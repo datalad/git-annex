@@ -1,4 +1,4 @@
-git-annex (6.20160420) UNRELEASED; urgency=medium
+git-annex (6.20160511) unstable; urgency=medium
 
   * Fix bug that sometimes prevented git-annex smudge --clean from consuming
     all its input, which resulted in git add bypassing git-annex.
@@ -33,7 +33,7 @@ git-annex (6.20160420) UNRELEASED; urgency=medium
     of the repo and your public keys can upload files to, but only you can
     decrypt the files stored in it.
 
- -- Joey Hess <id@joeyh.name>  Thu, 28 Apr 2016 13:17:04 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 11 May 2016 12:41:42 -0400
 
 git-annex (6.20160419) unstable; urgency=medium
 
