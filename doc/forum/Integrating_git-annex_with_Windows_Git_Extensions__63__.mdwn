@@ -1,0 +1,10 @@
+I installed the Windows git-annex, and had to run the following command from Git Bash (in Admin mode) in order to get git to see git-annex:
+
+$ ln -s /C/Program\ Files\ \(x86\)/Git/usr/bin/git-annex.exe git-annex.exe
+
+Was this 
+1) a known install issue that I missed somewhere?
+2) a failure in my particular installation?
+3) or was I supposed to put C:\Program Files (x86)\Git\usr\bin in my Windows path?
+
+Wasn't sure if we needed a docs update...

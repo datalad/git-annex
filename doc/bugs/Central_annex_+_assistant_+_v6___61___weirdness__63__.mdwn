@@ -1,0 +1,104 @@
+### Please describe the problem.
+Git-annex with v6 repo causes weird file creation behavior.
+
+### What steps will reproduce the problem?
+On central repo:
+  git init --bare central6
+  cd central6
+  git annex init origin
+  git annex upgrade
+On Client A
+  git clone {central6 repo path/URI}
+  cd central6
+  git annex init clientA6
+  git annex upgrade
+On Client B
+  git clone {central6 repo path/URI}
+  cd central6
+  git annex init clientB6
+  git annex upgrade
+Start assistant on both clients.
+Start webapp on both clients.
+Add files to both clients.
+Wait for assistant to sync new files.
+Force sync with webapp on both clients 
+
+At this point examine files coming from the central repo on the non-originating client.  I see:
+Client A originated file:
+-rw-rw-r--. 1 user group 92528731 May 10 20:16 image.png
+Client B created file:
+-rw-rw-r--. 1 user group 103 May 10 20:21 image.png
+
+Here's the content of Client B's file:
+/annex/objects/SHA256E-s92528731--098928032fddbd0327c1d608249a133e276a00b8aa8bffca371bd32bded49777.png
+
+### What version of git-annex are you using? On what operating system?
+Linux (Fedora 23/CentOS 7)
+[[!format sh """
+git-annex version: 6.20160428-g1f253e8
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 6
+supported repository versions: 5 6
+upgrade supported from repository versions: 0 1 2 4 5
+"""]]
+
+### Please provide any additional information below.
+
+[[!format sh """
+# Client B
+[2016-05-10 20:09:51.879642] main: starting assistant version 6.20160428-g1f253e8
+[2016-05-10 20:09:52.127709] Cronner: You should enable consistency checking to protect your data. 
+[2016-05-10 20:09:57.340186] TransferScanner: Syncing with origin 
+(scanning...) [2016-05-10 20:09:58.182781] Watcher: Performing startup scan
+(started...) 
+
+merge: refs/remotes/origin/master - not something we can merge
+
+merge: refs/remotes/origin/synced/master - not something we can merge
+gpg: Signature made Thu 28 Apr 2016 10:44:48 AM EDT using DSA key ID 89C809CB
+gpg: /tmp/git-annex-gpg.tmpOTZtDq/trustdb.gpg: trustdb created
+gpg: Good signature from "git-annex distribution signing key (for Joey Hess) <id@joeyh.name>"
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 4005 5C6A FD2D 526B 2961  E78F 5EE1 DBA7 89C8 09CB
+git-annex: Daemon is already running.
+[2016-05-10 20:21:19.633914] main: Syncing with origin 
+From /smb/r7000/USB_Storage/tmp/git-annex/central6
+   7f1d48c..3e6f240  git-annex  -> origin/git-annex
+ * [new branch]      master     -> origin/master
+ * [new branch]      synced/git-annex -> origin/synced/git-annex
+ * [new branch]      synced/master -> origin/synced/master
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+
+Already up-to-date.
+[2016-05-10 20:21:23.337732] Pusher: Syncing with origin 
+To /smb/r7000/USB_Storage/tmp/git-annex/central6
+   3e6f240..358afc3  git-annex -> synced/git-annex
+[2016-05-10 20:21:25.056294] Committer: Adding image.png
+add image.png ok
+[2016-05-10 20:21:25.543293] Committer: Committing changes to git
+(recording state in git...)
+
+SHA256E-s103--d7d52e9de4a9c7c030743825c3a1ca072062e4ccadefcf1eb34be3004360b9b2.png
+            103 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+(checksum...) [2016-05-10 20:21:27.240904] Transferrer: Uploaded image.png
+[2016-05-10 20:21:27.787233] Pusher: Syncing with origin 
+[2016-05-10 20:21:28.12119] Committer: Adding image.png
+(recording state in git...)
+add image.png ok
+[2016-05-10 20:21:28.696135] Committer: Committing changes to git
+(recording state in git...)
+To /smb/r7000/USB_Storage/tmp/git-annex/central6
+   358afc3..e3ef364  git-annex -> synced/git-annex
+   15d9319..976e99f  master -> synced/master
+[2016-05-10 20:21:32.584488] Pusher: Syncing with origin 
+Everything up-to-date
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+It seems to work really well on v5, but the file "corruption" is difficult to recover from.
