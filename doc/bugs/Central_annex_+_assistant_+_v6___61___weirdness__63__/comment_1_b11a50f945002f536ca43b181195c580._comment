@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-12T19:15:28Z"
+ content="""
+I'd recommend not using the assistant with v6 repos yet. v6 is
+still considered experimental.
+
+In v6 mode, the "/annex/objects/" file content means that an unlocked file's
+content is not locally available yet.
+
+I reproduced this, and here's the log for a single file "bar" which was
+created on clientA:
+
+<pre>
+commit 2806e7c46e1df2bfd35ae22cf399a222957caa83
+Author: Joey Hess <joeyh@joeyh.name>
+Date:   Thu May 12 15:18:28 2016 -0400
+
+    git-annex in clientB
+
+ bar | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 99160180e14d3920e2b7ce4ded12b86057a8923f
+Author: Joey Hess <joeyh@joeyh.name>
+Date:   Thu May 12 15:18:24 2016 -0400
+
+    git-annex in clientA
+
+ bar | 1 +
+ 1 file changed, 1 insertion(+)
+</pre>
+
+So, it looks like clientB changed it for some reason.
+
+	-/annex/objects/SHA256E-s30--325229d85342c107421616848843592c2c1335d4d4e429b2805765af07de59be
+	+/annex/objects/SHA256E-s93--7493e6fd3acc936ff943283df9aa82ba3ad5f94e3c3168c2599f4fdf9a8c504d
+
+And, 7493e6fd3acc936ff943283df9aa82ba3ad5f94e3c3168c2599f4fdf9a8c504d is the sha256sum of
+"/annex/objects/SHA256E-s30--325229d85342c107421616848843592c2c1335d4d4e429b2805765af07de59be\n", so
+it's getting confused and re-adding pointer files, it seems.
+"""]]
