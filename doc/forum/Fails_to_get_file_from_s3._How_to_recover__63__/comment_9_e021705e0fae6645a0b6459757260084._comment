@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2016-05-12T19:04:00Z"
+ content="""
+My best guess at the moment is that the corruption must have something to
+do with using a partsize.
+
+Since you were able to get at the corrupted files, can you characterize at
+all how they were corrupted?
+
+In particular, did the corruption start at some multiple of N GiB?
+into the file? If so, that would correlate with your 1 GiB part size.
+
+Or was it just a small area of corruption?
+
+Or is the corrupt file truncated?
+"""]]
