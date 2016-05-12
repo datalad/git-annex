@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-05-12T19:36:19Z"
+ content="""
+Enormous animated gif shows:
+
+1. List of remotes. "Kapsel" remote has "Syncing disabled"
+2. Apparently user clicks on that, although it's not entirely clear.
+   Page seems to reload and still has "Syncing disabled" for Kapsel.
+3. User goed to Edit repository for Kapsel. That page has "Syncing enabled"
+   checked.
+4. User saves and remote list still has it disabled.
+
+I guess my suggestion is, first to tell us what version of git-annex you're
+using, and second, take a look at .git/annex/daemon.log inside the git
+repository. There's probaby something to help narrow the problem down in
+the log.
+
+It would probably also help to paste the .git/config stanza for
+the remote.
+"""]]
