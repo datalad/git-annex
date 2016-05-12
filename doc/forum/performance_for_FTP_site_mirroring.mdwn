@@ -2,7 +2,7 @@ Hello --
 
 I want to use git (and git-annex) to take point-in-time snapshots of an FTP site.  Think "web.archive.org" but for an FTP site.  I'm using LFTP to mirror the site into a directory, which I then check into git.  This way I can go back in time to see what the state of the site was in the past.
 
-The site itself is currently about 10K files and about 30GB.  The files themselves are mostly zip files, as well as some xml files.  I expect files to not change much, and when they do I expect their sizes and modification times to change.
+The site itself is currently about 10K files and about 30GB.  The files themselves are mostly zip files, as well as some xml files.  I expect files to not change much, and when they do I expect their sizes and modification times to change.  I'm using v6 mode with unlocked files.
 
 Here are my questions:
 
