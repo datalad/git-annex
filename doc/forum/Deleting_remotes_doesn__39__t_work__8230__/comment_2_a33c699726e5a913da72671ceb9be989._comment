@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-05-12T19:14:05Z"
+ content="""
+Thanks, good analysis! I've opened a bug about this:
+[[bugs/webapp_should_notice_when_remote_deletion_cannot_complete_due_to_not_syncing]]
+"""]]
