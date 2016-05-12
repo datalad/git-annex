@@ -20,9 +20,19 @@ git-annex should use smudge/clean filters.
   Upgrading a direct mode repo also leaves files in this state.
   User can use `git add` to clear it up, but better to avoid this,
   by updating stat info in the index.
-  (May need to use libgit2 to do this efficiently, cannot find
+
+  May need to use libgit2 to do this efficiently, cannot find
   any plumbing except git-update-index, which is very inneficient for
-  smudged files.)
+  smudged files; updating a file feeds its whole content through the clean
+  filter again.
+
+  Part of the problem is that the clean filter needs to consume the whole
+  of stdin. (And git has to write the whole file content to stdout from the
+  file it mmaps). A more efficient smudge/clean interface that let the filter
+  read the file itself would let git-annex short-circuit when the file it's
+  cleaning is one it already knows about. I've proposed extending git with
+  such an interface:
+  <http://news.gmane.org/find-root.php?message_id=20160512182432.GA27427%40kitenet.net>
 
 * Checking out a different branch causes git to smudge all changed files,
   and write their content. This does not honor annex.thin. A warning
