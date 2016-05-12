@@ -54,6 +54,14 @@ git-annex should use smudge/clean filters.
   be sorted out first; it would not do for git annex adjust to cause
   the whole work tree to be considered to be modified!
 
+* When git runs the smudge filter, it buffers all its output in ram before
+  writing it to a file. So, checking out a branch with a large v6 unlocked files
+  can cause git to use a lot of memory.
+  (This needs to be fixed in git, but my proposed interface in
+  <http://thread.gmane.org/gmane.comp.version-control.git/294425> would
+  avoid the problem for git checkout, since it would use the new interface
+  and not the smudge filter.)
+
 * Eventually (but not yet), make v6 the default for new repositories.
   Note that the assistant forces repos into direct mode; that will need to
   be changed then, and it should enable annex.thin instead.
