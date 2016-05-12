@@ -2,6 +2,7 @@ git-annex (6.20160512) UNRELEASED; urgency=medium
 
   * Change git annex info remote encryption description to use wording
     closer to what's used in initremote.
+  * webapp: Avoid confusing display of dead remotes.
 
  -- Joey Hess <id@joeyh.name>  Wed, 11 May 2016 16:08:38 -0400
 
