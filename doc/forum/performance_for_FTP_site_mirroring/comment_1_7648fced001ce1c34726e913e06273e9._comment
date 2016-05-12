@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-12T18:50:10Z"
+ content="""
+Are you using v6 mode? I'd have two entirely different sets of anwsers to
+all of these questions depending on whether you're using v6 mode or not.
+
+Since you mentioned annex.thin, I'm going to guess v6 mode...
+
+1. `git status` will be slow in v6 mode if files have been dropped or
+   git's index has otherwise gotten out of sync. This is the main reason v6
+   mode is still considered experiemental. It's being worked on.
+2. WORM backend won't help with 1. The only thing WORM is going to speed
+   up is avoiding checksumming when adding files. At the cost that two
+   versions of a file with the same size and different content can't be
+   differentiated.
+3. Yes, git config annex.backends WORM would set the WORM backend by default.
+   I don't think that WORM is a good fit for your use case though.
+4. `git add` is much slower than `git-annex add`, because the former has to run
+   git-annex once per file added. Instead, run: `git config annex.addunlocked true`
+   and then `git annex add` will add the files unlocked.
+5. We could think about making `git annex add` fiddle with directory perms
+   to allow replacing a file with the annex symlink. But, what happens
+   if it loses power before it can fix the perms back to original mode?
+   Etc. Perhaps there's a way to make lftp not remove write perms to start
+   with. But I think you're going to need to use unlocked files anyway,
+   otherwise lftp mirror is probably going to see the annexed symlink as
+   different than the remote file, and replace it.
+6. See #4.
+7. No, annex.thin does not make anything slower AFAIK.
+"""]]
