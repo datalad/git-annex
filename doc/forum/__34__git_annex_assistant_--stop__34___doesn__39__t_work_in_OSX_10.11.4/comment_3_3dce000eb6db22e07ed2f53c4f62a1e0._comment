@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-05-12T18:28:09Z"
+ content="""
+It seems to me that you could just click on "syncing enabled" in the
+webapp, to toggle it to "syncing disabled". This stops all data transfers
+without killing the program.
+
+The problem you describe with stopping doesn't quite make sense to me.
+
+For one things, `git annex assistant --autostop` does the exact same
+thing as changing directory into the repo and `git annex assistant --stop`.
+But, you seem to say that one works and the other doesn't.
+
+For another, `git annex assistant --stop` does exactly the same thing as
+killing the process by hand! That is, it sends it a TERM signal. 
+Perhaps you killed the process by hand with a stronger signal than TERM,
+but I don't see how even that would cause it to need to repair the repo.
+
+Why is launchd restarting the daemon when it exits?
+`~/Library/LaunchAgents/com.branchable.git-annex.assistant.plist`
+has RunAtLoad set, which AFAIK is supposed to make it run it once
+when you log in. It does not have KeepAlive set, so unless you've changed
+the configuration to include KeepAlive, I don't know why launchd would
+behave that way.
+"""]]
