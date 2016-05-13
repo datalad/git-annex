@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="thowz"
+ subject="adjusting symlink paths"
+ date="2016-05-13T22:32:33Z"
+ content="""
+Another good use case for this would be adjusting the target paths of symlinks for non-standard locations of the .git/annex/objects folder, such as when cloning into a repo where the GIT_DIR is outside the worktree folder, or when someone is using multiple worktrees and the links in other worktrees need to point to the GIT_COMMON_DIR.
+
+[[https://git-scm.com/docs/git-worktree]]<br>
+[[https://stacktoheap.com/blog/2016/01/19/using-multiple-worktrees-with-git/]]
+"""]]
