@@ -160,21 +160,41 @@ originalBranch = fmap fromAdjustedBranch <$> inRepo Git.Branch.current
  - adjusted version of a branch, changes the adjustment of the original
  - branch).
  -
- - Can fail, if no branch is checked out, or perhaps if staged changes
- - conflict with the adjusted branch.
+ - Can fail, if no branch is checked out, or if the adjusted branch already
+ - exists, or perhaps if staged changes conflict with the adjusted branch.
  -}
-enterAdjustedBranch :: Adjustment -> Annex ()
+enterAdjustedBranch :: Adjustment -> Annex Bool
 enterAdjustedBranch adj = go =<< originalBranch
   where
 	go (Just origbranch) = do
-		AdjBranch b <- preventCommits $ const $ 
-			adjustBranch adj origbranch
-		showOutput -- checkout can have output in large repos
-		inRepo $ Git.Command.run
-			[ Param "checkout"
-			, Param $ fromRef $ Git.Ref.base b
-			]
-	go Nothing = error "not on any branch!"
+		let adjbranch = adjBranch $ originalToAdjusted origbranch adj
+		ifM (inRepo $ Git.Ref.exists adjbranch)
+			( do
+				mapM_ (warning . unwords)
+					[ [ "adjusted branch"
+					  , Git.Ref.describe adjbranch
+					  , "already exists."
+					  ]
+					, [ "Aborting because that branch may have changes that have not yet reached"
+					  , Git.Ref.describe origbranch
+					  ]
+					, [ "You can check out the adjusted branch manually to enter it,"
+					  , "or delete the adjusted branch and re-run this command."
+					  ]
+					]
+				return False
+			, do
+				AdjBranch b <- preventCommits $ const $ 
+					adjustBranch adj origbranch
+				showOutput -- checkout can have output in large repos
+				inRepo $ Git.Command.runBool
+					[ Param "checkout"
+					, Param $ fromRef $ Git.Ref.base b
+					]
+			)
+	go Nothing = do
+		warning "not on any branch!"
+		return False
 
 adjustToCrippledFileSystem :: Annex ()
 adjustToCrippledFileSystem = do
@@ -186,7 +206,8 @@ adjustToCrippledFileSystem = do
 			, Param "-m"
 			, Param "commit before entering adjusted unlocked branch"
 			]
-	enterAdjustedBranch UnlockAdjustment
+	unlessM (enterAdjustedBranch UnlockAdjustment) $
+		warning "Failed to enter adjusted branch!"
 
 setBasisBranch :: BasisBranch -> Ref -> Annex ()
 setBasisBranch (BasisBranch basis) new = 

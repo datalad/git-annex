@@ -35,5 +35,4 @@ start :: Adjustment -> CommandStart
 start adj = do
 	checkVersionSupported
 	showStart "adjust" ""
-	enterAdjustedBranch adj
-	next $ next $ return True
+	next $ next $ enterAdjustedBranch adj
