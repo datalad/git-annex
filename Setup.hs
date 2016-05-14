@@ -15,6 +15,7 @@ import Control.Monad
 import System.Directory
 import Data.List
 import Control.Exception
+import qualified System.Info
 
 import qualified Build.DesktopFile as DesktopFile
 import qualified Build.Configure as Configure
@@ -28,7 +29,7 @@ main = defaultMainWithHooks simpleUserHooks
 	}
 
 myPostCopy :: Args -> CopyFlags -> PackageDescription -> LocalBuildInfo -> IO ()
-myPostCopy _ flags pkg lbi = do
+myPostCopy _ flags pkg lbi = when (System.Info.os /= "mingw32") $ do
 	installGitAnnexShell dest verbosity pkg lbi
 	installManpages      dest verbosity pkg lbi
 	installDesktopFile   dest verbosity pkg lbi

@@ -1,0 +1,10 @@
+git-annex 6.20160419 has a rare security fix.
+A [bug](http://git-annex.branchable.com/bugs/External_special_remote_broken__63__/) made encrypted special
+remotes that are configured to use chunks accidentially expose the checksums
+of content that is uploaded to the remote. Such information is supposed to
+be hidden from the remote's view by the encryption. The same bug also made
+resuming interrupted uploads to such remotes start over from the beginning.
+
+After releasing that, I've been occupied today with fixing the Android
+autobuilder, which somehow got its build environment broken (unsure how),
+and fixing some other dependency issues.

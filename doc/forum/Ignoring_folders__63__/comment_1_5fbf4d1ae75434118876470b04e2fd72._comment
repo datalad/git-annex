@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-10T16:17:47Z"
+ content="""
+Use .gitignore, there's no need of a git-annex specific way.
+"""]]

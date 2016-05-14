@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-05-10T17:59:03Z"
+ content="""
+Thinking about this some more, I think it makes sense that your friend who
+is doing the uploading is doing it from a clone of your repository.
+
+So, they could have access to the HMAC key, and could use it to encrypt
+filenames, rather than using the un-encrypted keys. filenames seems better,
+because there's no point in exposing the un-encrypted filenames to S3.
+
+So, the encryption setup on such a repository would be the un-encrypted
+HMAC key, and an indication of what gpg public key to encrypt file contents
+to.
+
+(Of course, you might choose to expose a sanitized form of your real
+repository for cloning, that's more or less empty. And could even expose
+it to the whole world if you want to let anyone use it for sending files
+to you. In this case the un-encrypted HMAC key would be a pretty open secret.)
+"""]]

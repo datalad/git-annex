@@ -15,12 +15,12 @@ import Utility.Exception
 import Utility.FreeDesktop
 import Utility.Path
 import Utility.Monad
+import Utility.Directory
 import Config.Files
 import Utility.OSX
 import Assistant.Install.AutoStart
 import Assistant.Install.Menu
 
-import System.Directory
 import System.Environment
 #ifndef mingw32_HOST_OS
 import System.Posix.User

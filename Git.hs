@@ -26,6 +26,7 @@ module Git (
 	repoDescribe,
 	repoLocation,
 	repoPath,
+	repoWorkTree,
 	localGitDir,
 	attributes,
 	attributesLocal,
@@ -72,6 +73,10 @@ repoPath Repo { location = Local { worktree = Just d } } = d
 repoPath Repo { location = Local { gitdir = d } } = d
 repoPath Repo { location = LocalUnknown dir } = dir
 repoPath Repo { location = Unknown } = error "unknown repoPath"
+
+repoWorkTree :: Repo -> Maybe FilePath
+repoWorkTree Repo { location = Local { worktree = Just d } } = Just d
+repoWorkTree _ = Nothing
 
 {- Path to a local repository's .git directory. -}
 localGitDir :: Repo -> FilePath

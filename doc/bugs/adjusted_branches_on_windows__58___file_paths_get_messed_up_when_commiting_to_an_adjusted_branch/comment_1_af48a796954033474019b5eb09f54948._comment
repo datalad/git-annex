@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-04T17:03:57Z"
+ content="""
+There were several places in the adjusted branch code that made unix
+filename assumptions. I think I've fixed them all now; it seems to work
+well on windows in my testing now.
+
+You should be able to grab an updated windows build from the windows
+autobuilder within the hour.
+"""]]

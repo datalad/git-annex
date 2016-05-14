@@ -9,12 +9,10 @@
 
 module Git.Env where
 
+import Common
 import Git
 import Git.Types
 import Utility.Env
-#ifdef __ANDROID__
-import Common
-#endif
 
 {- Adjusts the gitEnv of a Repo. Copies the system environment if the repo
  - does not have any gitEnv yet. -}
@@ -40,6 +38,16 @@ adjustGitEnv g adj = do
 
 addGitEnv :: Repo -> String -> String -> IO Repo
 addGitEnv g var val = adjustGitEnv g (addEntry var val)
+
+{- Environment variables to use when running a command.
+ - Includes GIT_DIR pointing at the repo, and GIT_WORK_TREE when the repo
+ - is not bare. Also includes anything added to the Repo's gitEnv,
+ - and a copy of the rest of the system environment. -}
+propGitEnv :: Repo -> IO [(String, String)]
+propGitEnv g = do
+	g' <- addGitEnv g "GIT_DIR" (localGitDir g)
+	g'' <- maybe (pure g') (addGitEnv g' "GIT_WORK_TREE") (repoWorkTree g)
+	return $ fromMaybe [] (gitEnv g'')
 
 {- Use with any action that makes a commit to set metadata. -}
 commitWithMetaData :: CommitMetaData -> CommitMetaData -> (Repo -> IO a) -> Repo -> IO a

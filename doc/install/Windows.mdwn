@@ -1,6 +1,6 @@
 git-annex now does Windows!
 
-* First, [install git for Windows](http://git-scm.com/downloads)  
+* First, [install Git for Windows](http://git-scm.com/downloads)  
   Important: **Get the 32 bit version not the 64 bit version.**  
   (Note that msysgit is no longer supported.)
 * Then, [install git-annex](https://downloads.kitenet.net/git-annex/windows/current/)
@@ -25,15 +25,19 @@ A daily build is also available, thanks to Yury V. Zaytsev and
 ## building it yourself
 
 To build git-annex from source on Windows, you need to install
-the Haskell Platform and Cygwin. Use Cygwin to install these packages:
-gcc rsync git wget ssh gnupg
+[Git for Windows](http://git-scm.com/downloads), and
+[Stack](http://haskellstack.org/).
 
-Once the prerequisites are installed, run:
+You also need to install rsync and wget for windows.
+They need to be linked with the same MINGW32 libraries that come with Git
+for Windows. One way is to download them from
+<https://downloads.kitenet.net/git-annex/windows/assets/>.
+Put them somewhere in PATH.
 
-	cabal update
-	git clone git://git-annex.branchable.com/ gitannex
-	cd gitannex
-	build
+Then open Git Bash, [[clone git-annex|download]], and in
+git-annex's source tree, run "stack build" to download and build
+all dependencies and git-annex. "stack install" will install git-annex.
 
 (To build the git-annex installer, you also need to install the NullSoft
-installer system.)
+installer system. The script `standalone/windows/build.sh` is
+used to make the builds linked to above.)

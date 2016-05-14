@@ -1,0 +1,29 @@
+Dear all,
+        I successfuly cloned my annex repo (hosted on gitlab.com) on my windows box (win 7, 64bits), and my data is on an exFat partition. 
+git annex version is 
+----------------
+git-annex version: 6.20160126-g2336107
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload) WebDAV ConcurrentOutput TorrentParser Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+-------------
+However, when I try to initialize annex on the newly cloned repo fails with the following error:
+
+$ git annex init "repo_win"
+init repo_win
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Enabling direct mode.
+
+git-annex: .git\annex\objects\c89\57a\SHA256E-s1339658--e7cfebb4ac9c81a6a060506c537b55aed9f13bd02d861d2b341fb8a79ad6e046.png\: openTempFile: does not exist (No such file or directory)
+failed
+git-annex: init: 1 failed
+
+any hints about this?
+Thanks in advance.
+Best regards,
+             Juan

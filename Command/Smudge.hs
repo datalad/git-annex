@@ -73,8 +73,13 @@ clean file = do
 	if isJust (parseLinkOrPointer b)
 		then liftIO $ B.hPut stdout b
 		else ifM (shouldAnnex file)
-			( liftIO . emitPointer
-				=<< go =<< ingest =<< lockDown cfg file
+			( do
+				-- Even though we ingest the actual file,
+				-- and not stdin, we need to consume all
+				-- stdin, or git will get annoyed.
+				B.length b `seq` return ()
+				liftIO . emitPointer
+					=<< go =<< ingest =<< lockDown cfg file
 			, liftIO $ B.hPut stdout b
 			)
 	stop

@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 6.20160419
+Version: 6.20160511
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <id@joeyh.name>
@@ -246,6 +246,9 @@ Executable git-annex
   if flag(Benchmark)
     Build-Depends: criterion, deepseq
     CPP-Options: -DWITH_BENCHMARK
+
+custom-setup
+  Setup-Depends: base (>= 4.5), hslogger, MissingH
 
 source-repository head
   type: git

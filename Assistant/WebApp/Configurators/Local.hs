@@ -24,7 +24,9 @@ import qualified Command.Sync
 import Config.Files
 import Utility.FreeDesktop
 import Utility.DiskFree
+#ifndef mingw32_HOST_OS
 import Utility.Mounts
+#endif
 import Utility.DataUnits
 import Remote (prettyUUID)
 import Annex.UUID

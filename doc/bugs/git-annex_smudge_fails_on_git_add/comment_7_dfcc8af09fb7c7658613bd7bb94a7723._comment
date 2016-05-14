@@ -1,0 +1,48 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2016-05-02T14:19:43Z"
+ content="""
+Relevant parts of the strace:
+
+	[pid 21392] read(0,  <unfinished ...>
+	[pid 21393] <... futex resumed> )       = 0
+	[pid 21392] <... read resumed> "\0\0009\214moov\0\0\0lmvhd\0\0\0\0\300\\\26\256\300\\\26\267\0\0\2X"..., 32752) = 32752
+	[pid 21392] write(1, "/annex/objects/SHA256E-s2589913-"..., 102 <unfinished...>
+	[pid 21389] <... read resumed> "/annex/objects/SHA256E-s2589913-"..., 2589913) = 102
+
+21392 is git-annex smudge, and 21389 is apparently a thread belonging to git.
+This shows git feeding 32752 bytes of content to git-annex smudge on stdin, and
+git-annex smudge responding with the annex object.
+
+Notice that git-annex calculates the actual file size to be 2589913 bytes, more
+than git has sent it at the time it replies. It can tell this because it stats
+and hashes the actual file.
+
+	[pid 21392] +++ exited with 0 +++
+	[pid 21390] write(9, "ml\3\23<\270\315\321s\322\306\341\301e\261\312[<\2\n\17\315\16a\v\245\215(q\207\314\23"..., 2495705) = -1 EPIPE (Broken pipe)
+	[pid 21390] --- SIGPIPE {si_signo=SIGPIPE, si_code=SI_USER, si_pid=21389, si_uid=2001} ---
+	[pid 21390] close(9)                    = 0
+	[pid 21390] write(2, "error: cannot feed the input to "..., 76error: cannot feed the input to external filter git-annex smudge --clean %f
+
+Now git-annex exits, and then git, tries to feed it another 2495705 bytes
+of data after it's exited. 
+
+So, it seems that the problem is git-annex is somehow doing a short read of its
+stdin, and not waiting for git to feed it the full content.
+
+And, I see this bug now in the code:
+
+	b <- liftIO $ B.hGetContents stdin
+	if isJust (parseLinkOrPointer b)
+
+`parseLinkOrPointer` is careful to *not* look at the whole file content,
+so nothing forces the lazy bytestring read to consume all of stdin.
+So, if git's writes are broken up as happened in this strace, git-annex
+will exit without consuming the whole stdin.
+
+I've committed a fix along with this comment, so since you're building
+from source, and able to reproduce this problem (which I have not
+so far been able to reproduce myself)
+you should be able to update and rebuild and verify the fix.
+"""]]

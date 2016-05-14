@@ -6,7 +6,6 @@ module Build.Version where
 
 import Data.List
 import System.Environment
-import System.Directory
 import Data.Char
 import System.Process
 import Control.Applicative
@@ -14,6 +13,7 @@ import Prelude
 
 import Utility.Monad
 import Utility.Exception
+import Utility.Directory
 
 type Version = String
 

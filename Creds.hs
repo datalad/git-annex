@@ -94,7 +94,7 @@ getRemoteCredPair c storage = maybe fromcache (return . Just) =<< fromenv
 		Nothing -> return Nothing
 	fromenccreds enccreds cipher storablecipher = do
 		cmd <- gpgCmd <$> Annex.getGitConfig
-		mcreds <- liftIO $ catchMaybeIO $ decrypt cmd cipher
+		mcreds <- liftIO $ catchMaybeIO $ decrypt cmd (getGpgDecParams c) cipher
 			(feedBytes $ L.pack $ fromB64 enccreds)
 			(readBytes $ return . L.unpack)
 		case mcreds of

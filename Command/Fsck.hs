@@ -248,17 +248,24 @@ verifyLocationLog' key desc present u updatestatus = do
 	uuids <- loggedLocations key
 	case (present, u `elem` uuids) of
 		(True, False) -> do
-				fix InfoPresent
-				-- There is no data loss, so do not fail.
-				return True
+			fix InfoPresent
+			-- There is no data loss, so do not fail.
+			return True
 		(False, True) -> do
-				fix InfoMissing
-				warning $
-					"** Based on the location log, " ++ desc
-					++ "\n** was expected to be present, " ++
-					"but its content is missing."
-				return False
-		_ -> return True
+			fix InfoMissing
+			warning $
+				"** Based on the location log, " ++ desc
+				++ "\n** was expected to be present, " ++
+				"but its content is missing."
+			return False
+		(False, False) -> do
+			-- When the location log for the key is not present,
+			-- create it, so that the key will be known.
+			when (null uuids) $
+				whenM (not <$> isKnownKey key) $
+					updatestatus InfoMissing
+			return True
+		(True, True) -> return True
   where
 	fix s = do
 		showNote "fixing location log"

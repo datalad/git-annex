@@ -18,7 +18,9 @@ import Annex.Content
 import Annex.Perms
 import qualified Annex.Queue
 import qualified Database.Keys
+#if ! defined(mingw32_HOST_OS) && ! defined(__ANDROID__)
 import Utility.Touch
+#endif
 
 cmd :: Command
 cmd = notDirect $ noCommit $ withGlobalOptions annexedMatchingOptions $

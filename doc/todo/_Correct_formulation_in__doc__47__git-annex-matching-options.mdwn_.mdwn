@@ -1,0 +1,5 @@
+If I understand it correctly, the original formulation is in fact incorrect.
+
+Please see https://github.com/joeyh/git-annex/pull/52/commits/e5bb450f44c6dfd01d7b2c84b3fa40c25867a47e for the patch.
+
+> [[done]] --[[Joey]]

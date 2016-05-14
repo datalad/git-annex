@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-06T16:31:03Z"
+ content="""
+No, it was correct as written. But, I think that was a confusing example
+since it essentially contained a double negative, and so I changed it a
+while ago to a --include example.
+"""]]

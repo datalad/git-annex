@@ -23,6 +23,16 @@ it several times as the map is being built.
 Note that this subcommand can be used to graph any git repository; it
 is not limited to git-annex repositories.
 
+# LEGEND
+
+Ovals are repositories. White is regular, green is trusted, red is
+untrusted, and grey is dead.
+
+Arrows between repositories are connections via git remotes.
+
+Light blue boxes are hosts that were mapped, and contain the repositories
+on that host.
+
 # OPTIONS
 
 * `--fast`

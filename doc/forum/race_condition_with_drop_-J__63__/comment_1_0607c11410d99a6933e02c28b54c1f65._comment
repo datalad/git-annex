@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-04T17:13:55Z"
+ content="""
+This can happen if the working tree contains two files that both point to
+the same content. Since git-annex is dropping multiple files in parallel,
+it might try to drop both files at the same time. One of the drops will
+succeed, and the other fail as shown.
+
+It should be nothing to worry about since the content does get dropped.
+"""]]

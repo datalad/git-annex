@@ -21,3 +21,13 @@ direct mode, the worst that can happen in this case is probably that a
 modified file doesn't get added and committed. But, using the inode cache
 for unlocked files would result in any such modified versions being thrown
 away when the file is added, which is much more data lossy..
+
+> This bug was regarding v5 unlock/lock. In v6 mode, locking a
+> file doesn't need to rechecksum it; the key is pulled out of the
+> associated files database, and the inode cache is used to detect if the
+> unlocked file has been modified and so avoid data loss.
+> 
+> So, this is [[done]] but only for v6 mode. I don't think I want to
+> backport it to v5 mode though; it fell out naturally as a consequence of
+> v6 mode, but to support it in v5 mode would be a lot more work.
+> --[[Joey]]

@@ -11,9 +11,9 @@
 module Utility.Tmp where
 
 import System.IO
-import System.Directory
 import Control.Monad.IfElse
 import System.FilePath
+import System.Directory
 import Control.Monad.IO.Class
 #ifndef mingw32_HOST_OS
 import System.Posix.Temp (mkdtemp)

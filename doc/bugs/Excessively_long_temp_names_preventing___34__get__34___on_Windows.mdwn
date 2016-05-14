@@ -1,0 +1,39 @@
+### Please describe the problem.
+
+Getting a file with a long name on Windows fails due to doubling the size of the path in the "misctmp" directory.
+
+### What steps will reproduce the problem?
+
+```
+get [Connectivity and Thought - The Influence of Semantic Network Structure in a Neurodynamical Model of Thinking] marupaka_creativity_NN12.pdf (from origin...)
+SHA256-s588307--41bf10d5c3a924808c6219395758354d7b6c4ff0a75e0d1a90e798fac015536c
+        588,307 100%  670.38kB/s    0:00:00 (xfr#1, to-chk=0/1)
+(checksum...)
+git-annex: MoveFileEx "..\\..\\.git\\annex\\tmp\\SHA256-s588307--41bf10d5c3a924808c6219395758354d7b6c4ff0a75e0d1a90e798fac015536c" "..\\..\\.git\\annex\\misctmp\\[Connectivity and Thought - The Influence of Semantic Network Structure in a Neurodynamical Model of Thinking] marupaka_creativ.0\\[Connectivity and Thought - The Influence of Semantic Network Structure in a Neurodynamical Model of Thinking] marupaka_creativ": does not exist (The system cannot find the path specified.)
+failed
+git-annex: get: 1 failed
+```
+
+Note that the second argument to MoveFileEx is longer than 256 characters, because the name of the file gets doubled for the temp directory.
+
+
+### What version of git-annex are you using? On what operating system?
+
+```
+git-annex version: 6.20160427-gd0036b9
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload) WebDAV ConcurrentOutput TorrentParser Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository versions: 5 6
+upgrade supported from repository versions: 2 3 4 5
+```
+
+OS: Windows 10
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, managing 30000 files, on operating systems other than Windows though...
+
+> [[fixed|done]] --[[Joey]]

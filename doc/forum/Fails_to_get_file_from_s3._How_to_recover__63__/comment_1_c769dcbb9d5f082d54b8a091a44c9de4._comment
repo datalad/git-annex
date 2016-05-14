@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="annexuser"
+ subject="comment 1"
+ date="2016-04-30T17:30:18Z"
+ content="""
+This also happens with a second file in the same repo, although the download seems to complete on this one before the error. The file is about the same size.
+
+    gxg otherfile.tgz.gpg
+    get otherfile.tgz.gpg (from s3...)
+    100%         10.7MB/s 0sgpg: WARNING: encrypted message has been manipulated!
+
+      Unable to access these remotes: s3
+
+      Try making some of these repositories available:
+            15ac19e4-223a-4c81-b7f7-797b9b026b86 -- [s3]
+
+      (Note that these git remotes have annex-ignore set: origin)
+    failed
+    git-annex: get: 1 failed
+
+"""]]

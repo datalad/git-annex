@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-05-03T18:14:51Z"
+ content="""
+The checksum is not coming from the RSS feed. If you ran `git-annex
+importfeed` without `--fast`, it downloaded the content and checksummed it
+locally, and this checksum becomes the one it expects to have when
+downloading the file again. If you ran `git annex importfeed` with `--fast`, 
+it doesn't get a checksum, but it does record the current size of the file
+as reported by the web server. 
+
+Either the size or the checksum changing could be what caused the
+verification problem. It's possible that the web server reports a bogus
+size somehow (I've seen this happen before), or the web server might
+be some kind of CDN that is serving up different file contents at
+different times for whatever reason.
+
+If you use `git rm` or commit a `rm`, then any content of the file is
+retained in the git-annex repository, at least until you use `git annex
+unused` to remove it. You can check out old versions of the branch and the
+file content will still be there.
+
+If you use `git annex drop`, it drops the content from the local
+repository. git-annex still knows about the file, and `git annex get` can
+get the content again, perhaps by downloading it from the web again.
+
+Since git-annex still knows about the file even if it's removed or dropped,
+`git annex importfeed` avoids re-importing such files from a rss feed.
+"""]]

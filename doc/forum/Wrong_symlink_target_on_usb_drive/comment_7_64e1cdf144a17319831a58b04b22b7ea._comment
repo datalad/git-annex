@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2016-05-10T21:00:06Z"
+ content="""
+You might be able to unset annex.crippledfilesystem. Or it might cause some
+stuff to break. Especially if you access this drive from Windows.
+
+AFAIK symlinks don't work in Windows; at least git-annex does not know how
+to create them on Windows. (Windows has symlink-ish things and git might be
+able to use them.)
+
+The link target is committed to the master branch, so you need to be able
+to check out that same branch in other clones and have it point at the
+content. So there can only be one link target used, and by default that's
+the mixed case one. See [[tuning]] for how to change that.
+"""]]

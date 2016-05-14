@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2016-05-10T17:22:03Z"
+ content="""
+I don't know what needs to be put where in the app to make `open`
+run git-annex-webapp. There is already a Info.plist file that I thought was
+supposed to handle that. If someone wants to help make `open` work please
+be my guest.
+"""]]

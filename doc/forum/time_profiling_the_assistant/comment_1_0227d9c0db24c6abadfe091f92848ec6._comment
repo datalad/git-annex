@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-03T19:23:59Z"
+ content="""
+The assistant is stopped by sending it a TERM signal. Seems that the RTS
+does not save profiling on TERM.
+
+Try manually sending it an INT signal instead. The RTS does save profiling
+when the program is ctrl-c'd.
+
+I'd probably just run git annex assistant --foreground and then ctrl-c it.
+
+There's also a cabal flag to enable EKG, so you can watch pretty graphs in
+a web browser while it's running.
+"""]]

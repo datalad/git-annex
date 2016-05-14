@@ -1,1 +1,3 @@
 To implement things like my custom `git annex-push` without the dash, i.e. `git annex push`, an alias system for git-annex would be nice.
+
+> [[closing|done]] --[[Joey]]

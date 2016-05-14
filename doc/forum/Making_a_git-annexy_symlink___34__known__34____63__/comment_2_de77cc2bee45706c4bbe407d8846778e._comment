@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 2"
+ date="2016-05-10T17:44:38Z"
+ content="""
+It protects against adding in corrupted files without noticing.
+
+If I move the symlink as a real file, the receiving git-annex will rehash it and, if it is corrupted, effectively change the symlink to a corrupt file with no way to tell this has occured.
+
+This method leaves the transplanted symlink broken (and may be fixed by a reinject of a good copy of the file from another drive) and the corrupt content would be left behind by the reinject. This makes it very obvious something has happened.
+
+Thank you for making these changes to support my use case. I really hope it doesn't break anyone else's!
+"""]]

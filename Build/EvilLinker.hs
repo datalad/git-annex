@@ -15,7 +15,6 @@ import Text.Parsec
 import Text.Parsec.String
 import Control.Applicative ((<$>))
 import Control.Monad
-import System.Directory
 import Data.Maybe
 import Data.List
 
@@ -23,6 +22,7 @@ import Utility.Monad
 import Utility.Process hiding (env)
 import qualified Utility.Process
 import Utility.Env
+import Utility.Directory
 
 data CmdParams = CmdParams
 	{ cmd :: String

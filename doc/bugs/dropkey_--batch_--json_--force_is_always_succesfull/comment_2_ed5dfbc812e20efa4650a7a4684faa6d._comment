@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 2"
+ date="2016-05-03T17:53:41Z"
+ content="""
+gotcha -- so it is a feature, so you could mark this one \"done\"
+
+But note, that although --force is indeed not necessary it is required atm
+
+[[!format sh \"\"\"
+$> echo MD5E-s11--74d80f7d99b835e5189948c8d4297efd | git annex dropkey --batch --json 
+git-annex: dropkey can cause data loss; use --force if you're sure you want to do this
+
+$> echo MD5E-s11--74d80f7d99b835e5189948c8d4297efd | git annex dropkey --batch --json --force
+{\"command\":\"dropkey\",\"key\":\"MD5E-s11--74d80f7d99b835e5189948c8d4297efd\",\"success\":true}
+
+$> git annex version                                                                         
+git-annex version: 6.20160425+gitgffe2ea2-1~ndall+1
+
+\"\"\"]]
+"""]]

@@ -16,6 +16,7 @@ import Types.UrlContents
 import qualified Git
 import Config
 import Git.Config (isTrue, boolConfig)
+import Git.Env
 import Remote.Helper.Special
 import Remote.Helper.ReadOnly
 import Remote.Helper.Messages
@@ -227,6 +228,8 @@ handleRequest' lck external req mp responsehandler
 		maybe noop (\a -> liftIO $ a bytesprocessed) mp
 	handleRemoteRequest (DIRHASH k) = 
 		send $ VALUE $ hashDirMixed def k
+	handleRemoteRequest (DIRHASH_LOWER k) = 
+		send $ VALUE $ hashDirLower def k
 	handleRemoteRequest (SETCONFIG setting value) =
 		liftIO $ atomically $ do
 			let v = externalConfig external
@@ -367,7 +370,9 @@ fromExternal lck external extractor a =
 startExternal :: ExternalType -> Annex ExternalState
 startExternal externaltype = do
 	errrelayer <- mkStderrRelayer
+	g <- Annex.gitRepo
 	liftIO $ do
+		p <- propgit g cmdp
 		(Just hin, Just hout, Just herr, pid) <- 
 			createProcess p `catchIO` runerr
 		fileEncoding hin
@@ -385,11 +390,14 @@ startExternal externaltype = do
 			}
   where
 	cmd = externalRemoteProgram externaltype
-	p = (proc cmd [])
+	cmdp = (proc cmd [])
 		{ std_in = CreatePipe
 		, std_out = CreatePipe
 		, std_err = CreatePipe
 		}
+	propgit g p = do
+		environ <- propGitEnv g
+		return $ p { env = Just environ }
 
 	runerr _ = error ("Cannot run " ++ cmd ++ " -- Make sure it's in your PATH and is executable.")
 

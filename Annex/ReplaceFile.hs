@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Annex.ReplaceFile where
 
 import Annex.Common
@@ -27,8 +29,17 @@ replaceFile :: FilePath -> (FilePath -> Annex ()) -> Annex ()
 replaceFile file action = do
 	misctmpdir <- fromRepo gitAnnexTmpMiscDir
 	void $ createAnnexDirectory misctmpdir
+#ifndef mingw32_HOST_OS
+	-- Use part of the filename as the template for the temp
+	-- directory. This does not need to be unique, but it
+	-- makes it more clear what this temp directory is for.
 	filemax <- liftIO $ fileNameLengthLimit misctmpdir
 	let basetmp = take (filemax `div` 2) (takeFileName file)
+#else
+	-- Windows has limits on the whole path length, so keep
+	-- it short.
+	let basetmp = "t"
+#endif
 	withTmpDirIn misctmpdir basetmp $ \tmpdir -> do
 		let tmpfile = tmpdir </> basetmp
 		action tmpfile

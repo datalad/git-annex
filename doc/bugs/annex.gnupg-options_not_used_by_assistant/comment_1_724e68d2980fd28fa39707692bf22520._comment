@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-10T16:30:04Z"
+ content="""
+annex.gnupg-options is only used when encrypting content, not when
+decrypting. And it has to decrypt the shared encryption key first,
+so that's why the error shows it was running gpg with --decrypt.
+
+Probable, even if you were able to make it always run gpg with
+--no-tty, it wouldn't help, because gpg needs to prompt for a passphrase.
+
+There should be a way to get gnupg to use gpg-agent, which would let it
+prompt for your password with a dialog box, rather than trying to prompt on
+the terminal. That would work better with the webapp.
+
+I do think there ought to be a config setting that allows passing options
+to gpg when it's decrypting things, and so I'll add something.
+"""]]

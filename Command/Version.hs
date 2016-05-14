@@ -16,6 +16,8 @@ import qualified Types.Remote as R
 import qualified Remote
 import qualified Backend
 
+import System.Info
+
 cmd :: Command
 cmd = dontCheck repoExists $ noCommit $ 
 	noRepo (seekNoRepo <$$> optParser) $ 
@@ -53,6 +55,8 @@ showVersion = do
 			unwords supportedVersions
 		vinfo "upgrade supported from repository versions" $
 			unwords upgradableVersions
+		vinfo "operating system" $
+			unwords [os, arch]
 
 showPackageVersion :: IO ()
 showPackageVersion = do

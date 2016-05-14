@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-10T17:47:05Z"
+ content="""
+Well, the weppapp prompts for a XMPP address, which AFAIK does not include
+a port.
+
+`.git/annex/creds/xmpp` can contain a port, but that's only used when
+the SRV record lookup doesn't find anything. Since most XMPP servers
+have SRV records, and SRV includes a port.
+
+AFAICS, if the SRV record includes a nonstandard port, it will be used. 
+If there's no SRV record, port 5222 will be used, unless you edit
+`.git/annex/creds/xmpp` to use another port, and then what you specified
+will be used.
+"""]]

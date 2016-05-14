@@ -4,7 +4,6 @@
 
 module Build.Configure where
 
-import System.Directory
 import Control.Applicative
 import System.Environment (getArgs)
 import Control.Monad.IfElse
@@ -20,6 +19,7 @@ import Utility.Env
 import Utility.Exception
 import qualified Git.Version
 import Utility.DottedVersion
+import Utility.Directory
 
 tests :: [TestCase]
 tests =

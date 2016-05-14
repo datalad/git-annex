@@ -12,7 +12,6 @@ module Main where
 import System.Environment
 import Data.Maybe
 import System.FilePath
-import System.Directory
 import Control.Monad
 import Data.List
 import System.Posix.Files

@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-05-03T17:48:07Z"
+ content="""
+Actually, you can do it without setting the field to a dummy value.
+
+For example, to find all files without an author metadata:
+
+	git annex find --not --metadata 'author=*'
+
+Same switches can be used with other commands, including the metadata
+command.
+
+You can also use the git-annex view command to enter a branch that only
+contains the files without metadata set:
+
+	git annex view 'author!=*'
+
+(Unfortunately, adding metadata to a file does not currently update this
+view branch.)
+"""]]

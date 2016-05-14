@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 2"
+ date="2016-04-29T13:21:04Z"
+ content="""
+ok, so it is non-fixable reality due to having separate 'annex COMMAND --batch' processes (instead of a single annex --batch process which could accept/carry different COMMANDs with their parameters... I think we had discussion somewhere before).
+Ok -- I will workaround (actually for now I have worked around by collecting all files to be dropped and doing that after annex addurl process finishes, but dropkey --batch sounds better for this usecase)
+"""]]

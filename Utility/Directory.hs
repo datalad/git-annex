@@ -6,12 +6,15 @@
  -}
 
 {-# LANGUAGE CPP #-}
-{-# OPTIONS_GHC -fno-warn-tabs #-}
+{-# OPTIONS_GHC -fno-warn-tabs -w #-}
 
-module Utility.Directory where
+module Utility.Directory (
+	module Utility.Directory,
+	module System.Directory
+) where
 
 import System.IO.Error
-import System.Directory
+import System.Directory hiding (isSymbolicLink)
 import Control.Monad
 import System.FilePath
 import Control.Applicative

@@ -1,0 +1,81 @@
+### Please describe the problem.
+
+I am using annex with a gcrypt encrypted repository but I am not able to sync content to the remote share via Webapp. If I sync via command line everything is working as expected but via Webapp I receive several error messages complaining about tty not available.
+
+As I workaround I changed two things:
+
+1. /usr/local/bin/git-remote-gcrypt: As $GPG_AGENT_INFO was not set I needed to include "--no-tty" on line 377
+2. Add a line in ~/.gnupg/gpg.conf with option "no-tty"
+
+As this breaks gpg2 for use on command line I wanted to provide the --no-tty via option **annex.gnupg-options** as mentioned in the manual. Not sure what I am doing wrong but the Webapp does not pick up these options.
+
+```
+[annex]
+	gnupg-options = --no-tty
+```
+
+
+### What steps will reproduce the problem?
+
+Create repository via
+
+```sh
+git annex initremote hidrive type=gcrypt gitrepo=rsync.hidrive.strato.com:/users/xxxxxx/hidrive.git chunk=5MiB keyid=XXXXXXXX
+```
+Launch Webapp
+
+```sh
+git annex webapp
+```
+
+Copy files to local annex directory
+
+### What version of git-annex are you using? On what operating system?
+
+OSX 10.11.4
+
+gpg (GnuPG) 2.0.30
+libgcrypt 1.7.0
+Copyright (C) 2015 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Home: ~/.gnupg
+Supported algorithms:
+Pubkey: RSA, RSA, RSA, ELG, DSA
+Cipher: IDEA, 3DES, CAST5, BLOWFISH, AES, AES192, AES256, TWOFISH,
+        CAMELLIA128, CAMELLIA192, CAMELLIA256
+Hash: MD5, SHA1, RIPEMD160, SHA256, SHA384, SHA512, SHA224
+Compression: Uncompressed, ZIP, ZLIB, BZIP2
+
+
+git-annex version: 6.20160418
+build flags: Assistant Webapp Pairing Testsuite WebDAV FsEvents XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 6
+supported repository versions: 5 6
+upgrade supported from repository versions: 0 1 2 4 5
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+
+[2016-05-05 15:04:31.059236] Pusher: Syncing with hidrive 
+(recording state in git...)
+gcrypt: Development version -- Repository format MAY CHANGE
+gpg: cannot open `/dev/tty': Device not configured
+
+  user error (gpg2 ["--quiet","--trust-model","always","--decrypt"] exited 2)
+gpg: cannot open `/dev/tty': Device not configured
+
+  user error (gpg2 ["--quiet","--trust-model","always","--decrypt"] exited 2)
+
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
+> added annex.gnupg-decrypt-options; [[done]] --[[Joey]]
