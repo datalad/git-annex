@@ -221,7 +221,11 @@ shouldRestage :: DaemonStatus -> Bool
 shouldRestage ds = scanComplete ds || forceRestage ds
 
 onAddUnlocked :: Bool -> GetFileMatcher -> Handler
-onAddUnlocked = onAddUnlocked' False contentchanged addassociatedfile addlink samefilestatus
+onAddUnlocked symlinkssupported matcher f fs = do
+	mk <- liftIO $ isPointerFile f
+	case mk of
+		Nothing -> onAddUnlocked' False contentchanged addassociatedfile addlink samefilestatus symlinkssupported matcher f fs
+		Just k -> addlink f k
   where
 	addassociatedfile key file = 
 		Database.Keys.addAssociatedFile key

@@ -102,3 +102,5 @@ Everything up-to-date
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 It seems to work really well on v5, but the v6 file "corruption" is difficult to recover from.
+
+> [[fixed|done]] --[[Joey]]

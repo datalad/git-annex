@@ -6,6 +6,8 @@ git-annex (6.20160512) UNRELEASED; urgency=medium
   * adjust: If the adjusted branch already exists, avoid overwriting it,
     since it might contain changes that have not yet been propigated to the
     original branch.
+  * assistant: Fix bug that caused v6 pointer files to be annexed by the
+    assistant.
 
  -- Joey Hess <id@joeyh.name>  Wed, 11 May 2016 16:08:38 -0400
 
