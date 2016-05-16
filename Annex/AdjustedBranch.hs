@@ -57,6 +57,8 @@ import qualified Data.Map as M
 data Adjustment
 	= UnlockAdjustment
 	| LockAdjustment
+	| FixAdjustment
+	| UnFixAdjustment
 	| HideMissingAdjustment
 	| ShowMissingAdjustment
 	deriving (Show, Eq)
@@ -66,32 +68,16 @@ reverseAdjustment UnlockAdjustment = LockAdjustment
 reverseAdjustment LockAdjustment = UnlockAdjustment
 reverseAdjustment HideMissingAdjustment = ShowMissingAdjustment
 reverseAdjustment ShowMissingAdjustment = HideMissingAdjustment
+reverseAdjustment FixAdjustment = UnFixAdjustment
+reverseAdjustment UnFixAdjustment = FixAdjustment
 
 {- How to perform various adjustments to a TreeItem. -}
 adjustTreeItem :: Adjustment -> TreeItem -> Annex (Maybe TreeItem)
-adjustTreeItem UnlockAdjustment ti@(TreeItem f m s)
-	| toBlobType m == Just SymlinkBlob = do
-		mk <- catKey s
-		case mk of
-			Just k -> do
-				Database.Keys.addAssociatedFile k f
-				Just . TreeItem f (fromBlobType FileBlob)
-					<$> hashPointerFile k
-			Nothing -> return (Just ti)
-	| otherwise = return (Just ti)
-adjustTreeItem LockAdjustment ti@(TreeItem f m s)
-	| toBlobType m /= Just SymlinkBlob = do
-		mk <- catKey s
-		case mk of
-			Just k -> do
-				absf <- inRepo $ \r -> absPath $
-					fromTopFilePath f r
-				linktarget <- calcRepo $ gitAnnexLink absf k
-				Just . TreeItem f (fromBlobType SymlinkBlob)
-					<$> hashSymlink linktarget
-			Nothing -> return (Just ti)
-	| otherwise = return (Just ti)
-adjustTreeItem HideMissingAdjustment ti@(TreeItem _ _ s) = do
+adjustTreeItem UnlockAdjustment = ifSymlink adjustToPointer noAdjust
+adjustTreeItem LockAdjustment = ifSymlink noAdjust adjustToSymlink
+adjustTreeItem FixAdjustment = ifSymlink adjustToSymlink noAdjust
+adjustTreeItem UnFixAdjustment = ifSymlink (adjustToSymlink' gitAnnexLinkCanonical) noAdjust
+adjustTreeItem HideMissingAdjustment = \ti@(TreeItem _ _ s) -> do
 	mk <- catKey s
 	case mk of
 		Just k -> ifM (inAnnex k)
@@ -99,7 +85,40 @@ adjustTreeItem HideMissingAdjustment ti@(TreeItem _ _ s) = do
 			, return Nothing
 			)
 		Nothing -> return (Just ti)
-adjustTreeItem ShowMissingAdjustment ti = return (Just ti)
+adjustTreeItem ShowMissingAdjustment = noAdjust
+
+ifSymlink :: (TreeItem -> Annex a) -> (TreeItem -> Annex a) -> TreeItem -> Annex a
+ifSymlink issymlink notsymlink ti@(TreeItem _f m _s)
+	| toBlobType m == Just SymlinkBlob = issymlink ti
+	| otherwise = notsymlink ti
+
+noAdjust :: TreeItem -> Annex (Maybe TreeItem)
+noAdjust = return . Just
+
+adjustToPointer :: TreeItem -> Annex (Maybe TreeItem)
+adjustToPointer ti@(TreeItem f _m s) = do
+	mk <- catKey s
+	case mk of
+		Just k -> do
+			Database.Keys.addAssociatedFile k f
+			Just . TreeItem f (fromBlobType FileBlob)
+				<$> hashPointerFile k
+		Nothing -> return (Just ti)
+
+adjustToSymlink :: TreeItem -> Annex (Maybe TreeItem)
+adjustToSymlink = adjustToSymlink' gitAnnexLink
+
+adjustToSymlink' :: (FilePath -> Key -> Git.Repo -> GitConfig -> IO FilePath) -> TreeItem -> Annex (Maybe TreeItem)
+adjustToSymlink' gitannexlink ti@(TreeItem f _m s) = do
+	mk <- catKey s
+	case mk of
+		Just k -> do
+			absf <- inRepo $ \r -> absPath $
+				fromTopFilePath f r
+			linktarget <- calcRepo $ gitannexlink absf k
+			Just . TreeItem f (fromBlobType SymlinkBlob)
+				<$> hashSymlink linktarget
+		Nothing -> return (Just ti)
 
 type OrigBranch = Branch
 newtype AdjBranch = AdjBranch { adjBranch :: Branch }
@@ -123,11 +142,15 @@ serialize UnlockAdjustment = "unlocked"
 serialize LockAdjustment = "locked"
 serialize HideMissingAdjustment = "present"
 serialize ShowMissingAdjustment = "showmissing"
+serialize FixAdjustment = "fixed"
+serialize UnFixAdjustment = "unfixed"
 
 deserialize :: String -> Maybe Adjustment
 deserialize "unlocked" = Just UnlockAdjustment
 deserialize "locked" = Just UnlockAdjustment
 deserialize "present" = Just HideMissingAdjustment
+deserialize "fixed" = Just FixAdjustment
+deserialize "unfixed" = Just UnFixAdjustment
 deserialize _ = Nothing
 
 originalToAdjusted :: OrigBranch -> Adjustment -> AdjBranch

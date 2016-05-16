@@ -4,7 +4,7 @@ git-annex adjust - enter an adjusted branch
 
 # SYNOPSIS
 
-git annex adjust --unlock`
+git annex adjust --unlock|--fix`
 
 # DESCRIPTION
 
@@ -32,6 +32,13 @@ This command can only be used in a v6 git-annex repository.
 
   Unlock all annexed files in the adjusted branch. This allows
   annexed files to be modified.
+
+* `--fix`
+
+  Fix the symlinks to annexed files to point to the local git annex
+  object directory. This can be useful if a repository is checked out in an
+  unusual way that prevents the symlinks committed to git from pointing at
+  the annex objects.
 
 # SEE ALSO
 

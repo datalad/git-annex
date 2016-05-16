@@ -13,6 +13,8 @@ git-annex (6.20160512) UNRELEASED; urgency=medium
   * add: Adding a v6 pointer file used to annex it; now the pointer file is
     added to git as-is. (git add of a pointer file already did the right
     thing)
+  * adjust: Add --fix adjustment, which is useful when the git directory
+    is in a nonstandard place.
 
  -- Joey Hess <id@joeyh.name>  Wed, 11 May 2016 16:08:38 -0400
 

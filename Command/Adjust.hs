@@ -21,6 +21,10 @@ optParser _ =
 		( long "unlock"
 		<> help "unlock annexed files"
 		)
+	<|> flag' FixAdjustment
+		( long "fix"
+		<> help "fix symlinks to annnexed files"
+		)
 	{- Not ready yet
 	<|> flag' HideMissingAdjustment
 		( long "hide-missing"

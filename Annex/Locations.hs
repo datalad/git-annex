@@ -15,6 +15,7 @@ module Annex.Locations (
 	gitAnnexLocation,
 	gitAnnexLocationDepth,
 	gitAnnexLink,
+	gitAnnexLinkCanonical,
 	gitAnnexContentLock,
 	gitAnnexMapping,
 	gitAnnexInodeCache,
@@ -80,6 +81,7 @@ import Types.UUID
 import Types.GitConfig
 import Types.Difference
 import qualified Git
+import qualified Git.Types as Git
 import Git.FilePath
 import Annex.DirHashes
 import Annex.Fixup
@@ -181,6 +183,20 @@ gitAnnexLink file key r config = do
 				Git.repoPath r </> ".git"
 		| otherwise = Git.localGitDir r
 	whoops = error $ "unable to normalize " ++ file
+
+{- Calculates a symlink target as would be used in a typical git
+ - repository, with .git in the top of the work tree. -}
+gitAnnexLinkCanonical :: FilePath -> Key -> Git.Repo -> GitConfig -> IO FilePath
+gitAnnexLinkCanonical file key r config = gitAnnexLink file key r' config'
+  where
+	r' = case r of
+		Git.Repo { Git.location = l@Git.Local { Git.worktree = Just wt } } ->
+			r { Git.location = l { Git.gitdir = wt </> ".git" } }
+		_ -> r
+	config' = config
+		{ annexCrippledFileSystem = False
+		, coreSymlinks = True
+		}
 
 {- File used to lock a key's content. -}
 gitAnnexContentLock :: Key -> Git.Repo -> GitConfig -> IO FilePath
