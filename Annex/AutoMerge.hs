@@ -52,8 +52,15 @@ autoMergeFrom branch currbranch mergeconfig commitmode = do
   where
 	go old = ifM isDirect
 		( mergeDirect currbranch old branch (resolveMerge old branch False) mergeconfig commitmode
-		, inRepo (Git.Merge.merge branch mergeconfig commitmode)
-			<||> (resolveMerge old branch False <&&> commitResolvedMerge commitmode)
+		, do
+			r <- inRepo (Git.Merge.merge branch mergeconfig commitmode)
+				<||> (resolveMerge old branch False <&&> commitResolvedMerge commitmode)
+			-- Merging can cause new associated files to appear
+			-- and the smudge filter will add them to the database.
+			-- To ensure that this process sees those changes,
+			-- close the database if it was open.
+			Database.Keys.closeDb
+			return r
 		)
 
 {- Resolves a conflicted merge. It's important that any conflicts be

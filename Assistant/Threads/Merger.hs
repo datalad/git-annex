@@ -19,7 +19,6 @@ import qualified Annex.Branch
 import qualified Git
 import qualified Git.Branch
 import qualified Command.Sync
-import qualified Database.Keys
 import Annex.TaggedPush
 import Remote (remoteFromUUID)
 
@@ -90,12 +89,6 @@ onChange file
 					currbranch mergeConfig
 					Git.Branch.AutomaticCommit
 					changedbranch
-				-- Merging can cause new associated files
-				-- to appear and the smudge filter will
-				-- add them to the database. To ensure that
-				-- this process sees those changes, close
-				-- the database if it was open.
-				liftAnnex $ Database.Keys.closeDb
 	mergecurrent _ = noop
 
 	handleDesynced = case fromTaggedBranch changedbranch of
