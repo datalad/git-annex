@@ -47,6 +47,7 @@ smudge file = do
 	case parseLinkOrPointer b of
 		Nothing -> liftIO $ B.putStr b
 		Just k -> do
+			Database.Keys.addAssociatedFile k =<< inRepo (toTopFilePath file)
 			-- A previous unlocked checkout of the file may have
 			-- led to the annex object getting modified;
 			-- don't provide such modified content as it
@@ -61,7 +62,6 @@ smudge file = do
 						=<< catchMaybeIO (B.readFile content)
 				, liftIO $ B.putStr b
 				)
-			Database.Keys.addAssociatedFile k =<< inRepo (toTopFilePath file)
 	stop
 
 -- Clean filter is fed file content on stdin, decides if a file
