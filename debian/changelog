@@ -10,6 +10,9 @@ git-annex (6.20160512) UNRELEASED; urgency=medium
     assistant.
   * assistant: Fix race in v6 mode that caused downloaded file content to
     sometimes not replace pointer files.
+  * add: Adding a v6 pointer file used to annex it; now the pointer file is
+    added to git as-is. (git add of a pointer file already did the right
+    thing)
 
  -- Joey Hess <id@joeyh.name>  Wed, 11 May 2016 16:08:38 -0400
 
