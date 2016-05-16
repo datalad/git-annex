@@ -8,6 +8,8 @@ git-annex (6.20160512) UNRELEASED; urgency=medium
     original branch.
   * assistant: Fix bug that caused v6 pointer files to be annexed by the
     assistant.
+  * assistant: Fix race in v6 mode that caused downloaded file content to
+    sometimes not replace pointer files.
 
  -- Joey Hess <id@joeyh.name>  Wed, 11 May 2016 16:08:38 -0400
 
