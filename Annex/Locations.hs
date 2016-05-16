@@ -151,8 +151,9 @@ gitAnnexLocation' key r config crippled symlinkssupported checker gitdir
 	 - for new content, unless symlinks are supported too.
 	 - Then hashDirMixed is used. But, the content could be
 	 - in either location so check both. -}
-	| symlinkssupported = check $ map inrepo $ reverse $ annexLocations config key
-	| crippled = checkall
+	| crippled = if symlinkssupported
+		then check $ map inrepo $ reverse $ annexLocations config key
+		else checkall
 	{- Regular repositories only use hashDirMixed, so
 	 - don't need to do any work to check if the file is
 	 - present. -}
