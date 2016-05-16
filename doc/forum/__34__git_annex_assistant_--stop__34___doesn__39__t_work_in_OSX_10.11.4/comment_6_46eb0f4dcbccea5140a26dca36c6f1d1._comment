@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="openmedi"
+ subject="comment 6"
+ date="2016-05-16T23:11:34Z"
+ content="""
+I did assume so, because b2s process seems to be running when the assistant fails to shut down. But a new, maybe related problem might have come to light: I have/had a gitlab remote, that grew so big (30 gig) that they shut it down, in the sense that I can't access it anymore (even reading from it seems to have stoped working). I believe that this gitlab remote has some objects that aren't available anymore and git annex seems to try to repair stuff that is not repairable. As always: This is all said with a big \"maybe\", since I wouldn't know how to test my repo against that hypothesis. I have now done `git annex untrust gitlab` and will try if that helps. All this seem very mysterious to me, since I can't believe that I failed remote should prevent the repo to find an acceptable state.
+
+- git annex fsck states that there are 60 failed files (\"Only 1 of 2 trustworthy copies exist of…\" for all of them as far as I can see in the log)
+- git annex version 6.20160418  installed through homebrew
+- git annex repo version is 6
+"""]]
