@@ -1,0 +1,94 @@
+### Please describe the problem.
+`git annex whereis` reports the same UUID multiple times, for example for one file:
+
+```
+whereis file1 (20 copies)
+        0866153a-19e5-4382-aeb6-30e8210706cc
+        0866153a-19e5-4382-aeb6-30e8210706cc
+        0866153a-19e5-4382-aeb6-30e8210706cc
+        0866153a-19e5-4382-aeb6-30e8210706cc
+        0dc538bf-5015-474a-965b-f59a678c2606
+        0dc538bf-5015-474a-965b-f59a678c2606
+        0dc538bf-5015-474a-965b-f59a678c2606
+        0dc538bf-5015-474a-965b-f59a678c2606
+        42c9b8ae-7fe5-452c-8965-146077b567fc
+        42c9b8ae-7fe5-452c-8965-146077b567fc
+        42c9b8ae-7fe5-452c-8965-146077b567fc
+        42c9b8ae-7fe5-452c-8965-146077b567fc
+        99f82d90-85a1-498e-a149-b5d21a0c4540
+        99f82d90-85a1-498e-a149-b5d21a0c4540
+        99f82d90-85a1-498e-a149-b5d21a0c4540
+        99f82d90-85a1-498e-a149-b5d21a0c4540
+        9b4679b3-95dd-4e20-8349-7a9ed4d9ff6a
+        9b4679b3-95dd-4e20-8349-7a9ed4d9ff6a
+        9b4679b3-95dd-4e20-8349-7a9ed4d9ff6a
+        9b4679b3-95dd-4e20-8349-7a9ed4d9ff6a
+ok
+```
+
+For another file:
+
+```
+whereis file2 (44 copies)
+        0866153a-19e5-4382-aeb6-30e8210706cc
+        0866153a-19e5-4382-aeb6-30e8210706cc
+        0866153a-19e5-4382-aeb6-30e8210706cc
+        0866153a-19e5-4382-aeb6-30e8210706cc
+        0dc538bf-5015-474a-965b-f59a678c2606
+        0dc538bf-5015-474a-965b-f59a678c2606
+        42c9b8ae-7fe5-452c-8965-146077b567fc
+        42c9b8ae-7fe5-452c-8965-146077b567fc
+        42c9b8ae-7fe5-452c-8965-146077b567fc
+        42c9b8ae-7fe5-452c-8965-146077b567fc
+        57c272a3-4146-4796-8c4d-349725e11153
+        57c272a3-4146-4796-8c4d-349725e11153
+        57c272a3-4146-4796-8c4d-349725e11153
+        57c272a3-4146-4796-8c4d-349725e11153
+        6edd8523-6321-4d60-ada1-364489093075
+        6edd8523-6321-4d60-ada1-364489093075
+        6edd8523-6321-4d60-ada1-364489093075
+        6edd8523-6321-4d60-ada1-364489093075
+        8ca47082-542f-4935-bd4d-71b3d8071f97
+        8ca47082-542f-4935-bd4d-71b3d8071f97
+        8ca47082-542f-4935-bd4d-71b3d8071f97
+        8ca47082-542f-4935-bd4d-71b3d8071f97
+        99c9cb4b-3d7d-406b-b68d-c30b62072d25
+        99c9cb4b-3d7d-406b-b68d-c30b62072d25
+        99c9cb4b-3d7d-406b-b68d-c30b62072d25
+        99c9cb4b-3d7d-406b-b68d-c30b62072d25
+        99f82d90-85a1-498e-a149-b5d21a0c4540
+        99f82d90-85a1-498e-a149-b5d21a0c4540
+        99f82d90-85a1-498e-a149-b5d21a0c4540
+        99f82d90-85a1-498e-a149-b5d21a0c4540
+        9b4679b3-95dd-4e20-8349-7a9ed4d9ff6a -- repo1
+        9b4679b3-95dd-4e20-8349-7a9ed4d9ff6a
+        9b4679b3-95dd-4e20-8349-7a9ed4d9ff6a
+        9b4679b3-95dd-4e20-8349-7a9ed4d9ff6a
+        9b4679b3-95dd-4e20-8349-7a9ed4d9ff6a
+        9e5cb42d-7a5a-4a99-b176-f0980d9b7265
+        9e5cb42d-7a5a-4a99-b176-f0980d9b7265
+        9e5cb42d-7a5a-4a99-b176-f0980d9b7265
+        9e5cb42d-7a5a-4a99-b176-f0980d9b7265
+        b1e180f9-3a47-4178-a360-043e731a4f5b -- local_repo [here]
+        b5472406-01a1-4cd8-a5b4-bb3d914264d2
+        b5472406-01a1-4cd8-a5b4-bb3d914264d2
+        b5472406-01a1-4cd8-a5b4-bb3d914264d2
+        b5472406-01a1-4cd8-a5b4-bb3d914264d2
+ok
+```
+
+Furthermore as can be seen it doesn't even recognise that I have added repo1 as a remote for file1, actually several other of the repositories are available as remotes but git annex doesn't recognise them.
+
+I have tried deleting the repository and cloning it again on windows, but that just seemed to create even more UUID repeats. So right now I am a bit vary of trying anything out on Windows on the repository.
+
+I have tried running `git annex repair` on Linux and it reported no problems, even though it also shows repeated UUIDs if I run `git annex whereis`.
+
+### What version of git-annex are you using? On what operating system?
+
+I am running "git-annex version: 6.20160511-g4633f0b" on Windows, but I have been having troubles with this for some time, though only on Windows.
+
+### Please provide any additional information below.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Yes it is working very nicely on all my linux computers, and right now I am mostly concerned that I might have messed up the repository by trying out Windows :-(.
+
