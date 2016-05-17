@@ -30,6 +30,7 @@ import qualified Git.CatFile
 import qualified Annex
 import Git.Types
 import Git.FilePath
+import Git.Index
 import qualified Git.Ref
 import Annex.Link
 
@@ -68,7 +69,7 @@ catObjectDetails ref = do
 catFileHandle :: Annex Git.CatFile.CatFileHandle
 catFileHandle = do
 	m <- Annex.getState Annex.catfilehandles
-	indexfile <- fromMaybe "" . maybe Nothing (lookup "GIT_INDEX_FILE")
+	indexfile <- fromMaybe "" . maybe Nothing (lookup indexEnv)
 		<$> fromRepo gitEnv
 	case M.lookup indexfile m of
 		Just h -> return h

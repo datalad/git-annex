@@ -12,6 +12,7 @@ import qualified Control.Exception as E
 import Annex.Common
 import Git
 import Git.Types
+import Git.Index
 import Git.Env
 import qualified Annex
 
@@ -21,7 +22,7 @@ withIndexFile f a = do
 	-- Workaround http://thread.gmane.org/gmane.comp.version-control.git/294880
 	absf <- liftIO $ absPath f
 	withAltRepo
-		(\g -> addGitEnv g "GIT_INDEX_FILE" absf)
+		(\g -> addGitEnv g indexEnv absf)
 		(\g g' -> g' { gitEnv = gitEnv g })
 		a
 
