@@ -17,9 +17,13 @@ import qualified Annex
 
 {- Runs an action using a different git index file. -}
 withIndexFile :: FilePath -> Annex a -> Annex a
-withIndexFile f = withAltRepo
-	(\g -> addGitEnv g "GIT_INDEX_FILE" f)
-	(\g g' -> g' { gitEnv = gitEnv g })
+withIndexFile f a = do
+	-- Workaround http://thread.gmane.org/gmane.comp.version-control.git/294880
+	absf <- liftIO $ absPath f
+	withAltRepo
+		(\g -> addGitEnv g "GIT_INDEX_FILE" absf)
+		(\g g' -> g' { gitEnv = gitEnv g })
+		a
 
 {- Runs an action using a different git work tree.
  -

@@ -367,7 +367,7 @@ withIndex :: Annex a -> Annex a
 withIndex = withIndex' False
 withIndex' :: Bool -> Annex a -> Annex a
 withIndex' bootstrapping a = do
-	f <- liftIO . absPath =<< fromRepo gitAnnexIndex
+	f <- fromRepo gitAnnexIndex
 	withIndexFile f $ do
 		checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
 			unless bootstrapping create

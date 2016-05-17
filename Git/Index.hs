@@ -24,7 +24,9 @@ indexEnv = "GIT_INDEX_FILE"
 override :: FilePath -> IO (IO ())
 override index = do
 	res <- getEnv var
-	setEnv var index True
+	-- Workaround http://thread.gmane.org/gmane.comp.version-control.git/294880
+	absindex <- absPath index
+	setEnv var absindex True
 	return $ reset res
   where
 	var = "GIT_INDEX_FILE"
