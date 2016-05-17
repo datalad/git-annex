@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-17T17:51:11Z"
+ content="""
+This is quite odd. Normally, multiple instances of the same UUID can occur
+but will get compacted down to 1.
+
+That it only lists the remote name/description for one instance of the UUID
+is probably a clue to whatever the problem is.
+
+Can you paste the output of this command: `git show git-annex:uuid.log`
+
+(It would be very helpful if I could get access to a clone of the git-annex
+branch of your repository.)
+"""]]
