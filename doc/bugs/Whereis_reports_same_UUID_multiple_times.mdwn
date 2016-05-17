@@ -29,7 +29,7 @@ ok
 For another file:
 
 ```
-whereis FerieKonto_privat_Ansoegning+om+uhaevede+feriepenge_ferieaar2010_2011.ps                                                                                                                                                              (44 copies)
+whereis file2 (44 copies)
         0866153a-19e5-4382-aeb6-30e8210706cc
         0866153a-19e5-4382-aeb6-30e8210706cc
         0866153a-19e5-4382-aeb6-30e8210706cc
