@@ -9,10 +9,19 @@ module Git.Index where
 
 import Common
 import Git
+import Git.FilePath
 import Utility.Env
 
 indexEnv :: String
 indexEnv = "GIT_INDEX_FILE"
+
+{- When relative, GIT_INDEX_FILE is interpreted by git as being 
+ - relative to the top of the work tree of the git repository,
+ - not to the CWD. -}
+indexEnvVal :: FilePath -> Repo -> IO String
+indexEnvVal index r
+	| isAbsolute index = return index
+	| otherwise = getTopFilePath <$> toTopFilePath index r
 
 {- Forces git to use the specified index file.
  -
@@ -21,12 +30,11 @@ indexEnv = "GIT_INDEX_FILE"
  -
  - Warning: Not thread safe.
  -}
-override :: FilePath -> IO (IO ())
-override index = do
+override :: FilePath -> Repo -> IO (IO ())
+override index r = do
 	res <- getEnv var
-	-- Workaround http://thread.gmane.org/gmane.comp.version-control.git/294880
-	absindex <- absPath index
-	setEnv var absindex True
+	val <- indexEnvVal index r
+	setEnv var val True
 	return $ reset res
   where
 	var = "GIT_INDEX_FILE"
