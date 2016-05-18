@@ -77,7 +77,7 @@ combineTransitions :: [Transitions] -> Transitions
 combineTransitions = S.unions
 
 transitionList :: Transitions -> [Transition]
-transitionList = map transition . S.elems
+transitionList = nub . map transition . S.elems
 
 {- Typically ran with Annex.Branch.change, but we can't import Annex.Branch
  - here since it depends on this module. -}

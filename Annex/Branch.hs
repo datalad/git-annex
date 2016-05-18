@@ -522,7 +522,7 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 	Annex.Queue.flush
 	withIndex $ do
 		prepareModifyIndex jl
-		run $ mapMaybe getTransitionCalculator $ transitionList ts
+		run $ mapMaybe getTransitionCalculator tlist
 		Annex.Queue.flush
 		if neednewlocalbranch
 			then do
@@ -535,7 +535,8 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 	message
 		| neednewlocalbranch && null transitionedrefs = "new branch for transition " ++ tdesc
 		| otherwise = "continuing transition " ++ tdesc
-	tdesc = show $ map describeTransition $ transitionList ts
+	tdesc = show $ map describeTransition tlist
+	tlist = transitionList ts
 
 	{- The changes to make to the branch are calculated and applied to
 	 - the branch directly, rather than going through the journal,
