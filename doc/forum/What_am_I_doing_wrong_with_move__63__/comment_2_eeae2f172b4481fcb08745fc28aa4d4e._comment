@@ -1,0 +1,42 @@
+[[!comment format=mdwn
+ username="Gus"
+ subject="Thank you"
+ date="2016-05-19T11:27:15Z"
+ content="""
+The external unit seems to hold a NTFS. Here is the `git-annex info` output:
+
+    repository mode: direct
+    trusted repositories: 0
+    semitrusted repositories: 4
+    	00000000-0000-0000-0000-000000000001 -- web
+     	00000000-0000-0000-0000-000000000002 -- bittorrent
+     	069de9a2-dc53-4c0a-82e0-a61a1f29e6b3 -- stratus PC [stratus]
+     	49b5b3a4-56ac-4cf2-aed9-1c23d3181c97 -- Toshiba USB HDD [here]
+    untrusted repositories: 0
+    transfers in progress: none
+    available local disk space: 4.42 gigabytes (+1 megabyte reserved)
+    local annex keys: 5556
+    local annex size: 1.66 terabytes
+    annexed files in working tree: 6618
+    size of annexed files in working tree: 1.1 terabytes
+    bloom filter size: 32 mebibytes (1.1% full)
+    backend usage: 
+    	SHA256E: 6618
+
+However, `git status` says:
+
+    fatal: This operation must be run in a work tree
+
+Which is not the same message as \"no git found here\", but is also not what I expected to see. `git log` seems to work but says nothing about the file at hand.
+
+On the PC side, however, I can see three commits on the file (I wish the commit message contained the command line with arguments, rather than the less descriptive \"git-annex in Toshiba USB HDD\").
+Using `git show` and `git cat-file` I managed to determine the following:
+
+March 4: the initial version of the file was committed.
+
+May 17 11:51: the file's content changed to `../../../../../../../../../media/TOSHIBA EXT/annex/.git/annex/objects/kx/3W/SHA256E-s96418--c6164e17d88914b2e6781e2cb8e7b91e9669ddf2d9ee6f5cbb17f3212bccfba4.jpg/SHA256E-s96418--c6164e17d88914b2e6781e2cb8e7b91e9669ddf2d9ee6f5cbb17f3212bccfba4.jpg`. This is blob `../.git/annex/objects/4z/gf/SHA256E-s245--ae647e7ad31089255413a9290ca9344542f3cd15ecef66884613bf776387633d.jpg/SHA256E-s245--ae647e7ad31089255413a9290ca9344542f3cd15ecef66884613bf776387633d.jpg`.
+
+May 17 12:22 the file's content changed again to `../../../../../../../../../media/TOSHIBA EXT/annex/.git/annex/objects/4z/gf/SHA256E-s245--ae647e7ad31089255413a9290ca9344542f3cd15ecef66884613bf776387633d.jpg/SHA256E-s245--ae647e7ad31089255413a9290ca9344542f3cd15ecef66884613bf776387633d.jpg`, i.e., a reference to the previous object. This is blob `../.git/annex/objects/ZQ/WF/SHA256E-s241--f3d7e5d1f788235b8eec0af58cc0c526b112b9e834a47ba7a475876c49dce343.jpg/SHA256E-s241--f3d7e5d1f788235b8eec0af58cc0c526b112b9e834a47ba7a475876c49dce343.jpg`.
+
+What else can I do in order to work out what went wrong? Is having concurrent commands manipulating the same repository a bad idea?
+"""]]
