@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="xloem"
+ subject="Retrieval progress message helpers"
+ date="2016-05-20T19:42:23Z"
+ content="""
+It would be nice if
+- progress could be provided in percentage rather than bytes, when that's all that's available
+- git-annex could inform the special remote how many bytes a file to be downloaded is, if that information is already available
+"""]]
