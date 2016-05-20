@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="EskildHustvedt"
+ subject="comment 1"
+ date="2016-05-20T07:45:52Z"
+ content="""
+Right, so I forgot to mention, perhaps crucially. I'm using v6 for these repos.
+
+Here's the tig grap for master: [[https://ssl.zerodogg.org/~zerodogg/tmp/annexmerge1-2016-05-20.png]]
+
+Here's the merge commit itself for master: [[https://ssl.zerodogg.org/~zerodogg/tmp/annexmerge2-2016-05-20.png]]
+"""]]

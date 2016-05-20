@@ -1,0 +1,15 @@
+A default cabal install on OS X in a sandbox of git-annex 6.20160511 will result in no S3 support, as reported to Homebrew in the following two issues:
+https://github.com/Homebrew/homebrew-core/issues/1268
+https://github.com/Homebrew/legacy-homebrew/issues/47737
+
+The underlying cause is that aws-0.13.0 lacks commit https://github.com/aristidb/aws/commit/402bfe5aa9ef4bec84186880faafcbfdae1ad91d, which allows data-default 0.6.
+
+I attempted to mitigate the issue using --flags="s3", but that does not seem to help (nor does it force the build to fail): still no s3 support. I'd expect that either to constrain data-default to 0.5.3 and produce a build with s3 support, or fail the build, but for some reason it doesn't. Is this not working because we're in a sandbox or some other reason?
+
+Currently, I'm planning to just patch aws with https://github.com/aristidb/aws/commit/402bfe5aa9ef4bec84186880faafcbfdae1ad91d rather than resorting to a fixed configuration (e.g., lts-5.5 or whatever), as you can see here:
+https://github.com/Homebrew/homebrew-core/pull/1307
+
+It would be great if git-annex could work around the issue itself, though.
+
+Meanwhile, I have also pinged aws to request a 0.13.1 release, which would solve the problem "the right way":
+https://github.com/aristidb/aws/issues/202
