@@ -9,19 +9,24 @@ module Git.Index where
 
 import Common
 import Git
-import Git.FilePath
 import Utility.Env
 
 indexEnv :: String
 indexEnv = "GIT_INDEX_FILE"
 
-{- When relative, GIT_INDEX_FILE is interpreted by git as being 
+{- Gets value to set GIT_INDEX_FILE to. Input should be absolute path,
+ - or relative to the CWD.
+ -
+ - When relative, GIT_INDEX_FILE is interpreted by git as being 
  - relative to the top of the work tree of the git repository,
- - not to the CWD. -}
-indexEnvVal :: FilePath -> Repo -> IO String
-indexEnvVal index r
-	| isAbsolute index = return index
-	| otherwise = getTopFilePath <$> toTopFilePath index r
+ - not to the CWD. Worse, other environment variables (GIT_WORK_TREE)
+ - or git options (--work-tree) or configuration (core.worktree)
+ - can change what the relative path is interpreted relative to.
+ -
+ - So, an absolute path is the only safe option for this to return.
+ -}
+indexEnvVal :: FilePath -> IO String
+indexEnvVal = absPath
 
 {- Forces git to use the specified index file.
  -
@@ -31,9 +36,9 @@ indexEnvVal index r
  - Warning: Not thread safe.
  -}
 override :: FilePath -> Repo -> IO (IO ())
-override index r = do
+override index _r = do
 	res <- getEnv var
-	val <- indexEnvVal index r
+	val <- indexEnvVal index
 	setEnv var val True
 	return $ reset res
   where

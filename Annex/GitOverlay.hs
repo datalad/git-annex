@@ -19,7 +19,7 @@ import qualified Annex
 {- Runs an action using a different git index file. -}
 withIndexFile :: FilePath -> Annex a -> Annex a
 withIndexFile f a = do
-	f' <- inRepo $ indexEnvVal f
+	f' <- liftIO $ indexEnvVal f
 	withAltRepo
 		(\g -> addGitEnv g indexEnv f')
 		(\g g' -> g' { gitEnv = gitEnv g })
