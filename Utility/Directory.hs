@@ -6,15 +6,14 @@
  -}
 
 {-# LANGUAGE CPP #-}
-{-# OPTIONS_GHC -fno-warn-tabs -w #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Directory (
 	module Utility.Directory,
-	module System.Directory
+	module Utility.SystemDirectory
 ) where
 
 import System.IO.Error
-import System.Directory hiding (isSymbolicLink)
 import Control.Monad
 import System.FilePath
 import Control.Applicative
@@ -31,6 +30,7 @@ import Utility.SafeCommand
 import Control.Monad.IfElse
 #endif
 
+import Utility.SystemDirectory
 import Utility.PosixFiles
 import Utility.Tmp
 import Utility.Exception
