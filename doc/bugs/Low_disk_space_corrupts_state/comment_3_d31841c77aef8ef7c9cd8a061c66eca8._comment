@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="xloem"
- subject="This could be detected"
- date="2016-05-22T16:26:29Z"
- content="""
-Git-annex could detect this by attempting to write a 1-byte file.
-"""]]
