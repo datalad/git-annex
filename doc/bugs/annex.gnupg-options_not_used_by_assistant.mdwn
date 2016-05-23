@@ -81,3 +81,5 @@ gpg: cannot open `/dev/tty': Device not configured
 > added annex.gnupg-decrypt-options; done --[[Joey]]
 
 >> Reopening, see comment. --[[Joey]]
+
+>>> Fixed again, [[done]] --[[Joey]]

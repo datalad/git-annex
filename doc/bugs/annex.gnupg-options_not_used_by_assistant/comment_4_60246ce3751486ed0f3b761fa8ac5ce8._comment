@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-05-23T21:06:53Z"
+ content="""
+Yeah, that was 2 thousand lines of fun patch..
+
+I'm nearly 100% sure that every place git-annex calls gpg will pass the
+configured options now.
+"""]]
