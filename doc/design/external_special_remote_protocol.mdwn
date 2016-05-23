@@ -150,7 +150,7 @@ so if an unknown request is seen, reply with `UNSUPPORTED-REQUEST`.
 
 These should be sent only in response to the git-annex request messages.
 They do not have to be sent immediately after the request; the special
-remote can send its own requests (listed in the next section below)
+remote can send its own messages (listed in the next section below)
 while it's handling a request.
 
 * `PREPARE-SUCCESS`  
@@ -220,7 +220,9 @@ in control.
 * `VERSION Int`  
   Supported protocol version. Current version is 1. Must be sent first
   thing at startup, as until it sees this git-annex does not know how to
-  talk with the special remote program!
+  talk with the special remote program!  
+  (git-annex does not send a reply to this message, but may give up if it
+  doesn't support the necessary protocol version.)
 * `PROGRESS Int`  
   Indicates the current progress of the transfer (in bytes). May be repeated
   any number of times during the transfer process, but it's wasteful to
@@ -246,7 +248,8 @@ in control.
   Normally this is sent during INITREMOTE, which allows these settings
   to be stored in the git-annex branch, so will be available if the same
   special remote is used elsewhere. (If sent after INITREMOTE, the changed
-  configuration will only be available while the remote is running.)
+  configuration will only be available while the remote is running.)  
+  (git-annex does not send a reply to this message.)
 * `GETCONFIG Setting`  
   Gets one of the special remote's configuration settings, which can have
   been passed by the user when running `git annex initremote`, or
@@ -264,7 +267,8 @@ in control.
   case the creds will be encrypted using it. If creds are not stored in
   the configuration, they'll only be stored in a local file.  
   (embedcreds can be set to yes by the user or by SETCONFIG to force
-   the creds to be stored in the remote's configuration).
+   the creds to be stored in the remote's configuration).  
+  (git-annex does not send a reply to this message.)
 * `GETCREDS Setting`  
   Gets any creds that were previously stored in the remote's configuration
   or a file.
@@ -282,7 +286,8 @@ in control.
   this is not configured by a special remote, but it may make sense
   in some situations to hint at the kind of content that should be stored
   in the special remote. Note that if a unparsable expression is set,
-  git-annex will ignore it.
+  git-annex will ignore it.  
+  (git-annex does not send a reply to this message.)
 * `GETWANTED`  
   Gets the current preferred content setting of the repository.
   (git-annex replies with VALUE followed by the preferred content
@@ -294,7 +299,8 @@ in control.
   multiple repositories are using the same special remote, and store
   different state, whichever one stored the state last will win. Also,
   it's best to avoid storing much state, since this will bloat the
-  git-annex branch. Most remotes will not need to store any state.
+  git-annex branch. Most remotes will not need to store any state.  
+  (git-annex does not send a reply to this message.)
 * `GETSTATE Key`  
   Gets any state that has been stored for the key.  
   (git-annex replies with VALUE followed by the state.)
@@ -305,17 +311,21 @@ in control.
   Keep in mind that this stores the url in the git-annex branch. This can
   result in bloat to the branch if the url is large and/or does not delta
   pack well with other information (such as the names of keys) already
-  stored in the branch.
+  stored in the branch.  
+  (git-annex does not send a reply to this message.)
 * `SETURLMISSING Key Url`  
   Records that the key can no longer be downloaded from the specified
-  URL.
+  URL.  
+  (git-annex does not send a reply to this message.)
 * `SETURIPRESENT Key Uri`  
   Records an URI where the Key can be downloaded from.  
   For example, "ipfs:ADDRESS" is used for the ipfs special remote;
-  its CLAIMURL handler checks for such URIS and claims them.
+  its CLAIMURL handler checks for such URIS and claims them.  
+  (git-annex does not send a reply to this message.)
 * `SETURIMISSING Key Uri`  
   Records that the key can no longer be downloaded from the specified
-  URI.
+  URI.  
+  (git-annex does not send a reply to this message.)
 * `GETURLS Key Prefix`  
   Gets the recorded urls where a Key can be downloaded from.
   Only urls that start with the Prefix will be returned. The Prefix
