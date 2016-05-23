@@ -133,12 +133,13 @@ store r buprepo = byteStorer $ \k b p -> do
 	showOutput -- make way for bup output
 	let cmd = proc "bup" (toCommand params)
 	quiet <- commandProgressDisabled
-	let runner = if quiet
-			then feedWithQuietOutput
-			else withHandle StdinHandle
-	liftIO $ runner createProcessSuccess cmd $ \h -> do
-		meteredWrite p h b
-		return True
+	if quiet
+		then liftIO $ feedWithQuietOutput createProcessSuccess cmd $ \h -> do
+			meteredWrite p h b
+			return True
+		else liftIO $ withHandle StdinHandle createProcessSuccess cmd $ \h -> do
+			meteredWrite p h b
+			return True
 
 retrieve :: BupRepo -> Retriever
 retrieve buprepo = byteRetriever $ \k sink -> do
