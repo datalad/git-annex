@@ -248,7 +248,9 @@ Executable git-annex
     CPP-Options: -DWITH_BENCHMARK
 
 custom-setup
-  Setup-Depends: base (>= 4.5), hslogger, MissingH
+  Setup-Depends: base (>= 4.5), hslogger, MissingH, unix-compat, process,
+    unix, filepath, exceptions, bytestring, directory, IfElse, data-default,
+    Cabal
 
 source-repository head
   type: git
