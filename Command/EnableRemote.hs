@@ -12,6 +12,7 @@ import qualified Logs.Remote
 import qualified Types.Remote as R
 import qualified Annex.SpecialRemote
 import qualified Remote
+import qualified Types.Remote as Remote
 import Logs.UUID
 
 import qualified Data.Map as M
@@ -43,7 +44,8 @@ start (name:ws) = go =<< Annex.SpecialRemote.findExisting name
 		let fullconfig = config `M.union` c	
 		t <- either error return (Annex.SpecialRemote.findType fullconfig)
 		showStart "enableremote" name
-		next $ perform t u fullconfig
+		gc <- maybe def Remote.gitconfig <$> Remote.byUUID u
+		next $ perform t u fullconfig gc
 
 unknownNameError :: String -> Annex a
 unknownNameError prefix = do
@@ -56,9 +58,9 @@ unknownNameError prefix = do
 				descm (M.keys m)
 	error $ prefix ++ "\n" ++ msg
 
-perform :: RemoteType -> UUID -> R.RemoteConfig -> CommandPerform
-perform t u c = do
-	(c', u') <- R.setup t (Just u) Nothing c
+perform :: RemoteType -> UUID -> R.RemoteConfig -> RemoteGitConfig -> CommandPerform
+perform t u c gc = do
+	(c', u') <- R.setup t (Just u) Nothing c gc
 	next $ cleanup u' c'
 
 cleanup :: UUID -> R.RemoteConfig -> CommandCleanup

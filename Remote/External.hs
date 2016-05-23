@@ -59,7 +59,7 @@ gen r u c gc
 			Nothing
 			Nothing
 	| otherwise = do
-		external <- newExternal externaltype u c
+		external <- newExternal externaltype u c gc
 		Annex.addCleanup (RemoteCleanup u) $ stopExternal external
 		cst <- getCost external r gc
 		avail <- getAvailability external r gc
@@ -108,8 +108,8 @@ gen r u c gc
 			rmt
 	externaltype = fromMaybe (error "missing externaltype") (remoteAnnexExternalType gc)
 
-externalSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-externalSetup mu _ c = do
+externalSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+externalSetup mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	let externaltype = fromMaybe (error "Specify externaltype=") $
 		M.lookup "externaltype" c
@@ -120,7 +120,7 @@ externalSetup mu _ c = do
 			setConfig (remoteConfig (fromJust (M.lookup "name" c)) "readonly") (boolConfig True)
 			return c'
 		_ -> do
-			external <- newExternal externaltype u c'
+			external <- newExternal externaltype u c' gc
 			handleRequest external INITREMOTE Nothing $ \resp -> case resp of
 				INITREMOTE_SUCCESS -> Just noop
 				INITREMOTE_FAILURE errmsg -> Just $ error errmsg
@@ -246,8 +246,9 @@ handleRequest' lck external req mp responsehandler
 		void $ liftIO $ atomically $ swapTMVar (externalConfig external) c'
 	handleRemoteRequest (GETCREDS setting) = do
 		c <- liftIO $ atomically $ readTMVar $ externalConfig external
+		gc <- liftIO $ atomically $ readTMVar $ externalGitConfig external
 		creds <- fromMaybe ("", "") <$> 
-			getRemoteCredPair c (credstorage setting)
+			getRemoteCredPair c gc (credstorage setting)
 		send $ CREDS (fst creds) (snd creds)
 	handleRemoteRequest GETUUID = send $
 		VALUE $ fromUUID $ externalUUID external

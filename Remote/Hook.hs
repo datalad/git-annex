@@ -70,8 +70,8 @@ gen r u c gc = do
   where
 	hooktype = fromMaybe (error "missing hooktype") $ remoteAnnexHookType gc
 
-hookSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-hookSetup mu _ c = do
+hookSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+hookSetup mu _ c _ = do
 	u <- maybe (liftIO genUUID) return mu
 	let hooktype = fromMaybe (error "Specify hooktype=") $
 		M.lookup "hooktype" c

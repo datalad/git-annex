@@ -99,12 +99,14 @@ gen r u c gc = do
 			, checkUrl = Nothing
 			}
 
-s3Setup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-s3Setup mu mcreds c = do
+s3Setup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+s3Setup mu mcreds c gc = do
 	u <- maybe (liftIO genUUID) return mu
-	s3Setup' (isNothing mu) u mcreds c
-s3Setup' :: Bool -> UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-s3Setup' new u mcreds c = if configIA c then archiveorg else defaulthost
+	s3Setup' (isNothing mu) u mcreds c gc
+s3Setup' :: Bool -> UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+s3Setup' new u mcreds c gc
+	| configIA c = archiveorg
+	| otherwise = defaulthost
   where
 	remotename = fromJust (M.lookup "name" c)
 	defbucket = remotename ++ "-" ++ fromUUID u
@@ -125,7 +127,7 @@ s3Setup' new u mcreds c = if configIA c then archiveorg else defaulthost
 		c'' <- setRemoteCredPair encsetup c' (AWS.creds u) mcreds
 		let fullconfig = c'' `M.union` defaults
 		when new $
-			genBucket fullconfig u
+			genBucket fullconfig gc u
 		use fullconfig
 
 	archiveorg = do
@@ -146,7 +148,7 @@ s3Setup' new u mcreds c = if configIA c then archiveorg else defaulthost
 			-- special constraints on key names
 			M.insert "mungekeys" "ia" defaults
 		info <- extractS3Info archiveconfig
-		withS3Handle archiveconfig u $
+		withS3Handle archiveconfig gc u $
 			writeUUIDFile archiveconfig u info
 		use archiveconfig
 
@@ -154,12 +156,12 @@ s3Setup' new u mcreds c = if configIA c then archiveorg else defaulthost
 -- http connections to be reused across calls to the helper.
 prepareS3Handle :: Remote -> (S3Handle -> helper) -> Preparer helper
 prepareS3Handle r = resourcePrepare $ const $
-	withS3Handle (config r) (uuid r)
+	withS3Handle (config r) (gitconfig r) (uuid r)
 
 -- Allows for read-only actions, which can be run without a S3Handle.
 prepareS3HandleMaybe :: Remote -> (Maybe S3Handle -> helper) -> Preparer helper
 prepareS3HandleMaybe r = resourcePrepare $ const $
-	withS3HandleMaybe (config r) (uuid r)
+	withS3HandleMaybe (config r) (gitconfig r) (uuid r)
 
 store :: Remote -> S3Info -> S3Handle -> Storer
 store _r info h = fileStorer $ \k f p -> do
@@ -311,11 +313,11 @@ checkKey r info Nothing k = case getpublicurl info of
  - so first check if the UUID file already exists and we can skip doing
  - anything.
  -}
-genBucket :: RemoteConfig -> UUID -> Annex ()
-genBucket c u = do
+genBucket :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex ()
+genBucket c gc u = do
 	showAction "checking bucket"
 	info <- extractS3Info c
-	withS3Handle c u $ \h ->
+	withS3Handle c gc u $ \h ->
 		go info h =<< checkUUIDFile c u info h
   where
 	go _ _ (Right True) = noop
@@ -408,16 +410,16 @@ sendS3Handle'
 	-> ResourceT IO a
 sendS3Handle' h r = AWS.pureAws (hawscfg h) (hs3cfg h) (hmanager h) r
 
-withS3Handle :: RemoteConfig -> UUID -> (S3Handle -> Annex a) -> Annex a
-withS3Handle c u a = withS3HandleMaybe c u $ \mh -> case mh of
+withS3Handle :: RemoteConfig -> RemoteGitConfig -> UUID -> (S3Handle -> Annex a) -> Annex a
+withS3Handle c gc u a = withS3HandleMaybe c gc u $ \mh -> case mh of
 	Just h -> a h
 	Nothing -> do
 		warnMissingCredPairFor "S3" (AWS.creds u)
 		error "No S3 credentials configured"
 
-withS3HandleMaybe :: RemoteConfig -> UUID -> (Maybe S3Handle -> Annex a) -> Annex a
-withS3HandleMaybe c u a = do
-	mcreds <- getRemoteCredPair c (AWS.creds u)
+withS3HandleMaybe :: RemoteConfig -> RemoteGitConfig -> UUID -> (Maybe S3Handle -> Annex a) -> Annex a
+withS3HandleMaybe c gc u a = do
+	mcreds <- getRemoteCredPair c gc (AWS.creds u)
 	case mcreds of
 		Just creds -> do
 			awscreds <- liftIO $ genCredentials creds

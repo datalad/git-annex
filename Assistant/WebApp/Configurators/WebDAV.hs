@@ -95,7 +95,7 @@ postEnableWebDAVR uuid = do
 	let name = fromJust $ M.lookup "name" c
 	let url = fromJust $ M.lookup "url" c
 	mcreds <- liftAnnex $
-		getRemoteCredPairFor "webdav" c (WebDAV.davCreds uuid)
+		getRemoteCredPairFor "webdav" c def (WebDAV.davCreds uuid)
 	case mcreds of
 		Just creds -> webDAVConfigurator $ liftH $
 			makeWebDavRemote enableSpecialRemote name creds M.empty

@@ -93,8 +93,8 @@ list autoinit = do
  - No attempt is made to make the remote be accessible via ssh key setup,
  - etc.
  -}
-gitSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-gitSetup Nothing _ c = do
+gitSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+gitSetup Nothing _ c _ = do
 	let location = fromMaybe (error "Specify location=url") $
 		Url.parseURIRelaxed =<< M.lookup "location" c
 	g <- Annex.gitRepo
@@ -103,7 +103,7 @@ gitSetup Nothing _ c = do
 		[] -> error "could not find existing git remote with specified location"
 		_ -> error "found multiple git remotes with specified location"
 	return (c, u)
-gitSetup (Just u) _ c = do
+gitSetup (Just u) _ c _ = do
 	inRepo $ Git.Command.run
 		[ Param "remote"
 		, Param "add"

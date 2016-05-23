@@ -28,8 +28,7 @@ module Crypto (
 	readBytes,
 	encrypt,
 	decrypt,
-	getGpgEncParams,
-	getGpgDecParams,
+	LensGpgEncParams(..),
 
 	prop_HmacSha1WithCipher_sane
 ) where
@@ -179,24 +178,24 @@ readBytes a h = liftIO (L.hGetContents h) >>= a
 {- Runs a Feeder action, that generates content that is symmetrically
  - encrypted with the Cipher (unless it is empty, in which case
  - public-key encryption is used) using the given gpg options, and then
- - read by the Reader action.  Note: For public-key encryption,
- - recipients MUST be included in 'params' (for instance using
- - 'getGpgEncParams'). -}
-encrypt :: (MonadIO m, MonadMask m) => Gpg.GpgCmd -> [CommandParam] -> Cipher -> Feeder -> Reader m a -> m a
-encrypt cmd params cipher = case cipher of
+ - read by the Reader action. -}
+encrypt :: (MonadIO m, MonadMask m, LensGpgEncParams c) => Gpg.GpgCmd -> c -> Cipher -> Feeder -> Reader m a -> m a
+encrypt cmd c cipher = case cipher of
 	Cipher{} -> Gpg.feedRead cmd (params ++ Gpg.stdEncryptionParams True) $
 			cipherPassphrase cipher
 	MacOnlyCipher{} -> Gpg.pipeLazy cmd $ params ++ Gpg.stdEncryptionParams False
+  where
+	params = getGpgEncParams c
 
 {- Runs a Feeder action, that generates content that is decrypted with the
  - Cipher (or using a private key if the Cipher is empty), and read by the
  - Reader action. -}
-decrypt :: (MonadIO m, MonadMask m) => Gpg.GpgCmd -> [CommandParam] -> Cipher -> Feeder -> Reader m a -> m a
-decrypt cmd params cipher = case cipher of
+decrypt :: (MonadIO m, MonadMask m, LensGpgEncParams c) => Gpg.GpgCmd -> c -> Cipher -> Feeder -> Reader m a -> m a
+decrypt cmd c cipher = case cipher of
 	Cipher{} -> Gpg.feedRead cmd params' $ cipherPassphrase cipher
 	MacOnlyCipher{} -> Gpg.pipeLazy cmd params'
   where
-	params' = Param "--decrypt" : params
+	params' = Param "--decrypt" : getGpgDecParams c
 
 macWithCipher :: Mac -> Cipher -> String -> String
 macWithCipher mac c = macWithCipher' mac (cipherMac c)
@@ -218,20 +217,14 @@ class LensGpgEncParams a where
 {- Extract the GnuPG options from a pair of a Remote Config and a Remote
  - Git Config. -}
 instance LensGpgEncParams (RemoteConfig, RemoteGitConfig) where
-	getGpgEncParams (c,gc) = map Param (remoteAnnexGnupgOptions gc) ++ getGpgEncParams c
-	getGpgDecParams (c,gc) = map Param (remoteAnnexGnupgDecryptOptions gc) ++ getGpgDecParams c
-
-{- Extract the GnuPG options from a Remote Config, ignoring any
- - git config settings. (Which is ok if the remote is just being set up 
- - and so doesn't have any.) -}
-instance LensGpgEncParams RemoteConfig where
- 	{- If the remote is configured to use public-key encryption,
-	 - look up the recipient keys and add them to the option list. -}
-	getGpgEncParams c = case M.lookup "encryption" c of
-		Just "pubkey" -> Gpg.pkEncTo $ maybe [] (split ",") $ M.lookup "cipherkeys" c
-		Just "sharedpubkey" -> Gpg.pkEncTo $ maybe [] (split ",") $ M.lookup "pubkeys" c
-		_ -> []
-	getGpgDecParams _ = []
+	getGpgEncParams (c,gc) = map Param (remoteAnnexGnupgOptions gc) ++
+ 		{- When the remote is configured to use public-key encryption,
+		 - look up the recipient keys and add them to the option list. -}
+		case M.lookup "encryption" c of
+			Just "pubkey" -> Gpg.pkEncTo $ maybe [] (split ",") $ M.lookup "cipherkeys" c
+			Just "sharedpubkey" -> Gpg.pkEncTo $ maybe [] (split ",") $ M.lookup "pubkeys" c
+			_ -> []
+	getGpgDecParams (_c,gc) = map Param (remoteAnnexGnupgDecryptOptions gc)
 
 {- Extract the GnuPG options from a Remote. -}
 instance LensGpgEncParams (RemoteA a) where
