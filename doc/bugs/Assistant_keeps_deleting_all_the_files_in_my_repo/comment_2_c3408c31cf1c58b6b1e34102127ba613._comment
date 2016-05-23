@@ -1,0 +1,56 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-05-23T17:30:07Z"
+ content="""
+I've now got a copy of the repo, in
+~/lib/big/git-annex-test-repos/ssl.zerodogg.org__zerodogg_private_tmp_privateDocs.zerodogg.tar.xz.gpg
+
+Looking at commit 77c7d149646655fb5851c3db584fe70d64707d04, it merges in
+0b4896bc205696630c81cf557959a4aaa24906f0 which has an empty tree. 
+
+0b4896bc205696630c81cf557959a4aaa24906f0 is itself a merge commit. 
+Both of the commits it merges themselves have empty trees.
+And so it goes down quite a way, with empty merge commits including
+418367b, 7bab5cf, b651554, cf5de84, c5905f7, 928040e, a590245, 5b53fc9, 
+6d9f5da, 5f2623d. The freqency of these might indeed indicate some kind
+of feedback loop, but I don't think whatever is causing that is the core problem.
+
+fc6670a37fd9d3984a112a80d9bbaec5c041c005 is the crucial merge it seems. Its
+parents are 71b6c8a and f8dfc21. Both of those parents have the same tree,
+5f18bed323c29fb77add3a84abcf8b1fb6b646d7, and that tree is populated with all
+the files. But somehow this merge deleted everything.
+
+	tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+	parent 71b6c8ad3fc44926c9be2bbb1bd308592b6eb05c
+	parent f8dfc219a40b2871baed3192ea5806bb4ac551e7
+	author xxx 1463570165 +0200
+	committer xxx 1463570165 +0200
+	
+	Merge branch 'refs/heads/synced/master' into HEAD
+
+(There are empty trees earlier where the same thing happened that you
+reverted, but it seems best to focus on the most recent occurance.)
+
+So, can you find fc6670a in .git/annex/daemon.log* in any of the
+clones of this repository? It would be good to narrow down on which
+machine(s) the bad merge is happening. (Maybe you've already narrowed it down?)
+
+One of the two parent commits (71b6c8ad3fc44926c9be2bbb1bd308592b6eb05c)
+is a manual revert you did, the other commit looks to have been done by
+the assistant. 
+I'm guessing that refs/heads/synced/master was f8dfc219a40b2871baed3192ea5806bb4ac551e7
+when the bad merge was generated. So this bad merge probably happened in
+the repository where you did that manual reversion.
+
+As far as I can tell this was a regular git merge that somehow decided to empty
+the tree. It was not a case of git-annex auto-resolving a merge conflict.
+
+Are you using adjusted branches in any of the clones of this repository?
+
+What version(s) of git are being used?
+
+(I noticed that despite using v6 mode, every file in the repository
+seems to be locked, so the smudge filters etc should not be involved in the
+problem unless using an adjusted branch.)
+"""]]
