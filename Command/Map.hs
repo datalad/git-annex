@@ -75,7 +75,6 @@ drawMap rs trustmap umap = Dot.graph $ repos ++ others
 		filter (`notElem` ruuids) (M.keys umap)
 	uuidnode u = trustDecorate trustmap u $
 		Dot.graphNode (fromUUID u) $ M.findWithDefault "" u umap
-	ts = M.keys (M.filter (== Trusted) trustmap)
 
 hostname :: Git.Repo -> String
 hostname r
