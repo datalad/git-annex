@@ -1,0 +1,19 @@
+### What version of git-annex are you using? On what operating system?
+
+6.20160425+gitgffe2ea2-1~ndall+1
+I am building now a brand new snapshot to see if replicates
+
+### Please provide any additional information below.
+Here is a debug output from datalad which shows the interaction
+
+[[!format sh """
+2016-05-23 16:41:59,955 [DEBUG  ] Initiating a new process for BatchedAnnex(annex_cmd='addurl', annex_options=<<['-c', 'annex.largefil...>>, git_options=[], output_proc=<function>, path=<<'/mnt/btrfs/datasets/d...>>) (annexrepo.py:1177)
+2016-05-23 16:41:59,956 [Level 5] Command: ['git', '-c', 'receive.autogc=0', '-c', 'gc.auto=0', 'annex', 'addurl', '-c', 'annex.largefiles=exclude=Makefile and exclude=LICENSE* and exclude=ISSUES* and exclude=CHANGES* and exclude=README* and exclude=*.[mc] and exclude=dataset*.json and (exclude=*.txt or include=*/*.txt) and (exclude=*.json or include=*/*.json) and (exclude=*.tsv or include=*/*.tsv)', '--with-files', '--json', '--batch'] (annexrepo.py:1180)
+2016-05-23 16:41:59,967 [Level 5] Sending u'http://openfmri.s3.amazonaws.com/tarballs/ds052_R2.0.0_metadata_derivatives.tgz?versionId=nrIMjS3lH6TMoSkA.27U.Md_k2BSva3i ds052_R2.0.0_metadata_derivatives.tgz\n' to batched annex BatchedAnnex(annex_cmd='addurl', annex_options=<<['-c', 'annex.largefil...>>, git_options=[], output_proc=<function>, path=<<'/mnt/btrfs/datasets/d...>>) (annexrepo.py:1234)
+2016-05-23 16:41:59,968 [Level 5] Done sending. (annexrepo.py:1242)
+yoh@datasets.datalad.org's password: 
+"""]]
+
+That repository indeed has a remote (ssh) setup pointing to datasets.datalad.org (which carries no load for annex, besides git-annex repository, ATM), but that remote should not be consulted IMHO for addurl operation (not to mention in the --batch mode shouldn't request any user interaction)
+
+[[!meta author=yoh]]
