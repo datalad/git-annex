@@ -19,6 +19,7 @@ git-annex (6.20160512) UNRELEASED; urgency=medium
     when in a subdirectory of the repository. This affected git annex view.
   * Fix crash when entering/changing view in a subdirectory of a repo that
     has a dotfile in its root.
+  * Support building with ghc 8.0.1.
 
  -- Joey Hess <id@joeyh.name>  Wed, 11 May 2016 16:08:38 -0400
 
