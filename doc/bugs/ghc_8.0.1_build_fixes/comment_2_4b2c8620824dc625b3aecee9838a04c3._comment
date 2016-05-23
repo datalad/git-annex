@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="ilovezfs"
+ subject="comment 2"
+ date="2016-05-23T16:26:35Z"
+ content="""
+> How does GHC complain about \"runner\"? 
+
+[[!format  text \"\"\"
+Remote/Bup.hs:137:30: error:
+    • Couldn't match expected type ‘t’
+                  with actual type ‘Utility.Process.CreateProcessRunner
+                                    -> CreateProcess -> (Handle -> IO a0) -> IO a0’
+      ‘t’ is a rigid type variable bound by
+        the inferred type of runner :: t at Remote/Bup.hs:136:13
+    • In the expression: feedWithQuietOutput
+      In the expression:
+        if quiet then feedWithQuietOutput else withHandle StdinHandle
+      In an equation for ‘runner’:
+          runner
+            = if quiet then feedWithQuietOutput else withHandle StdinHandle
+    • Relevant bindings include
+        runner :: t (bound at Remote/Bup.hs:136:13)
+\"\"\"]]
+
+>I've applied your change to Setup-Depends. Oddly, I seem to remember trying the Setup-Depends with the new cabal and thought it was working..
+
+
+It is working, until I run \"cabal configure\". Then it breaks unless I add those additional dependencies.
+
+I'll check on your other questions in a bit.
+
+
+"""]]
