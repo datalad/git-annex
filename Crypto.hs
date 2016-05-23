@@ -3,7 +3,7 @@
  - Currently using gpg; could later be modified to support different
  - crypto backends if neccessary.
  -
- - Copyright 2011-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -73,11 +73,11 @@ cipherMac (Cipher c) = take cipherBeginning c
 cipherMac (MacOnlyCipher c) = c
 
 {- Creates a new Cipher, encrypted to the specified key id. -}
-genEncryptedCipher :: Gpg.GpgCmd -> Gpg.KeyId -> EncryptedCipherVariant -> Bool -> IO StorableCipher
-genEncryptedCipher cmd keyid variant highQuality = do
+genEncryptedCipher :: LensGpgEncParams c => Gpg.GpgCmd -> c -> Gpg.KeyId -> EncryptedCipherVariant -> Bool -> IO StorableCipher
+genEncryptedCipher cmd c keyid variant highQuality = do
 	ks <- Gpg.findPubKeys cmd keyid
 	random <- Gpg.genRandom cmd highQuality size
-	encryptCipher cmd (mkCipher random) variant ks
+	encryptCipher cmd c (mkCipher random) variant ks
   where
 	(mkCipher, size) = case variant of
 		Hybrid -> (Cipher, cipherSize) -- used for MAC + symmetric
@@ -105,7 +105,7 @@ updateCipherKeyIds _ _ [] c = return c
 updateCipherKeyIds cmd encparams changes encipher@(EncryptedCipher _ variant ks) = do
 	ks' <- updateCipherKeyIds' cmd changes ks
 	cipher <- decryptCipher cmd encparams encipher
-	encryptCipher cmd cipher variant ks'
+	encryptCipher cmd encparams cipher variant ks'
 updateCipherKeyIds cmd _ changes (SharedPubKeyCipher cipher ks) =
 	SharedPubKeyCipher cipher <$> updateCipherKeyIds' cmd changes ks
 
@@ -123,15 +123,19 @@ updateCipherKeyIds' cmd changes (KeyIds ks) = do
 	listKeyIds = concat <$$> mapM (keyIds <$$> Gpg.findPubKeys cmd)
 
 {- Encrypts a Cipher to the specified KeyIds. -}
-encryptCipher :: Gpg.GpgCmd -> Cipher -> EncryptedCipherVariant -> KeyIds -> IO StorableCipher
-encryptCipher cmd c variant (KeyIds ks) = do
+encryptCipher :: LensGpgEncParams c => Gpg.GpgCmd -> c -> Cipher -> EncryptedCipherVariant -> KeyIds -> IO StorableCipher
+encryptCipher cmd c cip variant (KeyIds ks) = do
 	-- gpg complains about duplicate recipient keyids
 	let ks' = nub $ sort ks
-	let params = Gpg.pkEncTo ks' ++ Gpg.stdEncryptionParams False
+	let params = concat
+		[ getGpgEncParamsBase c
+		, Gpg.pkEncTo ks'
+		, Gpg.stdEncryptionParams False
+		]
 	encipher <- Gpg.pipeStrict cmd params cipher
 	return $ EncryptedCipher encipher variant (KeyIds ks')
   where
-	cipher = case c of
+	cipher = case cip of
 		Cipher x -> x
 		MacOnlyCipher x -> x
 
@@ -210,7 +214,11 @@ prop_HmacSha1WithCipher_sane = known_good == macWithCipher' HmacSha1 "foo" "bar"
 	known_good = "46b4ec586117154dacd49d664e5d63fdc88efb51"
 
 class LensGpgEncParams a where
-	{- Parameters for encrypting. -}
+	{- Base parameters for encrypting. Does not include specification
+	 - of recipient keys. -}
+	getGpgEncParamsBase :: a -> [CommandParam]
+	{- Parameters for encrypting. When the remote is configured to use
+	 - public-key encryption, includes specification of recipient keys. -}
 	getGpgEncParams :: a -> [CommandParam]
 	{- Parameters for decrypting. -}
 	getGpgDecParams :: a -> [CommandParam]
@@ -218,7 +226,8 @@ class LensGpgEncParams a where
 {- Extract the GnuPG options from a pair of a Remote Config and a Remote
  - Git Config. -}
 instance LensGpgEncParams (RemoteConfig, RemoteGitConfig) where
-	getGpgEncParams (c,gc) = map Param (remoteAnnexGnupgOptions gc) ++
+	getGpgEncParamsBase (_c,gc) = map Param (remoteAnnexGnupgOptions gc)
+	getGpgEncParams (c,gc) = getGpgEncParamsBase (c,gc) ++
  		{- When the remote is configured to use public-key encryption,
 		 - look up the recipient keys and add them to the option list. -}
 		case M.lookup "encryption" c of
@@ -229,5 +238,6 @@ instance LensGpgEncParams (RemoteConfig, RemoteGitConfig) where
 
 {- Extract the GnuPG options from a Remote. -}
 instance LensGpgEncParams (RemoteA a) where
+	getGpgEncParamsBase r = getGpgEncParamsBase (config r, gitconfig r)
 	getGpgEncParams r = getGpgEncParams (config r, gitconfig r)
 	getGpgDecParams r = getGpgDecParams (config r, gitconfig r)

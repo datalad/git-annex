@@ -63,8 +63,8 @@ encryptionSetup c gc = do
 		-- hybrid encryption is the default when a keyid is
 		-- specified but no encryption
 		_ | maybe (M.member "keyid" c) (== "hybrid") encryption ->
-			encsetup $ genEncryptedCipher cmd key Hybrid
-		Just "pubkey" -> encsetup $ genEncryptedCipher cmd key PubKey
+			encsetup $ genEncryptedCipher cmd (c, gc) key Hybrid
+		Just "pubkey" -> encsetup $ genEncryptedCipher cmd (c, gc) key PubKey
 		Just "sharedpubkey" -> encsetup $ genSharedPubKeyCipher cmd key
 		_ -> error $ "Specify " ++ intercalate " or "
 			(map ("encryption=" ++)
