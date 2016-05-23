@@ -197,10 +197,10 @@ encrypt cmd c cipher = case cipher of
  - Reader action. -}
 decrypt :: (MonadIO m, MonadMask m, LensGpgEncParams c) => Gpg.GpgCmd -> c -> Cipher -> Feeder -> Reader m a -> m a
 decrypt cmd c cipher = case cipher of
-	Cipher{} -> Gpg.feedRead cmd params' $ cipherPassphrase cipher
-	MacOnlyCipher{} -> Gpg.pipeLazy cmd params'
+	Cipher{} -> Gpg.feedRead cmd params $ cipherPassphrase cipher
+	MacOnlyCipher{} -> Gpg.pipeLazy cmd params
   where
-	params' = Param "--decrypt" : getGpgDecParams c
+	params = Param "--decrypt" : getGpgDecParams c
 
 macWithCipher :: Mac -> Cipher -> String -> String
 macWithCipher mac c = macWithCipher' mac (cipherMac c)
