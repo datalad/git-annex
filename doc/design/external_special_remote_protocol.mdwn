@@ -396,3 +396,24 @@ It works like this:
 * uuid discovery during INITREMOTE.
 * Hook into webapp. Needs a way to provide some kind of prompt to the user
   in the webapp, etc.
+
+* When a new "special remote message" is added to this protocol, and a
+  program wants to use it,  an old version of git-annex will reject the
+  message as unknown, and fail to use the remote with a protocol error.
+
+  The program can check `git-annex version`, but that's not very
+  satisfactory. Version comparison can be hard and
+  PATH might not point to the same git-annex that's running the program.
+
+  One way to fix this would be to make git-annex reply to VERSION
+  with a PROTOCOLKEYWORDS message listing all the keywords in the
+  protocol that it knows.
+  The program could then check if the new message it wants to send is on
+  the list. PROTOCOLKEYWORDS would be ignored by any program that doesn't
+  care/know about it; programs are required to send UNSUPPORTED-REQUEST.
+
+  I worry that some special remote programs might expect to get only 
+  PREPARE or INITREMOTE after VERSION, so this change would break them.
+  I mean, they shouldn't.. But a quickly/badly written one might.
+  Probably want to review all the linked external special remote programs
+  before doing this.
