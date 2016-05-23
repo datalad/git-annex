@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-23T18:02:11Z"
+ content="""
+It would be nice if git checked disk space before writing object
+files. However, it unfortunatly does not do so currently, and not checking
+disk space is typical of unix tools so it might be hard to convince the git
+devs to add that.
+
+git-annex has annex.diskreserve because it's dealing with so much data and
+such large files that it's best to not let it fill the disk and instead
+abort before it downloads too much data.
+
+I don't see any way that git-annex can avoid git objects taking up too much
+disk space, without re-implementing all of git + space checking. 
+
+Sure, `git annex sync` could avoid pulling if annex.diskreserve was not
+free, but this would not help with manual `git pull`, or `git commit`, or
+`git receive-pack`, or any of the other ways objects can be added to a git
+repository.
+
+What you can do though, is set annex.diskreserve to a reasonably
+large amount, so that git-annex tries to keep that much space free.
+Eg, set it to at least half the current size of `du -hs .git/objects`
+"""]]
