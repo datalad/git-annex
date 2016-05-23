@@ -1,0 +1,91 @@
+### Please describe the problem.
+In my repo network, multiple repos are cropping up with an "invalid object" error.  The object in question changes and appears to be from git-annex's hidden branch.
+
+### What steps will reproduce the problem?
+This is happening after I add a mess of new files and sync, within a couple times of doing this, after a day or so.
+
+### What version of git-annex are you using? On what operating system?
+6.20160518-g766728c on linux
+
+### Please provide any additional information below.
+
+[[!format sh """
+# Example error, file in question will change
+    (recording state in git...)
+    error: invalid object 100644 d547f60ac6c53f8bf38999d93ce954e3dfca1656 for
+    '051/0b4/SHA3_512-s12447441634--b84ff2ead694b9d355d8deb4eae620b5979f0127f127718d53d02cd32f1020fba45f1e63723484462beb10110328dab29d875ea1788f949ce541640603fa73c0.log'
+    fatal: git-write-tree: error building trees
+    git-annex: failed to read sha from git write-tree
+# End of transcript or log.
+
+# log of attempting to determine the issue yesterday
+2016-05-22
+
+Issue history:
+Original annex started being unable to finish commit.
+Second annex, I cloned and copied objects folder over.  Soon, same issue.
+Third annex, cloned from elsewhere, use git annex get to get objects from
+broken repo.  Same issue developed.
+Fourth annex, cloned from elsewhere, was able to commit successfully
+prior to adding objects from broken repo.
+Some object in the broken repo seems to be causing this issue somehow.
+
+Plan to resolve:
+- copy all objects over again.  verify that issue immediately develops.
+  
+  I expect the issue will trigger when I add a set of objects with litelog.
+  So I could narrow it either by narrowing the objects I add with litelog,
+  or by narrowing the object I copy from the broken repo.
+
+  I'll narrow the issue between the two, first.
+
+annex: used to be annex.2, busted
+annex.3: third repository, busted, holds objects
+annex.4:
+  1. cloned from delta
+  2. added logs, no issue
+  3. 10:24:24 EDT rsync --delete-during'd objects in from annex.3
+  4. 10:25:10 EDT added small test file, sync'd with delta fine
+  5. 2016-05-22 10:27:38
+      I ran fetchall but ran by root by mistake.
+      files were added with wrong permissions
+      fixed permissions.  only two files were cpied, voicerecorder and muse.
+      sync works fine.'
+  6. ran fetchall (as root) again, got 4 sensorium files
+  7. add and sync seems to work fine.
+  So now this repository is functioning with additional objects copied into
+  its annex folder.  It must have been something else which caused the issue
+  on the other repo I initialized this way.
+  8. I foolishly tried to git annex add the alphabetically first object from
+  the annex/objects folder to get it annex's logs.  It failed when trying to
+  _delete_ it to replace it with a link to itself, luckily it was not writable.
+
+  I'll try using this repo - 2016-05-22 10:36:24 EDT
+
+  I'll add the remotes one at a time and sync with them, adding litelog after
+  each one.
+
+  9. 2016-05-23 00:08 EDT
+    Issue reoccurred uploading data from phone. Was a larger block of data.
+    First fetched
+    then added
+    then copied to delta
+    issue showed at end of copy to delta
+
+    perhaps the issue resides on delta ??? but we synced to delta fine before
+    the issue must happen over time while I am away from the computer
+    or respond to a large amount of logs being uploaded
+    or it could have happened as a result of my work on the nested repo
+ 10. 2016-05-23 00:10:15 EDT
+   $ git annex copy --to=gitlab
+   06:55 EDT
+   $ git annex sync gitlab
+    both commands ran without issue
+    delta also fsck'd fine
+ 11. 2016-05-23 07:01 EDT
+    local repo fsck'd fine
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Very stable.  Still excited.
+
