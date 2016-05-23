@@ -1,7 +1,7 @@
 ### What version of git-annex are you using? On what operating system?
 
 6.20160425+gitgffe2ea2-1~ndall+1
-I am building now a brand new snapshot to see if replicates
+(reconfirmed with 6.20160523+gitg33c00ab-1~ndall+1)
 
 ### Please provide any additional information below.
 Here is a debug output from datalad which shows the interaction
