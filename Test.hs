@@ -1062,10 +1062,12 @@ test_conflict_resolution_adjusted_branch = whenM Annex.AdjustedBranch.isGitVersi
 				writeFile conflictor "conflictor2"
 				add_annex conflictor @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r2"
-				unlessM (annexeval Config.isDirect) $ do
-					-- need v6 to use adjust
-					git_annex "upgrade" [] @? "upgrade failed"
-					git_annex "adjust" ["--unlock"] @? "adjust failed"
+				-- need v6 to use adjust
+				git_annex "upgrade" [] @? "upgrade failed"
+				-- We might be in an adjusted branch
+				-- already, when eg on a crippled
+				-- filesystem. So, --force it.
+				git_annex "adjust" ["--unlock", "--force"] @? "adjust failed"
 			pair r1 r2
 			forM_ [r1,r2,r1] $ \r -> indir r $
 				git_annex "sync" [] @? "sync failed"

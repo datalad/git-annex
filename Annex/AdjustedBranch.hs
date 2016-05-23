@@ -191,7 +191,7 @@ enterAdjustedBranch adj = go =<< originalBranch
   where
 	go (Just origbranch) = do
 		let adjbranch = adjBranch $ originalToAdjusted origbranch adj
-		ifM (inRepo $ Git.Ref.exists adjbranch)
+		ifM (inRepo (Git.Ref.exists adjbranch) <&&> (not <$> Annex.getState Annex.force))
 			( do
 				mapM_ (warning . unwords)
 					[ [ "adjusted branch"
