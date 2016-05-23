@@ -82,7 +82,8 @@ annex.4:
    $ git annex sync gitlab
     both commands ran without issue
     delta also fsck'd fine
-
+ 11. 2016-05-23 07:01 EDT
+    local repo fsck'd fine
 """]]
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
