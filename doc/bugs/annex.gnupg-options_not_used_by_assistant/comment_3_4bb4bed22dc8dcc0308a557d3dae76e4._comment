@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-05-23T18:21:16Z"
+ content="""
+The gpg calls in that log are being done by git-annex, not by
+git-remote-gcrypt.
+
+I think this is decryptCipher, which can run gpg --decrypt and didn't
+get annex.gnupg-decrypt-options wired up to it. Although normally the
+creds would be cached when the special remote is set up or the first time
+it's used and should not need to be decrypted again.
+
+Threading gnupg-decrypt-options through to decryptCipher looks likely to
+involve nearly a full day's work.
+"""]]
