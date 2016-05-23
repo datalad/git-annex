@@ -239,7 +239,8 @@ in control.
   This is always the same for any given Key, so can be used for eg,
   creating hash directory structures to store Keys in. This is the same
   directory hash that is used by eg, the directory special remote.  
-  (git-annex replies with VALUE followed by the value.)
+  (git-annex replies with VALUE followed by the value.)  
+  (First supported by git-annex version 6.20160511.)
 * `SETCONFIG Setting Value`  
   Sets one of the special remote's configuration settings.  
   Normally this is sent during INITREMOTE, which allows these settings
@@ -323,6 +324,7 @@ in control.
   The final VALUE has an empty value, indicating the end of the url list.)
 * `DEBUG message`
   Tells git-annex to display the message if --debug is enabled.
+  (git-annex does not send a reply to this message.)
 
 ## general messages
 
