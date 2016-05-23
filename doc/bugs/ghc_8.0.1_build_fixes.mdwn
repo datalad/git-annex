@@ -14,7 +14,7 @@ The second patch is a code change.
 
 GHC 8.0.1 complains about these lines: https://github.com/joeyh/git-annex/blob/08625c5a89b14415c1c7fef518f27b07b0899c24/Remote/Bup.hs#L136-L141
 
-The variable "runner" fails to monomorphic, so I'm using the following hack (though I'm sure there's a better way to fix this):
+The variable "runner" fails to be monomorphic, so I'm using the following hack (though I'm sure there's a better way to fix this):
 
 [[!format  haskell """
     if quiet
