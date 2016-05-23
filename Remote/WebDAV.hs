@@ -87,7 +87,7 @@ webdavSetup mu mcreds c gc = do
 	url <- case M.lookup "url" c of
 		Nothing -> error "Specify url="
 		Just url -> return url
-	(c', encsetup) <- encryptionSetup c
+	(c', encsetup) <- encryptionSetup c gc
 	creds <- maybe (getCreds c' gc u) (return . Just) mcreds
 	testDav url creds
 	gitConfigSpecialRemote u c' "webdav" "true"

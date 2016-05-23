@@ -48,8 +48,8 @@ encryptionAlreadySetup = EncryptionIsSetup
  - an encryption key, or not encrypt. An encrypted cipher is created, or is
  - updated to be accessible to an additional encryption key. Or the user
  - could opt to use a shared cipher, which is stored unencrypted. -}
-encryptionSetup :: RemoteConfig -> Annex (RemoteConfig, EncryptionIsSetup)
-encryptionSetup c = do
+encryptionSetup :: RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, EncryptionIsSetup)
+encryptionSetup c gc = do
 	cmd <- gpgCmd <$> Annex.getGitConfig
 	maybe (genCipher cmd) (updateCipher cmd) (extractCipher c)
   where
@@ -78,10 +78,10 @@ encryptionSetup c = do
 	updateCipher cmd v = case v of
 		SharedCipher _ | maybe True (== "shared") encryption -> return (c', EncryptionIsSetup)
 		EncryptedCipher _ variant _
-			| maybe True (== if variant == Hybrid then "hybrid" else "pubkey") encryption ->
-				use "encryption update" $ updateCipherKeyIds cmd newkeys v
+			| maybe True (== if variant == Hybrid then "hybrid" else "pubkey") encryption -> do
+				use "encryption update" $ updateCipherKeyIds cmd (c, gc) newkeys v
 		SharedPubKeyCipher _ _ ->
-			use "encryption update" $ updateCipherKeyIds cmd newkeys v
+			use "encryption update" $ updateCipherKeyIds cmd (c, gc) newkeys v
 		_ -> cannotchange
 	encsetup a = use "encryption setup" . a =<< highRandomQuality
 	use m a = do
@@ -99,13 +99,13 @@ encryptionSetup c = do
 		-- remotes (while being backward-compatible).
 		[ "keyid", "keyid+", "keyid-", "highRandomQuality" ]
 
-remoteCipher :: RemoteConfig -> Annex (Maybe Cipher)
-remoteCipher = fmap fst <$$> remoteCipher'
+remoteCipher :: RemoteConfig -> RemoteGitConfig -> Annex (Maybe Cipher)
+remoteCipher c gc = fmap fst <$> remoteCipher' c gc
 
 {- Gets encryption Cipher. The decrypted Ciphers are cached in the Annex
  - state. -}
-remoteCipher' :: RemoteConfig -> Annex (Maybe (Cipher, StorableCipher))
-remoteCipher' c = go $ extractCipher c
+remoteCipher' :: RemoteConfig -> RemoteGitConfig -> Annex (Maybe (Cipher, StorableCipher))
+remoteCipher' c gc = go $ extractCipher c
   where
 	go Nothing = return Nothing
 	go (Just encipher) = do
@@ -114,7 +114,7 @@ remoteCipher' c = go $ extractCipher c
 			Just cipher -> return $ Just (cipher, encipher)
 			Nothing -> do
 				cmd <- gpgCmd <$> Annex.getGitConfig
-				cipher <- liftIO $ decryptCipher cmd encipher
+				cipher <- liftIO $ decryptCipher cmd (c, gc) encipher
 				Annex.changeState (\s -> s { Annex.ciphers = M.insert encipher cipher cache })
 				return $ Just (cipher, encipher)
 
@@ -134,8 +134,8 @@ embedCreds c
 	| otherwise = False
 
 {- Gets encryption Cipher, and key encryptor. -}
-cipherKey :: RemoteConfig -> Annex (Maybe (Cipher, EncKey))
-cipherKey c = fmap make <$> remoteCipher c
+cipherKey :: RemoteConfig -> RemoteGitConfig -> Annex (Maybe (Cipher, EncKey))
+cipherKey c gc = fmap make <$> remoteCipher c gc
   where
 	make ciphertext = (ciphertext, encryptKey mac ciphertext)
 	mac = fromMaybe defaultMac $ M.lookup "mac" c >>= readMac

@@ -123,7 +123,7 @@ s3Setup' new u mcreds c gc
 		return (fullconfig, u)
 
 	defaulthost = do
-		(c', encsetup) <- encryptionSetup c
+		(c', encsetup) <- encryptionSetup c gc
 		c'' <- setRemoteCredPair encsetup c' gc (AWS.creds u) mcreds
 		let fullconfig = c'' `M.union` defaults
 		when new $

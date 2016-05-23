@@ -99,14 +99,14 @@ genSharedPubKeyCipher cmd keyid highQuality = do
 {- Updates an existing Cipher, making changes to its keyids.
  -
  - When the Cipher is encrypted, re-encrypts it. -}
-updateCipherKeyIds :: Gpg.GpgCmd -> [(Bool, Gpg.KeyId)] -> StorableCipher -> IO StorableCipher
-updateCipherKeyIds _ _ SharedCipher{} = error "Cannot update shared cipher"
-updateCipherKeyIds _ [] c = return c
-updateCipherKeyIds cmd changes encipher@(EncryptedCipher _ variant ks) = do
+updateCipherKeyIds :: LensGpgEncParams encparams => Gpg.GpgCmd -> encparams -> [(Bool, Gpg.KeyId)] -> StorableCipher -> IO StorableCipher
+updateCipherKeyIds _ _ _ SharedCipher{} = error "Cannot update shared cipher"
+updateCipherKeyIds _ _ [] c = return c
+updateCipherKeyIds cmd encparams changes encipher@(EncryptedCipher _ variant ks) = do
 	ks' <- updateCipherKeyIds' cmd changes ks
-	cipher <- decryptCipher cmd encipher
+	cipher <- decryptCipher cmd encparams encipher
 	encryptCipher cmd cipher variant ks'
-updateCipherKeyIds cmd changes (SharedPubKeyCipher cipher ks) =
+updateCipherKeyIds cmd _ changes (SharedPubKeyCipher cipher ks) =
 	SharedPubKeyCipher cipher <$> updateCipherKeyIds' cmd changes ks
 
 updateCipherKeyIds' :: Gpg.GpgCmd -> [(Bool, Gpg.KeyId)] -> KeyIds -> IO KeyIds
@@ -136,15 +136,16 @@ encryptCipher cmd c variant (KeyIds ks) = do
 		MacOnlyCipher x -> x
 
 {- Decrypting an EncryptedCipher is expensive; the Cipher should be cached. -}
-decryptCipher :: Gpg.GpgCmd -> StorableCipher -> IO Cipher
-decryptCipher _ (SharedCipher t) = return $ Cipher t
-decryptCipher _ (SharedPubKeyCipher t _) = return $ MacOnlyCipher t
-decryptCipher cmd (EncryptedCipher t variant _) =
-	mkCipher <$> Gpg.pipeStrict cmd [ Param "--decrypt" ] t
+decryptCipher :: LensGpgEncParams c => Gpg.GpgCmd -> c -> StorableCipher -> IO Cipher
+decryptCipher _ _ (SharedCipher t) = return $ Cipher t
+decryptCipher _ _ (SharedPubKeyCipher t _) = return $ MacOnlyCipher t
+decryptCipher cmd c (EncryptedCipher t variant _) =
+	mkCipher <$> Gpg.pipeStrict cmd params t
   where
 	mkCipher = case variant of
 		Hybrid -> Cipher
 		PubKey -> MacOnlyCipher
+	params = Param "--decrypt" : getGpgDecParams c
 
 type EncKey = Key -> Key
 

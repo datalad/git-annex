@@ -113,7 +113,7 @@ externalSetup mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	let externaltype = fromMaybe (error "Specify externaltype=") $
 		M.lookup "externaltype" c
-	(c', _encsetup) <- encryptionSetup c
+	(c', _encsetup) <- encryptionSetup c gc
 
 	c'' <- case M.lookup "readonly" c of
 		Just v | isTrue v == Just True -> do

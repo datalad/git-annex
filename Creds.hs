@@ -58,7 +58,7 @@ setRemoteCredPair encsetup c gc storage mcreds = case mcreds of
 	Just creds
 		| embedCreds c -> case credPairRemoteKey storage of
 			Nothing -> localcache creds
-			Just key -> storeconfig creds key =<< remoteCipher =<< localcache creds
+			Just key -> storeconfig creds key =<< flip remoteCipher gc =<< localcache creds
 		| otherwise -> localcache creds
   where
 	localcache creds = do
@@ -84,7 +84,7 @@ getRemoteCredPair c gc storage = maybe fromcache (return . Just) =<< fromenv
 	fromcache = maybe fromconfig (return . Just) =<< readCacheCredPair storage
 	fromconfig = case credPairRemoteKey storage of
 		Just key -> do
-			mcipher <- remoteCipher' c
+			mcipher <- remoteCipher' c gc
 			case (M.lookup key c, mcipher) of
 				(Nothing, _) -> return Nothing
 				(Just enccreds, Just (cipher, storablecipher)) ->

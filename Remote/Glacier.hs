@@ -84,7 +84,7 @@ glacierSetup mu mcreds c gc = do
 	glacierSetup' (isJust mu) u mcreds c gc
 glacierSetup' :: Bool -> UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 glacierSetup' enabling u mcreds c gc = do
-	(c', encsetup) <- encryptionSetup c
+	(c', encsetup) <- encryptionSetup c gc
 	c'' <- setRemoteCredPair encsetup c' gc (AWS.creds u) mcreds
 	let fullconfig = c'' `M.union` defaults
 	unless enabling $
@@ -288,7 +288,7 @@ jobList r keys = go =<< glacierEnv (config r) (gitconfig r) (uuid r)
 			else do
 				enckeys <- forM keys $ \k ->
 					maybe k (\(_, enck) -> enck k)
-						<$> cipherKey (config r)
+						<$> cipherKey (config r) (gitconfig r)
 				let keymap = M.fromList $ zip enckeys keys
 				let convert = mapMaybe (`M.lookup` keymap)
 				return (convert succeeded, convert failed)

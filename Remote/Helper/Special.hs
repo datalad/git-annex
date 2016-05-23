@@ -176,7 +176,7 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 			then whereisKey baser
 			else Nothing
 		}
-	cip = cipherKey c
+	cip = cipherKey c (gitconfig baser)
 	isencrypted = isJust (extractCipher c)
 
 	safely a = catchNonAsync a (\e -> warning (show e) >> return False)
