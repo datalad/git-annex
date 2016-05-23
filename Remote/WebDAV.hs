@@ -91,7 +91,7 @@ webdavSetup mu mcreds c gc = do
 	creds <- maybe (getCreds c' gc u) (return . Just) mcreds
 	testDav url creds
 	gitConfigSpecialRemote u c' "webdav" "true"
-	c'' <- setRemoteCredPair encsetup c' (davCreds u) creds
+	c'' <- setRemoteCredPair encsetup c' gc (davCreds u) creds
 	return (c'', u)
 
 -- Opens a http connection to the DAV server, which will be reused

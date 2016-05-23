@@ -124,7 +124,7 @@ s3Setup' new u mcreds c gc
 
 	defaulthost = do
 		(c', encsetup) <- encryptionSetup c
-		c'' <- setRemoteCredPair encsetup c' (AWS.creds u) mcreds
+		c'' <- setRemoteCredPair encsetup c' gc (AWS.creds u) mcreds
 		let fullconfig = c'' `M.union` defaults
 		when new $
 			genBucket fullconfig gc u
@@ -132,7 +132,7 @@ s3Setup' new u mcreds c gc
 
 	archiveorg = do
 		showNote "Internet Archive mode"
-		c' <- setRemoteCredPair noEncryptionUsed c (AWS.creds u) mcreds
+		c' <- setRemoteCredPair noEncryptionUsed c gc (AWS.creds u) mcreds
 		-- Ensure user enters a valid bucket name, since
 		-- this determines the name of the archive.org item.
 		let validbucket = replace " " "-" $

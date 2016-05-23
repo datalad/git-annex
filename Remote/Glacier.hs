@@ -85,7 +85,7 @@ glacierSetup mu mcreds c gc = do
 glacierSetup' :: Bool -> UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 glacierSetup' enabling u mcreds c gc = do
 	(c', encsetup) <- encryptionSetup c
-	c'' <- setRemoteCredPair encsetup c' (AWS.creds u) mcreds
+	c'' <- setRemoteCredPair encsetup c' gc (AWS.creds u) mcreds
 	let fullconfig = c'' `M.union` defaults
 	unless enabling $
 		genVault fullconfig gc u

@@ -51,10 +51,10 @@ data CredPairStorage = CredPairStorage
  - if that's going to be done, so that the creds can be encrypted using the
  - cipher. The EncryptionIsSetup phantom type ensures that is the case.
  -}
-setRemoteCredPair :: EncryptionIsSetup -> RemoteConfig -> CredPairStorage -> Maybe CredPair -> Annex RemoteConfig
-setRemoteCredPair encsetup c storage mcreds = case mcreds of
-	Nothing -> maybe (return c) (setRemoteCredPair encsetup c storage . Just)
-		=<< getRemoteCredPair c nogitconfig storage
+setRemoteCredPair :: EncryptionIsSetup -> RemoteConfig -> RemoteGitConfig -> CredPairStorage -> Maybe CredPair -> Annex RemoteConfig
+setRemoteCredPair encsetup c gc storage mcreds = case mcreds of
+	Nothing -> maybe (return c) (setRemoteCredPair encsetup c gc storage . Just)
+		=<< getRemoteCredPair c gc storage
 	Just creds
 		| embedCreds c -> case credPairRemoteKey storage of
 			Nothing -> localcache creds
@@ -67,16 +67,12 @@ setRemoteCredPair encsetup c storage mcreds = case mcreds of
 
 	storeconfig creds key (Just cipher) = do
 		cmd <- gpgCmd <$> Annex.getGitConfig
-		s <- liftIO $ encrypt cmd (c, nogitconfig) cipher
+		s <- liftIO $ encrypt cmd (c, gc) cipher
 			(feedBytes $ L.pack $ encodeCredPair creds)
 			(readBytes $ return . L.unpack)
 		return $ M.insert key (toB64 s) c
 	storeconfig creds key Nothing =
 		return $ M.insert key (toB64 $ encodeCredPair creds) c
-	-- This is used before a remote is set up typically, so
-	-- use a default RemoteGitConfig
-	nogitconfig :: RemoteGitConfig
-	nogitconfig = def
 
 {- Gets a remote's credpair, from the environment if set, otherwise
  - from the cache in gitAnnexCredsDir, or failing that, from the
