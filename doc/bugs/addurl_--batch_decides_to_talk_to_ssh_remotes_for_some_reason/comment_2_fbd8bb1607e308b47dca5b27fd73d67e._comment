@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="what would be the &quot;best&quot; command to run?"
+ date="2016-05-24T00:10:23Z"
+ content="""
+Something was nagging back in my mind that issue was indeed similar to previously observed but I, as you, couldn't quickly locate it.  Now that you reminded that it was about whois -- [found it](http://git-annex.branchable.com/todo/add_option_to_whereis_to_avoid_network_interactions/) .
+What would be the best annex command to run to accomplish just that -- to \"register\" that given remote with annex (without bothering with sync/merge/...)?
+I guess I could run 'annex info' but that might want to deal with every remote.
+"""]]
