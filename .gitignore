@@ -24,7 +24,6 @@ dist
 cabal-dev
 .cabal-sandbox
 cabal.sandbox.config
-cabal.config
 .stack-work
 # Project-local emacs configuration
 .dir-locals.el
