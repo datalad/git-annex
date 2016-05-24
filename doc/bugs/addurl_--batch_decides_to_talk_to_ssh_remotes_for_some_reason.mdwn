@@ -17,3 +17,5 @@ yoh@datasets.datalad.org's password:
 That repository indeed has a remote (ssh) setup pointing to datasets.datalad.org (which carries no load for annex, besides git-annex repository, ATM), but that remote should not be consulted IMHO for addurl operation (not to mention in the --batch mode shouldn't request any user interaction)
 
 [[!meta author=yoh]]
+
+> [[done]] --[[Joey]]

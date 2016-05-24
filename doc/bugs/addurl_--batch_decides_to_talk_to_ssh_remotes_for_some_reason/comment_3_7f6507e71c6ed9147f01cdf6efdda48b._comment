@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-05-24T19:59:36Z"
+ content="""
+Made `git annex enableremote` be able to be used to explicitly enable
+git-annex to use a git remote, probing its UUID.
+"""]]
