@@ -59,6 +59,9 @@ a new clone, it will will attempt to enable the special remote. Of course,
 this works best when the special remote does not need anything special
 to be done to get it enabled.
 
+(This command also can be used to enable a remote that git-annex has been
+prevented from using by the `remote.<name>.annex-ignore` setting.)
+
 # SEE ALSO
 
 [[git-annex]](1)

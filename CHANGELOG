@@ -22,6 +22,7 @@ git-annex (6.20160512) UNRELEASED; urgency=medium
   * enableremote: Can now be used to explicitly enable git-annex to use
     git remotes. Using the command this way prevents other git-annex
     commands from probing new git remotes to auto-enable them.
+  * enableremote: Remove annex-ignore configuration from a remote.
   * Support building with ghc 8.0.1.
   * Pass the various gnupg-options configs to gpg in several cases where
     they were not before. Most notably, gnupg-decrypt-options is now

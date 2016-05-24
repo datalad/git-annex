@@ -80,6 +80,12 @@ setRemoteCost r c = setConfig (remoteConfig r "cost") (show c)
 setRemoteAvailability :: Git.Repo -> Availability -> Annex ()
 setRemoteAvailability r c = setConfig (remoteConfig r "availability") (show c)
 
+setRemoteIgnore :: Git.Repo -> Bool -> Annex ()
+setRemoteIgnore r b = setConfig (remoteConfig r "ignore") (Git.Config.boolConfig b)
+
+setRemoteBare :: Git.Repo -> Bool -> Annex ()
+setRemoteBare r b = setConfig (remoteConfig r "bare") (Git.Config.boolConfig b)
+
 isDirect :: Annex Bool
 isDirect = annexDirect <$> Annex.getGitConfig
 

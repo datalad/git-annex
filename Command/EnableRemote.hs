@@ -11,13 +11,14 @@ import Command
 import qualified Annex
 import qualified Logs.Remote
 import qualified Types.Remote as R
-import qualified Git.Types as Git
+import qualified Git
 import qualified Annex.SpecialRemote
 import qualified Remote
 import qualified Types.Remote as Remote
 import qualified Remote.Git
 import Logs.UUID
 import Annex.UUID
+import Config
 
 import qualified Data.Map as M
 
@@ -45,9 +46,10 @@ startNormalRemote :: RemoteName -> Git.Repo -> CommandStart
 startNormalRemote name r = do
 	showStart "enableremote" name
 	next $ next $ do
+		setRemoteIgnore r False
 		r' <- Remote.Git.configRead False r
 		u <- getRepoUUID r'
-		return (u /= NoUUID)
+		return $ u /= NoUUID
 
 startSpecialRemote :: RemoteName -> Remote.RemoteConfig -> Maybe (UUID, Remote.RemoteConfig) -> CommandStart
 startSpecialRemote name config Nothing = do
@@ -74,6 +76,10 @@ performSpecialRemote t u c gc = do
 cleanupSpecialRemote :: UUID -> R.RemoteConfig -> CommandCleanup
 cleanupSpecialRemote u c = do
 	Logs.Remote.configSet u c
+	mr <- Remote.byUUID u
+	case mr of
+		Nothing -> noop
+		Just r -> setRemoteIgnore (R.repo r) False
 	return True
 
 unknownNameError :: String -> Annex a
@@ -85,8 +91,12 @@ unknownNameError prefix = do
 			else Remote.prettyPrintUUIDsDescs
 				"known special remotes"
 				descm (M.keys m)
-	nouuids <- filterM (\r -> (==) NoUUID <$> getRepoUUID r)
-		=<< Annex.fromRepo Git.remotes
-	let nouuidmsg = unlines $ map ("\t" ++) $
-		mapMaybe Git.remoteName nouuids
-	error $ concat $ filter (not . null) [prefix ++ "\n", nouuidmsg, specialmsg]
+	disabledremotes <- filterM isdisabled =<< Annex.fromRepo Git.remotes
+	let remotesmsg = unlines $ map ("\t" ++) $
+		mapMaybe Git.remoteName disabledremotes
+	error $ concat $ filter (not . null) [prefix ++ "\n", remotesmsg, specialmsg]
+  where
+	isdisabled r = anyM id
+		[ (==) NoUUID <$> getRepoUUID r
+		, remoteAnnexIgnore <$> Annex.getRemoteGitConfig r
+		]
