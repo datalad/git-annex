@@ -40,7 +40,7 @@ grep -r "Banana" . #On the other hand, this has a result
 ```
 If the first machine do `git annex sync --content`, it can get and view the new file normally, trying to add new file afterward from the first machine works fine as well. Adding file from the 2nd machine results in the same behaviour (unencrypted file content). 
 
-When using gcrypt special remote on local machine , it does not seem to be an issue.
+When using gcrypt special remote on local machine , it does not seem to be an issue. Additionally, on machine 2 if I clone from the first machine then enableremote to the gcrypt server, it is also not a problem. Seems like the issue only happens when cloning the bare repo. On inspection of the annex/objects folder, the issue seems to be that beside the "GPGHMACSHA1*" files (which I assume is encrypted data), a bunch of "SHA256E*" files are also added which contains the raw unencrypted data.
 
 ### What version of git-annex are you using? On what operating system?
 
