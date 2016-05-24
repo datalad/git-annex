@@ -1,0 +1,60 @@
+[[!comment format=mdwn
+ username="ilovezfs"
+ subject="comment 3"
+ date="2016-05-24T09:32:31Z"
+ content="""
+> I've relaxed the bounds on base. AFAICS there are no bounds on time and transformers, so what were you suggesting I change there?
+
+The following assumes passing --flags=\"webapp s3\" and --max-backjumps=-1.
+
+Adding allow-newer for just base hangs.
+
+Adding allow-newer for just base and transformers leads to solver failure due to
+\"rejecting: aws-0.13.0 (conflict: unix => time==1.6.0.1/installed-1.6..., aws => time>=1.1.4 && <1.6)\"
+This has already been fixed by aws https://github.com/aristidb/aws/commit/512d4f7aa908b4fd2a2b72be79733d865d36652e but that commit is not in the released version of aws yet, so one option would be to patch aws directly with that commit. The other option is to set allow-newer for time.
+
+Adding allow-newer for just base and time leads to a failed build due to a transformers-0.4.3.0 issue, which doesn't affect newer versions of transformers. However, the current aws restricts transformers to <0.5, and the last version before 0.5 is 0.4.3.0. The error message is
+
+[[!format  text \"\"\"
+[11 of 27] Compiling Control.Monad.Trans.Error ( Control/Monad/Trans/Error.hs, dist/dist-sandbox-81571458/build/Control/Monad/Trans/Error.o )
+
+Control/Monad/Trans/Error.hs:69:10: error:
+    Duplicate instance declarations:
+      instance MonadPlus IO
+        -- Defined at Control/Monad/Trans/Error.hs:69:10
+      instance MonadPlus IO -- Defined in ‘GHC.Base’
+
+Control/Monad/Trans/Error.hs:73:10: error:
+    Duplicate instance declarations:
+      instance Alternative IO
+        -- Defined at Control/Monad/Trans/Error.hs:73:10
+      instance Alternative IO -- Defined in ‘GHC.Base’
+\"\"\"]]
+
+
+>Would -XNoMonomorphismRestriction fix it?
+
+Setting that option leads to
+[[!format  text \"\"\"
+[ 89 of 538] Compiling Utility.Url      ( Utility/Url.hs, dist/dist-sandbox-516bc87d/build/git-annex/git-annex-tmp/Utility/Url.o )
+
+Utility/Url.hs:160:85: error:
+    • Ambiguous type variable ‘a0’ arising from a use of ‘len’
+      prevents the constraint ‘(Read a0)’ from being solved.
+      Probable fix: use a type annotation to specify what ‘a0’ should be.
+      These potential instances exist:
+        instance Read a => Read (ZipList a)
+          -- Defined in ‘Control.Applicative’
+        instance (Read a, Read b) => Read (Either a b)
+          -- Defined in ‘Data.Either’
+        instance forall k a (b :: k). Read a => Read (Const a b)
+          -- Defined in ‘Data.Functor.Const’
+        ...plus 47 others
+        ...plus 177 instances involving out-of-scope types
+        (use -fprint-potential-instances to see them all)
+    • In the first argument of ‘isJust’, namely ‘len’
+      In the second argument of ‘(&&)’, namely ‘isJust len’
+      In the expression: \"ftp\" `isInfixOf` uriScheme u && isJust len
+\"\"\"]]
+
+"""]]
