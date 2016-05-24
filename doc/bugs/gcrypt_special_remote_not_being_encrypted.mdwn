@@ -38,7 +38,9 @@ grep -r "Banana" . #On the other hand, this has a result
 > ./annex/objects/ee1/042/SHA256E-s5--11861eaa2e70e8ac73d9d20cd172b6a5396cb0116fed5bfe432ca075144b2d48.org/SHA256E-s5--11861eaa2e70e8ac73d9d20cd172b6a5396cb0116fed5bfe432ca075144b2d48.org:BananaTest
 
 ```
-If the first machine do `git annex sync --content`, it can get and view the new file normally, trying to add new file afterward from the first machine works fine as well. Adding file from the 2nd machine results in the same behaviour (unencrypted file name)
+If the first machine do `git annex sync --content`, it can get and view the new file normally, trying to add new file afterward from the first machine works fine as well. Adding file from the 2nd machine results in the same behaviour (unencrypted file name). 
+
+When using gcrypt special remote on local machine , it does not seem to be an issue.
 
 ### What version of git-annex are you using? On what operating system?
 
