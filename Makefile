@@ -15,7 +15,7 @@ endif
 
 build: $(all)
 
-Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
+Build/SysConfig.hs: Build/TestConfig.hs Build/Configure.hs
 	if [ "$(BUILDER)" = ./Setup ]; then ghc --make Setup; fi
 	if [ "$(BUILDER)" = stack ]; then \
 		$(BUILDER) build $(BUILDEROPTIONS); \
@@ -86,15 +86,19 @@ man:
 	mkdir -p man
 
 docs: mans
-	LC_ALL=C TZ=UTC $(IKIWIKI) doc html -v --wikiname git-annex \
-		--plugin=goodstuff \
-		--no-usedirs --disable-plugin=openid --plugin=sidebar \
-		--underlaydir=/dev/null --set deterministic=1 \
-		--disable-plugin=shortcut --disable-plugin=smiley \
-		--plugin=comments --set comments_pagespec="*" \
-		--exclude='news/.*' --exclude='design/assistant/blog/*' \
-		--exclude='bugs/*' --exclude='todo/*' --exclude='forum/*' \
-		--exclude='users/*' --exclude='devblog/*' --exclude='thanks'
+	@if [ ! -e doc/index.mdwn ]; then \
+		echo "** doc/index.mdwn does not exist, skipping building docs (clone git-annex source to enable full docs build)" >&2; \
+	else \
+		LC_ALL=C TZ=UTC $(IKIWIKI) doc html -v --wikiname git-annex \
+			--plugin=goodstuff \
+			--no-usedirs --disable-plugin=openid --plugin=sidebar \
+			--underlaydir=/dev/null --set deterministic=1 \
+			--disable-plugin=shortcut --disable-plugin=smiley \
+			--plugin=comments --set comments_pagespec="*" \
+			--exclude='news/.*' --exclude='design/assistant/blog/*' \
+			--exclude='bugs/*' --exclude='todo/*' --exclude='forum/*' \
+			--exclude='users/*' --exclude='devblog/*' --exclude='thanks'; \
+	fi
 
 clean:
 	if [ "$(BUILDER)" != ./Setup ] && [ "$(BUILDER)" != cabal ]; then $(BUILDER) clean; fi
@@ -118,11 +122,9 @@ Build/OSXMkLibs: Build/OSXMkLibs.hs
 Build/LinuxMkLibs: Build/LinuxMkLibs.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
 
-sdist: clean mans
-	./Build/make-sdist.sh
-
 # Upload to hackage.
-hackage: sdist
+hackage:
+	@cabal sdist
 	@cabal upload dist/*.tar.gz
 
 LINUXSTANDALONE_DEST=tmp/git-annex.linux
@@ -170,7 +172,7 @@ prep-standalone:
 
 undo-standalone:
 	test -e .git
-	git checkout debian/changelog
+	git checkout debian/changelog CHANGELOG
 	quilt pop -a || true
 
 commit-standalone:

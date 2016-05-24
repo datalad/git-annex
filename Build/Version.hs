@@ -46,7 +46,7 @@ getVersion = do
 	
 getChangelogVersion :: IO Version
 getChangelogVersion = do
-	changelog <- readFile "debian/changelog"
+	changelog <- readFile "CHANGELOG"
 	let verline = takeWhile (/= '\n') changelog
 	return $ middle (words verline !! 1)
   where
