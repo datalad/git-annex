@@ -39,3 +39,5 @@ inreplace "git-annex.cabal",
 end
 """]]
 
+> [[fixed|done]], I hope. Have not tested the build myself but everything
+> applied. --[[Joey]]
