@@ -1,0 +1,23 @@
+git-annex has always balanced implicit and explicit behavior.
+Enabling a git reository to be used with git-annex needs an explicit init,
+to avoid foot-shooting; but a clone of a repository that is already
+using git-annex will be implicitally initialized. Git remotes implicitly
+are checked to see if they use git-annex, so the user can immediately
+follow `git remote add` with `git annex get` to get files from it.
+
+There's a fine line here, and implicit git remote enabling sometimes
+crosses it; sometimes the remote doesn't have git-annex-shell, and so
+there's an ugly error message and annex-ignore has to be set to avoid
+trying to enable that git remote again. Sometimes the probe of a remote
+can occur when the user doesn't really expect it to (and it can involve a
+ssh password prompt).
+
+Part of the problem is, there's not an explicit way to enable a git remote
+to be used by git-annex. So, today, I made `git annex enableremote` do
+that, when the remote name passed to it is a git remote rather than a
+special remote. This way, you can avoid the implicit behavior if you want
+to.
+
+I also made `git annex enableremote` un-set annex-ignore, so if a remote
+got that set due to a transient configuration problem, it can be explicitly
+enabled.
