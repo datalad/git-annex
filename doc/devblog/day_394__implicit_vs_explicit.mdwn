@@ -1,7 +1,7 @@
 git-annex has always balanced implicit and explicit behavior.
-Enabling a git reository to be used with git-annex needs an explicit init,
+Enabling a git repository to be used with git-annex needs an explicit init,
 to avoid foot-shooting; but a clone of a repository that is already
-using git-annex will be implicitally initialized. Git remotes implicitly
+using git-annex will be implicitly initialized. Git remotes implicitly
 are checked to see if they use git-annex, so the user can immediately
 follow `git remote add` with `git annex get` to get files from it.
 
