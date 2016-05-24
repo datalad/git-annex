@@ -1,0 +1,71 @@
+### Please describe the problem.
+I'm trying to setup a ssh special remote with gcrypt as an always-on sync point for 2 other machines. However, when syncing, only the first machine that was setup seems to do the encryption properly, the other machine that clones from the gcrypt remote sync the file content without encryption. I followed the instruction on https://git-annex.branchable.com/tips/fully_encrypted_git_repositories_with_gcrypt/
+
+### What steps will reproduce the problem?
+
+On the first machine:
+
+```
+cd MyStuffs
+git init
+git annex init "Macbook"
+cat "First file" > first.txt
+git annex add .
+git commit -a -m added
+git annex initremote personal-server type=gcrypt gitrepo=ssh://user@foo.bar.com/home/user/MyStuffs keyid=XXXXXXXXX
+git annex sync 
+git annex sync--content
+```
+
+On second machine
+
+```
+git clone gcrypt::ssh://user@foo.bar.com/home/user/MyStuffs test
+git annex enableremote personal-server gitrepo=ssh://user@foo.bar.com/home/user/MyStuffs 
+cd test 
+cat "BananaTest" > test
+git annex add .
+git commit -a -m added
+git annex sync --content
+```
+
+On the remote server
+
+```
+cd ~/MyStuffs
+grep -r "First" . #There is no result, which is good
+grep -r "Banana" . #On the other hand, this has a result
+> ./annex/objects/ee1/042/SHA256E-s5--11861eaa2e70e8ac73d9d20cd172b6a5396cb0116fed5bfe432ca075144b2d48.org/SHA256E-s5--11861eaa2e70e8ac73d9d20cd172b6a5396cb0116fed5bfe432ca075144b2d48.org:BananaTest
+
+```
+If the first machine do `git annex sync --content`, it can get and view the new file normally, trying to add new file afterward from the first machine works fine as well. Adding file from the 2nd machine results in the same behaviour (unencrypted file name)
+
+### What version of git-annex are you using? On what operating system?
+
+The first and second machine was in fact the same machine ,running OS X El Capitan
+
+```
+git-annex version: 6.20160511
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV FsEvents XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository versions: 5 6
+upgrade supported from repository versions: 0 1 2 4 5
+operating system: darwin x86_64
+```
+
+The remote server that use ssh is Debian Jessie, without git-annex installed (I tried it with git-annex installed on the server, it has the same behaviour)
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, everything works very nicely except this issue.
