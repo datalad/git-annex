@@ -1,0 +1,49 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 2"
+ date="2016-05-25T01:09:56Z"
+ content="""
+\"to remote host \"  so it was \"--to\". annex is already aware of having those files in that remote (see below).
+
+[[!format sh \"\"\"
+$> git annex copy --to=datalad-public --fast .        
+git annex copy --to=datalad-public --fast .  7.33s user 0.91s system 55% cpu 14.772 total
+
+$> git annex info
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 5
+	00000000-0000-0000-0000-000000000001 -- web
+ 	00000000-0000-0000-0000-000000000002 -- bittorrent
+ 	123c73e5-a8dc-4cff-8ffc-679c7ea67f94 -- yoh@smaug:/mnt/datasets/datalad/crawl/neurovault [here]
+ 	48c1556f-6241-45de-9497-338d437fcb62 -- yoh@falkor:/srv/datasets.datalad.org/www/neurovault/snapshots [datalad-public]
+ 	af2785da-2538-4346-a6f6-f2f30fc3f025 -- [datalad-archives]
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 31.42 terabytes (+1 megabyte reserved)
+local annex keys: 6615
+local annex size: 12.77 gigabytes
+annexed files in working tree: 6628
+size of annexed files in working tree: 6.31 gigabytes
+bloom filter size: 32 mebibytes (1.3% full)
+backend usage: 
+	SHA256E: 6628
+
+$> git annex whereis | head -30               
+whereis 1003/13873.nii.gz (3 copies) 
+  	123c73e5-a8dc-4cff-8ffc-679c7ea67f94 -- yoh@smaug:/mnt/datasets/datalad/crawl/neurovault [here]
+   	48c1556f-6241-45de-9497-338d437fcb62 -- yoh@falkor:/srv/datasets.datalad.org/www/neurovault/snapshots [datalad-public]
+   	af2785da-2538-4346-a6f6-f2f30fc3f025 -- [datalad-archives]
+
+  datalad-archives: dl+archive:SHA256E-s6460020224--710cc05117e2290e2f793271d11e26452cdc111121e09a937dbf5a34b3cc0107.tar/neurovault_snapshot/1003/13873.nii.gz#size=23262
+ok
+whereis 1003/13874.nii.gz (3 copies) 
+  	123c73e5-a8dc-4cff-8ffc-679c7ea67f94 -- yoh@smaug:/mnt/datasets/datalad/crawl/neurovault [here]
+   	48c1556f-6241-45de-9497-338d437fcb62 -- yoh@falkor:/srv/datasets.datalad.org/www/neurovault/snapshots [datalad-public]
+   	af2785da-2538-4346-a6f6-f2f30fc3f025 -- [datalad-archives]
+...
+> git annex copy --to=datalad-public .       
+copy 1003/13873.nii.gz (checking datalad-public...) yoh@datasets.datalad.org's password: 
+
+\"\"\"]]
+"""]]
