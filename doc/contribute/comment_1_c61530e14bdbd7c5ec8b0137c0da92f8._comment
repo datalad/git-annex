@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="ggreif@8132a868199b4ffec14150c87f538dc06a538220"
+ nickname="ggreif"
+ subject="GHC HEAD warnings"
+ date="2016-05-27T14:21:11Z"
+ content="""
+I have a patch:
+
+https://github.com/ggreif/git-annex/tree/patch-1
+
+It heals e.g.
+
+    Assistant/WebApp/Form.hs:52:1: warning: [-Wredundant-constraints]
+        ? Redundant constraint: Monad m
+        ? In the type signature for:
+               withNote :: (Monad m, ToWidget (HandlerSite m) a) =>
+                           Field m v -> a -> Field m v
+
+"""]]
