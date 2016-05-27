@@ -99,7 +99,8 @@ instance Arbitrary LogLine where
 	arbitrary = LogLine
 		<$> arbitrary
 		<*> elements [minBound..maxBound]
-		<*> arbitrary `suchThat` ('\n' `notElem`)
+		<*> arbitrary `suchThat`
+			(\c -> '\n' `notElem` c && '\r' `notElem` c)
 
 prop_parse_show_log :: [LogLine] -> Bool
 prop_parse_show_log l = parseLog (showLog l) == l
