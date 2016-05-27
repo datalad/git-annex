@@ -92,3 +92,6 @@ I am running "git-annex version: 6.20160511-g4633f0b" on Windows, but I have bee
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Yes it is working very nicely on all my linux computers, and right now I am mostly concerned that I might have messed up the repository by trying out Windows :-(.
 
+> [[fixed|done]]; repositories in this state are now handled appropriately
+> by git-annex. And, I've fixed at least the places I was able to identify
+> where '\r' slipped in. --[[Joey]]
