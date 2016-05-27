@@ -101,8 +101,9 @@ selectExtension f
 	| otherwise = intercalate "." ("":es)
   where
 	es = filter (not . null) $ reverse $
-		take 2 $ takeWhile shortenough $
-		reverse $ split "." $ filter validInExtension $ takeExtensions f
+		take 2 $ map (filter validInExtension) $
+		takeWhile shortenough $
+		reverse $ split "." $ takeExtensions f
 	shortenough e = length e <= 4 -- long enough for "jpeg"
 
 {- A key's checksum is checked during fsck. -}

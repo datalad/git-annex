@@ -1,3 +1,9 @@
+git-annex (6.20160528) UNRELEASED; urgency=medium
+
+  * Improve SHA*E extension extraction code.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 27 May 2016 13:12:48 -0400
+
 git-annex (6.20160527) unstable; urgency=medium
 
   * Split lines in the git-annex branch on \r as well as \n, to deal
