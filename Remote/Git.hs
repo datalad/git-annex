@@ -284,7 +284,7 @@ tryGitConfigRead autoinit r
 	
 	setremote setter v = case Git.remoteName r of
 		Nothing -> noop
-		Just n -> setter r v
+		Just _ -> setter r v
 	
 	handlegcrypt Nothing = return r
 	handlegcrypt (Just _cacheduuid) = do
