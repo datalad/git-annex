@@ -81,3 +81,5 @@ See also: [[parallel_possibilities]]
 >> Waiting on some updates to ascii-progress. --[[Joey]]
 
 >>> Wrote concurrent-output; [[done]] --[[Joey]]
+
+[[!meta author=yoh]]
