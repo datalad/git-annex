@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2016-05-27T15:40:16Z"
+ content="""
+I've developed a patch which yields a good whereis display in this repo.
+
+Still remains to be seen if there's some code path that currently causes
+'\r' to get added in the current version of git-annex on Windows.
+"""]]

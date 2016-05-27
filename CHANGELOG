@@ -1,5 +1,8 @@
 git-annex (6.20160512) UNRELEASED; urgency=medium
 
+  * Split lines in the git-annex branch on \r as well as \n, to deal
+    with \r\n terminated lines written by some versions of git-annex on
+    Windows. This fixes strange displays in some cases.
   * Change git annex info remote encryption description to use wording
     closer to what's used in initremote.
   * webapp: Avoid confusing display of dead remotes.
