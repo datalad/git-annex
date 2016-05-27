@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-05-27T15:02:05Z"
+ content="""
+In git-annex version 5.20140606, we have:
+
+	  * Windows: Fix bug introduced in last release that caused files
+	    in the git-annex branch to have lines teminated with \r.
+
+There was only 1 week where git-annex had that bug AFAIK, but of
+course the broken version could have kept on being used for some time.
+
+It's also always possible that this same problem popped up again in the
+code. The fix in 1ab3d7c81049e4ce7e8e47800e2ef1fecb3a9ab4 was to
+Annex.Journal and that still seems ok. The merge code is another place
+this could perhaps happen.
+"""]]
