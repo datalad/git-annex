@@ -850,6 +850,7 @@ Executable git-annex
     Logs.Difference.Pure
     Logs.FsckResults
     Logs.Group
+    Logs.Line
     Logs.Location
     Logs.MapLog
     Logs.MetaData
