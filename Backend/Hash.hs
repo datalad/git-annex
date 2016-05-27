@@ -102,7 +102,7 @@ selectExtension f
   where
 	es = filter (not . null) $ reverse $
 		take 2 $ takeWhile shortenough $
-		reverse $ split "." $ filter validExtension $ takeExtensions f
+		reverse $ split "." $ filter validInExtension $ takeExtensions f
 	shortenough e = length e <= 4 -- long enough for "jpeg"
 
 {- A key's checksum is checked during fsck. -}
@@ -133,8 +133,8 @@ checkKeyChecksum hash key file = catchIOErrorType HardwareFault hwfault $ do
 keyHash :: Key -> String
 keyHash key = dropExtensions (keyName key)
 
-validExtension :: Char -> Bool
-validExtension c
+validInExtension :: Char -> Bool
+validInExtension c
 	| isAlphaNum c = True
 	| c == '.' = True
 	| otherwise = False
@@ -143,7 +143,7 @@ validExtension c
  - that contain non-alphanumeric characters in their extension. -}
 needsUpgrade :: Key -> Bool
 needsUpgrade key = "\\" `isPrefixOf` keyHash key ||
-	any (not . validExtension) (takeExtensions $ keyName key)
+	any (not . validInExtension) (takeExtensions $ keyName key)
 
 trivialMigrate :: Key -> Backend -> AssociatedFile -> Maybe Key
 trivialMigrate oldkey newbackend afile
