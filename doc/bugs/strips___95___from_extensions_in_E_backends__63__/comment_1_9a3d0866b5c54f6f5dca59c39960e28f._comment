@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-27T17:06:41Z"
+ content="""
+Non-alphanumerics are stripped.
+
+This also results in a file "foo.ba________________________r" having
+".bar" picked as its extension.
+
+I think the fix is to filter out over-long "extensions" before stripping
+the non-alphanumerics.
+"""]]
