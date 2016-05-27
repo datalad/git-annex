@@ -30,7 +30,7 @@ git-annex (6.20160527) unstable; urgency=medium
     has a dotfile in its root.
   * webapp: Avoid confusing display of dead remotes.
   * Support building with ghc 8.0.1.
-  * Updated cabal file explictly lists source files. The tarball
+  * Updated cabal file explicitly lists source files. The tarball
     on hackage will include only the files needed for cabal install;
     it is NOT the full git-annex source tree.
   * debian/changelog, debian/NEWS, debian/copyright: Converted to symlinks
