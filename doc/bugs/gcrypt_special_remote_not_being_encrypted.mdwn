@@ -9,7 +9,7 @@ On the first machine:
 cd MyStuffs
 git init
 git annex init "Macbook"
-cat "First file" > first.txt
+echo "First file" > first.txt
 git annex add .
 git commit -a -m added
 git annex initremote personal-server type=gcrypt gitrepo=ssh://user@foo.bar.com/home/user/MyStuffs keyid=XXXXXXXXX
@@ -23,7 +23,7 @@ On second machine
 git clone gcrypt::ssh://user@foo.bar.com/home/user/MyStuffs test
 git annex enableremote personal-server gitrepo=ssh://user@foo.bar.com/home/user/MyStuffs 
 cd test 
-cat "BananaTest" > test
+echo "BananaTest" > test
 git annex add .
 git commit -a -m added
 git annex sync --content
