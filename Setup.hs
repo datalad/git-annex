@@ -14,11 +14,13 @@ import Control.Applicative
 import Control.Monad
 import System.Directory
 import Data.List
+import Data.Maybe
 import Control.Exception
 import qualified System.Info
 
 import qualified Build.DesktopFile as DesktopFile
 import qualified Build.Configure as Configure
+import Build.Mans (buildMans)
 import Utility.SafeCommand
 
 main :: IO ()
@@ -51,13 +53,10 @@ installManpages copyDest verbosity pkg lbi =
 	installOrdinaryFiles verbosity dstManDir =<< srcManpages
   where
 	dstManDir   = mandir (absoluteInstallDirs pkg lbi copyDest) </> "man1"
-	srcManpages = do
-		havemans <- boolSystem "make" [Param "mans"]
-		if havemans
-			then zip (repeat "man")
-				. filter (".1" `isSuffixOf`)
-				<$> getDirectoryContents "man"
-			else return []
+	-- If mdwn2man fails, perhaps because perl is not available,
+	-- we just skip installing man pages.
+	srcManpages = zip (repeat "man") . map takeFileName . catMaybes
+		<$> buildMans
 
 installDesktopFile :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
 installDesktopFile copyDest _verbosity pkg lbi

@@ -3,6 +3,8 @@ git-annex (6.20160528) UNRELEASED; urgency=medium
   * Improve SHA*E extension extraction code.
   * Windows: Avoid terminating git-annex branch lines with \r\n when
     union merging and performing transitions.
+  * Remove Makefile from cabal tarball; man page building is now handled by
+    a small haskell program.
 
  -- Joey Hess <id@joeyh.name>  Fri, 27 May 2016 13:12:48 -0400
 

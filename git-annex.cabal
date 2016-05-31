@@ -139,7 +139,6 @@ Extra-Source-Files:
   doc/git-annex-xmppgit.mdwn
   doc/logo.svg
   doc/logo_16x16.png
-  Makefile
   Build/mdwn2man
   Assistant/WebApp/routes
   static/activityicon.gif
@@ -663,6 +662,7 @@ Executable git-annex
     Build.EvilSplicer
     Build.InstallDesktopFile
     Build.LinuxMkLibs
+    Build.Mans
     Build.NullSoftInstaller
     Build.OSXMkLibs
     Build.Standalone
