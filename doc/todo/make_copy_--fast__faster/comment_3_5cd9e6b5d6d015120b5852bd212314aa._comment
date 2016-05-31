@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-05-31T16:02:01Z"
+ content="""
+copy --to has to query the git-annex branch to see if the file is on the remote.
+So it has worse locality than copy --from, which can simply stat the local
+file to see if it's present.
+
+Whatever inneficiencies git-annex has here are well swamped by the overhead
+of git querying the branch. 
+
+When the remote has most of the files already, `git annex copy --to remote` is
+similar to `git annex find --not --in remote`.
+
+Here I've ran that under /usr/bin/time, and it looks like git-annex
+ran for 89 seconds out of the 260 second runtime. So at least 65% of the total
+runtime is spent by git querying the branch.
+
+	89.26user 6.92system 4:20.80elapsed 36%CPU (0avgtext+0avgdata 75584maxresident)k
+	516432inputs+0outputs (0major+31156minor)pagefaults 0swaps
+"""]]
