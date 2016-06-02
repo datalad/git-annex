@@ -13,6 +13,7 @@ import Common
 import Git
 import Git.Sha
 import Git.Command
+import qualified Git.Config
 import qualified Git.Ref
 import qualified Git.BuildVersion
 
@@ -114,18 +115,32 @@ fastForward branch (first:rest) repo =
 			(False, True) -> findbest c rs -- worse
 			(False, False) -> findbest c rs -- same
 
-{- The user may have set commit.gpgsign, indending all their manual
+{- The user may have set commit.gpgsign, intending all their manual
  - commits to be signed. But signing automatic/background commits could
  - easily lead to unwanted gpg prompts or failures.
  -}
 data CommitMode = ManualCommit | AutomaticCommit
 	deriving (Eq)
 
+{- Prevent signing automatic commits. -}
 applyCommitMode :: CommitMode -> [CommandParam] -> [CommandParam]
 applyCommitMode commitmode ps
 	| commitmode == AutomaticCommit && not (Git.BuildVersion.older "2.0.0") =
 		Param "--no-gpg-sign" : ps
 	| otherwise = ps
+
+{- Some versions of git commit-tree honor commit.gpgsign themselves,
+ - but others need -S to be passed to enable gpg signing of manual commits. -}
+applyCommitModeForCommitTree :: CommitMode -> [CommandParam] -> Repo -> [CommandParam]
+applyCommitModeForCommitTree commitmode ps r
+	| commitmode == ManualCommit =
+		case (Git.Config.getMaybe "commit.gpgsign" r) of
+			Just s | Git.Config.isTrue s == Just True ->
+				Param "-S":ps
+			_ -> ps'
+	| otherwise = ps'
+  where
+	ps' = applyCommitMode commitmode ps
 
 {- Commit via the usual git command. -}
 commitCommand :: CommitMode -> [CommandParam] -> Repo -> IO Bool
@@ -172,9 +187,9 @@ commitTree commitmode message parentrefs tree repo =
 		pipeWriteRead ([Param "commit-tree", Param (fromRef tree)] ++ ps)
 			sendmsg repo
   where
-	ps = applyCommitMode commitmode $
-		map Param $ concatMap (\r -> ["-p", fromRef r]) parentrefs
 	sendmsg = Just $ flip hPutStr message
+	ps = applyCommitModeForCommitTree commitmode parentparams repo
+	parentparams = map Param $ concatMap (\r -> ["-p", fromRef r]) parentrefs
 
 {- A leading + makes git-push force pushing a branch. -}
 forcePush :: String -> String
