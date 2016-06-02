@@ -126,7 +126,7 @@ genRemoteMap h@(TransportHandle g _) ochan =
 			_ -> return Nothing
 		_ -> return Nothing
 	  where
-		gc = extractRemoteGitConfig r (Git.repoDescribe r)
+		gc = extractRemoteGitConfig g (Git.repoDescribe r)
 
 genTransportHandle :: IO TransportHandle
 genTransportHandle = do
