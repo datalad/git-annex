@@ -93,6 +93,8 @@ initialize' mversion = do
 	whenM versionSupportsUnlockedPointers $ do
 		configureSmudgeFilter
 		Database.Keys.scanAssociatedFiles
+	whenM checkAdjustedClone $
+		void $ upgrade True
 	ifM (crippledFileSystem <&&> (not <$> isBare))
 		( ifM versionSupportsUnlockedPointers
 			( adjustToCrippledFileSystem
@@ -105,8 +107,6 @@ initialize' mversion = do
 		, unlessM isBare
 			switchHEADBack
 		)
-	whenM checkAdjustedClone $
-		void $ upgrade True
 	createInodeSentinalFile False
 
 uninitialize :: Annex ()
