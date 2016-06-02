@@ -11,7 +11,7 @@ Build/Standalone
 Build/OSXMkLibs
 Build/LinuxMkLibs
 Build/BuildVersion
-Build/Mans
+Build/MakeMans
 git-annex
 man
 git-union-merge

@@ -76,8 +76,8 @@ else
 IKIWIKI=ikiwiki
 endif
 
-mans: Build/Mans
-	./Build/Mans
+mans: Build/MakeMans
+	./Build/MakeMans
 
 docs: mans
 	LC_ALL=C TZ=UTC $(IKIWIKI) doc html -v --wikiname git-annex \
@@ -111,7 +111,7 @@ Build/OSXMkLibs: Build/OSXMkLibs.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
 Build/LinuxMkLibs: Build/LinuxMkLibs.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
-Build/Mans: Build/Mans.hs
+Build/MakeMans: Build/MakeMans.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
 
 # Upload to hackage.

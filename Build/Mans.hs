@@ -18,8 +18,8 @@ import System.Exit
 import Data.Maybe
 import Utility.Exception
 
-main :: IO ()
-main = do
+buildMansOrWarn :: IO ()
+buildMansOrWarn = do
 	mans <- buildMans
 	when (any isNothing mans) $
 		error "mdwn2man failed"

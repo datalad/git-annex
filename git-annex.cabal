@@ -662,6 +662,7 @@ Executable git-annex
     Build.EvilSplicer
     Build.InstallDesktopFile
     Build.LinuxMkLibs
+    Build.MakeMans
     Build.Mans
     Build.NullSoftInstaller
     Build.OSXMkLibs
