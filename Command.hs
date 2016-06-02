@@ -91,9 +91,6 @@ stop = return Nothing
 stopUnless :: Annex Bool -> Annex (Maybe a) -> Annex (Maybe a)
 stopUnless c a = ifM c ( a , stop )
 
-isBareRepo :: Annex Bool
-isBareRepo = fromRepo Git.repoIsLocalBare
-
 commonChecks :: [CommandCheck]
 commonChecks = [repoExists]
 

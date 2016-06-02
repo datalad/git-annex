@@ -86,6 +86,9 @@ setRemoteIgnore r b = setConfig (remoteConfig r "ignore") (Git.Config.boolConfig
 setRemoteBare :: Git.Repo -> Bool -> Annex ()
 setRemoteBare r b = setConfig (remoteConfig r "bare") (Git.Config.boolConfig b)
 
+isBareRepo :: Annex Bool
+isBareRepo = fromRepo Git.repoIsLocalBare
+
 isDirect :: Annex Bool
 isDirect = annexDirect <$> Annex.getGitConfig
 

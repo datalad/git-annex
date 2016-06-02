@@ -32,6 +32,7 @@ import Types.RefSpec
 import Git.Types
 import Git.Sha
 import Git.FilePath
+import Config
 import Logs.View (is_branchView)
 import Annex.BloomFilter
 import qualified Database.Keys

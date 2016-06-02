@@ -85,7 +85,7 @@ initialize' mversion = do
 	checkLockSupport
 	checkFifoSupport
 	checkCrippledFileSystem
-	unlessM isBare $
+	unlessM isBareRepo $
 		hookWrite preCommitHook
 	setDifferences
 	unlessM (isJust <$> getVersion) $
@@ -98,7 +98,7 @@ initialize' mversion = do
 		NeedUpgradeForAdjustedClone -> void $ upgrade True
 		InAdjustedClone -> return ()
 		NotInAdjustedClone ->
-			ifM (crippledFileSystem <&&> (not <$> isBare))
+			ifM (crippledFileSystem <&&> (not <$> isBareRepo))
 				( ifM versionSupportsUnlockedPointers
 					( adjustToCrippledFileSystem
 					, do
@@ -107,7 +107,7 @@ initialize' mversion = do
 					)
 				-- Handle case where this repo was cloned from a
 				-- direct mode repo
-				, unlessM isBare
+				, unlessM isBareRepo
 					switchHEADBack
 				)
 	createInodeSentinalFile False
@@ -136,9 +136,6 @@ ensureInitialized = getVersion >>= maybe needsinit checkUpgrade
 {- Checks if a repository is initialized. Does not check version for ugrade. -}
 isInitialized :: Annex Bool
 isInitialized = maybe Annex.Branch.hasSibling (const $ return True) =<< getVersion
-
-isBare :: Annex Bool
-isBare = fromRepo Git.repoIsLocalBare
 
 {- A crippled filesystem is one that does not allow making symlinks,
  - or removing write access from files. -}
