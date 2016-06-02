@@ -46,10 +46,17 @@ noObserver :: TransferObserver
 noObserver _ _ _ = noop
 
 upload :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> TransferObserver -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
-upload u key f d o a _witness = runTransfer (Transfer Upload u key) f d o a
+upload u key f d o a _witness = guardHaveUUID u $ 
+	runTransfer (Transfer Upload u key) f d o a
 
 download :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> TransferObserver -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
-download u key f d o a _witness = runTransfer (Transfer Download u key) f d o a
+download u key f d o a _witness = guardHaveUUID u $
+	runTransfer (Transfer Download u key) f d o a
+
+guardHaveUUID :: Observable v => UUID -> Annex v -> Annex v
+guardHaveUUID u a
+	| u == NoUUID = return observeFailure
+	| otherwise = a
 
 {- Runs a transfer action. Creates and locks the lock file while the
  - action is running, and stores info in the transfer information

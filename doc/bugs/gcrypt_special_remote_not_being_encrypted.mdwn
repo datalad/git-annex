@@ -71,3 +71,5 @@ The remote server that use ssh is Debian Jessie, without git-annex installed (I 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, everything works very nicely except this issue.
+
+> [[fixed|done]] --[[Joey]]

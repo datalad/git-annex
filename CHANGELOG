@@ -5,6 +5,9 @@ git-annex (6.20160528) UNRELEASED; urgency=medium
     union merging and performing transitions.
   * Remove Makefile from cabal tarball; man page building is now handled by
     a small haskell program.
+  * sync --content: Fix bug that caused transfers of files to be made 
+    to a git remote that does not have a UUID. This particularly impacted
+    clones from gcrypt repositories.
 
  -- Joey Hess <id@joeyh.name>  Fri, 27 May 2016 13:12:48 -0400
 

@@ -106,7 +106,8 @@ seek o = allowConcurrentOutput $ do
 
 	remotes <- syncRemotes (syncWith o)
 	let gitremotes = filter Remote.gitSyncableRemote remotes
-	let dataremotes = filter (not . remoteAnnexIgnore . Remote.gitconfig) remotes
+	let dataremotes = filter (\r -> Remote.uuid r /= NoUUID) $ 
+		filter (not . remoteAnnexIgnore . Remote.gitconfig) remotes
 
 	-- Syncing involves many actions, any of which can independently
 	-- fail, without preventing the others from running.
