@@ -542,13 +542,17 @@ diffTreeToTreeItem dti = TreeItem
 {- Cloning a repository that has an adjusted branch checked out will
  - result in the clone having the same adjusted branch checked out -- but
  - the origbranch won't exist in the clone, nor will the basis.
- - Create them. -}
-checkAdjustedClone :: Annex ()
+ - Create them.
+ -
+ - The repository may also need to be upgraded to a new version, if the
+ - current version is too old to support adjusted branches. Returns True
+ - when this is the case. -}
+checkAdjustedClone :: Annex Bool
 checkAdjustedClone = go =<< inRepo Git.Branch.current
   where
-	go Nothing = return ()
+	go Nothing = return False
 	go (Just currbranch) = case adjustedToOriginal currbranch of
-		Nothing -> return ()
+		Nothing -> return False
 		Just (adj, origbranch) -> do
 			let remotebranch = Git.Ref.underBase "refs/remotes/origin" origbranch
 			let basis@(BasisBranch bb) = basisBranch (originalToAdjusted origbranch adj)
@@ -556,6 +560,7 @@ checkAdjustedClone = go =<< inRepo Git.Branch.current
 				setBasisBranch basis remotebranch
 			unlessM (inRepo $ Git.Ref.exists origbranch) $
 				inRepo $ Git.Branch.update' origbranch remotebranch
+			not <$> versionSupportsUnlockedPointers
 
 -- git 2.2.0 needed for GIT_COMMON_DIR which is needed
 -- by updateAdjustedBranch to use withWorkTreeRelated.

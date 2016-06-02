@@ -11,6 +11,8 @@ git-annex (6.20160528) UNRELEASED; urgency=medium
   * Pass -S to git commit-tree when commit.gpgsign is set and when
     making a non-automatic commit, in order to preserve current behavior
     when used with git 1.9, which has stopped doing this itself.
+  * Automatically enable v6 mode when initializing in a clone from a repo
+    that has an adjusted branch checked out.
 
  -- Joey Hess <id@joeyh.name>  Fri, 27 May 2016 13:12:48 -0400
 
