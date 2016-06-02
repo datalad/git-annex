@@ -29,7 +29,7 @@ newtype RemoteURI = RemoteURI URI
 type Transport = RemoteRepo -> RemoteURI -> TransportHandle -> TChan Consumed -> TChan Emitted -> IO ()
 
 data RemoteRepo = RemoteRepo Git.Repo RemoteGitConfig
-type LocalRepo = Git.Repo
+newtype LocalRepo = LocalRepo Git.Repo
 
 -- All Transports share a single AnnexState MVar
 --

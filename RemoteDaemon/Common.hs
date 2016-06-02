@@ -30,7 +30,7 @@ liftAnnex (TransportHandle _ annexstate) a = do
 	return r
 
 inLocalRepo :: TransportHandle -> (Git.Repo -> IO a) -> IO a
-inLocalRepo (TransportHandle g _) a = a g
+inLocalRepo (TransportHandle (LocalRepo g) _) a = a g
 
 -- Check if any of the shas are actally new in the local git repo,
 -- to avoid unnecessary fetching.

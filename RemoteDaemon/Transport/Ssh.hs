@@ -29,10 +29,10 @@ transport rr@(RemoteRepo r _) url h ichan ochan = do
 		Just (cmd, params) -> transportUsingCmd cmd params rr url h ichan ochan
 
 transportUsingCmd :: FilePath -> [CommandParam] -> Transport
-transportUsingCmd cmd params rr@(RemoteRepo r gc) url h@(TransportHandle g s) ichan ochan = do
+transportUsingCmd cmd params rr@(RemoteRepo r gc) url h@(TransportHandle (LocalRepo g) s) ichan ochan = do
 	-- enable ssh connection caching wherever inLocalRepo is called
 	g' <- liftAnnex h $ sshOptionsTo r gc g
-	let transporthandle = TransportHandle g' s
+	let transporthandle = TransportHandle (LocalRepo g') s
 	transportUsingCmd' cmd params rr url transporthandle ichan ochan
 
 transportUsingCmd' :: FilePath -> [CommandParam] -> Transport
