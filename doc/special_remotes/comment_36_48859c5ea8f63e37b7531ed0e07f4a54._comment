@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="Dilyin"
+ subject="Special remote's annex cost"
+ date="2016-06-01T18:44:15Z"
+ content="""
+Looks like it's not possible to set the annex cost of the \"web\" and \"bittorrent\" special remotes annex cost.
+
+This doesn't seem to work:
+
+[remote \"web\"]
+  annex-cost = 500
+
+Perhaps, because these remotes don't actually exist.
+
+Setting annex cost for a webdav remote works but is incremented by 50 for some reason.
+
+"""]]

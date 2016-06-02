@@ -1,0 +1,33 @@
+### Please describe the problem.
+
+Sometimes I end up having files whose contents _do_ exist in this repo, but the location log says otherwise.
+
+For indirect repos, I can just run `annex fsck` on the directory, it says "(fixing location log)", and everything is fine.
+
+But when I try to do the same in a _direct_ repo, it refuses to admit that it just found a copy:
+
+[[!format text """
+┌ frost ~/Attic/Anime (annex)
+┘ annex fsck Foo/
+fsck Foo/[HorribleSubs] Foobar - 01 [720p].mkv (checksum...) 
+  ** No known copies exist of Foo/[HorribleSubs] Foobar - 01 [720p].mkv
+failed
+fsck Foo/[HorribleSubs] Foobar - 02 [720p].mkv (checksum...) 
+  ** No known copies exist of Foo/[HorribleSubs] Foobar - 02 [720p].mkv
+failed
+...and so on.
+"""]]
+
+(A copy _does_ exist; after all, `annex` just spent 30 seconds checksumming it.)
+
+I work around this bug by switching to indirect mode temporarily, which allows fsck to fix the log.
+
+### What steps will reproduce the problem?
+
+For the fsck bug, I think you just need a file that physically exists in the repo, but not marked as such in the location log.
+
+As for how such files happen in the first place, I've no idea myself. (For what it's worth, the log seems fine.)
+
+### What version of git-annex are you using? On what operating system?
+
+Arch's community/git-annex 6.20160511
