@@ -1,6 +1,7 @@
 ### Please describe the problem.
 
-Interestingly, on my first attempt I had two files which migrated from MD5 to MD5E backend, but may be I have done some steps differently which provoked also  also utils/test/test_data.tar.gz to get to the same destine.  I am a bit confused why git diff reports change in the symlink if file is already a real file (I guess all the smudging magic)
+Interestingly, on my first attempt I had two files which migrated from MD5 to MD5E backend, but may be I have done some steps differently which provoked also  also utils/test/test_data.tar.gz to get to the same destiny (actually later replicated on a fresh clone).
+I am also a bit confused why git diff reports change in the symlink if file is already a real file (I guess all the smudging magic)
 
 ### Please provide any additional information below.
 
