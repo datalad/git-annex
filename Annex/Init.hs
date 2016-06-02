@@ -93,20 +93,23 @@ initialize' mversion = do
 	whenM versionSupportsUnlockedPointers $ do
 		configureSmudgeFilter
 		Database.Keys.scanAssociatedFiles
-	whenM checkAdjustedClone $
-		void $ upgrade True
-	ifM (crippledFileSystem <&&> (not <$> isBare))
-		( ifM versionSupportsUnlockedPointers
-			( adjustToCrippledFileSystem
-			, do
-				enableDirectMode
-				setDirect True
-			)
-		-- Handle case where this repo was cloned from a
-		-- direct mode repo
-		, unlessM isBare
-			switchHEADBack
-		)
+	v <- checkAdjustedClone
+	case v of
+		NeedUpgradeForAdjustedClone -> void $ upgrade True
+		InAdjustedClone -> return ()
+		NotInAdjustedClone ->
+			ifM (crippledFileSystem <&&> (not <$> isBare))
+				( ifM versionSupportsUnlockedPointers
+					( adjustToCrippledFileSystem
+					, do
+						enableDirectMode
+						setDirect True
+					)
+				-- Handle case where this repo was cloned from a
+				-- direct mode repo
+				, unlessM isBare
+					switchHEADBack
+				)
 	createInodeSentinalFile False
 
 uninitialize :: Annex ()
