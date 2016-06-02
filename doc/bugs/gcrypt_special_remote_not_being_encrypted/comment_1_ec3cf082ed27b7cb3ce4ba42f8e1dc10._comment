@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-06-02T17:10:48Z"
+ content="""
+What's going on here is, you have cloned a gcrypt repository so have it as
+the origin remote. git-annex is storing files in that remote as if it were
+a regular git remote. It's not being used as a special remote at all.
+
+This is surely a bug; git-annex should notice that remote has a gcrypt-id
+and treat it as a gcrypt remote, or refuse to use it since it's not set up
+as a special remote.
+
+It also seems that only git annex sync --content behaves this way;
+git annex copy "cannot determine uuid for origin".
+"""]]
