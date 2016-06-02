@@ -1,0 +1,57 @@
+### Please describe the problem.
+
+Interestingly, on my first attempt I had two files which migrated from MD5 to MD5E backend, but may be I have done some steps differently which provoked also  also utils/test/test_data.tar.gz to get to the same destine.  I am a bit confused why git diff reports change in the symlink if file is already a real file (I guess all the smudging magic)
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+(git)smaug:~exppsy/freesurfer-upstream2[master]git
+$> git status
+On branch master
+Your branch is up-to-date with 'origin/master'.
+nothing to commit, working directory clean
+
+$> git annex adjust --unlock
+adjust
+Checking out files: 100% (468/468), done.
+Switched to branch 'adjusted/master(unlocked)'
+ok
+git annex adjust --unlock  23.70s user 35.25s system 32% cpu 2:59.41 total
+changes on filesystem:
+ vtkutils/vtkKWRGBATransferFunctionEditorTester-scalars.mgh | 2 +-
+
+$> git status
+On branch adjusted/master(unlocked)
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+        modified:   vtkutils/vtkKWRGBATransferFunctionEditorTester-scalars.mgh
+
+no changes added to commit (use "git add" and/or "git commit -a")
+changes on filesystem:
+ vtkutils/vtkKWRGBATransferFunctionEditorTester-scalars.mgh | 2 +-
+
+$> git diff
+diff --git a/vtkutils/vtkKWRGBATransferFunctionEditorTester-scalars.mgh b/vtkutils/vtkKWRGBATransferFunctionEditorTester-scalars.mgh
+index 9ea90d3..7bc0177 100644
+--- a/vtkutils/vtkKWRGBATransferFunctionEditorTester-scalars.mgh
++++ b/vtkutils/vtkKWRGBATransferFunctionEditorTester-scalars.mgh
+@@ -1 +1 @@
+-/annex/objects/SHA256-s655672--85f9b50e8fb8a72a8783152c7ad098c0600222256a7244ccd595cbe67b9ea949
++/annex/objects/SHA256E-s655672--85f9b50e8fb8a72a8783152c7ad098c0600222256a7244ccd595cbe67b9ea949.mgh
+changes on filesystem:
+ vtkutils/vtkKWRGBATransferFunctionEditorTester-scalars.mgh | 2 +-
+
+$> ls -ld vtkutils/vtkKWRGBATransferFunctionEditorTester-scalars.mgh
+-rw------- 1 yoh yoh 655672 Jun  1 23:28 vtkutils/vtkKWRGBATransferFunctionEditorTester-scalars.mgh
+
+$> git annex version
+git-annex version: 6.20160523+gitg33c00ab-1~ndall+1
+
+"""]]
+
+
+[[!meta author=yoh]]
