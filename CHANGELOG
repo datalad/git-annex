@@ -3534,7 +3534,7 @@ git-annex (3.20120430) unstable; urgency=low
     (Requested by the Internet Archive)
   * uninit: Clear annex.uuid from .git/config. Closes: #670639
   * Added shared cipher mode to encryptable special remotes. This option
-    avoids gpg key distribution, at the expense of flexability, and with
+    avoids gpg key distribution, at the expense of flexibility, and with
     the requirement that all clones of the git repository be equally trusted.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 30 Apr 2012 13:16:10 -0400

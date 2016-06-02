@@ -91,7 +91,7 @@ newAssistantUrl repo = do
 
 {- Checks if the assistant is listening on an url.
  -
- - Always checks http, because https with self-signed cert is problimatic.
+ - Always checks http, because https with self-signed cert is problematic.
  - warp-tls listens to http, in order to show an error page, so this works.
  -}
 assistantListening :: URLString -> IO Bool

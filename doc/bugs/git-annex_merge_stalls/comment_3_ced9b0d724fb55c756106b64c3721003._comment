@@ -11,7 +11,7 @@ joeyh so, my thought is that perhaps you had a git-annex process before that was
 joeyh for example, if you ran it and ctrl-z'd at just the right time, it could be suspended and holding the lock
 joeyh (or the kernel coud have gotten confused, which given you also had a crash, who knows..)
 dp sounds logical
-joeyh forcing locks is always a problimatic thing
+joeyh forcing locks is always a problematic thing
 joeyh but git-annex could certainly notice if it seems to be stalled and print some useful messages
 joeyh and maybe have a way to run with locks forced
 </pre>

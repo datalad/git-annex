@@ -620,7 +620,7 @@ mangleCode = flip_colon
 		void $ string "= "
 		return $ "= do { " ++ x ++ " <- return $ "
 
-{- Embedded files use unsafe packing, which is problimatic
+{- Embedded files use unsafe packing, which is problematic
  - for several reasons, including that GHC sometimes omits trailing
  - newlines in the file content, which leads to the wrong byte
  - count. Also, GHC sometimes outputs unicode characters, which 

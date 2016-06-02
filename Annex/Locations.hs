@@ -411,7 +411,7 @@ gitAnnexAssistantDefaultDir = "annex"
  -
  - This is used when a new Key is initially being generated, eg by getKey.
  - Unlike keyFile and fileKey, it does not need to be a reversable
- - escaping. Also, it's ok to change this to add more problimatic
+ - escaping. Also, it's ok to change this to add more problematic
  - characters later. Unlike changing keyFile, which could result in the
  - filenames used for existing keys changing and contents getting lost.
  -

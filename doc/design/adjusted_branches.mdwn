@@ -229,7 +229,7 @@ better to delete it from the work tree, but keep the branch as-is. Then
 
 But, not maintaining an adjusted branch complicates other things. See
 WORKTREE notes throughout this page. Overall, the WORKTREE approach seems
-too problimatic.
+too problematic.
 
 Ah, but we know that when adjustment #2 is in place, any file that `git annex
 get` could act on is not in the index. So, it could look at the master branch
@@ -242,7 +242,7 @@ index in that case.
 
 ## problems
 
-Using `git checkout` when in an adjusted branch is problimatic, because a
+Using `git checkout` when in an adjusted branch is problematic, because a
 non-adjusted branch would then be checked out. But, we can just say, if
 you want to get into an adjusted branch, you have to run git annex adjust
 Or, could make a post-checkout hook. This is would mostly be confusing when

@@ -10,7 +10,7 @@ Today I put together a lot of things I've been thinking about:
 * There are other changes some would like to see (like lower-case object
   hash directory names) that are certianly not enough to warrant a flag
   day repo format upgrade.
-* It would be nice to let people who want to have some flexability to play
+* It would be nice to let people who want to have some flexibility to play
   around with changes, in their own repos, as long as they don't a)
   make git-annex a lot more complicated, or b) negatively impact others.
   (Without having to fork git-annex.)

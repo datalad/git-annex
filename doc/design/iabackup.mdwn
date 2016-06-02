@@ -92,7 +92,7 @@ decided to remove content.
    annex.diskreserve)
 2. Note that [[numcopies|copies]] and [[preferred_content]] settings can be
    used to make clients only want to download an file if it's not yet
-   reached the desired number of copies. Lots of flexability here in
+   reached the desired number of copies. Lots of flexibility here in
    git-annex.
 3. git-annex will push back to the server an updated git-annex branch,
    which will record when it has successfully stored an file.
