@@ -52,6 +52,7 @@ import Annex.Perms
 import Annex.GitOverlay
 import Utility.Tmp
 import qualified Database.Keys
+import Config
 
 import qualified Data.Map as M
 
@@ -551,7 +552,10 @@ data AdjustedClone = InAdjustedClone | NotInAdjustedClone | NeedUpgradeForAdjust
  - current version is too old to support adjusted branches. Returns True
  - when this is the case. -}
 checkAdjustedClone :: Annex AdjustedClone
-checkAdjustedClone = go =<< inRepo Git.Branch.current
+checkAdjustedClone = ifM isBareRepo
+	( return NotInAdjustedClone
+	, go =<< inRepo Git.Branch.current
+	)
   where
 	go Nothing = return NotInAdjustedClone
 	go (Just currbranch) = case adjustedToOriginal currbranch of
