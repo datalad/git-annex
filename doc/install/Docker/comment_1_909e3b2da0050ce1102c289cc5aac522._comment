@@ -1,0 +1,66 @@
+[[!comment format=mdwn
+ username="matei.david@d6acba23dba331f26fc4756d01c7ab65cf3aee4d"
+ nickname="matei.david"
+ subject="A more detailed walkthrough"
+ date="2016-06-03T18:48:11Z"
+ content="""
+I want to use a recent `git-annex` version, and I prefer a Docker solution to a binary. There wasn't much documentation on how to do that, so here are the steps I took, just in case anybody finds this information useful. This is not a complete guide, just more than I was able to find so far.
+
+- Install Docker so that you can access it (eg, `docker info`) without `sudo`. (Beyond the scope in here.)
+
+- Create a git-annex image as follows:
+
+Dockerfile:
+
+    FROM debian:unstable
+    RUN apt-get update && apt-get install -y ssh git man git-annex=6.20160511-1
+    # maybe install gpg2, other remotes, etc
+    #RUN apt-get install -y gnupg2 && ln -s /usr/bin/gpg2 /usr/local/bin/gpg
+    #RUN apt-get install -y golang-go && GOPATH=/usr/local go get github.com/encryptio/git-annex-remote-b2
+    VOLUME /data
+    WORKDIR /data
+
+Build image and run basic test:
+
+    docker build -t git-annex-6.20160511-1 .
+    docker run -it --rm git-annex-6.20160511-1 git-annex version
+
+- You still need to:
+
+  - On host: Replace `git-annex` by a script that invokes the Dockerized version.
+  - In container:
+    - Use non-root uids, otherwise you end up creating files with uid 0.
+    - Access `ssh` and `gpg` credentials on host.
+    - Access `~/.gitconfig` on host.
+    - Mount `git` repository root as a volume, not just the current dir.
+    - Access AWS/B2 credentials, if applicable.
+
+Here is a sample script that achieves these. Name it `git-annex`, and place it in your `PATH` before the host `git-annex` (or just uninstall the latter).
+
+    #!/bin/bash
+    CONT_NAME=${CONT_NAME:-git-annex-6.20160511-1}
+    # if in git repo, mount root as /data, and cd into relative subdir
+    # if not, mount cwd as /data
+    abs_dir=$(readlink -e .)
+    root_dir=$(git rev-parse --show-toplevel 2>/dev/null || true)
+    root_dir=${root_dir:-$abs_dir}
+    rel_dir=${abs_dir#$root_dir}
+    # if run by git, assume command is git-annex
+    # otherwise, don't assume, to allow other uses
+    cmd=
+    ! [ \"$(basename \"$(readlink -e /proc/$PPID/exe)\")\" = \"git\" ] || cmd=git-annex
+    exec docker run -it --rm \
+        -u $(id -u):$(id -g) \
+        -v /etc/passwd:/etc/passwd:ro \
+        -v $HOME/.ssh:$HOME/.ssh \
+        -v $HOME/.gnupg:$HOME/.gnupg \
+        -v $HOME/.gitconfig:$HOME/.gitconfig \
+        -v \"$root_dir\":/data \
+        ${AWS_ACCESS_KEY_ID:+-e AWS_ACCESS_KEY_ID=\"$AWS_ACCESS_KEY_ID\"} \
+        ${AWS_SECRET_ACCESS_KEY:+-e AWS_SECRET_ACCESS_KEY=\"$AWS_SECRET_ACCESS_KEY\"} \
+        ${B2_ACCOUNT_ID:+-e B2_ACCOUNT_ID=\"$B2_ACCOUNT_ID\"} \
+        ${B2_APP_KEY:+-e B2_APP_KEY=\"$B2_APP_KEY\"} \
+        -w /data\"$rel_dir\" \
+        $CONT_NAME $cmd \"$@\"
+
+"""]]
