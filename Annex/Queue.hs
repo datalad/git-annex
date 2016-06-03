@@ -13,6 +13,7 @@ module Annex.Queue (
 	flush,
 	flushWhenFull,
 	size,
+	get,
 	mergeFrom,
 ) where
 
