@@ -969,9 +969,9 @@ test_union_merge_regression =
 					git_annex "get" [annexedfile] @? "get failed"
 					boolSystem "git" [Param "remote", Param "rm", Param "origin"] @? "remote rm"
 				forM_ [r3, r2, r1] $ \r -> indir r $
-					git_annex "sync" [] @? "sync failed"
+					git_annex "sync" [] @? ("sync failed in " ++ r)
 				forM_ [r3, r2] $ \r -> indir r $
-					git_annex "drop" ["--force", annexedfile] @? "drop failed"
+					git_annex "drop" ["--force", annexedfile] @? ("drop failed in " ++ r)
 				indir r1 $ do
 					git_annex "sync" [] @? "sync failed in r1"
 					git_annex_expectoutput "find" ["--in", "r3"] []
