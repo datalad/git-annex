@@ -17,6 +17,7 @@ git-annex (6.20160528) UNRELEASED; urgency=medium
     branch checked out.
   * remotedaemon: Fixed support for notifications of changes to gcrypt
     remotes, which was never tested and didn't quite work before.
+  * list: Do not include dead repositories.
 
  -- Joey Hess <id@joeyh.name>  Fri, 27 May 2016 13:12:48 -0400
 

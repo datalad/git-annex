@@ -56,7 +56,8 @@ getList o
 		ts <- mapM (lookupTrust . uuid) rs
 		hereu <- getUUID
 		heretrust <- lookupTrust hereu
-		return $ (hereu, "here", heretrust) : zip3 (map uuid rs) (map name rs) ts
+		let l = (hereu, "here", heretrust) : zip3 (map uuid rs) (map name rs) ts
+		return $ filter (\(_, _, t) -> t /= DeadTrusted) l 
 	getAllUUIDs = do
 		rs <- M.toList <$> uuidMap
 		rs3 <- forM rs $ \(u, n) -> (,,)
