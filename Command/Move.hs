@@ -113,23 +113,29 @@ toPerform dest move key afile fastcheck isthere =
 				upload (Remote.uuid dest) key afile noRetry noObserver $
 					Remote.storeKey dest key afile
 			if ok
-				then do
+				then finish $
 					Remote.logStatus dest key InfoPresent
-					finish
 				else do
 					when fastcheck $
 						warning "This could have failed because --fast is enabled."
 					stop
-		Right True -> do
+		Right True -> finish $
 			unlessM (expectedPresent dest key) $
 				Remote.logStatus dest key InfoPresent
-			finish
   where
-	finish
+	finish :: Annex () -> CommandPerform
+	finish setpresentremote
 		| move = lockContentForRemoval key $ \contentlock -> do
+			-- Drop content before updating location logs,
+			-- in case disk space is very low this frees up
+			-- space before writing data to disk.
 			removeAnnex contentlock
-			next $ Command.Drop.cleanupLocal key
-		| otherwise = next $ return True
+			next $ do
+				setpresentremote
+				Command.Drop.cleanupLocal key
+		| otherwise = next $ do
+			setpresentremote
+			return True
 
 {- Moves (or copies) the content of an annexed file from a remote
  - to the current repository.
