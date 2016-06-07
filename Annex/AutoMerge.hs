@@ -121,7 +121,7 @@ resolveMerge us them inoverlay = do
 	let merged = not (null mergedfs')
 	void $ liftIO cleanup
 
-	unlessM isDirect $ do
+	unlessM (pure inoverlay <||> isDirect) $ do
 		(deleted, cleanup2) <- inRepo (LsFiles.deleted [top])
 		unless (null deleted) $
 			Annex.Queue.addCommand "rm"
