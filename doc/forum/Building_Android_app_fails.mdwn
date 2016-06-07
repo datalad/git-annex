@@ -1,0 +1,69 @@
+When trying to build the Android app, I'm able to successfully set up the chroot, and enter it. Once I am inside, as the user "builder" I get a failure on the second step of the installation process "In the chroot, run standalone/android/install-haskell-packages".
+
+When I run this command, I get the following error:
+
+    cbits/cryptonite_rdrand.c: In function ‘cryptonite_get_rand_bytes’:
+    
+    cbits/cryptonite_rdrand.c:63:2:
+         error: inconsistent operand constraints in an ‘asm’
+          asm(".byte 0x48,0x0f,0xc7,0xf0; setc %1" \
+          ^
+    
+    cbits/cryptonite_rdrand.c:78:3:
+         note: in expansion of macro ‘inline_rdrand_rax’
+           inline_rdrand_rax(tmp, ok);
+           ^
+    
+    cbits/cryptonite_rdrand.c:63:2:
+         error: inconsistent operand constraints in an ‘asm’
+          asm(".byte 0x48,0x0f,0xc7,0xf0; setc %1" \
+          ^
+    
+    cbits/cryptonite_rdrand.c:87:3:
+         note: in expansion of macro ‘inline_rdrand_rax’
+           inline_rdrand_rax(tmp, ok);
+           ^
+    
+    cbits/cryptonite_rdrand.c:63:2:
+         error: inconsistent operand constraints in an ‘asm’
+          asm(".byte 0x48,0x0f,0xc7,0xf0; setc %1" \
+          ^
+    
+    cbits/cryptonite_rdrand.c:87:3:
+         note: in expansion of macro ‘inline_rdrand_rax’
+           inline_rdrand_rax(tmp, ok);
+           ^
+    
+    cbits/cryptonite_rdrand.c:63:2:
+         error: inconsistent operand constraints in an ‘asm’
+          asm(".byte 0x48,0x0f,0xc7,0xf0; setc %1" \
+          ^
+    
+    cbits/cryptonite_rdrand.c:94:3:
+         note: in expansion of macro ‘inline_rdrand_rax’
+           inline_rdrand_rax(tmp, ok);
+           ^
+    cabal: Error: some packages failed to install:
+    cryptonite-0.16 failed during the building phase. The exception was:
+    ExitFailure 1
+
+So, there is a problem with building the haskell package "cryptonite-0.16".
+
+I also get this output a little further up:
+
+    Failed to install cryptonite-0.16
+    Build log ( /home/builder/.cabal/logs/cryptonite-0.16.log ):
+    Warning: cryptonite.cabal: Unknown fields: extra-doc-files (line 37)
+    Fields allowed in this section:
+    name, version, cabal-version, build-type, license, license-file,
+    copyright, maintainer, build-depends, stability, homepage,
+    package-url, bug-reports, synopsis, description, category, author,
+    tested-with, data-files, data-dir, extra-source-files,
+    extra-tmp-files
+
+So perhaps that is helpful as well.
+
+
+If anyone has any guidance on how to move beyond this or what needs to be changed, I'd appreciate it!
+
+Thanks!
