@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="chris@f4ea67aa5ae4709d79959f782fcebb5edae9a79b"
+ nickname="chris"
+ subject="comment 2"
+ date="2016-06-07T13:40:24Z"
+ content="""
+The way I got round this was to give the metadata-only repository an annex-uuid of 00000000-0000-0000-0000-000000000000, and to run \"git annex wanted remotename nothing\".  Now everything works as I want, whether with the assistant or when I run git annex sync --content [--all] manually.
+"""]]

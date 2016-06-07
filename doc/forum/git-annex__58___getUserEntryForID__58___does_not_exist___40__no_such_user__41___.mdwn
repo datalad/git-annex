@@ -1,0 +1,24 @@
+Hi,
+
+I ran into this problem:
+$ git annex mirror --from origin
+git-annex: getUserEntryForID: does not exist (no such user)
+
+I found in the forum that, if the the machine uses LDAP etc. I should be able to use the HOME and USER environment variables.
+
+I'm not quite sure what the user authentication management on the machine I'm on is and I'd rather not deal with the sysadmins.
+But I know that  the /etc/passwd file does not have my user listed.
+I do have the the HOME and USER variables properly set and exported. 
+
+$ echo $HOME $USER
+/nethome/iiossifov iiossifov
+
+In the git-annex source code I found that the error occurs in Utility/UserInfo.hs. 
+I can't read Haskell but my guess is that the problem is with the myUserGecos for which there is no environment variable fall back.
+
+I'm using the pre-build git-annex version: 6.20160527-gb7d4774
+
+Would you be able to advice me how to deal with the problem?
+
+Thank you,
+Ivan
