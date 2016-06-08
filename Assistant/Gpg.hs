@@ -17,7 +17,7 @@ import qualified Data.Map as M
 newUserId :: GpgCmd -> IO UserId
 newUserId cmd = do
 	oldkeys <- secretKeys cmd
-	username <- myUserName
+	username <- either (const "unknown") id <$> myUserName
 	let basekeyname = username ++ "'s git-annex encryption key"
 	return $ Prelude.head $ filter (\n -> M.null $ M.filter (== n) oldkeys)
 		( basekeyname

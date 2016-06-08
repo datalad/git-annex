@@ -33,7 +33,7 @@ checkEnvironment = do
 
 checkEnvironmentIO :: IO ()
 checkEnvironmentIO = whenM (isNothing <$> myUserGecos) $ do
-	username <- myUserName
+	username <- either (const "unknown") id <$> myUserName
 	ensureEnv "GIT_AUTHOR_NAME" username
 	ensureEnv "GIT_COMMITTER_NAME" username
   where
@@ -52,7 +52,7 @@ ensureCommit :: Annex a -> Annex a
 ensureCommit a = either retry return =<< tryNonAsync a 
   where
 	retry _ = do
-		name <- liftIO myUserName
+		name <- liftIO $ either (const "unknown") id <$> myUserName
 		setConfig (ConfigKey "user.name") name
 		setConfig (ConfigKey "user.email") name
 		a

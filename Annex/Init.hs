@@ -52,13 +52,11 @@ genDescription (Just d) = return d
 genDescription Nothing = do
 	reldir <- liftIO . relHome =<< liftIO . absPath =<< fromRepo Git.repoPath
 	hostname <- fromMaybe "" <$> liftIO getHostname
-#ifndef mingw32_HOST_OS
 	let at = if null hostname then "" else "@"
-	username <- liftIO myUserName
-	return $ concat [username, at, hostname, ":", reldir]
-#else
-	return $ concat [hostname, ":", reldir]
-#endif
+	v <- liftIO myUserName
+	return $ concat $ case v of
+		Right username -> [username, at, hostname, ":", reldir]
+		Left _ -> [hostname, ":", reldir]
 
 initialize :: Maybe String -> Maybe Version -> Annex ()
 initialize mdescription mversion = do
