@@ -15,6 +15,7 @@ module Utility.UserInfo (
 ) where
 
 import Utility.Env
+import Utility.Exception
 
 import System.PosixCompat
 import Control.Applicative
@@ -47,7 +48,7 @@ myUserGecos :: IO (Maybe String)
 #if defined(__ANDROID__) || defined(mingw32_HOST_OS)
 myUserGecos = return Nothing
 #else
-myUserGecos = Just <$> myVal [] userGecos
+myUserGecos = catchMaybeIO $ myVal [] userGecos
 #endif
 
 myVal :: [String] -> (UserEntry -> String) -> IO String

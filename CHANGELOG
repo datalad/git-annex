@@ -22,6 +22,8 @@ git-annex (6.20160528) UNRELEASED; urgency=medium
     drop content from disk before writing location log.
   * Fix bad automatic merge conflict resolution between an annexed file
     and a directory with the same name when in an adjusted branch.
+  * Avoid a crash if getpwuid does not work, when querying the user's full
+    name.
 
  -- Joey Hess <id@joeyh.name>  Fri, 27 May 2016 13:12:48 -0400
 
