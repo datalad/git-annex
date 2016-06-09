@@ -13,9 +13,11 @@ import Annex.Content
 import Annex.Link
 import Annex.FileMatcher
 import Annex.Ingest
+import Annex.CatFile
 import Logs.Location
 import qualified Database.Keys
 import Git.FilePath
+import Backend
 
 import qualified Data.ByteString.Lazy as B
 
@@ -78,8 +80,16 @@ clean file = do
 				-- and not stdin, we need to consume all
 				-- stdin, or git will get annoyed.
 				B.length b `seq` return ()
+				-- Look up the backend that was used
+				-- for this file before, so that when
+				-- git re-cleans a file its backend does
+				-- not change.
+				currbackend <- maybe Nothing (maybeLookupBackendName . keyBackendName)
+					<$> catKeyFile file
 				liftIO . emitPointer
-					=<< go =<< ingest =<< lockDown cfg file
+					=<< go
+					=<< ingest' currbackend
+					=<< lockDown cfg file
 			, liftIO $ B.hPut stdout b
 			)
 	stop

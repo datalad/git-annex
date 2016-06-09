@@ -56,3 +56,5 @@ git-annex version: 6.20160523+gitg33c00ab-1~ndall+1
 
 
 [[!meta author=yoh]]
+
+> [[fixed|done]] --[[Joey]]
