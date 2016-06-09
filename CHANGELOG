@@ -20,18 +20,17 @@ git-annex (6.20160528) UNRELEASED; urgency=medium
   * list: Do not include dead repositories.
   * move --to: Better behavior when system is completely out of disk space;
     drop content from disk before writing location log.
-  * Fix bad automatic merge conflict resolution between an annexed file
+  * v6: Fix bad automatic merge conflict resolution between an annexed file
     and a directory with the same name when in an adjusted branch.
   * Avoid a crash if getpwuid does not work, when querying the user's full
     name.
-  * Fix bug in initialization of clone from a repo with an adjusted branch
+  * v6: Fix bug in initialization of clone from a repo with an adjusted branch
     that had not been synced back to master. 
     (This bug caused broken tree objects to get built by a later git annex
     sync.)
-  * Make lock and unlock work in v6 repos on files whose content is not
-    present.
-  * Fix update of associated files db when unlocking a file in a v6 repo.
-  * Make git clean filter preserve the backend that was used for a file.
+  * v6: Make lock and unlock work on files whose content is not present.
+  * v6: Fix update of associated files db when unlocking a file.
+  * v6: Make git clean filter preserve the backend that was used for a file.
 
  -- Joey Hess <id@joeyh.name>  Fri, 27 May 2016 13:12:48 -0400
 
