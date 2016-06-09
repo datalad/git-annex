@@ -24,6 +24,10 @@ git-annex (6.20160528) UNRELEASED; urgency=medium
     and a directory with the same name when in an adjusted branch.
   * Avoid a crash if getpwuid does not work, when querying the user's full
     name.
+  * Fix bug in initialization of clone from a repo with an adjusted branch
+    that had not been synced back to master. 
+    (This bug caused broken tree objects to get built by a later git annex
+    sync.)
 
  -- Joey Hess <id@joeyh.name>  Fri, 27 May 2016 13:12:48 -0400
 

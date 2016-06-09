@@ -300,8 +300,19 @@ commitAdjustedTree' treesha (BasisBranch basis) parents =
 	mkcommit = Git.Branch.commitTree Git.Branch.AutomaticCommit
 		adjustedBranchCommitMessage parents treesha
 
+{- This message should never be changed. -}
 adjustedBranchCommitMessage :: String
 adjustedBranchCommitMessage = "git-annex adjusted branch"
+
+findAdjustingCommit :: AdjBranch -> Annex (Maybe Commit)
+findAdjustingCommit (AdjBranch b) = go =<< catCommit b
+  where
+	go Nothing = return Nothing
+	go (Just c)
+		| commitMessage c == adjustedBranchCommitMessage = return (Just c)
+		| otherwise = case commitParent c of
+			[p] -> go =<< catCommit p
+			_ -> return Nothing
 
 {- Update the currently checked out adjusted branch, merging the provided
  - branch into it. Note that the provided branch should be a non-adjusted
@@ -545,12 +556,22 @@ data AdjustedClone = InAdjustedClone | NotInAdjustedClone | NeedUpgradeForAdjust
 
 {- Cloning a repository that has an adjusted branch checked out will
  - result in the clone having the same adjusted branch checked out -- but
- - the origbranch won't exist in the clone, nor will the basis.
- - Create them.
+ - the origbranch won't exist in the clone, nor will the basis. So
+ - to properly set up the adjusted branch, the origbranch and basis need
+ - to be set.
+ - 
+ - We can't trust that the origin's origbranch matches up with the currently
+ - checked out adjusted branch; the origin could have the two branches
+ - out of sync (eg, due to another branch having been pushed to the origin's
+ - origbranch), or due to a commit on its adjusted branch not having been
+ - propigated back to origbranch.
+ -
+ - So, find the adjusting commit on the currently checked out adjusted
+ - branch, and use the parent of that commit as the basis, and set the
+ - origbranch to it.
  -
  - The repository may also need to be upgraded to a new version, if the
- - current version is too old to support adjusted branches. Returns True
- - when this is the case. -}
+ - current version is too old to support adjusted branches. -}
 checkAdjustedClone :: Annex AdjustedClone
 checkAdjustedClone = ifM isBareRepo
 	( return NotInAdjustedClone
@@ -561,12 +582,15 @@ checkAdjustedClone = ifM isBareRepo
 	go (Just currbranch) = case adjustedToOriginal currbranch of
 		Nothing -> return NotInAdjustedClone
 		Just (adj, origbranch) -> do
-			let remotebranch = Git.Ref.underBase "refs/remotes/origin" origbranch
 			let basis@(BasisBranch bb) = basisBranch (originalToAdjusted origbranch adj)
-			unlessM (inRepo $ Git.Ref.exists bb) $
-				setBasisBranch basis remotebranch
-			unlessM (inRepo $ Git.Ref.exists origbranch) $
-				inRepo $ Git.Branch.update' origbranch remotebranch
+			unlessM (inRepo $ Git.Ref.exists bb) $ do
+				unlessM (inRepo $ Git.Ref.exists origbranch) $ do
+					let remotebranch = Git.Ref.underBase "refs/remotes/origin" origbranch
+					inRepo $ Git.Branch.update' origbranch remotebranch
+				aps <- fmap commitParent <$> findAdjustingCommit (AdjBranch currbranch)
+				case aps of
+					Just [p] -> setBasisBranch basis p
+					_ -> error $ "Unable to clean up from clone of adjusted branch; perhaps you should check out " ++ Git.Ref.describe origbranch
 			ifM versionSupportsUnlockedPointers
 				( return InAdjustedClone
 				, return NeedUpgradeForAdjustedClone
