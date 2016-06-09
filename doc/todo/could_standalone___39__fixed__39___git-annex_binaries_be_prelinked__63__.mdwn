@@ -1,0 +1,5 @@
+Since in datalad we are invoking git and git-annex quite frequently, and on debian systems atm relying on git-annex-standalone pkg, I wondered, if there is a possibility to get all 'shimmed' binaries prelinked against shipped core libs to avoid a current bunch of unsucesfull searches for libraries.... I thought it might provide a notable benefit.
+
+just an idea
+
+[[!meta author=yoh]]
