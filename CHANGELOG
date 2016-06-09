@@ -28,6 +28,8 @@ git-annex (6.20160528) UNRELEASED; urgency=medium
     that had not been synced back to master. 
     (This bug caused broken tree objects to get built by a later git annex
     sync.)
+  * Make lock and unlock work in v6 repos on files whose content is not
+    present.
 
  -- Joey Hess <id@joeyh.name>  Fri, 27 May 2016 13:12:48 -0400
 

@@ -22,4 +22,5 @@ lock git/bup.git/bupindex.hlink git-annex: content not present; cannot lock
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
-
+> Well, that was simply not implemented, but I've done so now. (unlocking
+> too). [[done]] --[[Joey]]

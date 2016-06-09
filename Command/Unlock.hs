@@ -37,14 +37,9 @@ start :: FilePath -> Key -> CommandStart
 start file key = ifM (isJust <$> isAnnexLink file)
 	( do
 		showStart "unlock" file
-		ifM (inAnnex key)
-			( ifM versionSupportsUnlockedPointers
-				( next $ performNew file key
-				, startOld file key 
-				)
-			, do
-				warning "content not present; cannot unlock"
-				next $ next $ return False
+		ifM versionSupportsUnlockedPointers
+			( next $ performNew file key
+			, startOld file key
 			)
 	, stop
 	)
@@ -52,11 +47,16 @@ start file key = ifM (isJust <$> isAnnexLink file)
 performNew :: FilePath -> Key -> CommandPerform
 performNew dest key = do
 	destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus dest
-	replaceFile dest $ \tmp -> do
-		r <- linkFromAnnex key tmp destmode
-		case r of
-			LinkAnnexOk -> return ()
-			_ -> error "unlock failed"
+	replaceFile dest $ \tmp ->
+		ifM (inAnnex key)
+			( do
+				r <- linkFromAnnex key tmp destmode
+				case r of
+					LinkAnnexOk -> return ()
+					LinkAnnexNoop -> return ()
+					_ -> error "unlock failed"
+			, liftIO $ writePointerFile tmp key destmode
+			)
 	next $ cleanupNew dest key destmode
 
 cleanupNew ::  FilePath -> Key -> Maybe FileMode -> CommandCleanup
