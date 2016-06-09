@@ -1,1 +1,3 @@
 The bash-completion.bash was gone in the 6.20160527 tarball on hackage. It used to be inside the tarball in <= 6.20160511 versions.
+
+> not a bug; [[done]] --[[Joey]] 
