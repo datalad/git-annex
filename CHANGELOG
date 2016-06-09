@@ -30,6 +30,7 @@ git-annex (6.20160528) UNRELEASED; urgency=medium
     sync.)
   * Make lock and unlock work in v6 repos on files whose content is not
     present.
+  * Fix update of associated files db when unlocking a file in a v6 repo.
 
  -- Joey Hess <id@joeyh.name>  Fri, 27 May 2016 13:12:48 -0400
 

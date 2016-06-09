@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010,2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,6 +16,8 @@ import Annex.Link
 import Annex.ReplaceFile
 import Utility.CopyFile
 import Utility.FileMode
+import Git.FilePath
+import qualified Database.Keys
 
 cmd :: Command
 cmd = mkcmd "unlock" "unlock files for modification"
@@ -62,6 +64,7 @@ performNew dest key = do
 cleanupNew ::  FilePath -> Key -> Maybe FileMode -> CommandCleanup
 cleanupNew dest key destmode = do
 	stagePointerFile dest destmode =<< hashPointerFile key
+	Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath dest)
 	return True
 
 startOld :: FilePath -> Key -> CommandStart
