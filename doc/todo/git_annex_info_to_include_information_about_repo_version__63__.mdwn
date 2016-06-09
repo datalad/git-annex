@@ -1,0 +1,3 @@
+I thought that 'git annex info' should be the best location to report current version (6 or before ATM?) of the repository, which seems to be stored only within .git/config.  so I see how it somewhat possibly doesn't fit 'git annex info' which reports primarily from the state of git-annex branch, but since even "available local disk space" is in there, version better be reported there as well imho
+
+[[!meta author=yoh]]
