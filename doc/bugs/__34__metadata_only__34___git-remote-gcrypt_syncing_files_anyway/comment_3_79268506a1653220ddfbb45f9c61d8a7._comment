@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-06-09T20:27:07Z"
+ content="""
+This was fixed in [[!commit fbf5045d4f17accde9e20fa528e52cb1dce61c47]]
+for `git annex sync --content`
+
+I don't remember the immediate cause of it being in a code that that the
+webapp would call, but I did add a belt-and-suspenders fix at a lower level
+which I'd hope would prevent the webapp from uploading anything in any
+case.
+
+Sounds like the webapp tries to queue transfers to a NoUUID remote, and
+then presumably gives up before the object gets uploaded.
+
+Looking at the code, calcSyncRemotes does not filter out NoUUID remotes
+when populating syncDataRemotes. So, I've fixed that too now.
+"""]]

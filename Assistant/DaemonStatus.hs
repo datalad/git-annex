@@ -55,6 +55,7 @@ calcSyncRemotes = do
 	let good r = Remote.uuid r `elem` alive
 	let syncable = filter good rs
 	let syncdata = filter (not . remoteAnnexIgnore . Remote.gitconfig) $
+		filter (\r -> Remote.uuid r /= NoUUID) $
 		filter (not . Remote.isXMPPRemote) syncable
 
 	return $ \dstatus -> dstatus
