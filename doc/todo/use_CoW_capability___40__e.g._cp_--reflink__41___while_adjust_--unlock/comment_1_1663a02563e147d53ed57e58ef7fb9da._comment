@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-06-09T19:44:14Z"
+ content="""
+Git's smudge interface requires git-annex to output the content to stdout;
+git writes it to the file. So, git-annex does not have an opportunity to
+efficiently copy the file. 
+
+(All file copies in git-annex use cp --reflink)
+
+My proposed extended smudge interface at
+<http://thread.gmane.org/gmane.comp.version-control.git/294425>
+lets the smudge filter write the file to disk, and then git-annex could
+use more efficient methods. Since this is already discussed in
+[[todo/smudge]] I think I'll close this bug report as a duplicate.
+"""]]

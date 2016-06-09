@@ -1,3 +1,5 @@
 I might be wrong but given the observation that adjust --unlock took  26.04s user 33.95s system 31% cpu 3:12.36 total   to finish operation on an annex (on smaug, btrfs filesystem) with a relatively small (~400) number of relatively large files, I guess no reflink copying was done.
 
 [[!meta author="yoh"]]
+
+> [[dup|done]] --[[Joey]]
