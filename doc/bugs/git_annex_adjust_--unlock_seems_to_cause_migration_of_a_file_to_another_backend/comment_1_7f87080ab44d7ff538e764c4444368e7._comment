@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-06-09T18:48:45Z"
+ content="""
+`git annex adjust` preserves the current backend.
+
+However, when a file in a v6 repository is unlocked, the clean filter will
+use whatever backend git-annex is configured to 
+use by git config annex.backends or annex.backend in .gitattributes.
+That defaults to SHA256E. It does not look at the current backend used by
+the file.
+
+So, you can get the same behavior by adding a file using a nonstandard
+backend, and then unlocking it.
+
+	joey@darkstar:~/tmp/rr>date > file
+	joey@darkstar:~/tmp/rr>git annex add file --backend=WORM
+	add file ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/rr>git annex unlock file
+	unlock file ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/rr>git diff file
+	diff --git a/file b/file
+	index 94ad1f9..bc7928f 100644
+	--- a/file
+	+++ b/file
+	@@ -1 +1 @@
+	-/annex/objects/WORM-s30-m1465498400--file
+	+/annex/objects/SHA256E-s30--2917d57a7009b0c2ce14669bf588f6ade6128bc52a8e3bf124d0d30b1fbfdb95
+
+To avoid this, the clean filter would need to look at what's checked
+into git for the file and reuse the same backend as was used before.
+
+.. I guess it's ok to do that. It slows the clean filter down slightly,
+but the clean filter has to hash the whole file content anyway. And,
+it means that when a file gets modified, the same backend that it
+was using gets used for the new key. Which is a behavior change, but
+one that makes sense.
+"""]]
