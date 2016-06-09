@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-06-09T19:19:07Z"
+ content="""
+	LANG=de_DE.UTF-8 errno -s 'Die Struktur muss bereinigt werden'
+	EUCLEAN 117 Die Struktur muss bereinigt werden
+
+This seems to be a failure mode of XFS filesystems, where when it needs to
+be fscked, it throws EUCLEAN.
+"""]]
