@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-06-10T19:40:54Z"
+ content="""
+You're left out the command line which you use to start the assistant.
+
+Without that, I see no indication that there is a bug. You have to pass
+--autostart to make the assistant start up in all configured repositories. 
+If you are not using that parameter, the assistant will only start up in
+the repository corresponding to the current working directory.
+"""]]
