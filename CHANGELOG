@@ -1,4 +1,4 @@
-git-annex (6.20160528) UNRELEASED; urgency=medium
+git-annex (6.20160613) unstable; urgency=medium
 
   * Improve SHA*E extension extraction code.
   * Windows: Avoid terminating git-annex branch lines with \r\n when
@@ -11,20 +11,20 @@ git-annex (6.20160528) UNRELEASED; urgency=medium
   * Pass -S to git commit-tree when commit.gpgsign is set and when
     making a non-automatic commit, in order to preserve current behavior
     when used with git 2.9, which has stopped doing this itself.
-  * Automatically enable v6 mode when initializing in a clone from a repo
-    that has an adjusted branch checked out.
-  * Fix initialization of a bare clone of a repo that has an adjusted
-    branch checked out.
   * remotedaemon: Fixed support for notifications of changes to gcrypt
     remotes, which was never tested and didn't quite work before.
   * list: Do not include dead repositories.
   * move --to: Better behavior when system is completely out of disk space;
     drop content from disk before writing location log.
+  * Avoid a crash if getpwuid does not work, when querying the user's full
+    name.
+  * Automatically enable v6 mode when initializing in a clone from a repo
+    that has an adjusted branch checked out.
+  * v6: Fix initialization of a bare clone of a repo that has an adjusted
+    branch checked out.
   * v6: Fix bad automatic merge conflict resolution between an annexed file
     and a directory with the same name when in an adjusted branch.
   * v6: Fix bad merge in an adjusted branch that resulted in an empty tree.
-  * Avoid a crash if getpwuid does not work, when querying the user's full
-    name.
   * v6: Fix bug in initialization of clone from a repo with an adjusted branch
     that had not been synced back to master. 
     (This bug caused broken tree objects to get built by a later git annex
@@ -33,7 +33,7 @@ git-annex (6.20160528) UNRELEASED; urgency=medium
   * v6: Fix update of associated files db when unlocking a file.
   * v6: Make git clean filter preserve the backend that was used for a file.
 
- -- Joey Hess <id@joeyh.name>  Fri, 27 May 2016 13:12:48 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 13 Jun 2016 14:57:38 -0400
 
 git-annex (6.20160527) unstable; urgency=medium
 
