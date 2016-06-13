@@ -358,10 +358,16 @@ updateAdjustedBranch tomerge (origbranch, adj) mergeconfig commitmode = catchBoo
 		withTmpDirIn misctmpdir "git" $ \tmpgit -> withWorkTreeRelated tmpgit $
 			withemptydir tmpwt $ withWorkTree tmpwt $ do
 				liftIO $ writeFile (tmpgit </> "HEAD") (fromRef updatedorig)
+				-- This reset makes git merge not care
+				-- that the work tree is empty; otherwise
+				-- it will think that all the files have
+				-- been staged for deletion, and sometimes
+				-- the merge includes these deletions
+				-- (for an unknown reason).
+				-- http://thread.gmane.org/gmane.comp.version-control.git/297237
+				inRepo $ Git.Command.run [Param "reset", Param "HEAD", Param "--quiet"]
 				showAction $ "Merging into " ++ fromRef (Git.Ref.base origbranch)
-				-- The --no-ff is important; it makes git
-				-- merge not care that the work tree is empty.
-				merged <- inRepo (Git.Merge.merge' [Param "--no-ff"] tomerge mergeconfig commitmode)
+				merged <- inRepo (Git.Merge.merge' [] tomerge mergeconfig commitmode)
 					<||> (resolveMerge (Just updatedorig) tomerge True <&&> commitResolvedMerge commitmode)
 				if merged
 					then do

@@ -22,6 +22,7 @@ git-annex (6.20160528) UNRELEASED; urgency=medium
     drop content from disk before writing location log.
   * v6: Fix bad automatic merge conflict resolution between an annexed file
     and a directory with the same name when in an adjusted branch.
+  * v6: Fix bad merge in an adjusted branch that resulted in an empty tree.
   * Avoid a crash if getpwuid does not work, when querying the user's full
     name.
   * v6: Fix bug in initialization of clone from a repo with an adjusted branch
