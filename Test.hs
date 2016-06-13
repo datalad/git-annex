@@ -232,6 +232,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "version" test_version
 	, testCase "sync" test_sync
 	, testCase "union merge regression" test_union_merge_regression
+	, testCase "adjusted branch merge regression" test_adjusted_branch_merge_regression
 	, testCase "conflict resolution" test_conflict_resolution
 	, testCase "conflict resolution (adjusted branch)" test_conflict_resolution_adjusted_branch
 	, testCase "conflict resolution movein regression" test_conflict_resolution_movein_regression
@@ -1390,12 +1391,38 @@ test_mixed_lock_conflict_resolution =
 		let v = filter (variantprefix `isPrefixOf`) l
 		length v == 0
 			@? (what ++ " not exactly 0 variant files in: " ++ show l)
-		void $ boolSystem "sh" [Param "-l"]
 		conflictor `elem` l @? ("conflictor not present after conflict resolution")
 		git_annex "get" [conflictor] @? "get failed"
 		git_annex_expectoutput "find" [conflictor] [conflictor]
 		-- regular file because it's unlocked
 		checkregularfile conflictor
+
+{- Regression test for a bad merge between two adjusted branch repos,
+ - where the same file is added to both independently. The bad merge
+ - emptied the whole tree. -}
+test_adjusted_branch_merge_regression :: Assertion
+test_adjusted_branch_merge_regression = whenM Annex.AdjustedBranch.isGitVersionSupported $
+	withtmpclonerepo $ \r1 ->
+		withtmpclonerepo $ \r2 -> do
+			pair r1 r2
+			setup r1
+			setup r2
+			checkmerge "r1" r1
+			checkmerge "r2" r2
+  where
+	conflictor = "conflictor"
+	setup r = indir r $ do
+		disconnectOrigin
+		git_annex "upgrade" [] @? "upgrade failed"
+		git_annex "adjust" ["--unlock", "--force"] @? "adjust failed"
+		writeFile conflictor "conflictor"
+		git_annex "add" [conflictor] @? "add conflicter failed"
+		git_annex "sync" [] @? "sync failed"
+	checkmerge what d = indir d $ do
+		git_annex "sync" [] @? ("sync failed in " ++ what)
+		l <- getDirectoryContents "."
+		conflictor `elem` l
+			@? ("conflictor not present after merge in " ++ what)
 
 {- Set up repos as remotes of each other. -}
 pair :: FilePath -> FilePath -> Assertion
