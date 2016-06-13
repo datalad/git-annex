@@ -22,3 +22,11 @@ etc.
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 I use git-annex for everything. I've got 10 repositories and around 2.5TB of data in those repos which in turn is synced all over the place. It's excellent.
+
+> This seems to be a git bug probably; see
+> <http://thread.gmane.org/gmane.comp.version-control.git/297237>.
+> 
+> Luckily, easy to work around the problem.
+> 
+> [[fixed|done]] in [[!commit bfd00a0f8ca69cb0669df50f8d98354f11c5253c]].
+> --[[Joey]]
