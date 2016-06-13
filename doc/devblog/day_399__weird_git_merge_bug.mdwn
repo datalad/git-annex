@@ -1,0 +1,16 @@
+There was one more test suite failure when run on FAT, which I've
+investigated today. It turns out that
+[a bug report](https://git-annex.branchable.com/bugs/Assistant_keeps_deleting_all_the_files_in_my_repo/)
+was filed about the same problem, and at root
+it seems to be a [bug in git merge](http://thread.gmane.org/gmane.comp.version-control.git/297237).
+Luckily, it was not hard to work around the strange merge behavior.
+
+It's been very worthwhile running the test suite on FAT; it's pointed me at
+several problems with adjusted branches over the past weeks. It would be
+good to add another test suite pass to test adjusted branches explicitly,
+but when I tried adding that, there were a lot of failures where the test
+suite is confused by adjusted branch behavior and would need to be taught
+about it.
+
+I've released git-annex 6.20160613. If you're using v6 repositories and
+especially adjusted branches, you should upgrade since it has many fixes.
