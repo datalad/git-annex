@@ -1,0 +1,47 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-06-13T16:22:27Z"
+ content="""
+@EskildHustvedt, are you using adjusted branches in any of your v6
+repositories?
+
+While investigating a test suite failure that occurs only on FAT,
+I think I have reproduced this bug. I used two v6 repos, both of
+them using adjusted branches, and added a file with the same name and
+content to both independently, then merged the two.
+
+In a merge of two commits that both had the same tree, a merge
+commit was constructed with an empty tree.
+
+Also, much as in the original bug report, there was a pattern of
+repeated merges.
+
+	commit 4bcff45c9670007b8faee5c5514bdd7b9096984a
+	Merge: 4935ace 63fe78f
+	# empty tree
+
+	commit 63fe78f28218ad71e865f52e2a833dbd4b452c96
+	Merge: 4e42f30 4935ace
+	# populated tree
+
+	4935ace has populated tree
+	4e42f30 has populated tree
+
+Notice that 4935ace is merged in twice, a bit oddly. Indeed, that
+is not possible to construct with manual git commands:
+
+	joey@darkstar:~/tmp/meep/2>git checkout 63fe78f
+	HEAD is now at 63fe78f... Merge branch 'refs/heads/synced/master' into HEAD
+	joey@darkstar:~/tmp/meep/2>git merge 4935ace
+	Already up-to-date.
+	joey@darkstar:~/tmp/meep/2>git checkout 4935ace
+	Previous HEAD position was 63fe78f... Merge branch 'refs/heads/synced/master' into HEAD
+	HEAD is now at 4935ace... git-annex in joey@darkstar:~/tmp/meep/2
+	joey@darkstar:~/tmp/meep/2>git merge 63fe78f
+	Updating 4935ace..63fe78f
+	Fast-forward
+
+In either case, git updates to 63fe78f. So, adusted branches must be
+breaking handling of one or the other of these two cases.
+"""]]

@@ -1390,6 +1390,7 @@ test_mixed_lock_conflict_resolution =
 		let v = filter (variantprefix `isPrefixOf`) l
 		length v == 0
 			@? (what ++ " not exactly 0 variant files in: " ++ show l)
+		void $ boolSystem "sh" [Param "-l"]
 		conflictor `elem` l @? ("conflictor not present after conflict resolution")
 		git_annex "get" [conflictor] @? "get failed"
 		git_annex_expectoutput "find" [conflictor] [conflictor]
