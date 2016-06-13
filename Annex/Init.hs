@@ -40,8 +40,8 @@ import Annex.InodeSentinal
 import Upgrade
 import Annex.Perms
 import qualified Database.Keys
-#ifndef mingw32_HOST_OS
 import Utility.UserInfo
+#ifndef mingw32_HOST_OS
 import Utility.FileMode
 import System.Posix.User
 import qualified Utility.LockFile.Posix as Posix
