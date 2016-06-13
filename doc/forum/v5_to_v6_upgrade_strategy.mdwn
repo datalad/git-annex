@@ -1,0 +1,21 @@
+I have recently jumped into git-annex, and have several TB stored in several remote annexes.
+I am able to sync to clients, and have some understanding of the operations needed to get files back etc.
+
+So far I have used v5 in Ubuntu and Debian 8. I have tried out assistant but will leave this until I better understand how git-annex works. CLI is best for this learning. 
+
+I am however concerned re the upgrade path from v5 to v6. I have not been able to find a comprehensive strategy. I have tried git-annex v6 and have upgraded a client repo to v6.
+
+All of my remote repos are v5, and to be honest I am very nervous about touching them.
+
+I do have a test bed where I try out all things before doing so on my 'production' repos. So, I can play, break, redo, in safety.
+
+Any direction as to formulating a game plan for upgrading my whole network of repos, clients, etc would be very much appreciated.
+
+And, if I have missed this, a pointer would be good for sure.
+
+
+Regards,
+
+Stan
+
+While it is obvious to all: this is amazing software. Genius.
