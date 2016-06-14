@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-06-14T01:55:03Z"
+ content="""
+Forgot to mention that the repeated merge commits happened because git
+merge -no-ff was being used, which makes a merge commit even when it can
+just fast-forward. That was removed as part of the fix, so the repeated
+merges should also be resolved.
+"""]]
