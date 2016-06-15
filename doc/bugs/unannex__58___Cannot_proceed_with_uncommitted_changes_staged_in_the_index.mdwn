@@ -1,0 +1,37 @@
+### Please describe the problem.
+
+I understand that `git annex unannex` is essentially there for undoing an accidential `git annex add`. Unfortunately it doesn't do that.
+
+If I have uncommited changes, which is the case after a `git annex add`, it tells me:
+
+    git-annex: Cannot proceed with uncommitted changes staged in the index. Recommend you: git commit
+    CallStack (from HasCallStack):
+      error, called at ./Command/Unannex.hs:48:19 in main:Command.Unannex
+
+But I would expect it to `git reset` the file and then replace the symlink by the actual file content.
+
+### What steps will reproduce the problem?
+
+    > git init
+    Initialized empty Git repository in /somewhere/.git
+    > git annex init
+    init  ok
+    (recording state in git...)
+    > touch foo
+    > git annex add foo
+    add foo ok
+    (recording state in git...)
+    > git annex unannex foo
+    git-annex: Cannot proceed with uncommitted changes staged in the index. Recommend you: git commit
+    CallStack (from HasCallStack):
+      error, called at ./Command/Unannex.hs:48:19 in main:Command.Unannex
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 6.20160527-gf21a425
+
+Installed from the Arch Linux repository.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Sure, I'm using it for photos, music and videos
