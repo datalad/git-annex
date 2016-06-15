@@ -1,0 +1,9 @@
+I made an attempt to tackle the following bug:
+
+[webapp should notice when remote deletion cannot complete due to not syncing](https://git-annex.branchable.com/bugs/webapp_should_notice_when_remote_deletion_cannot_complete_due_to_not_syncing/)
+
+My changes are in the following git repository
+
+[https://github.com/kathawala/git-annex.git](https://github.com/kathawala/git-annex.git)
+
+And the specific commit which fixes the bug is in a branch titled "unsync-nodelete". I have tested the change, it greys out and disables the "Delete" option in the "Actions" dropdown menu of the webapp for any repo in the "Repolist" view which has its syncing disabled. There is also some hover text which explains why the option is greyed out. Hope it is satisfactory! Thanks for your great work!!
