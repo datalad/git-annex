@@ -34,6 +34,9 @@ git-annex should use smudge/clean filters.
   such an interface:
   <http://news.gmane.org/find-root.php?message_id=20160512182432.GA27427%40kitenet.net>
 
+  And developed a patch set:
+  <http://thread.gmane.org/gmane.comp.version-control.git/297475>
+
 * Checking out a different branch causes git to smudge all changed files,
   and write their content. This does not honor annex.thin. A warning
   message is printed in this case.  
