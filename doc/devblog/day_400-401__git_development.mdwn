@@ -1,0 +1,11 @@
+Working on git, not git-annex the past two days, I have implemented the
+smudge-to-file/clean-from-file extension to the smudge/clean filter
+interface. Patches have been [sent to the git developers](http://thread.gmane.org/gmane.comp.version-control.git/297475), 
+and hopefully they'll like it and include it. This will make git-annex
+v6 work a lot faster and better.
+
+Amazing how much harder it is to code on git than on git-annex! While I'm
+certianly not as familiar with the git code base, this is mostly because C
+requires so much more care about innumerable details and so much verbosity
+to do anything. I probably could have implemented this interface in
+git-annex in 2 hours, not 2 days.
