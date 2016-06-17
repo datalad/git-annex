@@ -1,9 +1,9 @@
 ### Please describe the problem.
-When attempting to add a file listed in .gitignore, git annex exits silently. I would expect to see an error message a la plain git: "The following paths are ignored by one of your .gitignore files: <that file>"
+When attempting to add a file listed in .gitignore, git annex exits silently. I would expect to see an error message a la plain git: "The following paths are ignored by one of your .gitignore files: _that file_"
 
 ### What steps will reproduce the problem?
 1. Add a file to .gitignore
-2. git annex add <that file>
+2. git annex add _that file_
 
 ### What version of git-annex are you using? On what operating system?
 git-annex version: 6.20160613
