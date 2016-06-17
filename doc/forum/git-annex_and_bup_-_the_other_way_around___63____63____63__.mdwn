@@ -1,0 +1,28 @@
+I've been wondering about using `git-annex` and `bup` together - but _not_ with `bup` as the backend, but rather backing up `bup` repos using `git-annex`.
+
+Let me try to explain...
+
+* `bup` is a a great deduplicating backup tool, but it does not have encryption
+* `git-annex` is a awesome in so many ways.  Including 1) multiple copies, 2) encryption
+
+(I know the following reads like the motivation for `git-annex`, but let me add the word **backup**) 
+
+* Recovering large backups over the internet can be costly and time consuming
+* Local copies are fast, but are risky
+
+So I was wondering about having my `bup` repos in `git-annex`, with multiple copies, including, say, an encrypted S3 bucket and some local copies.
+
+Then, if I had a problem and needed to restore I could use my local copies for as much as I could and then only pull part of the backup from the complete remote backup.
+
+If that all works, I then have:
+
+1. A more complicated process than a simple backup tool  :-(
+2. Multiple complete backups available :-D
+3. Encrypted, offsite backups :-D
+4. Small transfers (`bup` uses the awesomness of `git` to dedup the hell out of your data) :-D
+
+---
+
+I've not done this yet, but was thinking it through.
+
+Can anyone share some opinions, thoughts, concerns or high-5s for the awesomeness of my idea?  ;-)
