@@ -5,7 +5,7 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE CPP, ScopedTypeVariables #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Exception (
@@ -28,6 +28,9 @@ module Utility.Exception (
 import Control.Monad.Catch as X hiding (Handler)
 import qualified Control.Monad.Catch as M
 import Control.Exception (IOException, AsyncException)
+#if MIN_VERSION_base(4,7,0)
+import Control.Exception (SomeAsyncException)
+#endif
 import Control.Monad
 import Control.Monad.IO.Class (liftIO, MonadIO)
 import System.IO.Error (isDoesNotExistError, ioeGetErrorType)
@@ -74,6 +77,9 @@ bracketIO setup cleanup = bracket (liftIO setup) (liftIO . cleanup)
 catchNonAsync :: MonadCatch m => m a -> (SomeException -> m a) -> m a
 catchNonAsync a onerr = a `catches`
 	[ M.Handler (\ (e :: AsyncException) -> throwM e)
+#if MIN_VERSION_base(4,7,0)
+	, M.Handler (\ (e :: SomeAsyncException) -> throwM e)
+#endif
 	, M.Handler (\ (e :: SomeException) -> onerr e)
 	]
 

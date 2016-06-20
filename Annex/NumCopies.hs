@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE ScopedTypeVariables, DeriveDataTypeable #-}
+{-# LANGUAGE CPP, ScopedTypeVariables, DeriveDataTypeable #-}
 
 module Annex.NumCopies (
 	module Types.NumCopies,
@@ -163,6 +163,9 @@ verifyEnoughCopiesToDrop nolocmsg key removallock need skip preverified tocheck 
 				cont v `catchNonAsync` (throw . DropException)
 			a `M.catches`
 				[ M.Handler (\ (e :: AsyncException) -> throwM e)
+#if MIN_VERSION_base(4,7,0)
+				, M.Handler (\ (e :: SomeAsyncException) -> throwM e)
+#endif
 				, M.Handler (\ (DropException e') -> throwM e')
 				, M.Handler (\ (_e :: SomeException) -> fallback)
 				]
