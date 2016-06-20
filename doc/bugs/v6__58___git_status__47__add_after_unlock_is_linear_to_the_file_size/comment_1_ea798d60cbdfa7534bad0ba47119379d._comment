@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="mail@4e627fd997ef5ca9f75e62ffc0aba5b27bd6aea1"
+ nickname="mail"
+ subject="comment 1"
+ date="2016-06-19T16:27:15Z"
+ content="""
+I noticed after filing the bug that the first `git commit` takes as much (or even more!) time as the `git add -A` before it.  
+So you pay overhead twice somehow.
+"""]]
