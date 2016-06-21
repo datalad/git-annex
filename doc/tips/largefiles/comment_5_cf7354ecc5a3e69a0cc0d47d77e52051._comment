@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="christophfischer@4706e95f48874dfd46092b278315693b92ea7d23"
+ nickname="christophfischer"
+ subject="how to recursively exclude files from git-annex (.gitattributes)"
+ date="2016-06-21T11:42:45Z"
+ content="""
+Hello 
+
+it took me some time to figure out how to exclude directories matching a specific structure within the .gitattributes file: 
+
+    **/some_dir/**/below_this_dir_is_everything_in_plane_text/**/* annex.largefiles=nothing
+
+Maybe it helps someone else. (In case this way is the intended way)
+"""]]
