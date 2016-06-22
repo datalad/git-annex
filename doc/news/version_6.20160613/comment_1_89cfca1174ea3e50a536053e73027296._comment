@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 1"
+ date="2016-06-21T08:46:50Z"
+ content="""
+     Improve SHA*E extension extraction code.
+
+This sounds really likely to break things like [recovering files by readding](https://git-annex.branchable.com/tips/recover_data_from_lost+found/), because the key is going to be different, despite having the same backend..
+"""]]
