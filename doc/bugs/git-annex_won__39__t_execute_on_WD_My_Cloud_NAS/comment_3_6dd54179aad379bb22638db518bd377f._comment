@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="sts"
+ subject="comment 3"
+ date="2016-06-23T12:07:10Z"
+ content="""
+Is there a way to link the objects with the gold linker? I am running into the same issue. Currently I am doing a workaround with mounting the drive via NFS, but that has quite poor performance (all git-related things).
+"""]]
