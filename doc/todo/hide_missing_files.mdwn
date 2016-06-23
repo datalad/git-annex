@@ -19,3 +19,7 @@ Thanks for any advice! --[[anarcat]]
 > the adjusted branch code when file contents are get/dropped, and the
 > naive way to do it could make things quite slow, if the branch needs to
 > be re-adjusted after each get/drop of each file. --[[Joey]]
+
+> > I ended up creating a new special remote for this, documented in
+> > [[forum/syncing_music_to_my_android_device]]. It would be much 
+> > cleaner, of course, if adjusted branches could do this. --[[anarcat]]
