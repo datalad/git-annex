@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="jgoerzen"
+ subject="A caution on this"
+ date="2016-06-23T21:24:49Z"
+ content="""
+Although I believe Joey's analysis is correct, I want to interject a caution: while investigating this issue on my own system, I discovered that a gcrypt remote has an unencrypted pack file and unencrypted index, which somehow contained actual data of mine.  I would consider it a git-annex bug that data (file contents) wound up in a pack file (this is a git-annex assistant repo) but a gcrypt bug that it made it there unencrypted.
+"""]]
