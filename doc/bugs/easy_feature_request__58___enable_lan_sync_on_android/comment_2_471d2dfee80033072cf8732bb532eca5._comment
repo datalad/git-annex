@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Farhan"
+ subject="Interested"
+ date="2016-06-24T03:22:38Z"
+ content="""
+I would like to help (though I have not enough time to fully make the feature for sure).
+
+With regards to:
+
+1) It seems that there is a library which implements an SSH server on Android. I see it [at this repo](https://github.com/barryk/android_external_dropbear) as well as at [this repo](https://github.com/berserker/android_dropbear), both of which are owned by the makers of popular sshd apps on the Google Play Store
+
+2) Do you mean that that library needs to be ported to Android/Java? If so, I could take a crack at it!
+"""]]
