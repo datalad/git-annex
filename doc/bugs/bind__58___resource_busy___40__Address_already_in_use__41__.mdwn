@@ -15,7 +15,7 @@ I don't know if you exactly can solve my problem, as it may be related to haskel
     pull <ANNEX>
     <etc...>
 
-Of course, the webapp as also troubles with this. My understanding of the phenomena is that only one git annex action can be performed at the time, so the rest of them crash or fail. Is my understanding correct, do you think? I can consequently, perform git annex actions, but only one at the time, and the whole thing feels unreliable. I suspect that the problem comes from the haskell compiler or platform, but I have no knowledge of haskell and I am consequently not really able to aim at what could be the problem. If you have an idea or some hints, I would be glad to hear from you, as that bug really comes in my way. I use git-annex for every bits of my computer life and that's really a handicap for me :-(.
+Of course, the webapp has also troubles with this. My understanding of the phenomena is that only one git annex action can be performed at the time, so the rest of them crash or fail. Is my understanding correct, do you think? I can consequently, perform git annex actions, but only one at the time, and the whole thing feels unreliable. I suspect that the problem comes from the haskell compiler or platform, but I have no knowledge of haskell and I am consequently not really able to aim at what could be the problem. If you have an idea or some hints, I would be glad to hear from you, as that bug really comes in my way. I use git-annex for every bits of my computer life and that's really a handicap for me :-(.
 
 ### Extract of .git/annex/daemon.log
 [[!format sh """
