@@ -1,0 +1,65 @@
+### Please describe the problem.
+
+First of all, I don't really believe the following is a good bug report, from my own career in SW development. I know what to do. However, this is a start to test the waters; I received no response in the general forum (not a complaint), but I am not sure if this is simply one of those issues for which the solution is so simple, that no one can bring themselves to reply.
+
+I can provide further detail, like console copies, but I figured that providing the config output to be a good first step. Apologies for the format of the config file: it was copied fine, but pasted on one line.
+
+
+It seems thinning is not doing what I expected:
+
+Which is: unlocking a file creates a hard link in the working directory, linked to the annex file, with the resulting dir size being the size of the one big file.
+
+Are my expectations correct?
+
+Is there something I am missing?
+
+
+
+### What steps will reproduce the problem?
+
+copied a big file to the working directory
+
+git add; git commit
+
+Locking the big file creates the symlink, with the file in the annex.
+
+Unlocking the big file creates a real file in the working dir, and the annex file stays there.
+
+The total dir is therefore twice the size of the big file.
+
+ls -li shows a unique inode for each file. Therefore it appears to not be a hard link.
+
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 6.20160524+gitg2b7b2c4-1~ndall+1
+
+Debian 8.5
+
+
+### Please provide any additional information below.
+
+repo config file:
+
+[core] repositoryformatversion = 0 filemode = true bare = false logallrefupdates = true [annex] uuid = c5c203ec-9353-4213-8af5-6fcb8de36ca2 version = 6 thin = true [filter "annex"] smudge = git-annex smudge %f clean = git-annex smudge --clean %f
+
+
+
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+You bet. It is simply great. I am in the process of migrating all my big data. I have roughly 6TB, and it is taking me many weeks.
+
+I am creating a typical duplicate topology. 2 remotes, 2 backup nodes. Multiple clients, each connected to the 2 remotes. Each client will only clone the repos or parts thereof that are relevant to that client.
+
+I have multiple clients on multiple VMs. I generally separate functions to VMs. I.e. postgresql to a pair of VMs; etc. Poorly behaving apps like iTunes to its very own penalty box win VM. HA to its own VM. etc.
+
+
