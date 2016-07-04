@@ -11,6 +11,8 @@ git-annex version: 6.20160613-g35dbe35 on debian jessie
 
 ### Please provide any additional information below.
 
+Example of the error @ https://gitlab.com/DanielDent/git-annex-remote-rclone/builds/2166644
+
 Error:
 gpg: cannot open tty `/dev/tty': No such device or address
 
