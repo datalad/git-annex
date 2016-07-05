@@ -41,7 +41,20 @@ Debian 8.5
 
 repo config file:
 
-[core] repositoryformatversion = 0 filemode = true bare = false logallrefupdates = true [annex] uuid = c5c203ec-9353-4213-8af5-6fcb8de36ca2 version = 6 thin = true [filter "annex"] smudge = git-annex smudge %f clean = git-annex smudge --clean %f
+[core] 
+repositoryformatversion = 0 
+filemode = true 
+bare = false 
+logallrefupdates = true 
+
+[annex] 
+uuid = c5c203ec-9353-4213-8af5-6fcb8de36ca2 
+version = 6 
+thin = true 
+
+[filter "annex"] 
+smudge = git-annex smudge %f 
+clean = git-annex smudge --clean %f
 
 
 
