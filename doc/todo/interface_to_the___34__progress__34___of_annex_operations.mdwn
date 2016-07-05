@@ -1,0 +1,7 @@
+It would be really nice if external tools working with annex could obtain updates on the progress of operations so they could report using their own UI back to the user.  Especially relevant for --batch --json modes of operations (e.g. for get or addurl) whenever no progress is reported by annex itself at all.  
+
+Related:
+[datalad #478](https://github.com/datalad/datalad/issues/478)
+
+
+[[!meta author=yoh]]
