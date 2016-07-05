@@ -5,3 +5,9 @@ Related:
 
 
 [[!meta author=yoh]]
+
+> --status-fd is one way, or the progress could be included as
+> part of the --batch protocol. In either case, it might make sense to
+> reuse part of the external special remote protocol. (Which would let you
+> relay the progress messages when datalad is doing a nested retrieval, I
+> suppose.) --[[Joey]]
