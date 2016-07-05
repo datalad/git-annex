@@ -4,6 +4,7 @@ git-annex (6.20160614) UNRELEASED; urgency=medium
     as such a deletion will never finish.
     Thanks, Farhan Kathawala.
   * get: Add --batch and --json options.
+  * New url for git-remote-gcrypt, now maintained by spwhitton.
 
  -- Joey Hess <id@joeyh.name>  Mon, 13 Jun 2016 21:52:24 -0400
 

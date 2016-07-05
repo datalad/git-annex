@@ -1,6 +1,6 @@
 {- git-remote-gcrypt support
  -
- - https://github.com/blake2-ppc/git-remote-gcrypt
+ - https://spwhitton.name/tech/code/git-remote-gcrypt/
  -
  - Copyright 2013 Joey Hess <id@joeyh.name>
  -
