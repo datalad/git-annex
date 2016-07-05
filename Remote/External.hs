@@ -461,16 +461,17 @@ checkPrepared lck external =
  - external special remote every time time just to ask it what its
  - cost is. -}
 getCost :: External -> Git.Repo -> RemoteGitConfig -> Annex Cost
-getCost external r gc = go =<< remoteCost' gc
+getCost external r gc = catchNonAsync (go =<< remoteCost' gc) (const defcst)
   where
 	go (Just c) = return c
 	go Nothing = do
 		c <- handleRequest external GETCOST Nothing $ \req -> case req of
 			COST c -> Just $ return c
-			UNSUPPORTED_REQUEST -> Just $ return expensiveRemoteCost
+			UNSUPPORTED_REQUEST -> Just defcst
 			_ -> Nothing
 		setRemoteCost r c
 		return c
+	defcst = return expensiveRemoteCost
 
 {- Caches the availability in the git config to avoid needing to start up an
  - external special remote every time time just to ask it what its
@@ -480,15 +481,17 @@ getCost external r gc = go =<< remoteCost' gc
  - globally available is the default.
  -}
 getAvailability :: External -> Git.Repo -> RemoteGitConfig -> Annex Availability
-getAvailability external r gc = maybe query return (remoteAnnexAvailability gc)
+getAvailability external r gc = 
+	maybe (catchNonAsync query (const defavail)) return (remoteAnnexAvailability gc)
   where
 	query = do
 		avail <- handleRequest external GETAVAILABILITY Nothing $ \req -> case req of
 			AVAILABILITY avail -> Just $ return avail
-			UNSUPPORTED_REQUEST -> Just $ return GloballyAvailable
+			UNSUPPORTED_REQUEST -> Just defavail
 			_ -> Nothing
 		setRemoteAvailability r avail
 		return avail
+	defavail = return GloballyAvailable
 
 claimurl :: External -> URLString -> Annex Bool
 claimurl external url =

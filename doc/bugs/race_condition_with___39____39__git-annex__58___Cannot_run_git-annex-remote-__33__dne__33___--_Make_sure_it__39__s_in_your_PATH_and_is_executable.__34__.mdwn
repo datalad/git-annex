@@ -1,3 +1,5 @@
+[[!metatitle="testremote of external special remote fails with 'Cannot run git-annex-remote-!dne!'"]]
+
 ### Please describe the problem.
 
 When git-annex has not recently used a remote, there appears to be a race condition where sometimes it will fail with "git-annex: Cannot run git-annex-remote-!dne! -- Make sure it's in your PATH and is executable."
@@ -17,3 +19,4 @@ Output: https://gitlab.com/DanielDent/git-annex-remote-rclone/builds/2166902
 
 The 'git-annex copy test --to GA-rclone-CI' line prior to the 'testremote' invocation seems to warm caches and avoids having the bug trigger.
 
+> [[fixed|done]] --[[Joey]]
