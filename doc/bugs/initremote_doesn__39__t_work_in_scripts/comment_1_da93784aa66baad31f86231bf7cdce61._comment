@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-07-05T13:28:12Z"
+ content="""
+I tried running initremote without a tty, and it worked ok,
+using the following test case:
+
+	#!/bin/sh
+	set -e
+	cd /tmp/r
+	pwd
+	git annex initremote test type=directory directory=../d encryption=hybrid keyid=2512E3C7 --fast --debug >/dev/null
+
+So, I need more information to reproduce this.
+
+It seems likely that, if gpg is trying to read from the tty, it needs to
+prompt for your key's passphrase for some reason. In which case setting
+--batch would only make it fail differently. If you want to script
+something that needs access to your gpg secret key, you need to configure
+gpg to use a gpg agent.
+"""]]
