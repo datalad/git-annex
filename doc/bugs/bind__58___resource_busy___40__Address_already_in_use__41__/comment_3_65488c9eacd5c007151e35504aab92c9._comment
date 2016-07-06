@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-07-06T19:08:10Z"
+ content="""
+Good greif, gentoo really does enable the ekg build flag.
+
+Well, I removed the flag, I guess I need to be careful with exposing build
+flags that are not for production use if there are distributions that
+enable every possible flag willy-nilly.
+"""]]

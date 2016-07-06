@@ -9,6 +9,9 @@ git-annex (6.20160614) UNRELEASED; urgency=medium
   * Remove unnecessary rpaths in the git-annex binary, but only when
     it's built using make, not cabal. 
     This speeds up git-annex statup time by around 50%.
+  * Remove the EKG build flag, since Gentoo for some reason decided to
+    enable this flag, depsite it not being intended for production use and
+    so enabled by default.
 
  -- Joey Hess <id@joeyh.name>  Mon, 13 Jun 2016 21:52:24 -0400
 

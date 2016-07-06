@@ -292,10 +292,6 @@ Flag MagicMime
 Flag ConcurrentOutput
   Description: Use concurrent-output library
 
-Flag EKG
-  Description: Enable use of EKG to monitor git-annex as it runs (at http://localhost:4242/)
-  Default: False
-
 Flag Benchmark
   Description: Enable benchmarking
   Default: False
@@ -470,11 +466,6 @@ Executable git-annex
     Build-Depends: concurrent-output (>= 1.6)
     CPP-Options: -DWITH_CONCURRENTOUTPUT
 
-  if flag(EKG)
-    Build-Depends: ekg
-    GHC-Options: -with-rtsopts=-T
-    CPP-Options: -DWITH_EKG
-  
   if flag(Benchmark)
     Build-Depends: criterion, deepseq
     CPP-Options: -DWITH_BENCHMARK
