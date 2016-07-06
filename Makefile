@@ -29,6 +29,8 @@ git-annex: Build/SysConfig.hs
 	else \
 		ln -sf dist/build/git-annex/git-annex git-annex; \
 	fi
+	# Work around https://github.com/haskell/cabal/issues/3524
+	@chrpath -d git-annex || echo "** unable to chrpath git-annex; it will be a little bit slower than necessary"
 
 # These are not built normally.
 git-union-merge.1: doc/git-union-merge.mdwn

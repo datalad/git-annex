@@ -6,6 +6,9 @@ git-annex (6.20160614) UNRELEASED; urgency=medium
   * get, drop: Add --batch and --json options.
   * New url for git-remote-gcrypt, now maintained by spwhitton.
   * testremote: Fix crash when testing a freshly made external special remote.
+  * Remove unnecessary rpaths in the git-annex binary, but only when
+    it's built using make, not cabal. 
+    This speeds up git-annex statup time by around 50%.
 
  -- Joey Hess <id@joeyh.name>  Mon, 13 Jun 2016 21:52:24 -0400
 
