@@ -3,7 +3,7 @@ git-annex (6.20160614) UNRELEASED; urgency=medium
   * Webapp: Don't allow deleting a remote that has syncing disabled,
     as such a deletion will never finish.
     Thanks, Farhan Kathawala.
-  * get: Add --batch and --json options.
+  * get, drop: Add --batch and --json options.
   * New url for git-remote-gcrypt, now maintained by spwhitton.
   * testremote: Fix crash when testing a freshly made external special remote.
 

@@ -1,3 +1,6 @@
 in the spirit of [[todo/--batch_for_add/]], [[todo/--batch_for_info/]], [[todo/--batch_for_find/]] and [[todo/--batch_for_whereis/]], why not add `--batch` to get/drop/import operations?
 
 I am writing a script to get a bunch of arbitrary files and i want to avoid the overhead of running git-annex multiple times. I know i can use `annex.alwayscommit=false` but that is rather counter-intuitive as well. --[[anarcat]]
+
+> [[done]] for add and drop. (Not for import, but if someone requests it
+> with a use case we'll see.) --[[Joey]] 
