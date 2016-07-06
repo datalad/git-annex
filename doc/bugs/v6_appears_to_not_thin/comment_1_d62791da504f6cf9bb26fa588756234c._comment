@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-07-06T18:42:47Z"
+ content="""
+annex.thin can only work on filesystems that support hard links,
+so the most likely reason, from the information you have given,
+is that the repository is on a FAT or other non-hard-link supporting
+filesystem.
+
+	joey@darkstar:~/tmp/xxx>date > bigfile
+	joey@darkstar:~/tmp/xxx>git annex add bigfile
+	add bigfile ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/xxx>git commit -m add
+	[master 39d19a4] add
+	 1 file changed, 1 insertion(+), 1 deletion(-)
+	 rewrite bigfile (100%)
+	 mode change 100644 => 120000
+	joey@darkstar:~/tmp/xxx>git annex unlock bigfile
+	unlock bigfile ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/xxx>ls -l bigfile
+	-rw-r--r-- 2 joey joey 30 Jul  6 14:46 bigfile
+
+It's working fine here as seen by the fact that bigfile
+has a link count of 2 after being unlocked.
+
+Other possibilies:
+
+* If the repository was cloned using `git clone --shared`,
+  annex.thin is not supported.
+* If there are multiple files in the working tree that have the same
+  content, annex.thin will only hard link one of them; the others
+  will be non-thin copies.
+"""]]
