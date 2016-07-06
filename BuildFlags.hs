@@ -80,6 +80,7 @@ buildFlags = filter (not . null)
 	, "MagicMime"
 #endif
 #ifdef WITH_EKG
+#warning Building with EKG. This build of git-annex should only be used for performance debugging, not for production use..
 	, "EKG"
 #endif
 	-- Always enabled now, but users may be used to seeing these flags
