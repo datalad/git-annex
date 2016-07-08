@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Stan"
+ subject="Hardlinks on hyperv VM"
+ date="2016-07-08T00:27:11Z"
+ content="""
+I am actually able to manually create hardlinks on all of the VMs in the tests.
+I did so with files I created outside any git dirs.
+"""]]
