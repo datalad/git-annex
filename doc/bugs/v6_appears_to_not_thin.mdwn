@@ -1,3 +1,5 @@
+[[!meta title="v6 does not thin on hyperv"]]
+
 ### Please describe the problem.
 
 First of all, I don't really believe the following is a good bug report, from my own career in SW development. I know what to do. However, this is a start to test the waters; I received no response in the general forum (not a complaint), but I am not sure if this is simply one of those issues for which the solution is so simple, that no one can bring themselves to reply.
