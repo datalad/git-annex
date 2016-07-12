@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="quisquous"
+ subject="comment 4"
+ date="2016-07-12T18:59:55Z"
+ content="""
+````
+~ ❯❯❯ stack --version
+Version 1.1.2 x86_64 hpack-0.14.0
+````
+"""]]
