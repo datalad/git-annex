@@ -25,3 +25,5 @@ killall git-annex, and then restart
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Really nice tool.  Thanks Joey!
+
+[[!tag moreinfo]]
