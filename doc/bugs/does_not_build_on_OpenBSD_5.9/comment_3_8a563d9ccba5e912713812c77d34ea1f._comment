@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-07-12T18:31:17Z"
+ content="""
+Not sure if that stack bug you linked to is quite a match for what it's
+doing, so I opened a new one:
+<https://github.com/commercialhaskell/stack/issues/2371>
+
+I don't currently see anything I could do in git-annex to avoid this
+problem.
+
+What version of stack are you using? It could be that a newer version of
+stack doesn't have the problem.
+"""]]
