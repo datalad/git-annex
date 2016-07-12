@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-07-12T17:13:37Z"
+ content="""
+This is due to git-annex using `git ls-files --others --exclude-standard`
+to find files to add. Since that silently skips ignored files, so does
+git-annex.
+
+Now that git has `git check-ignore --stdin`, it would be possible for
+git-annex to not run `git ls-files` with `--exclude-standard`, and
+instead check each file it returns to see if it's ignored, and print out 
+a warning message.
+
+But, that would mean a round-trip through the pipe for each filename.
+When operating on a directory containing a lot of new 
+files, it would probably slow down the processing somewhat.
+
+Hmm, but, `git add somedir` does not warn if there are gitignored files in
+somedir; it silently skips them while adding the rest of the directory.
+The warning comes only when explicitly listing an ignored file.
+
+So, git-annex could do the same, only passing the filename through
+checkingnore when it's a normal file and not a directory. This does
+entail statting every command-line parameter though, and passing through
+checkignore would still slow things down. Particularly when `git annex add`
+is run with a huge list of files to add.
+
+I don't know if it's super-important for `git annex add` to mirror every
+behavior of `git add` anyway. Other differences include `git annex add`
+with no parameters defaulting to adding ".", and `git annex add`
+skipping dotfiles by default.
+
+In v6 mode, you can use `git add` to do the same thing as `git annex add`,
+only more slowly. So it could be argued that `git annex add` will remain
+separate from `git add` only because its different behavior can be more
+useful, and for performance reasons. Which makes slowing `git annex add`
+down in order to make it behave more like `git add` seem counterproductive.
+"""]]
