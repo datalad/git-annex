@@ -57,6 +57,8 @@ git-annex should use smudge/clean filters.
   be sorted out first; it would not do for git annex adjust to cause
   the whole work tree to be considered to be modified!
 
+  My enhanced smudge/clean patch set also fixes this problem.
+
 * When git runs the smudge filter, it buffers all its output in ram before
   writing it to a file. So, checking out a branch with a large v6 unlocked files
   can cause git to use a lot of memory.
