@@ -18,6 +18,8 @@ git-annex (6.20160614) UNRELEASED; urgency=medium
   * uninit: Fix crash due to trying to write to deleted keys db.
     Reversion introduced by v6 mode support, affects v5 too.
   * Fix a similar crash when the webapp is used to delete a repository.
+  * Support checking presence of content at a http url that redirects to
+    a ftp url.
 
  -- Joey Hess <id@joeyh.name>  Mon, 13 Jun 2016 21:52:24 -0400
 
