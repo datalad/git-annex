@@ -31,3 +31,5 @@ As for how such files happen in the first place, I've no idea myself. (For what 
 ### What version of git-annex are you using? On what operating system?
 
 Arch's community/git-annex 6.20160511
+
+> [[fixed|done]] --[[Joey]]

@@ -214,11 +214,11 @@ fixLink key file = do
  - in this repository only. -}
 verifyLocationLog :: Key -> KeyStatus -> String -> Annex Bool
 verifyLocationLog key keystatus desc = do
+	direct <- isDirect
 	obj <- calcRepo $ gitAnnexLocation key
-	present <- if isKeyUnlocked keystatus
+	present <- if not direct && isKeyUnlocked keystatus
 		then liftIO (doesFileExist obj)
 		else inAnnex key
-	direct <- isDirect
 	u <- getUUID
 	
 	{- Since we're checking that a key's object file is present, throw

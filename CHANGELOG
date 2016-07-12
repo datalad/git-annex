@@ -12,6 +12,9 @@ git-annex (6.20160614) UNRELEASED; urgency=medium
   * Remove the EKG build flag, since Gentoo for some reason decided to
     enable this flag, depsite it not being intended for production use and
     so disabled by default.
+  * fsck: Fix a reversion in direct mode fsck of a file that is
+    present when the location log thinks it is not. Reversion introduced
+    in version 5.20151208.
 
  -- Joey Hess <id@joeyh.name>  Mon, 13 Jun 2016 21:52:24 -0400
 
