@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-07-12T17:48:50Z"
+ content="""
+Not OSX specific; reproduced on Linux.
+
+Instrumentation shows that removeInodeCaches is being called, when it
+unannexes the annexed file. This is why a file has to have been added to
+the repo to get the crash.
+
+It's actually not necessary for removeInodeCaches to be called in a v5
+repo, only in v6. If the code checked for v6 mode before writing to the
+database, such problems would be avoided except for in v6 mode.
+
+But, the actual fix is to make uninit close this and all other sqlite
+db's before deleting the .git/annex directory.
+"""]]

@@ -1,3 +1,5 @@
+[[!meta title="git annex uninit causes SqlLite3 error"]]
+
 ### Please describe the problem.
 I am basically having issues with `git annex uninit`
 
@@ -74,3 +76,5 @@ Now if I add a local file I get a different error
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I am super excited about what I can do with git-annex. I hope to setup and maintain encrypted repo(s) of some of my files, and access them by cloning a local copy of the encrypted repo and getting the files I want, using them, and then deleting the local copy.
+
+> [[fixed|done]] --[[Joey]]

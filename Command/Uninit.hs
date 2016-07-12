@@ -13,6 +13,7 @@ import qualified Git
 import qualified Git.Command
 import qualified Command.Unannex
 import qualified Annex.Branch
+import qualified Database.Keys
 import Annex.Content
 import Annex.Init
 import Utility.FileMode
@@ -61,7 +62,7 @@ finish = do
 	annexdir <- fromRepo gitAnnexDir
 	annexobjectdir <- fromRepo gitAnnexObjectDir
 	leftovers <- removeUnannexed =<< getKeysPresent InAnnex
-	liftIO $ prepareRemoveAnnexDir annexdir
+	prepareRemoveAnnexDir annexdir
 	if null leftovers
 		then liftIO $ removeDirectoryRecursive annexdir
 		else error $ unlines
@@ -89,9 +90,17 @@ finish = do
 	liftIO exitSuccess
 
 {- Turn on write bits in all remaining files in the annex directory, in
- - preparation for removal. -}
-prepareRemoveAnnexDir :: FilePath -> IO ()
-prepareRemoveAnnexDir annexdir =
+ - preparation for removal. 
+ -
+ - Also closes sqlite databases that might be in the directory,
+ - to avoid later failure to write any cached changes to them. -}
+prepareRemoveAnnexDir :: FilePath -> Annex ()
+prepareRemoveAnnexDir annexdir = do
+	Database.Keys.closeDb
+	liftIO $ prepareRemoveAnnexDir' annexdir
+
+prepareRemoveAnnexDir' :: FilePath -> IO ()
+prepareRemoveAnnexDir' annexdir =
 	recurseDir SystemFS annexdir >>= mapM_ (void . tryIO . allowWrite)
 
 {- Keys that were moved out of the annex have a hard link still in the

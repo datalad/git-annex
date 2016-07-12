@@ -15,6 +15,9 @@ git-annex (6.20160614) UNRELEASED; urgency=medium
   * fsck: Fix a reversion in direct mode fsck of a file that is
     present when the location log thinks it is not. Reversion introduced
     in version 5.20151208.
+  * uninit: Fix crash due to trying to write to deleted keys db.
+    Reversion introduced by v6 mode support, affects v5 too.
+  * Fix a similar crash when the webapp is used to delete a repository.
 
  -- Joey Hess <id@joeyh.name>  Mon, 13 Jun 2016 21:52:24 -0400
 
