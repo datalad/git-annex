@@ -16,7 +16,6 @@ flags:
     xmpp: false
     android: false
     androidsplice: false
-    ekg: false
 packages:
 - '.'
 resolver: lts-5.18
