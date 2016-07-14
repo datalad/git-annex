@@ -1,0 +1,24 @@
+Hello,
+
+I have two repos, both are standard/client and they are in sync:
+
+```
+% git annex sync marduk.dynv6 --content
+commit  ok
+pull marduk.dynv6 
+ok
+git annex sync marduk.dynv6 --content  64,35s user 4,54s system 88% cpu 1:18,15 total
+```
+I would ```copy --auto``` except to copy no files, but still, ```git annex copy --to=marduk.dynv6 --auto``` seems to copy all files:
+
+```
+% git annex copy --to=marduk.dynv6 --auto
+copy .gitignore (checking marduk.dynv6...) ok
+copy Alben/2Raumwohnung - Es wird Morgen/2Raumwohnung - 01 - Wolken ziehen vorbei.mp3 (checking marduk.dynv6...) ok
+copy Alben/2Raumwohnung - Es wird Morgen/2Raumwohnung - 02 - Spiel mit.mp3 (checking marduk.dynv6...) ok
+[... canceled]
+```
+Why is copy --auto copying these (presumably all) files here=
+
+Thanks!
+Florian
