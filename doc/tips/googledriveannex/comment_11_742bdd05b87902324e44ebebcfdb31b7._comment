@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="emanuele.olivetti@47d88ed185b03191e25329caa6fabc2efb3118b2"
+ nickname="emanuele.olivetti"
+ subject="googledriveannex does not"
+ date="2016-07-14T14:58:05Z"
+ content="""
+Following the instructions above, when issuing:
+
+    git annex initremote googledrive type=external externaltype=googledrive encryption=shared folder=gitannex
+
+googleannexdrive fails and I get:
+
+    initremote googledrive (encryption setup) (encryption key stored in git repository) No handlers could be found for logger \"oauth2client.util\"
+    git-annex: You need to set OAUTH environment variables and folder and encryption parameters when running initremote.
+
+Am I making some obvious mistake?
+
+If not, I'd like to share my positive experience with git-annex-remote-rclone (<https://github.com/DanielDent/git-annex-remote-rclone>), which wraps rclone (<https://rclone.org>) that supports Google Drive: it worked for me.
+"""]]
