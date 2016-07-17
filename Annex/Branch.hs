@@ -1,6 +1,6 @@
 {- management of the git-annex branch
  -
- - Copyright 2011-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -30,6 +30,7 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Bits.Utils
+import Data.Function
 import Control.Concurrent (threadDelay)
 
 import Annex.Common
@@ -81,9 +82,9 @@ hasOrigin = inRepo $ Git.Ref.exists originname
 hasSibling :: Annex Bool
 hasSibling = not . null <$> siblingBranches
 
-{- List of git-annex (refs, branches), including the main one and any
- - from remotes. Duplicate refs are filtered out. -}
-siblingBranches :: Annex [(Git.Ref, Git.Branch)]
+{- List of git-annex (shas, branches), including the main one and any
+ - from remotes. Duplicates are filtered out. -}
+siblingBranches :: Annex [(Git.Sha, Git.Branch)]
 siblingBranches = inRepo $ Git.Ref.matchingUniq [name]
 
 {- Creates the branch, if it does not already exist. -}
@@ -133,40 +134,50 @@ forceUpdate = updateTo =<< siblingBranches
  -
  - Returns True if any refs were merged in, False otherwise.
  -}
-updateTo :: [(Git.Ref, Git.Branch)] -> Annex Bool
+updateTo :: [(Git.Sha, Git.Branch)] -> Annex Bool
 updateTo pairs = do
 	-- ensure branch exists, and get its current ref
 	branchref <- getBranch
 	dirty <- journalDirty
 	ignoredrefs <- getIgnoredRefs
-	(refs, branches) <- unzip <$> filterM (isnewer ignoredrefs) pairs
-	if null refs
+	let unignoredrefs = excludeset ignoredrefs pairs
+	tomerge <- if null unignoredrefs
+		then return []
+		else do
+			mergedrefs <- getMergedRefs
+			filterM isnewer (excludeset mergedrefs unignoredrefs)
+	if null tomerge
 		{- Even when no refs need to be merged, the index
 		 - may still be updated if the branch has gotten ahead 
 		 - of the index. -}
-		then whenM (needUpdateIndex branchref) $ lockJournal $ \jl -> do
-			forceUpdateIndex jl branchref
-			{- When there are journalled changes
-			 - as well as the branch being updated,
-			 - a commit needs to be done. -}
-			when dirty $
-				go branchref True [] [] jl
-		else lockJournal $ go branchref dirty refs branches
-	return $ not $ null refs
+		then do
+			whenM (needUpdateIndex branchref) $ lockJournal $ \jl -> do
+				forceUpdateIndex jl branchref
+				{- When there are journalled changes
+				 - as well as the branch being updated,
+				 - a commit needs to be done. -}
+				when dirty $
+					go branchref True [] jl
+			{- Only needed for a while, to populate the
+			 - newly added merged refs cache with already
+			 - merged refs. Can be safely removed at any time. -}
+			addMergedRefs unignoredrefs
+		else lockJournal $ go branchref dirty tomerge
+	return $ not $ null tomerge
   where
-	isnewer ignoredrefs (r, _)
-		| S.member r ignoredrefs = return False
-		| otherwise = inRepo $ Git.Branch.changed fullname r
-	go branchref dirty refs branches jl = withIndex $ do
+	excludeset s = filter (\(r, _) -> S.notMember r s)
+	isnewer (r, _) = inRepo $ Git.Branch.changed fullname r
+	go branchref dirty tomerge jl = withIndex $ do
+		let (refs, branches) = unzip tomerge
 		cleanjournal <- if dirty then stageJournal jl else return noop
-		let merge_desc = if null branches
+		let merge_desc = if null tomerge
 			then "update"
 			else "merging " ++
 				unwords (map Git.Ref.describe branches) ++ 
 				" into " ++ fromRef name
 		localtransitions <- parseTransitionsStrictly "local"
 			<$> getLocal transitionsLog
-		unless (null branches) $ do
+		unless (null tomerge) $ do
 			showSideAction merge_desc
 			mapM_ checkBranchDifferences refs
 			mergeIndex jl refs
@@ -181,6 +192,7 @@ updateTo pairs = do
 					then updateIndex jl branchref
 					else commitIndex jl branchref merge_desc commitrefs
 			)
+		addMergedRefs tomerge
 		liftIO cleanjournal
 
 {- Gets the content of a file, which may be in the journal, or in the index
@@ -493,21 +505,6 @@ handleTransitions jl localts refs = do
 			<$> catFile ref transitionsLog
 		return (ref, ts)
 
-ignoreRefs :: [Git.Ref] -> Annex ()
-ignoreRefs rs = do
-	old <- getIgnoredRefs
-	let s = S.unions [old, S.fromList rs]
-	f <- fromRepo gitAnnexIgnoredRefs
-	replaceFile f $ \tmp -> liftIO $ writeFile tmp $
-		unlines $ map fromRef $ S.elems s
-
-getIgnoredRefs :: Annex (S.Set Git.Ref)
-getIgnoredRefs = S.fromList . mapMaybe Git.Sha.extractSha . lines <$> content
-  where
-	content = do
-		f <- fromRepo gitAnnexIgnoredRefs
-		liftIO $ catchDefaultIO "" $ readFile f
-
 {- Performs the specified transitions on the contents of the index file,
  - commits it to the branch, or creates a new branch.
  -}
@@ -578,3 +575,41 @@ checkBranchDifferences ref = do
 	mydiffs <- annexDifferences <$> Annex.getGitConfig
 	when (theirdiffs /= mydiffs) $
 		error "Remote repository is tuned in incompatable way; cannot be merged with local repository."
+
+ignoreRefs :: [Git.Sha] -> Annex ()
+ignoreRefs rs = do
+	old <- getIgnoredRefs
+	let s = S.unions [old, S.fromList rs]
+	f <- fromRepo gitAnnexIgnoredRefs
+	replaceFile f $ \tmp -> liftIO $ writeFile tmp $
+		unlines $ map fromRef $ S.elems s
+
+getIgnoredRefs :: Annex (S.Set Git.Sha)
+getIgnoredRefs = S.fromList . mapMaybe Git.Sha.extractSha . lines <$> content
+  where
+	content = do
+		f <- fromRepo gitAnnexIgnoredRefs
+		liftIO $ catchDefaultIO "" $ readFile f
+
+addMergedRefs :: [(Git.Sha, Git.Branch)] -> Annex ()
+addMergedRefs [] = return ()
+addMergedRefs new = do
+	old <- getMergedRefs'
+	-- Keep only the newest sha for each branch.
+	let l = nubBy ((==) `on` snd) (new ++ old)
+	f <- fromRepo gitAnnexMergedRefs
+	replaceFile f $ \tmp -> liftIO $ writeFile tmp $
+		unlines $ map (\(s, b) -> fromRef s ++ '\t' : fromRef b) l
+
+getMergedRefs :: Annex (S.Set Git.Sha)
+getMergedRefs = S.fromList . map fst <$> getMergedRefs'
+
+getMergedRefs' :: Annex [(Git.Sha, Git.Branch)]
+getMergedRefs' = do
+	f <- fromRepo gitAnnexMergedRefs
+	s <- liftIO $ catchDefaultIO "" $ readFile f
+	return $ map parse $ lines s
+  where
+	parse l = 
+		let (s, b) = separate (== '\t') l
+		in (Ref s, Ref b)

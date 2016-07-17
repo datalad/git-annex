@@ -8,7 +8,11 @@ git-annex (6.20160614) UNRELEASED; urgency=medium
   * testremote: Fix crash when testing a freshly made external special remote.
   * Remove unnecessary rpaths in the git-annex binary, but only when
     it's built using make, not cabal. 
-    This speeds up git-annex statup time by around 50%.
+    This speeds up git-annex startup time by around 50%.
+  * Speed up startup time by caching the refs that have been merged into
+    the git-annex branch.
+    This can speed up git-annex commands by as much as a second,
+    depending on the number of remotes.
   * Remove the EKG build flag, since Gentoo for some reason decided to
     enable this flag, depsite it not being intended for production use and
     so disabled by default.
