@@ -19,6 +19,7 @@ module Logs.Location (
 	logChange,
 	loggedLocations,
 	loggedLocationsHistorical,
+	loggedLocationsRef,
 	isKnownKey,
 	checkDead,
 	setDead,
@@ -31,10 +32,12 @@ import qualified Annex.Branch
 import Logs
 import Logs.Presence
 import Annex.UUID
-import Git.Types (RefDate)
+import Annex.CatFile
+import Git.Types (RefDate, Ref)
 import qualified Annex
 
 import Data.Time.Clock
+import qualified Data.ByteString.Lazy.Char8 as L
 
 {- Log a change in the presence of a key's value in current repository. -}
 logStatus :: Key -> LogStatus -> Annex ()
@@ -60,6 +63,10 @@ loggedLocations = getLoggedLocations currentLogInfo
 {- Gets the location log on a particular date. -}
 loggedLocationsHistorical :: RefDate -> Key -> Annex [UUID]
 loggedLocationsHistorical = getLoggedLocations . historicalLogInfo
+
+{- Gets the locations contained in a git ref. -}
+loggedLocationsRef :: Ref -> Annex [UUID]
+loggedLocationsRef ref = map toUUID . getLog . L.unpack <$> catObject ref
 
 getLoggedLocations :: (FilePath -> Annex [String]) -> Key -> Annex [UUID]
 getLoggedLocations getter key = do

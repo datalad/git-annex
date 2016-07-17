@@ -24,6 +24,7 @@ git-annex (6.20160614) UNRELEASED; urgency=medium
   * Fix a similar crash when the webapp is used to delete a repository.
   * Support checking presence of content at a http url that redirects to
     a ftp url.
+  * log: Added --all option.
 
  -- Joey Hess <id@joeyh.name>  Mon, 13 Jun 2016 21:52:24 -0400
 

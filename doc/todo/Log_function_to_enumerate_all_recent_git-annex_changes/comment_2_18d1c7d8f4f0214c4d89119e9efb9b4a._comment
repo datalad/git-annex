@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-07-17T19:09:41Z"
+ content="""
+Implelemented `git annex log --all`. It turned out to fit really well
+to add the functionality there.
+
+You can use --max-count, or even --since to limit the log
+that's displayed.
+
+The output streams, so you could just remember the first line you saw when
+running it before, and close the pipe when the subsequent run outputs that
+line. (Although this method may skip over changes that got merged in from
+another repository.)
+"""]]

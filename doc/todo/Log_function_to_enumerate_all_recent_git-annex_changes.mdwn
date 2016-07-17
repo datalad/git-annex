@@ -3,3 +3,5 @@ It would be great to have something to call in post-update-annex which would giv
 This could be `git annex log --all --max-count=1` or somesuch.
 
 This capability could alternatively be provided with a new post-transfer hook, called for every file.
+
+> [[done]] --[[Joey]]
