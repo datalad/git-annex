@@ -1,0 +1,10 @@
+Currently, commands can operate on specific files in the working tree,
+or on all known keys, or on a specific key. It would be useful to have
+something like `--branch foo` which would operate on the files present in
+the specified branch.
+
+For example, this would be useful in bare repos to fsck only the master
+branch, and not all versions of all keys.
+
+It might be worth allowing a full refspec, so that eg `refs/remotes/*/master`
+or `refs/tags/*` can be operated on.
