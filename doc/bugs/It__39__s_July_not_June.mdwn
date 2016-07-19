@@ -1,3 +1,7 @@
 The new tag created today is named 6.20160619
 
 Off-by-one bug ...
+
+> I really need to automate generating those version numbers.
+> I'm not going to re-release it though, and the version number meets 
+> all other requirements other than matching the release date, so [[done]] --[[Joey]]
