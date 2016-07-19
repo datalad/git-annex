@@ -7,4 +7,18 @@ For example, this would be useful in bare repos to fsck only the master
 branch, and not all versions of all keys.
 
 It might be worth allowing a full refspec, so that eg `refs/remotes/*/master`
-or `refs/tags/*` can be operated on.
+or `refs/tags/*` can be operated on. --[[Joey]]
+
+> This should be pretty easy to implement, using `git ls-tree`
+> to enumerate the contents of the ref.
+> 
+> The wrinkle is that for --all, the name of each key is shown as it's
+> operated on. But in this case, we want to instead display something like
+> "ref:filename".
+> 
+> So, every command that supports --branch (which probably
+> should be all the ones currently supporting --all) will need to be
+> modified, to be provided some new data type that is not FilePath to a
+> work tree file, but something to display while operating on an item.
+> 
+> Not a hard change to make, but an extensive one. --[[Joey]]
