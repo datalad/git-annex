@@ -150,7 +150,7 @@ so if an unknown request is seen, reply with `UNSUPPORTED-REQUEST`.
 
 These should be sent only in response to the git-annex request messages.
 They do not have to be sent immediately after the request; the special
-remote can send its own requests (listed in the next section below)
+remote can send its own messages (listed in the next section below)
 while it's handling a request.
 
 * `PREPARE-SUCCESS`  
@@ -220,7 +220,9 @@ in control.
 * `VERSION Int`  
   Supported protocol version. Current version is 1. Must be sent first
   thing at startup, as until it sees this git-annex does not know how to
-  talk with the special remote program!
+  talk with the special remote program!  
+  (git-annex does not send a reply to this message, but may give up if it
+  doesn't support the necessary protocol version.)
 * `PROGRESS Int`  
   Indicates the current progress of the transfer (in bytes). May be repeated
   any number of times during the transfer process, but it's wasteful to
@@ -239,13 +241,15 @@ in control.
   This is always the same for any given Key, so can be used for eg,
   creating hash directory structures to store Keys in. This is the same
   directory hash that is used by eg, the directory special remote.  
-  (git-annex replies with VALUE followed by the value.)
+  (git-annex replies with VALUE followed by the value.)  
+  (First supported by git-annex version 6.20160511.)
 * `SETCONFIG Setting Value`  
   Sets one of the special remote's configuration settings.  
   Normally this is sent during INITREMOTE, which allows these settings
   to be stored in the git-annex branch, so will be available if the same
   special remote is used elsewhere. (If sent after INITREMOTE, the changed
-  configuration will only be available while the remote is running.)
+  configuration will only be available while the remote is running.)  
+  (git-annex does not send a reply to this message.)
 * `GETCONFIG Setting`  
   Gets one of the special remote's configuration settings, which can have
   been passed by the user when running `git annex initremote`, or
@@ -263,7 +267,8 @@ in control.
   case the creds will be encrypted using it. If creds are not stored in
   the configuration, they'll only be stored in a local file.  
   (embedcreds can be set to yes by the user or by SETCONFIG to force
-   the creds to be stored in the remote's configuration).
+   the creds to be stored in the remote's configuration).  
+  (git-annex does not send a reply to this message.)
 * `GETCREDS Setting`  
   Gets any creds that were previously stored in the remote's configuration
   or a file.
@@ -281,7 +286,8 @@ in control.
   this is not configured by a special remote, but it may make sense
   in some situations to hint at the kind of content that should be stored
   in the special remote. Note that if a unparsable expression is set,
-  git-annex will ignore it.
+  git-annex will ignore it.  
+  (git-annex does not send a reply to this message.)
 * `GETWANTED`  
   Gets the current preferred content setting of the repository.
   (git-annex replies with VALUE followed by the preferred content
@@ -293,7 +299,8 @@ in control.
   multiple repositories are using the same special remote, and store
   different state, whichever one stored the state last will win. Also,
   it's best to avoid storing much state, since this will bloat the
-  git-annex branch. Most remotes will not need to store any state.
+  git-annex branch. Most remotes will not need to store any state.  
+  (git-annex does not send a reply to this message.)
 * `GETSTATE Key`  
   Gets any state that has been stored for the key.  
   (git-annex replies with VALUE followed by the state.)
@@ -304,17 +311,21 @@ in control.
   Keep in mind that this stores the url in the git-annex branch. This can
   result in bloat to the branch if the url is large and/or does not delta
   pack well with other information (such as the names of keys) already
-  stored in the branch.
+  stored in the branch.  
+  (git-annex does not send a reply to this message.)
 * `SETURLMISSING Key Url`  
   Records that the key can no longer be downloaded from the specified
-  URL.
+  URL.  
+  (git-annex does not send a reply to this message.)
 * `SETURIPRESENT Key Uri`  
   Records an URI where the Key can be downloaded from.  
   For example, "ipfs:ADDRESS" is used for the ipfs special remote;
-  its CLAIMURL handler checks for such URIS and claims them.
+  its CLAIMURL handler checks for such URIS and claims them.  
+  (git-annex does not send a reply to this message.)
 * `SETURIMISSING Key Uri`  
   Records that the key can no longer be downloaded from the specified
-  URI.
+  URI.  
+  (git-annex does not send a reply to this message.)
 * `GETURLS Key Prefix`  
   Gets the recorded urls where a Key can be downloaded from.
   Only urls that start with the Prefix will be returned. The Prefix
@@ -323,6 +334,7 @@ in control.
   The final VALUE has an empty value, indicating the end of the url list.)
 * `DEBUG message`
   Tells git-annex to display the message if --debug is enabled.
+  (git-annex does not send a reply to this message.)
 
 ## general messages
 
@@ -384,3 +396,24 @@ It works like this:
 * uuid discovery during INITREMOTE.
 * Hook into webapp. Needs a way to provide some kind of prompt to the user
   in the webapp, etc.
+
+* When a new "special remote message" is added to this protocol, and a
+  program wants to use it,  an old version of git-annex will reject the
+  message as unknown, and fail to use the remote with a protocol error.
+
+  The program can check `git-annex version`, but that's not very
+  satisfactory. Version comparison can be hard and
+  PATH might not point to the same git-annex that's running the program.
+
+  One way to fix this would be to make git-annex reply to VERSION
+  with a PROTOCOLKEYWORDS message listing all the keywords in the
+  protocol that it knows.
+  The program could then check if the new message it wants to send is on
+  the list. PROTOCOLKEYWORDS would be ignored by any program that doesn't
+  care/know about it; programs are required to send UNSUPPORTED-REQUEST.
+
+  I worry that some special remote programs might expect to get only 
+  PREPARE or INITREMOTE after VERSION, so this change would break them.
+  I mean, they shouldn't.. But a quickly/badly written one might.
+  Probably want to review all the linked external special remote programs
+  before doing this.

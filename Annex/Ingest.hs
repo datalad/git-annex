@@ -11,6 +11,7 @@ module Annex.Ingest (
 	lockDown,
 	ingestAdd,
 	ingest,
+	ingest',
 	finishIngestDirect,
 	finishIngestUnlocked,
 	cleanOldKeys,
@@ -140,9 +141,12 @@ ingestAdd ld@(Just (LockedDown cfg source)) = do
  - tree or the index.
  -}
 ingest :: Maybe LockedDown -> Annex (Maybe Key, Maybe InodeCache)
-ingest Nothing = return (Nothing, Nothing)
-ingest (Just (LockedDown cfg source)) = withTSDelta $ \delta -> do
-	backend <- chooseBackend $ keyFilename source
+ingest = ingest' Nothing
+
+ingest' :: Maybe Backend -> Maybe LockedDown -> Annex (Maybe Key, Maybe InodeCache)
+ingest' _ Nothing = return (Nothing, Nothing)
+ingest' preferredbackend (Just (LockedDown cfg source)) = withTSDelta $ \delta -> do
+	backend <- maybe (chooseBackend $ keyFilename source) (return . Just) preferredbackend
 	k <- genKey source backend
 	let src = contentLocation source
 	ms <- liftIO $ catchMaybeIO $ getFileStatus src

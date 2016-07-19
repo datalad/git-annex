@@ -20,9 +20,19 @@ git-annex should use smudge/clean filters.
   Upgrading a direct mode repo also leaves files in this state.
   User can use `git add` to clear it up, but better to avoid this,
   by updating stat info in the index.
-  (May need to use libgit2 to do this efficiently, cannot find
+
+  May need to use libgit2 to do this efficiently, cannot find
   any plumbing except git-update-index, which is very inneficient for
-  smudged files.)
+  smudged files; updating a file feeds its whole content through the clean
+  filter again.
+
+  Part of the problem is that the clean filter needs to consume the whole
+  of stdin. (And git has to write the whole file content to stdout from the
+  file it mmaps). A more efficient smudge/clean interface that let the filter
+  read the file itself would let git-annex short-circuit when the file it's
+  cleaning is one it already knows about. I've proposed extending git with
+  such an interface:
+  <http://news.gmane.org/find-root.php?message_id=20160512182432.GA27427%40kitenet.net>
 
 * Checking out a different branch causes git to smudge all changed files,
   and write their content. This does not honor annex.thin. A warning
@@ -43,6 +53,14 @@ git-annex should use smudge/clean filters.
   to think files are modified. So, the above todo item about that needs to
   be sorted out first; it would not do for git annex adjust to cause
   the whole work tree to be considered to be modified!
+
+* When git runs the smudge filter, it buffers all its output in ram before
+  writing it to a file. So, checking out a branch with a large v6 unlocked files
+  can cause git to use a lot of memory.
+  (This needs to be fixed in git, but my proposed interface in
+  <http://thread.gmane.org/gmane.comp.version-control.git/294425> would
+  avoid the problem for git checkout, since it would use the new interface
+  and not the smudge filter.)
 
 * Eventually (but not yet), make v6 the default for new repositories.
   Note that the assistant forces repos into direct mode; that will need to

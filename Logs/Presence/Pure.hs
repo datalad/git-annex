@@ -12,6 +12,7 @@ import qualified Data.Map as M
 
 import Annex.Common
 import Logs.TimeStamp
+import Logs.Line
 import Utility.QuickCheck
 
 data LogLine = LogLine {
@@ -25,7 +26,7 @@ data LogStatus = InfoPresent | InfoMissing | InfoDead
 
 {- Parses a log file. Unparseable lines are ignored. -}
 parseLog :: String -> [LogLine]
-parseLog = mapMaybe parseline . lines
+parseLog = mapMaybe parseline . splitLines
   where
 	parseline l = LogLine
 		<$> parsePOSIXTime d
@@ -98,7 +99,8 @@ instance Arbitrary LogLine where
 	arbitrary = LogLine
 		<$> arbitrary
 		<*> elements [minBound..maxBound]
-		<*> arbitrary `suchThat` ('\n' `notElem`)
+		<*> arbitrary `suchThat`
+			(\c -> '\n' `notElem` c && '\r' `notElem` c)
 
 prop_parse_show_log :: [LogLine] -> Bool
 prop_parse_show_log l = parseLog (showLog l) == l

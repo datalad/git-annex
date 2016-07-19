@@ -93,8 +93,8 @@ list autoinit = do
  - No attempt is made to make the remote be accessible via ssh key setup,
  - etc.
  -}
-gitSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-gitSetup Nothing _ c = do
+gitSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+gitSetup Nothing _ c _ = do
 	let location = fromMaybe (error "Specify location=url") $
 		Url.parseURIRelaxed =<< M.lookup "location" c
 	g <- Annex.gitRepo
@@ -103,7 +103,7 @@ gitSetup Nothing _ c = do
 		[] -> error "could not find existing git remote with specified location"
 		_ -> error "found multiple git remotes with specified location"
 	return (c, u)
-gitSetup (Just u) _ c = do
+gitSetup (Just u) _ c _ = do
 	inRepo $ Git.Command.run
 		[ Param "remote"
 		, Param "add"
@@ -247,7 +247,7 @@ tryGitConfigRead autoinit r
 				-- Cache when http remote is not bare for
 				-- optimisation.
 				unless (Git.Config.isBare r') $
-					setremote "annex-bare" (Git.Config.boolConfig False)
+					setremote setRemoteBare False
 				return r'
 
 	store = observe $ \r' -> do
@@ -274,21 +274,18 @@ tryGitConfigRead autoinit r
 			return r
 	
 	set_ignore msg longmessage = do
-		let k = "annex-ignore"
 		case Git.remoteName r of
 			Nothing -> noop
 			Just n -> do
-				warning $ "Remote " ++ n ++ " " ++ msg ++ "; setting " ++ k
+				warning $ "Remote " ++ n ++ " " ++ msg ++ "; setting annex-ignore"
 				when longmessage $
-					warning $ "This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git config remote." ++ n ++ "." ++ k ++ " false"
-		setremote k (Git.Config.boolConfig True)
+					warning $ "This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git annex enableremote " ++ n
+		setremote setRemoteIgnore True
 	
-	setremote k v = case Git.remoteName r of
+	setremote setter v = case Git.remoteName r of
 		Nothing -> noop
-		Just n -> do
-			let k' = "remote." ++ n ++ "." ++ k
-			inRepo $ Git.Command.run [Param "config", Param k', Param v]
-		
+		Just _ -> setter r v
+	
 	handlegcrypt Nothing = return r
 	handlegcrypt (Just _cacheduuid) = do
 		-- Generate UUID from the gcrypt-id

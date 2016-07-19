@@ -32,7 +32,9 @@ import Data.Word (Word32)
 import Control.Concurrent
 import qualified Control.Exception as E
 #else
+#ifdef linux_HOST_OS
 #warning Building without dbus support; will use mtab polling
+#endif
 #endif
 
 mountWatcherThread :: UrlRenderer -> NamedThread

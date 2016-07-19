@@ -169,13 +169,13 @@ noCrypto = error "cannot use gcrypt remote without encryption enabled"
 unsupportedUrl :: a
 unsupportedUrl = error "using non-ssh remote repo url with gcrypt is not supported"
 
-gCryptSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-gCryptSetup mu _ c = go $ M.lookup "gitrepo" c
+gCryptSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+gCryptSetup mu _ c gc = go $ M.lookup "gitrepo" c
   where
 	remotename = fromJust (M.lookup "name" c)
 	go Nothing = error "Specify gitrepo="
 	go (Just gitrepo) = do
-		(c', _encsetup) <- encryptionSetup c
+		(c', _encsetup) <- encryptionSetup c gc
 		inRepo $ Git.Command.run 
 			[ Param "remote", Param "add"
 			, Param remotename

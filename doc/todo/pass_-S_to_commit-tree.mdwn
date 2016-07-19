@@ -1,0 +1,12 @@
+In git 2.9.0, commit-tree does not respect commit.gpgsign on its own,
+which it used to.
+
+So, in Git.Branch.commitTree, it needs to check if gpgsign is set,
+and pass -S to commit-tree.
+
+(commit-tree -S works in older versions of git, so this can
+be done without version checks.)
+
+--[[Joey]] 
+
+> [[done]] --[[Joey]]

@@ -1,0 +1,11 @@
+A productive day of small fixes. Including a change to deal with an
+incompatability in git 2.9's commit.gpgsign, and couple of fixes
+involving gcrypt repositories.
+
+Also several improvements to cloning from repositories where an adjusted
+branch is checked out. The clone automatically ends up with the adjusted
+branch checked out too.
+
+The test suite has 3 failures when run on a FAT repository, all involving
+adjusted branches. Managed to fix one of them today, hope to get to the
+others soon.

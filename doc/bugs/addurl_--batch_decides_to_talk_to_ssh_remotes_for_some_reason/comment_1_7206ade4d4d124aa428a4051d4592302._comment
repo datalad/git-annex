@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-23T22:15:40Z"
+ content="""
+I seem to remember you filing a bug about the same thing with whereis,
+although I can't find it just now. Let's not file duplicate bugs when
+different git-annex commands exhibit the same bevavior, please?
+
+As I said before, when you set up a new git remote, you need to run some
+git-annex command so that it can query the UUID of the remote. Or, set
+remote.name.annex-ignore to make git-annex not use the remote.
+
+Why does addurl need to set up the remote objects including getting their
+UUIDs? Because remotes can claim urls.
+
+(--batch mode can't prevent stuff from prompting for passwords.)
+"""]]

@@ -19,6 +19,7 @@ import qualified Data.Set as S
 
 import Annex.Common
 import Logs.TimeStamp
+import Logs.Line
 
 transitionsLog :: FilePath
 transitionsLog = "transitions.log"
@@ -50,7 +51,7 @@ showTransitions = unlines . map showTransitionLine . S.elems
 
 {- If the log contains new transitions we don't support, returns Nothing. -}
 parseTransitions :: String -> Maybe Transitions
-parseTransitions = check . map parseTransitionLine . lines
+parseTransitions = check . map parseTransitionLine . splitLines
   where
 	check l
 		| all isJust l = Just $ S.fromList $ catMaybes l
@@ -77,7 +78,7 @@ combineTransitions :: [Transitions] -> Transitions
 combineTransitions = S.unions
 
 transitionList :: Transitions -> [Transition]
-transitionList = map transition . S.elems
+transitionList = nub . map transition . S.elems
 
 {- Typically ran with Annex.Branch.change, but we can't import Annex.Branch
  - here since it depends on this module. -}

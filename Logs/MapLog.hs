@@ -18,6 +18,7 @@ import Data.Time.Clock.POSIX
 
 import Common
 import Logs.TimeStamp
+import Logs.Line
 
 data TimeStamp = Unknown | Date POSIXTime
 	deriving (Eq, Ord, Show)
@@ -38,7 +39,7 @@ showMapLog fieldshower valueshower = unlines . map showpair . M.toList
 		unwords ["0", fieldshower f, valueshower v]
 
 parseMapLog :: Ord f => (String -> Maybe f) -> (String -> Maybe v) -> String -> MapLog f v
-parseMapLog fieldparser valueparser = M.fromListWith best . mapMaybe parse . lines
+parseMapLog fieldparser valueparser = M.fromListWith best . mapMaybe parse . splitLines
   where
 	parse line = do
 		let (ts, rest) = splitword line

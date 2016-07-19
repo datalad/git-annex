@@ -26,7 +26,7 @@ supportedVersions = ["5", "6"]
 
 upgradableVersions :: [Version]
 #ifndef mingw32_HOST_OS
-upgradableVersions = ["0", "1", "2", "4", "5"]
+upgradableVersions = ["0", "1", "2", "3", "4", "5"]
 #else
 upgradableVersions = ["2", "3", "4", "5"]
 #endif

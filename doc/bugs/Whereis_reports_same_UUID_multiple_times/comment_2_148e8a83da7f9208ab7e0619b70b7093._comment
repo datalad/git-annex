@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-05-27T14:26:18Z"
+ content="""
+Received a clone of this repository (in git-annex-test-repos/annex.bundle
+here), and was able to reproduce the bug.
+
+Looking at one duplicate UUID for one file, I see:
+
+	1444995510.830128s 1 0866153a-19e5-4382-aeb6-30e8210706cc
+	1444995510.830128s 1 0866153a-19e5-4382-aeb6-30e8210706cc
+	1444995510.830128s 1 0866153a-19e5-4382-aeb6-30e8210706cc
+	1444995510.830128s 1 0866153a-19e5-4382-aeb6-30e8210706cc
+	1444995510.830128s 1 0866153a-19e5-4382-aeb6-30e8210706cc
+
+The notable thing here is not that there are multiple lines for a UUID, but
+that they somehow have the *exact* same timestamp down to the
+microsecond.
+
+I'm a) unsure how this could happen and b) afraid that the log file
+compaction fails in this case, with catastrophic results.
+
+Regarding how this could happen, git blame shows a single commit
+adding duplicate lines with the same timestamp. Commit message was
+"update". The commit touched a wide swath of the repository, including even
+non-location-log files like trust.log, which also got duplicate lines with
+the same timestamp.
+
+Some of the lines were entirely new, but some existing lines also
+got duplicated.
+
+There were some duplicate lines before this commit, so it was not an
+isolated incident.
+
+Clearly, log compaction needs to collapse down lines that are identical except
+for timestamp. The location log code also needs to throw out all but one
+current item for a given uuid, since other code treats each returned location
+as a copy, expecting there to not be any duplicate UUIDs. With these changes,
+whatever caused these duplicate lines to occur in the first place at least
+won't result in weird output or data loss. I have not verified yet if data
+loss can actually occur in this case.
+"""]]

@@ -34,11 +34,11 @@ The only option on the git-annex side would be to add an option to totally
 disable use of locks, which would make it rather unsafe to use.
 Or to use only dotlocks (file existence level locks).
 
-Dotlocks are problimatic. Some of the uses git-annex makes of locking,
+Dotlocks are problematic. Some of the uses git-annex makes of locking,
 like using both shared and exclusive locks on a file to let multiple
 concurrent readers, would be very hard to emulate with dotlocks. Also,
 dotlocks go stale when processes die, and git-annex uses lots of different
-locks in different places, which would be problimatic to clean up in such
+locks in different places, which would be problematic to clean up in such
 a situation.
 
 I think that it might make sense, if git-annex has to fall back to dotlocks,

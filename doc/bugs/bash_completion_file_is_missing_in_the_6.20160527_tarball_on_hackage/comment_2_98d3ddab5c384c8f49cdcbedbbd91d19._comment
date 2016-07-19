@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="felixonmars@643c7c1f0bf9bace16d293d69b51419f012234d1"
+ nickname="felixonmars"
+ subject="comment 2"
+ date="2016-05-31T16:36:05Z"
+ content="""
+I see, thanks. I was using the tarball to build packages for Arch. Now I have switched to a git clone.
+"""]]

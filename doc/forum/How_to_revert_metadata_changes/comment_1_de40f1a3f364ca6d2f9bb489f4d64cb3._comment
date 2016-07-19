@@ -16,7 +16,7 @@ complications:
    file. This will cause git-annex to re-generate its index from the new
    contents of the branch.
 2. Resetting the git-annex branch to a previous rev won't "stick"
-   if the problimatic rev has already been pushed to other repositories.
+   if the problematic rev has already been pushed to other repositories.
    git-annex will automatically re-merge the git-annex branches from other
    repos at some point and get the problem rev back. Instead you'll need to
    make a commit to the git-annex branch that undoes the changes made by the
@@ -24,7 +24,7 @@ complications:
 3. The contents of the git-annex branch are merged by essentially
    taking the union of the local and remote contents.
    So if some other clone of the repository still has the
-   problimatic data in its git-annex branch, when git-annex union
+   problematic data in its git-annex branch, when git-annex union
    merges that in, the problem data will come back again, even if you've
    made a local commit that reverts its addition.
 

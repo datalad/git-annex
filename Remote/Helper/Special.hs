@@ -176,10 +176,8 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 			then whereisKey baser
 			else Nothing
 		}
-	cip = cipherKey c
+	cip = cipherKey c (gitconfig baser)
 	isencrypted = isJust (extractCipher c)
-	gpgencopts = getGpgEncParams encr
-	gpgdecopts = getGpgDecParams encr
 
 	safely a = catchNonAsync a (\e -> warning (show e) >> return False)
 
@@ -201,7 +199,7 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 	storechunk (Just (cipher, enck)) storer k content p = do
 		cmd <- gpgCmd <$> Annex.getGitConfig
 		withBytes content $ \b ->
-			encrypt cmd gpgencopts cipher (feedBytes b) $
+			encrypt cmd encr cipher (feedBytes b) $
 				readBytes $ \encb ->
 					storer (enck k) (ByteContent encb) p
 
@@ -211,7 +209,7 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 	  where
 		go (Just retriever) = displayprogress p k $ \p' ->
 			retrieveChunks retriever (uuid baser) chunkconfig
-				enck k dest p' (sink dest enc gpgdecopts)
+				enck k dest p' (sink dest enc encr)
 		go Nothing = return False
 		enck = maybe id snd enc
 
@@ -244,26 +242,27 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
  - into place. (And it may even already be in the right place..)
  -}
 sink
-	:: FilePath
+	:: LensGpgEncParams c
+	=> FilePath
 	-> Maybe (Cipher, EncKey)
-	-> [CommandParam]
+	-> c
 	-> Maybe Handle
 	-> Maybe MeterUpdate
 	-> ContentSource
 	-> Annex Bool
-sink dest enc gpgdecopts mh mp content = do
+sink dest enc c mh mp content = do
 	case (enc, mh, content) of
 		(Nothing, Nothing, FileContent f)
 			| f == dest -> noop
 			| otherwise -> liftIO $ moveFile f dest
 		(Just (cipher, _), _, ByteContent b) -> do
 			cmd <- gpgCmd <$> Annex.getGitConfig
-			decrypt cmd gpgdecopts cipher (feedBytes b) $
+			decrypt cmd c cipher (feedBytes b) $
 				readBytes write
 		(Just (cipher, _), _, FileContent f) -> do
 			cmd <- gpgCmd <$> Annex.getGitConfig
 			withBytes content $ \b ->
-				decrypt cmd gpgdecopts cipher (feedBytes b) $
+				decrypt cmd c cipher (feedBytes b) $
 					readBytes write
 			liftIO $ nukeFile f
 		(Nothing, _, FileContent f) -> do

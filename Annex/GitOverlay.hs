@@ -12,14 +12,19 @@ import qualified Control.Exception as E
 import Annex.Common
 import Git
 import Git.Types
+import Git.Index
 import Git.Env
 import qualified Annex
+import qualified Annex.Queue
 
 {- Runs an action using a different git index file. -}
 withIndexFile :: FilePath -> Annex a -> Annex a
-withIndexFile f = withAltRepo
-	(\g -> addGitEnv g "GIT_INDEX_FILE" f)
-	(\g g' -> g' { gitEnv = gitEnv g })
+withIndexFile f a = do
+	f' <- liftIO $ indexEnvVal f
+	withAltRepo
+		(\g -> addGitEnv g indexEnv f')
+		(\g g' -> g' { gitEnv = gitEnv g })
+		a
 
 {- Runs an action using a different git work tree.
  -
@@ -67,8 +72,18 @@ withAltRepo
 withAltRepo modrepo unmodrepo a = do
 	g <- gitRepo
 	g' <- liftIO $ modrepo g
-	r <- tryNonAsync $ do
-		Annex.changeState $ \s -> s { Annex.repo = g' }
+	q <- Annex.Queue.get
+	v <- tryNonAsync $ do
+		Annex.changeState $ \s -> s
+			{ Annex.repo = g'
+			-- Start a separate queue for any changes made
+			-- with the modified repo.
+			, Annex.repoqueue = Nothing
+			}
 		a
-	Annex.changeState $ \s -> s { Annex.repo = unmodrepo g (Annex.repo s) }
-	either E.throw return r
+	void $ tryNonAsync Annex.Queue.flush
+	Annex.changeState $ \s -> s
+		{ Annex.repo = unmodrepo g (Annex.repo s)
+		, Annex.repoqueue = Just q
+		}
+	either E.throw return v

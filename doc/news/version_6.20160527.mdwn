@@ -1,0 +1,37 @@
+git-annex 6.20160527 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Split lines in the git-annex branch on \r as well as \n, to deal
+     with \r\n terminated lines written by some versions of git-annex on
+     Windows. This fixes strange displays in some cases.
+   * assistant: Fix bug that caused v6 pointer files to be annexed by the
+     assistant.
+   * assistant: Fix race in v6 mode that caused downloaded file content to
+     sometimes not replace pointer files.
+   * add: Adding a v6 pointer file used to annex it; now the pointer file is
+     added to git as-is. (git add of a pointer file already did the right
+     thing)
+   * enableremote: Can now be used to explicitly enable git-annex to use
+     git remotes. Using the command this way prevents other git-annex
+     commands from probing new git remotes to auto-enable them.
+   * enableremote: Remove annex-ignore configuration from a remote.
+   * Change git annex info remote encryption description to use wording
+     closer to what's used in initremote.
+   * Pass the various gnupg-options configs to gpg in several cases where
+     they were not before. Most notably, gnupg-decrypt-options is now
+     passed when decrypting an encrypted cipher.
+   * adjust: Add --fix adjustment, which is useful when the git directory
+     is in a nonstandard place.
+   * adjust: If the adjusted branch already exists, avoid overwriting it,
+     since it might contain changes that have not yet been propigated to the
+     original branch.
+   * Work around git weirdness in handling of relative path to GIT\_INDEX\_FILE
+     when in a subdirectory of the repository. This affected git annex view.
+   * Fix crash when entering/changing view in a subdirectory of a repo that
+     has a dotfile in its root.
+   * webapp: Avoid confusing display of dead remotes.
+   * Support building with ghc 8.0.1.
+   * Updated cabal file explicitly lists source files. The tarball
+     on hackage will include only the files needed for cabal install;
+     it is NOT the full git-annex source tree.
+   * debian/changelog, debian/NEWS, debian/copyright: Converted to symlinks
+     to CHANGELOG, NEWS, and COPYRIGHT, which used to symlink to these instead."""]]

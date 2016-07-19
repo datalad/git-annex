@@ -156,10 +156,10 @@ getAddSshR :: Handler Html
 getAddSshR = postAddSshR
 postAddSshR :: Handler Html
 postAddSshR = sshConfigurator $ do
-	username <- liftIO $ T.pack <$> myUserName
+	username <- liftIO $ either (const Nothing) (Just . T.pack) <$> myUserName
 	((result, form), enctype) <- liftH $
 		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $ sshInputAForm textField $
-			SshInput Nothing (Just username) Password Nothing Nothing 22
+			SshInput Nothing username Password Nothing Nothing 22
 	case result of
 		FormSuccess sshinput -> do
 			s <- liftAssistant $ testServer sshinput

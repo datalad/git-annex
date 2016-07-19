@@ -35,6 +35,7 @@ import Common
 import Types.UUID
 import Logs.MapLog
 import Logs.TimeStamp
+import Logs.Line
 
 type Log v = MapLog UUID v
 
@@ -50,7 +51,7 @@ parseLog :: (String -> Maybe a) -> String -> Log a
 parseLog = parseLogWithUUID . const
 
 parseLogWithUUID :: (UUID -> String -> Maybe a) -> String -> Log a
-parseLogWithUUID parser = M.fromListWith best . mapMaybe parse . lines
+parseLogWithUUID parser = M.fromListWith best . mapMaybe parse . splitLines
   where
 	parse line
 		-- This is a workaround for a bug that caused

@@ -1,0 +1,26 @@
+### Please describe the problem.
+Cannot lock files which are not present.  This prevents converting v6 files from flat files to symlinks when they are missing.
+If a file is not present, locking it should either replace it with a broken symlink, or continue on to the next file with a warning.
+
+### What steps will reproduce the problem?
+I think this happened from unlocking a file in one v6 repo and syncing with a different v6 repo, perhaps via a v5 repo in the middle.  In repo #2, the file became unlocked but missing for me.
+
+### What version of git-annex are you using? On what operating system?
+6.20160528-g191d2ba on linux
+
+### Please provide any additional information below.
+
+[[!format sh """
+
+# I am trying to lock all files in my repo to downgrade from v6 back to v5, for stability
+
+$ git annex lock
+lock git/bup.git/bupindex.hlink git-annex: content not present; cannot lock
+
+# but I cannot
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+> Well, that was simply not implemented, but I've done so now. (unlocking
+> too). [[done]] --[[Joey]]

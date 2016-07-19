@@ -41,7 +41,7 @@ main :: IO ()
 main = do
 	[aref, bref, newref] <- map Git.Ref <$> parseArgs
 	g <- Git.Config.read =<< Git.CurrentRepo.get
-	_ <- Git.Index.override $ tmpIndex g
+	_ <- Git.Index.override (tmpIndex g) g
 	setup g
 	Git.UnionMerge.merge aref bref g
 	_ <- Git.Branch.commit Git.Branch.ManualCommit False "union merge" newref [aref, bref] g

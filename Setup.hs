@@ -14,11 +14,14 @@ import Control.Applicative
 import Control.Monad
 import System.Directory
 import Data.List
+import Data.Maybe
 import Control.Exception
 import qualified System.Info
 
 import qualified Build.DesktopFile as DesktopFile
 import qualified Build.Configure as Configure
+import Build.Mans (buildMans)
+import Utility.SafeCommand
 
 main :: IO ()
 main = defaultMainWithHooks simpleUserHooks
@@ -44,24 +47,16 @@ installGitAnnexShell copyDest verbosity pkg lbi =
   where
 	dstBinDir = bindir $ absoluteInstallDirs pkg lbi copyDest
 
-{- See http://www.haskell.org/haskellwiki/Cabal/Developer-FAQ#Installing_manpages
- -
- - Man pages are provided prebuilt in the tarball in cabal,
- - but may not be available otherwise, in which case, skip installing them.
- -}
+{- See http://www.haskell.org/haskellwiki/Cabal/Developer-FAQ#Installing_manpages -}
 installManpages :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
 installManpages copyDest verbosity pkg lbi =
 	installOrdinaryFiles verbosity dstManDir =<< srcManpages
   where
 	dstManDir   = mandir (absoluteInstallDirs pkg lbi copyDest) </> "man1"
-	srcManpages = do
-		havemans <- doesDirectoryExist srcManDir
-		if havemans
-			then zip (repeat srcManDir)
-				. filter (".1" `isSuffixOf`)
-				<$> getDirectoryContents srcManDir
-			else return []
-	srcManDir   = "man"
+	-- If mdwn2man fails, perhaps because perl is not available,
+	-- we just skip installing man pages.
+	srcManpages = zip (repeat "man") . map takeFileName . catMaybes
+		<$> buildMans
 
 installDesktopFile :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
 installDesktopFile copyDest _verbosity pkg lbi

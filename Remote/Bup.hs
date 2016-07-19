@@ -90,14 +90,14 @@ gen r u c gc = do
 		{ chunkConfig = NoChunks
 		}
 
-bupSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-bupSetup mu _ c = do
+bupSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+bupSetup mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	-- verify configuration is sane
 	let buprepo = fromMaybe (error "Specify buprepo=") $
 		M.lookup "buprepo" c
-	(c', _encsetup) <- encryptionSetup c
+	(c', _encsetup) <- encryptionSetup c gc
 
 	-- bup init will create the repository.
 	-- (If the repository already exists, bup init again appears safe.)
@@ -133,12 +133,12 @@ store r buprepo = byteStorer $ \k b p -> do
 	showOutput -- make way for bup output
 	let cmd = proc "bup" (toCommand params)
 	quiet <- commandProgressDisabled
-	let runner = if quiet
-			then feedWithQuietOutput
-			else withHandle StdinHandle
-	liftIO $ runner createProcessSuccess cmd $ \h -> do
+	let feeder = \h -> do
 		meteredWrite p h b
 		return True
+	liftIO $ if quiet
+		then feedWithQuietOutput createProcessSuccess cmd feeder
+		else withHandle StdinHandle createProcessSuccess cmd feeder
 
 retrieve :: BupRepo -> Retriever
 retrieve buprepo = byteRetriever $ \k sink -> do

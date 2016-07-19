@@ -16,7 +16,7 @@ import Remote.Helper.Ssh
 import Remote.GCrypt (accessShellConfig)
 
 transport :: Transport
-transport rr@(RemoteRepo r gc) url h@(TransportHandle g _) ichan ochan
+transport rr@(RemoteRepo r gc) url h@(TransportHandle (LocalRepo g) _) ichan ochan
 	| accessShellConfig gc = do
 		r' <- encryptedRemote g r
 		v <- liftAnnex h $ git_annex_shell r' "notifychanges" [] []

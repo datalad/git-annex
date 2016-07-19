@@ -1,3 +1,40 @@
+git-annex (6.20160613) unstable; urgency=medium
+
+  * Improve SHA*E extension extraction code.
+  * Windows: Avoid terminating git-annex branch lines with \r\n when
+    union merging and performing transitions.
+  * Remove Makefile from cabal tarball; man page building is now handled by
+    a small haskell program.
+  * sync --content: Fix bug that caused transfers of files to be made 
+    to a git remote that does not have a UUID. This particularly impacted
+    clones from gcrypt repositories.
+  * Pass -S to git commit-tree when commit.gpgsign is set and when
+    making a non-automatic commit, in order to preserve current behavior
+    when used with git 2.9, which has stopped doing this itself.
+  * remotedaemon: Fixed support for notifications of changes to gcrypt
+    remotes, which was never tested and didn't quite work before.
+  * list: Do not include dead repositories.
+  * move --to: Better behavior when system is completely out of disk space;
+    drop content from disk before writing location log.
+  * Avoid a crash if getpwuid does not work, when querying the user's full
+    name.
+  * Automatically enable v6 mode when initializing in a clone from a repo
+    that has an adjusted branch checked out.
+  * v6: Fix initialization of a bare clone of a repo that has an adjusted
+    branch checked out.
+  * v6: Fix bad automatic merge conflict resolution between an annexed file
+    and a directory with the same name when in an adjusted branch.
+  * v6: Fix bad merge in an adjusted branch that resulted in an empty tree.
+  * v6: Fix bug in initialization of clone from a repo with an adjusted branch
+    that had not been synced back to master. 
+    (This bug caused broken tree objects to get built by a later git annex
+    sync.)
+  * v6: Make lock and unlock work on files whose content is not present.
+  * v6: Fix update of associated files db when unlocking a file.
+  * v6: Make git clean filter preserve the backend that was used for a file.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 13 Jun 2016 14:57:38 -0400
+
 git-annex (6.20160511-1) unstable; urgency=medium
 
   * Package 6.20160511-1

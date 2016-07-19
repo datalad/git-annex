@@ -20,10 +20,15 @@ to specify "encryption=none" when first setting up a remote in order
 to disable encryption. To use encryption, you run
 `git-annex initremote` in one of these ways:
 
-* `git annex initremote newremote type=... encryption=hybrid keyid=KEYID ...`
+* `git annex initremote newremote type=... encryption=hybrid keyid=KEYID`
 * `git annex initremote newremote type=... encryption=shared`
-* `git annex initremote newremote type=... encryption=pubkey keyid=KEYID ...`
-* `git annex initremote newremote type=... encryption=sharedpubkey keyid=KEYID ...`
+* `git annex initremote newremote type=... encryption=pubkey keyid=KEYID`
+* `git annex initremote newremote type=... encryption=sharedpubkey keyid=KEYID`
+
+To see what encryption is used for a special remote, run
+`git annex info $remote` and look for a line like:
+
+	encryption: hybrid (to gpg keys: AEC828149D85C538 C910D9122512E3C8)
 
 ## hybrid encryption keys (encryption=hybrid)
 
@@ -31,23 +36,27 @@ The [[hybrid_key_design|design/encryption]] allows additional
 encryption keys to be added on to a special remote later. Due to this
 flexibility, it is the default and recommended encryption scheme.
 
-	git annex initremote newremote type=... [encryption=hybrid] keyid=KEYID ...
+	git annex initremote newremote type=... [encryption=hybrid] keyid=KEYID
 
-Here the KEYID(s) are passed to `gpg` to find encryption keys.
+The KEYID is passed to `gpg` to find gpg keys.
 Typically, you will say "keyid=2512E3C7" to use a specific gpg key.
 Or, you might say "keyid=id@joeyh.name" to search for matching keys.
 
 To add a new key and allow it to access all the content that is stored
 in the encrypted special remote, just run `git annex
-enableremote` specifying the new encryption key:
+enableremote` specifying the keyid to add:
 
 	git annex enableremote myremote keyid+=788A3F4C
 
-While a key can later be removed from the list, note that
-it will **not** necessarily prevent the owner of the key
-from accessing data on the remote (which is by design impossible to prevent,
-short of deleting the remote). In fact the only sound use of `keyid-=` is
-probably to replace a revoked key:
+You can repeat this process to add any number of gpg keys, including
+your own gpg keys and any public keys of others who you want to give
+access. Anyone with a corresponding secret key will be able to decrypt
+all content that is stored in the remote.
+
+While a key can later be removed from the list, note that it will **not**
+prevent the owner of the key from accessing data on the remote (which is by
+design impossible to prevent, short of deleting the remote). In fact the
+only sound use of `keyid-=` is probably to replace a revoked key:
 
 	git annex enableremote myremote keyid-=2512E3C7 keyid+=788A3F4C
 
@@ -70,16 +79,19 @@ repository with access to the encrypted data stored in the special remote.
 ## regular public key encryption (encryption=pubkey)
 
 This alternative simply encrypts the files in the special remotes to one or
-more public keys. It might be considered more secure due to its simplicity
-and since it's exactly the way everyone else uses gpg.
+more public keys. The corresponding private key is needed to store
+anything in the remote, or access anything stored in it.
+It might be considered more secure due to its simplicity and since
+it's exactly the way everyone else uses gpg.
 
-	git annex initremote newremote type=.... encryption=pubkey keyid=KEYID ...
+	git annex initremote newremote type=.... encryption=pubkey keyid=KEYID
 
 A disadvantage is that it is not easy to later add additional public keys
 to the special remote. While the `enableremote` parameters `keyid+=` and
-`keyid-=` can be used, they have **no effect** on files that are already
-present on the remote. Probably the only use for these parameters is
-to replace a revoked key:
+`keyid-=` can be used, they have **no effect** on encrypted files that
+are already stored in the remote.
+
+One use for these parameters is to replace a revoked key:
 
 	git annex enableremote myremote keyid-=2512E3C7 keyid+=788A3F4C
 
@@ -96,10 +108,10 @@ It is only used for HMAC encryption of filenames.)
 
 This is a variation on encryption=pubkey which lets anyone who
 has access to the gpg public keys store files in the special remote.
-But, only owners of the corresponding private keys can retrieve the files
+But, only owners of the corresponding gpg private keys can retrieve the files
 from the special remote.
 
-	git annex initremote newremote type=... encryption=sharedpubkey keyid=KEYID ...
+	git annex initremote newremote type=... encryption=sharedpubkey keyid=KEYID
 
 This might be useful if you want to let others drop off files for you in a
 special remote, so that only you can access them.

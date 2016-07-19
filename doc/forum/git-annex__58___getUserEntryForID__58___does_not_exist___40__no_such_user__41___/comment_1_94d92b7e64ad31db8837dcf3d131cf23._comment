@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-06-08T17:31:41Z"
+ content="""
+IIRC it's supposed to be possible to configure a system such as LDAP 
+so that `getpwuid` queries it, instead of failing as it seems to on your
+system, using `/etc/nsswitch.conf`. But I'm not sure about that or how to
+do it and you'd need to be the admin of the system.
+
+git-annex has three calls to `getpwuid` (aka getUserEntryForID`).
+In two of them it first looks at commonly set environment variables
+(HOME and USER/LOGNAME) and only uses `getpwuid` as a fallback.
+It seems reasonable to crash when git-annex can't determine the user's home
+directory or username in code that needs it, especially since all three
+environment variables are almost always going to be set.
+
+The third use is a GECOS lookup, and here there's no corresponding
+environment variable and git-annex can deal without knowing the full name
+of the user. So, I've made that not crash if `getpwuid` fails.
+
+(There's also a little-used code path where `getpwnam` is used 
+to expand `~` in a git remote path. Seems best to leave this crashing
+too if used on a system that does not have a working `getpwnam`.)
+
+So, you can try upgrading to an autobuild that has the fix, and if it still
+crashes, check that HOME and USER are set.
+"""]]

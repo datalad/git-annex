@@ -1,0 +1,17 @@
+Apparently, I managed to corrupt an SQLite DB when `git-annex get` ran out of space.  This prevents git-annex operations from
+working at all now.
+
+For example:
+
+    % git annex find --in .
+    sqlite worker thread crashed: SQLite3 returned ErrorError while attempting to perform prepare "SELECT null from content limit 1": no such table: content
+    git-annex: sqlite query crashed
+
+One of the few mentions of SQLite being used is in incremental fsck
+([[design/caching_database]]).  I did run incremental fsck in
+another repository a few days before this.  The fsck finished
+without issues, so I'd be happy with a solution that involves simply
+deleting the DB or something.
+
+- git-annex version: 6.20160527-gb7d4774
+- All repositories/remotes: version 5, indirect

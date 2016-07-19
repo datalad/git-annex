@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-05-27T15:45:49Z"
+ content="""
+Please open [[todo]] items for patches, don't send them as comments here.
+
+(I suspect that the patch as provided might break compilation with old
+versions of ghc, or old versions of yesod..)
+"""]]

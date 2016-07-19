@@ -226,7 +226,7 @@ startLocalPairing stage oncancel alert muuid displaysecret secret = do
 		let pubkey = either error id $ validateSshPubKey $ sshPubKey keypair
 		pairdata <- liftIO $ PairData
 			<$> getHostname
-			<*> myUserName
+			<*> (either error id <$> myUserName)
 			<*> pure reldir
 			<*> pure pubkey
 			<*> (maybe genUUID return muuid)
@@ -291,8 +291,8 @@ promptSecret msg cont = pairPage $ do
 		let (username, hostname) = maybe ("", "")
 			(\(_, v, a) -> (T.pack $ remoteUserName v, T.pack $ fromMaybe (showAddr a) (remoteHostName v)))
 			(verifiableVal . fromPairMsg <$> msg)
-		u <- T.pack <$> liftIO myUserName
-		let sameusername = username == u
+		u <- liftIO myUserName
+		let sameusername = Right username == (T.pack <$> u)
 		$(widgetFile "configurators/pairing/local/prompt")
 
 {- This counts unicode characters as more than one character,

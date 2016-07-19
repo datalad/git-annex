@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 18"""
+ date="2016-05-31T16:18:45Z"
+ content="""
+The hash directories for a key can be looked up by passing the key to
+`git annex examinekey --format '${hashdirlower}\n'`
+"""]]

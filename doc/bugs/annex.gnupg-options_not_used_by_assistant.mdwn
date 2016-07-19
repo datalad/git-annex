@@ -78,4 +78,8 @@ gpg: cannot open `/dev/tty': Device not configured
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 
-> added annex.gnupg-decrypt-options; [[done]] --[[Joey]]
+> added annex.gnupg-decrypt-options; done --[[Joey]]
+
+>> Reopening, see comment. --[[Joey]]
+
+>>> Fixed again, [[done]] --[[Joey]]

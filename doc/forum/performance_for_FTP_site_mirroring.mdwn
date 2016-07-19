@@ -1,0 +1,23 @@
+Hello --
+
+I want to use git (and git-annex) to take point-in-time snapshots of an FTP site.  Think "web.archive.org" but for an FTP site.  I'm using LFTP to mirror the site into a directory, which I then check into git.  This way I can go back in time to see what the state of the site was in the past.
+
+The site itself is currently about 10K files and about 30GB.  The files themselves are mostly zip files, as well as some xml files.  I expect files to not change much, and when they do I expect their sizes and modification times to change.  I'm using v6 mode with unlocked files.
+
+Here are my questions:
+
+1. I found that plain "git status" and "git diff" (not using git-annex) is quite slow.  i assume this is because git is computing checksums of all the files?
+
+2. On the assumption that the problem is that git is computing checksums, it seems like the appropriate way to get more performance is to tell git-annex to ignore checksum, i.e. use the WORM backend.  Is this correct?  I found that git status with the WORM backend set is fast.
+
+3. What is the proper way to set a backend globally?  'git annex init' has an option "--backend" but it doesn't seem to have any effect.  The correct way to set this globally is "git config annex.backends WORM", yes?
+
+4. Since I'm using another program to mirror the site, it appears I cannot use "locked" mode, as the mirroring program (lftp) will see that git-annex has replaced everything with symlinks and re-download the files.  Correct?  Therefore I'm using plain "git add" instead of "git annex add."
+
+5. Another reason why I appear to be forced to use "unlocked" mode is that, as part of the mirroring, the directory permissions are set to match the site, which are not writable.  git-annex appears to be unable to move the files that are inside of directories without write permissions.  Note that I am the owner of the local files/directories, and lftp happily adds and modifies files insides of these unwritable directories just fine, presumably by temporarily changing the permissions.  Is this correct?  Should I submit a feature request here?
+
+5. Although I am using WORM and unlocked mode, I found the initial "git add" and "git commit" of the 10K / 30GB of files to be pretty slow.  It takes on the order of 30 minutes for the add and an hour for the commit.  I didn't see a ton of either CPU or I/O activity.  A subsequent update of about 600 files is taking a long time to add (running 'git add -A'.)  I assume commit time will also be long.  Is this to be expected?  I would have hoped that the WORM backend prevents git from needing to actually read the files for a checksum.
+
+6. I understand that "thin = false" will lead to data duplication.  I assume this will make the initial commits slower.  Are there other performance implications of changing the thin setting?
+
+Thank you for creating a great tool.

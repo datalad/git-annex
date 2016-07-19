@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 1"
+ date="2016-05-16T11:41:08Z"
+ content="""
+I've very happy to report that the git-add, git-annex-fsck & 'git-annex-reinject --known' workflow is working great!
+
+Thank you for adding these :)
+"""]]

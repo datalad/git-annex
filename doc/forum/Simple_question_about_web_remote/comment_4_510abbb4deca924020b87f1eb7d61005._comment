@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="Gus"
+ subject="Restarting"
+ date="2016-05-17T10:36:55Z"
+ content="""
+My attempt to redo the podcast repository adding the `--fast` flag seems to be successful. Thank you.
+
+However, I would still like to ask you one thing about the delete operations.
+When would you use `git rm` instead of `git-annex drop` (in a repository that uses only git-annex to store the files)?
+
+Oh, and I'll also sneak in a small question that is unrelated to the above, since I don't think it deserves its own topic:
+Is git-annex safe to operate in parallel tasks? Can I be adding file A and move file B and rename file C from the same repository at the same time, without the integrity of the repository being compromised?
+
+
+"""]]

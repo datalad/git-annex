@@ -81,17 +81,17 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			}
 		chunkconfig = getChunkConfig c
 
-webdavSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-webdavSetup mu mcreds c = do
+webdavSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+webdavSetup mu mcreds c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	url <- case M.lookup "url" c of
 		Nothing -> error "Specify url="
 		Just url -> return url
-	(c', encsetup) <- encryptionSetup c
-	creds <- maybe (getCreds c' u) (return . Just) mcreds
+	(c', encsetup) <- encryptionSetup c gc
+	creds <- maybe (getCreds c' gc u) (return . Just) mcreds
 	testDav url creds
 	gitConfigSpecialRemote u c' "webdav" "true"
-	c'' <- setRemoteCredPair encsetup c' (davCreds u) creds
+	c'' <- setRemoteCredPair encsetup c' gc (davCreds u) creds
 	return (c'', u)
 
 -- Opens a http connection to the DAV server, which will be reused
@@ -234,8 +234,8 @@ mkColRecursive d = go =<< existsDAV d
 			inLocation d mkCol
 		)
 
-getCreds :: RemoteConfig -> UUID -> Annex (Maybe CredPair)
-getCreds c u = getRemoteCredPairFor "webdav" c (davCreds u)
+getCreds :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex (Maybe CredPair)
+getCreds c gc u = getRemoteCredPairFor "webdav" c gc (davCreds u)
 
 davCreds :: UUID -> CredPairStorage
 davCreds u = CredPairStorage
@@ -291,7 +291,7 @@ data DavHandle = DavHandle DAVContext DavUser DavPass URLString
 
 withDAVHandle :: Remote -> (Maybe DavHandle -> Annex a) -> Annex a
 withDAVHandle r a = do
-	mcreds <- getCreds (config r) (uuid r)
+	mcreds <- getCreds (config r) (gitconfig r) (uuid r)
 	case (mcreds, configUrl r) of
 		(Just (user, pass), Just baseurl) ->
 			withDAVContext baseurl $ \ctx ->

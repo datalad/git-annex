@@ -31,6 +31,7 @@ module Remote (
 	byNameOrGroup,
 	byNameOnly,
 	byNameWithUUID,
+	byUUID,
 	byCost,
 	prettyPrintUUIDs,
 	prettyPrintUUIDsDescs,
@@ -97,6 +98,11 @@ addName :: String -> RemoteName -> String
 addName desc n
 	| desc == n || null desc = "[" ++ n ++ "]"
 	| otherwise = desc ++ " [" ++ n ++ "]"
+
+byUUID :: UUID -> Annex (Maybe Remote)
+byUUID u = headMaybe . filter matching <$> remoteList
+  where
+	matching r = uuid r == u
 
 {- When a name is specified, looks up the remote matching that name.
  - (Or it can be a UUID.)

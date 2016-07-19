@@ -6,5 +6,5 @@
  content="""
 That's a good question. Unfortunatly they cannot; X and Y need to be stable across repositories, and git remotes can have different names in different repositories.
 
-Even using the description that git-annex stores for each repository for X and Y is problimatic, since that description can change, and so could be different in two repos that are each trying to resolve the same merge conflict.
+Even using the description that git-annex stores for each repository for X and Y is problematic, since that description can change, and so could be different in two repos that are each trying to resolve the same merge conflict.
 """]]

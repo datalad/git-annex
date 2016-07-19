@@ -11,6 +11,7 @@ Build/Standalone
 Build/OSXMkLibs
 Build/LinuxMkLibs
 Build/BuildVersion
+Build/MakeMans
 git-annex
 man
 git-union-merge
@@ -24,7 +25,6 @@ dist
 cabal-dev
 .cabal-sandbox
 cabal.sandbox.config
-cabal.config
 .stack-work
 # Project-local emacs configuration
 .dir-locals.el

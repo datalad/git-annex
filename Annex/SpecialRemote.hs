@@ -80,7 +80,7 @@ autoEnable = do
 		case (M.lookup nameKey c, findType c) of
 			(Just name, Right t) -> whenM (canenable u) $ do
 				showSideAction $ "Auto enabling special remote " ++ name
-				res <- tryNonAsync $ setup t (Just u) Nothing c
+				res <- tryNonAsync $ setup t (Just u) Nothing c def
 				case res of
 					Left e -> warning (show e)
 					Right _ -> return ()

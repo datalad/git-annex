@@ -1,4 +1,3 @@
-mans=$(shell find doc -maxdepth 1 -name git-annex*.mdwn | sed -e 's/^doc/man/' -e 's/\.mdwn/\.1/')
 all=git-annex mans docs
 
 # set to "./Setup" if you lack a cabal program. Or can be set to "stack"
@@ -15,7 +14,7 @@ endif
 
 build: $(all)
 
-Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
+Build/SysConfig.hs: Build/TestConfig.hs Build/Configure.hs
 	if [ "$(BUILDER)" = ./Setup ]; then ghc --make Setup; fi
 	if [ "$(BUILDER)" = stack ]; then \
 		$(BUILDER) build $(BUILDEROPTIONS); \
@@ -31,9 +30,6 @@ git-annex: Build/SysConfig.hs
 		ln -sf dist/build/git-annex/git-annex git-annex; \
 	fi
 
-man/%.1: doc/%.mdwn
-	./Build/mdwn2man $@ 1 $< > $@
-
 # These are not built normally.
 git-union-merge.1: doc/git-union-merge.mdwn
 	./Build/mdwn2man git-union-merge 1 doc/git-union-merge.mdwn > git-union-merge.1
@@ -42,7 +38,7 @@ git-union-merge:
 
 install-mans: mans
 	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/man/man1
-	install -m 0644 $(mans) $(DESTDIR)$(PREFIX)/$(SHAREDIR)/man/man1
+	install -m 0644 man/*.1 $(DESTDIR)$(PREFIX)/$(SHAREDIR)/man/man1
 
 install-docs: docs install-mans
 	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/doc/git-annex
@@ -80,10 +76,8 @@ else
 IKIWIKI=ikiwiki
 endif
 
-mans: man $(mans)
-
-man:
-	mkdir -p man
+mans: Build/MakeMans
+	./Build/MakeMans
 
 docs: mans
 	LC_ALL=C TZ=UTC $(IKIWIKI) doc html -v --wikiname git-annex \
@@ -102,7 +96,7 @@ clean:
 		doc/.ikiwiki html dist tags Build/SysConfig.hs \
 		Setup Build/InstallDesktopFile Build/EvilSplicer \
 		Build/Standalone Build/OSXMkLibs Build/LinuxMkLibs \
-		Build/DistributionUpdate Build/BuildVersion \
+		Build/DistributionUpdate Build/BuildVersion Build/Mans \
 		git-union-merge .tasty-rerun-log
 	find . -name \*.o -exec rm {} \;
 	find . -name \*.hi -exec rm {} \;
@@ -117,12 +111,12 @@ Build/OSXMkLibs: Build/OSXMkLibs.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
 Build/LinuxMkLibs: Build/LinuxMkLibs.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
-
-sdist: clean mans
-	./Build/make-sdist.sh
+Build/MakeMans: Build/MakeMans.hs
+	$(GHC) --make $@ -Wall -fno-warn-tabs
 
 # Upload to hackage.
-hackage: sdist
+hackage:
+	@cabal sdist
 	@cabal upload dist/*.tar.gz
 
 LINUXSTANDALONE_DEST=tmp/git-annex.linux
@@ -170,7 +164,7 @@ prep-standalone:
 
 undo-standalone:
 	test -e .git
-	git checkout debian/changelog
+	git checkout debian/changelog CHANGELOG
 	quilt pop -a || true
 
 commit-standalone:

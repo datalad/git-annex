@@ -21,6 +21,10 @@ optParser _ =
 		( long "unlock"
 		<> help "unlock annexed files"
 		)
+	<|> flag' FixAdjustment
+		( long "fix"
+		<> help "fix symlinks to annnexed files"
+		)
 	{- Not ready yet
 	<|> flag' HideMissingAdjustment
 		( long "hide-missing"
@@ -35,5 +39,4 @@ start :: Adjustment -> CommandStart
 start adj = do
 	checkVersionSupported
 	showStart "adjust" ""
-	enterAdjustedBranch adj
-	next $ next $ return True
+	next $ next $ enterAdjustedBranch adj

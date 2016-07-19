@@ -20,6 +20,7 @@ module Annex.AdjustedBranch (
 	adjustToCrippledFileSystem,
 	updateAdjustedBranch,
 	propigateAdjustedCommits,
+	AdjustedClone(..),
 	checkAdjustedClone,
 	isGitVersionSupported,
 	checkVersionSupported,
@@ -51,12 +52,15 @@ import Annex.Perms
 import Annex.GitOverlay
 import Utility.Tmp
 import qualified Database.Keys
+import Config
 
 import qualified Data.Map as M
 
 data Adjustment
 	= UnlockAdjustment
 	| LockAdjustment
+	| FixAdjustment
+	| UnFixAdjustment
 	| HideMissingAdjustment
 	| ShowMissingAdjustment
 	deriving (Show, Eq)
@@ -66,32 +70,16 @@ reverseAdjustment UnlockAdjustment = LockAdjustment
 reverseAdjustment LockAdjustment = UnlockAdjustment
 reverseAdjustment HideMissingAdjustment = ShowMissingAdjustment
 reverseAdjustment ShowMissingAdjustment = HideMissingAdjustment
+reverseAdjustment FixAdjustment = UnFixAdjustment
+reverseAdjustment UnFixAdjustment = FixAdjustment
 
 {- How to perform various adjustments to a TreeItem. -}
 adjustTreeItem :: Adjustment -> TreeItem -> Annex (Maybe TreeItem)
-adjustTreeItem UnlockAdjustment ti@(TreeItem f m s)
-	| toBlobType m == Just SymlinkBlob = do
-		mk <- catKey s
-		case mk of
-			Just k -> do
-				Database.Keys.addAssociatedFile k f
-				Just . TreeItem f (fromBlobType FileBlob)
-					<$> hashPointerFile k
-			Nothing -> return (Just ti)
-	| otherwise = return (Just ti)
-adjustTreeItem LockAdjustment ti@(TreeItem f m s)
-	| toBlobType m /= Just SymlinkBlob = do
-		mk <- catKey s
-		case mk of
-			Just k -> do
-				absf <- inRepo $ \r -> absPath $
-					fromTopFilePath f r
-				linktarget <- calcRepo $ gitAnnexLink absf k
-				Just . TreeItem f (fromBlobType SymlinkBlob)
-					<$> hashSymlink linktarget
-			Nothing -> return (Just ti)
-	| otherwise = return (Just ti)
-adjustTreeItem HideMissingAdjustment ti@(TreeItem _ _ s) = do
+adjustTreeItem UnlockAdjustment = ifSymlink adjustToPointer noAdjust
+adjustTreeItem LockAdjustment = ifSymlink noAdjust adjustToSymlink
+adjustTreeItem FixAdjustment = ifSymlink adjustToSymlink noAdjust
+adjustTreeItem UnFixAdjustment = ifSymlink (adjustToSymlink' gitAnnexLinkCanonical) noAdjust
+adjustTreeItem HideMissingAdjustment = \ti@(TreeItem _ _ s) -> do
 	mk <- catKey s
 	case mk of
 		Just k -> ifM (inAnnex k)
@@ -99,7 +87,40 @@ adjustTreeItem HideMissingAdjustment ti@(TreeItem _ _ s) = do
 			, return Nothing
 			)
 		Nothing -> return (Just ti)
-adjustTreeItem ShowMissingAdjustment ti = return (Just ti)
+adjustTreeItem ShowMissingAdjustment = noAdjust
+
+ifSymlink :: (TreeItem -> Annex a) -> (TreeItem -> Annex a) -> TreeItem -> Annex a
+ifSymlink issymlink notsymlink ti@(TreeItem _f m _s)
+	| toBlobType m == Just SymlinkBlob = issymlink ti
+	| otherwise = notsymlink ti
+
+noAdjust :: TreeItem -> Annex (Maybe TreeItem)
+noAdjust = return . Just
+
+adjustToPointer :: TreeItem -> Annex (Maybe TreeItem)
+adjustToPointer ti@(TreeItem f _m s) = do
+	mk <- catKey s
+	case mk of
+		Just k -> do
+			Database.Keys.addAssociatedFile k f
+			Just . TreeItem f (fromBlobType FileBlob)
+				<$> hashPointerFile k
+		Nothing -> return (Just ti)
+
+adjustToSymlink :: TreeItem -> Annex (Maybe TreeItem)
+adjustToSymlink = adjustToSymlink' gitAnnexLink
+
+adjustToSymlink' :: (FilePath -> Key -> Git.Repo -> GitConfig -> IO FilePath) -> TreeItem -> Annex (Maybe TreeItem)
+adjustToSymlink' gitannexlink ti@(TreeItem f _m s) = do
+	mk <- catKey s
+	case mk of
+		Just k -> do
+			absf <- inRepo $ \r -> absPath $
+				fromTopFilePath f r
+			linktarget <- calcRepo $ gitannexlink absf k
+			Just . TreeItem f (fromBlobType SymlinkBlob)
+				<$> hashSymlink linktarget
+		Nothing -> return (Just ti)
 
 type OrigBranch = Branch
 newtype AdjBranch = AdjBranch { adjBranch :: Branch }
@@ -123,11 +144,15 @@ serialize UnlockAdjustment = "unlocked"
 serialize LockAdjustment = "locked"
 serialize HideMissingAdjustment = "present"
 serialize ShowMissingAdjustment = "showmissing"
+serialize FixAdjustment = "fixed"
+serialize UnFixAdjustment = "unfixed"
 
 deserialize :: String -> Maybe Adjustment
 deserialize "unlocked" = Just UnlockAdjustment
 deserialize "locked" = Just UnlockAdjustment
 deserialize "present" = Just HideMissingAdjustment
+deserialize "fixed" = Just FixAdjustment
+deserialize "unfixed" = Just UnFixAdjustment
 deserialize _ = Nothing
 
 originalToAdjusted :: OrigBranch -> Adjustment -> AdjBranch
@@ -160,21 +185,41 @@ originalBranch = fmap fromAdjustedBranch <$> inRepo Git.Branch.current
  - adjusted version of a branch, changes the adjustment of the original
  - branch).
  -
- - Can fail, if no branch is checked out, or perhaps if staged changes
- - conflict with the adjusted branch.
+ - Can fail, if no branch is checked out, or if the adjusted branch already
+ - exists, or perhaps if staged changes conflict with the adjusted branch.
  -}
-enterAdjustedBranch :: Adjustment -> Annex ()
+enterAdjustedBranch :: Adjustment -> Annex Bool
 enterAdjustedBranch adj = go =<< originalBranch
   where
 	go (Just origbranch) = do
-		AdjBranch b <- preventCommits $ const $ 
-			adjustBranch adj origbranch
-		showOutput -- checkout can have output in large repos
-		inRepo $ Git.Command.run
-			[ Param "checkout"
-			, Param $ fromRef $ Git.Ref.base b
-			]
-	go Nothing = error "not on any branch!"
+		let adjbranch = adjBranch $ originalToAdjusted origbranch adj
+		ifM (inRepo (Git.Ref.exists adjbranch) <&&> (not <$> Annex.getState Annex.force))
+			( do
+				mapM_ (warning . unwords)
+					[ [ "adjusted branch"
+					  , Git.Ref.describe adjbranch
+					  , "already exists."
+					  ]
+					, [ "Aborting because that branch may have changes that have not yet reached"
+					  , Git.Ref.describe origbranch
+					  ]
+					, [ "You can check out the adjusted branch manually to enter it,"
+					  , "or delete the adjusted branch and re-run this command."
+					  ]
+					]
+				return False
+			, do
+				AdjBranch b <- preventCommits $ const $ 
+					adjustBranch adj origbranch
+				showOutput -- checkout can have output in large repos
+				inRepo $ Git.Command.runBool
+					[ Param "checkout"
+					, Param $ fromRef $ Git.Ref.base b
+					]
+			)
+	go Nothing = do
+		warning "not on any branch!"
+		return False
 
 adjustToCrippledFileSystem :: Annex ()
 adjustToCrippledFileSystem = do
@@ -186,7 +231,8 @@ adjustToCrippledFileSystem = do
 			, Param "-m"
 			, Param "commit before entering adjusted unlocked branch"
 			]
-	enterAdjustedBranch UnlockAdjustment
+	unlessM (enterAdjustedBranch UnlockAdjustment) $
+		warning "Failed to enter adjusted branch!"
 
 setBasisBranch :: BasisBranch -> Ref -> Annex ()
 setBasisBranch (BasisBranch basis) new = 
@@ -254,8 +300,19 @@ commitAdjustedTree' treesha (BasisBranch basis) parents =
 	mkcommit = Git.Branch.commitTree Git.Branch.AutomaticCommit
 		adjustedBranchCommitMessage parents treesha
 
+{- This message should never be changed. -}
 adjustedBranchCommitMessage :: String
 adjustedBranchCommitMessage = "git-annex adjusted branch"
+
+findAdjustingCommit :: AdjBranch -> Annex (Maybe Commit)
+findAdjustingCommit (AdjBranch b) = go =<< catCommit b
+  where
+	go Nothing = return Nothing
+	go (Just c)
+		| commitMessage c == adjustedBranchCommitMessage = return (Just c)
+		| otherwise = case commitParent c of
+			[p] -> go =<< catCommit p
+			_ -> return Nothing
 
 {- Update the currently checked out adjusted branch, merging the provided
  - branch into it. Note that the provided branch should be a non-adjusted
@@ -301,10 +358,16 @@ updateAdjustedBranch tomerge (origbranch, adj) mergeconfig commitmode = catchBoo
 		withTmpDirIn misctmpdir "git" $ \tmpgit -> withWorkTreeRelated tmpgit $
 			withemptydir tmpwt $ withWorkTree tmpwt $ do
 				liftIO $ writeFile (tmpgit </> "HEAD") (fromRef updatedorig)
+				-- This reset makes git merge not care
+				-- that the work tree is empty; otherwise
+				-- it will think that all the files have
+				-- been staged for deletion, and sometimes
+				-- the merge includes these deletions
+				-- (for an unknown reason).
+				-- http://thread.gmane.org/gmane.comp.version-control.git/297237
+				inRepo $ Git.Command.run [Param "reset", Param "HEAD", Param "--quiet"]
 				showAction $ "Merging into " ++ fromRef (Git.Ref.base origbranch)
-				-- The --no-ff is important; it makes git
-				-- merge not care that the work tree is empty.
-				merged <- inRepo (Git.Merge.merge' [Param "--no-ff"] tomerge mergeconfig commitmode)
+				merged <- inRepo (Git.Merge.merge' [] tomerge mergeconfig commitmode)
 					<||> (resolveMerge (Just updatedorig) tomerge True <&&> commitResolvedMerge commitmode)
 				if merged
 					then do
@@ -495,23 +558,49 @@ diffTreeToTreeItem dti = TreeItem
 	(Git.DiffTree.dstmode dti)
 	(Git.DiffTree.dstsha dti)
 
+data AdjustedClone = InAdjustedClone | NotInAdjustedClone | NeedUpgradeForAdjustedClone
+
 {- Cloning a repository that has an adjusted branch checked out will
  - result in the clone having the same adjusted branch checked out -- but
- - the origbranch won't exist in the clone, nor will the basis.
- - Create them. -}
-checkAdjustedClone :: Annex ()
-checkAdjustedClone = go =<< inRepo Git.Branch.current
+ - the origbranch won't exist in the clone, nor will the basis. So
+ - to properly set up the adjusted branch, the origbranch and basis need
+ - to be set.
+ - 
+ - We can't trust that the origin's origbranch matches up with the currently
+ - checked out adjusted branch; the origin could have the two branches
+ - out of sync (eg, due to another branch having been pushed to the origin's
+ - origbranch), or due to a commit on its adjusted branch not having been
+ - propigated back to origbranch.
+ -
+ - So, find the adjusting commit on the currently checked out adjusted
+ - branch, and use the parent of that commit as the basis, and set the
+ - origbranch to it.
+ -
+ - The repository may also need to be upgraded to a new version, if the
+ - current version is too old to support adjusted branches. -}
+checkAdjustedClone :: Annex AdjustedClone
+checkAdjustedClone = ifM isBareRepo
+	( return NotInAdjustedClone
+	, go =<< inRepo Git.Branch.current
+	)
   where
-	go Nothing = return ()
+	go Nothing = return NotInAdjustedClone
 	go (Just currbranch) = case adjustedToOriginal currbranch of
-		Nothing -> return ()
+		Nothing -> return NotInAdjustedClone
 		Just (adj, origbranch) -> do
-			let remotebranch = Git.Ref.underBase "refs/remotes/origin" origbranch
 			let basis@(BasisBranch bb) = basisBranch (originalToAdjusted origbranch adj)
-			unlessM (inRepo $ Git.Ref.exists bb) $
-				setBasisBranch basis remotebranch
-			unlessM (inRepo $ Git.Ref.exists origbranch) $
-				inRepo $ Git.Branch.update' origbranch remotebranch
+			unlessM (inRepo $ Git.Ref.exists bb) $ do
+				unlessM (inRepo $ Git.Ref.exists origbranch) $ do
+					let remotebranch = Git.Ref.underBase "refs/remotes/origin" origbranch
+					inRepo $ Git.Branch.update' origbranch remotebranch
+				aps <- fmap commitParent <$> findAdjustingCommit (AdjBranch currbranch)
+				case aps of
+					Just [p] -> setBasisBranch basis p
+					_ -> error $ "Unable to clean up from clone of adjusted branch; perhaps you should check out " ++ Git.Ref.describe origbranch
+			ifM versionSupportsUnlockedPointers
+				( return InAdjustedClone
+				, return NeedUpgradeForAdjustedClone
+				)
 
 -- git 2.2.0 needed for GIT_COMMON_DIR which is needed
 -- by updateAdjustedBranch to use withWorkTreeRelated.

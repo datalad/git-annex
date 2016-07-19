@@ -3,4 +3,4 @@ The OSX autobuilder has been updated to OSX 10.10 Yosemite. The
 might also work on 10.9 Mavericks too, and I'd appreciate help testing that.
 
 Went ahead and fixed the [[partial commit problem|bugs/modified_permissions_persist_after_unlock__44___commit]]
-by making the pre-commit hook detect and block problimatic partial commits.
+by making the pre-commit hook detect and block problematic partial commits.

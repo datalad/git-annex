@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-27T19:03:05Z"
+ content="""
+Union merge on windows does indeed add \r onto lines. 
+
+Looks like hashBlob is at fault; it writes a string to a temp file,
+and the IO layer does CRLF conversion at that point. 
+
+The git-annex branch transition code also uses hashBlob so would also
+do it.
+
+So I've reproduced the root cause of this now. Fixing..
+"""]]

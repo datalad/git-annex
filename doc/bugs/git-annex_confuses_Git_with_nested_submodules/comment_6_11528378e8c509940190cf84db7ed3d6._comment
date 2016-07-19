@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2016-05-16T20:14:57Z"
+ content="""
+I hope this will be fixed on the git side, but I don't know when it will
+be. Probably comes down to someone developing a patch.
+
+Occurs to me that git-annex could use adjusted branches to deal with this.
+When initializing in a submodule, it could enter an adjusted branch with
+`git annex adjust --fix`. This way, symlinks would be re-written to point
+to the submodule's git repository. The .git dotfile would not need to be
+converted to a symlink at all.
+"""]]

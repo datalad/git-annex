@@ -82,14 +82,14 @@ gen r u c gc = do
 		{ chunkConfig = NoChunks
 		}
 
-ddarSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-ddarSetup mu _ c = do
+ddarSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+ddarSetup mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	-- verify configuration is sane
 	let ddarrepo = fromMaybe (error "Specify ddarrepo=") $
 		M.lookup "ddarrepo" c
-	(c', _encsetup) <- encryptionSetup c
+	(c', _encsetup) <- encryptionSetup c gc
 
 	-- The ddarrepo is stored in git config, as well as this repo's
 	-- persistant state, so it can vary between hosts.

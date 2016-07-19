@@ -9,6 +9,7 @@
 
 module Database.Keys (
 	DbHandle,
+	closeDb,
 	addAssociatedFile,
 	getAssociatedFiles,
 	getAssociatedKey,
@@ -136,6 +137,16 @@ openDb createdb _ = catchPermissionDenied permerr $ withExclusiveLock gitAnnexKe
 	permerr e = case createdb of
 		False -> return DbUnavailable
 		True -> throwM e
+
+{- Closes the database if it was open. Any writes will be flushed to it.
+ -
+ - This does not normally need to be called; the database will auto-close
+ - when the handle is garbage collected. However, this can be used to
+ - force a re-read of the database, in case another process has written
+ - data to it.
+ -}
+closeDb :: Annex ()
+closeDb = liftIO . closeDbHandle =<< getDbHandle
 
 addAssociatedFile :: Key -> TopFilePath -> Annex ()
 addAssociatedFile k f = runWriterIO $ SQL.addAssociatedFile (toIKey k) f

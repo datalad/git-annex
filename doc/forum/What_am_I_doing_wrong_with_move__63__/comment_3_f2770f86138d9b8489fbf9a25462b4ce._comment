@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Gus"
+ subject="I think I have figured out something"
+ date="2016-06-05T22:42:17Z"
+ content="""
+When I `git-annex drop --force` a file from my direct repository, it gets replaced by a symbolic-link-like file, containing a path.
+Then, when I `git-annex sync` the repository to propagate the changes I have made, the file's content gets updated as if the file has been replaced.
+
+My question is then: why does the original file gets replaced by the link-like file when I drop it?
+"""]]

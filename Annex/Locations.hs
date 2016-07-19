@@ -15,6 +15,7 @@ module Annex.Locations (
 	gitAnnexLocation,
 	gitAnnexLocationDepth,
 	gitAnnexLink,
+	gitAnnexLinkCanonical,
 	gitAnnexContentLock,
 	gitAnnexMapping,
 	gitAnnexInodeCache,
@@ -80,6 +81,7 @@ import Types.UUID
 import Types.GitConfig
 import Types.Difference
 import qualified Git
+import qualified Git.Types as Git
 import Git.FilePath
 import Annex.DirHashes
 import Annex.Fixup
@@ -149,8 +151,9 @@ gitAnnexLocation' key r config crippled symlinkssupported checker gitdir
 	 - for new content, unless symlinks are supported too.
 	 - Then hashDirMixed is used. But, the content could be
 	 - in either location so check both. -}
-	| symlinkssupported = check $ map inrepo $ reverse $ annexLocations config key
-	| crippled = checkall
+	| crippled = if symlinkssupported
+		then check $ map inrepo $ reverse $ annexLocations config key
+		else checkall
 	{- Regular repositories only use hashDirMixed, so
 	 - don't need to do any work to check if the file is
 	 - present. -}
@@ -181,6 +184,20 @@ gitAnnexLink file key r config = do
 				Git.repoPath r </> ".git"
 		| otherwise = Git.localGitDir r
 	whoops = error $ "unable to normalize " ++ file
+
+{- Calculates a symlink target as would be used in a typical git
+ - repository, with .git in the top of the work tree. -}
+gitAnnexLinkCanonical :: FilePath -> Key -> Git.Repo -> GitConfig -> IO FilePath
+gitAnnexLinkCanonical file key r config = gitAnnexLink file key r' config'
+  where
+	r' = case r of
+		Git.Repo { Git.location = l@Git.Local { Git.worktree = Just wt } } ->
+			r { Git.location = l { Git.gitdir = wt </> ".git" } }
+		_ -> r
+	config' = config
+		{ annexCrippledFileSystem = False
+		, coreSymlinks = True
+		}
 
 {- File used to lock a key's content. -}
 gitAnnexContentLock :: Key -> Git.Repo -> GitConfig -> IO FilePath
@@ -394,7 +411,7 @@ gitAnnexAssistantDefaultDir = "annex"
  -
  - This is used when a new Key is initially being generated, eg by getKey.
  - Unlike keyFile and fileKey, it does not need to be a reversable
- - escaping. Also, it's ok to change this to add more problimatic
+ - escaping. Also, it's ok to change this to add more problematic
  - characters later. Unlike changing keyFile, which could result in the
  - filenames used for existing keys changing and contents getting lost.
  -

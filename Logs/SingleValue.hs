@@ -16,6 +16,7 @@ module Logs.SingleValue where
 import Annex.Common
 import qualified Annex.Branch
 import Logs.TimeStamp
+import Logs.Line
 
 import qualified Data.Set as S
 import Data.Time.Clock.POSIX
@@ -37,7 +38,7 @@ showLog = unlines . map showline . S.toList
 	showline (LogEntry t v) = unwords [show t, serialize v]
 
 parseLog :: (Ord v, SingleValueSerializable v) => String -> Log v
-parseLog = S.fromList . mapMaybe parse . lines
+parseLog = S.fromList . mapMaybe parse . splitLines
   where
 	parse line = do
 		let (ts, s) = splitword line

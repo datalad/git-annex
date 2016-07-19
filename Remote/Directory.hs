@@ -77,8 +77,8 @@ gen r u c gc = do
   where
 	dir = fromMaybe (error "missing directory") $ remoteAnnexDirectory gc
 
-directorySetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-directorySetup mu _ c = do
+directorySetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+directorySetup mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	-- verify configuration is sane
 	let dir = fromMaybe (error "Specify directory=") $
@@ -86,7 +86,7 @@ directorySetup mu _ c = do
 	absdir <- liftIO $ absPath dir
 	liftIO $ unlessM (doesDirectoryExist absdir) $
 		error $ "Directory does not exist: " ++ absdir
-	(c', _encsetup) <- encryptionSetup c
+	(c', _encsetup) <- encryptionSetup c gc
 
 	-- The directory is stored in git config, not in this remote's
 	-- persistant state, so it can vary between hosts.

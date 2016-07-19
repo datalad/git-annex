@@ -40,8 +40,8 @@ import Annex.InodeSentinal
 import Upgrade
 import Annex.Perms
 import qualified Database.Keys
-#ifndef mingw32_HOST_OS
 import Utility.UserInfo
+#ifndef mingw32_HOST_OS
 import Utility.FileMode
 import System.Posix.User
 import qualified Utility.LockFile.Posix as Posix
@@ -52,13 +52,11 @@ genDescription (Just d) = return d
 genDescription Nothing = do
 	reldir <- liftIO . relHome =<< liftIO . absPath =<< fromRepo Git.repoPath
 	hostname <- fromMaybe "" <$> liftIO getHostname
-#ifndef mingw32_HOST_OS
 	let at = if null hostname then "" else "@"
-	username <- liftIO myUserName
-	return $ concat [username, at, hostname, ":", reldir]
-#else
-	return $ concat [hostname, ":", reldir]
-#endif
+	v <- liftIO myUserName
+	return $ concat $ case v of
+		Right username -> [username, at, hostname, ":", reldir]
+		Left _ -> [hostname, ":", reldir]
 
 initialize :: Maybe String -> Maybe Version -> Annex ()
 initialize mdescription mversion = do
@@ -85,7 +83,7 @@ initialize' mversion = do
 	checkLockSupport
 	checkFifoSupport
 	checkCrippledFileSystem
-	unlessM isBare $
+	unlessM isBareRepo $
 		hookWrite preCommitHook
 	setDifferences
 	unlessM (isJust <$> getVersion) $
@@ -93,19 +91,23 @@ initialize' mversion = do
 	whenM versionSupportsUnlockedPointers $ do
 		configureSmudgeFilter
 		Database.Keys.scanAssociatedFiles
-	ifM (crippledFileSystem <&&> (not <$> isBare))
-		( ifM versionSupportsUnlockedPointers
-			( adjustToCrippledFileSystem
-			, do
-				enableDirectMode
-				setDirect True
-			)
-		-- Handle case where this repo was cloned from a
-		-- direct mode repo
-		, unlessM isBare
-			switchHEADBack
-		)
-	checkAdjustedClone
+	v <- checkAdjustedClone
+	case v of
+		NeedUpgradeForAdjustedClone -> void $ upgrade True
+		InAdjustedClone -> return ()
+		NotInAdjustedClone ->
+			ifM (crippledFileSystem <&&> (not <$> isBareRepo))
+				( ifM versionSupportsUnlockedPointers
+					( adjustToCrippledFileSystem
+					, do
+						enableDirectMode
+						setDirect True
+					)
+				-- Handle case where this repo was cloned from a
+				-- direct mode repo
+				, unlessM isBareRepo
+					switchHEADBack
+				)
 	createInodeSentinalFile False
 
 uninitialize :: Annex ()
@@ -132,9 +134,6 @@ ensureInitialized = getVersion >>= maybe needsinit checkUpgrade
 {- Checks if a repository is initialized. Does not check version for ugrade. -}
 isInitialized :: Annex Bool
 isInitialized = maybe Annex.Branch.hasSibling (const $ return True) =<< getVersion
-
-isBare :: Annex Bool
-isBare = fromRepo Git.repoIsLocalBare
 
 {- A crippled filesystem is one that does not allow making symlinks,
  - or removing write access from files. -}

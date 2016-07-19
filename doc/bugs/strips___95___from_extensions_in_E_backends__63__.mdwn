@@ -1,0 +1,17 @@
+in my obscure case filename is ds001_R1.1.0_raw.tgz  and resultant extension annex takes for the E backend is .0raw.tgz which is formed from .0_raw.tgz with _ removed.  IMHO if _ is not expected in the extensions, the target extension then should have been just .tgz.  If it does expect/allow for _ in extension -- should have been .0_raw.tgz
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+$> f=ds001_R1.1.0_raw.tgz; rm -rf /tmp/repo1; mkdir /tmp/repo1; cd /tmp/repo1; git init; git annex init ; echo 123>$f; git annex add --backend MD5E $f; ls -ld $f              
+Initialized empty Git repository in /tmp/repo1/.git/
+init  ok
+(recording state in git...)
+add ds001_R1.1.0_raw.tgz ok
+(recording state in git...)
+lrwxrwxrwx 1 yoh yoh 126 May 25 14:27 ds001_R1.1.0_raw.tgz -> .git/annex/objects/g5/jW/MD5E-s4--ba1f2511fc30423bdbb183fe33f3dd0f.0raw.tgz/MD5E-s4--ba1f2511fc30423bdbb183fe33f3dd0f.0raw.tgz
+"""]]
+
+[[!meta author=yoh]]
+
+> [[fixed|done]] --[[Joey]]

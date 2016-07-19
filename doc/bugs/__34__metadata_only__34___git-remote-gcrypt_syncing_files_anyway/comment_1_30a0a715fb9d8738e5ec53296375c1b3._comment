@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="chris@f4ea67aa5ae4709d79959f782fcebb5edae9a79b"
+ nickname="chris"
+ subject="similar problem"
+ date="2016-06-02T16:28:18Z"
+ content="""
+For me it's a version 6 repository, but I also get lots of queued transfers to my \"metadata only\" git-remote-gcrypt repo when I launch the webapp. Luckily they don't actually seem to turn up amongst the remote repo's objects (unless I'm missing something), but it causes the assistant to be busy being useless for a while.
+"""]]

@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-05-12T19:52:49Z"
+ content="""
+Looking at the code, the RepoList looks at syncRemotes to decide if a
+remote is syncing or not. The edit form instead looks at remoteAnnexSync
+from the remote's gitconfig. So, seems syncRemotes for some reason does
+not include this remote, despite its gitconfig saying to sync with it.
+
+Well, calcSyncRemotes starts with remoteAnnexSync but also excludes Dead
+repos. And indeed, when a repo is dead, it behaves as shown.
+
+So, `git annex semitrust Kapsel` should get it back to syncing with that
+remote. Assuming it's not dead for a reason.
+
+The webapp UI doesn't currently indicate when a remote is dead. I think you
+can only get into this state by running `git annex dead` at the command line
+though.
+
+Simple fix is to not make the webapp display dead remotes in the
+RepoList at all. Done.
+"""]]

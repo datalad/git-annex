@@ -8,8 +8,9 @@ Other mirrors of the git repository:
 * [at github](https://github.com/joeyh/git-annex)
 
 Releases of git-annex are uploaded
-[to hackage](http://hackage.haskell.org/package/git-annex). Get your
-tarballs there, if you need them.
+[to hackage](http://hackage.haskell.org/package/git-annex). Note that the
+tarball there is not the complete git-annex source tree, but only a subset
+to make `cabal install` work. Use git to checkout the full source tree.
 
 Some operating systems include git-annex in easily prepackaged form and
 others need some manual work. See [[install]] for details.

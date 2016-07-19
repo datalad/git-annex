@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-05-31T17:18:09Z"
+ content="""
+It could be that I made the wrong decision, but the tarball was being built
+with hacks to include all those files before, and was still not complete
+due to limits in what's allowed in tarballs on hackage.
+
+The Makefile will be removed from the tarball in the next release, 
+which should I think make it clearer that the tarball is not intended for a
+`make install` situation.
+"""]]

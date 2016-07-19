@@ -2,4 +2,4 @@ While being asked to check if file is available from "[datalad-archives]" remote
 
 [[!meta author=yoh]]
 
-> [[done]]] --[[Joey]]
+> [[done]] --[[Joey]]

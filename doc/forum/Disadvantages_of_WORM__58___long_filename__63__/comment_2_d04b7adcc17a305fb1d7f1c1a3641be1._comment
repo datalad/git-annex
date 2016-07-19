@@ -18,7 +18,7 @@ If you are using a mixture of filesystems, eg EXT4 and VFAT, this can still
 result in WORM key names generated on EXT4 being too long to fit on the
 VFAT filesystem. In this case, I would recommend not using WORM.
 
-Incidentially, that version also made many problimatic characters
+Incidentially, that version also made many problematic characters
 not be included in WORM key names, so they're more portable to eg, FAT
 filesystems.
 """]]

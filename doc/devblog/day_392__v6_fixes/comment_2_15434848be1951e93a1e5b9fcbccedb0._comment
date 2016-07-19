@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-05-21T13:55:01Z"
+ content="""
+Dangling objects are not related to the v6 syncing problems mentioned in
+this post.
+
+You can generally safely delete dangling objects from a git repository;
+git gc does it automatically after 30 days or so. git-annex does not
+normally create dangling objects but several git operations can.
+"""]]

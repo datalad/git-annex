@@ -17,7 +17,9 @@ import qualified Annex.Queue
 import qualified Database.Keys
 import Config
 import Annex.FileMatcher
+import Annex.Link
 import Annex.Version
+import Git.FilePath
 
 cmd :: Command
 cmd = notBareRepo $ withGlobalOptions (jobsOption : jsonOption : fileMatchingOptions) $
@@ -80,8 +82,15 @@ addFile file = do
 	return True
 
 start :: FilePath -> CommandStart
-start file = ifAnnexed file addpresent add
+start file = do
+	ifM versionSupportsUnlockedPointers
+		( do
+			mk <- liftIO $ isPointerFile file
+			maybe go fixuppointer mk
+		, go
+		)
   where
+	go = ifAnnexed file addpresent add
 	add = do
 		ms <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
 		case ms of
@@ -114,9 +123,14 @@ start file = ifAnnexed file addpresent add
 		-- the annexed symlink is present but not yet added to git
 		showStart "add" file
 		liftIO $ removeFile file
-		next $ next $ do
-			addLink file key Nothing
+		addLink file key Nothing
+		next $ next $
 			cleanup key =<< inAnnex key
+	fixuppointer key = do
+		-- the pointer file is present, but not yet added to git
+		showStart "add" file
+		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
+		next $ next $ addFile file
 
 perform :: FilePath -> CommandPerform
 perform file = do

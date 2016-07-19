@@ -50,6 +50,7 @@ import qualified Git.LsTree
 import qualified Git.FilePath
 import qualified Annex.Locations
 import qualified Types.KeySource
+import qualified Types.Remote
 import qualified Types.Backend
 import qualified Types.TrustLevel
 import qualified Types
@@ -231,6 +232,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "version" test_version
 	, testCase "sync" test_sync
 	, testCase "union merge regression" test_union_merge_regression
+	, testCase "adjusted branch merge regression" test_adjusted_branch_merge_regression
 	, testCase "conflict resolution" test_conflict_resolution
 	, testCase "conflict resolution (adjusted branch)" test_conflict_resolution_adjusted_branch
 	, testCase "conflict resolution movein regression" test_conflict_resolution_movein_regression
@@ -563,10 +565,11 @@ test_preferred_content = intmpclonerepo $ do
 test_lock :: Assertion
 test_lock = intmpclonerepoInDirect $ do
 	annexed_notpresent annexedfile
-	ifM (unlockedFiles <$> getTestMode)
-		( not <$> git_annex "lock" [annexedfile] @? "lock failed to fail with not present file"
-		, not <$> git_annex "unlock" [annexedfile] @? "unlock failed to fail with not present file"
-		)
+	unlessM (annexeval Annex.Version.versionSupportsUnlockedPointers) $
+		ifM (unlockedFiles <$> getTestMode)
+			( not <$> git_annex "lock" [annexedfile] @? "lock failed to fail with not present file"
+			, not <$> git_annex "unlock" [annexedfile] @? "unlock failed to fail with not present file"
+			)
 	annexed_notpresent annexedfile
 
 	-- regression test: unlock of newly added, not committed file
@@ -968,9 +971,9 @@ test_union_merge_regression =
 					git_annex "get" [annexedfile] @? "get failed"
 					boolSystem "git" [Param "remote", Param "rm", Param "origin"] @? "remote rm"
 				forM_ [r3, r2, r1] $ \r -> indir r $
-					git_annex "sync" [] @? "sync failed"
+					git_annex "sync" [] @? ("sync failed in " ++ r)
 				forM_ [r3, r2] $ \r -> indir r $
-					git_annex "drop" ["--force", annexedfile] @? "drop failed"
+					git_annex "drop" ["--force", annexedfile] @? ("drop failed in " ++ r)
 				indir r1 $ do
 					git_annex "sync" [] @? "sync failed in r1"
 					git_annex_expectoutput "find" ["--in", "r3"] []
@@ -1064,7 +1067,10 @@ test_conflict_resolution_adjusted_branch = whenM Annex.AdjustedBranch.isGitVersi
 				git_annex "sync" [] @? "sync failed in r2"
 				-- need v6 to use adjust
 				git_annex "upgrade" [] @? "upgrade failed"
-				git_annex "adjust" ["--unlock"] @? "adjust failed"
+				-- We might be in an adjusted branch
+				-- already, when eg on a crippled
+				-- filesystem. So, --force it.
+				git_annex "adjust" ["--unlock", "--force"] @? "adjust failed"
 			pair r1 r2
 			forM_ [r1,r2,r1] $ \r -> indir r $
 				git_annex "sync" [] @? "sync failed"
@@ -1391,6 +1397,33 @@ test_mixed_lock_conflict_resolution =
 		-- regular file because it's unlocked
 		checkregularfile conflictor
 
+{- Regression test for a bad merge between two adjusted branch repos,
+ - where the same file is added to both independently. The bad merge
+ - emptied the whole tree. -}
+test_adjusted_branch_merge_regression :: Assertion
+test_adjusted_branch_merge_regression = whenM Annex.AdjustedBranch.isGitVersionSupported $
+	withtmpclonerepo $ \r1 ->
+		withtmpclonerepo $ \r2 -> do
+			pair r1 r2
+			setup r1
+			setup r2
+			checkmerge "r1" r1
+			checkmerge "r2" r2
+  where
+	conflictor = "conflictor"
+	setup r = indir r $ do
+		disconnectOrigin
+		git_annex "upgrade" [] @? "upgrade failed"
+		git_annex "adjust" ["--unlock", "--force"] @? "adjust failed"
+		writeFile conflictor "conflictor"
+		git_annex "add" [conflictor] @? "add conflicter failed"
+		git_annex "sync" [] @? "sync failed"
+	checkmerge what d = indir d $ do
+		git_annex "sync" [] @? ("sync failed in " ++ what)
+		l <- getDirectoryContents "."
+		conflictor `elem` l
+			@? ("conflictor not present after merge in " ++ what)
+
 {- Set up repos as remotes of each other. -}
 pair :: FilePath -> FilePath -> Assertion
 pair r1 r2 = forM_ [r1, r2] $ \r -> indir r $ do
@@ -1522,6 +1555,7 @@ test_crypto = do
 	testscheme "pubkey"
   where
 	gpgcmd = Utility.Gpg.mkGpgCmd Nothing
+	encparams = (mempty :: Types.Remote.RemoteConfig, def :: Types.RemoteGitConfig)
 	testscheme scheme = intmpclonerepo $ whenM (Utility.Path.inPath (Utility.Gpg.unGpgCmd gpgcmd)) $ do
 		Utility.Gpg.testTestHarness gpgcmd 
 			@? "test harness self-test failed"
@@ -1577,7 +1611,7 @@ test_crypto = do
 		checkScheme Types.Crypto.Hybrid = scheme == "hybrid"
 		checkScheme Types.Crypto.PubKey = scheme == "pubkey"
 		checkKeys cip mvariant = do
-			cipher <- Crypto.decryptCipher gpgcmd cip
+			cipher <- Crypto.decryptCipher gpgcmd encparams cip
 			files <- filterM doesFileExist $
 				map ("dir" </>) $ concatMap (key2files cipher) keys
 			return (not $ null files) <&&> allM (checkFile mvariant) files

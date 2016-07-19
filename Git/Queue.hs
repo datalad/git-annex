@@ -163,7 +163,7 @@ runAction repo action@(CommandAction {}) = do
 		hPutStr h $ intercalate "\0" $ toCommand $ getFiles action
 		hClose h
 #else
-	-- Using xargs on Windows is problimatic, so just run the command
+	-- Using xargs on Windows is problematic, so just run the command
 	-- once per file (not as efficient.)
 	if null (getFiles action)
 		then void $ boolSystemEnv "git" gitparams (gitEnv repo)

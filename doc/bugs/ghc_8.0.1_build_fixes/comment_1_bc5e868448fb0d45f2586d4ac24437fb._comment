@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-23T14:50:25Z"
+ content="""
+How does GHC complain about "runner"? Would
+-XNoMonomorphismRestriction fix it? I don't like the suggested change
+because seeing that code, I'd naturally want to refactor it back to
+something like how it's currently written.. (Still, I've applied the patch
+for now.)
+
+I've relaxed the bounds on base. AFAICS there are no bounds on time and
+transformers, so what were you suggesting I change there?
+
+I've applied your change to Setup-Depends. Oddly, I seem to remember
+trying the Setup-Depends with the new cabal and thought it was working..
+"""]]

@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-06-02T17:32:24Z"
+ content="""
+The bug is limited to `git annex sync --content` because it
+didn't check if the git remote had no git-annex UUID before
+sending files to it. Commands like `git annex copy` always check that the
+remote has a UUID.
+
+I've made `git annex sync --content` also check for a UUID. So, it won't
+send any file contents to the origin remote in this configuration. I don't
+think it makes sense to have git-annex auto-promote the origin remote to a
+gcrypt special remote; you can just enableremote the special remote to make
+git-annex send the files to it, properly encrypted.
+
+When this bug occurs, git-annex actually doesn't remember that it's sent
+the un-encrypted files to the remote. I suggest that you just delete all
+files in the remote's annex/ directory of the gcrypt repository
+whose names do not start with "GPGHMACSHA1", in order to clean up from this
+bug.
+
+----
+
+The deeper problem is git-annex is able to transfer objects to a remote
+that does not have a UUID at all. I've put in a guard at a deeper level to
+prevent this whole class of problems.
+"""]]

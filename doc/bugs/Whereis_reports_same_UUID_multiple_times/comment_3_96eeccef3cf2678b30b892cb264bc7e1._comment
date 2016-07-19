@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-05-27T14:47:40Z"
+ content="""
+I tried reproducing this artificially by duplicating a presence log line.
+That didn't work; whereis showed only 1 copy, not multiple ones.
+Which makes sense, because the log reader makes a map that has the UUID as
+the key. So a single UUID can't appear more than once at that point. Good!
+
+So, there's something else going on in the problem repository that
+allows this behavior to occur.
+
+Aha! It's sequences of one or more `\r` at the end of the line.
+
+	fromList [("0866153a-19e5-4382-aeb6-30e8210706cc",LogLine {date = 1444995329.589s, status = InfoPresent, info = "0866153a-19e5-4382-aeb6-30e8210706cc"}),("0866153a-19e5-4382-aeb6-30e8210706cc\r",LogLine {date = 1444995329.589s, status = InfoPresent, info = "0866153a-19e5-4382-aeb6-30e8210706cc\r"}),("0866153a-19e5-4382-aeb6-30e8210706cc\r\r",LogLine {date = 1444995329.589s, status = InfoPresent, info = "0866153a-19e5-4382-aeb6-30e8210706cc\r\r"}) ...
+
+So, 0866153a-19e5-4382-aeb6-30e8210706cc seems to appear multiple times, but it's really due to these `\r`'s.
+
+Suspect this means that this problem only impacts display. It should not lead
+to data loss, because no remote will have a UUID ending in `\r', so there
+should be no way for git-annex to somehow count a remote twice as containing
+a copy of a file when dropping. Indeed, we can see in the whereis output that
+it only matches up some instances of the "duplicate" uuid with remotes -- because
+the other instances have carriage returns appended.
+
+Also, this suggests that the reason the duplicate lines occurred in the first
+place was something to do with a windows system, which presumably added some
+`\r\n` that is being stumbled over.
+"""]]

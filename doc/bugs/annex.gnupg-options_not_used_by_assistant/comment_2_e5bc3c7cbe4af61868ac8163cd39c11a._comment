@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="rustikus@9db90d0c115a1825e2f1e5f15257ec1298a6c7b6"
+ nickname="rustikus"
+ subject="Arrived in homebrew - Fix not working?"
+ date="2016-05-22T19:58:32Z"
+ content="""
+The new version arrived in homebrew today. Thanks for adding the possibility to add GPG decrypt options. 
+I added --no-tty to annex.gnupg-decrypt-options but unfortunately it is not picked up by gpg. This is the log after removing --no-tty from .gnupg/gpg.conf and only adding it to .git/config.
+
+[2016-05-22 21:23:15.527812] Committer: Adding test.md  
+add /Users/xxx/annex/nvatom/test.md ok  
+[2016-05-22 21:23:15.72065] Committer: Committing changes to git  
+(recording state in git...)  
+[2016-05-22 21:23:15.808952] Pusher: Syncing with hidrive   
+gcrypt: Development version -- Repository format MAY CHANGE  
+gcrypt: Decrypting manifest  
+gpg: Signature made Sat May 21 21:12:40 2016 CEST using RSA key ID XXXXXXX  
+gpg: Good signature from \"Git Annex (Key for git annex encryption) <xxx@xxx.de>\" [ultimate]  
+gcrypt: Encrypting to:  -r XXXXXXXXXXXXX  
+gcrypt: Requesting manifest signature  
+[2016-05-22 21:23:20.955819] Committer: Adding test.md  
+add /Users/xxx/annex/nvatom/test.md ok  
+[2016-05-22 21:23:20.973532] Committer: Committing changes to git  
+(recording state in git...)  
+gpg: cannot open `/dev/tty': Device not configured  
+
+  user error (gpg2 [\"--quiet\",\"--trust-model\",\"always\",\"--decrypt\"] exited 2)  
+gpg: cannot open `/dev/tty': Device not configured
+
+  user error (gpg2 [\"--quiet\",\"--trust-model\",\"always\",\"--decrypt\"] exited 2)  
+To gcrypt::rsync.hidrive.strato.com:/users/xxx/hidrive.git  
+   b50d4d1..eb9ef83  master -> synced/master  
+   9504de9..ed2332b  git-annex -> synced/git-annex  
+[2016-05-22 21:23:40.167619] Pusher: Syncing with hidrive 
+
+
+Unfortunately there is no upload happening but the status in the webapp is showing no error (everything green). Not sure if the error is actually coming from gcrypt and not git-annex? 
+
+
+"""]]

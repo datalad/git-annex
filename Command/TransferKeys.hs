@@ -16,6 +16,7 @@ import Annex.Transfer
 import qualified Remote
 import Utility.SimpleProtocol (dupIoHandles)
 import Git.Types (RemoteName)
+import qualified Database.Keys
 
 data TransferRequest = TransferRequest Direction Remote Key AssociatedFile
 
@@ -41,8 +42,13 @@ start = do
 				return ok
 		| otherwise = notifyTransfer direction file $
 			download (Remote.uuid remote) key file forwardRetry observer $ \p ->
-				getViaTmp (RemoteVerify remote) key $ \t -> 
-					Remote.retrieveKeyFile remote key file t p
+				getViaTmp (RemoteVerify remote) key $ \t -> do
+					r <- Remote.retrieveKeyFile remote key file t p
+					-- Make sure we get the current
+					-- associated files data for the key,
+					-- not old cached data.
+					Database.Keys.closeDb			
+					return r
 	
 	observer False t tinfo = recordFailedTransfer t tinfo
 	observer True _ _ = noop

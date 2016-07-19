@@ -87,7 +87,7 @@ Build-Depends:
 	openssh-client,
 	git-remote-gcrypt (>= 0.20130908-6),
 Maintainer: Richard Hartmann <richih@debian.org>
-Standards-Version: 3.9.7
+Standards-Version: 3.9.8
 Vcs-Git: git://git.kitenet.net/git-annex
 Homepage: http://git-annex.branchable.com/
 XS-Testsuite: autopkgtest

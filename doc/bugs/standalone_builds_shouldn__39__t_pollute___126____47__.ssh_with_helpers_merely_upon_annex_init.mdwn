@@ -14,3 +14,5 @@ Originally described in http://git-annex.branchable.com/devblog/day_155__missing
 5.20150916+gitg79661ef-1~ndall+1
 
 [[!meta author=yoh]]
+
+Since packaged version suggestively (I think I did check) resolved the issue, marking it as [[done]]

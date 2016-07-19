@@ -101,8 +101,8 @@ setupSpecialRemote' setdesc name remotetype config mcreds (mu, c) = do
 	 - assistant, because otherwise GnuPG may block once the entropy
 	 - pool is drained, and as of now there's no way to tell the user
 	 - to perform IO actions to refill the pool. -}
-	(c', u) <- R.setup remotetype mu mcreds $
-		M.insert "highRandomQuality" "false" $ M.union config c
+	let weakc = M.insert "highRandomQuality" "false" $ M.union config c
+	(c', u) <- R.setup remotetype mu mcreds weakc def
 	configSet u c'
 	when setdesc $
 		whenM (isNothing . M.lookup u <$> uuidMap) $
@@ -168,4 +168,4 @@ previouslyUsedCredPair getstorage remotetype criteria =
 	sametype r = R.typename (R.remotetype r) == R.typename remotetype
 	fromstorage r = do
 		let storage = getstorage (R.uuid r)
-		getRemoteCredPair (R.config r) storage
+		getRemoteCredPair (R.config r) (R.gitconfig r) storage

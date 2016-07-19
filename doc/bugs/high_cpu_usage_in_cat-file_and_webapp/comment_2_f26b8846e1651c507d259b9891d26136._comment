@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="jgoerzen"
+ subject="Still seeing this"
+ date="2016-06-08T18:03:51Z"
+ content="""
+This is on jessie with 5.20151208-1~bpo8.
+
+git-annex webapp and git --git-dir=.git --work-tree=. --literal-pathspecs -c core.bare=false cat-file --batch are using considerable CPU time.  The strace appears to be this:
+
+[[!format text \"\"\"
+[pid 29222] open(\".git/annex/journal/1e9_9e8_SHA256E-s109439--4df4c11870535f09bea79e309ac1d3de0e3ed5054900257c212277c0dc84290e.odt.log\", O_RDONLY|O_NOCTTY|O_NONBLOCK) = -1 ENOENT (No such file or directory)
+[pid 29222] write(15, \"refs/heads/git-annex:1e9/9e8/SHA\"..., 119) = 119
+[pid 29222] write(7, \"\1\0\0\0\0\0\0\0\", 8) = 8
+[pid 29161] read(7, \"\1\0\0\0\0\0\0\0\", 8) = 8
+[pid 29222] read(18, \"fb6b750de51cf247dae90279745c2478\"..., 8096) = 341
+\"\"\"]]
+
+What's more, the webapp shows that it's only synced to one of the two remotes, despite both being available.  The log has nothing about kicking off a sync run.
+
+I also wonder if this is and [[bugs/Assistant_having_a_child_git_cat-file_--batch_do_the_same_thing_over_and_over_and_using_a_lot_of_memory]] are the same issue.
+"""]]

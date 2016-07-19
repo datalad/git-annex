@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-06-09T19:51:10Z"
+ content="""
+The symbolic-link-like file is in fact, a symlink, which is what git-annex
+uses to represent an annexed file in git. If your filesystem does
+not support symlinks, git writes the link location to a regular file
+instead.
+
+git annex drop removes the content of a file from the local repository, but
+its symlink remains checked into git. So, the content of the file is
+replaced by the symlink in your working tree.
+
+That symlink should be the same thing git already had recorded for the
+file.
+
+Based on your earlier comment, it does seem that the symlink standin file
+that git uses is being treated as new content for the file, and getting
+annexed. That would be a bug.
+
+Is that happening when you run `git annex sync` on Linux, or is it on Windows?
+
+What else can you tell or show me to help me reproduce your problem? 
+I've tried setting up an NTFS filesystem, putting a git-annex repository on it, and dropping a file;
+git-annex sync did not do the wrong thing when I tried it.
+"""]]

@@ -1,0 +1,34 @@
+git-annex 6.20160511 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Fix bug that sometimes prevented git-annex smudge --clean from consuming
+     all its input, which resulted in git add bypassing git-annex.
+   * Fix build with directory-1.2.6.2.
+   * Improve behavior when a just added http remote is not available
+     during uuid probe. Do not mark it as annex-ignore, so it will be tried
+     again later.
+   * Android: Icon refresh.
+     Thanks, freewheelinfranks.
+   * Added DIRHASH-LOWER to external special remote protocol.
+   * git-annex.cabal: Add Setup-Depends.
+   * stack.yaml: Enable explicit-setup-deps.
+   * Windows: Fix several bugs in propigation of changes from the adjusted
+     branch back to the master branch.
+   * Windows: Fix an over-long temp directory name.
+   * map: Hide dead repositories that are not connected to the graph.
+   * map: Changed colors; red is used for untrusted repositories and grey
+     for dead.
+   * version: Display OS version and architecture too.
+   * Propigate GIT\_DIR and GIT\_WORK\_TREE environment to external special
+     remotes.
+   * Added annex.gnupg-decrypt-options and
+     remote.&lt;name&gt;.annex-gnupg-decrypt-options, which are passed to gpg
+     when it's decrypting data.
+   * fsck: When a key is not previously known in the location log,
+     record something so that reinject --known will work.
+   * In the unusual configuration where annex.crippledfilesystem=true but
+     core.symlinks=true, store object contents in mixed case hash
+     directories so that symlinks will point to them.
+   * Added new encryption=sharedpubkey mode for special remotes.
+     This is useful for makking a special remote that anyone with a clone
+     of the repo and your public keys can upload files to, but only you can
+     decrypt the files stored in it."""]]

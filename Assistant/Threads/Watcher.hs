@@ -221,7 +221,11 @@ shouldRestage :: DaemonStatus -> Bool
 shouldRestage ds = scanComplete ds || forceRestage ds
 
 onAddUnlocked :: Bool -> GetFileMatcher -> Handler
-onAddUnlocked = onAddUnlocked' False contentchanged addassociatedfile samefilestatus
+onAddUnlocked symlinkssupported matcher f fs = do
+	mk <- liftIO $ isPointerFile f
+	case mk of
+		Nothing -> onAddUnlocked' False contentchanged addassociatedfile addlink samefilestatus symlinkssupported matcher f fs
+		Just k -> addlink f k
   where
 	addassociatedfile key file = 
 		Database.Keys.addAssociatedFile key
@@ -238,15 +242,32 @@ onAddUnlocked = onAddUnlocked' False contentchanged addassociatedfile samefilest
 			=<< inRepo (toTopFilePath file)
 		unlessM (inAnnex oldkey) $
 			logStatus oldkey InfoMissing
+	addlink file key = do
+		mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
+		liftAnnex $ stagePointerFile file mode =<< hashPointerFile key
+		madeChange file $ LinkChange (Just key)
 
 {- In direct mode, add events are received for both new files, and
  - modified existing files.
  -}
 onAddDirect :: Bool -> GetFileMatcher -> Handler
-onAddDirect = onAddUnlocked' True changedDirect (\k f -> void $ addAssociatedFile k f) sameFileStatus
+onAddDirect = onAddUnlocked' True changedDirect addassociatedfile addlink sameFileStatus
+  where
+	addassociatedfile key file = void $ addAssociatedFile key file
+	addlink file key = do
+		link <- liftAnnex $ calcRepo $ gitAnnexLink file key
+		addLink file link (Just key)
 
-onAddUnlocked' :: Bool -> (Key -> FilePath -> Annex ()) -> (Key -> FilePath -> Annex ()) -> (Key -> FilePath -> FileStatus -> Annex Bool) -> Bool -> GetFileMatcher -> Handler
-onAddUnlocked' isdirect contentchanged addassociatedfile samefilestatus symlinkssupported matcher file fs = do
+onAddUnlocked'
+	:: Bool
+	-> (Key -> FilePath -> Annex ())
+	-> (Key -> FilePath -> Annex ())
+	-> (FilePath -> Key -> Assistant (Maybe Change))
+	-> (Key -> FilePath -> FileStatus -> Annex Bool)
+	-> Bool
+	-> GetFileMatcher
+	-> Handler
+onAddUnlocked' isdirect contentchanged addassociatedfile addlink samefilestatus symlinkssupported matcher file fs = do
 	v <- liftAnnex $ catKeyFile file
 	case (v, fs) of
 		(Just key, Just filestatus) ->
@@ -255,11 +276,9 @@ onAddUnlocked' isdirect contentchanged addassociatedfile samefilestatus symlinks
 				 - an existing file that is not
 				 - really modified, but it might have
 				 - just been deleted and been put back,
-				 - so it symlink is restaged to make sure. -}
+				 - so its annex link is restaged to make sure. -}
 				( ifM (shouldRestage <$> getDaemonStatus)
-					( do
-						link <- liftAnnex $ calcRepo $ gitAnnexLink file key
-						addLink file link (Just key)
+					( addlink file key
 					, noChange
 					)
 				, guardSymlinkStandin (Just key) $ do

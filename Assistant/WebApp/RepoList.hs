@@ -138,7 +138,10 @@ repoList reposelector
 		liftAnnex $ do
 			unwanted <- S.fromList
 				<$> filterM inUnwantedGroup (map Remote.uuid syncremotes)
-			rs <- filter selectedrepo . concat . Remote.byCost
+			trustmap <- trustMap
+			rs <- filter (\r -> M.lookup (Remote.uuid r) trustmap /= Just DeadTrusted)
+				. filter selectedrepo 
+				. concat . Remote.byCost
 				<$> Remote.remoteList
 			let l = flip map (map mkRepoId rs) $ \r -> case r of
 				(RepoUUID u)

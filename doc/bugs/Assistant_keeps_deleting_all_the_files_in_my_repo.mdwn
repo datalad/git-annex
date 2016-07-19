@@ -1,0 +1,32 @@
+### Please describe the problem.
+The assistant keeps making merges that deletes all the files in the repository. I "git revert" the merge commit, but the next day it does it again. It also seems to have gone into a merge loop before this happens (will post a screenshot of tig). I can make the repo available privately if that will help.
+
+### What steps will reproduce the problem?
+Unknown. It does it on its own without me even interacting with files in the annex.
+
+### What version of git-annex are you using? On what operating system?
+The host that keeps deleting is running 6.20160428-g1f253e8 on ArchLinux (x86_64). A remote that it keeps syncing with is running 6.20160511-g4633f0b, also on ArchLinux x86_64.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+Updating 8cb69d3..c589c5e
+Fast-forward
+ .gitignore                                                             | 3 ---
+ Bilete/8mars-2013-1.jpg                                                | 1 -
+etc.
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+I use git-annex for everything. I've got 10 repositories and around 2.5TB of data in those repos which in turn is synced all over the place. It's excellent.
+
+> This seems to be a git bug probably; see
+> <http://thread.gmane.org/gmane.comp.version-control.git/297237>.
+> 
+> Luckily, easy to work around the problem.
+> 
+> [[fixed|done]] in [[!commit bfd00a0f8ca69cb0669df50f8d98354f11c5253c]].
+> --[[Joey]]

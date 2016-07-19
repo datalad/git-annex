@@ -11,6 +11,7 @@ module Database.Keys.Handle (
 	DbState(..),
 	withDbState,
 	flushDbQueue,
+	closeDbHandle,
 ) where
 
 import qualified Database.Queue as H
@@ -38,8 +39,7 @@ newDbHandle = DbHandle <$> newMVar DbClosed
 withDbState
 	:: (MonadIO m, MonadCatch m)
 	=> DbHandle
-	-> (DbState
-	-> m (v, DbState))
+	-> (DbState -> m (v, DbState))
 	-> m v
 withDbState (DbHandle mvar) a = do
 	st <- liftIO $ takeMVar mvar
@@ -55,3 +55,11 @@ flushDbQueue (DbHandle mvar) = go =<< readMVar mvar
   where
 	go (DbOpen qh) = H.flushDbQueue qh
 	go _ = return ()
+
+closeDbHandle :: DbHandle -> IO ()
+closeDbHandle h = withDbState h go
+  where
+	go (DbOpen qh) = do
+		H.closeDbQueue qh
+		return ((), DbClosed)
+	go st = return ((), st)

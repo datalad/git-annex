@@ -1,0 +1,43 @@
+git-annex needs tweaks to build with ghc 8.0.1 and to run "cabal configure"
+
+Homebrew core only supports the latest stable version of each formula, so the release of ghc 8.0.1, which is now the latest stable version of ghc, will render git-annex unbuildable without patching.
+
+This affects both HEAD and 6.20160511
+
+GHC 8 compatibility:
+I have two patches to get it working. 6.20160511 passes all the tests in the "git annex test" suite built against GHC 8.0.1 with the patches. HEAD fails several of the tests but that seems to have nothing to do with GHC 8.0.1 specifically, and I'm sure you're already aware of these test suite issues with current HEAD.
+
+The first patch for GHC 8 is a cabal change.
+(buildpath/"cabal.config").write("allow-newer: base,time,transformers\n")
+
+The second patch is a code change.
+
+GHC 8.0.1 complains about these lines: https://github.com/joeyh/git-annex/blob/08625c5a89b14415c1c7fef518f27b07b0899c24/Remote/Bup.hs#L136-L141
+
+The variable "runner" fails to be monomorphic, so I'm using the following hack (though I'm sure there's a better way to fix this):
+
+[[!format  haskell """
+    if quiet
+      then liftIO $ feedWithQuietOutput createProcessSuccess cmd $ \h -> do
+        meteredWrite p h b
+        return True
+      else liftIO $ withHandle StdinHandle createProcessSuccess cmd $ \h -> do
+        meteredWrite p h b
+        return True
+"""]]
+
+Making cabal configure work:
+
+We run "cabal configure --flags=…" to verify the build will successfully enable the expected features, but this fails without addition custom setup dependencies. This affects the git-version of git  annex which has the custom setup section (both 6.20160511 and HEAD), but doesn't affect the Hackage 6.20160511 download because it has the custom-setup stanza removed.
+
+In order to run configure, I make the following change:
+
+[[!format  text """
+inreplace "git-annex.cabal",
+  "Setup-Depends: base (>= 4.5), hslogger, MissingH",
+  "Setup-Depends: base (>= 4.5), hslogger, MissingH, unix-compat, process, unix, filepath, exceptions, bytestring, directory, IfElse, data-default, Cabal"
+end
+"""]]
+
+> [[fixed|done]], I hope. Have not tested the build myself but everything
+> applied. --[[Joey]]

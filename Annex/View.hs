@@ -341,22 +341,24 @@ applyView' mkviewedfile getfilemetadata view = do
 	liftIO . nukeFile =<< fromRepo gitAnnexViewIndex
 	uh <- withViewIndex $ inRepo Git.UpdateIndex.startUpdateIndex
 	forM_ l $ \f -> do
-		relf <- getTopFilePath <$> inRepo (toTopFilePath f)
-		go uh relf =<< lookupFile f
+		topf <- inRepo (toTopFilePath f)
+		go uh topf =<< lookupFile f
 	liftIO $ do
 		void $ stopUpdateIndex uh
 		void clean
 	genViewBranch view
   where
 	genviewedfiles = viewedFiles view mkviewedfile -- enables memoization
-	go uh f (Just k) = do
+	go uh topf (Just k) = do
 		metadata <- getCurrentMetaData k
+		let f = getTopFilePath topf
 		let metadata' = getfilemetadata f `unionMetaData` metadata
 		forM_ (genviewedfiles f metadata') $ \fv -> do
 			f' <- fromRepo $ fromTopFilePath $ asTopFilePath fv
 			stagesymlink uh f' =<< calcRepo (gitAnnexLink f' k)
-	go uh f Nothing
-		| "." `isPrefixOf` f = do
+	go uh topf Nothing
+		| "." `isPrefixOf` getTopFilePath topf = do
+			f <- fromRepo $ fromTopFilePath topf
 			s <- liftIO $ getSymbolicLinkStatus f
 			if isSymbolicLink s
 				then stagesymlink uh f =<< liftIO (readSymbolicLink f)

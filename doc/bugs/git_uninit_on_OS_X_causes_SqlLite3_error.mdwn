@@ -1,0 +1,76 @@
+### Please describe the problem.
+I am basically having issues with `git annex uninit`
+
+### What steps will reproduce the problem?
+    $ git init localrepo
+    Initialized empty Git repository in /Users/w/work/temp/test/localrepo/.git/
+    $ cd localrepo
+    $ git annex init
+    init  ok
+    (recording state in git...)
+    $ git annex uninit
+    fatal: ambiguous argument 'HEAD': unknown revision or path not in the working tree.
+    Use '--' to separate paths from revisions, like this:
+    'git <command> [<revision>...] -- [<file>...]'
+    Deleted branch git-annex (was 98f3795).
+*********************
+Now if I add a local file I get a different error
+
+    $ git init localrepo
+    Initialized empty Git repository in /Users/w/work/temp/test/localrepo/.git/
+    $ cd localrepo
+    $ git annex init
+    init  ok
+    (recording state in git...)
+    $ date > secret_file
+    $ git annex add secret_file
+    add secret_file ok
+    (recording state in git...)
+    $ git commit -am "added"
+    [master (root-commit) a2e1882] added
+     1 file changed, 1 insertion(+)
+     create mode 120000 secret_file
+    $ git annex sync
+    commit  
+    On branch master
+    nothing to commit, working directory clean
+    ok
+    $ git annex uninit
+    unannex secret_file ok
+    Deleted branch git-annex (was 6a727da).
+    git-annex: failed to commit changes to sqlite database: Just SQLite3 returned ErrorCan'tOpen while attempting to perform open ".git/annex/keys/db".
+    CallStack (from HasCallStack):
+      error, called at ./Database/Handle.hs:111:26 in main:Database.Handle
+
+
+### What version of git-annex are you using? On what operating system?
+
+    $ brew info git-annex
+    git-annex: stable 6.20160527 (bottled), HEAD
+    Manage files with git without checking in file contents
+    https://git-annex.branchable.com/
+    /usr/local/Cellar/git-annex/6.20160527 (104 files, 87.0M) *
+      Poured from bottle on 2016-06-06 at 15:36:47
+    From: https://github.com/Homebrew/homebrew-core/blob/master/Formula/git-annex.rb
+    ==> Dependencies
+    Build: ghc ✘, cabal-install ✘, pkg-config ✔
+    Required: gsasl ✔, libidn ✔, libmagic ✔, gnutls ✘, quvi ✔
+    ==> Options
+    --with-git-union-merge
+    	Build the git-union-merge tool
+    --HEAD
+	Install HEAD version
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I am super excited about what I can do with git-annex. I hope to setup and maintain encrypted repo(s) of some of my files, and access them by cloning a local copy of the encrypted repo and getting the files I want, using them, and then deleting the local copy.

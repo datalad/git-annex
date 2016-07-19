@@ -2,8 +2,6 @@
 # Warning: hack
 
 my $prog=shift;
-$prog=~s/\.\d+$//;
-$prog=~s/man\///;
 my $section=shift;
 
 print ".TH $prog $section\n";

@@ -1,0 +1,3 @@
+Posted a [proposal for extending git smudge/clean filters with raw file access](http://thread.gmane.org/gmane.comp.version-control.git/294425).
+If git gets an interface like that, it will make it easy to deal with most of
+the remaining [[v6_todo_list|todo/smudge]].

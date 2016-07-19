@@ -95,7 +95,7 @@ instance MetaSerializable MetaField where
 	serialize (MetaField f) = CI.original f
 	deserialize = Just . mkMetaFieldUnchecked
 
-{- Base64 problimatic values. -}
+{- Base64 problematic values. -}
 instance MetaSerializable MetaValue where
 	serialize (MetaValue isset v) =
 		serialize isset ++

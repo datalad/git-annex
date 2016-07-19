@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 30"""
+ date="2016-05-23T18:54:35Z"
+ content="""
+You can find out the size of a key by using 
+`git-annex examinekey $key --format='${bytesize}\n'` 
+(There's a --batch option to avoid needing to spin up
+repeated such processes.)
+
+I suppose I could add a PROGRESSPRECENT, but any version of git-annex that
+didn't support it would fail with a protocol error if a special remote
+tried to use that. So, the special remote would need to check git-annex
+version to use it.
+
+So, maybe better to get the size of the key yourself, and convert the
+percentage to bytes for PROGRESS.
+"""]]
