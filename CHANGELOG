@@ -1,10 +1,6 @@
-git-annex (6.20160614) UNRELEASED; urgency=medium
+git-annex (6.20160619) unstable; urgency=medium
 
-  * Webapp: Don't allow deleting a remote that has syncing disabled,
-    as such a deletion will never finish.
-    Thanks, Farhan Kathawala.
   * get, drop: Add --batch and --json options.
-  * New url for git-remote-gcrypt, now maintained by spwhitton.
   * testremote: Fix crash when testing a freshly made external special remote.
   * Remove unnecessary rpaths in the git-annex binary, but only when
     it's built using make, not cabal. 
@@ -13,9 +9,6 @@ git-annex (6.20160614) UNRELEASED; urgency=medium
     the git-annex branch.
     This can speed up git-annex commands by as much as a second,
     depending on the number of remotes.
-  * Remove the EKG build flag, since Gentoo for some reason decided to
-    enable this flag, depsite it not being intended for production use and
-    so disabled by default.
   * fsck: Fix a reversion in direct mode fsck of a file that is
     present when the location log thinks it is not. Reversion introduced
     in version 5.20151208.
@@ -25,13 +18,20 @@ git-annex (6.20160614) UNRELEASED; urgency=medium
   * Support checking presence of content at a http url that redirects to
     a ftp url.
   * log: Added --all option.
+  * New url for git-remote-gcrypt, now maintained by spwhitton.
+  * webapp: Don't allow deleting a remote that has syncing disabled,
+    as such a deletion will never finish.
+    Thanks, Farhan Kathawala.
   * webapp: Escape unusual characters in ssh hostnames when generating
     mangled hostnames. This allows IPv6 addresses to be used on filesystems
     not supporting : in filenames.
   * Avoid any access to keys database in v5 mode repositories, which 
     are not supposed to use that database.
+  * Remove the EKG build flag, since Gentoo for some reason decided to
+    enable this flag, depsite it not being intended for production use and
+    so disabled by default.
 
- -- Joey Hess <id@joeyh.name>  Mon, 13 Jun 2016 21:52:24 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 19 Jul 2016 14:17:54 -0400
 
 git-annex (6.20160613) unstable; urgency=medium
 
