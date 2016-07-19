@@ -54,12 +54,9 @@ import Database.Esqueleto hiding (Key)
  - Any queued writes will be flushed before the read.
  -}
 runReader :: Monoid v => (SQL.ReadHandle -> Annex v) -> Annex v
-runReader a = ifM versionUsesKeysDatabase
-	( do
-		h <- getDbHandle
-		withDbState h go
-	, return mempty
-	)
+runReader a = do
+	h <- getDbHandle
+	withDbState h go
   where
 	go DbUnavailable = return (mempty, DbUnavailable)
 	go st@(DbOpen qh) = do
@@ -81,7 +78,7 @@ runReaderIO a = runReader (liftIO . a)
  -
  - The database is created if it doesn't exist yet. -}
 runWriter :: (SQL.WriteHandle -> Annex ()) -> Annex ()
-runWriter a = whenM versionUsesKeysDatabase $ do
+runWriter a = do
 	h <- getDbHandle
 	withDbState h go
   where
@@ -105,7 +102,10 @@ getDbHandle = go =<< Annex.getState Annex.keysdbhandle
   where
 	go (Just h) = pure h
 	go Nothing = do
-		h <- liftIO newDbHandle
+		h <- ifM versionUsesKeysDatabase
+			( liftIO newDbHandle
+			, liftIO unavailableDbHandle
+			)
 		Annex.changeState $ \s -> s { Annex.keysdbhandle = Just h }
 		return h
 
@@ -150,8 +150,7 @@ openDb createdb _ = catchPermissionDenied permerr $ withExclusiveLock gitAnnexKe
  - data to it.
  -}
 closeDb :: Annex ()
-closeDb = whenM versionUsesKeysDatabase $
-	liftIO . closeDbHandle =<< getDbHandle
+closeDb = liftIO . closeDbHandle =<< getDbHandle
 
 addAssociatedFile :: Key -> TopFilePath -> Annex ()
 addAssociatedFile k f = runWriterIO $ SQL.addAssociatedFile (toIKey k) f
