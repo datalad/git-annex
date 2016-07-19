@@ -1,0 +1,6 @@
+First release in over a month. Before making this release, a few last
+minute fixes, including a partial workaround for the problem that
+Sqlite databases don't work on Lustre filesystems.
+
+Backlog is now down to 140 messages, and only 3 of those are from this
+month. Still higher than I like.
