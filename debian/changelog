@@ -1,3 +1,9 @@
+git-annex (6.20160613-1) unstable; urgency=medium
+
+  * Package 6.20160613-1
+
+ -- Richard Hartmann <richih@debian.org>  Tue, 19 Jul 2016 18:48:50 +0200
+
 git-annex (6.20160613) unstable; urgency=medium
 
   * Improve SHA*E extension extraction code.
