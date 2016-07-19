@@ -14,13 +14,9 @@ In Debian, this is as simple as:
 
 ## downloading the source code
 
-The easiest way is using git; see [[download]] or just:
+The easiest way is using git; see [[download]] or just run:
 
 	git clone git://git-annex.branchable.com/ git-annex
-
-Or, you can use cabal to get the source code:
-
-	cabal update; cabal unpack git-annex
 
 ## building from source on Debian
 
@@ -44,20 +40,24 @@ It will be part of the Haskell Platform soon. On Debian unstable/testing:
 
 	sudo apt-get install haskell-stack zlib1g-dev libtinfo-dev
 
-Use stack to install all dependencies and git-annex:
+Get the git-annex source code, and inside the source tree run:
 
 	stack setup
-	stack install git-annex
+	stack install
 
 Move git-annex into some directory that is in your PATH:
 
 	mv ~/.local/bin/git-annex ~/bin # or /usr/local/bin/ or whatever
 
+(Why not run `stack install git-annex`? Because that causes stack to 
+[ignore git-annex's stack.yaml file](https://github.com/commercialhaskell/stack/issues/2371),
+yielding a less reliable build.)
+
 Note that this build produces a git-annex without the build flags
 XMPP, DBUS, and MagicMime.
 These optional features require installing additional C libraries.
 To try to build with these features 
-enabled, pass extra parameters when running stack: 
+enabled, pass extra parameters when running stack install: 
 `--flag git-annex:XMPP --flag git-annex:DBUS --flag git-annex:MagicMime`
 
 ## minimal build from source with cabal
@@ -71,7 +71,7 @@ Be warned that this involves building a lot of Haskell libraries from
 source, and so it has a lot of moving parts, and it's not uncommon for it
 to be broken from time to time.
 
-Inside the source tree, run:
+Get the git-annex source code, and inside the source tree, run:
 
 	cabal install -j -f"-assistant -webapp -webdav -pairing -xmpp -dns -dbus -magicmime" --only-dependencies
 	cabal configure -f"-assistant -webapp -webdav -pairing -xmpp -dns -dbus -magicmime"
