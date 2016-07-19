@@ -101,7 +101,7 @@ clean:
 		doc/.ikiwiki html dist tags Build/SysConfig.hs \
 		Setup Build/InstallDesktopFile Build/EvilSplicer \
 		Build/Standalone Build/OSXMkLibs Build/LinuxMkLibs \
-		Build/DistributionUpdate Build/BuildVersion Build/Mans \
+		Build/DistributionUpdate Build/BuildVersion Build/MakeMans \
 		git-union-merge .tasty-rerun-log
 	find . -name \*.o -exec rm {} \;
 	find . -name \*.hi -exec rm {} \;
