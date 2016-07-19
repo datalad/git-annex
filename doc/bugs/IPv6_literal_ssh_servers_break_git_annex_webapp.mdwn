@@ -60,4 +60,5 @@ The key's randomart image is:
 
 Yeah, it works great on my Linux machines. I'm just getting started with the web app, though; I'm trying to set up limited-access key-based SSH, and the web app seems to be also trying to do that...
 
-
+> Fixed by escaping the hostname when it contains any unusual characters.
+> [[done]] --[[Joey]]

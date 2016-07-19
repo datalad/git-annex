@@ -25,6 +25,9 @@ git-annex (6.20160614) UNRELEASED; urgency=medium
   * Support checking presence of content at a http url that redirects to
     a ftp url.
   * log: Added --all option.
+  * webapp: Escape unusual characters in ssh hostnames when generating
+    mangled hostnames. This allows IPv6 addresses to be used on filesystems
+    not supporting : in filenames.
 
  -- Joey Hess <id@joeyh.name>  Mon, 13 Jun 2016 21:52:24 -0400
 

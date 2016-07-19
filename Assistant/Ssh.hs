@@ -341,15 +341,31 @@ setSshConfig sshdata config = do
 {- This hostname is specific to a given repository on the ssh host,
  - so it is based on the real hostname, the username, and the directory.
  -
- - The mangled hostname has the form "git-annex-realhostname-username-port_dir".
- - The only use of "-" is to separate the parts shown; this is necessary
- - to allow unMangleSshHostName to work. Any unusual characters in the
- - username or directory are url encoded, except using "." rather than "%"
+ - The mangled hostname has the form:
+ - "git-annex-realhostname-username_port_dir"
+ - Note that "-" is only used in the realhostname and as a separator;
+ - this is necessary to allow unMangleSshHostName to work.
+ -
+ - Unusual characters are url encoded, but using "." rather than "%"
  - (the latter has special meaning to ssh).
+ -
+ - In the username and directory, unusual characters are any
+ - non-alphanumerics, other than "_"
+ -
+ - The real hostname is not normally encoded at all. This is done for
+ - backwards compatability and to avoid unnecessary ugliness in the
+ - filename. However, when it contains special characters
+ - (notably ":" which cannot be used on some filesystems), it is url
+ - encoded. To indicate it was encoded, the mangled hostname
+ - has the form
+ - "git-annex-.encodedhostname-username_port_dir"
  -}
 mangleSshHostName :: SshData -> String
-mangleSshHostName sshdata = "git-annex-" ++ T.unpack (sshHostName sshdata)
-	++ "-" ++ escape extra
+mangleSshHostName sshdata = intercalate "-" 
+	[ "git-annex"
+	, escapehostname (T.unpack (sshHostName sshdata))
+	, escape extra
+	]
   where
 	extra = intercalate "_" $ map T.unpack $ catMaybes
 		[ sshUserName sshdata
@@ -361,12 +377,18 @@ mangleSshHostName sshdata = "git-annex-" ++ T.unpack (sshHostName sshdata)
 		| c == '_' = True
 		| otherwise = False
 	escape s = replace "%" "." $ escapeURIString safe s
+	escapehostname s
+		| all (\c -> c == '.' || safe c) s = s
+		| otherwise = '.' : escape s
 
 {- Extracts the real hostname from a mangled ssh hostname. -}
 unMangleSshHostName :: String -> String
 unMangleSshHostName h = case split "-" h of
-	("git":"annex":rest) -> intercalate "-" (beginning rest)
+	("git":"annex":rest) -> unescape (intercalate "-" (beginning rest))
 	_ -> h
+  where
+	unescape ('.':s) = unEscapeString (replace "." "%" s)
+	unescape s = s
 
 {- Does ssh have known_hosts data for a hostname? -}
 knownHost :: Text -> IO Bool
