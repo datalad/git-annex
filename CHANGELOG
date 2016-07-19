@@ -28,6 +28,8 @@ git-annex (6.20160614) UNRELEASED; urgency=medium
   * webapp: Escape unusual characters in ssh hostnames when generating
     mangled hostnames. This allows IPv6 addresses to be used on filesystems
     not supporting : in filenames.
+  * Avoid any access to keys database in v5 mode repositories, which 
+    are not supposed to use that database.
 
  -- Joey Hess <id@joeyh.name>  Mon, 13 Jun 2016 21:52:24 -0400
 

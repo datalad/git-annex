@@ -27,6 +27,7 @@ import Database.Keys.Handle
 import qualified Database.Queue as H
 import Annex.Locations
 import Annex.Common hiding (delete)
+import Annex.Version (versionUsesKeysDatabase)
 import qualified Annex
 import Annex.Perms
 import Annex.LockFile
@@ -53,9 +54,12 @@ import Database.Esqueleto hiding (Key)
  - Any queued writes will be flushed before the read.
  -}
 runReader :: Monoid v => (SQL.ReadHandle -> Annex v) -> Annex v
-runReader a = do
-	h <- getDbHandle
-	withDbState h go
+runReader a = ifM versionUsesKeysDatabase
+	( do
+		h <- getDbHandle
+		withDbState h go
+	, return mempty
+	)
   where
 	go DbUnavailable = return (mempty, DbUnavailable)
 	go st@(DbOpen qh) = do
@@ -77,7 +81,7 @@ runReaderIO a = runReader (liftIO . a)
  -
  - The database is created if it doesn't exist yet. -}
 runWriter :: (SQL.WriteHandle -> Annex ()) -> Annex ()
-runWriter a = do
+runWriter a = whenM versionUsesKeysDatabase $ do
 	h <- getDbHandle
 	withDbState h go
   where
@@ -146,7 +150,8 @@ openDb createdb _ = catchPermissionDenied permerr $ withExclusiveLock gitAnnexKe
  - data to it.
  -}
 closeDb :: Annex ()
-closeDb = liftIO . closeDbHandle =<< getDbHandle
+closeDb = whenM versionUsesKeysDatabase $
+	liftIO . closeDbHandle =<< getDbHandle
 
 addAssociatedFile :: Key -> TopFilePath -> Annex ()
 addAssociatedFile k f = runWriterIO $ SQL.addAssociatedFile (toIKey k) f
