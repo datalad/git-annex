@@ -8,6 +8,7 @@
 module Database.Keys.Handle (
 	DbHandle,
 	newDbHandle,
+	unavailableDbHandle,
 	DbState(..),
 	withDbState,
 	flushDbQueue,
@@ -32,6 +33,9 @@ data DbState = DbClosed | DbOpen H.DbQueue | DbUnavailable
 
 newDbHandle :: IO DbHandle
 newDbHandle = DbHandle <$> newMVar DbClosed
+
+unavailableDbHandle :: IO DbHandle
+unavailableDbHandle = DbHandle <$> newMVar DbUnavailable
 
 -- Runs an action on the state of the handle, which can change its state.
 -- The MVar is empty while the action runs, which blocks other users

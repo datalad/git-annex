@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="baffo32"
+ subject="Use-case expansion"
+ date="2016-06-17T23:55:52Z"
+ content="""
+My use-case is to store the absolute disk offsets for files, to aid recovery in case of accidental loss.
+
+I'd like to run a script for every key added to the repo in which the script resides.  The script calls filefrag to determine the physical location of the key on the disk and adds it as metadata.
+
+If interested, my pre-commit-annex snippet is:
+
+                # requires recent e2fsprogs
+                if [ -x /usr/sbin/filefrag ]
+                then
+                        field=\"$(git config annex.uuid)\"-extents
+                        LC_ALL=C /usr/sbin/filefrag -ev \"$f\" | sed -n \
+                                -e 's/.*([0-9]* blocks* of \([0-9]*\) bytes).*/!bs \1/p'\
+                                -e 's/^ *[0-9]*: *\([0-9]*\)\.\. *[0-9]*: *\([0-9]*\)\.\. *[0-9]*: *\([0-9]*\): *.*/\1 \2 \3/p' |
+                        while read value
+                        do
+                                # !bs 4096     means values are in multiples of 4096 bytes (blocksize)
+                                # 0 5287839 5  means 5 blocks starting at block 0 of the file start at block 5287839 of the disk
+                                # extents which are not listed are from sparse files and contain all zeros
+                                equal='+=' addmeta \"$f\" \"$field\" \"$value\"
+                        done
+                fi
+
+"""]]

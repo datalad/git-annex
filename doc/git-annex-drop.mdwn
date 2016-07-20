@@ -61,6 +61,16 @@ safe to do so.
   when git-annex has to contact remotes to check if it can drop files.
   For example: `-J4`  
 
+* `--batch`
+
+  Enables batch mode, in which lines containing names of files to drop
+  are read from stdin.
+
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
 # SEE ALSO
 
 [[git-annex]](1)

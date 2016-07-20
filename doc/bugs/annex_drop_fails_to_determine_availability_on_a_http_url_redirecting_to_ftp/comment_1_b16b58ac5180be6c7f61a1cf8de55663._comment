@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-07-12T20:00:49Z"
+ content="""
+This only affects http to ftp redirects, because there's a special hack
+in place to use curl to check if a ftp url exists.
+
+Seems that http-conduit throws a StatusCodeException with statusCode = 302
+when it is redirected to a protocol that it does not support, such as ftp.
+
+So, it can catch that exception and fall back to curl.
+"""]]

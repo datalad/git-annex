@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="Don"
+ subject="comment 2"
+ date="2016-06-24T05:40:23Z"
+ content="""
+The bare repo on the external drive is configured as `full backup` and the repo at `~/doc` is `client`.  
+"""]]

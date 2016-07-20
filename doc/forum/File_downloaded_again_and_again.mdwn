@@ -1,0 +1,53 @@
+Hello,
+
+I have two repos, asaru in group client, marduk in groups archive and backup. Both are wanted=standard.
+
+Doing a ```git annex sync --content``` at asaru takes a long time and does the same action every time I run it (even if ran consecutively):
+
+```
+florian@asaru ~/Documents (git)-[master] % git annex sync --content
+commit  
+Auf Branch master
+Ihr Branch ist auf dem selben Stand wie 'marduk/master'.
+nichts zu committen, Arbeitsverzeichnis unverändert
+ok
+pull marduk 
+ok
+pull marduk.dynv6 
+ok
+get .localized (from marduk...) 
+SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+              0 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+(checksum...) ok
+get Bewerbung/bmw.aux (from marduk...) 
+SHA256E-s8--3345a075a22fb3bbc04567a1e5660ed0240d53f5881f458a2234dcd42a78d335.aux
+              8 100%    7.81kB/s    0:00:00 (xfr#1, to-chk=0/1)
+(checksum...) ok
+drop archive/Programmierung/zope/lib/python/Homefolder/.svn/empty-file (locking marduk.dynv6...) ok
+drop archive/Schule/Geschichte/Biographie 3/biographie.aux (locking marduk.dynv6...) ok
+pull marduk 
+ok
+pull marduk.dynv6 
+ok
+(recording state in git...)
+push marduk 
+Zähle Objekte: 8, Fertig.
+Delta compression using up to 4 threads.
+Komprimiere Objekte: 100% (8/8), Fertig.
+Schreibe Objekte: 100% (8/8), 679 bytes | 0 bytes/s, Fertig.
+Total 8 (delta 6), reused 0 (delta 0)
+To ssh://marduk.local/home/florian/Documents
+   bb9e640..b0fa6a1  git-annex -> synced/git-annex
+ok
+push marduk.dynv6 
+Everything up-to-date
+ok
+git annex sync --content  50,98s user 3,60s system 40% cpu 2:16,17 total
+```
+
+Taking a long time, as you can see in the last line. marduk.dynv6 and marduk are both (internet and local) remotes to Marduk.
+
+What is wrong here?
+
+Thanks,
+Florian

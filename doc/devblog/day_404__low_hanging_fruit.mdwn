@@ -1,0 +1,15 @@
+Back from vacation, with a message backlog of 181. I'm concentrating first on
+low-hanging fruit of easily implemented todos, and well reproducible bugs,
+to get started again.
+
+Implemented --batch mode for `git annex get` and `git annex drop`, and also
+enabled --json for those.
+
+Investigated git-annex startup time; see
+<http://git-annex.branchable.com/todo/could_standalone___39__fixed__39___git-annex_binaries_be_prelinked__63__/>.
+Turns out that cabal has a bug that causes many thousands of unnecessary
+syscalls when linking in the shared libraries. Working around it halved
+git-annex's startup time.
+
+Fixed a bug that caused `git annex testremote` to crash when testing a
+freshly made external special remote.

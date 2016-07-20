@@ -1,3 +1,7 @@
-Haskell Platform is now [officially available for openSUSE](http://software.opensuse.org/package/haskell-platform) via 1-Click Install. 
+There are [packages of git-annex](https://build.opensuse.org/project/show/devel:languages:haskell)
+available for openSUSE.
 
-At the time of writing, there are [unofficial packages of git-annex](http://software.opensuse.org/package/git-annex) available for openSUSE.  It should also be possible to build it via cabal or from source as described on the [[install]] page.
+From openSUSE:Leap:42.2 git-annex will be part of the distribution.
+
+git-annex is included in the openSUSE:Tumbleweed distribution
+and can be installed by running `zypper in git-annex`

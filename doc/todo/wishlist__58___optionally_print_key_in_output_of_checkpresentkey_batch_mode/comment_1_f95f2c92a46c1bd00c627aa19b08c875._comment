@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-07-11T16:36:11Z"
+ content="""
+Hmm, my assumption is that use of checkpresentkey --batch is in some kind
+of loop, or function call, where you'd write a key to it, read a response
+back, and now you know whether that key is present.
+
+Does your use case involve something like shell scripting? I suppose if you
+have a big list of keys and want to narrow it to only keys that are present
+or missing, you could be trying to pipe it through checkpresentkey --batch.
+"""]]

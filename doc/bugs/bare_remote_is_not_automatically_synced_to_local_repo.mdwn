@@ -1,0 +1,15 @@
+### Please describe the problem.
+
+I have a git annex repository at `~/doc` which has a remote stored on a second drive at `/media/backup/doc.git`, which is a bare git annex repo.  The webapp is run from `~/doc`. Changes are made to `/media/backup/doc.git` by syncing from other computers, but then those changes to the remote are not automatically propagated to `~/doc` by the webapp.
+
+The use case that lead to this situation is syncing several computers to a large hard drive on a server, utilizing a bare repo as a full backup, and then wishing to have a client repo in the home folder on the server.  So other computers sync their repos to `/media/backup/doc.git` and then any changes should be propagated to `~/doc` on the server. 
+
+Changes made to `~/doc` *are* synced to the backup repository on the backup hard drive, and those changes are almost immediately synced to the other machines by the webapp running on those respective machines. Those computers are configured to connect to `/media/backup/doc.git` on the server using SSH only (and git-annex-shell on the server), and do not use XMPP. 
+
+### What version of git-annex are you using? On what operating system?
+
+The amd64 pre-built tarball, git-annex version: 6.20160613-g35dbe35, running on Ubuntu 16.04.  
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Migrated all of my syncing to git annex about 10 months ago and haven't had any significant trouble :)

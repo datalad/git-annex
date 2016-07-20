@@ -16,7 +16,7 @@ import Annex.Wanted
 import qualified Command.Move
 
 cmd :: Command
-cmd = withGlobalOptions (jobsOption : annexedMatchingOptions) $ 
+cmd = withGlobalOptions (jobsOption : jsonOption : annexedMatchingOptions) $ 
 	command "get" SectionCommon 
 		"make content of annexed files available"
 		paramPaths (seek <$$> optParser)
@@ -26,6 +26,7 @@ data GetOptions = GetOptions
 	, getFrom :: Maybe (DeferredParse Remote)
 	, autoMode :: Bool
 	, keyOptions :: Maybe KeyOptions
+	, batchOption :: BatchMode
 	}
 
 optParser :: CmdParamsDesc -> Parser GetOptions
@@ -34,14 +35,18 @@ optParser desc = GetOptions
 	<*> optional parseFromOption
 	<*> parseAutoOption
 	<*> optional (parseKeyOptions True)
+	<*> parseBatchOption
 
 seek :: GetOptions -> CommandSeek
 seek o = allowConcurrentOutput $ do
 	from <- maybe (pure Nothing) (Just <$$> getParsed) (getFrom o)
-	withKeyOptions (keyOptions o) (autoMode o)
-		(startKeys from)
-		(withFilesInGit $ whenAnnexed $ start o from)
-		(getFiles o)
+	let go = whenAnnexed $ start o from
+	case batchOption o of
+		Batch -> batchInput Right (batchCommandAction . go)
+		NoBatch -> withKeyOptions (keyOptions o) (autoMode o)
+			(startKeys from)
+			(withFilesInGit go)
+			(getFiles o)
 
 start :: GetOptions -> Maybe Remote -> FilePath -> Key -> CommandStart
 start o from file key = start' expensivecheck from key (Just file)

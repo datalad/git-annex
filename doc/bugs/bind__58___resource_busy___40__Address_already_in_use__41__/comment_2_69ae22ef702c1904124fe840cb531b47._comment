@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-07-06T18:58:47Z"
+ content="""
+This looks suspiciously like git-annex has been built with the EKG flag
+enabled. That is disabled by default and only useful for debugging
+performace problems. When enabled, git-annex includes a EKG web server,
+so only one git-annex program can be run at once.
+
+Please file a bug on the gentoo package to get EKG turned off, if it is in
+fact enabled.
+
+You can check if it is by going to http://localhost:4242/ 
+while a git-annex command is running. Or, look at "git annex version"
+and see if EKG is included in the list of flags.
+"""]]

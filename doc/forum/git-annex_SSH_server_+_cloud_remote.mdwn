@@ -1,0 +1,13 @@
+I'd like to accomplish something like this:
+
+* shared git-annex remote hosted by SSH server
+* file contents stored in S3
+* everything encrypted
+
+The use case here is to achieve the availability of an SSH server (that is, multiple clients will sync to one, main server, eliminating a dependency on each other) and a single source of truth for the repository (i.e. eliminating P2P repo synchronization), and having the bulk of the disk space consumption living on S3 hosting.
+
+Is this possible? If so, any suggestions on how to do it? I understand how to do everything, except configure the SSH server to store annexed files on S3 hosting.
+
+Also, any thoughts on how much space the SSH server's git repo (without annexed files) could possibly grow to, with average use? Is it reasonable to say that it would never get bigger than 'tens of megabytes'? 
+
+Thank you!

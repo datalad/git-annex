@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 2"
+ date="2016-07-06T19:27:24Z"
+ content="""
+yikes, I never thought that 'git annex version', which works outside of repos as well, shows any information about the repository itself.  IMHO any such information should be within 'git annex info', not 'git annex version'  (does 'git version' show any repo specific version information? ;) )  Moreover there is no --json for 'annex version' ;)
+"""]]

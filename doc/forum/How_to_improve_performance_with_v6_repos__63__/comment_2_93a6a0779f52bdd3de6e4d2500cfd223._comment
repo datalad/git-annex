@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-07-06T18:57:15Z"
+ content="""
+This problem is dicussed in detail in [[todo/smudge]] and is the main
+reason that v6 mode is not production ready.
+
+I have patches to git that avoid this problem.
+"""]]

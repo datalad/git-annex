@@ -25,7 +25,8 @@ module Utility.Url (
 	assumeUrlExists,
 	download,
 	downloadQuiet,
-	parseURIRelaxed
+	parseURIRelaxed,
+	matchStatusCodeException,
 ) where
 
 import Common
@@ -126,6 +127,7 @@ data UrlInfo = UrlInfo
 	, urlSize :: Maybe Integer
 	, urlSuggestedFile :: Maybe FilePath
 	}
+	deriving (Show)
 
 assumeUrlExists :: UrlInfo
 assumeUrlExists = UrlInfo True Nothing Nothing
@@ -135,7 +137,14 @@ assumeUrlExists = UrlInfo True Nothing Nothing
 getUrlInfo :: URLString -> UrlOptions -> IO UrlInfo
 getUrlInfo url uo = case parseURIRelaxed url of
 	Just u -> case parseUrl (show u) of
-		Just req -> existsconduit req `catchNonAsync` const dne
+		Just req -> catchJust
+			-- When http redirects to a protocol which 
+			-- conduit does not support, it will throw
+			-- a StatusCodeException with found302.
+			(matchStatusCodeException (== found302))
+			(existsconduit req)
+			(const (existscurl u))
+			`catchNonAsync` (const dne)
 		-- http-conduit does not support file:, ftp:, etc urls,
 		-- so fall back to reading files and using curl.
 		Nothing
@@ -147,18 +156,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 						sz <- getFileSize' f stat
 						found (Just sz) Nothing
 					Nothing -> dne
-			| Build.SysConfig.curl -> do
-				output <- catchDefaultIO "" $
-					readProcess "curl" $ toCommand curlparams
-				let len = extractlencurl output
-				let good = found len Nothing
-				case lastMaybe (lines output) of
-					Just ('2':_:_) -> good
-					-- don't try to parse ftp status
-					-- codes; if curl got a length,
-					-- it's good
-					_ | "ftp" `isInfixOf` uriScheme u && isJust len -> good
-					_ -> dne
+			| Build.SysConfig.curl -> existscurl u
 			| otherwise -> dne
 	Nothing -> dne
   where
@@ -200,6 +198,23 @@ getUrlInfo url uo = case parseURIRelaxed url of
 				else dne
 		liftIO $ closeManager mgr
 		return ret
+
+	existscurl u = do
+		output <- catchDefaultIO "" $
+			readProcess "curl" $ toCommand curlparams
+		let len = extractlencurl output
+		let good = found len Nothing
+		let isftp = or
+			[ "ftp" `isInfixOf` uriScheme u
+			-- Check to see if http redirected to ftp.
+			, "Location: ftp://" `isInfixOf` output
+			]
+		case lastMaybe (lines output) of
+			Just ('2':_:_) -> good
+			-- don't try to parse ftp status codes; if curl
+			-- got a length, it's good
+			_ | isftp && isJust len -> good
+			_ -> dne
 
 -- Parse eg: attachment; filename="fname.ext"
 -- per RFC 2616
@@ -324,3 +339,13 @@ hContentLength = "Content-Length"
 hUserAgent :: CI.CI B.ByteString
 hUserAgent = "User-Agent"
 #endif
+
+{- Use with eg:
+ -
+ - > catchJust (matchStatusCodeException (== notFound404))
+ -}
+matchStatusCodeException :: (Status -> Bool) -> HttpException -> Maybe HttpException
+matchStatusCodeException want e@(StatusCodeException s _ _)
+	| want s = Just e
+	| otherwise = Nothing
+matchStatusCodeException _ _ = Nothing

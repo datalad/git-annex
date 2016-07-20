@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Horus"
+ subject="comment 2"
+ date="2016-07-14T08:32:11Z"
+ content="""
+Ah, ok, then it makes sense.
+
+Maybe it's an idea to expand the standard expression for client groups in a way that they drop a file if it has reached a backup repo (additionally to a archive repo)?
+
+Thanks!
+"""]]

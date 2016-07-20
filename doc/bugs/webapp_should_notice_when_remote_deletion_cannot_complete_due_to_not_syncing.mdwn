@@ -2,3 +2,6 @@ When deleting a remote via the webapp, if syncing is disabled
 the content will never get removed from the remote. So, the starting to
 delete a remote should probably enable syncing to it, or warn if syncing is
 disabled. --[[Joey]]
+
+> [[done]] via Farhan Kathawala's patch to simply grey out the menu item.
+> --[[Joey]]

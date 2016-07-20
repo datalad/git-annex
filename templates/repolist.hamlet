@@ -60,6 +60,11 @@
                       <a href="@{SyncNowRepositoryR $ asUUID repoid}">
                         <span .glyphicon .glyphicon-refresh>
                         \ Sync now
+                    $if notSyncing actions
+                      <a title="Not allowed when syncing is disabled." href="#" style="color: #999;">
+                        <span .glyphicon .glyphicon-trash>
+                        \ Delete
+                    $else
                       <a href="@{DeleteRepositoryR $ asUUID repoid}">
                         <span .glyphicon .glyphicon-trash>
                         \ Delete

@@ -4,7 +4,7 @@
       Need git-remote-gcrypt
     <p>
       To encrypt git repositories, you need to install #
-      <a href="https://github.com/joeyh/git-remote-gcrypt">
+      <a href="https://spwhitton.name/tech/code/git-remote-gcrypt/">
         git-remote-gcrypt
     <p>
       <a .btn .btn-primary .btn-lg href="">

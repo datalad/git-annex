@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-07-12T17:29:55Z"
+ content="""
+Bug sumitter, it would be good if you could find a way to reproduce
+the location log getting out of sync with reality. While `git annex fsck`
+is there to fix such a diverenge, it should not happen in the first place
+in normal operation.
+
+Reproduced by using `setpresentkey` to make the log not think
+the file content is locally available. The file was available, and had
+the right content, but fsck complains as shown.
+
+Ok, found the bug, it was treating the file as an unlocked file,
+but that meant it looked for the object file. That's the wrong
+thing to do in direct mode. This reversion was introduced in
+[[!commit e7183d83d367bb52f502266b11b5b6dff683279e]], so versions
+before 5.20151208 were ok. Fixing..
+"""]]

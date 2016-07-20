@@ -29,6 +29,11 @@ git-annex: Build/SysConfig.hs
 	else \
 		ln -sf dist/build/git-annex/git-annex git-annex; \
 	fi
+	# Work around https://github.com/haskell/cabal/issues/3524
+	# when not linked dynamically to haskell libs
+	@if ! ldd git-annex | grep -q libHS; then \
+		chrpath -d git-annex || echo "** unable to chrpath git-annex; it will be a little bit slower than necessary"; \
+	fi
 
 # These are not built normally.
 git-union-merge.1: doc/git-union-merge.mdwn
@@ -96,7 +101,7 @@ clean:
 		doc/.ikiwiki html dist tags Build/SysConfig.hs \
 		Setup Build/InstallDesktopFile Build/EvilSplicer \
 		Build/Standalone Build/OSXMkLibs Build/LinuxMkLibs \
-		Build/DistributionUpdate Build/BuildVersion Build/Mans \
+		Build/DistributionUpdate Build/BuildVersion Build/MakeMans \
 		git-union-merge .tasty-rerun-log
 	find . -name \*.o -exec rm {} \;
 	find . -name \*.hi -exec rm {} \;

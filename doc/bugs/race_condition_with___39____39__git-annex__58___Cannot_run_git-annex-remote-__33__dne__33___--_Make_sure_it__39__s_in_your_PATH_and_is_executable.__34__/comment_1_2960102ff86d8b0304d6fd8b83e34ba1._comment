@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-07-05T19:58:41Z"
+ content="""
+AFAICS this can only affect `git annex testremote` and not other commands; 
+to test behavior when the remote is not accessible, it uses
+mkUnavailable which substitutes "!dne!" for various values. 
+
+In the case of an external special remote, this causes it to run
+git-annex-remote-!dne! which is intentially not in the PATH. So, 
+testremote is testing the behavior when the external special remote
+program is missing.
+
+The bug is that in the remote warmup process it tries to run
+git-annex-remote-!dne! in order to query it for GETCOST, and this fails.
+
+It's not a race condition; it just fails the first time, and works
+the second time (since it has gotten the cost cached then).
+"""]]

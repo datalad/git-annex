@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Farhan"
+ subject="More Info"
+ date="2016-06-23T12:15:28Z"
+ content="""
+Can you please provide the following info? For curiosity's sake.
+
+When you are viewing the repos in the web app, on the right hand side for each repo is a drop down menu labelled \"actions\". Please click there and go to the option labelled \"Edit\". Click this option, and on the resulting page there should be a field labelled \"Repository group\". Can you tell us the \"Repository group\" for the repos you mentioned? What is the \"Repository group\" for the backup on the secondary drive, the repo in your home folder and the remote clients? My hunch is that these group types are not set up to reflect the configuration you want.
+"""]]

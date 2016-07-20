@@ -1,0 +1,64 @@
+### Please describe the problem.
+When trying to set up the Git Annex webapp to sync with an SSH server on Windows, specifying the remote server address ans an IPv6 literal address will result in an Internal Server Error like this:
+
+`C:\Users\anovak\.ssh\git-annex\key.git-annex-fc2e:f79e:da52:bd92:74f8:b045:e365:5e9d-anovak_22_.2Fhome.2Fanovak.2Fannex: openFile: invalid argument (Invalid argument)`
+
+I think the problem is that it's not escaping the colons, and you can't have colons in a filename on Windows.
+
+### What steps will reproduce the problem?
+
+1. Have Git Annex Webapp runnign on Windows.
+2. Go to the "Adding a remote server using ssh" page.
+3. Enter an IPv6 literal address (in brackets), like `[fc2e:f79e:da52:bd92:74f8:b045:e365:5e9d]`, under "Host name". I hyappen to be using cjdns addresses, but I bet you get the same issue with Internet addresses.
+4. Add the server, and elect to combine repositories if prompted.
+5. You should get the error.
+
+### What version of git-annex are you using? On what operating system?
+
+I have Git Annex: `Version: 6.20160613-g35dbe35` on Windows 7.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+[2016-07-17 11:11:09.3554208] main: starting assistant version 6.20160613-g35dbe35
+Warning: Couldn't open /dev/urandom
+Warning: using system clock for seed instead (quality will be lower)
+Launching web browser on file://C:\Users\anovak\annex\.git\annex\webapp.html
+[2016-07-17 11:11:09.482428] Cronner: You should enable consistency checking to protect your data. 
+(scanning...) [2016-07-17 11:11:09.7544436] Watcher: Performing startup scan
+(started...) 
+recv: failed (No error)
+recv: failed (No error)
+recv: failed (No error)
+(recording state in git...)
+Generating public/private rsa key pair.
+Your identification has been saved in C:\Users\anovak\AppData\Local\Temp\git-annex-keygen.0\key.
+Your public key has been saved in C:\Users\anovak\AppData\Local\Temp\git-annex-keygen.0\key.pub.
+The key fingerprint is:
+SHA256:sNwb2o1rp2ycVaMvEOxKZa2g6YlYVuOtbty8xybl3Uc anovak@Asteria
+The key's randomart image is:
++---[RSA 2048]----+
+|                 |
+|                 |
+|      .. .       |
+|    o..+= . o    |
+|   o =o=So o .   |
+|  o + oo==o   E  |
+| + + *.*+=.o .   |
+|. . * =.X.+ o .  |
+|   o. .B+o . .   |
++----[SHA256]-----+
+17/Jul/2016:11:15:48 -0700 [Error#yesod-core] C:\Users\anovak\.ssh\git-annex\key.git-annex-fc2e:f79e:da52:bd92:74f8:b045:e365:5e9d-anovak_22_.2Fhome.2Fanovak.2Fannex: openFile: invalid argument (Invalid argument) @(yesod_IAZWSEWTVsBHH7DfZiTwkc:Yesod.Core.Class.Yesod .\Yesod\Core\Class\Yesod.hs:628:5)
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yeah, it works great on my Linux machines. I'm just getting started with the web app, though; I'm trying to set up limited-access key-based SSH, and the web app seems to be also trying to do that...
+
+> Fixed by escaping the hostname when it contains any unusual characters.
+> [[done]] --[[Joey]]

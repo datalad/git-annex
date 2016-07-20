@@ -1,0 +1,7 @@
+It seems that it would be tremendously useful, see e.g. our [datalad install](https://github.com/datalad/datalad/issues/553)
+
+[[!meta author=yoh]]
+
+> [[done]] although the output while getting a file is not
+> machine-parseable. So, I made --json also work for get, but enabling
+> json output disables any progress display. --[[Joey]]

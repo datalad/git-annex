@@ -52,6 +52,7 @@ module Annex.Locations (
 	gitAnnexIndexStatus,
 	gitAnnexViewIndex,
 	gitAnnexViewLog,
+	gitAnnexMergedRefs,
 	gitAnnexIgnoredRefs,
 	gitAnnexPidFile,
 	gitAnnexPidLockFile,
@@ -356,6 +357,10 @@ gitAnnexViewIndex r = gitAnnexDir r </> "viewindex"
 {- File containing a log of recently accessed views. -}
 gitAnnexViewLog :: Git.Repo -> FilePath
 gitAnnexViewLog r = gitAnnexDir r </> "viewlog"
+
+{- List of refs that have already been merged into the git-annex branch. -}
+gitAnnexMergedRefs :: Git.Repo -> FilePath
+gitAnnexMergedRefs r = gitAnnexDir r </> "mergedrefs"
 
 {- List of refs that should not be merged into the git-annex branch. -}
 gitAnnexIgnoredRefs :: Git.Repo -> FilePath

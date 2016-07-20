@@ -12,7 +12,7 @@ version of the original branch, eg `adjusted/master`.
 There would be a adjustment function. For #1 above it would simply convert all
 annex symlinks to annex file pointers. For #2 above it would omit files
 whose content is not currently in the annex. Sometimes, both #1 and #2 would
-be wanted.
+be wanted. The function is currently implemented as the [[git-annex-adjust]] command.
 
 [Alternatively, it could stay on the master branch, and only adjust the
 work tree and index. See WORKTREE notes below for how this choice would

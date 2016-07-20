@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-07-12T17:41:35Z"
+ content="""
+Currently the only way to do that is to make a clone of the bare repsitory
+that's not bare. Then run `git annex fsck --from origin` inside the clone.
+This is more efficient when the clone is on the same disk as the bare
+repository.
+
+Another way to deal with it is to use `git annex dead --key` to
+make fsk stop complaining about the specific keys that you don't mind are
+gone.
+"""]]

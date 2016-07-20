@@ -119,9 +119,6 @@ import qualified Command.TestRemote
 #ifdef WITH_BENCHMARK
 import qualified Command.Benchmark
 #endif
-#ifdef WITH_EKG
-import System.Remote.Monitoring
-#endif
 
 cmds :: Parser TestOptions -> Maybe TestRunner -> [Command]
 cmds testoptparser testrunner = 
@@ -232,11 +229,7 @@ cmds testoptparser testrunner =
 	]
 
 run :: Parser TestOptions -> Maybe TestRunner -> [String] -> IO ()
-run testoptparser testrunner args = do
-#ifdef WITH_EKG
-	_ <- forkServer "localhost" 4242
-#endif
-	go envmodes
+run testoptparser testrunner args = go envmodes
   where
 	go [] = dispatch True args 
 		(cmds testoptparser testrunner)

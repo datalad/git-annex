@@ -1,0 +1,3 @@
+Worked on recent bug reports. Two bugs fixed today were both reversions
+introduced when the v6 repository support was added. Backlog is down to
+153.

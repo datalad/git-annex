@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 4"
+ date="2016-07-11T17:25:28Z"
+ content="""
+> git doesn't provide any command that outputs the repo version AFAIK, so it's not a useful precedent.
+
+well -- exactly that -- `git version` DOES NOT output repos (its index or whatnot) version HERE. It only provides information about git's version
+Either there is some git command which outputs repo (index, ...) version is somewhat independent.  But ok -- I don't care much enough, can take version from git config I guess indeed, even though 'annex info' seems to be the most logical location for that information to be provided from as well IMHO ;-)
+"""]]

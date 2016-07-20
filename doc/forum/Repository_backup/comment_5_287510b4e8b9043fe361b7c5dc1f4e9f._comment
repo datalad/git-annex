@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="sts"
+ subject="comment 5"
+ date="2016-06-27T19:36:58Z"
+ content="""
+I always backup my git-annex repos using 'git bundle create ... --all' which is similar to a git clone, but much more convenient for backups, because it is just a single file :).
+"""]]

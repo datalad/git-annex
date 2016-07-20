@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jscinoz@dc383eb6c5526eeb832a38ef5e5e626cf282ee6c"
+ nickname="jscinoz"
+ subject="comment 2"
+ date="2016-07-18T06:32:53Z"
+ content="""
+I suppose one enhancement could be to ignore annex.diskreserve when content is obtained by reflink copy, but I can imagine this would be difficult to achieve, since we don't know in advance whether or not --reflink=auto will actually result in a reflink copy. I imagine you could try reflink=always first, ignoring annex.diskreserve, then if it fails, fallback to reflink=auto where annex.diskreserve is checked, but perhaps this is too much filesystem-specific logic to be appropriate in git-annex.
+"""]]

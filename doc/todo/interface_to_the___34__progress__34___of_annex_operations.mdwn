@@ -1,0 +1,13 @@
+It would be really nice if external tools working with annex could obtain updates on the progress of operations so they could report using their own UI back to the user.  Especially relevant for --batch --json modes of operations (e.g. for get or addurl) whenever no progress is reported by annex itself at all.  
+
+Related:
+[datalad #478](https://github.com/datalad/datalad/issues/478)
+
+
+[[!meta author=yoh]]
+
+> --status-fd is one way, or the progress could be included as
+> part of the --batch protocol. In either case, it might make sense to
+> reuse part of the external special remote protocol. (Which would let you
+> relay the progress messages when datalad is doing a nested retrieval, I
+> suppose.) --[[Joey]]

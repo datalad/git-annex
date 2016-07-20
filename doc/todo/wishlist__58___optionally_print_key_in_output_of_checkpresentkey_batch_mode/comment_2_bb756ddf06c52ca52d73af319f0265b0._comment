@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="magibney@908c3d4677b9e87e203538d4d5e8c296255749a0"
+ nickname="magibney"
+ subject="comment 2"
+ date="2016-07-11T18:45:10Z"
+ content="""
+Exactly: shell scripting, \"big list of keys and want to narrow it to only keys that are present or missing\". 
+
+My motivating use case is as a sanity check that all keys have been successfully transferred on a Ceph S3 instance internally (i.e., `s3cmd cp s3://sourcebucket/[annex-key] s3://destbucket/[annex-key]`, without being read back to the local machine and separately written back up to a different bucket on the same server and locally deleted).  Post-transfer, I want to check that all keys are present as expected, but in the event that a failed transfer is detected, I'd like to be able to report a specific key back to the operator/calling script. 
+
+I'm thinking that if one is running `checkpresentkey` in batch mode (with multiple keys at once), there are many useful things one might want to do with the output that would require associating output status indicators with input keys; and since the output of `checkpresentkey --batch` is so terse, it could optionally be extended without too much parsing/escaping/etc complication. 
+
+Thanks for considering this, and apologies that the initial request was a bit cryptic about the use case! 
+"""]]

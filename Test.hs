@@ -1837,7 +1837,7 @@ cleanup = cleanup' False
 
 cleanup' :: Bool -> FilePath -> IO ()
 cleanup' final dir = whenM (doesDirectoryExist dir) $ do
-	Command.Uninit.prepareRemoveAnnexDir dir
+	Command.Uninit.prepareRemoveAnnexDir' dir
 	-- This sometimes fails on Windows, due to some files
 	-- being still opened by a subprocess.
 	catchIO (removeDirectoryRecursive dir) $ \e ->

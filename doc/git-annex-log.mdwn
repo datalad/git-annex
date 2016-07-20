@@ -34,6 +34,12 @@ showing each repository they were added to ("+") and removed from ("-").
   The [[git-annex-matching-options]](1)
   can be used to specify files to act on.
 
+* `--all`
+
+  Shows location log changes to all files, with the most recent changes first.
+  In this mode, the names of files are not available and keys are displayed
+  instead.
+
 # SEE ALSO
 
 [[git-annex]](1)

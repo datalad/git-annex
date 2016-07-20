@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-07-19T14:57:14Z"
+ content="""
+Yes, reflink is used instead of rsync when it's able to determine it's the
+same filesystem.
+
+Not checking diskreserve for reflink (and also for hard link when
+annex.hardlink is set) would be nice. But, it's a layering problem
+since currently the diskreserve check is done separately from the transfer.
+
+The same layering problem also makes downloads from encrypted special
+remotes not check if there's space for both the encrypted and de-encrypted
+file content, in cases where both files are present on disk at the same
+time.
+
+So, there would be multiple benefits to improving the api somehow so more
+smart diskreserve checks can be done. Although I'd then worry that if
+remotes were responsible for doing diskreserve checks, they might be buggy
+and forget to check. 
+"""]]

@@ -1,0 +1,59 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-07-06T15:59:34Z"
+ content="""
+Startup time is also particulary important when git-annex is being used as
+a smudge/clean filter in v6 mode, since it's run once per file git operates
+on.
+
+---
+
+What I'd look at before prelinking is, does your git-annex executable
+dynamically link haskell libraries?
+
+That was the case for a while in the standalone builds, until I noticed it
+caused too much linker time and put it back to static linking of the
+haskell libs. Leaving only 34 or so C shared libs.
+
+---
+
+Did some preliminary benchmarking here of `git-annex version --raw`
+
+* deb package build: 0.04 seconds min
+* deb package build prelinked: ~0.03 seconds min
+* standalone build: 0.05 seconds min
+* git-annex modified to print "hi" and exit immediately: 0.02 seconds min
+
+So, the overhead of the wrapper scripts for the standalone build is around
+0.01 seconds.
+
+And, prelinking does help a little bit (although probably closer to 0.005
+seconds than 0.01; my measurements are too coarse to get a good number).
+
+Meanwhile, 0.02 seconds are used after git-annex starts up. This overhead
+includes finding the path to the git repository, running and parsing `git
+config --list`, etc.
+
+But what about that 0.02 seconds just to print "hi"...?
+
+----
+
+With strace I noticed a very interesting thing. Despite being statically
+linked against the haskell libraries, the linker searches in all their
+paths for all C libraries. This adds around 30000 failed open() calls
+to git-annex's startup. This is done even after prelinking. It must be a
+significant part of the startup time.
+
+Filed a bug: <https://github.com/haskell/cabal/issues/3524>
+
+Put in a chrpath workaround, but only when git-annex is built with "make"
+(not cabal install git-annex).
+
+Updated benchmarks:
+
+* deb package build: 0.02 seconds min
+* deb package build prelinked: ~0.02 seconds min
+* standalone build: 0.03 seconds min
+* git-annex modified to print "hi" and exit immediately: 0.01 seconds min
+"""]]

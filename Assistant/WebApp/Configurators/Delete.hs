@@ -17,17 +17,15 @@ import Assistant.Sync
 import qualified Remote
 import qualified Git
 import Config.Files
-import Utility.FileMode
 import Logs.Trust
 import Logs.Remote
 import Logs.PreferredContent
 import Types.StandardGroups
 import Annex.UUID
+import Command.Uninit (prepareRemoveAnnexDir)
 
-import System.IO.HVFS (SystemFS(..))
 import qualified Data.Text as T
 import qualified Data.Map as M
-import System.Path
 
 notCurrentRepo :: UUID -> Handler Html -> Handler Html
 notCurrentRepo uuid a = do
@@ -99,12 +97,8 @@ deleteCurrentRepository = dangerPage $ do
 				rs <- syncRemotes <$> getDaemonStatus
 				mapM_ (\r -> changeSyncable (Just r) False) rs
 
-			{- Make all directories writable and files writable
-			 - so all annexed content can be deleted. -}
-			liftIO $ do
-				recurseDir SystemFS dir
-					>>= mapM_ (void . tryIO . allowWrite)
-				removeDirectoryRecursive =<< absPath dir
+			liftAnnex $ prepareRemoveAnnexDir dir
+			liftIO $ removeDirectoryRecursive =<< absPath dir
 			
 			redirect ShutdownConfirmedR
 		_ -> $(widgetFile "configurators/delete/currentrepository")

@@ -27,6 +27,7 @@ import Database.Keys.Handle
 import qualified Database.Queue as H
 import Annex.Locations
 import Annex.Common hiding (delete)
+import Annex.Version (versionUsesKeysDatabase)
 import qualified Annex
 import Annex.Perms
 import Annex.LockFile
@@ -101,7 +102,10 @@ getDbHandle = go =<< Annex.getState Annex.keysdbhandle
   where
 	go (Just h) = pure h
 	go Nothing = do
-		h <- liftIO newDbHandle
+		h <- ifM versionUsesKeysDatabase
+			( liftIO newDbHandle
+			, liftIO unavailableDbHandle
+			)
 		Annex.changeState $ \s -> s { Annex.keysdbhandle = Just h }
 		return h
 

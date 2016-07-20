@@ -1,0 +1,43 @@
+I'm a user of git-annex for many years now (since the first stable releases) and I've always used it before on debian-like systems. I have now a gentoo OS where I have compiled git-annex.
+
+    git-annex version: 6.20160419
+    build flags: Assistant Webapp Pairing S3(multipartupload) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime EKG Feeds Quvi
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+
+I don't know if you exactly can solve my problem, as it may be related to haskell stuff, and not directly coming from git-annex code, so I barely hope some hints about the possible source of the problem. When I perform any git annex action (here a git annex sync), I get the following message in the cli:
+
+    commit  
+    Error on startup: 
+    bind: resource busy (Address already in use)
+    git-annex: bind: resource busy (Address already in use)
+    ok
+    pull <ANNEX>
+    <etc...>
+
+Of course, the webapp has also troubles with this. My understanding of the phenomena is that only one git annex action can be performed at the time, so the rest of them crash or fail. Is my understanding correct, do you think? I can consequently, perform git annex actions, but only one at the time, and the whole thing feels unreliable. I suspect that the problem comes from the haskell compiler or platform, but I have no knowledge of haskell and I am consequently not really able to aim at what could be the problem. If you have an idea or some hints, I would be glad to hear from you, as that bug really comes in my way. I use git-annex for every bits of my computer life and that's really a handicap for me :-(.
+
+### Extract of .git/annex/daemon.log
+[[!format sh """
+
+[2016-06-19 17:41:57.98439] main: starting assistant version 6.20160419
+[2016-06-19 17:42:04.663738] TransferScanner: Syncing with hunbaut 
+
+  No known network monitor available through dbus; falling back to polling
+
+  No known volume monitor available through dbus; falling back to mtab polling
+(scanning...) [2016-06-19 17:42:04.833047] Watcher: Performing startup scan
+Error on startup: 
+bind: resource busy (Address already in use)
+git-annex: bind: resource busy (Address already in use)
+RemoteControl crashed: user error (nice ["ionice","-c3","/usr/bin/git-annex","remotedaemon"] exited 1)
+[2016-06-19 17:42:04.945745] RemoteControl: warning RemoteControl crashed: user error (nice ["ionice","-c3","/usr/bin/git-annex","remotedaemon"] exited 1)
+
+
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yeah, for years! Thank you so much for it :-)
+
+> [[done]] --[[Joey]]

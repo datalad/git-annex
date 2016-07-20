@@ -79,9 +79,6 @@ buildFlags = filter (not . null)
 #ifdef WITH_MAGICMIME
 	, "MagicMime"
 #endif
-#ifdef WITH_EKG
-	, "EKG"
-#endif
 	-- Always enabled now, but users may be used to seeing these flags
 	-- listed.
 	, "Feeds"

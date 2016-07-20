@@ -1,0 +1,3 @@
+Revisited my enhanced smudge/clean patch set for git, updating it for code
+review and to deal with changes in git since I've been away. This took
+several hours unfortunately.

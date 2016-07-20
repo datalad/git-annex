@@ -1,0 +1,3 @@
+Hi,
+
+Is there any way to estimate how much data will be transferred and/or written down on the target repository of a `git annex copy` command? Something that would take into account that some data is already there, etc.

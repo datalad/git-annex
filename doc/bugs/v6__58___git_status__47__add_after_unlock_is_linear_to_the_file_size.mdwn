@@ -1,0 +1,23 @@
+### Please describe the problem.
+
+After unlocking a repository, the next git status will take time linear to the file size. It seems to be highly inefficient (the I/O on my SSD is not anywhere near the limit).  
+For a 500Mb flac album it takes ~5–10s, for my 100GB local music archive it took well over 30min.
+
+### What steps will reproduce the problem?
+
+```
+git annex upgrade
+git annex unlock
+git status / git add -A
+```
+
+### What version of git-annex are you using? On what operating system?
+
+6.20160527  
+NixOS (master branch)
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Not yet. :)  
+But will use it to keep my music library and sync a smaller (ogg) version to my various devices (with beets handling metadata and conversion)
+

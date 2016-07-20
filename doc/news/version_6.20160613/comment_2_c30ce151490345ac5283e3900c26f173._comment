@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-07-12T19:55:52Z"
+ content="""
+In this case, the change only makes eg, "foo.ba__________r" not be considered
+to have an extension of ".bar". So it's unlikely to affect many files.
+
+I do try to keep the extension guessing code fairly stable to prevent breaking
+re-adding. But sometimes a bug does warrant changing it.
+"""]]

@@ -23,7 +23,7 @@ import System.Log.Logger (debugM)
 import qualified Data.Set as S
 
 cmd :: Command
-cmd = withGlobalOptions (jobsOption : annexedMatchingOptions) $
+cmd = withGlobalOptions (jobsOption : jsonOption : annexedMatchingOptions) $
 	command "drop" SectionCommon
 		"remove content of files from repository"
 		paramPaths (seek <$$> optParser)
@@ -33,6 +33,7 @@ data DropOptions = DropOptions
 	, dropFrom :: Maybe (DeferredParse Remote)
 	, autoMode :: Bool
 	, keyOptions :: Maybe KeyOptions
+	, batchOption :: BatchMode
 	}
 
 optParser :: CmdParamsDesc -> Parser DropOptions
@@ -41,6 +42,7 @@ optParser desc = DropOptions
 	<*> optional parseDropFromOption
 	<*> parseAutoOption
 	<*> optional (parseKeyOptions False)
+	<*> parseBatchOption
 
 parseDropFromOption :: Parser (DeferredParse Remote)
 parseDropFromOption = parseRemoteOption $ strOption
@@ -51,10 +53,14 @@ parseDropFromOption = parseRemoteOption $ strOption
 
 seek :: DropOptions -> CommandSeek
 seek o = allowConcurrentOutput $
-	withKeyOptions (keyOptions o) (autoMode o)
-		(startKeys o)
-		(withFilesInGit $ whenAnnexed $ start o)
-		(dropFiles o)
+	case batchOption o of
+		Batch -> batchInput Right (batchCommandAction . go)
+		NoBatch -> withKeyOptions (keyOptions o) (autoMode o)
+			(startKeys o)
+			(withFilesInGit go)
+			(dropFiles o)
+  where
+	go = whenAnnexed $ start o
 
 start :: DropOptions -> FilePath -> Key -> CommandStart
 start o file key = start' o key (Just file)

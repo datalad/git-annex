@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-07-19T17:01:03Z"
+ content="""
+It would be possible to add something like `git annex fsck --branch foo `
+which would operate on all files in the specified branch. I've opened
+[[todo/operate_on_branch_contents]] requesting that.
+"""]]

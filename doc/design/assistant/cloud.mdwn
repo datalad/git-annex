@@ -41,5 +41,5 @@ Another option is to not store the git repo in the cloud, but push/pull
 peer-to-peer. When peers cannot directly talk to one-another, this could be
 bounced through something like XMPP. This is **done** for [[xmpp]]!
 
-Another option: Use <https://github.com/blake2-ppc/git-remote-gcrypt> to store
+Another option: Use <https://spwhitton.name/tech/code/git-remote-gcrypt/> to store
 git repo encrypted on cloud storage.

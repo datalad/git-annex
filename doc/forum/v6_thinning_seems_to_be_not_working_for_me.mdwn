@@ -1,0 +1,42 @@
+git-annex version: 6.20160524+gitg2b7b2c4-1~ndall+1
+
+repo config:
+
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[annex]
+	uuid = c5c203ec-9353-4213-8af5-6fcb8de36ca2
+	version = 6
+	thin = true
+[filter "annex"]
+	smudge = git-annex smudge %f
+	clean = git-annex smudge --clean %f
+
+
+
+copied a big file to the working directory
+
+git add
+git commit
+
+
+Locking the big file creates the symlink, with the file in the annex.
+
+Unlocking the big file creates a real file in the working dir, and the annex file stays there.
+
+The total dir is therefore twice the size of the big file.
+
+ls -li shows a unique inode for each file.
+
+
+It seems thinning is not doing what I expected:
+
+Which is: unlocking a file creates a hard link in the working directory, linked to the annex file, with
+the resulting dir size being the size of the one big file.
+
+Are my expectations correct?
+
+Is there something I am missing?

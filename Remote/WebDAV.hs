@@ -30,7 +30,7 @@ import Remote.Helper.Http
 import qualified Remote.Helper.Chunked.Legacy as Legacy
 import Creds
 import Utility.Metered
-import Utility.Url (URLString)
+import Utility.Url (URLString, matchStatusCodeException)
 import Annex.UUID
 import Remote.WebDAV.DavLocation
 
@@ -269,12 +269,6 @@ existsDAV l = inLocation l check `catchNonAsync` (\e -> return (Left $ show e))
 			(getPropsM >> ispresent True)
 			(const $ ispresent False)
 	ispresent = return . Right
-
-matchStatusCodeException :: (Status -> Bool) -> HttpException -> Maybe HttpException
-matchStatusCodeException want e@(StatusCodeException s _ _)
-	| want s = Just e
-	| otherwise = Nothing
-matchStatusCodeException _ _ = Nothing
 
 -- Ignores any exceptions when performing a DAV action.
 safely :: DAVT IO a -> DAVT IO (Maybe a)

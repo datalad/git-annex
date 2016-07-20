@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-07-19T16:57:59Z"
+ content="""
+Right, it's checking if the file content is still present on the remote.
+Since that can take a while, or even lead to a ssh password prompt etc,
+it prints out the name of each file as it checks it. 
+
+--fast avoids that check, which is fine. I have gone back and forth on
+making --fast the default in this sitation.
+"""]]

@@ -1,0 +1,51 @@
+[[!format sh """
+$> git clone http://data.pymvpa.org/datasets/tutorial_data/.git tutorial_data-2
+Cloning into 'tutorial_data-2'...
+Checking connectivity... done.
+cd 
+#35 !280 [0].....................................:Thu Jul 14 10:16:49:.
+anthill:/home/ironfs/scratch/yarik
+$> cd tutorial_data-2
+total 36
+ 4 freesurfer/   4 hyperalignment_tutorial_data.hdf5.gz@  20 suma_surfaces/
+ 4 haxby2001/    4 results/
+(git)/home/ironfs/scratch/yarik/tutorial_data-2:[master]
+#36 !281 [0].....................................:Thu Jul 14 10:16:50:.
+anthill:/home/ironfs/scratch/yarik/tutorial_data-2
+$> git annex get hyperalignment_tutorial_data.hdf5.gz 
+
+  Detected a filesystem without POSIX fcntl lock support.
+
+  Enabling annex.pidlock.
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+/home/ironfs/scratch 100%[===================>]  15.04M  68.9MB/s    in 0.2s    
+(checksum...) ok
+(recording state in git...)
+(git)/home/ironfs/scratch/yarik/tutorial_data-2:[master]
+#37 !282 [0].....................................:Thu Jul 14 10:16:54:.
+anthill:/home/ironfs/scratch/yarik/tutorial_data-2
+$> git annex drop hyperalignment_tutorial_data.hdf5.gz
+drop hyperalignment_tutorial_data.hdf5.gz (checking origin...) git-annex: SQLite3 returned ErrorIO while attempting to perform prepare "PRAGMA journal_mode=WAL;": disk I/O error
+(git)/home/ironfs/scratch/yarik/tutorial_data-2:[master]
+
+$> git annex fsck
+fsck freesurfer/anat_nii.nii sqlite worker thread crashed: SQLite3 returned ErrorIO while attempting to perform prepare "SELECT null from content limit 1": disk I/O error
+git-annex: sqlite query crashed
+
+$> git annex version
+git-annex version: 6.20160613-g35dbe35
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository versions: 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+operating system: linux x86_64
+(git)/home/ironfs/scratch/yarik/tutorial_data:[master]
+
+"""]]
+
+
+
+[[!meta author=yoh]]

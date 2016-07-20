@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="upgrades instruction"
+ date="2016-06-23T14:44:18Z"
+ content="""
+since you haven't explicitly mentionned it, i'll just mention a pointer to the [[upgrades]] page which has specific instructions regarding upgrading repositories to the v6 layout.
+
+as far as I know, you can just upgrade the git-annex *program* itself harmlessly. it will *not* upgrade your repositories without you deliberately running [[git-annex-upgrade]].
+
+then [[git-annex-upgrade]] will operate changes, but only on direct mode repositories, as far as i can tell. those repositories are switched to [[design/adjusted branches]], which have their own set of issues right name, mostly limitations with the webapp but have also seen a few bugfixes on crippled filesystems recently.
+
+i am personnally doing the \"wait and see\" game especially considering my specific use case for v6 ([[todo/hide_missing_files/]]) has not been completely implemented yet. but I am of course using 6.x binaries without problems.
+
+i am not the git-annex author, so take my comments with a grain of salt of course. :) --[[anarcat]]
+"""]]
