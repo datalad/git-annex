@@ -1,0 +1,3 @@
+You typo'ed the tag and the release date in debian/changelog: 6.20160619 instead of 6.20160719
+
+I will release 6.20160719-1 in Debian on the assumption that you will fix that tag :)
