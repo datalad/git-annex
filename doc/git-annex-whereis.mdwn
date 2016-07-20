@@ -35,6 +35,10 @@ For example:
 
   Show whereis information for all known keys.
 
+* `--branch=ref`
+
+  Show whereis information for files in the specified branch or treeish.
+
 * `--unused`
 
   Show whereis information for files found by last run of git-annex unused.

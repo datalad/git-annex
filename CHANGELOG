@@ -1,3 +1,11 @@
+git-annex (6.20160620) UNRELEASED; urgency=medium
+
+  * Added --branch option to copy, drop, fsck, get, metadata, mirror, move,
+    and whereis commands. This option makes git-annex operate on files that
+    are included in a specified branch (or other treeish).
+
+ -- Joey Hess <id@joeyh.name>  Wed, 20 Jul 2016 12:03:15 -0400
+
 git-annex (6.20160619) unstable; urgency=medium
 
   * get, drop: Add --batch and --json options.

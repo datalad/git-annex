@@ -42,13 +42,29 @@ safe to do so.
 
   This is the default behavior when running git-annex drop in a bare repository.
 
+  Note that this bypasses checking the .gitattributes annex.numcopies
+  setting.
+
+* `--branch=ref`
+
+  Drop files in the specified branch or treeish.
+
+  Note that this bypasses checking the .gitattributes annex.numcopies
+  setting.
+
 * `--unused`
 
   Drop files found by last run of git-annex unused.
 
+  Note that this bypasses checking the .gitattributes annex.numcopies
+  setting.
+
 * `--key=keyname`
 
   Use this option to drop a specified key.
+
+  Note that this bypasses checking the .gitattributes annex.numcopies
+  setting.
 
 * file matching options
 

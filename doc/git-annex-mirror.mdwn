@@ -46,6 +46,13 @@ contents. Use [[git-annex-sync]](1) for that.
 
   This is the default behavior when running git-annex in a bare repository.
 
+* `--branch=ref`
+
+  Operate on files in the specified branch or treeish.
+
+  Like --all, this bypasses checking the .gitattributes annex.numcopies
+  setting when dropping files.
+
 * file matching options
 
   The [[git-annex-matching-options]](1)

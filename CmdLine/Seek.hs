@@ -154,7 +154,7 @@ withNothing :: CommandStart -> CmdParams -> CommandSeek
 withNothing a [] = seekActions $ return [a]
 withNothing _ _ = error "This command takes no parameters."
 
-{- Handles the --all, --unused, --key, and --incomplete options,
+{- Handles the --all, --branch, --unused, --key, and --incomplete options,
  - which specify particular keys to run an action on.
  -
  - In a bare repo, --all is the default.
@@ -162,34 +162,49 @@ withNothing _ _ = error "This command takes no parameters."
  - Otherwise falls back to a regular CommandSeek action on
  - whatever params were passed. -}
 withKeyOptions :: Maybe KeyOptions -> Bool -> (Key -> CommandStart) -> (CmdParams -> CommandSeek) -> CmdParams -> CommandSeek
-withKeyOptions ko auto keyaction = withKeyOptions' ko auto $ \getkeys -> do
-	matcher <- Limit.getMatcher
-	seekActions $ map (process matcher) <$> getkeys
+withKeyOptions ko auto keyaction = withKeyOptions' ko auto mkkeyaction
   where
+	mkkeyaction = do
+		matcher <- Limit.getMatcher
+		return $ \getkeys ->
+			seekActions $ map (process matcher) <$> getkeys
 	process matcher k = ifM (matcher $ MatchingKey k)
 		( keyaction k
 		, return Nothing
 		)
 
-withKeyOptions' :: Maybe KeyOptions -> Bool -> (Annex [Key] -> Annex ()) -> (CmdParams -> CommandSeek) -> CmdParams -> CommandSeek
-withKeyOptions' ko auto keyaction fallbackaction params = do
+withKeyOptions' :: Maybe KeyOptions -> Bool -> Annex (Annex [Key] -> Annex ()) -> (CmdParams -> CommandSeek) -> CmdParams -> CommandSeek
+withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 	bare <- fromRepo Git.repoIsLocalBare
 	when (auto && bare) $
 		error "Cannot use --auto in a bare repository"
 	case (null params, ko) of
 		(True, Nothing)
-			| bare -> go auto loggedKeys
+			| bare -> noauto $ runkeyaction loggedKeys
 			| otherwise -> fallbackaction params
 		(False, Nothing) -> fallbackaction params
-		(True, Just WantAllKeys) -> go auto loggedKeys
-		(True, Just WantUnusedKeys) -> go auto unusedKeys'
-		(True, Just (WantSpecificKey k)) -> go auto $ return [k]
-		(True, Just WantIncompleteKeys) -> go auto incompletekeys
-		(False, Just _) -> error "Can only specify one of file names, --all, --unused, --key, or --incomplete"
+		(True, Just WantAllKeys) -> noauto $ runkeyaction loggedKeys
+		(True, Just WantUnusedKeys) -> noauto $ runkeyaction unusedKeys'
+		(True, Just (WantSpecificKey k)) -> noauto $ runkeyaction (return [k])
+		(True, Just WantIncompleteKeys) -> noauto $ runkeyaction incompletekeys
+		(True, Just (WantBranchKeys bs)) -> noauto $ runbranchkeys bs
+		(False, Just _) -> error "Can only specify one of file names, --all, --branch, --unused, --key, or --incomplete"
   where
-	go True _ = error "Cannot use --auto with --all or --unused or --key or --incomplete"
-	go False getkeys = keyaction getkeys
+	noauto a
+		| auto = error "Cannot use --auto with --all or --branch or --unused or --key or --incomplete"
+		| otherwise = a
 	incompletekeys = staleKeysPrune gitAnnexTmpObjectDir True
+	runkeyaction ks = do
+		keyaction <- mkkeyaction
+		keyaction ks
+	runbranchkeys bs = do
+		keyaction <- mkkeyaction
+		forM_ bs $ \b -> do
+			(l, cleanup) <- inRepo $ LsTree.lsTree b
+			forM_ l $ \i ->
+				maybe noop (\k -> keyaction (return [k]))
+					=<< catKey (LsTree.sha i)
+			liftIO $ void cleanup
 
 prepFiltered :: (FilePath -> CommandStart) -> Annex [FilePath] -> Annex [CommandStart]
 prepFiltered a fs = do
@@ -200,9 +215,7 @@ prepFiltered a fs = do
 		( a f , return Nothing )
 
 seekActions :: Annex [CommandStart] -> Annex ()
-seekActions gen = do
-	as <- gen
-	mapM_ commandAction as
+seekActions gen = mapM_ commandAction =<< gen
 
 seekHelper :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> [FilePath] -> Annex [FilePath]
 seekHelper a params = do

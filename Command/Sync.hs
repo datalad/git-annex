@@ -441,7 +441,7 @@ seekSyncContent o rs = do
 		Just WantAllKeys -> Just <$> genBloomFilter (seekworktree mvar [])
 		_ -> seekworktree mvar [] (const noop) >> pure Nothing
 	withKeyOptions' (keyOptions o) False
-		(seekkeys mvar bloom) 
+		(return (seekkeys mvar bloom))
 		(const noop)
 		[]
 	finishCommandActions

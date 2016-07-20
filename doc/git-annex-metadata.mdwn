@@ -75,6 +75,11 @@ When run without any -s or -t parameters, displays the current metadata.
 
   Specify instead of a file to get/set metadata on all known keys.
 
+* `--branch=ref`
+
+  Specify instead of a file to get/set metadata on all files in the
+  specified branch or treeish.
+
 * `--unused`
 
   Specify instead of a file to get/set metadata on

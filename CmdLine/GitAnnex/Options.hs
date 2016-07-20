@@ -141,6 +141,7 @@ data KeyOptions
 	| WantUnusedKeys
 	| WantSpecificKey Key
 	| WantIncompleteKeys
+	| WantBranchKeys [Branch]
 
 parseKeyOptions :: Bool -> Parser KeyOptions
 parseKeyOptions allowincomplete = if allowincomplete
@@ -152,6 +153,10 @@ parseKeyOptions allowincomplete = if allowincomplete
 	else base
   where
 	base = parseAllOption
+		<|> WantBranchKeys <$> many (option (str >>= pure . Ref)
+			( long "branch" <> metavar paramRef
+			<> help "operate on files in the specified branch or treeish"
+			))
 		<|> flag' WantUnusedKeys
 			( long "unused" <> short 'U'
 			<> help "operate on files found by last run of git-annex unused"
