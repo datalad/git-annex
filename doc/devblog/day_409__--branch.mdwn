@@ -1,0 +1,17 @@
+A common complaint is that `git annex fsck` in a bare repository complains
+about missing content of deleted files. That's because in a bare
+repository, git-annex operates on all versions of all files. Today I added
+a --branch option, so if you only want to check say, the master branch, you
+can: `git annex fsck --branch master`
+
+The new option has other uses too. Want to get all the files in the v1.0
+tag? `git annex get --branch v1.0`
+
+It might be worth revisiting the implicit --all behavior for bare
+repositories. It could instead default to --branch HEAD or something like
+that. But I'd only want to change that if there was a strong consensus in
+favor.
+
+Over 3/4th of the time spent implementing --branch was spent in
+adjusting the output of commands, to show "branch:file" is being
+operated on. How annoying.
