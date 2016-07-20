@@ -449,8 +449,7 @@ seekSyncContent o rs = do
   where
 	seekworktree mvar l bloomfeeder = seekHelper LsFiles.inRepo l >>=
 		mapM_ (\f -> ifAnnexed f (go (Right bloomfeeder) mvar (Just f)) noop)
-	seekkeys mvar bloom getkeys =
-		mapM_ (go (Left bloom) mvar Nothing) =<< getkeys
+	seekkeys mvar bloom k _ = go (Left bloom) mvar Nothing k
 	go ebloom mvar af k = commandAction $ do
 		whenM (syncFile ebloom rs af k) $
 			void $ liftIO $ tryPutMVar mvar ()
@@ -512,7 +511,7 @@ syncFile ebloom rs af k = do
 		, return []
 		)
 	get have = includeCommandAction $ do
-		showStart' "get" k af
+		showStart' "get" k (mkActionItem af)
 		next $ next $ getKey' k af have
 
 	wantput r
@@ -527,4 +526,4 @@ syncFile ebloom rs af k = do
 		, return []
 		)
 	put dest = includeCommandAction $ 
-		Command.Move.toStart' dest False af k
+		Command.Move.toStart' dest False af k (mkActionItem af)

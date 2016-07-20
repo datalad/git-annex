@@ -117,10 +117,10 @@ handleDropsFrom locs rs reason fromhere key afile preverified runner = do
 			)
 
 	dropl fs n = checkdrop fs n Nothing $ \numcopies ->
-		Command.Drop.startLocal afile numcopies key preverified
+		Command.Drop.startLocal afile (mkActionItem afile) numcopies key preverified
 
 	dropr fs r n  = checkdrop fs n (Just $ Remote.uuid r) $ \numcopies ->
-		Command.Drop.startRemote afile numcopies key r
+		Command.Drop.startRemote afile (mkActionItem afile) numcopies key r
 
 	slocs = S.fromList locs
 	

@@ -49,17 +49,18 @@ seek o = allowConcurrentOutput $ do
 			(getFiles o)
 
 start :: GetOptions -> Maybe Remote -> FilePath -> Key -> CommandStart
-start o from file key = start' expensivecheck from key (Just file)
+start o from file key = start' expensivecheck from key afile (mkActionItem afile)
   where
+	afile = Just file
 	expensivecheck
 		| autoMode o = numCopiesCheck file key (<) <||> wantGet False (Just key) (Just file)
 		| otherwise = return True
 
-startKeys :: Maybe Remote -> Key -> CommandStart
+startKeys :: Maybe Remote -> Key -> ActionItem -> CommandStart
 startKeys from key = start' (return True) from key Nothing
 
-start' :: Annex Bool -> Maybe Remote -> Key -> AssociatedFile -> CommandStart
-start' expensivecheck from key afile = stopUnless (not <$> inAnnex key) $
+start' :: Annex Bool -> Maybe Remote -> Key -> AssociatedFile -> ActionItem -> CommandStart
+start' expensivecheck from key afile ai = stopUnless (not <$> inAnnex key) $
 	stopUnless expensivecheck $
 		case from of
 			Nothing -> go $ perform key afile
@@ -68,7 +69,7 @@ start' expensivecheck from key afile = stopUnless (not <$> inAnnex key) $
 					go $ Command.Move.fromPerform src False key afile
   where
 	go a = do
-		showStart' "get" key afile
+		showStart' "get" key ai
 		next a
 
 perform :: Key -> AssociatedFile -> CommandPerform

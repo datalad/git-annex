@@ -47,14 +47,13 @@ seek o = do
 				(whereisFiles o)
 
 start :: M.Map UUID Remote -> FilePath -> Key -> CommandStart
-start remotemap file key = start' remotemap key (Just file)
+start remotemap file key = startKeys remotemap key (mkActionItem afile)
+  where
+	afile = Just file
 
-startKeys :: M.Map UUID Remote -> Key -> CommandStart
-startKeys remotemap key = start' remotemap key Nothing
-
-start' :: M.Map UUID Remote -> Key -> AssociatedFile -> CommandStart
-start' remotemap key afile = do
-	showStart' "whereis" key afile
+startKeys :: M.Map UUID Remote -> Key -> ActionItem -> CommandStart
+startKeys remotemap key ai = do
+	showStart' "whereis" key ai
 	next $ perform remotemap key
 
 perform :: M.Map UUID Remote -> Key -> CommandPerform

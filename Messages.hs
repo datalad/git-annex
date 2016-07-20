@@ -9,6 +9,8 @@
 
 module Messages (
 	showStart,
+	ActionItem,
+	mkActionItem,
 	showStart',
 	showNote,
 	showAction,
@@ -50,36 +52,50 @@ import System.Log.Handler.Simple
 import Common
 import Types
 import Types.Messages
+import Git.FilePath
 import Messages.Internal
 import qualified Messages.JSON as JSON
 import Types.Key
 import qualified Annex
 
 showStart :: String -> FilePath -> Annex ()
-showStart command file = outputMessage (JSON.start command (Just file) Nothing) $
+showStart command file = outputMessage json $
 	command ++ " " ++ file ++ " "
+  where
+	json = JSON.start command (Just file) Nothing
 
-class ActionItem i where
-	actionItemDesc :: i -> Key -> String
-	actionItemWorkTreeFile :: i -> Maybe FilePath
+data ActionItem 
+	= ActionItemAssociatedFile AssociatedFile
+	| ActionItemKey
+	| ActionItemBranchFilePath BranchFilePath
 
-instance ActionItem FilePath where
-	actionItemDesc f _ = f
-	actionItemWorkTreeFile = Just
+class MkActionItem t where
+	mkActionItem :: t -> ActionItem
 
-instance ActionItem AssociatedFile where
-	actionItemDesc (Just f) _ = f
-	actionItemDesc Nothing k = key2file k
-	actionItemWorkTreeFile = id
+instance MkActionItem AssociatedFile where
+	mkActionItem = ActionItemAssociatedFile
 
-instance ActionItem Key where
-	actionItemDesc k _ = key2file k
-	actionItemWorkTreeFile _ = Nothing
+instance MkActionItem Key where
+	mkActionItem _ = ActionItemKey
 
-showStart' :: ActionItem i => String -> Key -> i -> Annex ()
-showStart' command key i = 
-	outputMessage (JSON.start command (actionItemWorkTreeFile i) (Just key)) $
-		command ++ " " ++ actionItemDesc i key ++ " "
+instance MkActionItem BranchFilePath where
+	mkActionItem = ActionItemBranchFilePath
+
+actionItemDesc :: ActionItem -> Key -> String
+actionItemDesc (ActionItemAssociatedFile (Just f)) _ = f
+actionItemDesc (ActionItemAssociatedFile Nothing) k = key2file k
+actionItemDesc ActionItemKey k = key2file k
+actionItemDesc (ActionItemBranchFilePath bfp) _ = descBranchFilePath bfp
+
+actionItemWorkTreeFile :: ActionItem -> Maybe FilePath
+actionItemWorkTreeFile (ActionItemAssociatedFile af) = af
+actionItemWorkTreeFile _ = Nothing
+
+showStart' :: String -> Key -> ActionItem -> Annex ()
+showStart' command key i = outputMessage json $
+	command ++ " " ++ actionItemDesc i key ++ " "
+  where
+	json = JSON.start command (actionItemWorkTreeFile i) (Just key)
 
 showNote :: String -> Annex ()
 showNote s = outputMessage (JSON.note s) $ "(" ++ s ++ ") "

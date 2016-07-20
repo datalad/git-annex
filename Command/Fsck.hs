@@ -89,7 +89,7 @@ seek o = allowConcurrentOutput $ do
 	checkDeadRepo u
 	i <- prepIncremental u (incrementalOpt o)
 	withKeyOptions (keyOptions o) False
-		(\k -> startKey i k =<< getNumCopies)
+		(\k ai -> startKey i k ai =<< getNumCopies)
 		(withFilesInGit $ whenAnnexed $ start from i)
 		(fsckFiles o)
 	cleanupIncremental i
@@ -111,7 +111,7 @@ start from inc file key = do
 				Nothing -> go $ perform key file backend numcopies
 				Just r -> go $ performRemote key file backend numcopies r
   where
-	go = runFsck inc file key
+	go = runFsck inc (mkActionItem (Just file)) key
 
 perform :: Key -> FilePath -> Backend -> NumCopies -> Annex Bool
 perform key file backend numcopies = do
@@ -173,11 +173,11 @@ performRemote key file backend numcopies remote =
 		)
 	dummymeter _ = noop
 
-startKey :: Incremental -> Key -> NumCopies -> CommandStart
-startKey inc key numcopies =
+startKey :: Incremental -> Key -> ActionItem -> NumCopies -> CommandStart
+startKey inc key ai numcopies =
 	case Backend.maybeLookupBackendName (keyBackendName key) of
 		Nothing -> stop
-		Just backend -> runFsck inc (key2file key) key $
+		Just backend -> runFsck inc ai key $
 			performKey key backend numcopies
 
 performKey :: Key -> Backend -> NumCopies -> Annex Bool
@@ -504,10 +504,10 @@ badContentRemote remote localcopy key = do
 		(False, True) -> "dropped from " ++ Remote.name remote
 		(_, False) -> "failed to drop from" ++ Remote.name remote
 
-runFsck :: Incremental -> FilePath -> Key -> Annex Bool -> CommandStart
-runFsck inc file key a = ifM (needFsck inc key)
+runFsck :: Incremental -> ActionItem -> Key -> Annex Bool -> CommandStart
+runFsck inc ai key a = ifM (needFsck inc key)
 	( do
-		showStart "fsck" file
+		showStart' "fsck" key ai
 		next $ do
 			ok <- a
 			when ok $

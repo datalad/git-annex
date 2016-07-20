@@ -4,7 +4,7 @@
  - the values a user passes to a command, and prepare actions operating
  - on them.
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -161,19 +161,29 @@ withNothing _ _ = error "This command takes no parameters."
  -
  - Otherwise falls back to a regular CommandSeek action on
  - whatever params were passed. -}
-withKeyOptions :: Maybe KeyOptions -> Bool -> (Key -> CommandStart) -> (CmdParams -> CommandSeek) -> CmdParams -> CommandSeek
+withKeyOptions 
+	:: Maybe KeyOptions
+	-> Bool
+	-> (Key -> ActionItem -> CommandStart)
+	-> (CmdParams -> CommandSeek)
+	-> CmdParams
+	-> CommandSeek
 withKeyOptions ko auto keyaction = withKeyOptions' ko auto mkkeyaction
   where
 	mkkeyaction = do
 		matcher <- Limit.getMatcher
-		return $ \getkeys ->
-			seekActions $ map (process matcher) <$> getkeys
-	process matcher k = ifM (matcher $ MatchingKey k)
-		( keyaction k
-		, return Nothing
-		)
+		return $ \k i ->
+			whenM (matcher $ MatchingKey k) $
+				commandAction $ keyaction k i
 
-withKeyOptions' :: Maybe KeyOptions -> Bool -> Annex (Annex [Key] -> Annex ()) -> (CmdParams -> CommandSeek) -> CmdParams -> CommandSeek
+withKeyOptions' 
+	:: Maybe KeyOptions
+	-> Bool
+	-> Annex (Key -> ActionItem -> Annex ())
+	-> (CmdParams
+	-> CommandSeek)
+	-> CmdParams
+	-> CommandSeek
 withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 	bare <- fromRepo Git.repoIsLocalBare
 	when (auto && bare) $
@@ -194,15 +204,17 @@ withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 		| auto = error "Cannot use --auto with --all or --branch or --unused or --key or --incomplete"
 		| otherwise = a
 	incompletekeys = staleKeysPrune gitAnnexTmpObjectDir True
-	runkeyaction ks = do
+	runkeyaction getks = do
 		keyaction <- mkkeyaction
-		keyaction ks
+		ks <- getks
+		forM_ ks $ \k -> keyaction k (mkActionItem k)
 	runbranchkeys bs = do
 		keyaction <- mkkeyaction
 		forM_ bs $ \b -> do
 			(l, cleanup) <- inRepo $ LsTree.lsTree b
-			forM_ l $ \i ->
-				maybe noop (\k -> keyaction (return [k]))
+			forM_ l $ \i -> do
+				let bfp = mkActionItem $ BranchFilePath b (LsTree.file i)
+				maybe noop (\k -> keyaction k bfp)
 					=<< catKey (LsTree.sha i)
 			unlessM (liftIO cleanup) $
 				error ("git ls-tree " ++ Git.fromRef b ++ " failed")

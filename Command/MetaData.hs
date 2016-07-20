@@ -69,20 +69,19 @@ seek o = do
 		(forFiles o)
 
 start :: POSIXTime -> MetaDataOptions -> FilePath -> Key -> CommandStart
-start now o file = start' (Just file) now o
+start now o file k = startKeys now o k (mkActionItem afile)
+  where
+	afile = Just file
 
-startKeys :: POSIXTime -> MetaDataOptions -> Key -> CommandStart
-startKeys = start' Nothing
-
-start' :: AssociatedFile -> POSIXTime -> MetaDataOptions -> Key -> CommandStart
-start' afile now o k = case getSet o of
+startKeys :: POSIXTime -> MetaDataOptions -> Key -> ActionItem -> CommandStart
+startKeys now o k ai = case getSet o of
 	Get f -> do
 		l <- S.toList . currentMetaDataValues f <$> getCurrentMetaData k
 		liftIO $ forM_ l $
 			putStrLn . fromMetaValue
 		stop
 	_ -> do
-		showStart' "metadata" k afile
+		showStart' "metadata" k ai
 		next $ perform now o k
 
 perform :: POSIXTime -> MetaDataOptions -> Key -> CommandPerform
