@@ -204,7 +204,8 @@ withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 			forM_ l $ \i ->
 				maybe noop (\k -> keyaction (return [k]))
 					=<< catKey (LsTree.sha i)
-			liftIO $ void cleanup
+			unlessM (liftIO cleanup) $
+				error ("git ls-tree " ++ Git.fromRef b ++ " failed")
 
 prepFiltered :: (FilePath -> CommandStart) -> Annex [FilePath] -> Annex [CommandStart]
 prepFiltered a fs = do
