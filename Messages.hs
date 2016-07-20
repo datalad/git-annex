@@ -1,9 +1,11 @@
 {- git-annex output messages
  -
- - Copyright 2010-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
+
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
 
 module Messages (
 	showStart,
@@ -57,9 +59,27 @@ showStart :: String -> FilePath -> Annex ()
 showStart command file = outputMessage (JSON.start command (Just file) Nothing) $
 	command ++ " " ++ file ++ " "
 
-showStart' :: String -> Key -> Maybe FilePath -> Annex ()
-showStart' command key afile = outputMessage (JSON.start command afile (Just key)) $
-	command ++ " " ++ fromMaybe (key2file key) afile ++ " "
+class ActionItem i where
+	actionItemDesc :: i -> Key -> String
+	actionItemWorkTreeFile :: i -> Maybe FilePath
+
+instance ActionItem FilePath where
+	actionItemDesc f _ = f
+	actionItemWorkTreeFile = Just
+
+instance ActionItem AssociatedFile where
+	actionItemDesc (Just f) _ = f
+	actionItemDesc Nothing k = key2file k
+	actionItemWorkTreeFile = id
+
+instance ActionItem Key where
+	actionItemDesc k _ = key2file k
+	actionItemWorkTreeFile _ = Nothing
+
+showStart' :: ActionItem i => String -> Key -> i -> Annex ()
+showStart' command key i = 
+	outputMessage (JSON.start command (actionItemWorkTreeFile i) (Just key)) $
+		command ++ " " ++ actionItemDesc i key ++ " "
 
 showNote :: String -> Annex ()
 showNote s = outputMessage (JSON.note s) $ "(" ++ s ++ ") "

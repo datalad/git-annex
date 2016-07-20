@@ -23,7 +23,7 @@ seek = withWords start
 
 start :: [String] -> CommandStart
 start (ks:us:vs:[]) = do
-	showStart' "setpresentkey" k Nothing
+	showStart' "setpresentkey" k k
 	next $ perform k (toUUID us) s
   where
 	k = fromMaybe (error "bad key") (file2key ks)
