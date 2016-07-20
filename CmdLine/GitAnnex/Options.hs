@@ -153,7 +153,7 @@ parseKeyOptions allowincomplete = if allowincomplete
 	else base
   where
 	base = parseAllOption
-		<|> WantBranchKeys <$> many (option (str >>= pure . Ref)
+		<|> WantBranchKeys <$> some (option (str >>= pure . Ref)
 			( long "branch" <> metavar paramRef
 			<> help "operate on files in the specified branch or treeish"
 			))
