@@ -1,0 +1,10 @@
+So I managed to muck stuff up pretty bad with git-annex assistant and wondering if there is a reasonable way to fix the situation without blowing everything away and starting over at this point.  So my setup is kind of laid out like this:
+I have the main annex folder in my home folder at this location: /home/<username>/annex  I have a full backup on a separate drive on the same system which is mounted to /mnt/store and there is a sym link to it in my home folder so ~/store and annex folder goes to ~/store/annex on that drive.  I sync with one other computer that comes and goes online on the local folder (I don't use a transfer repository).  Then I have an rsync.net account that is also set to full backup, I originally setup annex to use this with a self generated key that it would keep in git and it had synced and everything seemed good.  I later determined that I would rather use my own encryption key that I have backed up in a different way.  It seems the only way to change that is to delete the rsync.net remote and re-add it with the key that I want to use.  So I told it to delete it in the web-gui, it has been stuck cleaning out for about a month now.  A thread keeps dying and I keep restarting it according to the gui.  There is an error in the logs, but it looks like it is trying to connect to both the computer that isn't always up and rsync.net and dying with it:
+
+```
+[2016-07-20 09:40:26.563762726] NetWatcherFallback: Syncing with 192.168.1.118_annex, rsync.net_annex 
+ssh: connect to host 192.168.1.118 port 22: No route to host
+fatal: Could not read from remote repository.
+```
+
+So at this point, I am contemplating just copying all the files out of the annex folders and deleting all the annex stuff and configuration and all the stores and starting over basically unless there is another approach that I can kill the rsync.net annex remote, delete the stuff directly on rsync, setup a new rsync.net remote.
