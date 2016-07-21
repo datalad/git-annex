@@ -5,3 +5,6 @@ Off-by-one bug ...
 > I really need to automate generating those version numbers.
 > I'm not going to re-release it though, and the version number meets 
 > all other requirements other than matching the release date, so [[done]] --[[Joey]]
+
+>> JFTR, yesterday, I needed a tag to build the package against and pushed that to the
+>> main repo. If you object, feel free to nuke. -- RichiH
