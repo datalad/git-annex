@@ -3,6 +3,10 @@ git-annex (6.20160620) UNRELEASED; urgency=medium
   * Added --branch option to copy, drop, fsck, get, metadata, mirror, move,
     and whereis commands. This option makes git-annex operate on files that
     are included in a specified branch (or other treeish).
+  * git-annex.cabal: Temporarily limit to http-conduit <2.2.0
+    since aws 0.14.0 is not compatible with the newer version.
+  * git-annex.cabal: Temporarily limit to persistent <2.5
+    since esqueleto 2.4.3 is not compatible with the newer version.
 
  -- Joey Hess <id@joeyh.name>  Wed, 20 Jul 2016 12:03:15 -0400
 

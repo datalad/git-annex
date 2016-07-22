@@ -23,3 +23,6 @@ esqueleto 2.4.3 is incompatible with persistent 2.5
 https://github.com/prowdsponsor/esqueleto/issues/137
 https://github.com/prowdsponsor/esqueleto/pull/141
 https://github.com/prowdsponsor/esqueleto/pull/139
+
+> I assume this will be sorted out upstream, but I don't mind temporarily
+> adding the constraints. [[done]] --[[Joey]]
