@@ -334,9 +334,9 @@ Executable git-annex
    utf8-string, bytestring, text, sandi, json,
    monad-control, transformers,
    bloomfilter, edit-distance,
-   resourcet, http-conduit, http-client, http-types,
+   resourcet, http-conduit (<2.2.0), http-client, http-types,
    time, old-locale,
-   esqueleto, persistent-sqlite, persistent, persistent-template,
+   esqueleto, persistent-sqlite, persistent (<2.5), persistent-template,
    aeson,
    feed,
    regex-tdfa
