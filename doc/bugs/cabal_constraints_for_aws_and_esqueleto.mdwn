@@ -1,0 +1,25 @@
+See https://github.com/joeyh/git-annex/pull/55.
+
+### Please describe the problem.
+Solver needs some help when building with +S3 and +Webapp for Homebrew.
+
+### What steps will reproduce the problem?
+Build git-annex with GHC 8.0.1 and cabal install 1.24.0.0 with --flags=s3\ webapp
+
+### What version of git-annex are you using? On what operating system?
+6.20160719
+macOS 10.11.5
+
+### Please provide any additional information below.
+git-annex.cabal needs a couple of tweaks to reflect the following known issues:
+
+
+1.
+aws 0.14.0 is incompatible with http-conduit 2.2.0
+https://github.com/aristidb/aws/issues/206
+
+2.
+esqueleto 2.4.3 is incompatible with persistent 2.5
+https://github.com/prowdsponsor/esqueleto/issues/137
+https://github.com/prowdsponsor/esqueleto/pull/141
+https://github.com/prowdsponsor/esqueleto/pull/139
