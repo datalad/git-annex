@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Messages.JSON (
 	start,
 	end,
@@ -12,9 +14,12 @@ module Messages.JSON (
 	add,
 	complete,
 	DualDisp(..),
+	ParsedJSON(..),
 ) where
 
-import Text.JSON
+import qualified Text.JSON as JSON
+import Data.Aeson
+import Control.Applicative
 
 import qualified Utility.JSONStream as Stream
 import Types.Key
@@ -48,9 +53,40 @@ data DualDisp = DualDisp
 	, dispJson :: String
 	}
 
-instance JSON DualDisp where
-	showJSON = JSString . toJSString . dispJson
-	readJSON _ = Error "stub"
+instance JSON.JSON DualDisp where
+	showJSON = JSON.JSString . JSON.toJSString . dispJson
+	readJSON _ = JSON.Error "stub"
 
 instance Show DualDisp where
 	show = dispNormal
+
+-- An Aeson parser for the JSON output by this module, and 
+-- similar JSON input from users.
+data ParsedJSON a = ParsedJSON
+	{ parsedCommand :: Maybe String -- optional
+	, parsedKeyfile :: Either FilePath Key -- key is preferred
+	, parsedNote :: Maybe String -- optional
+	, parsedSuccess :: Bool -- optional, defaults to True
+	, parsedAdded :: Maybe a -- to parse additional fields added by `add`
+	}
+	deriving (Show)
+
+instance FromJSON a => FromJSON (ParsedJSON a) where
+	parseJSON (Object v) = ParsedJSON
+		<$> (v .:? "command")
+		<*> parsekeyfile
+		<*> (v .:? "note")
+		<*> (v .:? "success" .!= True)
+		<*> parseadded
+	  where
+		parsekeyfile = do
+			mks <- v .:? "key"
+			case file2key =<< mks of
+				Just k -> return (Right k)
+				Nothing -> do
+					mf <- v .:? "file"
+					case mf of
+						Just f -> return (Left f)
+						Nothing -> fail "missing key or file"
+		parseadded = (Just <$> parseJSON (Object v)) <|> return Nothing
+	parseJSON _ = mempty
