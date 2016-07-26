@@ -66,7 +66,7 @@ start o file key = ifM (limited <||> inAnnex key)
 
 showFormatted :: Maybe Utility.Format.Format -> String -> [(String, String)] -> Annex ()
 showFormatted format unformatted vars =
-	unlessM (showFullJSON vars) $
+	unlessM (showFullJSON $ JSONObject vars) $
 		case format of
 			Nothing -> liftIO $ putStrLn unformatted
 			Just formatter -> liftIO $ putStr $

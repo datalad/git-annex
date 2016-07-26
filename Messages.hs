@@ -29,6 +29,7 @@ module Messages (
 	earlyWarning,
 	warningIO,
 	indent,
+	JSONChunk(..),
 	maybeShowJSON,
 	showFullJSON,
 	showCustom,
@@ -43,7 +44,6 @@ module Messages (
 	implicitMessage,
 ) where
 
-import Text.JSON
 import System.Log.Logger
 import System.Log.Formatter
 import System.Log.Handler (setFormatter)
@@ -55,6 +55,7 @@ import Types.Messages
 import Git.FilePath
 import Messages.Internal
 import qualified Messages.JSON as JSON
+import Utility.JSONStream (JSONChunk(..))
 import Types.Key
 import qualified Annex
 
@@ -181,15 +182,15 @@ warningIO w = do
 indent :: String -> String
 indent = intercalate "\n" . map (\l -> "  " ++ l) . lines
 
-{- Shows a JSON fragment only when in json mode. -}
-maybeShowJSON :: JSON a => [(String, a)] -> Annex ()
+{- Shows a JSON chunk only when in json mode. -}
+maybeShowJSON :: JSONChunk v -> Annex ()
 maybeShowJSON v = withOutputType $ liftIO . go
   where
 	go JSONOutput = JSON.add v
 	go _ = return ()
 
 {- Shows a complete JSON value, only when in json mode. -}
-showFullJSON :: JSON a => [(String, a)] -> Annex Bool
+showFullJSON :: JSONChunk v -> Annex Bool
 showFullJSON v = withOutputType $ liftIO . go
   where
 	go JSONOutput = JSON.complete v >> return True

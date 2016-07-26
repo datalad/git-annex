@@ -250,7 +250,7 @@ nostat = return Nothing
 json :: JSON j => (j -> String) -> StatState j -> String -> StatState String
 json fmt a desc = do
 	j <- a
-	lift $ maybeShowJSON [(desc, j)]
+	lift $ maybeShowJSON $ JSONObject [(desc, j)]
 	return $ fmt j
 
 nojson :: StatState String -> String -> StatState String
@@ -374,7 +374,7 @@ transfer_list :: Stat
 transfer_list = stat desc $ nojson $ lift $ do
 	uuidmap <- Remote.remoteMap id
 	ts <- getTransfers
-	maybeShowJSON [(desc, map (uncurry jsonify) ts)]
+	maybeShowJSON $ JSONObject [(desc, map (uncurry jsonify) ts)]
 	return $ if null ts
 		then "none"
 		else multiLine $

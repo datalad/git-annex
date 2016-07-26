@@ -96,7 +96,7 @@ perform now o k = case getSet o of
 cleanup :: Key -> CommandCleanup
 cleanup k = do
 	l <- map unwrapmeta . fromMetaData <$> getCurrentMetaData k
-	maybeShowJSON l
+	maybeShowJSON (JSONObject l)
 	showLongNote $ unlines $ concatMap showmeta l
 	return True
   where

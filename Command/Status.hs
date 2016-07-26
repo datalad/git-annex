@@ -43,7 +43,7 @@ displayStatus s  = do
 	let c = statusChar s
 	absf <- fromRepo $ fromTopFilePath (statusFile s)
 	f <- liftIO $ relPathCwdToFile absf
-	unlessM (showFullJSON [("status", [c]), ("file", f)]) $
+	unlessM (showFullJSON $ JSONObject [("status", [c]), ("file", f)]) $
 		liftIO $ putStrLn $ [c] ++ " " ++ f
 
 -- Git thinks that present direct mode files are typechanged.

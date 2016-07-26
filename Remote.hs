@@ -72,6 +72,7 @@ import Remote.List
 import Config
 import Git.Types (RemoteName)
 import qualified Git
+import Utility.JSONStream
 
 {- Map from UUIDs of Remotes to a calculated value. -}
 remoteMap :: (Remote -> v) -> Annex (M.Map UUID v)
@@ -203,7 +204,7 @@ prettyPrintUUIDsWith
 	-> Annex String
 prettyPrintUUIDsWith optfield header descm showval uuidvals = do
 	hereu <- getUUID
-	maybeShowJSON [(header, map (jsonify hereu) uuidvals)]
+	maybeShowJSON $ JSONObject [(header, map (jsonify hereu) uuidvals)]
 	return $ unwords $ map (\u -> "\t" ++ prettify hereu u ++ "\n") uuidvals
   where
 	finddescription u = M.findWithDefault "" u descm
