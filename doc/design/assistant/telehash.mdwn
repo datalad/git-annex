@@ -2,7 +2,7 @@
 git-annex (assistant) repositories.
 
 Or something similar like [Snow](http://www.trustiosity.com/snow/)
-or [cjdns](https://github.com/cjdelisle/cjdns) or tor or i2p.
+or [cjdns](https://github.com/cjdelisle/cjdns) or tor or i2p or [magic wormhole](http://magic-wormhole.io/).
 
 ## telehash implementation status
 
@@ -29,6 +29,8 @@ or [cjdns](https://github.com/cjdelisle/cjdns) or tor or i2p.
   and the reliabilty of that network is not known. I notice it has only 1
   pre-seeded peer in the source tree for the DHT, and that peer was not up
   when I tried it.
+* Only provides network-layer transport, still need to implement some 
+  file transfer protocol on top.
 
 ## cjdns status
 
@@ -49,6 +51,14 @@ or [cjdns](https://github.com/cjdelisle/cjdns) or tor or i2p.
   Could be used to make git-annex run as a hidden service.
 
 ## i2p status
+
+## magic wormhole
+
+* simple file transfer protocol with out of band shared secret
+* handles NAT transversal
+* easy to use
+* doesn't require a running daemon
+* can transfer arbitrary blobs (strings, directories, files)
 
 ## implementation basics
 

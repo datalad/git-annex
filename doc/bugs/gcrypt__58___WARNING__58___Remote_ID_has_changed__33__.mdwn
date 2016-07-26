@@ -1,0 +1,45 @@
+### Please describe the problem.
+
+For some reason, after a while I can't sync to any remotes (removeable drives, servers, etc.)
+
+
+### What steps will reproduce the problem?
+
+git annex sync, git annex assistant doing its autosync, etc.
+
+
+### What version of git-annex are you using? On what operating system?
+
+Arch Linux, git annex 6.20160613-g1e4e6f4
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+
+Typing git annex synx in a terminal gives me:
+
+commit  ok
+pull disk0_annexes_docs 
+gcrypt: Decrypting manifest
+gpg: Signature made Mon 25 Jul 2016 00:13:00 BST using RSA key ID XXXXXXXXXXXXXXX
+gpg: Good signature from "XXX <XXX@XXX.XXX>" [ultimate]
+gcrypt: WARNING:
+gcrypt: WARNING: Remote ID has changed!
+gcrypt: WARNING: from :id:lczpGq00kb1sF+cxgCNE
+gcrypt: WARNING: to   :id:2br4BOnJZkrGUsXTlQR8
+
+
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+Not specific to assistant.
+
+
+# End of transcript or log.
+"""]]
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, this worked for ages, a year or more, it's awesome! Haven't plugged the removeable drives in for a while, now when I do this happens...
