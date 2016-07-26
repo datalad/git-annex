@@ -44,13 +44,31 @@ import Common
 import Utility.Base64
 import Utility.QuickCheck
 
+import qualified Data.Text as T
 import qualified Data.Set as S
 import qualified Data.Map as M
+import qualified Data.HashMap.Strict as HM
 import Data.Char
 import qualified Data.CaseInsensitive as CI
+import Data.Aeson
 
 newtype MetaData = MetaData (M.Map MetaField (S.Set MetaValue))
 	deriving (Show, Eq, Ord)
+
+instance ToJSON MetaData where
+	toJSON (MetaData m) = object $ map go (M.toList m)
+	  where
+		go (MetaField f, s) = (T.pack (CI.original f), toJSON s)
+
+instance FromJSON MetaData where
+	parseJSON (Object o) = do
+		l <- HM.toList <$> parseJSON (Object o)
+		MetaData . M.fromList <$> mapM go l
+	  where
+		go (t, l) = case mkMetaField (T.unpack t) of
+			Left e -> fail e
+			Right f -> (,) <$> pure f <*> parseJSON l
+	parseJSON _ = fail "expected an object"
 
 {- A metadata value can be currently be set (True), or may have been
  - set before and we're remembering it no longer is (False). -}
@@ -63,6 +81,13 @@ newtype MetaField = MetaField (CI.CI String)
 
 data MetaValue = MetaValue CurrentlySet String
 	deriving (Read, Show)
+
+instance ToJSON MetaValue where
+	toJSON (MetaValue _ v) = toJSON v
+
+instance FromJSON MetaValue where
+	parseJSON (String v) = return $ MetaValue (CurrentlySet True) (T.unpack v)
+	parseJSON _  = fail "expected a string"
 
 {- Metadata values compare and order the same whether currently set or not. -}
 instance Eq MetaValue where

@@ -1,5 +1,10 @@
-git-annex (6.20160620) UNRELEASED; urgency=medium
+git-annex (6.20160726) UNRELEASED; urgency=medium
 
+  * metadata --json output format has changed, adding a inner json object
+    named "fields" which contains only the fields and their values.
+    This should be easier to parse than the old format, which mixed up
+    metadata fields with other keys in the json object.
+    Any consumers of the old format will need to be updated.
   * Added --branch option to copy, drop, fsck, get, metadata, mirror, move,
     and whereis commands. This option makes git-annex operate on files that
     are included in a specified branch (or other treeish).

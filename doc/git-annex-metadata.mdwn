@@ -71,6 +71,16 @@ When run without any -s or -t parameters, displays the current metadata.
   Enable JSON output. This is intended to be parsed by programs that use
   git-annex. Each line of output is a JSON object.
 
+  The format of the JSON objects changed in git-annex version 6.20160726.
+
+  Example of the new format:
+
+	{"command":"metadata","file":"foo","key":"...","fields":{"author":["bar"],...},"note":"...","success":true}
+
+  Example of the old format, which lacks the inner fields object:
+
+	{"command":"metadata","file":"foo","key":"...","author":["bar"],...,"note":"...","success":true}
+
 * `--all`
 
   Specify instead of a file to get/set metadata on all known keys.

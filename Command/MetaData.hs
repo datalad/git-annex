@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,9 +10,13 @@ module Command.MetaData where
 import Command
 import Annex.MetaData
 import Logs.MetaData
+import Messages.JSON (ParsedJSON(..))
 
 import qualified Data.Set as S
+import qualified Data.Text as T
+import qualified Data.ByteString.Lazy.UTF8 as BU
 import Data.Time.Clock.POSIX
+import Data.Aeson
 
 cmd :: Command
 cmd = withGlobalOptions ([jsonOption] ++ annexedMatchingOptions) $ 
@@ -95,10 +99,38 @@ perform now o k = case getSet o of
 
 cleanup :: Key -> CommandCleanup
 cleanup k = do
-	l <- map unwrapmeta . fromMetaData <$> getCurrentMetaData k
-	maybeShowJSON (JSONObject l)
-	showLongNote $ unlines $ concatMap showmeta l
+	m <- getCurrentMetaData k
+	let Object o = toJSON (MetaDataFields m)
+	maybeShowJSON $ AesonObject o
+	showLongNote $ unlines $ concatMap showmeta $
+		map unwrapmeta (fromMetaData m)
 	return True
   where
 	unwrapmeta (f, v) = (fromMetaField f, map fromMetaValue (S.toList v))
 	showmeta (f, vs) = map ((f ++ "=") ++) vs
+
+-- Metadata serialized to JSON in the field named "fields" of
+-- a larger object.
+newtype MetaDataFields = MetaDataFields MetaData
+	deriving (Show)
+
+instance ToJSON MetaDataFields where
+	toJSON (MetaDataFields m) = object [ (fieldsField, toJSON m) ]
+
+instance FromJSON MetaDataFields where
+	parseJSON (Object v) = do
+		f <- v .: fieldsField
+		case f of
+			Nothing -> return (MetaDataFields emptyMetaData)
+			Just v' -> MetaDataFields <$> parseJSON v'
+	parseJSON _ = fail "expected an object"
+
+fieldsField :: T.Text
+fieldsField = T.pack "fields"
+
+parseJSONInput :: String -> Maybe (Either FilePath Key, MetaData)
+parseJSONInput i = do
+	v <- decode (BU.fromString i)
+	case parsedAdded v of
+		Nothing -> return (parsedKeyfile v, emptyMetaData)
+		Just (MetaDataFields m) -> return (parsedKeyfile v, m)

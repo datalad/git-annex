@@ -25,6 +25,7 @@ Build-Depends:
 	libghc-uuid-dev,
 	libghc-json-dev,
 	libghc-aeson-dev,
+	libghc-unordered-containers-dev,
 	libghc-ifelse-dev,
 	libghc-bloomfilter-dev,
 	libghc-edit-distance-dev,
