@@ -1,6 +1,6 @@
 {- git-annex Key data type
  -
- - Copyright 2011-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -21,6 +21,8 @@ module Types.Key (
 ) where
 
 import System.Posix.Types
+import Data.Aeson
+import qualified Data.Text as T
 
 import Common
 import Utility.QuickCheck
@@ -119,6 +121,13 @@ file2key s
 			return $ k { keyChunkNum = Just chunknum }
 		_ -> return k
 	addfield _ _ _ = Nothing
+
+instance ToJSON Key where
+	toJSON = toJSON . key2file
+
+instance FromJSON Key where
+	parseJSON (String t) = maybe mempty pure $ file2key $ T.unpack t
+	parseJSON _ = mempty
 
 instance Arbitrary Key where
 	arbitrary = Key

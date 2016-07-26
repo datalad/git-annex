@@ -10,7 +10,7 @@ module Command.MetaData where
 import Command
 import Annex.MetaData
 import Logs.MetaData
-import Messages.JSON (ParsedJSON(..))
+import Messages.JSON (JSONActionItem(..))
 
 import qualified Data.Set as S
 import qualified Data.Text as T
@@ -131,6 +131,11 @@ fieldsField = T.pack "fields"
 parseJSONInput :: String -> Maybe (Either FilePath Key, MetaData)
 parseJSONInput i = do
 	v <- decode (BU.fromString i)
-	case parsedAdded v of
-		Nothing -> return (parsedKeyfile v, emptyMetaData)
-		Just (MetaDataFields m) -> return (parsedKeyfile v, m)
+	let m = case itemAdded v of
+		Nothing -> emptyMetaData
+		Just (MetaDataFields m') -> m'
+	let keyfile = case (itemKey v, itemFile v) of
+		(Just k, _) -> Right k
+		(Nothing, Just f) -> Left f
+		(Nothing, Nothing) -> error "JSON input is missing either file or key"
+	return (keyfile, m)

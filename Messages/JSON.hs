@@ -15,7 +15,7 @@ module Messages.JSON (
 	complete,
 	DualDisp(..),
 	ObjectMap(..),
-	ParsedJSON(..),
+	JSONActionItem(..),
 ) where
 
 import Data.Aeson
@@ -25,17 +25,16 @@ import qualified Data.Text as T
 
 import qualified Utility.JSONStream as Stream
 import Types.Key
-import Data.Maybe
 
 start :: String -> Maybe FilePath -> Maybe Key -> IO ()
-start command file key = putStr $ Stream.start $ Stream.JSONChunk $ catMaybes
-	[ part "command" (Just command)
-	, part "file" file
-	, part "key" (fmap key2file key)
-	]
+start command file key = putStr $ Stream.start $ Stream.AesonObject o
   where
-	part _ Nothing = Nothing
-	part l (Just v) = Just (l, v)
+	Object o = toJSON $ JSONActionItem
+		{ itemCommand = Just command
+		, itemKey = key
+		, itemFile = file
+		, itemAdded = Nothing
+		}
 
 end :: Bool -> IO ()
 end b = putStr $ Stream.add (Stream.JSONChunk [("success", b)]) ++ Stream.end
@@ -71,33 +70,29 @@ instance ToJSON a => ToJSON (ObjectMap a) where
 	  where
 		go (k, v) = (T.pack k, toJSON v)
 
--- An Aeson parser for the JSON output by this module, and 
--- similar JSON input from users.
-data ParsedJSON a = ParsedJSON
-	{ parsedCommand :: Maybe String -- optional
-	, parsedKeyfile :: Either FilePath Key -- key is preferred
-	, parsedNote :: Maybe String -- optional
-	, parsedSuccess :: Bool -- optional, defaults to True
-	, parsedAdded :: Maybe a -- to parse additional fields added by `add`
+-- An item that a git-annex command acts on, and displays a JSON object about.
+data JSONActionItem a = JSONActionItem
+	{ itemCommand :: Maybe String
+	, itemKey :: Maybe Key
+	, itemFile :: Maybe FilePath
+	, itemAdded :: Maybe a -- for additional fields added by `add`
 	}
 	deriving (Show)
 
-instance FromJSON a => FromJSON (ParsedJSON a) where
-	parseJSON (Object v) = ParsedJSON
+instance ToJSON (JSONActionItem a) where
+	toJSON i = object
+		[ "command" .= itemCommand i
+		, "key" .= (toJSON (itemKey i))
+		, "file" .= itemFile i
+		-- itemAdded is not included; must be added later by 'add'
+		]
+
+instance FromJSON a => FromJSON (JSONActionItem a) where
+	parseJSON (Object v) = JSONActionItem
 		<$> (v .:? "command")
-		<*> parsekeyfile
-		<*> (v .:? "note")
-		<*> (v .:? "success" .!= True)
+		<*> (maybe (return Nothing) parseJSON =<< (v .:? "key"))
+		<*> (v .:? "file")
 		<*> parseadded
 	  where
-		parsekeyfile = do
-			mks <- v .:? "key"
-			case file2key =<< mks of
-				Just k -> return (Right k)
-				Nothing -> do
-					mf <- v .:? "file"
-					case mf of
-						Just f -> return (Left f)
-						Nothing -> fail "missing key or file"
 		parseadded = (Just <$> parseJSON (Object v)) <|> return Nothing
 	parseJSON _ = mempty
