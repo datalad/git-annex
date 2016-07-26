@@ -72,7 +72,6 @@ import Remote.List
 import Config
 import Git.Types (RemoteName)
 import qualified Git
-import Utility.JSONStream
 
 {- Map from UUIDs of Remotes to a calculated value. -}
 remoteMap :: (Remote -> v) -> Annex (M.Map UUID v)
