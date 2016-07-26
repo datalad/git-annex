@@ -14,31 +14,30 @@ module Utility.JSONStream (
 	end
 ) where
 
-import qualified Text.JSON as JSON
-import qualified Data.Aeson as Aeson
+import Data.Aeson
+import qualified Data.Text as T
 import qualified Data.ByteString.Lazy.UTF8 as B
 
-{- Only JSON objects can be used as chunks in the stream, not
- - other values.
- -
- - Both Aeson and Text.Json objects are supported. -}
-data JSONChunk a where
-	JSONObject :: JSON.JSON a => [(String, a)] -> JSONChunk [(String, a)]
-	AesonObject :: Aeson.Object -> JSONChunk Aeson.Object
+data JSONChunk v where
+	JSONChunk :: ToJSON v => [(String, v)] -> JSONChunk [(String, v)]
+	AesonObject :: Object -> JSONChunk Object
 
-encodeJSONChunk :: JSONChunk a -> String
-encodeJSONChunk (JSONObject l) = JSON.encodeStrict $ JSON.toJSObject l
-encodeJSONChunk (AesonObject o) = B.toString (Aeson.encode o)
+encodeJSONChunk :: JSONChunk v -> B.ByteString
+encodeJSONChunk (JSONChunk l) = encode $ object $ map mkPair l
+  where
+	mkPair (s, v) = (T.pack s, toJSON v)
+encodeJSONChunk (AesonObject o) = encode o
 
-{- Text.JSON and Aeson do not support building up a larger JSON document
- - piece by piece as a stream. To support streaming, a hack. The final "}" 
- - is left off the object, allowing it to be added to later. -}
+{- Aeson does not support building up a larger JSON object piece by piece
+ - with streaming output. To support streaming, a hack:
+ - The final "}" is left off the JSON, allowing more chunks to be added
+ - to later. -}
 start :: JSONChunk a -> String
 start a
 	| last s == endchar = init s
 	| otherwise = bad s
   where
-	s = encodeJSONChunk a
+	s = B.toString $ encodeJSONChunk a
 
 add :: JSONChunk a -> String
 add a

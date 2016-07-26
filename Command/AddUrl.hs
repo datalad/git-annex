@@ -356,7 +356,7 @@ cleanup u url file key mtmp = case mtmp of
 			)
   where
 	go = do
-		maybeShowJSON $ JSONObject [("key", key2file key)]
+		maybeShowJSON $ JSONChunk [("key", key2file key)]
 		when (isJust mtmp) $
 			logStatus key InfoPresent
 		setUrlPresent u key url

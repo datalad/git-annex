@@ -14,19 +14,21 @@ module Messages.JSON (
 	add,
 	complete,
 	DualDisp(..),
+	ObjectMap(..),
 	ParsedJSON(..),
 ) where
 
-import qualified Text.JSON as JSON
 import Data.Aeson
 import Control.Applicative
+import qualified Data.Map as M
+import qualified Data.Text as T
 
 import qualified Utility.JSONStream as Stream
 import Types.Key
 import Data.Maybe
 
 start :: String -> Maybe FilePath -> Maybe Key -> IO ()
-start command file key = putStr $ Stream.start $ Stream.JSONObject $ catMaybes
+start command file key = putStr $ Stream.start $ Stream.JSONChunk $ catMaybes
 	[ part "command" (Just command)
 	, part "file" file
 	, part "key" (fmap key2file key)
@@ -36,10 +38,10 @@ start command file key = putStr $ Stream.start $ Stream.JSONObject $ catMaybes
 	part l (Just v) = Just (l, v)
 
 end :: Bool -> IO ()
-end b = putStr $ Stream.add (Stream.JSONObject [("success", b)]) ++ Stream.end
+end b = putStr $ Stream.add (Stream.JSONChunk [("success", b)]) ++ Stream.end
 
 note :: String -> IO ()
-note s = add (Stream.JSONObject [("note", s)])
+note s = add (Stream.JSONChunk [("note", s)])
 
 add :: Stream.JSONChunk a -> IO ()
 add = putStr . Stream.add
@@ -53,12 +55,21 @@ data DualDisp = DualDisp
 	, dispJson :: String
 	}
 
-instance JSON.JSON DualDisp where
-	showJSON = JSON.JSString . JSON.toJSString . dispJson
-	readJSON _ = JSON.Error "stub"
+instance ToJSON DualDisp where
+	toJSON = toJSON . dispJson
 
 instance Show DualDisp where
 	show = dispNormal
+
+-- A Map that is serialized to JSON as an object, with each key being a
+-- field of the object. This is different from Aeson's normal 
+-- serialization of Map, which uses "[key, value]".
+data ObjectMap a = ObjectMap { fromObjectMap :: M.Map String a }
+
+instance ToJSON a => ToJSON (ObjectMap a) where
+	toJSON (ObjectMap m) = object $ map go $ M.toList m
+	  where
+		go (k, v) = (T.pack k, toJSON v)
 
 -- An Aeson parser for the JSON output by this module, and 
 -- similar JSON input from users.

@@ -23,7 +23,6 @@ Build-Depends:
 	libghc-unix-compat-dev,
 	libghc-dlist-dev,
 	libghc-uuid-dev,
-	libghc-json-dev,
 	libghc-aeson-dev,
 	libghc-unordered-containers-dev,
 	libghc-ifelse-dev,

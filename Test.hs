@@ -32,7 +32,8 @@ import Test.Tasty.Ingredients.Rerun
 import Options.Applicative (switch, long, help)
 
 import qualified Data.Map as M
-import qualified Text.JSON
+import qualified Data.Aeson
+import qualified Data.ByteString.Lazy.UTF8 as BU8
 
 import Common
 
@@ -924,10 +925,10 @@ test_merge = intmpclonerepo $
 
 test_info :: Assertion
 test_info = intmpclonerepo $ do
-	json <- git_annex_output "info" ["--json"]
-	case Text.JSON.decodeStrict json :: Text.JSON.Result (Text.JSON.JSObject Text.JSON.JSValue) of
-		Text.JSON.Ok _ -> return ()
-		Text.JSON.Error e -> assertFailure e
+	json <- BU8.fromString <$> git_annex_output "info" ["--json"]
+	case Data.Aeson.eitherDecode json :: Either String Data.Aeson.Value of
+		Right _ -> return ()
+		Left e -> assertFailure e
 
 test_version :: Assertion
 test_version = intmpclonerepo $

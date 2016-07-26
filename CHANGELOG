@@ -12,6 +12,7 @@ git-annex (6.20160726) UNRELEASED; urgency=medium
     since aws 0.14.0 is not compatible with the newer version.
   * git-annex.cabal: Temporarily limit to persistent <2.5
     since esqueleto 2.4.3 is not compatible with the newer version.
+  * Removed dependency on json library; all JSON is now handled by aeson.
 
  -- Joey Hess <id@joeyh.name>  Wed, 20 Jul 2016 12:03:15 -0400
 

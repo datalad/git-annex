@@ -331,7 +331,7 @@ Executable git-annex
    process, data-default, case-insensitive, uuid, random, dlist,
    unix-compat, SafeSemaphore, async, directory, filepath, IfElse,
    MissingH, hslogger, monad-logger,
-   utf8-string, bytestring, text, sandi, json,
+   utf8-string, bytestring, text, sandi,
    monad-control, transformers,
    bloomfilter, edit-distance,
    resourcet, http-conduit (<2.2.0), http-client, http-types,
