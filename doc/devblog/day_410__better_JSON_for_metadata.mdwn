@@ -20,11 +20,9 @@ problem, get in touch.
 
 ----
 
-While making that change, I also improved the JSON outputlayer, so it can
-use Aeson. I didn't switch exclusively to using Aeson, because git-annex
-commands with JSON output often output it incrementally as they go (which
-Aeson can't really do), and are anyway not often doing the kind of
-serialization of data type that Aeson excells at.
+While making that change, I also improved the JSON output layer, so it can
+use Aeson. Update: And switched everything over to using Aeson, so
+git-annex no longer depends on two different JSON libraries.
 
 This let me use Aeson to generate the "fields" object for `metadata
 --json`. And it was also easy enough to use Aeson to parse the output of
