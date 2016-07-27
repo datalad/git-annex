@@ -63,7 +63,7 @@ parseModMeta p = case lastMaybe f of
 	Just '+' -> AddMeta <$> mkMetaField f' <*> v
 	Just '-' -> DelMeta <$> mkMetaField f' <*> (Just <$> v)
 	Just '?' -> MaybeSetMeta <$> mkMetaField f' <*> v
-	_ -> SetMeta <$> mkMetaField f <*> v
+	_ -> SetMeta <$> mkMetaField f <*> (S.singleton <$> v)
   where
 	(f, sv) = separate (== '=') p
 	f' = beginning f

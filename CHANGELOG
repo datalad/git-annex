@@ -5,6 +5,8 @@ git-annex (6.20160726) UNRELEASED; urgency=medium
     This should be easier to parse than the old format, which mixed up
     metadata fields with other keys in the json object.
     Any consumers of the old format will need to be updated.
+  * Added metadata --batch option, which allows getting, setting, deleting,
+    and modifying metadata for multiple files/keys.
   * Added --branch option to copy, drop, fsck, get, metadata, mirror, move,
     and whereis commands. This option makes git-annex operate on files that
     are included in a specified branch (or other treeish).

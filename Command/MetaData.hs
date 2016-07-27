@@ -10,9 +10,12 @@ module Command.MetaData where
 import Command
 import Annex.MetaData
 import Logs.MetaData
+import Annex.WorkTree
 import Messages.JSON (JSONActionItem(..))
+import Types.Messages
 
 import qualified Data.Set as S
+import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy.UTF8 as BU
 import Data.Time.Clock.POSIX
@@ -28,6 +31,7 @@ data MetaDataOptions = MetaDataOptions
 	{ forFiles :: CmdParams
 	, getSet :: GetSet
 	, keyOptions :: Maybe KeyOptions
+	, batchOption :: BatchMode
 	}
 
 data GetSet = Get MetaField | GetAll | Set [ModMeta]
@@ -37,6 +41,7 @@ optParser desc = MetaDataOptions
 	<$> cmdParams desc
 	<*> ((Get <$> getopt) <|> (Set <$> some modopts) <|> pure GetAll)
 	<*> optional (parseKeyOptions False)
+	<*> parseBatchOption
   where
 	getopt = option (eitherReader mkMetaField)
 		( long "get" <> short 'g' <> metavar paramField
@@ -62,15 +67,21 @@ optParser desc = MetaDataOptions
 seek :: MetaDataOptions -> CommandSeek
 seek o = do
 	now <- liftIO getPOSIXTime
-	let seeker = case getSet o of
-		Get _ -> withFilesInGit
-		GetAll -> withFilesInGit
-		Set _ -> withFilesInGitNonRecursive
-			"Not recursively setting metadata. Use --force to do that."
-	withKeyOptions (keyOptions o) False
-		(startKeys now o)
-		(seeker $ whenAnnexed $ start now o)
-		(forFiles o)
+	case batchOption o of
+		NoBatch -> do
+			let seeker = case getSet o of
+				Get _ -> withFilesInGit
+				GetAll -> withFilesInGit
+				Set _ -> withFilesInGitNonRecursive
+					"Not recursively setting metadata. Use --force to do that."
+			withKeyOptions (keyOptions o) False
+				(startKeys now o)
+				(seeker $ whenAnnexed $ start now o)
+				(forFiles o)
+		Batch -> withOutputType $ \ot -> case ot of
+			JSONOutput -> batchInput parseJSONInput $
+				commandAction . startBatch now
+			_ -> error "--batch is currently only supported in --json mode"
 
 start :: POSIXTime -> MetaDataOptions -> FilePath -> Key -> CommandStart
 start now o file k = startKeys now o k (mkActionItem afile)
@@ -128,14 +139,37 @@ instance FromJSON MetaDataFields where
 fieldsField :: T.Text
 fieldsField = T.pack "fields"
 
-parseJSONInput :: String -> Maybe (Either FilePath Key, MetaData)
+parseJSONInput :: String -> Either String (Either FilePath Key, MetaData)
 parseJSONInput i = do
-	v <- decode (BU.fromString i)
+	v <- eitherDecode (BU.fromString i)
 	let m = case itemAdded v of
 		Nothing -> emptyMetaData
 		Just (MetaDataFields m') -> m'
-	let keyfile = case (itemKey v, itemFile v) of
-		(Just k, _) -> Right k
-		(Nothing, Just f) -> Left f
-		(Nothing, Nothing) -> error "JSON input is missing either file or key"
-	return (keyfile, m)
+	case (itemKey v, itemFile v) of
+		(Just k, _) -> Right (Right k, m)
+		(Nothing, Just f) -> Right (Left f, m)
+		(Nothing, Nothing) -> Left "JSON input is missing either file or key"
+
+startBatch :: POSIXTime -> (Either FilePath Key, MetaData) -> CommandStart
+startBatch now (i, (MetaData m)) = case i of
+	Left f -> do
+		mk <- lookupFile f
+		case mk of
+			Just k -> go k (mkActionItem (Just f))
+			Nothing -> error $ "not an annexed file: " ++ f
+	Right k -> go k (mkActionItem k)
+  where
+	go k ai = do
+		showStart' "metadata" k ai
+		let o = MetaDataOptions
+			{ forFiles = []
+			, getSet = if MetaData m == emptyMetaData
+				then GetAll
+				else Set $ map mkModMeta (M.toList m)
+			, keyOptions = Nothing
+			, batchOption = NoBatch
+			}
+		next $ perform now o k
+	mkModMeta (f, s)
+		| S.null s = DelMeta f Nothing
+		| otherwise = SetMeta f s

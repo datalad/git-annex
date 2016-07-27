@@ -204,8 +204,11 @@ emptyMetaData = MetaData M.empty
 {- Can be used to set a value, or to unset it, depending on whether
  - the MetaValue has CurrentlySet or not. -}
 updateMetaData :: MetaField -> MetaValue -> MetaData -> MetaData
-updateMetaData f v (MetaData m) = MetaData $
-	M.insertWith' S.union f (S.singleton v) m
+updateMetaData f v = updateMetaData' f (S.singleton v)
+
+updateMetaData' :: MetaField -> S.Set MetaValue -> MetaData -> MetaData
+updateMetaData' f s (MetaData m) = MetaData $
+	M.insertWith' S.union f s m
 
 {- New metadata overrides old._-}
 unionMetaData :: MetaData -> MetaData -> MetaData
@@ -247,7 +250,7 @@ data ModMeta
 	| DelMeta MetaField (Maybe MetaValue)
 	-- ^ delete value of a field. With Just, only that specific value
 	-- is deleted; with Nothing, all current values are deleted.
-	| SetMeta MetaField MetaValue
+	| SetMeta MetaField (S.Set MetaValue)
 	-- ^ removes any existing values
 	| MaybeSetMeta MetaField MetaValue
 	-- ^ set when field has no existing value
@@ -262,7 +265,7 @@ modMeta _ (DelMeta f (Just oldv)) =
 	updateMetaData f (unsetMetaValue oldv) emptyMetaData
 modMeta m (DelMeta f Nothing) = MetaData $ M.singleton f $
 	S.fromList $ map unsetMetaValue $ S.toList $ currentMetaDataValues f m
-modMeta m (SetMeta f v) = updateMetaData f v $
+modMeta m (SetMeta f s) = updateMetaData' f s $
 	foldr (updateMetaData f) emptyMetaData $
 		map unsetMetaValue $ S.toList $ currentMetaDataValues f m
 modMeta m (MaybeSetMeta f v)

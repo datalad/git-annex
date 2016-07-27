@@ -42,6 +42,7 @@ module Messages (
 	commandProgressDisabled,
 	outputMessage,
 	implicitMessage,
+	withOutputType,
 ) where
 
 import System.Log.Logger

@@ -1,6 +1,13 @@
-I can export metadata to JSON format, which is nice as this can now be read into any other tool and manipulated. But I cannot find a way to set the metadata from JSON and so I am left to figure out what changes need to be made via the g-a interface to get to the desired state, and that is hard to get right.
+I can export metadata to JSON format, which is nice as this can now be read
+into any other tool and manipulated. But I cannot find a way to set the
+metadata from JSON and so I am left to figure out what changes need to be
+made via the g-a interface to get to the desired state, and that is hard to
+get right.
 
-Maybe g-a metadata could grow an import-json function which would set (overwrite) the metadata for the given file(s) from JSON input.
+Maybe g-a metadata could grow an import-json function which would set
+(overwrite) the metadata for the given file(s) from JSON input.
 
 Thanks,
 -m
+
+> [[done]] via `git annex metadata --batch --json` --[[Joey]]
