@@ -13,6 +13,9 @@ git-annex (6.20160726) UNRELEASED; urgency=medium
   * git-annex.cabal: Temporarily limit to persistent <2.5
     since esqueleto 2.4.3 is not compatible with the newer version.
   * Removed dependency on json library; all JSON is now handled by aeson.
+  * When built with uuid-1.3.12, generate more random UUIDs than before.
+    (However, this did not impact git-annex much, so a hard depedency has
+    not been added on uuid-1.3.12.)
 
  -- Joey Hess <id@joeyh.name>  Wed, 20 Jul 2016 12:03:15 -0400
 
