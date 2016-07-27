@@ -22,12 +22,14 @@ import Data.Aeson
 import Control.Applicative
 import qualified Data.Map as M
 import qualified Data.Text as T
+import qualified Data.ByteString.Lazy as B
+import System.IO
 
 import qualified Utility.JSONStream as Stream
 import Types.Key
 
 start :: String -> Maybe FilePath -> Maybe Key -> IO ()
-start command file key = putStr $ Stream.start $ Stream.AesonObject o
+start command file key = B.hPut stdout $ Stream.start $ Stream.AesonObject o
   where
 	Object o = toJSON $ JSONActionItem
 		{ itemCommand = Just command
@@ -37,16 +39,16 @@ start command file key = putStr $ Stream.start $ Stream.AesonObject o
 		}
 
 end :: Bool -> IO ()
-end b = putStr $ Stream.add (Stream.JSONChunk [("success", b)]) ++ Stream.end
+end b = B.hPut stdout $ Stream.add (Stream.JSONChunk [("success", b)]) `B.append` Stream.end
 
 note :: String -> IO ()
 note s = add (Stream.JSONChunk [("note", s)])
 
 add :: Stream.JSONChunk a -> IO ()
-add = putStr . Stream.add
+add = B.hPut stdout . Stream.add
 
 complete :: Stream.JSONChunk a -> IO ()
-complete v = putStr $ Stream.start v ++ Stream.end
+complete v = B.hPut stdout $ Stream.start v `B.append` Stream.end
 
 -- A value that can be displayed either normally, or as JSON.
 data DualDisp = DualDisp
