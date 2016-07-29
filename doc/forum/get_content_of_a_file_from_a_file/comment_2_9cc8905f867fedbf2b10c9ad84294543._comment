@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="squid@d632da79105a546295e411392baaa70df380a4a2"
+ nickname="squid"
+ subject="comment 2"
+ date="2016-07-29T22:27:51Z"
+ content="""
+Hey, thank you very much! This is exactly what I was looking for. Unfortunately, FreeBSD sports version 5.20150727 where the --known option is not yet available, but that's a whole different problem that can be easily solved on a saturday.
+"""]]
