@@ -1,6 +1,6 @@
 Hello,
 
-I have posted a similiar (same?) problem already some weeks ago: https://git-annex.branchable.com/forum/File_downloaded_again_and_again/ But since there has been another problem which was fixed, I dare to repost.
+I have posted a similiar (same?) problem already some weeks ago: <https://git-annex.branchable.com/forum/File_downloaded_again_and_again/> But since there has been another problem which was fixed, I dare to repost.
 
 I have three repos: marduk (anything / archive) and horus (standard / client) and asaru (standard / client).
 
