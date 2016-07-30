@@ -30,6 +30,7 @@ import Logs.Location
 import Annex.NumCopies
 import Remote
 import Config
+import Git.Config (boolConfig)
 import Utility.Percentage
 import Logs.Transfer
 import Types.TrustLevel
@@ -220,6 +221,7 @@ file_stats f k =
 	[ file_name f
 	, key_size k
 	, key_name k
+	, content_present k
 	]
 
 remote_fast_stats :: Remote -> [Stat]
@@ -353,6 +355,9 @@ key_size k = simpleStat "size" $ showSizeKeys $ foldKeys [k]
 
 key_name :: Key -> Stat
 key_name k = simpleStat "key" $ pure $ key2file k
+
+content_present :: Key -> Stat
+content_present k = stat "present" $ json boolConfig $ lift $ inAnnex k
 
 bloom_info :: Stat
 bloom_info = simpleStat "bloom filter size" $ do
