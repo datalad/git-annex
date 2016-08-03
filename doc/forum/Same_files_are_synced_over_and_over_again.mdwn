@@ -52,5 +52,7 @@ ok
 
 Is it a bug? Any more information I can provide?
 
+EDIT: A pastebin of the output of a sync run without and with ```--debug```: <http://pastebin.com/raw/ad2T8jeV>
+
 Thanks!
 Florian
