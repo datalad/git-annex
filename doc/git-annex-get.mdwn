@@ -69,6 +69,9 @@ or transferring them from some kind of key-value store.
 
   Operate on files that have recently failed to be transferred.
 
+  Not to be confused with `--incomplete` which resumes only downloads
+  that managed to transfer part of the content of a file.
+
 * `--key=keyname`
 
   Use this option to get a specified key.
