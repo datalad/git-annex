@@ -3,6 +3,9 @@ donations of many people. I want to say "Thank You!" to each of
 you individually, but until I meet all 1500 of you, this page will have to
 do. You have my most sincere thanks. --[[Joey]]
 
+You can support my git-annex development
+[on Patreon](https://www.patreon.com/joeyh).
+
 (If I got your name wrong, or you don't want it publically posted here,
 email <id@joeyh.name>.)
 

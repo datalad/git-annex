@@ -9,4 +9,4 @@
 * [[forum]]
 * [[comments]]
 * [[contact]]
-* [Flattr this](http://flattr.com/thing/84843/git-annex)
+* [[thanks]]
