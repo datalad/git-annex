@@ -21,6 +21,7 @@ import Assistant.Alert
 import Assistant.Alert.Utility
 import Assistant.Commits
 import Assistant.Drop
+import Types.Transfer
 import Logs.Transfer
 import Logs.Location
 import qualified Git

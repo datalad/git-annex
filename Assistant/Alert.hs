@@ -14,7 +14,7 @@ import Assistant.Types.Alert
 import Assistant.Alert.Utility
 import qualified Remote
 import Utility.Tense
-import Logs.Transfer
+import Types.Transfer
 import Types.Distribution
 import Git.Types (RemoteName)
 

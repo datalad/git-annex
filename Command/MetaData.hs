@@ -40,7 +40,7 @@ optParser :: CmdParamsDesc -> Parser MetaDataOptions
 optParser desc = MetaDataOptions
 	<$> cmdParams desc
 	<*> ((Get <$> getopt) <|> (Set <$> some modopts) <|> pure GetAll)
-	<*> optional (parseKeyOptions False)
+	<*> optional parseKeyOptions
 	<*> parseBatchOption
   where
 	getopt = option (eitherReader mkMetaField)

@@ -31,7 +31,7 @@ data WhereisOptions = WhereisOptions
 optParser :: CmdParamsDesc -> Parser WhereisOptions
 optParser desc = WhereisOptions
 	<$> cmdParams desc
-	<*> optional (parseKeyOptions False)
+	<*> optional parseKeyOptions
 	<*> parseBatchOption
 
 seek :: WhereisOptions -> CommandSeek

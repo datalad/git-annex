@@ -16,6 +16,7 @@ import Assistant.Drop
 import Assistant.Sync
 import Assistant.DeleteRemote
 import Assistant.Types.UrlRenderer
+import Types.Transfer
 import Logs.Transfer
 import Logs.Location
 import Logs.Group

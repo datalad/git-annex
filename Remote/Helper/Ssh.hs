@@ -20,7 +20,7 @@ import Messages.Progress
 import Utility.Metered
 import Utility.Rsync
 import Types.Remote
-import Logs.Transfer
+import Types.Transfer
 import Config
 
 {- Generates parameters to ssh to a repository's host and run a command.

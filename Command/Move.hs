@@ -35,7 +35,7 @@ optParser :: CmdParamsDesc -> Parser MoveOptions
 optParser desc = MoveOptions
 	<$> cmdParams desc
 	<*> parseFromToOptions
-	<*> optional (parseKeyOptions False)
+	<*> optional (parseKeyOptions <|> parseFailedTransfersOption)
 
 instance DeferredParseClass MoveOptions where
 	finishParse v = MoveOptions
@@ -61,8 +61,10 @@ startKey o move = start' o move Nothing
 start' :: MoveOptions -> Bool -> AssociatedFile -> Key -> ActionItem -> CommandStart
 start' o move afile key ai = 
 	case fromToOptions o of
-		FromRemote src -> fromStart move afile key ai =<< getParsed src
-		ToRemote dest -> toStart move afile key ai =<< getParsed dest
+		FromRemote src -> checkFailedTransferDirection ai Download $
+			fromStart move afile key ai =<< getParsed src
+		ToRemote dest -> checkFailedTransferDirection ai Upload $
+			toStart move afile key ai =<< getParsed dest
 
 showMoveAction :: Bool -> Key -> ActionItem -> Annex ()
 showMoveAction move = showStart' (if move then "move" else "copy")

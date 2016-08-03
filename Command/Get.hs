@@ -14,6 +14,7 @@ import Annex.Transfer
 import Annex.NumCopies
 import Annex.Wanted
 import qualified Command.Move
+import Types.ActionItem
 
 cmd :: Command
 cmd = withGlobalOptions (jobsOption : jsonOption : annexedMatchingOptions) $ 
@@ -34,7 +35,7 @@ optParser desc = GetOptions
 	<$> cmdParams desc
 	<*> optional parseFromOption
 	<*> parseAutoOption
-	<*> optional (parseKeyOptions True)
+	<*> optional (parseIncompleteOption <|> parseKeyOptions <|> parseFailedTransfersOption)
 	<*> parseBatchOption
 
 seek :: GetOptions -> CommandSeek
@@ -57,7 +58,8 @@ start o from file key = start' expensivecheck from key afile (mkActionItem afile
 		| otherwise = return True
 
 startKeys :: Maybe Remote -> Key -> ActionItem -> CommandStart
-startKeys from key = start' (return True) from key Nothing
+startKeys from key ai = checkFailedTransferDirection ai Download $
+	start' (return True) from key Nothing ai
 
 start' :: Annex Bool -> Maybe Remote -> Key -> AssociatedFile -> ActionItem -> CommandStart
 start' expensivecheck from key afile ai = stopUnless (not <$> inAnnex key) $

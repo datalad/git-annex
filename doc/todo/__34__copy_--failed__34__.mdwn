@@ -3,3 +3,5 @@ I often "copy --to remote" many files at once, and inevitably the transfer fails
 Related: <https://git-annex.branchable.com/todo/make_copy_--fast__faster/>
 
 git-annex is awesome btw. Thanks!
+
+> [[done]] --[[Joey]]

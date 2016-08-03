@@ -34,7 +34,7 @@ import Utility.Rsync
 import Utility.CopyFile
 import Messages.Progress
 import Utility.Metered
-import Logs.Transfer
+import Types.Transfer
 import Types.Creds
 import Annex.DirHashes
 import Utility.Tmp

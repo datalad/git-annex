@@ -14,6 +14,7 @@ import Assistant.Common
 import Utility.ThreadScheduler
 import qualified Types.Remote as Remote
 import qualified Remote.Glacier as Glacier
+import Types.Transfer
 import Logs.Transfer
 import Assistant.DaemonStatus
 import Assistant.TransferQueue

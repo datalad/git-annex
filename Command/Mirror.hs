@@ -14,6 +14,7 @@ import qualified Command.Get
 import qualified Remote
 import Annex.Content
 import Annex.NumCopies
+import Types.Transfer
 
 cmd :: Command
 cmd = withGlobalOptions ([jobsOption] ++ annexedMatchingOptions) $
@@ -31,7 +32,7 @@ optParser :: CmdParamsDesc -> Parser MirrorOptions
 optParser desc = MirrorOptions
 	<$> cmdParams desc
 	<*> parseFromToOptions
-	<*> optional (parseKeyOptions False)
+	<*> optional (parseKeyOptions <|> parseFailedTransfersOption)
 
 instance DeferredParseClass MirrorOptions where
 	finishParse v = MirrorOptions
@@ -53,13 +54,13 @@ start o file k = startKey o afile k (mkActionItem afile)
 
 startKey :: MirrorOptions -> Maybe FilePath -> Key -> ActionItem -> CommandStart
 startKey o afile key ai = case fromToOptions o of
-	ToRemote r -> ifM (inAnnex key)
+	ToRemote r -> checkFailedTransferDirection ai Upload $ ifM (inAnnex key)
 		( Command.Move.toStart False afile key ai =<< getParsed r
 		, do
 			numcopies <- getnumcopies
 			Command.Drop.startRemote afile ai numcopies key =<< getParsed r
 		)
-	FromRemote r -> do
+	FromRemote r -> checkFailedTransferDirection ai Download $ do
 		haskey <- flip Remote.hasKey key =<< getParsed r
 		case haskey of
 			Left _ -> stop

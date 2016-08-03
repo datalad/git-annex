@@ -9,7 +9,7 @@ module Assistant.TransferrerPool where
 
 import Assistant.Common
 import Assistant.Types.TransferrerPool
-import Logs.Transfer
+import Types.Transfer
 import Utility.Batch
 
 import qualified Command.TransferKeys as T

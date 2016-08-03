@@ -32,6 +32,11 @@ or transferring them from some kind of key-value store.
   Enables parallel download with up to the specified number of jobs
   running at once. For example: `-J10`
 
+* file matching options
+ 
+  The [[git-annex-matching-options]](1)
+  can be used to specify files to get.
+
 * `--incomplete`
 
   Resume any incomplete downloads of files that were started and
@@ -44,11 +49,6 @@ or transferring them from some kind of key-value store.
   Note that the git-annex key will be displayed when downloading,
   as git-annex does not know the associated file, and the associated file
   may not even be in the current git working directory.
-
-* file matching options
- 
-  The [[git-annex-matching-options]](1)
-  can be used to specify files to get.
 
 * `--all`
 
@@ -64,6 +64,10 @@ or transferring them from some kind of key-value store.
 * `--unused`
 
   Operate on files found by last run of git-annex unused.
+
+* `--failed`
+
+  Operate on files that have recently failed to be transferred.
 
 * `--key=keyname`
 

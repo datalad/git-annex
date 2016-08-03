@@ -32,6 +32,7 @@ import Remote
 import Config
 import Git.Config (boolConfig)
 import Utility.Percentage
+import Types.Transfer
 import Logs.Transfer
 import Types.TrustLevel
 import Types.FileMatcher

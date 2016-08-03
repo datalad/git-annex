@@ -22,7 +22,7 @@ import Remote.Helper.ReadOnly
 import Remote.Helper.Messages
 import Utility.Metered
 import Messages.Progress
-import Logs.Transfer
+import Types.Transfer
 import Logs.PreferredContent.Raw
 import Logs.RemoteState
 import Logs.Web

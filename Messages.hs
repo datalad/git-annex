@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
-
 module Messages (
 	showStart,
 	ActionItem,
@@ -53,11 +51,10 @@ import System.Log.Handler.Simple
 import Common
 import Types
 import Types.Messages
-import Git.FilePath
+import Types.ActionItem
 import Messages.Internal
 import qualified Messages.JSON as JSON
 import Utility.JSONStream (JSONChunk(..))
-import Types.Key
 import qualified Annex
 
 showStart :: String -> FilePath -> Annex ()
@@ -65,33 +62,6 @@ showStart command file = outputMessage json $
 	command ++ " " ++ file ++ " "
   where
 	json = JSON.start command (Just file) Nothing
-
-data ActionItem 
-	= ActionItemAssociatedFile AssociatedFile
-	| ActionItemKey
-	| ActionItemBranchFilePath BranchFilePath
-
-class MkActionItem t where
-	mkActionItem :: t -> ActionItem
-
-instance MkActionItem AssociatedFile where
-	mkActionItem = ActionItemAssociatedFile
-
-instance MkActionItem Key where
-	mkActionItem _ = ActionItemKey
-
-instance MkActionItem BranchFilePath where
-	mkActionItem = ActionItemBranchFilePath
-
-actionItemDesc :: ActionItem -> Key -> String
-actionItemDesc (ActionItemAssociatedFile (Just f)) _ = f
-actionItemDesc (ActionItemAssociatedFile Nothing) k = key2file k
-actionItemDesc ActionItemKey k = key2file k
-actionItemDesc (ActionItemBranchFilePath bfp) _ = descBranchFilePath bfp
-
-actionItemWorkTreeFile :: ActionItem -> Maybe FilePath
-actionItemWorkTreeFile (ActionItemAssociatedFile af) = af
-actionItemWorkTreeFile _ = Nothing
 
 showStart' :: String -> Key -> ActionItem -> Annex ()
 showStart' command key i = outputMessage json $

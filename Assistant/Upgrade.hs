@@ -16,7 +16,7 @@ import Assistant.Alert
 import Assistant.DaemonStatus
 import Utility.Env
 import Types.Distribution
-import Logs.Transfer
+import Types.Transfer
 import Logs.Web
 import Logs.Presence
 import Logs.Location

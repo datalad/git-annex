@@ -10,7 +10,7 @@
 module Annex.Notification (NotifyWitness, notifyTransfer, notifyDrop) where
 
 import Annex.Common
-import Logs.Transfer
+import Types.Transfer
 #ifdef WITH_DBUS_NOTIFICATIONS
 import qualified Annex
 import Types.DesktopNotify

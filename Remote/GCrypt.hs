@@ -25,6 +25,7 @@ import Types.Remote
 import Types.GitConfig
 import Types.Crypto
 import Types.Creds
+import Types.Transfer
 import qualified Git
 import qualified Git.Command
 import qualified Git.Config
@@ -47,7 +48,6 @@ import qualified Remote.Directory
 import Utility.Rsync
 import Utility.Tmp
 import Logs.Remote
-import Logs.Transfer
 import Utility.Gpg
 
 remote :: RemoteType

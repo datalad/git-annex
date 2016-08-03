@@ -20,6 +20,7 @@ module Annex.Transfer (
 
 import Annex.Common
 import Logs.Transfer as X
+import Types.Transfer as X
 import Annex.Notification as X
 import Annex.Perms
 import Utility.Metered

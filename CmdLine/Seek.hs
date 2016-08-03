@@ -25,6 +25,10 @@ import CmdLine.GitAnnex.Options
 import CmdLine.Action
 import Logs.Location
 import Logs.Unused
+import Types.Transfer
+import Logs.Transfer
+import Remote.List
+import qualified Remote
 import Annex.CatFile
 import Annex.Content
 
@@ -154,8 +158,9 @@ withNothing :: CommandStart -> CmdParams -> CommandSeek
 withNothing a [] = seekActions $ return [a]
 withNothing _ _ = error "This command takes no parameters."
 
-{- Handles the --all, --branch, --unused, --key, and --incomplete options,
- - which specify particular keys to run an action on.
+{- Handles the --all, --branch, --unused, --failed, --key, and
+ - --incomplete options, which specify particular keys to run an
+ - action on.
  -
  - In a bare repo, --all is the default.
  -
@@ -180,8 +185,7 @@ withKeyOptions'
 	:: Maybe KeyOptions
 	-> Bool
 	-> Annex (Key -> ActionItem -> Annex ())
-	-> (CmdParams
-	-> CommandSeek)
+	-> (CmdParams -> CommandSeek)
 	-> CmdParams
 	-> CommandSeek
 withKeyOptions' ko auto mkkeyaction fallbackaction params = do
@@ -195,10 +199,11 @@ withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 		(False, Nothing) -> fallbackaction params
 		(True, Just WantAllKeys) -> noauto $ runkeyaction loggedKeys
 		(True, Just WantUnusedKeys) -> noauto $ runkeyaction unusedKeys'
+		(True, Just WantFailedTransfers) -> noauto runfailedtransfers
 		(True, Just (WantSpecificKey k)) -> noauto $ runkeyaction (return [k])
 		(True, Just WantIncompleteKeys) -> noauto $ runkeyaction incompletekeys
 		(True, Just (WantBranchKeys bs)) -> noauto $ runbranchkeys bs
-		(False, Just _) -> error "Can only specify one of file names, --all, --branch, --unused, --key, or --incomplete"
+		(False, Just _) -> error "Can only specify one of file names, --all, --branch, --unused, --failed, --key, or --incomplete"
   where
 	noauto a
 		| auto = error "Cannot use --auto with --all or --branch or --unused or --key or --incomplete"
@@ -218,6 +223,12 @@ withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 					=<< catKey (LsTree.sha i)
 			unlessM (liftIO cleanup) $
 				error ("git ls-tree " ++ Git.fromRef b ++ " failed")
+	runfailedtransfers = do
+		keyaction <- mkkeyaction
+		rs <- remoteList
+		ts <- concat <$> mapM (getFailedTransfers . Remote.uuid) rs
+		forM_ ts $ \(t, i) ->
+			keyaction (transferKey t) (mkActionItem (t, i))
 
 prepFiltered :: (FilePath -> CommandStart) -> Annex [FilePath] -> Annex [CommandStart]
 prepFiltered a fs = do

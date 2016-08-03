@@ -66,7 +66,7 @@ optParser desc = FsckOptions
 		<> completeRemotes
 		))
 	<*> optional parseincremental
-	<*> optional (parseKeyOptions False)
+	<*> optional parseKeyOptions
   where
 	parseincremental =
 		flag' StartIncrementalO

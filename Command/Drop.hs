@@ -41,7 +41,7 @@ optParser desc = DropOptions
 	<$> cmdParams desc
 	<*> optional parseDropFromOption
 	<*> parseAutoOption
-	<*> optional (parseKeyOptions False)
+	<*> optional parseKeyOptions
 	<*> parseBatchOption
 
 parseDropFromOption :: Parser (DeferredParse Remote)
