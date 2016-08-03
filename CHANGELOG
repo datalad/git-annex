@@ -22,6 +22,9 @@ git-annex (6.20160726) UNRELEASED; urgency=medium
     the content is present locally.
   * get, move, copy, mirror: Added --failed switch which retries
     failed copies/moves.
+  * Re-enable accumulating transfer failure log files for command-line
+    actions (disabled in 5.20150522), and remove the log files after
+    successful transfers.
 
  -- Joey Hess <id@joeyh.name>  Wed, 20 Jul 2016 12:03:15 -0400
 

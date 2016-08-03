@@ -94,8 +94,12 @@ runTransfer' ignorelock t file shouldretry transferobserver transferaction = do
 			return observeFailure
 		else do
 			v <- retry info metervar $ transferaction meter
+			let ok = observeBool v
 			liftIO $ cleanup tfile lck
-			transferobserver (observeBool v) t info
+			if ok
+				then removeFailedTransfer t
+				else recordFailedTransfer t info
+			transferobserver ok t info
 			return v
   where
 #ifndef mingw32_HOST_OS

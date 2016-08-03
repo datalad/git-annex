@@ -35,13 +35,13 @@ start = do
   where
 	runner (TransferRequest direction remote key file)
 		| direction == Upload = notifyTransfer direction file $
-			upload (Remote.uuid remote) key file forwardRetry observer $ \p -> do
+			upload (Remote.uuid remote) key file forwardRetry noObserver $ \p -> do
 				ok <- Remote.storeKey remote key file p
 				when ok $
 					Remote.logStatus remote key InfoPresent
 				return ok
 		| otherwise = notifyTransfer direction file $
-			download (Remote.uuid remote) key file forwardRetry observer $ \p ->
+			download (Remote.uuid remote) key file forwardRetry noObserver $ \p ->
 				getViaTmp (RemoteVerify remote) key $ \t -> do
 					r <- Remote.retrieveKeyFile remote key file t p
 					-- Make sure we get the current
@@ -49,9 +49,6 @@ start = do
 					-- not old cached data.
 					Database.Keys.closeDb			
 					return r
-	
-	observer False t tinfo = recordFailedTransfer t tinfo
-	observer True _ _ = noop
 
 runRequests
 	:: Handle
