@@ -114,7 +114,7 @@ toPerform dest move key afile fastcheck isthere =
 		Right False -> do
 			showAction $ "to " ++ Remote.name dest
 			ok <- notifyTransfer Upload afile $
-				upload (Remote.uuid dest) key afile noRetry noObserver $
+				upload (Remote.uuid dest) key afile noRetry $
 					Remote.storeKey dest key afile
 			if ok
 				then finish $
@@ -177,7 +177,7 @@ fromPerform src move key afile = ifM (inAnnex key)
 	)
   where
 	go = notifyTransfer Download afile $ 
-		download (Remote.uuid src) key afile noRetry noObserver $ \p -> do
+		download (Remote.uuid src) key afile noRetry $ \p -> do
 			showAction $ "from " ++ Remote.name src
 			getViaTmp (RemoteVerify src) key $ \t ->
 				Remote.retrieveKeyFile src key afile t p

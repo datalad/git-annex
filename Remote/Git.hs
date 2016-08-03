@@ -439,7 +439,7 @@ copyFromRemote' r key file dest meterupdate
 				Just (object, checksuccess) -> do
 					copier <- mkCopier hardlink params
 					runTransfer (Transfer Download u key)
-						file noRetry noObserver 
+						file noRetry
 						(\p -> copier object dest (combineMeterUpdate p meterupdate) checksuccess)
 	| Git.repoIsSsh (repo r) = unVerified $ feedprogressback $ \p -> do
 		Ssh.rsyncHelper (Just (combineMeterUpdate meterupdate p))
@@ -565,7 +565,7 @@ copyToRemote' r key file meterupdate
 				ensureInitialized
 				copier <- mkCopier hardlink params
 				let verify = Annex.Content.RemoteVerify r
-				runTransfer (Transfer Download u key) file noRetry noObserver $ \p ->
+				runTransfer (Transfer Download u key) file noRetry $ \p ->
 					let p' = combineMeterUpdate meterupdate p
 					in Annex.Content.saveState True `after`
 						Annex.Content.getViaTmp verify key

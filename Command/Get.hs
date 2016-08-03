@@ -14,7 +14,6 @@ import Annex.Transfer
 import Annex.NumCopies
 import Annex.Wanted
 import qualified Command.Move
-import Types.ActionItem
 
 cmd :: Command
 cmd = withGlobalOptions (jobsOption : jsonOption : annexedMatchingOptions) $ 
@@ -109,7 +108,7 @@ getKey' key afile = dispatch
 			either (const False) id <$> Remote.hasKey r key
 		| otherwise = return True
 	docopy r witness = getViaTmp (RemoteVerify r) key $ \dest ->
-		download (Remote.uuid r) key afile noRetry noObserver 
+		download (Remote.uuid r) key afile noRetry
 			(\p -> do
 				showAction $ "from " ++ Remote.name r
 				Remote.retrieveKeyFile r key afile dest p
