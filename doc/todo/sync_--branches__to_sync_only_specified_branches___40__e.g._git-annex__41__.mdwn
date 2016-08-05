@@ -1,0 +1,3 @@
+As we briefly discussed via email, it would be nice if sync could sync only some branches (e.g. git-annex) not all at once.
+
+[[!meta author=yoh]]
