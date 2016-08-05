@@ -26,6 +26,6 @@ The following paths are ignored by one of your .gitignore files:
 1exclude.txt
 Use -f if you really want to add them.
 git-annex: user error (xargs ["-0","git","--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.largefiles=exclude=*.txt","add","--"] exited 123)
-]]
+"""]]
 
 [[!meta author=yoh]]
