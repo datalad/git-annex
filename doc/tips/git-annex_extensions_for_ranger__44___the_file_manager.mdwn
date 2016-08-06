@@ -8,8 +8,8 @@ ranger lets you [define custom commands](https://github.com/ranger/ranger/wiki/C
 
 The small string of information that shows on each file line, aligned to the right, is called a `infostring`. [Linemodes in ranger](https://github.com/ranger/ranger/wiki/Custom-linemodes) lets you change between its default linemodes or add your own custom linemodes. I have written two git-annex linemodes: 
 
-  * [git-annex-metadata](https://github.com/fiatjaf/dotfiles/blob/5087963cead99f65afee153be672c8e5e624d638/ranger-plugins/linemode_gitannex.py#L8-L51); and
-  * [git-annex-whereis](https://github.com/fiatjaf/dotfiles/blob/5087963cead99f65afee153be672c8e5e624d638/ranger-plugins/linemode_gitannex.py#L54-L104). The first shows tags and metadata fields from git-annex, the second shows the name of the repositories where each file is (except the current repository, which should be clear from the color ranger puts on the file).
+  * [git-annex-metadata](https://github.com/fiatjaf/dotfiles/blob/5087963cead99f65afee153be672c8e5e624d638/ranger-plugins/linemode_gitannex.py#L8-L51), which shows tags and metadata fields from git-annex; and
+  * [git-annex-whereis](https://github.com/fiatjaf/dotfiles/blob/5087963cead99f65afee153be672c8e5e624d638/ranger-plugins/linemode_gitannex.py#L54-L104), which shows the name of the repositories where each file is (except the current repository, as that should be clear from the ranger colours).
 
 To switch linemodes, just type `:linemode git-annex-whereis` or `:linemode git-annex-metadata`.
 
