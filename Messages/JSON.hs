@@ -24,6 +24,8 @@ import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as B
 import System.IO
+import Data.Monoid
+import Prelude
 
 import qualified Utility.JSONStream as Stream
 import Types.Key
