@@ -913,6 +913,7 @@ Executable git-annex
     RemoteDaemon.Types
     Test
     Types
+    Types.ActionItem
     Types.Availability
     Types.Backend
     Types.BranchState
@@ -939,6 +940,7 @@ Executable git-annex
     Types.StandardGroups
     Types.StoreRetrieve
     Types.Test
+    Types.Transfer
     Types.TrustLevel
     Types.UUID
     Types.UrlContents
