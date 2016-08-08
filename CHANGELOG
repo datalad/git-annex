@@ -1,4 +1,4 @@
-git-annex (6.20160726) UNRELEASED; urgency=medium
+git-annex (6.20160808) unstable; urgency=medium
 
   * metadata --json output format has changed, adding a inner json object
     named "fields" which contains only the fields and their values.
@@ -26,7 +26,7 @@ git-annex (6.20160726) UNRELEASED; urgency=medium
     actions (disabled in 5.20150522), and remove the log files after
     successful transfers.
 
- -- Joey Hess <id@joeyh.name>  Wed, 20 Jul 2016 12:03:15 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 08 Aug 2016 11:42:17 -0400
 
 git-annex (6.20160619) unstable; urgency=medium
 
