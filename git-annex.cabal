@@ -337,7 +337,7 @@ Executable git-annex
    bloomfilter, edit-distance,
    resourcet, http-conduit (<2.2.0), http-client, http-types,
    time, old-locale,
-   esqueleto, persistent-sqlite, persistent (<2.5), persistent-template,
+   esqueleto, persistent-sqlite, persistent (==2.2.4.1), persistent-template,
    aeson,
    unordered-containers,
    feed,
