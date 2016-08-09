@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ subject="comment 9"
+ date="2016-08-09T20:17:47Z"
+ content="""
+I'm the git-remote-gcrypt maintainer, but as it stands it's not really possible to do anything about this bug without steps to reliably reproduce the corrupted/unencrypted remote repository.
+
+I have been using git-remote-gcrypt with git-annex and with plain git repos for more than two years and I have never encountered anything like this issue.  So there's no starting point to work on a fix for the issue.
+"""]]
