@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="pot"
+ subject="Hmmm, seems odd such a serious bug is allowed to linger without serious investigation"
+ date="2016-08-09T19:22:48Z"
+ content="""
+Should a developer not be all over this, would seem like a very major issue with the gcrypt backend (and annex's interaction with it) that this outcome could even be possible. You can't be using an encrypted store, which becomes irrepairably corrupted and with some of your data sat outside, unencrypted!
+
+Any thoughts from more knowledgeable developers on how to fix, investigate further, or do something useful on this front?
+"""]]
