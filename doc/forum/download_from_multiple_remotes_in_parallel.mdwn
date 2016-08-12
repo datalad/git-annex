@@ -1,0 +1,9 @@
+Hey everyone, 
+
+I have the situation that there are two remote repositories A and B, both of which have several files that I want to get. The problem is that both A and B have limited upstream, so launching several threads downloading from A would not speed up the download, but downloading from A and B in parallel would help significantly.
+
+When I git-annex-get these files, my dream would be that specifying --jobs=2 has the effect that thread #1 only downloads from A and thread #2 only downloads from B. If this is the case, great, but if it is not (and I expect it to not be the case), is there any way to get files in parallel from A and B, but only ever having one connection to each of these repositories?
+
+Thanks a lot!
+
+
