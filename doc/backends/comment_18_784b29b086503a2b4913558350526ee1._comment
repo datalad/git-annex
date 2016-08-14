@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="junk@5e3eeba2290e8a3fcf938d9f93b0dfa2565dc7b1"
+ nickname="junk"
+ subject="Howto verify encrypted files"
+ date="2016-08-14T17:07:03Z"
+ content="""
+Hi,
+
+I'd like to be able verify the consistancy of the files on a rsync remote without having access to the git repository or the gpg-key. This can easily be done with unencrypted files by running \"sha256sum filename\". Is there a way to do the same thing with encrypted files?
+
+Thank you very much!
+"""]]
