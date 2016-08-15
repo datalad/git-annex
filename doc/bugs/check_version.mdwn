@@ -1,0 +1,1 @@
+I'd like to be able to check the git annex version with `git annex --version`, to know if it's 5 or 6.
