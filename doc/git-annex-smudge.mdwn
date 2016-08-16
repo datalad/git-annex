@@ -25,7 +25,7 @@ not need to configure it manually.
 	        clean = git-annex smudge --clean %f
 
 To make git use that filter driver, it needs to be configured in
-the .gitattributes file or in `.git/config/attributes`. The latter
+the `.gitattributes` file or in `.git/info/attributes`. The latter
 is normally configured when a repository is initialized, with the following
 contents:
 
