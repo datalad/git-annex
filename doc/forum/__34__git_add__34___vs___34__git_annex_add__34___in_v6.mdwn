@@ -1,0 +1,5 @@
+Prior to v6, I used `git annex add` for files that should go into the annex, and `git add` for files that should be tracked in git normally.  With v6, `git add` silently adds to the annex instead, which surprised me because I didn't expect the file contents to still only reside only on the source computer after a push!  I don't have `annex.largefiles` set, but it seems like this is intended behavior.  Is there a way to return to v5 behavior for those two commands?  Is it safe to just remove the smudge/clean filter?  If so, is there a way to remove it in such a way that it propagates to all repositories?  (It's currently set in `.git/info/attributes`, which overrides `.gitattributes`).
+
+Having to come up a generic rule for `annex.largefiles` to cover all of my distinctions is difficult, and it's tedious to re-specify it for each new file.  I'd much rather just be able to continue using git as usual, and explicitly choose when to invoke git-annex.
+
+Jim
