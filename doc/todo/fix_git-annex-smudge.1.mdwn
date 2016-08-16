@@ -1,0 +1,24 @@
+Fixing errors in the git-annex-smudge manage.
+
+```
+The following changes since commit fa15580d1a55aef612a4a973e74e1728c371e98f:
+
+   (2016-08-16 15:14:37 +0000)
+
+are available in the git repository at:
+
+  https://git.jim.sh/jim/git-annex.git jim
+
+for you to fetch changes up to e2a55fdbaeb4acfd09910649689868f1c4f0625b:
+
+  Don't escape leading dots in code blocks in manpage (2016-08-16 11:51:16 -0400)
+
+----------------------------------------------------------------
+Jim Paris (2):
+      Fix path in git-annex-smudge(1)
+      Don't escape leading dots in code blocks in manpage
+
+ Build/mdwn2man            | 2 +-
+ doc/git-annex-smudge.mdwn | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+```
