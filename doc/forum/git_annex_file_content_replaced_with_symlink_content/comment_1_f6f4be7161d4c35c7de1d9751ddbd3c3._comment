@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="jimparis"
+ subject="comment 1"
+ date="2016-08-16T14:41:34Z"
+ content="""
+It seems like that is how [OSX stores symlinks on FAT filesystems](https://opensource.apple.com/source/msdosfs/msdosfs-185.2/msdosfs.kextproj/msdosfs.kmodproj/fat.h?txt) and how [Samba stores symlinks on Windows](https://wiki.samba.org/index.php/UNIX_Extensions#Storing_symlinks_on_Windows_servers).  Did you initially make the drive on one of those systems?  Using the same system again would probably make them appear like normal usable symlinks.
+
+At the very least, since you said `.git/annex` is full of data, I think you should be able to find the photo at the location listed in the last line of those files:
+
+```
+../.git/annex/objects/5F/Xw/SHA256E-s2499217--ad9525adf9a82e4ac83c89fd2bddfd2b2aef690ccbbddf38d91abc85f72509f6.jpg/SHA256E-s2499217--ad9525adf9a82e4ac83c89fd2bddfd2b2aef690ccbbddf38d91abc85f72509f6.jpg
+```
+
+"""]]
