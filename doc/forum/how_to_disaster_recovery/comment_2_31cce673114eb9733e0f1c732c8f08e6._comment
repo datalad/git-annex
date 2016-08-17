@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="jd.schroeder@0c8632a8f2bffdd4b0de05a0a3660f32acdfeeca"
+ nickname="jd.schroeder"
+ subject="comment 2"
+ date="2016-08-17T21:23:34Z"
+ content="""
+You may want to also try
+
+    git fsck
+
+as well.
+"""]]
