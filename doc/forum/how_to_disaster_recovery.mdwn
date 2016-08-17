@@ -1,0 +1,6 @@
+OS X: 10.11.6
+Annex: git-annex-6.20160619 (via brew)
+
+I'm [still strugling](http://git-annex.branchable.com/forum/git_annex_wants_to_repair_every_time_it__39__s_running/) with my annex repo over here. My problem is that for some reason git annex wants to repair my repo all the time when I'm starting the assistant and this (seemingly) never finishes, so I'm caught in an infinite loop in which no files get uploaded to my various remotes and nothing is downloaded either leaving me with all the data on my hard drive and nothing else. I would like to move on. How can I recover from this state? The daemon.log file doesn't show any information about what is happening during the repair and what might cause the failure. Is there another log file I could look at?
+
+Any help is appreciated at that point. Where should I look for more information? What should I do to change the behaviour? I want to solve this once and for all.
