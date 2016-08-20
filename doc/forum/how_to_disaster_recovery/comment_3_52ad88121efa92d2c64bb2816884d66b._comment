@@ -1,0 +1,67 @@
+[[!comment format=mdwn
+ username="openmedi"
+ subject="comment 3"
+ date="2016-08-20T14:59:17Z"
+ content="""
+Thanks you so much for the suggestions! I tried running `git annex fsck` which yielded no errors and also ran `git fsck` which gave the following output:
+
+```
+error in tree 317eed096daa6d5efde4621ea57b698e17a44827: duplicateEntries: contains duplicate file entries
+error in tree 5d03ab540eb58fef3cba9466d0f404a2f487acbe: duplicateEntries: contains duplicate file entries
+error in tree 8001d121ff90053597e56ee6b9e4dd7d36e5ff25: duplicateEntries: contains duplicate file entries
+error in tree 9eea5dcfc9d0ab387165b91e11ecf6433d501e88: duplicateEntries: contains duplicate file entries
+error in tree c7c1bbde3d9479cbb44a5adbe763e9a90577fcbd: duplicateEntries: contains duplicate file entries
+error in tree f7544950f810acacb43647719ab77427dced34da: duplicateEntries: contains duplicate file entries
+Checking object directories: 100% (256/256), done.
+Checking connectivity: 403770, done.
+dangling blob 0a37708d72fe5cfeb0421372874557c45be3bed5
+dangling blob 7c6e000baabaa9a3b451bc4a058c8a1743598a4b
+dangling tree 8001d121ff90053597e56ee6b9e4dd7d36e5ff25
+dangling blob 7c76f1e9b6c2bc2189d11db526d4d615bfbda98a
+dangling blob f69212b0c58b43e5d935cfc39fdf6b1751cb5286
+dangling blob 3ddcb33a4a10db7a7c5f7baba730515758b47552
+dangling blob 9feae3d7a5786071826d0ec92289178c2fbbf915
+dangling blob 683f54561577372de1083e231e25eede7a978a2a
+dangling blob ffd8254bc8d78f4dfa180b7b3846bd9af7ad4e0a
+dangling blob 20e2b593b9d93cb3b9f39fd9e22dcbe3427cc369
+dangling blob 500da653dfcb37895e64be4959155e03d352fcbb
+dangling blob d61e26a6e41c547ad135ef6b58f64bd00ad0b31f
+dangling blob 38a9462b54afe85ee24e01b0c4d0fbd75eb5a240
+dangling blob 39b6962714399c604a65b350a21795e00e44b4f5
+dangling blob 71f3b6ca386913456a7de6a31b56729d6f8c36c9
+dangling blob dde4a7fea11398020fed287c4d31780909580e5d
+dangling blob 943b98bbee781a7c68befd37700ab8503a17503c
+dangling blob dc99f8b37db7bdc361c6d7973ab863674b2c59b3
+dangling blob 83b7388589b510388e4c08e2963ec10f21355e63
+dangling blob 63c1e85eedc424c297e5f36f6bc705982471fdce
+dangling blob 11d9d8a2c45f4d8b0479513e2f65352cfd0863d0
+dangling blob 9ce519f47e5a7dd8c923fcb55693a22d82e21779
+dangling blob c1ea698236b21eede67d01a8dd52c877962d1845
+dangling blob 24f6096646c9df777f2a81f40bbdef456f0e754d
+dangling blob a4fb09b357878b1cf31cd2151eb9d0fab2f0b452
+dangling blob ff0dda6cd8a6f882fdf81717519b1abb2c347a3e
+dangling blob a0500a7a450c487a3deeba9915c8f0a88f91b538
+dangling blob 31542a921878a024ec2dbe5815f58da6b6b33e2c
+dangling blob 6b6c6a8eb15fbab7f878396d0f084faa22c73382
+dangling tree 5d03ab540eb58fef3cba9466d0f404a2f487acbe
+dangling blob 87319bda4de4424f60e384fe5c3c14c2ce399d10
+dangling blob d8360b3ffc67ccb1478a797370cbb2112589e13a
+dangling blob 90e18b4beb5e5aedefdab98b57ccf636fb77e046
+dangling blob 06e24bc228ae12504a2bcbe9d3d24f263ba0a209
+dangling blob d2eb8b104d2c002ded4ec76e440dee88f5174a39
+dangling blob e7addc9b07f4938d5871eb67278f64c1d15b2cb4
+dangling blob ff02ddf430604f4a60e3bc7b70804ff1f539dedb
+dangling blob 8c04bdb8cef6265ccde6b7491a57f3869c7d6b23
+dangling blob 8d83dd50a078efda7b60de1900736fbd77a2c5a6
+dangling tree 9eea5dcfc9d0ab387165b91e11ecf6433d501e88
+dangling blob 2011ce2b12529ec512b5c6b75bb6acdf3cbc5e82
+dangling blob 8d6d6e3ea481ddc9eb697c7e4c61479b212157c6
+dangling blob 68f62e8d6902b0de28c6f28899be73c6864d58e2
+dangling blob 97f77e273d92ebc908cfcc3b81dbbc28d10ae090
+dangling blob be24efa8af600f0ac331872e0769b18aa36a17c8
+dangling blob cd257f99eef789d2ce8f7f78d2e80c99311bf8b5
+dangling blob 4e973f9d9b9900d01f2d1f1815609e80b1fcf4a5
+```
+
+I'm now running git annex repair through the command line and hoping for the best. I'm sure this will run for a while. The output so far is just `Running git fsck ...` but I can see it's doing something since the terminal application in osx shows what commands it's currently running in the header of the window itself. I'm hoping this repair will finnish until tomorrow morning because I have a flight coming up at 8. Let's see.
+"""]]
