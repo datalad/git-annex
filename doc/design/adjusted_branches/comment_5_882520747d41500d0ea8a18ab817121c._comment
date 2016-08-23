@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="zack"
+ subject="adjusted branche to &quot;focus&quot; on a specific subtree"
+ date="2016-08-22T14:19:57Z"
+ content="""
+I'm having hard time supporting the following use case with git-annex:
+
+* using git annex so that \"git annex sync --content\" import in batch pictures from a camera SD card
+* destination of the import is a \"pictures/INCOMING\" subdir of a larger \"multimedia archive\" annex
+* I do not want to have all the other folders of the annex (parent and siblings of pictures/INCOMING) present on the SD card
+
+I wonder if adjusted branches might be a solution to this.
+Do I get it right that \"unlocked\" is currently the only supported kind of adjustment?
+
+If so, I'm not sure what would be needed to make the above use case feasible.
+At first sight though, commits int the adjusted branch that \"mounts\" pictures/INCOMING/ are conceptually easy to translate to the main branch: the changes would be the same, only they'll have to be applied in a specific subtree.
+They won't merge cleanly though.
+
+Is this an interesting/worthwhile use case for adjusted branches, or am I looking into the wrong part of git-annex design?
+
+Thanks for this amazing tool!
+"""]]

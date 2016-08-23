@@ -1,0 +1,13 @@
+Hello,
+
+I am pretty paranoid when it comes to my backups. I have a couple of live backups, but also take snapshots now and again and store these on offline hard drives in different places. I would like to use git-annex to keep track of what backup files I have and where. I encrypt all of my backup files, so the hard drive/repository does not need to be encrypted and I would prefer that so that there were fewer things that can go wrong -- I ideally want the files just sitting on the disk as a list of .gpg files, but with git annex able to tell me what I put on there/that the file I need is on there/count it towards any “number of copies” calculations.
+
+I have had a quick play with git annex and it seems I only have a couple of options:
+1) an (encrypted or unencrypted) bare repository, which I’m not keen on because I can’t see my files happily sitting there; or
+2) a clone of the whole git repository, but I’m concerned that this means any access details to things like my box.com account or whatever would be sitting on the drive in plaintext.
+
+Is there something else that I’ve missed or misunderstood?
+
+Many thanks!
+
+Aaron

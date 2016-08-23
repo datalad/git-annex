@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="jd.schroeder@0c8632a8f2bffdd4b0de05a0a3660f32acdfeeca"
+ nickname="jd.schroeder"
+ subject="comment 4"
+ date="2016-08-20T16:17:07Z"
+ content="""
+Unfortunately, I'm not familiar with the errors that git fsck is giving you, so I should defer to someone who knows more. I don't want to tell you something that makes the problem worse :)
+
+If repairing doesn't work, one other thing you could try is cloning the repository that's giving you trouble, and using git annex to move the data into the new clone. This won't modify your original (defective) repository.
+
+    git clone /path/to/repository /path/to/newClone
+    cd /path/to/newClone
+    git annex get --all
+
+If you have files in your original repository that the assistant hasn't committed yet, they won't be in the new clone. So you should look around in /path/to/newClone to see if everything is there. You can run
+
+    cd /path/to/repository
+    git status
+
+to see any files that have not yet been committed in the defective repository, and copy them over manually.
+
+Good luck! Hope you get it working.
+
+"""]]
