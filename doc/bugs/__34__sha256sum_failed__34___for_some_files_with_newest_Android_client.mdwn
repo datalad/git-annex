@@ -1,0 +1,55 @@
+### Please describe the problem.
+git annex fsck and git annex get are showing (false?) sha256sum failed messages on Android with the 2016-07-19 android 5.0 build. I haven't seen this before but have been using git-annex on Android, with the same repository for a year, so I'd guess regression.
+
+I ran fsck on the files on another machine (Watt: Debian testing, 6.20160511-1) and no errors occur. Note that isn't the machine that the Android tablet transfers from (Einstein: Debian stable + backports, 5.20151208-1~bpo8+1). The Android shell didn't have a sha256sum command, but it had an md5 command—and I tried one of the files (Management Report.pdf) and the md5 matches on both Watt and the Android tablet.
+
+I also ran git annex fsck on Einstein (the entire repository, since it's a bare repo) and the only problem it found was a single (different) key with an insufficient number of trusted copies.
+
+So I think the file is actually fine.
+
+### What steps will reproduce the problem?
+Unsure. Dropping and re-getting those files didn't help; it showed a sha256 error with get too.
+
+The only difference I can think of between the files that fail and work is the size:
+
+[[!format text """
+u0_a180@manta:/sdcard/Westerley-Board/Board Packets & Reports/2016-08-25 (Regular) $ ls -l
+-rw-rw---- root sdcard_r 116225 2016-08-24 05:40 Agenda 16-08-25.pdf
+-rw-rw---- root sdcard_r 10128521 2016-08-24 06:02 Management Report scan 2 (annotated; Anthony).pdf
+-rw-rw---- root sdcard_r 10128521 2016-08-24 06:02 Management Report scan 2.pdf
+-rw-rw---- root sdcard_r 53313352 2016-08-24 06:02 Management Report.pdf
+-rw-rw---- root sdcard_r 27154 2016-08-24 06:02 WHOA Chart of Accounts Spreadsheet.xlsx
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+
+### Please provide any additional information below.
+
+[[!format text """
+u0_a180@manta:/sdcard/Westerley-Board/Board Packets & Reports/2016-08-25 (Regular) $ git annex fsck *
+WARNING: linker: git-annex has text relocations. This is wasting memory and prevents security hardening. Please fix.
+fsck Agenda 16-08-25.pdf (checksum...) ok
+fsck Management Report scan 2 (annotated; Anthony).pdf (checksum...)
+sha256sum failed
+ok
+fsck Management Report scan 2.pdf (checksum...)
+sha256sum failed
+ok
+fsck Management Report.pdf (checksum...)
+sha256sum failed
+ok
+fsck WHOA Chart of Accounts Spreadsheet.xlsx (checksum...) ok
+(recording state in git...)
+__bionic_open_tzdata_path: ANDROID_ROOT not set!
+__bionic_open_tzdata_path: ANDROID_ROOT not set!
+__bionic_open_tzdata_path: ANDROID_ROOT not set!
+__bionic_open_tzdata_path: ANDROID_ROOT not set!
+__bionic_open_tzdata_path: ANDROID_ROOT not set!
+__bionic_open_tzdata_path: ANDROID_ROOT not set!
+u0_a180@manta:/sdcard/Westerley-Board/Board Packets & Reports/2016-08-25 (Regular) $
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, I've been using git annex for I think a year and a half now, on several repositories. It works pretty well. I have a total of around 315GB and 23K annexed keys across them (counting each annex only once, even though they're cloned on a bunch of machines).
