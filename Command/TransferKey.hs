@@ -51,7 +51,7 @@ start o key = case fromToOptions o of
 
 toPerform :: Key -> AssociatedFile -> Remote -> CommandPerform
 toPerform key file remote = go Upload file $
-	upload (uuid remote) key file forwardRetry noObserver $ \p -> do
+	upload (uuid remote) key file forwardRetry $ \p -> do
 		ok <- Remote.storeKey remote key file p
 		when ok $
 			Remote.logStatus remote key InfoPresent
@@ -59,7 +59,7 @@ toPerform key file remote = go Upload file $
 
 fromPerform :: Key -> AssociatedFile -> Remote -> CommandPerform
 fromPerform key file remote = go Upload file $
-	download (uuid remote) key file forwardRetry noObserver $ \p ->
+	download (uuid remote) key file forwardRetry $ \p ->
 		getViaTmp (RemoteVerify remote) key $ 
 			\t -> Remote.retrieveKeyFile remote key file t p
 

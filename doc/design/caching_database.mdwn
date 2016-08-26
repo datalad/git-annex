@@ -3,6 +3,7 @@
 * [[bugs/incremental_fsck_should_not_use_sticky_bit]]
 * [[todo/wishlist:_pack_metadata_in_direct_mode]]
 * [[todo/cache_key_info]]
+* [[bugs/indeterminite_preferred_content_state_for_duplicated_file]]
 
 What do all these have in common? They could all be improved by
 using some kind of database to locally store the information in an
@@ -29,9 +30,11 @@ Store in the database the Ref of the branch that was used to construct it.
 2. Make sure that builds on all platforms, and works reliably. **done**
 3. Use sqlite db for associated files cache. **done** (only for v6 unlocked
    files)
-4. Also, use associated files db to construct views.
-5. Use sqlite db for metadata cache.
-6. Use sqlite db for list of keys present in local annex.
+4. Use associated files db when dropping files, to fix
+   [[bugs/indeterminite_preferred_content_state_for_duplicated_file]]
+5. Also, use associated files db to construct views.
+6. Use sqlite db for metadata cache.
+7. Use sqlite db for list of keys present in local annex.
 
 ## sqlite or not?
 

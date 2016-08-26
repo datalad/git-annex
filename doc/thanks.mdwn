@@ -3,10 +3,13 @@ donations of many people. I want to say "Thank You!" to each of
 you individually, but until I meet all 1500 of you, this page will have to
 do. You have my most sincere thanks. --[[Joey]]
 
+You can support my git-annex development
+[on Patreon](https://www.patreon.com/joeyh).
+
 (If I got your name wrong, or you don't want it publically posted here,
 email <id@joeyh.name>.)
 
-## 2014-2015
+## 2014-2016
 
 <img alt="NSF logo" src="https://www.nsf.gov/images/logos/nsf1.gif">
 
@@ -14,7 +17,8 @@ git-annex development is partially supported by the
 [NSF](https://www.nsf.gov/awardsearch/showAward?AWD_ID=1429999) as a part of the
 [DataLad project](http://datalad.org/).
 
-Thanks also to these folks for their support: martin f. krafft and John Byrnes.
+Thanks also to these folks for their support: martin f. krafft, John Byrnes,
+Aurélien Couderc, and Jeffrey Chiu.
 
 ## 2013-2014
 

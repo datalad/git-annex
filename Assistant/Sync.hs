@@ -36,7 +36,7 @@ import Assistant.Threads.Watcher (watchThread, WatcherControl(..))
 import Assistant.TransferSlots
 import Assistant.TransferQueue
 import Assistant.RepoProblem
-import Logs.Transfer
+import Types.Transfer
 
 import Data.Time.Clock
 import qualified Data.Map as M

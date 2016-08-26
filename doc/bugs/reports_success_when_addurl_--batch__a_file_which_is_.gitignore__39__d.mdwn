@@ -1,0 +1,31 @@
+### Please describe the problem.
+
+Reports success although file is not added to git, since ignored due to .gitignore
+
+Although not sure yet if that is annex could actually take care about since probably annex stages those for 'add' command to git so wouldn't know right when addurl is called for a specific file?
+
+### What steps will reproduce the problem?
+
+see below
+
+### What version of git-annex are you using? On what operating system?
+
+6.20160728+gitg9a2fe62-1~ndall+1
+
+
+[[!format sh """
+
+$> rm -rf /tmp/123; mkdir /tmp/123; cd /tmp/123; git init; echo "*exclude*" >| .git/info/exclude; git annex init; { echo "http://www.onerussian.com/tmp/1exclude.txt 1exclude.txt"; echo "2nd one" >&2; echo "http://www.onerussian.com/tmp/2.txt 2.txt"\; } | git annex addurl -c annex.largefiles=exclude=*.txt --batch --json --with-files                                                                       
+Initialized empty Git repository in /tmp/123/.git/
+init  ok
+(recording state in git...)
+2nd one
+{"command":"addurl","key":null,"file":"1exclude.txt","note":"downloading http://www.onerussian.com/tmp/1exclude.txt ...","note":"non-large file; adding content to git repository","success":true}
+{"command":"addurl","key":null,"file":"2.txt;","note":"downloading http://www.onerussian.com/tmp/2.txt ...","key":"SHA256E-s2--53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3.txt","success":true}
+The following paths are ignored by one of your .gitignore files:
+1exclude.txt
+Use -f if you really want to add them.
+git-annex: user error (xargs ["-0","git","--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.largefiles=exclude=*.txt","add","--"] exited 123)
+"""]]
+
+[[!meta author=yoh]]

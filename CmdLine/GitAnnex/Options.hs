@@ -139,27 +139,37 @@ parseToOption = parseRemoteOption $ strOption
 data KeyOptions
 	= WantAllKeys
 	| WantUnusedKeys
+	| WantFailedTransfers
 	| WantSpecificKey Key
 	| WantIncompleteKeys
+	| WantBranchKeys [Branch]
 
-parseKeyOptions :: Bool -> Parser KeyOptions
-parseKeyOptions allowincomplete = if allowincomplete
-	then base
-		<|> flag' WantIncompleteKeys
-			( long "incomplete"
-			<> help "resume previous downloads"
-			)
-	else base
-  where
-	base = parseAllOption
-		<|> flag' WantUnusedKeys
-			( long "unused" <> short 'U'
-			<> help "operate on files found by last run of git-annex unused"
-			)
-		<|> (WantSpecificKey <$> option (str >>= parseKey)
-			( long "key" <> metavar paramKey
-			<> help "operate on specified key"
-			))
+parseKeyOptions :: Parser KeyOptions
+parseKeyOptions = parseAllOption
+	<|> WantBranchKeys <$> some (option (str >>= pure . Ref)
+		( long "branch" <> metavar paramRef
+		<> help "operate on files in the specified branch or treeish"
+		))
+	<|> flag' WantUnusedKeys
+		( long "unused" <> short 'U'
+		<> help "operate on files found by last run of git-annex unused"
+		)
+	<|> (WantSpecificKey <$> option (str >>= parseKey)
+		( long "key" <> metavar paramKey
+		<> help "operate on specified key"
+		))
+
+parseFailedTransfersOption :: Parser KeyOptions
+parseFailedTransfersOption = flag' WantFailedTransfers
+	( long "failed"
+	<> help "operate on files that recently failed to be transferred"
+	)
+
+parseIncompleteOption :: Parser KeyOptions
+parseIncompleteOption = flag' WantIncompleteKeys
+	( long "incomplete"
+	<> help "resume previous downloads"
+	)
 
 parseAllOption :: Parser KeyOptions
 parseAllOption = flag' WantAllKeys

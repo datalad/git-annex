@@ -38,7 +38,7 @@ import Git.Repair
 import Git.Index
 import Assistant.Unused
 import Logs.Unused
-import Logs.Transfer
+import Types.Transfer
 import Annex.Path
 import qualified Annex
 #ifdef WITH_WEBAPP

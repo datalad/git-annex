@@ -55,10 +55,10 @@ module Remote (
 	claimingUrl,
 ) where
 
-import qualified Data.Map as M
-import Text.JSON
-import Text.JSON.Generic
 import Data.Ord
+import Data.Aeson
+import qualified Data.Map as M
+import qualified Data.Text as T
 
 import Annex.Common
 import Types.Remote
@@ -194,7 +194,7 @@ prettyPrintUUIDsDescs header descm uuids =
 
 {- An optional field can be included in the list of UUIDs. -}
 prettyPrintUUIDsWith
-	:: JSON v
+	:: ToJSON v
 	=> Maybe String 
 	-> String 
 	-> M.Map UUID RemoteName
@@ -203,7 +203,7 @@ prettyPrintUUIDsWith
 	-> Annex String
 prettyPrintUUIDsWith optfield header descm showval uuidvals = do
 	hereu <- getUUID
-	maybeShowJSON [(header, map (jsonify hereu) uuidvals)]
+	maybeShowJSON $ JSONChunk [(header, map (jsonify hereu) uuidvals)]
 	return $ unwords $ map (\u -> "\t" ++ prettify hereu u ++ "\n") uuidvals
   where
 	finddescription u = M.findWithDefault "" u descm
@@ -220,12 +220,12 @@ prettyPrintUUIDsWith optfield header descm showval uuidvals = do
 		addoptval s = case showval =<< optval of
 			Nothing -> s
 			Just val -> val ++ ": " ++ s
-	jsonify hereu (u, optval) = toJSObject $ catMaybes
-		[ Just ("uuid", toJSON $ fromUUID u)
-		, Just ("description", toJSON $ finddescription u)
-		, Just ("here", toJSON $ hereu == u)
+	jsonify hereu (u, optval) = object $ catMaybes
+		[ Just (T.pack "uuid", toJSON $ fromUUID u)
+		, Just (T.pack "description", toJSON $ finddescription u)
+		, Just (T.pack "here", toJSON $ hereu == u)
 		, case (optfield, optval) of
-			(Just field, Just val) -> Just (field, showJSON val)
+			(Just field, Just val) -> Just (T.pack field, toJSON val)
 			_ -> Nothing
 		]
 

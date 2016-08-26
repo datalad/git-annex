@@ -19,7 +19,7 @@ import Assistant.Types.Buddies
 import Utility.NotificationBroadcaster
 import Utility.WebApp
 import Utility.Yesod
-import Logs.Transfer
+import Types.Transfer
 import Utility.Gpg (KeyId)
 import Build.SysConfig (packageversion)
 import Types.ScheduledActivity

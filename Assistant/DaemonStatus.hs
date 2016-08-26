@@ -14,6 +14,7 @@ import Assistant.Alert.Utility
 import Utility.Tmp
 import Assistant.Types.NetMessager
 import Utility.NotificationBroadcaster
+import Types.Transfer
 import Logs.Transfer
 import Logs.Trust
 import Logs.TimeStamp

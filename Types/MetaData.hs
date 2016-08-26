@@ -44,13 +44,31 @@ import Common
 import Utility.Base64
 import Utility.QuickCheck
 
+import qualified Data.Text as T
 import qualified Data.Set as S
 import qualified Data.Map as M
+import qualified Data.HashMap.Strict as HM
 import Data.Char
 import qualified Data.CaseInsensitive as CI
+import Data.Aeson
 
 newtype MetaData = MetaData (M.Map MetaField (S.Set MetaValue))
 	deriving (Show, Eq, Ord)
+
+instance ToJSON MetaData where
+	toJSON (MetaData m) = object $ map go (M.toList m)
+	  where
+		go (MetaField f, s) = (T.pack (CI.original f), toJSON s)
+
+instance FromJSON MetaData where
+	parseJSON (Object o) = do
+		l <- HM.toList <$> parseJSON (Object o)
+		MetaData . M.fromList <$> mapM go l
+	  where
+		go (t, l) = case mkMetaField (T.unpack t) of
+			Left e -> fail e
+			Right f -> (,) <$> pure f <*> parseJSON l
+	parseJSON _ = fail "expected an object"
 
 {- A metadata value can be currently be set (True), or may have been
  - set before and we're remembering it no longer is (False). -}
@@ -63,6 +81,13 @@ newtype MetaField = MetaField (CI.CI String)
 
 data MetaValue = MetaValue CurrentlySet String
 	deriving (Read, Show)
+
+instance ToJSON MetaValue where
+	toJSON (MetaValue _ v) = toJSON v
+
+instance FromJSON MetaValue where
+	parseJSON (String v) = return $ MetaValue (CurrentlySet True) (T.unpack v)
+	parseJSON _  = fail "expected a string"
 
 {- Metadata values compare and order the same whether currently set or not. -}
 instance Eq MetaValue where
@@ -179,8 +204,11 @@ emptyMetaData = MetaData M.empty
 {- Can be used to set a value, or to unset it, depending on whether
  - the MetaValue has CurrentlySet or not. -}
 updateMetaData :: MetaField -> MetaValue -> MetaData -> MetaData
-updateMetaData f v (MetaData m) = MetaData $
-	M.insertWith' S.union f (S.singleton v) m
+updateMetaData f v = updateMetaData' f (S.singleton v)
+
+updateMetaData' :: MetaField -> S.Set MetaValue -> MetaData -> MetaData
+updateMetaData' f s (MetaData m) = MetaData $
+	M.insertWith' S.union f s m
 
 {- New metadata overrides old._-}
 unionMetaData :: MetaData -> MetaData -> MetaData
@@ -222,7 +250,7 @@ data ModMeta
 	| DelMeta MetaField (Maybe MetaValue)
 	-- ^ delete value of a field. With Just, only that specific value
 	-- is deleted; with Nothing, all current values are deleted.
-	| SetMeta MetaField MetaValue
+	| SetMeta MetaField (S.Set MetaValue)
 	-- ^ removes any existing values
 	| MaybeSetMeta MetaField MetaValue
 	-- ^ set when field has no existing value
@@ -237,7 +265,7 @@ modMeta _ (DelMeta f (Just oldv)) =
 	updateMetaData f (unsetMetaValue oldv) emptyMetaData
 modMeta m (DelMeta f Nothing) = MetaData $ M.singleton f $
 	S.fromList $ map unsetMetaValue $ S.toList $ currentMetaDataValues f m
-modMeta m (SetMeta f v) = updateMetaData f v $
+modMeta m (SetMeta f s) = updateMetaData' f s $
 	foldr (updateMetaData f) emptyMetaData $
 		map unsetMetaValue $ S.toList $ currentMetaDataValues f m
 modMeta m (MaybeSetMeta f v)

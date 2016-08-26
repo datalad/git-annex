@@ -1,0 +1,15 @@
+Consider if file `foo` uses key K, and file `archive/bar` uses the same key K.
+Using standard client preferred content settings, `git annex drop --auto`
+will want to drop `archive/bar`, but `git annex get --auto` will want to get
+`foo`. `git annex sync --content` will do both operations, getting and then
+dropping the key. Running these commands repeatedly churns unncessarily.
+
+Fixing this needs a map from key to files using it. Then, when checking
+preferred content of `archive/bar`, it can see that `foo` also uses the
+key. Since `foo` is wanted, it should not drop the key, even though
+`archive/bar` is not wanted.
+
+Such a map exists, in the keys database, but only in v6 mode repositories.
+So, this seems solvable in v6 repositories, but not in v5.
+Also, the associated files map may not be accurate at all times, so that's
+a wrinkle to using it for this. --[[Joey]]

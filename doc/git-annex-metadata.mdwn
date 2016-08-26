@@ -17,6 +17,11 @@ metadata.
 
 When run without any -s or -t parameters, displays the current metadata.
 
+Each metadata field has its own "field-lastchanged" metadata, which
+contains the date the field was last changed. Unlike other metadata,
+this cannot be directly modified by this command. It is updated
+automatically.
+
 # OPTIONS
 
 * `-g field` / `--get field`
@@ -66,14 +71,14 @@ When run without any -s or -t parameters, displays the current metadata.
   The [[git-annex-matching-options]](1)
   can be used to specify files to act on.
 
-* `--json`
-
-  Enable JSON output. This is intended to be parsed by programs that use
-  git-annex. Each line of output is a JSON object.
-
 * `--all`
 
   Specify instead of a file to get/set metadata on all known keys.
+
+* `--branch=ref`
+
+  Specify instead of a file to get/set metadata on all files in the
+  specified branch or treeish.
 
 * `--unused`
 
@@ -83,6 +88,55 @@ When run without any -s or -t parameters, displays the current metadata.
 * `--key=keyname`
 
   Specify instead of a file to get/set metadata of the specified key.
+
+* `--json`
+
+  Enable JSON output (and input). Each line is a JSON object.
+
+  The format of the JSON objects changed in git-annex version 6.20160726.
+
+  Example of the new format:
+
+	{"command":"metadata","file":"foo","key":"...","fields":{"author":["bar"],...},"note":"...","success":true}
+
+  Example of the old format, which lacks the inner fields object:
+
+	{"command":"metadata","file":"foo","key":"...","author":["bar"],...,"note":"...","success":true}
+
+* `--batch`
+
+  Enables batch mode, which can be used to both get, store, and unset
+  metadata for multiple files or keys.
+
+  Batch currently only supports JSON input. So, you must
+  enable `--json` along with `--batch`.
+
+  In batch mode, git-annex reads lines from stdin, which contain
+  JSON objects. It replies to each input with an output JSON object.
+
+  The format of the JSON sent to git-annex can be the same as the JSON that
+  it outputs. Or, a simplified version. Only the "file" (or "key") field
+  is actually necessary.
+
+  For example, to get the current metadata of file foo:
+
+	{"file":"foo"}
+
+  To get the current metadata of the key k:
+	
+	{"key":"k"}
+
+  Any metadata fields included in the JSON object will be stored,
+  replacing whatever values the fields had before.
+  To unset a field, include it with an empty list of values.
+
+  To change the author of file foo to bar:
+
+	{"file":"foo","fields":{"author":["bar"]}}
+
+  To remove the author of file foo:
+
+	{"file":"foo","fields":{"author":[]}}
 
 # EXAMPLES
 

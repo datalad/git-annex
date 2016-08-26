@@ -16,6 +16,7 @@ import Assistant.TransferQueue
 import Assistant.TransferSlots
 import Assistant.DaemonStatus
 import Utility.NotificationBroadcaster
+import Types.Transfer
 import Logs.Transfer
 import Utility.Percentage
 import Utility.DataUnits

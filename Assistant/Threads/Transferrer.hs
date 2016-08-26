@@ -10,7 +10,7 @@ module Assistant.Threads.Transferrer where
 import Assistant.Common
 import Assistant.TransferQueue
 import Assistant.TransferSlots
-import Logs.Transfer
+import Types.Transfer
 import Annex.Path
 import Utility.Batch
 

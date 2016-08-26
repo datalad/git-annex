@@ -14,6 +14,8 @@
 
 module Git.FilePath (
 	TopFilePath,
+	BranchFilePath(..),
+	descBranchFilePath,
 	getTopFilePath,
 	fromTopFilePath,
 	toTopFilePath,
@@ -32,6 +34,13 @@ import qualified System.FilePath.Posix
 {- A FilePath, relative to the top of the git repository. -}
 newtype TopFilePath = TopFilePath { getTopFilePath :: FilePath }
 	deriving (Show, Eq, Ord)
+
+{- A file in a branch or other treeish. -}
+data BranchFilePath = BranchFilePath Ref TopFilePath
+
+{- Git uses the branch:file form to refer to a BranchFilePath -}
+descBranchFilePath :: BranchFilePath -> String
+descBranchFilePath (BranchFilePath b f) = fromRef b ++ ':' : getTopFilePath f
 
 {- Path to a TopFilePath, within the provided git repo. -}
 fromTopFilePath :: TopFilePath -> Git.Repo -> FilePath

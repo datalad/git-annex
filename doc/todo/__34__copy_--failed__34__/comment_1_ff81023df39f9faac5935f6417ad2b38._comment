@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-08-03T15:07:43Z"
+ content="""
+Nice idea, and there's already an implementation of a log of recent failed
+transfers that the assistant uses, that can be reused for this.
+"""]]

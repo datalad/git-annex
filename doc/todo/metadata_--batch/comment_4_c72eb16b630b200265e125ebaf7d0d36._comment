@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-07-25T17:39:37Z"
+ content="""
+--batch mode should be usable to get current metadata, set new
+metadata, and remove existing metadata. The non-batch metadata command has
+different syntaxes for all of these, but it would be good to have a single
+interface that handles all three in batch mode.
+
+It could read a line containing the file or key, with any metadata
+fields that should be changed:
+
+	{"file":"foo"}
+	{"file":"foo","author":["bar"]}
+	{"key":"SHA...","author":[]}
+
+And reply with *all* the metadata, in nearly the same format:
+
+	{"file":"foo","key":"SHA...","author":["bar"],lastchanged:["date"],"success":true}
+
+And that reply could in turn be edited and fed back in to change the
+metadata.
+
+----
+
+There's a DRY problem here because there's the current JSON generator code,
+and I'd have to add an Aeson parser to parse the JSON input. But, Aeson
+parsers also automatically have a matching generator, which is guaranteed
+to generate code that the parser can parse.
+
+So, it would be nice to use the Aeson JSON generator, instead of the
+current one, but that can only be done if the JSON is formatted the same,
+or close enough that nothing currently consuming `metadata --json` will
+break.
+"""]]

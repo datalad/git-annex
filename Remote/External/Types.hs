@@ -34,7 +34,7 @@ module Remote.External.Types (
 import Annex.Common
 import Types.StandardGroups (PreferredContentExpression)
 import Utility.Metered (BytesProcessed(..))
-import Logs.Transfer (Direction(..))
+import Types.Transfer (Direction(..))
 import Config.Cost (Cost)
 import Types.Remote (RemoteConfig)
 import Types.Availability (Availability(..))

@@ -1,0 +1,7 @@
+### Please describe the problem.
+
+Can't build on debian jessie using "make" - "apt-get build-dep git-annex" misses various dependencies, and disk-space-free is not actually in jessie.  I have built it with "stack", but that only produces something usable by me (links to stuff in my home dir).
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+The stack build works very nicely, thanks.

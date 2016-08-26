@@ -35,8 +35,8 @@ import qualified Git.Config
 import Config
 
 import qualified Data.UUID as U
+import qualified Data.UUID.V4 as U4
 import qualified Data.UUID.V5 as U5
-import System.Random
 import Data.Bits.Utils
 
 configkey :: ConfigKey
@@ -44,7 +44,7 @@ configkey = annexConfig "uuid"
 
 {- Generates a random UUID, that does not include the MAC address. -}
 genUUID :: IO UUID
-genUUID = UUID . show <$> (randomIO :: IO U.UUID)
+genUUID = UUID . show <$> U4.nextRandom
 
 {- Generates a UUID from a given string, using a namespace.
  - Given the same namespace, the same string will always result

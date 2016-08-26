@@ -1,6 +1,6 @@
 {- git-annex command infrastructure
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -26,6 +26,8 @@ import qualified Git
 import Annex.Init
 import Config
 import Utility.Daemon
+import Types.Transfer
+import Types.ActionItem
 
 {- Generates a normal Command -}
 command :: String -> CommandSection -> String -> CmdParamsDesc -> (CmdParamsDesc -> CommandParser) -> Command
@@ -90,6 +92,15 @@ stop = return Nothing
 {- Stops unless a condition is met. -}
 stopUnless :: Annex Bool -> Annex (Maybe a) -> Annex (Maybe a)
 stopUnless c a = ifM c ( a , stop )
+
+{- When acting on a failed transfer, stops unless it was in the specified
+ - direction. -}
+checkFailedTransferDirection :: ActionItem -> Direction -> Annex (Maybe a) -> Annex (Maybe a)
+checkFailedTransferDirection ai d = stopUnless (pure check)
+  where
+	check = case actionItemTransferDirection ai of
+		Nothing -> True
+		Just d' -> d' == d
 
 commonChecks :: [CommandCheck]
 commonChecks = [repoExists]

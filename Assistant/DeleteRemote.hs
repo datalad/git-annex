@@ -12,7 +12,7 @@ module Assistant.DeleteRemote where
 import Assistant.Common
 import Assistant.Types.UrlRenderer
 import Assistant.TransferQueue
-import Logs.Transfer
+import Types.Transfer
 import Logs.Location
 import Assistant.DaemonStatus
 import qualified Remote

@@ -34,7 +34,7 @@ optParser desc = GetOptions
 	<$> cmdParams desc
 	<*> optional parseFromOption
 	<*> parseAutoOption
-	<*> optional (parseKeyOptions True)
+	<*> optional (parseIncompleteOption <|> parseKeyOptions <|> parseFailedTransfersOption)
 	<*> parseBatchOption
 
 seek :: GetOptions -> CommandSeek
@@ -49,17 +49,19 @@ seek o = allowConcurrentOutput $ do
 			(getFiles o)
 
 start :: GetOptions -> Maybe Remote -> FilePath -> Key -> CommandStart
-start o from file key = start' expensivecheck from key (Just file)
+start o from file key = start' expensivecheck from key afile (mkActionItem afile)
   where
+	afile = Just file
 	expensivecheck
 		| autoMode o = numCopiesCheck file key (<) <||> wantGet False (Just key) (Just file)
 		| otherwise = return True
 
-startKeys :: Maybe Remote -> Key -> CommandStart
-startKeys from key = start' (return True) from key Nothing
+startKeys :: Maybe Remote -> Key -> ActionItem -> CommandStart
+startKeys from key ai = checkFailedTransferDirection ai Download $
+	start' (return True) from key Nothing ai
 
-start' :: Annex Bool -> Maybe Remote -> Key -> AssociatedFile -> CommandStart
-start' expensivecheck from key afile = stopUnless (not <$> inAnnex key) $
+start' :: Annex Bool -> Maybe Remote -> Key -> AssociatedFile -> ActionItem -> CommandStart
+start' expensivecheck from key afile ai = stopUnless (not <$> inAnnex key) $
 	stopUnless expensivecheck $
 		case from of
 			Nothing -> go $ perform key afile
@@ -68,7 +70,7 @@ start' expensivecheck from key afile = stopUnless (not <$> inAnnex key) $
 					go $ Command.Move.fromPerform src False key afile
   where
 	go a = do
-		showStart' "get" key afile
+		showStart' "get" key ai
 		next a
 
 perform :: Key -> AssociatedFile -> CommandPerform
@@ -106,7 +108,7 @@ getKey' key afile = dispatch
 			either (const False) id <$> Remote.hasKey r key
 		| otherwise = return True
 	docopy r witness = getViaTmp (RemoteVerify r) key $ \dest ->
-		download (Remote.uuid r) key afile noRetry noObserver 
+		download (Remote.uuid r) key afile noRetry
 			(\p -> do
 				showAction $ "from " ++ Remote.name r
 				Remote.retrieveKeyFile r key afile dest p

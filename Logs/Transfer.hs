@@ -9,6 +9,7 @@
 
 module Logs.Transfer where
 
+import Types.Transfer
 import Annex.Common
 import Annex.Perms
 import qualified Git
@@ -22,38 +23,6 @@ import Logs.TimeStamp
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
 import Control.Concurrent
-
-{- Enough information to uniquely identify a transfer, used as the filename
- - of the transfer information file. -}
-data Transfer = Transfer
-	{ transferDirection :: Direction
-	, transferUUID :: UUID
-	, transferKey :: Key
-	}
-	deriving (Eq, Ord, Read, Show)
-
-{- Information about a Transfer, stored in the transfer information file.
- -
- - Note that the associatedFile may not correspond to a file in the local
- - git repository. It's some file, possibly relative to some directory,
- - of some repository, that was acted on to initiate the transfer.
- -}
-data TransferInfo = TransferInfo
-	{ startedTime :: Maybe POSIXTime
-	, transferPid :: Maybe PID
-	, transferTid :: Maybe ThreadId
-	, transferRemote :: Maybe Remote
-	, bytesComplete :: Maybe Integer
-	, associatedFile :: Maybe FilePath
-	, transferPaused :: Bool
-	}
-	deriving (Show, Eq, Ord)
-
-stubTransferInfo :: TransferInfo
-stubTransferInfo = TransferInfo Nothing Nothing Nothing Nothing Nothing Nothing False
-
-data Direction = Upload | Download
-	deriving (Eq, Ord, Read, Show)
 
 showLcDirection :: Direction -> String
 showLcDirection Upload = "upload"

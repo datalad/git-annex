@@ -9,6 +9,7 @@ module Assistant.Threads.TransferPoller where
 
 import Assistant.Common
 import Assistant.DaemonStatus
+import Types.Transfer
 import Logs.Transfer
 import Utility.NotificationBroadcaster
 import qualified Assistant.Threads.TransferWatcher as TransferWatcher

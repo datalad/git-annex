@@ -41,7 +41,7 @@ optParser desc = DropOptions
 	<$> cmdParams desc
 	<*> optional parseDropFromOption
 	<*> parseAutoOption
-	<*> optional (parseKeyOptions False)
+	<*> optional parseKeyOptions
 	<*> parseBatchOption
 
 parseDropFromOption :: Parser (DeferredParse Remote)
@@ -63,36 +63,38 @@ seek o = allowConcurrentOutput $
 	go = whenAnnexed $ start o
 
 start :: DropOptions -> FilePath -> Key -> CommandStart
-start o file key = start' o key (Just file)
+start o file key = start' o key afile (mkActionItem afile)
+  where
+	afile = Just file
 
-start' :: DropOptions -> Key -> AssociatedFile -> CommandStart
-start' o key afile = do
+start' :: DropOptions -> Key -> AssociatedFile -> ActionItem -> CommandStart
+start' o key afile ai = do
 	from <- maybe (pure Nothing) (Just <$$> getParsed) (dropFrom o)
 	checkDropAuto (autoMode o) from afile key $ \numcopies ->
 		stopUnless (want from) $
 			case from of
-				Nothing -> startLocal afile numcopies key []
+				Nothing -> startLocal afile ai numcopies key []
 				Just remote -> do
 					u <- getUUID
 					if Remote.uuid remote == u
-						then startLocal afile numcopies key []
-						else startRemote afile numcopies key remote
+						then startLocal afile ai numcopies key []
+						else startRemote afile ai numcopies key remote
 	  where
 		want from
 			| autoMode o = wantDrop False (Remote.uuid <$> from) (Just key) afile
 			| otherwise = return True
 
-startKeys :: DropOptions -> Key -> CommandStart
+startKeys :: DropOptions -> Key -> ActionItem -> CommandStart
 startKeys o key = start' o key Nothing
 
-startLocal :: AssociatedFile -> NumCopies -> Key -> [VerifiedCopy] -> CommandStart
-startLocal afile numcopies key preverified = stopUnless (inAnnex key) $ do
-	showStart' "drop" key afile
+startLocal :: AssociatedFile -> ActionItem -> NumCopies -> Key -> [VerifiedCopy] -> CommandStart
+startLocal afile ai numcopies key preverified = stopUnless (inAnnex key) $ do
+	showStart' "drop" key ai
 	next $ performLocal key afile numcopies preverified
 
-startRemote :: AssociatedFile -> NumCopies -> Key -> Remote -> CommandStart
-startRemote afile numcopies key remote = do
-	showStart' ("drop " ++ Remote.name remote) key afile
+startRemote :: AssociatedFile -> ActionItem -> NumCopies -> Key -> Remote -> CommandStart
+startRemote afile ai numcopies key remote = do
+	showStart' ("drop " ++ Remote.name remote) key ai
 	next $ performRemote key afile numcopies remote
 
 performLocal :: Key -> AssociatedFile -> NumCopies -> [VerifiedCopy] -> CommandPerform

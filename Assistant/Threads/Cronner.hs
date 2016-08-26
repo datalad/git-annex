@@ -24,7 +24,7 @@ import Utility.HumanTime
 import Utility.Batch
 import Assistant.TransferQueue
 import Annex.Content
-import Logs.Transfer
+import Types.Transfer
 import Assistant.Types.UrlRenderer
 import Assistant.Alert
 import Remote

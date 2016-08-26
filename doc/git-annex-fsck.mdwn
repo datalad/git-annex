@@ -72,6 +72,10 @@ With parameters, only the specified files are checked.
 
   This is the default behavior when running git-annex in a bare repository.
 
+* `--branch=ref`
+
+  Operate on files in the specified branch or treeish.
+
 * `--unused`
 
   Operate on files found by last run of git-annex unused.

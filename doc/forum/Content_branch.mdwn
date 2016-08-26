@@ -1,0 +1,5 @@
+I was not able to find a convenient way to _only_ see locally available files.
+
+Is there a command to create a branch that only contain files taht are present locally, or is there another way to get a "locally available view" ?
+
+Thanks. 

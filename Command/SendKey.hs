@@ -48,7 +48,7 @@ fieldTransfer direction key a = do
 	liftIO $ debugM "fieldTransfer" "transfer start"
 	afile <- Fields.getField Fields.associatedFile
 	ok <- maybe (a $ const noop)
-		(\u -> runner (Transfer direction (toUUID u) key) afile noRetry noObserver a)
+		(\u -> runner (Transfer direction (toUUID u) key) afile noRetry a)
 		=<< Fields.getField Fields.remoteUUID
 	liftIO $ debugM "fieldTransfer" "transfer done"
 	liftIO $ exitBool ok

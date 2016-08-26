@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-08-03T16:02:46Z"
+ content="""
+--failed can now be used to retry only failed transfers. So that will be a
+lot faster in that specific case. 
+
+Leaving this bug open for the general wishlist that copy --fast be somehow
+a lot faster than it is at finding things that need to be copied.
+"""]]

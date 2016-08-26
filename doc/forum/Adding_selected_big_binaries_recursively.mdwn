@@ -1,0 +1,12 @@
+I have a very large stack of files, with many large binaries.
+Unless I am told its a bad idea, I want to initialize a git annex archive with the big files 'git annex added' ( symlinked to hidden annex) and the rest of the files 'git added'
+
+I tried-
+git annex add "*.adi"
+find . -name "*.adi" | git annex add
+find . -name "*.adi" | xargs git annex add
+git annex add robots/\*.adi
+
+
+Whats a good ( correct) way to do only the *.adi files recursively?
+( its Friday PST here- will return Monday)

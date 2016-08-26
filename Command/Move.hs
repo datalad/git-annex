@@ -35,7 +35,7 @@ optParser :: CmdParamsDesc -> Parser MoveOptions
 optParser desc = MoveOptions
 	<$> cmdParams desc
 	<*> parseFromToOptions
-	<*> optional (parseKeyOptions False)
+	<*> optional (parseKeyOptions <|> parseFailedTransfersOption)
 
 instance DeferredParseClass MoveOptions where
 	finishParse v = MoveOptions
@@ -51,18 +51,22 @@ seek o = allowConcurrentOutput $
 		(moveFiles o)
 
 start :: MoveOptions -> Bool -> FilePath -> Key -> CommandStart
-start o move = start' o move . Just
+start o move f k = start' o move afile k (mkActionItem afile)
+  where
+	afile = Just f
 
-startKey :: MoveOptions -> Bool -> Key -> CommandStart
+startKey :: MoveOptions -> Bool -> Key -> ActionItem -> CommandStart
 startKey o move = start' o move Nothing
 
-start' :: MoveOptions -> Bool -> AssociatedFile -> Key -> CommandStart
-start' o move afile key = 
+start' :: MoveOptions -> Bool -> AssociatedFile -> Key -> ActionItem -> CommandStart
+start' o move afile key ai = 
 	case fromToOptions o of
-		FromRemote src -> fromStart move afile key =<< getParsed src
-		ToRemote dest -> toStart move afile key =<< getParsed dest
+		FromRemote src -> checkFailedTransferDirection ai Download $
+			fromStart move afile key ai =<< getParsed src
+		ToRemote dest -> checkFailedTransferDirection ai Upload $
+			toStart move afile key ai =<< getParsed dest
 
-showMoveAction :: Bool -> Key -> AssociatedFile -> Annex ()
+showMoveAction :: Bool -> Key -> ActionItem -> Annex ()
 showMoveAction move = showStart' (if move then "move" else "copy")
 
 {- Moves (or copies) the content of an annexed file to a remote.
@@ -74,16 +78,16 @@ showMoveAction move = showStart' (if move then "move" else "copy")
  - A file's content can be moved even if there are insufficient copies to
  - allow it to be dropped.
  -}
-toStart :: Bool -> AssociatedFile -> Key -> Remote -> CommandStart
-toStart move afile key dest = do
+toStart :: Bool -> AssociatedFile -> Key -> ActionItem -> Remote -> CommandStart
+toStart move afile key ai dest = do
 	u <- getUUID
 	ishere <- inAnnex key
 	if not ishere || u == Remote.uuid dest
 		then stop -- not here, so nothing to do
-		else toStart' dest move afile key
+		else toStart' dest move afile key ai
 
-toStart' :: Remote -> Bool -> AssociatedFile -> Key -> CommandStart
-toStart' dest move afile key = do
+toStart' :: Remote -> Bool -> AssociatedFile -> Key -> ActionItem -> CommandStart
+toStart' dest move afile key ai = do
 	fast <- Annex.getState Annex.fast
 	if fast && not move && not (Remote.hasKeyCheap dest)
 		then ifM (expectedPresent dest key)
@@ -93,7 +97,7 @@ toStart' dest move afile key = do
 		else go False (Remote.hasKey dest key)
   where
 	go fastcheck isthere = do
-		showMoveAction move key afile
+		showMoveAction move key ai
 		next $ toPerform dest move key afile fastcheck =<< isthere
 
 expectedPresent :: Remote -> Key -> Annex Bool
@@ -110,7 +114,7 @@ toPerform dest move key afile fastcheck isthere =
 		Right False -> do
 			showAction $ "to " ++ Remote.name dest
 			ok <- notifyTransfer Upload afile $
-				upload (Remote.uuid dest) key afile noRetry noObserver $
+				upload (Remote.uuid dest) key afile noRetry $
 					Remote.storeKey dest key afile
 			if ok
 				then finish $
@@ -143,13 +147,13 @@ toPerform dest move key afile fastcheck isthere =
  - If the current repository already has the content, it is still removed
  - from the remote.
  -}
-fromStart :: Bool -> AssociatedFile -> Key -> Remote -> CommandStart
-fromStart move afile key src
+fromStart :: Bool -> AssociatedFile -> Key -> ActionItem -> Remote -> CommandStart
+fromStart move afile key ai src
 	| move = go
 	| otherwise = stopUnless (not <$> inAnnex key) go
   where
 	go = stopUnless (fromOk src key) $ do
-		showMoveAction move key afile
+		showMoveAction move key ai
 		next $ fromPerform src move key afile
 
 fromOk :: Remote -> Key -> Annex Bool
@@ -173,7 +177,7 @@ fromPerform src move key afile = ifM (inAnnex key)
 	)
   where
 	go = notifyTransfer Download afile $ 
-		download (Remote.uuid src) key afile noRetry noObserver $ \p -> do
+		download (Remote.uuid src) key afile noRetry $ \p -> do
 			showAction $ "from " ++ Remote.name src
 			getViaTmp (RemoteVerify src) key $ \t ->
 				Remote.retrieveKeyFile src key afile t p

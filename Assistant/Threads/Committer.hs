@@ -17,7 +17,7 @@ import Assistant.Alert
 import Assistant.DaemonStatus
 import Assistant.TransferQueue
 import Assistant.Drop
-import Logs.Transfer
+import Types.Transfer
 import Logs.Location
 import qualified Annex.Queue
 import qualified Git.LsFiles

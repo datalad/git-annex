@@ -4,7 +4,7 @@
  - the values a user passes to a command, and prepare actions operating
  - on them.
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -25,6 +25,10 @@ import CmdLine.GitAnnex.Options
 import CmdLine.Action
 import Logs.Location
 import Logs.Unused
+import Types.Transfer
+import Logs.Transfer
+import Remote.List
+import qualified Remote
 import Annex.CatFile
 import Annex.Content
 
@@ -154,42 +158,77 @@ withNothing :: CommandStart -> CmdParams -> CommandSeek
 withNothing a [] = seekActions $ return [a]
 withNothing _ _ = error "This command takes no parameters."
 
-{- Handles the --all, --unused, --key, and --incomplete options,
- - which specify particular keys to run an action on.
+{- Handles the --all, --branch, --unused, --failed, --key, and
+ - --incomplete options, which specify particular keys to run an
+ - action on.
  -
  - In a bare repo, --all is the default.
  -
  - Otherwise falls back to a regular CommandSeek action on
  - whatever params were passed. -}
-withKeyOptions :: Maybe KeyOptions -> Bool -> (Key -> CommandStart) -> (CmdParams -> CommandSeek) -> CmdParams -> CommandSeek
-withKeyOptions ko auto keyaction = withKeyOptions' ko auto $ \getkeys -> do
-	matcher <- Limit.getMatcher
-	seekActions $ map (process matcher) <$> getkeys
+withKeyOptions 
+	:: Maybe KeyOptions
+	-> Bool
+	-> (Key -> ActionItem -> CommandStart)
+	-> (CmdParams -> CommandSeek)
+	-> CmdParams
+	-> CommandSeek
+withKeyOptions ko auto keyaction = withKeyOptions' ko auto mkkeyaction
   where
-	process matcher k = ifM (matcher $ MatchingKey k)
-		( keyaction k
-		, return Nothing
-		)
+	mkkeyaction = do
+		matcher <- Limit.getMatcher
+		return $ \k i ->
+			whenM (matcher $ MatchingKey k) $
+				commandAction $ keyaction k i
 
-withKeyOptions' :: Maybe KeyOptions -> Bool -> (Annex [Key] -> Annex ()) -> (CmdParams -> CommandSeek) -> CmdParams -> CommandSeek
-withKeyOptions' ko auto keyaction fallbackaction params = do
+withKeyOptions' 
+	:: Maybe KeyOptions
+	-> Bool
+	-> Annex (Key -> ActionItem -> Annex ())
+	-> (CmdParams -> CommandSeek)
+	-> CmdParams
+	-> CommandSeek
+withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 	bare <- fromRepo Git.repoIsLocalBare
 	when (auto && bare) $
 		error "Cannot use --auto in a bare repository"
 	case (null params, ko) of
 		(True, Nothing)
-			| bare -> go auto loggedKeys
+			| bare -> noauto $ runkeyaction loggedKeys
 			| otherwise -> fallbackaction params
 		(False, Nothing) -> fallbackaction params
-		(True, Just WantAllKeys) -> go auto loggedKeys
-		(True, Just WantUnusedKeys) -> go auto unusedKeys'
-		(True, Just (WantSpecificKey k)) -> go auto $ return [k]
-		(True, Just WantIncompleteKeys) -> go auto incompletekeys
-		(False, Just _) -> error "Can only specify one of file names, --all, --unused, --key, or --incomplete"
+		(True, Just WantAllKeys) -> noauto $ runkeyaction loggedKeys
+		(True, Just WantUnusedKeys) -> noauto $ runkeyaction unusedKeys'
+		(True, Just WantFailedTransfers) -> noauto runfailedtransfers
+		(True, Just (WantSpecificKey k)) -> noauto $ runkeyaction (return [k])
+		(True, Just WantIncompleteKeys) -> noauto $ runkeyaction incompletekeys
+		(True, Just (WantBranchKeys bs)) -> noauto $ runbranchkeys bs
+		(False, Just _) -> error "Can only specify one of file names, --all, --branch, --unused, --failed, --key, or --incomplete"
   where
-	go True _ = error "Cannot use --auto with --all or --unused or --key or --incomplete"
-	go False getkeys = keyaction getkeys
+	noauto a
+		| auto = error "Cannot use --auto with --all or --branch or --unused or --key or --incomplete"
+		| otherwise = a
 	incompletekeys = staleKeysPrune gitAnnexTmpObjectDir True
+	runkeyaction getks = do
+		keyaction <- mkkeyaction
+		ks <- getks
+		forM_ ks $ \k -> keyaction k (mkActionItem k)
+	runbranchkeys bs = do
+		keyaction <- mkkeyaction
+		forM_ bs $ \b -> do
+			(l, cleanup) <- inRepo $ LsTree.lsTree b
+			forM_ l $ \i -> do
+				let bfp = mkActionItem $ BranchFilePath b (LsTree.file i)
+				maybe noop (\k -> keyaction k bfp)
+					=<< catKey (LsTree.sha i)
+			unlessM (liftIO cleanup) $
+				error ("git ls-tree " ++ Git.fromRef b ++ " failed")
+	runfailedtransfers = do
+		keyaction <- mkkeyaction
+		rs <- remoteList
+		ts <- concat <$> mapM (getFailedTransfers . Remote.uuid) rs
+		forM_ ts $ \(t, i) ->
+			keyaction (transferKey t) (mkActionItem (t, i))
 
 prepFiltered :: (FilePath -> CommandStart) -> Annex [FilePath] -> Annex [CommandStart]
 prepFiltered a fs = do
@@ -200,9 +239,7 @@ prepFiltered a fs = do
 		( a f , return Nothing )
 
 seekActions :: Annex [CommandStart] -> Annex ()
-seekActions gen = do
-	as <- gen
-	mapM_ commandAction as
+seekActions gen = mapM_ commandAction =<< gen
 
 seekHelper :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> [FilePath] -> Annex [FilePath]
 seekHelper a params = do

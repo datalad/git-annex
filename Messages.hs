@@ -1,12 +1,14 @@
 {- git-annex output messages
  -
- - Copyright 2010-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Messages (
 	showStart,
+	ActionItem,
+	mkActionItem,
 	showStart',
 	showNote,
 	showAction,
@@ -25,6 +27,7 @@ module Messages (
 	earlyWarning,
 	warningIO,
 	indent,
+	JSONChunk(..),
 	maybeShowJSON,
 	showFullJSON,
 	showCustom,
@@ -37,9 +40,9 @@ module Messages (
 	commandProgressDisabled,
 	outputMessage,
 	implicitMessage,
+	withOutputType,
 ) where
 
-import Text.JSON
 import System.Log.Logger
 import System.Log.Formatter
 import System.Log.Handler (setFormatter)
@@ -48,18 +51,23 @@ import System.Log.Handler.Simple
 import Common
 import Types
 import Types.Messages
+import Types.ActionItem
 import Messages.Internal
 import qualified Messages.JSON as JSON
-import Types.Key
+import Utility.JSONStream (JSONChunk(..))
 import qualified Annex
 
 showStart :: String -> FilePath -> Annex ()
-showStart command file = outputMessage (JSON.start command (Just file) Nothing) $
+showStart command file = outputMessage json $
 	command ++ " " ++ file ++ " "
+  where
+	json = JSON.start command (Just file) Nothing
 
-showStart' :: String -> Key -> Maybe FilePath -> Annex ()
-showStart' command key afile = outputMessage (JSON.start command afile (Just key)) $
-	command ++ " " ++ fromMaybe (key2file key) afile ++ " "
+showStart' :: String -> Key -> ActionItem -> Annex ()
+showStart' command key i = outputMessage json $
+	command ++ " " ++ actionItemDesc i key ++ " "
+  where
+	json = JSON.start command (actionItemWorkTreeFile i) (Just key)
 
 showNote :: String -> Annex ()
 showNote s = outputMessage (JSON.note s) $ "(" ++ s ++ ") "
@@ -145,15 +153,15 @@ warningIO w = do
 indent :: String -> String
 indent = intercalate "\n" . map (\l -> "  " ++ l) . lines
 
-{- Shows a JSON fragment only when in json mode. -}
-maybeShowJSON :: JSON a => [(String, a)] -> Annex ()
+{- Shows a JSON chunk only when in json mode. -}
+maybeShowJSON :: JSONChunk v -> Annex ()
 maybeShowJSON v = withOutputType $ liftIO . go
   where
 	go JSONOutput = JSON.add v
 	go _ = return ()
 
 {- Shows a complete JSON value, only when in json mode. -}
-showFullJSON :: JSON a => [(String, a)] -> Annex Bool
+showFullJSON :: JSONChunk v -> Annex Bool
 showFullJSON v = withOutputType $ liftIO . go
   where
 	go JSONOutput = JSON.complete v >> return True

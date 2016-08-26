@@ -9,6 +9,7 @@ module Command.TransferInfo where
 
 import Command
 import Annex.Content
+import Types.Transfer
 import Logs.Transfer
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Utility.Metered

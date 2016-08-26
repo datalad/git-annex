@@ -42,7 +42,7 @@ seek o = do
 
 start :: Key -> CommandStart
 start key = do
-	showStart' "dropkey" key Nothing
+	showStart' "dropkey" key (mkActionItem key)
 	next $ perform key
 
 perform :: Key -> CommandPerform

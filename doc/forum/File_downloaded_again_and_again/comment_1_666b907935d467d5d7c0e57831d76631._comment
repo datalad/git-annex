@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-07-19T18:53:04Z"
+ content="""
+Notice that the file it gets is empty, and the file it drops also appears
+to be an empty file, at least based on its filename. So, there is a single
+key used for both empty files.
+
+(There's also the two .aux files, which probably also have the same 8 byte
+content.)
+
+Your preferred content settings make one of the pair of files be wanted,
+and the other one not be wanted. In this situation, `get --auto` will get
+the key used for both files, and `drop --auto` will drop it. `sync
+--content` does both things, so repeatedly gets and then drops the key.
+
+One way to deal with this is to delete one of the copies of the file.
+Then it won't be in this mixed up state. But you may not want to do that.
+
+Another way to deal with it is to unlock one of the files, and add it back
+using `git annex add --backend=WORM $file`. This will make git-annex
+allocate a new key, only for that copy of the file.
+
+I do think this is a bug in git-annex, but not one that can immediately be
+fixed. I've opened a bug report at
+[[bugs/indeterminite_preferred_content_state_for_duplicated_file]].
+"""]]

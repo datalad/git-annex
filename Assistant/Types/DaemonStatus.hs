@@ -10,7 +10,7 @@ module Assistant.Types.DaemonStatus where
 import Annex.Common
 import Assistant.Pairing
 import Utility.NotificationBroadcaster
-import Logs.Transfer
+import Types.Transfer
 import Assistant.Types.ThreadName
 import Assistant.Types.NetMessager
 import Assistant.Types.Alert

@@ -14,7 +14,6 @@ import qualified Annex
 import Annex.Concurrent
 import Types.Command
 import Messages.Concurrent
-import Messages.Internal
 import Types.Messages
 
 import Control.Concurrent.Async

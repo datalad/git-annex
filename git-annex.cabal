@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 6.20160619
+Version: 6.20160808
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <id@joeyh.name>
@@ -323,21 +323,23 @@ Executable git-annex
   Build-Depends:
    base (>= 4.5 && < 5.0),
    optparse-applicative (>= 0.11.0), 
-   containers (>= 0.5.0.0), 
+   containers (>= 0.5.0.0),
    exceptions (>= 0.6),
    QuickCheck (>= 2.1),
    stm (>= 2.3),
    mtl (>= 2),
-   process, data-default, case-insensitive, uuid, random, dlist,
+   uuid (>= 1.2.6),
+   process, data-default, case-insensitive, random, dlist,
    unix-compat, SafeSemaphore, async, directory, filepath, IfElse,
    MissingH, hslogger, monad-logger,
-   utf8-string, bytestring, text, sandi, json,
+   utf8-string, bytestring, text, sandi,
    monad-control, transformers,
    bloomfilter, edit-distance,
-   resourcet, http-conduit, http-client, http-types,
+   resourcet, http-conduit (<2.2.0), http-client, http-types,
    time, old-locale,
-   esqueleto, persistent-sqlite, persistent, persistent-template,
+   esqueleto, persistent-sqlite, persistent (<2.5), persistent-template,
    aeson,
+   unordered-containers,
    feed,
    regex-tdfa
   CC-Options: -Wall
@@ -911,6 +913,7 @@ Executable git-annex
     RemoteDaemon.Types
     Test
     Types
+    Types.ActionItem
     Types.Availability
     Types.Backend
     Types.BranchState
@@ -937,6 +940,7 @@ Executable git-annex
     Types.StandardGroups
     Types.StoreRetrieve
     Types.Test
+    Types.Transfer
     Types.TrustLevel
     Types.UUID
     Types.UrlContents

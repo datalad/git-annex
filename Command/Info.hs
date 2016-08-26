@@ -11,8 +11,9 @@ module Command.Info where
 
 import "mtl" Control.Monad.State.Strict
 import qualified Data.Map.Strict as M
-import Text.JSON
+import qualified Data.Text as T
 import Data.Ord
+import Data.Aeson hiding (json)
 
 import Command
 import qualified Git
@@ -29,12 +30,14 @@ import Logs.Location
 import Annex.NumCopies
 import Remote
 import Config
+import Git.Config (boolConfig)
 import Utility.Percentage
+import Types.Transfer
 import Logs.Transfer
 import Types.TrustLevel
 import Types.FileMatcher
 import qualified Limit
-import Messages.JSON (DualDisp(..))
+import Messages.JSON (DualDisp(..), ObjectMap(..))
 import Annex.BloomFilter
 import qualified Command.Unused
 
@@ -219,6 +222,7 @@ file_stats f k =
 	[ file_name f
 	, key_size k
 	, key_name k
+	, content_present k
 	]
 
 remote_fast_stats :: Remote -> [Stat]
@@ -247,10 +251,10 @@ simpleStat desc getval = stat desc $ json id getval
 nostat :: Stat
 nostat = return Nothing
 
-json :: JSON j => (j -> String) -> StatState j -> String -> StatState String
+json :: ToJSON j => (j -> String) -> StatState j -> String -> StatState String
 json fmt a desc = do
 	j <- a
-	lift $ maybeShowJSON [(desc, j)]
+	lift $ maybeShowJSON $ JSONChunk [(desc, j)]
 	return $ fmt j
 
 nojson :: StatState String -> String -> StatState String
@@ -353,6 +357,9 @@ key_size k = simpleStat "size" $ showSizeKeys $ foldKeys [k]
 key_name :: Key -> Stat
 key_name k = simpleStat "key" $ pure $ key2file k
 
+content_present :: Key -> Stat
+content_present k = stat "present" $ json boolConfig $ lift $ inAnnex k
+
 bloom_info :: Stat
 bloom_info = simpleStat "bloom filter size" $ do
 	localkeys <- countKeys <$> cachedPresentData
@@ -374,7 +381,7 @@ transfer_list :: Stat
 transfer_list = stat desc $ nojson $ lift $ do
 	uuidmap <- Remote.remoteMap id
 	ts <- getTransfers
-	maybeShowJSON [(desc, map (uncurry jsonify) ts)]
+	maybeShowJSON $ JSONChunk [(desc, map (uncurry jsonify) ts)]
 	return $ if null ts
 		then "none"
 		else multiLine $
@@ -388,11 +395,11 @@ transfer_list = stat desc $ nojson $ lift $ do
 		, maybe (fromUUID $ transferUUID t) Remote.name $
 			M.lookup (transferUUID t) uuidmap
 		]
-	jsonify t i = toJSObject
-		[ ("transfer", showLcDirection (transferDirection t))
-		, ("key", key2file (transferKey t))
-		, ("file", fromMaybe "" (associatedFile i))
-		, ("remote", fromUUID (transferUUID t))
+	jsonify t i = object $ map (\(k, v) -> (T.pack k, v)) $
+		[ ("transfer", toJSON (showLcDirection (transferDirection t)))
+		, ("key", toJSON (key2file (transferKey t)))
+		, ("file", toJSON (associatedFile i))
+		, ("remote", toJSON (fromUUID (transferUUID t)))
 		]
 
 disk_size :: Stat
@@ -415,9 +422,9 @@ disk_size = simpleStat "available local disk space" $
 
 backend_usage :: Stat
 backend_usage = stat "backend usage" $ json fmt $
-	toJSObject . sort . M.toList . backendsKeys <$> cachedReferencedData
+	ObjectMap . backendsKeys <$> cachedReferencedData
   where
-	fmt = multiLine . map (\(b, n) -> b ++ ": " ++ show n) . fromJSObject
+	fmt = multiLine . map (\(b, n) -> b ++ ": " ++ show n) . sort . M.toList . fromObjectMap
 
 numcopies_stats :: Stat
 numcopies_stats = stat "numcopies stats" $ json fmt $

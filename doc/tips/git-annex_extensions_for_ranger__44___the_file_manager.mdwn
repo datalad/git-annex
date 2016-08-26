@@ -1,0 +1,24 @@
+If you use [ranger](https://github.com/ranger/ranger), the console-based file manager, you can benefit of its plugin system to get it easily entangled with git-annex. As far as I know, there 2 main types of extensions:
+
+## Custom commands
+
+ranger lets you [define custom commands](https://github.com/ranger/ranger/wiki/Commands) that can be called. Basically you could easily write proxy ranger commands for all git-annex commands you use. [Here](https://github.com/fiatjaf/dotfiles/blob/master/ranger-commands.py) have written `:ga_whereis` for outputting whereis information, and `:ga_set` and `:ga_tag` for metadata settting.
+
+## Linemodes
+
+The small string of information that shows on each file line, aligned to the right, is called a `infostring`. [Linemodes in ranger](https://github.com/ranger/ranger/wiki/Custom-linemodes) lets you change between its default linemodes or add your own custom linemodes. I have written two git-annex linemodes: 
+
+  * [git-annex-metadata](https://github.com/fiatjaf/dotfiles/blob/5087963cead99f65afee153be672c8e5e624d638/ranger-plugins/linemode_gitannex.py#L8-L51), which shows tags and metadata fields from git-annex; and
+  * [git-annex-whereis](https://github.com/fiatjaf/dotfiles/blob/5087963cead99f65afee153be672c8e5e624d638/ranger-plugins/linemode_gitannex.py#L54-L104), which shows the name of the repositories where each file is (except the current repository, as that should be clear from the ranger colours).
+
+To switch linemodes, just type `:linemode git-annex-whereis` or `:linemode git-annex-metadata`.
+
+You can also set `default_linemode path=/your/annex/path/.* git-annex-whereis`, for example, to have that linemode automatically set whenever you browse your git-annex folder on ranger.
+
+Beware of folders with too many files, as this will read output from git-annex for all the files, so ranger can freeze for some seconds.
+
+---
+
+As I didn't have any better place to put the code, eveything here is referenced in my [dotfiles repository on GitHub](https://github.com/fiatjaf/dotfiles). Just copy the two referenced files to your `~/.config/ranger/plugins/` folder and `~/.config/ranger/commands.py` file to get this working.
+
+Much other interesting commands and plugins can still be added. Modify this page if you come up with other ideas.

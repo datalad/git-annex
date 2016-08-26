@@ -1,0 +1,49 @@
+[[!meta title="if at first you don't succeed.."]]
+
+A user suggested [adding --failed](http://git-annex.branchable.com/todo/__34__copy_--failed__34__/)
+to retry failed transfers. That was a great idea and I landed a patch for it
+3 hours later. Love it when a user suggests something so clearly right and
+I am able to quickly make it happen!
+
+----
+
+Unfortunately, my funding from the [DataLad](https://datalad.org/) project
+to work on git-annex is running out. It's been a very good two years funded
+that way, with an enormous amount of improvements and support and bug
+fixes, but all good things must end. I'll continue to get some funding
+from them for the next year, but only for half as much time as the past two
+years.
+
+I need to decide it it makes sense to keep working on git-annex to the
+extent I have been. There are definitely a few (hundred) things I still
+want to do on git-annex, starting with getting the git patches landed to
+make v6 mode really shine. Past that, it's mostly up to the users. If they
+keep suggesting great ideas and finding git-annex useful, I'll want to
+work on it more.
+
+What to do about funding? Maybe some git-annex users can contribute a
+small amount each month to fund development. I've set up a Patreon
+page for this, **<https://www.patreon.com/joeyh>**
+
+----
+
+Anyhoo... Back to today's (unfunded) work.
+
+`--failed` can be used with `get`, `move`, `copy`, and
+`mirror`. Of course those commands can all be simply re-ran if some
+of the transfers fail and will pick up where they left off. But using
+`--failed` is faster because it does not need to scan all files to find
+out which still need to be transferred. And accumulated failures from
+multiple commands can be retried with a single use of `--failed`. 
+
+It's even possible to do things like `git annex get --from foo; git annex
+get --failed --from bar`, which first downloads everything it can from the
+foo remote and falls back to using the bar remote for the rest. Although
+setting remote costs is probably a better approach most of the time.
+
+Turns out that I had earlier disabled writing failure log files, except by
+the assistant, because only the assistant was using them. So, that had to
+be undone. There's some potential for failure log files to accumulate
+annoyingly, so perhaps some expiry mechanism will be needed. This is why
+`--failed` is documented as retrying "recent" transfers. Anyway, the
+failure log files are cleaned up after successful transfers.

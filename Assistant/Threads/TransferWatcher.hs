@@ -10,6 +10,7 @@ module Assistant.Threads.TransferWatcher where
 import Assistant.Common
 import Assistant.DaemonStatus
 import Assistant.TransferSlots
+import Types.Transfer
 import Logs.Transfer
 import Utility.DirWatcher
 import Utility.DirWatcher.Types

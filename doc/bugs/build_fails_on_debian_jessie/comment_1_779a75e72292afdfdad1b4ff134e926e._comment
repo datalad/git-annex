@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-07-30T16:15:57Z"
+ content="""
+The disk-free-space and mountpoints dependencies will need to be backported
+to Debian jessie before git-annex's backport can be updated. Both packages
+are available in testing, so should be fairly easy to backport.
+"""]]

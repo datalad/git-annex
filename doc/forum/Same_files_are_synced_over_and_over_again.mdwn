@@ -1,0 +1,58 @@
+Hello,
+
+I have posted a similiar (same?) problem already some weeks ago: <https://git-annex.branchable.com/forum/File_downloaded_again_and_again/> But since there has been another problem which was fixed, I dare to repost.
+
+I have three repos: marduk (anything / archive) and horus (standard / client) and asaru (standard / client).
+
+Whenever I do a ```git annex sync --content`` the same files are synced over and over again:
+
+```
+florian@horus ~/Documents (git)-[master] % git annex sync --content
+commit  
+On branch master
+nothing to commit, working directory clean
+ok
+pull marduk 
+ok
+get .localized (from marduk...) 
+SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+              0 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+(checksum...) ok
+get Bewerbung/thermoplast.aux (from marduk...) 
+SHA256E-s8--3345a075a22fb3bbc04567a1e5660ed0240d53f5881f458a2234dcd42a78d335.aux
+              8 100%    7.81kB/s    0:00:00 (xfr#1, to-chk=0/1)
+(checksum...) ok
+drop archive/Programmierung/zope/lib/python/Homefolder/.svn/empty-file (locking marduk...) ok
+drop archive/Schule/Geschichte/Biographie 3/biographie.aux (locking marduk...) ok
+pull marduk 
+ok
+(recording state in git...)
+push marduk 
+Counting objects: 8, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (8/8), done.
+Writing objects: 100% (8/8), 661 bytes | 0 bytes/s, done.
+Total 8 (delta 6), reused 0 (delta 0)
+To ssh://marduk.local/home/florian/Documents
+   d151eb6..c31839b  git-annex -> synced/git-annex
+ok
+git annex sync --content  81,50s user 7,19s system 50% cpu 2:54,56 total
+```
+
+When I execute the same command again, the same files are synced again. On the other repos it's the same behavior.
+
+git annex does not seem to record presence of that file:
+
+```
+florian@horus ~/Documents (git)-[master] % git annex whereis Bewerbung/thermoplast.aux
+whereis Bewerbung/thermoplast.aux (1 copy) 
+        f30dd4f0-5a03-4022-8f45-7c2620c4c058 -- Marduk [marduk]
+ok
+```
+
+Is it a bug? Any more information I can provide?
+
+EDIT: A pastebin of the output of a sync run without and with ```--debug```: <http://pastebin.com/raw/ad2T8jeV>
+
+Thanks!
+Florian

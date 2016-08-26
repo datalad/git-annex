@@ -54,6 +54,7 @@ import qualified Data.Set as S
 
 import Annex.Common
 import Logs.Location
+import Types.Transfer
 import Logs.Transfer
 import qualified Git
 import qualified Annex
