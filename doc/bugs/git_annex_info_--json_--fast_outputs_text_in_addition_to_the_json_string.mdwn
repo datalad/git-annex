@@ -1,0 +1,40 @@
+### Please describe the problem.
+
+`git annex info --json --fast 2>/dev/null` returns lines like `(merging origin/synced/git-annex into git-annex...)` befor the actual JSON string if updates where received with eg. `git pull` and `git annex sync` was not run yet.
+
+I would expect that the additional verbose output is suppressed if the --json switch is used (or maybe send to stderr?).
+
+However, it's easy to work around by piping the output through `grep -v -E '^\(.*\)$'`.
+
+I came across this when using `git annex info` to determine the description of the current repo:
+
+```
+git annex info --json --fast 2>/dev/null | grep -v -E '^\(.*\)$' | jq '."trusted repositories"+."semitrusted repositories"+."untrusted repositories" | [.[] | select(.here == true)] | .[length-1] | .description' | sed 's/^"\(.*\)"$/\1/'
+```
+
+which is used in some mr scripts that automatically set the repo description after cloning a git annex repo, based on the machine it us run on.
+
+### What steps will reproduce the problem?
+
+* clone a repo with git annex branches
+* run `git annex info --json --fast 2>/dev/null`
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 6.20160511-1~eugenesan~xenial1
+
+### Please provide any additional information below.
+
+[[!format sh """
+$ git annex info --json --fast 2>/dev/null
+(merging origin/synced/git-annex into git-annex...)
+(recording state in git...)
+{"command":"info","repository mode":"indirect","trusted repositories":[],"semitrusted repositories":[...}
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I really like git annex and its concepts and I'm currently in the process of adding all my bigger files that don't fit into git repos to git annex repos which are managed on my machines using mr (another great tool!) and some mr scripts that automate working with git annex repos.
+So far it works very well and it seems like I finally found a scalable and convenient solution to protect all my files and make them accessible from everywhere.
+
+
