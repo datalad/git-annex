@@ -1,0 +1,30 @@
+In my `big/git-annex-test-repos/20160830-annex-adjusted.tar.xz.gpg`,
+I have a .git/ directory for a repo where `git annex sync` after `git annex add`
+apparently committed the files and then fast-forward merged a branch
+over top which did not contain the just-added files.
+
+According to the bug reporter:
+
+> As mentioned on IRC I switched to master, back to the adjusted
+> branch and then did `git add "2016/H* T* und R*"` in the
+> meantime after restoring the files from backup, but I have not
+> synced/commited the latter yet. I also did `git gc` in the hope
+> that it would reduce the size a bit, but to no real success :)
+> 
+> My git-annex is 6.20160720-g9f0428e (standalone build) and git is
+> 2.1.4-2.1+deb8u2 from jessie.
+
+`git reflog` showed:
+
+	24a8128 HEAD@{3}: merge 24a81287ef63cd064977165b82de56e050c4a576: Fast-forward
+	9cdbd4f HEAD@{4}: commit: git-annex in orcus direct
+	9cdbd4f Adds the files, 24a8128 deletes them.
+
+Where 9cdbd4f added the files, but then 24a8128 lost them.
+
+The way 24a8128 appears in the reflog there is not what I usually see when
+running `git annex sync` on an adjusted branch. Possible smoking gun?
+
+Initial plan: Try to reset the adjusted branch and master back to before 9cdbd4f,
+and re-run to try to reproduce this happening.
+--[[Joey]] 
