@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="adamboche@d77483462c747486c7a7341a9080d1341eeddfe6"
+ nickname="adamboche"
+ subject="Retry rsync on failure"
+ date="2016-08-26T23:32:46Z"
+ content="""
+This may be useful for providing an in-product solution to this problem.
+http://unix.stackexchange.com/a/165417/126433
+"""]]
