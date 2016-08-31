@@ -26,7 +26,7 @@ the file was then back to being locked.
 
 But, that had some problems. The main one is that some users want to be able
 to edit files repeatedly, without manually having to unlock them every time.
-The [[direct_mode]] was made all files be unlocked all the time, but it
+The [[direct_mode]] made all files be unlocked all the time, but it
 had many problems of its own.
 
 ## enter v6 mode
