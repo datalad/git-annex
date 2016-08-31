@@ -119,11 +119,6 @@ Build/LinuxMkLibs: Build/LinuxMkLibs.hs
 Build/MakeMans: Build/MakeMans.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
 
-# Upload to hackage.
-hackage:
-	@cabal sdist
-	@cabal upload dist/*.tar.gz
-
 LINUXSTANDALONE_DEST=tmp/git-annex.linux
 linuxstandalone:
 	$(MAKE) git-annex linuxstandalone-nobuild
