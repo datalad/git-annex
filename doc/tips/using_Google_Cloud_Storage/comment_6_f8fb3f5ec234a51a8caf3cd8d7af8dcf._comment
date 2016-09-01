@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Dosenpfand"
+ subject="comment 6"
+ date="2016-09-01T18:38:46Z"
+ content="""
+When trying to use google cloud storage i get the following error:
+    $ git annex initremote cloud type=S3 encryption=none host=storage.googleapis.com port=80 storageclass=NEARLINE
+    initremote cloud (checking bucket...) (creating bucket in US...) git-annex: S3Error {s3StatusCode = Status {statusCode = 400, statusMessage = \"Bad Request\"}, s3ErrorCode = \"MalformedHeaderValue\", s3ErrorMessage = \"An HTTP header value was malformed.\", s3ErrorResource = Nothing, s3ErrorHostId = Nothing, s3ErrorAccessKeyId = Nothing, s3ErrorStringToSign = Nothing, s3ErrorBucket = Nothing, s3ErrorEndpointRaw = Nothing, s3ErrorEndpoint = Nothing}
+
+Does anybody know what is causing this? I am pretty sure that the credentials are correctly set and ommiting storageclass=NEARLINE does not help.
+"""]]
