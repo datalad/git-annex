@@ -1,0 +1,5 @@
+Hi,
+
+How git-annex-get chooses remote when it's called without the '--from' option? Is it anyhow controllable to prefer specific remotes/set priorities?
+
+What about downloading multiple files? Does it download from multiple remotes at the same time to optimize for bandwidth?
