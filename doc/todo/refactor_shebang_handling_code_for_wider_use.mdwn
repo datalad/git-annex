@@ -1,0 +1,7 @@
+Per: https://github.com/DanielDent/git-annex-remote-rclone/pull/10
+
+When launching an external special remote, use the shebang handling code which currently exists elsewhere in git-annex
+
+[joeyh] """Oh, git-annex already deals with this particular windows nonsense elsewhere. When it needs to run a git hook, it parses it for a shebang. Git for windows does the same.
+
+So, if you can please open a todo item in git-annex, I can refactor that existing code to be used in more places."""
