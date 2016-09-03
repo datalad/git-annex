@@ -1,0 +1,26 @@
+### Please describe the problem.
+
+CANNOT LINK EXECUTABLE "git-annex": /data/app/ga.androidterm-1/lib/arm/lib.git-annex.so has text relocations
+
+error: git-annex died of signal 6
+
+### What steps will reproduce the problem?
+install and start git annex on android
+http://downloads.kitenet.net/git-annex/android/current/5.0/git-annex.apk
+
+### What version of git-annex are you using? On what operating system?
+git-annex.apk 5.0
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
