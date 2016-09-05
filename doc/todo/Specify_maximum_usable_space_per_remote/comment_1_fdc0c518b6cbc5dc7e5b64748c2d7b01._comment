@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-09-05T16:40:56Z"
+ content="""
+This poses difficulties when several different git-annex repositories
+are uploading to the same special remote. They would have to somehow maintain a
+count of the amount of space used on the remote, but the repositories
+could be completely disconnected, other than being able to all access the
+special remote. So, the count would have to be stored on the remote, and
+updated atomically. But, not all remotes support atomic operations well
+enough to support such a distributed counter.
+
+If the storage service has an API call to get the space used, then the
+special remote can use that. I think that such a thing unfortunately can
+only be implemented that way, on a per-special-remote implementation basis.
+"""]]
