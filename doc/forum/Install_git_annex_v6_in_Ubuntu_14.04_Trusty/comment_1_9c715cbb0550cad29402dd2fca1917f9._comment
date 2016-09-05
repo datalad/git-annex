@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-09-05T19:40:48Z"
+ content="""
+I'd suggest using the Linux standalone build if your distribution
+has not yet packaged a new enough version of git-annex.
+
+Or file a bug on your distribution of course, to get them to be more
+proactive. git-annex v6 is at this point 9 months old, and has been
+in Debian since at least May, so I don't know why Ubuntu would be lagging
+on it.
+"""]]
