@@ -33,7 +33,7 @@ import Types.ActionItem
 command :: String -> CommandSection -> String -> CmdParamsDesc -> (CmdParamsDesc -> CommandParser) -> Command
 command name section desc paramdesc mkparser =
 	Command commonChecks False False name paramdesc 
-		section desc (mkparser paramdesc) Nothing
+		section desc (mkparser paramdesc) [] Nothing
 
 {- Simple option parser that takes all non-option params as-is. -}
 withParams :: (CmdParams -> v) -> CmdParamsDesc -> Parser v
@@ -68,18 +68,9 @@ noMessages c = c { cmdnomessages = True }
 noRepo :: (String -> Parser (IO ())) -> Command -> Command
 noRepo a c = c { cmdnorepo = Just (a (cmdparamdesc c)) }
 
-{- Adds global options to a command's option parser, and modifies its seek
- - option to first run actions for them.
- -}
+{- Adds global options to a command's. -}
 withGlobalOptions :: [GlobalOption] -> Command -> Command
-withGlobalOptions os c = c { cmdparser = apply <$> mixin (cmdparser c) }
-  where
-	mixin p = (,) 
-		<$> p
-		<*> combineGlobalOptions os
-	apply (seek, globalsetters) = do
-		void $ getParsed globalsetters
-		seek
+withGlobalOptions os c = c { cmdglobaloptions = cmdglobaloptions c ++ os }
 
 {- For start and perform stages to indicate what step to run next. -}
 next :: a -> Annex (Maybe a)

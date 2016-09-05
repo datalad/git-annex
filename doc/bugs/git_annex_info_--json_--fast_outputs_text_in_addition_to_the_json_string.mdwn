@@ -38,3 +38,4 @@ I really like git annex and its concepts and I'm currently in the process of add
 So far it works very well and it seems like I finally found a scalable and convenient solution to protect all my files and make them accessible from everywhere.
 
 
+> [[fixed|done]] --[[Joey]]
