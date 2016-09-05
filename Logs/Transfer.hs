@@ -5,6 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE CPP #-}
 
 module Logs.Transfer where
