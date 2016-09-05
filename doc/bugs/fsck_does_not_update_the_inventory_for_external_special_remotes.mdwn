@@ -46,3 +46,5 @@ Some files in my external special remote got removed outside of git-annex's know
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 git-annex is fantastic!  It is the only program that I trust to store my most precious files.  If there is another way to get git-annex to update its inventory for files removed in special remotes I will gladly try it!  Keep up the good work!
+
+[[!tag moreinfo]]

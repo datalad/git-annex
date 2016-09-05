@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-09-05T18:14:24Z"
+ content="""
+I do not reproduce this bug with the current version of git-annex.
+
+Using a directory special remote:
+
+	joey@darkstar:~/tmp/me>git annex copy foo --to d
+	copy foo (to d...) 
+	ok                      
+	joey@darkstar:~/tmp/me>sudo rm ../d/e70/8a4/SHA256E-s30--8f6ec07ba3543f8ae5da1d85602a389e36b15f291c2d1e02bc1920565c1a1f25/SHA256E-s30--8f6ec07ba3543f8ae5da1d85602a389e36b15f291c2d1e02bc1920565c1a1f25
+	fsck foo (fixing location log) 
+	  ** Based on the location log, foo
+	  ** was expected to be present, but its content is missing.
+	failed
+	(recording state in git...)
+	git-annex: fsck: 1 failed
+	joey@darkstar:~/tmp/me>git annex whereis
+	whereis foo (1 copy) 
+	  	e32ee842-ff63-4c23-b239-53cd887d79b1 -- joey@darkstar:~/tmp/me [here]
+	ok
+
+But, you omitted the "error message from special remote" for some reason.
+That information you omitted is almost certianly *crucial* information to understanding
+your bug report. 
+
+If git-annex thinks it was not able to talk to the special remote at all,
+it won't record it as not having the file, because more likely the special
+remote is temporarily not accessible.
+
+At the moment, I see no indication of a bug. I'll leave this open for a little while marked moreinfo.
+
+(I'm also curious how you managed to report this bug without giving any
+title at all. I had to rename ".mdwn" to a more reasonable filename.)
+"""]]
