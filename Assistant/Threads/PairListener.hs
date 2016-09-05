@@ -20,6 +20,9 @@ import Git
 
 import Network.Multicast
 import Network.Socket
+import qualified Data.ByteString as B
+import qualified Data.ByteString.UTF8 as BU8
+import qualified Network.Socket.ByteString as B
 import qualified Data.Text as T
 
 pairListenerThread :: UrlRenderer -> NamedThread
@@ -33,7 +36,7 @@ pairListenerThread urlrenderer = namedThread "PairListener" $ do
 	 - or only one like lo that doesn't support multicast. -}
 	getsock = multicastReceiver (multicastAddress IPv4AddrClass) pairingPort
 		
-	go reqs cache sock = liftIO (getmsg sock []) >>= \msg -> case readish msg of
+	go reqs cache sock = liftIO (getmsg sock B.empty) >>= \msg -> case readish (BU8.toString msg) of
 		Nothing -> go reqs cache sock
 		Just m -> do
 			debug ["received", show msg]
@@ -94,10 +97,10 @@ pairListenerThread urlrenderer = namedThread "PairListener" $ do
 	invalidateCache msg = filter (not . verifiedPairMsg msg)
 
 	getmsg sock c = do
-		(msg, n, _) <- recvFrom sock chunksz
-		if n < chunksz
-			then return $ c ++ msg
-			else getmsg sock $ c ++ msg
+		(msg, _) <- B.recvFrom sock chunksz
+		if B.length msg < chunksz
+			then return $ c <> msg
+			else getmsg sock $ c <> msg
 	  where
 		chunksz = 1024
 
