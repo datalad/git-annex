@@ -9,6 +9,8 @@ git-annex (6.20160809) UNRELEASED; urgency=medium
   * Make --json and --quiet suppress automatic init messages, and any
     other messages that might be output before a command starts.
     Fixes a reversion introduced in version 5.20150727.
+  * Assistant, repair: Filter out git fsck lines about duplicate file
+    entries in tree objects.
 
  -- Joey Hess <id@joeyh.name>  Mon, 05 Sep 2016 11:51:49 -0400
 
