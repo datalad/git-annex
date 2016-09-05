@@ -1,0 +1,77 @@
+I have this situation:
+
+* `marcos`: home server, canonical repository with all my files
+  (`group=backup`)
+* `angela`: laptop, with a subset of the files (`group=manual`)
+* `VHS`: backup external USB storage, should have a redundant copy of
+  all files (`group=manual`)
+
+directly connecting the external USB drive to `marcos` is annoying, so
+I usually connect it to `angela` instead, which doesn't have all the
+files.
+
+This brings up the peculiar situation that I cannot actually backup
+all the files to `VHS` from `angela`, without first copying them
+locally.
+
+I have a few issues with that:
+
+ 1. it fails silently: if I try to copy to `VHS` and the file is not on
+    `angela`, it silently fails:
+   
+        [997]anarcat@angela:mp3$ git annex drop nothere
+        (recording state in git...)
+        [998]anarcat@angela:mp3$ git annex copy --to VHS nothere
+        [999]anarcat@angela:mp3$ git annex find --in VHS nothere
+        [1001]anarcat@angela:mp3$ git annex list nothere
+        here
+        |VHS
+        ||htcones
+        |||marcos
+        ||||web
+        |||||bittorrent
+        ||||||htconesdumb
+        |||||||
+        ___X___ nothere
+        [1002]anarcat@angela:mp3$
+        
+    this shouldn't silently fail to copy: it should warn me that it
+    can't find a file to copy, at least.
+
+ 1. it takes up more disk space: i need to download all the missing
+    files locally before I can transfer them to `VHS`. here's the way
+    I make sure files are transfered properly on `VHS`:
+   
+        git annex copy --to VHS --not --in VHS
+        git annex get --not --in VHS
+        git annex copy --to VHS --not --in VHS
+        git annex drop --not --in 'here@{yesterday}'
+        
+    the latter line is expecially problematic, because it is not
+    accurate...
+
+ 1. it's slower: i need to write files locally before I can transfer
+    them. ideally, those files would be streamed, or at least I would
+    need to buffer locally only one file at a time and not the whole
+    batch.
+
+Maybe I am missing something obvious here and there are other ways of
+doing this. I am running `6.20160902+gitgbc49d8a-1~ndall+1`.
+
+I know I could setup `angela` to be in the `transfer` group, but then
+files I don't want would end up stored on `angela`: files that are
+missing from other remotes, for example. Even worse, some files I *do*
+want could be candidates for removal on `angela` because they have
+been propagated everywhere, whereas I have a select set of files
+(hence `group=manual`) that are present in `angela` that I want to
+stay there.
+
+It seems to me at least #1 above should be fixed: `copy` shouldn't
+succeed when it can't comply with the requested preferred content
+expression.
+
+Somehow, I expected this to work, and maybe that's the core issue here:
+
+    git annex copy --from marcos --to VHS nothere
+
+Thanks for considering this! -- [[anarcat]]
