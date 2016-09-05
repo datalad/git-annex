@@ -1,0 +1,19 @@
+Back after taking most of August off and working on other projects.
+
+Got the unanswered messages backlog down from 222 to 170. Still scary high.
+
+Numerous little improvements today. Notable ones:
+
+* Windows: Handle shebang in external special remote program. This is
+  needed for [git-annex-remote-rclone to work on Windows](https://github.com/DanielDent/git-annex-remote-rclone/pull/10).
+  Nice to see that external special remote is getting ported and
+  apparently lots of use.
+* Make --json and --quiet suppress automatic init messages, and any
+  other messages that might be output before a command starts. This was a
+  reversion introduced in the optparse-applicative changes over a year ago.
+
+Also I'm developing a plan to improve parallel downloading when multiple
+remotes have the same cost. See [[todo/get_round_robin]].
+
+Today's work was sponsored by Jake Vosloo on
+[Patreon](https://www.patreon.com/joeyh).

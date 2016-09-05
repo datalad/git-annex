@@ -3,3 +3,5 @@ Given that git/config will have information on remotes and maybe costs, it might
 This of course assumes that we like the idea of "parallel" launching and running of curl/rsync processes...
 
 This wish item is probably only useful for the paranoid people who store more than 1 copy of their data.
+
+See [[get_round_robin]] --[[Joey]]
