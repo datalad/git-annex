@@ -5,7 +5,6 @@
 module Build.Configure where
 
 import Control.Applicative
-import System.Environment (getArgs)
 import Control.Monad.IfElse
 import Control.Monad
 
@@ -133,12 +132,12 @@ cleanup = removeDirectoryRecursive tmpDir
 
 run :: [TestCase] -> IO ()
 run ts = do
-	args <- getArgs
 	setup
 	config <- runTests ts
-	if args == ["Android"]
-		then writeSysConfig $ androidConfig config
-		else writeSysConfig config
+	v <- getEnv "CROSS_COMPILE"
+	case v of
+		Just "Android" -> writeSysConfig $ androidConfig config
+		_ -> writeSysConfig config
 	cleanup
 	whenM isReleaseBuild $
 		cabalSetup "git-annex.cabal"

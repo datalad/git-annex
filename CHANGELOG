@@ -5,6 +5,7 @@ git-annex (6.20160809) UNRELEASED; urgency=medium
     Thanks, Jim Paris.
   * examimekey: Allow being run in a git repo that is not initialized by
     git-annex yet.
+  * Android: Fix disabling use of cp --reflink=auto, curl, sha224, and sha384.
 
  -- Joey Hess <id@joeyh.name>  Mon, 05 Sep 2016 11:51:49 -0400
 
