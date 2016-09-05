@@ -1,6 +1,8 @@
 git-annex (6.20160809) UNRELEASED; urgency=medium
 
   * Windows: Handle shebang in external special remote program.
+  * Fix formatting of git-annex-smudge man page, and improve mdwn2man.
+    Thanks, Jim Paris.
 
  -- Joey Hess <id@joeyh.name>  Mon, 05 Sep 2016 11:51:49 -0400
 

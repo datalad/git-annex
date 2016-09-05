@@ -22,3 +22,5 @@ Jim Paris (2):
  doc/git-annex-smudge.mdwn | 2 +-
  2 files changed, 2 insertions(+), 2 deletions(-)
 ```
+
+> Thanks Jim. [[merged|done]] --[[Joey]]
