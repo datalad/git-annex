@@ -15,4 +15,10 @@ should always find a consistent set of dependencies.
 I don't think it makes sense for git-annex to pin down versions like
 this just because one build environment is having trouble. So I don't
 plan to apply this patch.
+
+---- 
+
+Update: Seems the unstated goal was to make it work with ghc 8 which is
+still in a state of generally unhappy dependencies. So applied for that
+reason.
 """]]

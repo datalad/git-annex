@@ -20,3 +20,5 @@ since there's been a regression in the situation between 6.20160619 and
 
 Proposed solution is to set persistent (==2.2.4.1) instead of
 persistent (<2.5) in git-annex.cabal
+
+> [[done]]
