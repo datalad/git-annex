@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-09-05T20:00:33Z"
+ content="""
+You have presented cabal with some dependency situation that causes its
+solver to blow up. But AFAICS this is only the case in your own particular
+environment; it's not the case in my envionment, or Debian's
+environment, etc.
+
+If homebrew needs particular dependency versions, you could specify them
+locally in a local cabal.config file. Or you could use stack which
+should always find a consistent set of dependencies.
+
+I don't think it makes sense for git-annex to pin down versions like
+this just because one build environment is having trouble. So I don't
+plan to apply this patch.
+"""]]
