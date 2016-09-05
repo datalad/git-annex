@@ -1,3 +1,9 @@
+git-annex (6.20160809) UNRELEASED; urgency=medium
+
+  * Windows: Handle shebang in external special remote program.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 05 Sep 2016 11:51:49 -0400
+
 git-annex (6.20160808) unstable; urgency=medium
 
   * metadata --json output format has changed, adding a inner json object
