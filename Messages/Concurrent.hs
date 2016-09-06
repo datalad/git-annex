@@ -32,10 +32,12 @@ import GHC.IO.Encoding
  - instead.
  -}
 concurrentMessage :: OutputType -> Bool -> String -> Annex () -> Annex ()
-concurrentMessage o iserror msg fallback 
 #ifdef WITH_CONCURRENTOUTPUT
+concurrentMessage o iserror msg fallback 
 	| concurrentOutputEnabled o =
 		go =<< consoleRegion <$> Annex.getState Annex.output
+#else
+concurrentMessage _o _iserror _msg fallback 
 #endif
 	| otherwise = fallback
 #ifdef WITH_CONCURRENTOUTPUT
@@ -67,8 +69,8 @@ concurrentMessage o iserror msg fallback
  - complete.
  -}
 inOwnConsoleRegion :: OutputType -> Annex a -> Annex a
-inOwnConsoleRegion o a
 #ifdef WITH_CONCURRENTOUTPUT
+inOwnConsoleRegion o a
 	| concurrentOutputEnabled o = do
 		r <- mkregion
 		setregion (Just r)
@@ -82,6 +84,8 @@ inOwnConsoleRegion o a
 			Right ret -> do
 				rmregion r
 				return ret
+#else
+inOwnConsoleRegion _o a
 #endif
 	| otherwise = a
 #ifdef WITH_CONCURRENTOUTPUT
