@@ -5,3 +5,6 @@ This of course assumes that we like the idea of "parallel" launching and running
 This wish item is probably only useful for the paranoid people who store more than 1 copy of their data.
 
 See [[get_round_robin]] --[[Joey]]
+
+> [[done]], at least for `git annex get -JN` when two remotes have the same
+> cost..

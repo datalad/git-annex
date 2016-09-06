@@ -20,3 +20,12 @@ it might not really be desirable when not run in parallel. In particular,
 if A and B are on different spinning disks, then an access pattern of
 A,B,A,B might keep the disks idle enough that they spin down in-between
 access.
+
+> done for `git annex get -JN` where two remotes have the same cost.
+>
+> Also for `git annex sync --content -JN` when downloading and two remotes
+> have the same cost.
+>
+> Can't think of any other places that apply, except perhaps the assistant,
+> but it does its own much different queuing of transfers. [[done]]
+> --[[Joey]]
