@@ -28,7 +28,7 @@ export UPGRADE_LOCATION
 
 # Uncomment to get rid of cabal installed libraries.
 #cabal list --installed
-#rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
+rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
 
 # Don't allow build artifact from a past successful build to be extracted
 # if we fail.
@@ -42,6 +42,7 @@ cabal update || true
 cabal install --only-dependencies \
 		--constraint='persistent-sqlite ==2.2' \
 		--constraint='cryptonite ==0.7' \
+		--constraint='mwc-random ==0.13.3.2'
 		|| true
 
 # Detect when the last build was an incremental build and failed, 
