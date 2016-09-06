@@ -1,0 +1,8 @@
+### Please describe the problem.
+You can create bugs without titles
+
+### What steps will reproduce the problem?
+Press the edit button without filling out a title, then press "save page".
+
+
+
