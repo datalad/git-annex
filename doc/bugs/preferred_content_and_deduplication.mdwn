@@ -1,0 +1,98 @@
+### Please describe the problem.
+
+When having separate links to the same content, one wanted and one unwanted by the preferred content expression, git annex behaves suboptimally.
+
+### What steps will reproduce the problem?
+
+* Set up an annex repo with two identical files "f1" and "f2"
+* Clone this repo to an other location.
+* In the main repo set "git annex wanted . anything"
+* In the second repo set "git annex wanted . 'include=f1 and exclude=f2'
+* Try "git annex sync --content" in the second repo.
+
+```
+$ git annex sync --content
+commit  
+On branch master
+nothing to commit, working tree clean
+ok
+pull origin 
+ok
+get f1 (from origin...) (checksum...) ok
+drop f2 ok
+pull origin 
+ok
+(recording state in git...)
+push origin 
+Counting objects: 10, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (8/8), done.
+Writing objects: 100% (10/10), 892 bytes | 0 bytes/s, done.
+Total 10 (delta 3), reused 0 (delta 0)
+To /home/lenard/Documents/annex/test/r1
+   98340af..ebb8a8b  git-annex -> synced/git-annex
+ok
+```
+
+So it gets f1 just to drop it again (as f2) in the same command. It could be a real issue if it would mean downloading large files.
+
+In direct mode something entirely different happens:
+
+```
+$ git annex sync --content
+commit  ok
+pull origin 
+ok
+get f1 (from origin...) (checksum...) ok
+pull origin 
+ok
+(recording state in git...)
+push origin 
+Counting objects: 5, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (5/5), 450 bytes | 0 bytes/s, done.
+Total 5 (delta 2), reused 0 (delta 0)
+To /home/lenard/Documents/annex/test/r1
+   3666d0f..698c683  git-annex -> synced/git-annex
+ok
+$ ls -l
+total 0
+-rw-r--r-- 1 lenard lenard 0 Sep  6 10:44 f1
+-rw-r--r-- 1 lenard lenard 0 Sep  6 10:44 f2
+```
+
+Both files are here, even though f2 is not preferred. Strangely only f1 gets downloaded, it's at least better than downloading the file twice.
+
+### Expected behavior
+
+* No unnecessary downloads just for dropping the same content
+* Consistent behavior between direct and indirect modes (but direct mode being deprecated maybe this is a non-issue?)
+* The order of 'get --auto' and 'drop --auto' should be insignificant.
+
+As for what content would be actually preserved for deduplicated content? Preferred content expressions should be evaluated for keys and not for file paths. This would change the semantics somewhat, so 'include' would mean 'available at' and exclude would mean 'not available at'. So the expression 'include=f1 and exclude=f2' would semantically mean that '(key of f1 and f2) is available at f1 and not available at f2' and it would evaluate as false, so the content would not be wanted.
+
+### Workaround
+
+Don't use 'include' and 'exclude' in preferred content expressions (and 'standard' in many cases). Use metadata instead, metadata are bound to keys and not file paths (except location fields?).
+
+### What version of git-annex are you using? On what operating system?
+
+```
+git-annex version: 6.20160808
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository versions: 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+operating system: linux x86_64
+$ uname -a
+Linux lenard-hp 4.6.0-1-amd64 #1 SMP Debian 4.6.4-1 (2016-07-18) x86_64 GNU/Linux
+```
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I'm just trying out git-annex and I like it so far. I'm using it to keep my personal photos on my home server.
+
