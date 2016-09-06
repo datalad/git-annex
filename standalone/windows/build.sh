@@ -39,9 +39,7 @@ rm -f git-annex-installer.exe
 # for haskell libraries to link them with the cygwin library.
 cabal update || true
 
-cabal install persistent-sqlite-2.2
-
-cabal install --only-dependencies || true
+cabal install --only-dependencies --constraint='persistent-sqlite ==2.2' || true
 
 # Detect when the last build was an incremental build and failed, 
 # and try a full build. Done this way because this shell seems a bit
