@@ -43,7 +43,6 @@ import Annex.Wanted
 import Annex.Content
 import Command.Get (getKey')
 import qualified Command.Move
-import Logs.Location
 import Annex.Drop
 import Annex.UUID
 import Logs.UUID
@@ -470,7 +469,7 @@ seekSyncContent o rs = do
  -}
 syncFile :: Either (Maybe (Bloom Key)) (Key -> Annex ()) -> [Remote] -> AssociatedFile -> Key -> Annex Bool
 syncFile ebloom rs af k = do
-	locs <- loggedLocations k
+	locs <- Remote.keyLocations k
 	let (have, lack) = partition (\r -> Remote.uuid r `elem` locs) rs
 
 	got <- anyM id =<< handleget have
