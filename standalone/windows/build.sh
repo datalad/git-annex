@@ -42,7 +42,7 @@ cabal update || true
 cabal install --only-dependencies \
 		--constraint='persistent-sqlite ==2.2' \
 		--constraint='cryptonite ==0.7' \
-		--constraint='mwc-random ==0.13.3.2'
+		--constraint='mwc-random ==0.13.3.2' \
 		|| true
 
 # Detect when the last build was an incremental build and failed, 
