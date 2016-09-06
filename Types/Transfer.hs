@@ -13,6 +13,8 @@ import Utility.QuickCheck
 
 import Data.Time.Clock.POSIX
 import Control.Concurrent
+import Control.Applicative
+import Prelude
 
 {- Enough information to uniquely identify a transfer, used as the filename
  - of the transfer information file. -}
