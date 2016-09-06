@@ -51,7 +51,6 @@ import qualified Git.LsTree
 import qualified Git.FilePath
 import qualified Annex.Locations
 import qualified Types.KeySource
-import qualified Types.Remote
 import qualified Types.Backend
 import qualified Types.TrustLevel
 import qualified Types
@@ -102,6 +101,7 @@ import qualified CmdLine.GitAnnex as GitAnnex
 import qualified Remote.Helper.Encryptable
 import qualified Types.Crypto
 import qualified Utility.Gpg
+import qualified Types.Remote
 #endif
 
 optParser :: Parser TestOptions
