@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="onionjake"
+ subject="comment 2"
+ date="2016-09-06T19:45:06Z"
+ content="""
+This is indeed not a bug, my external remote is returning a CHECKPRESENT-UNKNOWN, which as designed does not update the location.  I have verified that returning a CHECKPRESENT-FAILURE does indeed update the location.
+
+As for creating a bug without a title, I simply just clicked \"edit\" then \"save\".  I tried it again with another bug and it worked.
+"""]]
