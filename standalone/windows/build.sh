@@ -28,7 +28,7 @@ export UPGRADE_LOCATION
 
 # Uncomment to get rid of cabal installed libraries.
 #cabal list --installed
-rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
+#rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
 
 # Don't allow build artifact from a past successful build to be extracted
 # if we fail.
@@ -39,7 +39,10 @@ rm -f git-annex-installer.exe
 # for haskell libraries to link them with the cygwin library.
 cabal update || true
 
-cabal install --only-dependencies --constraint='persistent-sqlite ==2.2' || true
+cabal install --only-dependencies \
+		--constraint='persistent-sqlite ==2.2' \
+		--constraint='cryptonite ==0.7' \
+		|| true
 
 # Detect when the last build was an incremental build and failed, 
 # and try a full build. Done this way because this shell seems a bit
