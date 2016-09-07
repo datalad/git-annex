@@ -1,4 +1,4 @@
-git-annex (6.20160809) UNRELEASED; urgency=medium
+git-annex (6.20160907) unstable; urgency=medium
 
   * Windows: Handle shebang in external special remote program.
   * Fix formatting of git-annex-smudge man page, and improve mdwn2man.
@@ -14,7 +14,7 @@ git-annex (6.20160809) UNRELEASED; urgency=medium
   * get -J, sync --content -J: Download different files from different
     remotes when the remotes have the same costs.
 
- -- Joey Hess <id@joeyh.name>  Mon, 05 Sep 2016 11:51:49 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 07 Sep 2016 11:12:11 -0400
 
 git-annex (6.20160808) unstable; urgency=medium
 
