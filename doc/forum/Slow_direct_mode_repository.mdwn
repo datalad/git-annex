@@ -1,0 +1,37 @@
+Hello.
+
+I have been using a portable USB disc for storing media. After several weeks of inactivity, when I used it with git-annex again I noticed it was running very slowly. I mean, it is an USB 2.0 connection, `git-annex sync` would take a few minutes, but now it takes *many hours*.
+
+When adding files to it (`git-annex add`), I would see the list of files passing by at the speed I would expect, but then, at the end, I would have to wait; the next day I saw the operation had completed. `git-annex status` makes me wait a similar amount of time, and `git-annex sync` also makes me wait, even when it has nothing to do — I saw `top` reporting 100% CPU usage, `iotop` saying `git` and `fuse` were saturating the USB connection to its maximum.
+
+File operations outside of `git-annex` seem to work fine, so I can't blame the hardware or the filesystem (NTFS mounted with `fuse`).
+
+I would like to know your thought about this problem, that I was not noticing before. Here is the regular information to help you form an oppinion:
+
+    % time git annex status --debug
+    [2016-09-07 20:20:46.093990203] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","status","-uall","-z"]
+    [2016-09-08 15:05:23.239573491] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","cat-file","--batch"]
+    [2016-09-08 15:08:25.605689622] process done ExitSuccess
+    git annex status --debug  33802.97s user 1162.38s system 51% cpu 18:47:39.54 total
+
+
+    % git-annex info
+    repository mode: direct
+    trusted repositories: 0
+    semitrusted repositories: 4
+    	00000000-0000-0000-0000-000000000001 -- web
+     	00000000-0000-0000-0000-000000000002 -- bittorrent
+     	069de9a2-dc53-4c0a-82e0-a61a1f29e6b3 -- stratos PC [stratos]
+     	49b5b3a4-56ac-4cf2-aed9-1c23d3181c97 -- Toshiba USB HDD [here]
+    untrusted repositories: 0
+    transfers in progress: none
+    available local disk space: 120.41 gigabytes (+1 megabyte reserved)
+    local annex keys: 6303
+    local annex size: 1.87 terabytes
+    annexed files in working tree: 7412
+    size of annexed files in working tree: 2.24 terabytes
+    bloom filter size: 32 mebibytes (1.3% full)
+    backend usage: 
+    	SHA256E: 7412
+
+Thank you for your time.
