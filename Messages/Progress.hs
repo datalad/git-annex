@@ -30,7 +30,7 @@ import Data.Quantity
 {- Shows a progress meter while performing a transfer of a key.
  - The action is passed a callback to use to update the meter. -}
 metered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
-metered combinemeterupdate key a = case keySize key of
+metered othermeter key a = case keySize key of
 	Nothing -> nometer
 	Just size -> withOutputType (go $ fromInteger size)
   where
@@ -39,21 +39,21 @@ metered combinemeterupdate key a = case keySize key of
 	go size NormalOutput = do
 		showOutput
 		(progress, meter) <- mkmeter size
-		r <- a $ \n -> liftIO $ do
+		m <- liftIO $ rateLimitMeterUpdate 0.1 (Just size) $ \n -> do
 			setP progress $ fromBytesProcessed n
 			displayMeter stdout meter
-			maybe noop (\m -> m n) combinemeterupdate
+		r <- a (combinemeter m)
 		liftIO $ clearMeter stdout meter
 		return r
 #if WITH_CONCURRENTOUTPUT
 	go size o@(ConcurrentOutput {})
 		| concurrentOutputEnabled o = withProgressRegion $ \r -> do
 			(progress, meter) <- mkmeter size
-			a $ \n -> liftIO $ do
+			m <- liftIO $ rateLimitMeterUpdate 0.1 (Just size) $ \n -> do
 				setP progress $ fromBytesProcessed n
 				s <- renderMeter meter
 				Regions.setConsoleRegion r ("\n" ++ s)
-				maybe noop (\m -> m n) combinemeterupdate
+			a (combinemeter m)
 #else
 	go _size _o
 #endif
@@ -65,6 +65,10 @@ metered combinemeterupdate key a = case keySize key of
 		return (progress, meter)
 
 	nometer = a (const noop)
+
+	combinemeter m = case othermeter of
+		Nothing -> m
+		Just om -> combineMeterUpdate m om
 
 {- Use when the progress meter is only desired for concurrent
  - output; as when a command's own progress output is preferred. -}
