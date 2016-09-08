@@ -64,7 +64,7 @@ metered othermeter key a = case keySize key of
 		meter <- liftIO $ newMeter progress "B" 25 (renderNums binaryOpts 1)
 		return (progress, meter)
 
-	nometer = a (const noop)
+	nometer = a $ combinemeter (const noop)
 
 	combinemeter m = case othermeter of
 		Nothing -> m
