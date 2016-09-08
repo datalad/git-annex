@@ -62,4 +62,14 @@ That's not a lot more verbose than the earlier version, and it ensures that
 consumers of the progress objects have all possible information available
 (including the name of the remote being downloaded from in the above
 example).
+
+Less verbose version:
+
+	{"progress-id":"1","action":{"command":"get","key":"SHA256E-s5242880--82cb4363f596cb66e7bc6e4cbfd2bfe8a8b6ac7e6d02557cc0e3944ec8faafc3","file":"bar","note":"from d1..."}}
+	{"progress-id":"1","percent-progress":"25%","byte-progress":500}
+	{"progress-id":"1","percent-progress":"75%","byte-progress":1500}
+	{"command":"get","key":"SHA256E-s5242880--82cb4363f596cb66e7bc6e4cbfd2bfe8a8b6ac7e6d02557cc0e3944ec8faafc3","file":"bar","note":"from d1...","success":true}
+
+Makes the consumer's job a bit more complicated, and could also make the
+implementation in git-annex harder. Is it worth it?
 """]]
