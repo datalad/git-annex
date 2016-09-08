@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 5"
+ date="2016-09-08T18:08:49Z"
+ content="""
+good idea on parametrizing frequency of updates from json -- indeed we wouldn't want to deal with output from it probably more often than once in a second per file.  Either \"skinny\" progress indication using IDs or full ones (so we could match by e.g. key) would work for us I think
+
+btw, just so that we don't forget.  I guess all of this would also be needed to be done for addurl, copy, move commands, right? (copy and move do not have --json yet) ;)
+"""]]
