@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-09-08T16:20:27Z"
+ content="""
+Needing to use file-level locking etc does make the mult-process approach
+to parallelism more expensive, but only I think by a small amount.
+
+Yes, there might need to be a switch to enable the json progress output.
+Although given the un-typed nature of json, consumers should probably be
+written with a plan in mind for what to do if they encounter something they
+don't understand. Any comsumer that just skips over unrecognised json
+objects would not be impacted by adding the progress..
+
+And here's a way to make the progress json less verbose:
+
+	{"progress-id":"1","action":{"command":"get","key":"SHA256E-s5242880--82cb4363f596cb66e7bc6e4cbfd2bfe8a8b6ac7e6d02557cc0e3944ec8faafc3","file":"bar","note":"from d1..."}}
+	{"progress-id":"1","percent-progress":"25%","byte-progress":500}
+	{"progress-id":"1","percent-progress":"75%","byte-progress":1500}
+	{"command":"get","key":"SHA256E-s5242880--82cb4363f596cb66e7bc6e4cbfd2bfe8a8b6ac7e6d02557cc0e3944ec8faafc3","file":"bar","note":"from d1...","success":true}
+
+Makes the consumer's job a bit more complicated, and could also make the
+implementation in git-annex harder. Is it worth it?
+"""]]
