@@ -11,17 +11,20 @@ import Common
 import Annex
 import Types.Messages
 import Messages.Concurrent
+import Messages.JSON
+
+import qualified Data.ByteString.Lazy as B
 
 withMessageState :: (MessageState -> Annex a) -> Annex a
 withMessageState a = Annex.getState Annex.output >>= a
 
-outputMessage :: IO () -> String -> Annex ()
+outputMessage :: JSONChunk -> String -> Annex ()
 outputMessage = outputMessage' False
 
-outputMessageFinal :: IO () -> String -> Annex ()
+outputMessageFinal :: JSONChunk -> String -> Annex ()
 outputMessageFinal = outputMessage' True
 
-outputMessage' :: Bool -> IO () -> String -> Annex ()
+outputMessage' :: Bool -> JSONChunk -> String -> Annex ()
 outputMessage' endmessage json msg = withMessageState $ \s -> case outputType s of
 	NormalOutput
 		| concurrentOutputEnabled s -> concurrentMessage s False msg q
@@ -29,7 +32,7 @@ outputMessage' endmessage json msg = withMessageState $ \s -> case outputType s 
 	JSONOutput _ -> void $ outputJSON json endmessage s
 	QuietOutput -> q
 
-outputJSON :: IO () -> Bool -> MessageState -> Annex Bool
+outputJSON :: JSONChunk -> Bool -> MessageState -> Annex Bool
 outputJSON json endmessage s = case outputType s of
 	JSONOutput withprogress
 		| withprogress || concurrentOutputEnabled s -> do
@@ -37,20 +40,17 @@ outputJSON json endmessage s = case outputType s of
 			if endmessage
 				then do
 					Annex.changeState $ \st -> 
-						st { Annex.output = s { jsonBuffer = [] } }
-					liftIO $ flushed $ do
-						showJSONBuffer s
-						json
+						st { Annex.output = s { jsonBuffer = none } }
+					liftIO $ flushed $ emit b
 				else Annex.changeState $ \st ->
-				        st { Annex.output = s { jsonBuffer = json : jsonBuffer s } }
+				        st { Annex.output = s { jsonBuffer = b } }
 			return True
 		| otherwise -> do
-			liftIO $ flushed json
+			liftIO $ flushed $ emit json
 			return True
 	_ -> return False
-
-showJSONBuffer :: MessageState -> IO ()
-showJSONBuffer s = sequence_ $ reverse $ jsonBuffer s
+  where
+	b = jsonBuffer s `B.append` json
 
 outputError :: String -> Annex ()
 outputError msg = withMessageState $ \s ->

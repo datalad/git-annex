@@ -11,7 +11,6 @@ module Messages.Progress where
 
 import Common
 import Messages
-import Messages.Internal
 import Utility.Metered
 import Types
 import Types.Messages
@@ -59,7 +58,7 @@ metered othermeter key a = case keySize key of
 #endif
 	go _ (MessageState { outputType = JSONOutput False }) = nometer
 	go size (MessageState { outputType = JSONOutput True }) = do
-		buf <- withMessageState $ return . showJSONBuffer
+		buf <- withMessageState $ return . jsonBuffer
 		m <- liftIO $ rateLimitMeterUpdate 0.1 (Just size) $
 			JSON.progress buf size
 		a (combinemeter m)
@@ -93,7 +92,7 @@ concurrentMeteredFile file combinemeterupdate key a =
 
 {- Progress dots. -}
 showProgressDots :: Annex ()
-showProgressDots = outputMessage q "."
+showProgressDots = outputMessage JSON.none "."
 
 {- Runs a command, that may output progress to either stdout or
  - stderr, as well as other messages.

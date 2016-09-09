@@ -8,6 +8,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Messages.JSON (
+	JSONChunk,
+	emit,
+	none,
 	start,
 	end,
 	note,
@@ -25,6 +28,8 @@ import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as B
 import System.IO
+import System.IO.Unsafe (unsafePerformIO)
+import Control.Concurrent
 import Data.Maybe
 import Data.Monoid
 import Prelude
@@ -34,8 +39,24 @@ import Types.Key
 import Utility.Metered
 import Utility.Percentage
 
-start :: String -> Maybe FilePath -> Maybe Key -> IO ()
-start command file key = B.hPut stdout $ Stream.start $ Stream.AesonObject o
+type JSONChunk = B.ByteString
+
+-- A global lock to avoid concurrent threads emitting json at the same time.
+{-# NOINLINE emitLock #-}
+emitLock :: MVar ()
+emitLock = unsafePerformIO $ newMVar ()
+
+emit :: JSONChunk -> IO ()
+emit v = do
+	takeMVar emitLock
+	B.hPut stdout v
+	putMVar emitLock ()
+
+none :: JSONChunk
+none = B.empty
+
+start :: String -> Maybe FilePath -> Maybe Key -> JSONChunk
+start command file key = Stream.start $ Stream.AesonObject o
   where
 	Object o = toJSON $ JSONActionItem
 		{ itemCommand = Just command
@@ -44,25 +65,26 @@ start command file key = B.hPut stdout $ Stream.start $ Stream.AesonObject o
 		, itemAdded = Nothing
 		}
 
-end :: Bool -> IO ()
-end b = B.hPut stdout $ Stream.add (Stream.JSONChunk [("success", b)]) `B.append` Stream.end
+end :: Bool -> JSONChunk
+end b =Stream.add (Stream.JSONChunk [("success", b)]) `B.append` Stream.end
 
-note :: String -> IO ()
+note :: String -> JSONChunk
 note s = add (Stream.JSONChunk [("note", s)])
 
-add :: Stream.JSONChunk a -> IO ()
-add = B.hPut stdout . Stream.add
+add :: Stream.JSONChunk a -> JSONChunk
+add = Stream.add
 
-complete :: Stream.JSONChunk a -> IO ()
-complete v = B.hPut stdout $ Stream.start v `B.append` Stream.end
+complete :: Stream.JSONChunk a -> JSONChunk
+complete v = Stream.start v `B.append` Stream.end
 
-progress :: IO () -> Integer -> BytesProcessed -> IO ()
-progress jsonbuffer size bytesprocessed = do
-	B.hPut stdout $ Stream.start $ Stream.AesonObject o
-	putStr ",\"action\":"
-	jsonbuffer
-	B.hPut stdout $ Stream.end
-	B.hPut stdout $ Stream.end
+progress :: B.ByteString -> Integer -> BytesProcessed -> IO ()
+progress jsonbuffer size bytesprocessed = emit $ B.concat
+	[ Stream.start $ Stream.AesonObject o
+	, ",\"action\":"
+	, jsonbuffer
+	, "}"
+	, Stream.end
+	]
   where
 	n = fromBytesProcessed bytesprocessed :: Integer
 	Object o = object

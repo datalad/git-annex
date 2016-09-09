@@ -105,7 +105,6 @@ showRemoteUrls :: M.Map UUID Remote -> (UUID, [URLString]) -> Annex ()
 showRemoteUrls remotemap (uu, us)
 	| null us = noop
 	| otherwise = case M.lookup uu remotemap of
-		Just r -> do
-			let ls = unlines $ map (\u -> name r ++ ": " ++ u) us 
-			outputMessage noop ('\n' : indent ls ++ "\n")
+		Just r -> showLongNote $ 
+			unlines $ map (\u -> name r ++ ": " ++ u) us 
 		Nothing -> noop

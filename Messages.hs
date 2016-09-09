@@ -85,7 +85,7 @@ showSideAction m = Annex.getState Annex.output >>= go
 			Annex.changeState $ \s -> s { Annex.output = st' }
 		| sideActionBlock st == InBlock = return ()
 		| otherwise = p
-	p = outputMessage q $ "(" ++ m ++ "...)\n"
+	p = outputMessage JSON.none $ "(" ++ m ++ "...)\n"
 			
 showStoringStateAction :: Annex ()
 showStoringStateAction = showSideAction "recording state in git"
@@ -110,7 +110,7 @@ doSideAction' b a = do
 {- Make way for subsequent output of a command. -}
 showOutput :: Annex ()
 showOutput = unlessM commandProgressDisabled $
-	outputMessage q "\n"
+	outputMessage JSON.none "\n"
 
 showLongNote :: String -> Annex ()
 showLongNote s = outputMessage (JSON.note s) ('\n' : indent s ++ "\n")
@@ -140,7 +140,7 @@ earlyWarning = warning' False
 warning' :: Bool -> String -> Annex ()
 warning' makeway w = do
 	when makeway $
-		outputMessage q "\n"
+		outputMessage JSON.none "\n"
 	outputError (w ++ "\n")
 
 {- Not concurrent output safe. -}
@@ -173,10 +173,10 @@ showCustom command a = do
 	outputMessage (JSON.end r) ""
 
 showHeader :: String -> Annex ()
-showHeader h = outputMessage q $ (h ++ ": ")
+showHeader h = outputMessage JSON.none $ (h ++ ": ")
 
 showRaw :: String -> Annex ()
-showRaw s = outputMessage q (s ++ "\n")
+showRaw s = outputMessage JSON.none (s ++ "\n")
 
 setupConsole :: IO ()
 setupConsole = do
