@@ -155,15 +155,11 @@ indent = intercalate "\n" . map (\l -> "  " ++ l) . lines
 
 {- Shows a JSON chunk only when in json mode. -}
 maybeShowJSON :: JSONChunk v -> Annex ()
-maybeShowJSON v = withMessageState $ \s -> case outputType s of
-	JSONOutput -> liftIO $ JSON.add v
-	_ -> return ()
+maybeShowJSON v = void $ withMessageState $ outputJSON (JSON.add v) False
 
 {- Shows a complete JSON value, only when in json mode. -}
 showFullJSON :: JSONChunk v -> Annex Bool
-showFullJSON v = withMessageState $ \s -> case outputType s of
-	JSONOutput -> liftIO $ JSON.complete v >> return True
-	_ -> return False
+showFullJSON v = withMessageState $ outputJSON (JSON.complete v) True
 
 {- Performs an action that outputs nonstandard/customized output, and
  - in JSON mode wraps its output in JSON.start and JSON.end, so it's

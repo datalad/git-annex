@@ -26,8 +26,13 @@ outputMessage' endmessage json msg = withMessageState $ \s -> case outputType s 
 	NormalOutput
 		| concurrentOutputEnabled s -> concurrentMessage s False msg q
 		| otherwise -> liftIO $ flushed $ putStr msg
+	JSONOutput -> void $ outputJSON json endmessage s
+	QuietOutput -> q
+
+outputJSON :: IO () -> Bool -> MessageState -> Annex Bool
+outputJSON json endmessage s = case outputType s of
 	JSONOutput
-		| concurrentOutputEnabled s ->
+		| concurrentOutputEnabled s -> do
 			-- Buffer json fragments until end is reached.
 			if endmessage
 				then do
@@ -38,8 +43,11 @@ outputMessage' endmessage json msg = withMessageState $ \s -> case outputType s 
 						json
 				else Annex.changeState $ \st ->
 				        st { Annex.output = s { jsonBuffer = json : jsonBuffer s } }
-		| otherwise -> liftIO $ flushed json
-	QuietOutput -> q
+			return True
+		| otherwise -> do
+			liftIO $ flushed json
+			return True
+	_ -> return False
 
 outputError :: String -> Annex ()
 outputError msg = withMessageState $ \s ->
