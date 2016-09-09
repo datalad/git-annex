@@ -24,6 +24,7 @@ import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as B
 import System.IO
+import Data.Maybe
 import Data.Monoid
 import Prelude
 
@@ -84,10 +85,12 @@ data JSONActionItem a = JSONActionItem
 	deriving (Show)
 
 instance ToJSON (JSONActionItem a) where
-	toJSON i = object
-		[ "command" .= itemCommand i
-		, "key" .= (toJSON (itemKey i))
-		, "file" .= itemFile i
+	toJSON i = object $ catMaybes
+		[ Just $ "command" .= itemCommand i
+		, case itemKey i of
+			Nothing -> Nothing
+			Just k -> Just $ "key" .= toJSON k
+		, Just $ "file" .= itemFile i
 		-- itemAdded is not included; must be added later by 'add'
 		]
 
