@@ -10,7 +10,7 @@
 module Types.Messages where
 
 import Data.Default
-import qualified Data.ByteString.Lazy as B
+import qualified Data.Aeson as Aeson
 
 #ifdef WITH_CONCURRENTOUTPUT
 import System.Console.Regions (ConsoleRegion)
@@ -31,7 +31,7 @@ data MessageState = MessageState
 	, consoleRegion :: Maybe ConsoleRegion
 	, consoleRegionErrFlag :: Bool
 #endif
-	, jsonBuffer :: B.ByteString
+	, jsonBuffer :: Maybe Aeson.Object
 	}
 
 instance Default MessageState
@@ -45,5 +45,5 @@ instance Default MessageState
 		, consoleRegion = Nothing
 		, consoleRegionErrFlag = False
 #endif
-		, jsonBuffer = B.empty
+		, jsonBuffer = Nothing
 		}

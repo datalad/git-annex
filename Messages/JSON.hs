@@ -5,10 +5,11 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, GADTs #-}
 
 module Messages.JSON (
-	JSONChunk,
+	JSONBuilder,
+	JSONChunk(..),
 	emit,
 	none,
 	start,
@@ -27,6 +28,7 @@ import Control.Applicative
 import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as B
+import qualified Data.HashMap.Strict as HM
 import System.IO
 import System.IO.Unsafe (unsafePerformIO)
 import Control.Concurrent
@@ -34,29 +36,31 @@ import Data.Maybe
 import Data.Monoid
 import Prelude
 
-import qualified Utility.JSONStream as Stream
 import Types.Key
 import Utility.Metered
 import Utility.Percentage
-
-type JSONChunk = B.ByteString
 
 -- A global lock to avoid concurrent threads emitting json at the same time.
 {-# NOINLINE emitLock #-}
 emitLock :: MVar ()
 emitLock = unsafePerformIO $ newMVar ()
 
-emit :: JSONChunk -> IO ()
-emit v = do
+emit :: Object -> IO ()
+emit o = do
 	takeMVar emitLock
-	B.hPut stdout v
+	B.hPut stdout (encode o)
+	putStr "\n"
 	putMVar emitLock ()
 
-none :: JSONChunk
-none = B.empty
+-- Building up a JSON object can be done by first using start,
+-- then add and note any number of times, and finally complete.
+type JSONBuilder = Maybe (Object, Bool) -> Maybe (Object, Bool)
 
-start :: String -> Maybe FilePath -> Maybe Key -> JSONChunk
-start command file key = Stream.start $ Stream.AesonObject o
+none :: JSONBuilder
+none = id
+
+start :: String -> Maybe FilePath -> Maybe Key -> JSONBuilder
+start command file key _ = Just (o, False)
   where
 	Object o = toJSON $ JSONActionItem
 		{ itemCommand = Just command
@@ -65,24 +69,36 @@ start command file key = Stream.start $ Stream.AesonObject o
 		, itemAdded = Nothing
 		}
 
-end :: Bool -> JSONChunk
-end b =Stream.add (Stream.JSONChunk [("success", b)]) `B.append` Stream.end
+end :: Bool -> JSONBuilder
+end b (Just (o, _)) = Just (HM.insert "success" (toJSON b) o, True)
+end _ Nothing = Nothing
 
-note :: String -> JSONChunk
-note s = add (Stream.JSONChunk [("note", s)])
+note :: String -> JSONBuilder
+note s (Just (o, e)) = Just (HM.insert "note" (toJSON s) o, e)
+note _ Nothing = Nothing
 
-add :: Stream.JSONChunk a -> JSONChunk
-add = Stream.add
+data JSONChunk v where
+	AesonObject :: Object -> JSONChunk Object
+	JSONChunk :: ToJSON v => [(String, v)] -> JSONChunk [(String, v)]
 
-complete :: Stream.JSONChunk a -> JSONChunk
-complete v = Stream.start v `B.append` Stream.end
+add :: JSONChunk v -> JSONBuilder
+add v (Just (o, e)) = Just (HM.union o' o, e)
+  where
+	Object o' = case v of
+		AesonObject ao -> Object ao
+		JSONChunk l -> object (map mkPair l)
+	mkPair (s, d) = (T.pack s, toJSON d)
+add _ Nothing = Nothing
 
-progress :: B.ByteString -> Integer -> BytesProcessed -> IO ()
-progress jsonbuffer size bytesprocessed = emit $ B.concat
-	[ Stream.start $ Stream.AesonObject o
-	, Stream.addNestedObject "action" jsonbuffer
-	, Stream.end
-	]
+complete :: JSONChunk v -> JSONBuilder
+complete v _ = add v (Just (HM.empty, True))
+
+-- Show JSON formatted progress, including the current state of the JSON 
+-- object for the action being performed.
+progress :: Maybe Object -> Integer -> BytesProcessed -> IO ()
+progress maction size bytesprocessed = emit $ case maction of
+	Just action -> HM.insert "action" (Object action) o
+	Nothing -> o
   where
 	n = fromBytesProcessed bytesprocessed :: Integer
 	Object o = object

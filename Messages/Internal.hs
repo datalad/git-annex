@@ -13,44 +13,39 @@ import Types.Messages
 import Messages.Concurrent
 import Messages.JSON
 
-import qualified Data.ByteString.Lazy as B
 
 withMessageState :: (MessageState -> Annex a) -> Annex a
 withMessageState a = Annex.getState Annex.output >>= a
 
-outputMessage :: JSONChunk -> String -> Annex ()
-outputMessage = outputMessage' False
-
-outputMessageFinal :: JSONChunk -> String -> Annex ()
-outputMessageFinal = outputMessage' True
-
-outputMessage' :: Bool -> JSONChunk -> String -> Annex ()
-outputMessage' endmessage json msg = withMessageState $ \s -> case outputType s of
+outputMessage :: JSONBuilder -> String -> Annex ()
+outputMessage jsonbuilder msg = withMessageState $ \s -> case outputType s of
 	NormalOutput
 		| concurrentOutputEnabled s -> concurrentMessage s False msg q
 		| otherwise -> liftIO $ flushed $ putStr msg
-	JSONOutput _ -> void $ outputJSON json endmessage s
+	JSONOutput _ -> void $ outputJSON jsonbuilder s
 	QuietOutput -> q
 
-outputJSON :: JSONChunk -> Bool -> MessageState -> Annex Bool
-outputJSON json endmessage s = case outputType s of
-	JSONOutput withprogress
-		| withprogress || concurrentOutputEnabled s -> do
-			-- Buffer json fragments until end is reached.
-			if endmessage
-				then do
-					Annex.changeState $ \st -> 
-						st { Annex.output = s { jsonBuffer = none } }
-					liftIO $ flushed $ emit b
-				else Annex.changeState $ \st ->
-				        st { Annex.output = s { jsonBuffer = b } }
+-- Buffer changes to JSON until end is reached and then emit it.
+outputJSON :: JSONBuilder -> MessageState -> Annex Bool
+outputJSON jsonbuilder s = case outputType s of
+	JSONOutput _
+		| endjson -> do
+			Annex.changeState $ \st -> 
+				st { Annex.output = s { jsonBuffer = Nothing } }
+			maybe noop (liftIO . flushed . emit) json
 			return True
 		| otherwise -> do
-			liftIO $ flushed $ emit json
+			Annex.changeState $ \st ->
+			        st { Annex.output = s { jsonBuffer = json } }
 			return True
 	_ -> return False
   where
-	b = jsonBuffer s `B.append` json
+	(json, endjson) = case jsonbuilder i of
+		Nothing -> (jsonBuffer s, False)
+		(Just (j, e)) -> (Just j, e)
+	i = case jsonBuffer s of
+		Nothing -> Nothing
+		Just b -> Just (b, False)
 
 outputError :: String -> Annex ()
 outputError msg = withMessageState $ \s ->

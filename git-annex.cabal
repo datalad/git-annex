@@ -1017,7 +1017,6 @@ Executable git-annex
     Utility.HumanNumber
     Utility.HumanTime
     Utility.InodeCache
-    Utility.JSONStream
     Utility.LinuxMkLibs
     Utility.LockFile
     Utility.LockFile.LockStatus

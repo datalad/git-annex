@@ -27,7 +27,7 @@ module Messages (
 	earlyWarning,
 	warningIO,
 	indent,
-	JSONChunk(..),
+	JSON.JSONChunk(..),
 	maybeShowJSON,
 	showFullJSON,
 	showCustom,
@@ -54,7 +54,6 @@ import Types.Messages
 import Types.ActionItem
 import Messages.Internal
 import qualified Messages.JSON as JSON
-import Utility.JSONStream (JSONChunk(..))
 import qualified Annex
 
 showStart :: String -> FilePath -> Annex ()
@@ -122,7 +121,7 @@ showEndFail :: Annex ()
 showEndFail = showEndResult False
 
 showEndResult :: Bool -> Annex ()
-showEndResult ok = outputMessageFinal (JSON.end ok) $ endResult ok ++ "\n"
+showEndResult ok = outputMessage (JSON.end ok) $ endResult ok ++ "\n"
 
 endResult :: Bool -> String
 endResult True = "ok"
@@ -154,12 +153,12 @@ indent :: String -> String
 indent = intercalate "\n" . map (\l -> "  " ++ l) . lines
 
 {- Shows a JSON chunk only when in json mode. -}
-maybeShowJSON :: JSONChunk v -> Annex ()
-maybeShowJSON v = void $ withMessageState $ outputJSON (JSON.add v) False
+maybeShowJSON :: JSON.JSONChunk v -> Annex ()
+maybeShowJSON v = void $ withMessageState $ outputJSON (JSON.add v)
 
 {- Shows a complete JSON value, only when in json mode. -}
-showFullJSON :: JSONChunk v -> Annex Bool
-showFullJSON v = withMessageState $ outputJSON (JSON.complete v) True
+showFullJSON :: JSON.JSONChunk v -> Annex Bool
+showFullJSON v = withMessageState $ outputJSON (JSON.complete v)
 
 {- Performs an action that outputs nonstandard/customized output, and
  - in JSON mode wraps its output in JSON.start and JSON.end, so it's
