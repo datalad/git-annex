@@ -1,0 +1,77 @@
+### Please describe the problem.
+
+autoenable for special remotes seems has stopped working (didn't check with prev versions though, so it might be just something changed in how repository is setup or smth else)
+
+### What version of git-annex are you using? On what operating system?
+
+6.20160902+gitgbc49d8a-1~ndall+1
+
+### Please provide any additional information below.
+
+as you can see below  autoenable=true  is set for that remote, and it enables manually just fine
+
+[[!format sh """
+(venv-tests) % rm -rf fbirn_phaseIII; git clone http://datasets.datalad.org/nidm/fbirn_phaseIII/.git
+Cloning into 'fbirn_phaseIII'...
+Checking connectivity... done.
+
+(venv-tests) % cd fbirn_phaseIII
+
+(venv-tests) % git annex info
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 6
+	00000000-0000-0000-0000-000000000001 -- web
+ 	00000000-0000-0000-0000-000000000002 -- bittorrent
+ 	225f46f1-c353-48ce-89da-ccc94dc59d01 -- yoh@falkor:/srv/datasets.datalad.org/www/nidm/fbirn_phaseIII [origin]
+ 	72ce8ab3-19bd-4cef-95b0-5b150c53edc1 -- datalad-archives
+ 	d3ceb488-0266-4464-985d-4d4a265e4144 -- yoh@smaug:/mnt/datasets/datalad/crawl/nidm/fbirn_phaseIII
+ 	f779a37c-96a5-43b5-822b-0010651dc7b1 -- yoh@hopa:/tmp/autoenable/fbirn_phaseIII [here]
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 1.2 gigabytes (+1 megabyte reserved)
+local annex keys: 0
+local annex size: 0 bytes
+annexed files in working tree: 7521
+size of annexed files in working tree: 2.76 gigabytes
+bloom filter size: 32 mebibytes (0% full)
+backend usage: 
+	MD5E: 7521
+
+(venv-tests) % echo 'git-annex:remote.log' | git cat-file --batch
+951989a46d53a17d9a2621f6af82def73c2dc96e blob 328
+72ce8ab3-19bd-4cef-95b0-5b150c53edc1 autoenable=true encryption=none externaltype=datalad-archives name=datalad-archives type=external timestamp=1473266618.950662s
+72ce8ab3-19bd-4cef-95b0-5b150c53edc1 autoenable=true encryption=none externaltype=datalad-archives name=datalad-archives type=external timestamp=1473444735.988475s
+
+(venv-tests) % git annex enableremote datalad-archives
+enableremote datalad-archives ok
+(recording state in git...)
+(venv-tests) % git annex info                                    
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 6
+	00000000-0000-0000-0000-000000000001 -- web
+ 	00000000-0000-0000-0000-000000000002 -- bittorrent
+ 	225f46f1-c353-48ce-89da-ccc94dc59d01 -- yoh@falkor:/srv/datasets.datalad.org/www/nidm/fbirn_phaseIII [origin]
+ 	72ce8ab3-19bd-4cef-95b0-5b150c53edc1 -- [datalad-archives]
+ 	d3ceb488-0266-4464-985d-4d4a265e4144 -- yoh@smaug:/mnt/datasets/datalad/crawl/nidm/fbirn_phaseIII
+ 	f779a37c-96a5-43b5-822b-0010651dc7b1 -- yoh@hopa:/tmp/autoenable/fbirn_phaseIII [here]
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 1.2 gigabytes (+1 megabyte reserved)
+local annex keys: 0
+local annex size: 0 bytes
+annexed files in working tree: 7521
+size of annexed files in working tree: 2.76 gigabytes
+bloom filter size: 32 mebibytes (0% full)
+backend usage: 
+	MD5E: 7521
+
+"""]]
+
+I am a little confused though since we do test for this scenario in datalad and test still passes, i.e. remote gets enabled... 
+
+
+[[!meta author=yoh]]
