@@ -20,7 +20,7 @@ import Annex.NumCopies
 import System.Log.Logger (debugM)
 
 cmd :: Command
-cmd = withGlobalOptions (jobsOption : annexedMatchingOptions) $
+cmd = withGlobalOptions (jobsOption : jsonOption : jsonProgressOption : annexedMatchingOptions) $
 	command "move" SectionCommon
 		"move content of files to/from another repository"
 		paramPaths (seek <--< optParser)

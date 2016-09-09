@@ -9,6 +9,7 @@ git-annex (6.20160908) UNRELEASED; urgency=medium
   * addurl, get: Added --json-progress option, which adds progress
     objects to the json output.
   * Remove key:null from git-annex add --json output.
+  * copy, move, mirror: Support --json and --json-progress.
 
  -- Joey Hess <id@joeyh.name>  Thu, 08 Sep 2016 12:48:55 -0400
 

@@ -72,6 +72,15 @@ Copies the content of files from or to another remote.
   The [[git-annex-matching-options]](1)
   can be used to specify files to copy.
 
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
+* `--json-progress`
+
+  Include progress objects in JSON output.
+
 # SEE ALSO
 
 [[git-annex]](1)

@@ -66,6 +66,15 @@ contents. Use [[git-annex-sync]](1) for that.
   The [[git-annex-matching-options]](1)
   can be used to specify files to mirror.
 
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
+* `--json-progress`
+
+  Include progress objects in JSON output.
+
 # SEE ALSO
 
 [[git-annex]](1)
