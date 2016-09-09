@@ -4,6 +4,8 @@ git-annex (6.20160908) UNRELEASED; urgency=medium
     Was updating as frequently as changes were reported, up to hundreds of
     times per second, which used unncessary bandwidth when running git-annex
     over ssh etc.
+  * Make --json and --quiet work when used with -J.
+    Previously, -J override the other options.
 
  -- Joey Hess <id@joeyh.name>  Thu, 08 Sep 2016 12:48:55 -0400
 

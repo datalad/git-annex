@@ -30,6 +30,7 @@ data MessageState = MessageState
 	, consoleRegion :: Maybe ConsoleRegion
 	, consoleRegionErrFlag :: Bool
 #endif
+	, jsonBuffer :: [IO ()]
 	}
 
 instance Default MessageState
@@ -43,4 +44,5 @@ instance Default MessageState
 		, consoleRegion = Nothing
 		, consoleRegionErrFlag = False
 #endif
+		, jsonBuffer = []
 		}

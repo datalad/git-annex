@@ -122,7 +122,7 @@ showEndFail :: Annex ()
 showEndFail = showEndResult False
 
 showEndResult :: Bool -> Annex ()
-showEndResult ok = outputMessage (JSON.end ok) $ endResult ok ++ "\n"
+showEndResult ok = outputMessageFinal (JSON.end ok) $ endResult ok ++ "\n"
 
 endResult :: Bool -> String
 endResult True = "ok"
