@@ -21,6 +21,7 @@ import Types.Messages
 import Types.Command
 import Types.DeferredParse
 import Types.DesktopNotify
+import Types.Concurrency
 import qualified Annex
 import qualified Remote
 import qualified Limit
@@ -302,7 +303,7 @@ jobsOption = globalSetter set $
 		)
   where
 	set n = do
-		Annex.changeState $ \s -> s { Annex.concurrentjobs = Just n }
+		Annex.changeState $ \s -> s { Annex.concurrency = Concurrent n }
 		c <- liftIO getNumCapabilities
 		when (n > c) $
 			liftIO $ setNumCapabilities n

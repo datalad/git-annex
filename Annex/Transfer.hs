@@ -28,6 +28,7 @@ import Utility.Metered
 import Annex.LockPool
 import Types.Remote (Verification(..))
 import qualified Types.Remote as Remote
+import Types.Concurrency
 
 import Control.Concurrent
 import qualified Data.Set as S
@@ -180,11 +181,11 @@ forwardRetry old new = bytesComplete old < bytesComplete new
  - increase total transfer speed.
  -}
 pickRemote :: Observable v => [Remote] -> (Remote -> Annex v) -> Annex v
-pickRemote l a = go l =<< Annex.getState Annex.concurrentjobs
+pickRemote l a = go l =<< Annex.getState Annex.concurrency
   where
 	go [] _ = return observeFailure
 	go (r:[]) _ = a r
-	go rs (Just n) | n > 1 = do
+	go rs (Concurrent n) | n > 1 = do
 		mv <- Annex.getState Annex.activeremotes
 		active <- liftIO $ takeMVar mv
 		let rs' = sortBy (inactiveFirst active) rs
@@ -193,7 +194,7 @@ pickRemote l a = go l =<< Annex.getState Annex.concurrentjobs
 		ok <- a r
 		if observeBool ok
 			then return ok
-			else go rs Nothing
+			else go rs NonConcurrent
 	goconcurrent mv active [] = do
 		liftIO $ putMVar mv active
 		return observeFailure

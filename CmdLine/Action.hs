@@ -13,6 +13,7 @@ import Annex.Common
 import qualified Annex
 import Annex.Concurrent
 import Types.Command
+import Types.Concurrency
 import Messages.Concurrent
 import Types.Messages
 
@@ -50,9 +51,9 @@ performCommandAction Command { cmdcheck = c, cmdname = name } seek cont = do
  - This should only be run in the seek stage.
  -}
 commandAction :: CommandStart -> Annex ()
-commandAction a = withOutputType go 
+commandAction a = go =<< Annex.getState Annex.concurrency
   where
-	go o@(ConcurrentOutput n _) = do
+	go (Concurrent n) = do
 		ws <- Annex.getState Annex.workers
 		(st, ws') <- if null ws
 			then do
@@ -62,9 +63,9 @@ commandAction a = withOutputType go
 				l <- liftIO $ drainTo (n-1) ws
 				findFreeSlot l
 		w <- liftIO $ async
-			$ snd <$> Annex.run st (inOwnConsoleRegion o run)
+			$ snd <$> Annex.run st (inOwnConsoleRegion (Annex.output st) run)
 		Annex.changeState $ \s -> s { Annex.workers = Right w:ws' }
-	go _  =	run
+	go NonConcurrent = run
 	run = void $ includeCommandAction a
 
 {- Waits for any forked off command actions to finish.
@@ -151,19 +152,21 @@ callCommandAction' = start
 {- Do concurrent output when that has been requested. -}
 allowConcurrentOutput :: Annex a -> Annex a
 #ifdef WITH_CONCURRENTOUTPUT
-allowConcurrentOutput a = go =<< Annex.getState Annex.concurrentjobs
+allowConcurrentOutput a = go =<< Annex.getState Annex.concurrency
   where
-	go Nothing = a
-	go (Just n) = ifM (liftIO concurrentOutputSupported)
+	go NonConcurrent = a
+	go (Concurrent _) = ifM (liftIO concurrentOutputSupported)
 		( Regions.displayConsoleRegions $
-			goconcurrent (ConcurrentOutput n True)
-		, goconcurrent (ConcurrentOutput n False)
+			goconcurrent True
+		, goconcurrent False
 		)
-	goconcurrent o = bracket_ (setup o) cleanup a
-	setup = Annex.setOutput
+	goconcurrent b = bracket_ (setup b) cleanup a
+	setup = setconcurrentenabled
 	cleanup = do
 		finishCommandActions
-		Annex.setOutput NormalOutput
+		setconcurrentenabled False
+	setconcurrentenabled b = Annex.changeState $ \s ->
+		s { Annex.output = (Annex.output s) { concurrentOutputEnabled = b } }
 #else
 allowConcurrentOutput = id
 #endif

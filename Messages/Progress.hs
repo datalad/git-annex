@@ -32,11 +32,11 @@ import Data.Quantity
 metered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
 metered othermeter key a = case keySize key of
 	Nothing -> nometer
-	Just size -> withOutputType (go $ fromInteger size)
+	Just size -> withMessageState (go $ fromInteger size)
   where
-	go _ QuietOutput = nometer
-	go _ JSONOutput = nometer
-	go size NormalOutput = do
+	go _ (MessageState { outputType = QuietOutput }) = nometer
+	go _ (MessageState { outputType = JSONOutput }) = nometer
+	go size (MessageState { outputType = NormalOutput, concurrentOutputEnabled = False }) = do
 		showOutput
 		(progress, meter) <- mkmeter size
 		m <- liftIO $ rateLimitMeterUpdate 0.1 (Just size) $ \n -> do
@@ -45,9 +45,9 @@ metered othermeter key a = case keySize key of
 		r <- a (combinemeter m)
 		liftIO $ clearMeter stdout meter
 		return r
+	go size (MessageState { outputType = NormalOutput, concurrentOutputEnabled = True }) =
 #if WITH_CONCURRENTOUTPUT
-	go size o@(ConcurrentOutput {})
-		| concurrentOutputEnabled o = withProgressRegion $ \r -> do
+		withProgressRegion $ \r -> do
 			(progress, meter) <- mkmeter size
 			m <- liftIO $ rateLimitMeterUpdate 0.1 (Just size) $ \n -> do
 				setP progress $ fromBytesProcessed n
@@ -55,9 +55,8 @@ metered othermeter key a = case keySize key of
 				Regions.setConsoleRegion r ("\n" ++ s)
 			a (combinemeter m)
 #else
-	go _size _o
+		nometer
 #endif
-		| otherwise = nometer
 
 	mkmeter size = do
 		progress <- liftIO $ newProgress "" size
@@ -73,18 +72,18 @@ metered othermeter key a = case keySize key of
 {- Use when the progress meter is only desired for concurrent
  - output; as when a command's own progress output is preferred. -}
 concurrentMetered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
-concurrentMetered combinemeterupdate key a = withOutputType go
-  where
-	go (ConcurrentOutput {}) = metered combinemeterupdate key a
-	go _ = a (fromMaybe nullMeterUpdate combinemeterupdate)
+concurrentMetered combinemeterupdate key a = 
+	withMessageState $ \s -> if concurrentOutputEnabled s
+		then metered combinemeterupdate key a
+		else a (fromMaybe nullMeterUpdate combinemeterupdate)
 
 {- Poll file size to display meter, but only for concurrent output. -}
 concurrentMeteredFile :: FilePath -> Maybe MeterUpdate -> Key -> Annex a -> Annex a
-concurrentMeteredFile file combinemeterupdate key a = withOutputType go
-  where
-	go (ConcurrentOutput {}) = metered combinemeterupdate key $ \p ->
-		watchFileSize file p a
-	go _ = a
+concurrentMeteredFile file combinemeterupdate key a = 
+	withMessageState $ \s -> if concurrentOutputEnabled s
+		then metered combinemeterupdate key $ \p ->
+			watchFileSize file p a
+		else a
 
 {- Progress dots. -}
 showProgressDots :: Annex ()
@@ -123,9 +122,9 @@ mkStderrRelayer = do
  - messing it up with interleaved stderr from a command.
  -}
 mkStderrEmitter :: Annex (String -> IO ())
-mkStderrEmitter = withOutputType go
+mkStderrEmitter = withMessageState go
   where
 #ifdef WITH_CONCURRENTOUTPUT
-	go o | concurrentOutputEnabled o = return Console.errorConcurrent
+	go s | concurrentOutputEnabled s = return Console.errorConcurrent
 #endif
 	go _ = return (hPutStrLn stderr)

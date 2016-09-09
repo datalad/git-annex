@@ -40,7 +40,7 @@ module Messages (
 	commandProgressDisabled,
 	outputMessage,
 	implicitMessage,
-	withOutputType,
+	withMessageState,
 ) where
 
 import System.Log.Logger
@@ -155,17 +155,15 @@ indent = intercalate "\n" . map (\l -> "  " ++ l) . lines
 
 {- Shows a JSON chunk only when in json mode. -}
 maybeShowJSON :: JSONChunk v -> Annex ()
-maybeShowJSON v = withOutputType $ liftIO . go
-  where
-	go JSONOutput = JSON.add v
-	go _ = return ()
+maybeShowJSON v = withMessageState $ \s -> case outputType s of
+	JSONOutput -> liftIO $ JSON.add v
+	_ -> return ()
 
 {- Shows a complete JSON value, only when in json mode. -}
 showFullJSON :: JSONChunk v -> Annex Bool
-showFullJSON v = withOutputType $ liftIO . go
-  where
-	go JSONOutput = JSON.complete v >> return True
-	go _ = return False
+showFullJSON v = withMessageState $ \s -> case outputType s of
+	JSONOutput -> liftIO $ JSON.complete v >> return True
+	_ -> return False
 
 {- Performs an action that outputs nonstandard/customized output, and
  - in JSON mode wraps its output in JSON.start and JSON.end, so it's
@@ -216,11 +214,11 @@ debugEnabled = do
 {- Should commands that normally output progress messages have that
  - output disabled? -}
 commandProgressDisabled :: Annex Bool
-commandProgressDisabled = withOutputType $ \t -> return $ case t of
-	QuietOutput -> True
-	JSONOutput -> True
-	NormalOutput -> False
-	ConcurrentOutput {} -> True
+commandProgressDisabled = withMessageState $ \s -> return $
+	case outputType s of
+		QuietOutput -> True
+		JSONOutput -> True
+		NormalOutput -> concurrentOutputEnabled s
 
 {- Use to show a message that is displayed implicitly, and so might be
  - disabled when running a certian command that needs more control over its

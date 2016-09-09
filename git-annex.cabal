@@ -949,6 +949,7 @@ Executable git-annex
     Types.BranchState
     Types.CleanupActions
     Types.Command
+    Types.Concurrency
     Types.Creds
     Types.Crypto
     Types.DeferredParse

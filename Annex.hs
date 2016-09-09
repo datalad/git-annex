@@ -56,6 +56,7 @@ import Types.BranchState
 import Types.TrustLevel
 import Types.Group
 import Types.Messages
+import Types.Concurrency
 import Types.UUID
 import Types.FileMatcher
 import Types.NumCopies
@@ -101,6 +102,7 @@ data AnnexState = AnnexState
 	, remotes :: [Types.Remote.RemoteA Annex]
 	, remoteannexstate :: M.Map UUID AnnexState
 	, output :: MessageState
+	, concurrency :: Concurrency
 	, force :: Bool
 	, fast :: Bool
 	, daemon :: Bool
@@ -134,7 +136,6 @@ data AnnexState = AnnexState
 	, existinghooks :: M.Map Git.Hook.Hook Bool
 	, desktopnotify :: DesktopNotify
 	, workers :: [Either AnnexState (Async AnnexState)]
-	, concurrentjobs :: Maybe Int
 	, activeremotes :: MVar (S.Set (Types.Remote.RemoteA Annex))
 	, keysdbhandle :: Maybe Keys.DbHandle
 	, cachedcurrentbranch :: Maybe Git.Branch
@@ -151,6 +152,7 @@ newState c r = do
 		, remotes = []
 		, remoteannexstate = M.empty
 		, output = def
+		, concurrency = NonConcurrent
 		, force = False
 		, fast = False
 		, daemon = False
@@ -184,7 +186,6 @@ newState c r = do
 		, existinghooks = M.empty
 		, desktopnotify = mempty
 		, workers = []
-		, concurrentjobs = Nothing
 		, activeremotes = emptyactiveremotes
 		, keysdbhandle = Nothing
 		, cachedcurrentbranch = Nothing

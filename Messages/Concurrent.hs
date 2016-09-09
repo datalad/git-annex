@@ -31,13 +31,13 @@ import GHC.IO.Encoding
  - When built without concurrent-output support, the fallback action is run
  - instead.
  -}
-concurrentMessage :: OutputType -> Bool -> String -> Annex () -> Annex ()
+concurrentMessage :: MessageState -> Bool -> String -> Annex () -> Annex ()
 #ifdef WITH_CONCURRENTOUTPUT
-concurrentMessage o iserror msg fallback 
-	| concurrentOutputEnabled o =
+concurrentMessage s iserror msg fallback 
+	| concurrentOutputEnabled s =
 		go =<< consoleRegion <$> Annex.getState Annex.output
 #else
-concurrentMessage _o _iserror _msg fallback 
+concurrentMessage _s _iserror _msg fallback 
 #endif
 	| otherwise = fallback
 #ifdef WITH_CONCURRENTOUTPUT
@@ -50,8 +50,8 @@ concurrentMessage _o _iserror _msg fallback
 		-- console regions are in use, so set the errflag
 		-- to get it to display to stderr later.
 		when iserror $ do
-			Annex.changeState $ \s ->
-				s { Annex.output = (Annex.output s) { consoleRegionErrFlag = True } }
+			Annex.changeState $ \st ->
+				st { Annex.output = (Annex.output st) { consoleRegionErrFlag = True } }
 		liftIO $ atomically $ do
 			Regions.appendConsoleRegion r msg
 			rl <- takeTMVar Regions.regionList
@@ -68,24 +68,24 @@ concurrentMessage _o _iserror _msg fallback
  - When not at a console, a region is not displayed until the action is
  - complete.
  -}
-inOwnConsoleRegion :: OutputType -> Annex a -> Annex a
+inOwnConsoleRegion :: MessageState -> Annex a -> Annex a
 #ifdef WITH_CONCURRENTOUTPUT
-inOwnConsoleRegion o a
-	| concurrentOutputEnabled o = do
+inOwnConsoleRegion s a
+	| concurrentOutputEnabled s = do
 		r <- mkregion
 		setregion (Just r)
 		eret <- tryNonAsync a `onException` rmregion r
 		case eret of
 			Left e -> do
 				-- Add error message to region before it closes.
-				concurrentMessage o True (show e) noop
+				concurrentMessage s True (show e) noop
 				rmregion r
 				throwM e
 			Right ret -> do
 				rmregion r
 				return ret
 #else
-inOwnConsoleRegion _o a
+inOwnConsoleRegion _s a
 #endif
 	| otherwise = a
 #ifdef WITH_CONCURRENTOUTPUT
@@ -94,12 +94,13 @@ inOwnConsoleRegion _o a
 	-- a message is added to it. This avoids unnecessary screen
 	-- updates when a region does not turn out to need to be used.
 	mkregion = Regions.newConsoleRegion Regions.Linear ""
-	setregion r = Annex.changeState $ \s -> s { Annex.output = (Annex.output s) { consoleRegion = r } }
+	setregion r = Annex.changeState $ \st -> st
+		{ Annex.output = (Annex.output st) { consoleRegion = r } }
 	rmregion r = do
 		errflag <- consoleRegionErrFlag <$> Annex.getState Annex.output
 		let h = if errflag then Console.StdErr else Console.StdOut
-		Annex.changeState $ \s ->
-			s { Annex.output = (Annex.output s) { consoleRegionErrFlag = False } }
+		Annex.changeState $ \st -> st
+			{ Annex.output = (Annex.output st) { consoleRegionErrFlag = False } }
 		setregion Nothing
 		liftIO $ atomically $ do
 			t <- Regions.getConsoleRegion r
@@ -135,7 +136,3 @@ concurrentOutputSupported = return True -- Windows is always unicode
 #else
 concurrentOutputSupported = return False
 #endif
-
-concurrentOutputEnabled :: OutputType -> Bool
-concurrentOutputEnabled (ConcurrentOutput _ b) = b
-concurrentOutputEnabled _ = False

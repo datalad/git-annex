@@ -15,7 +15,7 @@ import Data.Default
 import System.Console.Regions (ConsoleRegion)
 #endif
 
-data OutputType = NormalOutput | QuietOutput | ConcurrentOutput Int Bool | JSONOutput
+data OutputType = NormalOutput | QuietOutput | JSONOutput
 	deriving (Show)
 
 data SideActionBlock = NoBlock | StartBlock | InBlock
@@ -23,6 +23,7 @@ data SideActionBlock = NoBlock | StartBlock | InBlock
 
 data MessageState = MessageState
 	{ outputType :: OutputType
+	, concurrentOutputEnabled :: Bool
 	, sideActionBlock :: SideActionBlock
 	, implicitMessages :: Bool
 #ifdef WITH_CONCURRENTOUTPUT
@@ -35,6 +36,7 @@ instance Default MessageState
   where
 	def = MessageState
 		{ outputType = NormalOutput
+		, concurrentOutputEnabled = False
 		, sideActionBlock = NoBlock
 		, implicitMessages = True 
 #ifdef WITH_CONCURRENTOUTPUT
