@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="dave@2ab82f485adf7e2ce787066e35f5f9789bff430b"
+ nickname="dave"
+ subject="Similar issue on Debian machine"
+ date="2016-09-08T20:04:45Z"
+ content="""
+OK, let's try this on a GNU machine (debian, sid) running a git-annex from the official debian repos:
+
+    $ git annex version
+    git-annex version: 6.20160808
+    build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify
+                 XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512
+                        SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+    local repository version: 5
+    supported repository versions: 5 6
+    upgrade supported from repository versions: 0 1 2 3 4 5
+    operating system: linux x86_64
+
+Now, this time, the error message in the web app says something ordinary: `Permission denied (publickey,password,keyboard-interactive).`.  However, I see this in the log:
+
+    [2016-09-08 14:56:36.125939] read: ssh-keygen [\"-F\",\"usw-s009.rsync.net\"]
+    [2016-09-08 14:56:36.134026] process done ExitSuccess
+    [2016-09-08 14:56:36.1344] chat: ssh [
+        \"-oNumberOfPasswordPrompts=0\",
+        \"9553@git-annex-.usw.2Ds009.2Ersync.2Enet-9553_22_annex\",
+        \"mkdir -p .ssh;touch .ssh/authorized_keys;dd of=.ssh/authorized_keys oflag=append conv=notrunc;mkdir -p annex\"
+    ]
+    [2016-09-08 14:56:36.71948] process done ExitFailure 255
+
+As you can see, that string mangling is present there too.
+"""]]

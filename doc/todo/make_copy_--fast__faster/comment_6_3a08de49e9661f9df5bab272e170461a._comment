@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 6"
+ date="2016-09-09T12:47:30Z"
+ content="""
+ha -- a wild idea:  instead of   git ls-files git-annex | git cat-file   you could be much  better off  with using \"git archive\" to dump the content of all the files under git-annex branch!
+
+[[!format sh \"\"\"
+$> GIT_TRACE_PACKET=true GIT_TRACE_PERFORMANCE=true git annex find --not --in here >/dev/null                                      
+08:46:11.246625 trace.c:420             performance: 0.000291504 s: git command: '/usr/lib/git-annex.linux/shimmed/git/git' 'config' '--null' '--list'
+08:46:11.267559 trace.c:420             performance: 0.000466198 s: git command: '/usr/lib/git-annex.linux/shimmed/git/git' '--git-dir=.git' '--work-tree=.' '--literal-pathspecs' 'show-ref' 'git-annex'
+08:46:11.271522 trace.c:420             performance: 0.000434572 s: git command: '/usr/lib/git-annex.linux/shimmed/git/git' '--git-dir=.git' '--work-tree=.' '--literal-pathspecs' 'show-ref' '--hash' 'refs/heads/git-annex'
+08:46:22.647051 trace.c:420             performance: 11.387079176 s: git command: '/usr/lib/git-annex.linux/shimmed/git/git' '--git-dir=.git' '--work-tree=.' '--literal-pathspecs' 'ls-files' '--cached' '-z' '--'
+08:46:23.616005 trace.c:420             performance: 12.339791892 s: git command: '/usr/lib/git-annex.linux/shimmed/git/git' '--git-dir=.git' '--work-tree=.' '--literal-pathspecs' 'cat-file' '--batch'
+08:46:23.616052 trace.c:420             performance: 12.391364205 s: git command: 'git' 'annex' 'find' '--not' '--in' 'here'
+
+
+$> git ls-tree -r --name-only git-annex | sed -e \"s/^/git-annex:/g\" | time git --git-dir=.git cat-file --buffer --batch >| /tmp/111
+git --git-dir=.git cat-file --buffer --batch >| /tmp/111  7.80s user 0.40s system 99% cpu 8.214 total
+                
+
+$> time git archive git-annex > /dev/null                                                                                          
+git archive git-annex > /dev/null  0.20s user 0.00s system 97% cpu 0.212 total
+
+\"\"\"]]
+
+x40 times faster (if we disregard time to parse/split tar, but it should not be way too much I think)
+"""]]

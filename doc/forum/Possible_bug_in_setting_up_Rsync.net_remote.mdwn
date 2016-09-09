@@ -1,0 +1,24 @@
+Here is a line from the debug log...
+
+    [2016-09-08 13:08:37.01053] chat: ssh
+      ["-oNumberOfPasswordPrompts=0","-oStrictHostKeyChecking=no",
+       "9553@git-annex-.usw.2Ds009.2Ersync.2Enet-9553_22_annex",
+       "mkdir -p .ssh;touch .ssh/authorized_keys;dd of=.ssh/authorized_keys oflag=append conv=notrunc;mkdir -p annex"]
+
+The hostname I entered was ordinary: `usw-s009.rsync.net`... but as you can see, the `user@host:port` string is mangled.
+
+I'm using git tag `6.20160907` with changes to `git-annex.cabal` and `stack.yaml` to force use of `concurrent-output-1.7.7` since `1.7.6` had a bug that kept it from building on Windows (I guess?).
+
+Oh, this is on Windows, in case that wasn't clear...
+
+I think the bug is in `${git-annex-root}/Assistant/Ssh.hs` or `${git-annex-root}/Assistant/Pairing/MakeRemote.hs`.  The `.2D` and `.2E` bits in the mangled string make me think that the `-` and `.` characters in my hostname are being replaced by some Haskell representation of those values (`2D` in hexadecimal in ASCII is `-`, `2E` is `.`).
+
+But I've never even written hello world in Haskell so my path ends there.
+
+I'm happy to pull some tag or branch from github and run `stack install` over again and try adding the rsync.net remote again.
+
+I hope this helps!
+
+Cheers,
+
+--Dave
