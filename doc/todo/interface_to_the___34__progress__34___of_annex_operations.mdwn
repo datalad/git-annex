@@ -11,3 +11,5 @@ Related:
 > reuse part of the external special remote protocol. (Which would let you
 > relay the progress messages when datalad is doing a nested retrieval, I
 > suppose.) --[[Joey]]
+
+>> [[done]]; --json-progress implemented. --[[Joey]]
