@@ -75,24 +75,28 @@ metered othermeter key a = case keySize key of
 		Just om -> combineMeterUpdate m om
 
 {- Use when the command's own progress output is preferred.
- - The command's output will be suppressed and git-annex's progress output
+ - The command's output will be suppressed and git-annex's progress meter
  - used for concurrent output, and json progress. -}
 commandMetered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
 commandMetered combinemeterupdate key a = 
-	withMessageState $ \s -> case outputType s of
-		JSONOutput True -> usemeter
-		NormalOutput | concurrentOutputEnabled s -> usemeter
-		_ -> a (fromMaybe nullMeterUpdate combinemeterupdate)
-  where
-	usemeter = metered combinemeterupdate key a
+	withMessageState $ \s -> if needOutputMeter s
+		then metered combinemeterupdate key a
+		else a (fromMaybe nullMeterUpdate combinemeterupdate)
 
-{- Poll file size to display meter, but only for concurrent output. -}
-concurrentMeteredFile :: FilePath -> Maybe MeterUpdate -> Key -> Annex a -> Annex a
-concurrentMeteredFile file combinemeterupdate key a = 
-	withMessageState $ \s -> if concurrentOutputEnabled s
+{- Poll file size to display meter, but only when concurrent output or
+ - json progress needs the information. -}
+meteredFile :: FilePath -> Maybe MeterUpdate -> Key -> Annex a -> Annex a
+meteredFile file combinemeterupdate key a = 
+	withMessageState $ \s -> if needOutputMeter s
 		then metered combinemeterupdate key $ \p ->
 			watchFileSize file p a
 		else a
+
+needOutputMeter :: MessageState -> Bool
+needOutputMeter s = case outputType s of
+	JSONOutput True -> True
+	NormalOutput | concurrentOutputEnabled s -> True
+	_ -> False
 
 {- Progress dots. -}
 showProgressDots :: Annex ()
