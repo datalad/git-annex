@@ -80,9 +80,7 @@ complete v = Stream.start v `B.append` Stream.end
 progress :: B.ByteString -> Integer -> BytesProcessed -> IO ()
 progress jsonbuffer size bytesprocessed = emit $ B.concat
 	[ Stream.start $ Stream.AesonObject o
-	, ",\"action\":"
-	, jsonbuffer
-	, "}"
+	, Stream.addNestedObject "action" jsonbuffer
 	, Stream.end
 	]
   where

@@ -5,30 +5,32 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GADTs, OverloadedStrings #-}
 
 module Utility.JSONStream (
 	JSONChunk(..),
 	start,
 	add,
+	addNestedObject,
 	end
 ) where
 
 import Data.Aeson
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as B
+import qualified Data.ByteString.Lazy.UTF8 as BU8
 import Data.Char
 import Data.Word
 
 data JSONChunk v where
-	JSONChunk :: ToJSON v => [(String, v)] -> JSONChunk [(String, v)]
 	AesonObject :: Object -> JSONChunk Object
+	JSONChunk :: ToJSON v => [(String, v)] -> JSONChunk [(String, v)]
 
 encodeJSONChunk :: JSONChunk v -> B.ByteString
+encodeJSONChunk (AesonObject o) = encode o
 encodeJSONChunk (JSONChunk l) = encode $ object $ map mkPair l
   where
 	mkPair (s, v) = (T.pack s, toJSON v)
-encodeJSONChunk (AesonObject o) = encode o
 
 {- Aeson does not support building up a larger JSON object piece by piece
  - with streaming output. To support streaming, a hack:
@@ -43,10 +45,20 @@ start a
 
 add :: JSONChunk a -> B.ByteString
 add a
-	| not (B.null b) && B.head b == startchar = B.cons addchar (B.drop 1 b)
+	| not (B.null b) && B.head b == startchar = 
+		B.cons addchar (B.drop 1 b)
 	| otherwise = bad b
   where
 	b = start a
+
+addNestedObject :: String -> B.ByteString -> B.ByteString
+addNestedObject s b = B.concat
+	[ ",\""
+	, BU8.fromString s
+	, "\":"
+	, b
+	, "}"
+	]
 
 end :: B.ByteString
 end = endchar `B.cons` sepchar `B.cons` B.empty
