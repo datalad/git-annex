@@ -86,7 +86,7 @@ or transferring them from some kind of key-value store.
   displayed. If the specified file's content is already present, or
   it is not an annexed file, a blank line is output in response instead.
 
-  Since the usual progress output while getting a file is verbose and not
+  Since the usual output while getting a file is verbose and not
   machine-parseable, you may want to use --json in combination with
   --batch.
 
@@ -94,6 +94,10 @@ or transferring them from some kind of key-value store.
 
   Enable JSON output. This is intended to be parsed by programs that use
   git-annex. Each line of output is a JSON object.
+
+* `--json-progress`
+
+  Include progress objects in JSON output.
 
 # SEE ALSO
 

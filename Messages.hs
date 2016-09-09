@@ -213,7 +213,7 @@ commandProgressDisabled :: Annex Bool
 commandProgressDisabled = withMessageState $ \s -> return $
 	case outputType s of
 		QuietOutput -> True
-		JSONOutput -> True
+		JSONOutput _ -> True
 		NormalOutput -> concurrentOutputEnabled s
 
 {- Use to show a message that is displayed implicitly, and so might be

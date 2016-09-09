@@ -16,6 +16,7 @@ import Utility.Metered
 import Types
 import Types.Messages
 import Types.Key
+import qualified Messages.JSON as JSON
 
 #ifdef WITH_CONCURRENTOUTPUT
 import Messages.Concurrent
@@ -35,7 +36,6 @@ metered othermeter key a = case keySize key of
 	Just size -> withMessageState (go $ fromInteger size)
   where
 	go _ (MessageState { outputType = QuietOutput }) = nometer
-	go _ (MessageState { outputType = JSONOutput }) = nometer
 	go size (MessageState { outputType = NormalOutput, concurrentOutputEnabled = False }) = do
 		showOutput
 		(progress, meter) <- mkmeter size
@@ -57,6 +57,12 @@ metered othermeter key a = case keySize key of
 #else
 		nometer
 #endif
+	go _ (MessageState { outputType = JSONOutput False }) = nometer
+	go size (MessageState { outputType = JSONOutput True }) = do
+		buf <- withMessageState $ return . showJSONBuffer
+		m <- liftIO $ rateLimitMeterUpdate 0.1 (Just size) $
+			JSON.progress buf size
+		a (combinemeter m)
 
 	mkmeter size = do
 		progress <- liftIO $ newProgress "" size

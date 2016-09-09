@@ -286,9 +286,16 @@ combiningOptions =
 	shortopt o h = globalFlag (Limit.addToken [o]) ( short o <> help h <> hidden )
 
 jsonOption :: GlobalOption
-jsonOption = globalFlag (Annex.setOutput JSONOutput)
+jsonOption = globalFlag (Annex.setOutput (JSONOutput False))
 	( long "json" <> short 'j'
 	<> help "enable JSON output"
+	<> hidden
+	)
+
+jsonProgressOption :: GlobalOption
+jsonProgressOption = globalFlag (Annex.setOutput (JSONOutput True))
+	( long "json-progress" <> short 'j'
+	<> help "include progress in JSON output"
 	<> hidden
 	)
 

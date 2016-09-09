@@ -16,7 +16,7 @@ import Annex.Wanted
 import qualified Command.Move
 
 cmd :: Command
-cmd = withGlobalOptions (jobsOption : jsonOption : annexedMatchingOptions) $ 
+cmd = withGlobalOptions (jobsOption : jsonOption : jsonProgressOption : annexedMatchingOptions) $ 
 	command "get" SectionCommon 
 		"make content of annexed files available"
 		paramPaths (seek <$$> optParser)

@@ -88,6 +88,10 @@ be used to get better filenames.
   Enable JSON output. This is intended to be parsed by programs that use
   git-annex. Each line of output is a JSON object.
 
+* `--json-progress`
+
+  Include progress objects in JSON output.
+
 # CAVEATS
 
 If annex.largefiles is configured, and does not match a file, `git annex

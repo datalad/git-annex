@@ -13,6 +13,7 @@ module Messages.JSON (
 	note,
 	add,
 	complete,
+	progress,
 	DualDisp(..),
 	ObjectMap(..),
 	JSONActionItem(..),
@@ -30,6 +31,8 @@ import Prelude
 
 import qualified Utility.JSONStream as Stream
 import Types.Key
+import Utility.Metered
+import Utility.Percentage
 
 start :: String -> Maybe FilePath -> Maybe Key -> IO ()
 start command file key = B.hPut stdout $ Stream.start $ Stream.AesonObject o
@@ -52,6 +55,20 @@ add = B.hPut stdout . Stream.add
 
 complete :: Stream.JSONChunk a -> IO ()
 complete v = B.hPut stdout $ Stream.start v `B.append` Stream.end
+
+progress :: IO () -> Integer -> BytesProcessed -> IO ()
+progress jsonbuffer size bytesprocessed = do
+	B.hPut stdout $ Stream.start $ Stream.AesonObject o
+	putStr ",\"action\":"
+	jsonbuffer
+	B.hPut stdout $ Stream.end
+	B.hPut stdout $ Stream.end
+  where
+	n = fromBytesProcessed bytesprocessed :: Integer
+	Object o = object
+		[ "byte-progress" .= n
+		, "percent-progress" .= showPercentage 2 (percentage size n)
+		]
 
 -- A value that can be displayed either normally, or as JSON.
 data DualDisp = DualDisp
