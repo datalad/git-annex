@@ -421,7 +421,7 @@ copyFromRemote :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> 
 copyFromRemote r key file dest p
 	| Git.repoIsHttp (repo r) = unVerified $
 		Annex.Content.downloadUrl key p (keyUrls r key) dest
-	| otherwise = concurrentMetered (Just p) key $
+	| otherwise = commandMetered (Just p) key $
 		copyFromRemote' r key file dest
 
 copyFromRemote' :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
@@ -531,7 +531,7 @@ copyFromRemoteCheap _ _ _ _ = return False
 {- Tries to copy a key's content to a remote's annex. -}
 copyToRemote :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 copyToRemote r key file meterupdate = 
-	concurrentMetered (Just meterupdate) key $
+	commandMetered (Just meterupdate) key $
 		copyToRemote' r key file
 
 copyToRemote' :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
