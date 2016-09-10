@@ -106,3 +106,5 @@ also allow for tracking the number of copies of the objects and so on.
 
 Of course, this is a major undertaking and probably the hardest
 approach, but also the one potentially giving the most benefits.
+
+-- [[anarcat]]
