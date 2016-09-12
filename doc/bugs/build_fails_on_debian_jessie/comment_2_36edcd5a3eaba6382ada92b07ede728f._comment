@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="jk@3f2b4ce16bbac41470815333505aa47b91b7a9a6"
+ nickname="jk"
+ subject="comment 2"
+ date="2016-09-12T19:57:03Z"
+ content="""
+Got round to this eventually - build disk-space-free and mountpoints easily enough but then got into dependency hell over the shakespeare package: debian build process wants a later version than present in jessie, but won't build the stretch version against the jessie haskell packages.  
+
+I haven't got much experience of haskell, especially under debian build: is there a way out of this?
+"""]]
