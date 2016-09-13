@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jk@3f2b4ce16bbac41470815333505aa47b91b7a9a6"
+ nickname="jk"
+ subject="comment 3"
+ date="2016-09-13T07:05:48Z"
+ content="""
+A bit more detail: the version of git-annex in jessie-backports has shakespeare 2 as a dependency, but jessie-backports does not contain a package of that; also my attempts to build shakespeare 2 in a jessie{,-backports} enviroment fails with a long list of failed dependencies.
+"""]]
