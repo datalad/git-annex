@@ -178,8 +178,10 @@ secretKeys cmd = catchDefaultIO M.empty makemap
 	parse = extract [] Nothing . map (split ":")
 	extract c (Just keyid) (("uid":_:_:_:_:_:_:_:_:userid:_):rest) =
 		extract ((keyid, decode_c userid):c) Nothing rest
-	extract c (Just keyid) rest =
+	extract c (Just keyid) rest@(("sec":_):_) =
 		extract ((keyid, ""):c) Nothing rest
+	extract c (Just keyid) (_:rest) =
+		extract c (Just keyid) rest
 	extract c _ [] = c
 	extract c _ (("sec":_:_:_:keyid:_):rest) =
 		extract c (Just keyid) rest
