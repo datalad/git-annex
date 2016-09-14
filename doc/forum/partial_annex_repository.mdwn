@@ -1,0 +1,14 @@
+After I created a git repository, I added annex to it.
+
+Now, if I add a new file with 'git add', it goes into the annex.   However previously existing files are not in the annex.
+
+What are the implications of this?   Should I care?
+
+FWIW, most of the files are small, so I see no reason for the annex for them.
+
+How do I add a new file and not put it in the annex?
+
+How to I switch a file from one to the other?
+
+Thanks.
+
