@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-09-14T16:20:25Z"
+ content="""
+Re shakespeare, IIRC the dependency on version 2.0 was only needed
+in order to remove a dependency on hamlet, which got removed upstream.
+So if you add back the dependency on hamlet, it should
+build with the older version of shakespeare.
+
+See git commit 2989cdfe3ed7524c00d16b21e8af9773c37497ff.
+Basically, you want to revert that commit.
+
+Sorry about this farce; I tragically can't see a way to express
+the actual dependency situation in git-annex.cabal and debian/control ..
+"""]]
