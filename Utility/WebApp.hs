@@ -183,7 +183,7 @@ genAuthToken = do
  - Note that the usual Yesod error page is bypassed on error, to avoid
  - possibly leaking the auth token in urls on that page!
  -}
-checkAuthToken :: (Monad m, Yesod.MonadHandler m) => (Yesod.HandlerSite m -> AuthToken) -> m Yesod.AuthResult
+checkAuthToken :: Yesod.MonadHandler m => (Yesod.HandlerSite m -> AuthToken) -> m Yesod.AuthResult
 checkAuthToken extractAuthToken = do
 	webapp <- Yesod.getYesod
 	req <- Yesod.getRequest

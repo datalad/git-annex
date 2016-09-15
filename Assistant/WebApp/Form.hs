@@ -49,7 +49,7 @@ passwordField = F.passwordField
 	}
 
 {- Makes a note widget be displayed after a field. -}
-withNote :: (Monad m, ToWidget (HandlerSite m) a) => Field m v -> a -> Field m v
+withNote :: (ToWidget (HandlerSite m) a) => Field m v -> a -> Field m v
 withNote field note = field { fieldView = newview }
   where
 	newview theId name attrs val isReq = 
