@@ -12,6 +12,7 @@ git-annex (6.20160908) UNRELEASED; urgency=medium
   * copy, move, mirror: Support --json and --json-progress.
   * Improve gpg secret key list parser to deal with changes in gpg 2.1.15.
     Fixes key name display in webapp.
+  * stack.yaml: Update to lts-7.0 (ghc 8)
 
  -- Joey Hess <id@joeyh.name>  Thu, 08 Sep 2016 12:48:55 -0400
 
