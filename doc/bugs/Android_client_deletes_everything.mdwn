@@ -4,11 +4,11 @@ After not syncing my Android repo for a while, I tried to sync it. By some combi
 
 I then synced in my main direct mode crippled filesystem repo with the only copy of some files, and got a bunch of messages that Git Annex was deleting files I wanted to keep. I killed that sync with a ctrl+c.
 
-My problem is: how do I revert the offending commit and restore my files?
+My problem (***UPDATE**: solved) is: how do I revert the offending commit and restore my files?
 
-My other question is: how do I prevent this happening again? Is there a way I can pre-clear commits and not accept those that delete files without manual confirmation? Or should I just stop being mean to the Android client and hope it doesn't decide to delete things it shouldn't delete again?
+My other question (not yet solved) is: how do I prevent this happening again? Is there a way I can pre-clear commits and not accept those that delete files without manual confirmation? Or should I just stop being mean to the Android client and hope it doesn't decide to delete things it shouldn't delete again?
 
-I've tried a "git annex proxy -- git revert HASHOFBADCOMMIT", but (as I killed Git Annex before it got through recording that it had trashed my files), I just get:
+I've tried a `git annex proxy -- git revert HASHOFBADCOMMIT`, but (as I killed Git Annex before it got through recording that it had trashed my files), I just get:
 
 ```
 error: Your local changes would be overwritten by revert.
@@ -17,6 +17,8 @@ fatal: revert failed
 ```
 
 When syncing in a direct mode repo, does Git Annex happily delete the last copy of a file that appears to have been deleted somewhere else? Or does it save it until you manually clean up unused data, by moving it somewhere under .git?
+
+**UPDATE**: A `git annex sync`, of all things, in the direct mode repository seems to have brought the files and their contents back. It created a commit that undid the deleting commit, except for the deletion of a duplicate copy of one file, which I don't need to have.
 
 ### What steps will reproduce the problem?
 
