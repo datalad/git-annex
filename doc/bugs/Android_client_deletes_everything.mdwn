@@ -1,0 +1,43 @@
+### Please describe the problem.
+
+After not syncing my Android repo for a while, I tried to sync it. By some combination of starting up the assistant, killing it, running `git annex sync --content`, and killing *it*, I managed to get the Android client (operating in direct mode) to decide that I had manually deleted a whole bunch of files that had in fact just not been created yet, and to create a commit to that effect, which it promptly synced out to my other repos.
+
+I then synced in my main direct mode crippled filesystem repo with the only copy of some files, and got a bunch of messages that Git Annex was deleting files I wanted to keep. I killed that sync with a ctrl+c.
+
+My problem is: how do I revert the offending commit and restore my files?
+
+My other question is: how do I prevent this happening again? Is there a way I can pre-clear commits and not accept those that delete files without manual confirmation? Or should I just stop being mean to the Android client and hope it doesn't decide to delete things it shouldn't delete again?
+
+I've tried a "git annex proxy -- git revert HASHOFBADCOMMIT", but (as I killed Git Annex before it got through recording that it had trashed my files), I just get:
+
+```
+error: Your local changes would be overwritten by revert.
+hint: Commit your changes or stash them to proceed.
+fatal: revert failed
+```
+
+When syncing in a direct mode repo, does Git Annex happily delete the last copy of a file that appears to have been deleted somewhere else? Or does it save it until you manually clean up unused data, by moving it somewhere under .git?
+
+### What steps will reproduce the problem?
+
+It's not entirely clear. Some combination of interrupting and restarting the Android app can make it think that files have been deleted when they really have never been created.
+
+Alternately, to get the problem I really want to fix now, delete a file in one repo, sync the delete to a direct-mode repo with the only copy. Then somehow undo the delete from the direct mode repo and restore the content of the file.
+
+### What version of git-annex are you using? On what operating system?
+
+The PC has 6.20160903-g1c0b2b4 and Android has 6.20160714.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
