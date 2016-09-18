@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="kevin@f9ce8e46ad8c29b25093b82cf68fae38f54b89a1"
+ nickname="kevin"
+ subject="Groups..."
+ date="2016-09-18T20:35:00Z"
+ content="""
+The answer seems to be [groups](https://git-annex.branchable.com/preferred_content/standard_groups/).
+
+If I set the two repos I want to have content to be in the backup group, they'll always try to get every file the see.
+"""]]
