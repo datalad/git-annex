@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-09-21T17:23:18Z"
+ content="""
+git-annex is parsing the output of git fsck to see what sha1s it outputs,
+as those may have problems, --verbose would confuse that since it causes
+many more sha1s to be output to stdout.
+
+Passing --progress enables a progress display, but it is
+displayed on stderr, which is the same place git fsck displays
+some errors which git-annex also parses. Any attempt to untangle the
+progress and the error messages could be broken by changes to the git fsck
+output, so would not be a good idea.
+
+So while this is a good idea, it doesn't work out.
+"""]]
