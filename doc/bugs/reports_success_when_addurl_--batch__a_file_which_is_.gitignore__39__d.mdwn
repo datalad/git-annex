@@ -29,3 +29,8 @@ git-annex: user error (xargs ["-0","git","--git-dir=.git","--work-tree=.","--lit
 """]]
 
 [[!meta author=yoh]]
+
+> And it leaves the unstaged symlink behind too.
+> 
+> [[fixed|done]] to check ignore status before creating the file.
+> --[[Joey]]

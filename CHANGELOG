@@ -32,6 +32,7 @@ git-annex (6.20160908) UNRELEASED; urgency=medium
   * Also, running sync in an adjusted branch did not correctly sync
     changes back to the parent branch when it had a slash in its name.
     This bug has been fixed.
+  * addurl, importfeed: Improve behavior when file being added is gitignored.
 
  -- Joey Hess <id@joeyh.name>  Thu, 08 Sep 2016 12:48:55 -0400
 

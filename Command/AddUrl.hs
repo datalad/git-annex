@@ -19,6 +19,7 @@ import qualified Types.Remote as Remote
 import qualified Command.Add
 import Annex.Content
 import Annex.Ingest
+import Annex.CheckIgnore
 import Annex.UUID
 import Logs.Web
 import Types.KeySource
@@ -157,7 +158,7 @@ performRemote r relaxed uri file sz = ifAnnexed file adduri geturi
 	geturi = next $ isJust <$> downloadRemoteFile r relaxed uri file sz
 
 downloadRemoteFile :: Remote -> Bool -> URLString -> FilePath -> Maybe Integer -> Annex (Maybe Key)
-downloadRemoteFile r relaxed uri file sz = do
+downloadRemoteFile r relaxed uri file sz = checkCanAdd file $ do
 	let urlkey = Backend.URL.fromUrl uri sz
 	liftIO $ createDirectoryIfMissing True (parentDir file)
 	ifM (Annex.getState Annex.fast <||> pure relaxed)
@@ -236,7 +237,7 @@ performQuvi relaxed pageurl videourl file = ifAnnexed file addurl geturl
 	geturl = next $ isJust <$> addUrlFileQuvi relaxed quviurl videourl file
 
 addUrlFileQuvi :: Bool -> URLString -> URLString -> FilePath -> Annex (Maybe Key)
-addUrlFileQuvi relaxed quviurl videourl file = stopUnless (doesNotExist file) $ do
+addUrlFileQuvi relaxed quviurl videourl file = checkCanAdd file $ do
 	let key = Backend.URL.fromUrl quviurl Nothing
 	ifM (pure relaxed <||> Annex.getState Annex.fast)
 		( do
@@ -285,20 +286,12 @@ addUrlChecked relaxed url u checkexistssize key
 		)
 
 addUrlFile :: Bool -> URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
-addUrlFile relaxed url urlinfo file = stopUnless (doesNotExist file) $ do
+addUrlFile relaxed url urlinfo file = checkCanAdd file $ do
 	liftIO $ createDirectoryIfMissing True (parentDir file)
 	ifM (Annex.getState Annex.fast <||> pure relaxed)
 		( nodownload url urlinfo file
 		, downloadWeb url urlinfo file
 		)
-
-doesNotExist :: FilePath -> Annex Bool
-doesNotExist file = go =<< liftIO (catchMaybeIO $ getSymbolicLinkStatus file)
-  where
-	go Nothing = return True
-	go (Just _) = do
-		warning $ file ++ " already exists and is not annexed; not overwriting"
-		return False
 
 downloadWeb :: URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
 downloadWeb url urlinfo file = do
@@ -400,3 +393,16 @@ adjustFile o = addprefix . addsuffix
   where
 	addprefix f = maybe f (++ f) (prefixOption o)
 	addsuffix f = maybe f (f ++) (suffixOption o)
+
+checkCanAdd :: FilePath -> Annex (Maybe a) -> Annex (Maybe a)
+checkCanAdd file a = ifM (isJust <$> (liftIO $ catchMaybeIO $ getSymbolicLinkStatus file))
+	( do
+		warning $ file ++ " already exists and is not annexed; not overwriting"
+		return Nothing
+	, ifM ((not <$> Annex.getState Annex.force) <&&> checkIgnored file)
+		( do
+			warning $ "not adding " ++ file ++ " which is .gitignored (use --force to override)"
+			return Nothing
+		, a
+		)
+	)
