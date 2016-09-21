@@ -39,15 +39,6 @@ base = Ref . remove "refs/heads/" . remove "refs/remotes/" . fromRef
 		| prefix `isPrefixOf` s = drop (length prefix) s
 		| otherwise = s
 
-{- Gets the basename of any qualified ref. -}
-basename :: Ref -> Ref
-basename = Ref . reverse . takeWhile (/= '/') . reverse . fromRef
-
-{- Given a directory and any ref, takes the basename of the ref and puts
- - it under the directory. -}
-under :: String -> Ref -> Ref
-under dir r = Ref $ dir ++ "/" ++ fromRef (basename r)
-
 {- Given a directory such as "refs/remotes/origin", and a ref such as
  - refs/heads/master, yields a version of that ref under the directory,
  - such as refs/remotes/origin/master. -}

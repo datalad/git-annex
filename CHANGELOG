@@ -15,6 +15,23 @@ git-annex (6.20160908) UNRELEASED; urgency=medium
   * stack.yaml: Update to lts-7.0 (ghc 8)
   * info: Support being passed a treeish, and show info about the annexed
     files in it similar to how a directory is handled.
+  * sync: Previously, when run in a branch with a slash in its name,
+    such as "foo/bar", the sync branch was "synced/bar". That conflicted
+    with the sync branch used for branch "bar", so has been changed to
+    "synced/foo/bar".
+  * Note that if you're using an old version of git-annex to sync with
+    a branch with a slash in its name, it won't see some changes synced by
+    this version, and this version won't see some changes synced by the older
+    version. This is not a problem if there's a central bare repository,
+    but may impact other configurations until git-annex is upgraded to this
+    version.
+  * adjust: Previously, when adjusting a branch with a slash in its name,
+    such as "foo/bar", the adjusted branch was "adjusted/bar(unlocked)".
+    That conflicted with the adjusted branch used for branch "bar",
+    so has been changed to "adjusted/foo/bar(unlocked)"
+  * Also, running sync in an adjusted branch did not correctly sync
+    changes back to the parent branch when it had a slash in its name.
+    This bug has been fixed.
 
  -- Joey Hess <id@joeyh.name>  Thu, 08 Sep 2016 12:48:55 -0400
 

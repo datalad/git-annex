@@ -178,7 +178,7 @@ merge (b, _) mergeconfig commitmode tomerge =
 	autoMergeFrom tomerge b mergeconfig commitmode
 
 syncBranch :: Git.Branch -> Git.Branch
-syncBranch = Git.Ref.under "refs/heads/synced" . fromDirectBranch . fromAdjustedBranch
+syncBranch = Git.Ref.underBase "refs/heads/synced" . fromDirectBranch . fromAdjustedBranch
 
 remoteBranch :: Remote -> Git.Ref -> Git.Ref
 remoteBranch remote = Git.Ref.underBase $ "refs/remotes/" ++ Remote.name remote
