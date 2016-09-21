@@ -28,8 +28,10 @@ setHeadRef ref r = writeFile (headFile r) ("ref: " ++ fromRef ref)
 describe :: Ref -> String
 describe = fromRef . base
 
-{- Often git refs are fully qualified (eg: refs/heads/master).
- - Converts such a fully qualified ref into a base ref (eg: master). -}
+{- Often git refs are fully qualified 
+ - (eg refs/heads/master or refs/remotes/origin/master).
+ - Converts such a fully qualified ref into a base ref
+ - (eg: master or origin/master). -}
 base :: Ref -> Ref
 base = Ref . remove "refs/heads/" . remove "refs/remotes/" . fromRef
   where
