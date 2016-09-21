@@ -1,0 +1,6 @@
+`git annex sync` uses a branch named "synced/foo" to sync
+changes to branch named "foo", but that same name is used to sync
+changes to a branch named "bar/foo".
+
+Also, the adjusted branch code uses "adjusted/foo(unlocked)" for
+both "foo" and "bar/foo".
