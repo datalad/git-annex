@@ -1,0 +1,19 @@
+Catching up on backlog today. I hope to be back to a regular work schedule
+now. Unanswered messages down to 156. A lot of time today spent answering
+questions.
+
+There were several problems involving git branches with slashes in their
+name, such as "foo/bar" (but not "origin/master" or "refs/heads/foo").
+Some branch names based on such a branch would take only the "bar" part.
+In `git annex sync`, this led to perhaps merging "foo/bar" into "other/bar"
+or "bar". And the adjusted branch code was entirely broken for such
+branches. I've fixed it now.
+
+Also made `git annex addurl` behave better when the file it wants to 
+add is gitignored.
+
+Thinking about implementing `git annex copy --from A --to B`.
+It does not seem *too* hard to do that, at least with a temp file
+used inbetween. See [[todo/transitive_transfers]].
+
+Today's work was sponsored by Thomas Hochstein on Patreon.
