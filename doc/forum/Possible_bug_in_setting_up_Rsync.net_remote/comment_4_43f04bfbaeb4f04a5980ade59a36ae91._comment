@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-09-21T17:18:35Z"
+ content="""
+The error message "Permission denied (publickey,password,keyboard-interactive)"
+seems to be saying you entered the wrong password for rsync.net.
+"""]]
