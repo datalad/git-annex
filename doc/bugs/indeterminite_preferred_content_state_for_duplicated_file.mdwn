@@ -13,3 +13,6 @@ Such a map exists, in the keys database, but only in v6 mode repositories.
 So, this seems solvable in v6 repositories, but not in v5.
 Also, the associated files map may not be accurate at all times, so that's
 a wrinkle to using it for this. --[[Joey]]
+
+(See [[bugs/preferred_content_and_deduplication]] for a user bug report of
+the same thing, with some suggestions for workarounds too.)

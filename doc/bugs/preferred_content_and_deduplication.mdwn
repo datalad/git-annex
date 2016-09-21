@@ -96,3 +96,8 @@ Linux lenard-hp 4.6.0-1-amd64 #1 SMP Debian 4.6.4-1 (2016-07-18) x86_64 GNU/Linu
 
 I'm just trying out git-annex and I like it so far. I'm using it to keep my personal photos on my home server.
 
+> There's already a bug report open about this:
+> [[bugs/indeterminite_preferred_content_state_for_duplicated_file]].
+> 
+> Closing as a duplicate, but thanks for a well-researched bug report.
+> [[done]] --[[Joey]]
