@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 62"""
+ date="2016-09-21T17:21:58Z"
+ content="""
+In the meantime, the stack.yaml has been updated to use lts-7.0, which
+includes concurrent-output-1.7.7, so that should solve that.
+"""]]
