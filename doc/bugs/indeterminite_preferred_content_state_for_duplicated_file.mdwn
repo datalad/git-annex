@@ -16,3 +16,8 @@ a wrinkle to using it for this. --[[Joey]]
 
 (See [[bugs/preferred_content_and_deduplication]] for a user bug report of
 the same thing, with some suggestions for workarounds too.)
+
+In the preferred content expressions for standard groups, the only
+place this bug can be triggered involves archive directories of
+repositories in the client group. A file both in the archive directory and
+in another directory has indeterminite status.
