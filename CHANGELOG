@@ -12,7 +12,6 @@ git-annex (6.20160908) UNRELEASED; urgency=medium
   * copy, move, mirror: Support --json and --json-progress.
   * Improve gpg secret key list parser to deal with changes in gpg 2.1.15.
     Fixes key name display in webapp.
-  * stack.yaml: Update to lts-7.0 (ghc 8)
   * info: Support being passed a treeish, and show info about the annexed
     files in it similar to how a directory is handled.
   * sync: Previously, when run in a branch with a slash in its name,
