@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-09-21T16:46:16Z"
+ content="""
+Cost settings have nothing to do with this.
+
+[[Preferred_content]] can be configured to include specific files
+that you want to have in the repository, by matching on the filename.
+For example:
+
+	git annex wanted . "include=somefile or include=otherfile or include=*.mp3"
+
+Putting the repository in the backup group is similar to setting
+"include=*"
+"""]]
