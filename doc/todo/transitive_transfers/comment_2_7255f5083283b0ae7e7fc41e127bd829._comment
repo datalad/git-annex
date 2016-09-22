@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="JasonWoof"
+ subject="simpler use case"
+ date="2016-09-22T00:40:07Z"
+ content="""
+Here's my use case (much simpler)
+
+Three git repos:
+
+desktop: normal checkout, source of almost all annexd files, commits, etc.. The only place I run git annex commands. Not enough space to stored all annexed files
+
+main_external: bare git repo, stores all annext file contents, but no file tree. Usually connected. Purpose: primary backups
+
+old_external: like main_external, except connected only occasionally.
+
+
+I periodically copy from desktop to main_external. That's all well and good.
+
+The tricky part is when I plug in old_external and want to get everything on there. It's hard to get content onto old_external that is stored only on main_external. That's when I want to:
+
+    git annex copy --from=main_external --to=old_external --not --in old_external
+
+Note that this would _not_ copy obsolete data (ie only referenced from old git commits)  stored in old_external. I like that.
+
+To work around the lack of that feature, I try to keep coppies on desktop until I've had a chance to copy them to both external drives. It's good for numcopies, but I don't like trying to keep track of it, and I wish I could choose to let there be just one copy of things on main_external for replaceable data.
+"""]]
