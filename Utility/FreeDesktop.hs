@@ -38,7 +38,6 @@ import Utility.Directory
 import System.Environment
 import System.FilePath
 import Data.List
-import Data.String.Utils
 import Data.Maybe
 import Control.Applicative
 import Prelude
@@ -54,12 +53,13 @@ toString (StringV s) = s
 toString (BoolV b)
 	| b = "true"
 	| otherwise = "false"
-toString(NumericV f) = show f
+toString (NumericV f) = show f
 toString (ListV l)
 	| null l = ""
-	| otherwise = (intercalate ";" $ map (escapesemi . toString) l) ++ ";"
+	| otherwise = (intercalate ";" $ map (concatMap escapesemi . toString) l) ++ ";"
   where
-	escapesemi = intercalate "\\;" . split ";"
+	escapesemi ';' = "\\;"
+	escapesemi c = [c]
 
 genDesktopEntry :: String -> String -> Bool -> FilePath -> Maybe String -> [String] -> DesktopEntry
 genDesktopEntry name comment terminal program icon categories = catMaybes
