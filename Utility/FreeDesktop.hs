@@ -31,7 +31,6 @@ module Utility.FreeDesktop (
 import Utility.Exception
 import Utility.UserInfo
 import Utility.Process
-import Utility.PartialPrelude
 import Utility.Directory
 
 import System.Environment
@@ -135,7 +134,9 @@ userConfigDir = xdgEnvHome "CONFIG_HOME" ".config"
 userDesktopDir :: IO FilePath
 userDesktopDir = maybe fallback return =<< (parse <$> xdg_user_dir)
   where
-	parse = maybe Nothing (headMaybe . lines)
+	parse s = case lines <$> s of
+		Just (l:_) -> Just l
+		_ -> Nothing
 	xdg_user_dir = catchMaybeIO $ readProcess "xdg-user-dir" ["DESKTOP"]
 	fallback = xdgEnvHome "DESKTOP_DIR" "Desktop"
 
