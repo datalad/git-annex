@@ -31,10 +31,10 @@ module Utility.FreeDesktop (
 import Utility.Exception
 import Utility.UserInfo
 import Utility.Process
-import Utility.Directory
 
 import System.Environment
 import System.FilePath
+import System.Directory
 import Data.List
 import Data.Maybe
 import Control.Applicative
