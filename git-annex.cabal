@@ -35,7 +35,6 @@ Description:
 -- make cabal install git-annex work.
 Extra-Source-Files:
   stack.yaml
-  cabal.config
   README
   CHANGELOG
   NEWS
