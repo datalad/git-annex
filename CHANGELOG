@@ -1,4 +1,4 @@
-git-annex (6.20160908) UNRELEASED; urgency=medium
+git-annex (6.20160923) unstable; urgency=medium
 
   * Rate limit console progress display updates to 10 per second.
     Was updating as frequently as changes were reported, up to hundreds of
@@ -33,7 +33,7 @@ git-annex (6.20160908) UNRELEASED; urgency=medium
     This bug has been fixed.
   * addurl, importfeed: Improve behavior when file being added is gitignored.
 
- -- Joey Hess <id@joeyh.name>  Thu, 08 Sep 2016 12:48:55 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 23 Sep 2016 09:43:26 -0400
 
 git-annex (6.20160907) unstable; urgency=medium
 
