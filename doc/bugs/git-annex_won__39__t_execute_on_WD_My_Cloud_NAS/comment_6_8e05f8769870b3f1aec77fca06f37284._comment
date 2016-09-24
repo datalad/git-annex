@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="PaulK"
+ subject="comment 6"
+ date="2016-09-24T04:16:51Z"
+ content="""
+Nope, no difference. Same \"ELF load command alignment not page-aligned\" errors as before.
+"""]]
