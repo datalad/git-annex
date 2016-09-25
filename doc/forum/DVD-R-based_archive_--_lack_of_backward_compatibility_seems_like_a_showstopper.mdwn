@@ -1,0 +1,15 @@
+I've been planning to use git-annex to manage a collection of DVD-Rs (of photos and the like), something along [these lines](https://git-annex.branchable.com/forum/How_do_I_backup_my_data_to_blue_ray_disks__63__/), and especially this paragraph therein:
+
+> If the [media is] not rewritable [which in my case it won't be; see below], I might try making the git-annex repo in a temporary directory on the hard disk, and then generating the ISO from that once I've filled it up. Should work fine, I might set "remote..annex-readonly" to true in git repos that had such a disk as a remote to let git-annex know to not try to write to it.
+
+But then there's this bug report: [read-only filesystem on remote prevents auto-upgrade from v3 to v5, and prevents using a remote](https://git-annex.branchable.com/bugs/annex_get_fails_from_read-only_filesystem/), and [Joey's comment]((http://git-annex.branchable.com/bugs/annex_get_fails_from_read-only_filesystem/#comment-67f204c3a4312bbda8ace305dbe0afbf):
+
+> From a code complication POV, it's useful for git-annex to only support one version of repository at a time.
+
+My concept depends on being able to restore files from my archive, N years and M git-annex versions later, using `git annex get` (after `git annex whereis` or the like to find out which volume to mount).  If I can't count on the *get* to work -- and indeed, can pretty much count on it *not* to, after the next format-version bump -- this whole scheme sounds like a nonstarter.
+
+> As far as backwards compatablity goes, I don't anticipate ever removing the upgrade code from git-annex.
+
+This is an archive; therefore it will use write-once media -- if it were rewritable, it would be clobberable should something (including `git-annex upgrade`!) go wrong.
+
+So, is there a way around this?  Or am I (and others) out of luck on using git-annex to manage long-term archival storage?
