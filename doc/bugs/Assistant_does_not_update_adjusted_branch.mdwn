@@ -1,0 +1,89 @@
+### Please describe the problem.
+
+When using the assistant to synchronize several annex repositories, changes are not correctly or not at all propagated to repositories that are in the adjusted branch.
+
+* New files from other repositories are not created automatically in adjusted branch repos
+* Commited changes in files from other repositories are not reflected in in adjusted branch repos
+
+The manual states:
+>	To propigate  changes from  the adjusted branch  back to  the original
+>	branch, and to other repositories, as well as to merge in changes from
+>	other repositories, use git annex sync.
+
+I would expect that the assistant is just doing this, that I don't have to trigger the sync in the adjusted branch repo by myself.
+
+### What steps will reproduce the problem?
+
+Synchronizing several git annex repositories (three) with the assistant, with the second one being in the adjusted branch:
+* Create a new file in the first repository (normal v5, autocommit=true)
+* The file is being commited automatically and synchronized into the 3rd repository (normal v5).
+* But the file does not appear in the 2nd one, being in the adjusted branch
+
+Once you trigger
+    git annex sync
+in the 2nd repository, it seems the adjusted branch synchronizes with the master and the file appears.
+
+The same happens with changes in files.
+
+### What version of git-annex are you using? On what operating system?
+
+* git-annex version: 6.20160511-1~ubuntu14.04.1~ppa1
+* Linux 4.4.0-24-generic #43~14.04.1-Ubuntu x86_64
+* Linux Mint 17.3 Rosa
+
+### Please provide any additional information below.
+
+Assistant log from adjust branch repo.
+test7.txt is the new file created on other repo which didn't showed up immediately.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+(merging origin/git-annex into git-annex...)
+To /home/sven/Temporary/Annex1
+ + 9cc4eea...0e6c4ba git-annex -> synced/git-annex (forced update)
+(started...) 
+(merging synced/git-annex into git-annex...)
+(Merging into master...) Merge made by the 'recursive' strategy.
+ script.sh | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 script.sh
+(Merging into adjusted branch...) 
+Updating 449f26f..09950df
+Fast-forward
+ script.sh | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 script.sh
+[2016-09-25 16:32:28.594537] Committer: Committing changes to git
+(recording state in git...)
+[2016-09-25 16:32:28.631525] Pusher: Syncing with origin 
+To /home/sven/Temporary/Annex1
+   0e6c4ba..578f070  git-annex -> synced/git-annex
+   9754018..38c3683  master -> synced/master
+[2016-09-25 16:32:29.632224] Committer: Committing changes to git
+(recording state in git...)
+[2016-09-25 16:32:30.661338] Pusher: Syncing with origin 
+Everything up-to-date
+(merging synced/git-annex into git-annex...)
+(merging synced/git-annex into git-annex...)
+(recording state in git...)
+git-annex: Daemon is already running.
+[2016-09-25 16:36:58.360139] Committer: Adding test7.txt
+add test7.txt ok
+[2016-09-25 16:36:58.476985] Committer: Committing changes to git
+(recording state in git...)
+[2016-09-25 16:36:58.494964] Pusher: Syncing with origin 
+Everything up-to-date
+[2016-09-25 16:36:59.575623] Committer: Adding test7.txt
+add test7.txt ok
+[2016-09-25 16:36:59.578454] Committer: Committing changes to git
+(recording state in git...)
+[2016-09-25 16:37:00.506906] Pusher: Syncing with origin 
+Everything up-to-date
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I'm using git-annex a lot for synchronizing stuff between work, home, external backup discs, and now that I see the autocommit=false flag I'll surely start to use the assistant.
+And the new adjust branch is perfect for one of my use cases, but not like it behaves right now.
