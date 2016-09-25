@@ -15,6 +15,7 @@ I would expect that the assistant is just doing this, that I don't have to trigg
 ### What steps will reproduce the problem?
 
 Synchronizing several git annex repositories (three) with the assistant, with the second one being in the adjusted branch:
+
 * Create a new file in the first repository (normal v5, autocommit=true)
 * The file is being commited automatically and synchronized into the 3rd repository (normal v5).
 * But the file does not appear in the 2nd one, being in the adjusted branch
