@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""profiling"""
+ date="2016-09-26T19:20:36Z"
+ content="""
+Built git-annex with profiling, using `stack build --profile`
+
+(For reproduciblity, running git-annex in a clone of the git-annex repo
+https://github.com/RichiH/conference_proceedings with rev
+2797a49023fc24aff6fcaec55421572e1eddcfa2 checked out. It has 9496 annexed
+objects.)
+
+Profiling `git-annex find +RTS -p`:
+
+	        total time  =        3.53 secs   (3530 ticks @ 1000 us, 1 processor)
+	        total alloc = 3,772,700,720 bytes  (excludes profiling overheads)
+	
+	COST CENTRE            MODULE                  %time %alloc
+	
+	spanList               Data.List.Utils          32.6   37.7
+	startswith             Data.List.Utils          14.3    8.1
+	md5                    Data.Hash.MD5            12.4   18.2
+	join                   Data.List.Utils           6.9   13.7
+	catchIO                Utility.Exception         5.9    6.0
+	catches                Control.Monad.Catch       5.0    2.8
+	inAnnex'.checkindirect Annex.Content             4.6    1.8
+	readish                Utility.PartialPrelude    3.0    1.4
+	isAnnexLink            Annex.Link                2.6    4.0
+	split                  Data.List.Utils           1.5    0.8
+	keyPath                Annex.Locations           1.2    1.7
+
+
+This is interesting!
+
+Fully 40% of CPU time and allocations are in list (really String) processing,
+and the details of the profiling report show that `spanList` and `startsWith`
+and `join` are all coming from calls to `replace` in `keyFile` and `fileKey`.
+Both functions nest several calls to replace, so perhaps that could be unwound
+into a single pass and/or a ByteString used to do it more efficiently.
+
+12% of run time is spent calculating the md5 hashes for the hash
+directories for .git/annex/objects. Data.Hash.MD5 is from missingh, and
+it is probably a quite unoptimised version. Switching to the version
+if cryptonite would probably speed it up a lot.
+"""]]
