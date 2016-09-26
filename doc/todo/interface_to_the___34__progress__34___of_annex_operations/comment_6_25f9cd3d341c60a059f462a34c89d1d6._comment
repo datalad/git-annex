@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="+may be &quot;byte-target&quot; field? ;)"
+ date="2016-09-24T02:43:21Z"
+ content="""
+THANK YOU for implementing this feature -- we will make use of it soon.
+But so we don't do reverse estimation from \"byte-progress\" and \"percent-progress\", and didn't have to get it from a key (which might not have it e.g. in case of URL relaxed backend) -- could you just include in each record the \"byte-target\" (if known) or something like that? ;)  thanks in advance!
+"""]]
