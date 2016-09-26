@@ -1,3 +1,10 @@
+git-annex (6.20160924) UNRELEASED; urgency=medium
+
+  * Optimisations to time it takes git-annex to walk working tree and find
+    files to work on. Sped up by around 18%.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 26 Sep 2016 16:46:19 -0400
+
 git-annex (6.20160923) unstable; urgency=medium
 
   * Rate limit console progress display updates to 10 per second.
