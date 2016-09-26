@@ -1,0 +1,9 @@
+When using an external special remote with -Jn, multiple transfers do not
+happen concurrently to the remote. A single process is
+started for the external special remote, and there's locking to only let
+one request be made of it at a time.
+
+This should not be hard to make to use a pool of Externals, starting up a
+new one if the pool is empty or all in use. --[[Joey]]
+
+[[users/yoh]] may want this for datalad?
