@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-09-26T20:50:26Z"
+ content="""
+The metadata you get out should always be encoded the same as the metadata
+you put in. The encoding, or encodings used are up to you.
+
+Are you seeing metadata queries returning a different sequence of bytes
+than the sequence of bytes that were originally stored? If not, I don't
+think this is a bug.
+"""]]
