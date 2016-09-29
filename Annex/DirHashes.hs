@@ -14,6 +14,7 @@ module Annex.DirHashes (
 	dirHashes,
 	hashDirMixed,
 	hashDirLower,
+	display_32bits_as_dir
 ) where
 
 import Data.Bits
@@ -74,7 +75,7 @@ hashDirLower n k = hashDirs n 3 $ take 6 $ md5s $ md5FilePath $ key2file $ nonCh
  -}
 display_32bits_as_dir :: Word32 -> String
 display_32bits_as_dir w = trim $ swap_pairs cs
-  where 
+  where
 	-- Need 32 characters to use. To avoid inaverdently making
 	-- a real word, use letters that appear less frequently.
 	chars = ['0'..'9'] ++ "zqjxkmvwgpfZQJXKMVWGPF"
