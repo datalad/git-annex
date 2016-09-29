@@ -1,0 +1,6 @@
+Did most of the optimisations that recent profiling suggested. 
+This sped up a `git annex find` from 3.53 seconds to 1.73 seconds.
+And, `git annex find --not --in remote` from 12.41 seconds to 5.24 seconds.
+One of the optimisations sped up git-annex branch querying by up to 50%,
+which should also speed up use of some preferred content expressions.
+All in all, a very nice little optimisation pass.
