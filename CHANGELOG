@@ -6,6 +6,7 @@ git-annex (6.20160924) UNRELEASED; urgency=medium
     copies of the environment. Speeds up commands like 
     "git-annex find --in remote" by over 50%.
   * Optimised git-annex branch log file timestamp parsing.
+  * Add "total-size" field to --json-progress output.
 
  -- Joey Hess <id@joeyh.name>  Mon, 26 Sep 2016 16:46:19 -0400
 

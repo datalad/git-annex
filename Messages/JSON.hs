@@ -104,6 +104,7 @@ progress maction size bytesprocessed = emit $ case maction of
 	Object o = object
 		[ "byte-progress" .= n
 		, "percent-progress" .= showPercentage 2 (percentage size n)
+		, "total-size" .= size
 		]
 
 -- A value that can be displayed either normally, or as JSON.
