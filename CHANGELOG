@@ -5,6 +5,7 @@ git-annex (6.20160924) UNRELEASED; urgency=medium
   * Optimisations to git-annex branch query and setting, avoiding repeated
     copies of the environment. Speeds up commands like 
     "git-annex find --in remote" by over 50%.
+  * Optimised git-annex branch log file timestamp parsing.
 
  -- Joey Hess <id@joeyh.name>  Mon, 26 Sep 2016 16:46:19 -0400
 
