@@ -3,6 +3,7 @@ Hi,
 After reinstalling my laptop with the same GPG keys, I've got this error during re-syncing a remote crypted repo :
 
 ```
+Internal Server Error
 ; expected Just (UUID "e7fc2bc8-b630-5eeb-a0b3-b4806d7ab064") but remote gitrepo has UUID "e2f02805-eae7-5bb8-875e-c901ba9929b1" (":id:SCPxErEQVlqp+Hl6Su0f")
 ```
 
