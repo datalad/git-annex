@@ -139,6 +139,7 @@ data AnnexState = AnnexState
 	, activeremotes :: MVar (S.Set (Types.Remote.RemoteA Annex))
 	, keysdbhandle :: Maybe Keys.DbHandle
 	, cachedcurrentbranch :: Maybe Git.Branch
+	, cachedgitenv :: Maybe [(String, String)]
 	}
 
 newState :: GitConfig -> Git.Repo -> IO AnnexState
@@ -189,6 +190,7 @@ newState c r = do
 		, activeremotes = emptyactiveremotes
 		, keysdbhandle = Nothing
 		, cachedcurrentbranch = Nothing
+		, cachedgitenv = Nothing
 		}
 
 {- Makes an Annex state object for the specified git repo.
@@ -241,10 +243,10 @@ changeState modifier = do
 	mvar <- ask
 	liftIO $ modifyMVar_ mvar $ return . modifier
 
-withState :: (AnnexState -> (AnnexState, b)) -> Annex b
+withState :: (AnnexState -> IO (AnnexState, b)) -> Annex b
 withState modifier = do
 	mvar <- ask
-	liftIO $ modifyMVar mvar $ return . modifier
+	liftIO $ modifyMVar mvar modifier
 
 {- Sets a flag to True -}
 setFlag :: String -> Annex ()

@@ -83,7 +83,7 @@ catFileHandle = do
  - nothing is using the handles, eg at shutdown. -}
 catFileStop :: Annex ()
 catFileStop = do
-	m <- Annex.withState $ \s ->
+	m <- Annex.withState $ pure . \s ->
 		(s { Annex.catfilehandles = M.empty }, Annex.catfilehandles s)
 	liftIO $ mapM_ Git.CatFile.catFileStop (M.elems m)
 

@@ -2,6 +2,9 @@ git-annex (6.20160924) UNRELEASED; urgency=medium
 
   * Optimisations to time it takes git-annex to walk working tree and find
     files to work on. Sped up by around 18%.
+  * Optimisations to git-annex branch query and setting, avoiding repeated
+    copies of the environment. Speeds up commands like 
+    "git-annex find --in remote" by over 50%.
 
  -- Joey Hess <id@joeyh.name>  Mon, 26 Sep 2016 16:46:19 -0400
 
