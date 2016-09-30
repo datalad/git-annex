@@ -1,0 +1,33 @@
+### Please describe the problem.
+
+After unlocking a large file and editing it, the attempt to commit the change fails like so:
+
+git-annex: fd:16: hGetBuf: invalid argument (Invalid argument)
+
+### What steps will reproduce the problem?
+
+(it needs to be over 2G in size to reproduce the problem)
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 6.20160923 on macOS 10.12
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+$ dd if=/dev/zero of=largefile.txt bs=1048576 count=2048
+$ git annex add largefile.txt
+$ git commit -m 'added large file'
+$ git annex unlock largefile.txt
+$ echo foobar >> largefile.txt
+$ git commit -a -m 'edited large file'
+git-annex: fd:16: hGetBuf: invalid argument (Invalid argument)
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
