@@ -54,8 +54,7 @@ data External = External
 	, externalLock :: TMVar ExternalLock
 	-- Never left empty.
 	, externalConfig :: TMVar RemoteConfig
-	-- Never left empty.
-	, externalGitConfig :: TMVar RemoteGitConfig
+	, externalGitConfig :: RemoteGitConfig
 	}
 
 newExternal :: ExternalType -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex External
@@ -65,7 +64,7 @@ newExternal externaltype u c gc = liftIO $ External
 	<*> atomically newEmptyTMVar
 	<*> atomically (newTMVar ExternalLock)
 	<*> atomically (newTMVar c)
-	<*> atomically (newTMVar gc)
+	<*> pure gc
 
 type ExternalType = String
 

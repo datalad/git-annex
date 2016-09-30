@@ -242,13 +242,13 @@ handleRequest' lck external req mp responsehandler
 		send $ VALUE value
 	handleRemoteRequest (SETCREDS setting login password) = do
 		c <- liftIO $ atomically $ readTMVar $ externalConfig external
-		gc <- liftIO $ atomically $ readTMVar $ externalGitConfig external
+		let gc = externalGitConfig external
 		c' <- setRemoteCredPair encryptionAlreadySetup c gc (credstorage setting) $
 			Just (login, password)
 		void $ liftIO $ atomically $ swapTMVar (externalConfig external) c'
 	handleRemoteRequest (GETCREDS setting) = do
 		c <- liftIO $ atomically $ readTMVar $ externalConfig external
-		gc <- liftIO $ atomically $ readTMVar $ externalGitConfig external
+		let gc = externalGitConfig external
 		creds <- fromMaybe ("", "") <$> 
 			getRemoteCredPair c gc (credstorage setting)
 		send $ CREDS (fst creds) (snd creds)
