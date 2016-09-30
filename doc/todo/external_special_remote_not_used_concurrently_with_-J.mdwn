@@ -7,3 +7,5 @@ This should not be hard to make to use a pool of Externals, starting up a
 new one if the pool is empty or all in use. --[[Joey]]
 
 [[users/yoh]] may want this for datalad?
+
+> [[done]] --[[Joey]] 

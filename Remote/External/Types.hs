@@ -12,8 +12,6 @@ module Remote.External.Types (
 	External(..),
 	newExternal,
 	ExternalType,
-	ExternalLock,
-	withExternalLock,
 	ExternalState(..),
 	PrepareStatus(..),
 	Proto.parseMessage,
@@ -44,14 +42,12 @@ import qualified Utility.SimpleProtocol as Proto
 import Control.Concurrent.STM
 import Network.URI
 
--- If the remote is not yet running, the ExternalState TMVar is empty.
 data External = External
 	{ externalType :: ExternalType
 	, externalUUID :: UUID
-	-- Empty until the remote is running.
-	, externalState :: TMVar ExternalState
-	-- Empty when a remote is in use.
-	, externalLock :: TMVar ExternalLock
+	, externalState :: TMVar [ExternalState]
+	-- ^ TMVar is never left empty; list contains states for external
+	-- special remote processes that are not currently in use.
 	, externalDefaultConfig :: RemoteConfig
 	, externalGitConfig :: RemoteGitConfig
 	}
@@ -60,8 +56,7 @@ newExternal :: ExternalType -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex 
 newExternal externaltype u c gc = liftIO $ External
 	<$> pure externaltype
 	<*> pure u
-	<*> atomically newEmptyTMVar
-	<*> atomically (newTMVar ExternalLock)
+	<*> atomically (newTMVar [])
 	<*> pure c
 	<*> pure gc
 
@@ -71,22 +66,13 @@ data ExternalState = ExternalState
 	{ externalSend :: Handle
 	, externalReceive :: Handle
 	, externalShutdown :: IO ()
-	, externalPrepared :: PrepareStatus
-	-- Never left empty.
+	, externalPrepared :: TMVar PrepareStatus
+	-- ^ Never left empty.
 	, externalConfig :: TMVar RemoteConfig
+	-- ^ Never left empty.
 	}
 
 data PrepareStatus = Unprepared | Prepared | FailedPrepare ErrorMsg
-
--- Constructor is not exported, and only created by newExternal.
-data ExternalLock = ExternalLock
-
-withExternalLock :: External -> (ExternalLock -> Annex a) -> Annex a
-withExternalLock external = bracketIO setup cleanup
-  where
-	setup = atomically $ takeTMVar v
-	cleanup = atomically . putTMVar v
-	v = externalLock external
 
 -- Messages that can be sent to the external remote to request it do something.
 data Request 

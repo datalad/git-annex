@@ -9,6 +9,11 @@ git-annex (6.20160924) UNRELEASED; urgency=medium
   * Add "total-size" field to --json-progress output.
   * Make --json-progress output be shown even when the size of a object
     is not known.
+  * Multiple external special remote processes for the same remote will be
+    started as needed when using -J. This should not beak any existing
+    external special remotes, because running multiple git-annex commands
+    at the same time could already start multiple processes for the same
+    external special remotes.
 
  -- Joey Hess <id@joeyh.name>  Mon, 26 Sep 2016 16:46:19 -0400
 
