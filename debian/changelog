@@ -1,3 +1,58 @@
+git-annex (6.20160923) unstable; urgency=medium
+
+  * Rate limit console progress display updates to 10 per second.
+    Was updating as frequently as changes were reported, up to hundreds of
+    times per second, which used unncessary bandwidth when running git-annex
+    over ssh etc.
+  * Make --json and --quiet work when used with -J.
+    Previously, -J override the other options.
+  * addurl, get: Added --json-progress option, which adds progress
+    objects to the json output.
+  * Remove key:null from git-annex add --json output.
+  * copy, move, mirror: Support --json and --json-progress.
+  * Improve gpg secret key list parser to deal with changes in gpg 2.1.15.
+    Fixes key name display in webapp.
+  * info: Support being passed a treeish, and show info about the annexed
+    files in it similar to how a directory is handled.
+  * sync: Previously, when run in a branch with a slash in its name,
+    such as "foo/bar", the sync branch was "synced/bar". That conflicted
+    with the sync branch used for branch "bar", so has been changed to
+    "synced/foo/bar".
+  * Note that if you're using an old version of git-annex to sync with
+    a branch with a slash in its name, it won't see some changes synced by
+    this version, and this version won't see some changes synced by the older
+    version. This is not a problem if there's a central bare repository,
+    but may impact other configurations until git-annex is upgraded to this
+    version.
+  * adjust: Previously, when adjusting a branch with a slash in its name,
+    such as "foo/bar", the adjusted branch was "adjusted/bar(unlocked)".
+    That conflicted with the adjusted branch used for branch "bar",
+    so has been changed to "adjusted/foo/bar(unlocked)"
+  * Also, running sync in an adjusted branch did not correctly sync
+    changes back to the parent branch when it had a slash in its name.
+    This bug has been fixed.
+  * addurl, importfeed: Improve behavior when file being added is gitignored.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 23 Sep 2016 09:43:26 -0400
+
+git-annex (6.20160907) unstable; urgency=medium
+
+  * Windows: Handle shebang in external special remote program.
+  * Fix formatting of git-annex-smudge man page, and improve mdwn2man.
+    Thanks, Jim Paris.
+  * examimekey: Allow being run in a git repo that is not initialized by
+    git-annex yet.
+  * Android: Fix disabling use of cp --reflink=auto, curl, sha224, and sha384.
+  * Make --json and --quiet suppress automatic init messages, and any
+    other messages that might be output before a command starts.
+    Fixes a reversion introduced in version 5.20150727.
+  * Assistant, repair: Filter out git fsck lines about duplicate file
+    entries in tree objects.
+  * get -J, sync --content -J: Download different files from different
+    remotes when the remotes have the same costs.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 07 Sep 2016 11:12:11 -0400
+
 git-annex (6.20160808-1) unstable; urgency=medium
 
   * Package 6.2016008-1
