@@ -42,6 +42,8 @@ Update: there are multiple projects trying to solve this problem space outside o
  * [tox](https://tox.chat/) - DHT-enabled chat, file transfer and messaging platform, [no stable release](https://github.com/irungentoo/toxcore/issues/1353), [security concerns](http://lists.alioth.debian.org/pipermail/pkg-privacy-maintainers/Week-of-Mon-20150928/000046.html)
  * [ricochet](https://ricochet.im/) - similar, but relies on Tor, unclear if it supports file transfers, packaged in Debian
  * [pond](https://pond.imperialviolet.org/) - similar to ricochet
+ * [scout](https://github.com/bittorrent/scout) - DHT-based messaging and peer discovery, used for the Bittorrent-based [bleep messenger](http://www.bleep.pm), could be used to sync git history? [introduction article](http://blog.bittorrent.com/2016/09/09/scout-securely-locate-peers-without-central-servers/)
+ * [pwnat](http://samy.pl/pwnat/) can similarly be used to create tunnels to bypass NATs
 
 joeyh's approach for now is to [[wait and see what will emerge|devblog/day_219__catching_up_and_looking_back/]], but of course people are welcome to implement their own [[special_remotes]] to fix this problem!
 

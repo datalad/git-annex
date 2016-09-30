@@ -18,7 +18,15 @@ git-annex development is partially supported by the
 [DataLad project](http://datalad.org/).
 
 Thanks also to these folks for their support: martin f. krafft, John Byrnes,
-Aurélien Couderc, and Jeffrey Chiu.
+Aurélien Couderc, Jeffrey Chiu, Amitai Schlair, Andreas, Anthony DeRobertis,
+Baldur Kristinsson, Boyd Stephen Smith Jr., Brock Spratlen, Christian Diller,
+Denis Dzyubenko, Eskild Hustvedt, Evgeni Kunev, FBC, Fernando Jimenez, Greg
+Young, Henrik RIomar, Ignacio, Jake Vosloo, James Valleroy, Jason Woofenden,
+Jeff Goeke-Smith, Jim, Jochen Bartl, Johannes Schlatow, John Carr, Josh
+Taylor, Josh Triplett, Kuno Woudt, Matthias Urlichs, Mattias J, Nathan Howell,
+Nick Daly, Nicolas Schodet, Ole-Morten Duesund, Remy van Elst, RémiV, Thom
+May, Thomas Ferris Nicolaisen, Thomas Hochstein, Tyler Cipriani, encryptio,
+Øyvind A. Holm
 
 ## 2013-2014
 

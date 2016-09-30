@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 2"
+ date="2016-09-08T16:12:07Z"
+ content="""
+sounds good to me... the only remark that to not break compatibility with other git-annex consumers may be there could be additional switch to instruct annex to produce those progress records (e.g. --json-progress) which would only then provide progress reporting back, thus by default staying compatible with current behavior.
+
+as for -J - I guess indeed we could start multiple parallel annex processes operating on the same repository, but I wonder if then necessary locking etc between multiple processes wouldn't introduce additional performance hit etc.
+"""]]

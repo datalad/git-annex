@@ -136,7 +136,7 @@ assumeUrlExists = UrlInfo True Nothing Nothing
  - also returning its size and suggested filename if available. -}
 getUrlInfo :: URLString -> UrlOptions -> IO UrlInfo
 getUrlInfo url uo = case parseURIRelaxed url of
-	Just u -> case parseUrl (show u) of
+	Just u -> case parseurlconduit (show u) of
 		Just req -> catchJust
 			-- When http redirects to a protocol which 
 			-- conduit does not support, it will throw
@@ -215,6 +215,12 @@ getUrlInfo url uo = case parseURIRelaxed url of
 			-- got a length, it's good
 			_ | isftp && isJust len -> good
 			_ -> dne
+
+#if MIN_VERSION_http_client(0,4,30)
+	parseurlconduit = parseUrlThrow
+#else
+	parseurlconduit = parseUrl
+#endif
 
 -- Parse eg: attachment; filename="fname.ext"
 -- per RFC 2616

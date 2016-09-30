@@ -4,13 +4,13 @@ git-annex info - shows information about the specified item or the repository as
 
 # SYNOPSIS
 
-git annex info `[directory|file|remote|uuid ...]`
+git annex info `[directory|file|treeish|remote|uuid ...]`
 
 # DESCRIPTION
 
 Displays statistics and other information for the specified item,
-which can be a directory, or a file, or a remote, or the uuid of a
-repository.
+which can be a directory, or a file, or a treeish, or a remote,
+or the uuid of a repository.
   
 When no item is specified, displays statistics and information
 for the repository as a whole.

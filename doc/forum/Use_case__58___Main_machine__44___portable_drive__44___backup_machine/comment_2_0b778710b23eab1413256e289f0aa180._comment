@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-09-21T19:59:25Z"
+ content="""
+Use git-annex repositories on both the laptop and the thumb drive.
+
+You can start by setting up the repository on the thumb drive,
+and then git clone it to the laptop.
+
+Use `git annex direct` to make them use direct mode, so that
+files can be edited.
+
+You can run the git-annex assistant in the repository on the laptop
+(~/annex is the usual place for such a repository). This way
+changes to files there will automatically be committed to git.
+
+There's not currently a good way to have the assistant also commit
+any files that were added to the thumb drive, or merge in changes
+from the laptop to the thumb drive. Running the assistant in the repository
+on the thumb drive would take care of both, but fails when the thumb
+drive gets unplugged.
+
+What you can do is write a simple shell script to sync up the thumb drive.
+Something like this:
+
+	#!/bin/sh
+	set -e
+	cd /media/thumbdrive
+	git annex add
+	git annex sync -m "syncing thumb drive"
+"""]]

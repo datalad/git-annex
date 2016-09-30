@@ -1,0 +1,121 @@
+### Please describe the problem.
+Often, when I `git annex get` a large file over ssh, it will hang in the middle, and I'll have to C-c to cancel it, and try again. This strategy works, but I often have to keep canceling and retrying 5-10 times for a large file. This is unfortunate. I think maybe rsync is getting overwhelmed. 
+
+Request: Could you please add a flag --autoretry so that if `get` hangs, cancel and try again. This generally works, because of the rsync --partial flag, so it eventually gets to the end of the file. Thanks!
+
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 6.20160511-1~ubuntu14.04.1~ppa1
+Ubuntu 14.04
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+$ git annex get --debug
+[2016-08-26 15:59:19.476393] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--cached","-z","--"]
+get clerk/H101-2.json [2016-08-26 15:59:19.483388] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2016-08-26 15:59:19.485433] process done ExitSuccess
+[2016-08-26 15:59:19.485676] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2016-08-26 15:59:19.48755] process done ExitSuccess
+[2016-08-26 15:59:19.487727] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..4455cba13d289aad3c25ddc097b5ca02e7fc0ffb","--pretty=%H","-n1"]
+[2016-08-26 15:59:19.489793] process done ExitSuccess
+[2016-08-26 15:59:19.4899] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..7af97d408ed894922cd08bd2091dab5bb1cf1df9","--pretty=%H","-n1"]
+[2016-08-26 15:59:19.49133] process done ExitSuccess
+[2016-08-26 15:59:19.491939] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+(from origin...) 
+[2016-08-26 15:59:19.495688] read: rsync ["--progress","--inplace","--perms","-e","'ssh' '-S' '.git/annex/ssh/voteviewdev' '-o' 'ControlMaster=auto' '-o' 'ControlPersist=yes' '-T' 'voteviewdev' 'git-annex-shell ''sendkey'' ''/srv/annex'' ''--debug'' ''SHA256E-s49892641--7390d24449d67e1d60c31306bfc8b189f7c4ed223cc44bbd0096222b8ede3b92.json'' --uuid ff59187e-f48c-47d0-b75d-320a6a4ce115 ''--'' ''remoteuuid=da1361a1-3f1a-47b8-8165-daf8c30d543d'' ''unlocked='' ''direct='' ''associatedfile=clerk/H101-2.json'' ''--'''","--","dummy:",".git/annex/tmp/SHA256E-s49892641--7390d24449d67e1d60c31306bfc8b189f7c4ed223cc44bbd0096222b8ede3b92.json"]
+[2016-08-26 15:58:37.018182] transfer start
+[2016-08-26 15:58:37.023135] call: rsync ["--server","-t","--inplace","-e.Lsf",".","--sender","../../srv/annex/.git/annex/objects/2G/fP/SHA256E-s49892641--7390d24449d67e1d60c31306bfc8b189f7c4ed223cc44bbd0096222b8ede3b92.json/SHA256E-s49892641--7390d24449d67e1d60c31306bfc8b189f7c4ed223cc44bbd0096222b8ede3b92.json"]
+SHA256E-s49892641--7390d24449d67e1d60c31306bfc8b189f7c4ed223cc44bbd0096222b8ede3b92.json
+     49,101,968  98%   46.83MB/s    0:00:00  [2016-08-26 15:59:22.809273] feed: ssh ["-S",".git/annex/ssh/voteviewdev","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","voteviewdev","git-annex-shell 'transferinfo' '/srv/annex' '--debug' 'SHA256E-s49892641--7390d24449d67e1d60c31306bfc8b189f7c4ed223cc44bbd0096222b8ede3b92.json' --uuid ff59187e-f48c-47d0-b75d-320a6a4ce115 '--' 'remoteuuid=da1361a1-3f1a-47b8-8165-daf8c30d543d' 'associatedfile=clerk/H101-2.json' '--'"]
+     49,892,641 100%   39.52MB/s    0:00:01 (xfr#1, to-chk=0/1)
+[2016-08-26 15:58:39.034666] process done ExitSuccess
+[2016-08-26 15:58:39.038811] transfer done
+[2016-08-26 15:59:23.09308] process done ExitSuccess
+(checksum...) [2016-08-26 15:59:23.093582] read: sha256sum [".git/annex/tmp/SHA256E-s49892641--7390d24449d67e1d60c31306bfc8b189f7c4ed223cc44bbd0096222b8ede3b92.json"]
+[2016-08-26 15:59:23.331872] process done ExitSuccess
+ok
+get clerk/H102-1.json (from origin...) 
+[2016-08-26 15:59:23.337838] read: rsync ["--progress","--inplace","--perms","-e","'ssh' '-S' '.git/annex/ssh/voteviewdev' '-o' 'ControlMaster=auto' '-o' 'ControlPersist=yes' '-T' 'voteviewdev' 'git-annex-shell ''sendkey'' ''/srv/annex'' ''--debug'' ''SHA256E-s41311329--69c3b054a3fe9676133605730d85b7fcef8696f6782d402a524e41b836253891.json'' --uuid ff59187e-f48c-47d0-b75d-320a6a4ce115 ''--'' ''remoteuuid=da1361a1-3f1a-47b8-8165-daf8c30d543d'' ''unlocked='' ''direct='' ''associatedfile=clerk/H102-1.json'' ''--'''","--","dummy:",".git/annex/tmp/SHA256E-s41311329--69c3b054a3fe9676133605730d85b7fcef8696f6782d402a524e41b836253891.json"]
+[2016-08-26 15:59:23.351903] process done ExitSuccess
+[2016-08-26 15:58:39.394898] transfer start
+[2016-08-26 15:58:39.400323] call: rsync ["--server","-t","--inplace","-e.Lsf",".","--sender","../../srv/annex/.git/annex/objects/6Z/QP/SHA256E-s41311329--69c3b054a3fe9676133605730d85b7fcef8696f6782d402a524e41b836253891.json/SHA256E-s41311329--69c3b054a3fe9676133605730d85b7fcef8696f6782d402a524e41b836253891.json"]
+SHA256E-s41311329--69c3b054a3fe9676133605730d85b7fcef8696f6782d402a524e41b836253891.json
+      1,998,848   4%    1.91MB/s    0:00:20  [2016-08-26 15:59:24.608637] feed: ssh ["-S",".git/annex/ssh/voteviewdev","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","voteviewdev","git-annex-shell 'transferinfo' '/srv/annex' '--debug' 'SHA256E-s41311329--69c3b054a3fe9676133605730d85b7fcef8696f6782d402a524e41b836253891.json' --uuid ff59187e-f48c-47d0-b75d-320a6a4ce115 '--' 'remoteuuid=da1361a1-3f1a-47b8-8165-daf8c30d543d' 'associatedfile=clerk/H102-1.json' '--'"]
+     10,616,832  25%    1.54MB/s    0:00:19  
+
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
+
+
+
+### Please describe the problem.
+Often, when I `git annex get` a large file over ssh, it will hang in the middle, and I'll have to C-c to cancel it, and try again. This strategy works, but I often have to keep canceling and retrying 5-10 times for a large file. This is unfortunate. I think maybe rsync is getting overwhelmed. 
+
+Request: Could you please add a flag --autoretry so that if `get` hangs, cancel and try again. This generally works, because of the rsync --partial flag, so it eventually gets to the end of the file. Thanks!
+
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 6.20160511-1~ubuntu14.04.1~ppa1
+Ubuntu 14.04
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+$ git annex get --debug
+[2016-08-26 15:59:19.476393] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--cached","-z","--"]
+get clerk/H101-2.json [2016-08-26 15:59:19.483388] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2016-08-26 15:59:19.485433] process done ExitSuccess
+[2016-08-26 15:59:19.485676] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2016-08-26 15:59:19.48755] process done ExitSuccess
+[2016-08-26 15:59:19.487727] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..4455cba13d289aad3c25ddc097b5ca02e7fc0ffb","--pretty=%H","-n1"]
+[2016-08-26 15:59:19.489793] process done ExitSuccess
+[2016-08-26 15:59:19.4899] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..7af97d408ed894922cd08bd2091dab5bb1cf1df9","--pretty=%H","-n1"]
+[2016-08-26 15:59:19.49133] process done ExitSuccess
+[2016-08-26 15:59:19.491939] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+(from origin...) 
+[2016-08-26 15:59:19.495688] read: rsync ["--progress","--inplace","--perms","-e","'ssh' '-S' '.git/annex/ssh/voteviewdev' '-o' 'ControlMaster=auto' '-o' 'ControlPersist=yes' '-T' 'voteviewdev' 'git-annex-shell ''sendkey'' ''/srv/annex'' ''--debug'' ''SHA256E-s49892641--7390d24449d67e1d60c31306bfc8b189f7c4ed223cc44bbd0096222b8ede3b92.json'' --uuid ff59187e-f48c-47d0-b75d-320a6a4ce115 ''--'' ''remoteuuid=da1361a1-3f1a-47b8-8165-daf8c30d543d'' ''unlocked='' ''direct='' ''associatedfile=clerk/H101-2.json'' ''--'''","--","dummy:",".git/annex/tmp/SHA256E-s49892641--7390d24449d67e1d60c31306bfc8b189f7c4ed223cc44bbd0096222b8ede3b92.json"]
+[2016-08-26 15:58:37.018182] transfer start
+[2016-08-26 15:58:37.023135] call: rsync ["--server","-t","--inplace","-e.Lsf",".","--sender","../../srv/annex/.git/annex/objects/2G/fP/SHA256E-s49892641--7390d24449d67e1d60c31306bfc8b189f7c4ed223cc44bbd0096222b8ede3b92.json/SHA256E-s49892641--7390d24449d67e1d60c31306bfc8b189f7c4ed223cc44bbd0096222b8ede3b92.json"]
+SHA256E-s49892641--7390d24449d67e1d60c31306bfc8b189f7c4ed223cc44bbd0096222b8ede3b92.json
+     49,101,968  98%   46.83MB/s    0:00:00  [2016-08-26 15:59:22.809273] feed: ssh ["-S",".git/annex/ssh/voteviewdev","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","voteviewdev","git-annex-shell 'transferinfo' '/srv/annex' '--debug' 'SHA256E-s49892641--7390d24449d67e1d60c31306bfc8b189f7c4ed223cc44bbd0096222b8ede3b92.json' --uuid ff59187e-f48c-47d0-b75d-320a6a4ce115 '--' 'remoteuuid=da1361a1-3f1a-47b8-8165-daf8c30d543d' 'associatedfile=clerk/H101-2.json' '--'"]
+     49,892,641 100%   39.52MB/s    0:00:01 (xfr#1, to-chk=0/1)
+[2016-08-26 15:58:39.034666] process done ExitSuccess
+[2016-08-26 15:58:39.038811] transfer done
+[2016-08-26 15:59:23.09308] process done ExitSuccess
+(checksum...) [2016-08-26 15:59:23.093582] read: sha256sum [".git/annex/tmp/SHA256E-s49892641--7390d24449d67e1d60c31306bfc8b189f7c4ed223cc44bbd0096222b8ede3b92.json"]
+[2016-08-26 15:59:23.331872] process done ExitSuccess
+ok
+get clerk/H102-1.json (from origin...) 
+[2016-08-26 15:59:23.337838] read: rsync ["--progress","--inplace","--perms","-e","'ssh' '-S' '.git/annex/ssh/voteviewdev' '-o' 'ControlMaster=auto' '-o' 'ControlPersist=yes' '-T' 'voteviewdev' 'git-annex-shell ''sendkey'' ''/srv/annex'' ''--debug'' ''SHA256E-s41311329--69c3b054a3fe9676133605730d85b7fcef8696f6782d402a524e41b836253891.json'' --uuid ff59187e-f48c-47d0-b75d-320a6a4ce115 ''--'' ''remoteuuid=da1361a1-3f1a-47b8-8165-daf8c30d543d'' ''unlocked='' ''direct='' ''associatedfile=clerk/H102-1.json'' ''--'''","--","dummy:",".git/annex/tmp/SHA256E-s41311329--69c3b054a3fe9676133605730d85b7fcef8696f6782d402a524e41b836253891.json"]
+[2016-08-26 15:59:23.351903] process done ExitSuccess
+[2016-08-26 15:58:39.394898] transfer start
+[2016-08-26 15:58:39.400323] call: rsync ["--server","-t","--inplace","-e.Lsf",".","--sender","../../srv/annex/.git/annex/objects/6Z/QP/SHA256E-s41311329--69c3b054a3fe9676133605730d85b7fcef8696f6782d402a524e41b836253891.json/SHA256E-s41311329--69c3b054a3fe9676133605730d85b7fcef8696f6782d402a524e41b836253891.json"]
+SHA256E-s41311329--69c3b054a3fe9676133605730d85b7fcef8696f6782d402a524e41b836253891.json
+      1,998,848   4%    1.91MB/s    0:00:20  [2016-08-26 15:59:24.608637] feed: ssh ["-S",".git/annex/ssh/voteviewdev","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","voteviewdev","git-annex-shell 'transferinfo' '/srv/annex' '--debug' 'SHA256E-s41311329--69c3b054a3fe9676133605730d85b7fcef8696f6782d402a524e41b836253891.json' --uuid ff59187e-f48c-47d0-b75d-320a6a4ce115 '--' 'remoteuuid=da1361a1-3f1a-47b8-8165-daf8c30d543d' 'associatedfile=clerk/H102-1.json' '--'"]
+     10,616,832  25%    1.54MB/s    0:00:19  
+
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+

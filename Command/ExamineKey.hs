@@ -12,11 +12,12 @@ import qualified Utility.Format
 import Command.Find (parseFormatOption, showFormatted, keyVars)
 
 cmd :: Command
-cmd = noCommit $ noMessages $ withGlobalOptions [jsonOption] $
-	command "examinekey" SectionPlumbing 
-		"prints information from a key"
-		(paramRepeating paramKey)
-		(batchable run (optional parseFormatOption))
+cmd = noCommit $ noMessages $ dontCheck repoExists $ 
+	withGlobalOptions [jsonOption] $
+		command "examinekey" SectionPlumbing 
+			"prints information from a key"
+			(paramRepeating paramKey)
+			(batchable run (optional parseFormatOption))
 
 run :: Maybe Utility.Format.Format -> String -> Annex Bool
 run format p = do

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="kartynnik@c8b57e8688e66fe58144cae5833b23948ae9b599"
+ nickname="kartynnik"
+ subject="Branch names containing slashes"
+ date="2016-08-29T17:30:44Z"
+ content="""
+1) When I have a branch \"some/branch/name\" containing slashes in its name, git-annex sync strips everything up to the last slash and creates \"synced/name\", which may clash with \"some/other/name\". Is there a workaround?
+
+2) Could the \"don't use synced branches\" behavior referred in the comments above somehow be configured on the repository side so that everyone cloning it doesn't need to configure it for himself?
+"""]]

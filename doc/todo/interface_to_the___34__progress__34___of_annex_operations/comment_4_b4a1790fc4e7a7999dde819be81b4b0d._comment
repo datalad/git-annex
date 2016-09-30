@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-09-08T16:27:04Z"
+ content="""
+--json-progress=1 would also provide a way to tune how frequently the
+progress updates happen (eg max once per second). Which seems better than
+worrying about how large the json objects are.
+"""]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2016-09-21T17:04:40Z"
+ content="""
+RichiH already has a debian-jessie-backport branch in the git-annex git
+repo, so I added a commit onto it that fixes up the shakespeare dependency.
+
+I don't know what the holdup is on getting that backport actually uploaded
+to Debian.
+"""]]

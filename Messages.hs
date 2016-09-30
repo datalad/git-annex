@@ -27,7 +27,7 @@ module Messages (
 	earlyWarning,
 	warningIO,
 	indent,
-	JSONChunk(..),
+	JSON.JSONChunk(..),
 	maybeShowJSON,
 	showFullJSON,
 	showCustom,
@@ -40,7 +40,7 @@ module Messages (
 	commandProgressDisabled,
 	outputMessage,
 	implicitMessage,
-	withOutputType,
+	withMessageState,
 ) where
 
 import System.Log.Logger
@@ -54,7 +54,6 @@ import Types.Messages
 import Types.ActionItem
 import Messages.Internal
 import qualified Messages.JSON as JSON
-import Utility.JSONStream (JSONChunk(..))
 import qualified Annex
 
 showStart :: String -> FilePath -> Annex ()
@@ -85,7 +84,7 @@ showSideAction m = Annex.getState Annex.output >>= go
 			Annex.changeState $ \s -> s { Annex.output = st' }
 		| sideActionBlock st == InBlock = return ()
 		| otherwise = p
-	p = outputMessage q $ "(" ++ m ++ "...)\n"
+	p = outputMessage JSON.none $ "(" ++ m ++ "...)\n"
 			
 showStoringStateAction :: Annex ()
 showStoringStateAction = showSideAction "recording state in git"
@@ -110,7 +109,7 @@ doSideAction' b a = do
 {- Make way for subsequent output of a command. -}
 showOutput :: Annex ()
 showOutput = unlessM commandProgressDisabled $
-	outputMessage q "\n"
+	outputMessage JSON.none "\n"
 
 showLongNote :: String -> Annex ()
 showLongNote s = outputMessage (JSON.note s) ('\n' : indent s ++ "\n")
@@ -140,7 +139,7 @@ earlyWarning = warning' False
 warning' :: Bool -> String -> Annex ()
 warning' makeway w = do
 	when makeway $
-		outputMessage q "\n"
+		outputMessage JSON.none "\n"
 	outputError (w ++ "\n")
 
 {- Not concurrent output safe. -}
@@ -154,18 +153,12 @@ indent :: String -> String
 indent = intercalate "\n" . map (\l -> "  " ++ l) . lines
 
 {- Shows a JSON chunk only when in json mode. -}
-maybeShowJSON :: JSONChunk v -> Annex ()
-maybeShowJSON v = withOutputType $ liftIO . go
-  where
-	go JSONOutput = JSON.add v
-	go _ = return ()
+maybeShowJSON :: JSON.JSONChunk v -> Annex ()
+maybeShowJSON v = void $ withMessageState $ outputJSON (JSON.add v)
 
 {- Shows a complete JSON value, only when in json mode. -}
-showFullJSON :: JSONChunk v -> Annex Bool
-showFullJSON v = withOutputType $ liftIO . go
-  where
-	go JSONOutput = JSON.complete v >> return True
-	go _ = return False
+showFullJSON :: JSON.JSONChunk v -> Annex Bool
+showFullJSON v = withMessageState $ outputJSON (JSON.complete v)
 
 {- Performs an action that outputs nonstandard/customized output, and
  - in JSON mode wraps its output in JSON.start and JSON.end, so it's
@@ -179,10 +172,10 @@ showCustom command a = do
 	outputMessage (JSON.end r) ""
 
 showHeader :: String -> Annex ()
-showHeader h = outputMessage q $ (h ++ ": ")
+showHeader h = outputMessage JSON.none $ (h ++ ": ")
 
 showRaw :: String -> Annex ()
-showRaw s = outputMessage q (s ++ "\n")
+showRaw s = outputMessage JSON.none (s ++ "\n")
 
 setupConsole :: IO ()
 setupConsole = do
@@ -216,11 +209,11 @@ debugEnabled = do
 {- Should commands that normally output progress messages have that
  - output disabled? -}
 commandProgressDisabled :: Annex Bool
-commandProgressDisabled = withOutputType $ \t -> return $ case t of
-	QuietOutput -> True
-	JSONOutput -> True
-	NormalOutput -> False
-	ConcurrentOutput {} -> True
+commandProgressDisabled = withMessageState $ \s -> return $
+	case outputType s of
+		QuietOutput -> True
+		JSONOutput _ -> True
+		NormalOutput -> concurrentOutputEnabled s
 
 {- Use to show a message that is displayed implicitly, and so might be
  - disabled when running a certian command that needs more control over its

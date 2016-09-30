@@ -21,6 +21,7 @@ import Types.Messages
 import Types.Command
 import Types.DeferredParse
 import Types.DesktopNotify
+import Types.Concurrency
 import qualified Annex
 import qualified Remote
 import qualified Limit
@@ -285,9 +286,16 @@ combiningOptions =
 	shortopt o h = globalFlag (Limit.addToken [o]) ( short o <> help h <> hidden )
 
 jsonOption :: GlobalOption
-jsonOption = globalFlag (Annex.setOutput JSONOutput)
+jsonOption = globalFlag (Annex.setOutput (JSONOutput False))
 	( long "json" <> short 'j'
 	<> help "enable JSON output"
+	<> hidden
+	)
+
+jsonProgressOption :: GlobalOption
+jsonProgressOption = globalFlag (Annex.setOutput (JSONOutput True))
+	( long "json-progress" <> short 'j'
+	<> help "include progress in JSON output"
 	<> hidden
 	)
 
@@ -302,7 +310,7 @@ jobsOption = globalSetter set $
 		)
   where
 	set n = do
-		Annex.changeState $ \s -> s { Annex.concurrentjobs = Just n }
+		Annex.changeState $ \s -> s { Annex.concurrency = Concurrent n }
 		c <- liftIO getNumCapabilities
 		when (n > c) $
 			liftIO $ setNumCapabilities n

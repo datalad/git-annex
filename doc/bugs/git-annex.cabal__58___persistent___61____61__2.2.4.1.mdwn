@@ -1,0 +1,24 @@
+### Please describe the problem.
+Cf. https://github.com/joeyh/git-annex/pull/56
+patch url: https://github.com/joeyh/git-annex/pull/56.patch
+
+Goes together with Homebrew PR https://github.com/Homebrew/homebrew-core/pull/3724
+
+Homebrew Jenkins CI timed out after two hours with Solver
+still trying to find a solution.
+
+### What steps will reproduce the problem?
+Using --flags=s3\ webapp and --max-backjumps=10000
+
+### What version of git-annex are you using? On what operating system?
+6.20160808 macOS 10.9, 10.10, 10.11
+
+### Please provide any additional information below.
+This is a follow-up to https://github.com/joeyh/git-annex/commit/18e458db,
+since there's been a regression in the situation between 6.20160619 and
+6.20160808, probably simply because Hackage is a moving target.
+
+Proposed solution is to set persistent (==2.2.4.1) instead of
+persistent (<2.5) in git-annex.cabal
+
+> [[done]]

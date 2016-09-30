@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-09-05T16:17:22Z"
+ content="""
+Well, calckey's behavior is influenced by the annex.backends setting,
+so it might behave differently when run in a different git repo, or outside
+any git repo.
+
+In fact, `git annex calckey` currently can be run in a git repo that is not
+a git-annex repo; it does not check if the repo is initialized for
+git-annex (which many commands do). The failure about "Not in a git
+repository." comes when it tries to run code in the Annex monad, which 
+requires a git repository.
+
+To support being run without being in a git repo at all would
+really need an entirely separate code path to be implemented, not using the
+Annex monad, and so necessarily not looking at git configs. It's doable,
+but it would be a lot of work; I'd need some convincing motivation to add
+a lot of code to accomplish that.
+"""]]

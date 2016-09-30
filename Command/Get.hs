@@ -16,7 +16,7 @@ import Annex.Wanted
 import qualified Command.Move
 
 cmd :: Command
-cmd = withGlobalOptions (jobsOption : jsonOption : annexedMatchingOptions) $ 
+cmd = withGlobalOptions (jobsOption : jsonOption : jsonProgressOption : annexedMatchingOptions) $ 
 	command "get" SectionCommon 
 		"make content of annexed files available"
 		paramPaths (seek <$$> optParser)
@@ -89,16 +89,17 @@ getKey' key afile = dispatch
 		showNote "not available"
 		showlocs
 		return False
-	dispatch remotes = notifyTransfer Download afile $ trycopy remotes remotes
-	trycopy full [] _ = do
-		Remote.showTriedRemotes full
-		showlocs
-		return False
-	trycopy full (r:rs) witness =
-		ifM (probablyPresent r)
-			( docopy r witness <||> trycopy full rs witness
-			, trycopy full rs witness
+	dispatch remotes = notifyTransfer Download afile $ \witness -> do
+		ok <- pickRemote remotes $ \r -> ifM (probablyPresent r)
+			( docopy r witness
+			, return False
 			)
+		if ok
+			then return ok
+			else do
+				Remote.showTriedRemotes remotes
+				showlocs
+				return False
 	showlocs = Remote.showLocations False key []
 		"No other repository is known to contain the file."
 	-- This check is to avoid an ugly message if a remote is a

@@ -1,0 +1,12 @@
+I set up a new git annex repo with an S3 remote. Uploading small files works file, but the process fails on larger files (>1 GB) with the following error. 
+
+    copy prosper/loaninfo.p (checking s3...) (to s3...) 
+    99%          10.7MB/s 0s
+    S3Error {s3StatusCode = Status {statusCode = 400, statusMessage = "Bad Request"}, s3ErrorCode = "RequestTimeout", s3ErrorMessage = "Your socket connection to the server was not read from or written to within the timeout period. Idle connections     will be closed.", s3ErrorResource = Nothing, s3ErrorHostId = Just "< a base64 encoded string>", s3ErrorAccessKeyId = Nothing, s3ErrorStringToSign = Nothing, s3ErrorBucket = Nothing, s3ErrorEndpointRaw = Nothing, s3ErrorEndpoint = Nothing}
+
+I tried these different options while setting up remote, but nothing worked.
+partsize=1GiB
+partsize=400MiB
+chunk=100MiB
+
+What am I doing wrong? Should I try an even smaller chunk sie

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/3ee5cf54-f022-4a71-8666-3c2b5ee231dd"
+ nickname="Anthony DeRobertis"
+ subject="comment 1"
+ date="2016-08-24T10:53:05Z"
+ content="""
+Pretty sure that's not a file with a question mark (`0x3f`) in it, that's a file with a carriage return (`0x0d`) in it. In which case see also [git annex import fails on filenames with newlines in them](https://git-annex.branchable.com/bugs/git_annex_import_fails_on_filenames_with_newlines_in_them/).
+"""]]

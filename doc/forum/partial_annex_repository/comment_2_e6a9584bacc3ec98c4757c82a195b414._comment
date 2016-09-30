@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-09-21T16:54:24Z"
+ content="""
+Right, it's a feature of v6 mode that `git add` adds the file to the annex,
+unless annex.largefiles is configured to make it be added directly to the
+git repository.
+
+To switch your small files that are currently annexed to be added
+directly to git, the easiest way is:
+
+	git annex unannex $file
+	git -c 'annex.largefiles=exclude=*' add $file
+"""]]

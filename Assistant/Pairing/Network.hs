@@ -20,6 +20,8 @@ import Utility.Verifiable
 import Network.Multicast
 import Network.Info
 import Network.Socket
+import qualified Network.Socket.ByteString as B
+import qualified Data.ByteString.UTF8 as BU8
 import qualified Data.Map as M
 import Control.Concurrent
 
@@ -63,10 +65,11 @@ multicastPairMsg repeats secret pairdata stage = go M.empty repeats
 		withSocketsDo $ bracket setup cleanup use
 	  where
 		setup = multicastSender (multicastAddress IPv4AddrClass) pairingPort
-		cleanup (sock, _) = sClose sock -- FIXME does not work
+		cleanup (sock, _) = close sock -- FIXME does not work
 		use (sock, addr) = do
 			setInterface sock (showAddr i)
-			maybe noop (\s -> void $ sendTo sock s addr)
+			maybe noop
+				(\s -> void $ B.sendTo sock (BU8.fromString s) addr)
 				(M.lookup i cache)
 	updatecache cache [] = cache
 	updatecache cache (i:is)

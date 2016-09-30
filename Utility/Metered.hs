@@ -1,6 +1,6 @@
 {- Metered IO and actions
  -
- - Copyright 2012-2105 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2106 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -21,6 +21,8 @@ import Data.Bits.Utils
 import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Monad.IO.Class (MonadIO)
+import Data.Time.Clock
+import Data.Time.Clock.POSIX
 
 {- An action that can be run repeatedly, updating it on the bytes processed.
  -
@@ -259,3 +261,24 @@ outputFilter cmd params environ outfilter errfilter = catchBoolIO $ do
   where
 	p = (proc cmd (toCommand params))
 		{ env = environ }
+
+-- | Limit a meter to only update once per unit of time.
+--
+-- It's nice to display the final update to 100%, even if it comes soon
+-- after a previous update. To make that happen, a total size has to be
+-- provided.
+rateLimitMeterUpdate :: NominalDiffTime -> Maybe Integer -> MeterUpdate -> IO MeterUpdate
+rateLimitMeterUpdate delta totalsize meterupdate = do
+	lastupdate <- newMVar (toEnum 0 :: POSIXTime)
+	return $ mu lastupdate
+  where
+	mu lastupdate n@(BytesProcessed i) = case totalsize of
+		Just t | i >= t -> meterupdate n
+		_ -> do
+			now <- getPOSIXTime
+			prev <- takeMVar lastupdate
+			if now - prev >= delta
+				then do
+					putMVar lastupdate now
+					meterupdate n
+				else putMVar lastupdate prev

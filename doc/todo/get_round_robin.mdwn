@@ -1,0 +1,31 @@
+`git annex get` always gets files from the remote with the lowest cost.
+
+When two remotes have the same cost, it breaks the tie somehow, 
+and consistently prefers one of them over the other.
+
+It would be nice if it instead round-robined amoung remotes with
+the same cost that have the file. In particular, with -J2, and 2 remotes
+A and B having each file, one thread could download from A and the other
+from B. That might be much faster than the current behavior of two threads
+downloading everything from A.
+
+Maybe a way to implement it is to keep a list of recently used remotes,
+and when starting a new get from a set of remotes that have the same cost,
+prefer the remote that is futher down the recently used list (or not on it
+at all). (Or, since git-annex has a remote list already, it could rotate
+the remotes of the same cost whenever starting a download from one.)
+
+While this would be a nice improvement to -J2 from network remotes,
+it might not really be desirable when not run in parallel. In particular,
+if A and B are on different spinning disks, then an access pattern of
+A,B,A,B might keep the disks idle enough that they spin down in-between
+access.
+
+> done for `git annex get -JN` where two remotes have the same cost.
+>
+> Also for `git annex sync --content -JN` when downloading and two remotes
+> have the same cost.
+>
+> Can't think of any other places that apply, except perhaps the assistant,
+> but it does its own much different queuing of transfers. [[done]]
+> --[[Joey]]

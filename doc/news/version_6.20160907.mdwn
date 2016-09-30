@@ -1,0 +1,15 @@
+git-annex 6.20160907 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Windows: Handle shebang in external special remote program.
+   * Fix formatting of git-annex-smudge man page, and improve mdwn2man.
+     Thanks, Jim Paris.
+   * examimekey: Allow being run in a git repo that is not initialized by
+     git-annex yet.
+   * Android: Fix disabling use of cp --reflink=auto, curl, sha224, and sha384.
+   * Make --json and --quiet suppress automatic init messages, and any
+     other messages that might be output before a command starts.
+     Fixes a reversion introduced in version 5.20150727.
+   * Assistant, repair: Filter out git fsck lines about duplicate file
+     entries in tree objects.
+   * get -J, sync --content -J: Download different files from different
+     remotes when the remotes have the same costs."""]]

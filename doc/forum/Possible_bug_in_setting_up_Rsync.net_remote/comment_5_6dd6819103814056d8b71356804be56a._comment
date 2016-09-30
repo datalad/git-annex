@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="dave@2ab82f485adf7e2ce787066e35f5f9789bff430b"
+ nickname="dave"
+ subject="re: mangling is normal"
+ date="2016-09-21T21:12:16Z"
+ content="""
+... ok, here's the original message from the (web) UI:
+
+    ssh: Could not resolve hostname git-annex-.usw.2ds009.2ersync.2enet-9553_22_annex: Name or service not known
+
+I had figured the debug log might be helpful... Pardon me... :)
+"""]]

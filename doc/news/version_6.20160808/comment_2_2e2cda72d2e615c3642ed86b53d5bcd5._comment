@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-09-05T19:38:36Z"
+ content="""
+IIRC the OSX autobuilder was down and ended up being moved to a different
+host and so I held off updating the standalone builds for this release.
+
+I don't think it makes sense to update them now, so will just skip updating
+them for this release and proceed with the next release.
+"""]]

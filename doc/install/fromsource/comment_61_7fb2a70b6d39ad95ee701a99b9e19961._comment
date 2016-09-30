@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="dave@2ab82f485adf7e2ce787066e35f5f9789bff430b"
+ nickname="dave"
+ subject="concurrent-output-1.7.7"
+ date="2016-09-08T17:41:28Z"
+ content="""
+Hi.  `concurrent-output-1.7.7` is not present in resolver `lts-5.18`.
+"""]]

@@ -1,0 +1,50 @@
+### Please describe the problem.
+fsck doesn't not update the inventory for external special remotes
+
+This is perhaps the same behavior on all special remotes, but I have not verified it.
+
+### What steps will reproduce the problem?
+Run fsck or fsck -F on a special remote on which the file has been deleted outside of git-annex's knowledge.  The file will fail the existence check, but not update the inventory (i.e. git-annex-whereis/git-annex-list still thinks the file might reside on that remote).
+
+### What version of git-annex are you using? On what operating system?
+[[!format sh """
+$ git annex version
+git-annex version: 5.20151208-1build1
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA TorrentParser Database
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository version: 5
+upgrade supported from repository versions: 0 1 2 4
+$ dpkg -l | grep git-annex
+ii  git-annex                           5.20151208-1build1              amd64        manage files with git, without checking their contents into git
+$ lsb_release -d
+Description:    Ubuntu 16.04.1 LTS
+"""]]
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+myuser:/var/data/my_photos$ git annex fsck --from fabric 2010/wedding_photos/00017.jpg
+fsck 2010/wedding_video/00017.jpg (<error message from special remote>) failed
+(recording state in git...)
+myuser:/var/data/my_photos$ git annex list 2010/wedding_photos/00017.jpg                                            
+here (untrusted)
+|web
+||bittorrent
+|||fabric (untrusted)
+||||
+x__x 2010/wedding_photos/00017.jpg
+
+# End of transcript or log.
+"""]]
+
+### Why I care about this problem
+Some files in my external special remote got removed outside of git-annex's knowledge. I would like to copy back in the files that are missing, but I am having a hard time doing so.  git-annex-copy also notices that the file fails the existence check, but doesn't bother trying to re-upload the file.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+git-annex is fantastic!  It is the only program that I trust to store my most precious files.  If there is another way to get git-annex to update its inventory for files removed in special remotes I will gladly try it!  Keep up the good work!
+
+> [[done]] notabug --[[Joey]]

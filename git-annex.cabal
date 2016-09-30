@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 6.20160808
+Version: 6.20160923
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <id@joeyh.name>
@@ -329,15 +329,42 @@ Executable git-annex
    stm (>= 2.3),
    mtl (>= 2),
    uuid (>= 1.2.6),
-   process, data-default, case-insensitive, random, dlist,
-   unix-compat, SafeSemaphore, async, directory, filepath, IfElse,
-   MissingH, hslogger, monad-logger,
-   utf8-string, bytestring, text, sandi,
-   monad-control, transformers,
-   bloomfilter, edit-distance,
-   resourcet, http-conduit (<2.2.0), http-client, http-types,
-   time, old-locale,
-   esqueleto, persistent-sqlite, persistent (<2.5), persistent-template,
+   process,
+   data-default,
+   case-insensitive,
+   random,
+   dlist,
+   unix-compat,
+   SafeSemaphore,
+   async,
+   directory,
+   filepath,
+   IfElse,
+   MissingH,
+   hslogger,
+   monad-logger,
+   utf8-string,
+   bytestring,
+   text,
+   sandi,
+   monad-control,
+   transformers,
+   bloomfilter,
+   edit-distance,
+   resourcet,
+   http-client,
+   http-types,
+   -- Old version needed due to https://github.com/aristidb/aws/issues/206
+   http-conduit (<2.2.0),
+   time,
+   old-locale,
+   esqueleto,
+   persistent-sqlite, 
+   -- Old version needed due to
+   -- https://github.com/prowdsponsor/esqueleto/issues/137
+   -- and also temporarily to make ghc 8 builds work
+   persistent (< 2.5),
+   persistent-template,
    aeson,
    unordered-containers,
    feed,
@@ -438,8 +465,11 @@ Executable git-annex
      path-pieces (>= 0.1.4),
      warp (>= 3.0.0.5),
      warp-tls (>= 1.4),
-     wai, wai-extra,
-     blaze-builder, crypto-api, clientsession,
+     wai,
+     wai-extra,
+     blaze-builder,
+     crypto-api,
+     clientsession,
      template-haskell,
      shakespeare (>= 2.0.0),
      securemem,
@@ -919,6 +949,7 @@ Executable git-annex
     Types.BranchState
     Types.CleanupActions
     Types.Command
+    Types.Concurrency
     Types.Creds
     Types.Crypto
     Types.DeferredParse
@@ -986,7 +1017,6 @@ Executable git-annex
     Utility.HumanNumber
     Utility.HumanTime
     Utility.InodeCache
-    Utility.JSONStream
     Utility.LinuxMkLibs
     Utility.LockFile
     Utility.LockFile.LockStatus

@@ -11,11 +11,11 @@ module Messages.Progress where
 
 import Common
 import Messages
-import Messages.Internal
 import Utility.Metered
 import Types
 import Types.Messages
 import Types.Key
+import qualified Messages.JSON as JSON
 
 #ifdef WITH_CONCURRENTOUTPUT
 import Messages.Concurrent
@@ -30,59 +30,77 @@ import Data.Quantity
 {- Shows a progress meter while performing a transfer of a key.
  - The action is passed a callback to use to update the meter. -}
 metered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
-metered combinemeterupdate key a = case keySize key of
+metered othermeter key a = case keySize key of
 	Nothing -> nometer
-	Just size -> withOutputType (go $ fromInteger size)
+	Just size -> withMessageState (go $ fromInteger size)
   where
-	go _ QuietOutput = nometer
-	go _ JSONOutput = nometer
-	go size NormalOutput = do
+	go _ (MessageState { outputType = QuietOutput }) = nometer
+	go size (MessageState { outputType = NormalOutput, concurrentOutputEnabled = False }) = do
 		showOutput
 		(progress, meter) <- mkmeter size
-		r <- a $ \n -> liftIO $ do
+		m <- liftIO $ rateLimitMeterUpdate 0.1 (Just size) $ \n -> do
 			setP progress $ fromBytesProcessed n
 			displayMeter stdout meter
-			maybe noop (\m -> m n) combinemeterupdate
+		r <- a (combinemeter m)
 		liftIO $ clearMeter stdout meter
 		return r
-	go size o@(ConcurrentOutput {})
+	go size (MessageState { outputType = NormalOutput, concurrentOutputEnabled = True }) =
 #if WITH_CONCURRENTOUTPUT
-		| concurrentOutputEnabled o = withProgressRegion $ \r -> do
+		withProgressRegion $ \r -> do
 			(progress, meter) <- mkmeter size
-			a $ \n -> liftIO $ do
+			m <- liftIO $ rateLimitMeterUpdate 0.1 (Just size) $ \n -> do
 				setP progress $ fromBytesProcessed n
 				s <- renderMeter meter
 				Regions.setConsoleRegion r ("\n" ++ s)
-				maybe noop (\m -> m n) combinemeterupdate
+			a (combinemeter m)
+#else
+		nometer
 #endif
-		| otherwise = nometer
+	go _ (MessageState { outputType = JSONOutput False }) = nometer
+	go size (MessageState { outputType = JSONOutput True }) = do
+		buf <- withMessageState $ return . jsonBuffer
+		m <- liftIO $ rateLimitMeterUpdate 0.1 (Just size) $
+			JSON.progress buf size
+		a (combinemeter m)
 
 	mkmeter size = do
 		progress <- liftIO $ newProgress "" size
 		meter <- liftIO $ newMeter progress "B" 25 (renderNums binaryOpts 1)
 		return (progress, meter)
 
-	nometer = a (const noop)
+	nometer = a $ combinemeter (const noop)
 
-{- Use when the progress meter is only desired for concurrent
- - output; as when a command's own progress output is preferred. -}
-concurrentMetered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
-concurrentMetered combinemeterupdate key a = withOutputType go
-  where
-	go (ConcurrentOutput {}) = metered combinemeterupdate key a
-	go _ = a (fromMaybe nullMeterUpdate combinemeterupdate)
+	combinemeter m = case othermeter of
+		Nothing -> m
+		Just om -> combineMeterUpdate m om
 
-{- Poll file size to display meter, but only for concurrent output. -}
-concurrentMeteredFile :: FilePath -> Maybe MeterUpdate -> Key -> Annex a -> Annex a
-concurrentMeteredFile file combinemeterupdate key a = withOutputType go
-  where
-	go (ConcurrentOutput {}) = metered combinemeterupdate key $ \p ->
-		watchFileSize file p a
-	go _ = a
+{- Use when the command's own progress output is preferred.
+ - The command's output will be suppressed and git-annex's progress meter
+ - used for concurrent output, and json progress. -}
+commandMetered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
+commandMetered combinemeterupdate key a = 
+	withMessageState $ \s -> if needOutputMeter s
+		then metered combinemeterupdate key a
+		else a (fromMaybe nullMeterUpdate combinemeterupdate)
+
+{- Poll file size to display meter, but only when concurrent output or
+ - json progress needs the information. -}
+meteredFile :: FilePath -> Maybe MeterUpdate -> Key -> Annex a -> Annex a
+meteredFile file combinemeterupdate key a = 
+	withMessageState $ \s -> if needOutputMeter s
+		then metered combinemeterupdate key $ \p ->
+			watchFileSize file p a
+		else a
+
+needOutputMeter :: MessageState -> Bool
+needOutputMeter s = case outputType s of
+	JSONOutput True -> True
+	NormalOutput | concurrentOutputEnabled s -> True
+	_ -> False
 
 {- Progress dots. -}
 showProgressDots :: Annex ()
-showProgressDots = outputMessage q "."
+showProgressDots = outputMessage JSON.none "."
 
 {- Runs a command, that may output progress to either stdout or
  - stderr, as well as other messages.
@@ -117,9 +135,9 @@ mkStderrRelayer = do
  - messing it up with interleaved stderr from a command.
  -}
 mkStderrEmitter :: Annex (String -> IO ())
-mkStderrEmitter = withOutputType go
+mkStderrEmitter = withMessageState go
   where
 #ifdef WITH_CONCURRENTOUTPUT
-	go o | concurrentOutputEnabled o = return Console.errorConcurrent
+	go s | concurrentOutputEnabled s = return Console.errorConcurrent
 #endif
 	go _ = return (hPutStrLn stderr)

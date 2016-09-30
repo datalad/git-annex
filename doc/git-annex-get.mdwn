@@ -23,7 +23,8 @@ or transferring them from some kind of key-value store.
 * `--from=remote`
 
   Normally git-annex will choose which remotes to get the content
-  from. Use this option to specify which remote to use. 
+  from, preferring less expensive remotes. Use this option to specify
+  which remote to use. 
   
   Any files that are not available on the remote will be silently skipped.
 
@@ -85,7 +86,7 @@ or transferring them from some kind of key-value store.
   displayed. If the specified file's content is already present, or
   it is not an annexed file, a blank line is output in response instead.
 
-  Since the usual progress output while getting a file is verbose and not
+  Since the usual output while getting a file is verbose and not
   machine-parseable, you may want to use --json in combination with
   --batch.
 
@@ -93,6 +94,10 @@ or transferring them from some kind of key-value store.
 
   Enable JSON output. This is intended to be parsed by programs that use
   git-annex. Each line of output is a JSON object.
+
+* `--json-progress`
+
+  Include progress objects in JSON output.
 
 # SEE ALSO
 

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-09-05T18:26:03Z"
+ content="""
+@interfect probably what was discussed here
+<https://github.com/DanielDent/git-annex-remote-rclone/pull/10>
+
+I've made the necessary change to git-annex this morning so it should be
+able to run external special remote scripts on Windows. Have not tested it.
+"""]]

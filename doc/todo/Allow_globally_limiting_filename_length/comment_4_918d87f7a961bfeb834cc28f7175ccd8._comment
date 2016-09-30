@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-09-21T20:16:44Z"
+ content="""
+If an update hook rejects a push, then `git annex sync` will just note that
+it was unable to push. It will sync in only one direction until the problem
+that prevents pushing gets resolved.
+
+It might try pushing to a different branch name than usual to get around
+some other problems that cause pushes to fail so be sure to have the update
+hook check pushes to all branches (except for the git-annex branch)).
+
+I don't know why you'd want to filter such a commit out of the git history.
+You could just fix it by renaming the problem file and make a commit on top
+of the problem commit. Just make the update hook only look at the diff
+between the old version of the branch and the new version, so it won't be
+tripped up by intermediate commits that violate its rules.
+
+(I know that Ubuntu uses encfs or something like that by default, but
+surely they have not removed the Debian installer's support for full
+disk encryption?)
+"""]]

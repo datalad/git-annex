@@ -11,3 +11,9 @@ Related:
 > reuse part of the external special remote protocol. (Which would let you
 > relay the progress messages when datalad is doing a nested retrieval, I
 > suppose.) --[[Joey]]
+
+>> [[done]]; --json-progress implemented. I limited the frequency of json
+>> progress items to 10 per second max, and it's typically only 1 per
+>> second or less, so didn't implement
+>> --json-progress=N to tune it. Also added --json and --json-progress to
+>> copy, move, mirror commands. --[[Joey]]

@@ -1,6 +1,6 @@
 {- git-annex command data types
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,6 +11,7 @@ import Data.Ord
 import Options.Applicative.Types (Parser)
 
 import Types
+import Types.DeferredParse
 
 {- A command runs in these stages.
  -
@@ -46,6 +47,7 @@ data Command = Command
 	, cmdsection :: CommandSection
 	, cmddesc :: String          -- description of command for usage
 	, cmdparser :: CommandParser -- command line parser
+	, cmdglobaloptions :: [GlobalOption] -- additional global options
 	, cmdnorepo :: Maybe (Parser (IO ())) -- used when not in a repo
 	}
 

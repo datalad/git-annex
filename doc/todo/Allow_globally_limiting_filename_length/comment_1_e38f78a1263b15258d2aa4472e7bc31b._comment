@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-09-21T17:11:06Z"
+ content="""
+Standard encfs warning: It's buggy and insecure. Don't use it.
+
+You can find many other problems caused by encfs on this site, and 
+<https://defuse.ca/audits/encfs.htm> has described security problems with
+encfs for years.
+
+It would not help for `git-annex add` to check some kind of filename limit,
+because it would not prevent you doing this:
+
+	git annex add smallenough
+	git mv smallenough oh-oops-my-name-is-too-long-for-encfs
+	git commit -m haha
+
+A git pre-commit hook can of course be written that blocks such commits.
+
+I am not inclined to complicate git-annex just to handle encfs given how
+broken encfs is.
+"""]]

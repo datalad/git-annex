@@ -127,12 +127,12 @@ getSocket h = do
 	go' :: Int -> AddrInfo -> IO Socket
 	go' 0 _ = error "unable to bind to local socket"
 	go' n addr = do
-		r <- tryIO $ bracketOnError (open addr) sClose (useaddr addr)
+		r <- tryIO $ bracketOnError (open addr) close (useaddr addr)
 		either (const $ go' (pred n) addr) return r
 	open addr = socket (addrFamily addr) (addrSocketType addr) (addrProtocol addr)
 	useaddr addr sock = do
 		preparesocket sock
-		bindSocket sock (addrAddress addr)
+		bind sock (addrAddress addr)
 		use sock
 #endif
 	preparesocket sock = setSocketOption sock ReuseAddr 1
@@ -183,7 +183,7 @@ genAuthToken = do
  - Note that the usual Yesod error page is bypassed on error, to avoid
  - possibly leaking the auth token in urls on that page!
  -}
-checkAuthToken :: (Monad m, Yesod.MonadHandler m) => (Yesod.HandlerSite m -> AuthToken) -> m Yesod.AuthResult
+checkAuthToken :: Yesod.MonadHandler m => (Yesod.HandlerSite m -> AuthToken) -> m Yesod.AuthResult
 checkAuthToken extractAuthToken = do
 	webapp <- Yesod.getYesod
 	req <- Yesod.getRequest

@@ -9,9 +9,12 @@ module Types.Transfer where
 
 import Types
 import Utility.PID
+import Utility.QuickCheck
 
 import Data.Time.Clock.POSIX
 import Control.Concurrent
+import Control.Applicative
+import Prelude
 
 {- Enough information to uniquely identify a transfer, used as the filename
  - of the transfer information file. -}
@@ -45,3 +48,13 @@ stubTransferInfo = TransferInfo Nothing Nothing Nothing Nothing Nothing Nothing 
 data Direction = Upload | Download
 	deriving (Eq, Ord, Read, Show)
 
+instance Arbitrary TransferInfo where
+	arbitrary = TransferInfo
+		<$> arbitrary
+		<*> arbitrary
+		<*> pure Nothing -- cannot generate a ThreadID
+		<*> pure Nothing -- remote not needed
+		<*> arbitrary
+		-- associated file cannot be empty (but can be Nothing)
+		<*> arbitrary `suchThat` (/= Just "")
+		<*> arbitrary

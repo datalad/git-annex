@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-09-21T20:06:28Z"
+ content="""
+I'm not entirely sure I understand the question, but think you're
+probably trying to make nhost be able to access data0 independant
+of whether the external HDD is plugged into nhost or zhost
+(or perhaps qhost, whatever that is?)
+
+The way to do that is simply to set up one remote for each place
+the HDD can be plugged into. If the HDD can be plugged in locally,
+make a remote pointing at the local mount point. If the HDD can be
+plugged into zhost, make a remote pointing at
+zhost:/run/media/mee/data0/NIdata/ and so on.
+
+git-annex will figure out that these different remotes are pointing
+at the same repository. When running `git annex get` or `git annex sync
+--content`, it will check if the HDD is mounted locally,
+and will use it there if so; if not it will fall back to trying
+to access it via the remotes that use zhost etc.
+
+So in summary, git-annex is designed to just work in this kind of scenario.
+Set up lots of remotes and let it figure out which ones to use.
+"""]]

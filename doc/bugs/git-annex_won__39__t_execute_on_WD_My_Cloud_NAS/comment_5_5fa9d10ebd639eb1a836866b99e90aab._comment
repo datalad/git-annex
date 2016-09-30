@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2016-09-21T16:44:08Z"
+ content="""
+I've updated the [arm daily build](https://downloads.kitenet.net/git-annex/autobuild/armel/git-annex-standalone-armel.tar.gz) to use ld.gold temporarily. 
+
+Please give it a try and report back if it works and if so I'll
+make the change permanant.
+"""]]

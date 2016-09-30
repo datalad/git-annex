@@ -21,6 +21,7 @@ import Remote.Helper.Special
 import Remote.Helper.ReadOnly
 import Remote.Helper.Messages
 import Utility.Metered
+import Utility.Shell
 import Messages.Progress
 import Types.Transfer
 import Logs.PreferredContent.Raw
@@ -374,7 +375,13 @@ startExternal externaltype = do
 	errrelayer <- mkStderrRelayer
 	g <- Annex.gitRepo
 	liftIO $ do
-		p <- propgit g cmdp
+		(cmd, ps) <- findShellCommand basecmd
+		let basep = (proc cmd (toCommand ps))
+			{ std_in = CreatePipe
+			, std_out = CreatePipe
+			, std_err = CreatePipe
+			}
+		p <- propgit g basep
 		(Just hin, Just hout, Just herr, pid) <- 
 			createProcess p `catchIO` runerr
 		fileEncoding hin
@@ -391,24 +398,20 @@ startExternal externaltype = do
 			, externalPrepared = Unprepared
 			}
   where
-	cmd = externalRemoteProgram externaltype
-	cmdp = (proc cmd [])
-		{ std_in = CreatePipe
-		, std_out = CreatePipe
-		, std_err = CreatePipe
-		}
+	basecmd = externalRemoteProgram externaltype
+
 	propgit g p = do
 		environ <- propGitEnv g
 		return $ p { env = Just environ }
 
-	runerr _ = error ("Cannot run " ++ cmd ++ " -- Make sure it's in your PATH and is executable.")
+	runerr _ = error ("Cannot run " ++ basecmd ++ " -- Make sure it's in your PATH and is executable.")
 
 	checkearlytermination Nothing = noop
-	checkearlytermination (Just exitcode) = ifM (inPath cmd)
-		( error $ unwords [ "failed to run", cmd, "(" ++ show exitcode ++ ")" ]
+	checkearlytermination (Just exitcode) = ifM (inPath basecmd)
+		( error $ unwords [ "failed to run", basecmd, "(" ++ show exitcode ++ ")" ]
 		, do
 			path <- intercalate ":" <$> getSearchPath
-			error $ cmd ++ " is not installed in PATH (" ++ path ++ ")"
+			error $ basecmd ++ " is not installed in PATH (" ++ path ++ ")"
 		)
 
 stopExternal :: External -> Annex ()

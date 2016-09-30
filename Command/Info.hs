@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -24,6 +24,7 @@ import Utility.DataUnits
 import Utility.DiskFree
 import Annex.Content
 import Annex.UUID
+import Annex.CatFile
 import Logs.UUID
 import Logs.Trust
 import Logs.Location
@@ -31,6 +32,7 @@ import Annex.NumCopies
 import Remote
 import Config
 import Git.Config (boolConfig)
+import qualified Git.LsTree as LsTree
 import Utility.Percentage
 import Types.Transfer
 import Logs.Transfer
@@ -136,7 +138,7 @@ itemInfo o p = ifM (isdir p)
 					Right u -> uuidInfo o u
 					Left _ -> ifAnnexed p 
 						(fileInfo o p)
-						(noInfo p)
+						(treeishInfo o p)
 	)
   where
 	isdir = liftIO . catchBoolIO . (isDirectory <$$> getFileStatus)
@@ -144,16 +146,32 @@ itemInfo o p = ifM (isdir p)
 noInfo :: String -> Annex ()
 noInfo s = do
 	showStart "info" s
-	showNote $ "not a directory or an annexed file or a remote or a uuid"
+	showNote $ "not a directory or an annexed file or a treeish or a remote or a uuid"
 	showEndFail
 
 dirInfo :: InfoOptions -> FilePath -> Annex ()
 dirInfo o dir = showCustom (unwords ["info", dir]) $ do
-	stats <- selStats (tostats dir_fast_stats) (tostats dir_slow_stats)
+	stats <- selStats
+		(tostats (dir_name:tree_fast_stats True))
+		(tostats tree_slow_stats)
 	evalStateT (mapM_ showStat stats) =<< getDirStatInfo o dir
 	return True
   where
 	tostats = map (\s -> s dir)
+
+treeishInfo :: InfoOptions -> String -> Annex ()
+treeishInfo o t = do
+	mi <- getTreeStatInfo o (Git.Ref t)
+	case mi of
+		Nothing -> noInfo t
+		Just i -> showCustom (unwords ["info", t]) $ do
+			stats <- selStats 
+				(tostats (tree_name:tree_fast_stats False)) 
+				(tostats tree_slow_stats)
+			evalStateT (mapM_ showStat stats) i
+			return True
+  where
+	tostats = map (\s -> s t)
 
 fileInfo :: InfoOptions -> FilePath -> Key -> Annex ()
 fileInfo o file k = showCustom (unwords ["info", file]) $ do
@@ -192,27 +210,29 @@ global_fast_stats =
 	, transfer_list
 	, disk_size
 	]
+
 global_slow_stats :: [Stat]
 global_slow_stats = 
 	[ tmp_size
 	, bad_data_size
 	, local_annex_keys
 	, local_annex_size
-	, known_annex_files
-	, known_annex_size
+	, known_annex_files True
+	, known_annex_size True
 	, bloom_info
 	, backend_usage
 	]
-dir_fast_stats :: [FilePath -> Stat]
-dir_fast_stats =
-	[ dir_name
-	, const local_annex_keys
+
+tree_fast_stats :: Bool -> [FilePath -> Stat]
+tree_fast_stats isworktree =
+	[ const local_annex_keys
 	, const local_annex_size
-	, const known_annex_files
-	, const known_annex_size
+	, const (known_annex_files isworktree)
+	, const (known_annex_size isworktree)
 	]
-dir_slow_stats :: [FilePath -> Stat]
-dir_slow_stats =
+
+tree_slow_stats :: [FilePath -> Stat]
+tree_slow_stats =
 	[ const numcopies_stats
 	, const reposizes_stats
 	]
@@ -295,6 +315,9 @@ countRepoList n s = show n ++ "\n" ++ beginning s
 dir_name :: FilePath -> Stat
 dir_name dir = simpleStat "directory" $ pure dir
 
+tree_name :: String -> Stat
+tree_name t = simpleStat "tree" $ pure t
+
 file_name :: FilePath -> Stat
 file_name file = simpleStat "file" $ pure file
 
@@ -337,13 +360,19 @@ remote_annex_size :: UUID -> Stat
 remote_annex_size u = simpleStat "remote annex size" $
 	showSizeKeys =<< cachedRemoteData u
 
-known_annex_files :: Stat
-known_annex_files = stat "annexed files in working tree" $ json show $
-	countKeys <$> cachedReferencedData
+known_annex_files :: Bool -> Stat
+known_annex_files isworktree = 
+	stat ("annexed files in " ++ treeDesc isworktree) $ json show $
+		countKeys <$> cachedReferencedData
 
-known_annex_size :: Stat
-known_annex_size = simpleStat "size of annexed files in working tree" $
-	showSizeKeys =<< cachedReferencedData
+known_annex_size :: Bool -> Stat
+known_annex_size isworktree = 
+	simpleStat ("size of annexed files in " ++ treeDesc isworktree) $
+		showSizeKeys =<< cachedReferencedData
+  
+treeDesc :: Bool -> String
+treeDesc True = "working tree"
+treeDesc False = "tree"
 
 tmp_size :: Stat
 tmp_size = staleSize "temporary object directory size" gitAnnexTmpObjectDir
@@ -522,6 +551,36 @@ getDirStatInfo o dir = do
 				return $! (presentdata', referenceddata', numcopiesstats', repodata')
 			, return vs
 			)
+
+getTreeStatInfo :: InfoOptions -> Git.Ref -> Annex (Maybe StatInfo)
+getTreeStatInfo o r = do
+	fast <- Annex.getState Annex.fast
+	(ls, cleanup) <- inRepo $ LsTree.lsTree r
+	(presentdata, referenceddata, repodata) <- go fast ls initial
+	ifM (liftIO cleanup)
+		( return $ Just $
+			StatInfo (Just presentdata) (Just referenceddata) repodata Nothing o
+		, return Nothing
+		)
+  where
+	initial = (emptyKeyData, emptyKeyData, M.empty)
+	go _ [] vs = return vs
+	go fast (l:ls) vs@(presentdata, referenceddata, repodata) = do
+		mk <- catKey (LsTree.sha l)
+		case mk of
+			Nothing -> go fast ls vs
+			Just key -> do
+				!presentdata' <- ifM (inAnnex key)
+					( return $ addKey key presentdata
+					, return presentdata
+					)
+				let !referenceddata' = addKey key referenceddata
+				!repodata' <- if fast
+					then return repodata
+					else do
+						locs <- Remote.keyLocations key
+						return (updateRepoData key locs repodata)
+				go fast ls $! (presentdata', referenceddata', repodata')
 
 emptyKeyData :: KeyData
 emptyKeyData = KeyData 0 0 0 M.empty

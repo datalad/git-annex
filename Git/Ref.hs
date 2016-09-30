@@ -28,23 +28,16 @@ setHeadRef ref r = writeFile (headFile r) ("ref: " ++ fromRef ref)
 describe :: Ref -> String
 describe = fromRef . base
 
-{- Often git refs are fully qualified (eg: refs/heads/master).
- - Converts such a fully qualified ref into a base ref (eg: master). -}
+{- Often git refs are fully qualified 
+ - (eg refs/heads/master or refs/remotes/origin/master).
+ - Converts such a fully qualified ref into a base ref
+ - (eg: master or origin/master). -}
 base :: Ref -> Ref
 base = Ref . remove "refs/heads/" . remove "refs/remotes/" . fromRef
   where
 	remove prefix s
 		| prefix `isPrefixOf` s = drop (length prefix) s
 		| otherwise = s
-
-{- Gets the basename of any qualified ref. -}
-basename :: Ref -> Ref
-basename = Ref . reverse . takeWhile (/= '/') . reverse . fromRef
-
-{- Given a directory and any ref, takes the basename of the ref and puts
- - it under the directory. -}
-under :: String -> Ref -> Ref
-under dir r = Ref $ dir ++ "/" ++ fromRef (basename r)
 
 {- Given a directory such as "refs/remotes/origin", and a ref such as
  - refs/heads/master, yields a version of that ref under the directory,

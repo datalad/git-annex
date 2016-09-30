@@ -12,6 +12,7 @@ module Git.Hook where
 import Common
 import Git
 import Utility.Tmp
+import Utility.Shell
 #ifndef mingw32_HOST_OS
 import Utility.FileMode
 #endif
@@ -75,23 +76,5 @@ hookExists h r = do
 runHook :: Hook -> Repo -> IO Bool
 runHook h r = do
 	let f = hookFile h r
-	(c, ps) <- findcmd f
+	(c, ps) <- findShellCommand f
 	boolSystem c ps
-  where
-#ifndef mingw32_HOST_OS
-	findcmd = defcmd
-#else
-	{- Like git for windows, parse the first line of the hook file,
-	 - look for "#!", and dispatch the interpreter on the file. -}
-	findcmd f = do
-		l <- headMaybe . lines <$> catchDefaultIO "" (readFile f)
-		case l of
-			Just ('#':'!':rest) -> case words rest of
-				[] -> defcmd f
-				(c:ps) -> do
-					let ps' = map Param (ps ++ [f])
-					ok <- inPath c
-					return (if ok then c else takeFileName c, ps')
-			_ -> defcmd f
-#endif
-	defcmd f = return (f, [])

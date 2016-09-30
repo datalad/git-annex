@@ -99,7 +99,7 @@ parseCmd progname progdesc globaloptions allargs allcmds getparser =
 	mkparser c = (,,) 
 		<$> pure c
 		<*> getparser c
-		<*> combineGlobalOptions globaloptions
+		<*> combineGlobalOptions (globaloptions ++ cmdglobaloptions c)
 	synopsis n d = n ++ " - " ++ d
 	intro = mconcat $ concatMap (\l -> [H.text l, H.line])
 		(synopsis progname progdesc : commandList allcmds)

@@ -2,7 +2,11 @@ If you use [ranger](https://github.com/ranger/ranger), the console-based file ma
 
 ## Custom commands
 
-ranger lets you [define custom commands](https://github.com/ranger/ranger/wiki/Commands) that can be called. Basically you could easily write proxy ranger commands for all git-annex commands you use. [Here](https://github.com/fiatjaf/dotfiles/blob/master/ranger-commands.py) have written `:ga_whereis` for outputting whereis information, and `:ga_set` and `:ga_tag` for metadata settting.
+ranger lets you [define custom commands](https://github.com/ranger/ranger/wiki/Commands) that can be called. Basically you could easily write proxy ranger commands for all git-annex commands you use. [Here](https://github.com/fiatjaf/dotfiles/blob/master/ranger-commands.py) have written
+
+  * `:ga_whereis` for outputting whereis information;
+  * `:ga_set` and `:ga_tag` for metadata changing;
+  * `:ga_get` and `:ga_drop` for quick fetching from remotes and dropping them from local (really useful).
 
 ## Linemodes
 

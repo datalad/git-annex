@@ -119,11 +119,6 @@ Build/LinuxMkLibs: Build/LinuxMkLibs.hs
 Build/MakeMans: Build/MakeMans.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
 
-# Upload to hackage.
-hackage:
-	@cabal sdist
-	@cabal upload dist/*.tar.gz
-
 LINUXSTANDALONE_DEST=tmp/git-annex.linux
 linuxstandalone:
 	$(MAKE) git-annex linuxstandalone-nobuild
@@ -243,7 +238,7 @@ android: Build/EvilSplicer
 # Build just once, but link repeatedly, for different versions of Android.
 	mkdir -p tmp/androidtree/dist/build/git-annex/4.0 tmp/androidtree/dist/build/git-annex/4.3 tmp/androidtree/dist/build/git-annex/5.0
 	if [ ! -e tmp/androidtree/dist/setup-config ]; then \
-		cd tmp/androidtree && $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal configure -fAndroid $(ANDROID_FLAGS); \
+		cd tmp/androidtree && CROSS_COMPILE=Android $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal configure -fAndroid $(ANDROID_FLAGS); \
 	fi
 	cd tmp/androidtree && $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal build \
 		&& mv dist/build/git-annex/git-annex dist/build/git-annex/4.0/git-annex

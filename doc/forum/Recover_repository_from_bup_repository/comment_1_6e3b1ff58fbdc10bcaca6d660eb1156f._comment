@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-09-21T15:59:55Z"
+ content="""
+If your bup repository is a git-annex special remote, it contains only 
+the contents of annexed files, but not the rest of the git repository data
+(no filenames, no pointers to git-annex keys, etc).
+
+Also, the files in it may be encrypted in a variety of ways depending on
+how you set up that git-annex special remote. If encryption was used, most
+likely it needs information that was stored in the git repository to
+decrypt it.
+
+So, your best bet is to restore your git-annex repository from a backup or
+a clone of that repository. Then you can just `git annex enableremote` the
+bup special remote and use `git-annex get` as usual. If you didn't have a
+backup or a clone of the git-annex repository, then important 
+information is lost.
+
+Without the git-annex repository, you can manually get the contents of the
+files from the bup repository. In the bup repository, run `git branch`;
+this will print out the names of all the git-annex keys that were stored
+there. Then you can use `bup join` to extract the content of each key:
+
+	bup join -r /path/to/bup/repository $key > $key.content
+
+Without the git-annex repository, there's no record of what the filename
+was, but you can extract the content this way.
+
+But, if the key names start with "GPG" the the data is stored in bup
+encrypted and you are probably out of luck (although if you used
+encryption=pubkey when setting up the bup special remote, you
+can use gpg to decrypt the files after `bup join`).
+"""]]

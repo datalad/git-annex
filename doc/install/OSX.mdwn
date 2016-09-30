@@ -18,9 +18,7 @@ several more. Handy if you don't otherwise have git installed.
 
 ## autobuilds
 
-[[Joey]] autobuilds the app for 10.10 Yosemite
-(also reported to work on 10.9 Mavericks and 10.11 El Capitan).
-Thanks to Kevin McKenzie for hosting the autobuilder.
+Thanks to Dartmouth for hosting the autobuilder.
 
 * [autobuild of git-annex.dmg](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-yosemite/git-annex.dmg) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-yosemite/))
 

@@ -15,7 +15,6 @@ import Annex.Perms
 import qualified Git
 import Utility.Metered
 import Utility.Percentage
-import Utility.QuickCheck
 import Utility.PID
 import Annex.LockPool
 import Logs.TimeStamp
@@ -290,17 +289,6 @@ failedTransferDir u direction r = gitAnnexTransferDir r
 	</> "failed"
 	</> showLcDirection direction
 	</> filter (/= '/') (fromUUID u)
-
-instance Arbitrary TransferInfo where
-	arbitrary = TransferInfo
-		<$> arbitrary
-		<*> arbitrary
-		<*> pure Nothing -- cannot generate a ThreadID
-		<*> pure Nothing -- remote not needed
-		<*> arbitrary
-		-- associated file cannot be empty (but can be Nothing)
-		<*> arbitrary `suchThat` (/= Just "")
-		<*> arbitrary
 
 prop_read_write_transferinfo :: TransferInfo -> Bool
 prop_read_write_transferinfo info

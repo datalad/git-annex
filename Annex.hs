@@ -56,6 +56,7 @@ import Types.BranchState
 import Types.TrustLevel
 import Types.Group
 import Types.Messages
+import Types.Concurrency
 import Types.UUID
 import Types.FileMatcher
 import Types.NumCopies
@@ -77,7 +78,7 @@ import qualified Data.Set as S
  - The MVar is not exposed outside this module.
  -
  - Note that when an Annex action fails and the exception is caught,
- - ny changes the action has made to the AnnexState are retained,
+ - any changes the action has made to the AnnexState are retained,
  - due to the use of the MVar to store the state.
  -}
 newtype Annex a = Annex { runAnnex :: ReaderT (MVar AnnexState) IO a }
@@ -101,6 +102,7 @@ data AnnexState = AnnexState
 	, remotes :: [Types.Remote.RemoteA Annex]
 	, remoteannexstate :: M.Map UUID AnnexState
 	, output :: MessageState
+	, concurrency :: Concurrency
 	, force :: Bool
 	, fast :: Bool
 	, daemon :: Bool
@@ -134,57 +136,60 @@ data AnnexState = AnnexState
 	, existinghooks :: M.Map Git.Hook.Hook Bool
 	, desktopnotify :: DesktopNotify
 	, workers :: [Either AnnexState (Async AnnexState)]
-	, concurrentjobs :: Maybe Int
+	, activeremotes :: MVar (S.Set (Types.Remote.RemoteA Annex))
 	, keysdbhandle :: Maybe Keys.DbHandle
 	, cachedcurrentbranch :: Maybe Git.Branch
 	}
 
-newState :: GitConfig -> Git.Repo -> AnnexState
-newState c r = AnnexState
-	{ repo = r
-	, repoadjustment = return
-	, gitconfig = c
-	, backends = []
-	, remotes = []
-	, remoteannexstate = M.empty
-	, output = def
-	, force = False
-	, fast = False
-	, daemon = False
-	, branchstate = startBranchState
-	, repoqueue = Nothing
-	, catfilehandles = M.empty
-	, hashobjecthandle = Nothing
-	, checkattrhandle = Nothing
-	, checkignorehandle = Nothing
-	, forcebackend = Nothing
-	, globalnumcopies = Nothing
-	, forcenumcopies = Nothing
-	, limit = BuildingMatcher []
-	, uuidmap = Nothing
-	, preferredcontentmap = Nothing
-	, requiredcontentmap = Nothing
-	, forcetrust = M.empty
-	, trustmap = Nothing
-	, groupmap = Nothing
-	, ciphers = M.empty
-	, lockcache = M.empty
-	, flags = M.empty
-	, fields = M.empty
-	, cleanup = M.empty
-	, sentinalstatus = Nothing
-	, useragent = Nothing
-	, errcounter = 0
-	, unusedkeys = Nothing
-	, tempurls = M.empty
-	, quviversion = Nothing
-	, existinghooks = M.empty
-	, desktopnotify = mempty
-	, workers = []
-	, concurrentjobs = Nothing
-	, keysdbhandle = Nothing
-	, cachedcurrentbranch = Nothing
-	}
+newState :: GitConfig -> Git.Repo -> IO AnnexState
+newState c r = do
+	emptyactiveremotes <- newMVar S.empty
+	return $ AnnexState
+		{ repo = r
+		, repoadjustment = return
+		, gitconfig = c
+		, backends = []
+		, remotes = []
+		, remoteannexstate = M.empty
+		, output = def
+		, concurrency = NonConcurrent
+		, force = False
+		, fast = False
+		, daemon = False
+		, branchstate = startBranchState
+		, repoqueue = Nothing
+		, catfilehandles = M.empty
+		, hashobjecthandle = Nothing
+		, checkattrhandle = Nothing
+		, checkignorehandle = Nothing
+		, forcebackend = Nothing
+		, globalnumcopies = Nothing
+		, forcenumcopies = Nothing
+		, limit = BuildingMatcher []
+		, uuidmap = Nothing
+		, preferredcontentmap = Nothing
+		, requiredcontentmap = Nothing
+		, forcetrust = M.empty
+		, trustmap = Nothing
+		, groupmap = Nothing
+		, ciphers = M.empty
+		, lockcache = M.empty
+		, flags = M.empty
+		, fields = M.empty
+		, cleanup = M.empty
+		, sentinalstatus = Nothing
+		, useragent = Nothing
+		, errcounter = 0
+		, unusedkeys = Nothing
+		, tempurls = M.empty
+		, quviversion = Nothing
+		, existinghooks = M.empty
+		, desktopnotify = mempty
+		, workers = []
+		, activeremotes = emptyactiveremotes
+		, keysdbhandle = Nothing
+		, cachedcurrentbranch = Nothing
+		}
 
 {- Makes an Annex state object for the specified git repo.
  - Ensures the config is read, if it was not already, and performs
@@ -193,7 +198,7 @@ new :: Git.Repo -> IO AnnexState
 new r = do
 	r' <- Git.Config.read =<< Git.relPath r
 	let c = extractGitConfig r'
-	newState c <$> fixupRepo r' c
+	newState c =<< fixupRepo r' c
 
 {- Performs an action in the Annex monad from a starting state,
  - returning a new state. -}

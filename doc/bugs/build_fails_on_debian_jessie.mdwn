@@ -5,3 +5,5 @@ Can't build on debian jessie using "make" - "apt-get build-dep git-annex" misses
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 The stack build works very nicely, thanks.
+
+> The `debian-jessie-backport` branch should build. [[done]] --[[Joey]]

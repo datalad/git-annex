@@ -4,6 +4,14 @@ Debian unstable and testing are usually fairly up to date, so this should be eno
 
 	sudo apt install git-annex
 
+## Standalone backports for all releases
+
+If the version shipped with Debian is too old, 
+the [NeuroDebian team](http://neuro.debian.net/) provides a
+[standalone build package](http://neuro.debian.net/pkgs/git-annex-standalone.html)
+that is regularly updated and that should work across all releases of
+Debian.
+
 ## Debian 8.0 "jessie"
 
 	sudo apt install git-annex
@@ -30,11 +38,3 @@ Follow the instructions to [enable backports](http://backports.debian.org/Instru
 Follow the instructions to [enable backports](http://backports.debian.org/Instructions/).
 
 	sudo apt-get -t squeeze-backports install git-annex
-
-## Standalone backports for all releases
-
-If the version shipped with Debian is too old, 
-the [NeuroDebian team](http://neuro.debian.net/) provides a
-[standalone build package](http://neuro.debian.net/pkgs/git-annex-standalone.html)
-that is regularly updated and that should work across all releases of
-Debian.

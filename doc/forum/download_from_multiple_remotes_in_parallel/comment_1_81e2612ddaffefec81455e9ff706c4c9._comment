@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-09-05T20:18:56Z"
+ content="""
+Currently the way to do this to run two git-annex get's in parallel, one
+--from A and the other --from B. They will avoid stepping on each other's
+toes.
+
+-J2 does not currently accomplish this; git-annex always defaults to
+using the remote with the lowest cost. It might be a nice improvement to
+have get round-robin when multiple remotes of the same cost contain files.
+[[todo/get_round_robin]]
+"""]]

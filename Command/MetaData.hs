@@ -78,8 +78,8 @@ seek o = do
 				(startKeys now o)
 				(seeker $ whenAnnexed $ start now o)
 				(forFiles o)
-		Batch -> withOutputType $ \ot -> case ot of
-			JSONOutput -> batchInput parseJSONInput $
+		Batch -> withMessageState $ \s -> case outputType s of
+			JSONOutput _ -> batchInput parseJSONInput $
 				commandAction . startBatch now
 			_ -> error "--batch is currently only supported in --json mode"
 

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="interfect@b151490178830f44348aa57b77ad58c7d18e8fe7"
+ nickname="interfect"
+ subject="Windows support?"
+ date="2016-09-01T03:31:30Z"
+ content="""
+The git-annex-remote-rclone solution doesn't seem to work in Windows.
+
+I have the script on my PATH, and I'm doing everything in Git Bash. I can run the script from the shell just fine, but Git Annex itself says it can't execute it.
+
+git-annex: Cannot run git-annex-remote-rclone -- Make sure it's in your PATH and is executable.
+
+Presumably it doesn't know how to talk to bash.exe to get it to run the script.
+"""]]

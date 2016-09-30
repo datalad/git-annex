@@ -1,0 +1,65 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-09-08T15:32:00Z"
+ content="""
+yoh pointed out in email that reusing the special remote interface would
+not work with -J because it doesn't tell what key progress is being shown
+for.
+
+Also, note that --json -J does not currently output json; -J overrides the
+--json to instead use concurrent-output for progress display. The current
+way that json is emitted incrementally would need to be changed to be usable
+with -J.
+
+Is there any need for a program that is driving git-annex with --json
+to use -J, instead of just starting several git-annex processes? The only
+major benefit I can think of is the recently added better selection between
+multiple remotes by parallel `git annex get`. Other performance benefits
+between -J and multiple processes should mostly be small.
+
+To suppose --json -J, instead of a partial json object that later gets added
+to as the command progresses:
+
+	{"command":"get","key":"SHA256E-s5242880--82cb4363f596cb66e7bc6e4cbfd2bfe8a8b6ac7e6d02557cc0e3944ec8faafc3","file":"bar","note":"from d1..."
+
+We'd need something like this, with each json object buffered
+and only output when it was complete (and output serialized so
+objects are written one at a time):
+
+	{"command":"get","key":"SHA256E-s5242880--82cb4363f596cb66e7bc6e4cbfd2bfe8a8b6ac7e6d02557cc0e3944ec8faafc3","file":"bar","note":"from d1...", "inprogress":true}
+	{"command":"get","key":"SHA256E-s5242880--82cb4363f596cb66e7bc6e4cbfd2bfe8a8b6ac7e6d02557cc0e3944ec8faafc3","success":true}
+
+If we're doing that, we might as well use json for the progress info too,
+in between the two json objects in the example above:
+
+	{"percent-progress":"25%","byte-progress":500,"key":"SHA256E-s5242880--82cb4363f596cb66e7bc6e4cbfd2bfe8a8b6ac7e6d02557cc0e3944ec8faafc3"}
+	{"percent-progress":"75%","byte-progress":1500","key":"SHA256E-s5242880--82cb4363f596cb66e7bc6e4cbfd2bfe8a8b6ac7e6d02557cc0e3944ec8faafc3"}
+
+But this is a large change to the json format, and would probably break
+all consumers of it. I don't like that, but also don't like the complexity
+of having two different varieties of json output for parallel and
+non-parallel modes.
+
+Hmm, if we're buffering the "command" json objects, we could keep them
+formatted the same as they are now, only displaying them when done. And
+progress objects could be inserted before:
+
+	{"percent-progress":"25%","byte-progress":500,"key":"SHA256E-s5242880--82cb4363f596cb66e7bc6e4cbfd2bfe8a8b6ac7e6d02557cc0e3944ec8faafc3","file":"bar"}
+	{"percent-progress":"75%","byte-progress":1500","key":"SHA256E-s5242880--82cb4363f596cb66e7bc6e4cbfd2bfe8a8b6ac7e6d02557cc0e3944ec8faafc3","file":"bar"}
+	{"command":"get","key":"SHA256E-s5242880--82cb4363f596cb66e7bc6e4cbfd2bfe8a8b6ac7e6d02557cc0e3944ec8faafc3","file":"bar","note":"from d1...","success":true}
+
+That seems a bit verbose, but I think all that info could be needed by
+consumers of the progress objects. Hmm, since the "command" json objects
+are being buffered, we could even include the currently buffered object
+nested inside the progress object:
+
+	{"percent-progress":"25%","byte-progress":500,"action":{"command":"get","key":"SHA256E-s5242880--82cb4363f596cb66e7bc6e4cbfd2bfe8a8b6ac7e6d02557cc0e3944ec8faafc3","file":"bar","note":"from d1..."}}
+	{"percent-progress":"75%","byte-progress":1500,"action":{"command":"get","key":"SHA256E-s5242880--82cb4363f596cb66e7bc6e4cbfd2bfe8a8b6ac7e6d02557cc0e3944ec8faafc3","file":"bar","note":"from d1..."}}
+	{"command":"get","key":"SHA256E-s5242880--82cb4363f596cb66e7bc6e4cbfd2bfe8a8b6ac7e6d02557cc0e3944ec8faafc3","file":"bar","note":"from d1...","success":true}
+
+That's not a lot more verbose than the earlier version, and it ensures that
+consumers of the progress objects have all possible information available
+(including the name of the remote being downloaded from in the above
+example).
+"""]]
