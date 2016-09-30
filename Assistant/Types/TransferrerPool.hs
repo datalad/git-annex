@@ -13,8 +13,7 @@ import Assistant.Types.DaemonStatus
 
 import Control.Concurrent.STM hiding (check)
 
-{- This TMVar is never left empty. -}
-type TransferrerPool = TMVar (MkCheckTransferrer, [TransferrerPoolItem])
+type TransferrerPool = TVar (MkCheckTransferrer, [TransferrerPoolItem])
 
 type CheckTransferrer = IO Bool
 type MkCheckTransferrer = IO (IO Bool)
@@ -31,24 +30,22 @@ data Transferrer = Transferrer
 	}
 
 newTransferrerPool :: MkCheckTransferrer -> IO TransferrerPool
-newTransferrerPool c = newTMVarIO (c, [])
+newTransferrerPool c = newTVarIO (c, [])
 
 popTransferrerPool :: TransferrerPool -> STM (Maybe TransferrerPoolItem, Int)
 popTransferrerPool p = do
-	(c, l) <- takeTMVar p
+	(c, l) <- readTVar p
 	case l of
-		[] -> do
-			putTMVar p (c, [])
-			return (Nothing, 0)
+		[] -> return (Nothing, 0)
 		(i:is) -> do
-			putTMVar p (c, is)
+			writeTVar p (c, is)
 			return $ (Just i, length is)
 
 pushTransferrerPool :: TransferrerPool -> TransferrerPoolItem -> STM ()
 pushTransferrerPool p i = do
-	(c, l) <- takeTMVar p
+	(c, l) <- readTVar p
 	let l' = i:l
-	putTMVar p (c, l')
+	writeTVar p (c, l')
 
 {- Note that making a CheckTransferrer may allocate resources,
  - such as a NotificationHandle, so it's important that the returned
@@ -56,12 +53,12 @@ pushTransferrerPool p i = do
  - garbage collected. -}
 mkTransferrerPoolItem :: TransferrerPool -> Transferrer -> IO TransferrerPoolItem
 mkTransferrerPoolItem p t = do
-	mkcheck <- atomically $ fst <$> readTMVar p
+	mkcheck <- atomically $ fst <$> readTVar p
 	check <- mkcheck
 	return $ TransferrerPoolItem (Just t) check
 
 checkNetworkConnections :: DaemonStatusHandle -> MkCheckTransferrer
 checkNetworkConnections dstatushandle = do
-	dstatus <- atomically $ readTMVar dstatushandle
+	dstatus <- atomically $ readTVar dstatushandle
 	h <- newNotificationHandle False (networkConnectedNotifier dstatus)
 	return $ not <$> checkNotification h

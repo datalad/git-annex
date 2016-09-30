@@ -45,10 +45,10 @@ import Network.URI
 data External = External
 	{ externalType :: ExternalType
 	, externalUUID :: UUID
-	, externalState :: TMVar [ExternalState]
-	-- ^ TMVar is never left empty; list contains states for external
-	-- special remote processes that are not currently in use.
-	, externalLastPid :: TMVar PID
+	, externalState :: TVar [ExternalState]
+	-- ^ Contains states for external special remote processes
+	-- that are not currently in use.
+	, externalLastPid :: TVar PID
 	, externalDefaultConfig :: RemoteConfig
 	, externalGitConfig :: RemoteGitConfig
 	}
@@ -57,8 +57,8 @@ newExternal :: ExternalType -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex 
 newExternal externaltype u c gc = liftIO $ External
 	<$> pure externaltype
 	<*> pure u
-	<*> atomically (newTMVar [])
-	<*> atomically (newTMVar 0)
+	<*> atomically (newTVar [])
+	<*> atomically (newTVar 0)
 	<*> pure c
 	<*> pure gc
 
@@ -69,10 +69,8 @@ data ExternalState = ExternalState
 	, externalReceive :: Handle
 	, externalShutdown :: IO ()
 	, externalPid :: PID
-	, externalPrepared :: TMVar PrepareStatus
-	-- ^ Never left empty.
-	, externalConfig :: TMVar RemoteConfig
-	-- ^ Never left empty.
+	, externalPrepared :: TVar PrepareStatus
+	, externalConfig :: TVar RemoteConfig
 	}
 
 type PID = Int

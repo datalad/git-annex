@@ -30,7 +30,7 @@ import qualified Data.Set as S
 import qualified Data.Text as T
 
 getDaemonStatus :: Assistant DaemonStatus
-getDaemonStatus = (atomically . readTMVar) <<~ daemonStatusHandle
+getDaemonStatus = (atomically . readTVar) <<~ daemonStatusHandle
 
 modifyDaemonStatus_ :: (DaemonStatus -> DaemonStatus) -> Assistant ()
 modifyDaemonStatus_ a = modifyDaemonStatus $ \s -> (a s, ())
@@ -40,8 +40,8 @@ modifyDaemonStatus a = do
 	dstatus <- getAssistant daemonStatusHandle
 	liftIO $ do
 		(s, b) <- atomically $ do
-			r@(!s, _) <- a <$> takeTMVar dstatus
-			putTMVar dstatus s
+			r@(!s, _) <- a <$> readTVar dstatus
+			writeTVar dstatus s
 			return r
 		sendNotification $ changeNotifier s
 		return b
@@ -102,7 +102,7 @@ startDaemonStatus = do
 		flip catchDefaultIO (readDaemonStatusFile file) =<< newDaemonStatus
 	transfers <- M.fromList <$> getTransfers
 	addsync <- calcSyncRemotes
-	liftIO $ atomically $ newTMVar $ addsync $ status
+	liftIO $ atomically $ newTVar $ addsync $ status
 		{ scanComplete = False
 		, sanityCheckRunning = False
 		, currentTransfers = transfers
@@ -162,14 +162,14 @@ tenMinutes = 10 * 60
  - to the caller. -}
 adjustTransfersSTM :: DaemonStatusHandle -> (TransferMap -> TransferMap) -> STM ()
 adjustTransfersSTM dstatus a = do
-	s <- takeTMVar dstatus
+	s <- readTVar dstatus
 	let !v = a (currentTransfers s)
-	putTMVar dstatus $ s { currentTransfers = v }
+	writeTVar dstatus $ s { currentTransfers = v }
 
 {- Checks if a transfer is currently running. -}
 checkRunningTransferSTM :: DaemonStatusHandle -> Transfer -> STM Bool
 checkRunningTransferSTM dstatus t = M.member t . currentTransfers
-	<$> readTMVar dstatus
+	<$> readTVar dstatus
 
 {- Alters a transfer's info, if the transfer is in the map. -}
 alterTransferInfo :: Transfer -> (TransferInfo -> TransferInfo) -> Assistant ()
@@ -207,14 +207,14 @@ notifyTransfer :: Assistant ()
 notifyTransfer = do
 	dstatus <- getAssistant daemonStatusHandle
 	liftIO $ sendNotification
-		=<< transferNotifier <$> atomically (readTMVar dstatus)
+		=<< transferNotifier <$> atomically (readTVar dstatus)
 
 {- Send a notification when alerts are changed. -}
 notifyAlert :: Assistant ()
 notifyAlert = do
 	dstatus <- getAssistant daemonStatusHandle
 	liftIO $ sendNotification
-		=<< alertNotifier <$> atomically (readTMVar dstatus)
+		=<< alertNotifier <$> atomically (readTVar dstatus)
 
 {- Returns the alert's identifier, which can be used to remove it. -}
 addAlert :: Alert -> Assistant AlertId

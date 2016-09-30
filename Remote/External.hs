@@ -127,7 +127,7 @@ externalSetup mu _ c gc = do
 				INITREMOTE_FAILURE errmsg -> Just $ error errmsg
 				_ -> Nothing
 			withExternalState external $
-				liftIO . atomically . readTMVar . externalConfig
+				liftIO . atomically . readTVar . externalConfig
 
 	gitConfigSpecialRemote u c'' "externaltype" externaltype
 	return (c'', u)
@@ -234,24 +234,22 @@ handleRequest' st external req mp responsehandler
 	handleRemoteRequest (DIRHASH_LOWER k) = 
 		send $ VALUE $ hashDirLower def k
 	handleRemoteRequest (SETCONFIG setting value) =
-		liftIO $ atomically $ do
-			let v = externalConfig st
-			m <- takeTMVar v
-			putTMVar v $ M.insert setting value m
+		liftIO $ atomically $ modifyTVar' (externalConfig st) $
+			M.insert setting value
 	handleRemoteRequest (GETCONFIG setting) = do
 		value <- fromMaybe "" . M.lookup setting
-			<$> liftIO (atomically $ readTMVar $ externalConfig st)
+			<$> liftIO (atomically $ readTVar $ externalConfig st)
 		send $ VALUE value
 	handleRemoteRequest (SETCREDS setting login password) = do
 		let v = externalConfig st
-		c <- liftIO $ atomically $ readTMVar v
+		c <- liftIO $ atomically $ readTVar v
 		let gc = externalGitConfig external
 		c' <- setRemoteCredPair encryptionAlreadySetup c gc
 			(credstorage setting)
 			(Just (login, password))
-		void $ liftIO $ atomically $ swapTMVar v c'
+		void $ liftIO $ atomically $ swapTVar v c'
 	handleRemoteRequest (GETCREDS setting) = do
-		c <- liftIO $ atomically $ readTMVar $ externalConfig st
+		c <- liftIO $ atomically $ readTVar $ externalConfig st
 		let gc = externalGitConfig external
 		creds <- fromMaybe ("", "") <$> 
 			getRemoteCredPair c gc (credstorage setting)
@@ -356,19 +354,15 @@ withExternalState external = bracket alloc dealloc
 
 	alloc = do
 		ms <- liftIO $ atomically $ do
-			l <- takeTMVar v
+			l <- readTVar v
 			case l of
-				[] -> do
-					putTMVar v l
-					return Nothing
+				[] -> return Nothing
 				(st:rest) -> do
-					putTMVar v rest
+					writeTVar v rest
 					return (Just st)
 		maybe (startExternal external) return ms
 	
-	dealloc st = liftIO $ atomically $ do
-		l <- takeTMVar v
-		putTMVar v (st:l)
+	dealloc st = liftIO $ atomically $ modifyTVar' v (st:)
 
 {- Starts an external remote process running, and checks VERSION. -}
 startExternal :: External -> Annex ExternalState
@@ -396,11 +390,11 @@ startExternal external = do
 		fileEncoding herr
 		stderrelay <- async $ errrelayer herr
 		checkearlytermination =<< getProcessExitCode ph
-		cv <- newTMVarIO $ externalDefaultConfig external
-		pv <- newTMVarIO Unprepared
+		cv <- newTVarIO $ externalDefaultConfig external
+		pv <- newTVarIO Unprepared
 		pid <- atomically $ do
-			n <- succ <$> takeTMVar (externalLastPid external)
-			putTMVar (externalLastPid external) n
+			n <- succ <$> readTVar (externalLastPid external)
+			writeTVar (externalLastPid external) n
 			return n
 		return $ ExternalState
 			{ externalSend = hin
@@ -431,17 +425,13 @@ startExternal external = do
 
 stopExternal :: External -> Annex ()
 stopExternal external = liftIO $ do
-	l <- atomically $ do
-		l <- takeTMVar v
-		putTMVar v []
-		return l
+	l <- atomically $ swapTVar (externalState external) []
 	mapM_ stop l
   where
 	stop st = do
 		hClose $ externalSend st
 		hClose $ externalReceive st
 		externalShutdown st
-	v = externalState external
 
 externalRemoteProgram :: ExternalType -> String
 externalRemoteProgram externaltype = "git-annex-remote-" ++ externaltype
@@ -459,7 +449,7 @@ checkVersion _ _ _ = Nothing
  - the error message. -}
 checkPrepared :: ExternalState -> External -> Annex ()
 checkPrepared st external = do
-	v <- liftIO $ atomically $ readTMVar $ externalPrepared st
+	v <- liftIO $ atomically $ readTVar $ externalPrepared st
 	case v of
 		Prepared -> noop
 		FailedPrepare errmsg -> error errmsg
@@ -474,7 +464,7 @@ checkPrepared st external = do
 					_ -> Nothing
   where
 	setprepared status = liftIO $ atomically $ void $
-		swapTMVar (externalPrepared st) status
+		swapTVar (externalPrepared st) status
 
 {- Caches the cost in the git config to avoid needing to start up an
  - external special remote every time time just to ask it what its

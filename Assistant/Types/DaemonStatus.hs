@@ -86,8 +86,7 @@ data DaemonStatus = DaemonStatus
 
 type TransferMap = M.Map Transfer TransferInfo
 
-{- This TMVar is never left empty, so accessing it will never block. -}
-type DaemonStatusHandle = TMVar DaemonStatus
+type DaemonStatusHandle = TVar DaemonStatus
 
 newDaemonStatus :: IO DaemonStatus
 newDaemonStatus = DaemonStatus
