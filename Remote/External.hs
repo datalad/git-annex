@@ -126,7 +126,9 @@ externalSetup mu _ c gc = do
 				INITREMOTE_SUCCESS -> Just noop
 				INITREMOTE_FAILURE errmsg -> Just $ error errmsg
 				_ -> Nothing
-			liftIO $ atomically $ readTMVar $ externalConfig external
+			withExternalLock external $ \lck ->
+				fromExternal lck external externalConfig $
+					liftIO . atomically . readTMVar 
 
 	gitConfigSpecialRemote u c'' "externaltype" externaltype
 	return (c'', u)
@@ -232,22 +234,26 @@ handleRequest' lck external req mp responsehandler
 	handleRemoteRequest (DIRHASH_LOWER k) = 
 		send $ VALUE $ hashDirLower def k
 	handleRemoteRequest (SETCONFIG setting value) =
-		liftIO $ atomically $ do
-			let v = externalConfig external
-			m <- takeTMVar v
-			putTMVar v $ M.insert setting value m
+		fromExternal lck external externalConfig $ \v -> 
+			liftIO $ atomically $ do
+				m <- takeTMVar v
+				putTMVar v $ M.insert setting value m
 	handleRemoteRequest (GETCONFIG setting) = do
-		value <- fromMaybe "" . M.lookup setting
-			<$> liftIO (atomically $ readTMVar $ externalConfig external)
+		value <- fromExternal lck external externalConfig $ \v -> 
+			fromMaybe "" . M.lookup setting
+				<$> liftIO (atomically $ readTMVar v)
 		send $ VALUE value
 	handleRemoteRequest (SETCREDS setting login password) = do
-		c <- liftIO $ atomically $ readTMVar $ externalConfig external
-		let gc = externalGitConfig external
-		c' <- setRemoteCredPair encryptionAlreadySetup c gc (credstorage setting) $
-			Just (login, password)
-		void $ liftIO $ atomically $ swapTMVar (externalConfig external) c'
+		fromExternal lck external externalConfig $ \v -> do
+			c <- liftIO $ atomically $ readTMVar v
+			let gc = externalGitConfig external
+			c' <- setRemoteCredPair encryptionAlreadySetup c gc
+				(credstorage setting)
+				(Just (login, password))
+			void $ liftIO $ atomically $ swapTMVar v c'
 	handleRemoteRequest (GETCREDS setting) = do
-		c <- liftIO $ atomically $ readTMVar $ externalConfig external
+		c <- fromExternal lck external externalConfig $
+			liftIO . atomically . readTMVar
 		let gc = externalGitConfig external
 		creds <- fromMaybe ("", "") <$> 
 			getRemoteCredPair c gc (credstorage setting)
@@ -351,7 +357,7 @@ fromExternal lck external extractor a =
   where
 	go (Just st) = run st
 	go Nothing = do
-		st <- startExternal $ externalType external
+		st <- startExternal external
 		void $ liftIO $ atomically $ do
 			void $ tryReadTMVar v
 			putTMVar v st
@@ -370,8 +376,8 @@ fromExternal lck external extractor a =
 
 {- Starts an external remote process running, but does not handle checking
  - VERSION, etc. -}
-startExternal :: ExternalType -> Annex ExternalState
-startExternal externaltype = do
+startExternal :: External -> Annex ExternalState
+startExternal external = do
 	errrelayer <- mkStderrRelayer
 	g <- Annex.gitRepo
 	liftIO $ do
@@ -389,6 +395,7 @@ startExternal externaltype = do
 		fileEncoding herr
 		stderrelay <- async $ errrelayer herr
 		checkearlytermination =<< getProcessExitCode pid
+		cv <- atomically $ newTMVar $ externalDefaultConfig external
 		return $ ExternalState
 			{ externalSend = hin
 			, externalReceive = hout
@@ -396,9 +403,10 @@ startExternal externaltype = do
 				cancel stderrelay
 				void $ waitForProcess pid
 			, externalPrepared = Unprepared
+			, externalConfig = cv
 			}
   where
-	basecmd = externalRemoteProgram externaltype
+	basecmd = externalRemoteProgram $ externalType external
 
 	propgit g p = do
 		environ <- propGitEnv g

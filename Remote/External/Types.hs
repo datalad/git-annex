@@ -52,8 +52,7 @@ data External = External
 	, externalState :: TMVar ExternalState
 	-- Empty when a remote is in use.
 	, externalLock :: TMVar ExternalLock
-	-- Never left empty.
-	, externalConfig :: TMVar RemoteConfig
+	, externalDefaultConfig :: RemoteConfig
 	, externalGitConfig :: RemoteGitConfig
 	}
 
@@ -63,7 +62,7 @@ newExternal externaltype u c gc = liftIO $ External
 	<*> pure u
 	<*> atomically newEmptyTMVar
 	<*> atomically (newTMVar ExternalLock)
-	<*> atomically (newTMVar c)
+	<*> pure c
 	<*> pure gc
 
 type ExternalType = String
@@ -73,6 +72,8 @@ data ExternalState = ExternalState
 	, externalReceive :: Handle
 	, externalShutdown :: IO ()
 	, externalPrepared :: PrepareStatus
+	-- Never left empty.
+	, externalConfig :: TMVar RemoteConfig
 	}
 
 data PrepareStatus = Unprepared | Prepared | FailedPrepare ErrorMsg
