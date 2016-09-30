@@ -1,3 +1,9 @@
+git-annex (6.20160923-1) unstable; urgency=medium
+
+  * Package 6.20160923-1
+
+ -- Richard Hartmann <richih@debian.org>  Fri, 30 Sep 2016 20:31:25 +0200
+
 git-annex (6.20160923) unstable; urgency=medium
 
   * Rate limit console progress display updates to 10 per second.
