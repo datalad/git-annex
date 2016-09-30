@@ -48,6 +48,7 @@ data External = External
 	, externalState :: TMVar [ExternalState]
 	-- ^ TMVar is never left empty; list contains states for external
 	-- special remote processes that are not currently in use.
+	, externalLastPid :: TMVar PID
 	, externalDefaultConfig :: RemoteConfig
 	, externalGitConfig :: RemoteGitConfig
 	}
@@ -57,6 +58,7 @@ newExternal externaltype u c gc = liftIO $ External
 	<$> pure externaltype
 	<*> pure u
 	<*> atomically (newTMVar [])
+	<*> atomically (newTMVar 0)
 	<*> pure c
 	<*> pure gc
 
@@ -66,11 +68,14 @@ data ExternalState = ExternalState
 	{ externalSend :: Handle
 	, externalReceive :: Handle
 	, externalShutdown :: IO ()
+	, externalPid :: PID
 	, externalPrepared :: TMVar PrepareStatus
 	-- ^ Never left empty.
 	, externalConfig :: TMVar RemoteConfig
 	-- ^ Never left empty.
 	}
+
+type PID = Int
 
 data PrepareStatus = Unprepared | Prepared | FailedPrepare ErrorMsg
 

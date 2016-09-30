@@ -303,7 +303,7 @@ handleRequest' st external req mp responsehandler
 
 sendMessage :: Sendable m => ExternalState -> External -> m -> Annex ()
 sendMessage st external m = liftIO $ do
-	protocolDebug external True line
+	protocolDebug external st True line
 	hPutStrLn h line
 	hFlush h
   where
@@ -326,7 +326,7 @@ receiveMessage st external handleresponse handlerequest handleasync =
   where
 	go Nothing = protocolError False ""
 	go (Just s) = do
-		liftIO $ protocolDebug external False s
+		liftIO $ protocolDebug external st False s
 		case parseMessage s :: Maybe Response of
 			Just resp -> maybe (protocolError True s) id (handleresponse resp)
 			Nothing -> case parseMessage s :: Maybe RemoteRequest of
@@ -337,9 +337,10 @@ receiveMessage st external handleresponse handlerequest handleasync =
 	protocolError parsed s = error $ "external special remote protocol error, unexpectedly received \"" ++ s ++ "\" " ++
 		if parsed then "(command not allowed at this time)" else "(unable to parse command)"
 
-protocolDebug :: External -> Bool -> String -> IO ()
-protocolDebug external sendto line = debugM "external" $ unwords
-	[ externalRemoteProgram (externalType external)
+protocolDebug :: External -> ExternalState -> Bool -> String -> IO ()
+protocolDebug external st sendto line = debugM "external" $ unwords
+	[ externalRemoteProgram (externalType external) ++ 
+		"[" ++ show (externalPid st) ++ "]"
 	, if sendto then "<--" else "-->"
 	, line
 	]
@@ -388,21 +389,26 @@ startExternal external = do
 			, std_err = CreatePipe
 			}
 		p <- propgit g basep
-		(Just hin, Just hout, Just herr, pid) <- 
+		(Just hin, Just hout, Just herr, ph) <- 
 			createProcess p `catchIO` runerr
 		fileEncoding hin
 		fileEncoding hout
 		fileEncoding herr
 		stderrelay <- async $ errrelayer herr
-		checkearlytermination =<< getProcessExitCode pid
+		checkearlytermination =<< getProcessExitCode ph
 		cv <- newTMVarIO $ externalDefaultConfig external
 		pv <- newTMVarIO Unprepared
+		pid <- atomically $ do
+			n <- succ <$> takeTMVar (externalLastPid external)
+			putTMVar (externalLastPid external) n
+			return n
 		return $ ExternalState
 			{ externalSend = hin
 			, externalReceive = hout
+			, externalPid = pid
 			, externalShutdown = do
 				cancel stderrelay
-				void $ waitForProcess pid
+				void $ waitForProcess ph
 			, externalPrepared = pv
 			, externalConfig = cv
 			}
@@ -423,8 +429,6 @@ startExternal external = do
 			error $ basecmd ++ " is not installed in PATH (" ++ path ++ ")"
 		)
 
--- Note: Does not stop any externals that have a withExternalState
--- action currently running.
 stopExternal :: External -> Annex ()
 stopExternal external = liftIO $ do
 	l <- atomically $ do
