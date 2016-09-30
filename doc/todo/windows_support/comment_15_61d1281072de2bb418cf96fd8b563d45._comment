@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="ztl8702"
+ subject="Bash on Windows"
+ date="2016-09-30T19:14:34Z"
+ content="""
+Currently there is a bug that stops all Haskell programs from running on Bash on Windows:
+https://wpdev.uservoice.com/forums/266908-command-prompt-console-bash-on-ubuntu-on-windo/suggestions/13572504-add-support-for-timer-create
+
+https://github.com/Microsoft/BashOnWindows/issues/307
+"""]]
