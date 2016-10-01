@@ -1,0 +1,41 @@
+### Please describe the problem.
+
+Adding new files to a gcrypt remote ends up eating all inodes.
+
+### What steps will reproduce the problem?
+
+I have a docs directory, 780 files in it, various types, various subdirectories. I add these to a git annex repo. Create a gcrypt remote on a usb drive and use assistant to copy. Eventually all sorts of stuff stops working since there are no inodes left.
+
+### What version of git-annex are you using? On what operating system?
+
+Arch Linux 64 bit, stable. Git annex 6.20160613-8
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+Remote bare repo looks as follows:
+
+    annex/objects - contains 4096 directories (000, 001, ...)
+
+    annex/objects/XXX - contains ~1380 directories (001, ...)
+
+    annex/objects/XXX/XXX - contains two or three directories, e.g. GPGHMACSHA1--3939af6b89c30015490ce9e19f9051bb9e9fe64e
+
+    annex/objects/XXX/XXX/GPGHMACSHA1-XXXX - contains one or two files of the same name
+
+Let's multiply that out: 4096 * 1380 * 2 * 2 = 22,609,920
+
+Plus . and .. for all the directories, and boom, all my 59 million inodes are gone, before I even manage to store my 780 files!
+
+Disk is about 20% full.
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
