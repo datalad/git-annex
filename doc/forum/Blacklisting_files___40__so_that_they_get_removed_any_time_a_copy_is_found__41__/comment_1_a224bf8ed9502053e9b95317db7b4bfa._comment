@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ subject="Sketch of implementation, request for comment"
+ date="2016-10-01T17:25:46Z"
+ content="""
+From forum entry [git annex drop not freeing space on filesystem](http://git-annex.branchable.com/forum/git_annex_drop_not_freeing_space_on_filesystem/) I understand that:
+
+* removing a file from the tree hierarchy (with `git rm`, maybe other ways) opens the possibility of freeing space locally
+* syncing with remotes propagates this possibility
+* `git annex dropunused --force` can free space
+
+So, if we have a way to remove files by content (through git, git annex, etc), e.g. starting from http://stackoverflow.com/questions/460331/git-finding-a-filename-from-a-sha1 , we can sketch a naive implementation:
+
+* (option 1, provides Q1 and Q2 above) run `git ls-tree` and filter output for blacklisted hashes (anyone knows a way to efficiently filter lines matching a pattern from a potentially big collection?), run git rm on the paths obtained
+* (option 2, provides Q3 above) run `git gilter-branch` with a filter spec that removes files by hash (is that possible?)
+* git sync with remotes
+* on each remote `git annex dropunused --force`
+
+Does that make sense?
+
+Thank you.
+
+"""]]
