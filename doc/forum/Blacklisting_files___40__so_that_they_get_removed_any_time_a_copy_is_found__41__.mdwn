@@ -1,0 +1,55 @@
+Hello,
+
+I'm not sure this is mature enough as a wishlist item so I put it in the forum.  Please move if it is appropriate.
+
+# Context, general need
+
+I'm considering using git-annex to store photos, yet what I'm needing might be useful in more general cases.
+
+The need in one sentence: **deal with files that change status from "precious, please keep n copies" to "junk, please delete it from everywhere you find it, now and forever"**.
+
+# More concrete need
+
+I take many photographs and am interested in git-annex comfort to ensure a number of copies of files exist at any time.
+
+Sometimes I can sort photos and reject bad ones shortly after taking a roll, typically before I could `git annex add` them.  Sometimes I do it much later, after they have been included in `git-annex` and stored in several places.
+
+## Rationale 1: releasing storage space
+
+I'm worried about having a lot of space still used by photographs that I actually don't want to keep.
+
+It's not marginal.  For example, at 30Mb per RAW photo, 300+ photos in an ordinary afternoon take 10Gb, from which up to one half could turn out rejected.  Whole photo/video collection is already probably much over 1Tb and growing.
+
+So we're talking about 5Gb per shooting day to be freed and already probably 100+Gb to free from remotes, so definitely something to consider.
+
+## Rationale 2: rejecting files once and for all, not having to repeat it
+
+Once I rejected a photograph, I'd like to never have to `rm`, `forget`, `drop` them or whatever again.  Ideally it would just be dropped from any back-end (that supports removing information) at any time in the future, perhaps with just a generic command/script like `git annex purge_the_junk_files`.
+
+# Questions
+
+* Q1 Is there a simple way to somehow "blacklist" a particular file so that from that moment on, any `sync`-like operation of `git-annex` involving a remote will remove the data of this file in that remote.
+* Q2 UI considerations. In my dreams, files could just be moved to a "junk" sub-folder (using photo sorting tools like e.g. geeqie), then a batch command would assign them the "blacklisted" or "junk" status.
+* Q3 I don't mind at this point if there are traces of where (in the filesystem tree) the now-rejected files were.  Perhaps it's easier to perform a different operation, that is completely forgetting the history of blacklisted files in the spirit of `git filter-branch`.
+
+Perhaps most of this can be done with simple configuration and a helper script.
+
+# Additional information
+
+* I'm wondering if some simple scheme like an actual `git filter-branch` in the local `git-annex` repo then some cleanup command (`git annex fsck`) then push to remote would have the intended effect.  Since this involves rewriting history I don't know how `git-annex` would like it.  But that's just a thought-experiment at this point.
+* The number of files to blacklist can quickly go to a few hundreds later thousands.  This might rule out some very naive implementations.
+* I can hack a bash script to perform whatever appropriate command so that given a solution to Q1 I have a solution to Q2.
+
+# Search before you post
+
+I've found other topics but they don't seem to even remotely deal with the topic here.  E.g.:
+
+* [[https://git-annex.branchable.com/forum/Backing_up_photos_to_the_cloud/]]
+* [[https://git-annex.branchable.com/forum/best_practices_for_importing_photos__63__/]]
+* [[https://git-annex.branchable.com/tips/automatically_adding_metadata/]] 
+
+[[https://git-annex.branchable.com/git-annex-forget/]] seems to be orthogonal (forget history of everything, but not delete data)
+
+This might be more-or-less on topic but confusing to me at this point : [[https://git-annex.branchable.com/forum/How_to_get_git-annex_to_forget_a_commit__63__/]]
+
+Thank you for your attention.
