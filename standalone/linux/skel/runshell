@@ -100,6 +100,11 @@ export ORIG_GCONV_PATH
 GCONV_PATH="$base/$(cat "$base/gconvdir")"
 export GCONV_PATH
 
+ORIG_LOCPATH="$LOCPATH"
+export ORIG_LOCPATH
+LOCPATH=/dev/null
+export LOCPATH
+
 ORIG_GIT_EXEC_PATH="$GIT_EXEC_PATH"
 export ORIG_GIT_EXEC_PATH
 GIT_EXEC_PATH="$base/git-core"
