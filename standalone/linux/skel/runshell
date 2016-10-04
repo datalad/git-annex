@@ -122,7 +122,7 @@ export MANPATH
 
 # Indicate which variables were exported above and should be cleaned
 # when running non-bundled programs.
-GIT_ANNEX_STANDLONE_ENV="PATH GCONV_PATH GIT_EXEC_PATH GIT_TEMPLATE_DIR MANPATH"
+GIT_ANNEX_STANDLONE_ENV="PATH GCONV_PATH GIT_EXEC_PATH GIT_TEMPLATE_DIR MANPATH LOCPATH"
 export GIT_ANNEX_STANDLONE_ENV
 
 if [ "$1" ]; then
