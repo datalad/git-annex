@@ -14,12 +14,9 @@ git-annex (6.20160924) UNRELEASED; urgency=medium
     external special remotes, because running multiple git-annex commands
     at the same time could already start multiple processes for the same
     external special remotes.
-  * Linux standalone: Add back the LOCPATH=/dev/null hack to avoid
-    the system locale-archive being read. Version mismatches between the
-    system locale-archive and the glibc in the bundle have been observed
-    to cause git crashes. Unfortunately, this causes locales to not be
-    used in the linux standalone bundle, reverting back to pre-6.20160419
-    behavior.
+  * Linux standalone: Include locale files in the bundle, and generate
+    locale definition files for the locales in use when starting runshell.
+    (Currently only done for utf-8 locales.)
 
  -- Joey Hess <id@joeyh.name>  Mon, 26 Sep 2016 16:46:19 -0400
 

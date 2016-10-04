@@ -100,11 +100,6 @@ export ORIG_GCONV_PATH
 GCONV_PATH="$base/$(cat "$base/gconvdir")"
 export GCONV_PATH
 
-ORIG_LOCPATH="$LOCPATH"
-export ORIG_LOCPATH
-LOCPATH=/dev/null
-export LOCPATH
-
 ORIG_GIT_EXEC_PATH="$GIT_EXEC_PATH"
 export ORIG_GIT_EXEC_PATH
 GIT_EXEC_PATH="$base/git-core"
@@ -119,6 +114,39 @@ ORIG_MANPATH="$MANPATH"
 export ORIG_MANPATH
 MANPATH="$base/usr/share/man:$MANPATH"
 export MANPATH
+
+# Avoid using system locales, which may interact badly with bundled libc.
+ORIG_LOCPATH="$LOCPATH"
+export ORIG_LOCPATH
+LOCPATH="$base/locales"
+export LOCPATH
+
+# Generate locale definition files for the locales in use,
+# using the localedef and locale files from the bundle.
+# Currently only utf-8 locales are handled.
+lastlocaleenv=""
+for localeenv in "$LANG" "$LANGUAGE" "$LC_CTYPE" "$LC_NUMERIC" "$LC_TIME" \
+		"$LC_COLLATE" "$LC_MONETARY" "$LC_MESSAGES" "$LC_PAPER" \
+		"$LC_NAME" "$LC_ADDRESS" "$LC_TELEPHONE" "$LC_MEASUREMENT" \
+		"$LC_IDENTIFICATION" "$LC_ALL"; do
+	if [ "$localeenv" != "$lastlocaleenv" ]; then
+		lastlocaleenv="$localeenv"
+		if [ ! -d "$base/locales/$localeenv" ]; then
+			if [ "${localeenv##[!.]*.}" = "utf8" ]; then
+				(
+					rm -rf "$base/locales/$localeenv.new.$$" &&
+					mkdir -p "$base/locales/$localeenv.new.$$" &&
+					# cd to $base since localedef reads files from pwd
+					cd "$base" &&
+					# Run localedef using the bundled i18n files;
+					# use LANG=C to avoid it reading the system locale archive.
+					I18NPATH="$base/i18n" LANG=C localedef -i "${localeenv%%.*}" -c -f UTF-8 "$base/locales/$localeenv.new.$$" &&
+					mv "$base/locales/$localeenv.new.$$" "$base/locales/$localeenv"
+				) >/dev/null 2>/dev/null || true
+			fi
+		fi
+	fi
+done
 
 # Indicate which variables were exported above and should be cleaned
 # when running non-bundled programs.

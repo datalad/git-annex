@@ -91,6 +91,8 @@ preferredBundledPrograms = catMaybes
 	-- used to unpack the tarball when upgrading
 	, Just "gunzip"
 	, Just "tar"
+	-- used by runshell to generate locales
+	, Just "localedef"
 #endif
 	-- nice, ionice, and nocache are not included in the bundle;
 	-- we rely on the system's own version, which may better match
