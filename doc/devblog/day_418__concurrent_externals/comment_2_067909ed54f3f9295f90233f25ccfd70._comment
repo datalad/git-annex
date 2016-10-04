@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-10-04T15:16:01Z"
+ content="""
+Well yes, git-annex -J4 or something can parallelize any operation and
+avoid such latencies.
+"""]]
