@@ -31,3 +31,5 @@ git-annex: fd:16: hGetBuf: invalid argument (Invalid argument)
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
+> reproduced; and confirmed that the fix below really did fix it on OSX.
+> [[done]] --[[Joey]]

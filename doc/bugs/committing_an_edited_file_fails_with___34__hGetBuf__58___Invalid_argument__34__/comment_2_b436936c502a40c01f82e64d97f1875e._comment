@@ -38,5 +38,5 @@ mode, which needs to use catKey.
 
 I've done this, and it fixes the problem I saw. I am not 100% sure if
 that's the same problem that occurred on OSX. (Which I was also able to
-reproduce). Probably is. Need to verify.
+reproduce). Probably is. Need to verify. Update: Verified fix.
 """]]
