@@ -26,7 +26,6 @@ import Annex.HashObject
 import Utility.FileMode
 
 import qualified Data.ByteString.Lazy as L
-import Data.Int
 
 type LinkTarget = String
 
@@ -137,7 +136,8 @@ writePointerFile file k mode = do
  - Only looks at the first line, as pointer files can have subsequent
  - lines. -}
 parseLinkOrPointer :: L.ByteString -> Maybe Key
-parseLinkOrPointer = parseLinkOrPointer' . decodeBS . L.take maxPointerSz
+parseLinkOrPointer = parseLinkOrPointer' 
+	. decodeBS . L.take (fromIntegral maxPointerSz)
   where
 
 {- Want to avoid buffering really big files in git into
@@ -146,7 +146,7 @@ parseLinkOrPointer = parseLinkOrPointer' . decodeBS . L.take maxPointerSz
  - 8192 bytes is plenty for a pointer to a key.
  - Pad some more to allow for any pointer files that might have
  - lines after the key explaining what the file is used for. -}
-maxPointerSz :: Int64
+maxPointerSz :: Integer
 maxPointerSz = 81920
 
 parseLinkOrPointer' :: String -> Maybe Key

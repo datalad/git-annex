@@ -17,6 +17,12 @@ git-annex (6.20160924) UNRELEASED; urgency=medium
   * Linux standalone: Include locale files in the bundle, and generate
     locale definition files for the locales in use when starting runshell.
     (Currently only done for utf-8 locales.)
+  * Avoid using a lot of memory when large objects are present in the git
+    repository and have to be checked to see if they are a pointed to an
+    annexed file. Cases where such memory use could occur included, but
+    were not limited to:
+    - git commit -a of a large unlocked file (in v5 mode)
+    - git-annex adjust when a large file was checked into git directly
 
  -- Joey Hess <id@joeyh.name>  Mon, 26 Sep 2016 16:46:19 -0400
 

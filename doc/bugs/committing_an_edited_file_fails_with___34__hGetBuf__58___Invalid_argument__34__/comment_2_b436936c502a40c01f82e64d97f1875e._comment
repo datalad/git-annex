@@ -1,0 +1,42 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-10-05T18:04:21Z"
+ content="""
+Nothing to do with v6 actually. 
+[[!commit 412dcb8017d9d42bc1fb2b5a7ae5418410cde539]] and a subsequent
+commit caused this behavior.
+
+In order to tell if a file is unlocked, the type needs to have changed
+from a symlink to a regular file, and the symlink needs to have been 
+an annexed link (and not some other symlink). That commit made it check
+catKeyFileHEAD, which necessarily reads the whole content of the last
+committed version of the file from git cat-file.
+
+A later commit added a check to catKeyFile, which reads the version of the
+file that is staged. Due to the git commit -a, the whole file content has
+been staged, and so that is where the large file content is read from git
+cat-file in git annex pre-commit.
+
+For pre-commit's purposes, the catKeyFile check is never going to find an
+annexed link, since the whole file content has been staged by git commit.
+
+But, rather than such a specific fix, I think that the core problem to fix
+is that catKey reads the whole content of a large object from git. That's
+just too expensive for git repos that contain large objects, for whatever
+reason.
+
+For example, grepping for catKey, I quickly found another place where
+a large file is read from git cat-file, in the adjusted branch code.
+
+So, let's make catKey check the object size before reading it; if it's
+> 8192 bytes it's certianly not a symlink. This wil need a separate 
+`git cat-file --batch-check` process, and a little extra work. It which will
+probably not be very expensive due to disk caching, but if it does cause
+a slowdown, the main thing will be to handling of unlocked files in v6
+mode, which needs to use catKey.
+
+I've done this, and it fixes the problem I saw. I am not 100% sure if
+that's the same problem that occurred on OSX. (Which I was also able to
+reproduce). Probably is. Need to verify.
+"""]]

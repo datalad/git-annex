@@ -49,6 +49,11 @@ catObject ref = do
 	h <- catFileHandle
 	liftIO $ Git.CatFile.catObject h ref
 
+catObjectMetaData :: Git.Ref -> Annex (Maybe (Integer, ObjectType))
+catObjectMetaData ref = do
+	h <- catFileHandle
+	liftIO $ Git.CatFile.catObjectMetaData h ref
+
 catTree :: Git.Ref -> Annex [(FilePath, FileMode)]
 catTree ref = do
 	h <- catFileHandle
@@ -89,7 +94,14 @@ catFileStop = do
 
 {- From ref to a symlink or a pointer file, get the key. -}
 catKey :: Ref -> Annex (Maybe Key)
-catKey ref = parseLinkOrPointer <$> catObject ref
+catKey ref = go =<< catObjectMetaData ref
+  where
+	go (Just (sz, _))
+		-- Avoid catting large files, that cannot be symlinks or
+		-- pointer files, which would require buffering their
+		-- content in memory, as well as a lot of IO.
+		| sz <= maxPointerSz = parseLinkOrPointer <$> catObject ref
+	go _ = return Nothing
 
 {- Gets a symlink target. -}
 catSymLinkTarget :: Sha -> Annex String
