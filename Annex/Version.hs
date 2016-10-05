@@ -24,6 +24,9 @@ latestVersion = "6"
 supportedVersions :: [Version]
 supportedVersions = ["5", "6"]
 
+versionForAdjustedClone :: Version
+versionForAdjustedClone = "6"
+
 upgradableVersions :: [Version]
 #ifndef mingw32_HOST_OS
 upgradableVersions = ["0", "1", "2", "3", "4", "5"]

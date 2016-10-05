@@ -23,6 +23,8 @@ git-annex (6.20160924) UNRELEASED; urgency=medium
     were not limited to:
     - git commit -a of a large unlocked file (in v5 mode)
     - git-annex adjust when a large file was checked into git directly
+  * When auto-upgrading a v3 remote, avoid upgrading to version 6,
+    instead keep it at version 5.
 
  -- Joey Hess <id@joeyh.name>  Mon, 26 Sep 2016 16:46:19 -0400
 

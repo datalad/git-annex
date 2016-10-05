@@ -19,7 +19,6 @@ import qualified Annex.Queue
 import qualified Git
 import qualified Git.LsFiles as LsFiles
 import Backend
-import Annex.Version
 import Utility.FileMode
 import Utility.Tmp
 import qualified Upgrade.V2
@@ -52,16 +51,13 @@ upgrade = do
 	showAction "v1 to v2"
 	
 	ifM (fromRepo Git.repoIsLocalBare)
-		( do
-			moveContent
-			setVersion latestVersion
+		( moveContent
 		, do
 			moveContent
 			updateSymlinks
 			moveLocationLogs
 	
 			Annex.Queue.flush
-			setVersion latestVersion
 		)
 	
 	Upgrade.V2.upgrade
