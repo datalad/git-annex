@@ -41,6 +41,10 @@ already have git conflicts in your repository or between repositories.
 Upgrading a repository with conflicts is not recommended; resolve the
 conflicts first before upgrading git-annex.
 
+The upgrade process needs to write to the repository. If the original
+repository cannot be written to (due to eg being on readonly media),
+the upgrade would need to be run in a copy of the repository.
+
 The upgrade events, so far:
 
 ## v5 -> v6 (git-annex version 6.x)

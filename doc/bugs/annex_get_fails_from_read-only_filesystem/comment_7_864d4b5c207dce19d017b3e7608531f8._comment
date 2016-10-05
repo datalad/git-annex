@@ -1,0 +1,52 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2016-10-05T20:29:56Z"
+ content="""
+I've made V3 repositories be supported to use without an upgrade, so
+that fixes the specific case this bug report was filed about.
+
+----
+
+I do not, however, want to commit to git-annex supporting use of all past
+repo versions without an upgrade process. The point of the upgrade process
+is to keep code complication down. 
+
+All the code that knows about V1 is in Upgrade.V1, and the rest of
+git-annex does not need to check the repo version when doing things
+with annex objects in order to support the different V1 location. 
+Supporting accessing content from V1 repositories without an upgrade would
+lose this clean separation and complicate an unknown number of places in
+git-annex. And any of those places that would have to include a check to
+handle V1 would be liable to break as the code was changed, without anyone
+except the rare V1 user likely to notice.
+
+V1 was the last upgrade to change the locations of annexed objects, and
+there's now the tuning interface that might be used for such future
+location changes, but that's not the only kind of change that an upgrade
+might deal with, and making a commitment that all future versions of
+git-annex will support getting annexed objects from V5 (and V6 and V3)
+would really narrow down the kinds of changes that could ever be made to
+the git annex repository format, and I don't want to do that.
+
+Supporting upgrades from all past versions is sufficient for future
+proofing. It doesn't guarantee super easy use of an old repo from some old
+version of git-annex. 
+
+... You might have to copy it from its original rusty
+media to some tiny corner of a far-future storage crystal, in order for
+git-annex to be able to write to the repository when it upgrades to V7
+without disturbing the original rusty media.
+
+.. And git-annex may need to do arbitrary amounts of work, since V7 turned
+out to also entail a switch from the broken-in-2100 SHA2 to a new
+quantum-computer-safe hash. 
+
+.. And git may also need to do similar work to upgrade the old repository
+from the (broken-in-2010) SHA1 to its new hash. (Hopefully git will support
+upgrading from old repo versions at least as well as git-annex does!)
+
+The important thing is to have a upgrade path that is guaranteed to
+be supported all the way into the future, and I've made the best choices I
+can to ensure that.
+"""]]

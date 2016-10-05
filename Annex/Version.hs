@@ -22,7 +22,7 @@ latestVersion :: Version
 latestVersion = "6"
 
 supportedVersions :: [Version]
-supportedVersions = ["5", "6"]
+supportedVersions = ["3", "5", "6"]
 
 versionForAdjustedClone :: Version
 versionForAdjustedClone = "6"
