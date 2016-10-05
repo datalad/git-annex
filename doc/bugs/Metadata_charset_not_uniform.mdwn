@@ -62,3 +62,5 @@ Metadata are not stored in a consistent format. It seems more like git-annex cho
 ### What version of git-annex are you using? On what operating system?
 
 6.20160808-1
+
+[[!tag moreinfo]]
