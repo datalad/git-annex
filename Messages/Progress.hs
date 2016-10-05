@@ -33,6 +33,7 @@ metered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
 metered othermeter key a = withMessageState $ go (keySize key)
   where
 	go _ (MessageState { outputType = QuietOutput }) = nometer
+	go Nothing (MessageState { outputType = NormalOutput }) = nometer
 	go (Just size) (MessageState { outputType = NormalOutput, concurrentOutputEnabled = False }) = do
 		showOutput
 		(progress, meter) <- mkmeter size
