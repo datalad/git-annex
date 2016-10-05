@@ -46,8 +46,6 @@ mklibs top = do
 	writeFile (top </> "libdirs") (unlines libdirs)
 	writeFile (top </> "gconvdir")
 		(parentDir $ Prelude.head $ filter ("/gconv/" `isInfixOf`) glibclibs)
-	writeFile (top </> "localedir")
-		(parentDir $ Prelude.head $ filter ("/locale/" `isInfixOf`) glibclibs)
 	
 	let linker = Prelude.head $ filter ("ld-linux" `isInfixOf`) libs'
 	mapM_ (installLinkerShim top linker) exes
