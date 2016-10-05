@@ -1,0 +1,23 @@
+Several bug fixes today and got caught up on most recent messages. Backlog
+is 157.
+
+The most significant one prevents git-annex from reading in the whole
+content of a large git object when it wants to check if it's an annex
+symlink. In several situations where large files were committed to git, or
+staged, git-annex could do a lot of work, and use a lot of memory and maybe
+crash. Fixed by checking the size of an object before asking 
+`git cat-file` for its content.
+
+Also a couple of improvements around versions and upgrading. IIRC git-annex
+used to only support one repository version at a time, but this was changed
+to support V6 as an optional upgrade from V5, and so the supported versions
+became a list. Since V3 repositories are identical to V5 other than the
+version, I added it to the supported version list, and any V3 repos out
+there can be used without upgading. Particularly useful if they're on
+read-only media.
+
+And, there was a bug in the automatic upgrading of a remote that caused it
+to be upgraded all the way to V6. Now it will only be upgraded to V5.
+
+Today's work was sponsored by Jake Vosloo on
+[Patreon](https://patreon.com/joeyh/).
