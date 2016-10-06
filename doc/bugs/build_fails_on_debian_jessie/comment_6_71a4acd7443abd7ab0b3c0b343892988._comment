@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jk@3f2b4ce16bbac41470815333505aa47b91b7a9a6"
+ nickname="jk"
+ subject="comment 6"
+ date="2016-10-06T10:42:52Z"
+ content="""
+Justg a quick note to add that `git-annex-standalone` from NeuroDebian is working fine for me on jessie.
+"""]]
