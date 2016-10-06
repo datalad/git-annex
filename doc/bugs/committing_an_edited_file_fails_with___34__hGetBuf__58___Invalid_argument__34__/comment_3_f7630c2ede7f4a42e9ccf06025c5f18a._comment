@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="ddenis"
+ subject="comment 3"
+ date="2016-10-06T16:59:03Z"
+ content="""
+Ah I didn't think that \"git commit -a\" would add it to git's index. I should've used \"git annex add\" indeed. But thank you for looking into this issue and fixing it so quickly!
+"""]]
