@@ -1,0 +1,12 @@
+I have the following setup:
+
+1. Removable hard drive (truecrypt)
+2. Removable hard drive (truecrypt)
+3. Amazon Cloud drive
+
+I usually use bup to make backups to (1) and (2) but now I would like to add (3). I would like to take advantage of git annex to sync/pull my backups easily, however git-annex doesn't like git inside git for some reason. Git annex give me the following features:
+
+1. Encryption using gnupg
+2. Pulling a backup is easy from remote then I run bup on the pulled backup.
+
+Any suggestion on how to accomplish this?
