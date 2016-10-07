@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ subject="Re: attaching a torrent file to a downloaded and annexed directory"
+ date="2016-10-07T09:11:55Z"
+ content="""
+wzhd, you can do `git annex addurl file:///full/path/to/file.torrent`. this has the downside of denoting a local file that may vanish or not be present at the same location in another checkout, but then again, same goes for http uris. (i'd rather like the torrent file or at least the info part thereof present in git or git-annex; adding the torrent with `addurl --raw` and then using its `file://` url at least gives all the data needed to use the torrent again).
+"""]]
