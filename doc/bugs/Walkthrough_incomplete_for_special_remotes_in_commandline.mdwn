@@ -1,0 +1,213 @@
+### Please describe the problem.
+
+When following the walkthough, I'm unable to sync or copy files to/from special remote.
+
+>$ git annex version                                                     
+                                                                                                                       
+>git-annex version: 6.20160923-gd1dabb3                                                                                 
+>build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify MPP ConcurrentOutput TorrentParser MagicMime Feeds >Quvi                                                                
+>key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 HA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 >SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL                
+>remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external                 
+>local repository version: 5                                                                                            
+>supported repository versions: 5 6                                                                                     
+>upgrade supported from repository versions: 0 1 2 3 4 5                                                                
+>operating system: linux x86_64                                                                                         
+
+
+### What steps will reproduce the problem?
+
+Follow the walkthrough:
+ - Create an annex
+ - add a special remote (dir, rsync, etc.)
+ - create a file
+ - try to sync
+ - try to copy the file
+
+
+```bash
+cd && pwd  # /home/vagrant
+mkdir -p tmp && cd tmp
+rm -rf source && rm -rf dir
+git init source
+# Dir for special directory remote
+mkdir dir
+cd source
+git annex init "the source of it all"
+git annex initremote dir type=directory directory=/home/vagrant/tmp/dir encryption=none
+# A file to test with
+echo "Whatever the heck I want" > file
+#
+# Testing copy
+#
+git annex copy file --to dir # Empty output
+ls -l /home/vagrant/tmp/dir # Empty dir
+# Testing sync
+git annex sync # No sync
+ls -l /home/vagrant/tmp/dir # Empty dir
+#
+# Maybe adding the file to git will help?
+#
+git add .
+git commit -m "A file"
+#
+# Testing copy again
+#
+git annex copy file --to dir # Empty output
+ls -l /home/vagrant/tmp/dir # Empty dir
+# Testing sync
+git annex sync # No sync
+ls -l /home/vagrant/tmp/dir # Empty dir
+#
+# Enable it doesn't help either
+#
+git annex enableremote dir directory=/home/vagrant/tmp/dir
+git annex copy file --to dir # Empty output
+ls -l /home/vagrant/tmp/dir # Empty dir
+# Testing sync
+git annex sync # No sync
+ls -l /home/vagrant/tmp/dir # Empty dir
+```
+
+
+### What version of git-annex are you using? On what operating system?
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+## Script
+set -euo pipefail
+IFS=$'\n\t'
+set -v # verbose - command echoing
+
+cd && pwd  # /home/vagrant
+mkdir -p tmp && cd tmp
+sudo rm -rf source && sudo rm -rf dir
+git init source
+# Dir for special directory remote
+mkdir dir 
+cd source 
+git annex init "the source of it all"
+git annex initremote dir type=directory directory=/home/vagrant/tmp/dir encryption=none
+# A file to test with
+echo "Whatever the heck I want" > file
+#
+# Testing copy 
+#
+git annex copy file --to dir # Empty output
+ls -l /home/vagrant/tmp/dir # Empty dir
+# Testing sync
+git annex sync # No sync
+ls -l /home/vagrant/tmp/dir # Empty dir
+#
+# Maybe adding the file to git will help?
+#
+git add .
+git commit -m "A file"
+#
+# Testing copy again
+#
+git annex copy file --to dir # Empty output
+ls -l /home/vagrant/tmp/dir # Empty dir
+# Testing sync
+git annex sync # No sync
+ls -l /home/vagrant/tmp/dir # Empty dir
+#
+# Enable it doesn't help either
+#
+git annex enableremote dir directory=/home/vagrant/tmp/dir
+git annex copy file --to dir # Empty output
+ls -l /home/vagrant/tmp/dir # Empty dir
+# Testing sync
+git annex sync # No sync
+ls -l /home/vagrant/tmp/dir # Empty dir
+
+######################
+# Start of transcript or log.
+cd && pwd  # /home/vagrant
+/home/vagrant
+mkdir -p tmp && cd tmp
+sudo rm -rf source && sudo rm -rf dir
+git init source
+Initialized empty Git repository in /home/vagrant/tmp/source/.git/
+# Dir for special directory remote
+mkdir dir
+cd source
+git annex init "the source of it all"
+init the source of it all ok
+(recording state in git...)
+git annex initremote dir type=directory directory=/home/vagrant/tmp/dir encryption=none
+initremote dir ok
+(recording state in git...)
+# A file to test with
+echo "Whatever the heck I want" > file
+#
+# Testing copy
+#
+git annex copy file --to dir # Empty output
+ls -l /home/vagrant/tmp/dir # Empty dir
+total 0
+# Testing sync
+git annex sync # No sync
+commit  
+On branch master
+
+Initial commit
+
+Untracked files:
+        file
+
+nothing added to commit but untracked files present
+ok
+ls -l /home/vagrant/tmp/dir # Empty dir                                                                                                                                                                                                      
+total 0                                                                                                                                                                                                                                      
+#                                                                                                                                                                                                                                            
+# Maybe adding the file to git will help?                                                                                                                                                                                                    
+#                                                                                                                                                                                                                                            
+git add .                                                                                                                                                                                                                                    
+git commit -m "A file"                                                                                                                                                                                                                       
+[master (root-commit) 10c3ad1] A file                                                                                                                                                                                                        
+ 1 file changed, 1 insertion(+)                                                                                                                                                                                                              
+ create mode 100644 file                                                                                                                                                                                                                     
+#                                                                                                                                                                                                                                            
+# Testing copy again                                                                                                                                                                                                                         
+#                                                                                                                                                                                                                                            
+git annex copy file --to dir # Empty output                                                                                                                                                                                                  
+ls -l /home/vagrant/tmp/dir # Empty dir                                                                                                                                                                                                      
+total 0                                                                                                                                                                                                                                      
+# Testing sync
+git annex sync # No sync
+commit  
+On branch master
+nothing to commit, working directory clean
+ok
+ls -l /home/vagrant/tmp/dir # Empty dir
+total 0
+#
+# Enable it doesn't help either
+#
+git annex enableremote dir directory=/home/vagrant/tmp/dir
+enableremote dir ok
+(recording state in git...)
+git annex copy file --to dir # Empty output
+ls -l /home/vagrant/tmp/dir # Empty dir
+total 0
+# Testing sync
+git annex sync # No sync
+commit  
+On branch master
+nothing to commit, working directory clean
+ok
+ls -l /home/vagrant/tmp/dir # Empty dir
+total 0
+
+# End of transcript or log.
+#####################
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Hey, the git-assistant works well :) I'm doing this as an exercise to get prepared for provisioning raspis running git-annex ;)
