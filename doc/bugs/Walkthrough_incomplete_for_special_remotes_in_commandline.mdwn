@@ -5,6 +5,7 @@ When following the walkthough, I'm unable to sync or copy files to/from special 
 ### What steps will reproduce the problem?
 
 Follow the walkthrough:
+
  - Create an annex
  - add a special remote (dir, rsync, etc.)
  - create a file
