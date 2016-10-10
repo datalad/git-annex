@@ -27,4 +27,24 @@ running `git annex sync` on an adjusted branch. Possible smoking gun?
 
 Initial plan: Try to reset the adjusted branch and master back to before 9cdbd4f,
 and re-run to try to reproduce this happening.
---[[Joey]] 
+--[[Joey]]
+
+> Update: Was able to reproduce bug as follows:
+
+1. Untar tarball
+2. git reset --hard 961bbbf
+3. git cherry-pick 9cdbd4f
+4. git annex sync
+
+Output of step #4 is:
+
+	On branch adjusted/master(unlocked)
+	nothing to commit, working tree clean
+	ok
+	merge synced/master (Merging into master...) Already up-to-date.
+	(Merging into adjusted branch...) 
+	Updating 61bf677..46e18b7
+	Fast-forward
+	(diffstat shows 1 file added, and all files from commit 9cdbd4f deleted)
+
+--[[Joey]]
