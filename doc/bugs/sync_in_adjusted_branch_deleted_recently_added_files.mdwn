@@ -29,7 +29,9 @@ Initial plan: Try to reset the adjusted branch and master back to before 9cdbd4f
 and re-run to try to reproduce this happening.
 --[[Joey]]
 
-> Update: Was able to reproduce bug as follows:
+----
+
+Update: Was able to reproduce bug as follows:
 
 1. Untar tarball
 2. git reset --hard 961bbbf
@@ -45,6 +47,14 @@ Output of step #4 is:
 	(Merging into adjusted branch...) 
 	Updating 61bf677..46e18b7
 	Fast-forward
-	(diffstat shows 1 file added, and all files from commit 9cdbd4f deleted)
+	(diffstat shows 1 file added, and all files added by commit 9cdbd4f deleted)
+
+Making changes other than that cherry-pick, like adding or renaming
+a file, don't seem to trigger the bug.
+
+I think that the bug is in Git.Tree.adjustTree, when the
+addtreeitems are in a deep subdirectory, it seems to not be adding them
+into the tree. This happens in simpler test cases, so something about
+this particular tree is breaking the code.
 
 --[[Joey]]
