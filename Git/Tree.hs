@@ -184,10 +184,11 @@ adjustTree adjusttreeitem addtreeitems removefiles r repo =
 			Just TreeObject -> do
 				(sl, modified, is') <- go h False [] (beneathSubTree i) is
 				sl' <- adjustlist h (inTree i) (beneathSubTree i) sl
-				subtree <- if modified || sl' /= sl
+				let slmodified = sl' /= sl
+				subtree <- if modified || slmodified
 					then liftIO $ recordSubTree h $ NewSubTree (LsTree.file i) sl'
 					else return $ RecordedSubTree (LsTree.file i) (LsTree.sha i) [] 
-				let !modified' = modified || wasmodified
+				let !modified' = modified || slmodified || wasmodified
 				go h modified' (subtree : c) intree is'
 			_ -> error ("unexpected object type \"" ++ LsTree.typeobj i ++ "\"")
 		| otherwise = return (c, wasmodified, i:is)

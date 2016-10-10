@@ -57,4 +57,24 @@ addtreeitems are in a deep subdirectory, it seems to not be adding them
 into the tree. This happens in simpler test cases, so something about
 this particular tree is breaking the code.
 
+----
+
+Ok, think I found the bug. In Git.Tree.adjustTree, it grafts in the new
+tree items, but it can forget that it needed to modify the tree, which
+prevents the change from propigating up from the subtree to the root, and
+so it gets left out of the reverse adjusted commit.
+
+I'm committing a fix, but this needs a test case. Leaving bug open for
+that.
+
+With the fix, when I git annex sync in felix's tree, the files that
+were getting wrongly deleted are added. The commit summary shows
+that git thinks those files were renamed:
+
+	 rename 2016/xxx xxx und yyy/{ => 2016/xxx xxx und yyy}/zzz/P1230949.JPG (100%)
+
+This seems wrong. I think this is a separate bug that was hidden
+by the other one, it's grafting in files using their whole path,
+to a subtree that is itself part way down that path.
+
 --[[Joey]]

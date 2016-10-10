@@ -26,6 +26,8 @@ git-annex (6.20160924) UNRELEASED; urgency=medium
   * When auto-upgrading a v3 remote, avoid upgrading to version 6,
     instead keep it at version 5.
   * Support using v3 repositories without upgrading them to v5.
+  * sync: Fix bug in adjusted branch merging that could cause recently
+    added files to be lost when updating the adjusted branch.
 
  -- Joey Hess <id@joeyh.name>  Mon, 26 Sep 2016 16:46:19 -0400
 
