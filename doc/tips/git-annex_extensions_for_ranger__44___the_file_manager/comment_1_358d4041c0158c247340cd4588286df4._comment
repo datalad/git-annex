@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="fiatjaf"
+ subject="related work"
+ date="2016-10-11T13:35:07Z"
+ content="""
+Just find some related / complimentary work for this. It is a bunch of ranger functions that wrap git-annex commands inside ranger:
+
+```
+:annex_add → git annex add + git commit -a
+:annex_get → git annex get
+:annex_drop → git annex drop
+:annex_copy <remote> → git annex copy --to=<remote>
+:annex_sync → git annex sync --fast --quiet
+```
+
+
+The code is at [https://github.com/matze/ranger-annex](https://github.com/matze/ranger-annex)
+
+More information on [this blog post](https://bloerg.net/2014/04/28/writing-a-git-annex-plugin-for-ranger.html).
+"""]]
