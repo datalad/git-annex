@@ -143,6 +143,16 @@ treeItemsToTree = go M.empty
 	  where
 		parent = takeDirectory d
 
+{- Flattens the top N levels of a Tree. -}
+flattenTree :: Int -> Tree -> Tree
+flattenTree 0 t = t
+flattenTree n (Tree l) = Tree (concatMap (go n) l)
+  where
+	go 0 c = [c]
+	go _ b@(TreeBlob _ _ _) = [b]
+	go n' (RecordedSubTree _ _ l') = concatMap (go (n'-1)) l'
+	go n' (NewSubTree _ l') = concatMap (go (n'-1)) l'
+
 {- Applies an adjustment to items in a tree.
  -
  - While less flexible than using getTree and recordTree,
@@ -163,42 +173,42 @@ adjustTree
 adjustTree adjusttreeitem addtreeitems removefiles r repo =
 	withMkTreeHandle repo $ \h -> do
 		(l, cleanup) <- liftIO $ lsTreeWithObjects r repo
-		(l', _, _) <- go h False [] inTopTree l
-		l'' <- adjustlist h inTopTree (const True) l'
+		(l', _, _) <- go h False [] 1 inTopTree l
+		l'' <- adjustlist h 0 inTopTree (const True) l'
 		sha <- liftIO $ mkTree h l''
 		void $ liftIO cleanup
 		return sha
   where
-	go _ wasmodified c _ [] = return (c, wasmodified, [])
-	go h wasmodified c intree (i:is)
+	go _ wasmodified c _ _ [] = return (c, wasmodified, [])
+	go h wasmodified c depth intree (i:is)
 		| intree i = case readObjectType (LsTree.typeobj i) of
 			Just BlobObject -> do
 				let ti = TreeItem (LsTree.file i) (LsTree.mode i) (LsTree.sha i)
 				v <- adjusttreeitem ti
 				case v of
-					Nothing -> go h True c intree is
+					Nothing -> go h True c depth intree is
 					Just ti'@(TreeItem f m s) ->
 						let !modified = wasmodified || ti' /= ti
 						    blob = TreeBlob f m s
-						in go h modified (blob:c) intree is
+						in go h modified (blob:c) depth intree is
 			Just TreeObject -> do
-				(sl, modified, is') <- go h False [] (beneathSubTree i) is
-				sl' <- adjustlist h (inTree i) (beneathSubTree i) sl
+				(sl, modified, is') <- go h False [] (depth+1) (beneathSubTree i) is
+				sl' <- adjustlist h depth (inTree i) (beneathSubTree i) sl
 				let slmodified = sl' /= sl
 				subtree <- if modified || slmodified
 					then liftIO $ recordSubTree h $ NewSubTree (LsTree.file i) sl'
 					else return $ RecordedSubTree (LsTree.file i) (LsTree.sha i) [] 
 				let !modified' = modified || slmodified || wasmodified
-				go h modified' (subtree : c) intree is'
+				go h modified' (subtree : c) depth intree is'
 			_ -> error ("unexpected object type \"" ++ LsTree.typeobj i ++ "\"")
 		| otherwise = return (c, wasmodified, i:is)
 
-	adjustlist h ishere underhere l = do
+	adjustlist h depth ishere underhere l = do
 		let (addhere, rest) = partition ishere addtreeitems
 		let l' = filter (not . removed) $
 			map treeItemToTreeContent addhere ++ l
 		let inl i = any (\t -> beneathSubTree t i) l'
-		let (Tree addunderhere) = treeItemsToTree $
+		let (Tree addunderhere) = flattenTree depth $ treeItemsToTree $
 			filter (\i -> underhere i && not (inl i)) rest
 		addunderhere' <- liftIO $ mapM (recordSubTree h) addunderhere
 		return (addunderhere'++l')

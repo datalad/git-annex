@@ -86,3 +86,5 @@ the adjusted branch that adds the file back, but the file doesn't reach
 the master branch in this scenario.
 
 --[[Joey]]
+
+Both bugs fixed now. [[done]] --[[Joey]]
