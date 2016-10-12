@@ -1,0 +1,30 @@
+git-annex 6.20161012 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Optimisations to time it takes git-annex to walk working tree and find
+     files to work on. Sped up by around 18%.
+   * Optimisations to git-annex branch query and setting, avoiding repeated
+     copies of the environment. Speeds up commands like
+     "git-annex find --in remote" by over 50%.
+   * Optimised git-annex branch log file timestamp parsing.
+   * Add "total-size" field to --json-progress output.
+   * Make --json-progress output be shown even when the size of a object
+     is not known.
+   * Multiple external special remote processes for the same remote will be
+     started as needed when using -J. This should not beak any existing
+     external special remotes, because running multiple git-annex commands
+     at the same time could already start multiple processes for the same
+     external special remotes.
+   * Linux standalone: Include locale files in the bundle, and generate
+     locale definition files for the locales in use when starting runshell.
+     (Currently only done for utf-8 locales.)
+   * Avoid using a lot of memory when large objects are present in the git
+     repository and have to be checked to see if they are a pointed to an
+     annexed file. Cases where such memory use could occur included, but
+     were not limited to:
+     - git commit -a of a large unlocked file (in v5 mode)
+     - git-annex adjust when a large file was checked into git directly
+   * When auto-upgrading a v3 remote, avoid upgrading to version 6,
+     instead keep it at version 5.
+   * Support using v3 repositories without upgrading them to v5.
+   * sync: Fix bug in adjusted branch merging that could cause recently
+     added files to be lost when updating the adjusted branch."""]]
