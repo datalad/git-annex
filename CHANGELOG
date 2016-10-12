@@ -1,4 +1,4 @@
-git-annex (6.20160924) UNRELEASED; urgency=medium
+git-annex (6.20161012) unstable; urgency=medium
 
   * Optimisations to time it takes git-annex to walk working tree and find
     files to work on. Sped up by around 18%.
@@ -29,7 +29,7 @@ git-annex (6.20160924) UNRELEASED; urgency=medium
   * sync: Fix bug in adjusted branch merging that could cause recently
     added files to be lost when updating the adjusted branch.
 
- -- Joey Hess <id@joeyh.name>  Mon, 26 Sep 2016 16:46:19 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 12 Oct 2016 09:37:41 -0400
 
 git-annex (6.20160923) unstable; urgency=medium
 
