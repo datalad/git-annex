@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://anarc.at/openid/"
+ nickname="anarcat"
+ subject="real happy about optimisations!"
+ date="2016-10-12T15:38:14Z"
+ content="""
+i am grateful and happy to see work on optimisations for git annex find. on repositories with lots of files, `find` is sometimes disappointingly slow (~25k files)... a 50% improvement is pretty awesome!
+
+thank you for your amazing work!
+
+
+"""]]
