@@ -7,7 +7,7 @@ Finally got back to that today. Luckily, I *was* able to reproduce the bug
 using felix's repo. The bug only occurs when there's a change deep in a
 tree of an adjusted branch, and not always then. After staring at it for a
 couple of hours, I finally found the problem; a modification flag was not
-getting propigated in this case, and some changes made deep in the tree
+getting propagated in this case, and some changes made deep in the tree
 were not getting included into parent trees.
 
 So, I think I've fixed it, but need to look at it some more to be sure, and
