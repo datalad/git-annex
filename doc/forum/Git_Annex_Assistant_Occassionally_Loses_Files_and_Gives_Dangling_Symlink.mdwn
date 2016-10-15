@@ -1,0 +1,9 @@
+I am using the git annex assistant between two linux machines. Sometimes, it seems to "lose" a file, having a dangling symlink of it. Fsck shows that there are no known copies of the file in the repositories, but if I do a search in .git/annex/objects, I'm able to find the file.
+
+
+I'm using git annex 6.20160923+gitgd1dabb3-1~ndall+1 and direct mode repositories thanks to the assistant.
+
+Any advice would be highly appreciated. Right now, I can't get it to consistently do this behavior, but any help would be appreciated, including what I should post, look for, etc. for more troubleshooting.
+
+Thanks again,
+Ryan
