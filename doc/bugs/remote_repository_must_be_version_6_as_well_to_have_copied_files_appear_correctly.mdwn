@@ -30,3 +30,9 @@ $> ./v6-push.sh 6 2>&1 | grep '>>>'
 
 
 [[!meta author=yoh]]
+
+> The data loss bugs are fixed in [[!commit ee309d694161d0f416420db6c4efb834c813351e]].
+> 
+> I am not sure yet why the keys database lacked an entry for the file;
+> perhaps something to do with it being a v6 unlocked file in a v5
+> repository. --[[Joey]]
