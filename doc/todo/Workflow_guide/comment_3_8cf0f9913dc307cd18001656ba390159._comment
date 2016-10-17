@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-10-17T19:42:08Z"
+ content="""
+@xloem nice start!
+
+It would be helpful to get this into a set of wiki pages documenting the
+workflows in detail. Since this site is a wiki, you can add pages as you like.
+Start by clicking the question mark to create [[/workflow]], and see
+[[ikiwiki/wikilink]] for how to add sub-pages like [[/workflow/assistant]].
+"""]]
