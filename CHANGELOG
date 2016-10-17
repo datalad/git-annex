@@ -5,6 +5,8 @@ git-annex (6.20161013) UNRELEASED; urgency=medium
   * upgrade: Handle upgrade to v6 when the repository already contains
     v6 unlocked files whose content is already present.
   * Improve style of offline html build of website.
+  * importfeed: Drop URL parameters from file extension.
+    Thanks, James MacMahon.
 
  -- Joey Hess <id@joeyh.name>  Mon, 17 Oct 2016 12:46:54 -0400
 
