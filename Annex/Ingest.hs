@@ -244,10 +244,9 @@ cleanOldKeys file newkey = do
 	topf <- inRepo (toTopFilePath file)
 	oldkeys <- filter (/= newkey)
 		<$> Database.Keys.getAssociatedKey topf
-	forM_ oldkeys $ \key -> do
-		obj <- calcRepo (gitAnnexLocation key)
-		caches <- Database.Keys.getInodeCaches key
-		unlessM (sameInodeCache obj caches) $ do
+	forM_ oldkeys $ \key ->
+		unlessM (isUnmodified key =<< calcRepo (gitAnnexLocation key)) $ do
+			caches <- Database.Keys.getInodeCaches key
 			unlinkAnnex key
 			fs <- filter (/= ingestedf)
 				. map (`fromTopFilePath` g)

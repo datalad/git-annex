@@ -1,3 +1,10 @@
+git-annex (6.20161013) UNRELEASED; urgency=medium
+
+  * lock, smudge: Fix edge cases where data loss could occur in v6 mode
+    when the keys database was not populated.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 17 Oct 2016 12:46:54 -0400
+
 git-annex (6.20161012) unstable; urgency=medium
 
   * Optimisations to time it takes git-annex to walk working tree and find
