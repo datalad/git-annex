@@ -213,3 +213,5 @@ total 0
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Hey, the git-assistant works well :) I'm doing this as an exercise to get prepared for provisioning raspis running git-annex ;)
+
+> closing per comment [[done]] --[[Joey]]
