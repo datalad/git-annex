@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="ryan@d4f0c2d3daacb5ec3a2945bca06f66decad4bfb5"
+ nickname="ryan"
+ avatar="http://cdn.libravatar.org/avatar/7732d2474bcd13998986a87a9b17273c"
+ subject="re: comment 1"
+ date="2016-10-17T19:54:45Z"
+ content="""
+I did try running fsck, which gave a message about not being able to find the file.
+
+That's too bad that there are these types of bugs in direct mode. I find it really nice to be able to just throw all my stuff in the git annex and not worry about the state and have it synced everywhere.
+
+Thanks again for making such a wonderful tool and helping me troubleshoot.
+"""]]
