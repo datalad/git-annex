@@ -35,4 +35,13 @@ $> ./v6-push.sh 6 2>&1 | grep '>>>'
 > 
 > I am not sure yet why the keys database lacked an entry for the file;
 > perhaps something to do with it being a v6 unlocked file in a v5
-> repository. --[[Joey]]
+> repository.
+> 
+> Ok.. Seems that cloning to a v5 repository, and then copying/getting
+> objects into it, and then upgrading to v6 reproduces the problem with the
+> keys database. The inode cache does not get populated for unlocked files
+> on upgrade. Also, unlocked files stay as pointer files even when their
+> content is present in annex/objects. Fixed the upgrade process to handle
+> this case.
+> 
+> [[fixed|done]]] --[[Joey]]
