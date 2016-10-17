@@ -14,11 +14,11 @@ module Database.Keys (
 	getAssociatedFiles,
 	getAssociatedKey,
 	removeAssociatedFile,
-	scanAssociatedFiles,
 	storeInodeCaches,
 	addInodeCaches,
 	getInodeCaches,
 	removeInodeCaches,
+	runWriter,
 ) where
 
 import qualified Database.Keys.SQL as SQL
@@ -36,11 +36,7 @@ import Annex.InodeSentinal
 import qualified Git.Types
 import qualified Git.LsTree
 import qualified Git.Branch
-import Git.Ref
 import Git.FilePath
-import Annex.CatFile
-
-import Database.Esqueleto hiding (Key)
 
 {- Runs an action that reads from the database.
  -
@@ -167,32 +163,6 @@ getAssociatedKey = map fromIKey <$$> runReaderIO . SQL.getAssociatedKey
 
 removeAssociatedFile :: Key -> TopFilePath -> Annex ()
 removeAssociatedFile k = runWriterIO . SQL.removeAssociatedFile (toIKey k)
-
-{- Find all unlocked associated files. This is expensive, and so normally
- - the associated files are updated incrementally when changes are noticed. -}
-scanAssociatedFiles :: Annex ()
-scanAssociatedFiles = whenM (isJust <$> inRepo Git.Branch.current) $ 
-	runWriter $ \h -> do
-		showSideAction "scanning for unlocked files"
-		dropallassociated h
-		(l, cleanup) <- inRepo $ Git.LsTree.lsTree headRef
-		forM_ l $ \i -> 
-			when (isregfile i) $
-				maybe noop (add h i)
-					=<< catKey (Git.LsTree.sha i)
-		liftIO $ void cleanup
-  where
-	dropallassociated h = liftIO $ flip SQL.queueDb h $
-		delete $ from $ \(_r :: SqlExpr (Entity SQL.Associated)) ->
-			return ()
-	isregfile i = case Git.Types.toBlobType (Git.LsTree.mode i) of
-		Just Git.Types.FileBlob -> True
-		Just Git.Types.ExecutableBlob -> True
-		_ -> False
-	add h i k = liftIO $ flip SQL.queueDb h $ 
-		void $ insertUnique $ SQL.Associated
-			(toIKey k)
-			(toSFilePath $ getTopFilePath $ Git.LsTree.file i)
 
 {- Stats the files, and stores their InodeCaches. -}
 storeInodeCaches :: Key -> [FilePath] -> Annex ()

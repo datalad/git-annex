@@ -15,6 +15,7 @@ import Annex.Link
 import Annex.Direct
 import Annex.Content
 import Annex.CatFile
+import Annex.WorkTree
 import qualified Database.Keys
 import qualified Annex.Content.Direct as Direct
 import qualified Git
@@ -31,7 +32,7 @@ upgrade :: Bool -> Annex Bool
 upgrade automatic = do
 	unless automatic $
 		showAction "v5 to v6"
-	Database.Keys.scanAssociatedFiles
+	scanUnlockedFiles
 	whenM isDirect $ do
 		{- Direct mode makes the same tradeoff of using less disk
 		 - space, with less preservation of old versions of files
