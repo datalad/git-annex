@@ -1,0 +1,32 @@
+### Please describe the problem.
+
+Originally spotted/reported: https://github.com/datalad/datalad/issues/1020
+
+If that is mandatory, then I guess there should be some error message.
+
+### What steps will reproduce the problem?
+
+create a remote repo without specifying version, i.e. of version 5 and copy data into it
+
+### What version of git-annex are you using? On what operating system?
+
+6.20160923+gitgd1dabb3-1~ndall+1
+
+### Please provide any additional information below.
+
+Output from running http://www.onerussian.com/tmp/v6-push.sh  with argument which specifies annex version within remote 
+
+[[!format sh """
+
+$> ./v6-push.sh 5 2>&1 | grep '>>>' 
+>>> /annex/objects/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat
+>>> /annex/objects/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat
+
+$> ./v6-push.sh 6 2>&1 | grep '>>>' 
+>>> /annex/objects/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat
+>>> 123
+
+"""]]
+
+
+[[!meta author=yoh]]
