@@ -9,6 +9,7 @@ git-annex (6.20161013) UNRELEASED; urgency=medium
     Thanks, James MacMahon.
   * Assistant, repair: Improved filtering out of git fsck lines about
     duplicate file entries in tree objects.
+  * test: Deal with gpg-agent behavior change that broke the test suite.
 
  -- Joey Hess <id@joeyh.name>  Mon, 17 Oct 2016 12:46:54 -0400
 

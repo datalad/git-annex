@@ -352,7 +352,14 @@ testHarness cmd a = do
 			[testSecretKey, testKey]
 		return dir
 		
-	cleanup orig tmpdir = removeDirectoryRecursive tmpdir >> reset orig
+	cleanup orig tmpdir = do
+		removeDirectoryRecursive tmpdir
+			-- gpg-agent may be shutting down at the same time
+			-- and may delete its socket at the same time as
+			-- we're trying to, causing an exception. Retrying
+			-- will deal with this race.
+			`catchIO` (\_ -> removeDirectoryRecursive tmpdir)
+		reset orig
 	reset (Just v) = setEnv var v True
 	reset _ = unsetEnv var
 
