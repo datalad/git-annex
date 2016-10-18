@@ -1,0 +1,34 @@
+After updating git annex from version 6.20160613 to 6.20161011 on my Archlinux machine, the assistant crashes while scanning the files for transfer.
+
+I'm using a v6 repository. My repositories can be synced perfectly on the command line, only the assistant keeps crashing.
+
+Here is the daemon.log:
+
+[[!format sh """
+[2016-10-18 11:49:59.482873] main: starting assistant version 6.20161011-ge2dcbe6
+[2016-10-18 11:50:05.181469] TransferScanner: Syncing with annexsyncbackup, origin 
+
+  No known network monitor available through dbus; falling back to polling
+
+From /media/backup/annex-backup/annex
+   318e381..9cc5e23  git-annex  -> annexsyncbackup/git-annex
+(merging annexsyncbackup/git-annex into git-annex...)
+From ssh://FOO/annex-sync
+   318e381..81ac41f  git-annex  -> origin/git-annex
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+To /media/backup/annex-backup/annex
+   318e381..a4931de  git-annex -> synced/git-annex
+To ssh://FOO/annex-sync.git
+   318e381..a4931de  git-annex -> synced/git-annex
+(started...) 
+[2016-10-18 11:50:12.364643] Committer: Committing changes to git
+(recording state in git...)
+[2016-10-18 11:50:12.464943] Pusher: Syncing with annexsyncbackup, origin 
+Everything up-to-date
+Everything up-to-date
+TransferScanner crashed: fd:47: commitBuffer: invalid argument (invalid character)
+[2016-10-18 11:50:15.016862] TransferScanner: warning TransferScanner crashed: fd:47: commitBuffer: invalid argument (invalid character)
+"""]]
+
+
