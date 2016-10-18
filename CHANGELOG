@@ -7,6 +7,8 @@ git-annex (6.20161013) UNRELEASED; urgency=medium
   * Improve style of offline html build of website.
   * importfeed: Drop URL parameters from file extension.
     Thanks, James MacMahon.
+  * Assistant, repair: Improved filtering out of git fsck lines about
+    duplicate file entries in tree objects.
 
  -- Joey Hess <id@joeyh.name>  Mon, 17 Oct 2016 12:46:54 -0400
 

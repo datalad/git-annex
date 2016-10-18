@@ -105,7 +105,7 @@ findShas supportsNoDangling = catMaybes . map extractSha . concat . map words . 
   where
 	wanted l
 		-- Skip lines like "error in tree <sha>: duplicateEntries: contains duplicate file entries"
-		| "duplicateEntries" `isPrefixOf` l = False
+		| "duplicateEntries" `isInfixOf` l = False
 		| supportsNoDangling = True
 		| otherwise = not ("dangling " `isPrefixOf` l)
 
