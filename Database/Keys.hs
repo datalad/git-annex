@@ -33,9 +33,6 @@ import Annex.Perms
 import Annex.LockFile
 import Utility.InodeCache
 import Annex.InodeSentinal
-import qualified Git.Types
-import qualified Git.LsTree
-import qualified Git.Branch
 import Git.FilePath
 
 {- Runs an action that reads from the database.
