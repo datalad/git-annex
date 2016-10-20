@@ -4,11 +4,17 @@ Subject: Patch debian/ to provide a standalone build of git-annex
 Origin: NeuroDebian
 Last-Update: 2015-04-20
 
-Index: git-annex/debian/control
-===================================================================
---- git-annex.orig/debian/control
-+++ git-annex/debian/control
-@@ -86,15 +86,14 @@ Vcs-Git: git://git.kitenet.net/git-annex
+--- a/debian/control
++++ b/debian/control
+@@ -83,6 +83,7 @@ Build-Depends:
+ 	rsync,
+ 	wget,
+ 	curl,
++	locales,
+ 	openssh-client,
+ 	git-remote-gcrypt (>= 0.20130908-6),
+ 	chrpath,
+@@ -92,15 +93,14 @@ Vcs-Git: git://git.kitenet.net/git-annex
  Homepage: http://git-annex.branchable.com/
  XS-Testsuite: autopkgtest
  
@@ -30,7 +36,7 @@ Index: git-annex/debian/control
  Recommends: 
  	lsof,
  	gnupg,
-@@ -109,7 +108,7 @@ Suggests:
+@@ -114,7 +114,7 @@ Suggests:
  	bup,
  	tahoe-lafs,
  	libnss-mdns,
@@ -39,7 +45,7 @@ Index: git-annex/debian/control
   git-annex allows managing files with git, without checking the file
   contents into git. While that may seem paradoxical, it is useful when
   dealing with files larger than git can currently easily handle, whether due
-@@ -127,3 +126,7 @@ Description: manage files with git, with
+@@ -132,3 +132,7 @@ Description: manage files with git, with
   noticing when files are changed, and automatically committing them
   to git and transferring them to other computers. The git-annex webapp
   makes it easy to set up and use git-annex this way.
@@ -47,16 +53,12 @@ Index: git-annex/debian/control
 + This package provides a standalone bundle build of git-annex, which
 + should be installable on any more or less recent Debian or Ubuntu
 + release.
-Index: git-annex/debian/install
-===================================================================
 --- /dev/null
-+++ git-annex/debian/install
++++ b/debian/install
 @@ -0,0 +1 @@
 +tmp/git-annex.linux usr/lib
-Index: git-annex/debian/links
-===================================================================
 --- /dev/null
-+++ git-annex/debian/links
++++ b/debian/links
 @@ -0,0 +1,2 @@
 +/usr/lib/git-annex.linux/git-annex /usr/bin/git-annex
 +/usr/lib/git-annex.linux/git-annex-shell /usr/bin/git-annex-shell
