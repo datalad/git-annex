@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="scottgorlin@a32946b2aad278883c1690a0753241583a9855b9"
+ nickname="scottgorlin"
+ avatar="http://cdn.libravatar.org/avatar/2dd1fc8add62bbf4ffefac081b322563"
+ subject="synced/* branches necessary on bare repo?"
+ date="2016-10-18T21:17:40Z"
+ content="""
+Are the synced/* branches necessary for a bare repo?  Since there is no working directory, can't sync operate directly on the top level branches of choice, and avoid 'branch pollution'?  Is it implemented this way just to simplify the code, or ...?
+
+Also wondering if there is a practical difference between a bare repo and an rsync repo (other than storing the metadata, of course) - they both use rsync for transfer, no?  Any speed/overhead/other differences to consider when choosing?
+
+For my use case pertaining to question 2 I am using a local ARM NAS which works with the binary (plus S3 or gdrive remotes etc), but I figure why not spin up a private gitlab repo with metadata and no content since I want an off-site backup of the metadata anyways.  Does a bare repo on a nas add anything here, vs an rsync remote?  Perhaps just rsync is even better to avoid overhead on a tiny/slow NAS?
+"""]]
