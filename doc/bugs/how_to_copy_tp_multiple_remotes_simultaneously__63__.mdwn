@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-I would like to make multiple copies of precious data and I would like these copies to run simultaneously to minimise the elapsed time taken.  Ideally, I would like to specy multiple `--to` options to `git annex copy`.  I have tried running multiple processes simultaneously by these start to fail with lock contention on `.git/config`.
+I would like to make multiple copies of precious data and I would like these copies to run simultaneously to minimise the elapsed time taken.  Ideally, I would like to specify multiple `--to` options to `git annex copy`.  I have tried running multiple processes simultaneously but these start to fail with lock contention on `.git/config`.
 
 ### What steps will reproduce the problem?
 
