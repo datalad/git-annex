@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="JohnKozak"
+ avatar="http://cdn.libravatar.org/avatar/23489adfe85e3e389a8ef9e9d83d4d60"
+ subject="It would be nice to be able to specify multiple --to options "
+ date="2016-10-23T18:16:27Z"
+ content="""
+I tried to run multiple processes simultaneously to achieve this, but they fail over locking on `.git/config`.
+"""]]
