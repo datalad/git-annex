@@ -1,0 +1,9 @@
+ATM, special remotes store content (keys) in a keystore which has no reflection of original files hierarchy.
+
+In many cases though it is plausible and reasonable to replicate original files hierarchy, e.g. when uploading path/file1.ext, have it stored on a remote also under such name with additional part of the path to allow for multiple versions, e.g. path/file1-Key[:5].ext (collision is possible but unlikely) or path/file1.ext/Key . This way we could replicate initial files hierarchy on a special remote, making it useful/usable without annex.  I guess (didn't check yet) that File in TRANSFER STORE request points to original file location (not resolved key location), so we can have information about original sample location within special remote.  Since it would be virtually impossible (or expensive to locate) to retrieve content solely by a Key, we could use URLs mechanism to associate given uploaded Key with a new custom URL (e.g. custom-schema:path-file1.ext/Key) so later this special remote could provide the content by claiming that url.  Sure thing custom remote could just use 'addurl' call independently within a call to "TRANSFER" to it, but I wondered if may be protocol could be adjusted to support
+
+TRANSFER-SUCCESS STORE Key URL
+
+response when upon STORE success special remote provides a url under which content should be registered available from.
+
+[[!meta author=yoh]]
