@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-10-05T19:30:48Z"
+ content="""
+It would help if you described what command you ran, or buttons you clicked
+on to get this to happen. Otherwise, I'm left making a lot of guesses..
+
+It looks like you might be running `git-annex enableremote` of a gcrypt
+special remote that you set up earlier. 
+
+It appears that the gcrypt remote has a gcrypt-id which is not the same as
+the one that was used when that special remote was originally initialized.
+
+I don't know why this would happen, and without details about what you did,
+I can barely venture a guess. All I can say is that, gcrypt is supposed to
+pick a gcrypt-id the first time a gcrypt remote is used, and not change it
+afterwards.
+
+... It might be that you did something that caused gcrypt to pick a new
+gcrypt-id.
+
+... It might be that the special remote has been pointed at a different
+gcrypt repository than the one that it was initially set up to use.
+
+It might help to look at both the local repository's `.git/config`, and the
+gcrypt git repositories git config, and see which of
+them have the wrong gcrypt-id value of ":id:SCPxErEQVlqp+Hl6Su0f".
+If only the local .git/config has that value and the gcrypt git repository
+has some other gcrypt-id, then the other one is probably the right one, and
+it might work to replace the wrong one with the right one.
+"""]]

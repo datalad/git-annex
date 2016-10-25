@@ -16,6 +16,7 @@ module Git.CatFile (
 	catCommit,
 	catObject,
 	catObjectDetails,
+	catObjectMetaData,
 ) where
 
 import System.IO
@@ -37,21 +38,28 @@ import Git.Types
 import Git.FilePath
 import qualified Utility.CoProcess as CoProcess
 
-data CatFileHandle = CatFileHandle CoProcess.CoProcessHandle Repo
+data CatFileHandle = CatFileHandle 
+	{ catFileProcess :: CoProcess.CoProcessHandle
+	, checkFileProcess :: CoProcess.CoProcessHandle
+	}
 
 catFileStart :: Repo -> IO CatFileHandle
 catFileStart = catFileStart' True
 
 catFileStart' :: Bool -> Repo -> IO CatFileHandle
-catFileStart' restartable repo = do
-	coprocess <- CoProcess.rawMode =<< gitCoProcessStart restartable
+catFileStart' restartable repo = CatFileHandle
+	<$> startp "--batch"
+	<*> startp "--batch-check=%(objectname) %(objecttype) %(objectsize)"
+  where
+	startp p = CoProcess.rawMode =<< gitCoProcessStart restartable
 		[ Param "cat-file"
-		, Param "--batch"
+		, Param p
 		] repo
-	return $ CatFileHandle coprocess repo
 
 catFileStop :: CatFileHandle -> IO ()
-catFileStop (CatFileHandle p _) = CoProcess.stop p
+catFileStop h = do
+	CoProcess.stop (catFileProcess h)
+	CoProcess.stop (checkFileProcess h)
 
 {- Reads a file from a specified branch. -}
 catFile :: CatFileHandle -> Branch -> FilePath -> IO L.ByteString
@@ -68,31 +76,50 @@ catObject :: CatFileHandle -> Ref -> IO L.ByteString
 catObject h object = maybe L.empty fst3 <$> catObjectDetails h object
 
 catObjectDetails :: CatFileHandle -> Ref -> IO (Maybe (L.ByteString, Sha, ObjectType))
-catObjectDetails (CatFileHandle hdl _) object = CoProcess.query hdl send receive
+catObjectDetails h object = query (catFileProcess h) object $ \from -> do
+	header <- hGetLine from
+	case parseResp object header of
+		Just (ParsedResp sha size objtype) -> do
+			content <- S.hGet from (fromIntegral size)
+			eatchar '\n' from
+			return $ Just (L.fromChunks [content], sha, objtype)
+		Just DNE -> return Nothing
+		Nothing -> error $ "unknown response from git cat-file " ++ show (header, object)
   where
-	query = fromRef object
-	send to = hPutStrLn to query
-	receive from = do
-		header <- hGetLine from
-		case words header of
-			[sha, objtype, size]
-				| length sha == shaSize ->
-					case (readObjectType objtype, reads size) of
-						(Just t, [(bytes, "")]) -> readcontent t bytes from sha
-						_ -> dne
-				| otherwise -> dne
-			_
-				| header == fromRef object ++ " missing" -> dne
-				| otherwise -> error $ "unknown response from git cat-file " ++ show (header, query)
-	readcontent objtype bytes from sha = do
-		content <- S.hGet from bytes
-		eatchar '\n' from
-		return $ Just (L.fromChunks [content], Ref sha, objtype)
-	dne = return Nothing
 	eatchar expected from = do
 		c <- hGetChar from
 		when (c /= expected) $
 			error $ "missing " ++ (show expected) ++ " from git cat-file"
+
+{- Gets the size and type of an object, without reading its content. -}
+catObjectMetaData :: CatFileHandle -> Ref -> IO (Maybe (Integer, ObjectType))
+catObjectMetaData h object = query (checkFileProcess h) object $ \from -> do
+	resp <- hGetLine from
+	case parseResp object resp of
+		Just (ParsedResp _ size objtype) ->
+			return $ Just (size, objtype)
+		Just DNE -> return Nothing
+		Nothing -> error $ "unknown response from git cat-file " ++ show (resp, object)
+
+data ParsedResp = ParsedResp Sha Integer ObjectType | DNE
+
+query :: CoProcess.CoProcessHandle -> Ref -> (Handle -> IO a) -> IO a
+query hdl object receive = CoProcess.query hdl send receive
+  where
+	send to = hPutStrLn to (fromRef object)
+
+parseResp :: Ref -> String -> Maybe ParsedResp
+parseResp object l = case words l of
+	[sha, objtype, size]
+		| length sha == shaSize ->
+			case (readObjectType objtype, reads size) of
+				(Just t, [(bytes, "")]) -> 
+					Just $ ParsedResp (Ref sha) bytes t
+				_ -> Nothing
+		| otherwise -> Nothing
+	_
+		| l == fromRef object ++ " missing" -> Just DNE
+		| otherwise -> Nothing
 
 {- Gets a list of files and directories in a tree. (Not recursive.) -}
 catTree :: CatFileHandle -> Ref -> IO [(FilePath, FileMode)]

@@ -37,6 +37,14 @@ problem:
   another clone of the repository. Even if the filenames are lost,
   it's possible to [[tips/recover_data_from_lost+found]].
 
+* What about upgrades to the git-annex repisitory format?
+  git-annex supports [[upgrades]] from all previous repository versions,
+  and will always support upgrading from all of them to any new versions.
+  Note that the upgrade process needs to modify the content of the
+  repository -- if modifying the original archived repository is not
+  desirable you can always make a copy of the repository and upgrade the
+  copy.
+
 * What about encrypted special remotes? A 
   [[fairly simple shell script using standard tools|Decrypting_files_in_special_remotes_without_git-annex]]
   (gpg and openssl) can decrypt files stored on such

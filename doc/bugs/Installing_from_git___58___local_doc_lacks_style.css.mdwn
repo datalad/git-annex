@@ -1,0 +1,33 @@
+### Please describe the problem.
+
+Installing from git : local doc has no style.
+Unstyled local documentation is less easy to read than the one on http://git-annex.branchable.com/ .
+
+### What steps will reproduce the problem?
+
+Follow steps in http://git-annex.branchable.com/install/fromsource/ .
+Open share/doc/git-annex/html/index.html in a browser.
+All text has same appearance.
+Style on branchable.com is minimal yet efficient (very good result-over-cost ratio).
+
+### What version of git-annex are you using? On what operating system?
+
+commit c075b58d40f2745e4b79c54e24edf9b94748d7e9
+Merge: 166d70d 455de2f
+Author: Joey Hess <joeyh@joeyh.name>
+Date:   Fri Sep 30 19:52:14 2016 -0400
+
+    Merge branch 'master' of ssh://git-annex.branchable.com
+
+(actually commit ade6ab403701b25a540ffee2fbaae89db4473a2c though it most certainly does not change any code)
+
+OS is Debian 7.11 on AMD64.
+
+### Please provide any additional information below.
+
+Copying style.css from branchable.com brings styling.
+Doc also refers to local.css which is only comments on branchable.com anyway.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Been trying shortly git-annex a few times.  Considering to put some important stuff inside now (1Tb photos/videos). I love git-annex concept and believes that you Joey have the eye for details that make rock-solid software possible (I do that for a living). I've been using Unison for about 15 years. Unison is nice enough for *sync* if storage devices are mounted always on same machine in same directory.  For source code *history*, I've been relying on git with great satisfaction (and seen quite a few git repos wrecked by a missing or corrupted file in .git, good job remote repos come to the rescue).  Since git allows to change remote URLs at any time and just work, I believe git-annex will bring the best of both worlds.  Also I love your style: everything not essential is just not added, preserving efficiency. Best way for a solid system is adding only what's necessary.

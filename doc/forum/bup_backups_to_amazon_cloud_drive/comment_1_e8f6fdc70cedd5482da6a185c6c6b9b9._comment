@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="Tafnzart"
+ subject="comment 1"
+ date="2016-10-08T16:43:54Z"
+ content="""
+Please ignore the previous message. I found my way. Actually I was confused by git annex list thinking it lists remotes, while it does list files too. So I was able to have a directory called dot-bup inside annex without problem. Thank you for great tool!
+"""]]

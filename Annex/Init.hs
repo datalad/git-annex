@@ -93,7 +93,8 @@ initialize' mversion = do
 		Database.Keys.scanAssociatedFiles
 	v <- checkAdjustedClone
 	case v of
-		NeedUpgradeForAdjustedClone -> void $ upgrade True
+		NeedUpgradeForAdjustedClone -> 
+			void $ upgrade True  versionForAdjustedClone
 		InAdjustedClone -> return ()
 		NotInAdjustedClone ->
 			ifM (crippledFileSystem <&&> (not <$> isBareRepo))

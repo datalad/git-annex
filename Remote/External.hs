@@ -1,6 +1,6 @@
 {- External special remote interface.
  -
- - Copyright 2013-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -126,7 +126,8 @@ externalSetup mu _ c gc = do
 				INITREMOTE_SUCCESS -> Just noop
 				INITREMOTE_FAILURE errmsg -> Just $ error errmsg
 				_ -> Nothing
-			liftIO $ atomically $ readTMVar $ externalConfig external
+			withExternalState external $
+				liftIO . atomically . readTVar . externalConfig
 
 	gitConfigSpecialRemote u c'' "externaltype" externaltype
 	return (c'', u)
@@ -201,27 +202,28 @@ safely a = go =<< tryNonAsync a
  - While the external remote is processing the Request, it may send
  - any number of RemoteRequests, that are handled here.
  -
- - Only one request can be made at a time, so locking is used.
+ - An external remote process can only handle one request at a time.
+ - Concurrent requests will start up additional processes.
  -
  - May throw exceptions, for example on protocol errors, or
  - when the repository cannot be used.
  -}
 handleRequest :: External -> Request -> Maybe MeterUpdate -> (Response -> Maybe (Annex a)) -> Annex a
 handleRequest external req mp responsehandler = 
-	withExternalLock external $ \lck ->
-		handleRequest' lck external req mp responsehandler
+	withExternalState external $ \st -> 
+		handleRequest' st external req mp responsehandler
 
-handleRequest' :: ExternalLock -> External -> Request -> Maybe MeterUpdate -> (Response -> Maybe (Annex a)) -> Annex a
-handleRequest' lck external req mp responsehandler
+handleRequest' :: ExternalState -> External -> Request -> Maybe MeterUpdate -> (Response -> Maybe (Annex a)) -> Annex a
+handleRequest' st external req mp responsehandler
 	| needsPREPARE req = do
-		checkPrepared lck external
+		checkPrepared st external
 		go
 	| otherwise = go
   where
 	go = do
-		sendMessage lck external req
+		sendMessage st external req
 		loop
-	loop = receiveMessage lck external responsehandler
+	loop = receiveMessage st external responsehandler
 		(\rreq -> Just $ handleRemoteRequest rreq >> loop)
 		(\msg -> Just $ handleAsyncMessage msg >> loop)
 
@@ -232,23 +234,23 @@ handleRequest' lck external req mp responsehandler
 	handleRemoteRequest (DIRHASH_LOWER k) = 
 		send $ VALUE $ hashDirLower def k
 	handleRemoteRequest (SETCONFIG setting value) =
-		liftIO $ atomically $ do
-			let v = externalConfig external
-			m <- takeTMVar v
-			putTMVar v $ M.insert setting value m
+		liftIO $ atomically $ modifyTVar' (externalConfig st) $
+			M.insert setting value
 	handleRemoteRequest (GETCONFIG setting) = do
 		value <- fromMaybe "" . M.lookup setting
-			<$> liftIO (atomically $ readTMVar $ externalConfig external)
+			<$> liftIO (atomically $ readTVar $ externalConfig st)
 		send $ VALUE value
 	handleRemoteRequest (SETCREDS setting login password) = do
-		c <- liftIO $ atomically $ readTMVar $ externalConfig external
-		gc <- liftIO $ atomically $ readTMVar $ externalGitConfig external
-		c' <- setRemoteCredPair encryptionAlreadySetup c gc (credstorage setting) $
-			Just (login, password)
-		void $ liftIO $ atomically $ swapTMVar (externalConfig external) c'
+		let v = externalConfig st
+		c <- liftIO $ atomically $ readTVar v
+		let gc = externalGitConfig external
+		c' <- setRemoteCredPair encryptionAlreadySetup c gc
+			(credstorage setting)
+			(Just (login, password))
+		void $ liftIO $ atomically $ swapTVar v c'
 	handleRemoteRequest (GETCREDS setting) = do
-		c <- liftIO $ atomically $ readTMVar $ externalConfig external
-		gc <- liftIO $ atomically $ readTMVar $ externalGitConfig external
+		c <- liftIO $ atomically $ readTVar $ externalConfig st
+		let gc = externalGitConfig external
 		creds <- fromMaybe ("", "") <$> 
 			getRemoteCredPair c gc (credstorage setting)
 		send $ CREDS (fst creds) (snd creds)
@@ -280,11 +282,11 @@ handleRequest' lck external req mp responsehandler
 		send (VALUE "") -- end of list
 	handleRemoteRequest (DEBUG msg) = liftIO $ debugM "external" msg
 	handleRemoteRequest (VERSION _) =
-		sendMessage lck external $ ERROR "too late to send VERSION"
+		sendMessage st external (ERROR "too late to send VERSION")
 
 	handleAsyncMessage (ERROR err) = error $ "external special remote error: " ++ err
 
-	send = sendMessage lck external
+	send = sendMessage st external
 
 	credstorage setting = CredPairStorage
 		{ credPairFile = base
@@ -297,34 +299,32 @@ handleRequest' lck external req mp responsehandler
 	withurl mk uri = handleRemoteRequest $ mk $
 		setDownloader (show uri) OtherDownloader
 
-sendMessage :: Sendable m => ExternalLock -> External -> m -> Annex ()
-sendMessage lck external m = 
-	fromExternal lck external externalSend $ \h ->
-		liftIO $ do
-			protocolDebug external True line
-			hPutStrLn h line
-			hFlush h
+sendMessage :: Sendable m => ExternalState -> External -> m -> Annex ()
+sendMessage st external m = liftIO $ do
+	protocolDebug external st True line
+	hPutStrLn h line
+	hFlush h
   where
 	line = unwords $ formatMessage m
+	h = externalSend st
 
 {- Waits for a message from the external remote, and passes it to the
  - apppropriate handler. 
  -
  - If the handler returns Nothing, this is a protocol error.-}
 receiveMessage
-	:: ExternalLock
+	:: ExternalState
 	-> External 
 	-> (Response -> Maybe (Annex a))
 	-> (RemoteRequest -> Maybe (Annex a))
 	-> (AsyncMessage -> Maybe (Annex a))
 	-> Annex a
-receiveMessage lck external handleresponse handlerequest handleasync =
-	go =<< fromExternal lck external externalReceive
-		(liftIO . catchMaybeIO . hGetLine)
+receiveMessage st external handleresponse handlerequest handleasync =
+	go =<< liftIO (catchMaybeIO $ hGetLine $ externalReceive st)
   where
 	go Nothing = protocolError False ""
 	go (Just s) = do
-		liftIO $ protocolDebug external False s
+		liftIO $ protocolDebug external st False s
 		case parseMessage s :: Maybe Response of
 			Just resp -> maybe (protocolError True s) id (handleresponse resp)
 			Nothing -> case parseMessage s :: Maybe RemoteRequest of
@@ -335,46 +335,47 @@ receiveMessage lck external handleresponse handlerequest handleasync =
 	protocolError parsed s = error $ "external special remote protocol error, unexpectedly received \"" ++ s ++ "\" " ++
 		if parsed then "(command not allowed at this time)" else "(unable to parse command)"
 
-protocolDebug :: External -> Bool -> String -> IO ()
-protocolDebug external sendto line = debugM "external" $ unwords
-	[ externalRemoteProgram (externalType external)
+protocolDebug :: External -> ExternalState -> Bool -> String -> IO ()
+protocolDebug external st sendto line = debugM "external" $ unwords
+	[ externalRemoteProgram (externalType external) ++ 
+		"[" ++ show (externalPid st) ++ "]"
 	, if sendto then "<--" else "-->"
 	, line
 	]
 
-{- Starts up the external remote if it's not yet running,
- - and passes a value extracted from its state to an action.
- -}
-fromExternal :: ExternalLock -> External -> (ExternalState -> v) -> (v -> Annex a) -> Annex a
-fromExternal lck external extractor a =
-	go =<< liftIO (atomically (tryReadTMVar v))
+{- While the action is running, the ExternalState provided to it will not
+ - be available to any other calls.
+ -
+ - Starts up a new process if no ExternalStates are available. -}
+withExternalState :: External -> (ExternalState -> Annex a) -> Annex a
+withExternalState external = bracket alloc dealloc
   where
-	go (Just st) = run st
-	go Nothing = do
-		st <- startExternal $ externalType external
-		void $ liftIO $ atomically $ do
-			void $ tryReadTMVar v
-			putTMVar v st
-
-		{- Handle initial protocol startup; check the VERSION
-		 - the remote sends. -}
-		receiveMessage lck external
-			(const Nothing)
-			(checkVersion lck external)
-			(const Nothing)
-
-		run st
-
-	run st = a $ extractor st
 	v = externalState external
 
-{- Starts an external remote process running, but does not handle checking
- - VERSION, etc. -}
-startExternal :: ExternalType -> Annex ExternalState
-startExternal externaltype = do
+	alloc = do
+		ms <- liftIO $ atomically $ do
+			l <- readTVar v
+			case l of
+				[] -> return Nothing
+				(st:rest) -> do
+					writeTVar v rest
+					return (Just st)
+		maybe (startExternal external) return ms
+	
+	dealloc st = liftIO $ atomically $ modifyTVar' v (st:)
+
+{- Starts an external remote process running, and checks VERSION. -}
+startExternal :: External -> Annex ExternalState
+startExternal external = do
 	errrelayer <- mkStderrRelayer
-	g <- Annex.gitRepo
-	liftIO $ do
+	st <- start errrelayer =<< Annex.gitRepo
+	receiveMessage st external
+		(const Nothing)
+		(checkVersion st external)
+		(const Nothing)
+	return st
+  where
+	start errrelayer g = liftIO $ do
 		(cmd, ps) <- findShellCommand basecmd
 		let basep = (proc cmd (toCommand ps))
 			{ std_in = CreatePipe
@@ -382,23 +383,31 @@ startExternal externaltype = do
 			, std_err = CreatePipe
 			}
 		p <- propgit g basep
-		(Just hin, Just hout, Just herr, pid) <- 
+		(Just hin, Just hout, Just herr, ph) <- 
 			createProcess p `catchIO` runerr
 		fileEncoding hin
 		fileEncoding hout
 		fileEncoding herr
 		stderrelay <- async $ errrelayer herr
-		checkearlytermination =<< getProcessExitCode pid
+		checkearlytermination =<< getProcessExitCode ph
+		cv <- newTVarIO $ externalDefaultConfig external
+		pv <- newTVarIO Unprepared
+		pid <- atomically $ do
+			n <- succ <$> readTVar (externalLastPid external)
+			writeTVar (externalLastPid external) n
+			return n
 		return $ ExternalState
 			{ externalSend = hin
 			, externalReceive = hout
+			, externalPid = pid
 			, externalShutdown = do
 				cancel stderrelay
-				void $ waitForProcess pid
-			, externalPrepared = Unprepared
+				void $ waitForProcess ph
+			, externalPrepared = pv
+			, externalConfig = cv
 			}
-  where
-	basecmd = externalRemoteProgram externaltype
+	
+	basecmd = externalRemoteProgram $ externalType external
 
 	propgit g p = do
 		environ <- propGitEnv g
@@ -415,50 +424,47 @@ startExternal externaltype = do
 		)
 
 stopExternal :: External -> Annex ()
-stopExternal external = liftIO $ stop =<< atomically (tryReadTMVar v)
+stopExternal external = liftIO $ do
+	l <- atomically $ swapTVar (externalState external) []
+	mapM_ stop l
   where
-	stop Nothing = noop
-	stop (Just st) = do
-		void $ atomically $ tryTakeTMVar v
+	stop st = do
 		hClose $ externalSend st
 		hClose $ externalReceive st
 		externalShutdown st
-	v = externalState external
 
 externalRemoteProgram :: ExternalType -> String
 externalRemoteProgram externaltype = "git-annex-remote-" ++ externaltype
 
-checkVersion :: ExternalLock -> External -> RemoteRequest -> Maybe (Annex ())
-checkVersion lck external (VERSION v) = Just $
+checkVersion :: ExternalState -> External -> RemoteRequest -> Maybe (Annex ())
+checkVersion st external (VERSION v) = Just $
 	if v `elem` supportedProtocolVersions
 		then noop
-		else sendMessage lck external (ERROR "unsupported VERSION")
+		else sendMessage st external (ERROR "unsupported VERSION")
 checkVersion _ _ _ = Nothing
 
 {- If repo has not been prepared, sends PREPARE.
  -
  - If the repo fails to prepare, or failed before, throws an exception with
  - the error message. -}
-checkPrepared :: ExternalLock -> External -> Annex ()
-checkPrepared lck external = 
-	fromExternal lck external externalPrepared $ \prepared ->
-		case prepared of
-			Prepared -> noop
-			FailedPrepare errmsg -> error errmsg
-			Unprepared -> 
-				handleRequest' lck external PREPARE Nothing $ \resp ->
-					case resp of
-						PREPARE_SUCCESS -> Just $
-							setprepared Prepared
-						PREPARE_FAILURE errmsg -> Just $ do
-							setprepared $ FailedPrepare errmsg
-							error errmsg
-						_ -> Nothing
+checkPrepared :: ExternalState -> External -> Annex ()
+checkPrepared st external = do
+	v <- liftIO $ atomically $ readTVar $ externalPrepared st
+	case v of
+		Prepared -> noop
+		FailedPrepare errmsg -> error errmsg
+		Unprepared ->
+			handleRequest' st external PREPARE Nothing $ \resp ->
+				case resp of
+					PREPARE_SUCCESS -> Just $
+						setprepared Prepared
+					PREPARE_FAILURE errmsg -> Just $ do
+						setprepared $ FailedPrepare errmsg
+						error errmsg
+					_ -> Nothing
   where
-	setprepared status = liftIO . atomically $ do
-		let v = externalState external
-		st <- takeTMVar v
-		void $ putTMVar v $ st { externalPrepared = status }
+	setprepared status = liftIO $ atomically $ void $
+		swapTVar (externalPrepared st) status
 
 {- Caches the cost in the git config to avoid needing to start up an
  - external special remote every time time just to ask it what its

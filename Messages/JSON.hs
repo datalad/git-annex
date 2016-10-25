@@ -95,16 +95,20 @@ complete v _ = add v (Just (HM.empty, True))
 
 -- Show JSON formatted progress, including the current state of the JSON 
 -- object for the action being performed.
-progress :: Maybe Object -> Integer -> BytesProcessed -> IO ()
-progress maction size bytesprocessed = emit $ case maction of
+progress :: Maybe Object -> Maybe Integer -> BytesProcessed -> IO ()
+progress maction msize bytesprocessed = emit $ case maction of
 	Just action -> HM.insert "action" (Object action) o
 	Nothing -> o
   where
 	n = fromBytesProcessed bytesprocessed :: Integer
-	Object o = object
-		[ "byte-progress" .= n
-		, "percent-progress" .= showPercentage 2 (percentage size n)
-		]
+	Object o = case msize of
+		Just size -> object
+			[ "byte-progress" .= n
+			, "percent-progress" .= showPercentage 2 (percentage size n)
+			, "total-size" .= size
+			]
+		Nothing -> object
+			[ "byte-progress" .= n ]
 
 -- A value that can be displayed either normally, or as JSON.
 data DualDisp = DualDisp

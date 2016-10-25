@@ -12,8 +12,6 @@ module Remote.External.Types (
 	External(..),
 	newExternal,
 	ExternalType,
-	ExternalLock,
-	withExternalLock,
 	ExternalState(..),
 	PrepareStatus(..),
 	Proto.parseMessage,
@@ -44,28 +42,25 @@ import qualified Utility.SimpleProtocol as Proto
 import Control.Concurrent.STM
 import Network.URI
 
--- If the remote is not yet running, the ExternalState TMVar is empty.
 data External = External
 	{ externalType :: ExternalType
 	, externalUUID :: UUID
-	-- Empty until the remote is running.
-	, externalState :: TMVar ExternalState
-	-- Empty when a remote is in use.
-	, externalLock :: TMVar ExternalLock
-	-- Never left empty.
-	, externalConfig :: TMVar RemoteConfig
-	-- Never left empty.
-	, externalGitConfig :: TMVar RemoteGitConfig
+	, externalState :: TVar [ExternalState]
+	-- ^ Contains states for external special remote processes
+	-- that are not currently in use.
+	, externalLastPid :: TVar PID
+	, externalDefaultConfig :: RemoteConfig
+	, externalGitConfig :: RemoteGitConfig
 	}
 
 newExternal :: ExternalType -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex External
 newExternal externaltype u c gc = liftIO $ External
 	<$> pure externaltype
 	<*> pure u
-	<*> atomically newEmptyTMVar
-	<*> atomically (newTMVar ExternalLock)
-	<*> atomically (newTMVar c)
-	<*> atomically (newTMVar gc)
+	<*> atomically (newTVar [])
+	<*> atomically (newTVar 0)
+	<*> pure c
+	<*> pure gc
 
 type ExternalType = String
 
@@ -73,20 +68,14 @@ data ExternalState = ExternalState
 	{ externalSend :: Handle
 	, externalReceive :: Handle
 	, externalShutdown :: IO ()
-	, externalPrepared :: PrepareStatus
+	, externalPid :: PID
+	, externalPrepared :: TVar PrepareStatus
+	, externalConfig :: TVar RemoteConfig
 	}
 
+type PID = Int
+
 data PrepareStatus = Unprepared | Prepared | FailedPrepare ErrorMsg
-
--- Constructor is not exported, and only created by newExternal.
-data ExternalLock = ExternalLock
-
-withExternalLock :: External -> (ExternalLock -> Annex a) -> Annex a
-withExternalLock external = bracketIO setup cleanup
-  where
-	setup = atomically $ takeTMVar v
-	cleanup = atomically . putTMVar v
-	v = externalLock external
 
 -- Messages that can be sent to the external remote to request it do something.
 data Request 

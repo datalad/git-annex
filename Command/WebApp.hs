@@ -154,7 +154,7 @@ firstRun o = do
 	 - threadstate. -}
 	let st = error "annex state not available"
 	{- Get a DaemonStatus without running in the Annex monad. -}
-	dstatus <- atomically . newTMVar =<< newDaemonStatus
+	dstatus <- atomically . newTVar =<< newDaemonStatus
 	d <- newAssistantData st dstatus
 	urlrenderer <- newUrlRenderer
 	v <- newEmptyMVar

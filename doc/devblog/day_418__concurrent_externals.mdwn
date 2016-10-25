@@ -1,0 +1,12 @@
+Realized recently that despite all the nice concurrency support in
+git-annex, external special remotes were limited to handling one request at
+a time.
+
+While the external special remote prococol could almost support concurrent
+requests, that would complicate implementing them, and probably need a
+version flag to enable to avoid breaking existing ones.
+
+Instead, made git-annex start up multiple external special remote processes
+as needed to handle concurrency.
+
+Today's work was sponsored by Josh Taylor on Patreon.

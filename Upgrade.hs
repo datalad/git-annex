@@ -26,7 +26,7 @@ checkUpgrade = maybe noop error <=< needsUpgrade
 needsUpgrade :: Version -> Annex (Maybe String)
 needsUpgrade v
 	| v `elem` supportedVersions = ok
-	| v `elem` autoUpgradeableVersions = ifM (upgrade True)
+	| v `elem` autoUpgradeableVersions = ifM (upgrade True defaultVersion)
 		( ok
 		, err "Automatic upgrade failed!"
 		)
@@ -37,13 +37,14 @@ needsUpgrade v
 		" is not supported. " ++ msg
 	ok = return Nothing
 
-upgrade :: Bool -> Annex Bool
-upgrade automatic = do
+upgrade :: Bool -> Version -> Annex Bool
+upgrade automatic destversion = do
 	upgraded <- go =<< getVersion
 	when upgraded $
-		setVersion latestVersion
+		setVersion destversion
 	return upgraded
   where
+	go (Just v) | v >= destversion = return True
 #ifndef mingw32_HOST_OS
 	go (Just "0") = Upgrade.V0.upgrade
 	go (Just "1") = Upgrade.V1.upgrade

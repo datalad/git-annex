@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2016-09-29T20:27:46Z"
+ content="""
+Added a "total-size" field for the size. Although, if a key's size is not
+known, git-annex does not currently do any progress displays for that key.
+"""]]

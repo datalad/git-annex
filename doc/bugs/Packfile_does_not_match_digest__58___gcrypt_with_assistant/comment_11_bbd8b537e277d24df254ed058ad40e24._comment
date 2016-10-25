@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="pot"
+ subject="inodes...."
+ date="2016-09-30T22:00:31Z"
+ content="""
+I think I may have tracked this down partly, I ran out of inodes on a removeable drive and started getting the same error. Will try and rectify underlying inode issue and then see.
+
+(secondary point, how on earth has my docs directory used up all 59 million inodes available to it when put into an annex???)
+"""]]

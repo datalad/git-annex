@@ -25,3 +25,6 @@ annex.version = 3 in the remote
 
 [[!tag confirmed]]
 [[!meta title="read-only filesystem on remote prevents auto-upgrade from v3 to v5, and prevents using a remote"]]
+
+> [[done]]; Fixed for V3 mode and rejected trying to support all old
+> versions without a repo-changing upgrade process. --[[Joey]]

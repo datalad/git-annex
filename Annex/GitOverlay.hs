@@ -22,9 +22,28 @@ withIndexFile :: FilePath -> Annex a -> Annex a
 withIndexFile f a = do
 	f' <- liftIO $ indexEnvVal f
 	withAltRepo
-		(\g -> addGitEnv g indexEnv f')
+		(usecachedgitenv $ \g -> liftIO $ addGitEnv g indexEnv f')
 		(\g g' -> g' { gitEnv = gitEnv g })
 		a
+  where
+	-- This is an optimisation. Since withIndexFile is run repeatedly,
+	-- and addGitEnv uses the slow copyGitEnv when gitEnv is Nothing, 
+	-- we cache the copied environment the first time, and reuse it in
+	-- subsequent calls.
+	--
+	-- (This could be done at another level; eg when creating the
+	-- Git object in the first place, but it's more efficient to let
+	-- the enviroment be inherited in all calls to git where it
+	-- does not need to be modified.)
+	usecachedgitenv m g = case gitEnv g of
+		Just _ -> m g
+		Nothing -> do
+			e <- Annex.withState $ \s -> case Annex.cachedgitenv s of
+				Nothing -> do
+					e <- copyGitEnv
+					return (s { Annex.cachedgitenv = Just e }, e)
+				Just e -> return (s, e)
+			m (g { gitEnv = Just e })
 
 {- Runs an action using a different git work tree.
  -
@@ -52,7 +71,7 @@ withWorkTree d = withAltRepo
 withWorkTreeRelated :: FilePath -> Annex a -> Annex a
 withWorkTreeRelated d = withAltRepo modrepo unmodrepo
   where
-	modrepo g = do
+	modrepo g = liftIO $ do
 		g' <- addGitEnv g "GIT_COMMON_DIR" =<< absPath (localGitDir g)
 		g'' <- addGitEnv g' "GIT_DIR" d
 		return (g'' { gitEnvOverridesGitDir = True })
@@ -62,7 +81,7 @@ withWorkTreeRelated d = withAltRepo modrepo unmodrepo
 		}
 
 withAltRepo 
-	:: (Repo -> IO Repo)
+	:: (Repo -> Annex Repo)
 	-- ^ modify Repo
 	-> (Repo -> Repo -> Repo)
 	-- ^ undo modifications; first Repo is the original and second
@@ -71,7 +90,7 @@ withAltRepo
 	-> Annex a
 withAltRepo modrepo unmodrepo a = do
 	g <- gitRepo
-	g' <- liftIO $ modrepo g
+	g' <- modrepo g
 	q <- Annex.Queue.get
 	v <- tryNonAsync $ do
 		Annex.changeState $ \s -> s

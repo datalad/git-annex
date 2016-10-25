@@ -18,22 +18,26 @@ import Utility.Env
  - does not have any gitEnv yet. -}
 adjustGitEnv :: Repo -> ([(String, String)] -> [(String, String)]) -> IO Repo
 adjustGitEnv g adj = do
-	e <- maybe copyenv return (gitEnv g)
+	e <- maybe copyGitEnv return (gitEnv g)
 	let e' = adj e
 	return $ g { gitEnv = Just e' }
   where
-	copyenv = do
+
+{- Copies the current environment, so it can be adjusted when running a git
+ - command. -}
+copyGitEnv :: IO [(String, String)]
+copyGitEnv = do
 #ifdef __ANDROID__
-		{- This should not be necessary on Android, but there is some
-		 - weird getEnvironment breakage. See
-		 - https://github.com/neurocyte/ghc-android/issues/7
-		 - Use getEnv to get some key environment variables that
-		 - git expects to have. -}
-		let keyenv = words "USER PATH GIT_EXEC_PATH HOSTNAME HOME"
-		let getEnvPair k = maybe Nothing (\v -> Just (k, v)) <$> getEnv k
-		catMaybes <$> forM keyenv getEnvPair
+	{- This should not be necessary on Android, but there is some
+	 - weird getEnvironment breakage. See
+	 - https://github.com/neurocyte/ghc-android/issues/7
+	 - Use getEnv to get some key environment variables that
+	 - git expects to have. -}
+	let keyenv = words "USER PATH GIT_EXEC_PATH HOSTNAME HOME"
+	let getEnvPair k = maybe Nothing (\v -> Just (k, v)) <$> getEnv k
+	catMaybes <$> forM keyenv getEnvPair
 #else
-		getEnvironment
+	getEnvironment
 #endif
 
 addGitEnv :: Repo -> String -> String -> IO Repo

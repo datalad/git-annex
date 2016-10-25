@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-10-05T20:54:02Z"
+ content="""
+I understand your pain (and have just made git-annex support reading V3
+repos without upgrading them). But, it's not a good idea to make git-annex
+support reading all previous repository versions without an upgrade step.
+
+Suggest you plan on copying your DVD-R to a writable medium to access it,
+if git-annex at some point stops supporting the old repo version without
+upgrade.
+"""]]

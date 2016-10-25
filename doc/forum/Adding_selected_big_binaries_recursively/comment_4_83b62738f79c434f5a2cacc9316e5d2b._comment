@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-10-05T21:01:38Z"
+ content="""
+That .gitattributes work when I try it here. Perhaps your version of
+git-annex is too old to support it. Configuring annex.largefiles via
+.gitattributes was first supported in version 6.20160211.
+"""]]

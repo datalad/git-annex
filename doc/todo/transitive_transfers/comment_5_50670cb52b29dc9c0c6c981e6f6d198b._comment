@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2016-10-05T19:59:13Z"
+ content="""
+@JasonWoof re your use case, you don't need transitive transfers.
+You can simply go to `old_external` and run:
+
+	git annex sync main_external
+	git annex get --branch main_external/master
+
+(Assuming that the `old_external` has a `main_external` remote.)
+
+This --branch option was added in a recent git-annex release.
+"""]]

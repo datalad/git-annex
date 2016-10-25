@@ -26,5 +26,5 @@ start = do
 	showStart "upgrade" "."
 	whenM (isNothing <$> getVersion) $ do
 		initialize Nothing Nothing
-	r <- upgrade False
+	r <- upgrade False latestVersion
 	next $ next $ return r

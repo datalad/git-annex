@@ -56,17 +56,18 @@ and check that it's valid. git-annex responds with the configuration values
 	VALUE true
 
 Once the special remote is satisfied with its configuration and is
-ready to go, it tells git-annex.
+ready to go, it tells git-annex that it's done with the PREPARE step:
 
 	PREPARE-SUCCESS
 
-Now git-annex will tell the special remote what to do. Let's suppose
-it wants to store a key. 
+Now git-annex will make a request. Let's suppose it wants to store a key. 
 
 	TRANSFER STORE somekey tmpfile
 
-The special remote can continue sending messages to git-annex during this
-transfer. It will typically send progress messages, indicating how many
+The special remote can then start reading the tmpfile and storing it.
+While it's doing that, the special remote can send messages back to 
+git-annex to indicate what it's doing, or ask for other information.
+It will typically send progress messages, indicating how many
 bytes have been sent:
 
 	PROGRESS 10240
@@ -75,6 +76,8 @@ bytes have been sent:
 Once the key has been stored, the special remote tells git-annex the result:
 
 	TRANSFER-SUCCESS STORE somekey
+
+Now git-annex will send its next request.
 
 Once git-annex is done with the special remote, it will close its stdin.
 The special remote program can then exit.
@@ -107,8 +110,6 @@ The following requests *must* all be supported by the special remote.
   The filename will not contain any whitespace.  
   Note that it's important that, while a Key is being stored, CHECKPRESENT
   not indicate it's present until all the data has been transferred.  
-  Multiple transfers might be requested by git-annex, but it's fine for the 
-  program to serialize them and only do one at a time.  
 * `CHECKPRESENT Key`  
   Requests the remote to check if a key is present in it.
 * `REMOVE Key`  
@@ -215,7 +216,7 @@ while it's handling a request.
 ## special remote messages
 
 These messages may be sent by the special remote at any time that it's
-in control.
+handling a request.
 
 * `VERSION Int`  
   Supported protocol version. Current version is 1. Must be sent first

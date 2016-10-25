@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 6.20160923
+Version: 6.20161012
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <id@joeyh.name>
@@ -35,7 +35,6 @@ Description:
 -- make cabal install git-annex work.
 Extra-Source-Files:
   stack.yaml
-  cabal.config
   README
   CHANGELOG
   NEWS

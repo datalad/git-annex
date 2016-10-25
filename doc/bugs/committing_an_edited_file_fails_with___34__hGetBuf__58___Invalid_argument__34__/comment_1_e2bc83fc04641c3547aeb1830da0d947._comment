@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-10-05T17:02:12Z"
+ content="""
+By using git commit -a to commit changes to a large annexed file, you
+are causing git to first add the file to the git repository, and then
+git-annex has to go fix up and convert it back to an annexed file.
+
+So, you probably don't want to be doing that, irrespective of this bug.
+Storing the file content in the git repository will waste disk space until
+git gc gets around to cleaning it up.
+
+Instead, use `git annex add` on the file after editing it, and then commit
+the result. As well as not cluttering up git with large unused objects,
+that will be generally faster, and will probably avoid this bug.
+
+----
+
+I've reproduced on linux a behavior that probably has the same root cause.
+It looks like git-annex pre-commit is reading the whole content of the
+large file from git cat-file, and buffering it in memory. Of course
+this uses a lot of memory and will fail for some size files, and it
+should definitely not be doing this.
+
+Suspect this is a reversion caused by the changes to support v6 mode.
+"""]]

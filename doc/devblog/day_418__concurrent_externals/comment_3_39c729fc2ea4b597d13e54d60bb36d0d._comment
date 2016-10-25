@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="Adam"
+ subject="comment 3"
+ date="2016-10-04T21:24:50Z"
+ content="""
+Oh, I see, thanks.  Have you thought about adding an option for that to the assistant?  For example, I tested syncing a bunch of text files through a special remote, and even though the files were small, the per-command latency added up, so the effective transfer rate wasn't very high.  If it were easy to set the concurrency option in the assistant, I guess it would help with that.
+"""]]

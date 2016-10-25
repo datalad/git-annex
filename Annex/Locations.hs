@@ -452,15 +452,25 @@ preSanitizeKeyName = concatMap escape
  - can cause existing objects to get lost.
  -}
 keyFile :: Key -> FilePath
-keyFile key = replace "/" "%" $ replace ":" "&c" $
-	replace "%" "&s" $ replace "&" "&a"  $ key2file key
+keyFile = concatMap esc . key2file
+  where
+	esc '&' = "&a"
+	esc '%' = "&s"
+	esc ':' = "&c"
+	esc '/' = "%"
+	esc c = [c]
 
 {- Reverses keyFile, converting a filename fragment (ie, the basename of
  - the symlink target) into a key. -}
 fileKey :: FilePath -> Maybe Key
-fileKey file = file2key $
-	replace "&a" "&" $ replace "&s" "%" $
-		replace "&c" ":" $ replace "%" "/" file
+fileKey = file2key . unesc [] 
+  where
+	unesc r [] = reverse r
+	unesc r ('%':cs) = unesc ('/':r) cs
+	unesc r ('&':'c':cs) = unesc (':':r) cs
+	unesc r ('&':'s':cs) = unesc ('%':r) cs
+	unesc r ('&':'a':cs) = unesc ('&':r) cs
+	unesc r (c:cs) = unesc (c:r) cs
 
 {- for quickcheck -}
 prop_isomorphic_fileKey :: String -> Bool

@@ -27,4 +27,64 @@ running `git annex sync` on an adjusted branch. Possible smoking gun?
 
 Initial plan: Try to reset the adjusted branch and master back to before 9cdbd4f,
 and re-run to try to reproduce this happening.
---[[Joey]] 
+--[[Joey]]
+
+----
+
+Update: Was able to reproduce bug as follows:
+
+1. Untar tarball
+2. git reset --hard 961bbbf
+3. git cherry-pick 9cdbd4f
+4. git annex sync
+
+Output of step #4 is:
+
+	On branch adjusted/master(unlocked)
+	nothing to commit, working tree clean
+	ok
+	merge synced/master (Merging into master...) Already up-to-date.
+	(Merging into adjusted branch...) 
+	Updating 61bf677..46e18b7
+	Fast-forward
+	(diffstat shows 1 file added, and all files added by commit 9cdbd4f deleted)
+
+Making changes other than that cherry-pick, like adding or renaming
+a file, don't seem to trigger the bug.
+
+I think that the bug is in Git.Tree.adjustTree, when the
+addtreeitems are in a deep subdirectory, it seems to not be adding them
+into the tree. This happens in simpler test cases, so something about
+this particular tree is breaking the code.
+
+----
+
+Ok, think I found the bug. In Git.Tree.adjustTree, it grafts in the new
+tree items, but it can forget that it needed to modify the tree, which
+prevents the change from propigating up from the subtree to the root, and
+so it gets left out of the reverse adjusted commit.
+
+I'm committing a fix. 
+
+With the fix, when I git annex sync in felix's tree, the files that
+were getting wrongly deleted are added. The commit summary shows
+that git thinks those files were renamed:
+
+	 rename 2016/xxx xxx und yyy/{ => 2016/xxx xxx und yyy}/zzz/P1230949.JPG (100%)
+
+This seems wrong. I think this is a separate bug that was hidden
+by the other one, it's grafting in files using their whole path,
+to a subtree that is itself part way down that path.
+
+---
+
+A simpler case of the both bugs is to have a file like a/b/c/d already
+committed and make a commit that adds a/b/x/y, without otherwise modifying
+that tree. On an adjusted branch, `git annex sync` makes a commit of a tree
+that does not include the new file. It may made a commit on top of it for
+the adjusted branch that adds the file back, but the file doesn't reach
+the master branch in this scenario.
+
+--[[Joey]]
+
+Both bugs fixed now. [[done]] --[[Joey]]

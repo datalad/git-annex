@@ -234,6 +234,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "sync" test_sync
 	, testCase "union merge regression" test_union_merge_regression
 	, testCase "adjusted branch merge regression" test_adjusted_branch_merge_regression
+	, testCase "adjusted branch subtree regression" test_adjusted_branch_subtree_regression
 	, testCase "conflict resolution" test_conflict_resolution
 	, testCase "conflict resolution (adjusted branch)" test_conflict_resolution_adjusted_branch
 	, testCase "conflict resolution movein regression" test_conflict_resolution_movein_regression
@@ -1424,6 +1425,27 @@ test_adjusted_branch_merge_regression = whenM Annex.AdjustedBranch.isGitVersionS
 		l <- getDirectoryContents "."
 		conflictor `elem` l
 			@? ("conflictor not present after merge in " ++ what)
+
+{- Regression test for a bug in adjusted branch syncing code, where adding
+ - a subtree to an existing tree lost files. -}
+test_adjusted_branch_subtree_regression :: Assertion
+test_adjusted_branch_subtree_regression = 
+	whenM Annex.AdjustedBranch.isGitVersionSupported $ 
+		withtmpclonerepo $ \r -> do
+			indir r $ do
+				disconnectOrigin
+				git_annex "upgrade" [] @? "upgrade failed"
+				git_annex "adjust" ["--unlock", "--force"] @? "adjust failed"
+				createDirectoryIfMissing True "a/b/c"
+				writeFile "a/b/c/d" "foo"
+				git_annex "add" ["a/b/c"] @? "add a/b/c failed"
+				git_annex "sync" [] @? "sync failed"
+				createDirectoryIfMissing True "a/b/x"
+				writeFile "a/b/x/y" "foo"
+				git_annex "add" ["a/b/x"] @? "add a/b/x failed"
+				git_annex "sync" [] @? "sync failed"
+				boolSystem "git" [Param "checkout", Param "master"] @? "git checkout master failed"
+				doesFileExist "a/b/x/y" @? ("a/b/x/y missing from master after adjusted branch sync")
 
 {- Set up repos as remotes of each other. -}
 pair :: FilePath -> FilePath -> Assertion

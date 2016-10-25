@@ -1,0 +1,8 @@
+Only had a couple hours today, which were spent doing some profiling of
+git-annex in situations where it has to look through a large working tree in
+order to find files to act on. The top five hot spots this found are
+responsible for between 50% and 80% of git-annex's total CPU use in these
+situations.
+
+The first optimisation sped up `git annex find` by around 18%.
+More tomorrow..

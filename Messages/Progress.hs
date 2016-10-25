@@ -30,12 +30,11 @@ import Data.Quantity
 {- Shows a progress meter while performing a transfer of a key.
  - The action is passed a callback to use to update the meter. -}
 metered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
-metered othermeter key a = case keySize key of
-	Nothing -> nometer
-	Just size -> withMessageState (go $ fromInteger size)
+metered othermeter key a = withMessageState $ go (keySize key)
   where
 	go _ (MessageState { outputType = QuietOutput }) = nometer
-	go size (MessageState { outputType = NormalOutput, concurrentOutputEnabled = False }) = do
+	go Nothing (MessageState { outputType = NormalOutput }) = nometer
+	go (Just size) (MessageState { outputType = NormalOutput, concurrentOutputEnabled = False }) = do
 		showOutput
 		(progress, meter) <- mkmeter size
 		m <- liftIO $ rateLimitMeterUpdate 0.1 (Just size) $ \n -> do
@@ -44,7 +43,7 @@ metered othermeter key a = case keySize key of
 		r <- a (combinemeter m)
 		liftIO $ clearMeter stdout meter
 		return r
-	go size (MessageState { outputType = NormalOutput, concurrentOutputEnabled = True }) =
+	go (Just size) (MessageState { outputType = NormalOutput, concurrentOutputEnabled = True }) =
 #if WITH_CONCURRENTOUTPUT
 		withProgressRegion $ \r -> do
 			(progress, meter) <- mkmeter size
@@ -57,10 +56,10 @@ metered othermeter key a = case keySize key of
 		nometer
 #endif
 	go _ (MessageState { outputType = JSONOutput False }) = nometer
-	go size (MessageState { outputType = JSONOutput True }) = do
+	go msize (MessageState { outputType = JSONOutput True }) = do
 		buf <- withMessageState $ return . jsonBuffer
-		m <- liftIO $ rateLimitMeterUpdate 0.1 (Just size) $
-			JSON.progress buf size
+		m <- liftIO $ rateLimitMeterUpdate 0.1 msize $
+			JSON.progress buf msize
 		a (combinemeter m)
 
 	mkmeter size = do
