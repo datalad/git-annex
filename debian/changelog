@@ -1,3 +1,9 @@
+git-annex (6.20161012-1) unstable; urgency=medium
+
+  * Package 6.20161012-1
+
+ -- Richard Hartmann <richih@debian.org>  Tue, 25 Oct 2016 21:28:12 +0200
+
 git-annex (6.20161012) unstable; urgency=medium
 
   * Optimisations to time it takes git-annex to walk working tree and find
