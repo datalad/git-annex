@@ -1,0 +1,25 @@
+### Please describe the problem.
+I normally use two clients with the assistant (lets call them A and B) and they are usually online at different times.
+Sometimes, after deleting a file in A, I turn on the client in B and when rescanning, instead of deleting that same file from B, it adds it back to A.
+
+I can always delete the file again, but it's a bit annoying. Anyway, it's a lot better than data loss ;)
+
+Might be worthy to mention that the computer running client B is quite slow and has a slow HD. I have 4 git-annex repositories and when I turn on the computer the rescan can easily take up a couple of hours.
+
+
+### What steps will reproduce the problem?
+B -> is turned off
+
+A -> delete file
+
+B -> turn on and wait for rescan
+
+B -> readds the file instead of deleting it
+
+
+### What version of git-annex are you using? On what operating system?
+6.20160923 (Debian Sid)
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I've been using git-annex for years with 4 different repositories, 3 of them pretty big (> 50 GB) and I'm really happy! :)
