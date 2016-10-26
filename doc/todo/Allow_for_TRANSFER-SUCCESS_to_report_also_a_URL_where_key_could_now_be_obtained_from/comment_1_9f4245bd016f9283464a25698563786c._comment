@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-10-26T17:29:46Z"
+ content="""
+Well no, the filename passed to "TRANSFER STORE" is wherever the content
+of the file is, in most circumstances it will not be a file in the working
+tree.
+
+(And even if the filename is a worktree file in some case, the special
+remote needs to support storing multiple versions of a file. So trying to
+use the name used in the working tree on the special remote seems very
+problimatic.)
+
+In any case, the external special remote protocol already has
+`SETURLPRESENT` which can be used if a TRANSFER STORE makes a key be
+available at an url.
+"""]]
