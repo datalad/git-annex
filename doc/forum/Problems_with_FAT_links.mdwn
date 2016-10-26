@@ -1,0 +1,52 @@
+# The problem:
+
+I use a v5 indirect mode repository in GNU/Linux, and a v5 direct mode repository on an external FAT HDD (that, therefore, cannot use *regular* symlinks).
+The problem is that I am noticing some of those pseudo-symlinks creeping into my indirect mode repository (I'll be calling them *FAT links* for disambiguation, please let me know if they have a proper name [.map files?]).
+
+This gets weird, because my two repositories are sync'ed, but do not act as I would expect.
+
+## Example:
+
+Indirect repository has the following files:
+
+* A (real file)
+* B (symlink)
+* **C (FAT link)** <- trouble maker
+
+Direct repository has these:
+
+* A (FAT link)
+* B (real file)
+* C (real file)
+
+The direct repository seems to be working fine, and in both places files A and B work as expected. But the indirect repository ignores the FAT links. `git status` or `git-annex status` do not see them, nor does `git-annex find`, `git-annex info` or `git-annex whereis`. They all act as if those files were not there.
+
+I thought that maybe if I removed file C, and ran some `git-annex sync`, the repository on my HDD would notify its companion that it had a file called C, and the new correct symlink would be created now that there was no conflict with the file name. So I did a simple `rm C` and one `git-annex sync` on each repository. What happened was that file C got deleted, and I had to dive into the `git-annex unused` to get it back, as it was my only copy of it (I wish there was a way to see the filenames on that output, but I made it!).
+
+I also tried `git-annex fix` on one of these FAT links, but it appears to fall outside of its competences (or it simply does not see the file, like those other commands). `git-annex fsck` skips these files too, BTW.
+
+# Now what?
+
+In total I have several hundreds of files in this situation. Maybe there is some simple or proper way to convert these back into the real symlinks they ought to be. I don't have the time to go into scripting mode to *try* to fix this issue, so I try to gain some guidance from those who know more than I do.
+
+I don't know how these FAT links came about. I did have some problem [like these reported here](https://git-annex.branchable.com/forum/files_got_replaced_by_broken_symblinks__44___how_to_get_them_back__63__/). If I recall correctly, in a direct repository in a FAT filesystem, running `git-annex drop FILE && git-annex sync` would replace FILE by a FAT link, and then this error would propagate to the other indirect repository. However, this is not the problem I am experiencing, since the original files are fine.
+Where should I go from here?
+
+I just noticed that `git log` has something to say about these FAT files. Maybe it helps *someone* to trace the origin (I can't decipher git-annex's logs yet). For most files it says this:
+
+    Merge: 71b3d64 8d1afcf
+    Date:   Sun Mar 13 09:53:06 2016 +0000
+        Merge branch 'refs/heads/synced/master' into annex/direct/master
+
+    Date:   Sun Mar 13 09:51:48 2016 +0000
+        git-annex in stratus PC
+
+For two files, it says the following:
+
+    Date:   Tue Aug 9 15:51:32 2016 +0100
+        git-annex in stratus PC
+
+"stratus PC" refers to my indirect repository.
+
+Thank you for your time.
+-- Gus
