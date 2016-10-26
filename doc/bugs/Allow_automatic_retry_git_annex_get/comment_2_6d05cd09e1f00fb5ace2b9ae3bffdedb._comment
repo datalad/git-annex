@@ -1,0 +1,66 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-10-26T18:26:35Z"
+ content="""
+The most common way a network connection can stall like this is when
+moving to a different wifi network: the connection is open but
+no more data will be received. I suppose other kinds of network
+glitches could also lead to this kind of situation.
+
+ssh has some things, like ServerAliveInterval and TCPKeepAlive, 
+that it can use to detect such problems. You may find them useful.
+
+----
+
+As for the retrying once a stall is detected, some transfers use
+`forwardRetry` which will automatically retry as long as the failed try
+managed to send some data. But the get/move/copy commands currently use
+`noRetry`. I can't find any justification for not always using
+`forwardRetry`; I think that it was added for the assistant originally and
+the other stuff just never switched over.
+
+Only problem I can think of is, if there actually is a ssh password 
+prompt, it would prompt again on retry. But most people using git-annex
+with ssh have something in place to make ssh not prompt repeatedly for
+passwords.
+
+So, I've gone ahead and enabled `forwardRetry` for everything.
+
+----
+
+Occurs to me that git-annex could try to notice when a transfer is not
+progressing, by reusing the existing progress metering code.
+
+Since some remotes don't update the progress meter, this could
+only be used to detect stalls after the progress meter has been updated
+at least once. If the stall occurs earlier than that, it would not be able
+to be detected.
+
+It seems quite hard to come up with a good timeout value to detect a
+stalled connection. Often progress meters are updated after every small
+(eg 32kb) chunk transferred. But others might poll periodically, or might
+use a larger chunk size. It's even possible that some special remotes
+are looking at a percent output by some program, and only update the meter
+when the percent transferred changes -- in which case it could be many
+minutes in between each meter update when a large file is being
+transferred.
+
+If the timeout is too short, git-annex will stall in a new way, by
+constantly killing "stalled" connections before they can send enough data.
+
+----
+
+So it really seems better to fix the ssh connection to not stall, since
+that is not so heuristic a fix. Seems like git-annex could force
+ServerAliveInterval to be set, and perhaps lower ServerAliveCountMax from 3
+to 1. The ssh BatchMode setting sets the former to 300, so a stalled
+connection will time out after 15 minutes. But BatchMode also disables
+prompting, and git-annex should not disable that.
+
+Catch is, what if the user has configured ssh with some
+other ServerAliveInterval value? We don't want git-annex to override that.
+
+(git-annex does have a rudimentary .ssh/config parser, but it's not
+good enough to handle eg, "Host *.example.com ")
+"""]]

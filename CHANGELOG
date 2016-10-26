@@ -12,6 +12,8 @@ git-annex (6.20161013) UNRELEASED; urgency=medium
   * test: Deal with gpg-agent behavior change that broke the test suite.
   * Improve ssh socket cleanup code to skip over the cruft that
     NFS sometimes puts in a directory when a file is being deleted.
+  * If a transfer fails for some reason, but some data managed to be sent,
+    the transfer will be retried. (The assistant already did this.)
 
  -- Joey Hess <id@joeyh.name>  Mon, 17 Oct 2016 12:46:54 -0400
 
