@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2016-10-26T17:44:55Z"
+ content="""
+@scottgorlin bare git repositories cannot in general be detected when
+looking at a remote, so `git annex sync` picks a behavior that works
+whether a remote is a bare git repository or not.
+
+A bare repo and a rsync special remote should have pretty similar
+performance.
+"""]]
