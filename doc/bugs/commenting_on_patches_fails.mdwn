@@ -41,3 +41,8 @@ FTR, the original comment I was trying to make was basically "yes, please add th
 Lots of luck with git-annex.  It's extremely useful as both a distributed content store, and also as a podcatcher.  Thanks for writing it :-)
 
 Ewen
+
+> In this particular case, a .hs file got added to the wiki,
+> presumably by picking that extension when editing the file.
+> In any case, if there's a bug here, it's a bug in ikiwiki  not git-annex
+> so this is not the place to track it. [[done]] --[[Joey]]
