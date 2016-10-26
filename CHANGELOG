@@ -14,6 +14,10 @@ git-annex (6.20161013) UNRELEASED; urgency=medium
     NFS sometimes puts in a directory when a file is being deleted.
   * If a transfer fails for some reason, but some data managed to be sent,
     the transfer will be retried. (The assistant already did this.)
+  * Run ssh with ServerAliveInterval 60, so that stalled transfers will
+    be noticed within about 3 minutes.
+    (Any setting in your ~/.ssh/config or /etc/ssh/ssh_config 
+    overrides this.)
 
  -- Joey Hess <id@joeyh.name>  Mon, 17 Oct 2016 12:46:54 -0400
 

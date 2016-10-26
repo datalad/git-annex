@@ -6,12 +6,12 @@
 On the ssh config, one way to do it is to pass -F with a config
 file that git-annex generates. It could look like:
 
-	Include ~/.ssh/ssh.config
-	Include /etc/ssh/ssh.config
+	Include ~/.ssh/config
+	Include /etc/ssh/ssh_config
 	ServerAliveInterval 60
 
-Since ssh uses the first config setting it sees, if ~/.ssh/ssh.config
-or /etc/ssh/ssh.config set a ServerAliveInterval that one will be used,
+Since ssh uses the first config setting it sees, if `~/.ssh/config`
+or `/etc/ssh/ssh_config` set a ServerAliveInterval that one will be used,
 and otherwise the value git-annex sets will be used.
 
 But.. Ssh enables TCPKeepAlive by default. You'd think that would be enough
@@ -23,4 +23,6 @@ or a firewall does not support it.
 
 If the problem is that users are disabling TCPKeepAlive, then
 having git-annex enable ServerAliveInterval makes sense.
+
+Ok; implemented this.
 """]]
