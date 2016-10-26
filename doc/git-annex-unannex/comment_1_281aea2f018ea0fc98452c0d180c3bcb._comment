@@ -1,0 +1,62 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="This needs to commit first. Any alternative?"
+ date="2016-10-25T07:25:47Z"
+ content="""
+Hello and thank you for git-annex.
+
+## Context
+
+Every newbie needs to understand what steps are possible and what to do when a wrong step was made.
+
+
+The wording \"undo accidental add command\" suggested (to me at least) that it was intended to be issued just *right after* the accidental add command, *before any commit*.  
+
+## Steps to reproduce
+
+Right after `git annex add path`, do `git annex unannex path`.
+
+## Expected behavior
+
+`git annex unannex path` would undo the add.
+
+More precisely, it would walk the path given, find any symlink pointing to annexed data and not committed yet, and replace it with a plain file with the linked content, honoring `--fast` option if given.
+
+## Observed behavior
+
+    git-annex: Cannot proceed with uncommitted changes staged in the index. Recommend you: git commit
+
+If user follows this path, there will be two unnecessary commits: an add commit and an unannex commit.
+
+There may be reasons to prefer not to introduce those commits.  Granted, git allows to adjust history after the fact.  Is there a simpler solution?
+
+## Question, summarized
+
+Is there a command to just revert a \"add\", without introducing any commit?
+
+
+## Details
+
+Full test log below:
+
+```
+{
+cd /tmp/ ; mkdir testga ; cd testga ; 
+git init ; git annex init ; 
+echo \"test\" > test ; 
+git annex add test ; git annex unannex test
+}
+
+Initialized empty Git repository in /tmp/testga/.git/
+init  ok
+(recording state in git...)
+add test ok
+(recording state in git...)
+git-annex: Cannot proceed with uncommitted changes staged in the index. Recommend you: git commit
+```
+
+Thank you for any hint.
+
+"""]]
