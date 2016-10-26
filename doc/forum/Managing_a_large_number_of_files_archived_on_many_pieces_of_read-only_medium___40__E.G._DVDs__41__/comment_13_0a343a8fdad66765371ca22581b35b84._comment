@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="Not a priority in itself, still feels like a missing piece."
+ date="2016-10-26T12:29:50Z"
+ content="""
+> I have a large number of files that are accessed infrequently and stored off-line on DVD-Rs. I need to keep track of which files are on which disc so that when I want a file I can find it.
+> (...)
+> 4) Easily incorporate the current DVD-Rs into the new system
+
+This last item would make `git-annex` suitable to catalog existing WORM media.
+
+In the past I have used some programs but was never satisfied with their graphical-UI-first approach or closed format.  For example: gtktalog, cdcat, cdcollect, where is it, virtual volume view, gnome catalog, basenji.  Ref: https://alternativeto.net/software/cdcollect/?platform=linux . 
+
+I also used at some point a plain old `find|{stat;md5}|gzip > ~/catalogs/my_volume_id.gz` then `grep mystring ~/catalogs/*gz` which, at the end of the day, has an overall good cost/benefit ratio.
+
+IMHO git-annex has a sane foundation and the potential to do better than those tools.
+
+Technically this looks indeed similar to a web special remote, but needs to accommodate for arbitrary mount point and keep count of copies.
+
+To be honest, the DVD use case is not a priority for me at the moment, but it feels like a missing piece in an otherwise good puzzle.  As if handling this case nicely would actually benefit other, more modern use cases.
+
+"""]]
