@@ -136,11 +136,20 @@ prepSocket socketfile = do
 	liftIO $ createDirectoryIfMissing True $ parentDir socketfile
 	lockFileCached $ socket2lock socketfile
 
+{- Find ssh socket files.
+ -
+ - The check that the lock file exists makes only socket files
+ - that were set up by prepSocket be found. On some NFS systems,
+ - a deleted socket file may linger for a while under another filename;
+ - and this check makes such files be skipped since the corresponding lock
+ - file won't exist.
+ -}
 enumSocketFiles :: Annex [FilePath]
-enumSocketFiles = go =<< sshCacheDir
+enumSocketFiles = liftIO . go =<< sshCacheDir
   where
 	go Nothing = return []
-	go (Just dir) = liftIO $ filter (not . isLock)
+	go (Just dir) = filterM (doesFileExist . socket2lock)
+		=<< filter (not . isLock)
 		<$> catchDefaultIO [] (dirContents dir)
 
 {- Stop any unused ssh connection caching processes. -}
