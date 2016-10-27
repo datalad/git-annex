@@ -1,3 +1,9 @@
+git-annex (6.20161027-1) unstable; urgency=medium
+
+  * Package 6.20161027-1
+
+ -- Richard Hartmann <richih@debian.org>  Thu, 27 Oct 2016 21:53:55 +0200
+
 git-annex (6.20161027) unstable; urgency=medium
 
   * lock, smudge: Fix edge cases where data loss could occur in v6 mode
