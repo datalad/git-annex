@@ -212,6 +212,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "move" test_move
 	, testCase "copy" test_copy
 	, testCase "lock" test_lock
+	, testCase "lock (v6 --force)" test_lock_v6_force
 	, testCase "edit (no pre-commit)" test_edit
 	, testCase "edit (pre-commit)" test_edit_precommit
 	, testCase "partial commit" test_partial_commit
@@ -612,6 +613,23 @@ test_lock = intmpclonerepoInDirect $ do
 	assertEqual "content of modified file" c (changedcontent annexedfile)
 	r' <- git_annex "drop" [annexedfile]
 	not r' @? "drop wrongly succeeded with no known copy of modified file"
+
+-- Regression test: lock --force when work tree file
+-- was modified lost the (unmodified) annex object.
+-- (Only occurred when the keys database was out of sync.)
+test_lock_v6_force :: Assertion
+test_lock_v6_force = intmpclonerepoInDirect $ do
+	git_annex "upgrade" [] @? "upgrade failed"
+	whenM (annexeval Annex.Version.versionSupportsUnlockedPointers) $ do
+		git_annex "get" [annexedfile] @? "get of file failed"
+		git_annex "unlock" [annexedfile] @? "unlock failed in v6 mode"
+		annexeval $ do
+			dbdir <- Annex.fromRepo Annex.Locations.gitAnnexKeysDb
+			liftIO $ removeDirectoryRecursive dbdir
+		writeFile annexedfile "test_lock_v6_force content"
+		not <$> git_annex "lock" [annexedfile] @? "lock of modified file failed to fail in v6 mode"
+		git_annex "lock" ["--force", annexedfile] @? "lock --force of modified file failed in v6 mode"
+		annexed_present_locked annexedfile
 
 test_edit :: Assertion
 test_edit = test_edit' False

@@ -161,7 +161,7 @@ downloadFeed url
 performDownload :: ImportFeedOptions -> Cache -> ToDownload -> Annex Bool
 performDownload opts cache todownload = case location todownload of
 	Enclosure url -> checkknown url $
-		rundownload url (takeExtension url) $ \f -> do
+		rundownload url (takeWhile (/= '?') $ takeExtension url) $ \f -> do
 			r <- Remote.claimingUrl url
 			if Remote.uuid r == webUUID || rawOption opts
 				then do

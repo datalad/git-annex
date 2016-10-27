@@ -1,0 +1,48 @@
+### Please describe the problem.
+
+I was attempting to comment on this patch:
+
+<https://git-annex.branchable.com/todo/PATCH__58___drop_url_parameters_from_extension.hs/>
+
+but adding the comment fails with:
+
+`Error: failed to create directory /home/b-git-annex/source/doc/todo/PATCH__58___drop_url_parameters_from_extension.hs/: File exists`
+
+(this appears to be repeatable.)  At a guess there's actually a file there for the patch... which is why it can't make a directory.
+
+### What steps will reproduce the problem?
+
+1.  Go to <https://git-annex.branchable.com/todo/PATCH__58___drop_url_parameters_from_extension.hs/>
+
+2.  Log in
+
+3.  Click "Add comment"
+
+4.  Enter comment with subject/body
+
+5.  Try to save the comment
+
+
+### What version of git-annex are you using? On what operating system?
+
+N.A.
+
+
+### Please provide any additional information below.
+
+FTR, the original comment I was trying to make was basically "yes, please add this patch" -- but more verbosely:
+
+"""This would be very useful.  **libsyn** seem to have changed their podcast URLs over the last couple of weeks to *always* add a `?dest_id=...` suffix (and changed the historical URL of every single podcast on any feed on their service, the next time it is rebuilt, which has led to a few large sets of duplicate downloads and a bunch of manual cleanup to avoid large duplicate downloads on the ones I noticed in time).  For now I've been doing manual "git mv" as I notice new ones coming in (a few every week), but I'd really prefer it happened automatically."""
+
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Lots of luck with git-annex.  It's extremely useful as both a distributed content store, and also as a podcatcher.  Thanks for writing it :-)
+
+Ewen
+
+> In this particular case, a .hs file got added to the wiki,
+> presumably by picking that extension when editing the file.
+> In any case, if there's a bug here, it's a bug in ikiwiki  not git-annex
+> so this is not the place to track it. [[done]] --[[Joey]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/bf293be5f036c0b6a1ac26519c8b6b07bfe749b971329c5014e8d84b53579735"
+ subject="comment 2"
+ date="2016-10-24T13:00:56Z"
+ content="""
+the `--file`/`--subfile` syntax would be workable; i'd probably employ a dedicated script to either know the sanitization mapping of the downloading client or to do heuristics based on file sizes. (side note on sanitization mappings: at least transmission seems to map every sane name through the identity map).
+
+i'm worried though that adding the pre-downloaded files file-by-file will then make it harder for git-annex to do a verified check-in; if, for example, we have a two-file torrent, and add the first one, git-annex can't veriyf that file because the second half of its last chunk is missing. unless git-annex started a download of the last chunk, it couldn't be sure that the #1 .log.web line is valid, and would need to keep that in some unverified staging area a la \"./file1 could be ./two-part.torrent#1, but i couldn't check that yet\", and only commit that information when file2 is added.
+"""]]

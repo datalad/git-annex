@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-10-26T17:53:23Z"
+ content="""
+The behavior your comment describes is only the case with v5
+repoitories in indirect mode. With v5 direct mode repositories and
+with the newer v6 repository format, `git annex unannex`
+is able to safely handle files that have been added and not committed yet.
+"""]]

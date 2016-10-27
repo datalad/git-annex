@@ -56,7 +56,7 @@ performNew dest key = do
 				case r of
 					LinkAnnexOk -> return ()
 					LinkAnnexNoop -> return ()
-					_ -> error "unlock failed"
+					LinkAnnexFailed -> error "unlock failed"
 			, liftIO $ writePointerFile tmp key destmode
 			)
 	next $ cleanupNew dest key destmode

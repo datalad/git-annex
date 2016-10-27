@@ -1,0 +1,42 @@
+### Please describe the problem.
+
+I would like to make multiple copies of precious data and I would like these copies to run simultaneously to minimise the elapsed time taken.  Ideally, I would like to specify multiple `--to` options to `git annex copy`.  I have tried running multiple processes simultaneously but these start to fail with lock contention on `.git/config`.
+
+### What steps will reproduce the problem?
+
+Running four simultaneous `git annex copy --to=` commands.
+
+### What version of git-annex are you using? On what operating system?
+
+OS is debian jessie, using `git-annex-standalone` from NeuroDebian.
+
+```
+git-annex version: 6.20160923+gitgd1dabb3-1~ndall+1
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotif
+y XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi                                                         
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_51
+2 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL         
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 6
+supported repository versions: 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+operating system: linux x86_64
+```
+
+### Please provide any additional information below.
+
+What I have is a python script and its output which I can't imagine is that helpful, but if you want it I'll upload it.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Usng it regularly and like it - many thanks.  This is a wishlist item, not a bug, as far as I'm concerned.
+
+

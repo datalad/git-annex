@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="openmedi"
+ subject="comment 7"
+ date="2016-10-18T17:37:38Z"
+ content="""
+Not that I know of. I tried a whole bunch of things, like deleting remotes, killing processes trying to switch between repo versions, modes, playing around in config files etc. etc. Not all of them were smart ideas, I admit. At some point it worked and if I remember correctly I tried to delete a branch and then the problems started. But adjusted branches seems to me like a too advanced feature to use.
+
+Btw.: Skipping over these entries doesn't help for me. It still tries to repair the repo (which takes maybe 4 hours, including having to initiate a temporary repo).
+"""]]

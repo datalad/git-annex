@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="Dead project, or just working smoothly? Also, which hat color?"
+ date="2016-10-23T18:23:34Z"
+ content="""
+Q1: No commit on https://github.com/TobiasTheViking/flickrannex/commits/master since Jan 13, 2014. Is it still working?
+
+Q2: I'm not sure I get it correctly.  Is it to use Flickr *photo* storage so that you can store git-annex content that is actually *photos* to visible Flickr collections (on web site) and vice versa (a nice white-hat hack)? Or is it just a cuckoo's hack to stuff arbitrary data on Flickr's servers without any content (a grey-zone hack)?
+
+"""]]

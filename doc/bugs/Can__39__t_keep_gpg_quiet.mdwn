@@ -42,3 +42,5 @@ I still get the output, which I shouldn't@
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Mixed bag, works when it works, but I've had quite a few "unexplained" happenings. Perservering for now, hoping me reporting bugs will see things improve...
+
+> [[done]]; gcrypt.gpg-args is the answer. --[[Joey]] 

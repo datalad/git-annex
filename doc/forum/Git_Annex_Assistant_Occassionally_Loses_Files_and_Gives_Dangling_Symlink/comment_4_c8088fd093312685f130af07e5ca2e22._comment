@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="ryan@d4f0c2d3daacb5ec3a2945bca06f66decad4bfb5"
+ nickname="ryan"
+ avatar="http://cdn.libravatar.org/avatar/7732d2474bcd13998986a87a9b17273c"
+ subject="fsck filename"
+ date="2016-10-18T04:05:51Z"
+ content="""
+Something like SHA256E-s146706--ee3814f2a8c017d1a8c2af39124f107a8a663ed00a13757f6e328bd652ecba1b.txt in /.git/annex/objects/...
+
+I didn't take very good notes, but it seemed to have the same filename as everything else. I was able to find it by doing an ag (grep) search for a string I knew was in the file.
+"""]]

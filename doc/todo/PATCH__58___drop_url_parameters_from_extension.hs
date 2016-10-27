@@ -52,3 +52,5 @@ index 498d504..210aca0 100644
                         if Remote.uuid r == webUUID || rawOption opts
                                 then do
 
+> Hmm, didn't cleanly apply for some reason. And, `takeWhile (/= '?')` is a 
+> simpler way to do that. Thank you for the bug report and patch; [[done]] --[[Joey]]

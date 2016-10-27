@@ -88,9 +88,10 @@ docs: mans
 	LC_ALL=C TZ=UTC $(IKIWIKI) doc html -v --wikiname git-annex \
 		--plugin=goodstuff \
 		--no-usedirs --disable-plugin=openid --plugin=sidebar \
-		--underlaydir=/dev/null --set deterministic=1 \
+		--plugin theme --set theme=actiontabs --set deterministic=1 \
 		--disable-plugin=shortcut --disable-plugin=smiley \
 		--plugin=comments --set comments_pagespec="*" \
+		--exclude='ikiwiki/*' \
 		--exclude='news/.*' --exclude='design/assistant/blog/*' \
 		--exclude='bugs/*' --exclude='todo/*' --exclude='forum/*' \
 		--exclude='users/*' --exclude='devblog/*' --exclude='thanks'

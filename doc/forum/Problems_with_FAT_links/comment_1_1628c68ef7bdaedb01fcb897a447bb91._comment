@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-10-26T18:18:57Z"
+ content="""
+I don't know what you mean when you say "FAT link". Do you mean it's a
+regular file that contains what looks like the pointer of a symlink?
+"""]]

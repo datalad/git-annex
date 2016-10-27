@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="Lower-case extension backends: +1"
+ date="2016-10-22T17:55:13Z"
+ content="""
+> SHA256e
+> I'd really like to have a SHA256e backend -- same as SHA256E but making sure that extensions of the files in .git/annex are converted to lower case. I normally try to convert filenames from cameras etc to lower case, but not all people that I share annex with do so consistently. In my use case, I need to be able to find duplicates among files and .jpg vs .JPG throws git annex dedup off. Otherwise E backends are superior to non-E for me. Thanks, Michael.
+
+Hello,
+
+TL;DR: *I second Michael's wish for hashing backends that aligns extensions to lowercase.*
+
+## Context, files with same content, extension have different case
+
+I realized a moment ago that git-annex basically automatically deduplicates with file granularity, which is very nice... *unless duplicates have varying case*, which does happen.  For some cameras, if you download files through a cable you get one file name with one case, if you read the card directly with a card reader you get another case (and another filename, by the way).  
+
+In invite anyone interested to drop a line here.
+
+## Workaround
+
+I understand I can align case after-the-fact with a bash shell command like below. Beware: man page of `rename` says there exist other versions that don't check for destination file, so the line below in some specific case (two files with same name, different content, file name only differs in case extension) might cause you to lose some information.  Or perhaps other cases.  Make sure you know what you do, I'm not responsible.
+
+```
+for EXT in aac amr arw asf avi bup crw ctg dsc dv jpg lrv m4a m4v mov mp3 mp4 mpe mpg mrk ndf nef njb ogg pdf png pnm ppm ps psd thm tif tiff txt ufraw wav xcf xcfbz2 xmp
+do find . -iname \"*.${EXT}\" -print0 | xargs -0 rename -v \"s/${EXT}/${EXT,,}/i\" ; done
+```
+
+If you prefer to align to upper-case, replace `,,` with `^^`.  This is bash syntax.
+
+## Please consider `SHA256e` backend (and others).
+
+Anyway the shell command above is a workaround.  A case-insensitive hashing backend seems a natural thing to do.  It would bring the best of both worlds: deduplicate efficiently while not confusing programs that depend on symlink target having a particular extension.
+
+"""]]

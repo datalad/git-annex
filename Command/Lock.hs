@@ -45,27 +45,27 @@ startNew file key = ifM (isJust <$> isAnnexLink file)
 	)
   where
 	go (Just key')
-		| key' == key = cont True
+		| key' == key = cont
 		| otherwise = errorModified
 	go Nothing = 
 		ifM (isUnmodified key file) 
-			( cont False
+			( cont
 			, ifM (Annex.getState Annex.force)
-				( cont True
+				( cont
 				, errorModified
 				)
 			)
-	cont = next . performNew file key
+	cont = next $ performNew file key
 
-performNew :: FilePath -> Key -> Bool -> CommandPerform
-performNew file key filemodified = do
+performNew :: FilePath -> Key -> CommandPerform
+performNew file key = do
 	lockdown =<< calcRepo (gitAnnexLocation key)
 	addLink file key
 		=<< withTSDelta (liftIO . genInodeCache file)
 	next $ cleanupNew file key
   where
 	lockdown obj = do
-		ifM (catchBoolIO $ sameInodeCache obj =<< Database.Keys.getInodeCaches key)
+		ifM (isUnmodified key obj)
 			( breakhardlink obj
 			, repopulate obj
 			)
@@ -83,20 +83,18 @@ performNew file key filemodified = do
 			Database.Keys.storeInodeCaches key [obj]
 
 	-- Try to repopulate obj from an unmodified associated file.
-	repopulate obj
-		| filemodified = modifyContent obj $ do
-			g <- Annex.gitRepo
-			fs <- map (`fromTopFilePath` g)
-				<$> Database.Keys.getAssociatedFiles key
-			mfile <- firstM (isUnmodified key) fs
-			liftIO $ nukeFile obj
-			case mfile of
-				Just unmodified ->
-					unlessM (checkedCopyFile key unmodified obj Nothing)
-						lostcontent
-				Nothing -> lostcontent
-		| otherwise = modifyContent obj $ 
-			liftIO $ renameFile file obj
+	repopulate obj = modifyContent obj $ do
+		g <- Annex.gitRepo
+		fs <- map (`fromTopFilePath` g)
+			<$> Database.Keys.getAssociatedFiles key
+		mfile <- firstM (isUnmodified key) fs
+		liftIO $ nukeFile obj
+		case mfile of
+			Just unmodified ->
+				unlessM (checkedCopyFile key unmodified obj Nothing)
+					lostcontent
+			Nothing -> lostcontent
+
 	lostcontent = logStatus key InfoMissing
 
 cleanupNew :: FilePath -> Key -> CommandCleanup

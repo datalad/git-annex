@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ avatar="http://cdn.libravatar.org/avatar/8122123b4c2bc77187e32d7e025f7d445d7a08de1ba532237876a31159ac01da"
+ subject="how to get ahold of the filename?"
+ date="2016-10-27T10:10:24Z"
+ content="""
+SETURLPRESENT -- sounds like could be used indeed, but
+
+- *Note that this does not make git-annex think that the url is present on the web special remote.* -- so does it mean that this git/annex repo will not be able to download from that URL (which could be just a simple public http:// url) without having this special remote available?
+- *The readonly=true parameter makes git-annex download content from the urls recorded earlier by SETURLPRESENT.*  -- so otherwise URL would not be used?  a bit confused
+
+**\"remote needs to support storing multiple versions of a file\"**
+
+SURE (e.g. as I have described before)
+
+**\"in most circumstances it will not be a file in the working tree\"**
+
+could then there be a reasonable (scalable, via git annex interface) way to discover the (original) path(s) within repository which was given to \"git add PATH\"?
+
+Once again -- the idea is to make some special remotes useful on their own without relying on having an annex and original git/annex repository to associate those with specific files.
+
+Related:
+I see that there is now also SETURIPRESENT.  Is there difference how annex handles URIs in comparison to URLs? in an example which I saw with ipfs: URI.  it feels that those are still URLs as prescribing \"how\" content should be retrieved (via ipfs). We have used similarly addurl command to register our urls for content from archives (e.g. dl+archive:MD5E-s2416581890--662e0713d0ce42bcdbadb8251b893b8a.tgz#path=ds001/sub-01/anat/sub-01_T1w.nii.gz)
+"""]]

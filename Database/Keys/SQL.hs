@@ -68,6 +68,18 @@ addAssociatedFile ik f = queueDb $ do
   where
 	af = toSFilePath (getTopFilePath f)
 
+-- Does not remove any old association for a file, but less expensive
+-- than addAssociatedFile. Calling dropAllAssociatedFiles first and then
+-- this is an efficient way to update all associated files.
+addAssociatedFileFast :: IKey -> TopFilePath -> WriteHandle -> IO ()
+addAssociatedFileFast ik f = queueDb $ void $ insertUnique $ Associated ik af
+  where
+	af = toSFilePath (getTopFilePath f)
+
+dropAllAssociatedFiles :: WriteHandle -> IO ()
+dropAllAssociatedFiles = queueDb $
+	delete $ from $ \(_r :: SqlExpr (Entity Associated)) -> return ()
+
 {- Note that the files returned were once associated with the key, but
  - some of them may not be any longer. -}
 getAssociatedFiles :: IKey -> ReadHandle -> IO [TopFilePath]

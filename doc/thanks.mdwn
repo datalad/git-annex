@@ -4,7 +4,8 @@ you individually, but until I meet all 1500 of you, this page will have to
 do. You have my most sincere thanks. --[[Joey]]
 
 You can support my git-annex development
-[on Patreon](https://www.patreon.com/joeyh).
+[on Patreon](https://www.patreon.com/joeyh) or
+[other ways](https://joeyh.name/thanks/)
 
 (If I got your name wrong, or you don't want it publically posted here,
 email <id@joeyh.name>.)

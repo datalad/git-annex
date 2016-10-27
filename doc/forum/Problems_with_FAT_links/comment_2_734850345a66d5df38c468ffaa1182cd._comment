@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="Gus"
+ avatar="http://cdn.libravatar.org/avatar/665626c67ab3ee7e842183f6f659e120"
+ subject="Yes"
+ date="2016-10-27T10:28:23Z"
+ content="""
+Exactly, the files that perform the role of symlinks on filsystems that do not support them adequately.
+The files that have only things like
+
+    ../../.git/annex/objects/jF/fq/SHA256E-s496058976--a687727e1b0e7cab74fa160f2dc17d0fbbffcf44939fc44e59f803de21617e19.avi/SHA256E-s496058976--a687727e1b0e7cab74fa160f2dc17d0fbbffcf44939fc44e59f803de21617e19.iso
+
+I do not know the proper name for them. Also, the git-annex standard information:
+
+    git-annex version: 6.20160613-g1e4e6f4
+    build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+    local repository version: 5
+    supported repository versions: 5 6
+    upgrade supported from repository versions: 0 1 2 3 4 5
+    operating system: linux x86_64
+
+Thank you very much for all your work and dedication to git-annex.
+
+"""]]

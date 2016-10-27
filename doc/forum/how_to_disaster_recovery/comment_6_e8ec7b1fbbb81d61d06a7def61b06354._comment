@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2016-10-18T15:27:05Z"
+ content="""
+Another user reported the same problem. Their repo indeed had a tree object
+that contained two items with the same name. In this case, two trees,
+with different contents.
+
+	040000 tree cd854aba649cee8855ec72579f4c98100471f7cf    Dokument
+	040000 tree 1ae499997746c8e976cf02edc2276532978dafc5    Dokument
+
+This user had been using adjusted branches, which would be my lead suspect.
+
+Original reporter, did you use git-annex's adjusted branches feature.
+"""]]

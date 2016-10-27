@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-10-17T19:39:21Z"
+ content="""
+You say you can find the file in .git/annex/objects. Have you tried
+running `git annex fsck` on the file? If it can also find the file
+there, it should fix the working tree up to have a copy of it.
+
+Direct mode is known to have the odd bug in this area.
+"""]]

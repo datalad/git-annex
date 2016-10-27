@@ -33,6 +33,7 @@ import qualified Git.Url
 import Config
 import Annex.Path
 import Utility.Env
+import Utility.Tmp
 import Types.CleanupActions
 import Git.Env
 #ifndef mingw32_HOST_OS
@@ -49,13 +50,33 @@ sshOptions (host, port) gc opts = go =<< sshCachingInfo (host, port)
 	go (Just socketfile, params) = do
 		prepSocket socketfile
 		ret params
-	ret ps = return $ concat
-		[ ps
-		, map Param (remoteAnnexSshOptions gc)
-		, opts
-		, portParams port
-		, [Param "-T"]
-		]
+	ret ps = do
+		overideconfigfile <- fromRepo gitAnnexSshConfig
+		-- We assume that the file content does not change.
+		-- If it did, a more expensive test would be needed.
+		liftIO $ unlessM (doesFileExist overideconfigfile) $
+			viaTmp writeFile overideconfigfile $ unlines
+				-- ssh expands "~"
+				[ "Include ~/.ssh/config"
+				-- ssh will silently skip the file
+				-- if it does not exist
+				, "Include /etc/ssh/ssh_config"
+				-- Everything below this point is only
+				-- used if there's no setting for it in
+				-- the above files.
+				--
+				-- Make sure that ssh detects stalled
+				-- connections.
+				, "ServerAliveInterval 60"
+				]
+		return $ concat
+			[ ps
+			, [Param "-F", File overideconfigfile]
+			, map Param (remoteAnnexSshOptions gc)
+			, opts
+			, portParams port
+			, [Param "-T"]
+			]
 
 {- Returns a filename to use for a ssh connection caching socket, and
  - parameters to enable ssh connection caching. -}
@@ -136,11 +157,20 @@ prepSocket socketfile = do
 	liftIO $ createDirectoryIfMissing True $ parentDir socketfile
 	lockFileCached $ socket2lock socketfile
 
+{- Find ssh socket files.
+ -
+ - The check that the lock file exists makes only socket files
+ - that were set up by prepSocket be found. On some NFS systems,
+ - a deleted socket file may linger for a while under another filename;
+ - and this check makes such files be skipped since the corresponding lock
+ - file won't exist.
+ -}
 enumSocketFiles :: Annex [FilePath]
-enumSocketFiles = go =<< sshCacheDir
+enumSocketFiles = liftIO . go =<< sshCacheDir
   where
 	go Nothing = return []
-	go (Just dir) = liftIO $ filter (not . isLock)
+	go (Just dir) = filterM (doesFileExist . socket2lock)
+		=<< filter (not . isLock)
 		<$> catchDefaultIO [] (dirContents dir)
 
 {- Stop any unused ssh connection caching processes. -}

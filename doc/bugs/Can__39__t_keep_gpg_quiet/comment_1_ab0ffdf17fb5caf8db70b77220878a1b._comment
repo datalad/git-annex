@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-10-17T20:32:02Z"
+ content="""
+The gnupg-options and gnupg-decrypt-options only apply when git-annex
+is running gpg, not when git-annex is running git push which is running
+git-remote-gcrypt which is running gpg.
+
+I don't think there's any way to pass gpg options through that chain of
+programs. Even if there is, I don't know that it would make sense to use
+the git-annex configuration, which normally is used when git-annex is using
+gpg in symmetric encryption mode, for git-remote-gcrypt, which is using gpg
+in pubic key encryption mode.
+
+I think you should just set gcrypt.gpg-args to whatever options are
+appropriate for its use of gpg.
+"""]]

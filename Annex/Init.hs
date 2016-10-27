@@ -31,6 +31,7 @@ import Annex.Version
 import Annex.Difference
 import Annex.UUID
 import Annex.Link
+import Annex.WorkTree
 import Config
 import Annex.Direct
 import Annex.AdjustedBranch
@@ -39,7 +40,6 @@ import Annex.Hook
 import Annex.InodeSentinal
 import Upgrade
 import Annex.Perms
-import qualified Database.Keys
 import Utility.UserInfo
 #ifndef mingw32_HOST_OS
 import Utility.FileMode
@@ -90,7 +90,7 @@ initialize' mversion = do
 		setVersion (fromMaybe defaultVersion mversion)
 	whenM versionSupportsUnlockedPointers $ do
 		configureSmudgeFilter
-		Database.Keys.scanAssociatedFiles
+		scanUnlockedFiles
 	v <- checkAdjustedClone
 	case v of
 		NeedUpgradeForAdjustedClone -> 

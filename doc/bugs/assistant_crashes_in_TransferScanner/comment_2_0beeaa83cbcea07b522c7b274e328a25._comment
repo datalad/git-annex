@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-10-26T18:21:13Z"
+ content="""
+This kind of thing tends to be due to a problem with locales, or a
+filename in the repository that can't be represented under the current
+locale.
+
+Just so happens that the version you upgraded to changed how the standalone
+tarball for linux handles locales. Did you install using that tarball?
+
+What does `locale` say?
+"""]]
