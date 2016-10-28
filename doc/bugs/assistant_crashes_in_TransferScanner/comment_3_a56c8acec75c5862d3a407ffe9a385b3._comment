@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="johannes@12f1850a57e13cc234b5ebf88a5d3ac68915a6c2"
+ nickname="johannes"
+ avatar="http://cdn.libravatar.org/avatar/7acaf4a71b0b93cc419195f58f4cd54c"
+ subject="comment 3"
+ date="2016-10-28T10:17:19Z"
+ content="""
+Yes, I installed the standalone tarball.
+
+My locale is set to en_US.utf8, here is what `locale` tells me:
+
+	LANG=en_US.utf8
+	LC_CTYPE=\"en_US.utf8\"
+	LC_NUMERIC=\"en_US.utf8\"
+	LC_TIME=\"en_US.utf8\"
+	LC_COLLATE=\"en_US.utf8\"
+	LC_MONETARY=\"en_US.utf8\"
+	LC_MESSAGES=\"en_US.utf8\"
+	LC_PAPER=\"en_US.utf8\"
+	LC_NAME=\"en_US.utf8\"
+	LC_ADDRESS=\"en_US.utf8\"
+	LC_TELEPHONE=\"en_US.utf8\"
+	LC_MEASUREMENT=\"en_US.utf8\"
+	LC_IDENTIFICATION=\"en_US.utf8\"
+	LC_ALL=
+"""]]
