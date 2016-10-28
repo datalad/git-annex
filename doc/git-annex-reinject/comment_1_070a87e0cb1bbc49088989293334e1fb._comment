@@ -1,0 +1,48 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="Like it's written: annex only"
+ date="2016-10-28T20:40:54Z"
+ content="""
+# Summary
+
+Just to make it explicit: `--known` mode operates on the *annex only*.  If trying to reinject a file that is stored in the regular git part of the repository, and therefore practically known, `git-annex-reinject` will consider it *not known*.
+
+# Context
+
+I'm currently using `git-annex reinject --known` to tidy a pre-git-annex storage.  It gets progressively near-emptied of big files, letting unknown files stand out in the deserted directory hierarchy.
+
+Yet only actually annexed files will get removed.
+
+In my case big files are pictures (NEF, JPG), and regular git files are `xmp` metadata files used by http://darktable.org/ to store processing parameters.  So, all xmp files linger there, whether they were committed in git or not, needing separate handling.
+
+# How to detect if a file is known to regular git repository (not annex).
+
+There must be a number of ways.  I just hacked one:
+
+```
+HASH=$( git hash-object \"$FILEPATH\" )
+if $( git cat-file -e \"$HASH\" )
+then
+        echo \"Known $FILEPATH\"
+else
+        echo \"Unknown $FILEPATH\"
+fi
+```
+
+This can be wrapped into a helper function and used in a `find | ...` one-liner to remove any file already known to git.
+
+## Caveats
+
+`git cat-file` will probably consider known any file actually stored within git objects, even if on an deleted branch or whatever situations where it is not reachable.  As a result, removing files based on this test may well lose information, not immediately, but on some subsequent `git gc`.
+
+Such caveat is not surprising, as regular git content and annexed content have differing \"scopes\"/lifetime.
+
+# Question
+
+Joey, is there an alternative to `git-annex-reinject --known` that considers regular git content, too?  Perhaps it's a pure git issue and therefore not something inside git-annex job?
+
+A quick test of `git-annex-import --clean-duplicates` shows similar behavior.
+
+"""]]
