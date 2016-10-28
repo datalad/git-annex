@@ -1,0 +1,7 @@
+Unlock is quite heavy in terms of I/O and thus waiting time, so we (in datalad) probably should provide also a progress bar indicator.
+
+1. how could I obtain a list of files which would be unlocked given a set of paths?
+
+2. could there be a --json mode of output (consistent with add --json etc)?
+
+[[!meta author=yoh]]
