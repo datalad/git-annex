@@ -1,0 +1,1 @@
+I've found that when a file is unlocked in a v6 repo, syncing with a v5 repo causes the file in the v5 repo to be a symlink-replacement file (the file contents are, e.g., /annex/objects/SHA256E-s10--114811b0b8998cb9853a5379598021410feddf69bb2ee7b7145d052a7e9b5d45). I'm wondering if this is a bug, or just something that users should be aware of.
