@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="aranea@650e41fad422f2a4d6f36ca1f20d41b7c0f18ab7"
+ nickname="aranea"
+ avatar="http://cdn.libravatar.org/avatar/8574023ce00757ca95b1708b7306602a"
+ subject="comment 1"
+ date="2016-10-31T22:31:44Z"
+ content="""
+According to git bisect, this bug has been introduced a month ago by commit 34530e59.
+"""]]
