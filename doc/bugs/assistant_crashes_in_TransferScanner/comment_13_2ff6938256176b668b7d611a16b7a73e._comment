@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2016-10-31T21:26:52Z"
+ content="""
+It's getFileNumCopies crashing, where the unlocked worktree 
+filename contains some non-ascii character.
+"""]]
