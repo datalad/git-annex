@@ -2,15 +2,25 @@ I would like to get available the access to the annex of my repository as remote
 The idea is not to have a redundant copy of the annex but to add an other option to connect to the annex.
 
 If I create an rsync remote I obtain something like
-	00000000-0000-0000-0000-000000000001 -- web
- 	00000000-0000-0000-0000-000000000002 -- bittorrent
+
+	00000000-0000-0000-0000-000000000001 -- web<br/>
+
+ 	00000000-0000-0000-0000-000000000002 -- bit torrent
+
  	044cf7ac-d2b1-4f84-8bbc-747ac4659c8f -- rsync
+
  	a0e14705-ef07-4b8a-9a00-8724fd936a91 -- origin /my-repo/.git/annex
+
 The remote "rsync" points to the same location of the annex /my-repo/.git/annex
+
 If I add a file
+
    git annex add file1
+
 and then I check where it is available
+
    git annex whereis file 1
+
 I obtain that it is not available on 'rsync'
 
 Therefore if someone has a copy of the repository, without access to the origin annex,
