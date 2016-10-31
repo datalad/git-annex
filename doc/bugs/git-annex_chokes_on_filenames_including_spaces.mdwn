@@ -24,3 +24,6 @@ add foo bar git-annex: unknown response from git cat-file ("HEAD:./foo bar missi
 CallStack (from HasCallStack):
   error, called at ./Git/CatFile.hs:102:28 in main:Git.CatFile
 """]]
+
+> What an embarrasing reversion. [[fixed|done]] and I'll push a release for
+> it right away. --[[Joey]]

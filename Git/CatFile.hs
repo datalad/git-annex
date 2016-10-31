@@ -109,17 +109,18 @@ query hdl object receive = CoProcess.query hdl send receive
 	send to = hPutStrLn to (fromRef object)
 
 parseResp :: Ref -> String -> Maybe ParsedResp
-parseResp object l = case words l of
-	[sha, objtype, size]
-		| length sha == shaSize ->
-			case (readObjectType objtype, reads size) of
-				(Just t, [(bytes, "")]) -> 
-					Just $ ParsedResp (Ref sha) bytes t
-				_ -> Nothing
-		| otherwise -> Nothing
-	_
-		| l == fromRef object ++ " missing" -> Just DNE
-		| otherwise -> Nothing
+parseResp object l 
+	| " missing" `isSuffixOf` l -- less expensive than full check
+		&& l == fromRef object ++ " missing" = Just DNE
+	| otherwise = case words l of
+		[sha, objtype, size]
+			| length sha == shaSize ->
+				case (readObjectType objtype, reads size) of
+					(Just t, [(bytes, "")]) -> 
+						Just $ ParsedResp (Ref sha) bytes t
+					_ -> Nothing
+			| otherwise -> Nothing
+		_ -> Nothing
 
 {- Gets a list of files and directories in a tree. (Not recursive.) -}
 catTree :: CatFileHandle -> Ref -> IO [(FilePath, FileMode)]
