@@ -1,3 +1,10 @@
+git-annex (6.20161028) UNRELEASED; urgency=medium
+
+  * Assistant, repair: Fix ignoring of git fsck errors due to
+    duplicate file entries in tree objects.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 31 Oct 2016 13:59:47 -0400
+
 git-annex (6.20161027) unstable; urgency=medium
 
   * lock, smudge: Fix edge cases where data loss could occur in v6 mode
