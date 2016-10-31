@@ -144,8 +144,7 @@ linuxstandalone-nobuild: Build/Standalone Build/LinuxMkLibs
 	install -d "$(LINUXSTANDALONE_DEST)/templates"
 	install -d "$(LINUXSTANDALONE_DEST)/magic"
 	cp /usr/share/file/magic.mgc "$(LINUXSTANDALONE_DEST)/magic"
-	install -d "$(LINUXSTANDALONE_DEST)/i18n"
-	cp /usr/share/i18n -a "$(LINUXSTANDALONE_DEST)/i18n"
+	cp /usr/share/i18n -a "$(LINUXSTANDALONE_DEST)"
 	
 	./Build/LinuxMkLibs "$(LINUXSTANDALONE_DEST)"
 	

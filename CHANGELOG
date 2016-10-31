@@ -2,6 +2,7 @@ git-annex (6.20161028) UNRELEASED; urgency=medium
 
   * Assistant, repair: Fix ignoring of git fsck errors due to
     duplicate file entries in tree objects.
+  * Linux standalone: Fix location of locale files in the bundle.
 
  -- Joey Hess <id@joeyh.name>  Mon, 31 Oct 2016 13:59:47 -0400
 
