@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-10-31T20:10:22Z"
+ content="""
+What real filenames? A git-annex special remote is a key/value store, where
+any key can correspond to zero or any number of filenames in the working
+tree. 
+
+What you're doing with S3 is using it to publish some files over the web.
+Fine. That's not a S3 special remote, so don't use it that way, just `git
+annex addurl` the files from S3.
+"""]]
