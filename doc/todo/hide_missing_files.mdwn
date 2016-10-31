@@ -23,3 +23,5 @@ Thanks for any advice! --[[anarcat]]
 > > I ended up creating a new special remote for this, documented in
 > > [[forum/syncing_music_to_my_android_device]]. It would be much 
 > > cleaner, of course, if adjusted branches could do this. --[[anarcat]]
+
+Other discussions: [[forum/How_to_hide_broken_symlinks]], where the idea of using views to hide missing files is introduced and [[forum/How_do_I_hide_files_not_present_in_the_local_annex__63__]], where it is said that placeholders shouldn't be used in direct mode... --[[anarcat]]
