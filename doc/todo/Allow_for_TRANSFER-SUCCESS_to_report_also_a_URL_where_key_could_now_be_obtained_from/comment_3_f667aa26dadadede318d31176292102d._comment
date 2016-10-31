@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""SETURLPRESENT"""
+ date="2016-10-31T18:51:07Z"
+ content="""
+git-annex does not keep track of which urls belong to which remote.
+Urls are, after all, Universal; it shoudn't matter which remote
+set an url.
+
+So, if `SETURLPRESENT` was used, and if git-annex thinks that the web
+special remote is recorded as having the content, it will try to download
+from that url, as well as any other urls that might be set.
+
+But, `SETURLPRESENT` does not make it think that the web special remote
+has the content. So, if the special remote that git-annex does think has to
+content is not enabled, `git annex get` won't try the web special remote.
+
+So, what you can do is run `git annex setpresentkey $key 00000000-0000-0000-0000-000000000001`
+to make it think  the web special remote has the url after `SETURLPRESENT`.
+Then it'll be the same as if `addurl` had been used; it will download from
+the web.
+
+(There's also a way to enable a external special remote in readonly mode.
+In this mode, the special remote program does not have to be in PATH, and
+when git-annex wants to get content from the remote it will download
+content from any urls.)
+
+(The difference with `SETURIPRESENT` is that it's assumed the URI cannot
+be downloaded via HTTP/FTP. So, while `git annex whereis` displays
+URIs, git-annex won't try to download them itself.)
+"""]]

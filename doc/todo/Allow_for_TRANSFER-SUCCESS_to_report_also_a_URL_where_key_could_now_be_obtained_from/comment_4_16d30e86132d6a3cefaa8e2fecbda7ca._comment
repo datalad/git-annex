@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""associated files"""
+ date="2016-10-31T19:12:56Z"
+ content="""
+git-annex keeps track of the AssociatedFile, which (when available) is 
+the worktree file corresponding to the Key that's being operated on.
+
+This information is not exposed in the external special remote interface.
+I'm worried that, if it were, people would try to do stuff that
+just can't work, like
+<http://git-annex.branchable.com/todo/dumb__44___unsafe__44___human-readable_backend/>
+
+Worktree files can be renamed or deleted or copied at any time and can have
+multiple versions, and any special remote that used this information to try
+to create something that resembles the worktree would have massive
+problems.
+
+I am having a hard time thinking of any use that an external special remote
+could make of the information that would not be a mistake.
+"""]]
