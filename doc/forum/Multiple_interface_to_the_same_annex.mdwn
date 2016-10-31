@@ -15,11 +15,11 @@ The remote "rsync" points to the same location of the annex /my-repo/.git/annex
 
 If I add a file
 
-   git annex add file1
+ 	git annex add file1
 
 and then I check where it is available
 
-   git annex whereis file 1
+ 	git annex whereis file 1
 
 I obtain that it is not available on 'rsync'
 
