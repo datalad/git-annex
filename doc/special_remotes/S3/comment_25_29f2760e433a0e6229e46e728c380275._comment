@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 25"""
+ date="2016-11-01T18:30:31Z"
+ content="""
+@justin.lebar I think you can turn on embedcreds when using `git annex
+enableremote`.
+"""]]
