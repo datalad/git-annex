@@ -1,3 +1,11 @@
+git-annex (6.20161032) UNRELEASED; urgency=medium
+
+  * Restarting a crashing git process could result in filename encoding
+    issues when not in a unicode locale, as the restarted processes's
+    handles were not read in raw mode.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 01 Nov 2016 14:02:06 -0400
+
 git-annex (6.20161031) unstable; urgency=medium
 
   * Assistant, repair: Fix ignoring of git fsck errors due to

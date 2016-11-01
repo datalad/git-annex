@@ -37,7 +37,7 @@ type CheckIgnoreHandle = CoProcess.CoProcessHandle
  -}
 checkIgnoreStart :: Repo -> IO (Maybe CheckIgnoreHandle)
 checkIgnoreStart repo = ifM supportedGitVersion
-	( Just <$> (CoProcess.rawMode =<< gitCoProcessStart True params repo')
+	( Just <$> gitCoProcessStart True params repo'
 	, return Nothing
 	)
   where
