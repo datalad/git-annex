@@ -31,4 +31,4 @@ TransferScanner crashed: fd:47: commitBuffer: invalid argument (invalid characte
 [2016-10-18 11:50:15.016862] TransferScanner: warning TransferScanner crashed: fd:47: commitBuffer: invalid argument (invalid character)
 """]]
 
-
+[[!meta title="v6 repository problems with filename encoding when not in unicode locale"]]
