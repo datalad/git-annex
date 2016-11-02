@@ -1,0 +1,51 @@
+### Please describe the problem.
+The git annex init command is failed.
+Following this command the created file content in .git/annex/ssh.config contains these lines
+
+Include ~/.ssh/config
+Include /etc/ssh/ssh_config
+ServerAliveInterval 60
+
+The two first Include directive seems to be invalid for openssh, then it seems the ssh command is failed and it is analysed as the remote does not git-annex-shell installed.
+Commenting these first 2 lines seems to fix the issue and then  regular git-annex commands can then be issued.
+
+### What steps will reproduce the problem?
+git annex init
+
+
+### What version of git-annex are you using? On what operating system?
+Here is the output of git annex version
+
+[[!format sh """
+git-annex version: 6.20161031-g0a58e94
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV FsEvents XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository versions: 3 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+operating system: darwin x86_64
+
+"""]]
+
+It is run on os X el capitan
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes sure, it's a great software !
+Basically commenting the first 2 lines seems to fix the issue.
+I would just like to be sure nothing else is hidden.
+
+
+
+
