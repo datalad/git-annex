@@ -1,0 +1,13 @@
+The description for the *pathdepth* option for *addurl* doesn't match its behaviour (emphasis mine).
+
+> Rather than basing the **filename** on the whole url, this causes a **path** to be constructed, starting at the specified depth within the path of the url.
+> 
+> For example, adding the url http://www.example.com/dir/subdir/bigfile with --pathdepth=1 will use "**dir/subdir/bigfile**", while --pathdepth=3 will use "bigfile".
+
+This isn't how it behaves. It would be more accurate as (emphasis on changes):
+
+> Rather than basing the filename on the whole url, this causes a **filename** to be constructed, starting at the specified depth within the path of the url.
+> 
+> For example, adding the url http://www.example.com/dir/subdir/bigfile with --pathdepth=1 will use "**dir_subdir_bigfile**", while --pathdepth=3 will use "bigfile".
+
+For what I am doing (adding a directory tree with addurl and file:// URLs), I'd actually like the behaviour described (to recreate the tree), but I'm not sure which one was the *intended* behaviour..
