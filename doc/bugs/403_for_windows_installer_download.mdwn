@@ -1,0 +1,23 @@
+### Please describe the problem.
+As of Nov 2, 2016 1:30AM EST, no Windows installer is to be found in https://downloads.kitenet.net/git-annex/windows/current/. Accessing .exe URI directly yields a 403 error. Not sure if this is a temporary hiccup or a script error somewhere -- pardon if this is not the right channel to report this issue.
+
+### What steps will reproduce the problem?
+See https://downloads.kitenet.net/git-annex/windows/current/.
+
+### What version of git-annex are you using? On what operating system?
+N/A
+
+### Please provide any additional information below.
+N/A
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Yes! Worked like a charm on my Mac.
+
