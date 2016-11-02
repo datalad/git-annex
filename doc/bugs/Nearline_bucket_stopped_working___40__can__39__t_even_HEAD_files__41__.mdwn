@@ -1,0 +1,69 @@
+### Please describe the problem.
+
+I added a google-cloud nearline special remote.  It worked great for about two weeks.  But now I cannot do any operations on the bucket; they all fail with 400s.
+
+### What steps will reproduce the problem?
+
+(I've XXX'ed out things that look like they might contain secrets.)
+
+	$ AWS_ACCESS_KEY_ID=GOOGXXX AWS_SECRET_ACCESS_KEY=XXX git annex copy --to goog-cloud-nearline2 photos/raw-photos/2007/Birds\ at\ GovCo/ --debug --json --verbose
+	[2016-11-02 10:09:43.617264] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+	[2016-11-02 10:09:43.628311] process done ExitSuccess
+	[2016-11-02 10:09:43.62842] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+	[2016-11-02 10:09:43.638154] process done ExitSuccess
+	[2016-11-02 10:09:43.639472] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+	[2016-11-02 10:09:43.670284] read: git ["config","--null","--list"]
+	[2016-11-02 10:09:43.684014] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--cached","-z","--","photos/raw-photos/2007/Birds at GovCo/"]
+	copy photos/raw-photos/2007/Birds at GovCo/IMG_4186.dng (checking goog-cloud-nearline2...) [2016-11-02 10:09:43.845838] String to sign: "HEAD\n\n\nWed,  2 Nov 2016 17:09:43 GMT\n/jlebar-annex-nearline2/GPGHMACSHA1--07b92ba4ec937b88911ce8128974ba449382113d"
+	[2016-11-02 10:09:43.845906] Host: "jlebar-annex-nearline2.storage.googleapis.com"
+	[2016-11-02 10:09:43.845938] Path: "/GPGHMACSHA1--07b92ba4ec937b88911ce8128974ba449382113d"
+	[2016-11-02 10:09:43.845966] Query string: ""
+	[2016-11-02 10:09:43.954556] Response status: Status {statusCode = 400, statusMessage = "Bad Request"}
+	[2016-11-02 10:09:43.954689] Response header 'X-GUploader-UploadID': 'XXX'
+	[2016-11-02 10:09:43.954818] Response header 'Content-Type': 'application/xml; charset=UTF-8'
+	[2016-11-02 10:09:43.954893] Response header 'Content-Length': '178'
+	[2016-11-02 10:09:43.95498] Response header 'Date': 'Wed, 02 Nov 2016 17:09:41 GMT'
+	[2016-11-02 10:09:43.955017] Response header 'Expires': 'Wed, 02 Nov 2016 17:09:41 GMT'
+	[2016-11-02 10:09:43.955047] Response header 'Cache-Control': 'private, max-age=0'
+	[2016-11-02 10:09:43.955143] Response header 'Server': 'UploadServer'
+	[2016-11-02 10:09:43.95518] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
+	(StatusCodeException (Status {statusCode = 400, statusMessage = "Bad Request"}) [("X-GUploader-UploadID","XXX"),("Content-Type","application/xml; charset=UTF-8"),("Content-Length","178"),("Date","Wed, 02 Nov 2016 17:09:41 GMT"),("Expires","Wed, 02 Nov 2016 17:09:41 GMT"),("Cache-Control","private, max-age=0"),("Server","UploadServer")] (CJ {expose = []})) failed
+	git-annex: copy: 1 failed
+	CallStack (from HasCallStack):
+	  error, called at ./CmdLine/Action.hs:41:28 in main:CmdLine.Action
+
+### What version of git-annex are you using? On what operating system?
+
+	$ git annex version
+	git-annex version: 6.20160923
+	build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV FsEvents XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+	key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+	remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+	local repository version: 6
+	supported repository versions: 5 6
+	upgrade supported from repository versions: 0 1 2 3 4 5
+	operating system: darwin x86_64
+
+### Please provide any additional information below.
+
+As I read their docs, GCS should be sending back a more helpful error message
+in the body of the response:
+https://cloud.google.com/storage/docs/xml-api/reference-status.  I tried to
+figure out how to get git annex to print that out, but...did you know git annex
+is a nontrivial Haskell program?  :)
+
+If we could get git annex to print out the body of the response and there is in
+fact an error message in there, I expect the reason for this error would be
+obvious.  Or if we could get git annex to do a "dry run" and print the HTTP
+requeset it *would have* made, I could probably run it in curl and get the
+response that way.
+
+(I actually considered setting up wireshark to capture the response, but I'd
+have to set up an HTTPS MITM...)
+
+I cannot figure out what made this stop working all of a sudden.  I don't think it was a git annex version update, and I checked remotes.log, and this remote's metadata hasn't changed.  (The line for this remote has been updated a few times, but afaict only the timestamp changed.)
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+It was working so great up until it wasn't -- I was very happy.  Thank you
+for all your work on this software; there is nothing like it.
