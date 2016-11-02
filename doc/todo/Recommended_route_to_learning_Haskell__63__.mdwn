@@ -1,3 +1,5 @@
 Like many, I'm an experienced coder in procedural and object-oriented languages only.
 
 Could you recommend a route to learning Haskell I could work on a little bit every month, such that I might eventually become familiar enough to hack on git-annex?
+
+[[done]]

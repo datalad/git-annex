@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-11-02T15:01:52Z"
+ content="""
+I'm taking this as an indication that [[/contribute]] needed some pointers
+for learning haskell, so have made some changes there that might answer
+your question, as well as others who see that page.
+"""]]
