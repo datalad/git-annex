@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="caleb@2b0d6f0eabf955cc8fd04c634b09f0ca4aad9233"
+ nickname="caleb"
+ avatar="http://cdn.libravatar.org/avatar/1d84382865c6c3378c04a35348fdfa07"
+ subject="Arch packages"
+ date="2016-11-03T09:54:34Z"
+ content="""
+@CandyAngel the Arch package in community has only been flagged as out of date since last week. It usually takes about a week once packages get flagged for the updates to drop. If it doesn't drop by the end of this week we can file a bug and get somebody on it. Using the -git package from AUR should not be necessary to get the latest released version of software on arch. If it is something is broken and should be fixed.
+"""]]
