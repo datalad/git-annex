@@ -1,0 +1,53 @@
+### Please describe the problem.
+
+I'm using git-annex with the [calibre e-book library](https://calibre-ebook.com/) software. Sometimes calibre will rename a directory. After a directory rename git annex unlock no longer works. It works once I've committed the changes to git.
+
+It would be nice if git-annex could give an error to explain why the unlock fails. I'd even be happy with an extra flag to unlock, like --debug or --verbose to show the message.
+
+### What steps will reproduce the problem?
+
+1. create a directory inside a repository
+2. save a file in the directory
+3. add the file to git annex and commit
+4. rename the directory
+5. try unlocking the file
+
+### What version of git-annex are you using? On what operating system?
+
+6.20161012 on Debian
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+    ~/scratch$ mkdir annex
+    ~/scratch$ cd annex/
+    ~/scratch/annex$ git init
+    Initialized empty Git repository in /home/edward/scratch/annex/.git/
+    ~/scratch/annex (master)$ git annex init --version=6
+    init  ok
+    (recording state in git...)
+    ~/scratch/annex (master)$ mkdir foo
+    ~/scratch/annex (master)$ cd foo
+    ~/scratch/annex/foo (master)$ echo test > test
+    ~/scratch/annex/foo (master)$ git annex add test
+    add test ok
+    (recording state in git...)
+    ~/scratch/annex/foo (master)$ git commit -m 'test'
+    [master (root-commit) 6368036] test
+     1 file changed, 1 insertion(+)
+     create mode 120000 foo/test
+    ~/scratch/annex/foo (master)$ cd ..
+    ~/scratch/annex (master)$ mv foo bar
+    ~/scratch/annex (master)$ cd bar
+    ~/scratch/annex/bar (master)$ git annex unlock test
+    ~/scratch/annex/bar (master)$ 
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+git-annex is amazing, I use it all the time. Thanks!
