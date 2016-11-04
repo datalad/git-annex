@@ -1,0 +1,50 @@
+# Context
+
+I'm currently using `git annex reinject --known` to deduplicate directories containing dozens number of huge (up to 4-13 Gb) files.
+Let's focus on one example big file.
+
+The file being reinjected is not already available in `.git/annex/objects`. It will be after `git annex reinject --known` completes.
+The file being reinjected is on a different filesystem on the same disk. This might be important.
+
+# Time taken to process one file.
+
+It's done in the background on a server and yields a log that shows how much time passes.
+
+It looks like:
+
+```
+reinject my_big_file.dv    (7 minutes pass)
+(checksum...)    (20 minutes pass)
+ok
+```
+
+`my_big_file.dv` is 8.7G big. 
+
+With the USB2 bandwith available, reading that file can take between 7 and 12 minutes.
+
+# What happens?
+
+* 7 minutes is a reasonable time to read the whole file
+* after "checksum..." appears, 20 minutes pass which is a reasonable time to move the file to the partition containing git-annex repository ... or to read it twice?
+
+This looks "mostly reasonable", perhaps a little long.
+
+Source code in Hash.hs says:
+
+	mstat <- liftIO $ catchMaybeIO $ getFileStatus file
+	case (mstat, fast) of
+		(Just stat, False) -> do
+			filesize <- liftIO $ getFileSize' file stat
+			showAction "checksum"
+			check <$> hashFile hash file filesize
+		_ -> return True
+
+
+I expected "checksum..." to appear *before* the checksum is actually computed, and source code appears to confirm that (trying to compensate ignorance of Haskell with knowledge of OCaml, pure functions, closures, functional programming, including C# and reactive programming).
+
+# Questions
+
+* Is it true that checksum is computed after "checksum..." appears?
+* Why do 7 minute pass before "checksum..." appear? What happens?
+* What happens in the 20 minutes after "checksum..." appear and before "ok"?
+
