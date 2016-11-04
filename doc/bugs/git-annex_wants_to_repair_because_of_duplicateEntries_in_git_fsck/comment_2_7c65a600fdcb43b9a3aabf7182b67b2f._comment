@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="EskildHustvedt"
+ avatar="http://cdn.libravatar.org/avatar/0be1310904ded29624b9edb4824d451b"
+ subject="comment 2"
+ date="2016-11-04T07:34:30Z"
+ content="""
+Ok, first off, the latest release no longer wants to release, so at least the symptom is fixed.
+
+Here's a quick look at the problem:
+
+[[!format sh \"\"\"
+[0 zerodogg@firefly annexed]$ git fsck          
+Checking object directories: 100% (256/256), done.
+error in tree 3818a8ea201197ed355aa87133a718afca7c4a49: duplicateEntries: contains duplicate file entries
+error in tree 255f43cff847013439117a3fc4cfa517a90f38cb: duplicateEntries: contains duplicate file entries
+error in tree 404b4124800ece4772296d1f7559d982d0bc4cbd: duplicateEntries: contains duplicate file entries
+Checking objects: 100% (347890/347890), done.
+Checking connectivity: 347890, done.
+[4 zerodogg@firefly annexed]$ GIT_PAGER=cat git show 3818a8ea201197ed355aa87133a718afca7c4a49
+tree 3818a8ea201197ed355aa87133a718afca7c4a49
+
+Diverse/
+Dokument/
+Dokument/
+NBGI/
+Politikk/
+Skule/
+btfixie.ods
+endless space/
+monolith productions/
+my games/
+[4 zerodogg@firefly annexed]$ GIT_PAGER=cat git ls-tree 404b4124800ece4772296d1f7559d982d0bc4cbd 
+040000 tree 2efffc4a0eb7df3fde68e7a222926ff4b91ede4a    Diverse
+040000 tree cd854aba649cee8855ec72579f4c98100471f7cf    Dokument
+040000 tree 1ae499997746c8e976cf02edc2276532978dafc5    Dokument
+040000 tree ec8256eb106836a356aa7818f5b579f78393820e    NBGI
+040000 tree 384904d7414811bd41ee36b4d2ae2555192bd49f    Politikk
+040000 tree 0ac0cf99f02852d45518ffcbd42a0edc9e07dfd4    Skule
+040000 tree a20b8cc805d1612b60d0dfab69a49788e0467ca6    endless space
+040000 tree 9463eeb6cfcaa87491bf7aec03d10cf5edd1ac7d    monolith productions
+040000 tree 0ce07221be630cbbf038d8a5f8534cb599d0daf4    my games
+\"\"\"]]
+
+From here I'm not sure how to figure out where to go. I do have a copy of the original working copy where the problem first appeared (it has now propagated to all copies), if you want a copy to dig around in. I'll also be happy to provide more information if you specify what you need.
+"""]]
