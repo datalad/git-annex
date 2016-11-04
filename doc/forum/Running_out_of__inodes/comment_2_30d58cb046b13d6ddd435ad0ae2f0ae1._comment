@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="git-annex+git consumes lots of inodes. They are cheap, don't limit their amount when creating a filesystem."
+ date="2016-11-04T09:56:45Z"
+ content="""
+TL;DR: don't play with `inode_ratio` when creating a filesystem. You will certainly get more storage space, up to 1.5%. But the numerous symlinks maintained by git-annex will consume a lot of inodes. You don't want your filesystem to fail to create any new file when doing a big `git annex add` or worse, `git repack` or `git gc` or `git repair`, right ?
+
+## Git annex heavily uses symlinks and dirs, which consumes several inodes per file.
+
+I ran out of inodes on two of my disks, with different git-annex repositories.
+
+Joeyh wrote:
+
+> Checking out a git repository necessarily requires one inode per file in the repository, plus a smaller quantity for the things in .git. A git-annex repository is much the same as any other git repository.
+
+I believe that in `.git/annex/objects`, the structure consumes two inodes, one for the directory and one for the actual file storing data.  Is it right?
+
+So, when a file is checked out and managed by `git-annex`, is consumes 3 inodes, right?
+
+Plus possibly many inodes used temporarily when doing some git operations.  E.g. `git repair`. Man page says: \"Since this command unpacks all packs in the repository, you may want to run git gc afterwards.\"
+
+So, at least 4 inodes per file ?
+
+## Optimising space by reducing inodes is no longer worth the trouble.
+
+External disks were formatted years ago maximizing disk space (for details see [http://serverfault.com/a/523210](http://serverfault.com/a/523210) ).
+The assumption was that nearly all files were more than 4 megabytes in size, so the ext2 `inode_ratio` was 4194304.
+This assumption was very true and all went well until `git-annex` entered the game.
+
+In the case of a git-annex repository, if there is at least 4 inodes per actual image file, `inode_ratio` must be at most the average file size divided by 4.
+
+I considered an inode ratio at 64k. With most files far above 1 megabyte, that leaves room for much more than 16 inodes for housekeeping.  You don't know in advance how the usage will evolve.  Perhaps you will need to do one or more git clones of the same annexed data, especially in a recovery situation, which will quickly multiply the number of consumed inodes.
+
+`mkfs.ext4` chooses by itself `inode_ratio=16384`. Filesystem capacity is 1.5% smaller than with the minimum number of inode.  I'll just stick with that.
+
+```
+time mkfs.ext4 -E lazy_itable_init -L \"MyWonderFulLabel\" -O sparse_super -m 0 /dev/sdb1
+```
+
+(Yes, `-m 0` removes the 5% reserved space for root, and yes, filesystem performance drops dramatically then full beyond 90% then 95%. That parameter can be tuned with tune2fs at any time. In doubt, remove it.)
+
+"""]]
