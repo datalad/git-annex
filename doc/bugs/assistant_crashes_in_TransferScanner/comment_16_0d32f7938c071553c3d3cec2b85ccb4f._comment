@@ -1,0 +1,56 @@
+[[!comment format=mdwn
+ username="johannes@12f1850a57e13cc234b5ebf88a5d3ac68915a6c2"
+ nickname="johannes"
+ avatar="http://cdn.libravatar.org/avatar/7acaf4a71b0b93cc419195f58f4cd54c"
+ subject="comment 16"
+ date="2016-11-04T10:27:26Z"
+ content="""
+FYI, with 20161101 I get the following errors:
+
+	fatal: '../home/johannes/annex-sync/Documents/personal/Kontoauszüge/Konto_XXXXXXXXXX-Auszug_2016_016.PDF' is outside repository
+	fatal: '../home/johannes/annex-sync/Documents/personal/Kontoauszüge/Konto_XXXXXXXXXX-Auszug_2016_016.PDF' is outside repository
+	fatal: '../home/johannes/annex-sync/Documents/personal/Kontoauszüge/Konto_XXXXXXXXXX-Auszug_2016_016.PDF' is outside repository
+	fatal: '../home/johannes/annex-sync/Documents/personal/Kontoauszüge/Konto_XXXXXXXXXX-Auszug_2016_016.PDF' is outside repository
+	fatal: '../home/johannes/annex-sync/Documents/personal/Kontoauszüge/Konto_XXXXXXXXXX-Auszug_2016_016.PDF' is outside repository
+	fatal: '../home/johannes/annex-sync/Documents/personal/Kontoauszüge/Konto_XXXXXXXXXX-Auszug_2016_016.PDF' is outside repository
+	fatal: '../home/johannes/annex-sync/Documents/personal/Kontoauszüge/Konto_XXXXXXXXXX-Auszug_2016_016.PDF' is outside repository
+	fatal: '../home/johannes/annex-sync/Documents/personal/Kontoauszüge/Konto_XXXXXXXXXX-Auszug_2016_016.PDF' is outside repository
+	fatal: '../home/johannes/annex-sync/Documents/personal/Kontoauszüge/Konto_XXXXXXXXXX-Auszug_2016_016.PDF' is outside repository
+	fatal: '../home/johannes/annex-sync/Documents/personal/Kontoauszüge/Konto_XXXXXXXXXX-Auszug_2016_016.PDF' is outside repository
+	fatal: '../home/johannes/annex-sync/Documents/personal/Kontoauszüge/Konto_XXXXXXXXXX-Auszug_2016_016.PDF' is outside repository
+
+
+	git-annex: git check-attr EOF: user error
+	failed
+
+	git-annex: fd:30: hFlush: resource vanished (Broken pipe)
+	failed
+
+	git-annex: fd:30: hFlush: resource vanished (Broken pipe)
+	failed
+
+	[...]
+
+	git-annex: fd:30: commitBuffer: resource vanished (Broken pipe)
+	failed
+
+	git-annex: fd:30: commitBuffer: resource vanished (Broken pipe)
+	failed
+
+	git-annex: fd:30: hFlush: resource vanished (Broken pipe)
+	failed
+
+	git-annex: fd:30: commitBuffer: resource vanished (Broken pipe)
+	failed
+
+	git-annex: fd:30: commitBuffer: resource vanished (Broken pipe)
+	failed
+
+	[...]
+
+	git-annex: sync: 836 failed
+
+The `[...]` indicates that the last error appears a lot of times.
+
+The first (repeated) error might be unrelated though. Note that this is a file I recently added and locked.
+"""]]
