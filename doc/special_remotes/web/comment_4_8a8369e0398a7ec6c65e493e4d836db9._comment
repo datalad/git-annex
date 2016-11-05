@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="spiderbit"
+ avatar="http://cdn.libravatar.org/avatar/5c1baf041aa5516cb28a2618f7263a56"
+ subject="update"
+ date="2016-11-05T17:38:26Z"
+ content="""
+Sorry, should have read the man page.
+
+of course I have to use %url and %file
+
+So it works with \"rsync %url %file\"  but it seems to not work recursive also it renames the files instead of adding them with their normal name. So not useful for what I want to do.
+
+I want to access a normal unmodified directory on my server and add the files to my local directory. That would be a minimal setup, everything else means just extremly big setups with assistant runnig and a cronjob to delete unused files, and lots of cpu load for indexing this files on the server.
+
+I think such minimal setup would be great to get startet without having very complex setups, you dont want to commit to such a tool and hours of setup to get somethnig useful, just to look if its useful for you.
+
+there are 2 aproaches either have a normal repos on the server, with again cronjob and flat setup. which is quite a setup to get.
+
+or use only a real repos on the client, both have big disadvantages normal repos complex setup, to complex to just test it. web links seem to be simple enough but is not recursive therefor only good for youtube links or stuff like that.
+
+Is there really no simple solution for what I want to do?
+"""]]
