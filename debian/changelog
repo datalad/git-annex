@@ -1,3 +1,19 @@
+git-annex (6.20161031-1) UNRELEASED; urgency=medium
+
+  * Package 6.20161031-1
+
+ -- Richard Hartmann <richih@debian.org>  Sun, 06 Nov 2016 19:00:01 +0100
+
+git-annex (6.20161031) unstable; urgency=medium
+
+  * Assistant, repair: Fix ignoring of git fsck errors due to
+    duplicate file entries in tree objects.
+  * Linux standalone: Fix location of locale files in the bundle.
+  * Fix reversion in 6.20161012 that prevented adding files with a space
+    in their name.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 31 Oct 2016 18:55:59 -0400
+
 git-annex (6.20161027-1) unstable; urgency=medium
 
   * Package 6.20161027-1
