@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="Bitten again by &quot;E&quot; backend, wish &quot;e&quot; backend."
+ date="2016-10-30T19:19:21Z"
+ content="""
+Changing file extension is arguably not a very common use case.  But changing extension case is more common, especially when copying files from FAT filesystems through different ways (Card reader, plugging device directly), and causes troubles.
+
+# Concrete case
+
+A set of files were imported with extension NEF and JPG, by mistake (forgot to rename them first), using default (or is it?) backend SHA256E.
+
+When using `git annex reinject --known` to cleanup another copy, files were not detected as known.
+
+This will happen again and feels not very good.
+
+# Workaround
+
+Thanks to CandyAngel I know I can rename then use `git annex migrate --force` and `reinject` again.
+
+# Better solution
+
+A SHA256e backend (that squashes extensions to lowercase) would not have this problem.
+
+# Additional information
+
+Why not switch to plain SHA256 backend?  I'm a little paranoid (which makes me a good fit for using git-annex overall).  
+
+One of the reason I use git-annex is that its storage format is actually simple, and files can be accessed even on a computer that can read the plain filesystem, without git or git-annex required.  But in the lifetime of a filesystem, many bad things can happen and details of storage format may make a difference in case of major recovery (or even sanity check) scenario.  Hashes without extension feel somehow uncomfortable.  Lowercase extension backends feel much better.
+
+"""]]

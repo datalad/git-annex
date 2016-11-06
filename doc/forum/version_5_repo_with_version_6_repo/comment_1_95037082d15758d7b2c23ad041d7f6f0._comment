@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-10-31T17:04:42Z"
+ content="""
+It's something that users need to be aware of if mixing use of v6 and v5
+repositories and unlocking files. 
+
+Of course, if it becomes a problem, you can simply lock the files in the v6
+repository and then the v5 repo will be able to access them via symlinks
+again.
+"""]]

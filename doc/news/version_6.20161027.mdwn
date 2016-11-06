@@ -1,0 +1,20 @@
+git-annex 6.20161027 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * lock, smudge: Fix edge cases where data loss could occur in v6 mode
+     when the keys database was not populated.
+   * upgrade: Handle upgrade to v6 when the repository already contains
+     v6 unlocked files whose content is already present.
+   * Improve style of offline html build of website.
+   * importfeed: Drop URL parameters from file extension.
+     Thanks, James MacMahon.
+   * Assistant, repair: Improved filtering out of git fsck lines about
+     duplicate file entries in tree objects.
+   * test: Deal with gpg-agent behavior change that broke the test suite.
+   * Improve ssh socket cleanup code to skip over the cruft that
+     NFS sometimes puts in a directory when a file is being deleted.
+   * If a transfer fails for some reason, but some data managed to be sent,
+     the transfer will be retried. (The assistant already did this.)
+   * Run ssh with ServerAliveInterval 60, so that stalled transfers will
+     be noticed within about 3 minutes.
+     (Any setting in your ~/.ssh/config or /etc/ssh/ssh\_config
+     overrides this.)"""]]

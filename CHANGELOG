@@ -1,3 +1,13 @@
+git-annex (6.20161031) unstable; urgency=medium
+
+  * Assistant, repair: Fix ignoring of git fsck errors due to
+    duplicate file entries in tree objects.
+  * Linux standalone: Fix location of locale files in the bundle.
+  * Fix reversion in 6.20161012 that prevented adding files with a space
+    in their name.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 31 Oct 2016 18:55:59 -0400
+
 git-annex (6.20161027) unstable; urgency=medium
 
   * lock, smudge: Fix edge cases where data loss could occur in v6 mode

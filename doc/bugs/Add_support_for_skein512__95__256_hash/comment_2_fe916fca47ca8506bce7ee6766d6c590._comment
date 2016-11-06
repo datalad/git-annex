@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="aranea@650e41fad422f2a4d6f36ca1f20d41b7c0f18ab7"
+ nickname="aranea"
+ avatar="http://cdn.libravatar.org/avatar/8574023ce00757ca95b1708b7306602a"
+ subject="comment 2"
+ date="2016-10-31T21:29:42Z"
+ content="""
+> What kind of performance benefit are we talking about here?
+
+Not much. In my benchmark, SKEIN512 was about 10% faster thank SKEIN256, and SKEIN256 has quite reasonable speed anyway. Thus, adding SKEIN512_256 is not neccessary if it complicated the code too much.
+
+Thanks anyway!
+"""]]

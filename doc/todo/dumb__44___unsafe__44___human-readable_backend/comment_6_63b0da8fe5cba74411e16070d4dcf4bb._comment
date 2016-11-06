@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2016-10-31T19:50:06Z"
+ content="""
+So, I tried your git-annex-remote-dumb. After fixing its calckey to work with the current version of git-annex ...
+
+	joey@darkstar:~/tmp/repo>git annex initremote dumb type=external externaltype=dumb  directory=/tmp/dumb encryption=none
+	initremote dumb ok
+	joey@darkstar:~/tmp/repo>echo hello > hello
+	joey@darkstar:~/tmp/repo>git annex add
+	add hello ok
+	joey@darkstar:~/tmp/repo>git commit -m add
+	joey@darkstar:~/tmp/repo>git annex move hello --to dumb
+	move hello (to dumb...) 
+	ok
+	joey@darkstar:~/tmp/repo>cat /tmp/dumb/hello
+	hello
+	joey@darkstar:~/tmp/repo>git mv hello goodbye
+	joey@darkstar:~/tmp/repo>git commit -a -m rename
+	joey@darkstar:~/tmp/repo>echo oh no > hello
+	joey@darkstar:~/tmp/repo>git annex add hello
+	add hello ok
+	joey@darkstar:~/tmp/repo>git commit -a -m foo
+	joey@darkstar:~/tmp/repo>git annex copy hello --to dumb
+	copy hello (to dumb...) 
+	ok                      
+	joey@darkstar:~/tmp/repo>cat /tmp/dumb/hello
+	oh no
+	joey@darkstar:~/tmp/repo>git annex whereis goodbye
+	whereis goodbye (1 copy) 
+	   	3ef932e6-0989-46bd-a4c6-86562ed713f5 -- [dumb]
+	ok
+	joey@darkstar:~/tmp/repo>git annex fsck --from dumb goodbye
+	fsck goodbye (fixing location log) 
+	  ** Based on the location log, goodbye
+	  ** was expected to be present, but its content is missing.
+	failed
+	(recording state in git...)
+
+So yeah, that's data loss, and it's just the first thing I thought of.
+
+Aside from data loss bugs, /tmp/dumb just can't be kept fully up-to-date
+with changes to the working tree. So what's the point of it?
+"""]]

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2016-10-31T20:17:59Z"
+ content="""
+You say it prints no filenames, but earlier you said: "In between git annex
+successfully uploads and drops a couple of files to/from the remotes."  
+... Which sounds like it must be printing some filenames.
+
+Even when I make the standalone tarball owned by root, and move all
+system-wide locale files out of the way, I still can't reproduce this.
+So I think it must have something to do with the filenames in your git
+repository, or something else particular to your git repository.
+"""]]

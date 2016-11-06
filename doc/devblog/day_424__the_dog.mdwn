@@ -1,0 +1,11 @@
+[[!meta title="the dog that didn't bark"]]
+
+Worked on several bug reports today, fixing some easy ones, and following
+up on others. And then there are the hard bugs.. Very pleased that I was
+able to eventually reproduce a bug based entirely on the information
+that git-annex's output did not include a filename. Didn't quite get that
+bug fixed though.
+
+At the end of the day, got a bug report that `git annex add` of filenames
+containing spaces has broken. This is a recent reversion and I'm pushing
+out a release with a fix ASAP.
