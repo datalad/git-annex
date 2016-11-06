@@ -1,8 +1,9 @@
-git-annex (6.20161031-1) UNRELEASED; urgency=medium
+git-annex (6.20161031-1) unstable; urgency=medium
 
   * Package 6.20161031-1
+  * Update cabal dependency on persistent Closes: #842572
 
- -- Richard Hartmann <richih@debian.org>  Sun, 06 Nov 2016 19:00:01 +0100
+ -- Richard Hartmann <richih@debian.org>  Sun, 06 Nov 2016 19:22:02 +0100
 
 git-annex (6.20161031) unstable; urgency=medium
 
