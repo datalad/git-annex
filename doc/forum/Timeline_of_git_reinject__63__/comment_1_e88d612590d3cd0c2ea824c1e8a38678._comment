@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-11-07T16:02:28Z"
+ content="""
+What turns out to have been going on here is the file was first checksummed
+silently to get the key and see if it is --known, 
+and then checksummed a second time (with the message displayed) as part of
+the reinject process.
+
+So, the second checksum is not needed in --known mode and I've made it not
+be done.
+
+It might be that the "(checksum)" message should be displayed during the
+intial checksum of the file. git-annex used to always say when it
+checksummed, but [[!commit 64160a96795d03ee791faa4757057200934687bc]] got
+rid of that in most cases. I guess that "reinject bigfile <13 minute wait> ok"
+is acceptable output though.
+"""]]
