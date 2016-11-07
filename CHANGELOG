@@ -7,6 +7,9 @@ git-annex (6.20161032) UNRELEASED; urgency=medium
     7.3, which don't support Include. When used with an older version
     of ssh, any ServerAliveInterval in ~/.ssh/config will be overridden
     by .git/annex/ssh.config.
+  * S3: Support the special case endpoint needed for the cn-north-1 region.
+  * Webapp: Don't list the Frankfurt region, as this (and some other new
+    regions) need V4 authorization which the aws library does not yet use.
 
  -- Joey Hess <id@joeyh.name>  Tue, 01 Nov 2016 14:02:06 -0400
 
