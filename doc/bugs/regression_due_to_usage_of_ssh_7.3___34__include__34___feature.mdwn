@@ -1,0 +1,12 @@
+### Please describe the problem.
+
+The latest released version of git-annex (6.20161031) breaks on all platforms that do not have ssh 7.3 installed as it relies on "Include" ssh_config(5) configuration flag that appeared in 7.3p1. The broken platforms include macOS Sierra and Ubuntu 16.04 Xenial (LTS) both include ssh 7.2
+
+    # Ubuntu 16.04
+    $ ssh -V
+    OpenSSH_7.2p2 Ubuntu-4ubuntu2.1, OpenSSL 1.0.2g  1 Mar 2016
+
+    # macOS
+    $ ssh -V
+    OpenSSH_7.2p2, LibreSSL 2.4.1
+
