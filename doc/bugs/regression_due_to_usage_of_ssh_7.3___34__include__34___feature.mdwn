@@ -10,3 +10,18 @@ The latest released version of git-annex (6.20161031) breaks on all platforms th
     $ ssh -V
     OpenSSH_7.2p2, LibreSSL 2.4.1
 
+Here is what it looks like:
+
+    $ git annex move --to vir
+    move Foobar.mkv (checking vir...) .git/annex/ssh.config: line 1: Bad configuration option: include
+    .git/annex/ssh.config: line 2: Bad configuration option: include
+    .git/annex/ssh.config: terminating, 2 bad configuration options
+    (unable to check vir
+    CallStack (from HasCallStack):
+      error, called at ./Remote/Helper/Messages.hs:32:15 in main:Remote.Helper.Messages) failed
+
+
+    $ cat .git/annex/ssh.config
+    Include ~/.ssh/config
+    Include /etc/ssh/ssh_config
+    ServerAliveInterval 60
