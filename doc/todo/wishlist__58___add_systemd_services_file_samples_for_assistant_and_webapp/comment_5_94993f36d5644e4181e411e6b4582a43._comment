@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Euxane"
+ avatar="http://cdn.libravatar.org/avatar/e6f48ec6bdf54a71119bcff72e29693f"
+ subject="comment 5"
+ date="2016-11-07T11:07:33Z"
+ content="""
+Syncthing's documentation explains in a nutshell the purpose of system and user services [here](https://docs.syncthing.net/users/autostart.html#using-systemd), and has also some examples of easily adaptable systemd config files for each [here](https://github.com/syncthing/syncthing/tree/master/etc/linux-systemd).
+
+This provides a common way of managing background services (starting order, auto-restart, …) that I personally prefer over Windows-ish tray-apps.
+"""]]
