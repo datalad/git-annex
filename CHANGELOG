@@ -11,6 +11,8 @@ git-annex (6.20161032) UNRELEASED; urgency=medium
   * Webapp: Don't list the Frankfurt region, as this (and some other new
     regions) need V4 authorization which the aws library does not yet use.
   * reinject --known: Avoid second, unncessary checksum of file.
+  * OSX: Remove RPATHs from git-annex binary, which are not needed,
+    slow down startup, and break the OSX Sierra linker.
 
  -- Joey Hess <id@joeyh.name>  Tue, 01 Nov 2016 14:02:06 -0400
 

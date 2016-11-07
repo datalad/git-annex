@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-11-07T17:59:14Z"
+ content="""
+`otool -l git-annex` shows hundreds of unnecessary RPATHs, removing
+them should fix this.
+
+One way would be to use `install_name_tool -delete_rpath` for each 
+of them.
+
+It would be better to upgrade to a fixed ghc,
+if it has fixed this RPATH mess. ghc 8.0.2 may fix it.
+But the OSX autobuilder is using stack, and no stackage LTS or nightly
+includes ghc 8.0.2 yet.
+
+Ok, I've put in the `install_name_tool -delete_rpath` workaround
+for the dmg build.
+
+Bug reporter: Please see if
+<https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-yosemite/git-annex.dmg>
+has fixed the problem for you.
+"""]]

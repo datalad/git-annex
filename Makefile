@@ -181,6 +181,11 @@ OSXAPP_BASE=$(OSXAPP_DEST)/Contents/MacOS/bundle
 osxapp: Build/Standalone Build/OSXMkLibs
 	$(MAKE) git-annex
 
+	# Remove all RPATHs, both because this overloads the linker on
+	# OSX Sierra, and to avoid the binary looking in someone's home
+	# directory.
+	eval install_name_tool $$(otool -l git-annex | grep "path " | sed 's/.*path /-delete_rpath /' | sed 's/ (.*//') git-annex
+
 	rm -rf "$(OSXAPP_DEST)" "$(OSXAPP_BASE)"
 	install -d tmp/build-dmg
 	cp -R standalone/osx/git-annex.app "$(OSXAPP_DEST)"
