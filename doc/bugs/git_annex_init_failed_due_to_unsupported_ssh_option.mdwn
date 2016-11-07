@@ -49,3 +49,19 @@ I would just like to be sure nothing else is hidden.
 
 
 
+> [[fixed|done]] by adding "IgnoreUnknown Include" 
+> to the top of `.git/annex/ssh_config`. Thus supporting the old ssh
+> version without needing to probe for its version number.
+> 
+> IgnoreUnknown itself was added back in ssh 6.4, in 2013, so
+> using git-annex with such an old ssh will still not work, but
+> such an old ssh probably has security holes anyway. (Debian oldstable has
+> such an old version of ssh, but Debian stable has 6.5.)
+> 
+> I decided not to update existing `.git/annex/ssh_config` 
+> since a) the user may have edited it and b) it would slow down every call
+> git-annex makes to ssh and c) as noted this problem makes git-annex mark
+> remotes as annex-ignore, and the user will need to manually edit
+> .git/config to remove that in order to recover from the problem, so might
+> as well remove `.git/annex/ssh_config` too.
+> --[[Joey]]

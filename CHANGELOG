@@ -3,6 +3,10 @@ git-annex (6.20161032) UNRELEASED; urgency=medium
   * Restarting a crashing git process could result in filename encoding
     issues when not in a unicode locale, as the restarted processes's
     handles were not read in raw mode.
+  * Make .git/annex/ssh.config file work with versions of ssh older than
+    7.3, which don't support Include. When used with an older version
+    of ssh, any ServerAliveInterval in ~/.ssh/config will be overridden
+    by .git/annex/ssh.config.
 
  -- Joey Hess <id@joeyh.name>  Tue, 01 Nov 2016 14:02:06 -0400
 
