@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-11-07T14:10:29Z"
+ content="""
+You forgot to show the error message from `git annex init` or whatever it
+was that failed. A second of paste will save hours of guesswork.
+
+Looking at `man ssh_config` on OSX, it seems ssh 6.9 does not support
+the Include directive.
+
+I guess that the detail you left out is that you ran `git annex init` in a
+repository that was cloned from another repository over ssh. That makes it
+use ssh to probe the remote, and that probing will fail if ssh is too old
+to support Include
+"""]]
