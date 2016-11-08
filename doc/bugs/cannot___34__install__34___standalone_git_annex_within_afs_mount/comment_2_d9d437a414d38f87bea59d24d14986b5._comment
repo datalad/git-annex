@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ avatar="http://cdn.libravatar.org/avatar/8122123b4c2bc77187e32d7e025f7d445d7a08de1ba532237876a31159ac01da"
+ subject="comment 2"
+ date="2016-11-08T19:18:40Z"
+ content="""
+--hard-dereference would be something to use on your end while creating a tarball ;-P (seems to be not applicable while extracting)
+
+would symlinks work there instead? (more FSs would support those than hard links I guess)
+"""]]
