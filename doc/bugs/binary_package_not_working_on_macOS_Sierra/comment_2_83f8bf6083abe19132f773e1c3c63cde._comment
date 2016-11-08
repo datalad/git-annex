@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="public@881708f3cb16d1f967ca9f517a310dd211474013"
+ nickname="public"
+ avatar="http://cdn.libravatar.org/avatar/e60c5356a8001ac2a78b489d6ac3731c"
+ subject="joey's test build fixes issue"
+ date="2016-11-08T14:53:48Z"
+ content="""
+I was having the same issue on macOS Sierra (10.12.1). I downloaded your test build and that seems to have resolved the issue.
+
+Andrew
+"""]]
