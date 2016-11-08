@@ -25,3 +25,5 @@ Here is what it looks like:
     Include ~/.ssh/config
     Include /etc/ssh/ssh_config
     ServerAliveInterval 60
+
+> This is already fixed in git. [[done]] --[[Joey]]

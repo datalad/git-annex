@@ -31,3 +31,5 @@ http://stackoverflow.com/a/39648502
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 
+> [[done]] (also, I updated the OSX build for the last release with this
+> fix) --[[Joey]]
