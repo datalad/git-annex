@@ -1,0 +1,3 @@
+I see that `enableremote` changes the source remote to log the presence of a new annex (the annex where `enableremote` was called). I have tested with a gcrypt remote and I see that a new commit appears in the git-annex branch of the source remote after `enableremote` was called. Since I have cloned the annex just for testing and will delete it afterwards, I would like to leave the original remote untouched.
+
+Is there a way to enable the remote read-only?
