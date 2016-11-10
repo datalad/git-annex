@@ -1,0 +1,33 @@
+### Please describe the problem.
+Recently I've noticed that the webapp is missing CSS styles. Upon inspection it seems that the CSS and JS resources fail to load with "401 Unauthorized" responses. If I copy the "?auth=" parameter from the main URL then I can access any of them, but I guess the session cookie isn't working.
+
+### What steps will reproduce the problem?
+1. Start the assistant with "git annex assistant start" or "git annex assistant" or "git annex assistant --autostart"
+2. Open the webapp with "git annex webapp" or by opening $ANNEX_DIR/.git/annex/webapp.html 
+3. The web app is missing all style and javascript resources
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 6.20161031
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV FsEvents XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 6
+supported repository versions: 3 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+operating system: darwin x86_64
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+[2016-11-10 10:35:20.214701] main: starting assistant version 6.20161031
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
