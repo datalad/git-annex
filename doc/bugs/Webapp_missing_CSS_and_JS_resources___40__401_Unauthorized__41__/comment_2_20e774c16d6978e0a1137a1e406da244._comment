@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-11-10T17:30:57Z"
+ content="""
+I don't reproduce the problem here. From where did you install git-annex?
+
+This seems likely to have something to do with the version of yesod it was
+built against.
+
+No session cookie is used; the auth token is not supposed to be needed when
+accessing urls under `/static/`. Looking at the code, this was not done
+explicitly; it seems to have relied on yesod not checking for authorization
+for static site parts. I've committed a change, to explicitly skip auth for
+`/static/` but without being able to reproduce the problem, can't test it.
+"""]]

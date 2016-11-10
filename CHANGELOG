@@ -13,6 +13,9 @@ git-annex (6.20161032) UNRELEASED; urgency=medium
   * reinject --known: Avoid second, unncessary checksum of file.
   * OSX: Remove RPATHs from git-annex binary, which are not needed,
     slow down startup, and break the OSX Sierra linker.
+  * webapp: Explicitly avoid checking for auth in static subsite
+    requests. Yesod didn't used to do auth checks for that, but this may
+    have changed.
 
  -- Joey Hess <id@joeyh.name>  Tue, 01 Nov 2016 14:02:06 -0400
 
