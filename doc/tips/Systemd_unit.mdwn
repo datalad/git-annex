@@ -16,7 +16,34 @@ It can be used as an alternative to XDG autostart files to start the git-annex d
 
 ##Setup
 
+### User service
+
+Sample unit file (`/etc/systemd/user/git-annex.service`):
+
+```
+[Unit]
+Description=git-annex assistant daemon
+
+[Service]
+ExecStart=/usr/bin/git-annex assistant --autostart --foreground
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
+```
+
+Commands for enabling and starting the service as the current user:
+
+```
+systemctl --user enable git-annex.service
+systemctl --user start git-annex.service
+```
+
+Usually services in `default.target` start during login. (Note however that they also _delay_ the login process.) However, if you enable "linger" via `loginctl`, then these services start on boot instead.
+
 ### System service
+
+If for some reason you cannot use `systemd --user`, the other option is to have system-wide services:
 
 Sample unit file (`/etc/systemd/system/git-annex@.service`):
 
@@ -27,7 +54,7 @@ After=network.target
 
 [Service]
 User=%i
-ExecStart=git-annex assistant --autostart --foreground
+ExecStart=/usr/bin/git-annex assistant --autostart --foreground
 Restart=on-failure
 
 [Install]
@@ -41,33 +68,6 @@ systemctl enable git-annex@u.service
 systemctl start git-annex@u.service
 
 ```
-
-
-### User service
-
-Sample unit file (`/etc/systemd/user/git-annex.service`):
-
-```
-[Unit]
-Description=git-annex assistant daemon
-
-[Service]
-ExecStart=git-annex assistant --autostart --foreground
-Restart=on-failure
-
-[Install]
-WantedBy=default.target
-
-```
-
-Commands for enabling and starting the service as the current user:
-
-```
-systemctl --user enable git-annex.service
-systemctl --user start git-annex.service
-
-```
-
 
 ---
 
