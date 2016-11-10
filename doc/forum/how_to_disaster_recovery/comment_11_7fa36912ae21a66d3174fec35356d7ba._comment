@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="openmedi"
+ subject="comment 11"
+ date="2016-11-10T12:53:34Z"
+ content="""
+Two days ago I updated my annex through brew and the constant repairing seems to have stopped. There is one problem where the assistant shows up without any design, maybe an error with the homebrew formula? I had the too many open files error, but this seems to have disappeared. I reactivated synching for my home repo and am now letting the assistant run for a few days to see how it will work.
+"""]]
