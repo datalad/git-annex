@@ -16,6 +16,8 @@ git-annex (6.20161032) UNRELEASED; urgency=medium
   * webapp: Explicitly avoid checking for auth in static subsite
     requests. Yesod didn't used to do auth checks for that, but this may
     have changed.
+  * Linux standalone: Avoid using hard links in the tarball so it can be
+    untarred on eg, afs which does not support them.
 
  -- Joey Hess <id@joeyh.name>  Tue, 01 Nov 2016 14:02:06 -0400
 
