@@ -57,7 +57,7 @@ withNote field note = field { fieldView = newview }
 		in [whamlet|^{fieldwidget}&nbsp;&nbsp;<span>^{note}</span>|]
 
 {- Note that the toggle string must be unique on the form. -}
-withExpandableNote :: (Monad m, ToWidget (HandlerSite m) w) => Field m v -> (String, w) -> Field m v
+withExpandableNote :: (ToWidget (HandlerSite m) w) => Field m v -> (String, w) -> Field m v
 withExpandableNote field (toggle, note) = withNote field $ [whamlet|
 <a .btn .btn-default data-toggle="collapse" data-target="##{ident}">#{toggle}</a>
 <div ##{ident} .collapse>
