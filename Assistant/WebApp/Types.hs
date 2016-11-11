@@ -48,7 +48,8 @@ data WebApp = WebApp
 	}
 
 mkYesodData "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
-	  
+
+excludeStatic :: [Text] -> Bool
 excludeStatic [] = True
 excludeStatic (p:_) = p /= "static"
 
