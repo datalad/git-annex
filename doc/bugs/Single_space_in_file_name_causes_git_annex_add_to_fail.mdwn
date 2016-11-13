@@ -38,6 +38,16 @@ Operating System: Linux (NixOS 16.09.909.238c7e0 (Flounder))
 
 Maybe related to [https://git-annex.branchable.com/forum/unknown_response_from_git_cat-file/](https://git-annex.branchable.com/forum/unknown_response_from_git_cat-file/) or [https://git-annex.branchable.com/bugs/git_annex_import_fails_on_filenames_with_newlines_in_them/](https://git-annex.branchable.com/bugs/git_annex_import_fails_on_filenames_with_newlines_in_them/)?
 
+EDIT: Somewhat surprisingly, if I build from source using `cabal`, everything works fine.
+
+    .cabal-sandbox/bin/git-annex version
+    git-annex version: 6.20161113-g1e88c12
+    build flags: Assistant Webapp Pairing Testsuite WebDAV Inotify ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+
+Not sure whether this means that this bug is actually fixed or whether it's an artifact of how things are built in Nix.
+
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Just starting out with it as a way of archiving some of my media seems to work great apart from this. Thanks a bunch!
