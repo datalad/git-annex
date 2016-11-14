@@ -1,0 +1,52 @@
+### Please describe the problem.
+
+In my unlocked adjusted branch, I get a lot of errors during "git annex sync". It appears to work fine otherwise (the files actually get synced). Below is what I see on the terminal. The repository is otherwise clean (no local or remote changes).
+This has started to happen around a month ago, though I cannot pinpoint the exact version. This is in the same repo you used to debug the disappearing files in direct mode recently (thanks a lot btw!).
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+$ git annex version
+git-annex version: 6.20161110-gd48f4ca
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+$ lsb_release -a
+No LSB modules are available.
+Distributor ID: Debian
+Description:    Debian GNU/Linux 8.6 (jessie)
+Release:        8.6
+Codename:       jessie
+"""]]
+
+### Please provide any additional information below.
+
+[[!format sh """
+$ git annex sync --content
+commit
+On branch adjusted/master(unlocked)
+nothing to commit, working tree clean
+ok
+pull origin
+remote: Counting objects: 113, done.
+remote: Compressing objects: 100% (113/113), done.
+remote: Total 113 (delta 112), reused 0 (delta 0)
+Receiving objects: 100% (113/113), 7.16 KiB | 0 bytes/s, done.
+Resolving deltas: 100% (112/112), completed with 112 local objects.
+From /srv/annex/bilder
+   97a4806..78cb4ef  git-annex  -> origin/git-annex
+ok
+(merging origin/git-annex into git-annex...)
+
+git-annex: fd:25: commitBuffer: invalid argument (invalid character)
+failed
+
+git-annex: fd:25: commitBuffer: invalid argument (invalid character)
+failed
+
+[...]
+
+git-annex: fd:25: commitBuffer: invalid argument (invalid character)
+failed
+git-annex: sync: 2653 failed
+"""]]
