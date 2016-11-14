@@ -52,6 +52,7 @@ import qualified Command.Init
 import qualified Command.Describe
 import qualified Command.InitRemote
 import qualified Command.EnableRemote
+import qualified Command.EnableTor
 import qualified Command.Expire
 import qualified Command.Repair
 import qualified Command.Unused
@@ -142,6 +143,7 @@ cmds testoptparser testrunner =
 	, Command.Describe.cmd
 	, Command.InitRemote.cmd
 	, Command.EnableRemote.cmd
+	, Command.EnableTor.cmd
 	, Command.Reinject.cmd
 	, Command.Unannex.cmd
 	, Command.Uninit.cmd

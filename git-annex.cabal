@@ -1063,6 +1063,7 @@ Executable git-annex
     Utility.ThreadLock
     Utility.ThreadScheduler
     Utility.Tmp
+    Utility.Tor
     Utility.Touch
     Utility.Url
     Utility.UserInfo
