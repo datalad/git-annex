@@ -12,7 +12,6 @@ import Assistant.Pairing
 import Utility.NotificationBroadcaster
 import Types.Transfer
 import Assistant.Types.ThreadName
-import Assistant.Types.NetMessager
 import Assistant.Types.Alert
 import Utility.Url
 
@@ -54,8 +53,6 @@ data DaemonStatus = DaemonStatus
 	, syncingToCloudRemote :: Bool
 	-- Set of uuids of remotes that are currently connected.
 	, currentlyConnectedRemotes :: S.Set UUID
-	-- List of uuids of remotes that we may have gotten out of sync with.
-	, desynced :: S.Set UUID
 	-- Pairing request that is in progress.
 	, pairingInProgress :: Maybe PairingInProgress
 	-- Broadcasts notifications about all changes to the DaemonStatus.
@@ -77,9 +74,6 @@ data DaemonStatus = DaemonStatus
 	, globalRedirUrl :: Maybe URLString
 	-- Actions to run after a Key is transferred.
 	, transferHook :: M.Map Key (Transfer -> IO ())
-	-- When the XMPP client is connected, this will contain the XMPP
-	-- address.
-	, xmppClientID :: Maybe ClientID
 	-- MVars to signal when a remote gets connected.
 	, connectRemoteNotifiers :: M.Map UUID [MVar ()]
 	}
@@ -105,7 +99,6 @@ newDaemonStatus = DaemonStatus
 	<*> pure []
 	<*> pure False
 	<*> pure S.empty
-	<*> pure S.empty
 	<*> pure Nothing
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
@@ -117,5 +110,4 @@ newDaemonStatus = DaemonStatus
 	<*> newNotificationBroadcaster
 	<*> pure Nothing
 	<*> pure M.empty
-	<*> pure Nothing
 	<*> pure M.empty

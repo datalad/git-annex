@@ -24,7 +24,7 @@ pushRetryThread = namedThread "PushRetrier" $ runEvery (Seconds halfhour) <~> do
 	topush <- getFailedPushesBefore (fromIntegral halfhour)
 	unless (null topush) $ do
 		debug ["retrying", show (length topush), "failed pushes"]
-		void $ pushToRemotes True topush
+		void $ pushToRemotes topush
   where
 	halfhour = 1800
 
@@ -35,7 +35,7 @@ pushThread = namedThread "Pusher" $ runEvery (Seconds 2) <~> do
 	-- Next, wait until at least one commit has been made
 	void getCommits
 	-- Now see if now's a good time to push.
-	void $ pushToRemotes True =<< pushTargets
+	void $ pushToRemotes =<< pushTargets
 
 {- We want to avoid pushing to remotes that are marked readonly.
  -

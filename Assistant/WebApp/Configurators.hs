@@ -5,26 +5,18 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings, CPP #-}
+{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 
 module Assistant.WebApp.Configurators where
 
 import Assistant.WebApp.Common
 import Assistant.WebApp.RepoList
-#ifdef WITH_XMPP
-import Assistant.XMPP.Client
-#endif
 
 {- The main configuration screen. -}
 getConfigurationR :: Handler Html
 getConfigurationR = ifM inFirstRun
 	( redirect FirstRepositoryR
 	, page "Configuration" (Just Configuration) $ do
-#ifdef WITH_XMPP
-		xmppconfigured <- liftAnnex $ isJust <$> getXMPPCreds
-#else
-		let xmppconfigured = False
-#endif
 		$(widgetFile "configurators/main")
 	)
 
@@ -38,9 +30,6 @@ makeMiscRepositories = $(widgetFile "configurators/addrepository/misc")
 
 makeCloudRepositories :: Widget
 makeCloudRepositories = $(widgetFile "configurators/addrepository/cloud")
-
-makeXMPPConnection :: Widget
-makeXMPPConnection = $(widgetFile "configurators/addrepository/xmppconnection")
 
 makeSshRepository :: Widget
 makeSshRepository = $(widgetFile "configurators/addrepository/ssh")

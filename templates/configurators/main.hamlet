@@ -27,16 +27,3 @@
           Unused files
       <p>
         Configure what to do with old and deleted files.
-  <div .row>
-    <div .col-sm-4>
-      <h3>
-        <a href="@{XMPPConfigR}">
-          Jabber account
-      $if xmppconfigured
-        <p>
-          Your jabber account is set up, and will be used to keep #
-          in touch with remote devices, and with your friends.
-      $else
-        <p>
-          Keep in touch with remote devices, and with your friends, #
-          by configuring a jabber account.

@@ -22,7 +22,6 @@ import Assistant.RemoteControl
 import Utility.DBus
 import DBus.Client
 import DBus
-import Assistant.NetMessager
 #else
 #ifdef linux_HOST_OS
 #warning Building without dbus support; will poll for network connection changes
@@ -44,9 +43,8 @@ netWatcherThread = thread noop
  - while (despite the local network staying up), are synced with
  - periodically.
  -
- - Note that it does not call notifyNetMessagerRestart, or
- - signal the RemoteControl, because it doesn't know that the
- - network has changed.
+ - Note that it does not signal the RemoteControl, because it doesn't 
+ - know that the network has changed.
  -}
 netWatcherFallbackThread :: NamedThread
 netWatcherFallbackThread = namedThread "NetWatcherFallback" $
@@ -76,7 +74,6 @@ dbusThread = do
 		sendRemoteControl LOSTNET
 	connchange True = do
 		debug ["detected network connection"]
-		notifyNetMessagerRestart
 		handleConnection
 		sendRemoteControl RESUME
 	onerr e _ = do
@@ -197,7 +194,7 @@ listenWicdConnections client setconnected = do
 handleConnection :: Assistant ()
 handleConnection = do
 	liftIO . sendNotification . networkConnectedNotifier =<< getDaemonStatus
-	reconnectRemotes True =<< networkRemotes
+	reconnectRemotes =<< networkRemotes
 
 {- Network remotes to sync with. -}
 networkRemotes :: Assistant [Remote]

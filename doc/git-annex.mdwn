@@ -658,13 +658,6 @@ subdirectories).
 
   See [[git-annex-remotedaemon]](1) for details.
 
-* `xmppgit`
-
-  This command is used internally by the assistant to perform git pulls
-  over XMPP.
-  
-  See [[git-annex-xmppgit]](1) for details.
-
 # TESTING COMMANDS
 
 * `test`
@@ -1295,11 +1288,6 @@ Here are all the supported configuration settings.
 
   Used to identify tahoe special remotes.
   Points to the configuration directory for tahoe.
-
-* `remote.<name>.annex-xmppaddress`
-
-  Used to identify the XMPP address of a Jabber buddy.
-  Normally this is set up by the git-annex assistant when pairing over XMPP.
 
 * `remote.<name>.gcrypt`
 

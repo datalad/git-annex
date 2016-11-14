@@ -1,39 +1,4 @@
-XMPP (Jabber) is used by the [[assistant]] as a git remote. This is,
-technically not a git-annex special remote (large files are not transferred
-over XMPP; only git commits are sent).
-
-Typically XMPP will be set up using the web app, but here's how a manual
-set up could be accomplished:
-
-1. xmpp login credentials need to be stored in `.git/annex/creds/xmpp`.
-   Obviously this file should be mode 600. An example file:
-
-	XMPPCreds {xmppUsername = "joeyhess", xmppPassword = "xxxx", xmppHostname = "xmpp.l.google.com.", xmppPort = 5222, xmppJID = "joeyhess@gmail.com"}
-
-2. A git remote is created using a special url, of the form `xmpp::user@host`
-   For the above example, it would be `url = xmpp::joeyhess@gmail.com`
-
-3. The uuid of one of the other clients using XMPP should be configured
-   using the `annex.uuid` setting, the same as is set up for other remotes.
-
-With the above configuration, the [[assistant]] will use xmpp remotes much as
-any other git remote. Since XMPP requires a client that is continually running
-to see incoming pushes, the XMPP remote cannot be used with git at the
-command line.
-
-## XMPP server support status
-[[!table  data="""
-Provider|Status|Type|Notes
-[[Gmail|http://gmail.com]]|Working|?|Google Apps: [setup your SRV records](http://www.olark.com/gtalk/check_srv) or configure `.git/annex/creds/xmpp` manually
-[[Coderollers|http://www.coderollers.com/xmpp-server/]]|Working|[[Openfire|http://www.igniterealtime.org/projects/openfire/]]
-[[jabber.me|http://jabber.me/]]|Working|[[Tigase|http://www.tigase.org/]]
-[[xmpp.ru.net|https://www.xmpp.ru.net]]|Working|[[jabberd2|http://jabberd2.org/]]
-[[jabber.org|http://jabber.org]]|Working|[[Isode M-Link|http://www.isode.com/products/m-link.html]]
--|Working|[[Prosody|http://prosody.im/]]|No providers tested.
--|Working|[[Metronome|http://www.lightwitch.org/]]|No providers tested.
--|[[Failing|http://git-annex.branchable.com/forum/XMPP_authentication_failure/]]|ejabberd|[[Authentication bug|https://support.process-one.net/browse/EJAB-1632]]: Fixed in debian unstable (>= 2.1.10-5) and stable (>=2.1.10-4+deb7u1)
--|[[Failing|http://git-annex.branchable.com/forum/XMPP_authentication_failure/#comment-4ce5aeabd12ca3016290b3d8255f6ef1]]|jabberd14|No further information
-"""]]
-List of providers: [[http://xmpp.net/]]
-
-See also: [[xmpp_protocol_design_notes|design/assistant/xmpp]]
+XMPP (Jabber) used to be able to be used by the [[assistant]] as a git remote.
+This never worked very well, and it was not entirely secure, since the XMPP
+server saw the contents of git pushes without encryption. So, XMPP support
+has been removed.

@@ -24,8 +24,6 @@ instructions.
 * Or perhaps you want to share files between computers in different
   locations, like home and work?  
   Follow the [[remote_sharing_walkthrough]].
-* Want to share a synchronised folder with a friend?  
-  Follow the [[share_with_a_friend_walkthrough]].
 * Want to archive data to a drive or the cloud?  
   Follow the [[archival_walkthrough]].
 

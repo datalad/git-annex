@@ -63,11 +63,6 @@ buildFlags = filter (not . null)
 #ifdef WITH_DESKTOP_NOTIFY
 	, "DesktopNotify"
 #endif
-#ifdef WITH_XMPP
-	, "XMPP"
-#else
-#warning Building without XMPP.
-#endif
 #ifdef WITH_CONCURRENTOUTPUT
 	, "ConcurrentOutput"
 #else

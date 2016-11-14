@@ -76,7 +76,7 @@ transferScannerThread urlrenderer = namedThread "TransferScanner" $ do
 	 -   to determine if the remote has been emptied.
 	 -}
 	startupScan = do
-		reconnectRemotes True =<< syncGitRemotes <$> getDaemonStatus
+		reconnectRemotes =<< syncGitRemotes <$> getDaemonStatus
 		addScanRemotes True =<< syncDataRemotes <$> getDaemonStatus
 
 {- This is a cheap scan for failed transfers involving a remote. -}

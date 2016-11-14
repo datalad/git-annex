@@ -41,10 +41,6 @@ import Assistant.Threads.WebApp
 #ifdef WITH_PAIRING
 import Assistant.Threads.PairListener
 #endif
-#ifdef WITH_XMPP
-import Assistant.Threads.XMPPClient
-import Assistant.Threads.XMPPPusher
-#endif
 #else
 import Assistant.Types.UrlRenderer
 #endif
@@ -152,11 +148,6 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 #ifdef WITH_WEBAPP
 #ifdef WITH_PAIRING
 				, assist $ pairListenerThread urlrenderer
-#endif
-#ifdef WITH_XMPP
-				, assist $ xmppClientThread urlrenderer
-				, assist $ xmppSendPackThread urlrenderer
-				, assist $ xmppReceivePackThread urlrenderer
 #endif
 #endif
 				, assist pushThread

@@ -16,11 +16,6 @@
 
 /config ConfigurationR GET
 /config/preferences PreferencesR GET POST
-/config/xmpp XMPPConfigR GET POST
-/config/xmpp/for/self XMPPConfigForPairSelfR GET POST
-/config/xmpp/for/frield XMPPConfigForPairFriendR GET POST
-/config/xmpp/needcloudrepo/#UUID NeedCloudRepoR GET
-/config/xmpp/disconnect DisconnectXMPPR GET
 /config/needconnection ConnectionNeededR GET
 /config/fsck ConfigFsckR GET POST
 /config/fsck/preferences ConfigFsckPreferencesR POST
@@ -67,14 +62,6 @@
 /config/repository/pair/local/running/#SecretReminder RunningLocalPairR GET
 /config/repository/pair/local/finish/#PairMsg FinishLocalPairR GET POST
 
-/config/repository/pair/xmpp/self/start StartXMPPPairSelfR GET
-/config/repository/pair/xmpp/self/running RunningXMPPPairSelfR GET
-
-/config/repository/pair/xmpp/friend/start StartXMPPPairFriendR GET
-/config/repository/pair/xmpp/friend/running/#BuddyKey RunningXMPPPairFriendR GET
-/config/repository/pair/xmpp/friend/accept/#PairKey ConfirmXMPPPairFriendR GET
-/config/repository/pair/xmpp/friend/finish/#PairKey FinishXMPPPairFriendR GET
-
 /config/repository/enable/rsync/#UUID EnableRsyncR GET POST
 /config/repository/enable/gcrypt/#UUID EnableSshGCryptR GET POST
 /config/repository/enable/directory/#UUID EnableDirectoryR GET
@@ -102,9 +89,6 @@
 
 /sidebar/#NotificationId SideBarR GET
 /notifier/sidebar NotifierSideBarR GET
-
-/buddylist/#NotificationId BuddyListR GET
-/notifier/buddylist NotifierBuddyListR GET
 
 /repolist/#NotificationId/#RepoSelector RepoListR GET
 /notifier/repolist/#RepoSelector NotifierRepoListR GET

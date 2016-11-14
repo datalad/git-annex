@@ -15,7 +15,6 @@ module Assistant.WebApp.Types where
 import Assistant.Common
 import Assistant.Ssh
 import Assistant.Pairing
-import Assistant.Types.Buddies
 import Utility.NotificationBroadcaster
 import Utility.WebApp
 import Utility.Yesod
@@ -159,14 +158,6 @@ instance PathPiece SecretReminder where
 	fromPathPiece = readish . unpack
 
 instance PathPiece UUID where
-	toPathPiece = pack . show
-	fromPathPiece = readish . unpack
-
-instance PathPiece BuddyKey where
-	toPathPiece = pack . show
-	fromPathPiece = readish . unpack
-
-instance PathPiece PairKey where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack
 

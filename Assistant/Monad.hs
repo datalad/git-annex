@@ -40,8 +40,6 @@ import Assistant.Types.BranchChange
 import Assistant.Types.Commits
 import Assistant.Types.Changes
 import Assistant.Types.RepoProblem
-import Assistant.Types.Buddies
-import Assistant.Types.NetMessager
 import Assistant.Types.ThreadName
 import Assistant.Types.RemoteControl
 import Assistant.Types.CredPairCache
@@ -68,8 +66,6 @@ data AssistantData = AssistantData
 	, changePool :: ChangePool
 	, repoProblemChan :: RepoProblemChan
 	, branchChangeHandle :: BranchChangeHandle
-	, buddyList :: BuddyList
-	, netMessager :: NetMessager
 	, remoteControl :: RemoteControl
 	, credPairCache :: CredPairCache
 	}
@@ -88,8 +84,6 @@ newAssistantData st dstatus = AssistantData
 	<*> newChangePool
 	<*> newRepoProblemChan
 	<*> newBranchChangeHandle
-	<*> newBuddyList
-	<*> newNetMessager
 	<*> newRemoteControl
 	<*> newCredPairCache
 

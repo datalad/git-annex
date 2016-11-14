@@ -10,8 +10,6 @@ module Assistant.Threads.Merger where
 import Assistant.Common
 import Assistant.TransferQueue
 import Assistant.BranchChange
-import Assistant.DaemonStatus
-import Assistant.ScanRemotes
 import Assistant.Sync
 import Utility.DirWatcher
 import Utility.DirWatcher.Types
@@ -19,11 +17,6 @@ import qualified Annex.Branch
 import qualified Git
 import qualified Git.Branch
 import qualified Command.Sync
-import Annex.TaggedPush
-import Remote (remoteFromUUID)
-
-import qualified Data.Set as S
-import qualified Data.Text as T
 
 {- This thread watches for changes to .git/refs/, and handles incoming
  - pushes. -}
@@ -70,8 +63,7 @@ onChange file
 		branchChanged
 		diverged <- liftAnnex Annex.Branch.forceUpdate
 		when diverged $
-			unlessM handleDesynced $
-				queueDeferredDownloads "retrying deferred download" Later
+			queueDeferredDownloads "retrying deferred download" Later
 	| "/synced/" `isInfixOf` file =
 		mergecurrent =<< liftAnnex (join Command.Sync.getCurrBranch)
 	| otherwise = noop
@@ -90,22 +82,6 @@ onChange file
 					Git.Branch.AutomaticCommit
 					changedbranch
 	mergecurrent _ = noop
-
-	handleDesynced = case fromTaggedBranch changedbranch of
-		Nothing -> return False
-		Just (u, info) -> do
-			mr <- liftAnnex $ remoteFromUUID u
-			case mr of
-				Nothing -> return False
-				Just r -> do
-					s <- desynced <$> getDaemonStatus
-					if S.member u s || Just (T.unpack $ getXMPPClientID r) == info
-						then do
-							modifyDaemonStatus_ $ \st -> st
-								{ desynced = S.delete u s }
-							addScanRemotes True [r]
-							return True
-						else return False
 
 equivBranches :: Git.Ref -> Git.Ref -> Bool
 equivBranches x y = base x == base y

@@ -260,7 +260,7 @@ getSyncNowRepositoryR uuid = do
 	if u == uuid
 		then do
 			thread <- liftAssistant $ asIO $
-				reconnectRemotes True
+				reconnectRemotes
 					=<< (syncRemotes <$> getDaemonStatus)
 			void $ liftIO $ forkIO thread
 		else maybe noop (liftAssistant . syncRemote)

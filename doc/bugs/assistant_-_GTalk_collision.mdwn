@@ -15,3 +15,5 @@ I expect to remain invisible, but I get the following warning: "Oops! You are no
 Syncing between the repositories works ok.
 
 [[!tag /design/assistant]]
+
+> [[done]]; xmpp support has been removed. --[[Joey]]

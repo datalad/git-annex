@@ -106,9 +106,6 @@ import qualified Command.Assistant
 #ifdef WITH_WEBAPP
 import qualified Command.WebApp
 #endif
-#ifdef WITH_XMPP
-import qualified Command.XMPPGit
-#endif
 import qualified Command.RemoteDaemon
 #endif
 import qualified Command.Test
@@ -212,9 +209,6 @@ cmds testoptparser testrunner =
 	, Command.Assistant.cmd
 #ifdef WITH_WEBAPP
 	, Command.WebApp.cmd
-#endif
-#ifdef WITH_XMPP
-	, Command.XMPPGit.cmd
 #endif
 	, Command.RemoteDaemon.cmd
 #endif
