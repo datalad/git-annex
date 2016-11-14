@@ -46,9 +46,13 @@ or [cjdns](https://github.com/cjdelisle/cjdns) or tor or i2p or [magic wormhole]
 
 * Awesome.
 * Easy to install, use; very well known.
+* May need root to set up a hidden service.
 * There's been some [haskell packages developed recently](http://www.leonmergen.com/haskell/privacy/2015/05/30/on-anonymous-networking-in-haskell-announcing-tor-and-i2p-for-haskell.html) 
   to communicate with tor and set up onion addresses for a service.
   Could be used to make git-annex run as a hidden service.
+  However, that relies on tor being configured with a ControlPort,
+  without authentication. The normal tor configuration does not enable a
+  ControlPort.
 
 ## i2p status
 
@@ -60,71 +64,73 @@ or [cjdns](https://github.com/cjdelisle/cjdns) or tor or i2p or [magic wormhole]
 * doesn't require a running daemon
 * can transfer arbitrary blobs (strings, directories, files)
 
-## implementation basics
+## general design
 
-* Add a telehash.log that maps between uuid and telehash address.
-  Or let's generalize it a bit; since things like snow work close enough
-  to the same. Make it address.log and map between uuid and (networktype, address)
-* On startup, assistant creates a new telehash keypair if not already
-  present; stores this locally and generates a telehash address from it,
-  stored in address.log.
-  (Or, if using snow, uses dns to look up the encryption public key address
-  of the local snow server, and stores that in address.log.)
-* Use telehash for notifications of changes to the repository
-* Do git push over telehash. (Pretty easy, may need rate limiting in
-  situations involving relays.)
-* Remove git push over XMPP (which has several problems including
-  XMPP being an unreliable transport, requiring a separate XMPP account per
-  repo, and XMPP not being end-to-end encrypted)
+* Make address.log that contains (uuid, transport, address, Maybe authtoken)
+* The authtoken is an additional guard, to protect against transports
+  where the address might be able to be guessed, or observed by the rest of
+  the network.
+* Some addresses can be used with only the provided authtoken
+  from the address.log. Remotes can be auto-enabled for these.
+* Other addresses have Nothing povided for the authtoken, and one
+  has to instead be provided during manual enabling of the remote.
+* The remotedaemon runs, and/or communicates with the program implementing
+  the network transport. For example for tor, the remotedaemon runs
+  the hidden service, and also connects to the tor hidden services of
+  other nodes.
+* The remotedaemon handles both sides of git push over the transport.
+* The remotedaemon may also support sending objects over the transport,
+  depending on the transport.
 
 ## address discovery
 
-The address is a public key, so won't want to type that in. Need discovery.
+The address is a public key, and the authtoken is some large chunk of data,
+so won't want to type that in. Need discovery.
 
 * Easy way is any set of repos that are already connected can communicate
   them via address.log.
-* Local pairing can be used for address discovery. Could be made
-  to work without ssh (with content transfer over telehash discussed
-  below).
-* XMPP pairing can also be used for address discovery. (Note that
-  MITM attacks are possible.) Is it worth keeping XMPP in git-annex just
-  for this?
-* Addresses of repositories can be communicated out of band (eg,
-  via an OTR session or gpg signed mail), and pasted into the webapp to
-  initiate a repository pairing that then proceeds entirely over telehash.
-  Once both sides do this, the pairing can proceed automatically.
+* Address and authtoken can be communicated out of band (eg,
+  via an OTR session or gpg encrypted mail or phone call),
+  and pasted into the webapp.
+* Use eg, electrum-mnemonic to encode the address+authtoken so that
+  it can be read over the phone.
+* Users may not have a way to communicate with perfect forward secrecy.
+  So it would be good to have a address+authtoken that can only be used
+  one time during pairing:
 
-## content transfer over telehash
+  1. Alice uses the webapp to generate a one-time address+authtoken,
+     and sends it into a message to Bob.
+  2. Bob enters it into his webapp.
+  3. Bob's assistant contacts Alice's over the transport, presents the
+     one-time authtoken. (Alice's assistant accepts it, and marks it as
+     used so it cannot be used again.)
+  4. Alice's webapp shows that it's ready to finish pairing; so does Bob's.
+     Both wait for their users to confirm before proceeding.
+  5. Alice's assistant generates a new, permanant use authtoken, sends it
+     to Bob's assistant, which stores it and enables a remote using it.
+  6. Bob's assistant generates a new, permanant use authtoken, sends it to
+     Alice's assistant, which stores it and enables a remote using it.
+  7. Alice and Bob's assistants are now paired.
 
-* In some circumstances, it would be ok to do annexed content transfer
-  over telehash. 
-  Need to check if there are MTU problems with large data bodies in
-  telehash messages.  
-  Probably not when a bridge is being used, due to required rate
-  limiting in bridging over telehash. Cloud transfer remotes still needed for
-  those situations.  
-  (And it should be fine to do it over snow, maybe more so.)  
-* On a LAN, telehash can be used to determine the current local IP address
-  of another computer on the LAN. The 2 could then determine if either uses
-  ssh and if so use regular git-annex-shell for transfers. Or could do
-  annexed content transfer directly over telehash.  
-  (Snow does not provide this feature AFAIK.)
+  Note that this exchange can be actively MITMed. If Eve can intercept
+  Alice's message to Bob, then Eve can pair with Alice. Or, if Eve can
+  forge a message from Alice to Bob, Eve can trick Bob into pairing with
+  her.
 
-## generic git-remote-telehash
+  If they make a phone call, it's much harder for Eve to MITM it.
+  Eve would need to listen to Alice reading the authtoken and enter it
+  before Bob does, so pairing with Alice. But as long as Alice waits
+  for Bob to confirm he's ready to finish pairing, this will fail,
+  because Bob won't get to that point if the authtoken is intercepted.
 
-This might turn out to be easy to split off from git-annex, so `git pull`
-and `git push` can be used at the command line to access telehash remotes.
-Allows using general git entirely decentralized and with end-to-end
-encryption.
-
-## separate daemon?
+## remotedaemon
 
 See [[git-remote-daemon]] for its design.
 
 Advantages:
 
 * `git annex sync` could also use the running daemon
-* `git-remote-telehash` could use the running daemon
+* `git-remote-$transport` could use the running daemon
 * c-telehash might end up linked to openssl, which has licence combination
   problems with git-annex. A separate process not using git-annex's code
   would avoid this.
