@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="gfa@1e86118cd41fbfea50004af221471ad97b55af18"
+ nickname="gfa"
+ avatar="http://cdn.libravatar.org/avatar/4678da4da55c67fa668e31ea0a76b201"
+ subject="same on Debian"
+ date="2016-11-14T09:13:19Z"
+ content="""
+I face the same issue on Debian testing
+
+git-annex 6.20161012-1
+git 1:2.10.2-1
+"""]]
