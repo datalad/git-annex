@@ -4,13 +4,13 @@ git-annex enable-tor - enable tor hidden service
 
 # SYNOPSIS
 
-git annex enable-tor localport
+git annex enable-tor userid uuid
 
 # DESCRIPTION
 
 This plumbing-level command enables a tor hidden service for git-annex,
-using the specified local port number. It outputs to stdout a line
-of the form "address.onion:onionport"
+using the specified repository uuid and userid. 
+It outputs to stdout a line of the form "address.onion:onionport socketfile"
 
 This command has to be run by root, since it modifies `/etc/tor/torrc`.
 

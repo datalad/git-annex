@@ -9,39 +9,39 @@ module Utility.Tor where
 
 import Common
 import Utility.ThreadScheduler
+import System.PosixCompat.Types
 import Data.Char
 
-type LocalPort = Int
 type OnionPort = Int
 type OnionAddress = String
+type OnionSocket = FilePath
 
--- | Adds a hidden service connecting to localhost on the specified local port.
+-- | Adds a hidden service connecting to localhost, using some kind
+-- of unique identifier.
+--
 -- This will only work if run as root, and tor has to already be running.
 --
 -- Picks a port number for the hidden service that is not used by any
 -- other hidden service (and is >= 1024). Returns the hidden service's
--- onion address and port.
-
--- If there is already a hidden service for the specified local port,
--- returns its information without making any changes.
-addHiddenService :: LocalPort -> IO (OnionAddress, OnionPort)
-addHiddenService localport = do
-	ls <- map (separate isSpace) . lines <$> readFile torrc
-	let usedports = mapMaybe readish $
-		map (drop 1 . dropWhile (/= ':')) $
-		map snd $
-		filter (\(k, _) -> k == "HiddenServicePort") ls
-	let newport = Prelude.head $ filter (`notElem` usedports) [1024..]
-	let dir = libDir </> "hidden_service" ++ show localport
-	if localport `elem` usedports
-		then waithiddenservice 1 dir newport
-		else do
+-- onion address, port, and the unix socket file to use.
+-- 
+-- If there is already a hidden service for the specified unique
+-- identifier, returns its information without making any changes.
+addHiddenService :: UserID -> String -> IO (OnionAddress, OnionPort, OnionSocket)
+addHiddenService uid ident = do
+	ls <- lines <$> readFile torrc
+	let portssocks = mapMaybe (parseportsock . separate isSpace) ls
+	case filter (\(_, s) -> s == sockfile) portssocks of
+		((p, _s):_) -> waithiddenservice 1 p
+		_ -> do
+			let newport = Prelude.head $
+				filter (`notElem` map fst portssocks) [1024..]
 			writeFile torrc $ unlines $
-				map (\(k, v) -> k ++ " " ++ v) ls ++
+				ls ++
 				[ ""
-				, "HiddenServiceDir " ++ dir
+				, "HiddenServiceDir " ++ hsdir
 				, "HiddenServicePort " ++ show newport ++ 
-					" 127.0.0.1:" ++ show localport
+					" unix:" ++ sockfile
 				]
 			-- Reload tor, so it will see the new hidden
 			-- service and generate the hostname file for it.
@@ -51,21 +51,32 @@ addHiddenService localport = do
 				]
 			unless reloaded $
 				error "failed to reload tor, perhaps the tor service is not running"
-			waithiddenservice 120 dir newport
+			waithiddenservice 120 newport
   where
-	waithiddenservice :: Int -> FilePath -> OnionPort -> IO (OnionAddress, OnionPort)
-	waithiddenservice 0 _ _ = error "tor failed to create hidden service, perhaps the tor service is not running"
-	waithiddenservice n dir newport = do
-		v <- tryIO $ readFile (dir </> "hostname")
+	parseportsock ("HiddenServicePort", l) = do
+		p <- readish $ takeWhile (not . isSpace) l
+		return (p, drop 1 (dropWhile (/= ':') l))
+	parseportsock _ = Nothing
+	
+	hsdir = libDir </> "hidden_service_" ++ show uid ++ "_" ++ ident
+	sockfile = runDir uid </> ident ++ ".sock"
+
+	waithiddenservice :: Int -> OnionPort -> IO (OnionAddress, OnionPort, OnionSocket)
+	waithiddenservice 0 _ = error "tor failed to create hidden service, perhaps the tor service is not running"
+	waithiddenservice n p = do
+		v <- tryIO $ readFile (hsdir </> "hostname")
 		case v of
 			Right s | ".onion\n" `isSuffixOf` s -> 
-				return (takeWhile (/= '\n') s, newport)
+				return (takeWhile (/= '\n') s, p, sockfile)
 			_ -> do
 				threadDelaySeconds (Seconds 1)
-				waithiddenservice (n-1) dir newport
+				waithiddenservice (n-1) p
 
 torrc :: FilePath
 torrc = "/etc/tor/torrc"
 
 libDir :: FilePath
 libDir = "/var/lib/tor"
+
+runDir :: UserID -> FilePath
+runDir uid = "/var/run/user" </> show uid
