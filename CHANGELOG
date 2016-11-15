@@ -1,3 +1,14 @@
+git-annex (6.20161112) UNRELEASED; urgency=medium
+
+  * git-annex.cabal: Loosen bounds on persistent to allow 2.5, which
+    on Debian has been patched to work with esqueleto.
+    This may break cabal's resolver on non-Debian systems;
+    if so, either use stack to build, or run cabal with 
+    --constraint='persistent ==2.2.4.1'
+    Hopefully this mess with esqueleto will be resolved soon.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 15 Nov 2016 11:15:27 -0400
+
 git-annex (6.20161111) unstable; urgency=medium
 
   * Restarting a crashing git process could result in filename encoding

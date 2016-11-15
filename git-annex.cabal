@@ -359,10 +359,7 @@ Executable git-annex
    old-locale,
    esqueleto,
    persistent-sqlite, 
-   -- Old version needed due to
-   -- https://github.com/prowdsponsor/esqueleto/issues/137
-   -- and also temporarily to make ghc 8 builds work
-   persistent (< 2.5),
+   persistent,
    persistent-template,
    aeson,
    unordered-containers,
