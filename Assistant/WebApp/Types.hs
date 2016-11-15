@@ -10,7 +10,10 @@
 {-# LANGUAGE FlexibleInstances, FlexibleContexts, ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Assistant.WebApp.Types where
+module Assistant.WebApp.Types (
+	module Assistant.WebApp.Types,
+	Route
+) where
 
 import Assistant.Common
 import Assistant.Ssh
