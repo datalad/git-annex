@@ -169,7 +169,12 @@ prepMerge :: Annex ()
 prepMerge = Annex.changeDirectory =<< fromRepo Git.repoPath
 
 mergeConfig :: [Git.Merge.MergeConfig]	
-mergeConfig = [Git.Merge.MergeNonInteractive]
+mergeConfig = 
+	[ Git.Merge.MergeNonInteractive
+	-- In several situations, unrelated histories should be merged
+	-- together. This includes pairing in the assistant etc.
+	, Git.Merge.MergeUnrelatedHistories
+	]
 
 merge :: CurrBranch -> [Git.Merge.MergeConfig] -> Git.Branch.CommitMode -> Git.Branch -> Annex Bool
 merge (Just b, Just adj) mergeconfig commitmode tomerge =

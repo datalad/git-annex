@@ -6,6 +6,9 @@ git-annex (6.20161112) UNRELEASED; urgency=medium
     if so, either use stack to build, or run cabal with 
     --constraint='persistent ==2.2.4.1'
     Hopefully this mess with esqueleto will be resolved soon.
+  * sync: Pass --allow-unrelated-histories to git merge when used with git
+    git 2.9.0 or newer. This makes merging a remote into a freshly created
+    direct mode repository work the same as it works in indirect mode.
 
  -- Joey Hess <id@joeyh.name>  Tue, 15 Nov 2016 11:15:27 -0400
 
