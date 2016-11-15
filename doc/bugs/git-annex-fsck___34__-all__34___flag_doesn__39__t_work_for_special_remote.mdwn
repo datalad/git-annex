@@ -1,0 +1,26 @@
+### Please describe the problem.
+I tried to use `git-annex-fsck --all --from remote` to check files on a special remote, but git-annex did a scan of the local repo instead. If I don't use the `--all` flag, it correctly checks the files on the remote (but just the files in the current checked out branch).
+
+### What steps will reproduce the problem?
+    mkdir repo
+    mkdir special
+    cd repo
+    git init
+    git annex init
+    git annex initremote special type=directory directory=../special encryption=none
+    touch testfile
+    git annex add testfile
+    git annex copy testfile --to special
+    chmod -R +w ../special/*
+    rm -r ../special/*
+    git annex fsck --all --from special   # should check special remote but checks local repo instead
+    git diff git-annex^ git-annex         # activity log shows that it checked special remote
+    git annex fsck --from special         # correctly checks special remote, identifies missing file
+
+
+### What version of git-annex are you using? On what operating system?
+6.20161012 on Ubuntu 16.10
+
+### Have you had any luck using git-annex before?
+Yes, it's been very helpful for managing large files between laptops, desktops, external storage, and remote storage.
+
