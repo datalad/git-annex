@@ -1,3 +1,26 @@
+git-annex (6.20161111) unstable; urgency=medium
+
+  * Restarting a crashing git process could result in filename encoding
+    issues when not in a unicode locale, as the restarted processes's
+    handles were not read in raw mode.
+  * Make .git/annex/ssh.config file work with versions of ssh older than
+    7.3, which don't support Include. When used with an older version
+    of ssh, any ServerAliveInterval in ~/.ssh/config will be overridden
+    by .git/annex/ssh.config.
+  * S3: Support the special case endpoint needed for the cn-north-1 region.
+  * Webapp: Don't list the Frankfurt S3 region, as this (and some other new
+    regions) need V4 authorization which the aws library does not yet use.
+  * reinject --known: Avoid second, unncessary checksum of file.
+  * OSX: Remove RPATHs from git-annex binary, which are not needed,
+    slow down startup, and break the OSX Sierra linker.
+  * webapp: Explicitly avoid checking for auth in static subsite
+    requests. Yesod didn't used to do auth checks for that, but this may
+    have changed.
+  * Linux standalone: Avoid using hard links in the tarball so it can be
+    untarred on eg, afs which does not support them.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 11 Nov 2016 14:46:39 -0400
+
 git-annex (6.20161031-1) unstable; urgency=medium
 
   * Package 6.20161031-1
