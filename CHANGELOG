@@ -13,6 +13,8 @@ git-annex (6.20161112) UNRELEASED; urgency=medium
     only use backtraces for unexpected errors.
   * fsck --all --from was checking the existence and content of files
     in the local repository, rather than on the special remote. Oops.
+  * Linux arm standalone: Build with a 32kb page size, which is needed
+    on several ARM NAS devices, including Drobo 5N, and WD NAS.
 
  -- Joey Hess <id@joeyh.name>  Tue, 15 Nov 2016 11:15:27 -0400
 
