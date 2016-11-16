@@ -46,8 +46,12 @@ import Utility.Data
  - where there's a problem that the user is excpected to see in some
  - circumstances. -}
 giveup :: [Char] -> a
+#ifdef MIN_VERSION_base
 #if MIN_VERSION_base(4,9,0)
 giveup = errorWithoutStackTrace
+#else
+giveup = error
+#endif
 #else
 giveup = error
 #endif
