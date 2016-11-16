@@ -1,3 +1,9 @@
+git-annex (6.20161111-1) unstable; urgency=medium
+
+  * Package 6.20161111-1
+
+ -- Richard Hartmann <richih@debian.org>  Wed, 16 Nov 2016 19:39:39 +0100
+
 git-annex (6.20161111) unstable; urgency=medium
 
   * Restarting a crashing git process could result in filename encoding
