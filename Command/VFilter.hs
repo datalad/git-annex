@@ -26,5 +26,5 @@ start params = do
 		let view' = filterView view $
 			map parseViewParam $ reverse params
 		next $ next $ if visibleViewSize view' > visibleViewSize view
-			then error "That would add an additional level of directory structure to the view, rather than filtering it. If you want to do that, use vadd instead of vfilter."
+			then giveup "That would add an additional level of directory structure to the view, rather than filtering it. If you want to do that, use vadd instead of vfilter."
 			else checkoutViewBranch view' narrowView

@@ -32,7 +32,7 @@ seek ps = do
 	-- in the index.
 	(fs, cleanup) <- inRepo $ LsFiles.notInRepo False ps
 	unless (null fs) $
-		error $ "Cannot undo changes to files that are not checked into git: " ++ unwords fs
+		giveup $ "Cannot undo changes to files that are not checked into git: " ++ unwords fs
 	void $ liftIO $ cleanup
 
 	-- Committing staged changes before undo allows later

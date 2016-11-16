@@ -56,7 +56,7 @@ batchInput parser a = do
 			either parseerr a (parser v)
 			batchInput parser a
   where
-	parseerr s = error $ "Batch input parse failure: " ++ s
+	parseerr s = giveup $ "Batch input parse failure: " ++ s
 
 -- Runs a CommandStart in batch mode.
 --

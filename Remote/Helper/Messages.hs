@@ -29,7 +29,7 @@ showChecking :: Describable a => a -> Annex ()
 showChecking v = showAction $ "checking " ++ describe v
 
 cantCheck :: Describable a => a -> e
-cantCheck v = error $ "unable to check " ++ describe v
+cantCheck v = giveup $ "unable to check " ++ describe v
 
 showLocking :: Describable a => a -> Annex ()
 showLocking v = showAction $ "locking " ++ describe v

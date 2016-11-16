@@ -38,7 +38,7 @@ performCommandAction Command { cmdcheck = c, cmdname = name } seek cont = do
 	showerrcount =<< Annex.getState Annex.errcounter
   where
 	showerrcount 0 = noop
-	showerrcount cnt = error $ name ++ ": " ++ show cnt ++ " failed"
+	showerrcount cnt = giveup $ name ++ ": " ++ show cnt ++ " failed"
 
 {- Runs one of the actions needed to perform a command.
  - Individual actions can fail without stopping the whole command,

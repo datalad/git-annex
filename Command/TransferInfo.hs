@@ -59,7 +59,7 @@ start (k:[]) = do
 				, exitSuccess
 				]
 	stop
-start _ = error "wrong number of parameters"
+start _ = giveup "wrong number of parameters"
 
 readUpdate :: IO (Maybe Integer)
 readUpdate = readish <$> getLine

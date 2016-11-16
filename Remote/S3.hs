@@ -136,7 +136,7 @@ s3Setup' new u mcreds c gc
 		-- Ensure user enters a valid bucket name, since
 		-- this determines the name of the archive.org item.
 		let validbucket = replace " " "-" $
-			fromMaybe (error "specify bucket=") $
+			fromMaybe (giveup "specify bucket=") $
 				getBucketName c'
 		let archiveconfig = 
 			-- IA acdepts x-amz-* as an alias for x-archive-*
@@ -252,7 +252,7 @@ retrieve r info Nothing = case getpublicurl info of
 		return False
 	Just geturl -> fileRetriever $ \f k p ->
 		unlessM (downloadUrl k p [geturl k] f) $
-			error "failed to download content"
+			giveup "failed to download content"
 
 retrieveCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
@@ -301,7 +301,7 @@ checkKey r info (Just h) k = do
 checkKey r info Nothing k = case getpublicurl info of
 	Nothing -> do
 		warnMissingCredPairFor "S3" (AWS.creds $ uuid r)
-		error "No S3 credentials configured"
+		giveup "No S3 credentials configured"
 	Just geturl -> do
 		showChecking r
 		withUrlOptions $ checkBoth (geturl k) (keySize k)
@@ -415,7 +415,7 @@ withS3Handle c gc u a = withS3HandleMaybe c gc u $ \mh -> case mh of
 	Just h -> a h
 	Nothing -> do
 		warnMissingCredPairFor "S3" (AWS.creds u)
-		error "No S3 credentials configured"
+		giveup "No S3 credentials configured"
 
 withS3HandleMaybe :: RemoteConfig -> RemoteGitConfig -> UUID -> (Maybe S3Handle -> Annex a) -> Annex a
 withS3HandleMaybe c gc u a = do
@@ -437,7 +437,7 @@ s3Configuration c = cfg
 	{ S3.s3Port = port
 	, S3.s3RequestStyle = case M.lookup "requeststyle" c of
 		Just "path" -> S3.PathStyle
-		Just s -> error $ "bad S3 requeststyle value: " ++ s
+		Just s -> giveup $ "bad S3 requeststyle value: " ++ s
 		Nothing -> S3.s3RequestStyle cfg
 	}
   where
@@ -455,7 +455,7 @@ s3Configuration c = cfg
 	port = let s = fromJust $ M.lookup "port" c in
 		case reads s of
 		[(p, _)] -> p
-		_ -> error $ "bad S3 port value: " ++ s
+		_ -> giveup $ "bad S3 port value: " ++ s
 	cfg = S3.s3 proto endpoint False
 
 tryS3 :: Annex a -> Annex (Either S3.S3Error a)
@@ -475,7 +475,7 @@ data S3Info = S3Info
 extractS3Info :: RemoteConfig -> Annex S3Info
 extractS3Info c = do
 	b <- maybe
-		(error "S3 bucket not configured")
+		(giveup "S3 bucket not configured")
 		(return . T.pack)
 		(getBucketName c)
 	let info = S3Info

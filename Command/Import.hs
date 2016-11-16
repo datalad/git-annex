@@ -62,7 +62,7 @@ seek o = allowConcurrentOutput $ do
 	repopath <- liftIO . absPath =<< fromRepo Git.repoPath
 	inrepops <- liftIO $ filter (dirContains repopath) <$> mapM absPath (importFiles o)
 	unless (null inrepops) $ do
-		error $ "cannot import files from inside the working tree (use git annex add instead): " ++ unwords inrepops
+		giveup $ "cannot import files from inside the working tree (use git annex add instead): " ++ unwords inrepops
 	largematcher <- largeFilesMatcher
 	withPathContents (start largematcher (duplicateMode o)) (importFiles o)
 

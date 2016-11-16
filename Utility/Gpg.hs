@@ -253,7 +253,7 @@ genRandom cmd highQuality size = checksize <$> readStrict cmd params
 			then s
 			else shortread len
 
-	shortread got = error $ unwords
+	shortread got = giveup $ unwords
 		[ "Not enough bytes returned from gpg", show params
 		, "(got", show got, "; expected", show expectedlength, ")"
 		]

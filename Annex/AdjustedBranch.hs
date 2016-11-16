@@ -596,7 +596,7 @@ checkAdjustedClone = ifM isBareRepo
 				aps <- fmap commitParent <$> findAdjustingCommit (AdjBranch currbranch)
 				case aps of
 					Just [p] -> setBasisBranch basis p
-					_ -> error $ "Unable to clean up from clone of adjusted branch; perhaps you should check out " ++ Git.Ref.describe origbranch
+					_ -> giveup $ "Unable to clean up from clone of adjusted branch; perhaps you should check out " ++ Git.Ref.describe origbranch
 			ifM versionSupportsUnlockedPointers
 				( return InAdjustedClone
 				, return NeedUpgradeForAdjustedClone
@@ -610,6 +610,6 @@ isGitVersionSupported = not <$> Git.Version.older "2.2.0"
 checkVersionSupported :: Annex ()
 checkVersionSupported = do
 	unlessM versionSupportsAdjustedBranch $
-		error "Adjusted branches are only supported in v6 or newer repositories."
+		giveup "Adjusted branches are only supported in v6 or newer repositories."
 	unlessM (liftIO isGitVersionSupported) $
-		error "Your version of git is too old; upgrade it to 2.2.0 or newer to use adjusted branches."
+		giveup "Your version of git is too old; upgrade it to 2.2.0 or newer to use adjusted branches."

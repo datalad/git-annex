@@ -100,7 +100,7 @@ genSharedPubKeyCipher cmd keyid highQuality = do
  -
  - When the Cipher is encrypted, re-encrypts it. -}
 updateCipherKeyIds :: LensGpgEncParams encparams => Gpg.GpgCmd -> encparams -> [(Bool, Gpg.KeyId)] -> StorableCipher -> IO StorableCipher
-updateCipherKeyIds _ _ _ SharedCipher{} = error "Cannot update shared cipher"
+updateCipherKeyIds _ _ _ SharedCipher{} = giveup "Cannot update shared cipher"
 updateCipherKeyIds _ _ [] c = return c
 updateCipherKeyIds cmd encparams changes encipher@(EncryptedCipher _ variant ks) = do
 	ks' <- updateCipherKeyIds' cmd changes ks
@@ -113,11 +113,11 @@ updateCipherKeyIds' :: Gpg.GpgCmd -> [(Bool, Gpg.KeyId)] -> KeyIds -> IO KeyIds
 updateCipherKeyIds' cmd changes (KeyIds ks) = do
 	dropkeys <- listKeyIds [ k | (False, k) <- changes ]
 	forM_ dropkeys $ \k -> unless (k `elem` ks) $
-		error $ "Key " ++ k ++ " was not present; cannot remove."
+		giveup $ "Key " ++ k ++ " was not present; cannot remove."
 	addkeys <- listKeyIds [ k | (True, k) <- changes ]
 	let ks' = (addkeys ++ ks) \\ dropkeys
 	when (null ks') $
-		error "Cannot remove the last key."
+		giveup "Cannot remove the last key."
 	return $ KeyIds ks'
   where
 	listKeyIds = concat <$$> mapM (keyIds <$$> Gpg.findPubKeys cmd)

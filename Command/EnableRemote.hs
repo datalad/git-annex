@@ -63,7 +63,7 @@ startSpecialRemote name config Nothing = do
 		_ -> unknownNameError "Unknown remote name."
 startSpecialRemote name config (Just (u, c)) = do
 	let fullconfig = config `M.union` c	
-	t <- either error return (Annex.SpecialRemote.findType fullconfig)
+	t <- either giveup return (Annex.SpecialRemote.findType fullconfig)
 	showStart "enableremote" name
 	gc <- maybe def Remote.gitconfig <$> Remote.byUUID u
 	next $ performSpecialRemote t u fullconfig gc
@@ -94,7 +94,7 @@ unknownNameError prefix = do
 	disabledremotes <- filterM isdisabled =<< Annex.fromRepo Git.remotes
 	let remotesmsg = unlines $ map ("\t" ++) $
 		mapMaybe Git.remoteName disabledremotes
-	error $ concat $ filter (not . null) [prefix ++ "\n", remotesmsg, specialmsg]
+	giveup $ concat $ filter (not . null) [prefix ++ "\n", remotesmsg, specialmsg]
   where
 	isdisabled r = anyM id
 		[ (==) NoUUID <$> getRepoUUID r

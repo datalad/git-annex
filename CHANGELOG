@@ -9,6 +9,8 @@ git-annex (6.20161112) UNRELEASED; urgency=medium
   * sync: Pass --allow-unrelated-histories to git merge when used with git
     git 2.9.0 or newer. This makes merging a remote into a freshly created
     direct mode repository work the same as it works in indirect mode.
+  * Avoid backtraces on expected failures when built with ghc 8;
+    only use backtraces for unexpected errors.
 
  -- Joey Hess <id@joeyh.name>  Tue, 15 Nov 2016 11:15:27 -0400
 

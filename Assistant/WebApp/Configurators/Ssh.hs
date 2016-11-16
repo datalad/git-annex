@@ -196,7 +196,7 @@ postEnableSshGCryptR u = whenGcryptInstalled $
 	enablegcrypt sshdata _ = prepSsh False sshdata $ \sshdata' ->
 		sshConfigurator $
 			checkExistingGCrypt sshdata' $
-				error "Expected to find an encrypted git repository, but did not."
+				giveup "Expected to find an encrypted git repository, but did not."
 	getsshinput = parseSshUrl <=< M.lookup "gitrepo"
 
 getEnableSshGitRemoteR :: UUID -> Handler Html
@@ -475,7 +475,7 @@ checkExistingGCrypt sshdata nope = checkGCryptRepoEncryption repourl nope nope $
 	case mu of
 		Just u -> void $ liftH $
 			combineExistingGCrypt sshdata u
-		Nothing -> error "The location contains a gcrypt repository that is not a git-annex special remote. This is not supported."
+		Nothing -> giveup "The location contains a gcrypt repository that is not a git-annex special remote. This is not supported."
   where
 	repourl = genSshUrl sshdata
 
@@ -641,7 +641,7 @@ enableRsyncNetGCrypt sshinput reponame =
 		checkGCryptRepoEncryption (genSshUrl sshdata) notencrypted notinstalled $
 			enableGCrypt sshdata reponame
   where
-	notencrypted = error "Unexpectedly found a non-encrypted git repository, instead of the expected encrypted git repository."
+	notencrypted = giveup "Unexpectedly found a non-encrypted git repository, instead of the expected encrypted git repository."
 	notinstalled = error "internal"
 
 {- Prepares rsync.net ssh key and creates the directory that will be 

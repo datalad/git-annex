@@ -105,7 +105,7 @@ getRemoteCredPair c gc storage = maybe fromcache (return . Just) =<< fromenv
 				-- Not a problem for shared cipher.
 				case storablecipher of
 					SharedCipher {} -> showLongNote "gpg error above was caused by an old git-annex bug in credentials storage. Working around it.."
-					_ -> error "*** Insecure credentials storage detected for this remote! See https://git-annex.branchable.com/upgrades/insecure_embedded_creds/"
+					_ -> giveup "*** Insecure credentials storage detected for this remote! See https://git-annex.branchable.com/upgrades/insecure_embedded_creds/"
 				fromcreds $ fromB64 enccreds
 	fromcreds creds = case decodeCredPair creds of
 		Just credpair -> do

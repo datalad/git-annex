@@ -292,7 +292,7 @@ updateSyncBranch (Just branch, madj) = do
 
 updateBranch :: Git.Branch -> Git.Branch -> Git.Repo -> IO ()
 updateBranch syncbranch updateto g = 
-	unlessM go $ error $ "failed to update " ++ Git.fromRef syncbranch
+	unlessM go $ giveup $ "failed to update " ++ Git.fromRef syncbranch
   where
 	go = Git.Command.runBool
 		[ Param "branch"

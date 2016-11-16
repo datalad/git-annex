@@ -80,4 +80,4 @@ readProgramFile = do
 cannotFindProgram :: IO a
 cannotFindProgram = do
 	f <- programFile
-	error $ "cannot find git-annex program in PATH or in the location listed in " ++ f
+	giveup $ "cannot find git-annex program in PATH or in the location listed in " ++ f

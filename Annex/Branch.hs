@@ -225,7 +225,7 @@ getHistorical date file =
 	-- This check avoids some ugly error messages when the reflog
 	-- is empty.
 	ifM (null <$> inRepo (Git.RefLog.get' [Param (fromRef fullname), Param "-n1"]))
-		( error ("No reflog for " ++ fromRef fullname)
+		( giveup ("No reflog for " ++ fromRef fullname)
 		, getRef (Git.Ref.dateRef fullname date) file
 		)
 
@@ -574,7 +574,7 @@ checkBranchDifferences ref = do
 		<$> catFile ref differenceLog
 	mydiffs <- annexDifferences <$> Annex.getGitConfig
 	when (theirdiffs /= mydiffs) $
-		error "Remote repository is tuned in incompatable way; cannot be merged with local repository."
+		giveup "Remote repository is tuned in incompatable way; cannot be merged with local repository."
 
 ignoreRefs :: [Git.Sha] -> Annex ()
 ignoreRefs rs = do

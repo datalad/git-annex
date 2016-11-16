@@ -584,7 +584,7 @@ prepIncremental u (Just StartIncrementalO) = do
 	recordStartTime u
 	ifM (FsckDb.newPass u)
 		( StartIncremental <$> openFsckDb u
-		, error "Cannot start a new --incremental fsck pass; another fsck process is already running."
+		, giveup "Cannot start a new --incremental fsck pass; another fsck process is already running."
 		)
 prepIncremental u (Just MoreIncrementalO) =
 	ContIncremental <$> openFsckDb u

@@ -153,7 +153,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
   where
 	changeprogram program = liftIO $ do
 		unlessM (boolSystem program [Param "version"]) $
-			error "New git-annex program failed to run! Not using."
+			giveup "New git-annex program failed to run! Not using."
 		pf <- programFile
 		liftIO $ writeFile pf program
 	

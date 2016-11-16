@@ -95,20 +95,20 @@ list autoinit = do
  -}
 gitSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 gitSetup Nothing _ c _ = do
-	let location = fromMaybe (error "Specify location=url") $
+	let location = fromMaybe (giveup "Specify location=url") $
 		Url.parseURIRelaxed =<< M.lookup "location" c
 	g <- Annex.gitRepo
 	u <- case filter (\r -> Git.location r == Git.Url location) (Git.remotes g) of
 		[r] -> getRepoUUID r
-		[] -> error "could not find existing git remote with specified location"
-		_ -> error "found multiple git remotes with specified location"
+		[] -> giveup "could not find existing git remote with specified location"
+		_ -> giveup "found multiple git remotes with specified location"
 	return (c, u)
 gitSetup (Just u) _ c _ = do
 	inRepo $ Git.Command.run
 		[ Param "remote"
 		, Param "add"
-		, Param $ fromMaybe (error "no name") (M.lookup "name" c)
-		, Param $ fromMaybe (error "no location") (M.lookup "location" c)
+		, Param $ fromMaybe (giveup "no name") (M.lookup "name" c)
+		, Param $ fromMaybe (giveup "no location") (M.lookup "location" c)
 		]
 	return (c, u)
 
@@ -202,7 +202,7 @@ tryGitConfigRead :: Bool -> Git.Repo -> Annex Git.Repo
 tryGitConfigRead autoinit r 
 	| haveconfig r = return r -- already read
 	| Git.repoIsSsh r = store $ do
-		v <- Ssh.onRemote r (pipedconfig, return (Left $ error "configlist failed")) "configlist" [] configlistfields
+		v <- Ssh.onRemote r (pipedconfig, return (Left $ giveup "configlist failed")) "configlist" [] configlistfields
 		case v of
 			Right r'
 				| haveconfig r' -> return r'
@@ -321,7 +321,7 @@ inAnnex rmt key
 		showChecking r
 		ifM (Url.withUrlOptions $ \uo -> anyM (\u -> Url.checkBoth u (keySize key) uo) (keyUrls rmt key))
 			( return True
-			, error "not found"
+			, giveup "not found"
 			)
 	checkremote = Ssh.inAnnex r key
 	checklocal = guardUsable r (cantCheck r) $
@@ -357,7 +357,7 @@ dropKey r key
 					logStatus key InfoMissing
 					Annex.Content.saveState True
 				return True
-	| Git.repoIsHttp (repo r) = error "dropping from http remote not supported"
+	| Git.repoIsHttp (repo r) = giveup "dropping from http remote not supported"
 	| otherwise = commitOnCleanup r $ Ssh.dropKey (repo r) key
 
 lockKey :: Remote -> Key -> (VerifiedCopy -> Annex r) -> Annex r
@@ -414,7 +414,7 @@ lockKey r key callback
 					failedlock
 	| otherwise = failedlock
   where
-	failedlock = error "can't lock content"
+	failedlock = giveup "can't lock content"
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
 copyFromRemote :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
@@ -444,7 +444,7 @@ copyFromRemote' r key file dest meterupdate
 	| Git.repoIsSsh (repo r) = unVerified $ feedprogressback $ \p -> do
 		Ssh.rsyncHelper (Just (combineMeterUpdate meterupdate p))
 			=<< Ssh.rsyncParamsRemote False r Download key dest file
-	| otherwise = error "copying from non-ssh, non-http remote not supported"
+	| otherwise = giveup "copying from non-ssh, non-http remote not supported"
   where
 	{- Feed local rsync's progress info back to the remote,
 	 - by forking a feeder thread that runs
@@ -547,7 +547,7 @@ copyToRemote' r key file meterupdate
 			unlocked <- isDirect <||> versionSupportsUnlockedPointers
 			Ssh.rsyncHelper (Just meterupdate)
 				=<< Ssh.rsyncParamsRemote unlocked r Upload key object file
-	| otherwise = error "copying to non-ssh repo not supported"
+	| otherwise = giveup "copying to non-ssh repo not supported"
   where
 	copylocal Nothing = return False
 	copylocal (Just (object, checksuccess)) = do

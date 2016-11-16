@@ -59,7 +59,7 @@ getChunkConfig m =
 		Just size
 			| size == 0 -> NoChunks
 			| size > 0 -> c (fromInteger size)
-		_ -> error $ "bad configuration " ++ f ++ "=" ++ v
+		_ -> giveup $ "bad configuration " ++ f ++ "=" ++ v
 
 -- An infinite stream of chunk keys, starting from chunk 1.
 newtype ChunkKeyStream = ChunkKeyStream [Key]

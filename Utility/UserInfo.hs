@@ -16,6 +16,7 @@ module Utility.UserInfo (
 
 import Utility.Env
 import Utility.Data
+import Utility.Exception
 
 import System.PosixCompat
 import Control.Applicative
@@ -25,7 +26,7 @@ import Prelude
  -
  - getpwent will fail on LDAP or NIS, so use HOME if set. -}
 myHomeDir :: IO FilePath
-myHomeDir = either error return =<< myVal env homeDirectory
+myHomeDir = either giveup return =<< myVal env homeDirectory
   where
 #ifndef mingw32_HOST_OS
 	env = ["HOME"]

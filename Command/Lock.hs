@@ -79,7 +79,7 @@ performNew file key = do
 		unlessM (sameInodeCache obj (maybeToList mfc)) $ do
 			modifyContent obj $ replaceFile obj $ \tmp -> do
 				unlessM (checkedCopyFile key obj tmp Nothing) $
-					error "unable to lock file"
+					giveup "unable to lock file"
 			Database.Keys.storeInodeCaches key [obj]
 
 	-- Try to repopulate obj from an unmodified associated file.
@@ -115,4 +115,4 @@ performOld file = do
 	next $ return True
 
 errorModified :: a
-errorModified =  error "Locking this file would discard any changes you have made to it. Use 'git annex add' to stage your changes. (Or, use --force to override)"
+errorModified =  giveup "Locking this file would discard any changes you have made to it. Use 'git annex add' to stage your changes. (Or, use --force to override)"

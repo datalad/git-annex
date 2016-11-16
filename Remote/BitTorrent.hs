@@ -111,7 +111,7 @@ dropKey k = do
  - implemented, it tells us nothing about the later state of the torrent.
  -}
 checkKey :: Key -> Annex Bool
-checkKey = error "cannot reliably check torrent status"
+checkKey = giveup "cannot reliably check torrent status"
 
 getBitTorrentUrls :: Key -> Annex [URLString]
 getBitTorrentUrls key = filter supported <$> getUrls key
@@ -138,7 +138,7 @@ checkTorrentUrl u = do
 	registerTorrentCleanup u
 	ifM (downloadTorrentFile u)
 		( torrentContents u
-		, error "could not download torrent file"
+		, giveup "could not download torrent file"
 		)
 
 {- To specify which file inside a multi-url torrent, the file number is
@@ -268,13 +268,13 @@ downloadTorrentContent k u dest filenum p = do
 		fs <- liftIO $ map fst <$> torrentFileSizes torrent
 		if length fs >= filenum
 			then return (fs !! (filenum - 1))
-			else error "Number of files in torrent seems to have changed."
+			else giveup "Number of files in torrent seems to have changed."
 
 checkDependencies :: Annex ()
 checkDependencies = do
 	missing <- liftIO $ filterM (not <$$> inPath) deps
 	unless (null missing) $
-		error $ "need to install additional software in order to download from bittorrent: " ++ unwords missing
+		giveup $ "need to install additional software in order to download from bittorrent: " ++ unwords missing
   where
 	deps =
 		[ "aria2c"
@@ -343,7 +343,7 @@ torrentFileSizes torrent = do
 	let mkfile = joinPath . map (scrub . decodeBS)
 	b <- B.readFile torrent
 	return $ case readTorrent b of
-		Left e -> error $ "failed to parse torrent: " ++ e
+		Left e -> giveup $ "failed to parse torrent: " ++ e
 		Right t -> case tInfo t of
 			SingleFile { tLength = l, tName = f } ->
 				[ (mkfile [f], l) ]
@@ -366,7 +366,7 @@ torrentFileSizes torrent = do
 				_ -> parsefailed (show v)
   where
 	getfield = btshowmetainfo torrent
-	parsefailed s = error $ "failed to parse btshowmetainfo output for torrent file: " ++ show s
+	parsefailed s = giveup $ "failed to parse btshowmetainfo output for torrent file: " ++ show s
 
 	-- btshowmetainfo outputs a list of "filename (size)"
 	splitsize d l = (scrub (d </> fn), sz)
@@ -379,7 +379,7 @@ torrentFileSizes torrent = do
 #endif
 	-- a malicious torrent file might try to do directory traversal
 	scrub f = if isAbsolute f || any (== "..") (splitPath f)
-		then error "found unsafe filename in torrent!"
+		then giveup "found unsafe filename in torrent!"
 		else f
 
 torrentContents :: URLString -> Annex UrlContents
