@@ -11,6 +11,8 @@ git-annex (6.20161112) UNRELEASED; urgency=medium
     direct mode repository work the same as it works in indirect mode.
   * Avoid backtraces on expected failures when built with ghc 8;
     only use backtraces for unexpected errors.
+  * fsck --all --from was checking the existence and content of files
+    in the local repository, rather than on the special remote. Oops.
 
  -- Joey Hess <id@joeyh.name>  Tue, 15 Nov 2016 11:15:27 -0400
 

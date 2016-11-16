@@ -24,3 +24,5 @@ I tried to use `git-annex-fsck --all --from remote` to check files on a special 
 ### Have you had any luck using git-annex before?
 Yes, it's been very helpful for managing large files between laptops, desktops, external storage, and remote storage.
 
+> Thanks for an excellent test case and a clear bug report. I've fixed this
+> bug. [[done]] --[[Joey]]
