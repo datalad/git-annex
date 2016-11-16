@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-11-16T18:41:25Z"
+ content="""
+It would be helpful to have more details, such as an example of software
+distributed for windows that way, or documentation of how such an archive
+is used on windows.
+
+The git-annex Windows installer is a exe file that uses the NullSoft
+installation system. As far as I know that's pretty common in the Windows
+world.
+
+I don't see any point in zipping up the single exe. It would be possible to
+make a zip containing all the files that instlling the exe installs. But,
+the installation process has to integrate git-annex with git, it installs
+menu items, etc. A zip file would not be able to handle that integration.
+So its use seems limited to me.
+"""]]
