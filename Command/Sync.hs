@@ -172,7 +172,10 @@ mergeConfig :: [Git.Merge.MergeConfig]
 mergeConfig = 
 	[ Git.Merge.MergeNonInteractive
 	-- In several situations, unrelated histories should be merged
-	-- together. This includes pairing in the assistant etc.
+	-- together. This includes pairing in the assistant, and merging
+	-- from a remote into a newly created direct mode repo.
+	-- (Once direct mode is removed, this could be changed, so only
+	-- the assistant uses it.)
 	, Git.Merge.MergeUnrelatedHistories
 	]
 
