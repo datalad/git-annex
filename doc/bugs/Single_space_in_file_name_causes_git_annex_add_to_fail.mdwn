@@ -51,3 +51,7 @@ Not sure whether this means that this bug is actually fixed or whether it's an a
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Just starting out with it as a way of archiving some of my media seems to work great apart from this. Thanks a bunch!
+
+> This bug was already fixed in git-annex 6.20161031. I told the Debian
+> maintainer about the bug fix at the time; package has not been updated
+> yet. [[done]] on git-annex side. --[[Joey]] 
