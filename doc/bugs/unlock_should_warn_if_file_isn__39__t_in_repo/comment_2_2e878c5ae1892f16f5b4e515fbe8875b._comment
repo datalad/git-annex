@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="edward"
+ avatar="http://cdn.libravatar.org/avatar/1e64ab07e0faced09520a5c589deb70b"
+ subject="comment 2"
+ date="2016-11-07T17:43:31Z"
+ content="""
+I see your point, feel free to close this bug.
+
+There is a way for git-annex to tell that the file is probably meant to be part of the repo because it is a symlink, it doesn't look the same as a new file.
+
+    ~/scratch/annex/bar (master)$ ls -l
+    total 4
+    lrwxrwxrwx 1 edward edward 181 Nov  4 18:02 test -> ../.git/annex/objects/w8/pv/SHA256E-s5--f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2/SHA256E-s5--f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2
+    ~/scratch/annex/bar (master)$ 
+"""]]

@@ -1,0 +1,35 @@
+### Please describe the problem.
+I downloaded the 10.11_El_Capitan dmg package (	2016-11-01 ) but it did not install on macOS Sierra. When I try to run it from command line I got this error:
+
+
+/Volumes/git-annex/git-annex.app/Contents/MacOS/$ ./git-annex
+
+dyld: malformed mach-o: load commands size (35008) > 32768
+
+Abort trap: 6
+
+
+I googled around and it seems to be a known issue with Haskell platform on the newer OS:
+http://stackoverflow.com/a/39648502
+
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
+> [[done]] (also, I updated the OSX build for the last release with this
+> fix) --[[Joey]]

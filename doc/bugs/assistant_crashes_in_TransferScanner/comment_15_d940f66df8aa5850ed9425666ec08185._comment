@@ -1,0 +1,49 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 15"""
+ date="2016-11-01T18:04:33Z"
+ content="""
+Having difficulty reproducing this again.
+
+However, I did find one way that the git check-attr handle could not be in
+raw mode. If for some reason the process was started and crashed, it would
+be restarted and not be in raw mode. 
+Fixed in [[!commit e23028d19b493c7abae0dffb96da44591aacca7b]].
+
+----
+
+As to the `git annex smudge --clean` encoding problem, here's a full test
+case:
+
+	joey@darkstar:/tmp>git init repo3
+	Initialized empty Git repository in /tmp/repo3/.git/
+	joey@darkstar:/tmp>cd repo3
+	joey@darkstar:/tmp/repo3>LANG=en_US.utf8
+	joey@darkstar:/tmp/repo3>git annex init --version=6
+	init  ok
+	(recording state in git...)
+	joey@darkstar:/tmp/repo3>touch xx.oöo
+	joey@darkstar:/tmp/repo3>git annex add xx.oöo
+	add xx.oöo ok
+	(recording state in git...)
+	joey@darkstar:/tmp/repo3>LANG=C
+	joey@darkstar:/tmp/repo3>git annex unlock xx.oöo
+	unlock xx.oöo ok
+	(recording state in git...)
+	joey@darkstar:/tmp/repo3>git annex smudge --clean xx.oöo  < xx.oöo 
+	git-annex: recoverEncode: invalid argument (invalid character)
+	git-annex: smudge: 1 failed
+
+Only happens when the filename extension contains unicode, which then becomes part of the key.
+
+If the unlock is done in a unicode locale, the later smudge succeeds even
+when done in LANG=C.
+
+Dumping the sqlite database, in the problem case, I see mokibake:
+
+	INSERT INTO "associated" VALUES(1,'SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.o��o','"xx.o\56515\56502o"');
+
+Compare with the working case:
+
+	INSERT INTO "associated" VALUES(11,'SHA256E-s30--58ed27fa666794aa15b72609483e9b488b984b568d668959136302faa8bb2fde.oöo','good.oöo');
+"""]]

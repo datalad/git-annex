@@ -34,7 +34,6 @@ main = getArgs >>= go
 mklibs :: FilePath -> IO ()
 mklibs top = do
 	fs <- dirContentsRecursive top
-	mapM_ symToHardLink fs
 	exes <- filterM checkExe fs
 	libs <- parseLdd <$> readProcess "ldd" exes
 	glibclibs <- glibcLibs
@@ -63,7 +62,18 @@ installLinkerShim :: FilePath -> FilePath -> FilePath -> IO ()
 installLinkerShim top linker exe = do
 	createDirectoryIfMissing True (top </> shimdir)
 	createDirectoryIfMissing True (top </> exedir)
-	renameFile exe exedest
+	ifM (isSymbolicLink <$> getSymbolicLinkStatus exe)
+		( do
+			sl <- readSymbolicLink exe
+			nukeFile exe
+			nukeFile exedest
+			-- Assume that for a symlink, the destination
+			-- will also be shimmed.
+			let sl' = ".." </> takeFileName sl </> takeFileName sl
+			print (sl', exedest)
+			createSymbolicLink sl' exedest
+		, renameFile exe exedest
+		)
 	link <- relPathDirToFile (top </> exedir) (top ++ linker)
 	unlessM (doesFileExist (top </> exelink)) $
 		createSymbolicLink link (top </> exelink)
@@ -81,15 +91,6 @@ installLinkerShim top linker exe = do
 	exedest = top </> shimdir </> base
 	exelink = exedir </> base
 
-{- Converting symlinks to hard links simplifies the binary shimming
- - process. -}
-symToHardLink :: FilePath -> IO ()
-symToHardLink f = whenM (isSymbolicLink <$> getSymbolicLinkStatus f) $ do
-	l <- readSymbolicLink f
-	let absl = absPathFrom (parentDir f) l
-	nukeFile f
-	createLink absl f
-
 installFile :: FilePath -> FilePath -> IO ()
 installFile top f = do
 	createDirectoryIfMissing True destdir
@@ -101,7 +102,7 @@ checkExe :: FilePath -> IO Bool
 checkExe f
 	| ".so" `isSuffixOf` f = return False
 	| otherwise = ifM (isExecutable . fileMode <$> getFileStatus f)
-		( checkFileExe <$> readProcess "file" [f]
+		( checkFileExe <$> readProcess "file" ["-L", f]
 		, return False
 		)
 

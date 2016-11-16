@@ -24,7 +24,7 @@ type Attr = String
 checkAttrStart :: [Attr] -> Repo -> IO CheckAttrHandle
 checkAttrStart attrs repo = do
 	currdir <- getCurrentDirectory
-	h <- CoProcess.rawMode =<< gitCoProcessStart True params repo
+	h <- gitCoProcessStart True params repo
 	oldgit <- Git.Version.older "1.7.7"
 	return (h, attrs, oldgit, currdir)
   where

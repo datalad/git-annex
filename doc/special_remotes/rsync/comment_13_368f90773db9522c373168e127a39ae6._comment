@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2016-11-07T17:40:15Z"
+ content="""
+@davidriod if you're using a rsyncurl that uses ssh, then yes, the
+transmission goes over a secure connection. If the rsyncurl uses
+the rsync protocol, there would be no encryption.
+
+Of course, encryption=none does not keep the data encrypted at rest,
+so the admin of the rsync server can see it etc.
+"""]]

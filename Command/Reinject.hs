@@ -45,7 +45,7 @@ startSrcDest (src:dest:[])
 	| otherwise = notAnnexed src $ do
 		showStart "reinject" dest
 		next $ ifAnnexed dest
-			(perform src)
+			(\key -> perform src key (verifyKeyContent DefaultVerify UnVerified key src))
 			stop
 startSrcDest _ = error "specify a src file and a dest file"
 
@@ -56,7 +56,7 @@ startKnown src = notAnnexed src $ do
 	case mkb of
 		Nothing -> error "Failed to generate key"
 		Just (key, _) -> ifM (isKnownKey key)
-			( next $ perform src key
+			( next $ perform src key (return True)
 			, do
 				warning "Not known content; skipping"
 				next $ next $ return True
@@ -65,14 +65,14 @@ startKnown src = notAnnexed src $ do
 notAnnexed :: FilePath -> CommandStart -> CommandStart
 notAnnexed src = ifAnnexed src (error $ "cannot used annexed file as src: " ++ src)
 
-perform :: FilePath -> Key -> CommandPerform
-perform src key = ifM move
+perform :: FilePath -> Key -> Annex Bool -> CommandPerform
+perform src key verify = ifM move
 	( next $ cleanup key
 	, error "failed"
 	)
   where
 	move = checkDiskSpaceToGet key False $
-		ifM (verifyKeyContent DefaultVerify UnVerified key src)
+		ifM verify
 			( do
 				moveAnnex key src
 				return True

@@ -51,7 +51,7 @@ catFileStart' restartable repo = CatFileHandle
 	<$> startp "--batch"
 	<*> startp "--batch-check=%(objectname) %(objecttype) %(objectsize)"
   where
-	startp p = CoProcess.rawMode =<< gitCoProcessStart restartable
+	startp p = gitCoProcessStart restartable
 		[ Param "cat-file"
 		, Param p
 		] repo

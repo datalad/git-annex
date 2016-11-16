@@ -56,8 +56,12 @@ sshOptions (host, port) gc opts = go =<< sshCachingInfo (host, port)
 		-- If it did, a more expensive test would be needed.
 		liftIO $ unlessM (doesFileExist overideconfigfile) $
 			viaTmp writeFile overideconfigfile $ unlines
+				-- Make old version of ssh that does
+				-- not know about Include ignore those
+				-- entries.
+				[ "IgnoreUnknown Include"
 				-- ssh expands "~"
-				[ "Include ~/.ssh/config"
+				, "Include ~/.ssh/config"
 				-- ssh will silently skip the file
 				-- if it does not exist
 				, "Include /etc/ssh/ssh_config"

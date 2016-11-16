@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 37"""
+ date="2016-11-07T14:58:17Z"
+ content="""
+@bec.watson, better to open a bug report for this kind of problem.
+
+Seems that the [AWS library](http://hackage.haskell.org/package/aws) 
+that git-annex is using does not use V4 authorization yet. Work is in 
+progress: <https://github.com/aristidb/aws/pull/199>
+
+As to the endpoint hostname, that must be a special case for
+China, so I've made git-annex aware of that special case.
+"""]]

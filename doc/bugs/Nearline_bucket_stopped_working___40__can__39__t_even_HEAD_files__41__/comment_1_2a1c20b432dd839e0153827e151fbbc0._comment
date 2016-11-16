@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-11-07T17:34:32Z"
+ content="""
+If you pass the --debug option, the debug output includes a transcript of
+the S3 http session. Edit: I see you did that, so you can in fact see
+the query and response in the debug output.
+
+I can confirm there have been no recent changes to git-annex's S3 support.
+Of course it's possible that if you upgraded git-annex the version of
+<http://hackage.haskell.org/package/aws> used changed, but that seems
+unlikely to cause such breakage.
+
+Seems likely that if it's stopped working, something changed on Google's
+end..
+"""]]

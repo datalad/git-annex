@@ -1,0 +1,103 @@
+---
+---
+
+/!\ __THIS PAGE IS A DRAFT__ /!\
+
+---
+---
+
+## Introduction
+
+Systemd is a suite of tools for system and user daemon management.
+
+It can be used as an alternative to XDG autostart files to start the git-annex daemon and optionally the webapp, either at startup (system service) or when an user logs in (user service).
+
+---
+
+##Setup
+
+### User service
+
+Sample unit file (`/etc/systemd/user/git-annex.service`):
+
+```
+[Unit]
+Description=git-annex assistant daemon
+
+[Service]
+ExecStart=/usr/bin/git-annex assistant --autostart --foreground
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
+```
+
+Commands for enabling and starting the service as the current user:
+
+```
+systemctl --user enable git-annex.service
+systemctl --user start git-annex.service
+```
+
+Usually services in `default.target` start during login. (Note however that they also _delay_ the login process.) However, if you enable "linger" via `loginctl`, then these services start on boot instead.
+
+### System service
+
+If for some reason you cannot use `systemd --user`, the other option is to have system-wide services:
+
+Sample unit file (`/etc/systemd/system/git-annex@.service`):
+
+```
+[Unit]
+Description=git-annex assistant daemon
+After=network.target
+
+[Service]
+User=%i
+ExecStart=/usr/bin/git-annex assistant --autostart --foreground
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Commands for enabling and starting the service as user `u`:
+
+```
+systemctl enable git-annex@u.service
+systemctl start git-annex@u.service
+
+```
+
+---
+
+## Considerations
+
+### Webapp
+
+The webapp may be started instead of the assistant, by launching the associated command in the unit file. This will run an associated assistant automatically. However, it may also attempt to open a potentially unwanted browser window.
+
+```
+ExecStart=git-annex webapp
+```
+
+_TODO: try this._
+
+### Encrypted home directory
+
+Users may store their keyring and repositories in their encrypted home directory mounted at login. This may break a system service running at boot.
+
+_TODO: try this._
+
+### Common daemon
+
+One daemon may be used to sync repositories for multiple users. For this, it might be helpful to make use of ACLs to access other user directories.
+
+---
+
+## References
+
+- [systemd.unit man page](https://www.freedesktop.org/software/systemd/man/systemd.unit.html)
+- [systemd on ArchWiki](https://wiki.archlinux.org/index.php/Systemd)
+- [TL;DR Syncthing with systemd documentation](https://docs.syncthing.net/users/autostart.html#using-systemd)
+- [Syncthing systemd unit files](https://github.com/syncthing/syncthing/tree/master/etc/linux-systemd)

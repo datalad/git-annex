@@ -1,0 +1,3 @@
+Having a windows build of Git-Annex in an archived format would be very usefull for automation, and deploy.
+Could it be possible to add this to the buildserver of gitannex?
+

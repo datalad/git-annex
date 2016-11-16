@@ -182,15 +182,20 @@ genAuthToken = do
  -
  - Note that the usual Yesod error page is bypassed on error, to avoid
  - possibly leaking the auth token in urls on that page!
+ -
+ - If the predicate does not match the route, the auth parameter is not
+ - needed.
  -}
-checkAuthToken :: Yesod.MonadHandler m => (Yesod.HandlerSite m -> AuthToken) -> m Yesod.AuthResult
-checkAuthToken extractAuthToken = do
-	webapp <- Yesod.getYesod
-	req <- Yesod.getRequest
-	let params = Yesod.reqGetParams req
-	if (toAuthToken <$> lookup "auth" params) == Just (extractAuthToken webapp)
-		then return Yesod.Authorized
-		else Yesod.sendResponseStatus unauthorized401 ()
+checkAuthToken :: Yesod.MonadHandler m => Yesod.RenderRoute site => (Yesod.HandlerSite m -> AuthToken) -> Yesod.Route site -> ([T.Text] -> Bool) -> m Yesod.AuthResult
+checkAuthToken extractAuthToken r predicate
+	| not (predicate (fst (Yesod.renderRoute r))) = return Yesod.Authorized
+	| otherwise = do
+		webapp <- Yesod.getYesod
+		req <- Yesod.getRequest
+		let params = Yesod.reqGetParams req
+		if (toAuthToken <$> lookup "auth" params) == Just (extractAuthToken webapp)
+			then return Yesod.Authorized
+			else Yesod.sendResponseStatus unauthorized401 ()
 
 {- A Yesod joinPath method, which adds an auth cgi parameter to every
  - url matching a predicate, containing a token extracted from the

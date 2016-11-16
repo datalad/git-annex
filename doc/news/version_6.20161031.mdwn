@@ -1,0 +1,7 @@
+git-annex 6.20161031 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Assistant, repair: Fix ignoring of git fsck errors due to
+     duplicate file entries in tree objects.
+   * Linux standalone: Fix location of locale files in the bundle.
+   * Fix reversion in 6.20161012 that prevented adding files with a space
+     in their name."""]]

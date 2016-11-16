@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-11-10T18:21:35Z"
+ content="""
+Bloating the tarball with duplicates of all the hard linked stuff would
+increase its size by a large amount.
+
+The current machinery for building the standlone tarball only works when
+using hard links.
+
+Ok.. Complicated it by making it use symlinks.
+"""]]

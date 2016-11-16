@@ -7,6 +7,15 @@ This website is a wiki, so you can edit and improve any page.
 Or, write a [[new_tip|tips]] explaining how to accomplish something with
 git-annex.
 
+## advanced wiki editing
+
+To make larger changes to the website, you can 
+`git clone git://git-annex.branchable.com/ git-annex` and will find the
+whole website source in `doc/`.
+
+You can even `git push` doc-only changes back without authentication,
+since it is a wiki!
+
 ## bug triage
 
 People often file [[bugs]] on git-annex that are easily resolved by helping
@@ -35,5 +44,17 @@ You could work to improve the Android port (Java etc) or improve the
 Javascript and CSS of the git-annex webapp, or work on porting libraries
 needed by the Windows port.
 
-To send patches, either include the patch in a bug report (small patch)
-or put up a branch in a git repository containing your changes.
+To send patches, either include the patch in a [[bug|bugs]] report (small
+patch) or put up a branch in a git repository containing your changes.
+
+## learning some Haskell
+
+Want to learn some Haskell to get hacking on git-annex?
+
+As Haskell programs go, git-annex does not use too many advanced features.
+[Learn You A Haskell](http://learnyouahaskell.com/) will teach you enough
+to get started.
+
+Of course git-annex does use monads, and particularly the `Annex``monad
+which gives access to its state about the git repository as well as
+lower-level IO.

@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="bec.watson@8b5998670cf3d60f88e6297923d1391706e0d15b"
+ nickname="bec.watson"
+ avatar="http://cdn.libravatar.org/avatar/85dbb458c368c0790d74923caa32a581"
+ subject="comment 26"
+ date="2016-11-05T01:04:47Z"
+ content="""
+Hi,
+
+I've been unable to setup a remote in Beijing (region cn-north-1) as the signature request type doesn't seem to be V4
+
+MacBook-Pro:gitannex-china iwatson$ git annex initremote ings3cn bucket=\"testbec\" type=S3 chunk=50MiB encryption=none datacenter=\"cn-north-1\" initremote ings3cn (checking bucket...) (creating bucket in cn-north-1...) git-annex: FailedConnectionException2 \"testbec.s3-cn-north-1.amazonaws.com\" 80 False getAddrInfo: does not exist (nodename nor servname provided, or not known)
+
+The endpoints for china default to \"testbec.s3-cn-north-1.amazonaws.com\" but should be \"s3.cn-north-1.amazonaws.com.cn\". Using host option I can set this: MacBook-Pro:gitannex-china iwatson$ git annex initremote ings3cn bucket=\"testbec\" type=S3 chunk=50MiB encryption=none host=\"s3.cn-north-1.amazonaws.com.cn\" datacenter=\"cn-north-1\" initremote ings3cn (checking bucket...) (creating bucket in cn-north-1...) git-annex: S3Error {s3StatusCode = Status {statusCode = 400, statusMessage = \"Bad Request\"}, s3ErrorCode = \"InvalidRequest\", s3ErrorMessage = \"The authorization mechanism you have provided is not supported. Please use AWS4-HMAC-SHA256.\", s3ErrorResource = Nothing, s3ErrorHostId = Just \"xxx=\", s3ErrorAccessKeyId = Nothing, s3ErrorStringToSign = Nothing, s3ErrorBucket = Nothing, s3ErrorEndpointRaw = Nothing, s3ErrorEndpoint = Nothing}
+
+However, the message is that the authorization mechanism isn't AWS4-HMAC-SHA256 - if you see AWS this is V4 required by china and all new AWS regions: http://docs.aws.amazon.com/general/latest/gr/signature-version-4.html
+
+Do the S3 remotes use the new V4 signature method? I can't see what else I'm doing wrong here but any help would be appreciated!
+
+Thanks :) bec
+"""]]

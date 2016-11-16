@@ -20,7 +20,7 @@ import Utility.Tmp
 type HashObjectHandle = CoProcess.CoProcessHandle
 
 hashObjectStart :: Repo -> IO HashObjectHandle
-hashObjectStart = CoProcess.rawMode <=< gitCoProcessStart True
+hashObjectStart = gitCoProcessStart True
 	[ Param "hash-object"
 	, Param "-w"
 	, Param "--stdin-paths"

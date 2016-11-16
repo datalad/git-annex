@@ -59,7 +59,7 @@ newtype MkTreeHandle = MkTreeHandle CoProcess.CoProcessHandle
 withMkTreeHandle :: (MonadIO m, MonadMask m) => Repo -> (MkTreeHandle -> m a) -> m a
 withMkTreeHandle repo a = bracketIO setup cleanup (a . MkTreeHandle)
   where
-	setup = CoProcess.rawMode =<< gitCoProcessStart False ps repo
+	setup = gitCoProcessStart False ps repo
 	ps = [Param "mktree", Param "--batch", Param "-z"]
 	cleanup = CoProcess.stop
 

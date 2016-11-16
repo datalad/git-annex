@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2016-11-07T14:35:42Z"
+ content="""
+git-annex uses standard desktop autostart files to make the assistant
+be run at login. They are included in the git-annex package. 
+Since that works perfectly fine on all linux desktop environments,
+I have not bothered with systemd user services for it, 
+which after all will only work on systemd systems.
+
+If you want to write some and add a page to
+<https://git-annex.branchable.com/tips/> about it, that would be fine.
+"""]]
