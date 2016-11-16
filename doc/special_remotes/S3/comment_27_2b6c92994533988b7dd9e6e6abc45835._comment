@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="David_K"
+ avatar="http://cdn.libravatar.org/avatar/09dd8544695feb9b8d8ee54e4ff0168d"
+ subject="comment 27"
+ date="2016-11-16T01:28:04Z"
+ content="""
+I'd like to reiterate q
+
+Is there a way to tell the S3 backend to store the files as they are named locally, instead of by hashed content name? i.e., I've annexed foo/bar.txt and annex puts it in s3 as mybucket.name/foo/bar.txt instead of mybucket.name/GPGHMACSHA1-random.txt
+
+
+"""]]
