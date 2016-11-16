@@ -250,9 +250,9 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 		let ls' = maybe ls (setupResume ls) currsize
 		if any null ls'
 			then return True -- dest is already complete
-			else firstavail currsize ls' `catchNonAsync` giveup
+			else firstavail currsize ls' `catchNonAsync` unable
 
-	giveup e = do
+	unable e = do
 		warning (show e)
 		return False
 
@@ -273,10 +273,10 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 						let sz = toBytesProcessed $
 							fromMaybe 0 $ keyChunkSize k
 						getrest p h sz sz ks
-							`catchNonAsync` giveup
+							`catchNonAsync` unable
 			case v of
 				Left e
-					| null ls -> giveup e
+					| null ls -> unable e
 					| otherwise -> firstavail currsize ls
 				Right r -> return r
 
@@ -286,7 +286,7 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 		liftIO $ p' zeroBytesProcessed
 		ifM (retriever (encryptor k) p' $ tosink (Just h) p')
 			( getrest p h sz (addBytesProcessed bytesprocessed sz) ks
-			, giveup "chunk retrieval failed"
+			, unable "chunk retrieval failed"
 			)
 
 	getunchunked = retriever (encryptor basek) basep $ tosink Nothing basep
