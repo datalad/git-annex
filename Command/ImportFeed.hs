@@ -147,7 +147,7 @@ findDownloads u = go =<< downloadFeed u
 {- Feeds change, so a feed download cannot be resumed. -}
 downloadFeed :: URLString -> Annex (Maybe Feed)
 downloadFeed url
-	| Url.parseURIRelaxed url == Nothing = error "invalid feed url"
+	| Url.parseURIRelaxed url == Nothing = giveup "invalid feed url"
 	| otherwise = do
 		showOutput
 		uo <- Url.getUrlOptions
@@ -336,7 +336,7 @@ noneValue = "none"
  - Throws an error if the feed is broken, otherwise shows a warning. -}
 feedProblem :: URLString -> String -> Annex ()
 feedProblem url message = ifM (checkFeedBroken url)
-	( error $ message ++ " (having repeated problems with feed: " ++ url ++ ")"
+	( giveup $ message ++ " (having repeated problems with feed: " ++ url ++ ")"
 	, warning $ "warning: " ++ message
 	)
 

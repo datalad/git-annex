@@ -1,0 +1,30 @@
+### Please describe the problem.
+Issue uploading to S3 remote (Dreamhost)
+
+### What steps will reproduce the problem?
+git-annex copy massart/f16_Web1/screencaptures/IMG_5159.MOV --to=cloud
+on my repo
+
+### What version of git-annex are you using? On what operating system?
+6.20161031-g0a58e94
+OS-X 10.11.6
+
+### Please provide any additional information below.
+I am using a different WIFI I haven't used before. Maybe it is blocking something…
+
+[[!format sh """
+git-annex copy massart/f16_Web1/screencaptures/IMG_5159.MOV --to=cloud
+copy massart/f16_Web1/screencaptures/IMG_5159.MOV (checking cloud...) (to cloud...) 
+17%           0.0 B/s 0sgpg: error running `/Users/joey/homebrew/opt/gpg-agent/bin/gpg-agent': probably not installed
+gpg: DBG: running `/Users/joey/homebrew/opt/gpg-agent/bin/gpg-agent' for testing failed: Configuration error
+gpg: can't connect to the agent: IPC connect call failed
+gpg: problem with the agent: No agent running
+35%       1021.8KB/s 30s
+  user error (gpg ["--quiet","--trust-model","always","--batch","--passphrase-fd","26","--symmetric","--force-mdc","--no-textmode"] exited 2)
+failed
+git-annex: copy: 1 failed
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Yes.
+

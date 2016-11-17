@@ -84,7 +84,7 @@ gen r u c gc = do
 		(simplyPrepare $ checkKey r bupr')
 		this
   where
-	buprepo = fromMaybe (error "missing buprepo") $ remoteAnnexBupRepo gc
+	buprepo = fromMaybe (giveup "missing buprepo") $ remoteAnnexBupRepo gc
 	specialcfg = (specialRemoteCfg c)
 		-- chunking would not improve bup
 		{ chunkConfig = NoChunks
@@ -95,14 +95,14 @@ bupSetup mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	-- verify configuration is sane
-	let buprepo = fromMaybe (error "Specify buprepo=") $
+	let buprepo = fromMaybe (giveup "Specify buprepo=") $
 		M.lookup "buprepo" c
 	(c', _encsetup) <- encryptionSetup c gc
 
 	-- bup init will create the repository.
 	-- (If the repository already exists, bup init again appears safe.)
 	showAction "bup init"
-	unlessM (bup "init" buprepo []) $ error "bup init failed"
+	unlessM (bup "init" buprepo []) $ giveup "bup init failed"
 
 	storeBupUUID u buprepo
 
@@ -197,7 +197,7 @@ storeBupUUID u buprepo = do
 			showAction "storing uuid"
 			unlessM (onBupRemote r boolSystem "git"
 				[Param "config", Param "annex.uuid", Param v]) $
-					error "ssh failed"
+					giveup "ssh failed"
 		else liftIO $ do
 			r' <- Git.Config.read r
 			let olduuid = Git.Config.get "annex.uuid" "" r'
@@ -251,7 +251,7 @@ bup2GitRemote r
 	| bupLocal r = 
 		if "/" `isPrefixOf` r
 			then Git.Construct.fromAbsPath r
-			else error "please specify an absolute path"
+			else giveup "please specify an absolute path"
 	| otherwise = Git.Construct.fromUrl $ "ssh://" ++ host ++ slash dir
   where
 	bits = split ":" r

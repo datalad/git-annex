@@ -33,7 +33,7 @@ seek = withPairs start
 start :: (FilePath, String) -> CommandStart
 start (file, keyname) = ifAnnexed file go stop
   where
-	newkey = fromMaybe (error "bad key") $ file2key keyname
+	newkey = fromMaybe (giveup "bad key") $ file2key keyname
 	go oldkey
 		| oldkey == newkey = stop
 		| otherwise = do
@@ -46,7 +46,7 @@ perform file oldkey newkey = do
 		( unlessM (linkKey file oldkey newkey) $
 			error "failed"
 		, unlessM (Annex.getState Annex.force) $
-			error $ file ++ " is not available (use --force to override)"
+			giveup $ file ++ " is not available (use --force to override)"
 		)
 	next $ cleanup file oldkey newkey
 

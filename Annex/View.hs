@@ -110,7 +110,7 @@ refineView origview = checksize . calc Unchanged origview
 			in (view', Narrowing)
 	
 	checksize r@(v, _)
-		| viewTooLarge v = error $ "View is too large (" ++ show (visibleViewSize v) ++ " levels of subdirectories)"
+		| viewTooLarge v = giveup $ "View is too large (" ++ show (visibleViewSize v) ++ " levels of subdirectories)"
 		| otherwise = r
 
 updateViewComponent :: ViewComponent -> MetaField -> ViewFilter -> Writer [ViewChange] ViewComponent
@@ -424,4 +424,4 @@ genViewBranch view = withViewIndex $ do
 	return branch
 
 withCurrentView :: (View -> Annex a) -> Annex a
-withCurrentView a = maybe (error "Not in a view.") a =<< currentView
+withCurrentView a = maybe (giveup "Not in a view.") a =<< currentView

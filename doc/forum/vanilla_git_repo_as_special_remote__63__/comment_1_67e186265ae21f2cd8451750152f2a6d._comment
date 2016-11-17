@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-11-16T18:30:12Z"
+ content="""
+You can use bup as a special remote, which will store the content in a git
+repository. But, not in a form that git diff can be used with.
+
+[[git-annex-diffdriver]] can be used to make `git diff` work on annexed
+files. For example:
+
+	export GIT_EXTERNAL_DIFF="git-annex diffdriver -- diff -u --"
+"""]]

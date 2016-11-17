@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="christopher@5845ecd3cef9edadd4dc084df00e1fa60ce311eb"
+ nickname="christopher"
+ avatar="http://cdn.libravatar.org/avatar/4b722efb21f38d9944730c93727bc602"
+ subject="comment 3"
+ date="2016-11-15T12:15:37Z"
+ content="""
+Hi Joey,
+
+I installed git-annex using the homebrew recipe from https://github.com/Homebrew/homebrew-core/blob/master/Formula/git-annex.rb, OS X 10.11.6 (15G31)
+
+These are the dependencies reported by homebrew:
+
+Build: ghc ✔, cabal-install ✔, pkg-config ✔
+Required: gsasl ✔, libidn ✔, libmagic ✔, gnutls ✔, quvi ✔
+
+I've re-installed using \"brew install git-annex --HEAD\" to pull in your latest commit and I can confirm that everything works as expected and the /static/ resources load correctly.
+
+Thanks,
+Chris
+"""]]

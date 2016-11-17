@@ -30,7 +30,7 @@ start (name:[]) = do
 	u <- Remote.nameToUUID name
 	showRaw . unwords . S.toList =<< lookupGroups u
 	stop
-start _ = error "Specify a repository and a group."
+start _ = giveup "Specify a repository and a group."
 
 setGroup :: UUID -> Group -> CommandPerform
 setGroup uuid g = do

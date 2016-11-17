@@ -68,12 +68,12 @@ gen r u c gc = do
 			, checkUrl = Nothing
 			}
   where
-	hooktype = fromMaybe (error "missing hooktype") $ remoteAnnexHookType gc
+	hooktype = fromMaybe (giveup "missing hooktype") $ remoteAnnexHookType gc
 
 hookSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 hookSetup mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
-	let hooktype = fromMaybe (error "Specify hooktype=") $
+	let hooktype = fromMaybe (giveup "Specify hooktype=") $
 		M.lookup "hooktype" c
 	(c', _encsetup) <- encryptionSetup c gc
 	gitConfigSpecialRemote u c' "hooktype" hooktype
@@ -129,7 +129,7 @@ store h = fileStorer $ \k src _p ->
 retrieve :: HookName -> Retriever
 retrieve h = fileRetriever $ \d k _p ->
 	unlessM (runHook h "retrieve" k (Just d) $ return True) $
-		error "failed to retrieve content"
+		giveup "failed to retrieve content"
 
 retrieveCheap :: HookName -> Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieveCheap _ _ _ _ = return False
@@ -145,7 +145,7 @@ checkKey r h k = do
   where
 	action = "checkpresent"
 	findkey s = key2file k `elem` lines s
-	check Nothing = error $ action ++ " hook misconfigured"
+	check Nothing = giveup $ action ++ " hook misconfigured"
 	check (Just hook) = do
 		environ <- hookEnv action k Nothing
 		findkey <$> readProcessEnv "sh" ["-c", hook] environ

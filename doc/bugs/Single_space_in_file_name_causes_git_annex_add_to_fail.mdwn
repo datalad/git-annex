@@ -1,0 +1,57 @@
+### Please describe the problem.
+
+If a filename has a single space (and only one space), `git annex add` will fail out with the following message:
+
+    add one two git-annex: unknown response from git cat-file ("HEAD:./one two missing",Ref "HEAD:./one two")
+    CallStack (from HasCallStack):
+      error, called at ./Git/CatFile.hs:102:28 in main:Git.CatFile
+
+### What steps will reproduce the problem?
+
+Run the following:
+
+    git init .
+    git annex init
+    touch "one two"
+    # this will cause error
+    git annex add "one two"
+    touch "one two three"
+    # this is fine
+    git annex add "one two three"
+
+### What version of git-annex are you using? On what operating system?
+
+Output of `git annex version`
+
+    git-annex version: 6.20161027
+    build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+    local repository version: 5
+    supported repository versions: 3 5 6
+    upgrade supported from repository versions: 0 1 2 3 4 5
+    operating system: linux x86_64
+
+Operating System: Linux (NixOS 16.09.909.238c7e0 (Flounder))
+
+### Please provide any additional information below.
+
+Maybe related to [https://git-annex.branchable.com/forum/unknown_response_from_git_cat-file/](https://git-annex.branchable.com/forum/unknown_response_from_git_cat-file/) or [https://git-annex.branchable.com/bugs/git_annex_import_fails_on_filenames_with_newlines_in_them/](https://git-annex.branchable.com/bugs/git_annex_import_fails_on_filenames_with_newlines_in_them/)?
+
+EDIT: Somewhat surprisingly, if I build from source using `cabal`, everything works fine.
+
+    .cabal-sandbox/bin/git-annex version
+    git-annex version: 6.20161113-g1e88c12
+    build flags: Assistant Webapp Pairing Testsuite WebDAV Inotify ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+
+Not sure whether this means that this bug is actually fixed or whether it's an artifact of how things are built in Nix.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Just starting out with it as a way of archiving some of my media seems to work great apart from this. Thanks a bunch!
+
+> This bug was already fixed in git-annex 6.20161031. I told the Debian
+> maintainer about the bug fix at the time; package has not been updated
+> yet. [[done]] on git-annex side. --[[Joey]] 

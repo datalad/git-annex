@@ -38,4 +38,4 @@ perform key = next $ do
  - it seems better to error out, rather than moving bad/tmp content into
  - the annex. -}
 performOther :: String -> Key -> CommandPerform
-performOther other _ = error $ "cannot addunused " ++ other ++ "content"
+performOther other _ = giveup $ "cannot addunused " ++ other ++ "content"

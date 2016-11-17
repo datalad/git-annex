@@ -139,7 +139,7 @@ postAddS3R = awsConfigurator $ do
 				]
 		_ -> $(widgetFile "configurators/adds3")
 #else
-postAddS3R = error "S3 not supported by this build"
+postAddS3R = giveup "S3 not supported by this build"
 #endif
 
 getAddGlacierR :: Handler Html
@@ -161,7 +161,7 @@ postAddGlacierR = glacierConfigurator $ do
 				]
 		_ -> $(widgetFile "configurators/addglacier")
 #else
-postAddGlacierR = error "S3 not supported by this build"
+postAddGlacierR = giveup "S3 not supported by this build"
 #endif
 
 getEnableS3R :: UUID -> Handler Html
@@ -179,7 +179,7 @@ postEnableS3R :: UUID -> Handler Html
 #ifdef WITH_S3
 postEnableS3R uuid = awsConfigurator $ enableAWSRemote S3.remote uuid
 #else
-postEnableS3R _ = error "S3 not supported by this build"
+postEnableS3R _ = giveup "S3 not supported by this build"
 #endif
 
 getEnableGlacierR :: UUID -> Handler Html
@@ -205,7 +205,7 @@ enableAWSRemote remotetype uuid = do
 				T.pack <$> Remote.prettyUUID uuid
 			$(widgetFile "configurators/enableaws")
 #else
-enableAWSRemote _ _ = error "S3 not supported by this build"
+enableAWSRemote _ _ = giveup "S3 not supported by this build"
 #endif
 
 makeAWSRemote :: SpecialRemoteMaker -> RemoteType -> StandardGroup -> AWSCreds -> RemoteName -> RemoteConfig -> Handler ()

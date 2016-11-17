@@ -73,7 +73,7 @@ addToken = add . Utility.Matcher.token
 
 {- Adds a new limit. -}
 addLimit :: Either String (MatchFiles Annex) -> Annex ()
-addLimit = either error (\l -> add $ Utility.Matcher.Operation $ l S.empty)
+addLimit = either giveup (\l -> add $ Utility.Matcher.Operation $ l S.empty)
 
 {- Add a limit to skip files that do not match the glob. -}
 addInclude :: String -> Annex ()
@@ -289,7 +289,7 @@ limitMetaData s = case parseMetaDataMatcher s of
 
 addTimeLimit :: String -> Annex ()
 addTimeLimit s = do
-	let seconds = maybe (error "bad time-limit") durationToPOSIXTime $
+	let seconds = maybe (giveup "bad time-limit") durationToPOSIXTime $
 		parseDuration s
 	start <- liftIO getPOSIXTime
 	let cutoff = start + seconds

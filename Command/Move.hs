@@ -197,4 +197,4 @@ fromPerform src move key afile = ifM (inAnnex key)
 			]
 		ok <- Remote.removeKey src key
 		next $ Command.Drop.cleanupRemote key src ok
-	faileddropremote = error "Unable to drop from remote."
+	faileddropremote = giveup "Unable to drop from remote."

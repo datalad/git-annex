@@ -37,7 +37,7 @@ startKey key = do
 	ls <- keyLocations key
 	case ls of
 		[] -> next $ performKey key
-		_ -> error "This key is still known to be present in some locations; not marking as dead."
+		_ -> giveup "This key is still known to be present in some locations; not marking as dead."
 		
 performKey :: Key -> CommandPerform
 performKey key = do

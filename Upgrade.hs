@@ -21,7 +21,7 @@ import qualified Upgrade.V4
 import qualified Upgrade.V5
 
 checkUpgrade :: Version -> Annex ()
-checkUpgrade = maybe noop error <=< needsUpgrade
+checkUpgrade = maybe noop giveup <=< needsUpgrade
 
 needsUpgrade :: Version -> Annex (Maybe String)
 needsUpgrade v
@@ -49,8 +49,8 @@ upgrade automatic destversion = do
 	go (Just "0") = Upgrade.V0.upgrade
 	go (Just "1") = Upgrade.V1.upgrade
 #else
-	go (Just "0") = error "upgrade from v0 on Windows not supported"
-	go (Just "1") = error "upgrade from v1 on Windows not supported"
+	go (Just "0") = giveup "upgrade from v0 on Windows not supported"
+	go (Just "1") = giveup "upgrade from v1 on Windows not supported"
 #endif
 	go (Just "2") = Upgrade.V2.upgrade
 	go (Just "3") = Upgrade.V3.upgrade automatic

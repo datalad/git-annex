@@ -123,6 +123,14 @@ so won't want to type that in. Need discovery.
   for Bob to confirm he's ready to finish pairing, this will fail,
   because Bob won't get to that point if the authtoken is intercepted.
 
+## local lan detection
+
+At connection time, after authentication, the remote can send
+(ip address, ssh host key). Try sshing to the ip address to check if
+the host key matches. If so, can enable a ssh remote, which will
+be cheaper than using the transport. Send the ssh public key back to the
+remote to get it authorized.
+
 ## remotedaemon
 
 See [[git-remote-daemon]] for its design.

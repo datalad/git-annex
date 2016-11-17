@@ -60,7 +60,7 @@ parseTransitions = check . map parseTransitionLine . splitLines
 parseTransitionsStrictly :: String -> String -> Transitions
 parseTransitionsStrictly source = fromMaybe badsource . parseTransitions
   where
-	badsource = error $ "unknown transitions listed in " ++ source ++ "; upgrade git-annex!"
+	badsource = giveup $ "unknown transitions listed in " ++ source ++ "; upgrade git-annex!"
 
 showTransitionLine :: TransitionLine -> String
 showTransitionLine (TransitionLine ts t) = unwords [show t, show ts]

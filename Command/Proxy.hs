@@ -30,7 +30,7 @@ seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart
-start [] = error "Did not specify command to run."
+start [] = giveup "Did not specify command to run."
 start (c:ps) = liftIO . exitWith =<< ifM isDirect
 	( do
 		tmp <- gitAnnexTmpMiscDir <$> gitRepo

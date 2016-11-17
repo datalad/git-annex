@@ -52,7 +52,7 @@ get = do
 		curr <- getCurrentDirectory
 		Git.Config.read $ newFrom $
 			Local { gitdir = absd, worktree = Just curr }
-	configure Nothing Nothing = error "Not in a git repository."
+	configure Nothing Nothing = giveup "Not in a git repository."
 
 	addworktree w r = changelocation r $
 		Local { gitdir = gitdir (location r), worktree = w }

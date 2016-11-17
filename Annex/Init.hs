@@ -129,7 +129,7 @@ ensureInitialized = getVersion >>= maybe needsinit checkUpgrade
   where
 	needsinit = ifM Annex.Branch.hasSibling
 			( initialize Nothing Nothing
-			, error "First run: git-annex init"
+			, giveup "First run: git-annex init"
 			)
 
 {- Checks if a repository is initialized. Does not check version for ugrade. -}

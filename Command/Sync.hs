@@ -169,7 +169,15 @@ prepMerge :: Annex ()
 prepMerge = Annex.changeDirectory =<< fromRepo Git.repoPath
 
 mergeConfig :: [Git.Merge.MergeConfig]	
-mergeConfig = [Git.Merge.MergeNonInteractive]
+mergeConfig = 
+	[ Git.Merge.MergeNonInteractive
+	-- In several situations, unrelated histories should be merged
+	-- together. This includes pairing in the assistant, and merging
+	-- from a remote into a newly created direct mode repo.
+	-- (Once direct mode is removed, this could be changed, so only
+	-- the assistant uses it.)
+	, Git.Merge.MergeUnrelatedHistories
+	]
 
 merge :: CurrBranch -> [Git.Merge.MergeConfig] -> Git.Branch.CommitMode -> Git.Branch -> Annex Bool
 merge (Just b, Just adj) mergeconfig commitmode tomerge =
@@ -287,7 +295,7 @@ updateSyncBranch (Just branch, madj) = do
 
 updateBranch :: Git.Branch -> Git.Branch -> Git.Repo -> IO ()
 updateBranch syncbranch updateto g = 
-	unlessM go $ error $ "failed to update " ++ Git.fromRef syncbranch
+	unlessM go $ giveup $ "failed to update " ++ Git.fromRef syncbranch
   where
 	go = Git.Command.runBool
 		[ Param "branch"

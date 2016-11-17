@@ -50,7 +50,7 @@ vicfg curcfg f = do
 	vi <- liftIO $ catchDefaultIO "vi" $ getEnv "EDITOR"
 	-- Allow EDITOR to be processed by the shell, so it can contain options.
 	unlessM (liftIO $ boolSystem "sh" [Param "-c", Param $ unwords [vi, shellEscape f]]) $
-		error $ vi ++ " exited nonzero; aborting"
+		giveup $ vi ++ " exited nonzero; aborting"
 	r <- parseCfg (defCfg curcfg) <$> liftIO (readFileStrictAnyEncoding f)
 	liftIO $ nukeFile f
 	case r of

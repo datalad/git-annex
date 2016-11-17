@@ -47,7 +47,7 @@ startSrcDest (src:dest:[])
 		next $ ifAnnexed dest
 			(\key -> perform src key (verifyKeyContent DefaultVerify UnVerified key src))
 			stop
-startSrcDest _ = error "specify a src file and a dest file"
+startSrcDest _ = giveup "specify a src file and a dest file"
 
 startKnown :: FilePath -> CommandStart
 startKnown src = notAnnexed src $ do
@@ -63,7 +63,8 @@ startKnown src = notAnnexed src $ do
 			)
 
 notAnnexed :: FilePath -> CommandStart -> CommandStart
-notAnnexed src = ifAnnexed src (error $ "cannot used annexed file as src: " ++ src)
+notAnnexed src = ifAnnexed src $
+	giveup $ "cannot used annexed file as src: " ++ src
 
 perform :: FilePath -> Key -> Annex Bool -> CommandPerform
 perform src key verify = ifM move

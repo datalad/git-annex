@@ -109,7 +109,7 @@ tahoeSetup mu _ c _ = do
   where
 	scsk = "shared-convergence-secret"
 	furlk = "introducer-furl"
-	missingfurl = error "Set TAHOE_FURL to the introducer furl to use."
+	missingfurl = giveup "Set TAHOE_FURL to the introducer furl to use."
 
 store :: UUID -> TahoeHandle -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store u hdl k _f _p = sendAnnex k noop $ \src ->
@@ -137,7 +137,7 @@ checkKey u hdl k = go =<< getCapability u k
 			[ Param "--raw"
 			, Param cap
 			]
-		either error return v
+		either giveup return v
 
 defaultTahoeConfigDir :: UUID -> IO TahoeConfigDir
 defaultTahoeConfigDir u = do
@@ -147,7 +147,7 @@ defaultTahoeConfigDir u = do
 tahoeConfigure :: TahoeConfigDir -> IntroducerFurl -> Maybe SharedConvergenceSecret -> IO SharedConvergenceSecret
 tahoeConfigure configdir furl mscs = do
 	unlessM (createClient configdir furl) $
-		error "tahoe create-client failed"
+		giveup "tahoe create-client failed"
 	maybe noop (writeSharedConvergenceSecret configdir) mscs
 	startTahoeDaemon configdir
 	getSharedConvergenceSecret configdir
@@ -173,7 +173,7 @@ getSharedConvergenceSecret configdir = go (60 :: Int)
   where
 	f = convergenceFile configdir
 	go n
-		| n == 0 = error $ "tahoe did not write " ++ f ++ " after 1 minute. Perhaps the daemon failed to start?"
+		| n == 0 = giveup $ "tahoe did not write " ++ f ++ " after 1 minute. Perhaps the daemon failed to start?"
 		| otherwise = do
 			v <- catchMaybeIO (readFile f)
 			case v of

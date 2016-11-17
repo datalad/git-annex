@@ -71,7 +71,7 @@ globalOptions =
 		check Nothing = unexpected expected "uninitialized repository"
 		check (Just u) = unexpectedUUID expected u
 	unexpectedUUID expected u = unexpected expected $ "UUID " ++ fromUUID u
-	unexpected expected s = error $
+	unexpected expected s = giveup $
 		"expected repository UUID " ++ expected ++ " but found " ++ s
 
 run :: [String] -> IO ()
@@ -109,7 +109,7 @@ builtin cmd dir params = do
 		Git.Config.read r
 			`catchIO` \_ -> do
 				hn <- fromMaybe "unknown" <$> getHostname
-				error $ "failed to read git config of git repository in " ++ hn ++ " on " ++ dir ++ "; perhaps this repository is not set up correctly or has moved"
+				giveup $ "failed to read git config of git repository in " ++ hn ++ " on " ++ dir ++ "; perhaps this repository is not set up correctly or has moved"
 
 external :: [String] -> IO ()
 external params = do
@@ -120,7 +120,7 @@ external params = do
 	checkDirectory lastparam
 	checkNotLimited
 	unlessM (boolSystem "git-shell" $ map Param $ "-c":params') $
-		error "git-shell failed"
+		giveup "git-shell failed"
 
 {- Split the input list into 3 groups separated with a double dash --.
  - Parameters between two -- markers are field settings, in the form:
@@ -150,6 +150,6 @@ checkField (field, val)
 	| otherwise = False
 
 failure :: IO ()
-failure = error $ "bad parameters\n\n" ++ usage h cmds
+failure = giveup $ "bad parameters\n\n" ++ usage h cmds
   where
 	h = "git-annex-shell [-c] command [parameters ...] [option ...]"

@@ -26,7 +26,6 @@ import qualified Control.Exception as E
 import Assistant.DaemonStatus
 import Assistant.WebApp.Types
 import Assistant.WebApp (renderUrl)
-import Yesod
 #endif
 import Assistant.Monad
 import Assistant.Types.UrlRenderer

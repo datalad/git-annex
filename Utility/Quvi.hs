@@ -79,8 +79,8 @@ forceQuery :: Query (Maybe Page)
 forceQuery v ps url = query' v ps url `catchNonAsync` onerr
   where
 	onerr e = ifM (inPath "quvi")
-		( error ("quvi failed: " ++ show e)
-		, error "quvi is not installed"
+		( giveup ("quvi failed: " ++ show e)
+		, giveup "quvi is not installed"
 		)
 
 {- Returns Nothing if the page is not a video page, or quvi is not

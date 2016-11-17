@@ -81,7 +81,7 @@ seek o = do
 		Batch -> withMessageState $ \s -> case outputType s of
 			JSONOutput _ -> batchInput parseJSONInput $
 				commandAction . startBatch now
-			_ -> error "--batch is currently only supported in --json mode"
+			_ -> giveup "--batch is currently only supported in --json mode"
 
 start :: POSIXTime -> MetaDataOptions -> FilePath -> Key -> CommandStart
 start now o file k = startKeys now o k (mkActionItem afile)
@@ -156,7 +156,7 @@ startBatch now (i, (MetaData m)) = case i of
 		mk <- lookupFile f
 		case mk of
 			Just k -> go k (mkActionItem (Just f))
-			Nothing -> error $ "not an annexed file: " ++ f
+			Nothing -> giveup $ "not an annexed file: " ++ f
 	Right k -> go k (mkActionItem k)
   where
 	go k ai = do

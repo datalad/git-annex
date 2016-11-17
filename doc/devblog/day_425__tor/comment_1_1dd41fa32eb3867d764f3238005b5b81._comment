@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="grawity@2ea26be48562f66fcb9b66307da72b1e2e37453f"
+ nickname="grawity"
+ avatar="http://cdn.libravatar.org/avatar/7003e967f47003bae82966aa373de8ef"
+ subject="comment 1"
+ date="2016-11-15T18:01:18Z"
+ content="""
+…or `pkexec`, which is present on many systems and generally integrates better with whatever DE/non-DE the user may be running.
+
+(OTOH, pkexec does not set up X11 access – then again, root helpers shouldn't need it.)
+"""]]

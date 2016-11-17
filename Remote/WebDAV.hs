@@ -85,7 +85,7 @@ webdavSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -
 webdavSetup mu mcreds c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	url <- case M.lookup "url" c of
-		Nothing -> error "Specify url="
+		Nothing -> giveup "Specify url="
 		Just url -> return url
 	(c', encsetup) <- encryptionSetup c gc
 	creds <- maybe (getCreds c' gc u) (return . Just) mcreds
@@ -122,7 +122,7 @@ retrieveCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
 
 retrieve :: ChunkConfig -> Maybe DavHandle -> Retriever
-retrieve _ Nothing = error "unable to connect"
+retrieve _ Nothing = giveup "unable to connect"
 retrieve (LegacyChunks _) (Just dav) = retrieveLegacyChunked dav
 retrieve _ (Just dav) = fileRetriever $ \d k p -> liftIO $
 	goDAV dav $
@@ -147,7 +147,7 @@ remove (Just dav) k = liftIO $ do
 					_ -> return False
 
 checkKey :: Remote -> ChunkConfig -> Maybe DavHandle -> CheckPresent
-checkKey r _ Nothing _ = error $ name r ++ " not configured"
+checkKey r _ Nothing _ = giveup $ name r ++ " not configured"
 checkKey r chunkconfig (Just dav) k = do
 	showChecking r
 	case chunkconfig of
@@ -155,7 +155,7 @@ checkKey r chunkconfig (Just dav) k = do
 		_ -> do
 			v <- liftIO $ goDAV dav $
 				existsDAV (keyLocation k)
-			either error return v
+			either giveup return v
 
 configUrl :: Remote -> Maybe URLString
 configUrl r = fixup <$> M.lookup "url" (config r)

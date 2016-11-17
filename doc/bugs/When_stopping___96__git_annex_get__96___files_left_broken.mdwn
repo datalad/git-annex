@@ -1,0 +1,40 @@
+### Please describe the problem.
+
+```
+> git annex get Narnia/
+get Narnia/Course of a Generation/01 Sail Around the World.mp3 (from Seagate...) 
+SHA256E-s8395599--2fea961006a279f0765c45755b35a06f0a4fc6bfbab6118182ebc693d7b47a91.mp3
+      8,395,599 100%   29.65MB/s    0:00:00 (xfr#1, to-chk=0/1)
+(checksum...) ^C⏎                                   
+```
+
+```
+> mpv ~/Music/sorted/Narnia/Course\ of\ a\ Generation/
+Playing: /home/philip/Music/sorted/Narnia/Course of a Generation/
+[file] This is a directory - adding to playlist.
+
+Playing: /home/philip/Music/sorted/Narnia/Course of a Generation/01 Sail Around the World.mp3
+Failed to recognize file format.
+
+Playing: /home/philip/Music/sorted/Narnia/Course of a Generation/02 When the Stars Are Falling.mp3
+```
+
+```
+> git annex version
+git-annex version: 6.20161012
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 6
+supported repository versions: 3 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+operating system: linux x86_64
+```
+
+Any consecutive `git annex get` commands don’t notice that the file is not completely transferred and leave it in a broken state.
+`git annex get --failed` does not correct the problem.
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, it (kind of) works for keeping my music library in sync.

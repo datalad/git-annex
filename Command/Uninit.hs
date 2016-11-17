@@ -30,12 +30,12 @@ cmd = addCheck check $
 check :: Annex ()
 check = do
 	b <- current_branch
-	when (b == Annex.Branch.name) $ error $
+	when (b == Annex.Branch.name) $ giveup $
 		"cannot uninit when the " ++ Git.fromRef b ++ " branch is checked out"
 	top <- fromRepo Git.repoPath
 	currdir <- liftIO getCurrentDirectory
 	whenM ((/=) <$> liftIO (absPath top) <*> liftIO (absPath currdir)) $
-		error "can only run uninit from the top of the git repository"
+		giveup "can only run uninit from the top of the git repository"
   where
 	current_branch = Git.Ref . Prelude.head . lines <$> revhead
 	revhead = inRepo $ Git.Command.pipeReadStrict
@@ -51,7 +51,7 @@ seek ps = do
 {- git annex symlinks that are not checked into git could be left by an
  - interrupted add. -}
 startCheckIncomplete :: FilePath -> Key -> CommandStart
-startCheckIncomplete file _ = error $ unlines
+startCheckIncomplete file _ = giveup $ unlines
 	[ file ++ " points to annexed content, but is not checked into git."
 	, "Perhaps this was left behind by an interrupted git annex add?"
 	, "Not continuing with uninit; either delete or git annex add the file and retry."
@@ -65,7 +65,7 @@ finish = do
 	prepareRemoveAnnexDir annexdir
 	if null leftovers
 		then liftIO $ removeDirectoryRecursive annexdir
-		else error $ unlines
+		else giveup $ unlines
 			[ "Not fully uninitialized"
 			, "Some annexed data is still left in " ++ annexobjectdir
 			, "This may include deleted files, or old versions of modified files."

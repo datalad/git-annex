@@ -53,7 +53,7 @@ gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remot
 gen r u c gc = do
 	cst <- remoteCost gc expensiveRemoteCost
 	(transport, url) <- rsyncTransport gc $
-		fromMaybe (error "missing rsyncurl") $ remoteAnnexRsyncUrl gc
+		fromMaybe (giveup "missing rsyncurl") $ remoteAnnexRsyncUrl gc
 	let o = genRsyncOpts c gc transport url
 	let islocal = rsyncUrlIsPath $ rsyncUrl o
 	return $ Just $ specialRemote' specialcfg c
@@ -127,7 +127,7 @@ rsyncTransport gc url
 					(map Param $ loginopt ++ sshopts')
 			"rsh":rshopts -> return $ map Param $ "rsh" :
 				loginopt ++ rshopts
-			rsh -> error $ "Unknown Rsync transport: "
+			rsh -> giveup $ "Unknown Rsync transport: "
 				++ unwords rsh
 	| otherwise = return ([], url)
   where
@@ -141,7 +141,7 @@ rsyncSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig ->
 rsyncSetup mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	-- verify configuration is sane
-	let url = fromMaybe (error "Specify rsyncurl=") $
+	let url = fromMaybe (giveup "Specify rsyncurl=") $
 		M.lookup "rsyncurl" c
 	(c', _encsetup) <- encryptionSetup c gc
 
@@ -188,7 +188,7 @@ store o k src meterupdate = withRsyncScratchDir $ \tmp -> do
 retrieve :: RsyncOpts -> FilePath -> Key -> MeterUpdate -> Annex ()
 retrieve o f k p = 
 	unlessM (rsyncRetrieve o k f (Just p)) $
-		error "rsync failed"
+		giveup "rsync failed"
 
 retrieveCheap :: RsyncOpts -> Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieveCheap o k _af f = ifM (preseedTmp k f) ( rsyncRetrieve o k f Nothing , return False )

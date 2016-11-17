@@ -23,10 +23,10 @@ start :: [String] -> CommandStart
 start (keyname:file:[]) = do
 	showStart "setkey" file
 	next $ perform file (mkKey keyname)
-start _ = error "specify a key and a content file"
+start _ = giveup "specify a key and a content file"
 
 mkKey :: String -> Key
-mkKey = fromMaybe (error "bad key") . file2key
+mkKey = fromMaybe (giveup "bad key") . file2key
 
 perform :: FilePath -> Key -> CommandPerform
 perform file key = do

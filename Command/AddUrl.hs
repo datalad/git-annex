@@ -133,7 +133,7 @@ checkUrl r o u = do
 				let f' = adjustFile o (deffile </> fromSafeFilePath f)
 				void $ commandAction $
 					startRemote r (relaxedOption o) f' u' sz
-		| otherwise = error $ unwords
+		| otherwise = giveup $ unwords
 			[ "That url contains multiple files according to the"
 			, Remote.name r
 			, " remote; cannot add it to a single file."
@@ -182,7 +182,7 @@ startWeb :: AddUrlOptions -> String -> CommandStart
 startWeb o s = go $ fromMaybe bad $ parseURI urlstring
   where
 	(urlstring, downloader) = getDownloader s
-	bad = fromMaybe (error $ "bad url " ++ urlstring) $
+	bad = fromMaybe (giveup $ "bad url " ++ urlstring) $
 		Url.parseURIRelaxed $ urlstring
 	go url = case downloader of
 		QuviDownloader -> usequvi
@@ -208,7 +208,7 @@ startWeb o s = go $ fromMaybe bad $ parseURI urlstring
 						)
 		showStart "addurl" file
 		next $ performWeb (relaxedOption o) urlstring file urlinfo
-	badquvi = error $ "quvi does not know how to download url " ++ urlstring
+	badquvi = giveup $ "quvi does not know how to download url " ++ urlstring
 	usequvi = do
 		page <- fromMaybe badquvi
 			<$> withQuviOptions Quvi.forceQuery [Quvi.quiet, Quvi.httponly] urlstring
@@ -372,7 +372,7 @@ url2file url pathdepth pathmax = case pathdepth of
 		| depth >= length urlbits -> frombits id
 		| depth > 0 -> frombits $ drop depth
 		| depth < 0 -> frombits $ reverse . take (negate depth) . reverse
-		| otherwise -> error "bad --pathdepth"
+		| otherwise -> giveup "bad --pathdepth"
   where
 	fullurl = concat
 		[ maybe "" uriRegName (uriAuthority url)
@@ -385,7 +385,7 @@ url2file url pathdepth pathmax = case pathdepth of
 
 urlString2file :: URLString -> Maybe Int -> Int -> FilePath
 urlString2file s pathdepth pathmax = case Url.parseURIRelaxed s of
-	Nothing -> error $ "bad uri " ++ s
+	Nothing -> giveup $ "bad uri " ++ s
 	Just u -> url2file u pathdepth pathmax
 
 adjustFile :: AddUrlOptions -> FilePath -> FilePath

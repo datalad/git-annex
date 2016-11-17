@@ -21,6 +21,6 @@ cmd = noCommit $ noMessages $ dontCheck repoExists $
 
 run :: Maybe Utility.Format.Format -> String -> Annex Bool
 run format p = do
-	let k = fromMaybe (error "bad key") $ file2key p
+	let k = fromMaybe (giveup "bad key") $ file2key p
 	showFormatted format (key2file k) (keyVars k)
 	return True
