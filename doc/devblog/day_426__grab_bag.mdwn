@@ -45,19 +45,19 @@ authentication. Which is a whole nother ball of complexity. So, I'm leaning
 instead to using a simple custom protocol something like:
 
 		> AUTH $localuuid $token
-		< AUTH-OK $remoteuuid
+		< AUTH-SUCCESS $remoteuuid
 		> SENDPACK $length
 		> $gitdata
 		< RECVPACK $length
 		< $gitdata
 		> GET $pos $key
-		< SENDING $length
+		< DATA $length
 		< $bytes
-		> GET-OK
+		> SUCCESS
 		> PUT $key
-		< SEND $pos
-		> SENDING $length
+		< PUT-FROM $pos
+		> DATA $length
 		> $bytes
-		< PUT-OK
+		< SUCCESS
 
 Today's work was sponsored by Riku Voipio.
