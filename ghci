@@ -1,4 +1,4 @@
 #!/bin/sh
 # ghci using objects built by cabal
 make dist/caballog
-$(grep 'ghc --make' dist/caballog | head -n 1 | perl -pe 's/--make/--interactive/; s/.\/[^\.\s]+.hs//; s/-package-id [^\s]+//g; s/-hide-all-packages//; s/-threaded//') $@
+$(grep 'ghc --make' dist/caballog | head -n 1 | perl -pe 's/--make/--interactive/; s/.\/[^\.\s]+.hs//; s/-package-id [^\s]+//g; s/-hide-all-packages//; s/-threaded//') $@ -fno-warn-tabs
