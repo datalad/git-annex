@@ -342,6 +342,7 @@ Executable git-annex
    MissingH,
    hslogger,
    monad-logger,
+   free,
    utf8-string,
    bytestring,
    text,
@@ -918,6 +919,7 @@ Executable git-annex
     Remote.Helper.Hooks
     Remote.Helper.Http
     Remote.Helper.Messages
+    Remote.Helper.P2P
     Remote.Helper.ReadOnly
     Remote.Helper.Special
     Remote.Helper.Ssh

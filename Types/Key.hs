@@ -27,6 +27,7 @@ import qualified Data.Text as T
 import Common
 import Utility.QuickCheck
 import Utility.Bloom
+import qualified Utility.SimpleProtocol as Proto
 
 {- A Key has a unique name, which is derived from a particular backend,
  - and may contain other optional metadata. -}
@@ -128,6 +129,10 @@ instance ToJSON Key where
 instance FromJSON Key where
 	parseJSON (String t) = maybe mempty pure $ file2key $ T.unpack t
 	parseJSON _ = mempty
+
+instance Proto.Serializable Key where
+	serialize = key2file
+	deserialize = file2key
 
 instance Arbitrary Key where
 	arbitrary = Key

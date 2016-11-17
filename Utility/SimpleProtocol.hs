@@ -5,6 +5,9 @@
  - License: BSD-2-clause
  -}
 
+{-# LANGUAGE FlexibleInstances #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 module Utility.SimpleProtocol (
 	Sendable(..),
 	Receivable(..),
@@ -88,3 +91,7 @@ dupIoHandles = do
 	nullh `hDuplicateTo` stdin
 	stderr `hDuplicateTo` stdout
 	return (readh, writeh)
+
+instance Serializable [Char] where
+	serialize = id
+	deserialize = Just

@@ -13,6 +13,8 @@ import qualified Data.Map as M
 import qualified Data.UUID as U
 import Data.Maybe
 
+import qualified Utility.SimpleProtocol as Proto
+
 -- A UUID is either an arbitrary opaque string, or UUID info may be missing.
 data UUID = NoUUID | UUID String
 	deriving (Eq, Ord, Show, Read)
@@ -35,3 +37,7 @@ isUUID :: String -> Bool
 isUUID = isJust . U.fromString
 
 type UUIDMap = M.Map UUID String
+
+instance Proto.Serializable UUID where
+	serialize = fromUUID
+	deserialize = Just . toUUID

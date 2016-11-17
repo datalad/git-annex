@@ -100,10 +100,6 @@ instance Proto.Serializable RemoteURI where
 	serialize (RemoteURI u) = show u
 	deserialize = RemoteURI <$$> parseURI
 
-instance Proto.Serializable [Char] where
-	serialize = id
-	deserialize = Just
-
 instance Proto.Serializable RefList where
 	serialize = unwords . map Git.fromRef
 	deserialize = Just . map Git.Ref . words
