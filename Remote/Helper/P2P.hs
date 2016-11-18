@@ -13,6 +13,7 @@ module Remote.Helper.P2P (
 	runPure,
 	protoDump,
 	auth,
+	remove,
 	get,
 	put,
 	serve,
@@ -44,6 +45,7 @@ data Message
 	= AUTH UUID AuthToken -- uuid of the peer that is authenticating
 	| AUTH_SUCCESS UUID -- uuid of the remote peer
 	| AUTH_FAILURE
+	| REMOVE Key
 	| GET Offset Key
 	| PUT Key
 	| PUT_FROM Offset
@@ -77,6 +79,9 @@ data ProtoF next
 	| SetPresent Key UUID next
 	| CheckPresent Key (Bool -> next)
 	-- ^ Checks if the whole content of the key is locally present.
+	| RemoveKeyFile Key (Bool -> next)
+	-- ^ If the key file is not present, still succeeds.
+	-- May fail if not enough copies to safely drop, etc.
 	deriving (Functor)
 
 type Proto = Free ProtoF
@@ -97,6 +102,7 @@ runPure (Free (WriteKeyFile _ _ _ _ next)) ms = runPure (next True) ms
 runPure (Free (CheckAuthToken _ _ next)) ms = runPure (next True) ms
 runPure (Free (SetPresent _ _ next)) ms = runPure next ms
 runPure (Free (CheckPresent _ next)) ms = runPure (next False) ms
+runPure (Free (RemoveKeyFile _ next)) ms = runPure (next False) ms
 
 protoDump :: [(String, Maybe Message)] -> String
 protoDump = unlines . map protoDump'
@@ -115,6 +121,11 @@ auth myuuid t = do
 		_ -> do
 			sendMessage (PROTO_ERROR "auth failed")
 			return Nothing
+
+remove :: Key -> Proto Bool
+remove key = do
+	sendMessage (REMOVE key)
+	checkSuccess
 
 get :: Key -> Proto Bool
 get key = receiveContent key (`GET` key)
@@ -165,6 +176,9 @@ serve myuuid = go Nothing
 				go autheduuid
 	
 	authed _theiruuid r = case r of
+		REMOVE key -> do
+			ok <- removeKeyFile key
+			sendMessage $ if ok then SUCCESS else FAILURE
 		PUT key -> do
 			have <- checkPresent key
 			if have
@@ -183,13 +197,7 @@ sendContent key offset = do
 	(len, content) <- readKeyFile' key offset
 	sendMessage (DATA len)
 	sendBytes len content
-	ack <- getMessage
-	case ack of
-		SUCCESS -> return True
-		FAILURE -> return False
-		_ -> do
-			sendMessage (PROTO_ERROR "expected SUCCESS or FAILURE")
-			return False
+	checkSuccess
 
 receiveContent :: Key -> (Offset -> Message) -> Proto Bool
 receiveContent key mkmsg = do
@@ -204,6 +212,16 @@ receiveContent key mkmsg = do
 			return ok
 		_ -> do
 			sendMessage (PROTO_ERROR "expected DATA")
+			return False
+
+checkSuccess :: Proto Bool
+checkSuccess = do
+	ack <- getMessage
+	case ack of
+		SUCCESS -> return True
+		FAILURE -> return False
+		_ -> do
+			sendMessage (PROTO_ERROR "expected SUCCESS or FAILURE")
 			return False
 
 -- Reads key file from an offset. The Len should correspond to
@@ -223,6 +241,7 @@ instance Proto.Sendable Message where
 	formatMessage (AUTH uuid authtoken) = ["AUTH", Proto.serialize uuid, Proto.serialize authtoken]
 	formatMessage (AUTH_SUCCESS uuid) = ["AUTH-SUCCESS",  Proto.serialize uuid]
 	formatMessage AUTH_FAILURE = ["AUTH-FAILURE"]
+	formatMessage (REMOVE key) = ["REMOVE", Proto.serialize key]
 	formatMessage (GET offset key) = ["GET", Proto.serialize offset, Proto.serialize key]
 	formatMessage (PUT key) = ["PUT", Proto.serialize key]
 	formatMessage (PUT_FROM offset) = ["PUT-FROM", Proto.serialize offset]
@@ -236,6 +255,7 @@ instance Proto.Receivable Message where
 	parseCommand "AUTH" = Proto.parse2 AUTH
 	parseCommand "AUTH-SUCCESS" = Proto.parse1 AUTH_SUCCESS
 	parseCommand "AUTH-FAILURE" = Proto.parse0 AUTH_FAILURE
+	parseCommand "REMOVE" = Proto.parse1 REMOVE
 	parseCommand "GET" = Proto.parse2 GET
 	parseCommand "PUT" = Proto.parse1 PUT
 	parseCommand "PUT-FROM" = Proto.parse1 PUT_FROM
