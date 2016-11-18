@@ -61,7 +61,7 @@ data Message
 -- | Free monad for implementing actions that use the protocol.
 data ProtoF next
 	= SendMessage Message next
-	| GetMessage (Message -> next)
+	| ReceiveMessage (Message -> next)
 	| SendBytes Len L.ByteString next
 	| ReceiveBytes Len (L.ByteString -> next)
 	-- ^ Lazily reads bytes from peer. Stops once Len are read,
@@ -94,8 +94,8 @@ $(makeFree ''ProtoF)
 runPure :: Show r => Proto r -> [Message] -> [(String, Maybe Message)]
 runPure (Pure r) _ = [("result: " ++ show r, Nothing)]
 runPure (Free (SendMessage m next)) ms = (">",  Just m):runPure next ms
-runPure (Free (GetMessage _)) [] = [("not enough Messages provided", Nothing)]
-runPure (Free (GetMessage next)) (m:ms) = ("<", Just m):runPure (next m) ms
+runPure (Free (ReceiveMessage _)) [] = [("not enough Messages provided", Nothing)]
+runPure (Free (ReceiveMessage next)) (m:ms) = ("<", Just m):runPure (next m) ms
 runPure (Free (SendBytes _ _ next)) ms = ("> bytes", Nothing):runPure next ms
 runPure (Free (ReceiveBytes _ next)) ms = ("< bytes", Nothing):runPure (next L.empty) ms
 runPure (Free (KeyFileSize _ next)) ms = runPure (next (Len 100)) ms
@@ -116,7 +116,7 @@ protoDump' (s, Just m) = s ++ " " ++ unwords (Proto.formatMessage m)
 auth :: UUID -> AuthToken -> Proto (Maybe UUID)
 auth myuuid t = do
 	sendMessage (AUTH myuuid t)
-	r <- getMessage
+	r <- receiveMessage
 	case r of
 		AUTH_SUCCESS theiruuid -> return $ Just theiruuid
 		AUTH_FAILURE -> return Nothing
@@ -140,7 +140,7 @@ get key = receiveContent key (`GET` key)
 put :: Key -> Proto Bool
 put key = do
 	sendMessage (PUT key)
-	r <- getMessage
+	r <- receiveMessage
 	case r of
 		PUT_FROM offset -> sendContent key offset
 		ALREADY_HAVE -> return True
@@ -164,7 +164,7 @@ serve :: UUID -> Proto ()
 serve myuuid = go Nothing
   where
 	go autheduuid = do
-		r <- getMessage
+		r <- receiveMessage
 		case r of
 			AUTH theiruuid authtoken -> do
 				ok <- checkAuthToken theiruuid authtoken
@@ -210,7 +210,7 @@ receiveContent key mkmsg = do
 	Len n <- keyFileSize key
 	let offset = Offset n
 	sendMessage (mkmsg offset)
-	r <- getMessage
+	r <- receiveMessage
 	case r of
 		DATA len -> do
 			ok <- writeKeyFile key offset len =<< receiveBytes len
@@ -222,7 +222,7 @@ receiveContent key mkmsg = do
 
 checkSuccess :: Proto Bool
 checkSuccess = do
-	ack <- getMessage
+	ack <- receiveMessage
 	case ack of
 		SUCCESS -> return True
 		FAILURE -> return False
