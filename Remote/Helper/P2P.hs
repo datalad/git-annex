@@ -104,16 +104,7 @@ auth myuuid t = do
 			return Nothing
 
 get :: Key -> Proto Bool
-get key = do
-	Len n <- keyFileSize key
-	let offset = Offset n
-	sendMessage (GET offset key)
-	r <- getMessage
-	case r of
-		DATA len -> receiveContent key offset len
-		_ -> do
-			sendMessage (PROTO_ERROR "expected DATA")
-			return False
+get key = receiveContent key (`GET` key)
 
 put :: Key -> Proto Bool
 put key = do
@@ -156,23 +147,17 @@ serve myuuid = go Nothing
 			_ -> do
 				case autheduuid of
 					Just theiruuid -> authed theiruuid r
-				Nothing -> sendMessage (PROTO_ERROR "must AUTH first")
+					Nothing -> sendMessage (PROTO_ERROR "must AUTH first")
 				go autheduuid
 	
-	authed theiruuid r = case r of
+	authed _theiruuid r = case r of
 		PUT key -> do
-			(Len n) <- keyFileSize key
-			let offset = Offset n
-			sendMessage (PUT_FROM offset)
-			r' <- getMessage
-			case r' of
-				DATA len -> do
-					void $ receiveContent key offset len
-					setPresent key myuuid
-				_ -> sendMessage (PROTO_ERROR "expected DATA")
+			ok <- receiveContent key PUT_FROM
+			when ok $
+				setPresent key myuuid
 		-- setPresent not called because the peer may have
 		-- requested the data but not permanatly stored it.
-		GET offset key -> sendContent key offset
+		GET offset key -> void $ sendContent key offset
 		_ -> sendMessage (PROTO_ERROR "unexpected command")
 
 sendContent :: Key -> Offset -> Proto Bool
@@ -188,12 +173,21 @@ sendContent key offset = do
 			sendMessage (PROTO_ERROR "expected SUCCESS or FAILURE")
 			return False
 
-receiveContent :: Key -> Offset -> Len -> Proto Bool
-receiveContent key offset len = do
-	content <- receiveBytes len
-	ok <- writeKeyFile key offset content
-	sendMessage $ if ok then SUCCESS else FAILURE
-	return ok
+receiveContent :: Key -> (Offset -> Message) -> Proto Bool
+receiveContent key mkmsg = do
+	Len n <- keyFileSize key
+	let offset = Offset n
+	sendMessage (mkmsg offset)
+	r <- getMessage
+	case r of
+		DATA len -> do
+			content <- receiveBytes len
+			ok <- writeKeyFile key offset content
+			sendMessage $ if ok then SUCCESS else FAILURE
+			return ok
+		_ -> do
+			sendMessage (PROTO_ERROR "expected DATA")
+			return False
 
 -- Reads key file from an offset. The Len should correspond to
 -- the length of the ByteString, but to avoid buffering the content
