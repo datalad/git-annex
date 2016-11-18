@@ -47,6 +47,7 @@ data Message
 	| GET Offset Key
 	| PUT Key
 	| PUT_FROM Offset
+	| ALREADY_HAVE
 	| SUCCESS
 	| FAILURE
 	| DATA Len -- followed by bytes
@@ -74,6 +75,8 @@ data ProtoF next
 	-- content been transferred.
 	| CheckAuthToken UUID AuthToken (Bool -> next)
 	| SetPresent Key UUID next
+	| CheckPresent Key (Bool -> next)
+	-- ^ Checks if the whole content of the key is locally present.
 	deriving (Functor)
 
 type Proto = Free ProtoF
@@ -93,6 +96,7 @@ runPure (Free (ReadKeyFile _ _ next)) ms = runPure (next L.empty) ms
 runPure (Free (WriteKeyFile _ _ _ _ next)) ms = runPure (next True) ms
 runPure (Free (CheckAuthToken _ _ next)) ms = runPure (next True) ms
 runPure (Free (SetPresent _ _ next)) ms = runPure next ms
+runPure (Free (CheckPresent _ next)) ms = runPure (next False) ms
 
 protoDump :: [(String, Maybe Message)] -> String
 protoDump = unlines . map protoDump'
@@ -121,6 +125,7 @@ put key = do
 	r <- getMessage
 	case r of
 		PUT_FROM offset -> sendContent key offset
+		ALREADY_HAVE -> return True
 		_ -> do
 			sendMessage (PROTO_ERROR "expected PUT_FROM")
 			return False
@@ -161,9 +166,13 @@ serve myuuid = go Nothing
 	
 	authed _theiruuid r = case r of
 		PUT key -> do
-			ok <- receiveContent key PUT_FROM
-			when ok $
-				setPresent key myuuid
+			have <- checkPresent key
+			if have
+				then sendMessage ALREADY_HAVE
+				else do
+					ok <- receiveContent key PUT_FROM
+					when ok $
+						setPresent key myuuid
 		-- setPresent not called because the peer may have
 		-- requested the data but not permanatly stored it.
 		GET offset key -> void $ sendContent key offset
@@ -217,6 +226,7 @@ instance Proto.Sendable Message where
 	formatMessage (GET offset key) = ["GET", Proto.serialize offset, Proto.serialize key]
 	formatMessage (PUT key) = ["PUT", Proto.serialize key]
 	formatMessage (PUT_FROM offset) = ["PUT-FROM", Proto.serialize offset]
+	formatMessage ALREADY_HAVE = ["ALREADY-HAVE"]
 	formatMessage SUCCESS = ["SUCCESS"]
 	formatMessage FAILURE = ["FAILURE"]
 	formatMessage (DATA leng) = ["DATA", Proto.serialize leng]
@@ -229,6 +239,7 @@ instance Proto.Receivable Message where
 	parseCommand "GET" = Proto.parse2 GET
 	parseCommand "PUT" = Proto.parse1 PUT
 	parseCommand "PUT-FROM" = Proto.parse1 PUT_FROM
+	parseCommand "ALREADY-HAVE" = Proto.parse0 ALREADY_HAVE
 	parseCommand "SUCCESS" = Proto.parse0 SUCCESS
 	parseCommand "FAILURE" = Proto.parse0 FAILURE
 	parseCommand "DATA" = Proto.parse1 DATA
