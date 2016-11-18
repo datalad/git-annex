@@ -59,10 +59,19 @@ data ProtoF next
 	| GetMessage (Message -> next)
 	| SendBytes Len L.ByteString next
 	| ReceiveBytes Len (L.ByteString -> next)
+	-- ^ Lazily reads bytes from peer. Stops once Len are read,
+	-- or if connection is lost, and in either case returns the bytes
+	-- that were read. This allows resuming interrupted transfers.
 	| KeyFileSize Key (Len -> next)
 	-- ^ Checks size of key file (dne = 0)
 	| ReadKeyFile Key Offset (L.ByteString -> next)
-	| WriteKeyFile Key Offset L.ByteString (Bool -> next)
+	| WriteKeyFile Key Offset Len L.ByteString (Bool -> next)
+	-- ^ Writes to key file starting at an offset. Returns True
+	-- once the whole content of the key is stored in the key file.
+	--
+	-- Note: The ByteString may not contain the entire remaining content
+	-- of the key. Only once the key file size == Len has the whole
+	-- content been transferred.
 	| CheckAuthToken UUID AuthToken (Bool -> next)
 	| SetPresent Key UUID next
 	deriving (Functor)
@@ -81,7 +90,7 @@ runPure (Free (SendBytes _ _ next)) ms = ("> bytes", Nothing):runPure next ms
 runPure (Free (ReceiveBytes _ next)) ms = ("< bytes", Nothing):runPure (next L.empty) ms
 runPure (Free (KeyFileSize _ next)) ms = runPure (next (Len 100)) ms
 runPure (Free (ReadKeyFile _ _ next)) ms = runPure (next L.empty) ms
-runPure (Free (WriteKeyFile _ _ _ next)) ms = runPure (next True) ms
+runPure (Free (WriteKeyFile _ _ _ _ next)) ms = runPure (next True) ms
 runPure (Free (CheckAuthToken _ _ next)) ms = runPure (next True) ms
 runPure (Free (SetPresent _ _ next)) ms = runPure next ms
 
@@ -181,8 +190,7 @@ receiveContent key mkmsg = do
 	r <- getMessage
 	case r of
 		DATA len -> do
-			content <- receiveBytes len
-			ok <- writeKeyFile key offset content
+			ok <- writeKeyFile key offset len =<< receiveBytes len
 			sendMessage $ if ok then SUCCESS else FAILURE
 			return ok
 		_ -> do
