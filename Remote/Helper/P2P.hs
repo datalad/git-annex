@@ -160,10 +160,6 @@ serve myuuid = go Nothing
 				go autheduuid
 	
 	authed theiruuid r = case r of
-		GET offset key -> do
-			ok <- sendContent key offset
-			when ok $
-				setPresent key theiruuid
 		PUT key -> do
 			(Len n) <- keyFileSize key
 			let offset = Offset n
@@ -174,6 +170,9 @@ serve myuuid = go Nothing
 					void $ receiveContent key offset len
 					setPresent key myuuid
 				_ -> sendMessage (PROTO_ERROR "expected DATA")
+		-- setPresent not called because the peer may have
+		-- requested the data but not permanatly stored it.
+		GET offset key -> sendContent key offset
 		_ -> sendMessage (PROTO_ERROR "unexpected command")
 
 sendContent :: Key -> Offset -> Proto Bool
