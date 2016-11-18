@@ -362,7 +362,7 @@ Executable git-annex
    -- Old version needed due to
    -- https://github.com/prowdsponsor/esqueleto/issues/137
    -- and also temporarily to make ghc 8 builds work
-   persistent >= 2.5 && < 2.7,
+   persistent (< 2.5),
    persistent-template,
    aeson,
    unordered-containers,
