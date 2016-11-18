@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE DeriveFunctor, TemplateHaskell, FlexibleContexts #-}
+{-# LANGUAGE DeriveFunctor, TemplateHaskell, FlexibleContexts, RankNTypes #-}
 
 module Remote.Helper.P2P (
 	AuthToken(..),
@@ -14,6 +14,7 @@ module Remote.Helper.P2P (
 	protoDump,
 	auth,
 	checkPresent,
+	lockContentWhile,
 	remove,
 	get,
 	put,
@@ -29,6 +30,7 @@ import Utility.PartialPrelude
 import Control.Monad
 import Control.Monad.Free
 import Control.Monad.Free.TH
+import Control.Monad.Catch
 import qualified Data.ByteString.Lazy as L
 
 newtype AuthToken = AuthToken String
@@ -47,6 +49,8 @@ data Message
 	| AUTH_SUCCESS UUID -- uuid of the remote peer
 	| AUTH_FAILURE
 	| CHECKPRESENT Key
+	| LOCKCONTENT Key
+	| UNLOCKCONTENT
 	| REMOVE Key
 	| GET Offset Key
 	| PUT Key
@@ -84,6 +88,9 @@ data ProtoF next
 	| RemoveKeyFile Key (Bool -> next)
 	-- ^ If the key file is not present, still succeeds.
 	-- May fail if not enough copies to safely drop, etc.
+	| TryLockContent Key (Bool -> Proto ()) next
+	-- ^ Try to lock the content of a key,  preventing it
+	-- from being deleted, and run the provided protocol action.
 	deriving (Functor)
 
 type Proto = Free ProtoF
@@ -105,6 +112,7 @@ runPure (Free (CheckAuthToken _ _ next)) ms = runPure (next True) ms
 runPure (Free (SetPresent _ _ next)) ms = runPure next ms
 runPure (Free (CheckContentPresent _ next)) ms = runPure (next False) ms
 runPure (Free (RemoveKeyFile _ next)) ms = runPure (next True) ms
+runPure (Free (TryLockContent _ p next)) ms = runPure (p True >> next) ms
 
 protoDump :: [(String, Maybe Message)] -> String
 protoDump = unlines . map protoDump'
@@ -128,6 +136,26 @@ checkPresent :: Key -> Proto Bool
 checkPresent key = do
 	sendMessage (CHECKPRESENT key)
 	checkSuccess
+
+{- Locks content to prevent it from being dropped, while running an action.
+ -
+ - Note that this only guarantees that the content is locked as long as the
+ - connection to the peer remains up. If the connection is unexpectededly
+ - dropped, the peer will then unlock the content.
+ -}
+lockContentWhile 
+	:: MonadMask m 
+	=> (forall r. Proto r -> m r)
+	-> Key
+	-> (Bool -> m ())
+	-> m ()
+lockContentWhile runproto key a = bracket setup cleanup a
+  where
+	setup = runproto $ do
+		sendMessage (LOCKCONTENT key)
+		checkSuccess
+	cleanup True = runproto $ sendMessage UNLOCKCONTENT
+	cleanup False = return ()
 
 remove :: Key -> Proto Bool
 remove key = do
@@ -183,6 +211,13 @@ serve myuuid = go Nothing
 				go autheduuid
 	
 	authed _theiruuid r = case r of
+		LOCKCONTENT key -> tryLockContent key $ \locked -> do
+			sendSuccess locked
+			when locked $ do
+				r' <- receiveMessage
+				case r' of
+					UNLOCKCONTENT -> return ()
+					_ -> sendMessage (ERROR "expected UNLOCKCONTENT")
 		CHECKPRESENT key -> sendSuccess =<< checkContentPresent key
 		REMOVE key -> sendSuccess =<< removeKeyFile key
 		PUT key -> do
@@ -252,6 +287,8 @@ instance Proto.Sendable Message where
 	formatMessage (AUTH_SUCCESS uuid) = ["AUTH-SUCCESS",  Proto.serialize uuid]
 	formatMessage AUTH_FAILURE = ["AUTH-FAILURE"]
 	formatMessage (CHECKPRESENT key) = ["CHECKPRESENT", Proto.serialize key]
+	formatMessage (LOCKCONTENT key) = ["LOCKCONTENT", Proto.serialize key]
+	formatMessage UNLOCKCONTENT = ["UNLOCKCONTENT"]
 	formatMessage (REMOVE key) = ["REMOVE", Proto.serialize key]
 	formatMessage (GET offset key) = ["GET", Proto.serialize offset, Proto.serialize key]
 	formatMessage (PUT key) = ["PUT", Proto.serialize key]
@@ -267,6 +304,8 @@ instance Proto.Receivable Message where
 	parseCommand "AUTH-SUCCESS" = Proto.parse1 AUTH_SUCCESS
 	parseCommand "AUTH-FAILURE" = Proto.parse0 AUTH_FAILURE
 	parseCommand "CHECKPRESENT" = Proto.parse1 CHECKPRESENT
+	parseCommand "LOCKCONTENT" = Proto.parse1 LOCKCONTENT
+	parseCommand "UNLOCKCONTENT" = Proto.parse0 UNLOCKCONTENT
 	parseCommand "REMOVE" = Proto.parse1 REMOVE
 	parseCommand "GET" = Proto.parse2 GET
 	parseCommand "PUT" = Proto.parse1 PUT
