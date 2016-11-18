@@ -55,7 +55,7 @@ data Message
 	| SUCCESS
 	| FAILURE
 	| DATA Len -- followed by bytes
-	| PROTO_ERROR String
+	| ERROR String
 	deriving (Show)
 
 -- | Free monad for implementing actions that use the protocol.
@@ -121,7 +121,7 @@ auth myuuid t = do
 		AUTH_SUCCESS theiruuid -> return $ Just theiruuid
 		AUTH_FAILURE -> return Nothing
 		_ -> do
-			sendMessage (PROTO_ERROR "auth failed")
+			sendMessage (ERROR "auth failed")
 			return Nothing
 
 checkPresent :: Key -> Proto Bool
@@ -145,7 +145,7 @@ put key = do
 		PUT_FROM offset -> sendContent key offset
 		ALREADY_HAVE -> return True
 		_ -> do
-			sendMessage (PROTO_ERROR "expected PUT_FROM")
+			sendMessage (ERROR "expected PUT_FROM")
 			return False
 
 -- | Serve the protocol.
@@ -157,7 +157,7 @@ put key = do
 -- talking to a server that does not support some new feature, and fall
 -- back.
 --
--- When the client sends PROTO_ERROR to the server, the server gives up,
+-- When the client sends ERROR to the server, the server gives up,
 -- since it's not clear what state the client is is, and so not possible to
 -- recover.
 serve :: UUID -> Proto ()
@@ -175,20 +175,16 @@ serve myuuid = go Nothing
 					else do
 						sendMessage AUTH_FAILURE
 						go autheduuid
-			PROTO_ERROR _ -> return ()
+			ERROR _ -> return ()
 			_ -> do
 				case autheduuid of
 					Just theiruuid -> authed theiruuid r
-					Nothing -> sendMessage (PROTO_ERROR "must AUTH first")
+					Nothing -> sendMessage (ERROR "must AUTH first")
 				go autheduuid
 	
 	authed _theiruuid r = case r of
-		CHECKPRESENT key -> do
-			ok <- checkContentPresent key
-			sendMessage $ if ok then SUCCESS else FAILURE
-		REMOVE key -> do
-			ok <- removeKeyFile key
-			sendMessage $ if ok then SUCCESS else FAILURE
+		CHECKPRESENT key -> sendSuccess =<< checkContentPresent key
+		REMOVE key -> sendSuccess =<< removeKeyFile key
 		PUT key -> do
 			have <- checkContentPresent key
 			if have
@@ -200,7 +196,7 @@ serve myuuid = go Nothing
 		-- setPresent not called because the peer may have
 		-- requested the data but not permanatly stored it.
 		GET offset key -> void $ sendContent key offset
-		_ -> sendMessage (PROTO_ERROR "unexpected command")
+		_ -> sendMessage (ERROR "unexpected command")
 
 sendContent :: Key -> Offset -> Proto Bool
 sendContent key offset = do
@@ -218,10 +214,10 @@ receiveContent key mkmsg = do
 	case r of
 		DATA len -> do
 			ok <- writeKeyFile key offset len =<< receiveBytes len
-			sendMessage $ if ok then SUCCESS else FAILURE
+			sendSuccess ok
 			return ok
 		_ -> do
-			sendMessage (PROTO_ERROR "expected DATA")
+			sendMessage (ERROR "expected DATA")
 			return False
 
 checkSuccess :: Proto Bool
@@ -231,8 +227,12 @@ checkSuccess = do
 		SUCCESS -> return True
 		FAILURE -> return False
 		_ -> do
-			sendMessage (PROTO_ERROR "expected SUCCESS or FAILURE")
+			sendMessage (ERROR "expected SUCCESS or FAILURE")
 			return False
+
+sendSuccess :: Bool -> Proto ()
+sendSuccess True = sendMessage SUCCESS
+sendSuccess False = sendMessage FAILURE
 
 -- Reads key file from an offset. The Len should correspond to
 -- the length of the ByteString, but to avoid buffering the content
@@ -260,7 +260,7 @@ instance Proto.Sendable Message where
 	formatMessage SUCCESS = ["SUCCESS"]
 	formatMessage FAILURE = ["FAILURE"]
 	formatMessage (DATA leng) = ["DATA", Proto.serialize leng]
-	formatMessage (PROTO_ERROR err) = ["PROTO-ERROR", Proto.serialize err]
+	formatMessage (ERROR err) = ["ERROR", Proto.serialize err]
 
 instance Proto.Receivable Message where
 	parseCommand "AUTH" = Proto.parse2 AUTH
@@ -275,7 +275,7 @@ instance Proto.Receivable Message where
 	parseCommand "SUCCESS" = Proto.parse0 SUCCESS
 	parseCommand "FAILURE" = Proto.parse0 FAILURE
 	parseCommand "DATA" = Proto.parse1 DATA
-	parseCommand "PROTO-ERROR" = Proto.parse1 PROTO_ERROR
+	parseCommand "ERROR" = Proto.parse1 ERROR
 	parseCommand _ = Proto.parseFail
 
 instance Proto.Serializable Offset where
