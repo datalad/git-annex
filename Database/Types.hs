@@ -25,7 +25,7 @@ toSKey :: Key -> SKey
 toSKey = SKey . key2file
 
 fromSKey :: SKey -> Key
-fromSKey (SKey s) = fromMaybe (error $ "bad serialied Key " ++ s) (file2key s)
+fromSKey (SKey s) = fromMaybe (error $ "bad serialized Key " ++ s) (file2key s)
 
 derivePersistField "SKey"
 
@@ -43,7 +43,7 @@ toIKey :: Key -> IKey
 toIKey = IKey . key2file
 
 fromIKey :: IKey -> Key
-fromIKey (IKey s) = fromMaybe (error $ "bad serialied Key " ++ s) (file2key s)
+fromIKey (IKey s) = fromMaybe (error $ "bad serialized Key " ++ s) (file2key s)
 
 derivePersistField "IKey"
 

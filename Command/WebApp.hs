@@ -77,7 +77,7 @@ start' allowauto o = do
 			else annexListen <$> Annex.getGitConfig
 		ifM (checkpid <&&> checkshim f)
 			( if isJust (listenAddress o)
-				then error "The assistant is already running, so --listen cannot be used."
+				then giveup "The assistant is already running, so --listen cannot be used."
 				else do
 					url <- liftIO . readFile
 						=<< fromRepo gitAnnexUrlFile
@@ -125,7 +125,7 @@ startNoRepo o = go =<< liftIO (filterM doesDirectoryExist =<< readAutoStartFile)
 				go ds
 			Right state -> void $ Annex.eval state $ do
 				whenM (fromRepo Git.repoIsLocalBare) $
-					error $ d ++ " is a bare git repository, cannot run the webapp in it"
+					giveup $ d ++ " is a bare git repository, cannot run the webapp in it"
 				callCommandAction $
 					start' False o
 

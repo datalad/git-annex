@@ -50,7 +50,7 @@ prepare input showmatch matches r =
 			| otherwise -> sleep n
 		Nothing -> list
   where
-	list = error $ unlines $
+	list = giveup $ unlines $
 		[ "Unknown command '" ++ input ++ "'"
 		, ""
 		, "Did you mean one of these?"

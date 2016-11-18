@@ -25,7 +25,7 @@ start :: String -> CommandStart
 start gcryptid = next $ next $ do
 	u <- getUUID
 	when (u /= NoUUID) $
-		error "gcryptsetup refusing to run; this repository already has a git-annex uuid!"
+		giveup "gcryptsetup refusing to run; this repository already has a git-annex uuid!"
 	
 	g <- gitRepo
 	gu <- Remote.GCrypt.getGCryptUUID True g
@@ -35,5 +35,5 @@ start gcryptid = next $ next $ do
 			then do
 				void $ Remote.GCrypt.setupRepo gcryptid g
 				return True
-			else error "cannot use gcrypt in a non-bare repository"
-		else error "gcryptsetup uuid mismatch"
+			else giveup "cannot use gcrypt in a non-bare repository"
+		else giveup "gcryptsetup uuid mismatch"

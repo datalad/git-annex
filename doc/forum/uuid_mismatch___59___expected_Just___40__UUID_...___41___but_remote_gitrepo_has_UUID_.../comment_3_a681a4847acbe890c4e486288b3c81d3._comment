@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="yomguy"
+ avatar="http://cdn.libravatar.org/avatar/03db077c04f8b753f3f504d9a2b06a29"
+ subject="comment 3"
+ date="2016-11-18T14:00:51Z"
+ content="""
+Hi joey,
+
+After modifying the gcrypt-id as you proposed, I have finally managed to clone the repo with  
+
+`git clone gcrypt::ssh://my.domain/home/admin/`
+
+But now I get only unresolved symbolic links for each files, that is .git/annex/objects directory only contains .map files.
+
+Would you have an idea about the reason/source of this behavior?
+
+Thank you so much,
+Guillaume
+"""]]

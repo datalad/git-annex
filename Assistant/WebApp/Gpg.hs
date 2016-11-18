@@ -56,7 +56,7 @@ withNewSecretKey use = do
 	liftIO $ genSecretKey cmd RSA "" userid maxRecommendedKeySize
 	results <- M.keys . M.filter (== userid) <$> liftIO (secretKeys cmd)
 	case results of
-		[] -> error "Failed to generate gpg key!"
+		[] -> giveup "Failed to generate gpg key!"
 		(key:_) -> use key
 
 {- Tries to find the name used in remote.log for a gcrypt repository
@@ -85,7 +85,7 @@ getGCryptRemoteName u repoloc = do
 	void $ inRepo $ Git.Remote.Remove.remove tmpremote
 	maybe missing return mname
   where
-	missing = error $ "Cannot find configuration for the gcrypt remote at " ++ repoloc
+	missing = giveup $ "Cannot find configuration for the gcrypt remote at " ++ repoloc
 
 {- Checks to see if a repo is encrypted with gcrypt, and runs one action if
  - it's not an another if it is.
@@ -103,7 +103,7 @@ checkGCryptRepoEncryption location notencrypted notinstalled encrypted =
 	dispatch Git.GCrypt.Decryptable = encrypted
 	dispatch Git.GCrypt.NotEncrypted = notencrypted
 	dispatch Git.GCrypt.NotDecryptable =
-		error "This git repository is encrypted with a GnuPG key that you do not have."
+		giveup "This git repository is encrypted with a GnuPG key that you do not have."
 
 {- Gets the UUID of the gcrypt repo at a location, which may not exist.
  - Only works if the gcrypt repo was created as a git-annex remote. -}

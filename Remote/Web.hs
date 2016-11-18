@@ -100,7 +100,7 @@ checkKey key = do
 	us <- getWebUrls key
 	if null us
 		then return False
-		else either error return =<< checkKey' key us
+		else either giveup return =<< checkKey' key us
 checkKey' :: Key -> [URLString] -> Annex (Either String Bool)
 checkKey' key us = firsthit us (Right False) $ \u -> do
 	let (u', downloader) = getDownloader u

@@ -12,6 +12,8 @@ module Utility.Glob (
 	matchGlob
 ) where
 
+import Utility.Exception
+
 import System.Path.WildMatch
 
 import "regex-tdfa" Text.Regex.TDFA
@@ -26,7 +28,7 @@ compileGlob :: String -> GlobCase -> Glob
 compileGlob glob globcase = Glob $
 	case compile (defaultCompOpt {caseSensitive = casesentitive}) defaultExecOpt regex of
 		Right r -> r
-		Left _ -> error $ "failed to compile regex: " ++ regex
+		Left _ -> giveup $ "failed to compile regex: " ++ regex
   where
 	regex = '^':wildToRegex glob
 	casesentitive = case globcase of

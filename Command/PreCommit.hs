@@ -46,7 +46,7 @@ seek ps = lockPreCommitHook $ ifM isDirect
 			( do
 				(fs, cleanup) <- inRepo $ Git.typeChangedStaged ps
 				whenM (anyM isOldUnlocked fs) $
-					error "Cannot make a partial commit with unlocked annexed files. You should `git annex add` the files you want to commit, and then run git commit."
+					giveup "Cannot make a partial commit with unlocked annexed files. You should `git annex add` the files you want to commit, and then run git commit."
 				void $ liftIO cleanup
 			, do
 				-- fix symlinks to files being committed

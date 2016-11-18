@@ -1,0 +1,23 @@
+Have waited too long for some next-generation encrypted P2P network, like
+telehash to emerge. Time to stop waiting; tor hidden services are not as
+cutting edge, but should work. Updated the [[design|design/assistant/telehash]]
+and started implementation in the `tor` branch.
+
+Unfortunately, Tor's default configuration does not enable the ControlPort.
+And, changing that in the configuration could be problimatic. This
+makes it harder than it ought to be to register a tor hidden service.
+So, I implemented a `git annex enable-tor` command, which can be run as root
+to set it up. The webapp will probably use `su-to-root` or `gksu` to run it. 
+There's some Linux-specific parts in there, and it uses a socket for
+communication between tor and the hidden service, which may cause problems
+for Windows porting later.
+
+Next step will be to get `git annex remotedaemon` to run as a tor hidden
+service.
+
+Also made a `no-xmpp` branch which removes xmpp support from the assistant.
+That will remove 3000 lines of code when it's merged. Will probably wait
+until after tor hidden services are working.
+
+Today's work was sponsored by Jake Vosloo on
+[Patreon](https://www.patreon.com/joeyh/).

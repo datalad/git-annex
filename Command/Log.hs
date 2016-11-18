@@ -93,7 +93,7 @@ seek o = do
 	case (logFiles o, allOption o) of
 		(fs, False) -> withFilesInGit (whenAnnexed $ start o outputter) fs
 		([], True) -> commandAction (startAll o outputter)
-		(_, True) -> error "Cannot specify both files and --all"
+		(_, True) -> giveup "Cannot specify both files and --all"
 
 start :: LogOptions -> (FilePath -> Outputter) -> FilePath -> Key -> CommandStart
 start o outputter file key = do

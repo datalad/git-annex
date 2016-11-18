@@ -25,7 +25,7 @@ seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart
-start [] = error "Specify metadata to include in view"
+start [] = giveup "Specify metadata to include in view"
 start ps = do
 	showStart "view" ""
 	view <- mkView ps
@@ -34,7 +34,7 @@ start ps = do
 	go view Nothing = next $ perform view
 	go view (Just v)
 		| v == view = stop
-		| otherwise = error "Already in a view. Use the vfilter and vadd commands to further refine this view."
+		| otherwise = giveup "Already in a view. Use the vfilter and vadd commands to further refine this view."
 
 perform :: View -> CommandPerform
 perform view = do
@@ -47,7 +47,7 @@ paramView = paramRepeating "FIELD=VALUE"
 mkView :: [String] -> Annex View
 mkView ps = go =<< inRepo Git.Branch.current
   where
-	go Nothing = error "not on any branch!"
+	go Nothing = giveup "not on any branch!"
 	go (Just b) = return $ fst $ refineView (View b []) $
 		map parseViewParam $ reverse ps
 

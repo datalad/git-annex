@@ -39,7 +39,7 @@ start = do
 
 guardTest :: Annex ()
 guardTest = unlessM (fromMaybe False . Git.Config.isTrue <$> getConfig key "") $
-	error $ unlines
+	giveup $ unlines
 		[ "Running fuzz tests *writes* to and *deletes* files in"
 		, "this repository, and pushes those changes to other"
 		, "repositories! This is a developer tool, not something"

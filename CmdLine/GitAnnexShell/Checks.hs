@@ -26,7 +26,7 @@ checkEnv var = do
 	case v of
 		Nothing -> noop
 		Just "" -> noop
-		Just _ -> error $ "Action blocked by " ++ var
+		Just _ -> giveup $ "Action blocked by " ++ var
 
 checkDirectory :: Maybe FilePath -> IO ()
 checkDirectory mdir = do
@@ -44,7 +44,7 @@ checkDirectory mdir = do
 					then noop
 					else req d' (Just dir')
   where
-	req d mdir' = error $ unwords 
+	req d mdir' = giveup $ unwords 
 		[ "Only allowed to access"
 		, d
 		, maybe "and could not determine directory from command line" ("not " ++) mdir'
@@ -64,4 +64,4 @@ gitAnnexShellCheck :: Command -> Command
 gitAnnexShellCheck = addCheck okforshell . dontCheck repoExists
   where
 	okforshell = unlessM (isInitialized <||> isJust . gcryptId <$> Annex.getGitConfig) $
-		error "Not a git-annex or gcrypt repository."
+		giveup "Not a git-annex or gcrypt repository."

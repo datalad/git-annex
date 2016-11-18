@@ -210,7 +210,7 @@ waitLock (Seconds timeout) lockfile = go timeout
 			=<< tryLock lockfile
 		| otherwise = do
 			hPutStrLn stderr $ show timeout ++ " second timeout exceeded while waiting for pid lock file " ++ lockfile
-			error $ "Gave up waiting for possibly stale pid lock file " ++ lockfile
+			giveup $ "Gave up waiting for possibly stale pid lock file " ++ lockfile
 
 dropLock :: LockHandle -> IO ()
 dropLock (LockHandle lockfile _ sidelock) = do

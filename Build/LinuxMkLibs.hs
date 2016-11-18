@@ -70,7 +70,6 @@ installLinkerShim top linker exe = do
 			-- Assume that for a symlink, the destination
 			-- will also be shimmed.
 			let sl' = ".." </> takeFileName sl </> takeFileName sl
-			print (sl', exedest)
 			createSymbolicLink sl' exedest
 		, renameFile exe exedest
 		)

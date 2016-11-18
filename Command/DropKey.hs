@@ -32,7 +32,7 @@ optParser desc = DropKeyOptions
 seek :: DropKeyOptions -> CommandSeek
 seek o = do
 	unlessM (Annex.getState Annex.force) $
-		error "dropkey can cause data loss; use --force if you're sure you want to do this"
+		giveup "dropkey can cause data loss; use --force if you're sure you want to do this"
 	withKeys start (toDrop o)
 	case batchOption o of
 		Batch -> batchInput parsekey $ batchCommandAction . start

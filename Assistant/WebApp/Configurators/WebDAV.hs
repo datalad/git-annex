@@ -82,7 +82,7 @@ postAddBoxComR = boxConfigurator $ do
 				]
 		_ -> $(widgetFile "configurators/addbox.com")
 #else
-postAddBoxComR = error "WebDAV not supported by this build"
+postAddBoxComR = giveup "WebDAV not supported by this build"
 #endif
 
 getEnableWebDAVR :: UUID -> Handler Html
@@ -120,7 +120,7 @@ postEnableWebDAVR uuid = do
 					T.pack <$> Remote.prettyUUID uuid
 				$(widgetFile "configurators/enablewebdav")
 #else
-postEnableWebDAVR _ = error "WebDAV not supported by this build"
+postEnableWebDAVR _ = giveup "WebDAV not supported by this build"
 #endif
 
 #ifdef WITH_WEBDAV

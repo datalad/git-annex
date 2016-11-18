@@ -32,7 +32,7 @@ start (keyname:url:[]) = do
 start [] = do
 	showStart "registerurl" "stdin"
 	next massAdd
-start _ = error "specify a key and an url"
+start _ = giveup "specify a key and an url"
 
 massAdd :: CommandPerform
 massAdd = go True =<< map (separate (== ' ')) . lines <$> liftIO getContents
@@ -43,7 +43,7 @@ massAdd = go True =<< map (separate (== ' ')) . lines <$> liftIO getContents
 		ok <- perform' key u
 		let !status' = status && ok
 		go status' rest
-	go _ _ = error "Expected pairs of key and url on stdin, but got something else."
+	go _ _ = giveup "Expected pairs of key and url on stdin, but got something else."
 
 perform :: Key -> URLString -> CommandPerform
 perform key url = do

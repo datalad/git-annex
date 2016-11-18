@@ -111,7 +111,7 @@ lockPidFile pidfile = do
 #endif
 
 alreadyRunning :: IO ()
-alreadyRunning = error "Daemon is already running."
+alreadyRunning = giveup "Daemon is already running."
 
 {- Checks if the daemon is running, by checking that the pid file
  - is locked by the same process that is listed in the pid file.
@@ -135,7 +135,7 @@ checkDaemon pidfile = bracket setup cleanup go
 	check _ Nothing = Nothing
 	check (Just (pid, _)) (Just pid')
 		| pid == pid' = Just pid
-		| otherwise = error $
+		| otherwise = giveup $
 			"stale pid in " ++ pidfile ++ 
 			" (got " ++ show pid' ++ 
 			"; expected " ++ show pid ++ " )"

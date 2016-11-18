@@ -101,15 +101,15 @@ repoExists = CommandCheck 0 ensureInitialized
 
 notDirect :: Command -> Command
 notDirect = addCheck $ whenM isDirect $
-	error "You cannot run this command in a direct mode repository."
+	giveup "You cannot run this command in a direct mode repository."
 
 notBareRepo :: Command -> Command
 notBareRepo = addCheck $ whenM (fromRepo Git.repoIsLocalBare) $
-	error "You cannot run this command in a bare repository."
+	giveup "You cannot run this command in a bare repository."
 
 noDaemonRunning :: Command -> Command
 noDaemonRunning = addCheck $ whenM (isJust <$> daemonpid) $
-	error "You cannot run this command while git-annex watch or git-annex assistant is running."
+	giveup "You cannot run this command while git-annex watch or git-annex assistant is running."
   where
 	daemonpid = liftIO . checkDaemon =<< fromRepo gitAnnexPidFile
 

@@ -75,17 +75,17 @@ gen r u c gc = do
 			, checkUrl = Nothing
 			}
   where
-	dir = fromMaybe (error "missing directory") $ remoteAnnexDirectory gc
+	dir = fromMaybe (giveup "missing directory") $ remoteAnnexDirectory gc
 
 directorySetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 directorySetup mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	-- verify configuration is sane
-	let dir = fromMaybe (error "Specify directory=") $
+	let dir = fromMaybe (giveup "Specify directory=") $
 		M.lookup "directory" c
 	absdir <- liftIO $ absPath dir
 	liftIO $ unlessM (doesDirectoryExist absdir) $
-		error $ "Directory does not exist: " ++ absdir
+		giveup $ "Directory does not exist: " ++ absdir
 	(c', _encsetup) <- encryptionSetup c gc
 
 	-- The directory is stored in git config, not in this remote's
@@ -216,6 +216,6 @@ checkKey d _ k = liftIO $
 		( return True
 		, ifM (doesDirectoryExist d)
 			( return False
-			, error $ "directory " ++ d ++ " is not accessible"
+			, giveup $ "directory " ++ d ++ " is not accessible"
 			)
 		)

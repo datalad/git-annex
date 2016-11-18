@@ -92,7 +92,7 @@ start (Expire expire) noact actlog descs u =
 data Expire = Expire (M.Map (Maybe UUID) (Maybe POSIXTime))
 
 parseExpire :: [String] -> Annex Expire
-parseExpire [] = error "Specify an expire time."
+parseExpire [] = giveup "Specify an expire time."
 parseExpire ps = do
 	now <- liftIO getPOSIXTime
 	Expire . M.fromList <$> mapM (parse now) ps
@@ -104,7 +104,7 @@ parseExpire ps = do
 			return (Just r, parsetime now t)
 	parsetime _ "never" = Nothing
 	parsetime now s = case parseDuration s of
-		Nothing -> error $ "bad expire time: " ++ s
+		Nothing -> giveup $ "bad expire time: " ++ s
 		Just d -> Just (now - durationToPOSIXTime d)
 
 parseActivity :: Monad m => String -> m Activity

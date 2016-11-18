@@ -71,7 +71,7 @@ webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost
 #ifdef __ANDROID__
 	when (isJust listenhost') $
 		-- See Utility.WebApp
-		error "Sorry, --listen is not currently supported on Android"
+		giveup "Sorry, --listen is not currently supported on Android"
 #endif
 	webapp <- WebApp
 		<$> pure assistantdata

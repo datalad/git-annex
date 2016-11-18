@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-11-16T19:04:37Z"
+ content="""
+Seems to work as described here:
+
+	joey@darkstar:~/tmp/r>rm localhost__joey_blog_index.html 
+	joey@darkstar:~/tmp/r>git annex addurl --pathdepth 2 http://localhost/~joey/blog/index.html
+	addurl blog/index.html (downloading http://localhost/~joey/blog/index.html ...) 
+	/home/joey/tmp/r/ 100%[===========>]  40.70K  --.-KB/s    in 0s      
+	ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/r>ls
+	blog/
+	joey@darkstar:~/tmp/r>ls blog
+	index.html
+
+It would probably help if you can provide a test case where it does not work
+as described.
+"""]]

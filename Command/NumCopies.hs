@@ -23,15 +23,15 @@ seek = withWords start
 start :: [String] -> CommandStart
 start [] = startGet
 start [s] = case readish s of
-	Nothing -> error $ "Bad number: " ++ s
+	Nothing -> giveup $ "Bad number: " ++ s
 	Just n
 		| n > 0 -> startSet n
 		| n == 0 -> ifM (Annex.getState Annex.force)
 			( startSet n
-			, error "Setting numcopies to 0 is very unsafe. You will lose data! If you really want to do that, specify --force."
+			, giveup "Setting numcopies to 0 is very unsafe. You will lose data! If you really want to do that, specify --force."
 			)
-		| otherwise -> error "Number cannot be negative!"
-start _ = error "Specify a single number."
+		| otherwise -> giveup "Number cannot be negative!"
+start _ = giveup "Specify a single number."
 
 startGet :: CommandStart
 startGet = next $ next $ do

@@ -30,4 +30,5 @@ operating system: darwin x86_64
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
-
+> [[done]], my fix worked! Don't know entirely why it was needed..
+> --[[Joey]]

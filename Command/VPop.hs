@@ -26,7 +26,7 @@ seek = withWords start
 start :: [String] -> CommandStart
 start ps = go =<< currentView
   where
-	go Nothing = error "Not in a view."
+	go Nothing = giveup "Not in a view."
 	go (Just v) = do
 		showStart "vpop" (show num)
 		removeView v
