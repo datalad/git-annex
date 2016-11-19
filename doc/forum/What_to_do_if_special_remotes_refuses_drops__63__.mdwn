@@ -1,0 +1,9 @@
+I have a special remote that I would like to delete and have marked it as such in the assistant. Although this was before my myriad of problems with git annex itself wanting to repair the repo all the time. Right now if I take a loog into my daemon.log I see the following error over and over again:
+
+```
+drop skydrive foo.bar 
+  This file could not be removed
+failed
+```
+
+I checked if I can login into my account and it works just fine. So I assume that this might be a bug? Is it somehow possible to forego the cleaning out of the special remote and just mark it as deleted for good? Thanks in advance!
