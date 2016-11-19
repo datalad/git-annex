@@ -24,6 +24,7 @@ module Utility.SimpleProtocol (
 
 import Data.Char
 import GHC.IO.Handle
+import System.Exit (ExitCode(..))
 
 import Common
 
@@ -95,3 +96,9 @@ dupIoHandles = do
 instance Serializable [Char] where
 	serialize = id
 	deserialize = Just
+
+instance Serializable ExitCode where
+	serialize ExitSuccess = "0"
+	serialize (ExitFailure n) = show n
+	deserialize "0" = Just ExitSuccess
+	deserialize s = ExitFailure <$> readish s

@@ -18,6 +18,7 @@ module Remote.Helper.P2P (
 	remove,
 	get,
 	put,
+	connect,
 	serve,
 ) where
 
@@ -31,6 +32,8 @@ import Control.Monad
 import Control.Monad.Free
 import Control.Monad.Free.TH
 import Control.Monad.Catch
+import System.Exit (ExitCode(..))
+import System.IO (Handle)
 import qualified Data.ByteString.Lazy as L
 
 newtype AuthToken = AuthToken String
@@ -42,12 +45,22 @@ newtype Offset = Offset Integer
 newtype Len = Len Integer
 	deriving (Show)
 
+-- | Service as used by the connect message is gitremote-helpers(1)
+data Service = UploadPack | ReceivePack
+	deriving (Show)
+
+data RelayData
+	= RelayData L.ByteString
+	| RelayMessage Message
+
 -- | Messages in the protocol. The peer that makes the connection
 -- always initiates requests, and the other peer makes responses to them.
 data Message
 	= AUTH UUID AuthToken -- uuid of the peer that is authenticating
 	| AUTH_SUCCESS UUID -- uuid of the remote peer
 	| AUTH_FAILURE
+	| CONNECT Service
+	| CONNECTDONE ExitCode
 	| CHECKPRESENT Key
 	| LOCKCONTENT Key
 	| UNLOCKCONTENT
@@ -58,7 +71,7 @@ data Message
 	| ALREADY_HAVE
 	| SUCCESS
 	| FAILURE
-	| DATA Len -- followed by bytes
+	| DATA Len -- followed by bytes of data
 	| ERROR String
 	deriving (Show)
 
@@ -89,8 +102,20 @@ data ProtoF next
 	-- ^ If the key file is not present, still succeeds.
 	-- May fail if not enough copies to safely drop, etc.
 	| TryLockContent Key (Bool -> Proto ()) next
+	| WriteHandle Handle L.ByteString next
 	-- ^ Try to lock the content of a key,  preventing it
 	-- from being deleted, and run the provided protocol action.
+	| Relay Handle (RelayData -> Proto (Maybe ExitCode)) (ExitCode -> next)
+	-- ^ Waits for data to be written to the Handle, and for messages
+	-- to be received from the peer, and passes the data to the
+	-- callback, continuing until it returns an ExitCode.
+	| RelayService Service
+		(Handle -> RelayData -> Proto (Maybe ExitCode))
+		(ExitCode -> next)
+	-- ^ Runs a service, and waits for it to output to stdout,
+	-- and for messages to be received from the peer, and passes
+	-- the data to the callback (which is also passed the service's
+	-- stdin Handle), continuing uniil the service exits.
 	deriving (Functor)
 
 type Proto = Free ProtoF
@@ -113,6 +138,9 @@ runPure (Free (SetPresent _ _ next)) ms = runPure next ms
 runPure (Free (CheckContentPresent _ next)) ms = runPure (next False) ms
 runPure (Free (RemoveKeyFile _ next)) ms = runPure (next True) ms
 runPure (Free (TryLockContent _ p next)) ms = runPure (p True >> next) ms
+runPure (Free (WriteHandle _ _ next)) ms = runPure next ms
+runPure (Free (Relay _ _ next)) ms = runPure (next ExitSuccess) ms
+runPure (Free (RelayService _ _ next)) ms = runPure (next ExitSuccess) ms
 
 protoDump :: [(String, Maybe Message)] -> String
 protoDump = unlines . map protoDump'
@@ -176,6 +204,26 @@ put key = do
 			sendMessage (ERROR "expected PUT_FROM")
 			return False
 
+connect :: Service -> Handle -> Handle -> Proto ExitCode
+connect service hin hout = do
+	sendMessage (CONNECT service)
+	relay hin (relayCallback hout)
+
+relayCallback :: Handle -> RelayData -> Proto (Maybe ExitCode)
+relayCallback hout (RelayMessage (DATA len)) = do
+	writeHandle hout =<< receiveBytes len
+	return Nothing
+relayCallback _ (RelayMessage (CONNECTDONE exitcode)) =
+	return (Just exitcode)
+relayCallback _ (RelayMessage _) = do
+	sendMessage (ERROR "expected DATA or CONNECTDONE")
+	return (Just (ExitFailure 1))
+relayCallback _ (RelayData b) = do
+	let len = Len $ fromIntegral $ L.length b
+	sendMessage (DATA len)
+	sendBytes len b
+	return Nothing
+
 -- | Serve the protocol.
 --
 -- Note that if the client sends an unexpected message, the server will
@@ -231,11 +279,14 @@ serve myuuid = go Nothing
 		-- setPresent not called because the peer may have
 		-- requested the data but not permanatly stored it.
 		GET offset key -> void $ sendContent key offset
+		CONNECT service -> do
+			exitcode <- relayService service relayCallback
+			sendMessage (CONNECTDONE exitcode)
 		_ -> sendMessage (ERROR "unexpected command")
 
 sendContent :: Key -> Offset -> Proto Bool
 sendContent key offset = do
-	(len, content) <- readKeyFile' key offset
+	(len, content) <- readKeyFileLen key offset
 	sendMessage (DATA len)
 	sendBytes len content
 	checkSuccess
@@ -272,8 +323,8 @@ sendSuccess False = sendMessage FAILURE
 -- Reads key file from an offset. The Len should correspond to
 -- the length of the ByteString, but to avoid buffering the content
 -- in memory, is gotten using keyFileSize.
-readKeyFile' :: Key -> Offset -> Proto (Len, L.ByteString)
-readKeyFile' key (Offset offset) = do
+readKeyFileLen :: Key -> Offset -> Proto (Len, L.ByteString)
+readKeyFileLen key (Offset offset) = do
 	(Len totallen) <- keyFileSize key
 	let len = totallen - offset
 	if len <= 0
@@ -286,6 +337,8 @@ instance Proto.Sendable Message where
 	formatMessage (AUTH uuid authtoken) = ["AUTH", Proto.serialize uuid, Proto.serialize authtoken]
 	formatMessage (AUTH_SUCCESS uuid) = ["AUTH-SUCCESS",  Proto.serialize uuid]
 	formatMessage AUTH_FAILURE = ["AUTH-FAILURE"]
+	formatMessage (CONNECT service) = ["CONNECT", Proto.serialize service]
+	formatMessage (CONNECTDONE exitcode) = ["CONNECTDONE", Proto.serialize exitcode]
 	formatMessage (CHECKPRESENT key) = ["CHECKPRESENT", Proto.serialize key]
 	formatMessage (LOCKCONTENT key) = ["LOCKCONTENT", Proto.serialize key]
 	formatMessage UNLOCKCONTENT = ["UNLOCKCONTENT"]
@@ -296,13 +349,15 @@ instance Proto.Sendable Message where
 	formatMessage ALREADY_HAVE = ["ALREADY-HAVE"]
 	formatMessage SUCCESS = ["SUCCESS"]
 	formatMessage FAILURE = ["FAILURE"]
-	formatMessage (DATA leng) = ["DATA", Proto.serialize leng]
+	formatMessage (DATA len) = ["DATA", Proto.serialize len]
 	formatMessage (ERROR err) = ["ERROR", Proto.serialize err]
 
 instance Proto.Receivable Message where
 	parseCommand "AUTH" = Proto.parse2 AUTH
 	parseCommand "AUTH-SUCCESS" = Proto.parse1 AUTH_SUCCESS
 	parseCommand "AUTH-FAILURE" = Proto.parse0 AUTH_FAILURE
+	parseCommand "CONNECT" = Proto.parse1 CONNECT
+	parseCommand "CONNECTDONE" = Proto.parse1 CONNECT
 	parseCommand "CHECKPRESENT" = Proto.parse1 CHECKPRESENT
 	parseCommand "LOCKCONTENT" = Proto.parse1 LOCKCONTENT
 	parseCommand "UNLOCKCONTENT" = Proto.parse0 UNLOCKCONTENT
@@ -328,3 +383,10 @@ instance Proto.Serializable Len where
 instance Proto.Serializable AuthToken where
 	serialize (AuthToken s) = s
 	deserialize = Just . AuthToken
+
+instance Proto.Serializable Service where
+	serialize UploadPack = "git-upload-pack"
+	serialize ReceivePack = "git-receive-pack"
+	deserialize "git-upload-pack" = Just UploadPack
+	deserialize "git-receive-pack" = Just ReceivePack
+	deserialize _ = Nothing
