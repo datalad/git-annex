@@ -14,7 +14,7 @@ import Utility.Tor
 -- git-annex, as that would create root-owned files.
 cmd :: Command
 cmd = noCommit $ dontCheck repoExists $
-	command "enable-tor" SectionPlumbing ""
+	command "enable-tor" SectionSetup ""
 		"userid uuid" (withParams seek)
 
 seek :: CmdParams -> CommandSeek

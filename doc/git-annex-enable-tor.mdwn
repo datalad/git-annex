@@ -14,9 +14,14 @@ It outputs to stdout a line of the form "address.onion:onionport socketfile"
 
 This command has to be run by root, since it modifies `/etc/tor/torrc`.
 
+After this command is run, `git annex remotedaemon` can be run to serve the
+hidden service.
+
 # SEE ALSO
 
 [[git-annex]](1)
+
+[[git-annex-remotedaemon]](1)
 
 # AUTHOR
 

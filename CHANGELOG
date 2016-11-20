@@ -1,3 +1,10 @@
+git-annex (6.20161119) UNRELEASED; urgency=medium
+
+  * remotedaemon: Fork to background by default. Added --foreground switch
+    to enable old behavior.
+
+ -- Joey Hess <id@joeyh.name>  Sun, 20 Nov 2016 14:10:15 -0400
+
 git-annex (6.20161118) unstable; urgency=medium
 
   * git-annex.cabal: Loosen bounds on persistent to allow 2.5, which

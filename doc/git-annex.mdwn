@@ -212,6 +212,12 @@ subdirectories).
   
   See [[git-annex-enableremote]](1) for details.
 
+* `enable-tor`
+
+  Sets up tor hidden service.
+  
+  See [[git-annex-enable-tor]](1) for details.
+
 * `numcopies [N]`
 
   Configure desired number of copies.
@@ -378,6 +384,13 @@ subdirectories).
   is on a removable drive that gets unplugged at the wrong time.
   
   See [[git-annex-repair]](1) for details.
+
+* `remotedaemon`
+
+  Persistent communication with remotes.
+
+  See [[git-annex-remotedaemon]](1) for details.
+
 
 # QUERY COMMANDS
 
@@ -651,12 +664,6 @@ subdirectories).
   of being symlinks.
 
   See [[git-annex-smudge]](1) for details.
-
-* `remotedaemon`
-
-  Detects when network remotes have received git pushes and fetches from them.
-
-  See [[git-annex-remotedaemon]](1) for details.
 
 * `xmppgit`
 
