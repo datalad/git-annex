@@ -920,6 +920,7 @@ Executable git-annex
     Remote.Helper.Http
     Remote.Helper.Messages
     Remote.Helper.P2P
+    Remote.Helper.P2P.IO
     Remote.Helper.ReadOnly
     Remote.Helper.Special
     Remote.Helper.Ssh
