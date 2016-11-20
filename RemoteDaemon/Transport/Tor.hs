@@ -46,6 +46,6 @@ server th@(TransportHandle (LocalRepo r) _) = do
 			h <- socketToHandle conn ReadWriteMode
 			hSetBuffering h LineBuffering
 			hSetBinaryMode h False
-			runNetProtoHandle h r (serve u)
+			runNetProtoHandle h h r (serve u)
 			hClose h
 

@@ -134,6 +134,7 @@ data NetF c
 	| ReceiveMessage (Message -> c)
 	| SendBytes Len L.ByteString c
 	| ReceiveBytes Len (L.ByteString -> c)
+	| CheckAuthToken UUID AuthToken (Bool -> c)
 	| Relay RelayHandle
 		(RelayData -> Net (Maybe ExitCode))
 		(ExitCode -> c)
@@ -173,7 +174,6 @@ data LocalF c
 	-- Note: The ByteString may not contain the entire remaining content
 	-- of the key. Only once the key file size == Len has the whole
 	-- content been transferred.
-	| CheckAuthToken UUID AuthToken (Bool -> c)
 	| SetPresent Key UUID c
 	| CheckContentPresent Key (Bool -> c)
 	-- ^ Checks if the whole content of the key is locally present.
@@ -203,6 +203,7 @@ runNet (ReceiveMessage _) [] = [("not enough Messages provided", Nothing)]
 runNet (ReceiveMessage next) (m:ms) = ("<", Just m):runPure (next m) ms
 runNet (SendBytes _ _ next) ms = ("> bytes", Nothing):runPure next ms
 runNet (ReceiveBytes _ next) ms = ("< bytes", Nothing):runPure (next L.empty) ms
+runNet (CheckAuthToken _ _ next) ms = runPure (next True) ms
 runNet (Relay _ _ next) ms = runPure (next ExitSuccess) ms
 runNet (RelayService _ _ next) ms = runPure (next ExitSuccess) ms
 runNet (WriteRelay _ _ next) ms = runPure next ms
@@ -211,7 +212,6 @@ runLocal :: Show r => LocalF (Proto r) -> [Message] -> [(String, Maybe Message)]
 runLocal (KeyFileSize _ next) ms = runPure (next (Len 100)) ms
 runLocal (ReadKeyFile _ _ next) ms = runPure (next L.empty) ms
 runLocal (WriteKeyFile _ _ _ _ next) ms = runPure (next True) ms
-runLocal (CheckAuthToken _ _ next) ms = runPure (next True) ms
 runLocal (SetPresent _ _ next) ms = runPure next ms
 runLocal (CheckContentPresent _ next) ms = runPure (next False) ms
 runLocal (RemoveKeyFile _ next) ms = runPure (next True) ms
@@ -298,7 +298,7 @@ serve myuuid = go Nothing
 		r <- net receiveMessage
 		case r of
 			AUTH theiruuid authtoken -> do
-				ok <- local $ checkAuthToken theiruuid authtoken
+				ok <- net $ checkAuthToken theiruuid authtoken
 				if ok
 					then do
 						net $ sendMessage (AUTH_SUCCESS myuuid)

@@ -14,6 +14,7 @@ module Remote.Helper.P2P.IO
 
 import Remote.Helper.P2P
 import Utility.Process
+import Types.UUID
 import Git
 import Git.Command
 import Utility.SafeCommand
@@ -33,39 +34,46 @@ type RunProto = forall a m. MonadIO m => Proto a -> m a
 
 data S = S
 	{ repo :: Repo
-	, hdl :: Handle
+	, ihdl :: Handle
+	, ohdl :: Handle
 	}
 
 -- Implementation of the protocol, communicating with a peer
 -- over a Handle. No Local actions will be run.
-runNetProtoHandle :: MonadIO m => Handle -> Repo -> Proto a -> m a
-runNetProtoHandle h r = go
+runNetProtoHandle :: MonadIO m => Handle -> Handle -> Repo -> Proto a -> m a
+runNetProtoHandle i o r = go
   where
 	go :: RunProto
 	go (Pure a) = pure a
-	go (Free (Net n)) = runNetHandle (S r h) go n
+	go (Free (Net n)) = runNetHandle (S r i o) go n
 	go (Free (Local _)) = error "local actions not allowed"
 
 runNetHandle :: MonadIO m => S -> RunProto -> NetF (Proto a) -> m a
 runNetHandle s runner f = case f of
 	SendMessage m next -> do
 		liftIO $ do
-			hPutStrLn (hdl s) (unwords (formatMessage m))
-			hFlush (hdl s)
+			hPutStrLn (ohdl s) (unwords (formatMessage m))
+			hFlush (ohdl s)
 		runner next
 	ReceiveMessage next -> do
-		l <- liftIO $ hGetLine (hdl s)
-		let m = fromMaybe (ERROR "protocol parse error")
-			(parseMessage l)
-		runner (next m)
+		l <- liftIO $ hGetLine (ihdl s)
+		case parseMessage l of
+			Just m -> runner (next m)
+			Nothing -> runner $ do
+				let e = ERROR "protocol parse error"
+				net $ sendMessage e
+				next e
 	SendBytes _len b next -> do
 		liftIO $ do
-			L.hPut (hdl s) b
-			hFlush (hdl s)
+			L.hPut (ohdl s) b
+			hFlush (ohdl s)
 		runner next
 	ReceiveBytes (Len n) next -> do
-		b <- liftIO $ L.hGet (hdl s) (fromIntegral n)
+		b <- liftIO $ L.hGet (ihdl s) (fromIntegral n)
 		runner (next b)
+	CheckAuthToken u t next -> do
+		authed <- return True -- TODO XXX FIXME really check
+		runner (next authed)
 	Relay hout callback next ->
 		runRelay runner hout callback >>= runner . next
 	RelayService service callback next ->
