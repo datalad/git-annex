@@ -1,0 +1,40 @@
+### Please describe the problem.
+
+When addurl'ing a big file with .gitattributes configured to add only some files directly into git (and 'git annex add' operating correctly), addurl adds large files straight into git.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 6.20161018+gitgf3c366a-1~ndall+1
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+$> cat .gitattributes 
+* annex.backend=MD5E
+* annex.largefiles=(largerthan=100kb)
+*.json annex.largefiles=nothing
+*.txt annex.largefiles=nothing
+*.tsv annex.largefiles=nothing
+*.nii.gz annex.largefiles=(largerthan=0kb)
+*.tgz annex.largefiles=(largerthan=0kb)
+*.tar.gz annex.largefiles=(largerthan=0kb)
+*.gz annex.largefiles=(largerthan=0kb)
+
+$> git annex addurl http://fcp-indi.s3.amazonaws.com/data/Projects/HBNSSI/RawDataTars/sub-0031121_baseline.tar.gz\?versionId\=7FvexHgyazWF.dUo238FA7XRiK0FWQDw.
+addurl fcp_indi.s3.amazonaws.com_data_Projects_HBNSSI_RawDataTars_sub_0031121_baseline.tar.gz_versionId_7FvexHgyazWF.dUo238FA7XRiK0FWQDw. (downloading http://fcp-indi.s3.amazonaws.com/data/Projects/HBNSSI/RawDataTars/sub-0031121_baseline.tar.gz?versionId=7FvexHgyazWF.dUo238FA7XRiK0FWQDw. ...) 
+/mnt/btrfs/datasets/datalad/crawl-misc/indi/ 100%[==============================================================================================>] 195.44M  21.2MB/s    in 12s     
+(non-large file; adding content to git repository) ok
+(recording state in git...)
+cached/staged changes:                                                                                                                                                              
+ \u2026r.gz_versionId_7FvexHgyazWF.dUo238FA7XRiK0FWQDw. | Bin 0 -> 204937338 bytes
+
+$> ls -l fcp_indi.s3.amazonaws.com_data_Projects_HBNSSI_RawDataTars_sub_0031121_baseline.tar.gz_versionId_7FvexHgyazWF.dUo238FA7XRiK0FWQDw. 
+-rw------- 1 yoh datalad 204937338 Oct 25 17:30 fcp_indi.s3.amazonaws.com_data_Projects_HBNSSI_RawDataTars_sub_0031121_baseline.tar.gz_versionId_7FvexHgyazWF.dUo238FA7XRiK0FWQDw.
+cached/staged changes:                                                                                                                                                              
+ \u2026r.gz_versionId_7FvexHgyazWF.dUo238FA7XRiK0FWQDw. | Bin 0 -> 204937338 bytes
+
+"""]]
+
+
+
