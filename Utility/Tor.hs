@@ -15,6 +15,7 @@ import Data.Char
 type OnionPort = Int
 type OnionAddress = String
 type OnionSocket = FilePath
+type UniqueIdent = String
 
 -- | Adds a hidden service connecting to localhost, using some kind
 -- of unique identifier.
@@ -27,7 +28,7 @@ type OnionSocket = FilePath
 -- 
 -- If there is already a hidden service for the specified unique
 -- identifier, returns its information without making any changes.
-addHiddenService :: UserID -> String -> IO (OnionAddress, OnionPort, OnionSocket)
+addHiddenService :: UserID -> UniqueIdent -> IO (OnionAddress, OnionPort, OnionSocket)
 addHiddenService uid ident = do
 	ls <- lines <$> readFile torrc
 	let portssocks = mapMaybe (parseportsock . separate isSpace) ls
@@ -39,7 +40,7 @@ addHiddenService uid ident = do
 			writeFile torrc $ unlines $
 				ls ++
 				[ ""
-				, "HiddenServiceDir " ++ hsdir
+				, "HiddenServiceDir " ++ hiddenServiceDir uid ident
 				, "HiddenServicePort " ++ show newport ++ 
 					" unix:" ++ sockfile
 				]
@@ -58,13 +59,12 @@ addHiddenService uid ident = do
 		return (p, drop 1 (dropWhile (/= ':') l))
 	parseportsock _ = Nothing
 	
-	hsdir = libDir </> "hidden_service_" ++ show uid ++ "_" ++ ident
-	sockfile = runDir uid </> ident ++ ".sock"
+	sockfile = socketFile uid ident
 
 	waithiddenservice :: Int -> OnionPort -> IO (OnionAddress, OnionPort, OnionSocket)
 	waithiddenservice 0 _ = error "tor failed to create hidden service, perhaps the tor service is not running"
 	waithiddenservice n p = do
-		v <- tryIO $ readFile (hsdir </> "hostname")
+		v <- tryIO $ readFile $ hiddenServiceHostnameFile uid ident
 		case v of
 			Right s | ".onion\n" `isSuffixOf` s -> 
 				return (takeWhile (/= '\n') s, p, sockfile)
@@ -80,3 +80,12 @@ libDir = "/var/lib/tor"
 
 runDir :: UserID -> FilePath
 runDir uid = "/var/run/user" </> show uid
+
+socketFile :: UserID -> UniqueIdent -> FilePath
+socketFile uid ident = runDir uid </> ident ++ ".sock"
+
+hiddenServiceDir :: UserID -> UniqueIdent -> FilePath
+hiddenServiceDir uid ident = libDir </> "hidden_service_" ++ show uid ++ "_" ++ ident
+
+hiddenServiceHostnameFile :: UserID -> UniqueIdent -> FilePath
+hiddenServiceHostnameFile uid ident = hiddenServiceDir uid ident </> "hostname"

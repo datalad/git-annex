@@ -45,7 +45,9 @@ runInteractive = do
 	let controller = runController ichan ochan
 	
 	-- If any thread fails, the rest will be killed.
-	void $ tryIO $ reader `concurrently` writer `concurrently` controller
+	void $ tryIO $ reader
+		`concurrently` writer
+		`concurrently` controller
 
 runNonInteractive :: IO ()
 runNonInteractive = do
@@ -59,7 +61,9 @@ runNonInteractive = do
 		void $ atomically $ readTChan ochan
 	let controller = runController ichan ochan
 	
-	void $ tryIO $ reader `concurrently` writer `concurrently` controller
+	void $ tryIO $ reader
+		`concurrently` writer
+		`concurrently` controller
 
 type RemoteMap = M.Map Git.Repo (IO (), TChan Consumed)
 
@@ -70,6 +74,7 @@ runController ichan ochan = do
 	h <- genTransportHandle
 	m <- genRemoteMap h ochan
 	startrunning m
+	mapM_ (\s -> async (s h)) remoteServers
 	go h False m
   where
 	go h paused m = do

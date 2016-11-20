@@ -9,7 +9,7 @@
 
 module Remote.Helper.P2P.IO
 	( RunProto
-	, runProtoHandle
+	, runNetProtoHandle
 	) where
 
 import Remote.Helper.P2P
@@ -38,8 +38,8 @@ data S = S
 
 -- Implementation of the protocol, communicating with a peer
 -- over a Handle. No Local actions will be run.
-runProtoHandle :: MonadIO m => Handle -> Repo -> Proto a -> m a
-runProtoHandle h r = go
+runNetProtoHandle :: MonadIO m => Handle -> Repo -> Proto a -> m a
+runNetProtoHandle h r = go
   where
 	go :: RunProto
 	go (Pure a) = pure a

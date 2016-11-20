@@ -14,7 +14,7 @@ import RemoteDaemon.Core
 import Utility.Daemon
 
 cmd :: Command
-cmd = noCommit $ dontCheck repoExists $
+cmd = noCommit $
 	command "remotedaemon" SectionMaintenance
 		"persistent communication with remotes"
 		paramNothing (run <$$> const parseDaemonOptions)
