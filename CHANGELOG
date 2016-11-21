@@ -1,3 +1,11 @@
+git-annex (6.20161119) UNRELEASED; urgency=medium
+
+  * addurl: Fix bug in checking annex.largefiles expressions using
+    largerthan, mimetype, and smallerthan; the first two always failed
+    to match, and the latter always matched.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 21 Nov 2016 11:27:50 -0400
+
 git-annex (6.20161118) unstable; urgency=medium
 
   * git-annex.cabal: Loosen bounds on persistent to allow 2.5, which

@@ -341,7 +341,7 @@ cleanup u url file key mtmp = case mtmp of
 	Nothing -> go
 	Just tmp -> do
 		largematcher <- largeFilesMatcher
-		ifM (checkFileMatcher largematcher file)
+		ifM (checkFileMatcher largematcher tmp)
 			( go
 			, do
 				liftIO $ renameFile tmp file

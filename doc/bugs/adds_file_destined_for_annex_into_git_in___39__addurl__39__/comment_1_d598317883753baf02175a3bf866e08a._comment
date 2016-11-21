@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-11-21T15:12:54Z"
+ content="""
+It's sufficient to have "* annex.largefiles=(largerthan=100kb)"
+in .gitattributes.
+
+Even "* annex.largefiles=(largerthan=0kb)" will reproduce it.
+
+Ok, I see why.. It's running the largefile matcher on the destination file
+before it renames the temp file to it!
+
+Seems to have been broken this way ever since addurl got largefiles
+support. Testing didn't catch it because it only affects largefiles
+expressions that need to examine the file.
+
+Fixed in git. Audited other checkFileMatcher calls for this problem;
+the rest are ok.
+"""]]
