@@ -88,7 +88,7 @@ instance Proto.Receivable Message where
 	parseCommand "AUTH-SUCCESS" = Proto.parse1 AUTH_SUCCESS
 	parseCommand "AUTH-FAILURE" = Proto.parse0 AUTH_FAILURE
 	parseCommand "CONNECT" = Proto.parse1 CONNECT
-	parseCommand "CONNECTDONE" = Proto.parse1 CONNECT
+	parseCommand "CONNECTDONE" = Proto.parse1 CONNECTDONE
 	parseCommand "CHECKPRESENT" = Proto.parse1 CHECKPRESENT
 	parseCommand "LOCKCONTENT" = Proto.parse1 LOCKCONTENT
 	parseCommand "UNLOCKCONTENT" = Proto.parse0 UNLOCKCONTENT
