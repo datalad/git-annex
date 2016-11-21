@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="scottgorlin@a32946b2aad278883c1690a0753241583a9855b9"
+ nickname="scottgorlin"
+ avatar="http://cdn.libravatar.org/avatar/2dd1fc8add62bbf4ffefac081b322563"
+ subject="Coldline"
+ date="2016-11-21T00:49:23Z"
+ content="""
+Wanted to add that \"storageclass=COLDLINE\" appears to work seamlessly, both from my mac and arm NAS.  As far as I can tell, this appears to be a no-brainer vs glacier - builtin git annex client, simpler/cheaper billing, and no 4 hour delay!
+"""]]
