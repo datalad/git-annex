@@ -1,0 +1,24 @@
+Sometimes a name has been used for a special remote, and you want to change
+the name. A common reason is that the special remote has become dead, and
+you want to reuse the name for a new special remote. 
+
+Initremote prevents reusing a name when the old one exists, even if the old
+one is dead. And that makes sense in general, because a dead remote can
+come back sometimes, and that would leave the repo with two special remotes
+with the same name, and so enableremote would need to be run with a uuid
+instead of a name to specify which one to enable, which is not a desirable
+state of affairs.
+
+So, add `git annex renameremote oldname newname`. This could also do a `git
+remote rename`, or equivilant. (`git remote rename` gets confused by special
+remotes not having a fetch url and fails; this can be worked around by
+manually renaming the stanza in git config.)
+
+Implementing that would need a way to remove the old name from remote.log.
+We can't remove lines from union merged files, but what we could do is
+add a new line like:
+
+	- name=oldname timestamp=<latest>
+
+And in parsing remote.log, if the UUID is "-", don't include the
+remote with that name in the the resulting map.
