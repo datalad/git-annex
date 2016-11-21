@@ -21,9 +21,7 @@ run (_remotename:address:[]) = forever $ do
 	-- gitremote-helpers protocol
 	l <- getLine
 	case l of
-		"capabilities" -> do
-			putStrLn "connect"
-			putStrLn ""
+		"capabilities" -> putStrLn "connect" >> ready
 		"connect git-upload-pack" -> go UploadPack
 		"connect git-receive-pack" -> go ReceivePack
 		_ -> error $ "git-remote-helpers protocol error at " ++ show l
@@ -33,9 +31,12 @@ run (_remotename:address:[]) = forever $ do
 			reverse $ takeWhile (/= '/') $ reverse address
 		| otherwise = parseAddressPort address
 	go service = do
+		ready
+		connectService onionaddress onionport service >>= exitWith
+	ready = do
 		putStrLn ""
 		hFlush stdout
-		connectService onionaddress onionport service >>= exitWith
+		
 run (_remotename:[]) = giveup "remote address not configured"
 run _ = giveup "expected remote name and address parameters"
 

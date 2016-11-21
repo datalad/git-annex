@@ -14,7 +14,6 @@ module Remote.Helper.P2P.IO
 
 import Remote.Helper.P2P
 import Utility.Process
-import Types.UUID
 import Git
 import Git.Command
 import Utility.SafeCommand
@@ -24,10 +23,10 @@ import Utility.Exception
 import Control.Monad
 import Control.Monad.Free
 import Control.Monad.IO.Class
-import Data.Maybe
 import System.Exit (ExitCode(..))
 import System.IO
 import Control.Concurrent
+import Control.Concurrent.Async
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 
@@ -58,7 +57,6 @@ runNetHandle s runner f = case f of
 		runner next
 	ReceiveMessage next -> do
 		l <- liftIO $ hGetLine (ihdl s)
-		-- liftIO $ hPutStrLn stderr ("< " ++ show l)
 		case parseMessage l of
 			Just m -> runner (next m)
 			Nothing -> runner $ do
@@ -72,64 +70,43 @@ runNetHandle s runner f = case f of
 		runner next
 	ReceiveBytes (Len n) next -> do
 		b <- liftIO $ L.hGet (ihdl s) (fromIntegral n)
-		--liftIO $ hPutStrLn stderr $ "!!!" ++ show (L.length b)
 		runner (next b)
 	CheckAuthToken u t next -> do
 		authed <- return True -- TODO XXX FIXME really check
 		runner (next authed)
-	Relay hout callback next ->
-		runRelay runner hout callback >>= runner . next
-	RelayService service callback next ->
-		runRelayService s runner service callback >>= runner . next
-	WriteRelay (RelayHandle h) b next -> do
-		liftIO $ do
-			-- L.hPut h b
-			hPutStrLn h (show ("relay got:", b, L.length b))
-			hFlush h
-		runner next
+	Relay hin hout next ->
+		runRelay runner hin hout >>= runner . next
+	RelayService service next ->
+		runRelayService s runner service >> runner next
 
 runRelay
 	:: MonadIO m
 	=> RunProto
 	-> RelayHandle
-	-> (RelayData -> Net (Maybe ExitCode))
+	-> RelayHandle
 	-> m ExitCode
-runRelay runner (RelayHandle hout) callback = do
-	v <- liftIO newEmptyMVar
-	_ <- liftIO $ forkIO $ readout v
-	feeder <- liftIO $ forkIO $ feedin v
-	exitcode <- liftIO $ drain v
-	liftIO $ killThread feeder
-	return exitcode
+runRelay runner (RelayHandle hout) (RelayHandle hin) = liftIO $
+	bracket setup cleanup go
   where
-	feedin v = forever $ do
-		m <- runner $ net receiveMessage
-		putMVar v $ RelayMessage m
+	setup = do
+		v <- newEmptyMVar
+		void $ forkIO $ relayFeeder runner v
+		void $ forkIO $ relayReader v hout
+		return v
 	
-	readout v = do
-		b <- B.hGetSome hout 65536
-		if B.null b
-			then hClose hout
-			else do
-				putMVar v $ RelayData (L.fromChunks [b])
-				readout v
-
-	drain v = do
-		d <- takeMVar v
-		liftIO $ hPutStrLn stderr (show d)
-		r <- runner $ net $ callback d
-		case r of
-			Nothing -> drain v
-			Just exitcode -> return exitcode
+	cleanup _ = do
+		hClose hin
+		hClose hout
+	
+	go v = relayHelper runner v hin
 
 runRelayService
-	:: (MonadIO m, MonadMask m)
+	:: MonadIO m
 	=> S
 	-> RunProto
 	-> Service
-	-> (RelayHandle -> RelayData -> Net (Maybe ExitCode))
-	-> m ExitCode
-runRelayService s runner service callback = bracket setup cleanup go
+	-> m ()
+runRelayService s runner service = liftIO $ bracket setup cleanup go
   where
 	cmd = case service of
 		UploadPack -> "upload-pack"
@@ -141,45 +118,70 @@ runRelayService s runner service callback = bracket setup cleanup go
 		] (repo s)
 
 	setup = do
-		v <- liftIO newEmptyMVar
-		(Just hin, Just hout, _, pid) <- liftIO $ 
-			createProcess serviceproc
-				{ std_out = CreatePipe
-				, std_in = CreatePipe
-				}
-		feeder <- liftIO $ forkIO $ feedin v
-		return (v, feeder, hin, hout, pid)
+		(Just hin, Just hout, _, pid) <- createProcess serviceproc
+			{ std_out = CreatePipe
+			, std_in = CreatePipe
+			}
+		v <- newEmptyMVar
+		feeder <- async $ relayFeeder runner v
+		reader <- async $ relayReader v hout
+		waiter <- async $ waitexit v pid
+		return (v, feeder, reader, waiter, hin, hout, pid)
 
-	cleanup (_, feeder, hin, hout, pid) = liftIO $ do
+	cleanup (_, feeder, reader, waiter, hin, hout, pid) = do
+		hPutStrLn stderr "!!!!\n\nIN CLEANUP"
+		hFlush stderr
 		hClose hin
 		hClose hout
-		liftIO $ killThread feeder
+		cancel reader
+		cancel waiter
 		void $ waitForProcess pid
 
-	go (v, _, hin, hout, pid) = do
-		_ <- liftIO $ forkIO $ readout v hout
-		_ <- liftIO $ forkIO $ putMVar v . Left =<< waitForProcess pid
-		liftIO $ drain v hin
+	go (v, _, _, _, hin, _, _) = do
+		exitcode <- relayHelper runner v hin
+		runner $ net $ relayToPeer (RelayDone exitcode)
+	
+	waitexit v pid = putMVar v . RelayDone =<< waitForProcess pid
 
-	drain v hin = do
+-- Processes RelayData as it is put into the MVar.
+relayHelper :: RunProto -> MVar RelayData -> Handle -> IO ExitCode
+relayHelper runner v hin = loop
+  where
+	loop = do
 		d <- takeMVar v
 		case d of
-			Left exitcode -> return exitcode
-			Right relaydata -> do
-				liftIO $ hPutStrLn stderr ("> " ++ show relaydata)
-				_ <- runner $ net $
-					callback (RelayHandle hin) relaydata
-				drain v hin
-	
-	readout v hout = do
+			RelayFromPeer b -> do
+				L.hPut hin b
+				hFlush hin
+				loop
+			RelayToPeer b -> do
+				runner $ net $ relayToPeer (RelayToPeer b)
+				loop
+			RelayDone exitcode -> do
+				runner $ net $ relayToPeer (RelayDone exitcode)
+				return exitcode
+
+-- Takes input from the peer, and puts it into the MVar for processing.
+-- Repeats until the peer tells it it's done.
+relayFeeder :: RunProto -> MVar RelayData -> IO ()
+relayFeeder runner v = loop
+  where
+	loop = do
+		rd <- runner $ net relayFromPeer
+		putMVar v rd
+		case rd of
+			RelayDone _ -> return ()
+			_ -> loop
+
+-- Reads input from the Handle and puts it into the MVar for relaying to
+-- the peer. Continues until EOF on the Handle.
+relayReader :: MVar RelayData -> Handle -> IO ()
+relayReader v hout = loop
+  where
+	loop = do
 		b <- B.hGetSome hout 65536
 		if B.null b
 			then return ()
 			else do
-				putMVar v $ Right $ 
-					RelayData (L.fromChunks [b])
-				readout v hout
-
-	feedin v = forever $ do
-		m <- runner $ net receiveMessage
-		putMVar v $ Right $ RelayMessage m
+				putMVar v $ RelayToPeer (L.fromChunks [b])
+				loop

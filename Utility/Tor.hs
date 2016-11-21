@@ -17,8 +17,12 @@ import qualified Data.ByteString.UTF8 as BU8
 import qualified System.Random as R
 
 type OnionPort = Int
+
 newtype OnionAddress = OnionAddress String
+	deriving (Show)
+
 type OnionSocket = FilePath
+
 type UniqueIdent = String
 
 connectHiddenService :: OnionAddress -> OnionPort -> IO Socket

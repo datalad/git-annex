@@ -141,29 +141,17 @@ data NetF c
 	| SendBytes Len L.ByteString c
 	| ReceiveBytes Len (L.ByteString -> c)
 	| CheckAuthToken UUID AuthToken (Bool -> c)
-	| Relay RelayHandle
-		(RelayData -> Net (Maybe ExitCode))
-		(ExitCode -> c)
-	-- ^ Waits for data to be written to the RelayHandle, and for messages
-	-- to be received from the peer, and passes the data to the
-	-- callback, continuing until it returns an ExitCode.
-	| RelayService Service
-		(RelayHandle -> RelayData -> Net (Maybe ExitCode))
-		(ExitCode -> c)
-	-- ^ Runs a service, and waits for it to output to stdout,
-	-- and for messages to be received from the peer, and passes
-	-- the data to the callback (which is also passed the service's
-	-- stdin RelayHandle), continuing uniil the service exits.
-	| WriteRelay RelayHandle L.ByteString c
-	-- ^ Write data to a relay's handle, flushing it immediately.
+	| RelayService Service c
+	-- ^ Runs a service, relays its output to the peer, and data
+	-- from the peer to it.
+	| Relay RelayHandle RelayHandle (ExitCode -> c)
+	-- ^ Reads from the first RelayHandle, and sends the data to a
+	-- peer, while at the same time accepting input from the peer
+	-- which is sent the the second RelayHandle. Continues until 
+	-- the peer sends an ExitCode.
 	deriving (Functor)
 
 type Net = Free NetF
-
-data RelayData
-	= RelayData L.ByteString
-	| RelayMessage Message
-	deriving (Show)
 
 newtype RelayHandle = RelayHandle Handle
 
@@ -212,8 +200,7 @@ runNet (SendBytes _ _ next) ms = ("> bytes", Nothing):runPure next ms
 runNet (ReceiveBytes _ next) ms = ("< bytes", Nothing):runPure (next L.empty) ms
 runNet (CheckAuthToken _ _ next) ms = runPure (next True) ms
 runNet (Relay _ _ next) ms = runPure (next ExitSuccess) ms
-runNet (RelayService _ _ next) ms = runPure (next ExitSuccess) ms
-runNet (WriteRelay _ _ next) ms = runPure next ms
+runNet (RelayService _ next) ms = runPure next ms
 
 runLocal :: Show r => LocalF (Proto r) -> [Message] -> [(String, Maybe Message)]
 runLocal (KeyFileSize _ next) ms = runPure (next (Len 100)) ms
@@ -341,9 +328,7 @@ serve myuuid = go Nothing
 		-- setPresent not called because the peer may have
 		-- requested the data but not permanatly stored it.
 		GET offset key -> void $ sendContent key offset
-		CONNECT service -> do
-			exitcode <- net $ relayService service relayCallback
-			net $ sendMessage (CONNECTDONE exitcode)
+		CONNECT service -> net $ relayService service
 		_ -> net $ sendMessage (ERROR "unexpected command")
 
 sendContent :: Key -> Offset -> Proto Bool
@@ -399,19 +384,28 @@ readKeyFileLen key (Offset offset) = do
 connect :: Service -> Handle -> Handle -> Proto ExitCode
 connect service hin hout = do
 	net $ sendMessage (CONNECT service)
-	net $ relay (RelayHandle hin) (relayCallback (RelayHandle hout))
+	net $ relay (RelayHandle hin) (RelayHandle hout)
 
-relayCallback :: RelayHandle -> RelayData -> Net (Maybe ExitCode)
-relayCallback hout (RelayMessage (DATA len)) = do
-	writeRelay hout =<< receiveBytes len
-	return Nothing
-relayCallback _ (RelayMessage (CONNECTDONE exitcode)) =
-	return (Just exitcode)
-relayCallback _ (RelayMessage m) = do
-	sendMessage $ ERROR $ "expected DATA or CONNECTDONE not " ++ unwords (Proto.formatMessage m)
-	return (Just (ExitFailure 1))
-relayCallback _ (RelayData b) = do
+data RelayData
+	= RelayToPeer L.ByteString
+	| RelayFromPeer L.ByteString
+	| RelayDone ExitCode
+	deriving (Show)
+
+relayFromPeer :: Net RelayData
+relayFromPeer = do
+	r <- receiveMessage
+	case r of
+		CONNECTDONE exitcode -> return $ RelayDone exitcode
+		DATA len -> RelayFromPeer <$> receiveBytes len
+		_ -> do
+			sendMessage $ ERROR "expected DATA or CONNECTDONE"
+			return $ RelayDone $ ExitFailure 1
+
+relayToPeer :: RelayData -> Net ()
+relayToPeer (RelayDone exitcode) = sendMessage (CONNECTDONE exitcode)
+relayToPeer (RelayToPeer b) = do
 	let len = Len $ fromIntegral $ L.length b
 	sendMessage (DATA len)
 	sendBytes len b
-	return Nothing
+relayToPeer (RelayFromPeer _) = return ()
