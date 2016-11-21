@@ -24,11 +24,11 @@ start :: CmdParams -> CommandStart
 start (suserid:uuid:[]) = case readish suserid of
 	Nothing -> error "Bad userid"
 	Just userid -> do
-		(onionaddr, onionport, onionsocket) <- liftIO $
+		(OnionAddress onionaddr, onionport) <- liftIO $
 			addHiddenService userid uuid
-		liftIO $ putStrLn $
+		liftIO $ putStrLn $ 
+			"tor-annex::" ++
 			onionaddr ++ ":" ++ 
-			show onionport ++ " " ++
-			show onionsocket
+			show onionport ++ " "
 		stop
 start _ = error "Bad params"

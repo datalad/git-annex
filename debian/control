@@ -77,6 +77,7 @@ Build-Depends:
 	libghc-disk-free-space-dev,
 	libghc-mountpoints-dev,
 	libghc-magic-dev,
+	libghc-socks-dev,
 	lsof [linux-any],
 	ikiwiki,
 	libimage-magick-perl,

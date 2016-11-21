@@ -12,6 +12,7 @@ import RemoteDaemon.Types
 import RemoteDaemon.Common
 import Utility.Tor
 import Utility.FileMode
+import Remote.Helper.Tor
 import Remote.Helper.P2P
 import Remote.Helper.P2P.IO
 import Annex.UUID
@@ -43,9 +44,6 @@ server th@(TransportHandle (LocalRepo r) _) = do
 		(conn, _) <- accept soc
 		forkIO $ do
 			debugM "remotedaemon" "handling a connection"
-			h <- socketToHandle conn ReadWriteMode
-			hSetBuffering h LineBuffering
-			hSetBinaryMode h False
+			h <- torHandle conn
 			runNetProtoHandle h h r (serve u)
 			hClose h
-

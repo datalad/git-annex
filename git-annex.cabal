@@ -59,6 +59,7 @@ Extra-Source-Files:
   doc/git-annex-dropunused.mdwn
   doc/git-annex-edit.mdwn
   doc/git-annex-enableremote.mdwn
+  doc/git-annex-enable-tor.mdwn
   doc/git-annex-examinekey.mdwn
   doc/git-annex-expire.mdwn
   doc/git-annex-find.mdwn
@@ -136,6 +137,7 @@ Extra-Source-Files:
   doc/git-annex-webapp.mdwn
   doc/git-annex-whereis.mdwn
   doc/git-annex-xmppgit.mdwn
+  doc/git-remote-tor-annex.mdwn
   doc/logo.svg
   doc/logo_16x16.png
   Build/mdwn2man
@@ -365,7 +367,8 @@ Executable git-annex
    aeson,
    unordered-containers,
    feed,
-   regex-tdfa
+   regex-tdfa,
+   socks
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
   Extensions: PackageImports
@@ -700,6 +703,7 @@ Executable git-annex
     CmdLine.GitAnnexShell.Fields
     CmdLine.GlobalSetter
     CmdLine.Option
+    CmdLine.GitRemoteTorAnnex
     CmdLine.Seek
     CmdLine.Usage
     Command
@@ -924,6 +928,7 @@ Executable git-annex
     Remote.Helper.ReadOnly
     Remote.Helper.Special
     Remote.Helper.Ssh
+    Remote.Helper.Tor
     Remote.Hook
     Remote.List
     Remote.Rsync

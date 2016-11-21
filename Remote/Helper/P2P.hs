@@ -26,6 +26,12 @@ import qualified Data.ByteString.Lazy as L
 newtype AuthToken = AuthToken String
 	deriving (Show)
 
+mkAuthToken :: String -> Maybe AuthToken
+mkAuthToken = fmap AuthToken . headMaybe . lines
+
+nullAuthToken :: AuthToken
+nullAuthToken = AuthToken ""
+
 newtype Offset = Offset Integer
 	deriving (Show)
 
@@ -157,6 +163,7 @@ type Net = Free NetF
 data RelayData
 	= RelayData L.ByteString
 	| RelayMessage Message
+	deriving (Show)
 
 newtype RelayHandle = RelayHandle Handle
 
@@ -400,8 +407,8 @@ relayCallback hout (RelayMessage (DATA len)) = do
 	return Nothing
 relayCallback _ (RelayMessage (CONNECTDONE exitcode)) =
 	return (Just exitcode)
-relayCallback _ (RelayMessage _) = do
-	sendMessage (ERROR "expected DATA or CONNECTDONE")
+relayCallback _ (RelayMessage m) = do
+	sendMessage $ ERROR $ "expected DATA or CONNECTDONE not " ++ unwords (Proto.formatMessage m)
 	return (Just (ExitFailure 1))
 relayCallback _ (RelayData b) = do
 	let len = Len $ fromIntegral $ L.length b

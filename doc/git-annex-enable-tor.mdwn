@@ -10,7 +10,7 @@ git annex enable-tor userid uuid
 
 This plumbing-level command enables a tor hidden service for git-annex,
 using the specified repository uuid and userid. 
-It outputs to stdout a line of the form "address.onion:onionport socketfile"
+It outputs the address of the hidden service to stdout.
 
 This command has to be run by root, since it modifies `/etc/tor/torrc`.
 
