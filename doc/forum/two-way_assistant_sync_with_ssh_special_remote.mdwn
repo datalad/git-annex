@@ -1,0 +1,30 @@
+I am attempting to set up automatic two-way synchronization between my laptop and a server via ssh by running assistant on both machines. I want to have both machines be non-bare and unlocked.
+
+On the server:
+
+    $ mkdir ~/annex
+    $ cd annex
+    $ git init
+    $ git annex init u --version=6
+    $ echo This is test file 1. >testfile1.txt
+    $ git annex add testfile1.txt
+    $ git annex sync
+    $ git annex adjust --unlock
+    $ git annex wanted . standard
+    $ git annex group . client
+
+On my laptop:
+
+    $ git clone ssh://server/home/username/annex
+    $ cd annex
+    $ git annex init ml2 --version=6
+    $ git annex sync
+    $ git annex adjust --unlock
+    $ git annex wanted . standard
+    $ git annex group . client
+
+Everything seems to work when I manually sync. When I run
+
+    $ git annex assistant
+
+on both machines, however, I only get one-way automatic synchronization. Changes on the laptop are immediately propagated to the server. But changes on the server do not show up on the laptop until I manually sync. What am I doing wrong?
