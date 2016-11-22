@@ -132,8 +132,6 @@ runRelayService s runner service = bracket setup cleanup go
 		return (v, waiter, hin, hout, pid)
 
 	cleanup (_, waiter, hin, hout, pid) = do
-		hPutStrLn stderr "!!!!\n\nIN CLEANUP"
-		hFlush stderr
 		hClose hin
 		hClose hout
 		cancel waiter
