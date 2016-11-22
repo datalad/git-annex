@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RankNTypes, CPP #-}
 
 module Remote.Helper.P2P.IO
 	( RunProto
@@ -179,9 +179,31 @@ relayReader :: MVar RelayData -> Handle -> IO ()
 relayReader v hout = loop
   where
 	loop = do
-		b <- B.hGetSome hout 65536
-		if B.null b
-			then return ()
-			else do
-				putMVar v $ RelayToPeer (L.fromChunks [b])
+		bs <- getsome []
+		case bs of
+			[] -> return ()
+			_ -> do
+				putMVar v $ RelayToPeer (L.fromChunks bs)
 				loop
+	
+	-- Waiit for the first available chunk. Then, without blocking,
+	-- try to get more chunks, in case a stream of chunks is being
+	-- written in close succession. 
+	--
+	-- On Windows, hGetNonBlocking is broken, so avoid using it there.
+	getsome [] = do
+		b <- B.hGetSome hout chunk
+		if B.null b
+			then return []
+#ifndef mingw32_HOST_OS
+			else getsome [b]
+#else
+			else return [b]
+#endif
+	getsome bs = do
+		b <- B.hGetNonBlocking hout chunk
+		if B.null b
+			then return (reverse bs)
+			else getsome (b:bs)
+	
+	chunk = 65536
