@@ -3,6 +3,7 @@ git-annex (6.20161119) UNRELEASED; urgency=medium
   * addurl: Fix bug in checking annex.largefiles expressions using
     largerthan, mimetype, and smallerthan; the first two always failed
     to match, and the latter always matched.
+  * Relicense 5 source files that are not part of the webapp from AGPL to GPL.
 
  -- Joey Hess <id@joeyh.name>  Mon, 21 Nov 2016 11:27:50 -0400
 
