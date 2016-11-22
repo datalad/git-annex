@@ -156,7 +156,7 @@ readCacheCredPair storage = maybe Nothing decodeCredPair
 	<$> readCacheCreds (credPairFile storage)
 
 readCacheCreds :: FilePath -> Annex (Maybe Creds)
-readCacheCreds f = liftIO . catchMaybeIO . readFile =<< cacheCredsFile f
+readCacheCreds f = liftIO . catchMaybeIO . readFileStrict =<< cacheCredsFile f
 
 cacheCredsFile :: FilePath -> Annex FilePath
 cacheCredsFile basefile = do
