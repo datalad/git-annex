@@ -10,16 +10,20 @@ git annex enable-tor userid uuid
 
 This plumbing-level command enables a tor hidden service for git-annex,
 using the specified repository uuid and userid. 
-It outputs the address of the hidden service to stdout.
 
 This command has to be run by root, since it modifies `/etc/tor/torrc`.
 
 After this command is run, `git annex remotedaemon` can be run to serve the
-hidden service.
+tor hidden service.
+
+Use the `git-annex p2p --gen-address` command to give other users access
+to your repository via the tor hidden service.
 
 # SEE ALSO
 
 [[git-annex]](1)
+
+[[git-annex-p2p-auth]](1)
 
 [[git-annex-remotedaemon]](1)
 
