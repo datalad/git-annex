@@ -168,14 +168,14 @@ relayHelper runner v hin = loop
 				return (Just exitcode)
 
 -- Takes input from the peer, and puts it into the MVar for processing.
--- Repeats until the peer tells it it's done.
+-- Repeats until the peer tells it it's done or hangs up.
 relayFeeder :: RunProto -> MVar RelayData -> IO ()
 relayFeeder runner v = loop
   where
 	loop = do
 		mrd <- runner $ net relayFromPeer
 		case mrd of
-			Nothing -> return ()
+			Nothing -> putMVar v (RelayDone (ExitFailure 1))
 			Just rd -> do
 				putMVar v rd
 				case rd of

@@ -47,3 +47,4 @@ server th@(TransportHandle (LocalRepo r) _) = do
 			h <- torHandle conn
 			_ <- runNetProtoHandle h h r (serve u)
 			hClose h
+			debugM "remotedaemon" "done handling a connection"
