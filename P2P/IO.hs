@@ -7,7 +7,7 @@
 
 {-# LANGUAGE RankNTypes, CPP #-}
 
-module Remote.Helper.P2P.IO
+module P2P.IO
 	( RunProto
 	, runNetProtoHandle
 	) where

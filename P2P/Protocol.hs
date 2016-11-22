@@ -7,7 +7,7 @@
 
 {-# LANGUAGE DeriveFunctor, TemplateHaskell, FlexibleContexts, RankNTypes #-}
 
-module Remote.Helper.P2P where
+module P2P.Protocol where
 
 import qualified Utility.SimpleProtocol as Proto
 import Types.Key

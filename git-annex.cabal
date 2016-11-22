@@ -904,6 +904,8 @@ Executable git-annex
     Messages.Internal
     Messages.JSON
     Messages.Progress
+    P2P.IO
+    P2P.Protocol
     Remote
     Remote.BitTorrent
     Remote.Bup
@@ -923,8 +925,6 @@ Executable git-annex
     Remote.Helper.Hooks
     Remote.Helper.Http
     Remote.Helper.Messages
-    Remote.Helper.P2P
-    Remote.Helper.P2P.IO
     Remote.Helper.ReadOnly
     Remote.Helper.Special
     Remote.Helper.Ssh
