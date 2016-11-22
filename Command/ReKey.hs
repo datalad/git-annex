@@ -44,7 +44,7 @@ perform :: FilePath -> Key -> Key -> CommandPerform
 perform file oldkey newkey = do
 	ifM (inAnnex oldkey) 
 		( unlessM (linkKey file oldkey newkey) $
-			error "failed"
+			giveup "failed"
 		, unlessM (Annex.getState Annex.force) $
 			giveup $ file ++ " is not available (use --force to override)"
 		)
