@@ -20,6 +20,7 @@ import Assistant.Ssh
 import Assistant.Pairing
 import Assistant.Types.Buddies
 import Utility.NotificationBroadcaster
+import Utility.AuthToken
 import Utility.WebApp
 import Utility.Yesod
 import Types.Transfer

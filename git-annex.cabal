@@ -368,7 +368,8 @@ Executable git-annex
    unordered-containers,
    feed,
    regex-tdfa,
-   socks
+   socks,
+   securemem
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
   Extensions: PackageImports
@@ -472,7 +473,6 @@ Executable git-annex
      clientsession,
      template-haskell,
      shakespeare (>= 2.0.0),
-     securemem,
      byteable
     CPP-Options: -DWITH_WEBAPP
 
@@ -989,6 +989,7 @@ Executable git-annex
     Upgrade.V4
     Upgrade.V5
     Utility.Applicative
+    Utility.AuthToken
     Utility.Base64
     Utility.Batch
     Utility.Bloom

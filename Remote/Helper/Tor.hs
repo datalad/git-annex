@@ -8,19 +8,23 @@
 module Remote.Helper.Tor where
 
 import Annex.Common
-import Remote.Helper.P2P (mkAuthToken, AuthToken)
+import Utility.AuthToken
 import Creds
 import Utility.Tor
 import Utility.Env
 
 import Network.Socket
+import qualified Data.Text as T
 
-getTorAuthToken :: OnionAddress -> Annex (Maybe AuthToken)
-getTorAuthToken (OnionAddress onionaddress) =
-	maybe Nothing mkAuthToken <$> getM id 
+-- Read the first line of the creds file. Environment variable overrides.
+getTorAuthTokenFor :: OnionAddress -> Annex (Maybe AuthToken)
+getTorAuthTokenFor (OnionAddress onionaddress) =
+	maybe Nothing mk <$> getM id 
 		[ liftIO $ getEnv torAuthTokenEnv
 		, readCacheCreds onionaddress
 		]
+  where
+	mk = toAuthToken . T.pack . takeWhile (/= '\n')
 
 torAuthTokenEnv :: String
 torAuthTokenEnv = "GIT_ANNEX_TOR_AUTHTOKEN"

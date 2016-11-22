@@ -14,6 +14,7 @@ import Remote.Helper.P2P
 import Remote.Helper.P2P.IO
 import Remote.Helper.Tor
 import Utility.Tor
+import Utility.AuthToken
 import Annex.UUID
 
 run :: [String] -> IO ()
@@ -53,7 +54,7 @@ connectService address port service = do
 	state <- Annex.new =<< Git.CurrentRepo.get
 	Annex.eval state $ do
 		authtoken <- fromMaybe nullAuthToken
-			<$> getTorAuthToken address
+			<$> getTorAuthTokenFor address
 		myuuid <- getUUID
 		g <- Annex.gitRepo
 		h <- liftIO $ torHandle =<< connectHiddenService address port

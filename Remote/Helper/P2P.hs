@@ -12,6 +12,7 @@ module Remote.Helper.P2P where
 import qualified Utility.SimpleProtocol as Proto
 import Types.Key
 import Types.UUID
+import Utility.AuthToken
 import Utility.Applicative
 import Utility.PartialPrelude
 
@@ -22,15 +23,6 @@ import Control.Monad.Catch
 import System.Exit (ExitCode(..))
 import System.IO
 import qualified Data.ByteString.Lazy as L
-
-newtype AuthToken = AuthToken String
-	deriving (Show)
-
-mkAuthToken :: String -> Maybe AuthToken
-mkAuthToken = fmap AuthToken . headMaybe . lines
-
-nullAuthToken :: AuthToken
-nullAuthToken = AuthToken ""
 
 newtype Offset = Offset Integer
 	deriving (Show)
@@ -110,10 +102,6 @@ instance Proto.Serializable Offset where
 instance Proto.Serializable Len where
 	serialize (Len n) = show n
 	deserialize = Len <$$> readish
-
-instance Proto.Serializable AuthToken where
-	serialize (AuthToken s) = s
-	deserialize = Just . AuthToken
 
 instance Proto.Serializable Service where
 	serialize UploadPack = "git-upload-pack"

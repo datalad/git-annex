@@ -12,7 +12,7 @@ module Utility.WebApp where
 import Common
 import Utility.Tmp
 import Utility.FileMode
-import Utility.Hash
+import Utility.AuthToken
 
 import qualified Yesod
 import qualified Network.Wai as Wai
@@ -23,7 +23,6 @@ import qualified Data.CaseInsensitive as CI
 import Network.Socket
 import "crypto-api" Crypto.Random
 import qualified Web.ClientSession as CS
-import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as B
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -31,8 +30,6 @@ import Blaze.ByteString.Builder.Char.Utf8 (fromText)
 import Blaze.ByteString.Builder (Builder)
 import Control.Arrow ((***))
 import Control.Concurrent
-import Data.SecureMem
-import Data.Byteable
 #ifdef __ANDROID__
 import Data.Endian
 #endif
@@ -159,24 +156,6 @@ webAppSessionBackend _ = do
 		Just . Yesod.clientSessionBackend key . fst
 			<$> Yesod.clientSessionDateCacher timeout
 
-type AuthToken = SecureMem
-
-toAuthToken :: T.Text -> AuthToken
-toAuthToken = secureMemFromByteString . TE.encodeUtf8
-
-fromAuthToken :: AuthToken -> T.Text
-fromAuthToken = TE.decodeLatin1 . toBytes
-
-{- Generates a random sha2_512 string, encapsulated in a SecureMem,
- - suitable to be used for an authentication secret. -}
-genAuthToken :: IO AuthToken
-genAuthToken = do
-	g <- newGenIO :: IO SystemRandom
-	return $
-		case genBytes 512 g of
-			Left e -> error $ "failed to generate auth token: " ++ show e
-			Right (s, _) -> toAuthToken $ T.pack $ show $ sha2_512 $ L.fromChunks [s]
-
 {- A Yesod isAuthorized method, which checks the auth cgi parameter
  - against a token extracted from the Yesod application.
  -
@@ -193,7 +172,7 @@ checkAuthToken extractAuthToken r predicate
 		webapp <- Yesod.getYesod
 		req <- Yesod.getRequest
 		let params = Yesod.reqGetParams req
-		if (toAuthToken <$> lookup "auth" params) == Just (extractAuthToken webapp)
+		if (toAuthToken =<< lookup "auth" params) == Just (extractAuthToken webapp)
 			then return Yesod.Authorized
 			else Yesod.sendResponseStatus unauthorized401 ()
 
