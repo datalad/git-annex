@@ -30,7 +30,7 @@ import Control.Concurrent.Async
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 
-type RunProto = forall a m. (MonadIO m, MonadMask m) => Proto a -> m a
+type RunProto = forall a m. (MonadIO m, MonadMask m) => Proto a -> m (Maybe a)
 
 data S = S
 	{ repo :: Repo
@@ -40,58 +40,66 @@ data S = S
 
 -- Implementation of the protocol, communicating with a peer
 -- over a Handle. No Local actions will be run.
-runNetProtoHandle :: (MonadIO m, MonadMask m) => Handle -> Handle -> Repo -> Proto a -> m a
+runNetProtoHandle :: (MonadIO m, MonadMask m) => Handle -> Handle -> Repo -> Proto a -> m (Maybe a)
 runNetProtoHandle i o r = go
   where
 	go :: RunProto
-	go (Pure a) = pure a
+	go (Pure v) = pure (Just v)
 	go (Free (Net n)) = runNetHandle (S r i o) go n
-	go (Free (Local _)) = error "local actions not allowed"
+	go (Free (Local _)) = return Nothing
 
-runNetHandle :: (MonadIO m, MonadMask m) => S -> RunProto -> NetF (Proto a) -> m a
+runNetHandle :: (MonadIO m, MonadMask m) => S -> RunProto -> NetF (Proto a) -> m (Maybe a)
 runNetHandle s runner f = case f of
 	SendMessage m next -> do
-		liftIO $ do
+		v <- liftIO $ tryIO $ do
 			hPutStrLn (ohdl s) (unwords (formatMessage m))
 			hFlush (ohdl s)
-		runner next
+		case v of
+			Left _e -> return Nothing
+			Right () -> runner next
 	ReceiveMessage next -> do
-		l <- liftIO $ hGetLine (ihdl s)
-		case parseMessage l of
-			Just m -> runner (next m)
-			Nothing -> runner $ do
-				let e = ERROR $ "protocol parse error: " ++ show l
-				net $ sendMessage e
-				next e
+		v <- liftIO $ tryIO $ hGetLine (ihdl s)
+		case v of
+			Left _e -> return Nothing
+			Right l -> case parseMessage l of
+				Just m -> runner (next m)
+				Nothing -> runner $ do
+					let e = ERROR $ "protocol parse error: " ++ show l
+					net $ sendMessage e
+					next e
 	SendBytes _len b next -> do
-		liftIO $ do
+		v <- liftIO $ tryIO $ do
 			L.hPut (ohdl s) b
 			hFlush (ohdl s)
-		runner next
+		case v of
+			Left _e -> return Nothing
+			Right () -> runner next
 	ReceiveBytes (Len n) next -> do
-		b <- liftIO $ L.hGet (ihdl s) (fromIntegral n)
-		runner (next b)
+		v <- liftIO $ tryIO $ L.hGet (ihdl s) (fromIntegral n)
+		case v of
+			Left _e -> return Nothing
+			Right b -> runner (next b)
 	CheckAuthToken u t next -> do
 		authed <- return True -- TODO XXX FIXME really check
 		runner (next authed)
-	Relay hin hout next ->
-		runRelay runner hin hout >>= runner . next
-	RelayService service next ->
-		runRelayService s runner service >> runner next
+	Relay hin hout next -> do
+		v <- liftIO $ runRelay runner hin hout
+		case v of
+			Nothing -> return Nothing
+			Just exitcode -> runner (next exitcode)
+	RelayService service next -> do
+		v <- liftIO $ runRelayService s runner service
+		case v of
+			Nothing -> return Nothing
+			Just () -> runner next
 
-runRelay
-	:: MonadIO m
-	=> RunProto
-	-> RelayHandle
-	-> RelayHandle
-	-> m ExitCode
-runRelay runner (RelayHandle hout) (RelayHandle hin) = liftIO $
-	bracket setup cleanup go
+runRelay :: RunProto -> RelayHandle -> RelayHandle -> IO (Maybe ExitCode)
+runRelay runner (RelayHandle hout) (RelayHandle hin) = bracket setup cleanup go
   where
 	setup = do
 		v <- newEmptyMVar
-		void $ forkIO $ relayFeeder runner v
-		void $ forkIO $ relayReader v hout
+		void $ async $ relayFeeder runner v
+		void $ async $ relayReader v hout
 		return v
 	
 	cleanup _ = do
@@ -100,13 +108,8 @@ runRelay runner (RelayHandle hout) (RelayHandle hin) = liftIO $
 	
 	go v = relayHelper runner v hin
 
-runRelayService
-	:: MonadIO m
-	=> S
-	-> RunProto
-	-> Service
-	-> m ()
-runRelayService s runner service = liftIO $ bracket setup cleanup go
+runRelayService :: S -> RunProto -> Service -> IO (Maybe ())
+runRelayService s runner service = bracket setup cleanup go
   where
 	cmd = case service of
 		UploadPack -> "upload-pack"
@@ -123,28 +126,29 @@ runRelayService s runner service = liftIO $ bracket setup cleanup go
 			, std_in = CreatePipe
 			}
 		v <- newEmptyMVar
-		feeder <- async $ relayFeeder runner v
-		reader <- async $ relayReader v hout
+		void $ async $ relayFeeder runner v
+		void $ async $ relayReader v hout
 		waiter <- async $ waitexit v pid
-		return (v, feeder, reader, waiter, hin, hout, pid)
+		return (v, waiter, hin, hout, pid)
 
-	cleanup (_, feeder, reader, waiter, hin, hout, pid) = do
+	cleanup (_, waiter, hin, hout, pid) = do
 		hPutStrLn stderr "!!!!\n\nIN CLEANUP"
 		hFlush stderr
 		hClose hin
 		hClose hout
-		cancel reader
 		cancel waiter
 		void $ waitForProcess pid
 
-	go (v, _, _, _, hin, _, _) = do
-		exitcode <- relayHelper runner v hin
-		runner $ net $ relayToPeer (RelayDone exitcode)
+	go (v, _, hin, _, _) = do
+		r <- relayHelper runner v hin
+		case r of
+			Nothing -> return Nothing
+			Just exitcode -> runner $ net $ relayToPeer (RelayDone exitcode)
 	
 	waitexit v pid = putMVar v . RelayDone =<< waitForProcess pid
 
 -- Processes RelayData as it is put into the MVar.
-relayHelper :: RunProto -> MVar RelayData -> Handle -> IO ExitCode
+relayHelper :: RunProto -> MVar RelayData -> Handle -> IO (Maybe ExitCode)
 relayHelper runner v hin = loop
   where
 	loop = do
@@ -155,11 +159,13 @@ relayHelper runner v hin = loop
 				hFlush hin
 				loop
 			RelayToPeer b -> do
-				runner $ net $ relayToPeer (RelayToPeer b)
-				loop
+				r <- runner $ net $ relayToPeer (RelayToPeer b)
+				case r of
+					Nothing -> return Nothing
+					Just () -> loop
 			RelayDone exitcode -> do
-				runner $ net $ relayToPeer (RelayDone exitcode)
-				return exitcode
+				_ <- runner $ net $ relayToPeer (RelayDone exitcode)
+				return (Just exitcode)
 
 -- Takes input from the peer, and puts it into the MVar for processing.
 -- Repeats until the peer tells it it's done.
@@ -167,11 +173,14 @@ relayFeeder :: RunProto -> MVar RelayData -> IO ()
 relayFeeder runner v = loop
   where
 	loop = do
-		rd <- runner $ net relayFromPeer
-		putMVar v rd
-		case rd of
-			RelayDone _ -> return ()
-			_ -> loop
+		mrd <- runner $ net relayFromPeer
+		case mrd of
+			Nothing -> return ()
+			Just rd -> do
+				putMVar v rd
+				case rd of
+					RelayDone _ -> return ()
+					_ -> loop
 
 -- Reads input from the Handle and puts it into the MVar for relaying to
 -- the peer. Continues until EOF on the Handle.

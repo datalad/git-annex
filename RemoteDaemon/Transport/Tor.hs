@@ -45,5 +45,5 @@ server th@(TransportHandle (LocalRepo r) _) = do
 		forkIO $ do
 			debugM "remotedaemon" "handling a connection"
 			h <- torHandle conn
-			runNetProtoHandle h h r (serve u)
+			_ <- runNetProtoHandle h h r (serve u)
 			hClose h
