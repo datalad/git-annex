@@ -17,16 +17,24 @@ import Remote.Helper.P2P
 import Remote.Helper.P2P.IO
 import Annex.UUID
 import Types.UUID
+import Messages
+import Git
 
 import System.PosixCompat.User
 import Network.Socket
 import Control.Concurrent
 import System.Log.Logger (debugM)
+import Control.Concurrent.STM
 
 -- Run tor hidden service.
 server :: TransportHandle -> IO ()
 server th@(TransportHandle (LocalRepo r) _) = do
 	u <- liftAnnex th getUUID
+
+	q <- newTBQueueIO maxConnections
+	replicateM_ maxConnections $
+		forkIO $ forever $ serveClient u r q
+
 	uid <- getRealUserID
 	let ident = fromUUID u
 	let sock = socketFile uid ident
@@ -42,9 +50,28 @@ server th@(TransportHandle (LocalRepo r) _) = do
 	debugM "remotedaemon" "tor hidden service running"
 	forever $ do
 		(conn, _) <- accept soc
-		forkIO $ do
-			debugM "remotedaemon" "handling a connection"
-			h <- torHandle conn
-			_ <- runNetProtoHandle h h r (serve u)
+		h <- torHandle conn
+		ok <- atomically $ ifM (isFullTBQueue q)
+			( return False
+			, do
+				writeTBQueue q h
+				return True
+			)
+		unless ok $ do
 			hClose h
-			debugM "remotedaemon" "done handling a connection"
+			warningIO "dropped TOR connection, too busy"
+
+-- How many clients to serve at a time, maximum. This is to avoid DOS
+-- attacks.
+maxConnections :: Int
+maxConnections = 10
+
+serveClient :: UUID -> Repo -> TBQueue Handle -> IO ()
+serveClient u r q = bracket setup cleanup go
+  where
+	setup = atomically $ readTBQueue q
+	cleanup = hClose
+	go h = do
+		debugM "remotedaemon" "serving a TOR connection"
+		void $ runNetProtoHandle h h r (serve u)
+		debugM "remotedaemon" "done with TOR connection"
