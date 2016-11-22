@@ -340,13 +340,18 @@ cleanup :: UUID -> URLString -> FilePath -> Key -> Maybe FilePath -> Annex ()
 cleanup u url file key mtmp = case mtmp of
 	Nothing -> go
 	Just tmp -> do
+		-- Move to final location for large file check.
+		liftIO $ renameFile tmp file
 		largematcher <- largeFilesMatcher
-		ifM (checkFileMatcher largematcher tmp)
-			( go
-			, do
-				liftIO $ renameFile tmp file
-				void $ Command.Add.addSmall file
-			)
+		large <- checkFileMatcher largematcher file
+		if large
+			then do
+				-- Move back to tmp because addAnnexedFile
+				-- needs the file in a different location
+				-- than the work tree file.
+				liftIO $ renameFile file tmp
+				go
+			else void $ Command.Add.addSmall file
   where
 	go = do
 		maybeShowJSON $ JSONChunk [("key", key2file key)]
