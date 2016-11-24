@@ -12,7 +12,7 @@ module P2P.IO
 	, runNetProtoHandle
 	) where
 
-import Remote.Helper.P2P
+import P2P.Protocol
 import Utility.Process
 import Git
 import Git.Command

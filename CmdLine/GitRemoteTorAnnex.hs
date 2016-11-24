@@ -10,8 +10,8 @@ module CmdLine.GitRemoteTorAnnex where
 import Common
 import qualified Annex
 import qualified Git.CurrentRepo
-import Remote.Helper.P2P
-import Remote.Helper.P2P.IO
+import P2P.Protocol
+import P2P.IO
 import Remote.Helper.Tor
 import Utility.Tor
 import Utility.AuthToken

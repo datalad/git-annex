@@ -13,8 +13,8 @@ import RemoteDaemon.Common
 import Utility.Tor
 import Utility.FileMode
 import Remote.Helper.Tor
-import Remote.Helper.P2P
-import Remote.Helper.P2P.IO
+import P2P.Protocol
+import P2P.IO
 import Annex.UUID
 import Types.UUID
 import Messages
