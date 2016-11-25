@@ -1,0 +1,41 @@
+This is a recreation of a stackexchange question, in case the community here is more knowledgeable.
+
+Link to stackexchange question : http://unix.stackexchange.com/questions/325753/git-annex-link-to-different-file-names
+
+Content :
+"Maybe this is just a crazy use case that doesn't work, but I was wondering if there's a way to build a file's history from files with different file names. I'm exploring this idea because I'd like to have a git-annex system but I can't force my coworkers to adapt.
+
+Here's what I have in mind :
+
+    Folder 1, managed by coworkers (On a shared disk) :
+
+        drawing_shop_12_nov_2015.pdf
+        drawing_shop_13_nov_2015.pdf
+        drawing_asbuilt_14_nov_2015.pdf
+        drawing_asbuilt_rev1_15_nov_2015.pdf
+
+And
+
+    Git-annex, managed by me :
+
+        drawing.pdf
+
+    (with a shop branch and a asbuilt branch)
+
+The git-annex's drawing.pdf would have an history like this :
+
+[shop]
+|
+Commit A "Initial shop drawing"
+|
+Commit B "Add corrections from Wizzbasket"
+ \
+  |
+  [asbuilt]
+  Commit C "Reflect as built"
+  |
+  Commit D "Change dweezelbox block for simplicity"
+
+But somehow the "managed by coworkers" repo would be a direct mode repo with Commit A pointing to drawing_shop_12_nov_2015.pdf, Commit B to drawing_shop_13_nov_2015.pdf etc.
+
+Can this be done?"
