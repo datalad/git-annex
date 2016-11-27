@@ -1,0 +1,47 @@
+I want to use metadata views to sort files into top-level directories based on a tag, but then preserve the directory structure underneath that. I'm having trouble with this.
+
+Say I have an annex at `~/annex` with a structure like this:
+
+    $ tree
+    .
+    ├── foo
+    │   └── bar
+    │       ├── one.txt
+    │       ├── three.txt
+    │       └── two.txt
+    └── waldo
+        └── fred
+            ├── a.txt
+            ├── b.txt
+            └── c.txt
+
+I tag some of the files with `blah`:
+
+    $ git annex metadata -t blah foo/bar/*
+
+Now I want to change my view to only see those files with a certain tag, but I want to maintain their directory structure, ie I want to end up with something like this:
+
+    $ tree
+    .
+    ├── blah
+    │   └── foo
+    │       └── bar
+    │           ├── one.txt
+    │           ├── three.txt
+    │           └── two.txt
+
+If I do `git annex view blah` I see the files `one.txt`, `two.txt` and `three.txt` but they are in the top level of `~/annex`. The `foo` and `bar` directories are not present.
+
+If I do `git annex view blah "/=*"` then the files I present under the `foo` directory, but the `bar` subdirectory is not there.
+
+It would also be fine if I could just hide the files that did not have the `blah` tag, so that I ended up with this:
+
+    $ tree
+    .
+    ├── foo
+    │   └── bar
+    │       ├── one.txt
+    │       ├── three.txt
+    │       └── two.txt
+
+Is something like this possible?
