@@ -29,7 +29,6 @@ type UniqueIdent = String
 
 connectHiddenService :: OnionAddress -> OnionPort -> IO Socket
 connectHiddenService (OnionAddress address) port = do
-	hPutStrLn stderr $ show ("connect to", address, port)
 	(s, _) <- socksConnect torsockconf socksaddr
 	return s
   where
@@ -122,7 +121,7 @@ hiddenServiceHostnameFile uid ident = hiddenServiceDir uid ident </> "hostname"
 -- That should not be a problem if the UniqueIdent is around the length of
 -- a UUID.
 hiddenServiceSocketFile :: UserID -> UniqueIdent -> FilePath
-hiddenServiceSocketFile uid ident = etcDir </> "hidden_services" </> show uid ++ "_" ++ show ident </> "s"
+hiddenServiceSocketFile uid ident = etcDir </> "hidden_services" </> show uid ++ "_" ++ ident </> "s"
 
 -- | Sets up the directory for the socketFile, with appropriate
 -- permissions. Must run as root.
