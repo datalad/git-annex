@@ -18,7 +18,7 @@ several more. Handy if you don't otherwise have git installed.
 
 ## autobuilds
 
-Thanks to Dartmouth for hosting the autobuilder.
+Thanks to Dartmouth College for hosting the autobuilder.
 
 * [autobuild of git-annex.dmg](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-yosemite/git-annex.dmg) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-yosemite/))
 

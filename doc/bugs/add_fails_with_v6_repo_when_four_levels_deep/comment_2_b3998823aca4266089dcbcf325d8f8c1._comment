@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="t.z.mates"
+ avatar="http://cdn.libravatar.org/avatar/90f15fad216078fd08d62cc676487925"
+ subject="comment 2"
+ date="2016-11-19T04:42:25Z"
+ content="""
+Thanks for looking into it; I just checked again, and even on the newest version (6.20161118 binary), I'm still experiencing the behavior. However, I checked on an older OpenSuse box I have, and there it works (6.20161031 from OpenSuse repo).
+
+Since my two machines experiencing the problem are both running arch, it seems it's somehow related to that distro. I've checked both installing via the binary (from kitenet) and from the arch community repo, but both produce the same behavior. Further, the OpenSuse install has the same build flags as the binaries, so that doesn't seem to be it. Are there any other diagnostics I can run?
+
+This particular problem isn't very troublesome (it doesn't seem to have any material impact aside from error messages); however, I also occasionally experience a more serious bug. Namely, when certain (seemingly random) files are added to the repo locked, their content disappears and the symlink is broken (this is the other problem I alluded to in the description). I suspect that problem is related to this one though, since it also only affects my arch machines. I haven't yet submitted a report for that bug yet, though, since I can't reliably replicate it. 
+"""]]

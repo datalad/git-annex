@@ -20,8 +20,6 @@ Multiple pairs of file and key can be given in a single command line.
   Allow rekeying of even files whose content is not currently available.
   Use with caution.
 
-# OPTIONS
-
 # SEE ALSO
 
 [[git-annex]](1)

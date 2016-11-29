@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="palday@91f366b5178879146d2b6e1e53bfa21389ee89a8"
+ nickname="palday"
+ avatar="http://cdn.libravatar.org/avatar/077a63af75ddba159980fbf88690f401"
+ subject="Temporary workaround until the brew formula is updated"
+ date="2016-11-29T02:17:52Z"
+ content="""
+The homebrew formula doesn't yet this fix, but you can get around the problem in the meantime by getting a newer SSH via homebrew:
+
+```
+brew install homebrew/dupes/openssh
+```
+
+You can then choose to keep that or get rid of it when the formula for git annex is later updated.
+"""]]

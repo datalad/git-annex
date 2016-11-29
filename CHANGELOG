@@ -6,8 +6,12 @@ git-annex (6.20161119) UNRELEASED; urgency=medium
     hidden service.
   * remotedaemon: Fork to background by default. Added --foreground switch
     to enable old behavior.
+  * addurl: Fix bug in checking annex.largefiles expressions using
+    largerthan, mimetype, and smallerthan; the first two always failed
+    to match, and the latter always matched.
+  * Relicense 5 source files that are not part of the webapp from AGPL to GPL.
 
- -- Joey Hess <id@joeyh.name>  Sun, 20 Nov 2016 14:10:15 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 21 Nov 2016 11:27:50 -0400
 
 git-annex (6.20161118) unstable; urgency=medium
 
