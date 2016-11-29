@@ -1,0 +1,27 @@
+I've somehow managed to get my indirect repository to symlink to literal content instead of object files. 
+
+By this I mean literally the symlink is pointing at the contents of the file as the filename.
+
+So if I have a blah.txt file with this content:
+
+* First line
+* second line
+
+And I ls -al to view the symlink pointer, it shows up as this:
+
+* blah.txt -> First line?second line
+
+It literally has the contents of the file as the destination filename.
+
+I've tried a couple things I could think of to re-symlink the files, but they don't seem to do anything as they think everything is fine:
+
+* git annex indirect //returns nothing
+* git annex lock blah.txt //returns nothing
+* git annex fix blah.txt //returns nothing
+* git annex fsck //returns nothing
+
+I'm actually able to find several of these files hanging around by searching for all symlinks that don't point to something in the .git directory.
+
+Is there a way for me to replace the symlinks with correct symlinks to the objects in .git/annex? Can it even figure out which ones it was supposed to point to if the symlinks are messed up (are filenames -> content hashes stored anywhere else)?
+
+Else I might have to go do some manual rebasing and history editing to try to undo the bad commits manually. I've synced this repo to another direct repo so I'll need to figure out how to manually fix that repo too (using proxy).  From what I can tell the annex/direct/master seems to be same as master and synced/master branches? Is there an [[internals]] page for direct branches besides [[direct_mode]] so I know what should be fixed where?

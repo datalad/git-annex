@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="scottgorlin@a32946b2aad278883c1690a0753241583a9855b9"
+ nickname="scottgorlin"
+ avatar="http://cdn.libravatar.org/avatar/2dd1fc8add62bbf4ffefac081b322563"
+ subject="IgnoreUnknown Include considered harmful?"
+ date="2016-11-23T20:07:45Z"
+ content="""
+As noted, include appears to not work on a mac at the moment.  This means git-annex silently ignores the included configs, which may be required to ssh to the remotes of interest.  This is happening to me.
+
+My understanding is that ssh aliases are the recommended way of juggling multiple private keys amongst multiple hosts, so it is a required part of many git workflows.  In this particular case, I have set up git annex on a NAS which does not allow multiple ssh users (QNAP) and the authentication is done only via key identity, not username.  Thus, host aliases are necessary.
+
+If one config can't include another, I would prefer an early failure indicating a problem with the config file, or better, a solution where git-annex doesn't require a config.  In this scenario, git fetch remote_name and git annex copy --to remotename do not resolve to the same alias definitions (the latter is missing because of the ignored config!).
+
+I got my setup to work only by finding and manually editing <repo>/.git/annex/ssh_config, which to my knowledge is undocumented (ie when is it written? do any commands change it?); manual mucking around inside .git to me is not a good practice, and for now I have two different alias's defined (in repo and in ~/.ssh/config)
+
+
+"""]]

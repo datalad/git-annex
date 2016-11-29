@@ -2,8 +2,12 @@ git-annex now does Windows!
 
 * First, [install Git for Windows](http://git-scm.com/downloads)  
   Important: **Get the 32 bit version not the 64 bit version.**  
-  (Note that msysgit is no longer supported.)
+  (Note that msysgit is no longer supported.) If you installed the
+  64 bit version of git, then parts of git-annex will still run,
+  however, some features, including tools like rsync, are not-functional.
 * Then, [install git-annex](https://downloads.kitenet.net/git-annex/windows/current/)
+  into the same location Git has been installed to. You must provide this path to the
+  git-annex installer. For instance, the path may be "C:\Users\John\AppData\Local\Programs\Git\"
 
 This port is now in reasonably good shape for command-line use of
 git-annex. The assistant and webapp are also usable. There are some known
