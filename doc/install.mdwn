@@ -17,7 +17,7 @@ detailed instructions             | quick install
 &nbsp;&nbsp;[[ScientificLinux5]]  |
 &nbsp;&nbsp;[[openSUSE]]          | `zypper in git-annex`
 &nbsp;&nbsp;[[Docker]]            | 
-[[Windows]]                       | [download installer](https://downloads.kitenet.net/git-annex/windows/current/) and follow the [instructions here](http://git-annex.branchable.com/install/Windows/) **beta**
+[[Windows]]                       | [download installer](https://downloads.kitenet.net/git-annex/windows/current/) **beta**
 """]]
 
 All the download links above use https for security. For added security, see
