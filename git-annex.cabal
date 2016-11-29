@@ -904,6 +904,7 @@ Executable git-annex
     Messages.Internal
     Messages.JSON
     Messages.Progress
+    P2P.Address
     P2P.Auth
     P2P.IO
     P2P.Protocol

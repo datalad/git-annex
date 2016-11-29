@@ -21,7 +21,7 @@ import qualified System.Random as R
 type OnionPort = Int
 
 newtype OnionAddress = OnionAddress String
-	deriving (Show)
+	deriving (Show, Eq)
 
 type OnionSocket = FilePath
 
@@ -57,7 +57,7 @@ addHiddenService uid ident = do
 	case filter (\(_, s) -> s == sockfile) portssocks of
 		((p, _s):_) -> waithiddenservice 1 p
 		_ -> do
-			highports <- R.getStdRandom highports
+			highports <- R.getStdRandom mkhighports
 			let newport = Prelude.head $
 				filter (`notElem` map fst portssocks) highports
 			writeFile torrc $ unlines $
@@ -74,7 +74,7 @@ addHiddenService uid ident = do
 				, ("sefvice", [Param "tor", Param "reload"])
 				]
 			unless reloaded $
-				error "failed to reload tor, perhaps the tor service is not running"
+				giveup "failed to reload tor, perhaps the tor service is not running"
 			waithiddenservice 120 newport
   where
 	parseportsock ("HiddenServicePort", l) = do
@@ -85,12 +85,12 @@ addHiddenService uid ident = do
 	sockfile = hiddenServiceSocketFile uid ident
 
 	-- An infinite random list of high ports.
-	highports g = 
+	mkhighports g = 
 		let (g1, g2) = R.split g
 		in (R.randomRs (1025, 65534) g1, g2)
 
 	waithiddenservice :: Int -> OnionPort -> IO (OnionAddress, OnionPort)
-	waithiddenservice 0 _ = error "tor failed to create hidden service, perhaps the tor service is not running"
+	waithiddenservice 0 _ = giveup "tor failed to create hidden service, perhaps the tor service is not running"
 	waithiddenservice n p = do
 		v <- tryIO $ readFile $ hiddenServiceHostnameFile uid ident
 		case v of

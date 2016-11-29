@@ -15,6 +15,7 @@ module Creds (
 	getEnvCredPair,
 	writeCacheCreds,
 	readCacheCreds,
+	cacheCredsFile,
 	removeCreds,
 	includeCredsInfo,
 ) where
