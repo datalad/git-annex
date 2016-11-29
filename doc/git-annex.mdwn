@@ -391,6 +391,11 @@ subdirectories).
 
   See [[git-annex-remotedaemon]](1) for details.
 
+* `p2p`
+
+  Configure peer-2-Peer links between repositories.
+
+  See [[git-annex-p2p]](1) for details.
 
 # QUERY COMMANDS
 

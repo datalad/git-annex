@@ -27,6 +27,7 @@ that supports it is 5.20140405.
 For tor-annex remotes, the remotedaemon runs as a tor hidden service,
 accepting connections from other nodes and serving up the contents of the
 repository. This is only done if you first run `git annex enable-tor`.
+Use `git annex p2p` to configure access to tor-annex remotes.
 
 # OPTIONS
 
@@ -47,6 +48,8 @@ comes back up.
 [[git-annex-assistant]](1)
 
 [[git-annex-enable-tor]](1)
+
+[[git-annex-p2p]](1)
 
 # AUTHOR
 

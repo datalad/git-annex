@@ -16,7 +16,7 @@ To make git-annex use Tor, run these commands in your git-annex repository:
 	git annex remotedaemon
 	git annex p2p --gen-address
 
-The p2p-auth command will output a long address, such as:
+The p2p command will output a long address, such as:
 
 	tor-annex::eeaytkuhaupbarfi.onion:4412:7f53c5b65b8957ef626fd461ceaae8056e3dbc459ae715e4
 
@@ -55,8 +55,8 @@ You can run any commands you normally would to sync with that remote:
 
 	git annex sync --content peer1
 
-You can also generate an address for this new peer, by running
-`git annex p2p --gen`, and add that address to other peers using `git annex
+You can also generate an address for this new peer, by running `git annex
+p2p --gen-address`, and add that address to other peers using `git annex
 p2p --link-remote`. It's often useful to link peers up in both directions,
 so peer1 is a remote of peer2 and peer2 is a remote of peer1.
 
