@@ -37,7 +37,7 @@ server th@(TransportHandle (LocalRepo r) _) = do
 
 	uid <- getRealUserID
 	let ident = fromUUID u
-	let sock = socketFile uid ident
+	let sock = hiddenServiceSocketFile uid ident
 	nukeFile sock
 	soc <- socket AF_UNIX Stream defaultProtocol
 	bind soc (SockAddrUnix sock)
