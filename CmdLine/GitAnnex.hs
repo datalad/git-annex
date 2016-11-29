@@ -101,6 +101,7 @@ import qualified Command.DiffDriver
 import qualified Command.Smudge
 import qualified Command.Undo
 import qualified Command.Version
+import qualified Command.RemoteDaemon
 #ifdef WITH_ASSISTANT
 import qualified Command.Watch
 import qualified Command.Assistant
@@ -110,7 +111,6 @@ import qualified Command.WebApp
 #ifdef WITH_XMPP
 import qualified Command.XMPPGit
 #endif
-import qualified Command.RemoteDaemon
 #endif
 import qualified Command.Test
 #ifdef WITH_TESTSUITE
@@ -209,6 +209,7 @@ cmds testoptparser testrunner =
 	, Command.Smudge.cmd
 	, Command.Undo.cmd
 	, Command.Version.cmd
+	, Command.RemoteDaemon.cmd
 #ifdef WITH_ASSISTANT
 	, Command.Watch.cmd
 	, Command.Assistant.cmd
@@ -218,7 +219,6 @@ cmds testoptparser testrunner =
 #ifdef WITH_XMPP
 	, Command.XMPPGit.cmd
 #endif
-	, Command.RemoteDaemon.cmd
 #endif
 	, Command.Test.cmd testoptparser testrunner
 #ifdef WITH_TESTSUITE
