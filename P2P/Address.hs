@@ -51,10 +51,12 @@ instance FormatP2PAddress P2PAddressAuth where
 		authtoken <- toAuthToken (T.pack $ reverse ra)
 		return (P2PAddressAuth addr authtoken)
 
+-- | Load known P2P addresses for this repository.
 loadP2PAddresses :: Annex [P2PAddress]
 loadP2PAddresses = mapMaybe unformatP2PAddress . maybe [] lines
 	<$> readCacheCreds p2pAddressCredsFile
 
+-- | Store a new P2P address for this repository.
 storeP2PAddress :: P2PAddress -> Annex ()
 storeP2PAddress addr = do
 	addrs <- loadP2PAddresses
