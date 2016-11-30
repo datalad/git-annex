@@ -24,7 +24,7 @@ important thing is that it should end with "All tests passed".
 A daily build is also available, thanks to Yury V. Zaytsev and
 Dartmouth College.
 
-* [download](https://downloads.kitenet.net/git-annex/autobuild/windows/) ([build logs](https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/))
+* [download](https://downloads.kitenet.net/git-annex/autobuild/windows/)
 
 ## building it yourself
 
