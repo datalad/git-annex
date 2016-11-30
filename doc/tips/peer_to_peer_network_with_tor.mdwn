@@ -42,16 +42,17 @@ repository:
 	sudo git annex enable-tor
 	git annex remotedaemon
 
-Now, tell the new peer about the address of the first peer:
+Now, tell the new peer about the address of the first peer.
+This will make a git remote named "peer1", which connects,
+through Tor, to the repository on the other peer.
 
-	git annex p2p --link tor-annnex::eeaytkuhaupbarfi.onion:4412:7f53c5b65b8957ef626fd461ceaae8056e3dbc459ae715e4 --named peer1
+	git annex p2p --link peer1
 
-(Of course, you should paste in the address you generated earlier, 
-not the example one shown above.)
+That command will prompt for an address; paste in the address that was
+generated on the first peer, and then press Enter.
 
-Now this git-annex repository will have a remote named "peer1"
-which connects, through Tor, to the repository on the other peer.
-You can run any commands you normally would to sync with that remote:
+Now you can run any commands you normally would to sync with the
+peer1 remote:
 
 	git annex sync --content peer1
 
