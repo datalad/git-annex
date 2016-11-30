@@ -112,7 +112,7 @@ Recommends:
 	nocache,
 	aria2,
 Suggests:
-	graphviz,
+	xdot,
 	bup,
 	tahoe-lafs,
 	libnss-mdns,
