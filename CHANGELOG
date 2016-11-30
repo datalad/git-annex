@@ -4,6 +4,10 @@ git-annex (6.20161119) UNRELEASED; urgency=medium
     largerthan, mimetype, and smallerthan; the first two always failed
     to match, and the latter always matched.
   * Relicense 5 source files that are not part of the webapp from AGPL to GPL.
+  * map: Run xdot if it's available in PATH. On OSX, the dot command
+    does not support graphical display, while xdot does.
+  * Debian: xdot is a better interactive viewer than dot, so Suggest
+    xdot, rather than graphviz.
 
  -- Joey Hess <id@joeyh.name>  Mon, 21 Nov 2016 11:27:50 -0400
 

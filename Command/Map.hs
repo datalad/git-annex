@@ -47,14 +47,24 @@ start = do
 	liftIO $ writeFile file (drawMap rs trustmap umap)
 	next $ next $
 		ifM (Annex.getState Annex.fast)
-			( do
-				showLongNote $ "left map in " ++ file
-				return True
-			, do
-				showLongNote $ "running: dot -Tx11 " ++ file
-				showOutput
-				liftIO $ boolSystem "dot" [Param "-Tx11", File file]
+			( runViewer file []
+			, runViewer file
+	 			[ ("xdot", [File file])
+				, ("dot", [Param "-Tx11", File file])
+				]	
 			)
+
+runViewer :: FilePath -> [(String, [CommandParam])] -> Annex Bool
+runViewer file [] = do
+	showLongNote $ "left map in " ++ file
+	return True
+runViewer file ((c, ps):rest) = ifM (liftIO $ inPath c)
+	( do
+		showLongNote $ "running: " ++ c ++ unwords (toCommand ps)
+		showOutput
+		liftIO $ boolSystem c ps
+	, runViewer file rest
+	)
 
 {- Generates a graph for dot(1). Each repository, and any other uuids
  - (except for dead ones), are displayed as a node, and each of its
