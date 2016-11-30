@@ -16,6 +16,7 @@ import Assistant.DaemonStatus
 import Assistant.Types.Buddies
 import Utility.NotificationBroadcaster
 import Utility.Yesod
+import Utility.WebApp
 
 import Data.Text (Text)
 import qualified Data.Text as T
