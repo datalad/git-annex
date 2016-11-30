@@ -5,17 +5,19 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE RankNTypes, CPP #-}
+{-# LANGUAGE RankNTypes, ScopedTypeVariables, CPP #-}
 
 module P2P.IO
-	( RunProto
+	( RunEnv(..)
 	, runNetProtoHandle
+	, runNetHandle
 	) where
 
 import P2P.Protocol
 import Utility.Process
 import Git
 import Git.Command
+import Utility.AuthToken
 import Utility.SafeCommand
 import Utility.SimpleProtocol
 import Utility.Exception
@@ -32,33 +34,34 @@ import qualified Data.ByteString.Lazy as L
 
 type RunProto = forall a m. (MonadIO m, MonadMask m) => Proto a -> m (Maybe a)
 
-data S = S
-	{ repo :: Repo
-	, ihdl :: Handle
-	, ohdl :: Handle
+data RunEnv = RunEnv
+	{ runRepo :: Repo
+	, runCheckAuth :: (AuthToken -> Bool)
+	, runIhdl :: Handle
+	, runOhdl :: Handle
 	}
 
 -- Implementation of the protocol, communicating with a peer
 -- over a Handle. No Local actions will be run.
-runNetProtoHandle :: (MonadIO m, MonadMask m) => Handle -> Handle -> Repo -> Proto a -> m (Maybe a)
-runNetProtoHandle i o r = go
+runNetProtoHandle :: (MonadIO m, MonadMask m) => RunEnv -> Proto a -> m (Maybe a)
+runNetProtoHandle runenv = go
   where
 	go :: RunProto
 	go (Pure v) = pure (Just v)
-	go (Free (Net n)) = runNetHandle (S r i o) go n
+	go (Free (Net n)) = runNetHandle runenv go n
 	go (Free (Local _)) = return Nothing
 
-runNetHandle :: (MonadIO m, MonadMask m) => S -> RunProto -> NetF (Proto a) -> m (Maybe a)
-runNetHandle s runner f = case f of
+runNetHandle :: (MonadIO m, MonadMask m) => RunEnv -> RunProto -> NetF (Proto a) -> m (Maybe a)
+runNetHandle runenv runner f = case f of
 	SendMessage m next -> do
 		v <- liftIO $ tryIO $ do
-			hPutStrLn (ohdl s) (unwords (formatMessage m))
-			hFlush (ohdl s)
+			hPutStrLn (runOhdl runenv) (unwords (formatMessage m))
+			hFlush (runOhdl runenv)
 		case v of
 			Left _e -> return Nothing
 			Right () -> runner next
 	ReceiveMessage next -> do
-		v <- liftIO $ tryIO $ hGetLine (ihdl s)
+		v <- liftIO $ tryIO $ hGetLine (runIhdl runenv)
 		case v of
 			Left _e -> return Nothing
 			Right l -> case parseMessage l of
@@ -69,18 +72,18 @@ runNetHandle s runner f = case f of
 					next e
 	SendBytes _len b next -> do
 		v <- liftIO $ tryIO $ do
-			L.hPut (ohdl s) b
-			hFlush (ohdl s)
+			L.hPut (runOhdl runenv) b
+			hFlush (runOhdl runenv)
 		case v of
 			Left _e -> return Nothing
 			Right () -> runner next
 	ReceiveBytes (Len n) next -> do
-		v <- liftIO $ tryIO $ L.hGet (ihdl s) (fromIntegral n)
+		v <- liftIO $ tryIO $ L.hGet (runIhdl runenv) (fromIntegral n)
 		case v of
 			Left _e -> return Nothing
 			Right b -> runner (next b)
-	CheckAuthToken u t next -> do
-		authed <- return True -- TODO XXX FIXME really check
+	CheckAuthToken _u t next -> do
+		let authed = runCheckAuth runenv t
 		runner (next authed)
 	Relay hin hout next -> do
 		v <- liftIO $ runRelay runner hin hout
@@ -88,7 +91,7 @@ runNetHandle s runner f = case f of
 			Nothing -> return Nothing
 			Just exitcode -> runner (next exitcode)
 	RelayService service next -> do
-		v <- liftIO $ runRelayService s runner service
+		v <- liftIO $ runRelayService runenv runner service
 		case v of
 			Nothing -> return Nothing
 			Just () -> runner next
@@ -108,8 +111,8 @@ runRelay runner (RelayHandle hout) (RelayHandle hin) = bracket setup cleanup go
 	
 	go v = relayHelper runner v hin
 
-runRelayService :: S -> RunProto -> Service -> IO (Maybe ())
-runRelayService s runner service = bracket setup cleanup go
+runRelayService :: RunEnv -> RunProto -> Service -> IO (Maybe ())
+runRelayService runenv runner service = bracket setup cleanup go
   where
 	cmd = case service of
 		UploadPack -> "upload-pack"
@@ -117,8 +120,8 @@ runRelayService s runner service = bracket setup cleanup go
 	
 	serviceproc = gitCreateProcess
 		[ Param cmd
-		, File (repoPath (repo s))
-		] (repo s)
+		, File (repoPath (runRepo runenv))
+		] (runRepo runenv)
 
 	setup = do
 		(Just hin, Just hout, _, pid) <- createProcess serviceproc

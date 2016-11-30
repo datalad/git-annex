@@ -60,7 +60,13 @@ connectService address port service = do
 		myuuid <- getUUID
 		g <- Annex.gitRepo
 		h <- liftIO $ torHandle =<< connectHiddenService address port
-		runNetProtoHandle h h g $ do
+		let runenv = RunEnv
+			{ runRepo = g
+			, runCheckAuth = const False
+			, runIhdl = h
+			, runOhdl = h
+			}
+		runNetProtoHandle runenv $ do
 			v <- auth myuuid authtoken
 			case v of
 				Just _theiruuid -> connect service stdin stdout

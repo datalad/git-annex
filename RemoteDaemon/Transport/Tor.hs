@@ -12,9 +12,11 @@ import RemoteDaemon.Types
 import RemoteDaemon.Common
 import Utility.Tor
 import Utility.FileMode
+import Utility.AuthToken
 import Remote.Helper.Tor
 import P2P.Protocol
 import P2P.IO
+import P2P.Auth
 import Annex.UUID
 import Types.UUID
 import Messages
@@ -33,7 +35,7 @@ server th@(TransportHandle (LocalRepo r) _) = do
 
 	q <- newTBQueueIO maxConnections
 	replicateM_ maxConnections $
-		forkIO $ forever $ serveClient u r q
+		forkIO $ forever $ serveClient th u r q
 
 	uid <- getRealUserID
 	let ident = fromUUID u
@@ -66,12 +68,21 @@ server th@(TransportHandle (LocalRepo r) _) = do
 maxConnections :: Int
 maxConnections = 10
 
-serveClient :: UUID -> Repo -> TBQueue Handle -> IO ()
-serveClient u r q = bracket setup cleanup go
+serveClient :: TransportHandle -> UUID -> Repo -> TBQueue Handle -> IO ()
+serveClient th u r q = bracket setup cleanup go
   where
 	setup = atomically $ readTBQueue q
 	cleanup = hClose
 	go h = do
 		debugM "remotedaemon" "serving a TOR connection"
-		void $ runNetProtoHandle h h r (serve u)
+		-- Load auth tokens for every connection, to notice
+		-- when the allowed set is changed.
+		allowed <- liftAnnex th loadP2PAuthTokens
+		let runenv = RunEnv
+			{ runRepo = r
+			, runCheckAuth = (`isAllowedAuthToken` allowed)
+			, runIhdl = h
+			, runOhdl = h
+			}
+		void $ runNetProtoHandle runenv (serve u)
 		debugM "remotedaemon" "done with TOR connection"
