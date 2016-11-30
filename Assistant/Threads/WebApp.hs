@@ -76,7 +76,7 @@ webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost
 #endif
 	webapp <- WebApp
 		<$> pure assistantdata
-		<*> genAuthToken 512
+		<*> genAuthToken 128
 		<*> getreldir
 		<*> pure staticRoutes
 		<*> pure postfirstrun
