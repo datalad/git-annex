@@ -12,6 +12,7 @@ import Creds
 import P2P.Address
 import Utility.AuthToken
 import Utility.Tor
+import Utility.Env
 
 import qualified Data.Text as T
 
@@ -38,9 +39,19 @@ p2pAuthCredsFile :: FilePath
 p2pAuthCredsFile = "p2pauth"
 
 -- | Loads the AuthToken to use when connecting with a given P2P address.
+--
+-- It's loaded from the first line of the creds file, but
+-- GIT_ANNEX_P2P_AUTHTOKEN overrides.
 loadP2PRemoteAuthToken :: P2PAddress -> Annex (Maybe AuthToken)
-loadP2PRemoteAuthToken addr = maybe Nothing (toAuthToken . T.pack)
-	<$> readCacheCreds (addressCredsFile addr)
+loadP2PRemoteAuthToken addr = maybe Nothing mk <$> getM id
+	[ liftIO $ getEnv "GIT_ANNEX_P2P_AUTHTOKEN"
+	, readCacheCreds (addressCredsFile addr)
+	]
+  where
+	mk = toAuthToken . T.pack . takeWhile (/= '\n')
+
+p2pAuthTokenEnv :: String
+p2pAuthTokenEnv = "GIT_ANNEX_P2P_AUTHTOKEN"
 
 -- | Stores the AuthToken o use when connecting with a given P2P address.
 storeP2PRemoteAuthToken :: P2PAddress -> AuthToken -> Annex ()

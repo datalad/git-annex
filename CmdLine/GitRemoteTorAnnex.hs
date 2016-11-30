@@ -16,6 +16,8 @@ import Remote.Helper.Tor
 import Utility.Tor
 import Utility.AuthToken
 import Annex.UUID
+import P2P.Address
+import P2P.Auth
 
 run :: [String] -> IO ()
 run (_remotename:address:[]) = forever $ do
@@ -54,7 +56,7 @@ connectService address port service = do
 	state <- Annex.new =<< Git.CurrentRepo.get
 	Annex.eval state $ do
 		authtoken <- fromMaybe nullAuthToken
-			<$> getTorAuthTokenFor address
+			<$> loadP2PRemoteAuthToken (TorAnnex address port)
 		myuuid <- getUUID
 		g <- Annex.gitRepo
 		h <- liftIO $ torHandle =<< connectHiddenService address port
@@ -62,4 +64,4 @@ connectService address port service = do
 			v <- auth myuuid authtoken
 			case v of
 				Just _theiruuid -> connect service stdin stdout
-				Nothing -> giveup $ "authentication failed, perhaps you need to set " ++ torAuthTokenEnv
+				Nothing -> giveup $ "authentication failed, perhaps you need to set " ++ p2pAuthTokenEnv

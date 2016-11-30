@@ -15,7 +15,7 @@ over tor(1), communicating with a tor hidden service.
 
 The tor hidden service probably requires an authtoken to use it.
 The authtoken can be provided in the environment variable
-`GIT_ANNEX_TOR_AUTHTOKEN`. Or, if there is a file in 
+`GIT_ANNEX_P2P_AUTHTOKEN`. Or, if there is a file in 
 `.git/annex/creds/` matching the onion address of the hidden
 service, its first line is used as the authtoken.
 
