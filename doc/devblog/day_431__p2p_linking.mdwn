@@ -1,0 +1,27 @@
+Today I finished the second-to-last big missing peice for tor hidden service
+remotes. Networks of these remotes are P2P networks, and there needs to be
+a way for peers to find one-another, and to authenticate with one-another.
+The `git annex p2p` command sets up links between peers in such a network.
+
+So far it has only a basic interface that sets up a one way link between
+two peers. In the first repository, run `git annex p2p --gen-address`.
+That outputs a long address. In the second repository, run
+`git annex p2p --link peer1`, and paste the address into it. That sets up a
+git remote named "peer1" that connects back to the first repository over tor.
+
+That is a one-directional link, while a bi-directional link would be
+much more convenient to have between peers. Worse, the address can be reused by
+anyone who sees it, to link into the repository. And, the address is far
+too long to communicate in any way except for pasting it.
+
+So I want to improve that later. What I'd really like to have is an
+interface that displays a one-time-use phrase of five to ten words, that
+can be read over the phone or across the room. Exchange phrases with a
+friend, and get your repositories securely linked together with tor.
+
+But, `git annex p2p` is good enough for now. I can move on to the final
+keystone of the tor support, which is file transfer over tor.
+That should, fingers crossed, be relatively easy, and the `tor` branch is
+close to mergeable now.
+
+Today's work was sponsored by Riku Voipio.
