@@ -13,11 +13,10 @@ import Types.Remote (RemoteConfig, RemoteConfigKey, typename, setup)
 import Logs.Remote
 import Logs.Trust
 import qualified Git.Config
+import Git.Types (RemoteName)
 
 import qualified Data.Map as M
 import Data.Ord
-
-type RemoteName = String
 
 {- See if there's an existing special remote with this name.
  -

@@ -12,6 +12,7 @@ import qualified Annex
 import qualified Logs.Remote
 import qualified Types.Remote as R
 import qualified Git
+import qualified Git.Types as Git
 import qualified Annex.SpecialRemote
 import qualified Remote
 import qualified Types.Remote as Remote
@@ -40,9 +41,7 @@ start (name:rest) = go =<< filter matchingname <$> Annex.fromRepo Git.remotes
 		=<< Annex.SpecialRemote.findExisting name
 	go (r:_) = startNormalRemote name r
 
-type RemoteName = String
-
-startNormalRemote :: RemoteName -> Git.Repo -> CommandStart
+startNormalRemote :: Git.RemoteName -> Git.Repo -> CommandStart
 startNormalRemote name r = do
 	showStart "enableremote" name
 	next $ next $ do
@@ -51,7 +50,7 @@ startNormalRemote name r = do
 		u <- getRepoUUID r'
 		return $ u /= NoUUID
 
-startSpecialRemote :: RemoteName -> Remote.RemoteConfig -> Maybe (UUID, Remote.RemoteConfig) -> CommandStart
+startSpecialRemote :: Git.RemoteName -> Remote.RemoteConfig -> Maybe (UUID, Remote.RemoteConfig) -> CommandStart
 startSpecialRemote name config Nothing = do
 	m <- Annex.SpecialRemote.specialRemoteMap
 	confm <- Logs.Remote.readRemoteLog

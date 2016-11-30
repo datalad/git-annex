@@ -23,7 +23,10 @@ import qualified Data.Text as T
 data P2PAddress = TorAnnex OnionAddress OnionPort
 	deriving (Eq, Show)
 
--- | A P2P address, with an AuthToken
+-- | A P2P address, with an AuthToken.
+--
+-- This is enough information to connect to the peer, and authenticate with
+-- it.
 data P2PAddressAuth = P2PAddressAuth P2PAddress AuthToken
 	deriving (Eq, Show)
 

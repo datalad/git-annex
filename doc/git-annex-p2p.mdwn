@@ -11,14 +11,18 @@ git annex p2p [options]
 This command can be used to link git-annex repositories over peer-2-peer
 networks.
 
+Currently, the only P2P network supported by git-annex is Tor hidden
+services.
+
 # OPTIONS
 
 * `--gen-address`
 
   Generates addresses that can be used to access this git-annex repository
-  over a P2P network. The address or addresses is output to stdout.
+  over the available P2P networks. The address or addresses is output to
+  stdout.
 
-* `--link-remote remotename address`
+* `--link address --named remotename`
 
   Sets up a git remote with the specified remotename that is accessed over
   a P2P network. The address is one generated in the remote repository using

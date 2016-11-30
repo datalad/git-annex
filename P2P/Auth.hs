@@ -1,4 +1,4 @@
-{- P2P protocol, authorization
+{- P2P authtokens
  -
  - Copyright 2016 Joey Hess <id@joeyh.name>
  -
@@ -7,24 +7,29 @@
 
 module P2P.Auth where
 
-import Common
+import Annex.Common
+import Creds
 import Utility.AuthToken
 
 import qualified Data.Text as T
 
--- Use .git/annex/creds/p2p to hold AuthTokens of authorized peers.
-getAuthTokens :: Annex AllowedAuthTokens
-getAuthTokens = allowedAuthTokens <$> getAuthTokens'
+-- | Load authtokens that are accepted by this repository.
+loadP2PAuthTokens :: Annex AllowedAuthTokens
+loadP2PAuthTokens = allowedAuthTokens <$> loadP2PAuthTokens'
 
-getAuthTokens' :: Annex [AuthTokens]
-getAuthTokens' = mapMaybe toAuthToken
-	. map T.pack
-	. lines
-	. fromMaybe []
-	<$> readCacheCreds "tor"
+loadP2PAuthTokens' :: Annex [AuthToken]
+loadP2PAuthTokens' = mapMaybe toAuthToken
+        . map T.pack
+        . lines
+        . fromMaybe []
+        <$> readCacheCreds p2pAuthCredsFile
 
-addAuthToken :: AuthToken -> Annex ()
-addAuthToken t = do
-	ts <- getAuthTokens'
-	let d = unlines $ map (T.unpack . fromAuthToken) (t:ts)
-	writeCacheCreds d "tor"
+storeP2PAuthToken :: AuthToken -> Annex ()
+storeP2PAuthToken t = do
+	ts <- loadP2PAuthTokens'
+	unless (t `elem` ts) $ do
+		let d = unlines $ map (T.unpack . fromAuthToken) (t:ts)
+		writeCacheCreds d p2pAuthCredsFile
+
+p2pAuthCredsFile :: FilePath
+p2pAuthCredsFile = "p2pauth"

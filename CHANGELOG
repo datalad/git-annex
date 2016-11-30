@@ -1,6 +1,7 @@
 git-annex (6.20161119) UNRELEASED; urgency=medium
 
   * enable-tor: New command, enables tor hidden service for P2P syncing.
+  * p2p: New command, allows linking repositories using a P2P network.
   * remotedaemon: Serve tor hidden service.
   * Added git-remote-tor-annex, which allows git pull and push to the tor
     hidden service.

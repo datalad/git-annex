@@ -96,6 +96,7 @@ import qualified Command.Direct
 import qualified Command.Indirect
 import qualified Command.Upgrade
 import qualified Command.Forget
+import qualified Command.P2P
 import qualified Command.Proxy
 import qualified Command.DiffDriver
 import qualified Command.Smudge
@@ -204,6 +205,7 @@ cmds testoptparser testrunner =
 	, Command.Indirect.cmd
 	, Command.Upgrade.cmd
 	, Command.Forget.cmd
+	, Command.P2P.cmd
 	, Command.Proxy.cmd
 	, Command.DiffDriver.cmd
 	, Command.Smudge.cmd

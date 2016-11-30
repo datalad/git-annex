@@ -91,6 +91,7 @@ Extra-Source-Files:
   doc/git-annex-mirror.mdwn
   doc/git-annex-move.mdwn
   doc/git-annex-numcopies.mdwn
+  doc/git-annex-p2p.mdwn
   doc/git-annex-pre-commit.mdwn
   doc/git-annex-preferred-content.mdwn
   doc/git-annex-proxy.mdwn
@@ -727,6 +728,7 @@ Executable git-annex
     Command.DropKey
     Command.DropUnused
     Command.EnableRemote
+    Command.EnableTor
     Command.ExamineKey
     Command.Expire
     Command.Find
@@ -762,6 +764,7 @@ Executable git-annex
     Command.Move
     Command.NotifyChanges
     Command.NumCopies
+    Command.P2P
     Command.PreCommit
     Command.Proxy
     Command.ReKey
