@@ -32,6 +32,7 @@ import Control.Concurrent.Async
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 
+-- Type of interpreters of the Proto free monad.
 type RunProto = forall a m. (MonadIO m, MonadMask m) => Proto a -> m (Maybe a)
 
 data RunEnv = RunEnv
@@ -41,8 +42,10 @@ data RunEnv = RunEnv
 	, runOhdl :: Handle
 	}
 
--- Implementation of the protocol, communicating with a peer
--- over a Handle. No Local actions will be run.
+-- Interpreter of Proto that communicates with a peer over a Handle.
+--
+-- No Local actions will be run; if the interpreter reaches any,
+-- it returns Nothing.
 runNetProtoHandle :: (MonadIO m, MonadMask m) => RunEnv -> Proto a -> m (Maybe a)
 runNetProtoHandle runenv = go
   where
@@ -51,6 +54,9 @@ runNetProtoHandle runenv = go
 	go (Free (Net n)) = runNetHandle runenv go n
 	go (Free (Local _)) = return Nothing
 
+-- Interprater of Net that communicates with a peer over a Handle.
+--
+-- An interpreter for Proto has to be provided.
 runNetHandle :: (MonadIO m, MonadMask m) => RunEnv -> RunProto -> NetF (Proto a) -> m (Maybe a)
 runNetHandle runenv runner f = case f of
 	SendMessage m next -> do
