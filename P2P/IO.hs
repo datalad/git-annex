@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE RankNTypes, ScopedTypeVariables, CPP #-}
+{-# LANGUAGE RankNTypes, ScopedTypeVariables, FlexibleContexts, CPP #-}
 
 module P2P.IO
 	( RunEnv(..)
@@ -33,7 +33,7 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 
 -- Type of interpreters of the Proto free monad.
-type RunProto = forall a m. (MonadIO m, MonadMask m) => Proto a -> m (Maybe a)
+type RunProto m = forall a. (MonadIO m, MonadMask m) => Proto a -> m (Maybe a)
 
 data RunEnv = RunEnv
 	{ runRepo :: Repo
@@ -49,15 +49,13 @@ data RunEnv = RunEnv
 runNetProtoHandle :: (MonadIO m, MonadMask m) => RunEnv -> Proto a -> m (Maybe a)
 runNetProtoHandle runenv = go
   where
-	go :: RunProto
+	go :: RunProto m
 	go (Pure v) = pure (Just v)
 	go (Free (Net n)) = runNetHandle runenv go n
 	go (Free (Local _)) = return Nothing
 
 -- Interprater of Net that communicates with a peer over a Handle.
---
--- An interpreter for Proto has to be provided.
-runNetHandle :: (MonadIO m, MonadMask m) => RunEnv -> RunProto -> NetF (Proto a) -> m (Maybe a)
+runNetHandle :: (MonadIO m, MonadMask m) => RunEnv -> RunProto m -> NetF (Proto a) -> m (Maybe a)
 runNetHandle runenv runner f = case f of
 	SendMessage m next -> do
 		v <- liftIO $ tryIO $ do
@@ -92,17 +90,23 @@ runNetHandle runenv runner f = case f of
 		let authed = runCheckAuth runenv t
 		runner (next authed)
 	Relay hin hout next -> do
-		v <- liftIO $ runRelay runner hin hout
+		v <- liftIO $ runRelay runnerio hin hout
 		case v of
 			Nothing -> return Nothing
 			Just exitcode -> runner (next exitcode)
 	RelayService service next -> do
-		v <- liftIO $ runRelayService runenv runner service
+		v <- liftIO $ runRelayService runenv runnerio service
 		case v of
 			Nothing -> return Nothing
 			Just () -> runner next
+  where
+	-- This is only used for running Net actions when relaying,
+	-- so it's ok to use runNetProtoHandle, despite it not supporting
+	-- all Proto actions.
+	runnerio :: RunProto IO
+	runnerio = runNetProtoHandle runenv
 
-runRelay :: RunProto -> RelayHandle -> RelayHandle -> IO (Maybe ExitCode)
+runRelay :: RunProto IO -> RelayHandle -> RelayHandle -> IO (Maybe ExitCode)
 runRelay runner (RelayHandle hout) (RelayHandle hin) = bracket setup cleanup go
   where
 	setup = do
@@ -117,7 +121,7 @@ runRelay runner (RelayHandle hout) (RelayHandle hin) = bracket setup cleanup go
 	
 	go v = relayHelper runner v hin
 
-runRelayService :: RunEnv -> RunProto -> Service -> IO (Maybe ())
+runRelayService :: RunEnv -> RunProto IO -> Service -> IO (Maybe ())
 runRelayService runenv runner service = bracket setup cleanup go
   where
 	cmd = case service of
@@ -155,7 +159,7 @@ runRelayService runenv runner service = bracket setup cleanup go
 	waitexit v pid = putMVar v . RelayDone =<< waitForProcess pid
 
 -- Processes RelayData as it is put into the MVar.
-relayHelper :: RunProto -> MVar RelayData -> Handle -> IO (Maybe ExitCode)
+relayHelper :: RunProto IO -> MVar RelayData -> Handle -> IO (Maybe ExitCode)
 relayHelper runner v hin = loop
   where
 	loop = do
@@ -176,7 +180,7 @@ relayHelper runner v hin = loop
 
 -- Takes input from the peer, and puts it into the MVar for processing.
 -- Repeats until the peer tells it it's done or hangs up.
-relayFeeder :: RunProto -> MVar RelayData -> IO ()
+relayFeeder :: RunProto IO -> MVar RelayData -> IO ()
 relayFeeder runner v = loop
   where
 	loop = do
