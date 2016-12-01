@@ -1,4 +1,4 @@
-{- P2P protocol, partial IO implementation
+{- P2P protocol, IO implementation
  -
  - Copyright 2016 Joey Hess <id@joeyh.name>
  -
@@ -9,8 +9,8 @@
 
 module P2P.IO
 	( RunEnv(..)
-	, runNetProtoHandle
-	, runNetHandle
+	, runNetProto
+	, runNet
 	) where
 
 import P2P.Protocol
@@ -42,21 +42,25 @@ data RunEnv = RunEnv
 	, runOhdl :: Handle
 	}
 
--- Interpreter of Proto that communicates with a peer over a Handle.
+-- Purposefully incomplete interpreter of Proto.
 --
--- No Local actions will be run; if the interpreter reaches any,
+-- This only runs Net actions. No Local actions will be run
+-- (those need the Annex monad) -- if the interpreter reaches any,
 -- it returns Nothing.
-runNetProtoHandle :: (MonadIO m, MonadMask m) => RunEnv -> Proto a -> m (Maybe a)
-runNetProtoHandle runenv = go
+runNetProto :: RunEnv -> Proto a -> IO (Maybe a)
+runNetProto runenv = go
   where
-	go :: RunProto m
+	go :: RunProto IO
 	go (Pure v) = pure (Just v)
-	go (Free (Net n)) = runNetHandle runenv go n
+	go (Free (Net n)) = runNet runenv go n
 	go (Free (Local _)) = return Nothing
 
--- Interprater of Net that communicates with a peer over a Handle.
-runNetHandle :: (MonadIO m, MonadMask m) => RunEnv -> RunProto m -> NetF (Proto a) -> m (Maybe a)
-runNetHandle runenv runner f = case f of
+-- Interprater of the Net part of Proto.
+--
+-- An interpreter of Proto has to be provided, to handle the rest of Proto
+-- actions.
+runNet :: (MonadIO m, MonadMask m) => RunEnv -> RunProto m -> NetF (Proto a) -> m (Maybe a)
+runNet runenv runner f = case f of
 	SendMessage m next -> do
 		v <- liftIO $ tryIO $ do
 			hPutStrLn (runOhdl runenv) (unwords (formatMessage m))
@@ -101,10 +105,9 @@ runNetHandle runenv runner f = case f of
 			Just () -> runner next
   where
 	-- This is only used for running Net actions when relaying,
-	-- so it's ok to use runNetProtoHandle, despite it not supporting
+	-- so it's ok to use runNetProto, despite it not supporting
 	-- all Proto actions.
-	runnerio :: RunProto IO
-	runnerio = runNetProtoHandle runenv
+	runnerio = runNetProto runenv
 
 runRelay :: RunProto IO -> RelayHandle -> RelayHandle -> IO (Maybe ExitCode)
 runRelay runner (RelayHandle hout) (RelayHandle hin) = bracket setup cleanup go

@@ -174,38 +174,6 @@ type Local = Free LocalF
 $(makeFree ''NetF)
 $(makeFree ''LocalF)
 
--- | Running Proto actions purely, to see what they do.
-runPure :: Show r => Proto r -> [Message] -> [(String, Maybe Message)]
-runPure (Pure r) _ = [("result: " ++ show r, Nothing)]
-runPure (Free (Net n)) ms = runNet n ms
-runPure (Free (Local n)) ms = runLocal n ms
-
-runNet :: Show r => NetF (Proto r) -> [Message] -> [(String, Maybe Message)]
-runNet (SendMessage m next) ms = (">",  Just m):runPure next ms
-runNet (ReceiveMessage _) [] = [("not enough Messages provided", Nothing)]
-runNet (ReceiveMessage next) (m:ms) = ("<", Just m):runPure (next m) ms
-runNet (SendBytes _ _ next) ms = ("> bytes", Nothing):runPure next ms
-runNet (ReceiveBytes _ next) ms = ("< bytes", Nothing):runPure (next L.empty) ms
-runNet (CheckAuthToken _ _ next) ms = runPure (next True) ms
-runNet (Relay _ _ next) ms = runPure (next ExitSuccess) ms
-runNet (RelayService _ next) ms = runPure next ms
-
-runLocal :: Show r => LocalF (Proto r) -> [Message] -> [(String, Maybe Message)]
-runLocal (KeyFileSize _ next) ms = runPure (next (Len 100)) ms
-runLocal (ReadKeyFile _ _ next) ms = runPure (next L.empty) ms
-runLocal (WriteKeyFile _ _ _ _ next) ms = runPure (next True) ms
-runLocal (SetPresent _ _ next) ms = runPure next ms
-runLocal (CheckContentPresent _ next) ms = runPure (next False) ms
-runLocal (RemoveKeyFile _ next) ms = runPure (next True) ms
-runLocal (TryLockContent _ p next) ms = runPure (p True >> next) ms
-
-protoDump :: [(String, Maybe Message)] -> String
-protoDump = unlines . map protoDump'
-
-protoDump' :: (String, Maybe Message) -> String
-protoDump' (s, Nothing) = s
-protoDump' (s, Just m) = s ++ " " ++ unwords (Proto.formatMessage m)
-
 auth :: UUID -> AuthToken -> Proto (Maybe UUID)
 auth myuuid t = do
 	net $ sendMessage (AUTH myuuid t)

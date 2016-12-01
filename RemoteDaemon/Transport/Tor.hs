@@ -84,5 +84,5 @@ serveClient th u r q = bracket setup cleanup go
 			, runIhdl = h
 			, runOhdl = h
 			}
-		void $ runNetProtoHandle runenv (serve u)
+		void $ runNetProto runenv (serve u)
 		debugM "remotedaemon" "done with TOR connection"

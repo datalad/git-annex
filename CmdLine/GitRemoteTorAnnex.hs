@@ -66,7 +66,7 @@ connectService address port service = do
 			, runIhdl = h
 			, runOhdl = h
 			}
-		runNetProtoHandle runenv $ do
+		liftIO $ runNetProto runenv $ do
 			v <- auth myuuid authtoken
 			case v of
 				Just _theiruuid -> connect service stdin stdout
