@@ -174,7 +174,9 @@ data LocalF c
 	-- May fail if not enough copies to safely drop, etc.
 	| TryLockContent Key (Bool -> Proto ()) c
 	-- ^ Try to lock the content of a key,  preventing it
-	-- from being deleted, and run the provided protocol action.
+	-- from being deleted, while running the provided protocol
+	-- action. If unable to lock the content, runs the protocol action
+	-- with False.
 	deriving (Functor)
 
 type Local = Free LocalF
@@ -291,7 +293,7 @@ serve myuuid = go Nothing
 					when ok $
 						local $ setPresent key myuuid
 		-- setPresent not called because the peer may have
-		-- requested the data but not permanatly stored it.
+		-- requested the data but not permanently stored it.
 		GET offset key -> void $ sendContent key offset
 		CONNECT service -> net $ relayService service
 		_ -> net $ sendMessage (ERROR "unexpected command")
