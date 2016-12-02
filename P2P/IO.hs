@@ -5,10 +5,11 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE RankNTypes, ScopedTypeVariables, FlexibleContexts, CPP #-}
+{-# LANGUAGE RankNTypes, FlexibleContexts, BangPatterns, CPP #-}
 
 module P2P.IO
-	( RunEnv(..)
+	( RunProto
+	, RunEnv(..)
 	, runNetProto
 	, runNet
 	) where
@@ -55,7 +56,7 @@ runNetProto runenv = go
 	go (Free (Net n)) = runNet runenv go n
 	go (Free (Local _)) = return Nothing
 
--- Interprater of the Net part of Proto.
+-- Interpreter of the Net part of Proto.
 --
 -- An interpreter of Proto has to be provided, to handle the rest of Proto
 -- actions.
@@ -78,13 +79,14 @@ runNet runenv runner f = case f of
 					let e = ERROR $ "protocol parse error: " ++ show l
 					net $ sendMessage e
 					next e
-	SendBytes _len b next -> do
+	SendBytes len b next -> do
 		v <- liftIO $ tryIO $ do
-			L.hPut (runOhdl runenv) b
+			ok <- sendExactly len b (runOhdl runenv)
 			hFlush (runOhdl runenv)
+			return ok
 		case v of
-			Left _e -> return Nothing
-			Right () -> runner next
+			Right True -> runner next
+			_ -> return Nothing
 	ReceiveBytes (Len n) next -> do
 		v <- liftIO $ tryIO $ L.hGet (runIhdl runenv) (fromIntegral n)
 		case v of
@@ -108,6 +110,30 @@ runNet runenv runner f = case f of
 	-- so it's ok to use runNetProto, despite it not supporting
 	-- all Proto actions.
 	runnerio = runNetProto runenv
+
+-- Send exactly the specified number of bytes or returns False.
+--
+-- The ByteString can be larger or smaller than the specified length.
+-- For example, it can be lazily streaming from a file that gets
+-- appended to, or truncated.
+--
+-- Must avoid sending too many bytes as it would confuse the other end.
+-- This is easily dealt with by truncating it.
+--
+-- If too few bytes are sent, the only option is to give up on this
+-- connection. False is returned to indicate this problem.
+--
+-- We can't check the length of the whole lazy bytestring without buffering
+-- it in memory. Instead, process it one chunk at a time, and sum the length
+-- of the chunks.
+sendExactly :: Len -> L.ByteString -> Handle -> IO Bool
+sendExactly (Len l) lb h = go 0 $ L.toChunks $ L.take (fromIntegral l) lb
+  where
+	go n [] = return (toInteger n == l)
+	go n (b:bs) = do
+		B.hPut h b
+		let !n' = n + B.length b
+		go n' bs
 
 runRelay :: RunProto IO -> RelayHandle -> RelayHandle -> IO (Maybe ExitCode)
 runRelay runner (RelayHandle hout) (RelayHandle hin) = bracket setup cleanup go
