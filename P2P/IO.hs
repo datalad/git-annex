@@ -63,14 +63,14 @@ runNetProto runenv = go
 runNet :: (MonadIO m, MonadMask m) => RunEnv -> RunProto m -> NetF (Proto a) -> m (Maybe a)
 runNet runenv runner f = case f of
 	SendMessage m next -> do
-		v <- liftIO $ tryIO $ do
+		v <- liftIO $ tryNonAsync $ do
 			hPutStrLn (runOhdl runenv) (unwords (formatMessage m))
 			hFlush (runOhdl runenv)
 		case v of
 			Left _e -> return Nothing
 			Right () -> runner next
 	ReceiveMessage next -> do
-		v <- liftIO $ tryIO $ hGetLine (runIhdl runenv)
+		v <- liftIO $ tryNonAsync $ hGetLine (runIhdl runenv)
 		case v of
 			Left _e -> return Nothing
 			Right l -> case parseMessage l of
@@ -80,7 +80,7 @@ runNet runenv runner f = case f of
 					net $ sendMessage e
 					next e
 	SendBytes len b next -> do
-		v <- liftIO $ tryIO $ do
+		v <- liftIO $ tryNonAsync $ do
 			ok <- sendExactly len b (runOhdl runenv)
 			hFlush (runOhdl runenv)
 			return ok
@@ -88,7 +88,7 @@ runNet runenv runner f = case f of
 			Right True -> runner next
 			_ -> return Nothing
 	ReceiveBytes (Len n) next -> do
-		v <- liftIO $ tryIO $ L.hGet (runIhdl runenv) (fromIntegral n)
+		v <- liftIO $ tryNonAsync $ L.hGet (runIhdl runenv) (fromIntegral n)
 		case v of
 			Left _e -> return Nothing
 			Right b -> runner (next b)
