@@ -5,7 +5,9 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE DeriveFunctor, TemplateHaskell, FlexibleContexts, RankNTypes #-}
+{-# LANGUAGE DeriveFunctor, TemplateHaskell, FlexibleContexts #-}
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances, RankNTypes #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module P2P.Protocol where
 
@@ -15,14 +17,17 @@ import Types.UUID
 import Utility.AuthToken
 import Utility.Applicative
 import Utility.PartialPrelude
+import Git.FilePath
 
 import Control.Monad
 import Control.Monad.Free
 import Control.Monad.Free.TH
 import Control.Monad.Catch
+import System.FilePath
 import System.Exit (ExitCode(..))
 import System.IO
 import qualified Data.ByteString.Lazy as L
+import Data.Char
 
 newtype Offset = Offset Integer
 	deriving (Show)
@@ -46,8 +51,8 @@ data Message
 	| LOCKCONTENT Key
 	| UNLOCKCONTENT
 	| REMOVE Key
-	| GET Offset Key
-	| PUT Key
+	| GET Offset AssociatedFile Key
+	| PUT AssociatedFile Key
 	| PUT_FROM Offset
 	| ALREADY_HAVE
 	| SUCCESS
@@ -66,8 +71,8 @@ instance Proto.Sendable Message where
 	formatMessage (LOCKCONTENT key) = ["LOCKCONTENT", Proto.serialize key]
 	formatMessage UNLOCKCONTENT = ["UNLOCKCONTENT"]
 	formatMessage (REMOVE key) = ["REMOVE", Proto.serialize key]
-	formatMessage (GET offset key) = ["GET", Proto.serialize offset, Proto.serialize key]
-	formatMessage (PUT key) = ["PUT", Proto.serialize key]
+	formatMessage (GET offset af key) = ["GET", Proto.serialize offset, Proto.serialize af, Proto.serialize key]
+	formatMessage (PUT af key) = ["PUT", Proto.serialize af, Proto.serialize key]
 	formatMessage (PUT_FROM offset) = ["PUT-FROM", Proto.serialize offset]
 	formatMessage ALREADY_HAVE = ["ALREADY-HAVE"]
 	formatMessage SUCCESS = ["SUCCESS"]
@@ -85,8 +90,8 @@ instance Proto.Receivable Message where
 	parseCommand "LOCKCONTENT" = Proto.parse1 LOCKCONTENT
 	parseCommand "UNLOCKCONTENT" = Proto.parse0 UNLOCKCONTENT
 	parseCommand "REMOVE" = Proto.parse1 REMOVE
-	parseCommand "GET" = Proto.parse2 GET
-	parseCommand "PUT" = Proto.parse1 PUT
+	parseCommand "GET" = Proto.parse3 GET
+	parseCommand "PUT" = Proto.parse2 PUT
 	parseCommand "PUT-FROM" = Proto.parse1 PUT_FROM
 	parseCommand "ALREADY-HAVE" = Proto.parse0 ALREADY_HAVE
 	parseCommand "SUCCESS" = Proto.parse0 SUCCESS
@@ -109,6 +114,38 @@ instance Proto.Serializable Service where
 	deserialize "git-upload-pack" = Just UploadPack
 	deserialize "git-receive-pack" = Just ReceivePack
 	deserialize _ = Nothing
+
+-- | Since AssociatedFile is not the last thing in a protocol line,
+-- its serialization cannot contain any whitespace. This is handled
+-- by replacing whitespace with '%' (and '%' with '%%')
+--
+-- When deserializing an AssociatedFile from a peer, it's sanitized,
+-- to avoid any unusual characters that might cause problems when it's
+-- displayed to the user.
+--
+-- These mungings are ok, because an AssociatedFile is only ever displayed
+-- to the user and does not need to match a file on disk.
+instance Proto.Serializable AssociatedFile where
+	serialize Nothing = ""
+	serialize (Just af) = toInternalGitPath $ concatMap esc af
+	  where
+		esc '%' = "%%"
+		esc c 
+			| isSpace c = "%"
+			| otherwise = [c]
+	
+	deserialize s = case fromInternalGitPath $ deesc [] s of
+		[] -> Just Nothing
+		f
+			| isRelative f -> Just (Just f)
+			| otherwise -> Nothing
+	  where
+	  	deesc b [] = reverse b
+		deesc b ('%':'%':cs) = deesc ('%':b) cs
+		deesc b ('%':cs) = deesc ('_':b) cs
+		deesc b (c:cs)
+			| isControl c = deesc ('_':b) cs
+			| otherwise = deesc (c:b) cs
 
 -- | Free monad for the protocol, combining net communication,
 -- and local actions.
@@ -155,10 +192,10 @@ data LocalF c
 	| ContentSize Key (Maybe Len -> c)
 	-- ^ Gets size of the content of a key, when the full content is
 	-- present.
-	| ReadContent Key Offset (L.ByteString -> c)
+	| ReadContent Key AssociatedFile Offset (L.ByteString -> c)
 	-- ^ Lazily reads the content of a key. Note that the content
 	-- may change while it's being sent.
-	| WriteContent Key Offset Len L.ByteString (Bool -> c)
+	| WriteContent Key AssociatedFile Offset Len L.ByteString (Bool -> c)
 	-- ^ Writes content to temp file starting at an offset.
 	-- Once the whole content of the key has been stored, moves the
 	-- temp file into place and returns True.
@@ -226,15 +263,15 @@ remove key = do
 	net $ sendMessage (REMOVE key)
 	checkSuccess
 
-get :: Key -> Proto Bool
-get key = receiveContent key (`GET` key)
+get :: Key -> AssociatedFile -> Proto Bool
+get key af = receiveContent key af (\offset -> GET offset af key)
 
-put :: Key -> Proto Bool
-put key = do
-	net $ sendMessage (PUT key)
+put :: Key -> AssociatedFile -> Proto Bool
+put key af = do
+	net $ sendMessage (PUT af key)
 	r <- net receiveMessage
 	case r of
-		PUT_FROM offset -> sendContent key offset
+		PUT_FROM offset -> sendContent key af offset
 		ALREADY_HAVE -> return True
 		_ -> do
 			net $ sendMessage (ERROR "expected PUT_FROM")
@@ -307,17 +344,17 @@ serveAuthed myuuid = void $ serverLoop handler
 	handler (REMOVE key) = do
 		sendSuccess =<< local (removeContent key)
 		return ServerContinue
-	handler (PUT key) = do
+	handler (PUT af key) = do
 		have <- local $ checkContentPresent key
 		if have
 			then net $ sendMessage ALREADY_HAVE
 			else do
-				ok <- receiveContent key PUT_FROM
+				ok <- receiveContent key af PUT_FROM
 				when ok $
 					local $ setPresent key myuuid
 		return ServerContinue
-	handler (GET offset key) = do
-		void $ sendContent key offset
+	handler (GET offset key af) = do
+		void $ sendContent af key offset
 		-- setPresent not called because the peer may have
 		-- requested the data but not permanently stored it.
 		return ServerContinue
@@ -326,22 +363,22 @@ serveAuthed myuuid = void $ serverLoop handler
 		return ServerContinue
 	handler _ = return ServerUnexpected
 
-sendContent :: Key -> Offset -> Proto Bool
-sendContent key offset = do
-	(len, content) <- readContentLen key offset
+sendContent :: Key -> AssociatedFile -> Offset -> Proto Bool
+sendContent key af offset = do
+	(len, content) <- readContentLen key af offset
 	net $ sendMessage (DATA len)
 	net $ sendBytes len content
 	checkSuccess
 
-receiveContent :: Key -> (Offset -> Message) -> Proto Bool
-receiveContent key mkmsg = do
+receiveContent :: Key -> AssociatedFile -> (Offset -> Message) -> Proto Bool
+receiveContent key af mkmsg = do
 	Len n <- local $ tmpContentSize key
 	let offset = Offset n
 	net $ sendMessage (mkmsg offset)
 	r <- net receiveMessage
 	case r of
 		DATA len -> do
-			ok <- local . writeContent key offset len
+			ok <- local . writeContent key af offset len
 				=<< net (receiveBytes len)
 			sendSuccess ok
 			return ok
@@ -366,8 +403,8 @@ sendSuccess False = net $ sendMessage FAILURE
 -- Reads content from an offset. The Len should correspond to
 -- the length of the ByteString, but to avoid buffering the content
 -- in memory, is gotten using contentSize.
-readContentLen :: Key -> Offset -> Proto (Len, L.ByteString)
-readContentLen key (Offset offset) = go =<< local (contentSize key)
+readContentLen :: Key -> AssociatedFile -> Offset -> Proto (Len, L.ByteString)
+readContentLen key af (Offset offset) = go =<< local (contentSize key)
   where
 	go Nothing = return (Len 0, L.empty)
 	go (Just (Len totallen)) = do
@@ -375,7 +412,8 @@ readContentLen key (Offset offset) = go =<< local (contentSize key)
 		if len <= 0
 			then return (Len 0, L.empty)
 			else do
-				content <- local $ readContent key (Offset offset)
+				content <- local $
+					readContent key af (Offset offset)
 				return (Len len, content)
 
 connect :: Service -> Handle -> Handle -> Proto ExitCode

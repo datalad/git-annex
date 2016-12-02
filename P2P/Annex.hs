@@ -15,6 +15,8 @@ module P2P.Annex
 
 import Annex.Common
 import Annex.Content
+import Annex.Transfer
+import Annex.Notification
 import P2P.Protocol
 import P2P.IO
 import Logs.Location
@@ -48,8 +50,8 @@ runLocal runmode runner a = case a of
 		let getsize = liftIO . catchMaybeIO . getFileSize
 		size <- inAnnex' isJust Nothing getsize k
 		runner (next (Len <$> size))
-	-- TODO transfer logs
-	ReadContent k (Offset o) next -> do
+	-- TODO transfer log not updated
+	ReadContent k af (Offset o) next -> do
 		v <- tryNonAsync $ prepSendAnnex k
 		case v of
 			-- The check can detect a problem after the
@@ -57,25 +59,26 @@ runLocal runmode runner a = case a of
 			-- Instead, the receiving peer must AlwaysVerify
 			-- the content it receives.
 			Right (Just (f, _check)) -> do
-				v' <- liftIO $ tryNonAsync $ do
-					h <- openBinaryFile f ReadMode
-					when (o /= 0) $
-						hSeek h AbsoluteSeek o
-					L.hGetContents h
+				v' <- tryNonAsync $ -- transfer upload k af $
+					liftIO $ do
+						h <- openBinaryFile f ReadMode
+						when (o /= 0) $
+							hSeek h AbsoluteSeek o
+						L.hGetContents h
 				case v' of
 					Left _ -> return Nothing
 					Right b -> runner (next b)
 			_ -> return Nothing
-	-- TODO transfer logs
-	WriteContent k (Offset o) (Len l) b next -> do
+	WriteContent k af (Offset o) (Len l) b next -> do
 		ok <- flip catchNonAsync (const $ return False) $
-			getViaTmp AlwaysVerify k $ \tmp -> liftIO $ do
-				withBinaryFile tmp WriteMode $ \h -> do
-					when (o /= 0) $
-						hSeek h AbsoluteSeek o
-					L.hPut h b
-				sz <- getFileSize tmp
-				return (toInteger sz == l, UnVerified)
+			transfer download k af $
+				getViaTmp AlwaysVerify k $ \tmp -> liftIO $ do
+					withBinaryFile tmp WriteMode $ \h -> do
+						when (o /= 0) $
+							hSeek h AbsoluteSeek o
+						L.hPut h b
+					sz <- getFileSize tmp
+					return (toInteger sz == l, UnVerified)
 		runner (next ok)
 	SetPresent k u next -> do
 		v <- tryNonAsync $ logChange k u InfoPresent
@@ -107,3 +110,11 @@ runLocal runmode runner a = case a of
 				protoaction False
 				next
 			Right _ -> runner next
+  where
+	transfer mk k af a = case runmode of
+		-- Update transfer logs when serving.
+		Serving theiruuid -> 
+			mk theiruuid k af noRetry (const a) noNotification
+		-- Transfer logs are updated higher in the stack when
+		-- a client.
+		Client -> a
