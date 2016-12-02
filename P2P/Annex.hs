@@ -8,7 +8,8 @@
 {-# LANGUAGE RankNTypes, FlexibleContexts #-}
 
 module P2P.Annex
-	( RunEnv(..)
+	( RunMode(..)
+	, RunEnv(..)
 	, runFullProto
 	) where
 
@@ -22,17 +23,23 @@ import Types.NumCopies
 import Control.Monad.Free
 import qualified Data.ByteString.Lazy as L
 
+-- When we're serving a peer, we know their uuid, and can use it to update
+-- transfer logs.
+data RunMode
+	= Serving UUID
+	| Client
+
 -- Full interpreter for Proto, that can receive and send objects.
-runFullProto :: RunEnv -> Proto a -> Annex (Maybe a)
-runFullProto runenv = go
+runFullProto :: RunMode -> RunEnv -> Proto a -> Annex (Maybe a)
+runFullProto runmode runenv = go
   where
 	go :: RunProto Annex
 	go (Pure v) = pure (Just v)
 	go (Free (Net n)) = runNet runenv go n
-	go (Free (Local l)) = runLocal go l
+	go (Free (Local l)) = runLocal runmode go l
 
-runLocal :: RunProto Annex -> LocalF (Proto a) -> Annex (Maybe a)
-runLocal runner a = case a of
+runLocal :: RunMode -> RunProto Annex -> LocalF (Proto a) -> Annex (Maybe a)
+runLocal runmode runner a = case a of
 	TmpContentSize k next -> do
 		tmp <- fromRepo $ gitAnnexTmpObjectLocation k
 		size <- liftIO $ catchDefaultIO 0 $ getFileSize tmp

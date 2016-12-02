@@ -240,63 +240,91 @@ put key = do
 			net $ sendMessage (ERROR "expected PUT_FROM")
 			return False
 
--- | Serve the protocol.
---
--- Note that if the client sends an unexpected message, the server will
--- respond with PTOTO_ERROR, and always continues processing messages.
--- Since the protocol is not versioned, this is necessary to handle
--- protocol changes robustly, since the client can detect when it's
--- talking to a server that does not support some new feature, and fall
--- back.
---
--- When the client sends ERROR to the server, the server gives up,
--- since it's not clear what state the client is is, and so not possible to
--- recover.
-serve :: UUID -> Proto ()
-serve myuuid = go Nothing
+data ServerHandler a
+	= ServerGot a
+	| ServerContinue
+	| ServerUnexpected
+
+-- Server loop, getting messages from the client and handling them
+serverLoop :: (Message -> Proto (ServerHandler a)) -> Proto (Maybe a)
+serverLoop a = do
+	cmd <- net receiveMessage
+	case cmd of
+		-- When the client sends ERROR to the server, the server
+		-- gives up, since it's not clear what state the client
+		-- is in, and so not possible to recover.
+		ERROR _ -> return Nothing
+		_ -> do
+			v <- a cmd
+			case v of
+				ServerGot r -> return (Just r)
+				ServerContinue -> serverLoop a
+				-- If the client sends an unexpected message,
+				-- the server will respond with ERROR, and
+				-- always continues processing messages.
+				--
+				-- Since the protocol is not versioned, this
+				-- is necessary to handle protocol changes
+				-- robustly, since the client can detect when
+				-- it's talking to a server that does not
+				-- support some new feature, and fall back.
+				ServerUnexpected -> do
+					net $ sendMessage (ERROR "unexpected command")
+					serverLoop a
+
+-- | Serve the protocol, with an unauthenticated peer. Once the peer
+-- successfully authenticates, returns their UUID.
+serveAuth :: UUID -> Proto (Maybe UUID)
+serveAuth myuuid = serverLoop handler
   where
-	go autheduuid = do
-		r <- net receiveMessage
-		case r of
-			AUTH theiruuid authtoken -> do
-				ok <- net $ checkAuthToken theiruuid authtoken
-				if ok
-					then do
-						net $ sendMessage (AUTH_SUCCESS myuuid)
-						go (Just theiruuid)
-					else do
-						net $ sendMessage AUTH_FAILURE
-						go autheduuid
-			ERROR _ -> return ()
-			_ -> do
-				case autheduuid of
-					Just theiruuid -> authed theiruuid r
-					Nothing -> net $ sendMessage (ERROR "must AUTH first")
-				go autheduuid
-	
-	authed _theiruuid r = case r of
-		LOCKCONTENT key -> local $ tryLockContent key $ \locked -> do
+	handler (AUTH theiruuid authtoken) = do
+		ok <- net $ checkAuthToken theiruuid authtoken
+		if ok
+			then do
+				net $ sendMessage (AUTH_SUCCESS myuuid)
+				return (ServerGot theiruuid)
+			else do
+				net $ sendMessage AUTH_FAILURE
+				return ServerContinue
+	handler _ = return ServerUnexpected
+
+-- | Serve the protocol, with a peer that has authenticated.
+serveAuthed :: UUID -> Proto ()
+serveAuthed myuuid = void $ serverLoop handler
+  where
+	handler (LOCKCONTENT key) = do
+		local $ tryLockContent key $ \locked -> do
 			sendSuccess locked
 			when locked $ do
 				r' <- net receiveMessage
 				case r' of
 					UNLOCKCONTENT -> return ()
 					_ -> net $ sendMessage (ERROR "expected UNLOCKCONTENT")
-		CHECKPRESENT key -> sendSuccess =<< local (checkContentPresent key)
-		REMOVE key ->  sendSuccess =<< local (removeContent key)
-		PUT key -> do
-			have <- local $ checkContentPresent key
-			if have
-				then net $ sendMessage ALREADY_HAVE
-				else do
-					ok <- receiveContent key PUT_FROM
-					when ok $
-						local $ setPresent key myuuid
+		return ServerContinue
+	handler (CHECKPRESENT key) = do
+		sendSuccess =<< local (checkContentPresent key)
+		return ServerContinue
+	handler (REMOVE key) = do
+		sendSuccess =<< local (removeContent key)
+		return ServerContinue
+	handler (PUT key) = do
+		have <- local $ checkContentPresent key
+		if have
+			then net $ sendMessage ALREADY_HAVE
+			else do
+				ok <- receiveContent key PUT_FROM
+				when ok $
+					local $ setPresent key myuuid
+		return ServerContinue
+	handler (GET offset key) = do
+		void $ sendContent key offset
 		-- setPresent not called because the peer may have
 		-- requested the data but not permanently stored it.
-		GET offset key -> void $ sendContent key offset
-		CONNECT service -> net $ relayService service
-		_ -> net $ sendMessage (ERROR "unexpected command")
+		return ServerContinue
+	handler (CONNECT service) = do
+		net $ relayService service
+		return ServerContinue
+	handler _ = return ServerUnexpected
 
 sendContent :: Key -> Offset -> Proto Bool
 sendContent key offset = do

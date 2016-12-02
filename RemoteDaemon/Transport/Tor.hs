@@ -17,6 +17,7 @@ import Utility.FileMode
 import Utility.AuthToken
 import Remote.Helper.Tor
 import P2P.Protocol
+import P2P.IO
 import P2P.Annex
 import P2P.Auth
 import Annex.UUID
@@ -90,7 +91,12 @@ serveClient th u r q = bracket setup cleanup go
 				, runIhdl = h
 				, runOhdl = h
 				}
-			void $ runFullProto runenv (serve u)
+			v <- liftIO $ runNetProto runenv $ serveAuth u
+			case v of
+				Just (Just theiruuid) -> void $ 
+					runFullProto (Serving theiruuid) runenv $
+						serveAuthed u
+				_ -> return ()
 		-- Merge the duplicated state back in.
 		liftAnnex th $ mergeState st'
 		debugM "remotedaemon" "done with TOR connection"
