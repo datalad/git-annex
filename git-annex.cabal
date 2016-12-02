@@ -908,6 +908,7 @@ Executable git-annex
     Messages.JSON
     Messages.Progress
     P2P.Address
+    P2P.Annex
     P2P.Auth
     P2P.IO
     P2P.Protocol

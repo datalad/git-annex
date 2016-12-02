@@ -8,6 +8,8 @@
 module RemoteDaemon.Transport.Tor (server) where
 
 import Common
+import qualified Annex
+import Annex.Concurrent
 import RemoteDaemon.Types
 import RemoteDaemon.Common
 import Utility.Tor
@@ -15,7 +17,7 @@ import Utility.FileMode
 import Utility.AuthToken
 import Remote.Helper.Tor
 import P2P.Protocol
-import P2P.IO
+import P2P.Annex
 import P2P.Auth
 import Annex.UUID
 import Types.UUID
@@ -75,14 +77,20 @@ serveClient th u r q = bracket setup cleanup go
 	cleanup = hClose
 	go h = do
 		debugM "remotedaemon" "serving a TOR connection"
-		-- Load auth tokens for every connection, to notice
-		-- when the allowed set is changed.
-		allowed <- liftAnnex th loadP2PAuthTokens
-		let runenv = RunEnv
-			{ runRepo = r
-			, runCheckAuth = (`isAllowedAuthToken` allowed)
-			, runIhdl = h
-			, runOhdl = h
-			}
-		void $ runNetProto runenv (serve u)
+		-- Avoid doing any work in the liftAnnex, since only one
+		-- can run at a time.
+		st <- liftAnnex th dupState
+		((), st') <- Annex.run st $ do
+			-- Load auth tokens for every connection, to notice
+			-- when the allowed set is changed.
+			allowed <- loadP2PAuthTokens
+			let runenv = RunEnv
+				{ runRepo = r
+				, runCheckAuth = (`isAllowedAuthToken` allowed)
+				, runIhdl = h
+				, runOhdl = h
+				}
+			void $ runFullProto runenv (serve u)
+		-- Merge the duplicated state back in.
+		liftAnnex th $ mergeState st'
 		debugM "remotedaemon" "done with TOR connection"
