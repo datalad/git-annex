@@ -127,7 +127,12 @@ data NetF c
 	= SendMessage Message c
 	| ReceiveMessage (Message -> c)
 	| SendBytes Len L.ByteString c
+	-- ^ Sends exactly Len bytes of data. (Any more or less will
+	-- confuse the receiver.)
 	| ReceiveBytes Len (L.ByteString -> c)
+	-- ^ Lazily reads bytes from peer. Stops once Len are read,
+	-- or if connection is lost, and in either case returns the bytes
+	-- that were read. This allows resuming interrupted transfers.
 	| CheckAuthToken UUID AuthToken (Bool -> c)
 	| RelayService Service c
 	-- ^ Runs a service, relays its output to the peer, and data
@@ -144,24 +149,28 @@ type Net = Free NetF
 newtype RelayHandle = RelayHandle Handle
 
 data LocalF c
-	-- ^ Lazily reads bytes from peer. Stops once Len are read,
-	-- or if connection is lost, and in either case returns the bytes
-	-- that were read. This allows resuming interrupted transfers.
-	= KeyFileSize Key (Len -> c)
-	-- ^ Checks size of key file (dne = 0)
-	| ReadKeyFile Key Offset (L.ByteString -> c)
-	| WriteKeyFile Key Offset Len L.ByteString (Bool -> c)
-	-- ^ Writes to key file starting at an offset. Returns True
-	-- once the whole content of the key is stored in the key file.
+	= TmpContentSize Key (Len -> c)
+	-- ^ Gets size of the temp file where received content may have
+	-- been stored. If not present, returns 0.
+	| ContentSize Key (Maybe Len -> c)
+	-- ^ Gets size of the content of a key, when the full content is
+	-- present.
+	| ReadContent Key Offset (L.ByteString -> c)
+	-- ^ Lazily reads the content of a key. Note that the content
+	-- may change while it's being sent.
+	| WriteContent Key Offset Len L.ByteString (Bool -> c)
+	-- ^ Writes content to temp file starting at an offset.
+	-- Once the whole content of the key has been stored, moves the
+	-- temp file into place and returns True.
 	--
 	-- Note: The ByteString may not contain the entire remaining content
-	-- of the key. Only once the key file size == Len has the whole
+	-- of the key. Only once the temp file size == Len has the whole
 	-- content been transferred.
 	| SetPresent Key UUID c
 	| CheckContentPresent Key (Bool -> c)
 	-- ^ Checks if the whole content of the key is locally present.
-	| RemoveKeyFile Key (Bool -> c)
-	-- ^ If the key file is not present, still succeeds.
+	| RemoveContent Key (Bool -> c)
+	-- ^ If the content is not present, still succeeds.
 	-- May fail if not enough copies to safely drop, etc.
 	| TryLockContent Key (Bool -> Proto ()) c
 	-- ^ Try to lock the content of a key,  preventing it
@@ -272,7 +281,7 @@ serve myuuid = go Nothing
 					UNLOCKCONTENT -> return ()
 					_ -> net $ sendMessage (ERROR "expected UNLOCKCONTENT")
 		CHECKPRESENT key -> sendSuccess =<< local (checkContentPresent key)
-		REMOVE key ->  sendSuccess =<< local (removeKeyFile key)
+		REMOVE key ->  sendSuccess =<< local (removeContent key)
 		PUT key -> do
 			have <- local $ checkContentPresent key
 			if have
@@ -289,20 +298,20 @@ serve myuuid = go Nothing
 
 sendContent :: Key -> Offset -> Proto Bool
 sendContent key offset = do
-	(len, content) <- readKeyFileLen key offset
+	(len, content) <- readContentLen key offset
 	net $ sendMessage (DATA len)
 	net $ sendBytes len content
 	checkSuccess
 
 receiveContent :: Key -> (Offset -> Message) -> Proto Bool
 receiveContent key mkmsg = do
-	Len n <- local $ keyFileSize key
+	Len n <- local $ tmpContentSize key
 	let offset = Offset n
 	net $ sendMessage (mkmsg offset)
 	r <- net receiveMessage
 	case r of
 		DATA len -> do
-			ok <- local . writeKeyFile key offset len
+			ok <- local . writeContent key offset len
 				=<< net (receiveBytes len)
 			sendSuccess ok
 			return ok
@@ -324,18 +333,20 @@ sendSuccess :: Bool -> Proto ()
 sendSuccess True = net $ sendMessage SUCCESS
 sendSuccess False = net $ sendMessage FAILURE
 
--- Reads key file from an offset. The Len should correspond to
+-- Reads content from an offset. The Len should correspond to
 -- the length of the ByteString, but to avoid buffering the content
--- in memory, is gotten using keyFileSize.
-readKeyFileLen :: Key -> Offset -> Proto (Len, L.ByteString)
-readKeyFileLen key (Offset offset) = do
-	(Len totallen) <- local $ keyFileSize key
-	let len = totallen - offset
-	if len <= 0
-		then return (Len 0, L.empty)
-		else do
-			content <- local $ readKeyFile key (Offset offset)
-			return (Len len, content)
+-- in memory, is gotten using contentSize.
+readContentLen :: Key -> Offset -> Proto (Len, L.ByteString)
+readContentLen key (Offset offset) = go =<< local (contentSize key)
+  where
+	go Nothing = return (Len 0, L.empty)
+	go (Just (Len totallen)) = do
+		let len = totallen - offset
+		if len <= 0
+			then return (Len 0, L.empty)
+			else do
+				content <- local $ readContent key (Offset offset)
+				return (Len len, content)
 
 connect :: Service -> Handle -> Handle -> Proto ExitCode
 connect service hin hout = do
