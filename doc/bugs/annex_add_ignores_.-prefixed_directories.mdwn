@@ -72,3 +72,5 @@ Changes to be committed:
 """]]
 
 Ref: https://github.com/datalad/datalad/issues/1027
+
+[[!meta author=yoh]]
