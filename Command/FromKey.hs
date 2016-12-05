@@ -20,16 +20,18 @@ import Network.URI
 cmd :: Command
 cmd = notDirect $ notBareRepo $
 	command "fromkey" SectionPlumbing "adds a file using a specific key"
-		(paramPair paramKey paramPath)
+		(paramRepeating (paramPair paramKey paramPath))
 		(withParams seek)
 
 seek :: CmdParams -> CommandSeek
+seek [] = do
+	withNothing startMass []
 seek ps = do
 	force <- Annex.getState Annex.force
-	withWords (start force) ps
+	withPairs (start force) ps
 
-start :: Bool -> [String] -> CommandStart
-start force (keyname:file:[]) = do
+start :: Bool -> (String, FilePath) -> CommandStart
+start force (keyname, file) = do
 	let key = mkKey keyname
 	unless force $ do
 		inbackend <- inAnnex key
@@ -37,10 +39,11 @@ start force (keyname:file:[]) = do
 			"key ("++ keyname ++") is not present in backend (use --force to override this sanity check)"
 	showStart "fromkey" file
 	next $ perform key file
-start _ [] = do
+
+startMass :: CommandStart
+startMass = do
 	showStart "fromkey" "stdin"
 	next massAdd
-start _ _ = giveup "specify a key and a dest file"
 
 massAdd :: CommandPerform
 massAdd = go True =<< map (separate (== ' ')) . lines <$> liftIO getContents
