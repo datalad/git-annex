@@ -24,8 +24,7 @@ cmd = notDirect $ notBareRepo $
 		(withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek [] = do
-	withNothing startMass []
+seek [] = withNothing startMass []
 seek ps = do
 	force <- Annex.getState Annex.force
 	withPairs (start force) ps
