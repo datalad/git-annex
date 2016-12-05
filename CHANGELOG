@@ -11,6 +11,8 @@ git-annex (6.20161119) UNRELEASED; urgency=medium
   * rmurl: Multiple pairs of files and urls can be provided on the
     command line.
   * rmurl: Added --batch mode.
+  * fromkey: Accept multiple pairs of files and keys.
+    Thanks, Daniel Brooks.
 
  -- Joey Hess <id@joeyh.name>  Mon, 21 Nov 2016 11:27:50 -0400
 
