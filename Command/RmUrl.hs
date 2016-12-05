@@ -10,7 +10,6 @@ module Command.RmUrl where
 import Command
 import Logs.Web
 import qualified Remote
-import CmdLine.Batch
 
 cmd :: Command
 cmd = notBareRepo $

@@ -25,15 +25,39 @@ cmd = notDirect $
 	command "rekey" SectionPlumbing
 		"change keys used for files"
 		(paramRepeating $ paramPair paramPath paramKey)
-		(withParams seek)
+		(seek <$$> optParser)
 
-seek :: CmdParams -> CommandSeek
-seek = withPairs start
+data ReKeyOptions = ReKeyOptions
+	{ reKeyThese :: CmdParams
+	, batchOption :: BatchMode
+	}
 
-start :: (FilePath, String) -> CommandStart
-start (file, keyname) = ifAnnexed file go stop
+optParser :: CmdParamsDesc -> Parser ReKeyOptions
+optParser desc = ReKeyOptions
+	<$> cmdParams desc
+	<*> parseBatchOption
+
+-- Split on the last space, since a FilePath can contain whitespace,
+-- but a Key very rarely does.
+batchParser :: String -> Either String (FilePath, Key)
+batchParser s = case separate (== ' ') (reverse s) of
+	(rk, rf)
+		| null rk || null rf -> Left "Expected: \"file key\""
+		| otherwise -> case file2key (reverse rk) of
+			Nothing -> Left "bad key"
+			Just k -> Right (reverse rf, k)
+
+seek :: ReKeyOptions -> CommandSeek
+seek o = case batchOption o of
+	Batch -> batchInput batchParser (batchCommandAction . start)
+	NoBatch -> withPairs (start . parsekey) (reKeyThese o)
   where
-	newkey = fromMaybe (giveup "bad key") $ file2key keyname
+	parsekey (file, skey) =
+		(file, fromMaybe (giveup "bad key") (file2key skey))
+
+start :: (FilePath, Key) -> CommandStart
+start (file, newkey) = ifAnnexed file go stop
+  where
 	go oldkey
 		| oldkey == newkey = stop
 		| otherwise = do
