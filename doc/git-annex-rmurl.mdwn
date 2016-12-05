@@ -10,10 +10,6 @@ git annex rmurl `[file url ..]`
 
 Record that the file is no longer available at the url.
 
-If nothing is specified on the command line, they are instead read
-from stdin. Any number of lines can be provided in this mode,
-each containing a file and and url, separated by a single space.
-
 # OPTIONS
 
 * `--batch`
