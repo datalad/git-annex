@@ -8,6 +8,9 @@ git-annex (6.20161119) UNRELEASED; urgency=medium
     does not support graphical display, while xdot does.
   * Debian: xdot is a better interactive viewer than dot, so Suggest
     xdot, rather than graphviz.
+  * rmurl: Multiple pairs of files and urls can be provided on the
+    command line.
+  * rmurl: Added --batch mode.
 
  -- Joey Hess <id@joeyh.name>  Mon, 21 Nov 2016 11:27:50 -0400
 

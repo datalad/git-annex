@@ -4,11 +4,23 @@ git-annex rmurl - record file is not available at url
 
 # SYNOPSIS
 
-git annex rmurl `file url`
+git annex rmurl `[file url ..]`
 
 # DESCRIPTION
 
 Record that the file is no longer available at the url.
+
+If nothing is specified on the command line, they are instead read
+from stdin. Any number of lines can be provided in this mode,
+each containing a file and and url, separated by a single space.
+
+# OPTIONS
+
+* `--batch`
+
+  Enables batch mode, in which lines are read from stdin.
+  Each line should contain the file, and the url to remove from that file,
+  separated by a single space.
 
 # SEE ALSO
 
