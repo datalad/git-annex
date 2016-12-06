@@ -123,6 +123,10 @@ so won't want to type that in. Need discovery.
   for Bob to confirm he's ready to finish pairing, this will fail,
   because Bob won't get to that point if the authtoken is intercepted.
 
+  Check out
+  <https://en.wikipedia.org/wiki/Password-authenticated_key_agreement>
+  for more MITM resistance.
+
 ## local lan detection
 
 At connection time, after authentication, the remote can send
