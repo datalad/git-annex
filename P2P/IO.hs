@@ -11,6 +11,7 @@ module P2P.IO
 	( RunProto
 	, P2PConnection(..)
 	, connectPeer
+	, closeConnection
 	, setupHandle
 	, runNetProto
 	, runNet
@@ -59,6 +60,11 @@ connectPeer g (TorAnnex onionaddress onionport) = do
 		, connIhdl = h
 		, connOhdl = h
 		}
+
+closeConnection :: P2PConnection -> IO ()
+closeConnection conn = do
+	hClose (connIhdl conn)
+	hClose (connOhdl conn)
 
 setupHandle :: Socket -> IO Handle
 setupHandle s = do

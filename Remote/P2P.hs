@@ -16,13 +16,16 @@ import qualified P2P.Protocol as P2P
 import P2P.Address
 import P2P.Annex
 import P2P.IO
+import P2P.Auth
 import Types.Remote
 import Types.GitConfig
 import qualified Git
+import Annex.UUID
 import Config
 import Config.Cost
 import Remote.Helper.Git
 import Utility.Metered
+import Utility.AuthToken
 import Types.NumCopies
 
 import Control.Concurrent
@@ -128,8 +131,7 @@ runProto' a (OpenConnection conn) = do
 	if isJust r
 		then return (OpenConnection conn, r)
 		else do
-			liftIO $ hClose (connIhdl conn)
-			liftIO $ hClose (connOhdl conn)
+			liftIO $ closeConnection conn
 			return (ClosedConnection, r)
 
 -- Uses an open connection if one is available in the ConnectionPool;
@@ -165,5 +167,16 @@ openConnection addr = do
 	g <- Annex.gitRepo
 	v <- liftIO $ tryNonAsync $ connectPeer g addr
 	case v of
-		Right conn -> return (OpenConnection conn)
+		Right conn -> do
+			myuuid <- getUUID
+			authtoken <- fromMaybe nullAuthToken
+				<$> loadP2PRemoteAuthToken addr
+			res <- liftIO $ runNetProto conn $
+				P2P.auth myuuid authtoken
+			case res of
+				Just (Just _theiruuid) ->
+					return (OpenConnection conn)
+				_ -> do
+					liftIO $ closeConnection conn
+					return ClosedConnection
 		Left _e -> return ClosedConnection
