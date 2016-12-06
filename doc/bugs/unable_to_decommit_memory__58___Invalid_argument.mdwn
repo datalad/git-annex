@@ -21,6 +21,8 @@ uname -r: 4.4.14-11.pvops.qubes.x86_64
 
 I found this: https://ghc.haskell.org/trac/ghc/ticket/12495
 
+It looks like this is a problem that occurs only on kernels < 4.5, when ghc is built with a newer glibc, I think.
+
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Git annex rocks!
