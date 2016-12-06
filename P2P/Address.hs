@@ -10,6 +10,7 @@ module P2P.Address where
 import qualified Annex
 import Annex.Common
 import Git
+import Git.Types
 import Creds
 import Utility.AuthToken
 import Utility.Tor
@@ -53,6 +54,10 @@ instance FormatP2PAddress P2PAddressAuth where
 		addr <- unformatP2PAddress (reverse rs)
 		authtoken <- toAuthToken (T.pack $ reverse ra)
 		return (P2PAddressAuth addr authtoken)
+
+repoP2PAddress :: Repo -> Maybe P2PAddress
+repoP2PAddress (Repo { location = Url url }) = unformatP2PAddress (show url)
+repoP2PAddress _ = Nothing
 
 -- | Load known P2P addresses for this repository.
 loadP2PAddresses :: Annex [P2PAddress]

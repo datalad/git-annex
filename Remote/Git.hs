@@ -49,6 +49,8 @@ import Remote.Helper.Git
 import Remote.Helper.Messages
 import qualified Remote.Helper.Ssh as Ssh
 import qualified Remote.GCrypt
+import qualified Remote.P2P
+import P2P.Address
 import Annex.Path
 import Creds
 import Annex.CatFile
@@ -130,7 +132,9 @@ configRead autoinit r = do
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc
 	| Git.GCrypt.isEncrypted r = Remote.GCrypt.chainGen r u c gc
-	| otherwise = go <$> remoteCost gc defcst
+	| otherwise = case repoP2PAddress r of
+		Nothing -> go <$> remoteCost gc defcst
+		Just addr -> Remote.P2P.chainGen addr r u c gc
   where
 	defcst = if repoCheap r then cheapRemoteCost else expensiveRemoteCost
 	go cst = Just new

@@ -937,6 +937,7 @@ Executable git-annex
     Remote.Helper.Tor
     Remote.Hook
     Remote.List
+    Remote.P2P
     Remote.Rsync
     Remote.Rsync.RsyncUrl
     Remote.S3
