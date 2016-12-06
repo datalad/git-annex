@@ -1,19 +1,20 @@
 ### Please describe the problem.
 Recent builds of git-annex spew out many lines such as:
-```
-git-annex: unable to decommit memory: Invalid argument
-git-annex: unable to decommit memory: Invalid argument
-git-annex: unable to decommit memory: Invalid argument
-git-annex: unable to decommit memory: Invalid argument
-git-annex: unable to decommit memory: Invalid argument
-```
+
+    git-annex: unable to decommit memory: Invalid argument
+    git-annex: unable to decommit memory: Invalid argument
+    git-annex: unable to decommit memory: Invalid argument
+    git-annex: unable to decommit memory: Invalid argument
+    git-annex: unable to decommit memory: Invalid argument
 
 ### What steps will reproduce the problem?
 This happens to me syncing any large repository now.
 
 ### What version of git-annex are you using? On what operating system?
 git-annex version: 6.20161118-g0a34f08
+
 uname -r: 4.4.14-11.pvops.qubes.x86_64
+
 /etc/system-release: Fedora release 23 (Twenty Three)
 
 ### Please provide any additional information below.
