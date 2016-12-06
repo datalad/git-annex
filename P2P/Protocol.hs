@@ -189,16 +189,25 @@ data LocalF c
 	= TmpContentSize Key (Len -> c)
 	-- ^ Gets size of the temp file where received content may have
 	-- been stored. If not present, returns 0.
+	| FileSize FilePath (Len -> c)
+	-- ^ Gets size of the content of a file. If not present, returns 0.
 	| ContentSize Key (Maybe Len -> c)
 	-- ^ Gets size of the content of a key, when the full content is
 	-- present.
 	| ReadContent Key AssociatedFile Offset (L.ByteString -> c)
 	-- ^ Lazily reads the content of a key. Note that the content
 	-- may change while it's being sent.
-	| WriteContent Key AssociatedFile Offset Len L.ByteString (Bool -> c)
-	-- ^ Writes content to temp file starting at an offset.
+	| StoreContent Key AssociatedFile Offset Len L.ByteString (Bool -> c)
+	-- ^ Stores content to the key's temp file starting at an offset.
 	-- Once the whole content of the key has been stored, moves the
-	-- temp file into place and returns True.
+	-- temp file into place as the content of the key, and returns True.
+	--
+	-- Note: The ByteString may not contain the entire remaining content
+	-- of the key. Only once the temp file size == Len has the whole
+	-- content been transferred.
+	| StoreContentTo FilePath Offset Len L.ByteString (Bool -> c)
+	-- ^ Stores the content to a temp file starting at an offset.
+	-- Once the whole content of the key has been stored, returns True.
 	--
 	-- Note: The ByteString may not contain the entire remaining content
 	-- of the key. Only once the temp file size == Len has the whole
@@ -246,16 +255,16 @@ checkPresent key = do
  -}
 lockContentWhile 
 	:: MonadMask m 
-	=> (forall r. Proto r -> m r)
+	=> (forall r. r -> Proto r -> m r)
 	-> Key
-	-> (Bool -> m ())
-	-> m ()
+	-> (Bool -> m a)
+	-> m a
 lockContentWhile runproto key a = bracket setup cleanup a
   where
-	setup = runproto $ do
+	setup = runproto False $ do
 		net $ sendMessage (LOCKCONTENT key)
 		checkSuccess
-	cleanup True = runproto $ net $ sendMessage UNLOCKCONTENT
+	cleanup True = runproto () $ net $ sendMessage UNLOCKCONTENT
 	cleanup False = return ()
 
 remove :: Key -> Proto Bool
@@ -263,8 +272,11 @@ remove key = do
 	net $ sendMessage (REMOVE key)
 	checkSuccess
 
-get :: Key -> AssociatedFile -> Proto Bool
-get key af = receiveContent key af (\offset -> GET offset af key)
+get :: FilePath -> Key -> AssociatedFile -> Proto Bool
+get dest key af = receiveContent sizer storer (\offset -> GET offset af key)
+  where
+	sizer = fileSize dest
+	storer = storeContentTo dest
 
 put :: Key -> AssociatedFile -> Proto Bool
 put key af = do
@@ -349,7 +361,9 @@ serveAuthed myuuid = void $ serverLoop handler
 		if have
 			then net $ sendMessage ALREADY_HAVE
 			else do
-				ok <- receiveContent key af PUT_FROM
+				let sizer = tmpContentSize key
+				let storer = storeContent key af
+				ok <- receiveContent sizer storer PUT_FROM
 				when ok $
 					local $ setPresent key myuuid
 		return ServerContinue
@@ -370,15 +384,15 @@ sendContent key af offset = do
 	net $ sendBytes len content
 	checkSuccess
 
-receiveContent :: Key -> AssociatedFile -> (Offset -> Message) -> Proto Bool
-receiveContent key af mkmsg = do
-	Len n <- local $ tmpContentSize key
+receiveContent :: Local Len -> (Offset -> Len -> L.ByteString -> Local Bool) -> (Offset -> Message) -> Proto Bool
+receiveContent sizer storer mkmsg = do
+	Len n <- local sizer
 	let offset = Offset n
 	net $ sendMessage (mkmsg offset)
 	r <- net receiveMessage
 	case r of
 		DATA len -> do
-			ok <- local . writeContent key af offset len
+			ok <- local . storer offset len
 				=<< net (receiveBytes len)
 			sendSuccess ok
 			return ok

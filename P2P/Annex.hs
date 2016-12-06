@@ -16,7 +16,6 @@ module P2P.Annex
 import Annex.Common
 import Annex.Content
 import Annex.Transfer
-import Annex.Notification
 import P2P.Protocol
 import P2P.IO
 import Logs.Location
@@ -46,6 +45,9 @@ runLocal runmode runner a = case a of
 		tmp <- fromRepo $ gitAnnexTmpObjectLocation k
 		size <- liftIO $ catchDefaultIO 0 $ getFileSize tmp
 		runner (next (Len size))
+	FileSize f next -> do
+		size <- liftIO $ catchDefaultIO 0 $ getFileSize f
+		runner (next (Len size))
 	ContentSize k next -> do
 		let getsize = liftIO . catchMaybeIO . getFileSize
 		size <- inAnnex' isJust Nothing getsize k
@@ -69,16 +71,15 @@ runLocal runmode runner a = case a of
 					Left _ -> return Nothing
 					Right b -> runner (next b)
 			_ -> return Nothing
-	WriteContent k af (Offset o) (Len l) b next -> do
+	StoreContent k af o l b next -> do
 		ok <- flip catchNonAsync (const $ return False) $
 			transfer download k af $
-				getViaTmp AlwaysVerify k $ \tmp -> liftIO $ do
-					withBinaryFile tmp WriteMode $ \h -> do
-						when (o /= 0) $
-							hSeek h AbsoluteSeek o
-						L.hPut h b
-					sz <- getFileSize tmp
-					return (toInteger sz == l, UnVerified)
+				getViaTmp AlwaysVerify k $ \tmp ->
+					unVerified $ storefile tmp o l b
+		runner (next ok)
+	StoreContentTo dest o l b next -> do
+		ok <- flip catchNonAsync (const $ return False) $
+			storefile dest o l b
 		runner (next ok)
 	SetPresent k u next -> do
 		v <- tryNonAsync $ logChange k u InfoPresent
@@ -111,10 +112,17 @@ runLocal runmode runner a = case a of
 				next
 			Right _ -> runner next
   where
-	transfer mk k af a = case runmode of
+	transfer mk k af ta = case runmode of
 		-- Update transfer logs when serving.
 		Serving theiruuid -> 
-			mk theiruuid k af noRetry (const a) noNotification
+			mk theiruuid k af noRetry (const ta) noNotification
 		-- Transfer logs are updated higher in the stack when
 		-- a client.
-		Client -> a
+		Client -> ta
+	storefile dest (Offset o) (Len l) b = liftIO $ do
+		withBinaryFile dest WriteMode $ \h -> do
+			when (o /= 0) $
+				hSeek h AbsoluteSeek o
+			L.hPut h b
+		sz <- getFileSize dest
+		return (toInteger sz == l)
