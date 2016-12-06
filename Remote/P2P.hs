@@ -15,14 +15,13 @@ import qualified Annex
 import qualified P2P.Protocol as P2P
 import P2P.Address
 import P2P.Annex
+import P2P.IO
 import Types.Remote
 import Types.GitConfig
 import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Git
-import Remote.Helper.Tor
-import Utility.Tor
 import Utility.Metered
 import Types.NumCopies
 
@@ -108,7 +107,7 @@ lock theiruuid addr connpool k callback =
 
 -- | A connection to the peer.
 data Connection 
-	= TorAnnexConnection RunEnv
+	= OpenConnection P2PConnection
 	| ClosedConnection
 
 type ConnectionPool = TVar [Connection]
@@ -122,14 +121,15 @@ runProto addr connpool a = withConnection addr connpool (runProto' a)
 
 runProto' :: P2P.Proto a -> Connection -> Annex (Connection, Maybe a)
 runProto' _ ClosedConnection = return (ClosedConnection, Nothing)
-runProto' a conn@(TorAnnexConnection runenv) = do
-	r <- runFullProto Client runenv a
+runProto' a (OpenConnection conn) = do
+	r <- runFullProto Client conn a
 	-- When runFullProto fails, the connection is no longer usable,
 	-- so close it.
 	if isJust r
-		then return (conn, r)
+		then return (OpenConnection conn, r)
 		else do
-			liftIO $ hClose (runIhdl runenv)
+			liftIO $ hClose (connIhdl conn)
+			liftIO $ hClose (connOhdl conn)
 			return (ClosedConnection, r)
 
 -- Uses an open connection if one is available in the ConnectionPool;
@@ -161,17 +161,9 @@ withConnection addr connpool a = bracketOnError get cache go
 		return r
 
 openConnection :: P2PAddress -> Annex Connection
-openConnection (TorAnnex onionaddress onionport) = do
-	v <- liftIO $ tryNonAsync $ 
-		torHandle =<< connectHiddenService onionaddress onionport
+openConnection addr = do
+	g <- Annex.gitRepo
+	v <- liftIO $ tryNonAsync $ connectPeer g addr
 	case v of
-		Right h -> do
-			g <- Annex.gitRepo
-			let runenv = RunEnv
-				{ runRepo = g
-				, runCheckAuth = const False
-				, runIhdl = h
-				, runOhdl = h
-				}
-			return (TorAnnexConnection runenv)
+		Right conn -> return (OpenConnection conn)
 		Left _e -> return ClosedConnection

@@ -15,7 +15,6 @@ import RemoteDaemon.Common
 import Utility.Tor
 import Utility.FileMode
 import Utility.AuthToken
-import Remote.Helper.Tor
 import P2P.Protocol
 import P2P.IO
 import P2P.Annex
@@ -55,7 +54,7 @@ server th@(TransportHandle (LocalRepo r) _) = do
 	debugM "remotedaemon" "tor hidden service running"
 	forever $ do
 		(conn, _) <- accept soc
-		h <- torHandle conn
+		h <- setupHandle conn
 		ok <- atomically $ ifM (isFullTBQueue q)
 			( return False
 			, do
@@ -85,16 +84,16 @@ serveClient th u r q = bracket setup cleanup go
 			-- Load auth tokens for every connection, to notice
 			-- when the allowed set is changed.
 			allowed <- loadP2PAuthTokens
-			let runenv = RunEnv
-				{ runRepo = r
-				, runCheckAuth = (`isAllowedAuthToken` allowed)
-				, runIhdl = h
-				, runOhdl = h
+			let conn = P2PConnection
+				{ connRepo = r
+				, connCheckAuth = (`isAllowedAuthToken` allowed)
+				, connIhdl = h
+				, connOhdl = h
 				}
-			v <- liftIO $ runNetProto runenv $ serveAuth u
+			v <- liftIO $ runNetProto conn $ serveAuth u
 			case v of
 				Just (Just theiruuid) -> void $ 
-					runFullProto (Serving theiruuid) runenv $
+					runFullProto (Serving theiruuid) conn $
 						serveAuthed u
 				_ -> return ()
 		-- Merge the duplicated state back in.

@@ -12,7 +12,6 @@ import qualified Annex
 import qualified Git.CurrentRepo
 import P2P.Protocol
 import P2P.IO
-import Remote.Helper.Tor
 import Utility.Tor
 import Utility.AuthToken
 import Annex.UUID
@@ -59,14 +58,8 @@ connectService address port service = do
 			<$> loadP2PRemoteAuthToken (TorAnnex address port)
 		myuuid <- getUUID
 		g <- Annex.gitRepo
-		h <- liftIO $ torHandle =<< connectHiddenService address port
-		let runenv = RunEnv
-			{ runRepo = g
-			, runCheckAuth = const False
-			, runIhdl = h
-			, runOhdl = h
-			}
-		liftIO $ runNetProto runenv $ do
+		conn <- liftIO $ connectPeer g (TorAnnex address port)
+		liftIO $ runNetProto conn $ do
 			v <- auth myuuid authtoken
 			case v of
 				Just _theiruuid -> connect service stdin stdout

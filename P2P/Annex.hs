@@ -9,7 +9,7 @@
 
 module P2P.Annex
 	( RunMode(..)
-	, RunEnv(..)
+	, P2PConnection(..)
 	, runFullProto
 	) where
 
@@ -31,12 +31,12 @@ data RunMode
 	| Client
 
 -- Full interpreter for Proto, that can receive and send objects.
-runFullProto :: RunMode -> RunEnv -> Proto a -> Annex (Maybe a)
-runFullProto runmode runenv = go
+runFullProto :: RunMode -> P2PConnection -> Proto a -> Annex (Maybe a)
+runFullProto runmode conn = go
   where
 	go :: RunProto Annex
 	go (Pure v) = pure (Just v)
-	go (Free (Net n)) = runNet runenv go n
+	go (Free (Net n)) = runNet conn go n
 	go (Free (Local l)) = runLocal runmode go l
 
 runLocal :: RunMode -> RunProto Annex -> LocalF (Proto a) -> Annex (Maybe a)
