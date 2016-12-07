@@ -85,9 +85,12 @@ streamMeteredFile f meterupdate h = withMeteredFile f meterupdate $ L.hPut h
 
 {- Writes a ByteString to a Handle, updating a meter as it's written. -}
 meteredWrite :: MeterUpdate -> Handle -> L.ByteString -> IO ()
-meteredWrite meterupdate h = go zeroBytesProcessed . L.toChunks 
+meteredWrite meterupdate h = void . meteredWrite' meterupdate h
+
+meteredWrite' :: MeterUpdate -> Handle -> L.ByteString -> IO BytesProcessed
+meteredWrite' meterupdate h = go zeroBytesProcessed . L.toChunks 
   where
-	go _ [] = return ()
+	go sofar [] = return sofar
 	go sofar (c:cs) = do
 		S.hPut h c
 		let sofar' = addBytesProcessed sofar $ S.length c

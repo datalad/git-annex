@@ -73,10 +73,9 @@ chainGen addr r u c gc = do
 	}
 	return (Just this)
 
--- TODO update progress
 store :: UUID -> P2PAddress -> ConnectionPool -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store u addr connpool k af p = fromMaybe False
-	<$> runProto u addr connpool (P2P.put k af)
+	<$> runProto u addr connpool (P2P.put k af p)
 
 retrieve :: UUID -> P2PAddress -> ConnectionPool -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
 retrieve u addr connpool k af dest _p = unVerified $ fromMaybe False 

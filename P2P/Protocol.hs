@@ -17,6 +17,7 @@ import Types.UUID
 import Utility.AuthToken
 import Utility.Applicative
 import Utility.PartialPrelude
+import Utility.Metered
 import Git.FilePath
 
 import Control.Monad
@@ -163,7 +164,7 @@ local = hoistFree Local
 data NetF c
 	= SendMessage Message c
 	| ReceiveMessage (Message -> c)
-	| SendBytes Len L.ByteString c
+	| SendBytes Len L.ByteString MeterUpdate c
 	-- ^ Sends exactly Len bytes of data. (Any more or less will
 	-- confuse the receiver.)
 	| ReceiveBytes Len (L.ByteString -> c)
@@ -278,12 +279,12 @@ get dest key af = receiveContent sizer storer (\offset -> GET offset af key)
 	sizer = fileSize dest
 	storer = storeContentTo dest
 
-put :: Key -> AssociatedFile -> Proto Bool
-put key af = do
+put :: Key -> AssociatedFile -> MeterUpdate -> Proto Bool
+put key af p = do
 	net $ sendMessage (PUT af key)
 	r <- net receiveMessage
 	case r of
-		PUT_FROM offset -> sendContent key af offset
+		PUT_FROM offset -> sendContent key af offset p
 		ALREADY_HAVE -> return True
 		_ -> do
 			net $ sendMessage (ERROR "expected PUT_FROM")
@@ -368,7 +369,7 @@ serveAuthed myuuid = void $ serverLoop handler
 					local $ setPresent key myuuid
 		return ServerContinue
 	handler (GET offset key af) = do
-		void $ sendContent af key offset
+		void $ sendContent af key offset nullMeterUpdate
 		-- setPresent not called because the peer may have
 		-- requested the data but not permanently stored it.
 		return ServerContinue
@@ -377,11 +378,11 @@ serveAuthed myuuid = void $ serverLoop handler
 		return ServerContinue
 	handler _ = return ServerUnexpected
 
-sendContent :: Key -> AssociatedFile -> Offset -> Proto Bool
-sendContent key af offset = do
+sendContent :: Key -> AssociatedFile -> Offset -> MeterUpdate -> Proto Bool
+sendContent key af offset p = do
 	(len, content) <- readContentLen key af offset
 	net $ sendMessage (DATA len)
-	net $ sendBytes len content
+	net $ sendBytes len content p
 	checkSuccess
 
 receiveContent :: Local Len -> (Offset -> Len -> L.ByteString -> Local Bool) -> (Offset -> Message) -> Proto Bool
@@ -456,5 +457,5 @@ relayToPeer (RelayDone exitcode) = sendMessage (CONNECTDONE exitcode)
 relayToPeer (RelayToPeer b) = do
 	let len = Len $ fromIntegral $ L.length b
 	sendMessage (DATA len)
-	sendBytes len b
+	sendBytes len b nullMeterUpdate
 relayToPeer (RelayFromPeer _) = return ()

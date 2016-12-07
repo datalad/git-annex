@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE RankNTypes, FlexibleContexts, BangPatterns, CPP #-}
+{-# LANGUAGE RankNTypes, FlexibleContexts, CPP #-}
 
 module P2P.IO
 	( RunProto
@@ -26,6 +26,7 @@ import Utility.AuthToken
 import Utility.SafeCommand
 import Utility.SimpleProtocol
 import Utility.Exception
+import Utility.Metered
 import Utility.Tor
 import Utility.FileSystemEncoding
 
@@ -110,9 +111,9 @@ runNet conn runner f = case f of
 					let e = ERROR $ "protocol parse error: " ++ show l
 					net $ sendMessage e
 					next e
-	SendBytes len b next -> do
+	SendBytes len b p next -> do
 		v <- liftIO $ tryNonAsync $ do
-			ok <- sendExactly len b (connOhdl conn)
+			ok <- sendExactly len b (connOhdl conn) p
 			hFlush (connOhdl conn)
 			return ok
 		case v of
@@ -153,18 +154,10 @@ runNet conn runner f = case f of
 --
 -- If too few bytes are sent, the only option is to give up on this
 -- connection. False is returned to indicate this problem.
---
--- We can't check the length of the whole lazy bytestring without buffering
--- it in memory. Instead, process it one chunk at a time, and sum the length
--- of the chunks.
-sendExactly :: Len -> L.ByteString -> Handle -> IO Bool
-sendExactly (Len l) lb h = go 0 $ L.toChunks $ L.take (fromIntegral l) lb
-  where
-	go n [] = return (toInteger n == l)
-	go n (b:bs) = do
-		B.hPut h b
-		let !n' = n + B.length b
-		go n' bs
+sendExactly :: Len -> L.ByteString -> Handle -> MeterUpdate -> IO Bool
+sendExactly (Len l) b h p = do
+	sent <- meteredWrite' p h (L.take (fromIntegral l) b)
+	return (fromBytesProcessed sent == l)
 
 runRelay :: RunProto IO -> RelayHandle -> RelayHandle -> IO (Maybe ExitCode)
 runRelay runner (RelayHandle hout) (RelayHandle hin) = bracket setup cleanup go
