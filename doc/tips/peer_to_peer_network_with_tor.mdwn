@@ -1,9 +1,9 @@
 git-annex has recently gotten support for running as a
-[Tor](http://http://torproject.org/) hidden service. This is a great, and
-very secure way to connect repositories between computers in different
+[Tor](http://http://torproject.org/) hidden service. This is a nice secure
+and easy to use way to connect repositories between peers in different
 locations, without needing any central server.
 
-## the first peer
+## setting up the first peer
 
 First, you need to get Tor installed and running. See
 [their website](http://http://torproject.org/), or try a command like:
@@ -100,3 +100,33 @@ combine the onion address with the authentication data.
 When you run `git annex peer --link`, it sets up a git remote using
 the onion address, and it stashes the authentication data away in a file in
 `.git/annex/creds/`
+
+## security
+
+Tor hidden services can be quite secure. But this doesn't mean that using
+git-annex over Tor is automatically perfectly secure. Here are some things
+to consider:
+
+* Anyone who learns the address of a peer can connect to that peer,
+  download the whole history of the git repository, and any available
+  annexed files. They can also upload new files to the peer, and even
+  remove annexed files from the peer. So consider ways that the address
+  of a peer might be exposed.
+
+* While Tor can be used to anonymize who you are, git defaults to including
+  your name and email address in git commit messages. So if you want an
+  anonymous git-annex repository, you'll need to configure git not to do
+  that.
+
+* Using Tor prevents listeners from decrypting your traffic. But, they'll
+  probably still know you're using Tor. Also, by traffic analysis,
+  they may be able to guess if you're using git-annex over tor, and even
+  make guesses about the sizes and types of files that you're exchanging
+  with peers.
+
+* There have been past attacks on the Tor network that have exposed
+  who was running Tor hidden services.
+  <https://blog.torproject.org/blog/tor-security-advisory-relay-early-traffic-confirmation-attack>
+
+* An attacker who can connect to the git-annex Tor hidden service, even
+  without authenticating, can try to perform denial of service attacks.
