@@ -193,7 +193,7 @@ store _r info h = fileStorer $ \k f p -> do
 		uploadid <- S3.imurUploadId <$> sendS3Handle h startreq
 
 		-- The actual part size will be a even multiple of the
-		-- 32k chunk size that hGetUntilMetered uses.
+		-- 32k chunk size that lazy ByteStrings use.
 		let partsz' = (partsz `div` toInteger defaultChunkSize) * toInteger defaultChunkSize
 
 		-- Send parts of the file, taking care to stream each part

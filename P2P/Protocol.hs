@@ -167,7 +167,7 @@ data NetF c
 	| SendBytes Len L.ByteString MeterUpdate c
 	-- ^ Sends exactly Len bytes of data. (Any more or less will
 	-- confuse the receiver.)
-	| ReceiveBytes Len (L.ByteString -> c)
+	| ReceiveBytes Len MeterUpdate (L.ByteString -> c)
 	-- ^ Lazily reads bytes from peer. Stops once Len are read,
 	-- or if connection is lost, and in either case returns the bytes
 	-- that were read. This allows resuming interrupted transfers.
@@ -273,8 +273,8 @@ remove key = do
 	net $ sendMessage (REMOVE key)
 	checkSuccess
 
-get :: FilePath -> Key -> AssociatedFile -> Proto Bool
-get dest key af = receiveContent sizer storer (\offset -> GET offset af key)
+get :: FilePath -> Key -> AssociatedFile -> MeterUpdate -> Proto Bool
+get dest key af p = receiveContent p sizer storer (\offset -> GET offset af key)
   where
 	sizer = fileSize dest
 	storer = storeContentTo dest
@@ -364,7 +364,7 @@ serveAuthed myuuid = void $ serverLoop handler
 			else do
 				let sizer = tmpContentSize key
 				let storer = storeContent key af
-				ok <- receiveContent sizer storer PUT_FROM
+				ok <- receiveContent nullMeterUpdate sizer storer PUT_FROM
 				when ok $
 					local $ setPresent key myuuid
 		return ServerContinue
@@ -385,8 +385,8 @@ sendContent key af offset p = do
 	net $ sendBytes len content p
 	checkSuccess
 
-receiveContent :: Local Len -> (Offset -> Len -> L.ByteString -> Local Bool) -> (Offset -> Message) -> Proto Bool
-receiveContent sizer storer mkmsg = do
+receiveContent :: MeterUpdate -> Local Len -> (Offset -> Len -> L.ByteString -> Local Bool) -> (Offset -> Message) -> Proto Bool
+receiveContent p sizer storer mkmsg = do
 	Len n <- local sizer
 	let offset = Offset n
 	net $ sendMessage (mkmsg offset)
@@ -394,7 +394,7 @@ receiveContent sizer storer mkmsg = do
 	case r of
 		DATA len -> do
 			ok <- local . storer offset len
-				=<< net (receiveBytes len)
+				=<< net (receiveBytes len p)
 			sendSuccess ok
 			return ok
 		_ -> do
@@ -447,7 +447,7 @@ relayFromPeer = do
 	r <- receiveMessage
 	case r of
 		CONNECTDONE exitcode -> return $ RelayDone exitcode
-		DATA len -> RelayFromPeer <$> receiveBytes len
+		DATA len -> RelayFromPeer <$> receiveBytes len nullMeterUpdate
 		_ -> do
 			sendMessage $ ERROR "expected DATA or CONNECTDONE"
 			return $ RelayDone $ ExitFailure 1

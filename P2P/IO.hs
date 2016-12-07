@@ -119,8 +119,8 @@ runNet conn runner f = case f of
 		case v of
 			Right True -> runner next
 			_ -> return Nothing
-	ReceiveBytes (Len n) next -> do
-		v <- liftIO $ tryNonAsync $ L.hGet (connIhdl conn) (fromIntegral n)
+	ReceiveBytes len p next -> do
+		v <- liftIO $ tryNonAsync $ receiveExactly len (connIhdl conn) p
 		case v of
 			Left _e -> return Nothing
 			Right b -> runner (next b)
@@ -155,9 +155,12 @@ runNet conn runner f = case f of
 -- If too few bytes are sent, the only option is to give up on this
 -- connection. False is returned to indicate this problem.
 sendExactly :: Len -> L.ByteString -> Handle -> MeterUpdate -> IO Bool
-sendExactly (Len l) b h p = do
-	sent <- meteredWrite' p h (L.take (fromIntegral l) b)
-	return (fromBytesProcessed sent == l)
+sendExactly (Len n) b h p = do
+	sent <- meteredWrite' p h (L.take (fromIntegral n) b)
+	return (fromBytesProcessed sent == n)
+
+receiveExactly :: Len -> Handle -> MeterUpdate -> IO L.ByteString
+receiveExactly (Len n) h p = hGetMetered h (Just n) p
 
 runRelay :: RunProto IO -> RelayHandle -> RelayHandle -> IO (Maybe ExitCode)
 runRelay runner (RelayHandle hout) (RelayHandle hin) = bracket setup cleanup go

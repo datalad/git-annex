@@ -24,6 +24,7 @@ import Annex.UUID
 import Config
 import Config.Cost
 import Remote.Helper.Git
+import Messages.Progress
 import Utility.Metered
 import Utility.AuthToken
 import Types.NumCopies
@@ -74,12 +75,14 @@ chainGen addr r u c gc = do
 	return (Just this)
 
 store :: UUID -> P2PAddress -> ConnectionPool -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store u addr connpool k af p = fromMaybe False
-	<$> runProto u addr connpool (P2P.put k af p)
+store u addr connpool k af p = 
+	metered (Just p) k $ \p' -> fromMaybe False
+		<$> runProto u addr connpool (P2P.put k af p')
 
 retrieve :: UUID -> P2PAddress -> ConnectionPool -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
-retrieve u addr connpool k af dest _p = unVerified $ fromMaybe False 
-	<$> runProto u addr connpool (P2P.get dest k af)
+retrieve u addr connpool k af dest p = unVerified $ 
+	metered (Just p) k $ \p' -> fromMaybe False 
+		<$> runProto u addr connpool (P2P.get dest k af p')
 
 remove :: UUID -> P2PAddress -> ConnectionPool -> Key -> Annex Bool
 remove u addr connpool k = fromMaybe False
