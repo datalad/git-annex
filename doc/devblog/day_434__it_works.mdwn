@@ -16,4 +16,12 @@ the Tor relays being used, but this example with a 100 mb file is not bad:
 There are still a couple of [[known bugs|todo/tor]], 
 but I've merged the `tor` branch into `master` already.
 
+----
+
+Alpernebbi has built a GUI for editing git-annex metadata.
+Something I always wanted!  
+[[Read about it here|tips/a_gui_for_metadata_operations]]
+
+----
+
 Today's work was sponsored by Ethan Aubin.

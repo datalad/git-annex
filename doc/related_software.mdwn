@@ -16,6 +16,10 @@ designed to interoperate with it.
 * [Magit](http://github.com/magit/magit), an Emacs mode for Git, has
   [an extension](https://github.com/magit/magit-annex) for git annex.
 
+* [git-annex-metadata-gui](https://github.com/alpernebbi/git-annex-metadata-gui)
+  is a GUI for editing the metadata. An easier alternative to using
+  [[git-annex-metadata]] at the command line.
+
 * [DataLad](http://datalad.org/) uses git-annex to provide access to
   scientific data available from various sources.
 
