@@ -49,12 +49,12 @@ chainGen addr r u c gc = do
 		{ uuid = u
 		, cost = cst
 		, name = Git.repoDescribe r
-		, storeKey = store addr connpool
-		, retrieveKeyFile = retrieve addr connpool
+		, storeKey = store u addr connpool
+		, retrieveKeyFile = retrieve u addr connpool
 		, retrieveKeyFileCheap = \_ _ _ -> return False
-		, removeKey = remove addr connpool
+		, removeKey = remove u addr connpool
 		, lockContent = Just (lock u addr connpool)
-		, checkPresent = checkpresent addr connpool
+		, checkPresent = checkpresent u addr connpool
 		, checkPresentCheap = False
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
@@ -74,27 +74,27 @@ chainGen addr r u c gc = do
 	return (Just this)
 
 -- TODO update progress
-store :: P2PAddress -> ConnectionPool -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store addr connpool k af p = fromMaybe False
-	<$> runProto addr connpool (P2P.put k af)
+store :: UUID -> P2PAddress -> ConnectionPool -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
+store u addr connpool k af p = fromMaybe False
+	<$> runProto u addr connpool (P2P.put k af)
 
-retrieve :: P2PAddress -> ConnectionPool -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
-retrieve addr connpool k af dest _p = unVerified $ fromMaybe False 
-	<$> runProto addr connpool (P2P.get dest k af)
+retrieve :: UUID -> P2PAddress -> ConnectionPool -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
+retrieve u addr connpool k af dest _p = unVerified $ fromMaybe False 
+	<$> runProto u addr connpool (P2P.get dest k af)
 
-remove :: P2PAddress -> ConnectionPool -> Key -> Annex Bool
-remove addr connpool k = fromMaybe False
-	<$> runProto addr connpool (P2P.remove k)
+remove :: UUID -> P2PAddress -> ConnectionPool -> Key -> Annex Bool
+remove u addr connpool k = fromMaybe False
+	<$> runProto u addr connpool (P2P.remove k)
 
-checkpresent :: P2PAddress -> ConnectionPool -> Key -> Annex Bool
-checkpresent addr connpool k = maybe unavail return
-	=<< runProto addr connpool (P2P.checkPresent k)
+checkpresent :: UUID -> P2PAddress -> ConnectionPool -> Key -> Annex Bool
+checkpresent u addr connpool k = maybe unavail return
+	=<< runProto u addr connpool (P2P.checkPresent k)
   where
 	unavail = giveup "can't connect to peer"
 
 lock :: UUID -> P2PAddress -> ConnectionPool -> Key -> (VerifiedCopy -> Annex r) -> Annex r
-lock theiruuid addr connpool k callback =
-	withConnection addr connpool $ \conn -> do
+lock u addr connpool k callback =
+	withConnection u addr connpool $ \conn -> do
 		connv <- liftIO $ newMVar conn
 		let runproto d p = do
 			c <- liftIO $ takeMVar connv
@@ -106,7 +106,7 @@ lock theiruuid addr connpool k callback =
 		return (conn', r)
   where
 	go False = giveup "can't lock content"
-	go True = withVerifiedCopy LockedCopy theiruuid (return True) callback
+	go True = withVerifiedCopy LockedCopy u (return True) callback
 
 -- | A connection to the peer.
 data Connection 
@@ -119,8 +119,8 @@ mkConnectionPool :: Annex ConnectionPool
 mkConnectionPool = liftIO $ newTVarIO []
 
 -- Runs the Proto action.
-runProto :: P2PAddress -> ConnectionPool -> P2P.Proto a -> Annex (Maybe a)
-runProto addr connpool a = withConnection addr connpool (runProto' a)
+runProto :: UUID -> P2PAddress -> ConnectionPool -> P2P.Proto a -> Annex (Maybe a)
+runProto u addr connpool a = withConnection u addr connpool (runProto' a)
 
 runProto' :: P2P.Proto a -> Connection -> Annex (Connection, Maybe a)
 runProto' _ ClosedConnection = return (ClosedConnection, Nothing)
@@ -139,8 +139,8 @@ runProto' a (OpenConnection conn) = do
 --
 -- Once the action is done, the connection is added back to the
 -- ConnectionPool, unless it's no longer open.
-withConnection :: P2PAddress -> ConnectionPool -> (Connection -> Annex (Connection, a)) -> Annex a
-withConnection addr connpool a = bracketOnError get cache go
+withConnection :: UUID -> P2PAddress -> ConnectionPool -> (Connection -> Annex (Connection, a)) -> Annex a
+withConnection u addr connpool a = bracketOnError get cache go
   where
 	get = do
 		mc <- liftIO $ atomically $ do
@@ -152,7 +152,7 @@ withConnection addr connpool a = bracketOnError get cache go
 				(c:cs) -> do
 					writeTVar connpool cs
 					return (Just c)
-		maybe (openConnection addr) return mc
+		maybe (openConnection u addr) return mc
 	
 	cache ClosedConnection = return ()
 	cache conn = liftIO $ atomically $ modifyTVar' connpool (conn:)
@@ -162,8 +162,8 @@ withConnection addr connpool a = bracketOnError get cache go
 		cache conn'
 		return r
 
-openConnection :: P2PAddress -> Annex Connection
-openConnection addr = do
+openConnection :: UUID -> P2PAddress -> Annex Connection
+openConnection u addr = do
 	g <- Annex.gitRepo
 	v <- liftIO $ tryNonAsync $ connectPeer g addr
 	case v of
@@ -174,9 +174,16 @@ openConnection addr = do
 			res <- liftIO $ runNetProto conn $
 				P2P.auth myuuid authtoken
 			case res of
-				Just (Just _theiruuid) ->
-					return (OpenConnection conn)
+				Just (Just theiruuid)
+					| u == theiruuid -> return (OpenConnection conn)
+					| otherwise -> do
+						liftIO $ closeConnection conn
+						warning "Remote peer uuid seems to have changed."
+						return ClosedConnection
 				_ -> do
 					liftIO $ closeConnection conn
+					warning "Unable to authenticate with peer."
 					return ClosedConnection
-		Left _e -> return ClosedConnection
+		Left _e -> do
+			warning "Unable to connect to peer."
+			return ClosedConnection
