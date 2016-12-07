@@ -4,7 +4,6 @@ Mostly working!
 
 Current todo list:
 
-* uuid discovery in p2p link
 * copy --to peer seems to make the remotedaemon buffer the content in
   memory, more than I'd expect.
 * update progress meters

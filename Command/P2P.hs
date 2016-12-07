@@ -10,10 +10,15 @@ module Command.P2P where
 import Command
 import P2P.Address
 import P2P.Auth
+import P2P.IO
+import qualified P2P.Protocol as P2P
 import Utility.AuthToken
 import Git.Types
 import qualified Git.Remote
 import qualified Git.Command
+import qualified Annex
+import Annex.UUID
+import Config
 
 cmd :: Command
 cmd = command "p2p" SectionSetup
@@ -61,7 +66,7 @@ linkRemote remotename = do
   where
 	prompt = do
 		liftIO $ putStrLn ""
-		liftIO $ putStr "Enter address: "
+		liftIO $ putStr "Enter peer address: "
 		liftIO $ hFlush stdout
 		s <- liftIO getLine
 		if null s
@@ -74,9 +79,20 @@ linkRemote remotename = do
 					prompt
 				Just addr -> setup addr
 	setup (P2PAddressAuth addr authtoken) = do
-		storeP2PRemoteAuthToken addr authtoken
-		inRepo $ Git.Command.runBool
-			[ Param "remote", Param "add"
-			, Param remotename
-			, Param (formatP2PAddress addr)
-			]
+		g <- Annex.gitRepo
+		conn <- liftIO $ connectPeer g addr
+			`catchNonAsync` giveup "Unable to connect with peer. Please check that the peer is connected to the network, and try again."
+		u <- getUUID
+		v <- liftIO $ runNetProto conn $ P2P.auth u authtoken
+		case v of
+			Just (Just theiruuid) -> do
+				ok <- inRepo $ Git.Command.runBool
+					[ Param "remote", Param "add"
+					, Param remotename
+					, Param (formatP2PAddress addr)
+					]
+				when ok $ do
+					storeUUIDIn (remoteConfig remotename "uuid") theiruuid
+					storeP2PRemoteAuthToken addr authtoken
+				return ok
+			_ -> giveup "Unable to authenticate with peer. Please check the address and try again."
