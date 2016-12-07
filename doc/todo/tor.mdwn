@@ -1,0 +1,20 @@
+git-annex sync over tor
+
+Mostly working!
+
+Current todo list:
+
+* uuid discovery in p2p link
+* copy --to peer seems to make the remotedaemon buffer the content in
+  memory, more than I'd expect.
+* update progress meters
+* Think about locking some more. What happens if the connection to the peer
+  is dropped while we think we're locking content there from being dropped?
+* merge to master
+
+Eventually:
+
+* address exchange via electrum-mnemonic or magic wormhole (see PAKE)
+* webapp UI for easy pairing
+* friend-of-a-friend peer discovery to build more interconnected networks
+  of nodes
