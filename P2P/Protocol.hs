@@ -379,22 +379,24 @@ serveAuthed myuuid = void $ serverLoop handler
 	handler _ = return ServerUnexpected
 
 sendContent :: Key -> AssociatedFile -> Offset -> MeterUpdate -> Proto Bool
-sendContent key af offset p = do
+sendContent key af offset@(Offset n) p = do
+	let p' = offsetMeterUpdate p (toBytesProcessed n)
 	(len, content) <- readContentLen key af offset
 	net $ sendMessage (DATA len)
-	net $ sendBytes len content p
+	net $ sendBytes len content p'
 	checkSuccess
 
 receiveContent :: MeterUpdate -> Local Len -> (Offset -> Len -> L.ByteString -> Local Bool) -> (Offset -> Message) -> Proto Bool
 receiveContent p sizer storer mkmsg = do
 	Len n <- local sizer
+	let p' = offsetMeterUpdate p (toBytesProcessed n)
 	let offset = Offset n
 	net $ sendMessage (mkmsg offset)
 	r <- net receiveMessage
 	case r of
 		DATA len -> do
 			ok <- local . storer offset len
-				=<< net (receiveBytes len p)
+				=<< net (receiveBytes len p')
 			sendSuccess ok
 			return ok
 		_ -> do

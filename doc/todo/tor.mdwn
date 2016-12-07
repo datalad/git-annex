@@ -7,8 +7,7 @@ Current todo list:
 * copy --to peer seems to make the remotedaemon buffer the content in
   memory, more than I'd expect.
 * update progress logs in remotedaemon send/receive
-* Resuming an interrupted download does not jump the progress to reflect
-  the amount already present. And, it fails at the end.
+* Resuming an interrupted download fails at the end.
 * Think about locking some more. What happens if the connection to the peer
   is dropped while we think we're locking content there from being dropped?
 * merge to master
