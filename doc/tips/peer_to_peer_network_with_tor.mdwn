@@ -63,7 +63,7 @@ so peer1 is a remote of peer2 and peer2 is a remote of peer1.
 
 Any number of peers can be connected this way, within reason.
 
-## git-annex remotedaemon
+## starting git-annex remotedaemon
 
 Notice the `git annex remotedaemon` being run in the above examples.
 That command runs the Tor hidden service so that other peers
@@ -76,6 +76,20 @@ You can do that with a simple cron job:
 
 If you use the git-annex assistant, and have it auto-starting on boot, it
 will take care of starting the remotedaemon for you.
+
+## speed of large transfers
+
+Tor prioritizes security over speed, and the Tor network only has so much
+bandwidth to go around. So, distributing large quantities (gigabytes) 
+of data over Tor may be slow, and should probably be avoided.
+
+One way to avoid sending much data over tor is to set up an encrypted
+[[special_remote|special_remotes]]. git-annex knows that Tor is rather
+expensive to use, so if a file is available on a special remote as well as
+over Tor, it will download it from the special remote.
+
+You can contribute to the Tor network by
+[running a Tor relay or bridge](https://www.torproject.org/getinvolved/relays.html.en).
 
 ## onion addresses and authentication
 
