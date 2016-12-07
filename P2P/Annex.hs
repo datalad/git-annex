@@ -125,4 +125,4 @@ runLocal runmode runner a = case a of
 				hSeek h AbsoluteSeek o
 			L.hPut h b
 		sz <- getFileSize dest
-		return (toInteger sz == l)
+		return (toInteger sz == l + o)
