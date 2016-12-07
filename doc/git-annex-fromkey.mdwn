@@ -4,14 +4,16 @@ git-annex fromkey - adds a file using a specific key
 
 # SYNOPSIS
 
-git annex fromkey `[key file]`
+git annex fromkey `[key file ...]`
 
 # DESCRIPTION
 
 This plumbing-level command can be used to manually set up a file
 in the git repository to link to a specified key.
 
-If the key and file are not specified on the command line, they are
+Multiple pairs of file and key can be given in a single command line.
+
+If no key and file pair are specified on the command line, they are
 instead read from stdin. Any number of lines can be provided in this
 mode, each containing a key and filename, separated by a single space.
 
@@ -26,7 +28,7 @@ to do that.
 * `--force`
 
   Allow making a file link to a key whose content is not in the local
-  repository. The key may not be known to git-annex at all.  
+  repository. The key may not be known to git-annex at all.
 
 # SEE ALSO
 

@@ -20,6 +20,12 @@ Multiple pairs of file and key can be given in a single command line.
   Allow rekeying of even files whose content is not currently available.
   Use with caution.
 
+* `--batch`
+
+  Enables batch mode, in which lines are read from stdin.
+  Each line should contain the file, and the new key to use for that file,
+  separated by a single space.
+
 # SEE ALSO
 
 [[git-annex]](1)

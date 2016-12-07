@@ -1,0 +1,9 @@
+I created a local annex directory that's an adjusted branch used with the assistant. On another machine, I initialized an annex directory, then made this into a full-backup ssh remote for my local.
+
+After the assistant pushes to the remote, and the remote runs `git annex sync`, the remote is missing some directories and has some extra directories. For example, it has the extra directory `Documents/programs/Documents/programs/`, which has different contents than `Documents/programs/`. Both directories are missing the subdirectory `graphing_experiments/`.
+
+From my local, `git annex whereis Documents/programs/graphing_experiments` says the directory exists on the remote. But it's not there.
+
+I recreated the remote from scratch and the problem persists.
+
+The assistant says the remote is caught up, and is keeping up with new content changes. What could cause this?

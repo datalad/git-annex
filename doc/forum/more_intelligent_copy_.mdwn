@@ -1,0 +1,15 @@
+Hi,
+
+I noticed, that 
+
+git annex copy --to REMOTE FILES
+
+and 
+
+git annex copy --to REMOTE --not --in REMOTE FILES
+
+behave differently. The first does not check, whether file contents are already in the remote the latter does that. I realize that this mimics "normal" (UNIX) copy behaviour but I was not entirely certain this was desired.
+Depending on the type of the remote and its configuration (encryption) the latter is considerably faster.
+
+Just my two cents.
+

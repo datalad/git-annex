@@ -1,0 +1,49 @@
+[[!comment format=mdwn
+ username="https://anarc.at/openid/"
+ nickname="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/b36dcf65657dd36128161355d8920a99503def9461c1bb212410980fe6f07125"
+ subject="magic wormhole"
+ date="2016-11-30T22:16:19Z"
+ content="""
+> What I'd really like to have is an interface that displays a
+> one-time-use phrase of five to ten words, that can be read over the
+> phone or across the room. Exchange phrases with a friend, and get
+> your repositories securely linked together with tor.
+
+I already mentionned the project in [[design/assistant/telehash/]],
+but [magic-wormhole](https://github.com/warner/magic-wormhole) does
+exactly that:
+
+    % wormhole send README.md
+    Sending 7924 byte file named 'README.md'
+    On the other computer, please run: wormhole receive
+    Wormhole code is: 7-crossover-clockwork
+    
+    Sending (<-10.0.1.43:58988)..
+    100%|=========================| 7.92K/7.92K [00:00<00:00, 6.02MB/s]
+    File sent.. waiting for confirmation
+    Confirmation received. Transfer complete.
+
+Receiver:
+
+    % wormhole receive
+    Enter receive wormhole code: 7-crossover-clockwork
+    Receiving file (7924 bytes) into: README.md
+    ok? (y/n): y
+    Receiving (->tcp:10.0.1.43:58986)..
+    100%|===========================| 7.92K/7.92K [00:00<00:00, 120KB/s]
+    Received file written to README.md
+
+While that example shows a file transfer, arbitrary data can be
+transfered this way. There's a documented protocol, and it's not
+completely peer-to-peer: there are relay servers to deal with NAT'd
+machines. But the [PAKE
+protocol](https://en.wikipedia.org/wiki/Password-authenticated_key_agreement)
+(basically SPAKE2) could be a good inspiration here.
+
+Otherwise, I must say that, as a user, I don't mind copy-pasting a
+hidden service string (if that's what it's about): i can do that over
+a secure medium (email + OpenPGP or IM + OTR) easily... But I
+understand it can be difficult to do for new users.
+
+"""]]
