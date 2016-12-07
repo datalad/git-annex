@@ -120,7 +120,7 @@ runLocal runmode runner a = case a of
 		-- a client.
 		Client -> ta
 	storefile dest (Offset o) (Len l) b = liftIO $ do
-		withBinaryFile dest WriteMode $ \h -> do
+		withBinaryFile dest AppendMode $ \h -> do
 			when (o /= 0) $
 				hSeek h AbsoluteSeek o
 			L.hPut h b
