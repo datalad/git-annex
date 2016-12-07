@@ -5,13 +5,12 @@ Mostly working!
 Current todo list:
 
 * copy --to peer seems to make the remotedaemon buffer the content in
-  memory, more than I'd expect.
+  memory, more than I'd expect. Check if this is a memory leak..
 * There are no error messages when things fail. Need to convert P2P runner
   from Maybe to Either String.
 * update progress logs in remotedaemon send/receive
 * Think about locking some more. What happens if the connection to the peer
   is dropped while we think we're locking content there from being dropped?
-* merge to master
 
 Eventually:
 
