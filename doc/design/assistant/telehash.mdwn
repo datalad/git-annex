@@ -66,18 +66,17 @@ or [cjdns](https://github.com/cjdelisle/cjdns) or tor or i2p or [magic wormhole]
 
 ## general design
 
-* Make address.log that contains (uuid, transport, address, Maybe authtoken)
-* The authtoken is an additional guard, to protect against transports
-  where the address might be able to be guessed, or observed by the rest of
-  the network.
-* Some addresses can be used with only the provided authtoken
-  from the address.log. Remotes can be auto-enabled for these.
-* Other addresses have Nothing povided for the authtoken, and one
-  has to instead be provided during manual enabling of the remote.
+* There is a generic P2P protocol, which should be usable with any P2P
+  system that can send messages between peers.
+* A p2p remote has an url like tor-annex::fijdksajdksjfkj, which connects
+  to a specific peer. The peer's address may be kept private, but 
+  the design allows the address to be public without giving access to
+  the peer.
+* An authtoken also needs to be presented when connecting with a peer.
+  This is stored in local creds storage and must be kept private.
 * The remotedaemon runs, and/or communicates with the program implementing
-  the network transport. For example for tor, the remotedaemon runs
-  the hidden service, and also connects to the tor hidden services of
-  other nodes.
+  the P2P network. For example for tor, the remotedaemon runs the
+  hidden service.
 * The remotedaemon handles both sides of git push over the transport.
 * The remotedaemon may also support sending objects over the transport,
   depending on the transport.
