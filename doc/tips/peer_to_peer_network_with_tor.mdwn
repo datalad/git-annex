@@ -1,12 +1,12 @@
 git-annex has recently gotten support for running as a
-[Tor](http://http://torproject.org/) hidden service. This is a nice secure
+[Tor](https://torproject.org/) hidden service. This is a nice secure
 and easy to use way to connect repositories between peers in different
 locations, without needing any central server.
 
 ## setting up the first peer
 
 First, you need to get Tor installed and running. See
-[their website](http://http://torproject.org/), or try a command like:
+[their website](https://torproject.org/), or try a command like:
 
 	sudo apt-get install tor
 
