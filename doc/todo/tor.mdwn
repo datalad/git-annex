@@ -6,6 +6,8 @@ Current todo list:
 
 * copy --to peer seems to make the remotedaemon buffer the content in
   memory, more than I'd expect. Check if this is a memory leak..
+* Resuming an interrupted transfer fails at the end, despite having gotten
+  the whole correct file content.
 * There are no error messages when things fail. Need to convert P2P runner
   from Maybe to Either String.
 * update progress logs in remotedaemon send/receive
