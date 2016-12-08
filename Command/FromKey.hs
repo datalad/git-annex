@@ -45,9 +45,7 @@ startMass = do
 	next massAdd
 
 massAdd :: CommandPerform
-massAdd = do
-	liftIO $ fileEncoding stdin
-	go True =<< map (separate (== ' ')) . lines <$> liftIO getContents
+massAdd = go True =<< map (separate (== ' ')) . lines <$> liftIO getContents
   where
 	go status [] = next $ return status
 	go status ((keyname,f):rest) | not (null keyname) && not (null f) = do
