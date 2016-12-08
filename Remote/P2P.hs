@@ -188,7 +188,7 @@ openConnection u addr = do
 					liftIO $ closeConnection conn
 					return ClosedConnection
 				Left e -> do
-					warning e
+					warning $ "Problem communicating with peer. (" ++ e ++ ")"
 					liftIO $ closeConnection conn
 					return ClosedConnection
 		Left e -> do
