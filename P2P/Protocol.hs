@@ -29,6 +29,8 @@ import System.Exit (ExitCode(..))
 import System.IO
 import qualified Data.ByteString.Lazy as L
 import Data.Char
+import Control.Applicative
+import Prelude
 
 newtype Offset = Offset Integer
 	deriving (Show)
