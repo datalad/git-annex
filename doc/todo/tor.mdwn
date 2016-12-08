@@ -6,8 +6,10 @@ Current todo list:
 
 * copy --to peer seems to make the remotedaemon buffer the content in
   memory, more than I'd expect. Check if this is a memory leak..
-* Resuming an interrupted transfer fails at the end, despite having gotten
-  the whole correct file content.
+* When a transfer can't be done because another transfer of the same 
+  object is already in progress, the message about this is output by the
+  remotedaemon --debug, but not forwarded to the peer, which shows
+  "Connection reset by peer"
 * update progress logs in remotedaemon send/receive
 * Think about locking some more. What happens if the connection to the peer
   is dropped while we think we're locking content there from being dropped?
