@@ -20,9 +20,9 @@ import P2P.Protocol
 import P2P.IO
 import Logs.Location
 import Types.NumCopies
+import Utility.Metered
 
 import Control.Monad.Free
-import qualified Data.ByteString.Lazy as L
 
 -- When we're serving a peer, we know their uuid, and can use it to update
 -- transfer logs.
@@ -52,35 +52,33 @@ runLocal runmode runner a = case a of
 		let getsize = liftIO . catchMaybeIO . getFileSize
 		size <- inAnnex' isJust Nothing getsize k
 		runner (next (Len <$> size))
-	-- TODO transfer log not updated
-	ReadContent k af (Offset o) next -> do
+	ReadContent k af o sender next -> do
 		v <- tryNonAsync $ prepSendAnnex k
 		case v of
-			-- The check can detect a problem after the
-			-- content is sent, but we don't use it.
-			-- Instead, the receiving peer must AlwaysVerify
-			-- the content it receives.
+			-- The check can detect if the file
+			-- changed while it was transferred, but we don't
+			-- use it. Instead, the receiving peer must
+			-- AlwaysVerify the content it receives.
 			Right (Just (f, _check)) -> do
-				v' <- tryNonAsync $ -- transfer upload k af $
-					liftIO $ do
-						h <- openBinaryFile f ReadMode
-						when (o /= 0) $
-							hSeek h AbsoluteSeek o
-						L.hGetContents h
+				v' <- tryNonAsync $
+					transfer upload k af $
+						sinkfile f o sender
 				case v' of
 					Left e -> return (Left (show e))
-					Right b -> runner (next b)
-			Right Nothing -> return (Left "content not available")
+					Right (Left e) -> return (Left (show e))
+					Right (Right ok) -> runner (next ok)
+			-- content not available
+ 			Right Nothing -> runner (next False)
 			Left e -> return (Left (show e))
 	StoreContent k af o l getb next -> do
 		ok <- flip catchNonAsync (const $ return False) $
-			transfer download k af $
+			transfer download k af $ \p ->
 				getViaTmp AlwaysVerify k $ \tmp ->
-					unVerified $ storefile tmp o l getb
+					unVerified $ storefile tmp o l getb p
 		runner (next ok)
 	StoreContentTo dest o l getb next -> do
 		ok <- flip catchNonAsync (const $ return False) $
-			storefile dest o l getb
+			storefile dest o l getb nullMeterUpdate
 		runner (next ok)
 	SetPresent k u next -> do
 		v <- tryNonAsync $ logChange k u InfoPresent
@@ -116,18 +114,31 @@ runLocal runmode runner a = case a of
 	transfer mk k af ta = case runmode of
 		-- Update transfer logs when serving.
 		Serving theiruuid -> 
-			mk theiruuid k af noRetry (const ta) noNotification
+			mk theiruuid k af noRetry ta noNotification
 		-- Transfer logs are updated higher in the stack when
 		-- a client.
-		Client -> ta
-	storefile dest (Offset o) (Len l) getb = do
+		Client -> ta nullMeterUpdate
+	
+	storefile dest (Offset o) (Len l) getb p = do
+		let p' = offsetMeterUpdate p (toBytesProcessed o)
 		v <- runner getb
 		case v of
 			Right b -> liftIO $ do
 				withBinaryFile dest ReadWriteMode $ \h -> do
 					when (o /= 0) $
 						hSeek h AbsoluteSeek o
-					L.hPut h b
-				sz <- liftIO $ getFileSize dest
+					meteredWrite p' h b
+				sz <- getFileSize dest
 				return (toInteger sz == l + o)
 			Left e -> error e
+	
+	sinkfile f (Offset o) sender p = bracket setup cleanup go
+	  where
+		setup = liftIO $ openBinaryFile f ReadMode
+		cleanup = liftIO . hClose
+		go h = do
+			let p' = offsetMeterUpdate p (toBytesProcessed o)
+			when (o /= 0) $
+				liftIO $ hSeek h AbsoluteSeek o
+			b <- liftIO $ hGetContentsMetered h p'
+			runner (sender b)

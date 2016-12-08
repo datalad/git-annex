@@ -197,9 +197,10 @@ data LocalF c
 	| ContentSize Key (Maybe Len -> c)
 	-- ^ Gets size of the content of a key, when the full content is
 	-- present.
-	| ReadContent Key AssociatedFile Offset (L.ByteString -> c)
-	-- ^ Lazily reads the content of a key. Note that the content
-	-- may change while it's being sent.
+	| ReadContent Key AssociatedFile Offset (L.ByteString -> Proto Bool) (Bool -> c)
+	-- ^ Reads the content of a key and sends it to the callback.
+	-- Note that the content may change while it's being sent.
+	-- If the content is not available, sends L.empty to the callback.
 	| StoreContent Key AssociatedFile Offset Len (Proto L.ByteString) (Bool -> c)
 	-- ^ Stores content to the key's temp file starting at an offset.
 	-- Once the whole content of the key has been stored, moves the
@@ -381,12 +382,20 @@ serveAuthed myuuid = void $ serverLoop handler
 	handler _ = return ServerUnexpected
 
 sendContent :: Key -> AssociatedFile -> Offset -> MeterUpdate -> Proto Bool
-sendContent key af offset@(Offset n) p = do
-	let p' = offsetMeterUpdate p (toBytesProcessed n)
-	(len, content) <- readContentLen key af offset
-	net $ sendMessage (DATA len)
-	net $ sendBytes len content p'
-	checkSuccess
+sendContent key af offset@(Offset n) p = go =<< local (contentSize key)
+  where
+ 	go Nothing = sender (Len 0) L.empty
+	go (Just (Len totallen)) = do
+		let len = totallen - n
+		if len <= 0
+			then sender (Len 0) L.empty
+			else local $ readContent key af offset $
+				sender (Len len)
+	sender len content = do
+		let p' = offsetMeterUpdate p (toBytesProcessed n)
+		net $ sendMessage (DATA len)
+		net $ sendBytes len content p'
+		checkSuccess
 
 receiveContent :: MeterUpdate -> Local Len -> (Offset -> Len -> Proto L.ByteString -> Local Bool) -> (Offset -> Message) -> Proto Bool
 receiveContent p sizer storer mkmsg = do
@@ -418,22 +427,6 @@ checkSuccess = do
 sendSuccess :: Bool -> Proto ()
 sendSuccess True = net $ sendMessage SUCCESS
 sendSuccess False = net $ sendMessage FAILURE
-
--- Reads content from an offset. The Len should correspond to
--- the length of the ByteString, but to avoid buffering the content
--- in memory, is gotten using contentSize.
-readContentLen :: Key -> AssociatedFile -> Offset -> Proto (Len, L.ByteString)
-readContentLen key af (Offset offset) = go =<< local (contentSize key)
-  where
-	go Nothing = return (Len 0, L.empty)
-	go (Just (Len totallen)) = do
-		let len = totallen - offset
-		if len <= 0
-			then return (Len 0, L.empty)
-			else do
-				content <- local $
-					readContent key af (Offset offset)
-				return (Len len, content)
 
 connect :: Service -> Handle -> Handle -> Proto ExitCode
 connect service hin hout = do
