@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-12-08T21:11:31Z"
+ content="""
+Indeed, the ssh bundled in the apk is shockingly old by now, and needs to
+get updated.
+"""]]
