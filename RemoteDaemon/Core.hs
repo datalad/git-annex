@@ -20,6 +20,7 @@ import Utility.SimpleProtocol
 import Utility.ThreadScheduler
 import Config
 import Annex.Ssh
+import Types.Messages
 
 import Control.Concurrent
 import Control.Concurrent.Async
@@ -151,7 +152,9 @@ genTransportHandle :: IO TransportHandle
 genTransportHandle = do
 	annexstate <- newMVar =<< Annex.new =<< Git.CurrentRepo.get
 	g <- Annex.repo <$> readMVar annexstate
-	return $ TransportHandle (LocalRepo g) annexstate
+	let h = TransportHandle (LocalRepo g) annexstate
+	liftAnnex h $ Annex.setOutput QuietOutput
+	return h
 
 updateTransportHandle :: TransportHandle -> IO TransportHandle
 updateTransportHandle h@(TransportHandle _g annexstate) = do
