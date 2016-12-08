@@ -16,6 +16,9 @@ Current todo list:
 
 Eventually:
 
+* Limiting authtokens to read-only access.
+* Revoking authtokens. (This and read-only need a name associated with an
+  authtoken, so the user can adjust its configuration after creating it.)
 * address exchange via electrum-mnemonic or magic wormhole (see PAKE)
 * webapp UI for easy pairing
 * friend-of-a-friend peer discovery to build more interconnected networks
