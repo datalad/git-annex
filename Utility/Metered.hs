@@ -5,7 +5,7 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE TypeSynonymInstances, BangPatterns #-}
 
 module Utility.Metered where
 
@@ -93,7 +93,7 @@ meteredWrite' meterupdate h = go zeroBytesProcessed . L.toChunks
 	go sofar [] = return sofar
 	go sofar (c:cs) = do
 		S.hPut h c
-		let sofar' = addBytesProcessed sofar $ S.length c
+		let !sofar' = addBytesProcessed sofar $ S.length c
 		meterupdate sofar'
 		go sofar' cs
 
@@ -138,7 +138,7 @@ hGetMetered h wantsize meterupdate = lazyRead zeroBytesProcessed
 				hClose h
 				return $ L.empty
 			else do
-				let sofar' = addBytesProcessed sofar (S.length c)
+				let !sofar' = addBytesProcessed sofar (S.length c)
 				meterupdate sofar'
 				if keepgoing (fromBytesProcessed sofar')
 					then do
