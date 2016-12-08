@@ -51,7 +51,7 @@ server th@(TransportHandle (LocalRepo r) _) = do
 	modifyFileMode sock $ addModes
 		[groupReadMode, groupWriteMode, otherReadMode, otherWriteMode]
 	listen soc 2
-	debugM "remotedaemon" "tor hidden service running"
+	debugM "remotedaemon" "Tor hidden service running"
 	forever $ do
 		(conn, _) <- accept soc
 		h <- setupHandle conn
@@ -63,7 +63,7 @@ server th@(TransportHandle (LocalRepo r) _) = do
 			)
 		unless ok $ do
 			hClose h
-			warningIO "dropped TOR connection, too busy"
+			warningIO "dropped Tor connection, too busy"
 
 -- How many clients to serve at a time, maximum. This is to avoid DOS
 -- attacks.
@@ -76,7 +76,7 @@ serveClient th u r q = bracket setup cleanup go
 	setup = atomically $ readTBQueue q
 	cleanup = hClose
 	go h = do
-		debugM "remotedaemon" "serving a TOR connection"
+		debugM "remotedaemon" "serving a Tor connection"
 		-- Avoid doing any work in the liftAnnex, since only one
 		-- can run at a time.
 		st <- liftAnnex th dupState
@@ -96,9 +96,9 @@ serveClient th u r q = bracket setup cleanup go
 					runFullProto (Serving theiruuid) conn $
 						serveAuthed u
 				Right Nothing -> liftIO $
-					debugM "remotedaemon" "TOR connection failed to authenticate"
+					debugM "remotedaemon" "Tor connection failed to authenticate"
 				Left e -> liftIO $
-					debugM "remotedaemon" ("Error while serving TOR connection: " ++ e)
+					debugM "remotedaemon" ("Error while serving Tor connection: " ++ e)
 		-- Merge the duplicated state back in.
 		liftAnnex th $ mergeState st'
-		debugM "remotedaemon" "done with TOR connection"
+		debugM "remotedaemon" "done with Tor connection"
