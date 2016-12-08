@@ -24,11 +24,7 @@ COST CENTRE                                               MODULE                
 </pre>
 
   Switching to L.hGet, it still leaks, so seems hGetMetered is not at fault
-  and the bytestring is being buffered excessively somehow before it
-  reaches the file.
-
-  Aha! While a send is in progress like this, .git/annex/tmp is empty!
-  The whole file is being buffered in memory and written at the end.
+  and the bytestring is being buffered excessively somehow.
 
 * When a transfer can't be done because another transfer of the same 
   object is already in progress, the message about this is output by the
