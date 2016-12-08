@@ -81,7 +81,7 @@ linkRemote remotename = do
 	setup (P2PAddressAuth addr authtoken) = do
 		g <- Annex.gitRepo
 		conn <- liftIO $ connectPeer g addr
-			`catchNonAsync` giveup "Unable to connect with peer. Please check that the peer is connected to the network, and try again."
+			`catchNonAsync` connerror
 		u <- getUUID
 		v <- liftIO $ runNetProto conn $ P2P.auth u authtoken
 		case v of
@@ -96,3 +96,4 @@ linkRemote remotename = do
 					storeP2PRemoteAuthToken addr authtoken
 				return ok
 			_ -> giveup "Unable to authenticate with peer. Please check the address and try again."
+	connerror e = giveup $ "Unable to connect with peer. Please check that the peer is connected to the network, and try again. ("  ++ show e ++ ")"
