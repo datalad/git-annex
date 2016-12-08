@@ -370,6 +370,7 @@ Executable git-annex
    feed,
    regex-tdfa,
    socks,
+   byteable,
    securemem
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
@@ -473,8 +474,7 @@ Executable git-annex
      crypto-api,
      clientsession,
      template-haskell,
-     shakespeare (>= 2.0.0),
-     byteable
+     shakespeare (>= 2.0.0)
     CPP-Options: -DWITH_WEBAPP
 
   if flag(Pairing)
