@@ -200,7 +200,7 @@ data LocalF c
 	| ReadContent Key AssociatedFile Offset (L.ByteString -> c)
 	-- ^ Lazily reads the content of a key. Note that the content
 	-- may change while it's being sent.
-	| StoreContent Key AssociatedFile Offset Len L.ByteString (Bool -> c)
+	| StoreContent Key AssociatedFile Offset Len (Proto L.ByteString) (Bool -> c)
 	-- ^ Stores content to the key's temp file starting at an offset.
 	-- Once the whole content of the key has been stored, moves the
 	-- temp file into place as the content of the key, and returns True.
@@ -208,7 +208,7 @@ data LocalF c
 	-- Note: The ByteString may not contain the entire remaining content
 	-- of the key. Only once the temp file size == Len has the whole
 	-- content been transferred.
-	| StoreContentTo FilePath Offset Len L.ByteString (Bool -> c)
+	| StoreContentTo FilePath Offset Len (Proto L.ByteString) (Bool -> c)
 	-- ^ Stores the content to a temp file starting at an offset.
 	-- Once the whole content of the key has been stored, returns True.
 	--
@@ -388,7 +388,7 @@ sendContent key af offset@(Offset n) p = do
 	net $ sendBytes len content p'
 	checkSuccess
 
-receiveContent :: MeterUpdate -> Local Len -> (Offset -> Len -> L.ByteString -> Local Bool) -> (Offset -> Message) -> Proto Bool
+receiveContent :: MeterUpdate -> Local Len -> (Offset -> Len -> Proto L.ByteString -> Local Bool) -> (Offset -> Message) -> Proto Bool
 receiveContent p sizer storer mkmsg = do
 	Len n <- local sizer
 	let p' = offsetMeterUpdate p (toBytesProcessed n)
@@ -397,8 +397,8 @@ receiveContent p sizer storer mkmsg = do
 	r <- net receiveMessage
 	case r of
 		DATA len -> do
-			ok <- local . storer offset len
-				=<< net (receiveBytes len p')
+			ok <- local $ storer offset len
+				(net (receiveBytes len p'))
 			sendSuccess ok
 			return ok
 		_ -> do

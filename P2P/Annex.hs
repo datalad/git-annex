@@ -72,15 +72,15 @@ runLocal runmode runner a = case a of
 					Right b -> runner (next b)
 			Right Nothing -> return (Left "content not available")
 			Left e -> return (Left (show e))
-	StoreContent k af o l b next -> do
+	StoreContent k af o l getb next -> do
 		ok <- flip catchNonAsync (const $ return False) $
 			transfer download k af $
 				getViaTmp AlwaysVerify k $ \tmp ->
-					unVerified $ storefile tmp o l b
+					unVerified $ storefile tmp o l getb
 		runner (next ok)
-	StoreContentTo dest o l b next -> do
+	StoreContentTo dest o l getb next -> do
 		ok <- flip catchNonAsync (const $ return False) $
-			storefile dest o l b
+			storefile dest o l getb
 		runner (next ok)
 	SetPresent k u next -> do
 		v <- tryNonAsync $ logChange k u InfoPresent
@@ -120,10 +120,14 @@ runLocal runmode runner a = case a of
 		-- Transfer logs are updated higher in the stack when
 		-- a client.
 		Client -> ta
-	storefile dest (Offset o) (Len l) b = liftIO $ do
-		withBinaryFile dest ReadWriteMode $ \h -> do
-			when (o /= 0) $
-				hSeek h AbsoluteSeek o
-			L.hPut h b
-		sz <- getFileSize dest
-		return (toInteger sz == l + o)
+	storefile dest (Offset o) (Len l) getb = do
+		v <- runner getb
+		case v of
+			Right b -> liftIO $ do
+				withBinaryFile dest ReadWriteMode $ \h -> do
+					when (o /= 0) $
+						hSeek h AbsoluteSeek o
+					L.hPut h b
+				sz <- liftIO $ getFileSize dest
+				return (toInteger sz == l + o)
+			Left e -> error e
