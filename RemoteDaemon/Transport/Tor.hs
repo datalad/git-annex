@@ -95,12 +95,10 @@ serveClient th u r q = bracket setup cleanup go
 				Right (Just theiruuid) -> void $ 
 					runFullProto (Serving theiruuid) conn $
 						serveAuthed u
-				Right Nothing -> do
-					liftIO $ debugM "remotedaemon" "TOR connection failed to authenticate"
-					return ()
-				Left e -> do
-					warning e
-					return ()
+				Right Nothing -> liftIO $
+					debugM "remotedaemon" "TOR connection failed to authenticate"
+				Left e -> liftIO $
+					debugM "remotedaemon" ("Error while serving TOR connection: " ++ e)
 		-- Merge the duplicated state back in.
 		liftAnnex th $ mergeState st'
 		debugM "remotedaemon" "done with TOR connection"
