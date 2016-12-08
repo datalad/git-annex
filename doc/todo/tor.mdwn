@@ -4,8 +4,13 @@ Mostly working!
 
 Current todo list:
 
-* copy --to peer seems to make the remotedaemon buffer the content in
-  memory, more than I'd expect. Check if this is a memory leak..
+* copy --to peer of a 100 mb file causes the memory of the remotedaemon
+  to creep up from 40 mb to 136 mb. Once the transfer is done, the
+  remotedaemon continues using all that memory. Memory leak. Profile it.  
+  (The sending process creeps up some initially, but stops at 45 mb used.
+  That could just be buffering.)  
+  (copy --from peer does not leak on either end; the remotedaemon uses 34
+  mb and the receiver 44 mb.)
 * When a transfer can't be done because another transfer of the same 
   object is already in progress, the message about this is output by the
   remotedaemon --debug, but not forwarded to the peer, which shows
