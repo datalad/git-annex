@@ -127,14 +127,15 @@ runProto u addr connpool a = withConnection u addr connpool (runProto' a)
 runProto' :: P2P.Proto a -> Connection -> Annex (Connection, Maybe a)
 runProto' _ ClosedConnection = return (ClosedConnection, Nothing)
 runProto' a (OpenConnection conn) = do
-	r <- runFullProto Client conn a
+	v <- runFullProto Client conn a
 	-- When runFullProto fails, the connection is no longer usable,
 	-- so close it.
-	if isJust r
-		then return (OpenConnection conn, r)
-		else do
+	case v of
+		Left e -> do
+			warning e
 			liftIO $ closeConnection conn
-			return (ClosedConnection, r)
+			return (ClosedConnection, Nothing)
+		Right r -> return (OpenConnection conn, Just r)
 
 -- Uses an open connection if one is available in the ConnectionPool;
 -- otherwise opens a new connection.
@@ -176,16 +177,20 @@ openConnection u addr = do
 			res <- liftIO $ runNetProto conn $
 				P2P.auth myuuid authtoken
 			case res of
-				Just (Just theiruuid)
+				Right (Just theiruuid)
 					| u == theiruuid -> return (OpenConnection conn)
 					| otherwise -> do
 						liftIO $ closeConnection conn
 						warning "Remote peer uuid seems to have changed."
 						return ClosedConnection
-				_ -> do
-					liftIO $ closeConnection conn
+				Right Nothing -> do
 					warning "Unable to authenticate with peer."
+					liftIO $ closeConnection conn
 					return ClosedConnection
-		Left _e -> do
-			warning "Unable to connect to peer."
+				Left e -> do
+					warning e
+					liftIO $ closeConnection conn
+					return ClosedConnection
+		Left e -> do
+			warning $ "Unable to connect to peer. (" ++ show e ++ ")"
 			return ClosedConnection

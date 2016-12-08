@@ -42,7 +42,7 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 
 -- Type of interpreters of the Proto free monad.
-type RunProto m = forall a. (MonadIO m, MonadMask m) => Proto a -> m (Maybe a)
+type RunProto m = forall a. (MonadIO m, MonadMask m) => Proto a -> m (Either String a)
 
 data P2PConnection = P2PConnection
 	{ connRepo :: Repo
@@ -80,31 +80,31 @@ setupHandle s = do
 -- This only runs Net actions. No Local actions will be run
 -- (those need the Annex monad) -- if the interpreter reaches any,
 -- it returns Nothing.
-runNetProto :: P2PConnection -> Proto a -> IO (Maybe a)
+runNetProto :: P2PConnection -> Proto a -> IO (Either String a)
 runNetProto conn = go
   where
 	go :: RunProto IO
-	go (Pure v) = pure (Just v)
+	go (Pure v) = pure (Right v)
 	go (Free (Net n)) = runNet conn go n
-	go (Free (Local _)) = return Nothing
+	go (Free (Local _)) = return (Left "unexpected annex operation attempted")
 
 -- Interpreter of the Net part of Proto.
 --
 -- An interpreter of Proto has to be provided, to handle the rest of Proto
 -- actions.
-runNet :: (MonadIO m, MonadMask m) => P2PConnection -> RunProto m -> NetF (Proto a) -> m (Maybe a)
+runNet :: (MonadIO m, MonadMask m) => P2PConnection -> RunProto m -> NetF (Proto a) -> m (Either String a)
 runNet conn runner f = case f of
 	SendMessage m next -> do
 		v <- liftIO $ tryNonAsync $ do
 			hPutStrLn (connOhdl conn) (unwords (formatMessage m))
 			hFlush (connOhdl conn)
 		case v of
-			Left _e -> return Nothing
+			Left e -> return (Left (show e))
 			Right () -> runner next
 	ReceiveMessage next -> do
 		v <- liftIO $ tryNonAsync $ hGetLine (connIhdl conn)
 		case v of
-			Left _e -> return Nothing
+			Left e -> return (Left (show e))
 			Right l -> case parseMessage l of
 				Just m -> runner (next m)
 				Nothing -> runner $ do
@@ -118,11 +118,12 @@ runNet conn runner f = case f of
 			return ok
 		case v of
 			Right True -> runner next
-			_ -> return Nothing
+			Right False -> return (Left "short data write")
+			Left e -> return (Left (show e))
 	ReceiveBytes len p next -> do
 		v <- liftIO $ tryNonAsync $ receiveExactly len (connIhdl conn) p
 		case v of
-			Left _e -> return Nothing
+			Left e -> return (Left (show e))
 			Right b -> runner (next b)
 	CheckAuthToken _u t next -> do
 		let authed = connCheckAuth conn t
@@ -130,13 +131,13 @@ runNet conn runner f = case f of
 	Relay hin hout next -> do
 		v <- liftIO $ runRelay runnerio hin hout
 		case v of
-			Nothing -> return Nothing
-			Just exitcode -> runner (next exitcode)
+			Left e -> return (Left e)
+			Right exitcode -> runner (next exitcode)
 	RelayService service next -> do
 		v <- liftIO $ runRelayService conn runnerio service
 		case v of
-			Nothing -> return Nothing
-			Just () -> runner next
+			Left e -> return (Left e)
+			Right () -> runner next
   where
 	-- This is only used for running Net actions when relaying,
 	-- so it's ok to use runNetProto, despite it not supporting
@@ -162,8 +163,10 @@ sendExactly (Len n) b h p = do
 receiveExactly :: Len -> Handle -> MeterUpdate -> IO L.ByteString
 receiveExactly (Len n) h p = hGetMetered h (Just n) p
 
-runRelay :: RunProto IO -> RelayHandle -> RelayHandle -> IO (Maybe ExitCode)
-runRelay runner (RelayHandle hout) (RelayHandle hin) = bracket setup cleanup go
+runRelay :: RunProto IO -> RelayHandle -> RelayHandle -> IO (Either String ExitCode)
+runRelay runner (RelayHandle hout) (RelayHandle hin) = 
+	bracket setup cleanup go
+		`catchNonAsync` (return . Left . show)
   where
 	setup = do
 		v <- newEmptyMVar
@@ -177,8 +180,10 @@ runRelay runner (RelayHandle hout) (RelayHandle hin) = bracket setup cleanup go
 	
 	go v = relayHelper runner v
 
-runRelayService :: P2PConnection -> RunProto IO -> Service -> IO (Maybe ())
-runRelayService conn runner service = bracket setup cleanup go
+runRelayService :: P2PConnection -> RunProto IO -> Service -> IO (Either String ())
+runRelayService conn runner service = 
+	bracket setup cleanup go
+		`catchNonAsync` (return . Left . show)
   where
 	cmd = case service of
 		UploadPack -> "upload-pack"
@@ -209,13 +214,13 @@ runRelayService conn runner service = bracket setup cleanup go
 	go (v, _, _, _, _) = do
 		r <- relayHelper runner v
 		case r of
-			Nothing -> return Nothing
-			Just exitcode -> runner $ net $ relayToPeer (RelayDone exitcode)
+			Left e -> return (Left (show e))
+			Right exitcode -> runner $ net $ relayToPeer (RelayDone exitcode)
 	
 	waitexit v pid = putMVar v . RelayDone =<< waitForProcess pid
 
 -- Processes RelayData as it is put into the MVar.
-relayHelper :: RunProto IO -> MVar RelayData -> IO (Maybe ExitCode)
+relayHelper :: RunProto IO -> MVar RelayData -> IO (Either String ExitCode)
 relayHelper runner v = loop
   where
 	loop = do
@@ -224,11 +229,11 @@ relayHelper runner v = loop
 			RelayToPeer b -> do
 				r <- runner $ net $ relayToPeer (RelayToPeer b)
 				case r of
-					Nothing -> return Nothing
-					Just () -> loop
+					Left e -> return (Left e)
+					Right () -> loop
 			RelayDone exitcode -> do
 				_ <- runner $ net $ relayToPeer (RelayDone exitcode)
-				return (Just exitcode)
+				return (Right exitcode)
 			RelayFromPeer _ -> loop -- not handled here
 
 -- Takes input from the peer, and sends it to the relay process's stdin.
@@ -239,15 +244,15 @@ relayFeeder runner v hin = loop
 	loop = do
 		mrd <- runner $ net relayFromPeer
 		case mrd of
-			Nothing ->
+			Left _e ->
 				putMVar v (RelayDone (ExitFailure 1))
-			Just (RelayDone exitcode) ->
+			Right (RelayDone exitcode) ->
 				putMVar v (RelayDone exitcode)
-			Just (RelayFromPeer b) -> do
+			Right (RelayFromPeer b) -> do
 				L.hPut hin b
 				hFlush hin
 				loop
-			Just (RelayToPeer _) -> loop -- not handled here
+			Right (RelayToPeer _) -> loop -- not handled here
 
 -- Reads input from the Handle and puts it into the MVar for relaying to
 -- the peer. Continues until EOF on the Handle.

@@ -85,7 +85,7 @@ linkRemote remotename = do
 		u <- getUUID
 		v <- liftIO $ runNetProto conn $ P2P.auth u authtoken
 		case v of
-			Just (Just theiruuid) -> do
+			Right (Just theiruuid) -> do
 				ok <- inRepo $ Git.Command.runBool
 					[ Param "remote", Param "add"
 					, Param remotename
@@ -95,5 +95,6 @@ linkRemote remotename = do
 					storeUUIDIn (remoteConfig remotename "uuid") theiruuid
 					storeP2PRemoteAuthToken addr authtoken
 				return ok
-			_ -> giveup "Unable to authenticate with peer. Please check the address and try again."
+			Right Nothing -> giveup "Unable to authenticate with peer. Please check the address and try again."
+			Left e -> giveup $ "Unable to authenticate with peer: " ++ e
 	connerror e = giveup $ "Unable to connect with peer. Please check that the peer is connected to the network, and try again. ("  ++ show e ++ ")"

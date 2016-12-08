@@ -31,15 +31,15 @@ data RunMode
 	| Client
 
 -- Full interpreter for Proto, that can receive and send objects.
-runFullProto :: RunMode -> P2PConnection -> Proto a -> Annex (Maybe a)
+runFullProto :: RunMode -> P2PConnection -> Proto a -> Annex (Either String a)
 runFullProto runmode conn = go
   where
 	go :: RunProto Annex
-	go (Pure v) = pure (Just v)
+	go (Pure v) = pure (Right v)
 	go (Free (Net n)) = runNet conn go n
 	go (Free (Local l)) = runLocal runmode go l
 
-runLocal :: RunMode -> RunProto Annex -> LocalF (Proto a) -> Annex (Maybe a)
+runLocal :: RunMode -> RunProto Annex -> LocalF (Proto a) -> Annex (Either String a)
 runLocal runmode runner a = case a of
 	TmpContentSize k next -> do
 		tmp <- fromRepo $ gitAnnexTmpObjectLocation k
@@ -68,9 +68,10 @@ runLocal runmode runner a = case a of
 							hSeek h AbsoluteSeek o
 						L.hGetContents h
 				case v' of
-					Left _ -> return Nothing
+					Left e -> return (Left (show e))
 					Right b -> runner (next b)
-			_ -> return Nothing
+			Right Nothing -> return (Left "content not available")
+			Left e -> return (Left (show e))
 	StoreContent k af o l b next -> do
 		ok <- flip catchNonAsync (const $ return False) $
 			transfer download k af $
@@ -84,12 +85,12 @@ runLocal runmode runner a = case a of
 	SetPresent k u next -> do
 		v <- tryNonAsync $ logChange k u InfoPresent
 		case v of
-			Left _ -> return Nothing
+			Left e -> return (Left (show e))
 			Right () -> runner next
 	CheckContentPresent k next -> do
 		v <- tryNonAsync $ inAnnex k
 		case v of
-			Left _ -> return Nothing
+			Left e -> return (Left (show e))
 			Right result -> runner (next result)
 	RemoveContent k next -> do
 		v <- tryNonAsync $ lockContentForRemoval k $ \contentlock -> do
@@ -97,7 +98,7 @@ runLocal runmode runner a = case a of
 				logStatus k InfoMissing
 				return True
 		case v of
-			Left _ -> return Nothing
+			Left e -> return (Left (show e))
 			Right result -> runner (next result)
 	TryLockContent k protoaction next -> do
 		v <- tryNonAsync $ lockContentShared k $ \verifiedcopy -> 
