@@ -167,7 +167,7 @@ runRelay runner (RelayHandle hout) (RelayHandle hin) = bracket setup cleanup go
   where
 	setup = do
 		v <- newEmptyMVar
-		void $ async $ relayFeeder runner v
+		void $ async $ relayFeeder runner v hin
 		void $ async $ relayReader v hout
 		return v
 	
@@ -175,7 +175,7 @@ runRelay runner (RelayHandle hout) (RelayHandle hin) = bracket setup cleanup go
 		hClose hin
 		hClose hout
 	
-	go v = relayHelper runner v hin
+	go v = relayHelper runner v
 
 runRelayService :: P2PConnection -> RunProto IO -> Service -> IO (Maybe ())
 runRelayService conn runner service = bracket setup cleanup go
@@ -195,7 +195,7 @@ runRelayService conn runner service = bracket setup cleanup go
 			, std_in = CreatePipe
 			}
 		v <- newEmptyMVar
-		void $ async $ relayFeeder runner v
+		void $ async $ relayFeeder runner v hin
 		void $ async $ relayReader v hout
 		waiter <- async $ waitexit v pid
 		return (v, waiter, hin, hout, pid)
@@ -206,8 +206,8 @@ runRelayService conn runner service = bracket setup cleanup go
 		cancel waiter
 		void $ waitForProcess pid
 
-	go (v, _, hin, _, _) = do
-		r <- relayHelper runner v hin
+	go (v, _, _, _, _) = do
+		r <- relayHelper runner v
 		case r of
 			Nothing -> return Nothing
 			Just exitcode -> runner $ net $ relayToPeer (RelayDone exitcode)
@@ -215,16 +215,12 @@ runRelayService conn runner service = bracket setup cleanup go
 	waitexit v pid = putMVar v . RelayDone =<< waitForProcess pid
 
 -- Processes RelayData as it is put into the MVar.
-relayHelper :: RunProto IO -> MVar RelayData -> Handle -> IO (Maybe ExitCode)
-relayHelper runner v hin = loop
+relayHelper :: RunProto IO -> MVar RelayData -> IO (Maybe ExitCode)
+relayHelper runner v = loop
   where
 	loop = do
 		d <- takeMVar v
 		case d of
-			RelayFromPeer b -> do
-				L.hPut hin b
-				hFlush hin
-				loop
 			RelayToPeer b -> do
 				r <- runner $ net $ relayToPeer (RelayToPeer b)
 				case r of
@@ -233,21 +229,25 @@ relayHelper runner v hin = loop
 			RelayDone exitcode -> do
 				_ <- runner $ net $ relayToPeer (RelayDone exitcode)
 				return (Just exitcode)
+			RelayFromPeer _ -> loop -- not handled here
 
--- Takes input from the peer, and puts it into the MVar for processing.
+-- Takes input from the peer, and sends it to the relay process's stdin.
 -- Repeats until the peer tells it it's done or hangs up.
-relayFeeder :: RunProto IO -> MVar RelayData -> IO ()
-relayFeeder runner v = loop
+relayFeeder :: RunProto IO -> MVar RelayData -> Handle -> IO ()
+relayFeeder runner v hin = loop
   where
 	loop = do
 		mrd <- runner $ net relayFromPeer
 		case mrd of
-			Nothing -> putMVar v (RelayDone (ExitFailure 1))
-			Just rd -> do
-				putMVar v rd
-				case rd of
-					RelayDone _ -> return ()
-					_ -> loop
+			Nothing ->
+				putMVar v (RelayDone (ExitFailure 1))
+			Just (RelayDone exitcode) ->
+				putMVar v (RelayDone exitcode)
+			Just (RelayFromPeer b) -> do
+				L.hPut hin b
+				hFlush hin
+				loop
+			Just (RelayToPeer _) -> loop -- not handled here
 
 -- Reads input from the Handle and puts it into the MVar for relaying to
 -- the peer. Continues until EOF on the Handle.
