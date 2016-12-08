@@ -11,6 +11,18 @@ Current todo list:
   That could just be buffering.)  
   (copy --from peer does not leak on either end; the remotedaemon uses 34
   mb and the receiver 44 mb.)
+
+  Profiling results: Leak is in hGetMetered, or perhaps in
+  the consumer of the data it reads. Graph shows `ARR_WORDS` is
+  the type; that must be a bytestring.
+
+<pre>                                                                                                                   individual      inherited
+COST CENTRE                                               MODULE                               no.      entries  %time %alloc   %time %alloc
+                     tryNonAsync                          Utility.Exception                    3241          0    0.0    0.1    49.3   65.8
+                      receiveExactly                      P2P.IO                               3429          0    0.0    0.0    49.3   65.7
+                       hGetMetered                        Utility.Metered                      3430          0   49.1   65.6    49.3   65.7
+</pre>
+
 * When a transfer can't be done because another transfer of the same 
   object is already in progress, the message about this is output by the
   remotedaemon --debug, but not forwarded to the peer, which shows
