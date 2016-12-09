@@ -356,9 +356,9 @@ dropKey r key
 			commitOnCleanup r $ onLocal r $ do
 				ensureInitialized
 				whenM (Annex.Content.inAnnex key) $ do
-					Annex.Content.lockContentForRemoval key
+					Annex.Content.lockContentForRemoval key $ do
 						Annex.Content.removeAnnex
-					logStatus key InfoMissing
+						logStatus key InfoMissing
 					Annex.Content.saveState True
 				return True
 	| Git.repoIsHttp (repo r) = giveup "dropping from http remote not supported"
