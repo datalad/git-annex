@@ -10,7 +10,6 @@ Current todo list:
   "Connection reset by peer"
 * Think about locking some more. What happens if the connection to the peer
   is dropped while we think we're locking content there from being dropped?
-* test remotedaemon's change detection
 
 Eventually:
 
