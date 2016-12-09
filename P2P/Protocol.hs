@@ -387,7 +387,10 @@ serveAuthed myuuid = void $ serverLoop handler
 		return ServerContinue
 	handler (CONNECT service) = do
 		net $ relayService service
-		return ServerContinue
+		-- After connecting to git, there may be unconsumed data
+		-- from the git processes hanging around (even if they
+		-- exited successfully), so stop serving this connection.
+		return $ ServerGot ()
 	handler NOTIFYCHANGE = do
 		refs <- local waitRefChange
 		net $ sendMessage (CHANGED refs)
