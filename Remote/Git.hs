@@ -356,8 +356,8 @@ dropKey r key
 			commitOnCleanup r $ onLocal r $ do
 				ensureInitialized
 				whenM (Annex.Content.inAnnex key) $ do
-					Annex.Content.lockContentForRemoval key $ do
-						Annex.Content.removeAnnex
+					Annex.Content.lockContentForRemoval key $ \lock -> do
+						Annex.Content.removeAnnex lock
 						logStatus key InfoMissing
 					Annex.Content.saveState True
 				return True
