@@ -133,14 +133,16 @@ transport (RemoteRepo r _) url@(RemoteURI uri) th ichan ochan =
 		res <- runNetProto conn $
 			P2P.auth myuuid authtoken
 		case res of
-			Right (Just theiruuid)
-				| getUncachedUUID r == theiruuid -> do
-					send (CONNECTED url)
-					status <- handlecontrol
-						`race` handlepeer conn
-					send (DISCONNECTED url)
-					return $ either id id status
-				| otherwise -> return ConnectionStopping
+			Right (Just theiruuid) -> do
+				expecteduuid <- liftAnnex th $ getRepoUUID r
+				if expecteduuid == theiruuid
+					then do
+						send (CONNECTED url)
+						status <- handlecontrol
+							`race` handlepeer conn
+						send (DISCONNECTED url)
+						return $ either id id status
+					else return ConnectionStopping
 			_ -> return ConnectionClosed
 	
 	send msg = atomically $ writeTChan ochan msg
