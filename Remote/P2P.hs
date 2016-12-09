@@ -132,7 +132,7 @@ runProto' a (OpenConnection conn) = do
 	-- so close it.
 	case v of
 		Left e -> do
-			warning e
+			warning $ "Lost connection to peer (" ++ e ++ ")"
 			liftIO $ closeConnection conn
 			return (ClosedConnection, Nothing)
 		Right r -> return (OpenConnection conn, Just r)
