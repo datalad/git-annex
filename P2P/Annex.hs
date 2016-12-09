@@ -25,10 +25,8 @@ import Utility.Metered
 
 import Control.Monad.Free
 
--- When we're serving a peer, we know their uuid, and can use it to update
--- transfer logs.
 data RunMode
-	= Serving UUID
+	= Serving UUID ChangedRefsHandle
 	| Client
 
 -- Full interpreter for Proto, that can receive and send objects.
@@ -115,18 +113,17 @@ runLocal runmode runner a = case a of
 				protoaction False
 				next
 			Right _ -> runner next
-	WaitRefChange next -> do
-		v <- tryNonAsync $ bracket
-			watchChangedRefs
-			(liftIO . stopWatchingChangedRefs)
-			(liftIO . waitChangedRefs)
-		case v of
-			Left e -> return (Left (show e))
-			Right changedrefs -> runner (next changedrefs)
+	WaitRefChange next -> case runmode of
+		Serving _ h -> do
+			v <- tryNonAsync $ liftIO $ waitChangedRefs h
+			case v of
+				Left e -> return (Left (show e))
+				Right changedrefs -> runner (next changedrefs)
+		_ -> return $ Left "change notification not implemented for client"
   where
 	transfer mk k af ta = case runmode of
 		-- Update transfer logs when serving.
-		Serving theiruuid -> 
+		Serving theiruuid _ -> 
 			mk theiruuid k af noRetry ta noNotification
 		-- Transfer logs are updated higher in the stack when
 		-- a client.

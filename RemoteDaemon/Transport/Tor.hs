@@ -10,6 +10,7 @@ module RemoteDaemon.Transport.Tor (server) where
 import Common
 import qualified Annex
 import Annex.Concurrent
+import Annex.ChangedRefs
 import RemoteDaemon.Types
 import RemoteDaemon.Common
 import Utility.Tor
@@ -71,12 +72,18 @@ maxConnections :: Int
 maxConnections = 10
 
 serveClient :: TransportHandle -> UUID -> Repo -> TBQueue Handle -> IO ()
-serveClient th u r q = bracket setup cleanup go
+serveClient th u r q = bracket setup cleanup start
   where
-	setup = atomically $ readTBQueue q
-	cleanup = hClose
-	go h = do
+	setup = do
+		h <- atomically $ readTBQueue q
 		debugM "remotedaemon" "serving a Tor connection"
+		return h
+	
+	cleanup h = do
+		debugM "remotedaemon" "done with Tor connection"
+		hClose h
+
+	start h = do
 		-- Avoid doing any work in the liftAnnex, since only one
 		-- can run at a time.
 		st <- liftAnnex th dupState
@@ -92,16 +99,18 @@ serveClient th u r q = bracket setup cleanup go
 				}
 			v <- liftIO $ runNetProto conn $ serveAuth u
 			case v of
-				Right (Just theiruuid) -> void $ do
-					v' <- runFullProto (Serving theiruuid) conn $
-						serveAuthed u
-					case v' of
-						Right () -> return ()
-						Left e -> liftIO $ debugM "remotedaemon" ("Tor connection error: " ++ e)
+				Right (Just theiruuid) -> authed conn theiruuid
 				Right Nothing -> liftIO $
 					debugM "remotedaemon" "Tor connection failed to authenticate"
 				Left e -> liftIO $
 					debugM "remotedaemon" ("Tor connection error before authentication: " ++ e)
 		-- Merge the duplicated state back in.
 		liftAnnex th $ mergeState st'
-		debugM "remotedaemon" "done with Tor connection"
+	
+	authed conn theiruuid = 
+		bracket watchChangedRefs (liftIO . stopWatchingChangedRefs) $ \crh -> do
+			v' <- runFullProto (Serving theiruuid crh) conn $
+				serveAuthed u
+			case v' of
+				Right () -> return ()
+				Left e -> liftIO $ debugM "remotedaemon" ("Tor connection error: " ++ e)
