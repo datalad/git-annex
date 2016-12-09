@@ -17,6 +17,7 @@ import Utility.SimpleProtocol
 import qualified Git
 import Git.Command
 import Utility.ThreadScheduler
+import Annex.ChangedRefs
 
 import Control.Concurrent.STM
 import Control.Concurrent.Async
@@ -73,7 +74,7 @@ transportUsingCmd' cmd params (RemoteRepo r _) url transporthandle ichan ochan =
 			Just SshRemote.READY -> do
 				send (CONNECTED url)
 				handlestdout fromh
-			Just (SshRemote.CHANGED shas) -> do
+			Just (SshRemote.CHANGED (ChangedRefs shas)) -> do
 				whenM (checkNewShas transporthandle shas) $
 					fetch
 				handlestdout fromh

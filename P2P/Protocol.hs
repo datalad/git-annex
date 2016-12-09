@@ -19,6 +19,7 @@ import Utility.Applicative
 import Utility.PartialPrelude
 import Utility.Metered
 import Git.FilePath
+import Annex.ChangedRefs (ChangedRefs)
 
 import Control.Monad
 import Control.Monad.Free
@@ -50,6 +51,8 @@ data Message
 	| AUTH_FAILURE
 	| CONNECT Service
 	| CONNECTDONE ExitCode
+	| NOTIFYCHANGE
+	| CHANGED ChangedRefs
 	| CHECKPRESENT Key
 	| LOCKCONTENT Key
 	| UNLOCKCONTENT
@@ -70,6 +73,8 @@ instance Proto.Sendable Message where
 	formatMessage AUTH_FAILURE = ["AUTH-FAILURE"]
 	formatMessage (CONNECT service) = ["CONNECT", Proto.serialize service]
 	formatMessage (CONNECTDONE exitcode) = ["CONNECTDONE", Proto.serialize exitcode]
+	formatMessage NOTIFYCHANGE = ["NOTIFYCHANGE"]
+	formatMessage (CHANGED refs) = ["CHANGED", Proto.serialize refs]
 	formatMessage (CHECKPRESENT key) = ["CHECKPRESENT", Proto.serialize key]
 	formatMessage (LOCKCONTENT key) = ["LOCKCONTENT", Proto.serialize key]
 	formatMessage UNLOCKCONTENT = ["UNLOCKCONTENT"]
@@ -89,6 +94,8 @@ instance Proto.Receivable Message where
 	parseCommand "AUTH-FAILURE" = Proto.parse0 AUTH_FAILURE
 	parseCommand "CONNECT" = Proto.parse1 CONNECT
 	parseCommand "CONNECTDONE" = Proto.parse1 CONNECTDONE
+	parseCommand "NOTIFYCHANGE" = Proto.parse0 NOTIFYCHANGE
+	parseCommand "CHANGED" = Proto.parse1 CHANGED
 	parseCommand "CHECKPRESENT" = Proto.parse1 CHECKPRESENT
 	parseCommand "LOCKCONTENT" = Proto.parse1 LOCKCONTENT
 	parseCommand "UNLOCKCONTENT" = Proto.parse0 UNLOCKCONTENT
@@ -227,6 +234,8 @@ data LocalF c
 	-- from being deleted, while running the provided protocol
 	-- action. If unable to lock the content, runs the protocol action
 	-- with False.
+	| WaitRefChange (ChangedRefs -> c)
+	-- ^ Waits for one or more git refs to change and returns them.
 	deriving (Functor)
 
 type Local = Free LocalF
@@ -378,6 +387,10 @@ serveAuthed myuuid = void $ serverLoop handler
 		return ServerContinue
 	handler (CONNECT service) = do
 		net $ relayService service
+		return ServerContinue
+	handler NOTIFYCHANGE = do
+		refs <- local waitRefChange
+		net $ sendMessage (CHANGED refs)
 		return ServerContinue
 	handler _ = return ServerUnexpected
 

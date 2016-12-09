@@ -16,11 +16,11 @@ module RemoteDaemon.Transport.Ssh.Types (
 ) where
 
 import qualified Utility.SimpleProtocol as Proto
-import RemoteDaemon.Types (RefList)
+import Annex.ChangedRefs (ChangedRefs)
 
 data Notification
 	= READY
-	| CHANGED RefList
+	| CHANGED ChangedRefs
 
 instance Proto.Sendable Notification where
 	formatMessage READY = ["READY"]

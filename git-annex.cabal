@@ -371,6 +371,7 @@ Executable git-annex
    regex-tdfa,
    socks,
    byteable,
+   stm-chans,
    securemem
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
@@ -513,6 +514,7 @@ Executable git-annex
     Annex.Branch.Transitions
     Annex.BranchState
     Annex.CatFile
+    Annex.ChangedRefs
     Annex.CheckAttr
     Annex.CheckIgnore
     Annex.Common

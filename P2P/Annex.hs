@@ -16,6 +16,7 @@ module P2P.Annex
 import Annex.Common
 import Annex.Content
 import Annex.Transfer
+import Annex.ChangedRefs
 import P2P.Protocol
 import P2P.IO
 import Logs.Location
@@ -114,6 +115,14 @@ runLocal runmode runner a = case a of
 				protoaction False
 				next
 			Right _ -> runner next
+	WaitRefChange next -> do
+		v <- tryNonAsync $ bracket
+			watchChangedRefs
+			(liftIO . stopWatchingChangedRefs)
+			(liftIO . waitChangedRefs)
+		case v of
+			Left e -> return (Left (show e))
+			Right changedrefs -> runner (next changedrefs)
   where
 	transfer mk k af ta = case runmode of
 		-- Update transfer logs when serving.

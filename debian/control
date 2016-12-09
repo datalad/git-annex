@@ -50,6 +50,7 @@ Build-Depends:
 	libghc-esqueleto-dev,
 	libghc-securemem-dev,
 	libghc-byteable-dev,
+	libghc-stm-chans-dev,
 	libghc-dns-dev,
 	libghc-case-insensitive-dev,
 	libghc-http-types-dev,
