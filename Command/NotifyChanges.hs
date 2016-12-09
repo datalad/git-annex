@@ -24,18 +24,19 @@ seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start :: CommandStart
-start = do
-	h <- watchChangedRefs
+start = go =<< watchChangedRefs
+  where
+	go (Just h) = do
+		-- No messages need to be received from the caller,
+		-- but when it closes the connection, notice and terminate.
+		let receiver = forever $ void $ getProtocolLine stdin
+		let sender = forever $ send . CHANGED =<< waitChangedRefs h
 
-	-- No messages need to be received from the caller,
-	-- but when it closes the connection, notice and terminate.
-	let receiver = forever $ void $ getProtocolLine stdin
-	let sender = forever $ send . CHANGED =<< waitChangedRefs h
-
-	liftIO $ send READY
-	void $ liftIO $ concurrently sender receiver
-	liftIO $ stopWatchingChangedRefs h
-	stop
+		liftIO $ send READY
+		void $ liftIO $ concurrently sender receiver
+		liftIO $ stopWatchingChangedRefs h
+		stop
+	go Nothing = stop
 
 send :: Notification -> IO ()
 send n = do

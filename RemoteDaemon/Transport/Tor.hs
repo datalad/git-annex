@@ -110,7 +110,7 @@ serveClient th u r q = bracket setup cleanup start
 		liftAnnex th $ mergeState st'
 	
 	authed conn theiruuid = 
-		bracket watchChangedRefs (liftIO . stopWatchingChangedRefs) $ \crh -> do
+		bracket watchChangedRefs (liftIO . maybe noop stopWatchingChangedRefs) $ \crh -> do
 			v' <- runFullProto (Serving theiruuid crh) conn $
 				P2P.serveAuthed u
 			case v' of

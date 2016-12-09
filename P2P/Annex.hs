@@ -26,7 +26,7 @@ import Utility.Metered
 import Control.Monad.Free
 
 data RunMode
-	= Serving UUID ChangedRefsHandle
+	= Serving UUID (Maybe ChangedRefsHandle)
 	| Client
 
 -- Full interpreter for Proto, that can receive and send objects.
@@ -114,12 +114,12 @@ runLocal runmode runner a = case a of
 				next
 			Right _ -> runner next
 	WaitRefChange next -> case runmode of
-		Serving _ h -> do
+		Serving _ (Just h) -> do
 			v <- tryNonAsync $ liftIO $ waitChangedRefs h
 			case v of
 				Left e -> return (Left (show e))
 				Right changedrefs -> runner (next changedrefs)
-		_ -> return $ Left "change notification not implemented for client"
+		_ -> return $ Left "change notification not available"
   where
 	transfer mk k af ta = case runmode of
 		-- Update transfer logs when serving.

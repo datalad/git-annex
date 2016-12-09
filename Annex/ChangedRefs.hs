@@ -71,7 +71,7 @@ stopWatchingChangedRefs h@(ChangedRefsHandle wh chan) = do
 	atomically $ closeTBMChan chan
 	drainChangedRefs h
 
-watchChangedRefs :: Annex ChangedRefsHandle
+watchChangedRefs :: Annex (Maybe ChangedRefsHandle)
 watchChangedRefs = do
 	-- This channel is used to accumulate notifications,
 	-- because the DirWatcher might have multiple threads that find
@@ -90,8 +90,11 @@ watchChangedRefs = do
 		, modifyHook = notifyhook
 		}
 
-	h <- liftIO $ watchDir refdir (const False) True hooks id
-	return $ ChangedRefsHandle h chan
+	if canWatch
+		then do
+			h <- liftIO $ watchDir refdir (const False) True hooks id
+			return $ Just $ ChangedRefsHandle h chan
+		else return Nothing
 
 notifyHook :: TBMChan Git.Sha -> FilePath -> Maybe FileStatus -> IO ()
 notifyHook chan reffile _
