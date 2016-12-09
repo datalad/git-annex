@@ -69,10 +69,9 @@ server th@(TransportHandle (LocalRepo r) _) = do
 			hClose h
 			warningIO "dropped Tor connection, too busy"
 
--- How many clients to serve at a time, maximum. This is to avoid DOS
--- attacks.
+-- How many clients to serve at a time, maximum. This is to avoid DOS attacks.
 maxConnections :: Int
-maxConnections = 10
+maxConnections = 100
 
 serveClient :: TransportHandle -> UUID -> Repo -> TBQueue Handle -> IO ()
 serveClient th u r q = bracket setup cleanup start
