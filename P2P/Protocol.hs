@@ -441,6 +441,16 @@ sendSuccess :: Bool -> Proto ()
 sendSuccess True = net $ sendMessage SUCCESS
 sendSuccess False = net $ sendMessage FAILURE
 
+notifyChange :: Proto (Maybe ChangedRefs)
+notifyChange = do
+	net $ sendMessage NOTIFYCHANGE
+	ack <- net receiveMessage
+	case ack of
+		CHANGED rs -> return (Just rs)
+		_ -> do
+			net $ sendMessage (ERROR "expected CHANGED")
+			return Nothing
+
 connect :: Service -> Handle -> Handle -> Proto ExitCode
 connect service hin hout = do
 	net $ sendMessage (CONNECT service)

@@ -16,7 +16,6 @@ import qualified RemoteDaemon.Transport.Ssh.Types as SshRemote
 import Utility.SimpleProtocol
 import qualified Git
 import Git.Command
-import Utility.ThreadScheduler
 import Annex.ChangedRefs
 
 import Control.Concurrent.STM
@@ -38,7 +37,7 @@ transportUsingCmd cmd params rr@(RemoteRepo r gc) url h@(TransportHandle (LocalR
 
 transportUsingCmd' :: FilePath -> [CommandParam] -> Transport
 transportUsingCmd' cmd params (RemoteRepo r _) url transporthandle ichan ochan =
-	robustly 1 $ do
+	robustConnection 1 $ do
 		(Just toh, Just fromh, Just errh, pid) <-
 			createProcess (proc cmd (toCommand params))
 			{ std_in = CreatePipe
@@ -79,13 +78,13 @@ transportUsingCmd' cmd params (RemoteRepo r _) url transporthandle ichan ochan =
 					fetch
 				handlestdout fromh
 			-- avoid reconnect on protocol error
-			Nothing -> return Stopping
+			Nothing -> return ConnectionStopping
 	
 	handlecontrol = do
 		msg <- atomically $ readTChan ichan
 		case msg of
-			STOP -> return Stopping
-			LOSTNET -> return Stopping
+			STOP -> return ConnectionStopping
+			LOSTNET -> return ConnectionStopping
 			_ -> handlecontrol
 
 	-- Old versions of git-annex-shell that do not support
@@ -103,23 +102,5 @@ transportUsingCmd' cmd params (RemoteRepo r _) url transporthandle ichan ochan =
 					, "needs its git-annex upgraded"
 					, "to 5.20140405 or newer"
 					]
-				return Stopping
+				return ConnectionStopping
 			else handlestderr errh
-
-data Status = Stopping | ConnectionClosed
-
-{- Make connection robustly, with exponential backoff on failure. -}
-robustly :: Int -> IO Status -> IO ()
-robustly backoff a = caught =<< catchDefaultIO ConnectionClosed a
-  where
-	caught Stopping = return ()
-	caught ConnectionClosed = do
-		threadDelaySeconds (Seconds backoff)
-		robustly increasedbackoff a
-
-	increasedbackoff
-		| b2 > maxbackoff = maxbackoff
-		| otherwise = b2
-	  where
-		b2 = backoff * 2
-		maxbackoff = 3600 -- one hour

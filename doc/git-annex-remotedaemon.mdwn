@@ -9,8 +9,8 @@ git annex remotedaemon
 # DESCRIPTION
 
 The remotedaemon provides persistent communication with remotes.
-This is useful to detect when remotes have received git pushes, so the
-changes can be promptly fetched and the local repository updated.
+It detects when git branches on remotes have changes, and fetches
+the changes from them.
 
 The assistant runs the remotedaemon and communicates with it on
 stdio using a simple textual protocol.
@@ -19,12 +19,12 @@ Several types of remotes are supported:
 
 For ssh remotes, the remotedaemon tries to maintain a connection to the
 remote git repository, and uses git-annex-shell notifychanges to detect
-when the remote git repository has changed, and fetch the changes from
-it. For this to work, the git remote must have [[git-annex-shell]](1)
-installed, with notifychanges support. The first version of git-annex-shell
-that supports it is 5.20140405.
+when the remote git repository has changed. For this to work, the git
+remote must have [[git-annex-shell]](1) installed, with notifychanges
+support. The first version of git-annex-shell that supports it is
+5.20140405.
 
-For tor-annex remotes, the remotedaemon runs as a tor hidden service,
+For tor-annex remotes, the remotedaemon runs a tor hidden service,
 accepting connections from other nodes and serving up the contents of the
 repository. This is only done if you first run `git annex enable-tor`.
 Use `git annex p2p` to configure access to tor-annex remotes.

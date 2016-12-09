@@ -37,14 +37,17 @@ class FormatP2PAddress a where
 
 instance FormatP2PAddress P2PAddress where
 	formatP2PAddress (TorAnnex (OnionAddress onionaddr) onionport) =
-		"tor-annex::" ++ onionaddr ++ ":" ++ show onionport
+		torAnnexScheme ++ ":" ++ onionaddr ++ ":" ++ show onionport
 	unformatP2PAddress s
-		| "tor-annex::" `isPrefixOf` s = do
+		| (torAnnexScheme ++ ":") `isPrefixOf` s = do
 			let s' = dropWhile (== ':') $ dropWhile (/= ':') s
 			let (onionaddr, ps) = separate (== ':') s'
 			onionport <- readish ps
 			return (TorAnnex (OnionAddress onionaddr) onionport)
 		| otherwise = Nothing
+
+torAnnexScheme :: String
+torAnnexScheme = "tor-annex:"
 
 instance FormatP2PAddress P2PAddressAuth where
 	formatP2PAddress (P2PAddressAuth addr authtoken) =
