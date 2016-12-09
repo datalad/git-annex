@@ -40,6 +40,7 @@ import Control.Concurrent
 import Control.Concurrent.Async
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
+import System.Log.Logger (debugM)
 
 -- Type of interpreters of the Proto free monad.
 type RunProto m = forall a. (MonadIO m, MonadMask m) => Proto a -> m (Either String a)
@@ -96,7 +97,9 @@ runNet :: (MonadIO m, MonadMask m) => P2PConnection -> RunProto m -> NetF (Proto
 runNet conn runner f = case f of
 	SendMessage m next -> do
 		v <- liftIO $ tryNonAsync $ do
-			hPutStrLn (connOhdl conn) (unwords (formatMessage m))
+			let l = unwords (formatMessage m)
+			debugM "p2p" ("P2P > " ++ l)
+			hPutStrLn (connOhdl conn) l
 			hFlush (connOhdl conn)
 		case v of
 			Left e -> return (Left (show e))
@@ -106,12 +109,14 @@ runNet conn runner f = case f of
 		case v of
 			Left e -> return (Left (show e))
 			Right Nothing -> return (Left "protocol error")
-			Right (Just l) -> case parseMessage l of
-				Just m -> runner (next m)
-				Nothing -> runner $ do
-					let e = ERROR $ "protocol parse error: " ++ show l
-					net $ sendMessage e
-					next e
+			Right (Just l) -> do
+				liftIO $ debugM "p2p" ("P2P < " ++ l)
+				case parseMessage l of
+					Just m -> runner (next m)
+					Nothing -> runner $ do
+						let e = ERROR $ "protocol parse error: " ++ show l
+						net $ sendMessage e
+						next e
 	SendBytes len b p next -> do
 		v <- liftIO $ tryNonAsync $ do
 			ok <- sendExactly len b (connOhdl conn) p
