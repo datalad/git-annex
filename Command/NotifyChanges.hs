@@ -9,16 +9,10 @@ module Command.NotifyChanges where
 
 import Command
 import Annex.ChangedRefs
-import Utility.DirWatcher
-import Utility.DirWatcher.Types
-import qualified Git
-import Git.Sha
 import RemoteDaemon.Transport.Ssh.Types
 import Utility.SimpleProtocol
 
-import Control.Concurrent
 import Control.Concurrent.Async
-import Control.Concurrent.STM
 
 cmd :: Command
 cmd = noCommit $ 
