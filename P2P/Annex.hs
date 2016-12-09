@@ -91,10 +91,14 @@ runLocal runmode runner a = case a of
 			Left e -> return (Left (show e))
 			Right result -> runner (next result)
 	RemoveContent k next -> do
-		v <- tryNonAsync $ lockContentForRemoval k $ \contentlock -> do
-				removeAnnex contentlock
-				logStatus k InfoMissing
-				return True
+		v <- tryNonAsync $
+			ifM (Annex.Content.inAnnex key)
+				( lockContentForRemoval k $ \contentlock -> do
+					removeAnnex contentlock
+					logStatus k InfoMissing
+					return True
+				, return True
+				)
 		case v of
 			Left e -> return (Left (show e))
 			Right result -> runner (next result)

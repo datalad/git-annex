@@ -12,9 +12,6 @@ Current todo list:
   object is already in progress, the message about this is output by the
   remotedaemon --debug, but not forwarded to the peer, which shows
   "Connection reset by peer"
-* git annex drop --from peer1, when the peer does not have a file,
-  shows "<socket: 18>: hGetLine: end of file"; the peer has closed the
-  connection.
 * Think about locking some more. What happens if the connection to the peer
   is dropped while we think we're locking content there from being dropped?
 
