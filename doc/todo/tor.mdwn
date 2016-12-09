@@ -4,6 +4,10 @@ Mostly working!
 
 Current todo list:
 
+* Current use of hGetLine to read protocol messages allows memory DOS by
+  sending a very long line. May also have line ending problems across OS's. 
+  Switch to instead reading a packed data structure that starts with its
+  length, and refuse to read messages > 32k.
 * When a transfer can't be done because another transfer of the same 
   object is already in progress, the message about this is output by the
   remotedaemon --debug, but not forwarded to the peer, which shows
