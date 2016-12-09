@@ -4,16 +4,14 @@ Mostly working!
 
 Current todo list:
 
-* Current use of hGetLine to read protocol messages allows memory DOS by
-  sending a very long line. May also have line ending problems across OS's. 
-  Switch to instead reading a packed data structure that starts with its
-  length, and refuse to read messages > 32k.
 * When a transfer can't be done because another transfer of the same 
   object is already in progress, the message about this is output by the
   remotedaemon --debug, but not forwarded to the peer, which shows
   "Connection reset by peer"
 * Think about locking some more. What happens if the connection to the peer
   is dropped while we think we're locking content there from being dropped?
+* Make remotedaemon connect to tor peers, notice when their repos have
+  changed, and pull, like it does for ssh peers.
 
 Eventually:
 
