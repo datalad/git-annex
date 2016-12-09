@@ -13,6 +13,7 @@ import Utility.DirWatcher.Types
 import qualified Git
 import Git.Sha
 import RemoteDaemon.Transport.Ssh.Types
+import Utility.SimpleProtocol
 
 import Control.Concurrent
 import Control.Concurrent.Async
@@ -52,7 +53,7 @@ start = do
 	
 	-- No messages need to be received from the caller,
 	-- but when it closes the connection, notice and terminate.
-	let receiver = forever $ void getLine
+	let receiver = forever $ void $ getProtocolLine stdin
 	void $ liftIO $ concurrently sender receiver
 	stop
 

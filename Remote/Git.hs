@@ -45,6 +45,7 @@ import Utility.CopyFile
 #endif
 import Utility.Env
 import Utility.Batch
+import Utility.SimpleProtocol
 import Remote.Helper.Git
 import Remote.Helper.Messages
 import qualified Remote.Helper.Ssh as Ssh
@@ -390,7 +391,7 @@ lockKey r key callback
 						, std_out = CreatePipe
 						, std_err = UseHandle nullh
 						}
-		v <- liftIO $ tryIO $ hGetLine hout
+		v <- liftIO $ tryIO $ getProtocolLine hout
 		let signaldone = void $ tryNonAsync $ liftIO $ mapM_ tryNonAsync
 			[ hPutStrLn hout ""
 			, hFlush hout
@@ -408,7 +409,7 @@ lockKey r key callback
 					void $ waitForProcess p
 				failedlock
 			Right l 
-				| l == Ssh.contentLockedMarker -> bracket_
+				| l == Just Ssh.contentLockedMarker -> bracket_
 					noop
 					signaldone 
 					(withVerifiedCopy LockedCopy r checkexited callback)

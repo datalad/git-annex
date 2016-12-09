@@ -1,6 +1,6 @@
 {- Simple line-based protocols.
  -
- - Copyright 2013-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2016 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -20,6 +20,7 @@ module Utility.SimpleProtocol (
 	parse2,
 	parse3,
 	dupIoHandles,
+	getProtocolLine,
 ) where
 
 import Data.Char
@@ -47,6 +48,16 @@ parseMessage s = parseCommand command rest
 class Serializable a where
 	serialize :: a -> String
 	deserialize :: String -> Maybe a
+
+instance Serializable [Char] where
+	serialize = id
+	deserialize = Just
+
+instance Serializable ExitCode where
+	serialize ExitSuccess = "0"
+	serialize (ExitFailure n) = show n
+	deserialize "0" = Just ExitSuccess
+	deserialize s = ExitFailure <$> readish s
 
 {- Parsing the parameters of messages. Using the right parseN ensures
  - that the string is split into exactly the requested number of words,
@@ -93,12 +104,25 @@ dupIoHandles = do
 	stderr `hDuplicateTo` stdout
 	return (readh, writeh)
 
-instance Serializable [Char] where
-	serialize = id
-	deserialize = Just
-
-instance Serializable ExitCode where
-	serialize ExitSuccess = "0"
-	serialize (ExitFailure n) = show n
-	deserialize "0" = Just ExitSuccess
-	deserialize s = ExitFailure <$> readish s
+{- Reads a line, but to avoid super-long lines eating memory, returns
+ - Nothing if 32 kb have been read without seeing a '\n'
+ -
+ - If there is a '\r' before the '\n', it is removed, to support
+ - systems using "\r\n" at ends of lines 
+ -
+ - This implementation is not super efficient, but as long as the Handle
+ - supports buffering, it avoids reading a character at a time at the
+ - syscall level.
+ -}
+getProtocolLine :: Handle -> IO (Maybe String)
+getProtocolLine h = go (32768 :: Int) []
+  where
+	go 0 _ = return Nothing
+	go n l = do
+		c <- hGetChar h
+		if c == '\n'
+			then return $ Just $ reverse $ 
+				case l of
+					('\r':rest) -> rest
+					_ -> l
+			else go (n-1) (c:l)

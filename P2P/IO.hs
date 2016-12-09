@@ -102,10 +102,11 @@ runNet conn runner f = case f of
 			Left e -> return (Left (show e))
 			Right () -> runner next
 	ReceiveMessage next -> do
-		v <- liftIO $ tryNonAsync $ hGetLine (connIhdl conn)
+		v <- liftIO $ tryNonAsync $ getProtocolLine (connIhdl conn)
 		case v of
 			Left e -> return (Left (show e))
-			Right l -> case parseMessage l of
+			Right Nothing -> return (Left "protocol error")
+			Right (Just l) -> case parseMessage l of
 				Just m -> runner (next m)
 				Nothing -> runner $ do
 					let e = ERROR $ "protocol parse error: " ++ show l

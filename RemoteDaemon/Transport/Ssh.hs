@@ -68,8 +68,8 @@ transportUsingCmd' cmd params (RemoteRepo r _) url transporthandle ichan ochan =
 		send (DONESYNCING url ok)
 		
 	handlestdout fromh = do
-		l <- hGetLine fromh
-		case parseMessage l of
+		ml <- getProtocolLine fromh
+		case parseMessage =<< ml of
 			Just SshRemote.READY -> do
 				send (CONNECTED url)
 				handlestdout fromh
