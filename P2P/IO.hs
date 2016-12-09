@@ -98,7 +98,7 @@ runNet conn runner f = case f of
 	SendMessage m next -> do
 		v <- liftIO $ tryNonAsync $ do
 			let l = unwords (formatMessage m)
-			debugM "p2p" ("P2P > " ++ l)
+			debugMessage "P2P >" m
 			hPutStrLn (connOhdl conn) l
 			hFlush (connOhdl conn)
 		case v of
@@ -109,10 +109,10 @@ runNet conn runner f = case f of
 		case v of
 			Left e -> return (Left (show e))
 			Right Nothing -> return (Left "protocol error")
-			Right (Just l) -> do
-				liftIO $ debugM "p2p" ("P2P < " ++ l)
-				case parseMessage l of
-					Just m -> runner (next m)
+			Right (Just l) -> case parseMessage l of
+					Just m -> do
+						liftIO $ debugMessage "P2P <" m
+						runner (next m)
 					Nothing -> runner $ do
 						let e = ERROR $ "protocol parse error: " ++ show l
 						net $ sendMessage e
@@ -149,6 +149,14 @@ runNet conn runner f = case f of
 	-- so it's ok to use runNetProto, despite it not supporting
 	-- all Proto actions.
 	runnerio = runNetProto conn
+
+debugMessage :: String -> Message -> IO ()
+debugMessage prefix m = debugM "p2p" $
+	prefix ++ " " ++ unwords (formatMessage safem)
+  where
+	safem = case m of
+		AUTH u _ -> AUTH u nullAuthToken
+		_ -> m
 
 -- Send exactly the specified number of bytes or returns False.
 --
