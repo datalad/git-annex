@@ -65,7 +65,7 @@ Build-Depends:
 	libghc-xml-types-dev,
 	libghc-async-dev,
 	libghc-monad-logger-dev,
-	ligghc-free-dev,
+	libghc-free-dev,
 	libghc-feed-dev (>= 0.3.9.2),
 	libghc-regex-tdfa-dev,
 	libghc-tasty-dev (>= 0.7),
