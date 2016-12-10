@@ -509,7 +509,7 @@ mangleCode = flip_colon
 					then unexpected "second line of lambda"
 					else if "=>" `isSuffixOf` lastline
 						then unexpected "probably type signature"
-						else return $ "\n" ++ indent1 ++ "; " ++ prefix ++ " -> "
+						else return $ "\n" ++ lastline ++ "\n" ++ indent1 ++ "; " ++ prefix ++ " -> "
 	{- Sometimes cases themselves span multiple lines:
 	 -
 	 - Nothing
