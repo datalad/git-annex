@@ -1,4 +1,4 @@
-git-annex (6.20161119) UNRELEASED; urgency=medium
+git-annex (6.20161210) unstable; urgency=medium
 
   * enable-tor: New command, enables tor hidden service for P2P syncing.
   * p2p: New command, allows linking repositories using a P2P network.
@@ -27,7 +27,7 @@ git-annex (6.20161119) UNRELEASED; urgency=medium
   * Fix build with http-client 0.5.
     Thanks, Alper Nebi Yasak.
 
- -- Joey Hess <id@joeyh.name>  Mon, 21 Nov 2016 11:27:50 -0400
+ -- Joey Hess <id@joeyh.name>  Sat, 10 Dec 2016 11:56:25 -0400
 
 git-annex (6.20161118) unstable; urgency=medium
 
