@@ -24,6 +24,8 @@ git-annex (6.20161119) UNRELEASED; urgency=medium
   * add: Stage modified non-large files when running in indirect mode. 
     (This was already done in v6 mode and direct mode.)
   * git-annex-shell, remotedaemon, git remote: Fix some memory DOS attacks.
+  * Fix build with http-client 0.5.
+    Thanks, Alper Nebi Yasak.
 
  -- Joey Hess <id@joeyh.name>  Mon, 21 Nov 2016 11:27:50 -0400
 
