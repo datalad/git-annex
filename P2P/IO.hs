@@ -85,7 +85,7 @@ runNetProto :: P2PConnection -> Proto a -> IO (Either String a)
 runNetProto conn = go
   where
 	go :: RunProto IO
-	go (Pure v) = pure (Right v)
+	go (Pure v) = return (Right v)
 	go (Free (Net n)) = runNet conn go n
 	go (Free (Local _)) = return (Left "unexpected annex operation attempted")
 

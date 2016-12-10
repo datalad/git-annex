@@ -34,7 +34,7 @@ runFullProto :: RunMode -> P2PConnection -> Proto a -> Annex (Either String a)
 runFullProto runmode conn = go
   where
 	go :: RunProto Annex
-	go (Pure v) = pure (Right v)
+	go (Pure v) = return (Right v)
 	go (Free (Net n)) = runNet conn go n
 	go (Free (Local l)) = runLocal runmode go l
 
