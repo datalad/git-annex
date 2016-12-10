@@ -52,6 +52,7 @@ import Utility.Url (checkBoth, managerSettings, closeManager)
 #if MIN_VERSION_http_client(0,5,0)
 import Network.HTTP.Client (responseTimeoutNone)
 #else
+responseTimeoutNone :: Maybe Int
 responseTimeoutNone = Nothing
 #endif
 
