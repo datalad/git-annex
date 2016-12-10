@@ -5,6 +5,13 @@ prebuilt tarball of the most recent release.
 This tarball should work on most Linux systems. It has basically no
 dependencies and is self-contained.
 
+**Warning** Linux kernels older than 4.5 may not run this build correctly, and
+<a href="http://git-annex.branchable.com/bugs/unable_to_decommit_memory__58___Invalid_argument/">data loss has been reported</a>
+using this build with the old kernel. We are working to resolve this
+problem, and if you use such a kernel, we recommend running
+`git annex test` to check git-annex works correctly, and/or 
+using the build for ancient kernels.
+
 * x86-32: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386.tar.gz)
 * x86-64: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz)
 * x86-32, for ancient kernels: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386-ancient.tar.gz)
