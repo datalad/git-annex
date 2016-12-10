@@ -357,8 +357,7 @@ Executable git-annex
    resourcet,
    http-client,
    http-types,
-   -- Old version needed due to https://github.com/aristidb/aws/issues/206
-   http-conduit (<2.2.0),
+   http-conduit,
    time,
    old-locale,
    esqueleto,

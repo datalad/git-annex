@@ -49,6 +49,12 @@ import Annex.Content
 import Annex.Url (withUrlOptions)
 import Utility.Url (checkBoth, managerSettings, closeManager)
 
+#if MIN_VERSION_http_client(0,5,0)
+import Network.HTTP.Client (responseTimeoutNone)
+#else
+responseTimeoutNone = Nothing
+#endif
+
 type BucketName = String
 
 remote :: RemoteType
@@ -430,7 +436,7 @@ withS3HandleMaybe c gc u a = do
   where
 	s3cfg = s3Configuration c
 	httpcfg = managerSettings
-		{ managerResponseTimeout = Nothing }
+		{ managerResponseTimeout = responseTimeoutNone }
 
 s3Configuration :: RemoteConfig -> S3.S3Configuration AWS.NormalQuery
 s3Configuration c = cfg
