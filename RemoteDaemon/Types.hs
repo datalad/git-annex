@@ -5,7 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module RemoteDaemon.Types where
@@ -15,6 +14,7 @@ import qualified Annex
 import qualified Git.Types as Git
 import qualified Utility.SimpleProtocol as Proto
 import Types.GitConfig
+import Annex.ChangedRefs (ChangedRefs)
 
 import Network.URI
 import Control.Concurrent
@@ -52,12 +52,10 @@ data Consumed
 	= PAUSE
 	| LOSTNET
 	| RESUME
-	| CHANGED RefList
+	| CHANGED ChangedRefs
 	| RELOAD
 	| STOP
 	deriving (Show)
-
-type RefList = [Git.Ref]
 
 instance Proto.Sendable Emitted where
 	formatMessage (CONNECTED remote) =
@@ -99,14 +97,6 @@ instance Proto.Receivable Consumed where
 instance Proto.Serializable RemoteURI where
 	serialize (RemoteURI u) = show u
 	deserialize = RemoteURI <$$> parseURI
-
-instance Proto.Serializable [Char] where
-	serialize = id
-	deserialize = Just
-
-instance Proto.Serializable RefList where
-	serialize = unwords . map Git.fromRef
-	deserialize = Just . map Git.Ref . words
 
 instance Proto.Serializable Bool where
 	serialize False = "0"

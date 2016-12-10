@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="neocryptek@659edac901ffbc8e541a974f8f18987eeafc63bd"
+ nickname="neocryptek"
+ avatar="http://cdn.libravatar.org/avatar/d9bfdefa9b503f1ac4844a686618374e"
+ subject="comment 2"
+ date="2016-11-21T22:26:52Z"
+ content="""
+Right, though bup also requires installation on the server. I'm looking for a way to store content into a vanilla git repo (as I don't have permission to install anything custom on the server).
+
+Since I want to store the content outside of git annex, it feels like a special remote. Though ideally it would have human readable files like:
+
+* <https://git-annex.branchable.com/todo/dumb__44___unsafe__44___human-readable_backend/>
+
+But since it's git and not just a normal (single version) filesystem, it could dedupe and save previous versions. Is there an easy way to hook git up safely to the external remote protocol:
+
+* [[special_remotes/external]]
+"""]]

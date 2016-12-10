@@ -1,6 +1,6 @@
 {- git-annex main program dispatch
  -
- - Copyright 2010-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,6 +13,7 @@ import Network.Socket (withSocketsDo)
 
 import qualified CmdLine.GitAnnex
 import qualified CmdLine.GitAnnexShell
+import qualified CmdLine.GitRemoteTorAnnex
 import qualified Test
 
 #ifdef mingw32_HOST_OS
@@ -23,20 +24,15 @@ import Utility.Env
 main :: IO ()
 main = withSocketsDo $ do
 	ps <- getArgs
+#ifdef mingw32_HOST_OS
+	winEnv
+#endif
 	run ps =<< getProgName
   where
-	run ps n
-		| isshell n = CmdLine.GitAnnexShell.run ps
-		| otherwise =
-#ifdef mingw32_HOST_OS
-			do
-				winEnv
-				gitannex ps
-#else
-			gitannex ps
-#endif
-	gitannex = CmdLine.GitAnnex.run Test.optParser Test.runner
-	isshell n = takeFileName n == "git-annex-shell"
+	run ps n = case takeFileName n of
+		"git-annex-shell" -> CmdLine.GitAnnexShell.run ps
+		"git-remote-tor-annex" -> CmdLine.GitRemoteTorAnnex.run ps
+		_  -> CmdLine.GitAnnex.run Test.optParser Test.runner ps
 
 #ifdef mingw32_HOST_OS
 {- On Windows, if HOME is not set, probe it and set it.

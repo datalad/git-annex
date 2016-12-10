@@ -13,6 +13,8 @@ Some of the things you can do with metadata include:
   For example `git annex find --metadata tag=foo --or --metadata tag=bar`
 * Using it in [[preferred_content]] expressions. 
   For example "metadata=tag=important or not metadata=author=me"
+* Editing and viewing it with git-annex-metadata-gui,
+  [[tips/a_gui_for_metadata_operations]].
 
 Each file (actually the underlying key) can have any number of metadata
 fields, which each can have any number of values. For example, to tag

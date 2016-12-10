@@ -45,6 +45,11 @@ instance Observable (Bool, Verification) where
 	observeBool = fst
 	observeFailure = (False, UnVerified)
 
+instance Observable (Either e Bool) where
+	observeBool (Left _) = False
+	observeBool (Right b) = b
+	observeFailure = Right False
+
 upload :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
 upload u key f d a _witness = guardHaveUUID u $ 
 	runTransfer (Transfer Upload u key) f d a

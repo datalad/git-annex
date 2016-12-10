@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="alpernebbi"
+ avatar="http://cdn.libravatar.org/avatar/daf2abb14f39e28ad75d5f9a03fcd106"
+ subject="comment 3"
+ date="2016-12-10T07:36:04Z"
+ content="""
+I experienced all these with the [linux standalone](https://git-annex.branchable.com/install/Linux_standalone/) from this site as well.
+
+However, I couldn't reproduce them in a Debian unstable chroot where I installed the `git-annex` package from their repos.
+"""]]

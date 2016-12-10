@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 6.20161118
+Version: 6.20161210
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <id@joeyh.name>
@@ -59,6 +59,7 @@ Extra-Source-Files:
   doc/git-annex-dropunused.mdwn
   doc/git-annex-edit.mdwn
   doc/git-annex-enableremote.mdwn
+  doc/git-annex-enable-tor.mdwn
   doc/git-annex-examinekey.mdwn
   doc/git-annex-expire.mdwn
   doc/git-annex-find.mdwn
@@ -90,6 +91,7 @@ Extra-Source-Files:
   doc/git-annex-mirror.mdwn
   doc/git-annex-move.mdwn
   doc/git-annex-numcopies.mdwn
+  doc/git-annex-p2p.mdwn
   doc/git-annex-pre-commit.mdwn
   doc/git-annex-preferred-content.mdwn
   doc/git-annex-proxy.mdwn
@@ -136,6 +138,7 @@ Extra-Source-Files:
   doc/git-annex-webapp.mdwn
   doc/git-annex-whereis.mdwn
   doc/git-annex-xmppgit.mdwn
+  doc/git-remote-tor-annex.mdwn
   doc/logo.svg
   doc/logo_16x16.png
   Build/mdwn2man
@@ -342,6 +345,7 @@ Executable git-annex
    MissingH,
    hslogger,
    monad-logger,
+   free,
    utf8-string,
    bytestring,
    text,
@@ -353,8 +357,7 @@ Executable git-annex
    resourcet,
    http-client,
    http-types,
-   -- Old version needed due to https://github.com/aristidb/aws/issues/206
-   http-conduit (<2.2.0),
+   http-conduit,
    time,
    old-locale,
    esqueleto,
@@ -364,7 +367,11 @@ Executable git-annex
    aeson,
    unordered-containers,
    feed,
-   regex-tdfa
+   regex-tdfa,
+   socks,
+   byteable,
+   stm-chans,
+   securemem
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
   Extensions: PackageImports
@@ -467,9 +474,7 @@ Executable git-annex
      crypto-api,
      clientsession,
      template-haskell,
-     shakespeare (>= 2.0.0),
-     securemem,
-     byteable
+     shakespeare (>= 2.0.0)
     CPP-Options: -DWITH_WEBAPP
 
   if flag(Pairing)
@@ -508,6 +513,7 @@ Executable git-annex
     Annex.Branch.Transitions
     Annex.BranchState
     Annex.CatFile
+    Annex.ChangedRefs
     Annex.CheckAttr
     Annex.CheckIgnore
     Annex.Common
@@ -699,6 +705,7 @@ Executable git-annex
     CmdLine.GitAnnexShell.Fields
     CmdLine.GlobalSetter
     CmdLine.Option
+    CmdLine.GitRemoteTorAnnex
     CmdLine.Seek
     CmdLine.Usage
     Command
@@ -722,6 +729,7 @@ Executable git-annex
     Command.DropKey
     Command.DropUnused
     Command.EnableRemote
+    Command.EnableTor
     Command.ExamineKey
     Command.Expire
     Command.Find
@@ -757,6 +765,7 @@ Executable git-annex
     Command.Move
     Command.NotifyChanges
     Command.NumCopies
+    Command.P2P
     Command.PreCommit
     Command.Proxy
     Command.ReKey
@@ -899,6 +908,11 @@ Executable git-annex
     Messages.Internal
     Messages.JSON
     Messages.Progress
+    P2P.Address
+    P2P.Annex
+    P2P.Auth
+    P2P.IO
+    P2P.Protocol
     Remote
     Remote.BitTorrent
     Remote.Bup
@@ -923,6 +937,7 @@ Executable git-annex
     Remote.Helper.Ssh
     Remote.Hook
     Remote.List
+    Remote.P2P
     Remote.Rsync
     Remote.Rsync.RsyncUrl
     Remote.S3
@@ -934,6 +949,7 @@ Executable git-annex
     RemoteDaemon.Core
     RemoteDaemon.Transport
     RemoteDaemon.Transport.GCrypt
+    RemoteDaemon.Transport.Tor
     RemoteDaemon.Transport.Ssh
     RemoteDaemon.Transport.Ssh.Types
     RemoteDaemon.Types
@@ -980,6 +996,7 @@ Executable git-annex
     Upgrade.V4
     Upgrade.V5
     Utility.Applicative
+    Utility.AuthToken
     Utility.Base64
     Utility.Batch
     Utility.Bloom
@@ -1060,6 +1077,7 @@ Executable git-annex
     Utility.ThreadLock
     Utility.ThreadScheduler
     Utility.Tmp
+    Utility.Tor
     Utility.Touch
     Utility.Url
     Utility.UserInfo

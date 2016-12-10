@@ -1,6 +1,6 @@
 {- git-remote-daemon utilities
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,6 +9,8 @@ module RemoteDaemon.Common
 	( liftAnnex
 	, inLocalRepo
 	, checkNewShas
+	, ConnectionStatus(..)
+	, robustConnection
 	) where
 
 import qualified Annex
@@ -16,6 +18,7 @@ import Annex.Common
 import RemoteDaemon.Types
 import qualified Git
 import Annex.CatFile
+import Utility.ThreadScheduler
 
 import Control.Concurrent
 
@@ -40,3 +43,22 @@ checkNewShas transporthandle = check
 	check [] = return True
 	check (r:rs) = maybe (check rs) (const $ return False)
 		=<< liftAnnex transporthandle (catObjectDetails r)
+
+data ConnectionStatus = ConnectionStopping | ConnectionClosed
+
+{- Make connection robust, retrying on error, with exponential backoff. -}
+robustConnection :: Int -> IO ConnectionStatus -> IO ()
+robustConnection backoff a = 
+	caught =<< a `catchNonAsync` (const $ return ConnectionClosed)
+  where
+	caught ConnectionStopping = return ()
+	caught ConnectionClosed = do
+		threadDelaySeconds (Seconds backoff)
+		robustConnection increasedbackoff a
+
+	increasedbackoff
+		| b2 > maxbackoff = maxbackoff
+		| otherwise = b2
+	  where
+		b2 = backoff * 2
+		maxbackoff = 3600 -- one hour

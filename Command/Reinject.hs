@@ -16,8 +16,7 @@ import Types.KeySource
 cmd :: Command
 cmd = command "reinject" SectionUtility 
 	"inject content of file back into annex"
-	(paramRepeating (paramPair "SRC" "DEST")
-		`paramOr` "--known " ++ paramRepeating "SRC")
+	(paramRepeating (paramPair "SRC" "DEST"))
 	(seek <$$> optParser)
 
 data ReinjectOptions = ReinjectOptions

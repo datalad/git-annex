@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="Known bug, fixed."
+ date="2016-11-23T18:04:27Z"
+ content="""
+This is a known bug introduced in 6.20161012 and fixed in 6.20161031.
+
+Solution is: just update your copy of git-annex. At this time most recent is 6.20161119 .
+
+For more details, see changelog at https://github.com/joeyh/git-annex/blob/master/CHANGELOG#L53
+
+
+
+"""]]

@@ -33,17 +33,19 @@ main = defaultMainWithHooks simpleUserHooks
 
 myPostCopy :: Args -> CopyFlags -> PackageDescription -> LocalBuildInfo -> IO ()
 myPostCopy _ flags pkg lbi = when (System.Info.os /= "mingw32") $ do
-	installGitAnnexShell dest verbosity pkg lbi
+	installGitAnnexLinks dest verbosity pkg lbi
 	installManpages      dest verbosity pkg lbi
 	installDesktopFile   dest verbosity pkg lbi
   where
 	dest      = fromFlag $ copyDest flags
 	verbosity = fromFlag $ copyVerbosity flags
 
-installGitAnnexShell :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
-installGitAnnexShell copyDest verbosity pkg lbi =
+installGitAnnexLinks :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
+installGitAnnexLinks copyDest verbosity pkg lbi = do
 	rawSystemExit verbosity "ln"
 		["-sf", "git-annex", dstBinDir </> "git-annex-shell"]
+	rawSystemExit verbosity "ln"
+		["-sf", "git-annex", dstBinDir </> "git-remote-tor-annex"]
   where
 	dstBinDir = bindir $ absoluteInstallDirs pkg lbi copyDest
 

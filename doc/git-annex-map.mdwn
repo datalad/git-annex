@@ -10,8 +10,8 @@ git annex map
 
 Helps you keep track of your repositories, and the connections between them,
 by going out and looking at all the ones it can get to, and generating a
-Graphviz file displaying it all. If the `dot` command is available, it is
-used to display the file to your screen (using x11 backend).
+Graphviz file displaying it all. If the `xdot` or `dot` command is available,
+it is used to display the file to your screen.
   
 This command only connects to hosts that the host it's run on can
 directly connect to. It does not try to tunnel through intermediate hosts.
@@ -37,7 +37,7 @@ on that host.
 
 * `--fast`
 
-  Disable using `dot` to display the generated Graphviz file.
+  Don't display the generated Graphviz file, but save it for later use.
 
 # SEE ALSO
 

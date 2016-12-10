@@ -5,6 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Remote.WebDAV (remote, davCreds, configUrl) where
@@ -33,6 +34,10 @@ import Utility.Metered
 import Utility.Url (URLString, matchStatusCodeException)
 import Annex.UUID
 import Remote.WebDAV.DavLocation
+
+#if MIN_VERSION_http_client(0,5,0)
+import Network.HTTP.Client (HttpExceptionContent(..), responseStatus)
+#endif
 
 remote :: RemoteType
 remote = RemoteType {
@@ -302,6 +307,17 @@ goDAV (DavHandle ctx user pass _) a = choke $ run $ prettifyExceptions $ do
 {- Catch StatusCodeException and trim it to only the statusMessage part,
  - eliminating a lot of noise, which can include the whole request that
  - failed. The rethrown exception is no longer a StatusCodeException. -}
+#if MIN_VERSION_http_client(0,5,0)
+prettifyExceptions :: DAVT IO a -> DAVT IO a
+prettifyExceptions a = catchJust (matchStatusCodeException (const True)) a go
+  where
+	go (HttpExceptionRequest _ (StatusCodeException response message)) = error $ unwords
+		[ "DAV failure:"
+		, show (responseStatus response)
+		, show (message)
+		]
+	go e = throwM e
+#else
 prettifyExceptions :: DAVT IO a -> DAVT IO a
 prettifyExceptions a = catchJust (matchStatusCodeException (const True)) a go
   where
@@ -311,6 +327,7 @@ prettifyExceptions a = catchJust (matchStatusCodeException (const True)) a go
 		, show (statusMessage status)
 		]
 	go e = throwM e
+#endif
 
 prepDAV :: DavUser -> DavPass -> DAVT IO ()
 prepDAV user pass = do

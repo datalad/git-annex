@@ -11,4 +11,4 @@ type Creds = String -- can be any data that contains credentials
 
 type CredPair = (Login, Password)
 type Login = String
-type Password = String -- todo: use securemem
+type Password = String

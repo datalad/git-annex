@@ -49,7 +49,7 @@
 <iframe width=1024 scrolling=no frameborder=0 marginheight=0 marginwidth=0 src="https://downloads.kitenet.net/git-annex/autobuildtest/x86_64-apple-yosemite/testresult/status">
 </iframe>
 <h2><a href="https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/">Windows</a></h2>
-<a href="https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/">here</a>
+<a href="http://vps.zaytsev.net:8080/">here</a> (firewalled from most locations; kite can access it)
 <h2><a href="https://buildd.debian.org/status/package.php?p=git-annex&suite=sid">Debian</a></h2>
 <iframe width=1024 scrolling=no height=500px frameborder=0 marginheight=0 marginwidth=0 src="https://buildd.debian.org/status/package.php?p=git-annex&suite=sid">
 </iframe>

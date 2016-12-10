@@ -52,6 +52,7 @@ import qualified Command.Init
 import qualified Command.Describe
 import qualified Command.InitRemote
 import qualified Command.EnableRemote
+import qualified Command.EnableTor
 import qualified Command.Expire
 import qualified Command.Repair
 import qualified Command.Unused
@@ -95,11 +96,13 @@ import qualified Command.Direct
 import qualified Command.Indirect
 import qualified Command.Upgrade
 import qualified Command.Forget
+import qualified Command.P2P
 import qualified Command.Proxy
 import qualified Command.DiffDriver
 import qualified Command.Smudge
 import qualified Command.Undo
 import qualified Command.Version
+import qualified Command.RemoteDaemon
 #ifdef WITH_ASSISTANT
 import qualified Command.Watch
 import qualified Command.Assistant
@@ -109,7 +112,6 @@ import qualified Command.WebApp
 #ifdef WITH_XMPP
 import qualified Command.XMPPGit
 #endif
-import qualified Command.RemoteDaemon
 #endif
 import qualified Command.Test
 #ifdef WITH_TESTSUITE
@@ -142,6 +144,7 @@ cmds testoptparser testrunner =
 	, Command.Describe.cmd
 	, Command.InitRemote.cmd
 	, Command.EnableRemote.cmd
+	, Command.EnableTor.cmd
 	, Command.Reinject.cmd
 	, Command.Unannex.cmd
 	, Command.Uninit.cmd
@@ -202,11 +205,13 @@ cmds testoptparser testrunner =
 	, Command.Indirect.cmd
 	, Command.Upgrade.cmd
 	, Command.Forget.cmd
+	, Command.P2P.cmd
 	, Command.Proxy.cmd
 	, Command.DiffDriver.cmd
 	, Command.Smudge.cmd
 	, Command.Undo.cmd
 	, Command.Version.cmd
+	, Command.RemoteDaemon.cmd
 #ifdef WITH_ASSISTANT
 	, Command.Watch.cmd
 	, Command.Assistant.cmd
@@ -216,7 +221,6 @@ cmds testoptparser testrunner =
 #ifdef WITH_XMPP
 	, Command.XMPPGit.cmd
 #endif
-	, Command.RemoteDaemon.cmd
 #endif
 	, Command.Test.cmd testoptparser testrunner
 #ifdef WITH_TESTSUITE

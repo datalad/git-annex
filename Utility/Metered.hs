@@ -1,11 +1,11 @@
 {- Metered IO and actions
  -
- - Copyright 2012-2106 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2016 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE TypeSynonymInstances, BangPatterns #-}
 
 module Utility.Metered where
 
@@ -85,12 +85,15 @@ streamMeteredFile f meterupdate h = withMeteredFile f meterupdate $ L.hPut h
 
 {- Writes a ByteString to a Handle, updating a meter as it's written. -}
 meteredWrite :: MeterUpdate -> Handle -> L.ByteString -> IO ()
-meteredWrite meterupdate h = go zeroBytesProcessed . L.toChunks 
+meteredWrite meterupdate h = void . meteredWrite' meterupdate h
+
+meteredWrite' :: MeterUpdate -> Handle -> L.ByteString -> IO BytesProcessed
+meteredWrite' meterupdate h = go zeroBytesProcessed . L.toChunks 
   where
-	go _ [] = return ()
+	go sofar [] = return sofar
 	go sofar (c:cs) = do
 		S.hPut h c
-		let sofar' = addBytesProcessed sofar $ S.length c
+		let !sofar' = addBytesProcessed sofar $ S.length c
 		meterupdate sofar'
 		go sofar' cs
 
@@ -112,30 +115,30 @@ offsetMeterUpdate base offset = \n -> base (offset `addBytesProcessed` n)
  - meter updates, so use caution.
  -}
 hGetContentsMetered :: Handle -> MeterUpdate -> IO L.ByteString
-hGetContentsMetered h = hGetUntilMetered h (const True)
+hGetContentsMetered h = hGetMetered h Nothing
 
-{- Reads from the Handle, updating the meter after each chunk.
+{- Reads from the Handle, updating the meter after each chunk is read.
+ -
+ - Stops at EOF, or when the requested number of bytes have been read.
+ - Closes the Handle at EOF, but otherwise leaves it open.
  -
  - Note that the meter update is run in unsafeInterleaveIO, which means that
  - it can be run at any time. It's even possible for updates to run out
  - of order, as different parts of the ByteString are consumed.
- -
- - Stops at EOF, or when keepgoing evaluates to False.
- - Closes the Handle at EOF, but otherwise leaves it open.
  -}
-hGetUntilMetered :: Handle -> (Integer -> Bool) -> MeterUpdate -> IO L.ByteString
-hGetUntilMetered h keepgoing meterupdate = lazyRead zeroBytesProcessed
+hGetMetered :: Handle -> Maybe Integer -> MeterUpdate -> IO L.ByteString
+hGetMetered h wantsize meterupdate = lazyRead zeroBytesProcessed
   where
 	lazyRead sofar = unsafeInterleaveIO $ loop sofar
 
 	loop sofar = do
-		c <- S.hGet h defaultChunkSize
+		c <- S.hGet h (nextchunksize (fromBytesProcessed sofar))
 		if S.null c
 			then do
 				hClose h
 				return $ L.empty
 			else do
-				let sofar' = addBytesProcessed sofar (S.length c)
+				let !sofar' = addBytesProcessed sofar (S.length c)
 				meterupdate sofar'
 				if keepgoing (fromBytesProcessed sofar')
 					then do
@@ -145,6 +148,18 @@ hGetUntilMetered h keepgoing meterupdate = lazyRead zeroBytesProcessed
 						cs <- lazyRead sofar'
 						return $ L.append (L.fromChunks [c]) cs
 					else return $ L.fromChunks [c]
+	
+	keepgoing n = case wantsize of
+		Nothing -> True
+		Just sz -> n < sz
+	
+	nextchunksize n = case wantsize of
+		Nothing -> defaultChunkSize
+		Just sz -> 
+			let togo = sz - n
+			in if togo < toInteger defaultChunkSize
+				then fromIntegral togo
+				else defaultChunkSize
 
 {- Same default chunk size Lazy ByteStrings use. -}
 defaultChunkSize :: Int

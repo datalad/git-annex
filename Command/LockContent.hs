@@ -10,6 +10,7 @@ module Command.LockContent where
 import Command
 import Annex.Content
 import Remote.Helper.Ssh (contentLockedMarker)
+import Utility.SimpleProtocol
 
 cmd :: Command
 cmd = noCommit $ 
@@ -37,7 +38,7 @@ start [ks] = do
 		( liftIO $ do
 			putStrLn contentLockedMarker
 			hFlush stdout
-			_ <- getLine
+			_ <- getProtocolLine stdin
 			return True
 		, return False
 		)

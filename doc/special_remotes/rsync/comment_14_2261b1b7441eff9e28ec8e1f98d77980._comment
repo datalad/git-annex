@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="davidriod@e75b369a4b1cced29c14354bce7493c61f00b1c7"
+ nickname="davidriod"
+ avatar="http://cdn.libravatar.org/avatar/d6e327bd88b88802d6f0c20c83f682a2"
+ subject="Sharing rsync special remote between repository"
+ date="2016-11-24T19:23:42Z"
+ content="""
+I was wondering if it is possible to share a rsync special remote between repository which are not parented in any way. The use case would be that even if these repositories are not related at all they still may contains the same binary file. It would be useful to have a single rsync remote in order to reduce space usage. I think it could work as the object names are based on their checksum, but I wonder if anyone has already try that ?
+"""]]

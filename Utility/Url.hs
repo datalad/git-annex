@@ -350,8 +350,16 @@ hUserAgent = "User-Agent"
  -
  - > catchJust (matchStatusCodeException (== notFound404))
  -}
+#if MIN_VERSION_http_client(0,5,0)
+matchStatusCodeException :: (Status -> Bool) -> HttpException -> Maybe HttpException
+matchStatusCodeException want e@(HttpExceptionRequest _ (StatusCodeException r _))
+	| want (responseStatus r) = Just e
+	| otherwise = Nothing
+matchStatusCodeException _ _ = Nothing
+#else
 matchStatusCodeException :: (Status -> Bool) -> HttpException -> Maybe HttpException
 matchStatusCodeException want e@(StatusCodeException s _ _)
 	| want s = Just e
 	| otherwise = Nothing
 matchStatusCodeException _ _ = Nothing
+#endif

@@ -23,6 +23,7 @@ import qualified Git.Config
 
 import qualified Remote.Git
 import qualified Remote.GCrypt
+import qualified Remote.P2P
 #ifdef WITH_S3
 import qualified Remote.S3
 #endif
@@ -44,6 +45,7 @@ remoteTypes :: [RemoteType]
 remoteTypes =
 	[ Remote.Git.remote
 	, Remote.GCrypt.remote
+	, Remote.P2P.remote
 #ifdef WITH_S3
 	, Remote.S3.remote
 #endif
@@ -116,4 +118,4 @@ updateRemote remote = do
 {- Checks if a remote is syncable using git. -}
 gitSyncableRemote :: Remote -> Bool
 gitSyncableRemote r = remotetype r `elem`
-	[ Remote.Git.remote, Remote.GCrypt.remote ]
+	[ Remote.Git.remote, Remote.GCrypt.remote, Remote.P2P.remote ]

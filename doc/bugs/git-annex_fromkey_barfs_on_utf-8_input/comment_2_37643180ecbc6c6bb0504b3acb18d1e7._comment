@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-12-08T21:03:14Z"
+ content="""
+I'm not able to reproduce the original reported problem; it works even when
+using the C locale. However, it may be that this patch would fix it:
+
+<pre>
+diff --git a/Command/FromKey.hs b/Command/FromKey.hs
+index dca63aa..6a81c1f 100644
+--- a/Command/FromKey.hs
++++ b/Command/FromKey.hs
+@@ -45,7 +45,9 @@ startMass = do
+ 	next massAdd
+ 
+ massAdd :: CommandPerform
+-massAdd = go True =<< map (separate (== ' ')) . lines <$> liftIO getContents
++massAdd = do
++	liftIO $ fileEncoding stdin
++	go True =<< map (separate (== ' ')) . lines <$> liftIO getContents
+   where
+ 	go status [] = next $ return status
+ 	go status ((keyname,f):rest) | not (null keyname) && not (null f) = do
+</pre>
+
+(The NeuroDebian git-annex-standalone may well have had its locale
+installation broken by [[!commit c07981122672f6cc87ca08efb57d8a7b1e2f5725]],
+which assumes that the git-annex.linux is writable by the user.
+I doubt that is related to the original bug report.)
+"""]]

@@ -41,9 +41,6 @@ optParser desc = AddOptions
 		)
 	<*> parseBatchOption
 
-{- Add acts on both files not checked into git yet, and unlocked files.
- -
- - In direct mode, it acts on any files that have changed. -}
 seek :: AddOptions -> CommandSeek
 seek o = allowConcurrentOutput $ do
 	matcher <- largeFilesMatcher
@@ -59,10 +56,9 @@ seek o = allowConcurrentOutput $ do
 		NoBatch -> do
 			let go a = a gofile (addThese o)
 			go (withFilesNotInGit (not $ includeDotFiles o))
-			ifM (versionSupportsUnlockedPointers <||> isDirect)
-				( go withFilesMaybeModified
-				, go withFilesOldUnlocked
-				)
+			go withFilesMaybeModified
+			unlessM (versionSupportsUnlockedPointers <||> isDirect) $
+				go withFilesOldUnlocked
 
 {- Pass file off to git-add. -}
 startSmall :: FilePath -> CommandStart

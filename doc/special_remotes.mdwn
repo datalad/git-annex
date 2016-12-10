@@ -18,6 +18,7 @@ They cannot be used by other git commands though.
 * [[tahoe]]
 * [[web]]
 * [[bittorrent]]
+* [[tor]]
 * [[xmpp]]
 * [[hook]]
 

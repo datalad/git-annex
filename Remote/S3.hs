@@ -49,6 +49,13 @@ import Annex.Content
 import Annex.Url (withUrlOptions)
 import Utility.Url (checkBoth, managerSettings, closeManager)
 
+#if MIN_VERSION_http_client(0,5,0)
+import Network.HTTP.Client (responseTimeoutNone)
+#else
+responseTimeoutNone :: Maybe Int
+responseTimeoutNone = Nothing
+#endif
+
 type BucketName = String
 
 remote :: RemoteType
@@ -193,7 +200,7 @@ store _r info h = fileStorer $ \k f p -> do
 		uploadid <- S3.imurUploadId <$> sendS3Handle h startreq
 
 		-- The actual part size will be a even multiple of the
-		-- 32k chunk size that hGetUntilMetered uses.
+		-- 32k chunk size that lazy ByteStrings use.
 		let partsz' = (partsz `div` toInteger defaultChunkSize) * toInteger defaultChunkSize
 
 		-- Send parts of the file, taking care to stream each part
@@ -430,7 +437,7 @@ withS3HandleMaybe c gc u a = do
   where
 	s3cfg = s3Configuration c
 	httpcfg = managerSettings
-		{ managerResponseTimeout = Nothing }
+		{ managerResponseTimeout = responseTimeoutNone }
 
 s3Configuration :: RemoteConfig -> S3.S3Configuration AWS.NormalQuery
 s3Configuration c = cfg

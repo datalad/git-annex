@@ -45,10 +45,13 @@ import Utility.CopyFile
 #endif
 import Utility.Env
 import Utility.Batch
+import Utility.SimpleProtocol
 import Remote.Helper.Git
 import Remote.Helper.Messages
 import qualified Remote.Helper.Ssh as Ssh
 import qualified Remote.GCrypt
+import qualified Remote.P2P
+import P2P.Address
 import Annex.Path
 import Creds
 import Annex.CatFile
@@ -130,7 +133,9 @@ configRead autoinit r = do
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc
 	| Git.GCrypt.isEncrypted r = Remote.GCrypt.chainGen r u c gc
-	| otherwise = go <$> remoteCost gc defcst
+	| otherwise = case repoP2PAddress r of
+		Nothing -> go <$> remoteCost gc defcst
+		Just addr -> Remote.P2P.chainGen addr r u c gc
   where
 	defcst = if repoCheap r then cheapRemoteCost else expensiveRemoteCost
 	go cst = Just new
@@ -352,9 +357,9 @@ dropKey r key
 			commitOnCleanup r $ onLocal r $ do
 				ensureInitialized
 				whenM (Annex.Content.inAnnex key) $ do
-					Annex.Content.lockContentForRemoval key
-						Annex.Content.removeAnnex
-					logStatus key InfoMissing
+					Annex.Content.lockContentForRemoval key $ \lock -> do
+						Annex.Content.removeAnnex lock
+						logStatus key InfoMissing
 					Annex.Content.saveState True
 				return True
 	| Git.repoIsHttp (repo r) = giveup "dropping from http remote not supported"
@@ -386,7 +391,7 @@ lockKey r key callback
 						, std_out = CreatePipe
 						, std_err = UseHandle nullh
 						}
-		v <- liftIO $ tryIO $ hGetLine hout
+		v <- liftIO $ tryIO $ getProtocolLine hout
 		let signaldone = void $ tryNonAsync $ liftIO $ mapM_ tryNonAsync
 			[ hPutStrLn hout ""
 			, hFlush hout
@@ -404,7 +409,7 @@ lockKey r key callback
 					void $ waitForProcess p
 				failedlock
 			Right l 
-				| l == Ssh.contentLockedMarker -> bracket_
+				| l == Just Ssh.contentLockedMarker -> bracket_
 					noop
 					signaldone 
 					(withVerifiedCopy LockedCopy r checkexited callback)
