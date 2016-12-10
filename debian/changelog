@@ -1,3 +1,9 @@
+git-annex (6.20161210-1) unstable; urgency=medium
+
+  * Package 6.20161210-1
+
+ -- Richard Hartmann <richih@debian.org>  Sat, 10 Dec 2016 20:18:21 +0100
+
 git-annex (6.20161210) unstable; urgency=medium
 
   * enable-tor: New command, enables tor hidden service for P2P syncing.
