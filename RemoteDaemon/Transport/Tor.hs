@@ -31,6 +31,7 @@ import System.PosixCompat.User
 import Control.Concurrent
 import System.Log.Logger (debugM)
 import Control.Concurrent.STM
+import Control.Concurrent.STM.TBMQueue
 import Control.Concurrent.Async
 import qualified Network.Socket as S
 
@@ -39,7 +40,7 @@ server :: TransportHandle -> IO ()
 server th@(TransportHandle (LocalRepo r) _) = do
 	u <- liftAnnex th getUUID
 
-	q <- newTBQueueIO maxConnections
+	q <- newTBMQueueIO maxConnections
 	replicateM_ maxConnections $
 		forkIO $ forever $ serveClient th u r q
 
@@ -59,10 +60,10 @@ server th@(TransportHandle (LocalRepo r) _) = do
 	forever $ do
 		(conn, _) <- S.accept soc
 		h <- setupHandle conn
-		ok <- atomically $ ifM (isFullTBQueue q)
+		ok <- atomically $ ifM (isFullTBMQueue q)
 			( return False
 			, do
-				writeTBQueue q h
+				writeTBMQueue q h
 				return True
 			)
 		unless ok $ do
@@ -73,19 +74,21 @@ server th@(TransportHandle (LocalRepo r) _) = do
 maxConnections :: Int
 maxConnections = 100
 
-serveClient :: TransportHandle -> UUID -> Repo -> TBQueue Handle -> IO ()
+serveClient :: TransportHandle -> UUID -> Repo -> TBMQueue Handle -> IO ()
 serveClient th u r q = bracket setup cleanup start
   where
 	setup = do
-		h <- atomically $ readTBQueue q
+		h <- atomically $ readTBMQueue q
 		debugM "remotedaemon" "serving a Tor connection"
 		return h
 	
-	cleanup h = do
+	cleanup Nothing = return ()
+	cleanup (Just h) = do
 		debugM "remotedaemon" "done with Tor connection"
 		hClose h
 
-	start h = do
+	start Nothing = return ()
+	start (Just h) = do
 		-- Avoid doing any work in the liftAnnex, since only one
 		-- can run at a time.
 		st <- liftAnnex th dupState
