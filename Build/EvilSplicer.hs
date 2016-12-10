@@ -491,12 +491,13 @@ mangleCode = flip_colon
 	 - a line:
 	 -
 	 - forall foo =>
-	 -   Foo  ->
+	 -   Foo ->
 	 -
-	 - To detect and avoid these, note that ghc puts 2 spaces
-	 - before the "->"
+	 - To avoid breaking these, look for the => on the previous line.
 	 -}
 	case_layout = parsecAndReplace $ do
+		void newline
+		lastline <- restOfLine
 		void newline
 		indent1 <- many1 $ char ' '
 		prefix <- manyTill (noneOf "\n") (try (string "-> "))
@@ -506,7 +507,7 @@ mangleCode = flip_colon
 				then unexpected "lambda expression"
 				else if null prefix
 					then unexpected "second line of lambda"
-					else if "  " `isSuffixOf` prefix
+					else if "=>" `isSuffixOf` lastline
 						then unexpected "probably type signature"
 						else return $ "\n" ++ indent1 ++ "; " ++ prefix ++ " -> "
 	{- Sometimes cases themselves span multiple lines:
