@@ -474,7 +474,7 @@ mangleCode = flip_colon
 	 -
 	 - To fix, we could just put a semicolon at the start of every line
 	 - containing " -> " ... Except that lambdas also contain that.
-	 - But we can get around that: GHC outputs lambas like this:
+	 - But we can get around that: GHC outputs lambdas like this:
 	 -
 	 - \ foo
 	 -   -> bar
@@ -486,6 +486,15 @@ mangleCode = flip_colon
 	 - So, we can put the semicolon at the start of every line
 	 - containing " -> " unless there's a "\ " first, or it's
 	 - all whitespace up until it.
+	 -
+	 - Except.. type signatures also contain " -> " sometimes starting
+	 - a line:
+	 -
+	 - forall foo =>
+	 -   Foo  ->
+	 -
+	 - To detect and avoid these, note that ghc puts 2 spaces
+	 - before the "->"
 	 -}
 	case_layout = parsecAndReplace $ do
 		void newline
@@ -497,7 +506,9 @@ mangleCode = flip_colon
 				then unexpected "lambda expression"
 				else if null prefix
 					then unexpected "second line of lambda"
-					else return $ "\n" ++ indent1 ++ "; " ++ prefix ++ " -> "
+					else if "  " `isSuffixOf` prefix
+						then unexpected "probably type signature"
+						else return $ "\n" ++ indent1 ++ "; " ++ prefix ++ " -> "
 	{- Sometimes cases themselves span multiple lines:
 	 -
 	 - Nothing
