@@ -37,6 +37,10 @@ git-annex should use smudge/clean filters.
   And developed a patch set:
   <http://thread.gmane.org/gmane.comp.version-control.git/297475>
 
+* Implement git's new `filter.<driver>.process` interface, which will
+  let only 1 git-annex process be started by git when processing
+  multiple files, and so should be faster.
+
 * Checking out a different branch causes git to smudge all changed files,
   and write their content. This does not honor annex.thin. A warning
   message is printed in this case.  
