@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2016-12-12T17:30:03Z"
+ content="""
+Can you please check if the current builds still have the "unable to
+decommit memory" problem or not?
+
+(What it does after that error is probably nondeterministic, fixing that
+error is the crucial thing.)
+"""]]
