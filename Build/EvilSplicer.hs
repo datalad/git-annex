@@ -486,18 +486,8 @@ mangleCode = flip_colon
 	 - So, we can put the semicolon at the start of every line
 	 - containing " -> " unless there's a "\ " first, or it's
 	 - all whitespace up until it.
-	 -
-	 - Except.. type signatures also contain " -> " sometimes starting
-	 - a line:
-	 -
-	 - forall foo =>
-	 -   Foo ->
-	 -
-	 - To avoid breaking these, look for the => on the previous line.
 	 -}
-	case_layout = parsecAndReplace $ do
-		void newline
-		lastline <- restOfLine
+	case_layout = skipfree $ parsecAndReplace $ do
 		void newline
 		indent1 <- many1 $ char ' '
 		prefix <- manyTill (noneOf "\n") (try (string "-> "))
@@ -507,9 +497,7 @@ mangleCode = flip_colon
 				then unexpected "lambda expression"
 				else if null prefix
 					then unexpected "second line of lambda"
-					else if "=>" `isSuffixOf` lastline
-						then unexpected "probably type signature"
-						else return $ "\n" ++ lastline ++ "\n" ++ indent1 ++ "; " ++ prefix ++ " -> "
+					else return $ "\n" ++ indent1 ++ "; " ++ prefix ++ " -> "
 	{- Sometimes cases themselves span multiple lines:
 	 -
 	 - Nothing
@@ -520,7 +508,7 @@ mangleCode = flip_colon
 	 -        var var
 	 -   -> foo
 	 -}
-	case_layout_multiline = parsecAndReplace $ do
+	case_layout_multiline = skipfree $ parsecAndReplace $ do
 		void newline
 		indent1 <- many1 $ char ' '
 		firstline <- restofline
@@ -532,6 +520,11 @@ mangleCode = flip_colon
 			then unexpected "lambda expression"
 			else return $ "\n" ++ indent1 ++ "; " ++ firstline ++ "\n"
 				++ indent1 ++ indent2 ++ "-> "
+
+	{- Type definitions for free monads triggers the case_* hacks, avoid. -}
+	skipfree f s
+		| "MonadFree" `isInfixOf` s = s
+		| otherwise = f s
 
 	{- (foo, \ -> bar) is not valid haskell, GHC.
 	 - Change to (foo, bar)
