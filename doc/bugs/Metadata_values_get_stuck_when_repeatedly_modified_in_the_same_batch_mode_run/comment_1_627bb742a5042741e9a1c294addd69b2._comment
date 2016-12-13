@@ -13,4 +13,10 @@ it is:
 
 That is supposed to unset c, with the CurrentlySet False, but instead c
 remains set somehow.
+
+Aha, the use of `addMetaData'` causes the bug. That reuses the same
+timestamp, and indeed the same timestamp is used for all the batch
+changes. With the same timestamp for the log line that sets c as the line
+that removes it, it's indeterminite which line will be acted on first, and
+so the removal can be processed before the addition, leaving c "stuck".
 """]]
