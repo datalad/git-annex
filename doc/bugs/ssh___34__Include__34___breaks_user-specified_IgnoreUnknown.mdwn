@@ -24,3 +24,7 @@ To be fair, this might be an OpenSSH bug (IgnoreUnknown ought to be merged), but
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, it's been taking care of my archives for nearly a year.
+
+> How annoying, ssh seems to make it impossible to set this in a way that
+> doesn't break some configurations. Oh well, gave up on setting it
+> and removed the code to do so. [[done]] --[[Joey]]

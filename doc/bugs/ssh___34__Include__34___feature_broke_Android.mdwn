@@ -6,3 +6,5 @@ Unfortunately, the Android apk (which I got from https://downloads.kitenet.net/g
 I had to edit .git/annex/ssh.config to comment out the three offending lines and then append the contents of ~/.ssh/config to get git-annex working again.
 
 (This is on a Nexus 10 running stock, though I doubt it matters)
+
+> Reverted use of this feature for now.[[done]] --[[Joey]]

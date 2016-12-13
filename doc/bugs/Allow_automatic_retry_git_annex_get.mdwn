@@ -59,5 +59,3 @@ SHA256E-s41311329--69c3b054a3fe9676133605730d85b7fcef8696f6782d402a524e41b836253
 
 
 [[!meta title="Detect stalled transfer and retry or abort it"]]
-
-> [[done]] --[[Joey]]
