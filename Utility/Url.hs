@@ -303,7 +303,7 @@ download' quiet url file uo = do
 	 - it was asked to write to a file elsewhere. -}
 	go cmd opts = withTmpDir "downloadurl" $ \tmp -> do
 		absfile <- absPath file
-		let ps = addUserAgent uo $ reqParams uo++opts++[File absfile, File url]
+		let ps = addUserAgent uo $ opts++reqParams uo++[File absfile, File url]
 		boolSystem' cmd ps $ \p -> p { cwd = Just tmp }
 	
 	quietopt s

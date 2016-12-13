@@ -3,6 +3,9 @@ git-annex (6.20161211) UNRELEASED; urgency=medium
   * Debian: Build webapp on armel.
   * metadata --batch: Fix bug when conflicting metadata changes were
     made in the same batch run.
+  * Pass annex.web-options to wget and curl after other options, so that
+    eg --no-show-progress can be set by the user to disable the default
+    --show-progress.
 
  -- Joey Hess <id@joeyh.name>  Sun, 11 Dec 2016 21:29:51 -0400
 
