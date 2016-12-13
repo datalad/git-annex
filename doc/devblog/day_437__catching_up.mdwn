@@ -1,0 +1,20 @@
+Quite a backlog developed in the couple of weeks I was concentrating on tor
+support. I've taken a first pass through it and fixed the most pressing
+issues now. 
+
+Most important was an ugly memory corruption problem in the GHC runtime
+system that may have led to data corruption when using git-annex with Linux
+kernels older than 4.5. All the Linux standalone builds of git-annex have
+been updated to fix that issue.
+
+Today dealt with several more things, including fixing a buggy timestamp
+issue with `metadata --batch`, reverting the ssh ServerAliveInterval
+setting (broke on too many systems with old ssh or complicated ssh
+configurations), making batch input not be rejected when it can't be decoded
+as UTF-8, and more.
+
+Also, spent some time learning a little bit about Magic Wormhole and SPAKE,
+as a way to exchange tor remote addresses. Using Magic Wormhole for that
+seems like a reasonable plan. I did file a couple bugs on it which will
+need to get fixed, and then using it is mostly a question of whether it's
+easy enough to install that git-annex can rely on it.
