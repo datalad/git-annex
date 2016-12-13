@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-12-13T14:40:02Z"
+ content="""
+I thought this would involve the journal, but it seems not; same
+behavior occurs if the journal is committed after each metadata change.
+
+Looking at the new metadata value in the case where a and c both get set,
+it is:
+
+	MetaData (fromList [(MetaField "f",fromList [MetaValue (CurrentlySet True) "a",MetaValue (CurrentlySet False) "c"])])
+
+That is supposed to unset c, with the CurrentlySet False, but instead c
+remains set somehow.
+"""]]
