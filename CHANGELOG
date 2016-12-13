@@ -10,6 +10,8 @@ git-annex (6.20161211) UNRELEASED; urgency=medium
     with too many old versions of ssh and unusual ssh configurations.
     It should have not been needed anyway since ssh is supposted to
     have TCPKeepAlive enabled by default.
+  * Make all --batch input, as well as fromkey and registerurl stdin
+    be processed without requiring it to be in the current encoding.
 
  -- Joey Hess <id@joeyh.name>  Sun, 11 Dec 2016 21:29:51 -0400
 
