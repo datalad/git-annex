@@ -46,13 +46,7 @@ or [cjdns](https://github.com/cjdelisle/cjdns) or tor or i2p or [magic wormhole]
 
 * Awesome.
 * Easy to install, use; very well known.
-* May need root to set up a hidden service.
-* There's been some [haskell packages developed recently](http://www.leonmergen.com/haskell/privacy/2015/05/30/on-anonymous-networking-in-haskell-announcing-tor-and-i2p-for-haskell.html) 
-  to communicate with tor and set up onion addresses for a service.
-  Could be used to make git-annex run as a hidden service.
-  However, that relies on tor being configured with a ControlPort,
-  without authentication. The normal tor configuration does not enable a
-  ControlPort.
+* Supported in git-annex now!
 
 ## i2p status
 
@@ -81,10 +75,10 @@ or [cjdns](https://github.com/cjdelisle/cjdns) or tor or i2p or [magic wormhole]
 * The remotedaemon may also support sending objects over the transport,
   depending on the transport.
 
-## address discovery
+## address exchange
 
 The address is a public key, and the authtoken is some large chunk of data,
-so won't want to type that in. Need discovery.
+so won't want to type that in. Need discovery or exchange for peering.
 
 * Easy way is any set of repos that are already connected can communicate
   them via address.log.
@@ -95,36 +89,18 @@ so won't want to type that in. Need discovery.
   it can be read over the phone.
 * Users may not have a way to communicate with perfect forward secrecy.
   So it would be good to have a address+authtoken that can only be used
-  one time during pairing:
+  one time during pairing.
+* Check out [PAKE](https://en.wikipedia.org/wiki/Password-authenticated_key_agreement)
+  for MITM resistance.
+* Possibly use magic wormhole to exchange the address, which avoids
+  the users needing to exchange so much data. The magic wormhole code
+  is just 3 words, and it uses PAKE.
+  
+  I tried it, and opened a couple of bug reports:
 
-  1. Alice uses the webapp to generate a one-time address+authtoken,
-     and sends it into a message to Bob.
-  2. Bob enters it into his webapp.
-  3. Bob's assistant contacts Alice's over the transport, presents the
-     one-time authtoken. (Alice's assistant accepts it, and marks it as
-     used so it cannot be used again.)
-  4. Alice's webapp shows that it's ready to finish pairing; so does Bob's.
-     Both wait for their users to confirm before proceeding.
-  5. Alice's assistant generates a new, permanant use authtoken, sends it
-     to Bob's assistant, which stores it and enables a remote using it.
-  6. Bob's assistant generates a new, permanant use authtoken, sends it to
-     Alice's assistant, which stores it and enables a remote using it.
-  7. Alice and Bob's assistants are now paired.
-
-  Note that this exchange can be actively MITMed. If Eve can intercept
-  Alice's message to Bob, then Eve can pair with Alice. Or, if Eve can
-  forge a message from Alice to Bob, Eve can trick Bob into pairing with
-  her.
-
-  If they make a phone call, it's much harder for Eve to MITM it.
-  Eve would need to listen to Alice reading the authtoken and enter it
-  before Bob does, so pairing with Alice. But as long as Alice waits
-  for Bob to confirm he's ready to finish pairing, this will fail,
-  because Bob won't get to that point if the authtoken is intercepted.
-
-  Check out
-  <https://en.wikipedia.org/wiki/Password-authenticated_key_agreement>
-  for more MITM resistance.
+  - [receive UI output to stdout, use stderr instead](https://github.com/warner/magic-wormhole/issues/99)
+  - [redirecting receive stdout to a pipe disables tab completion](https://github.com/warner/magic-wormhole/issues/100)
+  - [option to receive to a specific file](https://github.com/warner/magic-wormhole/issues/101)
 
 ## local lan detection
 
