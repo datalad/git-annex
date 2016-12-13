@@ -82,3 +82,4 @@ I love the metadata functionality so much that I wrote [[tips/a_gui_for_metadata
 Metadata driven views are awesome (but I don't like the entire folder hierarchy being appended to the filename).
 I haven't used the other commands much since I have not yet organized most of my stuff (and their naively copy-pasted backups), but I am glad I discovered git-annex before I began organizing.
 
+> [[fixed|done]] --[[Joey]]

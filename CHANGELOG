@@ -1,6 +1,8 @@
 git-annex (6.20161211) UNRELEASED; urgency=medium
 
   * Debian: Build webapp on armel.
+  * metadata --batch: Fix bug when conflicting metadata changes were
+    made in the same batch run.
 
  -- Joey Hess <id@joeyh.name>  Sun, 11 Dec 2016 21:29:51 -0400
 
