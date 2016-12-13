@@ -11,3 +11,7 @@ This isn't how it behaves. It would be more accurate as (emphasis on changes):
 > For example, adding the url http://www.example.com/dir/subdir/bigfile with --pathdepth=1 will use "**dir_subdir_bigfile**", while --pathdepth=3 will use "bigfile".
 
 For what I am doing (adding a directory tree with addurl and file:// URLs), I'd actually like the behaviour described (to recreate the tree), but I'm not sure which one was the *intended* behaviour..
+
+> [[done]]; bug report didn't show what was wrong; I can see nothing wrong;
+> bug reporter cannot seem to remember what was wrong. Probably user error.
+> --[[Joey]]
