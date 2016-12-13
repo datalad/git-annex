@@ -26,3 +26,6 @@ It looks like this is a problem that occurs only on kernels < 4.5, when ghc is b
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Git annex rocks!
+
+> [[fixed|done]]; fix is confirmed, all linux standalone builds are updated
+> (and I pinged Yoh to update the neurodebian standalone build). --[[Joey]]
