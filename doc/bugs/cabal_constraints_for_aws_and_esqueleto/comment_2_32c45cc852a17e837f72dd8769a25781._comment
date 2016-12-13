@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-12-13T15:58:25Z"
+ content="""
+This got fixed in the meantime. Note that posting comments to a bug that
+has already been closed is a good way to get new problems not to be
+noticed..
+"""]]
