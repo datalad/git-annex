@@ -14,6 +14,7 @@ import Git.Types
 import Creds
 import Utility.AuthToken
 import Utility.Tor
+import qualified Utility.SimpleProtocol as Proto
 
 import qualified Data.Text as T
 
@@ -45,6 +46,10 @@ instance FormatP2PAddress P2PAddress where
 			onionport <- readish ps
 			return (TorAnnex (OnionAddress onionaddr) onionport)
 		| otherwise = Nothing
+
+instance Proto.Serializable P2PAddressAuth where
+	serialize = formatP2PAddress
+	deserialize = unformatP2PAddress
 
 torAnnexScheme :: String
 torAnnexScheme = "tor-annex:"
