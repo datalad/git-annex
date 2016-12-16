@@ -39,6 +39,11 @@ services.
 
   Specify a name to use when setting up a git remote.
 
+* `--one-way`
+
+  Use with `--link` to create a one-way link with a peer, rather than the
+  default bi-directional link.
+
 # SEE ALSO
 
 [[git-annex]](1)

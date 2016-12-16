@@ -24,10 +24,13 @@ data P2POpts
 	= GenAddresses
 	| LinkRemote
 
-optParser :: CmdParamsDesc -> Parser (P2POpts, Maybe RemoteName)
-optParser _ = (,)
+data LinkDirection = BiDirectional | OneWay
+
+optParser :: CmdParamsDesc -> Parser (P2POpts, Maybe RemoteName, LinkDirection)
+optParser _ = (,,)
 	<$> (genaddresses <|> linkremote)
 	<*> optional name
+	<*> direction
   where
 	genaddresses = flag' GenAddresses
 		( long "gen-addresses"
@@ -42,13 +45,17 @@ optParser _ = (,)
 		<> metavar paramName
 		<> help "name of remote"
 		)
+	direction = flag BiDirectional OneWay
+		( long "one-way"
+		<> help "make one-way link, rather than default bi-directional link"
+		)
 
-seek :: (P2POpts, Maybe RemoteName) -> CommandSeek
-seek (GenAddresses, _) = genAddresses =<< loadP2PAddresses
-seek (LinkRemote, Just name) = commandAction $
-	linkRemote (Git.Remote.makeLegalName name)
-seek (LinkRemote, Nothing) = commandAction $
-	linkRemote =<< unusedPeerRemoteName
+seek :: (P2POpts, Maybe RemoteName, LinkDirection) -> CommandSeek
+seek (GenAddresses, _, _) = genAddresses =<< loadP2PAddresses
+seek (LinkRemote, Just name, direction) = commandAction $
+	linkRemote direction (Git.Remote.makeLegalName name)
+seek (LinkRemote, Nothing, direction) = commandAction $
+	linkRemote direction =<< unusedPeerRemoteName
 
 -- Only addresses are output to stdout, to allow scripting.
 genAddresses :: [P2PAddress] -> Annex ()
@@ -62,8 +69,8 @@ genAddresses addrs = do
 			map (`P2PAddressAuth` authtoken) addrs
 
 -- Address is read from stdin, to avoid leaking it in shell history.
-linkRemote :: RemoteName -> CommandStart
-linkRemote remotename = do
+linkRemote :: LinkDirection -> RemoteName -> CommandStart
+linkRemote direction remotename = do
 	showStart "p2p link" remotename
 	next $ next prompt
   where
@@ -81,9 +88,12 @@ linkRemote remotename = do
 					liftIO $ hPutStrLn stderr "Unable to parse that address, please check its format and try again."
 					prompt
 				Just addr -> do
-					myaddrs <- loadP2PAddresses
-					authtoken <- liftIO $ genAuthToken 128
-					storeP2PAuthToken authtoken
-					let linkbackto = map (`P2PAddressAuth` authtoken) myaddrs
+					linkbackto <- case direction of
+						OneWay -> return []
+						BiDirectional -> do
+							myaddrs <- loadP2PAddresses
+							authtoken <- liftIO $ genAuthToken 128
+							storeP2PAuthToken authtoken
+							return $ map (`P2PAddressAuth` authtoken) myaddrs
 					linkAddress addr linkbackto remotename
 						>>= either giveup return
