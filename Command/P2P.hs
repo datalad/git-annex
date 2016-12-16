@@ -27,25 +27,43 @@ cmd = command "p2p" SectionSetup
 
 data P2POpts
 	= GenAddresses
-	| LinkRemote RemoteName
+	| LinkRemote
 
-optParser :: CmdParamsDesc -> Parser P2POpts 
-optParser _ = genaddresses <|> linkremote
+optParser :: CmdParamsDesc -> Parser (P2POpts, Maybe RemoteName)
+optParser _ = (,)
+	<$> (genaddresses <|> linkremote)
+	<*> optional name
   where
 	genaddresses = flag' GenAddresses
 		( long "gen-addresses"
 		<> help "generate addresses that allow accessing this repository over P2P networks"
 		)
-	linkremote = LinkRemote <$> strOption
+	linkremote = flag' LinkRemote
 		( long "link"
-		<> metavar paramRemote
-		<> help "specify name to use for git remote"
+		<> help "set up a P2P link to a git remote"
+		)
+	name = strOption
+		( long "name"
+		<> metavar paramName
+		<> help "name of remote"
 		)
 
-seek :: P2POpts -> CommandSeek
-seek GenAddresses = genAddresses =<< loadP2PAddresses
-seek (LinkRemote name) = commandAction $
+seek :: (P2POpts, Maybe RemoteName) -> CommandSeek
+seek (GenAddresses, _) = genAddresses =<< loadP2PAddresses
+seek (LinkRemote, Just name) = commandAction $
 	linkRemote (Git.Remote.makeLegalName name)
+seek (LinkRemote, Nothing) = commandAction $
+	linkRemote =<< unusedPeerRemoteName
+
+unusedPeerRemoteName :: Annex RemoteName
+unusedPeerRemoteName = go (1 :: Integer) =<< usednames
+  where
+	usednames = mapMaybe remoteName . remotes <$> Annex.gitRepo
+	go n names = do
+		let name = "peer" ++ show n
+		if name `elem` names
+			then go (n+1) names
+			else return name
 
 -- Only addresses are output to stdout, to allow scripting.
 genAddresses :: [P2PAddress] -> Annex ()

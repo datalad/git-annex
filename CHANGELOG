@@ -12,6 +12,8 @@ git-annex (6.20161211) UNRELEASED; urgency=medium
     have TCPKeepAlive enabled by default.
   * Make all --batch input, as well as fromkey and registerurl stdin
     be processed without requiring it to be in the current encoding.
+  * p2p: --link no longer takes a remote name, instead the --name
+    option can be used.
 
  -- Joey Hess <id@joeyh.name>  Sun, 11 Dec 2016 21:29:51 -0400
 

@@ -46,7 +46,7 @@ Now, tell the new peer about the address of the first peer.
 This will make a git remote named "peer1", which connects,
 through Tor, to the repository on the other peer.
 
-	git annex p2p --link peer1
+	git annex p2p --link --name peer1
 
 That command will prompt for an address; paste in the address that was
 generated on the first peer, and then press Enter.
