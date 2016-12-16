@@ -96,11 +96,11 @@ so won't want to type that in. Need discovery or exchange for peering.
   the users needing to exchange so much data. The magic wormhole code
   is just 3 words, and it uses PAKE.
   
-  I tried it, and opened a couple of bug reports:
+  I tried it, and opened a couple of bug reports that would be useful in
+  integrating it with git-annex:
 
-  - [receive UI output to stdout, use stderr instead](https://github.com/warner/magic-wormhole/issues/99)
-  - [redirecting receive stdout to a pipe disables tab completion](https://github.com/warner/magic-wormhole/issues/100)
   - [option to receive to a specific file](https://github.com/warner/magic-wormhole/issues/101)
+  - [machine readable wormhole code ](https://github.com/warner/magic-wormhole/issues/104])
 
 ## local lan detection
 
