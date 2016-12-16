@@ -14,7 +14,6 @@ module P2P.Protocol where
 import qualified Utility.SimpleProtocol as Proto
 import Types.Key
 import Types.UUID
-import P2P.Address
 import Utility.AuthToken
 import Utility.Applicative
 import Utility.PartialPrelude
@@ -50,7 +49,6 @@ data Message
 	= AUTH UUID AuthToken -- uuid of the peer that is authenticating
 	| AUTH_SUCCESS UUID -- uuid of the remote peer
 	| AUTH_FAILURE
-	| LINK P2PAddressAuth -- sending an address that the peer may link to
 	| CONNECT Service
 	| CONNECTDONE ExitCode
 	| NOTIFYCHANGE
@@ -71,9 +69,8 @@ data Message
 
 instance Proto.Sendable Message where
 	formatMessage (AUTH uuid authtoken) = ["AUTH", Proto.serialize uuid, Proto.serialize authtoken]
-	formatMessage (AUTH_SUCCESS uuid) = ["AUTH-SUCCESS", Proto.serialize uuid]
+	formatMessage (AUTH_SUCCESS uuid) = ["AUTH-SUCCESS",  Proto.serialize uuid]
 	formatMessage AUTH_FAILURE = ["AUTH-FAILURE"]
-	formatMessage (LINK addr) = ["LINK", Proto.serialize addr]
 	formatMessage (CONNECT service) = ["CONNECT", Proto.serialize service]
 	formatMessage (CONNECTDONE exitcode) = ["CONNECTDONE", Proto.serialize exitcode]
 	formatMessage NOTIFYCHANGE = ["NOTIFYCHANGE"]
@@ -95,7 +92,6 @@ instance Proto.Receivable Message where
 	parseCommand "AUTH" = Proto.parse2 AUTH
 	parseCommand "AUTH-SUCCESS" = Proto.parse1 AUTH_SUCCESS
 	parseCommand "AUTH-FAILURE" = Proto.parse0 AUTH_FAILURE
-	parseCommand "LINK" = Proto.parse1 LINK
 	parseCommand "CONNECT" = Proto.parse1 CONNECT
 	parseCommand "CONNECTDONE" = Proto.parse1 CONNECTDONE
 	parseCommand "NOTIFYCHANGE" = Proto.parse0 NOTIFYCHANGE
@@ -240,8 +236,6 @@ data LocalF c
 	-- with False.
 	| WaitRefChange (ChangedRefs -> c)
 	-- ^ Waits for one or more git refs to change and returns them.
-	| AddLinkToPeer P2PAddressAuth (Bool -> c)
-	-- ^ Adds a link to a peer using the provided address.
 	deriving (Functor)
 
 type Local = Free LocalF
@@ -260,11 +254,6 @@ auth myuuid t = do
 		_ -> do
 			net $ sendMessage (ERROR "auth failed")
 			return Nothing
-
-link :: P2PAddressAuth -> Proto Bool
-link addr = do
-	net $ sendMessage (LINK addr)
-	checkSuccess
 
 checkPresent :: Key -> Proto Bool
 checkPresent key = do
@@ -365,9 +354,6 @@ serveAuth myuuid = serverLoop handler
 serveAuthed :: UUID -> Proto ()
 serveAuthed myuuid = void $ serverLoop handler
   where
-	handler (LINK addr) = do
-		sendSuccess =<< local (addLinkToPeer addr)
-		return ServerContinue
 	handler (LOCKCONTENT key) = do
 		local $ tryLockContent key $ \locked -> do
 			sendSuccess locked

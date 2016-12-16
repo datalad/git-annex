@@ -11,8 +11,6 @@ module P2P.Annex
 	( RunMode(..)
 	, P2PConnection(..)
 	, runFullProto
-	, unusedPeerRemoteName
-	, linkAddress
 	) where
 
 import Annex.Common
@@ -21,16 +19,9 @@ import Annex.Transfer
 import Annex.ChangedRefs
 import P2P.Protocol
 import P2P.IO
-import P2P.Address
-import P2P.Auth
 import Logs.Location
 import Types.NumCopies
 import Utility.Metered
-import qualified Git.Command
-import qualified Annex
-import Annex.UUID
-import Git.Types (RemoteName, remoteName, remotes)
-import Config
 
 import Control.Monad.Free
 
@@ -129,17 +120,6 @@ runLocal runmode runner a = case a of
 				Left e -> return (Left (show e))
 				Right changedrefs -> runner (next changedrefs)
 		_ -> return $ Left "change notification not available"
-	AddLinkToPeer addr next -> do
-		v <- tryNonAsync $ do
-			-- Flood protection; don't let a huge number
-			-- of peer remotes be created.
-			ns <- usedPeerRemoteNames
-			if length ns > 100
-				then return $ Right False
-				else linkAddress addr [] =<< unusedPeerRemoteName
-		case v of
-			Right (Right r) -> runner (next r)
-			_ -> runner (next False)
   where
 	transfer mk k af ta = case runmode of
 		-- Update transfer logs when serving.
@@ -172,46 +152,3 @@ runLocal runmode runner a = case a of
 				liftIO $ hSeek h AbsoluteSeek o
 			b <- liftIO $ hGetContentsMetered h p'
 			runner (sender b)
-
-unusedPeerRemoteName :: Annex RemoteName
-unusedPeerRemoteName = go (1 :: Integer) =<< usedPeerRemoteNames
-  where
-	go n names = do
-		let name = "peer" ++ show n
-		if name `elem` names
-			then go (n+1) names
-			else return name
-
-usedPeerRemoteNames :: Annex [RemoteName]
-usedPeerRemoteNames = filter ("peer" `isPrefixOf`) 
-	. mapMaybe remoteName . remotes <$> Annex.gitRepo
-
-linkAddress :: P2PAddressAuth -> [P2PAddressAuth] -> RemoteName -> Annex (Either String Bool)
-linkAddress (P2PAddressAuth addr authtoken) linkbackto remotename = do
-	g <- Annex.gitRepo
-	cv <- liftIO $ tryNonAsync $ connectPeer g addr
-	case cv of
-		Left e -> return $ Left $ "Unable to connect with peer. Please check that the peer is connected to the network, and try again. ("  ++ show e ++ ")"
-		Right conn -> do
-			u <- getUUID
-			v <- liftIO $ runNetProto conn $ do
-				authresp <- P2P.Protocol.auth u authtoken
-				lbok <- forM linkbackto $ P2P.Protocol.link
-				return (authresp, lbok)
-			case v of
-				Right (Just theiruuid, lbok) -> do
-					ok <- inRepo $ Git.Command.runBool
-						[ Param "remote", Param "add"
-						, Param remotename
-						, Param (formatP2PAddress addr)
-						]
-					when ok $ do
-						storeUUIDIn (remoteConfig remotename "uuid") theiruuid
-						storeP2PRemoteAuthToken addr authtoken
-					if not ok
-						then return $ Right False
-						else if or lbok || null linkbackto
-							then return $ Right True
-							else return $ Left "Linked with peer. However, the peer was unable to link back to us, so the link is one-way."
-				Right (Nothing, _) -> return $ Left "Unable to authenticate with peer. Please check the address and try again."
-				Left e -> return $ Left $ "Unable to authenticate with peer: " ++ e

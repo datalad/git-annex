@@ -56,12 +56,12 @@ peer1 remote:
 
 	git annex sync --content peer1
 
-Any number of peers can be connected this way, within reason.
+You can also generate an address for this new peer, by running `git annex
+p2p --gen-addresses`, and link other peers to that address using `git annex
+p2p --link`. It's often useful to link peers up in both directions,
+so peer1 is a remote of peer2 and peer2 is a remote of peer1.
 
-(When the second peer links to it, the first peer also
-gets a new remote added to it, which points to the second peer.
-So, on the first peer, you can also sync with the second peer.
-The name of the that remote will be "peer1", or "peer2", etc.)
+Any number of peers can be connected this way, within reason.
 
 ## starting git-annex remotedaemon
 

@@ -14,10 +14,6 @@ git-annex (6.20161211) UNRELEASED; urgency=medium
     be processed without requiring it to be in the current encoding.
   * p2p: --link no longer takes a remote name, instead the --name
     option can be used.
-  * p2p --link now defaults to setting up a bi-directional link;
-    both the local and remote git repositories get remotes added
-    pointing at one-another.
-  * p2p: Added --one-way option.
 
  -- Joey Hess <id@joeyh.name>  Sun, 11 Dec 2016 21:29:51 -0400
 
