@@ -12,6 +12,7 @@ import Utility.SafeCommand
 import Utility.Monad
 import Utility.Misc
 import Utility.FileSystemEncoding
+import Utility.Env
 
 import System.IO
 import System.Exit
@@ -58,13 +59,14 @@ sendCode = putMVar
 --
 -- A request to make the code available in machine-parsable form is here:
 -- https://github.com/warner/magic-wormhole/issues/104
---
--- XXX This currently fails due to 
--- https://github.com/warner/magic-wormhole/issues/108
 sendFile :: FilePath -> CodeObserver -> WormHoleParams -> IO Bool
-sendFile f o ps = runWormHoleProcess p $ \_hin hout -> do
-	fileEncoding hout
-	findcode =<< words <$> hGetContents hout
+sendFile f o ps = do
+	-- Work around stupid stdout buffering behavior of python.
+	-- See https://github.com/warner/magic-wormhole/issues/108
+	environ <- addEntry "PYTHONUNBUFFERED" "1" <$> getEnvironment
+	runWormHoleProcess p { env = Just environ} $ \_hin hout -> do
+		fileEncoding hout
+		findcode =<< words <$> hGetContents hout
   where
 	p = wormHoleProcess (Param "send" : ps ++ [File f])
 	findcode [] = return False
