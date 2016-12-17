@@ -124,7 +124,8 @@ wormHoleProcess :: WormHoleParams -> CreateProcess
 wormHoleProcess = proc "wormhole" . toCommand
 
 runWormHoleProcess :: CreateProcess -> (Handle -> Handle -> IO Bool) ->  IO Bool
-runWormHoleProcess p consumer = bracketOnError setup cleanup go
+runWormHoleProcess p consumer = 
+	bracketOnError setup (\v -> cleanup v <&&> return False) go
   where
 	setup = do
 		(Just hin, Just hout, Nothing, pid)
