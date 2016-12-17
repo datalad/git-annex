@@ -55,7 +55,10 @@ sendCode = putMVar
 -- Currently this has to parse the output of wormhole to find the code.
 -- To make this as robust as possible, avoids looking for any particular
 -- output strings, and only looks for the form of a wormhole code
--- (number-word-word).
+-- (number-word-word). 
+--
+-- Note that, if the filename looks like "foo 1-wormhole-code bar", when
+-- that is output by wormhole, it will look like it's output a wormhole code.
 --
 -- A request to make the code available in machine-parsable form is here:
 -- https://github.com/warner/magic-wormhole/issues/104
