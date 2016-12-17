@@ -5,7 +5,20 @@
  - License: BSD-2-clause
  -}
 
-module Utility.MagicWormHole where
+module Utility.MagicWormHole (
+	Code,
+	mkCode,
+	validCode,
+	CodeObserver,
+	CodeProducer,
+	mkCodeObserver,
+	mkCodeProducer,
+	waitCode,
+	sendCode,
+	WormHoleParams,
+	sendFile,
+	receiveFile,
+) where
 
 import Utility.Process
 import Utility.SafeCommand
@@ -21,7 +34,13 @@ import Control.Exception
 import Data.Char
 
 -- | A Magic Wormhole code.
-type Code = String
+newtype Code = Code String
+
+-- | Smart constructor for Code
+mkCode :: String -> Maybe Code
+mkCode s
+	| validCode s = Just (Code s)
+	| otherwise = Nothing
 
 -- | Codes have the form number-word-word and may contain 2 or more words.
 validCode :: String -> Bool
@@ -36,21 +55,27 @@ validCode s =
 		, not $ any isSpace s
 		]
 
-type CodeObserver = MVar Code
+newtype CodeObserver = CodeObserver (MVar Code)
+
+newtype CodeProducer = CodeProducer (MVar Code)
+
+mkCodeObserver :: IO CodeObserver
+mkCodeObserver = CodeObserver <$> newEmptyMVar
+
+mkCodeProducer :: IO CodeProducer
+mkCodeProducer = CodeProducer <$> newEmptyMVar
+
+waitCode :: CodeObserver -> IO Code
+waitCode (CodeObserver o) = takeMVar o
+
+sendCode :: CodeProducer -> Code -> IO ()
+sendCode (CodeProducer p) = putMVar p
 
 type WormHoleParams = [CommandParam]
 
-mkCodeObserver :: IO CodeObserver
-mkCodeObserver = newEmptyMVar
-
-waitCode :: CodeObserver -> IO Code
-waitCode = takeMVar
-
-sendCode :: CodeObserver -> Code -> IO ()
-sendCode = putMVar
-
--- | Sends a file. Once the send is underway, the Code will be sent to the
--- CodeObserver.
+-- | Sends a file. Once the send is underway, and the Code has been
+-- generated, it will be sent to the CodeObserver. (This may not happen,
+-- eg if there's a network problem).
 --
 -- Currently this has to parse the output of wormhole to find the code.
 -- To make this as robust as possible, avoids looking for any particular
@@ -63,7 +88,7 @@ sendCode = putMVar
 -- A request to make the code available in machine-parsable form is here:
 -- https://github.com/warner/magic-wormhole/issues/104
 sendFile :: FilePath -> CodeObserver -> WormHoleParams -> IO Bool
-sendFile f o ps = do
+sendFile f (CodeObserver observer) ps = do
 	-- Work around stupid stdout buffering behavior of python.
 	-- See https://github.com/warner/magic-wormhole/issues/108
 	environ <- addEntry "PYTHONUNBUFFERED" "1" <$> getEnvironment
@@ -73,17 +98,18 @@ sendFile f o ps = do
   where
 	p = wormHoleProcess (Param "send" : ps ++ [File f])
 	findcode [] = return False
-	findcode (w:ws)
-		| validCode w = do
-			sendCode o w
+	findcode (w:ws) = case mkCode w of
+		Just code -> do
+			putMVar observer code
 			return True
-		| otherwise = findcode ws
+		Nothing -> findcode ws
 
 -- | Receives a file. Once the receive is under way, the Code will be
--- read from the CodeObserver, and fed to it on stdin.
-receiveFile :: FilePath -> CodeObserver -> WormHoleParams -> IO Bool
-receiveFile f o ps = runWormHoleProcess p $ \hin hout -> do
-	hPutStrLn hin =<< waitCode o
+-- read from the CodeProducer, and fed to wormhole on stdin.
+receiveFile :: FilePath -> CodeProducer -> WormHoleParams -> IO Bool
+receiveFile f (CodeProducer producer) ps = runWormHoleProcess p $ \hin _hout -> do
+	Code c <- takeMVar producer
+	hPutStrLn hin c
 	hFlush hin
 	return True
   where
