@@ -16,11 +16,30 @@ services.
 
 # OPTIONS
 
+* `--pair`
+
+  Run this in two repositories to pair them together over the P2P network.
+
+  This will print out a code phrase, like "3-mango-elephant", and
+  will prompt for you to enter the code phrase from the other repository.
+
+  Once code phrases have been exchanged, the two repositories will
+  be paired. A git remote will be created for the other repository,
+  with a name like "peer1".
+
+  This uses [Magic Wormhole](https://github.com/warner/magic-wormhole)
+  to verify the code phrases and securely communicate the P2P addresses of
+  the repositories, so you will need it installed on both computers that are
+  being paired.
+
 * `--gen-address`
 
   Generates addresses that can be used to access this git-annex repository
   over the available P2P networks. The address or addresses is output to
-  stdout.
+  stdout. 
+  
+  Note that anyone who knows these addresses can access your
+  repository over the P2P networks.
 
 * `--link`
 
@@ -34,7 +53,8 @@ services.
 
 * `--name`
 
-  Specify a name to use when setting up a git remote.
+  Specify a name to use when setting up a git remote with `--link`
+  or `--pair`.
 
 # SEE ALSO
 
@@ -43,6 +63,8 @@ services.
 [[git-annex-enable-tor]](1)
 
 [[git-annex-remotedaemon]](1)
+
+wormhole(1)
 
 # AUTHOR
 

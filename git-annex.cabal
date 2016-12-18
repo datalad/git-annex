@@ -1044,7 +1044,7 @@ Executable git-annex
     Utility.LockPool.Windows
     Utility.LogFile
     Utility.Lsof
-    Utility.MagicWormHole
+    Utility.MagicWormhole
     Utility.Matcher
     Utility.Metered
     Utility.Misc

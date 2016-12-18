@@ -5,9 +5,11 @@
  - License: BSD-2-clause
  -}
 
-module Utility.MagicWormHole (
+module Utility.MagicWormhole (
 	Code,
 	mkCode,
+	toCode,
+	fromCode,
 	validCode,
 	CodeObserver,
 	CodeProducer,
@@ -32,15 +34,24 @@ import System.Exit
 import Control.Concurrent
 import Control.Exception
 import Data.Char
+import Data.List
 
 -- | A Magic Wormhole code.
 newtype Code = Code String
+	deriving (Eq, Show)
 
 -- | Smart constructor for Code
 mkCode :: String -> Maybe Code
 mkCode s
 	| validCode s = Just (Code s)
 	| otherwise = Nothing
+
+-- | Tries to fix up some common mistakes in a homan-entered code.
+toCode :: String -> Maybe Code
+toCode s = mkCode $ intercalate "-" $ words s
+
+fromCode :: Code -> String
+fromCode (Code s) = s
 
 -- | Codes have the form number-word-word and may contain 2 or more words.
 validCode :: String -> Bool
