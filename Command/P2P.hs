@@ -133,7 +133,7 @@ performPairing remotename addrs = do
 	-- This note is displayed mainly so when magic wormhole
 	-- complains about possible protocol mismatches or other problems,
 	-- it's clear what's doing the complaining.
-	showNote "using Magic Wormhole for pairing"
+	showNote "using Magic Wormhole"
 	next $ do
 		showOutput
 		r <- wormholePairing remotename addrs ui
