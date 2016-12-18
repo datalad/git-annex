@@ -67,10 +67,10 @@ seek (LinkRemote, Just name) = commandAction $
 seek (LinkRemote, Nothing) = commandAction $
 	linkRemote =<< unusedPeerRemoteName
 seek (Pair, Just name) = commandAction $
-	pairing name =<< loadP2PAddresses
+	startPairing name =<< loadP2PAddresses
 seek (Pair, Nothing) = commandAction $ do
 	name <- unusedPeerRemoteName
-	pairing name =<< loadP2PAddresses
+	startPairing name =<< loadP2PAddresses
 
 unusedPeerRemoteName :: Annex RemoteName
 unusedPeerRemoteName = go (1 :: Integer) =<< usednames
@@ -119,11 +119,23 @@ linkRemote remotename = do
 						ConnectionError e -> giveup e
 						AuthenticationError e -> giveup e
 
-pairing :: RemoteName -> [P2PAddress] -> CommandStart
-pairing _ [] = giveup "No P2P networks are currrently available."
-pairing remotename addrs = do
+startPairing :: RemoteName -> [P2PAddress] -> CommandStart
+startPairing _ [] = giveup "No P2P networks are currrently available."
+startPairing remotename addrs = do
 	showStart "p2p pair" remotename
-	next $ next $ do
+	ifM (liftIO Wormhole.isInstalled)
+		( next $ performPairing remotename addrs
+		, giveup "Magic Wormhole is not installed, and is needed for pairing. Install it from your distribution or from https://github.com/warner/magic-wormhole/"
+		) 
+
+performPairing :: RemoteName -> [P2PAddress] -> CommandPerform
+performPairing remotename addrs = do
+	-- This note is displayed mainly so when magic wormhole
+	-- complains about possible protocol mismatches or other problems,
+	-- it's clear what's doing the complaining.
+	showLongNote "Will use Magic Wormhole for pairing."
+	next $ do
+		showOutput
 		r <- wormholePairing remotename addrs ui
 		case r of
 			PairSuccess -> return True
@@ -153,7 +165,9 @@ pairing remotename addrs = do
 		l <- getLine
 		case Wormhole.toCode l of
 			Just code
-				| code /= ourcode -> return code
+				| code /= ourcode -> do
+					putStrLn "Pairing in process..."
+					return code
 				| otherwise -> do
 					putStrLn "Oops -- You entered this repository's pairing code. We need the pairing code of the *other* repository."
 					getcode ourcode

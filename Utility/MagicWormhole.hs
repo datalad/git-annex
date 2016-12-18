@@ -20,6 +20,7 @@ module Utility.MagicWormhole (
 	WormHoleParams,
 	sendFile,
 	receiveFile,
+	isInstalled,
 ) where
 
 import Utility.Process
@@ -28,6 +29,7 @@ import Utility.Monad
 import Utility.Misc
 import Utility.FileSystemEncoding
 import Utility.Env
+import Utility.Path
 
 import System.IO
 import System.Exit
@@ -153,3 +155,6 @@ runWormHoleProcess p consumer =
 			ExitSuccess -> True
 			ExitFailure _ -> False
 	go h@(hin, hout, _) = consumer hin hout <&&> cleanup h
+
+isInstalled :: IO Bool
+isInstalled = inPath "wormhole"
