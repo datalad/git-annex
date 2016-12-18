@@ -70,7 +70,7 @@ addHiddenService uid ident = do
 			-- service and generate the hostname file for it.
 			reloaded <- anyM (uncurry boolSystem)
 				[ ("systemctl", [Param "reload", Param "tor"])
-				, ("sefvice", [Param "tor", Param "reload"])
+				, ("service", [Param "tor", Param "reload"])
 				]
 			unless reloaded $
 				giveup "failed to reload tor, perhaps the tor service is not running"

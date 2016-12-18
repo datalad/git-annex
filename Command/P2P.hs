@@ -166,7 +166,7 @@ performPairing remotename addrs = do
 		case Wormhole.toCode l of
 			Just code
 				| code /= ourcode -> do
-					putStrLn "Pairing in process..."
+					putStrLn "Exchanging pairing data..."
 					return code
 				| otherwise -> do
 					putStrLn "Oops -- You entered this repository's pairing code. We need the pairing code of the *other* repository."
@@ -258,7 +258,7 @@ finishPairing :: Int -> RemoteName -> HalfAuthToken -> PairData -> Annex Pairing
 finishPairing retries remotename (HalfAuthToken ourhalf) (PairData (HalfAuthToken theirhalf) theiraddrs) = do
 	case (toAuthToken (ourhalf <> theirhalf), toAuthToken (theirhalf <> ourhalf)) of
 		(Just ourauthtoken, Just theirauthtoken) -> do
-			liftIO $ putStrLn $ "Successfully exchanged pairing data. Connecting to " ++ remotename ++  " ..."
+			liftIO $ putStrLn $ "Successfully exchanged pairing data. Connecting to " ++ remotename ++  "..."
 			storeP2PAuthToken ourauthtoken
 			go retries theiraddrs theirauthtoken
 		_ -> return ReceiveFailed
