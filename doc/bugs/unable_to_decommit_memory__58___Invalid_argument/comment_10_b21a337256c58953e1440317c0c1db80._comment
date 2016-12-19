@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2016-12-19T19:53:11Z"
+ content="""
+The only way the files could be in lost+found is if the system crashed or
+there was a disk error etc. Can't be due to this bug. So, it may be that
+this bug did not actually cause any data loss. The screwed up symlinks could
+have been caused by a disk error.
+"""]]
