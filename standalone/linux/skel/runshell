@@ -132,7 +132,7 @@ for localeenv in "$LANG" "$LANGUAGE" "$LC_CTYPE" "$LC_NUMERIC" "$LC_TIME" \
 	if [ "$localeenv" != "$lastlocaleenv" ]; then
 		lastlocaleenv="$localeenv"
 		if [ ! -d "$base/locales/$localeenv" ]; then
-			if [ "${localeenv##[!.]*.}" = "utf8" ]; then
+			if [ "${localeenv##[!.]*.}" = "utf8" ] || [ "${localeenv##[!.]*.}" = "UTF-8" ]; then
 				(
 					rm -rf "$base/locales/$localeenv.new.$$" &&
 					mkdir -p "$base/locales/$localeenv.new.$$" &&

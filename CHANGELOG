@@ -17,6 +17,8 @@ git-annex (6.20161211) UNRELEASED; urgency=medium
   * p2p: --link no longer takes a remote name, instead the --name
     option can be used.
   * Debian: Build webapp on armel.
+  * Linux standalone: Improve generation of locale definition files,
+    supporting locales such as, en_GB.UTF-8.
 
  -- Joey Hess <id@joeyh.name>  Sun, 11 Dec 2016 21:29:51 -0400
 

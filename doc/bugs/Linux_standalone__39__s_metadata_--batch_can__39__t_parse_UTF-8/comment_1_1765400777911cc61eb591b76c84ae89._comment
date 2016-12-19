@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-12-19T20:37:56Z"
+ content="""
+JSON uses  a UTF-8 encoding. So the usual hack used in git-annex
+of bypassing the system locale and essentially reading data as binary can't
+work for --json. 
+
+So, I think you need to be using a unicode locale, which is properly set up
+in order to use --json. And, the data fed in via --json needs to actually
+be encoded as unicode and not some other encoding.
+
+runshell was recently changed to bypass using the system locales, it
+includes its own locale data and attempts to generate a locale definition
+file for the locale. The code that did that was failing to notice that
+en_GB.UTF-8 was a UTF-8 locale (en_GB.utf8 would work though), which
+explains why the locale is not set inside runshell
+(git-annex.linux/git-annex is a script that uses runshell). I've corrected
+that problem, and verified it fixes the problem you reported.
+"""]]
