@@ -33,22 +33,37 @@ In both repositories, run this command:
 
 	git annex p2p --pair
 
-This will print out a code phrase, like "11-incredible-tumeric",
-and prompt for you to enter the other repository's code phrase.
+This will print out a pairing code, like "11-incredible-tumeric",
+and prompt for you to enter the other repository's pairing code.
 
-Once the code phrases are exchanged, the two repositories will be securely
+Once the pairing codes are exchanged, the two repositories will be securely
 connected to one-another via Tor. Each will have a git remote, with a name
 like "peer1", which connects to the other repository.
 
 Then, you can run commands like `git annex sync peer1 --content` to sync
 with the paired repository.
 
-The Magic Wormhole code phrases used during pairing will no longer be
-useful for anything afterwards.
-
 Pairing connects just two repositories, but you can repeat the process to
 pair with as many other repositories as you like, in order to build up
 larger networks of repositories.
+
+## how to exchange pairing codes
+
+When pairing with a friend's repository, you have to exchange
+pairing codes. How to do this securely?
+
+The pairing codes can only be used once, so it's ok to exchange them in
+a way that someone else can access later. However, if someone can overhear
+your exchange of codes in real time, they could trick you into pairing
+with them.
+
+Here are some suggestions for how to exchange the codes,
+with the most secure ways first:
+
+* In person.
+* In an encrypted message (gpg signed email, Off The Record (OTR)
+  conversation, etc).
+* By a voice phone call.
 
 ## starting git-annex remotedaemon on boot
 
