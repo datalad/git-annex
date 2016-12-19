@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-12-19T19:55:23Z"
+ content="""
+It's somewhat misleading that it complains there are no enclosures in the
+feed. While importfeed mostly downloads only enclosures in podcast feeds,
+it also checks link tags, which this feed contains, to see if quvi supports
+downloading content from them. Quvi does support the links in this feed,
+so it should work despite there being no enclosures.
+
+I've reproduced it not working, and it seems that the problem is this is
+not quite a valid Atom feed, and the feed parsing library is failing to
+parse it. Perhaps that can be improved; I filed a bug here
+<https://github.com/bergmark/feed/issues/18>
+"""]]
