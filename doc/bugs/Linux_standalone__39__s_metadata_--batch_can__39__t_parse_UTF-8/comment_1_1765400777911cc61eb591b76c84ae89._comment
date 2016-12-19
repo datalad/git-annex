@@ -3,14 +3,6 @@
  subject="""comment 1"""
  date="2016-12-19T20:37:56Z"
  content="""
-JSON uses  a UTF-8 encoding. So the usual hack used in git-annex
-of bypassing the system locale and essentially reading data as binary can't
-work for --json. 
-
-So, I think you need to be using a unicode locale, which is properly set up
-in order to use --json. And, the data fed in via --json needs to actually
-be encoded as unicode and not some other encoding.
-
 runshell was recently changed to bypass using the system locales, it
 includes its own locale data and attempts to generate a locale definition
 file for the locale. The code that did that was failing to notice that
@@ -18,4 +10,36 @@ en_GB.UTF-8 was a UTF-8 locale (en_GB.utf8 would work though), which
 explains why the locale is not set inside runshell
 (git-annex.linux/git-annex is a script that uses runshell). I've corrected
 that problem, and verified it fixes the problem you reported.
+
+----
+
+However.. The same thing happens when using LANG=C with git-annex
+installed by any method and --json --batch. So the deeper problem is that
+it's forcing the batch input to be decoded as utf8 via the current locale.
+This happens in Command/MetaData.hs parseJSONInput which uses
+`BU.fromString`. 
+
+I tried swapping in `encodeBS` for `BU.fromString`. That prevented the
+decoding error, but made git-annex complain that the file was not annexed,
+due to a Mojibake problem: 
+
+With `encodeBS`, the input `{"file":"ü.txt"}` is encoded as
+`"{\"file\":\"\195\188.txt\"}"`. Aeson parses that input to this:
+
+	JSONActionItem {itemCommand = Nothing, itemKey = Nothing, itemFile = Just "\252.txt", itemAdded = Nothing}
+
+Note that the first two bytes have been
+parsed by Aeson as unicode (since JSON is unicode encoded),
+yielding character 252 (ü).
+
+In a unicode locale, this works ok, because the encoding layer is able to
+convert that unicode character back to two bytes 195 188 
+and finds the file on disk. But in a non-unicode locale, it doesn't know
+what to do with the unicode character, and in fact it gets discarded
+and so it looks for a file named ".txt".
+
+So, to make --batch --json input work in non-unicode locales, it would
+need, after parsing the json, to re-encode filenames (and perhaps other
+data), from utf8 to the filesystem encoding. I have not yet worked out how
+to do that.
 """]]
