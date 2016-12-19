@@ -19,6 +19,8 @@ git-annex (6.20161211) UNRELEASED; urgency=medium
   * Debian: Build webapp on armel.
   * Linux standalone: Improve generation of locale definition files,
     supporting locales such as, en_GB.UTF-8.
+  * rekey --force: Incorrectly marked the new key's content as being
+    present in the local repo even when it was not.
 
  -- Joey Hess <id@joeyh.name>  Sun, 11 Dec 2016 21:29:51 -0400
 
