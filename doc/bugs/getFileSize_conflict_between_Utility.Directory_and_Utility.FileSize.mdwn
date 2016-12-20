@@ -31,3 +31,4 @@ import Utility.Directory as X hiding (getFileSize)
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Yes :)
 
+> [[fixed|done]]; thanks for reporting!

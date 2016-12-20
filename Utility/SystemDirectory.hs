@@ -13,4 +13,4 @@ module Utility.SystemDirectory (
 	module System.Directory
 ) where
 
-import System.Directory hiding (isSymbolicLink)
+import System.Directory hiding (isSymbolicLink, getFileSize)
