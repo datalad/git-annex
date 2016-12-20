@@ -7,7 +7,7 @@ understand how everything is stored and exactly what changes are happening.
 I will proceed to summarize all of these. I will begin at the automatic
 end, hoping that this is most useful, and drill down to the low level
 approaches. Note, however, that this is the opposite order of how git-annex
-was apparently developed. A list of workflows that started from manual,
+was developed. A list of workflows that started from manual,
 commandline usage would be much more intuitive, but you'd have to be
 willing to read the man page and wiki pages to get started, and that's
 pretty much what's already out there anyway.
@@ -19,7 +19,7 @@ Note that for each of these levels of interaction, all the levels following will
 The [[`git annex webapp`|git-annex-webapp]] command launches a local web
 server which serves a graphical user interface and automatically manages
 git annex. It will attempt to guide you through the whole process and do
-everything for you. I think the intent is that no other commands are
+everything for you. The intent is that no other commands are
 needed. This should be run on every machine that may produce file changes.
 
 # 2. [[git annex assistant|git-annex-assistant]] without the webapp
@@ -72,10 +72,7 @@ can use [[`git annex get`|git-annex-get]], [[`git annex
 drop`|git-annex-drop]], [[`git annex move`|git-annex-move]], and [[`git
 annex copy`|git-annex-copy]]. Git-annex will not violate a required content
 expression or your numcopies setting unless you pass `--force`, so your
-files are still safe. This is the workflow I mostly use, and I find it the
-most stable. I'm trying to migrate up to `--content`, but I have too many
-large files that haven't reached their numcopies yet for that to be
-effective.
+files are still safe.
 
 # 6. Manual management of git history without the synchronizer
 
