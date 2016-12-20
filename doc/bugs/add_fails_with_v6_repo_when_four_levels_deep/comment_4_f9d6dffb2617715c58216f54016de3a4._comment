@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="t.z.mates"
+ avatar="http://cdn.libravatar.org/avatar/90f15fad216078fd08d62cc676487925"
+ subject="comment 4"
+ date="2016-12-20T23:08:44Z"
+ content="""
+Hmm, I don't think an old version of git is the cause. I'm currently running the most recent build of git (2.11.0), but have used a number of versions over the past year.
+
+I'm not sure if this is relevant, but this other bug reports similar behavior: [sync --content, fatal is outside repository errors](https://git-annex.branchable.com/forum/sync_--content__44___fatal_is_outside_repository_errors/). Specifically, it notes that there is an odd use of relative paths:
+> The relative path ../Users is curious
+
+My error also appends an extra period. In particular, the path should be \"./1/2/3/4/foo\" but prints \"../1/2/3/4/foo\".
+"""]]
