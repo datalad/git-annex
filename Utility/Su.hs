@@ -9,7 +9,6 @@ module Utility.Su where
 
 import Common
 import Utility.Env
-import Utility.Path
 
 import System.Posix.Terminal
 
