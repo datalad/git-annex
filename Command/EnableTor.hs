@@ -32,12 +32,15 @@ seek = withWords start
 
 start :: [String] -> CommandStart
 start os = do
+	uuid <- getUUID
+	when (uuid == NoUUID) $
+		giveup "This can only be run in a git-annex repository."
 #ifndef mingw32_HOST_OS
 	curruserid <- liftIO getEffectiveUserID
 	if curruserid == 0
 		then case readish =<< headMaybe os of
 			Nothing -> giveup "Need user-id parameter."
-			Just userid -> go userid
+			Just userid -> go uuid userid
 		else do
 			liftIO $ putStrLn "Need root access to enable tor..."
 			gitannex <- liftIO readProgramFile
@@ -48,13 +51,10 @@ start os = do
 					[ "Failed to run as root:" , gitannex ] ++ toCommand ps
 				)
 #else
-	go 0
+	go uuid 0
 #endif
   where
-	go userid = do
-		uuid <- getUUID
-		when (uuid == NoUUID) $
-			giveup "This can only be run in a git-annex repository."
+	go uuid userid = do
 		(onionaddr, onionport) <- liftIO $
 			addHiddenService "tor-annex" userid (fromUUID uuid)
 		storeP2PAddress $ TorAnnex onionaddr onionport
