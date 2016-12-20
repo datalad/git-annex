@@ -23,7 +23,7 @@ to accomplish this.
 
 In each git-annex repository, run these commands:
 
-	sudo git annex enable-tor $(id -u)
+	git annex enable-tor
 	git annex remotedaemon
 
 Now git-annex is running as a Tor hidden service, but 

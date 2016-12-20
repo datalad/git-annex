@@ -1072,6 +1072,7 @@ Executable git-annex
     Utility.Shell
     Utility.SimpleProtocol
     Utility.SshConfig
+    Utility.Su
     Utility.SystemDirectory
     Utility.TList
     Utility.Tense
