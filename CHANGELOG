@@ -2,7 +2,6 @@ git-annex (6.20161211) UNRELEASED; urgency=medium
 
   * p2p --pair makes it easy to pair repositories over P2P, using
     Magic Wormhole codes to find the other repository.
-  * Debian: Recommend magic-wormhole.
   * metadata --batch: Fix bug when conflicting metadata changes were
     made in the same batch run.
   * Pass annex.web-options to wget and curl after other options, so that
@@ -16,12 +15,13 @@ git-annex (6.20161211) UNRELEASED; urgency=medium
     be processed without requiring it to be in the current encoding.
   * p2p: --link no longer takes a remote name, instead the --name
     option can be used.
-  * Debian: Build webapp on armel.
   * Linux standalone: Improve generation of locale definition files,
     supporting locales such as, en_GB.UTF-8.
   * rekey --force: Incorrectly marked the new key's content as being
     present in the local repo even when it was not.
   * Fix build with directory-1.3.
+  * Debian: Suggest tor and magic-wormhole.
+  * Debian: Build webapp on armel.
 
  -- Joey Hess <id@joeyh.name>  Sun, 11 Dec 2016 21:29:51 -0400
 

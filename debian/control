@@ -112,10 +112,11 @@ Recommends:
 	git-remote-gcrypt (>= 0.20130908-6),
 	nocache,
 	aria2,
-	magic-wormhole,
 Suggests:
 	xdot,
 	bup,
+	tor,
+	magic-wormhole,
 	tahoe-lafs,
 	libnss-mdns,
 Description: manage files with git, without checking their contents into git
