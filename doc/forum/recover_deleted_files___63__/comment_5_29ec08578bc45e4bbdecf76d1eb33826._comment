@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="veron_veron@8e19f168a8da3dabcdbf28ccd3f27edfb40941ed"
+ nickname="veron_veron"
+ avatar="http://cdn.libravatar.org/avatar/eb7805af696010b4e8844aefeeb89a1b"
+ subject="easy"
+ date="2016-12-20T09:19:31Z"
+ content="""
+Indeed the recycle bin, and using Windows Explorer to look in folders; the programs you used are not designed to search for files; especially programs like Elements, which uses a catalog is not what you need now. Moving files confuses PS Elements organiser enough to make it seem like you lost files, while they're actually there. When things go wrong, use the basic tools provided in Windows itself (explorer, search).
+For file recovery programs, I've use <a href=\"http://www.passwordmanagers.net/resources/Software-for-Recovering-Deleted-Files-71.html\">Software for Recovering Deleted Files</a> on a few occassions; it's free and it works as good as can be expected. The main thing is to stop using the external hard disk until you use this tool, and avoid writing any files to it.
+"""]]
