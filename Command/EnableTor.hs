@@ -30,6 +30,6 @@ start ps = case readish =<< headMaybe ps of
 		when (uuid == NoUUID) $
 			giveup "This can only be run in a git-annex repository."
 		(onionaddr, onionport) <- liftIO $
-			addHiddenService userid (fromUUID uuid)
+			addHiddenService "tor-annex" userid (fromUUID uuid)
 		storeP2PAddress $ TorAnnex onionaddr onionport
 		stop

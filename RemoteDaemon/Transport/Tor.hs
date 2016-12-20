@@ -39,36 +39,41 @@ import qualified Network.Socket as S
 server :: TransportHandle -> IO ()
 server th@(TransportHandle (LocalRepo r) _) = do
 	u <- liftAnnex th getUUID
-
-	q <- newTBMQueueIO maxConnections
-	replicateM_ maxConnections $
-		forkIO $ forever $ serveClient th u r q
-
 	uid <- getRealUserID
 	let ident = fromUUID u
-	let sock = hiddenServiceSocketFile uid ident
-	nukeFile sock
-	soc <- S.socket S.AF_UNIX S.Stream S.defaultProtocol
-	S.bind soc (S.SockAddrUnix sock)
-	-- Allow everyone to read and write to the socket; tor is probably
-	-- running as a different user. Connections have to authenticate
-	-- to do anything, so it's fine that other local users can connect.
-	modifyFileMode sock $ addModes
-		[groupReadMode, groupWriteMode, otherReadMode, otherWriteMode]
-	S.listen soc 2
-	debugM "remotedaemon" "Tor hidden service running"
-	forever $ do
-		(conn, _) <- S.accept soc
-		h <- setupHandle conn
-		ok <- atomically $ ifM (isFullTBMQueue q)
-			( return False
-			, do
-				writeTBMQueue q h
-				return True
-			)
-		unless ok $ do
-			hClose h
-			warningIO "dropped Tor connection, too busy"
+	go u =<< getHiddenServiceSocketFile uid ident
+  where
+	go u (Just sock) = do
+		q <- newTBMQueueIO maxConnections
+		replicateM_ maxConnections $
+			forkIO $ forever $ serveClient th u r q
+
+		nukeFile sock
+		soc <- S.socket S.AF_UNIX S.Stream S.defaultProtocol
+		S.bind soc (S.SockAddrUnix sock)
+		-- Allow everyone to read and write to the socket; tor
+		-- is probably running as a different user.
+		-- Connections have to authenticate to do anything,
+		-- so it's fine that other local users can connect to the
+		-- socket.
+		modifyFileMode sock $ addModes
+			[groupReadMode, groupWriteMode, otherReadMode, otherWriteMode]
+
+		S.listen soc 2
+		debugM "remotedaemon" "Tor hidden service running"
+		forever $ do
+			(conn, _) <- S.accept soc
+			h <- setupHandle conn
+			ok <- atomically $ ifM (isFullTBMQueue q)
+				( return False
+				, do
+					writeTBMQueue q h
+					return True
+				)
+			unless ok $ do
+				hClose h
+				warningIO "dropped Tor connection, too busy"
+	go _ Nothing = debugM "remotedaemon" "Tor hidden service not enabled"
 
 -- How many clients to serve at a time, maximum. This is to avoid DOS attacks.
 maxConnections :: Int

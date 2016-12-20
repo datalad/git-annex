@@ -25,7 +25,11 @@ newtype OnionAddress = OnionAddress String
 
 type OnionSocket = FilePath
 
+-- | A unique identifier for a hidden service.
 type UniqueIdent = String
+
+-- | Name of application that is providing a hidden service.
+type AppName = String
 
 connectHiddenService :: OnionAddress -> OnionPort -> IO Socket
 connectHiddenService (OnionAddress address) port = do
@@ -48,9 +52,9 @@ connectHiddenService (OnionAddress address) port = do
 -- 
 -- If there is already a hidden service for the specified unique
 -- identifier, returns its information without making any changes.
-addHiddenService :: UserID -> UniqueIdent -> IO (OnionAddress, OnionPort)
-addHiddenService uid ident = do
-	prepHiddenServiceSocketDir uid ident
+addHiddenService :: AppName -> UserID -> UniqueIdent -> IO (OnionAddress, OnionPort)
+addHiddenService appname uid ident = do
+	prepHiddenServiceSocketDir appname uid ident
 	ls <- lines <$> readFile torrc
 	let portssocks = mapMaybe (parseportsock . separate isSpace) ls
 	case filter (\(_, s) -> s == sockfile) portssocks of
@@ -81,7 +85,7 @@ addHiddenService uid ident = do
 		return (p, drop 1 (dropWhile (/= ':') l))
 	parseportsock _ = Nothing
 	
-	sockfile = hiddenServiceSocketFile uid ident
+	sockfile = hiddenServiceSocketFile appname uid ident
 
 	-- An infinite random list of high ports.
 	mkhighports g = 
@@ -104,7 +108,7 @@ addHiddenService uid ident = do
 -- The "hs" is used in the name to prevent too long a path name,
 -- which could present problems for socketFile.
 hiddenServiceDir :: UserID -> UniqueIdent -> FilePath
-hiddenServiceDir uid ident = libDir </> "hs_" ++ show uid ++ "_" ++ ident
+hiddenServiceDir uid ident = torLibDir </> "hs_" ++ show uid ++ "_" ++ ident
 
 hiddenServiceHostnameFile :: UserID -> UniqueIdent -> FilePath
 hiddenServiceHostnameFile uid ident = hiddenServiceDir uid ident </> "hostname"
@@ -112,33 +116,45 @@ hiddenServiceHostnameFile uid ident = hiddenServiceDir uid ident </> "hostname"
 -- | Location of the socket for a hidden service.
 --
 -- This has to be a location that tor can read from, and that the user
--- can write to. Tor is often prevented by apparmor from reading
--- from many locations. Putting it in /etc is a FHS violation, but it's the
--- simplest and most robust choice until http://bugs.debian.org/846275 is
--- dealt with.
+-- can write to. Since torLibDir is locked down, it can't go in there.
 --
 -- Note that some unix systems limit socket paths to 92 bytes long.
 -- That should not be a problem if the UniqueIdent is around the length of
--- a UUID.
-hiddenServiceSocketFile :: UserID -> UniqueIdent -> FilePath
-hiddenServiceSocketFile uid ident = etcDir </> "hidden_services" </> show uid ++ "_" ++ ident </> "s"
+-- a UUID, and the AppName is short.
+hiddenServiceSocketFile :: AppName -> UserID -> UniqueIdent -> FilePath
+hiddenServiceSocketFile appname uid ident = varLibDir </> appname </> show uid ++ "_" ++ ident </> "s"
+
+-- | Parse torrc, to get the socket file used for a hidden service with
+-- the specified UniqueIdent.
+getHiddenServiceSocketFile :: UserID -> UniqueIdent -> IO (Maybe FilePath)
+getHiddenServiceSocketFile uid ident = 
+	parse . map words . lines <$> catchDefaultIO "" (readFile torrc)
+  where
+	parse [] = Nothing
+	parse (("HiddenServiceDir":hsdir:[]):("HiddenServicePort":_hsport:hsaddr:[]):rest)
+		| "unix:" `isPrefixOf` hsaddr && hsdir == hsdir_want =
+			Just (drop (length "unix:") hsaddr)
+		| otherwise = parse rest
+	parse (_:rest) = parse rest
+
+	hsdir_want = hiddenServiceDir uid ident
 
 -- | Sets up the directory for the socketFile, with appropriate
 -- permissions. Must run as root.
-prepHiddenServiceSocketDir :: UserID -> UniqueIdent -> IO ()
-prepHiddenServiceSocketDir uid ident = do
+prepHiddenServiceSocketDir :: AppName -> UserID -> UniqueIdent -> IO ()
+prepHiddenServiceSocketDir appname uid ident = do
 	createDirectoryIfMissing True d
 	setOwnerAndGroup d uid (-1)
 	modifyFileMode d $
 		addModes [ownerReadMode, ownerExecuteMode, ownerWriteMode]
   where
-	d = takeDirectory $ hiddenServiceSocketFile uid ident
+	d = takeDirectory $ hiddenServiceSocketFile appname uid ident
 
 torrc :: FilePath
 torrc = "/etc/tor/torrc"
 
-libDir :: FilePath
-libDir = "/var/lib/tor"
+torLibDir :: FilePath
+torLibDir = "/var/lib/tor"
 
-etcDir :: FilePath
-etcDir = "/etc/tor"
+varLibDir :: FilePath
+varLibDir = "/var/lib"
