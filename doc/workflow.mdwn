@@ -12,7 +12,9 @@ commandline usage would be much more intuitive, but you'd have to be
 willing to read the man page and wiki pages to get started, and that's
 pretty much what's already out there anyway.
 
-Note that for each of these levels of interaction, all the levels following will also work as well. So you can actually manually move annexed files around while the webapp is running, etc.
+Note that for each of these levels of interaction, all the levels following
+will also work as well. So you can actually manually move annexed files
+around while the webapp is running, etc.
 
 # 1. [[git annex webapp|git-annex-webapp]]
 
@@ -27,18 +29,19 @@ needed. This should be run on every machine that may produce file changes.
 You could call [[`git annex assistant`|git-annex-assistant]] the
 command-line version of the webapp, giving you more control over creating
 and connecting your repositories, and configuring how files are moved
-between them. The assistant, when running, will automatically watch for
-file changes and synchronize them to other repositories, but you must
-manually create the repositories and configure the rules for syncing. To
-create a repository, use `git init` and then [[`git annex
-init`|git-annex-init]], and then `git remote add` it to any other
-repositories. If you want more than one annex, you can add their paths to
-`~/.config/git-annex/autostart` if you would like them to automatically
-begin syncing when `git annex assistant --autostart` is run, perhaps on
-boot or login. You can configure rules for where files are copied using the
-repository setup commands such as [[git annex
-preferred-content|git-annex-preferred-content]] to configure [[content
-preferences|preferred content]] for what goes where, [[`git annex
+between them.
+
+The assistant, when running, will automatically watch for file changes and
+synchronize them to other repositories, but you must manually create the
+repositories and configure the rules for syncing. To create a repository,
+use `git init` and then [[`git annex init`|git-annex-init]], and then `git
+remote add` it to any other repositories. If you want more than one annex,
+you can add their paths to `~/.config/git-annex/autostart` if you would
+like them to automatically begin syncing when `git annex assistant
+--autostart` is run, perhaps on boot or login. You can configure rules for
+where files are copied using the repository setup commands such as [[git
+annex preferred-content|git-annex-preferred-content]] to configure
+[[content preferences|preferred content]] for what goes where, [[`git annex
 numcopies`|git-annex-numcopies]] for how many [[copies]] must be kept of
 each file, and [[`git config annex.largefiles`|tips/largefiles]] to define
 small files that should be stored straight in git; most of the settings are
