@@ -56,6 +56,6 @@ start os = do
   where
 	go uuid userid = do
 		(onionaddr, onionport) <- liftIO $
-			addHiddenService "tor-annex" userid (fromUUID uuid)
+			addHiddenService torAppName userid (fromUUID uuid)
 		storeP2PAddress $ TorAnnex onionaddr onionport
 		stop

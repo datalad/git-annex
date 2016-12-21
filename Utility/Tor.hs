@@ -66,7 +66,7 @@ addHiddenService appname uid ident = do
 			writeFile torrc $ unlines $
 				ls ++
 				[ ""
-				, "HiddenServiceDir " ++ hiddenServiceDir uid ident
+				, "HiddenServiceDir " ++ hiddenServiceDir appname uid ident
 				, "HiddenServicePort " ++ show newport ++ 
 					" unix:" ++ sockfile
 				]
@@ -95,7 +95,7 @@ addHiddenService appname uid ident = do
 	waithiddenservice :: Int -> OnionPort -> IO (OnionAddress, OnionPort)
 	waithiddenservice 0 _ = giveup "tor failed to create hidden service, perhaps the tor service is not running"
 	waithiddenservice n p = do
-		v <- tryIO $ readFile $ hiddenServiceHostnameFile uid ident
+		v <- tryIO $ readFile $ hiddenServiceHostnameFile appname uid ident
 		case v of
 			Right s | ".onion\n" `isSuffixOf` s ->
 				return (OnionAddress (takeWhile (/= '\n') s), p)
@@ -105,13 +105,14 @@ addHiddenService appname uid ident = do
 
 -- | A hidden service directory to use.
 --
--- The "hs" is used in the name to prevent too long a path name,
--- which could present problems for socketFile.
-hiddenServiceDir :: UserID -> UniqueIdent -> FilePath
-hiddenServiceDir uid ident = torLibDir </> "hs_" ++ show uid ++ "_" ++ ident
+-- Has to be inside the torLibDir so tor can create it.
+--
+-- Has to end with "uid_ident" so getHiddenServiceSocketFile can find it.
+hiddenServiceDir :: AppName -> UserID -> UniqueIdent -> FilePath
+hiddenServiceDir appname uid ident = torLibDir </> appname ++ "_" ++ show uid ++ "_" ++ ident
 
-hiddenServiceHostnameFile :: UserID -> UniqueIdent -> FilePath
-hiddenServiceHostnameFile uid ident = hiddenServiceDir uid ident </> "hostname"
+hiddenServiceHostnameFile :: AppName -> UserID -> UniqueIdent -> FilePath
+hiddenServiceHostnameFile appname uid ident = hiddenServiceDir appname uid ident </> "hostname"
 
 -- | Location of the socket for a hidden service.
 --
@@ -126,18 +127,20 @@ hiddenServiceSocketFile appname uid ident = varLibDir </> appname </> show uid +
 
 -- | Parse torrc, to get the socket file used for a hidden service with
 -- the specified UniqueIdent.
-getHiddenServiceSocketFile :: UserID -> UniqueIdent -> IO (Maybe FilePath)
-getHiddenServiceSocketFile uid ident = 
+getHiddenServiceSocketFile :: AppName -> UserID -> UniqueIdent -> IO (Maybe FilePath)
+getHiddenServiceSocketFile _appname uid ident = 
 	parse . map words . lines <$> catchDefaultIO "" (readFile torrc)
   where
 	parse [] = Nothing
 	parse (("HiddenServiceDir":hsdir:[]):("HiddenServicePort":_hsport:hsaddr:[]):rest)
-		| "unix:" `isPrefixOf` hsaddr && hsdir == hsdir_want =
+		| "unix:" `isPrefixOf` hsaddr && hasident hsdir =
 			Just (drop (length "unix:") hsaddr)
 		| otherwise = parse rest
 	parse (_:rest) = parse rest
 
-	hsdir_want = hiddenServiceDir uid ident
+	-- Don't look for AppName in the hsdir, because it didn't used to
+	-- be included.
+	hasident hsdir = (show uid ++ "_" ++ ident) `isSuffixOf` takeFileName hsdir
 
 -- | Sets up the directory for the socketFile, with appropriate
 -- permissions. Must run as root.

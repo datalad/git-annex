@@ -41,7 +41,7 @@ server th@(TransportHandle (LocalRepo r) _) = do
 	u <- liftAnnex th getUUID
 	uid <- getRealUserID
 	let ident = fromUUID u
-	go u =<< getHiddenServiceSocketFile uid ident
+	go u =<< getHiddenServiceSocketFile torAppName uid ident
   where
 	go u (Just sock) = do
 		q <- newTBMQueueIO maxConnections
