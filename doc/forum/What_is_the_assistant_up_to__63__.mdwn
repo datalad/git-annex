@@ -1,0 +1,5 @@
+Is there a way to see what the assistant is doing right now, what failed, etc. ?
+I am running the assistant on a remote server so the Webapp's interface is not easily available.
+
+I was hoping to have something that is easier to read than the daemon.log
+
