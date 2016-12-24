@@ -1,3 +1,7 @@
+## version 6.20170101
+
+This release removes XMPP support. Instead, the new Tor support can be used.
+
 ## version 5.20140421
 
 This release begins to deprecate XMPP support. In particular, if you use

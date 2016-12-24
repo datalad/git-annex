@@ -1,0 +1,32 @@
+Want to share all the files in your repository securely with a friend?
+
+This connects to your friend's repository using
+[Tor](https://torproject.org/). Both you and your friend will need to
+install [Tor](https://torproject.org/) and
+[Magic Wormhole](https://github.com/warner/magic-wormhole), and then both
+follow these steps to connect your repositories.
+
+Start by opening up your git annex dashboard.
+
+[[!img local_pairing_walkthrough/addrepository.png alt="Add another repository button"]]
+
+`*click*`
+
+[[!img pairing.png alt="Share with a friend"]]
+
+`*click*`
+
+Now you will probably be prompted to enter a password, to configure Tor.
+(Depending on how your system is configured, this may be the root password,
+or your user account's password.)
+
+Then, a pairing code will be generated. Tell it to your friend. Ask them
+for their pairing code, and enter it in the form.
+
+Once you've exchanged pairing codes, your repositories will be connected
+over Tor. They will begin to sync files back and forth, which can take a
+while since Tor is not super-fast.
+
+---
+
+See [[tips/peer_to_peer_network_with_tor]] for more details.

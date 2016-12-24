@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.246"
- subject="comment 4"
- date="2013-11-12T18:18:16Z"
- content="""
-You can easily use a removable drive as a transfer repository to sync two computers that have no network connection. Just use the webapp to add the drive on one computer. The drive will be set up as a transfer repository by default. The webapp will automatically start copying all your files to it. Then you can disconnect the drive, bring it to the other computer, and repeat the process. Everything from the first computer will then sync over from the drive to the second computer. And repeat moving the drive back and forth to keep things in sync.
-"""]]

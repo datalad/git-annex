@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawl6RDLuI2b2fHkTRseVQGUNjcQ2qUrOaE0"
- nickname="Фёдор"
- subject="comment 1"
- date="2014-05-25T15:10:34Z"
- content="""
-Do we need a cloud repository just to bypass NAT? I understand it can't share files within Jabber, but it just looks unpolished. Maybe some punching techniques might be handy, pwnat for example.
-"""]]

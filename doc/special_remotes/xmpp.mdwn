@@ -1,4 +1,4 @@
 XMPP (Jabber) used to be able to be used by the [[assistant]] as a git remote.
 This never worked very well, and it was not entirely secure, since the XMPP
 server saw the contents of git pushes without encryption. So, XMPP support
-has been removed.
+has been removed. Use [[tor]] instead.
