@@ -197,6 +197,7 @@ Extra-Source-Files:
   templates/configurators/enablewebdav.hamlet
   templates/configurators/pairing/local/inprogress.hamlet
   templates/configurators/pairing/local/prompt.hamlet
+  templates/configurators/pairing/tor/prompt.hamlet
   templates/configurators/pairing/disabled.hamlet
   templates/configurators/addglacier.hamlet
   templates/configurators/fsck.cassius
@@ -219,6 +220,7 @@ Extra-Source-Files:
   templates/configurators/addrepository/archive.hamlet
   templates/configurators/addrepository/cloud.hamlet
   templates/configurators/addrepository/connection.hamlet
+  templates/configurators/addrepository/torconnection.hamlet
   templates/configurators/addrepository/ssh.hamlet
   templates/configurators/addrepository/misc.hamlet
   templates/configurators/rsync.net/add.hamlet

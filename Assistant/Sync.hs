@@ -18,8 +18,6 @@ import qualified Command.Sync
 import Utility.Parallel
 import qualified Git
 import qualified Git.Command
-import qualified Git.Merge
-import qualified Git.Ref
 import qualified Remote
 import qualified Types.Remote as Remote
 import qualified Remote.List as Remote

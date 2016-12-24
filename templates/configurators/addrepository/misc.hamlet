@@ -8,6 +8,8 @@
   <a href="http://en.wikipedia.org/wiki/Sneakernet">SneakerNet</a> #
   between computers. 
 
+^{makeTorConnection}
+
 <h3>
   <a href="@{StartLocalPairR}">
     <span .glyphicon .glyphicon-plus-sign>

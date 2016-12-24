@@ -31,6 +31,9 @@ makeMiscRepositories = $(widgetFile "configurators/addrepository/misc")
 makeCloudRepositories :: Widget
 makeCloudRepositories = $(widgetFile "configurators/addrepository/cloud")
 
+makeTorConnection :: Widget
+makeTorConnection = $(widgetFile "configurators/addrepository/torconnection")
+
 makeSshRepository :: Widget
 makeSshRepository = $(widgetFile "configurators/addrepository/ssh")
 

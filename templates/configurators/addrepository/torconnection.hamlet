@@ -1,0 +1,13 @@
+<h3>
+  <a href="@{StartTorPairSelfR}">
+    <span .glyphicon .glyphicon-plus-sign>
+    \ Share with your other devices
+<p>
+  Keep files in sync between your devices running git-annex.
+
+<h3>
+  <a href="@{StartTorPairFriendR}">
+    <span .glyphicon .glyphicon-plus-sign>
+    \ Share with a friend
+<p>
+  Combine your repository with a friend's repository, and share your files.

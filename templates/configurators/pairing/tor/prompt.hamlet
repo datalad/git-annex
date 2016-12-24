@@ -1,0 +1,35 @@
+<div .col-sm-9>
+  <div .content-box>
+    <h2>
+      $case pairingwith
+        $of PairingWithSelf
+          Pairing your devices
+        $of PairingWithFriend
+          Pairing with a friend
+    <p>
+      Pairing will connect two git-annex repositories using #
+      <a href="https://torproject.org/">Tor</a>, #
+      allowing files to be shared between them.
+    <p>
+      $case pairingwith
+        $of PairingWithSelf
+          This device's #
+        $of PairingWithFriend
+          Your repository's #
+      pairing code is: <b><big>#{Wormhole.fromCode ourcode}</big></b>
+    <p>
+      $case pairingwith
+        $of PairingWithSelf
+          Enter that code into the webapp of the device you want to #
+          pair with.
+        $of PairingWithFriend
+          Tell that code to your friend. #
+    <p>
+      <form method="post" .form-horizontal enctype=#{enctype}>
+        <fieldset>
+          ^{form}
+          ^{webAppFormAuthToken}
+          <div .form-group>
+            <div .col-sm-10 .col-sm-offset-2>
+              <button .btn .btn-primary type=submit>
+                Finish pairing

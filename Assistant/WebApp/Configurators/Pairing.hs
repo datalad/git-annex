@@ -1,6 +1,6 @@
 {- git-annex assistant webapp configurator for pairing
  -
- - Copyright 2012 Joey Hess <id@joeyh.name>
+ - Copyright 2012,2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -22,6 +22,7 @@ import Assistant.DaemonStatus
 import Utility.Verifiable
 #endif
 import Utility.UserInfo
+import qualified Utility.MagicWormhole as Wormhole
 import Git
 
 import qualified Data.Text as T
@@ -32,6 +33,38 @@ import Data.Char
 import qualified Control.Exception as E
 import Control.Concurrent
 #endif
+
+data PairingWith = PairingWithSelf | PairingWithFriend
+
+getStartTorPairFriendR :: Handler Html
+getStartTorPairFriendR = postStartTorPairR PairingWithFriend
+
+getStartTorPairSelfR :: Handler Html
+getStartTorPairSelfR = postStartTorPairR PairingWithSelf
+
+postStartTorPairFriendR :: Handler Html
+postStartTorPairFriendR = postStartTorPairR PairingWithFriend
+
+postStartTorPairSelfR :: Handler Html
+postStartTorPairSelfR = postStartTorPairR PairingWithSelf
+
+postStartTorPairR :: PairingWith -> Handler Html
+postStartTorPairR pairingwith = pairPage $ do
+	let Just ourcode = Wormhole.mkCode "11-bannana-bananna" -- XXX tmp
+	((result, form), enctype) <- liftH $
+		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $
+			areq wormholeCodeField (bfs codeprompt) Nothing
+	case result of
+		FormSuccess v -> error "TODO"
+		_ -> showform form enctype ourcode
+  where
+	showform form enctype ourcode = $(widgetFile "configurators/pairing/tor/prompt")
+	codeprompt = case pairingwith of
+		PairingWithFriend -> "Your friend's pairing code"
+		PairingWithSelf -> "The other device's pairing code"
+	wormholeCodeField = checkBool (Wormhole.validCode . T.unpack)
+		("That does not look like a valid code. Try again..." :: T.Text)
+		textField
 
 {- Starts local pairing. -}
 getStartLocalPairR :: Handler Html
