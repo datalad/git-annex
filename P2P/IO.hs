@@ -68,35 +68,6 @@ closeConnection conn = do
 	hClose (connIhdl conn)
 	hClose (connOhdl conn)
 
--- Serves the protocol on a unix socket.
---
--- The callback is run to serve a connection, and is responsible for
--- closing the Handle when done.
---
--- Note that while the callback is running, other connections won't be
--- processes, so longterm work should be run in a separate thread by
--- the callback.
-serveUnixSocket :: FilePath -> (Handle -> IO ()) -> IO ()
-serveUnixSocket unixsocket serveconn = do
-	nukeFile unixsocket
-	soc <- S.socket S.AF_UNIX S.Stream S.defaultProtocol
-	S.bind soc (S.SockAddrUnix unixsocket)
-	-- Allow everyone to read and write to the socket,
-	-- so a daemon like tor, that is probably running as a different
-	-- de sock $ addModes
-	-- user, can access it.
-	-- 
-        -- Connections have to authenticate to do anything,
-        -- so it's fine that other local users can connect to the
-        -- socket.
-	modifyFileMode unixsocket $ addModes
-		[groupReadMode, groupWriteMode, otherReadMode, otherWriteMode]
-	S.listen soc 2
-	forever $ do
-		(conn, _) <- S.accept soc
-		h <- setupHandle conn
-		serveconn conn
-
 setupHandle :: Socket -> IO Handle
 setupHandle s = do
 	h <- socketToHandle s ReadWriteMode

@@ -48,8 +48,22 @@ server th@(TransportHandle (LocalRepo r) _) = do
 		replicateM_ maxConnections $
 			forkIO $ forever $ serveClient th u r q
 
+		nukeFile sock
+		soc <- S.socket S.AF_UNIX S.Stream S.defaultProtocol
+		S.bind soc (S.SockAddrUnix sock)
+		-- Allow everyone to read and write to the socket; tor
+		-- is probably running as a different user.
+		-- Connections have to authenticate to do anything,
+		-- so it's fine that other local users can connect to the
+		-- socket.
+		modifyFileMode sock $ addModes
+			[groupReadMode, groupWriteMode, otherReadMode, otherWriteMode]
+
+		S.listen soc 2
 		debugM "remotedaemon" "Tor hidden service running"
-		serveUnixSocket sock $ \conn -> do
+		forever $ do
+			(conn, _) <- S.accept soc
+			h <- setupHandle conn
 			ok <- atomically $ ifM (isFullTBMQueue q)
 				( return False
 				, do

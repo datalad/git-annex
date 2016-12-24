@@ -4,6 +4,7 @@ Mostly working!
 
 Current todo list:
 
+* Make enable-tor check connection back to itself to verify tor is working.
 * When a transfer can't be done because another transfer of the same 
   object is already in progress, the message about this is output by the
   remotedaemon --debug, but not forwarded to the peer, which shows

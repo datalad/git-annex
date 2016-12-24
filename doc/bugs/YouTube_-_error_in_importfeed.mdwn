@@ -69,6 +69,3 @@ ok
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, for years.  I donated to fund the dev and proudly display my git-annex stickers!
-
-> This is now fixed in feed's git repository, and will be in the next
-> release of feed after the current 0.3.11.1 release. [[done]] --[[Joey]]
