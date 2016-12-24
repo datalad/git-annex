@@ -72,7 +72,7 @@ closeConnection conn = do
 -- closing the Handle when done.
 --
 -- Note that while the callback is running, other connections won't be
--- processes, so longterm work should be run in a separate thread by
+-- processed, so longterm work should be run in a separate thread by
 -- the callback.
 serveUnixSocket :: FilePath -> (Handle -> IO ()) -> IO ()
 serveUnixSocket unixsocket serveconn = do

@@ -26,7 +26,8 @@ In each git-annex repository, run these commands:
 	git annex enable-tor
 	git annex remotedaemon
 
-Now git-annex is running as a Tor hidden service, but 
+The enable-tor command may prompt for the root password, since it
+configures Tor. Now git-annex is running as a Tor hidden service, but 
 it will only talk to peers after pairing with them.
 
 In both repositories, run this command:
