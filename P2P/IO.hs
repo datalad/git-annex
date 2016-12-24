@@ -12,35 +12,33 @@ module P2P.IO
 	, P2PConnection(..)
 	, connectPeer
 	, closeConnection
+	, serveUnixSocket
 	, setupHandle
 	, runNetProto
 	, runNet
 	) where
 
+import Common
 import P2P.Protocol
 import P2P.Address
-import Utility.Process
 import Git
 import Git.Command
 import Utility.AuthToken
-import Utility.SafeCommand
 import Utility.SimpleProtocol
-import Utility.Exception
 import Utility.Metered
 import Utility.Tor
-import Utility.FileSystemEncoding
+import Utility.FileMode
 
-import Control.Monad
 import Control.Monad.Free
 import Control.Monad.IO.Class
 import System.Exit (ExitCode(..))
 import Network.Socket
-import System.IO
 import Control.Concurrent
 import Control.Concurrent.Async
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import System.Log.Logger (debugM)
+import qualified Network.Socket as S
 
 -- Type of interpreters of the Proto free monad.
 type RunProto m = forall a. (MonadIO m, MonadMask m) => Proto a -> m (Either String a)
@@ -67,6 +65,34 @@ closeConnection :: P2PConnection -> IO ()
 closeConnection conn = do
 	hClose (connIhdl conn)
 	hClose (connOhdl conn)
+
+-- Serves the protocol on a unix socket.
+--
+-- The callback is run to serve a connection, and is responsible for
+-- closing the Handle when done.
+--
+-- Note that while the callback is running, other connections won't be
+-- processes, so longterm work should be run in a separate thread by
+-- the callback.
+serveUnixSocket :: FilePath -> (Handle -> IO ()) -> IO ()
+serveUnixSocket unixsocket serveconn = do
+	nukeFile unixsocket
+	soc <- S.socket S.AF_UNIX S.Stream S.defaultProtocol
+	S.bind soc (S.SockAddrUnix unixsocket)
+	-- Allow everyone to read and write to the socket,
+	-- so a daemon like tor, that is probably running as a different
+	-- de sock $ addModes
+	-- user, can access it.
+	-- 
+        -- Connections have to authenticate to do anything,
+        -- so it's fine that other local users can connect to the
+        -- socket.
+	modifyFileMode unixsocket $ addModes
+		[groupReadMode, groupWriteMode, otherReadMode, otherWriteMode]
+	S.listen soc 2
+	forever $ do
+		(conn, _) <- S.accept soc
+		setupHandle conn >>= serveconn
 
 setupHandle :: Socket -> IO Handle
 setupHandle s = do

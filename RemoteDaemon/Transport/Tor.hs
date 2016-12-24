@@ -14,7 +14,6 @@ import Annex.ChangedRefs
 import RemoteDaemon.Types
 import RemoteDaemon.Common
 import Utility.Tor
-import Utility.FileMode
 import Utility.AuthToken
 import P2P.Protocol as P2P
 import P2P.IO
@@ -33,7 +32,6 @@ import System.Log.Logger (debugM)
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TBMQueue
 import Control.Concurrent.Async
-import qualified Network.Socket as S
 
 -- Run tor hidden service.
 server :: TransportHandle -> IO ()
@@ -48,30 +46,16 @@ server th@(TransportHandle (LocalRepo r) _) = do
 		replicateM_ maxConnections $
 			forkIO $ forever $ serveClient th u r q
 
-		nukeFile sock
-		soc <- S.socket S.AF_UNIX S.Stream S.defaultProtocol
-		S.bind soc (S.SockAddrUnix sock)
-		-- Allow everyone to read and write to the socket; tor
-		-- is probably running as a different user.
-		-- Connections have to authenticate to do anything,
-		-- so it's fine that other local users can connect to the
-		-- socket.
-		modifyFileMode sock $ addModes
-			[groupReadMode, groupWriteMode, otherReadMode, otherWriteMode]
-
-		S.listen soc 2
 		debugM "remotedaemon" "Tor hidden service running"
-		forever $ do
-			(conn, _) <- S.accept soc
-			h <- setupHandle conn
+		serveUnixSocket sock $ \conn -> do
 			ok <- atomically $ ifM (isFullTBMQueue q)
 				( return False
 				, do
-					writeTBMQueue q h
+					writeTBMQueue q conn
 					return True
 				)
 			unless ok $ do
-				hClose h
+				hClose conn
 				warningIO "dropped Tor connection, too busy"
 	go _ Nothing = debugM "remotedaemon" "Tor hidden service not enabled"
 
