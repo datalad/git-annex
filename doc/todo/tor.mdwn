@@ -14,6 +14,7 @@ Current todo list:
 
 Eventually:
 
+* Windows and Android support.
 * Limiting authtokens to read-only access.
 * Revoking authtokens. (This and read-only need a name associated with an
   authtoken, so the user can adjust its configuration after creating it.)
