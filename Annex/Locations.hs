@@ -63,7 +63,6 @@ module Annex.Locations (
 	gitAnnexUrlFile,
 	gitAnnexTmpCfgFile,
 	gitAnnexSshDir,
-	gitAnnexSshConfig,
 	gitAnnexRemotesDir,
 	gitAnnexAssistantDefaultDir,
 	HashLevels(..),
@@ -402,10 +401,6 @@ gitAnnexTmpCfgFile r = gitAnnexDir r </> "config.tmp"
 {- .git/annex/ssh/ is used for ssh connection caching -}
 gitAnnexSshDir :: Git.Repo -> FilePath
 gitAnnexSshDir r = addTrailingPathSeparator $ gitAnnexDir r </> "ssh"
-
-{- .git/annex/ssh.config is used to configure ssh. -}
-gitAnnexSshConfig :: Git.Repo -> FilePath
-gitAnnexSshConfig r = gitAnnexDir r </> "ssh.config"
 
 {- .git/annex/remotes/ is used for remote-specific state. -}
 gitAnnexRemotesDir :: Git.Repo -> FilePath

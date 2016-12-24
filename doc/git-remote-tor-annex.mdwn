@@ -1,0 +1,36 @@
+# NAME
+
+git-remote-tor-annex - remote helper program to talk to git-annex over tor
+
+# SYNOPSIS
+
+git fetch tor-annex::address.onion:port
+
+git remote add tor tor-annex::address.onion:port
+
+# DESCRIPTION
+
+This is a git remote helper program that allows git to pull and push
+over tor(1), communicating with a tor hidden service.
+
+The tor hidden service probably requires an authtoken to use it.
+The authtoken can be provided in the environment variable
+`GIT_ANNEX_P2P_AUTHTOKEN`. Or, if there is a file in 
+`.git/annex/creds/` matching the onion address of the hidden
+service, its first line is used as the authtoken.
+
+# SEE ALSO
+
+git-remote-helpers(1)
+
+[[git-annex]](1)
+
+[[git-annex-enable-tor]](1)
+
+[[git-annex-remotedaemon]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

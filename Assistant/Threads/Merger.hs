@@ -11,6 +11,8 @@ import Assistant.Common
 import Assistant.TransferQueue
 import Assistant.BranchChange
 import Assistant.Sync
+import Assistant.DaemonStatus
+import Assistant.ScanRemotes
 import Utility.DirWatcher
 import Utility.DirWatcher.Types
 import qualified Annex.Branch
@@ -78,7 +80,7 @@ onChange file
 					, "into", Git.fromRef b
 					]
 				void $ liftAnnex $ Command.Sync.merge
-					currbranch mergeConfig
+					currbranch Command.Sync.mergeConfig
 					Git.Branch.AutomaticCommit
 					changedbranch
 	mergecurrent _ = noop

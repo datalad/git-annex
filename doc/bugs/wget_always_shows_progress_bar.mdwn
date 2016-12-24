@@ -1,0 +1,25 @@
+### Please describe the problem.
+
+git annex addurl or importfeed operations were quiet on git-annex versions older than 5.20141219, if
+annex.web-options was set to "--quiet". But now the --show-progress option is always passed to wget.
+
+In some use cases this might be nice, but I'm using GNU Parallel to update multiple podcast feeds
+concurrently, and it causes wget to output the ugly "dot" indicator for every feed, which is totally
+useless since parallel buffers and groups the output. Adding "--no-show-progress" to web-options
+does not help (it does not override --show-progress), nor does redirecting stdout to /dev/null.
+Redirecting stderr would hide possible errors.
+
+### What steps will reproduce the problem?
+
+parallel git annex importfeed --relaxed --quiet ::: http://feeds.feedburner.com/freakonomicsradio
+
+### What version of git-annex are you using? On what operating system?
+
+5.20151208-1~bpo8+1 on Debian.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I love git annex and use it daily.
+
+
+> [[done]] --[[Joey]]

@@ -57,7 +57,7 @@ seek o = commandAction $ start (fromInteger $ sizeOption o) (testRemote o)
 start :: Int -> RemoteName -> CommandStart
 start basesz name = do
 	showStart "testremote" name
-	r <- either error id <$> Remote.byName' name
+	r <- either giveup id <$> Remote.byName' name
 	showAction "generating test keys"
 	fast <- Annex.getState Annex.fast
 	ks <- mapM randKey (keySizes basesz fast)

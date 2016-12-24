@@ -7,7 +7,7 @@
 
 {-# LANGUAGE CPP #-}
 
-module Annex.Notification (NotifyWitness, notifyTransfer, notifyDrop) where
+module Annex.Notification (NotifyWitness, noNotification, notifyTransfer, notifyDrop) where
 
 import Annex.Common
 import Types.Transfer
@@ -20,6 +20,10 @@ import qualified DBus.Client
 
 -- Witness that notification has happened.
 data NotifyWitness = NotifyWitness
+
+-- Only use when no notification should be done.
+noNotification :: NotifyWitness
+noNotification = NotifyWitness
 
 {- Wrap around an action that performs a transfer, which may run multiple
  - attempts. Displays notification when supported and when the user asked

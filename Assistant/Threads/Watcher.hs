@@ -65,10 +65,10 @@ checkCanWatch
 #else
 		noop
 #endif
-	| otherwise = error "watch mode is not available on this system"
+	| otherwise = giveup "watch mode is not available on this system"
 
 needLsof :: Annex ()
-needLsof = error $ unlines
+needLsof = giveup $ unlines
 	[ "The lsof command is needed for watch mode to be safe, and is not in PATH."
 	, "To override lsof checks to ensure that files are not open for writing"
 	, "when added to the annex, you can use --force"

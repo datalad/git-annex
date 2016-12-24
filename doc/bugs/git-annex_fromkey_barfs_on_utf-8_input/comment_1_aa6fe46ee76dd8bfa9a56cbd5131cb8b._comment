@@ -1,0 +1,55 @@
+[[!comment format=mdwn
+ username="alpernebbi"
+ avatar="http://cdn.libravatar.org/avatar/daf2abb14f39e28ad75d5f9a03fcd106"
+ subject="UTF-8 problems in some other commands"
+ date="2016-12-05T20:46:07Z"
+ content="""
+Running the command above gives me the same error on Xubuntu 16.04, using `git-annex-standalone` package from NeuroDebian repositories.
+
+    git-annex version: 6.20161122+gitg9f179ae-1~ndall+1
+    build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+    local repository version: 5
+    supported repository versions: 3 5 6
+    upgrade supported from repository versions: 0 1 2 3 4 5
+    operating system: linux x86_64
+
+I encountered other commands that fail as well:
+
+    $ touch u.txt ü.txt
+    $ git annex add
+
+    $ git-annex calckey ü.txt
+    # prints key
+
+    $ git-annex calckey --batch
+    ü.txt
+    # dies
+
+    $ git-annex lookupkey ü.txt
+    # prints key
+
+    $ git-annex lookupkey --batch
+    ü.txt
+    # dies
+
+    $ git-annex metadata --batch --json
+    {\"file\":\"ü.txt\"}
+    # dies
+
+    $ git-annex metadata --batch --json
+    {\"file\":\"u.txt\",\"fields\":{\"ü\":[\"b\"]}}
+    # dies
+
+    $ git-annex metadata --batch --json
+    {\"file\":\"u.txt\",\"fields\":{\"a\":[\"ü\"]}}
+    # dies
+
+All those die without output, all $? are 0.
+No values were recorded to metadata.
+Also:
+
+    $ git-annex-metadata --json
+    # entry for \"ü.txt\" has \"file\":\"��.txt\"
+"""]]

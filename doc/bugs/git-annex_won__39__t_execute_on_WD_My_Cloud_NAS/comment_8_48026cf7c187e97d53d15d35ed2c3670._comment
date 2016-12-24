@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2016-11-16T21:48:49Z"
+ content="""
+The arm daily build now uses a 32kb page size. So try
+<https://downloads.kitenet.net/git-annex/autobuild/armel/git-annex-standalone-armel.tar.gz>
+
+That has been verified to fix the problem on a Drobo 5N.
+
+This may still not be enough for some of the affected NAS devices, which
+use a 64kb page size. Unfortunately, gold fails to link with a 64kb page
+size: <http://bugs.debian.org/844467>
+"""]]

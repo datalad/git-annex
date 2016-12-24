@@ -1,0 +1,13 @@
+Hey everyone.
+
+I wrote a GUI for git-annex metadata in Python: [git-annex-metadata-gui](https://github.com/alpernebbi/git-annex-metadata-gui). 
+It shows the files that are in the current branch (only those in the annex) in the respective folder hierarchy.
+The keys that are in the repository, but not in the current branch are also shown in another tab.
+You can view, edit or remove fields for individual files with support for multiple values for fields.
+There is a file preview for image and text files as well.
+I uploaded some screenshots in the repository to show it in action.
+
+While making it, I decided to move the git-annex calls into its own Python package, 
+which became [git-annex-adapter](https://github.com/alpernebbi/git-annex-adapter).
+
+I hope these can be useful to someone other than myself as well.

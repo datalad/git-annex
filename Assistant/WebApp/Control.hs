@@ -74,5 +74,5 @@ getLogR :: Handler Html
 getLogR = page "Logs" Nothing $ do
 	logfile <- liftAnnex $ fromRepo gitAnnexLogFile
 	logs <- liftIO $ listLogs logfile
-	logcontent <- liftIO $ concat <$> mapM readFileStrictAnyEncoding logs
+	logcontent <- liftIO $ concat <$> mapM readFile logs
 	$(widgetFile "control/log")

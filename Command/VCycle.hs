@@ -25,7 +25,7 @@ seek = withNothing start
 start ::CommandStart
 start = go =<< currentView
   where
-	go Nothing = error "Not in a view."
+	go Nothing = giveup "Not in a view."
 	go (Just v) = do
 		showStart "vcycle" ""
 		let v' = v { viewComponents = vcycle [] (viewComponents v) }

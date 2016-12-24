@@ -1,6 +1,6 @@
 The development of git-annex was made possible by the generous
 donations of many people. I want to say "Thank You!" to each of
-you individually, but until I meet all 1500 of you, this page will have to
+you individually, but until I meet all 1500+ of you, this page will have to
 do. You have my most sincere thanks. --[[Joey]]
 
 You can support my git-annex development
@@ -18,16 +18,8 @@ git-annex development is partially supported by the
 [NSF](https://www.nsf.gov/awardsearch/showAward?AWD_ID=1429999) as a part of the
 [DataLad project](http://datalad.org/).
 
-Thanks also to these folks for their support: martin f. krafft, John Byrnes,
-Aurélien Couderc, Jeffrey Chiu, Amitai Schlair, Andreas, Anthony DeRobertis,
-Baldur Kristinsson, Boyd Stephen Smith Jr., Brock Spratlen, Christian Diller,
-Denis Dzyubenko, Eskild Hustvedt, Evgeni Kunev, FBC, Fernando Jimenez, Greg
-Young, Henrik RIomar, Ignacio, Jake Vosloo, James Valleroy, Jason Woofenden,
-Jeff Goeke-Smith, Jim, Jochen Bartl, Johannes Schlatow, John Carr, Josh
-Taylor, Josh Triplett, Kuno Woudt, Matthias Urlichs, Mattias J, Nathan Howell,
-Nick Daly, Nicolas Schodet, Ole-Morten Duesund, Remy van Elst, RémiV, Thom
-May, Thomas Ferris Nicolaisen, Thomas Hochstein, Tyler Cipriani, encryptio,
-Øyvind A. Holm
+Thanks also to these folks for their support: 
+[[!inline raw=yes pages="thanks/list"]] and anonymous supporters.
 
 ## 2013-2014
 
@@ -385,13 +377,11 @@ Tyree, Aaron Whitehouse
 * Rsync.net, for providing me a free account so I can make sure git-annex
   works well with it.
 * LeastAuthority.com, for providing me a free Tahoe-LAFS grid account,
-  so I can test git-annex with that, and back up the git-annex assistant
-  screencasts.
+  so I can test git-annex with that.
+* Yury V. Zaytsev for running the Windows autobuilder.
+* Kevin McKenzie for providing a OSX account for testing.
 * Anna and Mark, for the loan of the video camera; as well as the rest of
   my family, for your support. Even when I couldn't explain what I was
   working on.
-* The Hodges, for providing such a congenial place for me to live and work
-  on these first world problems, while you're off helping people in the
-  third world.
 * And Mom, for stamping and stuffing so many thank you envelopes, and all the
   rhubarb pies.

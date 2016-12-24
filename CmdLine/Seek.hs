@@ -40,7 +40,7 @@ withFilesInGitNonRecursive :: String -> (FilePath -> CommandStart) -> CmdParams 
 withFilesInGitNonRecursive needforce a params = ifM (Annex.getState Annex.force)
 	( withFilesInGit a params
 	, if null params
-		then error needforce
+		then giveup needforce
 		else seekActions $ prepFiltered a (getfiles [] params)
 	)
   where
@@ -54,7 +54,7 @@ withFilesInGitNonRecursive needforce a params = ifM (Annex.getState Annex.force)
 			[] -> do
 				void $ liftIO $ cleanup
 				getfiles c ps
-			_ -> error needforce
+			_ -> giveup needforce
 
 withFilesNotInGit :: Bool -> (FilePath -> CommandStart) -> CmdParams -> CommandSeek
 withFilesNotInGit skipdotfiles a params
@@ -117,7 +117,7 @@ withPairs a params = seekActions $ return $ map a $ pairs [] params
   where
 	pairs c [] = reverse c
 	pairs c (x:y:xs) = pairs ((x,y):c) xs
-	pairs _ _ = error "expected pairs"
+	pairs _ _ = giveup "expected pairs"
 
 withFilesToBeCommitted :: (FilePath -> CommandStart) -> CmdParams -> CommandSeek
 withFilesToBeCommitted a params = seekActions $ prepFiltered a $
@@ -152,11 +152,11 @@ withFilesMaybeModified a params = seekActions $
 withKeys :: (Key -> CommandStart) -> CmdParams -> CommandSeek
 withKeys a params = seekActions $ return $ map (a . parse) params
   where
-	parse p = fromMaybe (error "bad key") $ file2key p
+	parse p = fromMaybe (giveup "bad key") $ file2key p
 
 withNothing :: CommandStart -> CmdParams -> CommandSeek
 withNothing a [] = seekActions $ return [a]
-withNothing _ _ = error "This command takes no parameters."
+withNothing _ _ = giveup "This command takes no parameters."
 
 {- Handles the --all, --branch, --unused, --failed, --key, and
  - --incomplete options, which specify particular keys to run an
@@ -191,7 +191,7 @@ withKeyOptions'
 withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 	bare <- fromRepo Git.repoIsLocalBare
 	when (auto && bare) $
-		error "Cannot use --auto in a bare repository"
+		giveup "Cannot use --auto in a bare repository"
 	case (null params, ko) of
 		(True, Nothing)
 			| bare -> noauto $ runkeyaction loggedKeys
@@ -203,10 +203,10 @@ withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 		(True, Just (WantSpecificKey k)) -> noauto $ runkeyaction (return [k])
 		(True, Just WantIncompleteKeys) -> noauto $ runkeyaction incompletekeys
 		(True, Just (WantBranchKeys bs)) -> noauto $ runbranchkeys bs
-		(False, Just _) -> error "Can only specify one of file names, --all, --branch, --unused, --failed, --key, or --incomplete"
+		(False, Just _) -> giveup "Can only specify one of file names, --all, --branch, --unused, --failed, --key, or --incomplete"
   where
 	noauto a
-		| auto = error "Cannot use --auto with --all or --branch or --unused or --key or --incomplete"
+		| auto = giveup "Cannot use --auto with --all or --branch or --unused or --key or --incomplete"
 		| otherwise = a
 	incompletekeys = staleKeysPrune gitAnnexTmpObjectDir True
 	runkeyaction getks = do

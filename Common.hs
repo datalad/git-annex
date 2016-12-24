@@ -29,7 +29,6 @@ import Utility.Directory as X
 import Utility.Monad as X
 import Utility.Data as X
 import Utility.Applicative as X
-import Utility.FileSystemEncoding as X
 import Utility.PosixFiles as X hiding (fileSize)
 import Utility.FileSize as X
 import Utility.Network as X

@@ -1,0 +1,34 @@
+### Please describe the problem.
+directory 1.3.0.0 causes a conflict for "getFileSize"
+
+### What steps will reproduce the problem?
+Build git-annex with directory 1.3.0.0 (first need to bump max directory version on concurrent-output (and aws if building with s3))
+
+### What version of git-annex are you using? On what operating system?
+6.20161210 on macOS 10.11 El Capitan
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+[23 of 34] Compiling Common           ( Common.hs, dist/setup/Common.o )
+
+Common.hs:3:16: error:
+    Conflicting exports for ‘getFileSize’:
+       ‘module X’ exports ‘X.getFileSize’
+         imported from ‘Utility.Directory’ at Common.hs:28:1-29
+         (and originally defined in ‘System.Directory’)
+       ‘module X’ exports ‘X.getFileSize’
+         imported from ‘Utility.FileSize’ at Common.hs:34:1-28
+         (and originally defined at Utility/FileSize.hs:26:1-11)
+"""]]
+
+A fix, though possibly not best, is to make this change in Common.hs:
+[[!format sh """
+import Utility.Directory as X hiding (getFileSize)
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Yes :)
+
+> [[fixed|done]]; thanks for reporting!

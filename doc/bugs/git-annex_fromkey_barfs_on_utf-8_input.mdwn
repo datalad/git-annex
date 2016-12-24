@@ -1,0 +1,38 @@
+### Please describe the problem.
+
+I'm sending a stream of keys and filenames to git-annex fromkey on stdin, and it errors out with "git-annex: <stdin>: hGetContents: invalid argument (invalid byte sequence)". On the other hand yipdw tried to reproduce this and it worked fine for him, so I must be doing something wrong.
+
+I have LANG=en_US.UTF-8 set in my environment, if that matters.
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+echo "MD5-s3263532--0b4d070eff7baa8ef314ca330aecb71f é" | git-annex fromkey
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+git-annex version: 6.20161118-g0a34f08
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository versions: 3 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+operating system: linux x86_64
+"""]]
+
+### Please provide any additional information below.
+
+Note that this is indeed valid utf-8:
+
+[[!format sh """
+ db48x  ~  projects  IA.BAK-server  echo "é" | hexdump -C
+00000000  c3 a9 0a                                          |...|
+00000003
+"""]]
+
+> Despite my strange inability to reproduce these, there's really only one
+> thing that can fix it, namely using fileEncoding. Now done for all batch
+> and stdin reading stuff. [[fixed|done]] I suppose. --[[Joey]]

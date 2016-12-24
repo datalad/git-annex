@@ -65,3 +65,5 @@ I would just like to be sure nothing else is hidden.
 > .git/config to remove that in order to recover from the problem, so might
 > as well remove `.git/annex/ssh_config` too.
 > --[[Joey]]
+
+>> Fixed more by stopping using `.git/annex/ssh_config` at all.  --[[Joey]]

@@ -165,7 +165,7 @@ largeFilesMatcher = go =<< annexLargeFiles <$> Annex.getGitConfig
 	mkmatcher expr = do
 		parser <- mkLargeFilesParser
 		either badexpr return $ parsedToMatcher $ parser expr
-	badexpr e = error $ "bad annex.largefiles configuration: " ++ e
+	badexpr e = giveup $ "bad annex.largefiles configuration: " ++ e
 
 simply :: MatchFiles Annex -> ParseResult
 simply = Right . Operation

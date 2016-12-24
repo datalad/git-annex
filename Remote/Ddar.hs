@@ -76,7 +76,7 @@ gen r u c gc = do
 		, claimUrl = Nothing
 		, checkUrl = Nothing
 		}
-	ddarrepo = maybe (error "missing ddarrepo") (DdarRepo gc) (remoteAnnexDdarRepo gc)
+	ddarrepo = maybe (giveup "missing ddarrepo") (DdarRepo gc) (remoteAnnexDdarRepo gc)
 	specialcfg = (specialRemoteCfg c)
 		-- chunking would not improve ddar
 		{ chunkConfig = NoChunks
@@ -87,7 +87,7 @@ ddarSetup mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	-- verify configuration is sane
-	let ddarrepo = fromMaybe (error "Specify ddarrepo=") $
+	let ddarrepo = fromMaybe (giveup "Specify ddarrepo=") $
 		M.lookup "ddarrepo" c
 	(c', _encsetup) <- encryptionSetup c gc
 

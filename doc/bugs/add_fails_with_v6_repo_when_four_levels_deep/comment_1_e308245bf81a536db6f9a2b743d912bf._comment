@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-11-16T18:49:09Z"
+ content="""
+I'm not able to reproduce the problem with your test case and git-annex
+version 6.20161012.
+
+Can you still reproduce it after upgrading?
+"""]]

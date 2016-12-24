@@ -164,16 +164,16 @@ rsyncTransport r gc
 	othertransport = return ([], loc, AccessDirect)
 
 noCrypto :: Annex a
-noCrypto = error "cannot use gcrypt remote without encryption enabled"
+noCrypto = giveup "cannot use gcrypt remote without encryption enabled"
 
 unsupportedUrl :: a
-unsupportedUrl = error "using non-ssh remote repo url with gcrypt is not supported"
+unsupportedUrl = giveup "using non-ssh remote repo url with gcrypt is not supported"
 
 gCryptSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 gCryptSetup mu _ c gc = go $ M.lookup "gitrepo" c
   where
 	remotename = fromJust (M.lookup "name" c)
-	go Nothing = error "Specify gitrepo="
+	go Nothing = giveup "Specify gitrepo="
 	go (Just gitrepo) = do
 		(c', _encsetup) <- encryptionSetup c gc
 		inRepo $ Git.Command.run 
@@ -200,7 +200,7 @@ gCryptSetup mu _ c gc = go $ M.lookup "gitrepo" c
 			]
 		g <- inRepo Git.Config.reRead
 		case Git.GCrypt.remoteRepoId g (Just remotename) of
-			Nothing -> error "unable to determine gcrypt-id of remote"
+			Nothing -> giveup "unable to determine gcrypt-id of remote"
 			Just gcryptid -> do
 				let u = genUUIDInNameSpace gCryptNameSpace gcryptid
 				if Just u == mu || isNothing mu
@@ -208,7 +208,7 @@ gCryptSetup mu _ c gc = go $ M.lookup "gitrepo" c
 						method <- setupRepo gcryptid =<< inRepo (Git.Construct.fromRemoteLocation gitrepo)
 						gitConfigSpecialRemote u c' "gcrypt" (fromAccessMethod method)
 						return (c', u)
-					else error $ "uuid mismatch; expected " ++ show mu ++ " but remote gitrepo has " ++ show u ++ " (" ++ show gcryptid ++ ")"
+					else giveup $ "uuid mismatch; expected " ++ show mu ++ " but remote gitrepo has " ++ show u ++ " (" ++ show gcryptid ++ ")"
 
 {- Sets up the gcrypt repository. The repository is either a local
  - repo, or it is accessed via rsync directly, or it is accessed over ssh
@@ -258,7 +258,7 @@ setupRepo gcryptid r
 			, Param rsyncurl
 			]
 		unless ok $
-			error "Failed to connect to remote to set it up."
+			giveup "Failed to connect to remote to set it up."
 		return AccessDirect
 
 	{-  Ask git-annex-shell to configure the repository as a gcrypt
@@ -337,7 +337,7 @@ retrieve r rsyncopts
 	| Git.repoIsSsh (repo r) = if accessShell r
 		then fileRetriever $ \f k p ->
 			unlessM (Ssh.rsyncHelper (Just p) =<< Ssh.rsyncParamsRemote False r Download k f Nothing) $
-				error "rsync failed"
+				giveup "rsync failed"
 		else fileRetriever $ Remote.Rsync.retrieve rsyncopts
 	| otherwise = unsupportedUrl
   where

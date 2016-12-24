@@ -33,7 +33,7 @@ import qualified Git.Url
 import Config
 import Annex.Path
 import Utility.Env
-import Utility.Tmp
+import Utility.FileSystemEncoding
 import Types.CleanupActions
 import Git.Env
 #ifndef mingw32_HOST_OS
@@ -50,37 +50,13 @@ sshOptions (host, port) gc opts = go =<< sshCachingInfo (host, port)
 	go (Just socketfile, params) = do
 		prepSocket socketfile
 		ret params
-	ret ps = do
-		overideconfigfile <- fromRepo gitAnnexSshConfig
-		-- We assume that the file content does not change.
-		-- If it did, a more expensive test would be needed.
-		liftIO $ unlessM (doesFileExist overideconfigfile) $
-			viaTmp writeFile overideconfigfile $ unlines
-				-- Make old version of ssh that does
-				-- not know about Include ignore those
-				-- entries.
-				[ "IgnoreUnknown Include"
-				-- ssh expands "~"
-				, "Include ~/.ssh/config"
-				-- ssh will silently skip the file
-				-- if it does not exist
-				, "Include /etc/ssh/ssh_config"
-				-- Everything below this point is only
-				-- used if there's no setting for it in
-				-- the above files.
-				--
-				-- Make sure that ssh detects stalled
-				-- connections.
-				, "ServerAliveInterval 60"
-				]
-		return $ concat
-			[ ps
-			, [Param "-F", File overideconfigfile]
-			, map Param (remoteAnnexSshOptions gc)
-			, opts
-			, portParams port
-			, [Param "-T"]
-			]
+	ret ps = return $ concat
+		[ ps
+		, map Param (remoteAnnexSshOptions gc)
+		, opts
+		, portParams port
+		, [Param "-T"]
+		]
 
 {- Returns a filename to use for a ssh connection caching socket, and
  - parameters to enable ssh connection caching. -}

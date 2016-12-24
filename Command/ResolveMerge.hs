@@ -33,8 +33,8 @@ start = do
 		( do
 			void $ commitResolvedMerge Git.Branch.ManualCommit
 			next $ next $ return True
-		, error "Merge conflict could not be automatically resolved."
+		, giveup "Merge conflict could not be automatically resolved."
 		)
   where
-	nobranch = error "No branch is currently checked out."
-	nomergehead = error "No SHA found in .git/merge_head"
+	nobranch = giveup "No branch is currently checked out."
+	nomergehead = giveup "No SHA found in .git/merge_head"

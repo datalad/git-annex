@@ -55,6 +55,7 @@ install-bins: build
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install git-annex $(DESTDIR)$(PREFIX)/bin
 	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
+	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-remote-tor-annex
 
 install-misc: Build/InstallDesktopFile
 	./Build/InstallDesktopFile $(PREFIX)/bin/git-annex || true
@@ -133,6 +134,7 @@ linuxstandalone-nobuild: Build/Standalone Build/LinuxMkLibs
 	cp git-annex "$(LINUXSTANDALONE_DEST)/bin/"
 	strip "$(LINUXSTANDALONE_DEST)/bin/git-annex"
 	ln -sf git-annex "$(LINUXSTANDALONE_DEST)/bin/git-annex-shell"
+	ln -sf git-annex "$(LINUXSTANDALONE_DEST)/bin/git-remote-tor-annex"
 	zcat standalone/licences.gz > $(LINUXSTANDALONE_DEST)/LICENSE
 	cp doc/logo_16x16.png doc/logo.svg $(LINUXSTANDALONE_DEST)
 	cp standalone/trustedkeys.gpg $(LINUXSTANDALONE_DEST)
@@ -194,6 +196,7 @@ osxapp: Build/Standalone Build/OSXMkLibs
 	cp git-annex "$(OSXAPP_BASE)"
 	strip "$(OSXAPP_BASE)/git-annex"
 	ln -sf git-annex "$(OSXAPP_BASE)/git-annex-shell"
+	ln -sf git-annex "$(OSXAPP_BASE)/git-remote-tor-annex"
 	gzcat standalone/licences.gz > $(OSXAPP_BASE)/LICENSE
 	cp $(OSXAPP_BASE)/LICENSE tmp/build-dmg/LICENSE.txt
 	cp standalone/trustedkeys.gpg $(OSXAPP_DEST)/Contents/MacOS

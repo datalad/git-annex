@@ -26,9 +26,9 @@ start (ks:us:vs:[]) = do
 	showStart' "setpresentkey" k (mkActionItem k)
 	next $ perform k (toUUID us) s
   where
-	k = fromMaybe (error "bad key") (file2key ks)
-	s = fromMaybe (error "bad value") (parseStatus vs)
-start _ = error "Wrong number of parameters"
+	k = fromMaybe (giveup "bad key") (file2key ks)
+	s = fromMaybe (giveup "bad value") (parseStatus vs)
+start _ = giveup "Wrong number of parameters"
 
 perform :: Key -> UUID -> LogStatus -> CommandPerform
 perform k u s = next $ do

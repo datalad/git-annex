@@ -1,0 +1,63 @@
+Fixed one howler of a bug today. Turns out that
+`git annex fsck --all --from remote` didn't actually check the content of
+the remote, but checked the local repository. Only `--all` was buggy;
+`git annex fsck --from remote` was ok. Don't think this is crash priority
+enough to make a release for, since only `--all` is affected.
+
+Somewhat uncomfortably made `git annex sync` pass
+`--allow-unrelated-histories` to git merge. While I do think that git's
+recent refusal to merge unrelated histories is good in general, the
+problem is that initializing a direct mode repository involves making an
+empty commit. So merging from a remote into such a direct mode repository
+means merging unrelated histories, while an indirect mode repository doesn't.
+Seems best to avoid such inconsistencies, and the only way I could see to
+do it is to always use `--allow-unrelated-histories`. May revisit this once
+direct mode is finally removed.
+
+Using the git-annex arm standalone bundle on some WD NAS boxes used to
+work, and then it seems they changed their kernel to use a nonstandard page
+size, and broke it. This actually seems to be a 
+[bug in the gold linker](http://bugs.debian.org/844467), which defaults to an
+unncessarily small page size on arm. The git-annex arm bundle is being
+adjusted to try to deal with this.
+
+ghc 8 made `error` include some backtrace information. While it's really
+nice to have backtraces for unexpected exceptions in Haskell, it turns
+out that git-annex used `error` a lot with the intent of showing an error
+message to the user, and a backtrace clutters up such messages. So,
+bit the bullet and checked through every `error` in git-annex and made such
+ones not include a backtrace.
+
+Also, I've been considering what protocol to use between git-annex nodes
+when communicating over tor. One way would be to make it very similar to
+`git-annex-shell`, using rsync etc, and possibly reusing code from
+git-annex-shell. However, it can take a while to make a connection across
+the tor network, and that method seems to need a new connection for each
+file transfered etc. Also thought about using a http based protocol. The
+servant library is great for that, you get both http client and server
+implementations almost for free. Resuming interrupted transfers might
+complicate it, and the hidden service side would need to listen on a unix
+socket, instead of the regular http port. It might be worth it to use http
+for tor, if it could be reused for git-annex http servers not on the tor
+network. But, then I'd have to make the http server support git pull and
+push over http in a way that's compatable with how git uses http, including
+authentication. Which is a whole nother ball of complexity. So, I'm leaning
+instead to using a simple custom protocol something like:
+
+		> AUTH $localuuid $token
+		< AUTH-SUCCESS $remoteuuid
+		> SENDPACK $length
+		> $gitdata
+		< RECVPACK $length
+		< $gitdata
+		> GET $pos $key
+		< DATA $length
+		< $bytes
+		> SUCCESS
+		> PUT $key
+		< PUT-FROM $pos
+		> DATA $length
+		> $bytes
+		< SUCCESS
+
+Today's work was sponsored by Riku Voipio.

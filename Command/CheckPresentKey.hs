@@ -40,7 +40,7 @@ seek o = case batchOption o of
 			_ -> wrongnumparams
 		batchInput Right $ checker >=> batchResult
   where
-	wrongnumparams = error "Wrong number of parameters"
+	wrongnumparams = giveup "Wrong number of parameters"
 					
 data Result = Present | NotPresent | CheckFailure String
 
@@ -71,8 +71,8 @@ batchResult Present = liftIO $ putStrLn "1"
 batchResult _ = liftIO $ putStrLn "0"
 
 toKey :: String -> Key
-toKey = fromMaybe (error "Bad key") . file2key
+toKey = fromMaybe (giveup "Bad key") . file2key
 
 toRemote :: String -> Annex Remote
-toRemote rn = maybe (error "Unknown remote") return
+toRemote rn = maybe (giveup "Unknown remote") return
 	=<< Remote.byNameWithUUID (Just rn)

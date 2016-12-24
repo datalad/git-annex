@@ -1,0 +1,49 @@
+### Please describe the problem.
+https://github.com/aristidb/aws/issues/206 was recently resolved in https://github.com/aristidb/aws/pull/213.
+
+A newer version will be tagged imminently according to https://github.com/aristidb/aws/issues/206#issuecomment-260214736.
+
+With the http-conduit (<2.2.0) constraint removed from git-annex.cabal, and the aws dependency set to use aws head (currently c8806dc), the git-annex build fails. 
+
+### What steps will reproduce the problem?
+
+Remove the http-conduit (<2.2.0) constraint and attempt to build git-annex with aws head.
+
+### What version of git-annex are you using? On what operating system?
+
+macOS 10.11, git-annex 6.20161118.
+
+### Please provide any additional information below.
+Full build log: https://gist.github.com/ilovezfs/15bcd8f1086b3d825beff58140e04eec
+[[!format sh """
+[ 90 of 542] Compiling Types.Crypto     ( Types/Crypto.hs, dist/dist-sandbox-6b15e8f0/build/git-annex/git-annex-tmp/Types/Crypto.o )
+[ 91 of 542] Compiling Utility.Metered  ( Utility/Metered.hs, dist/dist-sandbox-6b15e8f0/build/git-annex/git-annex-tmp/Utility/Metered.o )
+[ 92 of 542] Compiling Messages.JSON    ( Messages/JSON.hs, dist/dist-sandbox-6b15e8f0/build/git-annex/git-annex-tmp/Messages/JSON.o )
+[ 93 of 542] Compiling Utility.Url      ( Utility/Url.hs, dist/dist-sandbox-6b15e8f0/build/git-annex/git-annex-tmp/Utility/Url.o )
+
+Utility/Url.hs:354:34: error:
+    • The constructor ‘StatusCodeException’ should have 2 arguments, but has been given 3
+    • In the pattern: StatusCodeException s _ _
+      In an equation for ‘matchStatusCodeException’:
+          matchStatusCodeException want e@(StatusCodeException s _ _)
+            | want s = Just e
+            | otherwise = Nothing
+
+Utility/Url.hs:354:34: error:
+    • Couldn't match expected type ‘HttpException’
+                  with actual type ‘HttpExceptionContent’
+    • In the pattern: StatusCodeException s _ _
+      In an equation for ‘matchStatusCodeException’:
+          matchStatusCodeException want e@(StatusCodeException s _ _)
+            | want s = Just e
+            | otherwise = Nothing
+cabal: Leaving directory '.'
+cabal: Error: some packages failed to install:
+git-annex-6.20161118 failed during the building phase. The exception was:
+ExitFailure 1
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Yes :)
+
+> [[done]] via the nice patch! --[[Joey]]

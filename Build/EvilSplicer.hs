@@ -210,7 +210,6 @@ applySplices destdir imports splices@(first:_) = do
 	when (oldcontent /= Just newcontent) $ do
 		putStrLn $ "splicing " ++ f
 		withFile dest WriteMode $ \h -> do
-		        fileEncoding h
 			hPutStr h newcontent
 		        hClose h
   where
@@ -474,7 +473,7 @@ mangleCode = flip_colon
 	 -
 	 - To fix, we could just put a semicolon at the start of every line
 	 - containing " -> " ... Except that lambdas also contain that.
-	 - But we can get around that: GHC outputs lambas like this:
+	 - But we can get around that: GHC outputs lambdas like this:
 	 -
 	 - \ foo
 	 -   -> bar
@@ -487,7 +486,7 @@ mangleCode = flip_colon
 	 - containing " -> " unless there's a "\ " first, or it's
 	 - all whitespace up until it.
 	 -}
-	case_layout = parsecAndReplace $ do
+	case_layout = skipfree $ parsecAndReplace $ do
 		void newline
 		indent1 <- many1 $ char ' '
 		prefix <- manyTill (noneOf "\n") (try (string "-> "))
@@ -508,7 +507,7 @@ mangleCode = flip_colon
 	 -        var var
 	 -   -> foo
 	 -}
-	case_layout_multiline = parsecAndReplace $ do
+	case_layout_multiline = skipfree $ parsecAndReplace $ do
 		void newline
 		indent1 <- many1 $ char ' '
 		firstline <- restofline
@@ -520,6 +519,11 @@ mangleCode = flip_colon
 			then unexpected "lambda expression"
 			else return $ "\n" ++ indent1 ++ "; " ++ firstline ++ "\n"
 				++ indent1 ++ indent2 ++ "-> "
+
+	{- Type definitions for free monads triggers the case_* hacks, avoid. -}
+	skipfree f s
+		| "MonadFree" `isInfixOf` s = s
+		| otherwise = f s
 
 	{- (foo, \ -> bar) is not valid haskell, GHC.
 	 - Change to (foo, bar)
@@ -716,7 +720,9 @@ parsecAndReplace p s = case parse find "" s of
 	find = many $ try (Right <$> p) <|> (Left <$> anyChar)
 
 main :: IO ()
-main = go =<< getArgs
+main = do
+	useFileSystemEncoding
+	go =<< getArgs
   where
 	go (destdir:log:header:[]) = run destdir log (Just header)
 	go (destdir:log:[]) = run destdir log Nothing

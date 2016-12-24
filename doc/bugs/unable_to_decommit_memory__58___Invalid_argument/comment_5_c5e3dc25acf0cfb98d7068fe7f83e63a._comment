@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="0xloem@0bd8a79a57e4f0dcade8fc81d162c37eae4d6730"
+ nickname="0xloem"
+ avatar="http://cdn.libravatar.org/avatar/b8c087f7c5e6a9358748f0727c077f3b"
+ subject="Nope a Fluke"
+ date="2016-12-11T13:26:29Z"
+ content="""
+Apologies.  I can't reproduce the segfault running the tests again.  The corruption and crashing seems to have been some horrifying fluke.
+"""]]

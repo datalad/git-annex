@@ -1,0 +1,23 @@
+git-annex sync over tor
+
+Mostly working!
+
+Current todo list:
+
+* Webapp UI to set it up.
+* When a transfer can't be done because another transfer of the same 
+  object is already in progress, the message about this is output by the
+  remotedaemon --debug, but not forwarded to the peer, which shows
+  "Connection reset by peer"
+* Think about locking some more. What happens if the connection to the peer
+  is dropped while we think we're locking content there from being dropped?
+
+Eventually:
+
+* Windows and Android support.
+* Limiting authtokens to read-only access.
+* Revoking authtokens. (This and read-only need a name associated with an
+  authtoken, so the user can adjust its configuration after creating it.)
+* friend-of-a-friend peer discovery to build more interconnected networks
+  of nodes
+* Discovery of nodes on same LAN, and direct connection to them.

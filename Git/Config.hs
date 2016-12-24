@@ -79,10 +79,6 @@ global = do
 {- Reads git config from a handle and populates a repo with it. -}
 hRead :: Repo -> Handle -> IO Repo
 hRead repo h = do
-	-- We use the FileSystemEncoding when reading from git-config,
-	-- because it can contain arbitrary filepaths (and other strings)
-	-- in any encoding.
-	fileEncoding h
 	val <- hGetContentsStrict h
 	store val repo
 
@@ -167,7 +163,6 @@ coreBare = "core.bare"
 fromPipe :: Repo -> String -> [CommandParam] -> IO (Either SomeException (Repo, String))
 fromPipe r cmd params = try $
 	withHandle StdoutHandle createProcessSuccess p $ \h -> do
-		fileEncoding h
 		val <- hGetContentsStrict h
 		r' <- store val r
 		return (r', val)

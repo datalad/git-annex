@@ -1,0 +1,51 @@
+For a Haskell programmer, and day where a big thing is implemented
+without the least scrap of code that touches the IO monad is a good day.
+And this was a good day for me!
+
+Implemented the p2p protocol for tor hidden services. Its needs are somewhat
+similar to the external special remote protocol, but the two protocols are
+not fully overlapping with one-another. Rather than try to unify them, and
+so complicate both cases, I prefer to reuse as much code as possible between
+separate protocol implementations. The generating and parsing of messages
+is largely shared between them. I let the new p2p protocol otherwise
+develop in its own direction.
+
+But, I *do* want to make this p2p protocol reusable for other types of p2p
+networks than tor hidden services. This was an opportunity to use the Free
+monad, which I'd never used before. It worked out great, letting me write
+monadic code to handle requests and responses in the protocol, that reads
+the content of files and resumes transfers and so on, all independent
+of any concrete implementation.
+
+The whole implementation of the protocol only needed 74 lines of monadic code.
+It helped that I was able to factor out functions like this one, that is used
+both for handling a download, and by the remote when an upload is sent to it:
+
+	receiveContent :: Key -> Offset -> Len -> Proto Bool
+	receiveContent key offset len = do
+	        content <- receiveBytes len
+	        ok <- writeKeyFile key offset content
+	        sendMessage $ if ok then SUCCESS else FAILURE
+	        return ok
+
+To get transcripts of the protocol in action, the Free monad can be evaluated
+purely, providing the other side of the conversation:
+
+	ghci> putStrLn $ protoDump $ runPure (put (fromJust $ file2key "WORM--foo")) [PUT_FROM (Offset 10), SUCCESS]
+	> PUT WORM--foo
+	< PUT-FROM 10
+	> DATA 90
+	> bytes
+	< SUCCESS
+	result: True
+
+	ghci> putStrLn $ protoDump $ runPure (serve (toUUID "myuuid")) [GET (Offset 0) (fromJust $ file2key "WORM--foo")]
+	< GET 0 WORM--foo
+	> PROTO-ERROR must AUTH first
+	result: ()
+
+Am very happy with all this pure code and that I'm finally using Free monads.
+Next I need to get down the the dirty business of wiring this up to
+actual IO actions, and an actual network connection.
+
+Today's work was sponsored by Jake Vosloo on Patreon.

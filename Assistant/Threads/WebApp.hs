@@ -38,6 +38,7 @@ import Assistant.WebApp.OtherRepos
 import Assistant.WebApp.Repair
 import Assistant.Types.ThreadedMonad
 import Utility.WebApp
+import Utility.AuthToken
 import Utility.Tmp
 import Utility.FileMode
 import Git
@@ -70,11 +71,11 @@ webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost
 #ifdef __ANDROID__
 	when (isJust listenhost') $
 		-- See Utility.WebApp
-		error "Sorry, --listen is not currently supported on Android"
+		giveup "Sorry, --listen is not currently supported on Android"
 #endif
 	webapp <- WebApp
 		<$> pure assistantdata
-		<*> genAuthToken
+		<*> genAuthToken 128
 		<*> getreldir
 		<*> pure staticRoutes
 		<*> pure postfirstrun

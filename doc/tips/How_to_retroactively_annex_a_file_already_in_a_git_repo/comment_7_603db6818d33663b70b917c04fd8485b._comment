@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="&quot;Hmm, guyz? Are you serious with these scripts?&quot; Well, what's the matter?"
+ date="2016-11-15T10:58:32Z"
+ content="""
+## Wow, scary
+
+Dilyin's comment is scary.  It suggests bad things can happen, but is not very clear.
+
+Bloated history is one thing.  
+Obviously broken repo is bad but can be (slowly) recovered from remotes.  
+Subtly crippled history that you don't notice can be a major problem (especially once you have propagated it to all your remotes to \"recover from bloat\").
+
+## More common than it seems
+
+There's a case probably more common than people actually report: mistakenly doing `git add` instead of `git annex add` and realizing it only after a number of commits. Doing `git annex add` at that time will have the file duplicated (regular git and annex). 
+
+Extra wish: when doing `git annex add` of a file that is already present in git history, `git-annex` could notice and tell.
+
+## Simple solution?
+
+Can anyone elaborate on the scripts provided here, are they safe?  What can happen if improperly used or in corner cases?
+
+* \"files are replaced with symlinks and are in the index\" -> so what ?
+* \"Make sure that you don't have annex.largefiles settings that would prevent annexing the files.\" -> What would happen? Also `.gitattributes`.
+
+Thank you.
+"""]]

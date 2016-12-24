@@ -70,7 +70,7 @@ handlePopper numchunks chunksize meterupdate h sink = do
 -- meter as it goes.
 httpBodyRetriever :: FilePath -> MeterUpdate -> Response BodyReader -> IO ()
 httpBodyRetriever dest meterupdate resp
-	| responseStatus resp /= ok200 = error $ show $ responseStatus resp
+	| responseStatus resp /= ok200 = giveup $ show $ responseStatus resp
 	| otherwise = bracket (openBinaryFile dest WriteMode) hClose (go zeroBytesProcessed)
   where
 	reader = responseBody resp

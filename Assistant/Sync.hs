@@ -19,6 +19,7 @@ import Utility.Parallel
 import qualified Git
 import qualified Git.Command
 import qualified Git.Merge
+import qualified Git.Ref
 import qualified Remote
 import qualified Types.Remote as Remote
 import qualified Remote.List as Remote
@@ -204,15 +205,8 @@ manualPull currentbranch remotes = do
 			)
 	haddiverged <- liftAnnex Annex.Branch.forceUpdate
 	forM_ normalremotes $ \r ->
-		liftAnnex $ Command.Sync.mergeRemote r currentbranch mergeConfig
+		liftAnnex $ Command.Sync.mergeRemote r currentbranch Command.Sync.mergeConfig
 	return (catMaybes failed, haddiverged)
-
-mergeConfig :: [Git.Merge.MergeConfig]
-mergeConfig = 
-	[ Git.Merge.MergeNonInteractive
-	-- Pairing involves merging unrelated histories
-	, Git.Merge.MergeUnrelatedHistories
-	]
 
 {- Start syncing a remote, using a background thread. -}
 syncRemote :: Remote -> Assistant ()

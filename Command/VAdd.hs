@@ -33,6 +33,6 @@ start params = do
 				next $ next $ return True
 			Narrowing -> next $ next $ do
 				if visibleViewSize view' == visibleViewSize view
-					then error "That would not add an additional level of directory structure to the view. To filter the view, use vfilter instead of vadd."
+					then giveup "That would not add an additional level of directory structure to the view. To filter the view, use vfilter instead of vadd."
 					else checkoutViewBranch view' narrowView
-			Widening -> error "Widening view to match more files is not currently supported."
+			Widening -> giveup "Widening view to match more files is not currently supported."

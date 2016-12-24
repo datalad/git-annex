@@ -5,6 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Remote.WebDAV (remote, davCreds, configUrl) where
@@ -33,6 +34,10 @@ import Utility.Metered
 import Utility.Url (URLString, matchStatusCodeException)
 import Annex.UUID
 import Remote.WebDAV.DavLocation
+
+#if MIN_VERSION_http_client(0,5,0)
+import Network.HTTP.Client (HttpExceptionContent(..), responseStatus)
+#endif
 
 remote :: RemoteType
 remote = RemoteType {
@@ -85,7 +90,7 @@ webdavSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -
 webdavSetup mu mcreds c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	url <- case M.lookup "url" c of
-		Nothing -> error "Specify url="
+		Nothing -> giveup "Specify url="
 		Just url -> return url
 	(c', encsetup) <- encryptionSetup c gc
 	creds <- maybe (getCreds c' gc u) (return . Just) mcreds
@@ -122,7 +127,7 @@ retrieveCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
 
 retrieve :: ChunkConfig -> Maybe DavHandle -> Retriever
-retrieve _ Nothing = error "unable to connect"
+retrieve _ Nothing = giveup "unable to connect"
 retrieve (LegacyChunks _) (Just dav) = retrieveLegacyChunked dav
 retrieve _ (Just dav) = fileRetriever $ \d k p -> liftIO $
 	goDAV dav $
@@ -147,7 +152,7 @@ remove (Just dav) k = liftIO $ do
 					_ -> return False
 
 checkKey :: Remote -> ChunkConfig -> Maybe DavHandle -> CheckPresent
-checkKey r _ Nothing _ = error $ name r ++ " not configured"
+checkKey r _ Nothing _ = giveup $ name r ++ " not configured"
 checkKey r chunkconfig (Just dav) k = do
 	showChecking r
 	case chunkconfig of
@@ -155,7 +160,7 @@ checkKey r chunkconfig (Just dav) k = do
 		_ -> do
 			v <- liftIO $ goDAV dav $
 				existsDAV (keyLocation k)
-			either error return v
+			either giveup return v
 
 configUrl :: Remote -> Maybe URLString
 configUrl r = fixup <$> M.lookup "url" (config r)
@@ -302,6 +307,17 @@ goDAV (DavHandle ctx user pass _) a = choke $ run $ prettifyExceptions $ do
 {- Catch StatusCodeException and trim it to only the statusMessage part,
  - eliminating a lot of noise, which can include the whole request that
  - failed. The rethrown exception is no longer a StatusCodeException. -}
+#if MIN_VERSION_http_client(0,5,0)
+prettifyExceptions :: DAVT IO a -> DAVT IO a
+prettifyExceptions a = catchJust (matchStatusCodeException (const True)) a go
+  where
+	go (HttpExceptionRequest _ (StatusCodeException response message)) = error $ unwords
+		[ "DAV failure:"
+		, show (responseStatus response)
+		, show (message)
+		]
+	go e = throwM e
+#else
 prettifyExceptions :: DAVT IO a -> DAVT IO a
 prettifyExceptions a = catchJust (matchStatusCodeException (const True)) a go
   where
@@ -311,6 +327,7 @@ prettifyExceptions a = catchJust (matchStatusCodeException (const True)) a go
 		, show (statusMessage status)
 		]
 	go e = throwM e
+#endif
 
 prepDAV :: DavUser -> DavPass -> DAVT IO ()
 prepDAV user pass = do

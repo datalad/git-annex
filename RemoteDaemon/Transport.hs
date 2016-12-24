@@ -10,7 +10,9 @@ module RemoteDaemon.Transport where
 import RemoteDaemon.Types
 import qualified RemoteDaemon.Transport.Ssh
 import qualified RemoteDaemon.Transport.GCrypt
+import qualified RemoteDaemon.Transport.Tor
 import qualified Git.GCrypt
+import P2P.Address (torAnnexScheme)
 
 import qualified Data.Map as M
 
@@ -21,4 +23,8 @@ remoteTransports :: M.Map TransportScheme Transport
 remoteTransports = M.fromList
 	[ ("ssh:", RemoteDaemon.Transport.Ssh.transport)
 	, (Git.GCrypt.urlScheme, RemoteDaemon.Transport.GCrypt.transport)
+	, (torAnnexScheme, RemoteDaemon.Transport.Tor.transport)
 	]
+
+remoteServers :: [TransportHandle -> IO ()]
+remoteServers = [RemoteDaemon.Transport.Tor.server]

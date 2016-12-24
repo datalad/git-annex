@@ -19,7 +19,7 @@ cmd = noCommit $ noMessages $
 
 run :: () -> String -> Annex Bool
 run _ p = do
-	let k = fromMaybe (error "bad key") $ file2key p
+	let k = fromMaybe (giveup "bad key") $ file2key p
 	maybe (return False) (\f -> liftIO (putStrLn f) >> return True)
 		=<< inAnnex' (pure True) Nothing check k
   where

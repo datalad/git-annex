@@ -45,7 +45,7 @@ wrapUnannex a = ifM (versionSupportsUnlockedPointers <||> isDirect)
 	 -}
 	, ifM cleanindex
 		( lockPreCommitHook $ commit `after` a
-		, error "Cannot proceed with uncommitted changes staged in the index. Recommend you: git commit"
+		, giveup "Cannot proceed with uncommitted changes staged in the index. Recommend you: git commit"
 		)
 	)
   where

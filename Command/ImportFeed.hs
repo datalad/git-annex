@@ -138,23 +138,25 @@ findDownloads u = go =<< downloadFeed u
 			Just $ ToDownload f u i $ Enclosure enclosureurl
 		Nothing -> mkquvi f i
 	mkquvi f i = case getItemLink i of
-		Just link -> ifM (quviSupported link)
-			( return $ Just $ ToDownload f u i $ QuviLink link
-			, return Nothing
-			)
+		Just link -> do
+			liftIO $ print ("link", link)
+			ifM (quviSupported link)
+				( return $ Just $ ToDownload f u i $ QuviLink link
+				, return Nothing
+				)
 		Nothing -> return Nothing
 
 {- Feeds change, so a feed download cannot be resumed. -}
 downloadFeed :: URLString -> Annex (Maybe Feed)
 downloadFeed url
-	| Url.parseURIRelaxed url == Nothing = error "invalid feed url"
+	| Url.parseURIRelaxed url == Nothing = giveup "invalid feed url"
 	| otherwise = do
 		showOutput
 		uo <- Url.getUrlOptions
 		liftIO $ withTmpFile "feed" $ \f h -> do
 			hClose h
 			ifM (Url.download url f uo)
-				( parseFeedString <$> readFileStrictAnyEncoding f
+				( parseFeedString <$> readFileStrict f
 				, return Nothing
 				)
 
@@ -336,7 +338,7 @@ noneValue = "none"
  - Throws an error if the feed is broken, otherwise shows a warning. -}
 feedProblem :: URLString -> String -> Annex ()
 feedProblem url message = ifM (checkFeedBroken url)
-	( error $ message ++ " (having repeated problems with feed: " ++ url ++ ")"
+	( giveup $ message ++ " (having repeated problems with feed: " ++ url ++ ")"
 	, warning $ "warning: " ++ message
 	)
 

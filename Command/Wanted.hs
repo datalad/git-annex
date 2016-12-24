@@ -37,7 +37,7 @@ cmd' name desc getter setter = command name SectionSetup desc pdesc (withParams 
 	start (rname:expr:[]) = go rname $ \uuid -> do
 		showStart name rname
 		performSet setter expr uuid
-	start _ = error "Specify a repository."
+	start _ = giveup "Specify a repository."
 		
 	go rname a = do
 		u <- Remote.nameToUUID rname
@@ -52,7 +52,7 @@ performGet getter a = do
 
 performSet :: (a -> PreferredContentExpression -> Annex ()) -> String -> a -> CommandPerform
 performSet setter expr a = case checkPreferredContentExpression expr of
-	Just e -> error $ "Parse error: " ++ e
+	Just e -> giveup $ "Parse error: " ++ e
 	Nothing -> do
 		setter a expr
 		next $ return True

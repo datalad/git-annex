@@ -33,9 +33,9 @@ start :: CommandStart
 start = ifM isDirect
 	( do
 		unlessM (coreSymlinks <$> Annex.getGitConfig) $
-			error "Git is configured to not use symlinks, so you must use direct mode."
+			giveup "Git is configured to not use symlinks, so you must use direct mode."
 		whenM probeCrippledFileSystem $
-			error "This repository seems to be on a crippled filesystem, you must use direct mode."
+			giveup "This repository seems to be on a crippled filesystem, you must use direct mode."
 		next perform
 	, stop
 	)

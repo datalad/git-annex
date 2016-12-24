@@ -250,14 +250,6 @@ instance Proto.Serializable Direction where
 	deserialize "RETRIEVE" = Just Download
 	deserialize _ = Nothing
 
-instance Proto.Serializable Key where
-	serialize = key2file
-	deserialize = file2key
-
-instance Proto.Serializable [Char] where
-	serialize = id
-	deserialize = Just
-
 instance Proto.Serializable ProtocolVersion where
 	serialize = show
 	deserialize = readish

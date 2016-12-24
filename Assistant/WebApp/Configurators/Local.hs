@@ -151,7 +151,7 @@ getFirstRepositoryR = postFirstRepositoryR
 postFirstRepositoryR :: Handler Html
 postFirstRepositoryR = page "Getting started" (Just Configuration) $ do
 	unlessM (liftIO $ inPath "git") $
-		error "You need to install git in order to use git-annex!"
+		giveup "You need to install git in order to use git-annex!"
 #ifdef __ANDROID__
 	androidspecial <- liftIO $ doesDirectoryExist "/sdcard/DCIM"
 	let path = "/sdcard/annex"
@@ -309,7 +309,7 @@ getFinishAddDriveR drive = go
 		mu <- liftAnnex $ probeGCryptRemoteUUID dir
 		case mu of
 			Just u -> enableexistinggcryptremote u
-			Nothing -> error "The drive contains a gcrypt repository that is not a git-annex special remote. This is not supported."
+			Nothing -> giveup "The drive contains a gcrypt repository that is not a git-annex special remote. This is not supported."
 	enableexistinggcryptremote u = do
 		remotename' <- liftAnnex $ getGCryptRemoteName u dir
 		makewith $ const $ do

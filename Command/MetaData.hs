@@ -20,6 +20,7 @@ import qualified Data.Text as T
 import qualified Data.ByteString.Lazy.UTF8 as BU
 import Data.Time.Clock.POSIX
 import Data.Aeson
+import Control.Concurrent
 
 cmd :: Command
 cmd = withGlobalOptions ([jsonOption] ++ annexedMatchingOptions) $ 
@@ -65,23 +66,22 @@ optParser desc = MetaDataOptions
 			)
 
 seek :: MetaDataOptions -> CommandSeek
-seek o = do
-	now <- liftIO getPOSIXTime
-	case batchOption o of
-		NoBatch -> do
-			let seeker = case getSet o of
-				Get _ -> withFilesInGit
-				GetAll -> withFilesInGit
-				Set _ -> withFilesInGitNonRecursive
-					"Not recursively setting metadata. Use --force to do that."
-			withKeyOptions (keyOptions o) False
-				(startKeys now o)
-				(seeker $ whenAnnexed $ start now o)
-				(forFiles o)
-		Batch -> withMessageState $ \s -> case outputType s of
-			JSONOutput _ -> batchInput parseJSONInput $
-				commandAction . startBatch now
-			_ -> error "--batch is currently only supported in --json mode"
+seek o = case batchOption o of
+	NoBatch -> do
+		now <- liftIO getPOSIXTime
+		let seeker = case getSet o of
+			Get _ -> withFilesInGit
+			GetAll -> withFilesInGit
+			Set _ -> withFilesInGitNonRecursive
+				"Not recursively setting metadata. Use --force to do that."
+		withKeyOptions (keyOptions o) False
+			(startKeys now o)
+			(seeker $ whenAnnexed $ start now o)
+			(forFiles o)
+	Batch -> withMessageState $ \s -> case outputType s of
+		JSONOutput _ -> batchInput parseJSONInput $
+			commandAction . startBatch
+		_ -> giveup "--batch is currently only supported in --json mode"
 
 start :: POSIXTime -> MetaDataOptions -> FilePath -> Key -> CommandStart
 start now o file k = startKeys now o k (mkActionItem afile)
@@ -150,13 +150,13 @@ parseJSONInput i = do
 		(Nothing, Just f) -> Right (Left f, m)
 		(Nothing, Nothing) -> Left "JSON input is missing either file or key"
 
-startBatch :: POSIXTime -> (Either FilePath Key, MetaData) -> CommandStart
-startBatch now (i, (MetaData m)) = case i of
+startBatch :: (Either FilePath Key, MetaData) -> CommandStart
+startBatch (i, (MetaData m)) = case i of
 	Left f -> do
 		mk <- lookupFile f
 		case mk of
 			Just k -> go k (mkActionItem (Just f))
-			Nothing -> error $ "not an annexed file: " ++ f
+			Nothing -> giveup $ "not an annexed file: " ++ f
 	Right k -> go k (mkActionItem k)
   where
 	go k ai = do
@@ -169,6 +169,15 @@ startBatch now (i, (MetaData m)) = case i of
 			, keyOptions = Nothing
 			, batchOption = NoBatch
 			}
+		now <- liftIO getPOSIXTime
+		-- It would be bad if two batch mode changes used exactly
+		-- the same timestamp, since the order of adds and removals
+		-- of the same metadata value would then be indeterminate.
+		-- To guarantee that never happens, delay 1 microsecond,
+		-- so the timestamp will always be different. This is
+		-- probably less expensive than cleaner methods,
+		-- such as taking from a list of increasing timestamps.
+		liftIO $ threadDelay 1
 		next $ perform now o k
 	mkModMeta (f, s)
 		| S.null s = DelMeta f Nothing

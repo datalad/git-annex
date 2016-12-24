@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-11-16T18:36:34Z"
+ content="""
+Thing is, git-annex get does not update the file in place. Only once the
+entire file is downloaded, and its content is verified correct is it moved
+into a place where you can access it.
+
+So, it seems much more likely to me that the content of the file, as
+originally added to git-annex, was bad, and the it had just finished
+verifying the content and moving it into place when you interruped the
+command.
+
+Please check with `git annex fsck` on the file and see if it determines
+it has the content git-annex expects it to have.
+
+However, I notice you're using a v6 repository. Is the file an unlocked
+file? It's possible that in that specific case there could be a bug.
+I've interrupted `git annex get` on a nearly daily basis for years, but
+v6 is still experimental and not as well tested.
+"""]]

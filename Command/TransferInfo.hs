@@ -13,6 +13,7 @@ import Types.Transfer
 import Logs.Transfer
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Utility.Metered
+import Utility.SimpleProtocol
 
 cmd :: Command
 cmd = noCommit $ 
@@ -59,7 +60,7 @@ start (k:[]) = do
 				, exitSuccess
 				]
 	stop
-start _ = error "wrong number of parameters"
+start _ = giveup "wrong number of parameters"
 
 readUpdate :: IO (Maybe Integer)
-readUpdate = readish <$> getLine
+readUpdate = maybe Nothing readish <$> getProtocolLine stdin

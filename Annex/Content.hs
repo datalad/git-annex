@@ -268,8 +268,8 @@ lockContentUsing locker key a = do
 		(unlock lockfile)
 		(const a)
   where
-	alreadylocked = error "content is locked"
-	failedtolock e = error $ "failed to lock content: " ++ show e
+	alreadylocked = giveup "content is locked"
+	failedtolock e = giveup $ "failed to lock content: " ++ show e
 
 	lock contentfile lockfile =
 		(maybe alreadylocked return 

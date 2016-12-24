@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-12-10T15:13:44Z"
+ content="""
+I think that the "x86-32, for ancient kernels" build should avoid this
+problem. <http://git-annex.branchable.com/install/Linux_standalone/>
+
+It's very surprising if this lead to symlinks being created that apparently
+contain garbage in their link targets. Perhaps glibc is failing in a way
+with the old kernel that leads to memory corruption? I have asked the GHC
+developers if that could be the case in
+<https://ghc.haskell.org/trac/ghc/ticket/12865>
+
+I hope that the content of your files is in fact somewhere under
+`.git/annex/objects/` -- look around, and with some luck, you may find it.
+Unfortunately, the information about, which object file goes with which
+working tree has apparently been lost. (Also, you might check if these
+symlinks have been staged in git; it's possible though unlikely that the
+correct link target got staged in git.)
+
+I have filed a bug on Debian's ghc to get them to fast-track getting the
+patch into ghc. <https://bugs.debian.org/847677>
+"""]]

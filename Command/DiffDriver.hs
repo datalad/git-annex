@@ -73,7 +73,7 @@ parseReq opts = case separate (== "--") opts of
 	mk (unmergedpath:[]) = UnmergedReq { rPath = unmergedpath }
 	mk _ = badopts
 
-	badopts = error $ "Unexpected input: " ++ unwords opts
+	badopts = giveup $ "Unexpected input: " ++ unwords opts
 
 {- Check if either file is a symlink to a git-annex object,
  - which git-diff will leave as a normal file containing the link text.

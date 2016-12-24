@@ -107,12 +107,12 @@ gen r u c gc
 			(simplyPrepare toremove)
 			(simplyPrepare tocheckkey)
 			rmt
-	externaltype = fromMaybe (error "missing externaltype") (remoteAnnexExternalType gc)
+	externaltype = fromMaybe (giveup "missing externaltype") (remoteAnnexExternalType gc)
 
 externalSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 externalSetup mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
-	let externaltype = fromMaybe (error "Specify externaltype=") $
+	let externaltype = fromMaybe (giveup "Specify externaltype=") $
 		M.lookup "externaltype" c
 	(c', _encsetup) <- encryptionSetup c gc
 
@@ -124,7 +124,7 @@ externalSetup mu _ c gc = do
 			external <- newExternal externaltype u c' gc
 			handleRequest external INITREMOTE Nothing $ \resp -> case resp of
 				INITREMOTE_SUCCESS -> Just noop
-				INITREMOTE_FAILURE errmsg -> Just $ error errmsg
+				INITREMOTE_FAILURE errmsg -> Just $ giveup errmsg
 				_ -> Nothing
 			withExternalState external $
 				liftIO . atomically . readTVar . externalConfig
@@ -151,8 +151,7 @@ retrieve external = fileRetriever $ \d k p ->
 			TRANSFER_SUCCESS Download k'
 				| k == k' -> Just $ return ()
 			TRANSFER_FAILURE Download k' errmsg
-				| k == k' -> Just $ do
-					error errmsg
+				| k == k' -> Just $ giveup errmsg
 			_ -> Nothing
 
 remove :: External -> Remover
@@ -168,7 +167,7 @@ remove external k = safely $
 			_ -> Nothing
 
 checkKey :: External -> CheckPresent
-checkKey external k = either error id <$> go
+checkKey external k = either giveup id <$> go
   where
 	go = handleRequest external (CHECKPRESENT k) Nothing $ \resp ->
 		case resp of
@@ -284,7 +283,7 @@ handleRequest' st external req mp responsehandler
 	handleRemoteRequest (VERSION _) =
 		sendMessage st external (ERROR "too late to send VERSION")
 
-	handleAsyncMessage (ERROR err) = error $ "external special remote error: " ++ err
+	handleAsyncMessage (ERROR err) = giveup $ "external special remote error: " ++ err
 
 	send = sendMessage st external
 
@@ -332,7 +331,7 @@ receiveMessage st external handleresponse handlerequest handleasync =
 				Nothing -> case parseMessage s :: Maybe AsyncMessage of
 					Just msg -> maybe (protocolError True s) id (handleasync msg)
 					Nothing -> protocolError False s
-	protocolError parsed s = error $ "external special remote protocol error, unexpectedly received \"" ++ s ++ "\" " ++
+	protocolError parsed s = giveup $ "external special remote protocol error, unexpectedly received \"" ++ s ++ "\" " ++
 		if parsed then "(command not allowed at this time)" else "(unable to parse command)"
 
 protocolDebug :: External -> ExternalState -> Bool -> String -> IO ()
@@ -385,9 +384,6 @@ startExternal external = do
 		p <- propgit g basep
 		(Just hin, Just hout, Just herr, ph) <- 
 			createProcess p `catchIO` runerr
-		fileEncoding hin
-		fileEncoding hout
-		fileEncoding herr
 		stderrelay <- async $ errrelayer herr
 		checkearlytermination =<< getProcessExitCode ph
 		cv <- newTVarIO $ externalDefaultConfig external
@@ -413,14 +409,14 @@ startExternal external = do
 		environ <- propGitEnv g
 		return $ p { env = Just environ }
 
-	runerr _ = error ("Cannot run " ++ basecmd ++ " -- Make sure it's in your PATH and is executable.")
+	runerr _ = giveup ("Cannot run " ++ basecmd ++ " -- Make sure it's in your PATH and is executable.")
 
 	checkearlytermination Nothing = noop
 	checkearlytermination (Just exitcode) = ifM (inPath basecmd)
-		( error $ unwords [ "failed to run", basecmd, "(" ++ show exitcode ++ ")" ]
+		( giveup $ unwords [ "failed to run", basecmd, "(" ++ show exitcode ++ ")" ]
 		, do
 			path <- intercalate ":" <$> getSearchPath
-			error $ basecmd ++ " is not installed in PATH (" ++ path ++ ")"
+			giveup $ basecmd ++ " is not installed in PATH (" ++ path ++ ")"
 		)
 
 stopExternal :: External -> Annex ()
@@ -452,7 +448,7 @@ checkPrepared st external = do
 	v <- liftIO $ atomically $ readTVar $ externalPrepared st
 	case v of
 		Prepared -> noop
-		FailedPrepare errmsg -> error errmsg
+		FailedPrepare errmsg -> giveup errmsg
 		Unprepared ->
 			handleRequest' st external PREPARE Nothing $ \resp ->
 				case resp of
@@ -460,7 +456,7 @@ checkPrepared st external = do
 						setprepared Prepared
 					PREPARE_FAILURE errmsg -> Just $ do
 						setprepared $ FailedPrepare errmsg
-						error errmsg
+						giveup errmsg
 					_ -> Nothing
   where
 	setprepared status = liftIO $ atomically $ void $
@@ -520,8 +516,8 @@ checkurl external url =
 		CHECKURL_MULTI ((_, sz, f):[]) ->
 			Just $ return $ UrlContents sz $ Just $ mkSafeFilePath f
 		CHECKURL_MULTI l -> Just $ return $ UrlMulti $ map mkmulti l
-		CHECKURL_FAILURE errmsg -> Just $ error errmsg
-		UNSUPPORTED_REQUEST -> error "CHECKURL not implemented by external special remote"
+		CHECKURL_FAILURE errmsg -> Just $ giveup errmsg
+		UNSUPPORTED_REQUEST -> giveup "CHECKURL not implemented by external special remote"
 		_ -> Nothing
   where
 	mkmulti (u, s, f) = (u, s, mkSafeFilePath f)
@@ -530,7 +526,7 @@ retrieveUrl :: Retriever
 retrieveUrl = fileRetriever $ \f k p -> do
 	us <- getWebUrls k
 	unlessM (downloadUrl k p us f) $
-		error "failed to download content"
+		giveup "failed to download content"
 
 checkKeyUrl :: Git.Repo -> CheckPresent
 checkKeyUrl r k = do

@@ -17,7 +17,7 @@ import Data.Bits ((.&.))
 watchDir :: FilePath -> (FilePath -> Bool) -> Bool -> WatchHooks -> IO EventStream
 watchDir dir ignored scanevents hooks = do
 	unlessM fileLevelEventsSupported $
-		error "Need at least OSX 10.7.0 for file-level FSEvents"
+		giveup "Need at least OSX 10.7.0 for file-level FSEvents"
 	scan dir
 	eventStreamCreate [dir] 1.0 True True True dispatch
   where

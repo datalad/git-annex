@@ -320,7 +320,7 @@ unusedSpec m spec
 	range (a, b) = case (readish a, readish b) of
 		(Just x, Just y) -> [x..y]
 		_ -> badspec
-	badspec = error $ "Expected number or range, not \"" ++ spec ++ "\""
+	badspec = giveup $ "Expected number or range, not \"" ++ spec ++ "\""
 
 {- Seek action for unused content. Finds the number in the maps, and
  - calls one of 3 actions, depending on the type of unused file. -}
@@ -335,7 +335,7 @@ startUnused message unused badunused tmpunused maps n = search
 	, (unusedTmpMap maps, tmpunused)
 	]
   where
-	search [] = error $ show n ++ " not valid (run git annex unused for list)"
+	search [] = giveup $ show n ++ " not valid (run git annex unused for list)"
 	search ((m, a):rest) =
 		case M.lookup n m of
 			Nothing -> search rest

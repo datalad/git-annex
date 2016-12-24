@@ -20,30 +20,32 @@ import Network.URI
 cmd :: Command
 cmd = notDirect $ notBareRepo $
 	command "fromkey" SectionPlumbing "adds a file using a specific key"
-		(paramPair paramKey paramPath)
+		(paramRepeating (paramPair paramKey paramPath))
 		(withParams seek)
 
 seek :: CmdParams -> CommandSeek
+seek [] = withNothing startMass []
 seek ps = do
 	force <- Annex.getState Annex.force
-	withWords (start force) ps
+	withPairs (start force) ps
 
-start :: Bool -> [String] -> CommandStart
-start force (keyname:file:[]) = do
+start :: Bool -> (String, FilePath) -> CommandStart
+start force (keyname, file) = do
 	let key = mkKey keyname
 	unless force $ do
 		inbackend <- inAnnex key
-		unless inbackend $ error $
+		unless inbackend $ giveup $
 			"key ("++ keyname ++") is not present in backend (use --force to override this sanity check)"
 	showStart "fromkey" file
 	next $ perform key file
-start _ [] = do
+
+startMass :: CommandStart
+startMass = do
 	showStart "fromkey" "stdin"
 	next massAdd
-start _ _ = error "specify a key and a dest file"
 
 massAdd :: CommandPerform
-massAdd = go True =<< map (separate (== ' ')) . lines <$> liftIO getContents
+massAdd = go True =<< map (separate (== ' ')) <$> batchLines
   where
 	go status [] = next $ return status
 	go status ((keyname,f):rest) | not (null keyname) && not (null f) = do
@@ -51,7 +53,7 @@ massAdd = go True =<< map (separate (== ' ')) . lines <$> liftIO getContents
 		ok <- perform' key f
 		let !status' = status && ok
 		go status' rest
-	go _ _ = error "Expected pairs of key and file on stdin, but got something else."
+	go _ _ = giveup "Expected pairs of key and file on stdin, but got something else."
 
 -- From user input to a Key.
 -- User can input either a serialized key, or an url.
@@ -66,7 +68,7 @@ mkKey s = case parseURI s of
 		Backend.URL.fromUrl s Nothing
 	_ -> case file2key s of
 		Just k -> k
-		Nothing -> error $ "bad key/url " ++ s
+		Nothing -> giveup $ "bad key/url " ++ s
 
 perform :: Key -> FilePath -> CommandPerform
 perform key file = do

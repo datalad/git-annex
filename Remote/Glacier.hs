@@ -146,7 +146,7 @@ retrieve r k sink = go =<< glacierEnv c gc u
 		, Param $ getVault $ config r
 		, Param $ archive r k
 		]
-	go Nothing = error "cannot retrieve from glacier"
+	go Nothing = giveup "cannot retrieve from glacier"
 	go (Just e) = do
 		let cmd = (proc "glacier" (toCommand params))
 			{ env = Just e
@@ -182,7 +182,7 @@ checkKey r k = do
 	showChecking r
 	go =<< glacierEnv (config r) (gitconfig r) (uuid r)
   where
-	go Nothing = error "cannot check glacier"
+	go Nothing = giveup "cannot check glacier"
 	go (Just e) = do
 		{- glacier checkpresent outputs the archive name to stdout if
 		 - it's present. -}
@@ -190,7 +190,7 @@ checkKey r k = do
 		let probablypresent = key2file k `elem` lines s
 		if probablypresent
 			then ifM (Annex.getFlag "trustglacier")
-				( return True, error untrusted )
+				( return True, giveup untrusted )
 			else return False
 
 	params = glacierParams (config r)
@@ -222,7 +222,7 @@ glacierParams :: RemoteConfig -> [CommandParam] -> [CommandParam]
 glacierParams c params = datacenter:params
   where
 	datacenter = Param $ "--region=" ++
-		fromMaybe (error "Missing datacenter configuration")
+		fromMaybe (giveup "Missing datacenter configuration")
 			(M.lookup "datacenter" c)
 
 glacierEnv :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex (Maybe [(String, String)])
@@ -239,7 +239,7 @@ glacierEnv c gc u = do
 	(uk, pk) = credPairEnvironment creds
 
 getVault :: RemoteConfig -> Vault
-getVault = fromMaybe (error "Missing vault configuration") 
+getVault = fromMaybe (giveup "Missing vault configuration") 
 	. M.lookup "vault"
 
 archive :: Remote -> Key -> Archive
@@ -249,7 +249,7 @@ archive r k = fileprefix ++ key2file k
 
 genVault :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex ()
 genVault c gc u = unlessM (runGlacier c gc u params) $
-	error "Failed creating glacier vault."
+	giveup "Failed creating glacier vault."
   where
 	params = 
 		[ Param "vault"
@@ -312,7 +312,7 @@ jobList r keys = go =<< glacierEnv (config r) (gitconfig r) (uuid r)
 checkSaneGlacierCommand :: IO ()
 checkSaneGlacierCommand = 
 	whenM ((Nothing /=) <$> catchMaybeIO shouldfail) $
-		error wrongcmd
+		giveup wrongcmd
   where
 	test = proc "glacier" ["--compatibility-test-git-annex"]
 	shouldfail = withQuietOutput createProcessSuccess test

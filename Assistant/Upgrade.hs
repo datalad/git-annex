@@ -2,7 +2,7 @@
  -
  - Copyright 2013 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU AGPL version 3 or higher.
+ - Licensed under the GNU GPL version 3 or higher.
  -}
 
 {-# LANGUAGE CPP #-}
@@ -153,7 +153,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
   where
 	changeprogram program = liftIO $ do
 		unlessM (boolSystem program [Param "version"]) $
-			error "New git-annex program failed to run! Not using."
+			giveup "New git-annex program failed to run! Not using."
 		pf <- programFile
 		liftIO $ writeFile pf program
 	

@@ -3,7 +3,6 @@
 * [[design/caching_database]] for metadata views
 * [[assistant/deltas]]
 * [[assistant/gpgkeys]] management for the assistant
-* [[assistant/telehash]] or similar
 * [[design/requests_routing]]
 * [[design/new_repo_versions]]
 

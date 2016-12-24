@@ -25,4 +25,4 @@ start (g:[]) = next $ performGet groupPreferredContentMapRaw g
 start (g:expr:[]) = do
 	showStart "groupwanted" g
 	next $ performSet groupPreferredContentSet expr g
-start _ = error "Specify a group."
+start _ = giveup "Specify a group."

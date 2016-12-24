@@ -1,11 +1,11 @@
 {- git-remote-daemon core
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module RemoteDaemon.Core (runForeground) where
+module RemoteDaemon.Core (runInteractive, runNonInteractive) where
 
 import qualified Annex
 import Common
@@ -17,8 +17,10 @@ import qualified Git
 import qualified Git.Types as Git
 import qualified Git.CurrentRepo
 import Utility.SimpleProtocol
+import Utility.ThreadScheduler
 import Config
 import Annex.Ssh
+import Types.Messages
 
 import Control.Concurrent
 import Control.Concurrent.Async
@@ -26,8 +28,8 @@ import Control.Concurrent.STM
 import Network.URI
 import qualified Data.Map as M
 
-runForeground :: IO ()
-runForeground = do
+runInteractive :: IO ()
+runInteractive = do
 	(readh, writeh) <- dupIoHandles
 	ichan <- newTChanIO :: IO (TChan Consumed)
 	ochan <- newTChanIO :: IO (TChan Emitted)
@@ -44,8 +46,25 @@ runForeground = do
 	let controller = runController ichan ochan
 	
 	-- If any thread fails, the rest will be killed.
-	void $ tryIO $
-		reader `concurrently` writer `concurrently` controller
+	void $ tryIO $ reader
+		`concurrently` writer
+		`concurrently` controller
+
+runNonInteractive :: IO ()
+runNonInteractive = do
+	ichan <- newTChanIO :: IO (TChan Consumed)
+	ochan <- newTChanIO :: IO (TChan Emitted)
+	
+	let reader = forever $ do
+		threadDelaySeconds (Seconds (60*60))
+		atomically $ writeTChan ichan RELOAD
+	let writer = forever $
+		void $ atomically $ readTChan ochan
+	let controller = runController ichan ochan
+	
+	void $ tryIO $ reader
+		`concurrently` writer
+		`concurrently` controller
 
 type RemoteMap = M.Map Git.Repo (IO (), TChan Consumed)
 
@@ -56,6 +75,7 @@ runController ichan ochan = do
 	h <- genTransportHandle
 	m <- genRemoteMap h ochan
 	startrunning m
+	mapM_ (\s -> async (s h)) remoteServers
 	go h False m
   where
 	go h paused m = do
@@ -132,7 +152,9 @@ genTransportHandle :: IO TransportHandle
 genTransportHandle = do
 	annexstate <- newMVar =<< Annex.new =<< Git.CurrentRepo.get
 	g <- Annex.repo <$> readMVar annexstate
-	return $ TransportHandle (LocalRepo g) annexstate
+	let h = TransportHandle (LocalRepo g) annexstate
+	liftAnnex h $ Annex.setOutput QuietOutput
+	return h
 
 updateTransportHandle :: TransportHandle -> IO TransportHandle
 updateTransportHandle h@(TransportHandle _g annexstate) = do

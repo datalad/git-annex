@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-12-11T19:35:21Z"
+ content="""
+All Linux standalone builds have been updated with a version of ghc that
+has that bug fixed. Can you please upgrade and verify it's fixed?
+"""]]

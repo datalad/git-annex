@@ -147,7 +147,7 @@ postAddIAR = iaConfigurator $ do
 					]
 		_ -> $(widgetFile "configurators/addia")
 #else
-postAddIAR = error "S3 not supported by this build"
+postAddIAR = giveup "S3 not supported by this build"
 #endif
 
 getEnableIAR :: UUID -> Handler Html
@@ -157,7 +157,7 @@ postEnableIAR :: UUID -> Handler Html
 #ifdef WITH_S3
 postEnableIAR = iaConfigurator . enableIARemote
 #else
-postEnableIAR _ = error "S3 not supported by this build"
+postEnableIAR _ = giveup "S3 not supported by this build"
 #endif
 
 #ifdef WITH_S3

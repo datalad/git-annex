@@ -1,0 +1,85 @@
+### Please describe the problem.
+
+While running `git-annex metadata --batch --json`, repeatedly assigning a field to the same value in the same run (with different values in between the assignments of the same value) causes a value to get stuck.
+
+### What steps will reproduce the problem?
+
+    $ touch test.txt
+    $ git annex add
+    $ git-annex metadata --batch --json
+    {"file":"test.txt","fields":{"f":["a"]}}
+    # prints { ... "f":["a"] ... }
+    {"file":"test.txt","fields":{"f":["b"]}}
+    # prints { ... "f":["b"] ... }
+    {"file":"test.txt","fields":{"f":["c"]}}
+    # prints { ... "f":["c"] ... }
+    {"file":"test.txt","fields":{"f":["a"]}}
+    # prints { ... "f":["a", "c"] ... }
+    {"file":"test.txt","fields":{"f":["b"]}}
+    # prints { ... "f":["c"] ... }
+    
+### What version of git-annex are you using? On what operating system?
+
+    git-annex version: 6.20161122+gitg9f179ae-1~ndall+1
+    build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+    local repository version: 5
+    supported repository versions: 3 5 6
+    upgrade supported from repository versions: 0 1 2 3 4 5
+    operating system: linux x86_64
+
+I'm using Xubuntu 16.04, with the `git-annex-standalone` package from NeuroDebian repository.
+
+### Please provide any additional information below.
+
+If you keep reassigning the same values, things get very weird. Full inputs/outputs from a sample run:
+
+    {"file":"test.txt","fields":{"f":["a"]}}
+    {"command":"metadata","note":"f=a\nf-lastchanged=2016-12-05@21-17-39\nlastchanged=2016-12-05@21-17-39\n","success":true,"key":"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.txt","file":"test.txt","fields":    {"f-lastchanged":["2016-12-05@21-17-39"],"lastchanged":["2016-12-05@21-17-39"],"f":["a"]}}
+    {"file":"test.txt","fields":{"f":["b"]}}
+    {"command":"metadata","note":"f=b\nf-lastchanged=2016-12-05@21-17-39\nlastchanged=2016-12-05@21-17-39\n","success":true,"key":"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.txt","file":"test.txt","fields":{"f-lastchanged":["2016-12-05@21-17-39"],"lastchanged":["2016-12-05@21-17-39"],"f":["b"]}}
+    {"file":"test.txt","fields":{"f":["c"]}}
+    {"command":"metadata","note":"f=c\nf-lastchanged=2016-12-05@21-17-39\nlastchanged=2016-12-05@21-17-39\n","success":true,"key":"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.txt","file":"test.txt","fields":{"f-lastchanged":["2016-12-05@21-17-39"],"lastchanged":["2016-12-05@21-17-39"],"f":["c"]}}
+    {"file":"test.txt","fields":{"f":["a"]}}
+    {"command":"metadata","note":"f=a\nf=c\nf-lastchanged=2016-12-05@21-17-39\nlastchanged=2016-12-05@21-17-39\n","success":true,"key":"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.txt","file":"test.txt","fields":{"f-lastchanged":["2016-12-05@21-17-39"],"lastchanged":["2016-12-05@21-17-39"],"f":["a","c"]}}
+    {"file":"test.txt","fields":{"f":["b"]}}
+    {"command":"metadata","note":"f=c\nf-lastchanged=2016-12-05@21-17-39\nlastchanged=2016-12-05@21-17-39\n","success":true,"key":"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.txt","file":"test.txt","fields":{"f-lastchanged":["2016-12-05@21-17-39"],"lastchanged":["2016-12-05@21-17-39"],"f":["c"]}}
+    {"file":"test.txt","fields":{"f":[]}}   
+    {"command":"metadata","note":"lastchanged=2016-12-05@21-17-39\n","success":true,"key":"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.txt","file":"test.txt","fields":{"lastchanged":["2016-12-05@21-17-39"]}}
+    {"file":"test.txt","fields":{"f":["b"]}}
+    {"command":"metadata","note":"lastchanged=2016-12-05@21-17-39\n","success":true,"key":"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.txt","file":"test.txt","fields":{"lastchanged":["2016-12-05@21-17-39"]}}
+    {"file":"test.txt","fields":{"f":["c"]}}
+    {"command":"metadata","note":"f=c\nf-lastchanged=2016-12-05@21-17-39\nlastchanged=2016-12-05@21-17-39\n","success":true,"key":"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.txt","file":"test.txt","fields":{"f-lastchanged":["2016-12-05@21-17-39"],"lastchanged":["2016-12-05@21-17-39"],"f":["c"]}}
+    {"file":"test.txt","fields":{"f":["a"]}}
+    {"command":"metadata","note":"f=a\nf=c\nf-lastchanged=2016-12-05@21-17-39\nlastchanged=2016-12-05@21-17-39\n","success":true,"key":"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.txt","file":"test.txt","fields":{"f-lastchanged":["2016-12-05@21-17-39"],"lastchanged":["2016-12-05@21-17-39"],"f":["a","c"]}}
+    {"file":"test.txt","fields":{"f":["b"]}}
+    {"command":"metadata","note":"f=c\nf-lastchanged=2016-12-05@21-17-39\nlastchanged=2016-12-05@21-17-39\n","success":true,"key":"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.txt","file":"test.txt","fields":{"f-lastchanged":["2016-12-05@21-17-39"],"lastchanged":["2016-12-05@21-17-39"],"f":["c"]}}
+    {"file":"test.txt","fields":{"f":["c"]}}
+    {"command":"metadata","note":"f=c\nf-lastchanged=2016-12-05@21-17-39\nlastchanged=2016-12-05@21-17-39\n","success":true,"key":"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.txt","file":"test.txt","fields":{"f-lastchanged":["2016-12-05@21-17-39"],"lastchanged":["2016-12-05@21-17-39"],"f":["c"]}}
+    {"file":"test.txt","fields":{"f":["a"]}}
+    {"command":"metadata","note":"f=a\nf=c\nf-lastchanged=2016-12-05@21-17-39\nlastchanged=2016-12-05@21-17-39\n","success":true,"key":"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.txt","file":"test.txt","fields":{"f-lastchanged":["2016-12-05@21-17-39"],"lastchanged":["2016-12-05@21-17-39"],"f":["a","c"]}}
+    {"file":"test.txt","fields":{"f":["b"]}}
+    {"command":"metadata","note":"f=c\nf-lastchanged=2016-12-05@21-17-39\nlastchanged=2016-12-05@21-17-39\n","success":true,"key":"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.txt","file":"test.txt","fields":{"f-lastchanged":["2016-12-05@21-17-39"],"lastchanged":["2016-12-05@21-17-39"],"f":["c"]}}
+    {"file":"test.txt","fields":{"f":["b"]}}
+    {"command":"metadata","note":"f=b\nf=c\nf-lastchanged=2016-12-05@21-17-39\nlastchanged=2016-12-05@21-17-39\n","success":true,"key":"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.txt","file":"test.txt","fields":{"f-lastchanged":["2016-12-05@21-17-39"],"lastchanged":["2016-12-05@21-17-39"],"f":["b","c"]}}
+    {"file":"test.txt","fields":{"f":["a"]}}
+    {"command":"metadata","note":"f=a\nf=b\nf=c\nf-lastchanged=2016-12-05@21-17-39\nlastchanged=2016-12-05@21-17-39\n","success":true,"key":"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.txt","file":"test.txt","fields":{"f-lastchanged":["2016-12-05@21-17-39"],"lastchanged":["2016-12-05@21-17-39"],"f":["a","b","c"]}}
+    {"file":"test.txt","fields":{"f":["d"]}}
+    {"command":"metadata","note":"f=b\nf=c\nf=d\nf-lastchanged=2016-12-05@21-17-39\nlastchanged=2016-12-05@21-17-39\n","success":true,"key":"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.txt","file":"test.txt","fields":{"f-lastchanged":["2016-12-05@21-17-39"],"lastchanged":["2016-12-05@21-17-39"],"f":["b","c","d"]}}
+    {"file":"test.txt","fields":{"f":["a"]}}
+    {"command":"metadata","note":"f=b\nf=c\nf=d\nf-lastchanged=2016-12-05@21-17-39\nlastchanged=2016-12-05@21-17-39\n","success":true,"key":"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.txt","file":"test.txt","fields":{"f-lastchanged":["2016-12-05@21-17-39"],"lastchanged":["2016-12-05@21-17-39"],"f":["b","c","d"]}}
+    {"file":"test.txt","fields":{"f":["a"]}}
+    {"command":"metadata","note":"f=b\nf=c\nf=d\nf-lastchanged=2016-12-05@21-17-39\nlastchanged=2016-12-05@21-17-39\n","success":true,"key":"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.txt","file":"test.txt","fields":{"f-lastchanged":["2016-12-05@21-17-39"],"lastchanged":["2016-12-05@21-17-39"],"f":["b","c","d"]}}
+    {"file":"test.txt","fields":{"f":[]}}   
+    {"command":"metadata","note":"f=c\nf-lastchanged=2016-12-05@21-17-39\nlastchanged=2016-12-05@21-17-39\n","success":true,"key":"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.txt","file":"test.txt","fields":{"f-lastchanged":["2016-12-05@21-17-39"],"lastchanged":["2016-12-05@21-17-39"],"f":["c"]}}
+    
+Restarting the process solves the issue.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I love the metadata functionality so much that I wrote [[tips/a_gui_for_metadata_operations]] and discovered this bug.
+Metadata driven views are awesome (but I don't like the entire folder hierarchy being appended to the filename).
+I haven't used the other commands much since I have not yet organized most of my stuff (and their naively copy-pasted backups), but I am glad I discovered git-annex before I began organizing.
+
+> [[fixed|done]] --[[Joey]]

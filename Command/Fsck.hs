@@ -89,7 +89,7 @@ seek o = allowConcurrentOutput $ do
 	checkDeadRepo u
 	i <- prepIncremental u (incrementalOpt o)
 	withKeyOptions (keyOptions o) False
-		(\k ai -> startKey i k ai =<< getNumCopies)
+		(\k ai -> startKey from i k ai =<< getNumCopies)
 		(withFilesInGit $ whenAnnexed $ start from i)
 		(fsckFiles o)
 	cleanupIncremental i
@@ -109,7 +109,7 @@ start from inc file key = do
 			numcopies <- getFileNumCopies file
 			case from of
 				Nothing -> go $ perform key file backend numcopies
-				Just r -> go $ performRemote key file backend numcopies r
+				Just r -> go $ performRemote key (Just file) backend numcopies r
   where
 	go = runFsck inc (mkActionItem (Just file)) key
 
@@ -129,8 +129,8 @@ perform key file backend numcopies = do
 
 {- To fsck a remote, the content is retrieved to a tmp file,
  - and checked locally. -}
-performRemote :: Key -> FilePath -> Backend -> NumCopies -> Remote -> Annex Bool
-performRemote key file backend numcopies remote =
+performRemote :: Key -> AssociatedFile -> Backend -> NumCopies -> Remote -> Annex Bool
+performRemote key afile backend numcopies remote =
 	dispatch =<< Remote.hasKey remote key
   where
 	dispatch (Left err) = do
@@ -147,10 +147,10 @@ performRemote key file backend numcopies remote =
 				return False
 	dispatch (Right False) = go False Nothing
 	go present localcopy = check
-		[ verifyLocationLogRemote key file remote present
+		[ verifyLocationLogRemote key (maybe (key2file key) id afile) remote present
 		, checkKeySizeRemote key remote localcopy
 		, checkBackendRemote backend key remote localcopy
-		, checkKeyNumCopies key (Just file) numcopies
+		, checkKeyNumCopies key afile numcopies
 		]
 	withtmp a = do
 		pid <- liftIO getPID
@@ -161,7 +161,7 @@ performRemote key file backend numcopies remote =
 		cleanup
 		cleanup `after` a tmp
 	getfile tmp = ifM (checkDiskSpace (Just (takeDirectory tmp)) key 0 True)
-		( ifM (Remote.retrieveKeyFileCheap remote key (Just file) tmp)
+		( ifM (Remote.retrieveKeyFileCheap remote key afile tmp)
 			( return (Just True)
 			, ifM (Annex.getState Annex.fast)
 				( return Nothing
@@ -173,12 +173,14 @@ performRemote key file backend numcopies remote =
 		)
 	dummymeter _ = noop
 
-startKey :: Incremental -> Key -> ActionItem -> NumCopies -> CommandStart
-startKey inc key ai numcopies =
+startKey :: Maybe Remote -> Incremental -> Key -> ActionItem -> NumCopies -> CommandStart
+startKey from inc key ai numcopies =
 	case Backend.maybeLookupBackendName (keyBackendName key) of
 		Nothing -> stop
 		Just backend -> runFsck inc ai key $
-			performKey key backend numcopies
+			case from of
+				Nothing -> performKey key backend numcopies
+				Just r -> performRemote key Nothing backend numcopies r
 
 performKey :: Key -> Backend -> NumCopies -> Annex Bool
 performKey key backend numcopies = do
@@ -584,7 +586,7 @@ prepIncremental u (Just StartIncrementalO) = do
 	recordStartTime u
 	ifM (FsckDb.newPass u)
 		( StartIncremental <$> openFsckDb u
-		, error "Cannot start a new --incremental fsck pass; another fsck process is already running."
+		, giveup "Cannot start a new --incremental fsck pass; another fsck process is already running."
 		)
 prepIncremental u (Just MoreIncrementalO) =
 	ContIncremental <$> openFsckDb u

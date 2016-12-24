@@ -1,0 +1,17 @@
+git-annex 6.20161118 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * git-annex.cabal: Loosen bounds on persistent to allow 2.5, which
+     on Debian has been patched to work with esqueleto.
+     This may break cabal's resolver on non-Debian systems;
+     if so, either use stack to build, or run cabal with
+     --constraint='persistent ==2.2.4.1'
+     Hopefully this mess with esqueleto will be resolved soon.
+   * sync: Pass --allow-unrelated-histories to git merge when used with git
+     git 2.9.0 or newer. This makes merging a remote into a freshly created
+     direct mode repository work the same as it works in indirect mode.
+   * Avoid backtraces on expected failures when built with ghc 8;
+     only use backtraces for unexpected errors.
+   * fsck --all --from was checking the existence and content of files
+     in the local repository, rather than on the special remote. Oops.
+   * Linux arm standalone: Build with a 32kb page size, which is needed
+     on several ARM NAS devices, including Drobo 5N, and WD NAS."""]]

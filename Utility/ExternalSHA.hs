@@ -14,7 +14,6 @@ module Utility.ExternalSHA (externalSHA) where
 
 import Utility.SafeCommand
 import Utility.Process
-import Utility.FileSystemEncoding
 import Utility.Misc
 import Utility.Exception
 
@@ -30,7 +29,6 @@ externalSHA command shasize file = do
 		Left _ -> Left (command ++ " failed")
   where
 	readsha args = withHandle StdoutHandle createProcessSuccess p $ \h -> do
-		fileEncoding h
 		output  <- hGetContentsStrict h
 		hClose h
 		return output

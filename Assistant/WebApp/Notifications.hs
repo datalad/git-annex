@@ -15,7 +15,7 @@ import Assistant.WebApp.Types
 import Assistant.DaemonStatus
 import Utility.NotificationBroadcaster
 import Utility.Yesod
-import Utility.WebApp
+import Utility.AuthToken
 
 import Data.Text (Text)
 import qualified Data.Text as T

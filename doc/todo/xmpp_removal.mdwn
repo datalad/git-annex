@@ -21,6 +21,8 @@ telehash. But, can't wait on that forever..
 XMPP support is already disabled by default in some builds of git-annex,
 notably the stack build. It's never worked on Windows.
 
+The [[no-xmpp]] branch is ready for merging.
+
 Next step is probably to default the flag to false by default,
 except for in a few builds like the Debian package and standalone builds.
 

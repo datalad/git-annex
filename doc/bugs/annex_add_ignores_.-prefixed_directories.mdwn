@@ -1,0 +1,78 @@
+### Please describe the problem.
+
+annex add  seems to ignore content under directories having . prefix.
+
+We thought to unify (across direct/indirect/v6) adding files to annex repository by using 'git annex add' with corresponding setting for largefiles for any addition, but it seems to ignore content under .-prefixed directories, unlike git
+
+### What version of git-annex are you using? On what operating system?
+
+6.20161122+gitg9f179ae-1~ndall+1
+
+### Please provide any additional information below.
+
+[[!format sh """
+hopa:/tmp/datalad_temp_test_annex_add_no_dotfilesqMXck8
+$> git status                      
+On branch master
+ 
+Initial commit
+
+nothing to commit (create/copy files and use "git add" to track)
+
+$> mkdir .dir dir; echo 123 > .dir/123; echo 124 > dir/124
+
+$> git status
+On branch master
+
+Initial commit
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	.dir/
+	dir/
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+$> git annex add -c 'annex.largefiles=nothing' .
+add dir/124 (non-large file; adding content to git repository) ok
+(recording state in git...)
+
+$> git status
+On branch master
+
+Initial commit
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+
+	new file:   dir/124
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	.dir/
+
+
+# and with regular git
+$> git  -c 'annex.largefiles=nothing' add . 
+
+$> git status
+On branch master
+
+Initial commit
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+
+	new file:   .dir/123
+	new file:   dir/124
+
+
+"""]]
+
+Ref: https://github.com/datalad/datalad/issues/1027
+
+[[!meta author=yoh]]
+
+[[done]]; oh -- it is RTFM: --include-dotfiles  --[[yoh]]

@@ -50,8 +50,11 @@ buildMans = do
 			else return (Just dest)
 
 isManSrc :: FilePath -> Bool
-isManSrc s = "git-annex" `isPrefixOf` (takeFileName s)
-	&& takeExtension s == ".mdwn"
+isManSrc s
+	| not (takeExtension s == ".mdwn") = False
+	| otherwise = "git-annex" `isPrefixOf` f || "git-remote-" `isPrefixOf` f
+  where
+	f = takeFileName s
 
 srcToDest :: FilePath -> FilePath
 srcToDest s = "man" </> progName s ++ ".1"

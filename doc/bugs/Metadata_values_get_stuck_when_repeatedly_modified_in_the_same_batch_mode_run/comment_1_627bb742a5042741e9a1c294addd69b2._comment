@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-12-13T14:40:02Z"
+ content="""
+I thought this would involve the journal, but it seems not; same
+behavior occurs if the journal is committed after each metadata change.
+
+Looking at the new metadata value in the case where a and c both get set,
+it is:
+
+	MetaData (fromList [(MetaField "f",fromList [MetaValue (CurrentlySet True) "a",MetaValue (CurrentlySet False) "c"])])
+
+That is supposed to unset c, with the CurrentlySet False, but instead c
+remains set somehow.
+
+Aha, the use of `addMetaData'` causes the bug. That reuses the same
+timestamp, and indeed the same timestamp is used for all the batch
+changes. With the same timestamp for the log line that sets c as the line
+that removes it, it's indeterminite which line will be acted on first, and
+so the removal can be processed before the addition, leaving c "stuck".
+
+Fixing..
+"""]]

@@ -46,7 +46,7 @@ encryptedRemote baserepo = go
 		u = show url
 		plen = length urlPrefix
 	go _ = notencrypted
-	notencrypted = error "not a gcrypt encrypted repository"
+	notencrypted = giveup "not a gcrypt encrypted repository"
 
 data ProbeResult = Decryptable | NotDecryptable | NotEncrypted
 

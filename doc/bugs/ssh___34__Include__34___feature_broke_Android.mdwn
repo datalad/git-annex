@@ -1,0 +1,10 @@
+### Please describe the problem.
+https://git-annex.branchable.com/bugs/git_annex_init_failed_due_to_unsupported_ssh_option/ deal with Include not being supported by pre 7.3 by using the 6.4+ IgnoreUnknown directive.
+
+Unfortunately, the Android apk (which I got from https://downloads.kitenet.net/git-annex/android/current/5.0/git-annex.apk) has (according to ssh -v) OpenSSH_6.0p1.
+
+I had to edit .git/annex/ssh.config to comment out the three offending lines and then append the contents of ~/.ssh/config to get git-annex working again.
+
+(This is on a Nexus 10 running stock, though I doubt it matters)
+
+> Reverted use of this feature for now.[[done]] --[[Joey]]

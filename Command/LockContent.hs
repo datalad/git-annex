@@ -10,6 +10,7 @@ module Command.LockContent where
 import Command
 import Annex.Content
 import Remote.Helper.Ssh (contentLockedMarker)
+import Utility.SimpleProtocol
 
 cmd :: Command
 cmd = noCommit $ 
@@ -32,13 +33,13 @@ start [ks] = do
 		then exitSuccess
 		else exitFailure
   where
-	k = fromMaybe (error "bad key") (file2key ks)
+	k = fromMaybe (giveup "bad key") (file2key ks)
 	locksuccess = ifM (inAnnex k)
 		( liftIO $ do
 			putStrLn contentLockedMarker
 			hFlush stdout
-			_ <- getLine
+			_ <- getProtocolLine stdin
 			return True
 		, return False
 		)
-start _ = error "Specify exactly 1 key."
+start _ = giveup "Specify exactly 1 key."

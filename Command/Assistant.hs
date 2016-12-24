@@ -66,14 +66,14 @@ startNoRepo :: AssistantOptions -> IO ()
 startNoRepo o
 	| autoStartOption o = autoStart o
 	| autoStopOption o = autoStop
-	| otherwise = error "Not in a git repository."
+	| otherwise = giveup "Not in a git repository."
 
 autoStart :: AssistantOptions -> IO ()
 autoStart o = do
 	dirs <- liftIO readAutoStartFile
 	when (null dirs) $ do
 		f <- autoStartFile
-		error $ "Nothing listed in " ++ f
+		giveup $ "Nothing listed in " ++ f
 	program <- programPath
 	haveionice <- pure Build.SysConfig.ionice <&&> inPath "ionice"
 	forM_ dirs $ \d -> do

@@ -152,7 +152,7 @@ watchDir i dir ignored scanevents hooks
 		-- disk full error.
 		| isFullError e =
 			case errHook hooks of
-				Nothing -> error $ "failed to add inotify watch on directory " ++ dir ++ " (" ++ show e ++ ")"
+				Nothing -> giveup $ "failed to add inotify watch on directory " ++ dir ++ " (" ++ show e ++ ")"
 				Just hook -> tooManyWatches hook dir
 		-- The directory could have been deleted.
 		| isDoesNotExistError e = return ()

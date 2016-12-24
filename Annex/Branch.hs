@@ -61,6 +61,7 @@ import qualified Annex.Queue
 import Annex.Branch.Transitions
 import qualified Annex
 import Annex.Hook
+import Utility.FileSystemEncoding
 
 {- Name of the branch that is used to store git-annex's information. -}
 name :: Git.Ref
@@ -225,7 +226,7 @@ getHistorical date file =
 	-- This check avoids some ugly error messages when the reflog
 	-- is empty.
 	ifM (null <$> inRepo (Git.RefLog.get' [Param (fromRef fullname), Param "-n1"]))
-		( error ("No reflog for " ++ fromRef fullname)
+		( giveup ("No reflog for " ++ fromRef fullname)
 		, getRef (Git.Ref.dateRef fullname date) file
 		)
 
@@ -436,7 +437,6 @@ stageJournal jl = withIndex $ do
 	g <- gitRepo
 	let dir = gitAnnexJournalDir g
 	(jlogf, jlogh) <- openjlog
-	liftIO $ fileEncoding jlogh
 	h <- hashObjectHandle
 	withJournalHandle $ \jh ->
 		Git.UpdateIndex.streamUpdateIndex g
@@ -574,7 +574,7 @@ checkBranchDifferences ref = do
 		<$> catFile ref differenceLog
 	mydiffs <- annexDifferences <$> Annex.getGitConfig
 	when (theirdiffs /= mydiffs) $
-		error "Remote repository is tuned in incompatable way; cannot be merged with local repository."
+		giveup "Remote repository is tuned in incompatable way; cannot be merged with local repository."
 
 ignoreRefs :: [Git.Sha] -> Annex ()
 ignoreRefs rs = do

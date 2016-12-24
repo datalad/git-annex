@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-11-16T18:52:07Z"
+ content="""
+It would be helpful if you said what version of git-annex you are using.
+
+And, is your git-annex repository using the new experimental v6 format? One
+user reported a similar error message with a v6 git-annex repository. See
+[[bugs/assistant_crashes_in_TransferScanner]]
+
+Or might your repository be using direct mode?
+
+So, please paste in `git annex version` and `git annex info` output.
+
+It kind of looks like it's having difficulty determining where the top of
+the git repository is, or constructing a relative path to the git
+repository.
+
+Are there any symlinks in the path to /Users/andrew/notes ? Eg, is /Users
+a symlink, or /Users/andrew a symlink, or //Users/andrew/notes itself
+symlinked to elsewhere?
+
+Does only `git annex sync --content` fail? What if you run, eg
+`git annex copy --auto --to cloud` and `git annex get --auto --from cloud`,
+does that fail similarly, or does it succeed?
+
+You say it's only failing for some files. Do the filenames that it's
+failing on contain any non-ascii characters?
+"""]]

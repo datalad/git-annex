@@ -112,7 +112,7 @@ byUUID u = headMaybe . filter matching <$> remoteList
  -}
 byName :: Maybe RemoteName -> Annex (Maybe Remote)
 byName Nothing = return Nothing
-byName (Just n) = either error Just <$> byName' n
+byName (Just n) = either giveup Just <$> byName' n
 
 {- Like byName, but the remote must have a configured UUID. -}
 byNameWithUUID :: Maybe RemoteName -> Annex (Maybe Remote)
@@ -120,7 +120,7 @@ byNameWithUUID = checkuuid <=< byName
   where
 	checkuuid Nothing = return Nothing
 	checkuuid (Just r)
-		| uuid r == NoUUID = error $
+		| uuid r == NoUUID = giveup $
 			if remoteAnnexIgnore (gitconfig r)
 				then noRemoteUUIDMsg r ++
 					" (" ++ show (remoteConfig (repo r) "ignore") ++
@@ -156,7 +156,7 @@ noRemoteUUIDMsg r = "cannot determine uuid for " ++ name r ++ " (perhaps you nee
  - and returns its UUID. Finds even repositories that are not
  - configured in .git/config. -}
 nameToUUID :: RemoteName -> Annex UUID
-nameToUUID = either error return <=< nameToUUID'
+nameToUUID = either giveup return <=< nameToUUID'
 
 nameToUUID' :: RemoteName -> Annex (Either String UUID)
 nameToUUID' "." = Right <$> getUUID -- special case for current repo

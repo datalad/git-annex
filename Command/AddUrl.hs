@@ -27,6 +27,7 @@ import Types.UrlContents
 import Annex.FileMatcher
 import Logs.Location
 import Utility.Metered
+import Utility.FileSystemEncoding
 import qualified Annex.Transfer as Transfer
 import Annex.Quvi
 import qualified Utility.Quvi as Quvi
@@ -133,7 +134,7 @@ checkUrl r o u = do
 				let f' = adjustFile o (deffile </> fromSafeFilePath f)
 				void $ commandAction $
 					startRemote r (relaxedOption o) f' u' sz
-		| otherwise = error $ unwords
+		| otherwise = giveup $ unwords
 			[ "That url contains multiple files according to the"
 			, Remote.name r
 			, " remote; cannot add it to a single file."
@@ -182,7 +183,7 @@ startWeb :: AddUrlOptions -> String -> CommandStart
 startWeb o s = go $ fromMaybe bad $ parseURI urlstring
   where
 	(urlstring, downloader) = getDownloader s
-	bad = fromMaybe (error $ "bad url " ++ urlstring) $
+	bad = fromMaybe (giveup $ "bad url " ++ urlstring) $
 		Url.parseURIRelaxed $ urlstring
 	go url = case downloader of
 		QuviDownloader -> usequvi
@@ -208,7 +209,7 @@ startWeb o s = go $ fromMaybe bad $ parseURI urlstring
 						)
 		showStart "addurl" file
 		next $ performWeb (relaxedOption o) urlstring file urlinfo
-	badquvi = error $ "quvi does not know how to download url " ++ urlstring
+	badquvi = giveup $ "quvi does not know how to download url " ++ urlstring
 	usequvi = do
 		page <- fromMaybe badquvi
 			<$> withQuviOptions Quvi.forceQuery [Quvi.quiet, Quvi.httponly] urlstring
@@ -340,13 +341,18 @@ cleanup :: UUID -> URLString -> FilePath -> Key -> Maybe FilePath -> Annex ()
 cleanup u url file key mtmp = case mtmp of
 	Nothing -> go
 	Just tmp -> do
+		-- Move to final location for large file check.
+		liftIO $ renameFile tmp file
 		largematcher <- largeFilesMatcher
-		ifM (checkFileMatcher largematcher file)
-			( go
-			, do
-				liftIO $ renameFile tmp file
-				void $ Command.Add.addSmall file
-			)
+		large <- checkFileMatcher largematcher file
+		if large
+			then do
+				-- Move back to tmp because addAnnexedFile
+				-- needs the file in a different location
+				-- than the work tree file.
+				liftIO $ renameFile file tmp
+				go
+			else void $ Command.Add.addSmall file
   where
 	go = do
 		maybeShowJSON $ JSONChunk [("key", key2file key)]
@@ -372,7 +378,7 @@ url2file url pathdepth pathmax = case pathdepth of
 		| depth >= length urlbits -> frombits id
 		| depth > 0 -> frombits $ drop depth
 		| depth < 0 -> frombits $ reverse . take (negate depth) . reverse
-		| otherwise -> error "bad --pathdepth"
+		| otherwise -> giveup "bad --pathdepth"
   where
 	fullurl = concat
 		[ maybe "" uriRegName (uriAuthority url)
@@ -385,7 +391,7 @@ url2file url pathdepth pathmax = case pathdepth of
 
 urlString2file :: URLString -> Maybe Int -> Int -> FilePath
 urlString2file s pathdepth pathmax = case Url.parseURIRelaxed s of
-	Nothing -> error $ "bad uri " ++ s
+	Nothing -> giveup $ "bad uri " ++ s
 	Just u -> url2file u pathdepth pathmax
 
 adjustFile :: AddUrlOptions -> FilePath -> FilePath

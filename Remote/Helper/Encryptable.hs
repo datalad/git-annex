@@ -66,14 +66,14 @@ encryptionSetup c gc = do
 			encsetup $ genEncryptedCipher cmd (c, gc) key Hybrid
 		Just "pubkey" -> encsetup $ genEncryptedCipher cmd (c, gc) key PubKey
 		Just "sharedpubkey" -> encsetup $ genSharedPubKeyCipher cmd key
-		_ -> error $ "Specify " ++ intercalate " or "
+		_ -> giveup $ "Specify " ++ intercalate " or "
 			(map ("encryption=" ++)
 				["none","shared","hybrid","pubkey", "sharedpubkey"])
 			++ "."
-	key = fromMaybe (error "Specifiy keyid=...") $ M.lookup "keyid" c
+	key = fromMaybe (giveup "Specifiy keyid=...") $ M.lookup "keyid" c
 	newkeys = maybe [] (\k -> [(True,k)]) (M.lookup "keyid+" c) ++
 		maybe [] (\k -> [(False,k)]) (M.lookup "keyid-" c)
-	cannotchange = error "Cannot set encryption type of existing remotes."
+	cannotchange = giveup "Cannot set encryption type of existing remotes."
 	-- Update an existing cipher if possible.
 	updateCipher cmd v = case v of
 		SharedCipher _ | maybe True (== "shared") encryption -> return (c', EncryptionIsSetup)

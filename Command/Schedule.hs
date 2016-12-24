@@ -29,9 +29,9 @@ start = parse
   where
 	parse (name:[]) = go name performGet
 	parse (name:expr:[]) = go name $ \uuid -> do
-		showStart "schedile" name
+		showStart "schedule" name
 		performSet expr uuid
-	parse _ = error "Specify a repository."
+	parse _ = giveup "Specify a repository."
 
 	go name a = do
 		u <- Remote.nameToUUID name
@@ -47,7 +47,7 @@ performGet uuid = do
 
 performSet :: String -> UUID -> CommandPerform
 performSet expr uuid = case parseScheduledActivities expr of
-	Left e -> error $ "Parse error: " ++ e
+	Left e -> giveup $ "Parse error: " ++ e
 	Right l -> do
 		scheduleSet uuid l
 		next $ return True
