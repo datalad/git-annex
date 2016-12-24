@@ -57,9 +57,7 @@ batchInput parser a = go =<< batchLines
 	parseerr s = giveup $ "Batch input parse failure: " ++ s
 
 batchLines :: Annex [String]
-batchLines = liftIO $ do
-	fileEncoding stdin
-	lines <$> getContents
+batchLines = liftIO $ lines <$> getContents
 
 -- Runs a CommandStart in batch mode.
 --

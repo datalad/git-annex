@@ -210,7 +210,6 @@ applySplices destdir imports splices@(first:_) = do
 	when (oldcontent /= Just newcontent) $ do
 		putStrLn $ "splicing " ++ f
 		withFile dest WriteMode $ \h -> do
-		        fileEncoding h
 			hPutStr h newcontent
 		        hClose h
   where
@@ -721,7 +720,9 @@ parsecAndReplace p s = case parse find "" s of
 	find = many $ try (Right <$> p) <|> (Left <$> anyChar)
 
 main :: IO ()
-main = go =<< getArgs
+main = do
+	useFileSystemEncoding
+	go =<< getArgs
   where
 	go (destdir:log:header:[]) = run destdir log (Just header)
 	go (destdir:log:[]) = run destdir log Nothing

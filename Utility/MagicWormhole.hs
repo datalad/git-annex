@@ -27,7 +27,6 @@ import Utility.Process
 import Utility.SafeCommand
 import Utility.Monad
 import Utility.Misc
-import Utility.FileSystemEncoding
 import Utility.Env
 import Utility.Path
 
@@ -105,8 +104,7 @@ sendFile f (CodeObserver observer) ps = do
 	-- Work around stupid stdout buffering behavior of python.
 	-- See https://github.com/warner/magic-wormhole/issues/108
 	environ <- addEntry "PYTHONUNBUFFERED" "1" <$> getEnvironment
-	runWormHoleProcess p { env = Just environ} $ \_hin hout -> do
-		fileEncoding hout
+	runWormHoleProcess p { env = Just environ} $ \_hin hout ->
 		findcode =<< words <$> hGetContents hout
   where
 	p = wormHoleProcess (Param "send" : ps ++ [File f])

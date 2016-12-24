@@ -22,6 +22,7 @@ import Git.UpdateIndex
 import Git.HashObject
 import Git.Types
 import Git.FilePath
+import Utility.FileSystemEncoding
 
 {- Performs a union merge between two branches, staging it in the index.
  - Any previously staged changes in the index will be lost.
@@ -94,8 +95,7 @@ mergeFile info file hashhandle h = case filter (/= nullSha) [Ref asha, Ref bsha]
 	-- We don't know how the file is encoded, but need to
 	-- split it into lines to union merge. Using the
 	-- FileSystemEncoding for this is a hack, but ensures there
-	-- are no decoding errors. Note that this works because
-	-- hashObject sets fileEncoding on its write handle.
+	-- are no decoding errors.
 	getcontents s = lines . encodeW8NUL . L.unpack <$> catObject h s
 
 {- Calculates a union merge between a list of refs, with contents.

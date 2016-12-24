@@ -159,7 +159,6 @@ runAction repo action@(CommandAction {}) = do
 #ifndef mingw32_HOST_OS
 	let p = (proc "xargs" $ "-0":"git":toCommand gitparams) { env = gitEnv repo }
 	withHandle StdinHandle createProcessSuccess p $ \h -> do
-		fileEncoding h
 		hPutStr h $ intercalate "\0" $ toCommand $ getFiles action
 		hClose h
 #else

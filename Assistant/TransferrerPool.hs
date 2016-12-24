@@ -74,8 +74,6 @@ mkTransferrer program batchmaker = do
 		, std_in = CreatePipe
 		, std_out = CreatePipe
 		}
-	fileEncoding readh
-	fileEncoding writeh
 	return $ Transferrer
 		{ transferrerRead = readh
 		, transferrerWrite = writeh

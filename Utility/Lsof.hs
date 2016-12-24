@@ -47,9 +47,8 @@ queryDir path = query ["+d", path]
  -}
 query :: [String] -> IO [(FilePath, LsofOpenMode, ProcessInfo)]
 query opts =
-	withHandle StdoutHandle (createProcessChecked checkSuccessProcess) p $ \h -> do
-		fileEncoding h
-		parse <$> hGetContentsStrict h
+	withHandle StdoutHandle (createProcessChecked checkSuccessProcess) p $
+		parse <$$> hGetContentsStrict
   where
 	p = proc "lsof" ("-F0can" : opts)
 

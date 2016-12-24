@@ -53,7 +53,6 @@ runQuiet params repo = withQuietOutput createProcessSuccess $
 pipeReadLazy :: [CommandParam] -> Repo -> IO (String, IO Bool)
 pipeReadLazy params repo = assertLocal repo $ do
 	(_, Just h, _, pid) <- createProcess p { std_out = CreatePipe }
-	fileEncoding h
 	c <- hGetContents h
 	return (c, checkSuccessProcess pid)
   where
@@ -66,7 +65,6 @@ pipeReadLazy params repo = assertLocal repo $ do
 pipeReadStrict :: [CommandParam] -> Repo -> IO String
 pipeReadStrict params repo = assertLocal repo $
 	withHandle StdoutHandle (createProcessChecked ignoreFailureProcess) p $ \h -> do
-		fileEncoding h
 		output <- hGetContentsStrict h
 		hClose h
 		return output
@@ -81,9 +79,7 @@ pipeWriteRead params writer repo = assertLocal repo $
 	writeReadProcessEnv "git" (toCommand $ gitCommandLine params repo) 
 		(gitEnv repo) writer (Just adjusthandle)
   where
-	adjusthandle h = do
-		fileEncoding h
-		hSetNewlineMode h noNewlineTranslation
+	adjusthandle h = hSetNewlineMode h noNewlineTranslation
 
 {- Runs a git command, feeding it input on a handle with an action. -}
 pipeWrite :: [CommandParam] -> Repo -> (Handle -> IO ()) -> IO ()

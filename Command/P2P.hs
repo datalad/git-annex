@@ -161,7 +161,6 @@ performPairing remotename addrs = do
 	getcode ourcode = do
 		putStr "Enter the other repository's pairing code: "
 		hFlush stdout
-		fileEncoding stdin
 		l <- getLine
 		case Wormhole.toCode l of
 			Just code
@@ -236,7 +235,7 @@ wormholePairing remotename ouraddrs ui = do
 				then return ReceiveFailed
 				else do
 					r <- liftIO $ tryIO $
-						readFileStrictAnyEncoding recvf
+						readFileStrict recvf
 					case r of
 						Left _e -> return ReceiveFailed
 						Right s -> maybe 

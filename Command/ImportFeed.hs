@@ -156,7 +156,7 @@ downloadFeed url
 		liftIO $ withTmpFile "feed" $ \f h -> do
 			hClose h
 			ifM (Url.download url f uo)
-				( parseFeedString <$> readFileStrictAnyEncoding f
+				( parseFeedString <$> readFileStrict f
 				, return Nothing
 				)
 

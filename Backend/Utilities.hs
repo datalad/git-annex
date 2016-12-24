@@ -10,6 +10,7 @@ module Backend.Utilities where
 import Data.Hash.MD5
 
 import Annex.Common
+import Utility.FileSystemEncoding
 
 {- Generates a keyName from an input string. Takes care of sanitizing it.
  - If it's not too long, the full string is used as the keyName.

@@ -55,7 +55,6 @@ startUpdateIndex :: Repo -> IO UpdateIndexHandle
 startUpdateIndex repo = do
 	(Just h, _, _, p) <- createProcess (gitCreateProcess params repo)
 		{ std_in = CreatePipe }
-	fileEncoding h
 	return $ UpdateIndexHandle p h
   where
 	params = map Param ["update-index", "-z", "--index-info"]

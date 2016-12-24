@@ -21,6 +21,7 @@ import Types.CleanupActions
 import Messages.Progress
 import Utility.Metered
 import Utility.Tmp
+import Utility.FileSystemEncoding
 import Backend.URL
 import Annex.Perms
 import Annex.UUID

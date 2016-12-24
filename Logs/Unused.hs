@@ -66,7 +66,7 @@ updateUnusedLog prefix m = do
 writeUnusedLog :: FilePath -> UnusedLog -> Annex ()
 writeUnusedLog prefix l = do
 	logfile <- fromRepo $ gitAnnexUnusedLog prefix
-	liftIO $ viaTmp writeFileAnyEncoding logfile $ unlines $ map format $ M.toList l
+	liftIO $ viaTmp writeFile logfile $ unlines $ map format $ M.toList l
   where
 	format (k, (i, Just t)) = show i ++ " " ++ key2file k ++ " " ++ show t
 	format (k, (i, Nothing)) = show i ++ " " ++ key2file k
@@ -76,7 +76,7 @@ readUnusedLog prefix = do
 	f <- fromRepo $ gitAnnexUnusedLog prefix
 	ifM (liftIO $ doesFileExist f)
 		( M.fromList . mapMaybe parse . lines
-			<$> liftIO (readFileStrictAnyEncoding f)
+			<$> liftIO (readFileStrict f)
 		, return M.empty
 		)
   where

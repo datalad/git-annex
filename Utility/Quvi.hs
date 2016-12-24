@@ -153,11 +153,8 @@ httponly :: QuviParams
 httponly Quvi04 = [Param "-c", Param "http"]
 httponly _ = [] -- No way to do it with 0.9?
 
-{- Both versions of quvi will output utf-8 encoded data even when
- - the locale doesn't support it. -}
 readQuvi :: [String] -> IO String
 readQuvi ps = withHandle StdoutHandle createProcessSuccess p $ \h -> do
-	fileEncoding h
 	r <- hGetContentsStrict h
 	hClose h
 	return r

@@ -99,7 +99,6 @@ setupHandle s = do
 	h <- socketToHandle s ReadWriteMode
 	hSetBuffering h LineBuffering
 	hSetBinaryMode h False
-	fileEncoding h
 	return h
 
 -- Purposefully incomplete interpreter of Proto.

@@ -33,6 +33,7 @@ import qualified Git.Url
 import Config
 import Annex.Path
 import Utility.Env
+import Utility.FileSystemEncoding
 import Types.CleanupActions
 import Git.Env
 #ifndef mingw32_HOST_OS

@@ -27,6 +27,7 @@ import Types.UrlContents
 import Annex.FileMatcher
 import Logs.Location
 import Utility.Metered
+import Utility.FileSystemEncoding
 import qualified Annex.Transfer as Transfer
 import Annex.Quvi
 import qualified Utility.Quvi as Quvi

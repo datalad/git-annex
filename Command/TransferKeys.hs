@@ -56,10 +56,7 @@ runRequests
 	-> (TransferRequest -> Annex Bool)
 	-> Annex ()
 runRequests readh writeh a = do
-	liftIO $ do
-		hSetBuffering readh NoBuffering
-		fileEncoding readh
-		fileEncoding writeh
+	liftIO $ hSetBuffering readh NoBuffering
 	go =<< readrequests
   where
 	go (d:rn:k:f:rest) = do
