@@ -161,3 +161,6 @@ torLibDir = "/var/lib/tor"
 
 varLibDir :: FilePath
 varLibDir = "/var/lib"
+
+torIsInstalled :: IO Bool
+torIsInstalled = inPath "tor"

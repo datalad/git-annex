@@ -22,6 +22,7 @@ import Assistant.DaemonStatus
 import Utility.Verifiable
 #endif
 import Utility.UserInfo
+import Utility.Tor
 import qualified Utility.MagicWormhole as Wormhole
 import Git
 
@@ -49,14 +50,15 @@ postStartTorPairSelfR :: Handler Html
 postStartTorPairSelfR = postStartTorPairR PairingWithSelf
 
 postStartTorPairR :: PairingWith -> Handler Html
-postStartTorPairR pairingwith = pairPage $ do
-	let Just ourcode = Wormhole.mkCode "11-bannana-bananna" -- XXX tmp
-	((result, form), enctype) <- liftH $
-		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $
-			areq wormholeCodeField (bfs codeprompt) Nothing
-	case result of
-		FormSuccess v -> error "TODO"
-		_ -> showform form enctype ourcode
+postStartTorPairR pairingwith = whenTorInstalled $ whenWormholeInstalled $
+	pairPage $ do
+		let Just ourcode = Wormhole.mkCode "11-bannana-bananna" -- XXX tmp
+		((result, form), enctype) <- liftH $
+			runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $
+				areq wormholeCodeField (bfs codeprompt) Nothing
+		case result of
+			FormSuccess v -> error "TODO"
+			_ -> showform form enctype ourcode
   where
 	showform form enctype ourcode = $(widgetFile "configurators/pairing/tor/prompt")
 	codeprompt = case pairingwith of
@@ -65,6 +67,20 @@ postStartTorPairR pairingwith = pairPage $ do
 	wormholeCodeField = checkBool (Wormhole.validCode . T.unpack)
 		("That does not look like a valid pairing code. Try again..." :: T.Text)
 		textField
+
+whenTorInstalled :: Handler Html -> Handler Html
+whenTorInstalled a = ifM (liftIO torIsInstalled)
+	( a
+	, page "Need Tor" (Just Configuration) $
+		$(widgetFile "configurators/needtor")
+	)
+
+whenWormholeInstalled :: Handler Html -> Handler Html
+whenWormholeInstalled a = ifM (liftIO Wormhole.isInstalled)
+	( a
+	, page "Need Magic Wormhole" (Just Configuration) $
+		$(widgetFile "configurators/needmagicwormhole")
+	)
 
 {- Starts local pairing. -}
 getStartLocalPairR :: Handler Html

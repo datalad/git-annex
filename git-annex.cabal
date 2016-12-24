@@ -227,6 +227,8 @@ Extra-Source-Files:
   templates/configurators/rsync.net/encrypt.hamlet
   templates/configurators/gitlab.com/add.hamlet
   templates/configurators/needgcrypt.hamlet
+  templates/configurators/needtor.hamlet
+  templates/configurators/needmagicwormhole.hamlet
   templates/configurators/enabledirectory.hamlet
   templates/configurators/fsck/status.hamlet
   templates/configurators/fsck/form.hamlet
