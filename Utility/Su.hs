@@ -45,7 +45,7 @@ runAsRoot cmd ps = go =<< firstM (inPath . fst) =<< selectcmds
 	
 	-- These will only work when run in a console.
 	consolecmds = 
-		[ ("su", [Param "-c", Param cmd, Param "--"] ++ ps)
+		[ ("su", [Param "-c", Param shellcmd])
 		, ("sudo", [Param cmd] ++ ps)
 		, ("su-to-root", [Param "-c", Param shellcmd])
 		]
