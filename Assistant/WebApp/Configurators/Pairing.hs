@@ -63,7 +63,7 @@ postStartTorPairR pairingwith = pairPage $ do
 		PairingWithFriend -> "Your friend's pairing code"
 		PairingWithSelf -> "The other device's pairing code"
 	wormholeCodeField = checkBool (Wormhole.validCode . T.unpack)
-		("That does not look like a valid code. Try again..." :: T.Text)
+		("That does not look like a valid pairing code. Try again..." :: T.Text)
 		textField
 
 {- Starts local pairing. -}

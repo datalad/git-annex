@@ -171,7 +171,7 @@ performPairing remotename addrs = do
 					putStrLn "Oops -- You entered this repository's pairing code. We need the pairing code of the *other* repository."
 					getcode ourcode
 			Nothing -> do
-				putStrLn "That does not look like a valid code. Try again..."
+				putStrLn "That does not look like a valiad pairing code. Try again..."
 				getcode ourcode
 
 -- We generate half of the authtoken; the pair will provide
