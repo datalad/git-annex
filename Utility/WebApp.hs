@@ -84,7 +84,6 @@ fixSockAddr addr = addr
 
 -- disable buggy sloworis attack prevention code
 webAppSettings :: Settings
-
 webAppSettings = setTimeout halfhour defaultSettings
   where
 	halfhour = 30 * 60
