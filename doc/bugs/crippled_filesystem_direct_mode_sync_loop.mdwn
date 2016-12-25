@@ -1,0 +1,74 @@
+### Please describe the problem.
+Two direct mode repos both on crippled filesystem (NTFS), although no file is modified, each "git annex sync" command will generate a new commit on master branch, which makes "git log" grow fast.
+
+### What steps will reproduce the problem?
+Run the script below on NTFS filesystem
+
+### What version of git-annex are you using? On what operating system?
+I tried multiple combination:
+git version from 2.7.4 to 2.11.0;
+git-annex version from 5.20150812 to 6.20161211;
+OS includes ubuntu xenial&yakkety and Windows 10;
+As long as the script is run on NTFS filesystem it reproudces the problem.
+However, on non crippled file system the script works without problem.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+mkdir a
+cd a
+git init
+git annex init first
+git annex direct
+echo foo > 1.txt
+git annex add .
+git annex sync
+cd ..
+git clone a b
+cd b
+git annex init second
+git annex direct
+git annex sync
+cd ../a
+git remote add second ../b
+git annex sync
+echo bar > 2.txt
+git annex add 2.txt
+git annex sync
+cd ../b
+git annex sync
+cd ../a
+git annex sync
+cd ../b
+git annex sync
+cd ../a
+git annex sync
+cd ../b
+git annex sync
+cd ../a
+git annex sync
+cd ../b
+git annex sync
+cd ../a
+git annex sync
+cd ../b
+git annex sync
+cd ../a
+git annex sync
+cd ../b
+git annex sync
+cd ../a
+git annex sync
+cd ../b
+git annex sync
+git log | grep refs/heads/synced/master | wc
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I'm new to git-annex and immediately astonished by its unique strength. I fit the Archivist use case, and this could be the solution I wanted for so long. I'm planning to deploy it on 2 Windows boxes and several USB disks, all of them on NTFS. I learnt the idea that v6 repo is not yet good for Win/NTFS (double disk space), so I guess direct mode is the way to go? I have already got some test repos running and practicing, indeed this sync loop problem is the only remaining case I'm not confident with. Is it a bug or some safety measure feature? Am I good to go? Thanks and oh, Merry X'mas!
