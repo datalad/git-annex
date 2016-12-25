@@ -21,7 +21,11 @@ around while the webapp is running, etc.
 The [[`git annex webapp`|git-annex-webapp]] command launches a local web
 server which serves a graphical user interface and automatically manages
 git annex. It will attempt to guide you through the whole process and do
-everything for you. [[You do not even need to type the command|assistant/quickstart]]. This should be run on every machine that may produce file changes.  When you move files into or out of your repository folder, the changes should be recorded and automatically propagated to other connected machines.
+everything for you. [[You do not even need to type the command.
+|assistant/quickstart]] This should be run on every machine that may
+produce file changes.  When you move files into or out of your repository
+folder, git-annex should record the changes and automatically propagate
+them to other connected machines.
 
 # 2. [[git annex assistant|git-annex-assistant]] without the webapp
 
