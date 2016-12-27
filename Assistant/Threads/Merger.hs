@@ -10,9 +10,6 @@ module Assistant.Threads.Merger where
 import Assistant.Common
 import Assistant.TransferQueue
 import Assistant.BranchChange
-import Assistant.Sync
-import Assistant.DaemonStatus
-import Assistant.ScanRemotes
 import Utility.DirWatcher
 import Utility.DirWatcher.Types
 import qualified Annex.Branch
