@@ -20,8 +20,7 @@
     <p>
       $case pairingwith
         $of PairingWithSelf
-          Enter that code into the webapp of the device you want to #
-          pair with.
+          Enter that code into the device you want to pair with. #
         $of PairingWithFriend
           Tell that code to your friend. #
     <p>
@@ -33,3 +32,28 @@
             <div .col-sm-10 .col-sm-offset-2>
               <button .btn .btn-primary type=submit>
                 Finish pairing
+  <div .content-box>
+    <h3 .alert-heading>
+      ^{htmlIcon InfoIcon} Keep pairing codes safe
+    $case pairingwith
+      $of PairingWithSelf
+        <p>
+          Pairing codes can only be used a single time, but if someone #
+          saw the pairing codes before you use them, they could #
+          pair with your devices. So be careful with the pairing codes!
+      $of PairingWithFriend
+        <p>
+          Pairing codes can only be used a single time, but if someone #
+          overhears you exchanging them with your friend, they could #
+          pair with your repositories. #
+        <p>
+          Here are some suggestions for how to exchange the pairing #
+          code with your friend, with the safest ways first:
+          <ul>
+            <li>
+              In person.
+            <li>
+              In an encrypted message #
+              (gpg signed email, Off The Record (OTR) conversation, etc).
+            <li>
+              By a voice phone call.

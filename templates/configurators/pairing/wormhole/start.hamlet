@@ -5,7 +5,7 @@
         $of PairingWithSelf
           Preparing for pairing your devices
         $of PairingWithFriend
-          reparing for pairing with a friend
+          Preparing for pairing with a friend
     <p>
       Pairing will connect two git-annex repositories using #
       <a href="https://torproject.org/">Tor</a>, #

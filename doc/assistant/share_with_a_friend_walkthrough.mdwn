@@ -16,11 +16,15 @@ Start by opening up your git annex dashboard.
 
 `*click*`
 
-Now you will probably be prompted to enter a password, to configure Tor.
+[[!img enabletor.png alt="Enabling tor hidden service"]]
+
+You will probably be prompted to enter a password, to configure Tor.
 (Depending on how your system is configured, this may be the root password,
 or your user account's password.)
 
-Then, a pairing code will be generated. Tell it to your friend. Ask them
+[[!img wormholepairing.png alt="Pairing with a friend form"]]
+
+A pairing code will be generated. Tell it to your friend. Ask them
 for their pairing code, and enter it in the form.
 
 Once you've exchanged pairing codes, your repositories will be connected

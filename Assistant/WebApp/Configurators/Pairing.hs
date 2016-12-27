@@ -18,16 +18,17 @@ import Assistant.DaemonStatus
 import Assistant.Pairing.MakeRemote
 import Assistant.Pairing.Network
 import Assistant.Ssh
-import Assistant.Alert
 import Utility.Verifiable
 #endif
 import Utility.UserInfo
 import Utility.Tor
 import Assistant.WebApp.Pairing
+import Assistant.Alert
 import qualified Utility.MagicWormhole as Wormhole
 import Assistant.MakeRemote
 import Assistant.RemoteControl
 import Assistant.Sync
+import Assistant.WebApp.SideBar
 import Command.P2P (unusedPeerRemoteName, PairingResult(..))
 import P2P.Address
 import Git
@@ -57,7 +58,7 @@ startWormholePairR pairingwith = whenTorInstalled $ whenWormholeInstalled $
 
 getPrepareWormholePairR :: PairingWith -> Handler Html
 getPrepareWormholePairR pairingwith = do
-	enableTor
+	-- enableTor
 	myaddrs <- liftAnnex loadP2PAddresses
 	remotename <- liftAnnex unusedPeerRemoteName
 	h <- liftAssistant $
