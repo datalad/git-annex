@@ -78,7 +78,7 @@ mkCodeProducer :: IO CodeProducer
 mkCodeProducer = CodeProducer <$> newEmptyMVar
 
 waitCode :: CodeObserver -> IO Code
-waitCode (CodeObserver o) = takeMVar o
+waitCode (CodeObserver o) = readMVar o
 
 sendCode :: CodeProducer -> Code -> IO ()
 sendCode (CodeProducer p) = putMVar p
@@ -119,7 +119,7 @@ sendFile f (CodeObserver observer) ps = do
 -- read from the CodeProducer, and fed to wormhole on stdin.
 receiveFile :: FilePath -> CodeProducer -> WormHoleParams -> IO Bool
 receiveFile f (CodeProducer producer) ps = runWormHoleProcess p $ \hin _hout -> do
-	Code c <- takeMVar producer
+	Code c <- readMVar producer
 	hPutStrLn hin c
 	hFlush hin
 	return True
