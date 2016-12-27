@@ -26,6 +26,6 @@
         <p>
           This could take a few minutes, and you may be prompted for a #
           password in order to enable the Tor hidden service.
-	<p>
-	  If this is taking too long, check that you are connected to the #
-	  network, and that Tor is working.
+        <p>
+          If this is taking too long, check that you are connected to the #
+          network, and that Tor is working.
