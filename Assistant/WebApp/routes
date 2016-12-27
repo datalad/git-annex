@@ -62,8 +62,10 @@
 /config/repository/pair/local/running/#SecretReminder RunningLocalPairR GET
 /config/repository/pair/local/finish/#PairMsg FinishLocalPairR GET POST
 
-/config/repository/pair/tor/self/start StartTorPairSelfR GET POST
-/config/repository/pair/tor/friend/start StartTorPairFriendR GET POST
+/config/repository/pair/wormhole/start/self StartWormholePairSelfR GET
+/config/repository/pair/wormhole/start/friend StartWormholePairFriendR GET
+/config/repository/pair/wormhole/prepare/#PairingWith PrepareWormholePairR GET
+/config/repository/pair/wormhole/running/#WormholePairingId RunningWormholePairR GET POST
 
 /config/repository/enable/rsync/#UUID EnableRsyncR GET POST
 /config/repository/enable/gcrypt/#UUID EnableSshGCryptR GET POST

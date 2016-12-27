@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE TypeFamilies, QuasiQuotes, TemplateHaskell, OverloadedStrings, FlexibleContexts #-}
 {-# LANGUAGE CPP #-}
 
 module Assistant.WebApp.Configurators.Pairing where
@@ -14,18 +14,26 @@ import Assistant.Pairing
 import Assistant.WebApp.Common
 import Annex.UUID
 #ifdef WITH_PAIRING
-import Assistant.Pairing.Network
+import Assistant.DaemonStatus
 import Assistant.Pairing.MakeRemote
+import Assistant.Pairing.Network
 import Assistant.Ssh
 import Assistant.Alert
-import Assistant.DaemonStatus
 import Utility.Verifiable
 #endif
 import Utility.UserInfo
 import Utility.Tor
+import Assistant.WebApp.Pairing
 import qualified Utility.MagicWormhole as Wormhole
+import Assistant.MakeRemote
+import Assistant.RemoteControl
+import Assistant.Sync
+import Command.P2P (unusedPeerRemoteName, PairingResult(..))
+import P2P.Address
 import Git
+import Config.Files
 
+import qualified Data.Map as M
 import qualified Data.Text as T
 #ifdef WITH_PAIRING
 import qualified Data.Text.Encoding as T
@@ -34,39 +42,96 @@ import Data.Char
 import qualified Control.Exception as E
 import Control.Concurrent
 #endif
+import Control.Concurrent.STM hiding (check)
 
-data PairingWith = PairingWithSelf | PairingWithFriend
+getStartWormholePairFriendR :: Handler Html
+getStartWormholePairFriendR = startWormholePairR PairingWithFriend
 
-getStartTorPairFriendR :: Handler Html
-getStartTorPairFriendR = postStartTorPairR PairingWithFriend
+getStartWormholePairSelfR :: Handler Html
+getStartWormholePairSelfR = startWormholePairR PairingWithSelf
 
-getStartTorPairSelfR :: Handler Html
-getStartTorPairSelfR = postStartTorPairR PairingWithSelf
+startWormholePairR :: PairingWith -> Handler Html
+startWormholePairR pairingwith = whenTorInstalled $ whenWormholeInstalled $
+	pairPage $
+		$(widgetFile "configurators/pairing/wormhole/start")
 
-postStartTorPairFriendR :: Handler Html
-postStartTorPairFriendR = postStartTorPairR PairingWithFriend
+getPrepareWormholePairR :: PairingWith -> Handler Html
+getPrepareWormholePairR pairingwith = do
+	enableTor
+	myaddrs <- liftAnnex loadP2PAddresses
+	remotename <- liftAnnex unusedPeerRemoteName
+	h <- liftAssistant $
+		startWormholePairing pairingwith remotename myaddrs
+	i <- liftIO . addWormholePairingState h
+		=<< wormholePairingState <$> getYesod
+	redirect $ RunningWormholePairR i
 
-postStartTorPairSelfR :: Handler Html
-postStartTorPairSelfR = postStartTorPairR PairingWithSelf
+enableTor :: Handler ()
+enableTor = do
+	gitannex <- liftIO readProgramFile
+	(transcript, ok) <- liftIO $ processTranscript gitannex ["enable-tor"] Nothing
+	if ok
+		-- Reload remotedameon so it's serving the tor hidden
+		-- service.
+		then liftAssistant $ sendRemoteControl RELOAD
+		else giveup $ "Failed to enable tor\n\n" ++ transcript
 
-postStartTorPairR :: PairingWith -> Handler Html
-postStartTorPairR pairingwith = whenTorInstalled $ whenWormholeInstalled $
-	pairPage $ do
-		let Just ourcode = Wormhole.mkCode "11-bannana-bananna" -- XXX tmp
+getRunningWormholePairR :: WormholePairingId -> Handler Html
+getRunningWormholePairR = runningWormholePairR
+
+postRunningWormholePairR :: WormholePairingId -> Handler Html
+postRunningWormholePairR = runningWormholePairR
+
+runningWormholePairR :: WormholePairingId -> Handler Html
+runningWormholePairR i = go =<< getWormholePairingHandle i
+  where
+	go Nothing = redirect StartWormholePairFriendR
+	go (Just h) = pairPage $  withPairingWith h $ \pairingwith -> do
+		ourcode <- liftIO $ getOurWormholeCode h
+		let codeprompt = case pairingwith of
+			PairingWithFriend -> "Your friend's pairing code"
+			PairingWithSelf -> "The other device's pairing code"
 		((result, form), enctype) <- liftH $
 			runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $
-				areq wormholeCodeField (bfs codeprompt) Nothing
+				areq (checkwormholecode ourcode pairingwith textField) (bfs codeprompt) Nothing
 		case result of
-			FormSuccess v -> error "TODO"
-			_ -> showform form enctype ourcode
-  where
-	showform form enctype ourcode = $(widgetFile "configurators/pairing/tor/prompt")
-	codeprompt = case pairingwith of
-		PairingWithFriend -> "Your friend's pairing code"
-		PairingWithSelf -> "The other device's pairing code"
-	wormholeCodeField = checkBool (Wormhole.validCode . T.unpack)
-		("That does not look like a valid pairing code. Try again..." :: T.Text)
-		textField
+			FormSuccess t -> case Wormhole.toCode (T.unpack t) of
+				Nothing -> giveup invalidcode
+				Just theircode -> finish h theircode
+			_ -> showform form enctype ourcode pairingwith
+	
+	showform form enctype ourcode pairingwith =
+		$(widgetFile "configurators/pairing/wormhole/prompt")
+	
+	checkwormholecode ourcode pairingwith = check $ \t ->
+		case Wormhole.toCode (T.unpack t) of
+			Nothing -> Left (T.pack invalidcode)
+			Just theircode
+				| theircode == ourcode -> Left $
+					case pairingwith of
+						PairingWithSelf -> "Oops -- You entered this repository's pairing code. Enter the pairing code of the *other* repository."
+						PairingWithFriend -> "Oops -- You entered your pairing code. Enter your friend's pairing code."
+				| otherwise -> Right t
+
+	invalidcode = "That does not look like a valid pairing code. Try again..."
+
+	finish h theircode = do
+		void $ liftIO $ sendTheirWormholeCode h theircode
+		res <- liftAssistant $ finishWormholePairing h
+		case res of
+			SendFailed -> giveup "Failed sending data to pair."
+			ReceiveFailed -> giveup "Failed receiving data from pair."
+			LinkFailed e -> giveup $ "Failed linking to pair: " ++ e
+			PairSuccess -> withRemoteName h $ \remotename -> do
+				r <- liftAnnex $ addRemote (return remotename)
+				liftAssistant $ syncRemote r
+				liftAssistant $ sendRemoteControl RELOAD
+				redirect DashboardR
+
+getWormholePairingHandle :: WormholePairingId -> Handler (Maybe WormholePairingHandle)
+getWormholePairingHandle i = do
+	s <- wormholePairingState <$> getYesod
+	liftIO $ atomically $ M.lookup i <$> readTVar s
 
 whenTorInstalled :: Handler Html -> Handler Html
 whenTorInstalled a = ifM (liftIO torIsInstalled)

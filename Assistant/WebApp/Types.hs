@@ -27,6 +27,7 @@ import Utility.Gpg (KeyId)
 import Build.SysConfig (packageversion)
 import Types.ScheduledActivity
 import Assistant.WebApp.RepoId
+import Assistant.WebApp.Pairing
 import Types.Distribution
 
 import Yesod.Static
@@ -48,6 +49,7 @@ data WebApp = WebApp
 	, cannotRun :: Maybe String
 	, noAnnex :: Bool
 	, listenHost ::Maybe HostName
+	, wormholePairingState :: WormholePairingState
 	}
 
 mkYesodData "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
@@ -182,5 +184,13 @@ instance PathPiece RepoId where
 	fromPathPiece = readish . unpack
 
 instance PathPiece GitAnnexDistribution where
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
+
+instance PathPiece PairingWith where
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
+
+instance PathPiece WormholePairingId where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack

@@ -197,7 +197,8 @@ Extra-Source-Files:
   templates/configurators/enablewebdav.hamlet
   templates/configurators/pairing/local/inprogress.hamlet
   templates/configurators/pairing/local/prompt.hamlet
-  templates/configurators/pairing/tor/prompt.hamlet
+  templates/configurators/pairing/wormhole/prompt.hamlet
+  templates/configurators/pairing/wormhole/start.hamlet
   templates/configurators/pairing/disabled.hamlet
   templates/configurators/addglacier.hamlet
   templates/configurators/fsck.cassius
@@ -220,9 +221,9 @@ Extra-Source-Files:
   templates/configurators/addrepository/archive.hamlet
   templates/configurators/addrepository/cloud.hamlet
   templates/configurators/addrepository/connection.hamlet
-  templates/configurators/addrepository/torconnection.hamlet
   templates/configurators/addrepository/ssh.hamlet
   templates/configurators/addrepository/misc.hamlet
+  templates/configurators/addrepository/wormholepairing.hamlet
   templates/configurators/rsync.net/add.hamlet
   templates/configurators/rsync.net/encrypt.hamlet
   templates/configurators/gitlab.com/add.hamlet
@@ -642,6 +643,7 @@ Executable git-annex
     Assistant.WebApp.Notifications
     Assistant.WebApp.OtherRepos
     Assistant.WebApp.Page
+    Assistant.WebApp.Pairing
     Assistant.WebApp.Repair
     Assistant.WebApp.RepoId
     Assistant.WebApp.RepoList

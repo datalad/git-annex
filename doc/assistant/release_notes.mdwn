@@ -1,6 +1,10 @@
 ## version 6.20170101
 
-This release removes XMPP support. Instead, the new Tor support can be used.
+XMPP support has been removed from the assistant in this release.
+
+If your repositories used XMPP to keep in sync, that will no longer
+work, and you should enable some other remote to keep them in sync.
+A ssh server is one way, or use the new Tor pairing feature.
 
 ## version 5.20140421
 

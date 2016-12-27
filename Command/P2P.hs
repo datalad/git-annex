@@ -168,7 +168,7 @@ performPairing remotename addrs = do
 					putStrLn "Exchanging pairing data..."
 					return code
 				| otherwise -> do
-					putStrLn "Oops -- You entered this repository's pairing code. We need the pairing code of the *other* repository."
+					putStrLn "Oops -- You entered this repository's pairing code. Enter the pairing code of the *other* repository."
 					getcode ourcode
 			Nothing -> do
 				putStrLn "That does not look like a valiad pairing code. Try again..."
