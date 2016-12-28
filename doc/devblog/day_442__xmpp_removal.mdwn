@@ -1,0 +1,15 @@
+The webapp's wormhole pairing almost worked perfectly on the first test.
+Turned out the remotedaemon was not noticing that the tor hidden service
+got enabled. After fixing that, it worked perfectly!
+
+So, I've merged that feature, and removed XMPP support from the assistant
+at the same time. If all goes well, the autobuilds will be updated soon,
+and it'll be released in time for new year's.
+
+Anyone who's been using XMPP to keep repositories in sync will need to
+either switch to Tor, or could add a remote on a ssh server to sync by
+instead. See
+<http://git-annex.branchable.com/assistant/share_with_a_friend_walkthrough/>
+for the pointy-clicky way to do it, and
+<http://git-annex.branchable.com/tips/peer_to_peer_network_with_tor/> for
+the command-line way.
