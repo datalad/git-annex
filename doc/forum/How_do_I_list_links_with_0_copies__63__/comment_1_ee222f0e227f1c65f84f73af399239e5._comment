@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-12-28T00:15:34Z"
+ content="""
+	git annex find --not --copies 1
+
+This works because --copies 1 finds all files with 1 or more copies,
+and so inverting it with --not finds all files with fewer copies.
+"""]]
