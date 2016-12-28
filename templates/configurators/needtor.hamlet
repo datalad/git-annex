@@ -1,0 +1,11 @@
+<div .col-sm-9>
+  <div .content-box>
+    <h2>
+      Need Tor
+    <p>
+      You need to install #
+      <a href="https://torproject.org/">
+        Tor
+    <p>
+      <a .btn .btn-primary .btn-lg href="">
+        Retry

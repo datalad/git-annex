@@ -1,7 +1,13 @@
-git-annex (6.20161211) UNRELEASED; urgency=medium
+git-annex (6.20170101) UNRELEASED; urgency=medium
 
-  * p2p --pair makes it easy to pair repositories over P2P, using
+  * XMPP support has been removed from the assistant in this release.
+    If your repositories used XMPP to keep in sync, that will no longer
+    work, and you should enable some other remote to keep them in sync.
+    A ssh server is one way, or use the new Tor pairing feature.
+  * p2p --pair makes it easy to pair repositories, using
     Magic Wormhole codes to find the other repository.
+  * webapp: The "Share with a friend" and "Share with your other devices"
+    pages have been changed to pair repositories using Tor and Magic Wormhole.
   * metadata --batch: Fix bug when conflicting metadata changes were
     made in the same batch run.
   * Pass annex.web-options to wget and curl after other options, so that

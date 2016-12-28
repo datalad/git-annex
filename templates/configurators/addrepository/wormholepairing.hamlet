@@ -1,12 +1,12 @@
 <h3>
-  <a href="@{StartXMPPPairSelfR}">
+  <a href="@{StartWormholePairSelfR}">
     <span .glyphicon .glyphicon-plus-sign>
     \ Share with your other devices
 <p>
   Keep files in sync between your devices running git-annex.
 
 <h3>
-  <a href="@{StartXMPPPairFriendR}">
+  <a href="@{StartWormholePairFriendR}">
     <span .glyphicon .glyphicon-plus-sign>
     \ Share with a friend
 <p>

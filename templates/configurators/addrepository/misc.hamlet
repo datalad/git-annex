@@ -8,7 +8,7 @@
   <a href="http://en.wikipedia.org/wiki/Sneakernet">SneakerNet</a> #
   between computers. 
 
-^{makeXMPPConnection}
+^{makeWormholePairing}
 
 <h3>
   <a href="@{StartLocalPairR}">

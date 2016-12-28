@@ -13,7 +13,6 @@ flags:
     webapp: true
     magicmime: false
     dbus: false
-    xmpp: false
     android: false
     androidsplice: false
 packages:

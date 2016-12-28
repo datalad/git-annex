@@ -5,3 +5,5 @@ Currently XMPP fails if you use a google apps account. Since the domain provided
 Same goes for webdav support. If i have my own webdav server somewhere on the internet there is no way to set it up in the assistant.
 
 [[!tag /design/assistant]]
+
+> [[done]]; xmpp support has been removed --[[Joey]]

@@ -37,16 +37,8 @@ notCurrentRepo uuid a = do
 	go Nothing = error "Unknown UUID"
 	go (Just _) = a
 
-handleXMPPRemoval :: UUID -> Handler Html -> Handler Html
-handleXMPPRemoval uuid nonxmpp = do
-	remote <- fromMaybe (error "unknown remote")
-		<$> liftAnnex (Remote.remoteFromUUID uuid)
-	if Remote.isXMPPRemote remote
-		then deletionPage $ $(widgetFile "configurators/delete/xmpp")
-		else nonxmpp
-
 getDeleteRepositoryR :: UUID -> Handler Html
-getDeleteRepositoryR uuid = notCurrentRepo uuid $ handleXMPPRemoval uuid $ do
+getDeleteRepositoryR uuid = notCurrentRepo uuid $ do
 	deletionPage $ do
 		reponame <- liftAnnex $ Remote.prettyUUID uuid
 		$(widgetFile "configurators/delete/start")

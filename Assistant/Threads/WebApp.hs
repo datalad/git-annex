@@ -26,7 +26,6 @@ import Assistant.WebApp.Configurators.Pairing
 import Assistant.WebApp.Configurators.AWS
 import Assistant.WebApp.Configurators.IA
 import Assistant.WebApp.Configurators.WebDAV
-import Assistant.WebApp.Configurators.XMPP
 import Assistant.WebApp.Configurators.Preferences
 import Assistant.WebApp.Configurators.Unused
 import Assistant.WebApp.Configurators.Edit
@@ -37,6 +36,7 @@ import Assistant.WebApp.Documentation
 import Assistant.WebApp.Control
 import Assistant.WebApp.OtherRepos
 import Assistant.WebApp.Repair
+import Assistant.WebApp.Pairing
 import Assistant.Types.ThreadedMonad
 import Utility.WebApp
 import Utility.AuthToken
@@ -83,6 +83,7 @@ webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost
 		<*> pure cannotrun
 		<*> pure noannex
 		<*> pure listenhost'
+		<*> newWormholePairingState
 	setUrlRenderer urlrenderer $ yesodRender webapp (pack "")
 	app <- toWaiAppPlain webapp
 	app' <- ifM debugEnabled

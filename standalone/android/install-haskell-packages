@@ -111,10 +111,7 @@ EOF
 	patched DAV
 	patched yesod-static
 	patched dns
-	patched gnutls
 	patched unbounded-delays
-	patched gnuidn
-	patched network-protocol-xmpp
 	patched uuid
 
 	cd ..

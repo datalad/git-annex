@@ -1,0 +1,31 @@
+<div .col-sm-9>
+  <div .content-box>
+    <h2>
+      $case pairingwith
+        $of PairingWithSelf
+          Preparing for pairing your devices
+        $of PairingWithFriend
+          Preparing for pairing with a friend
+    <p>
+      Pairing will connect two git-annex repositories using #
+      <a href="https://torproject.org/">Tor</a>, #
+      allowing files to be shared between them.
+    <p>
+      First, a Tor hidden service needs to be set up on this computer.
+    <p>
+      <a .btn .btn-primary onclick="$('#setupmodal').modal('show');" href="@{PrepareWormholePairR pairingwith}">
+        <span .glyphicon .glyphicon-resize-small>
+        \ Let's get started #
+<div .modal .fade #setupmodal>
+  <div .modal-dialog>
+    <div .modal-content>
+      <div .modal-header>
+        <h3>
+          Enabling Tor hidden service ...
+      <div .modal-body>
+        <p>
+          This could take a few minutes, and you may be prompted for a #
+          password in order to enable the Tor hidden service.
+        <p>
+          If this is taking too long, check that you are connected to the #
+          network, and that Tor is working.

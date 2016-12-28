@@ -21,6 +21,10 @@ connect them together over Tor so they share their contents. Or, you and a
 friend want to connect your repositories together. Pairing is an easy way
 to accomplish this.
 
+(The instructions below use the command line. If you or your friend would
+rather avoid using the command line, follow the
+[[share_with_a_friend_walkthrough]].)
+
 In each git-annex repository, run these commands:
 
 	git annex enable-tor

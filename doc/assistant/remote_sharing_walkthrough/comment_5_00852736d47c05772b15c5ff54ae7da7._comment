@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawmkXtBdMgE1d9nCz2iBc4f85xh4izZ_auU"
- nickname="Ulrich"
- subject="Using a portable drive as another transfer device? – cool."
- date="2013-11-14T19:05:56Z"
- content="""
-Thanks - I was hoping that it is that easy. I'll try that as soon as I have a working version of the latest git-annex (trying to build with brew for Mac OS X 10.9, but without success so far). 
-"""]]
