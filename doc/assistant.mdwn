@@ -22,7 +22,7 @@ instructions.
 * Want to make two nearby computers share the same synchronised folder?  
   Follow the [[local_pairing_walkthrough]].
 * Want to share files with a friend? Follow the
-  [[share_with_a_friend_walkthrough]]].
+  [[share_with_a_friend_walkthrough]].
 * Want to archive data to a drive or the cloud?  
   Follow the [[archival_walkthrough]].
 
