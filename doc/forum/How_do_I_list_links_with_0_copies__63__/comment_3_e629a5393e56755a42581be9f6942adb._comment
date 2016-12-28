@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="ghen1"
+ avatar="http://cdn.libravatar.org/avatar/efd0e92b6198291138f0cd7aedbf86b6"
+ subject="comment 3"
+ date="2016-12-28T11:16:17Z"
+ content="""
+When I first read this:
+
+    git annex find --not --copies 1
+
+I expected it would also select files with *more* than 1 copy. Nothing wrong with it if it works; just seems semantically ambiguous to me.
+"""]]
