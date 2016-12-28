@@ -32,7 +32,7 @@
             <div .col-sm-10 .col-sm-offset-2>
               <button .btn .btn-primary type=submit>
                 Finish pairing
-  <div .content-box>
+  <div .alert .alert-info>
     <h3 .alert-heading>
       ^{htmlIcon InfoIcon} Keep pairing codes safe
     $case pairingwith
