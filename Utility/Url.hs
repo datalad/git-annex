@@ -110,6 +110,7 @@ checkBoth :: URLString -> Maybe Integer -> UrlOptions -> IO Bool
 checkBoth url expected_size uo = do
 	v <- check url expected_size uo
 	return (fst v && snd v)
+
 check :: URLString -> Maybe Integer -> UrlOptions -> IO (Bool, Bool)
 check url expected_size = go <$$> getUrlInfo url
   where
