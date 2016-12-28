@@ -15,6 +15,7 @@ import Utility.Path
 import Utility.FileSystemEncoding
 import Utility.Exception
 import Utility.PartialPrelude
+import Utility.Applicative
 #endif
 
 #ifdef mingw32_HOST_OS
