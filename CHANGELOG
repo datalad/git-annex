@@ -30,6 +30,7 @@ git-annex (6.20170101) UNRELEASED; urgency=medium
   * enable-tor: No longer needs to be run as root.
   * enable-tor: When run as a regular user, test a connection back to 
     the hidden service over tor.
+  * Support all common locations of the torrc file.
   * Always use filesystem encoding for all file and handle reads and
     writes.
   * Fix build with directory-1.3.
