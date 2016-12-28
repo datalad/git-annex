@@ -23,7 +23,8 @@ to accomplish this.
 
 (The instructions below use the command line. If you or your friend would
 rather avoid using the command line, follow the
-[[share_with_a_friend_walkthrough]].)
+[[webapp_walktrough|assistant/share_with_a_friend_walkthrough]]. It's fine
+for one person to use the command line and the other to use the webapp.)
 
 In each git-annex repository, run these commands:
 
