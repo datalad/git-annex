@@ -22,6 +22,7 @@ import Utility.Verifiable
 #endif
 import Utility.UserInfo
 import Utility.Tor
+import Utility.Su
 import Assistant.WebApp.Pairing
 import Assistant.Alert
 import qualified Utility.MagicWormhole as Wormhole
@@ -53,7 +54,8 @@ getStartWormholePairSelfR = startWormholePairR PairingWithSelf
 
 startWormholePairR :: PairingWith -> Handler Html
 startWormholePairR pairingwith = whenTorInstalled $ whenWormholeInstalled $
-	pairPage $
+	pairPage $ do
+		sucommand <- liftIO $ mkSuCommand "git-annex" [Param "enable-tor"]
 		$(widgetFile "configurators/pairing/wormhole/start")
 
 getPrepareWormholePairR :: PairingWith -> Handler Html

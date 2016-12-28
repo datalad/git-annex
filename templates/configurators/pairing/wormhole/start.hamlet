@@ -5,9 +5,9 @@
         $of PairingWithSelf
           Preparing for pairing your devices
         $of PairingWithFriend
-          Preparing for pairing with a friend
+          Preparing for sharing with a friend
     <p>
-      Pairing will connect two git-annex repositories using #
+      This will connect two git-annex repositories using #
       <a href="https://torproject.org/">Tor</a>, #
       allowing files to be shared between them.
     <p>
@@ -23,9 +23,13 @@
         <h3>
           Enabling Tor hidden service ...
       <div .modal-body>
+        $case describePasswordPrompt' sucommand
+          $of Nothing
+            #
+          $of (Just promptdesc)
+            <p>
+              #{promptdesc} in order to enable the Tor hidden service.
         <p>
-          This could take a few minutes, and you may be prompted for a #
-          password in order to enable the Tor hidden service.
-        <p>
-          If this is taking too long, check that you are connected to the #
+          This could take several minutes to finish. If it #
+          is taking too long, check that you are connected to the #
           network, and that Tor is working.

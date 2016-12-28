@@ -49,10 +49,12 @@ start os = do
 			Just userid -> go uuid userid
 		else do
 			showStart "enable-tor" ""
-			showLongNote "Need root access to enable tor..."
 			gitannex <- liftIO readProgramFile
 			let ps = [Param (cmdname cmd), Param (show curruserid)]
-			ifM (liftIO $ runAsRoot gitannex ps)
+			sucommand <- liftIO $ mkSuCommand gitannex ps
+			maybe noop showLongNote
+				(describePasswordPrompt' sucommand)
+			ifM (liftIO $ runSuCommand sucommand)
 				( next $ next checkHiddenService
 				, giveup $ unwords $
 					[ "Failed to run as root:" , gitannex ] ++ toCommand ps

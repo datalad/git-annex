@@ -12,18 +12,51 @@ import Utility.Env
 
 import System.Posix.Terminal
 
--- Runs a command as root, fairly portably.
+data WhosePassword
+	= RootPassword
+	| UserPassword
+	| SomePassword
+	-- ^ may be user or root; su program should indicate which
+	deriving (Show)
+
+data PasswordPrompt
+	= WillPromptPassword WhosePassword
+	| MayPromptPassword WhosePassword
+	| NoPromptPassword
+	deriving (Show)
+
+describePasswordPrompt :: PasswordPrompt -> Maybe String
+describePasswordPrompt (WillPromptPassword whose) = Just $
+	"You will be prompted for " ++ describeWhosePassword whose ++ " password"
+describePasswordPrompt (MayPromptPassword whose) = Just $
+	"You may be prompted for " ++ describeWhosePassword whose ++ " password"
+describePasswordPrompt NoPromptPassword = Nothing
+
+describeWhosePassword :: WhosePassword -> String
+describeWhosePassword RootPassword = "root's"
+describeWhosePassword UserPassword = "your"
+describeWhosePassword SomePassword = "a"
+
+data SuCommand = SuCommand PasswordPrompt String [CommandParam]
+	deriving (Show)
+
+describePasswordPrompt' :: Maybe SuCommand -> Maybe String
+describePasswordPrompt' (Just (SuCommand p _ _)) = describePasswordPrompt p
+describePasswordPrompt' Nothing = Nothing
+
+runSuCommand :: (Maybe SuCommand) -> IO Bool
+runSuCommand (Just (SuCommand _ cmd ps)) = boolSystem cmd ps
+runSuCommand Nothing = return False
+
+-- Generates a SuCommand that runs a command as root, fairly portably.
 --
 -- Does not use sudo commands if something else is available, because
 -- the user may not be in sudoers and we couldn't differentiate between
 -- that and the command failing. Although, some commands like gksu
 -- decide based on the system's configuration whether sudo should be used.
-runAsRoot :: String -> [CommandParam] -> IO Bool
-runAsRoot cmd ps = go =<< firstM (inPath . fst) =<< selectcmds
+mkSuCommand :: String -> [CommandParam] -> IO (Maybe SuCommand)
+mkSuCommand cmd ps = firstM (\(SuCommand _ p _) -> inPath p) =<< selectcmds
   where
-	go Nothing = return False
-	go (Just (cmd', ps')) = boolSystem cmd' ps'
-
 	selectcmds = ifM (inx <||> (not <$> atconsole))
 		( return (graphicalcmds ++ consolecmds)
 		, return consolecmds
@@ -34,20 +67,27 @@ runAsRoot cmd ps = go =<< firstM (inPath . fst) =<< selectcmds
 
 	-- These will only work when the user is logged into a desktop.
 	graphicalcmds =
-		[ ("gksu", [Param shellcmd])
-		, ("kdesu", [Param shellcmd])
+		[ SuCommand (MayPromptPassword SomePassword) "gksu"
+			[Param shellcmd]
+		, SuCommand (MayPromptPassword SomePassword) "kdesu"
+			[Param shellcmd]
 		-- Available in Debian's menu package; knows about lots of
 		-- ways to gain root.
-		, ("su-to-root", [Param "-X", Param "-c", Param shellcmd])
+		, SuCommand (MayPromptPassword SomePassword) "su-to-root"
+			[Param "-X", Param "-c", Param shellcmd]
 		-- OSX native way to run a command as root, prompts in GUI
-		, ("osascript", [Param "-e", Param ("do shell script \"" ++ shellcmd ++ "\" with administrator privileges")])
+		, SuCommand (WillPromptPassword RootPassword) "osascript"
+			[Param "-e", Param ("do shell script \"" ++ shellcmd ++ "\" with administrator privileges")]
 		]
 	
 	-- These will only work when run in a console.
 	consolecmds = 
-		[ ("su", [Param "-c", Param shellcmd])
-		, ("sudo", [Param cmd] ++ ps)
-		, ("su-to-root", [Param "-c", Param shellcmd])
+		[ SuCommand (WillPromptPassword RootPassword) "su"
+			[Param "-c", Param shellcmd]
+		, SuCommand (MayPromptPassword UserPassword) "sudo"
+			([Param cmd] ++ ps)
+		, SuCommand (MayPromptPassword SomePassword) "su-to-root"
+			[Param "-c", Param shellcmd]
 		]
 	
 	shellcmd = unwords $ map shellEscape (cmd:toCommand ps)
