@@ -34,14 +34,25 @@ import Control.Concurrent.STM.TBMQueue
 import Control.Concurrent.Async
 
 -- Run tor hidden service.
-server :: TransportHandle -> IO ()
-server th@(TransportHandle (LocalRepo r) _) = do
-	u <- liftAnnex th getUUID
-	uid <- getRealUserID
-	let ident = fromUUID u
-	go u =<< getHiddenServiceSocketFile torAppName uid ident
+server :: Server
+server ichan th@(TransportHandle (LocalRepo r) _) = go
   where
-	go u (Just sock) = do
+	go = checkstartservice >>= handlecontrol
+
+	checkstartservice = do
+		u <- liftAnnex th getUUID
+		uid <- getRealUserID
+		let ident = fromUUID u
+		msock <- getHiddenServiceSocketFile torAppName uid ident
+		case msock of
+			Nothing -> do
+				debugM "remotedaemon" "Tor hidden service not enabled"
+				return False
+			Just sock -> do
+				void $ async $ startservice sock u
+				return True
+	
+	startservice sock u = do
 		q <- newTBMQueueIO maxConnections
 		replicateM_ maxConnections $
 			forkIO $ forever $ serveClient th u r q
@@ -57,7 +68,18 @@ server th@(TransportHandle (LocalRepo r) _) = do
 			unless ok $ do
 				hClose conn
 				warningIO "dropped Tor connection, too busy"
-	go _ Nothing = debugM "remotedaemon" "Tor hidden service not enabled"
+	
+	handlecontrol servicerunning = do
+		msg <- atomically $ readTChan ichan
+		case msg of
+			-- On reload, the configuration may have changed to
+			-- enable the tor hidden service. If it was not
+			-- enabled before, start it,
+			RELOAD | not servicerunning -> go
+			-- We can ignore all other messages; no need
+			-- to restart the hidden service when the network
+			-- changes as tor takes care of all that.
+			_ -> handlecontrol servicerunning
 
 -- How many clients to serve at a time, maximum. This is to avoid DOS attacks.
 maxConnections :: Int
