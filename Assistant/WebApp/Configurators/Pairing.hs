@@ -58,7 +58,7 @@ startWormholePairR pairingwith = whenTorInstalled $ whenWormholeInstalled $
 
 getPrepareWormholePairR :: PairingWith -> Handler Html
 getPrepareWormholePairR pairingwith = do
-	-- enableTor
+	enableTor
 	myaddrs <- liftAnnex loadP2PAddresses
 	remotename <- liftAnnex unusedPeerRemoteName
 	h <- liftAssistant $
