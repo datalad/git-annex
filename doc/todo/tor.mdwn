@@ -20,3 +20,5 @@ Eventually:
 * friend-of-a-friend peer discovery to build more interconnected networks
   of nodes
 * Discovery of nodes on same LAN, and direct connection to them.
+* Make `git annex map` show a peer's remotes?  
+  Would it be surprising if peers can learn this information?
