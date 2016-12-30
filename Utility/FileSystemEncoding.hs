@@ -10,6 +10,7 @@
 
 module Utility.FileSystemEncoding (
 	useFileSystemEncoding,
+	fileEncoding,
 	withFilePath,
 	md5FilePath,
 	decodeBS,
@@ -62,6 +63,13 @@ useFileSystemEncoding = do
 	hSetEncoding stdout e
 	hSetEncoding stderr e
 	Encoding.setLocaleEncoding e	
+
+fileEncoding :: Handle -> IO ()
+#ifndef mingw32_HOST_OS
+fileEncoding h = hSetEncoding h =<< Encoding.getFileSystemEncoding
+#else
+fileEncoding h = hSetEncoding h Encoding.utf8
+#endif
 
 {- Marshal a Haskell FilePath into a NUL terminated C string using temporary
  - storage. The FilePath is encoded using the filesystem encoding,

@@ -69,7 +69,7 @@ openDb db tablename = do
 	worker <- async (workerThread (T.pack db) tablename jobs)
 	
 	-- work around https://github.com/yesodweb/persistent/issues/474
-	liftIO useFileSystemEncoding
+	liftIO $ fileEncoding stderr
 
 	return $ DbHandle worker jobs
 
