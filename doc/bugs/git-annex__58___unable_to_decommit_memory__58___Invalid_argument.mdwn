@@ -10,11 +10,11 @@ Not sure. I tried creating a small test repo, adding files, and syncing, but it 
 
 ### What version of git-annex are you using? On what operating system?
 
-Just updated to:
-
     git-annex version: 6.20161211+gitgc3ab3c6-1~ndall+1
 
 ... via the neurodebian repo. On Xubuntu 14.04 64x
+
+    uname -r: 3.13.0-106-generic
 
 ### Please provide any additional information below.
 
