@@ -1,0 +1,3 @@
+1. Timestamps in daemon.log would be useful.
+
+2. An easy way to get annex/assistant to periodically mail daemon.log (or even better, only the new additions to daemon.log) to the local user would be great. This would seem to me like a good use of git-annex-schedule, which at the moment only does fsck, or it could be an optional part of log rotation. With this, when running annex on a remote server, one could easily get periodic confirmations that everything's working out as it should, that fscks are not failing, etc.
