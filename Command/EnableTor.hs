@@ -12,6 +12,7 @@ module Command.EnableTor where
 import Command
 import qualified Annex
 import P2P.Address
+import P2P.Annex
 import Utility.Tor
 import Annex.UUID
 import Config.Files
@@ -105,10 +106,8 @@ checkHiddenService = bracket setup cleanup go
 	startlistener = do
 		r <- Annex.gitRepo
 		u <- getUUID
-		uid <- liftIO getRealUserID
-		let ident = fromUUID u
-		v <- liftIO $ getHiddenServiceSocketFile torAppName uid ident
-		case v of
+		msock <- torSocketFile
+		case msock of
 			Just sockfile -> ifM (liftIO $ haslistener sockfile)
 				( liftIO $ async $ return ()
 				, liftIO $ async $ runlistener sockfile u r

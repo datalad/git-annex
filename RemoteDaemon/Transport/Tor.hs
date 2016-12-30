@@ -13,7 +13,6 @@ import Annex.Concurrent
 import Annex.ChangedRefs
 import RemoteDaemon.Types
 import RemoteDaemon.Common
-import Utility.Tor
 import Utility.AuthToken
 import P2P.Protocol as P2P
 import P2P.IO
@@ -26,7 +25,6 @@ import Messages
 import Git
 import Git.Command
 
-import System.PosixCompat.User
 import Control.Concurrent
 import System.Log.Logger (debugM)
 import Control.Concurrent.STM
@@ -41,9 +39,7 @@ server ichan th@(TransportHandle (LocalRepo r) _) = go
 
 	checkstartservice = do
 		u <- liftAnnex th getUUID
-		uid <- getRealUserID
-		let ident = fromUUID u
-		msock <- getHiddenServiceSocketFile torAppName uid ident
+		msock <- liftAnnex th torSocketFile
 		case msock of
 			Nothing -> do
 				debugM "remotedaemon" "Tor hidden service not enabled"
