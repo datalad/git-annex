@@ -1,0 +1,27 @@
+### Please describe the problem.
+
+Received the following error upon syncing a large repo.
+
+    git-annex: unable to decommit memory: Invalid argument
+
+### What steps will reproduce the problem?
+
+Not sure. I tried creating a small test repo, adding files, and syncing, but it did not produce the error.
+
+### What version of git-annex are you using? On what operating system?
+
+Just updated to:
+
+    git-annex version: 6.20161211+gitgc3ab3c6-1~ndall+1
+
+... via the neurodebian repo. On Xubuntu 14.04 64x
+
+### Please provide any additional information below.
+
+My files appear to be okay, and otherwise the annex seems to be functioning normally.
+
+Nonetheless I'm hesitant to use it while this error occurs. Is safe to keep using my annex in spite of the error?
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I've been using git-annex for at least a year now. It's one of the greatest tools I've ever found, and is indispensable for some of my work. I can't recall any other problems I've had that weren't user-caused. So thank you!
