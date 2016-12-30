@@ -5,12 +5,16 @@
  - License: BSD-2-clause
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Utility.Su where
 
 import Common
 import Utility.Env
 
+#ifndef mingw32_HOST_OS
 import System.Posix.Terminal
+#endif
 
 data WhosePassword
 	= RootPassword
@@ -55,6 +59,7 @@ runSuCommand Nothing = return False
 -- that and the command failing. Although, some commands like gksu
 -- decide based on the system's configuration whether sudo should be used.
 mkSuCommand :: String -> [CommandParam] -> IO (Maybe SuCommand)
+#ifndef mingw32_HOST_OS
 mkSuCommand cmd ps = firstM (\(SuCommand _ p _) -> inPath p) =<< selectcmds
   where
 	selectcmds = ifM (inx <||> (not <$> atconsole))
@@ -91,3 +96,7 @@ mkSuCommand cmd ps = firstM (\(SuCommand _ p _) -> inPath p) =<< selectcmds
 		]
 	
 	shellcmd = unwords $ map shellEscape (cmd:toCommand ps)
+#else
+-- For windows, we assume the user has administrator access.
+mkSuCommand cmd ps = SuCommand NoPromptPassword cmd ps
+#endif
