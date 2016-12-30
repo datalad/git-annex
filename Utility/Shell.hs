@@ -50,7 +50,7 @@ findShellCommand f = do
 	defcmd
 #else
 	l <- catchDefaultIO Nothing $ withFile f ReadMode $
-		headMaybe . lines <$$> hGetContents h
+		headMaybe . lines <$$> hGetContents
 	case l of
 		Just ('#':'!':rest) -> case words rest of
 			[] -> defcmd
