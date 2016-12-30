@@ -163,6 +163,10 @@ runLocal runmode runner a = case a of
 torSocketFile :: Annex (Maybe FilePath)
 torSocketFile = do
 	u <- getUUID
-	uid <- liftIO getRealUserID
 	let ident = fromUUID u
+#ifndef mingw32_HOST_OS
+	uid <- liftIO getRealUserID
+#else
+	let uid = 0
+#endif
 	liftIO $ getHiddenServiceSocketFile torAppName uid ident
