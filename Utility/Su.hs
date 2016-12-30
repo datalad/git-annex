@@ -98,5 +98,5 @@ mkSuCommand cmd ps = firstM (\(SuCommand _ p _) -> inPath p) =<< selectcmds
 	shellcmd = unwords $ map shellEscape (cmd:toCommand ps)
 #else
 -- For windows, we assume the user has administrator access.
-mkSuCommand cmd ps = SuCommand NoPromptPassword cmd ps
+mkSuCommand cmd ps = return $ SuCommand NoPromptPassword cmd ps
 #endif
