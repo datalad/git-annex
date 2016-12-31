@@ -35,6 +35,8 @@ Seems like this would need Windows 10.
 * Deleting a git repository from inside the webapp fails "RemoveDirectory
   permision denied ... file is being used by another process"
 
+* Tor remotes are not supported yet. Should not be very hard to get it working.
+
 ## potential encoding problems
 
 [[bugs/Unicode_file_names_ignored_on_Windows]] is fixed, but some potential
