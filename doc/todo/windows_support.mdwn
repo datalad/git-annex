@@ -28,10 +28,6 @@ Seems like this would need Windows 10.
 * gcrypt is not ported to windows (and as a shell script, may need
   to be rewritten)
 
-* Incremental fsck sets the sticky bit to record when a file is fscked,
-  and this is not done on windows, so fsck doesn't behave incrementally
-  there.
-
 * Deleting a git repository from inside the webapp fails "RemoveDirectory
   permision denied ... file is being used by another process"
 
