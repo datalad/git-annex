@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://itorres.net/"
+ nickname="Ignacio Torres "
+ avatar="http://cdn.libravatar.org/avatar/525cc09b4eb4dc770fe20209f4a240268cad5b027135556bd27acbca9d0d3bc8"
+ subject="Issue appeared on Android 6.0 (SDK 23)"
+ date="2016-12-31T14:33:25Z"
+ content="""
+> On previous versions of Android, if your app requested the system to load a shared library with text relocations, the system displayed a warning but still allowed the library to be loaded. Beginning in this release, the system rejects this library if your app's target SDK version is 23 or higher. 
+
+Source: https://developer.android.com/about/versions/marshmallow/android-6.0-changes.html#behavior-runtime
+
+I experience the same issue on a CM14 (Android 7) Moto X
+"""]]
