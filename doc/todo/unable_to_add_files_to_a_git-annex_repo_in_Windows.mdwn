@@ -1,0 +1,13 @@
+I was trying to use the assistant, but when it didn't work I started troubleshooting. I wasn't able to get git-annex to work directly, so I'll start with it:
+
+    $ git annex add *jpg
+    add RnG.jpg
+    git-annex: .git\annex\objects\fc3\7ab\SHA256E-s63863--b26754195df2c07063401ab1dc8406a1f96c0a512724020b693e28bdbce9addf.jpg\: openTempFile: does not exist (No such file or directory)
+    failed
+    add Scan0005.jpg
+    git-annex: .git\annex\objects\3ae\9e3\SHA256E-s156803--617405c2e88c939a8cfa871a226c2fe04fe0b58b50667e4436250fcb7c59d09b.jpg\: openTempFile: does not exist (No such file or directory)
+    failed
+    (recording state in git...)
+    git-annex: add: 2 failed
+
+This is Windows 7. I've installed git 2.11 and git-annex 6.20161211-gc3ab3c6.
