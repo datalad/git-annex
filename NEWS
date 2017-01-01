@@ -1,4 +1,4 @@
-git-annex (6.20170101) unstable; urgency=low
+git-annex (6.20170101) unstable; urgency=medium
 
   XMPP support has been removed from the assistant in this release.
 
