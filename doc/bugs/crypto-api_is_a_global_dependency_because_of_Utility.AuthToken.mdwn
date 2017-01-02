@@ -1,0 +1,24 @@
+### Please describe the problem.
+
+Builds without Webapp and TestSuite fail at `Utility.AuthToken`.
+
+
+### What steps will reproduce the problem?
+
+Build git-annex with Webapp and TestSuite disabled.
+
+
+### What version of git-annex are you using? On what operating system?
+
+Version 6.20170101 on arch linux.
+
+
+### Please provide any additional information below.
+
+We need to make `crypto-api` into a global dependency. Here is a [patch](https://gist.github.com/aroig/100c2977b6df8a2109823b715647d5fb).
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Oh yes! I use it everyday to sync collections of binary files across computers and VM's! 
+
