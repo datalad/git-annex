@@ -1,0 +1,3 @@
+Is it possible to transfer list of remotes and their file availability information (which files are found on which remotes) from another repository?
+
+My use case would be to combine several repositories that have no copies of the actual files, but which do know of remotes that have them, so that the new composite repository would also know where to get each file.
