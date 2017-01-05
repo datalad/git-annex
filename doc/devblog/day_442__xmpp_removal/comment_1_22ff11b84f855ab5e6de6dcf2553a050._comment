@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="Apichat"
+ avatar="http://cdn.libravatar.org/avatar/af7b465d7cd067b9c5acd365bdef92ac"
+ subject="Maintain the XMPP function ?"
+ date="2017-01-05T14:00:34Z"
+ content="""
+Is it realy a good idea to remove now the XMPP function ? While XMPP is a good tool to manage social relations and is getting improve ? [As you say it is an easy way to share with friends](http://joeyh.name/blog/entry/p2p_dreams/)
+
+The lake of use of the XMPP function in Git-annex is may be due to the fact that Git-annex assistant and the XMPP feature are difficult to use on Windows - so 90% of social relations can't exist.
+
+Can't you a least maintain the XMPP function ?
+ 
+XMPP is getting improve a lot those years :
+
+  * Host services, finally we can easily use a host service up to date and with our own domain name :
+    * [[https://account.conversations.im/domain]]
+    * [[https://support-en.mailbox.org/knowledge-base/article/introduction-to-jabber]]
+    * [[https://gultsch.de/compliance_ranked.html]]
+
+  * Protocol Specifications 
+    * [The State of Mobile XMPP in 2016](https://gultsch.de/xmpp_2016.html)
+
+  * Client software :
+    * [[https://conversations.im]]
+    * [[https://jitsi.org]]
+    * [[https://conversejs.org]]
+    * [Tor Messenger](https://trac.torproject.org/projects/tor/wiki/doc/TorMessenger)
+
+  * Server software :
+    * [[https://prosody.im]]
+    * [[https://www.ejabberd.im]]
+    * [Mongoose IM platform](https://www.erlang-solutions.com/products/mongooseim.html)
+
+
+"""]]
