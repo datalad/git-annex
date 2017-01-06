@@ -1,3 +1,9 @@
+git-annex (6.20170101-1) unstable; urgency=medium
+
+  * Package 6.20170101-1
+
+ -- Richard Hartmann <richih@debian.org>  Fri, 06 Jan 2017 14:48:34 +0100
+
 git-annex (6.20170101) unstable; urgency=medium
 
   * XMPP support has been removed from the assistant in this release.
