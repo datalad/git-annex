@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://svario.it/gioele"
+ nickname="Gioele"
+ avatar="http://cdn.libravatar.org/avatar/af2f2ba0dafe4650011d20f2168d43cff773aba97f55ae5b252bb873f391c1e2"
+ subject="The `version` command reports 6.20161231-gc8eeb17da"
+ date="2017-01-03T11:13:32Z"
+ content="""
+If I run `git-annex version` I get `6.20161231-gc8eeb17da` instead of `6.20170101-something`. Not a big deal, but maybe somebody else may be confused by it.
+
+My `git-annex` binary comes from `git-annex-standalone-amd64.tar.gz` (SHA1 `4a82bb7d0276f387e72f8e09e0d2b1f35edb49bd`).
+"""]]

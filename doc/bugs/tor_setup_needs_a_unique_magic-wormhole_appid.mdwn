@@ -1,0 +1,24 @@
+### Please describe the problem.
+
+The new "tor onion server" setup function uses magic-wormhole to transfer the necessary keys and addresses (yay!). However it should really be using a distinct "app id". Magic-wormhole codes are scoped to a specific APPID, which means that someone using the normal CLI client (`wormhole send foo.jpg`) can get a wormhole code like "1-purple-kumquat", and someone doing a git-annex setup process can get a code like "1-green-mushroom", and they won't be competing with each other for the numeric channel-id.
+
+If magic-wormhole's file-transfer application got really popular, and there were thousands of simultaneous users, the file-transfer wormhole codes would grow to require three or four digits (e.g. "9134-purple-kumquat"), making them harder to type. But if git-annex uses a different APPID, then git-annex codes could continue to be short and easy, independent of contention for channel-ids on other applications.
+
+To tell magic-wormhole to use a different APPID, just do `wormhole --appid=$APPID send ...` or `wormhole --appid=$APPID receive ...`. APPIDs should be unique and scoped to an owner of some sort, so I'd recommend a DNS name or URL-shaped identifier, something like "git-annex.branchable.com/onion-setup". If you add a new distinct mode, one which doesn't interoperate with the current onion-setup mode, you can allocate a new APPID for that mode too (e.g. "git-annex.branchable.com/new-thing-setup").
+
+You'll have a compatibility hit when you land this: two applications using different APPIDs won't communicate, so e.g. git-annex before the patch won't do wormhole setups with git-annex after the patch.
+
+The --appid= feature was added in magic-wormhole 0.9.0, released 24-Dec-2016.
+
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+
+I haven't run git-annex's onion setup feature directly, but I'm reading through the source code from current git, cd8d905f3418b9c6a6c658a0c7256ae6f5066310, Utility/MagicWormhole.hs, and I don't see anything that adds an --appid argument. (I don't know Haskell at all, so I apologize if it's already doing --appid and I'm just not looking in the right place).
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+It looks pretty amazing! Looking forward to using it in a Dropbox-like synchronization context soon.
+
+
