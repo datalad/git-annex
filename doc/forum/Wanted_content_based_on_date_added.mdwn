@@ -1,0 +1,12 @@
+Hi,
+
+I was wondering whether it was possible to configure git annex in a way, that new content is held in a specific repository until it is considered old.
+
+I found that "git config annex.genmetadata true" creates year and month tags in the metadata. However, creating the wanted expression poses a problem. Afaik there is no way to access the current year/month in a wanted expression and no way to do arithmetic in a wanted expression. Furthermore, I do not know, when the assistant checks wanted expressions for matches? I assume it does so only when something changes in git or when the wanted expressions change but not in regular intervals?
+
+I guess I could whip up a cronjob that changes the wanted expression every month and do the calculations outside of git annex but this seems somehow wrong. 
+
+Is this a problem other users share or maybe have already solved?
+
+Cheers,
+Marek
