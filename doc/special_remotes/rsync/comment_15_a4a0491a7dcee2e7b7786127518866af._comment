@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 15"""
+ date="2016-12-13T16:43:42Z"
+ content="""
+@davidriod you can do things like this with special remotes, as long
+as the special remotes are not encrypted.
+
+I don't really recommend it. With such a shared special remote R and two
+disconnected git repos -- call them A and B, some confusing situations can
+occur. For example, the only copies of some files may be 
+on special remote R and git repo B. A knows about the copy in R, so 
+git-annex is satisfied there is one copy of the file. But now, B can drop
+the content from R, which is allowed as the content is in B. A is then left
+unable to recover the content of the files at all, since they have been
+removed from R.
+
+Better to connect the two repositories A and B, even if you do work in
+two separate branches. Then if a file ends up located only on B, A will be
+able to say where it is, and could even get it from B (if B was set up as a
+remote).
+"""]]

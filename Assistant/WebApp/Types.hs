@@ -18,7 +18,6 @@ module Assistant.WebApp.Types (
 import Assistant.Common
 import Assistant.Ssh
 import Assistant.Pairing
-import Assistant.Types.Buddies
 import Utility.NotificationBroadcaster
 import Utility.AuthToken
 import Utility.WebApp
@@ -28,6 +27,7 @@ import Utility.Gpg (KeyId)
 import Build.SysConfig (packageversion)
 import Types.ScheduledActivity
 import Assistant.WebApp.RepoId
+import Assistant.WebApp.Pairing
 import Types.Distribution
 
 import Yesod.Static
@@ -49,6 +49,7 @@ data WebApp = WebApp
 	, cannotRun :: Maybe String
 	, noAnnex :: Bool
 	, listenHost ::Maybe HostName
+	, wormholePairingState :: WormholePairingState
 	}
 
 mkYesodData "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
@@ -166,14 +167,6 @@ instance PathPiece UUID where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack
 
-instance PathPiece BuddyKey where
-	toPathPiece = pack . show
-	fromPathPiece = readish . unpack
-
-instance PathPiece PairKey where
-	toPathPiece = pack . show
-	fromPathPiece = readish . unpack
-
 instance PathPiece RepoSelector where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack
@@ -191,5 +184,13 @@ instance PathPiece RepoId where
 	fromPathPiece = readish . unpack
 
 instance PathPiece GitAnnexDistribution where
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
+
+instance PathPiece PairingWith where
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
+
+instance PathPiece WormholePairingId where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack

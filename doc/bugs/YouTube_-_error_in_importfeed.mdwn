@@ -1,0 +1,74 @@
+### Please describe the problem.
+When adding a YouTube channel via importfeed I get the error:
+
+```
+  warning: bad feed content; no enclosures to download
+```
+
+### What steps will reproduce the problem?
+1. `cd $(mktemp -d)`
+2. `git init && git annex init`
+3. `git annex importfeed https://www.youtube.com/feeds/videos.xml\?playlist_id\=PLoXkGkpREHNBY9KtkdqhBIfx-waIGSKet`
+4. Get sad.  :-(
+
+(URL [https://www.youtube.com/feeds/videos.xml?playlist_id=PLoXkGkpREHNBY9KtkdqhBIfx-waIGSKet](https://www.youtube.com/feeds/videos.xml?playlist_id=PLoXkGkpREHNBY9KtkdqhBIfx-waIGSKet) looks like a feed to Firefox)
+
+
+### What version of git-annex are you using? On what operating system?
+OSX (MacOS?) - installed via homebrew
+
+    git-annex version: 6.20161210
+    build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV FsEvents XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+
+Debian Jessie - installed via apt-get (ASIDE: why is the apt-get version sooooo old?)
+
+    git-annex version: 5.20141125
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA CryptoHash
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar hook external
+
+
+### Additional information
+
+Running with `--debug` (see below) seems to indicate that the feed downloads correctly, but it is the parsing that is failing.  I don't know what command is being run to parse the feed though.
+
+
+``` shell
+git annex importfeed --debug https://www.youtube.com/feeds/videos.xml\?playlist_id\=PLoXkGkpREHNBY9KtkdqhBIfx-waIGSKet
+```
+results in:
+
+``` shell
+(checking known urls...) [2016-12-19 12:39:36.387714] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2016-12-19 12:39:36.392367] process done ExitSuccess
+[2016-12-19 12:39:36.392496] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2016-12-19 12:39:36.396484] process done ExitSuccess
+[2016-12-19 12:39:36.406716] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--stage","-z","--","."]
+[2016-12-19 12:39:36.412674] process done ExitSuccess
+importfeed https://www.youtube.com/feeds/videos.xml?playlist_id=PLoXkGkpREHNBY9KtkdqhBIfx-waIGSKet
+[2016-12-19 12:39:36.413555] call: wget ["--clobber","-c","-O","/var/folders/l0/l60294_970b9fh46062znm0r0000gn/T/feed16807282475249","https://www.youtube.com/feeds/videos.xml?playlist_id=PLoXkGkpREHNBY9KtkdqhBIfx-waIGSKet","--user-agent","git-annex/6.20161210"]
+--2016-12-19 12:39:36--  https://www.youtube.com/feeds/videos.xml?playlist_id=PLoXkGkpREHNBY9KtkdqhBIfx-waIGSKet
+Resolving www.youtube.com... 216.58.199.78, 2404:6800:4006:806::200e
+Connecting to www.youtube.com|216.58.199.78|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/xml]
+Saving to: ‘/var/folders/l0/l60294_970b9fh46062znm0r0000gn/T/feed16807282475249’
+
+/var/folders/l0/l60294_970b9fh46062znm0r0000gn/T/f     [ <=>                                                                                                             ]  23.81K  --.-KB/s    in 0.02s
+
+2016-12-19 12:39:37 (1.22 MB/s) - ‘/var/folders/l0/l60294_970b9fh46062znm0r0000gn/T/feed16807282475249’ saved [24386]
+
+[2016-12-19 12:39:37.595869] process done ExitSuccess
+
+  warning: bad feed content; no enclosures to download
+ok
+```
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, for years.  I donated to fund the dev and proudly display my git-annex stickers!
+
+> This is now fixed in feed's git repository, and will be in the next
+> release of feed after the current 0.3.11.1 release. [[done]] --[[Joey]]

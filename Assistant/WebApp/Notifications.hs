@@ -13,7 +13,6 @@ import Assistant.Common
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.DaemonStatus
-import Assistant.Types.Buddies
 import Utility.NotificationBroadcaster
 import Utility.Yesod
 import Utility.AuthToken
@@ -60,9 +59,6 @@ getNotifierTransfersR = notifierUrl TransfersR getTransferBroadcaster
 getNotifierSideBarR :: Handler RepPlain
 getNotifierSideBarR = notifierUrl SideBarR getAlertBroadcaster
 
-getNotifierBuddyListR :: Handler RepPlain
-getNotifierBuddyListR = notifierUrl BuddyListR getBuddyListBroadcaster
-
 getNotifierRepoListR :: RepoSelector -> Handler RepPlain
 getNotifierRepoListR reposelector = notifierUrl route getRepoListBroadcaster
   where
@@ -76,9 +72,6 @@ getTransferBroadcaster = transferNotifier <$> getDaemonStatus
 
 getAlertBroadcaster :: Assistant NotificationBroadcaster
 getAlertBroadcaster = alertNotifier <$> getDaemonStatus
-
-getBuddyListBroadcaster :: Assistant NotificationBroadcaster
-getBuddyListBroadcaster =  getBuddyBroadcaster <$> getAssistant buddyList
 
 getRepoListBroadcaster :: Assistant NotificationBroadcaster
 getRepoListBroadcaster =  syncRemotesNotifier <$> getDaemonStatus

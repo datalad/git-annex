@@ -353,7 +353,7 @@ checkAvailable :: Bool -> Remote -> IO Bool
 checkAvailable assumenetworkavailable = 
 	maybe (return assumenetworkavailable) doesDirectoryExist . localpath
 
-{- Remotes using the XMPP transport have urls like xmpp::user@host -}
+{- Old remotes using the XMPP transport have urls like xmpp::user@host -}
 isXMPPRemote :: Remote -> Bool
 isXMPPRemote remote = Git.repoIsUrl r && "xmpp::" `isPrefixOf` Git.repoLocation r
   where

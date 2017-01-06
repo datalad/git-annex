@@ -25,7 +25,11 @@ newtype OnionAddress = OnionAddress String
 
 type OnionSocket = FilePath
 
+-- | A unique identifier for a hidden service.
 type UniqueIdent = String
+
+-- | Name of application that is providing a hidden service.
+type AppName = String
 
 connectHiddenService :: OnionAddress -> OnionPort -> IO Socket
 connectHiddenService (OnionAddress address) port = do
@@ -48,10 +52,10 @@ connectHiddenService (OnionAddress address) port = do
 -- 
 -- If there is already a hidden service for the specified unique
 -- identifier, returns its information without making any changes.
-addHiddenService :: UserID -> UniqueIdent -> IO (OnionAddress, OnionPort)
-addHiddenService uid ident = do
-	prepHiddenServiceSocketDir uid ident
-	ls <- lines <$> readFile torrc
+addHiddenService :: AppName -> UserID -> UniqueIdent -> IO (OnionAddress, OnionPort)
+addHiddenService appname uid ident = do
+	prepHiddenServiceSocketDir appname uid ident
+	ls <- lines <$> (readFile =<< findTorrc)
 	let portssocks = mapMaybe (parseportsock . separate isSpace) ls
 	case filter (\(_, s) -> s == sockfile) portssocks of
 		((p, _s):_) -> waithiddenservice 1 p
@@ -59,10 +63,11 @@ addHiddenService uid ident = do
 			highports <- R.getStdRandom mkhighports
 			let newport = Prelude.head $
 				filter (`notElem` map fst portssocks) highports
+			torrc <- findTorrc
 			writeFile torrc $ unlines $
 				ls ++
 				[ ""
-				, "HiddenServiceDir " ++ hiddenServiceDir uid ident
+				, "HiddenServiceDir " ++ hiddenServiceDir appname uid ident
 				, "HiddenServicePort " ++ show newport ++ 
 					" unix:" ++ sockfile
 				]
@@ -70,7 +75,7 @@ addHiddenService uid ident = do
 			-- service and generate the hostname file for it.
 			reloaded <- anyM (uncurry boolSystem)
 				[ ("systemctl", [Param "reload", Param "tor"])
-				, ("sefvice", [Param "tor", Param "reload"])
+				, ("service", [Param "tor", Param "reload"])
 				]
 			unless reloaded $
 				giveup "failed to reload tor, perhaps the tor service is not running"
@@ -81,7 +86,7 @@ addHiddenService uid ident = do
 		return (p, drop 1 (dropWhile (/= ':') l))
 	parseportsock _ = Nothing
 	
-	sockfile = hiddenServiceSocketFile uid ident
+	sockfile = hiddenServiceSocketFile appname uid ident
 
 	-- An infinite random list of high ports.
 	mkhighports g = 
@@ -91,7 +96,7 @@ addHiddenService uid ident = do
 	waithiddenservice :: Int -> OnionPort -> IO (OnionAddress, OnionPort)
 	waithiddenservice 0 _ = giveup "tor failed to create hidden service, perhaps the tor service is not running"
 	waithiddenservice n p = do
-		v <- tryIO $ readFile $ hiddenServiceHostnameFile uid ident
+		v <- tryIO $ readFile $ hiddenServiceHostnameFile appname uid ident
 		case v of
 			Right s | ".onion\n" `isSuffixOf` s ->
 				return (OnionAddress (takeWhile (/= '\n') s), p)
@@ -101,44 +106,72 @@ addHiddenService uid ident = do
 
 -- | A hidden service directory to use.
 --
--- The "hs" is used in the name to prevent too long a path name,
--- which could present problems for socketFile.
-hiddenServiceDir :: UserID -> UniqueIdent -> FilePath
-hiddenServiceDir uid ident = libDir </> "hs_" ++ show uid ++ "_" ++ ident
+-- Has to be inside the torLibDir so tor can create it.
+--
+-- Has to end with "uid_ident" so getHiddenServiceSocketFile can find it.
+hiddenServiceDir :: AppName -> UserID -> UniqueIdent -> FilePath
+hiddenServiceDir appname uid ident = torLibDir </> appname ++ "_" ++ show uid ++ "_" ++ ident
 
-hiddenServiceHostnameFile :: UserID -> UniqueIdent -> FilePath
-hiddenServiceHostnameFile uid ident = hiddenServiceDir uid ident </> "hostname"
+hiddenServiceHostnameFile :: AppName -> UserID -> UniqueIdent -> FilePath
+hiddenServiceHostnameFile appname uid ident = hiddenServiceDir appname uid ident </> "hostname"
 
 -- | Location of the socket for a hidden service.
 --
 -- This has to be a location that tor can read from, and that the user
--- can write to. Tor is often prevented by apparmor from reading
--- from many locations. Putting it in /etc is a FHS violation, but it's the
--- simplest and most robust choice until http://bugs.debian.org/846275 is
--- dealt with.
+-- can write to. Since torLibDir is locked down, it can't go in there.
 --
 -- Note that some unix systems limit socket paths to 92 bytes long.
 -- That should not be a problem if the UniqueIdent is around the length of
--- a UUID.
-hiddenServiceSocketFile :: UserID -> UniqueIdent -> FilePath
-hiddenServiceSocketFile uid ident = etcDir </> "hidden_services" </> show uid ++ "_" ++ ident </> "s"
+-- a UUID, and the AppName is short.
+hiddenServiceSocketFile :: AppName -> UserID -> UniqueIdent -> FilePath
+hiddenServiceSocketFile appname uid ident = varLibDir </> appname </> show uid ++ "_" ++ ident </> "s"
+
+-- | Parse torrc, to get the socket file used for a hidden service with
+-- the specified UniqueIdent.
+getHiddenServiceSocketFile :: AppName -> UserID -> UniqueIdent -> IO (Maybe FilePath)
+getHiddenServiceSocketFile _appname uid ident = 
+	parse . map words . lines <$> catchDefaultIO "" (readFile =<< findTorrc)
+  where
+	parse [] = Nothing
+	parse (("HiddenServiceDir":hsdir:[]):("HiddenServicePort":_hsport:hsaddr:[]):rest)
+		| "unix:" `isPrefixOf` hsaddr && hasident hsdir =
+			Just (drop (length "unix:") hsaddr)
+		| otherwise = parse rest
+	parse (_:rest) = parse rest
+
+	-- Don't look for AppName in the hsdir, because it didn't used to
+	-- be included.
+	hasident hsdir = (show uid ++ "_" ++ ident) `isSuffixOf` takeFileName hsdir
 
 -- | Sets up the directory for the socketFile, with appropriate
 -- permissions. Must run as root.
-prepHiddenServiceSocketDir :: UserID -> UniqueIdent -> IO ()
-prepHiddenServiceSocketDir uid ident = do
+prepHiddenServiceSocketDir :: AppName -> UserID -> UniqueIdent -> IO ()
+prepHiddenServiceSocketDir appname uid ident = do
 	createDirectoryIfMissing True d
 	setOwnerAndGroup d uid (-1)
 	modifyFileMode d $
 		addModes [ownerReadMode, ownerExecuteMode, ownerWriteMode]
   where
-	d = takeDirectory $ hiddenServiceSocketFile uid ident
+	d = takeDirectory $ hiddenServiceSocketFile appname uid ident
 
-torrc :: FilePath
-torrc = "/etc/tor/torrc"
+-- | Finds the system's torrc file, in any of the typical locations of it.
+-- Returns the first found. If there is no system torrc file, defaults to
+-- /etc/tor/torrc.
+findTorrc :: IO FilePath
+findTorrc = fromMaybe "/etc/tor/torrc" <$> firstM doesFileExist
+	-- Debian
+	[ "/etc/tor/torrc"
+	-- Some systems put it here instead.
+	, "/etc/torrc"
+	-- Default when installed from source
+	, "/usr/local/etc/tor/torrc" 
+	]
 
-libDir :: FilePath
-libDir = "/var/lib/tor"
+torLibDir :: FilePath
+torLibDir = "/var/lib/tor"
 
-etcDir :: FilePath
-etcDir = "/etc/tor"
+varLibDir :: FilePath
+varLibDir = "/var/lib"
+
+torIsInstalled :: IO Bool
+torIsInstalled = inPath "tor"

@@ -80,3 +80,5 @@ fatal: The remote end hung up unexpectedly
 [2014-02-13 13:18:25 CET] XMPPClient: to client: d6/tigase-14134
 
 """]]
+
+> [[done]]; xmpp support has been removed --[[Joey]]

@@ -1,0 +1,30 @@
+### Please describe the problem.
+
+The OpenSSH client parses configuration in a "first match wins" manner, and this also applies to `IgnoreUnknown`. This means that when git-annex's `Include ~/.ssh/config` is processed, any user-specified `IgnoreUnknown` setting in the global configuration will be ignored because it has already been set. As a result, every time git-annex runs ssh, it immediately exits with an error:
+
+[[!format text """
+drop vol3 somefile.mkv (locking vol5...) (lockcontent failed) (checking vol5...)
+/home/grawity/.ssh/config: line 217: Bad configuration option: gssapikeyexchange
+/home/grawity/.ssh/config: terminating, 1 bad configuration options
+failed
+"""]]
+
+To be fair, this might be an OpenSSH bug (IgnoreUnknown ought to be merged), but it seems git-annex is triggering it unnecessarily.
+
+### What steps will reproduce the problem?
+
+1. In `~/.ssh/config`, have some unrecognized options (e.g. `GSSAPIKeyExchange`) and a corresponding `IgnoreUnknown`.
+
+2. Try to use a git-annex feature which directly invokes ssh, e.g. get or drop.
+
+### What version of git-annex are you using? On what operating system?
+
+6.20161210 on Arch, but I think this was introduced in a 201611* release.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, it's been taking care of my archives for nearly a year.
+
+> How annoying, ssh seems to make it impossible to set this in a way that
+> doesn't break some configurations. Oh well, gave up on setting it
+> and removed the code to do so. [[done]] --[[Joey]]

@@ -126,6 +126,6 @@ cleanup file oldkey newkey = do
 			Database.Keys.removeAssociatedFile oldkey 
 				=<< inRepo (toTopFilePath file)
 		)
-
-	logStatus newkey InfoPresent
+	whenM (inAnnex newkey) $
+		logStatus newkey InfoPresent
 	return True

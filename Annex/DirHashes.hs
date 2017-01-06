@@ -26,6 +26,7 @@ import Common
 import Types.Key
 import Types.GitConfig
 import Types.Difference
+import Utility.FileSystemEncoding
 
 type Hasher = Key -> FilePath
 

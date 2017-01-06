@@ -183,7 +183,6 @@ setupConsole = do
 		<$> streamHandler stderr DEBUG
 		<*> pure preciseLogFormatter
 	updateGlobalLogger rootLoggerName (setLevel NOTICE . setHandlers [s])
-	setConsoleEncoding
 	{- Force output to be line buffered. This is normally the case when
 	 - it's connected to a terminal, but may not be when redirected to
 	 - a file or a pipe. -}

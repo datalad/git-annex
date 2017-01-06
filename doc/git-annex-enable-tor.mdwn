@@ -4,14 +4,18 @@ git-annex enable-tor - enable tor hidden service
 
 # SYNOPSIS
 
+git annex enable-tor
+
 sudo git annex enable-tor $(id -u)
 
 # DESCRIPTION
 
 This command enables a tor hidden service for git-annex.
 
-It has to be run by root, since it modifies `/etc/tor/torrc`.
-Pass it your user id number, as output by `id -u`
+It modifies `/etc/tor/torrc` to register the hidden service. If run as a
+normal user, it will try to use sudo/su/etc to get root access to modify
+that file. If you run it as root, pass it your non-root user id number,
+as output by `id -u`
 
 After this command is run, `git annex remotedaemon` can be run to serve the
 tor hidden service, and then `git-annex p2p --gen-address` can be run to

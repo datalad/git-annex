@@ -1,69 +1,77 @@
 git-annex has recently gotten support for running as a
 [Tor](https://torproject.org/) hidden service. This is a nice secure
-and easy to use way to connect repositories between peers in different
-locations, without needing any central server.
+and easy to use way to connect repositories in different
+locations. No account on a central server is needed; it's peer-to-peer.
 
-## setting up the first peer
+## dependencies
 
-First, you need to get Tor installed and running. See
+To use this, you need to get Tor installed and running. See
 [their website](https://torproject.org/), or try a command like:
 
 	sudo apt-get install tor
 
-To make git-annex use Tor, run these commands in your git-annex repository:
+You also need to install [Magic Wormhole](https://github.com/warner/magic-wormhole).
 
-	sudo git annex enable-tor $(id -u)
-	git annex remotedaemon
-	git annex p2p --gen-addresses
+	sudo apt-get install magic-wormhole
 
-The p2p command will output a long address, such as:
+## pairing two repositories
 
-	tor-annex::eeaytkuhaupbarfi.onion:4412:7f53c5b65b8957ef626fd461ceaae8056e3dbc459ae715e4
+You have two git-annex repositories on different computers, and want to
+connect them together over Tor so they share their contents. Or, you and a
+friend want to connect your repositories together. Pairing is an easy way
+to accomplish this.
 
-At this point, git-annex is running as a tor hidden service, but
-it will only talk to peers who know that address.
+(The instructions below use the command line. If you or your friend would
+rather avoid using the command line, follow the
+[[webapp_walktrough|assistant/share_with_a_friend_walkthrough]]. It's fine
+for one person to use the command line and the other to use the webapp.)
 
-## adding additional peers
+In each git-annex repository, run these commands:
 
-To add a peer, get tor installed and running on it.
-
-	sudo apt-get install tor
-
-You need a git-annex repository on the new peer. It's fine to start
-with a new empty repository:
-
-	git init annex
-	cd annex
-	git annex init
-
-And make git-annex use Tor, by running these commands in the git-annex
-repository:
-
-	sudo git annex enable-tor $(id -u)
+	git annex enable-tor
 	git annex remotedaemon
 
-Now, tell the new peer about the address of the first peer.
-This will make a git remote named "peer1", which connects,
-through Tor, to the repository on the other peer.
+The enable-tor command may prompt for the root password, since it
+configures Tor. Now git-annex is running as a Tor hidden service, but 
+it will only talk to peers after pairing with them.
 
-	git annex p2p --link peer1
+In both repositories, run this command:
 
-That command will prompt for an address; paste in the address that was
-generated on the first peer, and then press Enter.
+	git annex p2p --pair
 
-Now you can run any commands you normally would to sync with the
-peer1 remote:
+This will print out a pairing code, like "11-incredible-tumeric",
+and prompt for you to enter the other repository's pairing code.
 
-	git annex sync --content peer1
+Once the pairing codes are exchanged, the two repositories will be securely
+connected to one-another via Tor. Each will have a git remote, with a name
+like "peer1", which connects to the other repository.
 
-You can also generate an address for this new peer, by running `git annex
-p2p --gen-addresses`, and link other peers to that address using `git annex
-p2p --link`. It's often useful to link peers up in both directions,
-so peer1 is a remote of peer2 and peer2 is a remote of peer1.
+Then, you can run commands like `git annex sync peer1 --content` to sync
+with the paired repository.
 
-Any number of peers can be connected this way, within reason.
+Pairing connects just two repositories, but you can repeat the process to
+pair with as many other repositories as you like, in order to build up
+larger networks of repositories.
 
-## starting git-annex remotedaemon
+## how to exchange pairing codes
+
+When pairing with a friend's repository, you have to exchange
+pairing codes. How to do this securely?
+
+The pairing codes can only be used once, so it's ok to exchange them in
+a way that someone else can access later. However, if someone can overhear
+your exchange of codes in real time, they could trick you into pairing
+with them.
+
+Here are some suggestions for how to exchange the codes,
+with the most secure ways first:
+
+* In person.
+* In an encrypted message (gpg signed email, Off The Record (OTR)
+  conversation, etc).
+* By a voice phone call.
+
+## starting git-annex remotedaemon on boot
 
 Notice the `git annex remotedaemon` being run in the above examples.
 That command runs the Tor hidden service so that other peers
@@ -72,7 +80,7 @@ can connect to your repository over Tor.
 So, you may want to arrange for the remotedaemon to be started on boot.
 You can do that with a simple cron job:
 
-	@reboot cd myannexrepo && git annex remotedaemon
+	@reboot cd ~/myannexrepo && git annex remotedaemon
 
 If you use the git-annex assistant, and have it auto-starting on boot, it
 will take care of starting the remotedaemon for you.
@@ -84,9 +92,9 @@ bandwidth to go around. So, distributing large quantities (gigabytes)
 of data over Tor may be slow, and should probably be avoided.
 
 One way to avoid sending much data over tor is to set up an encrypted
-[[special_remote|special_remotes]]. git-annex knows that Tor is rather
-expensive to use, so if a file is available on a special remote as well as
-over Tor, it will download it from the special remote.
+[[special_remote|special_remotes]] someplace. git-annex knows that Tor is
+rather expensive to use, so if a file is available on a special remote as
+well as over Tor, it will download it from the special remote.
 
 You can contribute to the Tor network by
 [running a Tor relay or bridge](https://www.torproject.org/getinvolved/relays.html.en).
@@ -114,6 +122,9 @@ combine the onion address with the authentication data.
 When you run `git annex peer --link`, it sets up a git remote using
 the onion address, and it stashes the authentication data away in a file in
 `.git/annex/creds/`
+
+When you pair repositories, these addresses are exchanged using 
+[Magic Wormhole](https://github.com/warner/magic-wormhole).
 
 ## security
 
@@ -144,3 +155,14 @@ to consider:
 
 * An attacker who can connect to the git-annex Tor hidden service, even
   without authenticating, can try to perform denial of service attacks.
+
+* Magic wormhole is pretty secure, but the code phrase could be guessed
+  (unlikely) or intercepted. An attacker gets just one chance to try to enter
+  the correct code phrase, before pairing finishes. If the attacker
+  successfully guesses/intercepts both code phrases, they can MITM the
+  pairing process.
+
+  If you don't want to use magic wormhole, you can instead manually generate
+  addresses with `git annex p2p --gen-addresses` and send them over an
+  authenticated, encrypted channel (such as OTR) to a friend to add with
+  `git annex p2p --link`. This may be more secure, if you get it right.

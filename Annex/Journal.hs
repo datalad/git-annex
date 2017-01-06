@@ -37,7 +37,6 @@ setJournalFile _jl file content = do
 	let tmpfile = tmp </> takeFileName jfile
 	liftIO $ do
 		withFile tmpfile WriteMode $ \h -> do
-			fileEncoding h
 #ifdef mingw32_HOST_OS
 			hSetNewlineMode h noNewlineTranslation
 #endif
@@ -53,7 +52,7 @@ getJournalFile _jl = getJournalFileStale
  - changes. -}
 getJournalFileStale :: FilePath -> Annex (Maybe String)
 getJournalFileStale file = inRepo $ \g -> catchMaybeIO $
-	readFileStrictAnyEncoding $ journalFile file g
+	readFileStrict $ journalFile file g
 
 {- List of files that have updated content in the journal. -}
 getJournalledFiles :: JournalLocked -> Annex [FilePath]

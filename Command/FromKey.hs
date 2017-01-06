@@ -45,7 +45,7 @@ startMass = do
 	next massAdd
 
 massAdd :: CommandPerform
-massAdd = go True =<< map (separate (== ' ')) . lines <$> liftIO getContents
+massAdd = go True =<< map (separate (== ' ')) <$> batchLines
   where
 	go status [] = next $ return status
 	go status ((keyname,f):rest) | not (null keyname) && not (null f) = do

@@ -47,10 +47,10 @@ start' s = do
 	rawMode to
 	return $ CoProcessState pid to from s
   where
-	rawMode h = do
-		fileEncoding h
 #ifdef mingw32_HOST_OS
-		hSetNewlineMode h noNewlineTranslation
+	rawMode h = hSetNewlineMode h noNewlineTranslation
+#else
+	rawMode _ = return ()
 #endif
 
 stop :: CoProcessHandle -> IO ()

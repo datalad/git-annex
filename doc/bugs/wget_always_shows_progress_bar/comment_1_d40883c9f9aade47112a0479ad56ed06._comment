@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-12-13T15:49:20Z"
+ content="""
+Since 2014, git-annex has used wget -q --show-progress to get a
+progress bar without the several other lines of output it would normally
+display. Whether a given git-annex build does this depends on what
+version of wget it saw at configure time.
+
+Running git-annex with --quiet will disable the wget progress bar (and
+other git-annex output). This seems like the thing to do if you're running
+git-annex concurrently. (Of course, git-annex also has its own built-in
+concurrency with -J which can display multiple download progress bars in a
+nice way.)
+
+Still, might as well make the web-options come after the default options so
+they can be overridden. Doing so.
+"""]]

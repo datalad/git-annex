@@ -1,4 +1,9 @@
-A walkthrough of the basic features of git-annex.
+A walkthrough of some of the basic features of git-annex, using the command
+line. If you don't want to use the command line, see [[assistant/quickstart]]
+instead.
+
+What follows is only one possible [[workflow]] for using git-annex,
+but following along will teach you the basic concepts from the ground up.
 
 [[!toc]]
 

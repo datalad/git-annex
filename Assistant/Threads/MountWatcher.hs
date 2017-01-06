@@ -146,7 +146,7 @@ handleMount urlrenderer dir = do
 	debug ["detected mount of", dir]
 	rs <- filter (Git.repoIsLocal . Remote.repo) <$> remotesUnder dir
 	mapM_ (fsckNudge urlrenderer . Just) rs
-	reconnectRemotes True rs
+	reconnectRemotes rs
 
 {- Finds remotes located underneath the mount point.
  -

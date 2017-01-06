@@ -384,9 +384,6 @@ startExternal external = do
 		p <- propgit g basep
 		(Just hin, Just hout, Just herr, ph) <- 
 			createProcess p `catchIO` runerr
-		fileEncoding hin
-		fileEncoding hout
-		fileEncoding herr
 		stderrelay <- async $ errrelayer herr
 		checkearlytermination =<< getProcessExitCode ph
 		cv <- newTVarIO $ externalDefaultConfig external

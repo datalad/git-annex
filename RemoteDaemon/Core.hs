@@ -74,12 +74,13 @@ runController :: TChan Consumed -> TChan Emitted -> IO ()
 runController ichan ochan = do
 	h <- genTransportHandle
 	m <- genRemoteMap h ochan
-	startrunning m
-	mapM_ (\s -> async (s h)) remoteServers
-	go h False m
+	starttransports m
+	serverchans <- mapM (startserver h) remoteServers
+	go h False m serverchans
   where
-	go h paused m = do
+	go h paused m serverchans = do
 		cmd <- atomically $ readTChan ichan
+		broadcast cmd serverchans
 		case cmd of
 			RELOAD -> do
 				h' <- updateTransportHandle h
@@ -87,36 +88,42 @@ runController ichan ochan = do
 				let common = M.intersection m m'
 				let new = M.difference m' m
 				let old = M.difference m m'
-				broadcast STOP old
+				broadcast STOP (mchans old)
 				unless paused $
-					startrunning new
-				go h' paused (M.union common new)
+					starttransports new
+				go h' paused (M.union common new) serverchans
 			LOSTNET -> do
 				-- force close all cached ssh connections
 				-- (done here so that if there are multiple
 				-- ssh remotes, it's only done once)
 				liftAnnex h forceSshCleanup
-				broadcast LOSTNET m
-				go h True m
+				broadcast LOSTNET transportchans
+				go h True m serverchans
 			PAUSE -> do
-				broadcast STOP m
-				go h True m
+				broadcast STOP transportchans
+				go h True m serverchans
 			RESUME -> do
 				when paused $
-					startrunning m
-				go h False m
+					starttransports m
+				go h False m serverchans
 			STOP -> exitSuccess
 			-- All remaining messages are sent to
 			-- all Transports.
 			msg -> do
-				unless paused $ atomically $
-					forM_ chans (`writeTChan` msg)
-				go h paused m
+				unless paused $
+					broadcast msg transportchans
+				go h paused m serverchans
 	  where
-		chans = map snd (M.elems m)
+		transportchans = mchans m
+		mchans = map snd . M.elems
+	
+	startserver h server = do
+		c <- newTChanIO
+		void $ async $ server c h
+		return c
 
-	startrunning m = forM_ (M.elems m) startrunning'
-	startrunning' (transport, c) = do
+	starttransports m = forM_ (M.elems m) starttransports'
+	starttransports' (transport, c) = do
 		-- drain any old control messages from the channel
 		-- to avoid confusing the transport with them
 		atomically $ drain c
@@ -124,9 +131,7 @@ runController ichan ochan = do
 	
 	drain c = maybe noop (const $ drain c) =<< tryReadTChan c
 	
-	broadcast msg m = atomically $ forM_ (M.elems m) send
-	  where
-		send (_, c) = writeTChan c msg
+	broadcast msg cs = atomically $ forM_ cs $ \c -> writeTChan c msg
 
 -- Generates a map with a transport for each supported remote in the git repo,
 -- except those that have annex.sync = false

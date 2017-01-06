@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2016-12-24T16:57:45Z"
+ content="""
+This is an old closed bug report. The recent comments are about a
+completely unrelated issue, which I suspect was fixed by
+[[!commit 95c8b37544c383983712c5c368dd803c51bf8eeb]].
+
+Please file new bug reports if you have an issue, if the old bug report was
+closed years ago.
+"""]]

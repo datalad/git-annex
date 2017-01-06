@@ -1,2 +1,4 @@
 
 While trying so establish a jabber link via a server that runs a nonstandard port I came across the problem that git-annex always appends :5222 to the jabber server address. This effectively stops the connection procedure at a point where it does not need to.
+
+> XMPP support has been removed from git-annex, so closing. [[done]]

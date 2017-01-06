@@ -32,3 +32,7 @@ Note that this is indeed valid utf-8:
 00000000  c3 a9 0a                                          |...|
 00000003
 """]]
+
+> Despite my strange inability to reproduce these, there's really only one
+> thing that can fix it, namely using fileEncoding. Now done for all batch
+> and stdin reading stuff. [[fixed|done]] I suppose. --[[Joey]]

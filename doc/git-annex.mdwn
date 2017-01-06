@@ -385,12 +385,6 @@ subdirectories).
   
   See [[git-annex-repair]](1) for details.
 
-* `remotedaemon`
-
-  Persistent communication with remotes.
-
-  See [[git-annex-remotedaemon]](1) for details.
-
 * `p2p`
 
   Configure peer-2-Peer links between repositories.
@@ -670,12 +664,11 @@ subdirectories).
 
   See [[git-annex-smudge]](1) for details.
 
-* `xmppgit`
+* `remotedaemon`
 
-  This command is used internally by the assistant to perform git pulls
-  over XMPP.
-  
-  See [[git-annex-xmppgit]](1) for details.
+  Detects when network remotes have received git pushes and fetches from them.
+
+  See [[git-annex-remotedaemon]](1) for details.
 
 # TESTING COMMANDS
 
@@ -1307,11 +1300,6 @@ Here are all the supported configuration settings.
 
   Used to identify tahoe special remotes.
   Points to the configuration directory for tahoe.
-
-* `remote.<name>.annex-xmppaddress`
-
-  Used to identify the XMPP address of a Jabber buddy.
-  Normally this is set up by the git-annex assistant when pairing over XMPP.
 
 * `remote.<name>.gcrypt`
 

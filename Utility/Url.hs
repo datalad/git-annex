@@ -110,6 +110,7 @@ checkBoth :: URLString -> Maybe Integer -> UrlOptions -> IO Bool
 checkBoth url expected_size uo = do
 	v <- check url expected_size uo
 	return (fst v && snd v)
+
 check :: URLString -> Maybe Integer -> UrlOptions -> IO (Bool, Bool)
 check url expected_size = go <$$> getUrlInfo url
   where
@@ -303,7 +304,7 @@ download' quiet url file uo = do
 	 - it was asked to write to a file elsewhere. -}
 	go cmd opts = withTmpDir "downloadurl" $ \tmp -> do
 		absfile <- absPath file
-		let ps = addUserAgent uo $ reqParams uo++opts++[File absfile, File url]
+		let ps = addUserAgent uo $ opts++reqParams uo++[File absfile, File url]
 		boolSystem' cmd ps $ \p -> p { cwd = Just tmp }
 	
 	quietopt s

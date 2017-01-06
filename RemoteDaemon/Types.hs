@@ -28,6 +28,10 @@ newtype RemoteURI = RemoteURI URI
 -- from a Chan, and emits others to another Chan.
 type Transport = RemoteRepo -> RemoteURI -> TransportHandle -> TChan Consumed -> TChan Emitted -> IO ()
 
+-- A server for a Transport consumes some messages from a Chan in
+-- order to learn about network changes, reloads, etc.
+type Server = TChan Consumed -> TransportHandle -> IO ()
+
 data RemoteRepo = RemoteRepo Git.Repo RemoteGitConfig
 newtype LocalRepo = LocalRepo Git.Repo
 

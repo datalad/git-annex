@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="marekj"
+ avatar="http://cdn.libravatar.org/avatar/65a60e8f5183feeeef8cef815bf73e61"
+ subject="git annex info"
+ date="2016-12-21T12:58:37Z"
+ content="""
+I found that git annex info provides information on current transfers. Using -F it provides what I want.
+"""]]

@@ -61,6 +61,7 @@ import qualified Annex.Queue
 import Annex.Branch.Transitions
 import qualified Annex
 import Annex.Hook
+import Utility.FileSystemEncoding
 
 {- Name of the branch that is used to store git-annex's information. -}
 name :: Git.Ref
@@ -436,7 +437,6 @@ stageJournal jl = withIndex $ do
 	g <- gitRepo
 	let dir = gitAnnexJournalDir g
 	(jlogf, jlogh) <- openjlog
-	liftIO $ fileEncoding jlogh
 	h <- hashObjectHandle
 	withJournalHandle $ \jh ->
 		Git.UpdateIndex.streamUpdateIndex g

@@ -37,6 +37,7 @@ import Git.Command
 import Git.Types
 import Git.FilePath
 import qualified Utility.CoProcess as CoProcess
+import Utility.FileSystemEncoding
 
 data CatFileHandle = CatFileHandle 
 	{ catFileProcess :: CoProcess.CoProcessHandle

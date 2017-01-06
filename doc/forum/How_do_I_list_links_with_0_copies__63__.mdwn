@@ -1,0 +1,5 @@
+I've been searching around and can't find this. I don't need `git annex unused`, but something that'll list the files I should "git rm".
+
+The best solution I've found so far is:
+
+    git annex whereis|grep '0 copies.*failed'|perl -pe 's/^whereis (.*?) \(0 copies\) failed$/$1/'

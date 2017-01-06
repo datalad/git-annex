@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="ghen1"
+ avatar="http://cdn.libravatar.org/avatar/efd0e92b6198291138f0cd7aedbf86b6"
+ subject="To Reproduce"
+ date="2016-12-31T14:19:07Z"
+ content="""
+I've successfully reproduced the error.
+
+Steps:
+
+1. Create 5k small files using a script. (I used one given here: <https://unix.stackexchange.com/questions/199863/create-many-files-with-random-content> )
+2. Init git and git-annex
+3. Add files to git-annex. **The error occurs here** after/while (recording state in git...)
+
+If no error occurs, try increasing the number of files to 10k or more.
+
+I ran both *status* and *fsck* in both git and git-annex, with no errors, so AFAIK it hasn't corrupted anything.
+"""]]

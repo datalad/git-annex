@@ -14,6 +14,7 @@ import Build.Version (getChangelogVersion, Version)
 import Utility.UserInfo
 import Utility.Url
 import Utility.Tmp
+import Utility.FileSystemEncoding
 import qualified Git.Construct
 import qualified Annex
 import Annex.Content
@@ -50,6 +51,7 @@ autobuilds =
 
 main :: IO ()
 main = do
+	useFileSystemEncoding
 	version <- liftIO getChangelogVersion
 	repodir <- getRepoDir
 	changeWorkingDirectory repodir

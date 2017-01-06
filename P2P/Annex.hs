@@ -5,25 +5,32 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE RankNTypes, FlexibleContexts #-}
+{-# LANGUAGE RankNTypes, FlexibleContexts, CPP #-}
 
 module P2P.Annex
 	( RunMode(..)
 	, P2PConnection(..)
 	, runFullProto
+	, torSocketFile
 	) where
 
 import Annex.Common
 import Annex.Content
 import Annex.Transfer
 import Annex.ChangedRefs
+import P2P.Address
 import P2P.Protocol
 import P2P.IO
 import Logs.Location
 import Types.NumCopies
 import Utility.Metered
+import Utility.Tor
+import Annex.UUID
 
 import Control.Monad.Free
+#ifndef mingw32_HOST_OS
+import System.Posix.User
+#endif
 
 data RunMode
 	= Serving UUID (Maybe ChangedRefsHandle)
@@ -152,3 +159,14 @@ runLocal runmode runner a = case a of
 				liftIO $ hSeek h AbsoluteSeek o
 			b <- liftIO $ hGetContentsMetered h p'
 			runner (sender b)
+
+torSocketFile :: Annex (Maybe FilePath)
+torSocketFile = do
+	u <- getUUID
+	let ident = fromUUID u
+#ifndef mingw32_HOST_OS
+	uid <- liftIO getRealUserID
+#else
+	let uid = 0
+#endif
+	liftIO $ getHiddenServiceSocketFile torAppName uid ident

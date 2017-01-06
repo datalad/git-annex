@@ -26,5 +26,5 @@ remoteTransports = M.fromList
 	, (torAnnexScheme, RemoteDaemon.Transport.Tor.transport)
 	]
 
-remoteServers :: [TransportHandle -> IO ()]
+remoteServers :: [Server]
 remoteServers = [RemoteDaemon.Transport.Tor.server]

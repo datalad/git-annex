@@ -1,0 +1,31 @@
+git-annex 6.20161210 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Linux standalone: Updated ghc to fix its "unable to decommit memory"
+     bug, which may have resulted in data loss when these builds were used
+     with Linux kernels older than 4.5.
+   * enable-tor: New command, enables tor hidden service for P2P syncing.
+   * p2p: New command, allows linking repositories using a P2P network.
+   * remotedaemon: Serve tor hidden service.
+   * Added git-remote-tor-annex, which allows git pull and push to the tor
+     hidden service.
+   * remotedaemon: Fork to background by default. Added --foreground switch
+     to enable old behavior.
+   * addurl: Fix bug in checking annex.largefiles expressions using
+     largerthan, mimetype, and smallerthan; the first two always failed
+     to match, and the latter always matched.
+   * Relicense 5 source files that are not part of the webapp from AGPL to GPL.
+   * map: Run xdot if it's available in PATH. On OSX, the dot command
+     does not support graphical display, while xdot does.
+   * Debian: xdot is a better interactive viewer than dot, so Suggest
+     xdot, rather than graphviz.
+   * rmurl: Multiple pairs of files and urls can be provided on the
+     command line.
+   * rmurl: Added --batch mode.
+   * fromkey: Accept multiple pairs of files and keys.
+     Thanks, Daniel Brooks.
+   * rekey: Added --batch mode.
+   * add: Stage modified non-large files when running in indirect mode.
+     (This was already done in v6 mode and direct mode.)
+   * git-annex-shell, remotedaemon, git remote: Fix some memory DOS attacks.
+   * Fix build with http-client 0.5.
+     Thanks, Alper Nebi Yasak."""]]

@@ -21,8 +21,6 @@ Seems like this would need Windows 10.
   Workaround: Put your git-annex repo in `C:\annex` or some similar short
   path if possible.
 
-* XMPP library not yet built. (See below.)
-
 * Local pairing seems to fail, after acking on Linux box, it stalls.
   (Also, of course, the Windows box is unlikely to have a ssh server,
   so only pairing with a !Windows box will work.)
@@ -30,12 +28,10 @@ Seems like this would need Windows 10.
 * gcrypt is not ported to windows (and as a shell script, may need
   to be rewritten)
 
-* Incremental fsck sets the sticky bit to record when a file is fscked,
-  and this is not done on windows, so fsck doesn't behave incrementally
-  there.
-
 * Deleting a git repository from inside the webapp fails "RemoveDirectory
   permision denied ... file is being used by another process"
+
+* Tor remotes are not supported yet. Should not be very hard to get it working.
 
 ## potential encoding problems
 
@@ -88,42 +84,3 @@ seems unreliable/broken on Windows.
   it and files can be transferred to it and back
 * Does stopping in progress transfers work in the webapp?
 
-## trying to build XMPP
-
-Lots of library deps:
-
-1. gsasl-$LATEST.zip from <http://josefsson.org/gnutls4win/> (includes
-   gnuidn and gnutls)
-2. pkg-config from
-   <http://sourceforge.net/projects/pkgconfiglite/files/latest/download?source=files>
-3. libxml2 from mingw:
-   <http://sourceforge.net/projects/mingw/files/MSYS/Extension/libxml2/libxml2-2.7.6-1/>
-   both the -dll and the -dev
-3. Extract all the above into the Haskell platform's mingw directory. Note
-   that pkg-config needs to be moved out of a named subdirectory.
-4. Run in DOS prompt (not cygwin!): cabal install network-protocol-xmpp
-
-Current FAIL:
-
-<pre>
-Loading package gnutls-0.1.5 ... ghc.exe: internal error: Misaligned section: 18206e5b
-    (GHC version 7.6.3 for i386_unknown_mingw32)
-        Please report this as a GHC bug:
-	http://www.haskell.org/ghc/reportabug
-</pre>
-
-<https://ghc.haskell.org/trac/ghc/ticket/8830>
-
-Note: This only happens in the TH link stage. So building w/o the webapp
-works with XMPP.
-
-Options:
-
-1. Use EvilSplicer, building first without XMPP library, but with its UI,
-   and a second time without TH, but with the XMPP library. Partially done
-   on the `winsplicehack` branch, but requires building patched versions
-   of lots of yesod dependency chain to export modules referenced by TH
-   splices, like had to be done on Android. Horrible pain. Ugly as hell.
-2. Make a helper program with the XMPP support in it, that does not use TH.
-3. Swich to a different XMPP client library, like
-   <http://hackage.haskell.org/package/pontarius-xmpp>

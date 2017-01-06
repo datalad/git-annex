@@ -614,4 +614,4 @@ successfulRepair = fst
 safeReadFile :: FilePath -> IO String
 safeReadFile f = do
 	allowRead f
-	readFileStrictAnyEncoding f
+	readFileStrict f

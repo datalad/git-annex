@@ -24,6 +24,7 @@ import Git.Types
 import Git.FilePath
 import Annex.HashObject
 import Utility.FileMode
+import Utility.FileSystemEncoding
 
 import qualified Data.ByteString.Lazy as L
 
@@ -63,7 +64,6 @@ getAnnexLinkTarget' file coresymlinks = if coresymlinks
 			Nothing -> fallback
 
 	probefilecontent f = withFile f ReadMode $ \h -> do
-		fileEncoding h
 		-- The first 8k is more than enough to read; link
 		-- files are small.
 		s <- take 8192 <$> hGetContents h

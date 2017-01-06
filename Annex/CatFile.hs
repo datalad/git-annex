@@ -33,6 +33,7 @@ import Git.FilePath
 import Git.Index
 import qualified Git.Ref
 import Annex.Link
+import Utility.FileSystemEncoding
 
 catFile :: Git.Branch -> FilePath -> Annex L.ByteString
 catFile branch file = do

@@ -48,15 +48,16 @@ batchBadInput Batch = liftIO $ putStrLn ""
 
 -- Reads lines of batch mode input and passes to the action to handle.
 batchInput :: (String -> Either String a) -> (a -> Annex ()) -> Annex ()
-batchInput parser a = do
-	mp <- liftIO $ catchMaybeIO getLine
-	case mp of
-		Nothing -> return ()
-		Just v -> do
-			either parseerr a (parser v)
-			batchInput parser a
+batchInput parser a = go =<< batchLines
   where
+	go [] = return ()
+	go (l:rest) = do
+		either parseerr a (parser l)
+		go rest
 	parseerr s = giveup $ "Batch input parse failure: " ++ s
+
+batchLines :: Annex [String]
+batchLines = liftIO $ lines <$> getContents
 
 -- Runs a CommandStart in batch mode.
 --

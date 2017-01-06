@@ -138,10 +138,12 @@ findDownloads u = go =<< downloadFeed u
 			Just $ ToDownload f u i $ Enclosure enclosureurl
 		Nothing -> mkquvi f i
 	mkquvi f i = case getItemLink i of
-		Just link -> ifM (quviSupported link)
-			( return $ Just $ ToDownload f u i $ QuviLink link
-			, return Nothing
-			)
+		Just link -> do
+			liftIO $ print ("link", link)
+			ifM (quviSupported link)
+				( return $ Just $ ToDownload f u i $ QuviLink link
+				, return Nothing
+				)
 		Nothing -> return Nothing
 
 {- Feeds change, so a feed download cannot be resumed. -}
@@ -154,7 +156,7 @@ downloadFeed url
 		liftIO $ withTmpFile "feed" $ \f h -> do
 			hClose h
 			ifM (Url.download url f uo)
-				( parseFeedString <$> readFileStrictAnyEncoding f
+				( parseFeedString <$> readFileStrict f
 				, return Nothing
 				)
 

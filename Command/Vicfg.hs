@@ -41,7 +41,7 @@ start = do
 	createAnnexDirectory $ parentDir f
 	cfg <- getCfg
 	descs <- uuidDescriptions
-	liftIO $ writeFileAnyEncoding f $ genCfg cfg descs
+	liftIO $ writeFile f $ genCfg cfg descs
 	vicfg cfg f
 	stop
 
@@ -51,11 +51,11 @@ vicfg curcfg f = do
 	-- Allow EDITOR to be processed by the shell, so it can contain options.
 	unlessM (liftIO $ boolSystem "sh" [Param "-c", Param $ unwords [vi, shellEscape f]]) $
 		giveup $ vi ++ " exited nonzero; aborting"
-	r <- parseCfg (defCfg curcfg) <$> liftIO (readFileStrictAnyEncoding f)
+	r <- parseCfg (defCfg curcfg) <$> liftIO (readFileStrict f)
 	liftIO $ nukeFile f
 	case r of
 		Left s -> do
-			liftIO $ writeFileAnyEncoding f s
+			liftIO $ writeFile f s
 			vicfg curcfg f
 		Right newcfg -> setCfg curcfg newcfg
 

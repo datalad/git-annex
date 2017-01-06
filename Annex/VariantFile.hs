@@ -8,6 +8,7 @@
 module Annex.VariantFile where
 
 import Annex.Common
+import Utility.FileSystemEncoding
 
 import Data.Hash.MD5
 

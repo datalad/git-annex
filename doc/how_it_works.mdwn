@@ -1,8 +1,11 @@
-This page gives a high-level view of git-annex. For a detailed
+This page gives a high-level view of how git-annex works. For a detailed
 low-level view, see [[the_man_page|git-annex]] and [[internals]].
 
 You do not need to read this page to get started with using git-annex. The
-[[walkthrough]] provides step-by-step instructions.
+[[walkthrough]] provides step-by-step examples, and [[workflow]] discusses
+different ways you can use git-annex.
+
+----
 
 Still reading? Ok. Git's man page calls it "a stupid content
 tracker". With git-annex, git is instead "a stupid filename and metadata"

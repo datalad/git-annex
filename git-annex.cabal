@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 6.20161210
+Version: 6.20170101
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <id@joeyh.name>
@@ -137,7 +137,6 @@ Extra-Source-Files:
   doc/git-annex-watch.mdwn
   doc/git-annex-webapp.mdwn
   doc/git-annex-whereis.mdwn
-  doc/git-annex-xmppgit.mdwn
   doc/git-remote-tor-annex.mdwn
   doc/logo.svg
   doc/logo_16x16.png
@@ -198,13 +197,9 @@ Extra-Source-Files:
   templates/configurators/enablewebdav.hamlet
   templates/configurators/pairing/local/inprogress.hamlet
   templates/configurators/pairing/local/prompt.hamlet
+  templates/configurators/pairing/wormhole/prompt.hamlet
+  templates/configurators/pairing/wormhole/start.hamlet
   templates/configurators/pairing/disabled.hamlet
-  templates/configurators/pairing/xmpp/self/retry.hamlet
-  templates/configurators/pairing/xmpp/self/prompt.hamlet
-  templates/configurators/pairing/xmpp/friend/prompt.hamlet
-  templates/configurators/pairing/xmpp/friend/confirm.hamlet
-  templates/configurators/pairing/xmpp/end.hamlet
-  templates/configurators/xmpp.hamlet
   templates/configurators/addglacier.hamlet
   templates/configurators/fsck.cassius
   templates/configurators/edit/nonannexremote.hamlet
@@ -226,19 +221,20 @@ Extra-Source-Files:
   templates/configurators/addrepository/archive.hamlet
   templates/configurators/addrepository/cloud.hamlet
   templates/configurators/addrepository/connection.hamlet
-  templates/configurators/addrepository/xmppconnection.hamlet
   templates/configurators/addrepository/ssh.hamlet
   templates/configurators/addrepository/misc.hamlet
+  templates/configurators/addrepository/wormholepairing.hamlet
   templates/configurators/rsync.net/add.hamlet
   templates/configurators/rsync.net/encrypt.hamlet
   templates/configurators/gitlab.com/add.hamlet
   templates/configurators/needgcrypt.hamlet
+  templates/configurators/needtor.hamlet
+  templates/configurators/needmagicwormhole.hamlet
   templates/configurators/enabledirectory.hamlet
   templates/configurators/fsck/status.hamlet
   templates/configurators/fsck/form.hamlet
   templates/configurators/fsck/preferencesform.hamlet
   templates/configurators/fsck/formcontent.hamlet
-  templates/configurators/delete/xmpp.hamlet
   templates/configurators/delete/finished.hamlet
   templates/configurators/delete/start.hamlet
   templates/configurators/delete/currentrepository.hamlet
@@ -246,9 +242,6 @@ Extra-Source-Files:
   templates/configurators/adddrive.hamlet
   templates/configurators/preferences.hamlet
   templates/configurators/addia.hamlet
-  templates/configurators/xmpp/buddylist.hamlet
-  templates/configurators/xmpp/disabled.hamlet
-  templates/configurators/xmpp/needcloudrepo.hamlet
   templates/configurators/enableaws.hamlet
   templates/configurators/addrepository.hamlet
   templates/actionbutton.hamlet
@@ -307,9 +300,6 @@ Flag Cryptonite
 
 Flag Dbus
   Description: Enable dbus support
-
-Flag XMPP
-  Description: Enable notifications using XMPP
 
 source-repository head
   type: git
@@ -481,11 +471,6 @@ Executable git-annex
     Build-Depends: network-multicast, network-info
     CPP-Options: -DWITH_PAIRING
 
-  if flag(XMPP)
-    if (! os(windows))
-      Build-Depends: network-protocol-xmpp, gnutls (>= 0.1.4), xml-types
-      CPP-Options: -DWITH_XMPP
-  
   if flag(TorrentParser)
     Build-Depends: torrent (>= 10000.0.0)
     CPP-Options: -DWITH_TORRENTPARSER
@@ -580,7 +565,6 @@ Executable git-annex
     Assistant.MakeRemote
     Assistant.Monad
     Assistant.NamedThread
-    Assistant.NetMessager
     Assistant.Pairing
     Assistant.Pairing.MakeRemote
     Assistant.Pairing.Network
@@ -613,20 +597,16 @@ Executable git-annex
     Assistant.Threads.Upgrader
     Assistant.Threads.Watcher
     Assistant.Threads.WebApp
-    Assistant.Threads.XMPPClient
-    Assistant.Threads.XMPPPusher
     Assistant.TransferQueue
     Assistant.TransferSlots
     Assistant.TransferrerPool
     Assistant.Types.Alert
     Assistant.Types.BranchChange
-    Assistant.Types.Buddies
     Assistant.Types.Changes
     Assistant.Types.Commits
     Assistant.Types.CredPairCache
     Assistant.Types.DaemonStatus
     Assistant.Types.NamedThread
-    Assistant.Types.NetMessager
     Assistant.Types.Pushes
     Assistant.Types.RemoteControl
     Assistant.Types.RepoProblem
@@ -654,7 +634,6 @@ Executable git-annex
     Assistant.WebApp.Configurators.Unused
     Assistant.WebApp.Configurators.Upgrade
     Assistant.WebApp.Configurators.WebDAV
-    Assistant.WebApp.Configurators.XMPP
     Assistant.WebApp.Control
     Assistant.WebApp.DashBoard
     Assistant.WebApp.Documentation
@@ -664,15 +643,12 @@ Executable git-annex
     Assistant.WebApp.Notifications
     Assistant.WebApp.OtherRepos
     Assistant.WebApp.Page
+    Assistant.WebApp.Pairing
     Assistant.WebApp.Repair
     Assistant.WebApp.RepoId
     Assistant.WebApp.RepoList
     Assistant.WebApp.SideBar
     Assistant.WebApp.Types
-    Assistant.XMPP
-    Assistant.XMPP.Buddies
-    Assistant.XMPP.Client
-    Assistant.XMPP.Git
     Backend
     Backend.Hash
     Backend.URL
@@ -812,7 +788,6 @@ Executable git-annex
     Command.Watch
     Command.WebApp
     Command.Whereis
-    Command.XMPPGit
     Common
     Config
     Config.Cost
@@ -1044,6 +1019,7 @@ Executable git-annex
     Utility.LockPool.Windows
     Utility.LogFile
     Utility.Lsof
+    Utility.MagicWormhole
     Utility.Matcher
     Utility.Metered
     Utility.Misc
@@ -1071,6 +1047,7 @@ Executable git-annex
     Utility.Shell
     Utility.SimpleProtocol
     Utility.SshConfig
+    Utility.Su
     Utility.SystemDirectory
     Utility.TList
     Utility.Tense

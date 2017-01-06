@@ -1,0 +1,28 @@
+
+    [365 of 557] Compiling Assistant.WebApp.Form ( Assistant/WebApp/Form.hs, dist/build/git-annex/git-annex-tmp/Assistant/WebApp/Form.o )
+
+    Assistant/WebApp/Form.hs:61:60: error:
+        * Exception when trying to run compile-time code:
+            "
+    <a .btn .btn-default data-toggle="collapse" data-target="##{ident}">#{toggle}</a>
+    <div ##{ident} .collapse>
+      ^{note}
+    " (line 2, column 45):
+    unexpected "d"
+    expecting ">"
+    CallStack (from HasCallStack):
+      error, called at ./Text/Hamlet.hs:421:21 in shakespeare-2.0.12-4ppL9xZ9sKD6RsPGnrhiq:Text.Hamlet
+          Code: Language.Haskell.TH.Quote.quoteExp
+                  whamlet
+                  "\n\
+                  \<a .btn .btn-default data-toggle=\"collapse\" data-target=\"##{ident}\">#{toggle}</a>\n\
+                  \<div ##{ident} .collapse>\n\
+                  \  ^{note}\n"
+        * In the quasi-quotation:
+            [whamlet|
+    <a .btn .btn-default data-toggle="collapse" data-target="##{ident}">#{toggle}</a>
+    <div ##{ident} .collapse>
+      ^{note}
+    |]
+
+[[done]]

@@ -90,3 +90,6 @@ storeP2PAddress addr = do
 
 p2pAddressCredsFile :: FilePath
 p2pAddressCredsFile = "p2paddrs"
+
+torAppName :: AppName
+torAppName = "tor-annex"

@@ -76,8 +76,8 @@ computers are on the same network. If you go on a trip, any files you
 edit will not be visible to your friend until you get back. 
 
 To get around this, you'll often also want to set up
-[[jabber_pairing|share_with_a_friend_walkthrough]], and a server
-in the cloud, which they can use to exchange files while away.
+[[tor_pairing|share_with_a_friend_walkthrough]] too, 
+which they can use to exchange files while away.
 
 And also, you can pair with as many other computers as you like, not just
 one!

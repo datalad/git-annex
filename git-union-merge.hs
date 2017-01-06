@@ -14,6 +14,7 @@ import qualified Git.CurrentRepo
 import qualified Git.Branch
 import qualified Git.Index
 import qualified Git
+import Utility.FileSystemEncoding
 
 header :: String
 header = "Usage: git-union-merge ref ref newref"
@@ -39,6 +40,7 @@ parseArgs = do
 
 main :: IO ()
 main = do
+	useFileSystemEncoding
 	[aref, bref, newref] <- map Git.Ref <$> parseArgs
 	g <- Git.Config.read =<< Git.CurrentRepo.get
 	_ <- Git.Index.override (tmpIndex g) g

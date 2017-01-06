@@ -112,7 +112,7 @@ configureSmudgeFilter = do
 		createDirectoryIfMissing True (takeDirectory lf)
 		writeFile lf (lfs ++ "\n" ++ stdattr)
   where
-	readattr = liftIO . catchDefaultIO "" . readFileStrictAnyEncoding
+	readattr = liftIO . catchDefaultIO "" . readFileStrict
 	stdattr = unlines
 		[ "* filter=annex"
 		, ".* !filter"

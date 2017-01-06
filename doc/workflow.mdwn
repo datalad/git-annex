@@ -1,0 +1,100 @@
+Git-annex supports a wide variety of workflows, a spectrum that ranges from
+completely automatic behavior where git-annex handles everything, through
+manual behavior where git-annex does only what you say when you tell it to,
+all the way down to internal behavior, where you have complete control and
+understand how everything is stored and exactly what changes are happening.
+
+I will proceed to summarize all of these. I will begin at the automatic
+end, hoping that this is most useful, and drill down to the low level
+approaches. Note, however, that this is the opposite order of how git-annex
+was developed. A list of workflows that started from manual,
+commandline usage would be much more intuitive, but you'd have to be
+willing to read the man page and wiki pages to get started, and that's
+pretty much what's already out there anyway.
+
+Note that for each of these levels of interaction, all the levels following
+will also work as well. So you can actually manually move annexed files
+around while the webapp is running, etc.
+
+# 1. [[git annex webapp|git-annex-webapp]]
+
+The [[`git annex webapp`|git-annex-webapp]] command launches a local web
+server which serves a graphical user interface and automatically manages
+git annex. It will attempt to guide you through the whole process and do
+everything for you. [[You do not even need to type the command.
+|assistant/quickstart]] This should be run on every machine that may
+produce file changes.  When you move files into or out of your repository
+folder, git-annex should record the changes and automatically propagate
+them to other connected machines.
+
+# 2. [[git annex assistant|git-annex-assistant]] without the webapp
+
+You could call [[`git annex assistant`|git-annex-assistant]] the
+command-line version of the webapp, giving you more control over creating
+and connecting your repositories, and configuring how files are moved
+between them.
+
+The assistant, when running, will automatically watch for file changes and
+synchronize them to other repositories, but you must manually create the
+repositories and configure the rules for syncing. To create a repository,
+use `git init` and then [[`git annex init`|git-annex-init]], and then `git
+remote add` it to any other repositories. If you want more than one annex,
+you can add their paths to `~/.config/git-annex/autostart` if you would
+like them to automatically begin syncing when `git annex assistant
+--autostart` is run, perhaps on boot or login. You can configure rules for
+where files are copied using the repository setup commands such as [[git
+annex preferred-content|git-annex-preferred-content]] to configure
+[[content preferences|preferred content]] for what goes where, [[`git annex
+numcopies`|git-annex-numcopies]] for how many [[copies]] must be kept of
+each file, and [[`git config annex.largefiles`|tips/largefiles]] to define
+small files that should be stored straight in git; most of the settings are
+accessible in one place with [[`git annex vicfg`|git-annex-vicfg]].
+
+# 3. [[git annex watch|git-annex-watch]] without the assistant
+
+The [[`git annex watch`|git-annex-watch]] command is like the assistant but
+has no automatic network behavior, giving you complete control over when
+repositories are pushed and pulled, and when files are moved between
+systems. The local repository is watched, and any file changes are added to
+git-annex. In order to synchronize between repositories, you must run
+[[`git annex sync --content`|git-annex-sync]] in the repository with the
+changes, which will merge the git history and logs with your remotes, and
+automatically transfer files to match your preferred and required content
+expressions.
+
+# 4. No background processes
+
+This allows you to decide when and what files are annexed. In order to tell
+git-annex to manage files, you must [[`git annex add`|git-annex-add]] the
+files.
+
+# 5. Plain [[git annex sync|git-annex-sync]] without `--content`
+
+This gives you fine-grained control of where copies of your files are
+stored. [[`git annex sync`|git-annex-sync]] without `--content` tells
+git-annex to merge git histories, but it does not automatically transfer
+your large files between systems. To transfer files and directories, you
+can use [[`git annex get`|git-annex-get]], [[`git annex
+drop`|git-annex-drop]], [[`git annex move`|git-annex-move]], and [[`git
+annex copy`|git-annex-copy]]. Git-annex will not violate a required content
+expression or your numcopies setting unless you pass `--force`, so your
+files are still safe.
+
+# 6. Manual management of git history without the synchronizer
+
+This allows you to control precisely what is committed to git, what commit
+message is used, and how your history is merged between repositories. You
+must have an understanding of git, and run `git commit` after `git annex
+add` to store the change. You must manage the git history yourself, using
+`git pull` and `git push`, to synchronize repositories. You may freely use
+git normally side-by-side with git-annex.
+
+# 7. Manual management of git annex keys
+
+This gives you control of what and where git annex stores your files under
+the hood, and how they are associated with your working tree, rather than
+using the `git annex add` and `git annex get` commands which reference
+files automatically. Git-annex has a variety of plumbing commands listed in
+the [[man page|git-annex]] that let you directly store and retrieve data in
+an annex associated with your git repository, where every datafile is
+enumerated by a unique hashkey.

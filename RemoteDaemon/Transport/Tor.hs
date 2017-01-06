@@ -13,8 +13,6 @@ import Annex.Concurrent
 import Annex.ChangedRefs
 import RemoteDaemon.Types
 import RemoteDaemon.Common
-import Utility.Tor
-import Utility.FileMode
 import Utility.AuthToken
 import P2P.Protocol as P2P
 import P2P.IO
@@ -27,48 +25,57 @@ import Messages
 import Git
 import Git.Command
 
-import System.PosixCompat.User
 import Control.Concurrent
 import System.Log.Logger (debugM)
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TBMQueue
 import Control.Concurrent.Async
-import qualified Network.Socket as S
 
 -- Run tor hidden service.
-server :: TransportHandle -> IO ()
-server th@(TransportHandle (LocalRepo r) _) = do
-	u <- liftAnnex th getUUID
+server :: Server
+server ichan th@(TransportHandle (LocalRepo r) _) = go
+  where
+	go = checkstartservice >>= handlecontrol
 
-	q <- newTBMQueueIO maxConnections
-	replicateM_ maxConnections $
-		forkIO $ forever $ serveClient th u r q
-
-	uid <- getRealUserID
-	let ident = fromUUID u
-	let sock = hiddenServiceSocketFile uid ident
-	nukeFile sock
-	soc <- S.socket S.AF_UNIX S.Stream S.defaultProtocol
-	S.bind soc (S.SockAddrUnix sock)
-	-- Allow everyone to read and write to the socket; tor is probably
-	-- running as a different user. Connections have to authenticate
-	-- to do anything, so it's fine that other local users can connect.
-	modifyFileMode sock $ addModes
-		[groupReadMode, groupWriteMode, otherReadMode, otherWriteMode]
-	S.listen soc 2
-	debugM "remotedaemon" "Tor hidden service running"
-	forever $ do
-		(conn, _) <- S.accept soc
-		h <- setupHandle conn
-		ok <- atomically $ ifM (isFullTBMQueue q)
-			( return False
-			, do
-				writeTBMQueue q h
+	checkstartservice = do
+		u <- liftAnnex th getUUID
+		msock <- liftAnnex th torSocketFile
+		case msock of
+			Nothing -> do
+				debugM "remotedaemon" "Tor hidden service not enabled"
+				return False
+			Just sock -> do
+				void $ async $ startservice sock u
 				return True
-			)
-		unless ok $ do
-			hClose h
-			warningIO "dropped Tor connection, too busy"
+	
+	startservice sock u = do
+		q <- newTBMQueueIO maxConnections
+		replicateM_ maxConnections $
+			forkIO $ forever $ serveClient th u r q
+
+		debugM "remotedaemon" "Tor hidden service running"
+		serveUnixSocket sock $ \conn -> do
+			ok <- atomically $ ifM (isFullTBMQueue q)
+				( return False
+				, do
+					writeTBMQueue q conn
+					return True
+				)
+			unless ok $ do
+				hClose conn
+				warningIO "dropped Tor connection, too busy"
+	
+	handlecontrol servicerunning = do
+		msg <- atomically $ readTChan ichan
+		case msg of
+			-- On reload, the configuration may have changed to
+			-- enable the tor hidden service. If it was not
+			-- enabled before, start it,
+			RELOAD | not servicerunning -> go
+			-- We can ignore all other messages; no need
+			-- to restart the hidden service when the network
+			-- changes as tor takes care of all that.
+			_ -> handlecontrol servicerunning
 
 -- How many clients to serve at a time, maximum. This is to avoid DOS attacks.
 maxConnections :: Int

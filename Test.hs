@@ -95,6 +95,7 @@ import qualified Utility.HumanTime
 import qualified Utility.ThreadScheduler
 import qualified Utility.Base64
 import qualified Utility.Tmp
+import qualified Utility.FileSystemEncoding
 import qualified Command.Uninit
 import qualified CmdLine.GitAnnex as GitAnnex
 #ifndef mingw32_HOST_OS
@@ -1675,7 +1676,8 @@ test_add_subdirs = intmpclonerepo $ do
 	 - calculated correctly for files in subdirs. -}
 	unlessM (unlockedFiles <$> getTestMode) $ do
 		git_annex "sync" [] @? "sync failed"
-		l <- annexeval $ decodeBS <$> Annex.CatFile.catObject (Git.Types.Ref "HEAD:dir/foo")
+		l <- annexeval $ Utility.FileSystemEncoding.decodeBS
+			<$> Annex.CatFile.catObject (Git.Types.Ref "HEAD:dir/foo")
 		"../.git/annex/" `isPrefixOf` l @? ("symlink from subdir to .git/annex is wrong: " ++ l)
 
 	createDirectory "dir2"

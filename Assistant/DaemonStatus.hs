@@ -12,7 +12,6 @@ module Assistant.DaemonStatus where
 import Assistant.Common
 import Assistant.Alert.Utility
 import Utility.Tmp
-import Assistant.Types.NetMessager
 import Utility.NotificationBroadcaster
 import Types.Transfer
 import Logs.Transfer
@@ -20,14 +19,12 @@ import Logs.Trust
 import Logs.TimeStamp
 import qualified Remote
 import qualified Types.Remote as Remote
-import qualified Git
 
 import Control.Concurrent.STM
 import System.Posix.Types
 import Data.Time.Clock.POSIX
 import qualified Data.Map as M
 import qualified Data.Set as S
-import qualified Data.Text as T
 
 getDaemonStatus :: Assistant DaemonStatus
 getDaemonStatus = (atomically . readTVar) <<~ daemonStatusHandle
@@ -264,6 +261,3 @@ alertDuring :: Alert -> Assistant a -> Assistant a
 alertDuring alert a = do
 	i <- addAlert $ alert { alertClass = Activity }
 	removeAlert  i `after` a
-
-getXMPPClientID :: Remote -> ClientID
-getXMPPClientID r = T.pack $ drop (length "xmpp::") (Git.repoLocation (Remote.repo r))
