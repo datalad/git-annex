@@ -1,3 +1,11 @@
+git-annex (6.20170102) UNRELEASED; urgency=medium
+
+  * Increase default cost for p2p remotes from 200 to 1000.
+    This makes git-annex prefer transferring data from special
+    remotes when possible.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 06 Jan 2017 15:22:06 -0400
+
 git-annex (6.20170101) unstable; urgency=medium
 
   * XMPP support has been removed from the assistant in this release.
