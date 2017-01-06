@@ -1,3 +1,45 @@
+git-annex (6.20170101) unstable; urgency=medium
+
+  * XMPP support has been removed from the assistant in this release.
+    If your repositories used XMPP to keep in sync, that will no longer
+    work, and you should enable some other remote to keep them in sync.
+    A ssh server is one way, or use the new Tor pairing feature.
+  * p2p --pair makes it easy to pair repositories, over Tor, using
+    Magic Wormhole codes to find the other repository.
+    See http://git-annex.branchable.com/tips/peer_to_peer_network_with_tor/
+  * webapp: The "Share with a friend" and "Share with your other devices"
+    pages have been changed to pair repositories using Tor and Magic Wormhole.
+  * metadata --batch: Fix bug when conflicting metadata changes were
+    made in the same batch run.
+  * Pass annex.web-options to wget and curl after other options, so that
+    eg --no-show-progress can be set by the user to disable the default
+    --show-progress.
+  * Revert ServerAliveInterval change in 6.20161111, which caused problems
+    with too many old versions of ssh and unusual ssh configurations.
+    It should have not been needed anyway since ssh is supposted to
+    have TCPKeepAlive enabled by default.
+  * Make all --batch input, as well as fromkey and registerurl stdin
+    be processed without requiring it to be in the current encoding.
+  * p2p: --link no longer takes a remote name, instead the --name
+    option can be used.
+  * Linux standalone: Improve generation of locale definition files,
+    supporting locales such as en_GB.UTF-8.
+  * rekey --force: Incorrectly marked the new key's content as being
+    present in the local repo even when it was not.
+  * enable-tor: Put tor sockets in /var/lib/tor-annex/, rather
+    than in /etc/tor/hidden_service/.
+  * enable-tor: No longer needs to be run as root.
+  * enable-tor: When run as a regular user, also tests a connection back to 
+    the hidden service over tor.
+  * Support all common locations of the torrc file.
+  * Always use filesystem encoding for all file and handle reads and
+    writes.
+  * Fix build with directory-1.3.
+  * Debian: Suggest tor and magic-wormhole.
+  * Debian: Build webapp on armel.
+
+ -- Joey Hess <id@joeyh.name>  Sat, 31 Dec 2016 15:11:04 -0400
+
 git-annex (6.20161210-1) unstable; urgency=medium
 
   * Package 6.20161210-1
