@@ -1,0 +1,14 @@
+
+Working on the Baobáxia project, we have this interesting problem: If some content is added twice with different file names, it will appear in the git-annex repository as two symlinks pointing to the same file in the annex.
+
+So far so good.
+
+But this means that if I want to delete a file, I have two cases:
+
+* If this content was added only once, I need to drop the binary content with git annex drop and afterwards remove the symlink with git rm.
+* If this content exists under more than one file name, I need to remove the symlink with git rm only; I should *not* drop the content.
+
+So the question is: How do I know that, apart from searching through the whole repository? Is there a more efficient way? After going through the manual I can't find it, but I may have overlooked something.
+
+Note: This question references bug #191 in the Baobáxia project, https://github.com/RedeMocambos/baobaxia/issues/191
+
