@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="fossil"
+ avatar="http://cdn.libravatar.org/avatar/951f4f4e1dca2ebe880ddb392c2d3e73"
+ subject="comment 4"
+ date="2017-01-08T15:57:42Z"
+ content="""
+This is a bug, introduced in [commit 34530e59](https://github.com/joeyh/git-annex/commit/34530e59) (release 6.20161012) and fixed in [commit b530e432](https://github.com/joeyh/git-annex/commit/b530e432) (release 6.20161031).
+
+* [git-annex chokes on filenames including spaces](https://git-annex.branchable.com/bugs/git-annex_chokes_on_filenames_including_spaces/)
+* [Single space in file name causes git annex add to fail](https://git-annex.branchable.com/bugs/Single_space_in_file_name_causes_git_annex_add_to_fail/)
+
+It happens only when the filename contains a single space, so a workaround is to first add a filename without any spaces, and then rename it:
+
+    fn=\"foo bar.txt\"; cp \"$fn\" tmp && git annex add tmp && git mv -f tmp \"$fn\"
+"""]]
