@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="ghen1"
+ avatar="http://cdn.libravatar.org/avatar/efd0e92b6198291138f0cd7aedbf86b6"
+ subject="comment 1"
+ date="2017-01-07T15:41:36Z"
+ content="""
+You don't need to keep track of links. Just delete the links, then run:
+
+    git-annex unused
+
+This will find any content that isn't linked to. You can then run *git-annex dropunused* to free up space.
+
+See these man pages:<br/>
+<https://git-annex.branchable.com/git-annex-unused/><br/>
+<https://git-annex.branchable.com/git-annex-dropunused/>
+"""]]

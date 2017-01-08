@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="t.z.mates"
+ avatar="http://cdn.libravatar.org/avatar/90f15fad216078fd08d62cc676487925"
+ subject="comment 5"
+ date="2017-01-08T06:43:48Z"
+ content="""
+So, I've done a bit more investigating, and it seems the specific command that causes the error is
+
+    git --git-dir=../../../../.git --work-tree=../../../.. --literal-pathspecs ls-files --modified -- foo
+In particular, if I execute the code:
+
+    git init
+    git annex init --version=6
+    mkdir -p 1/2/3/4
+    touch 1/2/3/4/foo
+    git annex add 1/2/3/4/foo
+    git annex sync
+    git annex unlock 1/2/3/4/foo
+    echo \"bar\" >> 1/2/3/4/foo
+    cd 1/2/3/4
+    git --git-dir=../../../../.git --work-tree=../../../.. --literal-pathspecs ls-files --modified -- foo
+I get the above mentioned error. However, if I run the exact same code without any of the \"git annex\" commands (i.e. only initializing a standard git repository), the ls-files commands returns without error.
+
+I'm not sure what to make of this though; it doesn't seem to be any sort of corrupted log or bad config options (I ran the same commands on a different, working computer, copied the .git directory to the non-working computer, and still couldn't run the ls-files command). I'm rather at a loss of what to check next.
+"""]]
