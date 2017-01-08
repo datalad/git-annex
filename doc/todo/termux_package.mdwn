@@ -1,0 +1,15 @@
+Termux is an android terminal with apt. It should be possible to build
+git-annex this way, and this would be a nice alternative (or perhaps
+replacement) for the git-annex.apk.
+
+Looks like termux uses ubuntu to build, but cross-compiles for android,
+using bionic. So, ghc-android would still need to be used to build
+git-annex.
+
+<https://github.com/termux/termux-packages>
+
+May be easier to build an appropriate .deb from the android git-annex
+binary, and add it to termux's sources.list?
+
+
+--[[Joey]]
