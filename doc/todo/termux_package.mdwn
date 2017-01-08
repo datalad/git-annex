@@ -15,4 +15,8 @@ binary, and add it to termux's sources.list?
 > <https://github.com/termux/termux-packages/issues/420>
 > --[[Joey]] 
 
+This would also help with [[tor]] support on android, since termux has a
+tor package. And would avoid needing to bundle other 
+often out of date stuff with git-annex.apk.
+
 --[[Joey]]
