@@ -1,0 +1,61 @@
+Sometimes it may happen that you have multiple git-annex repositories
+with the same UUID. This is usually because you did something special,
+like copying a repository with `cp -a` or `dd` instead of cloning it,
+or you just replaced a drive with a fresh one. In my case, the latter
+happened: I ran out of space on my media drive and replaced it with a
+larger drive. Since it had multiple git-annex repositories (and data
+*not* managed by git-annex), I simply used `rsync` to copy the drive
+over, which created duplicate git-annex repositories with the same
+UUIDs.
+
+It may still be useful to reuse those repositories as distinct
+entities, and it is therefore important to assign new UUIDs to those
+cloned repositories so that content tracking works properly and you do
+not lose data.
+
+In this case, you actually do *not* want to specify an existing UUID
+when you run reinit: you want git-annex to generate a new one for
+you. So, in that context, I've always wondered why
+[[git-annex-reinit]] absolutely requires an argument.  I understand
+there may be *other* use cases where you may want to `reinit` a
+repository to an existing UUID, but that seems like a much *less*
+common use case, and one that may bring more trouble than is worth.
+
+So I believe there should be an easy way to assign a fresh new UUID to
+a repository. `reinit` should allow doing that when no arguments are
+given: it should show the old and new UUID and maybe a warning message
+indicating that tracking information may be wrong now if the old UUID
+is not in use anymore.
+
+As shown below, I also wonder if `reinit` should recommend the user
+perform a `fsck` to make sure the location logs reflect the change...
+
+Workaround
+----------
+
+It is obviously possible to assign a new UUID with the current
+command, by generating one by hand.
+
+Git-annex doesn't have a user-visible way of generating a new UUID, so
+we'll have to improvise something. It uses the
+[Data.UUID](https://hackage.haskell.org/package/uuid-1.3.13/docs/Data-UUID.html)
+Haskell module, in V4 mode, which is the [standard, random
+way](https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_.28random.29)
+of generating UUIDs. I believe that the `uuidgen` command, when ran in
+`--random` mode, will produce similarly unique UUIDs that are good
+enough for our purpose. So I have used this to reassign new UUIDs to
+cloned copies of repositories:
+
+    git annex reinit $(uuidgen)
+
+The next step is to fix the location log so that the UUID change is
+reflected in the tracking information:
+
+    git annex fsck --fast
+
+Then, optionally, you will want to propagate that change to other
+repositories:
+
+    git annex sync
+
+Thanks for any feedback or comments... -- [[anarcat]]
