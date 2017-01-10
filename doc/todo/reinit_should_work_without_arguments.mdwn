@@ -53,6 +53,10 @@ reflected in the tracking information:
 
     git annex fsck --fast
 
+You may also want to set a new description for the new clone:
+
+    git annex describe here "bare 2TB Seagate barracuda HD"
+
 Then, optionally, you will want to propagate that change to other
 repositories:
 
