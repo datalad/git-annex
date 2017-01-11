@@ -1,0 +1,3 @@
+While running *git-annex unused* on an annex with tens of thousands of items, *git-annex*'s memory usage ballooned to over 3 gigs and my PC froze. I cannot run *git-annex unused* on this annex because of this issue.
+
+If it's possible, more efficient memory management would prevent this from happening.
