@@ -1,0 +1,30 @@
+I  have just started using git annex, and I cloned the annex onto an external usb formatted as exFAT. I am using Mac OS X.
+
+The clone went fine, but when running `git annex init` the following happened
+
+```
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Disabling core.symlinks.
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+
+  Enabling direct mode.
+```
+then git annex appears to get stuck according to `top`:  
+
+```
+PID    COMMAND      %CPU TIME     #TH   #WQ  #PORT MEM    PURG   CMPRS  PGRP  PPID  STATE    BOOSTS  
+
+86934  git-annex    0.0  01:07.09 4     0    13    4152K  0B     5684K  86933 86933 stuck    *0[1]
+```
+
+I am running git-annex 6.20170101, so direct mode should no longer be used. Is that correct? If so what should I do to figure out what's going on?
+
+ The most relevant related thread I could find was this one [Bare repo on USB ...](http://git-annex.branchable.com/forum/Bare_repo_on_USB_drive_not_providing_files/) which suggests exFAT may not work well on Linux. However, I mainly use this USB on my Macbook to supplement the SSD. Another possibly relevant thread is this one [Android table ... only exFAT...](http://git-annex.branchable.com/forum/Using_git_annex_with_Android_tablet_which_only_has_exFAT_and_no_symlinks/).
+
+I appreciate any assitance.
