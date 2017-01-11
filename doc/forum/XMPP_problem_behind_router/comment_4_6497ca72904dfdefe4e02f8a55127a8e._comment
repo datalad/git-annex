@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="mdcotonopu@d25539d868f269dc6d1b838c21bb86205a40dab9"
+ nickname="mdcotonopu"
+ avatar="http://cdn.libravatar.org/avatar/7acb7ca4679a80a3ea544df55ae4959b"
+ subject="comment 4"
+ date="2017-01-11T09:35:48Z"
+ content="""
+Running high debug verbosity with DEBUG=* npm start indicates that the socket connection with the target XMPP server was started, but still the online event is never fired, and online is never logged. (The server times out at 150 seconds before anything can be logged.<a href=\"https://productriver.com/best-wireless-routers\">best 4 wireless routers</a>
+"""]]
