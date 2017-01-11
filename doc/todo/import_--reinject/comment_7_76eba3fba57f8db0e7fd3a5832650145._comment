@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 7"
+ date="2017-01-11T22:29:55Z"
+ content="""
+Can I avoid git-annex making a copy of the file when using *reinject --known*? I have files larger than the available free space..
+"""]]
