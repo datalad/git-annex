@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="https://joelpurra.com/"
+ avatar="http://cdn.libravatar.org/avatar/6b09b608da8a2f34acf3d89caf8b7438ddbd404bb2db31414855118a7dab678c"
+ subject="macOS HFS+, core.precomposeUnicode"
+ date="2017-01-13T14:27:15Z"
+ content="""
+@joeyh.name: did you notice the subtle difference between the filename in the input and the output in your example? I think it might cause problems due to a discrepancy between `git annex` and the file system when checking if a file exists or not. Not sure if the problem is in `git` or `git annex`; what do you think?
+
+```text
+git annex add George\'s\ Cafe\314\201
+...
+create mode 120000 \"George's Caf\303\251\"
+```
+
+See [Unicode Subtleties in the HFS Plus Volume Format](https://developer.apple.com/legacy/library/technotes/tn/tn1150.html#UnicodeSubtleties) and `git config` for [`core.precomposeUnicode`](https://git-scm.com/docs/git-config#git-config-coreprecomposeUnicode)
+
+Here's a `printf` example.
+
+```bash
+printf '\303\251 e\314\201 (note double space)  \314\201'
+```
+```text
+é é (note double space)  ́
+```
+```bash
+printf '\303\251 e\314\201 (note double space)  \314\201' | LC_ALL=C vis -otc
+```
+```text
+\303\251 e\314\201 (note double space)  \314\201
+```
+
+"""]]
