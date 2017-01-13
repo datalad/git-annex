@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="dermungo@19d0cb1f22d4169b48363cfff60c9ede2c14fffa"
+ nickname="dermungo"
+ avatar="http://cdn.libravatar.org/avatar/4f4b91e2275a6673506e2990a4f96270"
+ subject="Work around"
+ date="2017-01-13T14:54:40Z"
+ content="""
+Perhaps other people knew this already, but I thought I would post it here in case someone else has trouble finding a solution to this issue.
+
+I use a global gitignore that ignores most of the files I want to have in my annex.
+The solution was to override my global .gitignore according to this answer at SO <http://stackoverflow.com/questions/26678955/un-ignore-all-files-in-global-gitignore> by creating a .gitignore in the annexed repo with the pattern
+```
+!*
+```
+
+Now it automatically adds everything (except dotfiles) when running `git annex add $DIRPATH`.
+"""]]
