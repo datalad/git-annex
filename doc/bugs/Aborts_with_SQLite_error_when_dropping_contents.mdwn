@@ -1,0 +1,80 @@
+### Please describe the problem.
+
+Trying to drop the contents of 131 files in a subdirectory, but it dies 
+with an "sqlite worker thread crashed" error. The contents of one file 
+is deleted, and then it dies. The files in that directory are exactly 1G 
+(1000000000) bytes each.
+
+There's no data loss here, it creates files in `.git/annex/journal/` 
+which is added to the git-annex branch after a git annex sync. "git 
+annex fsck --fast --quiet" is happy and finds no errors.
+
+### What steps will reproduce the problem?
+
+"git annex drop" with and without --force. Tried to copy one of the 
+files to another server with Debian 8.7, and it's successfully dropped 
+there. Same git-annex version.
+
+### What version of git-annex are you using? On what operating system?
+
+OS: Ubuntu 14.04.5 LTS
+
+git-annex: 6.20161211-gc3ab3c668 (from 
+`git-annex-standalone-amd64.tar.gz` in the annex at 
+downloads.kitenet.net)
+
+I have compiled the newest sqlite3 3.16.2 and placed it in 
+/usr/local/bin/, just mentioning it because it's some kind of SQLite 
+error. but executing the command with a PATH without /usr/local/bin 
+makes no difference.
+
+### Please provide any additional information below.
+
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+    $ git annex drop -d --force
+    [2017-01-16 08:58:39.947856861] read: git ["--git-dir=../../../../../../../.git","--work-tree=../../../../../../..","--literal-pathspecs","ls-files","--cached","-z","--"]
+    [2017-01-16 08:58:39.953150944] chat: git ["--git-dir=../../../../../../../.git","--work-tree=../../../../../../..","--literal-pathspecs","check-attr","-z","--stdin","annex.backend","annex.numcopies","annex.largefiles","--"]
+    [2017-01-16 08:58:39.953742873] read: git ["--version"]
+    [2017-01-16 08:58:39.959438053] process done ExitSuccess
+    [2017-01-16 08:58:39.959919735] read: git ["--git-dir=../../../../../../../.git","--work-tree=../../../../../../..","--literal-pathspecs","show-ref","git-annex"]
+    [2017-01-16 08:58:39.963707897] process done ExitSuccess
+    [2017-01-16 08:58:39.963882344] read: git ["--git-dir=../../../../../../../.git","--work-tree=../../../../../../..","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+    [2017-01-16 08:58:39.967078602] process done ExitSuccess
+    [2017-01-16 08:58:39.969062554] chat: git ["--git-dir=../../../../../../../.git","--work-tree=../../../../../../..","--literal-pathspecs","cat-file","--batch"]
+    [2017-01-16 08:58:39.970168767] chat: git ["--git-dir=../../../../../../../.git","--work-tree=../../../../../../..","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+    drop MyStream_3/MyStream_3.mp4.split_ag [2017-01-16 08:58:39.984359273] Dropping from here proof: Nothing
+    sqlite worker thread crashed: SQLite3 returned ErrorCan'tOpen while attempting to perform prepare "SELECT null from content limit 1": unable to open database file
+    ok
+    git-annex: thread blocked indefinitely in an MVar operation
+    $ git annex drop -d --force
+    [2017-01-16 08:58:58.890031175] read: git ["--git-dir=../../../../../../../.git","--work-tree=../../../../../../..","--literal-pathspecs","ls-files","--cached","-z","--"]
+    [2017-01-16 08:58:58.895047131] chat: git ["--git-dir=../../../../../../../.git","--work-tree=../../../../../../..","--literal-pathspecs","check-attr","-z","--stdin","annex.backend","annex.numcopies","annex.largefiles","--"]
+    [2017-01-16 08:58:58.895690334] read: git ["--version"]
+    [2017-01-16 08:58:58.901206493] process done ExitSuccess
+    [2017-01-16 08:58:58.901836453] read: git ["--git-dir=../../../../../../../.git","--work-tree=../../../../../../..","--literal-pathspecs","show-ref","git-annex"]
+    [2017-01-16 08:58:58.905632574] process done ExitSuccess
+    [2017-01-16 08:58:58.905793223] read: git ["--git-dir=../../../../../../../.git","--work-tree=../../../../../../..","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+    [2017-01-16 08:58:58.909227509] process done ExitSuccess
+    [2017-01-16 08:58:58.910902084] chat: git ["--git-dir=../../../../../../../.git","--work-tree=../../../../../../..","--literal-pathspecs","cat-file","--batch"]
+    [2017-01-16 08:58:58.912164764] chat: git ["--git-dir=../../../../../../../.git","--work-tree=../../../../../../..","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+    drop MyStream_3/MyStream_3.mp4.split_ah [2017-01-16 08:58:58.927477693] Dropping from here proof: Nothing
+    sqlite worker thread crashed: SQLite3 returned ErrorCan'tOpen while attempting to perform prepare "SELECT null from content limit 1": unable to open database file
+    ok
+    git-annex: thread blocked indefinitely in an MVar operation
+    $
+
+# End of transcript or log.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Indeed. All my stuff (around 3.5 terabytes) is stored in git-annex with 
+at least three copies of each file on different disks and locations, 
+spread over various hard disks, memory sticks, servers and you name it. 
+Unused disk space is a waste, so I fill everything up to the brim with 
+extra copies.
+
+In other words, Git-Annex and I are very happy together, and I'd like to 
+marry it. And because you are the father, I hereby respectfully ask for 
+your blessing.
