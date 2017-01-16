@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="xloem"
+ avatar="http://cdn.libravatar.org/avatar/b8c087f7c5e6a9358748f0727c077f3b"
+ subject="comment 1"
+ date="2017-01-16T12:16:37Z"
+ content="""
+You can set the server up as a normal git remote to store file changelogs, and then also as an rsync special remote to store file data.  See https://git-annex.branchable.com/special_remotes/rsync/
+"""]]
