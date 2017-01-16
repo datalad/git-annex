@@ -1,0 +1,52 @@
+### Please describe the problem.
+Git-annex is hanging for me on all operations if I have a customized OpenSSH host as a remote.
+This is because git-annex uses a custom config file that uses directives introduced in OpenSSH 7.3p1 .  I have OpenSSH 6.7p1 .
+
+### What steps will reproduce the problem?
+On Debian Jessie, specify a custom host in ~/.ssh/config such as
+
+     Host custom-host
+          HostName realhost.com
+
+Add it as a remote and try to use git-annex
+
+     $ git remote add custom user@custom-host
+     $ git annex vicfg --debug
+
+It just hangs.
+
+### What version of git-annex are you using? On what operating system?
+     git-annex version: 6.20161211-gc3ab3c668
+     PRETTY_NAME="Debian GNU/Linux 8 (jessie)"
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+annex@host:~/annex$ git annex vicfg --debug
+[2017-01-16 12:01:58.104071891] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2017-01-16 12:01:58.110698965] process done ExitSuccess
+[2017-01-16 12:01:58.11093666] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2017-01-16 12:01:58.116640973] process done ExitSuccess
+[2017-01-16 12:01:58.123254411] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2017-01-16 12:01:58.125003224] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2017-01-16 12:01:58.131239655] read: ssh ["-S",".git/annex/ssh/annex@annex-whonix-standalone","-o","ControlMaster=auto","-o","ControlPersist=yes","-F",".git/annex/ssh.config","-T","annex@annex-whonix-standalone","git-annex-shell 'configlist' '/~/annex' '--debug'"]
+^C
+annex@host:~/annex$ cat .git/annex/ssh.config 
+IgnoreUnknown Include
+Include ~/.ssh/config
+Include /etc/ssh/ssh_config
+ServerAliveInterval 60
+
+# End of transcript or log.
+"""]]
+
+The problem is the use of the `Include` directive which is not understood by my release of OpenSSH.
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Git-annex rocks !!!!
+
