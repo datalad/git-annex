@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="shodanshok@8c8405b6944c211be7dec8ae8fccde70adc19027"
+ nickname="shodanshok"
+ avatar="http://cdn.libravatar.org/avatar/8b4dd6a9f2396b788ca18f3690609ad3"
+ subject="Can git-annex be used to quasi-realtime replication?"
+ date="2017-01-16T17:41:07Z"
+ content="""
+Suppose I have two Samba fileservers in two different locations. Can I use git-annex in thin mode + git-annex assistant to automatically synchronize these two fileserver? Specifically, I am trying to understand if:
+
+1) git-annex preserve owner/group ID and POSIX ACLs;
+2) it can efficiently manage very large number of file/directory (500K+ files)
+3) it can be used alongside inotify to efficiently transfer only changed files
+
+One last thing: I which sense git-annex is not like Unison? It seems it can be configured to have very similar functionality. I am missing something?
+
+Thank you all.
+"""]]
