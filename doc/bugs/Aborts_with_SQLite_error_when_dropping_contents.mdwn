@@ -1,3 +1,6 @@
+(Found the problem, so you might want to skip to the comments to see 
+what's wrong.)
+
 ### Please describe the problem.
 
 Trying to drop the contents of 131 files in a subdirectory, but it dies 
