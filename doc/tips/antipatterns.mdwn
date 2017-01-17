@@ -3,7 +3,7 @@ git-annex in the past that can lead to catastrophic data loss, abusive
 disk usage, improper swearing and other unfortunate experiences.
 
 This could also be called the "git annex worst practices", but is
-different than [[not|what git annex is not]] in that it covers normal
+different than [[what git annex is not|not]] in that it covers normal
 use cases of git-annex, just implemented in the wrong way. Hopefully,
 git-annex should make it as hard as possible to do those things, but
 sometimes, you just can't help it, people figure out the worst
