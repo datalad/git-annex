@@ -1,0 +1,80 @@
+### Please describe the problem.
+
+I'm getting `fatal: unable to normalize object directory` while issuing `git annex copy` from an annex in my laptop to a vanilla remote annex located in a USB disk.
+As far as I can tell there are no hardware problems with the disk or the laptop.
+
+```
+$ git annex copy --auto --to usbdrive .
+copy vlc-record-2016-07-17-15h16m55s-hr-fernsehen-Die fantastische Reise der Vögel (3_6).ts (to usbdrive...) 
+SHA256E-s1256869488--28edfd2c4eb08e6782c806a85db7bc10595c16df6f64d3d46ebc2802b3ba5038.ts
+  1,256,869,488 100%   52.96MB/s    0:00:22 (xfr#1, to-chk=0/1)
+(checksum...) fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+
+  fd:24: hGetLine: end of file
+
+SHA256E-s1256869488--28edfd2c4eb08e6782c806a85db7bc10595c16df6f64d3d46ebc2802b3ba5038.ts
+  1,256,869,488 100%   56.08MB/s    0:00:21 (xfr#1, to-chk=0/1)
+(checksum...) 
+  fd:23: hFlush: resource vanished (Broken pipe)
+
+  fd:23: hClose: resource vanished (Broken pipe)
+ok
+(recording state in git...)
+```
+
+But note that the command did not abort. After copying, `fsck` reports no error:
+
+```
+$ git annex fsck --from=usbdrive 'vlc-record-2016-07-17-15h16m55s-hr-fernsehen-Die fantastische Reise der Vögel (3_6).ts'
+fsck vlc-record-2016-07-17-15h16m55s-hr-fernsehen-Die fantastische Reise der Vögel (3_6).ts (checksum...) ok
+(recording state in git...)
+```
+
+I get the same errors with `drop`, which fails: 
+
+```
+$ git annex drop --from usbdrive 'vlc-record-2016-07-17-15h16m55s-hr-fernsehen-Die fantastische Reise der Vögel (3_6).ts'
+drop usbdrive vlc-record-2016-07-17-15h16m55s-hr-fernsehen-Die fantastische Reise der Vögel (3_6).ts fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+fatal: unable to normalize object directory: /home/jr/Videos/ts/../../../../../run/media/jr/TOSHIBA/jr/Videos.git/objects
+
+git-annex: fd:27: hGetLine: end of file
+failed
+git-annex: drop: 1 failed
+```
+
+But the same `drop` works if executed again:
+
+```
+$ git annex drop --from usbdrive 'vlc-record-2016-07-17-15h16m55s-hr-fernsehen-Die fantastische Reise der Vögel (3_6).ts'
+drop usbdrive vlc-record-2016-07-17-15h16m55s-hr-fernsehen-Die fantastische Reise der Vögel (3_6).ts ok
+(recording state in git...)
+```
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 6.20161231-gc8eeb17da
+
+Linux XXX 4.8.13-1-ARCH #1 SMP PREEMPT Fri Dec 9 07:24:34 CET 2016 x86_64 GNU/Linux
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes! I use git-annex without a problem since years. This is the first time I have really no idea what's going on.
