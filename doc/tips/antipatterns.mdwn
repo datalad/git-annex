@@ -57,7 +57,7 @@ we can do to change that in this case.
 using reinit with an existing uuid without fsck
 ===============================================
 
-To quote the manpage:
+To quote the [[git-annex-reinit]] manpage:
 
 > Normally, initializing a repository generates a new, unique
 > identifier (UUID) for that repository. Occasionally it may be useful
@@ -95,6 +95,9 @@ An improvement to git-annex here would be to allow
 [[todo/reinit_should_work_without_arguments|reinit to work without arguments]]
 to at least not encourage UUID reuse. reinit could also recommend
 running fsck explicitely. It could even trigger an fsck directly.
+
+The [[git-annex-reinit]] manpage has always suggested running `fsck`,
+but the wording has been changed on 2017-01-17.
 
 Other cases
 ===========
