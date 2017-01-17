@@ -14,8 +14,10 @@ UUID -- for example, if a repository got deleted, and you're
 setting it back up.
 
 Use this with caution; it can be confusing to have two existing
-repositories with the same UUID. Also, you will probably want to run
-a fsck.
+repositories with the same UUID. It can lead to data loss and other
+weird phenomenons. Make sure you run `git annex fsck` after changing
+the UUID of a repository to make sure location tracking information is
+recorded correctly.
 
 Like `git annex init`, this attempts to enable any special remotes
 that are configured with autoenable=true.
@@ -25,6 +27,8 @@ that are configured with autoenable=true.
 [[git-annex]](1)
 
 [[git-annex-init]](1)
+
+[[git-annex-fsck]](1)
 
 # AUTHOR
 
