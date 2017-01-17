@@ -90,7 +90,7 @@ Fixes
 -----
 
 An improvement to git-annex here would be to allow
-[[todo/reinit_should_work_without_arguments|reinit to work without arguments]]
+[[reinit to work without arguments|todo/reinit_should_work_without_arguments]]
 to at least not encourage UUID reuse. reinit could also recommend
 running fsck explicitely. It could even trigger an fsck directly.
 
