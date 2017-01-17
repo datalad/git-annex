@@ -11,13 +11,11 @@ possible ways of doing things.
 
 [[!toc]]
 
-.git/annex symlink
-==================
+---
 
-Antipattern
------------
+# **Antipattern**
 
-Symlinking the `.git/annex` symlink directory, in the hope of saving
+Symlinking the `.git/annex` directory, in the hope of saving
 disk space, is a horrible idea. The general antipattern is:
 
     git clone repoA repoB
@@ -54,8 +52,11 @@ Probably no way to fix this in git-annex - if users want to shoot
 themselves in the foot by messing with the backend, there's not much
 we can do to change that in this case.
 
-using reinit with an existing uuid without fsck
-===============================================
+---
+
+# **Antipattern**
+
+Reinit repo with an existing uuid without fsck
 
 To quote the [[git-annex-reinit]] manpage:
 
@@ -63,9 +64,6 @@ To quote the [[git-annex-reinit]] manpage:
 > identifier (UUID) for that repository. Occasionally it may be useful
 > to reuse a UUID -- for example, if a repository got deleted, and
 > you're setting it back up.
-
-Anti-pattern
-------------
 
 [[git-annex-reinit]] can be used to reuse UUIDs for deleted
 repositories. But what happens if you reuse the UUID of an *existing*
