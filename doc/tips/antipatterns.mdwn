@@ -13,7 +13,7 @@ possible ways of doing things.
 
 ---
 
-# **Antipattern**
+# **Symlinking the `.git/annex` directory**
 
 Symlinking the `.git/annex` directory, in the hope of saving
 disk space, is a horrible idea. The general antipattern is:
@@ -54,9 +54,7 @@ we can do to change that in this case.
 
 ---
 
-# **Antipattern**
-
-Reinit repo with an existing uuid without fsck
+# **Reinit repo with an existing uuid without `fsck`**
 
 To quote the [[git-annex-reinit]] manpage:
 
