@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="https://anarc.at/openid/"
+ nickname="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/b36dcf65657dd36128161355d8920a99503def9461c1bb212410980fe6f07125"
+ subject="re dataloss and point"
+ date="2017-01-17T01:34:43Z"
+ content="""
+I think you wouldn't have had data loss if you untrusted the repository, am I correct? The remote is explicitly marked as \"unsafe\" (and ideally, it would automatically declare that to git-annex, but maybe there's no way to setup the trust level of remotes automatically like that) so operations that *move* files to it will be denied unless there's another copy somewhere...
+
+As for \"what's the point of it\", I thought I made that pretty clear... It enables use cases like:
+
+* [[forum/syncing_music_to_my_android_device/]]
+* [[forum/original_filename_on_s3/]]
+* [[todo/Facilitate_public_pretty_S3_URLs]]
+* etc
+
+> Aside from data loss bugs, /tmp/dumb just can't be kept fully up-to-date with changes to the working tree. So what's the point of it?
+
+I'm not sure what you mean there, by \"can't be kept fully up up-to-date\", could you clarify?
+
+Do you mean it won't follow renames and such? In my use case, I don't mind: i can just trash the remote and recreate it, if the working tree changes - and it doesn't change often enough for this to be a problem.
+
+> After fixing its calckey to work with the current version of git-annex...
+
+would you mind sharing that fix? :)
+
+thanks for the feedback, and sorry for the delay - for some reason i never got notifications for the reply... :/
+"""]]
