@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://anarc.at/openid/"
+ nickname="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/b36dcf65657dd36128161355d8920a99503def9461c1bb212410980fe6f07125"
+ subject="answers"
+ date="2017-01-17T16:56:39Z"
+ content="""
+i actually answered this in [[forum/Full_workflow_guide]] before realizing this post was a duplicate.
+
+i am not sure where that should be put - it's not a \"full workflow guide\", it's actually a \"specific workflow guide\", namely \"i have 3 computers and need to sync files from A to B to C\"... 
+
+i wonder if this should be marked as resolved or if we want to add a specific workflow for this or what?
+
+this reminds me of my broader [[todo/build_a_user_guide]] task... -- [[anarcat]]
+"""]]
