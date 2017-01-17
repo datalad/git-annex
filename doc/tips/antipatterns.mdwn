@@ -1,0 +1,106 @@
+This page tries to regroup a set of Really Bad Ideas people had with
+git-annex in the past that can lead to catastrophic data loss, abusive
+disk usage, improper swearing and other unfortunate experiences.
+
+This could also be called the "git annex worst practices", but is
+different than [[not|what git annex is not]] in that it covers normal
+use cases of git-annex, just implemented in the wrong way. Hopefully,
+git-annex should make it as hard as possible to do those things, but
+sometimes, you just can't help it, people figure out the worst
+possible ways of doing things.
+
+[[!toc]]
+
+.git/annex symlink
+==================
+
+Antipattern
+-----------
+
+Symlinking the `.git/annex` symlink directory, in the hope of saving
+disk space, is a horrible idea. The general antipattern is:
+
+    git clone repoA repoB
+    mv repoB/.git/annex repoB/.git/annex.bak
+    ln -s repoA/.git/annex repoB/.git/annex
+
+This is bad because git-annex will believe it has two copy of the
+files and then would let you drop the single copy, therefore leading
+to data loss.
+
+Proper pattern
+--------------
+
+The proper way of doing this is through git-annex's hardlink support,
+by cloning the repository with the `--shared` option:
+
+    git clone --shared repoA repoB
+
+This will setup repoB as an "untrusted" repository and use hardlinks
+to copy files between the two repos, using space only once. This
+works, of course, only on filesystems that support hardlinks, but
+that's usually the case for filesystems that support symlinks.
+
+Real world cases
+----------------
+
+ * [[forum/share_.git__47__annex__47__objects_across_multiple_repositories_on_one_machine/]]
+ * at least one IRC discussion
+
+Fixes
+-----
+
+Probably no way to fix this in git-annex - if users want to shoot
+themselves in the foot by messing with the backend, there's not much
+we can do to change that in this case.
+
+using reinit with an existing uuid without fsck
+===============================================
+
+To quote the manpage:
+
+> Normally, initializing a repository generates a new, unique
+> identifier (UUID) for that repository. Occasionally it may be useful
+> to reuse a UUID -- for example, if a repository got deleted, and
+> you're setting it back up.
+
+Anti-pattern
+------------
+
+[[git-annex-reinit]] can be used to reuse UUIDs for deleted
+repositories. But what happens if you reuse the UUID of an *existing*
+repository, or a repository that hasn't been properly emptied before
+being declared dead? This can lead to data loss because, in that case,
+git-annex may think some files are still present in the revived
+repository (while they may not actually be).
+
+Proper pattern
+--------------
+
+The proper way of using reinit is to make sure you run
+[[git-annex-fsck]] (optionally with `--fast` to save time) on the
+revived repo right after running reinit. This will ensure that at
+least the location log will be updated, and git-annex will notice if
+files are missing.
+
+Real world cases
+----------------
+
+ * [[bugs/remotes_disappeared]]
+
+Fixes
+-----
+
+An improvement to git-annex here would be to allow
+[[todo/reinit_should_work_without_arguments|reinit to work without arguments]]
+to at least not encourage UUID reuse. reinit could also recommend
+running fsck explicitely. It could even trigger an fsck directly.
+
+Other cases
+===========
+
+Feel free to add your lessons in catastrophe here! It's educational
+and fun, and will improve git-annex for everyone.
+
+PS: should this be a toplevel page instead of being drowned in the
+[[tips]] section? Where should it be linked to?  -- [[anarcat]]
