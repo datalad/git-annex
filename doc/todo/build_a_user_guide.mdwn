@@ -1,3 +1,5 @@
 there's a lot of good documentation on this wiki, but it's hard to find sometimes. it's also unclear if we should look in the [[git-annex]] manpage or elsewhere in the wiki or where. this is a typical problem with the use of wikis for documentation: it's there, but hard to find. it doesn't mean a wiki shouldn't be used but, as with any user manual, special care needs to be taken about structure, organisation and making sure the manual is exhaustive.
 
 a good example of this problem is [[todo/document_standard_groups_more_extensively_in_the_UI]]. --[[anarcat]]
+
+update: a beginning of this may be the the [[workflow]] page but it lacks a lot of details... 
