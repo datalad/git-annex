@@ -1,0 +1,53 @@
+[[!comment format=mdwn
+ username="butirsky@86ff3803c45a8a1e5fc253d2728ce493c8addf96"
+ nickname="butirsky"
+ avatar="http://cdn.libravatar.org/avatar/bf8e56c57b179935c6f52ebc4690c2bf"
+ subject="comment 4"
+ date="2017-01-18T13:35:18Z"
+ content="""
+Log from other side:
+
+```
+[2017-01-18 15:46:22 MSK] main: starting assistant version 5.20140412ubuntu1
+[2017-01-18 15:46:22 MSK] Cronner: You should enable consistency checking to protect your data. 
+(Recording state in git...)
+(scanning...) [2017-01-18 15:46:22 MSK] Watcher: Performing startup scan
+(started...) Generating public/private rsa key pair.
+Your identification has been saved in /tmp/git-annex-keygen.0/key.
+Your public key has been saved in /tmp/git-annex-keygen.0/key.pub.
+The key fingerprint is:
+aa:c0:c3:b8:ca:4d:5c:85:58:02:b6:a0:4a:64:18:dd echormonov@sml-pc-091
+The key's randomart image is:
++--[ RSA 2048]----+
+|+B.o .           |
+|B o E .          |
+|.o . . .         |
+|o     .          |
+|.    .  S        |
+| +. .  .         |
+|. =o  .          |
+|..oo .           |
+|+. ..            |
++-----------------+
+[2017-01-18 15:48:26 MSK] main: Pairing in progress
+[2017-01-18 15:48:44 MSK] PairListener: abutirsky@sml-pc-066:~/Desktop/gitrepo_test is sending a pair request.
+Generating public/private rsa key pair.
+Your identification has been saved in /tmp/git-annex-keygen.0/key.
+Your public key has been saved in /tmp/git-annex-keygen.0/key.pub.
+The key fingerprint is:
+28:e0:f4:a2:2c:a2:bc:7a:22:6e:4c:6d:8f:38:ac:b4 echormonov@sml-pc-091
+The key's randomart image is:
++--[ RSA 2048]----+
+|                 |
+|                 |
+|  o              |
+| o o   .         |
+|  + o . S        |
+|.o + .           |
+|Boo o            |
+|O*o. .           |
+|XEo              |
++-----------------+
+[2017-01-18 15:50:40 MSK] main: Pairing with abutirsky@sml-pc-066:~/Desktop/gitrepo_test in progress
+```
+"""]]
