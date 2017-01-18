@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="jaylangseth@fa84aeedaf6dd96a51e93b012339ac09fb4dc135"
+ nickname="jaylangseth"
+ avatar="http://cdn.libravatar.org/avatar/a40561e76777f90b29891f8fb86b5d05"
+ subject="comment 3"
+ date="2017-01-18T21:11:15Z"
+ content="""
+Ok!  Got it working, and I can ssh between the two machines and access git-annex-shell on both sides, got all the $PATH stuff right.  I set up one repo on the desktop and one on the server, made them remotes of each other, and I have managed to transfer files back and forth using \"git annex sync.\"  But how do I get the assistant to do this automatically without command line intervention?  Just dropping the file in one folder, it doesn't show up in another, unlike the other git-annex repos I have between my two local computers.
+"""]]
