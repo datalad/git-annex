@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="pa.aronsson@1f04cce52a3649f5485c62c1f97bf157b1d3ba56"
- nickname="pa.aronsson"
- avatar="http://cdn.libravatar.org/avatar/33eb282dc9247afcffea03dcbe960107"
- subject="Isn't the ending &quot;.&quot; in the host name the problem?"
- date="2017-01-20T09:53:56Z"
- content="""
-xmpp.l.google.com.:5222 -> xmpp.l.google.com:5222
-"""]]
