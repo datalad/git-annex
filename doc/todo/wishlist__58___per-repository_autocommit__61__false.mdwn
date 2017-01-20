@@ -1,0 +1,5 @@
+when using git-annex as a minority participant in a repository (eg. because in a hardware project, at some point in time, photos get added), users will start to need to `git annex sync` (because a plain `git pull` / `git push` will work but show errors, and a `pull --all` / `annex merge` is difficult for users to remember). to stay in line with usual git usage, the `sync` must be used with `config annex.autocommit false`, but that needs to be configured on each repository.
+
+forgetting to do that explicit configuration results, in one sync command, easily results in an unwanted implicit commit that's pushed across remotes.
+
+could there be a per-repository option (somewhere around .gitattributes, or maybe in the git-annex branch) that disables autocommits for the repository?
