@@ -1,0 +1,15 @@
+### What version of git-annex are you using? On what operating system?
+
+6.20170101+gitg93d69b1-1~ndall+1
+
+### Please provide any additional information below.
+
+[[!format sh """
+$> git annex copy --help
+...
+  -j,--json                enable JSON output
+  -j,--json-progress       include progress in JSON output
+
+"""]]
+
+[[!meta author=yoh]]
