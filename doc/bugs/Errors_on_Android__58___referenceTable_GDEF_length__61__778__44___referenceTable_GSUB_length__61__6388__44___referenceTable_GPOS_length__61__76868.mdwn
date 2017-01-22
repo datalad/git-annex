@@ -2,24 +2,24 @@
 
 Opening the Android app, the following message is shown:
 
-   referenceTable GDEF length=778
-   referenceTable GSUB length=6388
-   referenceTable GPOS length=76868
+    referenceTable GDEF length=778
+    referenceTable GSUB length=6388
+    referenceTable GPOS length=76868
 
-   [Terminal session finished]
+    [Terminal session finished]
 
 I am not able to use git-annex. Trying to open a new window in git-annex, I get similar errors:
 
-   [Terminal session finished]
-   referenceTable GDEF length=778 1
-   referenceTable GSUB length=6388 1
-   referenceTable GPOS length=76868 1
-   referenceTable head length=54 1
-   referenceTable GDEF length=670
-   referenceTable GSUB length=7168
-   referenceTable GPOS length=24560
-   referenceTable head length=54 1
-   git annex webapp
+    [Terminal session finished]
+    referenceTable GDEF length=778 1
+    referenceTable GSUB length=6388 1
+    referenceTable GPOS length=76868 1
+    referenceTable head length=54 1
+    referenceTable GDEF length=670
+    referenceTable GSUB length=7168
+    referenceTable GPOS length=24560
+    referenceTable head length=54 1
+    git annex webapp
 
 
 ### What steps will reproduce the problem?
