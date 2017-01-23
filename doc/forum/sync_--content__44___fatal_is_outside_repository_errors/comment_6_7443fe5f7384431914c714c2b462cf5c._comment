@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="RESOLVED / deleted all files then re-added as zip"
+ date="2017-01-23T02:28:23Z"
+ content="""
+OK. I ended up having to delete all the files from git, then re-add them zipped up.
+
+I re-read the post you mentioned, this helped me resolve my issue:
+[assistant crashes in TransferScanner](http://git-annex.branchable.com/bugs/assistant_crashes_in_TransferScanner/) (from johannes)
+
+Johannes dropped the file, then re-added, that fixed his issue. So I tried that first.
+
+I did the following:
+
+ * git-annex dropped all problem files. this didn't fix issue
+ * deleted all problem files (using OS-X Finder), committed the deletion with git (git add -A), issue then fixed
+    * re-added deleted files, issue came back
+    * re-added deleted files in different folder, issue came back
+    * re-added deleted files all with different filenames in different path, issue came back
+    * zipped up folder of problem files, then added to git-annex, no issues
+
+
+"""]]
