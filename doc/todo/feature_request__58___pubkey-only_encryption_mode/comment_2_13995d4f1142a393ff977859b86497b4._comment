@@ -16,7 +16,7 @@ I don't understand the reasoning that made you come to this conclusion.
 
 Let me restate my use case:
 
-With only the public part of a gpg key id available to a user, I would like that user to be able to add files to a git-annex repository. The user should then be able to copy the files encrypted to remotes that support encryption (S3 etc). The user should not be able to fetch or verify files from the encrypted remotes (since she lacks the private gpg key). The remote would be write-only for the user, basically. However, a friend of the user, posessing the private key (and having access to the remote), should be able to use the remote just like a normal git-annex remote.
+With only the public part of a gpg key id available to a user, I would like that user to be able to add files to a git-annex repository. The user should then be able to copy the files encrypted to remotes that support encryption (S3 etc). The user should not be able to fetch or verify files from the encrypted remotes (since she lacks the private gpg key). The remote would be write-only for the user, basically. However, a friend of the user, possessing the private key (and having access to the remote), should be able to use the remote just like a normal git-annex remote.
 
 This is the normal way of using gpg for asymmetric encryption of files. I would find it useful to be able to use git-annex in a similar way. As far as I can understand, only the encrypted HMAC key is stopping me from using git-annex in this way. 
 
