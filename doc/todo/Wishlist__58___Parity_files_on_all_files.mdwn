@@ -1,0 +1,65 @@
+To make sure we can archive our data safely, we need to:
+
+- Store revisions
+- Allow files to be tracked while moved to archival spaces
+- Be platform-agnostic
+- Sync
+- Protect against bit-rot
+
+
+1 and 3 are handled by git itself; everything is a straight forward graph-structure comprised of plain text pointers *(accepting that some filesystems do not easily expose file metadata, but that's on them as we can simply chose to use a different system if that's important)
+
+2 and 4 seem to be handled by git-annex
+
+**But 5 is missing.**
+
+
+Thankfully, we already have a technology that can fill in elegantly here: parity files.
+
+
+### 2 potential user stories:
+
+#### Put everything together
+
+- This user wants everything together and in the filesystem in case one of the tools she relies on disappears.
+- Might have a structure like this:
+   - Project
+     - documents
+       - contract.pdf
+       - contract.pdf.vol000+01.par2
+       - contract.pdf.vol001+02.par2
+       - contract.pdf.vol003+04.par2
+       - Client brochure.zip
+       - Client brochure.zip.vol000+01.par2
+       - Client brochure.zip.vol001+02.par2
+       - Client brochure.zip.vol003+04.par2
+
+- Or like this:
+   - Project
+     - documents
+       - contract.pdf
+       - Client brochure.zip
+     - documents.vol000+01.par2
+     - documents.vol001+02.par2
+     - documents.vol003+04.par2
+
+
+
+#### Keep everything clean
+
+- This user doesn't want to clutter folders with extra files. He would rather only have the data files themselves in case they need to be zipped and sent to clients. If he had setup 1, he would delete *.par before zipping, leading to potential data loss.
+- Might have a structure like this:
+   - Project
+     - documents
+       - contract.pdf
+       - Client brochure.zip
+   - [git-annex]
+       - contract.pdf.vol000+01.par2
+       - contract.pdf.vol001+02.par2
+       - contract.pdf.vol003+04.par2
+       - Client brochure.zip.vol000+01.par2
+       - Client brochure.zip.vol001+02.par2
+       - Client brochure.zip.vol003+04.par2
+
+
+This would also enhance the data-checking capabilities of git-annex, as data loss could be fixed and new parity files generated from the recovered files transparently, self-healing the archive.
