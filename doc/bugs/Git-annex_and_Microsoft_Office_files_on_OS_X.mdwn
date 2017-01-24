@@ -1,0 +1,28 @@
+### Please describe the problem.
+
+On OS X 10.11.6, if you save any MS office file (.pptx, .docx, .xlsx) in a git-annex directory it won't be synced by the assistant unless you restart the daemon. If you look in the logs it says "/Users/me/annex/test.pptx still has writers, not adding" This probably has something to do with temporary/lockfiles used by MS office apps (Office 2011 for Mac). Any ideas on a workaround, other than restarting the daemon constantly?
+
+
+### What steps will reproduce the problem?
+
+1.  Create any MS office file (.docx, .pptx, .xlsx).  Save in a directory managed by git-annex assistant.  Error message "still has writers, not adding" will show up in git-annex log.  File will not be synced to any other computer running git-annex assistant until Office application quit and daemon restarted.
+
+
+### What version of git-annex are you using? On what operating system?
+
+6.20161211-gf58b134, OS X 10.11.6
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes!  It's wonderful otherwise!
