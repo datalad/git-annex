@@ -1,0 +1,107 @@
+### Please describe the problem.
+
+Even if  -c annex.largefiles=nothing  is used with git add, then git commit  commits file into annex.
+
+This script demonstrates initial finding: http://www.onerussian.com/tmp/ga.sh
+
+Even if we use -c annex.largefiles=nothing  with both add and commit, subsequent   git status   migrates that file into annex (which is even more weird)
+
+Adjusted script demonstrates it: http://www.onerussian.com/tmp/ga-2.sh
+
+### What steps will reproduce the problem?
+
+see above
+
+### What version of git-annex are you using? On what operating system?
+
+6.20170101+gitg93d69b1-1~ndall+1
+
+
+### Please provide any additional information below.
+
+For completeness here is the output of the 2nd script run:
+
+[[!format sh """
+$> /tmp/ga-2.sh
+++ mktemp -d
++ d=/home/yoh/.tmp/tmp.WXTv2cULD0
++ echo 'directory: /home/yoh/.tmp/tmp.WXTv2cULD0'
+directory: /home/yoh/.tmp/tmp.WXTv2cULD0
++ cd /home/yoh/.tmp/tmp.WXTv2cULD0
++ git init
+Initialized empty Git repository in /tmp/tmp.WXTv2cULD0/.git/
++ git annex init --version=6
+init  ok
+(recording state in git...)
++ sed -i -e 's,pre-commit ,pre-commit --debug ,g' .git/hooks/pre-commit
++ echo 'I: creating a file'
+I: creating a file
++ echo whatever
++ git -c annex.largefiles=nothing add file5
++ git annex lookupkey file5
++ echo 'not in annex as it should'
+not in annex as it should
++ git annex find
++ ls -lR .git/annex/objects
+ls: cannot access '.git/annex/objects': No such file or directory
++ :
++ git -c annex.largefiles=nothing commit -m sdf
+[2017-01-27 09:43:27.569648245] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff","--cached","--name-only","-z","--diff-filter=ACMRT","--","."]
+[2017-01-27 09:43:27.576498829] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2017-01-27 09:43:27.581039152] process done ExitSuccess
+[2017-01-27 09:43:27.581134039] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2017-01-27 09:43:27.585093046] process done ExitFailure 1
+[master (root-commit) 9ec3fe6] sdf
+ 1 file changed, 1 insertion(+)
+ create mode 100644 file5
++ ls -lR .git/annex/objects
+ls: cannot access '.git/annex/objects': No such file or directory
++ :
++ echo 'I: before git status'
+I: before git status
++ ls -lR .git/annex/objects
+ls: cannot access '.git/annex/objects': No such file or directory
++ :
++ git status
+On branch master
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   file5
+
+no changes added to commit (use "git add" and/or "git commit -a")
++ echo 'I: after git status'
+I: after git status
++ ls -lR .git/annex/objects
+.git/annex/objects:
+total 0
+drwx------ 3 yoh yoh 60 Jan 27 09:43 XF
+
+.git/annex/objects/XF:
+total 0
+drwx------ 3 yoh yoh 60 Jan 27 09:43 pp
+
+.git/annex/objects/XF/pp:
+total 0
+dr-x------ 2 yoh yoh 60 Jan 27 09:43 SHA256E-s9--cd293be6cea034bd45a0352775a219ef5dc7825ce55d1f7dae9762d80ce64411
+
+.git/annex/objects/XF/pp/SHA256E-s9--cd293be6cea034bd45a0352775a219ef5dc7825ce55d1f7dae9762d80ce64411:
+total 4
+-rw------- 1 yoh yoh 9 Jan 27 09:43 SHA256E-s9--cd293be6cea034bd45a0352775a219ef5dc7825ce55d1f7dae9762d80ce64411
++ git diff
+diff --git a/file5 b/file5
+index 982793c..8fdffc0 100644
+--- a/file5
++++ b/file5
+@@ -1 +1 @@
+-whatever
++/annex/objects/SHA256E-s9--cd293be6cea034bd45a0352775a219ef5dc7825ce55d1f7dae9762d80ce64411
+
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+yeap
+
+[[!meta author=yoh]]
