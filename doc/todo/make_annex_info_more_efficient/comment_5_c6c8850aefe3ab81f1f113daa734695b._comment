@@ -7,7 +7,7 @@ When run on a local repository, git-annex info does not look at the
 git-annex branch. That would be slower than traversing the directories.
 (Asking for info about a remote does look at the git-annex branch.)
 
-git ls-tree does not have to look at files on disk, so is not comprable.
+git ls-tree does not have to look at files on disk, so is not comparable.
 The work `git annex info` does is roughly the same as a du of
 .git/annex/objects and a readlink of each symlink in the work tree.
 
