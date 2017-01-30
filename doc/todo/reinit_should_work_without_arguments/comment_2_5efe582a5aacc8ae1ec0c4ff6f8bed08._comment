@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://anarc.at/openid/"
+ nickname="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/b36dcf65657dd36128161355d8920a99503def9461c1bb212410980fe6f07125"
+ subject="usability..."
+ date="2017-01-30T18:06:22Z"
+ content="""
+This is all about usability. `reinit` is where I looked for this feature, and I didn't find it, so I figured it could be expanded to cover that use case.
+
+If `init` can do this, why not have a `overwrite` option or something that will actually remove the uuid key from the git config first?
+
+I don't think we should assume users know that they can edit `.git/config` safely. I certainly didn't think of doing that and sometimes shot myself in the foot playing in there... ;)
+"""]]
