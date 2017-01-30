@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-01-30T17:35:27Z"
+ content="""
+Generally git-annex takes longer the more files in the repository it needs
+to deal with. If a repository gets a great many files (typically 
+hundreds of thousands to millions), various inneficiencies in git annex
+git-annex will slow things down enough that it gets annoying.
+Splitting the files into different branches 
+(or separate repositories) is a common way to deal with that.
+
+Also, running on a spinning disk tends to be a lot slower than a SSD.
+
+Just for comparison, `git annex status` in a repository with 75000 files
+takes 0.5 seconds on my laptop's SSD. `git status` takes 0.2 seconds.
+
+In your particular case, the NTFS partition and/or v6
+mode seems likely to be the reason for slowdowns. Both git and git-annex
+record the inode numbers used for files in the repository. Those numbers
+are supposed to be stable, but mounting a filesystem on windows and then
+linux will make the inode numbers change. (Even remounting a FAT
+partition on linux will change the inodes, although that doesn't seem
+to happen for NTFS in a quick test).
+
+When the inodes have changed, much slower code paths get activated, since
+git and git-annex have to then assume the contents of the files may have
+changed since the last time they saw them. In a v6 repository where this
+has happened, `git status` is quite likely running `git-annex smudge`
+once per file in the working tree, which is quite slow.
+"""]]
