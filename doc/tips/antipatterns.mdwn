@@ -66,9 +66,16 @@ To quote the [[git-annex-reinit]] manpage:
 [[git-annex-reinit]] can be used to reuse UUIDs for deleted
 repositories. But what happens if you reuse the UUID of an *existing*
 repository, or a repository that hasn't been properly emptied before
-being declared dead? This can lead to data loss because, in that case,
-git-annex may think some files are still present in the revived
-repository (while they may not actually be).
+being declared dead? This can lead to git-annex getting confused
+because, in that case, git-annex may think some files are still
+present in the revived repository (while they may not actually be).
+
+This should never result in data loss, because git-annex does not
+trust its records about the contents of a repository, and checks
+that it really contains files before dropping them from other
+repositories. (The one exception to this rule is trusted repositories,
+whose contents are never checked. See the next two sections for more
+about problems with trusted repositories.)
 
 Proper pattern
 --------------
@@ -89,11 +96,45 @@ Fixes
 
 An improvement to git-annex here would be to allow
 [[reinit to work without arguments|todo/reinit_should_work_without_arguments]]
-to at least not encourage UUID reuse. reinit could also recommend
-running fsck explicitely. It could even trigger an fsck directly.
+to at least not encourage UUID reuse.
 
-The [[git-annex-reinit]] manpage has always suggested running `fsck`,
-but the wording has been changed on 2017-01-17.
+# **Deleting data from trusted repositories**
+
+When you use [[git-annex-trust]] on a repository, you disable
+some very important sanity checks that make sure that git-annex
+never loses the content of files. So trusting a repository
+is a good way to shoot yourself in the foot and lose data. Like the
+man page says, "Use with care."
+
+When you have made git-annex trust a repository, you can lose data
+by dropping files from that repository. For example, suppose file `foo` is
+present in the trusted repository, and also in a second repository.
+
+Now suppose you run `git annex drop foo` in both repositories.
+Normally, git-annex will not let both copies of the file be removed,
+but if the trusted repository is able to verify that the second
+repository has a copy, it will delete its copy. Then the drop in the second
+repository will *trust* the trusted repository still has its copy,
+and so the last copy of the file gets deleted.
+
+Proper pattern
+--------------
+
+Either avoid using trusted repositories, or avoid dropping content
+from them, or make sure you `git annex sync` just right, so
+other reposities know that data has been removed from a trusted repository.
+
+# **Deleting trusted repositories**
+
+Another way trusted repositories are unsafe is that even after they're
+deleted, git-annex will trust that they contained the files they
+used to contain.
+
+Proper pattern
+--------------
+
+Always use [[git-annex-dead]] to tell git-annex when a repository has
+been deleted, especially if it was trusted.
 
 Other cases
 ===========
