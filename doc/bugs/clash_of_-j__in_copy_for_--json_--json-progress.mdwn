@@ -13,3 +13,6 @@ $> git annex copy --help
 """]]
 
 [[!meta author=yoh]]
+
+> Removed the short -j for --json-progress, I don't think that
+> needs a short option. [[done]] --[[Joey]]

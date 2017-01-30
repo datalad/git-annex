@@ -294,7 +294,7 @@ jsonOption = globalFlag (Annex.setOutput (JSONOutput False))
 
 jsonProgressOption :: GlobalOption
 jsonProgressOption = globalFlag (Annex.setOutput (JSONOutput True))
-	( long "json-progress" <> short 'j'
+	( long "json-progress"
 	<> help "include progress in JSON output"
 	<> hidden
 	)
