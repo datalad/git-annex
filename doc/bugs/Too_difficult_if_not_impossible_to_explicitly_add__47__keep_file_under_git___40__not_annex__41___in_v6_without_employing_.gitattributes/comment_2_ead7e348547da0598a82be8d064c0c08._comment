@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-01-30T16:11:04Z"
+ content="""
+What's really going on with `git status`:
+
+* It runs `git annex smudge --clean`
+* That ingests the file into the annex, but does not change what's staged at all.
+* When you run `git diff`, it again cleans the file and displays
+  the difference between what is staged (the unannexed file) and the
+  cleaned version (the annexed file).
+* Notice that if you run `git annex add file12 -c annex.largefiles=nothing`
+  after this, the file gets staged in non-annexed file, as you'd expect.
+
+So the only problem I see here is `git annex smudge --clean`
+is ingesting a file into the annex when `git status` is not going to
+update the working tree to use the pointer to that file. But the clean
+hook interface doesn't provide it any way to know why git is asking for a
+file to be cleaned, so it has to always do that.
+
+If this is a small file suitable for being checked into git, the overhead of
+having a copy of it in the annex shouldn't matter much, and annex.thin
+will even make that copy be a hard link.
+
+I suppose one way this could be improved is for `git annex smudge --clean`
+to check if a file was checked into git as a non-annexed file before,
+and then avoid cleaning it at all. But then if someone had a non-annexed
+file and it got big and they wanted to add it annexed, such a change
+would cause a problem..
+
+Or git's smudge/clean interface could be improved so that the clean
+filter can know why it's being called, and so avoid ingesting files
+unnecessarily. IIRC my patch to improve the git interface did do that, but
+unfortunately it's stalled getting accepted into git.
+" ""]]
