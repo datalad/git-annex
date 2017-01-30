@@ -280,6 +280,12 @@ subdirectories).
 
   See [[git-annex-schedule]](1) for details.
 
+* `config`
+
+  Get and set other configuration stored in git-annex branch.
+  
+  See [[git-annex-config]](1) for details.
+
 * `vicfg`
 
   Opens EDITOR on a temp file containing most of the above configuration
@@ -999,6 +1005,9 @@ Here are all the supported configuration settings.
 
   Set to false to prevent the git-annex assistant and git-annex sync
   from automatically committing changes to files in the repository.
+
+  To configure the behavior in all repositories, this can be set in
+  [[git-annex-config]].
 
 * `annex.startupscan`
 

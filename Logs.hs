@@ -63,6 +63,9 @@ uuidLog = "uuid.log"
 numcopiesLog :: FilePath
 numcopiesLog = "numcopies.log"
 
+configLog :: FilePath
+configLog = "config.log"
+
 remoteLog :: FilePath
 remoteLog = "remote.log"
 

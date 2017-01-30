@@ -100,6 +100,16 @@ Records the global numcopies setting.
 
 The file format is simply a timestamp followed by a number.
 
+## `config.log`
+
+Records global configuration settings, which can be overridden by values
+in `.git/config`.
+
+The file format is a timestamp, followed by the name of the configuration,
+followed by the value. For example:
+
+	1317929189.157237s annex.autocommit false
+
 ## `remote.log`
 
 Holds persistent configuration settings for [[special_remotes]] such as

@@ -84,6 +84,7 @@ import qualified Command.GroupWanted
 import qualified Command.Required
 import qualified Command.Schedule
 import qualified Command.Ungroup
+import qualified Command.Config
 import qualified Command.Vicfg
 import qualified Command.Sync
 import qualified Command.Mirror
@@ -158,6 +159,7 @@ cmds testoptparser testrunner =
 	, Command.Required.cmd
 	, Command.Schedule.cmd
 	, Command.Ungroup.cmd
+	, Command.Config.cmd
 	, Command.Vicfg.cmd
 	, Command.LookupKey.cmd
 	, Command.CalcKey.cmd

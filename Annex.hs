@@ -114,6 +114,7 @@ data AnnexState = AnnexState
 	, checkignorehandle :: Maybe (Maybe CheckIgnoreHandle)
 	, forcebackend :: Maybe String
 	, globalnumcopies :: Maybe NumCopies
+	, globalconfig :: Maybe (M.Map String String)
 	, forcenumcopies :: Maybe NumCopies
 	, limit :: ExpandableMatcher Annex
 	, uuidmap :: Maybe UUIDMap
@@ -165,6 +166,7 @@ newState c r = do
 		, checkignorehandle = Nothing
 		, forcebackend = Nothing
 		, globalnumcopies = Nothing
+		, globalconfig = Nothing
 		, forcenumcopies = Nothing
 		, limit = BuildingMatcher []
 		, uuidmap = Nothing

@@ -1,0 +1,56 @@
+# NAME
+
+git-annex config - configuration stored in git-annex branch
+
+# SYNOPSIS
+
+git annex config --set name value
+
+git annex config --get name
+
+git annex config --unset name
+
+# DESCRIPTION
+
+Set or get configuration settings stored in the git-annex branch.
+
+Unlike `git config` settings, these settings can be seen
+in all clones of the repository, once they have gotten their
+git-annex branches in sync.
+
+# SUPPORTED SETTINGS
+
+git-annex does not check the git-annex branch for all settings.
+Only a few make sense to be able to set such that all clones of a
+repository see the setting, and so git-annex only looks for these:
+
+These settings can be overridden on a per-repository basis using
+`git config`:
+
+None yet!
+
+# EXAMPLE
+
+Suppose you want to prevent git annex sync from committing changes
+to files, so a manual git commit workflow is used in all clones of the
+repository. Then run:
+
+	git annex config --set annex.autocommit false
+
+If you change your mind, you can get back to the default behavior:
+
+	git annex config --unset annex.autocommit
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+git-config(1)
+
+[[git-annex-vicfg]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

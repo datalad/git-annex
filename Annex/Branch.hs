@@ -233,7 +233,7 @@ getHistorical date file =
 getRef :: Ref -> FilePath -> Annex String
 getRef ref file = withIndex $ decodeBS <$> catFile ref file
 
-{- Applies a function to modifiy the content of a file.
+{- Applies a function to modify the content of a file.
  -
  - Note that this does not cause the branch to be merged, it only
  - modifes the current content of the file on the branch.
