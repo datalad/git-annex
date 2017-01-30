@@ -24,7 +24,10 @@ instance SingleValueSerializable NumCopies where
 	deserialize = NumCopies <$$> readish
 
 setGlobalNumCopies :: NumCopies -> Annex ()
-setGlobalNumCopies = setLog numcopiesLog
+setGlobalNumCopies new = do
+	curr <- getGlobalNumCopies
+	when (curr /= Just new) $
+		setLog numcopiesLog new
 
 {- Value configured in the numcopies log. Cached for speed. -}
 getGlobalNumCopies :: Annex (Maybe NumCopies)

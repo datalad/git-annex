@@ -1,6 +1,6 @@
 # NAME
 
-git-annex vicfg - edit git-annex's configuration
+git-annex vicfg - edit configuration in git-annex branch
 
 # SYNOPSIS
 
@@ -8,13 +8,18 @@ git annex vicfg
 
 # DESCRIPTION
 
-Opens EDITOR on a temp file containing all of git-annex's global 
-configuration settings, and when it exits, stores any
-changes made back to the git-annex branch.
+Opens EDITOR on a temp file containing all of git-annex's 
+configuration settings that are stored in the git-annex branch, 
+and when it exits, stores any changes made back to the git-annex branch.
+
+Unlike git config settings, these configuration settings can be seen
+by all clones of the repository.
 
 # SEE ALSO
 
 [[git-annex]](1)
+
+git-config(1)
 
 # AUTHOR
 

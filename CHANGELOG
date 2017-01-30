@@ -5,6 +5,7 @@ git-annex (6.20170102) UNRELEASED; urgency=medium
     remotes when possible.
   * Remove -j short option for --json-progress; that option was already
     taken for --json.
+  * vicfg: Include the numcopies configuation.
 
  -- Joey Hess <id@joeyh.name>  Fri, 06 Jan 2017 15:22:06 -0400
 

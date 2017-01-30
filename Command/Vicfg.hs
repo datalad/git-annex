@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2012-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -24,12 +24,14 @@ import Logs.Trust
 import Logs.Group
 import Logs.PreferredContent
 import Logs.Schedule
+import Logs.NumCopies
 import Types.StandardGroups
 import Types.ScheduledActivity
+import Types.NumCopies
 import Remote
 
 cmd :: Command
-cmd = command "vicfg" SectionSetup "edit git-annex's configuration"
+cmd = command "vicfg" SectionSetup "edit configuration in git-annex branch"
 	paramNothing (withParams seek)
 
 seek :: CmdParams -> CommandSeek
@@ -66,6 +68,7 @@ data Cfg = Cfg
 	, cfgRequiredContentMap :: M.Map UUID PreferredContentExpression
 	, cfgGroupPreferredContentMap :: M.Map Group PreferredContentExpression
 	, cfgScheduleMap :: M.Map UUID [ScheduledActivity]
+	, cfgNumCopies :: Maybe NumCopies
 	}
 
 getCfg :: Annex Cfg
@@ -76,6 +79,7 @@ getCfg = Cfg
 	<*> requiredContentMapRaw
 	<*> groupPreferredContentMapRaw
 	<*> scheduleMap
+	<*> getGlobalNumCopies
 
 setCfg :: Cfg -> Cfg -> Annex ()
 setCfg curcfg newcfg = do
@@ -86,6 +90,7 @@ setCfg curcfg newcfg = do
 	mapM_ (uncurry requiredContentSet) $ M.toList $ cfgRequiredContentMap diff
 	mapM_ (uncurry groupPreferredContentSet) $ M.toList $ cfgGroupPreferredContentMap diff
 	mapM_ (uncurry scheduleSet) $ M.toList $ cfgScheduleMap diff
+	maybe noop setGlobalNumCopies $ cfgNumCopies diff
 
 {- Default config has all the keys from the input config, but with their
  - default values. -}
@@ -97,6 +102,7 @@ defCfg curcfg = Cfg
 	, cfgRequiredContentMap = mapdef $ cfgRequiredContentMap curcfg
 	, cfgGroupPreferredContentMap = mapdef $ cfgGroupPreferredContentMap curcfg
 	, cfgScheduleMap = mapdef $ cfgScheduleMap curcfg
+	, cfgNumCopies = Nothing
 	}
   where
 	mapdef :: forall k v. Default v => M.Map k v -> M.Map k v
@@ -110,6 +116,7 @@ diffCfg curcfg newcfg = Cfg
 	, cfgRequiredContentMap = diff cfgRequiredContentMap
 	, cfgGroupPreferredContentMap = diff cfgGroupPreferredContentMap
 	, cfgScheduleMap = diff cfgScheduleMap
+	, cfgNumCopies = cfgNumCopies newcfg
 	}
   where
 	diff f = M.differenceWith (\x y -> if x == y then Nothing else Just x)
@@ -125,6 +132,7 @@ genCfg cfg descs = unlines $ intercalate [""]
 	, standardgroups
 	, requiredcontent
 	, schedule
+	, others
 	]
   where
 	intro =
@@ -201,6 +209,14 @@ genCfg cfg descs = unlines $ intercalate [""]
 		[ com $ "(for " ++ fromMaybe "" (M.lookup u descs) ++ ")"
 		, unwords [setting, fromUUID u, "=", val]
 		]
+
+	line' setting Nothing = com $ unwords [setting, "default", "="]
+	line' setting (Just val) = unwords [setting, "default", "=", val]
+
+	others =
+		[ com "Other configuration"
+		, line' "numcopies" (show . fromNumCopies <$> cfgNumCopies cfg)
+		]
 	
 settings :: Ord v => Cfg -> M.Map UUID String -> (Cfg -> M.Map UUID v) -> [String] -> ((v, UUID) -> [String]) -> (UUID -> [String]) -> [String]
 settings cfg descs = settings' cfg (M.keysSet descs)
@@ -274,6 +290,9 @@ parseCfg defcfg = go [] defcfg . lines
 			Right l -> 
 				let m = M.insert u l (cfgScheduleMap cfg)
 				in Right $ cfg { cfgScheduleMap = m }
+		| setting == "numcopies" = case readish val of
+			Nothing -> Left "parse error (expected an integer)"
+			Just n -> Right $ cfg { cfgNumCopies = Just (NumCopies n) }
 		| otherwise = badval "setting" setting
 	  where
 		u = toUUID f
