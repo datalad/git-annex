@@ -24,6 +24,7 @@ import Logs.Trust
 import Logs.Group
 import Logs.PreferredContent
 import Logs.Schedule
+import Logs.Config
 import Logs.NumCopies
 import Types.StandardGroups
 import Types.ScheduledActivity
@@ -68,6 +69,7 @@ data Cfg = Cfg
 	, cfgRequiredContentMap :: M.Map UUID PreferredContentExpression
 	, cfgGroupPreferredContentMap :: M.Map Group PreferredContentExpression
 	, cfgScheduleMap :: M.Map UUID [ScheduledActivity]
+	, cfgGlobalConfigs :: M.Map ConfigName ConfigValue
 	, cfgNumCopies :: Maybe NumCopies
 	}
 
@@ -79,6 +81,7 @@ getCfg = Cfg
 	<*> requiredContentMapRaw
 	<*> groupPreferredContentMapRaw
 	<*> scheduleMap
+	<*> loadGlobalConfig
 	<*> getGlobalNumCopies
 
 setCfg :: Cfg -> Cfg -> Annex ()
@@ -90,6 +93,7 @@ setCfg curcfg newcfg = do
 	mapM_ (uncurry requiredContentSet) $ M.toList $ cfgRequiredContentMap diff
 	mapM_ (uncurry groupPreferredContentSet) $ M.toList $ cfgGroupPreferredContentMap diff
 	mapM_ (uncurry scheduleSet) $ M.toList $ cfgScheduleMap diff
+	mapM_ (uncurry setGlobalConfig) $ M.toList $ cfgGlobalConfigs diff
 	maybe noop setGlobalNumCopies $ cfgNumCopies diff
 
 {- Default config has all the keys from the input config, but with their
@@ -102,6 +106,7 @@ defCfg curcfg = Cfg
 	, cfgRequiredContentMap = mapdef $ cfgRequiredContentMap curcfg
 	, cfgGroupPreferredContentMap = mapdef $ cfgGroupPreferredContentMap curcfg
 	, cfgScheduleMap = mapdef $ cfgScheduleMap curcfg
+	, cfgGlobalConfigs = mapdef $ cfgGlobalConfigs curcfg
 	, cfgNumCopies = Nothing
 	}
   where
@@ -116,6 +121,7 @@ diffCfg curcfg newcfg = Cfg
 	, cfgRequiredContentMap = diff cfgRequiredContentMap
 	, cfgGroupPreferredContentMap = diff cfgGroupPreferredContentMap
 	, cfgScheduleMap = diff cfgScheduleMap
+	, cfgGlobalConfigs = diff cfgGlobalConfigs
 	, cfgNumCopies = cfgNumCopies newcfg
 	}
   where
@@ -132,7 +138,8 @@ genCfg cfg descs = unlines $ intercalate [""]
 	, standardgroups
 	, requiredcontent
 	, schedule
-	, others
+	, numcopies
+	, globalconfigs
 	]
   where
 	intro =
@@ -205,6 +212,14 @@ genCfg cfg descs = unlines $ intercalate [""]
 		(\(l, u) -> line "schedule" u $ fromScheduledActivities l)
 		(\u -> line "schedule" u "")
 
+	globalconfigs = settings' cfg S.empty cfgGlobalConfigs
+		[ com "Other global configuration"
+		]
+		(\(s, g) -> gline g s)
+		(\g -> gline g "")
+	  where
+		gline g val = [ unwords ["config", g, "=", val] ]
+
 	line setting u val =
 		[ com $ "(for " ++ fromMaybe "" (M.lookup u descs) ++ ")"
 		, unwords [setting, fromUUID u, "=", val]
@@ -213,8 +228,8 @@ genCfg cfg descs = unlines $ intercalate [""]
 	line' setting Nothing = com $ unwords [setting, "default", "="]
 	line' setting (Just val) = unwords [setting, "default", "=", val]
 
-	others =
-		[ com "Other configuration"
+	numcopies =
+		[ com "Numcopies configuration"
 		, line' "numcopies" (show . fromNumCopies <$> cfgNumCopies cfg)
 		]
 	
@@ -290,6 +305,9 @@ parseCfg defcfg = go [] defcfg . lines
 			Right l -> 
 				let m = M.insert u l (cfgScheduleMap cfg)
 				in Right $ cfg { cfgScheduleMap = m }
+		| setting == "config" =
+			let m = M.insert f val (cfgGlobalConfigs cfg)
+			in Right $ cfg { cfgGlobalConfigs = m }
 		| setting == "numcopies" = case readish val of
 			Nothing -> Left "parse error (expected an integer)"
 			Just n -> Right $ cfg { cfgNumCopies = Just (NumCopies n) }
