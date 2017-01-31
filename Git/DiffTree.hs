@@ -101,11 +101,11 @@ getdiff command params repo = do
 
 {- Parses --raw output used by diff-tree and git-log. -}
 parseDiffRaw :: [String] -> [DiffTreeItem]
-parseDiffRaw l = go l []
+parseDiffRaw l = go l
   where
-	go [] c = c
-	go (info:f:rest) c = go rest (mk info f : c)
-	go (s:[]) _ = error $ "diff-tree parse error near \"" ++ s ++ "\""
+	go [] = []
+	go (info:f:rest) = mk info f : go rest
+	go (s:[]) = error $ "diff-tree parse error near \"" ++ s ++ "\""
 
 	mk info f = DiffTreeItem
 		{ srcmode = readmode srcm
