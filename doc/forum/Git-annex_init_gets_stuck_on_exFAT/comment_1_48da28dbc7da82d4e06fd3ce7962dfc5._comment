@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-01-31T16:42:54Z"
+ content="""
+Despite v6 repo format being available now, git-annex still defaults to v5,
+and so needs to use direct mode when run in a FAT filesystem. If you want
+to use v6 repo mode, you will need to `git annex init --version=6`
+
+Based on some googling, "stuck" state in OSX top means that it's stuck in a
+kernel call. This probably means that git-annex is waiting for a disk
+access, or from output from one of its child processes (eg git commands).
+
+It would be helpful to look at the process tree and see what child
+processes of git-annex are running at this point.
+"""]]
