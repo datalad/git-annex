@@ -89,7 +89,7 @@ commitDiff ref = getdiff (Param "show")
 getdiff :: CommandParam -> [CommandParam] -> Repo -> IO ([DiffTreeItem], IO Bool)
 getdiff command params repo = do
 	(diff, cleanup) <- pipeNullSplit ps repo
-	return (fromMaybe (error $ "git " ++ show (toCommand ps) ++ " parse failed") (parseDiffRaw diff), cleanup)
+	return (parseDiffRaw diff, cleanup)
   where
 	ps = 
 		command :
@@ -100,24 +100,23 @@ getdiff command params repo = do
 		params
 
 {- Parses --raw output used by diff-tree and git-log. -}
-parseDiffRaw :: [String] -> Maybe [DiffTreeItem]
+parseDiffRaw :: [String] -> [DiffTreeItem]
 parseDiffRaw l = go l []
   where
-	go [] c = Just c
-	go (info:f:rest) c = case mk info f of
-		Nothing -> Nothing
-		Just i -> go rest (i:c)
-	go (_:[]) _ = Nothing
+	go [] c = c
+	go (info:f:rest) c = go rest (mk info f : c)
+	go (s:[]) _ = error $ "diff-tree parse error near \"" ++ s ++ "\""
 
 	mk info f = DiffTreeItem
-		<$> readmode srcm
-		<*> readmode dstm
-		<*> extractSha ssha
-		<*> extractSha dsha
-		<*> pure s
-		<*> pure (asTopFilePath $ fromInternalGitPath $ Git.Filename.decode f)
+		{ srcmode = readmode srcm
+		, dstmode = readmode dstm
+		, srcsha = fromMaybe (error "bad srcsha") $ extractSha ssha
+		, dstsha = fromMaybe (error "bad dstsha") $ extractSha dsha
+		, status = s
+		, file = asTopFilePath $ fromInternalGitPath $ Git.Filename.decode f
+		}
 	  where
-		readmode = fst <$$> headMaybe . readOct
+		readmode = fst . Prelude.head . readOct
 
 		-- info = :<srcmode> SP <dstmode> SP <srcsha> SP <dstsha> SP <status>
 		-- All fields are fixed, so we can pull them out of

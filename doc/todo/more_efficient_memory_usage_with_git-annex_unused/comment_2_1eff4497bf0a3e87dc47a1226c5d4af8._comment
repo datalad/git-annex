@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-01-31T20:24:04Z"
+ content="""
+The heap profile has multiple spikes (so not an accumulating memory leak).
+The diff parsing code is indeed what's using so much memory. Looks like
+data is failing to stream through that code and instead the whole
+diff output gets buffered.
+
+Aha.. Git.DiffTree.parseDiffRaw used to return a list, but changed
+in [[!commit 8d124beba8]]
+to a Maybe list in order to avoid being a partial function. But 
+that change destroyed laziness, since the whole input has to be parsed
+in order to determine if Nothing should be returned.
+
+However, fixing that only eliminated part of the spike. There's something
+else keeping data from streaming.
+"""]]
