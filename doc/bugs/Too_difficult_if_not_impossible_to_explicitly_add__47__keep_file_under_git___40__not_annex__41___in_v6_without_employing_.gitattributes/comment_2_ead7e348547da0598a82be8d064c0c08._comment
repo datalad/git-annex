@@ -33,4 +33,4 @@ Or git's smudge/clean interface could be improved so that the clean
 filter can know why it's being called, and so avoid ingesting files
 unnecessarily. IIRC my patch to improve the git interface did do that, but
 unfortunately it's stalled getting accepted into git.
-" ""]]
+"""]]
