@@ -14,3 +14,6 @@ Build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS
 
 [[!meta title="xmpp fails to work with googlemail domain"]]
 [[!tag design/assistant]]
+
+> git-annex no longer contains XMPP support, so this bug is "fixed".
+> [[done]] --[[Joey]]
