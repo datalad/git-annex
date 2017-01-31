@@ -4,4 +4,4 @@ This is very straightforward.
 	# cd ~/annex
 	# git init
 	# git annex init
-        # git config receive.denyNonFastForwards false
+	# git config receive.denyNonFastForwards false
