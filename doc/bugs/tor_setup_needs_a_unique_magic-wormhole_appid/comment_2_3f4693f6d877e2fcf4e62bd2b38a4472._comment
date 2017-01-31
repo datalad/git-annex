@@ -3,7 +3,7 @@
  subject="""comment 2"""
  date="2017-01-31T17:20:56Z"
  content="""
-<https://git-annex.branchable.com/bugs/tor_setup_needs_a_unique_magic-wormhole_appid/>
+<https://lists.debian.org/debian-devel-announce/2017/01/msg00002.html>
 based on this, we may have missed the window; there are 5 days until
 Debian freezes, and it takes 10 days to get a change into testing.
 
