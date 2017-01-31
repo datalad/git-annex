@@ -7,7 +7,7 @@ When doing 'git annex add .' it failed with an error that contained only the par
 
 Create a file with a newline in its name:
 
-    ~/tmp $ touch 'file with newline'$'\n''line 2'^C
+    ~/tmp $ touch 'file with newline'$'\n''line 2'
     ~/tmp $ mkdir annex
     ~/tmp $ cd annex/
     ~/tmp/annex $ git init
