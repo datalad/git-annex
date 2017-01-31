@@ -9,6 +9,8 @@ git-annex (6.20170102) UNRELEASED; urgency=medium
   * config: New command for storing configuration in the git-annex branch.
   * stack.yaml: Update to lts-7.18.
   * Some optimisations to string splitting code.
+  * unused: When large files are checked right into git, avoid buffering
+    their contents in memory.
 
  -- Joey Hess <id@joeyh.name>  Fri, 06 Jan 2017 15:22:06 -0400
 
