@@ -50,3 +50,4 @@ The problem is the use of the `Include` directive which is not understood by my 
 
 Git-annex rocks !!!!
 
+> [[done]]; this was already fixed --[[Joey]]
