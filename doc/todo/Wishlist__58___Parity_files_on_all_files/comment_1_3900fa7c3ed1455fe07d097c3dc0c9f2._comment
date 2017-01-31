@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-01-31T16:55:27Z"
+ content="""
+git repositories don't contain parity files for their data. Instead, git
+relies on multiple copies of the repository to keep things safe. Not as
+efficient as parity files, but a lot easier, and protects against many more
+disasters than do parity files. git-annex takes the same approach.
+Lots Of Copies Keeps Stuff Safe.
+
+Even if git-annex started generating parity files for its objects,
+the git repository would still not have them, so bit flips could still
+corrupt your git-annex repository.
+
+Nothing stops you from writing git hooks that maintain parity files
+alongside all the files in a git repository. If you do that, you'll get
+parity files for the git-annex files too. But I don't see this being needed
+in git-annex itself and AFAICS there are plenty of hooks in git and
+git-annex to allow doing that.
+"""]]
