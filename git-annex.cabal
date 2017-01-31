@@ -694,6 +694,7 @@ Executable git-annex
     Command.CalcKey
     Command.CheckPresentKey
     Command.Commit
+    Command.Config
     Command.ConfigList
     Command.ContentLocation
     Command.Copy
@@ -850,6 +851,7 @@ Executable git-annex
     Logs.Activity
     Logs.Chunk
     Logs.Chunk.Pure
+    Logs.Config
     Logs.Difference
     Logs.Difference.Pure
     Logs.FsckResults
