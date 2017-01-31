@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-01-31T17:20:56Z"
+ content="""
+<https://git-annex.branchable.com/bugs/tor_setup_needs_a_unique_magic-wormhole_appid/>
+based on this, we may have missed the window; there are 5 days until
+Debian freezes, and it takes 10 days to get a change into testing.
+
+It's still probably possible to get a change in, but it would need manual
+approval. Guess it would come down to whether I could get the change
+pre-approved for migration into Debian before releasing a git-annex
+with that change.
+
+(AFAIK Debian is the only distribution containing git-annex that's getting
+ready to freeze it.)
+"""]]
