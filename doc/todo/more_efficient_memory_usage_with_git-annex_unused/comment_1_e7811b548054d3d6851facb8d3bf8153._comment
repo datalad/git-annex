@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-01-31T15:36:58Z"
+ content="""
+You need to provide at least a version number, and ideally enough
+information to reproduce the bug when filing bug reports.
+
+Anyhow, I ran git-annex (HEAD) unused in my big repo, and its memory use
+got up to over 1 gb which is much more than I would expect (should be
+a couple hundred mb max).
+
+The memory growth happens in the stage when it's
+constructing the bloom filter for the keys in the diff between the
+index and other branches. In my big repo, those diffs are quite large;
+eg I have a branch with 70k files and another with 0 files.
+
+I replaced insertMB with noop, so the bloom filters are not really
+populated, and it still uses as much memory. So
+the memory is not being leaked by the bloom filters themselves, but
+is instead being leaked when processing the branch diffs,
+or something like that.
+
+Need to profile to find what's leaking.
+"""]]
