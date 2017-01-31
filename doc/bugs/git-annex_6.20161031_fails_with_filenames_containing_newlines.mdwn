@@ -7,18 +7,18 @@ When doing 'git annex add .' it failed with an error that contained only the par
 
 Create a file with a newline in its name:
 
-~/tmp $ touch 'file with newline'$'\n''line 2'^C
-~/tmp $ mkdir annex
-~/tmp $ cd annex/
-~/tmp/annex $ git init
-~/tmp/annex $ git annex init
-init  ok
-(recording state in git...)
-~/tmp/annex $ cp ../file* .
-~/tmp/annex $ git annex add .
-add file with newline
-line 2 git-annex: unknown response from git cat-file ("HEAD:./file with newline missing",Ref "HEAD:./file with newline\nline 2")
-~/tmp/annex $
+    ~/tmp $ touch 'file with newline'$'\n''line 2'^C
+    ~/tmp $ mkdir annex
+    ~/tmp $ cd annex/
+    ~/tmp/annex $ git init
+    ~/tmp/annex $ git annex init
+    init  ok
+    (recording state in git...)
+    ~/tmp/annex $ cp ../file* .
+    ~/tmp/annex $ git annex add .
+    add file with newline
+    line 2 git-annex: unknown response from git cat-file ("HEAD:./file with newline missing",Ref "HEAD:./file with newline\nline 2")
+    ~/tmp/annex $
 
 ### What version of git-annex are you using? On what operating system?
 
