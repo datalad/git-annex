@@ -268,7 +268,7 @@ readTransferInfo mpid s = TransferInfo
 	filename
 		| end rest == "\n" = beginning rest
 		| otherwise = rest
-	bits = split " " firstline
+	bits = splitc ' ' firstline
 	numbits = length bits
 	time = if numbits > 0
 		then Just <$> parsePOSIXTime =<< headMaybe bits

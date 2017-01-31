@@ -302,7 +302,7 @@ ariaProgress (Just sz) meter ps = do
 		=<< ariaParams ps
 
 parseAriaProgress :: Integer -> ProgressParser
-parseAriaProgress totalsize = go [] . reverse . split ['\r']
+parseAriaProgress totalsize = go [] . reverse . splitc '\r'
   where
 	go remainder [] = (Nothing, remainder)
 	go remainder (x:xs) = case readish (findpercent x) of

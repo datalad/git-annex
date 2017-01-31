@@ -269,7 +269,7 @@ withKeysReferencedDiff a getdiff extractsha = do
 	forM_ ds go
 	liftIO $ void clean
   where
-	go d = do
+  	go d = do
 		let sha = extractsha d
 		unless (sha == nullSha) $
 			(parseLinkOrPointer <$> catObject sha)

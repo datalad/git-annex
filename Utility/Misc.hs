@@ -45,6 +45,14 @@ separate c l = unbreak $ break c l
 		| null b = r
 		| otherwise = (a, tail b)
 
+{- Split on a single character. This is over twice as fast as using
+ - Data.List.Utils.split on a list of length 1, while producing
+ - identical results. -}
+splitc :: Char -> String -> [String]
+splitc c s = case break (== c) s of
+	(i, _c:rest) -> i : splitc c rest
+	(i, []) -> i : []
+
 {- Breaks out the first line. -}
 firstLine :: String -> String
 firstLine = takeWhile (/= '\n')

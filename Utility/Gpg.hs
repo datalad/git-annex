@@ -162,7 +162,7 @@ findPubKeys :: GpgCmd -> String -> IO KeyIds
 findPubKeys cmd for = KeyIds . parse . lines <$> readStrict cmd params
   where
 	params = [Param "--with-colons", Param "--list-public-keys", Param for]
-	parse = mapMaybe (keyIdField . split ":")
+	parse = mapMaybe (keyIdField . splitc ':')
 	keyIdField ("pub":_:_:_:f:_) = Just f
 	keyIdField _ = Nothing
 
@@ -175,7 +175,7 @@ secretKeys cmd = catchDefaultIO M.empty makemap
   where
 	makemap = M.fromList . parse . lines <$> readStrict cmd params
 	params = [Param "--with-colons", Param "--list-secret-keys", Param "--fixed-list-mode"]
-	parse = extract [] Nothing . map (split ":")
+	parse = extract [] Nothing . map (splitc ':')
 	extract c (Just keyid) (("uid":_:_:_:_:_:_:_:_:userid:_):rest) =
 		extract ((keyid, decode_c userid):c) Nothing rest
 	extract c (Just keyid) rest@(("sec":_):_) =

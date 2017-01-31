@@ -254,7 +254,7 @@ bup2GitRemote r
 			else giveup "please specify an absolute path"
 	| otherwise = Git.Construct.fromUrl $ "ssh://" ++ host ++ slash dir
   where
-	bits = split ":" r
+	bits = splitc ':' r
 	host = Prelude.head bits
 	dir = intercalate ":" $ drop 1 bits
 	-- "host:~user/dir" is not supported specially by bup;

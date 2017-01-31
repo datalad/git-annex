@@ -148,7 +148,7 @@ readKey1 v
 		, keyMtime = t
 		}
   where
-	bits = split ":" v
+	bits = splitc ':' v
 	b = Prelude.head bits
 	n = intercalate ":" $ drop (if wormy then 3 else 1) bits
 	t = if wormy

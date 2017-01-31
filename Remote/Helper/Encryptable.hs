@@ -165,7 +165,7 @@ extractCipher c = case (M.lookup "cipher" c,
 		Just $ SharedCipher (fromB64bs t)
 	_ -> Nothing
   where
-	readkeys = KeyIds . split ","
+	readkeys = KeyIds . splitc ','
 
 describeEncryption :: RemoteConfig -> String
 describeEncryption c = case extractCipher c of

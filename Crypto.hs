@@ -231,8 +231,8 @@ instance LensGpgEncParams (RemoteConfig, RemoteGitConfig) where
  		{- When the remote is configured to use public-key encryption,
 		 - look up the recipient keys and add them to the option list. -}
 		case M.lookup "encryption" c of
-			Just "pubkey" -> Gpg.pkEncTo $ maybe [] (split ",") $ M.lookup "cipherkeys" c
-			Just "sharedpubkey" -> Gpg.pkEncTo $ maybe [] (split ",") $ M.lookup "pubkeys" c
+			Just "pubkey" -> Gpg.pkEncTo $ maybe [] (splitc ',') $ M.lookup "cipherkeys" c
+			Just "sharedpubkey" -> Gpg.pkEncTo $ maybe [] (splitc ',') $ M.lookup "pubkeys" c
 			_ -> []
 	getGpgDecParams (_c,gc) = map Param (remoteAnnexGnupgDecryptOptions gc)
 

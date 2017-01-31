@@ -25,7 +25,7 @@ instance Show DottedVersion where
 normalize :: String -> DottedVersion
 normalize v = DottedVersion v $ 
 	sum $ mult 1 $ reverse $ extend precision $ take precision $
-		map readi $ split "." v
+		map readi $ splitc '.' v
   where
 	extend n l = l ++ replicate (n - length l) 0
 	mult _ [] = []

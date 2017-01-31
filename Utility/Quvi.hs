@@ -124,14 +124,14 @@ supported Quvi09 url = (firstlevel <&&> secondlevel)
 		Nothing -> return False
 		Just auth -> do
 			let domain = map toLower $ uriRegName auth
-			let basedomain = intercalate "." $ reverse $ take 2 $ reverse $ split "." domain
+			let basedomain = intercalate "." $ reverse $ take 2 $ reverse $ splitc '.' domain
 			any (\h -> domain `isSuffixOf` h || basedomain `isSuffixOf` h) 
 				. map (map toLower) <$> listdomains Quvi09
 	secondlevel = snd <$> processTranscript "quvi"
 		(toCommand [Param "dump", Param "-o", Param url]) Nothing
 
 listdomains :: QuviVersion -> IO [String]
-listdomains Quvi09 = concatMap (split ",") 
+listdomains Quvi09 = concatMap (splitc ',') 
 	. concatMap (drop 1 . words) 
 	. filter ("domains: " `isPrefixOf`) . lines
 	<$> readQuvi (toCommand [Param "info", Param "-p", Param "domains"])

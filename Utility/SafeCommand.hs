@@ -11,7 +11,7 @@ module Utility.SafeCommand where
 
 import System.Exit
 import Utility.Process
-import Data.String.Utils
+import Utility.Misc
 import System.FilePath
 import Data.Char
 import Data.List
@@ -86,7 +86,7 @@ shellEscape :: String -> String
 shellEscape f = "'" ++ escaped ++ "'"
   where
 	-- replace ' with '"'"'
-	escaped = intercalate "'\"'\"'" $ split "'" f
+	escaped = intercalate "'\"'\"'" $ splitc '\'' f
 
 -- | Unescapes a set of shellEscaped words or filenames.
 shellUnEscape :: String -> [String]

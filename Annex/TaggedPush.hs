@@ -39,7 +39,7 @@ toTaggedBranch u info b = Git.Ref $ intercalate "/" $ catMaybes
 	]
 
 fromTaggedBranch :: Git.Branch -> Maybe (UUID, Maybe String)
-fromTaggedBranch b = case split "/" $ Git.fromRef b of
+fromTaggedBranch b = case splitc '/' $ Git.fromRef b of
 	("refs":"synced":u:info:_base) ->
 		Just (toUUID u, fromB64Maybe info)
 	("refs":"synced":u:_base) ->

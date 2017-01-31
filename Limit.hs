@@ -161,7 +161,7 @@ addCopies :: String -> Annex ()
 addCopies = addLimit . limitCopies
 
 limitCopies :: MkLimit Annex
-limitCopies want = case split ":" want of
+limitCopies want = case splitc ':' want of
 	[v, n] -> case parsetrustspec v of
 		Just checker -> go n $ checktrust checker
 		Nothing -> go n $ checkgroup v

@@ -26,7 +26,7 @@ module Git.Construct (
 #ifndef mingw32_HOST_OS
 import System.Posix.User
 #endif
-import qualified Data.Map as M hiding (map, split)
+import qualified Data.Map as M
 import Network.URI
 
 import Common
@@ -143,7 +143,7 @@ remoteNamedFromKey :: String -> IO Repo -> IO Repo
 remoteNamedFromKey k = remoteNamed basename
   where
 	basename = intercalate "." $ 
-		reverse $ drop 1 $ reverse $ drop 1 $ split "." k
+		reverse $ drop 1 $ reverse $ drop 1 $ splitc '.' k
 
 {- Constructs a new Repo for one of a Repo's remotes using a given
  - location (ie, an url). -}

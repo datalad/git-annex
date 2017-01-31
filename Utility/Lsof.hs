@@ -107,7 +107,7 @@ parseFormatted s = bundle $ go [] $ lines s
 	parsemode ('u':_) = OpenReadWrite
 	parsemode _ = OpenUnknown
 
-	splitnull = split "\0"
+	splitnull = splitc '\0'
 
 	parsefail = error $ "failed to parse lsof output: " ++ show s
 

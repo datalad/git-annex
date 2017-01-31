@@ -24,7 +24,7 @@ rsyncShell command = [Param "-e", Param $ unwords $ map escape (toCommand comman
 	{- rsync requires some weird, non-shell like quoting in
 	- here. A doubled single quote inside the single quoted
 	- string is a single quote. -}
-	escape s = "'" ++  intercalate "''" (split "'" s) ++ "'"
+	escape s = "'" ++  intercalate "''" (splitc '\'' s) ++ "'"
 
 {- Runs rsync in server mode to send a file. -}
 rsyncServerSend :: [CommandParam] -> FilePath -> IO Bool
@@ -123,7 +123,7 @@ parseRsyncProgress = go [] . reverse . progresschunks
 	{- Find chunks that each start with delim.
 	 - The first chunk doesn't start with it
 	 - (it's empty when delim is at the start of the string). -}
-	progresschunks = drop 1 . split [delim]
+	progresschunks = drop 1 . splitc delim
 	findbytesstart s = dropWhile isSpace s
 
 	parsebytes :: String -> Maybe Integer

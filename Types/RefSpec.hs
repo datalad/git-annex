@@ -25,7 +25,7 @@ allRefSpec :: RefSpec
 allRefSpec = [AddMatching $ compileGlob "*" CaseSensative]
 
 parseRefSpec :: String -> Either String RefSpec
-parseRefSpec v = case partitionEithers (map mk $ split ":" v) of
+parseRefSpec v = case partitionEithers (map mk $ splitc ':' v) of
 	([],refspec) -> Right refspec
 	(e:_,_) -> Left e
   where

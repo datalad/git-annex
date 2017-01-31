@@ -383,7 +383,7 @@ mangleSshHostName sshdata = intercalate "-"
 
 {- Extracts the real hostname from a mangled ssh hostname. -}
 unMangleSshHostName :: String -> String
-unMangleSshHostName h = case split "-" h of
+unMangleSshHostName h = case splitc '-' h of
 	("git":"annex":rest) -> unescape (intercalate "-" (beginning rest))
 	_ -> h
   where

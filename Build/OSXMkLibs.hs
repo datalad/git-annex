@@ -95,7 +95,7 @@ findLibPath l = go =<< getEnv "DYLD_LIBRARY_PATH"
   where
 	go Nothing = return l
 	go (Just p) = fromMaybe l
-		<$> firstM doesFileExist (map (</> f) (split ":" p))
+		<$> firstM doesFileExist (map (</> f) (splitc ':' p))
 	f = takeFileName l
 
 {- Expands any @rpath in the list of libraries.

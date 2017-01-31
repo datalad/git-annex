@@ -92,7 +92,7 @@ hostname r
 	| otherwise = "localhost"
 
 basehostname :: Git.Repo -> String
-basehostname r = fromMaybe "" $ headMaybe $ split "." $ hostname r
+basehostname r = fromMaybe "" $ headMaybe $ splitc '.' $ hostname r
 
 {- A name to display for a repo. Uses the name from uuid.log if available,
  - or the remote name if not. -}

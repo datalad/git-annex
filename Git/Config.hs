@@ -132,7 +132,7 @@ parse s
 	-- --list output will have an = in the first line
 	| all ('=' `elem`) (take 1 ls) = sep '=' ls
 	-- --null --list output separates keys from values with newlines
-	| otherwise = sep '\n' $ split "\0" s
+	| otherwise = sep '\n' $ splitc '\0' s
   where
 	ls = lines s
 	sep c = M.fromListWith (++) . map (\(k,v) -> (k, [v])) .

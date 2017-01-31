@@ -387,7 +387,7 @@ url2file url pathdepth pathmax = case pathdepth of
 		]
 	frombits a = intercalate "/" $ a urlbits
 	urlbits = map (truncateFilePath pathmax . sanitizeFilePath) $
-		filter (not . null) $ split "/" fullurl
+		filter (not . null) $ splitc '/' fullurl
 
 urlString2file :: URLString -> Maybe Int -> Int -> FilePath
 urlString2file s pathdepth pathmax = case Url.parseURIRelaxed s of

@@ -66,7 +66,7 @@ fixBadUUID = M.fromList . map fixup . M.toList
 	newertime (LogEntry (Date d) _) = d + minimumPOSIXTimeSlice
 	newertime (LogEntry Unknown _) = minimumPOSIXTimeSlice
 	minimumPOSIXTimeSlice = 0.000001
-	isuuid s = length s == 36 && length (split "-" s) == 5
+	isuuid s = length s == 36 && length (splitc '-' s) == 5
 
 {- Records the uuid in the log, if it's not already there. -}
 recordUUID :: UUID -> Annex ()
