@@ -7,6 +7,7 @@ git-annex (6.20170102) UNRELEASED; urgency=medium
     taken for --json.
   * vicfg: Include the numcopies configuation.
   * config: New command for storing configuration in the git-annex branch.
+  * stack.yaml: Update to lts-7.18.
 
  -- Joey Hess <id@joeyh.name>  Fri, 06 Jan 2017 15:22:06 -0400
 
