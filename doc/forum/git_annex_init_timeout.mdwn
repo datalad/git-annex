@@ -1,0 +1,43 @@
+I'm trying git-annex for the first time and having some issues.
+
+I have a WD MyBook 2TB Cloud Drive and using OSX Sierra.
+
+I want to create an Annex on one the NAS smb shares and then a Amazon Cloud Drive replica for offsite backup.
+
+When I run `git annex init` from the mounted share in OSX it fails with the below:
+
+```
+git-annex init
+init
+  Detected a filesystem without POSIX fcntl lock support.
+
+  Enabling annex.pidlock.
+
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Disabling core.symlinks.
+
+  Enabling direct mode.
+A300 second timeout exceeded while waiting for pid lock file .git/annex/pidlock
+```
+
+Below are the results of `git-annex version`
+
+```
+git-annex version: 6.20170101
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV FsEvents ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository versions: 3 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+operating system: darwin x86_64
+```
+
+
+
+Is it possible to have an annex on a SMB share?
