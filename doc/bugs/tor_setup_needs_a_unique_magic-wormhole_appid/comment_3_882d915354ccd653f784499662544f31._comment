@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-02-02T17:46:05Z"
+ content="""
+After talking it over with the Debian maintainer, conclusion is
+we unfortunately missed the window to make this change.
+
+One way to still make the change would be to modify git-annex now to use an
+appid, but only once the date is after 31 Dec 2021 or so. So the change
+then has plenty of time to get into the subseqent Debian stable release
+(assuming the current release happens sometime in the next 1.5 years, and
+the one after that takes around the current average of 2 years), and also
+plenty of time to get into other faster moving distributions.
+
+That leaves a few years in which there's a risk that popularity of tor
+wormhole pairing snowballs. Currently I do think that's a low risk. 
+Most users of git-annex with tor will likely only pair with well under 10
+other repositories (it's too tedious to pair with more, and it starts
+not scaling well to have links to too many repositories). Pairing takes
+maybe 10 minutes max to do. So, each user will run wormhole for 100
+minutes max. For there to be a constant load of 100 users running wormhole,
+needs 3600 new users every day, or 1.3 million per year.
+"""]]
