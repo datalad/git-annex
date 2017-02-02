@@ -24,7 +24,7 @@ Thanks to Dartmouth College for hosting the autobuilder.
 
 ## using Homebrew
 
-git-annex is now [[available in Homebrew|Homebrew]] (source) as well as [[available in Homebrew Cask|Homebrew-cask]] (binary).
+git-annex is [[available in Homebrew|Homebrew]].
 
 ## using MacPorts
 
