@@ -12,4 +12,4 @@ git annex get .
 
 This is usually quite fast, but it is not so easy to do since I don't keep an SSH port open on my laptop.
 
-My question: Is there any command that I can run on my laptop which basically runs "git annex get ." from the server?
+My question: Is there any command that I can run on my laptop which basically invokes "git annex get ." from the server?
