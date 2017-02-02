@@ -1,0 +1,88 @@
+### Please describe the problem.
+
+extra-deps in stack.yaml seems to miss a few packages? I am pretty new to stack, so maybe
+I am misinterpreting, but following stacks suggestion below and adding 
+
+- bloomfilter-2.0.1.0
+- network-multicast-0.2.0
+- torrent-10000.0.1
+
+to my stack.yaml lets me build the latest master branch on jessie.
+
+### What steps will reproduce the problem?
+
+Checking out the latest commit (661dae3649f10a07ba6091a9a376ae1049fed716) and running "stack setup && stack install"
+should reproduce it? See transcript below.
+
+### What version of git-annex are you using? On what operating system?
+
+6.20170101-android on Debian Jessie. Stack Version 1.3.2
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+
+$ git clone git://git-annex.branchable.com/ git-annex                                                                                                                                
+Cloning into 'git-annex'...
+remote: Counting objects: 178001, done.
+remote: Compressing objects: 100% (49612/49612), done.
+remote: Total 178001 (delta 127721), reused 178001 (delta 127721)
+Receiving objects: 100% (178001/178001), 43.14 MiB | 1.47 MiB/s, done.
+Resolving deltas: 100% (127721/127721), done.
+Checking connectivity... done.
+$ cd git-annex
+$ stack setup
+Downloaded lts-7.18 build plan.    
+Fetching package index ...remote: Counting objects: 1887, done.
+remote: Compressing objects: 100% (164/164), done.
+remote: Total 1887 (delta 676), reused 641 (delta 641), pack-reused 1079
+Receiving objects: 100% (1887/1887), 1.59 MiB | 904.00 KiB/s, done.
+Resolving deltas: 100% (757/757), completed with 311 local objects.
+From https://github.com/commercialhaskell/all-cabal-hashes
+   3ae7c75..ca0bc8e  hackage    -> origin/hackage
+ - [tag update]      current-hackage -> current-hackage
+Fetched package index.    
+Populated index cache.    
+stack will use a sandboxed GHC it installed
+For more information on paths, see 'stack path' and 'stack exec env'
+To use this GHC and packages outside of a project, consider using:
+stack ghc, stack ghci, stack runghc, or stack exec
+$ stack install
+Cabal file warning in /home/phaer/projects/external/git-annex/git-annex.cabal: Ignoring unknown section type: custom-setup
+
+Error: While constructing the build plan, the following exceptions were encountered:
+
+In the dependencies for git-annex-6.20170101(-android
+-androidsplice
++assistant
++concurrentoutput
++cryptonite
+-dbus
+-magicmime
++network-uri
++pairing
++production
++s3
++testsuite
++torrentparser
++webapp
++webdav):
+    bloomfilter must match -any, but the stack configuration has no specified version (latest applicable is 2.0.1.0)
+    network-multicast must match -any, but the stack configuration has no specified version (latest applicable is 0.2.0)
+    torrent must match (>=10000.0.0), but the stack configuration has no specified version
+            (latest applicable is 10000.0.1)
+
+Recommended action: try adding the following to your extra-deps in /home/phaer/projects/external/git-annex/stack.yaml:
+- bloomfilter-2.0.1.0
+- network-multicast-0.2.0
+- torrent-10000.0.1
+
+You may also want to try the 'stack solver' command
+Plan construction failed.
+
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, I am using it since a few years to manage my videos, photos and music. Thanks so much for this outstanding piece of software!
