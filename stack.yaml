@@ -20,6 +20,9 @@ packages:
 extra-deps:
 - esqueleto-2.5.1
 - yesod-default-1.2.0
+- bloomfilter-2.0.1.0
+- network-multicast-0.2.0
+- torrent-10000.0.1
 explicit-setup-deps:
   git-annex: true
 resolver: lts-7.18

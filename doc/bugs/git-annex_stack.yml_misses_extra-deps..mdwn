@@ -86,3 +86,7 @@ Plan construction failed.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, I am using it since a few years to manage my videos, photos and music. Thanks so much for this outstanding piece of software!
+
+> Seems that, since I have those packages globally installed, stack solver 
+> did not notice that they needed to be listed there. Hrm. Ok well, added
+> them by hand. [[done]] --[[Joey]] 
