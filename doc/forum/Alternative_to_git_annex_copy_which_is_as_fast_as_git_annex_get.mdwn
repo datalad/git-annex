@@ -1,0 +1,15 @@
+I have a big git-annex repository. If I add a few files on my laptop I want to sync it with my server which consists of one bare git-annex repository (server_bare) and one regular git-annex repository (server).
+
+I run
+
+git annex sync
+git annex copy * --to server
+
+The second command is really slow since it runs git annex copy on every single file that I have locally (it sometimes takes an hour to complete). If I would instead run
+
+git annex sync
+git annex get .
+
+This is usually quite fast, but it is not so easy to do since I don't keep an SSH port open on my laptop.
+
+My question: Is there any command that I can run on my laptop which basically invokes "git annex get ." from the server?
