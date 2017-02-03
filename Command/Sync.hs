@@ -66,6 +66,7 @@ cmd = withGlobalOptions [jobsOption] $
 data SyncOptions  = SyncOptions
 	{ syncWith :: CmdParams
 	, commitOption :: Bool
+	, noCommitOption :: Bool
 	, messageOption :: Maybe String
 	, pullOption :: Bool
 	, pushOption :: Bool
@@ -80,8 +81,13 @@ optParser desc = SyncOptions
 		( metavar desc
 		<> completeRemotes
 		))
-	<*> invertableSwitch "commit" True
-		( help "avoid git commit" 
+	<*> switch
+		( long "commit"
+		<> help "commit changes to git"
+		)
+	<*> switch
+		( long "no-commit"
+		<> help "avoid git commit" 
 		)
 	<*> optional (strOption
 		( long "message" <> short 'm' <> metavar "MSG"
@@ -246,7 +252,7 @@ commit o = stopUnless shouldcommit $ next $ next $ do
 		)
   where
 	shouldcommit = pure (commitOption o)
-		<&&> getGitConfigVal annexAutoCommit
+		<||> (pure (not (noCommitOption o)) <&&> getGitConfigVal annexAutoCommit)
 
 commitMsg :: Annex String
 commitMsg = do
