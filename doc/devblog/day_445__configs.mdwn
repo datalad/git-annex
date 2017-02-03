@@ -1,0 +1,11 @@
+Finished the repository-clone-global configuration settings I started
+adding on Monday. Came up with a nice type-driven way to make sure
+that configuration is loaded when needed, and only loaded once.
+Then it was easy to make annex.autocommit be configurable by git-annex
+config. Also added a new annex.synccontent configuration, which can also be
+set by git-annex config.
+
+Also resolved a tricky situation with providing an appid to magic wormhole.
+It will happen on a flag day in 2021. I've marked my calendar..
+
+Today's work was sponsored by Thomas Hochstein on Patreon.
