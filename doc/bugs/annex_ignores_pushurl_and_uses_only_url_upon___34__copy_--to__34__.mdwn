@@ -1,0 +1,81 @@
+### Please describe the problem.
+
+Cannot copy content to the remote whenever its url is http and pushurl is ssh
+
+
+### What version of git-annex are you using? On what operating system?
+
+6.20170101+gitg93d69b1-1~ndall+1
+
+### Please provide any additional information below.
+
+Having a remote which has Read-only http url but ssh pushurl:
+
+[[!format sh """
+
+
+hopa:/tmp/tmp.uCP6SjbQYt/orig
+$> cat .git/config 
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[annex]
+	uuid = 1c81ccbf-e814-44cb-b2a4-3aef93d159e4
+	version = 5
+	backends = MD5E
+[remote "target1"]
+	url = http://localhost:8082/demoannex/.git
+	fetch = +refs/heads/*:refs/remotes/target1/*
+	pushurl = localhost:/home/yoh/.tmp/tmp.uCP6SjbQYt/public_html/demoannex
+	annex-ignore = false
+	annex-bare = false
+	annex-uuid = d3720112-3b83-450d-a30e-cda370bf5a13
+	push = master
+	push = git-annex
+
+
+"""]]
+
+copy seems to try to push via http url, not succeeding. Interestingly, without --fast option, it doesn't even give a meaningful error message -- just says that it fails to find the file at the remote end (here are both calls outputs):
+
+[[!format sh """
+
+hopa:/tmp/tmp.uCP6SjbQYt/orig
+$> git annex copy --to target1 --debug --json --fast
+[2017-02-03 09:58:09.433515455] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2017-02-03 09:58:09.43918477] process done ExitSuccess
+[2017-02-03 09:58:09.43929589] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2017-02-03 09:58:09.443217439] process done ExitSuccess
+[2017-02-03 09:58:09.444030163] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2017-02-03 09:58:09.444468521] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2017-02-03 09:58:09.449625506] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--cached","-z","--"]
+  copying to non-ssh repo not supported
+  copying to non-ssh repo not supported
+  This could have failed because --fast is enabled.
+{"command":"copy","note":"to target1...","success":false,"key":"MD5E-s0--d41d8cd98f00b204e9800998ecf8427e","file":"probe"}
+git-annex: copy: 1 failed
+
+
+$> git annex copy --to target1 --debug --json
+[2017-02-03 09:57:51.713147198] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2017-02-03 09:57:51.717451798] process done ExitSuccess
+[2017-02-03 09:57:51.717690883] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2017-02-03 09:57:51.721647463] process done ExitSuccess
+[2017-02-03 09:57:51.72243661] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2017-02-03 09:57:51.722822231] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2017-02-03 09:57:51.726838506] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--cached","-z","--"]
+{"command":"copy","note":"not found","success":false,"key":"MD5E-s0--d41d8cd98f00b204e9800998ecf8427e","file":"probe"}
+git-annex: copy: 1 failed
+
+
+"""]]
+
+So far we found the way to rectify it by providing value of pushurl as a remote..url value for that git annex call.  But it would be more "kosher" if git annex itself respected pushurl in such cases.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+lots
+
+[[!meta author="yoh"]]
