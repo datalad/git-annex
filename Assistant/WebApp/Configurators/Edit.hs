@@ -43,6 +43,7 @@ import Utility.Gpg
 import Annex.UUID
 import Assistant.Ssh
 import Config
+import Config.GitConfig
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -76,7 +77,7 @@ getRepoConfig uuid mremote = do
 
 	syncable <- case mremote of
 		Just r -> return $ remoteAnnexSync $ Remote.gitconfig r
-		Nothing -> annexAutoCommit <$> Annex.getGitConfig
+		Nothing -> getGitConfigVal annexAutoCommit
 
 	return $ RepoConfig
 		(T.pack $ maybe "here" Remote.name mremote)

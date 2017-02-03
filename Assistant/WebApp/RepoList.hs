@@ -12,7 +12,6 @@ module Assistant.WebApp.RepoList where
 import Assistant.WebApp.Common
 import Assistant.DaemonStatus
 import Assistant.WebApp.Notifications
-import qualified Annex
 import qualified Remote
 import qualified Types.Remote as Remote
 import Remote.List (remoteListRefresh)
@@ -21,6 +20,7 @@ import Logs.Remote
 import Logs.Trust
 import Logs.Group
 import Config
+import Config.GitConfig
 import Git.Remote
 import Assistant.Sync
 import Config.Cost
@@ -152,7 +152,7 @@ repoList reposelector
 			if includeHere reposelector
 				then do
 					r <- RepoUUID <$> getUUID
-					autocommit <- annexAutoCommit <$> Annex.getGitConfig
+					autocommit <- getGitConfigVal annexAutoCommit
 					let hereactions = if autocommit
 						then mkSyncingRepoActions r
 						else mkNotSyncingRepoActions r

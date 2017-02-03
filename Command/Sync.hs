@@ -39,6 +39,7 @@ import qualified Git.Ref
 import qualified Git
 import qualified Remote.Git
 import Config
+import Config.GitConfig
 import Annex.Wanted
 import Annex.Content
 import Command.Get (getKey')
@@ -237,7 +238,7 @@ commit o = stopUnless shouldcommit $ next $ next $ do
 		)
   where
 	shouldcommit = pure (commitOption o)
-		<&&> (annexAutoCommit <$> Annex.getGitConfig)
+		<&&> getGitConfigVal annexAutoCommit
 
 commitMsg :: Annex String
 commitMsg = do

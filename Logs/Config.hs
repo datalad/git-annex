@@ -1,4 +1,4 @@
-{- git-annex config log
+{- git-annex repository-global config log
  -
  - Copyright 2017 Joey Hess <id@joeyh.name>
  -
@@ -15,7 +15,6 @@ module Logs.Config (
 ) where
 
 import Annex.Common
-import qualified Annex
 import Logs
 import Logs.MapLog
 import qualified Annex.Branch
@@ -44,18 +43,13 @@ unsetGlobalConfig name = do
 	when (curr /= Nothing) $
 		setGlobalConfig' name "" -- set to empty string to unset
 
+-- Reads the global config log every time.
 getGlobalConfig :: ConfigName -> Annex (Maybe ConfigValue)
-getGlobalConfig name = do
-	m <- maybe loadGlobalConfig return
-		=<< Annex.getState Annex.globalconfig
-	return (M.lookup name m)
+getGlobalConfig name = M.lookup name <$> loadGlobalConfig
 
 parseGlobalConfig :: String -> MapLog ConfigName ConfigValue
 parseGlobalConfig = parseMapLog Just Just
 
 loadGlobalConfig :: Annex (M.Map ConfigName ConfigValue)
-loadGlobalConfig = do
-	m <- M.filter (not . null) . simpleMap . parseGlobalConfig
-		<$> Annex.Branch.get configLog
-	Annex.changeState $ \s -> s { Annex.globalconfig = Just m }
-	return m
+loadGlobalConfig = M.filter (not . null) . simpleMap . parseGlobalConfig
+	<$> Annex.Branch.get configLog

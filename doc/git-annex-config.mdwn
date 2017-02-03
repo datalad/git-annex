@@ -25,9 +25,12 @@ Only a few make sense to be able to set such that all clones of a
 repository see the setting, and so git-annex only looks for these:
 
 These settings can be overridden on a per-repository basis using
-`git config`:
+`git config`.
 
-None yet!
+* `annex.autocommit`
+
+  Set to false to prevent the git-annex assistant and git-annex sync
+  from automatically committing changes to files in the repository.
 
 # EXAMPLE
 

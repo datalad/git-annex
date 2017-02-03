@@ -6,8 +6,10 @@
  -}
 
 module Types.GitConfig ( 
+	Configurable(..),
 	GitConfig(..),
 	extractGitConfig,
+	mergeGitConfig,
 	RemoteGitConfig(..),
 	extractRemoteGitConfig,
 ) where
@@ -29,6 +31,14 @@ import Utility.HumanTime
 import Utility.Gpg (GpgCmd, mkGpgCmd)
 import Utility.ThreadScheduler (Seconds(..))
 
+-- | A configurable value, that may not be fully determined yet.
+data Configurable a
+	= HasConfig a
+	-- ^ Value is fully determined.
+	| DefaultConfig a
+	-- ^ A default value is known, but not all config sources
+	-- have been read yet.
+
 {- Main git-annex settings. Each setting corresponds to a git-config key
  - such as annex.foo -}
 data GitConfig = GitConfig
@@ -46,7 +56,7 @@ data GitConfig = GitConfig
 	, annexDelayAdd :: Maybe Int
 	, annexHttpHeaders :: [String]
 	, annexHttpHeadersCommand :: Maybe String
-	, annexAutoCommit :: Bool
+	, annexAutoCommit :: Configurable Bool
 	, annexDebug :: Bool
 	, annexWebOptions :: [String]
 	, annexQuviOptions :: [String]
@@ -93,7 +103,8 @@ extractGitConfig r = GitConfig
 	, annexDelayAdd = getmayberead (annex "delayadd")
 	, annexHttpHeaders = getlist (annex "http-headers")
 	, annexHttpHeadersCommand = getmaybe (annex "http-headers-command")
-	, annexAutoCommit = getbool (annex "autocommit") True
+	, annexAutoCommit = configurable True $ 
+		getmaybebool (annex "autocommit")
 	, annexDebug = getbool (annex "debug") False
 	, annexWebOptions = getwords (annex "web-options")
 	, annexQuviOptions = getwords (annex "quvi-options")
@@ -133,9 +144,25 @@ extractGitConfig r = GitConfig
 	getlist k = Git.Config.getList k r
 	getwords k = fromMaybe [] $ words <$> getmaybe k
 
+	configurable d Nothing = DefaultConfig d
+	configurable _ (Just v) = HasConfig v
+
 	annex k = "annex." ++ k
 			
 	onemegabyte = 1000000
+
+{- Merge a GitConfig that comes from git-config with one containing
+ - repository-global defaults. -}
+mergeGitConfig :: GitConfig -> GitConfig -> GitConfig
+mergeGitConfig gitconfig repoglobals = gitconfig
+	{ annexAutoCommit = merge annexAutoCommit
+	}
+  where
+	merge f = case f gitconfig of
+		HasConfig v -> HasConfig v
+		DefaultConfig d -> case f repoglobals of
+			HasConfig v -> HasConfig v
+			DefaultConfig _ -> HasConfig d
 
 {- Per-remote git-annex settings. Each setting corresponds to a git-config
  - key such as <remote>.annex-foo, or if that is not set, a default from

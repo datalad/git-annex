@@ -1,6 +1,6 @@
 {- Git configuration
  -
- - Copyright 2011-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -24,7 +24,8 @@ data ConfigKey = ConfigKey String
 instance Show ConfigKey where
 	show (ConfigKey s) = s
 
-{- Looks up a setting in git config. -}
+{- Looks up a setting in git config. This is not as efficient as using the
+ - GitConfig type. -}
 getConfig :: ConfigKey -> String -> Annex String
 getConfig (ConfigKey key) d = fromRepo $ Git.Config.get key d
 

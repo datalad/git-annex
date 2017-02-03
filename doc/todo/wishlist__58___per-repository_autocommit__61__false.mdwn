@@ -3,3 +3,5 @@ when using git-annex as a minority participant in a repository (eg. because in a
 forgetting to do that explicit configuration results, in one sync command, easily results in an unwanted implicit commit that's pushed across remotes.
 
 could there be a per-repository option (somewhere around .gitattributes, or maybe in the git-annex branch) that disables autocommits for the repository?
+
+> [[done]] --[[Joey]]

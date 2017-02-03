@@ -7,6 +7,8 @@ git-annex (6.20170102) UNRELEASED; urgency=medium
     taken for --json.
   * vicfg: Include the numcopies configuation.
   * config: New command for storing configuration in the git-annex branch.
+  * annex.autocommit can be configured via git-annex config, to control
+    the default behavior in all clones of a repository.
   * stack.yaml: Update to lts-7.18.
   * Some optimisations to string splitting code.
   * unused: When large files are checked right into git, avoid buffering

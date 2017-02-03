@@ -793,6 +793,7 @@ Executable git-annex
     Config
     Config.Cost
     Config.Files
+    Config.GitConfig
     Creds
     Crypto
     Database.Fsck
