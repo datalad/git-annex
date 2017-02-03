@@ -1,0 +1,15 @@
+Hello,
+
+I use CrashPlan, a proprietary offsite backup system to backup a couple of git-annex repositories.
+
+CrashPlan backups the symlinks as symlinks as well as the .git directory. So all data is backuped. However, restoring it tedious.
+
+I identify a file that I want to restore, download it and get only the symlink. Now I can descent into the .git directory and get the correct blob the symlink points to.
+
+Are there any simple strategies getting a specific file from a git-annex repo if you only have file-based view on the repo?
+
+I can, of course, use direct mode, that would resolve this issue, but would prefer to use the safer indirect mode.
+
+Thanks for any ideas!
+
+Best!
