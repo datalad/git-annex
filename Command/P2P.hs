@@ -26,6 +26,7 @@ import qualified Utility.MagicWormhole as Wormhole
 
 import Control.Concurrent.Async
 import qualified Data.Text as T
+import Data.Time.Clock.POSIX
 
 cmd :: Command
 cmd = command "p2p" SectionSetup
@@ -224,10 +225,32 @@ wormholePairing remotename ouraddrs ui = do
 		observer <- liftIO Wormhole.mkCodeObserver
 		producer <- liftIO Wormhole.mkCodeProducer
 		void $ liftIO $ async $ ui observer producer
+		-- Provide an appid to magic wormhole, to avoid using
+		-- the same channels that other wormhole users use.
+		--
+		-- Since a version of git-annex that did not provide an
+		-- appid is shipping in Debian 9, and having one side
+		-- provide an appid while the other does not will make
+		-- wormhole fail, this is deferred until 2021-12-31.
+		-- After that point, all git-annex's should have been
+		-- upgraded to include this code, and they will start
+		-- providing an appid.
+		--
+		-- This assumes reasonably good client clocks. If the clock
+		-- is completely wrong, it won't use the appid at that
+		-- point, and pairing will fail. On 2021-12-31, minor clock
+		-- skew may also cause transient problems.
+		--
+		-- After 2021-12-31, this can be changed to simply
+		-- always provide the appid.
+		now <- liftIO getPOSIXTime
+		let wormholeparams = if now < 1640950000
+			then []
+			else Wormhole.appId "git-annex.branchable.com/p2p-setup"
 		(sendres, recvres) <- liftIO $
-			Wormhole.sendFile sendf observer []
+			Wormhole.sendFile sendf observer wormholeparams
 				`concurrently`
-			Wormhole.receiveFile recvf producer []
+			Wormhole.receiveFile recvf producer wormholeparams
 		liftIO $ nukeFile sendf
 		if sendres /= True
 			then return SendFailed

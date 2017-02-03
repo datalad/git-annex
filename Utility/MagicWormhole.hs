@@ -18,6 +18,7 @@ module Utility.MagicWormhole (
 	waitCode,
 	sendCode,
 	WormHoleParams,
+	appId,
 	sendFile,
 	receiveFile,
 	isInstalled,
@@ -86,6 +87,11 @@ sendCode :: CodeProducer -> Code -> IO ()
 sendCode (CodeProducer p) = putMVar p
 
 type WormHoleParams = [CommandParam]
+
+-- | An appid should be provided when using wormhole in an app, to avoid
+-- using the same channel space as ad-hoc wormhole users.
+appId :: String -> WormHoleParams
+appId s = [Param "--appid", Param s]
 
 -- | Sends a file. Once the send is underway, and the Code has been
 -- generated, it will be sent to the CodeObserver. (This may not happen,

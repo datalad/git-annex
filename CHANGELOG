@@ -20,6 +20,13 @@ git-annex (6.20170102) UNRELEASED; urgency=medium
     their contents in memory.
   * unused: Improved memory use significantly when there are a lot
     of differences between branches.
+  * Wormhole pairing will start to provide an appid to wormhole on
+    2021-12-31. An appid can't be provided now because Debian stable is going
+    to ship a older version of git-annex that does not provide an appid.
+    Assumption is that by 2021-12-31, this version of git-annex will be
+    shipped in a Debian stable release. If that turns out to not be the
+    case, this change will need to be cherry-picked into the git-annex in
+    Debian stable, or its wormhole pairing will break.
 
  -- Joey Hess <id@joeyh.name>  Fri, 06 Jan 2017 15:22:06 -0400
 

@@ -21,4 +21,4 @@ I haven't run git-annex's onion setup feature directly, but I'm reading through 
 
 It looks pretty amazing! Looking forward to using it in a Dropbox-like synchronization context soon.
 
-
+> I've gone with the 2021-12-31 flag day approach. [[done]] --[[Joey]]
