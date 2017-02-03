@@ -38,6 +38,7 @@ data Configurable a
 	| DefaultConfig a
 	-- ^ A default value is known, but not all config sources
 	-- have been read yet.
+	deriving (Show)
 
 {- Main git-annex settings. Each setting corresponds to a git-config key
  - such as annex.foo -}
@@ -57,6 +58,7 @@ data GitConfig = GitConfig
 	, annexHttpHeaders :: [String]
 	, annexHttpHeadersCommand :: Maybe String
 	, annexAutoCommit :: Configurable Bool
+	, annexSyncContent :: Configurable Bool
 	, annexDebug :: Bool
 	, annexWebOptions :: [String]
 	, annexQuviOptions :: [String]
@@ -105,6 +107,8 @@ extractGitConfig r = GitConfig
 	, annexHttpHeadersCommand = getmaybe (annex "http-headers-command")
 	, annexAutoCommit = configurable True $ 
 		getmaybebool (annex "autocommit")
+	, annexSyncContent = configurable False $ 
+		getmaybebool (annex "synccontent")
 	, annexDebug = getbool (annex "debug") False
 	, annexWebOptions = getwords (annex "web-options")
 	, annexQuviOptions = getwords (annex "quvi-options")
@@ -156,6 +160,7 @@ extractGitConfig r = GitConfig
 mergeGitConfig :: GitConfig -> GitConfig -> GitConfig
 mergeGitConfig gitconfig repoglobals = gitconfig
 	{ annexAutoCommit = merge annexAutoCommit
+	, annexSyncContent = merge annexSyncContent
 	}
   where
 	merge f = case f gitconfig of

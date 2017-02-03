@@ -62,7 +62,10 @@ by running "git annex sync" on the remote.
 
   Normally, syncing does not transfer the contents of annexed files.
   The --content option causes the content of files in the work tree
-  to also be uploaded and downloaded as necessary.  
+  to also be uploaded and downloaded as necessary.
+
+  The annex.synccontent configuration can be set to true to make content
+  be synced by default.
 
   Normally this tries to get each annexed file in the work tree
   that the local repository  does not yet have, and then copies each

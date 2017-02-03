@@ -70,6 +70,7 @@ data SyncOptions  = SyncOptions
 	, pullOption :: Bool
 	, pushOption :: Bool
 	, contentOption :: Bool
+	, noContentOption :: Bool
 	, keyOptions :: Maybe KeyOptions
 	}
 
@@ -92,8 +93,13 @@ optParser desc = SyncOptions
 	<*> invertableSwitch "push" True
 		( help "avoid git pushes to remotes" 
 		)
-	<*> invertableSwitch "content" False
-		( help "also transfer file contents" 
+	<*> switch 
+		( long "content"
+		<> help "transfer file contents" 
+		)
+	<*> switch
+		( long "no-content"
+		<> help "do not transfer file contents"
 		)
 	<*> optional parseAllOption
 
@@ -118,22 +124,24 @@ seek o = allowConcurrentOutput $ do
 		, map (withbranch . pullRemote o mergeConfig) gitremotes
 		,  [ mergeAnnex ]
 		]
-	when (contentOption o) $
-		whenM (seekSyncContent o dataremotes) $
-			-- Transferring content can take a while,
-			-- and other changes can be pushed to the git-annex
-			-- branch on the remotes in the meantime, so pull
-			-- and merge again to avoid our push overwriting
-			-- those changes.
-			mapM_ includeCommandAction $ concat
-				[ map (withbranch . pullRemote o mergeConfig) gitremotes
-				, [ commitAnnex, mergeAnnex ]
-				]
+	whenM (shouldsynccontent <&&> seekSyncContent o dataremotes) $
+		-- Transferring content can take a while,
+		-- and other changes can be pushed to the git-annex
+		-- branch on the remotes in the meantime, so pull
+		-- and merge again to avoid our push overwriting
+		-- those changes.
+		mapM_ includeCommandAction $ concat
+			[ map (withbranch . pullRemote o mergeConfig) gitremotes
+			, [ commitAnnex, mergeAnnex ]
+			]
 	
 	void $ includeCommandAction $ withbranch pushLocal
 	-- Pushes to remotes can run concurrently.
 	mapM_ (commandAction . withbranch . pushRemote o) gitremotes
-	
+  where
+	shouldsynccontent = pure (contentOption o)
+		<||> (pure (not (noContentOption o)) <&&> getGitConfigVal annexSyncContent)
+
 type CurrBranch = (Maybe Git.Branch, Maybe Adjustment)
 
 {- There may not be a branch checked out until after the commit,

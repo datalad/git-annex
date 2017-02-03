@@ -1009,6 +1009,13 @@ Here are all the supported configuration settings.
   To configure the behavior in all clones of the repository,
   this can be set in [[git-annex-config]].
 
+* `annex.synccontent`
+
+  Set to true to make git-annex sync default to syncing content.
+
+  To configure the behavior in all clones of the repository,
+  this can be set in [[git-annex-config]].
+
 * `annex.startupscan`
 
   Set to false to prevent the git-annex assistant from scanning the
