@@ -1,0 +1,13 @@
+### Please describe the feature request.
+It would be useful in the special remote protocol to add commands to store or retrieve local key / value pairs (not stored under git, but only in local files). At the time of writing it seems to me that there are no ways for a special remote to store key / value pairs that are not so relevant to be stored in the git-annex branch but may be of great relevance for other uses (such as optimization).
+
+More on my specific use of the feature: Resumable uploads
+Use case: while uploading a file to a remote which allow resumable uploads (giving you a token to resume at each uploaded chunk), the network connection may drop. The special remote then may need to store the token value under a local file in order to try resume the upload at a later time.
+
+Since the token is not relevant to the story of the git-annex branch (not regarding the user or the repository itself) but of great relevance for optimization (and may also expire after some time) the addition of commands such as SETCONFIG and GETCONFIG (maybe with names like SETLOCALCONFIG and GETLOCALCONFIG) seems natural to me. They could be also useful to save other optimization values (settings that may need to vary from a repository to another one).
+
+### What version of git-annex are you using? On what operating system?
+git-annex 6.20170101 on Debian stretch (from debian archives)
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+I'm using (and enjoying) it a lot :)
