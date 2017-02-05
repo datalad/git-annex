@@ -1,0 +1,33 @@
+### Please describe the problem.
+
+git annex assistant ignores the --foreground switch:
+
+```
+florian@marduk ~ % /usr/bin/git-annex assistant --foreground --autostart        
+git-annex autostart in /home/florian/.synced_configuration
+ok
+florian@marduk ~ % 
+```
+
+The assistant ist started, but forks to background. This also brekas the systemd unit from https://git-annex.branchable.com/tips/Systemd_unit/
+
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+
+6.20170101-15 at Arch.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
