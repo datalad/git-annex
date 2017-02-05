@@ -1,0 +1,51 @@
+### Please describe the problem.
+
+aws 0.16 has a breaking change, causing git-annex' usage of S3.UploadPartResponse to fail.
+
+[[!format haskell """
+[325 of 546] Compiling Remote.S3        ( Remote/S3.hs, dist/dist-sandbox-8fbcd4b9/build/git-annex/git-annex-tmp/Remote/S3.o )
+
+Remote/S3.hs:224:49: error:
+    • The constructor ‘S3.UploadPartResponse’ should have 1 argument, but has been given 2
+    • In the pattern: S3.UploadPartResponse _ etag
+      In a stmt of a 'do' block:
+        S3.UploadPartResponse _ etag <- sendS3Handle h req
+      In the expression:
+        do { let sz = ...;
+             let p' = offsetMeterUpdate p (toBytesProcessed pos);
+             let numchunks
+                   = ceiling
+                       (fromIntegral sz / fromIntegral defaultChunkSize :: Double);
+             let popper = handlePopper numchunks defaultChunkSize p' fh;
+             .... }
+cabal: Leaving directory '.'
+cabal: Error: some packages failed to install:
+"""]]
+
+I suggest switching to {} pattern matching, like this:
+
+[[!format haskell """
+S3.UploadPartResponse { S3.uprEtag = etag } <- sendS3Handle h req
+"""]]
+
+### What steps will reproduce the problem?
+
+Try to build git-annex with aws 0.16.
+
+### What version of git-annex are you using? On what operating system?
+
+Not sure, I got this build failure report from ilovezfs who I think uses Max OS X, and git-annex master.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
