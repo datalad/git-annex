@@ -9,7 +9,7 @@ ok
 florian@marduk ~ % 
 ```
 
-The assistant ist started, but forks to background. This also brekas the systemd unit from https://git-annex.branchable.com/tips/Systemd_unit/
+The assistant ist started, but forks to background. This also breaks the systemd unit from https://git-annex.branchable.com/tips/Systemd_unit/ (add Type=forking to the service works around that)
 
 It seems to be connected to the autostart option, without --autostart it does not go background.
 
