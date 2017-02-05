@@ -1,0 +1,42 @@
+### Please describe the problem.
+aws-0.16 and 0.15.1 were just released. 0.16 has breaking changes.
+
+### What steps will reproduce the problem?
+Try to build git-annex with the S3 flag with aws-0.16.
+
+Note that git-annex builds successfully with 0.15.1, and that 0.15 has its own problems since it constrains xml-conduit to < 1.4, which fails unless blaze-markup is also contrained to < 0.8.0.0. This is resolved by using 0.15.1 since it lifted the contraint on xml-conduit to < 1.5.
+
+### What version of git-annex are you using? On what operating system?
+6.20170101 on macOS
+
+### Please provide any additional information below.
+The build failure is
+[[!format sh """
+[323 of 546] Compiling Remote.Glacier   ( Remote/Glacier.hs, dist/dist-sandbox-8fbcd4b9/build/git-annex/git-annex-tmp/Remote/Glacier.o )
+[324 of 546] Compiling Remote.Helper.Http ( Remote/Helper/Http.hs, dist/dist-sandbox-8fbcd4b9/build/git-annex/git-annex-tmp/Remote/Helper/Http.o )
+[325 of 546] Compiling Remote.S3        ( Remote/S3.hs, dist/dist-sandbox-8fbcd4b9/build/git-annex/git-annex-tmp/Remote/S3.o )
+
+Remote/S3.hs:224:49: error:
+    • The constructor ‘S3.UploadPartResponse’ should have 1 argument, but has been given 2
+    • In the pattern: S3.UploadPartResponse _ etag
+      In a stmt of a 'do' block:
+        S3.UploadPartResponse _ etag <- sendS3Handle h req
+      In the expression:
+        do { let sz = ...;
+             let p' = offsetMeterUpdate p (toBytesProcessed pos);
+             let numchunks
+                   = ceiling
+                       (fromIntegral sz / fromIntegral defaultChunkSize :: Double);
+             let popper = handlePopper numchunks defaultChunkSize p' fh;
+             .... }
+cabal: Leaving directory '.'
+cabal: Error: some packages failed to install:
+git-annex-6.20170101 failed during the building phase. The exception was:
+ExitFailure 1
+/usr/local/Homebrew/Library/Homebrew/debrew.rb:11:in `raise'
+BuildError: Failed executing: cabal install --jobs=8 --max-backjumps=100000 --prefix=/usr/local/Cellar/git-annex/6.20170101_1 --flags=s3\ webapp
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes!
