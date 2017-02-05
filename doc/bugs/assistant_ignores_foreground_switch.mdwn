@@ -11,6 +11,8 @@ florian@marduk ~ %
 
 The assistant ist started, but forks to background. This also brekas the systemd unit from https://git-annex.branchable.com/tips/Systemd_unit/
 
+It seems to be connected to the autostart option, without --autostart it does not go background.
+
 ### What steps will reproduce the problem?
 
 
