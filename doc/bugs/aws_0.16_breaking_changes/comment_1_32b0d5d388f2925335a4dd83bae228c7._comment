@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="aristidb@4551cc1215222a56e271a796b92908680f3941b5"
+ nickname="aristidb"
+ avatar="http://cdn.libravatar.org/avatar/64e6cb35f87f56a7f13bac236afff510"
+ subject="comment 1"
+ date="2017-02-05T12:29:27Z"
+ content="""
+As explained in my duplicate report on <http://git-annex.branchable.com/bugs/git-annex_does_not_build_with_aws_0.16/>:
+
+I suggest switching to {} pattern matching, like this:
+
+[[!format haskell \"\"\"
+S3.UploadPartResponse { S3.uprEtag = etag } <- sendS3Handle h req
+\"\"\"]]
+
+"""]]
