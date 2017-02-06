@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2017-02-06T20:46:29Z"
+ content="""
+thought about it...
+I guess it would then be a limitation, sorry -- a feature, of v6 mode indeed that all instructions on what files should go into annex vs git should always reside within .gitattributes, to be in effect.  Although very powerful, might be limiting in case of a naive user.  Any chance you would pick up on pushing your suggested changes forward (i.e. keep nagging like I do I guess) within git? ;)
+"""]]
