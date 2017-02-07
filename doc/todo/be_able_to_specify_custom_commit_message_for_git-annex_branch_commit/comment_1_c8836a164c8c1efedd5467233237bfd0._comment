@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-02-07T16:39:59Z"
+ content="""
+Such an env var could easily be supported.
+
+It's desirable to mostly keep the mantainace of the git-annex branch
+out of the user's view, because it's a complication that should not
+need to worry about.
+
+Keeping it in an env var does avoid complicating the discoverable
+interface with some parameter to specifiy the commit message. Another
+way would be to make the commit message configurable in git config.
+Then it could be overridden with -c. Seems like the user of this 
+feature is likely going to also use annex.alwayscommit=false sometimes
+in order to construct git-annex branch commits that bundle up several
+changes.
+
+Anyway, I'm curious what kind of use cases make using custom commit
+messages for the git-annex branch makes sense. I doubt that typical git
+workflows with cherry-picking patches, patch review, etc, work with that
+branch.
+"""]]
