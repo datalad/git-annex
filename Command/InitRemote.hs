@@ -46,8 +46,14 @@ start (name:ws) = ifM (isJust <$> findExisting name)
 
 perform :: RemoteType -> String -> R.RemoteConfig -> CommandPerform
 perform t name c = do
-	(c', u) <- R.setup t R.Init Nothing Nothing c def
+	(c', u) <- R.setup t R.Init cu Nothing c def
 	next $ cleanup u name c'
+  where
+	cu = case M.lookup "uuid" c of
+		Just s
+			| isUUID s -> Just (toUUID s)
+			| otherwise -> giveup "invalid uuid"
+		Nothing -> Nothing
 
 cleanup :: UUID -> String -> R.RemoteConfig -> CommandCleanup
 cleanup u name c = do
