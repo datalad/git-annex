@@ -49,9 +49,9 @@ makeRsyncRemote name location = makeRemote name location $ const $ void $
 	go =<< Annex.SpecialRemote.findExisting name
   where
 	go Nothing = setupSpecialRemote name Rsync.remote config Nothing
-		(Nothing, Annex.SpecialRemote.newConfig name)
+		(Nothing, R.Init, Annex.SpecialRemote.newConfig name)
 	go (Just (u, c)) = setupSpecialRemote name Rsync.remote config Nothing
-		(Just u, c)
+		(Just u, R.Enable, c)
 	config = M.fromList
 		[ ("encryption", "shared")
 		, ("rsyncurl", location)
@@ -81,7 +81,7 @@ initSpecialRemote name remotetype mcreds config = go 0
 		r <- Annex.SpecialRemote.findExisting fullname
 		case r of
 			Nothing -> setupSpecialRemote fullname remotetype config mcreds
-				(Nothing, Annex.SpecialRemote.newConfig fullname)
+				(Nothing, R.Init, Annex.SpecialRemote.newConfig fullname)
 			Just _ -> go (n + 1)
 
 {- Enables an existing special remote. -}
@@ -90,19 +90,19 @@ enableSpecialRemote name remotetype mcreds config = do
 	r <- Annex.SpecialRemote.findExisting name
 	case r of
 		Nothing -> error $ "Cannot find a special remote named " ++ name
-		Just (u, c) -> setupSpecialRemote' False name remotetype config mcreds (Just u, c)
+		Just (u, c) -> setupSpecialRemote' False name remotetype config mcreds (Just u, R.Enable, c)
 
-setupSpecialRemote :: RemoteName -> RemoteType -> R.RemoteConfig -> Maybe CredPair -> (Maybe UUID, R.RemoteConfig) -> Annex RemoteName
+setupSpecialRemote :: RemoteName -> RemoteType -> R.RemoteConfig -> Maybe CredPair -> (Maybe UUID, R.SetupStage, R.RemoteConfig) -> Annex RemoteName
 setupSpecialRemote = setupSpecialRemote' True
 
-setupSpecialRemote' :: Bool -> RemoteName -> RemoteType -> R.RemoteConfig -> Maybe CredPair -> (Maybe UUID, R.RemoteConfig) -> Annex RemoteName
-setupSpecialRemote' setdesc name remotetype config mcreds (mu, c) = do
+setupSpecialRemote' :: Bool -> RemoteName -> RemoteType -> R.RemoteConfig -> Maybe CredPair -> (Maybe UUID, R.SetupStage, R.RemoteConfig) -> Annex RemoteName
+setupSpecialRemote' setdesc name remotetype config mcreds (mu, ss, c) = do
 	{- Currently, only 'weak' ciphers can be generated from the
 	 - assistant, because otherwise GnuPG may block once the entropy
 	 - pool is drained, and as of now there's no way to tell the user
 	 - to perform IO actions to refill the pool. -}
 	let weakc = M.insert "highRandomQuality" "false" $ M.union config c
-	(c', u) <- R.setup remotetype mu mcreds weakc def
+	(c', u) <- R.setup remotetype ss mu mcreds weakc def
 	configSet u c'
 	when setdesc $
 		whenM (isNothing . M.lookup u <$> uuidMap) $

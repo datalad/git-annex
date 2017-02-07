@@ -96,8 +96,8 @@ list autoinit = do
  - No attempt is made to make the remote be accessible via ssh key setup,
  - etc.
  -}
-gitSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-gitSetup Nothing _ c _ = do
+gitSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+gitSetup Init mu _ c _ = do
 	let location = fromMaybe (giveup "Specify location=url") $
 		Url.parseURIRelaxed =<< M.lookup "location" c
 	g <- Annex.gitRepo
@@ -105,8 +105,10 @@ gitSetup Nothing _ c _ = do
 		[r] -> getRepoUUID r
 		[] -> giveup "could not find existing git remote with specified location"
 		_ -> giveup "found multiple git remotes with specified location"
-	return (c, u)
-gitSetup (Just u) _ c _ = do
+	if isNothing mu || mu == Just u
+		then return (c, u)
+		else error "git remote did not have specified uuid"
+gitSetup Enable (Just u) _ c _ = do
 	inRepo $ Git.Command.run
 		[ Param "remote"
 		, Param "add"
@@ -114,6 +116,7 @@ gitSetup (Just u) _ c _ = do
 		, Param $ fromMaybe (giveup "no location") (M.lookup "location" c)
 		]
 	return (c, u)
+gitSetup Enable Nothing _ _ _ = error "unable to enable git remote with no specified uuid"
 
 {- It's assumed to be cheap to read the config of non-URL remotes, so this is
  - done each time git-annex is run in a way that uses remotes.

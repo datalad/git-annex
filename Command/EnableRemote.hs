@@ -69,7 +69,7 @@ startSpecialRemote name config (Just (u, c)) = do
 
 performSpecialRemote :: RemoteType -> UUID -> R.RemoteConfig -> RemoteGitConfig -> CommandPerform
 performSpecialRemote t u c gc = do
-	(c', u') <- R.setup t (Just u) Nothing c gc
+	(c', u') <- R.setup t R.Enable (Just u) Nothing c gc
 	next $ cleanupSpecialRemote u' c'
 
 cleanupSpecialRemote :: UUID -> R.RemoteConfig -> CommandCleanup

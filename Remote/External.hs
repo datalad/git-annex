@@ -109,8 +109,8 @@ gen r u c gc
 			rmt
 	externaltype = fromMaybe (giveup "missing externaltype") (remoteAnnexExternalType gc)
 
-externalSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-externalSetup mu _ c gc = do
+externalSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+externalSetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	let externaltype = fromMaybe (giveup "Specify externaltype=") $
 		M.lookup "externaltype" c

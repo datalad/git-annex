@@ -77,8 +77,8 @@ gen r u c gc = do
   where
 	dir = fromMaybe (giveup "missing directory") $ remoteAnnexDirectory gc
 
-directorySetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-directorySetup mu _ c gc = do
+directorySetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+directorySetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	-- verify configuration is sane
 	let dir = fromMaybe (giveup "Specify directory=") $

@@ -78,16 +78,16 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 		{ chunkConfig = NoChunks
 		}
 
-glacierSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-glacierSetup mu mcreds c gc = do
+glacierSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+glacierSetup ss mu mcreds c gc = do
 	u <- maybe (liftIO genUUID) return mu
-	glacierSetup' (isJust mu) u mcreds c gc
-glacierSetup' :: Bool -> UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-glacierSetup' enabling u mcreds c gc = do
+	glacierSetup' ss u mcreds c gc
+glacierSetup' :: SetupStage -> UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+glacierSetup' ss u mcreds c gc = do
 	(c', encsetup) <- encryptionSetup c gc
 	c'' <- setRemoteCredPair encsetup c' gc (AWS.creds u) mcreds
 	let fullconfig = c'' `M.union` defaults
-	unless enabling $
+	when (ss == Init) $
 		genVault fullconfig gc u
 	gitConfigSpecialRemote u fullconfig "glacier" "true"
 	return (fullconfig, u)

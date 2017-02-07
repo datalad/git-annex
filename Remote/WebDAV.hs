@@ -86,8 +86,8 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			}
 		chunkconfig = getChunkConfig c
 
-webdavSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-webdavSetup mu mcreds c gc = do
+webdavSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+webdavSetup _ mu mcreds c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	url <- case M.lookup "url" c of
 		Nothing -> giveup "Specify url="

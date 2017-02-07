@@ -106,12 +106,12 @@ gen r u c gc = do
 			, checkUrl = Nothing
 			}
 
-s3Setup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-s3Setup mu mcreds c gc = do
+s3Setup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+s3Setup ss mu mcreds c gc = do
 	u <- maybe (liftIO genUUID) return mu
-	s3Setup' (isNothing mu) u mcreds c gc
-s3Setup' :: Bool -> UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-s3Setup' new u mcreds c gc
+	s3Setup' ss u mcreds c gc
+s3Setup' :: SetupStage -> UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+s3Setup' ss u mcreds c gc
 	| configIA c = archiveorg
 	| otherwise = defaulthost
   where
@@ -133,7 +133,7 @@ s3Setup' new u mcreds c gc
 		(c', encsetup) <- encryptionSetup c gc
 		c'' <- setRemoteCredPair encsetup c' gc (AWS.creds u) mcreds
 		let fullconfig = c'' `M.union` defaults
-		when new $
+		when (ss == Init) $
 			genBucket fullconfig gc u
 		use fullconfig
 

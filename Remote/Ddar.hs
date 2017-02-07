@@ -82,8 +82,8 @@ gen r u c gc = do
 		{ chunkConfig = NoChunks
 		}
 
-ddarSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-ddarSetup mu _ c gc = do
+ddarSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+ddarSetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	-- verify configuration is sane

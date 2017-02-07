@@ -9,7 +9,7 @@ module Annex.SpecialRemote where
 
 import Annex.Common
 import Remote (remoteTypes, remoteMap)
-import Types.Remote (RemoteConfig, RemoteConfigKey, typename, setup)
+import Types.Remote (RemoteConfig, RemoteConfigKey, SetupStage(..), typename, setup)
 import Logs.Remote
 import Logs.Trust
 import qualified Git.Config
@@ -79,7 +79,7 @@ autoEnable = do
 		case (M.lookup nameKey c, findType c) of
 			(Just name, Right t) -> whenM (canenable u) $ do
 				showSideAction $ "Auto enabling special remote " ++ name
-				res <- tryNonAsync $ setup t (Just u) Nothing c def
+				res <- tryNonAsync $ setup t Enable (Just u) Nothing c def
 				case res of
 					Left e -> warning (show e)
 					Right _ -> return ()
