@@ -41,3 +41,6 @@ please see above
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I hope to have very soon ;-)
+
+> This is a duplicate of [[this bug report|git_annex_import_fails_on_filenames_with_newlines_in_them]].
+> Closing as dup. [[done]] --[[Joey]]
