@@ -27,6 +27,7 @@ git-annex (6.20170102) UNRELEASED; urgency=medium
     shipped in a Debian stable release. If that turns out to not be the
     case, this change will need to be cherry-picked into the git-annex in
     Debian stable, or its wormhole pairing will break.
+  * Fix build with aws 0.16. Thanks, aristidb.
 
  -- Joey Hess <id@joeyh.name>  Fri, 06 Jan 2017 15:22:06 -0400
 

@@ -40,3 +40,5 @@ BuildError: Failed executing: cabal install --jobs=8 --max-backjumps=100000 --pr
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes!
+
+> [[fixed|done]] thanks --[[Joey]]

@@ -221,7 +221,7 @@ store _r info h = fileStorer $ \k f p -> do
 						let popper = handlePopper numchunks defaultChunkSize p' fh
 						let req = S3.uploadPart (bucket info) object partnum uploadid $
 							 RequestBodyStream (fromIntegral sz) popper
-						S3.UploadPartResponse _ etag <- sendS3Handle h req
+						S3.UploadPartResponse { S3.uprETag = etag } <- sendS3Handle h req
 						sendparts (offsetMeterUpdate meter (toBytesProcessed sz)) (etag:etags) (partnum + 1)
 			sendparts p [] 1
 
