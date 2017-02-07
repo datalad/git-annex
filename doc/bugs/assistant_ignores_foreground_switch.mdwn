@@ -32,4 +32,4 @@ It seems to be connected to the autostart option, without --autostart it does no
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
-
+> Made it support this combination of switches. [[done]] --[[Joey]]

@@ -1,6 +1,6 @@
 {- git-annex assistant
  -
- - Copyright 2012-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,6 +15,8 @@ import Config.Files
 import qualified Build.SysConfig
 import Utility.HumanTime
 import Assistant.Install
+
+import Control.Concurrent.Async
 
 cmd :: Command
 cmd = dontCheck repoExists $ notBareRepo $
@@ -68,6 +70,7 @@ startNoRepo o
 	| autoStopOption o = autoStop
 	| otherwise = giveup "Not in a git repository."
 
+-- Does not return
 autoStart :: AssistantOptions -> IO ()
 autoStart o = do
 	dirs <- liftIO readAutoStartFile
@@ -76,28 +79,47 @@ autoStart o = do
 		giveup $ "Nothing listed in " ++ f
 	program <- programPath
 	haveionice <- pure Build.SysConfig.ionice <&&> inPath "ionice"
-	forM_ dirs $ \d -> do
+	pids <- forM dirs $ \d -> do
 		putStrLn $ "git-annex autostart in " ++ d
-		ifM (catchBoolIO $ go haveionice program d)
-			( putStrLn "ok"
-			, putStrLn "failed"
-			)
+		mpid <- catchMaybeIO $ go haveionice program d
+		if foregroundDaemonOption (daemonOptions o)
+			then return mpid
+			else do
+				case mpid of
+					Nothing -> putStrLn "failed"
+					Just pid -> ifM (checkSuccessProcess pid)
+						( putStrLn "ok"
+						, putStrLn "failed"
+						)
+				return Nothing
+	-- Wait for any foreground jobs to finish and propigate exit status.
+	ifM (all (== True) <$> mapConcurrently checkSuccessProcess (catMaybes pids))
+		( exitSuccess
+		, exitFailure
+		)
   where
 	go haveionice program dir = do
 		setCurrentDirectory dir
 		-- First stop any old daemon running in this directory, which
 		-- might be a leftover from an old login session. Such a
 		-- leftover might be left in an environment where it is
-		-- unavble to use the ssh agent or other login session
+		-- unable to use the ssh agent or other login session
 		-- resources.
 		void $ boolSystem program [Param "assistant", Param "--stop"]
-		if haveionice
-			then boolSystem "ionice" (Param "-c3" : Param program : baseparams)
-			else boolSystem program baseparams
+		(Nothing, Nothing, Nothing, pid) <- createProcess p
+		return pid
 	  where
-		baseparams =
-			[ Param "assistant"
-			, Param $ "--startdelay=" ++ fromDuration (fromMaybe (Duration 5) (startDelayOption o))
+		p
+			| haveionice = proc "ionice"
+				(toCommand $ Param "-c3" : Param program : baseparams)
+			| otherwise = proc program
+				(toCommand baseparams)
+		baseparams = catMaybes
+			[ Just $ Param "assistant"
+			, Just $ Param $ "--startdelay=" ++ fromDuration (fromMaybe (Duration 5) (startDelayOption o))
+			, if foregroundDaemonOption (daemonOptions o)
+				then Just $ Param "--foreground"
+				else Nothing
 			]
 
 autoStop :: IO ()
