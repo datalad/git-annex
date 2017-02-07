@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2017-02-07T17:02:03Z"
+ content="""
+The post-update-annex hook is run whenever the git-annex branch changes,
+so any change to the annexed files stored in the repository will be
+followed by this hook running.
+
+But then how would that hook figure out which content files have been added,
+in order to add parity files for them? Well, someone else had a similar
+type of redundancy information they wanted to add, see
+[[Log_function_to_enumerate_all_recent_git-annex_changes]] for a thread
+about it.
+"""]]
