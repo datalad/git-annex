@@ -18,6 +18,7 @@ import Types.KeySource
 import Annex.CheckIgnore
 import Annex.NumCopies
 import Annex.FileMatcher
+import Logs.Location
 
 cmd :: Command
 cmd = withGlobalOptions (jobsOption : jsonOption : fileMatchingOptions) $ notBareRepo $
@@ -136,7 +137,7 @@ start largematcher mode (srcfile, destfile) =
 		let ks = KeySource srcfile srcfile Nothing
 		v <- genKey ks backend
 		case v of
-			Just (k, _) -> ifM (not . null <$> keyLocations k)
+			Just (k, _) -> ifM (isKnownKey k)
 				( return (maybe Nothing (\a -> Just (a k)) dupa)
 				, return notdupa
 				)

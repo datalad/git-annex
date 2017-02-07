@@ -366,8 +366,8 @@ test_import = intmpclonerepo $ Utility.Tmp.withTmpDir "importtest" $ \importdir 
 	git_annex "drop" ["--force", imported1, imported2, imported5] @? "drop failed"
 	annexed_notpresent_imported imported2
 	(toimportdup, importfdup, importeddup) <- mktoimport importdir "importdup"
-	git_annex "import" ["--clean-duplicates", toimportdup] 
-		@? "import of missing duplicate with --clean-duplicates failed"
+	not <$> git_annex "import" ["--clean-duplicates", toimportdup] 
+		@? "import of missing duplicate with --clean-duplicates failed to fail"
 	checkdoesnotexist importeddup
 	checkexists importfdup
   where

@@ -34,6 +34,15 @@ git-annex (6.20170102) UNRELEASED; urgency=medium
     UUID for the new special remote, instead of generating a UUID.
     This can be useful in some situations, eg when the same data can be
     accessed via two different special remote backends.
+  * import: Changed how --deduplicate, --skip-duplicates, and
+    --clean-duplicates determine if a file is a duplicate.
+    Before, only content known to be present somewhere was considered
+    a duplicate. Now, any content that has been annexed before will be
+    considered a duplicate, even if all annexed copies of the data have
+    been lost.
+    Note that --clean-duplicates and --deduplicate still check
+    numcopies, so won't delete duplicate files unless there's an annexed
+    copy.
 
  -- Joey Hess <id@joeyh.name>  Fri, 06 Jan 2017 15:22:06 -0400
 
