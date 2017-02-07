@@ -45,8 +45,8 @@ Several options can be used to adjust handling of duplicate files.
 
 * `--skip-duplicates`
 
-  Only import files that are not duplicates; and avoid deleting
-  duplicate files from the import location.
+  Only import files that are not duplicates. Avoids deleting any
+  files from the import location.
 
 * `--clean-duplicates`
 
