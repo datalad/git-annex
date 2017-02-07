@@ -79,3 +79,6 @@ So far we found the way to rectify it by providing value of pushurl as a remote.
 lots
 
 [[!meta author="yoh"]]
+
+> [[done]] because there is already an annexUrl config to meet this need.
+> --[[Joey]]
