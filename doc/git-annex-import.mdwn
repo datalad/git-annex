@@ -33,10 +33,9 @@ Several options can be used to adjust handling of duplicate files.
 
   Do not delete files from the import location.
 
-  This could allow importing the same files repeatedly
-  to different locations in a repository. More likely, it could be used to
-  import the same files to a number of different branches or separate git
-  repositories.
+  Running with this option repeatedly can import the same files into
+  different git repositories, or branches, or different locations in a git
+  repository.
 
 * `--deduplicate`
 
@@ -52,6 +51,12 @@ Several options can be used to adjust handling of duplicate files.
 
   Does not import any files, but any files found in the import location
   that are duplicates are deleted.
+
+* `--reinject-duplicates`
+
+  Imports files that are not duplicates. Files that are duplicates have
+  their content reinjected into the annex (similar to
+  [[git-annex-reinject]]).
 
 * `--force`
 

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2017-02-09T19:33:46Z"
+ content="""
+Actually, import --deduplicate, --skip-duplicates, --clean-duplicates 
+are implemeted naively and do hash files twice. So it's
+the same efficiency..
+
+But, I just finished a more complicated implementation that avoids
+the second hashing.
+
+That does make the combined action worth adding, I suppose. Done so as
+--reinject-duplicates.
+"""]]

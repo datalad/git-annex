@@ -11,6 +11,7 @@ import Command
 import qualified Git
 import qualified Annex
 import qualified Command.Add
+import qualified Command.Reinject
 import Utility.CopyFile
 import Backend
 import Types.KeySource
@@ -28,7 +29,7 @@ cmd = withGlobalOptions (jobsOption : jsonOption : fileMatchingOptions) $ notBar
 		"move and add files from outside git working copy"
 		paramPaths (seek <$$> optParser)
 
-data DuplicateMode = Default | Duplicate | DeDuplicate | CleanDuplicates | SkipDuplicates
+data DuplicateMode = Default | Duplicate | DeDuplicate | CleanDuplicates | SkipDuplicates | ReinjectDuplicates
 	deriving (Eq)
 
 data ImportOptions = ImportOptions
@@ -57,7 +58,11 @@ duplicateModeParser =
 		)
 	<|> flag' SkipDuplicates
 		( long "skip-duplicates"
-		<> help "import only new files"
+		<> help "import only new files (do not delete source files)"
+		)
+	<|> flag' ReinjectDuplicates
+		( long "reinject-duplicates"
+		<> help "import new files, and reinject the content of files that were imported before"
 		)
 
 seek :: ImportOptions -> CommandSeek
@@ -88,6 +93,9 @@ start largematcher mode (srcfile, destfile) =
 				warning "Could not verify that the content is still present in the annex; not removing from the import location."
 				stop
 			)
+	reinject k = do
+		showNote "reinjecting"
+		Command.Reinject.perform srcfile k
 	importfile ld k = checkdestdir $ do
 		ignored <- not <$> Annex.getState Annex.force <&&> checkIgnored destfile
 		if ignored
@@ -183,6 +191,9 @@ start largematcher mode (srcfile, destfile) =
 			(skipbecause "not duplicate")
 		SkipDuplicates -> checkdup k 
 			(skipbecause "duplicate")
+			(importfile ld k)
+		ReinjectDuplicates -> checkdup k
+			(reinject k)
 			(importfile ld k)
 		_ -> importfile ld k
 	skipbecause s = showNote (s ++ "; skipping") >> next (return True)
