@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2017-02-09T19:45:26Z"
+ content="""
+I feel that the problem with this idea is that the suggested
+actions "create symlinks (s), inject content (i) and delete from source (d)"
+are only an approximation of how import is implemented. If they perfectly
+matched the implementation, then import could treat them as a DSL and
+simply evaluate the expression to do its work. But it's not that simple.
+For one thing, --deduplicate and --clean-duplicates don't simply "delete from source" the
+duplicates; they first check that numcopies can be satisfied. The default
+import behavior doesn't "sid", in fact it moves from source to the work tree
+(thus implicitly deleting from source first), then injects, and then creates
+the symlink. Everything has dependencies and interrelationships, and the best
+way I've found to express that so far is as the Haskell code in
+Command/Import.hs.
+
+Even exposing that interface and using the current implementation for
+particular canned expressions seems risky; exposing imperfect abstractions
+can shoot you in the foot later when something under the abstraction needs
+to change.
+
+So I'd rather improve the documentation for git-annex import if it is
+unclear. Not opposed to finding a way to work in these "Dsid,Nsid"
+summaries to the the documentation.
+"""]]
