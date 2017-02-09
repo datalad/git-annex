@@ -1,0 +1,56 @@
+[[!comment format=mdwn
+ username="victorsavu3@d059e0a74888923e70a555ce8ab75e8ba00b6eb7"
+ nickname="victorsavu3"
+ avatar="http://cdn.libravatar.org/avatar/4b54518265211913a82b83b930427c45"
+ subject="RequestTimeoutException when uploading to glacier"
+ date="2017-02-09T20:45:42Z"
+ content="""
+I sometimes receive the following error when trying to upload files to glacier:
+
+```
+Traceback (most recent call last):
+ File \"/home/victor/bin/glacier\", line 736, in <module>
+    main()
+  File \"/home/victor/bin/glacier\", line 732, in main
+    App().main()
+  File \"/home/victor/bin/glacier\", line 718, in main
+    self.args.func()
+  File \"/home/victor/bin/glacier\", line 500, in archive_upload
+    file_obj=self.args.file, description=name)
+  File \"/usr/lib/python2.7/site-packages/boto/glacier/vault.py\", line 178, in create_archive_from_file
+    writer.close()
+  File \"/usr/lib/python2.7/site-packages/boto/glacier/writer.py\", line 228, in close
+    self.partitioner.flush()
+  File \"/usr/lib/python2.7/site-packages/boto/glacier/writer.py\", line 79, in flush
+    self._send_part()
+  File \"/usr/lib/python2.7/site-packages/boto/glacier/writer.py\", line 75, in _send_part
+    self.send_fn(part)
+  File \"/usr/lib/python2.7/site-packages/boto/glacier/writer.py\", line 222, in _upload_part
+    self.uploader.upload_part(self.next_part_index, part_data)
+  File \"/usr/lib/python2.7/site-packages/boto/glacier/writer.py\", line 129, in upload_part
+    content_range, part_data)
+  File \"/usr/lib/python2.7/site-packages/boto/glacier/layer1.py\", line 1279, in upload_part
+    response_headers=response_headers)
+  File \"/usr/lib/python2.7/site-packages/boto/glacier/layer1.py\", line 119, in make_request
+    raise UnexpectedHTTPResponseError(ok_responses, response)
+boto.glacier.exceptions.UnexpectedHTTPResponseError: Expected 204, got (408, code=RequestTimeoutException, message=Request timed out.)
+gpg: [stdout]: write error: Broken pipe
+gpg: DBG: deflate: iobuf_write failed
+gpg: [stdout]: write error: Broken pipe
+gpg: filter_flush failed on close: Broken pipe
+gpg: [stdout]: write error: Broken pipe
+gpg: filter_flush failed on close: Broken pipe
+git-annex: fd:17: hPutBuf: resource vanished (Broken pipe)
+```
+
+It happens only sometimes. glacier-cli can upload files without problems. The progress of the file upload is also erratic, it jumps to ~90% and then gets stuck. Can I do something to resolve this?
+
+```
+git-annex version: 5.20140717
+build flags: Assistant Inotify DBus TDFA
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
+remote types: git gcrypt bup directory rsync web glacier ddar hook external
+```
+
+I am using glacier-cli from git master.
+"""]]
