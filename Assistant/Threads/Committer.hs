@@ -322,7 +322,7 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 		doadd = sanitycheck ks $ do
 			(mkey, mcache) <- liftAnnex $ do
 				showStart "add" $ keyFilename ks
-				ingest $ Just $ LockedDown lockdownconfig ks
+				ingest (Just $ LockedDown lockdownconfig ks) Nothing
 			maybe (failedingest change) (done change mcache $ keyFilename ks) mkey
 	add _ _ = return Nothing
 

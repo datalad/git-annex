@@ -1,6 +1,6 @@
 {- git-annex content ingestion
  -
- - Copyright 2010-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,6 +10,7 @@ module Annex.Ingest (
 	LockDownConfig(..),
 	lockDown,
 	ingestAdd,
+	ingestAdd',
 	ingest,
 	ingest',
 	finishIngestDirect,
@@ -116,10 +117,13 @@ lockDown' cfg file = ifM (pure (not (hardlinkFileTmp cfg)) <||> crippledFileSyst
 {- Ingests a locked down file into the annex. Updates the work tree and
  - index. -}
 ingestAdd :: Maybe LockedDown -> Annex (Maybe Key)
-ingestAdd Nothing = return Nothing
-ingestAdd ld@(Just (LockedDown cfg source)) = do
-	(mk, mic) <- ingest ld
-	case mk of
+ingestAdd ld = ingestAdd' ld Nothing
+
+ingestAdd' :: Maybe LockedDown -> Maybe Key -> Annex (Maybe Key)
+ingestAdd' Nothing _ = return Nothing
+ingestAdd' ld@(Just (LockedDown cfg source)) mk = do
+	(mk', mic) <- ingest ld mk
+	case mk' of
 		Nothing -> return Nothing
 		Just k -> do
 			let f = keyFilename source
@@ -140,14 +144,17 @@ ingestAdd ld@(Just (LockedDown cfg source)) = do
 {- Ingests a locked down file into the annex. Does not update the working
  - tree or the index.
  -}
-ingest :: Maybe LockedDown -> Annex (Maybe Key, Maybe InodeCache)
+ingest :: Maybe LockedDown -> Maybe Key -> Annex (Maybe Key, Maybe InodeCache)
 ingest = ingest' Nothing
 
-ingest' :: Maybe Backend -> Maybe LockedDown -> Annex (Maybe Key, Maybe InodeCache)
-ingest' _ Nothing = return (Nothing, Nothing)
-ingest' preferredbackend (Just (LockedDown cfg source)) = withTSDelta $ \delta -> do
-	backend <- maybe (chooseBackend $ keyFilename source) (return . Just) preferredbackend
-	k <- genKey source backend
+ingest' :: Maybe Backend -> Maybe LockedDown -> Maybe Key -> Annex (Maybe Key, Maybe InodeCache)
+ingest' _ Nothing _ = return (Nothing, Nothing)
+ingest' preferredbackend (Just (LockedDown cfg source)) mk = withTSDelta $ \delta -> do
+	k <- case mk of
+		Nothing -> do
+			backend <- maybe (chooseBackend $ keyFilename source) (return . Just) preferredbackend
+			fmap fst <$> genKey source backend
+		Just k -> return (Just k)
 	let src = contentLocation source
 	ms <- liftIO $ catchMaybeIO $ getFileStatus src
 	mcache <- maybe (pure Nothing) (liftIO . toInodeCache delta src) ms
@@ -156,7 +163,7 @@ ingest' preferredbackend (Just (LockedDown cfg source)) = withTSDelta $ \delta -
 		(Just newc, Just c) | compareStrong c newc -> go k mcache ms
 		_ -> failure "changed while it was being added"
   where
-	go (Just (key, _)) mcache (Just s)
+	go (Just key) mcache (Just s)
 		| lockingFile cfg = golocked key mcache s
 		| otherwise = ifM isDirect
 			( godirect key mcache s

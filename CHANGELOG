@@ -43,6 +43,9 @@ git-annex (6.20170102) UNRELEASED; urgency=medium
     Note that --clean-duplicates and --deduplicate still check
     numcopies, so won't delete duplicate files unless there's an annexed
     copy.
+  * import: --deduplicate and --skip-duplicates were implemented
+    inneficiently; they unncessarily hashed each file twice. They have
+    been improved to only hash once.
 
  -- Joey Hess <id@joeyh.name>  Fri, 06 Jan 2017 15:22:06 -0400
 

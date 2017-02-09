@@ -88,7 +88,7 @@ clean file = do
 					<$> catKeyFile file
 				liftIO . emitPointer
 					=<< go
-					=<< ingest' currbackend
+					=<< (\ld -> ingest' currbackend ld Nothing)
 					=<< lockDown cfg file
 			, liftIO $ B.hPut stdout b
 			)
