@@ -4,4 +4,5 @@ None of the `git annex import` modes work properly in this case. By default, imp
 
 So I'm hoping for something like `git annex import --reinject <src>...`. Or are there other existing ways to achieve the same? I couldn't find any.
 
-> implemented `git annex reinject --known` [[done]] --[[Joey]] 
+> implemented `git annex reinject --known` [[done]] (and also `git annex
+> import --reinject-known` now) --[[Joey]] 
