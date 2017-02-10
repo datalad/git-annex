@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2017-02-10T01:38:33Z"
+ content="""
+indeed that was the case.... not clear though how that one ended up without pidlock not being set since all creation was uniform as far as I remember
+
+I wonder if annex could potentially detect for such a case and reissue check/assignment of the pidlock?
+"""]]
