@@ -150,14 +150,30 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 -- open(2) suggests that link can sometimes appear to fail
 -- on NFS but have actually succeeded, and the way to find out is to stat
 -- the file and check its link count etc.
+--
+-- However, not all filesystems support hard links. So, first probe
+-- to see if they are supported. If not, use open with O_EXCL.
 linkToLock :: SideLockHandle -> FilePath -> FilePath -> IO Bool
 linkToLock Nothing _ _ = return False
 linkToLock (Just _) src dest = do
-	_ <- tryIO $ createLink src dest
-	ifM (catchBoolIO checklinked)
-		( catchBoolIO $ not <$> checkInsaneLustre dest
-		, return False
-		)
+	let probe = src ++ ".lnk"
+	v <- tryIO $ createLink src probe
+	nukeFile probe
+	case v of
+		Right _ -> do
+			_ <- tryIO $ createLink src dest
+			ifM (catchBoolIO checklinked)
+				( catchBoolIO $ not <$> checkInsaneLustre dest
+				, return False
+				)
+		Left _ -> catchBoolIO $ do
+			fd <- openFd dest WriteOnly
+				(Just $ combineModes readModes)
+				(defaultFileFlags {exclusive = True})
+			h <- fdToHandle fd
+			readFile src >>= hPutStr h
+			hClose h
+			return True
   where
 	checklinked = do
 		x <- getSymbolicLinkStatus src

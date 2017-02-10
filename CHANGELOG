@@ -49,6 +49,8 @@ git-annex (6.20170102) UNRELEASED; urgency=medium
   * import: Added --reinject-duplicates.
   * Added git template directory to Linux standalone tarball and OSX
     app bundle.
+  * Improve pid locking code to work on filesystems that don't support hard
+    links.
 
  -- Joey Hess <id@joeyh.name>  Fri, 06 Jan 2017 15:22:06 -0400
 

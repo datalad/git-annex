@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-02-10T18:52:59Z"
+ content="""
+I was able to reproduce the problem with a FAT filesystem
+mounted on Linux, if I manually enabled annex.pidlock
+before git-annex init. Hard linking does not work on FAT, so that
+matches my earlier guess.
+
+I've committed a fix for this, so try again with a recent autobuild of
+git-annex and it will probably fix your problem.
+"""]]
