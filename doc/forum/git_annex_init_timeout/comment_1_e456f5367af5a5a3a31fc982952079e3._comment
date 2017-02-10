@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-02-10T18:06:28Z"
+ content="""
+git-annex needs flock locking to be supported by the filesystem it's used
+on. There's a workaround using pid locks, but that is apparently not
+working on OSX in your case. I've only tested it on Linux.
+
+I tried reproducing this on OSX by enabling annex.pidlock before using
+git-annex. But it worked ok.
+
+So, I suspect there may be a problem with the network filesystem's handling
+of the pidlock file. One likely problem is if it doesn't support hard
+links, since the pidlock file is hard linked into place.
+
+You can check if it supports hard links by running this on the drive where
+you had the problem:
+
+	touch foo
+	ln foo bar
+"""]]
