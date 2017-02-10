@@ -1,0 +1,59 @@
+### Please describe the problem.
+
+ATM, if bundled git is used instead of system-wide available (e.g. standalone git-annex's PATH is preceding system's /usr/bin), then user running 'git init' uses bundled version of git.  In comparison to "full regular" installation of git, bundled version doesn't carry hooks, so any "git init"ed with it repository would lack those samples in .git/hooks
+
+### What steps will reproduce the problem?
+
+just use bundled git and run "git init" in some new dir
+
+### What version of git-annex are you using? On what operating system?
+
+6.20170209+gitg16be7b5cc-1~ndall+1
+
+
+### Please provide any additional information below.
+
+actually there is few more differences (/tmp/123 generated with bundled version) -- description, branches:
+
+[[!format sh """
+(git)hopa:/tmp/123[master]
+$> find .git
+.git
+.git/objects
+.git/objects/info
+.git/objects/pack
+.git/config
+.git/HEAD
+.git/refs
+.git/refs/tags
+.git/refs/heads
+
+(git)hopa:/tmp/123_system[master]
+$> find .git            
+.git
+.git/objects
+.git/objects/info
+.git/objects/pack
+.git/config
+.git/HEAD
+.git/refs
+.git/refs/tags
+.git/refs/heads
+.git/info
+.git/info/exclude
+.git/hooks
+.git/hooks/prepare-commit-msg.sample
+.git/hooks/pre-applypatch.sample
+.git/hooks/pre-rebase.sample
+.git/hooks/pre-receive.sample
+.git/hooks/pre-commit.sample
+.git/hooks/pre-push.sample
+.git/hooks/commit-msg.sample
+.git/hooks/post-update.sample
+.git/hooks/applypatch-msg.sample
+.git/hooks/update.sample
+.git/description
+.git/branches
+"""]]
+
+[[!meta author=yoh]]
