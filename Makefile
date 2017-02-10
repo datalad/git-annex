@@ -144,6 +144,7 @@ linuxstandalone-nobuild: Build/Standalone Build/LinuxMkLibs
 	install -d "$(LINUXSTANDALONE_DEST)/git-core"
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(LINUXSTANDALONE_DEST)"/git-core && tar x)
 	install -d "$(LINUXSTANDALONE_DEST)/templates"
+	(cd "$(shell git --man-path)"/../git-core/templates && tar c .) | (cd "$(LINUXSTANDALONE_DEST)"/templates && tar x)
 	install -d "$(LINUXSTANDALONE_DEST)/magic"
 	cp /usr/share/file/magic.mgc "$(LINUXSTANDALONE_DEST)/magic"
 	cp /usr/share/i18n -a "$(LINUXSTANDALONE_DEST)"
@@ -205,6 +206,7 @@ osxapp: Build/Standalone Build/OSXMkLibs
 
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(OSXAPP_BASE)" && tar x)
 	install -d "$(OSXAPP_BASE)/templates"
+	(cd "$(shell git --man-path)"/../git-core/templates && tar c .) | (cd "$(OSXAPP_BASE)"/templates && tar x)
 	install -d "$(OSXAPP_BASE)/magic"
 	if [ -e "$(OSX_MAGIC_FILE)" ]; then \
 		cp "$(OSX_MAGIC_FILE)" "$(OSXAPP_BASE)/magic/magic.mgc"; \

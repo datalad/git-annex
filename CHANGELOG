@@ -47,6 +47,8 @@ git-annex (6.20170102) UNRELEASED; urgency=medium
     inneficiently; they unncessarily hashed each file twice. They have
     been improved to only hash once.
   * import: Added --reinject-duplicates.
+  * Added git template directory to Linux standalone tarball and OSX
+    app bundle.
 
  -- Joey Hess <id@joeyh.name>  Fri, 06 Jan 2017 15:22:06 -0400
 
