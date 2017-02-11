@@ -20,7 +20,7 @@ While in the adjusted branch, you can use git-annex and git commands as
 usual. Any commits that you make will initially only be made to the
 adjusted branch. 
 
-To propigate changes from the adjusted branch back to the original branch,
+To propagate changes from the adjusted branch back to the original branch,
 and to other repositories, as well as to merge in changes from other
 repositories, use `git annex sync`.
 
