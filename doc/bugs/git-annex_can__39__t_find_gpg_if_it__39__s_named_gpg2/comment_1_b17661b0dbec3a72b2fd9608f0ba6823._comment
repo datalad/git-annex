@@ -4,7 +4,7 @@
  date="2015-09-09T21:12:01Z"
  content="""
 git-annex should work ok with gpg version 2; there was one minor
-incompatability vs gpg version 1, but it was ironed out in 2013.
+incompatibility vs gpg version 1, but it was ironed out in 2013.
 
 If you build it from source, and have only gpg2 in PATH, and not gpg, it
 will build a git-annex that runs gpg2.

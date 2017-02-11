@@ -11,8 +11,8 @@ building all libraries again. So, it would be a lot of CPU on an ongoing basis,
 or a source of unfixed security bugs. 
 
 And, I think it would not be entirely non-fragile. It's not exactly unheard
-of for a new version of a haskell library to accidentially break
-compatability with the old version of ghc which is generally unused in the
+of for a new version of a haskell library to accidentally break
+compatibility with the old version of ghc which is generally unused in the
 haskell community outside of debian stable. Or, to need a newer version of
 some C library headers than is in stable, or ...
 """]]

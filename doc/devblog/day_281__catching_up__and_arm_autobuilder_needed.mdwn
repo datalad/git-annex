@@ -14,8 +14,8 @@ and so lets a lot of queries be done much faster. The implementation
 should make it easy to add --batch to more plumbing commands as needed,
 and could probably extend to non-plumbing commands too.
 
-Today: The first 5 hours involved an incompatable mess of ssh and rsync
-versions on Windows. A gordian knot of brokenness and depedency hell.
+Today: The first 5 hours involved an incompatible mess of ssh and rsync
+versions on Windows. A Gordian knot of brokenness and dependency hell.
 I finally found a solution which involves downgrading the cygwin rsync
 to an older version, and using msysgit's ssh rather than cygwin's.
 

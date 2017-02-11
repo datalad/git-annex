@@ -70,7 +70,7 @@ encryptionSetup c gc = do
 			(map ("encryption=" ++)
 				["none","shared","hybrid","pubkey", "sharedpubkey"])
 			++ "."
-	key = fromMaybe (giveup "Specifiy keyid=...") $ M.lookup "keyid" c
+	key = fromMaybe (giveup "Specify keyid=...") $ M.lookup "keyid" c
 	newkeys = maybe [] (\k -> [(True,k)]) (M.lookup "keyid+" c) ++
 		maybe [] (\k -> [(False,k)]) (M.lookup "keyid-" c)
 	cannotchange = giveup "Cannot set encryption type of existing remotes."

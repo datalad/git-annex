@@ -13,7 +13,7 @@ at debugging output to find:
    messages.
 2. The git-receive-pack side waited on the wrong thread, so didn't
    notice when the program was done.
-3. I accidentially used the wrong attribute name when sending a ReceivePackDone
+3. I accidentally used the wrong attribute name when sending a ReceivePackDone
    message.
 
 But all in all, it just worked.

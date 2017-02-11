@@ -2,7 +2,7 @@ Reduced activity this week (didn't work on the assistant after all),
 but several things got done:
 
 Monday: Fixed `fsck --fast --from remote` to not fail when the remote
-didn't support fast copy mode. And dealt with an incompatability in S3 bucket
+didn't support fast copy mode. And dealt with an incompatibility in S3 bucket
 names; the old hS3 library supported upper-case bucket names but the new
 one needs them all in lower case.
 

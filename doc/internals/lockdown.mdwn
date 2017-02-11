@@ -1,6 +1,6 @@
 Object files stored in `.git/annex/objects` are each put in their own directory.
 This allows the write bit to be removed from both the file, and its directory,
-which prevents accidentially deleting or changing the file contents.
+which prevents accidentally deleting or changing the file contents.
 
 The reasoning for doing this follows:
 
@@ -16,7 +16,7 @@ But git-annex does not make a local copy of a file added to it, because
 the file could be very large.
 
 So, it's important for git-annex to find another way to preserve the expected
-property that once committed, you cannot accidentially lose a file.
+property that once committed, you cannot accidentally lose a file.
 The most important protection it makes is just to remove the write bit of
 the file. Thus preventing programs from modifying it.
 

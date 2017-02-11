@@ -26,7 +26,7 @@ seek = withNothing start
 start :: CommandStart
 start = ifM versionSupportsDirectMode
 	( ifM isDirect ( stop , next perform )
-	, giveup "Direct mode is not suppported by this repository version. Use git-annex unlock instead."
+	, giveup "Direct mode is not supported by this repository version. Use git-annex unlock instead."
 	)
 
 perform :: CommandPerform

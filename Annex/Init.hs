@@ -119,7 +119,7 @@ uninitialize = do
 
 {- Will automatically initialize if there is already a git-annex
  - branch from somewhere. Otherwise, require a manual init
- - to avoid git-annex accidentially being run in git
+ - to avoid git-annex accidentally being run in git
  - repos that did not intend to use it.
  -
  - Checks repository version and handles upgrades too.

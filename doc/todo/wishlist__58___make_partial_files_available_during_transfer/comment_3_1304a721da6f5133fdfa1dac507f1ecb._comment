@@ -4,7 +4,7 @@
  subject="comment 3"
  date="2012-11-04T19:58:28Z"
  content="""
-I'm not at all comfortable with either idea. Temporarily repointing the symlink could lead to accidentially git committing a bad symlink. Or the user accidentially doing something with a partially transferred file. Running rsync in place would break lots of things that assume that, once the file is present, it can be assumed to be the full and correct file. (Obviously fsck doesn't assume that, but checks made by `git annex drop` do, for example.)
+I'm not at all comfortable with either idea. Temporarily repointing the symlink could lead to accidentally git committing a bad symlink. Or the user accidentally doing something with a partially transferred file. Running rsync in place would break lots of things that assume that, once the file is present, it can be assumed to be the full and correct file. (Obviously fsck doesn't assume that, but checks made by `git annex drop` do, for example.)
 
 However, you can access partially transferred files by key in `.git/annex/tmp`. It would be easy to write some hack that looks at the symlink to get the key, and then spits out the name of the partial file in `.git/annex/tmp.`.
 """]]

@@ -11,7 +11,7 @@ That fixed one last Windows bug that was disabled in the test suite:
 `git annex add ..\subdir\file` will now work.
 
 I am re-installing the Android autobuilder for 2 reasons: I noticed I had
-accidentially lost a patch to make a library use the Android SSL cert directory,
+accidentally lost a patch to make a library use the Android SSL cert directory,
 and also a new version of GHC is very near to release and so it makes sense
 to update.
 

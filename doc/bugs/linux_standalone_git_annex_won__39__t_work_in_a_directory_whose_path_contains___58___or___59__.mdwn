@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-The shim for the standalone version of git annex invokes the dynamic linker with --library-path set appropriatly.  glibc's parsing of library-path treats : and ; as seperaters and has no quoting syntax for those characters.  Also path items have to be absolute paths so you can't avoid having the whole path.
+The shim for the standalone version of git annex invokes the dynamic linker with --library-path set appropriately.  glibc's parsing of library-path treats : and ; as separators and has no quoting syntax for those characters.  Also path items have to be absolute paths so you can't avoid having the whole path.
 
 As a result if you install the standalone version in a directory whose path includes either of those characters it will produce a library-path that's interpreted incorrectly leading to it looking for the libraries in the wrong place and potentially eventually using the system's installed versions if they are available.
 
@@ -18,7 +18,7 @@ This bug applies to any version.  with a ':' it will probably occur on any unix,
 
 ### Please provide any additional information below.
 
-This bug can't be fixed.  It's unlikely to trip people up but might with a bad combination of label-based drive mounting and odd drive labels.  The worst case would be incompatable libraries on the system install which could lead to data corruption.
+This bug can't be fixed.  It's unlikely to trip people up but might with a bad combination of label-based drive mounting and odd drive labels.  The worst case would be incompatible libraries on the system install which could lead to data corruption.
 
 I recommend that the git annex shim should check for ':' or ';' in the path and exit non-zero if they are found.
 

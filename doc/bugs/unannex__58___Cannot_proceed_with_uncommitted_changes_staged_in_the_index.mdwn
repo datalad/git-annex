@@ -1,8 +1,8 @@
 ### Please describe the problem.
 
-I understand that `git annex unannex` is essentially there for undoing an accidential `git annex add`. Unfortunately it doesn't do that.
+I understand that `git annex unannex` is essentially there for undoing an accidental `git annex add`. Unfortunately it doesn't do that.
 
-If I have uncommited changes, which is the case after a `git annex add`, it tells me:
+If I have uncommitted changes, which is the case after a `git annex add`, it tells me:
 
     git-annex: Cannot proceed with uncommitted changes staged in the index. Recommend you: git commit
     CallStack (from HasCallStack):

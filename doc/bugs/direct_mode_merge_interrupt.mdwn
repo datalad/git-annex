@@ -20,7 +20,7 @@ update the whole work tree, and only after it's updated should it update
 the index and the current branch to reflect the merge.  
 
 This way, if the merge is interrupted, the work tree may have uncommitted
-changed -- but it's fine if they get accidentially committed, since when
+changed -- but it's fine if they get accidentally committed, since when
 the merge is re-done, those changes will by the same ones made by the
 merge. (I assume this is how `git merge` normally works.) --[[Joey]]
 

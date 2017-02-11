@@ -574,7 +574,7 @@ checkBranchDifferences ref = do
 		<$> catFile ref differenceLog
 	mydiffs <- annexDifferences <$> Annex.getGitConfig
 	when (theirdiffs /= mydiffs) $
-		giveup "Remote repository is tuned in incompatable way; cannot be merged with local repository."
+		giveup "Remote repository is tuned in incompatible way; cannot be merged with local repository."
 
 ignoreRefs :: [Git.Sha] -> Annex ()
 ignoreRefs rs = do

@@ -33,7 +33,7 @@ FAIL (0.29s)
       addurl failed on file:///private/var/folders/4j/br7bdhjx4b384_snb2087gt00000gn/T/nix-build-git-annex-5.20151116.drv-0/git-annex-5.20151116/.t/tmprepo0/myurl
 
 2 out of 150 tests failed (126.13s)
-  (This could be due to a bug in git-annex, or an incompatability
+  (This could be due to a bug in git-annex, or an incompatibility
    with utilities, such as git, installed on this system.)
 ```
 

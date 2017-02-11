@@ -4,5 +4,5 @@
  subject="comment 12"
  date="2013-05-24T15:33:12Z"
  content="""
-Ah -- No, your AWS creds are not stored. While some other special remotes, like webdav, can store all necessary credentials, it's not done for AWS. I didn't want git-annex to be responsible for someone accidentially publishing their AWS creds to their friends, since that could cost them a lot of money.
+Ah -- No, your AWS creds are not stored. While some other special remotes, like webdav, can store all necessary credentials, it's not done for AWS. I didn't want git-annex to be responsible for someone accidentally publishing their AWS creds to their friends, since that could cost them a lot of money.
 """]]

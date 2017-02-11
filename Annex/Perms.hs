@@ -148,7 +148,7 @@ thawPerms a = ifM crippledFileSystem
 	)
 
 {- Blocks writing to the directory an annexed file is in, to prevent the
- - file accidentially being deleted. However, if core.sharedRepository
+ - file accidentally being deleted. However, if core.sharedRepository
  - is set, this is not done, since the group must be allowed to delete the
  - file.
  -}

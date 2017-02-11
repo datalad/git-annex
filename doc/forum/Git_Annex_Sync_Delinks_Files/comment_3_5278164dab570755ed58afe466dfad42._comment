@@ -6,7 +6,7 @@
  content="""
 \"Checking out files\" is a message printed by git (not by git-annex) when it is updating the work tree.
 
-It still seems that you have somehow committed large files directly to git. Perhaps you accidentially ran \"git add\" on a large file.
+It still seems that you have somehow committed large files directly to git. Perhaps you accidentally ran \"git add\" on a large file.
 
 git annex sync is probably merging this commit from one of your other repositories.
 """]]

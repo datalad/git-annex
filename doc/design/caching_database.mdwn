@@ -87,7 +87,7 @@ MVars.)
 
 (Note that if the database is a cache, there is no need to perform migrations
 when querying it. My benchmarks skip `runMigration`. Instead, if the query
-fails, the database doesn't exist, or uses an incompatable schema, and the
+fails, the database doesn't exist, or uses an incompatible schema, and the
 cache can be rebuilt then. This avoids the problem that persistent's migrations
 can sometimes fail.)
 

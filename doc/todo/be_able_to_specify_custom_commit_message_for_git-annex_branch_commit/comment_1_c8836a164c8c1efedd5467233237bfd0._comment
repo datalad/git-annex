@@ -10,7 +10,7 @@ out of the user's view, because it's a complication that should not
 need to worry about.
 
 Keeping it in an env var does avoid complicating the discoverable
-interface with some parameter to specifiy the commit message. Another
+interface with some parameter to specify the commit message. Another
 way would be to make the commit message configurable in git config.
 Then it could be overridden with -c. Seems like the user of this 
 feature is likely going to also use annex.alwayscommit=false sometimes

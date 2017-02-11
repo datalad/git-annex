@@ -122,7 +122,7 @@ runner = Just $ \opts -> isolateGitConfig $ do
 		Just act -> ifM act
 			( exitSuccess
 			, do
-				putStrLn "  (This could be due to a bug in git-annex, or an incompatability"
+				putStrLn "  (This could be due to a bug in git-annex, or an incompatibility"
 				putStrLn "   with utilities, such as git, installed on this system.)"
 				exitFailure
 			)
@@ -452,7 +452,7 @@ test_drop_untrustedremote = intmpclonerepo $ do
 	git_annex "untrust" ["origin"] @? "untrust of origin failed"
 	git_annex "get" [annexedfile] @? "get failed"
 	annexed_present annexedfile
-	not <$> git_annex "drop" [annexedfile] @? "drop wrongly suceeded with only an untrusted copy of the file"
+	not <$> git_annex "drop" [annexedfile] @? "drop wrongly succeeded with only an untrusted copy of the file"
 	annexed_present annexedfile
 	inmainrepo $ annexed_present annexedfile
 

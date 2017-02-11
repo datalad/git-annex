@@ -1048,7 +1048,7 @@ git-annex (5.20150731) unstable; urgency=medium
   * webapp: Support enabling known gitlab.com remotes.
   * Fix rsync special remote to work when -Jn is used for concurrent
     uploads.
-  * The last release accidentially removed a number of options from the
+  * The last release accidentally removed a number of options from the
     copy command. (-J, file matching options, etc). These have been added
     back.
   * init: Detect when the filesystem is crippled such that it ignores
@@ -1258,7 +1258,7 @@ git-annex (5.20150508) unstable; urgency=medium
     (endpoint, port, storage class)
   * S3: Let git annex enableremote be used, without trying to recreate
     a bucket that should already exist.
-  * S3: Fix incompatability with bucket names used by hS3; the aws library
+  * S3: Fix incompatibility with bucket names used by hS3; the aws library
     cannot handle upper-case bucket names. git-annex now converts them to
     lower case automatically.
   * import: Check for gitignored files before moving them into the tree.
@@ -1655,7 +1655,7 @@ git-annex (5.20141125) unstable; urgency=medium
 
   * Remove fixup code for bad bare repositories created by
     versions 5.20131118 through 5.20131127. That fixup code would
-    accidentially fire when --git-dir was incorrectly
+    accidentally fire when --git-dir was incorrectly
     pointed at the working tree of a git-annex repository,
     possibly resulting in data loss. Closes: #768093
   * Windows: Fix crash when user.name is not set in git config.
@@ -3441,7 +3441,7 @@ git-annex (3.20130124) unstable; urgency=low
   * webapp: Has a page to view the log, accessed from the control menu.
   * webapp: Fix crash adding removable drive that has an annex directory
     in it that is not a git repository.
-  * Deal with incompatability in gpg2, which caused prompts for encryption
+  * Deal with incompatibility in gpg2, which caused prompts for encryption
     passphrases rather than using the supplied --passphrase-fd.
   * bugfix: Union merges involving two or more repositories could sometimes
     result in data from one repository getting lost. This could result
@@ -3541,7 +3541,7 @@ git-annex (3.20121211) unstable; urgency=low
     associated with a file.
   * webapp: S3 and Glacier forms now have a select list of all
     currently-supported AWS regions.
-  * webdav: Avoid trying to set props, avoiding incompatability with
+  * webdav: Avoid trying to set props, avoiding incompatibility with
     livedrive.com. Needs DAV version 0.3.
   * webapp: Prettify error display.
   * webapp: Fix bad interaction between required fields and modals.
@@ -4970,7 +4970,7 @@ git-annex (0.04) unstable; urgency=low
   * Note that git-annex 0.04 cannot transfer content from old repositories
     that have not yet been upgraded.
   * Annexed file contents are now made unwritable and put in unwriteable
-    directories, to avoid them accidentially being removed or modified.
+    directories, to avoid them accidentally being removed or modified.
     (Thanks Josh Triplett for the idea.)
   * Add build dep on libghc6-testpack-dev. Closes: #603016
   * Avoid using runghc to run test suite as it is not available on all
