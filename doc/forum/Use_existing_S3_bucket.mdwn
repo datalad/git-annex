@@ -1,0 +1,8 @@
+Hello,
+
+is it possible to use an existing AWS S3 bucket (one I created in the AWS web interface) when executing initremote? I tried but git annex failed with s3ErrorCode = "BucketAlreadyOwnedByYou".
+
+Background is that http://git-annex.branchable.com/special_remotes/S3/ only mentions EU for datacenter. But there are three possible EU datacenters now. So I created a bucket in EU (Frankfurt) and tried to use this one with bucket=mybucket
+
+Best Thanks!
+
