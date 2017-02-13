@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-02-13T18:27:02Z"
+ content="""
+The .git/annex/creds/uuid files for S3 special remotes are supposed to
+contain the S3 access credentials, the same values you set
+`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` to. Since it's just some
+high-entropy credentials, perhaps that's why you thought it looked garbled?
+
+I doubt that the error message about the cause of the gpg error is
+right; that is a workaround for an old bug in git-annex 5.20140916. Unless
+you used such an old version to set up the special remote, it's probably
+not related to that problem at all.
+
+The actual problem seems to be:
+
+	gpg: packet(2) with unknown version 13
+	gpg: [don't know]: invalid packet (ctb=6b)
+
+This probably points to an incompatability between the gpg versions.
+The easiest fix is probably to upgrade Debian to gpg 2.
+
+With embedcreds, the S3 creds are symmetrically encrypted/decrypted
+using gpg --symmetric. This is a less common way to use gpg,
+and it could be that there's an incompatability with how different
+versions of gpg do it.
+"""]]
