@@ -51,6 +51,7 @@ git-annex (6.20170102) UNRELEASED; urgency=medium
     app bundle.
   * Improve pid locking code to work on filesystems that don't support hard
     links.
+  * S3: Fix check of uuid file stored in bucket, which was not working.
 
  -- Joey Hess <id@joeyh.name>  Fri, 06 Jan 2017 15:22:06 -0400
 

@@ -7,6 +7,7 @@
 
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CPP #-}
 
 module Remote.S3 (remote, iaHost, configIA, iaItemUrl) where
@@ -355,7 +356,8 @@ genBucket c gc u = do
 
 {- Writes the UUID to an annex-uuid file within the bucket.
  -
- - If the file already exists in the bucket, it must match.
+ - If the file already exists in the bucket, it must match,
+ - or this fails.
  -
  - Note that IA buckets can only created by having a file
  - stored in them. So this also takes care of that.
@@ -365,6 +367,9 @@ writeUUIDFile c u info h = do
 	v <- checkUUIDFile c u info h
 	case v of
 		Right True -> noop
+		Right False -> do
+			warning "The bucket already exists, and its annex-uuid file indicates it is used by a different special remote."
+			giveup "Cannot reuse this bucket."
 		_ -> void $ sendS3Handle h mkobject
   where
 	file = T.pack $ uuidFile c
@@ -375,21 +380,26 @@ writeUUIDFile c u info h = do
 {- Checks if the UUID file exists in the bucket
  - and has the specified UUID already. -}
 checkUUIDFile :: RemoteConfig -> UUID -> S3Info -> S3Handle -> Annex (Either SomeException Bool)
-checkUUIDFile c u info h = tryNonAsync $ check <$> get
+checkUUIDFile c u info h = tryNonAsync $ liftIO $ runResourceT $ do
+	resp <- tryS3 $ sendS3Handle' h (S3.getObject (bucket info) file)
+	case resp of
+		Left _ -> return False
+		Right r -> do
+			v <- AWS.loadToMemory r
+			let !ok = check v
+			return ok
   where
-	get = liftIO 
-		. runResourceT 
-		. either (pure . Left) (Right <$$> AWS.loadToMemory)
-		=<< tryS3 (sendS3Handle h (S3.getObject (bucket info) file))
-	check (Right (S3.GetObjectMemoryResponse _meta rsp)) =
+	check (S3.GetObjectMemoryResponse _meta rsp) =
 		responseStatus rsp == ok200 && responseBody rsp == uuidb
-	check (Left _S3Error) = False
 
 	file = T.pack $ uuidFile c
 	uuidb = L.fromChunks [T.encodeUtf8 $ T.pack $ fromUUID u]
 
 uuidFile :: RemoteConfig -> FilePath
 uuidFile c = getFilePrefix c ++ "annex-uuid"
+
+tryS3 :: ResourceT IO a -> ResourceT IO (Either S3.S3Error a)
+tryS3 a = (Right <$> a) `catch` (pure . Left)
 
 data S3Handle = S3Handle 
 	{ hmanager :: Manager
@@ -464,9 +474,6 @@ s3Configuration c = cfg
 		[(p, _)] -> p
 		_ -> giveup $ "bad S3 port value: " ++ s
 	cfg = S3.s3 proto endpoint False
-
-tryS3 :: Annex a -> Annex (Either S3.S3Error a)
-tryS3 a = (Right <$> a) `catch` (pure . Left)
 
 data S3Info = S3Info
 	{ bucket :: S3.Bucket
