@@ -49,8 +49,8 @@ pairListenerThread urlrenderer = namedThread "PairListener" $ do
 					debug ["ignoring message that looped back"]
 					go reqs cache sock
 				(_, _, False, _) -> do
-					liftAnnex $ warning
-						"illegal control characters in pairing message; ignoring"
+					liftAnnex $ warning $
+						"illegal control characters in pairing message; ignoring (" ++ show (pairMsgData m) ++ ")"
 					go reqs cache sock
 				-- PairReq starts a pairing process, so a
 				-- new one is always heeded, even if

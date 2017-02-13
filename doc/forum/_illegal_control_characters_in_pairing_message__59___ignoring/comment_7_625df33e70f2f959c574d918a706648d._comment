@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2017-02-13T19:52:36Z"
+ content="""
+Seems we can rule out user/hostname/directory, which probably leaves
+the ssh public key as the culprit, but I'm not sure.
+
+So, I changed the error message to display the problem data,
+in [[!commit 5fd15677042b66be81936f081fe0a17f5960096f]]. Once you have a
+git-annex version with that commit, if you see the problem, paste in the
+error message and I should be able to get to the bottom of this.
+"""]]
