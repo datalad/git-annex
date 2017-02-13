@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2017-02-13T20:14:31Z"
+ content="""
+In your original message, you mentioned NFS won't work due to locking.
+However, as far as I know, those NFS locking problems can be worked
+around by `git config annex.pidlock true`. That said, I encourage
+*not* using NFS if there is any alternative and it sounds like you've
+found an alternative, so great.
+
+Re your question about the assistant, have you tried running the assistant
+in the repo on the server? Once it's running, it should update the
+repository whenever the client pushes over a change.
+"""]]
