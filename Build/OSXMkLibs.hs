@@ -25,6 +25,7 @@ import Utility.SafeCommand
 import Utility.Path
 import Utility.Exception
 import Utility.Env
+import Utility.Misc
 
 import qualified Data.Map as M
 import qualified Data.Set as S
