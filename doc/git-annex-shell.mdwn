@@ -149,7 +149,7 @@ and fully lock it down to read-only mode:
 
 Obviously, `ssh-rsa AAAAB3NzaC1y[...] user@example.com` needs to
 replaced with your SSH key. The above also assumes `git-annex-shell`
-is availble in your `$PATH`, use an absolute path if it is not the
+is available in your `$PATH`, use an absolute path if it is not the
 case.
 
 # SEE ALSO
