@@ -798,6 +798,7 @@ Executable git-annex
     Crypto
     Database.Fsck
     Database.Handle
+    Database.Init
     Database.Keys
     Database.Keys.Handle
     Database.Keys.SQL

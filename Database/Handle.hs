@@ -9,7 +9,6 @@
 
 module Database.Handle (
 	DbHandle,
-	initDb,
 	openDb,
 	TableName,
 	queryDb,
@@ -37,26 +36,6 @@ import System.IO
 {- A DbHandle is a reference to a worker thread that communicates with
  - the database. It has a MVar which Jobs are submitted to. -}
 data DbHandle = DbHandle (Async ()) (MVar Job)
-
-{- Ensures that the database is initialized. Pass the migration action for
- - the database.
- -
- - The database is initialized using WAL mode, to prevent readers
- - from blocking writers, and prevent a writer from blocking readers.
- -}
-initDb :: FilePath -> SqlPersistM () -> IO ()
-initDb f migration = do
-	let db = T.pack f
-	enableWAL db
-	runSqlite db migration
-
-enableWAL :: T.Text -> IO ()
-enableWAL db = do
-	conn <- Sqlite.open db
-	stmt <- Sqlite.prepare conn (T.pack "PRAGMA journal_mode=WAL;")
-	void $ Sqlite.step stmt
-	void $ Sqlite.finalize stmt
-	Sqlite.close conn
 
 {- Name of a table that should exist once the database is initialized. -}
 type TableName = String

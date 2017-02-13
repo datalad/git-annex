@@ -25,11 +25,11 @@ import qualified Database.Keys.SQL as SQL
 import Database.Types
 import Database.Keys.Handle
 import qualified Database.Queue as H
+import Database.Init
 import Annex.Locations
 import Annex.Common hiding (delete)
 import Annex.Version (versionUsesKeysDatabase)
 import qualified Annex
-import Annex.Perms
 import Annex.LockFile
 import Utility.InodeCache
 import Annex.InodeSentinal
@@ -120,11 +120,7 @@ openDb createdb _ = catchPermissionDenied permerr $ withExclusiveLock gitAnnexKe
 	case (dbexists, createdb) of
 		(True, _) -> open db
 		(False, True) -> do
-			liftIO $ do
-				createDirectoryIfMissing True dbdir
-				H.initDb db SQL.createTables
-			setAnnexDirPerm dbdir
-			setAnnexFilePerm db
+			initDb db SQL.createTables
 			open db
 		(False, False) -> return DbUnavailable
   where

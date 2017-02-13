@@ -81,3 +81,6 @@ extra copies.
 In other words, Git-Annex and I are very happy together, and I'd like to 
 marry it. And because you are the father, I hereby respectfully ask for 
 your blessing.
+
+> [[fixed|done]] (and I suppose you have my blessing, but I'm not sure
+> that's legal yet!) --[[Joey]]

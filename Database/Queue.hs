@@ -9,7 +9,6 @@
 
 module Database.Queue (
 	DbQueue,
-	initDb,
 	openDbQueue,
 	queryDbQueue,
 	closeDbQueue,
