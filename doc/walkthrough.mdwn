@@ -9,8 +9,8 @@ but following along will teach you the basic concepts from the ground up.
 
 [[!inline feeds=no trail=yes show=0 template=walkthrough pagenames="""
 	walkthrough/creating_a_repository
-	walkthrough/adding_a_remote
 	walkthrough/adding_files
+	walkthrough/adding_a_remote
 	walkthrough/renaming_files
 	walkthrough/getting_file_content
 	walkthrough/syncing
