@@ -1,0 +1,14 @@
+Last week I only had energy to work most of each day on git-annex,
+or to blog about it. I chose quiet work. The changelog did grow
+a good amount.
+
+Today, fixed some autobuilder problems, and I am gearing up to add another
+autobuild, targeting arm boxes with older linux kernels, since I got a
+chance to upgrade the arm autobuilder's disk this weekend.
+
+Also, some work on the S3 special remote, and worked around a bug in
+sqlite's handling of umask.
+
+Backlog is down to 243 messages.
+
+Today's work was sponsored by Trenton Cronholm on Patreon.
