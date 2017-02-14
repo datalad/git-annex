@@ -1,0 +1,56 @@
+git-annex 6.20170214 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Increase default cost for p2p remotes from 200 to 1000.
+     This makes git-annex prefer transferring data from special
+     remotes when possible.
+   * Remove -j short option for --json-progress; that option was already
+     taken for --json.
+   * vicfg: Include the numcopies configuation.
+   * config: New command for storing configuration in the git-annex branch.
+   * annex.autocommit can be configured via git-annex config, to control
+     the default behavior in all clones of a repository.
+   * New annex.synccontent config setting, which can be set to true to make
+     git annex sync default to --content. This may become the default at
+     some point in the future. As well as being configuable by git config,
+     it can be configured by git-annex config to control the default
+     behavior in all clones of a repository.
+   * stack.yaml: Update to lts-7.18.
+   * Some optimisations to string splitting code.
+   * unused: When large files are checked right into git, avoid buffering
+     their contents in memory.
+   * unused: Improved memory use significantly when there are a lot
+     of differences between branches.
+   * Wormhole pairing will start to provide an appid to wormhole on
+     2021-12-31. An appid can't be provided now because Debian stable is going
+     to ship a older version of git-annex that does not provide an appid.
+     Assumption is that by 2021-12-31, this version of git-annex will be
+     shipped in a Debian stable release. If that turns out to not be the
+     case, this change will need to be cherry-picked into the git-annex in
+     Debian stable, or its wormhole pairing will break.
+   * Fix build with aws 0.16. Thanks, aristidb.
+   * assistant: Make --autostart --foreground wait for the children it
+     starts. Before, the --foreground was ignored when autostarting.
+   * initremote: When a uuid= parameter is passed, use the specified
+     UUID for the new special remote, instead of generating a UUID.
+     This can be useful in some situations, eg when the same data can be
+     accessed via two different special remote backends.
+   * import: Changed how --deduplicate, --skip-duplicates, and
+     --clean-duplicates determine if a file is a duplicate.
+     Before, only content known to be present somewhere was considered
+     a duplicate. Now, any content that has been annexed before will be
+     considered a duplicate, even if all annexed copies of the data have
+     been lost.
+     Note that --clean-duplicates and --deduplicate still check
+     numcopies, so won't delete duplicate files unless there's an annexed
+     copy.
+   * import: --deduplicate and --skip-duplicates were implemented
+     inneficiently; they unncessarily hashed each file twice. They have
+     been improved to only hash once.
+   * import: Added --reinject-duplicates.
+   * Added git template directory to Linux standalone tarball and OSX
+     app bundle.
+   * Improve pid locking code to work on filesystems that don't support hard
+     links.
+   * S3: Fix check of uuid file stored in bucket, which was not working.
+   * Work around sqlite's incorrect handling of umask when creating
+     databases."""]]
