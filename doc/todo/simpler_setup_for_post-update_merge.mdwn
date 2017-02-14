@@ -1,0 +1,58 @@
+A git post-update hook can run git-annex merge and so make all pushes
+into a repository update its working tree.
+
+But, there are some complications to writing that hook. See
+<http://git-annex.branchable.com/tips/setup_a_public_repository_on_a_web_site/>
+IIRC different versions of git may behave differently.
+
+And, such a hook can't be used on a filesystem that doesn't support
+executables. (Except on Windows which has a workaround to allow
+non-executable hooks.)
+
+Could there be a single command that sets it up? Something like 
+`git annex merge --run-automatically`
+
+That could install the hook, and also set an annex.automerge config.
+
+The config could be checked by git-annex sync (and assistant) when pushing
+to a local remote, and they could perform a merge on the remote. This way,
+it would work for repos on removable drives that don't support execute
+bits. (Ssh remotes on such filesystems would not be handled, but that's a
+rare configuration; the hook would handle ssh remotes on non-crippled
+filesystems, and on Windows.)
+
+---
+
+Alternatively, receive.denyCurrentBranch can be set to updateInstead.
+With this configuration, `git annex sync` automatically updates the
+work-tree of the remote already.
+
+However, any differences in the remote's work tree or index (other than new
+unstaged files) prevent the work tree update. Currently, `git annex sync`
+does the master:master push quietly, because in standard non-bare repos
+that's expected to fail. So, failures to update the remote work tree
+won't be noticed. (`git annex sync` could look at the remote's
+receive.denyCurrentBranch setting, but this would be hard to do for ssh
+remotes).
+
+Also, this wouldn't work for direct mode repositories, which are often used
+on removable drives.
+
+---
+
+Potential least surprise violation:
+
+If a repository is updating when git annex pushes changes to it, 
+the user might also expect that the same git annex sync
+would pull changes from that repository. Even though nothing has been
+run on the repository to commit changes made there.
+
+Particularly when the assistant is being used, this seems an easy confusion 
+to have. In one clone the user sees every file change getting committed
+and synced around, so why would that not happen in the other clone, on the
+removable drive?
+
+Keeping this a command-line setup, and not something the assistant does,
+will avoid that confusion.
+
+--[[Joey]]
