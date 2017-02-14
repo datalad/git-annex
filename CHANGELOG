@@ -1,3 +1,10 @@
+git-annex (6.20170215) UNRELEASED; urgency=medium
+
+  * sync, merge: Fail when the current branch has no commits yet, instead
+    of not merging in anything from remotes and appearing to succeed.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 14 Feb 2017 15:54:25 -0400
+
 git-annex (6.20170214) unstable; urgency=medium
 
   * Increase default cost for p2p remotes from 200 to 1000.

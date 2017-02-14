@@ -272,22 +272,38 @@ commitStaged commitmode commitmessage = do
 	return True
 
 mergeLocal :: [Git.Merge.MergeConfig] -> CurrBranch -> CommandStart
-mergeLocal mergeconfig currbranch@(Just branch, madj) = go =<< needmerge
+mergeLocal mergeconfig currbranch@(Just branch, madj) =
+	go =<< needMerge currbranch
   where
-	syncbranch = syncBranch branch
-	needmerge = ifM isBareRepo
-		( return False
-		, ifM (inRepo $ Git.Ref.exists syncbranch)
-			( inRepo $ Git.Branch.changed branch' syncbranch
-			, return False
-			)
-		)
-	go False = stop
-	go True = do
+	go Nothing = stop
+	go (Just syncbranch) = do
 		showStart "merge" $ Git.Ref.describe syncbranch
 		next $ next $ merge currbranch mergeconfig Git.Branch.ManualCommit syncbranch
+	syncbranch = syncBranch branch
+mergeLocal _ (Nothing, madj) = do
+	b <- inRepo Git.Branch.currentUnsafe
+	ifM (needMerge (b, madj))
+		( do
+			warning $ "There are no commits yet in the currently checked out branch, so cannot merge any remote changes into it."
+			next $ next $ return False
+		, stop
+		)
+
+-- Returns the branch that should be merged, if any.
+needMerge :: CurrBranch -> Annex (Maybe Git.Branch)
+needMerge (Nothing, _) = return Nothing
+needMerge (Just branch, madj) = ifM (allM checks)
+	( return (Just syncbranch)
+	, return Nothing
+	)
+  where
+	checks =
+		[ not <$> isBareRepo
+		, inRepo (Git.Ref.exists syncbranch)
+		, inRepo (Git.Branch.changed branch' syncbranch)
+		]
+	syncbranch = syncBranch branch
 	branch' = maybe branch (adjBranch . originalToAdjusted branch) madj
-mergeLocal _ (Nothing, _) = stop
 
 pushLocal :: CurrBranch -> CommandStart
 pushLocal b = do
