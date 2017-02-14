@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-02-14T18:50:02Z"
+ content="""
+With a weird crash like this, I was thinking there might be an error message
+output to the console. I guess you showed the full console output though.
+
+Was the 85% of system memory happening on Windows or on Linux?
+
+I have no clues how to debug this. If there's useful information anywhere,
+it's probably in some windows crash log or system log thing that I know
+nothing about.
+"""]]
