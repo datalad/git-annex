@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="lasitus"
+ avatar="http://cdn.libravatar.org/avatar/dfe778f28027aeb75876172022aa5de3"
+ subject="comment 5"
+ date="2017-02-15T02:17:25Z"
+ content="""
+Got a decent result this last run:
+
+Console output
+
+```
+[2017-02-14 20:40:25.3493472] logging to .git\annex\daemon.log
+[2017-02-14 20:40:25.3493472] chat: C:\Program Files (x86)\Git\usr\bin\git-annex.exe [\"assistant\",\"--debug\"]
+[2017-02-14 20:47:21.2931135] process done ExitFailure 1
+```
+
+daemon.log ending
+
+```
+[2017-02-14 20:47:17.4915947] process done ExitSuccess
+[2017-02-14 20:47:19.7279831] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2017-02-14 20:47:19.7436092] process done ExitSuccess
+[2017-02-14 20:47:19.7436092] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"refs/heads/annex/direct/master\"]
+[2017-02-14 20:47:19.7748596] process done ExitSuccess
+[2017-02-14 20:47:19.7748596] Pusher: pushing to [Remote { name =\"origin\" }]
+[2017-02-14 20:47:19.8217363] Committer: queued Upload UUID \"b77aaec0-e75b-4eec-a08c-b09cbe2947d5\" LR Main\LR Main Smart Previews.lrdata\1\117C\117C0B4F-1D99-4DF6-9E7B-7C0B655876D9.dng Nothing : new file created
+[2017-02-14 20:47:19.8529873] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"push\",\"origin\",\"+git-annex:synced/git-annex\",\"annex/direct/master:synced/master\"]
+[2017-02-14 20:47:19.9154902] Transferrer: Transferring: Upload UUID \"b77aaec0-e75b-4eec-a08c-b09cbe2947d5\" LR Main\LR Main Smart Previews.lrdata\1\117C\117C0B4F-1D99-4DF6-9E7B-7C0B655876D9.dng Nothing
+[2017-02-14 20:47:19.9154902] Watcher: add LR Main\LR Main Smart Previews.lrdata\1\162B\162B90D0-CC7C-4BD9-AC2B-BA2D4C72B555.dng
+
+117C0B4F-1D99-4DF6-9E7B-7C0B655876D9.dng
+      1,792,000 100%  152.52MB/s    0:00:00 (xfr#1, to-chk=0/1)
+git-annex.exe: out of memory
+(recording state in git...)
+To storage.lan:/srv/annex/pictures
+   0623558..669c99c  git-annex -> synced/git-annex
+   6309934..b8e043d  annex/direct/master -> synced/master
+
+```
+"""]]
