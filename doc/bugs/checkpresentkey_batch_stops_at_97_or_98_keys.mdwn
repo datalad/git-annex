@@ -1,0 +1,61 @@
+### Please describe the problem.
+
+**git annex checkpresentkey --batch $remote** doesn't check all the keys it is provided with.
+
+Depending how this is run, given 8000 keys, it may return info only the first handful or ~97.
+
+### What steps will reproduce the problem?
+
+The directory contains 8000 symlinks whose filename is the same as their key. The content is not in 'spearmint' (or any other configured remotes, but is present 'here').
+
+    $ find . -type l -printf "%f\n" | git annex checkpresentkey --batch | wc -l
+    8000
+    $ find . -type l -printf "%f\n" | git annex checkpresentkey --batch spearmint | wc -l
+    97
+    $ find . -type l -printf "%f\n" | git annex checkpresentkey --batch spearmint | wc -l
+    97
+
+Without a remote, all get checked..
+
+    $ git annex find --format '${key}\n' . | git annex checkpresentkey --batch | wc -l
+    8000
+    $ git annex find --format '${key}\n' . | git annex checkpresentkey --batch | sort | uniq -c
+       8000 0
+
+Specifying a remote only checks a small handful of keys (count changes each time)..
+
+    $ git annex find --format '${key}\n' . | git annex checkpresentkey --batch spearmint | wc -l
+    6
+    $ git annex find --format '${key}\n' . | git annex checkpresentkey --batch spearmint | wc -l
+    14
+    $ git annex find --format '${key}\n' . | git annex checkpresentkey --batch spearmint | wc -l
+    7
+    $ git annex find --format '${key}\n' . | git annex checkpresentkey --batch spearmint | wc -l
+    8
+
+Putting the keys into a file seems to make this more consistent (more in line with *find -type f*)
+
+    $ git annex find --format '${key}\n' . > /tmp/keys.txt
+    $ cat /tmp/keys.txt | git annex checkpresentkey --batch spearmint | wc -l
+    96
+    $ cat /tmp/keys.txt | git annex checkpresentkey --batch spearmint | wc -l
+    96
+
+Shuffling the key order doesn't matter much either..
+
+    $ shuf /tmp/keys.txt | git annex checkpresentkey --batch spearmint | wc -l
+    97
+    $ shuf /tmp/keys.txt | git annex checkpresentkey --batch spearmint | wc -l
+    96
+    $ shuf /tmp/keys.txt | git annex checkpresentkey --batch spearmint | wc -l
+    97
+
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 6.20161231-g8740cd971
+
+Arch Linux (installed from 'community')
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I only find (what I think are) bugs because I use it and I use it because I like it. I like it because it works (except for when I find actual bugs :]).
