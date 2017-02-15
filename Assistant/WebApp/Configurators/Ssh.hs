@@ -379,7 +379,7 @@ sshAuthTranscript sshinput opts input = case inputAuthMethod sshinput of
 	geti f = maybe "" T.unpack (f sshinput)
 
 	go extraopts environ = processTranscript' 
-		(askPass environ) "ssh" (extraopts ++ opts)
+		(askPass environ (proc "ssh" (extraopts ++ opts)))
 		-- Always provide stdin, even when empty.
 		(Just (fromMaybe "" input))
 
