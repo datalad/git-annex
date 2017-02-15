@@ -210,7 +210,9 @@ tryGitConfigRead :: Bool -> Git.Repo -> Annex Git.Repo
 tryGitConfigRead autoinit r 
 	| haveconfig r = return r -- already read
 	| Git.repoIsSsh r = store $ do
-		v <- Ssh.onRemote r (pipedconfig, return (Left $ giveup "configlist failed")) "configlist" [] configlistfields
+		v <- Ssh.onRemote NoConsumeStdin r
+			(pipedconfig, return (Left $ giveup "configlist failed"))
+			"configlist" [] configlistfields
 		case v of
 			Right r'
 				| haveconfig r' -> return r'
@@ -384,7 +386,8 @@ lockKey r key callback
 						)
 	| Git.repoIsSsh (repo r) = do
 		showLocking r
-		Just (cmd, params) <- Ssh.git_annex_shell (repo r) "lockcontent"
+		Just (cmd, params) <- Ssh.git_annex_shell ConsumeStdin
+			(repo r) "lockcontent"
 			[Param $ key2file key] []
 		(Just hin, Just hout, Nothing, p) <- liftIO $ 
 			withFile devNull WriteMode $ \nullh ->
@@ -477,7 +480,8 @@ copyFromRemote' r key file dest meterupdate
 		u <- getUUID
 		let fields = (Fields.remoteUUID, fromUUID u)
 			: maybe [] (\f -> [(Fields.associatedFile, f)]) file
-		Just (cmd, params) <- Ssh.git_annex_shell (repo r) "transferinfo" 
+		Just (cmd, params) <- Ssh.git_annex_shell ConsumeStdin
+			(repo r) "transferinfo" 
 			[Param $ key2file key] fields
 		v <- liftIO (newEmptySV :: IO (MSampleVar Integer))
 		pidv <- liftIO $ newEmptyMVar
@@ -583,7 +587,7 @@ copyToRemote' r key file meterupdate
 fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)
 fsckOnRemote r params
 	| Git.repoIsUrl r = do
-		s <- Ssh.git_annex_shell r "fsck" params []
+		s <- Ssh.git_annex_shell NoConsumeStdin r "fsck" params []
 		return $ case s of
 			Nothing -> return False
 			Just (c, ps) -> batchCommand c ps
@@ -665,7 +669,8 @@ commitOnCleanup r a = go `after` a
 				Annex.Branch.commit "update"
 		| otherwise = void $ do
 			Just (shellcmd, shellparams) <-
-				Ssh.git_annex_shell (repo r) "commit" [] []
+				Ssh.git_annex_shell NoConsumeStdin
+					(repo r) "commit" [] []
 			
 			-- Throw away stderr, since the remote may not
 			-- have a new enough git-annex shell to

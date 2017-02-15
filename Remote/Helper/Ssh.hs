@@ -26,17 +26,17 @@ import Config
 {- Generates parameters to ssh to a repository's host and run a command.
  - Caller is responsible for doing any neccessary shellEscaping of the
  - passed command. -}
-toRepo :: Git.Repo -> RemoteGitConfig -> [CommandParam] -> Annex [CommandParam]
-toRepo r gc sshcmd = do
+toRepo :: ConsumeStdin -> Git.Repo -> RemoteGitConfig -> [CommandParam] -> Annex [CommandParam]
+toRepo cs r gc sshcmd = do
 	let opts = map Param $ remoteAnnexSshOptions gc
 	let host = fromMaybe (giveup "bad ssh url") $ Git.Url.hostuser r
-	params <- sshOptions (host, Git.Url.port r) gc opts
+	params <- sshOptions cs (host, Git.Url.port r) gc opts
 	return $ params ++ Param host : sshcmd
 
 {- Generates parameters to run a git-annex-shell command on a remote
  - repository. -}
-git_annex_shell :: Git.Repo -> String -> [CommandParam] -> [(Field, String)] -> Annex (Maybe (FilePath, [CommandParam]))
-git_annex_shell r command params fields
+git_annex_shell :: ConsumeStdin -> Git.Repo -> String -> [CommandParam] -> [(Field, String)] -> Annex (Maybe (FilePath, [CommandParam]))
+git_annex_shell cs r command params fields
 	| not $ Git.repoIsUrl r = do
 		shellopts <- getshellopts
 		return $ Just (shellcmd, shellopts ++ fieldopts)
@@ -49,7 +49,7 @@ git_annex_shell r command params fields
 				: map shellEscape (toCommand shellopts) ++
 			uuidcheck u ++
 			map shellEscape (toCommand fieldopts)
-		sshparams <- toRepo r gc [Param sshcmd]
+		sshparams <- toRepo cs r gc [Param sshcmd]
 		return $ Just ("ssh", sshparams)
 	| otherwise = return Nothing
   where
@@ -76,14 +76,15 @@ git_annex_shell r command params fields
  - Or, if the remote does not support running remote commands, returns
  - a specified error value. -}
 onRemote 
-	:: Git.Repo
+	:: ConsumeStdin
+	-> Git.Repo
 	-> (FilePath -> [CommandParam] -> IO a, Annex a)
 	-> String
 	-> [CommandParam]
 	-> [(Field, String)]
 	-> Annex a
-onRemote r (with, errorval) command params fields = do
-	s <- git_annex_shell r command params fields
+onRemote cs r (with, errorval) command params fields = do
+	s <- git_annex_shell cs r command params fields
 	case s of
 		Just (c, ps) -> liftIO $ with c ps
 		Nothing -> errorval
@@ -92,7 +93,7 @@ onRemote r (with, errorval) command params fields = do
 inAnnex :: Git.Repo -> Key -> Annex Bool
 inAnnex r k = do
 	showChecking r
-	onRemote r (check, cantCheck r) "inannex" [Param $ key2file k] []
+	onRemote NoConsumeStdin r (check, cantCheck r) "inannex" [Param $ key2file k] []
   where
 	check c p = dispatch =<< safeSystem c p
 	dispatch ExitSuccess = return True
@@ -101,7 +102,7 @@ inAnnex r k = do
 
 {- Removes a key from a remote. -}
 dropKey :: Git.Repo -> Key -> Annex Bool
-dropKey r key = onRemote r (boolSystem, return False) "dropkey"
+dropKey r key = onRemote NoConsumeStdin r (boolSystem, return False) "dropkey"
 	[ Param "--quiet", Param "--force"
 	, Param $ key2file key
 	]
@@ -133,7 +134,7 @@ rsyncParamsRemote unlocked r direction key file afile = do
 		-- compatability.
 		: (Fields.direct, if unlocked then "1" else "")
 		: maybe [] (\f -> [(Fields.associatedFile, f)]) afile
-	Just (shellcmd, shellparams) <- git_annex_shell (repo r)
+	Just (shellcmd, shellparams) <- git_annex_shell ConsumeStdin (repo r)
 		(if direction == Download then "sendkey" else "recvkey")
 		[ Param $ key2file key ]
 		fields

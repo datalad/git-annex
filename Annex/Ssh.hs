@@ -1,6 +1,6 @@
 {- git-annex ssh interface, with connection caching
  -
- - Copyright 2012-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -8,6 +8,7 @@
 {-# LANGUAGE CPP #-}
 
 module Annex.Ssh (
+	ConsumeStdin(..),
 	sshOptions,
 	sshCacheDir,
 	sshReadPort,
@@ -41,10 +42,15 @@ import Annex.Perms
 import Annex.LockPool
 #endif
 
+{- Some ssh commands are fed stdin on a pipe and so should be allowed to
+ - consume it. But ssh commands that are not piped stdin should generally
+ - not be allowed to consume the process's stdin. -}
+data ConsumeStdin = ConsumeStdin | NoConsumeStdin
+
 {- Generates parameters to ssh to a given host (or user@host) on a given
  - port. This includes connection caching parameters, and any ssh-options. -}
-sshOptions :: (String, Maybe Integer) -> RemoteGitConfig -> [CommandParam] -> Annex [CommandParam]
-sshOptions (host, port) gc opts = go =<< sshCachingInfo (host, port)
+sshOptions :: ConsumeStdin -> (String, Maybe Integer) -> RemoteGitConfig -> [CommandParam] -> Annex [CommandParam]
+sshOptions cs (host, port) gc opts = go =<< sshCachingInfo (host, port)
   where
 	go (Nothing, params) = ret params
 	go (Just socketfile, params) = do
@@ -55,6 +61,9 @@ sshOptions (host, port) gc opts = go =<< sshCachingInfo (host, port)
 		, map Param (remoteAnnexSshOptions gc)
 		, opts
 		, portParams port
+		, case cs of
+			ConsumeStdin -> []
+			NoConsumeStdin -> [Param "-n"]
 		, [Param "-T"]
 		]
 

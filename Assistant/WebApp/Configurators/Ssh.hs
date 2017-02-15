@@ -746,7 +746,9 @@ testGitLabUrl glu = case parseGitLabUrl glu of
 	probeuuid sshdata = do
 		r <- inRepo $ Git.Construct.fromRemoteLocation (fromJust $ sshRepoUrl sshdata)
 		getUncachedUUID . either (const r) fst <$>
-			Remote.Helper.Ssh.onRemote r (Git.Config.fromPipe r, return (Left $ error "configlist failed")) "configlist" [] []
+			Remote.Helper.Ssh.onRemote NoConsumeStdin r
+				(Git.Config.fromPipe r, return (Left $ error "configlist failed"))
+				"configlist" [] []
 	verifysshworks sshdata = inRepo $ Git.Command.runBool
 		[ Param "send-pack"
 		, Param (fromJust $ sshRepoUrl sshdata)

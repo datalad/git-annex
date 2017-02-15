@@ -28,6 +28,7 @@ import Remote.Helper.Messages
 import Utility.Hash
 import Utility.UserInfo
 import Annex.UUID
+import Annex.Ssh
 import Utility.Metered
 
 type BupRepo = String
@@ -213,7 +214,7 @@ storeBupUUID u buprepo = do
 onBupRemote :: Git.Repo -> (FilePath -> [CommandParam] -> IO a) -> FilePath -> [CommandParam] -> Annex a
 onBupRemote r a command params = do
 	c <- Annex.getRemoteGitConfig r
-	sshparams <- Ssh.toRepo r c [Param $
+	sshparams <- Ssh.toRepo NoConsumeStdin r c [Param $
 			"cd " ++ dir ++ " && " ++ unwords (command : toCommand params)]
 	liftIO $ a "ssh" sshparams
   where

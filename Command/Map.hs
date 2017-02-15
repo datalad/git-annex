@@ -16,6 +16,7 @@ import qualified Git.Config
 import qualified Git.Construct
 import qualified Remote
 import qualified Annex
+import Annex.Ssh
 import Annex.UUID
 import Logs.UUID
 import Logs.Trust
@@ -219,10 +220,11 @@ tryScan r
 	  where
 		p = proc pcmd $ toCommand params
 
-	configlist = Ssh.onRemote r (pipedconfig, return Nothing) "configlist" [] []
+	configlist = Ssh.onRemote NoConsumeStdin r
+		(pipedconfig, return Nothing) "configlist" [] []
 	manualconfiglist = do
 		gc <- Annex.getRemoteGitConfig r
-		sshparams <- Ssh.toRepo r gc [Param sshcmd]
+		sshparams <- Ssh.toRepo NoConsumeStdin r gc [Param sshcmd]
 		liftIO $ pipedconfig "ssh" sshparams
 	  where
 		sshcmd = "sh -c " ++ shellEscape

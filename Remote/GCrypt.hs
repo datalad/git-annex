@@ -159,7 +159,7 @@ rsyncTransport r gc
 		let rsyncpath = if "/~/" `isPrefixOf` path
 			then drop 3 path
 			else path
-		opts <- sshOptions (host, Nothing) gc []
+		opts <- sshOptions ConsumeStdin (host, Nothing) gc []
 		return (rsyncShell $ Param "ssh" : opts, host ++ ":" ++ rsyncpath, AccessShell)
 	othertransport = return ([], loc, AccessDirect)
 
@@ -263,7 +263,8 @@ setupRepo gcryptid r
 
 	{-  Ask git-annex-shell to configure the repository as a gcrypt
 	 -  repository. May fail if it is too old. -}
-	gitannexshellsetup = Ssh.onRemote r (boolSystem, return False)
+	gitannexshellsetup = Ssh.onRemote NoConsumeStdin r
+		(boolSystem, return False)
 		"gcryptsetup" [ Param gcryptid ] []
 
 	denyNonFastForwards = "receive.denyNonFastForwards"
@@ -398,7 +399,7 @@ getGCryptId fast r gc
 	| Git.repoIsLocal r || Git.repoIsLocalUnknown r = extract <$>
 		liftIO (catchMaybeIO $ Git.Config.read r)
 	| not fast = extract . liftM fst <$> getM (eitherToMaybe <$>)
-		[ Ssh.onRemote r (Git.Config.fromPipe r, return (Left $ error "configlist failed")) "configlist" [] []
+		[ Ssh.onRemote NoConsumeStdin r (Git.Config.fromPipe r, return (Left $ error "configlist failed")) "configlist" [] []
 		, getConfigViaRsync r gc
 		]
 	| otherwise = return (Nothing, r)

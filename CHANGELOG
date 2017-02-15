@@ -2,6 +2,13 @@ git-annex (6.20170215) UNRELEASED; urgency=medium
 
   * sync, merge: Fail when the current branch has no commits yet, instead
     of not merging in anything from remotes and appearing to succeed.
+  * Run ssh with -n whenever input is not being piped into it,
+    to avoid it consuming stdin that it shouldn't.
+    This fixes git-annex-checkpresentkey --batch remote,
+    which didn't output results for all keys passed into it. Other
+    git-annex commands that communicate with a remote over ssh may also
+    have been consuming stdin that they shouldn't have, which could have
+    impacted using them in eg, shell scripts.
 
  -- Joey Hess <id@joeyh.name>  Tue, 14 Feb 2017 15:54:25 -0400
 

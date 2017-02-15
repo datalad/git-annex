@@ -122,7 +122,7 @@ rsyncTransport gc url
 				let (port, sshopts') = sshReadPort sshopts
 				    userhost = takeWhile (/=':') url
 				-- Connection caching
-				(Param "ssh":) <$> sshOptions
+				(Param "ssh":) <$> sshOptions ConsumeStdin
 					(userhost, port) gc
 					(map Param $ loginopt ++ sshopts')
 			"rsh":rshopts -> return $ map Param $ "rsh" :

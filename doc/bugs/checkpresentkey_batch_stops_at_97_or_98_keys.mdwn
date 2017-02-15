@@ -59,3 +59,5 @@ Arch Linux (installed from 'community')
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I only find (what I think are) bugs because I use it and I use it because I like it. I like it because it works (except for when I find actual bugs :]).
+
+> [[fixed|done]] --[[Joey]]

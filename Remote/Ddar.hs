@@ -118,11 +118,11 @@ splitRemoteDdarRepo ddarrepo =
 
 {- Return the command and parameters to use for a ddar call that may need to be
  - made on a remote repository. This will call ssh if needed. -}
-ddarRemoteCall :: DdarRepo -> Char -> [CommandParam] -> Annex (String, [CommandParam])
-ddarRemoteCall ddarrepo cmd params
+ddarRemoteCall :: ConsumeStdin -> DdarRepo -> Char -> [CommandParam] -> Annex (String, [CommandParam])
+ddarRemoteCall cs ddarrepo cmd params
 	| ddarLocal ddarrepo = return ("ddar", localParams)
 	| otherwise = do
-		os <- sshOptions (host, Nothing) (ddarRepoConfig ddarrepo) []
+		os <- sshOptions cs (host, Nothing) (ddarRepoConfig ddarrepo) []
 		return ("ssh", os ++ remoteParams)
   where
 	(host, ddarrepo') = splitRemoteDdarRepo ddarrepo
@@ -130,13 +130,13 @@ ddarRemoteCall ddarrepo cmd params
 	remoteParams = Param host : Param "ddar" : Param [cmd] : Param ddarrepo' : params
 
 {- Specialized ddarRemoteCall that includes extraction command and flags -}
-ddarExtractRemoteCall :: DdarRepo -> Key -> Annex (String, [CommandParam])
-ddarExtractRemoteCall ddarrepo k =
-	ddarRemoteCall ddarrepo 'x' [Param "--force-stdout", Param $ key2file k]
+ddarExtractRemoteCall :: ConsumeStdin -> DdarRepo -> Key -> Annex (String, [CommandParam])
+ddarExtractRemoteCall cs ddarrepo k =
+	ddarRemoteCall cs ddarrepo 'x' [Param "--force-stdout", Param $ key2file k]
 
 retrieve :: DdarRepo -> Retriever
 retrieve ddarrepo = byteRetriever $ \k sink -> do
-	(cmd, params) <- ddarExtractRemoteCall ddarrepo k
+	(cmd, params) <- ddarExtractRemoteCall NoConsumeStdin ddarrepo k
 	let p = (proc cmd $ toCommand params) { std_out = CreatePipe }
 	(_, Just h, _, pid) <- liftIO $ createProcess p
 	liftIO (hClose h >> forceSuccessProcess p pid)
@@ -147,7 +147,8 @@ retrieveCheap _ _ _ = return False
 
 remove :: DdarRepo -> Remover
 remove ddarrepo key = do
-	(cmd, params) <- ddarRemoteCall ddarrepo 'd' [Param $ key2file key]
+	(cmd, params) <- ddarRemoteCall NoConsumeStdin ddarrepo 'd'
+		[Param $ key2file key]
 	liftIO $ boolSystem cmd params
 
 ddarDirectoryExists :: DdarRepo -> Annex (Either String Bool)
@@ -158,7 +159,8 @@ ddarDirectoryExists ddarrepo
 			Left _ -> Right False
 			Right status -> Right $ isDirectory status
 	| otherwise = do
-		ps <- sshOptions (host, Nothing) (ddarRepoConfig ddarrepo) []
+		ps <- sshOptions NoConsumeStdin (host, Nothing)
+			(ddarRepoConfig ddarrepo) []
 		exitCode <- liftIO $ safeSystem "ssh" (ps ++ params)
 		case exitCode of
 			ExitSuccess -> return $ Right True
@@ -178,7 +180,7 @@ ddarDirectoryExists ddarrepo
 {- Use "ddar t" to determine if a given key is present in a ddar archive -}
 inDdarManifest :: DdarRepo -> Key -> Annex (Either String Bool)
 inDdarManifest ddarrepo k = do
-	(cmd, params) <- ddarRemoteCall ddarrepo 't' []
+	(cmd, params) <- ddarRemoteCall NoConsumeStdin ddarrepo 't' []
 	let p = proc cmd $ toCommand params
 	liftIO $ catchMsgIO $ withHandle StdoutHandle createProcessSuccess p $ \h -> do
 		contents <- hGetContents h

@@ -23,7 +23,7 @@ import Control.Concurrent.Async
 
 transport :: Transport
 transport rr@(RemoteRepo r _) url h ichan ochan = do
-	v <- liftAnnex h $ git_annex_shell r "notifychanges" [] []
+	v <- liftAnnex h $ git_annex_shell ConsumeStdin r "notifychanges" [] []
 	case v of
 		Nothing -> noop
 		Just (cmd, params) -> transportUsingCmd cmd params rr url h ichan ochan
