@@ -389,18 +389,20 @@ pushRemote o remote (Just branch, _) = stopUnless (pure (pushOption o) <&&> need
 {- Pushes a regular branch like master to a remote. Also pushes the git-annex
  - branch.
  -
- - If the remote is a bare git repository, it's best to push the regular 
+ - If the remote is a bare git repository, it's best to push the regular
  - branch directly to it, so that cloning/pulling will get it.
  - On the other hand, if it's not bare, pushing to the checked out branch
- - will fail, and this is why we push to its syncBranch.
+ - will generally fail (except with receive.denyCurrentBranch=updateInstead),
+ - and this is why we push to its syncBranch.
  -
  - Git offers no way to tell if a remote is bare or not, so both methods
  - are tried.
  -
- - The direct push is likely to spew an ugly error message, so stderr is
- - elided. Since git progress display goes to stderr too, the sync push
- - is done first, and actually sends the data. Then the direct push is
- - tried, with stderr discarded, to update the branch ref on the remote.
+ - The direct push is likely to spew an ugly error message, so its stderr is
+ - often elided. Since git progress display goes to stderr too, the 
+ - sync push is done first, and actually sends the data. Then the
+ - direct push is tried, with stderr discarded, to update the branch ref
+ - on the remote.
  -
  - The sync push forces the update of the remote synced/git-annex branch.
  - This is necessary if a transition has rewritten the git-annex branch.
@@ -416,16 +418,30 @@ pushRemote o remote (Just branch, _) = stopUnless (pure (pushOption o) <&&> need
  - set on the remote.
  -}
 pushBranch :: Remote -> Git.Branch -> Git.Repo -> IO Bool
-pushBranch remote branch g = tryIO (directpush g) `after` syncpush g
+pushBranch remote branch g = directpush `after` syncpush
   where
-	syncpush = Git.Command.runBool $ pushparams
+	syncpush = flip Git.Command.runBool g $ pushparams
 		[ Git.Branch.forcePush $ refspec Annex.Branch.name
 		, refspec $ fromAdjustedBranch branch
 		]
-	directpush = Git.Command.runQuiet $ pushparams
-		[ Git.fromRef $ Git.Ref.base $ Annex.Branch.name
-		, Git.fromRef $ Git.Ref.base $ fromDirectBranch $ fromAdjustedBranch branch
-		]
+	directpush = do
+		-- Git prints out an error message when this fails.
+		-- In the default configuration of receive.denyCurrentBranch,
+		-- the error message mentions that config setting
+		-- (and should even if it is localized), and is quite long,
+		-- and the user was not intending to update the checked out
+		-- branch, so in that case, avoid displaying the error
+		-- message. Do display other error messages though,
+		-- including the error displayed when
+		-- receive.denyCurrentBranch=updateInstead -- the user
+		-- will want to see that one.
+		let p = flip Git.Command.gitCreateProcess g $ pushparams
+			[ Git.fromRef $ Git.Ref.base $ Annex.Branch.name
+			, Git.fromRef $ Git.Ref.base $ fromDirectBranch $ fromAdjustedBranch branch
+			]
+		(transcript, ok) <- processTranscript' p Nothing
+		when (not ok && not ("denyCurrentBranch" `isInfixOf` transcript)) $
+			hPutStr stderr transcript
 	pushparams branches =
 		[ Param "push"
 		, Param $ Remote.name remote

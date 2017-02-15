@@ -25,18 +25,20 @@ filesystems, and on Windows.)
 
 Alternatively, receive.denyCurrentBranch can be set to updateInstead.
 With this configuration, `git annex sync` automatically updates the
-work-tree of the remote already.
+work-tree of the remote already. 
 
-However, any differences in the remote's work tree or index (other than new
-unstaged files) prevent the work tree update. Currently, `git annex sync`
-does the master:master push quietly, because in standard non-bare repos
-that's expected to fail. So, failures to update the remote work tree
-won't be noticed. (`git annex sync` could look at the remote's
-receive.denyCurrentBranch setting, but this would be hard to do for ssh
-remotes).
+This wouldn't work for direct mode repositories, which are often used
+on removable drives, since git thinks they're bare repos.
 
-Also, this wouldn't work for direct mode repositories, which are often used
-on removable drives.
+Nor will it work for adjusted branches, since the adjusted branch is not
+updated by the push.
+
+---
+
+Could the updateInstead configuration be made to work for direct mode and
+adjusted branches? Could install a post-update hook, that runs a git-annex
+command that checks for updateInstead, and emulates its behavior, handling
+direct mode and adjusted branches.
 
 ---
 

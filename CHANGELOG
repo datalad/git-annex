@@ -9,6 +9,9 @@ git-annex (6.20170215) UNRELEASED; urgency=medium
     git-annex commands that communicate with a remote over ssh may also
     have been consuming stdin that they shouldn't have, which could have
     impacted using them in eg, shell scripts.
+  * sync: Improve integration with receive.denyCurrentBranch=updateInstead,
+    displaying error messages from the remote then it fails to update
+    its checked out branch.
 
  -- Joey Hess <id@joeyh.name>  Tue, 14 Feb 2017 15:54:25 -0400
 
