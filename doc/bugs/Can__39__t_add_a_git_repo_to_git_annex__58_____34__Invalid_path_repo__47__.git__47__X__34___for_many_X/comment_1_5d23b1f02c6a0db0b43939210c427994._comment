@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="andy"
+ avatar="http://cdn.libravatar.org/avatar/1f1c630290d8b02d7faddc9fa4482c8d"
+ subject="comment 1"
+ date="2017-02-16T06:34:50Z"
+ content="""
+I've had the same problem; I solve it by packing the repositories into a compressed file of some sort (currently a 7z archive) and committing that to Git Annex. I have a script that makes that a one-line job. If I need to make changes to the repo, I can unpack the archive and work on the repo as usual.
+"""]]
