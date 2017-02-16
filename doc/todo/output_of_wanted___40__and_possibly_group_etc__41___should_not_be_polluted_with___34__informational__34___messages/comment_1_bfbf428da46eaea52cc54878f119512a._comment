@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 1"
+ date="2017-02-16T14:10:56Z"
+ content="""
+In your example, it is polluted by these messages because git-annex is initialising the repository as a git-annex. There should be a 'git annex init' after the 'cd', before you run git-annex commands (e.g. wanted).
+"""]]
