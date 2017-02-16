@@ -71,21 +71,11 @@ drwxrwxrwt 52 root root  36864 Feb 16 13:46 ..
 drwxrwxr-x  9 jk   users  4096 Feb 16 13:48 .git
 -rw-rw-r--  1 jk   users    28 Feb 16 13:47 .gitattributes
 -rw-rw-r--  1 jk   users     4 Feb 16 13:48 xxx
-renn:/tmp/test$ git config annex
-error: key does not contain a section: annex
-renn:/tmp/test$ exit
-Script done, file is git-annex-mime-bug.txt
-renn:/tmp$ git check-attr --all raw/20160325/drone/DJI00147.MP4
-fatal: Not a git repository (or any of the parent directories): .git
-renn:/tmp$ cd test/
-renn:/tmp/test$ git check-attr --all xxx
-xxx: annex.largefiles: anything
-xxx: filter: annex
-renn:/tmp/test$ 
 
 renn:/tmp/test$ git check-attr --all xxx
 xxx: annex.largefiles: anything
 xxx: filter: annex
+
 
 # End of transcript or log.
 """]]
