@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2017-02-16T15:54:18Z"
+ content="""
+Thank you CandyAngel for the feedback.  I do know how to avoid it, but my point is that git-annex here uses stdout for both \"log messages\" and the output of the log command. IIRC some other commands, and git uses stderr for log/informational messages in cases where stdout is used for communicating output
+"""]]
