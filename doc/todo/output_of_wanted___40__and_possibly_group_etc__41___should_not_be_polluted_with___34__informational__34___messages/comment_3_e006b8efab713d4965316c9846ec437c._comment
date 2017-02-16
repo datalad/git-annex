@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-02-16T16:53:30Z"
+ content="""
+This can happen at other times than repository auto-init too.
+
+Generally plumbing commands just turn off all such messages very early,
+but in this case, the command has one mode where it's supposed to get data,
+which is plumbing-like, and another mode where it sets data, which is
+supposed to display normal messages about what it's doing. So it didn't
+turn messages off until after parsing the command line, which is too late.
+
+Affected commands: config group groupwanted numcopies schedule wanted required
+
+Fairly sure that's a complete set, at least it's all the commands with
+both a get and a set mode.
+"""]]

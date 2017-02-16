@@ -11,7 +11,8 @@ import Command
 import Logs.Config
 
 cmd :: Command
-cmd = command "config" SectionSetup "configuration stored in git-annex branch"
+cmd = noMessages $ command "config" SectionSetup
+	"configuration stored in git-annex branch"
 	paramNothing (seek <$$> optParser)
 
 data Action
@@ -47,11 +48,13 @@ optParser _ = setconfig <|> getconfig <|> unsetconfig
 
 seek :: Action -> CommandSeek
 seek (SetConfig name val) = commandAction $ do
+	allowMessages
 	showStart name val
 	next $ next $ do
 		setGlobalConfig name val
 		return True
 seek (UnsetConfig name) = commandAction $ do
+	allowMessages
 	showStart name "unset"
 	next $ next $ do
 		unsetGlobalConfig name

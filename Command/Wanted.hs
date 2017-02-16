@@ -8,10 +8,8 @@
 module Command.Wanted where
 
 import Command
-import qualified Annex
 import qualified Remote
 import Logs.PreferredContent
-import Types.Messages
 import Types.StandardGroups
 
 import qualified Data.Map as M
@@ -27,7 +25,8 @@ cmd'
 	-> Annex (M.Map UUID PreferredContentExpression)
 	-> (UUID -> PreferredContentExpression -> Annex ())
 	-> Command
-cmd' name desc getter setter = command name SectionSetup desc pdesc (withParams seek)
+cmd' name desc getter setter = noMessages $ 
+	command name SectionSetup desc pdesc (withParams seek)
   where
 	pdesc = paramPair paramRemote (paramOptional paramExpression)
 
@@ -35,6 +34,7 @@ cmd' name desc getter setter = command name SectionSetup desc pdesc (withParams 
 
 	start (rname:[]) = go rname (performGet getter)
 	start (rname:expr:[]) = go rname $ \uuid -> do
+		allowMessages
 		showStart name rname
 		performSet setter expr uuid
 	start _ = giveup "Specify a repository."
@@ -45,7 +45,6 @@ cmd' name desc getter setter = command name SectionSetup desc pdesc (withParams 
 
 performGet :: Ord a => Annex (M.Map a PreferredContentExpression) -> a -> CommandPerform
 performGet getter a = do
-	Annex.setOutput QuietOutput
 	m <- getter
 	liftIO $ putStrLn $ fromMaybe "" $ M.lookup a m
 	next $ return True

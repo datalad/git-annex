@@ -12,7 +12,7 @@ import Logs.PreferredContent
 import Command.Wanted (performGet, performSet)
 
 cmd :: Command
-cmd = command "groupwanted" SectionSetup 
+cmd = noMessages $ command "groupwanted" SectionSetup 
 	"get or set groupwanted expression"
 	(paramPair paramGroup (paramOptional paramExpression))
 	(withParams seek)
@@ -23,6 +23,7 @@ seek = withWords start
 start :: [String] -> CommandStart
 start (g:[]) = next $ performGet groupPreferredContentMapRaw g
 start (g:expr:[]) = do
+	allowMessages
 	showStart "groupwanted" g
 	next $ performSet groupPreferredContentSet expr g
 start _ = giveup "Specify a group."

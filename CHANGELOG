@@ -12,6 +12,9 @@ git-annex (6.20170215) UNRELEASED; urgency=medium
   * sync: Improve integration with receive.denyCurrentBranch=updateInstead,
     displaying error messages from the remote then it fails to update
     its checked out branch.
+  * config group groupwanted numcopies schedule wanted required: 
+    Avoid displaying extraneous messages about repository auto-init,
+    git-annex branch merging, etc, when being used to get information.
 
  -- Joey Hess <id@joeyh.name>  Tue, 14 Feb 2017 15:54:25 -0400
 
