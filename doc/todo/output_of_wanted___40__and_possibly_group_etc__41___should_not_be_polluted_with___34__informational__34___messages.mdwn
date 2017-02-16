@@ -1,0 +1,11 @@
+[[!format sh """
+$> git  clone http://datasets.datalad.org/labs/haxby/raiders/.git ; cd raiders; git annex wanted origin 2>/dev/null     
+Cloning into 'raiders'...
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+not metadata=distribution-restrictions=*
+"""]]
+
+so it is necessary to avoid considering all the merging and recording messages, complicating using wanted in the scripts etc
+
+[[!meta author=yoh]]
