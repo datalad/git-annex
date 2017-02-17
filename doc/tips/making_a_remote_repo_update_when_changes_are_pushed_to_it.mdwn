@@ -17,7 +17,8 @@ normally you'll want to avoid manually changing the remote's working tree,
 and only push changes into it in this configuration.
 
 When the remote is using [[direct_mode]] or
-[[adjusted_branches|git-annex-adjust]], you need the git-annex post-receive
+[[adjusted_branches|git-annex-adjust]], you need the 
+[[git-annex post-receive|git-annex-post-receive]]
 hook to be set up for pushes to update the remote's working tree.
 This is a new feature in git-annex 6.20170217. If the remote was
 initialized with an older version of git-annex, you will need to re-run
