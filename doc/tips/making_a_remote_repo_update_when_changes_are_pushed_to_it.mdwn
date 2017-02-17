@@ -1,0 +1,24 @@
+Normally, pushing a change into a remote git repository does not update its
+working tree. But it can be very convenient to only need to `git push`
+(or `git annex sync --content`) to a remote to update the files checked out
+there.
+
+Git has a way to let you do this, by setting `receive.denyCurrentBranch`
+to `updateInstead` in the remote repository. For example:
+
+	ssh remote
+	cd /path/to/repo
+	git config receive.denyCurrentBranch updateInstead
+
+Now after a push to the remote, its working tree will be updated.
+
+Changes in the remote's working tree can prevent this update from working;
+normally you'll want to avoid manually changing the remote's working tree,
+and only push changes into it in this configuration.
+
+When the remote is using [[direct_mode]] or
+[[adjusted_branches|git-annex-adjust]], you need the git-annex post-receive
+hook to be set up for pushes to update the remote's working tree.
+This is a new feature in git-annex 6.20170217. If the remote was
+initialized with an older version of git-annex, you will need to re-run
+`git annex init` in the remote after upgrading git-annex.

@@ -12,44 +12,19 @@ Here's how I set it up. --[[Joey]]
 3. `git init; git annex init`
 4. `git config core.sharedrepository world` (Makes sure files
    are always added with permissions that allow everyone to read them.)
-5. We want users to be able to clone the git repository over http, because
+5. `git config receive.denyCurrentBranch updateInstead` (Makes the
+   [[working tree update when changes are pushed to it|making_a_remote_repo_update_when_changes_are_pushed_to_it]].)
+6. We want users to be able to clone the git repository over http, because
    git-annex can download files from it over http as well. For this to
    work, `git update-server-info` needs to get run after commits. The
    git `post-update` hook will take care of this, you just need to enable
    the hook. `chmod +x .git/hooks/post-update`
-6. `git annex add; git commit -m added`
-7. Make sure users can still download files from the site directly.
-8. Instruct advanced users to clone a http url that ends with the "/.git/"
+7. `git annex add; git commit -m added`
+8. Make sure users can still download files from the site directly.
+9. Instruct advanced users to clone a http url that ends with the "/.git/"
    directory. For example, for downloads.kitenet.net, the clone url
    is `https://downloads.kitenet.net/.git/`
-9. Set up a git `post-receive` hook to update the repository's working tree
-   when changes are pushed to it. See below for details.
 
 When users clone over http, and run git-annex, it will
 automatically learn all about your repository and be able to download files
 right out of it, also using http. 
-
-## post-receive hook
-
-If you have git-annex 4.20130703, the post-receive hook mentioned above
-in step 9 just needs to run `git annex merge`.
-
-With older versions of git-annex, you can instead use `git annex sync`.
-
-There are two gotchas with some versions of git to be aware of when writing
-this post-receive hook.
-
-1. The hook may be run with the current directory set to the `.git`
-   directory, and not the top of your work tree. So you need to `cd ..` or
-   similar in the hook.
-2. `GIT_DIR` may be set to `.`, which will not be right after changing
-   directory. So you will probably want to unset it.
-
-Here's a post-receive hook that takes these problems into account:
-
-<pre>
-#!/bin/sh
-unset GIT_DIR
-cd ..
-git annex merge
-</pre>

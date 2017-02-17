@@ -7,4 +7,8 @@
 This is not something the assistant really handles yet. The issue is that if you have a non-bare repository on the USB drive, something has to run `git annex sync` in it when changes are pushed to it, to update it to display the files that are in the repository.
 
 One way to do this is to set up a non-bare repository by hand and add a git post-receive hook that runs `git annex sync`
+
+Update: Another way, recently added is
+<https://git-annex.branchable.com/making_a_remote_repo_update_when_changes_are_pushed_to_it/>
+This new approach even supports FAT filesystems!
 """]]
