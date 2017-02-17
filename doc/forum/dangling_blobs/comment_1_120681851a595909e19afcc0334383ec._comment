@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-02-17T16:33:02Z"
+ content="""
+This message from git fsck does not indicate any kind of serious problem
+with the repository.
+
+A dangling blob can be added to a git repository when something gets
+staged but is then never included in a commit. For example, with the
+assistant, if a file is created, and then modified soon after, the
+original version would get staged, but before it was committed, the
+new version staged and included in the commit. 
+
+There are several other scenarios, involving the assistant and not, where
+that could happen.
+
+So, git is telling you that the git repository contains
+information that's not being used. Unless you are low on disk
+space this probably doesn't matter, and git will automatically
+clean up dangling blobs after a while (or see `git gc`).
+"""]]
