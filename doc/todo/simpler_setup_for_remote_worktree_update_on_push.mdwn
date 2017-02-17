@@ -40,6 +40,19 @@ adjusted branches? Could install a post-update hook, that runs a git-annex
 command that checks for updateInstead, and emulates its behavior, handling
 direct mode and adjusted branches.
 
+To support direct mode repos on removable drives w/o execute bits,
+could make sync check local remotes and run the equivilant action as the
+hook would run.
+
+To fully emulate updateInstead, the post-update hook 
+should abort if the tree is unclean or if there are merge conflicts.
+But, in a direct mode repo, the only way the user will likely resolve such
+a situation is git-annex sync/merge, so the hook could just run git-annex
+merge instead of trying to fully emulate regular updateInstead behavior.
+Similarly, in an adjusted branch, the push will update master, and git
+annex sync/merge is what the user will likely do. Although they could
+choose to reset changes to the tree.
+
 ---
 
 Potential least surprise violation:
