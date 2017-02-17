@@ -418,12 +418,14 @@ pushRemote o remote (Just branch, _) = stopUnless (pure (pushOption o) <&&> need
  - set on the remote.
  -}
 pushBranch :: Remote -> Git.Branch -> Git.Repo -> IO Bool
-pushBranch remote branch g = directpush `after` syncpush
+pushBranch remote branch g = directpush `after` annexpush `after` syncpush
   where
 	syncpush = flip Git.Command.runBool g $ pushparams
 		[ Git.Branch.forcePush $ refspec Annex.Branch.name
 		, refspec $ fromAdjustedBranch branch
 		]
+	annexpush = void $ tryIO $ flip Git.Command.runQuiet g $ pushparams
+		[ Git.fromRef $ Git.Ref.base $ Annex.Branch.name ]
 	directpush = do
 		-- Git prints out an error message when this fails.
 		-- In the default configuration of receive.denyCurrentBranch,
@@ -436,9 +438,7 @@ pushBranch remote branch g = directpush `after` syncpush
 		-- receive.denyCurrentBranch=updateInstead -- the user
 		-- will want to see that one.
 		let p = flip Git.Command.gitCreateProcess g $ pushparams
-			[ Git.fromRef $ Git.Ref.base $ Annex.Branch.name
-			, Git.fromRef $ Git.Ref.base $ fromDirectBranch $ fromAdjustedBranch branch
-			]
+			[ Git.fromRef $ Git.Ref.base $ fromDirectBranch $ fromAdjustedBranch branch ]
 		(transcript, ok) <- processTranscript' p Nothing
 		when (not ok && not ("denyCurrentBranch" `isInfixOf` transcript)) $
 			hPutStr stderr transcript
