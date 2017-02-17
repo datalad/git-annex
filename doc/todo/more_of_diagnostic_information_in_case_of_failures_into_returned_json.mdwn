@@ -1,0 +1,20 @@
+ATM I am experiencing sporadic failures of the batched  git annex addurl call -- seems to report failure (success: False) once in a while, but succeeds on a retry:
+
+[[!format sh """
+(Pdb) p url
+'http://openneuro.s3.amazonaws.com/ds000001/ds000001_R1.1.0/uncompressed/sub016/BOLD/task001_run003/QA/QA_report.pdf?versionId=null'
+
+(Pdb) p out_json
+{u'note': u'from datalad', u'command': u'addurl', u'file': u'ds000001_R1.1.0/uncompressed/sub016/BOLD/task001_run003/QA/QA_report.pdf', u'success': False}
+
+(Pdb) up
+> /home/yoh/proj/datalad/datalad/datalad/support/gitrepo.py(210)newfunc()
+-> return func(self, file_new, *args, **kwargs)
+
+(Pdb) func(self, file_new, *args, **kwargs)
+{u'note': u'from datalad', u'file': u'ds000001_R1.1.0/uncompressed/sub016/BOLD/task001_run003/QA/QA_report.pdf', u'command': u'addurl', u'key': u'MD5E-s1191419--cb4efab8104b5117f64b58ee6d6a79ba.pdf', u'success': True}
+"""]]
+
+besides me blindly trying to re-run it e.g. 3 times and only then declare total failure, I wondered if json output could provide more information (if any known) about the failure... e.g. if a custom remote crashed/errorred (I guess the case here due to "from datalad") -- what was stderr/exit code for that process if crashed/ERROR msg... if wget -- what was stderr there
+
+[[!meta name=yoh]]
