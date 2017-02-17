@@ -1,0 +1,27 @@
+Revisiting an issue I reported a couple of months ago but never figured out. I am trying to use git annex assistant on two separate machines to automatically mirror files between them. But after I start the second assistant and add new files to the annex, I find that git fsck reports dangling blobs. Is there a conflict between the two assistants?
+
+On the server:
+
+    $ mkdir ~/annex
+    $ cd ~/annex
+    $ git init
+    $ git annex init u --version=6
+    $ echo This is test file 1. >testfile1.txt
+    $ git annex add testfile1.txt
+    $ git annex sync
+    $ git remote add ml2 ssh://laptop/Users/username/annex
+    $ git annex assistant
+
+After all that, I do this on the laptop:
+
+    $ cd ~/
+    $ git clone ssh://server/home/username/annex
+    $ cd annex
+    $ git annex init ml2 --version=6
+    $ git annex sync
+    $ git annex assistant
+
+At this point git fsck is happy. But when I add files to the annex on either machine and run git fsck, I get messages like:
+
+    Checking object directories: 100% (256/256), done.
+    dangling blob 31a30177d1e37faf8eac96524302a61713d3d522

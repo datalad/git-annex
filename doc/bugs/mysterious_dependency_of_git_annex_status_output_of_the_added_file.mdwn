@@ -1,0 +1,81 @@
+### Please describe the problem.
+
+in v6 mode -- Result depends on having a good sleep before running 'git annex add'.
+
+Without sleep, git annex manages first to stage file to be committed into git, but then also modifies it to be added into annex  (this is not shown above -- just inspect that repository obtained without having any sleep)
+
+I guess relates to http://git-annex.branchable.com/bugs/Too_difficult_if_not_impossible_to_explicitly_add__47__keep_file_under_git___40__not_annex__41___in_v6_without_employing_.gitattributes/
+
+### What steps will reproduce the problem?
+
+Run http://www.onerussian.com/tmp/ga-3.sh  twice:  once giving 0 secs to sleep, and then 1 (or about 0.3 might work as well)
+
+
+### What version of git-annex are you using? On what operating system?
+
+6.20170209+gitg16be7b5cc-1~ndall+1
+
+### Please provide any additional information below.
+
+if we just proceed with the script (init, add, status) without any delays -- git annex status would report it 
+[[!format sh """
+$> ./ga-3.sh 0
++ s=0
+++ mktemp -d
++ d=/home/yoh/.tmp/tmp.d6g0E7scxt
++ echo 'directory: /home/yoh/.tmp/tmp.d6g0E7scxt'
+directory: /home/yoh/.tmp/tmp.d6g0E7scxt
++ cd /home/yoh/.tmp/tmp.d6g0E7scxt
++ git init
+Initialized empty Git repository in /tmp/tmp.d6g0E7scxt/.git/
++ git annex init --version=6
+init  ok
+(recording state in git...)
++ sed -i -e 's,pre-commit ,pre-commit --debug ,g' .git/hooks/pre-commit
++ echo 'I: creating a file'
+I: creating a file
++ echo whatever
++ sleep 0
++ git -c annex.largefiles=nothing annex --debug add file5
+[2017-02-17 10:19:48.91932971] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--others","--exclude-standard","-z","--","file5"]
+add file5 (non-large file; adding content to git repository) ok
+[2017-02-17 10:19:48.923428344] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--modified","-z","--","file5"]
+(recording state in git...)
+[2017-02-17 10:19:48.927922289] feed: xargs ["-0","git","--git-dir=.git","--work-tree=.","--literal-pathspecs","add","--"]
+[2017-02-17 10:19:48.956812867] process done ExitSuccess
++ git annex status
+M file5
+"""]]
+
+And if we wait just a bit before running add -- we would get it reported added
+[[!format sh """
+hopa:~/.tmp
+$> ./ga-3.sh 1
++ s=1
+++ mktemp -d
++ d=/home/yoh/.tmp/tmp.4I7ym6dSx2
++ echo 'directory: /home/yoh/.tmp/tmp.4I7ym6dSx2'
+directory: /home/yoh/.tmp/tmp.4I7ym6dSx2
++ cd /home/yoh/.tmp/tmp.4I7ym6dSx2
++ git init
+Initialized empty Git repository in /tmp/tmp.4I7ym6dSx2/.git/
++ git annex init --version=6
+init  ok
+(recording state in git...)
++ sed -i -e 's,pre-commit ,pre-commit --debug ,g' .git/hooks/pre-commit
++ echo 'I: creating a file'
+I: creating a file
++ echo whatever
++ sleep 1
++ git -c annex.largefiles=nothing annex --debug add file5
+[2017-02-17 10:19:52.529445464] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--others","--exclude-standard","-z","--","file5"]
+add file5 (non-large file; adding content to git repository) ok
+[2017-02-17 10:19:52.533532166] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--modified","-z","--","file5"]
+(recording state in git...)
+[2017-02-17 10:19:52.537789158] feed: xargs ["-0","git","--git-dir=.git","--work-tree=.","--literal-pathspecs","add","--"]
+[2017-02-17 10:19:52.567222419] process done ExitSuccess
++ git annex status
+A file5
+"""]]
+
+[[!meta author=yoh]]
