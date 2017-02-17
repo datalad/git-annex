@@ -24,7 +24,7 @@ module Annex.Perms (
 
 import Annex.Common
 import Utility.FileMode
-import Git.SharedRepository
+import Git.ConfigTypes
 import qualified Annex
 import Config
 

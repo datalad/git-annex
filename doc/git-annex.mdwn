@@ -542,6 +542,13 @@ subdirectories).
   
   See [[git-annex-pre-commit]](1) for details.
 
+* `post-receive`
+
+  This is meant to be called from git's post-receive hook. `git annex init`
+  automatically creates a post-receive hook using this.
+  
+  See [[git-annex-post-receive]](1) for details.
+
 * `lookupkey [file ...]`
 
   Looks up key used for file.

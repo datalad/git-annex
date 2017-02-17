@@ -61,6 +61,7 @@ import qualified Command.AddUnused
 import qualified Command.Unlock
 import qualified Command.Lock
 import qualified Command.PreCommit
+import qualified Command.PostReceive
 import qualified Command.Find
 import qualified Command.FindRef
 import qualified Command.Whereis
@@ -148,6 +149,7 @@ cmds testoptparser testrunner =
 	, Command.Uninit.cmd
 	, Command.Reinit.cmd
 	, Command.PreCommit.cmd
+	, Command.PostReceive.cmd
 	, Command.NumCopies.cmd
 	, Command.Trust.cmd
 	, Command.Untrust.cmd

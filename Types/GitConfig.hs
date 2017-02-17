@@ -18,7 +18,7 @@ import Common
 import qualified Git
 import qualified Git.Config
 import qualified Git.Construct
-import Git.SharedRepository
+import Git.ConfigTypes
 import Utility.DataUnits
 import Config.Cost
 import Types.UUID
@@ -84,6 +84,7 @@ data GitConfig = GitConfig
 	, annexAddUnlocked :: Bool
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
+	, receiveDenyCurrentBranch :: DenyCurrentBranch
 	, gcryptId :: Maybe String
 	, gpgCmd :: GpgCmd
 	}
@@ -137,6 +138,7 @@ extractGitConfig r = GitConfig
 	, annexAddUnlocked = getbool (annex "addunlocked") False
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
+	, receiveDenyCurrentBranch = getDenyCurrentBranch r
 	, gcryptId = getmaybe "core.gcrypt-id"
 	, gpgCmd = mkGpgCmd (getmaybe "gpg.program")
 	}

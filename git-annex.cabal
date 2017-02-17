@@ -743,6 +743,7 @@ Executable git-annex
     Command.NotifyChanges
     Command.NumCopies
     Command.P2P
+    Command.PostReceive
     Command.PreCommit
     Command.Proxy
     Command.ReKey
@@ -814,6 +815,7 @@ Executable git-annex
     Git.Command
     Git.Command.Batch
     Git.Config
+    Git.ConfigTypes
     Git.Construct
     Git.CurrentRepo
     Git.DiffTree
@@ -839,7 +841,6 @@ Executable git-annex
     Git.Remote.Remove
     Git.Repair
     Git.Sha
-    Git.SharedRepository
     Git.Status
     Git.Tree
     Git.Types

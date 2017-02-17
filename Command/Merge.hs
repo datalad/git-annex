@@ -17,9 +17,9 @@ cmd = command "merge" SectionMaintenance
 	paramNothing (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek ps = do
-	withNothing mergeBranch ps
-	withNothing mergeSynced ps
+seek _ = do
+	commandAction mergeBranch
+	commandAction mergeSynced
 
 mergeBranch :: CommandStart
 mergeBranch = do

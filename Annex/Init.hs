@@ -83,8 +83,9 @@ initialize' mversion = do
 	checkLockSupport
 	checkFifoSupport
 	checkCrippledFileSystem
-	unlessM isBareRepo $
+	unlessM isBareRepo $ do
 		hookWrite preCommitHook
+		hookWrite postReceiveHook
 	setDifferences
 	unlessM (isJust <$> getVersion) $
 		setVersion (fromMaybe defaultVersion mversion)
@@ -114,6 +115,7 @@ initialize' mversion = do
 uninitialize :: Annex ()
 uninitialize = do
 	hookUnWrite preCommitHook
+	hookUnWrite postReceiveHook
 	removeRepoUUID
 	removeVersion
 
