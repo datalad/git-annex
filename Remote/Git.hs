@@ -54,9 +54,9 @@ import qualified Remote.P2P
 import P2P.Address
 import Annex.Path
 import Creds
-import Annex.CatFile
 import Messages.Progress
 import Types.NumCopies
+import Annex.Concurrent
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
@@ -613,7 +613,7 @@ repairRemote r a = return $ do
 {- Runs an action from the perspective of a local remote.
  -
  - The AnnexState is cached for speed and to avoid resource leaks.
- - However, catFileStop is called to avoid git-cat-file processes hanging
+ - However, coprocesses are stopped to avoid git processes hanging
  - around on removable media.
  -
  - The repository's git-annex branch is not updated, as an optimisation.
@@ -637,7 +637,7 @@ onLocal r a = do
 	go st a' = do
 		curro <- Annex.getState Annex.output
 		(ret, st') <- liftIO $ Annex.run (st { Annex.output = curro }) $
-			catFileStop `after` a'
+			stopCoProcesses `after` a'
 		cache st'
 		return ret
 
