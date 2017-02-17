@@ -1,7 +1,7 @@
 {- git-annex command
  -
  - Copyright 2011 Joachim Breitner <mail@joachim-breitner.de>
- - Copyright 2011-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -40,6 +40,7 @@ import qualified Git
 import qualified Remote.Git
 import Config
 import Config.GitConfig
+import Config.Files
 import Annex.Wanted
 import Annex.Content
 import Command.Get (getKey')
@@ -51,6 +52,7 @@ import Annex.AutoMerge
 import Annex.AdjustedBranch
 import Annex.Ssh
 import Annex.BloomFilter
+import Annex.UpdateInstead
 import Utility.Bloom
 import Utility.OptParse
 
@@ -377,14 +379,30 @@ pushRemote o remote (Just branch, _) = stopUnless (pure (pushOption o) <&&> need
 		showOutput
 		ok <- inRepoWithSshOptionsTo (Remote.repo remote) (Remote.gitconfig remote) $
 			pushBranch remote branch
-		unless ok $ do
-			warning $ unwords [ "Pushing to " ++ Remote.name remote ++ " failed." ]
-			showLongNote "(non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)"
-		return ok
+		if ok
+			then postpushupdate
+			else do
+				warning $ unwords [ "Pushing to " ++ Remote.name remote ++ " failed." ]
+				showLongNote "(non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)"
+				return ok
   where
 	needpush
 		| remoteAnnexReadOnly (Remote.gitconfig remote) = return False
 		| otherwise = anyM (newer remote) [syncBranch branch, Annex.Branch.name]
+	-- Do updateInstead emulation for remotes on eg removable drives
+	-- formatted FAT, where the post-update hook won't run.
+	postpushupdate
+		| maybe False annexCrippledFileSystem (remoteGitConfig (Remote.gitconfig remote)) = 
+			case Git.repoWorkTree (Remote.repo remote) of
+				Nothing -> return True
+				Just wt -> ifM (Remote.Git.onLocal remote needUpdateInsteadEmulation)
+					( liftIO $ do
+						p <- readProgramFile
+						boolSystem' p [Param "post-receive"]
+							(\cp -> cp { cwd = Just wt })
+					, return True
+					)
+		| otherwise = return True
 
 {- Pushes a regular branch like master to a remote. Also pushes the git-annex
  - branch.

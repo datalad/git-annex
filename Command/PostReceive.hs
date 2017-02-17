@@ -5,19 +5,13 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Command.PostReceive where
 
 import Command
 import qualified Annex
-import Config
-import Annex.Version
-import Annex.AdjustedBranch
-import Git.Branch
 import Git.Types
-import Git.ConfigTypes
-import qualified Command.Merge
+import Annex.UpdateInstead
+import Command.Sync (mergeLocal, prepMerge, mergeConfig, getCurrBranch)
 
 cmd :: Command
 cmd = command "post-receive" SectionPlumbing
@@ -28,7 +22,7 @@ cmd = command "post-receive" SectionPlumbing
 seek :: CmdParams -> CommandSeek
 seek _ = whenM needUpdateInsteadEmulation $ do
 	fixPostReceiveHookEnv
-	updateInsteadEmulation
+	commandAction updateInsteadEmulation
 
 {- When run by the post-receive hook, the cwd is the .git directory, 
  - and GIT_DIR=. It's not clear why git does this.
@@ -46,16 +40,7 @@ fixPostReceiveHookEnv = do
 				}
 		_ -> noop
 
-{- receive.denyCurrentBranch=updateInstead does not work in direct mode
- - repositories or when an adjusted branch is checked out, so must be
- - emulated. -}
-needUpdateInsteadEmulation :: Annex Bool
-needUpdateInsteadEmulation = updateinsteadset <&&> (isDirect <||> isadjusted)
-  where
-	updateinsteadset = (== UpdateInstead) . receiveDenyCurrentBranch
-		<$> Annex.getGitConfig
-	isadjusted = versionSupportsUnlockedPointers
-		<&&> (maybe False (isJust . getAdjustment) <$> inRepo Git.Branch.current)
-
-updateInsteadEmulation :: Annex ()
-updateInsteadEmulation = commandAction Command.Merge.mergeSynced
+updateInsteadEmulation :: CommandStart
+updateInsteadEmulation = do
+	prepMerge
+	mergeLocal mergeConfig =<< join getCurrBranch

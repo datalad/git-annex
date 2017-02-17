@@ -538,6 +538,7 @@ Executable git-annex
     Annex.Ssh
     Annex.TaggedPush
     Annex.Transfer
+    Annex.UpdateInstead
     Annex.UUID
     Annex.Url
     Annex.VariantFile

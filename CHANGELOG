@@ -15,6 +15,10 @@ git-annex (6.20170215) UNRELEASED; urgency=medium
   * Added post-recieve hook, which makes updateInstead work with direct
     mode and adjusted branches.
   * init: Set up the post-receive hook.
+  * sync: When syncing with a local repository located on a crippled
+    filesystem, run the post-receive hook there, since it wouldn't get run
+    otherwise. This makes pushing to repos on FAT-formatted removable
+    drives update them when receive.denyCurrentBranch=updateInstead.
   * config group groupwanted numcopies schedule wanted required: 
     Avoid displaying extraneous messages about repository auto-init,
     git-annex branch merging, etc, when being used to get information.

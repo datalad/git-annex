@@ -1,6 +1,6 @@
 {- Standard git remotes.
  -
- - Copyright 2011-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,6 +11,7 @@ module Remote.Git (
 	remote,
 	configRead,
 	repoAvail,
+	onLocal,
 ) where
 
 import Annex.Common
@@ -336,7 +337,7 @@ inAnnex rmt key
 	checkremote = Ssh.inAnnex r key
 	checklocal = guardUsable r (cantCheck r) $
 		maybe (cantCheck r) return
-			=<< onLocal rmt (Annex.Content.inAnnexSafe key)
+			=<< onLocalFast rmt (Annex.Content.inAnnexSafe key)
 
 keyUrls :: Remote -> Key -> [String]
 keyUrls r key = map tourl locs'
@@ -359,7 +360,7 @@ dropKey :: Remote -> Key -> Annex Bool
 dropKey r key
 	| not $ Git.repoIsUrl (repo r) =
 		guardUsable (repo r) (return False) $
-			commitOnCleanup r $ onLocal r $ do
+			commitOnCleanup r $ onLocalFast r $ do
 				ensureInitialized
 				whenM (Annex.Content.inAnnex key) $ do
 					Annex.Content.lockContentForRemoval key $ \lock -> do
@@ -378,7 +379,7 @@ lockKey r key callback
 			-- Lock content from perspective of remote,
 			-- and then run the callback in the original
 			-- annex monad, not the remote's.
-			onLocal r $ 
+			onLocalFast r $ 
 				Annex.Content.lockContentShared key $ \vc ->
 					ifM (Annex.Content.inAnnex key)
 						( liftIO $ inorigrepo $ callback vc
@@ -442,7 +443,7 @@ copyFromRemote' r key file dest meterupdate
 		u <- getUUID
 		hardlink <- wantHardLink
 		-- run copy from perspective of remote
-		onLocal r $ do
+		onLocalFast r $ do
 			ensureInitialized
 			v <- Annex.Content.prepSendAnnex key
 			case v of
@@ -571,7 +572,7 @@ copyToRemote' r key file meterupdate
 		u <- getUUID
 		hardlink <- wantHardLink
 		-- run copy from perspective of remote
-		onLocal r $ ifM (Annex.Content.inAnnex key)
+		onLocalFast r $ ifM (Annex.Content.inAnnex key)
 			( return True
 			, do
 				ensureInitialized
@@ -613,33 +614,35 @@ repairRemote r a = return $ do
 {- Runs an action from the perspective of a local remote.
  -
  - The AnnexState is cached for speed and to avoid resource leaks.
- - However, coprocesses are stopped to avoid git processes hanging
- - around on removable media.
- -
- - The repository's git-annex branch is not updated, as an optimisation.
- - No caller of onLocal can query data from the branch and be ensured
- - it gets a current value. Caller of onLocal can make changes to
- - the branch, however.
+ - However, coprocesses are stopped after each call to avoid git
+ - processes hanging around on removable media.
  -}
 onLocal :: Remote -> Annex a -> Annex a
 onLocal r a = do
 	m <- Annex.getState Annex.remoteannexstate
-	case M.lookup (uuid r) m of
-		Nothing -> do
-			st <- liftIO $ Annex.new (repo r)
-			go st $ do
-				Annex.BranchState.disableUpdate	
-				a
-		Just st -> go st a
+	go =<< maybe
+		(liftIO $ Annex.new $ repo r)
+		return
+		(M.lookup (uuid r) m)
   where
 	cache st = Annex.changeState $ \s -> s
 		{ Annex.remoteannexstate = M.insert (uuid r) st (Annex.remoteannexstate s) }
-	go st a' = do
+	go st = do
 		curro <- Annex.getState Annex.output
 		(ret, st') <- liftIO $ Annex.run (st { Annex.output = curro }) $
-			stopCoProcesses `after` a'
+			stopCoProcesses `after` a
 		cache st'
 		return ret
+
+{- Faster variant of onLocal.
+ -
+ - The repository's git-annex branch is not updated, as an optimisation.
+ - No caller of onLocalFast can query data from the branch and be ensured
+ - it gets the most current value. Caller of onLocalFast can make changes
+ - to the branch, however.
+ -}
+onLocalFast :: Remote -> Annex a -> Annex a
+onLocalFast r a = onLocal r $ Annex.BranchState.disableUpdate >> a
 
 {- Copys a file with rsync unless both locations are on the same
  - filesystem. Then cp could be faster. -}
@@ -664,7 +667,7 @@ commitOnCleanup r a = go `after` a
   where
 	go = Annex.addCleanup (RemoteCleanup $ uuid r) cleanup
 	cleanup
-		| not $ Git.repoIsUrl (repo r) = onLocal r $
+		| not $ Git.repoIsUrl (repo r) = onLocalFast r $
 			doQuietSideAction $
 				Annex.Branch.commit "update"
 		| otherwise = void $ do
