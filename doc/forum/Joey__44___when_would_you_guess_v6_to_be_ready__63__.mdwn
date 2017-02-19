@@ -1,0 +1,3 @@
+A question for Joey: What's the expected schedule for v6 repos becoming solid enough to make them the default? Is it next on the priority list or are you still waiting for some git patches to propagate through or something like that?
+
+I'm asking because I make extensive use of v5 direct mode repos. They sometimes give me a bit of trouble in ways which I hope indirect, unlocked, thin v6 repos could fix. However, I don't want to switch to v6 as long as Joey considers it too experimental/unfinished to be made the default repo format. So I'm trying to decide whether I should put in the effort to investigate the issues I'm having (which are annoying but not catastrophic), or just wait until v6 is ready for prime time.
