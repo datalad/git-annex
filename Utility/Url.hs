@@ -246,17 +246,16 @@ headRequest r = r
 		(requestHeaders r)
 	}
 
-{- Used to download large files, such as the contents of keys.
+{- Download a perhaps large file, with auto-resume of incomplete downloads.
  -
- - Uses wget or curl program for its progress bar. (Wget has a better one,
- - so is preferred.) Which program to use is determined at run time; it
- - would not be appropriate to test at configure time and build support
- - for only one in.
+ - Uses wget or curl program for its progress bar and resuming support. 
+ - Which program to use is determined at run time depending on which is
+ - in path and which works best in a particular situation.
  -}
 download :: URLString -> FilePath -> UrlOptions -> IO Bool
 download = download' False
 
-{- No output, even on error. -}
+{- No output to stdout. -}
 downloadQuiet :: URLString -> FilePath -> UrlOptions -> IO Bool
 downloadQuiet = download' True
 
@@ -265,6 +264,12 @@ download' quiet url file uo = do
 	case parseURIRelaxed url of
 		Just u
 			| uriScheme u == "file:" -> curl
+			-- curl is preferred in quiet mode, because
+			-- it displays http errors to stderr, while wget
+			-- does not display them in quiet mode
+			| quiet -> ifM (inPath "curl") (curl, wget)
+			-- wget is preferred mostly because it has a better
+			-- progress bar
 			| otherwise -> ifM (inPath "wget") (wget , curl)
 		_ -> return False
   where
@@ -275,7 +280,8 @@ download' quiet url file uo = do
 	 - support, or need that option.
 	 -
 	 - When the wget version is new enough, pass options for
-	 - a less cluttered download display.
+	 - a less cluttered download display. Using -nv rather than -q
+	 - avoids most clutter while still displaying http errors.
 	 -}
 #ifndef __ANDROID__
 	wgetparams = concat
@@ -296,7 +302,7 @@ download' quiet url file uo = do
 		-- curl does not create destination file
 		-- if the url happens to be empty, so pre-create.
 		writeFile file ""
-		go "curl" $ headerparams ++ quietopt "-s" ++
+		go "curl" $ headerparams ++ quietopt "-sS" ++
 			[ Param "-f"
 			, Param "-L"
 			, Param "-C", Param "-"

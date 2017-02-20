@@ -18,3 +18,5 @@ ATM I am experiencing sporadic failures of the batched  git annex addurl call --
 besides me blindly trying to re-run it e.g. 3 times and only then declare total failure, I wondered if json output could provide more information (if any known) about the failure... e.g. if a custom remote crashed/errorred (I guess the case here due to "from datalad") -- what was stderr/exit code for that process if crashed/ERROR msg... if wget -- what was stderr there
 
 [[!meta name=yoh]]
+
+> Switched to curl with -sS in --json mode. [[done]] I suppose. --[[Joey]]

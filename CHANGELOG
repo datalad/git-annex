@@ -27,6 +27,11 @@ git-annex (6.20170215) UNRELEASED; urgency=medium
   * adjust: Fix behavior when used in a repository that contains
     submodules.
   * Run wget with -nv instead of -q, so it will display HTTP errors.
+  * Run curl with -S, so HTTP errors are displayed, even when
+    it's otherwise silent.
+  * When downloading in --json or --quiet mode, use curl in preference
+    to wget, since curl is able to display only errors to stderr, unlike
+    wget.
 
  -- Joey Hess <id@joeyh.name>  Tue, 14 Feb 2017 15:54:25 -0400
 

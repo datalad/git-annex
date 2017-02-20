@@ -3,12 +3,13 @@
  subject="""comment 2"""
  date="2017-02-20T19:15:18Z"
  content="""
+It seems there is no way to get only errors on
+stderr with wget; the choice is between no output, and a mixture of errors
+and informational messages on stderr. In --json or --quiet mode, only
+errors should be output to stderr.
+
 In general, the --json output does include a "note" with any
 available message about why an operation failed. 
-
-Since wget outputs HTTP errors to stdout, there's no way to capture
-the actual message for json, and so swiching to wget -nv won't improve
-the json, since in json mode wget is run with -q.
 
 It would not be hard to use a HTTP library and propagate the HTTP errors
 into the json "note", but it might be hard to get resumption of partial
