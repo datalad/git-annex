@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="benjamin.poldrack@d09ccff6d42dd20277610b59867cf7462927b8e3"
+ nickname="benjamin.poldrack"
+ avatar="http://cdn.libravatar.org/avatar/5c1a901caa7c2cfeeb7e17e786c5230d"
+ subject="comment 2"
+ date="2017-02-20T19:06:58Z"
+ content="""
+Yes, that's what I assumed. Therefore this bug was linked in the datalad issue regarding --ignore-submodules.
+
+May be we are the only ones, who are actually effected, since we heavily use submodules. If it's too much of an effort, I will find a way around it, I guess.
+Either way: Thank you for having a look at it.
+[[ben]]
+"""]]
