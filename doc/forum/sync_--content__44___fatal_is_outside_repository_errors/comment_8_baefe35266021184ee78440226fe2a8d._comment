@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="the problem files"
+ date="2017-02-20T18:11:03Z"
+ content="""
+Joey,
+
+the file names seem quite ordinary:
+
+    cv/submissions/BCA_Submission/small_images/drawblocks_2015_IMG_1719.jpg
+    cv/submissions/BCA_Submission/small_images/drawblocks_2015_IMG_3848.jpg
+    cv/submissions/BCA_Submission/small_images/macropavilion_2016_IMG_0391.jpg
+    cv/submissions/BCA_Submission/small_images/sequencing_2016_DSC5048.jpg
+    cv/submissions/BCA_Submission/small_images/sequencing_2016_IMG_8231.jpg
+
+Possibly this is related to an issue I had with v6 and `annex.largefiles` about 12-months ago. I had done `git config annex.largefiles 'largerthan=100kb and not (include=*.c or include=*.h)'`. But I believe this resulted in git-annex thinking locked files with no content present should be added to git instead of annex? After doing a `git-annex add .` I now had a bunch of files whose content was lost. Or perhaps I did a sync with a v5 repo, or perhaps I did a sync with a repo with a different large files settings, I can't remember. Anyhow, I managed to lose links to the file content and `git-annex get` or fsck couldn't retrieve them. I never filed a bug report because I was never able to reproduce the issue on a clean repo. 
+
+Anyhow, perhaps spelunking into the git log would give some answers?
+
+
+
+Andrew
+
+"""]]
