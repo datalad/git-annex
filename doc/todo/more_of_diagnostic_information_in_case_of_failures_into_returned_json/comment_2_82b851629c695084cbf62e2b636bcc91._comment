@@ -6,13 +6,15 @@
 In general, the --json output does include a "note" with any
 available message about why an operation failed. 
 
-Since wget outputs HTTP errors to stdout, there's no way to capture the actual
-message for json, and so swiching to wget -nv won't improve the json.
-(curl also outputs HTTP errors to stdout too, so it's no better)
+Since wget outputs HTTP errors to stdout, there's no way to capture
+the actual message for json, and so swiching to wget -nv won't improve
+the json, since in json mode wget is run with -q.
 
-Short of using a HTTP library for url downloads in --json mode,
-I don't see a way to fix this. It would not be hard to use a HTTP library
-and propagate the HTTP errors into the json "note", but it might be hard to
-get resumption of partial downloads to work as well with a HTTP library as
-it works with wget.
+It would not be hard to use a HTTP library and propagate the HTTP errors
+into the json "note", but it might be hard to get resumption of partial
+downloads to work as well with a HTTP library as it works with wget/curl.
+
+What we could do is use curl in preference to wget in json mode; 
+curl -s -S avoids all progress etc output and displays the
+http errors to stderr.
 ""]]
