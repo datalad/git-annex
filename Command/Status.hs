@@ -20,14 +20,28 @@ cmd = notBareRepo $ noCommit $ noMessages $
 	withGlobalOptions [jsonOption] $
 		command "status" SectionCommon
 			"show the working tree status"
-			paramPaths (withParams seek)
+			paramPaths (seek <$$> optParser)
 
-seek :: CmdParams -> CommandSeek
-seek = withWords start
+data StatusOptions = StatusOptions
+	{ statusFiles :: CmdParams
+	, ignoreSubmodules :: Maybe String
+	}
+
+optParser :: CmdParamsDesc -> Parser StatusOptions
+optParser desc = StatusOptions
+	<$> cmdParams desc
+	<*> optional (strOption
+		( long "ignore-submodules"
+		<> help "passed on to git status"
+		<> metavar "WHEN"
+		))
+
+seek :: StatusOptions -> CommandSeek
+seek o = withWords (start o) (statusFiles o)
 	
-start :: [FilePath] -> CommandStart
-start locs = do
-	(l, cleanup) <- inRepo $ getStatus locs
+start :: StatusOptions -> [FilePath] -> CommandStart
+start o locs = do
+	(l, cleanup) <- inRepo $ getStatus ps locs
 	getstatus <- ifM isDirect
 		( return statusDirect
 		, return $ \s -> pure (Just s)
@@ -35,6 +49,10 @@ start locs = do
 	forM_ l $ \s -> maybe noop displayStatus =<< getstatus s
 	void $ liftIO cleanup
 	stop
+  where
+	ps = case ignoreSubmodules o of
+		Nothing -> []
+		Just s -> [Param $ "--ignore-submodules="++s]
 
 displayStatus :: Status -> Annex ()
 -- renames not shown in this simplified status

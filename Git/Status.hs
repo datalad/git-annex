@@ -64,13 +64,14 @@ parseStatusZ = go []
 	cparse '?' = Just Untracked
 	cparse _ = Nothing
 
-getStatus :: [FilePath] -> Repo -> IO ([Status], IO Bool)
-getStatus l r = do
-	(ls, cleanup) <- pipeNullSplit params r
+getStatus :: [CommandParam] -> [FilePath] -> Repo -> IO ([Status], IO Bool)
+getStatus ps fs r = do
+	(ls, cleanup) <- pipeNullSplit ps' r
 	return (parseStatusZ ls, cleanup)
   where
-	params =
-		[ Param "status"
-		, Param "-uall"
-		, Param "-z"
-		] ++ map File l
+	ps' = concat
+		[ [Param "status"]
+		, ps
+		, [ Param "-uall" , Param "-z"]
+		, map File fs
+		]

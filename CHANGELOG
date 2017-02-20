@@ -32,6 +32,7 @@ git-annex (6.20170215) UNRELEASED; urgency=medium
   * When downloading in --json or --quiet mode, use curl in preference
     to wget, since curl is able to display only errors to stderr, unlike
     wget.
+  * status: Pass --ignore-submodules=when option on to git status.
 
  -- Joey Hess <id@joeyh.name>  Tue, 14 Feb 2017 15:54:25 -0400
 
