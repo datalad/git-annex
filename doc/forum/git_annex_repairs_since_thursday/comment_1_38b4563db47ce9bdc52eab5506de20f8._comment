@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="openmedi"
+ avatar="http://cdn.libravatar.org/avatar/563ffaff3b492c579bd8f094472e4506"
+ subject="comment 1"
+ date="2017-02-19T15:27:08Z"
+ content="""
+It's now Sunday and I stopped all three running git-annex processes on my system, after git used about 80% of my cpu, the daemon.log showing nothing and git annex info -F not responding.
+"""]]

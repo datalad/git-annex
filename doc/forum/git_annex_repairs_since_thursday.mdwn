@@ -1,0 +1,5 @@
+I have not tried to get git annex to work in a bit. My troubles of recovering this annex repo have been documented [here](http://git-annex.branchable.com/forum/git_annex_wants_to_repair_every_time_it__39__s_running/), [here](http://git-annex.branchable.com/forum/how_to_disaster_recovery/) and [here](http://git-annex.branchable.com/forum/__34__git_annex_assistant_--stop__34___doesn__39__t_work_in_OSX_10.11.4/). On Thurs day I thought I give it another try. Since Thursday it tries to repair two out of three repos: my local repo on my laptop and my repo on an external harddrive I have. The b2 special remote repo appears to be fine, or not checked, I'm not sure.
+
+What can I do, to get it working again?
+
+P.S.: In my mind this setup should work like this: I want to move contents from my laptop to the external hdd and to b2 so that there are two copies at all times. I want to use git annex so that I don't need to carry all that stuff around with me anymore, because space on my ssd is sparse.
