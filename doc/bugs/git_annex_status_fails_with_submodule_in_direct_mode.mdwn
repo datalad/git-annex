@@ -1,0 +1,57 @@
+### Please describe the problem.
+If a submodule is in direct mode, `git annex status` fails.
+Apparently the recursive inspection of submodules is done by an internal call to `git status`, which then misses a working tree in the submodule.
+### What steps will reproduce the problem?
+[[!format sh """
+#!/bin/bash
+
+set -ex
+d=$(mktemp -d)
+echo "directory: $d"
+cd $d
+git init
+git annex init
+echo whatever > file
+git annex add file
+git commit -m "file added"
+mkdir sub
+cd sub
+git init
+git annex init
+echo something > subfile
+git annex add subfile
+git commit -m "subfile added."
+cd ..
+git submodule add ./sub sub
+git commit -m "submodule added"
+cd sub
+git annex direct
+cd ..
+git annex status
+"""]]
+### What version of git-annex are you using? On what operating system?
+[[!format sh """
+% git annex version
+git-annex version: 6.20170209+gitg16be7b5cc-1~ndall+1
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: unknown
+supported repository versions: 3 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+operating system: linux x86_64
+"""]]
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes! I think it's a great piece of software!
