@@ -297,7 +297,12 @@ download' quiet url file uo = do
 		-- if the url happens to be empty, so pre-create.
 		writeFile file ""
 		go "curl" $ headerparams ++ quietopt "-s" ++
-			[Param "-f", Param "-L", Param "-C", Param "-", Param "-#", Param "-o"]
+			[ Param "-f"
+			, Param "-L"
+			, Param "-C", Param "-"
+			, Param "-#"
+			, Param "-o"
+			]
 	
 	{- Run wget in a temp directory because it has been buggy
 	 - and overwritten files in the current directory, even though
