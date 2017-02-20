@@ -26,6 +26,7 @@ git-annex (6.20170215) UNRELEASED; urgency=medium
     webapp and test suite.
   * adjust: Fix behavior when used in a repository that contains
     submodules.
+  * Run wget with -nv instead of -q, so it will display HTTP errors.
 
  -- Joey Hess <id@joeyh.name>  Tue, 14 Feb 2017 15:54:25 -0400
 

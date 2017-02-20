@@ -279,8 +279,8 @@ download' quiet url file uo = do
 	 -}
 #ifndef __ANDROID__
 	wgetparams = concat
-		[ if Build.SysConfig.wgetquietprogress && not quiet
-			then [Param "-q", Param "--show-progress"]
+		[ if Build.SysConfig.wgetunclutter && not quiet
+			then [Param "-nv", Param "--show-progress"]
 			else []
 		, [ Param "--clobber", Param "-c", Param "-O"]
 		]

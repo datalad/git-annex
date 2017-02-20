@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-02-20T18:50:18Z"
+ content="""
+Probably wget is just failing to download the url sometimes.
+Eg, `git annex addurl http://localhost/dne` fails with the same not useful
+output.
+
+wget is run with -q, which is the only way to turn off all its informational
+messages, but unfortunately that also turns off display of HTTP error messages.
+
+Using -nv instead of -q would display HTTP errors,
+but also 1 extra line of output once the download is complete.
+I suppose that's worth the trade-off.
+"""]]
