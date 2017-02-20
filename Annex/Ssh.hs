@@ -258,7 +258,8 @@ sshReadPort params = (port, reverse args)
  - options. (The options are separated by newlines.)
  -
  - This is a workaround for GIT_SSH not being able to contain
- - additional parameters to pass to ssh. -}
+ - additional parameters to pass to ssh. (GIT_SSH_COMMAND can,
+ - but is not supported by older versions of git.) -}
 sshOptionsEnv :: String
 sshOptionsEnv = "GIT_ANNEX_SSHOPTION"
 
