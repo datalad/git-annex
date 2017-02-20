@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2017-02-20T17:00:55Z"
+ content="""
+I'd expect that the respone body is indeed not shown by --debug.
+
+A timestamp bug seems as good a theory as anything. In either the S3
+library git-annex is using, or the S3 emulation Google Cloud Storage is
+using. Or perhaps google has different versions of the servers that behave
+differently.
+
+Over on [[tips/using_Google_Cloud_Storage]], @Dosenpfand
+reports what looks like the same 400 when initializing a nearline remote.
+
+Since this is using a S3 interoperability layer in Google Cloud Storage,
+I'd not be surprised if there were bugs or limitations in it. 
+Using the native GCS API seems like an increasingly good idea,
+and <https://github.com/bgilbert/gcsannex> implements that.
+"""]]
