@@ -22,3 +22,4 @@ We need to make `crypto-api` into a global dependency. Here is a [patch](https:/
 
 Oh yes! I use it everyday to sync collections of binary files across computers and VM's! 
 
+> [[fixed|done]], thanks! --[[Joey]]

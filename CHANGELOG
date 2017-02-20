@@ -22,6 +22,8 @@ git-annex (6.20170215) UNRELEASED; urgency=medium
   * config group groupwanted numcopies schedule wanted required: 
     Avoid displaying extraneous messages about repository auto-init,
     git-annex branch merging, etc, when being used to get information.
+  * git-annex.cabal: Make crypto-api a dependency even when built w/o
+    webapp and test suite.
 
  -- Joey Hess <id@joeyh.name>  Tue, 14 Feb 2017 15:54:25 -0400
 

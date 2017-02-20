@@ -361,7 +361,8 @@ Executable git-annex
    socks,
    byteable,
    stm-chans,
-   securemem
+   securemem,
+   crypto-api
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
   Extensions: PackageImports
@@ -397,8 +398,7 @@ Executable git-annex
       Other-Modules: Utility.Touch.Old
 
   if flag(TestSuite)
-    Build-Depends: tasty (>= 0.7), tasty-hunit, tasty-quickcheck, tasty-rerun,
-     crypto-api
+    Build-Depends: tasty (>= 0.7), tasty-hunit, tasty-quickcheck, tasty-rerun
     CPP-Options: -DWITH_TESTSUITE
 
   if flag(S3)
@@ -461,7 +461,6 @@ Executable git-annex
      wai,
      wai-extra,
      blaze-builder,
-     crypto-api,
      clientsession,
      template-haskell,
      shakespeare (>= 2.0.0)
