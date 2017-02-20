@@ -24,6 +24,7 @@ import Git.FilePath
 import qualified Git.Filename
 
 import Numeric
+import Data.Char
 import System.Posix.Types
 
 data TreeItem = TreeItem
@@ -66,7 +67,9 @@ lsTreeFiles t fs repo = map parseLsTree <$> pipeNullSplitStrict ps repo
 		, File $ fromRef t
 		] ++ map File fs
 
-{- Parses a line of ls-tree output.
+{- Parses a line of ls-tree output, in format:
+ - mode SP type SP sha TAB file
+ -
  - (The --long format is not currently supported.) -}
 parseLsTree :: String -> TreeItem
 parseLsTree l = TreeItem 
@@ -76,12 +79,9 @@ parseLsTree l = TreeItem
 	, file = sfile
 	}
   where
-	-- l = <mode> SP <type> SP <sha> TAB <file>
-	-- All fields are fixed, so we can pull them out of
-	-- specific positions in the line.
-	(m, past_m) = splitAt 7 l
-	(!t, past_t) = splitAt 4 past_m
-	(!s, past_s) = splitAt shaSize $ Prelude.tail past_t
-	!f = Prelude.tail past_s
+	(m, past_m) = splitAt 7 l -- mode is 6 bytes
+	(!t, past_t) = separate isSpace past_m
+	(!s, past_s) = splitAt shaSize past_t
+	!f = drop 1 past_s
 	!smode = fst $ Prelude.head $ readOct m
 	!sfile = asTopFilePath $ Git.Filename.decode f
