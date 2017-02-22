@@ -1,6 +1,6 @@
 - External HD A: annex (contains files with long paths)
 - External HD B: annex (synced with A, doesn't have the contents for files with long paths)
-- laptop HD: annex     (syncing with B fails: paths too long)
+- laptop HD: annex     (*syncing with B fails*: paths too long)
 
 How should I resolve this? 
 
