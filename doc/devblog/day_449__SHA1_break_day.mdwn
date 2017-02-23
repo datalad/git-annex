@@ -2,7 +2,8 @@
 produced by an identical-prefix collision attack.
 
 After looking into it all day, it does not appear to impact git's security
-immediately. But we're well past the time when it seemed ok that git
+immediately, except for targeted attacks against specific projects by
+very wealthy attackers. But we're well past the time when it seemed ok that git
 uses SHA1. If this gets improved into a chosen-prefix collision
 attack, git will start to be rather insecure.
 
