@@ -1,0 +1,5 @@
+As soon as I read about Upspin, I thought about git-annex.  Could Upspin's interfaces be beneficial to the project and provide a standardization for naming, permissions and access control?
+
+I realize some of these concepts are not yet part of git-annex, but I thought I'd drop the note and give you the opportunity to evaluate the extent in which Upspin makes sense in the context of git-annex.
+
+https://upspin.io/

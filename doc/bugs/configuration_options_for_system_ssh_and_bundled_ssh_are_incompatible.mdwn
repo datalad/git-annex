@@ -1,0 +1,53 @@
+### Please describe the problem.
+
+It appears that the bundled ssh is built without support for some configuration options supported by my system ssh. In particular it doesn't support GSSAPIKexAlgorithms. In principle it's fine to compile this ssh without support for GSS, since nobody uses it, but in practice it means that I can't even turn it off in my system config without breaking the bundled ssh.
+
+(I suppose the problem could also be that the bundled ssh tries to use the system ssh configuration instead of a bundled configuration.)
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+git-annex version: 6.20161231-gc8eeb17da
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 6
+supported repository versions: 3 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+operating system: linux x86_64
+"""]]
+
+### Please provide any additional information below.
+
+See also [[todo/git-annex_ignores_GIT__95__SSH]]
+
+[[!format sh """
+ db48x  ~  video  git-annex sync
+commit
+On branch master
+Your branch is ahead of 'anglachel/master' by 20 commits.
+  (use "git push" to publish your local commits)
+nothing to commit, working tree clean
+ok
+pull anglachel
+/etc/crypto-policies/back-ends/openssh.config: line 3: Bad configuration option: gssapikexalgorithms
+/etc/crypto-policies/back-ends/openssh.config: terminating, 1 bad configuration options
+fatal: Could not read from remote repository.
+Please make sure you have the correct access rights
+and the repository exists.
+failed
+push anglachel
+/etc/crypto-policies/back-ends/openssh.config: line 3: Bad configuration option: gssapikexalgorithms
+/etc/crypto-policies/back-ends/openssh.config: terminating, 1 bad configuration options
+fatal: Could not read from remote repository.
+Please make sure you have the correct access rights
+and the repository exists.
+  Pushing to anglachel failed.
+  (non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)
+failed
+git-annex: sync: 2 failed
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+

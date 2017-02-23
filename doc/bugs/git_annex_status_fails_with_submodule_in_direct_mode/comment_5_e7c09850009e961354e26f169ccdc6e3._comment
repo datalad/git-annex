@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="benjamin.poldrack@d09ccff6d42dd20277610b59867cf7462927b8e3"
+ nickname="benjamin.poldrack"
+ avatar="http://cdn.libravatar.org/avatar/5c1a901caa7c2cfeeb7e17e786c5230d"
+ subject="comment 5"
+ date="2017-02-22T16:48:04Z"
+ content="""
+Just noticed another thing: If that failure happens, git-annex exits zero. Therefore it's hard to detect for us. We have just an empty json as return value as if the repo was clean.
+It would be nice to have either a non-zero exit or something within the json to indicate that the command failed.
+
+[[ben]]
+"""]]
