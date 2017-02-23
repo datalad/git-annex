@@ -13,11 +13,16 @@ import Git.Types
 import Annex.UpdateInstead
 import Command.Sync (mergeLocal, prepMerge, mergeConfig, getCurrBranch)
 
+-- This does not need to modify the git-annex branch to update the 
+-- work tree, but auto-initialization might change the git-annex branch.
+-- Since it would be surprising for a post-receive hook to make such a
+-- change, that's prevented by noCommit.
 cmd :: Command
-cmd = command "post-receive" SectionPlumbing
-	"run by git post-receive hook"
-	paramNothing
-	(withParams seek)
+cmd = noCommit $
+	command "post-receive" SectionPlumbing
+		"run by git post-receive hook"
+		paramNothing
+		(withParams seek)
 
 seek :: CmdParams -> CommandSeek
 seek _ = whenM needUpdateInsteadEmulation $ do
