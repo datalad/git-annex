@@ -7,6 +7,13 @@ very wealthy attackers. But we're well past the time when it seemed ok that git
 uses SHA1. If this gets improved into a chosen-prefix collision
 attack, git will start to be rather insecure.
 
+Projects that store binary files in git, that might be worth $100k for an
+attacker to backdoor **should** be concerned by the SHA1 collisions.
+A good example of such a project is
+<git://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git>.
+Using git-annex (with a suitable backend like SHA256) and signed commits
+together is a good way to secure such repositories.
+
 git-annex's SHA1 backend is already documented as only being 
 "for those who want a checksum but are not concerned about
 security", so no changes needed here.
