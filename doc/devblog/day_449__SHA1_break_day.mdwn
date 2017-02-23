@@ -1,0 +1,11 @@
+[The first SHA1 collision](https://shattered.io/) was announced today,
+produced by an identical-prefix collision attack.
+
+After looking into it all day, it does not appear to impact git's security
+immediately. But we're well past the time when it seemed ok that git
+uses SHA1. If this gets improved into a chosen-prefix collision
+attack, git will start to be rather insecure.
+
+git-annex's SHA1 backend is already documented as only being 
+"for those who want a checksum but are not concerned about
+security", so no changes needed here.
