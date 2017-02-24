@@ -31,6 +31,34 @@ warn about such a mistake.
 Perhaps, then, the config setting should be turned on by `git annex init`?
 Or, we can document this gotcha.
 
+> I've done some groundwork for this, but making git-annex not accept
+> insecure keys into the repo at all requires changing file2key,
+> which is a pure function that's used in eg, instances for serailization.
+> 
+> So, how to make it vary depending on git config? Can't. Alternative
+> would be to add lots of checks everywhere a key is read from disk
+> or network, which feels like it would be a hard security boundary to
+> manage.
+> 
+> It doesn't really matter if content under an insecure key is in the
+> repo, as long as there's not a signed commit referencing such a key.
+> So, we could say, this is up to the user constucting a signed commit, to not
+> put such keys in the commit.
+> 
+> Or, we could use the pre-commit hook, and when 
+> the config setting disallows insecure keys, make it reject commits
+> that contain them. But, if a past commit added a file using an insecure
+> key, and the current commit does not touch it, should it be rejected?
+> Rejecting it would then require a somewhat expensive look at the tree
+> being committed.
+> 
+> The user might be merging a branch from someone else; there seems no
+> git hook that can sanity check a fast-forward merge.
+> 
+> Perhaps leave it up to the person making signed commits to get it 
+> right, and make git annex fsck warn about such keys? That seems
+> reasonable. --[[Joey]]
+
 ----
 
 A few other potential problems:
