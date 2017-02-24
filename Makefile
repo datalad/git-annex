@@ -14,11 +14,15 @@ endif
 
 build: $(all)
 
-git-annex:
+tmp/configure-stamp: Build/TestConfig.hs Build/Configure.hs
 	if [ "$(BUILDER)" = ./Setup ]; then ghc --make Setup; fi
 	if [ "$(BUILDER)" != stack ]; then \
 		$(BUILDER) configure --ghc-options="$(shell Build/collect-ghc-options.sh)"; \
 	fi
+	mkdir -p tmp
+	touch tmp/configure-stamp
+
+git-annex: tmp/configure-stamp
 	$(BUILDER) build $(BUILDEROPTIONS)
 	if [ "$(BUILDER)" = stack ]; then \
 		ln -sf $$(find .stack-work/ -name git-annex -type f | grep build/git-annex/git-annex | tail -n 1) git-annex; \
@@ -108,7 +112,7 @@ Build/InstallDesktopFile: Build/InstallDesktopFile.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
 Build/EvilSplicer: Build/EvilSplicer.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
-Build/Standalone: Build/Standalone.hs git-annex
+Build/Standalone: Build/Standalone.hs tmp/configure-stamp
 	$(GHC) --make $@ -Wall -fno-warn-tabs
 Build/OSXMkLibs: Build/OSXMkLibs.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
@@ -119,8 +123,8 @@ Build/MakeMans: Build/MakeMans.hs
 
 LINUXSTANDALONE_DEST=tmp/git-annex.linux
 linuxstandalone:
-	$(MAKE) git-annex linuxstandalone-image
-linuxstandalone-image: Build/Standalone Build/LinuxMkLibs
+	$(MAKE) git-annex linuxstandalone-nobuild
+linuxstandalone-nobuild: Build/Standalone Build/LinuxMkLibs
 	rm -rf "$(LINUXSTANDALONE_DEST)"
 	mkdir -p tmp
 	cp -R standalone/linux/skel "$(LINUXSTANDALONE_DEST)"
