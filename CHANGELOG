@@ -33,7 +33,7 @@ git-annex (6.20170215) UNRELEASED; urgency=medium
     to wget, since curl is able to display only errors to stderr, unlike
     wget.
   * status: Pass --ignore-submodules=when option on to git status.
-  * Tighten key parser to not accept keys containing a non-numeric
+  * Tighten key parser to not accept keys containing non-numeric
     fields, which could be used to embed data useful for a SHA1
     attack against git.
 
