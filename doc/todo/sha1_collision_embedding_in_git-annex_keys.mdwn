@@ -23,12 +23,10 @@ is enabled)
 A few other potential problems:
 
 * `*E` backends could embed sha1 collision data in a long filename
-  extension. That this is much harder to exploit because git-annex
-  checks the hash of the data when it enters the repository, and git-annex
-  fsck also verifies it. It still might be worth limiting the length
-  of an extension in such a key to the longest such extension git-annex has
-  ever supported (probably < 20 bytes or so), which would be less than the
-  size of the data needed for current SHA1 collision attacks.
+  extension. It might be worth limiting the length
+  of an extension allowed in such a key to the longest such extension
+  git-annex has ever supported (probably < 20 bytes or so), which would
+  be less than the size of the data needed for current SHA1 collision attacks.
 * It might be possible to embed colliding data in a specially constructed
   key name with an extra field in it, eg "SHA256-cXXXXXXXXXXXXXXX-...".
   Need to review the code and see if such extra fields are allowed.  
