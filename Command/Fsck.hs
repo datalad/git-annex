@@ -175,7 +175,7 @@ performRemote key afile backend numcopies remote =
 
 startKey :: Maybe Remote -> Incremental -> Key -> ActionItem -> NumCopies -> CommandStart
 startKey from inc key ai numcopies =
-	case Backend.maybeLookupBackendName (keyBackendName key) of
+	case Backend.maybeLookupBackendVariety (keyVariety key) of
 		Nothing -> stop
 		Just backend -> runFsck inc ai key $
 			case from of

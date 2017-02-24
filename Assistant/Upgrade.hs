@@ -115,7 +115,7 @@ distributionDownloadComplete d dest cleanup t
 	| otherwise = cleanup
   where
 	k = distributionKey d
-	fsckit f = case Backend.maybeLookupBackendName (Types.Key.keyBackendName k) of
+	fsckit f = case Backend.maybeLookupBackendVariety (Types.Key.keyVariety k) of
 		Nothing -> return $ Just f
 		Just b -> case Types.Backend.verifyKeyContent b of
 			Nothing -> return $ Just f

@@ -14,6 +14,7 @@ import Data.Default
 import Annex.Common
 import Annex.Content
 import Annex.Link
+import Types.Key
 import Logs.Presence
 import qualified Annex.Queue
 import qualified Git
@@ -130,7 +131,7 @@ oldlog2key l
   where
 	len = length l - 4
 	k = readKey1 (take len l)
-	sane = (not . null $ keyName k) && (not . null $ keyBackendName k)
+	sane = (not . null $ keyName k) && (not . null $ formatKeyVariety $ keyVariety k)
 
 -- WORM backend keys: "WORM:mtime:size:filename"
 -- all the rest: "backend:key"
@@ -143,7 +144,7 @@ readKey1 v
 	| mixup = fromJust $ file2key $ intercalate ":" $ Prelude.tail bits
 	| otherwise = stubKey
 		{ keyName = n
-		, keyBackendName = b
+		, keyVariety = parseKeyVariety b
 		, keySize = s
 		, keyMtime = t
 		}
@@ -161,11 +162,12 @@ readKey1 v
 	mixup = wormy && isUpper (Prelude.head $ bits !! 1)
 
 showKey1 :: Key -> String
-showKey1 Key { keyName = n , keyBackendName = b, keySize = s, keyMtime = t } =
+showKey1 Key { keyName = n , keyVariety = v, keySize = s, keyMtime = t } =
 	intercalate ":" $ filter (not . null) [b, showifhere t, showifhere s, n]
   where
 	showifhere Nothing = ""
-	showifhere (Just v) = show v
+	showifhere (Just x) = show x
+	b = formatKeyVariety v
 
 keyFile1 :: Key -> FilePath
 keyFile1 key = replace "/" "%" $ replace "%" "&s" $ replace "&" "&a"  $ showKey1 key
@@ -189,7 +191,7 @@ lookupFile1 file = do
 		Right l -> makekey l
   where
 	getsymlink = takeFileName <$> readSymbolicLink file
-	makekey l = case maybeLookupBackendName bname of
+	makekey l = case maybeLookupBackendVariety (keyVariety k) of
 		Nothing -> do
 			unless (null kname || null bname ||
 			        not (isLinkToAnnex l)) $
@@ -198,7 +200,7 @@ lookupFile1 file = do
 		Just backend -> return $ Just (k, backend)
 	  where
 		k = fileKey1 l
-		bname = keyBackendName k
+		bname = formatKeyVariety (keyVariety k)
 		kname = keyName k
 		skip = "skipping " ++ file ++ 
 			" (unknown backend " ++ bname ++ ")"

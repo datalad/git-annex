@@ -64,6 +64,7 @@ import qualified Logs.PreferredContent
 import qualified Types.MetaData
 import qualified Remote
 import qualified Key
+import qualified Types.Key
 import qualified Types.Messages
 import qualified Config
 import qualified Config.Cost
@@ -2152,7 +2153,7 @@ backendWORM :: Types.Backend
 backendWORM = backend_ "WORM"
 
 backend_ :: String -> Types.Backend
-backend_ = Backend.lookupBackendName
+backend_ = Backend.lookupBackendVariety . Types.Key.parseKeyVariety
 
 getKey :: Types.Backend -> FilePath -> IO Types.Key
 getKey b f = fromJust <$> annexeval go

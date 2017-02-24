@@ -8,6 +8,7 @@
 module Backend.WORM (backends) where
 
 import Annex.Common
+import Types.Key
 import Types.Backend
 import Types.KeySource
 import Backend.Utilities
@@ -18,7 +19,7 @@ backends = [backend]
 
 backend :: Backend
 backend = Backend
-	{ name = "WORM"
+	{ backendVariety = WORMKey
 	, getKey = keyValue
 	, verifyKeyContent = Nothing
 	, canUpgradeKey = Nothing
@@ -37,7 +38,7 @@ keyValue source = do
 	relf <- getTopFilePath <$> inRepo (toTopFilePath $ keyFilename source)
 	return $ Just $ stubKey
 		{ keyName = genKeyName relf
-		, keyBackendName = name backend
+		, keyVariety = WORMKey
 		, keySize = Just sz
 		, keyMtime = Just $ modificationTime stat
 		}

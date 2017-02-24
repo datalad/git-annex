@@ -84,7 +84,7 @@ clean file = do
 				-- for this file before, so that when
 				-- git re-cleans a file its backend does
 				-- not change.
-				currbackend <- maybe Nothing (maybeLookupBackendName . keyBackendName)
+				currbackend <- maybe Nothing (maybeLookupBackendVariety . keyVariety)
 					<$> catKeyFile file
 				liftIO . emitPointer
 					=<< go

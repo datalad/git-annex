@@ -341,7 +341,7 @@ verifyKeyContent v UnVerified k f = ifM (shouldVerify v)
 		Just size -> do
 			size' <- liftIO $ catchDefaultIO 0 $ getFileSize f
 			return (size' == size)
-	verifycontent = case Types.Backend.verifyKeyContent =<< Backend.maybeLookupBackendName (keyBackendName k) of
+	verifycontent = case Types.Backend.verifyKeyContent =<< Backend.maybeLookupBackendVariety (keyVariety k) of
 		Nothing -> return True
 		Just verifier -> verifier k f
 

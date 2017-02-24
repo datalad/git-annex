@@ -36,6 +36,7 @@ import qualified Git.LsTree as LsTree
 import Utility.Percentage
 import Types.Transfer
 import Logs.Transfer
+import Types.Key
 import Types.TrustLevel
 import Types.FileMatcher
 import qualified Limit
@@ -51,7 +52,7 @@ data KeyData = KeyData
 	{ countKeys :: Integer
 	, sizeKeys :: Integer
 	, unknownSizeKeys :: Integer
-	, backendsKeys :: M.Map String Integer
+	, backendsKeys :: M.Map KeyVariety Integer
 	}
 
 data NumCopiesStats = NumCopiesStats
@@ -451,7 +452,8 @@ disk_size = simpleStat "available local disk space" $
 
 backend_usage :: Stat
 backend_usage = stat "backend usage" $ json fmt $
-	ObjectMap . backendsKeys <$> cachedReferencedData
+	ObjectMap . (M.mapKeys formatKeyVariety) . backendsKeys
+		<$> cachedReferencedData
   where
 	fmt = multiLine . map (\(b, n) -> b ++ ": " ++ show n) . sort . M.toList . fromObjectMap
 
@@ -598,7 +600,7 @@ addKey key (KeyData count size unknownsize backends) =
 	{- All calculations strict to avoid thunks when repeatedly
 	 - applied to many keys. -}
 	!count' = count + 1
-	!backends' = M.insertWith (+) (keyBackendName key) 1 backends
+	!backends' = M.insertWith (+) (keyVariety key) 1 backends
 	!size' = maybe size (+ size) ks
 	!unknownsize' = maybe (unknownsize + 1) (const unknownsize) ks
 	ks = keySize key

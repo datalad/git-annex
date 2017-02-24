@@ -78,6 +78,7 @@ import Data.Default
 
 import Common
 import Key
+import Types.Key
 import Types.UUID
 import Types.GitConfig
 import Types.Difference
@@ -478,7 +479,7 @@ prop_isomorphic_fileKey s
 	| null s = True -- it's not legal for a key to have no keyName
 	| otherwise= Just k == fileKey (keyFile k)
   where
-	k = stubKey { keyName = s, keyBackendName = "test" }
+	k = stubKey { keyName = s, keyVariety = OtherKey "test" }
 
 {- A location to store a key on a special remote that uses a filesystem.
  - A directory hash is used, to protect against filesystems that dislike

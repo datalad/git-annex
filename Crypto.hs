@@ -42,6 +42,7 @@ import Annex.Common
 import qualified Utility.Gpg as Gpg
 import Types.Crypto
 import Types.Remote
+import Types.Key
 
 {- The beginning of a Cipher is used for MAC'ing; the remainder is used
  - as the GPG symmetric encryption passphrase when using the hybrid
@@ -159,14 +160,16 @@ type EncKey = Key -> Key
 encryptKey :: Mac -> Cipher -> EncKey
 encryptKey mac c k = stubKey
 	{ keyName = macWithCipher mac c (key2file k)
-	, keyBackendName = encryptedBackendNamePrefix ++ showMac mac
+	, keyVariety = OtherKey (encryptedBackendNamePrefix ++ showMac mac)
 	}
 
 encryptedBackendNamePrefix :: String
 encryptedBackendNamePrefix = "GPG"
 
 isEncKey :: Key -> Bool
-isEncKey k = encryptedBackendNamePrefix `isPrefixOf` keyBackendName k
+isEncKey k = case keyVariety k of
+	OtherKey s ->  encryptedBackendNamePrefix `isPrefixOf` s
+	_ -> False
 
 type Feeder = Handle -> IO ()
 type Reader m a = Handle -> m a

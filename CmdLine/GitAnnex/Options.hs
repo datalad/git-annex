@@ -15,6 +15,7 @@ import Annex.Common
 import qualified Git.Config
 import qualified Git.Construct
 import Git.Types
+import Types.Key
 import Types.TrustLevel
 import Types.NumCopies
 import Types.Messages
@@ -346,4 +347,5 @@ completeRemotes = completer $ mkCompleter $ \input -> do
 		
 		
 completeBackends :: HasCompleter f => Mod f a
-completeBackends = completeWith (map Backend.name Backend.list)
+completeBackends = completeWith $
+	map (formatKeyVariety . Backend.backendVariety) Backend.list

@@ -2,7 +2,7 @@
  -
  - Most things should not need this, using Types instead
  -
- - Copyright 2010,2012 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,7 +13,7 @@ import Types.Key
 import Types.KeySource
 
 data BackendA a = Backend
-	{ name :: String
+	{ backendVariety :: KeyVariety
 	, getKey :: KeySource -> a (Maybe Key) 
 	-- Verifies the content of a key.
 	, verifyKeyContent :: Maybe (Key -> FilePath -> a Bool)
@@ -28,7 +28,7 @@ data BackendA a = Backend
 	}
 
 instance Show (BackendA a) where
-	show backend = "Backend { name =\"" ++ name backend ++ "\" }"
+	show backend = "Backend { name =\"" ++ formatKeyVariety (backendVariety backend) ++ "\" }"
 
 instance Eq (BackendA a) where
-	a == b = name a == name b
+	a == b = backendVariety a == backendVariety b

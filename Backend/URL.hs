@@ -11,6 +11,7 @@ module Backend.URL (
 ) where
 
 import Annex.Common
+import Types.Key
 import Types.Backend
 import Backend.Utilities
 
@@ -19,7 +20,7 @@ backends = [backend]
 
 backend :: Backend
 backend = Backend
-	{ name = "URL"
+	{ backendVariety = URLKey
 	, getKey = const $ return Nothing
 	, verifyKeyContent = Nothing
 	, canUpgradeKey = Nothing
@@ -33,6 +34,6 @@ backend = Backend
 fromUrl :: String -> Maybe Integer -> Key
 fromUrl url size = stubKey
 	{ keyName = genKeyName url
-	, keyBackendName = "URL"
+	, keyVariety = URLKey
 	, keySize = size
 	}

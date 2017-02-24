@@ -149,7 +149,7 @@ test st r k =
 		Annex.eval st (Annex.setOutput QuietOutput >> a) @? "failed"
 	present b = check ("present " ++ show b) $
 		(== Right b) <$> Remote.hasKey r k
-	fsck = case maybeLookupBackendName (keyBackendName k) of
+	fsck = case maybeLookupBackendVariety (keyVariety k) of
 		Nothing -> return True
 		Just b -> case Backend.verifyKeyContent b of
 			Nothing -> return True

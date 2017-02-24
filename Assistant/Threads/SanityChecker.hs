@@ -39,6 +39,7 @@ import Git.Index
 import Assistant.Unused
 import Logs.Unused
 import Types.Transfer
+import Types.Key
 import Annex.Path
 import qualified Annex
 #ifdef WITH_WEBAPP
@@ -308,7 +309,7 @@ cleanReallyOldTmp = do
 	cleanjunk check f = case fileKey (takeFileName f) of
 		Nothing -> cleanOld check f
 		Just k
-			| "GPGHMAC" `isPrefixOf` keyBackendName k ->
+			| "GPGHMAC" `isPrefixOf` formatKeyVariety (keyVariety k) ->
 				cleanOld check f
 			| otherwise -> noop
 

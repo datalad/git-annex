@@ -19,6 +19,7 @@ import Annex.Action
 import Annex.UUID
 import Logs.Trust
 import Annex.NumCopies
+import Types.Key
 import Types.TrustLevel
 import Types.Group
 import Types.FileMatcher
@@ -251,7 +252,8 @@ addInBackend = addLimit . limitInBackend
 limitInBackend :: MkLimit Annex
 limitInBackend name = Right $ const $ checkKey check
   where
-	check key = pure $ keyBackendName key == name
+	check key = pure $ keyVariety key == variety
+	variety = parseKeyVariety name
 
 {- Adds a limit to skip files that are too large or too small -}
 addLargerThan :: String -> Annex ()

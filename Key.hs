@@ -35,7 +35,7 @@ import qualified Utility.SimpleProtocol as Proto
 stubKey :: Key
 stubKey = Key
 	{ keyName = ""
-	, keyBackendName = ""
+	, keyVariety = OtherKey ""
 	, keySize = Nothing
 	, keyMtime = Nothing
 	, keyChunkSize = Nothing
@@ -69,8 +69,8 @@ fieldSep = '-'
  - The name field is always shown last, separated by doubled fieldSeps,
  - and is the only field allowed to contain the fieldSep. -}
 key2file :: Key -> FilePath
-key2file Key { keyBackendName = b, keySize = s, keyMtime = m, keyChunkSize = cs, keyChunkNum = cn, keyName = n } =
-	b +++ ('s' ?: s) +++ ('m' ?: m) +++ ('S' ?: cs) +++ ('C' ?: cn) +++ (fieldSep : n)
+key2file Key { keyVariety = kv, keySize = s, keyMtime = m, keyChunkSize = cs, keyChunkNum = cn, keyName = n } =
+	formatKeyVariety kv +++ ('s' ?: s) +++ ('m' ?: m) +++ ('S' ?: cs) +++ ('C' ?: cn) +++ (fieldSep : n)
   where
 	"" +++ y = y
 	x +++ "" = x
@@ -80,12 +80,12 @@ key2file Key { keyBackendName = b, keySize = s, keyMtime = m, keyChunkSize = cs,
 
 file2key :: FilePath -> Maybe Key
 file2key s
-	| key == Just stubKey || (keyName <$> key) == Just "" || (keyBackendName <$> key) == Just "" = Nothing
+	| key == Just stubKey || (keyName <$> key) == Just "" || (keyVariety <$> key) == Just (OtherKey "") = Nothing
 	| otherwise = key
   where
 	key = startbackend stubKey s
 
-	startbackend k v = sepfield k v addbackend
+	startbackend k v = sepfield k v addvariety
 		
 	sepfield k v a = case span (/= fieldSep) v of
 		(v', _:r) -> findfields r $ a k v'
@@ -96,7 +96,7 @@ file2key s
 		| otherwise = sepfield k v $ addfield c
 	findfields _ v = v
 
-	addbackend k v = Just k { keyBackendName = v }
+	addvariety k v = Just k { keyVariety = parseKeyVariety v }
 
 	-- This is a strict parser for security reasons; a key
 	-- can contain only 4 fields, which all consist only of numbers.
@@ -126,31 +126,27 @@ file2key s
 		| validKeyName k v = Just $ k { keyName = v }
 		| otherwise = Nothing
 
-{- A key with a backend ending in "E" is an extension preserving key,
- - using some hash.
+{- When a key HasExt, the length of the extension is limited in order to
+ - mitigate against SHA1 collision attacks (specifically, chosen-prefix
+ - attacks).
  -
- - The length of the extension is limited in order to mitigate against
- - SHA1 collision attacks (specifically, chosen-prefix attacks).
  - In such an attack, the extension of the key could be made to contain
  - the collision generation data, with the result that a signed git commit
  - including such keys would not be secure. 
  -
  - The maximum extension length ever generated for such a key was 8
  - characters; 20 is used here to give a little future wiggle-room. 
- - The SHA1 common-prefix attack used 128 bytes of data.
- -
- - This code is here, and not in Backend.Hash (where it really belongs)
- - so that file2key can check it whenever a Key is constructed.
+ - The SHA1 common-prefix attack needs 128 bytes of data.
  -}
 validKeyName :: Key -> String -> Bool
-validKeyName k v
-	| end (keyBackendName k) == "E" = length (takeExtensions v) <= 20
+validKeyName k name
+	| hasExt (keyVariety k) = length (takeExtensions name) <= 20
 	| otherwise = True
 
 instance Arbitrary Key where
 	arbitrary = Key
 		<$> (listOf1 $ elements $ ['A'..'Z'] ++ ['a'..'z'] ++ ['0'..'9'] ++ "-_\r\n \t")
-		<*> (listOf1 $ elements ['A'..'Z']) -- BACKEND
+		<*> (parseKeyVariety <$> (listOf1 $ elements ['A'..'Z'])) -- BACKEND
 		<*> ((abs <$>) <$> arbitrary) -- size cannot be negative
 		<*> arbitrary
 		<*> ((abs <$>) <$> arbitrary) -- chunksize cannot be negative
