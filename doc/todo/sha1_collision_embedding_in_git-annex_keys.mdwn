@@ -27,15 +27,15 @@ A few other potential problems:
 
   Impact is limited, because even if an attacker does this, the key also
   contains the checksum (eg SHA2) of the annexed data. The current SHA1
-  attack is only a prefix attack; it does not allow creating two colliding
-  keys that contain two different SHA2 checksums. That would need a
-  preimage attack to be feasible. 
+  attack is only a common-prefix attack; it does not allow creating two
+  colliding keys that contain two different SHA2 checksums. That would need a
+  chosen-prefix attack to be feasible. 
   
   It might be worth limiting the length
   of an extension allowed in such a key to the longest such extension
   git-annex has ever supported (probably < 20 bytes or so), which would
   be less than the size of the data needed for current SHA1 collision
-  attacks. Presumably aa preimage attack would need a similar amount of
+  attacks. Presumably aa chosen-prefix attack would need a similar amount of
   data.
 
 * It might be possible to embed colliding data in a specially constructed
