@@ -1,6 +1,6 @@
 {- git-annex Key data type
  -
- - Copyright 2011-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -104,7 +104,7 @@ file2key s
 		_ -> Nothing
 
 	findfields (c:v) (Just k)
-		| c == fieldSep = Just $ k { keyName = v }
+		| c == fieldSep = addkeyname k v
 		| otherwise = sepfield k v $ addfield c
 	findfields _ v = v
 
@@ -133,6 +133,31 @@ file2key s
 			return $ k { keyChunkNum = Just chunknum }
 		_ -> Nothing
 	addfield _ _ _ = Nothing
+
+	addkeyname k v
+		| validKeyName k v = Just $ k { keyName = v }
+		| otherwise = Nothing
+
+{- A key with a backend ending in "E" is an extension preserving key,
+ - using some hash.
+ -
+ - The length of the extension is limited in order to mitigate against
+ - SHA1 collision attacks (specifically, chosen-prefix attacks).
+ - In such an attack, the extension of the key could be made to contain
+ - the collision generation data, with the result that a signed git commit
+ - including such keys would not be secure. 
+ -
+ - The maximum extension length ever generated for such a key was 8
+ - characters; 20 is used here to give a little future wiggle-room. 
+ - The SHA1 common-prefix attack used 128 bytes of data.
+ -
+ - This code is here, and not in Backend.Hash (where it really belongs)
+ - so that file2key can check it whenever a Key is constructed.
+ -}
+validKeyName :: Key -> String -> Bool
+validKeyName k v
+	| end (keyBackendName k) == "E" = length (takeExtensions v) <= 20
+	| otherwise = True
 
 instance ToJSON Key where
 	toJSON = toJSON . key2file

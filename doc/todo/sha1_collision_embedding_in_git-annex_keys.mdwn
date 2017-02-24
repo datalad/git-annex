@@ -36,12 +36,15 @@ A few other potential problems:
   git-annex has ever supported (probably < 20 bytes or so), which would
   be less than the size of the data needed for current SHA1 collision
   attacks. Presumably aa chosen-prefix attack would need a similar amount of
-  data.
+  data. Update: Now done; git-annex refuses to use keys with super
+  long extensions.
 
 * It might be possible to embed colliding data in a specially constructed
   key name with an extra field in it, eg "SHA256-cXXXXXXXXXXXXXXX-...".
   Need to review the code and see if such extra fields are allowed.  
 
   Update: All fields are numeric, but could contain arbitrary data
-  after the number. This has been fixed; git-annex refuses to parse
+  after the number. Could have been used in a chosen-prefix attack
+  (posibly; would require field to come after key name data) or
+  preimage attack. This has been fixed; git-annex refuses to parse
   such fields, so it won't work with files that try to exploit this.
