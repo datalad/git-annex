@@ -22,6 +22,7 @@ module Types.Key (
 
 import System.Posix.Types
 import Data.Aeson
+import Data.Char
 import qualified Data.Text as T
 
 import Common
@@ -108,6 +109,16 @@ file2key s
 	findfields _ v = v
 
 	addbackend k v = Just k { keyBackendName = v }
+
+	-- This is a strict parser for security reasons; a key
+	-- can contain only 4 fields, which all consist only of numbers.
+	-- Any key containing other fields, or non-numeric data is
+	-- rejected with Nothing.
+	--
+	-- If a key contained non-numeric fields, they could be used to
+	-- embed data used in a SHA1 collision attack, which would be a
+	-- problem since the keys are committed to git.
+	addfield _ _ v | not (all isDigit v) = Nothing
 	addfield 's' k v = do
 		sz <- readish v
 		return $ k { keySize = Just sz }
@@ -120,7 +131,7 @@ file2key s
 	addfield 'C' k v = case readish v of
 		Just chunknum | chunknum > 0 ->
 			return $ k { keyChunkNum = Just chunknum }
-		_ -> return k
+		_ -> Nothing
 	addfield _ _ _ = Nothing
 
 instance ToJSON Key where

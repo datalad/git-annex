@@ -1,0 +1,36 @@
+Some git-annex backends allow embedding enough data in the names of keys
+that it could be used for a SHA1 collision attack. So, a signed git commit
+could point to a tree with such a key in it, and the blob for the key could
+have two versions with the same SHA1.
+
+Users who want to use git-annex with signed commits to mitigate git's own
+SHA1 insecurities would like at least a way to disable the insecure
+git-annex backends:
+
+* WORM can contain fairly arbitrary data in a key name
+* URL too (also, of course, URLs download arbitrary data from the web,
+  so a signed git commit pointing at URL keys doesn't have any security
+  even w/o SHA1 collisions)
+* SHA1 and MD5 backends are insecure because there can be colliding
+  versions of the data they point to.
+
+A config setting to prevent git-annex from using insecure backends would be
+useful.
+
+(git-annex might suggest enabling that configuration if commit.gpgSign
+is enabled)
+
+A few other potential problems:
+
+* `*E` backends could embed sha1 collision data in a long filename
+  extension. That this is much harder to exploit because git-annex
+  checks the hash of the data when it enters the repository, and git-annex
+  fsck also verifies it. It still might be worth limiting the length
+  of an extension in such a key to the longest such extension git-annex has
+  ever supported (probably < 20 bytes or so), which would be less than the
+  size of the data needed for current SHA1 collision attacks.
+* It might be possible to embed colliding data in a specially constructed
+  key name with an extra field in it, eg "SHA256-cXXXXXXXXXXXXXXX-...".
+  Need to review the code and see if such extra fields are allowed.  
+  Update: All fields are numeric, but could contain arbitrary data
+  after the number. (fixed now)
