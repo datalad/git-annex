@@ -14,13 +14,34 @@ git-annex backends:
 * SHA1 and MD5 backends are insecure because there can be colliding
   versions of the data they point to.
 
-A config setting to prevent git-annex from using insecure backends would be
-useful.
+There could be a config setting, which would prevent git-annex from using
+keys with such insecure backends. A user who checks git commit signatures
+could enable the config setting when they initially clone their repository.
+This should prevent any file contents using insecure backends from being
+downloaded into the repository. (Even git-annex-shell recvkey would
+refuse data using such a key, since it would fail parsing the key.)
+The user would thus know that any file contents in their repository match
+the files in signed git commits.
 
-(git-annex might suggest enabling that configuration if commit.gpgSign
-is enabled)
+Enabling the config setting in a repository that already contains
+file contents would be a mistake, because it might contain insecure keys.
+And since git-annex would skip over such files, `git annex fsck` cannot
+warn about such a mistake.
+
+Perhaps, then, the config setting should be turned on by `git annex init`?
+Or, we can document this gotcha.
+
+----
 
 A few other potential problems:
+
+* A symlink target like .git/annex/objects/XX/YY/SHA256--foo
+  might be able to be manipulated to add collision data in the path.
+  For example, .git/annex/objects/collisiondata/../XX/YY/SHA256--foo
+
+  I think this is not a valid attack, because at least on linux,
+  such a symlink won't be followed, unless the
+  .git/annex/objects/collisiondata directory exists.
 
 * `*E` backends could embed sha1 collision data in a long filename
   extension in a key.
@@ -28,15 +49,14 @@ A few other potential problems:
   Impact is limited, because even if an attacker does this, the key also
   contains the checksum (eg SHA2) of the annexed data. The current SHA1
   attack is only a common-prefix attack; it does not allow creating two
-  colliding keys that contain two different SHA2 checksums. That would need a
-  chosen-prefix attack to be feasible. 
+  colliding keys that contain two different SHA2 checksums. That would
+  need a chosen-prefix attack.
   
   It might be worth limiting the length
   of an extension allowed in such a key to the longest such extension
   git-annex has ever supported (probably < 20 bytes or so), which would
   be less than the size of the data needed for current SHA1 collision
-  attacks. Presumably aa chosen-prefix attack would need a similar amount of
-  data. Update: Now done; git-annex refuses to use keys with super
+  attacks. Now done; git-annex refuses to use keys with super
   long extensions.
 
 * It might be possible to embed colliding data in a specially constructed
@@ -44,7 +64,14 @@ A few other potential problems:
   Need to review the code and see if such extra fields are allowed.  
 
   Update: All fields are numeric, but could contain arbitrary data
-  after the number. Could have been used in a chosen-prefix attack
-  (posibly; would require field to come after key name data) or
-  preimage attack. This has been fixed; git-annex refuses to parse
+  after the number. Could have been used in a chosen-prefix attack.
+  This has been fixed; git-annex refuses to parse
   such fields, so it won't work with files that try to exploit this.
+
+* A symlink target like .git/annex/objects/XX/YY/SHA256--foo
+  might be able to be manipulated to add collision data in the path.
+  For example, .git/annex/objects/collisiondata/../XX/YY/SHA256--foo
+
+  I think this is not a valid attack, because at least on linux,
+  such a symlink won't be followed, unless the
+  .git/annex/objects/collisiondata directory exists.
