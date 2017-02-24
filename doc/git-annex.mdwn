@@ -823,8 +823,8 @@ Here are all the supported configuration settings.
 
 * `annex.backends`
 
-  Space-separated list of names of the key-value backends to use.
-  The first listed is used to store new files by default.
+  Space-separated list of names of the key-value backends to use
+  when adding new files to the repository.
 
   This is overridden by annex annex.backend configuration in the
   .gitattributes files.
