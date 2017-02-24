@@ -3,7 +3,9 @@ The file checked into git symlinks to the key. This key can later be used
 to retrieve the file's content (its value).
 
 Multiple pluggable key-value backends are supported, and a single repository
-can use different ones for different files.
+can use different ones for different files. 
+
+These are the recommended backends to use.
 
 * `SHA256E` -- The default backend for new files, combines a 256 bit SHA-2
   hash of the file's content with the file's extension. This allows
@@ -20,6 +22,10 @@ can use different ones for different files.
 * `SKEIN512`, `SKEIN512E`, `SKEIN256`, `SKEIN256E`
   -- [Skein hash](http://en.wikipedia.org/wiki/Skein_hash),
   a well-regarded SHA3 hash competition finalist.
+
+The backends below do not guarantee cryptographically that the
+content of an annexed file remains unchanged.
+
 * `SHA1`, `SHA1E`, `MD5`, `MD5E` -- Smaller hashes than `SHA256`
    for those who want a checksum but are not concerned about security.
 * `WORM` ("Write Once, Read Many") -- This assumes that any file with
@@ -29,6 +35,11 @@ can use different ones for different files.
 * `URL` -- This is a key that is generated from the url to a file.
   It's generated when using eg, `git annex addurl --fast`, when the file
   content is not available for hashing.
+
+If you want to be able to prove that you're working with the same file
+contents that were checked into a repository earlier, you should avoid
+using the non-cryptographically-secure backends, and will need to use
+signed git commits. See [[tips/using_signed_git_commits]] for details.
 
 Note that the various 512 and 384 length hashes result in long paths,
 which are known to not work on Windows. If interoperability on Windows is a
