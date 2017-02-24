@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="benjamin.poldrack@d09ccff6d42dd20277610b59867cf7462927b8e3"
+ nickname="benjamin.poldrack"
+ avatar="http://cdn.libravatar.org/avatar/5c1a901caa7c2cfeeb7e17e786c5230d"
+ subject="comment 1"
+ date="2017-02-24T13:00:08Z"
+ content="""
+I just want to point out, that this is most likely related to this one: <http://git-annex.branchable.com/bugs/Too_difficult_if_not_impossible_to_explicitly_add__47__keep_file_under_git___40__not_annex__41___in_v6_without_employing_.gitattributes/>
+
+Generally, we get into trouble with files in git in v6 repos everytime. Pretty much the same thing happens, if we clone an annex repo with a file directly in git and then `git annex init --version=6` that clone. In that case, I can't avoid it with such a delay. However, all of this doesn't happen if I do it manually via single commands in the shell, but does, if it's done in a script. In some way, that smudge filter seems run out of sync with the command call triggering it.
+
+[[ben]]
+"""]]
