@@ -74,13 +74,10 @@ A few other potential problems:
 * `*E` backends could embed sha1 collision data in a long filename
   extension in a key.
 
-  Impact is limited, because even if an attacker does this, the key also
-  contains the checksum (eg SHA2) of the annexed data. The current SHA1
-  attack is only a common-prefix attack; it does not allow creating two
-  colliding keys that contain two different SHA2 checksums. That would
-  need a chosen-prefix attack.
-  
-  It might be worth limiting the length
+  The recent SHA1 common-prefix attack could be used to exploit this;
+  the result would be two keys that have the same SHA1.
+
+  This can be fixed by limiting the length
   of an extension allowed in such a key to the longest such extension
   git-annex has ever supported (probably < 20 bytes or so), which would
   be less than the size of the data needed for current SHA1 collision
@@ -92,7 +89,7 @@ A few other potential problems:
   Need to review the code and see if such extra fields are allowed.  
 
   Update: All fields are numeric, but could contain arbitrary data
-  after the number. Could have been used in a chosen-prefix attack.
+  after the number. Could have been used in a common-prefix attack.
   This has been fixed; git-annex refuses to parse
   such fields, so it won't work with files that try to exploit this.
 

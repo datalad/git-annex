@@ -127,12 +127,11 @@ file2key s
 		| otherwise = Nothing
 
 {- When a key HasExt, the length of the extension is limited in order to
- - mitigate against SHA1 collision attacks (specifically, chosen-prefix
- - attacks).
+ - mitigate against SHA1 collision attacks.
  -
  - In such an attack, the extension of the key could be made to contain
  - the collision generation data, with the result that a signed git commit
- - including such keys would not be secure. 
+ - including such keys would not be secure.
  -
  - The maximum extension length ever generated for such a key was 8
  - characters; 20 is used here to give a little future wiggle-room. 
