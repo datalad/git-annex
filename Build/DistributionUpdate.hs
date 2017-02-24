@@ -119,13 +119,14 @@ makeinfos updated version = do
 			Just k -> whenM (inAnnex k) $ do
 				liftIO $ putStrLn f
 				let infofile = f ++ ".info"
-				liftIO $ writeFile infofile $ show $ GitAnnexDistribution
+				let d = GitAnnexDistribution
 					{ distributionUrl = mkUrl f
 					, distributionKey = k
 					, distributionVersion = bv
 					, distributionReleasedate = now
 					, distributionUrgentUpgrade = Nothing
 					}
+				liftIO $ writeFile infofile $ formatInfoFile d
 				void $ inRepo $ runBool [Param "add", File infofile]
 				signFile infofile
 				signFile f

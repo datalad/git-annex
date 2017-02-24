@@ -23,15 +23,6 @@ import Data.Time.Clock
 import Data.Time.Clock.POSIX
 import Control.Concurrent
 
-showLcDirection :: Direction -> String
-showLcDirection Upload = "upload"
-showLcDirection Download = "download"
-
-readLcDirection :: String -> Maybe Direction
-readLcDirection "upload" = Just Upload
-readLcDirection "download" = Just Download
-readLcDirection _ = Nothing
-
 describeTransfer :: Transfer -> TransferInfo -> String
 describeTransfer t info = unwords
 	[ show $ transferDirection t
@@ -212,7 +203,7 @@ parseTransferFile file
 	| "lck." `isPrefixOf` takeFileName file = Nothing
 	| otherwise = case drop (length bits - 3) bits of
 		[direction, u, key] -> Transfer
-			<$> readLcDirection direction
+			<$> parseDirection direction
 			<*> pure (toUUID u)
 			<*> fileKey key
 		_ -> Nothing
@@ -279,14 +270,14 @@ readTransferInfo mpid s = TransferInfo
 
 {- The directory holding transfer information files for a given Direction. -}
 transferDir :: Direction -> Git.Repo -> FilePath
-transferDir direction r = gitAnnexTransferDir r </> showLcDirection direction
+transferDir direction r = gitAnnexTransferDir r </> formatDirection direction
 
 {- The directory holding failed transfer information files for a given
  - Direction and UUID -}
 failedTransferDir :: UUID -> Direction -> Git.Repo -> FilePath
 failedTransferDir u direction r = gitAnnexTransferDir r
 	</> "failed"
-	</> showLcDirection direction
+	</> formatDirection direction
 	</> filter (/= '/') (fromUUID u)
 
 prop_read_write_transferinfo :: TransferInfo -> Bool

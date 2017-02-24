@@ -16,8 +16,7 @@ import Control.Concurrent
 import Control.Applicative
 import Prelude
 
-{- Enough information to uniquely identify a transfer, used as the filename
- - of the transfer information file. -}
+{- Enough information to uniquely identify a transfer. -}
 data Transfer = Transfer
 	{ transferDirection :: Direction
 	, transferUUID :: UUID
@@ -46,7 +45,16 @@ stubTransferInfo :: TransferInfo
 stubTransferInfo = TransferInfo Nothing Nothing Nothing Nothing Nothing Nothing False
 
 data Direction = Upload | Download
-	deriving (Eq, Ord, Read, Show)
+	deriving (Eq, Ord, Show, Read)
+
+formatDirection :: Direction -> String
+formatDirection Upload = "upload"
+formatDirection Download = "download"
+
+parseDirection :: String -> Maybe Direction
+parseDirection "upload" = Just Upload
+parseDirection "download" = Just Download
+parseDirection _ = Nothing
 
 instance Arbitrary TransferInfo where
 	arbitrary = TransferInfo

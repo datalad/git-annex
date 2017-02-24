@@ -324,7 +324,7 @@ downloadDistributionInfo = do
 		ifM (Url.downloadQuiet distributionInfoUrl infof uo
 			<&&> Url.downloadQuiet distributionInfoSigUrl sigf uo
 			<&&> verifyDistributionSig gpgcmd sigf)
-			( readish <$> readFileStrict infof
+			( parseInfoFile <$> readFileStrict infof
 			, return Nothing
 			)
 

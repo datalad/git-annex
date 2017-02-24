@@ -419,14 +419,14 @@ transfer_list = stat desc $ nojson $ lift $ do
   where
 	desc = "transfers in progress"
 	line uuidmap t i = unwords
-		[ showLcDirection (transferDirection t) ++ "ing"
+		[ formatDirection (transferDirection t) ++ "ing"
 		, fromMaybe (key2file $ transferKey t) (associatedFile i)
 		, if transferDirection t == Upload then "to" else "from"
 		, maybe (fromUUID $ transferUUID t) Remote.name $
 			M.lookup (transferUUID t) uuidmap
 		]
 	jsonify t i = object $ map (\(k, v) -> (T.pack k, v)) $
-		[ ("transfer", toJSON (showLcDirection (transferDirection t)))
+		[ ("transfer", toJSON (formatDirection (transferDirection t)))
 		, ("key", toJSON (key2file (transferKey t)))
 		, ("file", toJSON (associatedFile i))
 		, ("remote", toJSON (fromUUID (transferUUID t)))
