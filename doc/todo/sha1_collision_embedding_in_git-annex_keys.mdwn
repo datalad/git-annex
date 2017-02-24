@@ -30,5 +30,7 @@ A few other potential problems:
 * It might be possible to embed colliding data in a specially constructed
   key name with an extra field in it, eg "SHA256-cXXXXXXXXXXXXXXX-...".
   Need to review the code and see if such extra fields are allowed.  
+
   Update: All fields are numeric, but could contain arbitrary data
-  after the number. (fixed now)
+  after the number. This has been fixed; git-annex refuses to parse
+  such fields, so it won't work with files that try to exploit this.
