@@ -9,7 +9,7 @@
 
 module Types.ActionItem where
 
-import Types.Key
+import Key
 import Types.Transfer
 import Git.FilePath
 

@@ -23,7 +23,7 @@ import Data.Hash.MD5
 import Data.Default
 
 import Common
-import Types.Key
+import Key
 import Types.GitConfig
 import Types.Difference
 import Utility.FileSystemEncoding

@@ -36,7 +36,7 @@ import Data.Maybe
 import Data.Monoid
 import Prelude
 
-import Types.Key
+import Key
 import Utility.Metered
 import Utility.Percentage
 

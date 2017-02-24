@@ -14,7 +14,7 @@ import Data.Maybe
 import Data.Char
 
 import Utility.PartialPrelude
-import Types.Key
+import Key
 import Utility.InodeCache
 
 -- A serialized Key

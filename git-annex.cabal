@@ -848,6 +848,7 @@ Executable git-annex
     Git.UpdateIndex
     Git.Url
     Git.Version
+    Key
     Limit
     Limit.Wanted
     Logs

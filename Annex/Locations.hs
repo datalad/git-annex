@@ -77,7 +77,7 @@ import Data.Char
 import Data.Default
 
 import Common
-import Types.Key
+import Key
 import Types.UUID
 import Types.GitConfig
 import Types.Difference

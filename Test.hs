@@ -63,7 +63,7 @@ import qualified Logs.Presence
 import qualified Logs.PreferredContent
 import qualified Types.MetaData
 import qualified Remote
-import qualified Types.Key
+import qualified Key
 import qualified Types.Messages
 import qualified Config
 import qualified Config.Cost
@@ -152,8 +152,8 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	[ testProperty "prop_isomorphic_deencode_git" Git.Filename.prop_isomorphic_deencode
 	, testProperty "prop_isomorphic_deencode" Utility.Format.prop_isomorphic_deencode
 	, testProperty "prop_isomorphic_fileKey" Annex.Locations.prop_isomorphic_fileKey
-	, testProperty "prop_isomorphic_key_encode" Types.Key.prop_isomorphic_key_encode
-	, testProperty "prop_isomorphic_key_decode" Types.Key.prop_isomorphic_key_decode
+	, testProperty "prop_isomorphic_key_encode" Key.prop_isomorphic_key_encode
+	, testProperty "prop_isomorphic_key_decode" Key.prop_isomorphic_key_decode
 	, testProperty "prop_isomorphic_shellEscape" Utility.SafeCommand.prop_isomorphic_shellEscape
 	, testProperty "prop_isomorphic_shellEscape_multiword" Utility.SafeCommand.prop_isomorphic_shellEscape_multiword
 	, testProperty "prop_isomorphic_configEscape" Logs.Remote.prop_isomorphic_configEscape
@@ -390,7 +390,7 @@ test_reinject = intmpclonerepoInDirect $ do
 	git_annex "drop" ["--force", sha1annexedfile] @? "drop failed"
 	annexed_notpresent sha1annexedfile
 	writeFile tmp $ content sha1annexedfile
-	key <- Types.Key.key2file <$> getKey backendSHA1 tmp
+	key <- Key.key2file <$> getKey backendSHA1 tmp
 	git_annex "reinject" [tmp, sha1annexedfile] @? "reinject failed"
 	annexed_present sha1annexedfile
 	-- fromkey can't be used on a crippled filesystem, since it makes a
@@ -846,9 +846,9 @@ test_unused = intmpclonerepoInDirect $ do
 	checkunused [annexedfilekey, sha1annexedfilekey] "after rm sha1annexedfile"
 
 	-- good opportunity to test dropkey also
-	git_annex "dropkey" ["--force", Types.Key.key2file annexedfilekey]
+	git_annex "dropkey" ["--force", Key.key2file annexedfilekey]
 		@? "dropkey failed"
-	checkunused [sha1annexedfilekey] ("after dropkey --force " ++ Types.Key.key2file annexedfilekey)
+	checkunused [sha1annexedfilekey] ("after dropkey --force " ++ Key.key2file annexedfilekey)
 
 	not <$> git_annex "dropunused" ["1"] @? "dropunused failed to fail without --force"
 	git_annex "dropunused" ["--force", "1"] @? "dropunused failed"
@@ -1959,7 +1959,7 @@ checklocationlog f expected = do
 	case r of
 		Just k -> do
 			uuids <- annexeval $ Remote.keyLocations k
-			assertEqual ("bad content in location log for " ++ f ++ " key " ++ Types.Key.key2file k ++ " uuid " ++ show thisuuid)
+			assertEqual ("bad content in location log for " ++ f ++ " key " ++ Key.key2file k ++ " uuid " ++ show thisuuid)
 				expected (thisuuid `elem` uuids)
 		_ -> assertFailure $ f ++ " failed to look up key"
 
