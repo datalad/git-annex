@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Backend.Hash (
 	backends,
 	testKeyBackend,
@@ -36,9 +34,7 @@ data Hash
 hashes :: [Hash]
 hashes = concat 
 	[ map (SHA2Hash . HashSize) [256, 512, 224, 384]
-#ifdef WITH_CRYPTONITE
 	, map (SHA3Hash . HashSize) [256, 512, 224, 384]
-#endif
 	, map (SkeinHash . HashSize) [256, 512]
 	, [SHA1Hash]
 	, [MD5Hash]
@@ -212,12 +208,10 @@ shaHasher (HashSize hashsize) filesize
 
 sha3Hasher :: HashSize -> (L.ByteString -> String)
 sha3Hasher (HashSize hashsize)
-#ifdef WITH_CRYPTONITE
 	| hashsize == 256 = show . sha3_256
 	| hashsize == 224 = show . sha3_224
 	| hashsize == 384 = show . sha3_384
 	| hashsize == 512 = show . sha3_512
-#endif
 	| otherwise = error $ "unsupported SHA3 size " ++ show hashsize
 
 skeinHasher :: HashSize -> (L.ByteString -> String)

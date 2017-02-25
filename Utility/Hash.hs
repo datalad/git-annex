@@ -4,20 +4,16 @@
  - because of https://github.com/vincenthz/hs-cryptohash/issues/36
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Utility.Hash (
 	sha1,
 	sha2_224,
 	sha2_256,
 	sha2_384,
 	sha2_512,
-#ifdef WITH_CRYPTONITE
 	sha3_224,
 	sha3_256,
 	sha3_384,
 	sha3_512,
-#endif
 	skein256,
 	skein512,
 	md5,
@@ -31,12 +27,8 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.ByteString as S
-#ifdef WITH_CRYPTONITE
 import "cryptonite" Crypto.MAC.HMAC
 import "cryptonite" Crypto.Hash
-#else
-import "cryptohash" Crypto.Hash
-#endif
 
 sha1 :: L.ByteString -> Digest SHA1
 sha1 = hashlazy
@@ -53,7 +45,6 @@ sha2_384 = hashlazy
 sha2_512 :: L.ByteString -> Digest SHA512
 sha2_512 = hashlazy
 
-#ifdef WITH_CRYPTONITE
 sha3_224 :: L.ByteString -> Digest SHA3_224
 sha3_224 = hashlazy
 
@@ -65,7 +56,6 @@ sha3_384 = hashlazy
 
 sha3_512 :: L.ByteString -> Digest SHA3_512
 sha3_512 = hashlazy
-#endif
 
 skein256 :: L.ByteString -> Digest Skein256_256
 skein256 = hashlazy
@@ -86,12 +76,10 @@ prop_hashes_stable = all (\(hasher, result) -> hasher foo == result)
 	, (show . sha2_512, "f7fbba6e0636f890e56fbbf3283e524c6fa3204ae298382d624741d0dc6638326e282c41be5e4254d8820772c5518a2c5a8c0c7f7eda19594a7eb539453e1ed7")
 	, (show . skein256, "a04efd9a0aeed6ede40fe5ce0d9361ae7b7d88b524aa19917b9315f1ecf00d33")
 	, (show . skein512, "fd8956898113510180aa4658e6c0ac85bd74fb47f4a4ba264a6b705d7a8e8526756e75aecda12cff4f1aca1a4c2830fbf57f458012a66b2b15a3dd7d251690a7")
-#ifdef WITH_CRYPTONITE
 	, (show . sha3_224, "f4f6779e153c391bbd29c95e72b0708e39d9166c7cea51d1f10ef58a")
 	, (show . sha3_256, "76d3bc41c9f588f7fcd0d5bf4718f8f84b1c41b20882703100b9eb9413807c01")
 	, (show . sha3_384, "665551928d13b7d84ee02734502b018d896a0fb87eed5adb4c87ba91bbd6489410e11b0fbcc06ed7d0ebad559e5d3bb5")
 	, (show . sha3_512, "4bca2b137edc580fe50a88983ef860ebaca36c857b1f492839d6d7392452a63c82cbebc68e3b70a2a1480b4bb5d437a7cba6ecf9d89f9ff3ccd14cd6146ea7e7")
-#endif
 	, (show . md5, "acbd18db4cc2f85cedef654fccc4a4d8")
 	]
   where

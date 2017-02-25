@@ -4,7 +4,6 @@ flags:
     production: true
     assistant: true
     pairing: true
-    cryptonite: true
     network-uri: true
     s3: true
     testsuite: true

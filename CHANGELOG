@@ -38,6 +38,9 @@ git-annex (6.20170215) UNRELEASED; urgency=medium
     a hash). This ensures that signed git commits of annexed files
     will remain secure, as long as git-annex is using a secure hashing
     backend.
+  * Removed support for building with the old cryptohash library.
+    Building with that library made git-annex not support SHA3; it's time
+    for that to always be supported in case SHA2 dominoes.
 
  -- Joey Hess <id@joeyh.name>  Tue, 14 Feb 2017 15:54:25 -0400
 
