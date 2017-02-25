@@ -59,8 +59,8 @@ Or, we can document this gotcha.
 > right, and make git annex fsck warn about such keys? That seems
 > reasonable. --[[Joey]]
 
-> > Rather than preventing SHA1 Keys, could put checks in
-> > Annex.Content.moveAnnex to prevent SHA1 objects reaching the
+> > Rather than preventing SHA1/URL/WORM Keys, could put checks in
+> > Annex.Content.moveAnnex to prevent SHA1/URL/WORM objects reaching the
 > > repository. That would make moveAnnex a security boundary, which is is
 > > not currently. Would need to audid to check if anything else populates
 > > .git/annex/objects.
@@ -73,16 +73,24 @@ Or, we can document this gotcha.
 > > but only read the value from the git-annex branch when initializing the
 > > repository, and cache it in git-config.
 > > 
-> > This way, a repository can be created and configured not to allow SHA1,
-> > and all clones will inherit this configuration. 
+> > This way, a repository can be created and configured not to allow
+> > SHA1/URL/WORM, and all clones will inherit this configuration. 
 > >
 > > Users can also set it in git-config on a per repository basis.
 > > 
 > > If the git-annex-config setting is changed, existing clone's won't
 > > change their behavior, although new ones will.  That's a mixed
 > > blessing; it makes it harder to switch an existing repo to disallowing
-> > SHA1, but an accidental/malicious re-enabling of SHA1 won't affect
+> > SHA1/URL/WORM, but an accidental/malicious re-enabling won't affect
 > > clones made while it was disabled.
+> > 
+> > Could a repository be configured to either always disallow
+> > SHA1/URL/WORM, or always allow them, and then not let that be changed?
+> > Yes -- Look through all the history of the git-annex branch from the
+> > earliest commit forward. The first value stored in 
+> > git-annex/disableinsecurehashes (eg 0 or 1) is the value to use;
+> > any later changes are ignored. 
+> > That would be a little slow, but only needs to be done at init time.
 
 ----
 
