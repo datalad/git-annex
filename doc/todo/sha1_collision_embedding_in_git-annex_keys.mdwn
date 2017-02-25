@@ -33,7 +33,7 @@ Or, we can document this gotcha.
 
 > I've done some groundwork for this, but making git-annex not accept
 > insecure keys into the repo at all requires changing file2key,
-> which is a pure function that's used in eg, instances for serailization.
+> which is a pure function that's used in eg, instances for serialization.
 > 
 > So, how to make it vary depending on git config? Can't. Alternative
 > would be to add lots of checks everywhere a key is read from disk
@@ -58,6 +58,31 @@ Or, we can document this gotcha.
 > Perhaps leave it up to the person making signed commits to get it 
 > right, and make git annex fsck warn about such keys? That seems
 > reasonable. --[[Joey]]
+
+> > Rather than preventing SHA1 Keys, could put checks in
+> > Annex.Content.moveAnnex to prevent SHA1 objects reaching the
+> > repository. That would make moveAnnex a security boundary, which is is
+> > not currently. Would need to audid to check if anything else populates
+> > .git/annex/objects.
+> >
+> > Annex.Transfer.runTransfer could also check for disallowed objects,
+> > not as a security boundary, but to prevent accidental expensive
+> > transfers that would fail at the moveAnnex stage.
+
+> > As to how to enable this, it may make sense to use git-annex-config
+> > but only read the value from the git-annex branch when initializing the
+> > repository, and cache it in git-config.
+> > 
+> > This way, a repository can be created and configured not to allow SHA1,
+> > and all clones will inherit this configuration. 
+> >
+> > Users can also set it in git-config on a per repository basis.
+> > 
+> > If the git-annex-config setting is changed, existing clone's won't
+> > change their behavior, although new ones will.  That's a mixed
+> > blessing; it makes it harder to switch an existing repo to disallowing
+> > SHA1, but an accidental/malicious re-enabling of SHA1 won't affect
+> > clones made while it was disabled.
 
 ----
 
