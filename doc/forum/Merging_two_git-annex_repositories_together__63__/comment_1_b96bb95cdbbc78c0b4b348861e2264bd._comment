@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="openmedi"
+ avatar="http://cdn.libravatar.org/avatar/563ffaff3b492c579bd8f094472e4506"
+ subject="comment 1"
+ date="2017-02-25T20:35:52Z"
+ content="""
+I think you could add those two repositories as remotes of each other and merge them with the `--allow-unrelated-histories` option. But I'm not sure if this is a good idea, or not. But some googling in that direction might yield some useful information. Good luck!
+"""]]
