@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="michalrus"
+ avatar="http://cdn.libravatar.org/avatar/83c0b6e7f9d20f09a892263c4903bbae"
+ subject="comment 2"
+ date="2017-02-25T18:47:35Z"
+ content="""
+Sure, that’s what I did at the very beginning (revoking the creds on AWS).
+
+But still, when I clone this repo, `git annex info S3` in this fresh clone, says that credentials are embedded. This is a bit misleading.
+
+Maybe updating S3 configuration with `embedcreds=no` could change that behavior?
+
+It wouldn’t matter from the security standpoint (which is solved by changing permissions directly on AWS), but would simply be beneficial for usability. =)
+"""]]
