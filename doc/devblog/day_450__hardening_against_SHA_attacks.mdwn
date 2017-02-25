@@ -1,0 +1,13 @@
+Yesterday I said that a git-annex repository using signed commits and SHA2
+backend would be secure from SHA1 collision attacks. Then I noticed that
+there were two ways to embed the necessary collision generation data inside
+git-annex key names. I've fixed both of them today, and cannot find any
+other ways to embed collision generation data in between a signed commit
+and the annexed files.
+
+I also have a design for a way to configure git-annex to expect to see only
+keys using secure hash backends, which will make it easier to work with
+repositories that want to use signed commits and SHA2. Planning to implement
+that tomorrow.
+
+[[todo/sha1_collision_embedding_in_git-annex_keys]] has the details.
