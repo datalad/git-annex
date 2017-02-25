@@ -86,11 +86,15 @@ Or, we can document this gotcha.
 > > 
 > > Could a repository be configured to either always disallow
 > > SHA1/URL/WORM, or always allow them, and then not let that be changed?
-> > Yes -- Look through all the history of the git-annex branch from the
+> > Maybe -- Look through all the history of the git-annex branch from the
 > > earliest commit forward. The first value stored in 
 > > git-annex/disableinsecurehashes (eg 0 or 1) is the value to use;
 > > any later changes are ignored. 
 > > That would be a little slow, but only needs to be done at init time.
+> > It might be possible to fool this though. Create a new empty branch,
+> > with an old date, make a commit enabling insecure hashes, and
+> > merge it into git-annex branch HEAD. It now looks as if insecure hashes
+> > were disabled earliest.
 
 ----
 
