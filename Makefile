@@ -122,9 +122,8 @@ Build/MakeMans: Build/MakeMans.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
 
 LINUXSTANDALONE_DEST=tmp/git-annex.linux
-linuxstandalone:
-	$(MAKE) git-annex linuxstandalone-nobuild
-linuxstandalone-nobuild: Build/Standalone Build/LinuxMkLibs
+linuxstandalone: 
+	$(MAKE) git-annex Build/Standalone Build/LinuxMkLibs
 	rm -rf "$(LINUXSTANDALONE_DEST)"
 	mkdir -p tmp
 	cp -R standalone/linux/skel "$(LINUXSTANDALONE_DEST)"
@@ -182,7 +181,7 @@ dpkg-buildpackage%: prep-standalone
 OSXAPP_DEST=tmp/build-dmg/git-annex.app
 OSXAPP_BASE=$(OSXAPP_DEST)/Contents/MacOS/bundle
 osxapp: Build/Standalone Build/OSXMkLibs
-	$(MAKE) git-annex
+	$(MAKE) git-annex Build/Standalone Build/OSXMkLibs
 
 	# Remove all RPATHs, both because this overloads the linker on
 	# OSX Sierra, and to avoid the binary looking in someone's home
