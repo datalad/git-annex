@@ -65,6 +65,14 @@ sameExceptExt (SHA1Key _) (SHA1Key _) = True
 sameExceptExt (MD5Key _) (MD5Key _) = True
 sameExceptExt _ _ = False
 
+{- Is the Key variety cryptographically secure, such that no two differing
+ - file contents can be mapped to the same Key? -}
+cryptographicallySecure :: KeyVariety -> Bool
+cryptographicallySecure (SHA2Key _ _) = True
+cryptographicallySecure (SHA3Key _ _) = True
+cryptographicallySecure (SKEINKey _ _) = True
+cryptographicallySecure _ = False
+
 formatKeyVariety :: KeyVariety -> String
 formatKeyVariety v = case v of
 	SHA2Key sz e -> adde e (addsz sz "SHA")
