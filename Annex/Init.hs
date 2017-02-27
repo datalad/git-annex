@@ -1,6 +1,6 @@
 {- git-annex repository initialization
  -
- - Copyright 2011-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -26,6 +26,7 @@ import qualified Git.Objects
 import qualified Annex.Branch
 import Logs.UUID
 import Logs.Trust.Basic
+import Logs.Config
 import Types.TrustLevel
 import Annex.Version
 import Annex.Difference
@@ -110,6 +111,7 @@ initialize' mversion = do
 				, unlessM isBareRepo
 					switchHEADBack
 				)
+	propigateSecureHashesOnly
 	createInodeSentinalFile False
 
 uninitialize :: Annex ()
@@ -257,3 +259,12 @@ initSharedClone True = do
 	u <- getUUID
 	trustSet u UnTrusted
 	setConfig (annexConfig "hardlink") (Git.Config.boolConfig True)
+
+{- Propigate annex.securehashesonly from then global config to local
+ - config. This makes a clone inherit a parent's setting, but once
+ - a repository has a local setting, changes to the global config won't
+ - affect it. -}
+propigateSecureHashesOnly :: Annex ()
+propigateSecureHashesOnly =
+	maybe noop (setConfig (ConfigKey "annex.securehashesonly"))
+		=<< getGlobalConfig "annex.securehashesonly"

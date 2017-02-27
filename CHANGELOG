@@ -12,6 +12,8 @@ git-annex (6.20170215) UNRELEASED; urgency=medium
     backend.
   * fsck: Warn about any files whose content is present, that don't
     use secure hashes, when annex.securehashesonly is set.
+  * init: When annex.securehashesonly has been set with git-annex config,
+    copy that value to the annex.securehashesonly git config.
   * Added --securehash option to match files using a secure hash function,
     and corresponding securehash preferred content expression.
   * sync, merge: Fail when the current branch has no commits yet, instead
@@ -50,6 +52,10 @@ git-annex (6.20170215) UNRELEASED; urgency=medium
   * Removed support for building with the old cryptohash library.
     Building with that library made git-annex not support SHA3; it's time
     for that to always be supported in case SHA2 dominoes.
+  * config --set: As well as setting value in git-annex branch,
+    set local gitconfig. This is needed especially for
+    annex.securehashesonly, which is read only from local gitconfig and not
+    the git-annex branch.
 
  -- Joey Hess <id@joeyh.name>  Tue, 14 Feb 2017 15:54:25 -0400
 

@@ -840,6 +840,9 @@ Here are all the supported configuration settings.
   
   Also, git-annex fsck` will complain about any files present in
   the repository that use insecure hashes.
+  
+  To configure the behavior in new clones of the repository,
+  this can be set in [[git-annex-config]].
 
 * `annex.diskreserve`
 

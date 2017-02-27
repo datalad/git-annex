@@ -3,6 +3,8 @@ that it could be used for a SHA1 collision attack. So, a signed git commit
 could point to a tree with such a key in it, and the blob for the key could
 have two versions with the same SHA1.
 
+> All issues below are [[done]] --[[Joey]]
+
 Users who want to use git-annex with signed commits to mitigate git's own
 SHA1 insecurities would like at least a way to disable the insecure
 git-annex backends:
@@ -82,7 +84,8 @@ Or, we can document this gotcha.
 > > change their behavior, although new ones will.  That's a mixed
 > > blessing; it makes it harder to switch an existing repo to disallowing
 > > SHA1/URL/WORM, but an accidental/malicious re-enabling won't affect
-> > clones made while it was disabled.
+> > clones made while it was disabled. 
+> > > This is done now.
 > > 
 > > Could a repository be configured to either always disallow
 > > SHA1/URL/WORM, or always allow them, and then not let that be changed?

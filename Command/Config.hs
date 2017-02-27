@@ -9,6 +9,7 @@ module Command.Config where
 
 import Command
 import Logs.Config
+import Config
 
 cmd :: Command
 cmd = noMessages $ command "config" SectionSetup
@@ -52,12 +53,14 @@ seek (SetConfig name val) = commandAction $ do
 	showStart name val
 	next $ next $ do
 		setGlobalConfig name val
+		setConfig (ConfigKey name) val
 		return True
 seek (UnsetConfig name) = commandAction $ do
 	allowMessages
 	showStart name "unset"
 	next $ next $ do
 		unsetGlobalConfig name
+		unsetConfig (ConfigKey name)
 		return True
 seek (GetConfig name) = commandAction $ do
 	mv <- getGlobalConfig name
