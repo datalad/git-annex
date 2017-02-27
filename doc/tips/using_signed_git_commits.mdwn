@@ -6,7 +6,7 @@ is the same data that was originally commited to it.
 This is recommended if you are storing any kind of binary 
 files in a git repository.
 
-### How to do it
+## How to do it
 
 You need git-annex 6.20170228. Upgrade if you don't have it.
 
@@ -28,7 +28,7 @@ Use `git log --show-signature` to check the signatures of commits.
 If the signature is valid, it guarantees that all annexed files
 have the same content that was orignally committed.
 
-### Why is this more secure than git alone?
+## Why is this more secure than git alone?
 
 SHA1 collisions exist now, and can be produced using a common-prefix
 attack. See <https://shattered.io/>. Let's assume that a chosen-prefix
