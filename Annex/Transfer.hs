@@ -1,6 +1,6 @@
 {- git-annex transfers
  -
- - Copyright 2012-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -26,6 +26,7 @@ import Annex.Notification as X
 import Annex.Perms
 import Utility.Metered
 import Annex.LockPool
+import Types.Key
 import Types.Remote (Verification(..))
 import qualified Types.Remote as Remote
 import Types.Concurrency
@@ -87,7 +88,7 @@ alwaysRunTransfer :: Observable v => Transfer -> Maybe FilePath -> RetryDecider 
 alwaysRunTransfer = runTransfer' True
 
 runTransfer' :: Observable v => Bool -> Transfer -> Maybe FilePath -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
-runTransfer' ignorelock t file shouldretry transferaction = do
+runTransfer' ignorelock t file shouldretry transferaction = checkSecureHashes t $ do
 	info <- liftIO $ startTransferInfo file
 	(meter, tfile, metervar) <- mkProgressUpdater t info
 	mode <- annexFileMode
@@ -166,6 +167,30 @@ runTransfer' ignorelock t file shouldretry transferaction = do
 		| otherwise = do
 			f <- fromRepo $ gitAnnexTmpObjectLocation (transferKey t)
 			liftIO $ catchDefaultIO 0 $ getFileSize f
+
+{- Avoid download and upload of keys with insecure content when
+ - annex.securehashesonly is configured.
+ -
+ - This is not a security check. Even if this let the content be
+ - downloaded, the actual security checks would prevent the content from
+ - being added to the repository. The only reason this is done here is to
+ - avoid transferring content that's going to be rejected anyway.
+ -
+ - We assume that, if annex.securehashesonly is set and the local repo
+ - still contains content using an insecure hash, remotes will likewise
+ - tend to be configured to reject it, so Upload is also prevented.
+ -}
+checkSecureHashes :: Observable v => Transfer -> Annex v -> Annex v
+checkSecureHashes t a
+	| cryptographicallySecure variety = a
+	| otherwise = ifM (annexSecureHashesOnly <$> Annex.getGitConfig)
+		( do
+			warning $ "annex.securehashesonly blocked transfer of " ++ formatKeyVariety variety ++ " key"
+			return observeFailure
+		, a
+		)
+  where
+	variety = keyVariety (transferKey t)
 
 type RetryDecider = TransferInfo -> TransferInfo -> Bool
 
