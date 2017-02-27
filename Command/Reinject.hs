@@ -74,9 +74,8 @@ perform src key = ifM move
 	, error "failed"
 	)
   where
-	move = checkDiskSpaceToGet key False $ do
+	move = checkDiskSpaceToGet key False $
 		moveAnnex key src
-		return True
 
 cleanup :: Key -> CommandCleanup
 cleanup key = do

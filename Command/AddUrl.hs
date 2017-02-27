@@ -356,10 +356,13 @@ cleanup u url file key mtmp = case mtmp of
   where
 	go = do
 		maybeShowJSON $ JSONChunk [("key", key2file key)]
-		when (isJust mtmp) $
-			logStatus key InfoPresent
 		setUrlPresent u key url
-		addAnnexedFile file key mtmp
+		ifM (addAnnexedFile file key mtmp)
+			( do
+				when (isJust mtmp) $
+					logStatus key InfoPresent
+			, liftIO $ maybe noop nukeFile mtmp
+			)
 
 nodownload :: URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
 nodownload url urlinfo file

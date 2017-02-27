@@ -172,10 +172,13 @@ ingest' preferredbackend (Just (LockedDown cfg source)) mk = withTSDelta $ \delt
 	go _ _ _ = failure "failed to generate a key"
 
 	golocked key mcache s = do
-		catchNonAsync (moveAnnex key $ contentLocation source)
-			(restoreFile (keyFilename source) key)
-		populateAssociatedFiles key source
-		success key mcache s
+		v <- tryNonAsync (moveAnnex key $ contentLocation source)
+		case v of
+			Right True -> do
+				populateAssociatedFiles key source
+				success key mcache s		
+			Right False -> giveup "failed to add content to annex"
+			Left e -> restoreFile (keyFilename source) key e
 
 	gounlocked key (Just cache) s = do
 		-- Remove temp directory hard link first because
@@ -352,8 +355,11 @@ cachedCurrentBranch = maybe cache (return . Just)
 
 {- Adds a file to the work tree for the key, and stages it in the index.
  - The content of the key may be provided in a temp file, which will be
- - moved into place. -}
-addAnnexedFile :: FilePath -> Key -> Maybe FilePath -> Annex ()
+ - moved into place.
+ -
+ - When the content of the key is not accepted into the annex, returns False.
+ -}
+addAnnexedFile :: FilePath -> Key -> Maybe FilePath -> Annex Bool
 addAnnexedFile file key mtmp = ifM (addUnlocked <&&> not <$> isDirect)
 	( do
 		mode <- maybe
@@ -363,12 +369,13 @@ addAnnexedFile file key mtmp = ifM (addUnlocked <&&> not <$> isDirect)
 		stagePointerFile file mode =<< hashPointerFile key
 		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
 		case mtmp of
-			Just tmp -> do
-				moveAnnex key tmp
-				linkunlocked mode
+			Just tmp -> ifM (moveAnnex key tmp)
+				( linkunlocked mode >> return True
+				, writepointer mode >> return False
+				)
 			Nothing -> ifM (inAnnex key)
-				( linkunlocked mode
-				, liftIO $ writePointerFile file key mode
+				( linkunlocked mode >> return True
+				, writepointer mode >> return True
 				)
 	, do
 		addLink file key Nothing
@@ -381,7 +388,7 @@ addAnnexedFile file key mtmp = ifM (addUnlocked <&&> not <$> isDirect)
 				whenM isDirect $
 					Annex.Queue.flush
 				moveAnnex key tmp
-			Nothing -> return ()
+			Nothing -> return True
 	)
   where
 	linkunlocked mode = do
@@ -390,3 +397,4 @@ addAnnexedFile file key mtmp = ifM (addUnlocked <&&> not <$> isDirect)
 			LinkAnnexFailed -> liftIO $
 				writePointerFile file key mode
 			_ -> return ()
+	writepointer mode = liftIO $ writePointerFile file key mode

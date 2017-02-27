@@ -82,6 +82,7 @@ data GitConfig = GitConfig
 	, annexPidLock :: Bool
 	, annexPidLockTimeout :: Seconds
 	, annexAddUnlocked :: Bool
+	, annexSecureHashesOnly :: Bool
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
 	, receiveDenyCurrentBranch :: DenyCurrentBranch
@@ -136,6 +137,7 @@ extractGitConfig r = GitConfig
 	, annexPidLockTimeout = Seconds $ fromMaybe 300 $
 		getmayberead (annex "pidlocktimeout")
 	, annexAddUnlocked = getbool (annex "addunlocked") False
+	, annexSecureHashesOnly = getbool (annex "securehashesonly") False
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
 	, receiveDenyCurrentBranch = getDenyCurrentBranch r

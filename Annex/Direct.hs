@@ -383,10 +383,10 @@ removeDirect :: Key -> FilePath -> Annex ()
 removeDirect k f = do
 	void $ removeAssociatedFileUnchecked k f
 	unlessM (inAnnex k) $
-		ifM (goodContent k f)
-			( moveAnnex k f
-			, logStatus k InfoMissing
-			)
+		-- If moveAnnex rejects the content of the key,
+		-- treat that the same as its content having changed.
+		whenM (goodContent k f <&&> moveAnnex k f) $
+			logStatus k InfoMissing
 	liftIO $ do
 		nukeFile f
 		void $ tryIO $ removeDirectory $ parentDir f
