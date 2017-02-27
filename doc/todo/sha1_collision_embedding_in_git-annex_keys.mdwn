@@ -96,6 +96,9 @@ Or, we can document this gotcha.
 > > merge it into git-annex branch HEAD. It now looks as if insecure hashes
 > > were disabled earliest.
 
+> > > Well, annex.securehashesonly is implemented now. It currently needs to be
+> > > set in each clone that cares about it. --[[Joey]]
+
 ----
 
 A few other potential problems:
