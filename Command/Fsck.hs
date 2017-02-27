@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -35,6 +35,7 @@ import Utility.PID
 import qualified Database.Keys
 import qualified Database.Fsck as FsckDb
 import Types.CleanupActions
+import Types.Key
 
 import Data.Time.Clock.POSIX
 import System.Posix.Types (EpochTime)
@@ -233,6 +234,14 @@ verifyLocationLog key keystatus desc = do
 			warning $ "** Unable to set correct write mode for " ++ obj ++ " ; perhaps you don't own that file"
 	whenM (liftIO $ doesDirectoryExist $ parentDir obj) $
 		freezeContentDir obj
+
+	{- Warn when annex.securehashesonly is set and content using an 
+	 - insecure hash is present. This should only be able to happen
+	 - if the repository already contained the content before the
+	 - config was set. -}
+	when (present && not (cryptographicallySecure (keyVariety key))) $
+		whenM (annexSecureHashesOnly <$> Annex.getGitConfig) $
+			warning $ "** Despite annex.securehashesonly being set, " ++ obj ++ " has content present in the annex using an insecure " ++ formatKeyVariety (keyVariety key) ++ " key"
 
 	{- In direct mode, modified files will show up as not present,
 	 - but that is expected and not something to do anything about. -}

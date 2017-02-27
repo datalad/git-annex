@@ -2,9 +2,11 @@ git-annex (6.20170215) UNRELEASED; urgency=medium
 
   * Cryptographically secure hashes can be forced to be used in a
     repository, by setting annex.securehashesonly.
-    This does not prevent the git repository from containing files
-    with insecure hashes, but it does prevent the content of such files
-    from being added to .git/annex/objects.
+    This does not prevent the git repository from containing links
+    to insecure hashes, but it does prevent the content of such files
+    from being added to .git/annex/objects by any method.
+  * fsck: Warn about any files whose content is present, that don't
+    use secure hashes, when annex.securehashesonly is set.
   * sync, merge: Fail when the current branch has no commits yet, instead
     of not merging in anything from remotes and appearing to succeed.
   * Run ssh with -n whenever input is not being piped into it,

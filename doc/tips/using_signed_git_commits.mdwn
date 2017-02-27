@@ -1,0 +1,79 @@
+Git uses SHA1, which is becoming increasingly broken. Using git-annex
+and signed commits, we can work around the weaknesses of SHA1, and
+let anyone who clones a repository verify that the data they receive
+is the same data that was originally commited to it.
+
+This is recommended if you are storing any kind of binary 
+files in a git repository.
+
+### How to do it
+
+You need git-annex 6.20170228. Upgrade if you don't have it.
+
+git-annex can use many types of [[backends]] and not all of them are
+secure. So, you need to configure git-annex to only use
+cryptographically secure hashes. Also, let's make sure annex.verify
+is set (it is by default, but let's override any global gitconfig setting
+for it).
+
+	git config annex.securehashesonly true
+	git config annex.verify true
+
+That needs to be run in every clone of the repository. This will prevent
+any annexed object using an insecure hash from reaching your repository,
+and it will verify the hashes when transferring objects.
+
+It's important that all commits to the git repository are signed.
+Use `git commit --gpg-sign`, or enable the commit.gpgSign configuration.
+
+Use `git log --show-signature` to check the signatures of commits.
+If the signature is valid, it guarantees that all annexed files
+have the same content that was orignally committed.
+
+### Why is this more secure than git alone?
+
+SHA1 collisions exist now, and can be produced using a common-prefix
+attack. See <https://shattered.io/>. Let's assume that a chosen-prefix
+attack against SHA1 will also become feasible too. However, a full preimage
+attack still seems unlikely, so we won't consider such attacks in the
+analysis below.
+
+The reason that git-annex can work around git's problematic use of SHA1 is
+that git-annex uses other, [[stronger hashes|backends]] of the contents of
+annexed files. For example, an annexed file may be a symlink to
+".git/annex/objects/Ab/Cd/SHA256--eb45a55eb8756646e244e6c5f47349294568d58a9321244f4ee09a163da23a27".
+
+Such a symlink is stored as a git blob object. The SHA1 of the git blobs
+are listed in a git tree object, and the git commit object contains the
+SHA1 of the tree. Finally, the commit object is gpg signed.
+
+So, by checking the signature of a commit (`git log --show-signature`),
+you can verify that this is the same commit that was originally made
+to the repository. As far as the git developers know, there is no way
+to produce multiple colliding git tree objects (at least not without
+creating files with spectacularly ugly and long names), so you
+know that the tree object pointed to by the signed commit is the original one.
+
+Now, what about the blob objects that the tree lists? If these blobs
+were regular git files, a SHA1 collision could mean your git repository
+does not contain the same file that was orignally committed, and the signed
+commit would not help.
+
+But, if the blob object is a git-annex symlink target, it has to contain the
+strong hash of the file content. If a SHA1 collision swaps in some other
+blob object, it will need to contain the strong hash of a different file's
+content. The current common-prefix attack cannot do that.
+
+A chosen-prefix attack could make two strong hashes SHA1 the same,
+but it would need to include additional data after the hash to do it. Since
+git-annex version 6.20170224, there is no place for an attacker to
+put such data in a git-symlink target. (See
+[[todo/sha1_collision_embedding_in_git-annex_keys]] for details
+of how this was prevented.)
+
+So, we have a SHA1 chain from the gpg signature to the git-annex symlink target,
+and at no point in the chain is a SHA1 collision attack feasible.
+Finally, git-annex verifies the strong hash when transferring
+the content of a file into the repository (and `git annex fsck` verifies it
+too), and so the content that the symlink is pointing to must be the same
+content that was originally committed.
