@@ -117,6 +117,7 @@ preferredContentParser matchstandard matchgroupwanted getgroupmap configmap mu e
 		, SimpleToken "groupwanted" (call matchgroupwanted)
 		, SimpleToken "present" (simply $ limitPresent mu)
 		, SimpleToken "inpreferreddir" (simply $ limitInDir preferreddir)
+		, SimpleToken "securehash" (simply limitSecureHash)
 		, ValueToken "copies" (usev limitCopies)
 		, ValueToken "lackingcopies" (usev $ limitLackingCopies False)
 		, ValueToken "approxlackingcopies" (usev $ limitLackingCopies True)

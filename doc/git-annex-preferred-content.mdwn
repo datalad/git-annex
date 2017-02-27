@@ -96,6 +96,11 @@ elsewhere to allow removing it).
   Matches only files whose content is stored using the specified key-value
   backend.
 
+* `securehash`
+
+  Matches only files whose content is hashed using a cryptographically
+  secure function.
+
 * `inallgroup=groupname`
 
   Matches only files that git-annex believes are present in all repositories

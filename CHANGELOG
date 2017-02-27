@@ -7,6 +7,8 @@ git-annex (6.20170215) UNRELEASED; urgency=medium
     from being added to .git/annex/objects by any method.
   * fsck: Warn about any files whose content is present, that don't
     use secure hashes, when annex.securehashesonly is set.
+  * Added --securehash option to match files using a secure hash function,
+    and corresponding securehash preferred content expression.
   * sync, merge: Fail when the current branch has no commits yet, instead
     of not merging in anything from remotes and appearing to succeed.
   * Run ssh with -n whenever input is not being piped into it,

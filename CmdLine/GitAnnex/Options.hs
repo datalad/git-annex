@@ -224,6 +224,11 @@ nonWorkTreeMatchingOptions' =
 		<> hidden
 		<> completeBackends
 		)
+	, globalFlag Limit.addSecureHash
+		( long "securehash"
+		<> help "match files using a cryptographically secure hash"
+		<> hidden
+		)
 	, globalSetter Limit.addInAllGroup $ strOption
 		( long "inallgroup" <> metavar paramGroup
 		<> help "match files present in all remotes in a group"

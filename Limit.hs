@@ -1,6 +1,6 @@
 {- user-specified limits on files to act on
  -
- - Copyright 2011-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -254,6 +254,13 @@ limitInBackend name = Right $ const $ checkKey check
   where
 	check key = pure $ keyVariety key == variety
 	variety = parseKeyVariety name
+
+{- Adds a limit to skip files not using a secure hash. -}
+addSecureHash :: Annex ()
+addSecureHash = addLimit $ Right limitSecureHash
+
+limitSecureHash :: MatchFiles Annex
+limitSecureHash _ = checkKey $ pure . cryptographicallySecure . keyVariety
 
 {- Adds a limit to skip files that are too large or too small -}
 addLargerThan :: String -> Annex ()
