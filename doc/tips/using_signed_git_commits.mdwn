@@ -6,7 +6,7 @@ is the same data that was originally commited to it.
 This is recommended if you are storing any kind of binary 
 files in a git repository.
 
-## How to do it
+## Configuring git-annex
 
 You need git-annex 6.20170228. Upgrade if you don't have it.
 
@@ -20,6 +20,8 @@ Each new clone of the repository will then inherit that configuration.
 But, any existing clones will not, so this should be run in them:
 
 	git config annex.securehashesonly true
+
+## Signed commits
 
 It's important that all commits to the git repository are signed.
 Use `git commit --gpg-sign`, or enable the commit.gpgSign configuration.
