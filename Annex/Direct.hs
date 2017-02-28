@@ -385,8 +385,11 @@ removeDirect k f = do
 	unlessM (inAnnex k) $
 		-- If moveAnnex rejects the content of the key,
 		-- treat that the same as its content having changed.
-		whenM (goodContent k f <&&> moveAnnex k f) $
-			logStatus k InfoMissing
+		ifM (goodContent k f)
+			( unlessM (moveAnnex k f) $
+				logStatus k InfoMissing
+			, logStatus k InfoMissing
+			)
 	liftIO $ do
 		nukeFile f
 		void $ tryIO $ removeDirectory $ parentDir f
