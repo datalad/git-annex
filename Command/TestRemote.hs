@@ -225,5 +225,5 @@ randKey sz = withTmpFile "randkey" $ \f h -> do
 		}
 	k <- fromMaybe (error "failed to generate random key")
 		<$> Backend.getKey Backend.Hash.testKeyBackend ks
-	moveAnnex k f
+	_ <- moveAnnex k f
 	return k
