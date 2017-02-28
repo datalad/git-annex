@@ -180,7 +180,7 @@ dpkg-buildpackage%: prep-standalone
 
 OSXAPP_DEST=tmp/build-dmg/git-annex.app
 OSXAPP_BASE=$(OSXAPP_DEST)/Contents/MacOS/bundle
-osxapp: Build/Standalone Build/OSXMkLibs
+osxapp:
 	$(MAKE) git-annex Build/Standalone Build/OSXMkLibs
 
 	# Remove all RPATHs, both because this overloads the linker on
