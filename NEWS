@@ -1,4 +1,4 @@
-git-annex (6.20170228) UNRELEASED; urgency=medium
+git-annex (6.20170228) unstable; urgency=medium
 
   This version of git-annex has mitigations for SHA1 hash collision
   problems.

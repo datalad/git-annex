@@ -1,4 +1,4 @@
-git-annex (6.20170228) UNRELEASED; urgency=medium
+git-annex (6.20170228) unstable; urgency=medium
 
   * Cryptographically secure hashes can be forced to be used in a
     repository, by setting annex.securehashesonly.
@@ -57,7 +57,7 @@ git-annex (6.20170228) UNRELEASED; urgency=medium
   * git-annex.cabal: Make crypto-api a dependency even when built w/o
     webapp and test suite.
 
- -- Joey Hess <id@joeyh.name>  Tue, 14 Feb 2017 15:54:25 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 28 Feb 2017 14:39:47 -0400
 
 git-annex (6.20170214) unstable; urgency=medium
 
