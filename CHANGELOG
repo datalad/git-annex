@@ -1,4 +1,4 @@
-git-annex (6.20170215) UNRELEASED; urgency=medium
+git-annex (6.20170228) UNRELEASED; urgency=medium
 
   * Cryptographically secure hashes can be forced to be used in a
     repository, by setting annex.securehashesonly.
@@ -38,8 +38,6 @@ git-annex (6.20170215) UNRELEASED; urgency=medium
   * config group groupwanted numcopies schedule wanted required: 
     Avoid displaying extraneous messages about repository auto-init,
     git-annex branch merging, etc, when being used to get information.
-  * git-annex.cabal: Make crypto-api a dependency even when built w/o
-    webapp and test suite.
   * adjust: Fix behavior when used in a repository that contains
     submodules.
   * Run wget with -nv instead of -q, so it will display HTTP errors.
@@ -49,13 +47,15 @@ git-annex (6.20170215) UNRELEASED; urgency=medium
     to wget, since curl is able to display only errors to stderr, unlike
     wget.
   * status: Pass --ignore-submodules=when option on to git status.
-  * Removed support for building with the old cryptohash library.
-    Building with that library made git-annex not support SHA3; it's time
-    for that to always be supported in case SHA2 dominoes.
   * config --set: As well as setting value in git-annex branch,
     set local gitconfig. This is needed especially for
     annex.securehashesonly, which is read only from local gitconfig and not
     the git-annex branch.
+  * Removed support for building with the old cryptohash library.
+    Building with that library made git-annex not support SHA3; it's time
+    for that to always be supported in case SHA2 dominoes.
+  * git-annex.cabal: Make crypto-api a dependency even when built w/o
+    webapp and test suite.
 
  -- Joey Hess <id@joeyh.name>  Tue, 14 Feb 2017 15:54:25 -0400
 
