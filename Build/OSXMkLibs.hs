@@ -13,7 +13,6 @@ import System.FilePath
 import Control.Monad
 import Control.Monad.IfElse
 import Data.List
-import Data.String.Utils
 import Control.Applicative
 import Prelude
 
