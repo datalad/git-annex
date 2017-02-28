@@ -14,6 +14,8 @@ import Data.Time.Clock
 import Git.Config (isTrue, boolConfig)
 
 import Data.String.Utils
+import Control.Applicative
+import Prelude
 
 type GitAnnexVersion = String
 
