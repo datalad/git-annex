@@ -112,8 +112,9 @@ getCache :: Maybe String -> Annex Cache
 getCache opttemplate = ifM (Annex.getState Annex.force)
 	( ret S.empty S.empty
 	, do
-		showAction "checking known urls"
+		showStart "importfeed" "checking known urls"
 		(is, us) <- unzip <$> (mapM knownItems =<< knownUrls)
+		showEndOk
 		ret (S.fromList us) (S.fromList (concat is))
 	)
   where
