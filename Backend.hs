@@ -94,7 +94,7 @@ chooseBackend f = Annex.getState Annex.forcebackend >>= go
 lookupBackendVariety :: KeyVariety -> Backend
 lookupBackendVariety v = fromMaybe unknown $ maybeLookupBackendVariety v
   where
-	unknown = error $ "unknown backend " ++ formatKeyVariety v
+	unknown = giveup $ "unknown backend " ++ formatKeyVariety v
 
 maybeLookupBackendVariety :: KeyVariety -> Maybe Backend
 maybeLookupBackendVariety v = M.lookup v varietyMap
