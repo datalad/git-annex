@@ -89,7 +89,7 @@ formatKeyVariety v = case v of
 	addsz (HashSize n) s =  s ++ show n
 
 parseKeyVariety :: String -> KeyVariety
-parseKeyVariety "SHA256"    =  SHA2Key (HashSize 256) (HasExt False)
+parseKeyVariety "SHA256"    = SHA2Key (HashSize 256) (HasExt False)
 parseKeyVariety "SHA256E"   = SHA2Key (HashSize 256) (HasExt True)
 parseKeyVariety "SHA512"    = SHA2Key (HashSize 512) (HasExt False)
 parseKeyVariety "SHA512E"   = SHA2Key (HashSize 512) (HasExt True)
