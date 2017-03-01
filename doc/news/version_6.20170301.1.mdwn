@@ -1,0 +1,4 @@
+git-annex 6.20170301.1 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Fix reversion in yesterday's release that made SHA1E and MD5E backends
+     not work."""]]
