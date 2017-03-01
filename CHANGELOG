@@ -1,3 +1,10 @@
+git-annex (6.20170302) UNRELEASED; urgency=medium
+
+  * Fix reversion in yesterday's release that made SHA1E and MD5E backends
+    not work.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 01 Mar 2017 12:41:22 -0400
+
 git-annex (6.20170301) unstable; urgency=medium
 
   * No changes from 6.20170228; a new version number was needed due
