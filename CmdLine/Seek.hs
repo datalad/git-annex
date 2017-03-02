@@ -243,13 +243,12 @@ seekActions gen = mapM_ commandAction =<< gen
 
 seekHelper :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> [FilePath] -> Annex [FilePath]
 seekHelper a params = do
-	ll <- inRepo $ \g -> concat <$> forM (segmentXargsOrdered params)
-		(runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a fs g))
-	forM_ (map fst $ filter (null . snd) $ zip params ll) $ \p ->
+	forM_ params $ \p ->
 		unlessM (isJust <$> liftIO (catchMaybeIO $ getSymbolicLinkStatus p)) $ do
 			toplevelWarning False (p ++ " not found")
 			Annex.incError
-	return $ concat ll
+	inRepo $ \g -> concat . concat <$> forM (segmentXargsOrdered params)
+		(runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a fs g))
 
 notSymlink :: FilePath -> IO Bool
 notSymlink f = liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f

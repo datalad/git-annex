@@ -1,3 +1,10 @@
+git-annex (6.20170301.2) UNRELEASED; urgency=medium
+
+  * Bugfix: Passing a command a filename that does not exist sometimes
+    did not display an error, when a path to a directory was also passed.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 02 Mar 2017 12:51:40 -0400
+
 git-annex (6.20170301.1) unstable; urgency=medium
 
   * Fix reversion in yesterday's release that made SHA1E and MD5E backends
