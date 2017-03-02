@@ -47,8 +47,10 @@ start o locs = do
 		, return $ \s -> pure (Just s)
 		)
 	forM_ l $ \s -> maybe noop displayStatus =<< getstatus s
-	void $ liftIO cleanup
-	stop
+	ifM (liftIO cleanup)
+		( stop
+		, giveup "git status failed"
+		)
   where
 	ps = case ignoreSubmodules o of
 		Nothing -> []

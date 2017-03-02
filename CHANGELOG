@@ -2,6 +2,7 @@ git-annex (6.20170301.2) UNRELEASED; urgency=medium
 
   * Bugfix: Passing a command a filename that does not exist sometimes
     did not display an error, when a path to a directory was also passed.
+  * status: Propigate nonzero exit code from git status.
 
  -- Joey Hess <id@joeyh.name>  Thu, 02 Mar 2017 12:51:40 -0400
 
