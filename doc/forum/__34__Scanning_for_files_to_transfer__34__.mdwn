@@ -1,0 +1,9 @@
+I have a Git Annex repository on my laptop with currently 141094 files.
+
+I used "git config annex.startupscan false" to disable the startup scan.
+
+Yet the assistant still runs at high CPU consumption for extended periods of time after starting.
+
+In the webapp, the startup scan is shown as completed, but under "Transfers" it says "Scanning for files to transfer".
+
+What is the difference between "Performing startup scan" and "Scanning for files to transfer"?
