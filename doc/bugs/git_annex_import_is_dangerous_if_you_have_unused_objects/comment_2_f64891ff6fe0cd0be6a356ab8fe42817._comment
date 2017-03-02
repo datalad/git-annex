@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-03-02T21:26:57Z"
+ content="""
+One way to fix this would be to make `git reset --hard` first make a commit
+of the current state of the index, and store that commit in the reflog. 
+
+Of course, that's quite similar to `git stash` and probably most of us have
+just gotten in the habit of running `git stash` instead.
+"""]]
