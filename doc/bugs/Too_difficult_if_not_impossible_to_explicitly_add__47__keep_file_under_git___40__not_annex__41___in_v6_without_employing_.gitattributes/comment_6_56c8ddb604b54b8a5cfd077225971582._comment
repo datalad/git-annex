@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2017-03-02T17:58:22Z"
+ content="""
+The several comments after my analysis above seem to still be under the
+impression that it's somehow hard to keep files stored in git, not annexed
+in v6 mode. But as my analysis shows, that is not what is happening at all
+in the test case given.
+
+If you have a situation there that problem occurs, please share it.
+Otherwise, I will close this bug report.
+"""]]
