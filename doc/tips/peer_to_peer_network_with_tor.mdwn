@@ -132,11 +132,11 @@ Tor hidden services can be quite secure. But this doesn't mean that using
 git-annex over Tor is automatically perfectly secure. Here are some things
 to consider:
 
-* Anyone who learns the address of a peer can connect to that peer,
-  download the whole history of the git repository, and any available
-  annexed files. They can also upload new files to the peer, and even
-  remove annexed files from the peer. So consider ways that the address
-  of a peer might be exposed.
+* Anyone who learns the onion address address and authentication data of a peer
+  can connect to that peer, download the whole history of the git repository,
+  and any available annexed files. They can also upload new files to the peer,
+  and even remove annexed files from the peer. So consider ways that the
+  authentication data of a peer might be exposed.
 
 * While Tor can be used to anonymize who you are, git defaults to including
   your name and email address in git commit messages. So if you want an
