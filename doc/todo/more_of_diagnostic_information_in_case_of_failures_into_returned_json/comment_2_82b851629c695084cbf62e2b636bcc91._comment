@@ -18,4 +18,4 @@ downloads to work as well with a HTTP library as it works with wget/curl.
 What we could do is use curl in preference to wget in json mode; 
 curl -s -S avoids all progress etc output and displays the
 http errors to stderr.
-""]]
+"""]]
