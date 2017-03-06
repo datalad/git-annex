@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-03-06T17:34:29Z"
+ content="""
+If `git annex info` had said that the creds were not embedded after
+you tried `embedcreds=no`, then wouldn't you have belived it, and so not
+revoked the creds on AWS?
+"""]]
