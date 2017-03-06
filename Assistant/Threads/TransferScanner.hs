@@ -25,6 +25,7 @@ import qualified Types.Remote as Remote
 import Utility.ThreadScheduler
 import Utility.NotificationBroadcaster
 import Utility.Batch
+import Utility.ThreadScheduler
 import qualified Git.LsFiles as LsFiles
 import Annex.WorkTree
 import Annex.Content
@@ -32,6 +33,7 @@ import Annex.Wanted
 import CmdLine.Action
 
 import qualified Data.Set as S
+import Control.Concurrent
 
 {- This thread waits until a remote needs to be scanned, to find transfers
  - that need to be made, to keep data in sync.
@@ -145,6 +147,10 @@ expensiveScan urlrenderer rs = batch <~> do
 			(findtransfers f unwanted)
 				=<< liftAnnex (lookupFile f)
 		mapM_ (enqueue f) ts
+
+		{- Delay for a short time to avoid using too much CPU. -}
+		liftIO $ threadDelay $ fromIntegral $ oneSecond `div` 200
+
 		scan unwanted' fs
 
 	enqueue f (r, t) =
