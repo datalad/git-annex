@@ -1,0 +1,6 @@
+I have a client repository with an archive/ directory. If I let the assistant sync the repos or initiate a manual `git annex sync --content` the contents of the archive directory is filled up.
+
+I can't see why this happens. The repo is a client repo with the standard preferred contents and no required contents onfig.
+One of the files that is wanted has 2 copies in backup repositories (one is trusted and one is reachable and semitrusted). `git annex numcopies` is 2 for one of these files. The repos were checked by `git annex fsck` and synced.
+
+I'm not sure what to look for or how to debug this kind of situation. Any ideas? 
