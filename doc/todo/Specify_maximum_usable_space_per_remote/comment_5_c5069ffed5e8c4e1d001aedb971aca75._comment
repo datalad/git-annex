@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="jason.dixon.email@aa0e536a2ec2877d6f666108dbbc6e39bbe87ac0"
+ nickname="jason.dixon.email"
+ avatar="http://cdn.libravatar.org/avatar/fbe9050fc83bbd536d307d87ea14d4bc"
+ subject="Still seems useful"
+ date="2017-03-07T10:19:41Z"
+ content="""
+I dunno. I get your point. However I can also see this being a really useful feature. I can imagine it being implemented simply with a warning / note mentioning disconnected repos might overflow the limit (and perhaps a buffer should be left ie: limit = 15gb, allocate = 13gb). It would be up to the user to figure out what is right for them.
+
+I'm sure plenty of people either using the remote alone, in a small team, or with linked up repos (github/gitlab/whatever) would appreciate this option. I know I came to this page looking to see if it was possible already. :)
+
+Thanks too for the hard work! Amazing software!
+"""]]
