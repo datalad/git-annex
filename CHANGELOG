@@ -9,6 +9,8 @@ git-annex (6.20170301.2) UNRELEASED; urgency=medium
     in the full transfer scan, to avoid using too much CPU.
   * get -J: Improve distribution of jobs amoung remotes when there are more
     jobs than remotes.
+  * fsck -q: When a file has bad content, include the name of the file
+    in the warning message.
 
  -- Joey Hess <id@joeyh.name>  Thu, 02 Mar 2017 12:51:40 -0400
 

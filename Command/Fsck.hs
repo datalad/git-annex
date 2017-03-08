@@ -123,7 +123,7 @@ perform key file backend numcopies = do
 		, verifyLocationLog key keystatus file
 		, verifyAssociatedFiles key keystatus file
 		, verifyWorkTree key file
-		, checkKeySize key keystatus
+		, checkKeySize key keystatus (Just file)
 		, checkBackend backend key keystatus (Just file)
 		, checkKeyNumCopies key (Just file) numcopies
 		]
@@ -149,8 +149,8 @@ performRemote key afile backend numcopies remote =
 	dispatch (Right False) = go False Nothing
 	go present localcopy = check
 		[ verifyLocationLogRemote key (maybe (key2file key) id afile) remote present
-		, checkKeySizeRemote key remote localcopy
-		, checkBackendRemote backend key remote localcopy
+		, checkKeySizeRemote key remote localcopy afile
+		, checkBackendRemote backend key remote localcopy afile
 		, checkKeyNumCopies key afile numcopies
 		]
 	withtmp a = do
@@ -188,7 +188,7 @@ performKey key backend numcopies = do
 	keystatus <- getKeyStatus key
 	check
 		[ verifyLocationLog key keystatus (key2file key)
-		, checkKeySize key keystatus
+		, checkKeySize key keystatus Nothing
 		, checkBackend backend key keystatus Nothing
 		, checkKeyNumCopies key Nothing numcopies
 		]
@@ -338,22 +338,22 @@ verifyWorkTree key file = do
  -
  - Not checked when a file is unlocked, or in direct mode.
  -}
-checkKeySize :: Key -> KeyStatus -> Annex Bool
-checkKeySize _ KeyUnlocked = return True
-checkKeySize key _ = do
+checkKeySize :: Key -> KeyStatus -> AssociatedFile -> Annex Bool
+checkKeySize _ KeyUnlocked _ = return True
+checkKeySize key _ afile = do
 	file <- calcRepo $ gitAnnexLocation key
 	ifM (liftIO $ doesFileExist file)
-		( checkKeySizeOr badContent key file
+		( checkKeySizeOr badContent key file afile
 		, return True
 		)
 
-checkKeySizeRemote :: Key -> Remote -> Maybe FilePath -> Annex Bool
-checkKeySizeRemote _ _ Nothing = return True
-checkKeySizeRemote key remote (Just file) =
-	checkKeySizeOr (badContentRemote remote file) key file
+checkKeySizeRemote :: Key -> Remote -> Maybe FilePath -> AssociatedFile -> Annex Bool
+checkKeySizeRemote _ _ Nothing _ = return True
+checkKeySizeRemote key remote (Just file) afile =
+	checkKeySizeOr (badContentRemote remote file) key file afile
 
-checkKeySizeOr :: (Key -> Annex String) -> Key -> FilePath -> Annex Bool
-checkKeySizeOr bad key file = case keySize key of
+checkKeySizeOr :: (Key -> Annex String) -> Key -> FilePath -> AssociatedFile -> Annex Bool
+checkKeySizeOr bad key file afile = case keySize key of
 	Nothing -> return True
 	Just size -> do
 		size' <- liftIO $ getFileSize file
@@ -365,11 +365,12 @@ checkKeySizeOr bad key file = case keySize key of
 		return same
 	badsize a b = do
 		msg <- bad key
-		warning $ concat
-			[ "Bad file size ("
-			, compareSizes storageUnits True a b
-			, "); "
-			, msg
+		warning $ concat $ catMaybes
+			[ afile <> Just ": "
+			, Just "Bad file size ("
+			, Just $ compareSizes storageUnits True a b
+			, Just "); "
+			, Just msg
 			]
 
 {- Runs the backend specific check on a key's content object.
@@ -383,37 +384,37 @@ checkKeySizeOr bad key file = case keySize key of
  - because modification of direct mode files is allowed. It's still done
  - if the file does not appear modified, to catch disk corruption, etc.
  -}
-checkBackend :: Backend -> Key -> KeyStatus -> Maybe FilePath -> Annex Bool
-checkBackend backend key keystatus mfile = go =<< isDirect
+checkBackend :: Backend -> Key -> KeyStatus -> AssociatedFile -> Annex Bool
+checkBackend backend key keystatus afile = go =<< isDirect
   where
 	go False = do
 		content <- calcRepo $ gitAnnexLocation key
 		ifM (pure (isKeyUnlocked keystatus) <&&> (not <$> isUnmodified key content))
 			( nocheck
-			, checkBackendOr badContent backend key content
+			, checkBackendOr badContent backend key content afile
 			)
-	go True = maybe nocheck checkdirect mfile
+	go True = maybe nocheck checkdirect afile
 	checkdirect file = ifM (Direct.goodContent key file)
-		( checkBackendOr' (badContentDirect file) backend key file
+		( checkBackendOr' (badContentDirect file) backend key file afile
 			(Direct.goodContent key file)
 		, nocheck
 		)
 	nocheck = return True
 
-checkBackendRemote :: Backend -> Key -> Remote -> Maybe FilePath -> Annex Bool
-checkBackendRemote backend key remote = maybe (return True) go
+checkBackendRemote :: Backend -> Key -> Remote -> Maybe FilePath -> AssociatedFile -> Annex Bool
+checkBackendRemote backend key remote afile = maybe (return True) go
   where
-	go file = checkBackendOr (badContentRemote remote file) backend key file
+	go file = checkBackendOr (badContentRemote remote file) backend key file afile
 
-checkBackendOr :: (Key -> Annex String) -> Backend -> Key -> FilePath -> Annex Bool
-checkBackendOr bad backend key file =
-	checkBackendOr' bad backend key file (return True)
+checkBackendOr :: (Key -> Annex String) -> Backend -> Key -> FilePath -> AssociatedFile -> Annex Bool
+checkBackendOr bad backend key file afile =
+	checkBackendOr' bad backend key file afile (return True)
 
 -- The postcheck action is run after the content is verified,
 -- in order to detect situations where the file is changed while being
 -- verified (particularly in direct mode).
-checkBackendOr' :: (Key -> Annex String) -> Backend -> Key -> FilePath -> Annex Bool -> Annex Bool
-checkBackendOr' bad backend key file postcheck =
+checkBackendOr' :: (Key -> Annex String) -> Backend -> Key -> FilePath -> AssociatedFile -> Annex Bool -> Annex Bool
+checkBackendOr' bad backend key file afile postcheck =
 	case Types.Backend.verifyKeyContent backend of
 		Nothing -> return True
 		Just verifier -> do
@@ -422,7 +423,11 @@ checkBackendOr' bad backend key file postcheck =
 				( do
 					unless ok $ do
 						msg <- bad key
-						warning $ "Bad file content; " ++ msg
+						warning $ concat $ catMaybes
+							[ afile <> Just ": "
+							, Just "Bad file content; "
+							, Just msg
+							]
 					return ok
 				, return True
 				)
