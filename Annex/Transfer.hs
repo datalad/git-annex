@@ -32,7 +32,8 @@ import qualified Types.Remote as Remote
 import Types.Concurrency
 
 import Control.Concurrent
-import qualified Data.Set as S
+import qualified Data.Map.Strict as M
+import Data.Ord
 
 class Observable a where
 	observeBool :: a -> Bool
@@ -218,7 +219,7 @@ pickRemote l a = go l =<< Annex.getState Annex.concurrency
 	go rs (Concurrent n) | n > 1 = do
 		mv <- Annex.getState Annex.activeremotes
 		active <- liftIO $ takeMVar mv
-		let rs' = sortBy (inactiveFirst active) rs
+		let rs' = sortBy (lessActiveFirst active) rs
 		goconcurrent mv active rs'
 	go (r:rs) _ = do
 		ok <- a r
@@ -229,11 +230,11 @@ pickRemote l a = go l =<< Annex.getState Annex.concurrency
 		liftIO $ putMVar mv active
 		return observeFailure
 	goconcurrent mv active (r:rs) = do
-		let !active' = S.insert r active
+		let !active' = M.insertWith (+) r 1 active
 		liftIO $ putMVar mv active'
 		let getnewactive = do
 			active'' <- liftIO $ takeMVar mv
-			let !active''' = S.delete r active''
+			let !active''' = M.update (\n -> if n > 1 then Just (n-1) else Nothing) r active''
 			return active'''
 		let removeactive = liftIO . putMVar mv =<< getnewactive
 		ok <- a r `onException` removeactive
@@ -246,11 +247,10 @@ pickRemote l a = go l =<< Annex.getState Annex.concurrency
 				-- Re-sort the remaining rs 
 				-- because other threads could have
 				-- been assigned them in the meantime.
-				let rs' = sortBy (inactiveFirst active'') rs
+				let rs' = sortBy (lessActiveFirst active'') rs
 				goconcurrent mv active'' rs'
 
-inactiveFirst :: S.Set Remote -> Remote -> Remote -> Ordering
-inactiveFirst active a b
-	| Remote.cost a == Remote.cost b =
-		if a `S.member` active then GT else LT
+lessActiveFirst :: M.Map Remote Integer -> Remote -> Remote -> Ordering
+lessActiveFirst active a b
+	| Remote.cost a == Remote.cost b = comparing (`M.lookup` active) a b
 	| otherwise = compare a b

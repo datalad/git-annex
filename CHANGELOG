@@ -7,6 +7,8 @@ git-annex (6.20170301.2) UNRELEASED; urgency=medium
     so any system ssh will be preferred over it.
   * assistant: Add 1/200th second delay between checking each file
     in the full transfer scan, to avoid using too much CPU.
+  * get -J: Improve distribution of jobs amoung remotes when there are more
+    jobs than remotes.
 
  -- Joey Hess <id@joeyh.name>  Thu, 02 Mar 2017 12:51:40 -0400
 

@@ -136,7 +136,7 @@ data AnnexState = AnnexState
 	, existinghooks :: M.Map Git.Hook.Hook Bool
 	, desktopnotify :: DesktopNotify
 	, workers :: [Either AnnexState (Async AnnexState)]
-	, activeremotes :: MVar (S.Set (Types.Remote.RemoteA Annex))
+	, activeremotes :: MVar (M.Map (Types.Remote.RemoteA Annex) Integer)
 	, keysdbhandle :: Maybe Keys.DbHandle
 	, cachedcurrentbranch :: Maybe Git.Branch
 	, cachedgitenv :: Maybe [(String, String)]
@@ -144,7 +144,7 @@ data AnnexState = AnnexState
 
 newState :: GitConfig -> Git.Repo -> IO AnnexState
 newState c r = do
-	emptyactiveremotes <- newMVar S.empty
+	emptyactiveremotes <- newMVar M.empty
 	return $ AnnexState
 		{ repo = r
 		, repoadjustment = return
