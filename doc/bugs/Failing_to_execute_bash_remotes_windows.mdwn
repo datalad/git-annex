@@ -54,3 +54,5 @@ VERSION 1
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Oh yeah! This software is awesome. After getting used to having "dummy" shortcuts to content I don't currently have, with the simple ability to get/drop that content, I can't believe I haven't seen this anywhere before. If there is anything more impressive than this software, it's the support it has had from Joey over all this time. I'd have pulled my hair out long ago. :P
+
+> [[fixed|done]] although untested --[[Joey]]

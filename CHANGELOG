@@ -11,6 +11,8 @@ git-annex (6.20170301.2) UNRELEASED; urgency=medium
     jobs than remotes.
   * fsck -q: When a file has bad content, include the name of the file
     in the warning message.
+  * Windows: Improve handling of shebang in external special remote
+    program, searching for the program in the PATH.
 
  -- Joey Hess <id@joeyh.name>  Thu, 02 Mar 2017 12:51:40 -0400
 

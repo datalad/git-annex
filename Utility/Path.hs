@@ -227,6 +227,8 @@ inPath command = isJust <$> searchPath command
  -
  - The command may be fully qualified already, in which case it will
  - be returned if it exists.
+ -
+ - Note that this will find commands in PATH that are not executable.
  -}
 searchPath :: String -> IO (Maybe FilePath)
 searchPath command
