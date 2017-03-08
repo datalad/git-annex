@@ -25,7 +25,6 @@ import qualified Types.Remote as Remote
 import Utility.ThreadScheduler
 import Utility.NotificationBroadcaster
 import Utility.Batch
-import Utility.ThreadScheduler
 import qualified Git.LsFiles as LsFiles
 import Annex.WorkTree
 import Annex.Content
