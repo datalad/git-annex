@@ -24,10 +24,6 @@ Files: Utility/*
 Copyright: 2012-2017 Joey Hess <id@joeyh.name>
 License: BSD-2-clause
 
-Files: Utility/Gpg.hs Utility/DirWatcher*
-Copyright: © 2010-2014 Joey Hess <id@joeyh.name>
-License: GPL-3+
-
 Files: doc/logo* */favicon.ico standalone/osx/git-annex.app/Contents/Resources/git-annex.icns standalone/android/icons/*
 Copyright: 2007 Henrik Nyh <http://henrik.nyh.se/>
            2010 Joey Hess <id@joeyh.name>
