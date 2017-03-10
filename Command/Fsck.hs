@@ -193,8 +193,8 @@ performKey :: Key -> Backend -> NumCopies -> Annex Bool
 performKey key backend numcopies = do
 	keystatus <- getKeyStatus key
 	check
-		[ verifyLocationLog key keystatus ActionItemKey
-		, checkKeySize key keystatus ActionItemKey
+		[ verifyLocationLog key keystatus (mkActionItem key)
+		, checkKeySize key keystatus (mkActionItem key)
 		, checkBackend backend key keystatus (AssociatedFile Nothing)
 		, checkKeyNumCopies key (AssociatedFile Nothing) numcopies
 		]
