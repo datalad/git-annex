@@ -190,7 +190,7 @@ runActivity' urlrenderer (ScheduledSelfFsck _ d) = do
 	void $ repairWhenNecessary urlrenderer u Nothing fsckresults
 	mapM_ reget =<< liftAnnex (dirKeys gitAnnexBadDir)
   where
-	reget k = queueTransfers "fsck found bad file; redownloading" Next k Nothing Download
+	reget k = queueTransfers "fsck found bad file; redownloading" Next k (AssociatedFile Nothing) Download
 runActivity' urlrenderer (ScheduledRemoteFsck u s d) = dispatch =<< liftAnnex (remoteFromUUID u)
   where
 	dispatch Nothing = debug ["skipping remote fsck of uuid without a configured remote", fromUUID u, fromSchedule s]

@@ -39,6 +39,7 @@ import Logs.Transfer
 import Types.Key
 import Types.TrustLevel
 import Types.FileMatcher
+import Types.ActionItem
 import qualified Limit
 import Messages.JSON (DualDisp(..), ObjectMap(..))
 import Annex.BloomFilter
@@ -420,7 +421,9 @@ transfer_list = stat desc $ nojson $ lift $ do
 	desc = "transfers in progress"
 	line uuidmap t i = unwords
 		[ formatDirection (transferDirection t) ++ "ing"
-		, fromMaybe (key2file $ transferKey t) (associatedFile i)
+		, actionItemDesc
+			(ActionItemAssociatedFile (associatedFile i))
+			(transferKey t)
 		, if transferDirection t == Upload then "to" else "from"
 		, maybe (fromUUID $ transferUUID t) Remote.name $
 			M.lookup (transferUUID t) uuidmap
@@ -428,9 +431,11 @@ transfer_list = stat desc $ nojson $ lift $ do
 	jsonify t i = object $ map (\(k, v) -> (T.pack k, v)) $
 		[ ("transfer", toJSON (formatDirection (transferDirection t)))
 		, ("key", toJSON (key2file (transferKey t)))
-		, ("file", toJSON (associatedFile i))
+		, ("file", toJSON afile)
 		, ("remote", toJSON (fromUUID (transferUUID t)))
 		]
+	  where
+		AssociatedFile afile = associatedFile i
 
 disk_size :: Stat
 disk_size = simpleStat "available local disk space" $

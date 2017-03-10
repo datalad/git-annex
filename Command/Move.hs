@@ -53,10 +53,10 @@ seek o = allowConcurrentOutput $
 start :: MoveOptions -> Bool -> FilePath -> Key -> CommandStart
 start o move f k = start' o move afile k (mkActionItem afile)
   where
-	afile = Just f
+	afile = AssociatedFile (Just f)
 
 startKey :: MoveOptions -> Bool -> Key -> ActionItem -> CommandStart
-startKey o move = start' o move Nothing
+startKey o move = start' o move (AssociatedFile Nothing)
 
 start' :: MoveOptions -> Bool -> AssociatedFile -> Key -> ActionItem -> CommandStart
 start' o move afile key ai = 

@@ -110,9 +110,10 @@ start from inc file key = do
 			numcopies <- getFileNumCopies file
 			case from of
 				Nothing -> go $ perform key file backend numcopies
-				Just r -> go $ performRemote key (Just file) backend numcopies r
+				Just r -> go $ performRemote key afile backend numcopies r
   where
-	go = runFsck inc (mkActionItem (Just file)) key
+	go = runFsck inc (mkActionItem afile) key
+	afile = AssociatedFile (Just file)
 
 perform :: Key -> FilePath -> Backend -> NumCopies -> Annex Bool
 perform key file backend numcopies = do
@@ -123,10 +124,12 @@ perform key file backend numcopies = do
 		, verifyLocationLog key keystatus file
 		, verifyAssociatedFiles key keystatus file
 		, verifyWorkTree key file
-		, checkKeySize key keystatus (Just file)
-		, checkBackend backend key keystatus (Just file)
-		, checkKeyNumCopies key (Just file) numcopies
+		, checkKeySize key keystatus afile
+		, checkBackend backend key keystatus afile
+		, checkKeyNumCopies key afile numcopies
 		]
+  where
+	afile = AssociatedFile (Just file)
 
 {- To fsck a remote, the content is retrieved to a tmp file,
  - and checked locally. -}
@@ -148,7 +151,7 @@ performRemote key afile backend numcopies remote =
 				return False
 	dispatch (Right False) = go False Nothing
 	go present localcopy = check
-		[ verifyLocationLogRemote key (maybe (key2file key) id afile) remote present
+		[ verifyLocationLogRemote key afile remote present
 		, withLocalCopy localcopy $ checkKeySizeRemote key remote afile
 		, withLocalCopy localcopy $ checkBackendRemote backend key remote afile
 		, checkKeyNumCopies key afile numcopies
@@ -167,7 +170,7 @@ performRemote key afile backend numcopies remote =
 			, ifM (Annex.getState Annex.fast)
 				( return Nothing
 				, Just . fst <$>
-					Remote.retrieveKeyFile remote key Nothing tmp dummymeter
+					Remote.retrieveKeyFile remote key (AssociatedFile Nothing) tmp dummymeter
 				)
 			)
 		, return (Just False)
@@ -181,16 +184,16 @@ startKey from inc key ai numcopies =
 		Just backend -> runFsck inc ai key $
 			case from of
 				Nothing -> performKey key backend numcopies
-				Just r -> performRemote key Nothing backend numcopies r
+				Just r -> performRemote key (AssociatedFile Nothing) backend numcopies r
 
 performKey :: Key -> Backend -> NumCopies -> Annex Bool
 performKey key backend numcopies = do
 	keystatus <- getKeyStatus key
 	check
 		[ verifyLocationLog key keystatus (key2file key)
-		, checkKeySize key keystatus Nothing
-		, checkBackend backend key keystatus Nothing
-		, checkKeyNumCopies key Nothing numcopies
+		, checkKeySize key keystatus (AssociatedFile Nothing)
+		, checkBackend backend key keystatus (AssociatedFile Nothing)
+		, checkKeyNumCopies key (AssociatedFile Nothing) numcopies
 		]
 
 check :: [Annex Bool] -> Annex Bool
@@ -249,10 +252,12 @@ verifyLocationLog key keystatus desc = do
 		then return True
 		else verifyLocationLog' key desc present u (logChange key u)
 
-verifyLocationLogRemote :: Key -> String -> Remote -> Bool -> Annex Bool
-verifyLocationLogRemote key desc remote present =
+verifyLocationLogRemote :: Key -> AssociatedFile -> Remote -> Bool -> Annex Bool
+verifyLocationLogRemote key (AssociatedFile afile) remote present =
 	verifyLocationLog' key desc present (Remote.uuid remote)
 		(Remote.logStatus remote key)
+  where
+	desc = fromMaybe (key2file key) afile
 
 verifyLocationLog' :: Key -> String -> Bool -> UUID -> (LogStatus -> Annex ()) -> Annex Bool
 verifyLocationLog' key desc present u updatestatus = do
@@ -356,7 +361,7 @@ checkKeySizeRemote key remote afile localcopy =
 	checkKeySizeOr (badContentRemote remote localcopy) key localcopy afile
 
 checkKeySizeOr :: (Key -> Annex String) -> Key -> FilePath -> AssociatedFile -> Annex Bool
-checkKeySizeOr bad key file afile = case keySize key of
+checkKeySizeOr bad key file (AssociatedFile afile) = case keySize key of
 	Nothing -> return True
 	Just size -> do
 		size' <- liftIO $ getFileSize file
@@ -396,7 +401,9 @@ checkBackend backend key keystatus afile = go =<< isDirect
 			( nocheck
 			, checkBackendOr badContent backend key content afile
 			)
-	go True = maybe nocheck checkdirect afile
+	go True = case afile of
+		AssociatedFile Nothing -> nocheck
+		AssociatedFile (Just f) -> checkdirect f
 	checkdirect file = ifM (Direct.goodContent key file)
 		( checkBackendOr' (badContentDirect file) backend key file afile
 			(Direct.goodContent key file)
@@ -416,7 +423,7 @@ checkBackendOr bad backend key file afile =
 -- in order to detect situations where the file is changed while being
 -- verified (particularly in direct mode).
 checkBackendOr' :: (Key -> Annex String) -> Backend -> Key -> FilePath -> AssociatedFile -> Annex Bool -> Annex Bool
-checkBackendOr' bad backend key file afile postcheck =
+checkBackendOr' bad backend key file (AssociatedFile afile) postcheck =
 	case Types.Backend.verifyKeyContent backend of
 		Nothing -> return True
 		Just verifier -> do
@@ -436,21 +443,23 @@ checkBackendOr' bad backend key file afile postcheck =
 
 checkKeyNumCopies :: Key -> AssociatedFile -> NumCopies -> Annex Bool
 checkKeyNumCopies key afile numcopies = do
-	let file = fromMaybe (key2file key) afile
+	let (desc, hasafile) = case afile of
+		AssociatedFile Nothing -> (key2file key, False)
+		AssociatedFile (Just af) -> (af, True)
 	locs <- loggedLocations key
 	(untrustedlocations, otherlocations) <- trustPartition UnTrusted locs
 	(deadlocations, safelocations) <- trustPartition DeadTrusted otherlocations
 	let present = NumCopies (length safelocations)
 	if present < numcopies
-		then ifM (pure (isNothing afile) <&&> checkDead key)
+		then ifM (pure (not hasafile) <&&> checkDead key)
 			( do
 				showLongNote $ "This key is dead, skipping."
 				return True
 			, do
 				untrusted <- Remote.prettyPrintUUIDs "untrusted" untrustedlocations
 				dead <- Remote.prettyPrintUUIDs "dead" deadlocations
-				warning $ missingNote file present numcopies untrusted dead
-				when (fromNumCopies present == 0 && isNothing afile) $
+				warning $ missingNote desc present numcopies untrusted dead
+				when (fromNumCopies present == 0 && not hasafile) $
 					showLongNote "(Avoid this check by running: git annex dead --key )"
 				return False
 			)

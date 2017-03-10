@@ -126,7 +126,7 @@ rsyncHelper m params = do
 {- Generates rsync parameters that ssh to the remote and asks it
  - to either receive or send the key's content. -}
 rsyncParamsRemote :: Bool -> Remote -> Direction -> Key -> FilePath -> AssociatedFile -> Annex [CommandParam]
-rsyncParamsRemote unlocked r direction key file afile = do
+rsyncParamsRemote unlocked r direction key file (AssociatedFile afile) = do
 	u <- getUUID
 	let fields = (Fields.remoteUUID, fromUUID u)
 		: (Fields.unlocked, if unlocked then "1" else "")

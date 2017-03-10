@@ -30,10 +30,10 @@ optParser :: CmdParamsDesc -> Parser TransferKeyOptions
 optParser desc  = TransferKeyOptions
 	<$> cmdParams desc
 	<*> parseFromToOptions
-	<*> optional (strOption
+	<*> (AssociatedFile <$> optional (strOption
 		( long "file" <> metavar paramFile
 		<> help "the associated file"
-		))
+		)))
 
 instance DeferredParseClass TransferKeyOptions where
 	finishParse v = TransferKeyOptions

@@ -73,7 +73,7 @@ perform file oldkey oldbackend newbackend = go =<< genkey
 	go (Just (newkey, knowngoodcontent))
 		| knowngoodcontent = finish newkey
 		| otherwise = stopUnless checkcontent $ finish newkey
-	checkcontent = Command.Fsck.checkBackend oldbackend oldkey Command.Fsck.KeyLocked $ Just file
+	checkcontent = Command.Fsck.checkBackend oldbackend oldkey Command.Fsck.KeyLocked afile
 	finish newkey = ifM (Command.ReKey.linkKey file oldkey newkey)
 		( do
 			copyMetaData oldkey newkey
@@ -86,7 +86,7 @@ perform file oldkey oldbackend newbackend = go =<< genkey
 			next $ Command.ReKey.cleanup file oldkey newkey
 		, error "failed"
 		)
-	genkey = case maybe Nothing (\fm -> fm oldkey newbackend (Just file)) (fastMigrate oldbackend) of
+	genkey = case maybe Nothing (\fm -> fm oldkey newbackend afile) (fastMigrate oldbackend) of
 		Just newkey -> return $ Just (newkey, True)
 		Nothing -> do
 			content <- calcRepo $ gitAnnexLocation oldkey
@@ -99,3 +99,4 @@ perform file oldkey oldbackend newbackend = go =<< genkey
 			return $ case v of
 				Just (newkey, _) -> Just (newkey, False)
 				_ -> Nothing
+	afile = AssociatedFile (Just file)

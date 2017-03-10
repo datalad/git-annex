@@ -9,7 +9,7 @@ module Types (
 	Annex,
 	Backend,
 	Key,
-	AssociatedFile,
+	AssociatedFile(..),
 	UUID(..),
 	GitConfig(..),
 	RemoteGitConfig(..),

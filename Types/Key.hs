@@ -23,7 +23,8 @@ data Key = Key
 	} deriving (Eq, Ord, Read, Show)
 
 {- A filename may be associated with a Key. -}
-type AssociatedFile = Maybe FilePath
+newtype AssociatedFile = AssociatedFile (Maybe FilePath)
+	deriving (Show, Eq, Ord)
 
 {- There are several different varieties of keys. -}
 data KeyVariety

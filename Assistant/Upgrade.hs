@@ -85,7 +85,7 @@ startDistributionDownload d = go =<< liftIO . newVersionLocation d =<< liftIO ol
 		hook <- asIO1 $ distributionDownloadComplete d dest cleanup
 		modifyDaemonStatus_ $ \s -> s
 			{ transferHook = M.insert k hook (transferHook s) }
-		maybe noop (queueTransfer "upgrade" Next (Just f) t)
+		maybe noop (queueTransfer "upgrade" Next (AssociatedFile (Just f)) t)
 			=<< liftAnnex (remoteFromUUID webUUID)
 		startTransfer t
 	k = distributionKey d

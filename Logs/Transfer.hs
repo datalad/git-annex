@@ -10,6 +10,7 @@
 module Logs.Transfer where
 
 import Types.Transfer
+import Types.ActionItem
 import Annex.Common
 import Annex.Perms
 import qualified Git
@@ -27,7 +28,9 @@ describeTransfer :: Transfer -> TransferInfo -> String
 describeTransfer t info = unwords
 	[ show $ transferDirection t
 	, show $ transferUUID t
-	, fromMaybe (key2file $ transferKey t) (associatedFile info)
+	, actionItemDesc
+		(ActionItemAssociatedFile (associatedFile info))
+		(transferKey t)
 	, show $ bytesComplete info
 	]
 
@@ -67,8 +70,8 @@ mkProgressUpdater t info = do
 		Just sz -> sz `div` 100
 		Nothing -> 100 * 1024 -- arbitrarily, 100 kb
 
-startTransferInfo :: Maybe FilePath -> IO TransferInfo
-startTransferInfo file = TransferInfo
+startTransferInfo :: AssociatedFile -> IO TransferInfo
+startTransferInfo afile = TransferInfo
 	<$> (Just . utcTimeToPOSIXSeconds <$> getCurrentTime)
 #ifndef mingw32_HOST_OS
 	<*> pure Nothing -- pid not stored in file, so omitted for speed
@@ -78,7 +81,7 @@ startTransferInfo file = TransferInfo
 	<*> pure Nothing -- tid ditto
 	<*> pure Nothing -- not 0; transfer may be resuming
 	<*> pure Nothing
-	<*> pure file
+	<*> pure afile
 	<*> pure False
 
 {- If a transfer is still running, returns its TransferInfo.
@@ -228,7 +231,9 @@ writeTransferInfo info = unlines
 #ifdef mingw32_HOST_OS
 	, maybe "" show (transferPid info)
 #endif
-	, fromMaybe "" $ associatedFile info -- comes last; arbitrary content
+	-- comes last; arbitrary content
+	, let AssociatedFile afile = associatedFile info
+	  in fromMaybe "" afile
 	]
 
 readTransferInfoFile :: Maybe PID -> FilePath -> IO (Maybe TransferInfo)
@@ -246,7 +251,7 @@ readTransferInfo mpid s = TransferInfo
 	<*> pure Nothing
 	<*> pure Nothing
 	<*> bytes
-	<*> pure (if null filename then Nothing else Just filename)
+	<*> pure (AssociatedFile (if null filename then Nothing else Just filename))
 	<*> pure False
   where
 #ifdef mingw32_HOST_OS

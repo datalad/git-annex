@@ -36,13 +36,13 @@ data TransferInfo = TransferInfo
 	, transferTid :: Maybe ThreadId
 	, transferRemote :: Maybe Remote
 	, bytesComplete :: Maybe Integer
-	, associatedFile :: Maybe FilePath
+	, associatedFile :: AssociatedFile
 	, transferPaused :: Bool
 	}
 	deriving (Show, Eq, Ord)
 
 stubTransferInfo :: TransferInfo
-stubTransferInfo = TransferInfo Nothing Nothing Nothing Nothing Nothing Nothing False
+stubTransferInfo = TransferInfo Nothing Nothing Nothing Nothing Nothing (AssociatedFile Nothing) False
 
 data Direction = Upload | Download
 	deriving (Eq, Ord, Show, Read)
@@ -64,5 +64,5 @@ instance Arbitrary TransferInfo where
 		<*> pure Nothing -- remote not needed
 		<*> arbitrary
 		-- associated file cannot be empty (but can be Nothing)
-		<*> arbitrary `suchThat` (/= Just "")
+		<*> (AssociatedFile <$> arbitrary `suchThat` (/= Just ""))
 		<*> arbitrary

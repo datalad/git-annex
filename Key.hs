@@ -9,7 +9,7 @@
 
 module Key (
 	Key(..),
-	AssociatedFile,
+	AssociatedFile(..),
 	stubKey,
 	key2file,
 	file2key,

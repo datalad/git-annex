@@ -51,14 +51,15 @@ seek o = allowConcurrentOutput $ do
 start :: GetOptions -> Maybe Remote -> FilePath -> Key -> CommandStart
 start o from file key = start' expensivecheck from key afile (mkActionItem afile)
   where
-	afile = Just file
+	afile = AssociatedFile (Just file)
 	expensivecheck
-		| autoMode o = numCopiesCheck file key (<) <||> wantGet False (Just key) (Just file)
+		| autoMode o = numCopiesCheck file key (<)
+			<||> wantGet False (Just key) afile
 		| otherwise = return True
 
 startKeys :: Maybe Remote -> Key -> ActionItem -> CommandStart
 startKeys from key ai = checkFailedTransferDirection ai Download $
-	start' (return True) from key Nothing ai
+	start' (return True) from key (AssociatedFile Nothing) ai
 
 start' :: Annex Bool -> Maybe Remote -> Key -> AssociatedFile -> ActionItem -> CommandStart
 start' expensivecheck from key afile ai = stopUnless (not <$> inAnnex key) $

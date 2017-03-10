@@ -86,7 +86,7 @@ seek o = case batchOption o of
 start :: POSIXTime -> MetaDataOptions -> FilePath -> Key -> CommandStart
 start now o file k = startKeys now o k (mkActionItem afile)
   where
-	afile = Just file
+	afile = AssociatedFile (Just file)
 
 startKeys :: POSIXTime -> MetaDataOptions -> Key -> ActionItem -> CommandStart
 startKeys now o k ai = case getSet o of
@@ -155,7 +155,7 @@ startBatch (i, (MetaData m)) = case i of
 	Left f -> do
 		mk <- lookupFile f
 		case mk of
-			Just k -> go k (mkActionItem (Just f))
+			Just k -> go k (mkActionItem (AssociatedFile (Just f)))
 			Nothing -> giveup $ "not an annexed file: " ++ f
 	Right k -> go k (mkActionItem k)
   where

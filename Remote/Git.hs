@@ -479,8 +479,9 @@ copyFromRemote' r key file dest meterupdate
 		)
 	feedprogressback' a = do
 		u <- getUUID
+		let AssociatedFile afile = file
 		let fields = (Fields.remoteUUID, fromUUID u)
-			: maybe [] (\f -> [(Fields.associatedFile, f)]) file
+			: maybe [] (\f -> [(Fields.associatedFile, f)]) afile
 		Just (cmd, params) <- Ssh.git_annex_shell ConsumeStdin
 			(repo r) "transferinfo" 
 			[Param $ key2file key] fields

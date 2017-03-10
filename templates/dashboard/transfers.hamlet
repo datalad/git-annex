@@ -6,10 +6,7 @@
         <div .row>
           <div .col-sm-10>
             <h3 .forcewrap .small-margin-top .tiny-margin-bottom>
-              $maybe file <- associatedFile info
-                #{file}
-              $nothing
-                #{key2file $ transferKey transfer}
+              #{desc transfer info}
               $case transferDirection transfer
                 $of Upload
                   &rarr;

@@ -171,7 +171,9 @@ downloadRemoteFile r relaxed uri file sz = checkCanAdd file $ do
 			-- so that the remote knows what url it
 			-- should use to download it.
 			setTempUrl urlkey loguri
-			let downloader = \dest p -> fst <$> Remote.retrieveKeyFile r urlkey (Just file) dest p
+			let downloader = \dest p -> fst 
+				<$> Remote.retrieveKeyFile r urlkey
+					(AssociatedFile (Just file)) dest p
 			ret <- downloadWith downloader urlkey (Remote.uuid r) loguri file
 			removeTempUrl urlkey
 			return ret
@@ -255,8 +257,8 @@ addUrlFileQuvi relaxed quviurl videourl file = checkCanAdd file $ do
 			checkDiskSpaceToGet sizedkey Nothing $ do
 				tmp <- fromRepo $ gitAnnexTmpObjectLocation key
 				showOutput
-				ok <- Transfer.notifyTransfer Transfer.Download (Just file) $
-					Transfer.download webUUID key (Just file) Transfer.forwardRetry $ \p -> do
+				ok <- Transfer.notifyTransfer Transfer.Download afile $
+					Transfer.download webUUID key afile Transfer.forwardRetry $ \p -> do
 						liftIO $ createDirectoryIfMissing True (parentDir tmp)
 						downloadUrl key p [videourl] tmp
 				if ok
@@ -265,6 +267,8 @@ addUrlFileQuvi relaxed quviurl videourl file = checkCanAdd file $ do
 						return (Just key)
 					else return Nothing
 		)
+  where
+	afile = AssociatedFile (Just file)
 
 addUrlChecked :: Bool -> URLString -> UUID -> (Key -> Annex (Bool, Bool)) -> Key -> CommandPerform
 addUrlChecked relaxed url u checkexistssize key
@@ -328,10 +332,11 @@ downloadWith downloader dummykey u url file =
 			, return Nothing
 			)
   where
-	runtransfer tmp =  Transfer.notifyTransfer Transfer.Download (Just file) $
-		Transfer.download u dummykey (Just file) Transfer.forwardRetry $ \p -> do
+	runtransfer tmp =  Transfer.notifyTransfer Transfer.Download afile $
+		Transfer.download u dummykey afile Transfer.forwardRetry $ \p -> do
 			liftIO $ createDirectoryIfMissing True (parentDir tmp)
 			downloader tmp p
+	afile = AssociatedFile (Just file)
 
 {- Adds the url size to the Key. -}
 addSizeUrlKey :: Url.UrlInfo -> Key -> Key

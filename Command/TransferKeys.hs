@@ -116,10 +116,10 @@ instance TCSerialized Direction where
 	deserialize _ = Nothing
 
 instance TCSerialized AssociatedFile where
-	serialize (Just f) = f
-	serialize Nothing = ""
-	deserialize "" = Just Nothing
-	deserialize f = Just $ Just f
+	serialize (AssociatedFile (Just f)) = f
+	serialize (AssociatedFile Nothing) = ""
+	deserialize "" = Just (AssociatedFile Nothing)
+	deserialize f = Just (AssociatedFile (Just f))
 
 instance TCSerialized RemoteName where
 	serialize n = n

@@ -77,7 +77,7 @@ guardHaveUUID u a
  - An upload can be run from a read-only filesystem, and in this case
  - no transfer information or lock file is used.
  -}
-runTransfer :: Observable v => Transfer -> Maybe FilePath -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
+runTransfer :: Observable v => Transfer -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
 runTransfer = runTransfer' False
 
 {- Like runTransfer, but ignores any existing transfer lock file for the
@@ -85,12 +85,12 @@ runTransfer = runTransfer' False
  -
  - Note that this may result in confusing progress meter display in the
  - webapp, if multiple processes are writing to the transfer info file. -}
-alwaysRunTransfer :: Observable v => Transfer -> Maybe FilePath -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
+alwaysRunTransfer :: Observable v => Transfer -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
 alwaysRunTransfer = runTransfer' True
 
-runTransfer' :: Observable v => Bool -> Transfer -> Maybe FilePath -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
-runTransfer' ignorelock t file shouldretry transferaction = checkSecureHashes t $ do
-	info <- liftIO $ startTransferInfo file
+runTransfer' :: Observable v => Bool -> Transfer -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
+runTransfer' ignorelock t afile shouldretry transferaction = checkSecureHashes t $ do
+	info <- liftIO $ startTransferInfo afile
 	(meter, tfile, metervar) <- mkProgressUpdater t info
 	mode <- annexFileMode
 	(lck, inprogress) <- prep tfile mode info

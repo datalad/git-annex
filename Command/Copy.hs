@@ -53,6 +53,6 @@ start o file key = stopUnless shouldCopy $
 		| otherwise = return True
 	want = case Command.Move.fromToOptions (moveOptions o) of
 		ToRemote dest -> (Remote.uuid <$> getParsed dest) >>=
-			wantSend False (Just key) (Just file)
+			wantSend False (Just key) (AssociatedFile (Just file))
 		FromRemote _ ->
-			wantGet False (Just key) (Just file)
+			wantGet False (Just key) (AssociatedFile (Just file))

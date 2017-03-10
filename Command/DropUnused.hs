@@ -46,9 +46,9 @@ perform :: Maybe Remote -> NumCopies -> Key -> CommandPerform
 perform from numcopies key = case from of
 	Just r -> do
 		showAction $ "from " ++ Remote.name r
-		Command.Drop.performRemote key Nothing numcopies r
+		Command.Drop.performRemote key (AssociatedFile Nothing) numcopies r
 	Nothing -> ifM (inAnnex key)
-		( Command.Drop.performLocal key Nothing numcopies []
+		( Command.Drop.performLocal key (AssociatedFile Nothing) numcopies []
 		, next (return True)
 		)
 

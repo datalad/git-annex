@@ -148,8 +148,8 @@ trivialMigrate oldkey newbackend afile
 		}
 	{- Fast migration from hash to hashE backend. -}
 	| migratable && hasExt oldvariety = case afile of
-		Nothing -> Nothing
-		Just file -> Just $ oldkey
+		AssociatedFile Nothing -> Nothing
+		AssociatedFile (Just file) -> Just $ oldkey
 			{ keyName = keyHash oldkey ++ selectExtension file
 			, keyVariety = newvariety
 			}

@@ -136,8 +136,9 @@ instance Proto.Serializable Service where
 -- These mungings are ok, because an AssociatedFile is only ever displayed
 -- to the user and does not need to match a file on disk.
 instance Proto.Serializable AssociatedFile where
-	serialize Nothing = ""
-	serialize (Just af) = toInternalGitPath $ concatMap esc af
+	serialize (AssociatedFile Nothing) = ""
+	serialize (AssociatedFile (Just af)) = 
+		toInternalGitPath $ concatMap esc af
 	  where
 		esc '%' = "%%"
 		esc c 
@@ -145,9 +146,9 @@ instance Proto.Serializable AssociatedFile where
 			| otherwise = [c]
 	
 	deserialize s = case fromInternalGitPath $ deesc [] s of
-		[] -> Just Nothing
+		[] -> Just (AssociatedFile Nothing)
 		f
-			| isRelative f -> Just (Just f)
+			| isRelative f -> Just (AssociatedFile (Just f))
 			| otherwise -> Nothing
 	  where
 	  	deesc b [] = reverse b

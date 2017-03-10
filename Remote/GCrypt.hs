@@ -326,7 +326,8 @@ store r rsyncopts
 			return True
 	| Git.repoIsSsh (repo r) = if accessShell r
 		then fileStorer $ \k f p -> Ssh.rsyncHelper (Just p)
-			=<< Ssh.rsyncParamsRemote False r Upload k f Nothing
+			=<< Ssh.rsyncParamsRemote False r Upload k f
+				(AssociatedFile Nothing)
 		else fileStorer $ Remote.Rsync.store rsyncopts
 	| otherwise = unsupportedUrl
 
@@ -336,8 +337,10 @@ retrieve r rsyncopts
 		guardUsable (repo r) (return False) $
 			sink =<< liftIO (L.readFile $ gCryptLocation r k)
 	| Git.repoIsSsh (repo r) = if accessShell r
-		then fileRetriever $ \f k p ->
-			unlessM (Ssh.rsyncHelper (Just p) =<< Ssh.rsyncParamsRemote False r Download k f Nothing) $
+		then fileRetriever $ \f k p -> do
+			ps <- Ssh.rsyncParamsRemote False r Download k f
+				(AssociatedFile Nothing)
+			unlessM (Ssh.rsyncHelper (Just p) ps) $
 				giveup "rsync failed"
 		else fileRetriever $ Remote.Rsync.retrieve rsyncopts
 	| otherwise = unsupportedUrl

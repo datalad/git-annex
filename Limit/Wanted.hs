@@ -13,12 +13,14 @@ import Limit
 import Types.FileMatcher
 
 addWantGet :: Annex ()
-addWantGet = addLimit $ Right $ const $ checkWant $ wantGet False Nothing
+addWantGet = addLimit $ Right $ const $ checkWant $
+	wantGet False Nothing
 
 addWantDrop :: Annex ()
-addWantDrop = addLimit $ Right $ const $ checkWant $ wantDrop False Nothing Nothing
+addWantDrop = addLimit $ Right $ const $ checkWant $
+	wantDrop False Nothing Nothing
 
-checkWant :: (Maybe FilePath -> Annex Bool) -> MatchInfo -> Annex Bool
-checkWant a (MatchingFile fi) = a (Just $ matchFile fi)
+checkWant :: (AssociatedFile -> Annex Bool) -> MatchInfo -> Annex Bool
+checkWant a (MatchingFile fi) = a (AssociatedFile (Just $ matchFile fi))
 checkWant _ (MatchingKey _) = return False
 checkWant _ (MatchingInfo {}) = return False

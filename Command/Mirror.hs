@@ -43,16 +43,16 @@ instance DeferredParseClass MirrorOptions where
 seek :: MirrorOptions -> CommandSeek
 seek o = allowConcurrentOutput $ 
 	withKeyOptions (keyOptions o) False
-		(startKey o Nothing)
+		(startKey o (AssociatedFile Nothing))
 		(withFilesInGit $ whenAnnexed $ start o)
 		(mirrorFiles o)
 
 start :: MirrorOptions -> FilePath -> Key -> CommandStart
 start o file k = startKey o afile k (mkActionItem afile)
   where
-	afile = Just file
+	afile = AssociatedFile (Just file)
 
-startKey :: MirrorOptions -> Maybe FilePath -> Key -> ActionItem -> CommandStart
+startKey :: MirrorOptions -> AssociatedFile -> Key -> ActionItem -> CommandStart
 startKey o afile key ai = case fromToOptions o of
 	ToRemote r -> checkFailedTransferDirection ai Upload $ ifM (inAnnex key)
 		( Command.Move.toStart False afile key ai =<< getParsed r
@@ -72,4 +72,6 @@ startKey o afile key ai = case fromToOptions o of
 				, stop
 				)
   where
-	getnumcopies = maybe getNumCopies getFileNumCopies afile
+	getnumcopies = case afile of
+		AssociatedFile Nothing -> getNumCopies
+		AssociatedFile (Just af) -> getFileNumCopies af
