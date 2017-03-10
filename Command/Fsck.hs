@@ -36,6 +36,7 @@ import qualified Database.Keys
 import qualified Database.Fsck as FsckDb
 import Types.CleanupActions
 import Types.Key
+import Types.ActionItem
 
 import Data.Time.Clock.POSIX
 import System.Posix.Types (EpochTime)
@@ -121,15 +122,16 @@ perform key file backend numcopies = do
 	check
 		-- order matters
 		[ fixLink key file
-		, verifyLocationLog key keystatus file
+		, verifyLocationLog key keystatus ai
 		, verifyAssociatedFiles key keystatus file
 		, verifyWorkTree key file
-		, checkKeySize key keystatus afile
+		, checkKeySize key keystatus ai
 		, checkBackend backend key keystatus afile
 		, checkKeyNumCopies key afile numcopies
 		]
   where
 	afile = AssociatedFile (Just file)
+	ai = ActionItemAssociatedFile afile
 
 {- To fsck a remote, the content is retrieved to a tmp file,
  - and checked locally. -}
@@ -151,11 +153,12 @@ performRemote key afile backend numcopies remote =
 				return False
 	dispatch (Right False) = go False Nothing
 	go present localcopy = check
-		[ verifyLocationLogRemote key afile remote present
-		, withLocalCopy localcopy $ checkKeySizeRemote key remote afile
-		, withLocalCopy localcopy $ checkBackendRemote backend key remote afile
+		[ verifyLocationLogRemote key ai remote present
+		, withLocalCopy localcopy $ checkKeySizeRemote key remote ai
+		, withLocalCopy localcopy $ checkBackendRemote backend key remote ai
 		, checkKeyNumCopies key afile numcopies
 		]
+	ai = ActionItemAssociatedFile afile
 	withtmp a = do
 		pid <- liftIO getPID
 		t <- fromRepo gitAnnexTmpObjectDir
@@ -190,8 +193,8 @@ performKey :: Key -> Backend -> NumCopies -> Annex Bool
 performKey key backend numcopies = do
 	keystatus <- getKeyStatus key
 	check
-		[ verifyLocationLog key keystatus (key2file key)
-		, checkKeySize key keystatus (AssociatedFile Nothing)
+		[ verifyLocationLog key keystatus ActionItemKey
+		, checkKeySize key keystatus ActionItemKey
 		, checkBackend backend key keystatus (AssociatedFile Nothing)
 		, checkKeyNumCopies key (AssociatedFile Nothing) numcopies
 		]
@@ -218,8 +221,8 @@ fixLink key file = do
 
 {- Checks that the location log reflects the current status of the key,
  - in this repository only. -}
-verifyLocationLog :: Key -> KeyStatus -> String -> Annex Bool
-verifyLocationLog key keystatus desc = do
+verifyLocationLog :: Key -> KeyStatus -> ActionItem -> Annex Bool
+verifyLocationLog key keystatus ai = do
 	direct <- isDirect
 	obj <- calcRepo $ gitAnnexLocation key
 	present <- if not direct && isKeyUnlocked keystatus
@@ -250,17 +253,15 @@ verifyLocationLog key keystatus desc = do
 	 - but that is expected and not something to do anything about. -}
 	if direct && not present
 		then return True
-		else verifyLocationLog' key desc present u (logChange key u)
+		else verifyLocationLog' key ai present u (logChange key u)
 
-verifyLocationLogRemote :: Key -> AssociatedFile -> Remote -> Bool -> Annex Bool
-verifyLocationLogRemote key (AssociatedFile afile) remote present =
-	verifyLocationLog' key desc present (Remote.uuid remote)
+verifyLocationLogRemote :: Key -> ActionItem -> Remote -> Bool -> Annex Bool
+verifyLocationLogRemote key ai remote present =
+	verifyLocationLog' key ai present (Remote.uuid remote)
 		(Remote.logStatus remote key)
-  where
-	desc = fromMaybe (key2file key) afile
 
-verifyLocationLog' :: Key -> String -> Bool -> UUID -> (LogStatus -> Annex ()) -> Annex Bool
-verifyLocationLog' key desc present u updatestatus = do
+verifyLocationLog' :: Key -> ActionItem -> Bool -> UUID -> (LogStatus -> Annex ()) -> Annex Bool
+verifyLocationLog' key ai present u updatestatus = do
 	uuids <- loggedLocations key
 	case (present, u `elem` uuids) of
 		(True, False) -> do
@@ -270,8 +271,9 @@ verifyLocationLog' key desc present u updatestatus = do
 		(False, True) -> do
 			fix InfoMissing
 			warning $
-				"** Based on the location log, " ++ desc
-				++ "\n** was expected to be present, " ++
+				"** Based on the location log, " ++
+				actionItemDesc ai key ++
+				"\n** was expected to be present, " ++
 				"but its content is missing."
 			return False
 		(False, False) -> do
@@ -343,12 +345,12 @@ verifyWorkTree key file = do
  -
  - Not checked when a file is unlocked, or in direct mode.
  -}
-checkKeySize :: Key -> KeyStatus -> AssociatedFile -> Annex Bool
+checkKeySize :: Key -> KeyStatus -> ActionItem -> Annex Bool
 checkKeySize _ KeyUnlocked _ = return True
-checkKeySize key _ afile = do
+checkKeySize key _ ai = do
 	file <- calcRepo $ gitAnnexLocation key
 	ifM (liftIO $ doesFileExist file)
-		( checkKeySizeOr badContent key file afile
+		( checkKeySizeOr badContent key file ai
 		, return True
 		)
 
@@ -356,12 +358,12 @@ withLocalCopy :: Maybe FilePath -> (FilePath -> Annex Bool) -> Annex Bool
 withLocalCopy Nothing _ = return True
 withLocalCopy (Just localcopy) f = f localcopy
 
-checkKeySizeRemote :: Key -> Remote -> AssociatedFile -> FilePath -> Annex Bool
-checkKeySizeRemote key remote afile localcopy =
-	checkKeySizeOr (badContentRemote remote localcopy) key localcopy afile
+checkKeySizeRemote :: Key -> Remote -> ActionItem -> FilePath -> Annex Bool
+checkKeySizeRemote key remote ai localcopy =
+	checkKeySizeOr (badContentRemote remote localcopy) key localcopy ai
 
-checkKeySizeOr :: (Key -> Annex String) -> Key -> FilePath -> AssociatedFile -> Annex Bool
-checkKeySizeOr bad key file (AssociatedFile afile) = case keySize key of
+checkKeySizeOr :: (Key -> Annex String) -> Key -> FilePath -> ActionItem -> Annex Bool
+checkKeySizeOr bad key file ai = case keySize key of
 	Nothing -> return True
 	Just size -> do
 		size' <- liftIO $ getFileSize file
@@ -373,12 +375,12 @@ checkKeySizeOr bad key file (AssociatedFile afile) = case keySize key of
 		return same
 	badsize a b = do
 		msg <- bad key
-		warning $ concat $ catMaybes
-			[ afile <> Just ": "
-			, Just "Bad file size ("
-			, Just $ compareSizes storageUnits True a b
-			, Just "); "
-			, Just msg
+		warning $ concat
+			[ actionItemDesc ai key
+			, ": Bad file size ("
+			, compareSizes storageUnits True a b
+			, "); "
+			, msg
 			]
 
 {- Runs the backend specific check on a key's content object.
@@ -399,31 +401,31 @@ checkBackend backend key keystatus afile = go =<< isDirect
 		content <- calcRepo $ gitAnnexLocation key
 		ifM (pure (isKeyUnlocked keystatus) <&&> (not <$> isUnmodified key content))
 			( nocheck
-			, checkBackendOr badContent backend key content afile
+			, checkBackendOr badContent backend key content (mkActionItem afile)
 			)
 	go True = case afile of
 		AssociatedFile Nothing -> nocheck
 		AssociatedFile (Just f) -> checkdirect f
 	checkdirect file = ifM (Direct.goodContent key file)
-		( checkBackendOr' (badContentDirect file) backend key file afile
+		( checkBackendOr' (badContentDirect file) backend key file (mkActionItem afile)
 			(Direct.goodContent key file)
 		, nocheck
 		)
 	nocheck = return True
 
-checkBackendRemote :: Backend -> Key -> Remote -> AssociatedFile -> FilePath -> Annex Bool
-checkBackendRemote backend key remote afile localcopy =
-	checkBackendOr (badContentRemote remote localcopy) backend key localcopy afile
+checkBackendRemote :: Backend -> Key -> Remote -> ActionItem -> FilePath -> Annex Bool
+checkBackendRemote backend key remote ai localcopy =
+	checkBackendOr (badContentRemote remote localcopy) backend key localcopy ai
 
-checkBackendOr :: (Key -> Annex String) -> Backend -> Key -> FilePath -> AssociatedFile -> Annex Bool
-checkBackendOr bad backend key file afile =
-	checkBackendOr' bad backend key file afile (return True)
+checkBackendOr :: (Key -> Annex String) -> Backend -> Key -> FilePath -> ActionItem -> Annex Bool
+checkBackendOr bad backend key file ai =
+	checkBackendOr' bad backend key file ai (return True)
 
 -- The postcheck action is run after the content is verified,
 -- in order to detect situations where the file is changed while being
 -- verified (particularly in direct mode).
-checkBackendOr' :: (Key -> Annex String) -> Backend -> Key -> FilePath -> AssociatedFile -> Annex Bool -> Annex Bool
-checkBackendOr' bad backend key file (AssociatedFile afile) postcheck =
+checkBackendOr' :: (Key -> Annex String) -> Backend -> Key -> FilePath -> ActionItem -> Annex Bool -> Annex Bool
+checkBackendOr' bad backend key file ai postcheck =
 	case Types.Backend.verifyKeyContent backend of
 		Nothing -> return True
 		Just verifier -> do
@@ -432,10 +434,10 @@ checkBackendOr' bad backend key file (AssociatedFile afile) postcheck =
 				( do
 					unless ok $ do
 						msg <- bad key
-						warning $ concat $ catMaybes
-							[ afile <> Just ": "
-							, Just "Bad file content; "
-							, Just msg
+						warning $ concat
+							[ actionItemDesc ai key
+							, ": Bad file content; "
+							, msg
 							]
 					return ok
 				, return True
