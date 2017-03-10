@@ -4,6 +4,7 @@ flags:
     production: true
     assistant: true
     pairing: true
+    network-uri: true
     s3: true
     testsuite: true
     webdav: true
