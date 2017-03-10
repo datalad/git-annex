@@ -67,11 +67,7 @@ data UrlOptions = UrlOptions
 	{ userAgent :: Maybe UserAgent
 	, reqHeaders :: Headers
 	, reqParams :: [CommandParam]
-#if MIN_VERSION_http_conduit(2,0,0)
 	, applyRequest :: Request -> Request
-#else
-	, applyRequest :: forall m. Request m -> Request m
-#endif
 	}
 
 instance Default UrlOptions
@@ -232,11 +228,7 @@ contentDispositionFilename s
 			drop 1 $ dropWhile (/= '"') s
 	| otherwise = Nothing
 
-#if MIN_VERSION_http_conduit(2,0,0)
 headRequest :: Request -> Request
-#else
-headRequest :: Request m -> Request m
-#endif
 headRequest r = r
 	{ method = methodHead
 	-- remove defaut Accept-Encoding header, to get actual,

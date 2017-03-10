@@ -342,7 +342,7 @@ Executable git-annex
    resourcet,
    http-client,
    http-types,
-   http-conduit,
+   http-conduit (>= 2.0.0),
    time,
    old-locale,
    esqueleto,
@@ -395,7 +395,7 @@ Executable git-annex
     CPP-Options: -DWITH_WEBDAV
 
   if flag(Assistant) && ! os(solaris)
-    Build-Depends: dns, mountpoints
+    Build-Depends: dns (>= 1.0.0), mountpoints
     CPP-Options: -DWITH_ASSISTANT
 
   if flag(Assistant)

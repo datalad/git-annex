@@ -14,6 +14,7 @@ git-annex (6.20170301.2) UNRELEASED; urgency=medium
   * Windows: Improve handling of shebang in external special remote
     program, searching for the program in the PATH.
   * Drop support for building without network-uri.
+  * Drop support for building with old versions of dns and http-conduit.
 
  -- Joey Hess <id@joeyh.name>  Thu, 02 Mar 2017 12:51:40 -0400
 
