@@ -149,8 +149,8 @@ performRemote key afile backend numcopies remote =
 	dispatch (Right False) = go False Nothing
 	go present localcopy = check
 		[ verifyLocationLogRemote key (maybe (key2file key) id afile) remote present
-		, checkKeySizeRemote key remote localcopy afile
-		, checkBackendRemote backend key remote localcopy afile
+		, withLocalCopy localcopy $ checkKeySizeRemote key remote afile
+		, withLocalCopy localcopy $ checkBackendRemote backend key remote afile
 		, checkKeyNumCopies key afile numcopies
 		]
 	withtmp a = do
@@ -347,10 +347,13 @@ checkKeySize key _ afile = do
 		, return True
 		)
 
-checkKeySizeRemote :: Key -> Remote -> Maybe FilePath -> AssociatedFile -> Annex Bool
-checkKeySizeRemote _ _ Nothing _ = return True
-checkKeySizeRemote key remote (Just file) afile =
-	checkKeySizeOr (badContentRemote remote file) key file afile
+withLocalCopy :: Maybe FilePath -> (FilePath -> Annex Bool) -> Annex Bool
+withLocalCopy Nothing _ = return True
+withLocalCopy (Just localcopy) f = f localcopy
+
+checkKeySizeRemote :: Key -> Remote -> AssociatedFile -> FilePath -> Annex Bool
+checkKeySizeRemote key remote afile localcopy =
+	checkKeySizeOr (badContentRemote remote localcopy) key localcopy afile
 
 checkKeySizeOr :: (Key -> Annex String) -> Key -> FilePath -> AssociatedFile -> Annex Bool
 checkKeySizeOr bad key file afile = case keySize key of
@@ -401,10 +404,9 @@ checkBackend backend key keystatus afile = go =<< isDirect
 		)
 	nocheck = return True
 
-checkBackendRemote :: Backend -> Key -> Remote -> Maybe FilePath -> AssociatedFile -> Annex Bool
-checkBackendRemote backend key remote afile = maybe (return True) go
-  where
-	go file = checkBackendOr (badContentRemote remote file) backend key file afile
+checkBackendRemote :: Backend -> Key -> Remote -> AssociatedFile -> FilePath -> Annex Bool
+checkBackendRemote backend key remote afile localcopy =
+	checkBackendOr (badContentRemote remote localcopy) backend key localcopy afile
 
 checkBackendOr :: (Key -> Annex String) -> Backend -> Key -> FilePath -> AssociatedFile -> Annex Bool
 checkBackendOr bad backend key file afile =
