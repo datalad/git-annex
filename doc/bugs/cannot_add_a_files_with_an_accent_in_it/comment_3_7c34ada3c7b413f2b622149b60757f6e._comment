@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="Alan"
+ avatar="http://cdn.libravatar.org/avatar/9cbc26346f1c693d7df198e662a5fdae"
+ subject="Issue still present"
+ date="2017-03-10T07:32:16Z"
+ content="""
+I'm still having this issue, now with a folder. I added several files:
+
+    % git annex add Théâtre\ Augustin\ 2016/*                                           
+    add Théâtre Augustin 2016/Juin 2016 - Les Ptits du Madrigal - Bizarre, Bizarre.webm ok
+    add Théâtre Augustin 2016/Juin 2016 - Les Ptits du Madrigal - Conte A Rebours.webm ok
+    add Théâtre Augustin 2016/Juin 2016 - Les Ptits du Madrigal - Coup De Theatre.webm ok
+    add Théâtre Augustin 2016/Juin 2016 - Les Ptits du Madrigal - Inspecteur Toutou.webm ok
+    add Théâtre Augustin 2016/Juin 2016 - Les Ptits du Madrigal - La Princesse Qui Disait Toujours Non.webm ok
+    add Théâtre Augustin 2016/Juin 2016 - Les Ptits du Madrigal - Le Magicien Qui Aimait Les Bonbons.webm ok
+    (recording state in git...)
+
+and they show as both added and untracked
+
+    % git annex status                                                                 
+    A Théâtre Augustin 2016/Juin 2016 - Les Ptits du Madrigal - Bizarre, Bizarre.webm
+    A Théâtre Augustin 2016/Juin 2016 - Les Ptits du Madrigal - Conte A Rebours.webm
+    A Théâtre Augustin 2016/Juin 2016 - Les Ptits du Madrigal - Coup De Theatre.webm
+    A Théâtre Augustin 2016/Juin 2016 - Les Ptits du Madrigal - Inspecteur Toutou.webm
+    A Théâtre Augustin 2016/Juin 2016 - Les Ptits du Madrigal - La Princesse Qui Disait Toujours Non.webm
+    A Théâtre Augustin 2016/Juin 2016 - Les Ptits du Madrigal - Le Magicien Qui Aimait Les Bonbons.webm
+    ? Théâtre Augustin 2016/Juin 2016 - Les Ptits du Madrigal - Bizarre, Bizarre.webm
+    ? Théâtre Augustin 2016/Juin 2016 - Les Ptits du Madrigal - Conte A Rebours.webm
+    ? Théâtre Augustin 2016/Juin 2016 - Les Ptits du Madrigal - Coup De Theatre.webm
+    ? Théâtre Augustin 2016/Juin 2016 - Les Ptits du Madrigal - Inspecteur Toutou.webm
+    ? Théâtre Augustin 2016/Juin 2016 - Les Ptits du Madrigal - La Princesse Qui Disait Toujours Non.webm
+    ? Théâtre Augustin 2016/Juin 2016 - Les Ptits du Madrigal - Le Magicien Qui Aimait Les Bonbons.webm
+
+It seems to be related to this: https://stackoverflow.com/questions/11968183/how-to-handle-accented-characters-in-file-names-in-git-on-mac-os-x-converted-to
+
+I “solved“ the issue by doing a git add of the repository, but I'm wondering what options I need to use with git to avoid such issues in the future.
+"""]]
