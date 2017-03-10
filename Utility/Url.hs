@@ -342,14 +342,6 @@ hAcceptEncoding = "Accept-Encoding"
 hContentDisposition :: CI.CI B.ByteString
 hContentDisposition = "Content-Disposition"
 
-#if ! MIN_VERSION_http_types(0,7,0)
-hContentLength :: CI.CI B.ByteString
-hContentLength = "Content-Length"
-
-hUserAgent :: CI.CI B.ByteString
-hUserAgent = "User-Agent"
-#endif
-
 {- Use with eg:
  -
  - > catchJust (matchStatusCodeException (== notFound404))
