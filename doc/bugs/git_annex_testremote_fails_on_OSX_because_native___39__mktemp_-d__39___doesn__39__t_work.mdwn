@@ -85,3 +85,5 @@ FAIL
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Just starting but have high hopes :-)
+
+> [[done]] per my comment --[[Joey]]
