@@ -1,0 +1,35 @@
+I'm trying to set up a public repository that is cloneable from my web site,
+similar to what is mentioned at
+https://git-annex.branchable.com/tips/setup_a_public_repository_on_a_web_site/
+
+I've got a repo from my laptop that I can push to my web server, and I can list
+the contents of the `.git` directory:
+
+    $ curl https://example.com/annex/.git/
+    <html>
+    <head><title>Index of /annex/.git/</title></head>
+    <body bgcolor="white">
+    <h1>Index of /annex/.git/</h1><hr><pre><a href="../">../</a>
+    <a href="annex/">annex/</a>                 12-Mar-2017 17:42                   -
+    <a href="branches/">branches/</a>           12-Mar-2017 17:38                   -
+    <a href="hooks/">hooks/</a>                 12-Mar-2017 17:38                   -
+    <a href="info/">info/</a>                   12-Mar-2017 17:38                   -
+    <a href="logs/">logs/</a>                   12-Mar-2017 17:38                   -
+    <a href="objects/">objects/</a>             12-Mar-2017 17:40                   -
+    <a href="refs/">refs/</a>                   12-Mar-2017 17:38                   -
+    <a href="HEAD">HEAD</a>                     12-Mar-2017 17:39                  23
+    <a href="config">config</a>                 12-Mar-2017 17:40                 269
+    <a href="description">description</a>       12-Mar-2017 17:38                  73
+    <a href="index">index</a>                   12-Mar-2017 17:41                1200
+    </pre><hr></body>
+    </html>
+
+However, when I try to clone it to simulate what I expect people to do, I get:
+
+    $ git clone https://exmaple.com/annex/.git
+    Cloning into 'annex...
+    fatal: repository 'https://example.com/annex/.git/' not found
+
+I've configured with `git config core.sharedrepository world` and `git config
+receive.denyCurrentBranch updateInstead`, but it doesn't seem to be working as I
+can't clone the repository over https.
