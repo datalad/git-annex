@@ -15,6 +15,8 @@ git-annex (6.20170301.2) UNRELEASED; urgency=medium
     program, searching for the program in the PATH.
   * Drop support for building with old versions of dns, http-conduit,
     directory, feed, and http-types.
+  * Windows: Fix bug in shell script shebang lookup code that
+    caused a "delayed read on closed handle" error.
 
  -- Joey Hess <id@joeyh.name>  Thu, 02 Mar 2017 12:51:40 -0400
 
