@@ -47,22 +47,16 @@ gitSsh host mp cmd = do
 				  , Param c
 				  ]
 				, gitps
-				-- cmd is already shell escaped
-				-- for the remote side, but needs to be
-				-- shell-escaped once more since it's
-				-- passed through the local shell.
-				, [ Param $ shellEscape $ cmd ]
 				]
-			| otherwise -> ret c [ gitps, [Param cmd]]
+			| otherwise -> ret c [gitps]
 		Nothing -> do
 			gs <- getEnv gitSshEnv
 			case gs of
-				Just c -> ret c [ gitps, [Param cmd]]
+				Just c -> ret c [gitps]
 				Nothing -> return Nothing
  where
-	-- git passes exactly these parameters, followed by another
-	-- parameter containing the remote command.
+	-- git passes exactly these parameters
 	gitps = map Param $ case mp of
-		Nothing -> [host]
-		Just p -> [host, "-p", show p]
+		Nothing -> [host, cmd]
+		Just p -> [host, "-p", show p, cmd]
 	ret c ll = return $ Just (c, concat ll)
