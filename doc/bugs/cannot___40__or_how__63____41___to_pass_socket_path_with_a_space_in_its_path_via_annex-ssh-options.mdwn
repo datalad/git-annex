@@ -1,0 +1,31 @@
+### Please describe the problem.
+
+git annex specifies its own socket path via -S.  To overload with our socket path (to be reused by annex and other ssh invocations) we need to provide the path via annex-ssh-options option.  And we cannot pass it as an overload -o ControlPath since -S specification provided by annex "overrides" it.
+The difficulty comes in possibly not quite common but still possible case when path to the socket contains a space.  I have tried all kinds of possible specifications but failed to find one which works... 
+
+Could you give me a hint!? ;)
+
+### What version of git-annex are you using? On what operating system?
+
+6.20170307+gitg24ade8a25-1~ndall+1
+
+### Please provide any additional information below.
+
+[[!format sh """
+# so -- ssh works
+$> ssh -O check -oControlMaster=auto -S"/tmp/te st/socket" 'yohtest@smaug'
+Master running (pid=20336)
+# but can't get annex to use it:
+
+$> git annex init -c 'remote.origin.annex-ssh-options=-oControlMaster=auto -S"/tmp/te st/socket"' 
+init  ssh: Could not resolve hostname st/socket": Name or service not known   
+yohtest@smaug's password: 
+
+$> git annex init -c 'remote.origin.annex-ssh-options=-oControlMaster=auto "-S\"/tmp/te st/socket\""' 
+init  ssh: Could not resolve hostname "-s\\"/tmp/te: Name or service not known
+yohtest@smaug's password: 
+
+# etc
+"""]]
+
+[[!meta author=yoh]]
