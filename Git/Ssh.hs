@@ -43,10 +43,8 @@ gitSsh host mp cmd = do
 			-- treated the same as GIT_SSH
 			| any isSpace c -> ret "sh"
 				[ [ Param "-c"
-				  , Param (c ++ " \"$@\"")
-				  , Param c
+				  , Param (shellcmd c gitps)
 				  ]
-				, gitps
 				]
 			| otherwise -> ret c [gitps]
 		Nothing -> do
@@ -55,8 +53,16 @@ gitSsh host mp cmd = do
 				Just c -> ret c [gitps]
 				Nothing -> return Nothing
  where
-	-- git passes exactly these parameters
+	ret c ll = return $ Just (c, concat ll)
+
+	-- git passes exactly these parameters to the command
 	gitps = map Param $ case mp of
 		Nothing -> [host, cmd]
 		Just p -> [host, "-p", show p, cmd]
-	ret c ll = return $ Just (c, concat ll)
+
+	-- The shell command to run with sh -c is constructed
+	-- this way, rather than using "$@" because there could be some
+	-- unwanted parameters passed to the command, and this way they
+	-- are ignored. For example, when Utility.Rsync.rsyncShell is 
+	-- used, rsync adds some parameters after the command.
+	shellcmd c ps = c ++ " " ++ unwords (map shellEscape (toCommand ps))
