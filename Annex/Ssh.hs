@@ -9,6 +9,8 @@
 
 module Annex.Ssh (
 	ConsumeStdin(..),
+	SshCommand,
+	sshCommand,
 	sshOptions,
 	sshCacheDir,
 	sshReadPort,
@@ -37,6 +39,7 @@ import Utility.Env
 import Utility.FileSystemEncoding
 import Types.CleanupActions
 import Git.Env
+import Git.Ssh
 #ifndef mingw32_HOST_OS
 import Annex.Perms
 import Annex.LockPool
@@ -47,8 +50,22 @@ import Annex.LockPool
  - not be allowed to consume the process's stdin. -}
 data ConsumeStdin = ConsumeStdin | NoConsumeStdin
 
+{- Generates a command to ssh to a given host (or user@host) on a given
+ - port. This includes connection caching parameters, and any ssh-options.
+ - If GIT_SSH or GIT_SSH_COMMAND is set, they are used instead. -}
+sshCommand :: ConsumeStdin -> (SshHost, Maybe SshPort) -> RemoteGitConfig -> SshCommand -> Annex (FilePath, [CommandParam])
+sshCommand cs (host, port) gc remotecmd =
+	go =<< liftIO (gitSsh host port remotecmd)
+  where
+	go (Just (c, ps)) = return (c, consumeStdinParams cs ++ ps)
+	go Nothing = do
+		ps <- sshOptions cs (host, port) gc []
+		return ("ssh", Param host:ps++[Param remotecmd])
+
 {- Generates parameters to ssh to a given host (or user@host) on a given
- - port. This includes connection caching parameters, and any ssh-options. -}
+ - port. This includes connection caching parameters, and any
+ - ssh-options. Note that the host to ssh to and the command to run
+ - are not included in the returned options. -}
 sshOptions :: ConsumeStdin -> (String, Maybe Integer) -> RemoteGitConfig -> [CommandParam] -> Annex [CommandParam]
 sshOptions cs (host, port) gc opts = go =<< sshCachingInfo (host, port)
   where
@@ -61,11 +78,13 @@ sshOptions cs (host, port) gc opts = go =<< sshCachingInfo (host, port)
 		, map Param (remoteAnnexSshOptions gc)
 		, opts
 		, portParams port
-		, case cs of
-			ConsumeStdin -> []
-			NoConsumeStdin -> [Param "-n"]
+		, consumeStdinParams cs
 		, [Param "-T"]
 		]
+
+consumeStdinParams :: ConsumeStdin -> [CommandParam]
+consumeStdinParams ConsumeStdin = []
+consumeStdinParams NoConsumeStdin = [Param "-n"]
 
 {- Returns a filename to use for a ssh connection caching socket, and
  - parameters to enable ssh connection caching. -}
@@ -285,19 +304,24 @@ inRepoWithSshOptionsTo remote gc a =
 {- To make any git commands be run with ssh caching enabled,
  - and configured ssh-options alters the local Git.Repo's gitEnv
  - to set GIT_SSH=git-annex, and set sshOptionsEnv when running git
- - commands. -}
+ - commands.
+ -
+ - If GIT_SSH or GIT_SSH_COMMAND are set, this has no effect. -}
 sshOptionsTo :: Git.Repo -> RemoteGitConfig -> Git.Repo -> Annex Git.Repo
 sshOptionsTo remote gc localr
 	| not (Git.repoIsUrl remote) || Git.repoIsHttp remote = unchanged
 	| otherwise = case Git.Url.hostuser remote of
 		Nothing -> unchanged
-		Just host -> do
-			(msockfile, _) <- sshCachingInfo (host, Git.Url.port remote)
-			case msockfile of
-				Nothing -> use []
-				Just sockfile -> do
-					prepSocket sockfile
-					use (sshConnectionCachingParams sockfile)
+		Just host -> ifM (liftIO gitSshEnvSet)
+			( unchanged
+			, do
+				(msockfile, _) <- sshCachingInfo (host, Git.Url.port remote)
+				case msockfile of
+					Nothing -> use []
+					Just sockfile -> do
+						prepSocket sockfile
+						use (sshConnectionCachingParams sockfile)
+			)
   where
 	unchanged = return localr
 
@@ -313,7 +337,7 @@ sshOptionsTo remote gc localr
 				liftIO $ do
 					localr' <- addGitEnv localr sshOptionsEnv
 						(toSshOptionsEnv sshopts)
-					addGitEnv localr' "GIT_SSH" command
+					addGitEnv localr' gitSshEnv command
 
 runSshOptions :: [String] -> String -> IO ()
 runSshOptions args s = do

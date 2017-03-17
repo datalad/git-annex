@@ -1404,6 +1404,37 @@ specific failures.  git-annex itself should return 0 on success and 1 on
 failure, unless the `--time-limit=time` option is hit, in which case it
 returns with exit code 101.
 
+# ENVIRONMENT
+
+These environment variables are used by git-annex when set:
+
+* `GIT_WORK_TREE`, `GIT_DIR`
+
+  Handled the same as they are by git, see git(1)
+
+* `GIT_SSH`, `GIT_SSH_COMMAND`
+
+  Handled similarly to the same as described in git(1).
+  The one difference is that git-annex will sometimes pass an additional
+  "-n" parameter to these, as the first parameter, to prevent ssh from
+  reading from stdin.
+
+  Note that setting either of these environment variables prevents
+  git-annex from automatically enabling ssh connection caching
+  (see `annex.sshcaching`), so it will slow down some operations with
+  remotes over ssh. It's up to you to enable ssh connection caching
+  if you need it; see ssh's documentation.
+
+  Also, `annex.ssh-options` and `remote.<name>.annex-ssh-options`
+  won't have any effect when these envionment variables are set.
+
+  Usually it's better to configure any desired options through your
+  ~/.ssh/config file, or by setting `annex.ssh-options`.
+
+Some special remotes use additional environment variables
+for authentication etc. For example, `AWS_ACCESS_KEY_ID`
+and `GIT_ANNEX_P2P_AUTHTOKEN`. See special remote documentation.
+
 # FILES
 
 These files are used by git-annex:

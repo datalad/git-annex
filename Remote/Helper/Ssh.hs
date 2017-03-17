@@ -23,15 +23,10 @@ import Types.Remote
 import Types.Transfer
 import Config
 
-{- Generates parameters to ssh to a repository's host and run a command.
- - Caller is responsible for doing any neccessary shellEscaping of the
- - passed command. -}
-toRepo :: ConsumeStdin -> Git.Repo -> RemoteGitConfig -> [CommandParam] -> Annex [CommandParam]
-toRepo cs r gc sshcmd = do
-	let opts = map Param $ remoteAnnexSshOptions gc
+toRepo :: ConsumeStdin -> Git.Repo -> RemoteGitConfig -> SshCommand -> Annex (FilePath, [CommandParam])
+toRepo cs r gc remotecmd = do
 	let host = fromMaybe (giveup "bad ssh url") $ Git.Url.hostuser r
-	params <- sshOptions cs (host, Git.Url.port r) gc opts
-	return $ params ++ Param host : sshcmd
+	sshCommand cs (host, Git.Url.port r) gc remotecmd
 
 {- Generates parameters to run a git-annex-shell command on a remote
  - repository. -}
@@ -49,8 +44,7 @@ git_annex_shell cs r command params fields
 				: map shellEscape (toCommand shellopts) ++
 			uuidcheck u ++
 			map shellEscape (toCommand fieldopts)
-		sshparams <- toRepo cs r gc [Param sshcmd]
-		return $ Just ("ssh", sshparams)
+		Just <$> toRepo cs r gc sshcmd
 	| otherwise = return Nothing
   where
 	dir = Git.repoPath r

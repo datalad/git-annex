@@ -212,11 +212,11 @@ storeBupUUID u buprepo = do
 	v = fromUUID u
 
 onBupRemote :: Git.Repo -> (FilePath -> [CommandParam] -> IO a) -> FilePath -> [CommandParam] -> Annex a
-onBupRemote r a command params = do
+onBupRemote r runner command params = do
 	c <- Annex.getRemoteGitConfig r
-	sshparams <- Ssh.toRepo NoConsumeStdin r c [Param $
-			"cd " ++ dir ++ " && " ++ unwords (command : toCommand params)]
-	liftIO $ a "ssh" sshparams
+	let remotecmd = "cd " ++ dir ++ " && " ++ unwords (command : toCommand params)
+	(sshcmd, sshparams) <- Ssh.toRepo NoConsumeStdin r c remotecmd
+	liftIO $ runner sshcmd sshparams
   where
 	path = Git.repoPath r
 	base = fromMaybe path (stripPrefix "/~/" path)

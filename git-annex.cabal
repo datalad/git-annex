@@ -833,6 +833,7 @@ Executable git-annex
     Git.Remote.Remove
     Git.Repair
     Git.Sha
+    Git.Ssh
     Git.Status
     Git.Tree
     Git.Types

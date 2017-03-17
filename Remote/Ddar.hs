@@ -121,13 +121,12 @@ splitRemoteDdarRepo ddarrepo =
 ddarRemoteCall :: ConsumeStdin -> DdarRepo -> Char -> [CommandParam] -> Annex (String, [CommandParam])
 ddarRemoteCall cs ddarrepo cmd params
 	| ddarLocal ddarrepo = return ("ddar", localParams)
-	| otherwise = do
-		os <- sshOptions cs (host, Nothing) (ddarRepoConfig ddarrepo) []
-		return ("ssh", os ++ remoteParams)
+	| otherwise = sshCommand cs (host, Nothing) (ddarRepoConfig ddarrepo) remoteCommand
   where
 	(host, ddarrepo') = splitRemoteDdarRepo ddarrepo
 	localParams = Param [cmd] : Param (ddarRepoLocation ddarrepo) : params
-	remoteParams = Param host : Param "ddar" : Param [cmd] : Param ddarrepo' : params
+	remoteCommand = unwords $ map shellEscape $ toCommand $
+		[Param "ddar", Param [cmd], Param ddarrepo'] ++ params
 
 {- Specialized ddarRemoteCall that includes extraction command and flags -}
 ddarExtractRemoteCall :: ConsumeStdin -> DdarRepo -> Key -> Annex (String, [CommandParam])
@@ -159,23 +158,19 @@ ddarDirectoryExists ddarrepo
 			Left _ -> Right False
 			Right status -> Right $ isDirectory status
 	| otherwise = do
-		ps <- sshOptions NoConsumeStdin (host, Nothing)
-			(ddarRepoConfig ddarrepo) []
-		exitCode <- liftIO $ safeSystem "ssh" (ps ++ params)
+		let remotecmd = unwords $ map shellEscape
+			[ "test", "-d", ddarrepo' ]
+		(sshcmd, sshps) <- sshCommand NoConsumeStdin (host, Nothing)
+			(ddarRepoConfig ddarrepo) remotecmd
+		exitCode <- liftIO $ safeSystem sshcmd sshps
 		case exitCode of
 			ExitSuccess -> return $ Right True
 			ExitFailure 1 -> return $ Right False
-			ExitFailure code -> return $ Left $ "ssh call " ++
-				show (unwords $ toCommand params) ++
+			ExitFailure code -> return $ Left $ "ssh " ++
+				show (unwords $ toCommand sshps) ++
 				" failed with status " ++ show code
   where
 	(host, ddarrepo') = splitRemoteDdarRepo ddarrepo
-	params =
-		[ Param host
-		, Param "test"
-		, Param "-d"
-		, Param ddarrepo'
-		]
 
 {- Use "ddar t" to determine if a given key is present in a ddar archive -}
 inDdarManifest :: DdarRepo -> Key -> Annex (Either String Bool)

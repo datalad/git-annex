@@ -224,10 +224,10 @@ tryScan r
 		(pipedconfig, return Nothing) "configlist" [] []
 	manualconfiglist = do
 		gc <- Annex.getRemoteGitConfig r
-		sshparams <- Ssh.toRepo NoConsumeStdin r gc [Param sshcmd]
-		liftIO $ pipedconfig "ssh" sshparams
+		(sshcmd, sshparams) <- Ssh.toRepo NoConsumeStdin r gc remotecmd
+		liftIO $ pipedconfig sshcmd sshparams
 	  where
-		sshcmd = "sh -c " ++ shellEscape
+		remotecmd = "sh -c " ++ shellEscape
 			(cddir ++ " && " ++ "git config --null --list")
 		dir = Git.repoPath r
 		cddir
