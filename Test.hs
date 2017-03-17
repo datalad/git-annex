@@ -222,8 +222,9 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "drop (with remote)" test_drop_withremote
 	, testCase "drop (untrusted remote)" test_drop_untrustedremote
 	, testCase "get" test_get
-	, testCase "get (from ssh remote)" test_get_ssh_remote
+	, testCase "get (ssh remote)" test_get_ssh_remote
 	, testCase "move" test_move
+	, testCase "move (ssh remote)" test_move_ssh_remote
 	, testCase "copy" test_copy
 	, testCase "lock" test_lock
 	, testCase "lock (v6 --force)" test_lock_v6_force
@@ -493,7 +494,13 @@ test_get' setup = setup $ do
 		unannexed ingitfile
 
 test_move :: Assertion
-test_move = intmpclonerepo $ do
+test_move = test_move' intmpclonerepo
+
+test_move_ssh_remote :: Assertion
+test_move_ssh_remote = test_move' (with_ssh_origin intmpclonerepo)
+
+test_move' :: (Assertion -> Assertion) -> Assertion
+test_move' setup = setup $ do
 	annexed_notpresent annexedfile
 	inmainrepo $ annexed_present annexedfile
 	git_annex "move" ["--from", "origin", annexedfile] @? "move --from of file failed"
