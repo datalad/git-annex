@@ -48,7 +48,7 @@ cmds_notreadonly =
 	]
 
 cmds :: [Command]
-cmds = map adddirparam $ cmds_readonly ++ cmds_notreadonly
+cmds = map (adddirparam . noMessages) (cmds_readonly ++ cmds_notreadonly)
   where
 	adddirparam c = c { cmdparamdesc = "DIRECTORY " ++ cmdparamdesc c }
 

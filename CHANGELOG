@@ -17,6 +17,10 @@ git-annex (6.20170301.2) UNRELEASED; urgency=medium
     directory, feed, and http-types.
   * Windows: Fix bug in shell script shebang lookup code that
     caused a "delayed read on closed handle" error.
+  * git-annex-shell: Fix bug when used with a recently cloned repository,
+    where "merging" messages were included in the output of configlist
+    (and perhaps other commands) and caused a "Failed to get annex.uuid
+    configuration" error.
 
  -- Joey Hess <id@joeyh.name>  Thu, 02 Mar 2017 12:51:40 -0400
 

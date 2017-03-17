@@ -11,3 +11,5 @@ Next git-annex sync clam worked ok and got the UUID.
 
 clam has git-annex 6.20170101 installed.
 --[[Joey]]
+
+> [[fixed|done]] --[[Joey]]
