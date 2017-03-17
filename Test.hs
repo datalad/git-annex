@@ -1,6 +1,6 @@
 {- git-annex test suite
  -
- - Copyright 2010-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -29,13 +29,14 @@ import Test.Tasty.Runners
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
 import Test.Tasty.Ingredients.Rerun
-import Options.Applicative (switch, long, help)
+import Options.Applicative (switch, long, help, internal)
 
 import qualified Data.Map as M
 import qualified Data.Aeson
 import qualified Data.ByteString.Lazy.UTF8 as BU8
 
 import Common
+import CmdLine.GitAnnex.Options
 
 import qualified Utility.SafeCommand
 import qualified Annex
@@ -112,21 +113,31 @@ optParser = TestOptions
 	<*> switch
 		( long "keep-failures"
 		<> help "preserve repositories on test failure"
-	)
+		)
+	<*> switch
+		( long "fakessh"
+		<> internal
+		)
+	<*> cmdParams "non-options are for internal use only"
 
 runner :: Maybe (TestOptions -> IO ())
-runner = Just $ \opts -> isolateGitConfig $ do
-	ensuretmpdir
-	crippledfilesystem <- Annex.Init.probeCrippledFileSystem' tmpdir
-	case tryIngredients ingredients (tastyOptionSet opts) (tests crippledfilesystem opts) of
-		Nothing -> error "No tests found!?"
-		Just act -> ifM act
-			( exitSuccess
-			, do
-				putStrLn "  (This could be due to a bug in git-annex, or an incompatibility"
-				putStrLn "   with utilities, such as git, installed on this system.)"
-				exitFailure
-			)
+runner = Just go
+  where
+	go opts
+		| fakeSsh opts = runFakeSsh (internalData opts)
+		| otherwise = runtests opts
+	runtests opts = isolateGitConfig $ do
+		ensuretmpdir
+		crippledfilesystem <- Annex.Init.probeCrippledFileSystem' tmpdir
+		case tryIngredients ingredients (tastyOptionSet opts) (tests crippledfilesystem opts) of
+			Nothing -> error "No tests found!?"
+			Just act -> ifM act
+				( exitSuccess
+				, do
+					putStrLn "  (This could be due to a bug in git-annex, or an incompatibility"
+					putStrLn "   with utilities, such as git, installed on this system.)"
+					exitFailure
+				)
 
 ingredients :: [Ingredient]
 ingredients =
@@ -211,6 +222,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "drop (with remote)" test_drop_withremote
 	, testCase "drop (untrusted remote)" test_drop_untrustedremote
 	, testCase "get" test_get
+	, testCase "get (from ssh remote)" test_get_ssh_remote
 	, testCase "move" test_move
 	, testCase "copy" test_copy
 	, testCase "lock" test_lock
@@ -458,7 +470,13 @@ test_drop_untrustedremote = intmpclonerepo $ do
 	inmainrepo $ annexed_present annexedfile
 
 test_get :: Assertion
-test_get = intmpclonerepo $ do
+test_get = test_get' intmpclonerepo
+
+test_get_ssh_remote :: Assertion
+test_get_ssh_remote = test_get' (with_ssh_origin intmpclonerepo)
+
+test_get' :: (Assertion -> Assertion) -> Assertion
+test_get' setup = setup $ do
 	inmainrepo $ annexed_present annexedfile
 	annexed_notpresent annexedfile
 	git_annex "get" [annexedfile] @? "get of file failed"
@@ -1740,6 +1758,16 @@ innewrepo a = withgitrepo $ \r -> indir r a
 inmainrepo :: Assertion -> Assertion
 inmainrepo = indir mainrepodir
 
+with_ssh_origin :: (Assertion -> Assertion) -> (Assertion -> Assertion)
+with_ssh_origin cloner a = cloner $ do
+	origindir <- absPath
+		=<< annexeval (Config.getConfig (Config.ConfigKey config) "/dev/null")
+	let originurl = "localhost:" ++ origindir
+	boolSystem "git" [Param "config", Param config, Param originurl] @? "git config failed"
+	a
+  where
+	config = "remote.origin.url"
+
 intmpclonerepo :: Assertion -> Assertion
 intmpclonerepo a = withtmpclonerepo $ \r -> indir r a
 
@@ -2072,8 +2100,19 @@ setTestMode testmode = do
 		, ("GIT_COMMITTER_NAME", "git-annex test")
 		-- force gpg into batch mode for the tests
 		, ("GPG_BATCH", "1")
+		-- Make git and git-annex access ssh remotes on the local
+		-- filesystem, without using ssh at all.
+		, ("GIT_SSH_COMMAND", "git-annex test --fakessh --")
 		, ("TESTMODE", show testmode)
 		]
+
+runFakeSsh :: [String] -> IO ()
+runFakeSsh ("-n":ps) = runFakeSsh ps
+runFakeSsh (_host:cmd:[]) = do
+	let p = shell cmd
+	(_, _, _, pid) <- createProcess p
+	forceSuccessProcess p pid
+runFakeSsh ps = error $ "fake ssh option parse error: " ++ show ps
 
 getTestMode :: IO TestMode
 getTestMode = Prelude.read <$> Utility.Env.getEnvDefault "TESTMODE" ""
