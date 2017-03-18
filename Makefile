@@ -67,7 +67,7 @@ install-misc: Build/InstallDesktopFile
 
 install: install-bins install-docs install-misc
 
-test: git-annex
+test: git-annex git-annex-shell
 	./git-annex test
 
 retest: git-annex
