@@ -1,0 +1,13 @@
+Preparing for a release tomorrow. Yury fixed the Windows autobuilder over
+the weekend. The OSX autobuilder was broken by my changes Friday, which
+turned out to have a simple bug that took quite a long time to chase down.
+
+Also added `git annex sync --content-of=path` to sync the contents of files
+in a path, rather than in the whole work tree as `--content` does. I would
+have rather made this be `--content=path` but optparse-applicative 
+[does not support](https://github.com/pcapriotti/optparse-applicative/issues/243)
+options that can be either boolean or have a string value. Really,
+I'd rather `git annex sync path` do it, but that would be ambiguous
+with the remote name parameter.
+
+Today's work was sponsored by Jake Vosloo on Patreon.
