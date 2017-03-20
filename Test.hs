@@ -2116,9 +2116,8 @@ setTestMode testmode = do
 runFakeSsh :: [String] -> IO ()
 runFakeSsh ("-n":ps) = runFakeSsh ps
 runFakeSsh (_host:cmd:[]) = do
-	let p = shell cmd
-	(_, _, _, pid) <- createProcess p
-	forceSuccessProcess p pid
+	(_, _, _, pid) <- createProcess (shell cmd)
+	exitWith =<< waitForProcess pid
 runFakeSsh ps = error $ "fake ssh option parse error: " ++ show ps
 
 getTestMode :: IO TestMode
