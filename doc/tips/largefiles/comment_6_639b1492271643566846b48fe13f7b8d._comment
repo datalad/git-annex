@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2017-03-20T21:16:30Z"
+ content="""
+@joern.mankiewicz, you need to file a bug report with enough information to
+reproduce your problem.
+
+annex.largefiles in .gitattributes works fine:
+
+	joey@darkstar:~/tmp> git init ttt
+	Initialized empty Git repository in /home/joey/tmp/ttt/.git/
+	joey@darkstar:~/tmp> cd ttt
+	joey@darkstar:~/tmp/ttt> git annex init
+	init  ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/ttt> echo '* annex.largefiles=nothing' > .gitattributes
+	joey@darkstar:~/tmp/ttt> touch foo
+	joey@darkstar:~/tmp/ttt> git annex add foo
+	add foo (non-large file; adding content to git repository) ok
+	(recording state in git...)
+"""]]
