@@ -9,3 +9,6 @@ currently takes. Perhaps `git annex sync --dir==thedir`, which
 automatically enables content syncing?
 
 --[[Joey]]
+
+> Going with --content-of, so it's clear it enables content syncing.
+> With a -C short option. [[done]] --[[Joey]]

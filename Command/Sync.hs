@@ -63,7 +63,7 @@ cmd :: Command
 cmd = withGlobalOptions [jobsOption] $
 	command "sync" SectionCommon 
 		"synchronize local repository with remotes"
-		(paramRepeating paramRemote) (seek <$$> optParser)
+		(paramRepeating paramRemote) (seek <--< optParser)
 
 data SyncOptions  = SyncOptions
 	{ syncWith :: CmdParams
@@ -74,6 +74,7 @@ data SyncOptions  = SyncOptions
 	, pushOption :: Bool
 	, contentOption :: Bool
 	, noContentOption :: Bool
+	, contentOfOption :: [FilePath]
 	, keyOptions :: Maybe KeyOptions
 	}
 
@@ -109,7 +110,28 @@ optParser desc = SyncOptions
 		( long "no-content"
 		<> help "do not transfer file contents"
 		)
+	<*> many (strOption
+		( long "content-of"
+		<> short 'C'
+		<> help "transfer file contents of files in a given location"
+		<> metavar paramPath
+		))
 	<*> optional parseAllOption
+
+-- Since prepMerge changes the working directory, FilePath options
+-- have to be adjusted.
+instance DeferredParseClass SyncOptions where
+	finishParse v = SyncOptions
+		<$> pure (syncWith v)
+		<*> pure (commitOption v)
+		<*> pure (noCommitOption v)
+		<*> pure (messageOption v)
+		<*> pure (pullOption v)
+		<*> pure (pushOption v)
+		<*> pure (contentOption v)
+		<*> pure (noContentOption v)
+		<*> liftIO (mapM absPath (contentOfOption v))
+		<*> pure (keyOptions v)
 
 seek :: SyncOptions -> CommandSeek
 seek o = allowConcurrentOutput $ do
@@ -148,6 +170,7 @@ seek o = allowConcurrentOutput $ do
 	mapM_ (commandAction . withbranch . pushRemote o) gitremotes
   where
 	shouldsynccontent = pure (contentOption o)
+		<||> pure (not (null (contentOfOption o)))
 		<||> (pure (not (noContentOption o)) <&&> getGitConfigVal annexSyncContent)
 
 type CurrBranch = (Maybe Git.Branch, Maybe Adjustment)
@@ -510,7 +533,7 @@ seekSyncContent o rs = do
 	mvar <- liftIO newEmptyMVar
 	bloom <- case keyOptions o of
 		Just WantAllKeys -> Just <$> genBloomFilter (seekworktree mvar [])
-		_ -> seekworktree mvar [] (const noop) >> pure Nothing
+		_ -> seekworktree mvar (contentOfOption o) (const noop) >> pure Nothing
 	withKeyOptions' (keyOptions o) False
 		(return (seekkeys mvar bloom))
 		(const noop)
