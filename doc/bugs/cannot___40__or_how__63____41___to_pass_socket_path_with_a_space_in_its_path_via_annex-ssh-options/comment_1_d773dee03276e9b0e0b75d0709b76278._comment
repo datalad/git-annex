@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-03-21T17:38:57Z"
+ content="""
+You can't accomplish this with `remote.<name>.annex-ssh-options`,
+since it is not exposed to the shell, and the parser just breaks it up into
+words.
+
+A smarter parser would be needed. Or you could configure it in
+~/.ssh/config, or perhaps make a ssh config file elsewhere and use
+annex-ssh-options to pass -F to ssh to make it use this other config file.
+
+Now that git-annex supports `GIT_SSH_COMMAND`, which is exposed to the
+shell, you should be able to accomplish it that way. I don't know if that
+would work in your use case, since the environment variable affects all ssh
+remotes, not just one.
+"""]]
