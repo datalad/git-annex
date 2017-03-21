@@ -54,11 +54,10 @@ data ConsumeStdin = ConsumeStdin | NoConsumeStdin
  - port. This includes connection caching parameters, and any ssh-options.
  - If GIT_SSH or GIT_SSH_COMMAND is set, they are used instead. -}
 sshCommand :: ConsumeStdin -> (SshHost, Maybe SshPort) -> RemoteGitConfig -> SshCommand -> Annex (FilePath, [CommandParam])
-sshCommand cs (host, port) gc remotecmd =
-	go =<< liftIO (gitSsh host port remotecmd)
+sshCommand cs (host, port) gc remotecmd = maybe go return
+	=<< liftIO (gitSsh' host port remotecmd (consumeStdinParams cs))
   where
-	go (Just (c, ps)) = return (c, consumeStdinParams cs ++ ps)
-	go Nothing = do
+	go = do
 		ps <- sshOptions cs (host, port) gc []
 		return ("ssh", Param host:ps++[Param remotecmd])
 
