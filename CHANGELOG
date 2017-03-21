@@ -1,4 +1,4 @@
-git-annex (6.20170301.2) UNRELEASED; urgency=medium
+git-annex (6.20170321) unstable; urgency=medium
 
   * Bugfix: Passing a command a filename that does not exist sometimes
     did not display an error, when a path to a directory was also passed.
@@ -27,7 +27,7 @@ git-annex (6.20170301.2) UNRELEASED; urgency=medium
   * sync --content-of=path (-C path) added for when you want to sync
     only some files' contents, not the whole working tree.
 
- -- Joey Hess <id@joeyh.name>  Thu, 02 Mar 2017 12:51:40 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 21 Mar 2017 11:27:38 -0400
 
 git-annex (6.20170301.1) unstable; urgency=medium
 
