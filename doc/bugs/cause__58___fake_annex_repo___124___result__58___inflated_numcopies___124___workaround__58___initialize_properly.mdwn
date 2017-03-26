@@ -7,7 +7,8 @@ the annex-less git repo will gain a v5 annex branch
 it knows it can't store binary files
 but all the properly initialized annex repos in the network don't know that
 
-when I run "sync --content", the initialized annex repos think that the uninitialized repo contains the binary files.
+when I run "sync --content",
+the initialized annex repos think that the uninitialized repo contains copies.
 
 I suspect this results in inaccurate "copies" count
 I know it results in an inaccurate "list files' location" graph
@@ -35,12 +36,14 @@ git annex whereis
 
 Hypothesis:
 
-maybe the issue is that I cloned the repo rather than creating it normally,
-leaving it in a half-annexed state?
+maybe the issue is that I cloned the repo
+rather than creating it normally,
+thus leaving it in a half-annexed state?
 
 Experiment:
 
-tested by creating an independent git repo and then adding it as a remote to Alpha.
+tested by creating an independent git repo
+and then adding it as a remote to Alpha.
 
 then ran sync --content
 
@@ -55,11 +58,15 @@ git-annex sync --content
 
 ***** ramifications
 
-It would appear this error can cause data loss due to a false numcopies count.
+It would appear this error can cause data loss
+due to a false numcopies count.
 
-Yet GitHub is supposed to work. So this error should've already been noticed. Contradiction detected.
+Yet GitHub is supposed to work.
+So this error should've already been noticed.
+Contradiction detected.
 
-Positivity: I am planning on becoming a git-annex evangelist as part of a larger project. Emacs offers ergonomic control via magit and a dired plugin.
+Positivity: I am planning on becoming a git-annex evangelist as part of a larger project.
+Emacs offers ergonomic control via magit and a dired plugin.
 
 ***** environment
 
