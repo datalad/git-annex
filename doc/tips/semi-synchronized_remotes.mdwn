@@ -104,5 +104,11 @@ Therefore, the best approach may be to have git-annex respect the
 `remote.<name>.annex-push` and `remote.<name>.annex-pull` settings
 that would match the `sync --[no-]push --[no-]pull` flags.
 
+Note that this is similar in concept to
+[[todo/Bittorrent-like_features]], although here we assumes you
+already have some transport to share anything you need, yet still have
+to address the question of semi-synchronized git repositories in some
+way.
+
 I would obviously welcome additional comments and questions on this
 approach. -- [[anarcat]]
