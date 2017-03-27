@@ -1,0 +1,108 @@
+In general, git-annex repositories that are "synchronized" (e.g. with
+the [[git-annex-sync]] command, whatever the backend) have a global
+namespace. Repositories will eventually converge to have very exactly
+the same content, generally using git's push/pull/merge
+mechanisms.
+
+What if we do *not* wish to exactly have the same content across all
+repositories, but still want to share some objects?
+
+An example use case here is content (e.g. `.git/annex/objects` blobs)
+sharing, without having to deliberately collaborate over a globally
+consistent set of objects in the `master` branch. Think of a
+decentralized [conference proceedings][] repository where each
+conference could add their own content to a conference-specific
+repository, while at the same time allowing a unified view in another,
+more centralized repository, or allowing users to pick and choose
+which conference they would want content from.
+
+ [conference proceedings]: https://github.com/RichiH/conference_proceedings
+
+While each repository could have its own distinct branch, all
+repositories will see all those branches and this may affect content
+retention, as git-annex may consider files to be "in use" because they
+are on some remote branch, for example. Furthermore, I consider git
+branching to be a rather advanced topic in git usage. While git-annex
+uses those mechanisms (e.g. the `git-annex` and `sync/*` branches),
+those are generally hidden from the user until something goes
+wrong. Therefore I looked into providing a more straightforward
+approach to this problem for my users and myself.
+
+In my use case, I have the following repositories:
+
+* repoA: my own curated media collection
+* repoB: a third-party media collection
+
+I do not wish for my local curated collection (repoA) to be completely
+synchronized with the third-party collection (repoB). This is because
+we may have different tastes and retention policies: while I archive
+everything, there are certain media I am not interested in. On the
+other hand repoB might keep only (say) the last month of media and
+disard older content but have a more varied collection, which only a
+subset is interesting to me. Yet I still want to access some of that
+content!
+
+So I did the following to add the third party repository:
+
+    git remote add repoB example.net:repoB
+    git annex sync --no-push repoB
+    git annex get --from=repoB
+
+This works well: I get the files from repoB locally. Of course, if
+repoB expires some files, this will be impacted locally, but I can
+always revert those choices without conflict, because I do not push
+those back.
+
+The downside of the `--no-push` option in [[git-annex-sync]] is that
+it needs to be made explicit at each invocation of the
+command. Furthermore, this option is not supported by the assistant,
+which will happily sync the master branch to all remotes by default.
+
+An alternative is to manually fetch and merge content:
+
+    git fetch repoB
+    git annex merge repoB
+    git reset HEAD^
+    # revert any possible changes upstream we don't want
+    git commit
+
+Needless to say this quickly becomes quite messy, but it's the amazing
+level of control git and git-annex provides, which obviously comes
+with its price in complexity. Such a method will also be ignored by
+the assistant and further `sync` commands.
+
+To make sure those principles are respected in the assistant or a
+plain `git annex sync` that may mistakenly be ran in that repository,
+I need some special setting. There are the options I considered, in
+[.gitconfig](https://manpages.debian.org/git-config.1.en.html) or [[git-annex]]'s config options:
+
+ * `remote.<name>.annex-ignore=true`: `sync` and `assistant` will not
+   sync to the repository, but explicit `get --from=repoB` will still
+   work. unclear if `sync repoB` will also push.
+ * `remote.<name>.push=nothing`: git won't push by default, unless
+   branches are explicitly given, which may actually be the case for
+   git-annex, so unlikely to work.
+ * `remote.<name>.pushurl=/dev/null`: will completely disable any push
+   functionality to that remote. any sync will yield the following
+   error:
+   
+       fatal: '/dev/null' does not appear to be a git repository
+       [...]
+       git-annex: sync: 1 failed
+
+ * `remote.<name>.pushurl=.`: will push to the local repo
+   instead. crude hack and may confuse the hell out of git-annex, but
+   at least doesn't yield errors.
+
+I've settled for the `pushurl=/dev/null` hack for now. A similar
+approach is to make `repoB` read-only to the user. This however, may
+trigger the activation of `annex-ignore` by git-annex and will
+otherwise yield the same warnings as the `pushurl=/dev/null` hack.
+
+Therefore, the best approach may be to have git-annex respect the
+`remote.<name>.push=nothing` setting. Another approach would be to add
+`remote.<name>.annex-push` and `remote.<name>.annex-pull` settings
+that would match the `sync --[no-]push --[no-]pull` flags.
+
+I would obviously welcome additional comments and questions on this
+approach. -- [[anarcat]]
