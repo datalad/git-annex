@@ -77,8 +77,10 @@ I need some special setting. There are the options I considered, in
 [.gitconfig](https://manpages.debian.org/git-config.1.en.html) or [[git-annex]]'s config options:
 
  * `remote.<name>.annex-ignore=true`: `sync` and `assistant` will not
-   sync to the repository, but explicit `get --from=repoB` will still
-   work. unclear if `sync repoB` will also push.
+   sync *content* to the repository, but explicit `get --from=repoB`
+   will still work.
+ * `remote.<name>.annex-sync=false`: `sync` (and `assistant`?) will
+   not sync the git repository with the remote
  * `remote.<name>.push=nothing`: git won't push by default, unless
    branches are explicitly given, which may actually be the case for
    git-annex, so unlikely to work.
@@ -94,12 +96,34 @@ I need some special setting. There are the options I considered, in
    instead. crude hack and may confuse the hell out of git-annex, but
    at least doesn't yield errors.
 
-I've settled for the `pushurl=/dev/null` hack for now. A similar
-approach is to make `repoB` read-only to the user. This however, may
-trigger the activation of `annex-ignore` by git-annex and will
-otherwise yield the same warnings as the `pushurl=/dev/null` hack.
+A similar approach to hacking the `pushurl` is to make `repoB`
+read-only to the user. This however, may trigger the activation of
+`annex-ignore` by git-annex and will otherwise yield the same warnings
+as the `pushurl=/dev/null` hack.
 
-Therefore, the best approach may be to have git-annex respect the
+Right now, I am using `annex-sync = false` in `.git/config`. I have
+also configured the repository to be in the "manual" [[standard
+group|preferred_content/standard_groups]] which will avoid copying
+files into that repository:
+
+    $ git annex group repoB manual
+    group repoB ok
+    (recording state in git...)
+    $ git annex wanted repoB standard
+    wanted repoB ok
+    (recording state in git...)
+
+This is roughly equivalent to setting `annex-ignore = true`, yet it
+allows for more flexibility. I could, for example, create custom
+content expressions to sync certain folders automatically.
+
+A disadvantage of the `annex-sync` settings is that it affects both
+ways (push and pull), not just push, which is what I am interested
+in. Although it could be argued that restricting both is fine here
+because we want to manually review changes when we pull changes from
+those remotes anyways.
+
+The best approach may be to have git-annex respect the
 `remote.<name>.push=nothing` setting. Another approach would be to add
 `remote.<name>.annex-push` and `remote.<name>.annex-pull` settings
 that would match the `sync --[no-]push --[no-]pull` flags.
