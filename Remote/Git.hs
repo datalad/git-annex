@@ -248,18 +248,15 @@ tryGitConfigRead autoinit r
 				, return Nothing
 				)
 		case v of
-			Nothing -> do
-				warning $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
-				return r
-			Just (Left _) -> do
-				set_ignore "not usable by git-annex" False
-				return r
 			Just (Right r') -> do
 				-- Cache when http remote is not bare for
 				-- optimisation.
 				unless (Git.Config.isBare r') $
 					setremote setRemoteBare False
 				return r'
+			_ -> do
+				set_ignore "not usable by git-annex" False
+				return r
 
 	store = observe $ \r' -> do
 		g <- gitRepo

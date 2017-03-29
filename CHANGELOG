@@ -1,8 +1,9 @@
 git-annex (6.20170322) UNRELEASED; urgency=medium
 
-  * stack.yaml: Update to lts-8.6.
+  * When a http remote does not expose an annex.uuid config, only warn
+    about it once, not every time git-annex is run.
 
- -- Joey Hess <id@joeyh.name>  Mon, 27 Mar 2017 19:48:31 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 29 Mar 2017 12:41:46 -0400
 
 git-annex (6.20170321) unstable; urgency=medium
 
