@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
+ subject="onion-grater"
+ date="2017-03-30T14:49:12Z"
+ content="""
+you may want to consider using [onion-grater][] to limit possible escalations in the use of that control port:
+
+ [onion-grater]: https://github.com/Whonix/onion-grater
+
+RFP: [[!debbug 859125]]
+"""]]

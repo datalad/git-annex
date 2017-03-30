@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="oberix@c7a19cddb1663df0c612a979b9d13b0d67f1f69a"
+ nickname="oberix"
+ avatar="http://cdn.libravatar.org/avatar/e8b871f3d0bf96df9a3fc8cdca7abe09"
+ subject="autostart and foreground together doesn't seem to work"
+ date="2017-03-30T10:43:18Z"
+ content="""
+With systemd using `--autostart --foreground` either ignore foreground or quit immediatelly.
+
+I managed to have the process stay alive with `RemainAfterExit=on`:
+
+    [Service]
+    User=%i
+    ExecStart=/usr/bin/git-annex assistant --autostart --foreground
+    ExecStop=/usr/bin/git-annex assistant --autostop
+    RemainAfterExit=on
+    Restart=on-failure
+    RestartSec=5
+
+but git-annex processes does not maintain the `--foreground` option which is causing a lot of zombies in the long period (not totally clear why).
+
+My current solution is to have a service for each annex repository and avoid `--autosart` but this is annoying because it require to pass the path as `%I` and wrap git-annex in bash script to get the repo owner as the user.
+
+
+"""]]
