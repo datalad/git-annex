@@ -89,3 +89,4 @@ The process of setting up a multicast classroom would then be:
    files going by and stores them.
 5. Once the students are listening (*ahem*), teacher runs
    `git annex multicast-send [file]` to distribute files.
+"""]]
