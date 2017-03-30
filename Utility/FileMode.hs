@@ -177,7 +177,10 @@ writeFileProtected file content = writeFileProtected' file
 	(\h -> hPutStr h content)
 
 writeFileProtected' :: FilePath -> (Handle -> IO ()) -> IO ()
-writeFileProtected' file writer = withUmask 0o0077 $
+writeFileProtected' file writer = protectedOutput $
 	withFile file WriteMode $ \h -> do
 		void $ tryIO $ modifyFileMode file $ removeModes otherGroupModes
 		writer h
+
+protectedOutput :: IO a -> IO a
+protectedOutput = withUmask 0o0077

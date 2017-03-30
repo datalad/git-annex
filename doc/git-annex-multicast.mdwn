@@ -1,0 +1,95 @@
+# NAME
+
+git-annex multicast - multicast file distribution
+
+# SYNOPSIS
+
+git annex multicast [options]
+
+# DESCRIPTION
+
+Multicast allows files to be broadcast to multiple receivers,
+typically on a single local network.
+
+The uftp program is used for multicast.
+<http://uftp-multicast.sourceforge.net/>
+
+# OPTIONS
+
+* `--gen-address`
+
+  Generates a multicast encryption key and stores a corresponding multicast
+  address to the git-annex branch.
+
+* `--send [file]`
+
+  Sends the specified files to any receivers whose multicast addresses
+  are stored in the git-annex branch.
+
+  When no files are specified, all annexed files in the current directory
+  and subdirectories are sent.
+
+  The [[git-annex-matching-options]] can be used to control which files to
+  send. For example:
+
+	git annex multicast send . --not --copies 2
+
+* `--receive`
+
+  Receives files from senders whose multicast addresses
+  are stored in the git-annex brach.
+
+  As each file is received, its filename is displayed. This is the filename
+  that the sender used; the local working tree may use a different name
+  for the file, or not contain a link to the file.
+
+  This command continues running, until it is interrupted by you pressing
+  ctrl-c.
+
+  Note that the configured annex.diskreserve is not honored by this
+  command, because `uftpd` receives the actual files, and can receive
+  any size file.
+
+* `--uftp-opt=option` `-Uoption`
+
+  Pass an option on to the uftp/uftpd command. May be specified multiple
+  times.
+
+  For example, to broadcast at 50 Mbps:
+
+	git annex multicast send -U-R -U50000
+
+# EXAMPLE
+
+Suppose a teacher wants to multicast files to students in a classroom.
+
+This assumes that the teacher and students have cloned a git-annex
+repository, and both can push changes to its git-annex branch,
+or otherwise push changes to each-other.
+
+First, the teacher runs `git annex multicast --gen-address; git annex sync`
+
+Next, students each run `git annex multicast --gen-address; git annex sync`
+
+Once all the students have generated addresses, the teacher runs
+`git annex sync` once more. (Now the students all have received the
+teacher's address, and the teacher has received all the student's addresses.)
+
+Next students each run `git annex multicast --receive`
+
+Finally, once the students are all listening (ahem), teacher runs
+`git annex multicast --send`
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+uftp(1)
+
+uftpd(1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

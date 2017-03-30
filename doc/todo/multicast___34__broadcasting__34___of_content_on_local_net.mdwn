@@ -5,3 +5,6 @@ Although I haven't remembered that "hash thing" to perform the job, we looked ar
 What do you think?
 
 [[!meta name=yoh]]
+
+> [[done]]! I've only tested it with sender and receiver on the same
+> laptop, but it seems to work. --[[Joey]] 

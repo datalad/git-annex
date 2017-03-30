@@ -164,6 +164,12 @@ subdirectories).
   
   See [[git-annex-undo]](1) for details.
 
+* `multicast`
+
+  Multicast file distribution.
+
+  See [[git-annex-multicast]](1) for details.
+
 * `watch`
 
   Watch for changes and autocommit.

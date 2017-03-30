@@ -41,6 +41,7 @@ topLevelUUIDBasedLogs =
 	, scheduleLog
 	, activityLog
 	, differenceLog
+	, multicastLog
 	]
 
 {- All the ways to get a key from a presence log file -}
@@ -93,6 +94,8 @@ activityLog = "activity.log"
 differenceLog :: FilePath
 differenceLog = "difference.log"
 
+multicastLog :: FilePath
+multicastLog = "multicast.log"
 
 {- The pathname of the location log file for a given key. -}
 locationLogFile :: GitConfig -> Key -> String

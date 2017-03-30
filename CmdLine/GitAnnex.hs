@@ -14,6 +14,7 @@ import CmdLine
 import Command
 import Utility.Env
 import Annex.Ssh
+import Annex.Multicast
 import Types.Test
 
 import qualified Command.Help
@@ -53,6 +54,7 @@ import qualified Command.Describe
 import qualified Command.InitRemote
 import qualified Command.EnableRemote
 import qualified Command.EnableTor
+import qualified Command.Multicast
 import qualified Command.Expire
 import qualified Command.Repair
 import qualified Command.Unused
@@ -144,6 +146,7 @@ cmds testoptparser testrunner =
 	, Command.InitRemote.cmd
 	, Command.EnableRemote.cmd
 	, Command.EnableTor.cmd
+	, Command.Multicast.cmd
 	, Command.Reinject.cmd
 	, Command.Unannex.cmd
 	, Command.Uninit.cmd
@@ -242,4 +245,5 @@ run testoptparser testrunner args = go envmodes
 	envmodes =
 		[ (sshOptionsEnv, runSshOptions args)
 		, (sshAskPassEnv, runSshAskPass)
+		, (multicastReceiveEnv, runMulticastReceive args)
 		]

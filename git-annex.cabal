@@ -90,6 +90,7 @@ Extra-Source-Files:
   doc/git-annex-migrate.mdwn
   doc/git-annex-mirror.mdwn
   doc/git-annex-move.mdwn
+  doc/git-annex-multicast.mdwn
   doc/git-annex-numcopies.mdwn
   doc/git-annex-p2p.mdwn
   doc/git-annex-pre-commit.mdwn
@@ -318,7 +319,7 @@ Executable git-annex
    stm (>= 2.3),
    mtl (>= 2),
    uuid (>= 1.2.6),
-   process,
+   process (>= 1.4.2.0),
    data-default,
    case-insensitive,
    random,
@@ -518,6 +519,7 @@ Executable git-annex
     Annex.MakeRepo
     Annex.MetaData
     Annex.MetaData.StandardFields
+    Annex.Multicast
     Annex.Notification
     Annex.NumCopies
     Annex.Path
@@ -732,6 +734,7 @@ Executable git-annex
     Command.Migrate
     Command.Mirror
     Command.Move
+    Command.Multicast
     Command.NotifyChanges
     Command.NumCopies
     Command.P2P
@@ -857,6 +860,7 @@ Executable git-annex
     Logs.Location
     Logs.MapLog
     Logs.MetaData
+    Logs.Multicast
     Logs.NumCopies
     Logs.PreferredContent
     Logs.PreferredContent.Raw
