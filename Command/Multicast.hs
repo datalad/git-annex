@@ -178,7 +178,7 @@ receive ups = do
 	(callback, environ, statush) <- liftIO multicastCallbackEnv
 	tmpobjdir <- fromRepo gitAnnexTmpObjectDir
 	createAnnexDirectory tmpobjdir
-	withTmpDirIn tmpobjdir "multicast" $ \tmpdir -> withAuthList $ \authlist -> 
+	withTmpDirIn tmpobjdir "multicast" $ \tmpdir -> withAuthList $ \authlist -> do
 		abstmpdir <- liftIO $ absPath tmpdir
 		abscallback <- liftIO $ searchPath callback
 		let ps =
