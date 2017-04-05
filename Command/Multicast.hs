@@ -15,10 +15,10 @@ import Annex.Multicast
 import Annex.WorkTree
 import Annex.Content
 import Annex.UUID
-#ifndef mingw32_HOST_OS
-import Creds
 import Annex.Perms
 import Utility.FileMode
+#ifndef mingw32_HOST_OS
+import Creds
 #endif
 import qualified Limit
 import Types.FileMatcher
