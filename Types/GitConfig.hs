@@ -181,6 +181,8 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexCostCommand :: Maybe String
 	, remoteAnnexIgnore :: Bool
 	, remoteAnnexSync :: Bool
+	, remoteAnnexPull :: Bool
+	, remoteAnnexPush :: Bool
 	, remoteAnnexReadOnly :: Bool
 	, remoteAnnexVerify :: Bool
 	, remoteAnnexTrustLevel :: Maybe String
@@ -218,6 +220,8 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 	, remoteAnnexCostCommand = notempty $ getmaybe "cost-command"
 	, remoteAnnexIgnore = getbool "ignore" False
 	, remoteAnnexSync = getbool "sync" True
+	, remoteAnnexPull = getbool "pull" True
+	, remoteAnnexPush = getbool "push" True
 	, remoteAnnexReadOnly = getbool "readonly" False
 	, remoteAnnexVerify = getbool "verify" True
 	, remoteAnnexTrustLevel = notempty $ getmaybe "trustlevel"

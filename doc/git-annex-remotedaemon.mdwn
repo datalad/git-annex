@@ -29,6 +29,9 @@ accepting connections from other nodes and serving up the contents of the
 repository. This is only done if you first run `git annex enable-tor`.
 Use `git annex p2p` to configure access to tor-annex remotes.
 
+Note that when `remote.<name>.annex-pull` is set to false, the remotedaemon
+will avoid fetching changes from that remote.
+
 # OPTIONS
 
 * `--foreground`

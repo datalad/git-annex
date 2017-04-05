@@ -360,7 +360,7 @@ updateBranch syncbranch updateto g =
 		] g
 
 pullRemote :: SyncOptions -> [Git.Merge.MergeConfig] -> Remote -> CurrBranch -> CommandStart
-pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o) $ do
+pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o && wantpull) $ do
 	showStart "pull" (Remote.name remote)
 	next $ do
 		showOutput
@@ -370,6 +370,7 @@ pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o) $ do
 	fetch = inRepoWithSshOptionsTo (Remote.repo remote) (Remote.gitconfig remote) $
 		Git.Command.runBool
 			[Param "fetch", Param $ Remote.name remote]
+	wantpull = remoteAnnexPull (Remote.gitconfig remote)
 
 {- The remote probably has both a master and a synced/master branch.
  - Which to merge from? Well, the master has whatever latest changes
@@ -400,7 +401,7 @@ pushRemote o remote (Just branch, _) = stopUnless (pure (pushOption o) <&&> need
 	showStart "push" (Remote.name remote)
 	next $ next $ do
 		showOutput
-		ok <- inRepoWithSshOptionsTo (Remote.repo remote) (Remote.gitconfig remote) $
+		ok <- inRepoWithSshOptionsTo (Remote.repo remote) gc $
 			pushBranch remote branch
 		if ok
 			then postpushupdate
@@ -410,7 +411,8 @@ pushRemote o remote (Just branch, _) = stopUnless (pure (pushOption o) <&&> need
 				return ok
   where
 	needpush
-		| remoteAnnexReadOnly (Remote.gitconfig remote) = return False
+		| remoteAnnexReadOnly gc = return False
+		| not (remoteAnnexPush gc) = return False
 		| otherwise = anyM (newer remote) [syncBranch branch, Annex.Branch.name]
 	-- Do updateInstead emulation for remotes on eg removable drives
 	-- formatted FAT, where the post-update hook won't run.
@@ -426,6 +428,7 @@ pushRemote o remote (Just branch, _) = stopUnless (pure (pushOption o) <&&> need
 					, return True
 					)
 		| otherwise = return True
+	gc = Remote.gitconfig remote
 
 {- Pushes a regular branch like master to a remote. Also pushes the git-annex
  - branch.

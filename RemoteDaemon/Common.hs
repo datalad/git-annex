@@ -8,7 +8,7 @@
 module RemoteDaemon.Common
 	( liftAnnex
 	, inLocalRepo
-	, checkNewShas
+	, checkShouldFetch
 	, ConnectionStatus(..)
 	, robustConnection
 	) where
@@ -34,6 +34,13 @@ liftAnnex (TransportHandle _ annexstate) a = do
 
 inLocalRepo :: TransportHandle -> (Git.Repo -> IO a) -> IO a
 inLocalRepo (TransportHandle (LocalRepo g) _) a = a g
+
+-- Check if some shas should be fetched from the remote,
+-- and presumably later merged.
+checkShouldFetch :: RemoteGitConfig -> TransportHandle -> [Git.Sha] -> IO Bool
+checkShouldFetch gc transporthandle shas
+	| remoteAnnexPull gc = checkNewShas transporthandle shas
+	| otherwise = return False
 
 -- Check if any of the shas are actally new in the local git repo,
 -- to avoid unnecessary fetching.

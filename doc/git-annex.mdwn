@@ -1156,7 +1156,18 @@ Here are all the supported configuration settings.
 * `remote.<name>.annex-sync`
 
   If set to `false`, prevents git-annex sync (and the git-annex assistant)
-  from syncing with this remote.
+  from syncing with this remote by default. However, `git annex sync <name>`
+  can still be used to sync with the remote.
+
+* `remote.<name>.annex-pull`
+
+  If set to `false`, prevents git-annex sync (and the git-annex assistant
+  etc) from ever pulling (or fetching) from the remote.
+
+* `remote.<name>.annex-push`
+
+  If set to `false`, prevents git-annex sync (and the git-annex assistant
+  etc) from ever pushing to the remote.
 
 * `remote.<name>.annex-readonly`
 

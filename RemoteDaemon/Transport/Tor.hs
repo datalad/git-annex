@@ -129,7 +129,7 @@ serveClient th u r q = bracket setup cleanup start
 
 -- Connect to peer's tor hidden service.
 transport :: Transport
-transport (RemoteRepo r _) url@(RemoteURI uri) th ichan ochan =
+transport (RemoteRepo r gc) url@(RemoteURI uri) th ichan ochan =
 	case unformatP2PAddress (show uri) of
 		Nothing -> return ()
 		Just addr -> robustConnection 1 $ do
@@ -168,7 +168,7 @@ transport (RemoteRepo r _) url@(RemoteURI uri) th ichan ochan =
 		v <- runNetProto conn P2P.notifyChange
 		case v of
 			Right (Just (ChangedRefs shas)) -> do
-				whenM (checkNewShas th shas) $
+				whenM (checkShouldFetch gc th shas) $
 					fetch
 				handlepeer conn
 			_ -> return ConnectionClosed

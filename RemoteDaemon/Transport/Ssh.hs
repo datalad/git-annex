@@ -36,7 +36,7 @@ transportUsingCmd cmd params rr@(RemoteRepo r gc) url h@(TransportHandle (LocalR
 	transportUsingCmd' cmd params rr url transporthandle ichan ochan
 
 transportUsingCmd' :: FilePath -> [CommandParam] -> Transport
-transportUsingCmd' cmd params (RemoteRepo r _) url transporthandle ichan ochan =
+transportUsingCmd' cmd params (RemoteRepo r gc) url transporthandle ichan ochan =
 	robustConnection 1 $ do
 		(Just toh, Just fromh, Just errh, pid) <-
 			createProcess (proc cmd (toCommand params))
@@ -74,7 +74,7 @@ transportUsingCmd' cmd params (RemoteRepo r _) url transporthandle ichan ochan =
 				send (CONNECTED url)
 				handlestdout fromh
 			Just (SshRemote.CHANGED (ChangedRefs shas)) -> do
-				whenM (checkNewShas transporthandle shas) $
+				whenM (checkShouldFetch gc transporthandle shas) $
 					fetch
 				handlestdout fromh
 			-- avoid reconnect on protocol error

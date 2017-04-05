@@ -110,8 +110,14 @@ reconnectRemotes rs = void $ do
 pushToRemotes :: [Remote] -> Assistant [Remote]
 pushToRemotes remotes = do
 	now <- liftIO getCurrentTime
-	let remotes' = filter (not . remoteAnnexReadOnly . Remote.gitconfig) remotes
+	let remotes' = filter (wantpush . Remote.gitconfig) remotes
 	syncAction remotes' (pushToRemotes' now)
+  where
+	wantpush gc
+		| remoteAnnexReadOnly gc = False
+		| not (remoteAnnexPush gc) = False
+		| otherwise = True
+
 pushToRemotes' :: UTCTime -> [Remote] -> Assistant [Remote]
 pushToRemotes' now remotes = do
 	(g, branch, u) <- liftAnnex $ do
@@ -195,16 +201,20 @@ manualPull :: Command.Sync.CurrBranch -> [Remote] -> Assistant ([Remote], Bool)
 manualPull currentbranch remotes = do
 	g <- liftAnnex gitRepo
 	let (_xmppremotes, normalremotes) = partition Remote.isXMPPRemote remotes
-	failed <- forM normalremotes $ \r -> do
-		g' <- liftAnnex $ sshOptionsTo (Remote.repo r) (Remote.gitconfig r) g
-		ifM (liftIO $ Git.Command.runBool [Param "fetch", Param $ Remote.name r] g')
-			( return Nothing
-			, return $ Just r
-			)
+	failed <- forM normalremotes $ \r -> if wantpull $ Remote.gitconfig r
+		then do
+			g' <- liftAnnex $ sshOptionsTo (Remote.repo r) (Remote.gitconfig r) g
+			ifM (liftIO $ Git.Command.runBool [Param "fetch", Param $ Remote.name r] g')
+				( return Nothing
+				, return $ Just r
+				)
+		else return Nothing
 	haddiverged <- liftAnnex Annex.Branch.forceUpdate
 	forM_ normalremotes $ \r ->
 		liftAnnex $ Command.Sync.mergeRemote r currentbranch Command.Sync.mergeConfig
 	return (catMaybes failed, haddiverged)
+  where
+	wantpull gc = remoteAnnexPull gc
 
 {- Start syncing a remote, using a background thread. -}
 syncRemote :: Remote -> Assistant ()

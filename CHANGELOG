@@ -4,6 +4,9 @@ git-annex (6.20170322) UNRELEASED; urgency=medium
     about it once, not every time git-annex is run.
   * multicast: New command, uses uftp to multicast annexed files, for eg
     a classroom setting.
+  * Added remote.<name>.annex-push and remote.<name>.annex-pull
+    which can be useful to make remotes that don't get fully synced with
+    local changes.
 
  -- Joey Hess <id@joeyh.name>  Wed, 29 Mar 2017 12:41:46 -0400
 
