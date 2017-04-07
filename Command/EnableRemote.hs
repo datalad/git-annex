@@ -39,7 +39,10 @@ start (name:rest) = go =<< filter matchingname <$> Annex.fromRepo Git.remotes
 	matchingname r = Git.remoteName r == Just name
 	go [] = startSpecialRemote name (Logs.Remote.keyValToConfig rest)
 		=<< Annex.SpecialRemote.findExisting name
-	go (r:_) = startNormalRemote name r
+	go (r:_)
+		| null rest = startNormalRemote name r
+		| otherwise = giveup $ 
+			"That is a normal git remote; passing these parameters does not make sense: " ++ unwords rest
 
 startNormalRemote :: Git.RemoteName -> Git.Repo -> CommandStart
 startNormalRemote name r = do

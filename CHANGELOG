@@ -12,6 +12,8 @@ git-annex (6.20170322) UNRELEASED; urgency=medium
     necessary because as feared, the extra -n parameter that git-annex
     passes breaks uses of these environment variables that expect exactly
     the parameters that git passes.
+  * enableremote: When enabling a non-special remote, param=value
+    parameters can't be used, so error out if any are provided.
 
  -- Joey Hess <id@joeyh.name>  Wed, 29 Mar 2017 12:41:46 -0400
 
