@@ -1,0 +1,16 @@
+Digging in to some of the meatier backlog today. Backlog down to 225.
+
+A lot of fixes around using `git annex enableremote` to add new gpg keys to
+a gcrypt special remote. 
+
+Had to make git-annex's use of `GIT_SSH`/`GIT_SSH_COMMAND`
+contingent on `GIT_ANNEX_USE_GIT_SSH=1` being set. Unfortunate, but
+difference from git made at least one existing use of that environment
+variable break, and so it will need to be whitelisted in places where
+git-annex should use it.
+
+Added support for `git annex add --update`
+
+----
+
+Today's work was sponsored by Trenton Cronholm on Patreon.
