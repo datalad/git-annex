@@ -2110,6 +2110,7 @@ setTestMode testmode = do
 		-- Make git and git-annex access ssh remotes on the local
 		-- filesystem, without using ssh at all.
 		, ("GIT_SSH_COMMAND", "git-annex test --fakessh --")
+		, ("GIT_ANNEX_USE_GIT_SSH", "1")
 		, ("TESTMODE", show testmode)
 		]
 
