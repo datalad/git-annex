@@ -39,19 +39,28 @@ start (name:rest) = go =<< filter matchingname <$> Annex.fromRepo Git.remotes
 	matchingname r = Git.remoteName r == Just name
 	go [] = startSpecialRemote name (Logs.Remote.keyValToConfig rest)
 		=<< Annex.SpecialRemote.findExisting name
-	go (r:_)
-		| null rest = startNormalRemote name r
-		| otherwise = giveup $ 
-			"That is a normal git remote; passing these parameters does not make sense: " ++ unwords rest
+	go (r:_) = do
+		-- This could be either a normal git remote or a special
+		-- remote that has an url (eg gcrypt).
+		rs <- Remote.remoteList
+		case filter (\rmt -> Remote.name rmt == name) rs of
+			(rmt:_) | Remote.remotetype rmt == Remote.Git.remote ->
+				startNormalRemote name rest r
+			_  -> go []
 
-startNormalRemote :: Git.RemoteName -> Git.Repo -> CommandStart
-startNormalRemote name r = do
-	showStart "enableremote" name
-	next $ next $ do
-		setRemoteIgnore r False
-		r' <- Remote.Git.configRead False r
-		u <- getRepoUUID r'
-		return $ u /= NoUUID
+-- Normal git remotes are special-cased; enableremote retries probing
+-- the remote uuid.
+startNormalRemote :: Git.RemoteName -> [String] -> Git.Repo -> CommandStart
+startNormalRemote name restparams r
+	| null restparams = do
+		showStart "enableremote" name
+		next $ next $ do
+			setRemoteIgnore r False
+			r' <- Remote.Git.configRead False r
+			u <- getRepoUUID r'
+			return $ u /= NoUUID
+	| otherwise = giveup $
+		"That is a normal git remote; passing these parameters does not make sense: " ++ unwords restparams
 
 startSpecialRemote :: Git.RemoteName -> Remote.RemoteConfig -> Maybe (UUID, Remote.RemoteConfig) -> CommandStart
 startSpecialRemote name config Nothing = do
