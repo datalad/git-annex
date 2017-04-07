@@ -80,3 +80,5 @@ upgrade supported from repository versions: 0 1 2 3 4 5
 operating system: linux x86_64
 
 </pre>
+
+> [[done]] appears to be a confused user, not a bug. --[[Joey]]
