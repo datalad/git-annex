@@ -14,9 +14,11 @@ git-annex (6.20170322) UNRELEASED; urgency=medium
     the parameters that git passes.
   * enableremote: When enabling a non-special remote, param=value
     parameters can't be used, so error out if any are provided.
-  * enableremote: Fix re-enabling of existing gcrypt remotes, so
-    that eg, encryption key changes take effect. They were silently
+  * enableremote: Fix re-enabling of special remotes that have a git
+    url, so that eg, encryption key changes take effect. They were silently
     ignored, a reversion introduced in 6.20160527.
+  * gcrypt: Support re-enabling to change eg, encryption parameters.
+    This was never supported before.
 
  -- Joey Hess <id@joeyh.name>  Wed, 29 Mar 2017 12:41:46 -0400
 

@@ -31,7 +31,6 @@ import qualified Git.Command
 import qualified Git.Config
 import qualified Git.GCrypt
 import qualified Git.Construct
-import qualified Git.Types as Git ()
 import qualified Annex.Branch
 import Config
 import Config.Cost
@@ -176,11 +175,18 @@ gCryptSetup _ mu _ c gc = go $ M.lookup "gitrepo" c
 	go Nothing = giveup "Specify gitrepo="
 	go (Just gitrepo) = do
 		(c', _encsetup) <- encryptionSetup c gc
-		inRepo $ Git.Command.run 
-			[ Param "remote", Param "add"
-			, Param remotename
-			, Param $ Git.GCrypt.urlPrefix ++ gitrepo
-			]
+
+		let url = Git.GCrypt.urlPrefix ++ gitrepo
+		rs <- fromRepo Git.remotes
+		case filter (\r -> Git.remoteName r == Just remotename) rs of
+			[] -> inRepo $ Git.Command.run 
+				[ Param "remote", Param "add"
+				, Param remotename
+				, Param url
+				]
+			(r:_)
+				| Git.repoLocation r == url -> noop
+				| otherwise -> error "Another remote with the same name already exists."		
 
 		setGcryptEncryption c' remotename
 
