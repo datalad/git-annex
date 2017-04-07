@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2017-04-07T16:52:59Z"
+ content="""
+@joern.mankiewicz, I see you found a bug and filed it, so will answer in
+the but report.
+
+Barring bugs, adding another gpg key to a hybrid encryption special remote
+is as simple as `git annex enableremote $theremote keyid+=$newkey`
+"""]]
