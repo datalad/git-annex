@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""@ben: what?"""
+ date="2017-04-07T16:37:31Z"
+ content="""
+I don't know what you mean with `git annex init` in a v6 repo somehow
+doing something to a non-annexed file. That would be extemely surprising
+if it happened, and it does not happen when I try to follow your
+instructions.
+
+	joey@darkstar:~/tmp/v62>git annex init --version=6
+	init  (merging origin/git-annex into git-annex...)
+	(recording state in git...)
+	ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/v62>ls
+	x  y@
+	joey@darkstar:~/tmp/v62>git annex get y
+	get y (from origin...) (checksum...) ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/v62>git status
+	On branch master
+	Your branch is up-to-date with 'origin/master'.
+	nothing to commit, working tree clean
+"""]]
