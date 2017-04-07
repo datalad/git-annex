@@ -32,3 +32,4 @@
       Version: #{packageversion}
       <br>
       Build flags: #{unwords buildFlags}
+      Dependency versions: #{unwords dependencyVersions}

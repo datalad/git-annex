@@ -10,7 +10,7 @@ module Command.Version where
 import Command
 import qualified Build.SysConfig as SysConfig
 import Annex.Version
-import BuildFlags
+import BuildInfo
 import Types.Key
 import qualified Types.Backend as B
 import qualified Types.Remote as R
@@ -63,6 +63,7 @@ showPackageVersion :: IO ()
 showPackageVersion = do
 	vinfo "git-annex version" SysConfig.packageversion
 	vinfo "build flags" $ unwords buildFlags
+	vinfo "dependency versions" $ unwords dependencyVersions
 	vinfo "key/value backends" $ unwords $
 		map (formatKeyVariety . B.backendVariety) Backend.list
 	vinfo "remote types" $ unwords $ map R.typename Remote.remoteTypes

@@ -664,7 +664,7 @@ Executable git-annex
     Build.Standalone
     Build.TestConfig
     Build.Version
-    BuildFlags
+    BuildInfo
     CmdLine
     CmdLine.Action
     CmdLine.Batch

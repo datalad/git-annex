@@ -1,13 +1,16 @@
-{- git-annex build flags reporting
+{- git-annex build info reporting
  -
- - Copyright 2013 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 {-# LANGUAGE CPP #-}
 
-module BuildFlags where
+module BuildInfo where
+
+import Data.List
+import qualified Data.CaseInsensitive as CI
 
 buildFlags :: [String]
 buildFlags = filter (not . null)
@@ -79,3 +82,32 @@ buildFlags = filter (not . null)
 	, "Feeds"
 	, "Quvi"
 	]
+
+-- Not a complete list, let alone a listing transitive deps, but only
+-- the ones that are often interesting to know.
+dependencyVersions :: [String]
+dependencyVersions = map fmt $ sortOn (CI.mk . fst)
+	[ ("feed", VERSION_feed)
+	, ("uuid", VERSION_uuid)
+	, ("bloomfilter", VERSION_bloomfilter)
+	, ("http-client", VERSION_http_client)
+	, ("persistent-sqlite", VERSION_persistent_sqlite)
+	, ("cryptonite", VERSION_cryptonite)
+#ifdef WITH_S3
+	, ("aws", VERSION_aws)
+#endif
+#ifdef WITH_WEBDAV
+	, ("DAV", VERSION_DAV)
+#endif
+#ifdef WITH_TORRENTPARSER
+	, ("torrent", VERSION_torrent)
+#endif
+#ifdef WITH_WEBAPP
+	, ("yesod", VERSION_yesod)
+#endif 
+#ifdef TOOL_VERSION_ghc
+	, ("ghc", TOOL_VERSION_ghc)
+#endif
+	]
+  where
+	fmt (p, v) = p ++ "-" ++ v
