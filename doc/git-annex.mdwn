@@ -1434,7 +1434,10 @@ These environment variables are used by git-annex when set:
   Handled similarly to the same as described in git(1).
   The one difference is that git-annex will sometimes pass an additional
   "-n" parameter to these, as the first parameter, to prevent ssh from
-  reading from stdin.
+  reading from stdin. Since that can break existing uses of these
+  environment variables that don't expect the extra parameter, you will
+  need to set `GIT_ANNEX_USE_GIT_SSH=1` to make git-annex support
+  these.
 
   Note that setting either of these environment variables prevents
   git-annex from automatically enabling ssh connection caching

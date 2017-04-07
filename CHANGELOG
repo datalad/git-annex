@@ -7,6 +7,11 @@ git-annex (6.20170322) UNRELEASED; urgency=medium
   * Added remote.<name>.annex-push and remote.<name>.annex-pull
     which can be useful to make remotes that don't get fully synced with
     local changes.
+  * Disable git-annex's support for GIT_SSH and GIT_SSH_COMMAND, unless
+    GIT_ANNEX_USE_GIT_SSH=1 is also set in the environment. This is
+    necessary because as feared, the extra -n parameter that git-annex
+    passes breaks uses of these environment variables that expect exactly
+    the parameters that git passes.
 
  -- Joey Hess <id@joeyh.name>  Wed, 29 Mar 2017 12:41:46 -0400
 

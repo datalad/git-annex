@@ -52,10 +52,13 @@ data ConsumeStdin = ConsumeStdin | NoConsumeStdin
 
 {- Generates a command to ssh to a given host (or user@host) on a given
  - port. This includes connection caching parameters, and any ssh-options.
- - If GIT_SSH or GIT_SSH_COMMAND is set, they are used instead. -}
+ - If GIT_SSH or GIT_SSH_COMMAND is enabled, they are used instead. -}
 sshCommand :: ConsumeStdin -> (SshHost, Maybe SshPort) -> RemoteGitConfig -> SshCommand -> Annex (FilePath, [CommandParam])
-sshCommand cs (host, port) gc remotecmd = maybe go return
-	=<< liftIO (gitSsh' host port remotecmd (consumeStdinParams cs))
+sshCommand cs (host, port) gc remotecmd = ifM (liftIO safe_GIT_SSH)
+	( maybe go return
+		=<< liftIO (gitSsh' host port remotecmd (consumeStdinParams cs))
+	, go
+	)
   where
 	go = do
 		ps <- sshOptions cs (host, port) gc []
@@ -80,6 +83,12 @@ sshOptions cs (host, port) gc opts = go =<< sshCachingInfo (host, port)
 		, consumeStdinParams cs
 		, [Param "-T"]
 		]
+
+{- Due to passing -n to GIT_SSH and GIT_SSH_COMMAND, some settings
+ - of those that expect exactly git's parameters will break. So only
+ - use those if the user set GIT_ANNEX_USE_GIT_SSH to say it's ok. -}
+safe_GIT_SSH :: IO Bool
+safe_GIT_SSH = (== Just "1") <$> getEnv "GIT_ANNEX_USE_GIT_SSH"
 
 consumeStdinParams :: ConsumeStdin -> [CommandParam]
 consumeStdinParams ConsumeStdin = []
@@ -305,13 +314,13 @@ inRepoWithSshOptionsTo remote gc a =
  - to set GIT_SSH=git-annex, and set sshOptionsEnv when running git
  - commands.
  -
- - If GIT_SSH or GIT_SSH_COMMAND are set, this has no effect. -}
+ - If GIT_SSH or GIT_SSH_COMMAND are enabled, this has no effect. -}
 sshOptionsTo :: Git.Repo -> RemoteGitConfig -> Git.Repo -> Annex Git.Repo
 sshOptionsTo remote gc localr
 	| not (Git.repoIsUrl remote) || Git.repoIsHttp remote = unchanged
 	| otherwise = case Git.Url.hostuser remote of
 		Nothing -> unchanged
-		Just host -> ifM (liftIO gitSshEnvSet)
+		Just host -> ifM (liftIO $ safe_GIT_SSH <&&> gitSshEnvSet)
 			( unchanged
 			, do
 				(msockfile, _) <- sshCachingInfo (host, Git.Url.port remote)
