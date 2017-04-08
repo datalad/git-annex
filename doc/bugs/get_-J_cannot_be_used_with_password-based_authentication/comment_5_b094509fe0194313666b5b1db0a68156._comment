@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2017-04-08T03:16:48Z"
+ content="""
+> How do you check if ssh has established a cached ssh connection?
+
+ssh -O check  -- somewhat of an additional overhead, but possible
+
+> GIT_SSH_COMMAND is used for every call to ssh in git-annex.
+
+so then theoretically we could implement \"may be ...\" strategy on our end in our sshrun.
+"""]]
