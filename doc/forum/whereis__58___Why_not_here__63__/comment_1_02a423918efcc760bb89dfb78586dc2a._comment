@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Horus"
+ avatar="http://cdn.libravatar.org/avatar/8f0ee08b98ea5bba76c3fe112c08851c"
+ subject="comment 1"
+ date="2017-04-12T21:21:08Z"
+ content="""
+It's strange. I made a change to the file on Horus, it gets propagated to Marduk, but Marduk does not know about. whereis still shows the file is only at Horus. At Asaru the symlink is deleted (so the change info was propagated), but instead there is a symlink on invalid content (like in indirect mode)
+
+The connections are all over SSH: Horus -> Marduk <- Asaru
+
+Sorry, I'm utterly confused...
+"""]]
