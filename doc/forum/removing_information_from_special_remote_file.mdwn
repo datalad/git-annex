@@ -1,0 +1,8 @@
+I'm working on a project using git-annex and Tahoe as a special remote. I want to encrypt that Tahoe capability for various file(s) (the capability is present in the git-annex branch), so that it is impossible for a malicious actor to access a file. However, due to the union-merge that happens on that branch, no matter what I try, the plain text capability keeps coming back.
+
+How can I either remove an entry from a file in the git-annex branch, or maybe remove all history for a file so that it has nothing to merge against, or otherwise remove the plain-text capability?
+
+This is very similar/same as https://git-annex.branchable.com/forum/removing_remote.log_information_completely/ but hopefully I can get a updated perspective, or any further guidance. Any help at all would be greatly appreciated.
+
+If there's a simple way to modify the git-annex source code to accommodate this, I would be perfectly happy with that solution. Unfortunately I am not well versed in Haskell, but if there was a way to say, for example, ignore *.rmt files when doing the union-merge, that would probably work. I'd be happy with any solution though.
+
