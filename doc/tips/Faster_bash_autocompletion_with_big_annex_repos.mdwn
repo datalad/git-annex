@@ -1,0 +1,50 @@
+I'm currently using git annex to manage my entire file collection
+(including tons of music and books) and I noticed how slow
+autocompletion has become for files in the index (say for git add).
+The main offender is a while-read-case-echo bash loop in
+`__git_index_files` that can be readily substituted with a much faster
+sed invocation. Here is my benchmark:
+
+```
+__git_index_files ()
+{
+    local dir="$(__gitdir)" root="${2-.}" file;
+    if [ -d "$dir" ]; then
+        __git_ls_files_helper "$root" "$1" | while read -r file; do
+            case "$file" in
+                ?*/*)
+                    echo "${file%%/*}"
+                ;;
+                *)
+                    echo "$file"
+                ;;
+            esac;
+        done | sort | uniq;
+    fi
+}
+
+time __git_index_files > /dev/null
+
+
+__git_index_files ()
+{
+    local dir="$(__gitdir)" root="${2-.}" file;
+    if [ -d "$dir" ]; then
+        __git_ls_files_helper "$root" "$1" | \
+            sed -r 's@^"?([^/]+)/.*$@\1@' | sort | uniq
+    fi
+}
+
+time __git_index_files > /dev/null
+
+real    0m0.830s
+user    0m0.597s
+sys    0m0.310s
+
+real    0m0.345s
+user    0m0.357s
+sys    0m0.000s
+```
+
+So you might redefine `__git_index_files` as above in your .bashrc after sourcing the git autocomplete script. 
+
