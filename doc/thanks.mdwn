@@ -10,7 +10,7 @@ You can support my git-annex development
 (If I got your name wrong, or you don't want it publically posted here,
 email <id@joeyh.name>.)
 
-## 2014-2016
+## 2014-2017
 
 <img alt="NSF logo" src="https://www.nsf.gov/images/logos/nsf1.gif">
 
