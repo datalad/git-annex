@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/hVbIabkhqO11.DpKUWBoztFSLD5q#8cbe8"
+ nickname="Murat"
+ avatar="http://cdn.libravatar.org/avatar/52d95e40aca820c1993077ef9aa676c75700a072511c143f6db6b78be6b1b212"
+ subject="Why is it takins too long?"
+ date="2017-04-18T16:26:06Z"
+ content="""
+Hi,
+due to my requirement I need to revert vm image every time before running it via \"git reset --hard\" which is really fast on the other hand \"git annex unlock\" takes really long, I run git-annex on Centos 6 and git-annex version git-annex-3.20120522-2.1.el6.x86_64, if I update git-annex version can it help to fasten \"unlock\"?
+
+thanks a lot
+
+"""]]
