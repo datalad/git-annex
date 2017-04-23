@@ -243,3 +243,5 @@ and the relevant share:
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I'm an extremely regular user of git-annex on OS X and Linux, for several years, using it as a podcatcher and to manage most of my "large file" media.  It's one of those "couldn't live without" tools.  Thanks for writing it.
+
+(Touched, to ask for comments to be emailed to me)
