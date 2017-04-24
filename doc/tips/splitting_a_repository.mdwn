@@ -1,0 +1,56 @@
+[[!meta title="Splitting a git-annex repository"]]
+
+I have a [git annex](https://git-annex.branchable.com/) repo for all my media
+that has grown to 57866 files and git operations are getting slow, especially
+on external spinning hard drives, so I decided to split it into separate
+repositories.
+
+This is how I did it, with some help from `#git-annex`. Suppose the old big repo is at `~/oldrepo`:
+
+```
+# Create a new repo for photos only
+mkdir ~/photos
+cd photos
+git init
+git annex init laptop
+
+# Hardlink all the annexed data from the old repo
+cp -rl ~/oldrepo/.git/annex/objects .git/annex/
+
+# Regenerate the git annex metadata
+git annex fsck --fast
+
+# Also split the repo on the usb key
+cd /media/usbkey
+git clone ~/photos
+cd photos
+git annex init usbkey
+cp -rl ../oldrepo/.git/annex/objects .git/annex/
+git annex fsck --fast
+
+# Connect the annexes as remotes of each other
+git remote add laptop ~/photos
+cd ~/photos
+git remote add usbkey /media/usbkey
+```
+
+At this point, I went through all repos doing standard cleanup:
+
+```
+# Remove unneeded hard links
+git annex unused
+git annex dropunused --force 1-12345
+
+# Sync
+git annex sync
+```
+
+To make sure nothing is missing, I used `git annex find --not --in=here`
+to see if, for example, the usbkey that should have everything could be missing
+some thing.
+
+Update: Antoine Beaupré pointed me to
+[this tip about Repositories with large number of files](http://git-annex.branchable.com/tips/Repositories_with_large_number_of_files/)
+which I will try next time one of my repositories grows enough to hit a performance issue.
+
+> This document was originally written by [Enrico Zini](http://www.enricozini.org/blog/2017/debian/splitting-a-git-annex-repository/) and added to this wiki by [[anarcat]].
