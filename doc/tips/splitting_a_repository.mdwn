@@ -1,5 +1,7 @@
 [[!meta title="Splitting a git-annex repository"]]
 
+Note: this is the reverse of [[migrating two seperate disconnected directories to git annex]].
+
 I have a [git annex](https://git-annex.branchable.com/) repo for all my media
 that has grown to 57866 files and git operations are getting slow, especially
 on external spinning hard drives, so I decided to split it into separate
@@ -52,7 +54,5 @@ some thing.
 Update: Antoine Beaupré pointed me to
 [this tip about Repositories with large number of files](http://git-annex.branchable.com/tips/Repositories_with_large_number_of_files/)
 which I will try next time one of my repositories grows enough to hit a performance issue.
-
-Note: this is the reverse of [[migrating two seperate disconnected directories to git annex]].
 
 > This document was originally written by [Enrico Zini](http://www.enricozini.org/blog/2017/debian/splitting-a-git-annex-repository/) and added to this wiki by [[anarcat]].
