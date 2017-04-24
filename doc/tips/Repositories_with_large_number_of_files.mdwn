@@ -1,5 +1,7 @@
 Just as git does not scale well with large files, it can also become painful to work with when you have a large *number* of files. Below are things I have found to minimise the pain.
 
+[[!toc]]
+
 # Using version 4 index files
 
 During operations which affect the index, git writes an entirely new index out to index.lck and then replaces .git/index with it. With a large number of files, this index file can be quite large and take several seconds to write every time you manipulate the index!
@@ -46,3 +48,11 @@ You can avoid this by keeping the number of files in a directory to between 5000
 
 * [[forum/Handling_a_large_number_of_files]]
 * [[forum/__34__git_annex_sync__34___synced_after_8_hours]]
+
+# Forget tracking information
+
+In addition to keeping track of where files are, git-annex keeps a *log* that keeps track of where files *were*. This can take up space as well and slow down certain operations.
+
+You can use the [[git-annex-forget]] command to drop historical location tracking info for files.
+
+Note: this was discussed in [[forum/scalability_with_lots_of_files]].
