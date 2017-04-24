@@ -44,7 +44,7 @@ You can avoid this by keeping the number of files in a directory to between 5000
 
 [fpart](https://sourceforge.net/projects/fpart/) can be a very useful tool to achieve this.
 
-This sort of usage was discussed in [[forum/Handling_a_large_number_of_files]] and [[forum/__34__git_annex_sync__34___synced_after_8_hours]].
+This sort of usage was discussed in [[forum/Handling_a_large_number_of_files]] and [[forum/__34__git_annex_sync__34___synced_after_8_hours]]. -- [[CandyAngel]]
 
 # Forget tracking information
 
@@ -52,4 +52,4 @@ In addition to keeping track of where files are, git-annex keeps a *log* that ke
 
 You can use the [[git-annex-forget]] command to drop historical location tracking info for files.
 
-Note: this was discussed in [[forum/scalability_with_lots_of_files]].
+Note: this was discussed in [[forum/scalability_with_lots_of_files]]. -- [[anarcat]]
