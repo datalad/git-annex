@@ -44,10 +44,7 @@ You can avoid this by keeping the number of files in a directory to between 5000
 
 [fpart](https://sourceforge.net/projects/fpart/) can be a very useful tool to achieve this.
 
-## Topics discussing this sort of usage
-
-* [[forum/Handling_a_large_number_of_files]]
-* [[forum/__34__git_annex_sync__34___synced_after_8_hours]]
+This sort of usage was discussed in [[forum/Handling_a_large_number_of_files]] and [[forum/__34__git_annex_sync__34___synced_after_8_hours]].
 
 # Forget tracking information
 
