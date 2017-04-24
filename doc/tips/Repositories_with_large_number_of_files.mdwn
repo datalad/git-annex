@@ -40,7 +40,7 @@ If it takes a long time to list the files in a directory, naturally, git(-annex)
 
 You can avoid this by keeping the number of files in a directory to between 5000 and 20000 (depends on the filesystem and its settings).
 
-[fpart](http://contribs.martymac.org/fpart/) can be a very useful tool to achieve this.
+[fpart](https://sourceforge.net/projects/fpart/) can be a very useful tool to achieve this.
 
 ## Topics discussing this sort of usage
 
