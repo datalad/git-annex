@@ -1,3 +1,5 @@
+Note: this is the reverse of [[splitting_a_repository]].
+
 Scenario
 --------
 
