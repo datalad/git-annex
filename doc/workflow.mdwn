@@ -27,6 +27,8 @@ produce file changes.  When you move files into or out of your repository
 folder, git-annex should record the changes and automatically propagate
 them to other connected machines.
 
+The webapp is part of the larger [[assistant]].
+
 # 2. [[git annex assistant|git-annex-assistant]] without the webapp
 
 You could call [[`git annex assistant`|git-annex-assistant]] the
