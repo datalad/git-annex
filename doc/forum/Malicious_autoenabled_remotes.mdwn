@@ -1,0 +1,5 @@
+I've been trying to figure out whether git-annex can be used to make a user unknowingly download data from a malicious source. The general question here is, assuming a git/git-annex server that I can fully trust to be safe and secure (let's call it `trustedserver`):
+
+*Is it possible, when performing (for example) `git clone git@trustedserver:user/repo && cd repo && git annex init` for annex to set up and enable a remote that is **not** on `trustedserver`?*
+
+I'm trying to imagine a scenario where someone with access to the repository (a person who I share files with) can set up a remote to a different server (e.g., `badremote`), set it to `autoenable=true`, and sync changes. Would this enable the other user to put files on `badremote` that are not on `trustedserver` but are tracked by annex? More importantly, if this happens and I perform a `git clone` -> `git annex init` -> `git annex sync --content`, would I be downloading files from `badremote` without specifically enabling it?
