@@ -78,3 +78,5 @@ Linux XXX 4.8.13-1-ARCH #1 SMP PREEMPT Fri Dec 9 07:24:34 CET 2016 x86_64 GNU/Li
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes! I use git-annex without a problem since years. This is the first time I have really no idea what's going on.
+
+[[done]]
