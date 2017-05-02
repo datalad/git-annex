@@ -1,0 +1,16 @@
+Multiple backends can be stated in the .git/config annex.backends option -- but what is the purpose of the secondary backends? The first is used to add new files, but the second (third, fourth, ...) do not seem to serve any purpose.
+
+I frequently use git-annex to de-duplicate. The default SHA256E backend has caused issues since filename case is significant, so I have partially switched to SHA256. Now, as far as I can tell, I have to de-duplicate once per possible backend like
+    
+    git annex import --clean-duplicates --backend=SHA256E  fileA.pdf fileB.PDF ...
+    git annex import --clean-duplicates --backend=SHA256   fileA.pdf fileB.PDF ...
+    git annex import --clean-duplicates --backend=SKEIN256 fileA.pdf fileB.PDF ...
+    ...
+
+even when my .git/config has annex.backends = "SHA256E SHA256 SKEIN256 ...". In this use case I wouldn't mind hashing the file multiple times.
+
+Is there a better way to de-duplicate using multiple backends?
+
+---
+
+PS. Thanks for git-annex Joey. I have around 100 annexes and rely on them on a daily basis.
