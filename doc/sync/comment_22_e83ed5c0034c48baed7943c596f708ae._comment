@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="mario"
+ avatar="http://cdn.libravatar.org/avatar/4c63b0935789d29210d0bd8cad8d7ac7"
+ subject="Compressed file transfers"
+ date="2017-05-03T20:52:43Z"
+ content="""
+Hi,
+
+how does \"git-annex sync --content\" transfers its file to a (regular) ssh-remote? I think it uses rsync.. Is that correct?
+
+I want to use compression for the file transfers. Therefore, I tried in .git/config to set:
+
+    [remote \"origin\"]
+        annex-rsync-upload-options = \"--compress\"
+
+However, it seems that this crashes the upload. The sync just seems to hang.. Is it possible to use compression for the transfer? How?
+"""]]
