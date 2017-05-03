@@ -1,16 +1,25 @@
-Multiple backends can be stated in the .git/config annex.backends option -- but what is the purpose of the secondary backends? The first is used to add new files, but the second (third, fourth, ...) do not seem to serve any purpose.
+Is there a better way to de-duplicate in a way that considers multiple backends?
 
-I frequently use git-annex to de-duplicate. The default SHA256E backend has caused issues since filename case is significant, so I have partially switched to SHA256. Now, as far as I can tell, I have to de-duplicate once per possible backend like
-    
-    git annex import --clean-duplicates --backend=SHA256E  fileA.pdf fileB.PDF ...
-    git annex import --clean-duplicates --backend=SHA256   fileA.pdf fileB.PDF ...
-    git annex import --clean-duplicates --backend=SKEIN256 fileA.pdf fileB.PDF ...
-    ...
+Multiple backends can be added to the .git/config annex.backends entry, but what is the purpose of the secondary backends? The first is used when adding new files, but the second (third, fourth, ...) do not seem to serve any purpose. (Or am I missing something?)
 
-even when my .git/config has annex.backends = "SHA256E SHA256 SKEIN256 ...". In this use case I wouldn't mind hashing the file multiple times.
+Here's my use case, problem, and a possible solution. I frequently use git-annex to de-duplicate. The default SHA256E backend has caused issues since filename case is significant, so I have partially switched to SHA256. I also occasionally use other backends. Now when I'm given an arbitrary file, as far as I can tell, I have to try de-duplicate once for every possible backend which amounts to something like
 
-Is there a better way to de-duplicate using multiple backends?
+    for i SHA256E SHA256 SKEIN256 ... ; do
+        [ -f /tmp/afile.pdf ] && git annex import --clean-duplicates --backend=$i /tmp/afile.pdf
+    done
 
----
+even though my .git/config has annex.backends = "SHA256E SHA256 SKEIN256 ...". I was surprised that `--clean-duplicates` does not honour all listed annex.backends. In this case hashing multiple times as needed seems quite reasonable IMO, so adding multiple backend support for `--clean-duplicates` would solve the problem. If you're not keen to modify this existing behaviour, it might be instead sensible to have to opt-in by explicitly specifying all backends to consider, like
+
+    git annex import --clean-duplicates --backends="SHA256E SHA256 SKEIN256" /tmp/afile.pdf
+
+or
+
+    git annex import --clean-duplicates --backends="$( git config --get annex.backends )" /tmp/afile.pdf
+
+Moving this loop into git-annex would also allow hashing to be parallelized; it currently cannot because the file could disappear.
+
+- - -
 
 PS. Thanks for git-annex Joey. I have around 100 annexes and rely on them on a daily basis.
+
+-supernaught
