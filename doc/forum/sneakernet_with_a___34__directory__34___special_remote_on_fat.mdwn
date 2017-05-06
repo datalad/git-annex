@@ -1,0 +1,26 @@
+Hello,
+
+I'm starting to use git annex as a replacement for unison to sync/backup my family pictures.
+It looks very promising, thank you very much for all this work!
+
+My big plan (for now) is to use git annex
+
+* on my Linux home server
+* on my mac OS laptop
+* on a (big) USB drive, that I could plug either on the server (at home) or the laptop (during holidays)
+
+Since I want the USB drive to be usable from both Linux and mac OS, I picked FAT as a file system.
+
+I first tried to set up a bare repository on the USB drive, but did hit the [[bugs/VFAT_crazy_limit_on_max_filenames_in_directory]].
+So I used a "directory" special remote, and copied files from the server. It works fine.
+
+I then created the SSH remote on the laptop and synced some content. It works quite well too.
+
+I would now like to plug the USB drive on the laptop and tell it
+"hey, this is the same remote as the one you've seen from the server, just mounted somewhere else"
+(the path is `/Volumes/usbdrive/annex` on the laptop and `/media/usbdrive/annex` on the server).
+
+The [[special_remotes/directory]] doc suggests it is possible, but I don't know how.
+Shall I copy the relevant bit from the server `.git/config`, keeping the UUID and tweaking the mount point?
+
+Thank you!
