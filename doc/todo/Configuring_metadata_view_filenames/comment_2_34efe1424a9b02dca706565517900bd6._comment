@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Tafnzart"
+ avatar="http://cdn.libravatar.org/avatar/45f62eccc7caece0d1f963f6662ccfde"
+ subject="Maybe provide an option to force without name change"
+ date="2017-05-07T14:05:03Z"
+ content="""
+This name change shouldn't be necessary if on view that has directory structure from master:
+git annex view todo=* \"/=*\"
+"""]]
