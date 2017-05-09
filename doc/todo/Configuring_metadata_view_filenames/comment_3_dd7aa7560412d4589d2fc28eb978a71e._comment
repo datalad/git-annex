@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 3"
+ date="2017-05-09T10:05:14Z"
+ content="""
+>  But that would make memory use scale with the number of files in the view, which I'd prefer to avoid..
+
+This sounds like another use case for bloom filters :)
+"""]]
