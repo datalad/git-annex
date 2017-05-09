@@ -1217,6 +1217,10 @@ Here are all the supported configuration settings.
   to or from this remote. For example, to force IPv6, and limit
   the bandwidth to 100Kbyte/s, set it to `-6 --bwlimit 100`
 
+  Note that git-annex-shell has a whitelist of allowed rsync options,
+  and others will not be be passed to the remote rsync. So using some
+  options may break the communication between the local and remote rsyncs.
+
 * `remote.<name>.annex-rsync-upload-options`
 
   Options to use when using rsync to upload a file to a remote.
