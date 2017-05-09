@@ -48,7 +48,7 @@ data GitConfig = GitConfig
 	, annexNumCopies :: Maybe NumCopies
 	, annexDiskReserve :: Integer
 	, annexDirect :: Bool
-	, annexBackends :: [String]
+	, annexBackend :: Maybe String
 	, annexQueueSize :: Maybe Int
 	, annexBloomCapacity :: Maybe Int
 	, annexBloomAccuracy :: Maybe Int
@@ -98,7 +98,12 @@ extractGitConfig r = GitConfig
 	, annexDiskReserve = fromMaybe onemegabyte $
 		readSize dataUnits =<< getmaybe (annex "diskreserve")
 	, annexDirect = getbool (annex "direct") False
-	, annexBackends = getwords (annex "backends")
+	, annexBackend = maybe
+		-- annex.backends is the old name of the option, still used
+		-- when annex.backend is not set.
+		(headMaybe $ getwords (annex "backends"))
+		Just
+		(getmaybe (annex "backend"))
 	, annexQueueSize = getmayberead (annex "queuesize")
 	, annexBloomCapacity = getmayberead (annex "bloomcapacity")
 	, annexBloomAccuracy = getmayberead (annex "bloomaccuracy")

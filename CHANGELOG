@@ -22,6 +22,9 @@ git-annex (6.20170322) UNRELEASED; urgency=medium
   * git annex add -u now supported, analagous to git add -u
   * version: Added "dependency versions" line.
   * Keys marked as dead are now skipped by --all.
+  * annex.backend is the new name for what was annex.backends, and takes
+    a single key-value backend, rather than the unncessary and confusing
+    list. The old option still works if set.
 
  -- Joey Hess <id@joeyh.name>  Wed, 29 Mar 2017 12:41:46 -0400
 

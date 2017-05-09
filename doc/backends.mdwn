@@ -45,9 +45,8 @@ Note that the various 512 and 384 length hashes result in long paths,
 which are known to not work on Windows. If interoperability on Windows is a
 concern, avoid those.
 
-The `annex.backends` git-config setting can be used to list the backends
-git-annex should use when adding new files. The first one listed will
-be used.
+The `annex.backend` git-config setting can be used to configure the
+default backend to use when adding new files.
 
 For finer control of what backend is used when adding different types of
 files, the `.gitattributes` file can be used. The `annex.backend`

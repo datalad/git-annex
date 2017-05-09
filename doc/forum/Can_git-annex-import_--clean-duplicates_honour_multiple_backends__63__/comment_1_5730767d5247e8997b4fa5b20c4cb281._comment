@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-05-09T18:06:34Z"
+ content="""
+When git-annex is adding a file, a backend can chose to not
+generate any key, and then it will try the next backend in the list.
+
+The only backend that does that is the URL backend.
+So if someone lists URL first for some reason, it'll fall back to a backend
+that is usable. It could just as well crash in that edge case; the
+annex.backends UI happened before the needs of backends were perfectly
+understood. (As did the "backend" name...)
+
+Anyway, I see the use case, but.. `git annex import` actually honors
+annex.backend settings in .gitattributes before annex.backends in
+git-config. So, relying on it using the latter to make it check multiple
+backends won't always work. I don't think it would be good to complicate
+the .gitattributes annex.backends and --backend to support a list of
+backends.
+
+It seems it would be just as fast for you to run git-annex import once per
+backend, rather than compliciating it to try multiple backends. 
+
+I think that if annex.backends were not a list for historical reasons, 
+I'd be suggesting a small shell script is your best option. 
+
+And so rather than add a new feature just because annex.backends is
+historically a list, I'd rather perhaps deprecate annex.backends as
+unncessarily complicated, and make annex.backend be a single-backend
+setting. (Just did that.)
+
+Sorry this didn't quite go the way you wanted! If there is a disadvantage
+to the simple shell script option, please do let me know..
+"""]]

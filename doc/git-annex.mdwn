@@ -827,13 +827,16 @@ Here are all the supported configuration settings.
 
   A unique UUID for this repository (automatically set).
 
-* `annex.backends`
+* `annex.backend`
 
-  Space-separated list of names of the key-value backends to use
-  when adding new files to the repository.
+  Name of the default key-value backend to use when adding new files
+  to the repository.
 
   This is overridden by annex annex.backend configuration in the
-  .gitattributes files.
+  .gitattributes files, and by the --backend option.
+
+  (This used to be named `annex.backends`, and that will still be used
+  if set.)
 
 * `annex.securehashesonly`
 

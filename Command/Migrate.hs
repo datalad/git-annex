@@ -36,15 +36,13 @@ start file key = do
 		Nothing -> stop
 		Just oldbackend -> do
 			exists <- inAnnex key
-			newbackend <- choosebackend =<< chooseBackend file
+			newbackend <- maybe defaultBackend return 
+				=<< chooseBackend file
 			if (newbackend /= oldbackend || upgradableKey oldbackend key || forced) && exists
 				then do
 					showStart "migrate" file
 					next $ perform file key oldbackend newbackend
 				else stop
-  where
-	choosebackend Nothing = Prelude.head <$> orderedList
-	choosebackend (Just backend) = return backend
 
 {- Checks if a key is upgradable to a newer representation.
  - 

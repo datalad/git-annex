@@ -7,7 +7,7 @@
 
 module Backend (
 	list,
-	orderedList,
+	defaultBackend,
 	genKey,
 	getBackend,
 	chooseBackend,
@@ -33,40 +33,29 @@ import qualified Data.Map as M
 list :: [Backend]
 list = Backend.Hash.backends ++ Backend.WORM.backends ++ Backend.URL.backends
 
-{- List of backends in the order to try them when storing a new key. -}
-orderedList :: Annex [Backend]
-orderedList = do
-	l <- Annex.getState Annex.backends -- list is cached here
-	if not $ null l
-		then return l
-		else do
-			f <- Annex.getState Annex.forcebackend
-			case f of
-				Just name | not (null name) ->
-					return [lookupname name]
-				_ -> do
-					l' <- gen . annexBackends <$> Annex.getGitConfig
-					Annex.changeState $ \s -> s { Annex.backends = l' }
-					return l'
+{- Backend to use by default when generating a new key. -}
+defaultBackend :: Annex Backend
+defaultBackend = maybe cache return =<< Annex.getState Annex.backend
   where
-	gen [] = list
-	gen ns = map lookupname ns
+	cache = do
+		n <- maybe (annexBackend <$> Annex.getGitConfig) (return . Just)
+			=<< Annex.getState Annex.forcebackend
+		let b = case n of
+			Just name | valid name -> lookupname name
+			_ -> Prelude.head list
+		Annex.changeState $ \s -> s { Annex.backend = Just b }
+		return b
+	valid name = not (null name)
 	lookupname = lookupBackendVariety . parseKeyVariety
 
-{- Generates a key for a file, trying each backend in turn until one
- - accepts it. -}
+{- Generates a key for a file. -}
 genKey :: KeySource -> Maybe Backend -> Annex (Maybe (Key, Backend))
-genKey source trybackend = do
-	bs <- orderedList
-	let bs' = maybe bs (: bs) trybackend
-	genKey' bs' source
-genKey' :: [Backend] -> KeySource -> Annex (Maybe (Key, Backend))
-genKey' [] _ = return Nothing
-genKey' (b:bs) source = do
+genKey source preferredbackend = do
+	b <- maybe defaultBackend return preferredbackend
 	r <- B.getKey b source
-	case r of
-		Nothing -> genKey' bs source
-		Just k -> return $ Just (makesane k, b)
+	return $ case r of
+		Nothing -> Nothing
+		Just k -> Just (makesane k, b)
   where
 	-- keyNames should not contain newline characters.
 	makesane k = k { keyName = map fixbadchar (keyName k) }
@@ -82,13 +71,14 @@ getBackend file k = case maybeLookupBackendVariety (keyVariety k) of
 		return Nothing
 
 {- Looks up the backend that should be used for a file.
- - That can be configured on a per-file basis in the gitattributes file. -}
+ - That can be configured on a per-file basis in the gitattributes file,
+ - or forced with --backend. -}
 chooseBackend :: FilePath -> Annex (Maybe Backend)
 chooseBackend f = Annex.getState Annex.forcebackend >>= go
   where
-	go Nothing =  maybeLookupBackendVariety . parseKeyVariety
+	go Nothing = maybeLookupBackendVariety . parseKeyVariety
 		<$> checkAttr "annex.backend" f
-	go (Just _) = Just . Prelude.head <$> orderedList
+	go (Just _) = Just <$> defaultBackend
 
 {- Looks up a backend by variety. May fail if unsupported or disabled. -}
 lookupBackendVariety :: KeyVariety -> Backend

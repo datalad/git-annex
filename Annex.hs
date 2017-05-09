@@ -98,7 +98,7 @@ data AnnexState = AnnexState
 	{ repo :: Git.Repo
 	, repoadjustment :: (Git.Repo -> IO Git.Repo)
 	, gitconfig :: GitConfig
-	, backends :: [BackendA Annex]
+	, backend :: Maybe (BackendA Annex)
 	, remotes :: [Types.Remote.RemoteA Annex]
 	, remoteannexstate :: M.Map UUID AnnexState
 	, output :: MessageState
@@ -149,7 +149,7 @@ newState c r = do
 		{ repo = r
 		, repoadjustment = return
 		, gitconfig = c
-		, backends = []
+		, backend = Nothing
 		, remotes = []
 		, remoteannexstate = M.empty
 		, output = def
