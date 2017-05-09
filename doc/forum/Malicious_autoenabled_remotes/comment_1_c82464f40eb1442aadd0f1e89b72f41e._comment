@@ -1,0 +1,42 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-05-09T20:45:17Z"
+ content="""
+`git-annex init` will try to auto-enable special remotes that have
+been configured with autoenable=true.
+
+So if someone can push to the repository on trustedserver, they can
+set up such a special remote and cause your later clones of it to enable
+the special remote. Sync will then push content to their special remote.
+They could also check in additional annexed file to the git repository,
+and put their contents on their special remote, and sync would then
+download the contents from there.
+
+Of course, someone who can do this has to have write access to the
+git repository on trustedserver, and if they can write to the git repository,
+they can also send annexed file to there, unless you've prevented that
+somehow.
+
+I had not really considered the autoenable=true as a potential security
+problem, so it's good to think about it that way. I don't know if we have a
+real security problem here though. It seems to rely on the attacker
+having write access to the trustedserver so far.
+
+I suppose the attacker could instead convince you to pull from a clone that
+they control, and after you've pulled once, clones made from your
+repository (or trustedserver after you push to there) will then autoenable
+their special remote unexpectedly. Perhaps the goal then is to get git
+annex sync to unexpectedly send file contents there, so they can collect
+all your annexed files. Pulling from their repository once thus turns into
+sending them all your annexed files going forward.
+
+So I am starting to see this as a security problem.. 
+
+Note that pulling from someone untrusted can also change other settings in
+the git-annex branch (since it's automatically merged), which can probably
+screw up the repository fairly well in other ways, like setting numcopies
+to 0 and messing with preferred content expressions such that git-annex
+wants to drop all files, or copy files to repositories where you don't want
+them to go, etc.
+"""]]
