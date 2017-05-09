@@ -1,0 +1,21 @@
+In one of my annexes I will g-a-add a (e.g.) zip file, extract and g-a-add its contents and then set metadata on "each side"..
+
+    git annex metadata -s extracted_from+=$key_for_original.zip files_from_zip/
+    git annex metadata -s extracted_to+=$key_for_file1 original.zip
+    git annex metadata -s extracted_to+=$key_for_file2 original.zip
+    git annex metadata -s extracted_to+=$key_for_file3 original.zip
+    git annex metadata -s extracted_to+=$key_for_file4 original.zip
+
+This means that if the content for a file in files_from_zip/ is lost, you can easily find that it came from original.zip (which may not be lost) *or any other zip in that annex that also contains that file*.
+
+I was wondering if this would be worth building in?
+
+    git annex metadata --fromto original.zip files_from_zip/
+
+There are other situations this is useful (and I use), for example, when I convert an annexed file to another format, I record the "source" and "target" keys against each other. I suppose a very general name would be:
+
+    git annex metadata --parentchild original.zip files_from_zip/
+    git annex metadata --parentchild original.wav compressed.flac
+    git annex metadata --parentchild original.svg compressed.png
+
+and this would set 'parent' and 'child' metadata respectively.
