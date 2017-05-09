@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-05-09T21:07:11Z"
+ content="""
+You also get better seek speed with packed inodes.
+
+With default 256 byte inodes, there seems to be 59 bytes to play with.
+(Determined experimentally.) 
+
+Note that disks over 4 tb default to 32 kilobyte inodes, so probably most
+spinning hard disks these days *do* pack regular git-annex symlinks
+efficiently. (I don't have a 4 tb disk online to check this.. And I doubt
+CandyAngel was counting only the sizes of symlinks and not git repos
+or at least directory inodes to hold all the symlinks.)
+
+With a prefix like ".git/annex/objects/zX/Wx/S-s1000000000-"
+that leaves 20 bytes out of the 59 for the hash.
+
+That's not enough data to be cryptographically secure, but if
+we use SHA1 or MD5 as the base hash, it wouldn't be anyway. 15 bytes
+of hash state will base64 encode to 20 bytes. SHA1 is a 20 byte hash;
+MD5 is a 16 byte hash. So even MD5 would need to be truncated a little bit.
+Chances of (non-malicious) collision would still be small, only 256
+times as likely as a (non-malicious) MD5 collision. It could easily be made
+harder than MD5/SHA1 to maliciously collide by using truncated SHA2.
+
+(Files larger than 9.3 gb would still have too long symlinks due to the size
+field. The size field could also be omitted or encoded more efficiently,
+but omitting it would reduce git-annex's ability to not overfill disk
+and I don't think re-encoding buys enough to bother.)
+"""]]
