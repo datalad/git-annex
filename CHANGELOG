@@ -1,4 +1,4 @@
-git-annex (6.20170322) UNRELEASED; urgency=medium
+git-annex (6.20170510) unstable; urgency=medium
 
   * When a http remote does not expose an annex.uuid config, only warn
     about it once, not every time git-annex is run.
@@ -26,7 +26,7 @@ git-annex (6.20170322) UNRELEASED; urgency=medium
     a single key-value backend, rather than the unncessary and confusing
     list. The old option still works if set.
 
- -- Joey Hess <id@joeyh.name>  Wed, 29 Mar 2017 12:41:46 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 10 May 2017 15:05:22 -0400
 
 git-annex (6.20170321) unstable; urgency=medium
 
