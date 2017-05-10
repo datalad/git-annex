@@ -1,0 +1,84 @@
+Hi,
+
+I'm trying to get my head around groups, wanted, etc. for a particular use case.
+
+**Problem:** I can't work out how to get a source(?) repository to automatically drop files when they hit a transfer repository.
+
+
+I have a machine (`Machine 1`) that is used for data acquisition but it is behind a strict firewall (both physical and virtual).  I usually physically carry a USB drive over, set up a rsync ssh -> local-USB-drive from the one machine (`Machine 2`) that is able to connect over the network to `Machine 1`.  As it is a pain to lug the drive over, I only do this rsync maybe weekly, so the rsync takes many hours (~24) to complete.  Then (when I remember) I visit and I carry the USB drive back...  Naturally, this slows down my work process.
+
+What I was hoping to do was set up git-annex with the assistant to help me.  I am able to run the assistant, but not the webapp on `Machines 1 and 2`.  :-(
+
+My thought was - as these have to be disconnected network transfers...
+
+- `Repository 1 -> Repository 2` (when space permits)
+- `Repository 2 -> Repository 3` (when space permits) `-> Repository 4` (USB drive(s))
+
+
+Another limitation is that `Repos/Machines 2 & 3` have limited storage space.
+
+
+As a test case I can set up (`Repo1 -> Repo2`) and (`Repo2 -> Repo3`) (on other machines, but the commands should be the same...)
+
+After reading a bit I made a changed [preferred content](/preferred_content/standard_groups/) for a transfer repo to:
+
+```
+not (inallgroup=client and copies=client:1) and ($client)
+```
+
+i.e. `copies` from `2` to `1`.
+ 
+---
+
+
+Finally...The question
+----------------------
+
+**BUT** I can't work out how to get `Repo1` (the source) to automatically drop the files when they hit `Repo2` (what I'm guessing should be a transfer repository).
+
+Can anyone suggest how to automagically do this with the assistant?
+
+
+---
+
+
+If it would help I can share the git-annex commands I've been using, but as I'm only doing testing up at the moment, I'm happy to start from scratch if there is a RTFM page out there.  :-)
+
+
+I've put some details about my thoughts on the repositories and restrictions below.
+
+
+
+Repository 1
+------------
+- Type: source (Data collection)
+- Human readable directory structure
+- Physically: Machine 1
+- Strict firewall only incoming network connections from Machine 2
+- Storage: 50Gb
+
+
+Repository 2
+------------
+- Type: transfer
+- Physically: Machine 2
+- Reasonably relaxed firewall, can talk to Repository 3
+- Limited storage: 10Gb
+
+
+Repository 3
+------------
+- Type: transfer
+- Pysically: Machine 3
+- Reasonably relaxed firewall, can talk to Repository 2
+- Limited storage: 10Gb
+- Connected to USB drive(s)
+
+
+Repository 4, 5, ...
+--------------------
+- Type: ? Client ?
+- Human readable directory structure
+- Physically: USB drive
+- Usually (but not always) connected to machine 3
+- Large storage (2Tb) + Additional drives
