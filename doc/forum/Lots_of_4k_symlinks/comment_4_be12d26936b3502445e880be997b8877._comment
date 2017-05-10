@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 4"
+ date="2017-05-10T09:21:34Z"
+ content="""
+> And I doubt CandyAngel was counting only the sizes of symlinks and not git repos or at least directory inodes to hold all the symlinks.)
+
+In that repository, it is only top level directories (no sub directories) and each directory in it only has symlinks (up to 8000 of them). Directories are **mkdir $(uuidgen -r)**, hence the wildcard for du.
+
+It would be including the directory size to hold all the inodes, but it definitely *isn't counting .git* as this annex spans 3 drives with 6TB of content so far. Well, 6 drives because of \"numcopies 2\" :P
+
+I will calculate this a different way and only count symlinks, when I have access to it again.
+"""]]
