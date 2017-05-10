@@ -10,6 +10,7 @@
 module BuildInfo where
 
 import Data.List
+import Data.Ord
 import qualified Data.CaseInsensitive as CI
 
 buildFlags :: [String]
@@ -86,7 +87,7 @@ buildFlags = filter (not . null)
 -- Not a complete list, let alone a listing transitive deps, but only
 -- the ones that are often interesting to know.
 dependencyVersions :: [String]
-dependencyVersions = map fmt $ sortOn (CI.mk . fst)
+dependencyVersions = map fmt $ sortBy (comparing (CI.mk . fst))
 	[ ("feed", VERSION_feed)
 	, ("uuid", VERSION_uuid)
 	, ("bloomfilter", VERSION_bloomfilter)
