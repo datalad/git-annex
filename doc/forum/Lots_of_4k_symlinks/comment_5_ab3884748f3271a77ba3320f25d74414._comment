@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 5"
+ date="2017-05-10T12:44:08Z"
+ content="""
+    $ find -name .git -prune -o -type l | wc -l
+    1034886
+
+Just over a million symlinks.. very convenient :)
+
+    $ find -name .git -prune -o -type l -printf '%s\n' | awk '{sum+=$1} END {print sum/1024**3}'
+    195.9 # 195MB actual size
+    $ find -name .git -prune -o -type l -print0 | du -ch --files0-from=- | tail -n1
+    4.0G    total # 4GB disk usage
+
+And in comparison to my earlier comment 2 weeks ago:
+
+    $ du -shc *-* | tail -n3
+    33M     fd79bbd4-d41e-4ea8-acc8-86437c5eed7c
+    33M     ffbd042e-f6d9-4450-9a57-8ed1086f587c
+    4.1G    total
+
+So directory inode sizes are dwarfed by the 4K disk usage but ~198b actual usage of the symlinks (~96% wasted space?).
+"""]]
