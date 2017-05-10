@@ -48,6 +48,10 @@ If it would help I can share the git-annex commands I've been using, but as I'm 
 I've put some details about my thoughts on the repositories and restrictions below.
 
 
+Thanks - Olaf
+
+
+
 
 Repository 1
 ------------
