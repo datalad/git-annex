@@ -107,7 +107,7 @@ clean:
 		Setup Build/InstallDesktopFile Build/EvilSplicer \
 		Build/Standalone Build/OSXMkLibs Build/LinuxMkLibs \
 		Build/DistributionUpdate Build/BuildVersion Build/MakeMans \
-		git-union-merge .tasty-rerun-log
+		git-annex-shell git-union-merge .tasty-rerun-log
 	find . -name \*.o -exec rm {} \;
 	find . -name \*.hi -exec rm {} \;
 
