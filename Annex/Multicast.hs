@@ -19,6 +19,8 @@ import GHC.IO.Handle.FD
 #if ! MIN_VERSION_process(1,4,2)
 import System.Posix.IO (handleToFd)
 #endif
+import Control.Applicative
+import Prelude
 
 multicastReceiveEnv :: String
 multicastReceiveEnv = "GIT_ANNEX_MULTICAST_RECEIVE"
