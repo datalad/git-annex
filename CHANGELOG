@@ -1,3 +1,12 @@
+git-annex (6.20170511) UNRELEASED; urgency=medium
+
+  * Ssh password prompting improved when using -J for concurrency.
+    When ssh connection caching is enabled (and when GIT_ANNEX_USE_GIT_SSH
+    is not set), only one ssh password prompt will be made per host, and
+    only one ssh password prompt will be made at a time.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 11 May 2017 15:16:23 -0400
+
 git-annex (6.20170510) unstable; urgency=medium
 
   * When a http remote does not expose an annex.uuid config, only warn

@@ -11,6 +11,7 @@ module Annex.LockFile (
 	lockFileCached,
 	unlockFile,
 	getLockCache,
+	fromLockCache,
 	withExclusiveLock,
 	tryExclusiveLock,
 ) where

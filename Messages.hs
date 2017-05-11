@@ -1,6 +1,6 @@
 {- git-annex output messages
  -
- - Copyright 2010-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -41,12 +41,14 @@ module Messages (
 	outputMessage,
 	implicitMessage,
 	withMessageState,
+	prompt,
 ) where
 
 import System.Log.Logger
 import System.Log.Formatter
 import System.Log.Handler (setFormatter)
 import System.Log.Handler.Simple
+import Control.Concurrent
 
 import Common
 import Types
@@ -219,3 +221,15 @@ commandProgressDisabled = withMessageState $ \s -> return $
  - output. -}
 implicitMessage :: Annex () -> Annex ()
 implicitMessage = whenM (implicitMessages <$> Annex.getState Annex.output)
+
+{- Prevents any concurrent console access while running an action, so
+ - that the action is the only thing using the console, and can eg prompt
+ - the user.
+ -}
+prompt :: (MessageState -> Annex a) -> Annex a
+prompt a = withMessageState $ \s ->
+	if concurrentOutputEnabled s
+		then 
+			let l = promptLock s
+			in bracketIO (takeMVar l) (putMVar l) (const (a s))
+		else a s

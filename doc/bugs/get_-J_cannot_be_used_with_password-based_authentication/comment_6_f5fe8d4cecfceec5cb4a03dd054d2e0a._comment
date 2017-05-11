@@ -37,9 +37,6 @@ non-concurrent uses the current, faster path.
 prepSocket takes a shared 
 file level lock of the socket's lock file, which is used to tell when
 another git-annex process is using the connection multiplexer.
-So, an optimisation would be for prepSocket to try to take a non-blocking
-exclusive file-level lock. If it fails, it knows some process has
-already taken the shared lock, and so the multiplexer is started and no
-password prompting needs to be done. So it does not need to try to start
-the multiplexer in this case.
+So, an optimisation would be for prepSocket to check if it's already
+taken that shared lock, and then it does not need to start the multiplexer.
 """]]

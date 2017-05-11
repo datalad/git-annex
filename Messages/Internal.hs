@@ -13,7 +13,6 @@ import Types.Messages
 import Messages.Concurrent
 import Messages.JSON
 
-
 withMessageState :: (MessageState -> Annex a) -> Annex a
 withMessageState a = Annex.getState Annex.output >>= a
 

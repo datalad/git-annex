@@ -124,6 +124,7 @@ data AnnexState = AnnexState
 	, groupmap :: Maybe GroupMap
 	, ciphers :: M.Map StorableCipher Cipher
 	, lockcache :: LockCache
+	, sshstalecleaned :: MVar ()
 	, flags :: M.Map String Bool
 	, fields :: M.Map String String
 	, cleanup :: M.Map CleanupAction (Annex ())
@@ -145,6 +146,8 @@ data AnnexState = AnnexState
 newState :: GitConfig -> Git.Repo -> IO AnnexState
 newState c r = do
 	emptyactiveremotes <- newMVar M.empty
+	o <- newMessageState
+	sc <- newMVar ()
 	return $ AnnexState
 		{ repo = r
 		, repoadjustment = return
@@ -152,7 +155,7 @@ newState c r = do
 		, backend = Nothing
 		, remotes = []
 		, remoteannexstate = M.empty
-		, output = def
+		, output = o
 		, concurrency = NonConcurrent
 		, force = False
 		, fast = False
@@ -175,6 +178,7 @@ newState c r = do
 		, groupmap = Nothing
 		, ciphers = M.empty
 		, lockcache = M.empty
+		, sshstalecleaned = sc
 		, flags = M.empty
 		, fields = M.empty
 		, cleanup = M.empty

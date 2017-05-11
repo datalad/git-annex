@@ -23,10 +23,6 @@ module Annex.Ssh (
 	runSshAskPass
 ) where
 
-import qualified Data.Map as M
-import Data.Hash.MD5
-import System.Exit
-
 import Annex.Common
 import Annex.LockFile
 import qualified Build.SysConfig as SysConfig
@@ -38,12 +34,16 @@ import Annex.Path
 import Utility.Env
 import Utility.FileSystemEncoding
 import Types.CleanupActions
+import Types.Messages
 import Git.Env
 import Git.Ssh
 #ifndef mingw32_HOST_OS
 import Annex.Perms
 import Annex.LockPool
 #endif
+
+import Data.Hash.MD5
+import Control.Concurrent
 
 {- Some ssh commands are fed stdin on a pipe and so should be allowed to
  - consume it. But ssh commands that are not piped stdin should generally
@@ -71,16 +71,18 @@ sshCommand cs (host, port) gc remotecmd = ifM (liftIO safe_GIT_SSH)
 sshOptions :: ConsumeStdin -> (String, Maybe Integer) -> RemoteGitConfig -> [CommandParam] -> Annex [CommandParam]
 sshOptions cs (host, port) gc opts = go =<< sshCachingInfo (host, port)
   where
-	go (Nothing, params) = ret params
+	go (Nothing, params) = return $ mkparams cs params
 	go (Just socketfile, params) = do
-		prepSocket socketfile
-		ret params
-	ret ps = return $ concat
+		prepSocket socketfile gc
+			(Param host : mkparams NoConsumeStdin params)
+			
+		return $ mkparams cs params
+	mkparams cs' ps = concat
 		[ ps
 		, map Param (remoteAnnexSshOptions gc)
 		, opts
 		, portParams port
-		, consumeStdinParams cs
+		, consumeStdinParams cs'
 		, [Param "-T"]
 		]
 
@@ -158,21 +160,52 @@ portParams :: Maybe Integer -> [CommandParam]
 portParams Nothing = []
 portParams (Just port) = [Param "-p", Param $ show port]
 
-{- Prepare to use a socket file for ssh connection caching. 
- - Locks a lock file to prevent other git-annex processes from
- - stopping the ssh multiplexer on this socket. -}
-prepSocket :: FilePath -> Annex ()
-prepSocket socketfile = do
-	-- If the lock pool is empty, this is the first ssh of this
-	-- run. There could be stale ssh connections hanging around
+{- Prepare to use a socket file for ssh connection caching.
+ -
+ - When concurrency is enabled, this blocks until a ssh connection
+ - has been made to the host. So, any password prompting by ssh will
+ - happen in this call, and only one ssh process will prompt at a time.
+ -
+ - Locks the socket lock file to prevent other git-annex processes from
+ - stopping the ssh multiplexer on this socket.
+ -}
+prepSocket :: FilePath -> RemoteGitConfig -> [CommandParam] -> Annex ()
+prepSocket socketfile gc sshparams = do
+	-- There could be stale ssh connections hanging around
 	-- from a previous git-annex run that was interrupted.
-	whenM (not . any isLock . M.keys <$> getLockCache)
+	-- This must run only once, before we have made any ssh connection.
+	whenM (isJust <$> (liftIO . tryTakeMVar =<< Annex.getState Annex.sshstalecleaned)) $
 		sshCleanup
-	-- Cleanup at end of this run.
+	-- Cleanup at shutdown.
 	Annex.addCleanup SshCachingCleanup sshCleanup
-
+	
 	liftIO $ createDirectoryIfMissing True $ parentDir socketfile
-	lockFileCached $ socket2lock socketfile
+	let socketlock = socket2lock socketfile
+
+	prompt $ \s -> when (concurrentOutputEnabled s) $
+		-- If the LockCache already has the socketlock in it,
+		-- the connection has already been started. Otherwise,
+		-- get the connection started now.
+		whenM (isNothing <$> fromLockCache socketlock) $
+			void $ liftIO $ boolSystem "ssh" $
+				sshparams ++ startSshConnection gc
+	
+	lockFileCached socketlock
+
+-- Parameters to get ssh connected to the remote host,
+-- by asking it to run a no-op command.
+--
+-- Could simply run "true", but the remote host may only
+-- allow git-annex-shell to run. So, run git-annex-shell inannex
+-- with the path to the remote repository and no other parameters,
+-- which is a no-op supported by all versions of git-annex-shell.
+startSshConnection :: RemoteGitConfig -> [CommandParam]
+startSshConnection gc =
+	[ Param "git-annex-shell"
+	, Param "inannex"
+	, File $ Git.repoPath $ gitConfigRepo $
+		remoteGitConfig gc
+	]
 
 {- Find ssh socket files.
  -
@@ -324,12 +357,20 @@ sshOptionsTo remote gc localr
 		Just host -> ifM (liftIO $ safe_GIT_SSH <&&> gitSshEnvSet)
 			( unchanged
 			, do
-				(msockfile, _) <- sshCachingInfo (host, Git.Url.port remote)
+				let port = Git.Url.port remote
+				(msockfile, cacheparams) <- sshCachingInfo (host, port)
 				case msockfile of
 					Nothing -> use []
 					Just sockfile -> do
-						prepSocket sockfile
-						use (sshConnectionCachingParams sockfile)
+						prepSocket sockfile gc $
+							Param host : concat
+								[ cacheparams
+								, map Param (remoteAnnexSshOptions gc)
+								, portParams port
+								, consumeStdinParams NoConsumeStdin
+								, [Param "-T"]
+								]
+						use cacheparams
 			)
   where
 	unchanged = return localr

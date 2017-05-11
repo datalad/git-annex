@@ -1,6 +1,6 @@
 {- git-annex Messages data types
  - 
- - Copyright 2012 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,9 +9,9 @@
 
 module Types.Messages where
 
-import Data.Default
 import qualified Data.Aeson as Aeson
 
+import Control.Concurrent
 #ifdef WITH_CONCURRENTOUTPUT
 import System.Console.Regions (ConsoleRegion)
 #endif
@@ -32,11 +32,13 @@ data MessageState = MessageState
 	, consoleRegionErrFlag :: Bool
 #endif
 	, jsonBuffer :: Maybe Aeson.Object
+	, promptLock :: MVar () -- left full when not prompting
 	}
 
-instance Default MessageState
-  where
-	def = MessageState
+newMessageState :: IO MessageState
+newMessageState = do
+	promptlock <- newMVar ()
+	return $ MessageState
 		{ outputType = NormalOutput
 		, concurrentOutputEnabled = False
 		, sideActionBlock = NoBlock
@@ -46,4 +48,5 @@ instance Default MessageState
 		, consoleRegionErrFlag = False
 #endif
 		, jsonBuffer = Nothing
+		, promptLock = promptlock
 		}
