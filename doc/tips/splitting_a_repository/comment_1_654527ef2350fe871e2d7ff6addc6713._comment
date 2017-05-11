@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-05-11T16:28:32Z"
+ content="""
+This is a simple way to split a repository, but the resulting split git
+repository will be larger than is really necessary.
+
+When you `dropunused` all the hard links that are not present in the
+repository, git-annex will commit a log to the git-annex branch saying "I
+don't have this content" for each of them. That seems unnecessary since
+it probably does not have an earlier log saying it contained the content
+that was hard linked into it, and perhaps could be improved in git-annex
+to not record that unncessarily, but that's what it does currently.
+
+So I suggest running `git annex forget` after the dropunused or at some
+later point. That will delete all traces of those log files from
+the git-annex branch.
+"""]]
