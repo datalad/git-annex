@@ -98,9 +98,9 @@ genAddresses addrs = do
 linkRemote :: RemoteName -> CommandStart
 linkRemote remotename = do
 	showStart "p2p link" remotename
-	next $ next prompt
+	next $ next promptaddr
   where
-	prompt = do
+	promptaddr = do
 		liftIO $ putStrLn ""
 		liftIO $ putStr "Enter peer address: "
 		liftIO $ hFlush stdout
@@ -112,7 +112,7 @@ linkRemote remotename = do
 			else case unformatP2PAddress s of
 				Nothing -> do
 					liftIO $ hPutStrLn stderr "Unable to parse that address, please check its format and try again."
-					prompt
+					promptaddr
 				Just addr -> do
 					r <- setupLink remotename addr
 					case r of
