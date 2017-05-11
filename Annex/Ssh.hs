@@ -158,8 +158,9 @@ portParams :: Maybe Integer -> [CommandParam]
 portParams Nothing = []
 portParams (Just port) = [Param "-p", Param $ show port]
 
-{- Prepare to use a socket file. Locks a lock file to prevent
- - other git-annex processes from stopping the ssh on this socket. -}
+{- Prepare to use a socket file for ssh connection caching. 
+ - Locks a lock file to prevent other git-annex processes from
+ - stopping the ssh multiplexer on this socket. -}
 prepSocket :: FilePath -> Annex ()
 prepSocket socketfile = do
 	-- If the lock pool is empty, this is the first ssh of this
