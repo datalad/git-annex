@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-05-11T17:13:35Z"
+ content="""
+I'm not sure that a bare repository is the best way to go about it.
+
+One way to do it is to have a non-bare repository, which gets updated when
+you push (by eg setting receive.denyNonFastforwards=false), and have that
+non-bare repository be the one you push to deploy to.
+
+While you could push first to a bare repository and have it then push on
+the the non-bare repository, that seems to mostly only complicate things,
+since you will need to find a way to copy the annexed file contents from
+the bare to the non-bare repository.
+"""]]
