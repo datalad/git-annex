@@ -71,6 +71,7 @@ import Utility.Url
 import "mtl" Control.Monad.Reader
 import Control.Concurrent
 import Control.Concurrent.Async
+import Control.Concurrent.STM
 import qualified Data.Map as M
 import qualified Data.Set as S
 
@@ -124,7 +125,7 @@ data AnnexState = AnnexState
 	, groupmap :: Maybe GroupMap
 	, ciphers :: M.Map StorableCipher Cipher
 	, lockcache :: LockCache
-	, sshstalecleaned :: MVar ()
+	, sshstalecleaned :: TMVar Bool
 	, flags :: M.Map String Bool
 	, fields :: M.Map String String
 	, cleanup :: M.Map CleanupAction (Annex ())
@@ -147,7 +148,7 @@ newState :: GitConfig -> Git.Repo -> IO AnnexState
 newState c r = do
 	emptyactiveremotes <- newMVar M.empty
 	o <- newMessageState
-	sc <- newMVar ()
+	sc <- newTMVarIO False
 	return $ AnnexState
 		{ repo = r
 		, repoadjustment = return

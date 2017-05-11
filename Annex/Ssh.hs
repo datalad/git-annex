@@ -43,7 +43,7 @@ import Annex.LockPool
 #endif
 
 import Data.Hash.MD5
-import Control.Concurrent
+import Control.Concurrent.STM
 
 {- Some ssh commands are fed stdin on a pipe and so should be allowed to
  - consume it. But ssh commands that are not piped stdin should generally
@@ -173,23 +173,31 @@ prepSocket :: FilePath -> RemoteGitConfig -> [CommandParam] -> Annex ()
 prepSocket socketfile gc sshparams = do
 	-- There could be stale ssh connections hanging around
 	-- from a previous git-annex run that was interrupted.
-	-- This must run only once, before we have made any ssh connection.
-	whenM (isJust <$> (liftIO . tryTakeMVar =<< Annex.getState Annex.sshstalecleaned)) $
-		sshCleanup
+	-- This must run only once, before we have made any ssh connection,
+	-- and any other prepSocket calls must block while it's run.
+	tv <- Annex.getState Annex.sshstalecleaned
+	join $ liftIO $ atomically $ do
+		cleaned <- takeTMVar tv
+		if cleaned
+			then do
+				putTMVar tv cleaned
+				return noop
+			else return $ do
+				sshCleanup
+				liftIO $ atomically $ putTMVar tv True
 	-- Cleanup at shutdown.
 	Annex.addCleanup SshCachingCleanup sshCleanup
 	
 	liftIO $ createDirectoryIfMissing True $ parentDir socketfile
 	let socketlock = socket2lock socketfile
 
-	prompt $ \s -> when (concurrentOutputEnabled s) $
+	prompt $ \s -> when (concurrentOutputEnabled s) $ do
 		-- If the LockCache already has the socketlock in it,
 		-- the connection has already been started. Otherwise,
 		-- get the connection started now.
 		whenM (isNothing <$> fromLockCache socketlock) $
 			void $ liftIO $ boolSystem "ssh" $
 				sshparams ++ startSshConnection gc
-	
 	lockFileCached socketlock
 
 -- Parameters to get ssh connected to the remote host,
