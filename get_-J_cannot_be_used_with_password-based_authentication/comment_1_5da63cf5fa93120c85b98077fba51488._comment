@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-05-11T21:57:24Z"
+ content="""
+Current status: It's implemented, but not for `GIT_SSH` yet.
+
+`git annex get -J 3` seems to work well.
+
+`git annex drop -J 3` sometimes (once per 5 or so tries) runs
+2 ssh processes both prompting at once. For example:
+
+	21555 pts/3    S+     0:00      |           \_ ssh localhost -S .git/annex/ssh/localhost -o ControlMaster=auto -o ControlPersist=yes -T git-annex-shell 'lockcontent' '/~/tmp/b/a' 'SHA256E-s30--ec748fe42378798b82ddf4e6b3e778a0cbc5d76d458685af01dc1f09cc423eb7' --uuid ad19d177-519e-4440-a9c9-0c9cddd99db2
+	21556 pts/3    S+     0:00      |           \_ ssh localhost -S .git/annex/ssh/localhost -o ControlMaster=auto -o ControlPersist=yes -n -T git-annex-shell inannex .
+
+The inannex is what's used to bring up the ssh connection, so
+I don't immediately understand how the lockcontent could run before
+the ssh connection is brought up.
+"""]]
