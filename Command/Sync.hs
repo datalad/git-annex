@@ -417,7 +417,7 @@ pushRemote o remote (Just branch, _) = stopUnless (pure (pushOption o) <&&> need
 	-- Do updateInstead emulation for remotes on eg removable drives
 	-- formatted FAT, where the post-update hook won't run.
 	postpushupdate
-		| maybe False annexCrippledFileSystem (remoteGitConfig (Remote.gitconfig remote)) = 
+		| annexCrippledFileSystem (remoteGitConfig (Remote.gitconfig remote)) = 
 			case Git.repoWorkTree (Remote.repo remote) of
 				Nothing -> return True
 				Just wt -> ifM (Remote.Git.onLocal remote needUpdateInsteadEmulation)

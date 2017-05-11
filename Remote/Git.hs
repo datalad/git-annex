@@ -165,8 +165,7 @@ gen r u c gc
 			, config = c
 			, localpath = localpathCalc r
 			, repo = r
-			, gitconfig = gc
-				{ remoteGitConfig = Just $ extractGitConfig r }
+			, gitconfig = gc { remoteGitConfig = extractGitConfig r }
 			, readonly = Git.repoIsHttp r
 			, availability = availabilityCalc r
 			, remotetype = remote
@@ -351,7 +350,7 @@ keyUrls r key = map tourl locs'
 	locs' = map (replace "\\" "/") locs
 #endif
 	remoteconfig = gitconfig r
-	cfg = fromJust $ remoteGitConfig remoteconfig
+	cfg = remoteGitConfig remoteconfig
 
 dropKey :: Remote -> Key -> Annex Bool
 dropKey r key
@@ -520,7 +519,7 @@ copyFromRemoteCheap :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
 copyFromRemoteCheap r key af file
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $ liftIO $ do
 		loc <- gitAnnexLocation key (repo r) $
-			fromJust $ remoteGitConfig $ gitconfig r
+			remoteGitConfig $ gitconfig r
 		ifM (doesFileExist loc)
 			( do
 				absloc <- absPath loc

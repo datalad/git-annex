@@ -88,6 +88,7 @@ data GitConfig = GitConfig
 	, receiveDenyCurrentBranch :: DenyCurrentBranch
 	, gcryptId :: Maybe String
 	, gpgCmd :: GpgCmd
+	, gitConfigRepo :: Git.Repo
 	}
 
 extractGitConfig :: Git.Repo -> GitConfig
@@ -148,6 +149,7 @@ extractGitConfig r = GitConfig
 	, receiveDenyCurrentBranch = getDenyCurrentBranch r
 	, gcryptId = getmaybe "core.gcrypt-id"
 	, gpgCmd = mkGpgCmd (getmaybe "gpg.program")
+	, gitConfigRepo = r
 	}
   where
 	getbool k d = fromMaybe d $ getmaybebool k
@@ -216,7 +218,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexHookType :: Maybe String
 	, remoteAnnexExternalType :: Maybe String
 	{- A regular git remote's git repository config. -}
-	, remoteGitConfig :: Maybe GitConfig
+	, remoteGitConfig :: GitConfig
 	}
 
 extractRemoteGitConfig :: Git.Repo -> String -> RemoteGitConfig
@@ -252,7 +254,7 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 	, remoteAnnexDdarRepo = getmaybe "ddarrepo"
 	, remoteAnnexHookType = notempty $ getmaybe "hooktype"
 	, remoteAnnexExternalType = notempty $ getmaybe "externaltype"
-	, remoteGitConfig = Nothing
+	, remoteGitConfig = extractGitConfig r
 	}
   where
 	getbool k d = fromMaybe d $ getmaybebool k
