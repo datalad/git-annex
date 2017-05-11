@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2017-05-11T18:09:04Z"
+ content="""
+All cases could be dealt with by having a single process-level prompt lock
+(not a lock file, but an MVar), that's taken when doing something
+that might prompt for input.
+
+Then `Annex.Ssh.prepSocket` could block to take the prompt lock, and once
+it has the prompt lock, start the ssh connection multiplexer and wait for
+the the ssh connection to be established.
+
+Thus, even if `git annex get -J` is connecting to multiple hosts that each
+need passwords, password prompting would be serialized.
+
+All message output could also be blocked while the prompt lock is held,
+and then concurrent output would not scramble with the ssh password prompt.
+
+`ssh -S path -O check` does indeed exit nonzero when ssh has not yet
+connected and is at a password prompt. Also, I noticed that the socket file
+is only created after the password prompt, so a less expensive check
+(though perhaps not as accurate) is to see if the socket file exists.
+(But, it seems we don't need to check, see below.)
+
+The real problem is starting the ssh connection multiplexer without
+blocking for eg a whole rsync transfer to run. There's
+not a `-O` command that starts the multiplexer. The only way to do it seems
+to be something like `ssh -S path -o ControlMaster=auto -o 
+ControlPersist=yes host true`. So, run a no-op command on the remote host just
+to get the connection up. Then prepSocket will know the cached connection
+is up, and can drop the prompt lock and return.
+
+It would only need to do this when concurrency is enabled, so
+non-concurrent uses the current, faster path.
+
+prepSocket takes a shared 
+file level lock of the socket's lock file, which is used to tell when
+another git-annex process is using the connection multiplexer.
+So, an optimisation would be for prepSocket to try to take a non-blocking
+exclusive file-level lock. If it fails, it knows some process has
+already taken the shared lock, and so the multiplexer is started and no
+password prompting needs to be done. So it does not need to try to start
+the multiplexer in this case.
+"""]]
