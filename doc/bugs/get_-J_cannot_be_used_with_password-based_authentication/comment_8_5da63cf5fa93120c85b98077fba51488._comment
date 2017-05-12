@@ -1,6 +1,6 @@
 [[!comment format=mdwn
  username="joey"
- subject="""comment 1"""
+ subject="""status"""
  date="2017-05-11T21:57:24Z"
  content="""
 Current status: It's implemented, but not for `GIT_SSH` yet.
