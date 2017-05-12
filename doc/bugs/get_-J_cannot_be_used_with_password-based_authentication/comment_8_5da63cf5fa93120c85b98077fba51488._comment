@@ -6,5 +6,6 @@
 Current status: It's implemented, but not for `GIT_SSH` yet.
 
 The display is a bit ugly, because the ssh password prompt line
-confuses the concurrent-output region manager.
+confuses the concurrent-output region manager. Opened
+[[minor_display_glitch_with_ssh_password_prompting_and_-J]] bug for that.
 """]]
