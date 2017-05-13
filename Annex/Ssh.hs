@@ -34,7 +34,7 @@ import Annex.Path
 import Utility.Env
 import Utility.FileSystemEncoding
 import Types.CleanupActions
-import Types.Messages
+import Types.Concurrency
 import Git.Env
 import Git.Ssh
 #ifndef mingw32_HOST_OS
@@ -191,13 +191,16 @@ prepSocket socketfile gc sshparams = do
 	liftIO $ createDirectoryIfMissing True $ parentDir socketfile
 	let socketlock = socket2lock socketfile
 
-	prompt $ \s -> when (concurrentOutputEnabled s) $ do
-		-- If the LockCache already has the socketlock in it,
-		-- the connection has already been started. Otherwise,
-		-- get the connection started now.
-		whenM (isNothing <$> fromLockCache socketlock) $
-			void $ liftIO $ boolSystem "ssh" $
-				sshparams ++ startSshConnection gc
+	prompt $ \c -> case c of
+		Concurrent {} -> do
+			-- If the LockCache already has the socketlock in it,
+			-- the connection has already been started. Otherwise,
+			-- get the connection started now.
+			whenM (isNothing <$> fromLockCache socketlock) $
+				void $ liftIO $ boolSystem "ssh" $
+					sshparams ++ startSshConnection gc
+		NonConcurrent -> return ()
+	
 	lockFileCached socketlock
 
 -- Parameters to get ssh connected to the remote host,

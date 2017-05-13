@@ -54,6 +54,7 @@ import Common
 import Types
 import Types.Messages
 import Types.ActionItem
+import Types.Concurrency
 import Messages.Internal
 import qualified Messages.JSON as JSON
 import qualified Annex
@@ -226,10 +227,10 @@ implicitMessage = whenM (implicitMessages <$> Annex.getState Annex.output)
  - that the action is the only thing using the console, and can eg prompt
  - the user.
  -}
-prompt :: (MessageState -> Annex a) -> Annex a
-prompt a = withMessageState $ \s ->
-	if concurrentOutputEnabled s
-		then 
-			let l = promptLock s
-			in bracketIO (takeMVar l) (putMVar l) (const (a s))
-		else a s
+prompt :: (Concurrency -> Annex a) -> Annex a
+prompt a = go =<< Annex.getState Annex.concurrency
+  where
+	go NonConcurrent = a NonConcurrent
+	go c@(Concurrent {}) = withMessageState $ \s -> do
+		let l = promptLock s
+		bracketIO (takeMVar l) (putMVar l) (const (a c))
