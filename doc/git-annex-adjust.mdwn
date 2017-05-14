@@ -4,7 +4,7 @@ git-annex adjust - enter an adjusted branch
 
 # SYNOPSIS
 
-git annex adjust --unlock|--fix`
+`git annex adjust --unlock|--fix`
 
 # DESCRIPTION
 
