@@ -257,9 +257,9 @@ checkOldUnused urlrenderer = go =<< annexExpireUnused <$> liftAnnex Annex.getGit
   where
 	go (Just Nothing) = noop
 	go (Just (Just expireunused)) = expireUnused (Just expireunused)
-	go Nothing = maybe noop prompt =<< describeUnusedWhenBig
+	go Nothing = maybe noop promptconfig =<< describeUnusedWhenBig
 
-	prompt msg = 
+	promptconfig msg = 
 #ifdef WITH_WEBAPP
 		do
 			button <- mkAlertButton True (T.pack "Configure") urlrenderer ConfigUnusedR
