@@ -12,7 +12,6 @@ module Utility.FileSystemEncoding (
 	useFileSystemEncoding,
 	fileEncoding,
 	withFilePath,
-	md5FilePath,
 	decodeBS,
 	encodeBS,
 	decodeW8,
@@ -27,7 +26,6 @@ import qualified GHC.IO.Encoding as Encoding
 import Foreign.C
 import System.IO
 import System.IO.Unsafe
-import qualified Data.Hash.MD5 as MD5
 import Data.Word
 import Data.Bits.Utils
 import Data.List
@@ -100,10 +98,6 @@ _encodeFilePath fp = unsafePerformIO $ do
 	enc <- Encoding.getFileSystemEncoding
 	GHC.withCString enc fp (GHC.peekCString Encoding.char8)
 		`catchNonAsync` (\_ -> return fp)
-
-{- Encodes a FilePath into a Md5.Str, applying the filesystem encoding. -}
-md5FilePath :: FilePath -> MD5.Str
-md5FilePath = MD5.Str . _encodeFilePath
 
 {- Decodes a ByteString into a FilePath, applying the filesystem encoding. -}
 decodeBS :: L.ByteString -> FilePath

@@ -33,6 +33,7 @@ import Config
 import Annex.Path
 import Utility.Env
 import Utility.FileSystemEncoding
+import Utility.Hash
 import Types.CleanupActions
 import Types.Concurrency
 import Git.Env
@@ -42,7 +43,6 @@ import Annex.Perms
 import Annex.LockPool
 #endif
 
-import Data.Hash.MD5
 import Control.Concurrent.STM
 
 {- Some ssh commands are fed stdin on a pipe and so should be allowed to
@@ -287,7 +287,7 @@ hostport2socket host Nothing = hostport2socket' host
 hostport2socket host (Just port) = hostport2socket' $ host ++ "!" ++ show port
 hostport2socket' :: String -> FilePath
 hostport2socket' s
-	| length s > lengthofmd5s = md5s (Str s)
+	| length s > lengthofmd5s = show $ md5 $ encodeBS s
 	| otherwise = s
   where
 	lengthofmd5s = 32

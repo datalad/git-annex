@@ -25,6 +25,8 @@ import Utility.Path
 import Utility.FileMode
 import Utility.LockFile.LockStatus
 import Utility.ThreadScheduler
+import Utility.Hash
+import Utility.FileSystemEncoding
 import qualified Utility.LockFile.Posix as Posix
 
 import System.IO
@@ -33,7 +35,6 @@ import Data.Maybe
 import Data.List
 import Network.BSD
 import System.FilePath
-import Data.Hash.MD5
 import Control.Applicative
 import Prelude
 
@@ -99,7 +100,9 @@ sideLockFile lockfile = do
 	f <- absPath lockfile
 	let base = intercalate "_" (splitDirectories (makeRelative "/" f))
 	let shortbase = reverse $ take 32 $ reverse base
-	let md5sum = if base == shortbase then "" else md5s (Str base)
+	let md5sum = if base == shortbase
+		then ""
+		else show (md5 (encodeBS base))
 	dir <- ifM (doesDirectoryExist "/dev/shm")
 		( return "/dev/shm"
 		, return "/tmp"

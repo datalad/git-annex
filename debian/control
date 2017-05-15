@@ -11,6 +11,7 @@ Build-Depends:
 	libghc-hslogger-dev,
 	libghc-pcre-light-dev,
 	libghc-cryptonite-dev,
+	libghc-memory-dev,
 	libghc-sandi-dev,
 	libghc-utf8-string-dev,
 	libghc-aws-dev (>= 0.9.2-2~),

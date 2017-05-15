@@ -1,8 +1,4 @@
-{- Convenience wrapper around cryptohash/cryptonite.
- -
- - SHA3 hashes are currently only enabled when using cryptonite,
- - because of https://github.com/vincenthz/hs-cryptohash/issues/36
- -}
+{- Convenience wrapper around cryptonite's hashing. -}
 
 module Utility.Hash (
 	sha1,

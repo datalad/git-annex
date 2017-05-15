@@ -361,7 +361,8 @@ Executable git-annex
    stm-chans,
    securemem,
    crypto-api,
-   cryptonite
+   cryptonite,
+   memory
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
   Extensions: PackageImports
