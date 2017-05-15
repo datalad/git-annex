@@ -367,6 +367,7 @@ Executable git-annex
   Extensions: PackageImports
   -- Some things don't work with the non-threaded RTS.
   GHC-Options: -threaded
+  Other-Extensions: TemplateHaskell
 
   -- Fully optimize for production.
   if flag(Production)
