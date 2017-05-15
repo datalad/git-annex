@@ -25,7 +25,6 @@ import System.Posix.Files
 import Utility.Exception
 #endif
 
-import qualified "MissingH" System.Path as MissingH
 import Utility.Monad
 import Utility.UserInfo
 import Utility.Directory
@@ -67,18 +66,6 @@ simplifyPath path = dropTrailingPathSeparator $
  -}
 absPathFrom :: FilePath -> FilePath -> FilePath
 absPathFrom dir path = simplifyPath (combine dir path)
-
-{- On Windows, this converts the paths to unix-style, in order to run
- - MissingH's absNormPath on them. -}
-absNormPathUnix :: FilePath -> FilePath -> Maybe FilePath
-#ifndef mingw32_HOST_OS
-absNormPathUnix dir path = MissingH.absNormPath dir path
-#else
-absNormPathUnix dir path = todos <$> MissingH.absNormPath (fromdos dir) (fromdos path)
-  where
-	fromdos = replace "\\" "/"
-	todos = replace "/" "\\"
-#endif
 
 {- takeDirectory "foo/bar/" is "foo/bar". This instead yields "foo" -}
 parentDir :: FilePath -> FilePath
@@ -149,13 +136,13 @@ relPathDirToFile from to = relPathDirToFileAbs <$> absPath from <*> absPath to
 relPathDirToFileAbs :: FilePath -> FilePath -> FilePath
 relPathDirToFileAbs from to
 	| takeDrive from /= takeDrive to = to
-	| otherwise = intercalate s $ dotdots ++ uncommon
+	| otherwise = joinPath $ dotdots ++ uncommon
   where
-	s = [pathSeparator]
-	pfrom = split s from
-	pto = split s to
+	pfrom = sp from
+	pto = sp to
+	sp = dropTrailingPathSeparator . splitPath
 	common = map fst $ takeWhile same $ zip pfrom pto
-	same (c,d) = c == d
+	same (c,d) = c = d
 	uncommon = drop numcommon pto
 	dotdots = replicate (length pfrom - numcommon) ".."
 	numcommon = length common

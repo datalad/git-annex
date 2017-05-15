@@ -172,7 +172,7 @@ gitAnnexLocation' key r config crippled symlinkssupported checker gitdir
 gitAnnexLink :: FilePath -> Key -> Git.Repo -> GitConfig -> IO FilePath
 gitAnnexLink file key r config = do
 	currdir <- getCurrentDirectory
-	let absfile = fromMaybe whoops $ absNormPathUnix currdir file
+	let absfile = absNormPathUnix currdir file
 	let gitdir = getgitdir currdir
 	loc <- gitAnnexLocation' key r config False False (\_ -> return True) gitdir
 	toInternalGitPath <$> relPathDirToFile (parentDir absfile) loc
@@ -182,10 +182,10 @@ gitAnnexLink file key r config = do
 		 - supporting symlinks; generate link target that will
 		 - work portably. -}
 		| not (coreSymlinks config) && needsSubmoduleFixup r =
-			fromMaybe whoops $ absNormPathUnix currdir $
-				Git.repoPath r </> ".git"
+			absNormPathUnix currdir $ Git.repoPath r </> ".git"
 		| otherwise = Git.localGitDir r
-	whoops = error $ "unable to normalize " ++ file
+	absNormPathUnix d p = toInternalGitPath $
+		absPathFrom (toInternalGitPath d) (toInternalGitPath p)
 
 {- Calculates a symlink target as would be used in a typical git
  - repository, with .git in the top of the work tree. -}
