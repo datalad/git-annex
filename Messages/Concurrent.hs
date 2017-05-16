@@ -1,6 +1,6 @@
 {- git-annex output messages, including concurrent output to display regions
  -
- - Copyright 2010-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,8 +10,9 @@
 
 module Messages.Concurrent where
 
-import Annex
+import Types
 import Types.Messages
+import qualified Annex
 
 #ifdef WITH_CONCURRENTOUTPUT
 import Common
@@ -135,4 +136,23 @@ concurrentOutputSupported = return True -- Windows is always unicode
 #endif
 #else
 concurrentOutputSupported = return False
+#endif
+
+{- Hide any currently displayed console regions while running the action,
+ - so that the action can use the console itself.
+ - This needs a new enough version of concurrent-output; otherwise
+ - the regions will not be hidden, but the action still runs, garbling the
+ - display. -}
+hideRegionsWhile :: Annex a -> Annex a
+#if MIN_VERSION_concurrent_output(1,9,0)
+hideRegionsWhile a = bracketIO setup cleanup go
+  where
+	setup = Regions.waitDisplayChange $ swapTMVar Regions.regionList []
+	cleanup = void . atomically . swapTMVar Regions.regionList
+	go _ = do
+		liftIO $ hFlush stdout
+		a
+#else
+#warning Building with concurrent-output older than 1.9.0 so expect some display glitches when password prompts occur in concurrent mode
+hideRegionsWhile = id
 #endif

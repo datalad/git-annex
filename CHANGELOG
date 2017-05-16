@@ -4,6 +4,8 @@ git-annex (6.20170511) UNRELEASED; urgency=medium
     When ssh connection caching is enabled (and when GIT_ANNEX_USE_GIT_SSH
     is not set), only one ssh password prompt will be made per host, and
     only one ssh password prompt will be made at a time.
+  * When built with concurrent-output 1.9, ssh password prompts will no
+    longer interfere with the -J display.
   * Removed dependency on MissingH, instead depending on the split library.
   * Progress is displayed for transfers of files of unknown size.
   * Work around bug in git 2.13.0 involving GIT_COMMON_DIR that broke

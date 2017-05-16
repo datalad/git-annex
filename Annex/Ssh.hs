@@ -191,17 +191,27 @@ prepSocket socketfile gc sshparams = do
 	liftIO $ createDirectoryIfMissing True $ parentDir socketfile
 	let socketlock = socket2lock socketfile
 
-	prompt $ \c -> case c of
-		Concurrent {} -> do
-			-- If the LockCache already has the socketlock in it,
-			-- the connection has already been started. Otherwise,
-			-- get the connection started now.
-			whenM (isNothing <$> fromLockCache socketlock) $
-				void $ liftIO $ boolSystem "ssh" $
-					sshparams ++ startSshConnection gc
+	c <- Annex.getState Annex.concurrency
+	case c of
+		Concurrent {} -> makeconnection socketlock
 		NonConcurrent -> return ()
 	
 	lockFileCached socketlock
+  where
+	-- When the LockCache already has the socketlock in it,
+	-- the connection has already been started. Otherwise,
+	-- get the connection started now.
+	makeconnection socketlock =
+		whenM (isNothing <$> fromLockCache socketlock) $ do
+			let startps = sshparams ++ startSshConnection gc
+			-- When we can start the connection in batch mode,
+			-- ssh won't prompt to the console.
+			(_, connected) <- liftIO $ processTranscript "ssh"
+				(["-o", "BatchMode=true"] ++ toCommand startps)
+				Nothing
+			unless connected $ 
+				prompt $ void $ liftIO $
+					boolSystem "ssh" startps
 
 -- Parameters to get ssh connected to the remote host,
 -- by asking it to run a no-op command.
