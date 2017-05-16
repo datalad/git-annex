@@ -354,4 +354,4 @@ FAIL (1.50s)
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
-git-annex is an essential building block in my digital life style! It keeps backups of all my precious family photos.
+git-annex is an essential building block in my digital life style! It keeps backups of all my precious family photos. I'm a big git-annex shill when I get the chance, especially to nix, guix and decentralized hacker types.
