@@ -96,10 +96,10 @@ dirTreeRecursiveSkipping skipdir topdir = go [] [topdir]
 	go c (dir:dirs)
 		| skipdir (takeFileName dir) = go c dirs
 		| otherwise = unsafeInterleaveIO $ do
-			subdirs <- go c
+			subdirs <- go []
 				=<< filterM (isDirectory <$$> getSymbolicLinkStatus)
 				=<< catchDefaultIO [] (dirContents dir)
-			go (subdirs++[dir]) dirs
+			go (subdirs++dir:c) dirs
 
 {- Moves one filename to another.
  - First tries a rename, but falls back to moving across devices if needed. -}
