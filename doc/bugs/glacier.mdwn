@@ -1,3 +1,5 @@
+[[!meta title="glacier-cli fails with backtrace"]]
+
 ### Please describe the problem.
 
 Amazon Glacier remote doesn't work as expected. It seems like glacier-cli no longer works with git-annex.
@@ -97,3 +99,5 @@ git-annex: copy: 1 failed
 Yes it's a great tool :). Thanks!
 AWS Glacier integration would be a perfect addition and I could employ git-annex at my company.
 
+> Closing as it's not a bug in git-annex, but glacier-cli. [[done]]
+> --[[Joey]]
