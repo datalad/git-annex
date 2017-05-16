@@ -29,6 +29,7 @@ module Utility.Scheduled (
 import Utility.Data
 import Utility.PartialPrelude
 import Utility.Misc
+import Utility.Tuple
 
 import Data.List
 import Data.Time.Clock
@@ -37,7 +38,6 @@ import Data.Time.Calendar
 import Data.Time.Calendar.WeekDate
 import Data.Time.Calendar.OrdinalDate
 import Data.Time.Format ()
-import Data.Tuple.Utils
 import Data.Char
 import Control.Applicative
 import Prelude

@@ -26,7 +26,6 @@ import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.Map as M
 import Data.String
 import Data.Char
-import Data.Tuple.Utils
 import Numeric
 import System.Posix.Types
 
@@ -38,6 +37,7 @@ import Git.Types
 import Git.FilePath
 import qualified Utility.CoProcess as CoProcess
 import Utility.FileSystemEncoding
+import Utility.Tuple
 
 data CatFileHandle = CatFileHandle 
 	{ catFileProcess :: CoProcess.CoProcessHandle

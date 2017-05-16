@@ -29,8 +29,8 @@ module Annex.Branch (
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Set as S
 import qualified Data.Map as M
-import Data.Bits.Utils
 import Data.Function
+import Data.Char
 import Control.Concurrent (threadDelay)
 
 import Annex.Common
@@ -304,7 +304,7 @@ commitIndex' jl branchref message basemessage retrynum parents = do
 	-- look for "parent ref" lines and return the refs
 	commitparents = map (Git.Ref . snd) . filter isparent .
 		map (toassoc . decodeBS) . L.split newline
-	newline = c2w8 '\n'
+	newline = fromIntegral (ord '\n')
 	toassoc = separate (== ' ')
 	isparent (k,_) = k == "parent"
 		

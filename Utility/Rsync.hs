@@ -11,10 +11,10 @@ module Utility.Rsync where
 
 import Common
 import Utility.Metered
+import Utility.Tuple
 
 import Data.Char
 import System.Console.GetOpt
-import Data.Tuple.Utils
 
 {- Generates parameters to make rsync use a specified command as its remote
  - shell. -}

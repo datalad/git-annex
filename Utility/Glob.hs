@@ -1,3 +1,5 @@
+{-# LANGUAGE PackageImports #-}
+
 {- file globbing
  -
  - Copyright 2014 Joey Hess <id@joeyh.name>
@@ -14,10 +16,9 @@ module Utility.Glob (
 
 import Utility.Exception
 
-import System.Path.WildMatch
-
 import "regex-tdfa" Text.Regex.TDFA
 import "regex-tdfa" Text.Regex.TDFA.String
+import Data.Char
 
 newtype Glob = Glob Regex
 
@@ -30,10 +31,30 @@ compileGlob glob globcase = Glob $
 		Right r -> r
 		Left _ -> giveup $ "failed to compile regex: " ++ regex
   where
-	regex = '^':wildToRegex glob
+	regex = '^' : wildToRegex glob ++ "$"
 	casesentitive = case globcase of
 		CaseSensative -> True
 		CaseInsensative -> False
+
+wildToRegex :: String -> String
+wildToRegex = concat . go
+  where
+	go [] = []
+	go ('*':xs) = ".*" : go xs
+	go ('?':xs) = "." : go xs
+	go ('[':'!':xs) = "[^" : inpat xs
+	go ('[':xs) = "[" : inpat xs
+	go (x:xs)
+		| isDigit x || isAlpha x = [x] : go xs
+		| otherwise = esc x : go xs
+
+	inpat [] = []
+	inpat (x:xs) = case x of
+		']' -> "]" : go xs
+		'\\' -> esc x : inpat xs
+		_ -> [x] : inpat xs
+
+	esc c = ['\\', c]
 
 matchGlob :: Glob -> String -> Bool
 matchGlob (Glob regex) val = 

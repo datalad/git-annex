@@ -10,7 +10,6 @@
 
 module Utility.Path where
 
-import Data.String.Utils
 import System.FilePath
 import Data.List
 import Data.Maybe
@@ -28,6 +27,7 @@ import Utility.Exception
 import Utility.Monad
 import Utility.UserInfo
 import Utility.Directory
+import Utility.Split
 
 {- Simplifies a path, removing any "." component, collapsing "dir/..", 
  - and removing the trailing path separator.
@@ -76,12 +76,13 @@ parentDir = takeDirectory . dropTrailingPathSeparator
 upFrom :: FilePath -> Maybe FilePath
 upFrom dir
 	| length dirs < 2 = Nothing
-	| otherwise = Just $ joinDrive drive (intercalate s $ init dirs)
+	| otherwise = Just $ joinDrive drive $ intercalate s $ init dirs
   where
-	-- on Unix, the drive will be "/" when the dir is absolute, otherwise ""
+	-- on Unix, the drive will be "/" when the dir is absolute,
+	-- otherwise ""
 	(drive, path) = splitDrive dir
-	dirs = filter (not . null) $ split s path
 	s = [pathSeparator]
+	dirs = filter (not . null) $ split s path
 
 prop_upFrom_basics :: FilePath -> Bool
 prop_upFrom_basics dir
@@ -140,9 +141,9 @@ relPathDirToFileAbs from to
   where
 	pfrom = sp from
 	pto = sp to
-	sp = dropTrailingPathSeparator . splitPath
+	sp = map dropTrailingPathSeparator . splitPath
 	common = map fst $ takeWhile same $ zip pfrom pto
-	same (c,d) = c = d
+	same (c,d) = c == d
 	uncommon = drop numcommon pto
 	dotdots = replicate (length pfrom - numcommon) ".."
 	numcommon = length common

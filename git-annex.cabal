@@ -304,7 +304,7 @@ source-repository head
   location: git://git-annex.branchable.com/
 
 custom-setup
-  Setup-Depends: base (>= 4.5), hslogger, MissingH, unix-compat, process,
+  Setup-Depends: base (>= 4.5), hslogger, split, unix-compat, process,
     unix, filepath, exceptions, bytestring, directory, IfElse, data-default,
     Cabal
 
@@ -330,7 +330,6 @@ Executable git-annex
    directory (>= 1.2),
    filepath,
    IfElse,
-   MissingH,
    hslogger,
    monad-logger,
    free,
@@ -362,7 +361,8 @@ Executable git-annex
    securemem,
    crypto-api,
    cryptonite,
-   memory
+   memory,
+   split
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
   Extensions: PackageImports
@@ -1051,6 +1051,7 @@ Executable git-annex
     Utility.Scheduled.QuickCheck
     Utility.Shell
     Utility.SimpleProtocol
+    Utility.Split
     Utility.SshConfig
     Utility.Su
     Utility.SystemDirectory
@@ -1061,6 +1062,7 @@ Executable git-annex
     Utility.Tmp
     Utility.Tor
     Utility.Touch
+    Utility.Tuple
     Utility.Url
     Utility.UserInfo
     Utility.Verifiable

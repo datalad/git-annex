@@ -10,7 +10,6 @@
 
 module Main where
 
-import Data.List.Utils
 import Text.Parsec
 import Text.Parsec.String
 import Control.Applicative ((<$>))
@@ -23,6 +22,7 @@ import Utility.Process hiding (env)
 import qualified Utility.Process
 import Utility.Env
 import Utility.Directory
+import Utility.Split
 
 data CmdParams = CmdParams
 	{ cmd :: String

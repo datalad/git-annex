@@ -39,9 +39,9 @@ import qualified Utility.Lsof as Lsof
 import qualified Build.SysConfig
 import qualified Utility.Url as Url
 import qualified Annex.Url as Url
+import Utility.Tuple
 
 import qualified Data.Map as M
-import Data.Tuple.Utils
 
 {- Upgrade without interaction in the webapp. -}
 unattendedUpgrade :: Assistant ()

@@ -35,7 +35,6 @@ import Text.Parsec.String
 import Control.Applicative ((<$>))
 import Data.Either
 import Data.List hiding (find)
-import Data.String.Utils
 import Data.Char
 import System.Environment
 import System.FilePath
@@ -49,6 +48,7 @@ import Utility.Exception hiding (try)
 import Utility.Path
 import Utility.FileSystemEncoding
 import Utility.Directory
+import Utility.Split
 
 data Coord = Coord
 	{ coordLine :: Int

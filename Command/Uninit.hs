@@ -18,9 +18,6 @@ import Annex.Content
 import Annex.Init
 import Utility.FileMode
 
-import System.IO.HVFS
-import System.IO.HVFS.Utils
-
 cmd :: Command
 cmd = addCheck check $ 
 	command "uninit" SectionUtility
@@ -101,7 +98,8 @@ prepareRemoveAnnexDir annexdir = do
 
 prepareRemoveAnnexDir' :: FilePath -> IO ()
 prepareRemoveAnnexDir' annexdir =
-	recurseDir SystemFS annexdir >>= mapM_ (void . tryIO . allowWrite)
+	dirTreeRecursiveSkipping (const False) annexdir 
+		>>= mapM_ (void . tryIO . allowWrite)
 
 {- Keys that were moved out of the annex have a hard link still in the
  - annex, with > 1 link count, and those can be removed.

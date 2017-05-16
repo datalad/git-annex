@@ -8,12 +8,12 @@
 module Types.Distribution where
 
 import Utility.PartialPrelude
+import Utility.Split
 import Types.Key
 import Key
 import Data.Time.Clock
 import Git.Config (isTrue, boolConfig)
 
-import Data.String.Utils
 import Control.Applicative
 import Prelude
 

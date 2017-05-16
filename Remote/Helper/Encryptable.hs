@@ -21,13 +21,13 @@ module Remote.Helper.Encryptable (
 import qualified Data.Map as M
 import qualified "sandi" Codec.Binary.Base64 as B64
 import qualified Data.ByteString as B
-import Data.Bits.Utils
 
 import Annex.Common
 import Types.Remote
 import Crypto
 import Types.Crypto
 import qualified Annex
+import Utility.FileSystemEncoding
 
 -- Used to ensure that encryption has been set up before trying to
 -- eg, store creds in the remote config that would need to use the

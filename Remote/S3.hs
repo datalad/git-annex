@@ -29,7 +29,6 @@ import Control.Monad.Trans.Resource
 import Control.Monad.Catch
 import Data.Conduit
 import Data.IORef
-import Data.Bits.Utils
 import System.Log.Logger
 
 import Annex.Common
@@ -46,6 +45,7 @@ import Annex.UUID
 import Logs.Web
 import Utility.Metered
 import Utility.DataUnits
+import Utility.FileSystemEncoding
 import Annex.Content
 import Annex.Url (withUrlOptions)
 import Utility.Url (checkBoth, managerSettings, closeManager)

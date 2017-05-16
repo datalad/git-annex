@@ -10,6 +10,10 @@
 module Utility.Metered where
 
 import Common
+import Utility.FileSystemEncoding
+import Utility.Percentage
+import Utility.DataUnits
+import Utility.HumanTime
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S
@@ -17,7 +21,6 @@ import System.IO.Unsafe
 import Foreign.Storable (Storable(sizeOf))
 import System.Posix.Types
 import Data.Int
-import Data.Bits.Utils
 import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Monad.IO.Class (MonadIO)
@@ -216,7 +219,7 @@ commandMeter progressparser oh meterupdate cmd params =
 				unless (quietMode oh) $ do
 					S.hPut stdout b
 					hFlush stdout
-				let s = w82s (S.unpack b)
+				let s = encodeW8 (S.unpack b)
 				let (mbytes, buf') = progressparser (buf++s)
 				case mbytes of
 					Nothing -> feedprogress prev buf' h
@@ -297,3 +300,77 @@ rateLimitMeterUpdate delta totalsize meterupdate = do
 					putMVar lastupdate now
 					meterupdate n
 				else putMVar lastupdate prev
+
+data Meter = Meter (Maybe Integer) (MVar MeterState) (MVar String) RenderMeter DisplayMeter
+
+type MeterState = (BytesProcessed, POSIXTime)
+
+type DisplayMeter = MVar String -> String -> IO ()
+
+type RenderMeter = Maybe Integer -> (BytesProcessed, POSIXTime) -> (BytesProcessed, POSIXTime) -> String
+
+-- | Make a meter. Pass the total size, if it's known.
+mkMeter :: Maybe Integer -> RenderMeter -> DisplayMeter -> IO Meter
+mkMeter totalsize rendermeter displaymeter = Meter
+	<$> pure totalsize
+	<*> ((\t -> newMVar (zeroBytesProcessed, t)) =<< getPOSIXTime)
+	<*> newMVar ""
+	<*> pure rendermeter
+	<*> pure displaymeter
+
+-- | Updates the meter, displaying it if necessary.
+updateMeter :: Meter -> BytesProcessed -> IO ()
+updateMeter (Meter totalsize sv bv rendermeter displaymeter) new = do
+	now <- getPOSIXTime
+	(old, before) <- swapMVar sv (new, now)
+	when (old /= new) $
+		displaymeter bv $ 
+			rendermeter totalsize (old, before) (new, now)
+
+-- | Display meter to a Handle.
+displayMeterHandle :: Handle -> DisplayMeter
+displayMeterHandle h v s = do
+	olds <- swapMVar v s
+	-- Avoid writing when the rendered meter has not changed.
+	when (olds /= s) $ do
+		let padding = replicate (length olds - length s) ' '
+		hPutStr h ('\r':s ++ padding)
+		hFlush h
+
+-- | Clear meter displayed by displayMeterHandle.
+clearMeterHandle :: Meter -> Handle -> IO ()
+clearMeterHandle (Meter _ _ v _ _) h = do
+	olds <- readMVar v
+	hPutStr h $ '\r' : replicate (length olds) ' ' ++ "\r"
+	hFlush h
+
+-- | Display meter in the form:
+--   10%         300 KiB/s 16m40s
+-- or when total size is not known:
+--   1.3 MiB     300 KiB/s
+bandwidthMeter :: RenderMeter
+bandwidthMeter mtotalsize (BytesProcessed old, before) (BytesProcessed new, now) =
+	unwords $ catMaybes
+		[ Just percentoramount
+		-- Pad enough for max width: "xxxx.xx KiB  xxxx KiB/s"
+		, Just $ replicate (23 - length percentoramount - length rate) ' '
+		, Just rate
+		, estimatedcompletion
+		]
+  where
+	percentoramount = case mtotalsize of
+		Just totalsize -> showPercentage 0 $
+			percentage totalsize (min new totalsize)
+		Nothing -> roughSize' memoryUnits True 2 new
+	rate = roughSize' memoryUnits True 0 bytespersecond ++ "/s"
+	bytespersecond
+		| duration == 0 = fromIntegral transferred
+		| otherwise = floor $ fromIntegral transferred / duration
+	transferred = max 0 (new - old)
+	duration = max 0 (now - before)
+	estimatedcompletion = case mtotalsize of
+		Just totalsize
+			| bytespersecond > 0 -> 
+				Just $ fromDuration $ Duration $
+					totalsize `div` bytespersecond
+		_ -> Nothing

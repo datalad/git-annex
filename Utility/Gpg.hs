@@ -14,11 +14,9 @@ import qualified Build.SysConfig as SysConfig
 #ifndef mingw32_HOST_OS
 import System.Posix.Types
 import qualified System.Posix.IO
-import System.Path
 import Utility.Env
-#else
-import Utility.Tmp
 #endif
+import Utility.Tmp
 import Utility.Format (decode_c)
 
 import Control.Concurrent
@@ -336,23 +334,21 @@ keyBlock public ls = unlines
 {- Runs an action using gpg in a test harness, in which gpg does
  - not use ~/.gpg/, but a directory with the test key set up to be used. -}
 testHarness :: GpgCmd -> IO a -> IO a
-testHarness cmd a = do
-	orig <- getEnv var
-	bracket setup (cleanup orig) (const a)
+testHarness cmd a = withTmpDir "gpgtmpXXXXXX" $ \tmpdir ->
+	bracket (setup tmpdir) (cleanup tmpdir) (const a)
   where
 	var = "GNUPGHOME"		
 
-	setup = do
-		base <- getTemporaryDirectory
-		dir <- mktmpdir $ base </> "gpgtmpXXXXXX"
-		setEnv var dir True
+	setup tmpdir = do
+		orig <- getEnv var
+		setEnv var tmpdir True
 		-- For some reason, recent gpg needs a trustdb to be set up.
 		_ <- pipeStrict cmd [Param "--trust-model", Param "auto", Param "--update-trustdb"] []
 		_ <- pipeStrict cmd [Param "--import", Param "-q"] $ unlines
 			[testSecretKey, testKey]
-		return dir
+		return orig
 		
-	cleanup orig tmpdir = do
+	cleanup tmpdir orig = do
 		removeDirectoryRecursive tmpdir
 			-- gpg-agent may be shutting down at the same time
 			-- and may delete its socket at the same time as

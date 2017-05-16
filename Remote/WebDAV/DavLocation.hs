@@ -13,14 +13,14 @@ module Remote.WebDAV.DavLocation where
 import Types
 import Annex.Locations
 import Utility.Url (URLString)
+#ifdef mingw32_HOST_OS
+import Utility.Split
+#endif
 
 import System.FilePath.Posix -- for manipulating url paths
 import Network.Protocol.HTTP.DAV (inDAVLocation, DAVT)
 import Control.Monad.IO.Class (MonadIO)
 import Data.Default
-#ifdef mingw32_HOST_OS
-import Data.String.Utils
-#endif
 
 -- Relative to the top of the DAV url.
 type DavLocation = String

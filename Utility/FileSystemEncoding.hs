@@ -19,6 +19,10 @@ module Utility.FileSystemEncoding (
 	encodeW8NUL,
 	decodeW8NUL,
 	truncateFilePath,
+	s2w8,
+	w82s,
+	c2w8,
+	w82c,
 ) where
 
 import qualified GHC.Foreign as GHC
@@ -27,15 +31,14 @@ import Foreign.C
 import System.IO
 import System.IO.Unsafe
 import Data.Word
-import Data.Bits.Utils
 import Data.List
-import Data.List.Utils
 import qualified Data.ByteString.Lazy as L
 #ifdef mingw32_HOST_OS
 import qualified Data.ByteString.Lazy.UTF8 as L8
 #endif
 
 import Utility.Exception
+import Utility.Split
 
 {- Makes all subsequent Handles that are opened, as well as stdio Handles,
  - use the filesystem encoding, instead of the encoding of the current
@@ -139,14 +142,26 @@ decodeW8 = s2w8 . _encodeFilePath
 
 {- Like encodeW8 and decodeW8, but NULs are passed through unchanged. -}
 encodeW8NUL :: [Word8] -> FilePath
-encodeW8NUL = intercalate nul . map encodeW8 . split (s2w8 nul)
+encodeW8NUL = intercalate [nul] . map encodeW8 . splitc (c2w8 nul)
   where
-	nul = ['\NUL']
+	nul = '\NUL'
 
 decodeW8NUL :: FilePath -> [Word8]
-decodeW8NUL = intercalate (s2w8 nul) . map decodeW8 . split nul
+decodeW8NUL = intercalate [c2w8 nul] . map decodeW8 . splitc nul
   where
-	nul = ['\NUL']
+	nul = '\NUL'
+
+c2w8 :: Char -> Word8
+c2w8 = fromIntegral . fromEnum
+
+w82c :: Word8 -> Char
+w82c = toEnum . fromIntegral
+
+s2w8 :: String -> [Word8]
+s2w8 = map c2w8
+
+w82s :: [Word8] -> String
+w82s = map w82c
 
 {- Truncates a FilePath to the given number of bytes (or less),
  - as represented on disk.

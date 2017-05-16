@@ -94,7 +94,7 @@ fromUrl url
 
 fromUrlStrict :: String -> IO Repo
 fromUrlStrict url
-	| startswith "file://" url = fromAbsPath $ unEscapeString $ uriPath u
+	| "file://" `isPrefixOf` url = fromAbsPath $ unEscapeString $ uriPath u
 	| otherwise = pure $ newFrom $ Url u
   where
 	u = fromMaybe bad $ parseURI url
@@ -128,7 +128,7 @@ fromRemotes repo = mapM construct remotepairs
 	filterconfig f = filter f $ M.toList $ config repo
 	filterkeys f = filterconfig (\(k,_) -> f k)
 	remotepairs = filterkeys isremote
-	isremote k = startswith "remote." k && endswith ".url" k
+	isremote k = "remote." `isPrefixOf` k && ".url" `isSuffixOf` k
 	construct (k,v) = remoteNamedFromKey k $ fromRemoteLocation v repo
 
 {- Sets the name of a remote when constructing the Repo to represent it. -}

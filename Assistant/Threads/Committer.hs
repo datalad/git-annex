@@ -38,9 +38,9 @@ import Annex.Content.Direct
 import qualified Database.Keys
 import qualified Command.Sync
 import qualified Git.Branch
+import Utility.Tuple
 
 import Data.Time.Clock
-import Data.Tuple.Utils
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Either
