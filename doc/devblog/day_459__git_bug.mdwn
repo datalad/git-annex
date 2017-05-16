@@ -10,7 +10,8 @@ workaround out. It's not a super bad bug, but it does make the test suite
 fail and I've already had 3 people report the problem.
 
 Seems it would be good to have an integration test that runs git-annex's
-test suite against new commits to git.
+test suite against new commits to git. Ævar Arnfjörð Bjarmason has stepped
+up to add that to git's test suite.
 
 ----
 
