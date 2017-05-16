@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Yurt"
+ avatar="http://cdn.libravatar.org/avatar/28d2177f7678c6cc0b677c34927eba06"
+ subject="Encrypt to different subkeys?"
+ date="2017-05-16T20:25:01Z"
+ content="""
+Is it possible to encrypt with subkeys. I have a few subkeys distributed to different computers and I'd like to be able to sync to a special remote with all of them. Right now, if the master key is stripped, I get an error from gpg.
+
+I do this exact thing with password-store. Appending \"!\" to the subkey id should force gpg to use that specific key: [https://lists.zx2c4.com/pipermail/password-store/2014-September/001131.html](https://lists.zx2c4.com/pipermail/password-store/2014-September/001131.html).
+"""]]
