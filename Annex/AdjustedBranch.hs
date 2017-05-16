@@ -369,7 +369,6 @@ updateAdjustedBranch tomerge (origbranch, adj) mergeconfig commitmode = catchBoo
 				liftIO $ forM_ refs' $ \src ->
 					whenM (doesFileExist src) $ do
 						dest <- relPathDirToFile git_dir src
-						print (src, dest)
 						let dest' = tmpgit </> dest
 						createDirectoryIfMissing True (takeDirectory dest')
 						void $ createLinkOrCopy src dest'
