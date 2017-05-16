@@ -6,6 +6,8 @@ git-annex (6.20170511) UNRELEASED; urgency=medium
     only one ssh password prompt will be made at a time.
   * Removed dependency on MissingH, instead depending on the split library.
   * Progress is displayed for transfers of files of unknown size.
+  * Work around bug in git 2.13.0 involving GIT_COMMON_DIR that broke
+    merging changes into adjusted branches.
 
  -- Joey Hess <id@joeyh.name>  Thu, 11 May 2017 15:16:23 -0400
 

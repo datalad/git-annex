@@ -51,6 +51,7 @@ import Annex.Content
 import Annex.Perms
 import Annex.GitOverlay
 import Utility.Tmp
+import Utility.CopyFile
 import qualified Database.Keys
 import Config
 
@@ -355,9 +356,23 @@ updateAdjustedBranch tomerge (origbranch, adj) mergeconfig commitmode = catchBoo
 		misctmpdir <- fromRepo gitAnnexTmpMiscDir
 		void $ createAnnexDirectory misctmpdir
 		tmpwt <- fromRepo gitAnnexMergeDir
+		git_dir <- fromRepo Git.localGitDir
 		withTmpDirIn misctmpdir "git" $ \tmpgit -> withWorkTreeRelated tmpgit $
 			withemptydir tmpwt $ withWorkTree tmpwt $ do
 				liftIO $ writeFile (tmpgit </> "HEAD") (fromRef updatedorig)
+				-- Copy in refs and packed-refs, to work
+				-- around bug in git 2.13.0, which
+				-- causes it not to look in GIT_DIR for refs.
+				refs <- liftIO $ dirContentsRecursive $
+					git_dir </> "refs"
+				let refs' = (git_dir </> "packed-refs") : refs
+				liftIO $ forM_ refs' $ \src ->
+					whenM (doesFileExist src) $ do
+						dest <- relPathDirToFile git_dir src
+						print (src, dest)
+						let dest' = tmpgit </> dest
+						createDirectoryIfMissing True (takeDirectory dest')
+						void $ createLinkOrCopy src dest'
 				-- This reset makes git merge not care
 				-- that the work tree is empty; otherwise
 				-- it will think that all the files have
