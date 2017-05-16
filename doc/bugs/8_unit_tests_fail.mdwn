@@ -26,3 +26,4 @@ nix-build and inside a nix shell with manual building.
 
 Yep, works apart from the few tests that fail.
 
+> Duplicate of [[git-annex_in_nixpkgs_fails_with_git-2.13.0]]; closing. [[done]] --[[Joey]]
