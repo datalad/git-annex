@@ -153,6 +153,8 @@ hideRegionsWhile a = bracketIO setup cleanup go
 		liftIO $ hFlush stdout
 		a
 #else
+#ifdef WITH_CONCURRENTOUTPUT
 #warning Building with concurrent-output older than 1.9.0 so expect some display glitches when password prompts occur in concurrent mode
+#endif
 hideRegionsWhile = id
 #endif
