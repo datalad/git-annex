@@ -1,7 +1,7 @@
-In my analyses I often have multiple generated (>10k) small files in a single directory.
+In my analyses I often have multiple (>10k) generated  small files in a single directory.
 
 
-I would like to store this in git annex, in order to version them and probably even synchronize. The problem is that if a huge number of files is stored inside the repository, the repository itself becomes huge and slow. There are some ways to improve the performance ([[tips/Repositories_with_large_number_of_files]], [[forum/Handling_a_large_number_of_files]], [[forum/__34__git_annex_sync__34___synced_after_8_hours]]), but it doesn't solve the issue completely.
+I would like to store this in git annex, in order to version them and probably even synchronize. The problem is that if a huge number of files is stored inside the repository, the repository itself becomes huge and slow. There are some ways to improve the performance ([[1|tips/Repositories_with_large_number_of_files]], [[2|forum/Handling_a_large_number_of_files]], [[3|forum/__34__git_annex_sync__34___synced_after_8_hours]]), but it doesn't solve the issue completely.
 
 
 I was wondering if it is possible to force git annex to treat a single directory as one item in history? Probably with abandoning the checksum verification.
