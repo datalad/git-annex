@@ -1,0 +1,19 @@
+Hello,
+
+git-annex does a lot of convenient stuff, also locally. With git-annex sync [remote-name] the synchronization can be restricted to a single remote.
+
+However, I think being able to restrict sync to no remote at all, only doing the local stuff, would be helpful.
+
+The natural syntax for me would be git-annex sync here. But it says:
+
+    $ git-annex sync here
+    commit  ok
+    git-annex: there is no available git remote named "here"
+
+I think a workaround would be to do:
+
+    $ git-annex sync --no-push --no-pull
+
+Is that correct?
+
+Still, I think "git-annex sync here" would be a convenient shortcut.
