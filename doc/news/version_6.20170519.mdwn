@@ -1,0 +1,12 @@
+git-annex 6.20170519 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Ssh password prompting improved when using -J for concurrency.
+     When ssh connection caching is enabled (and when GIT\_ANNEX\_USE\_GIT\_SSH
+     is not set), only one ssh password prompt will be made per host, and
+     only one ssh password prompt will be made at a time.
+   * When built with concurrent-output 1.9, ssh password prompts will no
+     longer interfere with the -J display.
+   * Removed dependency on MissingH, instead depending on the split library.
+   * Progress is displayed for transfers of files of unknown size.
+   * Work around bug in git 2.13.0 involving GIT\_COMMON\_DIR that broke
+     merging changes into adjusted branches."""]]
