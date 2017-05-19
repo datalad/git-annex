@@ -1,4 +1,4 @@
-git-annex (6.20170511) UNRELEASED; urgency=medium
+git-annex (6.20170519) unstable; urgency=medium
 
   * Ssh password prompting improved when using -J for concurrency.
     When ssh connection caching is enabled (and when GIT_ANNEX_USE_GIT_SSH
@@ -11,7 +11,7 @@ git-annex (6.20170511) UNRELEASED; urgency=medium
   * Work around bug in git 2.13.0 involving GIT_COMMON_DIR that broke
     merging changes into adjusted branches.
 
- -- Joey Hess <id@joeyh.name>  Thu, 11 May 2017 15:16:23 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 19 May 2017 10:37:57 -0400
 
 git-annex (6.20170510) unstable; urgency=medium
 
