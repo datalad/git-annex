@@ -155,6 +155,7 @@ hideRegionsWhile a = bracketIO setup cleanup go
 		a
 #else
 hideRegionsWhile = id
+#endif
 #else
 hideRegionsWhile = id
 #endif
