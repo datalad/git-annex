@@ -144,6 +144,7 @@ concurrentOutputSupported = return False
  - the regions will not be hidden, but the action still runs, garbling the
  - display. -}
 hideRegionsWhile :: Annex a -> Annex a
+#ifdef WITH_CONCURRENTOUTPUT
 #if MIN_VERSION_concurrent_output(1,9,0)
 hideRegionsWhile a = bracketIO setup cleanup go
   where
@@ -153,8 +154,7 @@ hideRegionsWhile a = bracketIO setup cleanup go
 		liftIO $ hFlush stdout
 		a
 #else
-#ifdef WITH_CONCURRENTOUTPUT
-#warning Building with concurrent-output older than 1.9.0 so expect some display glitches when password prompts occur in concurrent mode
-#endif
+hideRegionsWhile = id
+#else
 hideRegionsWhile = id
 #endif
