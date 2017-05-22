@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="achilleas.k@14be77d42a1252fab5ec9dbf4e5ea03c5833e8c8"
+ nickname="achilleas.k"
+ avatar="http://cdn.libravatar.org/avatar/ed6c67c4d8e6c6850930e16eaf85a771"
+ subject="comment 2"
+ date="2017-05-22T14:40:21Z"
+ content="""
+Hey, thanks for the feedback and your thoughts. Should have gotten back to you sooner on this.
+
+I wanted to share with you my thoughts about getting around this issue, from the point of view of the `trustedserver` administrator, and get your input on this.
+
+I want to run a server that uses git and git annex for data storage. I want users of this server to feel safe that when they clone a repository and sync content, they're not pulling things from an untrusted server. I was thinking of modifying annex configurations serverside, perhaps as a *post-receive* hook. The idea would be to go through the remotes on the serveride, bare git repository, and mark all unknown (ssh, rsync, etc) remotes as a `dead`.
+
+Would this cause any issues for the receiver or the sender? Other than potentially making files for the receiver unavailable (which is what I want), would it possibly put the repository in a state where the original sender can't push more changes, because of a disagreement between configurations?
+
+I've played around with the idea a bit and I think the idea is pretty safe, but I might be missing something.
+
+Thanks!
+
+Achilleas
+"""]]
