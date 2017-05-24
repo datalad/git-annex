@@ -157,7 +157,11 @@ pipeLazy (GpgCmd cmd) params feeder reader = do
  - a key id, or a name; See the section 'HOW TO SPECIFY A USER ID' of
  - GnuPG's manpage.) -}
 findPubKeys :: GpgCmd -> String -> IO KeyIds
-findPubKeys cmd for = KeyIds . parse . lines <$> readStrict cmd params
+findPubKeys cmd for
+	-- "subkey!" tells gpg to force use of a specific subkey,
+	-- so pass it through as-is rather than looking up the master key.
+	| "!" `isSuffixOf` for = return $ KeyIds [for]
+	| otherwise = KeyIds . parse . lines <$> readStrict cmd params
   where
 	params = [Param "--with-colons", Param "--list-public-keys", Param for]
 	parse = mapMaybe (keyIdField . splitc ':')
