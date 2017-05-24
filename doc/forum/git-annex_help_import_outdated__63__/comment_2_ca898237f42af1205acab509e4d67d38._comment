@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-05-24T17:03:11Z"
+ content="""
+The man page is not outdated, see
+<https://git-annex.branchable.com/git-annex-import/>
+
+It seem that `git help`'s handling of MANPATH makes it not look
+first at the man pages from the standalone tarball in this case,
+and instead it displays the system man page.
+
+`git annex importfeed --help` will display the shorter documentation that's
+built into the binary.
+"""]]
