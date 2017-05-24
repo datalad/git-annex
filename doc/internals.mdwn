@@ -119,6 +119,8 @@ The file format is one line per remote, starting with the uuid of the
 remote, followed by a space, and then a series of var=value pairs,
 each separated by whitespace, and finally a timestamp.
 
+Special remotes that are autoenabled have autoenable=true here.
+
 Encrypted special remotes store their encryption key here,
 in the "cipher" value. It is base64 encoded, and unless shared [[encryption]]
 is used, is encrypted to one or more gpg keys. The first 256 bytes of
