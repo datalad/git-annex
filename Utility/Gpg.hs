@@ -22,6 +22,7 @@ import Utility.Format (decode_c)
 import Control.Concurrent
 import Control.Monad.IO.Class
 import qualified Data.Map as M
+import Data.Char
 
 type KeyId = String
 
@@ -158,15 +159,19 @@ pipeLazy (GpgCmd cmd) params feeder reader = do
  - GnuPG's manpage.) -}
 findPubKeys :: GpgCmd -> String -> IO KeyIds
 findPubKeys cmd for
-	-- "subkey!" tells gpg to force use of a specific subkey,
-	-- so pass it through as-is rather than looking up the master key.
-	| "!" `isSuffixOf` for = return $ KeyIds [for]
+	-- pass forced subkey through as-is rather than
+	-- looking up the master key.
+	| isForcedSubKey for = return $ KeyIds [for]
 	| otherwise = KeyIds . parse . lines <$> readStrict cmd params
   where
 	params = [Param "--with-colons", Param "--list-public-keys", Param for]
 	parse = mapMaybe (keyIdField . splitc ':')
 	keyIdField ("pub":_:_:_:f:_) = Just f
 	keyIdField _ = Nothing
+
+{- "subkey!" tells gpg to force use of a specific subkey -}
+isForcedSubKey :: String -> Bool
+isForcedSubKey s = "!" `isSuffixOf` s && all isHexDigit (drop 1 s)
 
 type UserId = String
 
