@@ -26,8 +26,9 @@ versions of a file have been committed, both will be added to the tree,
 under different filenames. For example, file "foo" would be replaced
 with "foo.somekey" and "foo.otherkey".
 
-Note that syncing with a remote will not update the remote's working
-tree with changes made to the local repository. However, those changes
+Note that syncing with a remote will not normally update the remote's working
+tree with changes made to the local repository. (Unless it's configured
+with receive.denyCurrentBranch=updateInstead.) However, those changes
 are pushed to the remote, so they can be merged into its working tree
 by running "git annex sync" on the remote.
 
