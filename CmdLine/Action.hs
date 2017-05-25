@@ -16,6 +16,7 @@ import Types.Command
 import Types.Concurrency
 import Messages.Concurrent
 import Types.Messages
+import Remote.List
 
 import Control.Concurrent.Async
 import Control.Exception (throwIO)
@@ -57,6 +58,12 @@ commandAction a = go =<< Annex.getState Annex.concurrency
 		ws <- Annex.getState Annex.workers
 		(st, ws') <- if null ws
 			then do
+				-- Generate the remote list now, to avoid
+				-- each thread generating it, which would
+				-- be more expensive and could cause
+				-- threads to contend over eg, calls to
+				-- setConfig.
+				_ <- remoteList
 				st <- dupState
 				return (st, replicate (n-1) (Left st))
 			else do

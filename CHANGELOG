@@ -6,6 +6,8 @@ git-annex (6.20170520) UNRELEASED; urgency=medium
     a transfer does not resume.
   * Fix transfer log file locking problem when running concurrent
     transfers.
+  * Avoid concurrent git-config setting problem when running concurrent
+    threads.
 
  -- Joey Hess <id@joeyh.name>  Wed, 24 May 2017 14:03:40 -0400
 
