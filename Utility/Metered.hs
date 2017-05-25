@@ -171,22 +171,27 @@ defaultChunkSize = 32 * k - chunkOverhead
 	k = 1024
 	chunkOverhead = 2 * sizeOf (1 :: Int) -- GHC specific
 
-{- Runs an action, watching a file as it grows and updating the meter. -}
+{- Runs an action, watching a file as it grows and updating the meter.
+ -
+ - The file may already exist, and the action could throw the original file
+ - away and start over. To avoid reporting the original file size followed
+ - by a smaller size in that case, wait until the file starts growing
+ - before updating the meter for the first time.
+ -}
 watchFileSize :: (MonadIO m, MonadMask m) => FilePath -> MeterUpdate -> m a -> m a
 watchFileSize f p a = bracket 
-	(liftIO $ forkIO $ watcher zeroBytesProcessed)
+	(liftIO $ forkIO $ watcher =<< getsz)
 	(liftIO . void . tryIO . killThread)
 	(const a)
   where
 	watcher oldsz = do
-		v <- catchMaybeIO $ toBytesProcessed <$> getFileSize f
-		newsz <- case v of
-			Just sz | sz /= oldsz -> do
-				p sz
-				return sz
-			_ -> return oldsz
 		threadDelay 500000 -- 0.5 seconds
-		watcher newsz
+		sz <- getsz
+		when (sz > oldsz) $
+			p sz
+		watcher sz
+	getsz = catchDefaultIO zeroBytesProcessed $
+		toBytesProcessed <$> getFileSize f
 
 data OutputHandler = OutputHandler
 	{ quietMode :: Bool

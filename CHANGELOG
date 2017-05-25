@@ -2,6 +2,8 @@ git-annex (6.20170520) UNRELEASED; urgency=medium
 
   * initremote, enableremote: Support gpg subkeys suffixed with an
     exclamation mark, which forces gpg to use a specific subkey.
+  * Improve progress display when watching file size, in cases where
+    a transfer does not resume.
 
  -- Joey Hess <id@joeyh.name>  Wed, 24 May 2017 14:03:40 -0400
 
