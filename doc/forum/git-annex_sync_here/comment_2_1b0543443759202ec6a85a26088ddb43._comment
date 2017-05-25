@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="mario"
+ avatar="http://cdn.libravatar.org/avatar/4c63b0935789d29210d0bd8cad8d7ac7"
+ subject="comment 2"
+ date="2017-05-25T12:47:18Z"
+ content="""
+git-annex sync does more than that. Especially merging the synced branches and, thus, showing files that were pushed into a repo from a remote. Also, git commit -a cannot be done in direct mode.
+But, I think I can just create an alias for git-annex sync --no-push --no-pull to save me some typing.
+"""]]
