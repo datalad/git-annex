@@ -118,7 +118,9 @@ runTransfer' ignorelock t afile shouldretry transferaction = checkSecureHashes t
 					void $ liftIO $ tryIO $
 						writeTransferInfoFile info tfile
 					return (Just lockhandle, False)
-				, return (Nothing, True)
+				, do
+					liftIO $ dropLock lockhandle
+					return (Nothing, True)
 				)
 #else
 	prep tfile _mode info = catchPermissionDenied (const prepfailed) $ do
