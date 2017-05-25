@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="mario"
+ avatar="http://cdn.libravatar.org/avatar/4c63b0935789d29210d0bd8cad8d7ac7"
+ subject="comment 2"
+ date="2017-05-25T12:01:46Z"
+ content="""
+Hi, thanks for your help.
+
+But I don't get it entirely. Let's say I move photos from the phone folder into another folder (on the laptop, after merging, in the master branch). How do I propagate these changes back into the phone branch? Since, I guess, merging would only work one-way in this setting. Or let's say I want to push a new picture from my laptop into the phone branch, how would I do this?
+"""]]
