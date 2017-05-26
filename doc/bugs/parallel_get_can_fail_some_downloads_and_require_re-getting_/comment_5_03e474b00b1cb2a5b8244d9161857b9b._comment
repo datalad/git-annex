@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="woohoo"
+ date="2017-05-26T02:03:57Z"
+ content="""
+Thank you Joey!  It seems to work very nice now!  Not a single one lost out of 1550!
+
+[[!format sh \"\"\"
+$> datalad get -J5 38*
+[INFO   ] Getting 100 items of dataset <Dataset path=/tmp/travis-buildlogs> ... 
+[INFO   ] Actually getting 1550 files 
+Tried to get 1550 files. Got 1550. 
+\"\"\"]]
+"""]]
