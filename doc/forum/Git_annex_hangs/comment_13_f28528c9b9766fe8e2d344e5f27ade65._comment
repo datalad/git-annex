@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="mario"
+ avatar="http://cdn.libravatar.org/avatar/4c63b0935789d29210d0bd8cad8d7ac7"
+ subject="Working again"
+ date="2017-05-29T15:19:18Z"
+ content="""
+Hi,
+
+I'm not sure what exactly has changed, but it's working again!
+
+Until now, I was using git-annex version: 6.20170321-gf3dee9d65 from the standalone-amd64.tar.gz. In the meantime I convinced the administrator to install git-annex system wide. She installed git-annex version: 5.20140221 from the packet-system.
+
+Now, the repository works again with both, git-annex 5 and 6.
+
+However, I cannot exactly tell if anything else has changed in the meantime, since I am not the administrator of the system.
+
+Thanks for your help, anyway.
+
+"""]]
