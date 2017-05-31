@@ -1,5 +1,6 @@
 git-annex (6.20170520) UNRELEASED; urgency=medium
 
+  * move --to=here moves from all reachable remotes to the local repository.
   * initremote, enableremote: Support gpg subkeys suffixed with an
     exclamation mark, which forces gpg to use a specific subkey.
   * Improve progress display when watching file size, in cases where

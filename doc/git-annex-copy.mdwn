@@ -14,14 +14,14 @@ Copies the content of files from or to another remote.
 
 * `--from=remote`
 
-  Use this option to copy the content of files from the specified
+  Copy the content of files from the specified
   remote to the local repository.
   
   Any files that are not available on the remote will be silently skipped.
 
 * `--to=remote`
 
-  Use this option to copy the content of files from the local repository
+  Copy the content of files from the local repository
   to the specified remote.
 
 * `--jobs=N` `-JN`
