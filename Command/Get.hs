@@ -32,7 +32,7 @@ data GetOptions = GetOptions
 optParser :: CmdParamsDesc -> Parser GetOptions
 optParser desc = GetOptions
 	<$> cmdParams desc
-	<*> optional parseFromOption
+	<*> optional (parseRemoteOption <$> parseFromOption)
 	<*> parseAutoOption
 	<*> optional (parseIncompleteOption <|> parseKeyOptions <|> parseFailedTransfersOption)
 	<*> parseBatchOption

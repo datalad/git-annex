@@ -1,6 +1,6 @@
 {- git-annex command-line option parsing
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -105,10 +105,10 @@ parseAutoOption = switch
 	<> help "automatic mode"
 	)
 
-parseRemoteOption :: Parser RemoteName -> Parser (DeferredParse Remote)
-parseRemoteOption p = DeferredParse 
+parseRemoteOption :: RemoteName -> DeferredParse Remote
+parseRemoteOption = DeferredParse 
 	. (fromJust <$$> Remote.byNameWithUUID)
-	. Just <$> p
+	. Just
 
 data FromToOptions
 	= FromRemote (DeferredParse Remote)
@@ -120,18 +120,18 @@ instance DeferredParseClass FromToOptions where
 
 parseFromToOptions :: Parser FromToOptions
 parseFromToOptions = 
-	(FromRemote <$> parseFromOption) 
-	<|> (ToRemote <$> parseToOption)
+	(FromRemote . parseRemoteOption <$> parseFromOption) 
+	<|> (ToRemote . parseRemoteOption <$> parseToOption)
 
-parseFromOption :: Parser (DeferredParse Remote)
-parseFromOption = parseRemoteOption $ strOption
+parseFromOption :: Parser RemoteName
+parseFromOption = strOption
 	( long "from" <> short 'f' <> metavar paramRemote
 	<> help "source remote"
 	<> completeRemotes
 	)
 
-parseToOption :: Parser (DeferredParse Remote)
-parseToOption = parseRemoteOption $ strOption
+parseToOption :: Parser RemoteName
+parseToOption = strOption
 	( long "to" <> short 't' <> metavar paramRemote
 	<> help "destination remote"
 	<> completeRemotes

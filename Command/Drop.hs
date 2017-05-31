@@ -45,7 +45,7 @@ optParser desc = DropOptions
 	<*> parseBatchOption
 
 parseDropFromOption :: Parser (DeferredParse Remote)
-parseDropFromOption = parseRemoteOption $ strOption
+parseDropFromOption = parseRemoteOption <$> strOption
 	( long "from" <> short 'f' <> metavar paramRemote
 	<> help "drop content from a remote"
 	<> completeRemotes

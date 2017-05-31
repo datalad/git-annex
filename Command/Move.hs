@@ -27,20 +27,28 @@ cmd = withGlobalOptions (jobsOption : jsonOption : jsonProgressOption : annexedM
 
 data MoveOptions = MoveOptions
 	{ moveFiles :: CmdParams
-	, fromToOptions :: FromToOptions
+	, fromToOptions :: Either ToHere FromToOptions
 	, keyOptions :: Maybe KeyOptions
 	}
+
+data ToHere = ToHere
 
 optParser :: CmdParamsDesc -> Parser MoveOptions
 optParser desc = MoveOptions
 	<$> cmdParams desc
-	<*> parseFromToOptions
+	<*> (parsefrom <|> parseto)
 	<*> optional (parseKeyOptions <|> parseFailedTransfersOption)
+  where
+	parsefrom = Right . FromRemote . parseRemoteOption <$> parseFromOption
+	parseto = herespecialcase <$> parseToOption
+	  where
+		herespecialcase "here" = Left ToHere
+		herespecialcase n = Right $ ToRemote $ parseRemoteOption n
 
 instance DeferredParseClass MoveOptions where
 	finishParse v = MoveOptions
 		<$> pure (moveFiles v)
-		<*> finishParse (fromToOptions v)
+		<*> either (pure . Left) (Right <$$> finishParse) (fromToOptions v)
 		<*> pure (keyOptions v)
 
 seek :: MoveOptions -> CommandSeek
@@ -61,10 +69,12 @@ startKey o move = start' o move (AssociatedFile Nothing)
 start' :: MoveOptions -> Bool -> AssociatedFile -> Key -> ActionItem -> CommandStart
 start' o move afile key ai = 
 	case fromToOptions o of
-		FromRemote src -> checkFailedTransferDirection ai Download $
-			fromStart move afile key ai =<< getParsed src
-		ToRemote dest -> checkFailedTransferDirection ai Upload $
-			toStart move afile key ai =<< getParsed dest
+		Right (FromRemote src) ->
+			checkFailedTransferDirection ai Download $
+				fromStart move afile key ai =<< getParsed src
+		Right (ToRemote dest) ->
+			checkFailedTransferDirection ai Upload $
+				toStart move afile key ai =<< getParsed dest
 
 showMoveAction :: Bool -> Key -> ActionItem -> Annex ()
 showMoveAction move = showStart' (if move then "move" else "copy")

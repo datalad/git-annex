@@ -62,7 +62,7 @@ data IncrementalOpt
 optParser :: CmdParamsDesc -> Parser FsckOptions
 optParser desc = FsckOptions
 	<$> cmdParams desc
-	<*> optional (parseRemoteOption $ strOption 
+	<*> optional (parseRemoteOption <$> strOption 
 		( long "from" <> short 'f' <> metavar paramRemote 
 		<> help "check remote"
 		<> completeRemotes
