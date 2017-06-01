@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-06-01T15:41:33Z"
+ content="""
+Failing at push seems too late; the user will already have a branch with
+the unwanted merge in it at that point and could have additional changes
+commited on top of it. And, only allowing fast-forward
+merges is probably not what you want either; regular non-conflicting git
+merges that are not fast-forwards will almost always be fine. If you did
+want to prevent any pushes containing non-fast-forward merges, you could
+do it with an `update` hook in the server's git repo.
+
+There is not currently a way to prevent `git annex sync` from
+auto-resolving a merge conflict, but I think there definitely should be.
+Something like `git config annex.resolvemerge false`.
+And, it probably makes sense to let that be configuration be propigated
+to all clones of a repository, by using
+`git-annex config annex.resolvemerge false`
+"""]]
