@@ -41,7 +41,9 @@ withFilesInGitNonRecursive needforce a params = ifM (Annex.getState Annex.force)
 	( withFilesInGit a params
 	, if null params
 		then giveup needforce
-		else seekActions $ prepFiltered a (getfiles [] params)
+		else do
+			checkFileOrDirectoryExists params
+			seekActions $ prepFiltered a (getfiles [] params)
 	)
   where
 	getfiles c [] = return (reverse c)
@@ -243,12 +245,15 @@ seekActions gen = mapM_ commandAction =<< gen
 
 seekHelper :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> [FilePath] -> Annex [FilePath]
 seekHelper a params = do
-	forM_ params $ \p ->
-		unlessM (isJust <$> liftIO (catchMaybeIO $ getSymbolicLinkStatus p)) $ do
-			toplevelWarning False (p ++ " not found")
-			Annex.incError
+	checkFileOrDirectoryExists params
 	inRepo $ \g -> concat . concat <$> forM (segmentXargsOrdered params)
 		(runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a fs g))
+
+checkFileOrDirectoryExists :: [FilePath] -> Annex ()
+checkFileOrDirectoryExists ps = forM_ ps $ \p ->
+	unlessM (isJust <$> liftIO (catchMaybeIO $ getSymbolicLinkStatus p)) $ do
+		toplevelWarning False (p ++ " not found")
+		Annex.incError
 
 notSymlink :: FilePath -> IO Bool
 notSymlink f = liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f

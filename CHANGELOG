@@ -9,6 +9,9 @@ git-annex (6.20170520) UNRELEASED; urgency=medium
     transfers.
   * Avoid concurrent git-config setting problem when running concurrent
     threads.
+  * metadata: When setting metadata of a file that did not exist,
+    no error message was displayed, unlike getting metadata and most other
+    git-annex commands. Fixed this oversight.
 
  -- Joey Hess <id@joeyh.name>  Wed, 24 May 2017 14:03:40 -0400
 
