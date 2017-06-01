@@ -43,6 +43,7 @@ optParser desc = MoveOptions
 	parseto = herespecialcase <$> parseToOption
 	  where
 		herespecialcase "here" = Left ToHere
+		herespecialcase "." = Left ToHere
 		herespecialcase n = Right $ ToRemote $ parseRemoteOption n
 
 instance DeferredParseClass MoveOptions where
