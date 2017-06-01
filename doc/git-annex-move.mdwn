@@ -53,6 +53,18 @@ Moves the content of files from or to another remote.
 
   Use this option to move a specified key.
 
+* `--fast`
+
+  When moving content to a remote, avoid a round trip to check if the remote
+  already has content. This can be faster, but might skip moving content
+  to the remote in some cases.
+
+* `--force`
+
+  When moving content from a remote, ignore location tracking information
+  and always check if the remote has content. Can be useful if the location
+  tracking information is out of date.
+
 * file matching options
 
   The [[git-annex-matching-options]](1)

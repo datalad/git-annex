@@ -37,12 +37,15 @@ Copies the content of files from or to another remote.
 
 * `--fast`
 
-  Avoid contacting the remote to check if it has every file when copying
-  --to it.
+  When copying content to a remote, avoid a round trip to check if the remote
+  already has content. This can be faster, but might skip copying content
+  to the remote in some cases.
 
 * `--force`
 
-  Force checking the remote for every file when copying --from it.
+  When copying content from a remote, ignore location tracking information
+  and always check if the remote has content. Can be useful if the location
+  tracking information is out of date.
 
 * `--all`
 
