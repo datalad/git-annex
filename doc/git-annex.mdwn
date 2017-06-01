@@ -1040,6 +1040,15 @@ Here are all the supported configuration settings.
   To configure the behavior in all clones of the repository,
   this can be set in [[git-annex-config]].
 
+* `annex.resolvemerge`
+
+  Set to false to prevent merge conflicts being automatically resolved
+  by the git-annex assitant, git-annex sync, git-annex merge,
+  and the git-annex post-receive hook.
+
+  To configure the behavior in all clones of the repository,
+  this can be set in [[git-annex-config]].
+
 * `annex.synccontent`
 
   Set to true to make git-annex sync default to syncing content.

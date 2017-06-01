@@ -76,7 +76,13 @@ data SyncOptions  = SyncOptions
 	, noContentOption :: Bool
 	, contentOfOption :: [FilePath]
 	, keyOptions :: Maybe KeyOptions
+	, resolveMergeOverride :: ResolveMergeOverride
 	}
+
+newtype ResolveMergeOverride = ResolveMergeOverride Bool
+
+instance Default ResolveMergeOverride where
+	def = ResolveMergeOverride False
 
 optParser :: CmdParamsDesc -> Parser SyncOptions
 optParser desc = SyncOptions
@@ -117,6 +123,9 @@ optParser desc = SyncOptions
 		<> metavar paramPath
 		))
 	<*> optional parseAllOption
+	<*> (ResolveMergeOverride <$> invertableSwitch "resolvemerge" True
+		( help "do not automatically resolve merge conflicts"
+		))
 
 -- Since prepMerge changes the working directory, FilePath options
 -- have to be adjusted.
@@ -132,6 +141,7 @@ instance DeferredParseClass SyncOptions where
 		<*> pure (noContentOption v)
 		<*> liftIO (mapM absPath (contentOfOption v))
 		<*> pure (keyOptions v)
+		<*> pure (resolveMergeOverride v)
 
 seek :: SyncOptions -> CommandSeek
 seek o = allowConcurrentOutput $ do
@@ -150,7 +160,7 @@ seek o = allowConcurrentOutput $ do
 	-- These actions cannot be run concurrently.
 	mapM_ includeCommandAction $ concat
 		[ [ commit o ]
-		, [ withbranch (mergeLocal mergeConfig) ]
+		, [ withbranch (mergeLocal mergeConfig (resolveMergeOverride o)) ]
 		, map (withbranch . pullRemote o mergeConfig) gitremotes
 		,  [ mergeAnnex ]
 		]
@@ -219,11 +229,14 @@ mergeConfig =
 	, Git.Merge.MergeUnrelatedHistories
 	]
 
-merge :: CurrBranch -> [Git.Merge.MergeConfig] -> Git.Branch.CommitMode -> Git.Branch -> Annex Bool
-merge (Just b, Just adj) mergeconfig commitmode tomerge =
-	updateAdjustedBranch tomerge (b, adj) mergeconfig commitmode
-merge (b, _) mergeconfig commitmode tomerge =
-	autoMergeFrom tomerge b mergeconfig commitmode
+merge :: CurrBranch -> [Git.Merge.MergeConfig] -> ResolveMergeOverride -> Git.Branch.CommitMode -> Git.Branch -> Annex Bool
+merge currbranch mergeconfig resolvemergeoverride commitmode tomerge = case currbranch of
+	(Just b, Just adj) -> updateAdjustedBranch tomerge (b, adj) mergeconfig canresolvemerge commitmode
+	(b, _) -> autoMergeFrom tomerge b mergeconfig canresolvemerge commitmode
+  where
+	canresolvemerge = case resolvemergeoverride of
+		ResolveMergeOverride True -> getGitConfigVal annexResolveMerge
+		ResolveMergeOverride False -> return False
 
 syncBranch :: Git.Branch -> Git.Branch
 syncBranch = Git.Ref.underBase "refs/heads/synced" . fromDirectBranch . fromAdjustedBranch
@@ -296,15 +309,15 @@ commitStaged commitmode commitmessage = do
 	void $ inRepo $ Git.Branch.commit commitmode False commitmessage branch parents
 	return True
 
-mergeLocal :: [Git.Merge.MergeConfig] -> CurrBranch -> CommandStart
-mergeLocal mergeconfig currbranch@(Just _, _) =
+mergeLocal :: [Git.Merge.MergeConfig] -> ResolveMergeOverride -> CurrBranch -> CommandStart
+mergeLocal mergeconfig resolvemergeoverride currbranch@(Just _, _) =
 	go =<< needMerge currbranch
   where
 	go Nothing = stop
 	go (Just syncbranch) = do
 		showStart "merge" $ Git.Ref.describe syncbranch
-		next $ next $ merge currbranch mergeconfig Git.Branch.ManualCommit syncbranch
-mergeLocal _ (Nothing, madj) = do
+		next $ next $ merge currbranch mergeconfig resolvemergeoverride Git.Branch.ManualCommit syncbranch
+mergeLocal _ _ (Nothing, madj) = do
 	b <- inRepo Git.Branch.currentUnsafe
 	ifM (isJust <$> needMerge (b, madj))
 		( do
@@ -365,7 +378,7 @@ pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o && want
 	next $ do
 		showOutput
 		stopUnless fetch $
-			next $ mergeRemote remote branch mergeconfig
+			next $ mergeRemote remote branch mergeconfig (resolveMergeOverride o)
   where
 	fetch = inRepoWithSshOptionsTo (Remote.repo remote) (Remote.gitconfig remote) $
 		Git.Command.runBool
@@ -377,8 +390,8 @@ pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o && want
  - were committed (or pushed changes, if this is a bare remote),
  - while the synced/master may have changes that some
  - other remote synced to this remote. So, merge them both. -}
-mergeRemote :: Remote -> CurrBranch -> [Git.Merge.MergeConfig] -> CommandCleanup
-mergeRemote remote currbranch mergeconfig = ifM isBareRepo
+mergeRemote :: Remote -> CurrBranch -> [Git.Merge.MergeConfig] -> ResolveMergeOverride -> CommandCleanup
+mergeRemote remote currbranch mergeconfig resolvemergeoverride = ifM isBareRepo
 	( return True
 	, case currbranch of
 		(Nothing, _) -> do
@@ -390,7 +403,7 @@ mergeRemote remote currbranch mergeconfig = ifM isBareRepo
 	)
   where
 	mergelisted getlist = and <$> 
-		(mapM (merge currbranch mergeconfig Git.Branch.ManualCommit . remoteBranch remote) =<< getlist)
+		(mapM (merge currbranch mergeconfig resolvemergeoverride Git.Branch.ManualCommit . remoteBranch remote) =<< getlist)
 	tomerge = filterM (changed remote)
 	branchlist Nothing = []
 	branchlist (Just branch) = [branch, syncBranch branch]

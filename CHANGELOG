@@ -12,6 +12,10 @@ git-annex (6.20170520) UNRELEASED; urgency=medium
   * metadata: When setting metadata of a file that did not exist,
     no error message was displayed, unlike getting metadata and most other
     git-annex commands. Fixed this oversight.
+  * Added annex.resolvemerge configuration, which can be set to false to 
+    disable the usual automatic merge conflict resolution done by git-annex
+    sync and the assistant.
+  * sync: Added --no-resolvemerge option.
 
  -- Joey Hess <id@joeyh.name>  Wed, 24 May 2017 14:03:40 -0400
 

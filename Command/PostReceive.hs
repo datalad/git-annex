@@ -48,4 +48,4 @@ fixPostReceiveHookEnv = do
 updateInsteadEmulation :: CommandStart
 updateInsteadEmulation = do
 	prepMerge
-	mergeLocal mergeConfig =<< join getCurrBranch
+	mergeLocal mergeConfig def =<< join getCurrBranch

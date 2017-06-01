@@ -211,7 +211,8 @@ manualPull currentbranch remotes = do
 		else return Nothing
 	haddiverged <- liftAnnex Annex.Branch.forceUpdate
 	forM_ normalremotes $ \r ->
-		liftAnnex $ Command.Sync.mergeRemote r currentbranch Command.Sync.mergeConfig
+		liftAnnex $ Command.Sync.mergeRemote r
+			currentbranch Command.Sync.mergeConfig def
 	return (catMaybes failed, haddiverged)
   where
 	wantpull gc = remoteAnnexPull gc

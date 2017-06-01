@@ -12,6 +12,9 @@ This performs the same merging (and merge conflict resolution)
 that is done by the sync command, but without pushing or pulling any
 data.
 
+When annex.resolvemerge is set to false, merge conflict resolution
+will not be done.
+
 # SEE ALSO
 
 [[git-annex]](1)

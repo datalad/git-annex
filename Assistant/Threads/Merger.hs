@@ -78,6 +78,7 @@ onChange file
 					]
 				void $ liftAnnex $ Command.Sync.merge
 					currbranch Command.Sync.mergeConfig
+					def
 					Git.Branch.AutomaticCommit
 					changedbranch
 	mergecurrent _ = noop

@@ -58,6 +58,7 @@ data GitConfig = GitConfig
 	, annexHttpHeaders :: [String]
 	, annexHttpHeadersCommand :: Maybe String
 	, annexAutoCommit :: Configurable Bool
+	, annexResolveMerge :: Configurable Bool
 	, annexSyncContent :: Configurable Bool
 	, annexDebug :: Bool
 	, annexWebOptions :: [String]
@@ -115,6 +116,8 @@ extractGitConfig r = GitConfig
 	, annexHttpHeadersCommand = getmaybe (annex "http-headers-command")
 	, annexAutoCommit = configurable True $ 
 		getmaybebool (annex "autocommit")
+	, annexResolveMerge = configurable True $ 
+		getmaybebool (annex "resolvemerge")
 	, annexSyncContent = configurable False $ 
 		getmaybebool (annex "synccontent")
 	, annexDebug = getbool (annex "debug") False

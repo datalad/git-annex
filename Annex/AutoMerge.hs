@@ -43,18 +43,18 @@ import qualified Data.ByteString.Lazy as L
  - Callers should use Git.Branch.changed first, to make sure that
  - there are changes from the current branch to the branch being merged in.
  -}
-autoMergeFrom :: Git.Ref -> Maybe Git.Ref -> [Git.Merge.MergeConfig] -> Git.Branch.CommitMode -> Annex Bool
-autoMergeFrom branch currbranch mergeconfig commitmode = do
+autoMergeFrom :: Git.Ref -> Maybe Git.Ref -> [Git.Merge.MergeConfig] -> Annex Bool -> Git.Branch.CommitMode -> Annex Bool
+autoMergeFrom branch currbranch mergeconfig canresolvemerge commitmode = do
 	showOutput
 	case currbranch of
 		Nothing -> go Nothing
 		Just b -> go =<< inRepo (Git.Ref.sha b)
   where
 	go old = ifM isDirect
-		( mergeDirect currbranch old branch (resolveMerge old branch False) mergeconfig commitmode
+		( mergeDirect currbranch old branch resolvemerge mergeconfig commitmode
 		, do
 			r <- inRepo (Git.Merge.merge branch mergeconfig commitmode)
-				<||> (resolveMerge old branch False <&&> commitResolvedMerge commitmode)
+				<||> (resolvemerge <&&> commitResolvedMerge commitmode)
 			-- Merging can cause new associated files to appear
 			-- and the smudge filter will add them to the database.
 			-- To ensure that this process sees those changes,
@@ -62,6 +62,11 @@ autoMergeFrom branch currbranch mergeconfig commitmode = do
 			Database.Keys.closeDb
 			return r
 		)
+	  where
+		resolvemerge = ifM canresolvemerge
+			( resolveMerge old branch False
+			, return False 
+			)
 
 {- Resolves a conflicted merge. It's important that any conflicts be
  - resolved in a way that itself avoids later merge conflicts, since

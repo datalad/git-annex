@@ -318,8 +318,8 @@ findAdjustingCommit (AdjBranch b) = go =<< catCommit b
 {- Update the currently checked out adjusted branch, merging the provided
  - branch into it. Note that the provided branch should be a non-adjusted
  - branch. -}
-updateAdjustedBranch :: Branch -> (OrigBranch, Adjustment) -> [Git.Merge.MergeConfig] -> Git.Branch.CommitMode -> Annex Bool
-updateAdjustedBranch tomerge (origbranch, adj) mergeconfig commitmode = catchBoolIO $
+updateAdjustedBranch :: Branch -> (OrigBranch, Adjustment) -> [Git.Merge.MergeConfig] -> Annex Bool -> Git.Branch.CommitMode -> Annex Bool
+updateAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge commitmode = catchBoolIO $
 	join $ preventCommits go
   where
 	adjbranch@(AdjBranch currbranch) = originalToAdjusted origbranch adj
@@ -417,7 +417,7 @@ updateAdjustedBranch tomerge (origbranch, adj) mergeconfig commitmode = catchBoo
 		-- this commit will be a fast-forward.
 		adjmergecommitff <- commitAdjustedTree' adjtree (BasisBranch mergecommit) [currbranch]
 		showAction "Merging into adjusted branch"
-		ifM (autoMergeFrom adjmergecommitff (Just currbranch) mergeconfig commitmode)
+		ifM (autoMergeFrom adjmergecommitff (Just currbranch) mergeconfig canresolvemerge commitmode)
 			( reparent adjtree adjmergecommit =<< getcurrentcommit
 			, return False
 			)

@@ -21,11 +21,6 @@ worry about the details, you can use sync.
 The content of annexed objects is not synced by default, but the --content
 option (see below) can make that also be synchronized.
 
-Merge conflicts are automatically handled by sync. When two conflicting
-versions of a file have been committed, both will be added to the tree,
-under different filenames. For example, file "foo" would be replaced
-with "foo.somekey" and "foo.otherkey".
-
 Note that syncing with a remote will not normally update the remote's working
 tree with changes made to the local repository. (Unless it's configured
 with receive.denyCurrentBranch=updateInstead.) However, those changes
@@ -113,6 +108,18 @@ by running "git annex sync" on the remote.
   parallel. Pulls are not done in parallel because that tends to be
   less efficient. When --content is synced, the files are processed
   in parallel as well.
+
+* `--resolvemerge`, `--no-resolvemerge`
+
+  By default, merge conflicts are automatically handled by sync. When two
+  conflicting versions of a file have been committed, both will be added 
+  to the tree, under different filenames. For example, file "foo" 
+  would be replaced with "foo.variant-A" and "foo.variant-B". (See
+  [[git-annex-resolvemerge]](1) for details.)
+
+  Use `--no-resolvemerge` to disable this automatic merge conflict
+  resolution. It can also be disabled by setting annex.resolvemerge
+  to false.
 
 # SEE ALSO
 
