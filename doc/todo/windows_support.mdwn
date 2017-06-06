@@ -7,8 +7,12 @@ usable!
 * There can be problems when the git-annex repository is in a deep
   or long path. Ie, `C:\loooooooooooooooooongdir\`.
   [Details here](http://git-annex.branchable.com/bugs/__34__git-annex:_direct:_1_failed__34___on_Windows)
+
   Workaround: Put your git-annex repo in `C:\annex` or some similar short
   path if possible.
+
+  Workaround: Enable long paths in the registry. See 
+  <https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247#maxpath>
 
 * Local pairing seems to fail, after acking on Linux box, it stalls.
   (Also, of course, the Windows box is unlikely to have a ssh server,
