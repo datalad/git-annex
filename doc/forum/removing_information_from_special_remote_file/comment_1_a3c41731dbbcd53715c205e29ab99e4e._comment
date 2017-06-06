@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-06-06T18:40:54Z"
+ content="""
+Even if you remove the information from the remote log, it would still be
+there in the git history of the file.
+
+The thing to do, then, is to not store those capabilities in git at all.
+
+If you have a use case for using tahoe without storing the capability in
+git, we could talk about implementing that. 
+
+I don't see how it would be useful to store content in tahoe if you can't
+get it back out, so seems that some form of encryption would need to be
+involved. Perhaps it could encrypt it using your gpg key or something?
+"""]]
