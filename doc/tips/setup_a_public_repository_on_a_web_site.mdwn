@@ -16,9 +16,10 @@ Here's how I set it up. --[[Joey]]
    [[working tree update when changes are pushed to it|making_a_remote_repo_update_when_changes_are_pushed_to_it]].)
 6. We want users to be able to clone the git repository over http, because
    git-annex can download files from it over http as well. For this to
-   work, `git update-server-info` needs to get run after commits. The
-   git `post-update` hook will take care of this, you just need to enable
-   the hook. `chmod +x .git/hooks/post-update`
+   work, `git update-server-info` needs to get run on the server after
+   commits or pushes to it. The git `post-update` hook will take care of
+   this, you just need to enable the hook on the server.
+   `chmod +x .git/hooks/post-update`
 7. `git annex add; git commit -m added`
 8. Make sure users can still download files from the site directly.
 9. Instruct advanced users to clone a http url that ends with the "/.git/"
