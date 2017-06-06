@@ -193,8 +193,10 @@ prepSocket socketfile gc sshparams = do
 
 	c <- Annex.getState Annex.concurrency
 	case c of
-		Concurrent {} -> makeconnection socketlock
-		NonConcurrent -> return ()
+		Concurrent {}
+			| annexUUID (remoteGitConfig gc) /= NoUUID ->
+				makeconnection socketlock
+		_ -> return ()
 	
 	lockFileCached socketlock
   where
@@ -207,11 +209,15 @@ prepSocket socketfile gc sshparams = do
 			-- When we can start the connection in batch mode,
 			-- ssh won't prompt to the console.
 			(_, connected) <- liftIO $ processTranscript "ssh"
-				(["-o", "BatchMode=true"] ++ toCommand startps)
+				(["-o", "BatchMode=true"]
+				++ toCommand startps)
 				Nothing
-			unless connected $ 
-				prompt $ void $ liftIO $
+			unless connected $ do
+				ok <- prompt $ liftIO $
 					boolSystem "ssh" startps
+				unless ok $
+					warning $ "Unable to run git-annex-shell on remote " ++
+						Git.repoDescribe (gitConfigRepo (remoteGitConfig gc))
 
 -- Parameters to get ssh connected to the remote host,
 -- by asking it to run a no-op command.

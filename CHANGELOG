@@ -16,6 +16,9 @@ git-annex (6.20170520) UNRELEASED; urgency=medium
     disable the usual automatic merge conflict resolution done by git-annex
     sync and the assistant.
   * sync: Added --no-resolvemerge option.
+  * Avoid error about git-annex-shell not being found when
+    syncing with -J with a git remote where git-annex-shell is not
+    installed.
 
  -- Joey Hess <id@joeyh.name>  Wed, 24 May 2017 14:03:40 -0400
 
