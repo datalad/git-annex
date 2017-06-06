@@ -124,6 +124,7 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 	hClose h
 	let failedlock st = do
 		dropLock $ LockHandle tmp st sidelock
+		nukeFile tmp
 		return Nothing
 	let tooklock st = return $ Just $ LockHandle lockfile' st sidelock
 	ifM (linkToLock sidelock tmp lockfile')
