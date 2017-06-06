@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-06-06T19:48:20Z"
+ content="""
+Sure, you can just add one repository as a remote of the other, 
+and `git fetch` and then git-annex will automatically combine
+all the information about remotes and locations of files.
+"""]]
