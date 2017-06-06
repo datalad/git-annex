@@ -57,3 +57,4 @@ ok
 
 I've used git-annex for well over a year, syncing multiple repositories, without a problem. I don't know how I ever got along without it! :-)
 
+> [[fixed|done]] --[[Joey]]
