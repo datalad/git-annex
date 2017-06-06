@@ -122,18 +122,21 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 	setFileMode tmp (combineModes readModes)
 	hPutStr h . show =<< mkPidLock
 	hClose h
-	st <- getFileStatus tmp
-	let failedlock = do
+	let failedlock st = do
 		dropLock $ LockHandle tmp st sidelock
 		return Nothing
-	let tooklock = return $ Just $ LockHandle lockfile' st sidelock
+	let tooklock st = return $ Just $ LockHandle lockfile' st sidelock
 	ifM (linkToLock sidelock tmp lockfile')
 		( do
 			nukeFile tmp
-			tooklock
+			-- May not have made a hard link, so stat
+			-- the lockfile
+			lckst <- getFileStatus lockfile'
+			tooklock lckst
 		, do
 			v <- readPidLock lockfile'
 			hn <- getHostName
+			tmpst <- getFileStatus tmp
 			case v of
 				Just pl | isJust sidelock && hn == lockingHost pl -> do
 					-- Since we have the sidelock,
@@ -142,8 +145,8 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 					-- we know that the pidlock is
 					-- stale, and can take it over.
 					rename tmp lockfile'
-					tooklock
-				_ -> failedlock
+					tooklock tmpst
+				_ -> failedlock tmpst
 		)
 
 -- Linux's open(2) man page recommends linking a pid lock into place,

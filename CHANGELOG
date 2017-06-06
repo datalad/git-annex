@@ -19,6 +19,9 @@ git-annex (6.20170520) UNRELEASED; urgency=medium
   * Avoid error about git-annex-shell not being found when
     syncing with -J with a git remote where git-annex-shell is not
     installed.
+  * Fix bug that prevented transfer locks from working when
+    run on SMB or other filesystem that does not support fcntl locks
+    and hard links.
 
  -- Joey Hess <id@joeyh.name>  Wed, 24 May 2017 14:03:40 -0400
 
