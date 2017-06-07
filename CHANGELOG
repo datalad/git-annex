@@ -22,6 +22,9 @@ git-annex (6.20170520) UNRELEASED; urgency=medium
   * Fix bug that prevented transfer locks from working when
     run on SMB or other filesystem that does not support fcntl locks
     and hard links.
+  * assistant: Merge changes from refs/remotes/foo/master into master.
+    Previously, only sync branches were merged. This makes regular git push
+    into a repository watched by the assistant auto-merge.
 
  -- Joey Hess <id@joeyh.name>  Wed, 24 May 2017 14:03:40 -0400
 
