@@ -63,13 +63,18 @@ onChange file
 		diverged <- liftAnnex Annex.Branch.forceUpdate
 		when diverged $
 			queueDeferredDownloads "retrying deferred download" Later
-	| "/synced/" `isInfixOf` file =
-		mergecurrent =<< liftAnnex (join Command.Sync.getCurrBranch)
+	-- Merge only from /synced/ branches, which are pushed by git-annex
+	-- sync and by remote instances of the assistant.
+	-- It would be nice to merge other remote tracking branches,
+	-- but it's hard to get an efficient list of them (git remote -r)
+	| "/synced/" `isInfixOf` file = mergecurrent
 	| otherwise = noop
   where
 	changedbranch = fileToBranch file
 
-	mergecurrent currbranch@(Just b, _)
+	mergecurrent =
+		mergecurrent' =<< liftAnnex (join Command.Sync.getCurrBranch)
+	mergecurrent' currbranch@(Just b, _)
 		| equivBranches changedbranch b =
 			whenM (liftAnnex $ inRepo $ Git.Branch.changed b changedbranch) $ do
 				debug
@@ -81,7 +86,7 @@ onChange file
 					def
 					Git.Branch.AutomaticCommit
 					changedbranch
-	mergecurrent _ = noop
+	mergecurrent' _ = noop
 
 equivBranches :: Git.Ref -> Git.Ref -> Bool
 equivBranches x y = base x == base y
