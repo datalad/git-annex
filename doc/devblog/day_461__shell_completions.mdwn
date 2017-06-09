@@ -1,0 +1,8 @@
+A new version of optparse-applicative supports zsh and fish shell
+completions. Got that integrated into git-annex, although it will be a
+while until most builds are updated to that version of the library.
+Also, re-submitted my old patch from 2015 to make "git annex<tab>"
+always tab complete in bash.
+
+Enough other small fixes and improvements have accumulated that a release
+is due soon..
