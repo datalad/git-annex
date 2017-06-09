@@ -27,6 +27,9 @@ git-annex (6.20170520) UNRELEASED; urgency=medium
     into a repository watched by the assistant auto-merge.
   * Makefile: Install completions for the fish and zsh shells
     when git-annex is built with optparse-applicative-0.14.
+  * assistant: Don't trust OSX FSEvents's eventFlagItemModified to be called
+    when the last writer of a file closes it; apparently that sometimes
+    does not happen, which prevented files from being quickly added.
 
  -- Joey Hess <id@joeyh.name>  Wed, 24 May 2017 14:03:40 -0400
 

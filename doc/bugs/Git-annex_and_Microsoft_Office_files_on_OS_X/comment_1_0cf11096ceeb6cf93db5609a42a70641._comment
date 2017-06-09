@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-06-09T17:52:00Z"
+ content="""
+This must have to do with the fsevents interface used on OSX.
+
+In Assistant.Threads.Committer.safeToAdd, when lsof detects
+a file is still open for write by some process, it cancels
+the add. This relies on events being received when files
+get closed (closingTracked).
+
+In Utility.DirWatcher.FSEvents.watchDir, when an event has
+eventFlagItemModified set, it treats that as a file add event.
+The intent is to emulate inotify's handling of file add events when
+files are closed.
+
+So, two theories:
+
+1. Perhaps eventFlagItemModified only gets set if the file
+   is actually modified. Ie, if MS office writes the file
+   and while it's being written another process opens it to read
+   it (perhaps to index the content), then if the other process
+   doesn't modify it, eventFlagItemModified is not set.
+
+2. Perhaps the way the assistant hard links/moves the file around
+   confuses the FSEvents handling. Perhaps there is an event with
+   eventFlagItemModified, but it's for the locked down file, or
+   something like that, so git-annex ignores it.
+
+In any case, I'm leaning toward thinking that closingTracked should
+not be True for FSEvents. This bug report seems to show, conclusively,
+that FSEvents does not have that property. If closingTracked was False,
+as it is for KQueue, the assistant would postpone adding the file,
+and keep retrying, around once per second, until it no longer had
+any writers, and then add it.
+
+So, I've made that change. I suspect it fixes the bug, but it would
+be pretty hard for me to test it. Could you please download tomorrow's
+daily build of git-annex for OSX, and see if it fixes the problem?
+"""]]
