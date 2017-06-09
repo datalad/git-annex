@@ -53,3 +53,5 @@ I have no idea why it needs to do that, though.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I've been using git-annex v5 repositories without any issues, and with smaller files, repository v6 works great!
+
+> dup; [[done]] --[[Joey]]
