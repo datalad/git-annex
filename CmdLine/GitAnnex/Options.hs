@@ -97,6 +97,7 @@ gitAnnexGlobalOptions = commonGlobalOptions ++
 cmdParams :: CmdParamsDesc -> Parser CmdParams
 cmdParams paramdesc = many $ argument str
 	( metavar paramdesc
+	<> action "file"
 	)
 
 parseAutoOption :: Parser Bool
