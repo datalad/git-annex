@@ -1,4 +1,4 @@
-git-annex (6.20170520) UNRELEASED; urgency=medium
+git-annex (6.20170520) unstable; urgency=medium
 
   * move --to=here moves from all reachable remotes to the local repository.
   * initremote, enableremote: Support gpg subkeys suffixed with an
@@ -31,7 +31,7 @@ git-annex (6.20170520) UNRELEASED; urgency=medium
     when the last writer of a file closes it; apparently that sometimes
     does not happen, which prevented files from being quickly added.
 
- -- Joey Hess <id@joeyh.name>  Wed, 24 May 2017 14:03:40 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 12 Jun 2017 13:37:16 -0400
 
 git-annex (6.20170519) unstable; urgency=medium
 
