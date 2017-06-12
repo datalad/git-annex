@@ -1,4 +1,0 @@
-git-annex 6.20170301 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * No changes from 6.20170228; a new version number was needed due
-     to a problem with Hackage."""]]
