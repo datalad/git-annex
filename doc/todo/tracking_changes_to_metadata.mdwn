@@ -1,0 +1,12 @@
+I use git-annex to store my music collection, which includes many albums I've ripped but don't like, as well as many albums I do like to listen to regularly but can't put on all my devices because of storage space limits. Previously I've used a `Now Playing` directory to track this, with copies of all the symlinks, but when I edit files (to correct file tags or whatever), things can get out of sync, so now I'm trying to use metadata instead. I was thinking to add a `NowPlaying=machinename` scheme and then on each machine I can `git annex get --metadata NowPlaying=machinename`.
+
+While migrating to this scheme, I've discovered a few places where a file wasn't in `Now Playing` when I expected it to be. A good example is that some songs exist both on an artist's album as well as a compilation album, and I've `drop`ped the track from the compilation album because I already had it on the artist's album.
+
+This has made me think that it would be nice to track changes to metadata, the same way we do with git commits on the files themselves. Right now this is almost possible using the `git-annex` branch. However:
+
+1. Every change to metadata just has the commit message "update". It would be nice if I could pass a commit message using something like `git annex metadata -s 'NowPlaying-=machinename' -m "This already exists on Artist - Album"`.
+2. Looking at the metadata history for a given file requires dereferencing the git-annex symlink and knowing some git-annex internals. It would be nice if there was a `git annex metadata log <filename>` command.
+
+From reading the documentation about [[tips/metadata_driven_views]], it seems almost like #1 would be possible using views and doing a `git commit` myself, but that still just generates an "update" message on the `git-annex` branch. Even if it did work, using `git annex view 'NowPlaying=*'` excludes all files that aren't tagged with any machine, which makes adding new files harder.
+
+What do you think? Is this abuse of the `git-annex` branch? Would this interfere with [[design/caching_database]]?
