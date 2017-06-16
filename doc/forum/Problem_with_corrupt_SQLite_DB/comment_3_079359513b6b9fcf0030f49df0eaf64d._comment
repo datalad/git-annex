@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="avar"
+ avatar="http://cdn.libravatar.org/avatar/57332d67a86eb51e06bf78d2baf42c3c"
+ subject="comment 3"
+ date="2017-06-16T20:37:47Z"
+ content="""
+What about if you are in v6 mode? I just read the wiki about that version upgrade, sounds exciting, but I got this with <v6 and I'm definitely not switching over if some sqlite error can hose my entire checkout. How do you actually recover from this when sqlite is a hard dependency?
+"""]]
