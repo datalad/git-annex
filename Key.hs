@@ -147,7 +147,7 @@ instance Arbitrary Key where
 		<$> (listOf1 $ elements $ ['A'..'Z'] ++ ['a'..'z'] ++ ['0'..'9'] ++ "-_\r\n \t")
 		<*> (parseKeyVariety <$> (listOf1 $ elements ['A'..'Z'])) -- BACKEND
 		<*> ((abs <$>) <$> arbitrary) -- size cannot be negative
-		<*> arbitrary
+		<*> ((abs . fromInteger <$>) <$> arbitrary) -- mtime cannot be negative
 		<*> ((abs <$>) <$> arbitrary) -- chunksize cannot be negative
 		<*> ((succ . abs <$>) <$> arbitrary) -- chunknum cannot be 0 or negative
 

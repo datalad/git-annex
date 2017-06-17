@@ -35,9 +35,6 @@ instance (Arbitrary v, Ord v) => Arbitrary (S.Set v) where
 instance Arbitrary POSIXTime where
 	arbitrary = fromInteger <$> nonNegative arbitrarySizedIntegral
 
-instance Arbitrary EpochTime where
-	arbitrary = fromInteger <$> nonNegative arbitrarySizedIntegral
-
 {- Pids are never negative, or 0. -}
 instance Arbitrary ProcessID where
 	arbitrary = arbitrarySizedBoundedIntegral `suchThat` (> 0)
