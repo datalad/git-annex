@@ -161,8 +161,8 @@ tests crippledfilesystem opts = testGroup "Tests" $ properties :
 
 properties :: TestTree
 properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
-	[ testProperty "prop_isomorphic_deencode_git" Git.Filename.prop_isomorphic_deencode
-	, testProperty "prop_isomorphic_deencode" Utility.Format.prop_isomorphic_deencode
+	[ testProperty "prop_encode_decode_roundtrip" Git.Filename.prop_encode_decode_roundtrip
+	, testProperty "prop_encode_c_decode_c_roundtrip" Utility.Format.prop_encode_c_decode_c_roundtrip
 	, testProperty "prop_isomorphic_fileKey" Annex.Locations.prop_isomorphic_fileKey
 	, testProperty "prop_isomorphic_key_encode" Key.prop_isomorphic_key_encode
 	, testProperty "prop_isomorphic_key_decode" Key.prop_isomorphic_key_decode

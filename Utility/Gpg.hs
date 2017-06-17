@@ -184,6 +184,9 @@ secretKeys cmd = catchDefaultIO M.empty makemap
 	params = [Param "--with-colons", Param "--list-secret-keys", Param "--fixed-list-mode"]
 	parse = extract [] Nothing . map (splitc ':')
 	extract c (Just keyid) (("uid":_:_:_:_:_:_:_:_:userid:_):rest) =
+		-- If the userid contains a ":" or a few other special
+		-- characters, gpg will hex-escape it. Use decode_c to
+		-- undo.
 		extract ((keyid, decode_c userid):c) Nothing rest
 	extract c (Just keyid) rest@(("sec":_):_) =
 		extract ((keyid, ""):c) Nothing rest

@@ -8,9 +8,10 @@
 
 module Git.Filename where
 
+import Common
 import Utility.Format (decode_c, encode_c)
 
-import Common
+import Data.Char
 
 decode :: String -> FilePath
 decode [] = []
@@ -23,6 +24,11 @@ decode f@(c:s)
 encode :: FilePath -> String
 encode s = "\"" ++ encode_c s ++ "\""
 
-{- for quickcheck -}
-prop_isomorphic_deencode :: String -> Bool
-prop_isomorphic_deencode s = s == decode (encode s)
+{- For quickcheck. 
+ -
+ - See comment on Utility.Format.prop_encode_c_decode_c_roundtrip for
+ - why this only tests chars < 256 -}
+prop_encode_decode_roundtrip :: String -> Bool
+prop_encode_decode_roundtrip s = s' == decode (encode s')
+  where
+	s' = filter (\c -> ord c < 256) s
