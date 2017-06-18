@@ -3,4 +3,4 @@ easy to add it to an image.
 
 For example:
 
-	docker run -i -t joeyh/debian-unstable apt-get install git-annex
+	docker run -i -t debian apt-get install git-annex
