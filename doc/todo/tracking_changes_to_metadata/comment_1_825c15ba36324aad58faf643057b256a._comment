@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-06-26T16:58:17Z"
+ content="""
+I don't see the benefit to having custom commit messages for metadata
+changes. The changes are there in machine-readable format, so why
+involve a human?
+
+I agree that it would be useful to have a way to look at the metadata
+history, much as `git annex log` looks at the location history.
+
+Indeed, a lot of `git annex log` could be reused; `getAllLog` and
+`getKeyLog` are the hard part and would be reusable for metadata logs.
+The result might be something like this, when run on a file "foo":
+
+	+ Thu, 22 Jun 2017 17:07:43 EST foo | author=foo
+	- Thu, 22 Jun 2017 17:07:43 EST foo | author=bar
+	+ Thu, 11 Jun 2017 11:11:11 EST foo | author=bar
+
+Note that git-annex log is necessarily slow when run on a lot of files,
+because it has to run a git command per file to get the log. `git-annex log
+--all` shows a fast stream of changes from newest first, but displays the
+git-annex key that was changed, not a filename. A version of `git annex
+log` for metadata would have these same limitations.
+
+Would this help with your use case?
+"""]]

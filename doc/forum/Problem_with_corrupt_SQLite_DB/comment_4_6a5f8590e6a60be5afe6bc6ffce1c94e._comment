@@ -10,4 +10,8 @@ safely.
 I've done some experimentation with deleting the sqlite database when there
 are unlocked files, and it seems that running `git annex fsck` manages to
 recover the deleted state and restores the database.
+
+Also, since git-annex uses sqlite in WAL mode, it may be possible to
+recover the database to the last good state by deleting
+`.git/annex/keys/db-wal`. You'd still want to run `git annex fsck`.
 """]]
