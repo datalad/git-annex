@@ -93,6 +93,11 @@ With parameters, only the specified files are checked.
 
   Runs multiple fsck jobs in parallel. For example: `-J4`
 
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
 # OPTIONS
 
 # SEE ALSO

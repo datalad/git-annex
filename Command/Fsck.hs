@@ -42,7 +42,7 @@ import Data.Time.Clock.POSIX
 import System.Posix.Types (EpochTime)
 
 cmd :: Command
-cmd = withGlobalOptions (jobsOption : annexedMatchingOptions) $
+cmd = withGlobalOptions (jobsOption : jsonOption : annexedMatchingOptions) $
 	command "fsck" SectionMaintenance
 		"find and fix problems"
 		paramPaths (seek <$$> optParser)
