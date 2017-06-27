@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="spalax@b201acef21dca7798b874036bbbaa9e0079a0b7e"
+ nickname="spalax"
+ avatar="http://cdn.libravatar.org/avatar/3f1353e4135221fc25bfecd1b812bcc8"
+ subject="git-annex support dropped"
+ date="2017-06-27T09:26:11Z"
+ content="""
+For information, gitlab is going to drop support for git-annex (see issue [#1648](https://gitlab.com/gitlab-org/gitlab-ee/issues/1648)).
+
+-- Louis
+"""]]
