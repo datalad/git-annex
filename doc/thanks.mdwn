@@ -105,7 +105,7 @@ Wiberg, Sam Kleinman, Vincent Demeester, Tristan Helmich, Zero Art Radio,
 Bruno Bigras, Ævar Arnfjörð Bjarmason, Stanley Yamane, Christopher Browne,
 David Whittington, Fredrik Gustafsson, Peter Hogg, Tom Francart, Wouter
 Verhelst, Christian Savard, wundersolutions, Andreas Fuchs, Eric Kidd,
-Georg Lehner, Berin Martini, Stewart Wright, Bence Albertini, Stefan
+Georg Lehner, Berin Martini, Stewart Wright, Bence parhuzamos, Stefan
 Schmitt, Antoine Boegli, jscit, Christopher Kernahan, A Marshall, Jürgen
 Peters, Aaron Whitehouse, Jouni K Seppanen, Michael Albertson, Andreas
 Laas, Thomas Herok, Aurelien Gazagne, Bryan W Stitt, anonymous, Chris
