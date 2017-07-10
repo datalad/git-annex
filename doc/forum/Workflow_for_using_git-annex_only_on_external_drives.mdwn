@@ -1,0 +1,8 @@
+I am starting to use annex and feel a bit overwhelmed. I would appreciate guidance on this use case.
+
+1. Content must exist on multiple external drives only. I do not want those files in my internal HDD.
+2. Not all drives will have all files. Probably none will. Drives might be smaller than the full set.
+3. I should always have two copies of each file somewhere (and be warned if not).
+3. Some files already exist in some drives I intend to use annex with in this way. When setting annex in them, I had rather avoid having to transfer in files from another set up drive if those files already exist in the new drive.
+4. Some drives will necessarily be using FAT32.
+5. I will be adding new content over time.
