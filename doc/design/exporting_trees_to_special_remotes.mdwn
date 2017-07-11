@@ -1,0 +1,181 @@
+For publishing content from a git-annex repository, it would be useful to
+be able to export a tree of files to a special remote, using the filenames
+and content from the tree.
+
+(See also [[todo/export]] and [[todo/dumb, unsafe, human-readable_backend]])
+
+## configuring a special remote for tree export
+
+If a special remote already has files stored in it, switching it to be a
+tree export would result in a mix of files named by key and by filename.
+That's not desirable. So, the user should set up a new special remote
+when they want to export a tree. (It would also be possible to drop all content
+from an existing special remote and reuse it, but there does not seem much
+benefit in doing so.)
+
+Add a new `initremote` configuration `exporttree=true`, that cannot be
+changed by `enableremote`:
+
+	git annex initremote myexport type=... exporttree=true
+
+It does not make sense to encrypt an export, so exporttree=true requires
+(and can even imply) encryption=false.
+
+Note that the particular tree to export is not specified yet. This is
+because the tree that is exported to a special remote may change.
+
+## exporting a treeish
+
+To export a treeish, the user can run:
+
+	git annex export $treeish --to myexport
+
+That does all necessary uploads etc to make the special remote contain
+the tree of files. The treeish can be a tag, a branch, or a tree.
+
+Users may sometimes want to export multiple treeishes to a single special 
+remote. For example, exporting several tags. This interface could be
+complicated to support that, putting the treeishes in subdirectories on the
+special remote etc. But that's not necessary, because the user can use git
+commands to graft trees together into a larger tree, and export that larger
+tree.
+
+If an export is interrupted, running it again should resume where it left
+off.
+
+It would also be nice to have a way to say, "I want to export the master branch", 
+and have git-annex sync and the assistant automatically update the export.
+This could be done by recording the treeish in eg, refs/remotes/myexport/HEAD.
+git-annex export could do this by default (if the user doesn't want the export
+to track the branch, they could instead export a tree or a tag).
+
+## updating an export
+
+The user can at any time re-run git-annex export with a new treeish
+to change what's exported. While some use cases for git annex export
+involve publishing datasets that are intended to remain immutable,
+other use cases include eg, making a tree of files available to a computer
+that can't run git-annex, and in such use cases, the tree needs to be able
+to be updated.
+
+To efficiently update an export, git-annex can diff the tree
+that was exported with the new tree. The naive approach is to upload
+new and modified files and remove deleted files.
+
+With rename detection, if the special remote supports moving files,
+more efficient updates can be done. It gets complicated; consider two files
+that swap names.
+
+If the special remote supports copying files, that would also make some
+updates more efficient.
+
+## resuming exports
+
+Resuming an interrupted export needs to work well.
+
+There are two cases here:
+
+1. Some of the files in the tree have been uploaded; others have not.
+2. A file has been partially uploaded.
+
+These two cases need to be disentangled somehow in order to handle
+them. One way is to use the location log as follows:
+
+* Before a file is uploaded, look up what key is currently exported
+  using that filename. If there is one, update the location log,
+  saying it's not present in the special remote.
+* Upload the file.
+* Update the location log for the newly exported key.
+
+Note that this method does not allow resuming a partial upload by appending to
+a file, because we don't know if the file actually started to be uploaded, or
+if the file instead still has the old key's content. Instead, the whole
+file needs to be re-uploaded.
+
+Alternative: Keep an index file that's the current state of the export.
+See comment #4 of [[todo/export]]. Not sure if that works?
+
+## location tracking
+
+Does a copy of a file exported to a special remote count as a copy
+of a file as far as [[numcopies]] goes? Should git-annex get download
+a file from an export? Or should exporting not update location tracking?
+
+The problem is that special remotes with exports are not
+key/value stores. The content of a file can change, and if multiple
+repositories can export a special remote, they can be out of sync about
+what files are exported to it. 
+
+To avoid such problems, when updating an exported file on a special remote,
+the key could be recorded there too. But, this would have to be done
+atomically, and checked atomically when downloading the file. Special
+remotes lack atomicity guarantees for file storage, let alone for file
+retrieval.
+
+Possible solution: Make exporttree=true cause the special remote to
+be untrusted, and rely on annex.verify to catch cases where the content
+of a file on a special remote has changed. This would work well enough
+except for when the WORM or URL backend is used. So, prevent the user
+from exporting such keys. Also, force verification on for such special
+remotes, don't let it be turned off.
+
+## recording exported filenames in git-annex branch
+
+In order to download the content of a key from a file exported
+to a special remote, the filename that was exported needs to somehow
+be recorded in the git-annex branch. How to do this? The filename could
+be included in the location tracking log or a related log file, or 
+the exported tree could be grafted into the git-annex branch
+(under eg, `exported/uuid/`). Which way uses less space in the git repository?
+
+Grafting in the exported tree records the necessary data, but the
+file-to-key map needs to be reversed to support downloading from an export.
+It would be too expensive to traverse the tree each time to hunt for a key;
+instead would need a database that gets populated once by traversing the
+tree.
+
+On the other hand, for updating what's exported, having access to the old
+exported tree seems perfect, because it and the new tree can be diffed to
+find what changes need to be made to the special remote. 
+
+If the filenames are stored in the location tracking log, the exported tree
+could be reconstructed, but it would take O(N) queries to git, where N is
+the total number of keys git-annex knows about; updating exports of small
+subsets of large repositories would be expensive.
+
+## export conflicts
+
+What if different repositories can access the same special remote,
+and different trees get exported to it concurrently?
+
+This would be very hard to untangle, because it's hard to know what
+content was exported to a file last, and thus what content the file
+actually has. The location log's timestamps might give a hint, 
+but clocks vary too much to trust it.
+
+Also, if the exported tree is grafted in to the git-annex branch, 
+there would be a merge conflict. Union merging would *scramble* the exported 
+tree, so even if a smart merge is added, old versions of git-annex would 
+corrupt the exported tree. To avoid this problem, add a log file 
+`exported/uuid.log` that lists the sha1 of the exported tree and the uuid
+of the repository that exported it. Still graft in the exported tree at 
+`exported/uuid/`  (so it gets transferred to remotes and is not GCed).
+When looking up the exported tree, read the sha1 from the log file,
+and use it rather than what's currently grafted into the git-annex branch.
+(Old versions of git-annex would still union merge the exported tree,
+and the resulting junk would waste some space.)
+
+If `exported/uuid.log` contains multiple active exports, there was an
+export conflict. Short of downloading the whole export to checksum it,
+or deleting the whole export, what can be done to resolve it?
+
+In this case, git-annex knows both exported trees. Have the user provide
+a tree that resolves the conflict as they desire (it could be the same as
+one of the exported trees, or some merge of them). Then diff each exported
+tree in turn against the resolving tree. If a file differs, re-export that
+file. In some cases this will do unncessary re-uploads, but it's reasonably
+efficient.
+
+The documentation should suggest strongly only exporting to a given special
+remote from a single repository, or having some other rule that avoids
+export conflicts.
