@@ -156,14 +156,13 @@ but clocks vary too much to trust it.
 Also, if the exported tree is grafted in to the git-annex branch, 
 there would be a merge conflict. Union merging would *scramble* the exported 
 tree, so even if a smart merge is added, old versions of git-annex would 
-corrupt the exported tree. To avoid this problem, add a log file 
-`exported/uuid.log` that lists the sha1 of the exported tree and the uuid
-of the repository that exported it. Still graft in the exported tree at 
-`exported/uuid/`  (so it gets transferred to remotes and is not GCed).
-When looking up the exported tree, read the sha1 from the log file,
-and use it rather than what's currently grafted into the git-annex branch.
-(Old versions of git-annex would still union merge the exported tree,
-and the resulting junk would waste some space.)
+corrupt the exported tree.
+
+To avoid that problem, add a log file  `exported/uuid.log` that lists
+the sha1 of the exported tree and the uuid of the repository that exported it.
+To avoid the exported tree being GCed, do graft it in to the git-annex
+branch, but follow that with a commit that removes the tree again,
+and only update `refs/heads/git-annex` after making both commits.
 
 If `exported/uuid.log` contains multiple active exports, there was an
 export conflict. Short of downloading the whole export to checksum it,
