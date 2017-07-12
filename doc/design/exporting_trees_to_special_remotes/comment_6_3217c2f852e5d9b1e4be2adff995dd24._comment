@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2017-07-12T18:09:00Z"
+ content="""
+That would almost work without any smarts on the git-annex side.
+When it tells the special remote to `REMOVEEXPORT`, the special remote
+could remove the file from the HEAD equivilant but retain the content in its
+versioned snapshots, and keep the url to that registered. But, that
+doesn't actually work, because the url is registered for that special
+remote, not the web special remote. Once git-annex thinks the file has been
+removed from the special remote, it will never try to use the url
+registered for that special remote.
+
+So, to support versioning-capable special remotes, there would need to be
+an additional response to `REMOVEEXPORT` that says "I removed it from HEAD,
+but I still have a copy in this url, which can be accessed using
+the web special remote".
+"""]]
