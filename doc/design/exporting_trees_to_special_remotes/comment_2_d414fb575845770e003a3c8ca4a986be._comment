@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="couldn't STATE be used for KEY -> FILENAME(s) mapping?"
+ date="2017-07-11T22:05:49Z"
+ content="""
+just wondered...
+at least in my attempt for zenodo special remote I did store zenodo's file deposition ID within the state to be able to request it back later on
+alternative -- URL(s) I guess.  Could be smth like exported:UUID/filename.
+"""]]

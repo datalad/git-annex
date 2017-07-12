@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="does it really need to be a new command (&quot;export&quot;) or could be the same old &quot;copy&quot;?"
+ date="2017-07-11T22:14:39Z"
+ content="""
+or it could be just a mode of operation for a special remote depending on \"exporttree=true\" being set, where in one (old) case it would operate based on keys associated with the files pointed on the cmdline (or just keys for --auto or pointed by metadata), whenever when \"exporttree=true\" -- it would operate on filenames pointed on command line (or files found to be associated with the keys as pointed by --auto or by metadata)? 
+Then the same 'copy --to' could be used in both cases, streamlining user experience ;) 
+"""]]
