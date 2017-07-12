@@ -27,7 +27,7 @@ tmp/configure-stamp: Build/TestConfig.hs Build/Configure.hs
 git-annex: tmp/configure-stamp
 	$(BUILDER) build $(BUILDEROPTIONS)
 	if [ "$(BUILDER)" = stack ]; then \
-		ln -sf $$(find .stack-work/ -name git-annex -type f | grep build/git-annex/git-annex | tail -n 1) git-annex; \
+		ln -sf $$(stack path --dist-dir)/build/git-annex/git-annex git-annex; \
 	else \
 		ln -sf dist/build/git-annex/git-annex git-annex; \
 	fi
