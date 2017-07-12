@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2017-07-12T16:45:51Z"
+ content="""
+I've added a section with changes to the external special remote protocol.
+I included the Key in each of the new protocol commands, although it's not
+strictly neeed, to allow the implementation to use SETURLPRESENT, SETSTATE,
+etc.
+
+`git annex copy $file --to myexport` could perhaps work; the difficulty
+though is, what if you've exported branch foo, and then checked out bar,
+and so you told it to export one version of the file, and are running
+git-annex copy on a different version? It seems that git-annex would have
+to cross-check in this and similar commands, to detect such a situation. 
+Unsure how much more work that would be, both CPU time and implementation
+time.
+
+I do think that `git annex get` could download files from exports easily
+enough, but see the "location tracking" section for trust caveats.
+
+I'm not clear about what you're suggesting be done with versioning support
+in external special remotest?
+"""]]
