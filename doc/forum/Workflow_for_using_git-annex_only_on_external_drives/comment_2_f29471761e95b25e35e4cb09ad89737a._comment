@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 2"
+ date="2017-07-21T09:15:40Z"
+ content="""
+1) Check out the source repository group, which will drop files once enough numcopies are available elsewhere
+2) This is pretty much why git-annex exists :)
+3) Set numcopies to 2 and use 'git annex fsck' to find out when there aren't enough copies
+4) You can use 'import' or 'reinject --known' to clean up known content outside of git-annex
+5) git-annex will run on 'crippled' filesystems like FAT32. Would recommend avoiding this if possible though
+6) This is presumed :)
+
+Sorry for brevity, but this should give some direction/keywords.
+"""]]
