@@ -1,0 +1,28 @@
+# Situation
+
+Since yesterday evening (18 hours ago), `git annex repair --verbose` is repairing a repository from a remote.  This is on a fast machine (i7 4 physical cores, 8 logical CPUs @2.6Ghz sitting idle, 16GB RAM mostly unused, hard drive with measured 111MB/s sustained capacity). `.git` folder to repair grew to 8Gb while remote was only about 640MB.
+
+# What `git annex repair` does
+
+Currently, `git annex repair` appears to :
+
+* make a complete local clone from the remotes it finds, 
+* expand all packs into individual objects files,
+* then pour (with rsync) all those objects into the repository
+* and I guess it ends with a git fsck/gc/whatever to glue things back.
+
+The expected result (a complete repaired repo) is great but it didn't work without help and the performance is disappointing.
+
+# Suggested room for improvements
+
+I would be willing to contribute some patches and although I have a respectable experience in programming, including some functional traits, I'm not savvy enough in Haskell at the time.
+
+(1) a complete clone in this case means *between one and two hours* of download and easily gets interrupted losing all eforts (just like a plain git clone). Actually I tried several times and it never completed.  I worked around this by doing a `git clone` on the server and `rsync`ing that to a local storage and adding that locally as a git remote.
+
+(2) Even when a local "git remote" is available, `git annex repair` first tried the network one instead. Perhaps it would be better if it sorted git remotes and first try the ones that appear to be available locally (no URL or file:// URL scheme)? Workaround: manually break the transfer to that `git repair` switches to the next remote.
+
+(3) does `git annex repair` really have to explode the repository into individual objects? In my case it took about one hour to create 1454978 (one million four hundred thousands) object files for a total of 6.8GB. (I should have put `TEMP` and `TMPDIR` to point to a SSD-based storage as a workaround or even dare a tmpfs.) `git-annex` then runs a `rsync` that has been going on thrashing the disk (I can hear and feel it) for 7 hours and a half, with an expected total time of 8 hours 20 minutes. That's a very inefficient way to copy 6.8GB (incidentally, rsync does it in alphabetical order of hash as shown by `strace` and confirmed by man page and [here](https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=640492) and [there](https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=160982)). There must be a more efficient way, right? 
+
+A a sidenote, I don't know how a repo containing about 300k files jumped to 1400k git objects within the last 2 months.
+
+Any feedback welcome, thanks.
