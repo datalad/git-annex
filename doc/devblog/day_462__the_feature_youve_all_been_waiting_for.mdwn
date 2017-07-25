@@ -1,4 +1,4 @@
-Have been working on a design for [[exporting_trees_to_special_remotes]].
+Have been working on a design for [[design/exporting_trees_to_special_remotes]].
 As well as being handy for publishing scientific data sets out of git-annex
 repositories, that covers long-requested features like
 [[todo/dumb, unsafe, human-readable_backend]].
