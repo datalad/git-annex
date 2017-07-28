@@ -1,0 +1,90 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="Experiment to run git-annex-repair as fast as possible."
+ date="2017-07-28T04:27:06Z"
+ content="""
+# Introduction
+
+There has been some progress somehow. I managed to have `git-annex-repair` somehow succeed while complaining (see details in [git-annex-repair claims success then failure](https://git-annex.branchable.com/todo/git-annex-repair_claims_success_then_failure/)).
+
+I've had a look at:
+
+* [repair stuck on ls-tree command](http://git-annex.branchable.com/forum/repair_stuck_on_ls-tree_command/)
+* [git-annex branch shows commit with looong commitlog](http://git-annex.branchable.com/bugs/git-annex_branch_shows_commit_with_looong_commitlog/)
+* [git-annex wants to repair because of duplicateEntries in git fsck](https://git-annex.branchable.com/bugs/git-annex_wants_to_repair_because_of_duplicateEntries_in_git_fsck/)
+
+Perhaps I'll use `git-annex-forget` after I've rebuilt the repo.
+
+# Approach: how to speed up git-annex-repair with warm filesystem cache
+
+With a rather \"violent\" approach I could have it run in 78 minutes instead of thrashing for tens of hours.  The approach is:
+
+* copy `.git` folder (without `.git/annex/objects`, yet copied `.git/objects` takes about 9GB) to a SSD,
+* have a shell command line repeatedly make a `tar` of that to keep all that data warm in the filesystem cache (it repeatedly made a 4.3GB `tar` to `/dev/null` nearly always under one minute, even down to 7 seconds quite a few times)
+* use a tmpfs as temp directory `mkdir /dev/shm/tmp/ ; export TMPDIR=/dev/shm/tmp/ ; export TEMP=/dev/shm/tmp/`
+* then in that context `git-annex-repair --force`
+
+This approach is intended to ensure the fastest processing time for git-annex-repair by providing it fully warm filesystem cache.  Since no L1 L2 or L3 cache is gigabyte-sized, that means all this runs at RAM speed.
+
+# Performance result
+
+That machine capable of processing (make a tar of) the whole repo in 7 seconds ran the `git-annex-repair` process for 78 minutes (never more than one core busy at a time) and completed.  78 minutes is enough to make between 70 and 600 `tar`s of the full content that git-annex is supposed to repair.  IIRC the CPU was not active all the time.
+
+In other words, currently, repairing a repository looks as costly somehow as reading it many tens or hundreds of time.  Intuition says it probably doesn't have to be, even considering costs like computations and launching external processes.
+
+# Quick analysis
+
+I have seen with `strace` that `git-annex-repair` runs a number of `git show` commands.  Actually, most of the processing time appears to be in those `git-show` commands.
+
+# Hunch about what happens
+
+`git-show` (at least sometimes) first walks a lot of (all ?) `.git/object` content.
+
+`git-show` (at least sometimes) spit tens of megabytes of data, including **full-text patches of changed files**.
+
+Adding `--stat` to the git show command makes it much much quicker.
+
+# A few figures
+
+I took one example of git-show command and ran it separately.
+
+With `--stat`, cold cache: 41 seconds to produce 10MB.
+
+    $ git --literal-pathspecs show somehash --stat | pv | wc
+
+    10,2MiO 0:00:41 [ 251KiB/s]
+     134215  536851 10736844
+
+With `--stat`, warm cache: 2.5 seconds to produce 10MB.
+
+    $ time git --literal-pathspecs show somehash --stat | pv | wc
+
+    10,2MiO 0:00:02 [4,08MiB/s]
+     134215  536851 10736844
+
+    real	0m2.514s
+    user	0m1.492s
+    sys	0m1.044s
+
+Without `--stat`, 502 seconds to produce 57MB.
+
+    $ time git --literal-pathspecs show somehash | pv | wc
+
+     2243  time git --literal-pathspecs show somehash | pv | wc
+
+    57,4MiO 0:08:22 [ 116KiB/s]
+     939462 2818382 60230220
+
+    real	8m22.846s
+    user	0m57.716s
+    sys	7m25.912s
+
+# Summary
+
+* Does `git-annex-repair` need to ask git to reconstruct text-diff-style information from compressed data? Is that the source of the bad performance?
+* What does `git-annex-repair` need in `git-show` output?
+* Can `git-annex-repair` be made faster (much faster?) by tuning the way it calls git?
+
+"""]]
