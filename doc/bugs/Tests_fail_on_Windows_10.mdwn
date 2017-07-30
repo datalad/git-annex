@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-Just tried to install git-annex on a friend's Windows machine to share a repo, but a lot of the tests failed. I have no idea how to debug things on Windows, maybe someone has an idea. AFIAK Windows has only crippled file systems, I tried with NTFS and ReFS.
+Just tried to install git-annex on a friend's Windows machine to share a repo, but a lot of the tests failed. I have no idea how to debug things on Windows, maybe someone has an idea. AFAIK Windows has only crippled file systems, I tried with NTFS and ReFS.
 
 It says "Permission denied. File is being used by another process". Maybe some kind of indexing? git annex assistant was turned off and it was the only test running.
 
@@ -133,7 +133,7 @@ OK (0.94s)
     import:                                                 Detected a filesystem without fifo support.
   Disabling ssh connection caching.
   Detected a crippled filesystem.
-git-annex: MoveFileEx "C:\\Users\\Minnie\\AppData\\Local\\Temp\\importtest.0\\import1\\f" "import1\\f": permission denie
+git-annex: MoveFileEx "C:\\Users\\<username>\\AppData\\Local\\Temp\\importtest.0\\import1\\f" "import1\\f": permission denie
 d (Der Prozess kann nicht auf die Datei zugreifen, da sie von einem anderen Prozess verwendet wird.)
 FAIL (4.98s)
       import failed
