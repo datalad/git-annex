@@ -6,7 +6,7 @@ It says "Permission denied. File is being used by another process". Maybe some k
 
 ### What steps will reproduce the problem?
 
-Install git, intsall git-annex, run "git annex test"
+Install git, install git-annex, run "git annex test"
 
 ### What version of git-annex are you using? On what operating system?
 
