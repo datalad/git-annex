@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-Just tried to install git-annex on a friend's Windows machine share a repo, but a lot of the tests failed. I have no idea how to debug things on Windows. Maybe someone has an idea. AFIAK Windows has only crippled file systems, I tried with NTFS and ReFS.
+Just tried to install git-annex on a friend's Windows machine to share a repo, but a lot of the tests failed. I have no idea how to debug things on Windows, maybe someone has an idea. AFIAK Windows has only crippled file systems, I tried with NTFS and ReFS.
 
 It says "Permission denied. File is being used by another process". Maybe some kind of indexing? git annex assistant was turned off and it was the only test running.
 
