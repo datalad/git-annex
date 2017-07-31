@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2017-07-31T19:05:04Z"
+ content="""
+There is no guarantee that system would have curl installed,  e.g. I believe neither of debian docker images would have curl.  For neurodebian package I sure thing could just depend on curl.  But I am afraid those who might be using standalone git-annex in minimalistic environments would get surprised
+
+FWIW -- removing curl from the bundled git-annex indeed helped
+"""]]
