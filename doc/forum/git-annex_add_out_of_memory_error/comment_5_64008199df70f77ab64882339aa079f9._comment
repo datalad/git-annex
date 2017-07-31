@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="issue seems to be out there"
+ date="2017-07-31T15:03:41Z"
+ content="""
+[https://github.com/datalad/datalad/issues/1678](https://github.com/datalad/datalad/issues/1678)
+git annex standalone is quite recent so those manpage workarounds should be in place
+
+
+"""]]
