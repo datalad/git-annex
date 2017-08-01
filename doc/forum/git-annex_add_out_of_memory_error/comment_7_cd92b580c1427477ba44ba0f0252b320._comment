@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 7"
+ date="2017-08-01T02:58:33Z"
+ content="""
+so does it mean we need to do some \"locale\" operation on those files while generating standalone .deb package?
+"""]]
