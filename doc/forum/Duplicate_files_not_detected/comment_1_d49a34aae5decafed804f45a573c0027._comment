@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jakemagee"
+ avatar="http://cdn.libravatar.org/avatar/85f708f18a2deeefad7719fa70d67c90"
+ subject="comment 1"
+ date="2017-08-02T15:34:19Z"
+ content="""
+Ok, so I figured out the issue with renamed files (needed to change the annex.backend to SHA256) being duplicated.  However, it still seems that appending small changes to large files results in the entire file being duplicated.  Maybe I've confused a feature of git-annex with another project... does git-annex not support chunking files to alleviate duplicating the entire contents of large files with small changes?
+"""]]
