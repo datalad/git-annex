@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~liori"
+ avatar="http://cdn.libravatar.org/avatar/e1d0fdc746b3d21bb147160d40815e37b257b9119774d21784939b2d3ba95a91"
+ subject="comment 2"
+ date="2017-08-04T22:13:43Z"
+ content="""
+> does git-annex not support chunking files to alleviate duplicating the entire contents of large files with small changes?
+
+Indeed it doesn't.
+"""]]
