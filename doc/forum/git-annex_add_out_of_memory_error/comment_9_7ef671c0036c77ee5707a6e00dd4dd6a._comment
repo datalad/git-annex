@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comes and goes!"
+ date="2017-08-09T17:11:37Z"
+ content="""
+ha -- and then later call succeeded! (damn... right before I was trying to debug it)
+
+[[!format sh \"\"\"
+yhalchen@discovery:~/datalad$ git pull --ff-only origin master
+From git://github.com/datalad/datalad
+ * branch              master     -> FETCH_HEAD
+Updating c0cd538d..39f80454
+
+Fast-forward
+ CHANGELOG.md                              |  16 ++++
+ CONTRIBUTING.md                           |   2 +-
+ COPYING                                   |   3 +-
+ datalad/__init__.py                       |  30 ++++---
+ datalad/distribution/tests/test_update.py |   4 +-
+ datalad/distribution/update.py            |   3 +
+ datalad/interface/test.py                 |  33 +++++++-
+ datalad/support/annexrepo.py              |  42 +++++++---
+ datalad/support/third/noseclasses.py      | 339 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ datalad/support/third/nosetester.py       | 450 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ datalad/tests/test_utils.py               |  13 +++
+ datalad/utils.py                          |  15 ++++
+ datalad/version.py                        |   2 +-
+ 13 files changed, 923 insertions(+), 29 deletions(-)
+ create mode 100644 datalad/support/third/noseclasses.py
+ create mode 100644 datalad/support/third/nosetester.py
+\"\"\"]]
+but comes back anyways ;)
+[[!format sh \"\"\"
+yhalchen@discovery:~/datalad$ git branch
+* (HEAD detached from 0.8.0)
+  master
+yhalchen@discovery:~/datalad$ git pull --ff-only origin master
+From git://github.com/datalad/datalad
+ * branch              master     -> FETCH_HEAD
+fatal: Out of memory, getdelim failed
+\"\"\"]]
+"""]]
