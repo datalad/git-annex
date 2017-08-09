@@ -1,0 +1,42 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="&quot;reproduces&quot; in a complete git installation "
+ date="2017-08-09T17:07:17Z"
+ content="""
+Installed a stretch based singularity container on a Centos 6.9 with 2.6.32-696.6.3.el6.x86_64 kernel and within it, I reliably get the message
+
+[[!format sh \"\"\"
+yhalchen@discovery:~/datalad$ git pull --ff-only origin master
+From git://github.com/datalad/datalad
+ * branch              master     -> FETCH_HEAD
+fatal: Out of memory, getdelim failed
+yhalchen@discovery:~/datalad$ echo $?
+128
+yhalchen@discovery:~/datalad$ git --version
+git version 2.11.0
+yhalchen@discovery:~/datalad$ which git
+/usr/bin/git
+yhalchen@discovery:~/datalad$ apt-cache policy git
+git:
+  Installed: 1:2.11.0-3
+  Candidate: 1:2.11.0-3
+  Version table:
+ *** 1:2.11.0-3 500
+        500 http://smaug.datalad.org:3142/debian stretch/main amd64 Packages
+        100 /var/lib/dpkg/status
+
+\"\"\"]]
+also note that message might come not the last one in the output (initial run for the command was different):
+
+[[!format sh \"\"\"
+yhalchen@discovery:~/datalad$ git pull --ff-only
+remote: Counting objects: 19, done.
+remote: Compressing objects: 100% (6/6), done.
+remote: Total 19 (delta 13), reused 19 (delta 13), pack-reused 0
+Unpacking objects: 100% (19/19), done.
+fatal: Out of memory, getdelim failed
+error: git://github.com/datalad/datalad did not send all necessary objects
+
+\"\"\"]]
+"""]]
