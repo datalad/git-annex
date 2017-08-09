@@ -1,0 +1,8 @@
+I want to go back to a specific commit in git annex as I lost most recent copies of a file and want to revert back to a previous revision, few months old. All remotes are dead but after reading few article, there might be a way to get the file back from the objects directory:
+
+git annex whereis image 
+whereis image (0 copies) failed
+git-annex: whereis: 1 failed
+
+Thanks,
+
