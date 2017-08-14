@@ -14,12 +14,12 @@
 
 module Logs.Transitions where
 
-import Data.Time.Clock.POSIX
-import qualified Data.Set as S
-
 import Annex.Common
+import Annex.VectorClock
 import Logs.TimeStamp
 import Logs.Line
+
+import qualified Data.Set as S
 
 transitionsLog :: FilePath
 transitionsLog = "transitions.log"
@@ -30,7 +30,7 @@ data Transition
 	deriving (Show, Ord, Eq, Read)
 
 data TransitionLine = TransitionLine
-	{ transitionStarted :: POSIXTime
+	{ transitionStarted :: VectorClock
 	, transition :: Transition
 	} deriving (Show, Ord, Eq)
 
@@ -43,8 +43,8 @@ describeTransition ForgetDeadRemotes = "forget dead remotes"
 noTransitions :: Transitions
 noTransitions = S.empty
 
-addTransition :: POSIXTime -> Transition -> Transitions -> Transitions
-addTransition ts t = S.insert $ TransitionLine ts t
+addTransition :: VectorClock -> Transition -> Transitions -> Transitions
+addTransition c t = S.insert $ TransitionLine c t
 
 showTransitions :: Transitions -> String
 showTransitions = unlines . map showTransitionLine . S.elems
@@ -67,7 +67,7 @@ showTransitionLine (TransitionLine ts t) = unwords [show t, show ts]
 
 parseTransitionLine :: String -> Maybe TransitionLine
 parseTransitionLine s = TransitionLine
-	<$> parsePOSIXTime ds
+	<$> (VectorClock <$> parsePOSIXTime ds)
 	<*> readish ts
   where
 	ws = words s

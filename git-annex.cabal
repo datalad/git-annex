@@ -536,6 +536,7 @@ Executable git-annex
     Annex.UpdateInstead
     Annex.UUID
     Annex.Url
+    Annex.VectorClock
     Annex.VariantFile
     Annex.Version
     Annex.View

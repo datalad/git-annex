@@ -33,6 +33,7 @@ import Logs
 import Logs.Presence
 import Annex.UUID
 import Annex.CatFile
+import Annex.VectorClock
 import Git.Types (RefDate, Ref)
 import qualified Annex
 
@@ -107,7 +108,10 @@ setDead key = do
 setDead' :: LogLine -> LogLine
 setDead' l = l
 	{ status = InfoDead
-	, date = date l + realToFrac (picosecondsToDiffTime 1)
+	, date = case date l of
+		VectorClock c -> VectorClock $
+			c + realToFrac (picosecondsToDiffTime 1)
+		Unknown -> Unknown
 	}
 
 {- Finds all keys that have location log information.

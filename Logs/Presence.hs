@@ -22,10 +22,9 @@ module Logs.Presence (
 	historicalLogInfo,
 ) where
 
-import Data.Time.Clock.POSIX
-
 import Logs.Presence.Pure as X
 import Annex.Common
+import Annex.VectorClock
 import qualified Annex.Branch
 import Git.Types (RefDate)
 
@@ -49,11 +48,11 @@ maybeAddLog file line = Annex.Branch.maybeChange file $ \s -> do
 readLog :: FilePath -> Annex [LogLine]
 readLog = parseLog <$$> Annex.Branch.get
 
-{- Generates a new LogLine with the current date. -}
+{- Generates a new LogLine with the current time. -}
 logNow :: LogStatus -> String -> Annex LogLine
 logNow s i = do
-	now <- liftIO getPOSIXTime
-	return $ LogLine now s i
+	c <- liftIO currentVectorClock
+	return $ LogLine c s i
 
 {- Reads a log and returns only the info that is still in effect. -}
 currentLogInfo :: FilePath -> Annex [String]

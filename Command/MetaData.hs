@@ -9,6 +9,7 @@ module Command.MetaData where
 
 import Command
 import Annex.MetaData
+import Annex.VectorClock
 import Logs.MetaData
 import Annex.WorkTree
 import Messages.JSON (JSONActionItem(..))
@@ -18,7 +19,6 @@ import qualified Data.Set as S
 import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy.UTF8 as BU
-import Data.Time.Clock.POSIX
 import Data.Aeson
 import Control.Concurrent
 
@@ -68,28 +68,28 @@ optParser desc = MetaDataOptions
 seek :: MetaDataOptions -> CommandSeek
 seek o = case batchOption o of
 	NoBatch -> do
-		now <- liftIO getPOSIXTime
+		c <- liftIO currentVectorClock
 		let seeker = case getSet o of
 			Get _ -> withFilesInGit
 			GetAll -> withFilesInGit
 			Set _ -> withFilesInGitNonRecursive
 				"Not recursively setting metadata. Use --force to do that."
 		withKeyOptions (keyOptions o) False
-			(startKeys now o)
-			(seeker $ whenAnnexed $ start now o)
+			(startKeys c o)
+			(seeker $ whenAnnexed $ start c o)
 			(forFiles o)
 	Batch -> withMessageState $ \s -> case outputType s of
 		JSONOutput _ -> batchInput parseJSONInput $
 			commandAction . startBatch
 		_ -> giveup "--batch is currently only supported in --json mode"
 
-start :: POSIXTime -> MetaDataOptions -> FilePath -> Key -> CommandStart
-start now o file k = startKeys now o k (mkActionItem afile)
+start :: VectorClock -> MetaDataOptions -> FilePath -> Key -> CommandStart
+start c o file k = startKeys c o k (mkActionItem afile)
   where
 	afile = AssociatedFile (Just file)
 
-startKeys :: POSIXTime -> MetaDataOptions -> Key -> ActionItem -> CommandStart
-startKeys now o k ai = case getSet o of
+startKeys :: VectorClock -> MetaDataOptions -> Key -> ActionItem -> CommandStart
+startKeys c o k ai = case getSet o of
 	Get f -> do
 		l <- S.toList . currentMetaDataValues f <$> getCurrentMetaData k
 		liftIO $ forM_ l $
@@ -97,14 +97,14 @@ startKeys now o k ai = case getSet o of
 		stop
 	_ -> do
 		showStart' "metadata" k ai
-		next $ perform now o k
+		next $ perform c o k
 
-perform :: POSIXTime -> MetaDataOptions -> Key -> CommandPerform
-perform now o k = case getSet o of
+perform :: VectorClock -> MetaDataOptions -> Key -> CommandPerform
+perform c o k = case getSet o of
 	Set ms -> do
 		oldm <- getCurrentMetaData k
 		let m = combineMetaData $ map (modMeta oldm) ms
-		addMetaData' k m now
+		addMetaData' k m c
 		next $ cleanup k
 	_ -> next $ cleanup k
 
@@ -169,7 +169,7 @@ startBatch (i, (MetaData m)) = case i of
 			, keyOptions = Nothing
 			, batchOption = NoBatch
 			}
-		now <- liftIO getPOSIXTime
+		t <- liftIO currentVectorClock
 		-- It would be bad if two batch mode changes used exactly
 		-- the same timestamp, since the order of adds and removals
 		-- of the same metadata value would then be indeterminate.
@@ -178,7 +178,7 @@ startBatch (i, (MetaData m)) = case i of
 		-- probably less expensive than cleaner methods,
 		-- such as taking from a list of increasing timestamps.
 		liftIO $ threadDelay 1
-		next $ perform now o k
+		next $ perform t o k
 	mkModMeta (f, s)
 		| S.null s = DelMeta f Nothing
 		| otherwise = SetMeta f s

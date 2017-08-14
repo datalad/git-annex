@@ -7,9 +7,6 @@
 
 module Logs.PreferredContent.Raw where
 
-import qualified Data.Map as M
-import Data.Time.Clock.POSIX
-
 import Annex.Common
 import qualified Annex.Branch
 import qualified Annex
@@ -18,6 +15,8 @@ import Logs.UUIDBased
 import Logs.MapLog
 import Types.StandardGroups
 import Types.Group
+
+import qualified Data.Map as M
 
 {- Changes the preferred content configuration of a remote. -}
 preferredContentSet :: UUID -> PreferredContentExpression -> Annex ()
@@ -28,10 +27,10 @@ requiredContentSet = setLog requiredContentLog
 
 setLog :: FilePath -> UUID -> PreferredContentExpression -> Annex ()
 setLog logfile uuid@(UUID _) val = do
-	ts <- liftIO getPOSIXTime
+	c <- liftIO currentVectorClock
 	Annex.Branch.change logfile $
 		showLog id
-		. changeLog ts uuid val
+		. changeLog c uuid val
 		. parseLog Just
 	Annex.changeState $ \s -> s 
 		{ Annex.preferredcontentmap = Nothing
@@ -42,10 +41,10 @@ setLog _ NoUUID _ = error "unknown UUID; cannot modify"
 {- Changes the preferred content configuration of a group. -}
 groupPreferredContentSet :: Group -> PreferredContentExpression -> Annex ()
 groupPreferredContentSet g val = do
-	ts <- liftIO getPOSIXTime
+	c <- liftIO currentVectorClock
 	Annex.Branch.change groupPreferredContentLog $
 		showMapLog id id 
-		. changeMapLog ts g val 
+		. changeMapLog c g val 
 		. parseMapLog Just Just
 	Annex.changeState $ \s -> s { Annex.preferredcontentmap = Nothing }
 

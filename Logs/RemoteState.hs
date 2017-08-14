@@ -17,16 +17,15 @@ import qualified Annex.Branch
 import qualified Annex
 
 import qualified Data.Map as M
-import Data.Time.Clock.POSIX
 
 type RemoteState = String
 
 setRemoteState :: UUID -> Key -> RemoteState -> Annex ()
 setRemoteState u k s = do
-	ts <- liftIO getPOSIXTime
+	c <- liftIO currentVectorClock
 	config <- Annex.getGitConfig
 	Annex.Branch.change (remoteStateLogFile config k) $
-		showLogNew id . changeLog ts u s . parseLogNew Just
+		showLogNew id . changeLog c u s . parseLogNew Just
 
 getRemoteState :: UUID -> Key -> Annex (Maybe RemoteState)
 getRemoteState u k = do

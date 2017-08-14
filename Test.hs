@@ -76,6 +76,7 @@ import qualified Annex.Init
 import qualified Annex.CatFile
 import qualified Annex.Path
 import qualified Annex.AdjustedBranch
+import qualified Annex.VectorClock
 import qualified Annex.View
 import qualified Annex.View.ViewedFile
 import qualified Logs.View
@@ -176,7 +177,7 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	, testProperty "prop_cost_sane" Config.Cost.prop_cost_sane
 	, testProperty "prop_matcher_sane" Utility.Matcher.prop_matcher_sane
 	, testProperty "prop_HmacSha1WithCipher_sane" Crypto.prop_HmacSha1WithCipher_sane
-	, testProperty "prop_TimeStamp_sane" Logs.MapLog.prop_TimeStamp_sane
+	, testProperty "prop_VectorClock_sane" Annex.VectorClock.prop_VectorClock_sane
 	, testProperty "prop_addMapLog_sane" Logs.MapLog.prop_addMapLog_sane
 	, testProperty "prop_verifiable_sane" Utility.Verifiable.prop_verifiable_sane
 	, testProperty "prop_segment_regressionTest" Utility.Misc.prop_segment_regressionTest

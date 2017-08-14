@@ -19,7 +19,6 @@ import Logs
 import Logs.MapLog
 import qualified Annex.Branch
 
-import Data.Time.Clock.POSIX
 import qualified Data.Map as M
 
 type ConfigName = String
@@ -33,9 +32,9 @@ setGlobalConfig name new = do
 
 setGlobalConfig' :: ConfigName -> ConfigValue -> Annex ()
 setGlobalConfig' name new = do
-	now <- liftIO getPOSIXTime
+	c <- liftIO currentVectorClock
 	Annex.Branch.change configLog $ 
-		showMapLog id id . changeMapLog now name new . parseGlobalConfig
+		showMapLog id id . changeMapLog c name new . parseGlobalConfig
 
 unsetGlobalConfig :: ConfigName -> Annex ()
 unsetGlobalConfig name = do

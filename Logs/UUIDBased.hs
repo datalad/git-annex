@@ -17,7 +17,8 @@
 module Logs.UUIDBased (
 	Log,
 	LogEntry(..),
-	TimeStamp(..),
+	VectorClock,
+	currentVectorClock,
 	parseLog,
 	parseLogNew,
 	parseLogWithUUID,
@@ -29,10 +30,10 @@ module Logs.UUIDBased (
 ) where
 
 import qualified Data.Map as M
-import Data.Time.Clock.POSIX
 
 import Common
 import Types.UUID
+import Annex.VectorClock
 import Logs.MapLog
 import Logs.TimeStamp
 import Logs.Line
@@ -42,8 +43,8 @@ type Log v = MapLog UUID v
 showLog :: (v -> String) -> Log v -> String
 showLog shower = unlines . map showpair . M.toList
   where
-	showpair (k, LogEntry (Date p) v) =
-		unwords [fromUUID k, shower v, tskey ++ show p]
+	showpair (k, LogEntry (VectorClock c) v) =
+		unwords [fromUUID k, shower v, tskey ++ show c]
 	showpair (k, LogEntry Unknown v) =
 		unwords [fromUUID k, shower v]
 
@@ -75,7 +76,7 @@ parseLogWithUUID parser = M.fromListWith best . mapMaybe parse . splitLines
 			| otherwise = drop 1 $ beginning ws
 		pdate s = case parsePOSIXTime s of
 			Nothing -> Unknown
-			Just d -> Date d
+			Just d -> VectorClock d
 
 showLogNew :: (v -> String) -> Log v -> String
 showLogNew = showMapLog fromUUID
@@ -83,7 +84,7 @@ showLogNew = showMapLog fromUUID
 parseLogNew :: (String -> Maybe v) -> String -> Log v
 parseLogNew = parseMapLog (Just . toUUID)
 
-changeLog :: POSIXTime -> UUID -> v -> Log v -> Log v
+changeLog :: VectorClock -> UUID -> v -> Log v -> Log v
 changeLog = changeMapLog
 
 addLog :: UUID -> LogEntry v -> Log v -> Log v

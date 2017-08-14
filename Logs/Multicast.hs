@@ -11,8 +11,6 @@ module Logs.Multicast (
 	knownFingerPrints,
 ) where
 
-import Data.Time.Clock.POSIX
-
 import Annex.Common
 import qualified Annex.Branch
 import Logs
@@ -25,9 +23,9 @@ newtype Fingerprint = Fingerprint String
 
 recordFingerprint :: Fingerprint -> UUID -> Annex ()
 recordFingerprint fp uuid = do
-	ts <- liftIO getPOSIXTime
+	c <- liftIO currentVectorClock
 	Annex.Branch.change multicastLog $
-		showLog show . changeLog ts uuid fp . parseLog readish
+		showLog show . changeLog c uuid fp . parseLog readish
 
 knownFingerPrints :: Annex (M.Map UUID Fingerprint)
 knownFingerPrints = simpleMap . parseLog readish <$> Annex.Branch.get activityLog

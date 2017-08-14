@@ -32,14 +32,13 @@ import Logs.Chunk.Pure
 import qualified Annex
 
 import qualified Data.Map as M
-import Data.Time.Clock.POSIX
 
 chunksStored :: UUID -> Key -> ChunkMethod -> ChunkCount -> Annex ()
 chunksStored u k chunkmethod chunkcount = do
-	ts <- liftIO getPOSIXTime
+	c <- liftIO currentVectorClock
 	config <- Annex.getGitConfig
 	Annex.Branch.change (chunkLogFile config k) $
-		showLog . changeMapLog ts (u, chunkmethod) chunkcount . parseLog
+		showLog . changeMapLog c (u, chunkmethod) chunkcount . parseLog
 
 chunksRemoved :: UUID -> Key -> ChunkMethod -> Annex ()
 chunksRemoved u k chunkmethod = chunksStored u k chunkmethod 0

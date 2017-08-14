@@ -2,6 +2,9 @@ git-annex (6.20170521) UNRELEASED; urgency=medium
 
   * Fix build with QuickCheck 2.10.
   * fsck: Support --json.
+  * Added GIT_ANNEX_VECTOR_CLOCK environment variable, which can be used to
+    override the default timestamps used in log files in the git-annex
+    branch. This is a dangerous environment variable; use with caution.
 
  -- Joey Hess <id@joeyh.name>  Sat, 17 Jun 2017 13:02:24 -0400
 

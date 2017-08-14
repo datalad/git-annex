@@ -7,19 +7,19 @@
 
 module Logs.Presence.Pure where
 
-import Data.Time.Clock.POSIX
-import qualified Data.Map as M
-
 import Annex.Common
+import Annex.VectorClock
 import Logs.TimeStamp
 import Logs.Line
 import Utility.QuickCheck
 
-data LogLine = LogLine {
-	date :: POSIXTime,
-	status :: LogStatus,
-	info :: String
-} deriving (Eq, Show)
+import qualified Data.Map as M
+
+data LogLine = LogLine
+	{ date :: VectorClock
+	, status :: LogStatus
+	, info :: String
+	} deriving (Eq, Show)
 
 data LogStatus = InfoPresent | InfoMissing | InfoDead
 	deriving (Eq, Show, Bounded, Enum)
@@ -29,7 +29,7 @@ parseLog :: String -> [LogLine]
 parseLog = mapMaybe parseline . splitLines
   where
 	parseline l = LogLine
-		<$> parsePOSIXTime d
+		<$> (VectorClock <$> parsePOSIXTime d)
 		<*> parseStatus s
 		<*> pure rest
 	  where

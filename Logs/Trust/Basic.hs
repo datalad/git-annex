@@ -11,8 +11,6 @@ module Logs.Trust.Basic (
 	trustMapRaw,
 ) where
 
-import Data.Time.Clock.POSIX
-
 import Annex.Common
 import Types.TrustLevel
 import qualified Annex.Branch
@@ -24,10 +22,10 @@ import Logs.Trust.Pure as X
 {- Changes the trust level for a uuid in the trustLog. -}
 trustSet :: UUID -> TrustLevel -> Annex ()
 trustSet uuid@(UUID _) level = do
-	ts <- liftIO getPOSIXTime
+	c <- liftIO currentVectorClock
 	Annex.Branch.change trustLog $
 		showLog showTrustLog .
-			changeLog ts uuid level .
+			changeLog c uuid level .
 				parseLog (Just . parseTrustLog)
 	Annex.changeState $ \s -> s { Annex.trustmap = Nothing }
 trustSet NoUUID _ = error "unknown UUID; cannot modify"
