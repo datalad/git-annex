@@ -70,6 +70,7 @@ import qualified Types.Messages
 import qualified Config
 import qualified Config.Cost
 import qualified Crypto
+import qualified Database.Keys
 import qualified Annex.WorkTree
 import qualified Annex.Link
 import qualified Annex.Init
@@ -652,6 +653,7 @@ test_lock_v6_force = intmpclonerepoInDirect $ do
 		git_annex "get" [annexedfile] @? "get of file failed"
 		git_annex "unlock" [annexedfile] @? "unlock failed in v6 mode"
 		annexeval $ do
+			Database.Keys.closeDb
 			dbdir <- Annex.fromRepo Annex.Locations.gitAnnexKeysDb
 			liftIO $ removeDirectoryRecursive dbdir
 		writeFile annexedfile "test_lock_v6_force content"
