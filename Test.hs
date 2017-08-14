@@ -34,6 +34,7 @@ import Options.Applicative (switch, long, help, internal)
 import qualified Data.Map as M
 import qualified Data.Aeson
 import qualified Data.ByteString.Lazy.UTF8 as BU8
+import System.Environment
 
 import Common
 import CmdLine.GitAnnex.Options
@@ -127,8 +128,23 @@ runner = Just go
   where
 	go opts
 		| fakeSsh opts = runFakeSsh (internalData opts)
-		| otherwise = runtests opts
-	runtests opts = isolateGitConfig $ do
+		| otherwise = runsubprocesstests opts
+			=<< Utility.Env.getEnv subenv
+	
+	-- Run git-annex test in a subprocess, so that any files
+	-- it may open will be closed before running finalCleanup.
+	-- This should prevent most failures to clean up after the test
+	-- suite.
+	subenv = "GIT_ANNEX_TEST_SUBPROCESS"
+	runsubprocesstests opts Nothing = do
+		pp <- Annex.Path.programPath
+		Utility.Env.setEnv subenv "1" True
+		ps <- getArgs
+		(Nothing, Nothing, Nothing, pid) <-createProcess (proc pp ps)
+		exitcode <- waitForProcess pid
+		unless (keepFailuresOption opts) finalCleanup
+		exitWith exitcode
+	runsubprocesstests opts (Just _) = isolateGitConfig $ do
 		ensuretmpdir
 		crippledfilesystem <- Annex.Init.probeCrippledFileSystem' tmpdir
 		case tryIngredients ingredients (tastyOptionSet opts) (tests crippledfilesystem opts) of
@@ -136,7 +152,7 @@ runner = Just go
 			Just act -> ifM act
 				( exitSuccess
 				, do
-					putStrLn "  (This could be due to a bug in git-annex, or an incompatibility"
+					putStrLn "  (Failures above could be due to a bug in git-annex, or an incompatibility"
 					putStrLn "   with utilities, such as git, installed on this system.)"
 					exitFailure
 				)
@@ -1915,20 +1931,24 @@ isolateGitConfig a = Utility.Tmp.withTmpDir "testhome" $ \tmphome -> do
 	a
 
 cleanup :: FilePath -> IO ()
-cleanup = cleanup' False
-
-cleanup' :: Bool -> FilePath -> IO ()
-cleanup' final dir = whenM (doesDirectoryExist dir) $ do
+cleanup dir = whenM (doesDirectoryExist dir) $ do
 	Command.Uninit.prepareRemoveAnnexDir' dir
-	-- This sometimes fails on Windows, due to some files
-	-- being still opened by a subprocess.
-	catchIO (removeDirectoryRecursive dir) $ \e ->
-		when final $ do
-			print e
-			putStrLn "sleeping 10 seconds and will retry directory cleanup"
-			Utility.ThreadScheduler.threadDelaySeconds (Utility.ThreadScheduler.Seconds 10)
-			whenM (doesDirectoryExist dir) $
-				removeDirectoryRecursive dir
+	-- This can fail if files in the directory are still open by a
+	-- subprocess.
+	void $ tryIO $ removeDirectoryRecursive dir
+
+finalCleanup :: IO ()
+finalCleanup = whenM (doesDirectoryExist tmpdir) $ do
+	Utility.Misc.reapZombies
+	Command.Uninit.prepareRemoveAnnexDir' tmpdir
+	catchIO (removeDirectoryRecursive tmpdir) $ \e -> do
+		print e
+		putStrLn "sleeping 10 seconds and will retry directory cleanup"
+		Utility.ThreadScheduler.threadDelaySeconds $
+			Utility.ThreadScheduler.Seconds 10
+		whenM (doesDirectoryExist tmpdir) $ do
+			Utility.Misc.reapZombies
+			removeDirectoryRecursive tmpdir
 	
 checklink :: FilePath -> Assertion
 checklink f =
@@ -2086,11 +2106,7 @@ withTestMode testmode = withResource prepare release . const
 			Just act -> unlessM act $
 				error "init tests failed! cannot continue"
 		return ()
-	release _
-		| keepFailures testmode = void $ tryIO $ do
-			cleanup' True mainrepodir
-			removeDirectory tmpdir
-		| otherwise = cleanup' True tmpdir
+	release _ = cleanup mainrepodir
 
 setTestMode :: TestMode -> IO ()
 setTestMode testmode = do

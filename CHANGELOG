@@ -7,6 +7,9 @@ git-annex (6.20170521) UNRELEASED; urgency=medium
     branch. This is a dangerous environment variable; use with caution.
   * Fix a git-annex test failure when run on NFS due to NFS lock files
     preventing directory removal.
+  * test: Avoid most situations involving failure to delete test
+    directories, by forking a worker process and only deleting the test
+    directory once it exits.
 
  -- Joey Hess <id@joeyh.name>  Sat, 17 Jun 2017 13:02:24 -0400
 
