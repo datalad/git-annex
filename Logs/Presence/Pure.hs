@@ -9,7 +9,6 @@ module Logs.Presence.Pure where
 
 import Annex.Common
 import Annex.VectorClock
-import Logs.TimeStamp
 import Logs.Line
 import Utility.QuickCheck
 
@@ -19,7 +18,10 @@ data LogLine = LogLine
 	{ date :: VectorClock
 	, status :: LogStatus
 	, info :: String
-	} deriving (Eq, Show)
+	} deriving (Eq)
+
+instance Show LogLine where
+	show l = "LogLine " ++ formatVectorClock (date l) ++ show (status l) ++ " " ++ show (info l)
 
 data LogStatus = InfoPresent | InfoMissing | InfoDead
 	deriving (Eq, Show, Bounded, Enum)
@@ -29,12 +31,12 @@ parseLog :: String -> [LogLine]
 parseLog = mapMaybe parseline . splitLines
   where
 	parseline l = LogLine
-		<$> (VectorClock <$> parsePOSIXTime d)
+		<$> parseVectorClock c
 		<*> parseStatus s
 		<*> pure rest
 	  where
-		(d, pastd) = separate (== ' ') l
-		(s, rest) = separate (== ' ') pastd
+		(c, pastc) = separate (== ' ') l
+		(s, rest) = separate (== ' ') pastc
 
 parseStatus :: String -> Maybe LogStatus
 parseStatus "1" = Just InfoPresent
@@ -46,7 +48,7 @@ parseStatus _ = Nothing
 showLog :: [LogLine] -> String
 showLog = unlines . map genline
   where
-	genline (LogLine d s i) = unwords [show d, genstatus s, i]
+	genline (LogLine c s i) = unwords [formatVectorClock c, genstatus s, i]
 	genstatus InfoPresent = "1"
 	genstatus InfoMissing = "0"
 	genstatus InfoDead = "X"

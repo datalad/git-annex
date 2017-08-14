@@ -35,7 +35,6 @@ import Common
 import Types.UUID
 import Annex.VectorClock
 import Logs.MapLog
-import Logs.TimeStamp
 import Logs.Line
 
 type Log v = MapLog UUID v
@@ -68,15 +67,12 @@ parseLogWithUUID parser = M.fromListWith best . mapMaybe parse . splitLines
 		u = toUUID $ Prelude.head ws
 		t = Prelude.last ws
 		ts
-			| tskey `isPrefixOf` t =
-				pdate $ drop 1 $ dropWhile (/= '=') t
+			| tskey `isPrefixOf` t = fromMaybe Unknown $
+				parseVectorClock $ drop 1 $ dropWhile (/= '=') t
 			| otherwise = Unknown
 		info
 			| ts == Unknown = drop 1 ws
 			| otherwise = drop 1 $ beginning ws
-		pdate s = case parsePOSIXTime s of
-			Nothing -> Unknown
-			Just d -> VectorClock d
 
 showLogNew :: (v -> String) -> Log v -> String
 showLogNew = showMapLog fromUUID

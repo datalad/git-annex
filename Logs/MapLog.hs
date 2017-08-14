@@ -19,7 +19,6 @@ module Logs.MapLog (
 
 import Common
 import Annex.VectorClock
-import Logs.TimeStamp
 import Logs.Line
 
 import qualified Data.Map as M
@@ -27,7 +26,7 @@ import qualified Data.Map as M
 data LogEntry v = LogEntry
 	{ changed :: VectorClock
 	, value :: v
-	} deriving (Eq, Show)
+	} deriving (Eq)
 
 type MapLog f v = M.Map f (LogEntry v)
 
@@ -43,9 +42,9 @@ parseMapLog :: Ord f => (String -> Maybe f) -> (String -> Maybe v) -> String -> 
 parseMapLog fieldparser valueparser = M.fromListWith best . mapMaybe parse . splitLines
   where
 	parse line = do
-		let (ts, rest) = splitword line
+		let (sc, rest) = splitword line
 		    (sf, sv) = splitword rest
-		c <- VectorClock <$> parsePOSIXTime ts
+		c <- parseVectorClock sc
 		f <- fieldparser sf
 		v <- valueparser sv
 		Just (f, LogEntry c v)

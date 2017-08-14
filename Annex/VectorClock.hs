@@ -21,7 +21,7 @@ import Utility.QuickCheck
 -- | Some very old logs did not have any time stamp at all;
 -- Unknown is used for those.
 data VectorClock = Unknown | VectorClock POSIXTime
-	deriving (Eq, Ord, Show)
+	deriving (Eq, Ord)
 
 -- Unknown is oldest.
 prop_VectorClock_sane :: Bool
@@ -37,3 +37,10 @@ currentVectorClock = go =<< getEnv "GIT_ANNEX_VECTOR_CLOCK"
 	go (Just s) = case parsePOSIXTime s of
 		Just t -> return (VectorClock t)
 		Nothing -> VectorClock <$> getPOSIXTime
+
+formatVectorClock :: VectorClock -> String
+formatVectorClock  Unknown = "0"
+formatVectorClock (VectorClock t) = show t
+
+parseVectorClock :: String -> Maybe VectorClock
+parseVectorClock t = VectorClock <$> parsePOSIXTime t

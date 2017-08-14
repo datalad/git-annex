@@ -16,7 +16,6 @@ module Logs.Transitions where
 
 import Annex.Common
 import Annex.VectorClock
-import Logs.TimeStamp
 import Logs.Line
 
 import qualified Data.Set as S
@@ -32,7 +31,7 @@ data Transition
 data TransitionLine = TransitionLine
 	{ transitionStarted :: VectorClock
 	, transition :: Transition
-	} deriving (Show, Ord, Eq)
+	} deriving (Ord, Eq)
 
 type Transitions = S.Set TransitionLine
 
@@ -63,16 +62,16 @@ parseTransitionsStrictly source = fromMaybe badsource . parseTransitions
 	badsource = giveup $ "unknown transitions listed in " ++ source ++ "; upgrade git-annex!"
 
 showTransitionLine :: TransitionLine -> String
-showTransitionLine (TransitionLine ts t) = unwords [show t, show ts]
+showTransitionLine (TransitionLine c t) = unwords [show t, formatVectorClock c]
 
 parseTransitionLine :: String -> Maybe TransitionLine
 parseTransitionLine s = TransitionLine
-	<$> (VectorClock <$> parsePOSIXTime ds)
+	<$> parseVectorClock cs
 	<*> readish ts
   where
 	ws = words s
 	ts = Prelude.head ws
-	ds = unwords $ Prelude.tail ws
+	cs = unwords $ Prelude.tail ws
 
 combineTransitions :: [Transitions] -> Transitions
 combineTransitions = S.unions
