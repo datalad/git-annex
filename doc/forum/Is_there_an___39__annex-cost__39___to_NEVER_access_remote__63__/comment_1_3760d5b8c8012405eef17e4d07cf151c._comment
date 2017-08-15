@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="olaf"
+ avatar="http://cdn.libravatar.org/avatar/4ae498d3d6ee558d6b65caa658f72572"
+ subject="comment 1"
+ date="2017-08-15T23:28:58Z"
+ content="""
+Just to clarify...
+
+There will be situations where I will want to access other remotes (either networked or special, like an external drive) when I'm blocking access to others (like Glacier).
+
+So, for the music annex example when I'm roaming:
+
+- Remote: external drive  -->  low cost
+- Remote: other machine on my local network  -->  medium cost
+- Remote: youtube --> high cost  (if, for example, my data provider gives me a certain amount of free youtube streaming...)
+- Remote: Glacier  -->  NO
+
+...and in this case if there are files that are only available on Glacier, I'm happy to live without them.
+
+And for the work example, again when roaming:
+
+- Remote: external drive  -->  low cost
+- Remote: other machine on my local network  -->  medium cost
+- Remote: Glacier  -->  high cost
+
+...but if there is a file I need on Glacier and no where else, then just get it.
+
+
+
+"""]]
