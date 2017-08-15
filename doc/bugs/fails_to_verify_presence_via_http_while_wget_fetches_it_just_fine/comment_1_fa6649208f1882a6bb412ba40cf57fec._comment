@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-08-15T17:28:20Z"
+ content="""
+The normal reason for this to happen is if the size of the file
+on the website has changed. git-annex checks the reported size and if it
+differs from the versioned file, it knows that the website no longer
+contains the same file.
+
+In this case, it seems to be a cgi program generating a zip file, and the
+program actually generated two different zip files when I hit it twice with
+wget. (So if git-annex actually did drop the only copy of the version you
+downloaded, you'd not be able to download it again. Not that git-annex can know
+that; this kind of thing is why trusting the web is not a good idea..) They did
+have the same size, but it looks like the web server is not sending a size
+header anyway.
+
+The actual problem is the web server takes a long time to answer a HEAD request
+for this URL. It takes 35 seconds before curl is able to HEAD it. I suspect
+it's generating the 300 mb zip file before it gets around to finishing
+the HEAD request. Not the greatest server behavior, all around.
+
+That breaks http-client due to its default 30 second timeout. So, will remove that timeout then.
+"""]]

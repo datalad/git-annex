@@ -56,6 +56,7 @@ managerSettings = tlsManagerSettings
 #else
 managerSettings = conduitManagerSettings
 #endif
+	{ managerResponseTimeout = responseTimeoutNone }
 
 type URLString = String
 

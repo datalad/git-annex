@@ -441,13 +441,11 @@ withS3HandleMaybe c gc u a = do
 		Just creds -> do
 			awscreds <- liftIO $ genCredentials creds
 			let awscfg = AWS.Configuration AWS.Timestamp awscreds debugMapper
-			bracketIO (newManager httpcfg) closeManager $ \mgr -> 
+			bracketIO (newManager managerSettings) closeManager $ \mgr -> 
 				a $ Just $ S3Handle mgr awscfg s3cfg
 		Nothing -> a Nothing
   where
 	s3cfg = s3Configuration c
-	httpcfg = managerSettings
-		{ managerResponseTimeout = responseTimeoutNone }
 
 s3Configuration :: RemoteConfig -> S3.S3Configuration AWS.NormalQuery
 s3Configuration c = cfg

@@ -11,6 +11,9 @@ git-annex (6.20170521) UNRELEASED; urgency=medium
     directories, by forking a worker process and only deleting the test
     directory once it exits.
   * move, copy: Support --batch.
+  * Disable http-client's default 30 second response timeout when HEADing
+    an url to check if it exists. Some web servers take quite a long time
+    to answer a HEAD request.
 
  -- Joey Hess <id@joeyh.name>  Sat, 17 Jun 2017 13:02:24 -0400
 
