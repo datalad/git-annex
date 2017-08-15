@@ -10,6 +10,7 @@ git-annex (6.20170521) UNRELEASED; urgency=medium
   * test: Avoid most situations involving failure to delete test
     directories, by forking a worker process and only deleting the test
     directory once it exits.
+  * move, copy: Support --batch.
 
  -- Joey Hess <id@joeyh.name>  Sat, 17 Jun 2017 13:02:24 -0400
 

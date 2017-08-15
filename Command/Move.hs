@@ -29,6 +29,7 @@ data MoveOptions = MoveOptions
 	{ moveFiles :: CmdParams
 	, fromToOptions :: Either ToHere FromToOptions
 	, keyOptions :: Maybe KeyOptions
+	, batchOption :: BatchMode
 	}
 
 data ToHere = ToHere
@@ -38,6 +39,7 @@ optParser desc = MoveOptions
 	<$> cmdParams desc
 	<*> (parsefrom <|> parseto)
 	<*> optional (parseKeyOptions <|> parseFailedTransfersOption)
+	<*> parseBatchOption
   where
 	parsefrom = Right . FromRemote . parseRemoteOption <$> parseFromOption
 	parseto = herespecialcase <$> parseToOption
@@ -51,13 +53,17 @@ instance DeferredParseClass MoveOptions where
 		<$> pure (moveFiles v)
 		<*> either (pure . Left) (Right <$$> finishParse) (fromToOptions v)
 		<*> pure (keyOptions v)
+		<*> pure (batchOption v)
 
 seek :: MoveOptions -> CommandSeek
-seek o = allowConcurrentOutput $ 
-	withKeyOptions (keyOptions o) False
-		(startKey o True)
-		(withFilesInGit $ whenAnnexed $ start o True)
-		(moveFiles o)
+seek o = allowConcurrentOutput $ do
+	let go = whenAnnexed $ start o True
+	case batchOption o of
+		Batch -> batchInput Right (batchCommandAction . go)
+		NoBatch -> withKeyOptions (keyOptions o) False
+			(startKey o True)
+			(withFilesInGit go)
+			(moveFiles o)
 
 start :: MoveOptions -> Bool -> FilePath -> Key -> CommandStart
 start o move f k = start' o move afile k (mkActionItem afile)
