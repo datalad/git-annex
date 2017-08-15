@@ -1,0 +1,5 @@
+It's possible for a key to contain whitespace in its name. This breaks the
+external special remote protocol, which uses whitespace to separate the key
+parameter from subsequent parameters.
+
+I think that this only causes problems for WORM keys. --[[Joey]]
