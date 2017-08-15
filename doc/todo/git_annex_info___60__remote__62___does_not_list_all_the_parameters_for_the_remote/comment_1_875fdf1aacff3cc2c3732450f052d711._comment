@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-08-15T17:20:10Z"
+ content="""
+This is an external special remote, and the meaning of prefix= and other
+parameters used when initializing an external special remote is up to that
+special remote. 
+
+For all git-annex knows, that may be some kind of binary
+value, or access token that you don't want scrawled on the screen. It makes
+sense for `git-annex info` not to display this stuff since it does not know
+what it is.
+
+It might make sense to extend the external special remote protocol
+with a command to get additional info to display.
+"""]]
