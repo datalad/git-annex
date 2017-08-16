@@ -1,0 +1,13 @@
+Hello!
+
+How can I have just a single directory unlocked at all times?
+
+• I’m running the Assistant.
+
+• If a new file is created in it, I’d like it to be added to annex BUT automatically unlocked (kept editable).
+
+• If such an unlocked file is changed, I’d like the Assistant to sync the change.
+
+How can this be configured?
+
+Thank you!
