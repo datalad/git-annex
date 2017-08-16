@@ -14,6 +14,7 @@ git-annex (6.20170521) UNRELEASED; urgency=medium
   * Disable http-client's default 30 second response timeout when HEADing
     an url to check if it exists. Some web servers take quite a long time
     to answer a HEAD request.
+  * Windows: Win32 package has subsumed Win32-extras; update dependency.
 
  -- Joey Hess <id@joeyh.name>  Sat, 17 Jun 2017 13:02:24 -0400
 
