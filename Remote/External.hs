@@ -134,7 +134,7 @@ externalSetup _ mu _ c gc = do
 
 store :: External -> Storer
 store external = fileStorer $ \k f p ->
-	handleRequest external (TRANSFER Upload k f) (Just p) $ \resp ->
+	handleRequestKey external (\sk -> TRANSFER Upload sk f) k (Just p) $ \resp ->
 		case resp of
 			TRANSFER_SUCCESS Upload k' | k == k' ->
 				Just $ return True
@@ -146,7 +146,7 @@ store external = fileStorer $ \k f p ->
 
 retrieve :: External -> Retriever
 retrieve external = fileRetriever $ \d k p -> 
-	handleRequest external (TRANSFER Download k d) (Just p) $ \resp ->
+	handleRequestKey external (\sk -> TRANSFER Download sk d) k (Just p) $ \resp ->
 		case resp of
 			TRANSFER_SUCCESS Download k'
 				| k == k' -> Just $ return ()
@@ -156,7 +156,7 @@ retrieve external = fileRetriever $ \d k p ->
 
 remove :: External -> Remover
 remove external k = safely $ 
-	handleRequest external (REMOVE k) Nothing $ \resp ->
+	handleRequestKey external REMOVE k Nothing $ \resp ->
 		case resp of
 			REMOVE_SUCCESS k'
 				| k == k' -> Just $ return True
@@ -169,7 +169,7 @@ remove external k = safely $
 checkKey :: External -> CheckPresent
 checkKey external k = either giveup id <$> go
   where
-	go = handleRequest external (CHECKPRESENT k) Nothing $ \resp ->
+	go = handleRequestKey external CHECKPRESENT k Nothing $ \resp ->
 		case resp of
 			CHECKPRESENT_SUCCESS k'
 				| k' == k -> Just $ return $ Right True
@@ -180,7 +180,7 @@ checkKey external k = either giveup id <$> go
 			_ -> Nothing
 
 whereis :: External -> Key -> Annex [String]
-whereis external k = handleRequest external (WHEREIS k) Nothing $ \resp -> case resp of
+whereis external k = handleRequestKey external WHEREIS k Nothing $ \resp -> case resp of
 	WHEREIS_SUCCESS s -> Just $ return [s]
 	WHEREIS_FAILURE -> Just $ return []
 	UNSUPPORTED_REQUEST -> Just $ return []
@@ -211,6 +211,11 @@ handleRequest :: External -> Request -> Maybe MeterUpdate -> (Response -> Maybe 
 handleRequest external req mp responsehandler = 
 	withExternalState external $ \st -> 
 		handleRequest' st external req mp responsehandler
+
+handleRequestKey :: External -> (SafeKey -> Request) -> Key -> Maybe MeterUpdate -> (Response -> Maybe (Annex a)) -> Annex a
+handleRequestKey external mkreq k mp responsehandler = case mkSafeKey k of
+	Right sk -> handleRequest external (mkreq sk) mp responsehandler
+	Left e -> giveup e
 
 handleRequest' :: ExternalState -> External -> Request -> Maybe MeterUpdate -> (Response -> Maybe (Annex a)) -> Annex a
 handleRequest' st external req mp responsehandler
