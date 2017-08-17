@@ -413,7 +413,7 @@ gitAnnexAssistantDefaultDir :: FilePath
 gitAnnexAssistantDefaultDir = "annex"
 
 {- Sanitizes a String that will be used as part of a Key's keyName,
- - dealing with characters that cause problems on substandard filesystems.
+ - dealing with characters that cause problems.
  -
  - This is used when a new Key is initially being generated, eg by getKey.
  - Unlike keyFile and fileKey, it does not need to be a reversable
@@ -430,7 +430,7 @@ preSanitizeKeyName = concatMap escape
   where
 	escape c
 		| isAsciiUpper c || isAsciiLower c || isDigit c = [c]
-		| c `elem` ".-_ " = [c] -- common, assumed safe
+		| c `elem` ".-_" = [c] -- common, assumed safe
 		| c `elem` "/%:" = [c] -- handled by keyFile
 		-- , is safe and uncommon, so will be used to escape
 		-- other characters. By itself, it is escaped to 

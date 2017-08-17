@@ -18,6 +18,9 @@ git-annex (6.20170521) UNRELEASED; urgency=medium
   * Added remote configuration settings annex-ignore-command and
     annex-sync-command, which are dynamic equivilants of the annex-ignore
     and annex-sync configurations.
+  * Prevent spaces from being embedded in the name of new WORM keys,
+    as that handing spaces in keys would complicate things like the
+    external special remote protocol.
 
  -- Joey Hess <id@joeyh.name>  Sat, 17 Jun 2017 13:02:24 -0400
 
