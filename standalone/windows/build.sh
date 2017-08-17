@@ -43,6 +43,7 @@ cabal install --only-dependencies \
 		--constraint='persistent-sqlite ==2.2' \
 		--constraint='cryptonite ==0.7' \
 		--constraint='mwc-random ==0.13.3.2' \
+		--constraint='xss-sanitize ==0.3.5.6' \
 		--force-reinstalls \
 		|| true
 
