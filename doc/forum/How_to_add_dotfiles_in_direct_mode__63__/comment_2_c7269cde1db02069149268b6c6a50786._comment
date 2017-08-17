@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="pitsa@5f5d24a1fb7ba0d050ae7cf95b4c3032002e8e38"
+ nickname="pitsa"
+ avatar="http://cdn.libravatar.org/avatar/d1de087e3bdaf7c2288b89b8ea56e6a5"
+ subject="Thanks"
+ date="2017-08-17T16:35:33Z"
+ content="""
+Ok, this seems to work:
+
+    git annex add -c annex.largefiles='not include=*' .gitattributes .gitignore
+    git annex sync
+
+"""]]

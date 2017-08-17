@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="michalrus"
+ avatar="http://cdn.libravatar.org/avatar/83c0b6e7f9d20f09a892263c4903bbae"
+ subject="comment 5"
+ date="2017-08-17T17:53:24Z"
+ content="""
+My particular example is that I’m using git-annex:
+
+• mostly as an archive (esp. in family files context),
+
+• but also as a sort-of FLOSS Dropbox for some specific files, that we’re editing.
+
+I’d like to prevent easy (accidental, really) editing of those archived files.
+
+Does this make sense?
+
+Thank you!
+"""]]
