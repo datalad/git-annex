@@ -19,4 +19,7 @@ Visit the site.
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
-
+> <https://git-annex.branchable.com/install/Linux_standalone/> uses
+> "x86-64" to refer to those. The "amd64" in the name of the file is
+> basically an internal detail, I hope people reading the page will find it
+> clear enough. [[done]] --[[Joey]]
