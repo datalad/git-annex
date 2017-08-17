@@ -149,9 +149,11 @@ while read line; do
 			rm -f "$tmp"
 		;;
 		TRANSFER)
+			op="$2"
 			key="$3"
-			file="$4"
-			case "$2" in
+			shift 3
+			file="$@"
+			case "$op" in
 				STORE)
 					echo TRANSFER-FAILURE STORE "$key" "upload not supported"
 				;;

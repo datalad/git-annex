@@ -31,6 +31,9 @@ git-annex (6.20170521) UNRELEASED; urgency=medium
     the filename parameter to the TRANSFER command could not contain
     spaces. It can in fact contain spaces. Special remotes implementors
     that relied on that may need to fix bugs in their special remotes.
+  * Fix the external special remotes git-annex-remote-ipfs, 
+    git-annex-remote-torrent and the example.sh template to correctly
+    support filenames with spaces.
 
  -- Joey Hess <id@joeyh.name>  Sat, 17 Jun 2017 13:02:24 -0400
 
