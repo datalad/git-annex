@@ -22,8 +22,8 @@ backend = Backend
 	{ backendVariety = WORMKey
 	, getKey = keyValue
 	, verifyKeyContent = Nothing
-	, canUpgradeKey = Nothing
-	, fastMigrate = Nothing
+	, canUpgradeKey = Just needsUpgrade
+	, fastMigrate = Just removeSpaces
 	, isStableKey = const True
 	}
 
@@ -42,3 +42,17 @@ keyValue source = do
 		, keySize = Just sz
 		, keyMtime = Just $ modificationTime stat
 		}
+
+{- Old WORM keys could contain spaces, and can be upgraded to remove them. -}
+needsUpgrade :: Key -> Bool
+needsUpgrade key = ' ' `elem` keyName key
+
+removeSpaces :: Key -> Backend -> AssociatedFile -> Maybe Key
+removeSpaces oldkey newbackend _
+	| migratable = Just $ oldkey
+		{ keyName = reSanitizeKeyName (keyName oldkey) }
+	| otherwise = Nothing
+  where
+	migratable = oldvariety == newvariety
+	oldvariety = keyVariety oldkey
+	newvariety = backendVariety newbackend

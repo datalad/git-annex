@@ -69,6 +69,7 @@ module Annex.Locations (
 	hashDirMixed,
 	hashDirLower,
 	preSanitizeKeyName,
+	reSanitizeKeyName,
 
 	prop_isomorphic_fileKey
 ) where
@@ -426,7 +427,10 @@ gitAnnexAssistantDefaultDir = "annex"
  - same key.
  -}
 preSanitizeKeyName :: String -> String
-preSanitizeKeyName = concatMap escape
+preSanitizeKeyName = preSanitizeKeyName' False
+
+preSanitizeKeyName' :: Bool -> String -> String
+preSanitizeKeyName' resanitize = concatMap escape
   where
 	escape c
 		| isAsciiUpper c || isAsciiLower c || isDigit c = [c]
@@ -435,8 +439,15 @@ preSanitizeKeyName = concatMap escape
 		-- , is safe and uncommon, so will be used to escape
 		-- other characters. By itself, it is escaped to 
 		-- doubled form.
-		| c == ',' = ",,"
+		| c == ',' = if not resanitize
+			then ",,"
+			else ","
 		| otherwise = ',' : show (ord c)
+
+{- Converts a keyName that has been santizied with an old version of
+ - preSanitizeKeyName to be sanitized with the new version. -}
+reSanitizeKeyName :: String -> String
+reSanitizeKeyName = preSanitizeKeyName' True
 
 {- Converts a key into a filename fragment without any directory.
  -

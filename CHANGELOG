@@ -21,6 +21,8 @@ git-annex (6.20170521) UNRELEASED; urgency=medium
   * Prevent spaces from being embedded in the name of new WORM keys,
     as that handing spaces in keys would complicate things like the
     external special remote protocol.
+  * migrate: WORM keys containing spaces will be migrated to not contain
+    spaces anymore.
 
  -- Joey Hess <id@joeyh.name>  Sat, 17 Jun 2017 13:02:24 -0400
 
