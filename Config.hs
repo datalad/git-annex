@@ -15,6 +15,7 @@ import qualified Git.Config
 import qualified Git.Command
 import qualified Annex
 import Config.Cost
+import Config.DynamicConfig
 import Types.Availability
 import Git.Types
 
@@ -70,10 +71,7 @@ remoteCost :: RemoteGitConfig -> Cost -> Annex Cost
 remoteCost c d = fromMaybe d <$> remoteCost' c
 
 remoteCost' :: RemoteGitConfig -> Annex (Maybe Cost)
-remoteCost' c = case remoteAnnexCostCommand c of
-	Just cmd | not (null cmd) -> liftIO $
-		readish <$> readProcess "sh" ["-c", cmd]
-	_ -> return $ remoteAnnexCost c
+remoteCost' = liftIO . getDynamicConfig . remoteAnnexCost
 
 setRemoteCost :: Git.Repo -> Cost -> Annex ()
 setRemoteCost r c = setConfig (remoteConfig r "cost") (show c)

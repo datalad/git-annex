@@ -7,9 +7,9 @@
 
 module Config.DynamicConfig where
 
-import Control.Concurrent.STM
+import Common
 
-import Utility.SafeCommand
+import Control.Concurrent.STM
 
 -- | A configuration value that may only be known after performing an IO
 -- action. The IO action will only be run the first time the configuration
@@ -42,3 +42,6 @@ successfullCommandRunner cmd = boolSystem "sh" [Param "-c", Param cmd]
 
 unsuccessfullCommandRunner :: CommandRunner Bool
 unsuccessfullCommandRunner cmd = not <$> successfullCommandRunner cmd
+
+readCommandRunner :: Read a => CommandRunner (Maybe a)
+readCommandRunner cmd = readish <$> readProcess "sh" ["-c", cmd]

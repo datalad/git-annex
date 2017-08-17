@@ -192,8 +192,7 @@ mergeGitConfig gitconfig repoglobals = gitconfig
  - key such as <remote>.annex-foo, or if that is not set, a default from
  - annex.foo -}
 data RemoteGitConfig = RemoteGitConfig
-	{ remoteAnnexCost :: Maybe Cost
-	, remoteAnnexCostCommand :: Maybe String
+	{ remoteAnnexCost :: DynamicConfig (Maybe Cost)
 	, remoteAnnexIgnore :: DynamicConfig Bool
 	, remoteAnnexSync :: DynamicConfig Bool
 	, remoteAnnexPull :: Bool
@@ -231,6 +230,9 @@ data RemoteGitConfig = RemoteGitConfig
 
 extractRemoteGitConfig :: Git.Repo -> String -> STM RemoteGitConfig
 extractRemoteGitConfig r remotename = do
+	annexcost <- mkDynamicConfig readCommandRunner
+		(notempty $ getmaybe "cost-command")
+		(getmayberead "cost")
 	annexignore <- mkDynamicConfig unsuccessfullCommandRunner
 		(notempty $ getmaybe "ignore-command")
 		(getbool "ignore" False)
@@ -238,8 +240,7 @@ extractRemoteGitConfig r remotename = do
 		(notempty $ getmaybe "sync-command")
 		(getbool "sync" True)
 	return $ RemoteGitConfig
-		{ remoteAnnexCost = getmayberead "cost"
-		, remoteAnnexCostCommand = notempty $ getmaybe "cost-command"
+		{ remoteAnnexCost = annexcost
 		, remoteAnnexIgnore = annexignore
 		, remoteAnnexSync = annexsync
 		, remoteAnnexPull = getbool "pull" True
