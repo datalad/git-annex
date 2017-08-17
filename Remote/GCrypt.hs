@@ -227,7 +227,8 @@ gCryptSetup _ mu _ c gc = go $ M.lookup "gitrepo" c
 setupRepo :: Git.GCrypt.GCryptId -> Git.Repo -> Annex AccessMethod
 setupRepo gcryptid r
 	| Git.repoIsUrl r = do
-		(_, _, accessmethod) <- rsyncTransport r def
+		dummycfg <- liftIO dummyRemoteGitConfig
+		(_, _, accessmethod) <- rsyncTransport r dummycfg
 		case accessmethod of
 			AccessDirect -> rsyncsetup
 			AccessShell -> ifM gitannexshellsetup
@@ -249,7 +250,8 @@ setupRepo gcryptid r
 	 -}
 	rsyncsetup = Remote.Rsync.withRsyncScratchDir $ \tmp -> do
 		liftIO $ createDirectoryIfMissing True $ tmp </> objectDir
-		(rsynctransport, rsyncurl, _) <- rsyncTransport r def
+		dummycfg <- liftIO dummyRemoteGitConfig
+		(rsynctransport, rsyncurl, _) <- rsyncTransport r dummycfg
 		let tmpconfig = tmp </> "config"
 		void $ liftIO $ rsync $ rsynctransport ++
 			[ Param $ rsyncurl ++ "/config"
@@ -389,8 +391,10 @@ toAccessMethod "shell" = AccessShell
 toAccessMethod _ = AccessDirect
 
 getGCryptUUID :: Bool -> Git.Repo -> Annex (Maybe UUID)
-getGCryptUUID fast r = (genUUIDInNameSpace gCryptNameSpace <$>) . fst
-	<$> getGCryptId fast r def
+getGCryptUUID fast r = do
+	dummycfg <- liftIO dummyRemoteGitConfig
+	(genUUIDInNameSpace gCryptNameSpace <$>) . fst
+		<$> getGCryptId fast r dummycfg
 
 coreGCryptId :: String
 coreGCryptId = "core.gcrypt-id"

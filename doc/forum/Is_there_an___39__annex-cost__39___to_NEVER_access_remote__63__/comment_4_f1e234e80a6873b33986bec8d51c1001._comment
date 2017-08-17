@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2017-08-17T17:53:59Z"
+ content="""
+I've implemented annex-ignore-command and annex-sync-command. Enjoy!
+"""]]

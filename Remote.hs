@@ -70,6 +70,7 @@ import Logs.Location hiding (logStatus)
 import Logs.Web
 import Remote.List
 import Config
+import Config.DynamicConfig
 import Git.Types (RemoteName)
 import qualified Git
 
@@ -120,12 +121,13 @@ byNameWithUUID = checkuuid <=< byName
   where
 	checkuuid Nothing = return Nothing
 	checkuuid (Just r)
-		| uuid r == NoUUID = giveup $
-			if remoteAnnexIgnore (gitconfig r)
-				then noRemoteUUIDMsg r ++
+		| uuid r == NoUUID =
+			ifM (liftIO $ getDynamicConfig $ remoteAnnexIgnore (gitconfig r))
+				( giveup $ noRemoteUUIDMsg r ++
 					" (" ++ show (remoteConfig (repo r) "ignore") ++
 					" is set)"
-				else noRemoteUUIDMsg r
+				, giveup $ noRemoteUUIDMsg r
+				)
 		| otherwise = return $ Just r
 
 byName' :: RemoteName -> Annex (Either String Remote)
@@ -292,8 +294,8 @@ remoteLocations locations trusted = do
 	let validtrustedlocations = nub locations `intersect` trusted
 
 	-- remotes that match uuids that have the key
-	allremotes <- filter (not . remoteAnnexIgnore . gitconfig)
-		<$> remoteList
+	allremotes <- remoteList 
+		>>= filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . gitconfig)
 	let validremotes = remotesWithUUID allremotes locations
 
 	return (sortBy (comparing cost) validremotes, validtrustedlocations)
@@ -313,7 +315,8 @@ showLocations separateuntrusted key exclude nolocmsg = do
 	let msg = message ppuuidswanted ppuuidsskipped
 	unless (null msg) $
 		showLongNote msg
-	ignored <- filter (remoteAnnexIgnore . gitconfig) <$> remoteList
+	ignored <- remoteList
+		>>= filterM (liftIO . getDynamicConfig . remoteAnnexIgnore . gitconfig)
 	unless (null ignored) $
 		showLongNote $ "(Note that these git remotes have annex-ignore set: " ++ unwords (map name ignored) ++ ")"
   where

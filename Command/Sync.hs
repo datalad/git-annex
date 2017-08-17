@@ -40,6 +40,7 @@ import qualified Git
 import qualified Remote.Git
 import Config
 import Config.GitConfig
+import Config.DynamicConfig
 import Config.Files
 import Annex.Wanted
 import Annex.Content
@@ -152,8 +153,8 @@ seek o = allowConcurrentOutput $ do
 
 	remotes <- syncRemotes (syncWith o)
 	let gitremotes = filter Remote.gitSyncableRemote remotes
-	let dataremotes = filter (\r -> Remote.uuid r /= NoUUID) $ 
-		filter (not . remoteAnnexIgnore . Remote.gitconfig) remotes
+	dataremotes <- filter (\r -> Remote.uuid r /= NoUUID)
+		<$> filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) remotes
 
 	-- Syncing involves many actions, any of which can independently
 	-- fail, without preventing the others from running.
@@ -247,10 +248,15 @@ remoteBranch remote = Git.Ref.underBase $ "refs/remotes/" ++ Remote.name remote
 -- Do automatic initialization of remotes when possible when getting remote
 -- list.
 syncRemotes :: [String] -> Annex [Remote]
-syncRemotes ps = syncRemotes' ps =<< Remote.remoteList' True
+syncRemotes ps = do
+	remotelist <- Remote.remoteList' True
+	available <- filterM (liftIO . getDynamicConfig . remoteAnnexSync . Remote.gitconfig)
+		(filter (not . Remote.isXMPPRemote) remotelist)
+	syncRemotes' ps available
 
 syncRemotes' :: [String] -> [Remote] -> Annex [Remote]
-syncRemotes' ps remotelist = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
+syncRemotes' ps available = 
+	ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
   where
 	pickfast = (++) <$> listed <*> (filterM good (fastest available))
 	
@@ -259,9 +265,6 @@ syncRemotes' ps remotelist = ifM (Annex.getState Annex.fast) ( nub <$> pickfast 
 		| otherwise = listed
 	
 	listed = concat <$> mapM Remote.byNameOrGroup ps
-	
-	available = filter (remoteAnnexSync . Remote.gitconfig)
-		$ filter (not . Remote.isXMPPRemote) remotelist
 	
 	good r
 		| Remote.gitSyncableRemote r = Remote.Git.repoAvail $ Remote.repo r

@@ -27,6 +27,7 @@ import Annex.TaggedPush
 import Annex.Ssh
 import qualified Config
 import Git.Config
+import Config.DynamicConfig
 import Assistant.NamedThread
 import Assistant.Threads.Watcher (watchThread, WatcherControl(..))
 import Assistant.TransferSlots
@@ -77,8 +78,8 @@ reconnectRemotes rs = void $ do
 	go = do
 		(failed, diverged) <- sync
 			=<< liftAnnex (join Command.Sync.getCurrBranch)
-		addScanRemotes diverged $
-			filter (not . remoteAnnexIgnore . Remote.gitconfig)
+		addScanRemotes diverged =<<
+			filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig)
 				nonxmppremotes
 		return failed
 	signal r = liftIO . mapM_ (flip tryPutMVar ())

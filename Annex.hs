@@ -329,7 +329,7 @@ adjustGitRepo a = do
 getRemoteGitConfig :: Git.Repo -> Annex RemoteGitConfig
 getRemoteGitConfig r = do
 	g <- gitRepo
-	return $ extractRemoteGitConfig g (Git.repoDescribe r)
+	liftIO $ atomically $ extractRemoteGitConfig g (Git.repoDescribe r)
 
 {- Converts an Annex action into an IO action, that runs with a copy
  - of the current Annex state. 

@@ -24,6 +24,7 @@ import Git.Types (RemoteName)
 import Creds
 import Assistant.Gpg
 import Utility.Gpg (KeyId)
+import Types.GitConfig
 
 import qualified Data.Map as M
 
@@ -102,7 +103,8 @@ setupSpecialRemote' setdesc name remotetype config mcreds (mu, ss, c) = do
 	 - pool is drained, and as of now there's no way to tell the user
 	 - to perform IO actions to refill the pool. -}
 	let weakc = M.insert "highRandomQuality" "false" $ M.union config c
-	(c', u) <- R.setup remotetype ss mu mcreds weakc def
+	dummycfg <- liftIO dummyRemoteGitConfig
+	(c', u) <- R.setup remotetype ss mu mcreds weakc dummycfg
 	configSet u c'
 	when setdesc $
 		whenM (isNothing . M.lookup u <$> uuidMap) $

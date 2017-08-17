@@ -1125,8 +1125,7 @@ Here are all the supported configuration settings.
 * `remote.<name>.annex-cost-command`
 
   If set, the command is run, and the number it outputs is used as the cost.
-  This allows varying the cost based on e.g., the current network. The
-  cost-command can be any shell command line.
+  This allows varying the cost based on e.g., the current network.
 
 * `remote.<name>.annex-start-command`
 
@@ -1165,11 +1164,23 @@ Here are all the supported configuration settings.
   This does not prevent git-annex sync (or the git-annex assistant) from
   syncing the git repository to the remote.
 
+* `remote.<name>.annex-ignore-command`
+
+  If set, the command is run, and if it exits nonzero, that's the same
+  as setting annex-ignore to true. This allows controlling behavior based
+  on e.g., the current network.
+
 * `remote.<name>.annex-sync`
 
   If set to `false`, prevents git-annex sync (and the git-annex assistant)
   from syncing with this remote by default. However, `git annex sync <name>`
   can still be used to sync with the remote.
+
+* `remote.<name>.annex-sync-command`
+
+  If set, the command is run, and if it exits nonzero, that's the same
+  as setting annex-sync to false. This allows controlling behavior based
+  on e.g., the current network.
 
 * `remote.<name>.annex-pull`
 

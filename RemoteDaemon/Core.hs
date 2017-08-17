@@ -10,6 +10,7 @@ module RemoteDaemon.Core (runInteractive, runNonInteractive) where
 import qualified Annex
 import Common
 import Types.GitConfig
+import Config.DynamicConfig
 import RemoteDaemon.Common
 import RemoteDaemon.Types
 import RemoteDaemon.Transport
@@ -139,19 +140,21 @@ genRemoteMap :: TransportHandle -> TChan Emitted -> IO RemoteMap
 genRemoteMap h@(TransportHandle (LocalRepo g) _) ochan = 
 	M.fromList . catMaybes <$> mapM gen (Git.remotes g)
   where
-	gen r = case Git.location r of
-		Git.Url u -> case M.lookup (uriScheme u) remoteTransports of
-			Just transport
-				| remoteAnnexSync gc -> do
-					ichan <- newTChanIO :: IO (TChan Consumed)
-					return $ Just
-						( r
-						, (transport (RemoteRepo r gc) (RemoteURI u) h ichan ochan, ichan)
-						)
+	gen r = do
+		gc <- atomically $ extractRemoteGitConfig g (Git.repoDescribe r)
+		case Git.location r of
+			Git.Url u -> case M.lookup (uriScheme u) remoteTransports of
+				Just transport -> ifM (getDynamicConfig (remoteAnnexSync gc))
+					( do
+						ichan <- newTChanIO :: IO (TChan Consumed)
+						return $ Just
+							( r
+							, (transport (RemoteRepo r gc) (RemoteURI u) h ichan ochan, ichan)
+							)
+					, return Nothing
+					)
+				Nothing -> return Nothing
 			_ -> return Nothing
-		_ -> return Nothing
-	  where
-		gc = extractRemoteGitConfig g (Git.repoDescribe r)
 
 genTransportHandle :: IO TransportHandle
 genTransportHandle = do

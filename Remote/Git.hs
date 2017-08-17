@@ -35,6 +35,7 @@ import qualified Annex.Url as Url
 import Utility.Tmp
 import Config
 import Config.Cost
+import Config.DynamicConfig
 import Annex.Init
 import Annex.Version
 import Types.CleanupActions
@@ -128,7 +129,8 @@ configRead :: Bool -> Git.Repo -> Annex Git.Repo
 configRead autoinit r = do
 	gc <- Annex.getRemoteGitConfig r
 	u <- getRepoUUID r
-	case (repoCheap r, remoteAnnexIgnore gc, u) of
+	annexignore <- liftIO $ getDynamicConfig (remoteAnnexIgnore gc)
+	case (repoCheap r, annexignore, u) of
 		(_, True, _) -> return r
 		(True, _, _) -> tryGitConfigRead autoinit r
 		(False, _, NoUUID) -> tryGitConfigRead autoinit r

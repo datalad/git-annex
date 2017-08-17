@@ -52,6 +52,7 @@ import qualified Git.Ref
 import qualified Git.LsTree
 import qualified Git.FilePath
 import qualified Annex.Locations
+import qualified Types.GitConfig
 import qualified Types.KeySource
 import qualified Types.Backend
 import qualified Types.TrustLevel
@@ -1642,7 +1643,6 @@ test_crypto = do
 	testscheme "pubkey"
   where
 	gpgcmd = Utility.Gpg.mkGpgCmd Nothing
-	encparams = (mempty :: Types.Remote.RemoteConfig, def :: Types.RemoteGitConfig)
 	testscheme scheme = intmpclonerepo $ whenM (Utility.Path.inPath (Utility.Gpg.unGpgCmd gpgcmd)) $ do
 		Utility.Gpg.testTestHarness gpgcmd 
 			@? "test harness self-test failed"
@@ -1698,6 +1698,8 @@ test_crypto = do
 		checkScheme Types.Crypto.Hybrid = scheme == "hybrid"
 		checkScheme Types.Crypto.PubKey = scheme == "pubkey"
 		checkKeys cip mvariant = do
+			dummycfg <- Types.GitConfig.dummyRemoteGitConfig
+			let encparams = (mempty :: Types.Remote.RemoteConfig, dummycfg)
 			cipher <- Crypto.decryptCipher gpgcmd encparams cip
 			files <- filterM doesFileExist $
 				map ("dir" </>) $ concatMap (key2files cipher) keys

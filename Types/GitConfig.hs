@@ -12,6 +12,7 @@ module Types.GitConfig (
 	mergeGitConfig,
 	RemoteGitConfig(..),
 	extractRemoteGitConfig,
+	dummyRemoteGitConfig,
 ) where
 
 import Common
@@ -27,11 +28,15 @@ import Types.Availability
 import Types.NumCopies
 import Types.Difference
 import Types.RefSpec
+import Config.DynamicConfig
 import Utility.HumanTime
 import Utility.Gpg (GpgCmd, mkGpgCmd)
 import Utility.ThreadScheduler (Seconds(..))
 
--- | A configurable value, that may not be fully determined yet.
+import Control.Concurrent.STM
+
+-- | A configurable value, that may not be fully determined yet because
+-- the global git config has not yet been loaded.
 data Configurable a
 	= HasConfig a
 	-- ^ Value is fully determined.
@@ -189,8 +194,8 @@ mergeGitConfig gitconfig repoglobals = gitconfig
 data RemoteGitConfig = RemoteGitConfig
 	{ remoteAnnexCost :: Maybe Cost
 	, remoteAnnexCostCommand :: Maybe String
-	, remoteAnnexIgnore :: Bool
-	, remoteAnnexSync :: Bool
+	, remoteAnnexIgnore :: DynamicConfig Bool
+	, remoteAnnexSync :: DynamicConfig Bool
 	, remoteAnnexPull :: Bool
 	, remoteAnnexPush :: Bool
 	, remoteAnnexReadOnly :: Bool
@@ -224,41 +229,48 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteGitConfig :: GitConfig
 	}
 
-extractRemoteGitConfig :: Git.Repo -> String -> RemoteGitConfig
-extractRemoteGitConfig r remotename = RemoteGitConfig
-	{ remoteAnnexCost = getmayberead "cost"
-	, remoteAnnexCostCommand = notempty $ getmaybe "cost-command"
-	, remoteAnnexIgnore = getbool "ignore" False
-	, remoteAnnexSync = getbool "sync" True
-	, remoteAnnexPull = getbool "pull" True
-	, remoteAnnexPush = getbool "push" True
-	, remoteAnnexReadOnly = getbool "readonly" False
-	, remoteAnnexVerify = getbool "verify" True
-	, remoteAnnexTrustLevel = notempty $ getmaybe "trustlevel"
-	, remoteAnnexStartCommand = notempty $ getmaybe "start-command"
-	, remoteAnnexStopCommand = notempty $ getmaybe "stop-command"
-	, remoteAnnexAvailability = getmayberead "availability"
-	, remoteAnnexBare = getmaybebool "bare"
-
-	, remoteAnnexShell = getmaybe "shell"
-	, remoteAnnexSshOptions = getoptions "ssh-options"
-	, remoteAnnexRsyncOptions = getoptions "rsync-options"
-	, remoteAnnexRsyncDownloadOptions = getoptions "rsync-download-options"
-	, remoteAnnexRsyncUploadOptions = getoptions "rsync-upload-options"
-	, remoteAnnexRsyncTransport = getoptions "rsync-transport"
-	, remoteAnnexGnupgOptions = getoptions "gnupg-options"
-	, remoteAnnexGnupgDecryptOptions = getoptions "gnupg-decrypt-options"
-	, remoteAnnexRsyncUrl = notempty $ getmaybe "rsyncurl"
-	, remoteAnnexBupRepo = getmaybe "buprepo"
-	, remoteAnnexTahoe = getmaybe "tahoe"
-	, remoteAnnexBupSplitOptions = getoptions "bup-split-options"
-	, remoteAnnexDirectory = notempty $ getmaybe "directory"
-	, remoteAnnexGCrypt = notempty $ getmaybe "gcrypt"
-	, remoteAnnexDdarRepo = getmaybe "ddarrepo"
-	, remoteAnnexHookType = notempty $ getmaybe "hooktype"
-	, remoteAnnexExternalType = notempty $ getmaybe "externaltype"
-	, remoteGitConfig = extractGitConfig r
-	}
+extractRemoteGitConfig :: Git.Repo -> String -> STM RemoteGitConfig
+extractRemoteGitConfig r remotename = do
+	annexignore <- mkDynamicConfig unsuccessfullCommandRunner
+		(notempty $ getmaybe "ignore-command")
+		(getbool "ignore" False)
+	annexsync <- mkDynamicConfig successfullCommandRunner
+		(notempty $ getmaybe "sync-command")
+		(getbool "sync" True)
+	return $ RemoteGitConfig
+		{ remoteAnnexCost = getmayberead "cost"
+		, remoteAnnexCostCommand = notempty $ getmaybe "cost-command"
+		, remoteAnnexIgnore = annexignore
+		, remoteAnnexSync = annexsync
+		, remoteAnnexPull = getbool "pull" True
+		, remoteAnnexPush = getbool "push" True
+		, remoteAnnexReadOnly = getbool "readonly" False
+		, remoteAnnexVerify = getbool "verify" True
+		, remoteAnnexTrustLevel = notempty $ getmaybe "trustlevel"
+		, remoteAnnexStartCommand = notempty $ getmaybe "start-command"
+		, remoteAnnexStopCommand = notempty $ getmaybe "stop-command"
+		, remoteAnnexAvailability = getmayberead "availability"
+		, remoteAnnexBare = getmaybebool "bare"
+	
+		, remoteAnnexShell = getmaybe "shell"
+		, remoteAnnexSshOptions = getoptions "ssh-options"
+		, remoteAnnexRsyncOptions = getoptions "rsync-options"
+		, remoteAnnexRsyncDownloadOptions = getoptions "rsync-download-options"
+		, remoteAnnexRsyncUploadOptions = getoptions "rsync-upload-options"
+		, remoteAnnexRsyncTransport = getoptions "rsync-transport"
+		, remoteAnnexGnupgOptions = getoptions "gnupg-options"
+		, remoteAnnexGnupgDecryptOptions = getoptions "gnupg-decrypt-options"
+		, remoteAnnexRsyncUrl = notempty $ getmaybe "rsyncurl"
+		, remoteAnnexBupRepo = getmaybe "buprepo"
+		, remoteAnnexTahoe = getmaybe "tahoe"
+		, remoteAnnexBupSplitOptions = getoptions "bup-split-options"
+		, remoteAnnexDirectory = notempty $ getmaybe "directory"
+		, remoteAnnexGCrypt = notempty $ getmaybe "gcrypt"
+		, remoteAnnexDdarRepo = getmaybe "ddarrepo"
+		, remoteAnnexHookType = notempty $ getmaybe "hooktype"
+		, remoteAnnexExternalType = notempty $ getmaybe "externaltype"
+		, remoteGitConfig = extractGitConfig r
+		}
   where
 	getbool k d = fromMaybe d $ getmaybebool k
 	getmaybebool k = Git.Config.isTrue =<< getmaybe k
@@ -275,5 +287,6 @@ notempty Nothing = Nothing
 notempty (Just "") = Nothing
 notempty (Just s) = Just s
 
-instance Default RemoteGitConfig where
-	def = extractRemoteGitConfig Git.Construct.fromUnknown "dummy"
+dummyRemoteGitConfig :: IO RemoteGitConfig
+dummyRemoteGitConfig = atomically $ 
+	extractRemoteGitConfig Git.Construct.fromUnknown "dummy"

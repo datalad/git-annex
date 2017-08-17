@@ -19,12 +19,13 @@ import Types.Remote (RemoteConfig)
 import Types.StandardGroups
 import Logs.Remote
 import Git.Types (RemoteName)
+import Assistant.Gpg
+import Types.GitConfig
 
 import qualified Data.Map as M
 #endif
 import qualified Data.Text as T
 import Network.URI
-import Assistant.Gpg
 
 webDAVConfigurator :: Widget -> Handler Html
 webDAVConfigurator = page "Add a WebDAV repository" (Just Configuration)
@@ -94,8 +95,9 @@ postEnableWebDAVR uuid = do
 	let c = fromJust $ M.lookup uuid m
 	let name = fromJust $ M.lookup "name" c
 	let url = fromJust $ M.lookup "url" c
-	mcreds <- liftAnnex $
-		getRemoteCredPairFor "webdav" c def (WebDAV.davCreds uuid)
+	mcreds <- liftAnnex $ do
+		dummycfg <- liftIO dummyRemoteGitConfig
+		getRemoteCredPairFor "webdav" c dummycfg (WebDAV.davCreds uuid)
 	case mcreds of
 		Just creds -> webDAVConfigurator $ liftH $
 			makeWebDavRemote enableSpecialRemote name creds M.empty

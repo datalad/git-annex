@@ -20,6 +20,8 @@ import qualified Remote.Git
 import Logs.UUID
 import Annex.UUID
 import Config
+import Config.DynamicConfig
+import Types.GitConfig
 
 import qualified Data.Map as M
 
@@ -76,7 +78,9 @@ startSpecialRemote name config (Just (u, c)) = do
 	let fullconfig = config `M.union` c	
 	t <- either giveup return (Annex.SpecialRemote.findType fullconfig)
 	showStart "enableremote" name
-	gc <- maybe def Remote.gitconfig <$> Remote.byUUID u
+	gc <- maybe (liftIO dummyRemoteGitConfig) 
+		(return . Remote.gitconfig)
+		=<< Remote.byUUID u
 	next $ performSpecialRemote t u fullconfig gc
 
 performSpecialRemote :: RemoteType -> UUID -> R.RemoteConfig -> RemoteGitConfig -> CommandPerform
@@ -109,5 +113,6 @@ unknownNameError prefix = do
   where
 	isdisabled r = anyM id
 		[ (==) NoUUID <$> getRepoUUID r
-		, remoteAnnexIgnore <$> Annex.getRemoteGitConfig r
+		, liftIO . getDynamicConfig . remoteAnnexIgnore
+			=<< Annex.getRemoteGitConfig r
 		]

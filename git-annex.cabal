@@ -792,6 +792,7 @@ Executable git-annex
     Config
     Config.Cost
     Config.Files
+    Config.DynamicConfig
     Config.GitConfig
     Creds
     Crypto
