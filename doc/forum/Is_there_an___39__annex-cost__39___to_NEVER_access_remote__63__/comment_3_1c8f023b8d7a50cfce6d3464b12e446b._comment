@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-08-17T16:06:44Z"
+ content="""
+Another good reason to have a separate config is it should probably
+block `git annex sync` from pulling/pushing the remote. Cost does not
+affect pulling and pushing.
+
+The two config settings `annex-ignore` and
+`annex-sync` are the non-dynamic ways to control this. 
+So perhaps the way that annex-cost-command is the dynamic form of
+annex-cost, there ought to be annex-ignore-command and annex-sync-command.
+
+That also allows for situations like a network where you want git-annex
+sync to only push the git repository but not annexed contents.
+"""]]
