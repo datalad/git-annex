@@ -50,6 +50,11 @@ closeManager :: Manager -> IO ()
 closeManager _ = return ()
 #endif
 
+#if ! MIN_VERSION_http_client(0,5,0)
+responseTimeoutNone :: Maybe Int
+responseTimeoutNone = Nothing
+#endif
+
 managerSettings :: ManagerSettings
 #if MIN_VERSION_http_conduit(2,1,7)
 managerSettings = tlsManagerSettings

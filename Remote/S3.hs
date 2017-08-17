@@ -23,7 +23,7 @@ import qualified Data.Map as M
 import Data.Char
 import Network.Socket (HostName)
 import Network.HTTP.Conduit (Manager, newManager)
-import Network.HTTP.Client (managerResponseTimeout, responseStatus, responseBody, RequestBody(..))
+import Network.HTTP.Client (responseStatus, responseBody, RequestBody(..))
 import Network.HTTP.Types
 import Control.Monad.Trans.Resource
 import Control.Monad.Catch
@@ -49,13 +49,6 @@ import Utility.FileSystemEncoding
 import Annex.Content
 import Annex.Url (withUrlOptions)
 import Utility.Url (checkBoth, managerSettings, closeManager)
-
-#if MIN_VERSION_http_client(0,5,0)
-import Network.HTTP.Client (responseTimeoutNone)
-#else
-responseTimeoutNone :: Maybe Int
-responseTimeoutNone = Nothing
-#endif
 
 type BucketName = String
 
