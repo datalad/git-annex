@@ -38,6 +38,7 @@ import Types.Transfer
 import Types.Creds
 import Annex.DirHashes
 import Utility.Tmp
+import Utility.SshHost
 
 import qualified Data.Map as M
 
@@ -120,7 +121,8 @@ rsyncTransport gc url
 		case fromNull ["ssh"] (remoteAnnexRsyncTransport gc) of
 			"ssh":sshopts -> do
 				let (port, sshopts') = sshReadPort sshopts
-				    userhost = takeWhile (/=':') url
+				    userhost = either error id $ mkSshHost $ 
+				    	takeWhile (/= ':') url
 				(Param "ssh":) <$> sshOptions ConsumeStdin
 					(userhost, port) gc
 					(map Param $ loginopt ++ sshopts')

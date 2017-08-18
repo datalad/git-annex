@@ -19,13 +19,17 @@ import Remote.Helper.Messages
 import Messages.Progress
 import Utility.Metered
 import Utility.Rsync
+import Utility.SshHost
 import Types.Remote
 import Types.Transfer
 import Config
 
 toRepo :: ConsumeStdin -> Git.Repo -> RemoteGitConfig -> SshCommand -> Annex (FilePath, [CommandParam])
 toRepo cs r gc remotecmd = do
-	let host = fromMaybe (giveup "bad ssh url") $ Git.Url.hostuser r
+	let host = maybe
+		(giveup "bad ssh url")
+		(either error id . mkSshHost)
+		(Git.Url.hostuser r)
 	sshCommand cs (host, Git.Url.port r) gc remotecmd
 
 {- Generates parameters to run a git-annex-shell command on a remote

@@ -1055,6 +1055,7 @@ Executable git-annex
     Utility.SimpleProtocol
     Utility.Split
     Utility.SshConfig
+    Utility.SshHost
     Utility.Su
     Utility.SystemDirectory
     Utility.TList

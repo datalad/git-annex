@@ -48,6 +48,7 @@ import Utility.Rsync
 import Utility.Tmp
 import Logs.Remote
 import Utility.Gpg
+import Utility.SshHost
 
 remote :: RemoteType
 remote = RemoteType {
@@ -158,8 +159,9 @@ rsyncTransport r gc
 		let rsyncpath = if "/~/" `isPrefixOf` path
 			then drop 3 path
 			else path
-		opts <- sshOptions ConsumeStdin (host, Nothing) gc []
-		return (rsyncShell $ Param "ssh" : opts, host ++ ":" ++ rsyncpath, AccessShell)
+		let sshhost = either error id (mkSshHost host)
+		opts <- sshOptions ConsumeStdin (sshhost, Nothing) gc []
+		return (rsyncShell $ Param "ssh" : opts, fromSshHost sshhost ++ ":" ++ rsyncpath, AccessShell)
 	othertransport = return ([], loc, AccessDirect)
 
 noCrypto :: Annex a

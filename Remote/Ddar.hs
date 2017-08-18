@@ -21,6 +21,7 @@ import Config.Cost
 import Remote.Helper.Special
 import Annex.Ssh
 import Annex.UUID
+import Utility.SshHost
 
 data DdarRepo = DdarRepo
 	{ ddarRepoConfig :: RemoteGitConfig
@@ -109,9 +110,8 @@ store ddarrepo = fileStorer $ \k src _p -> do
 	liftIO $ boolSystem "ddar" params
 
 {- Convert remote DdarRepo to host and path on remote end -}
-splitRemoteDdarRepo :: DdarRepo -> (String, String)
-splitRemoteDdarRepo ddarrepo =
-	(host, ddarrepo')
+splitRemoteDdarRepo :: DdarRepo -> (SshHost, String)
+splitRemoteDdarRepo ddarrepo = (either error id $ mkSshHost host, ddarrepo')
   where
 	(host, remainder) = span (/= ':') (ddarRepoLocation ddarrepo)
 	ddarrepo' = drop 1 remainder

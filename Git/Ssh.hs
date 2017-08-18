@@ -5,10 +5,11 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Git.Ssh where
+module Git.Ssh (module Git.Ssh, module Utility.SshHost) where
 
 import Common
 import Utility.Env
+import Utility.SshHost
 
 import Data.Char
 
@@ -20,9 +21,6 @@ gitSshCommandEnv = "GIT_SSH_COMMAND"
 
 gitSshEnvSet :: IO Bool
 gitSshEnvSet = anyM (isJust <$$> getEnv) [gitSshEnv, gitSshCommandEnv]
-
--- Either a hostname, or user@host
-type SshHost = String
 
 type SshPort = Integer
 
@@ -59,8 +57,8 @@ gitSsh' host mp cmd extrasshparams = do
 
 	-- Git passes exactly these parameters to the ssh command.
 	gitps = map Param $ case mp of
-		Nothing -> [host, cmd]
-		Just p -> [host, "-p", show p, cmd]
+		Nothing -> [fromSshHost host, cmd]
+		Just p -> [fromSshHost host, "-p", show p, cmd]
 
 	-- Passing any extra parameters to the ssh command may
 	-- break some commands.

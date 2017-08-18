@@ -62,19 +62,18 @@ sshCommand cs (host, port) gc remotecmd = ifM (liftIO safe_GIT_SSH)
   where
 	go = do
 		ps <- sshOptions cs (host, port) gc []
-		return ("ssh", Param host:ps++[Param remotecmd])
+		return ("ssh", Param (fromSshHost host):ps++[Param remotecmd])
 
 {- Generates parameters to ssh to a given host (or user@host) on a given
  - port. This includes connection caching parameters, and any
  - ssh-options. Note that the host to ssh to and the command to run
  - are not included in the returned options. -}
-sshOptions :: ConsumeStdin -> (String, Maybe Integer) -> RemoteGitConfig -> [CommandParam] -> Annex [CommandParam]
+sshOptions :: ConsumeStdin -> (SshHost, Maybe Integer) -> RemoteGitConfig -> [CommandParam] -> Annex [CommandParam]
 sshOptions cs (host, port) gc opts = go =<< sshCachingInfo (host, port)
   where
 	go (Nothing, params) = return $ mkparams cs params
 	go (Just socketfile, params) = do
-		prepSocket socketfile gc
-			(Param host : mkparams NoConsumeStdin params)
+		prepSocket socketfile gc host (mkparams NoConsumeStdin params)
 			
 		return $ mkparams cs params
 	mkparams cs' ps = concat
@@ -98,7 +97,7 @@ consumeStdinParams NoConsumeStdin = [Param "-n"]
 
 {- Returns a filename to use for a ssh connection caching socket, and
  - parameters to enable ssh connection caching. -}
-sshCachingInfo :: (String, Maybe Integer) -> Annex (Maybe FilePath, [CommandParam])
+sshCachingInfo :: (SshHost, Maybe Integer) -> Annex (Maybe FilePath, [CommandParam])
 sshCachingInfo (host, port) = go =<< sshCacheDir
   where
 	go Nothing = return (Nothing, [])
@@ -169,8 +168,8 @@ portParams (Just port) = [Param "-p", Param $ show port]
  - Locks the socket lock file to prevent other git-annex processes from
  - stopping the ssh multiplexer on this socket.
  -}
-prepSocket :: FilePath -> RemoteGitConfig -> [CommandParam] -> Annex ()
-prepSocket socketfile gc sshparams = do
+prepSocket :: FilePath -> RemoteGitConfig -> SshHost -> [CommandParam] -> Annex ()
+prepSocket socketfile gc sshhost sshparams = do
 	-- There could be stale ssh connections hanging around
 	-- from a previous git-annex run that was interrupted.
 	-- This must run only once, before we have made any ssh connection,
@@ -205,7 +204,8 @@ prepSocket socketfile gc sshparams = do
 	-- get the connection started now.
 	makeconnection socketlock =
 		whenM (isNothing <$> fromLockCache socketlock) $ do
-			let startps = sshparams ++ startSshConnection gc
+			let startps = Param (fromSshHost sshhost) :
+				sshparams ++ startSshConnection gc
 			-- When we can start the connection in batch mode,
 			-- ssh won't prompt to the console.
 			(_, connected) <- liftIO $ processTranscript "ssh"
@@ -298,9 +298,10 @@ forceStopSsh socketfile = do
  - of the path to a socket file. At the same time, it needs to be unique
  - for each host.
  -}
-hostport2socket :: String -> Maybe Integer -> FilePath
-hostport2socket host Nothing = hostport2socket' host
-hostport2socket host (Just port) = hostport2socket' $ host ++ "!" ++ show port
+hostport2socket :: SshHost -> Maybe Integer -> FilePath
+hostport2socket host Nothing = hostport2socket' $ fromSshHost host
+hostport2socket host (Just port) = hostport2socket' $
+	fromSshHost host ++ "!" ++ show port
 hostport2socket' :: String -> FilePath
 hostport2socket' s
 	| length s > lengthofmd5s = show $ md5 $ encodeBS s
@@ -385,18 +386,18 @@ sshOptionsTo remote gc localr
 			( unchanged
 			, do
 				let port = Git.Url.port remote
-				(msockfile, cacheparams) <- sshCachingInfo (host, port)
+				let sshhost = either error id (mkSshHost host)
+				(msockfile, cacheparams) <- sshCachingInfo (sshhost, port)
 				case msockfile of
 					Nothing -> use []
 					Just sockfile -> do
-						prepSocket sockfile gc $
-							Param host : concat
-								[ cacheparams
-								, map Param (remoteAnnexSshOptions gc)
-								, portParams port
-								, consumeStdinParams NoConsumeStdin
-								, [Param "-T"]
-								]
+						prepSocket sockfile gc sshhost $ concat
+							[ cacheparams
+							, map Param (remoteAnnexSshOptions gc)
+							, portParams port
+							, consumeStdinParams NoConsumeStdin
+							, [Param "-T"]
+							]
 						use cacheparams
 			)
   where
