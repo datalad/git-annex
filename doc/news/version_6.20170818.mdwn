@@ -1,3 +1,7 @@
+**Note** this is a security fix release. While the security
+hole needs perhaps some social engineering to exploit, a prompt upgrade is
+strongly recommended.
+
 git-annex 6.20170818 released with [[!toggle text="these changes"]]
 [[!toggleable text="""
    * Security fix: Disallow hostname starting with a dash, which
