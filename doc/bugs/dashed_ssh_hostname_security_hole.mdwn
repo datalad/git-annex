@@ -16,7 +16,7 @@ user is to use initremote with a ssh remote, so embedding the URL in the
 git-annex branch. Then the victim would enable it with enableremote.
 
 This was fixed in version 6.20170818. Now there's a SshHost type that
-is not allowed to start with a dash, and every invocation of git-annex is
+is not allowed to start with a dash, and every invocation of ssh is
 in a function that takes a SshHost. 
 
 [[done]]
