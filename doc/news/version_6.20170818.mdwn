@@ -1,6 +1,9 @@
-**Note** this is a security fix release. While the security
-hole needs perhaps some social engineering to exploit, a prompt upgrade is
-strongly recommended.
+**Note** this is a security fix release. A prompt upgrade is strongly
+recommended. Attacks using this security hole will involve the attacker
+either providing a ssh repository url to the user, or the user pulling from
+a git-annex repository provided by an attacker and then running `git annex
+enableremote`. For details about the security hole, see
+[[bugs/dashed_ssh_hostname_security_hole]].
 
 git-annex 6.20170818 released with [[!toggle text="these changes"]]
 [[!toggleable text="""
