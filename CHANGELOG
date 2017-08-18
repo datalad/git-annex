@@ -1,12 +1,14 @@
-git-annex (6.20170521) UNRELEASED; urgency=medium
+git-annex (6.20170818) unstable; urgency=high
 
   * Security fix: Disallow hostname starting with a dash, which
     would get passed to ssh and be treated an option. This could
-    be used by an attacker who provides a crafted ssh url to execute
-    arbitrary code via -oProxyCommand.
+    be used by an attacker who provides a crafted repository url
+    to cause the victim to execute arbitrary code via -oProxyCommand.
     (The same class of security hole recently affected git itself.)
+  * git-annex.cabal: Deal with breaking changes in Cabal 2.0.
   * Fix build with QuickCheck 2.10.
   * fsck: Support --json.
+  * move, copy: Support --batch.
   * Added GIT_ANNEX_VECTOR_CLOCK environment variable, which can be used to
     override the default timestamps used in log files in the git-annex
     branch. This is a dangerous environment variable; use with caution.
@@ -15,11 +17,9 @@ git-annex (6.20170521) UNRELEASED; urgency=medium
   * test: Avoid most situations involving failure to delete test
     directories, by forking a worker process and only deleting the test
     directory once it exits.
-  * move, copy: Support --batch.
   * Disable http-client's default 30 second response timeout when HEADing
     an url to check if it exists. Some web servers take quite a long time
     to answer a HEAD request.
-  * Windows: Win32 package has subsumed Win32-extras; update dependency.
   * Added remote configuration settings annex-ignore-command and
     annex-sync-command, which are dynamic equivilants of the annex-ignore
     and annex-sync configurations.
@@ -39,9 +39,9 @@ git-annex (6.20170521) UNRELEASED; urgency=medium
   * Fix the external special remotes git-annex-remote-ipfs, 
     git-annex-remote-torrent and the example.sh template to correctly
     support filenames with spaces.
-  * git-annex.cabal: Deal with breaking changes in Cabal 2.0.
+  * Windows: Win32 package has subsumed Win32-extras; update dependency.
 
- -- Joey Hess <id@joeyh.name>  Sat, 17 Jun 2017 13:02:24 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 18 Aug 2017 11:19:06 -0400
 
 git-annex (6.20170520) unstable; urgency=medium
 
