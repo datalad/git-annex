@@ -1,0 +1,42 @@
+git-annex 6.20170818 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Security fix: Disallow hostname starting with a dash, which
+     would get passed to ssh and be treated an option. This could
+     be used by an attacker who provides a crafted repository url
+     to cause the victim to execute arbitrary code via -oProxyCommand.
+     (The same class of security hole recently affected git itself.)
+   * git-annex.cabal: Deal with breaking changes in Cabal 2.0.
+   * Fix build with QuickCheck 2.10.
+   * fsck: Support --json.
+   * move, copy: Support --batch.
+   * Added GIT\_ANNEX\_VECTOR\_CLOCK environment variable, which can be used to
+     override the default timestamps used in log files in the git-annex
+     branch. This is a dangerous environment variable; use with caution.
+   * Fix a git-annex test failure when run on NFS due to NFS lock files
+     preventing directory removal.
+   * test: Avoid most situations involving failure to delete test
+     directories, by forking a worker process and only deleting the test
+     directory once it exits.
+   * Disable http-client's default 30 second response timeout when HEADing
+     an url to check if it exists. Some web servers take quite a long time
+     to answer a HEAD request.
+   * Added remote configuration settings annex-ignore-command and
+     annex-sync-command, which are dynamic equivilants of the annex-ignore
+     and annex-sync configurations.
+   * Prevent spaces from being embedded in the name of new WORM keys,
+     as that handing spaces in keys would complicate things like the
+     external special remote protocol.
+   * migrate: WORM keys containing spaces will be migrated to not contain
+     spaces anymore.
+   * External special remotes will refuse to operate on keys with spaces in
+     their names. That has never worked correctly due to the design of the
+     external special remote protocol. Display an error message suggesting
+     migration.
+   * Fix incorrect external special remote documentation, which said that
+     the filename parameter to the TRANSFER command could not contain
+     spaces. It can in fact contain spaces. Special remotes implementors
+     that relied on that may need to fix bugs in their special remotes.
+   * Fix the external special remotes git-annex-remote-ipfs,
+     git-annex-remote-torrent and the example.sh template to correctly
+     support filenames with spaces.
+   * Windows: Win32 package has subsumed Win32-extras; update dependency."""]]
