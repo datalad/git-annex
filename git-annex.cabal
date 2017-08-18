@@ -409,30 +409,31 @@ Executable git-annex
     CPP-Options: -DWITH_ASSISTANT
 
   if flag(Assistant)
-    if os(linux)
+    if os(linux) || flag(Android)
       Build-Depends: hinotify
       CPP-Options: -DWITH_INOTIFY
+      Other-Modules: Utility.DirWatcher.INotify
     else
       if os(darwin)
         Build-Depends: hfsevents
         CPP-Options: -DWITH_FSEVENTS
+        Other-Modules: Utility.DirWatcher.FSEvents
       else
         if os(windows)
           Build-Depends: Win32-notify
           CPP-Options: -DWITH_WIN32NOTIFY
+          Other-Modules: Utility.DirWatcher.Win32Notify
         else
           if (! os(solaris) && ! os(linux))
-            if flag(Android)
-              Build-Depends: hinotify
-              CPP-Options: -DWITH_INOTIFY
-            else
-              CPP-Options: -DWITH_KQUEUE
-              C-Sources: Utility/libkqueue.c
+            CPP-Options: -DWITH_KQUEUE
+            C-Sources: Utility/libkqueue.c
+            Other-Modules: Utility.DirWatcher.Kqueue
 
   if flag(Dbus)
     if (os(linux))
       Build-Depends: dbus (>= 0.10.7), fdo-notify (>= 0.3)
       CPP-Options: -DWITH_DBUS -DWITH_DESKTOP_NOTIFY -DWITH_DBUS_NOTIFICATIONS
+      Other-Modules: Utility.DBus
 
   if flag(Android)
     Build-Depends: data-endian
@@ -481,6 +482,7 @@ Executable git-annex
   if flag(Benchmark)
     Build-Depends: criterion, deepseq
     CPP-Options: -DWITH_BENCHMARK
+    Other-Modules: Command.Benchmark
 
   Other-Modules:
     Annex
@@ -651,20 +653,10 @@ Executable git-annex
     Backend.URL
     Backend.Utilities
     Backend.WORM
-    Build.BuildVersion
     Build.BundledPrograms
     Build.Configure
     Build.DesktopFile
-    Build.DistributionUpdate
-    Build.EvilLinker
-    Build.EvilSplicer
-    Build.InstallDesktopFile
-    Build.LinuxMkLibs
-    Build.MakeMans
     Build.Mans
-    Build.NullSoftInstaller
-    Build.OSXMkLibs
-    Build.Standalone
     Build.TestConfig
     Build.Version
     BuildInfo
@@ -687,7 +679,6 @@ Executable git-annex
     Command.AddUrl
     Command.Adjust
     Command.Assistant
-    Command.Benchmark
     Command.CalcKey
     Command.CheckPresentKey
     Command.Commit
@@ -984,16 +975,11 @@ Executable git-annex
     Utility.Bloom
     Utility.CoProcess
     Utility.CopyFile
-    Utility.DBus
     Utility.Daemon
     Utility.Data
     Utility.DataUnits
     Utility.DirWatcher
-    Utility.DirWatcher.FSEvents
-    Utility.DirWatcher.INotify
-    Utility.DirWatcher.Kqueue
     Utility.DirWatcher.Types
-    Utility.DirWatcher.Win32Notify
     Utility.Directory
     Utility.DiskFree
     Utility.Dot
@@ -1016,14 +1002,10 @@ Executable git-annex
     Utility.LockFile
     Utility.LockFile.LockStatus
     Utility.LockFile.PidLock
-    Utility.LockFile.Posix
-    Utility.LockFile.Windows
     Utility.LockPool
     Utility.LockPool.LockHandle
     Utility.LockPool.PidLock
-    Utility.LockPool.Posix
     Utility.LockPool.STM
-    Utility.LockPool.Windows
     Utility.LogFile
     Utility.Lsof
     Utility.MagicWormhole
@@ -1070,5 +1052,14 @@ Executable git-annex
     Utility.UserInfo
     Utility.Verifiable
     Utility.WebApp
-    Utility.WinProcess
     Utility.Yesod
+
+  if (os(windows))
+    Other-Modules:
+      Utility.LockFile.Windows
+      Utility.LockPool.Windows
+      Utility.WinProcess
+  else
+    Other-Modules:
+      Utility.LockFile.Posix
+      Utility.LockPool.Posix
