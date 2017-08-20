@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
+ subject="point to point?"
+ date="2017-03-31T13:08:59Z"
+ content="""
+I wonder: could this be used to send blobs to arbitrary hosts as well? I've been looking at the problem of sharing blobs without sharing the git repository (in [[tips/semi-synchronized_remotes]]), and while we have the tor/wormhole and SSH remotes that can be (ab)used for this purpose, uftp seems like a much better fit, feature-wise.
+
+When you run: `git annex multicast --gen-address; git annex sync`, does the `sync` command exchange git refs over multicast?
+
+When you run: `git annex multicast --send`, will that work for all git-annex blobs, or just the ones that are in the local checkout?
+
+Looking at the [server usage](http://uftp-multicast.sourceforge.net/server_usage.txt), i see that multicast is the default, but that you can also unicast to specific hosts:
+
+       Or in unicast mode:
+
+	    uftp -M host_or_ip file
+
+       Where host_or_ip is the hostname or unicast IP address of the  host  to
+       send to.
+
+       To send only to certain hosts:
+
+	    uftp -H client_id_1,client_id_2,client_id_3 file_to_send
+
+       or:
+
+	    uftp -H @file_containing_list_of_clients file_to_send
+
+Could this be used to send to arbitrary, non-local hosts on the internet?
+
+And how about tor support? Could this simplify the encrypted setup?
+
+This amazing feature just brings up more questions for me, but i'm really glad to see this come. It certainly addresses parts of [[todo/Bittorrent-like_features]], and is probably the first remote that supports bandwidth optimizations for multiple downloads, or rather, in this case, uploads. :)
+
+Thanks so much for your hard work!
+The feature set of git-annex never ceases to amaze me - new features just keep on coming, this is great!
+"""]]

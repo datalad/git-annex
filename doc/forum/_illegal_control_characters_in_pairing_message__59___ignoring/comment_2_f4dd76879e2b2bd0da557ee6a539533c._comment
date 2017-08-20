@@ -1,0 +1,95 @@
+[[!comment format=mdwn
+ username="butirsky@86ff3803c45a8a1e5fc253d2728ce493c8addf96"
+ nickname="butirsky"
+ avatar="http://cdn.libravatar.org/avatar/bf8e56c57b179935c6f52ebc4690c2bf"
+ subject="comment 2"
+ date="2017-01-18T13:19:43Z"
+ content="""
+Having the same issue, the error only on one side, syncing doesn't start:
+
+```
+[2017-01-18 15:25:30.603909] main: starting assistant version 5.20151208-1build1
+[2017-01-18 15:25:30.615017] Cronner: You should enable consistency checking to protect your data. 
+
+  No known volume monitor available through dbus; falling back to mtab polling
+(scanning...) [2017-01-18 15:25:31.040087] Watcher: Performing startup scan
+(started...) 
+(scanning...) [2017-01-18 15:27:19.254315] Watcher: Performing startup scan
+(started...) git-annex: Daemon is already running.
+warning: no common commits
+From /home/abutirsky/Desktop/annex
+ * [new branch]      annex/direct/master -> annex/annex/direct/master
+ * [new branch]      git-annex  -> annex/git-annex
+ * [new branch]      master     -> annex/master
+
+(merging annex/git-annex into git-annex...)
+(recording state in git...)
+
+Already up-to-date!
+Merge made by the 'recursive' strategy.
+[2017-01-18 15:29:18.003333] main: Syncing with annex 
+[2017-01-18 15:29:18.003518] Pusher: Syncing with annex 
+To /home/abutirsky/Desktop/annex
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      master -> synced/master
+Everything up-to-date
+
+(nautilus:19391): GLib-GIO-CRITICAL **: g_dbus_interface_skeleton_unexport: assertion 'interface_->priv->connections != NULL' failed
+
+(nautilus:19391): GLib-GIO-CRITICAL **: g_dbus_interface_skeleton_unexport: assertion 'interface_->priv->connections != NULL' failed
+
+(nautilus:19391): Gtk-CRITICAL **: gtk_icon_theme_get_for_screen: assertion 'GDK_IS_SCREEN (screen)' failed
+
+(nautilus:19391): GLib-GObject-WARNING **: invalid (NULL) pointer instance
+
+(nautilus:19391): GLib-GObject-CRITICAL **: g_signal_connect_object: assertion 'G_TYPE_CHECK_INSTANCE (instance)' failed
+git-annex: Daemon is already running.
+(scanning...) [2017-01-18 15:34:47.539423] Watcher: Performing startup scan
+(started...) git-annex: Daemon is already running.
+git-annex: Daemon is already running.
+git-annex: Daemon is already running.
+
+
+  illegal control characters in pairing message; ignoring
+
+  illegal control characters in pairing message; ignoring
+
+  illegal control characters in pairing message; ignoring
+
+  illegal control characters in pairing message; ignoring
+
+  illegal control characters in pairing message; ignoring
+
+  illegal control characters in pairing message; ignoring
+
+  illegal control characters in pairing message; ignoring
+
+  illegal control characters in pairing message; ignoring
+
+  illegal control characters in pairing message; ignoring
+Generating public/private rsa key pair.
+Your identification has been saved in /tmp/git-annex-keygen.0/key.
+Your public key has been saved in /tmp/git-annex-keygen.0/key.pub.
+The key fingerprint is:
+SHA256:dJ9VU8CQ+hHL2fsta1E5PkxTvkqDThbyOainUXZvaY4 abutirsky@sml-pc-066
+The key's randomart image is:
++---[RSA 2048]----+
+|            .+.o+|
+|            o ..o|
+|        . .o =..o|
+|       . o.o=o.=o|
+|        So+o*.+o+|
+|        o..Boo+= |
+|       .. + o=ooo|
+|       ... .=.o o|
+|       .o  E o.o |
++----[SHA256]-----+
+[2017-01-18 15:48:44.423064] main: Pairing in progress
+
+  illegal control characters in pairing message; ignoring
+
+  illegal control characters in pairing message; ignoring
+
+  illegal control characters in pairing message; ignoring
+```
+"""]]

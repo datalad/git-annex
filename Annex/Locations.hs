@@ -69,6 +69,7 @@ module Annex.Locations (
 	hashDirMixed,
 	hashDirLower,
 	preSanitizeKeyName,
+	reSanitizeKeyName,
 
 	prop_isomorphic_fileKey
 ) where
@@ -77,6 +78,7 @@ import Data.Char
 import Data.Default
 
 import Common
+import Key
 import Types.Key
 import Types.UUID
 import Types.GitConfig
@@ -171,7 +173,7 @@ gitAnnexLocation' key r config crippled symlinkssupported checker gitdir
 gitAnnexLink :: FilePath -> Key -> Git.Repo -> GitConfig -> IO FilePath
 gitAnnexLink file key r config = do
 	currdir <- getCurrentDirectory
-	let absfile = fromMaybe whoops $ absNormPathUnix currdir file
+	let absfile = absNormPathUnix currdir file
 	let gitdir = getgitdir currdir
 	loc <- gitAnnexLocation' key r config False False (\_ -> return True) gitdir
 	toInternalGitPath <$> relPathDirToFile (parentDir absfile) loc
@@ -181,10 +183,10 @@ gitAnnexLink file key r config = do
 		 - supporting symlinks; generate link target that will
 		 - work portably. -}
 		| not (coreSymlinks config) && needsSubmoduleFixup r =
-			fromMaybe whoops $ absNormPathUnix currdir $
-				Git.repoPath r </> ".git"
+			absNormPathUnix currdir $ Git.repoPath r </> ".git"
 		| otherwise = Git.localGitDir r
-	whoops = error $ "unable to normalize " ++ file
+	absNormPathUnix d p = toInternalGitPath $
+		absPathFrom (toInternalGitPath d) (toInternalGitPath p)
 
 {- Calculates a symlink target as would be used in a typical git
  - repository, with .git in the top of the work tree. -}
@@ -412,7 +414,7 @@ gitAnnexAssistantDefaultDir :: FilePath
 gitAnnexAssistantDefaultDir = "annex"
 
 {- Sanitizes a String that will be used as part of a Key's keyName,
- - dealing with characters that cause problems on substandard filesystems.
+ - dealing with characters that cause problems.
  -
  - This is used when a new Key is initially being generated, eg by getKey.
  - Unlike keyFile and fileKey, it does not need to be a reversable
@@ -425,17 +427,27 @@ gitAnnexAssistantDefaultDir = "annex"
  - same key.
  -}
 preSanitizeKeyName :: String -> String
-preSanitizeKeyName = concatMap escape
+preSanitizeKeyName = preSanitizeKeyName' False
+
+preSanitizeKeyName' :: Bool -> String -> String
+preSanitizeKeyName' resanitize = concatMap escape
   where
 	escape c
 		| isAsciiUpper c || isAsciiLower c || isDigit c = [c]
-		| c `elem` ".-_ " = [c] -- common, assumed safe
+		| c `elem` ".-_" = [c] -- common, assumed safe
 		| c `elem` "/%:" = [c] -- handled by keyFile
 		-- , is safe and uncommon, so will be used to escape
 		-- other characters. By itself, it is escaped to 
 		-- doubled form.
-		| c == ',' = ",,"
+		| c == ',' = if not resanitize
+			then ",,"
+			else ","
 		| otherwise = ',' : show (ord c)
+
+{- Converts a keyName that has been santizied with an old version of
+ - preSanitizeKeyName to be sanitized with the new version. -}
+reSanitizeKeyName :: String -> String
+reSanitizeKeyName = preSanitizeKeyName' True
 
 {- Converts a key into a filename fragment without any directory.
  -
@@ -478,7 +490,7 @@ prop_isomorphic_fileKey s
 	| null s = True -- it's not legal for a key to have no keyName
 	| otherwise= Just k == fileKey (keyFile k)
   where
-	k = stubKey { keyName = s, keyBackendName = "test" }
+	k = stubKey { keyName = s, keyVariety = OtherKey "test" }
 
 {- A location to store a key on a special remote that uses a filesystem.
  - A directory hash is used, to protect against filesystems that dislike

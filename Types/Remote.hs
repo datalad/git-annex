@@ -14,6 +14,7 @@ module Types.Remote
 	, RemoteConfig
 	, RemoteTypeA(..)
 	, RemoteA(..)
+	, SetupStage(..)
 	, Availability(..)
 	, Verification(..)
 	, unVerified
@@ -38,7 +39,11 @@ import Utility.SafeCommand
 import Utility.Url
 
 type RemoteConfigKey = String
+
 type RemoteConfig = M.Map RemoteConfigKey String
+
+data SetupStage = Init | Enable
+	deriving (Eq)
 
 {- There are different types of remotes. -}
 data RemoteTypeA a = RemoteType {
@@ -49,8 +54,8 @@ data RemoteTypeA a = RemoteType {
 	enumerate :: Bool -> a [Git.Repo],
 	-- generates a remote of this type
 	generate :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> a (Maybe (RemoteA a)),
-	-- initializes or changes a remote
-	setup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> a (RemoteConfig, UUID)
+	-- initializes or enables a remote
+	setup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> a (RemoteConfig, UUID)
 }
 
 instance Eq (RemoteTypeA a) where

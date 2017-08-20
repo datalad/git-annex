@@ -3,7 +3,8 @@
 # commands, all options, and will never go out of date!
 _git-annex()
 {
-    local cmdline
+    local CMDLINE
+    local IFS=$'\n'
     CMDLINE=(--bash-completion-index $COMP_CWORD)
 
     for arg in ${COMP_WORDS[@]}; do

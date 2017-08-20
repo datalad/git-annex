@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-02-07T18:59:41Z"
+ content="""
+I've made `initremote` be able to be provided with a uuid=whatever
+parameter to use whatever UUID you like.
+
+Valid use cases include setting up two special remotes that access the same
+data store through two different interfaces. For example, a rsync special
+remote that is also accessible via a NFS mount as a directory special remote.
+
+It can also be used when two unrelated repositories want to use the same
+data store. Of course, dropping data from the data store then becomes a
+problem, since one of the repositories will know it was dropped, and the
+other one won't. Can get into situations where one of the repositories
+was relying on its remote as the only place a file was stored, and so loses
+the only copy it knows about when the other repository moves the content
+from the remote.
+
+For datalad-archives, I think dropping content from that special remote is
+not supported. Which nearly avoids such problems. If so, it should be fine
+to reuse some UUID for all the datalad-archives special remotes in
+different unrelated datalad repositories.
+"""]]

@@ -47,7 +47,7 @@ FAIL (7.16s)
       addurl failed on file:///Users/born/.t/tmprepo0/myurl
 
 1 out of 1 tests failed (28.13s)
-  (This could be due to a bug in git-annex, or an incompatability
+  (This could be due to a bug in git-annex, or an incompatibility
    with utilities, such as git, installed on this system.)
 """]]
 

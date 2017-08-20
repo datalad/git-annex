@@ -25,7 +25,6 @@ import qualified Git.LsFiles as LsFiles
 import qualified Git.DiffTree as DiffTree
 import qualified Remote
 import qualified Annex.Branch
-import Annex.Link
 import Annex.CatFile
 import Annex.WorkTree
 import Types.RefSpec
@@ -269,11 +268,10 @@ withKeysReferencedDiff a getdiff extractsha = do
 	forM_ ds go
 	liftIO $ void clean
   where
-	go d = do
+  	go d = do
 		let sha = extractsha d
 		unless (sha == nullSha) $
-			(parseLinkOrPointer <$> catObject sha)
-				>>= maybe noop a
+			catKey sha >>= maybe noop a
 
 {- Filters out keys that have an associated file that's not modified. -}
 associatedFilesFilter :: [Key] -> Annex [Key]

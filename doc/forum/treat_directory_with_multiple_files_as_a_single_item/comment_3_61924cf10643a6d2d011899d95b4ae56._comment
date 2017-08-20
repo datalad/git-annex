@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-05-24T17:08:59Z"
+ content="""
+Well, there's no way I know of to make git treat a directory as one item in
+history. So even if git-annex didn't, it would not help much.
+
+You can check a tar archive into git-annex as a single file, and have hooks
+to handle unpacking it into the directory and repacking the directory back
+to it.
+"""]]

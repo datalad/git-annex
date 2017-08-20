@@ -43,6 +43,9 @@ transfersDisplay = do
 	ident = "transfers"
 	isrunning info = not $
 		transferPaused info || isNothing (startedTime info)
+	desc transfer info = case associatedFile info of
+		AssociatedFile Nothing -> key2file $ transferKey transfer
+		AssociatedFile (Just af) -> af
 
 {- Simplifies a list of transfers, avoiding display of redundant
  - equivilant transfers. -}

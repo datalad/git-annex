@@ -5,3 +5,6 @@ Right now `git annex import DIR/*` will import all the files in DIR, both those 
 It would be nice if there were an opposite `--only-duplicates` option that could be used to import only the files that are already known to git, ignoring the new files in DIR.
 
 PS: it would also be nice to have aliases like `--only-new-files` and `--skip-new-files` for `--skip-duplicates` and `--only-duplicates`.
+
+> I think that either `git annex reinject --known` or `git annex import
+> --reinject-known` can handle this use case. So, [[done]] --[[Joey]]

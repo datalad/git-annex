@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="johannes@12f1850a57e13cc234b5ebf88a5d3ac68915a6c2"
+ nickname="johannes"
+ avatar="http://cdn.libravatar.org/avatar/7acaf4a71b0b93cc419195f58f4cd54c"
+ subject="Solution"
+ date="2017-01-06T12:19:46Z"
+ content="""
+After the update to 20161231, I tried again. Unfortunately, I am still getting the same error.
+
+However, I noticed that removing the file for which I get the \"is outside repository\" error actually fixes the problem. Once I dropped the file from the annex as well, I was able to re-add the file without triggering this error again.
+
+Please consider this issues as fixed.
+"""]]

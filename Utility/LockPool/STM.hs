@@ -49,9 +49,9 @@ type LockPool = TMVar (M.Map LockFile LockStatus)
 
 -- A shared global variable for the lockPool. Avoids callers needing to
 -- maintain state for this implementation detail.
+{-# NOINLINE lockPool #-}
 lockPool :: LockPool
 lockPool = unsafePerformIO (newTMVarIO M.empty)
-{-# NOINLINE lockPool #-}
 
 -- Updates the LockPool, blocking as necessary if another thread is holding
 -- a conflicting lock.
@@ -62,23 +62,23 @@ lockPool = unsafePerformIO (newTMVarIO M.empty)
 -- Keeping the whole Map in a TMVar accomplishes this, at the expense of
 -- sometimes retrying after unrelated changes in the map.
 waitTakeLock :: LockPool -> LockFile -> LockMode -> STM LockHandle
-waitTakeLock pool file mode = do
-	m <- takeTMVar pool
-	v <- case M.lookup file m of
-		Just (LockStatus mode' n closelockfile)
-			| mode == LockShared && mode' == LockShared ->
-				return $ LockStatus mode (succ n) closelockfile
-			| n > 0 -> retry -- wait for lock
-		_ -> return $ LockStatus mode 1 noop
-	putTMVar pool (M.insert file v m)
-	newTMVar (pool, file)
+waitTakeLock pool file mode = maybe retry return =<< tryTakeLock pool file mode
 
 -- Avoids blocking if another thread is holding a conflicting lock.
 tryTakeLock :: LockPool -> LockFile -> LockMode -> STM (Maybe LockHandle)
-tryTakeLock pool file mode =
-	(Just <$> waitTakeLock pool file mode)
-		`orElse`
-	return Nothing
+tryTakeLock pool file mode = do
+	m <- takeTMVar pool
+	let success v = do
+		putTMVar pool (M.insert file v m)
+		Just <$> newTMVar (pool, file)
+	case M.lookup file m of
+		Just (LockStatus mode' n closelockfile)
+			| mode == LockShared && mode' == LockShared ->
+				success $ LockStatus mode (succ n) closelockfile
+			| n > 0 -> do
+				putTMVar pool m
+				return Nothing
+		_ -> success $ LockStatus mode 1 noop
 
 -- Call after waitTakeLock or tryTakeLock, to register a CloseLockFile
 -- action to run when releasing the lock.

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joshfindit"
+ avatar="http://cdn.libravatar.org/avatar/180f1a763647bfc099e97ac88b8f7b37"
+ subject="comment 2"
+ date="2017-02-04T16:24:32Z"
+ content="""
+Unless I'm not understanding correctly, Git and git-annex have different expected use-cases.
+
+With Git, it assumed that you will have a repository for each contained project, and keep the number of files small for easy replication across devices (which leads to multiple copies)
+With git-annex, it's possible (and seems more convenient for setup/clients) to have a monolithic repository where parts of it are replicated to devices.
+Yes, it's best practice to have multiple complete copies, but as the repository grows to 4TB, 12TB, or more, it's much less likely especially for a 'I guess I'm not a casual user any more' user who has simply been purchasing hard drives and maybe a NAS when needed.
+
+
+Certainly, I'm just being selfish: git-annex looks like an excellent answer to my ongoing question of 'how could I do files better', and this suggestion is squarely aimed at my personal wishlist. If checking integrity and self-healing large-file repositories doesn't interest anyone else then I'll look in to rolling my own solution to share.
+In the meantime; which git-annex hooks do you suggest I look at? (Bonus points if you can share the high-level logic that would make this work)
+"""]]

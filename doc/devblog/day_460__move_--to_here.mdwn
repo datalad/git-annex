@@ -1,0 +1,3 @@
+From the why-did-I-never-think-of-that-before department:
+`git annex move --to=here` implemented today. Useful if you want to
+move a file from whatever remotes might contain it to the local repository.

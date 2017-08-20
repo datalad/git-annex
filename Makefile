@@ -1,4 +1,4 @@
-all=git-annex mans docs
+all=git-annex git-annex-shell mans docs
 
 # set to "./Setup" if you lack a cabal program. Or can be set to "stack"
 BUILDER?=cabal
@@ -14,26 +14,31 @@ endif
 
 build: $(all)
 
-Build/SysConfig.hs: Build/TestConfig.hs Build/Configure.hs
+tmp/configure-stamp: Build/TestConfig.hs Build/Configure.hs
 	if [ "$(BUILDER)" = ./Setup ]; then ghc --make Setup; fi
-	if [ "$(BUILDER)" = stack ]; then \
-		$(BUILDER) build $(BUILDEROPTIONS); \
-	else \
+	if [ "$(BUILDER)" != stack ]; then \
 		$(BUILDER) configure --ghc-options="$(shell Build/collect-ghc-options.sh)"; \
+	else \
+		$(BUILDER) setup; \
 	fi
+	mkdir -p tmp
+	touch tmp/configure-stamp
 
-git-annex: Build/SysConfig.hs
+git-annex: tmp/configure-stamp
 	$(BUILDER) build $(BUILDEROPTIONS)
 	if [ "$(BUILDER)" = stack ]; then \
-		ln -sf $$(find .stack-work/ -name git-annex -type f | grep build/git-annex/git-annex | tail -n 1) git-annex; \
+		ln -sf $$(stack path --dist-dir)/build/git-annex/git-annex git-annex; \
 	else \
 		ln -sf dist/build/git-annex/git-annex git-annex; \
 	fi
-	# Work around https://github.com/haskell/cabal/issues/3524
-	# when not linked dynamically to haskell libs
+# Work around https://github.com/haskell/cabal/issues/3524
+# when not linked dynamically to haskell libs
 	@if ! ldd git-annex | grep -q libHS; then \
 		chrpath -d git-annex || echo "** unable to chrpath git-annex; it will be a little bit slower than necessary"; \
 	fi
+
+git-annex-shell: git-annex
+	ln -sf git-annex git-annex-shell
 
 # These are not built normally.
 git-union-merge.1: doc/git-union-merge.mdwn
@@ -57,14 +62,20 @@ install-bins: build
 	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
 	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-remote-tor-annex
 
-install-misc: Build/InstallDesktopFile
+install-misc: build Build/InstallDesktopFile
 	./Build/InstallDesktopFile $(PREFIX)/bin/git-annex || true
-	install -d $(DESTDIR)$(PREFIX)/share/bash-completion/completions
-	install -m 0644 bash-completion.bash $(DESTDIR)$(PREFIX)/share/bash-completion/completions/git-annex
+	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/bash-completion/completions
+	install -m 0644 bash-completion.bash $(DESTDIR)$(PREFIX)/$(SHAREDIR)/bash-completion/completions/git-annex
+	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/zsh/vendor-completions
+	@./git-annex --zsh-completion-script git-annex > $(DESTDIR)$(PREFIX)/$(SHAREDIR)/zsh/vendor-completions/_git-annex || \
+		echo "** zsh completions not installed; built with too old version of optparse-applicative"
+	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/fish/completions
+	@./git-annex --fish-completion-script git-annex > $(DESTDIR)$(PREFIX)/$(SHAREDIR)/fish/completions/git-annex.fish || \
+		echo "** fish completions not installed; built with too old version of optparse-applicative"
 
 install: install-bins install-docs install-misc
 
-test: git-annex
+test: git-annex git-annex-shell
 	./git-annex test
 
 retest: git-annex
@@ -104,7 +115,7 @@ clean:
 		Setup Build/InstallDesktopFile Build/EvilSplicer \
 		Build/Standalone Build/OSXMkLibs Build/LinuxMkLibs \
 		Build/DistributionUpdate Build/BuildVersion Build/MakeMans \
-		git-union-merge .tasty-rerun-log
+		git-annex-shell git-union-merge .tasty-rerun-log
 	find . -name \*.o -exec rm {} \;
 	find . -name \*.hi -exec rm {} \;
 
@@ -112,7 +123,7 @@ Build/InstallDesktopFile: Build/InstallDesktopFile.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
 Build/EvilSplicer: Build/EvilSplicer.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
-Build/Standalone: Build/Standalone.hs Build/SysConfig.hs
+Build/Standalone: Build/Standalone.hs tmp/configure-stamp
 	$(GHC) --make $@ -Wall -fno-warn-tabs
 Build/OSXMkLibs: Build/OSXMkLibs.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
@@ -122,9 +133,8 @@ Build/MakeMans: Build/MakeMans.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
 
 LINUXSTANDALONE_DEST=tmp/git-annex.linux
-linuxstandalone:
-	$(MAKE) git-annex linuxstandalone-nobuild
-linuxstandalone-nobuild: Build/Standalone Build/LinuxMkLibs
+linuxstandalone: 
+	$(MAKE) git-annex Build/Standalone Build/LinuxMkLibs
 	rm -rf "$(LINUXSTANDALONE_DEST)"
 	mkdir -p tmp
 	cp -R standalone/linux/skel "$(LINUXSTANDALONE_DEST)"
@@ -144,6 +154,7 @@ linuxstandalone-nobuild: Build/Standalone Build/LinuxMkLibs
 	install -d "$(LINUXSTANDALONE_DEST)/git-core"
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(LINUXSTANDALONE_DEST)"/git-core && tar x)
 	install -d "$(LINUXSTANDALONE_DEST)/templates"
+	(cd "$(shell git --man-path)"/../git-core/templates && tar c .) | (cd "$(LINUXSTANDALONE_DEST)"/templates && tar x)
 	install -d "$(LINUXSTANDALONE_DEST)/magic"
 	cp /usr/share/file/magic.mgc "$(LINUXSTANDALONE_DEST)/magic"
 	cp /usr/share/i18n -a "$(LINUXSTANDALONE_DEST)"
@@ -180,13 +191,15 @@ dpkg-buildpackage%: prep-standalone
 
 OSXAPP_DEST=tmp/build-dmg/git-annex.app
 OSXAPP_BASE=$(OSXAPP_DEST)/Contents/MacOS/bundle
-osxapp: Build/Standalone Build/OSXMkLibs
-	$(MAKE) git-annex
+osxapp:
+	$(MAKE) git-annex Build/Standalone Build/OSXMkLibs
 
 	# Remove all RPATHs, both because this overloads the linker on
 	# OSX Sierra, and to avoid the binary looking in someone's home
 	# directory.
-	eval install_name_tool $$(otool -l git-annex | grep "path " | sed 's/.*path /-delete_rpath /' | sed 's/ (.*//') git-annex
+	if otool -l git-annex | grep -q "path "; then \
+		eval install_name_tool $$(otool -l git-annex | grep "path " | sed 's/.*path /-delete_rpath /' | sed 's/ (.*//') git-annex; \
+	fi
 
 	rm -rf "$(OSXAPP_DEST)" "$(OSXAPP_BASE)"
 	install -d tmp/build-dmg
@@ -205,6 +218,7 @@ osxapp: Build/Standalone Build/OSXMkLibs
 
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(OSXAPP_BASE)" && tar x)
 	install -d "$(OSXAPP_BASE)/templates"
+	(cd "$(shell git --man-path)"/../git-core/templates && tar c .) | (cd "$(OSXAPP_BASE)"/templates && tar x)
 	install -d "$(OSXAPP_BASE)/magic"
 	if [ -e "$(OSX_MAGIC_FILE)" ]; then \
 		cp "$(OSX_MAGIC_FILE)" "$(OSXAPP_BASE)/magic/magic.mgc"; \

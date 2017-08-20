@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~barthelemy"
+ nickname="barthelemy"
+ avatar="http://cdn.libravatar.org/avatar/e99cb15f6029de3225721b3ebdd0233905eb69698e9b229a8c4cc510a4135438"
+ subject="I found it out!"
+ date="2017-05-05T12:41:59Z"
+ content="""
+On the laptop, I just have to run
+
+    git annex enableremote usbdrive directory=/Volumes/usbdrive/annex
+
+But I have not found a way to disable it (for use when the drive is unplugged) yet. It may not matter.
+"""]]

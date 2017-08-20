@@ -12,9 +12,28 @@ Resolves a conflicted merge, by adding both conflicting versions of the
 file to the tree, using variants of their filename. This is done
 automatically when using `git annex sync` or `git annex merge`.
 
-Note that only merge conflicts that involve an annexed file are resolved.
-Merge conflicts between two files that are not annexed will not be
-automatically resolved.
+Note that only merge conflicts that involve one or more annexed files
+are resolved. Merge conflicts between two files that are not annexed
+will not be automatically resolved.
+
+# EXAMPLE
+
+Suppose Alice commits a change to annexed file `foo`, and Bob commits
+a different change to the same file `foo`. 
+
+Merging between them will then fail, and git will present the
+merge conflict as a file `foo` pointing to one version of the
+git-annex symlink, with `git status` indicating that `foo` has an
+unresolved conflict.
+
+Running `git annex resolvemerge` in this situation will resolve the merge
+conflict, by replacing the file `foo` with files named like
+`foo.variant-c696` and `foo.variant-f16a`. One of the files has the content
+that Alice committed, and the other has the content that Bob committed.
+
+The user can then examine the two variants of the file, and either merge
+the two changes into a single file, or rename one of them back to `foo`
+and delete the other.
 
 # SEE ALSO
 

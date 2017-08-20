@@ -109,8 +109,8 @@ gen r u c gc
 			rmt
 	externaltype = fromMaybe (giveup "missing externaltype") (remoteAnnexExternalType gc)
 
-externalSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-externalSetup mu _ c gc = do
+externalSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+externalSetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	let externaltype = fromMaybe (giveup "Specify externaltype=") $
 		M.lookup "externaltype" c
@@ -134,7 +134,7 @@ externalSetup mu _ c gc = do
 
 store :: External -> Storer
 store external = fileStorer $ \k f p ->
-	handleRequest external (TRANSFER Upload k f) (Just p) $ \resp ->
+	handleRequestKey external (\sk -> TRANSFER Upload sk f) k (Just p) $ \resp ->
 		case resp of
 			TRANSFER_SUCCESS Upload k' | k == k' ->
 				Just $ return True
@@ -146,7 +146,7 @@ store external = fileStorer $ \k f p ->
 
 retrieve :: External -> Retriever
 retrieve external = fileRetriever $ \d k p -> 
-	handleRequest external (TRANSFER Download k d) (Just p) $ \resp ->
+	handleRequestKey external (\sk -> TRANSFER Download sk d) k (Just p) $ \resp ->
 		case resp of
 			TRANSFER_SUCCESS Download k'
 				| k == k' -> Just $ return ()
@@ -156,7 +156,7 @@ retrieve external = fileRetriever $ \d k p ->
 
 remove :: External -> Remover
 remove external k = safely $ 
-	handleRequest external (REMOVE k) Nothing $ \resp ->
+	handleRequestKey external REMOVE k Nothing $ \resp ->
 		case resp of
 			REMOVE_SUCCESS k'
 				| k == k' -> Just $ return True
@@ -169,7 +169,7 @@ remove external k = safely $
 checkKey :: External -> CheckPresent
 checkKey external k = either giveup id <$> go
   where
-	go = handleRequest external (CHECKPRESENT k) Nothing $ \resp ->
+	go = handleRequestKey external CHECKPRESENT k Nothing $ \resp ->
 		case resp of
 			CHECKPRESENT_SUCCESS k'
 				| k' == k -> Just $ return $ Right True
@@ -180,7 +180,7 @@ checkKey external k = either giveup id <$> go
 			_ -> Nothing
 
 whereis :: External -> Key -> Annex [String]
-whereis external k = handleRequest external (WHEREIS k) Nothing $ \resp -> case resp of
+whereis external k = handleRequestKey external WHEREIS k Nothing $ \resp -> case resp of
 	WHEREIS_SUCCESS s -> Just $ return [s]
 	WHEREIS_FAILURE -> Just $ return []
 	UNSUPPORTED_REQUEST -> Just $ return []
@@ -211,6 +211,11 @@ handleRequest :: External -> Request -> Maybe MeterUpdate -> (Response -> Maybe 
 handleRequest external req mp responsehandler = 
 	withExternalState external $ \st -> 
 		handleRequest' st external req mp responsehandler
+
+handleRequestKey :: External -> (SafeKey -> Request) -> Key -> Maybe MeterUpdate -> (Response -> Maybe (Annex a)) -> Annex a
+handleRequestKey external mkreq k mp responsehandler = case mkSafeKey k of
+	Right sk -> handleRequest external (mkreq sk) mp responsehandler
+	Left e -> giveup e
 
 handleRequest' :: ExternalState -> External -> Request -> Maybe MeterUpdate -> (Response -> Maybe (Annex a)) -> Annex a
 handleRequest' st external req mp responsehandler
@@ -375,7 +380,8 @@ startExternal external = do
 	return st
   where
 	start errrelayer g = liftIO $ do
-		(cmd, ps) <- findShellCommand basecmd
+		cmdpath <- searchPath basecmd
+		(cmd, ps) <- maybe (pure (basecmd, [])) findShellCommand cmdpath
 		let basep = (proc cmd (toCommand ps))
 			{ std_in = CreatePipe
 			, std_out = CreatePipe
@@ -383,9 +389,8 @@ startExternal external = do
 			}
 		p <- propgit g basep
 		(Just hin, Just hout, Just herr, ph) <- 
-			createProcess p `catchIO` runerr
+			createProcess p `catchIO` runerr cmdpath
 		stderrelay <- async $ errrelayer herr
-		checkearlytermination =<< getProcessExitCode ph
 		cv <- newTVarIO $ externalDefaultConfig external
 		pv <- newTVarIO Unprepared
 		pid <- atomically $ do
@@ -409,15 +414,11 @@ startExternal external = do
 		environ <- propGitEnv g
 		return $ p { env = Just environ }
 
-	runerr _ = giveup ("Cannot run " ++ basecmd ++ " -- Make sure it's in your PATH and is executable.")
-
-	checkearlytermination Nothing = noop
-	checkearlytermination (Just exitcode) = ifM (inPath basecmd)
-		( giveup $ unwords [ "failed to run", basecmd, "(" ++ show exitcode ++ ")" ]
-		, do
-			path <- intercalate ":" <$> getSearchPath
-			giveup $ basecmd ++ " is not installed in PATH (" ++ path ++ ")"
-		)
+	runerr (Just cmd) _ =
+		giveup $ "Cannot run " ++ cmd ++ " -- Make sure it's executable and that its dependencies are installed."
+	runerr Nothing _ = do
+		path <- intercalate ":" <$> getSearchPath
+		giveup $ "Cannot run " ++ basecmd ++ " -- It is not installed in PATH (" ++ path ++ ")"
 
 stopExternal :: External -> Annex ()
 stopExternal external = liftIO $ do

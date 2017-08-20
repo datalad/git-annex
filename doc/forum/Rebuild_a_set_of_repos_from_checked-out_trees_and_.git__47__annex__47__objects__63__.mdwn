@@ -1,0 +1,69 @@
+# Situation/trouble
+
+I have a set of big repos.  Each full replica manages about 172.000 annexed files plus a number of small regular files in git history, for a total of about 1.8TB. At filesystem level, `find` reports about 924.000 entries (directories, files, symlinks).
+
+That worked rather well for a while except that a number of operations are slow (even outside git-annex, e.g. a plain `find` takes more than our hour the first time).  Also, the git part got rather heavy.  Hundreds of megabytes that should have been annexed were committed as regular files and vice versa.
+
+The whole setup even survived some catastrophe rather well, for example 6 months ago when the first 1.5GB of one hard drive was accidentally overwritten.  `fsck` with an alternate superblock fixed the lower level, while `git annex repair` fixed the rest nicely.
+
+Last night, though, the git parts got corrupted and I'm struggling to get things back to a sane state.  `git log` shows only recent history then fails.  Various attempts with `git annex repair` failed so far, I'll try again adding a new local "bare" git clone of the server as remote for `git annex repair` to use.
+
+Storage media and filesystems seem sane, still.  Software has been unchanged for a long time:
+
+* client run Ubuntu 16.04 with locally compiled git-annex version: 6.20161001-gade6ab4
+* server runs with locally compiled (in a Debian unstable chroot) git-annex version: 6.20161011-g3135d35 .
+
+
+# Considered solution
+
+I'm considering:
+
+* recreating a new set of replicas
+* each replica on same filesystem as old one
+* recreated only from the checked-out tree and the `.git/annex.objects` tree.
+* *without* copying data (re-reading on import is okay, but no room on a 2TB disk for duplicating 1.8TB)
+* non-constraint: this will lose detailed history which is an inconvenience we can live with.
+
+# Solution, practically
+
+## (1) Assuming `git annex fsck` can take into account objects manually placed into `.git/annex/objects`
+
+	mkdir $newrepo
+	cd $newrepo
+	git init
+	git annex init
+	cp -al $oldrepo/* $newrepo/ # ignores .git and other .* (dotfiles)
+	cp -al $oldrepo/.git/annex/objects/* $newrepo/.git/annex/objects/*
+	git annex fsck # will this find and use result of cp ?
+	# git annex fsck will also tell if some checked-out files lack their annexed data
+	git remote add ...(other replicas)...
+	git annex sync ...(other replicas)...
+	git annex unused # will tell if some files don't appear in checked-out tree?
+
+## (2) Else...
+
+	mkdir $newrepo
+	cd $newrepo
+	git init
+	git annex init
+	cp -al $oldrepo/* $newrepo/ # ignores .git and other .* (dotfiles)
+	cp -al $oldrepo/.git/annex/objects/* ${newrepo}.objectdup
+	git annex reinject --known ${newrepo}.objectdup  # will that perform a copy? I must not in this case.
+	# or something like find "${newrepo}.objectdup" -type f -exec git annex reinject --known {} \;
+	git annex fsck # will tell if some checked-out files lack their annexed data
+	git remote add ...(other replicas)...
+	git annex sync ...(other replicas)...
+	# if some files in $oldrepo/.git/annex/objects/* don't appear in checked-out tree, the won't be picked up by reinject and remain in ${newrepo}.objectdup
+
+# Questions
+
+No one wins when a lot of time is spent on dead ends. :-) Before I
+spend time testing if solutions 1 and 2 can work, is there any caveat
+to mention?
+
+For example, perhaps one must clone from a common empty ancestor
+instead of creating independent annexed then sync?
+
+What else? Is the whole approach sane? Doomed? Anything simpler/better?
+
+Thanks a lot.

@@ -1,0 +1,1 @@
+I have a file which is 5.4 GB big and so it won't fit on my fat32 formated flash drive. Since it's a git remote I can't enable chunking. Is there another way to go about this, or will that file simply not fit?

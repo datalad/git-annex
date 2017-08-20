@@ -58,6 +58,7 @@ it assumes all files that are currently present are preferred content.
 Here are recent changes to preferred content expressions, and the version
 they were added in.
 
+* "securehash" 6.20170228
 * "nothing" 6.201600202
 * "anything" 5.20150616
 * "standard" 5.20140314  

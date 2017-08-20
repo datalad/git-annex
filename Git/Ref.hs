@@ -144,6 +144,6 @@ legal allowonelevel s = all (== False) illegal
 	ends v = v `isSuffixOf` s
 	begins v = v `isPrefixOf` s
 
-	pathbits = split "/" s
+	pathbits = splitc '/' s
 	illegalchars = " ~^:?*[\\" ++ controlchars
 	controlchars = chr 0o177 : [chr 0 .. chr (0o40-1)]

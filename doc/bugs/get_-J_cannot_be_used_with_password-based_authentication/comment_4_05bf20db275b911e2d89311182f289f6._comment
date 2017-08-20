@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2017-04-07T21:07:44Z"
+ content="""
+`GIT_SSH_COMMAND` is used for *every* call to ssh in git-annex.
+"""]]

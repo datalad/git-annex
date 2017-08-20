@@ -11,7 +11,6 @@ module Command.List where
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Function
-import Data.Tuple.Utils
 import Data.Ord
 
 import Command
@@ -20,6 +19,7 @@ import Logs.Trust
 import Logs.UUID
 import Annex.UUID
 import Git.Types (RemoteName)
+import Utility.Tuple
 
 cmd :: Command
 cmd = noCommit $ withGlobalOptions annexedMatchingOptions $

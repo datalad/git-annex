@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="ewen"
+ avatar="http://cdn.libravatar.org/avatar/605b2981cb52b4af268455dee7a4f64e"
+ subject="Track GUIDs to avoid duplicate downloads"
+ date="2017-03-21T08:59:59Z"
+ content="""
+While tracking podcast media URLs usually works to avoid duplicate downloads, when it fails it usually fails spectacularly. In particular if a podcast feed decides to update all the URLs (for old and new podcasts) to use a different URL scheme, then suddenly that looks like a huge volume of new URLs, and all of them get downloaded again -- even if the content has actually already been retrieved from a different URL (ie, older URL scheme). For instance the `acast.com` service has changed their URL scheme a couple of times in the last 1-2 years, rewriting all the historical URLs, so I have three copies of many of the episodes on podcasts on their service :-( (Many downloaded; some skipped once I caught the bulk download and stopped it/reran with `--fast` or `--relaxed` to make placeholders instead. `acast.com` seem to have managed to cause even more confusion by rewriting many of the older `mp3` files with new `id3` tags, thus changing the file size/hashes -- it definitely made cleaning up more complicated.)
+
+Some (all?) podcast feeds also have a `guid` field, which specifies what should be a unique per-episode and unchanging, that other podcatchers use to track \"seen this\" content.  In theory that `guid` value should be stable even across media URL changes -- at least if it isn't, then a podcaster changing the `guid` *and* media URL will almost certainly induce re-downloads in most podcatchers, and thus hopefully realise early on (eg, during testing) rather than in production.
+
+Can `git-annex` be extended to track the `guid` values as well as the filenames, so `git annex importfeed` can avoid downloading episodes where it has already processed that `guid`, and instead just add the newly listed url as an alternate web URL for that specific episode (which has been my manual work around).  Perhaps the episode `guid` could be stored as additional metadata, along with some sort of feed unique ID (link?), and then an index built/consulted when `importfeed` runs (although that \"feed unique ID\" would probably also have to be updatable by the user, to cope with \"the feed URL has now changed from `http://` to `https://` which also seems to be happening a bunch at present.)
+
+Ewen
+
+PS: Apologies for duplicate partial comment; I think my browser decided some key combination meant \"do default form action\", which is post -- and I wasn't finished writing.  I couldn't see a way to edit the comment, hence deleting/readding.
+
+"""]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2017-02-17T19:38:45Z"
+ content="""
+It's now pretty easy to set up a remote on a USB drive so that `git annex
+sync` will update the work tree. See 
+<https://git-annex.branchable.com/tips/making_a_remote_repo_update_when_changes_are_pushed_to_it/>
+
+However, the assistant does not do this by default when adding repos on USB
+drives, due to the likely confusion that setting up such a repo would
+cause, as described in my previous comment.
+"""]]

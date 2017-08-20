@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010, 2013 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -30,6 +30,7 @@ data AddOptions = AddOptions
 	{ addThese :: CmdParams
 	, includeDotFiles :: Bool
 	, batchOption :: BatchMode
+	, updateOnly :: Bool
 	}
 
 optParser :: CmdParamsDesc -> Parser AddOptions
@@ -40,6 +41,11 @@ optParser desc = AddOptions
 		<> help "don't skip dotfiles"
 		)
 	<*> parseBatchOption
+	<*> switch
+		( long "update"
+		<> short 'u'
+		<> help "only update tracked files"
+		)
 
 seek :: AddOptions -> CommandSeek
 seek o = allowConcurrentOutput $ do
@@ -52,10 +58,14 @@ seek o = allowConcurrentOutput $ do
 			)
 		)
 	case batchOption o of
-		Batch -> batchFiles gofile
+		Batch
+			| updateOnly o ->
+				giveup "--update --batch is not supported"
+			| otherwise -> batchFiles gofile
 		NoBatch -> do
 			let go a = a gofile (addThese o)
-			go (withFilesNotInGit (not $ includeDotFiles o))
+			unless (updateOnly o) $
+				go (withFilesNotInGit (not $ includeDotFiles o))
 			go withFilesMaybeModified
 			unlessM (versionSupportsUnlockedPointers <||> isDirect) $
 				go withFilesOldUnlocked

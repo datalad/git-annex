@@ -3,13 +3,13 @@ one more feature to it today: Full anacron style scheduling. So a fsck can
 be scheduled to run once per week, or month, or year, and it'll run the
 fsck the next time it's available after that much time has passed. The nice
 thing about this is I didn't have to change Cronner *at all* to add this,
-just improved the Recurrance data type and the code that calculates when
+just improved the Recurrence data type and the code that calculates when
 to run events.
 
 Rest of the day I've been catching up on some bug reports. The main bug I
 fixed caused git-annex on Android to hang when adding files. This turns out
 to be because it's using a new (unreleased) version of git, and
-`git check-attr -z` output format has changed in an incompatable way.
+`git check-attr -z` output format has changed in an incompatible way.
 
 I am currently 70 messages behind, which includes some ugly looking bug
 reports, so I will probably continue with this over the next couple days.

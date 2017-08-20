@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="For Debian/Ubuntu users -- get git-annex-standalone from NeuroDebian"
+ date="2017-07-12T17:57:21Z"
+ content="""
+We provide quite an up-to-date standalone backport build of git-annex (package name [git-annex-standalone](http://neuro.debian.net/pkgs/git-annex-standalone.html)) through NeuroDebian for all Debian/Ubuntus, so you might want to enable NeuroDebian repository (`apt-get install neurodebian`  on a recent debian/ubuntu or follow [NeuroDebian website](http://neuro.debian.net) for instructions). 
+"""]]

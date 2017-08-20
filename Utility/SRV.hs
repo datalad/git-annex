@@ -5,8 +5,6 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Utility.SRV (
 	mkSRVTcp,
 	mkSRV,
@@ -42,12 +40,7 @@ lookupSRV :: SRV -> IO [HostPort]
 lookupSRV (SRV srv) = do
 	seed <- makeResolvSeed defaultResolvConf
 	r <- withResolver seed $ flip DNS.lookupSRV $ B8.fromString srv
-	return $
-#if MIN_VERSION_dns(1,0,0)
-		either (const []) use r
-#else
-		maybe [] use r
-#endif
+	return $ either (const []) use r
   where
 	use = orderHosts . map tohosts
 	tohosts (priority, weight, port, hostname) =

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Michel"
+ avatar="http://cdn.libravatar.org/avatar/cf9fdab9aa34af56f769bf584c8e7011"
+ subject="Solution"
+ date="2017-03-11T00:44:18Z"
+ content="""
+I found a relatively simple solution by setting the following in .gitattributes:
+
+```
+* annex.largefiles=(largerthan=0kb)
+```
+
+"""]]

@@ -1,5 +1,5 @@
 A productive day of small fixes. Including a change to deal with an
-incompatability in git 2.9's commit.gpgsign, and couple of fixes
+incompatibility in git 2.9's commit.gpgsign, and couple of fixes
 involving gcrypt repositories.
 
 Also several improvements to cloning from repositories where an adjusted

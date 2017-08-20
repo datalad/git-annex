@@ -12,8 +12,6 @@ module Logs.Activity (
 	lastActivities,
 ) where
 
-import Data.Time.Clock.POSIX
-
 import Annex.Common
 import qualified Annex.Branch
 import Logs
@@ -24,9 +22,9 @@ data Activity = Fsck
 
 recordActivity :: Activity -> UUID -> Annex ()
 recordActivity act uuid = do
-	ts <- liftIO getPOSIXTime
+	c <- liftIO currentVectorClock
 	Annex.Branch.change activityLog $
-		showLog show . changeLog ts uuid act . parseLog readish
+		showLog show . changeLog c uuid act . parseLog readish
 
 lastActivities :: Maybe Activity -> Annex (Log Activity)
 lastActivities wantact = parseLog onlywanted <$> Annex.Branch.get activityLog

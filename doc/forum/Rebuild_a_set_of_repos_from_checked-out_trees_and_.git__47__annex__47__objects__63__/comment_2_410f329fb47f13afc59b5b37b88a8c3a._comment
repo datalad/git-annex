@@ -1,0 +1,84 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="Indeed git annex fsck can take into account objects manually placed into .git/annex/objects"
+ date="2017-07-28T05:03:30Z"
+ content="""
+Thanks @CandyAngel.  This is similar to wat I'm doing and somehow validates.
+I'm trying to repair on the same filesystem without long recopy.
+I don't understand why your solution is specific to v5 indirect mode.
+
+# Indeed git annex `fsck` can take into account objects manually placed into `.git/annex/objects`.
+
+Let's create a repo:
+
+    mkdir repo1
+    cd repo1/
+    ls -al
+    git init
+    git annex init repo1
+    ls -a
+    ls -al
+    echo 1 > 1
+    git annex add 1
+    git annex sync
+
+    git annex fsck
+    git annex repair --verbose
+
+Everything is fine.
+
+Let's say this repo has its git structures broken and we rebuild it from checked-out tree and `.git/annex/objects`.  We'll lose tree history and location tracking history but recover content.
+
+    cd ..
+    mkdir repo2
+    cd repo2
+    git init
+    git annex init repo2
+
+Ok we have an empty repo.  Let's import tree.
+
+    cp -al ../repo1/* .
+    ls -al
+    git annex add .
+    git annex repair --verbose
+
+    Running git fsck ...
+    No problems found.
+    ok
+
+Notice that `git annex repair` does not care about annexed objects, only history data.
+
+    git annex fsck
+
+But `fsck` notices about missing objects.
+
+    fsck 1
+      ** No known copies exist of 1
+    failed
+    (recording state in git...)
+    git-annex: fsck: 1 failed
+
+So, in a sense, `git annex fsck` and `git annex repair` operate on nearly independent things.
+
+Let's get annexed objects back.
+
+    ls -al # red shows symlink is broken
+    cp -al ../repo1/.git/annex/objects/ .git/annex/
+    find .git/annex/objects/
+    ls -al # grey shows symlink is okay
+    git annex fsck
+
+Hooray, `fsck` notices that objects are back.
+
+    fsck 1 (fixing location log) (checksum...) ok
+    (recording state in git...)
+
+# Conclusion
+
+I can use approach (1).  Extra benefit: it will notice if some files got corrupted on the filesystem.
+
+Approach (2) would mean, if any file was corrupted on the filesystem, it would have been considered the correct content, and I'd prefer to avoid that.
+
+"""]]

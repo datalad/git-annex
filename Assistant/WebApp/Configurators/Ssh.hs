@@ -39,6 +39,7 @@ import Utility.Tmp
 import Utility.FileMode
 import Utility.ThreadScheduler
 import Utility.Env
+import Utility.SshHost
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -299,12 +300,11 @@ testServer sshinput@(SshInput { inputHostname = Just hn }) = do
 				if knownhost then "yes" else "no"
 			, "-n" -- don't read from stdin
 			, "-p", show (inputPort sshinput)
-			, genSshHost
-				(fromJust $ inputHostname sshinput)
-				(inputUsername sshinput)
-			, remotecommand
 			]
-		parsetranscript . fst <$> sshAuthTranscript sshinput sshopts Nothing
+		let sshhost = genSshHost
+			(fromJust $ inputHostname sshinput)
+			(inputUsername sshinput)
+		parsetranscript . fst <$> sshAuthTranscript sshinput sshopts sshhost remotecommand Nothing
 	parsetranscript s =
 		let cs = map snd $ filter (reported . fst)
 			[ ("git-annex-shell", GitAnnexShellCapable)
@@ -339,9 +339,9 @@ testServer sshinput@(SshInput { inputHostname = Just hn }) = do
 
 {- Runs a ssh command to set up the repository; if it fails shows
  - the user the transcript, and if it succeeds, runs an action. -}
-sshSetup :: SshInput -> [String] -> Maybe String -> Handler Html -> Handler Html
-sshSetup sshinput opts input a = do
-	(transcript, ok) <- liftAssistant $ sshAuthTranscript sshinput opts input
+sshSetup :: SshInput -> [String] -> SshHost -> String -> Maybe String -> Handler Html -> Handler Html
+sshSetup sshinput opts sshhost cmd input a = do
+	(transcript, ok) <- liftAssistant $ sshAuthTranscript sshinput opts sshhost cmd input
 	if ok
 		then do
 			liftAssistant $ expireCachedCred $ getLogin sshinput
@@ -367,8 +367,8 @@ sshErr sshinput msg
  - cached password. ssh is coaxed to use git-annex as SSH_ASKPASS
  - to get the password.
  -}
-sshAuthTranscript :: SshInput -> [String] -> (Maybe String) -> Assistant (String, Bool)
-sshAuthTranscript sshinput opts input = case inputAuthMethod sshinput of
+sshAuthTranscript :: SshInput -> [String] -> SshHost -> String -> (Maybe String) -> Assistant (String, Bool)
+sshAuthTranscript sshinput opts sshhost cmd input = case inputAuthMethod sshinput of
 	ExistingSshKey -> liftIO $ go [passwordprompts 0] Nothing
 	CachedPassword -> setupAskPass
 	Password -> do
@@ -379,7 +379,7 @@ sshAuthTranscript sshinput opts input = case inputAuthMethod sshinput of
 	geti f = maybe "" T.unpack (f sshinput)
 
 	go extraopts environ = processTranscript' 
-		(askPass environ) "ssh" (extraopts ++ opts)
+		(askPass environ (proc "ssh" (extraopts ++ opts ++ [fromSshHost sshhost, cmd])))
 		-- Always provide stdin, even when empty.
 		(Just (fromMaybe "" input))
 
@@ -521,10 +521,11 @@ prepSsh' needsinit origsshdata sshdata keypair a
 				]
 		a sshdata
 	| otherwise = sshSetup (mkSshInput origsshdata)
-		 [ "-p", show (sshPort origsshdata)
-		 , genSshHost (sshHostName origsshdata) (sshUserName origsshdata)
-		 , remoteCommand
-		 ] Nothing (a sshdata)
+		[ "-p", show (sshPort origsshdata)
+		]
+		(genSshHost (sshHostName origsshdata) (sshUserName origsshdata))
+		remoteCommand
+		Nothing (a sshdata)
   where
 	remotedir = T.unpack $ sshDirectory sshdata
 	remoteCommand = shellWrap $ intercalate "&&" $ catMaybes
@@ -625,7 +626,7 @@ getMakeRsyncNetGCryptR :: SshData -> RepoKey -> Handler Html
 getMakeRsyncNetGCryptR sshdata NoRepoKey = whenGcryptInstalled $
 	withNewSecretKey $ getMakeRsyncNetGCryptR sshdata . RepoKey
 getMakeRsyncNetGCryptR sshdata (RepoKey keyid) = whenGcryptInstalled $
-	sshSetup (mkSshInput sshdata) [sshhost, gitinit] Nothing $
+	sshSetup (mkSshInput sshdata) [] sshhost gitinit Nothing $
 		makeGCryptRepo NewRepo keyid sshdata
   where
 	sshhost = genSshHost (sshHostName sshdata) (sshUserName sshdata)
@@ -661,11 +662,9 @@ prepRsyncNet sshinput reponame a = do
 			, sshCapabilities = [RsyncCapable]
 			}
 	let sshhost = genSshHost (sshHostName sshdata) (sshUserName sshdata)
-	let torsyncnet cmd = filter (not . null)
-		[ if knownhost then "" else sshOpt "StrictHostKeyChecking" "no"
-		, sshhost
-		, cmd
-		]
+	let torsyncnet
+		| knownhost = []
+		| otherwise = [sshOpt "StrictHostKeyChecking" "no"]
 	{- I'd prefer to separate commands with && , but
 	 - rsync.net's shell does not support that. -}
 	let remotecommand = intercalate ";"
@@ -674,7 +673,8 @@ prepRsyncNet sshinput reponame a = do
 		, "dd of=.ssh/authorized_keys oflag=append conv=notrunc"
 		, "mkdir -p " ++ T.unpack (sshDirectory sshdata)
 		]
-	sshSetup sshinput (torsyncnet remotecommand) (Just $ sshPubKey keypair) (a sshdata)
+	sshSetup sshinput torsyncnet sshhost remotecommand
+		(Just $ sshPubKey keypair) (a sshdata)
 
 isRsyncNet :: Maybe Text -> Bool
 isRsyncNet Nothing = False
@@ -746,7 +746,9 @@ testGitLabUrl glu = case parseGitLabUrl glu of
 	probeuuid sshdata = do
 		r <- inRepo $ Git.Construct.fromRemoteLocation (fromJust $ sshRepoUrl sshdata)
 		getUncachedUUID . either (const r) fst <$>
-			Remote.Helper.Ssh.onRemote r (Git.Config.fromPipe r, return (Left $ error "configlist failed")) "configlist" [] []
+			Remote.Helper.Ssh.onRemote NoConsumeStdin r
+				(Git.Config.fromPipe r, return (Left $ error "configlist failed"))
+				"configlist" [] []
 	verifysshworks sshdata = inRepo $ Git.Command.runBool
 		[ Param "send-pack"
 		, Param (fromJust $ sshRepoUrl sshdata)

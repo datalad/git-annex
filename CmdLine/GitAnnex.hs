@@ -14,6 +14,7 @@ import CmdLine
 import Command
 import Utility.Env
 import Annex.Ssh
+import Annex.Multicast
 import Types.Test
 
 import qualified Command.Help
@@ -53,6 +54,7 @@ import qualified Command.Describe
 import qualified Command.InitRemote
 import qualified Command.EnableRemote
 import qualified Command.EnableTor
+import qualified Command.Multicast
 import qualified Command.Expire
 import qualified Command.Repair
 import qualified Command.Unused
@@ -61,6 +63,7 @@ import qualified Command.AddUnused
 import qualified Command.Unlock
 import qualified Command.Lock
 import qualified Command.PreCommit
+import qualified Command.PostReceive
 import qualified Command.Find
 import qualified Command.FindRef
 import qualified Command.Whereis
@@ -84,6 +87,7 @@ import qualified Command.GroupWanted
 import qualified Command.Required
 import qualified Command.Schedule
 import qualified Command.Ungroup
+import qualified Command.Config
 import qualified Command.Vicfg
 import qualified Command.Sync
 import qualified Command.Mirror
@@ -142,11 +146,13 @@ cmds testoptparser testrunner =
 	, Command.InitRemote.cmd
 	, Command.EnableRemote.cmd
 	, Command.EnableTor.cmd
+	, Command.Multicast.cmd
 	, Command.Reinject.cmd
 	, Command.Unannex.cmd
 	, Command.Uninit.cmd
 	, Command.Reinit.cmd
 	, Command.PreCommit.cmd
+	, Command.PostReceive.cmd
 	, Command.NumCopies.cmd
 	, Command.Trust.cmd
 	, Command.Untrust.cmd
@@ -158,6 +164,7 @@ cmds testoptparser testrunner =
 	, Command.Required.cmd
 	, Command.Schedule.cmd
 	, Command.Ungroup.cmd
+	, Command.Config.cmd
 	, Command.Vicfg.cmd
 	, Command.LookupKey.cmd
 	, Command.CalcKey.cmd
@@ -238,4 +245,5 @@ run testoptparser testrunner args = go envmodes
 	envmodes =
 		[ (sshOptionsEnv, runSshOptions args)
 		, (sshAskPassEnv, runSshAskPass)
+		, (multicastReceiveEnv, runMulticastReceive args)
 		]

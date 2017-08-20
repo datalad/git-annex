@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="archimedes"
+ avatar="http://cdn.libravatar.org/avatar/5b2ed40aabedcb1b8c2c0ce69f55a1e1"
+ subject="comment 2"
+ date="2017-04-05T20:01:44Z"
+ content="""
+So actually \"import --reinject-duplicates\" solves the issue of reinject not being recursive.
+
+
+That trick on .git/annex/objects/ is cunning, but the destruction of Global before everything has been finished is discomforting...if only there was a \"--reinject-duplicates --duplicate\" option for import.
+
+No chance that I can make a recursive copy of .git/annex/objects with hardlinks can I? To then use with reinject-duplicates? 
+"""]]

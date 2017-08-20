@@ -15,7 +15,7 @@ import Types.Group
 import qualified Data.Set as S
 
 cmd :: Command
-cmd = command "group" SectionSetup "add a repository to a group"
+cmd = noMessages $ command "group" SectionSetup "add a repository to a group"
 	(paramPair paramRemote paramDesc) (withParams seek)
 
 seek :: CmdParams -> CommandSeek
@@ -23,12 +23,13 @@ seek = withWords start
 
 start :: [String] -> CommandStart
 start (name:g:[]) = do
+	allowMessages
 	showStart "group" name
 	u <- Remote.nameToUUID name
 	next $ setGroup u g
 start (name:[]) = do
 	u <- Remote.nameToUUID name
-	showRaw . unwords . S.toList =<< lookupGroups u
+	liftIO . putStrLn . unwords . S.toList =<< lookupGroups u
 	stop
 start _ = giveup "Specify a repository and a group."
 

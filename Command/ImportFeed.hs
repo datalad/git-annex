@@ -112,8 +112,9 @@ getCache :: Maybe String -> Annex Cache
 getCache opttemplate = ifM (Annex.getState Annex.force)
 	( ret S.empty S.empty
 	, do
-		showAction "checking known urls"
+		showStart "importfeed" "checking known urls"
 		(is, us) <- unzip <$> (mapM knownItems =<< knownUrls)
+		showEndOk
 		ret (S.fromList us) (S.fromList (concat is))
 	)
   where
@@ -138,12 +139,10 @@ findDownloads u = go =<< downloadFeed u
 			Just $ ToDownload f u i $ Enclosure enclosureurl
 		Nothing -> mkquvi f i
 	mkquvi f i = case getItemLink i of
-		Just link -> do
-			liftIO $ print ("link", link)
-			ifM (quviSupported link)
-				( return $ Just $ ToDownload f u i $ QuviLink link
-				, return Nothing
-				)
+		Just link -> ifM (quviSupported link)
+			( return $ Just $ ToDownload f u i $ QuviLink link
+			, return Nothing
+			)
 		Nothing -> return Nothing
 
 {- Feeds change, so a feed download cannot be resumed. -}
@@ -273,24 +272,16 @@ feedFile tmpl i extension = Utility.Format.format tmpl $
 		, extractField "itempubdate" [pubdate $ item i]
 		]
   where
-#if MIN_VERSION_feed(0,3,9)
 	pubdate itm = case getItemPublishDate itm :: Maybe (Maybe UTCTime) of
 		Just (Just d) -> Just $
 			formatTime defaultTimeLocale "%F" d
 		-- if date cannot be parsed, use the raw string
 		_ -> replace "/" "-" <$> getItemPublishDateString itm
-#else
-	pubdate _ = Nothing
-#endif
 
 extractMetaData :: ToDownload -> MetaData
-#if MIN_VERSION_feed(0,3,9)
 extractMetaData i = case getItemPublishDate (item i) :: Maybe (Maybe UTCTime) of
 	Just (Just d) -> unionMetaData meta (dateMetaData d meta)
 	_ -> meta
-#else
-extractMetaData i = meta
-#endif
   where
 	tometa (k, v) = (mkMetaFieldUnchecked k, S.singleton (toMetaValue v))
 	meta = MetaData $ M.fromList $ map tometa $ extractFields i

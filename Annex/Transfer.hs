@@ -1,6 +1,6 @@
 {- git-annex transfers
  -
- - Copyright 2012-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -26,12 +26,14 @@ import Annex.Notification as X
 import Annex.Perms
 import Utility.Metered
 import Annex.LockPool
+import Types.Key
 import Types.Remote (Verification(..))
 import qualified Types.Remote as Remote
 import Types.Concurrency
 
 import Control.Concurrent
-import qualified Data.Set as S
+import qualified Data.Map.Strict as M
+import Data.Ord
 
 class Observable a where
 	observeBool :: a -> Bool
@@ -75,7 +77,7 @@ guardHaveUUID u a
  - An upload can be run from a read-only filesystem, and in this case
  - no transfer information or lock file is used.
  -}
-runTransfer :: Observable v => Transfer -> Maybe FilePath -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
+runTransfer :: Observable v => Transfer -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
 runTransfer = runTransfer' False
 
 {- Like runTransfer, but ignores any existing transfer lock file for the
@@ -83,12 +85,12 @@ runTransfer = runTransfer' False
  -
  - Note that this may result in confusing progress meter display in the
  - webapp, if multiple processes are writing to the transfer info file. -}
-alwaysRunTransfer :: Observable v => Transfer -> Maybe FilePath -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
+alwaysRunTransfer :: Observable v => Transfer -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
 alwaysRunTransfer = runTransfer' True
 
-runTransfer' :: Observable v => Bool -> Transfer -> Maybe FilePath -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
-runTransfer' ignorelock t file shouldretry transferaction = do
-	info <- liftIO $ startTransferInfo file
+runTransfer' :: Observable v => Bool -> Transfer -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
+runTransfer' ignorelock t afile shouldretry transferaction = checkSecureHashes t $ do
+	info <- liftIO $ startTransferInfo afile
 	(meter, tfile, metervar) <- mkProgressUpdater t info
 	mode <- annexFileMode
 	(lck, inprogress) <- prep tfile mode info
@@ -116,7 +118,9 @@ runTransfer' ignorelock t file shouldretry transferaction = do
 					void $ liftIO $ tryIO $
 						writeTransferInfoFile info tfile
 					return (Just lockhandle, False)
-				, return (Nothing, True)
+				, do
+					liftIO $ dropLock lockhandle
+					return (Nothing, True)
 				)
 #else
 	prep tfile _mode info = catchPermissionDenied (const prepfailed) $ do
@@ -167,6 +171,30 @@ runTransfer' ignorelock t file shouldretry transferaction = do
 			f <- fromRepo $ gitAnnexTmpObjectLocation (transferKey t)
 			liftIO $ catchDefaultIO 0 $ getFileSize f
 
+{- Avoid download and upload of keys with insecure content when
+ - annex.securehashesonly is configured.
+ -
+ - This is not a security check. Even if this let the content be
+ - downloaded, the actual security checks would prevent the content from
+ - being added to the repository. The only reason this is done here is to
+ - avoid transferring content that's going to be rejected anyway.
+ -
+ - We assume that, if annex.securehashesonly is set and the local repo
+ - still contains content using an insecure hash, remotes will likewise
+ - tend to be configured to reject it, so Upload is also prevented.
+ -}
+checkSecureHashes :: Observable v => Transfer -> Annex v -> Annex v
+checkSecureHashes t a
+	| cryptographicallySecure variety = a
+	| otherwise = ifM (annexSecureHashesOnly <$> Annex.getGitConfig)
+		( do
+			warning $ "annex.securehashesonly blocked transfer of " ++ formatKeyVariety variety ++ " key"
+			return observeFailure
+		, a
+		)
+  where
+	variety = keyVariety (transferKey t)
+
 type RetryDecider = TransferInfo -> TransferInfo -> Bool
 
 noRetry :: RetryDecider
@@ -193,7 +221,7 @@ pickRemote l a = go l =<< Annex.getState Annex.concurrency
 	go rs (Concurrent n) | n > 1 = do
 		mv <- Annex.getState Annex.activeremotes
 		active <- liftIO $ takeMVar mv
-		let rs' = sortBy (inactiveFirst active) rs
+		let rs' = sortBy (lessActiveFirst active) rs
 		goconcurrent mv active rs'
 	go (r:rs) _ = do
 		ok <- a r
@@ -204,11 +232,11 @@ pickRemote l a = go l =<< Annex.getState Annex.concurrency
 		liftIO $ putMVar mv active
 		return observeFailure
 	goconcurrent mv active (r:rs) = do
-		let !active' = S.insert r active
+		let !active' = M.insertWith (+) r 1 active
 		liftIO $ putMVar mv active'
 		let getnewactive = do
 			active'' <- liftIO $ takeMVar mv
-			let !active''' = S.delete r active''
+			let !active''' = M.update (\n -> if n > 1 then Just (n-1) else Nothing) r active''
 			return active'''
 		let removeactive = liftIO . putMVar mv =<< getnewactive
 		ok <- a r `onException` removeactive
@@ -221,11 +249,10 @@ pickRemote l a = go l =<< Annex.getState Annex.concurrency
 				-- Re-sort the remaining rs 
 				-- because other threads could have
 				-- been assigned them in the meantime.
-				let rs' = sortBy (inactiveFirst active'') rs
+				let rs' = sortBy (lessActiveFirst active'') rs
 				goconcurrent mv active'' rs'
 
-inactiveFirst :: S.Set Remote -> Remote -> Remote -> Ordering
-inactiveFirst active a b
-	| Remote.cost a == Remote.cost b =
-		if a `S.member` active then GT else LT
+lessActiveFirst :: M.Map Remote Integer -> Remote -> Remote -> Ordering
+lessActiveFirst active a b
+	| Remote.cost a == Remote.cost b = comparing (`M.lookup` active) a b
 	| otherwise = compare a b

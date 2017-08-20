@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-06-26T16:52:25Z"
+ content="""
+Your alternative B does not actually remove the old version of the file,
+because git-annex unlock keeps a copy in .git/annex/objects
+(except when using v6 mode with annex.thin).
+
+Alternative A is fine, if you just want to remove the old version
+of the file from the local repository. Other clones of the repository
+may still have the content of that file though.
+
+I use alternative A fairly frequently in my own repositories, and then
+sometimes followup with `git annex unused` in clones and dropping all
+unused files.
+"""]]

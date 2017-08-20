@@ -1,0 +1,18 @@
+Wasn't planning to, but spent the day making git-annex not depend on the
+MissingH library. This has been a long-term goal, as MissingH pulls in
+several other libraries and is not modern or principled.
+
+The first part was to using cryptonite for MD5 calculation. While
+converting to the form git-annex uses to make hash directories involved
+some math, this did make git-annex garbage-collect less, and
+probably made it faster.
+
+Then I had to write my own progress meter display, since git-annex was
+using MissingH's display. That was fairly simple (73 LoC), and let me
+make it more efficient and tuned for the git-annex use case. As a bonus, it
+got progress displays when transferring files of unknown sizes, which
+wasn't done before.
+
+MissingH was handy training wheels when I was coming over from perl,
+but it's been training wheels on some old cars in the middle of a 
+500 car train for a while, so glad that's over.

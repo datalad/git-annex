@@ -1,0 +1,48 @@
+When you see a command like "ssh somehost rm -f file", you probably don't
+think that consumes stdin. After all, the `rm -f` doesn't. But, `ssh`
+can pass stdin over the network even if it's not being consumed, and it
+turns out git-annex was bitten by this.
+
+That bug made `git-annex-checkpresentkey --batch` with remote accessed
+over ssh not see all the batch-mode input that was passed into it, because
+ssh sometimes consumed some of it.
+
+Shell scripts using git-annex could also be impacted by the bug, for
+example:
+
+	#!/bin/sh
+	find . -type l -atime 100 | \
+		while read file; do
+			echo "gonna drop $file that has not been used in a while"
+			git annex drop "$file"
+		done
+
+Depending on what remotes `git annex drop` talks to, it might consume
+parts of the output of find.
+
+I've fixed this in git-annex now (using `ssh -n` when running commands
+that are not fed some stdin of their own), but this seems like a class of
+bug that could impact lots of programs that run ssh.
+
+----
+
+I've been thinking about [[simpler_setup_for_remote_worktree_update_on_push]].
+
+One nice way to make a remote update its worktree on push is available
+in recent-ish gits, receive.denyCurrentBranch=updateInstead. That could
+already be used with `git annex sync`, but it hid any error messages
+when pushing the master branch to the remote (since that push fails with
+a large error message in default configurations). Found a way to make
+the error message be displayed when the remote's receive.denyCurrentBranch
+does not have the default configuration.
+
+The remaining problem is that direct mode and adjusted branch remotes
+won't get their works trees updated even when configured that way. I am
+thinking about adding a post-update hook to support those.
+
+----
+
+Also continuing to bring up the ancient kernel arm autobuilder. It's running
+its first build now.
+
+Today's work was sponsored by Riku Voipio.

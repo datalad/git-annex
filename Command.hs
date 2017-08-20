@@ -22,12 +22,14 @@ import CmdLine.GlobalSetter as ReExported
 import CmdLine.GitAnnex.Options as ReExported
 import CmdLine.Batch as ReExported
 import Options.Applicative as ReExported hiding (command)
+import qualified Annex
 import qualified Git
 import Annex.Init
 import Config
 import Utility.Daemon
 import Types.Transfer
 import Types.ActionItem
+import Types.Messages
 
 {- Generates a normal Command -}
 command :: String -> CommandSection -> String -> CmdParamsDesc -> (CmdParamsDesc -> CommandParser) -> Command
@@ -62,6 +64,16 @@ noCommit c = c { cmdnocommit = True }
  - etc. -}
 noMessages :: Command -> Command
 noMessages c = c { cmdnomessages = True }
+
+{- Undoes noMessages -}
+allowMessages :: Annex ()
+allowMessages = do
+	curr <- Annex.getState Annex.output
+	case outputType curr of
+		QuietOutput -> Annex.setOutput NormalOutput
+		_ -> noop
+	Annex.changeState $ \s -> s
+		{ Annex.output = (Annex.output s) { implicitMessages = True } }
 
 {- Adds a fallback action to a command, that will be run if it's used
  - outside a git repository. -}

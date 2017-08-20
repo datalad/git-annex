@@ -122,9 +122,11 @@ while read line; do
 			fi
 		;;
 		TRANSFER)
+			op="$2"
 			key="$3"
-			file="$4"
-			case "$2" in
+			shift 3
+			file="$@"
+			case "$op" in
 				STORE)
 					# Store the file to a location
 					# based on the key.

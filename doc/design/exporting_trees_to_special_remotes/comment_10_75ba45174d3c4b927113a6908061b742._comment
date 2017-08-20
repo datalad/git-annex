@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="export &quot;each revision&quot; -- thinking about quiltdata"
+ date="2017-07-14T20:10:42Z"
+ content="""
+In some cases, if remote supports versioning, might be cool to be able to export all versions (from previously exported point, assuming linear progression).
+Having a chat with [https://quiltdata.com/](https://quiltdata.com/) folks, project which I just got to know about.
+1. They claim/hope to provide infinite storage for public datasets
+2. They do support \"File\" model, so dataset could simply contain files.  If we could (ab)use that -- sounds like a lovely free ride
+3. They do support versioning. If we could export all the versions -- super lovely.  
+
+Might also help to establish interoperability between the tools
+
+"""]]

@@ -1,0 +1,9 @@
+Catching up on some recent backlog after a trip and post-trip flu.
+
+Anarcat wrote up an anlysis of [[tips/semi-synchronized_remotes]], and
+based on that I implemented `remote.<name>.annex-push` and
+`remote.<name>.annex-pull`
+
+Also fixed the Windows build.
+
+Today's work was sponsored by Thomas Hochstein on Patreon.

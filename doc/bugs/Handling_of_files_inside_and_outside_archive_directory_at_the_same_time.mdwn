@@ -1,6 +1,6 @@
 Hi,
 
-some time ago, I accidentially copied some files from the archive to the non-archive part of my (indirect, type 'client') repository (instead of moving), with the effect that assistant always kept downloading and afterwards immediately dropping the files. Now this was not really suprising once I found the duplicate folder, but maybe git annex could detect this case and refuse to run in circles or at least complain about it.
+some time ago, I accidentally copied some files from the archive to the non-archive part of my (indirect, type 'client') repository (instead of moving), with the effect that assistant always kept downloading and afterwards immediately dropping the files. Now this was not really surprising once I found the duplicate folder, but maybe git annex could detect this case and refuse to run in circles or at least complain about it.
 
 Best
 Karsten

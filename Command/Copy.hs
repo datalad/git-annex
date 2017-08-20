@@ -35,11 +35,15 @@ instance DeferredParseClass CopyOptions where
 		<*> pure (autoMode v)
 
 seek :: CopyOptions -> CommandSeek
-seek o = allowConcurrentOutput $
-	withKeyOptions (Command.Move.keyOptions $ moveOptions o) (autoMode o)
-		(Command.Move.startKey (moveOptions o) False)
-		(withFilesInGit $ whenAnnexed $ start o)
-		(Command.Move.moveFiles $ moveOptions o)
+seek o = allowConcurrentOutput $ do
+	let go = whenAnnexed $ start o
+	case Command.Move.batchOption (moveOptions o) of
+		Batch -> batchInput Right (batchCommandAction . go)
+		NoBatch -> withKeyOptions
+			(Command.Move.keyOptions $ moveOptions o) (autoMode o)
+			(Command.Move.startKey (moveOptions o) False)
+			(withFilesInGit go)
+			(Command.Move.moveFiles $ moveOptions o)
 
 {- A copy is just a move that does not delete the source file.
  - However, auto mode avoids unnecessary copies, and avoids getting or
@@ -52,7 +56,10 @@ start o file key = stopUnless shouldCopy $
 		| autoMode o = want <||> numCopiesCheck file key (<)
 		| otherwise = return True
 	want = case Command.Move.fromToOptions (moveOptions o) of
-		ToRemote dest -> (Remote.uuid <$> getParsed dest) >>=
-			wantSend False (Just key) (Just file)
-		FromRemote _ ->
-			wantGet False (Just key) (Just file)
+		Right (ToRemote dest) ->
+			(Remote.uuid <$> getParsed dest) >>= checkwantsend
+		Right (FromRemote _) -> checkwantget
+		Left Command.Move.ToHere -> checkwantget
+			
+	checkwantsend = wantSend False (Just key) (AssociatedFile (Just file))
+	checkwantget = wantGet False (Just key) (AssociatedFile (Just file))

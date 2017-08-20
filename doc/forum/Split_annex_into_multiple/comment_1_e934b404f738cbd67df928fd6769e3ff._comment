@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-04-05T19:09:03Z"
+ content="""
+Recent git-annex's support `git annex reinject --known`
+
+You can do this -- but do note that it leaves Global in an unusable state,
+so only do it if you don't plan to use that repository again:
+
+	chmod -R +w $Global/.git/annex/objects/
+	git annex reinject --known $(find $Global/.git/annex/objects/ -type f)
+
+BTW, splitting the files amoung several git branches is also a useful
+thing to do in this situation. Splitting amoung branches avoids most of
+git's problems with a repository having too many files in it.
+"""]]

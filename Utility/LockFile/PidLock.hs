@@ -25,6 +25,8 @@ import Utility.Path
 import Utility.FileMode
 import Utility.LockFile.LockStatus
 import Utility.ThreadScheduler
+import Utility.Hash
+import Utility.FileSystemEncoding
 import qualified Utility.LockFile.Posix as Posix
 
 import System.IO
@@ -33,7 +35,6 @@ import Data.Maybe
 import Data.List
 import Network.BSD
 import System.FilePath
-import Data.Hash.MD5
 import Control.Applicative
 import Prelude
 
@@ -99,7 +100,9 @@ sideLockFile lockfile = do
 	f <- absPath lockfile
 	let base = intercalate "_" (splitDirectories (makeRelative "/" f))
 	let shortbase = reverse $ take 32 $ reverse base
-	let md5sum = if base == shortbase then "" else md5s (Str base)
+	let md5sum = if base == shortbase
+		then ""
+		else show (md5 (encodeBS base))
 	dir <- ifM (doesDirectoryExist "/dev/shm")
 		( return "/dev/shm"
 		, return "/tmp"
@@ -119,18 +122,22 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 	setFileMode tmp (combineModes readModes)
 	hPutStr h . show =<< mkPidLock
 	hClose h
-	st <- getFileStatus tmp
-	let failedlock = do
+	let failedlock st = do
 		dropLock $ LockHandle tmp st sidelock
+		nukeFile tmp
 		return Nothing
-	let tooklock = return $ Just $ LockHandle lockfile' st sidelock
+	let tooklock st = return $ Just $ LockHandle lockfile' st sidelock
 	ifM (linkToLock sidelock tmp lockfile')
 		( do
 			nukeFile tmp
-			tooklock
+			-- May not have made a hard link, so stat
+			-- the lockfile
+			lckst <- getFileStatus lockfile'
+			tooklock lckst
 		, do
 			v <- readPidLock lockfile'
 			hn <- getHostName
+			tmpst <- getFileStatus tmp
 			case v of
 				Just pl | isJust sidelock && hn == lockingHost pl -> do
 					-- Since we have the sidelock,
@@ -139,8 +146,8 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 					-- we know that the pidlock is
 					-- stale, and can take it over.
 					rename tmp lockfile'
-					tooklock
-				_ -> failedlock
+					tooklock tmpst
+				_ -> failedlock tmpst
 		)
 
 -- Linux's open(2) man page recommends linking a pid lock into place,
@@ -150,14 +157,30 @@ tryLock lockfile = trySideLock lockfile $ \sidelock -> do
 -- open(2) suggests that link can sometimes appear to fail
 -- on NFS but have actually succeeded, and the way to find out is to stat
 -- the file and check its link count etc.
+--
+-- However, not all filesystems support hard links. So, first probe
+-- to see if they are supported. If not, use open with O_EXCL.
 linkToLock :: SideLockHandle -> FilePath -> FilePath -> IO Bool
 linkToLock Nothing _ _ = return False
 linkToLock (Just _) src dest = do
-	_ <- tryIO $ createLink src dest
-	ifM (catchBoolIO checklinked)
-		( catchBoolIO $ not <$> checkInsaneLustre dest
-		, return False
-		)
+	let probe = src ++ ".lnk"
+	v <- tryIO $ createLink src probe
+	nukeFile probe
+	case v of
+		Right _ -> do
+			_ <- tryIO $ createLink src dest
+			ifM (catchBoolIO checklinked)
+				( catchBoolIO $ not <$> checkInsaneLustre dest
+				, return False
+				)
+		Left _ -> catchBoolIO $ do
+			fd <- openFd dest WriteOnly
+				(Just $ combineModes readModes)
+				(defaultFileFlags {exclusive = True})
+			h <- fdToHandle fd
+			readFile src >>= hPutStr h
+			hClose h
+			return True
   where
 	checklinked = do
 		x <- getSymbolicLinkStatus src

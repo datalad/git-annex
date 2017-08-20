@@ -1,0 +1,7 @@
+Hi, I'm attempting to uninit my giant git annex repo for my home folder. I've upgraded this to the latest repo version that uses smudge files instead of direct mode.
+
+However, when I try to uninit it, I end up with many broken symlinks, similar to that described [here](https://git-annex.branchable.com/forum/Broken_symlinks_remain_after_drop/).
+
+Any suggestions on how I can best restore these files to my home directory and migrate to using annex for an annex folder for stuff I need to transfer?
+
+Thanks!

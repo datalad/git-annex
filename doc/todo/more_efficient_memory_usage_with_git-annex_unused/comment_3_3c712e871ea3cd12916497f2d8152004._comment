@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-01-31T23:31:03Z"
+ content="""
+Fixed the rest of the streaming problem.
+
+(Also found/fixed an unrelated memory blow up in git annex unused that
+only happened when a large file got checked right into git.)
+"""]]

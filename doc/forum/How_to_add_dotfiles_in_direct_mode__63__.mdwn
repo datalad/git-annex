@@ -1,0 +1,6 @@
+I have my Darktable photo library in git-annex and I need to use
+
+- .gitignore to ignore some files like *.lock
+- .gitattributes to make the sidecar .xmp files to be non-annexed normal files (faster and saves the editing history)
+
+What is the correct way to add those dotfiles to git in direct mode? Do I need to switch the repository to indirect mode and then back to direct mode? (I rather not do that very often since the repo has tens of thousands of files.)

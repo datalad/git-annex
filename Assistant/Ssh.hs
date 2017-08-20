@@ -14,6 +14,7 @@ import Utility.Rsync
 import Utility.FileMode
 import Utility.SshConfig
 import Git.Remote
+import Utility.SshHost
 
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -64,8 +65,9 @@ sshOpt :: String -> String -> String
 sshOpt k v = concat ["-o", k, "=", v]
 
 {- user@host or host -}
-genSshHost :: Text -> Maybe Text -> String
-genSshHost host user = maybe "" (\v -> T.unpack v ++ "@") user ++ T.unpack host
+genSshHost :: Text -> Maybe Text -> SshHost
+genSshHost host user = either error id $ mkSshHost $
+	maybe "" (\v -> T.unpack v ++ "@") user ++ T.unpack host
 
 {- Generates a ssh or rsync url from a SshData. -}
 genSshUrl :: SshData -> String
@@ -119,8 +121,9 @@ genSshRepoName host dir
 	| otherwise = makeLegalName $ host ++ "_" ++ dir
 
 {- The output of ssh, including both stdout and stderr. -}
-sshTranscript :: [String] -> (Maybe String) -> IO (String, Bool)
-sshTranscript opts input = processTranscript "ssh" opts input
+sshTranscript :: [String] -> SshHost -> String -> (Maybe String) -> IO (String, Bool)
+sshTranscript opts sshhost cmd input = processTranscript "ssh"
+	(opts ++ [fromSshHost sshhost, cmd]) input
 
 {- Ensure that the ssh public key doesn't include any ssh options, like
  - command=foo, or other weirdness.
@@ -383,7 +386,7 @@ mangleSshHostName sshdata = intercalate "-"
 
 {- Extracts the real hostname from a mangled ssh hostname. -}
 unMangleSshHostName :: String -> String
-unMangleSshHostName h = case split "-" h of
+unMangleSshHostName h = case splitc '-' h of
 	("git":"annex":rest) -> unescape (intercalate "-" (beginning rest))
 	_ -> h
   where

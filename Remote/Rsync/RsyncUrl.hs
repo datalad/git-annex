@@ -17,7 +17,7 @@ import Utility.SafeCommand
 import Data.Default
 import System.FilePath.Posix
 #ifdef mingw32_HOST_OS
-import Data.String.Utils
+import Utility.Split
 #endif
 import Annex.DirHashes
 

@@ -13,6 +13,7 @@ import qualified Data.Map as M
 import Command
 import Annex.Content
 import Limit
+import Types.Key
 import qualified Utility.Format
 import Utility.DataUnits
 
@@ -76,7 +77,7 @@ showFormatted format unformatted vars =
 keyVars :: Key -> [(String, String)]
 keyVars key =
 	[ ("key", key2file key)
-	, ("backend", keyBackendName key)
+	, ("backend", formatKeyVariety $ keyVariety key)
 	, ("bytesize", size show)
 	, ("humansize", size $ roughSize storageUnits True)
 	, ("keyname", keyName key)

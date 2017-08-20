@@ -13,7 +13,6 @@ import System.FilePath
 import Control.Monad
 import Control.Monad.IfElse
 import Data.List
-import Data.String.Utils
 import Control.Applicative
 import Prelude
 
@@ -25,6 +24,8 @@ import Utility.SafeCommand
 import Utility.Path
 import Utility.Exception
 import Utility.Env
+import Utility.Misc
+import Utility.Split
 
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -95,7 +96,7 @@ findLibPath l = go =<< getEnv "DYLD_LIBRARY_PATH"
   where
 	go Nothing = return l
 	go (Just p) = fromMaybe l
-		<$> firstM doesFileExist (map (</> f) (split ":" p))
+		<$> firstM doesFileExist (map (</> f) (splitc ':' p))
 	f = takeFileName l
 
 {- Expands any @rpath in the list of libraries.

@@ -174,22 +174,21 @@ createBackgroundProcess p a = a =<< createProcess p
 -- returns a transcript combining its stdout and stderr, and
 -- whether it succeeded or failed.
 processTranscript :: String -> [String] -> (Maybe String) -> IO (String, Bool)
-processTranscript = processTranscript' id
+processTranscript cmd opts = processTranscript' (proc cmd opts)
 
-processTranscript' :: (CreateProcess -> CreateProcess) -> String -> [String] -> Maybe String -> IO (String, Bool)
-processTranscript' modproc cmd opts input = do
+processTranscript' :: CreateProcess -> Maybe String -> IO (String, Bool)
+processTranscript' cp input = do
 #ifndef mingw32_HOST_OS
 {- This implementation interleves stdout and stderr in exactly the order
  - the process writes them. -}
 	(readf, writef) <- System.Posix.IO.createPipe
 	readh <- System.Posix.IO.fdToHandle readf
 	writeh <- System.Posix.IO.fdToHandle writef
-	p@(_, _, _, pid) <- createProcess $ modproc $
-		(proc cmd opts)
-			{ std_in = if isJust input then CreatePipe else Inherit
-			, std_out = UseHandle writeh
-			, std_err = UseHandle writeh
-			}
+	p@(_, _, _, pid) <- createProcess $ cp
+		{ std_in = if isJust input then CreatePipe else Inherit
+		, std_out = UseHandle writeh
+		, std_err = UseHandle writeh
+		}
 	hClose writeh
 
 	get <- mkreader readh
@@ -200,12 +199,11 @@ processTranscript' modproc cmd opts input = do
 	return (transcript, ok)
 #else
 {- This implementation for Windows puts stderr after stdout. -}
-	p@(_, _, _, pid) <- createProcess $ modproc $
-		(proc cmd opts)
-			{ std_in = if isJust input then CreatePipe else Inherit
-			, std_out = CreatePipe
-			, std_err = CreatePipe
-			}
+	p@(_, _, _, pid) <- createProcess $ cp
+		{ std_in = if isJust input then CreatePipe else Inherit
+		, std_out = CreatePipe
+		, std_err = CreatePipe
+		}
 
 	getout <- mkreader (stdoutHandle p)
 	geterr <- mkreader (stderrHandle p)

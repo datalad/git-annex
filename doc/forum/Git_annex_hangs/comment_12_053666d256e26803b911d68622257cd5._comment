@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="mario"
+ avatar="http://cdn.libravatar.org/avatar/4c63b0935789d29210d0bd8cad8d7ac7"
+ subject="comment 12"
+ date="2017-05-25T18:25:59Z"
+ content="""
+I checked the file system, it's nfs.
+
+`git config --get annex.pidlock` gives nothing, so I guess it's not enabled. Do I have to enable it, if the repo is on an nfs mount?
+
+"""]]

@@ -13,6 +13,7 @@ import Logs.UUID
 import Logs.MapLog
 import Logs.Trust
 import Annex.UUID
+import Annex.VectorClock
 import qualified Remote
 import Utility.HumanTime
 
@@ -70,15 +71,15 @@ start (Expire expire) noact actlog descs u =
   where
 	lastact = changed <$> M.lookup u actlog
 	whenactive = case lastact of
-		Just (Date t) -> do
-			d <- liftIO $ durationSince $ posixSecondsToUTCTime t
+		Just (VectorClock c) -> do
+			d <- liftIO $ durationSince $ posixSecondsToUTCTime c
 			return $ "last active: " ++ fromDuration d ++ " ago"
 		_  -> return "no activity"
 	desc = fromUUID u ++ " " ++ fromMaybe "" (M.lookup u descs)
 	notexpired ent = case ent of
 		Unknown -> False
-		Date t -> case lookupexpire of
-			Just (Just expiretime) -> t >= expiretime
+		VectorClock c -> case lookupexpire of
+			Just (Just expiretime) -> c >= expiretime
 			_ -> True
 	lookupexpire = headMaybe $ catMaybes $
 		map (`M.lookup` expire) [Just u, Nothing]

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2017-02-07T21:09:58Z"
+ content="""
+@CandyAngel, reinject --known moves the file into the annex. The only time I can
+see that it would make a copy is when importing from some other drive
+than the drive the repository is on, and it would then delete the source file
+after copying.
+
+It does currently always check that enough disk space exists to copy
+the file, even though it's probably going to move it. Perhaps that's why
+you thought it copied it?
+"""]]

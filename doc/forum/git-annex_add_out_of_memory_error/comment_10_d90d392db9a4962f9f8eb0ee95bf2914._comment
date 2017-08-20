@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="relates to being on NFS"
+ date="2017-08-09T17:26:40Z"
+ content="""
+pretty sure in that 
+
+[[! format sh \"\"\"
+yhalchen@discovery:/mnt/scratch/yoh/datalad$ git pull --ff-only origin master
+fatal: Out of memory, getdelim failed
+error: git://github.com/datalad/datalad did not send all necessary objects
+
+yhalchen@discovery:/mnt/scratch/yoh/datalad$ git pull --ff-only origin master
+fatal: Out of memory, getdelim failed
+error: git://github.com/datalad/datalad did not send all necessary objects
+
+yhalchen@discovery:/mnt/scratch/yoh/datalad$ git pull --ff-only origin master
+From git://github.com/datalad/datalad
+ * branch              master     -> FETCH_HEAD
+fatal: Out of memory, getdelim failed
+
+\"\"\"]]
+"""]]

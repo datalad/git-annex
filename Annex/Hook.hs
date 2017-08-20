@@ -4,7 +4,7 @@
  - not change, otherwise removing old hooks using an old version of
  - the script would fail.
  -
- - Copyright 2013-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -21,6 +21,9 @@ import qualified Data.Map as M
 
 preCommitHook :: Git.Hook
 preCommitHook = Git.Hook "pre-commit" (mkHookScript "git annex pre-commit .")
+
+postReceiveHook :: Git.Hook
+postReceiveHook = Git.Hook "post-receive" (mkHookScript "git annex post-receive")
 
 preCommitAnnexHook :: Git.Hook
 preCommitAnnexHook = Git.Hook "pre-commit-annex" ""

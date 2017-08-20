@@ -153,10 +153,11 @@ genTransfer t info = case transferRemote info of
 	 -}
 	go remote transferrer = ifM (liftIO $ performTransfer transferrer t info)
 		( do
-			maybe noop
-				(void . addAlert . makeAlertFiller True 
-					. transferFileAlert direction True)
-				(associatedFile info)
+			case associatedFile info of
+				AssociatedFile Nothing -> noop
+				AssociatedFile (Just af) -> void $ 
+					addAlert $ makeAlertFiller True $
+						transferFileAlert direction True af
 			unless isdownload $
 				handleDrops
 					("object uploaded to " ++ show remote)

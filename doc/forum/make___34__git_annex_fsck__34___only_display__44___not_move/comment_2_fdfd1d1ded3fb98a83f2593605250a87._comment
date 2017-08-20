@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="archimedes"
+ avatar="http://cdn.libravatar.org/avatar/5b2ed40aabedcb1b8c2c0ce69f55a1e1"
+ subject="comment 2"
+ date="2017-03-08T22:34:59Z"
+ content="""
+Do you mean \"made\"==\"updated\" or made==\"already exists\"?
+
+Maybe I have an old version (installed via brew)...
+
+I get: 
+
+~/s/a/annex8 git:master ❯❯❯ git annex fsck -q
+  Bad file size (1 B smaller); moved to .git/annex/bad/<long_hash>
+git-annex: fsck: 1 failed
+
+unless there are no other copies, in which case the original filename it is printed on a new line with the \"No known copies\" warning. 
+
+My use-case is for images - a small amount of corruption to some old images might not be visually perceptible, and hence tolerable, especially if I'm short-sighted enough to only have 1 copy. 
+I mean its possible for the user to navigate to /bad, visually inspect that they're ok with a corrupted image, parse the git log --stat message and restore it. 
+But it seems beneficial to have something like a rsync-like \"--dryrun\" option for fsck.
+"""]]

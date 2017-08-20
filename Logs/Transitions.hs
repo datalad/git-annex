@@ -14,12 +14,11 @@
 
 module Logs.Transitions where
 
-import Data.Time.Clock.POSIX
-import qualified Data.Set as S
-
 import Annex.Common
-import Logs.TimeStamp
+import Annex.VectorClock
 import Logs.Line
+
+import qualified Data.Set as S
 
 transitionsLog :: FilePath
 transitionsLog = "transitions.log"
@@ -30,9 +29,9 @@ data Transition
 	deriving (Show, Ord, Eq, Read)
 
 data TransitionLine = TransitionLine
-	{ transitionStarted :: POSIXTime
+	{ transitionStarted :: VectorClock
 	, transition :: Transition
-	} deriving (Show, Ord, Eq)
+	} deriving (Ord, Eq)
 
 type Transitions = S.Set TransitionLine
 
@@ -43,8 +42,8 @@ describeTransition ForgetDeadRemotes = "forget dead remotes"
 noTransitions :: Transitions
 noTransitions = S.empty
 
-addTransition :: POSIXTime -> Transition -> Transitions -> Transitions
-addTransition ts t = S.insert $ TransitionLine ts t
+addTransition :: VectorClock -> Transition -> Transitions -> Transitions
+addTransition c t = S.insert $ TransitionLine c t
 
 showTransitions :: Transitions -> String
 showTransitions = unlines . map showTransitionLine . S.elems
@@ -63,16 +62,16 @@ parseTransitionsStrictly source = fromMaybe badsource . parseTransitions
 	badsource = giveup $ "unknown transitions listed in " ++ source ++ "; upgrade git-annex!"
 
 showTransitionLine :: TransitionLine -> String
-showTransitionLine (TransitionLine ts t) = unwords [show t, show ts]
+showTransitionLine (TransitionLine c t) = unwords [show t, formatVectorClock c]
 
 parseTransitionLine :: String -> Maybe TransitionLine
 parseTransitionLine s = TransitionLine
-	<$> parsePOSIXTime ds
+	<$> parseVectorClock cs
 	<*> readish ts
   where
 	ws = words s
 	ts = Prelude.head ws
-	ds = unwords $ Prelude.tail ws
+	cs = unwords $ Prelude.tail ws
 
 combineTransitions :: [Transitions] -> Transitions
 combineTransitions = S.unions

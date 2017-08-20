@@ -42,14 +42,15 @@ import Annex.InodeSentinal
 import Git.Types
 import Git.FilePath
 import Config
+import Config.GitConfig
 import Utility.ThreadScheduler
+import Utility.FileSystemEncoding
 import Logs.Location
 import qualified Database.Keys
 #ifndef mingw32_HOST_OS
 import qualified Utility.Lsof as Lsof
 #endif
 
-import Data.Bits.Utils
 import Data.Typeable
 import qualified Data.ByteString.Lazy as L
 import qualified Control.Exception as E
@@ -83,7 +84,7 @@ instance E.Exception WatcherControl
 
 watchThread :: NamedThread
 watchThread = namedThread "Watcher" $
-	ifM (liftAnnex $ annexAutoCommit <$> Annex.getGitConfig)
+	ifM (liftAnnex $ getGitConfigVal annexAutoCommit)
 		( runWatcher
 		, waitFor ResumeWatcher runWatcher
 		)

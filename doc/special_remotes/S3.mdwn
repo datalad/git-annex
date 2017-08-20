@@ -33,7 +33,7 @@ the S3 remote.
   Think carefully about who can access your repository before using
   embedcreds without gpg encryption.
 
-* `datacenter` - Defaults to "US". Other values include "EU",
+* `datacenter` - Defaults to "US". Other values include "EU" (which is EU/Ireland),
   "us-west-1", "us-west-2", "ap-southeast-1", "ap-southeast-2", and
   "sa-east-1".
 

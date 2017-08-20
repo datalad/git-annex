@@ -1,0 +1,51 @@
+### Please describe the problem.
+
+Fails to addurl --fast (there is additional problem there anyways since size is not provided by the server -- generated on the fly), but more important that refuses to drop even when addurl/wget fetch it just fine (although different one each time ATM -- probably time stamp within zip etc)
+
+### What steps will reproduce the problem?
+
+just try that url in the pasted output below
+
+### What version of git-annex are you using? On what operating system?
+6.20170525+gitge1cf095ae-1~ndall+1
+
+### Please provide any additional information below.
+
+[[!format sh """
+
+$> git annex whereis mriqcresults.zip 
+whereis mriqcresults.zip (2 copies)  
+  	00000000-0000-0000-0000-000000000001 -- web
+   	8da1dc60-6c81-4bdc-91f6-90f15368797c -- yoh@hopa:/tmp/test [here]
+
+  web: https://openneuro.org/crn/jobs/594d42a090c6d1000180660b/results/fileName?ticket=ticket
+ok
+2 31497.....................................:Wed 26 Jul 2017 03:08:00 PM EDT:.
+hopa:/tmp/test
+$> git annex drop --debug mriqcresults.zip
+[2017-07-26 15:08:11.696997009] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--cached","-z","--","mriqcresults.zip"]
+[2017-07-26 15:08:11.700695374] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","check-attr","-z","--stdin","annex.backend","annex.numcopies","annex.largefiles","--"]
+[2017-07-26 15:08:11.700910913] read: git ["--version"]
+[2017-07-26 15:08:11.705537628] process done ExitSuccess
+[2017-07-26 15:08:11.705930374] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2017-07-26 15:08:11.709905527] process done ExitSuccess
+[2017-07-26 15:08:11.709986403] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2017-07-26 15:08:11.713535966] process done ExitSuccess
+[2017-07-26 15:08:11.714440039] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2017-07-26 15:08:11.714790464] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+drop mriqcresults.zip (checking https://openneuro.org/crn/jobs/594d42a090c6d1000180660b/results/fileName?ticket=ticket...) (unsafe) 
+  Could only verify the existence of 0 out of 1 necessary copies
+
+  Rather than dropping this file, try using: git annex move
+
+  (Use --force to override this check, or adjust numcopies.)
+failed
+git-annex: drop: 1 failed
+
+
+"""]]
+
+[[!meta author=yoh]]
+
+
+> [[done]] --[[Joey]]

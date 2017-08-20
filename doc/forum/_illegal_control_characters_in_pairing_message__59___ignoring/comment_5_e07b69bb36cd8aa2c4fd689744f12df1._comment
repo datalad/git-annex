@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2017-01-31T16:50:18Z"
+ content="""
+Is "username@iMac.home" data that you obscured, or are you actually using
+an account called "username" with a hostname of "iMac.home"?
+
+As I said before, this is likely caused by some character that git-annex
+dooes not like in username or hostname of the other host than the one that
+displays the error.
+
+Hopefully one of you guys who can reproduce the problem can get this basic
+information to me, so I can try to get to the bottom of the problem.
+"""]]

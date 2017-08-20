@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2017-07-31T18:42:38Z"
+ content="""
+The locale generation done by the standalone tarball needs write access to
+its directory. If datalad is using the git-annex-standalone.deb, non-root
+user's won't be able to write to it, and it will still use the system
+locales.
+"""]]

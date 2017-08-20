@@ -38,6 +38,7 @@ import Types.Transfer
 import Types.Creds
 import Annex.DirHashes
 import Utility.Tmp
+import Utility.SshHost
 
 import qualified Data.Map as M
 
@@ -120,9 +121,9 @@ rsyncTransport gc url
 		case fromNull ["ssh"] (remoteAnnexRsyncTransport gc) of
 			"ssh":sshopts -> do
 				let (port, sshopts') = sshReadPort sshopts
-				    userhost = takeWhile (/=':') url
-				-- Connection caching
-				(Param "ssh":) <$> sshOptions
+				    userhost = either error id $ mkSshHost $ 
+				    	takeWhile (/= ':') url
+				(Param "ssh":) <$> sshOptions ConsumeStdin
 					(userhost, port) gc
 					(map Param $ loginopt ++ sshopts')
 			"rsh":rshopts -> return $ map Param $ "rsh" :
@@ -137,8 +138,8 @@ rsyncTransport gc url
 	loginopt = maybe [] (\l -> ["-l",l]) login
 	fromNull as xs = if null xs then as else xs
 
-rsyncSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-rsyncSetup mu _ c gc = do
+rsyncSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+rsyncSetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	-- verify configuration is sane
 	let url = fromMaybe (giveup "Specify rsyncurl=") $

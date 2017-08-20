@@ -12,7 +12,6 @@ module Logs.Difference (
 	module Logs.Difference.Pure
 ) where
 
-import Data.Time.Clock.POSIX
 import qualified Data.Map as M
 
 import Annex.Common
@@ -24,9 +23,9 @@ import Logs.Difference.Pure
 
 recordDifferences :: Differences -> UUID -> Annex ()
 recordDifferences ds@(Differences {}) uuid = do
-	ts <- liftIO getPOSIXTime
+	c <- liftIO currentVectorClock
 	Annex.Branch.change differenceLog $
-		showLog id . changeLog ts uuid (showDifferences ds) . parseLog Just
+		showLog id . changeLog c uuid (showDifferences ds) . parseLog Just
 recordDifferences UnknownDifferences _ = return ()
 
 -- Map of UUIDs that have Differences recorded.

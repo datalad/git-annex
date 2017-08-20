@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-05-24T17:27:20Z"
+ content="""
+The server can certainly do filtering or blocking of changes to the
+git-annex branch to prevent this kind of abuse.
+
+Marking a repository as dead will indeed prevent it from being
+auto-enabled. It will not cause later synchronisation problems. It seems
+like a perhaps too big hammer though. Cloning from such a server, and then
+pushing back to it would make your clone be marked as dead on the next
+pull!
+
+And marking dead doesn't prevent malicious changes to preferred
+content settings etc.
+
+Filtering in the `pre-receive` hook should be very doable. See
+[[internals]] for the git-annex branch documentation.
+"""]]

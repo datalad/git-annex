@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2017-02-20T16:27:39Z"
+ content="""
+I also can't reproduce any problem running the script from comment #5
+here. 
+
+(The reason that `git ls-files --modified` is
+throwing the error is because that ends up running git-annex
+when in a v6 repo.
+
+Seems like it must come down to the version of git, or some
+other part of the environment, since it is only happening on one computer
+and not others.
+
+Are there any symlinks in the path to the repository where this happens?
+Does this happen if you run the script in `/tmp/newrepo`?
+"""]]

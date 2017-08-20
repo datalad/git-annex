@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 23"""
+ date="2017-05-09T17:52:11Z"
+ content="""
+@mario, great question! (Not the best place for such a question, start a
+thread on the forum next time..)
+
+git-annex does use rsync when transferring files between ssh remotes.
+Rsync normally goes over ssh, and it might be better to enable compression
+at the ssh level. For example, I have "Compression yes" in `~/.ssh/config`
+
+I think that the reason your annex-rsync-upload-options setting broke
+it is that rsync needs --compress to be passed on to the other
+rsync process (in the remote repository), and that is run via
+git-annex-shell, which has a whitelist of options it will pass to rsync.
+Passing arbitrary options to rsync could allow unwanted behavior
+when git-annex-shell is being used as a security barrier. And --compress is
+one of the options that both the rsync sender and receiver have to agree
+on for the rsync protocol to work.
+
+I have added a note to the man page about this limitation of what
+the rsync-options settings can be used to do.
+"""]]

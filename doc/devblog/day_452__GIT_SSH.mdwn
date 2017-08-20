@@ -1,0 +1,17 @@
+Found a bug in git-annex-shell where verbose messages would sometimes make
+it output things git-annex didn't expect.
+
+While fixing that, I wanted to add a test case, but the test suite actually
+does not test git-annex-shell at all. It would need to ssh, which test
+suites should not do. So, I took a detour..
+
+Support for `GIT_SSH` and `GIT_SSH_COMMAND` has been requested before for
+various reasons. So I implemented that, which took 4 hours. (With one
+little possible compatability caveat, since git-annex needs to pass the -n
+parameter to ssh sometimes, and git's interface doesn't allow for such a
+parameter.)
+
+Now the test suite can use those environment variables to make mock ssh
+remotes be accessed using local `sh` instead of `ssh`.
+
+Today's work was sponsored by Trenton Cronholm on Patreon.

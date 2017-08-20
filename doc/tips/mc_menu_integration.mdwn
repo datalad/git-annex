@@ -1,0 +1,18 @@
+Put the following in your ~/.config/mc/menu to map g and G to
+git-annex-get and git-annex-drop in the famous mc file manager:
+
+    + ! t t
+    g git annex get
+      git annex get %f
+
+    + t t
+    g git annex get
+      git annex get %u
+
+    + ! t t
+    G git annex drop
+      git annex drop %f
+
+    + t t
+    G git annex drop
+      git annex drop %u

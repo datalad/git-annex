@@ -1,6 +1,6 @@
 {- git-annex test suite
  -
- - Copyright 2010-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -29,13 +29,15 @@ import Test.Tasty.Runners
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
 import Test.Tasty.Ingredients.Rerun
-import Options.Applicative (switch, long, help)
+import Options.Applicative (switch, long, help, internal)
 
 import qualified Data.Map as M
 import qualified Data.Aeson
 import qualified Data.ByteString.Lazy.UTF8 as BU8
+import System.Environment
 
 import Common
+import CmdLine.GitAnnex.Options
 
 import qualified Utility.SafeCommand
 import qualified Annex
@@ -50,6 +52,7 @@ import qualified Git.Ref
 import qualified Git.LsTree
 import qualified Git.FilePath
 import qualified Annex.Locations
+import qualified Types.GitConfig
 import qualified Types.KeySource
 import qualified Types.Backend
 import qualified Types.TrustLevel
@@ -63,17 +66,20 @@ import qualified Logs.Presence
 import qualified Logs.PreferredContent
 import qualified Types.MetaData
 import qualified Remote
+import qualified Key
 import qualified Types.Key
 import qualified Types.Messages
 import qualified Config
 import qualified Config.Cost
 import qualified Crypto
+import qualified Database.Keys
 import qualified Annex.WorkTree
 import qualified Annex.Link
 import qualified Annex.Init
 import qualified Annex.CatFile
 import qualified Annex.Path
 import qualified Annex.AdjustedBranch
+import qualified Annex.VectorClock
 import qualified Annex.View
 import qualified Annex.View.ViewedFile
 import qualified Logs.View
@@ -111,21 +117,46 @@ optParser = TestOptions
 	<*> switch
 		( long "keep-failures"
 		<> help "preserve repositories on test failure"
-	)
+		)
+	<*> switch
+		( long "fakessh"
+		<> internal
+		)
+	<*> cmdParams "non-options are for internal use only"
 
 runner :: Maybe (TestOptions -> IO ())
-runner = Just $ \opts -> isolateGitConfig $ do
-	ensuretmpdir
-	crippledfilesystem <- Annex.Init.probeCrippledFileSystem' tmpdir
-	case tryIngredients ingredients (tastyOptionSet opts) (tests crippledfilesystem opts) of
-		Nothing -> error "No tests found!?"
-		Just act -> ifM act
-			( exitSuccess
-			, do
-				putStrLn "  (This could be due to a bug in git-annex, or an incompatability"
-				putStrLn "   with utilities, such as git, installed on this system.)"
-				exitFailure
-			)
+runner = Just go
+  where
+	go opts
+		| fakeSsh opts = runFakeSsh (internalData opts)
+		| otherwise = runsubprocesstests opts
+			=<< Utility.Env.getEnv subenv
+	
+	-- Run git-annex test in a subprocess, so that any files
+	-- it may open will be closed before running finalCleanup.
+	-- This should prevent most failures to clean up after the test
+	-- suite.
+	subenv = "GIT_ANNEX_TEST_SUBPROCESS"
+	runsubprocesstests opts Nothing = do
+		pp <- Annex.Path.programPath
+		Utility.Env.setEnv subenv "1" True
+		ps <- getArgs
+		(Nothing, Nothing, Nothing, pid) <-createProcess (proc pp ps)
+		exitcode <- waitForProcess pid
+		unless (keepFailuresOption opts) finalCleanup
+		exitWith exitcode
+	runsubprocesstests opts (Just _) = isolateGitConfig $ do
+		ensuretmpdir
+		crippledfilesystem <- Annex.Init.probeCrippledFileSystem' tmpdir
+		case tryIngredients ingredients (tastyOptionSet opts) (tests crippledfilesystem opts) of
+			Nothing -> error "No tests found!?"
+			Just act -> ifM act
+				( exitSuccess
+				, do
+					putStrLn "  (Failures above could be due to a bug in git-annex, or an incompatibility"
+					putStrLn "   with utilities, such as git, installed on this system.)"
+					exitFailure
+				)
 
 ingredients :: [Ingredient]
 ingredients =
@@ -149,11 +180,11 @@ tests crippledfilesystem opts = testGroup "Tests" $ properties :
 
 properties :: TestTree
 properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
-	[ testProperty "prop_isomorphic_deencode_git" Git.Filename.prop_isomorphic_deencode
-	, testProperty "prop_isomorphic_deencode" Utility.Format.prop_isomorphic_deencode
+	[ testProperty "prop_encode_decode_roundtrip" Git.Filename.prop_encode_decode_roundtrip
+	, testProperty "prop_encode_c_decode_c_roundtrip" Utility.Format.prop_encode_c_decode_c_roundtrip
 	, testProperty "prop_isomorphic_fileKey" Annex.Locations.prop_isomorphic_fileKey
-	, testProperty "prop_isomorphic_key_encode" Types.Key.prop_isomorphic_key_encode
-	, testProperty "prop_isomorphic_key_decode" Types.Key.prop_isomorphic_key_decode
+	, testProperty "prop_isomorphic_key_encode" Key.prop_isomorphic_key_encode
+	, testProperty "prop_isomorphic_key_decode" Key.prop_isomorphic_key_decode
 	, testProperty "prop_isomorphic_shellEscape" Utility.SafeCommand.prop_isomorphic_shellEscape
 	, testProperty "prop_isomorphic_shellEscape_multiword" Utility.SafeCommand.prop_isomorphic_shellEscape_multiword
 	, testProperty "prop_isomorphic_configEscape" Logs.Remote.prop_isomorphic_configEscape
@@ -164,7 +195,7 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	, testProperty "prop_cost_sane" Config.Cost.prop_cost_sane
 	, testProperty "prop_matcher_sane" Utility.Matcher.prop_matcher_sane
 	, testProperty "prop_HmacSha1WithCipher_sane" Crypto.prop_HmacSha1WithCipher_sane
-	, testProperty "prop_TimeStamp_sane" Logs.MapLog.prop_TimeStamp_sane
+	, testProperty "prop_VectorClock_sane" Annex.VectorClock.prop_VectorClock_sane
 	, testProperty "prop_addMapLog_sane" Logs.MapLog.prop_addMapLog_sane
 	, testProperty "prop_verifiable_sane" Utility.Verifiable.prop_verifiable_sane
 	, testProperty "prop_segment_regressionTest" Utility.Misc.prop_segment_regressionTest
@@ -210,7 +241,9 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "drop (with remote)" test_drop_withremote
 	, testCase "drop (untrusted remote)" test_drop_untrustedremote
 	, testCase "get" test_get
+	, testCase "get (ssh remote)" test_get_ssh_remote
 	, testCase "move" test_move
+	, testCase "move (ssh remote)" test_move_ssh_remote
 	, testCase "copy" test_copy
 	, testCase "lock" test_lock
 	, testCase "lock (v6 --force)" test_lock_v6_force
@@ -366,8 +399,8 @@ test_import = intmpclonerepo $ Utility.Tmp.withTmpDir "importtest" $ \importdir 
 	git_annex "drop" ["--force", imported1, imported2, imported5] @? "drop failed"
 	annexed_notpresent_imported imported2
 	(toimportdup, importfdup, importeddup) <- mktoimport importdir "importdup"
-	git_annex "import" ["--clean-duplicates", toimportdup] 
-		@? "import of missing duplicate with --clean-duplicates failed"
+	not <$> git_annex "import" ["--clean-duplicates", toimportdup] 
+		@? "import of missing duplicate with --clean-duplicates failed to fail"
 	checkdoesnotexist importeddup
 	checkexists importfdup
   where
@@ -390,7 +423,7 @@ test_reinject = intmpclonerepoInDirect $ do
 	git_annex "drop" ["--force", sha1annexedfile] @? "drop failed"
 	annexed_notpresent sha1annexedfile
 	writeFile tmp $ content sha1annexedfile
-	key <- Types.Key.key2file <$> getKey backendSHA1 tmp
+	key <- Key.key2file <$> getKey backendSHA1 tmp
 	git_annex "reinject" [tmp, sha1annexedfile] @? "reinject failed"
 	annexed_present sha1annexedfile
 	-- fromkey can't be used on a crippled filesystem, since it makes a
@@ -452,12 +485,18 @@ test_drop_untrustedremote = intmpclonerepo $ do
 	git_annex "untrust" ["origin"] @? "untrust of origin failed"
 	git_annex "get" [annexedfile] @? "get failed"
 	annexed_present annexedfile
-	not <$> git_annex "drop" [annexedfile] @? "drop wrongly suceeded with only an untrusted copy of the file"
+	not <$> git_annex "drop" [annexedfile] @? "drop wrongly succeeded with only an untrusted copy of the file"
 	annexed_present annexedfile
 	inmainrepo $ annexed_present annexedfile
 
 test_get :: Assertion
-test_get = intmpclonerepo $ do
+test_get = test_get' intmpclonerepo
+
+test_get_ssh_remote :: Assertion
+test_get_ssh_remote = test_get' (with_ssh_origin intmpclonerepo)
+
+test_get' :: (Assertion -> Assertion) -> Assertion
+test_get' setup = setup $ do
 	inmainrepo $ annexed_present annexedfile
 	annexed_notpresent annexedfile
 	git_annex "get" [annexedfile] @? "get of file failed"
@@ -474,7 +513,13 @@ test_get = intmpclonerepo $ do
 		unannexed ingitfile
 
 test_move :: Assertion
-test_move = intmpclonerepo $ do
+test_move = test_move' intmpclonerepo
+
+test_move_ssh_remote :: Assertion
+test_move_ssh_remote = test_move' (with_ssh_origin intmpclonerepo)
+
+test_move' :: (Assertion -> Assertion) -> Assertion
+test_move' setup = setup $ do
 	annexed_notpresent annexedfile
 	inmainrepo $ annexed_present annexedfile
 	git_annex "move" ["--from", "origin", annexedfile] @? "move --from of file failed"
@@ -625,6 +670,7 @@ test_lock_v6_force = intmpclonerepoInDirect $ do
 		git_annex "get" [annexedfile] @? "get of file failed"
 		git_annex "unlock" [annexedfile] @? "unlock failed in v6 mode"
 		annexeval $ do
+			Database.Keys.closeDb
 			dbdir <- Annex.fromRepo Annex.Locations.gitAnnexKeysDb
 			liftIO $ removeDirectoryRecursive dbdir
 		writeFile annexedfile "test_lock_v6_force content"
@@ -846,9 +892,9 @@ test_unused = intmpclonerepoInDirect $ do
 	checkunused [annexedfilekey, sha1annexedfilekey] "after rm sha1annexedfile"
 
 	-- good opportunity to test dropkey also
-	git_annex "dropkey" ["--force", Types.Key.key2file annexedfilekey]
+	git_annex "dropkey" ["--force", Key.key2file annexedfilekey]
 		@? "dropkey failed"
-	checkunused [sha1annexedfilekey] ("after dropkey --force " ++ Types.Key.key2file annexedfilekey)
+	checkunused [sha1annexedfilekey] ("after dropkey --force " ++ Key.key2file annexedfilekey)
 
 	not <$> git_annex "dropunused" ["1"] @? "dropunused failed to fail without --force"
 	git_annex "dropunused" ["--force", "1"] @? "dropunused failed"
@@ -1597,7 +1643,6 @@ test_crypto = do
 	testscheme "pubkey"
   where
 	gpgcmd = Utility.Gpg.mkGpgCmd Nothing
-	encparams = (mempty :: Types.Remote.RemoteConfig, def :: Types.RemoteGitConfig)
 	testscheme scheme = intmpclonerepo $ whenM (Utility.Path.inPath (Utility.Gpg.unGpgCmd gpgcmd)) $ do
 		Utility.Gpg.testTestHarness gpgcmd 
 			@? "test harness self-test failed"
@@ -1653,6 +1698,8 @@ test_crypto = do
 		checkScheme Types.Crypto.Hybrid = scheme == "hybrid"
 		checkScheme Types.Crypto.PubKey = scheme == "pubkey"
 		checkKeys cip mvariant = do
+			dummycfg <- Types.GitConfig.dummyRemoteGitConfig
+			let encparams = (mempty :: Types.Remote.RemoteConfig, dummycfg)
 			cipher <- Crypto.decryptCipher gpgcmd encparams cip
 			files <- filterM doesFileExist $
 				map ("dir" </>) $ concatMap (key2files cipher) keys
@@ -1738,6 +1785,16 @@ innewrepo a = withgitrepo $ \r -> indir r a
 
 inmainrepo :: Assertion -> Assertion
 inmainrepo = indir mainrepodir
+
+with_ssh_origin :: (Assertion -> Assertion) -> (Assertion -> Assertion)
+with_ssh_origin cloner a = cloner $ do
+	origindir <- absPath
+		=<< annexeval (Config.getConfig (Config.ConfigKey config) "/dev/null")
+	let originurl = "localhost:" ++ origindir
+	boolSystem "git" [Param "config", Param config, Param originurl] @? "git config failed"
+	a
+  where
+	config = "remote.origin.url"
 
 intmpclonerepo :: Assertion -> Assertion
 intmpclonerepo a = withtmpclonerepo $ \r -> indir r a
@@ -1876,20 +1933,24 @@ isolateGitConfig a = Utility.Tmp.withTmpDir "testhome" $ \tmphome -> do
 	a
 
 cleanup :: FilePath -> IO ()
-cleanup = cleanup' False
-
-cleanup' :: Bool -> FilePath -> IO ()
-cleanup' final dir = whenM (doesDirectoryExist dir) $ do
+cleanup dir = whenM (doesDirectoryExist dir) $ do
 	Command.Uninit.prepareRemoveAnnexDir' dir
-	-- This sometimes fails on Windows, due to some files
-	-- being still opened by a subprocess.
-	catchIO (removeDirectoryRecursive dir) $ \e ->
-		when final $ do
-			print e
-			putStrLn "sleeping 10 seconds and will retry directory cleanup"
-			Utility.ThreadScheduler.threadDelaySeconds (Utility.ThreadScheduler.Seconds 10)
-			whenM (doesDirectoryExist dir) $
-				removeDirectoryRecursive dir
+	-- This can fail if files in the directory are still open by a
+	-- subprocess.
+	void $ tryIO $ removeDirectoryRecursive dir
+
+finalCleanup :: IO ()
+finalCleanup = whenM (doesDirectoryExist tmpdir) $ do
+	Utility.Misc.reapZombies
+	Command.Uninit.prepareRemoveAnnexDir' tmpdir
+	catchIO (removeDirectoryRecursive tmpdir) $ \e -> do
+		print e
+		putStrLn "sleeping 10 seconds and will retry directory cleanup"
+		Utility.ThreadScheduler.threadDelaySeconds $
+			Utility.ThreadScheduler.Seconds 10
+		whenM (doesDirectoryExist tmpdir) $ do
+			Utility.Misc.reapZombies
+			removeDirectoryRecursive tmpdir
 	
 checklink :: FilePath -> Assertion
 checklink f =
@@ -1959,7 +2020,7 @@ checklocationlog f expected = do
 	case r of
 		Just k -> do
 			uuids <- annexeval $ Remote.keyLocations k
-			assertEqual ("bad content in location log for " ++ f ++ " key " ++ Types.Key.key2file k ++ " uuid " ++ show thisuuid)
+			assertEqual ("bad content in location log for " ++ f ++ " key " ++ Key.key2file k ++ " uuid " ++ show thisuuid)
 				expected (thisuuid `elem` uuids)
 		_ -> assertFailure $ f ++ " failed to look up key"
 
@@ -2047,11 +2108,7 @@ withTestMode testmode = withResource prepare release . const
 			Just act -> unlessM act $
 				error "init tests failed! cannot continue"
 		return ()
-	release _
-		| keepFailures testmode = void $ tryIO $ do
-			cleanup' True mainrepodir
-			removeDirectory tmpdir
-		| otherwise = cleanup' True tmpdir
+	release _ = cleanup mainrepodir
 
 setTestMode :: TestMode -> IO ()
 setTestMode testmode = do
@@ -2071,8 +2128,19 @@ setTestMode testmode = do
 		, ("GIT_COMMITTER_NAME", "git-annex test")
 		-- force gpg into batch mode for the tests
 		, ("GPG_BATCH", "1")
+		-- Make git and git-annex access ssh remotes on the local
+		-- filesystem, without using ssh at all.
+		, ("GIT_SSH_COMMAND", "git-annex test --fakessh --")
+		, ("GIT_ANNEX_USE_GIT_SSH", "1")
 		, ("TESTMODE", show testmode)
 		]
+
+runFakeSsh :: [String] -> IO ()
+runFakeSsh ("-n":ps) = runFakeSsh ps
+runFakeSsh (_host:cmd:[]) = do
+	(_, _, _, pid) <- createProcess (shell cmd)
+	exitWith =<< waitForProcess pid
+runFakeSsh ps = error $ "fake ssh option parse error: " ++ show ps
 
 getTestMode :: IO TestMode
 getTestMode = Prelude.read <$> Utility.Env.getEnvDefault "TESTMODE" ""
@@ -2152,7 +2220,7 @@ backendWORM :: Types.Backend
 backendWORM = backend_ "WORM"
 
 backend_ :: String -> Types.Backend
-backend_ = Backend.lookupBackendName
+backend_ = Backend.lookupBackendVariety . Types.Key.parseKeyVariety
 
 getKey :: Types.Backend -> FilePath -> IO Types.Key
 getKey b f = fromJust <$> annexeval go

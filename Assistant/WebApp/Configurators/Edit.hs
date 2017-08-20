@@ -43,6 +43,8 @@ import Utility.Gpg
 import Annex.UUID
 import Assistant.Ssh
 import Config
+import Config.GitConfig
+import Config.DynamicConfig
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -75,8 +77,8 @@ getRepoConfig uuid mremote = do
 	description <- fmap T.pack . M.lookup uuid <$> uuidMap
 
 	syncable <- case mremote of
-		Just r -> return $ remoteAnnexSync $ Remote.gitconfig r
-		Nothing -> annexAutoCommit <$> Annex.getGitConfig
+		Just r -> liftIO $ getDynamicConfig $ remoteAnnexSync $ Remote.gitconfig r
+		Nothing -> getGitConfigVal annexAutoCommit
 
 	return $ RepoConfig
 		(T.pack $ maybe "here" Remote.name mremote)

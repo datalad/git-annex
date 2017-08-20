@@ -16,5 +16,5 @@ too many files to look at.
 
 Another approach is to look at the git log, find the commit that merged
 the unwanted changed (and created these variant files), and `git revert` that
-merge, and the earlier commit that was made accidentially.
+merge, and the earlier commit that was made accidentally.
 """]]

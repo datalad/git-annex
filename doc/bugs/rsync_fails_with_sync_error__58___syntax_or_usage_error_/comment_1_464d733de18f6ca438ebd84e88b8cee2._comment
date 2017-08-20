@@ -8,7 +8,7 @@ that the other side fails to deal with. We can see in your log that the
 two rsync are communicating successfully over the ssh connection
 at first.
 
-This could be something not clean about your ssh connection, or some incompatability
+This could be something not clean about your ssh connection, or some incompatibility
 in the versions of rsync or git-annex between the client and the server.
 It probably wouldn't hurt to make sure client and server have the same rsync
 version, and perhaps upgrade them both to the newest git-annex in case this

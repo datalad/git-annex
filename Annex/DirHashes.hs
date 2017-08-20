@@ -1,6 +1,6 @@
 {- git-annex file locations
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -19,14 +19,15 @@ module Annex.DirHashes (
 
 import Data.Bits
 import Data.Word
-import Data.Hash.MD5
 import Data.Default
+import qualified Data.ByteArray
 
 import Common
-import Types.Key
+import Key
 import Types.GitConfig
 import Types.Difference
 import Utility.FileSystemEncoding
+import Utility.Hash
 
 type Hasher = Key -> FilePath
 
@@ -62,15 +63,24 @@ hashDirs :: HashLevels -> Int -> String -> FilePath
 hashDirs (HashLevels 1) sz s = addTrailingPathSeparator $ take sz s
 hashDirs _ sz s = addTrailingPathSeparator $ take sz s </> drop sz s
 
-hashDirMixed :: HashLevels -> Hasher
-hashDirMixed n k = hashDirs n 2 $ take 4 $ display_32bits_as_dir =<< [a,b,c,d]
-  where
-	ABCD (a,b,c,d) = md5 $ md5FilePath $ key2file $ nonChunkKey k
-
 hashDirLower :: HashLevels -> Hasher
-hashDirLower n k = hashDirs n 3 $ take 6 $ md5s $ md5FilePath $ key2file $ nonChunkKey k
+hashDirLower n k = hashDirs n 3 $ take 6 $ show $ md5 $
+	encodeBS $ key2file $ nonChunkKey k
+
+{- This was originally using Data.Hash.MD5 from MissingH. This new version
+- is faster, but ugly as it has to replicate the 4 Word32's that produced. -}
+hashDirMixed :: HashLevels -> Hasher
+hashDirMixed n k = hashDirs n 2 $ take 4 $ concatMap display_32bits_as_dir $
+	encodeWord32 $ map fromIntegral $ Data.ByteArray.unpack $
+		Utility.Hash.md5 $ encodeBS $ key2file $ nonChunkKey k
+  where
+	encodeWord32 (b1:b2:b3:b4:rest) =
+		(shiftL b4 24 .|. shiftL b3 16 .|. shiftL b2 8 .|. b1)
+		: encodeWord32 rest
+	encodeWord32 _ = []
 
 {- modified version of display_32bits_as_hex from Data.Hash.MD5
+ - in MissingH
  -   Copyright (C) 2001 Ian Lynagh 
  -   License: Either BSD or GPL
  -}

@@ -9,8 +9,7 @@ module Annex.VariantFile where
 
 import Annex.Common
 import Utility.FileSystemEncoding
-
-import Data.Hash.MD5
+import Utility.Hash
 
 variantMarker :: String
 variantMarker = ".variant-"
@@ -42,4 +41,4 @@ variantFile file key
 	doubleconflict = variantMarker `isInfixOf` file
 
 shortHash :: String -> String
-shortHash = take 4 . md5s . md5FilePath
+shortHash = take 4 . show . md5 . encodeBS

@@ -15,36 +15,35 @@ module Logs.SingleValue where
 
 import Annex.Common
 import qualified Annex.Branch
-import Logs.TimeStamp
 import Logs.Line
+import Annex.VectorClock
 
 import qualified Data.Set as S
-import Data.Time.Clock.POSIX
 
 class SingleValueSerializable v where
 	serialize :: v -> String
 	deserialize :: String -> Maybe v
 
 data LogEntry v = LogEntry
-	{ changed :: POSIXTime
+	{ changed :: VectorClock
 	, value :: v
-	} deriving (Eq, Show, Ord)
+	} deriving (Eq, Ord)
 
 type Log v = S.Set (LogEntry v)
 
 showLog :: (SingleValueSerializable v) => Log v -> String
 showLog = unlines . map showline . S.toList
   where
-	showline (LogEntry t v) = unwords [show t, serialize v]
+	showline (LogEntry c v) = unwords [formatVectorClock c, serialize v]
 
 parseLog :: (Ord v, SingleValueSerializable v) => String -> Log v
 parseLog = S.fromList . mapMaybe parse . splitLines
   where
 	parse line = do
-		let (ts, s) = splitword line
-		date <- parsePOSIXTime ts
+		let (sc, s) = splitword line
+		c <- parseVectorClock sc
 		v <- deserialize s
-		Just (LogEntry date v)
+		Just (LogEntry c v)
 	splitword = separate (== ' ')
 
 newestValue :: Log v -> Maybe v
@@ -60,6 +59,6 @@ getLog = newestValue <$$> readLog
 
 setLog :: (SingleValueSerializable v) => FilePath -> v -> Annex ()
 setLog f v = do
-	now <- liftIO getPOSIXTime
-	let ent = LogEntry now v
+	c <- liftIO currentVectorClock
+	let ent = LogEntry c v
 	Annex.Branch.change f $ \_old -> showLog (S.singleton ent)

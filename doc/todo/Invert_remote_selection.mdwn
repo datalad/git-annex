@@ -1,0 +1,30 @@
+Say I have:
+
+    $> git remote
+    Alpha
+    Beta
+    Gamma
+    Delta
+
+It is easy to sync with all repos via:
+
+    $> git annex sync
+
+Or specific repos via:
+
+    $> git annex sync Alpha Beta
+
+However, it is currently awkward to exclude specific repos. Is it possible to 'invert' or 'negate' specific remotes, so that the following are equivalent?
+
+    $> git annex sync \! Gamma
+    $> git annex sync Alpha Beta Delta
+
+This problem comes up surprisingly often due to:
+
+  1. An external host being temporarily down (which causes sync to hang for a while),
+  2. Repos being available, but the machine is under heavy IO load or memory pressure,
+  3. Repos on external drives that are swapped out and mounted to a specific location (e.g., /mnt/),
+  4. Wanting to roll out repo-wide changes in stages, or keeping 1-2 repos untouched for whatever reason, or
+  5. Some repos being too large for a machine (e.g., repacking fails due to low memory), but which can still act like a dumb file-store.
+
+The problem gets worse when you have a lot of remotes or a lot of repos to manage (I have both). My impression is that this feature would require a syntax addition for git-annex-sync only. I like '!' because it behaves the same in GNU find and sh.

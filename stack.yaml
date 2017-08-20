@@ -4,7 +4,6 @@ flags:
     production: true
     assistant: true
     pairing: true
-    cryptonite: true
     network-uri: true
     s3: true
     testsuite: true
@@ -17,9 +16,11 @@ flags:
     androidsplice: false
 packages:
 - '.'
-resolver: lts-5.18
 extra-deps:
-- process-1.3.0.0
-- concurrent-output-1.7.7
+- aws-0.16
+- bloomfilter-2.0.1.0
+- torrent-10000.1.1
+- yesod-default-1.2.0
 explicit-setup-deps:
   git-annex: true
+resolver: lts-8.13

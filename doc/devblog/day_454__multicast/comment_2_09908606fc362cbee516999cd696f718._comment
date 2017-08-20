@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-04-05T15:20:20Z"
+ content="""
+Multicast is only being used to send git-annex objects around, not git
+objects. There's assumed to be some way to sync git repositories, which is
+how the encryption keys for uftp are distributed.
+
+`git annex multicast --send` operates on files in the working tree.
+It would be possible to make it support `--all`.
+
+I'm not sure if uftp can send outside the local LAN.
+
+It would certianly be possible to have a special remote backed by uftp
+that thus only sends to a single host. Since multicast does not send
+to any particular remote, it did not make sense to implement it
+as a special remote.
+"""]]

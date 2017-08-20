@@ -1,0 +1,21 @@
+Spent rather too long today tracking down a memory leak in `git annex unused`. 
+Actually, it was three memory leaks; one of them was a reversion introduced
+while otherwise improving a function to not be partial. Another only
+happened in very rare circumstances. The third, which took several more
+hours staring at the code, turned out to simply be an unnecessary use of an
+accumulating list. Feel like I should have seen that one sooner, but then I
+am under the weather and was running profiles in a daze for several hours..
+In the end, `git-annex unused` went from needing 1 gb of memory to 150 mb
+in my big repo.
+
+One advantage to all the profiling though, was I noticed that the `split`
+function was allocating a lot of memory, and seemed generally ineficient. This
+has to do with it splitting on a string; splitting on a single character
+can run twice as fast and churn the GC quite a bit less, so I wrote up a
+specialized version of that, and it's used extensively in git-annex now, so
+it may run up to 50% faster in some cases. Seems like haskell libraries
+with a `split` function should perhaps use the more optimal version
+when splitting on a single character, and I'm going to file bugs to that
+effect.
+
+Today's work was sponsored by Jake Vosloo on Patreon.

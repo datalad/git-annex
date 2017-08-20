@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-02-15T18:04:29Z"
+ content="""
+I am able to reproduce this, and it only happens when the remote being
+checked is a ssh remote, not a local directory.
+
+So, presumably something in the verification that the remote has the
+content is sometimes consuming the rest of stdin.
+
+The different numbers processed each time are probably due to buffering. If
+the command feeding the list of keys takes a while to print them all, and
+parts of its output are being thrown away, then that would explain the
+different numbers processed.
+
+Using ssh -n to run git-annex-shell checkpresentkey avoids the problem.
+
+This could also impact git-annex being used in some script, when the script
+is intended to consume stdin, but git-annex runs ssh, which consumes it
+instead. Other commands like `git annex drop` could be affected
+too in such situations.
+
+I've put in a comprehensive fix to all of git-annex's calls to ssh
+that don't provide some other stdin.
+"""]]

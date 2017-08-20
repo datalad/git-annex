@@ -10,10 +10,9 @@ module Command.NumCopies where
 import Command
 import qualified Annex
 import Annex.NumCopies
-import Types.Messages
 
 cmd :: Command
-cmd = command "numcopies" SectionSetup 
+cmd = noMessages $ command "numcopies" SectionSetup 
 	"configure desired number of copies"
 	paramNumber (withParams seek)
 
@@ -35,7 +34,6 @@ start _ = giveup "Specify a single number."
 
 startGet :: CommandStart
 startGet = next $ next $ do
-	Annex.setOutput QuietOutput
 	v <- getGlobalNumCopies
 	case v of
 		Just n -> liftIO $ putStrLn $ show $ fromNumCopies n
@@ -49,6 +47,7 @@ startGet = next $ next $ do
 
 startSet :: Int -> CommandStart
 startSet n = do
+	allowMessages
 	showStart "numcopies" (show n)
 	next $ next $ do
 		setGlobalNumCopies $ NumCopies n

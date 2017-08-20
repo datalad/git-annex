@@ -1,0 +1,10 @@
+This should be related to directory 1.3.
+
+    Common.hs:3:16: error:
+        Conflicting exports for ‘getFileSize’:
+           ‘module X’ exports ‘X.getFileSize’
+             imported from ‘Utility.FileSize’ at Common.hs:32:1-28
+             (and originally defined at Utility/FileSize.hs:26:1-11)
+           ‘module X’ exports ‘X.getFileSize’
+             imported from ‘Utility.Directory’ at Common.hs:33:1-29
+             (and originally defined in ‘System.Directory’)

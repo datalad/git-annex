@@ -10,7 +10,6 @@
 
 module Main where
 
-import Data.List.Utils
 import Text.Parsec
 import Text.Parsec.String
 import Control.Applicative ((<$>))
@@ -23,6 +22,7 @@ import Utility.Process hiding (env)
 import qualified Utility.Process
 import Utility.Env
 import Utility.Directory
+import Utility.Split
 
 data CmdParams = CmdParams
 	{ cmd :: String
@@ -127,7 +127,7 @@ getOutput c ps environ = do
 	putStrLn $ unwords [c, show ps]
 	systemenviron <- getEnvironment
 	let environ' = fromMaybe [] environ ++ systemenviron
-	out@(_, ok) <- processTranscript' (\p -> p { Utility.Process.env = Just environ' }) c ps Nothing
+	out@(_, ok) <- processTranscript' ((proc c ps) { Utility.Process.env = Just environ' }) Nothing
 	putStrLn $ unwords [c, "finished", show ok]
 	return out
 

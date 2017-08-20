@@ -22,11 +22,10 @@ module Database.Fsck (
 
 import Database.Types
 import qualified Database.Queue as H
+import Database.Init
 import Annex.Locations
-import Utility.PosixFiles
 import Utility.Exception
 import Annex.Common
-import Annex.Perms
 import Annex.LockFile
 
 import Database.Persist.TH
@@ -61,17 +60,8 @@ openDb u = do
 	dbdir <- fromRepo (gitAnnexFsckDbDir u)
 	let db = dbdir </> "db"
 	unlessM (liftIO $ doesFileExist db) $ do
-		let tmpdbdir = dbdir ++ ".tmp"
-		let tmpdb = tmpdbdir </> "db"
-		liftIO $ do
-			createDirectoryIfMissing True tmpdbdir
-			H.initDb tmpdb $ void $
-				runMigrationSilent migrateFsck
-		setAnnexDirPerm tmpdbdir
-		setAnnexFilePerm tmpdb
-		liftIO $ do
-			void $ tryIO $ removeDirectoryRecursive dbdir
-			rename tmpdbdir dbdir
+		initDb db $ void $
+			runMigrationSilent migrateFsck
 	lockFileCached =<< fromRepo (gitAnnexFsckDbLock u)
 	h <- liftIO $ H.openDbQueue db "fscked"
 	return $ FsckHandle h u

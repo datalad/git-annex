@@ -48,7 +48,7 @@ data out of your encrypted backup. You need to find a secure way to store a
 backup of your gpg key. Printing it out and storing it in a safe deposit box,
 for example.
 
-You can actually specifiy keyid= as many times as you like to allow any one
+You can actually specify keyid= as many times as you like to allow any one
 of a set of gpg keys to access this repository. So you could add a friend's
 key, or another gpg key you have.
 

@@ -15,6 +15,7 @@ import qualified Remote
 import qualified Logs.Remote
 import qualified Types.Remote as R
 import Logs.UUID
+import Types.GitConfig
 
 cmd :: Command
 cmd = command "initremote" SectionSetup
@@ -46,8 +47,15 @@ start (name:ws) = ifM (isJust <$> findExisting name)
 
 perform :: RemoteType -> String -> R.RemoteConfig -> CommandPerform
 perform t name c = do
-	(c', u) <- R.setup t Nothing Nothing c def
+	dummycfg <- liftIO dummyRemoteGitConfig
+	(c', u) <- R.setup t R.Init cu Nothing c dummycfg
 	next $ cleanup u name c'
+  where
+	cu = case M.lookup "uuid" c of
+		Just s
+			| isUUID s -> Just (toUUID s)
+			| otherwise -> giveup "invalid uuid"
+		Nothing -> Nothing
 
 cleanup :: UUID -> String -> R.RemoteConfig -> CommandCleanup
 cleanup u name c = do

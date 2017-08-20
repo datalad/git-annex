@@ -1,6 +1,6 @@
 {- user-specified limits on files to act on
  -
- - Copyright 2011-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -19,6 +19,7 @@ import Annex.Action
 import Annex.UUID
 import Logs.Trust
 import Annex.NumCopies
+import Types.Key
 import Types.TrustLevel
 import Types.Group
 import Types.FileMatcher
@@ -161,7 +162,7 @@ addCopies :: String -> Annex ()
 addCopies = addLimit . limitCopies
 
 limitCopies :: MkLimit Annex
-limitCopies want = case split ":" want of
+limitCopies want = case splitc ':' want of
 	[v, n] -> case parsetrustspec v of
 		Just checker -> go n $ checktrust checker
 		Nothing -> go n $ checkgroup v
@@ -251,7 +252,15 @@ addInBackend = addLimit . limitInBackend
 limitInBackend :: MkLimit Annex
 limitInBackend name = Right $ const $ checkKey check
   where
-	check key = pure $ keyBackendName key == name
+	check key = pure $ keyVariety key == variety
+	variety = parseKeyVariety name
+
+{- Adds a limit to skip files not using a secure hash. -}
+addSecureHash :: Annex ()
+addSecureHash = addLimit $ Right limitSecureHash
+
+limitSecureHash :: MatchFiles Annex
+limitSecureHash _ = checkKey $ pure . cryptographicallySecure . keyVariety
 
 {- Adds a limit to skip files that are too large or too small -}
 addLargerThan :: String -> Annex ()

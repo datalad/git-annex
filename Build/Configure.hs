@@ -34,7 +34,7 @@ tests =
 	, TestCase "rsync" $ requireCmd "rsync" "rsync --version >/dev/null"
 	, TestCase "curl" $ testCmd "curl" "curl --version >/dev/null"
 	, TestCase "wget" $ testCmd "wget" "wget --version >/dev/null"
-	, TestCase "wget supports -q --show-progress" checkWgetQuietProgress
+	, TestCase "wget unclutter options" checkWgetUnclutter
 	, TestCase "bup" $ testCmd "bup" "bup --version >/dev/null"
 	, TestCase "nice" $ testCmd "nice" "nice true >/dev/null"
 	, TestCase "ionice" $ testCmd "ionice" "ionice -c3 true >/dev/null"
@@ -105,8 +105,8 @@ getGitVersion = go =<< getEnv "FORCE_GIT_VERSION"
 			error $ "installed git version " ++ show v ++ " is too old! (Need " ++ show oldestallowed ++ " or newer)"
 		return $ Config "gitversion" $ StringConfig $ show v
 
-checkWgetQuietProgress :: Test
-checkWgetQuietProgress = Config "wgetquietprogress" . BoolConfig
+checkWgetUnclutter :: Test
+checkWgetUnclutter = Config "wgetunclutter" . BoolConfig
 	. maybe False (>= normalize "1.16")
 	<$> getWgetVersion 
 

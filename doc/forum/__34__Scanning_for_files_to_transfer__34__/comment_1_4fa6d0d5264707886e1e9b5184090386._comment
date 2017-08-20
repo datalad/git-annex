@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-03-06T17:03:12Z"
+ content="""
+The scan that is skipped is one of the files on disk in order to find
+changes that were made while the assistant was not running.
+
+What you are seeing is the full transfer scan. While annex.startupscan
+could be made to also skip that scan, a full transfer scan is not only run
+at startup, but after merging git-annex branch changes from a remote. So
+disabling it only at startup does not seem very useful.
+
+There could be an option to disable the full transfer scan ever running.
+However, this would make the assistant not notice certian transfers/drops
+that you would normally want it to do. For example, if a remote got a bunch
+of files in an archive/ directory from somewhere else, and the local
+repository contains those files, the full transfer scan is needed to notice
+that the archived files can now be removed from the local repository.
+In other situations, the local repository would not get files that it
+ought to contain.
+
+So, I think it might be better to make the expensive transfer scan run a
+little bit slower so it doesn't peg your CPU. I've added a 1/200th second
+delay after each file it checks. 
+
+That will make it use something like 
+5-10% of the CPU, instead of 100%. At the same time it doesn't slow down the
+total scan very much. In a repository with 5k files, it makes the scan 25
+seconds slower, which makes the assistant react that much slower -- but
+the expensive scan is only needed to make sure things turn out consistent,
+so its overall speed is not super important.
+
+Check it out, let me know if it's still using too much CPU. We could always
+make that 1/200th second tunable, or find a better value for it.
+"""]]

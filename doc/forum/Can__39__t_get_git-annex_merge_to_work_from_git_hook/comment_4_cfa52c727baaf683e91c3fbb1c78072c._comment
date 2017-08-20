@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2017-02-17T19:34:55Z"
+ content="""
+An easier way to set this up is available now, see 
+<https://git-annex.branchable.com/tips/making_a_remote_repo_update_when_changes_are_pushed_to_it/>
+"""]]

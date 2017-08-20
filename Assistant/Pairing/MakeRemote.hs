@@ -42,9 +42,9 @@ finishedLocalPairing msg keypair = do
 			[ sshOpt "StrictHostKeyChecking" "no"
 			, sshOpt "NumberOfPasswordPrompts" "0"
 			, "-n"
-			, genSshHost (sshHostName sshdata) (sshUserName sshdata)
-			, "git-annex-shell -c configlist " ++ T.unpack (sshDirectory sshdata)
 			]
+			(genSshHost (sshHostName sshdata) (sshUserName sshdata))
+			("git-annex-shell -c configlist " ++ T.unpack (sshDirectory sshdata))
 			Nothing
 	r <- liftAnnex $ addRemote $ makeSshRemote sshdata
 	liftAnnex $ setRemoteCost (Remote.repo r) semiExpensiveRemoteCost

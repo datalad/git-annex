@@ -1,6 +1,6 @@
 {- git-annex file content managing
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -80,6 +80,7 @@ import qualified Types.Backend
 import qualified Backend
 import qualified Database.Keys
 import Types.NumCopies
+import Types.Key
 import Annex.UUID
 import Annex.InodeSentinal
 import Utility.InodeCache
@@ -307,10 +308,12 @@ getViaTmp' v key action = do
 	(ok, verification) <- action tmpfile
 	if ok
 		then ifM (verifyKeyContent v verification key tmpfile)
-			( do
-				moveAnnex key tmpfile
-				logStatus key InfoPresent
-				return True
+			( ifM (moveAnnex key tmpfile)
+				( do
+					logStatus key InfoPresent
+					return True
+				, return False
+				)
 			, do
 				warning "verification of content failed"
 				liftIO $ nukeFile tmpfile
@@ -341,7 +344,7 @@ verifyKeyContent v UnVerified k f = ifM (shouldVerify v)
 		Just size -> do
 			size' <- liftIO $ catchDefaultIO 0 $ getFileSize f
 			return (size' == size)
-	verifycontent = case Types.Backend.verifyKeyContent =<< Backend.maybeLookupBackendName (keyBackendName k) of
+	verifycontent = case Types.Backend.verifyKeyContent =<< Backend.maybeLookupBackendVariety (keyVariety k) of
 		Nothing -> return True
 		Just verifier -> verifier k f
 
@@ -465,9 +468,18 @@ checkDiskSpace' need destdir key alreadythere samefilesystem = ifM (Annex.getSta
  - key, and one of them will probably get deleted later. So, adding the
  - check here would only raise expectations that git-annex cannot truely
  - meet.
+ -
+ - May return false, when a particular variety of key is not being
+ - accepted into the repository. Will display a warning message in this
+ - case. May also throw exceptions in some cases.
  -}
-moveAnnex :: Key -> FilePath -> Annex ()
-moveAnnex key src = withObjectLoc key storeobject storedirect
+moveAnnex :: Key -> FilePath -> Annex Bool
+moveAnnex key src = ifM (checkSecureHashes key)
+	( do
+		withObjectLoc key storeobject storedirect
+		return True
+	, return False
+	)
   where
 	storeobject dest = ifM (liftIO $ doesFileExist dest)
 		( alreadyhave
@@ -509,6 +521,16 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 	
 	alreadyhave = liftIO $ removeFile src
 
+checkSecureHashes :: Key -> Annex Bool
+checkSecureHashes key
+	| cryptographicallySecure (keyVariety key) = return True
+	| otherwise = ifM (annexSecureHashesOnly <$> Annex.getGitConfig)
+		( do
+			warning $ "annex.securehashesonly blocked adding " ++ formatKeyVariety (keyVariety key) ++ " key to annex objects"
+			return False
+		, return True
+		)
+
 populatePointerFile :: Key -> FilePath -> FilePath -> Annex ()
 populatePointerFile k obj f = go =<< liftIO (isPointerFile f)
   where
@@ -526,9 +548,12 @@ data LinkAnnexResult = LinkAnnexOk | LinkAnnexFailed | LinkAnnexNoop
 {- Populates the annex object file by hard linking or copying a source
  - file to it. -}
 linkToAnnex :: Key -> FilePath -> Maybe InodeCache -> Annex LinkAnnexResult
-linkToAnnex key src srcic = do
-	dest <- calcRepo (gitAnnexLocation key)
-	modifyContent dest $ linkAnnex To key src srcic dest Nothing
+linkToAnnex key src srcic = ifM (checkSecureHashes key)
+	( do
+		dest <- calcRepo (gitAnnexLocation key)
+		modifyContent dest $ linkAnnex To key src srcic dest Nothing
+	, return LinkAnnexFailed
+	)
 
 {- Makes a destination file be a link or copy from the annex object. -}
 linkFromAnnex :: Key -> FilePath -> Maybe FileMode -> Annex LinkAnnexResult

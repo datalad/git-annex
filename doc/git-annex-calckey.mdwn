@@ -12,7 +12,7 @@ This plumbing-level command calculates the key that would be used
 to refer to a file. The file is not added to the annex by this command.
 The key is output to stdout.
 
-The backend used is the first listed in the annex.backends configuration
+The backend used is the one from the annex.backend configuration
 setting, which can be overridden by the --backend option.
 For example, to force use of the SHA1 backend:
 

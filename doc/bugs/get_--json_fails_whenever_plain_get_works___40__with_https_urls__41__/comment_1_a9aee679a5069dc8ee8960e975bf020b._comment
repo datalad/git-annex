@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-07-31T18:46:00Z"
+ content="""
+Using --json will have the same effect as --quiet in that commands have
+to be made to not output to stdout in that mode. In the case of
+downloading an url, git-annex usually uses wget, however when curl is
+available in path, it uses it in quiet mode, because curl displays error
+messages to stdout, whereas wget never displays error messages at all
+when run in quiet mode.
+
+So, by using --json, you're changing the command that git-annex uses to
+download files from wget to curl.
+
+But, the git-annex standalone build bundles both wget and curl, so
+I'd expect that any certificates problem would affect both equally.
+But I suppose wget may be better able to deal with the certs on this
+system than curl, for whatever reason.
+
+Bundling certs with git-annex seems wrong on multiple counts; it's
+moving a large security boundary inside git-annex; it's lots of work;
+there may be local policies on allowed certs that this would disallow.
+
+Suggestion: Remove curl from the standalone build you're using, so
+it will use the system-wide curl.
+"""]]

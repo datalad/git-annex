@@ -44,13 +44,13 @@ type GetFileMatcher = FilePath -> Annex (FileMatcher Annex)
 checkFileMatcher :: GetFileMatcher -> FilePath -> Annex Bool
 checkFileMatcher getmatcher file = do
 	matcher <- getmatcher file
-	checkMatcher matcher Nothing (Just file) S.empty True
+	checkMatcher matcher Nothing (AssociatedFile (Just file)) S.empty True
 
 checkMatcher :: FileMatcher Annex -> Maybe Key -> AssociatedFile -> AssumeNotPresent -> Bool -> Annex Bool
 checkMatcher matcher mkey afile notpresent d
 	| isEmpty matcher = return d
 	| otherwise = case (mkey, afile) of
-		(_, Just file) -> go =<< fileMatchInfo file
+		(_, AssociatedFile (Just file)) -> go =<< fileMatchInfo file
 		(Just key, _) -> go (MatchingKey key)
 		_ -> return d
   where
@@ -117,6 +117,7 @@ preferredContentParser matchstandard matchgroupwanted getgroupmap configmap mu e
 		, SimpleToken "groupwanted" (call matchgroupwanted)
 		, SimpleToken "present" (simply $ limitPresent mu)
 		, SimpleToken "inpreferreddir" (simply $ limitInDir preferreddir)
+		, SimpleToken "securehash" (simply limitSecureHash)
 		, ValueToken "copies" (usev limitCopies)
 		, ValueToken "lackingcopies" (usev $ limitLackingCopies False)
 		, ValueToken "approxlackingcopies" (usev $ limitLackingCopies True)

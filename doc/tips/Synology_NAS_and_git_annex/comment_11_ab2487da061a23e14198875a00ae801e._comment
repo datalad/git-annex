@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="ewen"
+ avatar="http://cdn.libravatar.org/avatar/605b2981cb52b4af268455dee7a4f64e"
+ subject="git-annex on Synology DS216+ (x86-64)"
+ date="2017-05-28T01:19:16Z"
+ content="""
+I used a similar approach, with a bit of refinement to not require a custom ssh key/user, to [get `git-annex` running on a Synology DS216+ NAS](http://ewen.mcneill.gen.nz/blog/entry/2017-05-28-git-annex-on-synology-ds216+/), which is based around a Celeron chip (and thus needs the `x86-64` build).  Once all the `PATH` related issues are taken care of (which some symlinks into `/usr/bin`) it appears to work like any other Linux/Unix-based `git-annex` install.  (Definitely much more successful than [trying to use `git-annex` via a SMB share](http://git-annex.branchable.com/bugs/SMB__58___git_annex_clone_works__44___get_fails_on_transfer_lock/) at this point.)
+
+Ewen
+"""]]

@@ -39,9 +39,9 @@ import qualified Utility.Lsof as Lsof
 import qualified Build.SysConfig
 import qualified Utility.Url as Url
 import qualified Annex.Url as Url
+import Utility.Tuple
 
 import qualified Data.Map as M
-import Data.Tuple.Utils
 
 {- Upgrade without interaction in the webapp. -}
 unattendedUpgrade :: Assistant ()
@@ -85,7 +85,7 @@ startDistributionDownload d = go =<< liftIO . newVersionLocation d =<< liftIO ol
 		hook <- asIO1 $ distributionDownloadComplete d dest cleanup
 		modifyDaemonStatus_ $ \s -> s
 			{ transferHook = M.insert k hook (transferHook s) }
-		maybe noop (queueTransfer "upgrade" Next (Just f) t)
+		maybe noop (queueTransfer "upgrade" Next (AssociatedFile (Just f)) t)
 			=<< liftAnnex (remoteFromUUID webUUID)
 		startTransfer t
 	k = distributionKey d
@@ -115,7 +115,7 @@ distributionDownloadComplete d dest cleanup t
 	| otherwise = cleanup
   where
 	k = distributionKey d
-	fsckit f = case Backend.maybeLookupBackendName (Types.Key.keyBackendName k) of
+	fsckit f = case Backend.maybeLookupBackendVariety (Types.Key.keyVariety k) of
 		Nothing -> return $ Just f
 		Just b -> case Types.Backend.verifyKeyContent b of
 			Nothing -> return $ Just f
@@ -324,7 +324,7 @@ downloadDistributionInfo = do
 		ifM (Url.downloadQuiet distributionInfoUrl infof uo
 			<&&> Url.downloadQuiet distributionInfoSigUrl sigf uo
 			<&&> verifyDistributionSig gpgcmd sigf)
-			( readish <$> readFileStrict infof
+			( parseInfoFile <$> readFileStrict infof
 			, return Nothing
 			)
 

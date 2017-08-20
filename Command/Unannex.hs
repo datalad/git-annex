@@ -26,7 +26,7 @@ import Git.FilePath
 cmd :: Command
 cmd = withGlobalOptions annexedMatchingOptions $
 	command "unannex" SectionUtility
-		"undo accidential add command"
+		"undo accidental add command"
 		paramPaths (withParams seek)
 
 seek :: CmdParams -> CommandSeek

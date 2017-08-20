@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2017-05-11T15:57:10Z"
+ content="""
+Note that the analysis in my earlier comment assumes that the
+.git/annex/objects/xx/yy/key/ directory is removed. As long as those
+per-key directories are used, the symlinks cannot possibly be made short enough
+to pack.
+
+There have been some
+other requests for that (datalad requested it because all those per-key
+directories use disk space, add to the size of the git repo, and slow down
+traversal). However, git-annex relies on those directories to prevent
+accidential rm -rf deleting the annexed objects and prevent some symlink
+following programs from editing/corrupting the annexed objects (the
+per-key directories are left mode 400 most of the time). So it would be
+fairly complicated to add a tuning that eliminated those while locking
+down the permissions some other way (eg, making the `yy` directories mode
+400 except when one or more thread/process needs to write to them), and since
+it would have to be a tuning, it would introduce a lot of conditional
+complexity into the code.
+"""]]

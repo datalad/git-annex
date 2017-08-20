@@ -39,6 +39,7 @@ import Git.Index
 import Assistant.Unused
 import Logs.Unused
 import Types.Transfer
+import Types.Key
 import Annex.Path
 import qualified Annex
 #ifdef WITH_WEBAPP
@@ -189,8 +190,8 @@ dailyCheck urlrenderer = do
 	unused <- liftAnnex unusedKeys'
 	void $ liftAnnex $ setUnusedKeys unused
 	forM_ unused $ \k -> do
-		unlessM (queueTransfers "unused" Later k Nothing Upload) $
-			handleDrops "unused" True k Nothing []
+		unlessM (queueTransfers "unused" Later k (AssociatedFile Nothing) Upload) $
+			handleDrops "unused" True k (AssociatedFile Nothing) []
 
 	return True
   where
@@ -256,9 +257,9 @@ checkOldUnused urlrenderer = go =<< annexExpireUnused <$> liftAnnex Annex.getGit
   where
 	go (Just Nothing) = noop
 	go (Just (Just expireunused)) = expireUnused (Just expireunused)
-	go Nothing = maybe noop prompt =<< describeUnusedWhenBig
+	go Nothing = maybe noop promptconfig =<< describeUnusedWhenBig
 
-	prompt msg = 
+	promptconfig msg = 
 #ifdef WITH_WEBAPP
 		do
 			button <- mkAlertButton True (T.pack "Configure") urlrenderer ConfigUnusedR
@@ -308,7 +309,7 @@ cleanReallyOldTmp = do
 	cleanjunk check f = case fileKey (takeFileName f) of
 		Nothing -> cleanOld check f
 		Just k
-			| "GPGHMAC" `isPrefixOf` keyBackendName k ->
+			| "GPGHMAC" `isPrefixOf` formatKeyVariety (keyVariety k) ->
 				cleanOld check f
 			| otherwise -> noop
 

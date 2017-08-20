@@ -1,6 +1,6 @@
 {- git-annex ssh interface, with connection caching
  -
- - Copyright 2012-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -8,6 +8,9 @@
 {-# LANGUAGE CPP #-}
 
 module Annex.Ssh (
+	ConsumeStdin(..),
+	SshCommand,
+	sshCommand,
 	sshOptions,
 	sshCacheDir,
 	sshReadPort,
@@ -20,10 +23,6 @@ module Annex.Ssh (
 	runSshAskPass
 ) where
 
-import qualified Data.Map as M
-import Data.Hash.MD5
-import System.Exit
-
 import Annex.Common
 import Annex.LockFile
 import qualified Build.SysConfig as SysConfig
@@ -34,33 +33,71 @@ import Config
 import Annex.Path
 import Utility.Env
 import Utility.FileSystemEncoding
+import Utility.Hash
 import Types.CleanupActions
+import Types.Concurrency
 import Git.Env
+import Git.Ssh
 #ifndef mingw32_HOST_OS
 import Annex.Perms
 import Annex.LockPool
 #endif
 
-{- Generates parameters to ssh to a given host (or user@host) on a given
- - port. This includes connection caching parameters, and any ssh-options. -}
-sshOptions :: (String, Maybe Integer) -> RemoteGitConfig -> [CommandParam] -> Annex [CommandParam]
-sshOptions (host, port) gc opts = go =<< sshCachingInfo (host, port)
+import Control.Concurrent.STM
+
+{- Some ssh commands are fed stdin on a pipe and so should be allowed to
+ - consume it. But ssh commands that are not piped stdin should generally
+ - not be allowed to consume the process's stdin. -}
+data ConsumeStdin = ConsumeStdin | NoConsumeStdin
+
+{- Generates a command to ssh to a given host (or user@host) on a given
+ - port. This includes connection caching parameters, and any ssh-options.
+ - If GIT_SSH or GIT_SSH_COMMAND is enabled, they are used instead. -}
+sshCommand :: ConsumeStdin -> (SshHost, Maybe SshPort) -> RemoteGitConfig -> SshCommand -> Annex (FilePath, [CommandParam])
+sshCommand cs (host, port) gc remotecmd = ifM (liftIO safe_GIT_SSH)
+	( maybe go return
+		=<< liftIO (gitSsh' host port remotecmd (consumeStdinParams cs))
+	, go
+	)
   where
-	go (Nothing, params) = ret params
+	go = do
+		ps <- sshOptions cs (host, port) gc []
+		return ("ssh", Param (fromSshHost host):ps++[Param remotecmd])
+
+{- Generates parameters to ssh to a given host (or user@host) on a given
+ - port. This includes connection caching parameters, and any
+ - ssh-options. Note that the host to ssh to and the command to run
+ - are not included in the returned options. -}
+sshOptions :: ConsumeStdin -> (SshHost, Maybe Integer) -> RemoteGitConfig -> [CommandParam] -> Annex [CommandParam]
+sshOptions cs (host, port) gc opts = go =<< sshCachingInfo (host, port)
+  where
+	go (Nothing, params) = return $ mkparams cs params
 	go (Just socketfile, params) = do
-		prepSocket socketfile
-		ret params
-	ret ps = return $ concat
+		prepSocket socketfile gc host (mkparams NoConsumeStdin params)
+			
+		return $ mkparams cs params
+	mkparams cs' ps = concat
 		[ ps
 		, map Param (remoteAnnexSshOptions gc)
 		, opts
 		, portParams port
+		, consumeStdinParams cs'
 		, [Param "-T"]
 		]
 
+{- Due to passing -n to GIT_SSH and GIT_SSH_COMMAND, some settings
+ - of those that expect exactly git's parameters will break. So only
+ - use those if the user set GIT_ANNEX_USE_GIT_SSH to say it's ok. -}
+safe_GIT_SSH :: IO Bool
+safe_GIT_SSH = (== Just "1") <$> getEnv "GIT_ANNEX_USE_GIT_SSH"
+
+consumeStdinParams :: ConsumeStdin -> [CommandParam]
+consumeStdinParams ConsumeStdin = []
+consumeStdinParams NoConsumeStdin = [Param "-n"]
+
 {- Returns a filename to use for a ssh connection caching socket, and
  - parameters to enable ssh connection caching. -}
-sshCachingInfo :: (String, Maybe Integer) -> Annex (Maybe FilePath, [CommandParam])
+sshCachingInfo :: (SshHost, Maybe Integer) -> Annex (Maybe FilePath, [CommandParam])
 sshCachingInfo (host, port) = go =<< sshCacheDir
   where
 	go Nothing = return (Nothing, [])
@@ -122,20 +159,80 @@ portParams :: Maybe Integer -> [CommandParam]
 portParams Nothing = []
 portParams (Just port) = [Param "-p", Param $ show port]
 
-{- Prepare to use a socket file. Locks a lock file to prevent
- - other git-annex processes from stopping the ssh on this socket. -}
-prepSocket :: FilePath -> Annex ()
-prepSocket socketfile = do
-	-- If the lock pool is empty, this is the first ssh of this
-	-- run. There could be stale ssh connections hanging around
+{- Prepare to use a socket file for ssh connection caching.
+ -
+ - When concurrency is enabled, this blocks until a ssh connection
+ - has been made to the host. So, any password prompting by ssh will
+ - happen in this call, and only one ssh process will prompt at a time.
+ -
+ - Locks the socket lock file to prevent other git-annex processes from
+ - stopping the ssh multiplexer on this socket.
+ -}
+prepSocket :: FilePath -> RemoteGitConfig -> SshHost -> [CommandParam] -> Annex ()
+prepSocket socketfile gc sshhost sshparams = do
+	-- There could be stale ssh connections hanging around
 	-- from a previous git-annex run that was interrupted.
-	whenM (not . any isLock . M.keys <$> getLockCache)
-		sshCleanup
-	-- Cleanup at end of this run.
+	-- This must run only once, before we have made any ssh connection,
+	-- and any other prepSocket calls must block while it's run.
+	tv <- Annex.getState Annex.sshstalecleaned
+	join $ liftIO $ atomically $ do
+		cleaned <- takeTMVar tv
+		if cleaned
+			then do
+				putTMVar tv cleaned
+				return noop
+			else return $ do
+				sshCleanup
+				liftIO $ atomically $ putTMVar tv True
+	-- Cleanup at shutdown.
 	Annex.addCleanup SshCachingCleanup sshCleanup
-
+	
 	liftIO $ createDirectoryIfMissing True $ parentDir socketfile
-	lockFileCached $ socket2lock socketfile
+	let socketlock = socket2lock socketfile
+
+	c <- Annex.getState Annex.concurrency
+	case c of
+		Concurrent {}
+			| annexUUID (remoteGitConfig gc) /= NoUUID ->
+				makeconnection socketlock
+		_ -> return ()
+	
+	lockFileCached socketlock
+  where
+	-- When the LockCache already has the socketlock in it,
+	-- the connection has already been started. Otherwise,
+	-- get the connection started now.
+	makeconnection socketlock =
+		whenM (isNothing <$> fromLockCache socketlock) $ do
+			let startps = Param (fromSshHost sshhost) :
+				sshparams ++ startSshConnection gc
+			-- When we can start the connection in batch mode,
+			-- ssh won't prompt to the console.
+			(_, connected) <- liftIO $ processTranscript "ssh"
+				(["-o", "BatchMode=true"]
+				++ toCommand startps)
+				Nothing
+			unless connected $ do
+				ok <- prompt $ liftIO $
+					boolSystem "ssh" startps
+				unless ok $
+					warning $ "Unable to run git-annex-shell on remote " ++
+						Git.repoDescribe (gitConfigRepo (remoteGitConfig gc))
+
+-- Parameters to get ssh connected to the remote host,
+-- by asking it to run a no-op command.
+--
+-- Could simply run "true", but the remote host may only
+-- allow git-annex-shell to run. So, run git-annex-shell inannex
+-- with the path to the remote repository and no other parameters,
+-- which is a no-op supported by all versions of git-annex-shell.
+startSshConnection :: RemoteGitConfig -> [CommandParam]
+startSshConnection gc =
+	[ Param "git-annex-shell"
+	, Param "inannex"
+	, File $ Git.repoPath $ gitConfigRepo $
+		remoteGitConfig gc
+	]
 
 {- Find ssh socket files.
  -
@@ -201,12 +298,13 @@ forceStopSsh socketfile = do
  - of the path to a socket file. At the same time, it needs to be unique
  - for each host.
  -}
-hostport2socket :: String -> Maybe Integer -> FilePath
-hostport2socket host Nothing = hostport2socket' host
-hostport2socket host (Just port) = hostport2socket' $ host ++ "!" ++ show port
+hostport2socket :: SshHost -> Maybe Integer -> FilePath
+hostport2socket host Nothing = hostport2socket' $ fromSshHost host
+hostport2socket host (Just port) = hostport2socket' $
+	fromSshHost host ++ "!" ++ show port
 hostport2socket' :: String -> FilePath
 hostport2socket' s
-	| length s > lengthofmd5s = md5s (Str s)
+	| length s > lengthofmd5s = show $ md5 $ encodeBS s
 	| otherwise = s
   where
 	lengthofmd5s = 32
@@ -249,7 +347,8 @@ sshReadPort params = (port, reverse args)
  - options. (The options are separated by newlines.)
  -
  - This is a workaround for GIT_SSH not being able to contain
- - additional parameters to pass to ssh. -}
+ - additional parameters to pass to ssh. (GIT_SSH_COMMAND can,
+ - but is not supported by older versions of git.) -}
 sshOptionsEnv :: String
 sshOptionsEnv = "GIT_ANNEX_SSHOPTION"
 
@@ -275,19 +374,32 @@ inRepoWithSshOptionsTo remote gc a =
 {- To make any git commands be run with ssh caching enabled,
  - and configured ssh-options alters the local Git.Repo's gitEnv
  - to set GIT_SSH=git-annex, and set sshOptionsEnv when running git
- - commands. -}
+ - commands.
+ -
+ - If GIT_SSH or GIT_SSH_COMMAND are enabled, this has no effect. -}
 sshOptionsTo :: Git.Repo -> RemoteGitConfig -> Git.Repo -> Annex Git.Repo
 sshOptionsTo remote gc localr
 	| not (Git.repoIsUrl remote) || Git.repoIsHttp remote = unchanged
 	| otherwise = case Git.Url.hostuser remote of
 		Nothing -> unchanged
-		Just host -> do
-			(msockfile, _) <- sshCachingInfo (host, Git.Url.port remote)
-			case msockfile of
-				Nothing -> use []
-				Just sockfile -> do
-					prepSocket sockfile
-					use (sshConnectionCachingParams sockfile)
+		Just host -> ifM (liftIO $ safe_GIT_SSH <&&> gitSshEnvSet)
+			( unchanged
+			, do
+				let port = Git.Url.port remote
+				let sshhost = either error id (mkSshHost host)
+				(msockfile, cacheparams) <- sshCachingInfo (sshhost, port)
+				case msockfile of
+					Nothing -> use []
+					Just sockfile -> do
+						prepSocket sockfile gc sshhost $ concat
+							[ cacheparams
+							, map Param (remoteAnnexSshOptions gc)
+							, portParams port
+							, consumeStdinParams NoConsumeStdin
+							, [Param "-T"]
+							]
+						use cacheparams
+			)
   where
 	unchanged = return localr
 
@@ -303,7 +415,7 @@ sshOptionsTo remote gc localr
 				liftIO $ do
 					localr' <- addGitEnv localr sshOptionsEnv
 						(toSshOptionsEnv sshopts)
-					addGitEnv localr' "GIT_SSH" command
+					addGitEnv localr' gitSshEnv command
 
 runSshOptions :: [String] -> String -> IO ()
 runSshOptions args s = do

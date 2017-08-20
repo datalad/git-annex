@@ -18,6 +18,8 @@ module Remote.External.Types (
 	Proto.Sendable(..),
 	Proto.Receivable(..),
 	Request(..),
+	SafeKey,
+	mkSafeKey,
 	needsPREPARE,
 	Response(..),
 	RemoteRequest(..),
@@ -36,11 +38,13 @@ import Types.Transfer (Direction(..))
 import Config.Cost (Cost)
 import Types.Remote (RemoteConfig)
 import Types.Availability (Availability(..))
+import Types.Key
 import Utility.Url (URLString)
 import qualified Utility.SimpleProtocol as Proto
 
 import Control.Concurrent.STM
 import Network.URI
+import Data.Char
 
 data External = External
 	{ externalType :: ExternalType
@@ -77,6 +81,29 @@ type PID = Int
 
 data PrepareStatus = Unprepared | Prepared | FailedPrepare ErrorMsg
 
+-- The protocol does not support keys with spaces in their names;
+-- SafeKey can only be constructed for keys that are safe to use with the
+-- protocol.
+newtype SafeKey = SafeKey Key
+	deriving (Show)
+
+mkSafeKey :: Key -> Either String SafeKey
+mkSafeKey k 
+	| any isSpace (keyName k) = Left $ concat
+		[ "Sorry, this file cannot be stored on an external special remote because its key's name contains a space. "
+		, "To avoid this problem, you can run: git-annex migrate --backend="
+		, formatKeyVariety (keyVariety k)
+		, " and pass it the name of the file"
+		]
+	| otherwise = Right (SafeKey k)
+
+fromSafeKey :: SafeKey -> Key
+fromSafeKey (SafeKey k) = k
+
+instance Proto.Serializable SafeKey where
+	serialize = Proto.serialize . fromSafeKey
+	deserialize = fmap SafeKey . Proto.deserialize
+
 -- Messages that can be sent to the external remote to request it do something.
 data Request 
 	= PREPARE 
@@ -85,10 +112,10 @@ data Request
 	| GETAVAILABILITY
 	| CLAIMURL URLString
 	| CHECKURL URLString
-	| TRANSFER Direction Key FilePath
-	| CHECKPRESENT Key
-	| REMOVE Key
-	| WHEREIS Key
+	| TRANSFER Direction SafeKey FilePath
+	| CHECKPRESENT SafeKey
+	| REMOVE SafeKey
+	| WHEREIS SafeKey
 	deriving (Show)
 
 -- Does PREPARE need to have been sent before this request?

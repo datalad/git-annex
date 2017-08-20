@@ -74,9 +74,9 @@ parseRemoteLocation s repo = ret $ calcloc s
 		(bestkey, bestvalue) = maximumBy longestvalue insteadofs
 		longestvalue (_, a) (_, b) = compare b a
 		insteadofs = filterconfig $ \(k, v) -> 
-			startswith prefix k &&
-			endswith suffix k &&
-			startswith v l
+			prefix `isPrefixOf` k &&
+			suffix `isSuffixOf` k &&
+			v `isPrefixOf` l
 		filterconfig f = filter f $
 			concatMap splitconfigs $ M.toList $ fullconfig repo
 		splitconfigs (k, vs) = map (\v -> (k, v)) vs

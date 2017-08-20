@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2012-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,13 +11,17 @@ import Command
 import qualified Git
 import qualified Annex
 import qualified Command.Add
+import qualified Command.Reinject
 import Utility.CopyFile
 import Backend
-import Remote
 import Types.KeySource
 import Annex.CheckIgnore
 import Annex.NumCopies
 import Annex.FileMatcher
+import Annex.Ingest
+import Annex.InodeSentinal
+import Utility.InodeCache
+import Logs.Location
 
 cmd :: Command
 cmd = withGlobalOptions (jobsOption : jsonOption : fileMatchingOptions) $ notBareRepo $
@@ -25,7 +29,7 @@ cmd = withGlobalOptions (jobsOption : jsonOption : fileMatchingOptions) $ notBar
 		"move and add files from outside git working copy"
 		paramPaths (seek <$$> optParser)
 
-data DuplicateMode = Default | Duplicate | DeDuplicate | CleanDuplicates | SkipDuplicates
+data DuplicateMode = Default | Duplicate | DeDuplicate | CleanDuplicates | SkipDuplicates | ReinjectDuplicates
 	deriving (Eq)
 
 data ImportOptions = ImportOptions
@@ -54,7 +58,11 @@ duplicateModeParser =
 		)
 	<|> flag' SkipDuplicates
 		( long "skip-duplicates"
-		<> help "import only new files"
+		<> help "import only new files (do not delete source files)"
+		)
+	<|> flag' ReinjectDuplicates
+		( long "reinject-duplicates"
+		<> help "import new files, and reinject the content of files that were imported before"
 		)
 
 seek :: ImportOptions -> CommandSeek
@@ -70,12 +78,8 @@ start :: GetFileMatcher -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
 start largematcher mode (srcfile, destfile) =
 	ifM (liftIO $ isRegularFile <$> getSymbolicLinkStatus srcfile)
 		( do
-			ma <- pickaction
-			case ma of
-				Nothing -> stop
-				Just a -> do
-					showStart "import" destfile
-					next a
+			showStart "import" destfile
+			next pickaction
 		, stop
 		)
   where
@@ -89,7 +93,10 @@ start largematcher mode (srcfile, destfile) =
 				warning "Could not verify that the content is still present in the annex; not removing from the import location."
 				stop
 			)
-	importfile = checkdestdir $ do
+	reinject k = do
+		showNote "reinjecting"
+		Command.Reinject.perform srcfile k
+	importfile ld k = checkdestdir $ do
 		ignored <- not <$> Annex.getState Annex.force <&&> checkIgnored destfile
 		if ignored
 			then do
@@ -98,14 +105,14 @@ start largematcher mode (srcfile, destfile) =
 			else do
 				existing <- liftIO (catchMaybeIO $ getSymbolicLinkStatus destfile)
 				case existing of
-					Nothing -> importfilechecked
+					Nothing -> importfilechecked ld k
 					Just s
 						| isDirectory s -> notoverwriting "(is a directory)"
 						| isSymbolicLink s -> notoverwriting "(is a symlink)"
 						| otherwise -> ifM (Annex.getState Annex.force)
 							( do
 								liftIO $ nukeFile destfile
-								importfilechecked
+								importfilechecked ld k
 							, notoverwriting "(use --force to override, or a duplication option such as --deduplicate to clean up)"
 							)
 	checkdestdir cont = do
@@ -119,33 +126,77 @@ start largematcher mode (srcfile, destfile) =
 					warning $ "not importing " ++ destfile ++ " because " ++ destdir ++ " is not a directory"
 					stop
 
-	importfilechecked = do
+	importfilechecked ld k = do
+		-- Move or copy the src file to the dest file.
+		-- The dest file is what will be ingested.
 		liftIO $ createDirectoryIfMissing True (parentDir destfile)
 		liftIO $ if mode == Duplicate || mode == SkipDuplicates
 			then void $ copyFileExternal CopyAllMetaData srcfile destfile
 			else moveFile srcfile destfile
+		-- Get the inode cache of the dest file. It should be
+		-- weakly the same as the origianlly locked down file's
+		-- inode cache. (Since the file may have been copied,
+		-- its inodes may not be the same.)
+		newcache <- withTSDelta $ liftIO . genInodeCache destfile
+		let unchanged = case (newcache, inodeCache (keySource ld)) of
+			(_, Nothing) -> True
+			(Just newc, Just c) | compareWeak c newc -> True
+			_ -> False
+		unless unchanged $
+			giveup "changed while it was being added"
+		-- The LockedDown needs to be adjusted, since the destfile
+		-- is what will be ingested.
+		let ld' = ld
+			{ keySource = KeySource
+				{ keyFilename = destfile
+				, contentLocation = destfile
+				, inodeCache = newcache
+				}
+			}
 		ifM (checkFileMatcher largematcher destfile)
-			( Command.Add.perform destfile
+			( ingestAdd' (Just ld') (Just k)
+				>>= maybe
+					stop
+					(\addedk -> next $ Command.Add.cleanup addedk True)
 			, next $ Command.Add.addSmall destfile 
 			)
 	notoverwriting why = do
 		warning $ "not overwriting existing " ++ destfile ++ " " ++ why
 		stop
-	checkdup dupa notdupa = do
-		backend <- chooseBackend destfile
-		let ks = KeySource srcfile srcfile Nothing
-		v <- genKey ks backend
+	lockdown a = do
+		lockingfile <- not <$> addUnlocked
+		-- Minimal lock down with no hard linking so nothing
+		-- has to be done to clean up from it.
+		let cfg = LockDownConfig
+			{ lockingFile = lockingfile
+			, hardlinkFileTmp = False
+			}
+		v <- lockDown cfg srcfile
 		case v of
-			Just (k, _) -> ifM (not . null <$> keyLocations k)
-				( return (maybe Nothing (\a -> Just (a k)) dupa)
-				, return notdupa
-				)
-			_ -> return notdupa
-	pickaction = case mode of
-		DeDuplicate -> checkdup (Just deletedup) (Just importfile)
-		CleanDuplicates -> checkdup (Just deletedup) Nothing
-		SkipDuplicates -> checkdup Nothing (Just importfile)
-		_ -> return (Just importfile)
+			Just ld -> do
+				backend <- chooseBackend destfile
+				v' <- genKey (keySource ld) backend
+				case v' of
+					Just (k, _) -> a (ld, k)
+					Nothing -> giveup "failed to generate a key"
+			Nothing -> stop
+	checkdup k dupa notdupa = ifM (isKnownKey k)
+		( dupa
+		, notdupa
+		)
+	pickaction = lockdown $ \(ld, k) -> case mode of
+		DeDuplicate -> checkdup k (deletedup k) (importfile ld k)
+		CleanDuplicates -> checkdup k
+			(deletedup k)
+			(skipbecause "not duplicate")
+		SkipDuplicates -> checkdup k 
+			(skipbecause "duplicate")
+			(importfile ld k)
+		ReinjectDuplicates -> checkdup k
+			(reinject k)
+			(importfile ld k)
+		_ -> importfile ld k
+	skipbecause s = showNote (s ++ "; skipping") >> next (return True)
 
 verifyExisting :: Key -> FilePath -> (CommandPerform, CommandPerform) -> CommandPerform
 verifyExisting key destfile (yes, no) = do

@@ -12,10 +12,10 @@ import Utility.Directory
 import Utility.Process
 import Utility.Monad
 import Utility.Path
+import Utility.Split
 
 import Data.Maybe
 import System.FilePath
-import Data.List.Utils
 import System.Posix.Files
 import Data.Char
 import Control.Monad.IfElse

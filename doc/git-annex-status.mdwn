@@ -23,6 +23,11 @@ Particularly useful in direct mode.
   Enable JSON output. This is intended to be parsed by programs that use
   git-annex. Each line of output is a JSON object.
 
+* `--ignore-submodules=when`
+
+  This option is passed on to git status, see its man page for
+  details.
+
 # SEE ALSO
 
 [[git-annex]](1)

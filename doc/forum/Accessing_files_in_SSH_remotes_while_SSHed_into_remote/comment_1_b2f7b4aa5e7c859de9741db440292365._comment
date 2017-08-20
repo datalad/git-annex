@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="xloem"
+ avatar="http://cdn.libravatar.org/avatar/b8c087f7c5e6a9358748f0727c077f3b"
+ subject="comment 1"
+ date="2017-01-16T12:29:59Z"
+ content="""
+It sounds like you want to have a git-annex working directory on the server.
+
+You can put git-annex on the server without root access.  Just place it in a user folder such as ~/local .
+"""]]

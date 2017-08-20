@@ -41,7 +41,7 @@ start (k:[]) = do
 	case file2key k of
 		Nothing -> error "bad key"
 		(Just key) -> whenM (inAnnex key) $ do
-			file <- Fields.getField Fields.associatedFile
+			afile <- AssociatedFile <$> Fields.getField Fields.associatedFile
 			u <- maybe (error "missing remoteuuid") toUUID
 				<$> Fields.getField Fields.remoteUUID
 			let t = Transfer
@@ -49,7 +49,7 @@ start (k:[]) = do
 				, transferUUID = u
 				, transferKey = key
 				}
-			tinfo <- liftIO $ startTransferInfo file
+			tinfo <- liftIO $ startTransferInfo afile
 			(update, tfile, _) <- mkProgressUpdater t tinfo
 			liftIO $ mapM_ void
 				[ tryIO $ forever $ do

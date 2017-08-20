@@ -164,6 +164,12 @@ subdirectories).
   
   See [[git-annex-undo]](1) for details.
 
+* `multicast`
+
+  Multicast file distribution.
+
+  See [[git-annex-multicast]](1) for details.
+
 * `watch`
 
   Watch for changes and autocommit.
@@ -279,6 +285,12 @@ subdirectories).
   Get or set scheduled jobs.
 
   See [[git-annex-schedule]](1) for details.
+
+* `config`
+
+  Get and set other configuration stored in git-annex branch.
+  
+  See [[git-annex-config]](1) for details.
 
 * `vicfg`
 
@@ -535,6 +547,13 @@ subdirectories).
   automatically creates a pre-commit hook using this.
   
   See [[git-annex-pre-commit]](1) for details.
+
+* `post-receive`
+
+  This is meant to be called from git's post-receive hook. `git annex init`
+  automatically creates a post-receive hook using this.
+  
+  See [[git-annex-post-receive]](1) for details.
 
 * `lookupkey [file ...]`
 
@@ -808,13 +827,31 @@ Here are all the supported configuration settings.
 
   A unique UUID for this repository (automatically set).
 
-* `annex.backends`
+* `annex.backend`
 
-  Space-separated list of names of the key-value backends to use.
-  The first listed is used to store new files by default.
+  Name of the default key-value backend to use when adding new files
+  to the repository.
 
   This is overridden by annex annex.backend configuration in the
-  .gitattributes files.
+  .gitattributes files, and by the --backend option.
+
+  (This used to be named `annex.backends`, and that will still be used
+  if set.)
+
+* `annex.securehashesonly`
+
+  Set to true to indicate that the repository should only use
+  cryptographically secure hashes
+  (SHA2, SHA3) and not insecure hashes (MD5, SHA1) for content.
+
+  When this is set, the contents of files using cryptographically
+  insecure hashes will not be allowed to be added to the repository.
+  
+  Also, git-annex fsck` will complain about any files present in
+  the repository that use insecure hashes.
+  
+  To configure the behavior in new clones of the repository,
+  this can be set in [[git-annex-config]].
 
 * `annex.diskreserve`
 
@@ -1000,6 +1037,25 @@ Here are all the supported configuration settings.
   Set to false to prevent the git-annex assistant and git-annex sync
   from automatically committing changes to files in the repository.
 
+  To configure the behavior in all clones of the repository,
+  this can be set in [[git-annex-config]].
+
+* `annex.resolvemerge`
+
+  Set to false to prevent merge conflicts being automatically resolved
+  by the git-annex assitant, git-annex sync, git-annex merge,
+  and the git-annex post-receive hook.
+
+  To configure the behavior in all clones of the repository,
+  this can be set in [[git-annex-config]].
+
+* `annex.synccontent`
+
+  Set to true to make git-annex sync default to syncing content.
+
+  To configure the behavior in all clones of the repository,
+  this can be set in [[git-annex-config]].
+
 * `annex.startupscan`
 
   Set to false to prevent the git-annex assistant from scanning the
@@ -1069,8 +1125,7 @@ Here are all the supported configuration settings.
 * `remote.<name>.annex-cost-command`
 
   If set, the command is run, and the number it outputs is used as the cost.
-  This allows varying the cost based on e.g., the current network. The
-  cost-command can be any shell command line.
+  This allows varying the cost based on e.g., the current network.
 
 * `remote.<name>.annex-start-command`
 
@@ -1109,10 +1164,33 @@ Here are all the supported configuration settings.
   This does not prevent git-annex sync (or the git-annex assistant) from
   syncing the git repository to the remote.
 
+* `remote.<name>.annex-ignore-command`
+
+  If set, the command is run, and if it exits nonzero, that's the same
+  as setting annex-ignore to true. This allows controlling behavior based
+  on e.g., the current network.
+
 * `remote.<name>.annex-sync`
 
   If set to `false`, prevents git-annex sync (and the git-annex assistant)
-  from syncing with this remote.
+  from syncing with this remote by default. However, `git annex sync <name>`
+  can still be used to sync with the remote.
+
+* `remote.<name>.annex-sync-command`
+
+  If set, the command is run, and if it exits nonzero, that's the same
+  as setting annex-sync to false. This allows controlling behavior based
+  on e.g., the current network.
+
+* `remote.<name>.annex-pull`
+
+  If set to `false`, prevents git-annex sync (and the git-annex assistant
+  etc) from ever pulling (or fetching) from the remote.
+
+* `remote.<name>.annex-push`
+
+  If set to `false`, prevents git-annex sync (and the git-annex assistant
+  etc) from ever pushing to the remote.
 
 * `remote.<name>.annex-readonly`
 
@@ -1161,6 +1239,10 @@ Here are all the supported configuration settings.
   Options to use when using rsync
   to or from this remote. For example, to force IPv6, and limit
   the bandwidth to 100Kbyte/s, set it to `-6 --bwlimit 100`
+
+  Note that git-annex-shell has a whitelist of allowed rsync options,
+  and others will not be be passed to the remote rsync. So using some
+  options may break the communication between the local and remote rsyncs.
 
 * `remote.<name>.annex-rsync-upload-options`
 
@@ -1365,6 +1447,53 @@ for success or failures, or, more rarely, 127 or 128 for certain very
 specific failures.  git-annex itself should return 0 on success and 1 on
 failure, unless the `--time-limit=time` option is hit, in which case it
 returns with exit code 101.
+
+# ENVIRONMENT
+
+These environment variables are used by git-annex when set:
+
+* `GIT_WORK_TREE`, `GIT_DIR`
+
+  Handled the same as they are by git, see git(1)
+
+* `GIT_SSH`, `GIT_SSH_COMMAND`
+
+  Handled similarly to the same as described in git(1).
+  The one difference is that git-annex will sometimes pass an additional
+  "-n" parameter to these, as the first parameter, to prevent ssh from
+  reading from stdin. Since that can break existing uses of these
+  environment variables that don't expect the extra parameter, you will
+  need to set `GIT_ANNEX_USE_GIT_SSH=1` to make git-annex support
+  these.
+
+  Note that setting either of these environment variables prevents
+  git-annex from automatically enabling ssh connection caching
+  (see `annex.sshcaching`), so it will slow down some operations with
+  remotes over ssh. It's up to you to enable ssh connection caching
+  if you need it; see ssh's documentation.
+
+  Also, `annex.ssh-options` and `remote.<name>.annex-ssh-options`
+  won't have any effect when these envionment variables are set.
+
+  Usually it's better to configure any desired options through your
+  ~/.ssh/config file, or by setting `annex.ssh-options`.
+
+* `GIT_ANNEX_VECTOR_CLOCK`
+
+  Normally git-annex timestamps lines in the log files committed to the
+  git-annex branch. Setting this environment variable to a number
+  will make git-annex use that rather than the current number of seconds
+  since the UNIX epoch. Note that decimal seconds are supported.
+  
+  This is only provided for advanced users who either have a better way to
+  tell which commit is current than the local clock, or who need to avoid
+  embedding timestamps for policy reasons. Misuse of this environment
+  variable can confuse git-annex's book-keeping, sometimes in ways that
+  `git annex fsck` is unable to repair.
+
+Some special remotes use additional environment variables
+for authentication etc. For example, `AWS_ACCESS_KEY_ID`
+and `GIT_ANNEX_P2P_AUTHTOKEN`. See special remote documentation.
 
 # FILES
 

@@ -210,7 +210,8 @@ instance Arbitrary InodeCache where
 		let prim = InodeCachePrim
 			<$> arbitrary
 			<*> arbitrary
-			<*> arbitrary
+			-- timestamp cannot be negative
+			<*> (abs . fromInteger <$> arbitrary)
 		in InodeCache <$> prim
 
 #ifdef mingw32_HOST_OS

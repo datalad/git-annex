@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-08-15T16:43:07Z"
+ content="""
+The improvements around ssh password prompting require ssh connection
+caching to work. If a ssh connection fails because the wrong password is
+entered or because there's no usable tty or whatever, there's no cached
+ssh connection to reuse, so the next attempt to access that host will
+result in another password prompt.
+
+Also, datalad does not seem to be running git-annex with -J. So it *can't*
+be trying to make two ssh connection at the same time. My recent work on
+ssh password prompting was mostly to fix cases where git-annex is run with
+-J.
+
+It's also possible that some ssh configuration that I don't know of could
+make ssh password prompt even when git-annex is running it with
+`BatchMode=true` to avoid password prompts (in order to test if the ssh
+connection is already up). That would then result in two ssh password
+prompts, one after the other, which seems to match your transcript.
+
+If you have only one remote, specifying `--from=origin` won't change
+anything. Entering the right password would change something there though..
+"""]]

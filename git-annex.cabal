@@ -1,11 +1,11 @@
 Name: git-annex
-Version: 6.20170101
+Version: 6.20170818
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <id@joeyh.name>
 Author: Joey Hess
 Stability: Stable
-Copyright: 2010-2016 Joey Hess
+Copyright: 2010-2017 Joey Hess
 License-File: COPYRIGHT
 Homepage: http://git-annex.branchable.com/
 Build-type: Custom
@@ -90,6 +90,7 @@ Extra-Source-Files:
   doc/git-annex-migrate.mdwn
   doc/git-annex-mirror.mdwn
   doc/git-annex-move.mdwn
+  doc/git-annex-multicast.mdwn
   doc/git-annex-numcopies.mdwn
   doc/git-annex-p2p.mdwn
   doc/git-annex-pre-commit.mdwn
@@ -295,9 +296,6 @@ Flag network-uri
   Description: Get Network.URI from the network-uri package
   Default: True
 
-Flag Cryptonite
-  Description: Use the cryptonite library, instead of the older cryptohash
-
 Flag Dbus
   Description: Enable dbus support
 
@@ -306,7 +304,7 @@ source-repository head
   location: git://git-annex.branchable.com/
 
 custom-setup
-  Setup-Depends: base (>= 4.5), hslogger, MissingH, unix-compat, process,
+  Setup-Depends: base (>= 4.5), hslogger, split, unix-compat, process,
     unix, filepath, exceptions, bytestring, directory, IfElse, data-default,
     Cabal
 
@@ -329,10 +327,9 @@ Executable git-annex
    unix-compat,
    SafeSemaphore,
    async,
-   directory,
+   directory (>= 1.2),
    filepath,
    IfElse,
-   MissingH,
    hslogger,
    monad-logger,
    free,
@@ -346,8 +343,8 @@ Executable git-annex
    edit-distance,
    resourcet,
    http-client,
-   http-types,
-   http-conduit,
+   http-types (>= 0.7),
+   http-conduit (>= 2.0),
    time,
    old-locale,
    esqueleto,
@@ -356,17 +353,22 @@ Executable git-annex
    persistent-template,
    aeson,
    unordered-containers,
-   feed,
+   feed (>= 0.3.9),
    regex-tdfa,
    socks,
    byteable,
    stm-chans,
-   securemem
+   securemem,
+   crypto-api,
+   cryptonite,
+   memory,
+   split
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
   Extensions: PackageImports
   -- Some things don't work with the non-threaded RTS.
   GHC-Options: -threaded
+  Other-Extensions: TemplateHaskell
 
   -- Fully optimize for production.
   if flag(Production)
@@ -382,23 +384,16 @@ Executable git-annex
   else
     Build-Depends: network (< 2.6), network (>= 2.4)
 
-  if flag(Cryptonite)
-    Build-Depends: cryptonite
-    CPP-Options: -DWITH_CRYPTONITE
-  else
-    Build-Depends: cryptohash (>= 0.11.0)
-
   if (os(windows))
-    Build-Depends: Win32, Win32-extras, unix-compat (>= 0.4.1.3), setenv,
-      process (>= 1.3.0.0)
+    Build-Depends: Win32 (>= 2.5), unix-compat (>= 0.4.1.3), setenv,
+      process (>= 1.4.2.0)
   else
     Build-Depends: unix
     if impl(ghc <= 7.6.3)
       Other-Modules: Utility.Touch.Old
 
   if flag(TestSuite)
-    Build-Depends: tasty (>= 0.7), tasty-hunit, tasty-quickcheck, tasty-rerun,
-     crypto-api
+    Build-Depends: tasty (>= 0.7), tasty-hunit, tasty-quickcheck, tasty-rerun
     CPP-Options: -DWITH_TESTSUITE
 
   if flag(S3)
@@ -410,34 +405,35 @@ Executable git-annex
     CPP-Options: -DWITH_WEBDAV
 
   if flag(Assistant) && ! os(solaris)
-    Build-Depends: dns, mountpoints
+    Build-Depends: dns (>= 1.0.0), mountpoints
     CPP-Options: -DWITH_ASSISTANT
 
   if flag(Assistant)
-    if os(linux)
+    if os(linux) || flag(Android)
       Build-Depends: hinotify
       CPP-Options: -DWITH_INOTIFY
+      Other-Modules: Utility.DirWatcher.INotify
     else
       if os(darwin)
         Build-Depends: hfsevents
         CPP-Options: -DWITH_FSEVENTS
+        Other-Modules: Utility.DirWatcher.FSEvents
       else
         if os(windows)
           Build-Depends: Win32-notify
           CPP-Options: -DWITH_WIN32NOTIFY
+          Other-Modules: Utility.DirWatcher.Win32Notify
         else
           if (! os(solaris) && ! os(linux))
-            if flag(Android)
-              Build-Depends: hinotify
-              CPP-Options: -DWITH_INOTIFY
-            else
-              CPP-Options: -DWITH_KQUEUE
-              C-Sources: Utility/libkqueue.c
+            CPP-Options: -DWITH_KQUEUE
+            C-Sources: Utility/libkqueue.c
+            Other-Modules: Utility.DirWatcher.Kqueue
 
   if flag(Dbus)
     if (os(linux))
       Build-Depends: dbus (>= 0.10.7), fdo-notify (>= 0.3)
       CPP-Options: -DWITH_DBUS -DWITH_DESKTOP_NOTIFY -DWITH_DBUS_NOTIFICATIONS
+      Other-Modules: Utility.DBus
 
   if flag(Android)
     Build-Depends: data-endian
@@ -461,7 +457,6 @@ Executable git-annex
      wai,
      wai-extra,
      blaze-builder,
-     crypto-api,
      clientsession,
      template-haskell,
      shakespeare (>= 2.0.0)
@@ -487,6 +482,7 @@ Executable git-annex
   if flag(Benchmark)
     Build-Depends: criterion, deepseq
     CPP-Options: -DWITH_BENCHMARK
+    Other-Modules: Command.Benchmark
 
   Other-Modules:
     Annex
@@ -527,6 +523,7 @@ Executable git-annex
     Annex.MakeRepo
     Annex.MetaData
     Annex.MetaData.StandardFields
+    Annex.Multicast
     Annex.Notification
     Annex.NumCopies
     Annex.Path
@@ -538,8 +535,10 @@ Executable git-annex
     Annex.Ssh
     Annex.TaggedPush
     Annex.Transfer
+    Annex.UpdateInstead
     Annex.UUID
     Annex.Url
+    Annex.VectorClock
     Annex.VariantFile
     Annex.Version
     Annex.View
@@ -654,23 +653,13 @@ Executable git-annex
     Backend.URL
     Backend.Utilities
     Backend.WORM
-    Build.BuildVersion
     Build.BundledPrograms
     Build.Configure
     Build.DesktopFile
-    Build.DistributionUpdate
-    Build.EvilLinker
-    Build.EvilSplicer
-    Build.InstallDesktopFile
-    Build.LinuxMkLibs
-    Build.MakeMans
     Build.Mans
-    Build.NullSoftInstaller
-    Build.OSXMkLibs
-    Build.Standalone
     Build.TestConfig
     Build.Version
-    BuildFlags
+    BuildInfo
     CmdLine
     CmdLine.Action
     CmdLine.Batch
@@ -690,10 +679,10 @@ Executable git-annex
     Command.AddUrl
     Command.Adjust
     Command.Assistant
-    Command.Benchmark
     Command.CalcKey
     Command.CheckPresentKey
     Command.Commit
+    Command.Config
     Command.ConfigList
     Command.ContentLocation
     Command.Copy
@@ -739,9 +728,11 @@ Executable git-annex
     Command.Migrate
     Command.Mirror
     Command.Move
+    Command.Multicast
     Command.NotifyChanges
     Command.NumCopies
     Command.P2P
+    Command.PostReceive
     Command.PreCommit
     Command.Proxy
     Command.ReKey
@@ -792,10 +783,13 @@ Executable git-annex
     Config
     Config.Cost
     Config.Files
+    Config.DynamicConfig
+    Config.GitConfig
     Creds
     Crypto
     Database.Fsck
     Database.Handle
+    Database.Init
     Database.Keys
     Database.Keys.Handle
     Database.Keys.SQL
@@ -811,6 +805,7 @@ Executable git-annex
     Git.Command
     Git.Command.Batch
     Git.Config
+    Git.ConfigTypes
     Git.Construct
     Git.CurrentRepo
     Git.DiffTree
@@ -836,7 +831,7 @@ Executable git-annex
     Git.Remote.Remove
     Git.Repair
     Git.Sha
-    Git.SharedRepository
+    Git.Ssh
     Git.Status
     Git.Tree
     Git.Types
@@ -844,12 +839,14 @@ Executable git-annex
     Git.UpdateIndex
     Git.Url
     Git.Version
+    Key
     Limit
     Limit.Wanted
     Logs
     Logs.Activity
     Logs.Chunk
     Logs.Chunk.Pure
+    Logs.Config
     Logs.Difference
     Logs.Difference.Pure
     Logs.FsckResults
@@ -858,6 +855,7 @@ Executable git-annex
     Logs.Location
     Logs.MapLog
     Logs.MetaData
+    Logs.Multicast
     Logs.NumCopies
     Logs.PreferredContent
     Logs.PreferredContent.Raw
@@ -977,16 +975,11 @@ Executable git-annex
     Utility.Bloom
     Utility.CoProcess
     Utility.CopyFile
-    Utility.DBus
     Utility.Daemon
     Utility.Data
     Utility.DataUnits
     Utility.DirWatcher
-    Utility.DirWatcher.FSEvents
-    Utility.DirWatcher.INotify
-    Utility.DirWatcher.Kqueue
     Utility.DirWatcher.Types
-    Utility.DirWatcher.Win32Notify
     Utility.Directory
     Utility.DiskFree
     Utility.Dot
@@ -1009,14 +1002,10 @@ Executable git-annex
     Utility.LockFile
     Utility.LockFile.LockStatus
     Utility.LockFile.PidLock
-    Utility.LockFile.Posix
-    Utility.LockFile.Windows
     Utility.LockPool
     Utility.LockPool.LockHandle
     Utility.LockPool.PidLock
-    Utility.LockPool.Posix
     Utility.LockPool.STM
-    Utility.LockPool.Windows
     Utility.LogFile
     Utility.Lsof
     Utility.MagicWormhole
@@ -1046,7 +1035,9 @@ Executable git-annex
     Utility.Scheduled.QuickCheck
     Utility.Shell
     Utility.SimpleProtocol
+    Utility.Split
     Utility.SshConfig
+    Utility.SshHost
     Utility.Su
     Utility.SystemDirectory
     Utility.TList
@@ -1056,9 +1047,19 @@ Executable git-annex
     Utility.Tmp
     Utility.Tor
     Utility.Touch
+    Utility.Tuple
     Utility.Url
     Utility.UserInfo
     Utility.Verifiable
     Utility.WebApp
-    Utility.WinProcess
     Utility.Yesod
+
+  if (os(windows))
+    Other-Modules:
+      Utility.LockFile.Windows
+      Utility.LockPool.Windows
+      Utility.WinProcess
+  else
+    Other-Modules:
+      Utility.LockFile.Posix
+      Utility.LockPool.Posix

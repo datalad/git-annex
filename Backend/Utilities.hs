@@ -7,10 +7,9 @@
 
 module Backend.Utilities where
 
-import Data.Hash.MD5
-
 import Annex.Common
 import Utility.FileSystemEncoding
+import Utility.Hash
 
 {- Generates a keyName from an input string. Takes care of sanitizing it.
  - If it's not too long, the full string is used as the keyName.
@@ -20,7 +19,8 @@ genKeyName :: String -> String
 genKeyName s
 	-- Avoid making keys longer than the length of a SHA256 checksum.
 	| bytelen > sha256len =
-		truncateFilePath (sha256len - md5len - 1) s' ++ "-" ++ md5s (Str s)
+		truncateFilePath (sha256len - md5len - 1) s' ++ "-" ++ 
+			show (md5 (encodeBS s))
 	| otherwise = s'
   where
 	s' = preSanitizeKeyName s

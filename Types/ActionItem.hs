@@ -9,11 +9,9 @@
 
 module Types.ActionItem where
 
-import Types.Key
+import Key
 import Types.Transfer
 import Git.FilePath
-
-import Data.Maybe
 
 data ActionItem 
 	= ActionItemAssociatedFile AssociatedFile
@@ -37,15 +35,15 @@ instance MkActionItem (Transfer, TransferInfo) where
 	mkActionItem = uncurry ActionItemFailedTransfer
 
 actionItemDesc :: ActionItem -> Key -> String
-actionItemDesc (ActionItemAssociatedFile (Just f)) _ = f
-actionItemDesc (ActionItemAssociatedFile Nothing) k = key2file k
+actionItemDesc (ActionItemAssociatedFile (AssociatedFile (Just f))) _ = f
+actionItemDesc (ActionItemAssociatedFile (AssociatedFile Nothing)) k = key2file k
 actionItemDesc ActionItemKey k = key2file k
 actionItemDesc (ActionItemBranchFilePath bfp) _ = descBranchFilePath bfp
-actionItemDesc (ActionItemFailedTransfer _ i) k = 
-	fromMaybe (key2file k) (associatedFile i)
+actionItemDesc (ActionItemFailedTransfer _ i) k =
+	actionItemDesc (ActionItemAssociatedFile (associatedFile i)) k
 
 actionItemWorkTreeFile :: ActionItem -> Maybe FilePath
-actionItemWorkTreeFile (ActionItemAssociatedFile af) = af
+actionItemWorkTreeFile (ActionItemAssociatedFile (AssociatedFile af)) = af
 actionItemWorkTreeFile _ = Nothing
 
 actionItemTransferDirection :: ActionItem -> Maybe Direction

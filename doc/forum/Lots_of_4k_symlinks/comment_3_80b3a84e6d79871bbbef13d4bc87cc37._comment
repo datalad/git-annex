@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-05-09T22:49:01Z"
+ content="""
+My analysis above assumes no subdirectories.
+
+To leave space for even a single "../" would need to drop to 13 bytes
+of hash state. 1/79228162514264337593543950336 chance of 2 files colliding.
+Not comfortable with something so worse than md5, and that still doesn't help
+when files are 2 directories deep. Droping to 11 bytes for that,
+1/1208925819614629174706176 chance is starting to get into could really
+happen territory.
+"""]]

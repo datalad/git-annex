@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="xloem"
+ avatar="http://cdn.libravatar.org/avatar/b8c087f7c5e6a9358748f0727c077f3b"
+ subject="Git History"
+ date="2017-08-10T00:25:27Z"
+ content="""
+It would be great to have an option to include git history in the export, such that a special remote could be used both to rebuild a repository and to view the contents.
+"""]]

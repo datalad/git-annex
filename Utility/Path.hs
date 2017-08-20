@@ -10,7 +10,6 @@
 
 module Utility.Path where
 
-import Data.String.Utils
 import System.FilePath
 import Data.List
 import Data.Maybe
@@ -25,10 +24,10 @@ import System.Posix.Files
 import Utility.Exception
 #endif
 
-import qualified "MissingH" System.Path as MissingH
 import Utility.Monad
 import Utility.UserInfo
 import Utility.Directory
+import Utility.Split
 
 {- Simplifies a path, removing any "." component, collapsing "dir/..", 
  - and removing the trailing path separator.
@@ -68,18 +67,6 @@ simplifyPath path = dropTrailingPathSeparator $
 absPathFrom :: FilePath -> FilePath -> FilePath
 absPathFrom dir path = simplifyPath (combine dir path)
 
-{- On Windows, this converts the paths to unix-style, in order to run
- - MissingH's absNormPath on them. -}
-absNormPathUnix :: FilePath -> FilePath -> Maybe FilePath
-#ifndef mingw32_HOST_OS
-absNormPathUnix dir path = MissingH.absNormPath dir path
-#else
-absNormPathUnix dir path = todos <$> MissingH.absNormPath (fromdos dir) (fromdos path)
-  where
-	fromdos = replace "\\" "/"
-	todos = replace "/" "\\"
-#endif
-
 {- takeDirectory "foo/bar/" is "foo/bar". This instead yields "foo" -}
 parentDir :: FilePath -> FilePath
 parentDir = takeDirectory . dropTrailingPathSeparator
@@ -89,12 +76,13 @@ parentDir = takeDirectory . dropTrailingPathSeparator
 upFrom :: FilePath -> Maybe FilePath
 upFrom dir
 	| length dirs < 2 = Nothing
-	| otherwise = Just $ joinDrive drive (intercalate s $ init dirs)
+	| otherwise = Just $ joinDrive drive $ intercalate s $ init dirs
   where
-	-- on Unix, the drive will be "/" when the dir is absolute, otherwise ""
+	-- on Unix, the drive will be "/" when the dir is absolute,
+	-- otherwise ""
 	(drive, path) = splitDrive dir
-	dirs = filter (not . null) $ split s path
 	s = [pathSeparator]
+	dirs = filter (not . null) $ split s path
 
 prop_upFrom_basics :: FilePath -> Bool
 prop_upFrom_basics dir
@@ -149,11 +137,11 @@ relPathDirToFile from to = relPathDirToFileAbs <$> absPath from <*> absPath to
 relPathDirToFileAbs :: FilePath -> FilePath -> FilePath
 relPathDirToFileAbs from to
 	| takeDrive from /= takeDrive to = to
-	| otherwise = intercalate s $ dotdots ++ uncommon
+	| otherwise = joinPath $ dotdots ++ uncommon
   where
-	s = [pathSeparator]
-	pfrom = split s from
-	pto = split s to
+	pfrom = sp from
+	pto = sp to
+	sp = map dropTrailingPathSeparator . splitPath
 	common = map fst $ takeWhile same $ zip pfrom pto
 	same (c,d) = c == d
 	uncommon = drop numcommon pto
@@ -227,6 +215,8 @@ inPath command = isJust <$> searchPath command
  -
  - The command may be fully qualified already, in which case it will
  - be returned if it exists.
+ -
+ - Note that this will find commands in PATH that are not executable.
  -}
 searchPath :: String -> IO (Maybe FilePath)
 searchPath command

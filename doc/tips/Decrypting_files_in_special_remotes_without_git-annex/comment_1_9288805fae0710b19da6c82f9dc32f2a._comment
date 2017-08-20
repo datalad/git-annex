@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yibe"
+ avatar="http://cdn.libravatar.org/avatar/649c9e417b6c509a17f7b48caf065c91"
+ subject="comment 1"
+ date="2017-06-04T19:26:47Z"
+ content="""
+I have modified the script to add support for chunks and auto-detection of the MAC algorithm used: <https://gist.github.com/edb505a973999fe9aaa6c039c5ed0fbe>
+"""]]

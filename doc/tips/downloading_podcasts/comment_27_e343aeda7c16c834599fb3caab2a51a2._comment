@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="ewen"
+ avatar="http://cdn.libravatar.org/avatar/605b2981cb52b4af268455dee7a4f64e"
+ subject="Tracking GUIDs"
+ date="2017-03-21T21:46:27Z"
+ content="""
+@joey - thanks, that's prompt feature request fulfilment :-)
+
+Looking more closely at the duplicates, it turns out that not *everything* got duplicated, just the \"older\" episodes.  It turns out the newer episodes do have `guid` values saved (as `itemid` in the metadata) and the older episodes do not.  I think this is most likely because I *was* running a fairly old git-annex until about October 2016, on a fairly old OS install, but then upgraded to a more recent one (now about 6 months old) which does track them.  My assumption (without checking every file) is the episodes downloaded before October 2016 are ones that got duplicated.
+
+I've edited the main page and added a note that GUIDs are tracked in versions since 2015, since I didn't obviously find that listed anywhere before.
+
+Ewen
+"""]]

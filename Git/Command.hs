@@ -91,16 +91,16 @@ pipeWrite params repo = withHandle StdinHandle createProcessSuccess $
 pipeNullSplit :: [CommandParam] -> Repo -> IO ([String], IO Bool)
 pipeNullSplit params repo = do
 	(s, cleanup) <- pipeReadLazy params repo
-	return (filter (not . null) $ split sep s, cleanup)
+	return (filter (not . null) $ splitc sep s, cleanup)
   where
-	sep = "\0"
+	sep = '\0'
 
 pipeNullSplitStrict :: [CommandParam] -> Repo -> IO [String]
 pipeNullSplitStrict params repo = do
 	s <- pipeReadStrict params repo
-	return $ filter (not . null) $ split sep s
+	return $ filter (not . null) $ splitc sep s
   where
-	sep = "\0"
+	sep = '\0'
 
 pipeNullSplitZombie :: [CommandParam] -> Repo -> IO [String]
 pipeNullSplitZombie params repo = leaveZombie <$> pipeNullSplit params repo

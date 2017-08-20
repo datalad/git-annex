@@ -4,7 +4,7 @@
  subject="comment 1"
  date="2016-04-29T10:26:22Z"
  content="""
-> A bug made encrypted special remotes that are configured to use chunks accidentially expose the checksums of content that is uploaded to the remote. Such information is supposed to be hidden from the remote's view by the encryption.
+> A bug made encrypted special remotes that are configured to use chunks accidentally expose the checksums of content that is uploaded to the remote. Such information is supposed to be hidden from the remote's view by the encryption.
 
 What should the users do to repair this situation? How can the exposed checksums be removed from the remote? Is a `git annex sync` enough?
 

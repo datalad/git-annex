@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 1"
+ date="2017-05-09T14:25:50Z"
+ content="""
+It could also be possible to extend 'whereis' (maybe with a '--check-metadata' option?) to let the user know that *some* version (source or derivative) may be available.
+"""]]

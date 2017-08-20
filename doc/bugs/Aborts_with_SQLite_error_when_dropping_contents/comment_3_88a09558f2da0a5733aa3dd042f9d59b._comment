@@ -1,0 +1,53 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-02-13T20:21:09Z"
+ content="""
+Thanks for following up with the cause of this.
+
+In fact, assuming you're not using a v6 git-annex repository, it doesn't
+really need to update that database at all. But since we'll be upgrading to
+v6 eventually, I need to deal with problems like this. Also,
+this same problem will also impact the database used for incremental fsck.
+
+I can reproduce this with a v5 repository; dropping a file happens to run a
+code path that updates the database. And reproducing it w/o using git-annex too:
+
+	joey@darkstar:~/tmp>mkdir empty
+	joey@darkstar:~/tmp>umask
+	0002
+	joey@darkstar:~/tmp>touch empty/file
+	joey@darkstar:~/tmp>sqlite3 empty/db
+	SQLite version 3.16.2 2017-01-06 16:32:41
+	Enter ".help" for usage hints.
+	sqlite> create table foo;
+	Error: near ";": syntax error
+	sqlite> 
+	joey@darkstar:~/tmp>ls -l empty/
+	total 0
+	-rw-r--r-- 1 joey joey 0 Feb 13 16:33 db
+	-rw-rw-r-- 1 joey joey 0 Feb 13 16:32 file
+
+Seems that sqlite uses `0644 & umask` for the db permissions, 
+which is *bad* because it doesn't allow the umask to enable the group
+write bit. That 0644 is `SQLITE_DEFAULT_FILE_PERMISSIONS`, so it can
+be changed to something saner at compile time.
+
+`http://www.sqlite.org/src/doc/trunk/src/os_unix.c` has a useful comment.
+Seems that sqlite is careful to make -wal, -journal, and -shm files
+have the exact same permissions as main database file.
+
+So, if `.git/annex/keys/*` is updated to have the desired permissions when
+the database is created, every further write to the database will keep
+using the desired permissions.
+
+Hmm, it turns out that git-annex does already set the database permissions when
+creating it, but only if core.sharedRepository is set to group or all. So
+there's a workaround; just `git config core.sharedRepository group` when
+setting up a repository that's going to be accessed by multiple users. Almost
+certianly a better idea than relying on umask anyway; people mess up umask
+settings.
+
+I'll go ahead and make it always set sane permissions when creating databases.
+I'm not going to try to fix up permissions in existing repositories though.
+"""]]

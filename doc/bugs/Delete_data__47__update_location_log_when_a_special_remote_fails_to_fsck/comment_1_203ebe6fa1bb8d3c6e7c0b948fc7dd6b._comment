@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-06-26T17:14:56Z"
+ content="""
+`fsck --from remote` is supposed to update the location log when it
+determines that the remote does not contain the file.
+
+But in your case, the decryption failure appears to fsck as a transfer
+failure, which as you note can be transient. So it doesn't update the
+location log.
+
+It seems that what's needed is different errors to be returned when
+download fails, vs when download succeeds but decryption/verification fails.
+Then fsck could mark the file as not being present in the remote
+in the latter case.
+
+Although, that would leave the presumably corrupted encrypted data in the
+remote. (Unless fsck also tried to delete it.)
+
+Also, decryption can fail for other reasons, eg missing gpg keys,
+and in such a case, it would be bad for fsck to decide that the remote
+didn't contain any content! (And super bad for it to delete it from the
+remote!!)
+
+So hmm, I'm not sure about that idea.
+
+Your idea of getting a list of files that fsck failed to download
+is certianly useful. Perhaps a good way would be to make `git annex fsck
+--from remote --json` work, then the json output could be parsed to get a list of
+files, and you could use `git annex drop --from remote` to remove the bad
+data. That was the easiest possible thing, so I've made that change.
+"""]]

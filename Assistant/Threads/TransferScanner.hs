@@ -32,6 +32,7 @@ import Annex.Wanted
 import CmdLine.Action
 
 import qualified Data.Set as S
+import Control.Concurrent
 
 {- This thread waits until a remote needs to be scanned, to find transfers
  - that need to be made, to keep data in sync.
@@ -145,12 +146,17 @@ expensiveScan urlrenderer rs = batch <~> do
 			(findtransfers f unwanted)
 				=<< liftAnnex (lookupFile f)
 		mapM_ (enqueue f) ts
+
+		{- Delay for a short time to avoid using too much CPU. -}
+		liftIO $ threadDelay $ fromIntegral $ oneSecond `div` 200
+
 		scan unwanted' fs
 
 	enqueue f (r, t) =
 		queueTransferWhenSmall "expensive scan found missing object"
-			(Just f) t r
+			(AssociatedFile (Just f)) t r
 	findtransfers f unwanted key = do
+		let af = AssociatedFile (Just f)
 		{- The syncable remotes may have changed since this
 		 - scan began. -}
 		syncrs <- syncDataRemotes <$> getDaemonStatus
@@ -158,14 +164,14 @@ expensiveScan urlrenderer rs = batch <~> do
 		present <- liftAnnex $ inAnnex key
 		liftAnnex $ handleDropsFrom locs syncrs
 			"expensive scan found too many copies of object"
-			present key (Just f) [] callCommandAction
+			present key af [] callCommandAction
 		liftAnnex $ do
 			let slocs = S.fromList locs
 			let use a = return $ mapMaybe (a key slocs) syncrs
 			ts <- if present
-				then filterM (wantSend True (Just key) (Just f) . Remote.uuid . fst)
+				then filterM (wantSend True (Just key) af . Remote.uuid . fst)
 					=<< use (genTransfer Upload False)
-				else ifM (wantGet True (Just key) (Just f))
+				else ifM (wantGet True (Just key) af)
 					( use (genTransfer Download True) , return [] )
 			let unwanted' = S.difference unwanted slocs
 			return (unwanted', ts)

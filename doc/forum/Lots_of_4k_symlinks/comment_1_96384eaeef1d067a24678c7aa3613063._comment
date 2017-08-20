@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 1"
+ date="2017-04-24T13:55:02Z"
+ content="""
+> For the \"archivist use case\" of annex, this might lead to tens or hundreds of MBs of disk occupied by symlinks which actually don't add up to more than a few MBs.
+
+    $ pwd
+    /home/sorting_annex/mnt/keyfile
+    $ du -shc *-*
+    ...
+    33M     fd0dc9d3-ad62-429e-ba1b-acc26a453ca4
+    33M     fd2fc989-bea7-4ffb-bbc8-2e34cd0e5be5
+    33M     fd79bbd4-d41e-4ea8-acc8-86437c5eed7c
+    33M     ffbd042e-f6d9-4450-9a57-8ed1086f587c
+    2.7G    total
+    $
+
+Just a bit :P (yes, that is 2.7G of symlinks *so far*)
+"""]]

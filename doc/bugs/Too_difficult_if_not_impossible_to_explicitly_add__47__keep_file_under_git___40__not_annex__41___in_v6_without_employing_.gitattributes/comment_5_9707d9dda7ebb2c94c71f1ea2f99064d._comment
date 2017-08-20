@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="db48x"
+ avatar="http://cdn.libravatar.org/avatar/ad2688127feb555a92154b16d8eeb5d3"
+ subject="comment 5"
+ date="2017-02-14T21:10:13Z"
+ content="""
+I've got a repository that has a small file that gets updated regularly. I've given up trying to keep it unannexed and just started unlocking it every time I run the automated script that updates it.
+"""]]

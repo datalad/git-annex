@@ -44,3 +44,6 @@ The following will result in the creation of a 'normal' indirect share:
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Has been working great, so far, except for the above.
+
+> [[done]]; I think this just doesn't support permissions correcectly, and
+> there does not appear to be a git-annex bug. --[[Joey]]

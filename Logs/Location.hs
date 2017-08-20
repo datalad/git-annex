@@ -33,6 +33,7 @@ import Logs
 import Logs.Presence
 import Annex.UUID
 import Annex.CatFile
+import Annex.VectorClock
 import Git.Types (RefDate, Ref)
 import qualified Annex
 
@@ -86,7 +87,7 @@ checkDead :: Key -> Annex Bool
 checkDead key = do
 	config <- Annex.getGitConfig
 	ls <- compactLog <$> readLog (locationLogFile config key)
-	return $ all (\l -> status l == InfoDead) ls
+	return $! all (\l -> status l == InfoDead) ls
 
 {- Updates the log to say that a key is dead. 
  - 
@@ -107,21 +108,31 @@ setDead key = do
 setDead' :: LogLine -> LogLine
 setDead' l = l
 	{ status = InfoDead
-	, date = date l + realToFrac (picosecondsToDiffTime 1)
+	, date = case date l of
+		VectorClock c -> VectorClock $
+			c + realToFrac (picosecondsToDiffTime 1)
+		Unknown -> Unknown
 	}
 
 {- Finds all keys that have location log information.
- - (There may be duplicate keys in the list.) -}
+ - (There may be duplicate keys in the list.)
+ -
+ - Keys that have been marked as dead are not included.
+ -}
 loggedKeys :: Annex [Key]
-loggedKeys = mapMaybe locationLogFileKey <$> Annex.Branch.files
+loggedKeys = loggedKeys' (not <$$> checkDead)
+
+{- Note that sel should be strict, to avoid the filterM building many
+ - thunks. -} 
+loggedKeys' :: (Key -> Annex Bool) -> Annex [Key]
+loggedKeys' sel = filterM sel =<<
+	(mapMaybe locationLogFileKey <$> Annex.Branch.files)
 
 {- Finds all keys that have location log information indicating
  - they are present for the specified repository. -}
 loggedKeysFor :: UUID -> Annex [Key]
-loggedKeysFor u = filterM isthere =<< loggedKeys
+loggedKeysFor u = loggedKeys' isthere
   where
-	{- This should run strictly to avoid the filterM
-	 - building many thunks containing keyLocations data. -}
 	isthere k = do
 		us <- loggedLocations k
 		let !there = u `elem` us

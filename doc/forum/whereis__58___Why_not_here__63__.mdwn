@@ -1,0 +1,33 @@
+Hey,
+
+I have three repos, all are run by git-annex assistent. Files are synced just fine, but there is one oddity:
+
+```
+florian@horus ~/.synced_configuration (git)-[annex/direct/master] % git annex whereis .zshenv 
+whereis .zshenv (3 copies) 
+        69902190-d4c1-4abb-a000-f0712769f1cd -- Horus [here]
+        c7fc42ca-49f7-4688-b81d-c9cfd4a42564 -- Asaru
+        d5b0586f-32dd-4aae-a7a2-b23d9edd0c32 -- Marduk [marduk]
+ok
+florian@horus ~/.synced_configuration (git)-[annex/direct/master] % git annex whereis .emacs 
+whereis .emacs (2 copies) 
+        c7fc42ca-49f7-4688-b81d-c9cfd4a42564 -- Asaru
+        d5b0586f-32dd-4aae-a7a2-b23d9edd0c32 -- Marduk [marduk]
+ok
+```
+for `.zshenv` everything is fine, but why is `.emacs` not in Horus? Changes from and to Horus are propagated:
+
+```
+florian@horus ~/.synced_configuration (git)-[annex/direct/master] % git annex log .emacs
+- Wed, 12 Apr 2017 22:48:03 CEST .emacs | 69902190-d4c1-4abb-a000-f0712769f1cd -- Horus
++ Wed, 12 Apr 2017 22:02:55 CEST .emacs | 69902190-d4c1-4abb-a000-f0712769f1cd -- Horus
++ Wed, 12 Apr 2017 22:02:55 CEST .emacs | d5b0586f-32dd-4aae-a7a2-b23d9edd0c32 -- Marduk [marduk]
+- Wed, 12 Apr 2017 22:02:54 CEST .emacs | 69902190-d4c1-4abb-a000-f0712769f1cd -- Horus
+- Wed, 12 Apr 2017 22:02:53 CEST .emacs | d5b0586f-32dd-4aae-a7a2-b23d9edd0c32 -- Marduk [marduk]
++ Wed, 12 Apr 2017 22:00:40 CEST .emacs | d5b0586f-32dd-4aae-a7a2-b23d9edd0c32 -- Marduk [marduk]
++ Wed, 12 Apr 2017 22:00:36 CEST .emacs | 69902190-d4c1-4abb-a000-f0712769f1cd -- Horus
+```
+
+Anyone any idea what could be wrong there?
+
+Thanks!

@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: comments on protocol"""
+ date="2017-08-15T18:18:14Z"
+ content="""
+In `TRANSFEREXPORT STORE|RETRIEVE Key File Name`, it should always
+be possible for the File to not contain spaces in its name. But it could be
+rather painful for git-annex to avoid spaces in some cases (would need to
+link or copy the annexed file content). So well spotted. 
+
+Hmm, it's actually possible for a Key to contain spaces as well,
+at least with the WORM backend.
+[[external_special_remote_protocol_broken_by_key_with_spaces]]
+
+The protocol `VERSION` is picked by the special remote, it's not
+negotiated.
+"""]]

@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-02-07T20:24:29Z"
+ content="""
+Bearing in mind that I would have to *support* all of the resulting
+combinatorial explosion, and that several combinations don't make sense,
+or are unsafe, or seem useless, I think I'd rather keep it limited to
+well-selected points from the space.
+
+I've fixed the description of --skip-duplicates to match its behavior.
+I don't know if there's a good motivation for it not deleting the files it
+does import. I'd almost rather have thought that was a bug in the
+implementation, but the implementation explicitly copies rather than moves
+files for --skip-duplicates, so that does seem to have been done
+intentionally. In any case, `--clean-duplicates` can be run after it to
+delete dups, I suppose.
+
+An implementation of --mode=Did,Nsid seemed worth adding at first, perhaps
+as --reinject-duplicates. But thinking about it some more,
+that would be the same as:
+
+	git annex reinject --known /path/*
+	git annex import /path/*
+
+The first command moves all known files into the annex, which leaves
+only non-duplicate files for the second command to import. 
+
+The only time I can think of that this might not be suitable is if `/path` is
+getting new files added to it while the commands run... But in that case
+you can `mkdir /path/toimport; mv /path/* /path/toimport` and then
+run the 2 commands on `/path/toimport/*`
+"""]]

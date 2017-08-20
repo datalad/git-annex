@@ -36,6 +36,7 @@ module Logs.MetaData (
 import Annex.Common
 import Types.MetaData
 import Annex.MetaData.StandardFields
+import Annex.VectorClock
 import qualified Annex.Branch
 import qualified Annex
 import Logs
@@ -44,7 +45,6 @@ import Logs.TimeStamp
 
 import qualified Data.Set as S
 import qualified Data.Map as M
-import Data.Time.Clock.POSIX
 
 instance SingleValueSerializable MetaData where
 	serialize = Types.MetaData.serialize
@@ -83,26 +83,29 @@ getCurrentMetaData k = do
 		let MetaData m = value l
 		    ts = lastchangedval l
 		in M.map (const ts) m
-	lastchangedval l = S.singleton $ toMetaValue $ showts $ changed l
+	lastchangedval l = S.singleton $ toMetaValue $ showts $ 
+		case changed l of
+			VectorClock t -> t
+			Unknown -> 0
 	showts = formatPOSIXTime "%F@%H-%M-%S"
 
 {- Adds in some metadata, which can override existing values, or unset
  - them, but otherwise leaves any existing metadata as-is. -}
 addMetaData :: Key -> MetaData -> Annex ()
-addMetaData k metadata = addMetaData' k metadata =<< liftIO getPOSIXTime
+addMetaData k metadata = addMetaData' k metadata =<< liftIO currentVectorClock
 
-{- Reusing the same timestamp when making changes to the metadata
+{- Reusing the same VectorClock when making changes to the metadata
  - of multiple keys is a nice optimisation. The same metadata lines
  - will tend to be generated across the different log files, and so
  - git will be able to pack the data more efficiently. -}
-addMetaData' :: Key -> MetaData -> POSIXTime -> Annex ()
-addMetaData' k d@(MetaData m) now
+addMetaData' :: Key -> MetaData -> VectorClock -> Annex ()
+addMetaData' k d@(MetaData m) c
 	| d == emptyMetaData = noop
 	| otherwise = do
 		config <- Annex.getGitConfig
 		Annex.Branch.change (metaDataLogFile config k) $
 			showLog . simplifyLog 
-				. S.insert (LogEntry now metadata)
+				. S.insert (LogEntry c metadata)
 				. parseLog
   where
 	metadata = MetaData $ M.filterWithKey (\f _ -> not (isLastChangedField f)) m

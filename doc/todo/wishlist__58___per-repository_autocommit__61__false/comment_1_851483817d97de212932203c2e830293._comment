@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-01-30T18:13:42Z"
+ content="""
+This could be put in the git-annex branch similarly to the `git annex
+numcopies` configuration so all clones see it.
+
+As well as --no-commit, --content is the other option that I think 
+might make sense to have a clone-wide setting for. sync's --no-pull and
+--no-push seem much less likely to need such a setting.
+
+I've been leaning toward eventually turning sync --content on by default,
+and such a clone-wide configuration would be useful to let users get back
+the current behavior.
+
+Hmm, this could be generalized all the way to having a file in the
+git-annex branch that stores default settings for `annex.*` configs.
+But then git-annex would have to pull that file out of the git-annex branch
+every time it's run, which would slow down commands that get run a lot in
+succession. So that's a generalization too far.
+
+Still, looking through the configs, I can see some other things
+that it would similarly make sense to sometimes want to set clone-wide,
+including: annex.genmetadata, annex.used-refspec, annex.diskreserve, 
+annex.addsmallfiles.
+
+So, we have some configs that are each only used by a few commands,
+that make sense to be allowed to be set clone-wide. We can make the file
+in the git-annex branch be only read by commands that look at those
+configs, and can consider when implementing each whether it would slow
+down any command too much to have it need to read the git-annex branch
+file.
+
+I've added a `git annex config` command that can set such clone-wide
+configurations. I have not yet made git annex sync look at it for
+annex.autocommit.
+"""]]

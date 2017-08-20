@@ -18,7 +18,6 @@ module Logs.Group (
 
 import qualified Data.Map as M
 import qualified Data.Set as S
-import Data.Time.Clock.POSIX
 
 import Annex.Common
 import Logs
@@ -36,10 +35,10 @@ lookupGroups u = (fromMaybe S.empty . M.lookup u) . groupsByUUID <$> groupMap
 groupChange :: UUID -> (S.Set Group -> S.Set Group) -> Annex ()
 groupChange uuid@(UUID _) modifier = do
 	curr <- lookupGroups uuid
-	ts <- liftIO getPOSIXTime
+	c <- liftIO currentVectorClock
 	Annex.Branch.change groupLog $
 		showLog (unwords . S.toList) .
-			changeLog ts uuid (modifier curr) .
+			changeLog c uuid (modifier curr) .
 				parseLog (Just . S.fromList . words)
 	
 	-- The changed group invalidates the preferred content cache.

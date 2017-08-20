@@ -106,8 +106,8 @@ The following requests *must* all be supported by the special remote.
 * `TRANSFER STORE|RETRIEVE Key File`  
   Requests the transfer of a key. For STORE, the File is the file to upload;
   for RETRIEVE the File is where to store the download.  
-  Note that the File should not influence the filename used on the remote.
-  The filename will not contain any whitespace.  
+  Note that the File should not influence the filename used on the remote.  
+  Note that in some cases, the File may contain whitespace.  
   Note that it's important that, while a Key is being stored, CHECKPRESENT
   not indicate it's present until all the data has been transferred.  
 * `CHECKPRESENT Key`  

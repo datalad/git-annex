@@ -39,10 +39,10 @@ import qualified Git.Branch as Branch
 import Utility.Tmp
 import Utility.Rsync
 import Utility.FileMode
+import Utility.Tuple
 
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as L
-import Data.Tuple.Utils
 
 {- Given a set of bad objects found by git fsck, which may not
  - be complete, finds and removes all corrupt objects. -}

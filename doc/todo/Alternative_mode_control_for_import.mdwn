@@ -1,0 +1,17 @@
+This suggestion has come from being surprised at the behaviour of "import --skip-duplicates" which copies files instead of moving them and leaves the source directory untouched (description implies it will just leave duplicates alone).
+
+Apologies for the brevity, I've already typed this out once..
+
+"import" has several behaviours which can be controlled through some options, but they don't cover all wanted behaviours. This suggestion is for an alternative interface to control these behaviours, totally stolen from rsync :P
+
+    # create symlinks (s), inject content (i) and delete from source (d)
+    # duplicate (D) and new (N) files
+    git annex import --mode=Dsid,Nsid $src # (default behaviour)
+    git annex import --mode=Dsi,Nsi $src   # --duplicate
+    git annex import --mode=Dd,Nsid $src   # --deduplicate
+    git annex import --mode=Nsi $src       # --skip-duplicates
+    git annex import --mode=Dd $src        # --clean-duplicates
+    git annex import --mode=Did,Nsid $src  # (import new, reinject duplicate.. really want this!)
+    git annex import --mode=Ns $src        # (just creates symlinks for new)
+    git annex import --mode=Nsd $src       # (invalid mode due to data loss)
+    git annex import --mode=Nid $src       # (invalid or require --force)

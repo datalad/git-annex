@@ -37,7 +37,7 @@ of Bath CS department.
 * x86-64: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/amd64/git-annex-standalone-amd64.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/amd64/))
 * x86-32, for ancient kernels: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/i386-ancient/git-annex-standalone-i386-ancient.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/i386-ancient/))
 
-The arm autobuilder runs daily, and is hosted at [WetKnee Books](http://www.wetknee.com/).
+The arm autobuilder runs daily (sun permitting), and is hosted by [[Joey]].
 
 * arm: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/armel/git-annex-standalone-armel.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/armel/))
 

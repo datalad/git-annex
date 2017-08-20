@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 6"
+ date="2017-05-10T12:45:59Z"
+ content="""
+Oops,
+
+    find -name .git -prune -o -type l -printf '%s\n' | awk '{sum+=$1} END {print sum/1024**3}'
+
+should have been
+
+    find -name .git -prune -o -type l -printf '%s\n' | awk '{sum+=$1} END {print sum/1024**2}'
+
+That'll teach me to prematurely copy it :P
+"""]]

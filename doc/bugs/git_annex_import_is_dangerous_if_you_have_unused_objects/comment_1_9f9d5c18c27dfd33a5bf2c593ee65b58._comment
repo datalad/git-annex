@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-03-02T21:20:02Z"
+ content="""
+A simpler way to get to the same end result, without using git-annex
+import:
+
+	mv ~/foo .
+	git annex add foo
+	git reset --hard
+
+Now "foo" is only present in the git-annex object store, and we don't
+know what its filename(s) were. 
+
+A way to get to the same end result, without using git-annex:
+
+	mv ~/foo .
+	git add foo
+	git reset --hard
+
+Now "foo" is only present in the git object store, and we don't
+know what its filename(s) were.
+
+So, it's not `git-annex import`, or `git-annex add`, or `git add`
+that is dangerous here. It's `git reset --hard`.
+
+git will happily lose lots of data until you commit it. Once it's
+committed, it's safe. That's the rule of thumb. Nothing much that git-annex
+can do about that.
+"""]]

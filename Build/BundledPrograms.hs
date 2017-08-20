@@ -32,6 +32,16 @@ extraBundledPrograms = catMaybes
 #else
 	[
 #endif
+#ifndef darwin_HOST_OS
+#ifndef mingw32_HOST_OS
+	-- OS X has ssh installed by default.
+	-- On Windows, git provides ssh.
+	-- Linux probably has ssh installed system wide,
+	-- and if so the user probably wants to use that one.
+	, Just "ssh"
+	, Just "ssh-keygen"
+#endif
+#endif
 	]
 
 {- Programs that should be preferred for use from the bundle, over
@@ -57,15 +67,6 @@ preferredBundledPrograms = catMaybes
 	, Just "xargs"
 #endif
 	, Just "rsync"
-#ifndef darwin_HOST_OS
-#ifndef mingw32_HOST_OS
-	-- OS X has ssh installed by default.
-	-- Linux probably has ssh, but not guaranteed.
-	-- On Windows, git provides ssh.
-	, Just "ssh"
-	, Just "ssh-keygen"
-#endif
-#endif
 #ifndef mingw32_HOST_OS
 	, Just "sh"
 #endif

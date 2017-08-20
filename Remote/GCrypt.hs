@@ -31,7 +31,6 @@ import qualified Git.Command
 import qualified Git.Config
 import qualified Git.GCrypt
 import qualified Git.Construct
-import qualified Git.Types as Git ()
 import qualified Annex.Branch
 import Config
 import Config.Cost
@@ -49,6 +48,7 @@ import Utility.Rsync
 import Utility.Tmp
 import Logs.Remote
 import Utility.Gpg
+import Utility.SshHost
 
 remote :: RemoteType
 remote = RemoteType {
@@ -120,7 +120,7 @@ gen' r u c gc = do
 		, config = c
 		, localpath = localpathCalc r
 		, repo = r
-		, gitconfig = gc { remoteGitConfig = Just $ extractGitConfig r }
+		, gitconfig = gc { remoteGitConfig = extractGitConfig r }
 		, readonly = Git.repoIsHttp r
 		, availability = availabilityCalc r
 		, remotetype = remote
@@ -159,8 +159,9 @@ rsyncTransport r gc
 		let rsyncpath = if "/~/" `isPrefixOf` path
 			then drop 3 path
 			else path
-		opts <- sshOptions (host, Nothing) gc []
-		return (rsyncShell $ Param "ssh" : opts, host ++ ":" ++ rsyncpath, AccessShell)
+		let sshhost = either error id (mkSshHost host)
+		opts <- sshOptions ConsumeStdin (sshhost, Nothing) gc []
+		return (rsyncShell $ Param "ssh" : opts, fromSshHost sshhost ++ ":" ++ rsyncpath, AccessShell)
 	othertransport = return ([], loc, AccessDirect)
 
 noCrypto :: Annex a
@@ -169,18 +170,25 @@ noCrypto = giveup "cannot use gcrypt remote without encryption enabled"
 unsupportedUrl :: a
 unsupportedUrl = giveup "using non-ssh remote repo url with gcrypt is not supported"
 
-gCryptSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-gCryptSetup mu _ c gc = go $ M.lookup "gitrepo" c
+gCryptSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+gCryptSetup _ mu _ c gc = go $ M.lookup "gitrepo" c
   where
 	remotename = fromJust (M.lookup "name" c)
 	go Nothing = giveup "Specify gitrepo="
 	go (Just gitrepo) = do
 		(c', _encsetup) <- encryptionSetup c gc
-		inRepo $ Git.Command.run 
-			[ Param "remote", Param "add"
-			, Param remotename
-			, Param $ Git.GCrypt.urlPrefix ++ gitrepo
-			]
+
+		let url = Git.GCrypt.urlPrefix ++ gitrepo
+		rs <- fromRepo Git.remotes
+		case filter (\r -> Git.remoteName r == Just remotename) rs of
+			[] -> inRepo $ Git.Command.run 
+				[ Param "remote", Param "add"
+				, Param remotename
+				, Param url
+				]
+			(r:_)
+				| Git.repoLocation r == url -> noop
+				| otherwise -> error "Another remote with the same name already exists."		
 
 		setGcryptEncryption c' remotename
 
@@ -221,7 +229,8 @@ gCryptSetup mu _ c gc = go $ M.lookup "gitrepo" c
 setupRepo :: Git.GCrypt.GCryptId -> Git.Repo -> Annex AccessMethod
 setupRepo gcryptid r
 	| Git.repoIsUrl r = do
-		(_, _, accessmethod) <- rsyncTransport r def
+		dummycfg <- liftIO dummyRemoteGitConfig
+		(_, _, accessmethod) <- rsyncTransport r dummycfg
 		case accessmethod of
 			AccessDirect -> rsyncsetup
 			AccessShell -> ifM gitannexshellsetup
@@ -243,7 +252,8 @@ setupRepo gcryptid r
 	 -}
 	rsyncsetup = Remote.Rsync.withRsyncScratchDir $ \tmp -> do
 		liftIO $ createDirectoryIfMissing True $ tmp </> objectDir
-		(rsynctransport, rsyncurl, _) <- rsyncTransport r def
+		dummycfg <- liftIO dummyRemoteGitConfig
+		(rsynctransport, rsyncurl, _) <- rsyncTransport r dummycfg
 		let tmpconfig = tmp </> "config"
 		void $ liftIO $ rsync $ rsynctransport ++
 			[ Param $ rsyncurl ++ "/config"
@@ -263,7 +273,8 @@ setupRepo gcryptid r
 
 	{-  Ask git-annex-shell to configure the repository as a gcrypt
 	 -  repository. May fail if it is too old. -}
-	gitannexshellsetup = Ssh.onRemote r (boolSystem, return False)
+	gitannexshellsetup = Ssh.onRemote NoConsumeStdin r
+		(boolSystem, return False)
 		"gcryptsetup" [ Param gcryptid ] []
 
 	denyNonFastForwards = "receive.denyNonFastForwards"
@@ -325,7 +336,8 @@ store r rsyncopts
 			return True
 	| Git.repoIsSsh (repo r) = if accessShell r
 		then fileStorer $ \k f p -> Ssh.rsyncHelper (Just p)
-			=<< Ssh.rsyncParamsRemote False r Upload k f Nothing
+			=<< Ssh.rsyncParamsRemote False r Upload k f
+				(AssociatedFile Nothing)
 		else fileStorer $ Remote.Rsync.store rsyncopts
 	| otherwise = unsupportedUrl
 
@@ -335,8 +347,10 @@ retrieve r rsyncopts
 		guardUsable (repo r) (return False) $
 			sink =<< liftIO (L.readFile $ gCryptLocation r k)
 	| Git.repoIsSsh (repo r) = if accessShell r
-		then fileRetriever $ \f k p ->
-			unlessM (Ssh.rsyncHelper (Just p) =<< Ssh.rsyncParamsRemote False r Download k f Nothing) $
+		then fileRetriever $ \f k p -> do
+			ps <- Ssh.rsyncParamsRemote False r Download k f
+				(AssociatedFile Nothing)
+			unlessM (Ssh.rsyncHelper (Just p) ps) $
 				giveup "rsync failed"
 		else fileRetriever $ Remote.Rsync.retrieve rsyncopts
 	| otherwise = unsupportedUrl
@@ -379,8 +393,10 @@ toAccessMethod "shell" = AccessShell
 toAccessMethod _ = AccessDirect
 
 getGCryptUUID :: Bool -> Git.Repo -> Annex (Maybe UUID)
-getGCryptUUID fast r = (genUUIDInNameSpace gCryptNameSpace <$>) . fst
-	<$> getGCryptId fast r def
+getGCryptUUID fast r = do
+	dummycfg <- liftIO dummyRemoteGitConfig
+	(genUUIDInNameSpace gCryptNameSpace <$>) . fst
+		<$> getGCryptId fast r dummycfg
 
 coreGCryptId :: String
 coreGCryptId = "core.gcrypt-id"
@@ -398,7 +414,7 @@ getGCryptId fast r gc
 	| Git.repoIsLocal r || Git.repoIsLocalUnknown r = extract <$>
 		liftIO (catchMaybeIO $ Git.Config.read r)
 	| not fast = extract . liftM fst <$> getM (eitherToMaybe <$>)
-		[ Ssh.onRemote r (Git.Config.fromPipe r, return (Left $ error "configlist failed")) "configlist" [] []
+		[ Ssh.onRemote NoConsumeStdin r (Git.Config.fromPipe r, return (Left $ error "configlist failed")) "configlist" [] []
 		, getConfigViaRsync r gc
 		]
 	| otherwise = return (Nothing, r)

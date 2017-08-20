@@ -8,16 +8,14 @@
 module Command.Schedule where
 
 import Command
-import qualified Annex
 import qualified Remote
 import Logs.Schedule
 import Types.ScheduledActivity
-import Types.Messages
 
 import qualified Data.Set as S
 
 cmd :: Command
-cmd = command "schedule" SectionSetup "get or set scheduled jobs"
+cmd = noMessages $ command "schedule" SectionSetup "get or set scheduled jobs"
 	(paramPair paramRemote (paramOptional paramExpression))
 	(withParams seek)
 
@@ -29,6 +27,7 @@ start = parse
   where
 	parse (name:[]) = go name performGet
 	parse (name:expr:[]) = go name $ \uuid -> do
+		allowMessages
 		showStart "schedule" name
 		performSet expr uuid
 	parse _ = giveup "Specify a repository."
@@ -39,7 +38,6 @@ start = parse
 
 performGet :: UUID -> CommandPerform
 performGet uuid = do
-	Annex.setOutput QuietOutput
 	s <- scheduleGet uuid
 	liftIO $ putStrLn $ intercalate "; " $ 
 		map fromScheduledActivity $ S.toList s

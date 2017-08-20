@@ -33,6 +33,12 @@ is run in a new clone, it will attempt to enable the special remote. Of
 course, this works best when the special remote does not need anything
 special to be done to get it enabled.
 
+Normally, git-annex generates a new UUID for the new special remote.
+If you want to, you can specify a UUID for it to use, by passing a
+uuid=whatever parameter. This can be useful in some situations, eg when the
+same data can be accessed via two different special remote backends.
+But if in doubt, don't do this.
+
 # OPTIONS
 
 * `--fast`

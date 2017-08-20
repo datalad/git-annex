@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joern.mankiewicz@06fb5bc9b732f143dee3606866362f562531310d"
+ nickname="joern.mankiewicz"
+ avatar="http://cdn.libravatar.org/avatar/446365f4d50dddc42965fa0432e70cdb"
+ subject="Git-annex ignores annex.largefiles in .gitattributes"
+ date="2017-03-20T20:58:12Z"
+ content="""
+Hi guys!
+
+*sigh*
+
+Currently I am pulling my hair, maybe anybody here can clear things up a bit. I tried to setup a brand new mixed content repo with git-annex but it bluntly ignores my .gitattributes and annexes everything. When I set largefiles in config everything is fine and restrictions are applied right, in .gitattributes even a \"* annex.largefiles=nothing\" has no effect. All attributes show up right with git check-attr, I double checked. :-/ Same thing with a newly initialized minimal example repo. 
+
+I tried git-annex as distributed by openSUSE and the current stand-alone-package (in case it's a distribution bug), too. So no clues here, too.
+
+Output of git annex version:
+
+git-annex version: 6.20170302-gb35a50cca
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+
+System: OpenSUSE Tumbleweed
+Linux 4.9.3-1-default #1 SMP PREEMPT Thu Jan 12 11:32:53 UTC 2017 (2c7dfab) x86_64 x86_64 x86_64 GNU/Linux
+
+
+Any ideas? After trying around for hours I am somewhat flabberghasted. Did I miss some config- or buildoption to enable support for .gitattributes? 
+
+Kind regards
+
+Jörn
+"""]]

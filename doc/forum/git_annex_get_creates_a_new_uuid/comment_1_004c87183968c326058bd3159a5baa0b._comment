@@ -7,8 +7,8 @@
 From the man page:
 
 > Until a repository (**or one of its remotes**) has been initialized
-> git-annex will refuse to operate on it, to avoid accidentially
-> using it in a repository that was not intended tohave an annex.
+> git-annex will refuse to operate on it, to avoid accidentally
+> using it in a repository that was not intended to have an annex.
 
 So, yes, it assumes that if a repository has a git-annex branch already, git-annex is being used, and no explicit init is necessary. You can still run `git annex init` after the fact if you like.
 """]]

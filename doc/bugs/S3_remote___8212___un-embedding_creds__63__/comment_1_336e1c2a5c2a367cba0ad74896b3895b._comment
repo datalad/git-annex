@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-02-20T18:38:16Z"
+ content="""
+When you used embedcreds=yes, it *committed* the creds to the git-annex
+branch of the git repository. For embedcreds=no to do anything useful,
+it would need to remove that data from the git repository history.
+
+Removing data from a git repository tends to involve rewriting commits and
+forced pushes to all remotes, it's not a simple process and not ameanable
+to automation. It will be much easier, and more secure, to go into S3
+and generate new credentials, and revoke access to the old ones.
+
+What `git annex enableremote` with `embedcreds=no` does do is prevent
+any new creds from being embedded into the repository. Otherwise,
+`git annex enableremote` will update the embedded creds
+with whatever new ones are set in the environment when you run it.
+"""]]

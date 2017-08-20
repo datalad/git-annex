@@ -1,0 +1,49 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-05-11T16:06:03Z"
+ content="""
+Sounds like an interesting data-gathering application, I have to say
+I'm curious what it is. ;)
+
+If Repo1 is configured like this:
+
+	git-annex group here source
+	git annex wanted here standard
+
+Then it should want to drop the contents of files from Repo1 once it knows
+they have reached any other repository. (Sometimes people put a repository
+in a group but forget to set wanted to "standard" ...)
+
+Looks like Repo1 cannot make outgoing connections to Repo2?
+
+So, you need to run the assistant on Repo2 and probably on Repo1.
+Then it works like this:
+
+1. The assistant on Repo1 will commit files as they're put in the repository.
+2. The assistant on Repo2 will notice changes to Repo1, pull down the
+   files, see that Repo1 is configured as a source repository, and drop
+   the files from Repo1.
+3. The assistant on Repo1 will also notice when it's sent a file to Repo2
+   and can drop it from Repo1 then -- but this may take a while for it to
+   notice and #2 will probably happen first.
+
+Note that if you get the files added and committed by some other process,
+you don't really need to run the assistant on Repo1.
+
+The USB drives need to be client, so that once content reaches one of them,
+the content will be dropped from the transfer repositories. The way that
+part should work:
+
+1. Content reaches Repo2.
+2. The assistant in Repo3 notices the change to Repo2, pulls down
+   the files.
+3. The assistant in Repo3 pushes the files to a connected USB drive.
+4. The assistant in Repo3 drops content from itself and Repo2, since
+   it knows both are transfer repos and the content has reached a client
+   (USB).
+
+If you're having trouble getting any of this to work, I recommend
+running `git annex sync --content` manually while testing it, and make sure
+it does what you would expect to happen at each step.
+"""]]

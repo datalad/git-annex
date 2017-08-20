@@ -26,5 +26,5 @@ And here for a binary file stored in git:
 
 If you find the latter in the log, then the author and commit message of the commit adding it would be interesting.
 
-Hypothesis: Perhaps this repository started off on a Linux or OSX system, and you were using a git-annex older than 5.20131118, when the direct mode guard was added. You might have added this file back then and accidentially committed it directly to git.
+Hypothesis: Perhaps this repository started off on a Linux or OSX system, and you were using a git-annex older than 5.20131118, when the direct mode guard was added. You might have added this file back then and accidentally committed it directly to git.
 """]]

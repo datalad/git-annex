@@ -1,11 +1,9 @@
 {- git-annex hashing backends
  -
- - Copyright 2011-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
-
-{-# LANGUAGE CPP #-}
 
 module Backend.Hash (
 	backends,
@@ -14,6 +12,7 @@ module Backend.Hash (
 
 import Annex.Common
 import qualified Annex
+import Types.Key
 import Types.Backend
 import Types.KeySource
 import Utility.Hash
@@ -29,17 +28,14 @@ data Hash
 	| SHA2Hash HashSize
 	| SHA3Hash HashSize
 	| SkeinHash HashSize
-type HashSize = Int
 
 {- Order is slightly significant; want SHA256 first, and more general
  - sizes earlier. -}
 hashes :: [Hash]
 hashes = concat 
-	[ map SHA2Hash [256, 512, 224, 384]
-#ifdef WITH_CRYPTONITE
-	, map SHA3Hash [256, 512, 224, 384]
-#endif
-	, map SkeinHash [256, 512]
+	[ map (SHA2Hash . HashSize) [256, 512, 224, 384]
+	, map (SHA3Hash . HashSize) [256, 512, 224, 384]
+	, map (SkeinHash . HashSize) [256, 512]
 	, [SHA1Hash]
 	, [MD5Hash]
 	]
@@ -50,7 +46,7 @@ backends = concatMap (\h -> [genBackendE h, genBackend h]) hashes
 
 genBackend :: Hash -> Backend
 genBackend hash = Backend
-	{ name = hashName hash
+	{ backendVariety = hashKeyVariety hash (HasExt False)
 	, getKey = keyValue hash
 	, verifyKeyContent = Just $ checkKeyChecksum hash
 	, canUpgradeKey = Just needsUpgrade
@@ -60,19 +56,16 @@ genBackend hash = Backend
 
 genBackendE :: Hash -> Backend
 genBackendE hash = (genBackend hash)
-	{ name = hashNameE hash
+	{ backendVariety = hashKeyVariety hash (HasExt True)
 	, getKey = keyValueE hash
 	}
 
-hashName :: Hash -> String
-hashName MD5Hash = "MD5"
-hashName SHA1Hash = "SHA1"
-hashName (SHA2Hash size) = "SHA" ++ show size
-hashName (SHA3Hash size) = "SHA3_" ++ show size
-hashName (SkeinHash size) = "SKEIN" ++ show size
-
-hashNameE :: Hash -> String
-hashNameE hash = hashName hash ++ "E"
+hashKeyVariety :: Hash -> HasExt -> KeyVariety
+hashKeyVariety MD5Hash = MD5Key
+hashKeyVariety SHA1Hash = SHA1Key
+hashKeyVariety (SHA2Hash size) = SHA2Key size
+hashKeyVariety (SHA3Hash size) = SHA3Key size
+hashKeyVariety (SkeinHash size) = SKEINKey size
 
 {- A key is a hash of its contents. -}
 keyValue :: Hash -> KeySource -> Annex (Maybe Key)
@@ -82,7 +75,7 @@ keyValue hash source = do
 	s <- hashFile hash file filesize
 	return $ Just $ stubKey
 		{ keyName = s
-		, keyBackendName = hashName hash
+		, keyVariety = hashKeyVariety hash (HasExt False)
 		, keySize = Just filesize
 		}
 
@@ -92,7 +85,7 @@ keyValueE hash source = keyValue hash source >>= maybe (return Nothing) addE
   where
 	addE k = return $ Just $ k
 		{ keyName = keyName k ++ selectExtension (keyFilename source)
-		, keyBackendName = hashNameE hash
+		, keyVariety = hashKeyVariety hash (HasExt True)
 		}
 
 selectExtension :: FilePath -> String
@@ -103,7 +96,7 @@ selectExtension f
 	es = filter (not . null) $ reverse $
 		take 2 $ map (filter validInExtension) $
 		takeWhile shortenough $
-		reverse $ split "." $ takeExtensions f
+		reverse $ splitc '.' $ takeExtensions f
 	shortenough e = length e <= 4 -- long enough for "jpeg"
 
 {- A key's checksum is checked during fsck. -}
@@ -149,24 +142,29 @@ needsUpgrade key = "\\" `isPrefixOf` keyHash key ||
 trivialMigrate :: Key -> Backend -> AssociatedFile -> Maybe Key
 trivialMigrate oldkey newbackend afile
 	{- Fast migration from hashE to hash backend. -}
-	| keyBackendName oldkey == name newbackend ++ "E" = Just $ oldkey
+	| migratable && hasExt newvariety = Just $ oldkey
 		{ keyName = keyHash oldkey
-		, keyBackendName = name newbackend
+		, keyVariety = newvariety
 		}
 	{- Fast migration from hash to hashE backend. -}
-	| keyBackendName oldkey ++"E" == name newbackend = case afile of
-		Nothing -> Nothing
-		Just file -> Just $ oldkey
+	| migratable && hasExt oldvariety = case afile of
+		AssociatedFile Nothing -> Nothing
+		AssociatedFile (Just file) -> Just $ oldkey
 			{ keyName = keyHash oldkey ++ selectExtension file
-			, keyBackendName = name newbackend
+			, keyVariety = newvariety
 			}
 	| otherwise = Nothing
+  where
+	migratable = oldvariety /= newvariety 
+		&& sameExceptExt oldvariety newvariety
+	oldvariety = keyVariety oldkey
+	newvariety = backendVariety newbackend
 
 hashFile :: Hash -> FilePath -> Integer -> Annex String
 hashFile hash file filesize = go hash
   where
 	go MD5Hash = use md5Hasher
-	go SHA1Hash = usehasher 1
+	go SHA1Hash = usehasher (HashSize 1)
 	go (SHA2Hash hashsize) = usehasher hashsize
 	go (SHA3Hash hashsize) = use (sha3Hasher hashsize)
 	go (SkeinHash hashsize) = use (skeinHasher hashsize)
@@ -176,10 +174,10 @@ hashFile hash file filesize = go hash
 		-- Force full evaluation so file is read and closed.
 		return (length h `seq` h)
 	
-	usehasher hashsize = case shaHasher hashsize filesize of
+	usehasher hashsize@(HashSize sz) = case shaHasher hashsize filesize of
 		Left sha -> use sha
 		Right (external, internal) -> do
-			v <- liftIO $ externalSHA external hashsize file
+			v <- liftIO $ externalSHA external sz file
 			case v of
 				Right r -> return r
 				Left e -> do
@@ -189,7 +187,7 @@ hashFile hash file filesize = go hash
 					use internal
 
 shaHasher :: HashSize -> Integer -> Either (L.ByteString -> String) (String, L.ByteString -> String)
-shaHasher hashsize filesize
+shaHasher (HashSize hashsize) filesize
 	| hashsize == 1 = use SysConfig.sha1 sha1
 	| hashsize == 256 = use SysConfig.sha256 sha2_256
 	| hashsize == 224 = use SysConfig.sha224 sha2_224
@@ -209,17 +207,15 @@ shaHasher hashsize filesize
 	usehasher hasher = show . hasher
 
 sha3Hasher :: HashSize -> (L.ByteString -> String)
-sha3Hasher hashsize
-#ifdef WITH_CRYPTONITE
+sha3Hasher (HashSize hashsize)
 	| hashsize == 256 = show . sha3_256
 	| hashsize == 224 = show . sha3_224
 	| hashsize == 384 = show . sha3_384
 	| hashsize == 512 = show . sha3_512
-#endif
 	| otherwise = error $ "unsupported SHA3 size " ++ show hashsize
 
 skeinHasher :: HashSize -> (L.ByteString -> String)
-skeinHasher hashsize 
+skeinHasher (HashSize hashsize)
 	| hashsize == 256 = show . skein256
 	| hashsize == 512 = show . skein512
 	| otherwise = error $ "unsupported SKEIN size " ++ show hashsize
@@ -236,7 +232,7 @@ md5Hasher = show . md5
  -}
 testKeyBackend :: Backend
 testKeyBackend = 
-	let b = genBackendE (SHA2Hash 256)
+	let b = genBackendE (SHA2Hash (HashSize 256))
 	in b { getKey = (fmap addE) <$$> getKey b } 
   where
 	addE k = k { keyName = keyName k ++ longext }

@@ -1,6 +1,6 @@
 {- Standard git remotes.
  -
- - Copyright 2011-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,6 +11,7 @@ module Remote.Git (
 	remote,
 	configRead,
 	repoAvail,
+	onLocal,
 ) where
 
 import Annex.Common
@@ -34,6 +35,7 @@ import qualified Annex.Url as Url
 import Utility.Tmp
 import Config
 import Config.Cost
+import Config.DynamicConfig
 import Annex.Init
 import Annex.Version
 import Types.CleanupActions
@@ -54,9 +56,9 @@ import qualified Remote.P2P
 import P2P.Address
 import Annex.Path
 import Creds
-import Annex.CatFile
 import Messages.Progress
 import Types.NumCopies
+import Annex.Concurrent
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
@@ -96,8 +98,8 @@ list autoinit = do
  - No attempt is made to make the remote be accessible via ssh key setup,
  - etc.
  -}
-gitSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-gitSetup Nothing _ c _ = do
+gitSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+gitSetup Init mu _ c _ = do
 	let location = fromMaybe (giveup "Specify location=url") $
 		Url.parseURIRelaxed =<< M.lookup "location" c
 	g <- Annex.gitRepo
@@ -105,8 +107,10 @@ gitSetup Nothing _ c _ = do
 		[r] -> getRepoUUID r
 		[] -> giveup "could not find existing git remote with specified location"
 		_ -> giveup "found multiple git remotes with specified location"
-	return (c, u)
-gitSetup (Just u) _ c _ = do
+	if isNothing mu || mu == Just u
+		then return (c, u)
+		else error "git remote did not have specified uuid"
+gitSetup Enable (Just u) _ c _ = do
 	inRepo $ Git.Command.run
 		[ Param "remote"
 		, Param "add"
@@ -114,6 +118,7 @@ gitSetup (Just u) _ c _ = do
 		, Param $ fromMaybe (giveup "no location") (M.lookup "location" c)
 		]
 	return (c, u)
+gitSetup Enable Nothing _ _ _ = error "unable to enable git remote with no specified uuid"
 
 {- It's assumed to be cheap to read the config of non-URL remotes, so this is
  - done each time git-annex is run in a way that uses remotes.
@@ -124,7 +129,8 @@ configRead :: Bool -> Git.Repo -> Annex Git.Repo
 configRead autoinit r = do
 	gc <- Annex.getRemoteGitConfig r
 	u <- getRepoUUID r
-	case (repoCheap r, remoteAnnexIgnore gc, u) of
+	annexignore <- liftIO $ getDynamicConfig (remoteAnnexIgnore gc)
+	case (repoCheap r, annexignore, u) of
 		(_, True, _) -> return r
 		(True, _, _) -> tryGitConfigRead autoinit r
 		(False, _, NoUUID) -> tryGitConfigRead autoinit r
@@ -161,8 +167,7 @@ gen r u c gc
 			, config = c
 			, localpath = localpathCalc r
 			, repo = r
-			, gitconfig = gc
-				{ remoteGitConfig = Just $ extractGitConfig r }
+			, gitconfig = gc { remoteGitConfig = extractGitConfig r }
 			, readonly = Git.repoIsHttp r
 			, availability = availabilityCalc r
 			, remotetype = remote
@@ -207,7 +212,9 @@ tryGitConfigRead :: Bool -> Git.Repo -> Annex Git.Repo
 tryGitConfigRead autoinit r 
 	| haveconfig r = return r -- already read
 	| Git.repoIsSsh r = store $ do
-		v <- Ssh.onRemote r (pipedconfig, return (Left $ giveup "configlist failed")) "configlist" [] configlistfields
+		v <- Ssh.onRemote NoConsumeStdin r
+			(pipedconfig, return (Left $ giveup "configlist failed"))
+			"configlist" [] configlistfields
 		case v of
 			Right r'
 				| haveconfig r' -> return r'
@@ -242,18 +249,15 @@ tryGitConfigRead autoinit r
 				, return Nothing
 				)
 		case v of
-			Nothing -> do
-				warning $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
-				return r
-			Just (Left _) -> do
-				set_ignore "not usable by git-annex" False
-				return r
 			Just (Right r') -> do
 				-- Cache when http remote is not bare for
 				-- optimisation.
 				unless (Git.Config.isBare r') $
 					setremote setRemoteBare False
 				return r'
+			_ -> do
+				set_ignore "not usable by git-annex" False
+				return r
 
 	store = observe $ \r' -> do
 		g <- gitRepo
@@ -331,7 +335,7 @@ inAnnex rmt key
 	checkremote = Ssh.inAnnex r key
 	checklocal = guardUsable r (cantCheck r) $
 		maybe (cantCheck r) return
-			=<< onLocal rmt (Annex.Content.inAnnexSafe key)
+			=<< onLocalFast rmt (Annex.Content.inAnnexSafe key)
 
 keyUrls :: Remote -> Key -> [String]
 keyUrls r key = map tourl locs'
@@ -348,13 +352,13 @@ keyUrls r key = map tourl locs'
 	locs' = map (replace "\\" "/") locs
 #endif
 	remoteconfig = gitconfig r
-	cfg = fromJust $ remoteGitConfig remoteconfig
+	cfg = remoteGitConfig remoteconfig
 
 dropKey :: Remote -> Key -> Annex Bool
 dropKey r key
 	| not $ Git.repoIsUrl (repo r) =
 		guardUsable (repo r) (return False) $
-			commitOnCleanup r $ onLocal r $ do
+			commitOnCleanup r $ onLocalFast r $ do
 				ensureInitialized
 				whenM (Annex.Content.inAnnex key) $ do
 					Annex.Content.lockContentForRemoval key $ \lock -> do
@@ -373,7 +377,7 @@ lockKey r key callback
 			-- Lock content from perspective of remote,
 			-- and then run the callback in the original
 			-- annex monad, not the remote's.
-			onLocal r $ 
+			onLocalFast r $ 
 				Annex.Content.lockContentShared key $ \vc ->
 					ifM (Annex.Content.inAnnex key)
 						( liftIO $ inorigrepo $ callback vc
@@ -381,7 +385,8 @@ lockKey r key callback
 						)
 	| Git.repoIsSsh (repo r) = do
 		showLocking r
-		Just (cmd, params) <- Ssh.git_annex_shell (repo r) "lockcontent"
+		Just (cmd, params) <- Ssh.git_annex_shell ConsumeStdin
+			(repo r) "lockcontent"
 			[Param $ key2file key] []
 		(Just hin, Just hout, Nothing, p) <- liftIO $ 
 			withFile devNull WriteMode $ \nullh ->
@@ -436,7 +441,7 @@ copyFromRemote' r key file dest meterupdate
 		u <- getUUID
 		hardlink <- wantHardLink
 		-- run copy from perspective of remote
-		onLocal r $ do
+		onLocalFast r $ do
 			ensureInitialized
 			v <- Annex.Content.prepSendAnnex key
 			case v of
@@ -472,9 +477,11 @@ copyFromRemote' r key file dest meterupdate
 		)
 	feedprogressback' a = do
 		u <- getUUID
+		let AssociatedFile afile = file
 		let fields = (Fields.remoteUUID, fromUUID u)
-			: maybe [] (\f -> [(Fields.associatedFile, f)]) file
-		Just (cmd, params) <- Ssh.git_annex_shell (repo r) "transferinfo" 
+			: maybe [] (\f -> [(Fields.associatedFile, f)]) afile
+		Just (cmd, params) <- Ssh.git_annex_shell ConsumeStdin
+			(repo r) "transferinfo" 
 			[Param $ key2file key] fields
 		v <- liftIO (newEmptySV :: IO (MSampleVar Integer))
 		pidv <- liftIO $ newEmptyMVar
@@ -514,7 +521,7 @@ copyFromRemoteCheap :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
 copyFromRemoteCheap r key af file
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $ liftIO $ do
 		loc <- gitAnnexLocation key (repo r) $
-			fromJust $ remoteGitConfig $ gitconfig r
+			remoteGitConfig $ gitconfig r
 		ifM (doesFileExist loc)
 			( do
 				absloc <- absPath loc
@@ -564,7 +571,7 @@ copyToRemote' r key file meterupdate
 		u <- getUUID
 		hardlink <- wantHardLink
 		-- run copy from perspective of remote
-		onLocal r $ ifM (Annex.Content.inAnnex key)
+		onLocalFast r $ ifM (Annex.Content.inAnnex key)
 			( return True
 			, do
 				ensureInitialized
@@ -580,7 +587,7 @@ copyToRemote' r key file meterupdate
 fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)
 fsckOnRemote r params
 	| Git.repoIsUrl r = do
-		s <- Ssh.git_annex_shell r "fsck" params []
+		s <- Ssh.git_annex_shell NoConsumeStdin r "fsck" params []
 		return $ case s of
 			Nothing -> return False
 			Just (c, ps) -> batchCommand c ps
@@ -606,33 +613,35 @@ repairRemote r a = return $ do
 {- Runs an action from the perspective of a local remote.
  -
  - The AnnexState is cached for speed and to avoid resource leaks.
- - However, catFileStop is called to avoid git-cat-file processes hanging
- - around on removable media.
- -
- - The repository's git-annex branch is not updated, as an optimisation.
- - No caller of onLocal can query data from the branch and be ensured
- - it gets a current value. Caller of onLocal can make changes to
- - the branch, however.
+ - However, coprocesses are stopped after each call to avoid git
+ - processes hanging around on removable media.
  -}
 onLocal :: Remote -> Annex a -> Annex a
 onLocal r a = do
 	m <- Annex.getState Annex.remoteannexstate
-	case M.lookup (uuid r) m of
-		Nothing -> do
-			st <- liftIO $ Annex.new (repo r)
-			go st $ do
-				Annex.BranchState.disableUpdate	
-				a
-		Just st -> go st a
+	go =<< maybe
+		(liftIO $ Annex.new $ repo r)
+		return
+		(M.lookup (uuid r) m)
   where
 	cache st = Annex.changeState $ \s -> s
 		{ Annex.remoteannexstate = M.insert (uuid r) st (Annex.remoteannexstate s) }
-	go st a' = do
+	go st = do
 		curro <- Annex.getState Annex.output
 		(ret, st') <- liftIO $ Annex.run (st { Annex.output = curro }) $
-			catFileStop `after` a'
+			stopCoProcesses `after` a
 		cache st'
 		return ret
+
+{- Faster variant of onLocal.
+ -
+ - The repository's git-annex branch is not updated, as an optimisation.
+ - No caller of onLocalFast can query data from the branch and be ensured
+ - it gets the most current value. Caller of onLocalFast can make changes
+ - to the branch, however.
+ -}
+onLocalFast :: Remote -> Annex a -> Annex a
+onLocalFast r a = onLocal r $ Annex.BranchState.disableUpdate >> a
 
 {- Copys a file with rsync unless both locations are on the same
  - filesystem. Then cp could be faster. -}
@@ -657,12 +666,13 @@ commitOnCleanup r a = go `after` a
   where
 	go = Annex.addCleanup (RemoteCleanup $ uuid r) cleanup
 	cleanup
-		| not $ Git.repoIsUrl (repo r) = onLocal r $
+		| not $ Git.repoIsUrl (repo r) = onLocalFast r $
 			doQuietSideAction $
 				Annex.Branch.commit "update"
 		| otherwise = void $ do
 			Just (shellcmd, shellparams) <-
-				Ssh.git_annex_shell (repo r) "commit" [] []
+				Ssh.git_annex_shell NoConsumeStdin
+					(repo r) "commit" [] []
 			
 			-- Throw away stderr, since the remote may not
 			-- have a new enough git-annex shell to

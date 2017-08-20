@@ -1,5 +1,5 @@
 Made a release this morning, mostly because the release earlier this week
-turns out to have accidentially removed several options from `git annex copy`.
+turns out to have accidentally removed several options from `git annex copy`.
 
 Spent some time this afternoon improving how git-annex shuts down when
 --time-limit is used. This used to be a quick and dirty shutdown, similar

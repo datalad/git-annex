@@ -71,6 +71,12 @@ git-annex should use smudge/clean filters.
   avoid the problem for git checkout, since it would use the new interface
   and not the smudge filter.)
 
+* When `git add` is run with a large file, it allocates memory for
+  the whole file content, even though it's only going
+  to stream it to the clean filter. My proposed smudge/clean
+  interface patch also fixed this problem, since it made git not read
+  the file at all.
+
 * Eventually (but not yet), make v6 the default for new repositories.
   Note that the assistant forces repos into direct mode; that will need to
   be changed then, and it should enable annex.thin instead.

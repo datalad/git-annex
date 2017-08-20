@@ -55,8 +55,8 @@ handleDropsFrom locs rs reason fromhere key afile preverified runner = do
 			map (`fromTopFilePath` g) <$> Database.Keys.getAssociatedFiles key
 		)
 	let fs = case afile of
-		Just f -> nub (f : l)
-		Nothing -> l
+		AssociatedFile (Just f) -> nub (f : l)
+		AssociatedFile Nothing -> l
 	n <- getcopies fs
 	void $ if fromhere && checkcopies n Nothing
 		then go fs rs n >>= dropl fs
@@ -93,9 +93,9 @@ handleDropsFrom locs rs reason fromhere key afile preverified runner = do
 
 	checkdrop fs n u a
 		| null fs = check $ -- no associated files; unused content
-			wantDrop True u (Just key) Nothing
+			wantDrop True u (Just key) (AssociatedFile Nothing)
 		| otherwise = check $
-			allM (wantDrop True u (Just key) . Just) fs
+			allM (wantDrop True u (Just key) . AssociatedFile . Just) fs
 		where
 			check c = ifM c
 				( dodrop n u a
@@ -107,7 +107,9 @@ handleDropsFrom locs rs reason fromhere key afile preverified runner = do
 			( do
 				liftIO $ debugM "drop" $ unwords
 					[ "dropped"
-					, fromMaybe (key2file key) afile
+					, case afile of
+						AssociatedFile Nothing -> key2file key
+						AssociatedFile (Just af) -> af
 					, "(from " ++ maybe "here" show u ++ ")"
 					, "(copies now " ++ show (fromNumCopies have - 1) ++ ")"
 					, ": " ++ reason

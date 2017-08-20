@@ -38,9 +38,9 @@ import Annex.Content.Direct
 import qualified Database.Keys
 import qualified Command.Sync
 import qualified Git.Branch
+import Utility.Tuple
 
 import Data.Time.Clock
-import Data.Tuple.Utils
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Either
@@ -322,7 +322,7 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 		doadd = sanitycheck ks $ do
 			(mkey, mcache) <- liftAnnex $ do
 				showStart "add" $ keyFilename ks
-				ingest $ Just $ LockedDown lockdownconfig ks
+				ingest (Just $ LockedDown lockdownconfig ks) Nothing
 			maybe (failedingest change) (done change mcache $ keyFilename ks) mkey
 	add _ _ = return Nothing
 
@@ -503,9 +503,10 @@ checkChangeContent change@(Change { changeInfo = i }) =
 		Just k -> whenM (scanComplete <$> getDaemonStatus) $ do
 			present <- liftAnnex $ inAnnex k
 			void $ if present
-				then queueTransfers "new file created" Next k (Just f) Upload
-				else queueTransfers "new or renamed file wanted" Next k (Just f) Download
-			handleDrops "file renamed" present k (Just f) []
+				then queueTransfers "new file created" Next k af Upload
+				else queueTransfers "new or renamed file wanted" Next k af Download
+			handleDrops "file renamed" present k af []
   where
 	f = changeFile change
+	af = AssociatedFile (Just f)
 checkChangeContent _ = noop

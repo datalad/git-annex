@@ -70,7 +70,7 @@ OK (0.78s)
 [Removed 1667 lines]
 
 3 out of 269 tests failed (640.58s)
-  (This could be due to a bug in git-annex, or an incompatability
+  (This could be due to a bug in git-annex, or an incompatibility
    with utilities, such as git, installed on this system.)
 $
 

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="lasitus"
+ avatar="http://cdn.libravatar.org/avatar/dfe778f28027aeb75876172022aa5de3"
+ subject="comment 2"
+ date="2017-02-14T18:46:22Z"
+ content="""
+\"\"ExitFailure (-1073741819)\" looks kind of like an overflow of the exit status code, which is very strange.\"
+It isn't the only number I have received. I believe it was 5 on one run and 3 on another, but that is just from memory. I don't think the error was ever printed to the daemon.log. I can try and run it again and get more definite results.
+
+\"Is there an error message output anywhere when this happens?\"
+I gave you the end of daemon.log and everything that was printed after the crash. Any other logs you would like?
+
+\"It looks like you might have a ton of files in this repository, and that might have something to do with the memory use and load.\"
+After restarting and getting it going again, it was happily moving along with not much memory usage and 0.5 load. It seemed like both the client and the server were hung up on something that time. I had left it to chew on the files for quite some time. (That time the client didn't crash, but it stopped sensing any changes. Restarts of the assistant also didn't fix the issue, only a reboot on the Windows side.) I suppose I could have found whatever was running instead in task manager, but I'm saying a ctrl-c and apparent restart didn't help.
+"""]]

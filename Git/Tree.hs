@@ -35,11 +35,14 @@ newtype Tree = Tree [TreeContent]
 	deriving (Show)
 
 data TreeContent
+	-- A blob object in the tree.
 	= TreeBlob TopFilePath FileMode Sha
 	-- A subtree that is already recorded in git, with a known sha.
 	| RecordedSubTree TopFilePath Sha [TreeContent]
 	-- A subtree that has not yet been recorded in git.
 	| NewSubTree TopFilePath [TreeContent]
+	-- A commit object that is part of a tree (used for submodules)
+	| TreeCommit TopFilePath FileMode Sha
 	deriving (Show, Eq, Ord)
 
 {- Gets the Tree for a Ref. -}
@@ -93,6 +96,7 @@ mkTree (MkTreeHandle cp) l = CoProcess.query cp send receive
 			TreeBlob f fm s -> mkTreeOutput fm BlobObject s f
 			RecordedSubTree f s _ -> mkTreeOutput 0o040000 TreeObject s f
 			NewSubTree _ _ -> error "recordSubTree internal error; unexpected NewSubTree"
+			TreeCommit f fm s -> mkTreeOutput fm CommitObject s f
 		hPutStr h "\NUL" -- signal end of tree to --batch
 	receive h = getSha "mktree" (hGetLine h)
 
@@ -152,6 +156,7 @@ flattenTree n (Tree l) = Tree (concatMap (go n) l)
 	go _ b@(TreeBlob _ _ _) = [b]
 	go n' (RecordedSubTree _ _ l') = concatMap (go (n'-1)) l'
 	go n' (NewSubTree _ l') = concatMap (go (n'-1)) l'
+	go _ c@(TreeCommit _ _ _) = [c]
 
 {- Applies an adjustment to items in a tree.
  -
@@ -200,6 +205,9 @@ adjustTree adjusttreeitem addtreeitems removefiles r repo =
 					else return $ RecordedSubTree (LsTree.file i) (LsTree.sha i) [] 
 				let !modified' = modified || slmodified || wasmodified
 				go h modified' (subtree : c) depth intree is'
+			Just CommitObject -> do
+				let ti = TreeCommit (LsTree.file i) (LsTree.mode i)  (LsTree.sha i)
+				go h wasmodified (ti:c) depth intree is
 			_ -> error ("unexpected object type \"" ++ LsTree.typeobj i ++ "\"")
 		| otherwise = return (c, wasmodified, i:is)
 
@@ -236,6 +244,9 @@ extractTree l = case go [] inTopTree l of
 					let st = RecordedSubTree (LsTree.file i) (LsTree.sha i) subtree
 					in go (st:t) intree is'
 				Left e -> Left e
+			Just CommitObject ->
+				let c = TreeCommit (LsTree.file i) (LsTree.mode i) (LsTree.sha i)
+				in go (c:t) intree is
 			_ -> parseerr ("unexpected object type \"" ++ LsTree.typeobj i ++ "\"")
 		| otherwise = Right (t, i:is)
 	parseerr = Left
@@ -259,6 +270,7 @@ instance GitPath TreeContent where
 	gitPath (TreeBlob f _ _) = gitPath f
 	gitPath (RecordedSubTree f _ _) = gitPath f
 	gitPath (NewSubTree f _) = gitPath f
+	gitPath (TreeCommit f _ _) = gitPath f
 
 inTopTree :: GitPath t => t -> Bool
 inTopTree = inTree "."

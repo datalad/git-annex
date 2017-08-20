@@ -45,7 +45,7 @@ optParser desc = DropOptions
 	<*> parseBatchOption
 
 parseDropFromOption :: Parser (DeferredParse Remote)
-parseDropFromOption = parseRemoteOption $ strOption
+parseDropFromOption = parseRemoteOption <$> strOption
 	( long "from" <> short 'f' <> metavar paramRemote
 	<> help "drop content from a remote"
 	<> completeRemotes
@@ -65,7 +65,7 @@ seek o = allowConcurrentOutput $
 start :: DropOptions -> FilePath -> Key -> CommandStart
 start o file key = start' o key afile (mkActionItem afile)
   where
-	afile = Just file
+	afile = AssociatedFile (Just file)
 
 start' :: DropOptions -> Key -> AssociatedFile -> ActionItem -> CommandStart
 start' o key afile ai = do
@@ -85,7 +85,7 @@ start' o key afile ai = do
 			| otherwise = return True
 
 startKeys :: DropOptions -> Key -> ActionItem -> CommandStart
-startKeys o key = start' o key Nothing
+startKeys o key = start' o key (AssociatedFile Nothing)
 
 startLocal :: AssociatedFile -> ActionItem -> NumCopies -> Key -> [VerifiedCopy] -> CommandStart
 startLocal afile ai numcopies key preverified = stopUnless (inAnnex key) $ do
@@ -202,7 +202,8 @@ requiredContent = do
 {- In auto mode, only runs the action if there are enough
  - copies on other semitrusted repositories. -}
 checkDropAuto :: Bool -> Maybe Remote -> AssociatedFile -> Key -> (NumCopies -> CommandStart) -> CommandStart
-checkDropAuto automode mremote afile key a = go =<< maybe getNumCopies getFileNumCopies afile
+checkDropAuto automode mremote (AssociatedFile afile) key a =
+	go =<< maybe getNumCopies getFileNumCopies afile
   where
 	go numcopies
 		| automode = do

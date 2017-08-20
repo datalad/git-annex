@@ -23,34 +23,28 @@ import qualified System.Console.Regions as Regions
 import qualified System.Console.Concurrent as Console
 #endif
 
-import Data.Progress.Meter
-import Data.Progress.Tracker
-import Data.Quantity
-
 {- Shows a progress meter while performing a transfer of a key.
  - The action is passed a callback to use to update the meter. -}
 metered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
 metered othermeter key a = withMessageState $ go (keySize key)
   where
 	go _ (MessageState { outputType = QuietOutput }) = nometer
-	go Nothing (MessageState { outputType = NormalOutput }) = nometer
-	go (Just size) (MessageState { outputType = NormalOutput, concurrentOutputEnabled = False }) = do
+	go (msize) (MessageState { outputType = NormalOutput, concurrentOutputEnabled = False }) = do
 		showOutput
-		(progress, meter) <- mkmeter size
-		m <- liftIO $ rateLimitMeterUpdate 0.1 (Just size) $ \n -> do
-			setP progress $ fromBytesProcessed n
-			displayMeter stdout meter
+		meter <- liftIO $ mkMeter msize bandwidthMeter $ 
+			displayMeterHandle stdout
+		m <- liftIO $ rateLimitMeterUpdate 0.1 msize $
+			updateMeter meter
 		r <- a (combinemeter m)
-		liftIO $ clearMeter stdout meter
+		liftIO $ clearMeterHandle meter stdout
 		return r
-	go (Just size) (MessageState { outputType = NormalOutput, concurrentOutputEnabled = True }) =
+	go (msize) (MessageState { outputType = NormalOutput, concurrentOutputEnabled = True }) =
 #if WITH_CONCURRENTOUTPUT
 		withProgressRegion $ \r -> do
-			(progress, meter) <- mkmeter size
-			m <- liftIO $ rateLimitMeterUpdate 0.1 (Just size) $ \n -> do
-				setP progress $ fromBytesProcessed n
-				s <- renderMeter meter
-				Regions.setConsoleRegion r ("\n" ++ s)
+			meter <- liftIO $ mkMeter msize bandwidthMeter $ \_ s ->
+				Regions.setConsoleRegion r ('\n' : s)
+			m <- liftIO $ rateLimitMeterUpdate 0.1 msize $
+				updateMeter meter
 			a (combinemeter m)
 #else
 		nometer
@@ -61,11 +55,6 @@ metered othermeter key a = withMessageState $ go (keySize key)
 		m <- liftIO $ rateLimitMeterUpdate 0.1 msize $
 			JSON.progress buf msize
 		a (combinemeter m)
-
-	mkmeter size = do
-		progress <- liftIO $ newProgress "" size
-		meter <- liftIO $ newMeter progress "B" 25 (renderNums binaryOpts 1)
-		return (progress, meter)
 
 	nometer = a $ combinemeter (const noop)
 

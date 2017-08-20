@@ -24,9 +24,13 @@ fast as hamlet, and pure haskell code.
 Game plan:
 
 1. Upload a yesod-lucid to hackage. (done)
-2. Get servant, lucid, maybe yesod-lucid, packaged in Debian
+2. Get servant (done), lucid (done), maybe yesod-lucid, packaged in Debian
 3. Start converting individual yesod Handler Html to Handler LucidHtml.
    This will ditch the hamlet. This is by far the most work, but it can be
    done incrementally w/o breaking the build.
-4. Once all the hamlet is gone, remove the rest of the yesod stuff and
+4. Need to find a way to deal with Hamlet widgets that add CS and JS to
+   the page. Hamlet basically serves as a Writer monad to collect the HTML,
+   CS, and JS that widgets add to a page, so a replacement for that would
+   need to be developed.
+5. Once all the hamlet is gone, remove the rest of the yesod stuff and
    re-implement the routing etc with servant.

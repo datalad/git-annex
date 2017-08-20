@@ -71,6 +71,7 @@ import Utility.Url
 import "mtl" Control.Monad.Reader
 import Control.Concurrent
 import Control.Concurrent.Async
+import Control.Concurrent.STM
 import qualified Data.Map as M
 import qualified Data.Set as S
 
@@ -98,7 +99,7 @@ data AnnexState = AnnexState
 	{ repo :: Git.Repo
 	, repoadjustment :: (Git.Repo -> IO Git.Repo)
 	, gitconfig :: GitConfig
-	, backends :: [BackendA Annex]
+	, backend :: Maybe (BackendA Annex)
 	, remotes :: [Types.Remote.RemoteA Annex]
 	, remoteannexstate :: M.Map UUID AnnexState
 	, output :: MessageState
@@ -124,6 +125,7 @@ data AnnexState = AnnexState
 	, groupmap :: Maybe GroupMap
 	, ciphers :: M.Map StorableCipher Cipher
 	, lockcache :: LockCache
+	, sshstalecleaned :: TMVar Bool
 	, flags :: M.Map String Bool
 	, fields :: M.Map String String
 	, cleanup :: M.Map CleanupAction (Annex ())
@@ -136,7 +138,7 @@ data AnnexState = AnnexState
 	, existinghooks :: M.Map Git.Hook.Hook Bool
 	, desktopnotify :: DesktopNotify
 	, workers :: [Either AnnexState (Async AnnexState)]
-	, activeremotes :: MVar (S.Set (Types.Remote.RemoteA Annex))
+	, activeremotes :: MVar (M.Map (Types.Remote.RemoteA Annex) Integer)
 	, keysdbhandle :: Maybe Keys.DbHandle
 	, cachedcurrentbranch :: Maybe Git.Branch
 	, cachedgitenv :: Maybe [(String, String)]
@@ -144,15 +146,17 @@ data AnnexState = AnnexState
 
 newState :: GitConfig -> Git.Repo -> IO AnnexState
 newState c r = do
-	emptyactiveremotes <- newMVar S.empty
+	emptyactiveremotes <- newMVar M.empty
+	o <- newMessageState
+	sc <- newTMVarIO False
 	return $ AnnexState
 		{ repo = r
 		, repoadjustment = return
 		, gitconfig = c
-		, backends = []
+		, backend = Nothing
 		, remotes = []
 		, remoteannexstate = M.empty
-		, output = def
+		, output = o
 		, concurrency = NonConcurrent
 		, force = False
 		, fast = False
@@ -175,6 +179,7 @@ newState c r = do
 		, groupmap = Nothing
 		, ciphers = M.empty
 		, lockcache = M.empty
+		, sshstalecleaned = sc
 		, flags = M.empty
 		, fields = M.empty
 		, cleanup = M.empty
@@ -324,7 +329,7 @@ adjustGitRepo a = do
 getRemoteGitConfig :: Git.Repo -> Annex RemoteGitConfig
 getRemoteGitConfig r = do
 	g <- gitRepo
-	return $ extractRemoteGitConfig g (Git.repoDescribe r)
+	liftIO $ atomically $ extractRemoteGitConfig g (Git.repoDescribe r)
 
 {- Converts an Annex action into an IO action, that runs with a copy
  - of the current Annex state. 

@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -27,44 +27,64 @@ cmd = withGlobalOptions (jobsOption : jsonOption : jsonProgressOption : annexedM
 
 data MoveOptions = MoveOptions
 	{ moveFiles :: CmdParams
-	, fromToOptions :: FromToOptions
+	, fromToOptions :: Either ToHere FromToOptions
 	, keyOptions :: Maybe KeyOptions
+	, batchOption :: BatchMode
 	}
+
+data ToHere = ToHere
 
 optParser :: CmdParamsDesc -> Parser MoveOptions
 optParser desc = MoveOptions
 	<$> cmdParams desc
-	<*> parseFromToOptions
+	<*> (parsefrom <|> parseto)
 	<*> optional (parseKeyOptions <|> parseFailedTransfersOption)
+	<*> parseBatchOption
+  where
+	parsefrom = Right . FromRemote . parseRemoteOption <$> parseFromOption
+	parseto = herespecialcase <$> parseToOption
+	  where
+		herespecialcase "here" = Left ToHere
+		herespecialcase "." = Left ToHere
+		herespecialcase n = Right $ ToRemote $ parseRemoteOption n
 
 instance DeferredParseClass MoveOptions where
 	finishParse v = MoveOptions
 		<$> pure (moveFiles v)
-		<*> finishParse (fromToOptions v)
+		<*> either (pure . Left) (Right <$$> finishParse) (fromToOptions v)
 		<*> pure (keyOptions v)
+		<*> pure (batchOption v)
 
 seek :: MoveOptions -> CommandSeek
-seek o = allowConcurrentOutput $ 
-	withKeyOptions (keyOptions o) False
-		(startKey o True)
-		(withFilesInGit $ whenAnnexed $ start o True)
-		(moveFiles o)
+seek o = allowConcurrentOutput $ do
+	let go = whenAnnexed $ start o True
+	case batchOption o of
+		Batch -> batchInput Right (batchCommandAction . go)
+		NoBatch -> withKeyOptions (keyOptions o) False
+			(startKey o True)
+			(withFilesInGit go)
+			(moveFiles o)
 
 start :: MoveOptions -> Bool -> FilePath -> Key -> CommandStart
 start o move f k = start' o move afile k (mkActionItem afile)
   where
-	afile = Just f
+	afile = AssociatedFile (Just f)
 
 startKey :: MoveOptions -> Bool -> Key -> ActionItem -> CommandStart
-startKey o move = start' o move Nothing
+startKey o move = start' o move (AssociatedFile Nothing)
 
 start' :: MoveOptions -> Bool -> AssociatedFile -> Key -> ActionItem -> CommandStart
 start' o move afile key ai = 
 	case fromToOptions o of
-		FromRemote src -> checkFailedTransferDirection ai Download $
-			fromStart move afile key ai =<< getParsed src
-		ToRemote dest -> checkFailedTransferDirection ai Upload $
-			toStart move afile key ai =<< getParsed dest
+		Right (FromRemote src) ->
+			checkFailedTransferDirection ai Download $
+				fromStart move afile key ai =<< getParsed src
+		Right (ToRemote dest) ->
+			checkFailedTransferDirection ai Upload $
+				toStart move afile key ai =<< getParsed dest
+		Left ToHere ->
+			checkFailedTransferDirection ai Download $
+				toHereStart move afile key ai
 
 showMoveAction :: Bool -> Key -> ActionItem -> Annex ()
 showMoveAction move = showStart' (if move then "move" else "copy")
@@ -171,14 +191,15 @@ fromOk src key = go =<< Annex.getState Annex.force
 		return $ u /= Remote.uuid src && elem src remotes
 
 fromPerform :: Remote -> Bool -> Key -> AssociatedFile -> CommandPerform
-fromPerform src move key afile = ifM (inAnnex key)
-	( dispatch move True
-	, dispatch move =<< go
-	)
+fromPerform src move key afile = do
+	showAction $ "from " ++ Remote.name src
+	ifM (inAnnex key)
+		( dispatch move True
+		, dispatch move =<< go
+		)
   where
 	go = notifyTransfer Download afile $ 
-		download (Remote.uuid src) key afile forwardRetry $ \p -> do
-			showAction $ "from " ++ Remote.name src
+		download (Remote.uuid src) key afile forwardRetry $ \p ->
 			getViaTmp (RemoteVerify src) key $ \t ->
 				Remote.retrieveKeyFile src key afile t p
 	dispatch _ False = stop -- failed
@@ -198,3 +219,20 @@ fromPerform src move key afile = ifM (inAnnex key)
 		ok <- Remote.removeKey src key
 		next $ Command.Drop.cleanupRemote key src ok
 	faileddropremote = giveup "Unable to drop from remote."
+
+{- Moves (or copies) the content of an annexed file from reachable remotes
+ - to the current repository.
+ -
+ - When moving, the content is removed from all the reachable remotes. -}
+toHereStart ::  Bool -> AssociatedFile -> Key -> ActionItem -> CommandStart
+toHereStart move afile key ai
+	| move = go
+	| otherwise = stopUnless (not <$> inAnnex key) go
+  where
+	go = do
+		rs <- Remote.keyPossibilities key
+		forM_ rs $ \r ->
+			includeCommandAction $ do
+				showMoveAction move key ai
+				next $ fromPerform r move key afile
+		stop

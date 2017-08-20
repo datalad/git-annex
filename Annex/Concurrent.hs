@@ -56,14 +56,16 @@ dupState = do
  - Also closes various handles in it. -}
 mergeState :: AnnexState -> Annex ()
 mergeState st = do
-	st' <- liftIO $ snd <$> run st closehandles
+	st' <- liftIO $ snd <$> run st stopCoProcesses
 	forM_ (M.toList $ Annex.cleanup st') $
 		uncurry addCleanup
 	Annex.Queue.mergeFrom st'
 	changeState $ \s -> s { errcounter = errcounter s + errcounter st' }
-  where
-	closehandles = do
-		catFileStop
-		checkAttrStop
-		hashObjectStop
-		checkIgnoreStop
+
+{- Stops all long-running git query processes. -}
+stopCoProcesses :: Annex ()
+stopCoProcesses = do
+	catFileStop
+	checkAttrStop
+	hashObjectStop
+	checkIgnoreStop

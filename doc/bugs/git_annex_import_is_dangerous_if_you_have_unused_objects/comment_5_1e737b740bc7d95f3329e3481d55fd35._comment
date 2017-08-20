@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2017-03-06T16:25:53Z"
+ content="""
+The difficulty with checking if the content to be imported is referred to
+somewhere in the working tree is that there's no inexpensive way to
+determine that. It would have to run `git log -n1 -S$KEY` for each file.
+That can take quite a long time in repositories with a lot of history.
+I clocked it at 12 seconds per file on an SSD; will be quite a
+lot slower on a disc.
+
+I suppose that check could be added with a --fast to skip the check.
+
+PS, mbroadhead's is a good approach. Note though that the dropunused content
+will be considered a duplicate by import since git-annex
+version 6.20170214. Still, --deduplicate and --clean-duplicates won't
+delete the files from the import location in this case, since there
+are no copies of the content in the annex.
+"""]]

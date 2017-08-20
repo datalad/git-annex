@@ -1,0 +1,46 @@
+### Please describe the problem.
+
+git annex info  crashes in some directories of the NFS mounted partition but not in the others
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+yoh@rolando:/inbox/BIDS/Meng/Meng/1005-faceperception$ git annex info
+
+git-annex: waitToSetLock: resource exhausted (No locks available)
+failed
+git-annex: info: 1 failed
+yoh@rolando:/inbox/BIDS/Meng/Meng/1005-faceperception$ cd -
+/inbox/BIDS/Gobbini/Matteo/1002-faceangles
+
+yoh@rolando:/inbox/BIDS/Gobbini/Matteo/1002-faceangles$ git annex info
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 5
+	00000000-0000-0000-0000-000000000001 -- web
+ 	00000000-0000-0000-0000-000000000002 -- bittorrent
+ 	8ffcc6d4-1288-45cb-8e5b-0fa13a22c8c5 -- mvdoc@falkor:/srv/dbic.datalad.org/www/Gobbini/Matteo/1002-faceangles
+ 	b7872847-80ac-47d6-a712-fa695b24e85e -- yoh@rolando:/inbox/BIDS/Gobbini/Matteo/1002-faceangles [here]
+ 	db79e407-569d-43b4-8c39-c50f0eeb1fdd -- mvdoc@smaug:/mnt/btrfs/dbic/inbox/face-angles/Gobbini/Matteo
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 30.19 terabytes (+1 megabyte reserved)
+local annex keys: 40
+local annex size: 5.21 gigabytes
+annexed files in working tree: 40
+size of annexed files in working tree: 5.21 gigabytes
+bloom filter size: 32 mebibytes (0% full)
+backend usage: 
+	SHA256E: 40
+
+yoh@rolando:/inbox/BIDS/Gobbini/Matteo/1002-faceangles$ git annex version
+git-annex version: 6.20170101+gitg93d69b1-1~ndall+1
+
+"""]]
+
+
+so this one was a run from within singularity neurodebian environment on a centos box. but the same behaviour is if ran using 6.20161231-gc8eeb17da  standalone build ran under CentOS natively.
+
+[[!meta author=yoh]]
+

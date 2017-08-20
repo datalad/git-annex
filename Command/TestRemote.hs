@@ -149,14 +149,15 @@ test st r k =
 		Annex.eval st (Annex.setOutput QuietOutput >> a) @? "failed"
 	present b = check ("present " ++ show b) $
 		(== Right b) <$> Remote.hasKey r k
-	fsck = case maybeLookupBackendName (keyBackendName k) of
+	fsck = case maybeLookupBackendVariety (keyVariety k) of
 		Nothing -> return True
 		Just b -> case Backend.verifyKeyContent b of
 			Nothing -> return True
 			Just verifier -> verifier k (key2file k)
 	get = getViaTmp (RemoteVerify r) k $ \dest ->
-		Remote.retrieveKeyFile r k Nothing dest nullMeterUpdate
-	store = Remote.storeKey r k Nothing nullMeterUpdate
+		Remote.retrieveKeyFile r k (AssociatedFile Nothing)
+			dest nullMeterUpdate
+	store = Remote.storeKey r k (AssociatedFile Nothing) nullMeterUpdate
 	remove = Remote.removeKey r k
 
 testUnavailable :: Annex.AnnexState -> Remote -> Key -> [TestTree]
@@ -164,15 +165,15 @@ testUnavailable st r k =
 	[ check (== Right False) "removeKey" $
 		Remote.removeKey r k
 	, check (== Right False) "storeKey" $
-		Remote.storeKey r k Nothing nullMeterUpdate
+		Remote.storeKey r k (AssociatedFile Nothing) nullMeterUpdate
 	, check (`notElem` [Right True, Right False]) "checkPresent" $
 		Remote.checkPresent r k
 	, check (== Right False) "retrieveKeyFile" $
 		getViaTmp (RemoteVerify r) k $ \dest ->
-			Remote.retrieveKeyFile r k Nothing dest nullMeterUpdate
+			Remote.retrieveKeyFile r k (AssociatedFile Nothing) dest nullMeterUpdate
 	, check (== Right False) "retrieveKeyFileCheap" $
 		getViaTmp (RemoteVerify r) k $ \dest -> unVerified $
-			Remote.retrieveKeyFileCheap r k Nothing dest
+			Remote.retrieveKeyFileCheap r k (AssociatedFile Nothing) dest
 	]
   where
 	check checkval desc a = testCase desc $ do
@@ -225,5 +226,5 @@ randKey sz = withTmpFile "randkey" $ \f h -> do
 		}
 	k <- fromMaybe (error "failed to generate random key")
 		<$> Backend.getKey Backend.Hash.testKeyBackend ks
-	moveAnnex k f
+	_ <- moveAnnex k f
 	return k

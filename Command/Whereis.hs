@@ -49,7 +49,7 @@ seek o = do
 start :: M.Map UUID Remote -> FilePath -> Key -> CommandStart
 start remotemap file key = startKeys remotemap key (mkActionItem afile)
   where
-	afile = Just file
+	afile = AssociatedFile (Just file)
 
 startKeys :: M.Map UUID Remote -> Key -> ActionItem -> CommandStart
 startKeys remotemap key ai = do

@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 26"""
+ date="2017-03-21T17:28:27Z"
+ content="""
+@ewen importfeed already tracks guids, since 2015. Relevant commit is
+[[!commit f95a8c867223b2e17d036d0d3377bf0fc9d3adff]]
+
+You may well have an
+older version of git-annex that didn't do that. But there are probably also
+feeds that lack a useful guid, or that even make a change that changes the
+guid of an existing item.
+
+With `git annex metadata`, you can see the `itemid` which is where the guid
+is stored.
+
+PS, please post in [[todo]] when you have a request..
+"""]]

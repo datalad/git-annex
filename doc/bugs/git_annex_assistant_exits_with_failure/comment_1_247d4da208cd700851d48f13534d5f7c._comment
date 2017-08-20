@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-02-13T20:08:32Z"
+ content="""
+"ExitFailure (-1073741819)" looks kind of like an overflow of the exit
+status code, which is very strange.
+
+Is there an error message output anywhere when this happens?
+
+It looks like you might have a ton of files in this repository, and that
+might have something to do with the memory use and load.
+"""]]

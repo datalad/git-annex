@@ -383,8 +383,11 @@ removeDirect :: Key -> FilePath -> Annex ()
 removeDirect k f = do
 	void $ removeAssociatedFileUnchecked k f
 	unlessM (inAnnex k) $
+		-- If moveAnnex rejects the content of the key,
+		-- treat that the same as its content having changed.
 		ifM (goodContent k f)
-			( moveAnnex k f
+			( unlessM (moveAnnex k f) $
+				logStatus k InfoMissing
 			, logStatus k InfoMissing
 			)
 	liftIO $ do
@@ -441,7 +444,7 @@ setDirect wantdirect = do
  - this way things that show HEAD (eg shell prompts) will
  - hopefully show just "master". -}
 directBranch :: Ref -> Ref
-directBranch orighead = case split "/" $ fromRef orighead of
+directBranch orighead = case splitc '/' $ fromRef orighead of
 	("refs":"heads":"annex":"direct":_) -> orighead
 	("refs":"heads":rest) ->
 		Ref $ "refs/heads/annex/direct/" ++ intercalate "/" rest
@@ -452,7 +455,7 @@ directBranch orighead = case split "/" $ fromRef orighead of
  - Any other ref is left unchanged.
  -}
 fromDirectBranch :: Ref -> Ref
-fromDirectBranch directhead = case split "/" $ fromRef directhead of
+fromDirectBranch directhead = case splitc '/' $ fromRef directhead of
 	("refs":"heads":"annex":"direct":rest) -> 
 		Ref $ "refs/heads/" ++ intercalate "/" rest
 	_ -> directhead

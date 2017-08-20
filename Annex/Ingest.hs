@@ -1,6 +1,6 @@
 {- git-annex content ingestion
  -
- - Copyright 2010-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,6 +10,7 @@ module Annex.Ingest (
 	LockDownConfig(..),
 	lockDown,
 	ingestAdd,
+	ingestAdd',
 	ingest,
 	ingest',
 	finishIngestDirect,
@@ -116,10 +117,13 @@ lockDown' cfg file = ifM (pure (not (hardlinkFileTmp cfg)) <||> crippledFileSyst
 {- Ingests a locked down file into the annex. Updates the work tree and
  - index. -}
 ingestAdd :: Maybe LockedDown -> Annex (Maybe Key)
-ingestAdd Nothing = return Nothing
-ingestAdd ld@(Just (LockedDown cfg source)) = do
-	(mk, mic) <- ingest ld
-	case mk of
+ingestAdd ld = ingestAdd' ld Nothing
+
+ingestAdd' :: Maybe LockedDown -> Maybe Key -> Annex (Maybe Key)
+ingestAdd' Nothing _ = return Nothing
+ingestAdd' ld@(Just (LockedDown cfg source)) mk = do
+	(mk', mic) <- ingest ld mk
+	case mk' of
 		Nothing -> return Nothing
 		Just k -> do
 			let f = keyFilename source
@@ -140,14 +144,17 @@ ingestAdd ld@(Just (LockedDown cfg source)) = do
 {- Ingests a locked down file into the annex. Does not update the working
  - tree or the index.
  -}
-ingest :: Maybe LockedDown -> Annex (Maybe Key, Maybe InodeCache)
+ingest :: Maybe LockedDown -> Maybe Key -> Annex (Maybe Key, Maybe InodeCache)
 ingest = ingest' Nothing
 
-ingest' :: Maybe Backend -> Maybe LockedDown -> Annex (Maybe Key, Maybe InodeCache)
-ingest' _ Nothing = return (Nothing, Nothing)
-ingest' preferredbackend (Just (LockedDown cfg source)) = withTSDelta $ \delta -> do
-	backend <- maybe (chooseBackend $ keyFilename source) (return . Just) preferredbackend
-	k <- genKey source backend
+ingest' :: Maybe Backend -> Maybe LockedDown -> Maybe Key -> Annex (Maybe Key, Maybe InodeCache)
+ingest' _ Nothing _ = return (Nothing, Nothing)
+ingest' preferredbackend (Just (LockedDown cfg source)) mk = withTSDelta $ \delta -> do
+	k <- case mk of
+		Nothing -> do
+			backend <- maybe (chooseBackend $ keyFilename source) (return . Just) preferredbackend
+			fmap fst <$> genKey source backend
+		Just k -> return (Just k)
 	let src = contentLocation source
 	ms <- liftIO $ catchMaybeIO $ getFileStatus src
 	mcache <- maybe (pure Nothing) (liftIO . toInodeCache delta src) ms
@@ -156,7 +163,7 @@ ingest' preferredbackend (Just (LockedDown cfg source)) = withTSDelta $ \delta -
 		(Just newc, Just c) | compareStrong c newc -> go k mcache ms
 		_ -> failure "changed while it was being added"
   where
-	go (Just (key, _)) mcache (Just s)
+	go (Just key) mcache (Just s)
 		| lockingFile cfg = golocked key mcache s
 		| otherwise = ifM isDirect
 			( godirect key mcache s
@@ -165,10 +172,13 @@ ingest' preferredbackend (Just (LockedDown cfg source)) = withTSDelta $ \delta -
 	go _ _ _ = failure "failed to generate a key"
 
 	golocked key mcache s = do
-		catchNonAsync (moveAnnex key $ contentLocation source)
-			(restoreFile (keyFilename source) key)
-		populateAssociatedFiles key source
-		success key mcache s
+		v <- tryNonAsync (moveAnnex key $ contentLocation source)
+		case v of
+			Right True -> do
+				populateAssociatedFiles key source
+				success key mcache s		
+			Right False -> giveup "failed to add content to annex"
+			Left e -> restoreFile (keyFilename source) key e
 
 	gounlocked key (Just cache) s = do
 		-- Remove temp directory hard link first because
@@ -345,8 +355,11 @@ cachedCurrentBranch = maybe cache (return . Just)
 
 {- Adds a file to the work tree for the key, and stages it in the index.
  - The content of the key may be provided in a temp file, which will be
- - moved into place. -}
-addAnnexedFile :: FilePath -> Key -> Maybe FilePath -> Annex ()
+ - moved into place.
+ -
+ - When the content of the key is not accepted into the annex, returns False.
+ -}
+addAnnexedFile :: FilePath -> Key -> Maybe FilePath -> Annex Bool
 addAnnexedFile file key mtmp = ifM (addUnlocked <&&> not <$> isDirect)
 	( do
 		mode <- maybe
@@ -356,12 +369,13 @@ addAnnexedFile file key mtmp = ifM (addUnlocked <&&> not <$> isDirect)
 		stagePointerFile file mode =<< hashPointerFile key
 		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
 		case mtmp of
-			Just tmp -> do
-				moveAnnex key tmp
-				linkunlocked mode
+			Just tmp -> ifM (moveAnnex key tmp)
+				( linkunlocked mode >> return True
+				, writepointer mode >> return False
+				)
 			Nothing -> ifM (inAnnex key)
-				( linkunlocked mode
-				, liftIO $ writePointerFile file key mode
+				( linkunlocked mode >> return True
+				, writepointer mode >> return True
 				)
 	, do
 		addLink file key Nothing
@@ -374,7 +388,7 @@ addAnnexedFile file key mtmp = ifM (addUnlocked <&&> not <$> isDirect)
 				whenM isDirect $
 					Annex.Queue.flush
 				moveAnnex key tmp
-			Nothing -> return ()
+			Nothing -> return True
 	)
   where
 	linkunlocked mode = do
@@ -383,3 +397,4 @@ addAnnexedFile file key mtmp = ifM (addUnlocked <&&> not <$> isDirect)
 			LinkAnnexFailed -> liftIO $
 				writePointerFile file key mode
 			_ -> return ()
+	writepointer mode = liftIO $ writePointerFile file key mode

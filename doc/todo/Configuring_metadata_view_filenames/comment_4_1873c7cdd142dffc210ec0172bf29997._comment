@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2017-05-09T17:41:33Z"
+ content="""
+True, it could use a bloom filter.
+
+I had not thought of `/=*` (or forgot about it). Views could, as a special
+case, use the original paths in that case. That's getting very close to
+adjusted branch territory, and I want to rewrite the view branch generation
+code to use adjusted branches eventually (so changes made in the view
+branch can be propigated back out to the source branch and so view branches
+can be updated when the source branch changes).
+"""]]

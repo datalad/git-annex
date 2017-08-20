@@ -18,10 +18,10 @@ content of objects when in sharedRepository mode, like it normally does.
 
 Since that's a belt and suspenders protection, and since the object
 directory permissions weakening already lost a similar protection against
-accidential deletion of object files, shrug, I guess we'll do that.
+accidental deletion of object files, shrug, I guess we'll do that.
 
 I do feel that sharedRepository mode rarely ever makes sense to use. It's
-very fiddely to get the permissions set up right and keep them right, and
+very fiddly to get the permissions set up right and keep them right, and
 there are much better ways to share a centralized repo between users, eg
 use gitolite or a dedicated account that's locked down to only let
 git/git-annex commands be run.

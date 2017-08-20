@@ -4,7 +4,7 @@ git-annex group - add a repository to a group
 
 # SYNOPSIS
 
-git annex group `repository groupname`
+git annex group `repository [groupname]`
 
 # DESCRIPTION
 

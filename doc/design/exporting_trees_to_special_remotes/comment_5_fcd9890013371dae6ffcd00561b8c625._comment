@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="special remotes with versioning support"
+ date="2017-07-12T17:30:33Z"
+ content="""
+thanks -- I will check those all out!
+
+Meanwhile a quick one regarding \"I'm not clear about what you're suggesting be done with versioning support in external special remotes?\".
+
+I meant that in some cases there might be no need for any custom/special tracking per exported file would be needed -- upon export we could just register a unique URL for that particular version of the file for the corresponding KEY so later on it could be 'annex get'ed even if a new version of the file gets uploaded or removed.  So annex could just store those treeish(es) hexsha on what was exported last without any explicit additional tracking per file.  URL might be some custom one to be handled by the special remote backend.
+
+E.g. here is a list of versions (and corresponding urls) for a sample file on the s3 bucket
+
+[[!format sh \"\"\"
+$> datalad ls -aL s3://datalad-test0-versioned/3versions-allversioned.txt 
+Connecting to bucket: datalad-test0-versioned
+[INFO   ] S3 session: Connecting to the bucket datalad-test0-versioned 
+Bucket info:
+  Versioning: {'MfaDelete': 'Disabled', 'Versioning': 'Enabled'}
+     Website: datalad-test0-versioned.s3-website-us-east-1.amazonaws.com
+         ACL: <Policy: yoh@cs.unm.edu (owner) = FULL_CONTROL>
+3versions-allversioned.txt            ...  http://datalad-test0-versioned.s3.amazonaws.com/3versions-allversioned.txt?versionId=Kvuind11HZh._dCPaDAb0OY9dRrQoTMn [OK]
+3versions-allversioned.txt            ...  http://datalad-test0-versioned.s3.amazonaws.com/3versions-allversioned.txt?versionId=b.qCuh7Sg58VIYj8TVHzbRS97EvejzEl [OK]
+3versions-allversioned.txt            ...  http://datalad-test0-versioned.s3.amazonaws.com/3versions-allversioned.txt?versionId=pNsV5jJrnGATkmNrP8.i_xNH6CY4Mo5s [OK]
+3versions-allversioned.txt_sameprefix ...  http://datalad-test0-versioned.s3.amazonaws.com/3versions-allversioned.txt_sameprefix?versionId=Mvsc4FgJWc6gExwSw1d6wsLrnk6wdDVa [OK]
+\"\"\"]]
+"""]]

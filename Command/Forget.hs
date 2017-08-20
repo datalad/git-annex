@@ -11,8 +11,7 @@ import Command
 import qualified Annex.Branch as Branch
 import Logs.Transitions
 import qualified Annex
-
-import Data.Time.Clock.POSIX
+import Annex.VectorClock
 
 cmd :: Command
 cmd = command "forget" SectionMaintenance 
@@ -36,10 +35,10 @@ seek = commandAction . start
 start :: ForgetOptions -> CommandStart
 start o = do
 	showStart "forget" "git-annex"
-	now <- liftIO getPOSIXTime
-	let basets = addTransition now ForgetGitHistory noTransitions
+	c <- liftIO currentVectorClock
+	let basets = addTransition c ForgetGitHistory noTransitions
 	let ts = if dropDead o
-		then addTransition now ForgetDeadRemotes basets
+		then addTransition c ForgetDeadRemotes basets
 		else basets
 	next $ perform ts =<< Annex.getState Annex.force
 

@@ -1,0 +1,8 @@
+- External HD A: annex (contains files with long paths)
+- External HD B: annex (synced with A, doesn't have the contents for files with long paths)
+- laptop HD: annex     (*syncing with B fails*: paths too long)
+
+How should I resolve this? 
+
+- Can I rename the broken symlinks on B to shorten the paths, and then sync to the laptop? Would this be propagated to A when it's connected again?
+- Can I `git rm too/long/paths` on B and then sync?

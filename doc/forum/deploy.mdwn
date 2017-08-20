@@ -1,0 +1,5 @@
+Greetings,
+
+I use the push-to-deploy pattern (as described in 4.1 http://gitolite.com/deploy.html). However, my git repo has large binary files that I'd like to annex. Is there an example of using git annex with a bare remote repository with the appropriate post-receive hook to accomplish the deploy?
+
+Thanks

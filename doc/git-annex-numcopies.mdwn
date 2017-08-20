@@ -9,9 +9,12 @@ git annex numcopies `N`
 # DESCRIPTION
 
 Tells git-annex how many copies it should preserve of files, over all
-repositories. The default is 1.
+repositories. The default is 1. 
 
 Run without a number to get the current value.
+
+This configuration is stored in the git-annex branch, so it will be seen
+by all clones of the repository.
 
 When git-annex is asked to drop a file, it first verifies that the
 required number of copies can be satisfied among all the other

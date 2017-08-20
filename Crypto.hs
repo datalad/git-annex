@@ -42,6 +42,7 @@ import Annex.Common
 import qualified Utility.Gpg as Gpg
 import Types.Crypto
 import Types.Remote
+import Types.Key
 
 {- The beginning of a Cipher is used for MAC'ing; the remainder is used
  - as the GPG symmetric encryption passphrase when using the hybrid
@@ -159,14 +160,16 @@ type EncKey = Key -> Key
 encryptKey :: Mac -> Cipher -> EncKey
 encryptKey mac c k = stubKey
 	{ keyName = macWithCipher mac c (key2file k)
-	, keyBackendName = encryptedBackendNamePrefix ++ showMac mac
+	, keyVariety = OtherKey (encryptedBackendNamePrefix ++ showMac mac)
 	}
 
 encryptedBackendNamePrefix :: String
 encryptedBackendNamePrefix = "GPG"
 
 isEncKey :: Key -> Bool
-isEncKey k = encryptedBackendNamePrefix `isPrefixOf` keyBackendName k
+isEncKey k = case keyVariety k of
+	OtherKey s ->  encryptedBackendNamePrefix `isPrefixOf` s
+	_ -> False
 
 type Feeder = Handle -> IO ()
 type Reader m a = Handle -> m a
@@ -231,8 +234,8 @@ instance LensGpgEncParams (RemoteConfig, RemoteGitConfig) where
  		{- When the remote is configured to use public-key encryption,
 		 - look up the recipient keys and add them to the option list. -}
 		case M.lookup "encryption" c of
-			Just "pubkey" -> Gpg.pkEncTo $ maybe [] (split ",") $ M.lookup "cipherkeys" c
-			Just "sharedpubkey" -> Gpg.pkEncTo $ maybe [] (split ",") $ M.lookup "pubkeys" c
+			Just "pubkey" -> Gpg.pkEncTo $ maybe [] (splitc ',') $ M.lookup "cipherkeys" c
+			Just "sharedpubkey" -> Gpg.pkEncTo $ maybe [] (splitc ',') $ M.lookup "pubkeys" c
 			_ -> []
 	getGpgDecParams (_c,gc) = map Param (remoteAnnexGnupgDecryptOptions gc)
 

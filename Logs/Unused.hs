@@ -15,8 +15,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Logs.Unused (
 	UnusedMap,
 	updateUnusedLog,
@@ -93,14 +91,9 @@ readUnusedMap :: FilePath -> Annex UnusedMap
 readUnusedMap = log2map <$$> readUnusedLog
 
 dateUnusedLog :: FilePath -> Annex (Maybe UTCTime)
-#if MIN_VERSION_directory(1,2,0)
 dateUnusedLog prefix = do
 	f <- fromRepo $ gitAnnexUnusedLog prefix
 	liftIO $ catchMaybeIO $ getModificationTime f
-#else
--- old ghc's getModificationTime returned a ClockTime
-dateUnusedLog _prefix = return Nothing
-#endif
 
 {- Set of unused keys. This is cached for speed. -}
 unusedKeys :: Annex (S.Set Key)

@@ -28,6 +28,7 @@ import Remote.Helper.Messages
 import Utility.Hash
 import Utility.UserInfo
 import Annex.UUID
+import Annex.Ssh
 import Utility.Metered
 
 type BupRepo = String
@@ -90,8 +91,8 @@ gen r u c gc = do
 		{ chunkConfig = NoChunks
 		}
 
-bupSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-bupSetup mu _ c gc = do
+bupSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+bupSetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	-- verify configuration is sane
@@ -211,11 +212,11 @@ storeBupUUID u buprepo = do
 	v = fromUUID u
 
 onBupRemote :: Git.Repo -> (FilePath -> [CommandParam] -> IO a) -> FilePath -> [CommandParam] -> Annex a
-onBupRemote r a command params = do
+onBupRemote r runner command params = do
 	c <- Annex.getRemoteGitConfig r
-	sshparams <- Ssh.toRepo r c [Param $
-			"cd " ++ dir ++ " && " ++ unwords (command : toCommand params)]
-	liftIO $ a "ssh" sshparams
+	let remotecmd = "cd " ++ dir ++ " && " ++ unwords (command : toCommand params)
+	(sshcmd, sshparams) <- Ssh.toRepo NoConsumeStdin r c remotecmd
+	liftIO $ runner sshcmd sshparams
   where
 	path = Git.repoPath r
 	base = fromMaybe path (stripPrefix "/~/" path)
@@ -254,7 +255,7 @@ bup2GitRemote r
 			else giveup "please specify an absolute path"
 	| otherwise = Git.Construct.fromUrl $ "ssh://" ++ host ++ slash dir
   where
-	bits = split ":" r
+	bits = splitc ':' r
 	host = Prelude.head bits
 	dir = intercalate ":" $ drop 1 bits
 	-- "host:~user/dir" is not supported specially by bup;

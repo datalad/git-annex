@@ -38,7 +38,7 @@ lockExclusive = openLock fILE_SHARE_NONE
 {- Windows considers just opening a file enough to lock it. This will
  - create the LockFile if it does not already exist.
  -
- - Will fail if the file is already open with an incompatable ShareMode.
+ - Will fail if the file is already open with an incompatible ShareMode.
  - Note that this may happen if an unrelated process, such as a virus
  - scanner, even looks at the file. See http://support.microsoft.com/kb/316609
  -

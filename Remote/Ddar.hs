@@ -21,6 +21,7 @@ import Config.Cost
 import Remote.Helper.Special
 import Annex.Ssh
 import Annex.UUID
+import Utility.SshHost
 
 data DdarRepo = DdarRepo
 	{ ddarRepoConfig :: RemoteGitConfig
@@ -82,8 +83,8 @@ gen r u c gc = do
 		{ chunkConfig = NoChunks
 		}
 
-ddarSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-ddarSetup mu _ c gc = do
+ddarSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+ddarSetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	-- verify configuration is sane
@@ -109,34 +110,32 @@ store ddarrepo = fileStorer $ \k src _p -> do
 	liftIO $ boolSystem "ddar" params
 
 {- Convert remote DdarRepo to host and path on remote end -}
-splitRemoteDdarRepo :: DdarRepo -> (String, String)
-splitRemoteDdarRepo ddarrepo =
-	(host, ddarrepo')
+splitRemoteDdarRepo :: DdarRepo -> (SshHost, String)
+splitRemoteDdarRepo ddarrepo = (either error id $ mkSshHost host, ddarrepo')
   where
 	(host, remainder) = span (/= ':') (ddarRepoLocation ddarrepo)
 	ddarrepo' = drop 1 remainder
 
 {- Return the command and parameters to use for a ddar call that may need to be
  - made on a remote repository. This will call ssh if needed. -}
-ddarRemoteCall :: DdarRepo -> Char -> [CommandParam] -> Annex (String, [CommandParam])
-ddarRemoteCall ddarrepo cmd params
+ddarRemoteCall :: ConsumeStdin -> DdarRepo -> Char -> [CommandParam] -> Annex (String, [CommandParam])
+ddarRemoteCall cs ddarrepo cmd params
 	| ddarLocal ddarrepo = return ("ddar", localParams)
-	| otherwise = do
-		os <- sshOptions (host, Nothing) (ddarRepoConfig ddarrepo) []
-		return ("ssh", os ++ remoteParams)
+	| otherwise = sshCommand cs (host, Nothing) (ddarRepoConfig ddarrepo) remoteCommand
   where
 	(host, ddarrepo') = splitRemoteDdarRepo ddarrepo
 	localParams = Param [cmd] : Param (ddarRepoLocation ddarrepo) : params
-	remoteParams = Param host : Param "ddar" : Param [cmd] : Param ddarrepo' : params
+	remoteCommand = unwords $ map shellEscape $ toCommand $
+		[Param "ddar", Param [cmd], Param ddarrepo'] ++ params
 
 {- Specialized ddarRemoteCall that includes extraction command and flags -}
-ddarExtractRemoteCall :: DdarRepo -> Key -> Annex (String, [CommandParam])
-ddarExtractRemoteCall ddarrepo k =
-	ddarRemoteCall ddarrepo 'x' [Param "--force-stdout", Param $ key2file k]
+ddarExtractRemoteCall :: ConsumeStdin -> DdarRepo -> Key -> Annex (String, [CommandParam])
+ddarExtractRemoteCall cs ddarrepo k =
+	ddarRemoteCall cs ddarrepo 'x' [Param "--force-stdout", Param $ key2file k]
 
 retrieve :: DdarRepo -> Retriever
 retrieve ddarrepo = byteRetriever $ \k sink -> do
-	(cmd, params) <- ddarExtractRemoteCall ddarrepo k
+	(cmd, params) <- ddarExtractRemoteCall NoConsumeStdin ddarrepo k
 	let p = (proc cmd $ toCommand params) { std_out = CreatePipe }
 	(_, Just h, _, pid) <- liftIO $ createProcess p
 	liftIO (hClose h >> forceSuccessProcess p pid)
@@ -147,7 +146,8 @@ retrieveCheap _ _ _ = return False
 
 remove :: DdarRepo -> Remover
 remove ddarrepo key = do
-	(cmd, params) <- ddarRemoteCall ddarrepo 'd' [Param $ key2file key]
+	(cmd, params) <- ddarRemoteCall NoConsumeStdin ddarrepo 'd'
+		[Param $ key2file key]
 	liftIO $ boolSystem cmd params
 
 ddarDirectoryExists :: DdarRepo -> Annex (Either String Bool)
@@ -158,27 +158,24 @@ ddarDirectoryExists ddarrepo
 			Left _ -> Right False
 			Right status -> Right $ isDirectory status
 	| otherwise = do
-		ps <- sshOptions (host, Nothing) (ddarRepoConfig ddarrepo) []
-		exitCode <- liftIO $ safeSystem "ssh" (ps ++ params)
+		let remotecmd = unwords $ map shellEscape
+			[ "test", "-d", ddarrepo' ]
+		(sshcmd, sshps) <- sshCommand NoConsumeStdin (host, Nothing)
+			(ddarRepoConfig ddarrepo) remotecmd
+		exitCode <- liftIO $ safeSystem sshcmd sshps
 		case exitCode of
 			ExitSuccess -> return $ Right True
 			ExitFailure 1 -> return $ Right False
-			ExitFailure code -> return $ Left $ "ssh call " ++
-				show (unwords $ toCommand params) ++
+			ExitFailure code -> return $ Left $ "ssh " ++
+				show (unwords $ toCommand sshps) ++
 				" failed with status " ++ show code
   where
 	(host, ddarrepo') = splitRemoteDdarRepo ddarrepo
-	params =
-		[ Param host
-		, Param "test"
-		, Param "-d"
-		, Param ddarrepo'
-		]
 
 {- Use "ddar t" to determine if a given key is present in a ddar archive -}
 inDdarManifest :: DdarRepo -> Key -> Annex (Either String Bool)
 inDdarManifest ddarrepo k = do
-	(cmd, params) <- ddarRemoteCall ddarrepo 't' []
+	(cmd, params) <- ddarRemoteCall NoConsumeStdin ddarrepo 't' []
 	let p = proc cmd $ toCommand params
 	liftIO $ catchMsgIO $ withHandle StdoutHandle createProcessSuccess p $ \h -> do
 		contents <- hGetContents h

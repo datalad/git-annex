@@ -62,7 +62,7 @@ findSpecialRemotes s = do
   where
 	remotepairs = M.toList . M.filterWithKey match
 	construct (k,_) = Git.Construct.remoteNamedFromKey k (pure Git.Construct.fromUnknown)
-	match k _ = startswith "remote." k && endswith (".annex-"++s) k
+	match k _ = "remote." `isPrefixOf` k && (".annex-"++s) `isSuffixOf` k
 
 {- Sets up configuration for a special remote in .git/config. -}
 gitConfigSpecialRemote :: UUID -> RemoteConfig -> String -> String -> Annex ()

@@ -19,6 +19,7 @@ import Logs.Trust
 import Logs.TimeStamp
 import qualified Remote
 import qualified Types.Remote as Remote
+import Config.DynamicConfig
 
 import Control.Concurrent.STM
 import System.Posix.Types
@@ -47,12 +48,12 @@ modifyDaemonStatus a = do
  - and other associated information. -}
 calcSyncRemotes :: Annex (DaemonStatus -> DaemonStatus)
 calcSyncRemotes = do
-	rs <- filter (remoteAnnexSync . Remote.gitconfig) .
-		concat . Remote.byCost <$> Remote.remoteList
+	rs <- filterM (liftIO . getDynamicConfig . remoteAnnexSync . Remote.gitconfig)
+		=<< (concat . Remote.byCost <$> Remote.remoteList)
 	alive <- trustExclude DeadTrusted (map Remote.uuid rs)
 	let good r = Remote.uuid r `elem` alive
 	let syncable = filter good rs
-	let syncdata = filter (not . remoteAnnexIgnore . Remote.gitconfig) $
+	syncdata <- filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) $
 		filter (\r -> Remote.uuid r /= NoUUID) $
 		filter (not . Remote.isXMPPRemote) syncable
 

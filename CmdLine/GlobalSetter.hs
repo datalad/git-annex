@@ -20,5 +20,5 @@ globalSetter :: (v -> Annex ()) -> Parser v -> GlobalOption
 globalSetter setter parser = DeferredParse . setter <$> parser
 
 combineGlobalOptions :: [GlobalOption] -> Parser GlobalSetter
-combineGlobalOptions l = DeferredParse . sequence_ . map getParsed
+combineGlobalOptions l = DeferredParse . mapM_ getParsed
 	<$> many (foldl1 (<|>) l)

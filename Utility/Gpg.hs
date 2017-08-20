@@ -2,7 +2,7 @@
  -
  - Copyright 2011 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 {-# LANGUAGE CPP #-}
@@ -14,16 +14,15 @@ import qualified Build.SysConfig as SysConfig
 #ifndef mingw32_HOST_OS
 import System.Posix.Types
 import qualified System.Posix.IO
-import System.Path
 import Utility.Env
-#else
-import Utility.Tmp
 #endif
+import Utility.Tmp
 import Utility.Format (decode_c)
 
 import Control.Concurrent
 import Control.Monad.IO.Class
 import qualified Data.Map as M
+import Data.Char
 
 type KeyId = String
 
@@ -159,12 +158,20 @@ pipeLazy (GpgCmd cmd) params feeder reader = do
  - a key id, or a name; See the section 'HOW TO SPECIFY A USER ID' of
  - GnuPG's manpage.) -}
 findPubKeys :: GpgCmd -> String -> IO KeyIds
-findPubKeys cmd for = KeyIds . parse . lines <$> readStrict cmd params
+findPubKeys cmd for
+	-- pass forced subkey through as-is rather than
+	-- looking up the master key.
+	| isForcedSubKey for = return $ KeyIds [for]
+	| otherwise = KeyIds . parse . lines <$> readStrict cmd params
   where
 	params = [Param "--with-colons", Param "--list-public-keys", Param for]
-	parse = mapMaybe (keyIdField . split ":")
+	parse = mapMaybe (keyIdField . splitc ':')
 	keyIdField ("pub":_:_:_:f:_) = Just f
 	keyIdField _ = Nothing
+
+{- "subkey!" tells gpg to force use of a specific subkey -}
+isForcedSubKey :: String -> Bool
+isForcedSubKey s = "!" `isSuffixOf` s && all isHexDigit (drop 1 s)
 
 type UserId = String
 
@@ -175,8 +182,11 @@ secretKeys cmd = catchDefaultIO M.empty makemap
   where
 	makemap = M.fromList . parse . lines <$> readStrict cmd params
 	params = [Param "--with-colons", Param "--list-secret-keys", Param "--fixed-list-mode"]
-	parse = extract [] Nothing . map (split ":")
+	parse = extract [] Nothing . map (splitc ':')
 	extract c (Just keyid) (("uid":_:_:_:_:_:_:_:_:userid:_):rest) =
+		-- If the userid contains a ":" or a few other special
+		-- characters, gpg will hex-escape it. Use decode_c to
+		-- undo.
 		extract ((keyid, decode_c userid):c) Nothing rest
 	extract c (Just keyid) rest@(("sec":_):_) =
 		extract ((keyid, ""):c) Nothing rest
@@ -336,23 +346,21 @@ keyBlock public ls = unlines
 {- Runs an action using gpg in a test harness, in which gpg does
  - not use ~/.gpg/, but a directory with the test key set up to be used. -}
 testHarness :: GpgCmd -> IO a -> IO a
-testHarness cmd a = do
-	orig <- getEnv var
-	bracket setup (cleanup orig) (const a)
+testHarness cmd a = withTmpDir "gpgtmpXXXXXX" $ \tmpdir ->
+	bracket (setup tmpdir) (cleanup tmpdir) (const a)
   where
 	var = "GNUPGHOME"		
 
-	setup = do
-		base <- getTemporaryDirectory
-		dir <- mktmpdir $ base </> "gpgtmpXXXXXX"
-		setEnv var dir True
+	setup tmpdir = do
+		orig <- getEnv var
+		setEnv var tmpdir True
 		-- For some reason, recent gpg needs a trustdb to be set up.
 		_ <- pipeStrict cmd [Param "--trust-model", Param "auto", Param "--update-trustdb"] []
 		_ <- pipeStrict cmd [Param "--import", Param "-q"] $ unlines
 			[testSecretKey, testKey]
-		return dir
+		return orig
 		
-	cleanup orig tmpdir = do
+	cleanup tmpdir orig = do
 		removeDirectoryRecursive tmpdir
 			-- gpg-agent may be shutting down at the same time
 			-- and may delete its socket at the same time as

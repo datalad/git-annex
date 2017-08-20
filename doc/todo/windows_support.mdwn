@@ -1,25 +1,18 @@
 The git-annex Windows port is beta, but rapidly becoming polished and
 usable!
 
-## do we need this port anymore?
-
-See <http://blog.dustinkirkland.com/2016/03/ubuntu-on-windows.html>
-
-If windows has transparent support for running linux executables, and those
-executables can access files in "." which are on the windows system, then
-you could just use this to run linux git-annex on windows. No port needed.
-
-That would be great!
-
-Seems like this would need Windows 10.
 
 ## status
 
 * There can be problems when the git-annex repository is in a deep
   or long path. Ie, `C:\loooooooooooooooooongdir\`.
   [Details here](http://git-annex.branchable.com/bugs/__34__git-annex:_direct:_1_failed__34___on_Windows)
+
   Workaround: Put your git-annex repo in `C:\annex` or some similar short
   path if possible.
+
+  Workaround: Enable long paths in the registry. See 
+  <https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247#maxpath>
 
 * Local pairing seems to fail, after acking on Linux box, it stalls.
   (Also, of course, the Windows box is unlikely to have a ssh server,
@@ -84,3 +77,43 @@ seems unreliable/broken on Windows.
   it and files can be transferred to it and back
 * Does stopping in progress transfers work in the webapp?
 
+## do we need this port anymore?
+
+See <http://blog.dustinkirkland.com/2016/03/ubuntu-on-windows.html>
+
+If windows has transparent support for running linux executables, and those
+executables can access files in "." which are on the windows system, then
+you could just use this to run linux git-annex on windows. No port needed.
+
+That would be great!
+
+Seems like this would need Windows 10.
+
+> The latest builds of Windows 10 (build 15063) can run git-annex in the
+> Windows Subsystem for Linux. After following the instructions at
+> <https://msdn.microsoft.com/en-us/commandline/wsl/about>, run:
+> `sudo apt-get install git-annex`
+> 
+> git-annex in WSL passes its full test suite, and it avoids all
+> the problems discussed in sections above.
+> 
+> git-annex can access Windows files in eg `/mnt/c`, so a git-annex
+> repository can be stored there. However, if the git-annex repository uses
+> indirect mode, the symlinks used by git-annex won't be usable by Windows
+> programs. Use either direct mode, or v6 mode to avoid the symlink
+> problem.
+> 
+> Also, see this important caveat:
+> <https://blogs.msdn.microsoft.com/commandline/2016/11/17/do-not-change-linux-files-using-windows-apps-and-tools/>
+> 
+> WSL is currently rather annoying to enable. *If* it became easy enough
+> to enable, note that "bash -c git-annex" works from a windows command
+> prompt, and would probably work in a .bat file as well, so git-annex from
+> the WSL could be transparently used on the windows side.
+> 
+> The webapp does not currently work. It doesn't know how to open a web
+> browser from the linux side. There are also what look like some emulation
+> problems around the daemonization code. `git annex assistant
+> --foreground` does run, but while it notices when new files are added, it
+> does not notice when existing files get modified. Probably an inotify
+> emulation bug. --[[Joey]]

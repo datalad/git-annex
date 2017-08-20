@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="https://anarc.at/openid/"
+ nickname="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/b36dcf65657dd36128161355d8920a99503def9461c1bb212410980fe6f07125"
+ subject="hopefully an answer..."
+ date="2017-01-17T16:54:22Z"
+ content="""
+looking at the page title here, i'm tempted to simply point you to [[todo/Workflow_guide]] and therefore the new [[workflow]] page, but that may not answer your question directly. so let's see...
+
+the the examples below, i'll assume you are familiar with the commandline and show examples using git and git-annex commands, since you mentioned that. but a lot of those things can be done with the web assistant, if not everything. but i am not very familiar with it, so you'll excuse my geekiness...
+
+1. I want to start keeping track of some files I have in a directory
+
+        cd directory
+        git init
+        git annex init
+        git annex add \"some\" \"files\"
+        git commit -m\"start keeping track of some files\"
+
+    Note that you could track all files with `git annex add .` or `git annex add *`... regular glob patterns apply.
+
+2. I want to copy them to a second computer.
+
+    This is the harder part. Here I'll assume that you have an SSH server on the first computer, which i'll name `firstcomputer`. If that's not your case, you can use the new [[special_remotes/tor]] to pair arbitrary machines with the [[tips/peer_to_peer_network_with_tor]] instructions instead of this.
+
+    On the second computer:
+
+        git clone firstcomputer:directory
+        cd directory
+        git annex get
+
+3. From a third place, I want to get them from the second computer.
+
+    Same comments as above apply.
+
+    On the third computer:
+
+        git clone secondcomputer:directory
+        cd directory
+        git annex get
+
+4. I change the files on one computer, and I want to make sure the changes get synced to the others.
+
+    This can be done manually with [[git-annex-sync]] (with the `--content` flag to copy actual content), or automated with the [[git-annex-assistant]] or [[git-annex-watch]].
+"""]]

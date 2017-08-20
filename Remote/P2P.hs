@@ -45,7 +45,7 @@ remote = RemoteType {
 chainGen :: P2PAddress -> Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 chainGen addr r u c gc = do
 	connpool <- mkConnectionPool
-	cst <- remoteCost gc expensiveRemoteCost
+	cst <- remoteCost gc veryExpensiveRemoteCost
 	let this = Remote 
 		{ uuid = u
 		, cost = cst
@@ -63,7 +63,7 @@ chainGen addr r u c gc = do
 		, config = c
 		, localpath = Nothing
 		, repo = r
-		, gitconfig = gc { remoteGitConfig = Just $ extractGitConfig r }
+		, gitconfig = gc { remoteGitConfig = extractGitConfig r }
 		, readonly = False
 		, availability = GloballyAvailable
 		, remotetype = remote

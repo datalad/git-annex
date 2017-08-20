@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-01-31T17:04:26Z"
+ content="""
+Werner, I appreciate you filing this bug report. And I see magic-wormhole
+0.9.1 is now available in testing so it will be in the next debian stable
+release probably.
+
+If I'm going to make this change, I need to do it ASAP. If git-annex
+ships in Debian stable not using a wormhole app-id, then it pretty
+much is going to need to continue not using an app-id forever.
+(Which might not be a total disaster really; I don't know that a ton
+of users are using this feature..)
+
+The timeline for this is very tight now, unfortunately. (Pity that I have
+been traveling and missed this until now.) I'm not sure
+if, I released a git-annex today with this change, it would reach testing
+in time for the freeze. I've pinged Richih to try to figure that out.
+"""]]

@@ -28,10 +28,10 @@ noNotification = NotifyWitness
 {- Wrap around an action that performs a transfer, which may run multiple
  - attempts. Displays notification when supported and when the user asked
  - for it. -}
-notifyTransfer :: Direction -> Maybe FilePath -> (NotifyWitness -> Annex Bool) -> Annex Bool
-notifyTransfer _ Nothing a = a NotifyWitness
+notifyTransfer :: Direction -> AssociatedFile -> (NotifyWitness -> Annex Bool) -> Annex Bool
+notifyTransfer _ (AssociatedFile Nothing) a = a NotifyWitness
 #ifdef WITH_DBUS_NOTIFICATIONS
-notifyTransfer direction (Just f) a = do
+notifyTransfer direction (AssociatedFile (Just f)) a = do
 	wanted <- Annex.getState Annex.desktopnotify
 	if (notifyStart wanted || notifyFinish wanted)
 		then do
@@ -47,19 +47,19 @@ notifyTransfer direction (Just f) a = do
 			return ok
 		else a NotifyWitness
 #else
-notifyTransfer _ (Just _) a = a NotifyWitness
+notifyTransfer _ (AssociatedFile (Just _)) a = a NotifyWitness
 #endif
 
-notifyDrop :: Maybe FilePath -> Bool -> Annex ()
-notifyDrop Nothing _ = noop
+notifyDrop :: AssociatedFile -> Bool -> Annex ()
+notifyDrop (AssociatedFile Nothing) _ = noop
 #ifdef WITH_DBUS_NOTIFICATIONS
-notifyDrop (Just f) ok = do
+notifyDrop (AssociatedFile (Just f)) ok = do
 	wanted <- Annex.getState Annex.desktopnotify
 	when (notifyFinish wanted) $ liftIO $ do
 		client <- DBus.Client.connectSession
 		void $ Notify.notify client (droppedNote ok f)
 #else
-notifyDrop (Just _) _ = noop
+notifyDrop (AssociatedFile (Just _)) _ = noop
 #endif
 
 #ifdef WITH_DBUS_NOTIFICATIONS

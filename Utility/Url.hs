@@ -50,12 +50,18 @@ closeManager :: Manager -> IO ()
 closeManager _ = return ()
 #endif
 
+#if ! MIN_VERSION_http_client(0,5,0)
+responseTimeoutNone :: Maybe Int
+responseTimeoutNone = Nothing
+#endif
+
 managerSettings :: ManagerSettings
 #if MIN_VERSION_http_conduit(2,1,7)
 managerSettings = tlsManagerSettings
 #else
 managerSettings = conduitManagerSettings
 #endif
+	{ managerResponseTimeout = responseTimeoutNone }
 
 type URLString = String
 
@@ -67,11 +73,7 @@ data UrlOptions = UrlOptions
 	{ userAgent :: Maybe UserAgent
 	, reqHeaders :: Headers
 	, reqParams :: [CommandParam]
-#if MIN_VERSION_http_conduit(2,0,0)
 	, applyRequest :: Request -> Request
-#else
-	, applyRequest :: forall m. Request m -> Request m
-#endif
 	}
 
 instance Default UrlOptions
@@ -232,11 +234,7 @@ contentDispositionFilename s
 			drop 1 $ dropWhile (/= '"') s
 	| otherwise = Nothing
 
-#if MIN_VERSION_http_conduit(2,0,0)
 headRequest :: Request -> Request
-#else
-headRequest :: Request m -> Request m
-#endif
 headRequest r = r
 	{ method = methodHead
 	-- remove defaut Accept-Encoding header, to get actual,
@@ -246,17 +244,16 @@ headRequest r = r
 		(requestHeaders r)
 	}
 
-{- Used to download large files, such as the contents of keys.
+{- Download a perhaps large file, with auto-resume of incomplete downloads.
  -
- - Uses wget or curl program for its progress bar. (Wget has a better one,
- - so is preferred.) Which program to use is determined at run time; it
- - would not be appropriate to test at configure time and build support
- - for only one in.
+ - Uses wget or curl program for its progress bar and resuming support. 
+ - Which program to use is determined at run time depending on which is
+ - in path and which works best in a particular situation.
  -}
 download :: URLString -> FilePath -> UrlOptions -> IO Bool
 download = download' False
 
-{- No output, even on error. -}
+{- No output to stdout. -}
 downloadQuiet :: URLString -> FilePath -> UrlOptions -> IO Bool
 downloadQuiet = download' True
 
@@ -265,6 +262,12 @@ download' quiet url file uo = do
 	case parseURIRelaxed url of
 		Just u
 			| uriScheme u == "file:" -> curl
+			-- curl is preferred in quiet mode, because
+			-- it displays http errors to stderr, while wget
+			-- does not display them in quiet mode
+			| quiet -> ifM (inPath "curl") (curl, wget)
+			-- wget is preferred mostly because it has a better
+			-- progress bar
 			| otherwise -> ifM (inPath "wget") (wget , curl)
 		_ -> return False
   where
@@ -275,12 +278,13 @@ download' quiet url file uo = do
 	 - support, or need that option.
 	 -
 	 - When the wget version is new enough, pass options for
-	 - a less cluttered download display.
+	 - a less cluttered download display. Using -nv rather than -q
+	 - avoids most clutter while still displaying http errors.
 	 -}
 #ifndef __ANDROID__
 	wgetparams = concat
-		[ if Build.SysConfig.wgetquietprogress && not quiet
-			then [Param "-q", Param "--show-progress"]
+		[ if Build.SysConfig.wgetunclutter && not quiet
+			then [Param "-nv", Param "--show-progress"]
 			else []
 		, [ Param "--clobber", Param "-c", Param "-O"]
 		]
@@ -296,8 +300,13 @@ download' quiet url file uo = do
 		-- curl does not create destination file
 		-- if the url happens to be empty, so pre-create.
 		writeFile file ""
-		go "curl" $ headerparams ++ quietopt "-s" ++
-			[Param "-f", Param "-L", Param "-C", Param "-", Param "-#", Param "-o"]
+		go "curl" $ headerparams ++ quietopt "-sS" ++
+			[ Param "-f"
+			, Param "-L"
+			, Param "-C", Param "-"
+			, Param "-#"
+			, Param "-o"
+			]
 	
 	{- Run wget in a temp directory because it has been buggy
 	 - and overwritten files in the current directory, even though
@@ -338,14 +347,6 @@ hAcceptEncoding = "Accept-Encoding"
 
 hContentDisposition :: CI.CI B.ByteString
 hContentDisposition = "Content-Disposition"
-
-#if ! MIN_VERSION_http_types(0,7,0)
-hContentLength :: CI.CI B.ByteString
-hContentLength = "Content-Length"
-
-hUserAgent :: CI.CI B.ByteString
-hUserAgent = "User-Agent"
-#endif
 
 {- Use with eg:
  -

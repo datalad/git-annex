@@ -86,16 +86,16 @@ perform = do
 		whenM (liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f) $ do
 			v <- tryNonAsync (moveAnnex k f)
 			case v of
-				Right _ -> do 
+				Right True -> do 
 					l <- calcRepo $ gitAnnexLink f k
 					liftIO $ createSymbolicLink l f
-				Left e -> catchNonAsync (restoreFile f k e)
-					warnlocked
+				Right False -> warnlocked "Failed to move file to annex"
+				Left e -> catchNonAsync (restoreFile f k e) $
+					warnlocked . show
 		showEndOk
 
-	warnlocked :: SomeException -> Annex ()
-	warnlocked e = do
-		warning $ show e
+	warnlocked msg = do
+		warning msg
 		warning "leaving this file as-is; correct this problem and run git annex add on it"
 	
 cleanup :: CommandCleanup

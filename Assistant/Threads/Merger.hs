@@ -1,6 +1,6 @@
 {- git-annex assistant git merge thread
  -
- - Copyright 2012 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,6 +15,7 @@ import Utility.DirWatcher.Types
 import qualified Annex.Branch
 import qualified Git
 import qualified Git.Branch
+import qualified Git.Ref
 import qualified Command.Sync
 
 {- This thread watches for changes to .git/refs/, and handles incoming
@@ -63,14 +64,14 @@ onChange file
 		diverged <- liftAnnex Annex.Branch.forceUpdate
 		when diverged $
 			queueDeferredDownloads "retrying deferred download" Later
-	| "/synced/" `isInfixOf` file =
-		mergecurrent =<< liftAnnex (join Command.Sync.getCurrBranch)
-	| otherwise = noop
+	| otherwise = mergecurrent
   where
 	changedbranch = fileToBranch file
 
-	mergecurrent currbranch@(Just b, _)
-		| equivBranches changedbranch b =
+	mergecurrent =
+		mergecurrent' =<< liftAnnex (join Command.Sync.getCurrBranch)
+	mergecurrent' currbranch@(Just b, _)
+		| changedbranch `isRelatedTo` b =
 			whenM (liftAnnex $ inRepo $ Git.Branch.changed b changedbranch) $ do
 				debug
 					[ "merging", Git.fromRef changedbranch
@@ -78,14 +79,22 @@ onChange file
 					]
 				void $ liftAnnex $ Command.Sync.merge
 					currbranch Command.Sync.mergeConfig
+					def
 					Git.Branch.AutomaticCommit
 					changedbranch
-	mergecurrent _ = noop
+	mergecurrent' _ = noop
 
-equivBranches :: Git.Ref -> Git.Ref -> Bool
-equivBranches x y = base x == base y
+{- Is the first branch a synced branch or remote tracking branch related
+ - to the second branch, which should be merged into it? -}
+isRelatedTo :: Git.Ref -> Git.Ref -> Bool
+isRelatedTo x y
+	| basex /= takeDirectory basex ++ "/" ++ basey = False
+	| "/synced/" `isInfixOf` Git.fromRef x = True
+	| "refs/remotes/" `isPrefixOf` Git.fromRef x = True
+	| otherwise = False
   where
-	base = takeFileName . Git.fromRef
+	basex = Git.fromRef $ Git.Ref.base x
+	basey = Git.fromRef $ Git.Ref.base y
 
 isAnnexBranch :: FilePath -> Bool
 isAnnexBranch f = n `isSuffixOf` f

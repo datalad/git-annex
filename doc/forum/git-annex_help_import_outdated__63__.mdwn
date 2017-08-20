@@ -1,0 +1,13 @@
+Hi,
+
+I just saw that my installed version of git-annex is too old for:
+
+    git-annex import --reinject-duplicates [...]
+
+Thus, I downloaded the precompiled binary: git-annex-standalone-amd64.tar.gz	2017-05-10 16:19 	54M
+
+First of all, it works fine with this version. However, the "--reinject-duplicates" option is not shown, when calling:
+
+    ./git-annex help import  ## in ~/git-annex.linux/
+
+So, is the help page just outdated, or does git-annex help gets confused because I still have an older version of git-annex installed in the system?

@@ -112,7 +112,7 @@ hGetSomeString h sz = do
 	peekbytes :: Int -> Ptr Word8 -> IO [Word8]
 	peekbytes len buf = mapM (peekElemOff buf) [0..pred len]
 
-{- Reaps any zombie git processes. 
+{- Reaps any zombie processes that may be hanging around.
  -
  - Warning: Not thread safe. Anything that was expecting to wait
  - on a process and get back an exit status is going to be confused

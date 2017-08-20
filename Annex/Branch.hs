@@ -29,8 +29,8 @@ module Annex.Branch (
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Set as S
 import qualified Data.Map as M
-import Data.Bits.Utils
 import Data.Function
+import Data.Char
 import Control.Concurrent (threadDelay)
 
 import Annex.Common
@@ -233,7 +233,7 @@ getHistorical date file =
 getRef :: Ref -> FilePath -> Annex String
 getRef ref file = withIndex $ decodeBS <$> catFile ref file
 
-{- Applies a function to modifiy the content of a file.
+{- Applies a function to modify the content of a file.
  -
  - Note that this does not cause the branch to be merged, it only
  - modifes the current content of the file on the branch.
@@ -304,7 +304,7 @@ commitIndex' jl branchref message basemessage retrynum parents = do
 	-- look for "parent ref" lines and return the refs
 	commitparents = map (Git.Ref . snd) . filter isparent .
 		map (toassoc . decodeBS) . L.split newline
-	newline = c2w8 '\n'
+	newline = fromIntegral (ord '\n')
 	toassoc = separate (== ' ')
 	isparent (k,_) = k == "parent"
 		
@@ -574,7 +574,7 @@ checkBranchDifferences ref = do
 		<$> catFile ref differenceLog
 	mydiffs <- annexDifferences <$> Annex.getGitConfig
 	when (theirdiffs /= mydiffs) $
-		giveup "Remote repository is tuned in incompatable way; cannot be merged with local repository."
+		giveup "Remote repository is tuned in incompatible way; cannot be merged with local repository."
 
 ignoreRefs :: [Git.Sha] -> Annex ()
 ignoreRefs rs = do

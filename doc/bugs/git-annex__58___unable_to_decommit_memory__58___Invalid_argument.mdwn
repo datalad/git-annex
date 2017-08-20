@@ -25,3 +25,6 @@ Nonetheless I'm hesitant to use it while this error occurs. Is safe to keep usin
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I've been using git-annex for at least a year now. It's one of the greatest tools I've ever found, and is indispensable for some of my work. I can't recall any other problems I've had that weren't user-caused. So thank you!
+
+> According to yoh, this is fixed in the neurodebian build now. [[done]]
+> --[[Joey]]

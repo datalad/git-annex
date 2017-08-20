@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-05-11T17:06:23Z"
+ content="""
+The reason `git annex unlock` is slow is because it makes a copy
+of the entire file. The file is left as-is in the annex so the
+old version is available later, and the unlocked copy is made available for
+modification.
+
+More recent versions of git-annex support v6 mode, which has a annex.thin
+configuration that makes `git annex unlock` not do this copy, so it's very
+fast. But then no copy of the old version of the file will be made,
+and so you won't be able to revert to the old version. Which seems to be
+an important part of your workflow.
+
+Another way to make `git annex unlock` fast is to use a file system that
+supports Copy On Write (CoW). git-annex will use CoW automatically when
+available, and then unlocking doesn't need to actually copy the file,
+but the old version will still be preserved. Btrfs is the only filesystem
+I know of that supports CoW, although there may be others.
+"""]]
