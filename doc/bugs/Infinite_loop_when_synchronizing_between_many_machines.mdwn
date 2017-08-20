@@ -1,0 +1,27 @@
+### Please describe the problem.
+
+When an assistant adds a lot of new files, and there’s an assistant running for the repo on each of some 5 machines, infinite loop happens on those receiving the new files.
+
+### What steps will reproduce the problem?
+
+1. Have 5 machines with a repo checked out.
+2. Run git-annex-assistant on each.
+3. Copy a lot of files into the repo on one machine.
+4. Look at the webapp UIs on other machines.
+5. In the UI, the same files get enqueued and dequeued repeatedly and nothing else happens.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 6.20170520
+
+local repository version: 6
+
+operating system: linux x86_64
+
+### Please provide any additional information below.
+
+—
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes!
