@@ -1,3 +1,293 @@
+git-annex (6.20170818) unstable; urgency=high
+
+  * Security fix: Disallow hostname starting with a dash, which
+    would get passed to ssh and be treated an option. This could
+    be used by an attacker who provides a crafted repository url
+    to cause the victim to execute arbitrary code via -oProxyCommand.
+    (The same class of security hole recently affected git itself.)
+  * git-annex.cabal: Deal with breaking changes in Cabal 2.0.
+  * Fix build with QuickCheck 2.10.
+  * fsck: Support --json.
+  * move, copy: Support --batch.
+  * Added GIT_ANNEX_VECTOR_CLOCK environment variable, which can be used to
+    override the default timestamps used in log files in the git-annex
+    branch. This is a dangerous environment variable; use with caution.
+  * Fix a git-annex test failure when run on NFS due to NFS lock files
+    preventing directory removal.
+  * test: Avoid most situations involving failure to delete test
+    directories, by forking a worker process and only deleting the test
+    directory once it exits.
+  * Disable http-client's default 30 second response timeout when HEADing
+    an url to check if it exists. Some web servers take quite a long time
+    to answer a HEAD request.
+  * Added remote configuration settings annex-ignore-command and
+    annex-sync-command, which are dynamic equivilants of the annex-ignore
+    and annex-sync configurations.
+  * Prevent spaces from being embedded in the name of new WORM keys,
+    as that handing spaces in keys would complicate things like the
+    external special remote protocol.
+  * migrate: WORM keys containing spaces will be migrated to not contain
+    spaces anymore.
+  * External special remotes will refuse to operate on keys with spaces in
+    their names. That has never worked correctly due to the design of the
+    external special remote protocol. Display an error message suggesting
+    migration.
+  * Fix incorrect external special remote documentation, which said that
+    the filename parameter to the TRANSFER command could not contain
+    spaces. It can in fact contain spaces. Special remotes implementors
+    that relied on that may need to fix bugs in their special remotes.
+  * Fix the external special remotes git-annex-remote-ipfs, 
+    git-annex-remote-torrent and the example.sh template to correctly
+    support filenames with spaces.
+  * Windows: Win32 package has subsumed Win32-extras; update dependency.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 18 Aug 2017 11:19:06 -0400
+
+git-annex (6.20170520) unstable; urgency=medium
+
+  * move --to=here moves from all reachable remotes to the local repository.
+  * initremote, enableremote: Support gpg subkeys suffixed with an
+    exclamation mark, which forces gpg to use a specific subkey.
+  * Improve progress display when watching file size, in cases where
+    a transfer does not resume.
+  * Fix transfer log file locking problem when running concurrent
+    transfers.
+  * Avoid concurrent git-config setting problem when running concurrent
+    threads.
+  * metadata: When setting metadata of a file that did not exist,
+    no error message was displayed, unlike getting metadata and most other
+    git-annex commands. Fixed this oversight.
+  * Added annex.resolvemerge configuration, which can be set to false to 
+    disable the usual automatic merge conflict resolution done by git-annex
+    sync and the assistant.
+  * sync: Added --no-resolvemerge option.
+  * Avoid error about git-annex-shell not being found when
+    syncing with -J with a git remote where git-annex-shell is not
+    installed.
+  * Fix bug that prevented transfer locks from working when
+    run on SMB or other filesystem that does not support fcntl locks
+    and hard links.
+  * assistant: Merge changes from refs/remotes/foo/master into master.
+    Previously, only sync branches were merged. This makes regular git push
+    into a repository watched by the assistant auto-merge.
+  * Makefile: Install completions for the fish and zsh shells
+    when git-annex is built with optparse-applicative-0.14.
+  * assistant: Don't trust OSX FSEvents's eventFlagItemModified to be called
+    when the last writer of a file closes it; apparently that sometimes
+    does not happen, which prevented files from being quickly added.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 12 Jun 2017 13:37:16 -0400
+
+git-annex (6.20170519) unstable; urgency=medium
+
+  * Ssh password prompting improved when using -J for concurrency.
+    When ssh connection caching is enabled (and when GIT_ANNEX_USE_GIT_SSH
+    is not set), only one ssh password prompt will be made per host, and
+    only one ssh password prompt will be made at a time.
+  * When built with concurrent-output 1.9, ssh password prompts will no
+    longer interfere with the -J display.
+  * Removed dependency on MissingH, instead depending on the split library.
+  * Progress is displayed for transfers of files of unknown size.
+  * Work around bug in git 2.13.0 involving GIT_COMMON_DIR that broke
+    merging changes into adjusted branches.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 19 May 2017 10:37:57 -0400
+
+git-annex (6.20170510) unstable; urgency=medium
+
+  * When a http remote does not expose an annex.uuid config, only warn
+    about it once, not every time git-annex is run.
+  * multicast: New command, uses uftp to multicast annexed files, for eg
+    a classroom setting.
+  * Added remote.<name>.annex-push and remote.<name>.annex-pull
+    which can be useful to make remotes that don't get fully synced with
+    local changes.
+  * Disable git-annex's support for GIT_SSH and GIT_SSH_COMMAND, unless
+    GIT_ANNEX_USE_GIT_SSH=1 is also set in the environment. This is
+    necessary because as feared, the extra -n parameter that git-annex
+    passes breaks uses of these environment variables that expect exactly
+    the parameters that git passes.
+  * enableremote: When enabling a non-special remote, param=value
+    parameters can't be used, so error out if any are provided.
+  * enableremote: Fix re-enabling of special remotes that have a git
+    url, so that eg, encryption key changes take effect. They were silently
+    ignored, a reversion introduced in 6.20160527.
+  * gcrypt: Support re-enabling to change eg, encryption parameters.
+    This was never supported before.
+  * git annex add -u now supported, analagous to git add -u
+  * version: Added "dependency versions" line.
+  * Keys marked as dead are now skipped by --all.
+  * annex.backend is the new name for what was annex.backends, and takes
+    a single key-value backend, rather than the unncessary and confusing
+    list. The old option still works if set.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 10 May 2017 15:05:22 -0400
+
+git-annex (6.20170321) unstable; urgency=medium
+
+  * Bugfix: Passing a command a filename that does not exist sometimes
+    did not display an error, when a path to a directory was also passed.
+  * status: Propigate nonzero exit code from git status.
+  * Linux standalone builds put the bundled ssh last in PATH,
+    so any system ssh will be preferred over it.
+  * assistant: Add 1/200th second delay between checking each file
+    in the full transfer scan, to avoid using too much CPU.
+  * get -J: Improve distribution of jobs amoung remotes when there are more
+    jobs than remotes.
+  * fsck -q: When a file has bad content, include the name of the file
+    in the warning message.
+  * Windows: Improve handling of shebang in external special remote
+    program, searching for the program in the PATH.
+  * Drop support for building with old versions of dns, http-conduit,
+    directory, feed, and http-types.
+  * Windows: Fix bug in shell script shebang lookup code that
+    caused a "delayed read on closed handle" error.
+  * git-annex-shell: Fix bug when used with a recently cloned repository,
+    where "merging" messages were included in the output of configlist
+    (and perhaps other commands) and caused a "Failed to get annex.uuid
+    configuration" error.
+  * Support GIT_SSH and GIT_SSH_COMMAND, which are handled close the same
+    as they are by git. However, unlike git, git-annex sometimes needs to
+    pass the -n parameter when using these.
+  * sync --content-of=path (-C path) added for when you want to sync
+    only some files' contents, not the whole working tree.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 21 Mar 2017 11:27:38 -0400
+
+git-annex (6.20170301.1) unstable; urgency=medium
+
+  * Fix reversion in yesterday's release that made SHA1E and MD5E backends
+    not work.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 01 Mar 2017 12:46:03 -0400
+
+git-annex (6.20170301) unstable; urgency=medium
+
+  * No changes from 6.20170228; a new version number was needed due
+    to a problem with Hackage.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 01 Mar 2017 12:06:02 -0400
+
+git-annex (6.20170228) unstable; urgency=medium
+
+  * Cryptographically secure hashes can be forced to be used in a
+    repository, by setting annex.securehashesonly.
+    This does not prevent the git repository from containing links
+    to insecure hashes, but it does prevent the content of such files
+    from being added to .git/annex/objects by any method.
+  * Tighten key parser to prevent SHA1 collision attacks generating
+    two keys that have the same SHA1. (Only done for keys that contain
+    a hash). This ensures that signed git commits of annexed files
+    will remain secure, as long as git-annex is using a secure hashing
+    backend.
+  * fsck: Warn about any files whose content is present, that don't
+    use secure hashes, when annex.securehashesonly is set.
+  * init: When annex.securehashesonly has been set with git-annex config,
+    copy that value to the annex.securehashesonly git config.
+  * Added --securehash option to match files using a secure hash function,
+    and corresponding securehash preferred content expression.
+  * sync, merge: Fail when the current branch has no commits yet, instead
+    of not merging in anything from remotes and appearing to succeed.
+  * Run ssh with -n whenever input is not being piped into it,
+    to avoid it consuming stdin that it shouldn't.
+    This fixes git-annex-checkpresentkey --batch remote,
+    which didn't output results for all keys passed into it. Other
+    git-annex commands that communicate with a remote over ssh may also
+    have been consuming stdin that they shouldn't have, which could have
+    impacted using them in eg, shell scripts.
+  * sync: Improve integration with receive.denyCurrentBranch=updateInstead,
+    displaying error messages from the remote then it fails to update
+    its checked out branch.
+  * Added post-recieve hook, which makes updateInstead work with direct
+    mode and adjusted branches.
+  * init: Set up the post-receive hook.
+  * sync: When syncing with a local repository located on a crippled
+    filesystem, run the post-receive hook there, since it wouldn't get run
+    otherwise. This makes pushing to repos on FAT-formatted removable
+    drives update them when receive.denyCurrentBranch=updateInstead.
+  * config group groupwanted numcopies schedule wanted required: 
+    Avoid displaying extraneous messages about repository auto-init,
+    git-annex branch merging, etc, when being used to get information.
+  * adjust: Fix behavior when used in a repository that contains
+    submodules.
+  * Run wget with -nv instead of -q, so it will display HTTP errors.
+  * Run curl with -S, so HTTP errors are displayed, even when
+    it's otherwise silent.
+  * When downloading in --json or --quiet mode, use curl in preference
+    to wget, since curl is able to display only errors to stderr, unlike
+    wget.
+  * status: Pass --ignore-submodules=when option on to git status.
+  * config --set: As well as setting value in git-annex branch,
+    set local gitconfig. This is needed especially for
+    annex.securehashesonly, which is read only from local gitconfig and not
+    the git-annex branch.
+  * Removed support for building with the old cryptohash library.
+    Building with that library made git-annex not support SHA3; it's time
+    for that to always be supported in case SHA2 dominoes.
+  * git-annex.cabal: Make crypto-api a dependency even when built w/o
+    webapp and test suite.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 28 Feb 2017 14:39:47 -0400
+
+git-annex (6.20170214) unstable; urgency=medium
+
+  * Increase default cost for p2p remotes from 200 to 1000.
+    This makes git-annex prefer transferring data from special
+    remotes when possible.
+  * Remove -j short option for --json-progress; that option was already
+    taken for --json.
+  * vicfg: Include the numcopies configuation.
+  * config: New command for storing configuration in the git-annex branch.
+  * annex.autocommit can be configured via git-annex config, to control
+    the default behavior in all clones of a repository.
+  * New annex.synccontent config setting, which can be set to true to make
+    git annex sync default to --content. This may become the default at
+    some point in the future. As well as being configuable by git config,
+    it can be configured by git-annex config to control the default
+    behavior in all clones of a repository.
+  * stack.yaml: Update to lts-7.18.
+  * Some optimisations to string splitting code.
+  * unused: When large files are checked right into git, avoid buffering
+    their contents in memory.
+  * unused: Improved memory use significantly when there are a lot
+    of differences between branches.
+  * Wormhole pairing will start to provide an appid to wormhole on
+    2021-12-31. An appid can't be provided now because Debian stable is going
+    to ship a older version of git-annex that does not provide an appid.
+    Assumption is that by 2021-12-31, this version of git-annex will be
+    shipped in a Debian stable release. If that turns out to not be the
+    case, this change will need to be cherry-picked into the git-annex in
+    Debian stable, or its wormhole pairing will break.
+  * Fix build with aws 0.16. Thanks, aristidb.
+  * assistant: Make --autostart --foreground wait for the children it
+    starts. Before, the --foreground was ignored when autostarting.
+  * initremote: When a uuid= parameter is passed, use the specified
+    UUID for the new special remote, instead of generating a UUID.
+    This can be useful in some situations, eg when the same data can be
+    accessed via two different special remote backends.
+  * import: Changed how --deduplicate, --skip-duplicates, and
+    --clean-duplicates determine if a file is a duplicate.
+    Before, only content known to be present somewhere was considered
+    a duplicate. Now, any content that has been annexed before will be
+    considered a duplicate, even if all annexed copies of the data have
+    been lost.
+    Note that --clean-duplicates and --deduplicate still check
+    numcopies, so won't delete duplicate files unless there's an annexed
+    copy.
+  * import: --deduplicate and --skip-duplicates were implemented
+    inneficiently; they unncessarily hashed each file twice. They have
+    been improved to only hash once.
+  * import: Added --reinject-duplicates.
+  * Added git template directory to Linux standalone tarball and OSX
+    app bundle.
+  * Improve pid locking code to work on filesystems that don't support hard
+    links.
+  * S3: Fix check of uuid file stored in bucket, which was not working.
+  * Work around sqlite's incorrect handling of umask when creating
+    databases.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 14 Feb 2017 14:22:00 -0400
+
 git-annex (6.20170101-1) unstable; urgency=medium
 
   * Package 6.20170101-1
