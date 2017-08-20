@@ -1,0 +1,26 @@
+### Please describe the problem.
+
+I’ve just experienced something strange. When files are copied (instead of moved) into a repo with an assistant running, some of them get lost.
+
+### What steps will reproduce the problem?
+
+1. Start the assistant.
+2. `cp -rv some-big-directory your-annex-repo/`
+3. Wait for sync to finish.
+4. Compare some-big-directory with your-annex-repo/some-big-directory.
+
+It might be of some importance that I’m syncing this repo to 5 different machines.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 6.20170520
+local repository version: 6
+operating system: linux x86_64
+
+### Please provide any additional information below.
+
+Hard to tell, sometimes it happens, sometimes not.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Sure, very cool, but this data loss thing creeped me out!
