@@ -4,6 +4,7 @@ git-annex (6.20170818) unstable; urgency=high
     would get passed to ssh and be treated an option. This could
     be used by an attacker who provides a crafted repository url
     to cause the victim to execute arbitrary code via -oProxyCommand.
+    CVE-2017-12976
     (The same class of security hole recently affected git itself.)
   * git-annex.cabal: Deal with breaking changes in Cabal 2.0.
   * Fix build with QuickCheck 2.10.

@@ -19,6 +19,8 @@ This was fixed in version 6.20170818. Now there's a SshHost type that
 is not allowed to start with a dash, and every invocation of ssh is
 in a function that takes a SshHost. 
 
+CVE-2017-12976 has been assigned for this issue.
+
 [[done]]
 
 --[[Joey]]

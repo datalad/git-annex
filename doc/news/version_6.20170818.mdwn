@@ -3,7 +3,7 @@ recommended. Attacks using this security hole will involve the attacker
 either providing a ssh repository url to the user, or the user pulling from
 a git-annex repository provided by an attacker and then running `git annex
 enableremote`. For details about the security hole, see
-[[bugs/dashed_ssh_hostname_security_hole]].
+[[bugs/dashed_ssh_hostname_security_hole]]. CVE-2017-12976
 
 git-annex 6.20170818 released with [[!toggle text="these changes"]]
 [[!toggleable text="""
