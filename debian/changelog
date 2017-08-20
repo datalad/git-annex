@@ -1,3 +1,9 @@
+git-annex (6.20170818-1) unstable; urgency=high
+
+  * Package 6.20170818-1
+
+ -- Richard Hartmann <richih@debian.org>  Sun, 20 Aug 2017 12:25:57 +0200
+
 git-annex (6.20170818) unstable; urgency=high
 
   * Security fix: Disallow hostname starting with a dash, which
