@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="loredai"
+ avatar="http://cdn.libravatar.org/avatar/6f78b3b4228e2b05a53203b1cd717361"
+ subject="Upgrade path can produce confusing output"
+ date="2017-08-23T15:42:24Z"
+ content="""
+If you clone a v5 repository and then upgrade, you can get confusing output:
+
+git annex upgrade
+upgrade . 
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Disabling core.symlinks.
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+
+  Enabling direct mode.
+(v5 to v6...) (scanning for unlocked files...)
+ok
+(recording state in git...)
+
+$ ls
+largefile
+
+$ git branch -a
+* adjusted/master(unlocked)
+  git-annex
+  master
+  remotes/origin/HEAD -> origin/master
+  remotes/origin/git-annex
+  remotes/origin/master
+
+Although things seem fine, as adjusted branch is checked out.
+"""]]
