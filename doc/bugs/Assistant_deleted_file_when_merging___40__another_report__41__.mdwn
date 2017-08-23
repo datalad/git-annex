@@ -18,7 +18,7 @@ Any thoughts on how I would recover the removed files?  Some have a web remote, 
 Ah.  That's hard as I can't remember exactly what I did...  :-/
 
 1. Find an OLD repo and merge with a current one using the assistant.
-2. I *think* I used the agent and changed repositories to the old one (that was marked as `unwanted`).
+2. I *think* I used the webapp and changed repositories to the old one (that was marked as `unwanted`).
 3. I *think* I stopped and restarted the assistant a few times.  (It was a loooooong merge).
 
 ### What version of git-annex are you using? On what operating system?
