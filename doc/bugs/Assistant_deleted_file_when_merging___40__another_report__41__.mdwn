@@ -1,5 +1,5 @@
 ### Please describe the problem.
-A couple of days ago I merged a v5 repo with an OLD one (see [1]).  I *thought* it all went relatively smoothly until I tried to find some files that existed pre-merge.
+A couple of days ago I merged a v5 repo with an OLD one (see [1]) - both on the local drive.  I *thought* it all went relatively smoothly until I tried to find some files that existed pre-merge.
 
 **All** files from before the merge were deleted as part of the merge commit.  Fortunately, they seem to be available when I do `git annex unused`
 
