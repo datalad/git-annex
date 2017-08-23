@@ -5,13 +5,13 @@ When creating a new git-annex repository (or upgrading, or doing fsck) inside a 
 Indeed, a created-outside-cryfs git-annex repository works as expected when copied inside
 
 ### What steps will reproduce the problem?
-1.) Install cryfs (https://www.cryfs.org/, packaged for ubuntu,debian, or build from source)
-2.) Create a CryFS container: $ cryfs container container-data
-3.) Create a git annex repository inside the container:
+1. Install cryfs (https://www.cryfs.org/, packaged for ubuntu,debian, or build from source)
+2. Create a CryFS container: $ cryfs container container-data
+3. Create a git annex repository inside the container:
 
-$ cd container
-$ git init .
-$ git annex init --version 6
+    $ cd container
+    $ git init .
+    $ git annex init --version 6
 
 
 ### What version of git-annex are you using? On what operating system?
