@@ -1,0 +1,37 @@
+### Please describe the problem.
+A couple of days ago I merged a v5 repo with an OLD one (see [1]).  I *thought* it all went relatively smoothly until I tried to find some files that existed pre-merge.
+
+**All** files from before the merge were deleted as part of the merge commit.  Fortunately, they seem to be available when I do `git annex unused`
+
+
+---
+
+Any thoughts on how I would recover the removed files?  Some have a web remote, so doing it by hand for all 300ish would be a PITA.
+
+---
+
+[1] Last commit was Dec 2013, and `.git/config` has `annex.version = 3`
+
+
+### What steps will reproduce the problem?
+
+Ah.  That's hard as I can't remember exactly what I did...  :-/
+
+1. Find an OLD repo and merge with a current one using the assistant.
+2. I *think* I used the agent and changed repositories to the old one (that was marked as `unwanted`).
+3. I *think* I stopped and restarted the assistant a few times.  (It was a loooooong merge).
+
+### What version of git-annex are you using? On what operating system?
+
+- git-annex version: 6.20170520 (at time of merge)
+- git-annex version: 6.20170818 (currently)
+- Operating system: macOS Sierra v10.12.6
+- Installed by: homebrew
+
+### Please provide any additional information below.
+
+I suspect this is a bug that can't be reproduced easily.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+<3 <3 <3
