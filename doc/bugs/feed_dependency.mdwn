@@ -18,10 +18,10 @@ https://github.com/dzhus/feed/commit/259bab0 . With Stack, you just
 need to put the following in the `packages` section of your
 `stack.yaml`:
 
-    - location:
-        git: git@github.com:dzhus/feed
-        commit: 259bab0dd16853656ce1d2a005c4009d4747edc1
-      extra-dep: true
+	    - location:
+	        git: git@github.com:dzhus/feed
+	        commit: 259bab0dd16853656ce1d2a005c4009d4747edc1
+	      extra-dep: true
 
 Please report any feedback / issues to the aforementioned PR thread
 or here if that works for you.
