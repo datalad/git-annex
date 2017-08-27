@@ -28,6 +28,7 @@ I would like to contribute, but I was a bit surprised by this problem right when
 
 After the clone attempt running `git status` in the checkout directory produces a **huge** amount of output about deleted files and changes to the repo:
 
+    $ git status
     On branch master
     Your branch is up-to-date with 'origin/master'.
     Changes to be committed:
