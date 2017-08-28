@@ -55,3 +55,5 @@ Just try to clone it.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 git-annex looks like a really promising project for my personal backups solution involving usb disks, and some external services such as Backblaze B2. I wanted to look into improving Backblaze B2 support (large file support, etc).
+
+> [[done]]; ecryptfs is not supported --[[Joey]]
