@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-08-28T17:21:54Z"
+ content="""
+The difficulty with compressing annexed files is that they have to
+be available on disk in uncompressed form in order for the work tree to
+point to the content of the files. Notice that, even though git does
+compress .git/objects, the checked-out files in the working tree are not
+themselves compressed.
+
+git-annex does support compressing files that are stored on special
+remotes. Simply enabling encryption when initializing a special remote
+will also compress the data stored in it. A couple of special remotes like
+bup also compress content natively.
+
+Using a filesystem that supports compression is the only way I know of to
+transparently compress files located in the working tree.
+"""]]
