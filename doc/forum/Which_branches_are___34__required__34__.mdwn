@@ -1,0 +1,31 @@
+Hi,
+
+I have the problem where in one repository I should not have any files anymore (according to git annex list --in .) but the annex directory still is very big (several GB). Git unused does not return any unused files so I guess they must be referenced somewhere. I do not use tags so it must be a branch. Could you tell me which of these branches are required by git annex and which are superfluous?
+
+I have two repositories (at some point I had more): origin and exp and two special remotes (hubic and acd). exp is connected to hubic and acd.
+
+on exp I have more space usage than indicated by git annex list
+ exp has the following branches:
+
+    ~/annex$ git branch -a
+      git-annex
+    * master
+      synced/git-annex
+      synced/master
+      remotes/origin/HEAD -> origin/master
+      remotes/origin/git-annex
+      remotes/origin/master
+      remotes/origin/synced/git-annex
+      remotes/origin/synced/master
+
+I have read the page on the internal workings and so far pretty much of all the wiki but if someone could point me to a description (if one exists) that explains which branch is used for what that would be great!
+
+I understand that upon "git annex sync" a repo pulls the $REMOTE/master into remotes/$REMOTE/master and $REMOTE/synced/master into remotes/$REMOTE/synced/master. 
+"git annex sync" on $REMOTE will push master to another repo into synced/master.
+
+Cheers,
+Marek
+
+
+ 
+
