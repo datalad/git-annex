@@ -1,6 +1,8 @@
 git-annex (6.20170819) UNRELEASED; urgency=medium
 
   * Support building with feed-1.0, while still supporting older versions.
+  * init: Display an additional message when it detects a filesystem that
+    allows writing to files whose write bit is not set.
 
  -- Joey Hess <id@joeyh.name>  Mon, 28 Aug 2017 12:20:59 -0400
 

@@ -146,32 +146,40 @@ probeCrippledFileSystem :: Annex Bool
 probeCrippledFileSystem = do
 	tmp <- fromRepo gitAnnexTmpMiscDir
 	createAnnexDirectory tmp
-	liftIO $ probeCrippledFileSystem' tmp
+	probeCrippledFileSystem' tmp
 
-probeCrippledFileSystem' :: FilePath -> IO Bool
+probeCrippledFileSystem' :: FilePath -> Annex Bool
 #ifdef mingw32_HOST_OS
 probeCrippledFileSystem' _ = return True
 #else
 probeCrippledFileSystem' tmp = do
 	let f = tmp </> "gaprobe"
-	writeFile f ""
+	liftIO $ writeFile f ""
 	uncrippled <- probe f
-	void $ tryIO $ allowWrite f
-	removeFile f
+	void $ liftIO $ tryIO $ allowWrite f
+	liftIO $ removeFile f
 	return $ not uncrippled
   where
 	probe f = catchBoolIO $ do
 		let f2 = f ++ "2"
-		nukeFile f2
-		createSymbolicLink f f2
-		nukeFile f2
-		preventWrite f
+		liftIO $ nukeFile f2
+		liftIO $ createSymbolicLink f f2
+		liftIO $ nukeFile f2
+		liftIO $ preventWrite f
 		-- Should be unable to write to the file, unless
 		-- running as root, but some crippled
 		-- filesystems ignore write bit removals.
-		ifM ((== 0) <$> getRealUserID)
+		ifM ((== 0) <$> liftIO getRealUserID)
 			( return True
-			, not <$> catchBoolIO (writeFile f "2" >> return True)
+			, do
+				r <- liftIO $ catchBoolIO $
+					writeFile f "2" >> return True
+				if r
+					then do
+						warning "Filesystem allows writing to files whose write bit is not set."
+						return False
+					else return True
+
 			)
 #endif
 

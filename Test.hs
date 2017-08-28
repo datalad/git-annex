@@ -147,7 +147,7 @@ runner = Just go
 		exitWith exitcode
 	runsubprocesstests opts (Just _) = isolateGitConfig $ do
 		ensuretmpdir
-		crippledfilesystem <- Annex.Init.probeCrippledFileSystem' tmpdir
+		crippledfilesystem <- annexeval $ Annex.Init.probeCrippledFileSystem' tmpdir
 		case tryIngredients ingredients (tastyOptionSet opts) (tests crippledfilesystem opts) of
 			Nothing -> error "No tests found!?"
 			Just act -> ifM act
