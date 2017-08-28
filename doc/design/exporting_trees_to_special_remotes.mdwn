@@ -132,7 +132,7 @@ the [[external_special_remote_protocol]].
   Requests the remote rename a file stored on it from OldName to NewName.  
   The Key is provided in case the remote wants to use eg 
   `SETURIMISSING` and `SETURIPRESENT`.  
-  The remote responds with `RENAMEEXPORT-SUCCESS,
+  The remote responds with `RENAMEEXPORT-SUCCESS`,
   `RENAMEEXPORT-FAILURE`, or with `RENAMEEXPORT-UNSUPPORTED` if an efficient
   rename cannot be done.
 
