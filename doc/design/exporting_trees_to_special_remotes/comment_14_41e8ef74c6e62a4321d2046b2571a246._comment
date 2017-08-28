@@ -10,7 +10,7 @@ link or copy the annexed file content). So well spotted.
 
 Hmm, it's actually possible for a Key to contain spaces as well,
 at least with the WORM backend.
-[[external_special_remote_protocol_broken_by_key_with_spaces]]
+[[bugs/external_special_remote_protocol_broken_by_key_with_spaces]]
 
 The protocol `VERSION` is picked by the special remote, it's not
 negotiated.
