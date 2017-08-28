@@ -1,3 +1,9 @@
+git-annex (6.20170819) UNRELEASED; urgency=medium
+
+  * Support building with feed-1.0, while still supporting older versions.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 28 Aug 2017 12:20:59 -0400
+
 git-annex (6.20170818) unstable; urgency=high
 
   * Security fix: Disallow hostname starting with a dash, which

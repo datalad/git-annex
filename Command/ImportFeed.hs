@@ -19,6 +19,9 @@ import Data.Time.Format
 #if ! MIN_VERSION_time(1,5,0)
 import System.Locale
 #endif
+#if MIN_VERSION_feed(1,0,0)
+import qualified Data.Text as T
+#endif
 
 import Command
 import qualified Annex
@@ -136,11 +139,13 @@ findDownloads u = go =<< downloadFeed u
 
 	mk f i = case getItemEnclosure i of
 		Just (enclosureurl, _, _) -> return $ 
-			Just $ ToDownload f u i $ Enclosure enclosureurl
+			Just $ ToDownload f u i $ Enclosure $ 
+				fromFeed enclosureurl
 		Nothing -> mkquvi f i
 	mkquvi f i = case getItemLink i of
-		Just link -> ifM (quviSupported link)
-			( return $ Just $ ToDownload f u i $ QuviLink link
+		Just link -> ifM (quviSupported $ fromFeed link)
+			( return $ Just $ ToDownload f u i $ QuviLink $ 
+				fromFeed link
 			, return Nothing
 			)
 		Nothing -> return Nothing
@@ -211,7 +216,8 @@ performDownload opts cache todownload = case location todownload of
 		| otherwise = a
 
 	knownitemid = case getItemId (item todownload) of
-		Just (_, itemid) -> S.member itemid (knownitems cache)
+		Just (_, itemid) ->
+			S.member (fromFeed itemid) (knownitems cache)
 		_ -> False
 
 	rundownload url extension getter = do
@@ -276,7 +282,8 @@ feedFile tmpl i extension = Utility.Format.format tmpl $
 		Just (Just d) -> Just $
 			formatTime defaultTimeLocale "%F" d
 		-- if date cannot be parsed, use the raw string
-		_ -> replace "/" "-" <$> getItemPublishDateString itm
+		_ -> replace "/" "-" . fromFeed
+			<$> getItemPublishDateString itm
 
 extractMetaData :: ToDownload -> MetaData
 extractMetaData i = case getItemPublishDate (item i) :: Maybe (Maybe UTCTime) of
@@ -290,7 +297,7 @@ minimalMetaData :: ToDownload -> MetaData
 minimalMetaData i = case getItemId (item i) of
 	(Nothing) -> emptyMetaData
 	(Just (_, itemid)) -> MetaData $ M.singleton itemIdField 
-		(S.singleton $ toMetaValue itemid)
+		(S.singleton $ toMetaValue $ fromFeed itemid)
 
 {- Extract fields from the feed and item, that are both used as metadata,
  - and to generate the filename. -}
@@ -300,18 +307,18 @@ extractFields i = map (uncurry extractField)
 	, ("itemtitle", [itemtitle])
 	, ("feedauthor", [feedauthor])
 	, ("itemauthor", [itemauthor])
-	, ("itemsummary", [getItemSummary $ item i])
-	, ("itemdescription", [getItemDescription $ item i])
-	, ("itemrights", [getItemRights $ item i])
-	, ("itemid", [snd <$> getItemId (item i)])
+	, ("itemsummary", [fromFeed <$> getItemSummary (item i)])
+	, ("itemdescription", [fromFeed <$> getItemDescription (item i)])
+	, ("itemrights", [fromFeed <$> getItemRights (item i)])
+	, ("itemid", [fromFeed . snd <$> getItemId (item i)])
 	, ("title", [itemtitle, feedtitle])
 	, ("author", [itemauthor, feedauthor])
 	]
   where
-	feedtitle = Just $ getFeedTitle $ feed i
-	itemtitle = getItemTitle $ item i
-	feedauthor = getFeedAuthor $ feed i
-	itemauthor = getItemAuthor $ item i
+	feedtitle = Just $ fromFeed $ getFeedTitle $ feed i
+	itemtitle = fromFeed <$> getItemTitle (item i)
+	feedauthor = fromFeed <$> getFeedAuthor (feed i)
+	itemauthor = fromFeed <$> getItemAuthor (item i)
 
 itemIdField :: MetaField
 itemIdField = mkMetaFieldUnchecked "itemid"
@@ -359,3 +366,19 @@ clearFeedProblem url = void $ liftIO . tryIO . removeFile =<< feedState url
 
 feedState :: URLString -> Annex FilePath
 feedState url = fromRepo $ gitAnnexFeedState $ fromUrl url Nothing
+
+#if MIN_VERSION_feed(1,0,0)
+fromFeed :: T.Text -> String
+fromFeed = T.unpack
+#else
+fromFeed :: String -> String
+fromFeed = id
+#endif
+
+#if MIN_VERSION_feed(1,0,0)
+toFeed :: String -> T.Text
+toFeed = T.pack
+#else
+toFeed :: String -> String
+toFeed = id
+#endif
