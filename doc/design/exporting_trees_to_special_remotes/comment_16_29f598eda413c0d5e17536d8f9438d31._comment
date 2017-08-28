@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 16"""
+ date="2017-08-28T19:32:06Z"
+ content="""
+I've updated the proposed external special remote protocol to avoid the
+whitespace concerns. Not wild about needing a separate EXPORT request,
+which will probably get shoved into a global variable in most
+implementations. But it does avoid needing to use some kind of encoding,
+which would complicate implementations more, I feel.
+"""]]

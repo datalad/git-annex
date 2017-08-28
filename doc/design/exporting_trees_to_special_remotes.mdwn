@@ -108,28 +108,36 @@ would be overkill if it's only used to support resuming partial uploads.
 This needs some additional methods added to special remotes, and to
 the [[external_special_remote_protocol]].
 
-* `TRANSFEREXPORT STORE|RETRIEVE Key File Name`  
-  Requests the transfer of a File on local disk to or from a given
-  Name on the special remote.  
-  The Name will be in the form of a relative path, and may contain
-  path separators, whitespace, and other special characters.  
+Here's the changes to the latter:
+
+* `EXPORT Name`  
+  Comes immediately before each of the following requests, 
+  specifying the name of the exported file. It will be in the form
+  of a relative path, and may contain path separators, whitespace,
+  and other special characters.
+* `TRANSFEREXPORT STORE|RETRIEVE Key File`  
+  Requests the transfer of a File on local disk to or from the previously 
+  provided Name on the special remote.  
   The Key is provided in case the special remote wants to use eg
   `SETURIPRESENT`.  
   The remote responds with either `TRANSFER-SUCCESS` or
   `TRANSFER-FAILURE`, and a remote where exports do not make sense
   may always fail.
-* `CHECKPRESENTEXPORT Key Name`  
-  Requests the remote to check if a Name is present in it.  
+* `CHECKPRESENTEXPORT Key`  
+  Requests the remote to check if the previously provided Name is present
+  in it.  
   The remote responds with `CHECKPRESENT-SUCCESS`, `CHECKPRESENT-FAILURE`,
   or `CHECKPRESENT-UNKNOWN`.
-* `REMOVEEXPORT Key Name`  
-  Requests the remote to remove content stored by `TRANSFEREXPORT`.  
+* `REMOVEEXPORT Key`  
+  Requests the remote to remove content stored by `TRANSFEREXPORT`
+  with the previously provided Name.  
   The Key is provided in case the remote wants to use eg
   `SETURIMISSING`.
   The remote responds with either `REMOVE-SUCCESS` or
   `REMOVE-FAILURE`.
-* `RENAMEEXPORT Key OldName NewName`  
-  Requests the remote rename a file stored on it from OldName to NewName.  
+* `RENAMEEXPORT Key NewName`  
+  Requests the remote rename a file stored on it from the previously
+  provided Name to the NewName.  
   The Key is provided in case the remote wants to use eg 
   `SETURIMISSING` and `SETURIPRESENT`.  
   The remote responds with `RENAMEEXPORT-SUCCESS`,
