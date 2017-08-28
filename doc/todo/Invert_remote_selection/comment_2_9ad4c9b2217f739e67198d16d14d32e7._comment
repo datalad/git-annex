@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="supernaught"
+ avatar="http://cdn.libravatar.org/avatar/55f92a50f2617099e2dc7509130ce158"
+ subject="comment 2"
+ date="2017-08-28T22:01:23Z"
+ content="""
+It's not very ergonomic to type out so much each for each sync, but I suppose it technically accomplishes the idea.
+
+Still -- wouldn't making '\!x' alias to '-c remote.x.annex-sync=false' have minimal impact and provide a bit more symmetry with the matching-options?
+
+I'm not familiar with Haskell, but could probably fumble my way through this one. Would you accept a patch?
+"""]]
