@@ -118,17 +118,17 @@ the [[external_special_remote_protocol]].
   The remote responds with either `TRANSFER-SUCCESS` or
   `TRANSFER-FAILURE`, and a remote where exports do not make sense
   may always fail.
-* `CHECKPRESENTEXPORT Key Name`
+* `CHECKPRESENTEXPORT Key Name`  
   Requests the remote to check if a Name is present in it.  
   The remote responds with `CHECKPRESENT-SUCCESS`, `CHECKPRESENT-FAILURE`,
   or `CHECKPRESENT-UNKNOWN`.
-* `REMOVEEXPORT Key Name`
+* `REMOVEEXPORT Key Name`  
   Requests the remote to remove content stored by `TRANSFEREXPORT`.  
   The Key is provided in case the remote wants to use eg
   `SETURIMISSING`.
   The remote responds with either `REMOVE-SUCCESS` or
   `REMOVE-FAILURE`.
-* `RENAMEEXPORT Key OldName NewName`
+* `RENAMEEXPORT Key OldName NewName`  
   Requests the remote rename a file stored on it from OldName to NewName.  
   The Key is provided in case the remote wants to use eg 
   `SETURIMISSING` and `SETURIPRESENT`.  
