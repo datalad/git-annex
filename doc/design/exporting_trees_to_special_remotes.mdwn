@@ -118,8 +118,6 @@ Here's the changes to the latter:
 * `TRANSFEREXPORT STORE|RETRIEVE Key File`  
   Requests the transfer of a File on local disk to or from the previously 
   provided Name on the special remote.  
-  The Key is provided in case the special remote wants to use eg
-  `SETURIPRESENT`.  
   The remote responds with either `TRANSFER-SUCCESS` or
   `TRANSFER-FAILURE`, and a remote where exports do not make sense
   may always fail.
@@ -131,15 +129,11 @@ Here's the changes to the latter:
 * `REMOVEEXPORT Key`  
   Requests the remote to remove content stored by `TRANSFEREXPORT`
   with the previously provided Name.  
-  The Key is provided in case the remote wants to use eg
-  `SETURIMISSING`.
   The remote responds with either `REMOVE-SUCCESS` or
   `REMOVE-FAILURE`.
 * `RENAMEEXPORT Key NewName`  
   Requests the remote rename a file stored on it from the previously
   provided Name to the NewName.  
-  The Key is provided in case the remote wants to use eg 
-  `SETURIMISSING` and `SETURIPRESENT`.  
   The remote responds with `RENAMEEXPORT-SUCCESS`,
   `RENAMEEXPORT-FAILURE`, or with `RENAMEEXPORT-UNSUPPORTED` if an efficient
   rename cannot be done.
