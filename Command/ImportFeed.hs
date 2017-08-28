@@ -374,11 +374,3 @@ fromFeed = T.unpack
 fromFeed :: String -> String
 fromFeed = id
 #endif
-
-#if MIN_VERSION_feed(1,0,0)
-toFeed :: String -> T.Text
-toFeed = T.pack
-#else
-toFeed :: String -> String
-toFeed = id
-#endif
