@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-08-28T17:45:11Z"
+ content="""
+I think you could just use this:
+	
+	git annex sync -c remote.Gamma.annex-sync=false
+"""]]
