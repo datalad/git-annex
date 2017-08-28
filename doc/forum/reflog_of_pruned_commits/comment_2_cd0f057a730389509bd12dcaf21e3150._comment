@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-08-28T17:03:19Z"
+ content="""
+This does not seem to be a problem. If the warning message is bothering
+you, you could remove the part of the reflog that references the pruned
+commits, or remove the whole reflog.
+"""]]
