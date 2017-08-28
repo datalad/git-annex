@@ -32,3 +32,4 @@ remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar ho
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 
+> [[done]] per my comment --[[Joey]]
