@@ -31,6 +31,10 @@ remote:
   Do not use for new remotes. It is not safe to change the chunksize
   setting of an existing remote.
 
+* `exporttree` - Set to "true" to make this special remote usable
+  by [[git-annex-export]]. It will not be usable as a general-purpose
+  special remote.
+
 Setup example:
 
 	# git annex initremote usbdrive type=directory directory=/media/usbdrive/ encryption=none

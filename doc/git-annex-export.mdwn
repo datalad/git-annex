@@ -1,0 +1,37 @@
+# NAME
+
+git-annex export - export content to a remote
+
+# SYNOPSIS
+
+git annex export `treeish --to remote`
+
+# DESCRIPTION
+
+Use this command to export a tree of files from a git-annex repository.
+
+Normally files are stored on a git-annex special remote named by their
+keys. That is great for data storage, but your filenames are obscured.
+Exporting replicates the tree to the special remote as-is.
+
+Mixing key/value and exports in the same remote would be a mess and so is
+not allowed. So, you have to configure a remote with `exporttree=true`
+when initially setting it up with [[git-annex-initremote]](1).
+
+Repeated exports are done efficiently, by diffing the old and new tree,
+and transferring only the changed files.
+
+Exports can be interrupted and resumed. However, partially uploaded files
+will be re-started from the beginning.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-export]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -158,6 +158,12 @@ subdirectories).
   
   See [[git-annex-importfeed]](1) for details.
 
+* `export treeish --to remote`
+
+  Export content to a remote.
+
+  See [[git-annex-export]](1) for details.
+
 * `undo [filename|directory] ...`
 
   Undo last change to a file or directory.
