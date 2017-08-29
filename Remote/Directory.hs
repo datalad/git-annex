@@ -233,15 +233,13 @@ checkPresentGeneric d ps = liftIO $
 exportPath :: FilePath -> ExportLocation -> FilePath
 exportPath d (ExportLocation loc) = d </> loc
 
-storeExportDirectory :: FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
-storeExportDirectory d k loc p = sendAnnex k rollback send
+storeExportDirectory :: FilePath -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
+storeExportDirectory d src _k loc p = liftIO $ catchBoolIO $ do
+	createDirectoryIfMissing True dest
+	withMeteredFile src p (L.writeFile dest)
+	return True
   where
 	dest = exportPath d loc
-	send src = liftIO $ catchBoolIO $ do
-		createDirectoryIfMissing True dest
-		withMeteredFile src p (L.writeFile dest)
-		return True
-	rollback = liftIO $ nukeFile dest
 
 retrieveExportDirectory :: FilePath -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
 retrieveExportDirectory d _k loc dest p = unVerified $ liftIO $ catchBoolIO $ do

@@ -97,20 +97,20 @@ data RemoteA a = Remote {
 	-- operation.
 	checkPresentCheap :: Bool,
 
-	-- Exports a key's contents to an ExportLocation.
+	-- Exports content to an ExportLocation.
 	-- The exported file does not need to be updated atomically.
-	storeExport :: Maybe (Key -> ExportLocation -> MeterUpdate -> a Bool),
-	-- Retrieves an exported key to a file.
+	storeExport :: Maybe (FilePath -> Key -> ExportLocation -> MeterUpdate -> a Bool),
+	-- Retrieves exported content to a file.
 	-- (The MeterUpdate does not need to be used if it writes
 	-- sequentially to the file.)
 	retrieveExport :: Maybe (Key -> ExportLocation -> FilePath -> MeterUpdate -> a (Bool, Verification)),
-	-- Removes an exported key (succeeds if the contents are not present)
+	-- Removes an exported file (succeeds if the contents are not present)
 	removeExport :: Maybe (Key -> ExportLocation -> a Bool),
-	-- Checks if a key is exported to the remote at the specified
+	-- Checks if anything is exported to the remote at the specified
 	-- ExportLocation.
 	-- Throws an exception if the remote cannot be accessed.
 	checkPresentExport :: Maybe (Key -> ExportLocation -> a Bool),
-	-- Renames an already exported key.
+	-- Renames an already exported file.
 	renameExport :: Maybe (Key -> ExportLocation -> ExportLocation -> a Bool),
 
 	-- Some remotes can provide additional details for whereis.
