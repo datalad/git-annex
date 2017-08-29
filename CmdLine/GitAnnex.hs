@@ -95,6 +95,7 @@ import qualified Command.AddUrl
 import qualified Command.ImportFeed
 import qualified Command.RmUrl
 import qualified Command.Import
+import qualified Command.Export
 import qualified Command.Map
 import qualified Command.Direct
 import qualified Command.Indirect
@@ -141,6 +142,7 @@ cmds testoptparser testrunner =
 	, Command.ImportFeed.cmd
 	, Command.RmUrl.cmd
 	, Command.Import.cmd
+	, Command.Export.cmd
 	, Command.Init.cmd
 	, Command.Describe.cmd
 	, Command.InitRemote.cmd

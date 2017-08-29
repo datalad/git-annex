@@ -235,7 +235,7 @@ exportPath d (ExportLocation loc) = d </> loc
 
 storeExportDirectory :: FilePath -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
 storeExportDirectory d src _k loc p = liftIO $ catchBoolIO $ do
-	createDirectoryIfMissing True dest
+	createDirectoryIfMissing True (takeDirectory dest)
 	withMeteredFile src p (L.writeFile dest)
 	return True
   where
