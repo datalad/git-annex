@@ -157,6 +157,11 @@ gen r u c gc
 			, lockContent = Just (lockKey new)
 			, checkPresent = inAnnex new
 			, checkPresentCheap = repoCheap r
+			, storeExport = Nothing
+			, retrieveExport = Nothing
+			, removeExport = Nothing
+			, checkPresentExport = Nothing
+			, renameExport = Nothing
 			, whereisKey = Nothing
 			, remoteFsck = if Git.repoIsUrl r
 				then Nothing

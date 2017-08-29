@@ -85,6 +85,11 @@ gen r u c gc
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
+			, storeExport = Nothing
+			, retrieveExport = Nothing
+			, removeExport = Nothing
+			, checkPresentExport = Nothing
+			, renameExport = Nothing
 			, whereisKey = towhereis
 			, remoteFsck = Nothing
 			, repairRepo = Nothing

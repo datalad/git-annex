@@ -2,7 +2,7 @@
  -
  - Most things should not need this, using Types instead
  -
- - Copyright 2011-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -18,6 +18,7 @@ module Types.Remote
 	, Availability(..)
 	, Verification(..)
 	, unVerified
+	, ExportLocation(..)
 	)
 	where
 
@@ -69,6 +70,7 @@ data RemoteA a = Remote {
 	name :: RemoteName,
 	-- Remotes have a use cost; higher is more expensive
 	cost :: Cost,
+
 	-- Transfers a key's contents from disk to the remote.
 	-- The key should not appear to be present on the remote until
 	-- all of its contents have been transferred.
@@ -94,6 +96,23 @@ data RemoteA a = Remote {
 	-- Some remotes can checkPresent without an expensive network
 	-- operation.
 	checkPresentCheap :: Bool,
+
+	-- Exports a key's contents to an ExportLocation.
+	-- The exported file does not need to be updated atomically.
+	storeExport :: Maybe (Key -> ExportLocation -> MeterUpdate -> a Bool),
+	-- Retrieves an exported key to a file.
+	-- (The MeterUpdate does not need to be used if it writes
+	-- sequentially to the file.)
+	retrieveExport :: Maybe (Key -> ExportLocation -> FilePath -> MeterUpdate -> a (Bool, Verification)),
+	-- Removes an exported key (succeeds if the contents are not present)
+	removeExport :: Maybe (Key -> ExportLocation -> a Bool),
+	-- Checks if a key is exported to the remote at the specified
+	-- ExportLocation.
+	-- Throws an exception if the remote cannot be accessed.
+	checkPresentExport :: Maybe (Key -> ExportLocation -> a Bool),
+	-- Renames an already exported key.
+	renameExport :: Maybe (Key -> ExportLocation -> ExportLocation -> a Bool),
+
 	-- Some remotes can provide additional details for whereis.
 	whereisKey :: Maybe (Key -> a [String]),
 	-- Some remotes can run a fsck operation on the remote,
@@ -150,3 +169,8 @@ unVerified :: Monad m => m Bool -> m (Bool, Verification)
 unVerified a = do
 	ok <- a
 	return (ok, UnVerified)
+
+-- A location on a remote that a key can be exported to.
+-- The FilePath will be relative, and may contain unix-style path
+-- separators.
+newtype ExportLocation = ExportLocation FilePath

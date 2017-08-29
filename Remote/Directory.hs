@@ -1,6 +1,6 @@
 {- A "remote" that is just a filesystem directory.
  -
- - Copyright 2011-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -58,6 +58,11 @@ gen r u c gc = do
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = True
+			, storeExport = Just $ storeExportDirectory dir
+			, retrieveExport = Just $ retrieveExportDirectory dir
+			, removeExport = Just $ removeExportDirectory dir
+			, checkPresentExport = Just $ checkPresentExportDirectory dir
+			, renameExport = Just $ renameExportDirectory dir
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
@@ -119,16 +124,18 @@ tmpDir d k = addTrailingPathSeparator $ d </> "tmp" </> keyFile k
 {- Check if there is enough free disk space in the remote's directory to
  - store the key. Note that the unencrypted key size is checked. -}
 prepareStore :: FilePath -> ChunkConfig -> Preparer Storer
-prepareStore d chunkconfig = checkPrepare checker
+prepareStore d chunkconfig = checkPrepare (checkDiskSpaceDirectory d)
 	(byteStorer $ store d chunkconfig)
   where
-	checker k = do
-		annexdir <- fromRepo gitAnnexObjectDir
-		samefilesystem <- liftIO $ catchDefaultIO False $ 
-			(\a b -> deviceID a == deviceID b)
-				<$> getFileStatus d
-				<*> getFileStatus annexdir
-		checkDiskSpace (Just d) k 0 samefilesystem
+
+checkDiskSpaceDirectory :: FilePath -> Key -> Annex Bool
+checkDiskSpaceDirectory d k = do
+	annexdir <- fromRepo gitAnnexObjectDir
+	samefilesystem <- liftIO $ catchDefaultIO False $ 
+		(\a b -> deviceID a == deviceID b)
+			<$> getFileStatus d
+			<*> getFileStatus annexdir
+	checkDiskSpace (Just d) k 0 samefilesystem
 
 store :: FilePath -> ChunkConfig -> Key -> L.ByteString -> MeterUpdate -> Annex Bool
 store d chunkconfig k b p = liftIO $ do
@@ -211,11 +218,56 @@ removeDirGeneric topdir dir = do
 
 checkKey :: FilePath -> ChunkConfig -> CheckPresent
 checkKey d (LegacyChunks _) k = Legacy.checkKey d locations k
-checkKey d _ k = liftIO $
-	ifM (anyM doesFileExist (locations d k))
+checkKey d _ k = checkPresentGeneric d (locations d k)
+
+checkPresentGeneric :: FilePath -> [FilePath] -> Annex Bool
+checkPresentGeneric d ps = liftIO $
+	ifM (anyM doesFileExist ps)
 		( return True
 		, ifM (doesDirectoryExist d)
 			( return False
 			, giveup $ "directory " ++ d ++ " is not accessible"
 			)
 		)
+
+exportPath :: FilePath -> ExportLocation -> FilePath
+exportPath d (ExportLocation loc) = d </> loc
+
+storeExportDirectory :: FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
+storeExportDirectory d k loc p = sendAnnex k rollback send
+  where
+	dest = exportPath d loc
+	send src = liftIO $ catchBoolIO $ do
+		createDirectoryIfMissing True dest
+		withMeteredFile src p (L.writeFile dest)
+		return True
+	rollback = liftIO $ nukeFile dest
+
+retrieveExportDirectory :: FilePath -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
+retrieveExportDirectory d _k loc dest p = unVerified $ liftIO $ catchBoolIO $ do
+	withMeteredFile src p (L.writeFile dest)
+	return True
+  where
+	src = exportPath d loc
+
+removeExportDirectory :: FilePath -> Key -> ExportLocation -> Annex Bool
+removeExportDirectory d _k loc = liftIO $ do
+	nukeFile src
+	void $ tryIO $ removeDirectory $ takeDirectory src
+	return True
+  where
+	src = exportPath d loc
+
+checkPresentExportDirectory :: FilePath -> Key -> ExportLocation -> Annex Bool
+checkPresentExportDirectory d _k loc =
+	checkPresentGeneric d [exportPath d loc]
+
+renameExportDirectory :: FilePath -> Key -> ExportLocation -> ExportLocation -> Annex Bool
+renameExportDirectory d _k oldloc newloc = liftIO $ catchBoolIO $ do
+	createDirectoryIfMissing True dest
+	renameFile src dest
+	void $ tryIO $ removeDirectory $ takeDirectory src
+	return True
+  where
+	src = exportPath d oldloc
+	dest = exportPath d newloc
