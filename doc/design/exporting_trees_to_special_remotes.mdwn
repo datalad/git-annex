@@ -35,6 +35,11 @@ To export a treeish, the user can run:
 That does all necessary uploads etc to make the special remote contain
 the tree of files. The treeish can be a tag, a branch, or a tree.
 
+If a file's content is not present, it won't be exported. Re-running the
+same export later should export files whose content has become present.
+(This likely means a second pass, and needs location tracking to track
+which files are in the export.)
+
 Users may sometimes want to export multiple treeishes to a single special 
 remote. For example, exporting several tags. This interface could be
 complicated to support that, putting the treeishes in subdirectories on the
@@ -144,9 +149,13 @@ when using any of the above.
 
 ## location tracking
 
+Since not all the files in an exported treeish may have content
+present when the export is done, location tracking will be needed so that
+getting the files and exporting again transfers their content.
+
 Does a copy of a file exported to a special remote count as a copy
 of a file as far as [[numcopies]] goes? Should git-annex get download
-a file from an export? Or should exporting not update location tracking?
+a file from an export?
 
 The problem is that special remotes with exports are not
 key/value stores. The content of a file can change, and if multiple
@@ -218,10 +227,11 @@ checksum it, or deleting the whole export, what can be done to resolve it?
 
 In this case, git-annex knows both exported trees. Have the user provide
 a tree that resolves the conflict as they desire (it could be the same as
-one of the exported trees, or some merge of them). Then diff each exported
-tree in turn against the resolving tree. If a file differs, re-export that
-file. In some cases this will do unncessary re-uploads, but it's reasonably
-efficient.
+one of the exported trees, or some merge of them or an entirely new tree).
+The UI to do this can just be another `git annex export $tree --to remote`.
+To resolve, diff each exported tree in turn against the resolving tree. If a
+file differs, re-export that file. In some cases this will do unncessary
+re-uploads, but it's reasonably efficient.
 
 The documentation should suggest strongly only exporting to a given special
 remote from a single repository, or having some other rule that avoids
