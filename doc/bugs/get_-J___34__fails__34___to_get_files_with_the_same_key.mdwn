@@ -1,0 +1,48 @@
+### What steps will reproduce the problem?
+
+ask annex get in parallel files which point to the same key
+
+### What version of git-annex are you using? On what operating system?
+
+6.20170815+gitg22da64d0f-1~ndall+1
+
+### Please provide any additional information below.
+
+[[!format sh """
+# works in serial mode
+
+$> git annex get rh.white{,_avg}
+get rh.white (from web...) 
+/mnt/btrfs/scrap/tmp/ds0001 100%[===========================================>] 360.31K  --.-KB/s    in 0.1s    
+2017-08-30 10:08:02 URL:https://dl.dropboxusercontent.com/s/0lww4tomnwfanwd/rh.white_avg?dl=0 [368962/368962] -> "/mnt/btrfs/scrap/tmp/ds000114/derivatives/freesurfer/.git/annex/tmp/MD5E-s368962--99a4db61cedffee686aef99b2d197794" [1]
+(checksum...) ok
+(recording state in git...)
+(dev)2 10016.....................................:Wed 30 Aug 2017 10:08:02 AM EDT:.
+(git)smaug:…/btrfs/scrap/tmp/ds000114/derivatives/freesurfer[master]fsaverage5/surf
+$> git annex drop --fast rh.white{,_avg}         
+drop rh.white (checking https://dl.dropbox.com/s/0lww4tomnwfanwd/rh.white_avg?dl=0...) ok
+(recording state in git...)
+
+# "fails" in parallel
+$> git annex get -J2 rh.white{,_avg}   
+get rh.white get rh.white_avg (transfer already in progress, or unable to take transfer lock) 
+  Unable to access these remotes: web
+(from web...) 
+
+  Try making some of these repositories available:
+        00000000-0000-0000-0000-000000000001 -- web
+        5e47b3f3-f09c-4969-8885-920a49ff8a45 -- yoh@smaug:/mnt/btrfs/datasets/datalad/crawl/workshops/nih-workshop-2017/ds000114/derivatives/freesurfer
+failed
+/mnt/btrfs/scrap/tmp/ds0001 100%[===========================================>] 360.31K  1.63MB/s    in 0.2s    
+2017-08-30 10:08:21 URL:https://dl.dropboxusercontent.com/s/0lww4tomnwfanwd/rh.white_avg?dl=0 [368962/368962] -> "/mnt/btrfs/scrap/tmp/ds000114/derivatives/freesurfer/.git/annex/tmp/MD5E-s368962--99a4db61cedffee686aef99b2d197794" [1]
+(checksum...) ok
+(recording state in git...)
+git-annex: get: 1 failed
+(dev)2 10018 ->1.....................................:Wed 30 Aug 2017 10:08:21 AM EDT:.
+
+"""]]
+
+so at the end we get a run of git-annex which exits with error 1... and in json mode also the error(s) reported etc.
+I wondered if annex should first analyze passed paths to get actual keys to be fetched?
+
+[[!meta author=yoh]]
