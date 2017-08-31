@@ -230,9 +230,6 @@ checkPresentGeneric d ps = liftIO $
 			)
 		)
 
-exportPath :: FilePath -> ExportLocation -> FilePath
-exportPath d (ExportLocation loc) = d </> loc
-
 storeExportDirectory :: FilePath -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
 storeExportDirectory d src _k loc p = liftIO $ catchBoolIO $ do
 	createDirectoryIfMissing True (takeDirectory dest)
@@ -251,7 +248,7 @@ retrieveExportDirectory d _k loc dest p = unVerified $ liftIO $ catchBoolIO $ do
 removeExportDirectory :: FilePath -> Key -> ExportLocation -> Annex Bool
 removeExportDirectory d _k loc = liftIO $ do
 	nukeFile src
-	void $ tryIO $ removeDirectory $ takeDirectory src
+	removeExportLocation d loc
 	return True
   where
 	src = exportPath d loc
@@ -264,8 +261,21 @@ renameExportDirectory :: FilePath -> Key -> ExportLocation -> ExportLocation -> 
 renameExportDirectory d _k oldloc newloc = liftIO $ catchBoolIO $ do
 	createDirectoryIfMissing True dest
 	renameFile src dest
-	void $ tryIO $ removeDirectory $ takeDirectory src
+	removeExportLocation d oldloc
 	return True
   where
 	src = exportPath d oldloc
 	dest = exportPath d newloc
+
+exportPath :: FilePath -> ExportLocation -> FilePath
+exportPath d (ExportLocation loc) = d </> loc
+
+{- Removes the ExportLocation directory and its parents, so long as
+ - they're empty, up to but not including the topdir. -}
+removeExportLocation :: FilePath -> ExportLocation -> IO ()
+removeExportLocation topdir (ExportLocation loc) = go (Just loc) (Right ())
+  where
+	go _ (Left _e) = return ()
+	go Nothing _ = return ()
+	go (Just loc') _ = go (upFrom loc')
+		=<< tryIO (removeDirectory $ exportPath topdir (ExportLocation loc'))
