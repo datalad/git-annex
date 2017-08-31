@@ -16,6 +16,7 @@ import Types.Key
 import Types.Remote
 import Annex.Content
 import Annex.CatFile
+import Logs.Location
 import Messages.Progress
 import Utility.Tmp
 
@@ -69,10 +70,15 @@ performExport r diff loc = case storeExport r of
 	Just storer -> next $ do
 		v <- exportKey (Git.DiffTree.dstsha diff)
 		case v of
-			Right k -> metered Nothing k $ \m ->
-				sendAnnex k
-					(void $ performUnexport r k loc)
-					(\f -> storer f k loc m)
+			Right k -> ifM (inAnnex k)
+				( metered Nothing k $ \m ->
+					sendAnnex k
+						(void $ performUnexport r k loc)
+						(\f -> storer f k loc m)
+				, do
+					showNote "not available"
+					return False
+				)
 			-- Sending a non-annexed file.
 			Left sha1k -> metered Nothing sha1k $ \m ->
 				withTmpFile "export" $ \tmp h -> do
