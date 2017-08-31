@@ -17,14 +17,10 @@ there need to be a new interface in supported remotes?
 
 Work is in progress. Todo list:
 
-* Remember the previously exported tree (in git-annex branch, see design)
-  and use to make next export more efficient.
 * Only export to remotes that were initialized to support it.
 * Prevent using export remotes for key/value storage.
-* When exporting, update location tracking to allow getting from exports,
 * Use retrieveExport when getting from export remotes.
 * Efficient handling of renames.
-* Detect export conflicts (see design)
 * Support export to aditional special remotes (S3 etc)
 * Support export to external special remotes.
 * If the same content is present in two different files, export
@@ -36,4 +32,4 @@ Work is in progress. Todo list:
 
   And, once one of the files is uploaded, the location log will
   say the content is present, so the pass over the tree won't try to
-  upload the other file.
+  upload the other file. (See design for a fix for this.)

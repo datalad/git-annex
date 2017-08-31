@@ -11,14 +11,16 @@ import Command
 import qualified Git
 import qualified Git.DiffTree
 import qualified Git.LsTree
+import qualified Git.Ref
 import Git.Types
-import Git.Sha
 import Git.FilePath
+import Git.Sha
 import Types.Key
 import Types.Remote
 import Annex.Content
 import Annex.CatFile
 import Logs.Location
+import Logs.Export
 import Messages.Progress
 import Utility.Tmp
 
@@ -67,45 +69,46 @@ exportKey sha = mk <$> catKey sha
 seek :: ExportOptions -> CommandSeek
 seek o = do
 	r <- getParsed (exportRemote o)
-	let oldtreeish = emptyTree -- XXX temporary
+	new <- fromMaybe (error "unknown tree") <$>
+		inRepo (Git.Ref.sha (exportTreeish o))
+	old <- getExport (uuid r)
 
-	-- First, diff the old and new trees and update all changed
-	-- files in the export.
-	(diff, cleanup) <- inRepo $
-		Git.DiffTree.diffTreeRecursive oldtreeish (exportTreeish o)
-	seekActions $ pure $ map (startDiff r) diff
-	void $ liftIO cleanup
+	when (length old > 1) $
+		warning "Export conflict detected. Different trees have been exported to the same special remote. Resolving.."
+	
+	-- First, diff the old and new trees and delete all changed
+	-- files in the export. Every file that remains in the export will
+	-- have the content from the new treeish.
+	-- 
+	-- (Also, when there was an export conflict, this resolves it.)
+	forM_ old $ \oldtreesha -> do
+		(diff, cleanup) <- inRepo $
+			Git.DiffTree.diffTreeRecursive oldtreesha new
+		seekActions $ pure $ map (startUnexport r) diff
+		void $ liftIO cleanup
 
-	-- In case a previous export was incomplete, make a pass
-	-- over the whole tree and export anything that is not
-	-- yet exported.
-	(l, cleanup') <- inRepo $ Git.LsTree.lsTree (exportTreeish o)
-	seekActions $ pure $ map (start r) l
+	-- Waiting until now to record the export guarantees that,
+	-- if this export is interrupted, there are no files left over
+	-- from a previous export, that are not part of this export.
+	recordExport (uuid r) $ ExportChange
+		{ oldTreeish = old
+		, newTreeish = new
+		}
+
+	-- Export everything that is not yet exported.
+	(l, cleanup') <- inRepo $ Git.LsTree.lsTree new
+	seekActions $ pure $ map (startExport r) l
 	void $ liftIO cleanup'
 
-startDiff :: Remote -> Git.DiffTree.DiffTreeItem -> CommandStart
-startDiff r diff
-	| Git.DiffTree.dstsha diff == nullSha = do
-		showStart "unexport" f
-		oldk <- exportKey (Git.DiffTree.srcsha diff)
-		next $ performUnexport r oldk loc
-	| otherwise = do
-		showStart "export" f
-		k <- exportKey (Git.DiffTree.dstsha diff)
-		next $ performExport r k (Git.DiffTree.dstsha diff) loc
-  where
-	loc = ExportLocation $ toInternalGitPath $ 
-		getTopFilePath $ Git.DiffTree.file diff
-	f = getTopFilePath $ Git.DiffTree.file diff
-
-start :: Remote -> Git.LsTree.TreeItem -> CommandStart
-start r ti = do
+startExport :: Remote -> Git.LsTree.TreeItem -> CommandStart
+startExport r ti = do
 	ek <- exportKey (Git.LsTree.sha ti)
-	stopUnless (elem (uuid r) <$> loggedLocations (asKey ek)) $
+	stopUnless (notElem (uuid r) <$> loggedLocations (asKey ek)) $ do
+		showStart "export" f
 		next $ performExport r ek (Git.LsTree.sha ti) loc
   where
-	loc = ExportLocation $ toInternalGitPath $
-		getTopFilePath $ Git.LsTree.file ti
+	loc = ExportLocation $ toInternalGitPath f
+	f = getTopFilePath $ Git.LsTree.file ti
 
 performExport :: Remote -> ExportKey -> Sha -> ExportLocation -> CommandPerform
 performExport r ek contentsha loc = case storeExport r of
@@ -136,6 +139,17 @@ cleanupExport :: Remote -> ExportKey -> CommandCleanup
 cleanupExport r ek = do
 	logChange (asKey ek) (uuid r) InfoPresent
 	return True
+
+startUnexport :: Remote -> Git.DiffTree.DiffTreeItem -> CommandStart
+startUnexport r diff
+	| Git.DiffTree.srcsha diff /= nullSha = do
+		showStart "unexport" f
+		oldk <- exportKey (Git.DiffTree.srcsha diff)
+		next $ performUnexport r oldk loc
+	| otherwise = stop
+  where
+	loc = ExportLocation $ toInternalGitPath f
+	f = getTopFilePath $ Git.DiffTree.file diff
 
 performUnexport :: Remote -> ExportKey -> ExportLocation -> CommandPerform
 performUnexport r ek loc = case removeExport r of
