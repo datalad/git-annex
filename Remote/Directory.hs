@@ -29,6 +29,7 @@ import qualified Remote.Directory.LegacyChunked as Legacy
 import Annex.Content
 import Annex.UUID
 import Utility.Metered
+import Utility.Tmp
 
 remote :: RemoteType
 remote = RemoteType {
@@ -116,11 +117,6 @@ getLocation d k = do
 storeDir :: FilePath -> Key -> FilePath
 storeDir d k = addTrailingPathSeparator $ d </> hashDirLower def k </> keyFile k
 
-{- Where we store temporary data for a key, in the directory, as it's being
- - written. -}
-tmpDir :: FilePath -> Key -> FilePath
-tmpDir d k = addTrailingPathSeparator $ d </> "tmp" </> keyFile k
-
 {- Check if there is enough free disk space in the remote's directory to
  - store the key. Note that the unencrypted key size is checked. -}
 prepareStore :: FilePath -> ChunkConfig -> Preparer Storer
@@ -148,7 +144,7 @@ store d chunkconfig k b p = liftIO $ do
 			finalizeStoreGeneric tmpdir destdir
 			return True
   where
-	tmpdir = tmpDir d k
+	tmpdir = addTrailingPathSeparator $ d </> "tmp" </> keyFile k
 	destdir = storeDir d k
 
 {- Passed a temp directory that contains the files that should be placed
@@ -233,7 +229,9 @@ checkPresentGeneric d ps = liftIO $
 storeExportDirectory :: FilePath -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
 storeExportDirectory d src _k loc p = liftIO $ catchBoolIO $ do
 	createDirectoryIfMissing True (takeDirectory dest)
-	withMeteredFile src p (L.writeFile dest)
+	-- Write via temp file so that checkPresentGeneric will not
+	-- see it until it's fully stored.
+	viaTmp (\tmp () -> withMeteredFile src p (L.writeFile tmp)) dest ()
 	return True
   where
 	dest = exportPath d loc

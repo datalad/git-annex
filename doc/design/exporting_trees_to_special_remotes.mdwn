@@ -69,44 +69,12 @@ To efficiently update an export, git-annex can diff the tree
 that was exported with the new tree. The naive approach is to upload
 new and modified files and remove deleted files.
 
-Note that a file may have been partially uploaded to an export, and then
-the export updated to a tree without that file. So, need to try to delete
-all removed files, even if location tracking does not say that the special
-remote contains them.
-
 With rename detection, if the special remote supports moving files,
 more efficient updates can be done. It gets complicated; consider two files
 that swap names.
 
 If the special remote supports copying files, that would also make some
 updates more efficient.
-
-## resuming exports
-
-Resuming an interrupted export needs to work well.
-
-There are two cases here:
-
-1. Some of the files in the tree have been uploaded; others have not.
-2. A file has been partially uploaded.
-
-These two cases need to be disentangled somehow in order to handle
-them. One way is to use the location log as follows:
-
-* Before a file is uploaded, look up what key is currently exported
-  using that filename. If there is one, update the location log,
-  saying it's not present in the special remote.
-* Upload the file.
-* Update the location log for the newly exported key.
-
-Note that this method does not allow resuming a partial upload by appending to
-a file, because we don't know if the file actually started to be uploaded, or
-if the file instead still has the old key's content. Instead, the whole
-file needs to be re-uploaded.
-
-Alternative: Keep an index file that's the current state of the export.
-See comment #4 of [[todo/export]]. Not sure if that works? Perhaps it
-would be overkill if it's only used to support resuming partial uploads.
 
 ## changes to special remote interface
 
@@ -123,6 +91,9 @@ Here's the changes to the latter:
 * `TRANSFEREXPORT STORE|RETRIEVE Key File`  
   Requests the transfer of a File on local disk to or from the previously 
   provided Name on the special remote.  
+  Note that it's important that, while a file is being stored,
+  CHECKPRESENTEXPORT not indicate it's present until all the data has
+  been transferred.  
   The remote responds with either `TRANSFER-SUCCESS` or
   `TRANSFER-FAILURE`, and a remote where exports do not make sense
   may always fail.
@@ -241,3 +212,42 @@ re-uploads, but it's reasonably efficient.
 The documentation should suggest strongly only exporting to a given special
 remote from a single repository, or having some other rule that avoids
 export conflicts.
+
+## when to update export.log for efficient resuming of exports
+
+When should `export.log` be updated? Possibilities:
+
+* Before performing any work, to set the goal.
+* After the export is fully successful, to record the current state.
+* After some mid-point.
+
+Lots of things could go wrong during an export. A file might fail to be
+transferred or only part of it be transferred; a file's content might not
+be present to transfer at all. The export could be interrupted part way.
+Updating the export.log at the right point in time is important to handle
+these cases efficiently.
+
+If the export.log is updated first, then it's only a goal and does not tell
+us what's been done already.
+
+If the export.log is updated only after complete success, then the common
+case of some files not having content locally present will prevent it from
+being updated. When we resume, we again don't know what's been done
+already.
+
+If the export.log is updated after deleting any files from the
+remote that are not the same in the new treeish as in the old treeish,
+and as long as TRANSFEREXPORT STORE is atomic, then when resuming we can
+trust CHECKPRESENTEXPORT to only find files that have the correct content
+for the current treeish. (Unless a conflicting export was made from
+elsewhere, but in that case, the conflict resolution will have to fix up
+later.)
+
+Efficient resuming can then first check if the location log says the
+export contains the content. (If not, transfer a copy.) If the location
+log says the export contains the content, use CHECKPRESENTEXPORT to see if
+the file exists, and if not transfer a copy. The CHECKPRESENTEXPORT check
+deals with the case where the treeish has two files with the same content.
+If we have a key-to-files map for the export, then we can skip the 
+CHECKPRESENTEXPORT check when there's only one file using a key. So,
+resuming can be quite efficient.

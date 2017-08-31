@@ -98,7 +98,8 @@ data RemoteA a = Remote {
 	checkPresentCheap :: Bool,
 
 	-- Exports content to an ExportLocation.
-	-- The exported file does not need to be updated atomically.
+	-- The exported file should not appear to be present on the remote
+	-- until all of its contents have been transferred.
 	storeExport :: Maybe (FilePath -> Key -> ExportLocation -> MeterUpdate -> a Bool),
 	-- Retrieves exported content to a file.
 	-- (The MeterUpdate does not need to be used if it writes
