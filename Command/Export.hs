@@ -70,7 +70,9 @@ seek :: ExportOptions -> CommandSeek
 seek o = do
 	r <- getParsed (exportRemote o)
 	new <- fromMaybe (error "unknown tree") <$>
-		inRepo (Git.Ref.sha (exportTreeish o))
+		-- Dereference the tree pointed to by the branch, commit,
+		-- or tag.
+		inRepo (Git.Ref.tree (exportTreeish o))
 	old <- getExport (uuid r)
 
 	when (length old > 1) $

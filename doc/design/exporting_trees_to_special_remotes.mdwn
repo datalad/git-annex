@@ -133,12 +133,6 @@ key/value stores. The content of a file can change, and if multiple
 repositories can export a special remote, they can be out of sync about
 what files are exported to it. 
 
-To avoid such problems, when updating an exported file on a special remote,
-the key could be recorded there too. But, this would have to be done
-atomically, and checked atomically when downloading the file. Special
-remotes lack atomicity guarantees for file storage, let alone for file
-retrieval.
-
 Possible solution: Make exporttree=true cause the special remote to
 be untrusted, and rely on annex.verify to catch cases where the content
 of a file on a special remote has changed. This would work well enough
@@ -205,13 +199,8 @@ In this case, git-annex knows both exported trees. Have the user provide
 a tree that resolves the conflict as they desire (it could be the same as
 one of the exported trees, or some merge of them or an entirely new tree).
 The UI to do this can just be another `git annex export $tree --to remote`.
-To resolve, diff each exported tree in turn against the resolving tree. If a
-file differs, re-export that file. In some cases this will do unncessary
-re-uploads, but it's reasonably efficient.
-
-The documentation should suggest strongly only exporting to a given special
-remote from a single repository, or having some other rule that avoids
-export conflicts.
+To resolve, diff each exported tree in turn against the resolving tree
+and delete all files that differ.
 
 ## when to update export.log for efficient resuming of exports
 

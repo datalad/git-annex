@@ -21,6 +21,7 @@ module Annex.Branch (
 	maybeChange,
 	commit,
 	forceCommit,
+	getBranch,
 	files,
 	withIndex,
 	performTransitions,
