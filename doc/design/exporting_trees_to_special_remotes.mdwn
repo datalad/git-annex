@@ -175,6 +175,11 @@ except for when the WORM or URL backend is used. So, prevent the user
 from exporting such keys. Also, force verification on for such special
 remotes, don't let it be turned off.
 
+The same file contents may be in a treeish multiple times under different
+filenames. That complicates using location tracking. One file may have been
+exported and the other not, and location tracking says that the content
+is present in the export.
+
 ## recording exported filenames in git-annex branch
 
 In order to download the content of a key from a file exported

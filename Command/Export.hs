@@ -10,6 +10,8 @@ module Command.Export where
 import Command
 import qualified Git
 import qualified Git.DiffTree
+import qualified Git.LsTree
+import Git.Types
 import Git.Sha
 import Git.FilePath
 import Types.Key
@@ -41,65 +43,19 @@ optParser _ = ExportOptions
 		( metavar paramTreeish
 		)
 
-seek :: ExportOptions -> CommandSeek
-seek o = do
-	r <- getParsed (exportRemote o)
-	let oldtreeish = emptyTree -- XXX temporary
-	(diff, cleanup) <- inRepo $
-		Git.DiffTree.diffTreeRecursive oldtreeish (exportTreeish o)
-	seekActions $ pure $ map (start r) diff
-	void $ liftIO cleanup
+-- An export includes both annexed files and files stored in git.
+-- For the latter, a SHA1 key is synthesized.
+data ExportKey = AnnexKey Key | GitKey Key
 
-start :: Remote -> Git.DiffTree.DiffTreeItem -> CommandStart
-start r diff
-	| Git.DiffTree.dstsha diff == nullSha = do
-		showStart "unexport" f
-		oldk <- either id id <$> exportKey (Git.DiffTree.srcsha diff)
-		next $ performUnexport r oldk loc
-	| otherwise = do
-		showStart "export" f
-		next $ performExport r diff loc
-  where
-	loc = ExportLocation $ toInternalGitPath $ 
-		getTopFilePath $ Git.DiffTree.file diff
-	f = getTopFilePath $ Git.DiffTree.file diff
+asKey :: ExportKey -> Key
+asKey (AnnexKey k) = k
+asKey (GitKey k) = k
 
-performExport :: Remote -> Git.DiffTree.DiffTreeItem -> ExportLocation -> CommandPerform
-performExport r diff loc = case storeExport r of
-	Nothing -> error "remote does not support exporting files"
-	Just storer -> next $ do
-		v <- exportKey (Git.DiffTree.dstsha diff)
-		case v of
-			Right k -> ifM (inAnnex k)
-				( metered Nothing k $ \m ->
-					sendAnnex k
-						(void $ performUnexport r k loc)
-						(\f -> storer f k loc m)
-				, do
-					showNote "not available"
-					return False
-				)
-			-- Sending a non-annexed file.
-			Left sha1k -> metered Nothing sha1k $ \m ->
-				withTmpFile "export" $ \tmp h -> do
-					b <- catObject (Git.DiffTree.dstsha diff)
-					liftIO $ L.hPut h b
-					liftIO $ hClose h
-					storer tmp sha1k loc m
-
-performUnexport :: Remote -> Key -> ExportLocation -> CommandPerform
-performUnexport r k loc = case removeExport r of
-	Nothing -> error "remote does not support removing exported files"
-	Just remover -> next $ remover k loc
-
--- When the Sha points to an annexed file, get the key as Right.
--- When the Sha points to a non-annexed file, convert to a SHA1 key,
--- as Left.
-exportKey :: Git.Sha -> Annex (Either Key Key)
+exportKey :: Git.Sha -> Annex ExportKey
 exportKey sha = mk <$> catKey sha
   where
-	mk (Just k) = Right k
-	mk Nothing = Left $ Key
+	mk (Just k) = AnnexKey k
+	mk Nothing = GitKey $ Key
 		{ keyName = show sha
 		, keyVariety = SHA1Key (HasExt False)
 		, keySize = Nothing
@@ -107,3 +63,90 @@ exportKey sha = mk <$> catKey sha
 		, keyChunkSize = Nothing
 		, keyChunkNum = Nothing
 		}
+
+seek :: ExportOptions -> CommandSeek
+seek o = do
+	r <- getParsed (exportRemote o)
+	let oldtreeish = emptyTree -- XXX temporary
+
+	-- First, diff the old and new trees and update all changed
+	-- files in the export.
+	(diff, cleanup) <- inRepo $
+		Git.DiffTree.diffTreeRecursive oldtreeish (exportTreeish o)
+	seekActions $ pure $ map (startDiff r) diff
+	void $ liftIO cleanup
+
+	-- In case a previous export was incomplete, make a pass
+	-- over the whole tree and export anything that is not
+	-- yet exported.
+	(l, cleanup') <- inRepo $ Git.LsTree.lsTree (exportTreeish o)
+	seekActions $ pure $ map (start r) l
+	void $ liftIO cleanup'
+
+startDiff :: Remote -> Git.DiffTree.DiffTreeItem -> CommandStart
+startDiff r diff
+	| Git.DiffTree.dstsha diff == nullSha = do
+		showStart "unexport" f
+		oldk <- exportKey (Git.DiffTree.srcsha diff)
+		next $ performUnexport r oldk loc
+	| otherwise = do
+		showStart "export" f
+		k <- exportKey (Git.DiffTree.dstsha diff)
+		next $ performExport r k (Git.DiffTree.dstsha diff) loc
+  where
+	loc = ExportLocation $ toInternalGitPath $ 
+		getTopFilePath $ Git.DiffTree.file diff
+	f = getTopFilePath $ Git.DiffTree.file diff
+
+start :: Remote -> Git.LsTree.TreeItem -> CommandStart
+start r ti = do
+	ek <- exportKey (Git.LsTree.sha ti)
+	stopUnless (elem (uuid r) <$> loggedLocations (asKey ek)) $
+		next $ performExport r ek (Git.LsTree.sha ti) loc
+  where
+	loc = ExportLocation $ toInternalGitPath $
+		getTopFilePath $ Git.LsTree.file ti
+
+performExport :: Remote -> ExportKey -> Sha -> ExportLocation -> CommandPerform
+performExport r ek contentsha loc = case storeExport r of
+	Nothing -> error "remote does not support exporting files"
+	Just storer -> do
+		sent <- case ek of
+			AnnexKey k -> ifM (inAnnex k)
+				( metered Nothing k $ \m -> do
+					let rollback = void $ performUnexport r ek loc
+					sendAnnex k rollback
+						(\f -> storer f k loc m)
+				, do
+					showNote "not available"
+					return False
+				)
+			-- Sending a non-annexed file.
+			GitKey sha1k -> metered Nothing sha1k $ \m ->
+				withTmpFile "export" $ \tmp h -> do
+					b <- catObject contentsha
+					liftIO $ L.hPut h b
+					liftIO $ hClose h
+					storer tmp sha1k loc m
+		if sent
+			then next $ cleanupExport r ek
+			else stop
+
+cleanupExport :: Remote -> ExportKey -> CommandCleanup
+cleanupExport r ek = do
+	logChange (asKey ek) (uuid r) InfoPresent
+	return True
+
+performUnexport :: Remote -> ExportKey -> ExportLocation -> CommandPerform
+performUnexport r ek loc = case removeExport r of
+	Nothing -> error "remote does not support removing exported files"
+	Just remover -> do
+		ok <- remover (asKey ek) loc
+		if ok
+			then next $ cleanupUnexport r ek
+			else stop
+
+cleanupUnexport :: Remote -> ExportKey -> CommandCleanup
+cleanupUnexport r ek = do
+	logChange (asKey ek) (uuid r) InfoMissing
+	return True
