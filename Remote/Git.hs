@@ -50,6 +50,7 @@ import Utility.Batch
 import Utility.SimpleProtocol
 import Remote.Helper.Git
 import Remote.Helper.Messages
+import Remote.Helper.Export
 import qualified Remote.Helper.Ssh as Ssh
 import qualified Remote.GCrypt
 import qualified Remote.P2P
@@ -157,11 +158,7 @@ gen r u c gc
 			, lockContent = Just (lockKey new)
 			, checkPresent = inAnnex new
 			, checkPresentCheap = repoCheap r
-			, storeExport = Nothing
-			, retrieveExport = Nothing
-			, removeExport = Nothing
-			, checkPresentExport = Nothing
-			, renameExport = Nothing
+			, exportActions = exportUnsupported
 			, whereisKey = Nothing
 			, remoteFsck = if Git.repoIsUrl r
 				then Nothing

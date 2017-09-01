@@ -38,6 +38,7 @@ import Remote.Helper.Git
 import Remote.Helper.Encryptable
 import Remote.Helper.Special
 import Remote.Helper.Messages
+import Remote.Helper.Export
 import qualified Remote.Helper.Ssh as Ssh
 import Utility.Metered
 import Annex.UUID
@@ -114,11 +115,7 @@ gen' r u c gc = do
 		, lockContent = Nothing
 		, checkPresent = checkPresentDummy
 		, checkPresentCheap = repoCheap r
-		, storeExport = Nothing
-		, retrieveExport = Nothing
-		, removeExport = Nothing
-		, checkPresentExport = Nothing
-		, renameExport = Nothing
+		, exportActions = exportUnsupported
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing

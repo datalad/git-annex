@@ -26,6 +26,7 @@ import Backend.URL
 import Annex.Perms
 import Annex.UUID
 import qualified Annex.Url as Url
+import Remote.Helper.Export
 
 import Network.URI
 
@@ -61,11 +62,7 @@ gen r _ c gc =
 		, lockContent = Nothing
 		, checkPresent = checkKey
 		, checkPresentCheap = False
-		, storeExport = Nothing
-		, retrieveExport = Nothing
-		, removeExport = Nothing
-		, checkPresentExport = Nothing
-		, renameExport = Nothing
+		, exportActions = exportUnsupported
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing

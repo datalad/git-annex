@@ -10,6 +10,7 @@ module Remote.Web (remote, getWebUrls) where
 import Annex.Common
 import Types.Remote
 import Remote.Helper.Messages
+import Remote.Helper.Export
 import qualified Git
 import qualified Git.Construct
 import Annex.Content
@@ -50,11 +51,7 @@ gen r _ c gc =
 		, lockContent = Nothing
 		, checkPresent = checkKey
 		, checkPresentCheap = False
-		, storeExport = Nothing
-		, retrieveExport = Nothing
-		, removeExport = Nothing
-		, checkPresentExport = Nothing
-		, renameExport = Nothing
+		, exportActions = exportUnsupported
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing

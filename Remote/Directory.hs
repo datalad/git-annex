@@ -25,6 +25,7 @@ import Config.Cost
 import Config
 import Utility.FileMode
 import Remote.Helper.Special
+import Remote.Helper.Export
 import qualified Remote.Directory.LegacyChunked as Legacy
 import Annex.Content
 import Annex.UUID
@@ -59,11 +60,14 @@ gen r u c gc = do
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = True
-			, storeExport = Just $ storeExportDirectory dir
-			, retrieveExport = Just $ retrieveExportDirectory dir
-			, removeExport = Just $ removeExportDirectory dir
-			, checkPresentExport = Just $ checkPresentExportDirectory dir
-			, renameExport = Just $ renameExportDirectory dir
+			, exportActions = ExportActions
+				{ exportSupported = return True
+				, storeExport = storeExportDirectory dir
+				, retrieveExport = retrieveExportDirectory dir
+				, removeExport = removeExportDirectory dir
+				, checkPresentExport = checkPresentExportDirectory dir
+				, renameExport = renameExportDirectory dir
+				}
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
 			, repairRepo = Nothing

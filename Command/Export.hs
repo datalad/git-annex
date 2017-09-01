@@ -69,6 +69,9 @@ exportKey sha = mk <$> catKey sha
 seek :: ExportOptions -> CommandSeek
 seek o = do
 	r <- getParsed (exportRemote o)
+	unlessM (exportSupported (exportActions r)) $
+		error "That remote does not support exports."
+
 	new <- fromMaybe (error "unknown tree") <$>
 		-- Dereference the tree pointed to by the branch, commit,
 		-- or tag.
@@ -113,29 +116,28 @@ startExport r ti = do
 	f = getTopFilePath $ Git.LsTree.file ti
 
 performExport :: Remote -> ExportKey -> Sha -> ExportLocation -> CommandPerform
-performExport r ek contentsha loc = case storeExport r of
-	Nothing -> error "remote does not support exporting files"
-	Just storer -> do
-		sent <- case ek of
-			AnnexKey k -> ifM (inAnnex k)
-				( metered Nothing k $ \m -> do
-					let rollback = void $ performUnexport r ek loc
-					sendAnnex k rollback
-						(\f -> storer f k loc m)
-				, do
-					showNote "not available"
-					return False
-				)
-			-- Sending a non-annexed file.
-			GitKey sha1k -> metered Nothing sha1k $ \m ->
-				withTmpFile "export" $ \tmp h -> do
-					b <- catObject contentsha
-					liftIO $ L.hPut h b
-					liftIO $ hClose h
-					storer tmp sha1k loc m
-		if sent
-			then next $ cleanupExport r ek
-			else stop
+performExport r ek contentsha loc = do
+	let storer = storeExport $ exportActions r
+	sent <- case ek of
+		AnnexKey k -> ifM (inAnnex k)
+			( metered Nothing k $ \m -> do
+				let rollback = void $ performUnexport r ek loc
+				sendAnnex k rollback
+					(\f -> storer f k loc m)
+			, do
+				showNote "not available"
+				return False
+			)
+		-- Sending a non-annexed file.
+		GitKey sha1k -> metered Nothing sha1k $ \m ->
+			withTmpFile "export" $ \tmp h -> do
+				b <- catObject contentsha
+				liftIO $ L.hPut h b
+				liftIO $ hClose h
+				storer tmp sha1k loc m
+	if sent
+		then next $ cleanupExport r ek
+		else stop
 
 cleanupExport :: Remote -> ExportKey -> CommandCleanup
 cleanupExport r ek = do
@@ -154,13 +156,12 @@ startUnexport r diff
 	f = getTopFilePath $ Git.DiffTree.file diff
 
 performUnexport :: Remote -> ExportKey -> ExportLocation -> CommandPerform
-performUnexport r ek loc = case removeExport r of
-	Nothing -> error "remote does not support removing exported files"
-	Just remover -> do
-		ok <- remover (asKey ek) loc
-		if ok
-			then next $ cleanupUnexport r ek
-			else stop
+performUnexport r ek loc = do
+	let remover = removeExport $ exportActions r
+	ok <- remover (asKey ek) loc
+	if ok
+		then next $ cleanupUnexport r ek
+		else stop
 
 cleanupUnexport :: Remote -> ExportKey -> CommandCleanup
 cleanupUnexport r ek = do

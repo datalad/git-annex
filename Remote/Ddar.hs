@@ -19,6 +19,7 @@ import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
+import Remote.Helper.Export
 import Annex.Ssh
 import Annex.UUID
 import Utility.SshHost
@@ -60,11 +61,7 @@ gen r u c gc = do
 		, lockContent = Nothing
 		, checkPresent = checkPresentDummy
 		, checkPresentCheap = ddarLocal ddarrepo
-		, storeExport = Nothing
-		, retrieveExport = Nothing
-		, removeExport = Nothing
-		, checkPresentExport = Nothing
-		, renameExport = Nothing
+		, exportActions = exportUnsupported
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing

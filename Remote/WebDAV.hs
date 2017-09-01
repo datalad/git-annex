@@ -28,6 +28,7 @@ import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.Messages
 import Remote.Helper.Http
+import Remote.Helper.Export
 import qualified Remote.Helper.Chunked.Legacy as Legacy
 import Creds
 import Utility.Metered
@@ -68,11 +69,7 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
-			, storeExport = Nothing
-			, retrieveExport = Nothing
-			, removeExport = Nothing
-			, checkPresentExport = Nothing
-			, renameExport = Nothing
+			, exportActions = exportUnsupported
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
 			, repairRepo = Nothing

@@ -83,6 +83,10 @@ the [[external_special_remote_protocol]].
 
 Here's the changes to the latter:
 
+* `EXPORTSUPPORTED`  
+  Used to check if a special remote supports exports. The remote
+  responds with either `EXPORTSUPPORTED-SUCCESS` or
+  `EXPORTSUPPORTED-FAILURE`
 * `EXPORT Name`  
   Comes immediately before each of the following requests, 
   specifying the name of the exported file. It will be in the form

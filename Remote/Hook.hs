@@ -16,6 +16,7 @@ import Config.Cost
 import Annex.UUID
 import Remote.Helper.Special
 import Remote.Helper.Messages
+import Remote.Helper.Export
 import Utility.Env
 import Messages.Progress
 
@@ -51,11 +52,7 @@ gen r u c gc = do
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
-			, storeExport = Nothing
-			, retrieveExport = Nothing
-			, removeExport = Nothing
-			, checkPresentExport = Nothing
-			, renameExport = Nothing
+			, exportActions = exportUnsupported
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
 			, repairRepo = Nothing

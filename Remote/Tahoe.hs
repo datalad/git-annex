@@ -34,6 +34,7 @@ import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
+import Remote.Helper.Export
 import Annex.UUID
 import Annex.Content
 import Logs.RemoteState
@@ -75,11 +76,7 @@ gen r u c gc = do
 		, lockContent = Nothing
 		, checkPresent = checkKey u hdl
 		, checkPresentCheap = False
-		, storeExport = Nothing
-		, retrieveExport = Nothing
-		, removeExport = Nothing
-		, checkPresentExport = Nothing
-		, renameExport = Nothing
+		, exportActions = exportUnsupported
 		, whereisKey = Just (getWhereisKey u)
 		, remoteFsck = Nothing
 		, repairRepo = Nothing

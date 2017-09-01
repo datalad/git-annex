@@ -28,6 +28,7 @@ import Annex.UUID
 import Annex.Ssh
 import Remote.Helper.Special
 import Remote.Helper.Messages
+import Remote.Helper.Export
 import Remote.Rsync.RsyncUrl
 import Crypto
 import Utility.Rsync
@@ -73,11 +74,7 @@ gen r u c gc = do
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
-			, storeExport = Nothing
-			, retrieveExport = Nothing
-			, removeExport = Nothing
-			, checkPresentExport = Nothing
-			, renameExport = Nothing
+			, exportActions = exportUnsupported
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
 			, repairRepo = Nothing

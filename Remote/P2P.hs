@@ -24,6 +24,7 @@ import Annex.UUID
 import Config
 import Config.Cost
 import Remote.Helper.Git
+import Remote.Helper.Export
 import Messages.Progress
 import Utility.Metered
 import Utility.AuthToken
@@ -57,11 +58,7 @@ chainGen addr r u c gc = do
 		, lockContent = Just (lock u addr connpool)
 		, checkPresent = checkpresent u addr connpool
 		, checkPresentCheap = False
-		, storeExport = Nothing
-		, retrieveExport = Nothing
-		, removeExport = Nothing
-		, checkPresentExport = Nothing
-		, renameExport = Nothing
+		, exportActions = exportUnsupported
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing
