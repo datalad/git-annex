@@ -71,9 +71,9 @@ seek :: ExportOptions -> CommandSeek
 seek o = do
 	r <- getParsed (exportRemote o)
 	unlessM (exportSupported (exportActions r)) $
-		error "That remote does not support exports."
+		giveup "That remote does not support exports."
 
-	new <- fromMaybe (error "unknown tree") <$>
+	new <- fromMaybe (giveup "unknown tree") <$>
 		-- Dereference the tree pointed to by the branch, commit,
 		-- or tag.
 		inRepo (Git.Ref.tree (exportTreeish o))
