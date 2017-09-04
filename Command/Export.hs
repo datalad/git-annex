@@ -21,6 +21,7 @@ import Annex.Content
 import Annex.CatFile
 import Logs.Location
 import Logs.Export
+import Database.Export
 import Messages.Progress
 import Utility.Tmp
 
@@ -81,6 +82,8 @@ seek o = do
 	when (length old > 1) $
 		warning "Export conflict detected. Different trees have been exported to the same special remote. Resolving.."
 	
+	db <- openDb (uuid r)
+	
 	-- First, diff the old and new trees and delete all changed
 	-- files in the export. Every file that remains in the export will
 	-- have the content from the new treeish.
@@ -89,7 +92,7 @@ seek o = do
 	forM_ old $ \oldtreesha -> do
 		(diff, cleanup) <- inRepo $
 			Git.DiffTree.diffTreeRecursive oldtreesha new
-		seekActions $ pure $ map (startUnexport r) diff
+		seekActions $ pure $ map (startUnexport r db) diff
 		void $ liftIO cleanup
 
 	-- Waiting until now to record the export guarantees that,
@@ -102,12 +105,13 @@ seek o = do
 
 	-- Export everything that is not yet exported.
 	(l, cleanup') <- inRepo $ Git.LsTree.lsTree new
-	seekActions $ pure $ map (startExport r) l
+	seekActions $ pure $ map (startExport r db) l
 	void $ liftIO cleanup'
 
-startExport :: Remote -> Git.LsTree.TreeItem -> CommandStart
-startExport r ti = do
+startExport :: Remote -> ExportHandle -> Git.LsTree.TreeItem -> CommandStart
+startExport r db ti = do
 	ek <- exportKey (Git.LsTree.sha ti)
+	liftIO $ addExportLocation db (asKey ek) loc
 	stopUnless (notElem (uuid r) <$> loggedLocations (asKey ek)) $ do
 		showStart "export" f
 		next $ performExport r ek (Git.LsTree.sha ti) loc
@@ -144,11 +148,12 @@ cleanupExport r ek = do
 	logChange (asKey ek) (uuid r) InfoPresent
 	return True
 
-startUnexport :: Remote -> Git.DiffTree.DiffTreeItem -> CommandStart
-startUnexport r diff
+startUnexport :: Remote -> ExportHandle -> Git.DiffTree.DiffTreeItem -> CommandStart
+startUnexport r db diff
 	| Git.DiffTree.srcsha diff /= nullSha = do
 		showStart "unexport" f
 		oldk <- exportKey (Git.DiffTree.srcsha diff)
+		liftIO $ removeExportLocation db (asKey oldk) loc
 		next $ performUnexport r oldk loc
 	| otherwise = stop
   where

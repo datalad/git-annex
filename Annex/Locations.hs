@@ -36,6 +36,7 @@ module Annex.Locations (
 	gitAnnexFsckDbDir,
 	gitAnnexFsckDbLock,
 	gitAnnexFsckResultsLog,
+	gitAnnexExportDbDir,
 	gitAnnexScheduleState,
 	gitAnnexTransferDir,
 	gitAnnexCredsDir,
@@ -289,6 +290,15 @@ gitAnnexFsckDbLock u r = gitAnnexFsckDir u r </> "fsck.lck"
 {- .git/annex/fsckresults/uuid is used to store results of git fscks -}
 gitAnnexFsckResultsLog :: UUID -> Git.Repo -> FilePath
 gitAnnexFsckResultsLog u r = gitAnnexDir r </> "fsckresults" </> fromUUID u
+
+{- .git/annex/export/uuid/ is used to store information about
+ - exports to special remotes. -}
+gitAnnexExportDir :: UUID -> Git.Repo -> FilePath
+gitAnnexExportDir u r = gitAnnexDir r </> "export" </> fromUUID u
+
+{- Directory containing database used to record export info. -}
+gitAnnexExportDbDir :: UUID -> Git.Repo -> FilePath
+gitAnnexExportDbDir u r = gitAnnexExportDir u r </> "db"
 
 {- .git/annex/schedulestate is used to store information about when
  - scheduled jobs were last run. -}

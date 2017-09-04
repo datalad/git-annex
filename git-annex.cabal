@@ -787,6 +787,7 @@ Executable git-annex
     Config.GitConfig
     Creds
     Crypto
+    Database.Export
     Database.Fsck
     Database.Handle
     Database.Init
