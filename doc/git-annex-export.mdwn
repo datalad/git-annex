@@ -15,7 +15,7 @@ keys. That is great for data storage, but your filenames are obscured.
 Exporting replicates the tree to the special remote as-is.
 
 Mixing key/value and exports in the same remote would be a mess and so is
-not allowed. So, you have to configure a remote with `exporttree=true`
+not allowed. So, you have to configure a remote with `exporttree=yes`
 when initially setting it up with [[git-annex-initremote]](1).
 
 Repeated exports are done efficiently, by diffing the old and new tree,

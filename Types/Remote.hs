@@ -44,8 +44,7 @@ type RemoteConfigKey = String
 
 type RemoteConfig = M.Map RemoteConfigKey String
 
-data SetupStage = Init | Enable
-	deriving (Eq)
+data SetupStage = Init | Enable RemoteConfig
 
 {- There are different types of remotes. -}
 data RemoteTypeA a = RemoteType {

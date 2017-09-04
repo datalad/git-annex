@@ -31,7 +31,7 @@ remote:
   Do not use for new remotes. It is not safe to change the chunksize
   setting of an existing remote.
 
-* `exporttree` - Set to "true" to make this special remote usable
+* `exporttree` - Set to "yes" to make this special remote usable
   by [[git-annex-export]]. It will not be usable as a general-purpose
   special remote.
 

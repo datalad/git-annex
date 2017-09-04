@@ -52,7 +52,7 @@ makeRsyncRemote name location = makeRemote name location $ const $ void $
 	go Nothing = setupSpecialRemote name Rsync.remote config Nothing
 		(Nothing, R.Init, Annex.SpecialRemote.newConfig name)
 	go (Just (u, c)) = setupSpecialRemote name Rsync.remote config Nothing
-		(Just u, R.Enable, c)
+		(Just u, R.Enable c, c)
 	config = M.fromList
 		[ ("encryption", "shared")
 		, ("rsyncurl", location)
@@ -91,7 +91,7 @@ enableSpecialRemote name remotetype mcreds config = do
 	r <- Annex.SpecialRemote.findExisting name
 	case r of
 		Nothing -> error $ "Cannot find a special remote named " ++ name
-		Just (u, c) -> setupSpecialRemote' False name remotetype config mcreds (Just u, R.Enable, c)
+		Just (u, c) -> setupSpecialRemote' False name remotetype config mcreds (Just u, R.Enable c, c)
 
 setupSpecialRemote :: RemoteName -> RemoteType -> R.RemoteConfig -> Maybe CredPair -> (Maybe UUID, R.SetupStage, R.RemoteConfig) -> Annex RemoteName
 setupSpecialRemote = setupSpecialRemote' True

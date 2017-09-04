@@ -37,14 +37,14 @@ remote = RemoteType {
 	typename = "directory",
 	enumerate = const (findSpecialRemotes "directory"),
 	generate = gen,
-	setup = directorySetup
+	setup = exportableRemoteSetup directorySetup
 }
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
 	cst <- remoteCost gc cheapRemoteCost
 	let chunkconfig = getChunkConfig c
-	return $ Just $ specialRemote c
+	return $ Just $ exportableRemote $ specialRemote c
 		(prepareStore dir chunkconfig)
 		(retrieve dir chunkconfig)
 		(simplyPrepare $ remove dir)

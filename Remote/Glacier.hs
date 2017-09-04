@@ -89,8 +89,9 @@ glacierSetup' ss u mcreds c gc = do
 	(c', encsetup) <- encryptionSetup c gc
 	c'' <- setRemoteCredPair encsetup c' gc (AWS.creds u) mcreds
 	let fullconfig = c'' `M.union` defaults
-	when (ss == Init) $
-		genVault fullconfig gc u
+	case ss of
+		Init -> genVault fullconfig gc u
+		_ -> return ()
 	gitConfigSpecialRemote u fullconfig "glacier" "true"
 	return (fullconfig, u)
   where

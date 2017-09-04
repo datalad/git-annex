@@ -129,8 +129,9 @@ s3Setup' ss u mcreds c gc
 		(c', encsetup) <- encryptionSetup c gc
 		c'' <- setRemoteCredPair encsetup c' gc (AWS.creds u) mcreds
 		let fullconfig = c'' `M.union` defaults
-		when (ss == Init) $
-			genBucket fullconfig gc u
+		case ss of
+			Init -> genBucket fullconfig gc u
+			_ -> return ()
 		use fullconfig
 
 	archiveorg = do

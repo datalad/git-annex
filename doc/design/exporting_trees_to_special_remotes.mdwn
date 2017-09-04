@@ -15,13 +15,13 @@ when they want to export a tree. (It would also be possible to drop all content
 from an existing special remote and reuse it, but there does not seem much
 benefit in doing so.)
 
-Add a new `initremote` configuration `exporttree=true`, that cannot be
+Add a new `initremote` configuration `exporttree=yes`, that cannot be
 changed by `enableremote`:
 
-	git annex initremote myexport type=... exporttree=true
+	git annex initremote myexport type=... exporttree=yes
 
-It does not make sense to encrypt an export, so exporttree=true requires
-(and can even imply) encryption=false.
+It does not make sense to encrypt an export, so exporttree=yes requires
+encryption=none.
 
 Note that the particular tree to export is not specified yet. This is
 because the tree that is exported to a special remote may change.
@@ -137,7 +137,7 @@ key/value stores. The content of a file can change, and if multiple
 repositories can export a special remote, they can be out of sync about
 what files are exported to it. 
 
-Possible solution: Make exporttree=true cause the special remote to
+Possible solution: Make exporttree=yes cause the special remote to
 be untrusted, and rely on annex.verify to catch cases where the content
 of a file on a special remote has changed. This would work well enough
 except for when the WORM or URL backend is used. So, prevent the user
