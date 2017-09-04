@@ -17,7 +17,9 @@ there need to be a new interface in supported remotes?
 
 Work is in progress. Todo list:
 
-* Use retrieveExport when getting from export remotes.
+* `git annex get --from export` works in the repo that exported to it,
+  but in another repo, the export db won't be populated, so it won't work.
+  Maybe just show a useful error message in this case?
 * Efficient handling of renames.
 * Support export to aditional special remotes (S3 etc)
 * Support export to external special remotes.

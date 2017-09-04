@@ -11,11 +11,11 @@ git annex export `treeish --to remote`
 Use this command to export a tree of files from a git-annex repository.
 
 Normally files are stored on a git-annex special remote named by their
-keys. That is great for data storage, but your filenames are obscured.
-Exporting replicates the tree to the special remote as-is.
+keys. That is great for reliable data storage, but your filenames are
+obscured. Exporting replicates the tree to the special remote as-is.
 
-Mixing key/value and exports in the same remote would be a mess and so is
-not allowed. So, you have to configure a remote with `exporttree=yes`
+Mixing key/value storage and exports in the same remote would be a mess and
+so is not allowed. You have to configure a remote with `exporttree=yes`
 when initially setting it up with [[git-annex-initremote]](1).
 
 Repeated exports are done efficiently, by diffing the old and new tree,
@@ -23,6 +23,13 @@ and transferring only the changed files.
 
 Exports can be interrupted and resumed. However, partially uploaded files
 will be re-started from the beginning.
+
+Once content has been exported to a remote, commands like `git annex get`
+can download content from there the same as from other remotes. However,
+since an export is not a key/value store, git-annex has to do more
+verification of content downloaded from an export. Some types of keys,
+that are not based on checksums, cannot be downloaded from an export.
+And, git-annex will never trust an export to retain the content of a key.
 
 # SEE ALSO
 

@@ -159,7 +159,7 @@ unVerified a = do
 -- The FilePath will be relative, and may contain unix-style path
 -- separators.
 newtype ExportLocation = ExportLocation FilePath
-	deriving (Eq)
+	deriving (Show, Eq)
 
 data ExportActions a = ExportActions
 	{ exportSupported :: a Bool

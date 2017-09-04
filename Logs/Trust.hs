@@ -65,10 +65,16 @@ trustMap = maybe trustMapLoad return =<< Annex.getState Annex.trustmap
 trustMapLoad :: Annex TrustMap
 trustMapLoad = do
 	overrides <- Annex.getState Annex.forcetrust
+	l <- remoteList
+	-- Exports are never trusted, since they are not key/value stores.
+	exports <- filterM (Types.Remote.exportSupported . Types.Remote.exportActions) l
+	let exportoverrides = M.fromList $
+		map (\r -> (Types.Remote.uuid r, UnTrusted)) exports
 	logged <- trustMapRaw
-	configured <- M.fromList . catMaybes
-		<$> (map configuredtrust <$> remoteList)
-	let m = M.union overrides $ M.union configured logged
+	let configured = M.fromList $ mapMaybe configuredtrust l
+	let m = M.union exportoverrides $
+		M.union overrides $
+		M.union configured logged
 	Annex.changeState $ \s -> s { Annex.trustmap = Just m }
 	return m
   where

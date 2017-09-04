@@ -354,8 +354,12 @@ shouldVerify :: VerifyConfig -> Annex Bool
 shouldVerify AlwaysVerify = return True
 shouldVerify NoVerify = return False
 shouldVerify DefaultVerify = annexVerify <$> Annex.getGitConfig
-shouldVerify (RemoteVerify r) = shouldVerify DefaultVerify
-	<&&> pure (remoteAnnexVerify (Types.Remote.gitconfig r))
+shouldVerify (RemoteVerify r) = 
+	(shouldVerify DefaultVerify
+			<&&> pure (remoteAnnexVerify (Types.Remote.gitconfig r)))
+	-- Export remotes are not key/value stores, so always verify
+	-- content from them even when verification is disabled.
+	<||> Types.Remote.exportSupported (Types.Remote.exportActions r)
 
 {- Checks if there is enough free disk space to download a key
  - to its temp file.

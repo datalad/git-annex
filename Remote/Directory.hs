@@ -44,7 +44,7 @@ gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remot
 gen r u c gc = do
 	cst <- remoteCost gc cheapRemoteCost
 	let chunkconfig = getChunkConfig c
-	return $ Just $ exportableRemote $ specialRemote c
+	exportableRemote $ specialRemote c
 		(prepareStore dir chunkconfig)
 		(retrieve dir chunkconfig)
 		(simplyPrepare $ remove dir)
