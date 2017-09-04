@@ -30,7 +30,7 @@ import Types.Remote (ExportLocation(..))
 import Database.Persist.TH
 import Database.Esqueleto hiding (Key)
 
-data ExportHandle = ExportHandle H.DbQueue
+newtype ExportHandle = ExportHandle H.DbQueue
 
 share [mkPersist sqlSettings, mkMigrate "migrateExport"] [persistLowerCase|
 Exported

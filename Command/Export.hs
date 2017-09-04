@@ -108,6 +108,8 @@ seek o = do
 	seekActions $ pure $ map (startExport r db) l
 	void $ liftIO cleanup'
 
+	closeDb db
+
 startExport :: Remote -> ExportHandle -> Git.LsTree.TreeItem -> CommandStart
 startExport r db ti = do
 	ek <- exportKey (Git.LsTree.sha ti)
