@@ -8,12 +8,10 @@
 module Remote.Helper.Export where
 
 import Annex.Common
-import qualified Annex
 import Types.Remote
 import Types.Creds
 import Types.Backend
 import Types.Key
-import Types.TrustLevel
 import Backend
 import Remote.Helper.Encryptable (isEncrypted)
 import Database.Export
@@ -84,6 +82,10 @@ exportableRemote r = case M.lookup "exporttree" (config r) of
 			, checkPresent = \k ->
 				anyM (checkPresentExport (exportActions r) k)
 					=<< liftIO (getExportLocation db k)
+			, mkUnavailable = return Nothing
+			, getInfo = do
+				is <- getInfo r
+				return (is++[("export", "yes")])
 			}
 	_ -> return $ Just $ r { exportActions = exportUnsupported }
 
