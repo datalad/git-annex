@@ -18,17 +18,6 @@ there need to be a new interface in supported remotes?
 Work is in progress. Todo list:
 
 * Use retrieveExport when getting from export remotes.
-  (Needs a map from key to ExportLocation)
 * Efficient handling of renames.
-* If the same content is present in two different files, export
-  location tracking can be messed up. 
-  
-  When one of the files is deleted and
-  that tree is exported, the location log for the key will be updated
-  to say it's not present, even though the other file is still present.
-
-  And, once one of the files is uploaded, the location log will
-  say the content is present, so the pass over the tree won't try to
-  upload the other file. (See design for a fix for this.)
 * Support export to aditional special remotes (S3 etc)
 * Support export to external special remotes.

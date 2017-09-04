@@ -113,21 +113,20 @@ seek o = do
 startExport :: Remote -> ExportHandle -> Git.LsTree.TreeItem -> CommandStart
 startExport r db ti = do
 	ek <- exportKey (Git.LsTree.sha ti)
-	liftIO $ addExportLocation db (asKey ek) loc
-	stopUnless (notElem (uuid r) <$> loggedLocations (asKey ek)) $ do
+	stopUnless (liftIO $ notElem loc <$> getExportLocation db (asKey ek)) $ do
 		showStart "export" f
-		next $ performExport r ek (Git.LsTree.sha ti) loc
+		next $ performExport r db ek (Git.LsTree.sha ti) loc
   where
 	loc = ExportLocation $ toInternalGitPath f
 	f = getTopFilePath $ Git.LsTree.file ti
 
-performExport :: Remote -> ExportKey -> Sha -> ExportLocation -> CommandPerform
-performExport r ek contentsha loc = do
+performExport :: Remote -> ExportHandle -> ExportKey -> Sha -> ExportLocation -> CommandPerform
+performExport r db ek contentsha loc = do
 	let storer = storeExport $ exportActions r
 	sent <- case ek of
 		AnnexKey k -> ifM (inAnnex k)
 			( metered Nothing k $ \m -> do
-				let rollback = void $ performUnexport r ek loc
+				let rollback = void $ performUnexport r db ek loc
 				sendAnnex k rollback
 					(\f -> storer f k loc m)
 			, do
@@ -142,11 +141,12 @@ performExport r ek contentsha loc = do
 				liftIO $ hClose h
 				storer tmp sha1k loc m
 	if sent
-		then next $ cleanupExport r ek
+		then next $ cleanupExport r db ek loc
 		else stop
 
-cleanupExport :: Remote -> ExportKey -> CommandCleanup
-cleanupExport r ek = do
+cleanupExport :: Remote -> ExportHandle -> ExportKey -> ExportLocation -> CommandCleanup
+cleanupExport r db ek loc = do
+	liftIO $ addExportLocation db (asKey ek) loc
 	logChange (asKey ek) (uuid r) InfoPresent
 	return True
 
@@ -154,23 +154,28 @@ startUnexport :: Remote -> ExportHandle -> Git.DiffTree.DiffTreeItem -> CommandS
 startUnexport r db diff
 	| Git.DiffTree.srcsha diff /= nullSha = do
 		showStart "unexport" f
-		oldk <- exportKey (Git.DiffTree.srcsha diff)
-		liftIO $ removeExportLocation db (asKey oldk) loc
-		next $ performUnexport r oldk loc
+		ek <- exportKey (Git.DiffTree.srcsha diff)
+		next $ performUnexport r db ek loc
 	| otherwise = stop
   where
 	loc = ExportLocation $ toInternalGitPath f
 	f = getTopFilePath $ Git.DiffTree.file diff
 
-performUnexport :: Remote -> ExportKey -> ExportLocation -> CommandPerform
-performUnexport r ek loc = do
+performUnexport :: Remote -> ExportHandle -> ExportKey -> ExportLocation -> CommandPerform
+performUnexport r db ek loc = do
 	let remover = removeExport $ exportActions r
 	ok <- remover (asKey ek) loc
 	if ok
-		then next $ cleanupUnexport r ek
+		then next $ cleanupUnexport r db ek loc
 		else stop
 
-cleanupUnexport :: Remote -> ExportKey -> CommandCleanup
-cleanupUnexport r ek = do
-	logChange (asKey ek) (uuid r) InfoMissing
+cleanupUnexport :: Remote -> ExportHandle -> ExportKey -> ExportLocation -> CommandCleanup
+cleanupUnexport r db ek loc = do
+	liftIO $ do
+		removeExportLocation db (asKey ek) loc
+		-- Flush so that getExportLocation sees this and any
+		-- other removals of the key.
+		flushDbQueue db
+	whenM (liftIO $ null <$> getExportLocation db (asKey ek)) $
+		logChange (asKey ek) (uuid r) InfoMissing
 	return True

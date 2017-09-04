@@ -16,6 +16,7 @@ module Database.Export (
 	closeDb,
 	addExportLocation,
 	removeExportLocation,
+	flushDbQueue,
 	getExportLocation,
 	ExportedId,
 ) where
@@ -37,7 +38,6 @@ Exported
   key IKey
   file SFilePath
   KeyFileIndex key file
-  UniqueKey key
 |]
 
 {- Opens the database, creating it if it doesn't exist yet. -}
@@ -74,7 +74,10 @@ removeExportLocation h k (ExportLocation f) = queueDb h $
 	ik = toIKey k
 	ef = toSFilePath f
 
-{- Doesn't know about recently queued changes. -}
+flushDbQueue :: ExportHandle -> IO ()
+flushDbQueue (ExportHandle h) = H.flushDbQueue h
+
+{- Note that this does not see recently queued changes. -}
 getExportLocation :: ExportHandle -> Key -> IO [ExportLocation]
 getExportLocation (ExportHandle h) k = H.queryDbQueue h $ do
 	l <- select $ from $ \r -> do

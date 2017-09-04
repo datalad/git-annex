@@ -147,7 +147,8 @@ remotes, don't let it be turned off.
 The same file contents may be in a treeish multiple times under different
 filenames. That complicates using location tracking. One file may have been
 exported and the other not, and location tracking says that the content
-is present in the export.
+is present in the export. A sqlite database is needed to keep track of
+this.
 
 ## recording exported filenames in git-annex branch
 
