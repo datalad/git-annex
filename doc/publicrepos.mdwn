@@ -37,6 +37,11 @@ the public repositories that you can clone to try out git-annex.
   A slightly outdated mirror of http://ifarchive.org.  Scripts should probably be written
   to update the archive regularly.
 
+* [datasets.datalad.org](http://datasets.datalad.org)
+  A large (over 10TB of data) collection of DataLad (git-annex) datasets, providing access primarily 
+  to public neural data resources. Organized via git submodule mechanism. Although underlying
+  repositories are pure git/git-annex repositories, use of datalad tool is advised for more functionality
+  (search, recursive operation, etc). It is regularly updated and enriched.  
 
 This is a wiki -- add your own public repository to the list!
 See [[tips/centralized_git_repository_tutorial]].
