@@ -237,11 +237,37 @@ for the current treeish. (Unless a conflicting export was made from
 elsewhere, but in that case, the conflict resolution will have to fix up
 later.)
 
-Efficient resuming can then first check if the location log says the
-export contains the content. (If not, transfer a copy.) If the location
-log says the export contains the content, use CHECKPRESENTEXPORT to see if
-the file exists, and if not transfer a copy. The CHECKPRESENTEXPORT check
-deals with the case where the treeish has two files with the same content.
-If we have a key-to-files map for the export, then we can skip the 
-CHECKPRESENTEXPORT check when there's only one file using a key. So,
-resuming can be quite efficient.
+## handling renames efficiently
+
+To handle two files that swap names, a temp name is required.
+
+Difficulty with a temp name is picking a name that won't ever be used by
+any exported file.
+
+Interrupted exports also complicate this. While a name could be picked that
+is in neither the old nor the new tree, an export could be interrupted,
+leaving the file at the temp name. There needs to be something to clean
+that up when the export is resumed, even if it's resumed with a different 
+tree.
+
+Could use something like ".git-annex-tmp-content-$key" as the temp name.
+This hides it from casual view, which is good, and it's not depedent on the
+tree, so no state needs to be maintained to clean it up. Also, using the
+key in the name simplifies calculation of complicated renames (eg, renaming
+A to B, B to C, C to A)
+
+Export can first try to rename the temp name of all keys
+whose files are added in the diff. Followed by deleting the temp name
+of all keys whose files are removed in the diff. That is more renames and
+deletes than strictly necessary, but it will statelessly clean up 
+an interruped export as long as it's run again with the same new tree.
+
+But, an export of tree B should clean up after 
+an interrupted export of tree A. Some state is needed to handle this.
+Before starting the export of tree A, record it somewhere. Then when
+resuming, diff A..B, and rename/delete the temp names of the keys in the
+diff. As well as diffing from the last fully exported tree to B and doing
+the same rename/delete. 
+
+So, before an export does anything, need to record the tree that's about
+to be exported to export.log, not as an exported tree, but as a goal.
