@@ -49,6 +49,7 @@ optParser _ = ExportOptions
 -- An export includes both annexed files and files stored in git.
 -- For the latter, a SHA1 key is synthesized.
 data ExportKey = AnnexKey Key | GitKey Key
+	deriving (Show)
 
 asKey :: ExportKey -> Key
 asKey (AnnexKey k) = k
@@ -108,7 +109,7 @@ seek o = do
 				oldtreesha new
 			-- Rename from temp to new files.
 			mapdiff (\diff -> startMoveFromTempName r db (Git.DiffTree.dstsha diff) (Git.DiffTree.file diff))
-				new oldtreesha
+				oldtreesha new
 			-- Remove all remaining temps.
 			mapdiff
 				(startUnexportTempName r db . Git.DiffTree.srcsha)
@@ -252,8 +253,8 @@ startMoveFromTempName r db sha f
 	| sha == nullSha = stop
 	| otherwise = do
 		ek <- exportKey sha
-		stopUnless (liftIO $ elem loc <$> getExportLocation db (asKey ek)) $ do
-			let tmploc@(ExportLocation tmpf) = exportTempName ek
+		let tmploc@(ExportLocation tmpf) = exportTempName ek
+		stopUnless (liftIO $ elem tmploc <$> getExportLocation db (asKey ek)) $ do
 			showStart "rename" (tmpf ++ " -> " ++ f')
 			next $ performRename r db ek tmploc loc
   where
