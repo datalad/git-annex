@@ -261,7 +261,7 @@ checkPresentExportDirectory d _k loc =
 
 renameExportDirectory :: FilePath -> Key -> ExportLocation -> ExportLocation -> Annex Bool
 renameExportDirectory d _k oldloc newloc = liftIO $ catchBoolIO $ do
-	createDirectoryIfMissing True dest
+	createDirectoryIfMissing True (takeDirectory dest)
 	renameFile src dest
 	removeExportLocation d oldloc
 	return True
