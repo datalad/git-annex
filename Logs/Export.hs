@@ -14,22 +14,29 @@ import qualified Annex.Branch
 import qualified Git
 import qualified Git.Branch
 import Git.Tree
+import Git.Sha
 import Git.FilePath
 import Logs
 import Logs.UUIDBased
 import Annex.UUID
 
--- | Get the treeish that was exported to a special remote.
+data Exported = Exported
+	{ exportedTreeish :: Git.Ref
+	, incompleteExportedTreeish :: [Git.Ref]
+	}
+	deriving (Eq)
+
+-- | Get what's been exported to a special remote.
 --
 -- If the list contains multiple items, there was an export conflict,
 -- and different trees were exported to the same special remote.
-getExport :: UUID -> Annex [Git.Ref]
+getExport :: UUID -> Annex [Exported]
 getExport remoteuuid = nub . mapMaybe get . M.elems . simpleMap 
 	. parseLogNew parseExportLog
 	<$> Annex.Branch.get exportLog
   where
-	get (ExportLog t u)
-		| u == remoteuuid = Just t
+	get (ExportLog exported u)
+		| u == remoteuuid = Just exported
 		| otherwise = Nothing
 
 data ExportChange = ExportChange
@@ -38,6 +45,10 @@ data ExportChange = ExportChange
 	}
 
 -- | Record a change in what's exported to a special remote.
+--
+-- This is called before an export begins uploading new files to the
+-- remote, but after it's cleaned up any files that need to be deleted
+-- from the old treeish.
 --
 -- Any entries in the log for the oldTreeish will be updated to the
 -- newTreeish. This way, when multiple repositories are exporting to
@@ -50,27 +61,48 @@ recordExport :: UUID -> ExportChange -> Annex ()
 recordExport remoteuuid ec = do
 	c <- liftIO currentVectorClock
 	u <- getUUID
-	let val = ExportLog (newTreeish ec) remoteuuid
+	let val = ExportLog (Exported (newTreeish ec) []) remoteuuid
 	Annex.Branch.change exportLog $
 		showLogNew formatExportLog 
 			. changeLog c u val 
 			. M.mapWithKey (updateothers c u)
 			. parseLogNew parseExportLog
-	graftTreeish (newTreeish ec)
   where
-	updateothers c u theiru le@(LogEntry _ (ExportLog t remoteuuid'))
+	updateothers c u theiru le@(LogEntry _ (ExportLog exported@(Exported { exportedTreeish = t }) remoteuuid'))
 		| u == theiru || remoteuuid' /= remoteuuid || t `notElem` oldTreeish ec = le
-		| otherwise = LogEntry c (ExportLog (newTreeish ec) theiru)
+		| otherwise = LogEntry c (ExportLog (exported { exportedTreeish = newTreeish ec }) theiru)
 
-data ExportLog = ExportLog Git.Ref UUID
+-- | Record the beginning of an export, to allow cleaning up from
+-- interrupted exports.
+--
+-- This is called before any changes are made to the remote.
+recordExportBeginning :: UUID -> Git.Ref -> Annex ()
+recordExportBeginning remoteuuid newtree = do
+	c <- liftIO currentVectorClock
+	u <- getUUID
+	ExportLog old _ <- fromMaybe (ExportLog (Exported emptyTree []) remoteuuid)
+		. M.lookup u . simpleMap 
+		. parseLogNew parseExportLog
+		<$> Annex.Branch.get exportLog
+	let new = old { incompleteExportedTreeish = newtree:incompleteExportedTreeish old }
+	Annex.Branch.change exportLog $
+		showLogNew formatExportLog 
+			. changeLog c u (ExportLog new remoteuuid)
+			. parseLogNew parseExportLog
+	graftTreeish newtree
+
+data ExportLog = ExportLog Exported UUID
 
 formatExportLog :: ExportLog -> String
-formatExportLog (ExportLog treeish remoteuuid) =
-	Git.fromRef treeish ++ " " ++ fromUUID remoteuuid
+formatExportLog (ExportLog exported remoteuuid) = unwords $
+	[ Git.fromRef (exportedTreeish exported)
+	, fromUUID remoteuuid
+	] ++ map Git.fromRef (incompleteExportedTreeish exported)
 
 parseExportLog :: String -> Maybe ExportLog
 parseExportLog s = case words s of
-	(t:u:[]) -> Just $ ExportLog (Git.Ref t) (toUUID u)
+	(et:u:it) -> Just $
+		ExportLog (Exported (Git.Ref et) (map Git.Ref it)) (toUUID u)
 	_ -> Nothing
 
 -- To prevent git-annex branch merge conflicts, the treeish is

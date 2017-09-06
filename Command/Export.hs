@@ -79,9 +79,10 @@ seek o = do
 		inRepo (Git.Ref.tree (exportTreeish o))
 	old <- getExport (uuid r)
 
+	recordExportBeginning (uuid r) new
 	when (length old > 1) $
 		warning "Export conflict detected. Different trees have been exported to the same special remote. Resolving.."
-	
+
 	db <- openDb (uuid r)
 	
 	-- First, diff the old and new trees and delete all changed
@@ -89,7 +90,7 @@ seek o = do
 	-- have the content from the new treeish.
 	-- 
 	-- (Also, when there was an export conflict, this resolves it.)
-	forM_ old $ \oldtreesha -> do
+	forM_ (map exportedTreeish old) $ \oldtreesha -> do
 		(diff, cleanup) <- inRepo $
 			Git.DiffTree.diffTreeRecursive oldtreesha new
 		seekActions $ pure $ map (startUnexport r db) diff
@@ -99,7 +100,7 @@ seek o = do
 	-- if this export is interrupted, there are no files left over
 	-- from a previous export, that are not part of this export.
 	recordExport (uuid r) $ ExportChange
-		{ oldTreeish = old
+		{ oldTreeish = map exportedTreeish old
 		, newTreeish = new
 		}
 
