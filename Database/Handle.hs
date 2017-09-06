@@ -9,6 +9,7 @@
 
 module Database.Handle (
 	DbHandle,
+	DbConcurrency(..),
 	openDb,
 	TableName,
 	queryDb,
@@ -35,27 +36,49 @@ import System.IO
 
 {- A DbHandle is a reference to a worker thread that communicates with
  - the database. It has a MVar which Jobs are submitted to. -}
-data DbHandle = DbHandle (Async ()) (MVar Job)
+data DbHandle = DbHandle DbConcurrency (Async ()) (MVar Job)
 
 {- Name of a table that should exist once the database is initialized. -}
 type TableName = String
 
+{- Sqlite only allows a single write to a database at a time; a concurrent
+ - write will crash. 
+ -
+ - While a DbHandle serializes concurrent writes from
+ - multiple threads. But, when a database can be written to by
+ - multiple processes concurrently, use MultiWriter to make writes
+ - to the database be done robustly.
+ - 
+ - The downside of using MultiWriter is that after writing a change to the
+ - database, the a query using the same DbHandle will not immediately see
+ - the change! This is because the change is actually written using a
+ - separate database connection, and caching can prevent seeing the change.
+ - Also, consider that if multiple processes are writing to a database,
+ - you can't rely on seeing values you've just written anyway, as another
+ - process may change them.
+ -
+ - When a database can only be written to by a single process, use
+ - SingleWriter. Changes written to the database will always be immediately
+ - visible then.
+ -}
+data DbConcurrency = SingleWriter | MultiWriter
+
 {- Opens the database, but does not perform any migrations. Only use
- - if the database is known to exist and have the right tables. -}
-openDb :: FilePath -> TableName -> IO DbHandle
-openDb db tablename = do
+ - once the database is known to exist and have the right tables. -}
+openDb :: DbConcurrency -> FilePath -> TableName -> IO DbHandle
+openDb dbconcurrency db tablename = do
 	jobs <- newEmptyMVar
 	worker <- async (workerThread (T.pack db) tablename jobs)
 	
 	-- work around https://github.com/yesodweb/persistent/issues/474
 	liftIO $ fileEncoding stderr
 
-	return $ DbHandle worker jobs
+	return $ DbHandle dbconcurrency worker jobs
 
 {- This is optional; when the DbHandle gets garbage collected it will
  - auto-close. -}
 closeDb :: DbHandle -> IO ()
-closeDb (DbHandle worker jobs) = do
+closeDb (DbHandle _ worker jobs) = do
 	putMVar jobs CloseJob
 	wait worker
 
@@ -68,9 +91,12 @@ closeDb (DbHandle worker jobs) = do
  - Only one action can be run at a time against a given DbHandle.
  - If called concurrently in the same process, this will block until
  - it is able to run.
+ -
+ - Note that when the DbHandle was opened in MultiWriter mode, recent
+ - writes may not be seen by queryDb.
  -}
 queryDb :: DbHandle -> SqlPersistM a -> IO a
-queryDb (DbHandle _ jobs) a = do
+queryDb (DbHandle _ _ jobs) a = do
 	res <- newEmptyMVar
 	putMVar jobs $ QueryJob $
 		liftIO . putMVar res =<< tryNonAsync a
@@ -79,9 +105,9 @@ queryDb (DbHandle _ jobs) a = do
 
 {- Writes a change to the database.
  -
- - If a database is opened multiple times and there's a concurrent writer,
- - the write could fail. Retries repeatedly for up to 10 seconds, 
- - which should avoid all but the most exceptional problems.
+ - In MultiWriter mode, catches failure to write to the database,
+ - and retries repeatedly for up to 10 seconds,  which should avoid
+ - all but the most exceptional problems.
  -}
 commitDb :: DbHandle -> SqlPersistM () -> IO ()
 commitDb h wa = robustly Nothing 100 (commitDb' h wa)
@@ -97,15 +123,22 @@ commitDb h wa = robustly Nothing 100 (commitDb' h wa)
 				robustly (Just e) (n-1) a
 
 commitDb' :: DbHandle -> SqlPersistM () -> IO (Either SomeException ())
-commitDb' (DbHandle _ jobs) a = do
+commitDb' (DbHandle MultiWriter _ jobs) a = do
 	res <- newEmptyMVar
-	putMVar jobs $ ChangeJob $ \runner ->
+	putMVar jobs $ RobustChangeJob $ \runner ->
 		liftIO $ putMVar res =<< tryNonAsync (runner a)
 	takeMVar res
+commitDb' (DbHandle SingleWriter _ jobs) a = do
+	res <- newEmptyMVar
+	putMVar jobs $ ChangeJob $
+		liftIO . putMVar res =<< tryNonAsync a
+	takeMVar res
+		`catchNonAsync` (const $ error "sqlite commit crashed")
 
 data Job
 	= QueryJob (SqlPersistM ())
-	| ChangeJob ((SqlPersistM () -> IO ()) -> IO ())
+	| ChangeJob (SqlPersistM ())
+	| RobustChangeJob ((SqlPersistM () -> IO ()) -> IO ())
 	| CloseJob
 
 workerThread :: T.Text -> TableName -> MVar Job -> IO ()
@@ -127,10 +160,12 @@ workerThread db tablename jobs =
 			Left BlockedIndefinitelyOnMVar -> return ()
 			Right CloseJob -> return ()
 			Right (QueryJob a) -> a >> loop
-			-- change is run in a separate database connection
+			Right (ChangeJob a) -> a >> loop
+			-- Change is run in a separate database connection
 			-- since sqlite only supports a single writer at a
 			-- time, and it may crash the database connection
-			Right (ChangeJob a) -> liftIO (a (runSqliteRobustly tablename db)) >> loop
+			-- that the write is made to.
+			Right (RobustChangeJob a) -> liftIO (a (runSqliteRobustly tablename db)) >> loop
 	
 -- like runSqlite, but calls settle on the raw sql Connection.
 runSqliteRobustly :: TableName -> T.Text -> (SqlPersistM a) -> IO a

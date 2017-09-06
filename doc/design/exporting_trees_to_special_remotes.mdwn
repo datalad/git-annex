@@ -273,6 +273,7 @@ of a file when an export was interrupted.)
 
 So, before an export does anything, need to record the tree that's about
 to be exported to export.log, not as an exported tree, but as a goal.
+Then on resume, the temp files for that can be cleaned up.
 
 ## renames and export conflicts
 
