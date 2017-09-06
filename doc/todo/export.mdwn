@@ -17,6 +17,10 @@ there need to be a new interface in supported remotes?
 
 Work is in progress. Todo list:
 
+* initremote: Don't allow "exporttree=yes" to be set when the special remote
+  does not support exports. That would be confusing since the user would
+  set up a special remote for exports, but `git annex export` to it would
+  later fail..
 * `git annex get --from export` works in the repo that exported to it,
   but in another repo, the export db won't be populated, so it won't work.
   Maybe just show a useful error message in this case?  
