@@ -4,8 +4,8 @@
  subject="sounds like the dumb backend, except not dumb"
  date="2017-04-08T20:21:41Z"
  content="""
-This sounds a lot like what i was trying to do in [[todo/dumb, unsafe,
-human-readable_backend]], except done properly. :)
+This sounds a lot like what i was trying to do in
+[[todo/dumb, unsafe, human-readable_backend]], except done properly. :)
 
 I was wondering about that asymmetry recentrly, and it would seem like
 a good idea to fix this. the `--to remote` flag could especially be
