@@ -31,6 +31,25 @@ verification of content downloaded from an export. Some types of keys,
 that are not based on checksums, cannot be downloaded from an export.
 And, git-annex will never trust an export to retain the content of a key.
 
+# EXPORT CONFLICTS
+
+If two different git-annex repositories are both exporting different trees
+to the same special remote, it's possible for an export conflict to occur.
+This leaves the special remote with some files from one tree, and some
+files from the other. Files in the special remote may have entirely the
+wrong content as well.
+
+It's not possible for git-annex to detect when making an export will result
+in an export conflict. The best way to avoid export conflicts is to either
+only ever export to a special remote from a single repository, or to have a
+rule about the tree that you export to the special remote. For example, if
+you always export origin/master after pushing to origin, then an export
+conflict can't happen.
+
+An export conflict can only be detected after the two git repositories
+that produced it get back in sync. Then the next time you run `git annex
+export`, it will detect the export conflict, and resolve it.
+
 # SEE ALSO
 
 [[git-annex]](1)

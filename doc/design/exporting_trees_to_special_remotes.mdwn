@@ -205,7 +205,7 @@ a tree that resolves the conflict as they desire (it could be the same as
 one of the exported trees, or some merge of them or an entirely new tree).
 The UI to do this can just be another `git annex export $tree --to remote`.
 To resolve, diff each exported tree in turn against the resolving tree
-and delete all files that differ.
+and delete all files that differ. Then, upload all missing files.
 
 ## when to update export.log for efficient resuming of exports
 
@@ -256,18 +256,48 @@ tree, so no state needs to be maintained to clean it up. Also, using the
 key in the name simplifies calculation of complicated renames (eg, renaming
 A to B, B to C, C to A)
 
-Export can first try to rename the temp name of all keys
-whose files are added in the diff. Followed by deleting the temp name
-of all keys whose files are removed in the diff. That is more renames and
+Export can first try to rename all files that are deleted/modified
+to their key's temp name (falling back to deleting since not all
+special remotes support rename), and then, in a second pass, rename
+from the temp name to the new name. Followed by deleting the temp name
+of all keys whose files are deleted in the diff. That is more renames and
 deletes than strictly necessary, but it will statelessly clean up 
 an interruped export as long as it's run again with the same new tree.
 
 But, an export of tree B should clean up after 
 an interrupted export of tree A. Some state is needed to handle this.
 Before starting the export of tree A, record it somewhere. Then when
-resuming, diff A..B, and rename/delete the temp names of the keys in the
-diff. As well as diffing from the last fully exported tree to B and doing
-the same rename/delete. 
+resuming, diff A..B, and delete the temp names of the keys in the
+diff. (Can't rename here, because we don't know what was the content
+of a file when an export was interrupted.)
 
 So, before an export does anything, need to record the tree that's about
 to be exported to export.log, not as an exported tree, but as a goal.
+
+## renames and export conflicts
+
+What is there's an export conflict going on at the same time that a file
+in the export gets renamed?
+
+Suppose that there are two git repos A and B, each exporting to the same
+remote. A and B are not currently communicating. A exports T1 which
+contains F. B exports T2, which has a different content for F. 
+
+Then A exports T3, which renames F to G. If that rename is done
+on the remote, then A will think it's successfully exported T3,
+but G will have F's content from T2, not from T1.
+
+When A and B reconnect, the export conflict will be detected. 
+To resolve the export conflict, it says above to:
+
+> To resolve, diff each exported tree in turn against the resolving tree
+> and delete all files that differ. Then, upload all missing files.
+
+Assume that the resolving tree is T3. So B's export of T2 is diffed against
+T3. F differs and is deleted (no change). G differs and is deleted,
+which fixes up the problem that the wrong content was renamed to G.
+G is missing so gets uploaded.
+
+So, this works, as long as "delete all files that differ" means it
+deletes both old and new files. And as long as conflict resolution does not
+itself stash away files in the temp name for later renaming.
