@@ -33,18 +33,19 @@ import Utility.Metered
 import Utility.Tmp
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "directory",
-	enumerate = const (findSpecialRemotes "directory"),
-	generate = gen,
-	setup = exportableRemoteSetup directorySetup
-}
+remote = RemoteType
+	{ typename = "directory"
+	, enumerate = const (findSpecialRemotes "directory")
+	, generate = gen
+	, setup = directorySetup
+	, exportSupported = exportIsSupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
 	cst <- remoteCost gc cheapRemoteCost
 	let chunkconfig = getChunkConfig c
-	exportableRemote $ specialRemote c
+	return $ Just $ specialRemote c
 		(prepareStore dir chunkconfig)
 		(retrieve dir chunkconfig)
 		(simplyPrepare $ remove dir)
@@ -61,8 +62,7 @@ gen r u c gc = do
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = True
 			, exportActions = ExportActions
-				{ exportSupported = return True
-				, storeExport = storeExportDirectory dir
+				{ storeExport = storeExportDirectory dir
 				, retrieveExport = retrieveExportDirectory dir
 				, removeExport = removeExportDirectory dir
 				, checkPresentExport = checkPresentExportDirectory dir

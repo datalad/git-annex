@@ -35,12 +35,13 @@ import Utility.Metered
 type BupRepo = String
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "bup",
-	enumerate = const (findSpecialRemotes "buprepo"),
-	generate = gen,
-	setup = bupSetup
-}
+remote = RemoteType
+	{ typename = "bup"
+	, enumerate = const (findSpecialRemotes "buprepo")
+	, generate = gen
+	, setup = bupSetup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do

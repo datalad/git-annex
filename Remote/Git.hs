@@ -67,12 +67,13 @@ import qualified Data.Map as M
 import Network.URI
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "git",
-	enumerate = list,
-	generate = gen,
-	setup = gitSetup
-}
+remote = RemoteType
+	{ typename = "git"
+	, enumerate = list
+	, generate = gen
+	, setup = gitSetup
+	, exportSupported = exportUnsupported
+	}
 
 list :: Bool -> Annex [Git.Repo]
 list autoinit = do

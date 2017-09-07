@@ -23,12 +23,13 @@ import Annex.Quvi
 import qualified Utility.Quvi as Quvi
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "web",
-	enumerate = list,
-	generate = gen,
-	setup = error "not supported"
-}
+remote = RemoteType
+	{ typename = "web"
+	, enumerate = list
+	, generate = gen
+	, setup = error "not supported"
+	, exportSupported = exportUnsupported
+	}
 
 -- There is only one web remote, and it always exists.
 -- (If the web should cease to exist, remove this module and redistribute

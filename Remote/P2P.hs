@@ -34,14 +34,15 @@ import Control.Concurrent
 import Control.Concurrent.STM
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "p2p",
+remote = RemoteType
+	{ typename = "p2p"
 	-- Remote.Git takes care of enumerating P2P remotes,
 	-- and will call chainGen on them.
-	enumerate = const (return []),
-	generate = \_ _ _ _ -> return Nothing,
-	setup = error "P2P remotes are set up using git-annex p2p"
-}
+	, enumerate = const (return [])
+	, generate = \_ _ _ _ -> return Nothing
+	, setup = error "P2P remotes are set up using git-annex p2p"
+	, exportSupported = exportUnsupported
+	}
 
 chainGen :: P2PAddress -> Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 chainGen addr r u c gc = do

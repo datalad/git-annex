@@ -5,11 +5,12 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE FlexibleInstances #-}
+
 module Remote.Helper.Export where
 
 import Annex.Common
 import Types.Remote
-import Types.Creds
 import Types.Backend
 import Types.Key
 import Backend
@@ -19,24 +20,60 @@ import Database.Export
 import qualified Data.Map as M
 
 -- | Use for remotes that do not support exports.
-exportUnsupported :: ExportActions Annex
-exportUnsupported = ExportActions
-	{ exportSupported = return False
-	, storeExport = \_ _ _ _ -> return False
-	, retrieveExport = \_ _ _ _ -> return (False, UnVerified)
-	, removeExport = \_ _ -> return False
-	, checkPresentExport = \_ _ -> return False
-	, renameExport = \_ _ _ -> return False
-	}
+class HasExportUnsupported a where
+	exportUnsupported :: a
 
--- | A remote that supports exports when configured with exporttree=yes,
--- and otherwise does not.
-exportableRemote :: Remote -> Annex (Maybe Remote)
-exportableRemote r = case M.lookup "exporttree" (config r) of
-	Just "yes" -> do
+instance HasExportUnsupported (RemoteConfig -> RemoteGitConfig -> Annex Bool) where
+	exportUnsupported = \_ _ -> return False
+
+instance HasExportUnsupported (ExportActions Annex) where
+	exportUnsupported = ExportActions
+		{ storeExport = \_ _ _ _ -> return False
+		, retrieveExport = \_ _ _ _ -> return (False, UnVerified)
+		, removeExport = \_ _ -> return False
+		, checkPresentExport = \_ _ -> return False
+		, renameExport = \_ _ _ -> return False
+		}
+
+exportIsSupported :: RemoteConfig -> RemoteGitConfig -> Annex Bool
+exportIsSupported = \_ _ -> return True
+
+-- | Prevent or allow exporttree=yes when setting up a new remote,
+-- depending on exportSupported and other configuration.
+adjustExportableRemoteType :: RemoteType -> RemoteType
+adjustExportableRemoteType rt = rt { setup = setup' }
+  where
+	setup' st mu cp c gc = do
+		let cont = setup rt st mu cp c gc
+		ifM (exportSupported rt c gc)
+			( case st of
+				Init -> case M.lookup "exporttree" c of
+					Just "yes" | isEncrypted c ->
+						giveup "cannot enable both encryption and exporttree"
+					_ -> cont
+				Enable oldc
+					| M.lookup "exporttree" c /= M.lookup "exporttree" oldc ->
+						giveup "cannot change exporttree of existing special remote"
+					| otherwise -> cont
+			, case M.lookup "exporttree" c of
+				Just "yes" -> giveup "exporttree=yes is not supported by this special remote"
+				_ -> cont
+			)
+
+-- | If the remote is exportSupported, and exporttree=yes, adjust the
+-- remote to be an export.
+adjustExportable :: Remote -> Annex Remote
+adjustExportable r = case M.lookup "exporttree" (config r) of
+	Just "yes" -> ifM (isExportSupported r)
+		( isexport
+		, notexport
+		)
+	_ -> notexport
+  where
+	notexport = return $ r { exportActions = exportUnsupported }
+	isexport = do
 		db <- openDb (uuid r)
-
-		return $ Just $ r
+		return $ r
 			-- Storing a key on an export would need a way to
 			-- look up the file(s) that the currently exported
 			-- tree uses for a key; there's not currently an
@@ -87,17 +124,3 @@ exportableRemote r = case M.lookup "exporttree" (config r) of
 				is <- getInfo r
 				return (is++[("export", "yes")])
 			}
-	_ -> return $ Just $ r { exportActions = exportUnsupported }
-
-exportableRemoteSetup :: (SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)) -> SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-exportableRemoteSetup setupaction st mu cp c gc = case st of
-	Init -> case M.lookup "exporttree" c of
-		Just "yes" | isEncrypted c ->
-			giveup "cannot enable both encryption and exporttree"
-		_ -> cont
-	Enable oldc
-		| M.lookup "exporttree" c /= M.lookup "exporttree" oldc ->
-			giveup "cannot change exporttree of existing special remote"
-		| otherwise -> cont
-  where
-	cont = setupaction st mu cp c gc

@@ -77,7 +77,7 @@ exportTempName ek = ExportLocation $
 seek :: ExportOptions -> CommandSeek
 seek o = do
 	r <- getParsed (exportRemote o)
-	unlessM (exportSupported (exportActions r)) $
+	unlessM (isExportSupported r) $
 		giveup "That remote does not support exports."
 
 	new <- fromMaybe (giveup "unknown tree") <$>

@@ -52,12 +52,13 @@ type IntroducerFurl = String
 type Capability = String
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "tahoe",
-	enumerate = const (findSpecialRemotes "tahoe"),
-	generate = gen,
-	setup = tahoeSetup
-}
+remote = RemoteType
+	{ typename = "tahoe"
+	, enumerate = const (findSpecialRemotes "tahoe")
+	, generate = gen
+	, setup = tahoeSetup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do

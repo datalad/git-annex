@@ -67,7 +67,7 @@ trustMapLoad = do
 	overrides <- Annex.getState Annex.forcetrust
 	l <- remoteList
 	-- Exports are never trusted, since they are not key/value stores.
-	exports <- filterM (Types.Remote.exportSupported . Types.Remote.exportActions) l
+	exports <- filterM Types.Remote.isExportSupported l
 	let exportoverrides = M.fromList $
 		map (\r -> (Types.Remote.uuid r, UnTrusted)) exports
 	logged <- trustMapRaw

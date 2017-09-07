@@ -19,6 +19,7 @@ module Types.Remote
 	, Verification(..)
 	, unVerified
 	, ExportLocation(..)
+	, isExportSupported
 	, ExportActions(..)
 	)
 	where
@@ -36,7 +37,7 @@ import Types.UrlContents
 import Types.NumCopies
 import Config.Cost
 import Utility.Metered
-import Git.Types
+import Git.Types (RemoteName)
 import Utility.SafeCommand
 import Utility.Url
 
@@ -47,17 +48,19 @@ type RemoteConfig = M.Map RemoteConfigKey String
 data SetupStage = Init | Enable RemoteConfig
 
 {- There are different types of remotes. -}
-data RemoteTypeA a = RemoteType {
+data RemoteTypeA a = RemoteType
 	-- human visible type name
-	typename :: String,
+	{ typename :: String
 	-- enumerates remotes of this type
 	-- The Bool is True if automatic initialization of remotes is desired
-	enumerate :: Bool -> a [Git.Repo],
-	-- generates a remote of this type
-	generate :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> a (Maybe (RemoteA a)),
+	, enumerate :: Bool -> a [Git.Repo]
+	-- generates a remote of this type from the current git config
+	, generate :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> a (Maybe (RemoteA a))
 	-- initializes or enables a remote
-	setup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> a (RemoteConfig, UUID)
-}
+	, setup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> a (RemoteConfig, UUID)
+	-- check if a remote of this type is able to support export
+	, exportSupported :: RemoteConfig -> RemoteGitConfig -> a Bool
+	}
 
 instance Eq (RemoteTypeA a) where
 	x == y = typename x == typename y
@@ -161,12 +164,14 @@ unVerified a = do
 newtype ExportLocation = ExportLocation FilePath
 	deriving (Show, Eq)
 
-data ExportActions a = ExportActions
-	{ exportSupported :: a Bool
+isExportSupported :: RemoteA a -> a Bool
+isExportSupported r = exportSupported (remotetype r) (config r) (gitconfig r)
+
+data ExportActions a = ExportActions 
 	-- Exports content to an ExportLocation.
 	-- The exported file should not appear to be present on the remote
 	-- until all of its contents have been transferred.
-	, storeExport :: FilePath -> Key -> ExportLocation -> MeterUpdate -> a Bool
+	{ storeExport :: FilePath -> Key -> ExportLocation -> MeterUpdate -> a Bool
 	-- Retrieves exported content to a file.
 	-- (The MeterUpdate does not need to be used if it writes
 	-- sequentially to the file.)

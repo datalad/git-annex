@@ -36,12 +36,13 @@ import qualified Data.ByteString.Lazy as B
 #endif
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "bittorrent",
-	enumerate = list,
-	generate = gen,
-	setup = error "not supported"
-}
+remote = RemoteType
+	{ typename = "bittorrent"
+	, enumerate = list
+	, generate = gen
+	, setup = error "not supported"
+	, exportSupported = exportUnsupported
+	}
 
 -- There is only one bittorrent remote, and it always exists.
 list :: Bool -> Annex [Git.Repo]

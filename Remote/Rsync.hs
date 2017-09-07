@@ -44,12 +44,13 @@ import Utility.SshHost
 import qualified Data.Map as M
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "rsync",
-	enumerate = const (findSpecialRemotes "rsyncurl"),
-	generate = gen,
-	setup = rsyncSetup
-}
+remote = RemoteType
+	{ typename = "rsync"
+	, enumerate = const (findSpecialRemotes "rsyncurl")
+	, generate = gen
+	, setup = rsyncSetup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do

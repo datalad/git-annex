@@ -41,12 +41,13 @@ import Network.HTTP.Client (HttpExceptionContent(..), responseStatus)
 #endif
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "webdav",
-	enumerate = const (findSpecialRemotes "webdav"),
-	generate = gen,
-	setup = webdavSetup
-}
+remote = RemoteType
+	{ typename = "webdav"
+	, enumerate = const (findSpecialRemotes "webdav")
+	, generate = gen
+	, setup = webdavSetup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = new <$> remoteCost gc expensiveRemoteCost

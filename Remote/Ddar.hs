@@ -30,12 +30,13 @@ data DdarRepo = DdarRepo
 	}
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "ddar",
-	enumerate = const (findSpecialRemotes "ddarrepo"),
-	generate = gen,
-	setup = ddarSetup
-}
+remote = RemoteType
+	{ typename = "ddar"
+	, enumerate = const (findSpecialRemotes "ddarrepo")
+	, generate = gen
+	, setup = ddarSetup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do

@@ -40,12 +40,13 @@ import System.Log.Logger (debugM)
 import qualified Data.Map as M
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "external",
-	enumerate = const (findSpecialRemotes "externaltype"),
-	generate = gen,
-	setup = externalSetup
-}
+remote = RemoteType
+	{ typename = "external"
+	, enumerate = const (findSpecialRemotes "externaltype")
+	, generate = gen
+	, setup = externalSetup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc

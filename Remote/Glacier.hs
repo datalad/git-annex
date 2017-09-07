@@ -30,12 +30,13 @@ type Vault = String
 type Archive = FilePath
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "glacier",
-	enumerate = const (findSpecialRemotes "glacier"),
-	generate = gen,
-	setup = glacierSetup
-}
+remote = RemoteType
+	{ typename = "glacier"
+	, enumerate = const (findSpecialRemotes "glacier")
+	, generate = gen
+	, setup = glacierSetup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost

@@ -54,12 +54,13 @@ import Utility.Url (checkBoth, managerSettings, closeManager)
 type BucketName = String
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "S3",
-	enumerate = const (findSpecialRemotes "s3"),
-	generate = gen,
-	setup = s3Setup
-}
+remote = RemoteType
+	{ typename = "S3"
+	, enumerate = const (findSpecialRemotes "s3")
+	, generate = gen
+	, setup = s3Setup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do

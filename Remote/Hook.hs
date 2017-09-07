@@ -26,12 +26,13 @@ type Action = String
 type HookName = String
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "hook",
-	enumerate = const (findSpecialRemotes "hooktype"),
-	generate = gen,
-	setup = hookSetup
-}
+remote = RemoteType
+	{ typename = "hook"
+	, enumerate = const (findSpecialRemotes "hooktype")
+	, generate = gen
+	, setup = hookSetup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
