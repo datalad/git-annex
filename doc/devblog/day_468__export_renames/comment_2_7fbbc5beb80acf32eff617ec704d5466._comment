@@ -3,6 +3,17 @@
  subject="""comment 2"""
  date="2017-09-07T19:54:41Z"
  content="""
-Yes, I considered such cases, also cycles with multiple files, etc.
-All will work! :)
+Did not consider such a case. However, that's closely related to exporting
+files with same content being inefficient. There's a move
+operation but no copy operation. I might add a copy operation eventually,
+unsure.
+
+If a copy operation is added, then that rename case can be handled more
+efficiently, by moving to the single temp file and copying. Although it
+might still involve the special remote doing more work than strictly
+necessary depending on how it implements copy.
+
+At some point you have to pick simplicity and ability to recover from
+problems over totally optimal speed though, and I think your case is a
+reasonable place to draw the line.
 """]]
