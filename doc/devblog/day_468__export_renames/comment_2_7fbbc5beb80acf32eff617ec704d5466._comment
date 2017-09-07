@@ -13,7 +13,14 @@ efficiently, by moving to the single temp file and copying. Although it
 might still involve the special remote doing more work than strictly
 necessary depending on how it implements copy.
 
-At some point you have to pick simplicity and ability to recover from
-problems over totally optimal speed though, and I think your case is a
-reasonable place to draw the line.
+Anyway, if the user is exporting copys of files, they're probably going to
+care more about that being somewhat more efficient than about renames of
+pairs of those copies being optimally efficient..
+
+Handling it fully optimally, with only one temp file per key,
+would require analizing the change and finding pairs of renames
+that swap filenames and handling each pair in turn. I suppose that
+is doable, just needs a better data structure than I have now.
+I've added a note to my todo list and the design document, but
+no promises.
 """]]

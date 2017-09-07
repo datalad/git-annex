@@ -26,3 +26,15 @@ Work is in progress. Todo list:
   to get populated based on the export log in these cases.
 * Support export to aditional special remotes (S3 etc)
 * Support export to external special remotes.
+
+Low priority:
+
+* When there are two pairs of duplicate files, and the filenames are
+  swapped around, the current rename handling renames both dups to a single
+  temp file, and so the other file in the pair gets re-uploaded
+  unncessarily. This could be improved.
+
+  Perhaps: Find pairs of renames that swap content between two files.
+  Run each pair in turn. Then run the current rename code. Although this
+  still probably misses cases, where eg, content cycles amoung 3 files, and
+  the same content amoung 3 other files. Is there a general algorythm?
