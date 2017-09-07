@@ -114,9 +114,8 @@ Here's the changes to the latter:
 * `RENAMEEXPORT Key NewName`  
   Requests the remote rename a file stored on it from the previously
   provided Name to the NewName.  
-  The remote responds with `RENAMEEXPORT-SUCCESS`,
-  `RENAMEEXPORT-FAILURE`, or with `RENAMEEXPORT-UNSUPPORTED` if an efficient
-  rename cannot be done.
+  The remote responds with `RENAMEEXPORT-SUCCESS` or with
+  `RENAMEEXPORT-FAILURE` if an efficient rename cannot be done.
 
 To support old external special remote programs that have not been updated
 to support exports, git-annex will need to handle an `ERROR` response

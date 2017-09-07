@@ -43,7 +43,8 @@ the version of the protocol it is using.
 
 Once it knows the version, git-annex will generally 
 send a message telling the special remote to start up.
-(Or it might send a INITREMOTE, so don't hardcode this order.)
+(Or it might send an INITREMOTE or EXPORTSUPPORTED,
+so don't hardcode this order.)
 
 	PREPARE
 
@@ -102,7 +103,7 @@ The following requests *must* all be supported by the special remote.
   So any one-time setup tasks should be done idempotently.
 * `PREPARE`  
   Tells the remote that it's time to prepare itself to be used.  
-  Only INITREMOTE can come before this.
+  Only INITREMOTE or EXPORTSUPPORTED can come before this.
 * `TRANSFER STORE|RETRIEVE Key File`  
   Requests the transfer of a key. For STORE, the File is the file to upload;
   for RETRIEVE the File is where to store the download.  
@@ -143,6 +144,46 @@ replying with `UNSUPPORTED-REQUEST` is acceptable.
   network access.  
   This is not needed when `SETURIPRESENT` is used, since such uris are
   automatically displayed by `git annex whereis`.  
+* `EXPORTSUPPORTED`  
+  Used to check if a special remote supports exports. The remote
+  responds with either `EXPORTSUPPORTED-SUCCESS` or
+  `EXPORTSUPPORTED-FAILURE`. Note that this request may be made before
+  or after `PREPARE`.
+* `EXPORT Name`  
+  Comes immediately before each of the following export-related requests, 
+  specifying the name of the exported file. It will be in the form
+  of a relative path, and may contain path separators, whitespace,
+  and other special characters.
+* `TRANSFEREXPORT STORE|RETRIEVE Key File`  
+  Requests the transfer of a File on local disk to or from the previously 
+  provided Name on the special remote.  
+  Note that it's important that, while a file is being stored,
+  CHECKPRESENTEXPORT not indicate it's present until all the data has
+  been transferred.  
+  The remote responds with either `TRANSFER-SUCCESS` or
+  `TRANSFER-FAILURE`, and a remote where exports do not make sense
+  may always fail.
+* `CHECKPRESENTEXPORT Key`  
+  Requests the remote to check if the previously provided Name is present
+  in it.  
+  The remote responds with `CHECKPRESENT-SUCCESS`, `CHECKPRESENT-FAILURE`,
+  or `CHECKPRESENT-UNKNOWN`.
+* `REMOVEEXPORT Key`  
+  Requests the remote to remove content stored by `TRANSFEREXPORT`
+  with the previously provided Name.  
+  The remote responds with either `REMOVE-SUCCESS` or
+  `REMOVE-FAILURE`.  
+  If the content was already not present in the remote, it should
+  respond with `REMOVE-SUCCESS`.
+* `RENAMEEXPORT Key NewName`  
+  Requests the remote rename a file stored on it from the previously
+  provided Name to the NewName.  
+  The remote responds with `RENAMEEXPORT-SUCCESS` or
+  `RENAMEEXPORT-FAILURE`.
+
+To support old external special remote programs that have not been updated
+to support exports, git-annex will need to handle an `ERROR` response
+when using any of the above.
 
 More optional requests may be added, without changing the protocol version,
 so if an unknown request is seen, reply with `UNSUPPORTED-REQUEST`.
@@ -210,6 +251,15 @@ while it's handling a request.
   stored in the special remote.
 * `WHEREIS-FAILURE`  
   Indicates that no location is known for a key.
+* `EXPORTSUPPORTED-SUCCESS`  
+  Indicates that it makes sense to use this special remote as an export.
+* `EXPORTSUPPORTED`  
+  Indicates that it does not make sense to use this special remote as an
+  export.
+* `RENAMEEXPORT-SUCCESS`  
+  Indicates that a `RENAMEEXPORT` was done successfully.
+* `RENAMEEXPORT-FAILURE`  
+  Indicates that a `RENAMEEXPORT` failed for whatever reason.
 * `UNSUPPORTED-REQUEST`  
   Indicates that the special remote does not know how to handle a request.
 
