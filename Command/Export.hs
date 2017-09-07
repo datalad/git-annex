@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE TupleSections #-}
+
 module Command.Export where
 
 import Command
@@ -26,6 +28,7 @@ import Messages.Progress
 import Utility.Tmp
 
 import qualified Data.ByteString.Lazy as L
+import qualified Data.Map as M
 
 cmd :: Command
 cmd = command "export" SectionCommon
@@ -49,7 +52,7 @@ optParser _ = ExportOptions
 -- An export includes both annexed files and files stored in git.
 -- For the latter, a SHA1 key is synthesized.
 data ExportKey = AnnexKey Key | GitKey Key
-	deriving (Show)
+	deriving (Show, Eq, Ord)
 
 asKey :: ExportKey -> Key
 asKey (AnnexKey k) = k
@@ -103,17 +106,22 @@ seek o = do
 	case map exportedTreeish old of
 		[] -> return ()
 		[oldtreesha] -> do
-			-- Rename all old files to temp.
-			mapdiff
-				(\diff -> startMoveToTempName r db (Git.DiffTree.file diff) (Git.DiffTree.srcsha diff))
-				oldtreesha new
+			diffmap <- mkDiffMap oldtreesha new
+			let seekdiffmap a = seekActions $ pure $ map a (M.toList diffmap)
+			-- Rename old files to temp, or delete.
+			seekdiffmap $ \(ek, (moldf, mnewf)) ->
+				case (moldf, mnewf) of
+					(Just oldf, Just _newf) ->
+						startMoveToTempName r db oldf ek
+					(Just oldf, Nothing) -> 
+						startUnexport' r db oldf ek
+					_ -> stop
 			-- Rename from temp to new files.
-			mapdiff (\diff -> startMoveFromTempName r db (Git.DiffTree.dstsha diff) (Git.DiffTree.file diff))
-				oldtreesha new
-			-- Remove all remaining temps.
-			mapdiff
-				(startUnexportTempName r db . Git.DiffTree.srcsha)
-				oldtreesha new
+			seekdiffmap $ \(ek, (moldf, mnewf)) ->
+				case (moldf, mnewf) of
+					(Just _oldf, Just newf) ->
+						startMoveFromTempName r db ek newf
+					_ -> stop
 		ts -> do
 			warning "Export conflict detected. Different trees have been exported to the same special remote. Resolving.."
 			forM_ ts $ \oldtreesha -> do
@@ -126,7 +134,7 @@ seek o = do
 					, Git.DiffTree.dstsha d
 					]
 				-- Don't rename to temp, because the
-				-- content is unknown; unexport instead.
+				-- content is unknown; delete instead.
 				mapdiff
 					(\diff -> startUnexport r db (Git.DiffTree.file diff) (unexportboth diff))
 					oldtreesha new
@@ -151,6 +159,28 @@ seek o = do
 			Git.DiffTree.diffTreeRecursive oldtreesha newtreesha
 		seekActions $ pure $ map a diff
 		void $ liftIO cleanup
+
+-- Map of old and new filenames for each changed ExportKey in a diff.
+type DiffMap = M.Map ExportKey (Maybe TopFilePath, Maybe TopFilePath)
+
+mkDiffMap :: Git.Ref -> Git.Ref -> Annex DiffMap
+mkDiffMap old new = do
+	(diff, cleanup) <- inRepo $ Git.DiffTree.diffTreeRecursive old new
+	diffmap <- M.fromListWith combinedm . concat <$> forM diff mkdm
+	void $ liftIO cleanup
+	return diffmap
+  where
+	combinedm (srca, dsta) (srcb, dstb) = (srca <|> srcb, dsta <|> dstb)
+	mkdm i = do
+		srcek <- getk (Git.DiffTree.srcsha i)
+		dstek <- getk (Git.DiffTree.dstsha i)
+		return $ catMaybes
+			[ (, (Just (Git.DiffTree.file i), Nothing)) <$> srcek
+			, (, (Nothing, Just (Git.DiffTree.file i))) <$> dstek
+			]
+	getk sha
+		| sha == nullSha = return Nothing
+		| otherwise = Just <$> exportKey sha
 
 startExport :: Remote -> ExportHandle -> Git.LsTree.TreeItem -> CommandStart
 startExport r db ti = do
@@ -204,6 +234,14 @@ startUnexport r db f shas = do
 	loc = ExportLocation $ toInternalGitPath f'
 	f' = getTopFilePath f
 
+startUnexport' :: Remote -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
+startUnexport' r db f ek = do
+	showStart "unexport" f'
+	next $ performUnexport r db [ek] loc
+  where
+	loc = ExportLocation $ toInternalGitPath f'
+	f' = getTopFilePath f
+
 performUnexport :: Remote -> ExportHandle -> [ExportKey] -> ExportLocation -> CommandPerform
 performUnexport r db eks loc = do
 	ifM (allM (\ek -> removeExport (exportActions r) (asKey ek) loc) eks)
@@ -236,27 +274,21 @@ startUnexportTempName r db sha
 			showStart "unexport" f
 			next $ performUnexport r db [ek] loc
 
-startMoveToTempName :: Remote -> ExportHandle -> TopFilePath -> Git.Sha -> CommandStart
-startMoveToTempName r db f sha
-	| sha == nullSha = stop
-	| otherwise = do
-		ek <- exportKey sha
-		let tmploc@(ExportLocation tmpf) = exportTempName ek
-		showStart "rename" (f' ++ " -> " ++ tmpf)
-		next $ performRename r db ek loc tmploc
+startMoveToTempName :: Remote -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
+startMoveToTempName r db f ek = do
+	let tmploc@(ExportLocation tmpf) = exportTempName ek
+	showStart "rename" (f' ++ " -> " ++ tmpf)
+	next $ performRename r db ek loc tmploc
   where
 	loc = ExportLocation $ toInternalGitPath f'
 	f' = getTopFilePath f
 
-startMoveFromTempName :: Remote -> ExportHandle -> Git.Sha -> TopFilePath -> CommandStart
-startMoveFromTempName r db sha f
-	| sha == nullSha = stop
-	| otherwise = do
-		ek <- exportKey sha
-		let tmploc@(ExportLocation tmpf) = exportTempName ek
-		stopUnless (liftIO $ elem tmploc <$> getExportLocation db (asKey ek)) $ do
-			showStart "rename" (tmpf ++ " -> " ++ f')
-			next $ performRename r db ek tmploc loc
+startMoveFromTempName :: Remote -> ExportHandle -> ExportKey -> TopFilePath -> CommandStart
+startMoveFromTempName r db ek f = do
+	let tmploc@(ExportLocation tmpf) = exportTempName ek
+	stopUnless (liftIO $ elem tmploc <$> getExportLocation db (asKey ek)) $ do
+		showStart "rename" (tmpf ++ " -> " ++ f')
+		next $ performRename r db ek tmploc loc
   where
 	loc = ExportLocation $ toInternalGitPath f'
 	f' = getTopFilePath f

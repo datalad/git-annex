@@ -24,8 +24,5 @@ Work is in progress. Todo list:
   export from another repository also doesn't work right, because the
   export database is not populated. So, seems that the export database needs
   to get populated based on the export log in these cases.
-* Currently all modified/deleted files are renamed to temp files,
-  even when they won't be used. Avoid doing this unless the
-  temp file will be renamed to the new filename.
 * Support export to aditional special remotes (S3 etc)
 * Support export to external special remotes.
