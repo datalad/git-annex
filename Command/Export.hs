@@ -96,7 +96,9 @@ seek o = do
 	-- temp files. Diff from the incomplete tree to the new tree,
 	-- and delete any temp files that the new tree can't use.
 	forM_ (concatMap incompleteExportedTreeish old) $ \incomplete ->
-		mapdiff (startUnexportTempName r db . Git.DiffTree.srcsha) incomplete new
+		mapdiff (\diff -> startRecoverIncomplete r db (Git.DiffTree.srcsha diff) (Git.DiffTree.file diff))
+			incomplete
+			new
 
 	-- Diff the old and new trees, and delete or rename to new name all
 	-- changed files in the export. After this, every file that remains
@@ -264,15 +266,18 @@ cleanupUnexport r db eks loc = do
 			logChange (asKey ek) (uuid r) InfoMissing
 	return True
 
-startUnexportTempName :: Remote -> ExportHandle -> Git.Sha -> CommandStart
-startUnexportTempName r db sha
+startRecoverIncomplete :: Remote -> ExportHandle -> Git.Sha -> TopFilePath -> CommandStart
+startRecoverIncomplete r db sha oldf
 	| sha == nullSha = stop
 	| otherwise = do
 		ek <- exportKey sha
 		let loc@(ExportLocation f) = exportTempName ek
-		stopUnless (liftIO $ elem loc <$> getExportLocation db (asKey ek)) $ do
-			showStart "unexport" f
-			next $ performUnexport r db [ek] loc
+		showStart "unexport" f
+		liftIO $ removeExportLocation db (asKey ek) oldloc
+		next $ performUnexport r db [ek] loc
+  where
+	oldloc = ExportLocation $ toInternalGitPath oldf'
+	oldf' = getTopFilePath oldf
 
 startMoveToTempName :: Remote -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
 startMoveToTempName r db f ek = do
