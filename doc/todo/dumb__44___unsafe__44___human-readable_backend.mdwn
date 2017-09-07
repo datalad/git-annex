@@ -10,3 +10,6 @@ I know this would have several downsides:
 * much more exposed to corruption (no checksum to check against recorded? or can this be put somewhere else?)
 
 The main advantage, for me, is much better interoperability: any remote becomes usable by other non-git-annex clients... It would also be great as it would allow me to store only a *part* of my git-annex files on a remote without having a forest of empty files (on broken filesystems) or symlinks (on real filesystems) for files that are missing, something that is a massive source of confusion for users I work with. It could, for example, allow me to create thumb drives that would solve the [[hide missing files]] problem. -- [[anarcat]]
+
+> [[done]]; the new `git-annex export` feature allows you to export a tree
+> to a special remote. --[[Joey]]
