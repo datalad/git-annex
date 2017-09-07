@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Horus"
+ avatar="http://cdn.libravatar.org/avatar/8f0ee08b98ea5bba76c3fe112c08851c"
+ subject="comment 1"
+ date="2017-09-07T09:30:53Z"
+ content="""
+Well, there is ```git unannex ...``` 
+
+<https://git-annex.branchable.com/git-annex-unannex/>
+
+Is that what you're looking for?
+"""]]
