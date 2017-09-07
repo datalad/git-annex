@@ -50,6 +50,7 @@ import Utility.Batch
 import Utility.SimpleProtocol
 import Remote.Helper.Git
 import Remote.Helper.Messages
+import Remote.Helper.Export
 import qualified Remote.Helper.Ssh as Ssh
 import qualified Remote.GCrypt
 import qualified Remote.P2P
@@ -66,12 +67,13 @@ import qualified Data.Map as M
 import Network.URI
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "git",
-	enumerate = list,
-	generate = gen,
-	setup = gitSetup
-}
+remote = RemoteType
+	{ typename = "git"
+	, enumerate = list
+	, generate = gen
+	, setup = gitSetup
+	, exportSupported = exportUnsupported
+	}
 
 list :: Bool -> Annex [Git.Repo]
 list autoinit = do
@@ -110,7 +112,7 @@ gitSetup Init mu _ c _ = do
 	if isNothing mu || mu == Just u
 		then return (c, u)
 		else error "git remote did not have specified uuid"
-gitSetup Enable (Just u) _ c _ = do
+gitSetup (Enable _) (Just u) _ c _ = do
 	inRepo $ Git.Command.run
 		[ Param "remote"
 		, Param "add"
@@ -118,7 +120,7 @@ gitSetup Enable (Just u) _ c _ = do
 		, Param $ fromMaybe (giveup "no location") (M.lookup "location" c)
 		]
 	return (c, u)
-gitSetup Enable Nothing _ _ _ = error "unable to enable git remote with no specified uuid"
+gitSetup (Enable _) Nothing _ _ _ = error "unable to enable git remote with no specified uuid"
 
 {- It's assumed to be cheap to read the config of non-URL remotes, so this is
  - done each time git-annex is run in a way that uses remotes.
@@ -157,6 +159,7 @@ gen r u c gc
 			, lockContent = Just (lockKey new)
 			, checkPresent = inAnnex new
 			, checkPresentCheap = repoCheap r
+			, exportActions = exportUnsupported
 			, whereisKey = Nothing
 			, remoteFsck = if Git.repoIsUrl r
 				then Nothing

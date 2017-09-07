@@ -15,13 +15,13 @@ when they want to export a tree. (It would also be possible to drop all content
 from an existing special remote and reuse it, but there does not seem much
 benefit in doing so.)
 
-Add a new `initremote` configuration `exporttree=true`, that cannot be
+Add a new `initremote` configuration `exporttree=yes`, that cannot be
 changed by `enableremote`:
 
-	git annex initremote myexport type=... exporttree=true
+	git annex initremote myexport type=... exporttree=yes
 
-It does not make sense to encrypt an export, so exporttree=true requires
-(and can even imply) encryption=false.
+It does not make sense to encrypt an export, so exporttree=yes requires
+encryption=none.
 
 Note that the particular tree to export is not specified yet. This is
 because the tree that is exported to a special remote may change.
@@ -69,44 +69,12 @@ To efficiently update an export, git-annex can diff the tree
 that was exported with the new tree. The naive approach is to upload
 new and modified files and remove deleted files.
 
-Note that a file may have been partially uploaded to an export, and then
-the export updated to a tree without that file. So, need to try to delete
-all removed files, even if location tracking does not say that the special
-remote contains them.
-
 With rename detection, if the special remote supports moving files,
 more efficient updates can be done. It gets complicated; consider two files
 that swap names.
 
 If the special remote supports copying files, that would also make some
 updates more efficient.
-
-## resuming exports
-
-Resuming an interrupted export needs to work well.
-
-There are two cases here:
-
-1. Some of the files in the tree have been uploaded; others have not.
-2. A file has been partially uploaded.
-
-These two cases need to be disentangled somehow in order to handle
-them. One way is to use the location log as follows:
-
-* Before a file is uploaded, look up what key is currently exported
-  using that filename. If there is one, update the location log,
-  saying it's not present in the special remote.
-* Upload the file.
-* Update the location log for the newly exported key.
-
-Note that this method does not allow resuming a partial upload by appending to
-a file, because we don't know if the file actually started to be uploaded, or
-if the file instead still has the old key's content. Instead, the whole
-file needs to be re-uploaded.
-
-Alternative: Keep an index file that's the current state of the export.
-See comment #4 of [[todo/export]]. Not sure if that works? Perhaps it
-would be overkill if it's only used to support resuming partial uploads.
 
 ## changes to special remote interface
 
@@ -115,6 +83,10 @@ the [[external_special_remote_protocol]].
 
 Here's the changes to the latter:
 
+* `EXPORTSUPPORTED`  
+  Used to check if a special remote supports exports. The remote
+  responds with either `EXPORTSUPPORTED-SUCCESS` or
+  `EXPORTSUPPORTED-FAILURE`
 * `EXPORT Name`  
   Comes immediately before each of the following requests, 
   specifying the name of the exported file. It will be in the form
@@ -123,6 +95,9 @@ Here's the changes to the latter:
 * `TRANSFEREXPORT STORE|RETRIEVE Key File`  
   Requests the transfer of a File on local disk to or from the previously 
   provided Name on the special remote.  
+  Note that it's important that, while a file is being stored,
+  CHECKPRESENTEXPORT not indicate it's present until all the data has
+  been transferred.  
   The remote responds with either `TRANSFER-SUCCESS` or
   `TRANSFER-FAILURE`, and a remote where exports do not make sense
   may always fail.
@@ -139,9 +114,8 @@ Here's the changes to the latter:
 * `RENAMEEXPORT Key NewName`  
   Requests the remote rename a file stored on it from the previously
   provided Name to the NewName.  
-  The remote responds with `RENAMEEXPORT-SUCCESS`,
-  `RENAMEEXPORT-FAILURE`, or with `RENAMEEXPORT-UNSUPPORTED` if an efficient
-  rename cannot be done.
+  The remote responds with `RENAMEEXPORT-SUCCESS` or with
+  `RENAMEEXPORT-FAILURE` if an efficient rename cannot be done.
 
 To support old external special remote programs that have not been updated
 to support exports, git-annex will need to handle an `ERROR` response
@@ -162,18 +136,18 @@ key/value stores. The content of a file can change, and if multiple
 repositories can export a special remote, they can be out of sync about
 what files are exported to it. 
 
-To avoid such problems, when updating an exported file on a special remote,
-the key could be recorded there too. But, this would have to be done
-atomically, and checked atomically when downloading the file. Special
-remotes lack atomicity guarantees for file storage, let alone for file
-retrieval.
-
-Possible solution: Make exporttree=true cause the special remote to
+Possible solution: Make exporttree=yes cause the special remote to
 be untrusted, and rely on annex.verify to catch cases where the content
 of a file on a special remote has changed. This would work well enough
 except for when the WORM or URL backend is used. So, prevent the user
 from exporting such keys. Also, force verification on for such special
 remotes, don't let it be turned off.
+
+The same file contents may be in a treeish multiple times under different
+filenames. That complicates using location tracking. One file may have been
+exported and the other not, and location tracking says that the content
+is present in the export. A sqlite database is needed to keep track of
+this.
 
 ## recording exported filenames in git-annex branch
 
@@ -229,10 +203,101 @@ In this case, git-annex knows both exported trees. Have the user provide
 a tree that resolves the conflict as they desire (it could be the same as
 one of the exported trees, or some merge of them or an entirely new tree).
 The UI to do this can just be another `git annex export $tree --to remote`.
-To resolve, diff each exported tree in turn against the resolving tree. If a
-file differs, re-export that file. In some cases this will do unncessary
-re-uploads, but it's reasonably efficient.
+To resolve, diff each exported tree in turn against the resolving tree
+and delete all files that differ. Then, upload all missing files.
 
-The documentation should suggest strongly only exporting to a given special
-remote from a single repository, or having some other rule that avoids
-export conflicts.
+## when to update export.log for efficient resuming of exports
+
+When should `export.log` be updated? Possibilities:
+
+* Before performing any work, to set the goal.
+* After the export is fully successful, to record the current state.
+* After some mid-point.
+
+Lots of things could go wrong during an export. A file might fail to be
+transferred or only part of it be transferred; a file's content might not
+be present to transfer at all. The export could be interrupted part way.
+Updating the export.log at the right point in time is important to handle
+these cases efficiently.
+
+If the export.log is updated first, then it's only a goal and does not tell
+us what's been done already.
+
+If the export.log is updated only after complete success, then the common
+case of some files not having content locally present will prevent it from
+being updated. When we resume, we again don't know what's been done
+already.
+
+If the export.log is updated after deleting any files from the
+remote that are not the same in the new treeish as in the old treeish,
+and as long as TRANSFEREXPORT STORE is atomic, then when resuming we can
+trust CHECKPRESENTEXPORT to only find files that have the correct content
+for the current treeish. (Unless a conflicting export was made from
+elsewhere, but in that case, the conflict resolution will have to fix up
+later.)
+
+## handling renames efficiently
+
+To handle two files that swap names, a temp name is required.
+
+Difficulty with a temp name is picking a name that won't ever be used by
+any exported file.
+
+Interrupted exports also complicate this. While a name could be picked that
+is in neither the old nor the new tree, an export could be interrupted,
+leaving the file at the temp name. There needs to be something to clean
+that up when the export is resumed, even if it's resumed with a different 
+tree.
+
+Could use something like ".git-annex-tmp-content-$key" as the temp name.
+This hides it from casual view, which is good, and it's not depedent on the
+tree, so no state needs to be maintained to clean it up. Also, using the
+key in the name simplifies calculation of complicated renames (eg, renaming
+A to B, B to C, C to A)
+
+Export can first try to rename all files that are deleted/modified
+to their key's temp name (falling back to deleting since not all
+special remotes support rename), and then, in a second pass, rename
+from the temp name to the new name. Followed by deleting the temp name
+of all keys whose files are deleted in the diff. That is more renames and
+deletes than strictly necessary, but it will statelessly clean up 
+an interruped export as long as it's run again with the same new tree.
+
+But, an export of tree B should clean up after 
+an interrupted export of tree A. Some state is needed to handle this.
+Before starting the export of tree A, record it somewhere. Then when
+resuming, diff A..B, and delete the temp names of the keys in the
+diff. (Can't rename here, because we don't know what was the content
+of a file when an export was interrupted.)
+
+So, before an export does anything, need to record the tree that's about
+to be exported to export.log, not as an exported tree, but as a goal.
+Then on resume, the temp files for that can be cleaned up.
+
+## renames and export conflicts
+
+What is there's an export conflict going on at the same time that a file
+in the export gets renamed?
+
+Suppose that there are two git repos A and B, each exporting to the same
+remote. A and B are not currently communicating. A exports T1 which
+contains F. B exports T2, which has a different content for F. 
+
+Then A exports T3, which renames F to G. If that rename is done
+on the remote, then A will think it's successfully exported T3,
+but G will have F's content from T2, not from T1.
+
+When A and B reconnect, the export conflict will be detected. 
+To resolve the export conflict, it says above to:
+
+> To resolve, diff each exported tree in turn against the resolving tree
+> and delete all files that differ. Then, upload all missing files.
+
+Assume that the resolving tree is T3. So B's export of T2 is diffed against
+T3. F differs and is deleted (no change). G differs and is deleted,
+which fixes up the problem that the wrong content was renamed to G.
+G is missing so gets uploaded.
+
+So, this works, as long as "delete all files that differ" means it
+deletes both old and new files. And as long as conflict resolution does not
+itself stash away files in the temp name for later renaming.

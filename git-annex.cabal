@@ -787,6 +787,7 @@ Executable git-annex
     Config.GitConfig
     Creds
     Crypto
+    Database.Export
     Database.Fsck
     Database.Handle
     Database.Init
@@ -849,6 +850,7 @@ Executable git-annex
     Logs.Config
     Logs.Difference
     Logs.Difference.Pure
+    Logs.Export
     Logs.FsckResults
     Logs.Group
     Logs.Line
@@ -901,6 +903,7 @@ Executable git-annex
     Remote.Helper.Chunked
     Remote.Helper.Chunked.Legacy
     Remote.Helper.Encryptable
+    Remote.Helper.Export
     Remote.Helper.Git
     Remote.Helper.Hooks
     Remote.Helper.Http

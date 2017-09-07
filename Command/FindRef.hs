@@ -9,6 +9,7 @@ module Command.FindRef where
 
 import Command
 import qualified Command.Find as Find
+import qualified Git
 
 cmd :: Command
 cmd = withGlobalOptions nonWorkTreeMatchingOptions $ Find.mkCommand $ 
@@ -17,4 +18,4 @@ cmd = withGlobalOptions nonWorkTreeMatchingOptions $ Find.mkCommand $
 		paramRef (seek <$$> Find.optParser)
 
 seek :: Find.FindOptions -> CommandSeek
-seek o = Find.start o `withFilesInRefs` Find.findThese o
+seek o = Find.start o `withFilesInRefs` (map Git.Ref $ Find.findThese o)

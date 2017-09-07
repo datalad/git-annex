@@ -14,6 +14,7 @@ module Git.Tree (
 	recordTree,
 	TreeItem(..),
 	adjustTree,
+	treeMode,
 ) where
 
 import Common
@@ -94,11 +95,14 @@ mkTree (MkTreeHandle cp) l = CoProcess.query cp send receive
 	send h = do
 		forM_ l $ \i -> hPutStr h $ case i of
 			TreeBlob f fm s -> mkTreeOutput fm BlobObject s f
-			RecordedSubTree f s _ -> mkTreeOutput 0o040000 TreeObject s f
+			RecordedSubTree f s _ -> mkTreeOutput treeMode TreeObject s f
 			NewSubTree _ _ -> error "recordSubTree internal error; unexpected NewSubTree"
 			TreeCommit f fm s -> mkTreeOutput fm CommitObject s f
 		hPutStr h "\NUL" -- signal end of tree to --batch
 	receive h = getSha "mktree" (hGetLine h)
+
+treeMode :: FileMode
+treeMode = 0o040000
 
 mkTreeOutput :: FileMode -> ObjectType -> Sha -> TopFilePath -> String
 mkTreeOutput fm ot s f = concat

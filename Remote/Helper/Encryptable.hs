@@ -15,6 +15,7 @@ module Remote.Helper.Encryptable (
 	embedCreds,
 	cipherKey,
 	extractCipher,
+	isEncrypted,
 	describeEncryption,
 ) where
 
@@ -57,7 +58,7 @@ encryptionSetup c gc = do
 	encryption = M.lookup "encryption" c
 	-- Generate a new cipher, depending on the chosen encryption scheme
 	genCipher cmd = case encryption of
-		_ | M.member "cipher" c || M.member "cipherkeys" c || M.member "pubkeys" c -> cannotchange
+		_ | hasEncryptionConfig c -> cannotchange
 		Just "none" -> return (c, NoEncryption)
 		Just "shared" -> encsetup $ genSharedCipher cmd
 		-- hybrid encryption is the default when a keyid is
@@ -166,6 +167,15 @@ extractCipher c = case (M.lookup "cipher" c,
 	_ -> Nothing
   where
 	readkeys = KeyIds . splitc ','
+
+isEncrypted :: RemoteConfig -> Bool
+isEncrypted c = case M.lookup "encryption" c of
+	Just "none" -> False
+	Just _ -> True
+	Nothing -> hasEncryptionConfig c
+
+hasEncryptionConfig :: RemoteConfig -> Bool
+hasEncryptionConfig c = M.member "cipher" c || M.member "cipherkeys" c || M.member "pubkeys" c
 
 describeEncryption :: RemoteConfig -> String
 describeEncryption c = case extractCipher c of

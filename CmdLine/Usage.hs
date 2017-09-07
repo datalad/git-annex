@@ -94,6 +94,8 @@ paramAddress :: String
 paramAddress = "ADDRESS"
 paramItem :: String
 paramItem = "ITEM"
+paramTreeish :: String
+paramTreeish = "TREEISH"
 paramKeyValue :: String
 paramKeyValue = "K=V"
 paramNothing :: String

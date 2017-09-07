@@ -1,6 +1,6 @@
 {- A "remote" that is just a filesystem directory.
  -
- - Copyright 2011-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -25,18 +25,21 @@ import Config.Cost
 import Config
 import Utility.FileMode
 import Remote.Helper.Special
+import Remote.Helper.Export
 import qualified Remote.Directory.LegacyChunked as Legacy
 import Annex.Content
 import Annex.UUID
 import Utility.Metered
+import Utility.Tmp
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "directory",
-	enumerate = const (findSpecialRemotes "directory"),
-	generate = gen,
-	setup = directorySetup
-}
+remote = RemoteType
+	{ typename = "directory"
+	, enumerate = const (findSpecialRemotes "directory")
+	, generate = gen
+	, setup = directorySetup
+	, exportSupported = exportIsSupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
@@ -58,6 +61,13 @@ gen r u c gc = do
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = True
+			, exportActions = ExportActions
+				{ storeExport = storeExportDirectory dir
+				, retrieveExport = retrieveExportDirectory dir
+				, removeExport = removeExportDirectory dir
+				, checkPresentExport = checkPresentExportDirectory dir
+				, renameExport = renameExportDirectory dir
+				}
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
@@ -111,24 +121,21 @@ getLocation d k = do
 storeDir :: FilePath -> Key -> FilePath
 storeDir d k = addTrailingPathSeparator $ d </> hashDirLower def k </> keyFile k
 
-{- Where we store temporary data for a key, in the directory, as it's being
- - written. -}
-tmpDir :: FilePath -> Key -> FilePath
-tmpDir d k = addTrailingPathSeparator $ d </> "tmp" </> keyFile k
-
 {- Check if there is enough free disk space in the remote's directory to
  - store the key. Note that the unencrypted key size is checked. -}
 prepareStore :: FilePath -> ChunkConfig -> Preparer Storer
-prepareStore d chunkconfig = checkPrepare checker
+prepareStore d chunkconfig = checkPrepare (checkDiskSpaceDirectory d)
 	(byteStorer $ store d chunkconfig)
   where
-	checker k = do
-		annexdir <- fromRepo gitAnnexObjectDir
-		samefilesystem <- liftIO $ catchDefaultIO False $ 
-			(\a b -> deviceID a == deviceID b)
-				<$> getFileStatus d
-				<*> getFileStatus annexdir
-		checkDiskSpace (Just d) k 0 samefilesystem
+
+checkDiskSpaceDirectory :: FilePath -> Key -> Annex Bool
+checkDiskSpaceDirectory d k = do
+	annexdir <- fromRepo gitAnnexObjectDir
+	samefilesystem <- liftIO $ catchDefaultIO False $ 
+		(\a b -> deviceID a == deviceID b)
+			<$> getFileStatus d
+			<*> getFileStatus annexdir
+	checkDiskSpace (Just d) k 0 samefilesystem
 
 store :: FilePath -> ChunkConfig -> Key -> L.ByteString -> MeterUpdate -> Annex Bool
 store d chunkconfig k b p = liftIO $ do
@@ -141,7 +148,7 @@ store d chunkconfig k b p = liftIO $ do
 			finalizeStoreGeneric tmpdir destdir
 			return True
   where
-	tmpdir = tmpDir d k
+	tmpdir = addTrailingPathSeparator $ d </> "tmp" </> keyFile k
 	destdir = storeDir d k
 
 {- Passed a temp directory that contains the files that should be placed
@@ -211,11 +218,66 @@ removeDirGeneric topdir dir = do
 
 checkKey :: FilePath -> ChunkConfig -> CheckPresent
 checkKey d (LegacyChunks _) k = Legacy.checkKey d locations k
-checkKey d _ k = liftIO $
-	ifM (anyM doesFileExist (locations d k))
+checkKey d _ k = checkPresentGeneric d (locations d k)
+
+checkPresentGeneric :: FilePath -> [FilePath] -> Annex Bool
+checkPresentGeneric d ps = liftIO $
+	ifM (anyM doesFileExist ps)
 		( return True
 		, ifM (doesDirectoryExist d)
 			( return False
 			, giveup $ "directory " ++ d ++ " is not accessible"
 			)
 		)
+
+storeExportDirectory :: FilePath -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
+storeExportDirectory d src _k loc p = liftIO $ catchBoolIO $ do
+	createDirectoryIfMissing True (takeDirectory dest)
+	-- Write via temp file so that checkPresentGeneric will not
+	-- see it until it's fully stored.
+	viaTmp (\tmp () -> withMeteredFile src p (L.writeFile tmp)) dest ()
+	return True
+  where
+	dest = exportPath d loc
+
+retrieveExportDirectory :: FilePath -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
+retrieveExportDirectory d _k loc dest p = unVerified $ liftIO $ catchBoolIO $ do
+	withMeteredFile src p (L.writeFile dest)
+	return True
+  where
+	src = exportPath d loc
+
+removeExportDirectory :: FilePath -> Key -> ExportLocation -> Annex Bool
+removeExportDirectory d _k loc = liftIO $ do
+	nukeFile src
+	removeExportLocation d loc
+	return True
+  where
+	src = exportPath d loc
+
+checkPresentExportDirectory :: FilePath -> Key -> ExportLocation -> Annex Bool
+checkPresentExportDirectory d _k loc =
+	checkPresentGeneric d [exportPath d loc]
+
+renameExportDirectory :: FilePath -> Key -> ExportLocation -> ExportLocation -> Annex Bool
+renameExportDirectory d _k oldloc newloc = liftIO $ catchBoolIO $ do
+	createDirectoryIfMissing True (takeDirectory dest)
+	renameFile src dest
+	removeExportLocation d oldloc
+	return True
+  where
+	src = exportPath d oldloc
+	dest = exportPath d newloc
+
+exportPath :: FilePath -> ExportLocation -> FilePath
+exportPath d (ExportLocation loc) = d </> loc
+
+{- Removes the ExportLocation directory and its parents, so long as
+ - they're empty, up to but not including the topdir. -}
+removeExportLocation :: FilePath -> ExportLocation -> IO ()
+removeExportLocation topdir (ExportLocation loc) = go (Just loc) (Right ())
+  where
+	go _ (Left _e) = return ()
+	go Nothing _ = return ()
+	go (Just loc') _ = go (upFrom loc')
+		=<< tryIO (removeDirectory $ exportPath topdir (ExportLocation loc'))

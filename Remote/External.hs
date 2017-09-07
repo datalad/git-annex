@@ -18,6 +18,7 @@ import Config
 import Git.Config (isTrue, boolConfig)
 import Git.Env
 import Remote.Helper.Special
+import Remote.Helper.Export
 import Remote.Helper.ReadOnly
 import Remote.Helper.Messages
 import Utility.Metered
@@ -39,12 +40,13 @@ import System.Log.Logger (debugM)
 import qualified Data.Map as M
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "external",
-	enumerate = const (findSpecialRemotes "externaltype"),
-	generate = gen,
-	setup = externalSetup
-}
+remote = RemoteType
+	{ typename = "external"
+	, enumerate = const (findSpecialRemotes "externaltype")
+	, generate = gen
+	, setup = externalSetup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc
@@ -85,6 +87,7 @@ gen r u c gc
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
+			, exportActions = exportUnsupported
 			, whereisKey = towhereis
 			, remoteFsck = Nothing
 			, repairRepo = Nothing

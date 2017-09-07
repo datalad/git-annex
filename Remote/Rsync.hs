@@ -28,6 +28,7 @@ import Annex.UUID
 import Annex.Ssh
 import Remote.Helper.Special
 import Remote.Helper.Messages
+import Remote.Helper.Export
 import Remote.Rsync.RsyncUrl
 import Crypto
 import Utility.Rsync
@@ -43,12 +44,13 @@ import Utility.SshHost
 import qualified Data.Map as M
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "rsync",
-	enumerate = const (findSpecialRemotes "rsyncurl"),
-	generate = gen,
-	setup = rsyncSetup
-}
+remote = RemoteType
+	{ typename = "rsync"
+	, enumerate = const (findSpecialRemotes "rsyncurl")
+	, generate = gen
+	, setup = rsyncSetup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
@@ -73,6 +75,7 @@ gen r u c gc = do
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
+			, exportActions = exportUnsupported
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
 			, repairRepo = Nothing

@@ -10,6 +10,7 @@ module Remote.Web (remote, getWebUrls) where
 import Annex.Common
 import Types.Remote
 import Remote.Helper.Messages
+import Remote.Helper.Export
 import qualified Git
 import qualified Git.Construct
 import Annex.Content
@@ -22,12 +23,13 @@ import Annex.Quvi
 import qualified Utility.Quvi as Quvi
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "web",
-	enumerate = list,
-	generate = gen,
-	setup = error "not supported"
-}
+remote = RemoteType
+	{ typename = "web"
+	, enumerate = list
+	, generate = gen
+	, setup = error "not supported"
+	, exportSupported = exportUnsupported
+	}
 
 -- There is only one web remote, and it always exists.
 -- (If the web should cease to exist, remove this module and redistribute
@@ -50,6 +52,7 @@ gen r _ c gc =
 		, lockContent = Nothing
 		, checkPresent = checkKey
 		, checkPresentCheap = False
+		, exportActions = exportUnsupported
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing

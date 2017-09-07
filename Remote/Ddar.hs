@@ -19,6 +19,7 @@ import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
+import Remote.Helper.Export
 import Annex.Ssh
 import Annex.UUID
 import Utility.SshHost
@@ -29,12 +30,13 @@ data DdarRepo = DdarRepo
 	}
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "ddar",
-	enumerate = const (findSpecialRemotes "ddarrepo"),
-	generate = gen,
-	setup = ddarSetup
-}
+remote = RemoteType
+	{ typename = "ddar"
+	, enumerate = const (findSpecialRemotes "ddarrepo")
+	, generate = gen
+	, setup = ddarSetup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
@@ -60,6 +62,7 @@ gen r u c gc = do
 		, lockContent = Nothing
 		, checkPresent = checkPresentDummy
 		, checkPresentCheap = ddarLocal ddarrepo
+		, exportActions = exportUnsupported
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing

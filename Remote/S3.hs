@@ -39,6 +39,7 @@ import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.Http
 import Remote.Helper.Messages
+import Remote.Helper.Export
 import qualified Remote.Helper.AWS as AWS
 import Creds
 import Annex.UUID
@@ -53,12 +54,13 @@ import Utility.Url (checkBoth, managerSettings, closeManager)
 type BucketName = String
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "S3",
-	enumerate = const (findSpecialRemotes "s3"),
-	generate = gen,
-	setup = s3Setup
-}
+remote = RemoteType
+	{ typename = "S3"
+	, enumerate = const (findSpecialRemotes "s3")
+	, generate = gen
+	, setup = s3Setup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
@@ -84,6 +86,7 @@ gen r u c gc = do
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
+			, exportActions = exportUnsupported
 			, whereisKey = Just (getWebUrls info)
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
@@ -127,8 +130,9 @@ s3Setup' ss u mcreds c gc
 		(c', encsetup) <- encryptionSetup c gc
 		c'' <- setRemoteCredPair encsetup c' gc (AWS.creds u) mcreds
 		let fullconfig = c'' `M.union` defaults
-		when (ss == Init) $
-			genBucket fullconfig gc u
+		case ss of
+			Init -> genBucket fullconfig gc u
+			_ -> return ()
 		use fullconfig
 
 	archiveorg = do

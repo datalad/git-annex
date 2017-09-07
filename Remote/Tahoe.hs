@@ -34,6 +34,7 @@ import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
+import Remote.Helper.Export
 import Annex.UUID
 import Annex.Content
 import Logs.RemoteState
@@ -51,12 +52,13 @@ type IntroducerFurl = String
 type Capability = String
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "tahoe",
-	enumerate = const (findSpecialRemotes "tahoe"),
-	generate = gen,
-	setup = tahoeSetup
-}
+remote = RemoteType
+	{ typename = "tahoe"
+	, enumerate = const (findSpecialRemotes "tahoe")
+	, generate = gen
+	, setup = tahoeSetup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
@@ -75,6 +77,7 @@ gen r u c gc = do
 		, lockContent = Nothing
 		, checkPresent = checkKey u hdl
 		, checkPresentCheap = False
+		, exportActions = exportUnsupported
 		, whereisKey = Just (getWhereisKey u)
 		, remoteFsck = Nothing
 		, repairRepo = Nothing

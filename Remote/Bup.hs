@@ -25,6 +25,7 @@ import Config.Cost
 import qualified Remote.Helper.Ssh as Ssh
 import Remote.Helper.Special
 import Remote.Helper.Messages
+import Remote.Helper.Export
 import Utility.Hash
 import Utility.UserInfo
 import Annex.UUID
@@ -34,12 +35,13 @@ import Utility.Metered
 type BupRepo = String
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "bup",
-	enumerate = const (findSpecialRemotes "buprepo"),
-	generate = gen,
-	setup = bupSetup
-}
+remote = RemoteType
+	{ typename = "bup"
+	, enumerate = const (findSpecialRemotes "buprepo")
+	, generate = gen
+	, setup = bupSetup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
@@ -61,6 +63,7 @@ gen r u c gc = do
 		, lockContent = Nothing
 		, checkPresent = checkPresentDummy
 		, checkPresentCheap = bupLocal buprepo
+		, exportActions = exportUnsupported
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing

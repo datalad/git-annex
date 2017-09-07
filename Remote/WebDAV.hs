@@ -28,6 +28,7 @@ import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.Messages
 import Remote.Helper.Http
+import Remote.Helper.Export
 import qualified Remote.Helper.Chunked.Legacy as Legacy
 import Creds
 import Utility.Metered
@@ -40,12 +41,13 @@ import Network.HTTP.Client (HttpExceptionContent(..), responseStatus)
 #endif
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "webdav",
-	enumerate = const (findSpecialRemotes "webdav"),
-	generate = gen,
-	setup = webdavSetup
-}
+remote = RemoteType
+	{ typename = "webdav"
+	, enumerate = const (findSpecialRemotes "webdav")
+	, generate = gen
+	, setup = webdavSetup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
@@ -68,6 +70,7 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
+			, exportActions = exportUnsupported
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
