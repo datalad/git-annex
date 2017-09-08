@@ -4,7 +4,7 @@ git-annex (6.20170819) UNRELEASED; urgency=medium
     exports of trees to special remotes.
   * Use git-annex initremote with exporttree=yes to set up a special remote
     for use by git-annex export.
-  * Implemented export to directory special remotes.
+  * Implemented export to directory and S3 special remotes.
   * External special remote protocol extended to support export.
   * Support building with feed-1.0, while still supporting older versions.
   * init: Display an additional message when it detects a filesystem that

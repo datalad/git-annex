@@ -66,6 +66,10 @@ the S3 remote.
   so by default, a bucket name is chosen based on the remote name
   and UUID. This can be specified to pick a bucket name.
 
+* `exporttree` - Set to "yes" to make this special remote usable
+  by [[git-annex-export]]. It will not be usable as a general-purpose
+  special remote.
+
 * `public` - Set to "yes" to allow public read access to files sent
   to the S3 remote. This is accomplished by setting an ACL when each 
   file is uploaded to the remote. So, changes to this setting will
