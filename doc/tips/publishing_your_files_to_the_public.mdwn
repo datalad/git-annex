@@ -17,7 +17,7 @@ You can run that command again to update the export. See
 [[git-annex-export]] for details.
 
 Each exported file will be available to the public from
-`http://$BUCKET.s3.amazonaws.com/$file`
+`http://$BUCKET.s3.amazonaws.com/$FILE`
 
 Note: Bear in mind that Amazon will charge the owner of the bucket
 for public downloads from that bucket.
