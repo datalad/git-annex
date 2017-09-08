@@ -93,7 +93,7 @@ gen r u c gc = do
 				, checkPresentExport = checkPresentExportS3 this info
 				, renameExport = renameExportS3 this info
 				}
-			, whereisKey = Just (getWebUrls info)
+			, whereisKey = Just (getWebUrls info c)
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
 			, config = c
@@ -695,8 +695,10 @@ s3Info c info = catMaybes
 #endif
 	showstorageclass sc = show sc
 
-getWebUrls :: S3Info -> Key -> Annex [URLString]
-getWebUrls info k = case (public info, getpublicurl info) of
-	(True, Just geturl) -> return [geturl k]
-	_ -> return []
+getWebUrls :: S3Info -> RemoteConfig -> Key -> Annex [URLString]
+getWebUrls info c k
+	| exportTree c = return []
+	| otherwise = case (public info, getpublicurl info) of
+		(True, Just geturl) -> return [geturl k]
+		_ -> return []
 

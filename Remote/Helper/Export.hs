@@ -37,6 +37,11 @@ instance HasExportUnsupported (ExportActions Annex) where
 		, renameExport = \_ _ _ -> return False
 		}
 
+exportTree :: RemoteConfig -> Bool
+exportTree c = case M.lookup "exporttree" c of
+	Just "yes" -> True
+	_ -> False
+
 exportIsSupported :: RemoteConfig -> RemoteGitConfig -> Annex Bool
 exportIsSupported = \_ _ -> return True
 
@@ -49,17 +54,17 @@ adjustExportableRemoteType rt = rt { setup = setup' }
 		let cont = setup rt st mu cp c gc
 		ifM (exportSupported rt c gc)
 			( case st of
-				Init -> case M.lookup "exporttree" c of
-					Just "yes" | isEncrypted c ->
+				Init
+					| exportTree c && isEncrypted c ->
 						giveup "cannot enable both encryption and exporttree"
-					_ -> cont
+					| otherwise -> cont
 				Enable oldc
-					| M.lookup "exporttree" c /= M.lookup "exporttree" oldc ->
+					| exportTree c /= exportTree oldc ->
 						giveup "cannot change exporttree of existing special remote"
 					| otherwise -> cont
-			, case M.lookup "exporttree" c of
-				Just "yes" -> giveup "exporttree=yes is not supported by this special remote"
-				_ -> cont
+			, if exportTree c
+				then giveup "exporttree=yes is not supported by this special remote"
+				else cont
 			)
 
 -- | If the remote is exportSupported, and exporttree=yes, adjust the
