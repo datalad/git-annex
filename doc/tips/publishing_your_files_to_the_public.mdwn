@@ -24,7 +24,7 @@ for public downloads from that bucket.
 
 # Indexes
 
-By default, there is no index.ntml file exported, so if you open
+By default, there is no index.html file exported, so if you open
 `http://$BUCKET.s3.amazonaws.com/` in a web browser, you'll see an
 XML document listing the files.
 
