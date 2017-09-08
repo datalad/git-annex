@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 29"""
+ date="2017-09-08T20:46:28Z"
+ content="""
+@David_K @Joe, it's finally possible to publish annexed files to S3 while
+preserving filenames, using the new `git annex export` command!
+See [[tips/publishing_your_files_to_the_public]].
+"""]]
