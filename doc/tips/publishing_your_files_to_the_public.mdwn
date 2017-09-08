@@ -1,88 +1,39 @@
 # Creating a special S3 remote to hold files shareable by URL
 
-(In this example, I'll assume you'll be creating a bucket in S3 named **public-annex** and a special remote in git-annex, which will store its files in the previous bucket, named **public-s3**, but change these names if you are going to do the thing for real)
+In this example, I'll assume you'll be creating a bucket in Amazon S3 named
+$BUCKET and a special remote named public-s3. Be sure to replace $BUCKET
+with something like "public-bucket-joey" when you follow along in your
+shell.
 
-Set up your special [S3](http://git-annex.branchable.com/special_remotes/S3/) remote with (at least) these options:
+Set up your special [[S3 remote|special_remotes/S3]] with (at least) these options:
 
-    git annex initremote public-s3 type=s3 encryption=none bucket=public-annex chunk=0 public=yes
+	git annex initremote public-s3 type=s3 encryption=none bucket=$BUCKET exporttree=yes public=yes encryption=none
 
-This way git-annex will upload the files to this repo, (when you call `git
-annex copy [FILES...] --to public-s3`) without encrypting them and without
-chunking them. And, thanks to the public=yes, they will be
-accessible by anyone with the link.
+Then export the files in the master branch to the remote:
 
-(Note that public=yes was added in git-annex version 5.20150605.
-If you have an older version, it will be silently ignored, and you
-will instead need to use the AWS dashboard to configure a public get policy
-for the bucket.)
+	git annex export master --to public-s3
 
-Following the example, the files will be accessible at `http://public-annex.s3.amazonaws.com/KEY` where `KEY` is the file key created by git-annex and which you can discover running
+You can run that command again to update the export. See
+[[git-annex-export]] for details.
 
-    git annex lookupkey FILEPATH
+Each exported file will be available to the public from
+`http://$BUCKET.s3.amazonaws.com/$file`
 
-This way you can share a link to each file you have at your S3 remote.
+Note: Bear in mind that Amazon will charge the owner of the bucket
+for public downloads from that bucket.
 
-## Sharing all links in a folder
+# Indexes
 
-To share all the links in a given folder, for example, you can go to that folder and run (this is an example with the _fish_ shell, but I'm sure you can do the same in _bash_, I just don't know exactly):
+By default, there is no index.ntml file exported, so if you open
+`http://$BUCKET.s3.amazonaws.com/` in a web browser, you'll see an
+XML document listing the files.
 
-    for filename in (ls)
-        echo $filename": https://public-annex.s3.amazonaws.com/"(git annex lookupkey $filename)
-    end
+For a nicer list of files, you can make an index.html file, check it into
+git, and export it to the bucket. You'll need to configure the bucket to
+use index.html as its index document, as
+[explained here](https://stackoverflow.com/questions/27899/is-there-a-way-to-have-index-html-functionality-with-content-hosted-on-s3).
 
-## Sharing all links matching certain metadata
+# Old method
 
-The same applies to all the filters you can do with git-annex.
-
-For example, let's share links to all the files whose _author_'s name starts with "Mario" and are, in fact, stored at your public-s3 remote.
-However, instead of just a list of links we will output a markdown-formatted list of the filenames linked to their S3 urls:
-
-    for filename in (git annex find --metadata "author=Mario*" --and --in public-s3)
-       echo "* ["$filename"](https://public-annex.s3.amazonaws.com/"(git annex lookupkey $filename)")"
-    end
-
-Very useful.
-
-## Sharing links with time-limited URLs
-
-By using pre-signed URLs it is possible to create limits on how long a URL is valid for retrieving an object. 
-To enable use a private S3 bucket for the remotes and then pre-sign actual URL with the script in [AWS-Tools](https://github.com/gdbtek/aws-tools).
-Example:
-
-    key=`git annex lookupkey "$fname"`;  sign_s3_url.bash --region 'eu-west-1' --bucket 'mybuck' --file-path $key --aws-access-key-id XX --aws-secret-access-key XX --method 'GET' --minute-expire 10
-
-## Adding the S3 URL as a source
-
-Assuming all files in the current directory are available on S3, this will register the public S3 url for the file in git-annex, making it available for everyone *through git-annex*:
-
-<pre>
-git annex find --in public-s3 | while read file ; do
-  key=$(git annex lookupkey $file)
-  echo $key https://public-annex.s3.amazonaws.com/$key
-done | git annex registerurl
-</pre>
-
-`registerurl` was introduced in `5.20150317`.
-
-## Manually configuring a public get policy
-
-Here is how to manually configure a public get policy
-for a bucket, in the AWS dashboard.
-
-    {
-      "Version": "2008-10-17",
-      "Statement": [
-        {
-          "Sid": "AllowPublicRead",
-          "Effect": "Allow",
-          "Principal": {
-            "AWS": "*"
-          },
-          "Action": "s3:GetObject",
-          "Resource": "arn:aws:s3:::public-annex/*"
-        }
-      ]
-    }
-
-This should not be necessary if using a new enough version
-of git-annex, which can instead be configured with public=yet.
+To use `git annex export`, you need git-annex version 6.20170909 or
+newer. Before we had `git annex export` an [[old_method]] was used instead.

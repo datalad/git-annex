@@ -357,14 +357,16 @@ checkPresentExportS3 r info _k loc =
 	go = withS3Handle (config r) (gitconfig r) (uuid r) $ \h -> do
 		checkKeyHelper info h (T.pack $ bucketExportLocation info loc)
 
+-- S3 has no move primitive; copy and delete.
 renameExportS3 :: Remote -> S3Info -> Key -> ExportLocation -> ExportLocation -> Annex Bool
 renameExportS3 r info _k src dest = catchNonAsync go (\e -> warning (show e) >> return False)
   where
 	go = withS3Handle (config r) (gitconfig r) (uuid r) $ \h -> do
-		-- S3 has no move primitive; copy and delete.
-		void $ sendS3Handle h $ S3.copyObject (bucket info) dstobject
+		let co = S3.copyObject (bucket info) dstobject
 			(S3.ObjectId (bucket info) srcobject Nothing)
 			S3.CopyMetadata
+		-- ACL is not preserved by copy.
+		void $ sendS3Handle h $ co { S3.coAcl = acl info }
 		void $ sendS3Handle h $ S3.DeleteObject srcobject (bucket info)
 		return True
 	srcobject = T.pack $ bucketExportLocation info src
