@@ -153,7 +153,8 @@ replying with `UNSUPPORTED-REQUEST` is acceptable.
   Comes immediately before each of the following export-related requests, 
   specifying the name of the exported file. It will be in the form
   of a relative path, and may contain path separators, whitespace,
-  and other special characters.
+  and other special characters.  
+  No response is made to this message.
 * `TRANSFEREXPORT STORE|RETRIEVE Key File`  
   Requests the transfer of a File on local disk to or from the previously 
   provided Name on the special remote.  
@@ -253,12 +254,12 @@ while it's handling a request.
   Indicates that no location is known for a key.
 * `EXPORTSUPPORTED-SUCCESS`  
   Indicates that it makes sense to use this special remote as an export.
-* `EXPORTSUPPORTED`  
+* `EXPORTSUPPORTED-FAILURE`  
   Indicates that it does not make sense to use this special remote as an
   export.
-* `RENAMEEXPORT-SUCCESS`  
+* `RENAMEEXPORT-SUCCESS Key`  
   Indicates that a `RENAMEEXPORT` was done successfully.
-* `RENAMEEXPORT-FAILURE`  
+* `RENAMEEXPORT-FAILURE Key`  
   Indicates that a `RENAMEEXPORT` failed for whatever reason.
 * `UNSUPPORTED-REQUEST`  
   Indicates that the special remote does not know how to handle a request.

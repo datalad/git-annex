@@ -28,8 +28,10 @@ instance HasExportUnsupported (RemoteConfig -> RemoteGitConfig -> Annex Bool) wh
 
 instance HasExportUnsupported (ExportActions Annex) where
 	exportUnsupported = ExportActions
-		{ storeExport = \_ _ _ _ -> return False
-		, retrieveExport = \_ _ _ _ -> return (False, UnVerified)
+		{ storeExport = \_ _ _ _ -> do
+			warning "store export is unsupported"
+			return False
+		, retrieveExport = \_ _ _ _ -> return False
 		, removeExport = \_ _ -> return False
 		, checkPresentExport = \_ _ -> return False
 		, renameExport = \_ _ _ -> return False
@@ -68,7 +70,9 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 		( isexport
 		, notexport
 		)
-	_ -> notexport
+	Nothing -> notexport
+	Just "no" -> notexport
+	Just _ -> error "bad exporttree value"
   where
 	notexport = return $ r { exportActions = exportUnsupported }
 	isexport = do
@@ -86,18 +90,18 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 			-- Keys can be retrieved, but since an export
 			-- is not a true key/value store, the content of
 			-- the key has to be able to be strongly verified.
-			, retrieveKeyFile = \k _af dest p ->
+			, retrieveKeyFile = \k _af dest p -> unVerified $
 				if maybe False (isJust . verifyKeyContent) (maybeLookupBackendVariety (keyVariety k))
 					then do
 						locs <- liftIO $ getExportLocation db k
 						case locs of
 							[] -> do
 								warning "unknown export location"
-								return (False, UnVerified)
+								return False
 							(l:_) -> retrieveExport (exportActions r) k l dest p
 					else do
 						warning $ "exported content cannot be verified due to using the " ++ formatKeyVariety (keyVariety k) ++ " backend"
-						return (False, UnVerified)
+						return False
 			, retrieveKeyFileCheap = \_ _ _ -> return False
 			-- Remove all files a key was exported to.
 			, removeKey = \k -> do

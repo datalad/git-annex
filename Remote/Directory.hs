@@ -240,8 +240,8 @@ storeExportDirectory d src _k loc p = liftIO $ catchBoolIO $ do
   where
 	dest = exportPath d loc
 
-retrieveExportDirectory :: FilePath -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
-retrieveExportDirectory d _k loc dest p = unVerified $ liftIO $ catchBoolIO $ do
+retrieveExportDirectory :: FilePath -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
+retrieveExportDirectory d _k loc dest p = liftIO $ catchBoolIO $ do
 	withMeteredFile src p (L.writeFile dest)
 	return True
   where

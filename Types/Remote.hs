@@ -175,7 +175,7 @@ data ExportActions a = ExportActions
 	-- Retrieves exported content to a file.
 	-- (The MeterUpdate does not need to be used if it writes
 	-- sequentially to the file.)
-	, retrieveExport :: Key -> ExportLocation -> FilePath -> MeterUpdate -> a (Bool, Verification)
+	, retrieveExport :: Key -> ExportLocation -> FilePath -> MeterUpdate -> a Bool
 	-- Removes an exported file (succeeds if the contents are not present)
 	, removeExport :: Key -> ExportLocation -> a Bool
 	-- Checks if anything is exported to the remote at the specified

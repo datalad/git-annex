@@ -45,7 +45,7 @@ remote = RemoteType
 	, enumerate = const (findSpecialRemotes "externaltype")
 	, generate = gen
 	, setup = externalSetup
-	, exportSupported = exportUnsupported
+	, exportSupported = checkExportSupported
 	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -61,11 +61,28 @@ gen r u c gc
 			Nothing
 			Nothing
 			Nothing
+			exportUnsupported
+			exportUnsupported
 	| otherwise = do
 		external <- newExternal externaltype u c gc
 		Annex.addCleanup (RemoteCleanup u) $ stopExternal external
 		cst <- getCost external r gc
 		avail <- getAvailability external r gc
+		exportsupported <- checkExportSupported' external
+		let exportactions = if exportsupported
+			then ExportActions
+				{ storeExport = storeExportExternal external
+				, retrieveExport = retrieveExportExternal external
+				, removeExport = removeExportExternal external
+				, checkPresentExport = checkPresentExportExternal external
+				, renameExport = renameExportExternal external
+				}
+			else exportUnsupported
+		-- Cheap exportSupported that replaces the expensive
+		-- checkExportSupported now that we've already checked it.
+		let cheapexportsupported = if exportsupported
+			then exportIsSupported
+			else exportUnsupported
 		mk cst avail
 			(store external)
 			(retrieve external)
@@ -74,8 +91,10 @@ gen r u c gc
 			(Just (whereis external))
 			(Just (claimurl external))
 			(Just (checkurl external))
+			exportactions
+			cheapexportsupported
   where
-	mk cst avail tostore toretrieve toremove tocheckkey towhereis toclaimurl tocheckurl = do
+	mk cst avail tostore toretrieve toremove tocheckkey towhereis toclaimurl tocheckurl exportactions cheapexportsupported = do
 		let rmt = Remote
 			{ uuid = u
 			, cost = cst
@@ -87,7 +106,7 @@ gen r u c gc
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
-			, exportActions = exportUnsupported
+			, exportActions = exportactions
 			, whereisKey = towhereis
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
@@ -97,7 +116,8 @@ gen r u c gc
 			, gitconfig = gc
 			, readonly = False
 			, availability = avail
-			, remotetype = remote
+			, remotetype = remote 
+				{ exportSupported = cheapexportsupported }
 			, mkUnavailable = gen r u c $
 				gc { remoteAnnexExternalType = Just "!dne!" }
 			, getInfo = return [("externaltype", externaltype)]
@@ -134,6 +154,21 @@ externalSetup _ mu _ c gc = do
 
 	gitConfigSpecialRemote u c'' "externaltype" externaltype
 	return (c'', u)
+
+checkExportSupported :: RemoteConfig -> RemoteGitConfig -> Annex Bool
+checkExportSupported c gc = do
+	let externaltype = fromMaybe (giveup "Specify externaltype=") $
+		remoteAnnexExternalType gc <|> M.lookup "externaltype" c
+	checkExportSupported' 
+		=<< newExternal externaltype NoUUID c gc
+
+checkExportSupported' :: External -> Annex Bool
+checkExportSupported' external = safely $
+	handleRequest external EXPORTSUPPORTED Nothing $ \resp -> case resp of
+		EXPORTSUPPORTED_SUCCESS -> Just $ return True
+		EXPORTSUPPORTED_FAILURE -> Just $ return False
+		UNSUPPORTED_REQUEST -> Just $ return False
+		_ -> Nothing
 
 store :: External -> Storer
 store external = fileStorer $ \k f p ->
@@ -189,6 +224,78 @@ whereis external k = handleRequestKey external WHEREIS k Nothing $ \resp -> case
 	UNSUPPORTED_REQUEST -> Just $ return []
 	_ -> Nothing
 
+storeExportExternal :: External -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
+storeExportExternal external f k loc p = safely $
+	handleRequestExport external loc req k (Just p) $ \resp -> case resp of
+		TRANSFER_SUCCESS Upload k' | k == k' ->
+			Just $ return True
+		TRANSFER_FAILURE Upload k' errmsg | k == k' ->
+			Just $ do
+				warning errmsg
+				return False
+		UNSUPPORTED_REQUEST -> Just $ do
+			warning "TRANSFEREXPORT not implemented by external special remote"
+			return False
+		_ -> Nothing
+  where
+	req sk = TRANSFEREXPORT Upload sk f
+
+retrieveExportExternal :: External -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
+retrieveExportExternal external k loc d p = safely $
+	handleRequestExport external loc req k (Just p) $ \resp -> case resp of
+		TRANSFER_SUCCESS Download k'
+			| k == k' -> Just $ return True
+		TRANSFER_FAILURE Download k' errmsg
+			| k == k' -> Just $ do
+				warning errmsg
+				return False
+		UNSUPPORTED_REQUEST -> Just $ do
+			warning "TRANSFEREXPORT not implemented by external special remote"
+			return False
+		_ -> Nothing
+  where
+	req sk = TRANSFEREXPORT Download sk d
+
+removeExportExternal :: External -> Key -> ExportLocation -> Annex Bool
+removeExportExternal external k loc = safely $
+	handleRequestExport external loc REMOVEEXPORT k Nothing $ \resp -> case resp of
+		REMOVE_SUCCESS k'
+			| k == k' -> Just $ return True
+		REMOVE_FAILURE k' errmsg
+			| k == k' -> Just $ do
+				warning errmsg
+				return False
+		UNSUPPORTED_REQUEST -> Just $ do
+			warning "REMOVEEXPORT not implemented by external special remote"
+			return False
+		_ -> Nothing
+
+checkPresentExportExternal :: External -> Key -> ExportLocation -> Annex Bool
+checkPresentExportExternal external k loc = either giveup id <$> go
+  where
+	go = handleRequestExport external loc CHECKPRESENTEXPORT k Nothing $ \resp -> case resp of
+		CHECKPRESENT_SUCCESS k'
+			| k' == k -> Just $ return $ Right True
+		CHECKPRESENT_FAILURE k'
+			| k' == k -> Just $ return $ Right False
+		CHECKPRESENT_UNKNOWN k' errmsg
+			| k' == k -> Just $ return $ Left errmsg
+		UNSUPPORTED_REQUEST -> Just $ return $
+			Left "CHECKPRESENTEXPORT not implemented by external special remote"
+		_ -> Nothing
+
+renameExportExternal :: External -> Key -> ExportLocation -> ExportLocation -> Annex Bool
+renameExportExternal external k src dest = safely $
+	handleRequestExport external src req k Nothing $ \resp -> case resp of
+		RENAMEEXPORT_SUCCESS k'
+			| k' == k -> Just $ return True
+		RENAMEEXPORT_FAILURE k' 
+			| k' == k -> Just $ return False
+		UNSUPPORTED_REQUEST -> Just $ return False
+		_ -> Nothing
+  where
+	req sk = RENAMEEXPORT sk dest
+
 safely :: Annex Bool -> Annex Bool
 safely a = go =<< tryNonAsync a
   where
@@ -219,6 +326,16 @@ handleRequestKey :: External -> (SafeKey -> Request) -> Key -> Maybe MeterUpdate
 handleRequestKey external mkreq k mp responsehandler = case mkSafeKey k of
 	Right sk -> handleRequest external (mkreq sk) mp responsehandler
 	Left e -> giveup e
+
+{- Export location is first sent in an EXPORT message before
+ - the main request. This is done because the ExportLocation can
+ - contain spaces etc. -}
+handleRequestExport :: External -> ExportLocation -> (SafeKey -> Request) -> Key -> Maybe MeterUpdate -> (Response -> Maybe (Annex a)) -> Annex a
+handleRequestExport external loc mkreq k mp responsehandler = do
+	withExternalState external $ \st -> do
+		checkPrepared st external
+		sendMessage st external (EXPORT loc)
+	handleRequestKey external mkreq k mp responsehandler
 
 handleRequest' :: ExternalState -> External -> Request -> Maybe MeterUpdate -> (Response -> Maybe (Annex a)) -> Annex a
 handleRequest' st external req mp responsehandler
