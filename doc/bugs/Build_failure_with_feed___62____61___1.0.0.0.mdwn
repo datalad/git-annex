@@ -178,3 +178,4 @@ https://gist.githubusercontent.com/anonymous/dcc8d9823bd50b7fca10d5cf8961e75d/ra
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Yes!
 
+> I fixed this last week, in [[!commit ee2f096e3ba3aea24445ff2093b426b68e000cc2]]. [[done]]
