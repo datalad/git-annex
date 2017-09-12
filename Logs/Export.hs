@@ -84,7 +84,7 @@ recordExportBeginning remoteuuid newtree = do
 		. M.lookup u . simpleMap 
 		. parseLogNew parseExportLog
 		<$> Annex.Branch.get exportLog
-	let new = old { incompleteExportedTreeish = newtree:incompleteExportedTreeish old }
+	let new = old { incompleteExportedTreeish = nub (newtree:incompleteExportedTreeish old) }
 	Annex.Branch.change exportLog $
 		showLogNew formatExportLog 
 			. changeLog c u (ExportLog new remoteuuid)

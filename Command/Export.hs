@@ -10,6 +10,7 @@
 module Command.Export where
 
 import Command
+import qualified Annex
 import qualified Git
 import qualified Git.DiffTree
 import qualified Git.LsTree
@@ -144,10 +145,12 @@ seek o = do
 	-- Waiting until now to record the export guarantees that,
 	-- if this export is interrupted, there are no files left over
 	-- from a previous export, that are not part of this export.
-	recordExport (uuid r) $ ExportChange
-		{ oldTreeish = map exportedTreeish old
-		, newTreeish = new
-		}
+	c <- Annex.getState Annex.errcounter
+	when (c == 0) $
+		recordExport (uuid r) $ ExportChange
+			{ oldTreeish = map exportedTreeish old
+			, newTreeish = new
+			}
 
 	-- Export everything that is not yet exported.
 	(l, cleanup') <- inRepo $ Git.LsTree.lsTree new
