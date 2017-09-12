@@ -29,8 +29,6 @@ Work is in progress. Todo list:
   Would need git-annex sync to export to the master tree?
   This is similar to the little-used preferreddir= preferred content
   setting and the "public" repository group.
-* Test export to IA via S3. In particualar, does removing an exported file
-  work?
 
 Low priority:
 

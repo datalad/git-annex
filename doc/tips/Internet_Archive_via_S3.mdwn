@@ -11,9 +11,10 @@ comply with their [terms of service](http://www.archive.org/about/terms.php).
 A nice added feature is that whenever git-annex sends a file to the
 Internet Archive, it records its url, the same as if you'd run `git annex
 addurl`. So any users who can clone your repository can download the files
-from archive.org, without needing any login or password info. This makes
-the Internet Archive a nice way to publish the large files associated with
-a public git repository.
+from archive.org, without needing any login or password info. 
+The url to the content in the Internet Archive is also displayed by
+`git annex whereis`. This makes the Internet Archive a nice way to
+publish the large files associated with a public git repository.
 
 ## webapp setup
 
@@ -50,10 +51,15 @@ Then you can annex files and copy them to the remote as usual:
 	# git annex copy photo1.jpeg --fast --to archive-panama
 	copy (to archive-panama...) ok
 
-Once a file has been stored on archive.org, it cannot be (easily) removed
-from it. Also, git-annex whereis will tell you a public url for the file
-on archive.org. (It may take a while for archive.org to make the file
-publically visibile.)
+It may take a while for archive.org to make files publically visible after
+they've been uploaded.
+
+## removing files
+
+While files can be removed from the Internet Archive, 
+[derived versions](https://archive.org/help/derivatives.php)
+of some files may continued to be stored there after the originals
+were removed. git-annex warns about this problem.
 
 ## exporting trees
 
@@ -63,6 +69,7 @@ are important, you can run `git annex initremote` with an additional
 parameter "exporttree=yes", and then use [[git-annex-export]] to publish
 a tree of files to the Internet Archive.
 
-Note that the Internet Archive does not support filenames containing
-whitespace and some other characters. Exporting such problem filenames will
-fail; you can rename the file and re-export.
+Note that the Internet Archive may not support certian characters
+in filenames ([see FAQ](http://archive.org/about/faqs.php#1099)).
+If exporting a filename fails due to such limitations, you would need
+to rename it in your git annex repository in order to export it.
