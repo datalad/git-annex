@@ -27,6 +27,7 @@ module Utility.Url (
 	downloadQuiet,
 	parseURIRelaxed,
 	matchStatusCodeException,
+	matchHttpExceptionContent,
 ) where
 
 import Common
@@ -365,3 +366,9 @@ matchStatusCodeException want e@(StatusCodeException s _ _)
 	| otherwise = Nothing
 matchStatusCodeException _ _ = Nothing
 #endif
+
+matchHttpExceptionContent :: (HttpExceptionContent -> Bool) -> HttpException -> Maybe HttpException
+matchHttpExceptionContent want e@(HttpExceptionRequest _ hec)
+	| want hec = Just e
+	| otherwise = Nothing
+matchHttpExceptionContent _ _ = Nothing

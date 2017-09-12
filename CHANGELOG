@@ -10,6 +10,10 @@ git-annex (6.20170819) UNRELEASED; urgency=medium
   * init: Display an additional message when it detects a filesystem that
     allows writing to files whose write bit is not set.
   * S3: Allow removing files from IA.
+  * webdav: Checking if a non-existent file is present on Box.com
+    triggered a bug in its webdav support that generates an infinite series
+    of redirects. Deal with such problems by assuming such behavior means
+    the file is not present.
 
  -- Joey Hess <id@joeyh.name>  Mon, 28 Aug 2017 12:20:59 -0400
 

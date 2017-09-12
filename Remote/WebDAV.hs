@@ -32,7 +32,7 @@ import Remote.Helper.Export
 import qualified Remote.Helper.Chunked.Legacy as Legacy
 import Creds
 import Utility.Metered
-import Utility.Url (URLString, matchStatusCodeException)
+import Utility.Url (URLString, matchStatusCodeException, matchHttpExceptionContent)
 import Annex.UUID
 import Remote.WebDAV.DavLocation
 
@@ -317,11 +317,15 @@ existsDAV l = inLocation l check `catchNonAsync` (\e -> return (Left $ show e))
 		-- more depth is certainly not needed to check if a
 		-- location exists.
 		setDepth (Just Depth1)
-		catchJust
-			(matchStatusCodeException (== notFound404))
+		catchJust missinghttpstatus
 			(getPropsM >> ispresent True)
 			(const $ ispresent False)
 	ispresent = return . Right
+	missinghttpstatus e = 
+		matchStatusCodeException (== notFound404) e
+		<|> matchHttpExceptionContent toomanyredirects e
+	toomanyredirects (TooManyRedirects _) = True
+	toomanyredirects _ = False
 
 safely :: DAVT IO a -> DAVT IO (Maybe a)
 safely = eitherToMaybe <$$> tryNonAsync
