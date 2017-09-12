@@ -278,17 +278,10 @@ retrieveCheap _ _ _ = return False
  - While it may remove the file, there are generally other files
  - derived from it that it does not remove. -}
 remove :: S3Info -> S3Handle -> Remover
-remove info h k = warnIARemoval info $ do
+remove info h k = do
 	res <- tryNonAsync $ sendS3Handle h $
 		S3.DeleteObject (T.pack $ bucketObject info k) (bucket info)
 	return $ either (const False) (const True) res
-
-warnIARemoval :: S3Info -> Annex a -> Annex a
-warnIARemoval info a
-	| isIA info = do
-		warning "Derived versions of removed file may still be present in the Internet Archive"
-		a
-	| otherwise = a
 
 checkKey :: Remote -> S3Info -> Maybe S3Handle -> CheckPresent
 checkKey r info Nothing k = case getpublicurl info of
@@ -345,7 +338,7 @@ retrieveExportS3 r info _k loc f p =
 		return True
 
 removeExportS3 :: Remote -> S3Info -> Key -> ExportLocation -> Annex Bool
-removeExportS3 r info _k loc = warnIARemoval info $
+removeExportS3 r info _k loc = 
 	catchNonAsync go (\e -> warning (show e) >> return False)
   where
 	go = withS3Handle (config r) (gitconfig r) (uuid r) $ \h -> do

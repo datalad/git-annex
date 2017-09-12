@@ -51,15 +51,15 @@ Then you can annex files and copy them to the remote as usual:
 	# git annex copy photo1.jpeg --fast --to archive-panama
 	copy (to archive-panama...) ok
 
+## update lag
+
 It may take a while for archive.org to make files publically visible after
 they've been uploaded.
 
-## removing files
-
 While files can be removed from the Internet Archive, 
 [derived versions](https://archive.org/help/derivatives.php)
-of some files may continued to be stored there after the originals
-were removed. git-annex warns about this problem.
+of some files may continued to be stored there for a while
+after the originals were removed.
 
 ## exporting trees
 
