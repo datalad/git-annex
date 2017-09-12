@@ -17,7 +17,6 @@ there need to be a new interface in supported remotes?
 
 Work is in progress. Todo list:
 
-* Compact the export.log to remove old entries.
 * `git annex get --from export` works in the repo that exported to it,
   but in another repo, the export db won't be populated, so it won't work.
   Maybe just show a useful error message in this case?  
@@ -25,7 +24,6 @@ Work is in progress. Todo list:
   export from another repository also doesn't work right, because the
   export database is not populated. So, seems that the export database needs
   to get populated based on the export log in these cases.
-* Support export to aditional special remotes (webdav etc)
 * Support export in the assistant (when eg setting up a S3 special remote).
   Would need git-annex sync to export to the master tree?
   This is similar to the little-used preferreddir= preferred content

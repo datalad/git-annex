@@ -11,6 +11,7 @@ import qualified Data.Map as M
 
 import Annex.Common
 import qualified Annex.Branch
+import Annex.Journal
 import qualified Git
 import qualified Git.Branch
 import Git.Tree
@@ -97,7 +98,7 @@ recordExportBeginning remoteuuid newtree = do
 		showExportLog 
 			. changeMapLog c ep new
 			. parseExportLog
-	graftTreeish newtree
+	Annex.Branch.graftTreeish newtree (asTopFilePath "export.tree")
 
 parseExportLog :: String -> MapLog ExportParticipants Exported
 parseExportLog = parseMapLog parseExportParticipants parseExported
@@ -125,20 +126,3 @@ parseExported :: String -> Maybe Exported
 parseExported s = case words s of
 	(et:it) -> Just $ Exported (Git.Ref et) (map Git.Ref it)
 	_ -> Nothing
-
--- To prevent git-annex branch merge conflicts, the treeish is
--- first grafted in and then removed in a subsequent commit.
-graftTreeish :: Git.Ref -> Annex ()
-graftTreeish treeish = do
-	branchref <- Annex.Branch.getBranch
-	Tree t <- inRepo $ getTree branchref
-	t' <- inRepo $ recordTree $ Tree $
-		RecordedSubTree (asTopFilePath graftpoint) treeish [] : t
-	commit <- inRepo $ Git.Branch.commitTree Git.Branch.AutomaticCommit
-		"export tree" [branchref] t'
-	origtree <- inRepo $ recordTree (Tree t)
-	commit' <- inRepo $ Git.Branch.commitTree Git.Branch.AutomaticCommit
-		"export tree cleanup" [commit] origtree
-	inRepo $ Git.Branch.update' Annex.Branch.fullname commit'
-  where
-	graftpoint = "export.tree"
