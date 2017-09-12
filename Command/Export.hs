@@ -92,8 +92,6 @@ seek o = do
 	db <- openDb (uuid r)
 	ea <- exportActions r
 	recordExportBeginning (uuid r) new
-	
-	liftIO $ print (old, new)
 
 	-- Clean up after incomplete export of a tree, in which
 	-- the next block of code below may have renamed some files to
