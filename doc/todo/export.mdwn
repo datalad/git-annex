@@ -17,6 +17,9 @@ there need to be a new interface in supported remotes?
 
 Work is in progress. Todo list:
 
+* The export.log parsing only works right when there's one export
+  remote. With 2, only the most recently exported to one is gotten from the
+  log.
 * `git annex get --from export` works in the repo that exported to it,
   but in another repo, the export db won't be populated, so it won't work.
   Maybe just show a useful error message in this case?  
