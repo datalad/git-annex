@@ -362,7 +362,7 @@ checkPresentExportS3 r info _k loc =
 
 -- S3 has no move primitive; copy and delete.
 renameExportS3 :: Remote -> S3Info -> Key -> ExportLocation -> ExportLocation -> Annex Bool
-renameExportS3 r info _k src dest = catchNonAsync go (\e -> warning (show e) >> return False)
+renameExportS3 r info _k src dest = catchNonAsync go (\_ -> return False)
   where
 	go = withS3Handle (config r) (gitconfig r) (uuid r) $ \h -> do
 		let co = S3.copyObject (bucket info) dstobject
