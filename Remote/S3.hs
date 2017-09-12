@@ -348,9 +348,7 @@ removeExportS3 r info _k loc =
 
 checkPresentExportS3 :: Remote -> S3Info -> Key -> ExportLocation -> Annex Bool
 checkPresentExportS3 r info _k loc = 
-	catchNonAsync go (\e -> warning (show e) >> return False)
-  where
-	go = withS3Handle (config r) (gitconfig r) (uuid r) $ \h -> do
+	withS3Handle (config r) (gitconfig r) (uuid r) $ \h -> do
 		checkKeyHelper info h (T.pack $ bucketExportLocation info loc)
 
 -- S3 has no move primitive; copy and delete.
