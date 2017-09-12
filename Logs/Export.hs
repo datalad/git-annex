@@ -24,7 +24,7 @@ data Exported = Exported
 	{ exportedTreeish :: Git.Ref
 	, incompleteExportedTreeish :: [Git.Ref]
 	}
-	deriving (Eq)
+	deriving (Eq, Show)
 
 -- | Get what's been exported to a special remote.
 --

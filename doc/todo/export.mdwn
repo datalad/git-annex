@@ -48,4 +48,5 @@ Low priority:
   fails to actually delete it.
   Hypothesis: Those are done in separate http connections and it might be
   talking to two different backend servers that are out of sync.
-  So, making export cache connections might help.
+  So, making export cache connections might help. Update: No, caching
+  connections did not solve it.

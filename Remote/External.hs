@@ -70,7 +70,7 @@ gen r u c gc
 		avail <- getAvailability external r gc
 		exportsupported <- checkExportSupported' external
 		let exportactions = if exportsupported
-			then ExportActions
+			then return $ ExportActions
 				{ storeExport = storeExportExternal external
 				, retrieveExport = retrieveExportExternal external
 				, removeExport = removeExportExternal external

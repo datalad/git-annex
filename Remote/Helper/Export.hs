@@ -26,8 +26,8 @@ class HasExportUnsupported a where
 instance HasExportUnsupported (RemoteConfig -> RemoteGitConfig -> Annex Bool) where
 	exportUnsupported = \_ _ -> return False
 
-instance HasExportUnsupported (ExportActions Annex) where
-	exportUnsupported = ExportActions
+instance HasExportUnsupported (Annex (ExportActions Annex)) where
+	exportUnsupported = return $ ExportActions
 		{ storeExport = \_ _ _ _ -> do
 			warning "store export is unsupported"
 			return False
@@ -103,7 +103,9 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 							[] -> do
 								warning "unknown export location"
 								return False
-							(l:_) -> retrieveExport (exportActions r) k l dest p
+							(l:_) -> do
+								ea <- exportActions r
+								retrieveExport ea k l dest p
 					else do
 						warning $ "exported content cannot be verified due to using the " ++ formatKeyVariety (keyVariety k) ++ " backend"
 						return False
@@ -111,8 +113,9 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 			-- Remove all files a key was exported to.
 			, removeKey = \k -> do
 				locs <- liftIO $ getExportLocation db k
+				ea <- exportActions r
 				oks <- forM locs $ \loc -> do
-					ok <- removeExport (exportActions r) k loc
+					ok <- removeExport ea k loc
 					when ok $
 						liftIO $ removeExportLocation db k loc
 					return ok
@@ -125,8 +128,9 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 			-- Check if any of the files a key was exported
 			-- to are present. This doesn't guarantee the
 			-- export contains the right content.
-			, checkPresent = \k ->
-				anyM (checkPresentExport (exportActions r) k)
+			, checkPresent = \k -> do
+				ea <- exportActions r
+				anyM (checkPresentExport ea k)
 					=<< liftIO (getExportLocation db k)
 			, mkUnavailable = return Nothing
 			, getInfo = do

@@ -86,13 +86,14 @@ gen r u c gc = do
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
-			, exportActions = ExportActions
-				{ storeExport = storeExportS3 this info
-				, retrieveExport = retrieveExportS3 this info
-				, removeExport = removeExportS3 this info
-				, checkPresentExport = checkPresentExportS3 this info
-				, renameExport = renameExportS3 this info
-				}
+			, exportActions = withS3Handle c gc u $ \h -> 
+				return $ ExportActions
+					{ storeExport = storeExportS3 info h
+					, retrieveExport = retrieveExportS3 info h
+					, removeExport = removeExportS3 info h
+					, checkPresentExport = checkPresentExportS3 info h
+					, renameExport = renameExportS3 info h
+					}
 			, whereisKey = Just (getWebUrls info c)
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
@@ -321,41 +322,40 @@ checkKeyHelper info h object = do
 			| otherwise = Nothing
 #endif
 
-storeExportS3 :: Remote -> S3Info -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
-storeExportS3 r info f _k loc p = 
+storeExportS3 :: S3Info -> S3Handle -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
+storeExportS3 info h f _k loc p = 
 	catchNonAsync go (\e -> warning (show e) >> return False)
   where
-	go = withS3Handle (config r) (gitconfig r) (uuid r) $ \h -> do
+	go = do
 		storeHelper info h f (T.pack $ bucketExportLocation info loc) p
 		return True
 
-retrieveExportS3 :: Remote -> S3Info -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
-retrieveExportS3 r info _k loc f p =
+retrieveExportS3 :: S3Info -> S3Handle -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
+retrieveExportS3 info h _k loc f p =
 	catchNonAsync go (\e -> warning (show e) >> return False)
   where
-	go = withS3Handle (config r) (gitconfig r) (uuid r) $ \h -> do
+	go = do
 		retrieveHelper info h (T.pack $ bucketExportLocation info loc) f p
 		return True
 
-removeExportS3 :: Remote -> S3Info -> Key -> ExportLocation -> Annex Bool
-removeExportS3 r info _k loc = 
+removeExportS3 :: S3Info -> S3Handle -> Key -> ExportLocation -> Annex Bool
+removeExportS3 info h _k loc = 
 	catchNonAsync go (\e -> warning (show e) >> return False)
   where
-	go = withS3Handle (config r) (gitconfig r) (uuid r) $ \h -> do
+	go = do
 		res <- tryNonAsync $ sendS3Handle h $
 			S3.DeleteObject (T.pack $ bucketExportLocation info loc) (bucket info)
 		return $ either (const False) (const True) res
 
-checkPresentExportS3 :: Remote -> S3Info -> Key -> ExportLocation -> Annex Bool
-checkPresentExportS3 r info _k loc = 
-	withS3Handle (config r) (gitconfig r) (uuid r) $ \h -> do
-		checkKeyHelper info h (T.pack $ bucketExportLocation info loc)
+checkPresentExportS3 :: S3Info -> S3Handle -> Key -> ExportLocation -> Annex Bool
+checkPresentExportS3 info h _k loc =
+	checkKeyHelper info h (T.pack $ bucketExportLocation info loc)
 
 -- S3 has no move primitive; copy and delete.
-renameExportS3 :: Remote -> S3Info -> Key -> ExportLocation -> ExportLocation -> Annex Bool
-renameExportS3 r info _k src dest = catchNonAsync go (\_ -> return False)
+renameExportS3 :: S3Info -> S3Handle -> Key -> ExportLocation -> ExportLocation -> Annex Bool
+renameExportS3 info h _k src dest = catchNonAsync go (\_ -> return False)
   where
-	go = withS3Handle (config r) (gitconfig r) (uuid r) $ \h -> do
+	go = do
 		let co = S3.copyObject (bucket info) dstobject
 			(S3.ObjectId (bucket info) srcobject Nothing)
 			S3.CopyMetadata

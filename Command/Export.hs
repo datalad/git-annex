@@ -89,15 +89,18 @@ seek o = do
 		-- or tag.
 		inRepo (Git.Ref.tree (exportTreeish o))
 	old <- getExport (uuid r)
-	recordExportBeginning (uuid r) new
 	db <- openDb (uuid r)
+	ea <- exportActions r
+	recordExportBeginning (uuid r) new
 	
+	liftIO $ print (old, new)
+
 	-- Clean up after incomplete export of a tree, in which
 	-- the next block of code below may have renamed some files to
 	-- temp files. Diff from the incomplete tree to the new tree,
 	-- and delete any temp files that the new tree can't use.
 	forM_ (concatMap incompleteExportedTreeish old) $ \incomplete ->
-		mapdiff (\diff -> startRecoverIncomplete r db (Git.DiffTree.srcsha diff) (Git.DiffTree.file diff))
+		mapdiff (\diff -> startRecoverIncomplete r ea db (Git.DiffTree.srcsha diff) (Git.DiffTree.file diff))
 			incomplete
 			new
 
@@ -115,15 +118,15 @@ seek o = do
 			seekdiffmap $ \(ek, (moldf, mnewf)) ->
 				case (moldf, mnewf) of
 					(Just oldf, Just _newf) ->
-						startMoveToTempName r db oldf ek
+						startMoveToTempName r ea db oldf ek
 					(Just oldf, Nothing) -> 
-						startUnexport' r db oldf ek
+						startUnexport' r ea db oldf ek
 					_ -> stop
 			-- Rename from temp to new files.
 			seekdiffmap $ \(ek, (moldf, mnewf)) ->
 				case (moldf, mnewf) of
 					(Just _oldf, Just newf) ->
-						startMoveFromTempName r db ek newf
+						startMoveFromTempName r ea db ek newf
 					_ -> stop
 		ts -> do
 			warning "Export conflict detected. Different trees have been exported to the same special remote. Resolving.."
@@ -139,7 +142,7 @@ seek o = do
 				-- Don't rename to temp, because the
 				-- content is unknown; delete instead.
 				mapdiff
-					(\diff -> startUnexport r db (Git.DiffTree.file diff) (unexportboth diff))
+					(\diff -> startUnexport r ea db (Git.DiffTree.file diff) (unexportboth diff))
 					oldtreesha new
 
 	-- Waiting until now to record the export guarantees that,
@@ -154,7 +157,7 @@ seek o = do
 
 	-- Export everything that is not yet exported.
 	(l, cleanup') <- inRepo $ Git.LsTree.lsTree new
-	seekActions $ pure $ map (startExport r db) l
+	seekActions $ pure $ map (startExport r ea db) l
 	void $ liftIO cleanup'
 
 	closeDb db
@@ -187,23 +190,24 @@ mkDiffMap old new = do
 		| sha == nullSha = return Nothing
 		| otherwise = Just <$> exportKey sha
 
-startExport :: Remote -> ExportHandle -> Git.LsTree.TreeItem -> CommandStart
-startExport r db ti = do
+startExport :: Remote -> ExportActions Annex -> ExportHandle -> Git.LsTree.TreeItem -> CommandStart
+startExport r ea db ti = do
 	ek <- exportKey (Git.LsTree.sha ti)
 	stopUnless (liftIO $ notElem loc <$> getExportLocation db (asKey ek)) $ do
 		showStart "export" f
-		next $ performExport r db ek (Git.LsTree.sha ti) loc
+		next $ performExport r ea db ek (Git.LsTree.sha ti) loc
   where
 	loc = ExportLocation $ toInternalGitPath f
 	f = getTopFilePath $ Git.LsTree.file ti
 
-performExport :: Remote -> ExportHandle -> ExportKey -> Sha -> ExportLocation -> CommandPerform
-performExport r db ek contentsha loc = do
-	let storer = storeExport $ exportActions r
+performExport :: Remote -> ExportActions Annex -> ExportHandle -> ExportKey -> Sha -> ExportLocation -> CommandPerform
+performExport r ea db ek contentsha loc = do
+	let storer = storeExport ea
 	sent <- case ek of
 		AnnexKey k -> ifM (inAnnex k)
 			( metered Nothing k $ \m -> do
-				let rollback = void $ performUnexport r db [ek] loc
+				let rollback = void $
+					performUnexport r ea db [ek] loc
 				sendAnnex k rollback
 					(\f -> storer f k loc m)
 			, do
@@ -227,29 +231,29 @@ cleanupExport r db ek loc = do
 	logChange (asKey ek) (uuid r) InfoPresent
 	return True
 
-startUnexport :: Remote -> ExportHandle -> TopFilePath -> [Git.Sha] -> CommandStart
-startUnexport r db f shas = do
+startUnexport :: Remote -> ExportActions Annex -> ExportHandle -> TopFilePath -> [Git.Sha] -> CommandStart
+startUnexport r ea db f shas = do
 	eks <- forM (filter (/= nullSha) shas) exportKey
 	if null eks
 		then stop
 		else do
 			showStart "unexport" f'
-			next $ performUnexport r db eks loc
+			next $ performUnexport r ea db eks loc
   where
 	loc = ExportLocation $ toInternalGitPath f'
 	f' = getTopFilePath f
 
-startUnexport' :: Remote -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
-startUnexport' r db f ek = do
+startUnexport' :: Remote -> ExportActions Annex -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
+startUnexport' r ea db f ek = do
 	showStart "unexport" f'
-	next $ performUnexport r db [ek] loc
+	next $ performUnexport r ea db [ek] loc
   where
 	loc = ExportLocation $ toInternalGitPath f'
 	f' = getTopFilePath f
 
-performUnexport :: Remote -> ExportHandle -> [ExportKey] -> ExportLocation -> CommandPerform
-performUnexport r db eks loc = do
-	ifM (allM (\ek -> removeExport (exportActions r) (asKey ek) loc) eks)
+performUnexport :: Remote -> ExportActions Annex -> ExportHandle -> [ExportKey] -> ExportLocation -> CommandPerform
+performUnexport r ea db eks loc = do
+	ifM (allM (\ek -> removeExport ea (asKey ek) loc) eks)
 		( next $ cleanupUnexport r db eks loc
 		, stop
 		)
@@ -269,47 +273,47 @@ cleanupUnexport r db eks loc = do
 			logChange (asKey ek) (uuid r) InfoMissing
 	return True
 
-startRecoverIncomplete :: Remote -> ExportHandle -> Git.Sha -> TopFilePath -> CommandStart
-startRecoverIncomplete r db sha oldf
+startRecoverIncomplete :: Remote -> ExportActions Annex -> ExportHandle -> Git.Sha -> TopFilePath -> CommandStart
+startRecoverIncomplete r ea db sha oldf
 	| sha == nullSha = stop
 	| otherwise = do
 		ek <- exportKey sha
 		let loc@(ExportLocation f) = exportTempName ek
 		showStart "unexport" f
 		liftIO $ removeExportLocation db (asKey ek) oldloc
-		next $ performUnexport r db [ek] loc
+		next $ performUnexport r ea db [ek] loc
   where
 	oldloc = ExportLocation $ toInternalGitPath oldf'
 	oldf' = getTopFilePath oldf
 
-startMoveToTempName :: Remote -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
-startMoveToTempName r db f ek = do
+startMoveToTempName :: Remote -> ExportActions Annex -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
+startMoveToTempName r ea db f ek = do
 	let tmploc@(ExportLocation tmpf) = exportTempName ek
 	showStart "rename" (f' ++ " -> " ++ tmpf)
-	next $ performRename r db ek loc tmploc
+	next $ performRename r ea db ek loc tmploc
   where
 	loc = ExportLocation $ toInternalGitPath f'
 	f' = getTopFilePath f
 
-startMoveFromTempName :: Remote -> ExportHandle -> ExportKey -> TopFilePath -> CommandStart
-startMoveFromTempName r db ek f = do
+startMoveFromTempName :: Remote -> ExportActions Annex -> ExportHandle -> ExportKey -> TopFilePath -> CommandStart
+startMoveFromTempName r ea db ek f = do
 	let tmploc@(ExportLocation tmpf) = exportTempName ek
 	stopUnless (liftIO $ elem tmploc <$> getExportLocation db (asKey ek)) $ do
 		showStart "rename" (tmpf ++ " -> " ++ f')
-		next $ performRename r db ek tmploc loc
+		next $ performRename r ea db ek tmploc loc
   where
 	loc = ExportLocation $ toInternalGitPath f'
 	f' = getTopFilePath f
 
-performRename :: Remote -> ExportHandle -> ExportKey -> ExportLocation -> ExportLocation -> CommandPerform
-performRename r db ek src dest = do
-	ifM (renameExport (exportActions r) (asKey ek) src dest)
+performRename :: Remote -> ExportActions Annex -> ExportHandle -> ExportKey -> ExportLocation -> ExportLocation -> CommandPerform
+performRename r ea db ek src dest = do
+	ifM (renameExport ea (asKey ek) src dest)
 		( next $ cleanupRename db ek src dest
 		-- In case the special remote does not support renaming,
 		-- unexport the src instead.
 		, do
 			warning "rename failed; deleting instead"
-			performUnexport r db [ek] src
+			performUnexport r ea db [ek] src
 		)
 
 cleanupRename :: ExportHandle -> ExportKey -> ExportLocation -> ExportLocation -> CommandCleanup

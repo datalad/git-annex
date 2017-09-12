@@ -70,12 +70,12 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
-			, exportActions = ExportActions
-				{ storeExport = storeExportDav this
-				, retrieveExport = retrieveExportDav this
-				, removeExport = removeExportDav this
-				, checkPresentExport = checkPresentExportDav this
-				, renameExport = renameExportDav this
+			, exportActions = withDAVHandle this $ \mh -> return $ ExportActions
+				{ storeExport = storeExportDav mh
+				, retrieveExport = retrieveExportDav mh
+				, removeExport = removeExportDav mh
+				, checkPresentExport = checkPresentExportDav this mh
+				, renameExport = renameExportDav mh
 				}
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
@@ -178,37 +178,36 @@ checkKey r chunkconfig (Just dav) k = do
 				existsDAV (keyLocation k)
 			either giveup return v
 
-storeExportDav :: Remote -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
-storeExportDav r f _k loc p = runExport r $ \dav -> do
+storeExportDav :: Maybe DavHandle -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
+storeExportDav mh f _k loc p = runExport mh $ \dav -> do
 	reqbody <- liftIO $ httpBodyStorer f p
 	storeHelper dav (exportTmpLocation loc) (exportLocation loc) reqbody
 	return True
 
-retrieveExportDav :: Remote -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
-retrieveExportDav r _k loc d p = runExport r $ \_dav -> do
+retrieveExportDav :: Maybe DavHandle -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
+retrieveExportDav mh  _k loc d p = runExport mh $ \_dav -> do
 	retrieveHelper (exportLocation loc) d p
 	return True
 
-removeExportDav :: Remote -> Key -> ExportLocation -> Annex Bool
-removeExportDav r _k loc = runExport r $ \_dav ->
+removeExportDav :: Maybe DavHandle -> Key -> ExportLocation -> Annex Bool
+removeExportDav mh _k loc = runExport mh $ \_dav ->
 	removeHelper (exportLocation loc)
 
-checkPresentExportDav :: Remote -> Key -> ExportLocation -> Annex Bool
-checkPresentExportDav r _k loc = withDAVHandle r $ \mh -> case mh of
+checkPresentExportDav :: Remote -> Maybe DavHandle -> Key -> ExportLocation -> Annex Bool
+checkPresentExportDav r mh _k loc = case mh of
 	Nothing -> giveup $ name r ++ " not configured"
 	Just h -> liftIO $ do
 		v <- goDAV h $ existsDAV (exportLocation loc)
 		either giveup return v
 
-renameExportDav :: Remote -> Key -> ExportLocation -> ExportLocation -> Annex Bool
-renameExportDav r _k src dest = runExport r $ \dav -> do
+renameExportDav :: Maybe DavHandle -> Key -> ExportLocation -> ExportLocation -> Annex Bool
+renameExportDav mh _k src dest = runExport mh $ \dav -> do
 	moveDAV (baseURL dav) (exportLocation src) (exportLocation dest)
 	return True
 
-runExport :: Remote -> (DavHandle -> DAVT IO Bool) -> Annex Bool
-runExport r a = withDAVHandle r $ \mh -> case mh of
-	Nothing -> return False
-	Just h -> fromMaybe False <$> liftIO (goDAV h $ safely (a h))
+runExport :: Maybe DavHandle -> (DavHandle -> DAVT IO Bool) -> Annex Bool
+runExport Nothing _ = return False
+runExport (Just h) a = fromMaybe False <$> liftIO (goDAV h $ safely (a h))
 
 configUrl :: Remote -> Maybe URLString
 configUrl r = fixup <$> M.lookup "url" (config r)
