@@ -304,7 +304,9 @@ performRename r db ek src dest = do
 		( next $ cleanupRename db ek src dest
 		-- In case the special remote does not support renaming,
 		-- unexport the src instead.
-		, performUnexport r db [ek] src
+		, do
+			warning "rename failed; deleting instead"
+			performUnexport r db [ek] src
 		)
 
 cleanupRename :: ExportHandle -> ExportKey -> ExportLocation -> ExportLocation -> CommandCleanup

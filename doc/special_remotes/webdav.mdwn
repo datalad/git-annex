@@ -29,6 +29,10 @@ the webdav remote.
   be created as needed. Use of a https URL is strongly
   encouraged, since HTTP basic authentication is used.
 
+* `exporttree` - Set to "yes" to make this special remote usable
+  by [[git-annex-export]]. It will not be usable as a general-purpose
+  special remote.
+
 * `chunk` - Enables [[chunking]] when storing large files.
 
 * `chunksize` - Deprecated version of chunk parameter above.  

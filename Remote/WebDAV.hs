@@ -1,6 +1,6 @@
 {- WebDAV remotes.
  -
- - Copyright 2012-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,7 +15,7 @@ import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.UTF8 as B8
 import qualified Data.ByteString.Lazy.UTF8 as L8
-import Network.HTTP.Client (HttpException(..))
+import Network.HTTP.Client (HttpException(..), RequestBody)
 import Network.HTTP.Types
 import System.IO.Error
 import Control.Monad.Catch
@@ -46,7 +46,7 @@ remote = RemoteType
 	, enumerate = const (findSpecialRemotes "webdav")
 	, generate = gen
 	, setup = webdavSetup
-	, exportSupported = exportUnsupported
+	, exportSupported = exportIsSupported
 	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -70,7 +70,13 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
-			, exportActions = exportUnsupported
+			, exportActions = ExportActions
+				{ storeExport = storeExportDav this
+				, retrieveExport = retrieveExportDav this
+				, removeExport = removeExportDav this
+				, checkPresentExport = checkPresentExportDav this
+				, renameExport = renameExportDav this
+				}
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
@@ -114,17 +120,21 @@ store (LegacyChunks chunksize) (Just dav) = fileStorer $ \k f p -> liftIO $
 store _  (Just dav) = httpStorer $ \k reqbody -> liftIO $ goDAV dav $ do
 	let tmp = keyTmpLocation k
 	let dest = keyLocation k
+	storeHelper dav tmp dest reqbody
+	return True
+
+storeHelper :: DavHandle -> DavLocation -> DavLocation -> RequestBody -> DAVT IO ()
+storeHelper dav tmp dest reqbody = do
 	void $ mkColRecursive tmpDir
 	inLocation tmp $
 		putContentM' (contentType, reqbody)
-	finalizeStore (baseURL dav) tmp dest
-	return True
+	finalizeStore dav tmp dest
 
-finalizeStore :: URLString -> DavLocation -> DavLocation -> DAVT IO ()
-finalizeStore baseurl tmp dest = do
+finalizeStore :: DavHandle -> DavLocation -> DavLocation -> DAVT IO ()
+finalizeStore dav tmp dest = do
 	inLocation dest $ void $ safely $ delContentM
 	maybe noop (void . mkColRecursive) (locationParent dest)
-	moveDAV baseurl tmp dest
+	moveDAV (baseURL dav) tmp dest
 
 retrieveCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
@@ -133,26 +143,29 @@ retrieve :: ChunkConfig -> Maybe DavHandle -> Retriever
 retrieve _ Nothing = giveup "unable to connect"
 retrieve (LegacyChunks _) (Just dav) = retrieveLegacyChunked dav
 retrieve _ (Just dav) = fileRetriever $ \d k p -> liftIO $
-	goDAV dav $
-		inLocation (keyLocation k) $
-			withContentM $
-				httpBodyRetriever d p
+	goDAV dav $ retrieveHelper (keyLocation k) d p
+
+retrieveHelper :: DavLocation -> FilePath -> MeterUpdate -> DAVT IO ()
+retrieveHelper loc d p = inLocation loc $
+	withContentM $ httpBodyRetriever d p
 
 remove :: Maybe DavHandle -> Remover
 remove Nothing _ = return False
-remove (Just dav) k = liftIO $ do
+remove (Just dav) k = liftIO $ goDAV dav $
 	-- Delete the key's whole directory, including any
 	-- legacy chunked files, etc, in a single action.
-	let d = keyDir k
-	goDAV dav $ do
-		v <- safely $ inLocation d delContentM
-		case v of
-			Just _ -> return True
-			Nothing -> do
-				v' <- existsDAV d
-				case v' of
-					Right False -> return True
-					_ -> return False
+	removeHelper (keyDir k)
+
+removeHelper :: DavLocation -> DAVT IO Bool
+removeHelper d = do
+	v <- safely $ inLocation d delContentM
+	case v of
+		Just _ -> return True
+		Nothing -> do
+			v' <- existsDAV d
+			case v' of
+				Right False -> return True
+				_ -> return False
 
 checkKey :: Remote -> ChunkConfig -> Maybe DavHandle -> CheckPresent
 checkKey r _ Nothing _ = giveup $ name r ++ " not configured"
@@ -164,6 +177,38 @@ checkKey r chunkconfig (Just dav) k = do
 			v <- liftIO $ goDAV dav $
 				existsDAV (keyLocation k)
 			either giveup return v
+
+storeExportDav :: Remote -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
+storeExportDav r f _k loc p = runExport r $ \dav -> do
+	reqbody <- liftIO $ httpBodyStorer f p
+	storeHelper dav (exportTmpLocation loc) (exportLocation loc) reqbody
+	return True
+
+retrieveExportDav :: Remote -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
+retrieveExportDav r _k loc d p = runExport r $ \_dav -> do
+	retrieveHelper (exportLocation loc) d p
+	return True
+
+removeExportDav :: Remote -> Key -> ExportLocation -> Annex Bool
+removeExportDav r _k loc = runExport r $ \_dav ->
+	removeHelper (exportLocation loc)
+
+checkPresentExportDav :: Remote -> Key -> ExportLocation -> Annex Bool
+checkPresentExportDav r _k loc = withDAVHandle r $ \mh -> case mh of
+	Nothing -> giveup $ name r ++ " not configured"
+	Just h -> liftIO $ do
+		v <- goDAV h $ existsDAV (exportLocation loc)
+		either giveup return v
+
+renameExportDav :: Remote -> Key -> ExportLocation -> ExportLocation -> Annex Bool
+renameExportDav r _k src dest = runExport r $ \dav -> do
+	moveDAV (baseURL dav) (exportLocation src) (exportLocation dest)
+	return True
+
+runExport :: Remote -> (DavHandle -> DAVT IO Bool) -> Annex Bool
+runExport r a = withDAVHandle r $ \mh -> case mh of
+	Nothing -> return False
+	Just h -> fromMaybe False <$> liftIO (goDAV h $ safely (a h))
 
 configUrl :: Remote -> Maybe URLString
 configUrl r = fixup <$> M.lookup "url" (config r)
@@ -278,7 +323,6 @@ existsDAV l = inLocation l check `catchNonAsync` (\e -> return (Left $ show e))
 			(const $ ispresent False)
 	ispresent = return . Right
 
--- Ignores any exceptions when performing a DAV action.
 safely :: DAVT IO a -> DAVT IO (Maybe a)
 safely = eitherToMaybe <$$> tryNonAsync
 
@@ -351,7 +395,7 @@ storeLegacyChunked chunksize k dav b =
 	storer locs = Legacy.storeChunked chunksize locs storehttp b
 	recorder l s = storehttp l (L8.fromString s)
 	finalizer tmp' dest' = goDAV dav $ 
-		finalizeStore (baseURL dav) tmp' (fromJust $ locationParent dest')
+		finalizeStore dav tmp' (fromJust $ locationParent dest')
 
 	tmp = addTrailingPathSeparator $ keyTmpLocation k
 	dest = keyLocation k

@@ -11,6 +11,7 @@
 module Remote.WebDAV.DavLocation where
 
 import Types
+import Types.Remote (ExportLocation(..))
 import Annex.Locations
 import Utility.Url (URLString)
 #ifdef mingw32_HOST_OS
@@ -45,6 +46,12 @@ keyLocation k = keyDir k ++ keyFile k
 {- Where we store temporary data for a key as it's being uploaded. -}
 keyTmpLocation :: Key -> DavLocation
 keyTmpLocation = tmpLocation . keyFile
+
+exportLocation :: ExportLocation -> DavLocation
+exportLocation (ExportLocation f) = f
+
+exportTmpLocation :: ExportLocation -> DavLocation
+exportTmpLocation (ExportLocation f) = tmpLocation f
 
 tmpLocation :: FilePath -> DavLocation
 tmpLocation f = tmpDir </> f
