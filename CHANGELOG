@@ -14,6 +14,8 @@ git-annex (6.20170819) UNRELEASED; urgency=medium
     triggered a bug in its webdav support that generates an infinite series
     of redirects. Deal with such problems by assuming such behavior means
     the file is not present.
+  * webdav: Fix lack of url-escaping of filenames. Mostly impacted exports
+    of filenames containing eg spaces.
 
  -- Joey Hess <id@joeyh.name>  Mon, 28 Aug 2017 12:20:59 -0400
 

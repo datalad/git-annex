@@ -21,14 +21,17 @@ import Utility.Split
 import System.FilePath.Posix -- for manipulating url paths
 import Network.Protocol.HTTP.DAV (inDAVLocation, DAVT)
 import Control.Monad.IO.Class (MonadIO)
+import Network.URI
 import Data.Default
 
 -- Relative to the top of the DAV url.
 type DavLocation = String
 
-{- Runs action in subdirectory, relative to the current location. -}
+{- Runs action with a new location relative to the current location. -}
 inLocation :: (MonadIO m) => DavLocation -> DAVT m a -> DAVT m a
-inLocation d = inDAVLocation (</> d)
+inLocation d = inDAVLocation (</> d')
+  where
+	d' = escapeURIString isUnescapedInURI d
 
 {- The directory where files(s) for a key are stored. -}
 keyDir :: Key -> DavLocation
