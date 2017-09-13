@@ -41,5 +41,6 @@ Low priority:
   still probably misses cases, where eg, content cycles amoung 3 files, and
   the same content amoung 3 other files. Is there a general algorythm?
 * webdav: When a file in a subdirectory gets deleted,
-  the webdav collection is remains, empty. Need to check if collection is
-  empty, and delete otherwise.
+  the webdav collection is remains, empty. Could to check if collection is
+  empty, and delete otherwise, but that would have a race if another export
+  is running to the same webdav server.
