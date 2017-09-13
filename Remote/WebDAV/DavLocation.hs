@@ -53,9 +53,6 @@ keyTmpLocation = tmpLocation . keyFile
 exportLocation :: ExportLocation -> DavLocation
 exportLocation (ExportLocation f) = f
 
-exportTmpLocation :: ExportLocation -> DavLocation
-exportTmpLocation (ExportLocation f) = tmpLocation f
-
 tmpLocation :: FilePath -> DavLocation
 tmpLocation f = tmpDir </> f
 

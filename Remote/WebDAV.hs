@@ -179,9 +179,9 @@ checkKey r chunkconfig (Just dav) k = do
 			either giveup return v
 
 storeExportDav :: Maybe DavHandle -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
-storeExportDav mh f _k loc p = runExport mh $ \dav -> do
+storeExportDav mh f k loc p = runExport mh $ \dav -> do
 	reqbody <- liftIO $ httpBodyStorer f p
-	storeHelper dav (exportTmpLocation loc) (exportLocation loc) reqbody
+	storeHelper dav (keyTmpLocation k) (exportLocation loc) reqbody
 	return True
 
 retrieveExportDav :: Maybe DavHandle -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
