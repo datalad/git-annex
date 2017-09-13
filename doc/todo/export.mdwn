@@ -40,12 +40,6 @@ Low priority:
   Run each pair in turn. Then run the current rename code. Although this
   still probably misses cases, where eg, content cycles amoung 3 files, and
   the same content amoung 3 other files. Is there a general algorythm?
-* Exporting to box.com via webdav, a rename of a file behaves
-  oddly. The rename to the temp file succeeds, but the rename of the temp
-  file to the final name fails.
-  Also, sometimes the delete of the temp file that's done as a fallback
-  fails to actually delete it.
-  Hypothesis: Those are done in separate http connections and it might be
-  talking to two different backend servers that are out of sync.
-  So, making export cache connections might help. Update: No, caching
-  connections did not solve it.
+* webdav: When a file in a subdirectory gets deleted,
+  the webdav collection is remains, empty. Need to check if collection is
+  empty, and delete otherwise.

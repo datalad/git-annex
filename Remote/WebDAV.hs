@@ -201,9 +201,15 @@ checkPresentExportDav r mh _k loc = case mh of
 		either giveup return v
 
 renameExportDav :: Maybe DavHandle -> Key -> ExportLocation -> ExportLocation -> Annex Bool
-renameExportDav mh _k src dest = runExport mh $ \dav -> do
-	moveDAV (baseURL dav) (exportLocation src) (exportLocation dest)
-	return True
+renameExportDav Nothing _ _ _ = return False
+renameExportDav (Just h) _k src dest
+	-- box.com's DAV endpoint has buggy handling of renames,
+	-- so avoid renaming when using it.
+	| boxComUrl `isPrefixOf` baseURL h = return False
+	| otherwise = runExport (Just h) $ \dav -> do
+		maybe noop (void . mkColRecursive) (locationParent (exportLocation dest))
+		moveDAV (baseURL dav) (exportLocation src) (exportLocation dest)
+		return True
 
 runExport :: Maybe DavHandle -> (DavHandle -> DAVT IO Bool) -> Annex Bool
 runExport Nothing _ = return False
@@ -213,7 +219,10 @@ configUrl :: Remote -> Maybe URLString
 configUrl r = fixup <$> M.lookup "url" (config r)
   where
 	-- box.com DAV url changed
-	fixup = replace "https://www.box.com/dav/" "https://dav.box.com/dav/"
+	fixup = replace "https://www.box.com/dav/" boxComUrl
+
+boxComUrl :: URLString
+boxComUrl = "https://dav.box.com/dav/"
 
 type DavUser = B8.ByteString
 type DavPass = B8.ByteString
