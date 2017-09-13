@@ -11,10 +11,7 @@ import qualified Data.Map as M
 
 import Annex.Common
 import qualified Annex.Branch
-import Annex.Journal
 import qualified Git
-import qualified Git.Branch
-import Git.Tree
 import Git.Sha
 import Git.FilePath
 import Logs
