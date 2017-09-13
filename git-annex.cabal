@@ -697,6 +697,7 @@ Executable git-annex
     Command.EnableTor
     Command.ExamineKey
     Command.Expire
+    Command.Export
     Command.Find
     Command.FindRef
     Command.Fix
