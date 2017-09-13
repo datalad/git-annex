@@ -367,8 +367,16 @@ matchStatusCodeException want e@(StatusCodeException s _ _)
 matchStatusCodeException _ _ = Nothing
 #endif
 
+#if MIN_VERSION_http_client(0,5,0)
 matchHttpExceptionContent :: (HttpExceptionContent -> Bool) -> HttpException -> Maybe HttpException
 matchHttpExceptionContent want e@(HttpExceptionRequest _ hec)
 	| want hec = Just e
 	| otherwise = Nothing
 matchHttpExceptionContent _ _ = Nothing
+#else
+matchHttpExceptionContent :: (HttpException -> Bool) -> HttpException -> Maybe HttpException
+matchHttpExceptionContent want e
+	| want e = Just e
+	| otherwise = Nothing
+matchHttpExceptionContent _ _ = Nothing
+#endif
