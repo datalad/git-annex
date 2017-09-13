@@ -79,7 +79,12 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 	Just "no" -> notexport
 	Just _ -> error "bad exporttree value"
   where
-	notexport = return $ r { exportActions = exportUnsupported }
+	notexport = return $ r 
+		{ exportActions = exportUnsupported
+		, remotetype = (remotetype r)
+			{ exportSupported = exportUnsupported
+			}
+		}
 	isexport = do
 		db <- openDb (uuid r)
 		return $ r
