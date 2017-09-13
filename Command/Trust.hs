@@ -36,5 +36,5 @@ trustCommand c level = withWords start
 			groupSet uuid S.empty
 		l <- lookupTrust uuid
 		when (l /= level) $
-			warning $ "This remote's trust level is locally overridden to " ++ showTrustLevel l ++ " via git config."
+			warning $ "This remote's trust level is overridden to " ++ showTrustLevel l ++ "."
 		next $ return True
