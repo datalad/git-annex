@@ -1,0 +1,43 @@
+### Please describe the problem.
+
+ATM I am chasing a problem that somehow one key "mutated" although I do not remember doing anything malicious, file seems to be also not  writable (itself).
+So I decided to fsck, and only spotted a problem when some warnings started to appear that I am not the owner of the (key)file.  So I looked inside and found
+that all key dirs are writeable BUT annex complains only about the ones where it can't change permissions since they don't belong to me
+
+
+### What version of git-annex are you using? On what operating system?
+
+6.20170815+gitg22da64d0f-1~ndall+1
+
+### Please provide any additional information below.
+
+[[!format sh """
+$> for f in sub00{1,3}/anatomy/highres001.nii.gz; do ls -ld $(realpath $f | xargs dirname ); git annex fsck $f; done 
+drwxrws--- 2 yoh famface 3 May 12 15:15 /data/famface/openfmri/data/.git/annex/objects/08/V3/SHA256E-s6498717--b850ac82ec9db2d399962609e9381d9c2bdf1f426012500b7005b173ea4d9102.nii.gz/
+fsck sub001/anatomy/highres001.nii.gz (checksum...) ok
+(recording state in git...)
+drwxrwsr-x 2 contematto famface 3 Jul 13  2015 /data/famface/openfmri/data/.git/annex/objects/x2/xX/SHA256E-s6592524--dccba651dc4cd104826a05a2efb6a257b39ca2d8b44d215027250221729f9434.nii.gz/
+fsck sub003/anatomy/highres001.nii.gz 
+  ** Unable to set correct write mode for .git/annex/objects/x2/xX/SHA256E-s6592524--dccba651dc4cd104826a05a2efb6a257b39ca2d8b44d215027250221729f9434.nii.gz/SHA256E-s6592524--dccba651dc4cd104826a05a2efb6a257b39ca2d8b44d215027250221729f9434.nii.gz ; perhaps you don't own that file
+(checksum...) ok
+(recording state in git...)
+
+# thought to see may be annex would complain then!?
+$> chmod a+rwx /data/famface/openfmri/data/.git/annex/objects/08/V3/SHA256E-s6498717--b850ac82ec9db2d399962609e9381d9c2bdf1f426012500b7005b173ea4d9102.nii.gz/
+
+$> for f in sub00{1,3}/anatomy/highres001.nii.gz; do ls -ld $(realpath $f | xargs dirname ); git annex fsck $f; done                                          
+drwxrwsrwx 2 yoh famface 3 May 12 15:15 /data/famface/openfmri/data/.git/annex/objects/08/V3/SHA256E-s6498717--b850ac82ec9db2d399962609e9381d9c2bdf1f426012500b7005b173ea4d9102.nii.gz/
+fsck sub001/anatomy/highres001.nii.gz (checksum...) ok
+(recording state in git...)
+drwxrwsr-x 2 contematto famface 3 Jul 13  2015 /data/famface/openfmri/data/.git/annex/objects/x2/xX/SHA256E-s6592524--dccba651dc4cd104826a05a2efb6a257b39ca2d8b44d215027250221729f9434.nii.gz/
+fsck sub003/anatomy/highres001.nii.gz 
+  ** Unable to set correct write mode for .git/annex/objects/x2/xX/SHA256E-s6592524--dccba651dc4cd104826a05a2efb6a257b39ca2d8b44d215027250221729f9434.nii.gz/SHA256E-s6592524--dccba651dc4cd104826a05a2efb6a257b39ca2d8b44d215027250221729f9434.nii.gz ; perhaps you don't own that file
+(checksum...) ok
+(recording state in git...)
+
+"""]]
+
+btw -- the same wrong permissions on the upper hash directories, and they do not get fixed/complained about at all
+
+
+[[!meta author=yoh]]
