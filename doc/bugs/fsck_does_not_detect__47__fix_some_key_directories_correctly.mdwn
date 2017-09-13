@@ -37,7 +37,7 @@ fsck sub003/anatomy/highres001.nii.gz
 
 """]]
 
-btw -- the same wrong permissions on the upper hash directories, and they do not get fixed/complained about at all
+~~btw -- the same wrong permissions on the upper hash directories, and they do not get fixed/complained about at all (that is ok)~~
 
 
 [[!meta author=yoh]]
