@@ -291,6 +291,7 @@ removeExportDirectoryM external dir = safely $
 		REMOVEEXPORTDIRECTORY_SUCCESS -> Just $ return True
 		REMOVEEXPORTDIRECTORY_FAILURE -> Just $ return False
 		UNSUPPORTED_REQUEST -> Just $ return True
+		_ -> Nothing
   where
 	req = REMOVEEXPORTDIRECTORY dir
 
