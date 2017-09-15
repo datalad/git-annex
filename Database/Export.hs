@@ -28,11 +28,10 @@ import qualified Database.Queue as H
 import Database.Init
 import Annex.Locations
 import Annex.Common hiding (delete)
-import Types.Remote (ExportLocation(..), ExportDirectory(..))
+import Types.Remote (ExportLocation(..), ExportDirectory(..), exportedDirectories)
 
 import Database.Persist.TH
 import Database.Esqueleto hiding (Key)
-import qualified System.FilePath.Posix as Posix
 
 newtype ExportHandle = ExportHandle H.DbQueue
 
@@ -114,12 +113,3 @@ isExportDirectoryEmpty (ExportHandle h) (ExportDirectory d) = H.queryDbQueue h $
 	return $ null l
   where
 	ed = toSFilePath d
-
-exportedDirectories :: ExportLocation -> [ExportDirectory]
-exportedDirectories (ExportLocation f) =
-	map (ExportDirectory . Posix.joinPath . reverse) $ 
-		subs [] $ map Posix.dropTrailingPathSeparator $
-			Posix.splitPath $ Posix.takeDirectory f
-  where
-	subs _ [] = []
-	subs ps (d:ds) = (d:ps) : subs (d:ps) ds

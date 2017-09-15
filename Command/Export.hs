@@ -25,6 +25,7 @@ import Annex.CatFile
 import Logs.Location
 import Logs.Export
 import Database.Export
+import Remote.Helper.Export
 import Messages.Progress
 import Utility.Tmp
 
@@ -252,24 +253,24 @@ startUnexport' r ea db f ek = do
 performUnexport :: Remote -> ExportActions Annex -> ExportHandle -> [ExportKey] -> ExportLocation -> CommandPerform
 performUnexport r ea db eks loc = do
 	ifM (allM (\ek -> removeExport ea (asKey ek) loc) eks)
-		( next $ cleanupUnexport r db eks loc
+		( next $ cleanupUnexport r ea db eks loc
 		, stop
 		)
 
-cleanupUnexport :: Remote -> ExportHandle -> [ExportKey] -> ExportLocation -> CommandCleanup
-cleanupUnexport r db eks loc = do
+cleanupUnexport :: Remote -> ExportActions Annex -> ExportHandle -> [ExportKey] -> ExportLocation -> CommandCleanup
+cleanupUnexport r ea db eks loc = do
 	liftIO $ do
 		forM_ eks $ \ek ->
 			removeExportLocation db (asKey ek) loc
-		-- Flush so that getExportLocation sees this and any
-		-- other removals of the key.
 		flushDbQueue db
+
 	remaininglocs <- liftIO $ 
 		concat <$> forM eks (\ek -> getExportLocation db (asKey ek))
 	when (null remaininglocs) $
 		forM_ eks $ \ek ->
 			logChange (asKey ek) (uuid r) InfoMissing
-	return True
+	
+	removeEmptyDirectories ea db loc (map asKey eks)
 
 startRecoverIncomplete :: Remote -> ExportActions Annex -> ExportHandle -> Git.Sha -> TopFilePath -> CommandStart
 startRecoverIncomplete r ea db sha oldf
@@ -306,7 +307,7 @@ startMoveFromTempName r ea db ek f = do
 performRename :: Remote -> ExportActions Annex -> ExportHandle -> ExportKey -> ExportLocation -> ExportLocation -> CommandPerform
 performRename r ea db ek src dest = do
 	ifM (renameExport ea (asKey ek) src dest)
-		( next $ cleanupRename db ek src dest
+		( next $ cleanupRename ea db ek src dest
 		-- In case the special remote does not support renaming,
 		-- unexport the src instead.
 		, do
@@ -314,11 +315,10 @@ performRename r ea db ek src dest = do
 			performUnexport r ea db [ek] src
 		)
 
-cleanupRename :: ExportHandle -> ExportKey -> ExportLocation -> ExportLocation -> CommandCleanup
-cleanupRename db ek src dest = do
+cleanupRename :: ExportActions Annex -> ExportHandle -> ExportKey -> ExportLocation -> ExportLocation -> CommandCleanup
+cleanupRename ea db ek src dest = do
 	liftIO $ do
 		removeExportLocation db (asKey ek) src
 		addExportLocation db (asKey ek) dest
-		-- Flush so that getExportLocation sees this.
 		flushDbQueue db
-	return True
+	removeEmptyDirectories ea db src [asKey ek]

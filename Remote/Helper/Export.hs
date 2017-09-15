@@ -120,12 +120,15 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 			, removeKey = \k -> do
 				locs <- liftIO $ getExportLocation db k
 				ea <- exportActions r
-				oks <- forM locs $ \loc -> do
-					ok <- removeExport ea k loc
-					when ok $
-						liftIO $ removeExportLocation db k loc
-					return ok
-				liftIO $ flushDbQueue db
+				oks <- forM locs $ \loc ->
+					ifM (removeExport ea k loc)
+						( do
+							liftIO $ do
+								removeExportLocation db k loc
+								flushDbQueue db
+							removeEmptyDirectories ea db loc [k]
+						, return False
+						)
 				return (and oks)
 			-- Can't lock content on exports, since they're
 			-- not key/value stores, and someone else could
@@ -143,3 +146,26 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 				is <- getInfo r
 				return (is++[("export", "yes")])
 			}
+
+-- | Remove empty directories from the export. Call after removing an
+-- exported file, and after calling removeExportLocation and flushing the
+-- database.
+removeEmptyDirectories :: ExportActions Annex -> ExportHandle -> ExportLocation -> [Key] -> Annex Bool
+removeEmptyDirectories ea db loc ks = case removeExportDirectory ea of
+	Nothing -> return True
+	Just removeexportdirectory -> do
+		ok <- allM (go removeexportdirectory) 
+			(reverse (exportedDirectories loc))
+		unless ok $ liftIO $ do
+			-- Add back to export database, so this is
+			-- tried again next time.
+			forM_ ks $ \k ->
+				addExportLocation db k loc
+			flushDbQueue db
+		return ok
+  where
+	go removeexportdirectory d = 
+		ifM (liftIO $ isExportDirectoryEmpty db d)
+			( removeexportdirectory d
+			, return True
+			)
