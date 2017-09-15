@@ -151,18 +151,20 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 -- exported file, and after calling removeExportLocation and flushing the
 -- database.
 removeEmptyDirectories :: ExportActions Annex -> ExportHandle -> ExportLocation -> [Key] -> Annex Bool
-removeEmptyDirectories ea db loc ks = case removeExportDirectory ea of
-	Nothing -> return True
-	Just removeexportdirectory -> do
-		ok <- allM (go removeexportdirectory) 
-			(reverse (exportedDirectories loc))
-		unless ok $ liftIO $ do
-			-- Add back to export database, so this is
-			-- tried again next time.
-			forM_ ks $ \k ->
-				addExportLocation db k loc
-			flushDbQueue db
-		return ok
+removeEmptyDirectories ea db loc ks
+	| null (exportedDirectories loc) = return True
+	| otherwise = case removeExportDirectory ea of
+		Nothing -> return True
+		Just removeexportdirectory -> do
+			ok <- allM (go removeexportdirectory) 
+				(reverse (exportedDirectories loc))
+			unless ok $ liftIO $ do
+				-- Add back to export database, so this is
+				-- tried again next time.
+				forM_ ks $ \k ->
+					addExportLocation db k loc
+				flushDbQueue db
+			return ok
   where
 	go removeexportdirectory d = 
 		ifM (liftIO $ isExportDirectoryEmpty db d)

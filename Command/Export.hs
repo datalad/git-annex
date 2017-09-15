@@ -321,4 +321,6 @@ cleanupRename ea db ek src dest = do
 		removeExportLocation db (asKey ek) src
 		addExportLocation db (asKey ek) dest
 		flushDbQueue db
-	removeEmptyDirectories ea db src [asKey ek]
+	if exportedDirectories src /= exportedDirectories dest
+		then removeEmptyDirectories ea db src [asKey ek]
+		else return True

@@ -27,8 +27,8 @@ module Types.Remote
 	where
 
 import qualified Data.Map as M
-import Data.Ord
 import qualified System.FilePath.Posix as Posix
+import Data.Ord
 
 import qualified Git
 import Types.Key
@@ -201,13 +201,14 @@ data ExportActions a = ExportActions
 	, renameExport :: Key -> ExportLocation -> ExportLocation -> a Bool
 	}
 
--- | All directories down to the ExportLocation, with the deepest ones
--- last.
+-- | All subdirectories down to the ExportLocation, with the deepest ones
+-- last. Does not include the top of the export.
 exportedDirectories :: ExportLocation -> [ExportDirectory]
 exportedDirectories (ExportLocation f) =
-	map (ExportDirectory . Posix.joinPath . reverse) $ 
-		subs [] $ map Posix.dropTrailingPathSeparator $
-			Posix.splitPath $ Posix.takeDirectory f
+	map (ExportDirectory . Posix.joinPath . reverse) (subs [] dirs)
   where
 	subs _ [] = []
 	subs ps (d:ds) = (d:ps) : subs (d:ps) ds
+
+	dirs = map Posix.dropTrailingPathSeparator $
+		reverse $ drop 1 $ reverse $ Posix.splitPath f
