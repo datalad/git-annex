@@ -18,7 +18,9 @@ module Database.Export (
 	removeExportLocation,
 	flushDbQueue,
 	getExportLocation,
+	isExportDirectoryEmpty,
 	ExportedId,
+	ExportedDirectoryId,
 ) where
 
 import Database.Types
@@ -26,10 +28,11 @@ import qualified Database.Queue as H
 import Database.Init
 import Annex.Locations
 import Annex.Common hiding (delete)
-import Types.Remote (ExportLocation(..))
+import Types.Remote (ExportLocation(..), ExportDirectory(..))
 
 import Database.Persist.TH
 import Database.Esqueleto hiding (Key)
+import qualified System.FilePath.Posix as Posix
 
 newtype ExportHandle = ExportHandle H.DbQueue
 
@@ -38,6 +41,10 @@ Exported
   key IKey
   file SFilePath
   KeyFileIndex key file
+ExportedDirectory
+  subdir SFilePath
+  file SFilePath
+  SubdirFileIndex subdir file
 |]
 
 {- Opens the database, creating it if it doesn't exist yet. -}
@@ -63,13 +70,24 @@ queueDb (ExportHandle h) = H.queueDb h checkcommit
 		| otherwise = return False
 
 addExportLocation :: ExportHandle -> Key -> ExportLocation -> IO ()
-addExportLocation h k (ExportLocation f) = queueDb h $ 
-	void $ insertUnique $ Exported (toIKey k) (toSFilePath f)
+addExportLocation h k el@(ExportLocation f) = queueDb h $ do
+	void $ insertUnique $ Exported ik ef
+	insertMany_ $ map
+		(\(ExportDirectory d) -> ExportedDirectory (toSFilePath d) ef)
+		(exportedDirectories el)
+  where
+	ik = toIKey k
+	ef = toSFilePath f
 
 removeExportLocation :: ExportHandle -> Key -> ExportLocation -> IO ()
-removeExportLocation h k (ExportLocation f) = queueDb h $
+removeExportLocation h k el@(ExportLocation f) = queueDb h $ do
 	delete $ from $ \r -> do
 		where_ (r ^. ExportedKey ==. val ik &&. r ^. ExportedFile ==. val ef)
+	let subdirs = map (\(ExportDirectory d) -> toSFilePath d)
+		(exportedDirectories el)
+	delete $ from $ \r -> do
+		where_ (r ^. ExportedDirectoryFile ==. val ef
+			&&. r ^. ExportedDirectorySubdir `in_` valList subdirs)
   where
 	ik = toIKey k
 	ef = toSFilePath f
@@ -86,3 +104,22 @@ getExportLocation (ExportHandle h) k = H.queryDbQueue h $ do
 	return $ map (ExportLocation . fromSFilePath . unValue) l
   where
 	ik = toIKey k
+
+{- Note that this does not see recently queued changes. -}
+isExportDirectoryEmpty :: ExportHandle -> ExportDirectory -> IO Bool
+isExportDirectoryEmpty (ExportHandle h) (ExportDirectory d) = H.queryDbQueue h $ do
+	l <- select $ from $ \r -> do
+		where_ (r ^. ExportedDirectorySubdir ==. val ed)
+		return (r ^. ExportedDirectoryFile)
+	return $ null l
+  where
+	ed = toSFilePath d
+
+exportedDirectories :: ExportLocation -> [ExportDirectory]
+exportedDirectories (ExportLocation f) =
+	map (ExportDirectory . Posix.joinPath . reverse) $ 
+		subs [] $ map Posix.dropTrailingPathSeparator $
+			Posix.splitPath $ Posix.takeDirectory f
+  where
+	subs _ [] = []
+	subs ps (d:ds) = (d:ps) : subs (d:ps) ds
