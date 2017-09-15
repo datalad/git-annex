@@ -11,7 +11,7 @@
 module Remote.WebDAV.DavLocation where
 
 import Types
-import Types.Remote (ExportLocation(..))
+import Types.Export
 import Annex.Locations
 import Utility.Url (URLString)
 #ifdef mingw32_HOST_OS

@@ -18,16 +18,12 @@ module Types.Remote
 	, Availability(..)
 	, Verification(..)
 	, unVerified
-	, ExportLocation(..)
-	, ExportDirectory(..)
 	, isExportSupported
 	, ExportActions(..)
-	, exportedDirectories
 	)
 	where
 
 import qualified Data.Map as M
-import qualified System.FilePath.Posix as Posix
 import Data.Ord
 
 import qualified Git
@@ -38,6 +34,7 @@ import Types.Availability
 import Types.Creds
 import Types.UrlContents
 import Types.NumCopies
+import Types.Export
 import Config.Cost
 import Utility.Metered
 import Git.Types (RemoteName)
@@ -161,15 +158,6 @@ unVerified a = do
 	ok <- a
 	return (ok, UnVerified)
 
--- A location on a remote that a key can be exported to.
--- The FilePath will be relative, and may contain unix-style path
--- separators.
-newtype ExportLocation = ExportLocation FilePath
-	deriving (Show, Eq)
-
-newtype ExportDirectory = ExportDirectory FilePath
-	deriving (Show, Eq)
-
 isExportSupported :: RemoteA a -> a Bool
 isExportSupported r = exportSupported (remotetype r) (config r) (gitconfig r)
 
@@ -200,15 +188,3 @@ data ExportActions a = ExportActions
 	-- support renames.
 	, renameExport :: Key -> ExportLocation -> ExportLocation -> a Bool
 	}
-
--- | All subdirectories down to the ExportLocation, with the deepest ones
--- last. Does not include the top of the export.
-exportedDirectories :: ExportLocation -> [ExportDirectory]
-exportedDirectories (ExportLocation f) =
-	map (ExportDirectory . Posix.joinPath . reverse) (subs [] dirs)
-  where
-	subs _ [] = []
-	subs ps (d:ds) = (d:ps) : subs (d:ps) ds
-
-	dirs = map Posix.dropTrailingPathSeparator $
-		reverse $ drop 1 $ reverse $ Posix.splitPath f

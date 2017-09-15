@@ -33,6 +33,7 @@ import System.Log.Logger
 
 import Annex.Common
 import Types.Remote
+import Types.Export
 import qualified Git
 import Config
 import Config.Cost

@@ -28,7 +28,7 @@ import qualified Database.Queue as H
 import Database.Init
 import Annex.Locations
 import Annex.Common hiding (delete)
-import Types.Remote (ExportLocation(..), ExportDirectory(..), exportedDirectories)
+import Types.Export
 
 import Database.Persist.TH
 import Database.Esqueleto hiding (Key)
@@ -73,7 +73,7 @@ addExportLocation h k el@(ExportLocation f) = queueDb h $ do
 	void $ insertUnique $ Exported ik ef
 	insertMany_ $ map
 		(\(ExportDirectory d) -> ExportedDirectory (toSFilePath d) ef)
-		(exportedDirectories el)
+		(exportDirectories el)
   where
 	ik = toIKey k
 	ef = toSFilePath f
@@ -83,7 +83,7 @@ removeExportLocation h k el@(ExportLocation f) = queueDb h $ do
 	delete $ from $ \r -> do
 		where_ (r ^. ExportedKey ==. val ik &&. r ^. ExportedFile ==. val ef)
 	let subdirs = map (\(ExportDirectory d) -> toSFilePath d)
-		(exportedDirectories el)
+		(exportDirectories el)
 	delete $ from $ \r -> do
 		where_ (r ^. ExportedDirectoryFile ==. val ef
 			&&. r ^. ExportedDirectorySubdir `in_` valList subdirs)

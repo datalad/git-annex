@@ -945,6 +945,7 @@ Executable git-annex
     Types.DesktopNotify
     Types.Difference
     Types.Distribution
+    Types.Export
     Types.FileMatcher
     Types.GitConfig
     Types.Group

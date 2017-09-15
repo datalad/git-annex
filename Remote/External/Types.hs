@@ -36,7 +36,8 @@ import Types.StandardGroups (PreferredContentExpression)
 import Utility.Metered (BytesProcessed(..))
 import Types.Transfer (Direction(..))
 import Config.Cost (Cost)
-import Types.Remote (RemoteConfig, ExportLocation(..), ExportDirectory(..))
+import Types.Remote (RemoteConfig)
+import Types.Export
 import Types.Availability (Availability(..))
 import Types.Key
 import Utility.Url (URLString)

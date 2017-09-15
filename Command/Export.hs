@@ -20,6 +20,7 @@ import Git.FilePath
 import Git.Sha
 import Types.Key
 import Types.Remote
+import Types.Export
 import Annex.Content
 import Annex.CatFile
 import Logs.Location
@@ -321,6 +322,6 @@ cleanupRename ea db ek src dest = do
 		removeExportLocation db (asKey ek) src
 		addExportLocation db (asKey ek) dest
 		flushDbQueue db
-	if exportedDirectories src /= exportedDirectories dest
+	if exportDirectories src /= exportDirectories dest
 		then removeEmptyDirectories ea db src [asKey ek]
 		else return True

@@ -11,6 +11,7 @@ import Remote.External.Types
 import qualified Annex
 import Annex.Common
 import Types.Remote
+import Types.Export
 import Types.CleanupActions
 import Types.UrlContents
 import qualified Git

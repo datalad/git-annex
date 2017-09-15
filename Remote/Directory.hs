@@ -19,6 +19,7 @@ import Data.Default
 
 import Annex.Common
 import Types.Remote
+import Types.Export
 import Types.Creds
 import qualified Git
 import Config.Cost

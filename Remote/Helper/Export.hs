@@ -12,6 +12,7 @@ module Remote.Helper.Export where
 import Annex.Common
 import Types.Remote
 import Types.Backend
+import Types.Export
 import Types.Key
 import Backend
 import Remote.Helper.Encryptable (isEncrypted)
@@ -152,12 +153,12 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 -- database.
 removeEmptyDirectories :: ExportActions Annex -> ExportHandle -> ExportLocation -> [Key] -> Annex Bool
 removeEmptyDirectories ea db loc ks
-	| null (exportedDirectories loc) = return True
+	| null (exportDirectories loc) = return True
 	| otherwise = case removeExportDirectory ea of
 		Nothing -> return True
 		Just removeexportdirectory -> do
 			ok <- allM (go removeexportdirectory) 
-				(reverse (exportedDirectories loc))
+				(reverse (exportDirectories loc))
 			unless ok $ liftIO $ do
 				-- Add back to export database, so this is
 				-- tried again next time.
