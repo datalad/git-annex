@@ -1,0 +1,20 @@
+After doing some fine-tuning of webdav export on Wednesday, I noticed a
+problem: There seems to be no way in the webdav spec to delete a collection
+(directory) only when it's empty like `rmdir(2)` does. 
+It would be possible to check the contents of the collection before
+deleting it, but that's complex (involving XML parsing) and race-prone.
+
+So, I decided to add a remote method to delete a directory, and make
+git-annex keep track of when a directory in an export is empty, and delete
+it. While it does complicate the design some to need to do this, that seems
+better than complicating the implementation of remotes like webdav. And
+some remotes may not have a `rmdir(2)` equivilant or a way to check if a
+directory is empty.
+
+Spent most of today implementing that, including some rather hairy
+eSQL to maintain a table of exported directories.
+
+Still not quite done with export..
+
+Today's work was sponsored by Trenton Cronholm on
+[Patreon](https://patreon.com/joeyh)
