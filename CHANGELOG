@@ -16,6 +16,7 @@ git-annex (6.20170819) UNRELEASED; urgency=medium
     the file is not present.
   * webdav: Fix lack of url-escaping of filenames. Mostly impacted exports
     of filenames containing eg spaces.
+  * webdav: Changed path used on webdav server for temporary files.
 
  -- Joey Hess <id@joeyh.name>  Mon, 28 Aug 2017 12:20:59 -0400
 

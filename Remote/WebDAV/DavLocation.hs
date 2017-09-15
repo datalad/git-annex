@@ -46,18 +46,15 @@ keyDir k = addTrailingPathSeparator $ hashdir </> keyFile k
 keyLocation :: Key -> DavLocation
 keyLocation k = keyDir k ++ keyFile k
 
+exportLocation :: ExportLocation -> DavLocation
+exportLocation (ExportLocation f) = f
+
 {- Where we store temporary data for a key as it's being uploaded. -}
 keyTmpLocation :: Key -> DavLocation
 keyTmpLocation = tmpLocation . keyFile
 
-exportLocation :: ExportLocation -> DavLocation
-exportLocation (ExportLocation f) = f
-
 tmpLocation :: FilePath -> DavLocation
-tmpLocation f = tmpDir </> f
-
-tmpDir :: DavLocation
-tmpDir = "tmp"
+tmpLocation f = "git-annex-webdav-tmp-" ++ f
 
 locationParent :: String -> Maybe String
 locationParent loc

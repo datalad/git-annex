@@ -127,7 +127,7 @@ store _  (Just dav) = httpStorer $ \k reqbody -> liftIO $ goDAV dav $ do
 
 storeHelper :: DavHandle -> DavLocation -> DavLocation -> RequestBody -> DAVT IO ()
 storeHelper dav tmp dest reqbody = do
-	void $ mkColRecursive tmpDir
+	maybe noop (void . mkColRecursive) (locationParent tmp)
 	inLocation tmp $
 		putContentM' (contentType, reqbody)
 	finalizeStore dav tmp dest
@@ -257,8 +257,8 @@ testDav url (Just (u, p)) = do
 	test $ liftIO $ evalDAVT url $ do
 		prepDAV user pass
 		makeParentDirs
-		void $ mkColRecursive tmpDir
-		inLocation (tmpLocation "git-annex-test") $ do
+		void $ mkColRecursive "/"
+		inLocation (tmpLocation "test") $ do
 			putContentM (Nothing, L8.fromString "test")
 			delContentM
   where
