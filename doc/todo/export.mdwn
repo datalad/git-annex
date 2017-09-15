@@ -43,4 +43,6 @@ Low priority:
 * webdav: When a file in a subdirectory gets deleted,
   the webdav collection is remains, empty. Could to check if collection is
   empty, and delete otherwise, but that would have a race if another export
-  is running to the same webdav server.
+  is running to the same webdav server.  
+  Probably best to add a remote method to delete a directory, and have
+  export use it on all directories it thinks should be empty.
