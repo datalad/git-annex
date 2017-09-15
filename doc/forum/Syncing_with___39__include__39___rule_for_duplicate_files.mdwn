@@ -1,0 +1,17 @@
+I have the following problem. I have file in git annex repo which is in two places in this repo.
+So there are two links to the file in the working tree.
+Let say (for clarity) that its path is: a/foo and b/foo.
+
+And when I do:
+
+    git annex wanted . "include=a/*"
+    git annex sync --content
+
+git-annex downloads the file and then drops it
+(i.e. it try to get a/foo and then drop b/foo).
+
+What should I do to avoid droping the file when include only
+one link to the file?
+
+The only one solution to the problem I've found is to use
+deprecated 'direct' mode, but let's say I want to do this the right way.
