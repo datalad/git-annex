@@ -176,6 +176,17 @@ replying with `UNSUPPORTED-REQUEST` is acceptable.
   `REMOVE-FAILURE`.  
   If the content was already not present in the remote, it should
   respond with `REMOVE-SUCCESS`.
+* `REMOVEEXPORTDIRECTORY Directory`  
+  Requests the remote remove an exported directory.  
+  If the remote does not use directories, or automatically cleans up
+  empty directories, this does not need to be implemented.  
+  The directory will be in the form of a relative path, and may contain path
+  separators, whitespace, and other special characters.  
+  Typically the directory will be empty, but it could possbly contain
+  files or other directories, and it's ok to remove those.  
+  The remote responds with either `REMOVEEXPORTDIRECTORY-SUCCESS`
+  or `REMOVEEXPORTDIRECTORY-FAILURE`.  
+  Should not fail if the directory was already removed.
 * `RENAMEEXPORT Key NewName`  
   Requests the remote rename a file stored on it from the previously
   provided Name to the NewName.  
@@ -261,6 +272,10 @@ while it's handling a request.
   Indicates that a `RENAMEEXPORT` was done successfully.
 * `RENAMEEXPORT-FAILURE Key`  
   Indicates that a `RENAMEEXPORT` failed for whatever reason.
+* `REMOVEEXPORTDIRECTORY-SUCCESS`  
+  Indicates that a `REMOVEEXPORTDIRECTORY` was done successfully.
+* `REMOVEEXPORTDIRECTORY-FAILURE`  
+  Indicates that a `REMOVEEXPORTDIRECTORY` failed for whatever reason.
 * `UNSUPPORTED-REQUEST`  
   Indicates that the special remote does not know how to handle a request.
 

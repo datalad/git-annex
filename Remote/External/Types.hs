@@ -36,7 +36,7 @@ import Types.StandardGroups (PreferredContentExpression)
 import Utility.Metered (BytesProcessed(..))
 import Types.Transfer (Direction(..))
 import Config.Cost (Cost)
-import Types.Remote (RemoteConfig, ExportLocation(..))
+import Types.Remote (RemoteConfig, ExportLocation(..), ExportDirectory(..))
 import Types.Availability (Availability(..))
 import Types.Key
 import Utility.Url (URLString)
@@ -121,6 +121,7 @@ data Request
 	| TRANSFEREXPORT Direction SafeKey FilePath
 	| CHECKPRESENTEXPORT SafeKey
 	| REMOVEEXPORT SafeKey
+	| REMOVEEXPORTDIRECTORY ExportDirectory
 	| RENAMEEXPORT SafeKey ExportLocation
 	deriving (Show)
 
@@ -160,6 +161,8 @@ instance Proto.Sendable Request where
 		[ "CHECKPRESENTEXPORT", Proto.serialize key ]
 	formatMessage (REMOVEEXPORT key) =
 		[ "REMOVEEXPORT", Proto.serialize key ]
+	formatMessage (REMOVEEXPORTDIRECTORY dir) =
+		[ "REMOVEEXPORTDIRECTORY", Proto.serialize dir ]
 	formatMessage (RENAMEEXPORT key newloc) =
 		[ "RENAMEEXPORT"
 		, Proto.serialize key
@@ -190,6 +193,8 @@ data Response
 	| WHEREIS_FAILURE
 	| EXPORTSUPPORTED_SUCCESS
 	| EXPORTSUPPORTED_FAILURE
+	| REMOVEEXPORTDIRECTORY_SUCCESS
+	| REMOVEEXPORTDIRECTORY_FAILURE
 	| RENAMEEXPORT_SUCCESS Key
 	| RENAMEEXPORT_FAILURE Key
 	| UNSUPPORTED_REQUEST
@@ -218,6 +223,8 @@ instance Proto.Receivable Response where
 	parseCommand "WHEREIS-FAILURE" = Proto.parse0 WHEREIS_FAILURE
 	parseCommand "EXPORTSUPPORTED-SUCCESS" = Proto.parse0 EXPORTSUPPORTED_SUCCESS
 	parseCommand "EXPORTSUPPORTED-FAILURE" = Proto.parse0 EXPORTSUPPORTED_FAILURE
+	parseCommand "REMOVEEXPORTDIRECTORY-SUCCESS" = Proto.parse0 REMOVEEXPORTDIRECTORY_SUCCESS
+	parseCommand "REMOVEEXPORTDIRECTORY-FAILURE" = Proto.parse0 REMOVEEXPORTDIRECTORY_FAILURE
 	parseCommand "RENAMEEXPORT-SUCCESS" = Proto.parse1 RENAMEEXPORT_SUCCESS
 	parseCommand "RENAMEEXPORT-FAILURE" = Proto.parse1 RENAMEEXPORT_FAILURE
 	parseCommand "UNSUPPORTED-REQUEST" = Proto.parse0 UNSUPPORTED_REQUEST
@@ -352,3 +359,7 @@ instance Proto.Serializable URI where
 instance Proto.Serializable ExportLocation where
 	serialize (ExportLocation loc) = loc
 	deserialize = Just . ExportLocation
+
+instance Proto.Serializable ExportDirectory where
+	serialize (ExportDirectory loc) = loc
+	deserialize = Just . ExportDirectory

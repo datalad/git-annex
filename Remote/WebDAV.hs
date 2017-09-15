@@ -73,8 +73,10 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			, exportActions = withDAVHandle this $ \mh -> return $ ExportActions
 				{ storeExport = storeExportDav mh
 				, retrieveExport = retrieveExportDav mh
-				, removeExport = removeExportDav mh
 				, checkPresentExport = checkPresentExportDav this mh
+				, removeExport = removeExportDav mh
+				, removeExportDirectory = Just $
+					removeExportDirectoryDav mh
 				, renameExport = renameExportDav mh
 				}
 			, whereisKey = Nothing
@@ -189,16 +191,21 @@ retrieveExportDav mh  _k loc d p = runExport mh $ \_dav -> do
 	retrieveHelper (exportLocation loc) d p
 	return True
 
-removeExportDav :: Maybe DavHandle -> Key -> ExportLocation -> Annex Bool
-removeExportDav mh _k loc = runExport mh $ \_dav ->
-	removeHelper (exportLocation loc)
-
 checkPresentExportDav :: Remote -> Maybe DavHandle -> Key -> ExportLocation -> Annex Bool
 checkPresentExportDav r mh _k loc = case mh of
 	Nothing -> giveup $ name r ++ " not configured"
 	Just h -> liftIO $ do
 		v <- goDAV h $ existsDAV (exportLocation loc)
 		either giveup return v
+
+removeExportDav :: Maybe DavHandle -> Key -> ExportLocation -> Annex Bool
+removeExportDav mh _k loc = runExport mh $ \_dav ->
+	removeHelper (exportLocation loc)
+
+removeExportDirectoryDav :: Maybe DavHandle -> ExportDirectory -> Annex Bool
+removeExportDirectoryDav mh (ExportDirectory dir) = runExport mh $ \_dav ->
+	safely (inLocation dir delContentM)
+		>>= maybe (return False) (const $ return True)
 
 renameExportDav :: Maybe DavHandle -> Key -> ExportLocation -> ExportLocation -> Annex Bool
 renameExportDav Nothing _ _ _ = return False

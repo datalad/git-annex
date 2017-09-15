@@ -92,6 +92,8 @@ gen r u c gc = do
 					, retrieveExport = retrieveExportS3 info h
 					, removeExport = removeExportS3 info h
 					, checkPresentExport = checkPresentExportS3 info h
+					-- S3 does not have directories.
+					, removeExportDirectory = Nothing
 					, renameExport = renameExportS3 info h
 					}
 			, whereisKey = Just (getWebUrls info c)

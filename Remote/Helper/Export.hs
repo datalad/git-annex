@@ -32,8 +32,9 @@ instance HasExportUnsupported (Annex (ExportActions Annex)) where
 			warning "store export is unsupported"
 			return False
 		, retrieveExport = \_ _ _ _ -> return False
-		, removeExport = \_ _ -> return False
 		, checkPresentExport = \_ _ -> return False
+		, removeExport = \_ _ -> return False
+		, removeExportDirectory = Just $ \_ -> return False
 		, renameExport = \_ _ _ -> return False
 		}
 

@@ -264,6 +264,15 @@ while read line; do
 			key="$2"
 			doremove "$key" "$exportlocation"
 		;;
+		REMOVEEXPORTDIRECTORY)
+			shift 1
+			dir="$@"
+			if [ ! -d "$dir" ] || rm -rf "$mydirectory/$dir"; then
+				echo REMOVEEXPORTDIRECTORY-SUCCESS
+			else
+				echo REMOVEEXPORTDIRECTORY-FAILURE
+			fi
+		;;
 		RENAMEEXPORT)
 			key="$2"
 			shift 2

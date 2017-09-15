@@ -47,26 +47,29 @@ gen r u c gc = do
 	let chunkconfig = getChunkConfig c
 	return $ Just $ specialRemote c
 		(prepareStore dir chunkconfig)
-		(retrieve dir chunkconfig)
-		(simplyPrepare $ remove dir)
-		(simplyPrepare $ checkKey dir chunkconfig)
+		(retrieveKeyFileM dir chunkconfig)
+		(simplyPrepare $ removeKeyM dir)
+		(simplyPrepare $ checkPresentM dir chunkconfig)
 		Remote
 			{ uuid = u
 			, cost = cst
 			, name = Git.repoDescribe r
 			, storeKey = storeKeyDummy
 			, retrieveKeyFile = retreiveKeyFileDummy
-			, retrieveKeyFileCheap = retrieveCheap dir chunkconfig
+			, retrieveKeyFileCheap = retrieveKeyFileCheapM dir chunkconfig
 			, removeKey = removeKeyDummy
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = True
 			, exportActions = return $ ExportActions
-				{ storeExport = storeExportDirectory dir
-				, retrieveExport = retrieveExportDirectory dir
-				, removeExport = removeExportDirectory dir
-				, checkPresentExport = checkPresentExportDirectory dir
-				, renameExport = renameExportDirectory dir
+				{ storeExport = storeExportM dir
+				, retrieveExport = retrieveExportM dir
+				, removeExport = removeExportM dir
+				, checkPresentExport = checkPresentExportM dir
+				-- Not needed because removeExportLocation
+				-- auto-removes empty directories.
+				, removeExportDirectory = Nothing
+				, renameExport = renameExportM dir
 				}
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
@@ -166,17 +169,17 @@ finalizeStoreGeneric tmp dest = do
 		mapM_ preventWrite =<< dirContents dest
 		preventWrite dest
 
-retrieve :: FilePath -> ChunkConfig -> Preparer Retriever
-retrieve d (LegacyChunks _) = Legacy.retrieve locations d
-retrieve d _ = simplyPrepare $ byteRetriever $ \k sink ->
+retrieveKeyFileM :: FilePath -> ChunkConfig -> Preparer Retriever
+retrieveKeyFileM d (LegacyChunks _) = Legacy.retrieve locations d
+retrieveKeyFileM d _ = simplyPrepare $ byteRetriever $ \k sink ->
 	sink =<< liftIO (L.readFile =<< getLocation d k)
 
-retrieveCheap :: FilePath -> ChunkConfig -> Key -> AssociatedFile -> FilePath -> Annex Bool
+retrieveKeyFileCheapM :: FilePath -> ChunkConfig -> Key -> AssociatedFile -> FilePath -> Annex Bool
 -- no cheap retrieval possible for chunks
-retrieveCheap _ (UnpaddedChunks _) _ _ _ = return False
-retrieveCheap _ (LegacyChunks _) _ _ _ = return False
+retrieveKeyFileCheapM _ (UnpaddedChunks _) _ _ _ = return False
+retrieveKeyFileCheapM _ (LegacyChunks _) _ _ _ = return False
 #ifndef mingw32_HOST_OS
-retrieveCheap d NoChunks k _af f = liftIO $ catchBoolIO $ do
+retrieveKeyFileCheapM d NoChunks k _af f = liftIO $ catchBoolIO $ do
 	file <- absPath =<< getLocation d k
 	ifM (doesFileExist file)
 		( do
@@ -185,11 +188,11 @@ retrieveCheap d NoChunks k _af f = liftIO $ catchBoolIO $ do
 		, return False
 		)
 #else
-retrieveCheap _ _ _ _ _ = return False
+retrieveKeyFileCheapM _ _ _ _ _ = return False
 #endif
 
-remove :: FilePath -> Remover
-remove d k = liftIO $ removeDirGeneric d (storeDir d k)
+removeKeyM :: FilePath -> Remover
+removeKeyM d k = liftIO $ removeDirGeneric d (storeDir d k)
 
 {- Removes the directory, which must be located under the topdir.
  -
@@ -216,9 +219,9 @@ removeDirGeneric topdir dir = do
 		then return ok
 		else doesDirectoryExist topdir <&&> (not <$> doesDirectoryExist dir)
 
-checkKey :: FilePath -> ChunkConfig -> CheckPresent
-checkKey d (LegacyChunks _) k = Legacy.checkKey d locations k
-checkKey d _ k = checkPresentGeneric d (locations d k)
+checkPresentM :: FilePath -> ChunkConfig -> CheckPresent
+checkPresentM d (LegacyChunks _) k = Legacy.checkKey d locations k
+checkPresentM d _ k = checkPresentGeneric d (locations d k)
 
 checkPresentGeneric :: FilePath -> [FilePath] -> Annex Bool
 checkPresentGeneric d ps = liftIO $
@@ -230,8 +233,8 @@ checkPresentGeneric d ps = liftIO $
 			)
 		)
 
-storeExportDirectory :: FilePath -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
-storeExportDirectory d src _k loc p = liftIO $ catchBoolIO $ do
+storeExportM :: FilePath -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
+storeExportM d src _k loc p = liftIO $ catchBoolIO $ do
 	createDirectoryIfMissing True (takeDirectory dest)
 	-- Write via temp file so that checkPresentGeneric will not
 	-- see it until it's fully stored.
@@ -240,27 +243,27 @@ storeExportDirectory d src _k loc p = liftIO $ catchBoolIO $ do
   where
 	dest = exportPath d loc
 
-retrieveExportDirectory :: FilePath -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
-retrieveExportDirectory d _k loc dest p = liftIO $ catchBoolIO $ do
+retrieveExportM :: FilePath -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
+retrieveExportM d _k loc dest p = liftIO $ catchBoolIO $ do
 	withMeteredFile src p (L.writeFile dest)
 	return True
   where
 	src = exportPath d loc
 
-removeExportDirectory :: FilePath -> Key -> ExportLocation -> Annex Bool
-removeExportDirectory d _k loc = liftIO $ do
+removeExportM :: FilePath -> Key -> ExportLocation -> Annex Bool
+removeExportM d _k loc = liftIO $ do
 	nukeFile src
 	removeExportLocation d loc
 	return True
   where
 	src = exportPath d loc
 
-checkPresentExportDirectory :: FilePath -> Key -> ExportLocation -> Annex Bool
-checkPresentExportDirectory d _k loc =
+checkPresentExportM :: FilePath -> Key -> ExportLocation -> Annex Bool
+checkPresentExportM d _k loc =
 	checkPresentGeneric d [exportPath d loc]
 
-renameExportDirectory :: FilePath -> Key -> ExportLocation -> ExportLocation -> Annex Bool
-renameExportDirectory d _k oldloc newloc = liftIO $ catchBoolIO $ do
+renameExportM :: FilePath -> Key -> ExportLocation -> ExportLocation -> Annex Bool
+renameExportM d _k oldloc newloc = liftIO $ catchBoolIO $ do
 	createDirectoryIfMissing True (takeDirectory dest)
 	renameFile src dest
 	removeExportLocation d oldloc

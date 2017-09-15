@@ -71,11 +71,12 @@ gen r u c gc
 		exportsupported <- checkExportSupported' external
 		let exportactions = if exportsupported
 			then return $ ExportActions
-				{ storeExport = storeExportExternal external
-				, retrieveExport = retrieveExportExternal external
-				, removeExport = removeExportExternal external
-				, checkPresentExport = checkPresentExportExternal external
-				, renameExport = renameExportExternal external
+				{ storeExport = storeExportM external
+				, retrieveExport = retrieveExportM external
+				, removeExport = removeExportM external
+				, checkPresentExport = checkPresentExportM external
+				, removeExportDirectory = Just $ removeExportDirectoryM external
+				, renameExport = renameExportM external
 				}
 			else exportUnsupported
 		-- Cheap exportSupported that replaces the expensive
@@ -84,13 +85,13 @@ gen r u c gc
 			then exportIsSupported
 			else exportUnsupported
 		mk cst avail
-			(store external)
-			(retrieve external)
-			(remove external)
-			(checkKey external)
-			(Just (whereis external))
-			(Just (claimurl external))
-			(Just (checkurl external))
+			(storeKeyM external)
+			(retrieveKeyFileM external)
+			(removeKeyM external)
+			(checkPresentM external)
+			(Just (whereisKeyM external))
+			(Just (claimUrlM external))
+			(Just (checkUrlM external))
 			exportactions
 			cheapexportsupported
   where
@@ -170,8 +171,8 @@ checkExportSupported' external = safely $
 		UNSUPPORTED_REQUEST -> Just $ return False
 		_ -> Nothing
 
-store :: External -> Storer
-store external = fileStorer $ \k f p ->
+storeKeyM :: External -> Storer
+storeKeyM external = fileStorer $ \k f p ->
 	handleRequestKey external (\sk -> TRANSFER Upload sk f) k (Just p) $ \resp ->
 		case resp of
 			TRANSFER_SUCCESS Upload k' | k == k' ->
@@ -182,8 +183,8 @@ store external = fileStorer $ \k f p ->
 					return False
 			_ -> Nothing
 
-retrieve :: External -> Retriever
-retrieve external = fileRetriever $ \d k p -> 
+retrieveKeyFileM :: External -> Retriever
+retrieveKeyFileM external = fileRetriever $ \d k p -> 
 	handleRequestKey external (\sk -> TRANSFER Download sk d) k (Just p) $ \resp ->
 		case resp of
 			TRANSFER_SUCCESS Download k'
@@ -192,8 +193,8 @@ retrieve external = fileRetriever $ \d k p ->
 				| k == k' -> Just $ giveup errmsg
 			_ -> Nothing
 
-remove :: External -> Remover
-remove external k = safely $ 
+removeKeyM :: External -> Remover
+removeKeyM external k = safely $ 
 	handleRequestKey external REMOVE k Nothing $ \resp ->
 		case resp of
 			REMOVE_SUCCESS k'
@@ -204,8 +205,8 @@ remove external k = safely $
 					return False
 			_ -> Nothing
 
-checkKey :: External -> CheckPresent
-checkKey external k = either giveup id <$> go
+checkPresentM :: External -> CheckPresent
+checkPresentM external k = either giveup id <$> go
   where
 	go = handleRequestKey external CHECKPRESENT k Nothing $ \resp ->
 		case resp of
@@ -217,15 +218,15 @@ checkKey external k = either giveup id <$> go
 				| k' == k -> Just $ return $ Left errmsg
 			_ -> Nothing
 
-whereis :: External -> Key -> Annex [String]
-whereis external k = handleRequestKey external WHEREIS k Nothing $ \resp -> case resp of
+whereisKeyM :: External -> Key -> Annex [String]
+whereisKeyM external k = handleRequestKey external WHEREIS k Nothing $ \resp -> case resp of
 	WHEREIS_SUCCESS s -> Just $ return [s]
 	WHEREIS_FAILURE -> Just $ return []
 	UNSUPPORTED_REQUEST -> Just $ return []
 	_ -> Nothing
 
-storeExportExternal :: External -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
-storeExportExternal external f k loc p = safely $
+storeExportM :: External -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
+storeExportM external f k loc p = safely $
 	handleRequestExport external loc req k (Just p) $ \resp -> case resp of
 		TRANSFER_SUCCESS Upload k' | k == k' ->
 			Just $ return True
@@ -240,8 +241,8 @@ storeExportExternal external f k loc p = safely $
   where
 	req sk = TRANSFEREXPORT Upload sk f
 
-retrieveExportExternal :: External -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
-retrieveExportExternal external k loc d p = safely $
+retrieveExportM :: External -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
+retrieveExportM external k loc d p = safely $
 	handleRequestExport external loc req k (Just p) $ \resp -> case resp of
 		TRANSFER_SUCCESS Download k'
 			| k == k' -> Just $ return True
@@ -256,22 +257,8 @@ retrieveExportExternal external k loc d p = safely $
   where
 	req sk = TRANSFEREXPORT Download sk d
 
-removeExportExternal :: External -> Key -> ExportLocation -> Annex Bool
-removeExportExternal external k loc = safely $
-	handleRequestExport external loc REMOVEEXPORT k Nothing $ \resp -> case resp of
-		REMOVE_SUCCESS k'
-			| k == k' -> Just $ return True
-		REMOVE_FAILURE k' errmsg
-			| k == k' -> Just $ do
-				warning errmsg
-				return False
-		UNSUPPORTED_REQUEST -> Just $ do
-			warning "REMOVEEXPORT not implemented by external special remote"
-			return False
-		_ -> Nothing
-
-checkPresentExportExternal :: External -> Key -> ExportLocation -> Annex Bool
-checkPresentExportExternal external k loc = either giveup id <$> go
+checkPresentExportM :: External -> Key -> ExportLocation -> Annex Bool
+checkPresentExportM external k loc = either giveup id <$> go
   where
 	go = handleRequestExport external loc CHECKPRESENTEXPORT k Nothing $ \resp -> case resp of
 		CHECKPRESENT_SUCCESS k'
@@ -284,8 +271,31 @@ checkPresentExportExternal external k loc = either giveup id <$> go
 			Left "CHECKPRESENTEXPORT not implemented by external special remote"
 		_ -> Nothing
 
-renameExportExternal :: External -> Key -> ExportLocation -> ExportLocation -> Annex Bool
-renameExportExternal external k src dest = safely $
+removeExportM :: External -> Key -> ExportLocation -> Annex Bool
+removeExportM external k loc = safely $
+	handleRequestExport external loc REMOVEEXPORT k Nothing $ \resp -> case resp of
+		REMOVE_SUCCESS k'
+			| k == k' -> Just $ return True
+		REMOVE_FAILURE k' errmsg
+			| k == k' -> Just $ do
+				warning errmsg
+				return False
+		UNSUPPORTED_REQUEST -> Just $ do
+			warning "REMOVEEXPORT not implemented by external special remote"
+			return False
+		_ -> Nothing
+
+removeExportDirectoryM :: External -> ExportDirectory -> Annex Bool
+removeExportDirectoryM external dir = safely $
+	handleRequest external req Nothing $ \resp -> case resp of
+		REMOVEEXPORTDIRECTORY_SUCCESS -> Just $ return True
+		REMOVEEXPORTDIRECTORY_FAILURE -> Just $ return False
+		UNSUPPORTED_REQUEST -> Just $ return True
+  where
+	req = REMOVEEXPORTDIRECTORY dir
+
+renameExportM :: External -> Key -> ExportLocation -> ExportLocation -> Annex Bool
+renameExportM external k src dest = safely $
 	handleRequestExport external src req k Nothing $ \resp -> case resp of
 		RENAMEEXPORT_SUCCESS k'
 			| k' == k -> Just $ return True
@@ -619,16 +629,16 @@ getAvailability external r gc =
 		return avail
 	defavail = return GloballyAvailable
 
-claimurl :: External -> URLString -> Annex Bool
-claimurl external url =
+claimUrlM :: External -> URLString -> Annex Bool
+claimUrlM external url =
 	handleRequest external (CLAIMURL url) Nothing $ \req -> case req of
 		CLAIMURL_SUCCESS -> Just $ return True
 		CLAIMURL_FAILURE -> Just $ return False
 		UNSUPPORTED_REQUEST -> Just $ return False
 		_ -> Nothing
 
-checkurl :: External -> URLString -> Annex UrlContents
-checkurl external url = 
+checkUrlM :: External -> URLString -> Annex UrlContents
+checkUrlM external url = 
 	handleRequest external (CHECKURL url) Nothing $ \req -> case req of
 		CHECKURL_CONTENTS sz f -> Just $ return $ UrlContents sz
 			(if null f then Nothing else Just $ mkSafeFilePath f)
