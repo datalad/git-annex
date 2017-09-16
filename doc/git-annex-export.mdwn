@@ -19,8 +19,12 @@ so is not allowed. You have to configure a special remote with
 `exporttree=yes` when initially setting it up with
 [[git-annex-initremote]](1).
 
+The treeish to export can be the name of a git branch, or a tag, or any
+other treeish accepted by git, including eg master:subdir to only export a
+subdirectory from a branch.
+
 Repeated exports are done efficiently, by diffing the old and new tree,
-and transferring only the changed files.
+and transferring only the changed files, and renaming files as necessary.
 
 Exports can be interrupted and resumed. However, partially uploaded files
 will be re-started from the beginning.
@@ -31,6 +35,26 @@ since an export is not a key/value store, git-annex has to do more
 verification of content downloaded from an export. Some types of keys,
 that are not based on checksums, cannot be downloaded from an export.
 And, git-annex will never trust an export to retain the content of a key.
+
+# EXAMPLE
+
+	git annex initremote myexport type=directory directory=/mnt/myexport \
+		exportree=yes encryption=none
+	git annex export master --to myexport
+
+After that, /mnt/myexport will contain the same tree of files as the master
+branch does.
+
+	git mv myfile subdir/myfile
+	git commit -m renamed
+	git annex export master --to myexport
+
+That updates /mnt/myexport to reflect the renamed file.
+
+	git annex export master:subdir --to myexport
+
+That updates /mnt/myexport, to contain only the files in the "subdir"
+directory of the master branch.
 
 # EXPORT CONFLICTS
 
