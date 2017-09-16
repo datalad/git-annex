@@ -52,6 +52,7 @@ for using git-annex with various services:
 * [Openstack Swift / Rackspace cloud files / Memset Memstore](https://github.com/DanielDent/git-annex-remote-rclone)
 * [Microsoft One Drive](https://github.com/DanielDent/git-annex-remote-rclone)
 * [Yandex Disk](https://github.com/DanielDent/git-annex-remote-rclone)
+* [smb / sftp](https://github.com/grawity/code/blob/master/net/git-annex-remote-gvfs)
 
 Want to add support for something else? [[Write your own!|external]]
 
