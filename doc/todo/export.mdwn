@@ -20,14 +20,82 @@ Work is in progress. Todo list:
 * `git annex get --from export` works in the repo that exported to it,
   but in another repo, the export db won't be populated, so it won't work.
   Maybe just show a useful error message in this case?  
+
   However, exporting from one repository and then trying to update the
   export from another repository also doesn't work right, because the
   export database is not populated. So, seems that the export database needs
-  to get populated based on the export log in these cases.
+  to get populated based on the export log in these cases.  
+
+  This needs a (local) record of what treeish the (local) export db
+  was last updated for, which is updated at the same time as the export log. 
+  One way to record that would be as a git ref. (Which may also help
+  for tracking exports of eg the master branch, see below.)
+
+  When the export log contains a different treeish than the local
+  record, the export was updated in another repository, and so the
+  export db needs to be updated.
+
+  Updating the export db could diff the last exported treeish with the
+  logged treeish. Add/delete exported files from the database to get
+  it to the same state as the remote database.
+  But, removeKey from an export makes the diff approach problimatic;
+  see below.
+
+* removeKey from an export is problimatic in distributed context
+
+  A file can be removed from an export via removeKey,
+  which updates the export db and location log, but does not update
+  the export log. This is problimatic when multiple repos are updating
+  an export.
+
+  1. In repo A, file F with content K is exported
+  2. In repo B, file F with content K' is exported, since F changed in the
+     exported treeish.
+  3. In repo A, file F is removed from the export, which results in
+     K being removed from the location log for the export.
+
+  Did #3 happen before or after #2?  
+  If #3 occurred before #2, then K' is present in the export
+  and the location log is correct.  
+  If #3 occurred after #2, then K' was accidentially removed
+  from the export, and the location log is now wrong.
+
+  Is there any reason to allow removeKey from an export?
+  Why would someone want to drop a single file from an export?
+  Why not remove the file from a tree, and export the new tree?
+
+  (Alternatively, removeKey could itself update the exported tree,
+  removing the file from it, and update the export log accordingly.
+  This would avoid the problem. But that's complication and it would be
+  rather slow and bloat the git repo with a lot of intermediate trees
+  when dropping multiple keys.)
+
+* git-annex sync to export and export tracking branch
+
+  This needs a way to configure an export tracking branch.
+  Eg, `git annex export --tracking master --to myexport`
+  
+  (There should only be one tracking branch per export remote.)
+  
+  Then running `git annex sync --content` would update the export with
+  any changes to master.
+
+  How to record the export tracking branch? It could be stored
+  as refs/remotes/myexport/master. This says that the master branch
+  is being exported to myexport, and the ref points to the last treeish
+  that was exported. 
+  
+  But.. master:subdir is a valid treeish, referring to the subdir
+  of the current master tree. This is a useful thing to want to export.
+  But, that's not a legal ref name. So, perhaps better to record
+  the export tracking branch some other way. Perhaps in git config?
+
 * Support export in the assistant (when eg setting up a S3 special remote).
-  Would need git-annex sync to export to the master tree?
+
   This is similar to the little-used preferreddir= preferred content
-  setting and the "public" repository group.
+  setting and the "public" repository group. The assistant uses
+  those for IA, which could be replaced with setting up an export
+  tracking branch.
 
 Low priority:
 
