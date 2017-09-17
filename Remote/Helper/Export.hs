@@ -117,20 +117,15 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 						warning $ "exported content cannot be verified due to using the " ++ formatKeyVariety (keyVariety k) ++ " backend"
 						return False
 			, retrieveKeyFileCheap = \_ _ _ -> return False
-			-- Remove all files a key was exported to.
-			, removeKey = \k -> do
-				locs <- liftIO $ getExportLocation db k
-				ea <- exportActions r
-				oks <- forM locs $ \loc ->
-					ifM (removeExport ea k loc)
-						( do
-							liftIO $ do
-								removeExportLocation db k loc
-								flushDbQueue db
-							removeEmptyDirectories ea db loc [k]
-						, return False
-						)
-				return (and oks)
+			-- Removing a key from an export would need to
+			-- change the tree in the export log to not include
+			-- the file. Otherwise, conflicts when removing
+			-- files would not be dealt with correctly.
+			-- There does not seem to be a good use case for
+			-- removing a key from an export in any case.
+			, removeKey = \_k -> do
+				warning "dropping content from an export is not supported; use `git annex export` to export a tree that lacks the files you want to remove"
+				return False
 			-- Can't lock content on exports, since they're
 			-- not key/value stores, and someone else could
 			-- change what's exported to a file at any time.
