@@ -27,7 +27,6 @@ import Annex.LockFile
 import Logs.Location
 import Logs.Export
 import Database.Export
-import Remote.Helper.Export
 import Messages.Progress
 import Utility.Tmp
 
@@ -129,7 +128,7 @@ seek' o r = do
 					(\diff -> startUnexport r ea db (Git.DiffTree.file diff) (unexportboth diff))
 					oldtreesha new
 			updateExportTree db emptyTree new
-	liftIO $ recordDataSource db new
+	liftIO $ recordExportTreeCurrent db new
 
 	-- Waiting until now to record the export guarantees that,
 	-- if this export is interrupted, there are no files left over
@@ -312,3 +311,28 @@ cleanupRename ea db ek src dest = do
 	if exportDirectories src /= exportDirectories dest
 		then removeEmptyDirectories ea db src [asKey ek]
 		else return True
+
+-- | Remove empty directories from the export. Call after removing an
+-- exported file, and after calling removeExportLocation and flushing the
+-- database.
+removeEmptyDirectories :: ExportActions Annex -> ExportHandle -> ExportLocation -> [Key] -> Annex Bool
+removeEmptyDirectories ea db loc ks
+	| null (exportDirectories loc) = return True
+	| otherwise = case removeExportDirectory ea of
+		Nothing -> return True
+		Just removeexportdirectory -> do
+			ok <- allM (go removeexportdirectory) 
+				(reverse (exportDirectories loc))
+			unless ok $ liftIO $ do
+				-- Add location back to export database, 
+				-- so this is tried again next time.
+				forM_ ks $ \k ->
+					addExportedLocation db k loc
+				flushDbQueue db
+			return ok
+  where
+	go removeexportdirectory d = 
+		ifM (liftIO $ isExportDirectoryEmpty db d)
+			( removeexportdirectory d
+			, return True
+			)

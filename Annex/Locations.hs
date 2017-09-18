@@ -303,7 +303,7 @@ gitAnnexExportDbDir u r = gitAnnexExportDir u r </> "db"
 
 {- Lock file for export state for a special remote. -}
 gitAnnexExportLock :: UUID -> Git.Repo -> FilePath
-gitAnnexExportLock u r = gitAnnexExportDir u r ++ ".lck"
+gitAnnexExportLock u r = gitAnnexExportDbDir u r ++ ".lck"
 
 {- .git/annex/schedulestate is used to store information about when
  - scheduled jobs were last run. -}

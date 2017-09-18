@@ -15,21 +15,21 @@ module Database.Export (
 	openDb,
 	closeDb,
 	flushDbQueue,
-	recordDataSource,
-	getDataSource,
 	addExportedLocation,
 	removeExportedLocation,
 	getExportedLocation,
 	isExportDirectoryEmpty,
+	getExportTreeCurrent,
+	recordExportTreeCurrent,
 	getExportTree,
 	addExportTree,
 	removeExportTree,
 	updateExportTree,
 	updateExportTree',
 	ExportedId,
-	ExportTreeId,
 	ExportedDirectoryId,
-	DataSourceId,
+	ExportTreeId,
+	ExportTreeCurrentId,
 ) where
 
 import Database.Types
@@ -50,29 +50,33 @@ import Database.Esqueleto hiding (Key)
 newtype ExportHandle = ExportHandle H.DbQueue
 
 share [mkPersist sqlSettings, mkMigrate "migrateExport"] [persistLowerCase|
--- Files that have been exported to the remote.
+-- Files that have been exported to the remote and are present on it.
 Exported
   key IKey
   file SFilePath
   ExportedIndex key file
--- The tree that has been exported to the remote. 
--- Not all of these files are necessarily present on the remote yet.
-ExportTree
-  key IKey
-  file SFilePath
-  ExportTreeIndex key file
 -- Directories that exist on the remote, and the files that are in them.
 ExportedDirectory
   subdir SFilePath
   file SFilePath
   ExportedDirectoryIndex subdir file
--- Record of what tree the current database content comes from.
-DataSource
+-- The content of the tree that has been exported to the remote.
+-- Not all of these files are necessarily present on the remote yet.
+ExportTree
+  key IKey
+  file SFilePath
+  ExportTreeIndex key file
+-- The tree stored in ExportTree
+ExportTreeCurrent
   tree SRef
   UniqueTree tree
 |]
 
-{- Opens the database, creating it if it doesn't exist yet. -}
+{- Opens the database, creating it if it doesn't exist yet.
+ -
+ - Only a single process should write to the export at a time, so guard
+ - any writes with the gitAnnexExportLock.
+ -}
 openDb :: UUID -> Annex ExportHandle
 openDb u = do
 	dbdir <- fromRepo (gitAnnexExportDbDir u)
@@ -97,19 +101,19 @@ queueDb (ExportHandle h) = H.queueDb h checkcommit
 flushDbQueue :: ExportHandle -> IO ()
 flushDbQueue (ExportHandle h) = H.flushDbQueue h
 
-recordDataSource :: ExportHandle -> Sha -> IO ()
-recordDataSource h s = queueDb h $ do
+recordExportTreeCurrent :: ExportHandle -> Sha -> IO ()
+recordExportTreeCurrent h s = queueDb h $ do
 	delete $ from $ \r -> do
-		where_ (r ^. DataSourceTree ==. r ^. DataSourceTree)
-	void $ insertUnique $ DataSource (toSRef s)
+		where_ (r ^. ExportTreeCurrentTree ==. r ^. ExportTreeCurrentTree)
+	void $ insertUnique $ ExportTreeCurrent $ toSRef s
 
-getDataSource :: ExportHandle -> IO (Maybe Sha)
-getDataSource (ExportHandle h) = H.queryDbQueue h $ do
+getExportTreeCurrent :: ExportHandle -> IO (Maybe Sha)
+getExportTreeCurrent (ExportHandle h) = H.queryDbQueue h $ do
 	l <- select $ from $ \r -> do
-		where_ (r ^. DataSourceTree ==. r ^. DataSourceTree)
-		return (r ^. DataSourceTree)
+		where_ (r ^. ExportTreeCurrentTree ==. r ^. ExportTreeCurrentTree)
+		return (r ^. ExportTreeCurrentTree)
 	case l of
-		(s:[]) -> return (Just (fromSRef (unValue s)))
+		(s:[]) -> return $ Just $ fromSRef $ unValue s
 		_ -> return Nothing
 
 addExportedLocation :: ExportHandle -> Key -> ExportLocation -> IO ()
@@ -167,7 +171,7 @@ getExportTree (ExportHandle h) k = H.queryDbQueue h $ do
 
 addExportTree :: ExportHandle -> Key -> ExportLocation -> IO ()
 addExportTree h k loc = queueDb h $
-	void $ insertUnique $ Exported ik ef
+	void $ insertUnique $ ExportTree ik ef
   where
 	ik = toIKey k
 	ef = toSFilePath (fromExportLocation loc)

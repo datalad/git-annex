@@ -12,13 +12,16 @@ module Remote.Helper.Export where
 import Annex.Common
 import Types.Remote
 import Types.Backend
-import Types.Export
 import Types.Key
 import Backend
 import Remote.Helper.Encryptable (isEncrypted)
 import Database.Export
+import Logs.Export
+import Annex.LockFile
+import Git.Sha
 
 import qualified Data.Map as M
+import Control.Concurrent.STM
 
 -- | Use for remotes that do not support exports.
 class HasExportUnsupported a where
@@ -89,6 +92,33 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 		}
 	isexport = do
 		db <- openDb (uuid r)
+
+		updateflag <- liftIO newEmptyTMVarIO
+		let updateonce = liftIO $ atomically $
+			ifM (isEmptyTMVar updateflag)
+				( do
+					putTMVar updateflag ()
+					return True
+				, return False
+				)
+		
+		-- Get export locations for a key. Checks once
+		-- if the export log is different than the database and
+		-- updates the database, to notice when an export has been
+		-- updated from another repository.
+		let getexportlocs = \k -> do
+			whenM updateonce $ withExclusiveLock (gitAnnexExportLock (uuid r)) $ do
+				old <- liftIO $ fromMaybe emptyTree
+					<$> getExportTreeCurrent db
+				l <- getExport (uuid r)
+				case map exportedTreeish l of
+					(new:[]) | new /= old -> do
+						updateExportTree db old new
+						liftIO $ recordExportTreeCurrent db new
+						liftIO $ flushDbQueue db
+					_ -> return ()
+			liftIO $ getExportTree db k
+
 		return $ r
 			-- Storing a key on an export could be implemented,
 			-- but it would perform unncessary work
@@ -104,7 +134,7 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 			, retrieveKeyFile = \k _af dest p -> unVerified $
 				if maybe False (isJust . verifyKeyContent) (maybeLookupBackendVariety (keyVariety k))
 					then do
-						locs <- liftIO $ getExportTree db k
+						locs <- getexportlocs k
 						case locs of
 							[] -> do
 								warning "unknown export location"
@@ -135,34 +165,9 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 			, checkPresent = \k -> do
 				ea <- exportActions r
 				anyM (checkPresentExport ea k)
-					=<< liftIO (getExportTree db k)
+					=<< getexportlocs k
 			, mkUnavailable = return Nothing
 			, getInfo = do
 				is <- getInfo r
 				return (is++[("export", "yes")])
 			}
-
--- | Remove empty directories from the export. Call after removing an
--- exported file, and after calling removeExportLocation and flushing the
--- database.
-removeEmptyDirectories :: ExportActions Annex -> ExportHandle -> ExportLocation -> [Key] -> Annex Bool
-removeEmptyDirectories ea db loc ks
-	| null (exportDirectories loc) = return True
-	| otherwise = case removeExportDirectory ea of
-		Nothing -> return True
-		Just removeexportdirectory -> do
-			ok <- allM (go removeexportdirectory) 
-				(reverse (exportDirectories loc))
-			unless ok $ liftIO $ do
-				-- Add location back to export database, 
-				-- so this is tried again next time.
-				forM_ ks $ \k ->
-					addExportedLocation db k loc
-				flushDbQueue db
-			return ok
-  where
-	go removeexportdirectory d = 
-		ifM (liftIO $ isExportDirectoryEmpty db d)
-			( removeexportdirectory d
-			, return True
-			)
