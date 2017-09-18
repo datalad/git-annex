@@ -50,12 +50,6 @@ tree.
 If an export is interrupted, running it again should resume where it left
 off.
 
-It would also be nice to have a way to say, "I want to export the master branch", 
-and have git-annex sync and the assistant automatically update the export.
-This could be done by recording the treeish in eg, refs/remotes/myexport/HEAD.
-git-annex export could do this by default (if the user doesn't want the export
-to track the branch, they could instead export a tree or a tag).
-
 ## updating an export
 
 The user can at any time re-run git-annex export with a new treeish
@@ -75,6 +69,26 @@ that swap names.
 
 If the special remote supports copying files, that would also make some
 updates more efficient.
+
+## tracking exports
+
+This lets the user say, "I want to export the master branch", 
+and have git-annex sync and the assistant automatically update the export
+when master changes.
+
+git-annex export could do this by default (if the user doesn't want the
+export to track the branch, they could instead export a tree or a tag). Or
+it could be a --tracking parameter.
+
+How to record the export tracking branch? It could be stored
+as refs/remotes/myexport/master. This says that the master branch
+is being exported to myexport, and the ref points to the last treeish
+that was exported.
+
+But.. master:subdir is a valid treeish, referring to the subdir
+of the current master tree. This is a useful thing to want to export.
+But, that's not a legal ref name. So, perhaps better to record
+the export tracking branch some other way. Perhaps in git config?
 
 ## changes to special remote interface
 

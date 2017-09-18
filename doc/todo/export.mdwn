@@ -28,8 +28,7 @@ Work is in progress. Todo list:
 
   This needs a (local) record of what treeish the (local) export db
   was last updated for, which is updated at the same time as the export log. 
-  One way to record that would be as a git ref. (Which may also help
-  for tracking exports of eg the master branch, see below.)
+  One way to record that would be as a git ref.
 
   When the export log contains a different treeish than the local
   record, the export was updated in another repository, and so the
@@ -39,27 +38,10 @@ Work is in progress. Todo list:
   logged treeish. Add/delete exported files from the database to get
   it to the same state as the remote database.
 
-* git-annex sync to export and export tracking branch
+* tracking exports
 
-  This needs a way to configure an export tracking branch.
-  Eg, `git annex export --tracking master --to myexport`
-  
-  (There should only be one tracking branch per export remote.)
-  
-  Then running `git annex sync --content` would update the export with
-  any changes to master.
-
-  How to record the export tracking branch? It could be stored
-  as refs/remotes/myexport/master. This says that the master branch
-  is being exported to myexport, and the ref points to the last treeish
-  that was exported. 
-  
-  But.. master:subdir is a valid treeish, referring to the subdir
-  of the current master tree. This is a useful thing to want to export.
-  But, that's not a legal ref name. So, perhaps better to record
-  the export tracking branch some other way. Perhaps in git config?
-
-* Support export in the assistant (when eg setting up a S3 special remote).
+* Support configuring export in the assistant
+  (when eg setting up a S3 special remote).
 
   This is similar to the little-used preferreddir= preferred content
   setting and the "public" repository group. The assistant uses
