@@ -315,3 +315,38 @@ G is missing so gets uploaded.
 So, this works, as long as "delete all files that differ" means it
 deletes both old and new files. And as long as conflict resolution does not
 itself stash away files in the temp name for later renaming.
+
+## dropping from exports and copying to exports
+
+It might be nice for `git annex drop $file --from myexport` and
+`git annex copy $myfile --to export` to work. However, there are some
+very difficult issues in supporting those, and they don't really
+seem necessary to use exports. Re-running `git annex export`
+to resume an export handles all the cases that copying to an export
+would need to. And, deleting a file from a tree and exporting the new tree
+is the thing to do if a file no longer should be exported.
+
+Here's an example of the kind of problem supporting these needs to deal with:
+
+1. In repo A, file F with content K is exported
+2. In repo B, file F with content K' is exported, since F changed in the
+   exported treeish.
+3. In repo A, file F is removed from the export, which results in
+   K being removed from the location log for the export.
+
+But... did #3 happen before or after #2?
+If #3 occurred before #2, then K' is present in the export
+and the location log is correct.
+If #3 occurred after #2, and A and B's git-annex branches
+were not synced, then K' was accidentially removed
+from the export, and the location log is now wrong.
+
+Is there any reason to allow removeKey from an export?
+Why would someone want to drop a single file from an export?
+Why not remove the file from a tree, and export the new tree?
+
+(Alternatively, removeKey could itself update the exported tree,
+removing the file from it, and update the export log accordingly.
+This would avoid the problem. But that's complication and it would be
+rather slow and bloat the git repo with a lot of intermediate trees
+when dropping multiple keys.)
