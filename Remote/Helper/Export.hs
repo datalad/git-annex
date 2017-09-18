@@ -90,12 +90,11 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 	isexport = do
 		db <- openDb (uuid r)
 		return $ r
-			-- Storing a key on an export would need a way to
-			-- look up the file(s) that the currently exported
-			-- tree uses for a key; there's not currently an
-			-- inexpensive way to do that (getExportedLocation
-			-- only finds files that have been stored on the
-			-- export already).
+			-- Storing a key on an export could be implemented,
+			-- but it would perform unncessary work
+			-- when another repository has already stored the
+			-- key, and the local repository does not know
+			-- about it. To avoid unnecessary costs, don't do it.
 			{ storeKey = \_ _ _ -> do
 				warning "remote is configured with exporttree=yes; use `git-annex export` to store content on it"
 				return False
@@ -105,7 +104,7 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 			, retrieveKeyFile = \k _af dest p -> unVerified $
 				if maybe False (isJust . verifyKeyContent) (maybeLookupBackendVariety (keyVariety k))
 					then do
-						locs <- liftIO $ getExportedLocation db k
+						locs <- liftIO $ getExportTree db k
 						case locs of
 							[] -> do
 								warning "unknown export location"
@@ -136,7 +135,7 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 			, checkPresent = \k -> do
 				ea <- exportActions r
 				anyM (checkPresentExport ea k)
-					=<< liftIO (getExportedLocation db k)
+					=<< liftIO (getExportTree db k)
 			, mkUnavailable = return Nothing
 			, getInfo = do
 				is <- getInfo r
