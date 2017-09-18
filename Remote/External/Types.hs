@@ -358,9 +358,9 @@ instance Proto.Serializable URI where
 	deserialize = parseURI
 
 instance Proto.Serializable ExportLocation where
-	serialize (ExportLocation loc) = loc
-	deserialize = Just . ExportLocation
+	serialize = fromExportLocation
+	deserialize = Just . mkExportLocation
 
 instance Proto.Serializable ExportDirectory where
-	serialize (ExportDirectory loc) = loc
-	deserialize = Just . ExportDirectory
+	serialize = fromExportDirectory
+	deserialize = Just . mkExportDirectory

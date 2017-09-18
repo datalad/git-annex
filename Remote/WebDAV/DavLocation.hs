@@ -47,7 +47,7 @@ keyLocation :: Key -> DavLocation
 keyLocation k = keyDir k ++ keyFile k
 
 exportLocation :: ExportLocation -> DavLocation
-exportLocation (ExportLocation f) = f
+exportLocation = fromExportLocation
 
 {- Where we store temporary data for a key as it's being uploaded. -}
 keyTmpLocation :: Key -> DavLocation

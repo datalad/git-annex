@@ -21,6 +21,7 @@ import Git.Sha
 import Types.Key
 import Types.Remote
 import Types.Export
+import Annex.Export
 import Annex.Content
 import Annex.CatFile
 import Annex.LockFile
@@ -52,28 +53,6 @@ optParser _ = ExportOptions
 	parsetreeish = argument str
 		( metavar paramTreeish
 		)
-
--- An export includes both annexed files and files stored in git.
--- For the latter, a SHA1 key is synthesized.
-data ExportKey = AnnexKey Key | GitKey Key
-	deriving (Show, Eq, Ord)
-
-asKey :: ExportKey -> Key
-asKey (AnnexKey k) = k
-asKey (GitKey k) = k
-
-exportKey :: Git.Sha -> Annex ExportKey
-exportKey sha = mk <$> catKey sha
-  where
-	mk (Just k) = AnnexKey k
-	mk Nothing = GitKey $ Key
-		{ keyName = show sha
-		, keyVariety = SHA1Key (HasExt False)
-		, keySize = Nothing
-		, keyMtime = Nothing
-		, keyChunkSize = Nothing
-		, keyChunkNum = Nothing
-		}
 
 -- To handle renames which swap files, the exported file is first renamed
 -- to a stable temporary name based on the key.
@@ -153,7 +132,8 @@ seek' o r = do
 	-- if this export is interrupted, there are no files left over
 	-- from a previous export, that are not part of this export.
 	c <- Annex.getState Annex.errcounter
-	when (c == 0) $
+	when (c == 0) $ do
+		liftIO $ recordDataSource db new
 		recordExport (uuid r) $ ExportChange
 			{ oldTreeish = map exportedTreeish old
 			, newTreeish = new
@@ -184,24 +164,24 @@ mkDiffMap old new = do
   where
 	combinedm (srca, dsta) (srcb, dstb) = (srca <|> srcb, dsta <|> dstb)
 	mkdm i = do
-		srcek <- getk (Git.DiffTree.srcsha i)
-		dstek <- getk (Git.DiffTree.dstsha i)
+		srcek <- getek (Git.DiffTree.srcsha i)
+		dstek <- getek (Git.DiffTree.dstsha i)
 		return $ catMaybes
 			[ (, (Just (Git.DiffTree.file i), Nothing)) <$> srcek
 			, (, (Nothing, Just (Git.DiffTree.file i))) <$> dstek
 			]
-	getk sha
+	getek sha
 		| sha == nullSha = return Nothing
 		| otherwise = Just <$> exportKey sha
 
 startExport :: Remote -> ExportActions Annex -> ExportHandle -> Git.LsTree.TreeItem -> CommandStart
 startExport r ea db ti = do
 	ek <- exportKey (Git.LsTree.sha ti)
-	stopUnless (liftIO $ notElem loc <$> getExportLocation db (asKey ek)) $ do
+	stopUnless (liftIO $ notElem loc <$> getExportedLocation db (asKey ek)) $ do
 		showStart "export" f
 		next $ performExport r ea db ek (Git.LsTree.sha ti) loc
   where
-	loc = ExportLocation $ toInternalGitPath f
+	loc = mkExportLocation f
 	f = getTopFilePath $ Git.LsTree.file ti
 
 performExport :: Remote -> ExportActions Annex -> ExportHandle -> ExportKey -> Sha -> ExportLocation -> CommandPerform
@@ -231,7 +211,7 @@ performExport r ea db ek contentsha loc = do
 
 cleanupExport :: Remote -> ExportHandle -> ExportKey -> ExportLocation -> CommandCleanup
 cleanupExport r db ek loc = do
-	liftIO $ addExportLocation db (asKey ek) loc
+	liftIO $ addExportedLocation db (asKey ek) loc
 	logChange (asKey ek) (uuid r) InfoPresent
 	return True
 
@@ -244,7 +224,7 @@ startUnexport r ea db f shas = do
 			showStart "unexport" f'
 			next $ performUnexport r ea db eks loc
   where
-	loc = ExportLocation $ toInternalGitPath f'
+	loc = mkExportLocation f'
 	f' = getTopFilePath f
 
 startUnexport' :: Remote -> ExportActions Annex -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
@@ -252,7 +232,7 @@ startUnexport' r ea db f ek = do
 	showStart "unexport" f'
 	next $ performUnexport r ea db [ek] loc
   where
-	loc = ExportLocation $ toInternalGitPath f'
+	loc = mkExportLocation f'
 	f' = getTopFilePath f
 
 performUnexport :: Remote -> ExportActions Annex -> ExportHandle -> [ExportKey] -> ExportLocation -> CommandPerform
@@ -266,11 +246,11 @@ cleanupUnexport :: Remote -> ExportActions Annex -> ExportHandle -> [ExportKey] 
 cleanupUnexport r ea db eks loc = do
 	liftIO $ do
 		forM_ eks $ \ek ->
-			removeExportLocation db (asKey ek) loc
+			removeExportedLocation db (asKey ek) loc
 		flushDbQueue db
 
 	remaininglocs <- liftIO $ 
-		concat <$> forM eks (\ek -> getExportLocation db (asKey ek))
+		concat <$> forM eks (\ek -> getExportedLocation db (asKey ek))
 	when (null remaininglocs) $
 		forM_ eks $ \ek ->
 			logChange (asKey ek) (uuid r) InfoMissing
@@ -282,31 +262,31 @@ startRecoverIncomplete r ea db sha oldf
 	| sha == nullSha = stop
 	| otherwise = do
 		ek <- exportKey sha
-		let loc@(ExportLocation f) = exportTempName ek
-		showStart "unexport" f
-		liftIO $ removeExportLocation db (asKey ek) oldloc
+		let loc = exportTempName ek
+		showStart "unexport" (fromExportLocation f)
+		liftIO $ removeExportedLocation db (asKey ek) oldloc
 		next $ performUnexport r ea db [ek] loc
   where
-	oldloc = ExportLocation $ toInternalGitPath oldf'
+	oldloc = mkExportLocation oldf'
 	oldf' = getTopFilePath oldf
 
 startMoveToTempName :: Remote -> ExportActions Annex -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
 startMoveToTempName r ea db f ek = do
-	let tmploc@(ExportLocation tmpf) = exportTempName ek
-	showStart "rename" (f' ++ " -> " ++ tmpf)
+	showStart "rename" (f' ++ " -> " ++ fromExportLocation tmploc)
 	next $ performRename r ea db ek loc tmploc
   where
-	loc = ExportLocation $ toInternalGitPath f'
+	loc = mkExportLocation f'
 	f' = getTopFilePath f
+	tmploc = exportTempName ek
 
 startMoveFromTempName :: Remote -> ExportActions Annex -> ExportHandle -> ExportKey -> TopFilePath -> CommandStart
 startMoveFromTempName r ea db ek f = do
-	let tmploc@(ExportLocation tmpf) = exportTempName ek
-	stopUnless (liftIO $ elem tmploc <$> getExportLocation db (asKey ek)) $ do
-		showStart "rename" (tmpf ++ " -> " ++ f')
+	let tmploc = exportTempName ek
+	stopUnless (liftIO $ elem tmploc <$> getExportedLocation db (asKey ek)) $ do
+		showStart "rename" (exportLocation tmploc ++ " -> " ++ f')
 		next $ performRename r ea db ek tmploc loc
   where
-	loc = ExportLocation $ toInternalGitPath f'
+	loc = mkExportLocation f'
 	f' = getTopFilePath f
 
 performRename :: Remote -> ExportActions Annex -> ExportHandle -> ExportKey -> ExportLocation -> ExportLocation -> CommandPerform
@@ -323,8 +303,8 @@ performRename r ea db ek src dest = do
 cleanupRename :: ExportActions Annex -> ExportHandle -> ExportKey -> ExportLocation -> ExportLocation -> CommandCleanup
 cleanupRename ea db ek src dest = do
 	liftIO $ do
-		removeExportLocation db (asKey ek) src
-		addExportLocation db (asKey ek) dest
+		removeExportedLocation db (asKey ek) src
+		addExportedLocation db (asKey ek) dest
 		flushDbQueue db
 	if exportDirectories src /= exportDirectories dest
 		then removeEmptyDirectories ea db src [asKey ek]

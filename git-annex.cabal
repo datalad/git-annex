@@ -506,6 +506,7 @@ Executable git-annex
     Annex.Direct
     Annex.Drop
     Annex.Environment
+    Annex.Export
     Annex.FileMatcher
     Annex.Fixup
     Annex.GitOverlay

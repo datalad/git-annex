@@ -204,8 +204,8 @@ removeExportDav mh _k loc = runExport mh $ \_dav ->
 	removeHelper (exportLocation loc)
 
 removeExportDirectoryDav :: Maybe DavHandle -> ExportDirectory -> Annex Bool
-removeExportDirectoryDav mh (ExportDirectory dir) = runExport mh $ \_dav ->
-	safely (inLocation dir delContentM)
+removeExportDirectoryDav mh dir = runExport mh $ \_dav ->
+	safely (inLocation (fromExportDirectory dir) delContentM)
 		>>= maybe (return False) (const $ return True)
 
 renameExportDav :: Maybe DavHandle -> Key -> ExportLocation -> ExportLocation -> Annex Bool

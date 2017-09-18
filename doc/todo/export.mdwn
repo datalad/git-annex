@@ -26,17 +26,29 @@ Work is in progress. Todo list:
   export database is not populated. So, seems that the export database needs
   to get populated based on the export log in these cases.  
 
-  This needs a (local) record of what tree the (local) export db
-  was last updated for, which is updated at the same time as the export log. 
-  One way to record that would be as a git ref.
+  This needs the db to contain a record of the data source,
+  the tree that most recently populated it.
 
-  When the export log contains a different tree than the local
-  record, the export was updated in another repository, and so the
+  When the export log contains a different tree than the data source,
+  the export was updated in another repository, and so the
   export db needs to be updated.
 
-  Updating the export db could diff the last exported treeish with the
+  Updating the export db could diff the data source with the 
   logged treeish. Add/delete exported files from the database to get
   it to the same state as the remote database.
+
+  When an export is incomplete, the database is in some
+  state in between the data source tree and the incompletely
+  exported tree. Diffing won't resolve this.
+
+  When to record the data source? If it's done at the same time the export
+  is recorded (as no longer incomplete) in the export log, all the files
+  have not yet been uploaded to the export, and the the database is not
+  fully updated to match the data source.
+
+  Seems that we need a separate table, to be able to look up filenames
+  from the export tree by key. That table can be fully populated,
+  before the Exported table is.
 
 * tracking exports
 

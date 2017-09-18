@@ -615,7 +615,7 @@ getBucketObject c = munge . key2file
 		_ -> getFilePrefix c ++ s
 
 getBucketExportLocation :: RemoteConfig -> ExportLocation -> FilePath
-getBucketExportLocation c (ExportLocation loc) = getFilePrefix c ++ loc
+getBucketExportLocation c loc = getFilePrefix c ++ fromExportLocation loc
 
 {- Internet Archive documentation limits filenames to a subset of ascii.
  - While other characters seem to work now, this entity encodes everything

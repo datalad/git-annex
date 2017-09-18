@@ -274,14 +274,14 @@ renameExportM d _k oldloc newloc = liftIO $ catchBoolIO $ do
 	dest = exportPath d newloc
 
 exportPath :: FilePath -> ExportLocation -> FilePath
-exportPath d (ExportLocation loc) = d </> loc
+exportPath d loc = d </> fromExportLocation loc
 
 {- Removes the ExportLocation directory and its parents, so long as
  - they're empty, up to but not including the topdir. -}
 removeExportLocation :: FilePath -> ExportLocation -> IO ()
-removeExportLocation topdir (ExportLocation loc) = go (Just loc) (Right ())
+removeExportLocation topdir loc = go (Just $ fromExportLocation loc) (Right ())
   where
 	go _ (Left _e) = return ()
 	go Nothing _ = return ()
 	go (Just loc') _ = go (upFrom loc')
-		=<< tryIO (removeDirectory $ exportPath topdir (ExportLocation loc'))
+		=<< tryIO (removeDirectory $ exportPath topdir (mkExportLocation loc'))

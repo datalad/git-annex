@@ -93,7 +93,7 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 			-- Storing a key on an export would need a way to
 			-- look up the file(s) that the currently exported
 			-- tree uses for a key; there's not currently an
-			-- inexpensive way to do that (getExportLocation
+			-- inexpensive way to do that (getExportedLocation
 			-- only finds files that have been stored on the
 			-- export already).
 			{ storeKey = \_ _ _ -> do
@@ -105,7 +105,7 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 			, retrieveKeyFile = \k _af dest p -> unVerified $
 				if maybe False (isJust . verifyKeyContent) (maybeLookupBackendVariety (keyVariety k))
 					then do
-						locs <- liftIO $ getExportLocation db k
+						locs <- liftIO $ getExportedLocation db k
 						case locs of
 							[] -> do
 								warning "unknown export location"
@@ -136,7 +136,7 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 			, checkPresent = \k -> do
 				ea <- exportActions r
 				anyM (checkPresentExport ea k)
-					=<< liftIO (getExportLocation db k)
+					=<< liftIO (getExportedLocation db k)
 			, mkUnavailable = return Nothing
 			, getInfo = do
 				is <- getInfo r
@@ -155,10 +155,10 @@ removeEmptyDirectories ea db loc ks
 			ok <- allM (go removeexportdirectory) 
 				(reverse (exportDirectories loc))
 			unless ok $ liftIO $ do
-				-- Add back to export database, so this is
-				-- tried again next time.
+				-- Add location back to export database, 
+				-- so this is tried again next time.
 				forM_ ks $ \k ->
-					addExportLocation db k loc
+					addExportedLocation db k loc
 				flushDbQueue db
 			return ok
   where
