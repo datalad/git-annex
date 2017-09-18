@@ -1,0 +1,21 @@
+I am looking for a short cut for my workflow where I sync a (somewhat) central repo and a few client repos.
+
+So, I sync upstream 
+
+    laptop > git annex sync --content
+
+and ssh to the central repo and run another sync
+
+    server > git annex sync
+
+to bring it up to date so that I can sync/pull it again from my desktop.
+
+Is there an easy way to script/do both steps in one for different protocols? E.g., update a ssh repo and a USB-drive repo when syncing on the local one?
+
+At the moment, I would try to check for all known remotes
+
+    > git remote -v
+
+and depending on the protocol ssh/cd into each for triggering a sync.
+
+
