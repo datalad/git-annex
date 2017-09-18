@@ -23,6 +23,7 @@ import Types.Remote
 import Types.Export
 import Annex.Content
 import Annex.CatFile
+import Annex.LockFile
 import Logs.Location
 import Logs.Export
 import Database.Export
@@ -85,7 +86,10 @@ seek o = do
 	r <- getParsed (exportRemote o)
 	unlessM (isExportSupported r) $
 		giveup "That remote does not support exports."
+	withExclusiveLock (gitAnnexExportLock (uuid r)) (seek' o r)
 
+seek' :: ExportOptions -> Remote -> CommandSeek
+seek' o r = do
 	new <- fromMaybe (giveup "unknown tree") <$>
 		-- Dereference the tree pointed to by the branch, commit,
 		-- or tag.

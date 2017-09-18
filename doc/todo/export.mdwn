@@ -26,11 +26,11 @@ Work is in progress. Todo list:
   export database is not populated. So, seems that the export database needs
   to get populated based on the export log in these cases.  
 
-  This needs a (local) record of what treeish the (local) export db
+  This needs a (local) record of what tree the (local) export db
   was last updated for, which is updated at the same time as the export log. 
   One way to record that would be as a git ref.
 
-  When the export log contains a different treeish than the local
+  When the export log contains a different tree than the local
   record, the export was updated in another repository, and so the
   export db needs to be updated.
 
