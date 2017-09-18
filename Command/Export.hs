@@ -18,7 +18,6 @@ import qualified Git.Ref
 import Git.Types
 import Git.FilePath
 import Git.Sha
-import Types.Key
 import Types.Remote
 import Types.Export
 import Annex.Export
@@ -57,7 +56,7 @@ optParser _ = ExportOptions
 -- To handle renames which swap files, the exported file is first renamed
 -- to a stable temporary name based on the key.
 exportTempName :: ExportKey -> ExportLocation
-exportTempName ek = ExportLocation $ 
+exportTempName ek = mkExportLocation $ 
 	".git-annex-tmp-content-" ++ key2file (asKey (ek))
 
 seek :: ExportOptions -> CommandSeek
@@ -91,14 +90,16 @@ seek' o r = do
 	-- changed files in the export. After this, every file that remains
 	-- in the export will have the content from the new treeish.
 	-- 
-	-- (Also, when there was an export conflict, this resolves it.)
+	-- When there was an export conflict, this resolves it.
+	--
+	-- The ExportTree is also updated here to reflect the new tree.
 	case map exportedTreeish old of
-		[] -> return ()
+		[] -> updateExportTree db emptyTree new
 		[oldtreesha] -> do
-			diffmap <- mkDiffMap oldtreesha new
+			diffmap <- mkDiffMap oldtreesha new db
 			let seekdiffmap a = seekActions $ pure $ map a (M.toList diffmap)
 			-- Rename old files to temp, or delete.
-			seekdiffmap $ \(ek, (moldf, mnewf)) ->
+			seekdiffmap $ \(ek, (moldf, mnewf)) -> do
 				case (moldf, mnewf) of
 					(Just oldf, Just _newf) ->
 						startMoveToTempName r ea db oldf ek
@@ -127,13 +128,14 @@ seek' o r = do
 				mapdiff
 					(\diff -> startUnexport r ea db (Git.DiffTree.file diff) (unexportboth diff))
 					oldtreesha new
+			updateExportTree db emptyTree new
+	liftIO $ recordDataSource db new
 
 	-- Waiting until now to record the export guarantees that,
 	-- if this export is interrupted, there are no files left over
 	-- from a previous export, that are not part of this export.
 	c <- Annex.getState Annex.errcounter
 	when (c == 0) $ do
-		liftIO $ recordDataSource db new
 		recordExport (uuid r) $ ExportChange
 			{ oldTreeish = map exportedTreeish old
 			, newTreeish = new
@@ -155,8 +157,8 @@ seek' o r = do
 -- Map of old and new filenames for each changed ExportKey in a diff.
 type DiffMap = M.Map ExportKey (Maybe TopFilePath, Maybe TopFilePath)
 
-mkDiffMap :: Git.Ref -> Git.Ref -> Annex DiffMap
-mkDiffMap old new = do
+mkDiffMap :: Git.Ref -> Git.Ref -> ExportHandle -> Annex DiffMap
+mkDiffMap old new db = do
 	(diff, cleanup) <- inRepo $ Git.DiffTree.diffTreeRecursive old new
 	diffmap <- M.fromListWith combinedm . concat <$> forM diff mkdm
 	void $ liftIO cleanup
@@ -166,6 +168,7 @@ mkDiffMap old new = do
 	mkdm i = do
 		srcek <- getek (Git.DiffTree.srcsha i)
 		dstek <- getek (Git.DiffTree.dstsha i)
+		updateExportTree' db srcek dstek i
 		return $ catMaybes
 			[ (, (Just (Git.DiffTree.file i), Nothing)) <$> srcek
 			, (, (Nothing, Just (Git.DiffTree.file i))) <$> dstek
@@ -263,7 +266,7 @@ startRecoverIncomplete r ea db sha oldf
 	| otherwise = do
 		ek <- exportKey sha
 		let loc = exportTempName ek
-		showStart "unexport" (fromExportLocation f)
+		showStart "unexport" (fromExportLocation loc)
 		liftIO $ removeExportedLocation db (asKey ek) oldloc
 		next $ performUnexport r ea db [ek] loc
   where
@@ -283,7 +286,7 @@ startMoveFromTempName :: Remote -> ExportActions Annex -> ExportHandle -> Export
 startMoveFromTempName r ea db ek f = do
 	let tmploc = exportTempName ek
 	stopUnless (liftIO $ elem tmploc <$> getExportedLocation db (asKey ek)) $ do
-		showStart "rename" (exportLocation tmploc ++ " -> " ++ f')
+		showStart "rename" (fromExportLocation tmploc ++ " -> " ++ f')
 		next $ performRename r ea db ek tmploc loc
   where
 	loc = mkExportLocation f'

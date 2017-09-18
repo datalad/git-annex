@@ -22,7 +22,10 @@ module Database.Export (
 	getExportedLocation,
 	isExportDirectoryEmpty,
 	getExportTree,
+	addExportTree,
+	removeExportTree,
 	updateExportTree,
+	updateExportTree',
 	ExportedId,
 	ExportTreeId,
 	ExportedDirectoryId,
@@ -183,18 +186,22 @@ updateExportTree h old new = do
 	(diff, cleanup) <- inRepo $
 		Git.DiffTree.diffTreeRecursive old new
 	forM_ diff $ \i -> do
-		let loc = mkExportLocation $ getTopFilePath $
-			Git.DiffTree.file i
 		srcek <- getek (Git.DiffTree.srcsha i)
-		case srcek of
-			Nothing -> return ()
-			Just k -> liftIO $ removeExportTree h (asKey k) loc
 		dstek <- getek (Git.DiffTree.dstsha i)
-		case dstek of
-			Nothing -> return ()
-			Just k -> liftIO $ addExportTree h (asKey k) loc
+		updateExportTree' h srcek dstek i
 	void $ liftIO cleanup
   where
 	getek sha
 		| sha == nullSha = return Nothing
 		| otherwise = Just <$> exportKey sha
+
+updateExportTree' :: ExportHandle -> Maybe ExportKey -> Maybe ExportKey -> Git.DiffTree.DiffTreeItem-> Annex ()
+updateExportTree' h srcek dstek i = do
+	case srcek of
+		Nothing -> return ()
+		Just k -> liftIO $ removeExportTree h (asKey k) loc
+	case dstek of
+		Nothing -> return ()
+		Just k -> liftIO $ addExportTree h (asKey k) loc
+  where
+	loc = mkExportLocation $ getTopFilePath $ Git.DiffTree.file i
