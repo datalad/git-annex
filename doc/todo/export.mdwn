@@ -17,9 +17,6 @@ there need to be a new interface in supported remotes?
 
 Work is in progress. Todo list:
 
-* bug: export db update does not reash disk after Remote.Helper.Export calls
-  updateExportTree. 
-
 * tracking exports
 
 * Support configuring export in the assistant

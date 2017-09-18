@@ -142,11 +142,15 @@ data Job
 	| CloseJob
 
 workerThread :: T.Text -> TableName -> MVar Job -> IO ()
-workerThread db tablename jobs =
-	catchNonAsync (runSqliteRobustly tablename db loop) showerr
+workerThread db tablename jobs = go
   where
-  	showerr e = hPutStrLn stderr $
-		"sqlite worker thread crashed: " ++ show e
+	go = do
+		v <- tryNonAsync (runSqliteRobustly tablename db loop)
+		case v of
+			Left e -> hPutStrLn stderr $
+				"sqlite worker thread crashed: " ++ show e
+			Right True -> go
+			Right False -> return ()
 	
 	getjob :: IO (Either BlockedIndefinitelyOnMVar Job)
 	getjob = try $ takeMVar jobs
@@ -157,15 +161,21 @@ workerThread db tablename jobs =
 			-- Exception is thrown when the MVar is garbage
 			-- collected, which means the whole DbHandle
 			-- is not used any longer. Shutdown cleanly.
-			Left BlockedIndefinitelyOnMVar -> return ()
-			Right CloseJob -> return ()
+			Left BlockedIndefinitelyOnMVar -> return False
+			Right CloseJob -> return False
 			Right (QueryJob a) -> a >> loop
-			Right (ChangeJob a) -> a >> loop
+			Right (ChangeJob a) -> do
+				a
+				-- Exit this sqlite transaction so the
+				-- database gets updated on disk.
+				return True
 			-- Change is run in a separate database connection
 			-- since sqlite only supports a single writer at a
 			-- time, and it may crash the database connection
 			-- that the write is made to.
-			Right (RobustChangeJob a) -> liftIO (a (runSqliteRobustly tablename db)) >> loop
+			Right (RobustChangeJob a) -> do
+				liftIO (a (runSqliteRobustly tablename db))
+				loop
 	
 -- like runSqlite, but calls settle on the raw sql Connection.
 runSqliteRobustly :: TableName -> T.Text -> (SqlPersistM a) -> IO a
