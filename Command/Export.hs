@@ -82,7 +82,8 @@ seek o = do
 		db <- openDb (uuid r)
 		ea <- exportActions r
 		changeExport r ea db new
-		void $ fillExport r ea db new
+		unlessM (Annex.getState Annex.fast) $
+			void $ fillExport r ea db new
 		closeDb db
 
 -- | Changes what's exported to the remote. Does not upload any new

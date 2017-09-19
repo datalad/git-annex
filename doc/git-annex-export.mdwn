@@ -50,6 +50,12 @@ And, git-annex will never trust an export to retain the content of a key.
   the branch. `git annex sync --content` and the git-annex assistant
   will update exports when it commits to the branch they are tracking.
 
+* `--fast`
+
+  This sets up an export of a tree, but avoids any expensive file uploads to
+  the remote. You can later run `git annex sync --content` to upload
+  the files to the export.
+
 # EXAMPLE
 
 	git annex initremote myexport type=directory directory=/mnt/myexport \
