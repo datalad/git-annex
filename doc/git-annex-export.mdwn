@@ -6,6 +6,8 @@ git-annex export - export content to a remote
 
 git annex export `treeish --to remote`
 
+git annex export `--tracking treeish --to remote`
+
 # DESCRIPTION
 
 Use this command to export a tree of files from a git-annex repository.
@@ -36,6 +38,18 @@ verification of content downloaded from an export. Some types of keys,
 that are not based on checksums, cannot be downloaded from an export.
 And, git-annex will never trust an export to retain the content of a key.
 
+# OPTIONS
+
+* `--to=remote`
+
+  Specify the special remote to export to.
+
+* `--tracking`
+
+  This makes the export track changes that are committed to
+  the branch. `git annex sync --content` and the git-annex assistant
+  will update exports when it commits to the branch they are tracking.
+
 # EXAMPLE
 
 	git annex initremote myexport type=directory directory=/mnt/myexport \
@@ -55,6 +69,10 @@ That updates /mnt/myexport to reflect the renamed file.
 
 That updates /mnt/myexport, to contain only the files in the "subdir"
 directory of the master branch.
+
+	git annex export --tracking master --to myexport
+
+That makes myexport track changes that are committed to the master branch.
 
 # EXPORT CONFLICTS
 
@@ -80,6 +98,8 @@ export`, it will detect the export conflict, and resolve it.
 [[git-annex]](1)
 
 [[git-annex-initremote]](1)
+
+[[git-annex-sync]](1)
 
 # AUTHOR
 

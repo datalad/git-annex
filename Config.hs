@@ -18,6 +18,7 @@ import Config.Cost
 import Config.DynamicConfig
 import Types.Availability
 import Git.Types
+import qualified Types.Remote as Remote
 
 type UnqualifiedConfigKey = String
 data ConfigKey = ConfigKey String
@@ -54,6 +55,9 @@ instance RemoteNameable Git.Repo where
 
 instance RemoteNameable RemoteName where
 	 getRemoteName = id
+
+instance RemoteNameable Remote where
+	getRemoteName = Remote.name
 
 {- A per-remote config setting in git config. -}
 remoteConfig :: RemoteNameable r => r -> UnqualifiedConfigKey -> ConfigKey

@@ -1210,6 +1210,14 @@ Here are all the supported configuration settings.
   from remotes. If you trust a remote and don't want the overhead
   of these checksums, you can set this to `false`.
 
+* `remote.<name>.annex-export-tracking`
+
+  When set to a branch name or other treeish, this makes what's exported
+  to the special remote track changes to the branch. See
+  [[git-annex-export]](1). `git-annex sync --content` and the 
+  git-annex assistant update exports when changes have been
+  committed to the tracking branch.
+
 * `remote.<name>.annexUrl`
 
   Can be used to specify a different url than the regular `remote.<name>.url`

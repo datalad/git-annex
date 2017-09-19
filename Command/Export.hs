@@ -28,6 +28,7 @@ import Logs.Location
 import Logs.Export
 import Database.Export
 import Messages.Progress
+import Config
 import Utility.Tmp
 
 import qualified Data.ByteString.Lazy as L
@@ -41,15 +42,21 @@ cmd = command "export" SectionCommon
 data ExportOptions = ExportOptions
 	{ exportTreeish :: Git.Ref
 	, exportRemote :: DeferredParse Remote
+	, exportTracking :: Bool
 	}
 
 optParser :: CmdParamsDesc -> Parser ExportOptions
 optParser _ = ExportOptions
 	<$> (Git.Ref <$> parsetreeish)
 	<*> (parseRemoteOption <$> parseToOption)
+	<*> parsetracking
   where
 	parsetreeish = argument str
 		( metavar paramTreeish
+		)
+	parsetracking = switch
+		( long "tracking"
+		<> help ("track changes to the " ++ paramTreeish)
 		)
 
 -- To handle renames which swap files, the exported file is first renamed
@@ -75,6 +82,10 @@ seek' o r = do
 	db <- openDb (uuid r)
 	ea <- exportActions r
 	recordExportBeginning (uuid r) new
+	
+	when (exportTracking o) $
+		setConfig (remoteConfig r "export-tracking")
+			(fromRef $ exportTreeish o)
 
 	-- Clean up after incomplete export of a tree, in which
 	-- the next block of code below may have renamed some files to
