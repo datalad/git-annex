@@ -46,14 +46,19 @@ import Annex.Wanted
 import Annex.Content
 import Command.Get (getKey')
 import qualified Command.Move
+import qualified Command.Export
 import Annex.Drop
 import Annex.UUID
 import Logs.UUID
+import Logs.Export
 import Annex.AutoMerge
 import Annex.AdjustedBranch
 import Annex.Ssh
 import Annex.BloomFilter
 import Annex.UpdateInstead
+import Annex.Export
+import Annex.LockFile
+import qualified Database.Export as Export
 import Utility.Bloom
 import Utility.OptParse
 
@@ -153,7 +158,8 @@ seek o = allowConcurrentOutput $ do
 
 	remotes <- syncRemotes (syncWith o)
 	let gitremotes = filter Remote.gitSyncableRemote remotes
-	dataremotes <- filter (\r -> Remote.uuid r /= NoUUID)
+	(exportremotes, dataremotes) <- partition (exportTree . Remote.config)
+		. filter (\r -> Remote.uuid r /= NoUUID)
 		<$> filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) remotes
 
 	-- Syncing involves many actions, any of which can independently
@@ -165,16 +171,19 @@ seek o = allowConcurrentOutput $ do
 		, map (withbranch . pullRemote o mergeConfig) gitremotes
 		,  [ mergeAnnex ]
 		]
-	whenM (shouldsynccontent <&&> seekSyncContent o dataremotes) $
+	whenM shouldsynccontent $ do
+		syncedcontent <- seekSyncContent o dataremotes
+		exportedcontent <- seekExportContent exportremotes
 		-- Transferring content can take a while,
 		-- and other changes can be pushed to the git-annex
 		-- branch on the remotes in the meantime, so pull
 		-- and merge again to avoid our push overwriting
 		-- those changes.
-		mapM_ includeCommandAction $ concat
-			[ map (withbranch . pullRemote o mergeConfig) gitremotes
-			, [ commitAnnex, mergeAnnex ]
-			]
+		when (syncedcontent || exportedcontent) $ do
+			mapM_ includeCommandAction $ concat
+				[ map (withbranch . pullRemote o mergeConfig) gitremotes
+				, [ commitAnnex, mergeAnnex ]
+				]
 	
 	void $ includeCommandAction $ withbranch pushLocal
 	-- Pushes to remotes can run concurrently.
@@ -640,3 +649,32 @@ syncFile ebloom rs af k = do
 		)
 	put dest = includeCommandAction $ 
 		Command.Move.toStart' dest False af k (mkActionItem af)
+
+{- When a remote has an export-tracking branch, change the export to
+ - follow the current content of the branch. Otherwise, transfer any files
+ - that were part of an export but are not in the remote yet. -}
+seekExportContent :: [Remote] -> Annex Bool
+seekExportContent rs = or <$> forM rs go
+  where
+	go r = withExclusiveLock (gitAnnexExportLock (Remote.uuid r)) $ do
+		db <- Export.openDb (Remote.uuid r)
+		ea <- Remote.exportActions r
+		exported <- case remoteAnnexExportTracking (Remote.gitconfig r) of
+			Nothing -> getExport (Remote.uuid r)
+			Just b -> do
+				mcur <- inRepo $ Git.Ref.tree b
+				case mcur of
+					Nothing -> getExport (Remote.uuid r)
+					Just cur -> do
+						Command.Export.changeExport r ea db cur
+						return [Exported cur []]
+		Export.closeDb db `after` fillexport r ea db exported
+
+	fillexport _ _ _ [] = return False
+	fillexport r ea db (Exported { exportedTreeish = t }:[]) =
+		Command.Export.fillExport r ea db t
+	fillexport r _ _ _ = do
+		warning $ "Export conflict detected. Different trees have been exported to " ++ 
+			Remote.name r ++ 
+			". Use git-annex export to resolve this conflict."
+		return False

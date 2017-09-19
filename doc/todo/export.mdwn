@@ -17,7 +17,7 @@ there need to be a new interface in supported remotes?
 
 Work is in progress. Todo list:
 
-* tracking exports
+* Make assistant update tracking exports.
 
 * Support configuring export in the assistant
   (when eg setting up a S3 special remote).

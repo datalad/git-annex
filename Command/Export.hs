@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE TupleSections, BangPatterns #-}
 
 module Command.Export where
 
@@ -33,6 +33,7 @@ import Utility.Tmp
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
+import Control.Concurrent
 
 cmd :: Command
 cmd = command "export" SectionCommon
@@ -70,23 +71,27 @@ seek o = do
 	r <- getParsed (exportRemote o)
 	unlessM (isExportSupported r) $
 		giveup "That remote does not support exports."
-	withExclusiveLock (gitAnnexExportLock (uuid r)) (seek' o r)
-
-seek' :: ExportOptions -> Remote -> CommandSeek
-seek' o r = do
+	when (exportTracking o) $
+		setConfig (remoteConfig r "export-tracking")
+			(fromRef $ exportTreeish o)
 	new <- fromMaybe (giveup "unknown tree") <$>
 		-- Dereference the tree pointed to by the branch, commit,
 		-- or tag.
 		inRepo (Git.Ref.tree (exportTreeish o))
+	withExclusiveLock (gitAnnexExportLock (uuid r)) $ do
+		db <- openDb (uuid r)
+		ea <- exportActions r
+		changeExport r ea db new
+		void $ fillExport r ea db new
+		closeDb db
+
+-- | Changes what's exported to the remote. Does not upload any new
+-- files, but does delete and rename files already exported to the remote.
+changeExport :: Remote -> ExportActions Annex -> ExportHandle -> Git.Ref -> CommandSeek
+changeExport r ea db new = do
 	old <- getExport (uuid r)
-	db <- openDb (uuid r)
-	ea <- exportActions r
 	recordExportBeginning (uuid r) new
 	
-	when (exportTracking o) $
-		setConfig (remoteConfig r "export-tracking")
-			(fromRef $ exportTreeish o)
-
 	-- Clean up after incomplete export of a tree, in which
 	-- the next block of code below may have renamed some files to
 	-- temp files. Diff from the incomplete tree to the new tree,
@@ -150,13 +155,6 @@ seek' o r = do
 			{ oldTreeish = map exportedTreeish old
 			, newTreeish = new
 			}
-
-	-- Export everything that is not yet exported.
-	(l, cleanup') <- inRepo $ Git.LsTree.lsTree new
-	seekActions $ pure $ map (startExport r ea db) l
-	void $ liftIO cleanup'
-
-	closeDb db
   where
 	mapdiff a oldtreesha newtreesha = do
 		(diff, cleanup) <- inRepo $
@@ -187,11 +185,22 @@ mkDiffMap old new db = do
 		| sha == nullSha = return Nothing
 		| otherwise = Just <$> exportKey sha
 
-startExport :: Remote -> ExportActions Annex -> ExportHandle -> Git.LsTree.TreeItem -> CommandStart
-startExport r ea db ti = do
+-- | Upload all exported files that are not yet in the remote,
+-- Returns True when files were uploaded.
+fillExport :: Remote -> ExportActions Annex -> ExportHandle -> Git.Ref -> Annex Bool
+fillExport r ea db new = do
+	(l, cleanup) <- inRepo $ Git.LsTree.lsTree new
+	cvar <- liftIO $ newMVar False
+	seekActions $ pure $ map (startExport r ea db cvar) l
+	void $ liftIO $ cleanup
+	liftIO $ takeMVar cvar
+
+startExport :: Remote -> ExportActions Annex -> ExportHandle -> MVar Bool -> Git.LsTree.TreeItem -> CommandStart
+startExport r ea db cvar ti = do
 	ek <- exportKey (Git.LsTree.sha ti)
 	stopUnless (liftIO $ notElem loc <$> getExportedLocation db (asKey ek)) $ do
-		showStart "export" f
+		showStart ("export " ++ name r) f
+		liftIO $ modifyMVar_ cvar (pure . const True)
 		next $ performExport r ea db ek (Git.LsTree.sha ti) loc
   where
 	loc = mkExportLocation f
@@ -234,7 +243,7 @@ startUnexport r ea db f shas = do
 	if null eks
 		then stop
 		else do
-			showStart "unexport" f'
+			showStart ("unexport " ++ name r) f'
 			next $ performUnexport r ea db eks loc
   where
 	loc = mkExportLocation f'
@@ -242,7 +251,7 @@ startUnexport r ea db f shas = do
 
 startUnexport' :: Remote -> ExportActions Annex -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
 startUnexport' r ea db f ek = do
-	showStart "unexport" f'
+	showStart ("unexport " ++ name r) f'
 	next $ performUnexport r ea db [ek] loc
   where
 	loc = mkExportLocation f'
@@ -276,7 +285,7 @@ startRecoverIncomplete r ea db sha oldf
 	| otherwise = do
 		ek <- exportKey sha
 		let loc = exportTempName ek
-		showStart "unexport" (fromExportLocation loc)
+		showStart ("unexport " ++ name r) (fromExportLocation loc)
 		liftIO $ removeExportedLocation db (asKey ek) oldloc
 		next $ performUnexport r ea db [ek] loc
   where
@@ -285,7 +294,7 @@ startRecoverIncomplete r ea db sha oldf
 
 startMoveToTempName :: Remote -> ExportActions Annex -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
 startMoveToTempName r ea db f ek = do
-	showStart "rename" (f' ++ " -> " ++ fromExportLocation tmploc)
+	showStart ("rename " ++ name r) (f' ++ " -> " ++ fromExportLocation tmploc)
 	next $ performRename r ea db ek loc tmploc
   where
 	loc = mkExportLocation f'
@@ -296,7 +305,7 @@ startMoveFromTempName :: Remote -> ExportActions Annex -> ExportHandle -> Export
 startMoveFromTempName r ea db ek f = do
 	let tmploc = exportTempName ek
 	stopUnless (liftIO $ elem tmploc <$> getExportedLocation db (asKey ek)) $ do
-		showStart "rename" (fromExportLocation tmploc ++ " -> " ++ f')
+		showStart ("rename " ++ name r) (fromExportLocation tmploc ++ " -> " ++ f')
 		next $ performRename r ea db ek tmploc loc
   where
 	loc = mkExportLocation f'

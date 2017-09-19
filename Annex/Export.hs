@@ -10,7 +10,10 @@ module Annex.Export where
 import Annex
 import Annex.CatFile
 import Types.Key
+import Types.Remote
 import qualified Git
+
+import qualified Data.Map as M
 
 -- An export includes both annexed files and files stored in git.
 -- For the latter, a SHA1 key is synthesized.
@@ -33,3 +36,8 @@ exportKey sha = mk <$> catKey sha
 		, keyChunkSize = Nothing
 		, keyChunkNum = Nothing
 		}
+
+exportTree :: RemoteConfig -> Bool
+exportTree c = case M.lookup "exporttree" c of
+	Just "yes" -> True
+	_ -> False

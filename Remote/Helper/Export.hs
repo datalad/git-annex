@@ -17,6 +17,7 @@ import Backend
 import Remote.Helper.Encryptable (isEncrypted)
 import Database.Export
 import Logs.Export
+import Annex.Export
 import Annex.LockFile
 import Git.Sha
 
@@ -41,11 +42,6 @@ instance HasExportUnsupported (Annex (ExportActions Annex)) where
 		, removeExportDirectory = Just $ \_ -> return False
 		, renameExport = \_ _ _ -> return False
 		}
-
-exportTree :: RemoteConfig -> Bool
-exportTree c = case M.lookup "exporttree" c of
-	Just "yes" -> True
-	_ -> False
 
 exportIsSupported :: RemoteConfig -> RemoteGitConfig -> Annex Bool
 exportIsSupported = \_ _ -> return True
