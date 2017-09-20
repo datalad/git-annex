@@ -10,6 +10,7 @@ module Assistant.Threads.Merger where
 import Assistant.Common
 import Assistant.TransferQueue
 import Assistant.BranchChange
+import Assistant.Sync
 import Utility.DirWatcher
 import Utility.DirWatcher.Types
 import qualified Annex.Branch
@@ -62,7 +63,8 @@ onChange file
 	| isAnnexBranch file = do
 		branchChanged
 		diverged <- liftAnnex Annex.Branch.forceUpdate
-		when diverged $
+		when diverged $ do
+			updateExportTreeFromLogAll
 			queueDeferredDownloads "retrying deferred download" Later
 	| otherwise = mergecurrent
   where

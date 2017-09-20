@@ -35,6 +35,7 @@ import Assistant.TransferQueue
 import Assistant.RepoProblem
 import Assistant.Commits
 import Types.Transfer
+import Database.Export
 
 import Data.Time.Clock
 import qualified Data.Map as M
@@ -218,6 +219,8 @@ manualPull currentbranch remotes = do
 	forM_ normalremotes $ \r ->
 		liftAnnex $ Command.Sync.mergeRemote r
 			currentbranch Command.Sync.mergeConfig def
+	when haddiverged $
+		updateExportTreeFromLogAll
 	return (catMaybes failed, haddiverged)
   where
 	wantpull gc = remoteAnnexPull gc
@@ -264,3 +267,9 @@ changeSyncFlag r enabled = do
 	void Remote.remoteListRefresh
   where
 	key = Config.remoteConfig (Remote.repo r) "sync"
+
+updateExportTreeFromLogAll :: Assistant ()
+updateExportTreeFromLogAll = do
+	rs <- exportRemotes <$> getDaemonStatus
+	forM_ rs $ \r -> liftAnnex $
+		openDb (Remote.uuid r) >>= updateExportTreeFromLog
