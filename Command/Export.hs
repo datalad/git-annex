@@ -22,6 +22,7 @@ import Types.Remote
 import Types.Export
 import Annex.Export
 import Annex.Content
+import Annex.Transfer
 import Annex.CatFile
 import Annex.LockFile
 import Logs.Location
@@ -30,6 +31,7 @@ import Database.Export
 import Messages.Progress
 import Config
 import Utility.Tmp
+import Utility.Metered
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
@@ -202,21 +204,25 @@ startExport r ea db cvar ti = do
 	stopUnless (liftIO $ notElem loc <$> getExportedLocation db (asKey ek)) $ do
 		showStart ("export " ++ name r) f
 		liftIO $ modifyMVar_ cvar (pure . const True)
-		next $ performExport r ea db ek (Git.LsTree.sha ti) loc
+		next $ performExport r ea db ek af (Git.LsTree.sha ti) loc
   where
 	loc = mkExportLocation f
-	f = getTopFilePath $ Git.LsTree.file ti
+	f = getTopFilePath (Git.LsTree.file ti)
+	af = AssociatedFile (Just f)
 
-performExport :: Remote -> ExportActions Annex -> ExportHandle -> ExportKey -> Sha -> ExportLocation -> CommandPerform
-performExport r ea db ek contentsha loc = do
+performExport :: Remote -> ExportActions Annex -> ExportHandle -> ExportKey -> AssociatedFile -> Sha -> ExportLocation -> CommandPerform
+performExport r ea db ek af contentsha loc = do
 	let storer = storeExport ea
 	sent <- case ek of
 		AnnexKey k -> ifM (inAnnex k)
 			( metered Nothing k $ \m -> do
 				let rollback = void $
 					performUnexport r ea db [ek] loc
-				sendAnnex k rollback
-					(\f -> storer f k loc m)
+				notifyTransfer Upload af $
+					upload (uuid r) k af noRetry $ \pm -> do
+						let m' = combineMeterUpdate pm m
+						sendAnnex k rollback
+							(\f -> storer f k loc m')
 			, do
 				showNote "not available"
 				return False
