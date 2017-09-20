@@ -16,10 +16,7 @@ import Types.Key
 import Backend
 import Remote.Helper.Encryptable (isEncrypted)
 import Database.Export
-import Logs.Export
 import Annex.Export
-import Annex.LockFile
-import Git.Sha
 
 import qualified Data.Map as M
 import Control.Concurrent.STM
@@ -103,16 +100,8 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 		-- updates the database, to notice when an export has been
 		-- updated from another repository.
 		let getexportlocs = \k -> do
-			whenM updateonce $ withExclusiveLock (gitAnnexExportLock (uuid r)) $ do
-				old <- liftIO $ fromMaybe emptyTree
-					<$> getExportTreeCurrent db
-				l <- getExport (uuid r)
-				case map exportedTreeish l of
-					(new:[]) | new /= old -> do
-						updateExportTree db old new
-						liftIO $ recordExportTreeCurrent db new
-						liftIO $ flushDbQueue db
-					_ -> return ()
+			whenM updateonce $
+				updateExportTreeFromLog db
 			liftIO $ getExportTree db k
 
 		return $ r

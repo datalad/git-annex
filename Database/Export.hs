@@ -26,6 +26,7 @@ module Database.Export (
 	removeExportTree,
 	updateExportTree,
 	updateExportTree',
+	updateExportTreeFromLog,
 	ExportedId,
 	ExportedDirectoryId,
 	ExportTreeId,
@@ -39,6 +40,8 @@ import Annex.Locations
 import Annex.Common hiding (delete)
 import Types.Export
 import Annex.Export
+import qualified Logs.Export as Log
+import Annex.LockFile
 import Git.Types
 import Git.Sha
 import Git.FilePath
@@ -47,7 +50,7 @@ import qualified Git.DiffTree
 import Database.Persist.TH
 import Database.Esqueleto hiding (Key)
 
-newtype ExportHandle = ExportHandle H.DbQueue
+data ExportHandle = ExportHandle H.DbQueue UUID
 
 share [mkPersist sqlSettings, mkMigrate "migrateExport"] [persistLowerCase|
 -- Files that have been exported to the remote and are present on it.
@@ -85,13 +88,13 @@ openDb u = do
 		initDb db $ void $
 			runMigrationSilent migrateExport
 	h <- liftIO $ H.openDbQueue H.SingleWriter db "exported"
-	return $ ExportHandle h
+	return $ ExportHandle h u
 
 closeDb :: ExportHandle -> Annex ()
-closeDb (ExportHandle h) = liftIO $ H.closeDbQueue h
+closeDb (ExportHandle h _) = liftIO $ H.closeDbQueue h
 
 queueDb :: ExportHandle -> SqlPersistM () -> IO ()
-queueDb (ExportHandle h) = H.queueDb h checkcommit
+queueDb (ExportHandle h _) = H.queueDb h checkcommit
   where
 	-- commit queue after 1000 changes
 	checkcommit sz _lastcommittime
@@ -99,7 +102,7 @@ queueDb (ExportHandle h) = H.queueDb h checkcommit
 		| otherwise = return False
 
 flushDbQueue :: ExportHandle -> IO ()
-flushDbQueue (ExportHandle h) = H.flushDbQueue h
+flushDbQueue (ExportHandle h _) = H.flushDbQueue h
 
 recordExportTreeCurrent :: ExportHandle -> Sha -> IO ()
 recordExportTreeCurrent h s = queueDb h $ do
@@ -108,7 +111,7 @@ recordExportTreeCurrent h s = queueDb h $ do
 	void $ insertUnique $ ExportTreeCurrent $ toSRef s
 
 getExportTreeCurrent :: ExportHandle -> IO (Maybe Sha)
-getExportTreeCurrent (ExportHandle h) = H.queryDbQueue h $ do
+getExportTreeCurrent (ExportHandle h _) = H.queryDbQueue h $ do
 	l <- select $ from $ \r -> do
 		where_ (r ^. ExportTreeCurrentTree ==. r ^. ExportTreeCurrentTree)
 		return (r ^. ExportTreeCurrentTree)
@@ -141,7 +144,7 @@ removeExportedLocation h k el = queueDb h $ do
 
 {- Note that this does not see recently queued changes. -}
 getExportedLocation :: ExportHandle -> Key -> IO [ExportLocation]
-getExportedLocation (ExportHandle h) k = H.queryDbQueue h $ do
+getExportedLocation (ExportHandle h _) k = H.queryDbQueue h $ do
 	l <- select $ from $ \r -> do
 		where_ (r ^. ExportedKey ==. val ik)
 		return (r ^. ExportedFile)
@@ -151,7 +154,7 @@ getExportedLocation (ExportHandle h) k = H.queryDbQueue h $ do
 
 {- Note that this does not see recently queued changes. -}
 isExportDirectoryEmpty :: ExportHandle -> ExportDirectory -> IO Bool
-isExportDirectoryEmpty (ExportHandle h) d = H.queryDbQueue h $ do
+isExportDirectoryEmpty (ExportHandle h _) d = H.queryDbQueue h $ do
 	l <- select $ from $ \r -> do
 		where_ (r ^. ExportedDirectorySubdir ==. val ed)
 		return (r ^. ExportedDirectoryFile)
@@ -161,7 +164,7 @@ isExportDirectoryEmpty (ExportHandle h) d = H.queryDbQueue h $ do
 
 {- Get locations in the export that might contain a key. -}
 getExportTree :: ExportHandle -> Key -> IO [ExportLocation]
-getExportTree (ExportHandle h) k = H.queryDbQueue h $ do
+getExportTree (ExportHandle h _) k = H.queryDbQueue h $ do
 	l <- select $ from $ \r -> do
 		where_ (r ^. ExportTreeKey ==. val ik)
 		return (r ^. ExportTreeFile)
@@ -209,3 +212,16 @@ updateExportTree' h srcek dstek i = do
 		Just k -> liftIO $ addExportTree h (asKey k) loc
   where
 	loc = mkExportLocation $ getTopFilePath $ Git.DiffTree.file i
+			
+updateExportTreeFromLog :: ExportHandle -> Annex ()
+updateExportTreeFromLog db@(ExportHandle _ u) = 
+	withExclusiveLock (gitAnnexExportLock u) $ do
+		old <- liftIO $ fromMaybe emptyTree
+			<$> getExportTreeCurrent db
+		l <- Log.getExport u
+		case map Log.exportedTreeish l of
+			(new:[]) | new /= old -> do
+				updateExportTree db old new
+				liftIO $ recordExportTreeCurrent db new
+				liftIO $ flushDbQueue db
+			_ -> return ()
