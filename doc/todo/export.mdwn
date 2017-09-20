@@ -13,14 +13,5 @@ exported data.
 Would this be able to reuse the existing `storeKey` interface, or would
 there need to be a new interface in supported remotes?
 
---[[Joey]]
+> [[done]]! --[[Joey]]
 
-Work is in progress. Todo list:
-
-* Support configuring export in the assistant
-  (when eg setting up a S3 special remote).
-
-  This is similar to the little-used preferreddir= preferred content
-  setting and the "public" repository group. The assistant uses
-  those for IA, which could be replaced with setting up an export
-  tracking branch.
