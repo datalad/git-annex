@@ -72,7 +72,7 @@ deleteCurrentRepository :: Handler Html
 deleteCurrentRepository = dangerPage $ do
 	reldir <- fromJust . relDir <$> liftH getYesod
 	havegitremotes <- haveremotes syncGitRemotes
-	havedataremotes <- haveremotes syncDataRemotes
+	havedataremotes <- haveremotes downloadRemotes
 	((result, form), enctype) <- liftH $
 		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $
 			sanityVerifierAForm $ SanityVerifier magicphrase

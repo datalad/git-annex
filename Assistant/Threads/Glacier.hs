@@ -29,7 +29,7 @@ glacierThread = namedThread "Glacier" $ runEvery (Seconds 3600) <~> go
   where
 	isglacier r = Remote.remotetype r == Glacier.remote
 	go = do
-		rs <- filter isglacier . syncDataRemotes <$> getDaemonStatus
+		rs <- filter isglacier . downloadRemotes <$> getDaemonStatus
 		forM_ rs $ \r -> 
 			check r =<< liftAnnex (getFailedTransfers $ Remote.uuid r)
 	check _ [] = noop

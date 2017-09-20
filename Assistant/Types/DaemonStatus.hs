@@ -49,6 +49,10 @@ data DaemonStatus = DaemonStatus
 	, syncGitRemotes :: [Remote]
 	-- Ordered list of remotes to sync data with
 	, syncDataRemotes :: [Remote]
+	-- Ordered list of remotes to export to
+	, exportRemotes :: [Remote]
+	-- Ordered list of remotes that data can be downloaded from
+	, downloadRemotes :: [Remote]
 	-- Are we syncing to any cloud remotes?
 	, syncingToCloudRemote :: Bool
 	-- Set of uuids of remotes that are currently connected.
@@ -94,6 +98,8 @@ newDaemonStatus = DaemonStatus
 	<*> pure M.empty
 	<*> pure M.empty
 	<*> pure firstAlertId
+	<*> pure []
+	<*> pure []
 	<*> pure []
 	<*> pure []
 	<*> pure []

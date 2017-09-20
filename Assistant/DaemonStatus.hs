@@ -20,6 +20,7 @@ import Logs.TimeStamp
 import qualified Remote
 import qualified Types.Remote as Remote
 import Config.DynamicConfig
+import Annex.Export
 
 import Control.Concurrent.STM
 import System.Posix.Types
@@ -53,15 +54,18 @@ calcSyncRemotes = do
 	alive <- trustExclude DeadTrusted (map Remote.uuid rs)
 	let good r = Remote.uuid r `elem` alive
 	let syncable = filter good rs
-	syncdata <- filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) $
+	contentremotes <- filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) $
 		filter (\r -> Remote.uuid r /= NoUUID) $
 		filter (not . Remote.isXMPPRemote) syncable
+	let (exportremotes, dataremotes) = partition (exportTree . Remote.config) contentremotes
 
 	return $ \dstatus -> dstatus
 		{ syncRemotes = syncable
 		, syncGitRemotes = filter Remote.gitSyncableRemote syncable
-		, syncDataRemotes = syncdata
-		, syncingToCloudRemote = any iscloud syncdata
+		, syncDataRemotes = dataremotes
+		, exportRemotes = exportremotes
+		, downloadRemotes = contentremotes
+		, syncingToCloudRemote = any iscloud contentremotes
 		}
   where
 	iscloud r = not (Remote.readonly r) && Remote.availability r == Remote.GloballyAvailable

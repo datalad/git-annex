@@ -78,7 +78,7 @@ transferScannerThread urlrenderer = namedThread "TransferScanner" $ do
 	 -}
 	startupScan = do
 		reconnectRemotes =<< syncGitRemotes <$> getDaemonStatus
-		addScanRemotes True =<< syncDataRemotes <$> getDaemonStatus
+		addScanRemotes True =<< scannableRemotes
 
 {- This is a cheap scan for failed transfers involving a remote. -}
 failedTransferScan :: Remote -> Assistant ()
@@ -157,24 +157,29 @@ expensiveScan urlrenderer rs = batch <~> do
 			(AssociatedFile (Just f)) t r
 	findtransfers f unwanted key = do
 		let af = AssociatedFile (Just f)
-		{- The syncable remotes may have changed since this
-		 - scan began. -}
-		syncrs <- syncDataRemotes <$> getDaemonStatus
 		locs <- liftAnnex $ loggedLocations key
 		present <- liftAnnex $ inAnnex key
+		let slocs = S.fromList locs
+		
+		{- The remotes may have changed since this scan began. -}
+		syncrs <- syncDataRemotes <$> getDaemonStatus
+		let use l a = mapMaybe (a key slocs) . l <$> getDaemonStatus
+
 		liftAnnex $ handleDropsFrom locs syncrs
 			"expensive scan found too many copies of object"
 			present key af [] callCommandAction
-		liftAnnex $ do
-			let slocs = S.fromList locs
-			let use a = return $ mapMaybe (a key slocs) syncrs
-			ts <- if present
-				then filterM (wantSend True (Just key) af . Remote.uuid . fst)
-					=<< use (genTransfer Upload False)
-				else ifM (wantGet True (Just key) af)
-					( use (genTransfer Download True) , return [] )
-			let unwanted' = S.difference unwanted slocs
-			return (unwanted', ts)
+		ts <- if present
+			then liftAnnex . filterM (wantSend True (Just key) af . Remote.uuid . fst)
+				=<< use syncDataRemotes (genTransfer Upload False)
+			else ifM (liftAnnex $ wantGet True (Just key) af)
+				( use downloadRemotes (genTransfer Download True) , return [] )
+		let unwanted' = S.difference unwanted slocs
+		return (unwanted', ts)
+
+-- Both syncDataRemotes and exportRemotes can be scanned.
+-- The downloadRemotes list contains both.
+scannableRemotes :: Assistant [Remote]
+scannableRemotes = downloadRemotes <$> getDaemonStatus
 
 genTransfer :: Direction -> Bool -> Key -> S.Set UUID -> Remote -> Maybe (Remote, Transfer)
 genTransfer direction want key slocs r
