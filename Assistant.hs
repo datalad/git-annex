@@ -18,6 +18,7 @@ import Assistant.Threads.DaemonStatus
 import Assistant.Threads.Watcher
 import Assistant.Threads.Committer
 import Assistant.Threads.Pusher
+import Assistant.Threads.Exporter
 import Assistant.Threads.Merger
 import Assistant.Threads.TransferWatcher
 import Assistant.Threads.Transferrer
@@ -152,6 +153,8 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 #endif
 				, assist pushThread
 				, assist pushRetryThread
+				, assist exportThread
+				, assist exportRetryThread
 				, assist mergeThread
 				, assist transferWatcherThread
 				, assist transferPollerThread

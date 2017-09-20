@@ -59,8 +59,9 @@ transferScannerThread urlrenderer = namedThread "TransferScanner" $ do
 			(s { transferScanRunning = b }, s)
 		liftIO $ sendNotification $ transferNotifier ds
 		
-	{- All git remotes are synced, and all available remotes
-	 - are scanned in full on startup, for multiple reasons, including:
+	{- All git remotes are synced, all exports are updated,
+	 - and all available remotes are scanned in full on startup,
+	 - for multiple reasons, including:
 	 -
 	 - * This may be the first run, and there may be remotes
 	 -   already in place, that need to be synced.

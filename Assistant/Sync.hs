@@ -33,6 +33,7 @@ import Assistant.Threads.Watcher (watchThread, WatcherControl(..))
 import Assistant.TransferSlots
 import Assistant.TransferQueue
 import Assistant.RepoProblem
+import Assistant.Commits
 import Types.Transfer
 
 import Data.Time.Clock
@@ -48,10 +49,10 @@ import Control.Concurrent
  - it's sufficient to requeue failed transfers.
  -
  - Also handles signaling any connectRemoteNotifiers, after the syncing is
- - done.
+ - done, and records an export commit to make any exports be updated.
  -}
 reconnectRemotes :: [Remote] -> Assistant ()
-reconnectRemotes [] = noop
+reconnectRemotes [] = recordExportCommit
 reconnectRemotes rs = void $ do
 	rs' <- liftIO $ filterM (Remote.checkAvailable True) rs
 	unless (null rs') $ do
@@ -60,6 +61,7 @@ reconnectRemotes rs = void $ do
 			whenM (liftIO $ Remote.checkAvailable False r) $
 				repoHasProblem (Remote.uuid r) (syncRemote r)
 		mapM_ signal $ filter (`notElem` failedrs) rs'
+	recordExportCommit
   where
 	gitremotes = filter (notspecialremote . Remote.repo) rs
 	(_xmppremotes, nonxmppremotes) = partition Remote.isXMPPRemote rs
@@ -143,9 +145,11 @@ pushToRemotes' now remotes = do
 				then retry currbranch g u failed
 				else fallback branch g u failed
 
-	updatemap succeeded failed = changeFailedPushMap $ \m ->
-		M.union (makemap failed) $
-			M.difference m (makemap succeeded)
+	updatemap succeeded failed = do
+		v <- getAssistant failedPushMap 
+		changeFailedPushMap v $ \m ->
+			M.union (makemap failed) $
+				M.difference m (makemap succeeded)
 	makemap l = M.fromList $ zip l (repeat now)
 
 	retry currbranch g u rs = do

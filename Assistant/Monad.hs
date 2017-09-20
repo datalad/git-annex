@@ -62,7 +62,9 @@ data AssistantData = AssistantData
 	, transferSlots :: TransferSlots
 	, transferrerPool :: TransferrerPool
 	, failedPushMap :: FailedPushMap
+	, failedExportMap :: FailedPushMap
 	, commitChan :: CommitChan
+	, exportCommitChan :: CommitChan
 	, changePool :: ChangePool
 	, repoProblemChan :: RepoProblemChan
 	, branchChangeHandle :: BranchChangeHandle
@@ -80,6 +82,8 @@ newAssistantData st dstatus = AssistantData
 	<*> newTransferSlots
 	<*> newTransferrerPool (checkNetworkConnections dstatus)
 	<*> newFailedPushMap
+	<*> newFailedPushMap
+	<*> newCommitChan
 	<*> newCommitChan
 	<*> newChangePool
 	<*> newRepoProblemChan

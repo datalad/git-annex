@@ -67,6 +67,7 @@ commitThread = namedThread "Committer" $ do
 				void $ alertWhile commitAlert $
 					liftAnnex $ commitStaged msg
 				recordCommit
+				recordExportCommit
 				let numchanges = length readychanges
 				mapM_ checkChangeContent readychanges
 				return numchanges

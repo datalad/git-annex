@@ -21,6 +21,7 @@ module Command.Sync (
 	updateBranch,
 	syncBranch,
 	updateSyncBranch,
+	seekExportContent,
 ) where
 
 import Command
@@ -652,7 +653,10 @@ syncFile ebloom rs af k = do
 
 {- When a remote has an export-tracking branch, change the export to
  - follow the current content of the branch. Otherwise, transfer any files
- - that were part of an export but are not in the remote yet. -}
+ - that were part of an export but are not in the remote yet.
+ - 
+ - Returns True if any file transfers were made.
+ -}
 seekExportContent :: [Remote] -> Annex Bool
 seekExportContent rs = or <$> forM rs go
   where

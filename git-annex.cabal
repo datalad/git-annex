@@ -580,6 +580,7 @@ Executable git-annex
     Assistant.Threads.ConfigMonitor
     Assistant.Threads.Cronner
     Assistant.Threads.DaemonStatus
+    Assistant.Threads.Exporter
     Assistant.Threads.Glacier
     Assistant.Threads.Merger
     Assistant.Threads.MountWatcher
