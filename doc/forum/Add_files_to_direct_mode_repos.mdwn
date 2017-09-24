@@ -1,0 +1,1 @@
+I started a git annex repo in a crippled filesystem (FAT32). I git-annex-add'ed some files but then I learned one cannot then git-commit them if on a direct mode repo (“fatal: This operation must be run in a work tree”). How do I add files in a crippled filesystem and then have them propagate to other repost if numcopies > 1?
