@@ -378,5 +378,4 @@ matchHttpExceptionContent :: (HttpException -> Bool) -> HttpException -> Maybe H
 matchHttpExceptionContent want e
 	| want e = Just e
 	| otherwise = Nothing
-matchHttpExceptionContent _ _ = Nothing
 #endif
