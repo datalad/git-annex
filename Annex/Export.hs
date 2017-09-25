@@ -14,6 +14,8 @@ import Types.Remote
 import qualified Git
 
 import qualified Data.Map as M
+import Control.Applicative
+import Prelude
 
 -- An export includes both annexed files and files stored in git.
 -- For the latter, a SHA1 key is synthesized.
