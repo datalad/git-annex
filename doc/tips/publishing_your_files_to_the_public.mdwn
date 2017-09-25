@@ -1,28 +1,60 @@
-# Creating a special S3 remote to hold files shareable by URL
+You have a git-annex repository, and you want to publish the files
+in it to the public. One way is to
+[[setup_a_public_repository_on_a_web_site]], but perhaps you don't have a
+web server that can run git-annex, and you just want to publish the current
+files, not the whole git-annex repository.
 
-In this example, I'll assume you'll be creating a bucket in Amazon S3 named
-$BUCKET and a special remote named public-s3. Be sure to replace $BUCKET
-with something like "public-bucket-joey" when you follow along in your
-shell.
+The [[git-annex export|git-annex-export]] command is the solution. It lets
+a tree of files from your git-annex repository be published to Amazon 
+[[special_remotes/S3]], as well as other types of special remotes like
+[[special_remotes/webdav]] and [[special_remotes/directory]].
+
+# publishing to Amazon S3
+
+Let's create a bucket in Amazon S3 named $BUCKET and a special remote
+named public-s3. Exporting has to be enabled when setting up a special
+remote for the first time.
 
 Set up your special [[S3 remote|special_remotes/S3]] with (at least) these options:
 
 	git annex initremote public-s3 type=s3 encryption=none bucket=$BUCKET exporttree=yes public=yes encryption=none
 
+Be sure to replace $BUCKET with something like 
+"public-bucket-joey" when you follow along in your shell.
+
+[[!template id=note text="""
+Want to only export files in a subdirectory of the master branch?
+Use `master:subdir`. 
+
+Any git treeish can be used with the export command, so you can also
+export tags, etc.
+"""]]
+
 Then export the files in the master branch to the remote:
 
 	git annex export master --to public-s3
 
-You can run that command again to update the export. See
-[[git-annex-export]] for details.
-
-Each exported file will be available to the public from
+Each exported file will be available to the public at
 `http://$BUCKET.s3.amazonaws.com/$FILE`
 
 Note: Bear in mind that Amazon will charge the owner of the bucket
 for public downloads from that bucket.
 
-# Indexes
+# Tracking changes to master
+
+So far, the current contents of the master branch have been exported to
+public-s3, and to update the export when the branch changes, you have to
+remember to run `git annex export` again. To automate updating the export,
+enable tracking.
+	
+	git annex export --tracking master --to public-s3
+
+That tells git-annex that the export should track changes to master.
+When you run `git annex sync --content`, it will update all tracking
+exports. The git-annex assistant also automatically updates tracking
+exports.
+
+# Amazon S3 indexes
 
 By default, there is no index.html file exported, so if you open
 `http://$BUCKET.s3.amazonaws.com/` in a web browser, you'll see an
