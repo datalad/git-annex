@@ -9,6 +9,7 @@
 {-# LANGUAGE OverloadedStrings, GADTs, FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses, GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE CPP #-}
 
 module Database.Export (
 	ExportHandle,
@@ -122,9 +123,14 @@ getExportTreeCurrent (ExportHandle h _) = H.queryDbQueue h $ do
 addExportedLocation :: ExportHandle -> Key -> ExportLocation -> IO ()
 addExportedLocation h k el = queueDb h $ do
 	void $ insertUnique $ Exported ik ef
-	insertMany_ $ map
+	let edirs = map
 		(\ed -> ExportedDirectory (toSFilePath (fromExportDirectory ed)) ef)
 		(exportDirectories el)
+#if MIN_VERSION_persistent(2,1,0)
+	insertMany_ edirs
+#else
+	void $ insertMany edirs
+#endif
   where
 	ik = toIKey k
 	ef = toSFilePath (fromExportLocation el)
