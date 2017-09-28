@@ -3,6 +3,9 @@ git-annex (6.20170926) UNRELEASED; urgency=medium
   * webdav: Improve error message for failed request to include the request
     method and path.
   * metadata: Added --remove-all.
+  * Warn when metadata is inherited from a previous version of a file,
+    to avoid the user being surprised in cases where that behavior is not
+    desired or expected.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Sep 2017 12:01:39 -0400
 

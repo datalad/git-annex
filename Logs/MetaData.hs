@@ -55,6 +55,9 @@ getMetaDataLog key = do
 	config <- Annex.getGitConfig
 	readLog $ metaDataLogFile config key
 
+logToCurrentMetaData :: [LogEntry MetaData] -> MetaData
+logToCurrentMetaData = currentMetaData . combineMetaData . map value
+
 {- Go through the log from oldest to newest, and combine it all
  - into a single MetaData representing the current state.
  -
@@ -64,7 +67,7 @@ getMetaDataLog key = do
 getCurrentMetaData :: Key -> Annex MetaData
 getCurrentMetaData k = do
 	ls <- S.toAscList <$> getMetaDataLog k
-	let loggedmeta = currentMetaData $ combineMetaData $ map value ls
+	let loggedmeta = logToCurrentMetaData ls
 	return $ currentMetaData $ unionMetaData loggedmeta
 		(lastchanged ls loggedmeta)
   where
@@ -177,13 +180,18 @@ simplifyLog s = case sl of
  - repository.
  - 
  - Any metadata already attached to the new key is not preserved.
+ -
+ - Returns True when metadata was copied.
  -}
-copyMetaData :: Key -> Key -> Annex ()
+copyMetaData :: Key -> Key -> Annex Bool
 copyMetaData oldkey newkey
-	| oldkey == newkey = noop
+	| oldkey == newkey = return False
 	| otherwise = do
 		l <- getMetaDataLog oldkey
-		unless (S.null l) $ do
-			config <- Annex.getGitConfig
-			Annex.Branch.change (metaDataLogFile config newkey) $
-				const $ showLog l
+		if logToCurrentMetaData (S.toAscList l) == emptyMetaData
+			then return False
+			else do
+				config <- Annex.getGitConfig
+				Annex.Branch.change (metaDataLogFile config newkey) $
+					const $ showLog l
+				return True

@@ -39,12 +39,20 @@ import Data.Time.Clock.POSIX
  -}
 genMetaData :: Key -> FilePath -> FileStatus -> Annex ()
 genMetaData key file status = do
-	maybe noop (`copyMetaData` key) =<< catKeyFileHEAD file
+	v <- catKeyFileHEAD file
+	case v of
+		Nothing -> noop
+		Just oldkey -> 
+			whenM (copyMetaData oldkey key)
+				warncopied
 	whenM (annexGenMetaData <$> Annex.getGitConfig) $ do
 		curr <- getCurrentMetaData key
 		addMetaData key (dateMetaData mtime curr)
   where
 	mtime = posixSecondsToUTCTime $ realToFrac $ modificationTime status
+	warncopied = warning $ 
+		"Copied metadata from old version of " ++ file ++ " to new version. " ++ 
+		"If you don't want this copied metadata, run: git annex metadata --remove-all " ++ file
 
 {- Generates metadata for a file's date stamp.
  - Does not overwrite any existing metadata values. -}
