@@ -20,6 +20,7 @@ import Git.Config (isTrue, boolConfig)
 import Git.Env
 import Remote.Helper.Special
 import Remote.Helper.Export
+import Annex.Export
 import Remote.Helper.ReadOnly
 import Remote.Helper.Messages
 import Utility.Metered
@@ -69,7 +70,9 @@ gen r u c gc
 		Annex.addCleanup (RemoteCleanup u) $ stopExternal external
 		cst <- getCost external r gc
 		avail <- getAvailability external r gc
-		exportsupported <- checkExportSupported' external
+		exportsupported <- if exportTree c
+			then checkExportSupported' external
+			else return False
 		let exportactions = if exportsupported
 			then return $ ExportActions
 				{ storeExport = storeExportM external
@@ -165,8 +168,9 @@ checkExportSupported c gc = do
 		=<< newExternal externaltype NoUUID c gc
 
 checkExportSupported' :: External -> Annex Bool
-checkExportSupported' external = safely $
-	handleRequest external EXPORTSUPPORTED Nothing $ \resp -> case resp of
+checkExportSupported' external = go `catchNonAsync` (const (return False))
+  where
+	go = handleRequest external EXPORTSUPPORTED Nothing $ \resp -> case resp of
 		EXPORTSUPPORTED_SUCCESS -> Just $ return True
 		EXPORTSUPPORTED_FAILURE -> Just $ return False
 		UNSUPPORTED_REQUEST -> Just $ return False
@@ -313,7 +317,7 @@ safely a = go =<< tryNonAsync a
   where
 	go (Right r) = return r
 	go (Left e) = do
-		warning $ show e
+		toplevelWarning False (show e)
 		return False
 
 {- Sends a Request to the external remote, and waits for it to generate

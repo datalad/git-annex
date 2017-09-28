@@ -7,6 +7,10 @@ git-annex (6.20170926) UNRELEASED; urgency=medium
     to avoid the user being surprised in cases where that behavior is not
     desired or expected.
   * sync: Added --cleanup, which removes local and remote synced/ branches.
+  * external: When the external special remote program crashed, a newline
+    could be output, which messed up the expected output for --batch mode.
+  * external: Avoid checking EXPORTSUPPORTED for special remotes that are
+    not configured to use exports.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Sep 2017 12:01:39 -0400
 
