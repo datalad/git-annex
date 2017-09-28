@@ -16,6 +16,7 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.UTF8 as B8
 import qualified Data.ByteString.Lazy.UTF8 as L8
 import Network.HTTP.Client (HttpException(..), RequestBody)
+import qualified Network.HTTP.Client as HTTP
 import Network.HTTP.Types
 import System.IO.Error
 import Control.Monad.Catch
@@ -378,17 +379,20 @@ goDAV (DavHandle ctx user pass _) a = choke $ run $ prettifyExceptions $ do
 prettifyExceptions :: DAVT IO a -> DAVT IO a
 prettifyExceptions a = catchJust (matchStatusCodeException (const True)) a go
   where
-	go (HttpExceptionRequest _ (StatusCodeException response message)) = error $ unwords
+	go (HttpExceptionRequest req (StatusCodeException response message)) = giveup $ unwords
 		[ "DAV failure:"
 		, show (responseStatus response)
 		, show (message)
+		, "HTTP request:"
+		, show (HTTP.method req)
+		, show (HTTP.path req)
 		]
 	go e = throwM e
 #else
 prettifyExceptions :: DAVT IO a -> DAVT IO a
 prettifyExceptions a = catchJust (matchStatusCodeException (const True)) a go
   where
-	go (StatusCodeException status _ _) = error $ unwords
+	go (StatusCodeException status _ _) = giveup $ unwords
 		[ "DAV failure:"
 		, show (statusCode status)
 		, show (statusMessage status)
