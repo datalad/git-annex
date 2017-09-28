@@ -167,7 +167,7 @@ adjustedToOriginal b
 	| adjustedBranchPrefix `isPrefixOf` bs = do
 		let (base, as) = separate (== '(') (drop prefixlen bs)
 		adj <- deserialize (takeWhile (/= ')') as)
-		Just (adj, Git.Ref.underBase "refs/heads" (Ref base))
+		Just (adj, Git.Ref.branchRef (Ref base))
 	| otherwise = Nothing
   where
 	bs = fromRef b

@@ -125,6 +125,19 @@ by running "git annex sync" on the remote.
   resolution. It can also be disabled by setting annex.resolvemerge
   to false.
 
+* `--cleanup`
+
+  Removes the local and remote `synced/` branches, which were created
+  and pushed by `git-annex sync`.
+
+  This can come in handy when you've synced a change to remotes and now
+  want to reset your master branch back before that change. So you
+  run `git reset` and force-push the master branch to remotes, only
+  to find that the next `git annex merge` or `git annex sync` brings the
+  changes back. Why? Because the `synced/master` branch is hanging
+  around and still has the change in it. Cleaning up the `synced/` branches
+  prevents that problem.
+
 # SEE ALSO
 
 [[git-annex]](1)

@@ -6,6 +6,7 @@ git-annex (6.20170926) UNRELEASED; urgency=medium
   * Warn when metadata is inherited from a previous version of a file,
     to avoid the user being surprised in cases where that behavior is not
     desired or expected.
+  * sync: Added --cleanup, which removes local and remote synced/ branches.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Sep 2017 12:01:39 -0400
 

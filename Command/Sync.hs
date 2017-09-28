@@ -59,6 +59,7 @@ import Annex.BloomFilter
 import Annex.UpdateInstead
 import Annex.Export
 import Annex.LockFile
+import Annex.TaggedPush
 import qualified Database.Export as Export
 import Utility.Bloom
 import Utility.OptParse
@@ -82,6 +83,7 @@ data SyncOptions  = SyncOptions
 	, contentOption :: Bool
 	, noContentOption :: Bool
 	, contentOfOption :: [FilePath]
+	, cleanupOption :: Bool
 	, keyOptions :: Maybe KeyOptions
 	, resolveMergeOverride :: ResolveMergeOverride
 	}
@@ -129,6 +131,10 @@ optParser desc = SyncOptions
 		<> help "transfer file contents of files in a given location"
 		<> metavar paramPath
 		))
+	<*> switch
+		( long "cleanup"
+		<> help "remove synced/ branches from previous sync"
+		)
 	<*> optional parseAllOption
 	<*> (ResolveMergeOverride <$> invertableSwitch "resolvemerge" True
 		( help "do not automatically resolve merge conflicts"
@@ -147,6 +153,7 @@ instance DeferredParseClass SyncOptions where
 		<*> pure (contentOption v)
 		<*> pure (noContentOption v)
 		<*> liftIO (mapM absPath (contentOfOption v))
+		<*> pure (cleanupOption v)
 		<*> pure (keyOptions v)
 		<*> pure (resolveMergeOverride v)
 
@@ -163,32 +170,39 @@ seek o = allowConcurrentOutput $ do
 		. filter (\r -> Remote.uuid r /= NoUUID)
 		<$> filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) remotes
 
-	-- Syncing involves many actions, any of which can independently
-	-- fail, without preventing the others from running.
-	-- These actions cannot be run concurrently.
-	mapM_ includeCommandAction $ concat
-		[ [ commit o ]
-		, [ withbranch (mergeLocal mergeConfig (resolveMergeOverride o)) ]
-		, map (withbranch . pullRemote o mergeConfig) gitremotes
-		,  [ mergeAnnex ]
-		]
-	whenM shouldsynccontent $ do
-		syncedcontent <- seekSyncContent o dataremotes
-		exportedcontent <- seekExportContent exportremotes
-		-- Transferring content can take a while,
-		-- and other changes can be pushed to the git-annex
-		-- branch on the remotes in the meantime, so pull
-		-- and merge again to avoid our push overwriting
-		-- those changes.
-		when (syncedcontent || exportedcontent) $ do
+	if cleanupOption o
+		then do
+			commandAction (withbranch cleanupLocal)
+			mapM_ (commandAction . withbranch . cleanupRemote) gitremotes
+		else do
+			-- Syncing involves many actions, any of which
+			-- can independently fail, without preventing
+			-- the others from running. 
+			-- These actions cannot be run concurrently.
 			mapM_ includeCommandAction $ concat
-				[ map (withbranch . pullRemote o mergeConfig) gitremotes
-				, [ commitAnnex, mergeAnnex ]
+				[ [ commit o ]
+				, [ withbranch (mergeLocal mergeConfig (resolveMergeOverride o)) ]
+				, map (withbranch . pullRemote o mergeConfig) gitremotes
+				,  [ mergeAnnex ]
 				]
+			
+			whenM shouldsynccontent $ do
+				syncedcontent <- seekSyncContent o dataremotes
+				exportedcontent <- seekExportContent exportremotes
+				-- Transferring content can take a while,
+				-- and other changes can be pushed to the
+				-- git-annex branch on the remotes in the
+				-- meantime, so pull and merge again to
+				-- avoid our push overwriting those changes.
+				when (syncedcontent || exportedcontent) $ do
+					mapM_ includeCommandAction $ concat
+						[ map (withbranch . pullRemote o mergeConfig) gitremotes
+						, [ commitAnnex, mergeAnnex ]
+						]
 	
-	void $ includeCommandAction $ withbranch pushLocal
-	-- Pushes to remotes can run concurrently.
-	mapM_ (commandAction . withbranch . pushRemote o) gitremotes
+			void $ includeCommandAction $ withbranch pushLocal
+			-- Pushes to remotes can run concurrently.
+			mapM_ (commandAction . withbranch . pushRemote o) gitremotes
   where
 	shouldsynccontent = pure (contentOption o)
 		<||> pure (not (null (contentOfOption o)))
@@ -682,3 +696,32 @@ seekExportContent rs = or <$> forM rs go
 			Remote.name r ++ 
 			". Use git-annex export to resolve this conflict."
 		return False
+
+cleanupLocal :: CurrBranch -> CommandStart
+cleanupLocal (Nothing, _) = stop
+cleanupLocal (Just currb, _) = do
+	showStart "cleanup" "local"
+	next $ next $ do
+		delbranch $ syncBranch currb
+		delbranch $ syncBranch $ Git.Ref.base $ Annex.Branch.name
+		mapM_ (\(s,r) -> inRepo $ Git.Ref.delete s r)
+			=<< listTaggedBranches
+		return True
+  where
+	delbranch b = whenM (inRepo $ Git.Ref.exists $ Git.Ref.branchRef b) $
+		inRepo $ Git.Branch.delete b
+
+cleanupRemote :: Remote -> CurrBranch -> CommandStart
+cleanupRemote _ (Nothing, _) = stop
+cleanupRemote remote (Just b, _) = do
+	showStart "cleanup" (Remote.name remote)
+	next $ next $
+		inRepo $ Git.Command.runBool
+			[ Param "push"
+			, Param "--quiet"
+			, Param "--delete"
+			, Param $ Remote.name remote
+			, Param $ Git.fromRef $ syncBranch b
+			, Param $ Git.fromRef $ syncBranch $
+				Git.Ref.base $ Annex.Branch.name
+			]
