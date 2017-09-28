@@ -244,12 +244,17 @@ removeEmptyFields (MetaData m) = MetaData $ M.filter (not . S.null) m
 metaDataValues :: MetaField -> MetaData -> S.Set MetaValue
 metaDataValues f (MetaData m) = fromMaybe S.empty (M.lookup f m)
 
+mapMetaData :: (S.Set MetaValue -> S.Set MetaValue) -> MetaData -> MetaData
+mapMetaData f (MetaData m) = MetaData (M.map f m)
+
 {- Ways that existing metadata can be modified -}
 data ModMeta
 	= AddMeta MetaField MetaValue
 	| DelMeta MetaField (Maybe MetaValue)
 	-- ^ delete value of a field. With Just, only that specific value
-	-- is deleted; with Nothing, all current values are deleted.
+	-- is deleted; with Nothing, all current values are deleted.a
+	| DelAllMeta
+	-- ^ delete all currently set metadata
 	| SetMeta MetaField (S.Set MetaValue)
 	-- ^ removes any existing values
 	| MaybeSetMeta MetaField MetaValue
@@ -265,6 +270,9 @@ modMeta _ (DelMeta f (Just oldv)) =
 	updateMetaData f (unsetMetaValue oldv) emptyMetaData
 modMeta m (DelMeta f Nothing) = MetaData $ M.singleton f $
 	S.fromList $ map unsetMetaValue $ S.toList $ currentMetaDataValues f m
+modMeta m DelAllMeta = mapMetaData
+	(S.fromList . map unsetMetaValue . S.toList)
+	(currentMetaData m)
 modMeta m (SetMeta f s) = updateMetaData' f s $
 	foldr (updateMetaData f) emptyMetaData $
 		map unsetMetaValue $ S.toList $ currentMetaDataValues f m

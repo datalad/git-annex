@@ -60,6 +60,15 @@ automatically.
 
   Unset a tag.
 
+* `--remove-all`
+
+  Remove all metadata from the specified files.
+
+  When a file is modified and the new version added, git-annex will copy
+  over the metadata from the old version of the file. In situations where
+  you don't want that copied metadata, you can use this option to remove
+  it.
+
 * `--force`
 
   By default, `git annex metadata` refuses to recursively set metadata

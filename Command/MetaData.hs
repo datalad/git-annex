@@ -64,6 +64,10 @@ optParser desc = MetaDataOptions
 			( long "remove"  <> short 'r' <> metavar "FIELD"
 			<> help "remove all values of a field"
 			)
+		<|> flag' DelAllMeta
+			( long "remove-all"
+			<> help "remove all metadata"
+			)
 
 seek :: MetaDataOptions -> CommandSeek
 seek o = case batchOption o of
