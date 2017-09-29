@@ -109,7 +109,7 @@ toStart move afile key ai dest = do
 toStart' :: Remote -> Bool -> AssociatedFile -> Key -> ActionItem -> CommandStart
 toStart' dest move afile key ai = do
 	fast <- Annex.getState Annex.fast
-	if fast && not move && not (Remote.hasKeyCheap dest)
+	if fast && not move
 		then ifM (expectedPresent dest key)
 			( stop
 			, go True (pure $ Right False)
