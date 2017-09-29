@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-09-29T16:27:40Z"
+ content="""
+ikiwiki gets slow the more pages it has to deal with. With only a few
+thousand pages, it's pretty fast. Including comments, there are currently 
+nearly 10k pages here. (The server might also have been overloaded
+for some reason when this bug was filed. There were some stability problems
+in august related to apache bugs.)
+
+In the past I've deleted old closed bugs to speed it back up.
+There around 3k pages in bugs and todo including comments.
+
+Deleted bugs closed before this year and removed almost 1k pages.
+
+Also, needing to update the rss and atom feeds when adding a bug
+meant writing over 10 mb to disk every time. Limited the size of those
+feeds, which should help a lot.
+"""]]
