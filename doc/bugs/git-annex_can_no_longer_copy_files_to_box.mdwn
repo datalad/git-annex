@@ -22,7 +22,7 @@ Add a file to an annex repo with a webdav backend set up per the settings above:
 
 Attempt to copy that file to the webdav backend:
 
-     git copy -t box test.pdf
+     git-annex copy -t box test.pdf
 
 ### What version of git-annex are you using? On what operating system?
 
