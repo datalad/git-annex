@@ -1,3 +1,0 @@
-[[!meta author=yoh]]
-
-> [[done]] (using json input) --[[Joey]]
