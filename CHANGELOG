@@ -11,6 +11,7 @@ git-annex (6.20170926) UNRELEASED; urgency=medium
     could be output, which messed up the expected output for --batch mode.
   * external: Avoid checking EXPORTSUPPORTED for special remotes that are
     not configured to use exports.
+  * test: Fix reversion that made it only run inside a git repository.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Sep 2017 12:01:39 -0400
 
