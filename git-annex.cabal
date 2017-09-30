@@ -399,6 +399,7 @@ Executable git-annex
   if flag(S3)
     Build-Depends: conduit, conduit-extra, aws (>= 0.9.2)
     CPP-Options: -DWITH_S3
+    Other-Modules: Remote.S3
 
   if flag(WebDAV)
     Build-Depends: DAV (>= 1.0)
@@ -919,7 +920,6 @@ Executable git-annex
     Remote.P2P
     Remote.Rsync
     Remote.Rsync.RsyncUrl
-    Remote.S3
     Remote.Tahoe
     Remote.Web
     Remote.WebDAV
