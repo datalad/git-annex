@@ -28,3 +28,5 @@ Full log is here: https://gist.github.com/ilovezfs/1ed886b43d534b239be25f4aa8b73
 Yes!
 
 [[!meta title="OSX git-annex test fails: Too many open files"]]
+
+> [[fixed|done]] --[[Joey]]

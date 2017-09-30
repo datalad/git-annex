@@ -82,6 +82,7 @@ import qualified Annex.AdjustedBranch
 import qualified Annex.VectorClock
 import qualified Annex.View
 import qualified Annex.View.ViewedFile
+import qualified Annex.Action
 import qualified Logs.View
 import qualified Utility.Path
 import qualified Utility.FileMode
@@ -1778,7 +1779,7 @@ annexeval a = do
 	s <- Annex.new =<< Git.CurrentRepo.get
 	Annex.eval s $ do
 		Annex.setOutput Types.Messages.QuietOutput
-		a
+		a `finally` Annex.Action.stopCoProcesses
 
 innewrepo :: Assertion -> Assertion
 innewrepo a = withgitrepo $ \r -> indir r a
@@ -1813,7 +1814,8 @@ intmpclonerepoInDirect a = intmpclonerepo $
 checkRepo :: Types.Annex a -> FilePath -> IO a
 checkRepo getval d = do
 	s <- Annex.new =<< Git.Construct.fromPath d
-	Annex.eval s getval
+	Annex.eval s $
+		getval `finally` Annex.Action.stopCoProcesses
 
 isInDirect :: FilePath -> IO Bool
 isInDirect = checkRepo (not <$> Config.isDirect)

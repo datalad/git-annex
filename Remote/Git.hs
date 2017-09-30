@@ -59,7 +59,7 @@ import Annex.Path
 import Creds
 import Messages.Progress
 import Types.NumCopies
-import Annex.Concurrent
+import Annex.Action
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
@@ -311,11 +311,12 @@ tryGitConfigRead autoinit r
 	 - it if allowed. However, if that fails, still return the read
 	 - git config. -}
 	readlocalannexconfig = do
-		s <- Annex.new r
-		Annex.eval s $ do
+		let check = do
 			Annex.BranchState.disableUpdate
 			void $ tryNonAsync $ ensureInitialized
 			Annex.getState Annex.repo
+		s <- Annex.new r
+		Annex.eval s $ check `finally` stopCoProcesses
 		
 	configlistfields = if autoinit
 		then [(Fields.autoInit, "1")]
@@ -611,7 +612,7 @@ repairRemote r a = return $ do
 	Annex.eval s $ do
 		Annex.BranchState.disableUpdate
 		ensureInitialized
-		a
+		a `finally` stopCoProcesses
 
 {- Runs an action from the perspective of a local remote.
  -
@@ -632,7 +633,7 @@ onLocal r a = do
 	go st = do
 		curro <- Annex.getState Annex.output
 		(ret, st') <- liftIO $ Annex.run (st { Annex.output = curro }) $
-			stopCoProcesses `after` a
+			a `finally` stopCoProcesses
 		cache st'
 		return ret
 

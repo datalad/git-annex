@@ -17,6 +17,10 @@ import System.Posix.Signals
 import Annex.Common
 import qualified Annex
 import Annex.Content
+import Annex.CatFile
+import Annex.CheckAttr
+import Annex.HashObject
+import Annex.CheckIgnore
 
 {- Actions to perform each time ran. -}
 startup :: Annex ()
@@ -32,4 +36,13 @@ shutdown :: Bool -> Annex ()
 shutdown nocommit = do
 	saveState nocommit
 	sequence_ =<< M.elems <$> Annex.getState Annex.cleanup
+	stopCoProcesses
 	liftIO reapZombies -- zombies from long-running git processes
+
+{- Stops all long-running git query processes. -}
+stopCoProcesses :: Annex ()
+stopCoProcesses = do
+	catFileStop
+	checkAttrStop
+	hashObjectStop
+	checkIgnoreStop
