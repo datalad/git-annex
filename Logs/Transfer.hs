@@ -93,22 +93,23 @@ startTransferInfo afile = TransferInfo
 checkTransfer :: Transfer -> Annex (Maybe TransferInfo)
 checkTransfer t = do
 	tfile <- fromRepo $ transferFile t
+	let lck = transferLockFile tfile
 	let cleanstale = do
 		void $ tryIO $ removeFile tfile
-		void $ tryIO $ removeFile $ transferLockFile tfile
+		void $ tryIO $ removeFile lck
 #ifndef mingw32_HOST_OS
-	let lck = transferLockFile tfile
 	v <- getLockStatus lck
 	case v of
 		StatusLockedBy pid -> liftIO $ catchDefaultIO Nothing $
 			readTransferInfoFile (Just pid) tfile
-		StatusNoLockFile -> return Nothing
-		StatusUnLocked -> do
+		_ -> do
 			-- Take a non-blocking lock while deleting
 			-- the stale lock file. Ignore failure
 			-- due to permissions problems, races, etc.
 			void $ tryIO $ do
-				r <- tryLockExclusive Nothing lck
+				mode <- annexFileMode
+				let lck = transferLockFile tfile
+				r <- tryLockExclusive (Just mode) lck
 				case r of
 					Just lockhandle -> liftIO $ do
 						cleanstale
@@ -116,7 +117,7 @@ checkTransfer t = do
 					_ -> noop
 			return Nothing
 #else
-	v <- liftIO $ lockShared $ transferLockFile tfile
+	v <- liftIO $ lockShared lck
 	liftIO $ case v of
 		Nothing -> catchDefaultIO Nothing $
 			readTransferInfoFile Nothing tfile

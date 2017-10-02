@@ -17,6 +17,7 @@ git-annex (6.20170926) UNRELEASED; urgency=medium
   * Fix process and file descriptor leak that was exposed when
     git-annex was built with ghc 8.2.1. Broke git-annex test on OSX
     due to running out of FDs, and may have also leaked in other situations.
+  * info: Improve cleanup of stale transfer info files.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Sep 2017 12:01:39 -0400
 
