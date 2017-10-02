@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-10-02T16:40:44Z"
+ content="""
+The way to do this is to use `git clone --shared`.
+Since git-annex version, 5.20140915, it detects when a new
+repository has been cloned that way and enables annex.hardlink,
+so files are inexpensively linked into place in the clone when getting them
+from the origin on the same filesystem.
+"""]]
