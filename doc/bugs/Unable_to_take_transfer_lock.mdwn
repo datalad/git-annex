@@ -39,3 +39,8 @@ Mac OS X 10.11.1 (El Capitan)
 Yes.
 
 It's wonderful. This should be a problem with Mac OS.
+
+> [[done]]; this appears to be the same bug as 
+> [[parallel_get_can_fail_some_downloads_and_require_re-getting_]], 
+> which was fixed in 6.20170520.
+> --[[Joey]] 
