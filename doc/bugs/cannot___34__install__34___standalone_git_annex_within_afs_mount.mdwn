@@ -1,0 +1,24 @@
+### Please describe the problem.
+
+Cannot even extract the standalone linux tarball for deployment on our processing server:
+
+[[!format sh """
+[mvdoc@rolando bin] > tar -xzf git-annex-standalone-amd64.tar.gz 
+tar: git-annex.linux/shimmed/git-fsck/git-fsck: Cannot hard link to `git-annex.linux/shimmed/git-help/git-help': Invalid cross-device link
+tar: git-annex.linux/shimmed/git-cat-file/git-cat-file: Cannot hard link to `git-annex.linux/shimmed/git-help/git-help': Invalid cross-device link
+tar: git-annex.linux/shimmed/git-init/git-init: Cannot hard link to `git-annex.linux/shimmed/git-help/git-help': Invalid cross-device link
+...
+tar: Exiting with failure status due to previous errors
+
+[mvdoc@rolando bin] > ls -l git-annex.linux/shimmed/git-pack-redundant/git-pack-redundant git-annex.linux/shimmed/git-help/git-help
+ls: cannot access git-annex.linux/shimmed/git-pack-redundant/git-pack-redundant: No such file or directory
+-rwxr-xr-x 1 mvdoc users 2023056 Oct 29 22:44 git-annex.linux/shimmed/git-help/git-help
+[mvdoc@rolando bin] > 
+
+
+# End of transcript or log.
+"""]]
+
+[[!meta author=yoh]]
+
+> [[done]] --[[Joey]]

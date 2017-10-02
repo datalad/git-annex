@@ -1,0 +1,5 @@
+You have noted that somewhere (may be in email), that it might help us to pipeline things if 'add' was returning the key if file was added to the annex.  I guess the same could apply to 'addurl' so decided to mark this separate todo
+
+[[!meta author=yoh]]
+
+> already done earlier today [[done]] --[[Joey]]
