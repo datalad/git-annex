@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="jgoerzen"
+ avatar="http://cdn.libravatar.org/avatar/090740822c9dcdb39ffe506b890981b4"
+ subject="A hint?"
+ date="2017-10-02T02:05:32Z"
+ content="""
+Hi folks,
+
+I no longer use git-annex so I can't comment directly on this.  However, in some testing with git-remote-gcrypt, I came across an issue where changes seem to be lost.  In short, every git push behaves as if --force were given.  Details in [Debian but #877464](https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=877464).
+"""]]
