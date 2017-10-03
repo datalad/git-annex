@@ -15,7 +15,7 @@
   limiting, then git-annex could be a useful alternative.
 
 * git-annex is also not a folder mirroring system like [syncthing](https://syncthing.net/) 
-  (although [syncthing could be supported as a special remote](todo/syncthing_special_remote/))
+  (although [[syncthing could be supported as a special remote|todo/syncthing_special_remote/]])
   or [gut](https://github.com/tillberg/gut), but it can be used to sync
   files such a way, with certain limitations (for example, it doesn't
   like syncing `.git` directories so much).
