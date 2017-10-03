@@ -108,7 +108,6 @@ checkTransfer t = do
 			-- due to permissions problems, races, etc.
 			void $ tryIO $ do
 				mode <- annexFileMode
-				let lck = transferLockFile tfile
 				r <- tryLockExclusive (Just mode) lck
 				case r of
 					Just lockhandle -> liftIO $ do
