@@ -2,7 +2,7 @@
 
 With the upgrade to git-annex 6.20170925 I can no longer copy files to box via webdav. I notice that the changelog suggests that there were many changes to the webdav backend, including a new path for temporary files and url-escaping of file names. I have been using webdav + Box successfully for almost two years. My box/webdav backed was set up with chunking and encryption:
 
-     WEBDAV_USERNAME=[username] WEBDAV_PASSWORD=[passwd] git annex initremote box type=webdav url=https://dav.box.com/dav/git-annex chunk=100mb keyid=[keyid]
+     WEBDAV_USERNAME=[username] WEBDAV_PASSWORD=[passwd] git annex initremote box type=webdav url=https://dav.box.com/dav/mystuff/annex chunk=100mb keyid=[keyid]
 
 Now when I try to add and copy a file to webdav I get the following error:
 
