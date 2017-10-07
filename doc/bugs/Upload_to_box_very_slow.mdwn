@@ -7,7 +7,7 @@ I used git bisect and rebuilds via stack to locate the commit that introduced th
      Bisecting: 0 revisions left to test after this (roughly 0 steps)
      [cf51f40f0eaed2c5968f35b94bebab4a1c819491] webdav: Changed path used on webdav server for temporary files.
 
-Please note: this is a different problem than the bug I reported here (https://git-annex.branchable.com/bugs/git-annex_can_no_longer_copy_files_to_box/), since it also affects the standalone version.
+Please note: this is distinct from the bug I reported here (https://git-annex.branchable.com/bugs/git-annex_can_no_longer_copy_files_to_box/), since it also affects the standalone version.
 
 ### What steps will reproduce the problem?
 
