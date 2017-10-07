@@ -20,6 +20,8 @@ import qualified Network.HTTP.Client as HTTP
 import Network.HTTP.Types
 import System.IO.Error
 import Control.Monad.Catch
+import Control.Monad.IO.Class (MonadIO)
+import System.Log.Logger (debugM)
 
 import Annex.Common
 import Types.Remote
@@ -130,12 +132,14 @@ store _  (Just dav) = httpStorer $ \k reqbody -> liftIO $ goDAV dav $ do
 storeHelper :: DavHandle -> DavLocation -> DavLocation -> RequestBody -> DAVT IO ()
 storeHelper dav tmp dest reqbody = do
 	maybe noop (void . mkColRecursive) (locationParent tmp)
+	debugDav $ "putContent " ++ tmp
 	inLocation tmp $
 		putContentM' (contentType, reqbody)
 	finalizeStore dav tmp dest
 
 finalizeStore :: DavHandle -> DavLocation -> DavLocation -> DAVT IO ()
 finalizeStore dav tmp dest = do
+	debugDav $ "delContent " ++ dest
 	inLocation dest $ void $ safely $ delContentM
 	maybe noop (void . mkColRecursive) (locationParent dest)
 	moveDAV (baseURL dav) tmp dest
@@ -150,8 +154,10 @@ retrieve _ (Just dav) = fileRetriever $ \d k p -> liftIO $
 	goDAV dav $ retrieveHelper (keyLocation k) d p
 
 retrieveHelper :: DavLocation -> FilePath -> MeterUpdate -> DAVT IO ()
-retrieveHelper loc d p = inLocation loc $
-	withContentM $ httpBodyRetriever d p
+retrieveHelper loc d p = do
+	debugDav $ "retrieve " ++ loc
+	inLocation loc $
+		withContentM $ httpBodyRetriever d p
 
 remove :: Maybe DavHandle -> Remover
 remove Nothing _ = return False
@@ -162,6 +168,7 @@ remove (Just dav) k = liftIO $ goDAV dav $
 
 removeHelper :: DavLocation -> DAVT IO Bool
 removeHelper d = do
+	debugDav $ "delContent " ++ d
 	v <- safely $ inLocation d delContentM
 	case v of
 		Just _ -> return True
@@ -205,8 +212,10 @@ removeExportDav mh _k loc = runExport mh $ \_dav ->
 	removeHelper (exportLocation loc)
 
 removeExportDirectoryDav :: Maybe DavHandle -> ExportDirectory -> Annex Bool
-removeExportDirectoryDav mh dir = runExport mh $ \_dav ->
-	safely (inLocation (fromExportDirectory dir) delContentM)
+removeExportDirectoryDav mh dir = runExport mh $ \_dav -> do
+	let d = fromExportDirectory dir
+	debugDav $ "delContent " ++ d
+	safely (inLocation d delContentM)
 		>>= maybe (return False) (const $ return True)
 
 renameExportDav :: Maybe DavHandle -> Key -> ExportLocation -> ExportLocation -> Annex Bool
@@ -295,14 +304,16 @@ mkColRecursive :: DavLocation -> DAVT IO Bool
 mkColRecursive d = go =<< existsDAV d
   where
 	go (Right True) = return True
-	go _ = ifM (inLocation d mkCol)
-		( return True
-		, do
-			case locationParent d of
-				Nothing -> makeParentDirs
-				Just parent -> void (mkColRecursive parent)
-			inLocation d mkCol
-		)
+	go _ = do
+		debugDav $ "mkCol " ++ d
+		ifM (inLocation d mkCol)
+			( return True
+			, do
+				case locationParent d of
+					Nothing -> makeParentDirs
+					Just parent -> void (mkColRecursive parent)
+				inLocation d mkCol
+			)
 
 getCreds :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex (Maybe CredPair)
 getCreds c gc u = getRemoteCredPairFor "webdav" c gc (davCreds u)
@@ -322,12 +333,16 @@ throwIO :: String -> IO a
 throwIO msg = ioError $ mkIOError userErrorType msg Nothing Nothing
 
 moveDAV :: URLString -> DavLocation -> DavLocation -> DAVT IO ()
-moveDAV baseurl src dest = inLocation src $ moveContentM newurl
+moveDAV baseurl src dest = do
+	debugDav $ "moveContent " ++ src ++ " " ++ newurl
+	inLocation src $ moveContentM (B8.fromString newurl)
   where
-	newurl = B8.fromString (locationUrl baseurl dest)
+	newurl = locationUrl baseurl dest
 
 existsDAV :: DavLocation -> DAVT IO (Either String Bool)
-existsDAV l = inLocation l check `catchNonAsync` (\e -> return (Left $ show e))
+existsDAV l = do
+	debugDav $ "getProps " ++ l
+	inLocation l check `catchNonAsync` (\e -> return (Left $ show e))
   where
 	check = do
 		-- Some DAV services only support depth of 1, and
@@ -415,6 +430,7 @@ storeLegacyChunked chunksize k dav b =
   where
 	storehttp l b' = void $ goDAV dav $ do
 		maybe noop (void . mkColRecursive) (locationParent l)
+		debugDav $ "putContent " ++ l
 		inLocation l $ putContentM (contentType, b')
 	storer locs = Legacy.storeChunked chunksize locs storehttp b
 	recorder l s = storehttp l (L8.fromString s)
@@ -428,7 +444,8 @@ retrieveLegacyChunked :: DavHandle -> Retriever
 retrieveLegacyChunked dav = fileRetriever $ \d k p -> liftIO $
 	withStoredFilesLegacyChunked k dav onerr $ \locs ->
 		Legacy.meteredWriteFileChunks p d locs $ \l ->
-			goDAV dav $
+			goDAV dav $ do
+				debugDav $ "getContent " ++ l
 				inLocation l $
 					snd <$> getContentM
   where
@@ -462,7 +479,8 @@ withStoredFilesLegacyChunked
 	-> IO a
 withStoredFilesLegacyChunked k dav onerr a = do
 	let chunkcount = keyloc ++ Legacy.chunkCount
-	v <- goDAV dav $ safely $ 
+	v <- goDAV dav $ safely $ do
+		debugDav $ "getContent " ++ chunkcount
 		inLocation chunkcount $
 			snd <$> getContentM
 	case v of
@@ -475,3 +493,6 @@ withStoredFilesLegacyChunked k dav onerr a = do
 				else a chunks
   where
 	keyloc = keyLocation k
+
+debugDav :: MonadIO m => String -> DAVT m ()
+debugDav msg = liftIO $ debugM "WebDAV" msg

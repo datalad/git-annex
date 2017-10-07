@@ -1,3 +1,9 @@
+git-annex (6.20171004) UNRELEASED; urgency=medium
+
+  * webdav: Make --debug show all webdav operations.
+
+ -- Joey Hess <id@joeyh.name>  Sat, 07 Oct 2017 14:11:00 -0400
+
 git-annex (6.20171003) unstable; urgency=medium
 
   * webdav: Improve error message for failed request to include the request
