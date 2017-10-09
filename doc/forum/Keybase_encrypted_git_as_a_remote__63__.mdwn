@@ -1,0 +1,6 @@
+Hello,
+
+Does anybody have experience of the new keybase encrypted git as a remote for git annex?
+
+Details can be found here: https://keybase.io/blog/encrypted-git-for-everyone
+
