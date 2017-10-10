@@ -1,0 +1,30 @@
+### Please describe the problem.
+
+Not sure how I have missed this issue for a while, since now I have tried with almost year old 6.20170101-1+b1 -- the same story as with 6.20171003-g14ffdd779
+
+I expect those files to be readable according to the 'shared' setting but definitely not writeable!
+
+### Please provide any additional information below.
+
+[[!format sh """
+$> sudo rm -rf tttt; mkdir tttt; ( cd tttt; git init --shared .; git annex init ; echo 123 >123; git annex add 123; git commit -m 'added 123'; ls -lL 123; ) 
+Initialized empty shared Git repository in /tmp/tttt/.git/
+init  ok
+(recording state in git...)
+add 123 ok
+(recording state in git...)
+[master (root-commit) b137ea6] added 123
+ 1 file changed, 1 insertion(+)
+ create mode 120000 123
+-rw-rw---- 1 yoh yoh 4 Oct 10 12:59 123
+
+$> echo 11 >> tttt/123
+# no error code
+"""]]
+
+FWIW my umask is 077 but originally discovered on a system with umask 0002
+
+I guess I need to annex fsck tons of repositories now :-/
+
+[[!meta author=yoh]]
+
