@@ -497,7 +497,7 @@ withS3HandleMaybe c gc u a = do
 		Just creds -> do
 			awscreds <- liftIO $ genCredentials creds
 			let awscfg = AWS.Configuration AWS.Timestamp awscreds debugMapper
-#if MIN_VERSION_aws(0,11,0)
+#if MIN_VERSION_aws(0,17,0)
 				Nothing
 #endif
 			bracketIO (newManager managerSettings) closeManager $ \mgr -> 
