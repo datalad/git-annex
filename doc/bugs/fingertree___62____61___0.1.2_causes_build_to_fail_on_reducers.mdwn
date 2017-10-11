@@ -47,3 +47,11 @@ Full log is here: https://gist.github.com/ilovezfs/544d546785addbe2c5ef41656fa7e
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes :)
+
+> I see this was fixed in the meantime in fingertree-0.1.2.
+> 
+> Also, I'd prefer not to complicate git-annex's dependencies with
+> versioning for indirect dependencies like this one, unless there's
+> some long drawn-out breakage to contend with.
+> 
+> [[done]] --[[Joey]]
