@@ -58,10 +58,11 @@ tmpLocation f = "git-annex-webdav-tmp-" ++ f
 
 locationParent :: String -> Maybe String
 locationParent loc
-	| loc `elem` tops = Nothing
-	| otherwise = Just (takeDirectory loc)
+	| loc `elem` tops || parent `elem` tops = Nothing
+	| otherwise = Just parent
   where
 	tops = ["/", "", "."]
+	parent = takeDirectory loc
 
 locationUrl :: URLString -> DavLocation -> URLString
 locationUrl baseurl loc = baseurl </> loc

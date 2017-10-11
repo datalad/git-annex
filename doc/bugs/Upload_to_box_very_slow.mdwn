@@ -118,3 +118,5 @@ Notice the 5 second gap here:
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes! Thank you!
+
+> [[fixed|done]] --[[Joey]]

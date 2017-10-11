@@ -2,6 +2,11 @@ git-annex (6.20171004) UNRELEASED; urgency=medium
 
   * webdav: Make --debug show all webdav operations.
   * Fix build with aws-0.17.
+  * webdav: Avoid unncessisarily creating the collection at the top
+    of the repository when storing files there, since that collection
+    is created by initremote.
+    (This seems to work around some brokenness of the box.com webdav
+    server which was entering a redirect loop.)
 
  -- Joey Hess <id@joeyh.name>  Sat, 07 Oct 2017 14:11:00 -0400
 
