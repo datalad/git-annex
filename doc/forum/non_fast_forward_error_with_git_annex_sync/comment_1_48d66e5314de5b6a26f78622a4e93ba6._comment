@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="matyasbot@fd008517d046c382e18306c0b3db48eb58d45dee"
+ nickname="matyasbot"
+ avatar="http://cdn.libravatar.org/avatar/c1b6b47dcdf2962858e6aad44a3cec66"
+ subject="pull didn't do anything either"
+ date="2017-10-11T14:23:29Z"
+ content="""
+Also, despite the pull claiming to have succeded, there was a new directory on the remote that did not get transferred to the local repo during the sync.
+"""]]
