@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2017-10-11T15:59:16Z"
+ content="""
+It's easy to have multiple versions of git-annex installed. Especially
+when a repository is shared amoung users, who may install different
+versions for their own reasons.
+
+I am not happy either about this weakening of safety guarantees that indirect
+mode repositories otherwise have. It seems at least worth a big fat
+warning.
+
+I don't feel comfortable changing locking without a major repository
+version change, which would be a Big Deal.
+
+Anyhow the file mode and directory mode are both needed to protect annexed
+files. Making the file read-only will not prevent a lot of things
+renaming over top of it. (Including vim!)
+"""]]
