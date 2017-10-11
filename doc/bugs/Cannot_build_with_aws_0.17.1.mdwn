@@ -43,3 +43,5 @@ Full build log is here: https://gist.github.com/ilovezfs/661a158dbe8aac33802f9b4
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes! :)
+
+> [[fixed|done]] --[[Joey]]
