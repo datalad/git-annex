@@ -40,8 +40,10 @@ rm -f git-annex-installer.exe
 cabal update || true
 
 # workaround strange cabal install bug for xss-sanitize
-git clone https://github.com/yesodweb/haskell-xss-sanitize xss-sanitize
-(cd xss-sanitize && cabal install)
+if [ ! -d xss-sanitize ]; then
+	git clone https://github.com/yesodweb/haskell-xss-sanitize xss-sanitize
+	(cd xss-sanitize && cabal install)
+fi
 
 cabal install --only-dependencies \
 		--constraint='persistent-sqlite ==2.2' \
