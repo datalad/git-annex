@@ -43,3 +43,5 @@ git annex version =
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes! A huge word of thanks for this amazing software! Since I work on multiple linux boxes, git annex keeps track of all my big files and enables me to move them back and forth with minimal fuss.
+
+> [[done]]; seems this is fixed. --[[Joey]]
