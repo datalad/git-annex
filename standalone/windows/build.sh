@@ -39,7 +39,10 @@ rm -f git-annex-installer.exe
 # for haskell libraries to link them with the cygwin library.
 cabal update || true
 
-cabal install xss-sanitize
+# workaround strange cabal install bug for xss-sanitize
+git clone https://github.com/yesodweb/haskell-xss-sanitize xss-sanitize
+(cd xss-sanitize && cabal install)
+
 cabal install --only-dependencies \
 		--constraint='persistent-sqlite ==2.2' \
 		--constraint='cryptonite ==0.7' \
