@@ -91,7 +91,8 @@ seek o = do
 	zone <- liftIO getCurrentTimeZone
 	let outputter = mkOutputter m zone o
 	case (logFiles o, allOption o) of
-		(fs, False) -> withFilesInGit (whenAnnexed $ start o outputter) fs
+		(fs, False) -> withFilesInGit (whenAnnexed $ start o outputter) 
+			=<< workTreeItems fs
 		([], True) -> commandAction (startAll o outputter)
 		(_, True) -> giveup "Cannot specify both files and --all"
 

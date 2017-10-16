@@ -576,7 +576,10 @@ seekSyncContent o rs = do
 	mvar <- liftIO newEmptyMVar
 	bloom <- case keyOptions o of
 		Just WantAllKeys -> Just <$> genBloomFilter (seekworktree mvar [])
-		_ -> seekworktree mvar (contentOfOption o) (const noop) >> pure Nothing
+		_ -> do
+			l <- workTreeItems (contentOfOption o)
+			seekworktree mvar l (const noop)
+			pure Nothing
 	withKeyOptions' (keyOptions o) False
 		(return (seekkeys mvar bloom))
 		(const noop)

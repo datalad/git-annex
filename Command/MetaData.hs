@@ -81,7 +81,7 @@ seek o = case batchOption o of
 		withKeyOptions (keyOptions o) False
 			(startKeys c o)
 			(seeker $ whenAnnexed $ start c o)
-			(forFiles o)
+			=<< workTreeItems (forFiles o)
 	Batch -> withMessageState $ \s -> case outputType s of
 		JSONOutput _ -> batchInput parseJSONInput $
 			commandAction . startBatch

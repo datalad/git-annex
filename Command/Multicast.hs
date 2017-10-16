@@ -131,7 +131,7 @@ send ups fs = withTmpFile "send" $ \t h -> do
 		giveup "Sorry, multicast send cannot be done from a direct mode repository."
 	
 	showStart "generating file list" ""
-	fs' <- seekHelper LsFiles.inRepo fs
+	fs' <- seekHelper LsFiles.inRepo =<< workTreeItems fs
 	matcher <- Limit.getMatcher
 	let addlist f o = whenM (matcher $ MatchingFile $ FileInfo f f) $
 		liftIO $ hPutStrLn h o

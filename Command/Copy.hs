@@ -43,7 +43,7 @@ seek o = allowConcurrentOutput $ do
 			(Command.Move.keyOptions $ moveOptions o) (autoMode o)
 			(Command.Move.startKey (moveOptions o) False)
 			(withFilesInGit go)
-			(Command.Move.moveFiles $ moveOptions o)
+			=<< workTreeItems (Command.Move.moveFiles $ moveOptions o)
 
 {- A copy is just a move that does not delete the source file.
  - However, auto mode avoids unnecessary copies, and avoids getting or

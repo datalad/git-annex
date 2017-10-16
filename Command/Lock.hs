@@ -29,12 +29,14 @@ cmd = notDirect $ withGlobalOptions annexedMatchingOptions $
 		paramPaths (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek ps = ifM versionSupportsUnlockedPointers
-	( withFilesInGit (whenAnnexed startNew) ps
-	, do
-		withFilesOldUnlocked startOld ps
-		withFilesOldUnlockedToBeCommitted startOld ps
-	)
+seek ps = do
+	l <- workTreeItems ps
+	ifM versionSupportsUnlockedPointers
+		( withFilesInGit (whenAnnexed startNew) l
+		, do
+			withFilesOldUnlocked startOld l
+			withFilesOldUnlockedToBeCommitted startOld l
+		)
 
 startNew :: FilePath -> Key -> CommandStart
 startNew file key = ifM (isJust <$> isAnnexLink file)

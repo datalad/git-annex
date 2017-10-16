@@ -93,7 +93,7 @@ seek o = allowConcurrentOutput $ do
 	withKeyOptions (keyOptions o) False
 		(\k ai -> startKey from i k ai =<< getNumCopies)
 		(withFilesInGit $ whenAnnexed $ start from i)
-		(fsckFiles o)
+		=<< workTreeItems (fsckFiles o)
 	cleanupIncremental i
 	void $ tryIO $ recordActivity Fsck u
 

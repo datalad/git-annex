@@ -46,7 +46,7 @@ seek o = allowConcurrentOutput $ do
 		NoBatch -> withKeyOptions (keyOptions o) (autoMode o)
 			(startKeys from)
 			(withFilesInGit go)
-			(getFiles o)
+			=<< workTreeItems (getFiles o)
 
 start :: GetOptions -> Maybe Remote -> FilePath -> Key -> CommandStart
 start o from file key = start' expensivecheck from key afile (mkActionItem afile)

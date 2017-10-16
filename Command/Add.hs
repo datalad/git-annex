@@ -63,7 +63,8 @@ seek o = allowConcurrentOutput $ do
 				giveup "--update --batch is not supported"
 			| otherwise -> batchFiles gofile
 		NoBatch -> do
-			let go a = a gofile (addThese o)
+			l <- workTreeItems (addThese o)
+			let go a = a gofile l
 			unless (updateOnly o) $
 				go (withFilesNotInGit (not $ includeDotFiles o))
 			go withFilesMaybeModified

@@ -63,7 +63,7 @@ seek o = allowConcurrentOutput $ do
 		NoBatch -> withKeyOptions (keyOptions o) False
 			(startKey o True)
 			(withFilesInGit go)
-			(moveFiles o)
+			=<< workTreeItems (moveFiles o)
 
 start :: MoveOptions -> Bool -> FilePath -> Key -> CommandStart
 start o move f k = start' o move afile k (mkActionItem afile)

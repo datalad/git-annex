@@ -45,7 +45,7 @@ seek o = allowConcurrentOutput $
 	withKeyOptions (keyOptions o) False
 		(startKey o (AssociatedFile Nothing))
 		(withFilesInGit $ whenAnnexed $ start o)
-		(mirrorFiles o)
+		=<< workTreeItems (mirrorFiles o)
 
 start :: MirrorOptions -> FilePath -> Key -> CommandStart
 start o file k = startKey o afile k (mkActionItem afile)

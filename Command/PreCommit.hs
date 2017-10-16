@@ -49,15 +49,16 @@ seek ps = lockPreCommitHook $ ifM isDirect
 					giveup "Cannot make a partial commit with unlocked annexed files. You should `git annex add` the files you want to commit, and then run git commit."
 				void $ liftIO cleanup
 			, do
+				l <- workTreeItems ps
 				-- fix symlinks to files being committed
-				flip withFilesToBeCommitted ps $ \f -> 
+				flip withFilesToBeCommitted l $ \f -> 
 					maybe stop (Command.Fix.start Command.Fix.FixSymlinks f)
 						=<< isAnnexLink f
 				-- inject unlocked files into the annex
 				-- (not needed when repo version uses
 				-- unlocked pointer files)
 				unlessM versionSupportsUnlockedPointers $
-					withFilesOldUnlockedToBeCommitted startInjectUnlocked ps
+					withFilesOldUnlockedToBeCommitted startInjectUnlocked l
 			)
 		runAnnexHook preCommitAnnexHook
 		-- committing changes to a view updates metadata
