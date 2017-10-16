@@ -11,6 +11,8 @@ set -e
 
 PATH="/c/Program Files (x86)/NSIS:/c/msysgit/cmd:/c/msysgit/bin:$PATH"
 
+ghc --version
+
 # Run a command with the cygwin environment available.
 # However, programs not from cygwin are preferred.
 withcyg () {
