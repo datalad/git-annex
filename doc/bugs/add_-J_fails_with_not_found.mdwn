@@ -37,3 +37,4 @@ lrwxrwxrwx 1 yoh users 129 Dec 12  2016 /mnt/DICOM/test2/inbox/2016/12/12/unknow
 
 so it does report success in json, but complains in stderr that file is not found... I guess some race condition between workers so it manages to catch the moment when file is moved into a key or smth like that?
 
+> [[done]] --[[Joey]] 
