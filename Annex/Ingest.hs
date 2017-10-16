@@ -128,9 +128,7 @@ ingestAdd' ld@(Just (LockedDown cfg source)) mk = do
 		Just k -> do
 			let f = keyFilename source
 			if lockingFile cfg
-				then do
-					liftIO $ nukeFile f
-					addLink f k mic
+				then addLink f k mic
 				else ifM isDirect
 					( do
 						l <- calcRepo $ gitAnnexLink f k

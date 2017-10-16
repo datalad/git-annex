@@ -7,6 +7,9 @@ git-annex (6.20171004) UNRELEASED; urgency=medium
     is created by initremote.
     (This seems to work around some brokenness of the box.com webdav
     server which was entering a redirect loop.)
+  * add: Replace work tree file atomically. Before, there was a window
+    where interrupting an add could result in the file being
+    moved into the annex, with no symlink yet created.
 
  -- Joey Hess <id@joeyh.name>  Sat, 07 Oct 2017 14:11:00 -0400
 
