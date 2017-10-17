@@ -8,7 +8,6 @@
 module Assistant.Types.TransferQueue where
 
 import Annex.Common
-import Types.Transfer
 
 import Control.Concurrent.STM
 import Utility.TList

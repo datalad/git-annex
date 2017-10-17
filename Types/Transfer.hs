@@ -7,10 +7,13 @@
 
 module Types.Transfer where
 
-import Types
+import Types.Remote
+import Types.Key
+import Types.UUID
 import Utility.PID
 import Utility.QuickCheck
 
+import Control.Concurrent.STM
 import Data.Time.Clock.POSIX
 import Control.Concurrent
 import Control.Applicative
@@ -30,18 +33,18 @@ data Transfer = Transfer
  - git repository. It's some file, possibly relative to some directory,
  - of some repository, that was acted on to initiate the transfer.
  -}
-data TransferInfo = TransferInfo
+data TransferInfoA a = TransferInfo
 	{ startedTime :: Maybe POSIXTime
 	, transferPid :: Maybe PID
 	, transferTid :: Maybe ThreadId
-	, transferRemote :: Maybe Remote
+	, transferRemote :: Maybe (RemoteA a)
 	, bytesComplete :: Maybe Integer
 	, associatedFile :: AssociatedFile
 	, transferPaused :: Bool
 	}
 	deriving (Show, Eq, Ord)
 
-stubTransferInfo :: TransferInfo
+stubTransferInfo :: TransferInfoA a
 stubTransferInfo = TransferInfo Nothing Nothing Nothing Nothing Nothing (AssociatedFile Nothing) False
 
 data Direction = Upload | Download
@@ -56,7 +59,7 @@ parseDirection "upload" = Just Upload
 parseDirection "download" = Just Download
 parseDirection _ = Nothing
 
-instance Arbitrary TransferInfo where
+instance Arbitrary (TransferInfoA a) where
 	arbitrary = TransferInfo
 		<$> arbitrary
 		<*> arbitrary

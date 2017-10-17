@@ -61,6 +61,7 @@ import Types.UUID
 import Types.FileMatcher
 import Types.NumCopies
 import Types.LockCache
+import Types.Transfer
 import Types.DesktopNotify
 import Types.CleanupActions
 import qualified Database.Keys.Handle as Keys
@@ -125,6 +126,7 @@ data AnnexState = AnnexState
 	, groupmap :: Maybe GroupMap
 	, ciphers :: M.Map StorableCipher Cipher
 	, lockcache :: LockCache
+	, currentprocesstransfers :: TVar (S.Set Transfer)
 	, sshstalecleaned :: TMVar Bool
 	, flags :: M.Map String Bool
 	, fields :: M.Map String String
@@ -149,6 +151,7 @@ newState c r = do
 	emptyactiveremotes <- newMVar M.empty
 	o <- newMessageState
 	sc <- newTMVarIO False
+	cpt <- newTVarIO S.empty
 	return $ AnnexState
 		{ repo = r
 		, repoadjustment = return
@@ -179,6 +182,7 @@ newState c r = do
 		, groupmap = Nothing
 		, ciphers = M.empty
 		, lockcache = M.empty
+		, currentprocesstransfers = cpt
 		, sshstalecleaned = sc
 		, flags = M.empty
 		, fields = M.empty

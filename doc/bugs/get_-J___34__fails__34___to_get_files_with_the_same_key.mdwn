@@ -46,3 +46,5 @@ so at the end we get a run of git-annex which exits with error 1... and in json 
 I wondered if annex should first analyze passed paths to get actual keys to be fetched?
 
 [[!meta author=yoh]]
+
+> [[fixed|done]] --[[Joey]]

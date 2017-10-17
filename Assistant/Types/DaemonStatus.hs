@@ -38,7 +38,8 @@ data DaemonStatus = DaemonStatus
 	, lastSanityCheck :: Maybe POSIXTime
 	-- True when a scan for file transfers is running
 	, transferScanRunning :: Bool
-	-- Currently running file content transfers
+	-- Currently running file content transfers, for both this process
+	-- and other processes.
 	, currentTransfers :: TransferMap
 	-- Messages to display to the user.
 	, alertMap :: AlertMap

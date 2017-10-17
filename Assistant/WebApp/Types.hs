@@ -22,7 +22,6 @@ import Utility.NotificationBroadcaster
 import Utility.AuthToken
 import Utility.WebApp
 import Utility.Yesod
-import Types.Transfer
 import Utility.Gpg (KeyId)
 import Build.SysConfig (packageversion)
 import Types.ScheduledActivity
