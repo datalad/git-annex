@@ -11,8 +11,8 @@ git-annex (6.20171004) UNRELEASED; urgency=medium
     where interrupting an add could result in the file being
     moved into the annex, with no symlink yet created.
   * Avoid repeated checking that files passed on the command line exist.
-  * Improve behavior when -J transfers multiple files that point to the
-    same key.
+  * get -J/move -J/copy -J/mirror -J/sync -J: Avoid "transfer already in
+    progress" errors when two files use the same key.
   * stack.yaml: Update to lts-9.9.
 
  -- Joey Hess <id@joeyh.name>  Sat, 07 Oct 2017 14:11:00 -0400

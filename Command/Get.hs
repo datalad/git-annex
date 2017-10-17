@@ -62,8 +62,8 @@ startKeys from key ai = checkFailedTransferDirection ai Download $
 	start' (return True) from key (AssociatedFile Nothing) ai
 
 start' :: Annex Bool -> Maybe Remote -> Key -> AssociatedFile -> ActionItem -> CommandStart
-start' expensivecheck from key afile ai = stopUnless (not <$> inAnnex key) $
-	stopUnless expensivecheck $
+start' expensivecheck from key afile ai = onlyActionOn key $
+	stopUnless (not <$> inAnnex key) $ stopUnless expensivecheck $
 		case from of
 			Nothing -> go $ perform key afile
 			Just src ->
@@ -109,10 +109,9 @@ getKey' key afile = dispatch
 		| Remote.hasKeyCheap r =
 			either (const False) id <$> Remote.hasKey r key
 		| otherwise = return True
-	docopy r = download (Remote.uuid r) key afile forwardRetry $ \p ->
-		ifM (inAnnex key)
-			( return True
-			, getViaTmp (RemoteVerify r) key $ \dest -> do
+	docopy r witness = getViaTmp (RemoteVerify r) key $ \dest ->
+		download (Remote.uuid r) key afile forwardRetry
+			(\p -> do
 				showAction $ "from " ++ Remote.name r
 				Remote.retrieveKeyFile r key afile dest p
-			)
+			) witness

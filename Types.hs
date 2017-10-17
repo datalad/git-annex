@@ -15,8 +15,6 @@ module Types (
 	RemoteGitConfig(..),
 	Remote,
 	RemoteType,
-	Transfer,
-	TransferInfo,
 ) where
 
 import Annex
@@ -25,9 +23,7 @@ import Types.GitConfig
 import Types.Key
 import Types.UUID
 import Types.Remote
-import Types.Transfer
 
 type Backend = BackendA Annex
 type Remote = RemoteA Annex
 type RemoteType = RemoteTypeA Annex
-type TransferInfo = TransferInfoA Annex

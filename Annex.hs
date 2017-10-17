@@ -61,7 +61,6 @@ import Types.UUID
 import Types.FileMatcher
 import Types.NumCopies
 import Types.LockCache
-import Types.Transfer
 import Types.DesktopNotify
 import Types.CleanupActions
 import qualified Database.Keys.Handle as Keys
@@ -126,7 +125,6 @@ data AnnexState = AnnexState
 	, groupmap :: Maybe GroupMap
 	, ciphers :: M.Map StorableCipher Cipher
 	, lockcache :: LockCache
-	, currentprocesstransfers :: TVar (S.Set Transfer)
 	, sshstalecleaned :: TMVar Bool
 	, flags :: M.Map String Bool
 	, fields :: M.Map String String
@@ -140,6 +138,7 @@ data AnnexState = AnnexState
 	, existinghooks :: M.Map Git.Hook.Hook Bool
 	, desktopnotify :: DesktopNotify
 	, workers :: [Either AnnexState (Async AnnexState)]
+	, activekeys :: TVar (M.Map Key ThreadId)
 	, activeremotes :: MVar (M.Map (Types.Remote.RemoteA Annex) Integer)
 	, keysdbhandle :: Maybe Keys.DbHandle
 	, cachedcurrentbranch :: Maybe Git.Branch
@@ -149,9 +148,9 @@ data AnnexState = AnnexState
 newState :: GitConfig -> Git.Repo -> IO AnnexState
 newState c r = do
 	emptyactiveremotes <- newMVar M.empty
+	emptyactivekeys <- newTVarIO M.empty
 	o <- newMessageState
 	sc <- newTMVarIO False
-	cpt <- newTVarIO S.empty
 	return $ AnnexState
 		{ repo = r
 		, repoadjustment = return
@@ -182,7 +181,6 @@ newState c r = do
 		, groupmap = Nothing
 		, ciphers = M.empty
 		, lockcache = M.empty
-		, currentprocesstransfers = cpt
 		, sshstalecleaned = sc
 		, flags = M.empty
 		, fields = M.empty
@@ -196,6 +194,7 @@ newState c r = do
 		, existinghooks = M.empty
 		, desktopnotify = mempty
 		, workers = []
+		, activekeys = emptyactivekeys
 		, activeremotes = emptyactiveremotes
 		, keysdbhandle = Nothing
 		, cachedcurrentbranch = Nothing

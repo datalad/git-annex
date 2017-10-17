@@ -47,4 +47,6 @@ I wondered if annex should first analyze passed paths to get actual keys to be f
 
 [[!meta author=yoh]]
 
-> [[fixed|done]] --[[Joey]]
+> [[fixed|done]]; also fixed for several other commands, but the final 
+> fix needed each command that could have the problem to be modified, so 
+> there could possibly be some I missed.. --[[Joey]]

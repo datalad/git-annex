@@ -9,7 +9,6 @@
 
 module Logs.Transfer where
 
-import Types
 import Types.Transfer
 import Types.ActionItem
 import Annex.Common

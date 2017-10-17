@@ -609,7 +609,7 @@ seekSyncContent o rs = do
  - Returns True if any file transfers were made.
  -}
 syncFile :: Either (Maybe (Bloom Key)) (Key -> Annex ()) -> [Remote] -> AssociatedFile -> Key -> Annex Bool
-syncFile ebloom rs af k = do
+syncFile ebloom rs af k = onlyActionOn' k $ do
 	locs <- Remote.keyLocations k
 	let (have, lack) = partition (\r -> Remote.uuid r `elem` locs) rs
 

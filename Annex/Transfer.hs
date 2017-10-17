@@ -32,9 +32,7 @@ import qualified Types.Remote as Remote
 import Types.Concurrency
 
 import Control.Concurrent
-import Control.Concurrent.STM
 import qualified Data.Map.Strict as M
-import qualified Data.Set as S
 import Data.Ord
 
 class Observable a where
@@ -91,23 +89,22 @@ alwaysRunTransfer :: Observable v => Transfer -> AssociatedFile -> RetryDecider 
 alwaysRunTransfer = runTransfer' True
 
 runTransfer' :: Observable v => Bool -> Transfer -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
-runTransfer' ignorelock t afile shouldretry transferaction = 
-	checkSecureHashes t $ currentProcessTransfer t $ do
-		info <- liftIO $ startTransferInfo afile
-		(meter, tfile, metervar) <- mkProgressUpdater t info
-		mode <- annexFileMode
-		(lck, inprogress) <- prep tfile mode info
-		if inprogress && not ignorelock
-			then do
-				showNote "transfer already in progress, or unable to take transfer lock"
-				return observeFailure
-			else do
-				v <- handleretry info metervar $ transferaction meter
-				liftIO $ cleanup tfile lck
-				if observeBool v
-					then removeFailedTransfer t
-					else recordFailedTransfer t info
-				return v
+runTransfer' ignorelock t afile shouldretry transferaction = checkSecureHashes t $ do
+	info <- liftIO $ startTransferInfo afile
+	(meter, tfile, metervar) <- mkProgressUpdater t info
+	mode <- annexFileMode
+	(lck, inprogress) <- prep tfile mode info
+	if inprogress && not ignorelock
+		then do
+			showNote "transfer already in progress, or unable to take transfer lock"
+			return observeFailure
+		else do
+			v <- retry info metervar $ transferaction meter
+			liftIO $ cleanup tfile lck
+			if observeBool v
+				then removeFailedTransfer t
+				else recordFailedTransfer t info
+			return v
   where
 #ifndef mingw32_HOST_OS
 	prep tfile mode info = catchPermissionDenied (const prepfailed) $ do
@@ -156,7 +153,7 @@ runTransfer' ignorelock t afile shouldretry transferaction =
 		dropLock lockhandle
 		void $ tryIO $ removeFile lck
 #endif
-	handleretry oldinfo metervar run = do
+	retry oldinfo metervar run = do
 		v <- tryNonAsync run
 		case v of
 			Right b -> return b
@@ -165,7 +162,7 @@ runTransfer' ignorelock t afile shouldretry transferaction =
 				b <- getbytescomplete metervar
 				let newinfo = oldinfo { bytesComplete = Just b }
 				if shouldretry oldinfo newinfo
-					then handleretry newinfo metervar run
+					then retry newinfo metervar run
 					else return observeFailure
 	getbytescomplete metervar
 		| transferDirection t == Upload =
@@ -259,20 +256,3 @@ lessActiveFirst :: M.Map Remote Integer -> Remote -> Remote -> Ordering
 lessActiveFirst active a b
 	| Remote.cost a == Remote.cost b = comparing (`M.lookup` active) a b
 	| otherwise = compare a b
-
-{- Runs a transfer action. Only one thread can run for a given Transfer
- - at a time; other threads will block. -}
-currentProcessTransfer :: Transfer -> Annex a -> Annex a
-currentProcessTransfer t a = go =<< Annex.getState Annex.concurrency
-  where
-	go NonConcurrent = a
-	go (Concurrent _) = do
-		tv <- Annex.getState Annex.currentprocesstransfers
-		bracket_ (setup tv) (cleanup tv) a
-	setup tv = liftIO $ atomically $ do
-		s <- readTVar tv
-		if S.member t s
-			then retry
-			else writeTVar tv $! S.insert t s
-	cleanup tv = liftIO $ atomically $
-		modifyTVar' tv $ S.delete t

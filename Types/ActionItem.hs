@@ -10,7 +10,6 @@
 module Types.ActionItem where
 
 import Key
-import Types
 import Types.Transfer
 import Git.FilePath
 

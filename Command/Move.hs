@@ -74,7 +74,7 @@ startKey :: MoveOptions -> Bool -> Key -> ActionItem -> CommandStart
 startKey o move = start' o move (AssociatedFile Nothing)
 
 start' :: MoveOptions -> Bool -> AssociatedFile -> Key -> ActionItem -> CommandStart
-start' o move afile key ai = 
+start' o move afile key ai = onlyActionOn key $
 	case fromToOptions o of
 		Right (FromRemote src) ->
 			checkFailedTransferDirection ai Download $
@@ -200,11 +200,8 @@ fromPerform src move key afile = do
   where
 	go = notifyTransfer Download afile $ 
 		download (Remote.uuid src) key afile forwardRetry $ \p ->
-			ifM (inAnnex key)
-				( return True
-				, getViaTmp (RemoteVerify src) key $ \t ->
-					Remote.retrieveKeyFile src key afile t p
-				)
+			getViaTmp (RemoteVerify src) key $ \t ->
+				Remote.retrieveKeyFile src key afile t p
 	dispatch _ False = stop -- failed
 	dispatch False True = next $ return True -- copy complete
 	-- Finish by dropping from remote, taking care to verify that
