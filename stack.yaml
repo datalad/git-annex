@@ -23,4 +23,4 @@ extra-deps:
 - yesod-default-1.2.0
 explicit-setup-deps:
   git-annex: true
-resolver: lts-8.13
+resolver: lts-9.9
