@@ -11,28 +11,20 @@ PATH="/c/Program Files/Git/cmd:/c/Program Files/NSIS:$PATH"
 withcyg () {
 	PATH="$PATH:/c/cygwin/bin" "$@"
 }
+
+# Prefer programs from cygwin.
 withcygpreferred () {
 	PATH="/c/cygwin/bin:$PATH" "$@"
 }
 
-# Install haskell dependencies.
-# cabal install is not run in cygwin, because we don't want configure scripts
-# for haskell libraries to link them with the cygwin library.
-if ! cabal install --only-dependencies; then
-	cabal update || true
-	cabal install --only-dependencies
-fi
+# Deps are not built with cygwin environment, because we don't want
+# configure scripts for haskell libraries to link them with the cygwin
+# libraries.
+stack setup
+stack build --dependencies-only
 
 # Build git-annex
-if [ ! -e "dist/setup-config" ]; then
-	withcyg cabal configure
-fi
-if ! withcyg cabal build; then
-	ghc --make Build/EvilLinker -fno-warn-tabs
-	withcyg Build/EvilLinker
-fi
+withcyg stack build
 
 # Build the installer
-cabal install nsis
-ghc --make Build/NullSoftInstaller.hs -fno-warn-tabs
-PATH="$PATH:/cygdrive/c/Program Files/NSIS" Build/NullSoftInstaller.exe
+withcygpreferred stack runghc --package nsis Build/NullSoftInstaller.hs

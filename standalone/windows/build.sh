@@ -19,6 +19,11 @@ withcyg () {
 	PATH="$PATH:/c/cygwin/bin" "$@"
 }
 
+# Prefer programs from cygwin.
+withcygpreferred () {
+	PATH="/c/cygwin/bin:$PATH" "$@"
+}
+
 # This tells git-annex where to upgrade itself from.
 UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe
 export UPGRADE_LOCATION
@@ -28,49 +33,18 @@ export UPGRADE_LOCATION
 #FORCE_GIT_VERSION=1.9.5
 #export FORCE_GIT_VERSION
 
-# Uncomment to get rid of cabal installed libraries.
-#cabal list --installed
-#rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
-
 # Don't allow build artifact from a past successful build to be extracted
 # if we fail.
 rm -f git-annex-installer.exe
 
-# Install haskell dependencies.
-# cabal install is not run in cygwin, because we don't want configure scripts
-# for haskell libraries to link them with the cygwin library.
-cabal update || true
-
-# workaround strange cabal install bug for xss-sanitize
-if [ ! -d xss-sanitize ]; then
-	git clone https://github.com/yesodweb/haskell-xss-sanitize xss-sanitize
-	(cd xss-sanitize && cabal install)
-fi
-
-cabal install --only-dependencies \
-		--constraint='persistent-sqlite ==2.2' \
-		--constraint='cryptonite ==0.7' \
-		--constraint='mwc-random ==0.13.3.2' \
-		--force-reinstalls \
-		|| true
-
-# Detect when the last build was an incremental build and failed, 
-# and try a full build. Done this way because this shell seems a bit
-# broken.
-if [ -e last-incremental-failed ]; then
-	cabal clean || true
-	# windows breakage..
-	rm -rf dist dist.old || mv -v dist dist.old
-fi
-touch last-incremental-failed
-
+# Deps are not built with cygwin environment, because we don't want
+# configure scripts for haskell libraries to link them with the cygwin
+# libraries.
+stack setup
+stack build --dependencies-only
+  
 # Build git-annex
-withcyg cabal configure
-if ! withcyg cabal build; then
-	rm -f Build/EvilLinker.exe
-	ghc --make Build/EvilLinker -fno-warn-tabs
-	Build/EvilLinker
-fi
+withcyg stack build  
 
 # Get extra programs to bundle with git-annex.
 # These are msys2 programs, from https://msys2.github.io/.
@@ -96,15 +70,10 @@ getextra rsync.exe 85cb7a4d16d274fcf8069b39042965ad26abd6aa
 getextra wget.exe 044380729200d5762965b10123a4f134806b01cf
 
 # Build the installer
-cabal install nsis
-ghc -fforce-recomp --make Build/NullSoftInstaller.hs -fno-warn-tabs
-PATH=".:/c/cygwin/bin:$PATH" Build/NullSoftInstaller.exe
-
-rm -f last-incremental-failed
+withcygpreferred stack runghc --package nsis Build/NullSoftInstaller.hs
 
 rm -f dist/build-version
-ghc --make Build/BuildVersion.hs
-Build/BuildVersion > dist/build-version
+stack runghc Build/BuildVersion.hs > dist/build-version
 
 # Test git-annex
 # The test is run in c:/WINDOWS/Temp, because running it in the autobuilder
