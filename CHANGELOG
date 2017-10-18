@@ -1,4 +1,4 @@
-git-annex (6.20171004) UNRELEASED; urgency=medium
+git-annex (6.20171018) unstable; urgency=medium
 
   * add: Replace work tree file atomically on systems supporting hard
     links. Avoids a window where interrupting an add could result in
@@ -17,7 +17,7 @@ git-annex (6.20171004) UNRELEASED; urgency=medium
   * Fix build with aws-0.17.
   * stack.yaml: Update to lts-9.9.
 
- -- Joey Hess <id@joeyh.name>  Sat, 07 Oct 2017 14:11:00 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 18 Oct 2017 15:40:06 -0400
 
 git-annex (6.20171003) unstable; urgency=medium
 
