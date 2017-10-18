@@ -1,0 +1,7 @@
+I regularly get this:
+
+    It took 148.17 seconds to enumerate untracked files. 'status -uno'
+    may speed it up, but you have to be careful not to forget to add
+    new files yourself (see 'git help status').
+
+How can I run git-annex sync without enumerating untracked files? Can I add the -uno switch somehow?
