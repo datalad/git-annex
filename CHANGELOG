@@ -1,21 +1,21 @@
 git-annex (6.20171004) UNRELEASED; urgency=medium
 
-  * webdav: Make --debug show all webdav operations.
-  * Fix build with aws-0.17.
+  * add: Replace work tree file atomically on systems supporting hard
+    links. Avoids a window where interrupting an add could result in
+    the file being moved into the annex, with no symlink yet created.
   * webdav: Avoid unncessisarily creating the collection at the top
     of the repository when storing files there, since that collection
     is created by initremote.
     (This seems to work around some brokenness of the box.com webdav
     server, which caused uploads to be very slow or sometimes fail.)
-  * add: Replace work tree file atomically. Before, there was a window
-    where interrupting an add could result in the file being
-    moved into the annex, with no symlink yet created.
-  * Avoid repeated checking that files passed on the command line exist.
+  * webdav: Make --debug show all webdav operations.
   * get -J/move -J/copy -J/mirror -J/sync -J: Avoid "transfer already in
     progress" errors when two files use the same key.
-  * stack.yaml: Update to lts-9.9.
   * Konqueror desktop file location changed to one used by plasma 5.
     Thanks, Félix Sipma.
+  * Avoid repeated checking that files passed on the command line exist.
+  * Fix build with aws-0.17.
+  * stack.yaml: Update to lts-9.9.
 
  -- Joey Hess <id@joeyh.name>  Sat, 07 Oct 2017 14:11:00 -0400
 
