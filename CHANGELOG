@@ -14,6 +14,8 @@ git-annex (6.20171004) UNRELEASED; urgency=medium
   * get -J/move -J/copy -J/mirror -J/sync -J: Avoid "transfer already in
     progress" errors when two files use the same key.
   * stack.yaml: Update to lts-9.9.
+  * Konqueror desktop file location changed to one used by plasma 5.
+    Thanks, Félix Sipma.
 
  -- Joey Hess <id@joeyh.name>  Sat, 07 Oct 2017 14:11:00 -0400
 
