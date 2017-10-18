@@ -107,7 +107,8 @@ installFileManagerHooks program = do
 
 	-- KDE
 	home <- myHomeDir
-	let kdeServiceMenusdir = home </> ".kde" </> "share" </> "kde4" </> "services" </> "ServiceMenus"
+	userdata <- userDataDir
+	let kdeServiceMenusdir = userdata </> "kservices5" </> "ServiceMenus"
 	createDirectoryIfMissing True kdeServiceMenusdir
 	writeFile (kdeServiceMenusdir </> "git-annex.desktop")
 		(kdeDesktopFile actions)
