@@ -42,7 +42,7 @@ stack setup --stack-yaml standalone/windows/stack.yaml
 stack build -j 1 --stack-yaml standalone/windows/stack.yaml --no-haddock --dependencies-only 
   
 # Build git-annex
-withcyg stack build --stack-yaml --no-haddock standalone/windows/stack.yaml
+withcyg stack build --stack-yaml standalone/windows/stack.yaml
 
 # Get extra programs to bundle with git-annex.
 # These are msys2 programs, from https://msys2.github.io/.
