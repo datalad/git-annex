@@ -15,7 +15,7 @@ flags:
     android: false
     androidsplice: false
 packages:
-- '.'
+- '../..'
 extra-deps:
 - aws-0.17.1
 - bloomfilter-2.0.1.0
