@@ -33,7 +33,7 @@ export UPGRADE_LOCATION
 
 # Don't allow build artifact from a past successful build to be extracted
 # if we fail.
-withcyg rm -f git-annex-installer.exe
+#withcyg rm -f git-annex-installer.exe
 
 # Deps are not built with cygwin environment, because we don't want
 # configure scripts for haskell libraries to link them with the cygwin
