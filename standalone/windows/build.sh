@@ -83,6 +83,7 @@ export PATH
 mkdir -p c:/WINDOWS/Temp/git-annex-test/
 cd c:/WINDOWS/Temp/git-annex-test/
 rm -rf .t
+
 # Currently the test fails in the autobuilder environment for reasons not
 # yet understood. Windows users are encouraged to run the test suite
 # themseves, so we'll ignore these failures for now.
