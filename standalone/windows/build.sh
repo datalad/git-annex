@@ -35,15 +35,6 @@ export UPGRADE_LOCATION
 # if we fail.
 #withcyg rm -f git-annex-installer.exe
 
-# Deps are not built with cygwin environment, because we don't want
-# configure scripts for haskell libraries to link them with the cygwin
-# libraries.
-stack setup --stack-yaml standalone/windows/stack.yaml
-stack build -j 1 --stack-yaml standalone/windows/stack.yaml --no-haddock --dependencies-only 
-  
-# Build git-annex
-withcyg stack build --stack-yaml standalone/windows/stack.yaml
-
 # Get extra programs to bundle with git-annex.
 # These are msys2 programs, from https://msys2.github.io/.
 # Since git for windows uses msys2, and includes its libraries,
@@ -66,6 +57,15 @@ getextra () {
 }
 getextra rsync.exe 85cb7a4d16d274fcf8069b39042965ad26abd6aa
 getextra wget.exe 044380729200d5762965b10123a4f134806b01cf
+
+# Deps are not built with cygwin environment, because we don't want
+# configure scripts for haskell libraries to link them with the cygwin
+# libraries.
+stack setup --stack-yaml standalone/windows/stack.yaml
+stack build -j 1 --stack-yaml standalone/windows/stack.yaml --no-haddock --dependencies-only 
+  
+# Build git-annex
+withcyg stack build --stack-yaml standalone/windows/stack.yaml
 
 # Build the installer
 withcygpreferred stack runghc --package nsis Build/NullSoftInstaller.hs
