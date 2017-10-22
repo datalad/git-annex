@@ -39,10 +39,10 @@ export UPGRADE_LOCATION
 # configure scripts for haskell libraries to link them with the cygwin
 # libraries.
 stack setup --stack-yaml standalone/windows/stack.yaml
-stack build --stack-yaml standalone/windows/stack.yaml --dependencies-only 
+stack build --stack-yaml standalone/windows/stack.yaml --no-haddock --dependencies-only 
   
 # Build git-annex
-withcyg stack build --stack-yaml standalone/windows/stack.yaml
+withcyg stack build --stack-yaml --no-haddock standalone/windows/stack.yaml
 
 # Get extra programs to bundle with git-annex.
 # These are msys2 programs, from https://msys2.github.io/.
