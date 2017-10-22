@@ -9,7 +9,7 @@ set -e
 # Path to the Haskell Platform.
 #HP="/c/haskell/2014.2.0.0" # now in the default PATH
 
-PATH="/c/Program Files (x86)/NSIS:c:/cygwin/bin:$PATH"
+PATH="/c/Program Files (x86)/NSIS:$PATH"
 
 # Run a command with the cygwin environment available.
 # However, programs not from cygwin are preferred.
@@ -33,7 +33,7 @@ export UPGRADE_LOCATION
 
 # Don't allow build artifact from a past successful build to be extracted
 # if we fail.
-rm -f git-annex-installer.exe
+withcyg rm -f git-annex-installer.exe
 
 # Deps are not built with cygwin environment, because we don't want
 # configure scripts for haskell libraries to link them with the cygwin
@@ -53,11 +53,11 @@ getextra () {
 	extrasha="$2"
 	curextrasha="$(withcyg sha1sum $extrap | sed 's/ .*//')"
 	if [ ! -e "$extrap" ] || [ "$curextrasha" != "$extrasha" ]; then
-		rm -f "$extrap" || true
+		withcyg rm -f "$extrap" || true
 		withcyg wget https://downloads.kitenet.net/git-annex/windows/assets/$extrap
 		curextrasha="$(withcyg sha1sum $extrap | sed 's/ .*//')"
 		if [ "$curextrasha" != "$extrasha" ]; then
-			rm -f "$extrap"
+			withcyg rm -f "$extrap"
 			echo "CHECKSUM FAILURE" >&2
 			exit 1
 		fi
@@ -70,7 +70,7 @@ getextra wget.exe 044380729200d5762965b10123a4f134806b01cf
 # Build the installer
 withcygpreferred stack runghc --package nsis Build/NullSoftInstaller.hs
 
-rm -f dist/build-version
+withcyg rm -f dist/build-version
 stack runghc Build/BuildVersion.hs > dist/build-version
 
 # Test git-annex
@@ -80,7 +80,7 @@ PATH="$(pwd)/dist/build/git-annex/:$PATH"
 export PATH
 mkdir -p c:/WINDOWS/Temp/git-annex-test/
 cd c:/WINDOWS/Temp/git-annex-test/
-rm -rf .t
+withcyg rm -rf .t
 
 # Currently the test fails in the autobuilder environment for reasons not
 # yet understood. Windows users are encouraged to run the test suite
