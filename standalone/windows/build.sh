@@ -38,11 +38,11 @@ export UPGRADE_LOCATION
 # Deps are not built with cygwin environment, because we don't want
 # configure scripts for haskell libraries to link them with the cygwin
 # libraries.
-stack setup
-stack build --dependencies-only
+stack setup --stack-yaml standalone/windows/stack.yaml
+stack build --stack-yaml standalone/windows/stack.yaml --dependencies-only 
   
 # Build git-annex
-withcyg stack build  
+withcyg stack build --stack-yaml standalone/windows/stack.yaml
 
 # Get extra programs to bundle with git-annex.
 # These are msys2 programs, from https://msys2.github.io/.
