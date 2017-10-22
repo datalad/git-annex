@@ -39,7 +39,7 @@ export UPGRADE_LOCATION
 # configure scripts for haskell libraries to link them with the cygwin
 # libraries.
 stack setup --stack-yaml standalone/windows/stack.yaml
-stack build --stack-yaml standalone/windows/stack.yaml --no-haddock --dependencies-only 
+stack build -j 1 --stack-yaml standalone/windows/stack.yaml --no-haddock --dependencies-only 
   
 # Build git-annex
 withcyg stack build --stack-yaml --no-haddock standalone/windows/stack.yaml
