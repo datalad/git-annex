@@ -1,0 +1,87 @@
+### Please describe the problem.
+I cloned my git-annex repository to a bare repository on my server (and deleted the original to reinstall the OS). When I try to clone back to a new machine
+
+    $ git-annex get .
+    get programs/2017-06-drafts/About.txt (not available) 
+      Try making some of these repositories available:
+      	8ddb8c4d-06ac-4c93-bf28-15639e0ea600 -- MacBook
+    failed
+
+and so for many files I committed. The files are actually on the server as I can see from the size of the repo and I remember them being copied there.
+
+When I strace that command, I see that it stats a missing file
+
+    stat(".git/annex/objects/7v/5x/SHA256E-s81068--de1d8de99645d74ba1ea186b6cabd1fc116cb6c1823130756f33ff81807815ed.pdf/SHA256E-s81068--de1d8de99645d74ba1ea186b6cabd1fc116cb6c1823130756f33ff81807815ed.pdf", 0x200015bf0) = -1 ENOENT (No such file or directory)
+
+`.git/annex/objects` is absent in the cloned repository on the server (I test it there - on my machine it doesn't work either).
+
+However I can find that the SHA file really exists 
+
+    $ locate SHA256E-s81068--de1d8de99645d74ba1ea186b6cabd1fc116cb6c1823130756f33ff81807815ed.pdf/SHA256E-s81068--de1d8de99645d74ba1ea186b6cabd1fc116cb6c1823130756f33ff81807815ed.pdf
+    /home/yaroslav/work.git/d0d/994/SHA256E-s81068--de1d8de99645d74ba1ea186b6cabd1fc116cb6c1823130756f33ff81807815ed.pdf/SHA256E-s81068--de1d8de99645d74ba1ea186b6cabd1fc116cb6c1823130756f33ff81807815ed.pdf
+
+and that contains the necessary data.
+
+So I wrote this bash script to recover some files from the corrupt repo (put there your parameters like directory names etc)
+
+    fix_obj.sh
+[[!format  bash """
+NEWDIR=new
+while IFS=  read -r -d $'\0'; 
+do
+        trueloc=`sed 's/\/annex\/objects\///g' <"$REPLY"`  
+        # if you had swap files from editors, they may appear here. Fix them in advance.
+        # echo "$REPLY"':'$trueloc
+        truefil=`locate $trueloc/$trueloc | grep work.git-copy`
+        mkdir -p $NEWDIR/`dirname $REPLY`
+        cp -p $truefil $NEWDIR/$REPLY
+done < <(find $1/* -type f -print0)
+"""]]
+
+The cycle on all files is not a simple "for dir in \`find $1\`" because of possible newlines and spaces in directories. For my directories that worked, but I'm still not sure about possible bugs in that (actually it complains several times, but seems to work). The script doesn't work in sh, but can be launched via e.g.
+
+    . fix_obj.sh programs
+
+where 'programs' is a subdirectory (without a backslash) in your git repo that you want to recover.
+
+I don't know how this situation occured and how to fix that in other way. I tried `git gc`, `git-annex fsck`, `git-annex repair`, of course cloned (git and git-annex) and other things, but that didn't help. 
+
+I've read [disaster recovery](https://git-annex.branchable.com/design/assistant/disaster_recovery/)
+
+> # git repository repair
+> There are several ways git repositories can get damanged.
+> The most common is empty files in .git/annex/objects and commits that refer to those objects. When the objects have not yet been pushed anywhere. I've several times recovered from this manually by removing the bad files and resetting to before the commits that referred to them. Then re-staging any divergence in the working tree. This could perhaps be automated.
+> ...
+> This is useful outside git-annex as well, so make it a git-recover-repository command.
+
+I think that would be nice to provide some means to recover from these situations. At least those who face the same problem as me can use the script above.
+
+### What steps will reproduce the problem?
+
+1. Create git-annex on your local machine.
+2. Clone that to a remote server. Unfortunately I don't remember the exact commands - I think that was done with the `rsync` special backend.
+3. \* Delete all the data except on the server (better not do that).
+4. Try to clone that from the server to a new machine.
+
+### What version of git-annex are you using? On what operating system?
+
+On the original machine I used `version 6` with `thin`. git-annex was downloaded from this site as a binary maybe several months ago. The OS was `Fedora Core 24`, the FS was `ext4`.
+
+On the server where I cloned the repo I noticed that the git-annex version was `5`. On the server the git-annex version is `6.20171003-g14ffdd779`. The OS is `CentOS Linux 7 (Core)` (a virtual private server).
+
+### Please provide any additional information below.
+
+I managed to recover a unique part of my data, however I don't know how the repo could be recovered (which would be best). I will combine the data again from available pieces. 
+
+I'd also like to add that I'm not a git expert, I use quite few commands from that and now I may know it not better than git-annex. Only recently I realized that `special remotes` don't have a copy of the git repository (I found this only [here](http://git-annex.branchable.com/special_remotes/rsync/#comment-525d3951ab1f09fdf471f450a798b50e) and still can't see that on [special remotes](http://git-annex.branchable.com/special_remotes/) page). That would be great if we could understand not only basic things about e.g. special remotes, but also the underlying facts about git-annex, to better understand possible problems. It's not intuitive that some repositories are cloned via `git clone`, and some via `git-annex initremote` etc, or that could better pronounced if that is the only difference, otherwise things mess up: I still don't quite understand what would be the difference between `git-annex get .` and `git-annex sync --content` (because the latter showed me that my repo above was synced - even though it really missed the files I needed). 
+
+git-annex version 6 seems very promising, but I have a feeling that the documentation for the project should be a bit rewritten/restructured, because when I read comments from several years ago, I can't judge whether that is still appropriate or not. Sorry if I should had submitted that in another bug on the documentation. 
+
+And maybe one should rename my question, because I can't locate precisely the problem and mostly just used the keywords for a better search.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, I have a working git-annex repository on a server (with `gcrypt`) and on two laptops of mine. That works fine, though [not blazingly fast](http://git-annex.branchable.com/bugs/v6__58___git_status__47__add_after_unlock_is_linear_to_the_file_size/#comment-5b8baf74551f8cc192d5d87b8d6aefa3). 
+> and a lil' positive end note
+
+I think there are no other variants for me. A year ago I tried some 'out-of-the box' popular alternatives, but the only use from that was to better learn SELinux and process isolation. Now I think the best is the \*NIX style where you control everything and you can learn. I've spent many days learning git-annex and hope that will work (though the last link above). 
