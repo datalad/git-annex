@@ -52,7 +52,9 @@ import qualified Git.Ref
 import qualified Git.LsTree
 import qualified Git.FilePath
 import qualified Annex.Locations
+#ifndef mingw32_HOST_OS
 import qualified Types.GitConfig
+#endif
 import qualified Types.KeySource
 import qualified Types.Backend
 import qualified Types.TrustLevel
