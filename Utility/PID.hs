@@ -13,7 +13,8 @@ module Utility.PID where
 import System.Posix.Types (ProcessID)
 import System.Posix.Process (getProcessID)
 #else
-import System.Win32.Process (ProcessId, getCurrentProcessId)
+import System.Win32.Process (ProcessId)
+import System.Win32.Process.Current (getCurrentProcessId)
 #endif
 
 #ifndef mingw32_HOST_OS
