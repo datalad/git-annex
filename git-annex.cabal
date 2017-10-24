@@ -423,6 +423,7 @@ Executable git-annex
           if (! os(solaris) && ! os(linux))
             CPP-Options: -DWITH_KQUEUE
             C-Sources: Utility/libkqueue.c
+	    Includes: Utility/libkqueue.h
             Other-Modules: Utility.DirWatcher.Kqueue
 
   if flag(Dbus)
@@ -1062,6 +1063,7 @@ Executable git-annex
       Utility.LockPool.Windows
       Utility.WinProcess
     C-Sources: Utility/winprocess.c
+    Includes: Utility/winprocess.h
   else
     Other-Modules:
       Utility.LockFile.Posix
