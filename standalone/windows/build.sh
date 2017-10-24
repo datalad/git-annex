@@ -68,12 +68,14 @@ stack build -j 1 --stack-yaml standalone/windows/stack.yaml --no-haddock --depen
 withcyg stack build --stack-yaml standalone/windows/stack.yaml
 
 # Build the installer
-withcygpreferred stack runghc --stack-yaml standalone/windows/stack.yaml --no-haddock \
+withcygpreferred stack ghc --stack-yaml standalone/windows/stack.yaml --no-haddock \
 	--package nsis Build/NullSoftInstaller.hs
+./Build/NullSoftInstaller
 
 rm -f dist/build-version
-stack runghc --stack-yaml standalone/windows/stack.yaml --no-haddock \
+stack ghc --stack-yaml standalone/windows/stack.yaml --no-haddock \
 	Build/BuildVersion.hs > dist/build-version
+./Build/BuildVersion
 
 # Test git-annex
 # The test is run in c:/WINDOWS/Temp, because running it in the autobuilder
