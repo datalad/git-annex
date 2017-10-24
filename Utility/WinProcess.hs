@@ -11,5 +11,5 @@ module Utility.WinProcess where
 
 import Utility.PID
 
-foreign import ccall unsafe "terminatepid"
+foreign import ccall unsafe "winprocess.h terminatepid"
 	terminatePID :: PID -> IO ()
