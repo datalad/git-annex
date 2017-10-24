@@ -152,7 +152,7 @@ probeCrippledFileSystem = do
 
 probeCrippledFileSystem' :: FilePath -> IO (Bool, [String])
 #ifdef mingw32_HOST_OS
-probeCrippledFileSystem' _ = return True
+probeCrippledFileSystem' _ = return (True, [])
 #else
 probeCrippledFileSystem' tmp = do
 	let f = tmp </> "gaprobe"
