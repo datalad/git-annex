@@ -1061,6 +1061,7 @@ Executable git-annex
       Utility.LockFile.Windows
       Utility.LockPool.Windows
       Utility.WinProcess
+    C-Sources: Utility/winprocess.c
   else
     Other-Modules:
       Utility.LockFile.Posix
