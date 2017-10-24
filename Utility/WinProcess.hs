@@ -8,6 +8,8 @@
 module Utility.WinProcess where
 
 import Utility.PID
+import System.IO
 
 terminatePID :: PID -> IO ()
-terminatePID p = warning "terminating processes on windows is not currently working"
+terminatePID p = hPutStrLn stderr "terminating processes on windows is not currently working"
+
