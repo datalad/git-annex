@@ -9,7 +9,7 @@ set -e
 # Path to the Haskell Platform.
 #HP="/c/haskell/2014.2.0.0" # now in the default PATH
 
-PATH="/c/Program Files (x86)/NSIS:$PATH"
+PATH="/c/Program Files (x86)/NSIS:/usr/local/bin:/usr/bin:$PATH"
 
 # Run a command with the cygwin environment available.
 # However, programs not from cygwin are preferred.
@@ -33,7 +33,7 @@ export UPGRADE_LOCATION
 
 # Don't allow build artifact from a past successful build to be extracted
 # if we fail.
-#withcyg rm -f git-annex-installer.exe
+rm -f git-annex-installer.exe
 
 # Get extra programs to bundle with git-annex.
 # These are msys2 programs, from https://msys2.github.io/.
