@@ -42,17 +42,17 @@ rm -f git-annex-installer.exe
 getextra () {
 	extrap="$1"
 	extrasha="$2"
-	curextrasha="$(withcyg sha1sum $extrap | sed 's/ .*//')"
+	curextrasha="$(sha1sum $extrap | sed 's/ .*//')"
 	if [ ! -e "$extrap" ] || [ "$curextrasha" != "$extrasha" ]; then
-		withcyg rm -f "$extrap" || true
-		withcyg wget https://downloads.kitenet.net/git-annex/windows/assets/$extrap
-		curextrasha="$(withcyg sha1sum $extrap | sed 's/ .*//')"
+		rm -f "$extrap" || true
+		wget https://downloads.kitenet.net/git-annex/windows/assets/$extrap
+		curextrasha="$(sha1sum $extrap | sed 's/ .*//')"
 		if [ "$curextrasha" != "$extrasha" ]; then
-			withcyg rm -f "$extrap"
+			rm -f "$extrap"
 			echo "CHECKSUM FAILURE" >&2
 			exit 1
 		fi
-		withcyg chmod +x $extrap
+		chmod +x $extrap
 	fi
 }
 getextra rsync.exe 85cb7a4d16d274fcf8069b39042965ad26abd6aa
@@ -70,7 +70,7 @@ withcyg stack build --stack-yaml standalone/windows/stack.yaml
 # Build the installer
 withcygpreferred stack runghc --package nsis Build/NullSoftInstaller.hs
 
-withcyg rm -f dist/build-version
+rm -f dist/build-version
 stack runghc Build/BuildVersion.hs > dist/build-version
 
 # Test git-annex
@@ -80,7 +80,7 @@ PATH="$(pwd)/dist/build/git-annex/:$PATH"
 export PATH
 mkdir -p c:/WINDOWS/Temp/git-annex-test/
 cd c:/WINDOWS/Temp/git-annex-test/
-withcyg rm -rf .t
+rm -rf .t
 
 # Currently the test fails in the autobuilder environment for reasons not
 # yet understood. Windows users are encouraged to run the test suite
