@@ -6,10 +6,7 @@
 set -x
 set -e
 
-# Path to the Haskell Platform.
-#HP="/c/haskell/2014.2.0.0" # now in the default PATH
-
-PATH="/c/Program Files (x86)/NSIS:/usr/local/bin:/usr/bin:$PATH"
+PATH="/c/Program Files (x86)/NSIS/Bin:/c/Program Files (x86)/NSIS:/usr/local/bin:/usr/bin:$PATH"
 
 # Run a command with the cygwin environment available.
 # However, programs not from cygwin are preferred.
