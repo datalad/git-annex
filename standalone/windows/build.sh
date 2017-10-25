@@ -6,7 +6,7 @@
 set -x
 set -e
 
-PATH="/cygdrive/c/Program Files (x86)/NSIS/Bin:/cygdrive/c/Program Files (x86)/NSIS:/usr/local/bin:/usr/bin:$PATH"
+PATH="/cygdrive/c/git/cmd:/cygdrive/c/Program Files (x86)/NSIS/Bin:/cygdrive/c/Program Files (x86)/NSIS:/usr/local/bin:/usr/bin:$PATH"
 
 # Run a command with the cygwin environment available.
 # However, programs not from cygwin are preferred.
@@ -60,7 +60,7 @@ getextra rsync.exe 85cb7a4d16d274fcf8069b39042965ad26abd6aa
 # configure scripts for haskell libraries to link them with the cygwin
 # libraries.
 stack setup --stack-yaml stack-windows.yaml
-stack build -j 1 --stack-yaml stack-windows.yaml --work-dir .stack-work --no-haddock --dependencies-only 
+stack build -j 1 --stack-yaml stack-windows.yaml --no-haddock --dependencies-only 
   
 # Build git-annex
 withcyg stack build --stack-yaml stack-windows.yaml
