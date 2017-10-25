@@ -60,7 +60,7 @@ getextra rsync.exe 85cb7a4d16d274fcf8069b39042965ad26abd6aa
 # configure scripts for haskell libraries to link them with the cygwin
 # libraries.
 stack setup --stack-yaml stack-windows.yaml
-stack build -j 1 --stack-yaml stack-windows.yaml --no-haddock --dependencies-only 
+stack build -j 1 --stack-yaml stack-windows.yaml --work-dir .stack-work --no-haddock --dependencies-only 
   
 # Build git-annex
 withcyg stack build --stack-yaml stack-windows.yaml
