@@ -24,6 +24,7 @@ extra-deps:
 - bloomfilter-2.0.1.0
 - torrent-10000.1.1
 - yesod-default-1.2.0
+- win32-2.3.1.1
 explicit-setup-deps:
   git-annex: true
 resolver: lts-9.10
