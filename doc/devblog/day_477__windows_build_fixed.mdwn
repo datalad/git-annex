@@ -1,0 +1,10 @@
+Got the Windows build fixed, with help from Yury. The toolchain had been
+broken for months. We switched to using stack, which should make the
+Windows build more reproducible and easy to manage.
+
+Unfortunately, there was a link problem, and I had to disable some FFI code
+that was needed to terminate processes on Windows. Until that gets fixed,
+restarting and stopping the assistant won't work right on Windows.
+
+Aaand: The EvilLinker is not needed any longer, so I was very happy to be
+able to delete that hack. \o/

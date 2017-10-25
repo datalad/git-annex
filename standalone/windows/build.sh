@@ -78,7 +78,7 @@ stack ghc --stack-yaml standalone/windows/stack.yaml --no-haddock \
 # Test git-annex
 # The test is run in c:/WINDOWS/Temp, because running it in the autobuilder
 # directory runs afoul of Windows's short PATH_MAX.
-PATH="$(pwd)/dist/build/git-annex/:$PATH"
+PATH="$(pwd):$PATH"
 export PATH
 mkdir -p c:/WINDOWS/Temp/git-annex-test/
 cd c:/WINDOWS/Temp/git-annex-test/
