@@ -7,6 +7,8 @@ git-annex (6.20171019) UNRELEASED; urgency=medium
     instead.
   * stack.yaml: Added nix packages section.
     Thanks, Sean T Parsons 
+  * Add day to metadata when annex.genmetadata is enabled.
+    Thanks, Sean T Parsons
 
  -- Joey Hess <id@joeyh.name>  Tue, 24 Oct 2017 13:12:52 -0400
 

@@ -911,7 +911,7 @@ Here are all the supported configuration settings.
   Set this to `true` to make git-annex automatically generate some metadata
   when adding files to the repository.
 
-  In particular, it stores year and month metadata, from the file's
+  In particular, it stores year, month, and day metadata, from the file's
   modification date.
 
   When importfeed is used, it stores additional metadata from the feed,

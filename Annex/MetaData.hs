@@ -60,10 +60,11 @@ dateMetaData :: UTCTime -> MetaData -> MetaData
 dateMetaData mtime old = MetaData $ M.fromList $ filter isnew
 	[ (yearMetaField, S.singleton $ toMetaValue $ show y)
 	, (monthMetaField, S.singleton $ toMetaValue $ show m)
+	, (dayMetaField, S.singleton $ toMetaValue $ show d)
 	]
   where
 	isnew (f, _) = S.null (currentMetaDataValues f old)
-	(y, m, _d) = toGregorian $ utctDay mtime
+	(y, m, d) = toGregorian $ utctDay mtime
 
 {- Parses field=value, field+=value, field-=value, field?=value -}
 parseModMeta :: String -> Either String ModMeta

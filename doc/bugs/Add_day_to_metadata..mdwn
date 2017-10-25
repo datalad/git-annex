@@ -11,3 +11,5 @@ There's also a tiny bit extra for stack.yaml which will only affect people who h
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 git-annex is awesome, I lean on it heavily nearly every single day.
+
+> [[merged|done]]. Thanks for the patch! --[[Joey]] 
