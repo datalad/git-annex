@@ -15,7 +15,7 @@ flags:
     android: false
     androidsplice: false
 packages:
-- '../..'
+- '.'
 - location:
     git: https://github.com/joeyh/win32
     commit: f41d9e1cc60f225bc4ef4bbd7ec0bac43b61b982
