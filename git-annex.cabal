@@ -1061,7 +1061,6 @@ Executable git-annex
     Other-Modules:
       Utility.LockFile.Windows
       Utility.LockPool.Windows
-      Utility.WinProcess
   else
     Other-Modules:
       Utility.LockFile.Posix

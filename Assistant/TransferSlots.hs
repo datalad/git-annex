@@ -41,7 +41,7 @@ import qualified Control.Concurrent.MSemN as MSemN
 import System.Posix.Process (getProcessGroupIDOf)
 import System.Posix.Signals (signalProcessGroup, sigTERM, sigKILL)
 #else
-import Utility.WinProcess
+import System.Win32.Process (terminateProcessId)
 #endif
 
 type TransferGenerator = Assistant (Maybe (Transfer, TransferInfo, Transferrer -> Assistant ()))
@@ -270,7 +270,7 @@ cancelTransfer pause t = do
 		threadDelay 50000 -- 0.05 second grace period
 		signal sigKILL
 #else
-		terminatePID pid
+		terminateProcessId pid
 #endif
 
 {- Start or resume a transfer. -}

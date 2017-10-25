@@ -59,21 +59,20 @@ getextra rsync.exe 85cb7a4d16d274fcf8069b39042965ad26abd6aa
 # Deps are not built with cygwin environment, because we don't want
 # configure scripts for haskell libraries to link them with the cygwin
 # libraries.
-stack setup --stack-yaml standalone/windows/stack.yaml
-stack build -j 1 --stack-yaml standalone/windows/stack.yaml --no-haddock --dependencies-only 
+stack setup --stack-yaml stack-windows.yaml
+stack build -j 1 --stack-yaml stack-windows.yaml --no-haddock --dependencies-only 
   
 # Build git-annex
-withcyg stack build --stack-yaml standalone/windows/stack.yaml
+withcyg stack build --stack-yaml stack-windows.yaml
 
 # Build the installer
-withcygpreferred stack ghc --stack-yaml standalone/windows/stack.yaml --no-haddock \
+withcygpreferred stack ghc --stack-yaml stack-windows.yaml --no-haddock \
 	--package nsis Build/NullSoftInstaller.hs
 ./Build/NullSoftInstaller
 
 rm -f dist/build-version
 mkdir -p dist
-stack ghc --stack-yaml standalone/windows/stack.yaml --no-haddock \
-	Build/BuildVersion.hs
+stack ghc --stack-yaml stack-windows.yaml --no-haddock Build/BuildVersion.hs
 ./Build/BuildVersion > dist/build-version
 
 # Test git-annex

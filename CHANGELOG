@@ -2,9 +2,6 @@ git-annex (6.20171019) UNRELEASED; urgency=medium
 
   * Windows build fixed, and changed to use stack for more relaiable build
     environment.
-  * Code for terminating processes on Windows is not linking anymore;
-    made a warning be displayed instead. This breaks restarting the
-    assistant and git annex assistant --stop.
   * Windows: Remove wget from bundle; it needs libraries that are not
     included, and git for windows includes curl which git-annex will use
     instead.

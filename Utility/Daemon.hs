@@ -14,7 +14,7 @@ import Utility.PID
 #ifndef mingw32_HOST_OS
 import Utility.LogFile
 #else
-import Utility.WinProcess
+import System.Win32.Process (terminateProcessId)
 import Utility.LockFile
 #endif
 
@@ -162,7 +162,7 @@ stopDaemon pidfile = go =<< checkDaemon pidfile
 #ifndef mingw32_HOST_OS
 		signalProcess sigTERM pid
 #else
-		terminatePID pid
+		terminateProcessId pid
 #endif
 
 {- Windows locks a lock file that corresponds with the pid of the process.
