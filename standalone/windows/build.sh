@@ -6,7 +6,7 @@
 set -x
 set -e
 
-PATH="/Program Files (x86)/NSIS/Bin:/Program Files (x86)/NSIS:/usr/local/bin:/usr/bin:$PATH"
+PATH="/cygdrive/c/Program Files (x86)/NSIS/Bin:/cygdrive/c/Program Files (x86)/NSIS:/usr/local/bin:/usr/bin:$PATH"
 
 # Run a command with the cygwin environment available.
 # However, programs not from cygwin are preferred.
