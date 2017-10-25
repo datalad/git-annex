@@ -5,6 +5,9 @@ git-annex (6.20171019) UNRELEASED; urgency=medium
   * Code for terminating processes on Windows is not linking anymore;
     made a warning be displayed instead. This breaks restarting the
     assistant and git annex assistant --stop.
+  * Windows: Remove wget from bundle; it needs libraries that are not
+    included, and git for windows includes curl which git-annex will use
+    instead.
 
  -- Joey Hess <id@joeyh.name>  Tue, 24 Oct 2017 13:12:52 -0400
 

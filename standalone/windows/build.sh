@@ -53,7 +53,6 @@ getextra () {
 	fi
 }
 getextra rsync.exe 85cb7a4d16d274fcf8069b39042965ad26abd6aa
-getextra wget.exe 044380729200d5762965b10123a4f134806b01cf
 
 # Deps are not built with cygwin environment, because we don't want
 # configure scripts for haskell libraries to link them with the cygwin
