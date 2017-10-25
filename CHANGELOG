@@ -5,6 +5,8 @@ git-annex (6.20171019) UNRELEASED; urgency=medium
   * Windows: Remove wget from bundle; it needs libraries that are not
     included, and git for windows includes curl which git-annex will use
     instead.
+  * stack.yaml: Added nix packages section.
+    Thanks, Sean T Parsons 
 
  -- Joey Hess <id@joeyh.name>  Tue, 24 Oct 2017 13:12:52 -0400
 
