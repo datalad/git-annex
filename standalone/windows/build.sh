@@ -72,8 +72,8 @@ withcygpreferred stack ghc --stack-yaml standalone/windows/stack.yaml --no-haddo
 rm -f dist/build-version
 mkdir -p dist
 stack ghc --stack-yaml standalone/windows/stack.yaml --no-haddock \
-	Build/BuildVersion.hs > dist/build-version
-./Build/BuildVersion
+	Build/BuildVersion.hs
+./Build/BuildVersion > dist/build-version
 
 # Test git-annex
 # The test is run in c:/WINDOWS/Temp, because running it in the autobuilder
