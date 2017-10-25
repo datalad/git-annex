@@ -35,7 +35,9 @@ rm -f git-annex-installer.exe
 # Get extra programs to bundle with git-annex.
 # These are msys2 programs, from https://msys2.github.io/.
 # Since git for windows uses msys2, and includes its libraries,
-# these programs will work well with it.
+# these programs will work well with it. Note that these are 32 bit
+# programs, so the 32 bit version of git for windows needs to be installed,
+# not the 64 bit.
 getextra () {
 	extrap="$1"
 	extrasha="$2"
