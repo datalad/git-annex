@@ -70,6 +70,7 @@ withcygpreferred stack ghc --stack-yaml standalone/windows/stack.yaml --no-haddo
 ./Build/NullSoftInstaller
 
 rm -f dist/build-version
+mkdir -p dist
 stack ghc --stack-yaml standalone/windows/stack.yaml --no-haddock \
 	Build/BuildVersion.hs > dist/build-version
 ./Build/BuildVersion
