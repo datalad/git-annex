@@ -136,7 +136,9 @@ relPathDirToFile from to = relPathDirToFileAbs <$> absPath from <*> absPath to
  -}
 relPathDirToFileAbs :: FilePath -> FilePath -> FilePath
 relPathDirToFileAbs from to
-	| takeDrive from /= takeDrive to = to
+#ifdef mingw32_HOST_OS
+	| normdrive from /= normdrive to = to
+#endif
 	| otherwise = joinPath $ dotdots ++ uncommon
   where
 	pfrom = sp from
@@ -147,6 +149,9 @@ relPathDirToFileAbs from to
 	uncommon = drop numcommon pto
 	dotdots = replicate (length pfrom - numcommon) ".."
 	numcommon = length common
+#ifdef mingw32_HOST_OS
+	normdrive = map toLower . takeWhile (/= ':') . takeDrive
+#endif
 
 prop_relPathDirToFile_basics :: FilePath -> FilePath -> Bool
 prop_relPathDirToFile_basics from to

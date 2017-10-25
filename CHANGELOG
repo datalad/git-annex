@@ -9,6 +9,9 @@ git-annex (6.20171019) UNRELEASED; urgency=medium
     Thanks, Sean T Parsons 
   * Add day to metadata when annex.genmetadata is enabled.
     Thanks, Sean T Parsons
+  * Windows: Fix reversion that caused the path used to link
+    to annexed content include the drive letter and full path, rather than
+    being relative. (`git annex fix` will fix up after this problem).
 
  -- Joey Hess <id@joeyh.name>  Tue, 24 Oct 2017 13:12:52 -0400
 
