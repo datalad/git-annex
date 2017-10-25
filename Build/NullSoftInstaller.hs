@@ -41,6 +41,7 @@ main = do
 	withTmpDir "nsis-build" $ \tmpdir -> do
 		let gitannex = tmpdir </> gitannexprogram
 		mustSucceed "stack" [Param "--local-bin-path", File ".", Param "install"]
+		mustSucceed "ln" [File "git-annex.exe", File gitannex]
 		let license = tmpdir </> licensefile
 		mustSucceed "sh" [Param "-c", Param $ "zcat standalone/licences.gz > '" ++ license ++ "'"]
 		webappscript <- vbsLauncher tmpdir "git-annex-webapp" "git annex webapp"
