@@ -18,7 +18,7 @@ packages:
 - '.'
 - location:
     git: https://github.com/joeyh/win32
-    commit: f41d9e1cc60f225bc4ef4bbd7ec0bac43b61b982
+    commit: ca98916c3e2487ce36955d08b0e95477b094f7cd
 extra-deps:
 - aws-0.17.1
 - bloomfilter-2.0.1.0
