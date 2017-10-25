@@ -1,0 +1,59 @@
+### Please describe the problem.
+
+Playing with the new fancy "export" feature.  Thanks again!
+
+Somehow I see now commits in the git-annex branch in the quick succession establishing and then killing a "graft".
+Are they really needed/used by annex or could have been squashed/avoided?
+
+some details of the recent history of commands and how git-annex branch looks like are listed below
+
+
+### What version of git-annex are you using? On what operating system?
+
+6.20171018+gitgbb20b1ed3-1~ndall+1
+
+### Please provide any additional information below.
+
+[[!format sh """
+
+14883  tree /tmp/test-directory-export -a
+14887  git annex info
+14888  git annex export --to=directory-export
+14889  git annex export
+14890  git annex export --tracking master --to public-s3
+14891  git annex export --tracking master --to directory-export
+14892  git annex export
+14893  git annex export --to directory-export
+14894  git annex export
+14896  git annex sync --content
+14898  git log --stat git-annex
+
+
+$> git lg --stat git-annex | head -n 30
+* 4a03be8 - (git-annex) update (4 minutes ago) [Yaroslav Halchenko]| 
+|  export.log | 2 +-
+|  1 file changed, 1 insertion(+), 1 deletion(-)
+
+* b23ae9d - graft cleanup (4 minutes ago) [Yaroslav Halchenko]| 
+|  export.tree/.datalad/.gitattributes | 3 ---
+|  export.tree/.datalad/config         | 2 --
+|  export.tree/.gitattributes          | 1 -
+|  export.tree/123                     | 1 -
+|  export.tree/sub/dir/11              | 1 -
+|  5 files changed, 8 deletions(-)
+
+* 6a0bc5f - graft (4 minutes ago) [Yaroslav Halchenko]| 
+|  export.tree/.datalad/.gitattributes | 3 +++
+|  export.tree/.datalad/config         | 2 ++
+|  export.tree/.gitattributes          | 1 +
+|  export.tree/123                     | 1 +
+|  export.tree/sub/dir/11              | 1 +
+|  5 files changed, 8 insertions(+)
+
+* 919e345 - update (5 minutes ago) [Yaroslav Halchenko]| 
+|  export.log | 2 +-
+|  1 file changed, 1 insertion(+), 1 deletion(-)
+
+"""]]
+
+[[!meta author=yoh]]
