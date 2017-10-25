@@ -61,18 +61,6 @@ runTests (TestCase tname t : ts) = do
 	rest <- runTests ts
 	return $ c:rest
 
-{- Tests that a command is available, aborting if not. -}
-requireCmd :: ConfigKey -> String -> Test
-requireCmd k cmdline = do
-	ret <- testCmd k cmdline
-	handle ret
-  where
-	handle r@(Config _ (BoolConfig True)) = return r
-	handle r = do
-		testEnd r
-		error $ "** the " ++ c ++ " command is required"
-	c = head $ words cmdline
-
 {- Checks if a command is available by running a command line. -}
 testCmd :: ConfigKey -> String -> Test
 testCmd k cmdline = do
