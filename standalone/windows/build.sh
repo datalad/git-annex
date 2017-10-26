@@ -31,6 +31,8 @@ export UPGRADE_LOCATION
 # Don't allow build artifact from a past successful build to be extracted
 # if we fail.
 rm -f git-annex-installer.exe
+rm -f git-annex.exe
+rm -rf dist
 
 # Get extra programs to bundle with git-annex.
 # These are msys2 programs, from https://msys2.github.io/.
@@ -66,7 +68,6 @@ withcygpreferred stack ghc --stack-yaml stack-windows.yaml --no-haddock \
 	--package nsis Build/NullSoftInstaller.hs
 ./Build/NullSoftInstaller
 
-rm -f dist/build-version
 mkdir -p dist
 stack ghc --stack-yaml stack-windows.yaml --no-haddock Build/BuildVersion.hs
 ./Build/BuildVersion > dist/build-version
