@@ -21,7 +21,7 @@ important thing is that it should end with "All tests passed".
 
 ## autobuilds
 
-A daily build is also available, thanks to Yury V. Zaytsev and
+An hourly autobuild is also available, thanks to Yury V. Zaytsev and
 Dartmouth College.
 
 * [download](https://downloads.kitenet.net/git-annex/autobuild/windows/)
