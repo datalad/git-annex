@@ -58,7 +58,8 @@ getextra rsync.exe 85cb7a4d16d274fcf8069b39042965ad26abd6aa
 
 # Build git-annex
 stack setup --stack-yaml stack-windows.yaml
-stack build -j 1 --stack-yaml stack-windows.yaml --no-haddock
+stack install -j 1 --stack-yaml stack-windows.yaml --no-haddock \
+	--local-bin-path .
 
 # Build the installer
 withcygpreferred stack ghc --stack-yaml stack-windows.yaml --no-haddock \
