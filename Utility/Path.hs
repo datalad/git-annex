@@ -143,7 +143,7 @@ relPathDirToFileAbs from to
   where
 	pfrom = sp from
 	pto = sp to
-	sp = map dropTrailingPathSeparator . splitPath
+	sp = map dropTrailingPathSeparator . splitPath . dropDrive
 	common = map fst $ takeWhile same $ zip pfrom pto
 	same (c,d) = c == d
 	uncommon = drop numcommon pto
