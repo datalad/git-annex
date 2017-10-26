@@ -10,7 +10,7 @@ run to vary what remotes are used depending on eg, what network it's on.
 
 Also, I took a look at the external special remote protocol, and noticed
 two problems with it. First, keys with spaces in their names can't be used
-with it. This only affects the WORM backend, and it seems noone has ever
+with it. This only affects the WORM backend, and it seems no one has ever
 run into the problem. Rather than complicate the implementation of external
 special remotes, I decided to deprecate having spaces in key names. Which
 is just asking for trouble anyway. So now there's a nice error message, and

@@ -8,7 +8,7 @@ So, I decided to add a remote method to delete a directory, and make
 git-annex keep track of when a directory in an export is empty, and delete
 it. While it does complicate the design some to need to do this, that seems
 better than complicating the implementation of remotes like webdav. And
-some remotes may not have a `rmdir(2)` equivilant or a way to check if a
+some remotes may not have a `rmdir(2)` equivalent or a way to check if a
 directory is empty.
 
 Spent most of today implementing that, including some rather hairy

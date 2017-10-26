@@ -7,7 +7,7 @@ suites should not do. So, I took a detour..
 
 Support for `GIT_SSH` and `GIT_SSH_COMMAND` has been requested before for
 various reasons. So I implemented that, which took 4 hours. (With one
-little possible compatability caveat, since git-annex needs to pass the -n
+little possible compatibility caveat, since git-annex needs to pass the -n
 parameter to ssh sometimes, and git's interface doesn't allow for such a
 parameter.)
 
