@@ -58,6 +58,11 @@ getextra () {
 }
 getextra rsync.exe 85cb7a4d16d274fcf8069b39042965ad26abd6aa
 
+# Upgrade stack
+stack --version
+stack upgrade --git
+stack --version
+
 # Build git-annex
 stack setup --stack-yaml stack-windows.yaml
 stack install -j 1 --stack-yaml stack-windows.yaml --no-haddock \
