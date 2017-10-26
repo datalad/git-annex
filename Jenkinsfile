@@ -23,7 +23,7 @@ try {
             }
 
             stage('Archive') {
-                archiveArtifacts 'git-annex-installer.exe,dist/build-version'
+                archiveArtifacts 'git-annex-installer.exe,git-annex.exe,dist/build-version'
             }
 
             stage('Upload') {
