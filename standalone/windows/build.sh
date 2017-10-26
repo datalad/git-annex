@@ -28,9 +28,8 @@ export UPGRADE_LOCATION
 #FORCE_GIT_VERSION=1.9.5
 #export FORCE_GIT_VERSION
 
-# Don't allow build artifacts from a past successful build to be extracted
+# Don't allow build artifact from a past successful build to be extracted
 # if we fail.
-#rm -f git-annex.exe
 rm -f git-annex-installer.exe
 
 # Get extra programs to bundle with git-annex.
@@ -58,9 +57,9 @@ getextra () {
 getextra rsync.exe 85cb7a4d16d274fcf8069b39042965ad26abd6aa
 
 # Build git-annex
-#stack setup --stack-yaml stack-windows.yaml
-#stack install -j 1 --stack-yaml stack-windows.yaml --no-haddock \
-#	--local-bin-path .
+stack setup --stack-yaml stack-windows.yaml
+stack install -j 1 --stack-yaml stack-windows.yaml --no-haddock \
+	--local-bin-path .
 
 # Build the installer
 withcygpreferred stack ghc --stack-yaml stack-windows.yaml --no-haddock \
