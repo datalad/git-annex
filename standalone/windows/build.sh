@@ -6,7 +6,7 @@
 set -x
 set -e
 
-PATH="/cygdrive/c/git/cmd:/cygdrive/c/Program Files (x86)/NSIS/Bin:/cygdrive/c/Program Files (x86)/NSIS:/usr/local/bin:/usr/bin:/c/Users/jenkins/AppData/Roaming/local/bin:$PATH"
+PATH="/cygdrive/c/git/cmd:/cygdrive/c/Program Files (x86)/NSIS/Bin:/cygdrive/c/Program Files (x86)/NSIS:/usr/local/bin:/usr/bin:/cygdrive/c/Users/jenkins/AppData/Roaming/local/bin:$PATH"
 
 # Run a command with the cygwin environment available.
 # However, programs not from cygwin are preferred.
