@@ -22,9 +22,6 @@ import Utility.SshConfig
 import Utility.OSX
 #else
 import Utility.FreeDesktop
-#ifdef linux_HOST_OS
-import Utility.UserInfo
-#endif
 import Assistant.Install.Menu
 #endif
 
@@ -106,7 +103,6 @@ installFileManagerHooks program = do
 		genNautilusScript nautilusScriptdir
 
 	-- KDE
-	home <- myHomeDir
 	userdata <- userDataDir
 	let kdeServiceMenusdir = userdata </> "kservices5" </> "ServiceMenus"
 	createDirectoryIfMissing True kdeServiceMenusdir
