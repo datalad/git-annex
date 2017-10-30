@@ -136,8 +136,13 @@ delete oldvalue ref = run
 
 {- Gets the sha of the tree a ref uses. -}
 tree :: Ref -> Repo -> IO (Maybe Sha)
-tree ref = extractSha <$$> pipeReadStrict
-	[ Param "rev-parse", Param (fromRef ref ++ ":") ]
+tree (Ref ref) = extractSha <$$> pipeReadStrict
+	[ Param "rev-parse", Param ref' ]
+  where
+	ref' = if ':' `isInfixOf` ref
+		then ref
+		-- de-reference commit objects to the tree
+		else ref ++ ":"
 
 {- Checks if a String is a legal git ref name.
  -

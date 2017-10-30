@@ -1,3 +1,9 @@
+git-annex (6.20171027) UNRELEASED; urgency=medium
+
+  * Fix export of subdir of a branch.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 30 Oct 2017 12:01:45 -0400
+
 git-annex (6.20171026) unstable; urgency=medium
 
   * Windows: Fix reversion that caused the path used to link
