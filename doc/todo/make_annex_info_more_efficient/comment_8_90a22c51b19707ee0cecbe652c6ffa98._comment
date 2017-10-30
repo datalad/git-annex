@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2017-10-30T18:56:14Z"
+ content="""
+It's not clear to me what needs to be done here.
+
+I tried cloning the freesurfer repository, and in it with a cold
+disk cache, `git annex info` took 0.6 seconds (warm cache, 0.1 seconds).
+
+It seems like you wanted to get the "local annex size" value, perhaps
+without the overhead of the "size of annexed files in working tree"
+value? In an indirect mode repository, the former value is obtained
+the same as `du .git/annex/objects`, and should be similarly fast.
+""]]
