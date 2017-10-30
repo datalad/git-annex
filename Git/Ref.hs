@@ -139,7 +139,7 @@ tree :: Ref -> Repo -> IO (Maybe Sha)
 tree (Ref ref) = extractSha <$$> pipeReadStrict
 	[ Param "rev-parse", Param ref' ]
   where
-	ref' = if ':' `isInfixOf` ref
+	ref' = if ":" `isInfixOf` ref
 		then ref
 		-- de-reference commit objects to the tree
 		else ref ++ ":"
