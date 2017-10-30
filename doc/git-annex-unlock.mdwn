@@ -37,6 +37,11 @@ file to be lost from the local repository. So, enable annex.thin with care.
   The [[git-annex-matching-options]](1)
   can be used to specify files to unlock.
 
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
 # SEE ALSO
 
 [[git-annex]](1)
