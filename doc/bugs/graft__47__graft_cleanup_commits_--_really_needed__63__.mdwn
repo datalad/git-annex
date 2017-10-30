@@ -57,3 +57,5 @@ $> git lg --stat git-annex | head -n 30
 """]]
 
 [[!meta author=yoh]]
+
+> Seems we're ok, so [[done]] --[[Joey]]
