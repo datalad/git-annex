@@ -1,0 +1,78 @@
+[[!comment format=mdwn
+ username="erics"
+ avatar="http://cdn.libravatar.org/avatar/6e5f74c742128e5d98fd672ed6ea4865"
+ subject="Adventures with stack"
+ date="2017-11-01T19:19:51Z"
+ content="""
+I've played with git-annex before, but never used it seriously.  Building it from source for the first time, to get the latest and greatest, I ran into a few stumbling blocks.  I've got them sorted out now; this is to (a) document them, and (b) ask which if any of these should be considered bugs -- in which case I'll file bug reports about them.
+
+I'm a complete Haskell newbie, and don't want to dive into that right now, so I'm using *stack*, since I like the sound of
+> Using stack automates nearly everything, will work on many systems, and avoids build failures due to fast-changing haskell libraries.
+
+I'm working with Ubuntu 16.04 LTS, stack 1.5.1, ghc 8.0.2 (courtesy of stack), and git-annex 6.20171026.
+
+So, here's how things went.
+
+*Almost* following the *stack* section of [[install/fromsource]], after `stack setup` I did `stack build` instead of`stack install`, so that I could (a) run the tests before installing, and (b) install into /usr/local as root.
+
+Issue #1: **`stack test` doesn't run the tests**.  It took me a while to find `git annex test`.  This isn't a bug, just something for people to be aware of.
+
+Issue #2: **`stack build` doesn't create the *git-annex* and *git-annex-shell* symlinks**.  Which means that the *ssh remote* tests fail.
+
+Issue #3: **Unless they don't**.  If *./git-annex-shell* doesn't exist, the tests use whatever copy they find on $PATH.  Which lets them run -- but it's not testing the code you think it's testing.  This could lead to either false negatives or false positives under different circumstances.
+
+I'd noticed the Makefile, but dismissed it after a failed attempt to set `BUILDER=stack`, especially since it's undocumented.  Turns out it does important stuff -- like creating those symlinks.  So I dug more deeply.  The magic incantation is:
+
+	make BUILDER=stack GHC=\"stack ghc --\" [target]
+
+The \"--\" is the unobvious bit.
+
+There's even a `make test`.
+
+Issue #4: The Makefile does good and useful things, but **I can find no mention of it in [[install/fromsource]]**.
+
+OK, so at this point I've got the thing built, and the tests passing (legitimately, using the correct version of *git-annex-shell*).  Time to install it.
+
+Issue #5: **`sudo make install` doesn't work**.  *stack* refuses to run, complaining:
+
+> You are not the owner of '/home/erics/.stack/'. Aborting to protect file permissions.
+> Retry with '--allow-different-user' to disable this precaution.
+
+See <https://github.com/commercialhaskell/stack/issues/471> for what this is about.
+
+Three ways to add that option:
+
+1. Hack the Makefile -- add another `if [ $BUILDER = stack ]` section
+
+2. Add this line to git-annex's *stack.yaml* (or to *~/.stack/config.yaml* if you want it as a global setting):
+
+       allow-different-user: true
+
+   (It's a standalone entry, so should have *no* leading whitespace)
+
+3. For installing, use a variant of the above magic incantation:
+
+	  sudo make BUILDER=\"stack --allow-different-user\" GHC=\"stack ghc --\" install
+
+I did #2, but #3 is probably safest, since it means you're only allow(ing)-different-user when you actually need to.
+
+However you do it, be aware that if *stack* decides, at make-install time, to create any files under the source tree, of course it will create them as root, so subsequent builds as non-root will find them unwritable.  I presume that's what stack's error message, \"... to protect file permissions\", is talking about.
+
+Issue #6: **`make install` does indeed cause stack to create more files**.  Specifically, it builds *Build/InstallDesktopFile*.  It would make sense to build that at `make all` time, so that it gets done as the non-root user. This wouldn't guarantee not to pollute the source tree with root-owned files -- but as it is now, that's pretty much guaranteed *to* happen.
+
+After all those gripes, one very very good thing: I didn't have to apt-get any Haskell things at all!  Stack downloaded everything it needed, including the compiler.  Nice!
+
+Questions for @Joey:
+
+A. Is the Makefile undocumented because you don't really intend anyone else to use it, or is that just an oversight?
+
+B. Are any of the above issues legitimate bugs?  (Prime candidates, to my mind: #3 and #6)
+
+C. Given all the dependency grief in the comments from Cabal users, and that for all my troubles I experienced *none* of that ... maybe *stack* should be the recommended approach, even if you don't use it yourself?
+
+D. What's the preferred way to submit patches?  I have a couple of cosmetic ones for Makefile, besides the (trivial) fix for #6
+
+I'll edit the *stack* section of [[install/fromsource]] (the only part I'm competent to talk about), once I know which direction to go (i.e. the answer to (A)).
+
+
+"""]]
