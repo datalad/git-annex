@@ -59,7 +59,7 @@ And, git-annex will never trust an export to retain the content of a key.
 # EXAMPLE
 
 	git annex initremote myexport type=directory directory=/mnt/myexport \
-		exportree=yes encryption=none
+		exporttree=yes encryption=none
 	git annex export master --to myexport
 
 After that, /mnt/myexport will contain the same tree of files as the master
