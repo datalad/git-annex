@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="ynikitenko"
+ avatar="http://cdn.libravatar.org/avatar/168d629704097ddc596f75ca32a687a3"
+ subject="difference with git-annex-fix?"
+ date="2017-11-02T19:57:48Z"
+ content="""
+From git-annex-fix manual:
+
+       Fixes up symlinks that have become broken to again point to annexed content.
+       This is useful to run manually when you have been moving the symlinks around, but is done automatically when committing a change with git too.
+       Also, adjusts unlocked files to be copies or hard links as configured by annex.thin.
+
+So what is the difference between that and git-annex adjust --fix?
+"""]]
