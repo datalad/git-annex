@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="ynikitenko"
+ avatar="http://cdn.libravatar.org/avatar/168d629704097ddc596f75ca32a687a3"
+ subject="Works"
+ date="2017-11-02T19:21:43Z"
+ content="""
+Surprisingly, these very same repositories work today. I don't know why this happened. Seems that the commands I wrote above work.
+
+I've also found a useful post with various git-annex usage cases (basically the one descibed in this post).
+
+[http://ewen.mcneill.gen.nz/blog/entry/2014-11-15-git-annex-to-manage-media-backups/](http://ewen.mcneill.gen.nz/blog/entry/2014-11-15-git-annex-to-manage-media-backups/)
+"""]]
