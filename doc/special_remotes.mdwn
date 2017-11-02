@@ -102,7 +102,7 @@ as usual, and it then runs a lot of tests, using random data. It's
 particularly useful to test new implementations of special remotes.
 
 By default it will upload and download files of around 1MiB to the remote
-it tests; the `--size` parameter can adjust it test using smaller files.
+it tests; the `--size` parameter can adjust it to test using smaller files.
 
 It's safe to use this command even when you're already storing data in a
 remote; it won't touch your existing files stored on the remote.
