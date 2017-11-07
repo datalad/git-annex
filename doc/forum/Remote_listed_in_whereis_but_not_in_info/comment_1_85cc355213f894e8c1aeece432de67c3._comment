@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-11-07T18:05:49Z"
+ content="""
+For this to happen, the repository must somehow not be listed in uuid.log,
+but the location log for the file includes its uuid. Normally, any time a
+git-annex repo is initialized, it gets recorded in uuid.log.
+
+One way that could have happened is if `git annex reinit` was run
+with some uuid that was not known in uuid.log. Or, if `git config
+annex.uuid` were manually set.
+
+I don't think it's a problem, other than you not knowing where this
+repository is -- unless some file is only present in that repository. 
+
+You can run `git annex dead` with the uuid as a parameter to mark it dead,
+or you could `git annex describe` with the uuid as a parameter to give
+it a description.
+"""]]
