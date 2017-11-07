@@ -40,3 +40,5 @@ No intended functional change; only what *make* prints should be different.
 			--plugin=goodstuff \
 			--no-usedirs --disable-plugin=openid --plugin=sidebar \
 			--plugin theme --set theme=actiontabs --set deterministic=1 \
+
+> [[done]] --[[Joey]]
