@@ -1,4 +1,4 @@
-all=git-annex git-annex-shell mans docs
+all=git-annex git-annex-shell mans docs Build/InstallDesktopFile
 
 # set to "./Setup" if you lack a cabal program. Or can be set to "stack"
 BUILDER?=cabal
