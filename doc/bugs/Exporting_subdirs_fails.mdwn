@@ -20,3 +20,4 @@ ok
 ### What version of git-annex are you using? On what operating system?
 git-annex version: 6.20171026-g43d011a52 on Arch Linux
 
+> [[fixed|done]] --[[Joey]]
