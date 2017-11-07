@@ -2,7 +2,11 @@ all=git-annex git-annex-shell mans docs
 
 # set to "./Setup" if you lack a cabal program. Or can be set to "stack"
 BUILDER?=cabal
+ifeq ($(BUILDER),stack)
+GHC?=stack ghc --
+else
 GHC?=ghc
+endif
 
 PREFIX?=/usr
 SHAREDIR?=share
