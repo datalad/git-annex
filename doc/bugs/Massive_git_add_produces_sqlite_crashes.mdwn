@@ -52,6 +52,8 @@ Deleting git annex databases and running git annex fsck didnt do the trick:
 	git add $(git ls-files --others | grep txt)
 	# Again, plenty of sqlite errors :()
 
+It seems like a big overhead to add files tracked only by git in git annex repo. I know there are hooks/filters that catch and recover annexed files after modification but is it possible to disable these git annex hooks/filters when adding files that shouldn't be annexed ?
+
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Oh yeah, I am still discovering this powerfull git annex tool. 
 
