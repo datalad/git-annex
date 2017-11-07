@@ -22,3 +22,8 @@
 	 
 	 # set to "./Setup" if you lack a cabal program. Or can be set to "stack"
 	 BUILDER?=cabal
+
+> Applied [[done]]. Note that I had to do a considerable amount of editing to
+> get that in to a form that `git am` would accept. In the future,
+> providing a patch in a form that `git am` can use would be better.
+> --[[Joey]]
