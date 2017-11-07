@@ -22,6 +22,7 @@ It seems that git is looking at `$PWD` to get "/hd/repo" and normalizing
 the relative path via that. So there's no possible relative path
 that git will accept in this situation. This kind of seems like buggy
 behavior on git's part. I've posted about it to the git mailing list.
+<https://marc.info/?l=git&m=151008314122623&w=2>
 
 git-annex could avoid the problem by not using relative paths of course,
 but there are reasons including shorter path length (generally) 
