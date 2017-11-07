@@ -43,7 +43,7 @@ Create a git annex repo, add thousands of annexed binary files, and add thousand
 	# End of transcript or log.
 
 
-Triying to solve this problem, I found a part of answer in the form of a similar problem encounter here : <https://git-annex.branchable.com/forum/Problem_with_corrupt_SQLite_DB/>
+Triying to solve this problem, I found a part of answer in the form of a similar problem encountered here : <https://git-annex.branchable.com/forum/Problem_with_corrupt_SQLite_DB/>
 
 Deleting git annex databases and running git annex fsck didnt do the trick:
 	
