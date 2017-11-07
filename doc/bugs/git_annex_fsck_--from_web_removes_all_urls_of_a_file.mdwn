@@ -60,3 +60,4 @@ I'm running NixOS btw.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 I'm lovin' it!
 
+> [[fixed|done]] --[[Joey]] 

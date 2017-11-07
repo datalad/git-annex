@@ -119,8 +119,8 @@ checkKey' key us = firsthit us (Right False) $ \u -> do
 	firsthit (u:rest) _ a = do
 		r <- a u
 		case r of
-			Right _ -> return r
-			Left _ -> firsthit rest r a
+			Right True -> return r
+			_ -> firsthit rest r a
 
 getWebUrls :: Key -> Annex [URLString]
 getWebUrls key = filter supported <$> getUrls key
