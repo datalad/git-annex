@@ -38,6 +38,8 @@ Create a git annex repo, add thousands of annexed binary files, and add thousand
 	error: external filter git-annex smudge --clean %f failed 1
 	error: external filter git-annex smudge --clean %f failed
 	# [...] plenty of errors follow
+	>git ls-files --others | grep txt | wc -l
+	1953
 	# End of transcript or log.
 
 
