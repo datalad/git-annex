@@ -19,7 +19,8 @@ tries to clean up after itself, if the remote being tested had a bug,
 the cleanup might fail, leaving test data in the remote.
 
 Testing will use the remote's configuration, automatically varying
-the chunk sizes, and with simple shared encryption enabled and disabled.
+the chunk sizes, and with simple shared encryption disabled and enabled,
+and exporttree disabled and enabled.
 
 # OPTIONS
 
