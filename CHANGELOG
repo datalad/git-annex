@@ -10,6 +10,7 @@ git-annex (6.20171027) UNRELEASED; urgency=medium
     Thanks, Eric Siegerman 
   * Makefile improvement for BUILDER=stack, use stack to run ghc.
   * testremote: Test exporttree.
+  * Fix directory special remote's cleanup of empty export directories.
 
  -- Joey Hess <id@joeyh.name>  Mon, 30 Oct 2017 12:01:45 -0400
 
