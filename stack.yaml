@@ -24,11 +24,3 @@ extra-deps:
 explicit-setup-deps:
   git-annex: true
 resolver: lts-9.9
-nix:
-  packages:
-    - ncurses
-    - icu
-    - libcxx
-    - gcc
-    - zlib
-    - rsync
