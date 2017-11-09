@@ -18,14 +18,13 @@ packages:
 - '.'
 - location:
     git: https://github.com/joeyh/win32
-    commit: 9250d2b8cadf5a98ffb3f68d933a6257c1b7e23d
+    commit: 68067eeff8e019eff64b124b9c0232e94a0e8b30
   extra-dep: true
 extra-deps:
 - aws-0.17.1
 - bloomfilter-2.0.1.0
 - torrent-10000.1.1
 - yesod-default-1.2.0
-- Win32-2.4.0.0
 explicit-setup-deps:
   git-annex: true
 resolver: lts-9.10
