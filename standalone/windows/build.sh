@@ -64,16 +64,17 @@ getextra rsync.exe 85cb7a4d16d274fcf8069b39042965ad26abd6aa
 stack --version
 
 # Build git-annex
-stack setup
-stack install -j 1 --no-haddock --local-bin-path .
+stack setup --stack-yaml stack-windows.yaml
+stack install -j 1 --stack-yaml stack-windows.yaml --no-haddock \
+	--local-bin-path .
 
 # Build the installer
-withcygpreferred stack ghc --no-haddock \
+withcygpreferred stack ghc --stack-yaml stack-windows.yaml --no-haddock \
 	--package nsis Build/NullSoftInstaller.hs
 ./Build/NullSoftInstaller
 
 mkdir -p dist
-stack ghc --no-haddock Build/BuildVersion.hs
+stack ghc --stack-yaml stack-windows.yaml --no-haddock Build/BuildVersion.hs
 ./Build/BuildVersion > dist/build-version
 
 # Test git-annex
