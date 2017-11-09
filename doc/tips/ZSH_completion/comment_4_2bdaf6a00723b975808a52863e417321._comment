@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Lykos153"
+ avatar="http://cdn.libravatar.org/avatar/085df7b04d3408ba23c19f9c49be9ea2"
+ subject="comment 4"
+ date="2017-11-09T02:15:37Z"
+ content="""
+Doesn't work so well for me. The hand-build one performs way better in terms of clearness and efficiency. It groups the suggestions instead of sorting them by name and it prints a description for each command. But most importently, it does only suggest switches when `-` was typed and completes file names otherwise. The auto generated one (at least the one that is shipped with the Arch Linux package) puts the file names last, which makes it unusable.
+"""]]
