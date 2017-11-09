@@ -23,7 +23,6 @@ extra-deps:
 - yesod-default-1.2.0
 - Win32-2.6.1.0
 - unix-compat-0.5
-allow-newer: true
 explicit-setup-deps:
   git-annex: true
 resolver: lts-9.10
