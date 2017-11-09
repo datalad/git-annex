@@ -381,10 +381,10 @@ Executable git-annex
 
   if (os(windows))
     Build-Depends:
-      Win32 (>= 2.6.1.0),
+      Win32 (== 2.4.0.0),
       unix-compat (>= 0.5),
       setenv,
-      process (>= 1.6.2.0)
+      process (>= 1.4.2.0)
   else
     Build-Depends: unix
     if impl(ghc <= 7.6.3)

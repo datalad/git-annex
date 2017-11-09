@@ -16,16 +16,16 @@ flags:
     androidsplice: false
 packages:
 - '.'
+- location:
+    git: https://github.com/joeyh/win32
+    commit: 9250d2b8cadf5a98ffb3f68d933a6257c1b7e23d
+  extra-dep: true
 extra-deps:
 - aws-0.17.1
 - bloomfilter-2.0.1.0
 - torrent-10000.1.1
 - yesod-default-1.2.0
-- Win32-2.6.1.0
-- unix-compat-0.5
-- directory-1.3.1.5
-- process-1.6.2.0
-allow-newer: true
+- Win32-2.4.0.0
 explicit-setup-deps:
   git-annex: true
 resolver: lts-9.10
