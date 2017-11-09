@@ -39,9 +39,8 @@ for Windows. One way is to download it from
 Put it somewhere in PATH.
 
 Then open Git Bash, [[clone git-annex|download]], and in git-annex's source
-tree, run "stack build --stack-yaml stack-windows.yaml" to download and
-build all dependencies and git-annex. "stack install --stack-yaml
-stack-windows.yaml" will install git-annex.
+tree, run "stack build" to download and
+build all dependencies and git-annex. "stack install" will install git-annex.
 
 (To build the git-annex installer, you also need to install the NullSoft
 installer system. The script `standalone/windows/build.sh` is

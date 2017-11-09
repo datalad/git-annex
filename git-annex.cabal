@@ -381,7 +381,7 @@ Executable git-annex
 
   if (os(windows))
     Build-Depends:
-      Win32 (== 2.3.1.1),
+      Win32 (>= 2.6.1.0),
       Win32-extras,
       unix-compat (>= 0.5),
       setenv,
