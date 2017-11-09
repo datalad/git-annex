@@ -50,7 +50,6 @@ module Annex.Content (
 ) where
 
 import System.IO.Unsafe (unsafeInterleaveIO)
-import System.PosixCompat.Files
 import qualified Data.Set as S
 
 import Annex.Common
@@ -85,6 +84,7 @@ import Types.Key
 import Annex.UUID
 import Annex.InodeSentinal
 import Utility.InodeCache
+import Utility.PosixFiles
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool

@@ -15,7 +15,7 @@ module Utility.FileMode (
 import System.IO
 import Control.Monad
 import System.PosixCompat.Types
-import System.PosixCompat.Files
+import Utility.PosixFiles
 #ifndef mingw32_HOST_OS
 import System.Posix.Files
 import Control.Monad.IO.Class (liftIO)

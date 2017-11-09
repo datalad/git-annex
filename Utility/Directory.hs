@@ -16,7 +16,6 @@ module Utility.Directory (
 import System.IO.Error
 import Control.Monad
 import System.FilePath
-import System.PosixCompat.Files
 import Control.Applicative
 import Control.Concurrent
 import System.IO.Unsafe (unsafeInterleaveIO)
@@ -32,6 +31,7 @@ import Control.Monad.IfElse
 #endif
 
 import Utility.SystemDirectory
+import Utility.PosixFiles
 import Utility.Tmp
 import Utility.Exception
 import Utility.Monad

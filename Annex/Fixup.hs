@@ -15,11 +15,11 @@ import qualified Git.BuildVersion
 import Utility.Path
 import Utility.SafeCommand
 import Utility.Directory
+import Utility.PosixFiles
 import Utility.Exception
 
 import System.IO
 import System.FilePath
-import System.PosixCompat.Files
 import Data.List
 import Control.Monad
 import Control.Monad.IfElse
