@@ -8,7 +8,7 @@ I hadn't done a git annex sync in a long time. so I updated via brew on my high 
 
 when I ran git annex sync on my server, i saw it modify the 6 or so movies which I had copied over to the old lion laptop long ago. those six movies are now pointed to hashes which don't exist, and when I look at the history, the previous hashes don't exist either.
 
-then I ran a git annex fsck on the server, and it listed tons of movies which is says have so known copies. at some point, all of them were on the server. I suspect, but don't know how to confirm, that all the movies are still sitting in the annex on the server, but many many of the links are wrong.
+then I ran a git annex fsck on the server, and it listed tons of movies which is says have no known copies. at some point, all of them were on the server. I suspect, but don't know how to confirm, that all the movies are still sitting in the annex on the server, but many many of the links are wrong.
 
 how can I fix the links?
 
