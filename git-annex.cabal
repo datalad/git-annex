@@ -380,8 +380,12 @@ Executable git-annex
     Build-Depends: network (< 2.6), network (>= 2.4)
 
   if (os(windows))
-    Build-Depends: Win32 (== 2.3.1.1), Win32-extras, unix-compat (>= 0.4.1.3), setenv,
-      process (>= 1.4.2.0)
+    Build-Depends:
+      Win32 (>= 2.6.1.0),
+      Win32-extras,
+      unix-compat (>= 0.5),
+      setenv,
+      process (>= 1.6.2.0)
   else
     Build-Depends: unix
     if impl(ghc <= 7.6.3)
