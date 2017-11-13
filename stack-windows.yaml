@@ -19,6 +19,8 @@ packages:
 - location:
     git: https://github.com/snoyberg/http-client
     commit: 9207033c9869a46f7df759b56d1b317a7f542d63
+  subirs:
+  - http-client
   extra-dep: true
 extra-deps:
 - aws-0.17.1
