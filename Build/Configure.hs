@@ -7,7 +7,6 @@ module Build.Configure where
 import Control.Applicative
 import Control.Monad.IfElse
 import Control.Monad
-import System.Directory
 
 import Build.TestConfig
 import Build.Version
@@ -19,6 +18,7 @@ import Utility.Env
 import Utility.Exception
 import qualified Git.Version
 import Utility.DottedVersion
+import Utility.Directory
 
 tests :: [TestCase]
 tests =

@@ -14,7 +14,6 @@ import Utility.UserInfo
 import qualified Git.Config
 import Config
 import Utility.Env
-import Utility.Env.Set
 
 {- Checks that the system's environment allows git to function.
  - Git requires a GECOS username, or suitable git configuration, or

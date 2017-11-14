@@ -95,7 +95,6 @@ import qualified Utility.Process
 import qualified Utility.Misc
 import qualified Utility.InodeCache
 import qualified Utility.Env
-import qualified Utility.Env.Set
 import qualified Utility.Matcher
 import qualified Utility.Exception
 import qualified Utility.Hash
@@ -143,7 +142,7 @@ runner = Just go
 	subenv = "GIT_ANNEX_TEST_SUBPROCESS"
 	runsubprocesstests opts Nothing = do
 		pp <- Annex.Path.programPath
-		Utility.Env.Set.setEnv subenv "1" True
+		Utility.Env.setEnv subenv "1" True
 		ps <- getArgs
 		(Nothing, Nothing, Nothing, pid) <-createProcess (proc pp ps)
 		exitcode <- waitForProcess pid
@@ -1932,9 +1931,9 @@ ensuretmpdir = do
 isolateGitConfig :: IO a -> IO a
 isolateGitConfig a = Utility.Tmp.withTmpDir "testhome" $ \tmphome -> do
 	tmphomeabs <- absPath tmphome
-	Utility.Env.Set.setEnv "HOME" tmphomeabs True
-	Utility.Env.Set.setEnv "XDG_CONFIG_HOME" tmphomeabs True
-	Utility.Env.Set.setEnv "GIT_CONFIG_NOSYSTEM" "1" True
+	Utility.Env.setEnv "HOME" tmphomeabs True
+	Utility.Env.setEnv "XDG_CONFIG_HOME" tmphomeabs True
+	Utility.Env.setEnv "GIT_CONFIG_NOSYSTEM" "1" True
 	a
 
 cleanup :: FilePath -> IO ()
@@ -2120,7 +2119,7 @@ setTestMode testmode = do
 	currdir <- getCurrentDirectory
 	p <- Utility.Env.getEnvDefault "PATH" ""
 
-	mapM_ (\(var, val) -> Utility.Env.Set.setEnv var val True)
+	mapM_ (\(var, val) -> Utility.Env.setEnv var val True)
 		-- Ensure that the just-built git annex is used.
 		[ ("PATH", currdir ++ [searchPathSeparator] ++ p)
 		, ("TOPDIR", currdir)

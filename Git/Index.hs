@@ -10,7 +10,6 @@ module Git.Index where
 import Common
 import Git
 import Utility.Env
-import Utility.Env.Set
 
 indexEnv :: String
 indexEnv = "GIT_INDEX_FILE"
