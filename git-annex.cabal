@@ -995,6 +995,7 @@ Executable git-annex
     Utility.Dot
     Utility.DottedVersion
     Utility.Env
+    Utility.Env.Set
     Utility.Exception
     Utility.ExternalSHA
     Utility.FileMode

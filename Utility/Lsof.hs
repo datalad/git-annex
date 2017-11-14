@@ -11,7 +11,7 @@ module Utility.Lsof where
 
 import Common
 import Build.SysConfig as SysConfig
-import Utility.Env
+import Utility.Env.Set
 
 import System.Posix.Types
 

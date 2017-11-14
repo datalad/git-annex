@@ -15,6 +15,7 @@ import qualified Build.SysConfig as SysConfig
 import System.Posix.Types
 import qualified System.Posix.IO
 import Utility.Env
+import Utility.Env.Set
 #endif
 import Utility.Tmp
 import Utility.Format (decode_c)
