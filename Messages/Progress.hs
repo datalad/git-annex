@@ -24,12 +24,18 @@ import qualified System.Console.Concurrent as Console
 #endif
 
 {- Shows a progress meter while performing a transfer of a key.
- - The action is passed a callback to use to update the meter. -}
-metered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
-metered othermeter key a = withMessageState $ go (keySize key)
+ - The action is passed a callback to use to update the meter.
+ -
+ - When the key's size is not known, the srcfile is statted to get the size.
+ - This allows uploads of keys without size to still have progress
+ - displayed.
+ --}
+metered :: Maybe MeterUpdate -> Key -> Annex (Maybe FilePath) -> (MeterUpdate -> Annex a) -> Annex a
+metered othermeter key getsrcfile a = withMessageState $ \st ->
+	flip go st =<< getsz
   where
 	go _ (MessageState { outputType = QuietOutput }) = nometer
-	go (msize) (MessageState { outputType = NormalOutput, concurrentOutputEnabled = False }) = do
+	go msize (MessageState { outputType = NormalOutput, concurrentOutputEnabled = False }) = do
 		showOutput
 		meter <- liftIO $ mkMeter msize bandwidthMeter $ 
 			displayMeterHandle stdout
@@ -38,7 +44,7 @@ metered othermeter key a = withMessageState $ go (keySize key)
 		r <- a (combinemeter m)
 		liftIO $ clearMeterHandle meter stdout
 		return r
-	go (msize) (MessageState { outputType = NormalOutput, concurrentOutputEnabled = True }) =
+	go msize (MessageState { outputType = NormalOutput, concurrentOutputEnabled = True }) =
 #if WITH_CONCURRENTOUTPUT
 		withProgressRegion $ \r -> do
 			meter <- liftIO $ mkMeter msize bandwidthMeter $ \_ s ->
@@ -61,14 +67,22 @@ metered othermeter key a = withMessageState $ go (keySize key)
 	combinemeter m = case othermeter of
 		Nothing -> m
 		Just om -> combineMeterUpdate m om
+	
+	getsz = case keySize key of
+		Just sz -> return (Just sz)
+		Nothing -> do
+			srcfile <- getsrcfile
+			case srcfile of
+				Nothing -> return Nothing
+				Just f -> catchMaybeIO $ liftIO $ getFileSize f
 
 {- Use when the command's own progress output is preferred.
  - The command's output will be suppressed and git-annex's progress meter
  - used for concurrent output, and json progress. -}
-commandMetered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
-commandMetered combinemeterupdate key a = 
+commandMetered :: Maybe MeterUpdate -> Key -> Annex (Maybe FilePath) -> (MeterUpdate -> Annex a) -> Annex a
+commandMetered combinemeterupdate key getsrcfile a = 
 	withMessageState $ \s -> if needOutputMeter s
-		then metered combinemeterupdate key a
+		then metered combinemeterupdate key getsrcfile a
 		else a (fromMaybe nullMeterUpdate combinemeterupdate)
 
 {- Poll file size to display meter, but only when concurrent output or
@@ -76,7 +90,7 @@ commandMetered combinemeterupdate key a =
 meteredFile :: FilePath -> Maybe MeterUpdate -> Key -> Annex a -> Annex a
 meteredFile file combinemeterupdate key a = 
 	withMessageState $ \s -> if needOutputMeter s
-		then metered combinemeterupdate key $ \p ->
+		then metered combinemeterupdate key (return Nothing) $ \p ->
 			watchFileSize file p a
 		else a
 

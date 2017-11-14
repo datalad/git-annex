@@ -21,6 +21,7 @@ import Types.Remote
 import Types.GitConfig
 import qualified Git
 import Annex.UUID
+import Annex.Content
 import Config
 import Config.Cost
 import Remote.Helper.Git
@@ -78,13 +79,15 @@ chainGen addr r u c gc = do
 	return (Just this)
 
 store :: UUID -> P2PAddress -> ConnectionPool -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store u addr connpool k af p = 
-	metered (Just p) k $ \p' -> fromMaybe False
-		<$> runProto u addr connpool (P2P.put k af p')
+store u addr connpool k af p = do
+	let getsrcfile = fmap fst <$> prepSendAnnex k
+	metered (Just p) k getsrcfile $ \p' -> 
+		fromMaybe False
+			<$> runProto u addr connpool (P2P.put k af p')
 
 retrieve :: UUID -> P2PAddress -> ConnectionPool -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
 retrieve u addr connpool k af dest p = unVerified $ 
-	metered (Just p) k $ \p' -> fromMaybe False 
+	metered (Just p) k (return Nothing) $ \p' -> fromMaybe False 
 		<$> runProto u addr connpool (P2P.get dest k af p')
 
 remove :: UUID -> P2PAddress -> ConnectionPool -> Key -> Annex Bool

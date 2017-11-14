@@ -20,4 +20,5 @@ lrwxrwxrwx 1 yoh yoh 150 Nov  3 09:02 Why_is_git_annex_awesome__This_is_why_.web
 
 """]]
 
-
+> [[done]], but see my caveat about needing to handle lack of progress
+> output anyway. --[[Joey]]

@@ -187,7 +187,7 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 		go (Just storer) = preparecheckpresent k $ safely . go' storer
 		go Nothing = return False
 		go' storer (Just checker) = sendAnnex k rollback $ \src ->
-			displayprogress p k $ \p' ->
+			displayprogress p k (Just src) $ \p' ->
 				storeChunks (uuid baser) chunkconfig enck k src p'
 					(storechunk enc storer)
 					checker
@@ -207,7 +207,7 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 	retrieveKeyFileGen k dest p enc =
 		safely $ prepareretriever k $ safely . go
 	  where
-		go (Just retriever) = displayprogress p k $ \p' ->
+		go (Just retriever) = displayprogress p k Nothing $ \p' ->
 			retrieveChunks retriever (uuid baser) chunkconfig
 				enck k dest p' (sink dest enc encr)
 		go Nothing = return False
@@ -227,8 +227,8 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 
 	chunkconfig = chunkConfig cfg
 
-	displayprogress p k a
-		| displayProgress cfg = metered (Just p) k a
+	displayprogress p k srcfile a
+		| displayProgress cfg = metered (Just p) k (return srcfile) a
 		| otherwise = a p
 
 {- Sink callback for retrieveChunks. Stores the file content into the

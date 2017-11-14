@@ -435,7 +435,7 @@ copyFromRemote :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> 
 copyFromRemote r key file dest p
 	| Git.repoIsHttp (repo r) = unVerified $
 		Annex.Content.downloadUrl key p (keyUrls r key) dest
-	| otherwise = commandMetered (Just p) key $
+	| otherwise = commandMetered (Just p) key (return Nothing) $
 		copyFromRemote' r key file dest
 
 copyFromRemote' :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
@@ -546,27 +546,24 @@ copyFromRemoteCheap _ _ _ _ = return False
 
 {- Tries to copy a key's content to a remote's annex. -}
 copyToRemote :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-copyToRemote r key file meterupdate = 
-	commandMetered (Just meterupdate) key $
-		copyToRemote' r key file
-
-copyToRemote' :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-copyToRemote' r key file meterupdate
+copyToRemote r key file meterupdate
 	| not $ Git.repoIsUrl (repo r) =
 		guardUsable (repo r) (return False) $ commitOnCleanup r $
 			copylocal =<< Annex.Content.prepSendAnnex key
 	| Git.repoIsSsh (repo r) = commitOnCleanup r $
-		Annex.Content.sendAnnex key noop $ \object -> do
-			-- This is too broad really, but recvkey normally
-			-- verifies content anyway, so avoid complicating
-			-- it with a local sendAnnex check and rollback.
-			unlocked <- isDirect <||> versionSupportsUnlockedPointers
-			Ssh.rsyncHelper (Just meterupdate)
-				=<< Ssh.rsyncParamsRemote unlocked r Upload key object file
+		Annex.Content.sendAnnex key noop $ \object ->
+			withmeter object $ \p -> do
+				-- This is too broad really, but recvkey normally
+				-- verifies content anyway, so avoid complicating
+				-- it with a local sendAnnex check and rollback.
+				unlocked <- isDirect <||> versionSupportsUnlockedPointers
+				Ssh.rsyncHelper (Just p)
+					=<< Ssh.rsyncParamsRemote unlocked r Upload key object file
 	| otherwise = giveup "copying to non-ssh repo not supported"
   where
+	withmeter object = commandMetered (Just meterupdate) key (return $ Just object)
 	copylocal Nothing = return False
-	copylocal (Just (object, checksuccess)) = do
+	copylocal (Just (object, checksuccess)) = withmeter object $ \p -> do
 		-- The checksuccess action is going to be run in
 		-- the remote's Annex, but it needs access to the local
 		-- Annex monad's state.
@@ -581,11 +578,11 @@ copyToRemote' r key file meterupdate
 				ensureInitialized
 				copier <- mkCopier hardlink params
 				let verify = Annex.Content.RemoteVerify r
-				runTransfer (Transfer Download u key) file forwardRetry $ \p ->
-					let p' = combineMeterUpdate meterupdate p
+				runTransfer (Transfer Download u key) file forwardRetry $ \p' ->
+					let p'' = combineMeterUpdate p p'
 					in Annex.Content.saveState True `after`
 						Annex.Content.getViaTmp verify key
-							(\dest -> copier object dest p' (liftIO checksuccessio))
+							(\dest -> copier object dest p'' (liftIO checksuccessio))
 			)
 
 fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)

@@ -215,20 +215,20 @@ performExport r ea db ek af contentsha loc = do
 	let storer = storeExport ea
 	sent <- case ek of
 		AnnexKey k -> ifM (inAnnex k)
-			( metered Nothing k $ \m -> do
-				let rollback = void $
-					performUnexport r ea db [ek] loc
-				notifyTransfer Upload af $
-					upload (uuid r) k af noRetry $ \pm -> do
-						let m' = combineMeterUpdate pm m
-						sendAnnex k rollback
-							(\f -> storer f k loc m')
+			( notifyTransfer Upload af $
+				upload (uuid r) k af noRetry $ \pm -> do
+					let rollback = void $
+						performUnexport r ea db [ek] loc
+					sendAnnex k rollback $ \f ->
+						metered Nothing k (return $ Just f) $ \m -> do
+							let m' = combineMeterUpdate pm m
+							storer f k loc m'
 			, do
 				showNote "not available"
 				return False
 			)
 		-- Sending a non-annexed file.
-		GitKey sha1k -> metered Nothing sha1k $ \m ->
+		GitKey sha1k -> metered Nothing sha1k (return Nothing) $ \m ->
 			withTmpFile "export" $ \tmp h -> do
 				b <- catObject contentsha
 				liftIO $ L.hPut h b
