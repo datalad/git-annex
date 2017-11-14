@@ -1029,7 +1029,6 @@ Executable git-annex
     Utility.PartialPrelude
     Utility.Path
     Utility.Percentage
-    Utility.PosixFiles
     Utility.Process
     Utility.Process.Shim
     Utility.QuickCheck

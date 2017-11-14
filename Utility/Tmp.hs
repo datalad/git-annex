@@ -15,13 +15,13 @@ import Control.Monad.IfElse
 import System.FilePath
 import System.Directory
 import Control.Monad.IO.Class
+import System.PosixCompat.Files
 #ifndef mingw32_HOST_OS
 import System.Posix.Temp (mkdtemp)
 #endif
 
 import Utility.Exception
 import Utility.FileSystemEncoding
-import Utility.PosixFiles
 
 type Template = String
 

@@ -18,6 +18,7 @@ import System.IO as X hiding (FilePath)
 import System.Posix.IO as X hiding (createPipe)
 #endif
 import System.Exit as X
+import System.PosixCompat.Files as X hiding (fileSize)
 
 import Utility.Misc as X
 import Utility.Exception as X
@@ -28,7 +29,6 @@ import Utility.Directory as X
 import Utility.Monad as X
 import Utility.Data as X
 import Utility.Applicative as X
-import Utility.PosixFiles as X hiding (fileSize)
 import Utility.FileSize as X
 import Utility.Network as X
 import Utility.Split as X
