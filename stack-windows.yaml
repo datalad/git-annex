@@ -25,8 +25,6 @@ packages:
 - location:
     git: https://github.com/joeyh/unix-compat
     commit: 806b33c98fb9eb31c71d384a2456e0402e20bce9
-  subdirs:
-  - http-client
   extra-dep: true
 extra-deps:
 - aws-0.17.1
