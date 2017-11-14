@@ -105,7 +105,7 @@ getSocket h = do
 	addr <- inet_addr "127.0.0.1"
 	sock <- socket AF_INET Stream defaultProtocol
 	preparesocket sock
-	bindSocket sock (SockAddrInet aNY_PORT addr)
+	bind sock (SockAddrInet aNY_PORT addr)
 	use sock
   where
 #else

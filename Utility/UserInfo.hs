@@ -15,11 +15,13 @@ module Utility.UserInfo (
 ) where
 
 import Utility.Env
-import Utility.Data
 import Utility.Exception
+#ifndef mingw32_HOST_OS
+import Utility.Data
+import Control.Applicative
+#endif
 
 import System.PosixCompat
-import Control.Applicative
 import Prelude
 
 {- Current user's home directory.
@@ -58,6 +60,7 @@ myVal envvars extract = go envvars
 #ifndef mingw32_HOST_OS
 	go [] = Right . extract <$> (getUserEntryForID =<< getEffectiveUserID)
 #else
-	go [] = return $ Left ("environment not set: " ++ show envvars)
+	go [] = return $ either Left (Right . extract) $
+		Left ("environment not set: " ++ show envvars)
 #endif
 	go (v:vs) = maybe (go vs) (return . Right) =<< getEnv v
