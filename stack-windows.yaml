@@ -17,8 +17,8 @@ flags:
 packages:
 - '.'
 - location:
-    git: https://github.com/snoyberg/http-client
-    commit: 9207033c9869a46f7df759b56d1b317a7f542d63
+    git: https://github.com/joeyh/http-client
+    commit: dbaee53b5a5cfe2dd0f971837c61eccfce05c729
   subdirs:
   - http-client
   extra-dep: true
