@@ -217,9 +217,8 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 
 	makepointer key dest destmode = do
 		unless inoverlay $ 
-			unlessM (reuseOldFile unstagedmap key file dest) $ do
-				r <- linkFromAnnex key dest destmode
-				case r of
+			unlessM (reuseOldFile unstagedmap key file dest) $
+				linkFromAnnex key dest destmode >>= \case
 					LinkAnnexFailed -> liftIO $
 						writePointerFile dest key destmode
 					_ -> noop

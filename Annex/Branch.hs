@@ -446,18 +446,16 @@ stageJournal jl = withIndex $ do
 			[genstream dir h jh jlogh]
 	return $ cleanup dir jlogh jlogf
   where
-	genstream dir h jh jlogh streamer = do
-		v <- readDirectory jh
-		case v of
-			Nothing -> return ()
-			Just file -> do
-				unless (dirCruft file) $ do
-					let path = dir </> file
-					sha <- Git.HashObject.hashFile h path
-					hPutStrLn jlogh file
-					streamer $ Git.UpdateIndex.updateIndexLine
-						sha FileBlob (asTopFilePath $ fileJournal file)
-				genstream dir h jh jlogh streamer
+	genstream dir h jh jlogh streamer = readDirectory jh >>= \case
+		Nothing -> return ()
+		Just file -> do
+			unless (dirCruft file) $ do
+				let path = dir </> file
+				sha <- Git.HashObject.hashFile h path
+				hPutStrLn jlogh file
+				streamer $ Git.UpdateIndex.updateIndexLine
+					sha FileBlob (asTopFilePath $ fileJournal file)
+			genstream dir h jh jlogh streamer
 	-- Clean up the staged files, as listed in the temp log file.
 	-- The temp file is used to avoid needing to buffer all the
 	-- filenames in memory.

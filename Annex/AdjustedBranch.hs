@@ -80,9 +80,8 @@ adjustTreeItem UnlockAdjustment = ifSymlink adjustToPointer noAdjust
 adjustTreeItem LockAdjustment = ifSymlink noAdjust adjustToSymlink
 adjustTreeItem FixAdjustment = ifSymlink adjustToSymlink noAdjust
 adjustTreeItem UnFixAdjustment = ifSymlink (adjustToSymlink' gitAnnexLinkCanonical) noAdjust
-adjustTreeItem HideMissingAdjustment = \ti@(TreeItem _ _ s) -> do
-	mk <- catKey s
-	case mk of
+adjustTreeItem HideMissingAdjustment = \ti@(TreeItem _ _ s) ->
+	catKey s >>= \case
 		Just k -> ifM (inAnnex k)
 			( return (Just ti)
 			, return Nothing
@@ -99,29 +98,25 @@ noAdjust :: TreeItem -> Annex (Maybe TreeItem)
 noAdjust = return . Just
 
 adjustToPointer :: TreeItem -> Annex (Maybe TreeItem)
-adjustToPointer ti@(TreeItem f _m s) = do
-	mk <- catKey s
-	case mk of
-		Just k -> do
-			Database.Keys.addAssociatedFile k f
-			Just . TreeItem f (fromBlobType FileBlob)
-				<$> hashPointerFile k
-		Nothing -> return (Just ti)
+adjustToPointer ti@(TreeItem f _m s) = catKey s >>= \case
+	Just k -> do
+		Database.Keys.addAssociatedFile k f
+		Just . TreeItem f (fromBlobType FileBlob)
+			<$> hashPointerFile k
+	Nothing -> return (Just ti)
 
 adjustToSymlink :: TreeItem -> Annex (Maybe TreeItem)
 adjustToSymlink = adjustToSymlink' gitAnnexLink
 
 adjustToSymlink' :: (FilePath -> Key -> Git.Repo -> GitConfig -> IO FilePath) -> TreeItem -> Annex (Maybe TreeItem)
-adjustToSymlink' gitannexlink ti@(TreeItem f _m s) = do
-	mk <- catKey s
-	case mk of
-		Just k -> do
-			absf <- inRepo $ \r -> absPath $
-				fromTopFilePath f r
-			linktarget <- calcRepo $ gitannexlink absf k
-			Just . TreeItem f (fromBlobType SymlinkBlob)
-				<$> hashSymlink linktarget
-		Nothing -> return (Just ti)
+adjustToSymlink' gitannexlink ti@(TreeItem f _m s) = catKey s >>= \case
+	Just k -> do
+		absf <- inRepo $ \r -> absPath $
+			fromTopFilePath f r
+		linktarget <- calcRepo $ gitannexlink absf k
+		Just . TreeItem f (fromBlobType SymlinkBlob)
+			<$> hashSymlink linktarget
+	Nothing -> return (Just ti)
 
 type OrigBranch = Branch
 newtype AdjBranch = AdjBranch { adjBranch :: Branch }
@@ -438,11 +433,9 @@ updateAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge commi
 		return True
 	reparent _ _ Nothing = return False
 
-	getcurrentcommit = do
-		v <- inRepo Git.Branch.currentUnsafe
-		case v of
-			Nothing -> return Nothing
-			Just c -> catCommit c
+	getcurrentcommit = inRepo Git.Branch.currentUnsafe >>= \case
+		Nothing -> return Nothing
+		Just c -> catCommit c
 
 {- Check for any commits present on the adjusted branch that have not yet
  - been propigated to the basis branch, and propigate them to the basis
@@ -463,23 +456,19 @@ propigateAdjustedCommits'
 	-> Adjustment
 	-> CommitsPrevented
 	-> Annex (Maybe Sha, Annex ())
-propigateAdjustedCommits' origbranch adj _commitsprevented = do
-	ov <- inRepo $ Git.Ref.sha basis
-	case ov of
-		Just origsha -> do
-			cv <- catCommit currbranch
-			case cv of
-				Just currcommit -> do
-					v <- newcommits >>= go origsha False
-					case v of
-						Left e -> do
-							warning e
-							return (Nothing, return ())
-						Right newparent -> return
-							( Just newparent
-							, rebase currcommit newparent
-							)
-				Nothing -> return (Nothing, return ())
+propigateAdjustedCommits' origbranch adj _commitsprevented =
+	inRepo (Git.Ref.sha basis) >>= \case
+		Just origsha -> catCommit currbranch >>= \case
+			Just currcommit ->
+				newcommits >>= go origsha False >>= \case
+					Left e -> do
+						warning e
+						return (Nothing, return ())
+					Right newparent -> return
+						( Just newparent
+						, rebase currcommit newparent
+						)
+			Nothing -> return (Nothing, return ())
 		Nothing -> return (Nothing, return ())
   where
 	(BasisBranch basis) = basisBranch adjbranch
@@ -492,18 +481,16 @@ propigateAdjustedCommits' origbranch adj _commitsprevented = do
 		setBasisBranch (BasisBranch basis) parent
 		inRepo $ Git.Branch.update' origbranch parent
 		return (Right parent)
-	go parent pastadjcommit (sha:l) = do
-		mc <- catCommit sha
-		case mc of
-			Just c
-				| commitMessage c == adjustedBranchCommitMessage ->
-					go parent True l
-				| pastadjcommit -> do
-					v <- reverseAdjustedCommit parent adj (sha, c) origbranch
-					case v of
+	go parent pastadjcommit (sha:l) = catCommit sha >>= \case
+		Just c
+			| commitMessage c == adjustedBranchCommitMessage ->
+				go parent True l
+			| pastadjcommit ->
+				reverseAdjustedCommit parent adj (sha, c) origbranch
+					>>= \case
 						Left e -> return (Left e)
 						Right commit -> go commit pastadjcommit l
-			_ -> go parent pastadjcommit l
+		_ -> go parent pastadjcommit l
 	rebase currcommit newparent = do
 		-- Reuse the current adjusted tree, and reparent it
 		-- on top of the newparent.

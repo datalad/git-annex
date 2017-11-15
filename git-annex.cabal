@@ -306,7 +306,7 @@ source-repository head
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends:
-   base (>= 4.5 && < 5.0),
+   base (>= 4.6 && < 5.0),
    optparse-applicative (>= 0.11.0), 
    containers (>= 0.5.0.0),
    exceptions (>= 0.6),
@@ -360,7 +360,7 @@ Executable git-annex
    split
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
-  Extensions: PackageImports
+  Extensions: PackageImports, LambdaCase
   -- Some things don't work with the non-threaded RTS.
   GHC-Options: -threaded
   Other-Extensions: TemplateHaskell

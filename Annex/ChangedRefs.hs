@@ -39,31 +39,26 @@ data ChangedRefsHandle = ChangedRefsHandle DirWatcherHandle (TBMChan Git.Sha)
 -- When possible, coalesce ref writes that occur closely together
 -- in time. Delay up to 0.05 seconds to get more ref writes.
 waitChangedRefs :: ChangedRefsHandle -> IO ChangedRefs
-waitChangedRefs (ChangedRefsHandle _ chan) = do
-	v <- atomically $ readTBMChan chan
-	case v of
+waitChangedRefs (ChangedRefsHandle _ chan) =
+	atomically (readTBMChan chan) >>= \case
 		Nothing -> return $ ChangedRefs []
 		Just r -> do
 			threadDelay 50000
 			rs <- atomically $ loop []
 			return $ ChangedRefs (r:rs)
   where
-	loop rs = do
-		v <- tryReadTBMChan chan
-		case v of
-			Just (Just r) -> loop (r:rs)
-			_ -> return rs
+	loop rs = tryReadTBMChan chan >>= \case
+		Just (Just r) -> loop (r:rs)
+		_ -> return rs
 
 -- | Remove any changes that might be buffered in the channel,
 -- without waiting for any new changes.
 drainChangedRefs :: ChangedRefsHandle -> IO ()
 drainChangedRefs (ChangedRefsHandle _ chan) = atomically go
   where
-	go = do
-		v <- tryReadTBMChan chan
-		case v of
-			Just (Just _) -> go
-			_ -> return ()
+	go = tryReadTBMChan chan >>= \case
+		Just (Just _) -> go
+		_ -> return ()
 
 stopWatchingChangedRefs :: ChangedRefsHandle -> IO ()
 stopWatchingChangedRefs h@(ChangedRefsHandle wh chan) = do

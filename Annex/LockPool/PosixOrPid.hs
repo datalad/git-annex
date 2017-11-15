@@ -49,12 +49,10 @@ tryLockExclusive m f = tryPidLock m f $ Posix.tryLockExclusive m f
 checkLocked :: LockFile -> Annex (Maybe Bool)
 checkLocked f = Posix.checkLocked f `pidLockCheck` checkpid
   where
-	checkpid pidlock = do
-		v <- Pid.checkLocked pidlock
-		case v of
-			-- Only return true when the posix lock file exists.
-			Just _ -> Posix.checkLocked f
-			Nothing -> return Nothing
+	checkpid pidlock = Pid.checkLocked pidlock >>= \case
+		-- Only return true when the posix lock file exists.
+		Just _ -> Posix.checkLocked f
+		Nothing -> return Nothing
 
 getLockStatus :: LockFile -> Annex LockStatus
 getLockStatus f = Posix.getLockStatus f

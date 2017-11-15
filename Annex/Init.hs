@@ -93,8 +93,7 @@ initialize' mversion = do
 	whenM versionSupportsUnlockedPointers $ do
 		configureSmudgeFilter
 		scanUnlockedFiles
-	v <- checkAdjustedClone
-	case v of
+	checkAdjustedClone >>= \case
 		NeedUpgradeForAdjustedClone -> 
 			void $ upgrade True  versionForAdjustedClone
 		InAdjustedClone -> return ()

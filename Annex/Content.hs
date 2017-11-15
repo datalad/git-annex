@@ -149,30 +149,25 @@ inAnnexSafe key = inAnnex' (fromMaybe True) (Just False) go key
 			( checkOr is_unlocked lockfile
 			, return is_missing
 			)
-	checkOr d lockfile = do
-		v <- checkLocked lockfile
-		return $ case v of
-			Nothing -> d
-			Just True -> is_locked
-			Just False -> is_unlocked
+	checkOr d lockfile = checkLocked lockfile >>= return . \case
+		Nothing -> d
+		Just True -> is_locked
+		Just False -> is_unlocked
 #else
 	checkindirect f = liftIO $ ifM (doesFileExist f)
-		( do
-			v <- lockShared f
-			case v of
-				Nothing -> return is_locked
-				Just lockhandle -> do
-					dropLock lockhandle
-					return is_unlocked
+		( lockShared f >>= \case
+			Nothing -> return is_locked
+			Just lockhandle -> do
+				dropLock lockhandle
+				return is_unlocked
 		, return is_missing
 		)
 	{- In Windows, see if we can take a shared lock. If so, 
 	 - remove the lock file to clean up after ourselves. -}
 	checkdirect contentfile lockfile =
 		ifM (liftIO $ doesFileExist contentfile)
-			( modifyContent lockfile $ liftIO $ do
-				v <- lockShared lockfile
-				case v of
+			( modifyContent lockfile $ liftIO $
+				lockShared >>= \case
 					Nothing -> return is_locked
 					Just lockhandle -> do
 						dropLock lockhandle
@@ -428,8 +423,7 @@ checkDiskSpace' need destdir key alreadythere samefilesystem = ifM (Annex.getSta
 		inprogress <- if samefilesystem
 			then sizeOfDownloadsInProgress (/= key)
 			else pure 0
-		free <- liftIO . getDiskFree =<< dir
-		case free of
+		dir >>= liftIO . getDiskFree >>= \case
 			Just have -> do
 				reserve <- annexDiskReserve <$> Annex.getGitConfig
 				let delta = need + reserve - have - alreadythere + inprogress
@@ -581,9 +575,8 @@ data FromTo = From | To
  -}
 linkAnnex :: FromTo -> Key -> FilePath -> Maybe InodeCache -> FilePath -> Maybe FileMode -> Annex LinkAnnexResult
 linkAnnex _ _ _ Nothing _ _ = return LinkAnnexFailed
-linkAnnex fromto key src (Just srcic) dest destmode = do
-	mdestic <- withTSDelta (liftIO . genInodeCache dest)
-	case mdestic of
+linkAnnex fromto key src (Just srcic) dest destmode =
+	withTSDelta (liftIO . genInodeCache dest) >>= \case
 		Just destic -> do
 			cs <- Database.Keys.getInodeCaches key
 			if null cs
@@ -602,17 +595,15 @@ linkAnnex fromto key src (Just srcic) dest destmode = do
 	failed = do
 		Database.Keys.addInodeCaches key [srcic]
 		return LinkAnnexFailed
-	checksrcunchanged = do
-		mcache <- withTSDelta (liftIO . genInodeCache src)
-		case mcache of
-			Just srcic' | compareStrong srcic srcic' -> do
-				destic <- withTSDelta (liftIO . genInodeCache dest)
-				Database.Keys.addInodeCaches key $
-					catMaybes [destic, Just srcic]
-				return LinkAnnexOk
-			_ -> do
-				liftIO $ nukeFile dest
-				failed
+	checksrcunchanged = withTSDelta (liftIO . genInodeCache src) >>= \case
+		Just srcic' | compareStrong srcic srcic' -> do
+			destic <- withTSDelta (liftIO . genInodeCache dest)
+			Database.Keys.addInodeCaches key $
+				catMaybes [destic, Just srcic]
+			return LinkAnnexOk
+		_ -> do
+			liftIO $ nukeFile dest
+			failed
 
 {- Hard links or copies src to dest, which must not already exists.
  -

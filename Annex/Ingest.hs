@@ -169,9 +169,8 @@ ingest' preferredbackend (Just (LockedDown cfg source)) mk = withTSDelta $ \delt
 			)
 	go _ _ _ = failure "failed to generate a key"
 
-	golocked key mcache s = do
-		v <- tryNonAsync (moveAnnex key $ contentLocation source)
-		case v of
+	golocked key mcache s =
+		tryNonAsync (moveAnnex key $ contentLocation source) >>= \case
 			Right True -> do
 				populateAssociatedFiles key source
 				success key mcache s		
@@ -184,8 +183,7 @@ ingest' preferredbackend (Just (LockedDown cfg source)) mk = withTSDelta $ \delt
 		-- already has a hard link.
 		cleanCruft source
 		cleanOldKeys (keyFilename source) key
-		r <- linkToAnnex key (keyFilename source) (Just cache)
-		case r of
+		linkToAnnex key (keyFilename source) (Just cache) >>= \case
 			LinkAnnexFailed -> failure "failed to link to annex"
 			_ -> do
 				finishIngestUnlocked' key source
@@ -259,8 +257,7 @@ cleanOldKeys file newkey = do
 			fs <- filter (/= ingestedf)
 				. map (`fromTopFilePath` g)
 				<$> Database.Keys.getAssociatedFiles key
-			fs' <- filterM (`sameInodeCache` caches) fs
-			case fs' of
+			filterM (`sameInodeCache` caches) fs >>= \case
 				-- If linkToAnnex fails, the associated 
 				-- file with the content is still present,
 				-- so no need for any recovery.
@@ -342,14 +339,12 @@ cachedCurrentBranch = maybe cache (return . Just)
 	=<< Annex.getState Annex.cachedcurrentbranch
   where
 	cache :: Annex (Maybe Git.Branch)
-	cache = do
-		mb <- inRepo Git.Branch.currentUnsafe
-		case mb of
-			Nothing -> return Nothing
-			Just b -> do
-				Annex.changeState $ \s ->
-					s { Annex.cachedcurrentbranch = Just b }
-				return (Just b)
+	cache = inRepo Git.Branch.currentUnsafe >>= \case
+		Nothing -> return Nothing
+		Just b -> do
+			Annex.changeState $ \s ->
+				s { Annex.cachedcurrentbranch = Just b }
+			return (Just b)
 
 {- Adds a file to the work tree for the key, and stages it in the index.
  - The content of the key may be provided in a temp file, which will be
@@ -389,10 +384,8 @@ addAnnexedFile file key mtmp = ifM (addUnlocked <&&> not <$> isDirect)
 			Nothing -> return True
 	)
   where
-	linkunlocked mode = do
-		r <- linkFromAnnex key file mode
-		case r of
-			LinkAnnexFailed -> liftIO $
-				writePointerFile file key mode
-			_ -> return ()
+	linkunlocked mode = linkFromAnnex key file mode >>= \case
+		LinkAnnexFailed -> liftIO $
+			writePointerFile file key mode
+		_ -> return ()
 	writepointer mode = liftIO $ writePointerFile file key mode

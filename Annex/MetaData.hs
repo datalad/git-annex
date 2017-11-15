@@ -39,8 +39,7 @@ import Data.Time.Clock.POSIX
  -}
 genMetaData :: Key -> FilePath -> FileStatus -> Annex ()
 genMetaData key file status = do
-	v <- catKeyFileHEAD file
-	case v of
+	catKeyFileHEAD file >>= \case
 		Nothing -> noop
 		Just oldkey -> 
 			whenM (copyMetaData oldkey key)
