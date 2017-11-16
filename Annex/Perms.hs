@@ -112,7 +112,7 @@ isContentWritePermOk file = ifM crippledFileSystem
 	go AllShared = want writeModes
 	go _ = return True
 	want wantmode = do
-		liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
+		mmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
 		return $ case mmode of
 			Nothing -> True
 			Just havemode -> havemode == combineModes (havemode:wantmode)
