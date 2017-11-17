@@ -59,6 +59,6 @@ This is what I've got so far:
                 urls.append(r.geturl())
                 break
     assert(len(files) == len(urls))
-    p = Popen(['git-annex', 'addurl', '--batch', '--with-files', '--relzed'], stdin=PIPE, stdout=stdout)
+    p = Popen(['git-annex', 'addurl', '--batch', '--with-files', '--relaxed'], stdin=PIPE, stdout=stdout)
     p.stdin.writelines(str.encode(f + ' ' + u) for f, u in zip(urls, files))
     p.communicate()
