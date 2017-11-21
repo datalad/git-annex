@@ -16,7 +16,9 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.UTF8 as B8
 import qualified Data.ByteString.Lazy.UTF8 as L8
 import Network.HTTP.Client (HttpException(..), RequestBody)
+#if MIN_VERSION_http_client(0,5,0)
 import qualified Network.HTTP.Client as HTTP
+#endif
 import Network.HTTP.Types
 import System.IO.Error
 import Control.Monad.Catch
