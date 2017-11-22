@@ -1,0 +1,41 @@
+quvi does not seem maintained (last upstream release in 2013)
+and it supports many fewer videos than youtube-dl does.
+
+The difficulty with using youtube-dl is it, by design, does not
+provide a way to probe if it supports an url, other than running it
+and seeing if it finds a video at the url. This would make `git annex
+addurl` significantly slower if it ran youtube-dl to probe every url.
+
+It is possible to use youtube-dl to download arbitrary non-video files;
+it stores the file to disk just as wget or curl. But, that's well outside
+its intended use case, and so it does not feel like a good idea to make
+git-annex depend on using youtube-dl to download generic urls.
+(Also, youtube-dl has bugs with downloading non-video 
+urls, see for example http://bugs.debian.org/874321)
+
+So, switching to youtube-dl would probably need a new switch, like `git
+annex addurl --rip` that enables using it.
+
+Currently `git annex importfeed` automatically tests for video urls with
+quvi; it would also need to support `--rip`.
+
+Both of those changes would need changes to user's workflows and cron jobs.
+git-annex could keep supporting quvi for some time, and warn when it uses
+quvi, to help with the transition.
+
+Another gotcha is playlists. youtube-dl downloads playlists automatically.
+But, git-annex needs to record an url that downloads a single file so that
+`git annex get` works right. So, playlists will need to be disabled when
+git-annex runs youtube-dl. But, `--no-playlist` does not always disable
+playlists. Best option seems to be `--playlist-items 0` which works for
+non-playlists, and downloads only 1 item from playlists (hopefully a fairly
+stable item, but who knows..).
+
+Another gotcha is that youtube-dl's -o option does not fully determine the
+filename it downloads to. Sometims it will tack on an additional extension
+(seen with youtube videos where it added a ".mkv").
+And --get-filename does not report the actual filename when that happens.
+Only way I can find to avoid this wart is output to stdout with "-o -",
+but that would prevent resuming. Seems it would have to be run in a temp
+dir and the file moved out to the git-annex location when done, which would
+prevent stuff that operates on incomplete downloads from working.
