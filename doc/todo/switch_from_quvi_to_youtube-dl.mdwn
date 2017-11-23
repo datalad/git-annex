@@ -39,3 +39,7 @@ Only way I can find to avoid this wart is output to stdout with "-o -",
 but that would prevent resuming. Seems it would have to be run in a temp
 dir and the file moved out to the git-annex location when done, which would
 prevent stuff that operates on incomplete downloads from working.
+
+If the download is run in a temp directory anyway, could use -o to
+make the filenames start with the playlist number, and support downloading
+playlists, with the playlist item number encoded in the recorded url.
