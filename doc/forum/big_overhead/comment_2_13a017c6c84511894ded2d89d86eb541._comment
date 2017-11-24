@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="rasmus"
+ ip="109.201.154.150"
+ subject="comment 2"
+ date="2014-09-07T15:17:25Z"
+ content="""
+Thanks for help, Efraim.
+
+I'm not sure this is it.  On my other laptop, where the above statics were not calculated the `.git` folder of `doc.annex` is 26Gb (contents is 8.6Gb).  Meanwhile, unused files are 0.6Gb.  In `conf.annex` the `.git` folder is 3.2Gb, content is 70Mb and unused files is 2.2Mb.  I used the web interface to find the size of unused files.
+"""]]

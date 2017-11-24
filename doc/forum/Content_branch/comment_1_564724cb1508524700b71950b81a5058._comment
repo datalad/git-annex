@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="jd.schroeder@0c8632a8f2bffdd4b0de05a0a3660f32acdfeeca"
+ nickname="jd.schroeder"
+ subject="comment 1"
+ date="2016-07-29T19:12:24Z"
+ content="""
+I'm not sure about creating a branch, but I use [[https://git-annex.branchable.com/git-annex-find/]] to list locally available files.
+
+Good luck!
+"""]]

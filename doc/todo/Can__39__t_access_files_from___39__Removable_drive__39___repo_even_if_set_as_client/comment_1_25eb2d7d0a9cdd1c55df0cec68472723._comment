@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.253.75"
+ subject="comment 1"
+ date="2013-02-22T21:46:59Z"
+ content="""
+You have a bare git repository on your USB stick. The assistant uses bare repositories on USB sticks currently, although recent changes to support FAT make it possible to use non-bare repositories.
+
+For this to really work the way you want it to, the assistant would need to start updating local non-bare repositories whenever it pushed changes to them. Currently the assistant only updates the repository it's running in, so a non-bare repository on USB would lag behind and show an old version of the directory until manually updated with `git annex sync`.
+"""]]

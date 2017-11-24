@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="lasitus"
+ avatar="http://cdn.libravatar.org/avatar/dfe778f28027aeb75876172022aa5de3"
+ subject="comment 7"
+ date="2017-02-17T03:23:46Z"
+ content="""
+Ok, I have a script that generates the error. This generates a repository and 30 GB of random binary files with many folders 2 layers deep. Just put in an empty folder and run with python. No remotes are necessary. This was run in Windows 10 in a git bash window.
+
+```
+#!/usr/bin/env python
+
+import logging
+import os
+import shutil
+import subprocess
+import uuid
+
+logging.basicConfig(level=logging.DEBUG)
+
+repositoryPath = os.path.abspath(\"./bigRepoTest\")	
+os.makedirs(repositoryPath)
+
+subprocess.call(\"git init\", cwd=repositoryPath)
+subprocess.call(\"git annex init pc\", cwd=repositoryPath)
+
+def makeRandomDirectories(level1FolderCount, level2FolderCount, fileCount):
+	for directoryIndex in range(0, level1FolderCount):
+		logging.info(\"Adding top level folder \" + str(directoryIndex + 1) + \" of \" + str(level1FolderCount))
+		newDirectory = os.path.join(repositoryPath, str(uuid.uuid1()))
+		os.makedirs(newDirectory)
+		for directoryIndex in range(0, level2FolderCount):
+			newNestedDirectory = os.path.join(newDirectory, str(uuid.uuid1()))
+			os.makedirs(newNestedDirectory)
+			for fileIndex in range(0, fileCount):
+				newFile = os.path.join(newNestedDirectory, str(uuid.uuid1()) + \".bin\")
+				with open(newFile, 'wb') as fileOut:
+					fileOut.write(os.urandom(500000))
+
+makeRandomDirectories(32, 1000, 1)
+with open(os.path.join(repositoryPath, \"assistant.log\"), 'w') as output:
+	subprocess.Popen([\"git\", \"annex\", \"assistant\", \"--debug\"], cwd=repositoryPath, stdout=output, stderr=output)
+	makeRandomDirectories(32, 1000, 1)
+	subprocess.call(\"tail -f daemon.log\", cwd=os.path.join(repositoryPath, \".git\", \"annex\"))
+```
+"""]]

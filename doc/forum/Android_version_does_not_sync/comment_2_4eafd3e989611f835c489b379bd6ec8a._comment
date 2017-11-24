@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 2"
+ date="2014-07-14T18:21:15Z"
+ content="""
+How did you create this repository on the android device? Normally a git repository has an index file, unless it has just been manually created with `git init` and has not yet had anything added to it. When the webapp is used to create a repository, it should always leave it with an index file already present.
+"""]]

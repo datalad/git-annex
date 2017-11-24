@@ -1,0 +1,8 @@
+Hi,
+
+when running git annex add in my direct mode repository, since a few days ago I only get:
+
+$ git annex add
+git-annex: unknown response from git cat-file (":./Archiv/Someone missing",:./Archiv/Someone Like You Cover-fCvjvEGkTu4.flv)
+
+The :./Archiv/Someone missing part strikes me odd because it so much looks like broken shell meta-character escaping in git-annex, but I doubt that because it stopped working just suddenly.

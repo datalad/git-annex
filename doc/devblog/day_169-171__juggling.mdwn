@@ -1,0 +1,14 @@
+Keeping lots of things going these past few days..
+
+* Rebootstrapping the armel autobuilder with propellor. 
+  Some qemu instability and the need to update haskell
+  library patches meant this took a lot of hand-holding. Finally got a
+  working setup today.
+* Designing and ordering new git-annex stickers on clear viynl backing;
+  have put off sending those to campaign contributors for too long.
+* Added a new feature to the webapp: It now remembers the ssh remotes
+  that it sets up, and makes it easy to enable them elsewhere, the same
+  as other sorts of remotes. Had a very pleasant surprise building this,
+  when I was able to reuse all the UI code for enabling rsync and gcrypt
+  remotes. I think this will be a useful feature as we transition away
+  from XMPP.

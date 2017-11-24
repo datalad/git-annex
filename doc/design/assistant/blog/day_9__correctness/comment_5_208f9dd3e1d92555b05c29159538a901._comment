@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.135"
+ subject="comment 5"
+ date="2012-06-15T15:14:52Z"
+ content="""
+@wichert All this inotify stuff is entirely linux specific AFAIK anyway, so it's find for workarounds to limitations in inotify functionality to also be linux specific.
+
+@dieter I think you're thinking of hard links, filesystems don't track number of open file handles afaik.
+
+@Jimmy, I'm planning to get watch going on freebsd (and hopefully that will also cover OSX), after merging it :)
+
+@Richard, the file is set RO while it's being annexed, so any lsof would come after that point.
+"""]]

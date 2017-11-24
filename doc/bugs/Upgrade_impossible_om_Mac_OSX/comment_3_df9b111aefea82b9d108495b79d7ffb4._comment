@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkAUMhKOSkh9JaBA6xst3XxQIIsDEq5Zd4"
+ nickname="Ovidiu"
+ subject="comment 3"
+ date="2014-05-09T13:28:38Z"
+ content="""
+here is what the log looks like:
+
+[2014-05-09 15:23:22 SAST] main: starting assistant version 5.20140420-ga25b8bb
+(scanning...) [2014-05-09 15:23:23 SAST] Watcher: Performing startup scan
+[2014-05-09 15:23:24 SAST] Upgrader: An upgrade of git-annex is available.  (version 5.20140421)
+(started...) [2014-05-09 15:25:10 SAST] main: warning git-annex has been shut down
+[2014-05-09 15:25:31 SAST] main: starting assistant version 5.20140420-ga25b8bb
+(scanning...) [2014-05-09 15:25:31 SAST] Watcher: Performing startup scan
+[2014-05-09 15:25:32 SAST] Upgrader: An upgrade of git-annex is available.  (version 5.20140421)
+(started...) [2014-05-09 15:25:59 SAST] main: warning git-annex has been shut down
+
+[2014-05-09 15:27:14 SAST] main: starting assistant version 5.20140420-ga25b8bb
+(scanning...) [2014-05-09 15:27:14 SAST] Watcher: Performing startup scan
+[2014-05-09 15:27:15 SAST] Upgrader: An upgrade of git-annex is available.  (version 5.20140421)
+(started...) [2014-05-09 15:27:46 SAST] main: starting assistant version 5.20140420-ga25b8bb
+(scanning...) [2014-05-09 15:27:46 SAST] Watcher: Performing startup scan
+(started...) [2014-05-09 15:27:48 SAST] Upgrader: An upgrade of git-annex is available.  (version 5.20140421)
+"""]]

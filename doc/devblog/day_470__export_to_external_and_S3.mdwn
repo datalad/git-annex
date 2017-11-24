@@ -1,0 +1,12 @@
+Got `git annex export` working to external special remotes. Each external
+special remote will need some modifications to allow exporting. Exporting
+to some things doesn't make sense, but often there's a way to browse a tree
+of files stored on the special remote and so export is worth supporting.
+Now would be a good time to contact the author of your favorite special
+remote about supporting export..
+
+Also had time to get `git annex export` working to S3. The tip 
+[[tips/publishing_your_files_to_the_public]] had a clumsy method for
+publishing files via S3 before, and is now quite simple!
+
+Today's work was supported by the NSF-funded DataLad project.

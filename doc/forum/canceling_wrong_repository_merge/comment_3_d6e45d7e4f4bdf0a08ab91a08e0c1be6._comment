@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="the actual process i use"
+ date="2015-02-17T00:58:38Z"
+ content="""
+So it seems i am able to forget all of this within the matter of a few days, and since this is so error prone, here goes a more detailed explanation.
+
+What I do is:
+
+<pre>
+git clone repo repo.test
+cd repo.test
+git annex indirect # be safe! this may take a while, but it's necessary!
+git tag bak # keep track of a good working state
+git log --stat --stat-count=3 # find the commits we want to trash
+git tag firstbad badbeef1 # the first commit we want to kill
+git tag keep dada1234 # the first commit we want to keep
+git rebase -p --onto firstbad^ keep # drop everything between firstbad (inclusive) and keep (exclusive)
+git diff --stat keep # make sure this did what we expected
+git branch -D annex/direct/master synced/master # destroy this old branch that still has refs to the old commits
+</pre>
+
+Then for each repo:
+
+<pre>
+cd repo
+git tag bak
+git fetch origin # sync the master branch in
+git remote prune origin # make sure the dropped branches are gone
+git annex indirect # be safe
+git reset --hard origin/master
+git branch -D synced/master annex/direct/master
+git diff --stat bak # should change
+</pre>
+
+It would be useful to have that transition propagate properly everywhere so I don't have to do this in every repo, but at least the above should work fairly reliably.
+"""]]

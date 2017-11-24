@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="db"
+ subject="comment 2"
+ date="2016-01-23T23:06:03Z"
+ content="""
+In fact, I have 2x2 keys on my local machine
+
+key.git-annex-fqdn-db_2222_db.2Fannex
+key.git-annex-fqdn-db_2222_db.2Fannex.pub
+key.git-annex-fqdn-db_22_annex
+key.git-annex-fqdn-db_22_annex.pub
+
+Why duplicates? The \"public 2222\" key is in my  ~/.ssh/authorized_keys but not the \"public 22\"-key.
+"""]]

@@ -1,0 +1,44 @@
+Started implementing [[transfer_control]]. Although I'm currently calling
+the configuration for it "preferred content expressions". (What a mouthful!)
+
+I was mostly able to reuse the Limit code (used to handle parameters like
+--not --in otherrepo), so it can already build Matchers for preferred content
+expressions in my little Domain Specific Language.
+
+Preferred content expressions can be edited with `git annex vicfg`, which
+checks that they parse properly. 
+
+The plan is that the first place to use them is not going to be inside the
+assistant, but in commands that use the `--auto` parameter, which will use
+them as an additional constraint, in addition to the numcopies setting
+already used. Once I get it working there, I'll add it to the assistant.
+
+Let's say a repo has a preferred content setting of
+"(not copies=trusted:2) and (not in=usbdrive)"
+
+* `git annex get --auto` will get files that have less than 2 trusted
+  copies, and are not in the usb drive.
+* `git annex drop --auto` will drop files that have 2 or more trusted
+  copies, and are not in the usb drive (assuming numcopies allows dropping
+  them of course).
+* `git annex copy --auto --to thatrepo` run from another repo
+  will only copy files that have less than 2 trusted copies. (And if that
+  was run on the usb drive, it'd never copy anything!)
+
+There is a complication here.. What if the repo with that preferred content
+setting is itself trusted? Then when it gets a file, its number of
+trusted copies increases, which will make it be dropped again. :-/
+
+This is a nuance that the numcopies code already deals with, but it's
+much harder to deal with it in these complicated expressions. I need to think
+about this; the three ideas I'm working on are:
+
+1. Leave it to whoever/whatever writes these expressions to write ones
+   that avoid such problems. Which is ok if I'm the only one writing
+   pre-canned ones, in practice..
+2. Transform expressions into ones that avoid such problems. (For example,
+   replace "not copies=trusted:2" with "not (copies=trusted:2 or (in=here and
+   trusted=here and copies=trusted:3))"
+3. Have some of the commands (mostly drop I think) pretend the drop
+   has already happened, and check if it'd then want to get the file back
+   again.

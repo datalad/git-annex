@@ -1,0 +1,81 @@
+### Please describe the problem.
+
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+$> git annex get 2read/ISNN2010__Tang.pdf
+git-annex: Cannot mix --all or --unused with file names.
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+
+[[!format sh """
+$> apt-cache policy git-annex
+git-annex:
+  Installed: 5.20140116
+  Candidate: 5.20140116
+  Version table:
+ *** 5.20140116 0
+        600 http://debian.lcs.mit.edu/debian/ sid/main amd64 Packages
+        100 /var/lib/dpkg/status
+"""]]
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+$> git annex get 2read/ISNN2010__Tang.pdf
+git-annex: Cannot mix --all or --unused with file names.
+
+but seems to start fetching some load if I do not specify any path and just run 'git annex get'.
+
+There seems to be some screw up:
+
+I have plenty of objects under .git/annex/objects/ (seems largely from
+the directory above), nothing is now reported by unused (with obscure
+msg):
+
+$> du -scmL * 2>/dev/null | tail -1
+1	total                      
+
+$> du -scm .git/annex/objects 
+334	.git/annex/objects
+334	total
+
+$> git annex dropunused all
+git-annex: Map.findMin: empty map has no minimal element
+
+Here is some portion of the history which lead to such a state (there
+was git annex unused somewhere before)
+
+25954  git annex move --unused --to onerussian.com_annex
+25955  git annex dropunused
+25956  git annex dropunused all
+25962  git annex unused
+25963  git log --stat -SSHA256E-s5639442--67691e57cb4d6c51afe838590ad265ba4bea9c291cf52d58ed24f05b70bf33bf.mp3
+25965  git log --stat -SSHA256E-s143042--b4012bf03ed0a387a9e714390efa75f1dd769162cca4c9b77e516732342be3f9.html
+25968  git annex move --unused --to onerussian.com_annex
+25969  git annex dropunused all
+25976  git annex unused
+25978  git br
+25980  git log --stat -Ss741707--7c215090893f1f0c994e2a9ad3088016676464bbad26768841dd08c07295a2fe.pdf.map
+25981  git annex unused
+25982  git annex fsck
+25983  git annex unused
+25984  git annex dropkey
+25985  git log --stat -SSHA256E-s14534131--20de680eedb3e1fb687c9b00c154d978333b61f4ea122c632bdb5bcdbb1553ff.pdf
+25986  git show de3ccae8304efbae4a7a8add49de638f64b821fc
+25991  git annex fsck
+
+# End of transcript or log.
+"""]]
+
+[[!tag moreinfo]]
+
+> Tagged moreinfo since I have a workable theory about how this happened,
+> which would make it user configuration error and not a bug, but 
+> that has not been confirmed. --[[Joey]]

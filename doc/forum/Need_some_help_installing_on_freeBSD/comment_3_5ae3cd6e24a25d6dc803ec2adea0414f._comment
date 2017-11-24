@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-10-06T20:05:24Z"
+ content="""
+The WebDAV support means it does support box.com. Looking at the
+version info, this freebsd build seems to have more or less every possible
+option enabled. Nice job freebsd porters!
+"""]]

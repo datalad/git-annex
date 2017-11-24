@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.81.112"
+ subject="comment 4"
+ date="2012-05-27T21:33:11Z"
+ content="""
+Try running `git annex whereis` on the file and see where it says it is.
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.163"
+ subject="comment 7"
+ date="2014-02-08T17:42:52Z"
+ content="""
+What was the ugly hack that got it to link?
+
+I've seen setSocketOption fail on other OS's for various portability reasons. The haskell library that is responsible for this is <http://hackage.haskell.org/package/network>, and you can find several setSocketOption calls in it. I've had good luck ifdefing those out when they don't work. 
+
+Here's a patch where I disable the IPv6Only setting on Android (amoung other unrelated porting) <http://source.git-annex.branchable.com/?p=source.git;a=blob;f=standalone/android/haskell-patches/network_2.4.1.0_0001-android-port-fixes.patch;h=66c0de5448bacaf7449db768b4d720870bbcf9c4;hb=HEAD>
+"""]]

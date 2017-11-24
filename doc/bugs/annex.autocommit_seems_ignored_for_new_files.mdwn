@@ -1,0 +1,39 @@
+### Please describe the problem.
+
+When `annex.autocommit` is set to `false`, the assistant continues to commit to the repository, at least in indirect mode (direct mode not tested). I'd like it to not even `git annex add`, but it should at least not `git commit`.
+
+### What steps will reproduce the problem?
+
+I started the assistant with `git annex assistant`. Then I also opened the webapp with `git annex website`.
+
+Next, I ran `git config --bool --local --replace-all annex.autocommit false`. Supposedly that'll stop the assistant from committing things.
+
+Then I did a `echo "hello world" > test`.
+
+The webapp showed the file syncing, and `ls -l test` confirmed it'd been added the annex. `git status` confirmed it'd been committed as well.
+
+I did a `git rm test`, and then a `git status`... and it turns out the annex committed that as well.
+
+NOTE: My repository is in indirect mode.
+
+I tried `--global` instead of `--local` for the config, and that didn't make a difference.
+
+
+### What version of git-annex are you using? On what operating system?
+
+5.20141125 on Debian testing, from the package. (And, thank you Joey, for all your work on Debian. You'll be missed.)
+
+### Please provide any additional information below.
+
+> The assistant does not notice changes to the 
+> git configuration that are made while it's already running.
+> 
+> I have verified that setting `git config annex.autocommit true`
+> and then starting the assistant behaves as documented.
+>
+> So will asking the webapp to restart.
+> 
+> Retitling bug report appropriately. --[[Joey]]
+
+[[!meta title="git-annex assistant could watch .git/config and react to config changes on the fly"]]
+[[!tag confirmed]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 4"
+ date="2015-12-10T18:58:46Z"
+ content="""
+Correct, dropping a file from everywhere will lose its content entirely.
+
+But, git-annex has a [[copies]] tracking feature that prevents such foot-shooting. If you ask it to drop the last copy, it will refuse, although there is a way to override this if you really want to.
+"""]]

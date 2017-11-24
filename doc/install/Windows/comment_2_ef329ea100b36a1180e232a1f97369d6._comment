@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="eren.m.dursun@73116dce47e54243c7ee1637f1289afb02f07f4b"
+ nickname="eren.m.dursun"
+ subject="Re: Compatibility with recent version of Git for Windows"
+ date="2015-11-29T19:24:03Z"
+ content="""
+To install git-annex next to 64bit git on Windows:
+
+Start cmd.exe with administrator privileges and run
+mklink /J \"C:\Program Files (x86)\Git\" \"C:\Program Files\Git\"
+to add a sym-link. Install git-annex.
+"""]]

@@ -1,0 +1,282 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="comment 4"
+ date="2015-08-19T17:17:50Z"
+ content="""
+darn, you're right... then i screwed up my copy-paste. :( the assistant *was* running on a and b, that i am sure of.
+
+here's a more complete transcript (hopefully):
+
+<pre>
+[997]anarcat@desktop008:test$ mkdir g-a
+[998]anarcat@desktop008:test$ cd g-a/
+[999]anarcat@desktop008:g-a$ git init a
+Initialized empty Git repository in /home/anarcat/test/g-a/a/.git/
+[1000]anarcat@desktop008:g-a$ git init b
+Initialized empty Git repository in /home/anarcat/test/g-a/b/.git/
+[1001]anarcat@desktop008:g-a$ git init c
+Initialized empty Git repository in /home/anarcat/test/g-a/c/.git/
+[1002]anarcat@desktop008:g-a$ cd a
+[1003]anarcat@desktop008:a$ git annex init
+init  ok
+(recording state in git...)
+[1004]anarcat@desktop008:a$ git remote add origin ../b
+[1005]anarcat@desktop008:a$ cd ../b
+[1006]anarcat@desktop008:b$ git annex init
+init  ok
+(recording state in git...)
+[1007]anarcat@desktop008:b$ git remote add origin ../c
+[1008]anarcat@desktop008:b$ cd ../c
+[1009]anarcat@desktop008:c$ git annex init
+init  ok
+(recording state in git...)
+[1010]anarcat@desktop008:c$ cd ../a/
+[1011]anarcat@desktop008:a$ git annex ^C
+[1011]anarcat@desktop008:a130$ touch test
+[1012]anarcat@desktop008:a$ git annex add tset
+git-annex: tset not found
+git-annex: add: 1 failed
+[1013]anarcat@desktop008:a1$ git annex add test
+add test ok
+(recording state in git...)
+[1014]anarcat@desktop008:a$ git annex sync
+commit  ok
+pull origin
+warning: no common commits
+remote: Counting objects: 5, done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 5 (delta 0), reused 0 (delta 0)
+Unpacking objects: 100% (5/5), done.
+From ../b
+ * [new branch]      git-annex  -> origin/git-annex
+ok
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+push origin
+Counting objects: 16, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (12/12), done.
+Writing objects: 100% (16/16), 1.56 KiB | 0 bytes/s, done.
+Total 16 (delta 1), reused 0 (delta 0)
+To ../b
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      master -> synced/master
+ok
+[1015]anarcat@desktop008:a$ git annex assistant
+[1016]anarcat@desktop008:a$ cd ../b
+[1017]anarcat@desktop008:b$ git annex assistant
+[1018]anarcat@desktop008:b$ ls
+[1019]anarcat@desktop008:b$ git anne^C
+[1019]anarcat@desktop008:b130$ ls
+[1019]anarcat@desktop008:b$ git annex sync
+commit  ok
+pull origin
+
+merge: refs/remotes/origin/master - not something we can merge
+
+merge: refs/remotes/origin/synced/master - not something we can merge
+failed
+git-annex: sync: 1 failed
+[1020]anarcat@desktop008:b1$ git remote -v^C
+[1020]anarcat@desktop008:b130$ git re^C
+[1020]anarcat@desktop008:b130$ ls
+[1021]anarcat@desktop008:b$ cd ../
+[1022]anarcat@desktop008:g-a$ git annexccd ^C
+[1022]anarcat@desktop008:g-a130$ cd c
+[1023]anarcat@desktop008:c$ git annex sync
+commit  ok
+[1024]anarcat@desktop008:c$ ls
+[1025]anarcat@desktop008:c$ cd ../b
+[1026]anarcat@desktop008:b$ git co master
+error: pathspec 'master' did not match any file(s) known to git.
+[1027]anarcat@desktop008:b1$ git branch -a
+  git-annex
+  synced/git-annex
+  synced/master
+  remotes/origin/git-annex
+[1028]anarcat@desktop008:b$ git co -b master synced/master
+Already on 'master'
+[1029]anarcat@desktop008:b$ ls
+test
+[1030]anarcat@desktop008:b$ git annex sync
+commit  ok
+pull origin
+ok
+[1031]anarcat@desktop008:b$ cd ..c
+bash: cd: ..c: No such file or directory
+[1032]anarcat@desktop008:b1$ cd ../c
+[1033]anarcat@desktop008:c$ ls
+[1034]anarcat@desktop008:c$ git annex sync
+(recording state in git...)
+commit  ok
+[1035]anarcat@desktop008:c$ ls
+[1036]anarcat@desktop008:c$ cd ../a
+[1037]anarcat@desktop008:a$ echo test > foo
+[1038]anarcat@desktop008:a$ ls -al
+total 20K
+drwxr-xr-x  3 anarcat 4294967294 4096 aoû 19 13:12 .
+drwxr-xr-x  5 anarcat 4294967294 4096 aoû 19 13:10 ..
+lrwxrwxrwx  1 anarcat 4294967294  178 aoû 19 13:12 foo -> .git/annex/objects/w8/pv/SHA256E-s5--f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2/SHA256E-s5--f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2
+drwxr-xr-x 10 anarcat 4294967294 4096 aoû 19 13:12 .git
+lrwxrwxrwx  1 anarcat 4294967294  178 aoû 19 13:11 test -> .git/annex/objects/pX/ZJ/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+[1039]anarcat@desktop008:a$ git status
+On branch master
+nothing to commit, working directory clean
+[1040]anarcat@desktop008:a$ git annex list
+here
+|origin
+||web
+|||bittorrent
+||||
+XX__ foo
+XX__ test
+[1041]anarcat@desktop008:a$ git annex list --allrepos
+here
+|origin
+||web
+|||bittorrent
+||||
+XX__ foo
+XX__ test
+[1042]anarcat@desktop008:a$ cd ../b
+[1043]anarcat@desktop008:b$ git annex wanted transfer
+git-annex: there is no available git remote named \"transfer\"
+[1044]anarcat@desktop008:b1$ git annex wanted . transfer
+wanted . git-annex: Parse error: Parse failure: near \"transfer\"
+[1045]anarcat@desktop008:b1$ git annex wanted . groupwanted
+wanted . ok
+(recording state in git...)
+[1046]anarcat@desktop008:b$ git annex group . transfer
+group . c ok
+(recording state in git...)
+[1047]anarcat@desktop008:b$ cd ../a
+[1048]anarcat@desktop008:a$ git annex group . source
+group . ok
+(recording state in git...)
+[1049]anarcat@desktop008:a$ git annex wanted . groupwanted
+wanted . ok
+(recording state in git...)
+[1050]anarcat@desktop008:a$ cd ../c
+[1051]anarcat@desktop008:c$ git annex wanted . groupwanted
+wanted . ok
+(recording state in git...)
+[1052]anarcat@desktop008:c$ git annex group . backup
+group . (merging synced/git-annex into git-annex...)
+(recording state in git...)
+ok
+(recording state in git...)
+[1053]anarcat@desktop008:c$ cd ../
+[1054]anarcat@desktop008:g-a$ cd b
+[1055]anarcat@desktop008:b$ cd ../a
+[1056]anarcat@desktop008:a$ git annex list --allrepos
+here
+|origin
+||web
+|||bittorrent
+||||
+XX__ foo
+XX__ test
+[1057]anarcat@desktop008:a$ git annex^C
+[1057]anarcat@desktop008:a130$ cd ../
+[1058]anarcat@desktop008:g-a$ git ^C
+[1058]anarcat@desktop008:g-a130$ cd b
+[1059]anarcat@desktop008:b$ git remote -v
+origin  ../c (fetch)
+origin  ../c (push)
+[1060]anarcat@desktop008:b$ git annex sync
+commit  ok
+pull origin
+remote: Counting objects: 23, done.
+remote: Compressing objects: 100% (19/19), done.
+remote: Total 23 (delta 8), reused 0 (delta 0)
+Unpacking objects: 100% (23/23), done.
+From ../c
+   ac66bb1..43cfe35  git-annex  -> origin/git-annex
+ok
+(merging origin/git-annex into git-annex...)
+[1061]anarcat@desktop008:b$ git annex list --allrepos
+here
+|origin
+||web
+|||bittorrent
+||||anarcat@desktop008:~/test/g-a/a
+|||||
+XX__X foo
+XX__X test
+[1062]anarcat@desktop008:b$ cd ../a/
+[1063]anarcat@desktop008:a$ echo bar > bar
+[1064]anarcat@desktop008:a$ git status
+On branch master
+nothing to commit, working directory clean
+[1065]anarcat@desktop008:a$ cd ^C
+[1065]anarcat@desktop008:a130$ git annex list --allrepos
+here
+|origin
+||web
+|||bittorrent
+||||
+XX__ bar
+XX__ foo
+XX__ test
+[1066]anarcat@desktop008:a$ cd ../b
+[1067]anarcat@desktop008:b$ git annex list --allrepos
+here
+|origin
+||web
+|||bittorrent
+||||anarcat@desktop008:~/test/g-a/a
+|||||
+XX__X bar
+XX__X foo
+XX__X test
+</pre>
+
+now it seems that setting repo `b` in the transfer group helped, but the files didn't get purged from `a` (or `b`, for that matter).
+
+setting the central `b` wanted expression seems to help in dropping the file from `a`, but not from `b`:
+
+<pre>
+[1070]anarcat@desktop008:b$ cd ../a
+[1071]anarcat@desktop008:a$ echo quuex > quuex
+[1072]anarcat@desktop008:a$ git status
+On branch master
+nothing to commit, working directory clean
+[1073]anarcat@desktop008:a$ cd -
+/home/anarcat/test/g-a/b
+[1074]anarcat@desktop008:b$ git annex list --allrepos
+here
+|origin
+||web
+|||bittorrent
+||||anarcat@desktop008:~/test/g-a/a
+|||||
+XX__X bar
+XX__X foo
+X___X quuex
+XX__X test
+[1075]anarcat@desktop008:b$ cd ../c
+[1076]anarcat@desktop008:c$ git annex group
+git-annex: Specify a repository and a group.
+[1077]anarcat@desktop008:c1$ git annex group .
+(recording state in git...)
+backup
+[1078]anarcat@desktop008:c$ cd -
+/home/anarcat/test/g-a/b
+[1079]anarcat@desktop008:b$ git annex list --allrepos
+here
+|origin
+||web
+|||bittorrent
+||||anarcat@desktop008:~/test/g-a/a
+|||||
+XX__X bar
+XX__X foo
+X___X quuex
+XX__X test
+[1080]anarcat@desktop008:b$ git annex numcopies
+global numcopies is not set
+(default is 1)
+</pre>
+
+i think i'm almost getting this now. :)
+"""]]

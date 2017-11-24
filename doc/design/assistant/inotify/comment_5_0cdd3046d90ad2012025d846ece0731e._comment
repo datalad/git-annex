@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 5"
+ date="2012-06-17T21:42:59Z"
+ content="""
+okay, I've gotten gitbuilder to poll the git repo every minute for changes, gitbuilder doesn't build every commit. It doesn't work like that, it checks out the master and builds that. If there is a failure it automatically bisects to find out where the problem first got introduced. Hope the change to the builder helps!
+"""]]

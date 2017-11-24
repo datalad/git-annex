@@ -1,0 +1,1548 @@
+# NAME
+
+git-annex - manage files with git, without checking their contents in
+
+# SYNOPSIS
+
+git annex command [params ...]
+
+# DESCRIPTION
+
+git-annex allows managing files with git, without checking the file
+contents into git. While that may seem paradoxical, it is useful when
+dealing with files larger than git can currently easily handle, whether due
+to limitations in memory, checksumming time, or disk space.
+
+Even without file content tracking, being able to manage files with git,
+move files around and delete files with versioned directory trees, and use
+branches and distributed clones, are all very handy reasons to use git. And
+annexed files can co-exist in the same git repository with regularly
+versioned files, which is convenient for maintaining documents, Makefiles,
+etc that are associated with annexed files but that benefit from full
+revision control.
+
+When a file is annexed, its content is moved into a key-value store, and
+a symlink is made that points to the content. These symlinks are checked into
+git and versioned like regular files. You can move them around, delete
+them, and so on. Pushing to another git repository will make git-annex
+there aware of the annexed file, and it can be used to retrieve its
+content from the key-value store.
+
+# EXAMPLES
+
+	# git annex get video/hackity_hack_and_kaxxt.mov
+	get video/hackity_hack_and_kaxxt.mov (not available)
+	  I was unable to access these remotes: server
+	  Try making some of these repositories available:
+	  	5863d8c0-d9a9-11df-adb2-af51e6559a49  -- my home file server
+	   	58d84e8a-d9ae-11df-a1aa-ab9aa8c00826  -- portable USB drive
+	   	ca20064c-dbb5-11df-b2fe-002170d25c55  -- backup SATA drive
+	failed
+	# sudo mount /media/usb
+	# git remote add usbdrive /media/usb
+	# git annex get video/hackity_hack_and_kaxxt.mov
+	get video/hackity_hack_and_kaxxt.mov (from usbdrive...) ok
+	
+	# git annex add iso
+	add iso/Debian_5.0.iso ok
+	
+	# git annex drop iso/Debian_4.0.iso
+	drop iso/Debian_4.0.iso ok
+	
+	# git annex move iso --to=usbdrive
+	move iso/Debian_5.0.iso (moving to usbdrive...) ok
+
+# COMMONLY USED COMMANDS
+
+Like many git commands, git-annex can be passed a path that
+is either a file or a directory. In the latter case it acts on all relevant
+files in the directory. When no path is specified, most git-annex commands
+default to acting on all relevant files in the current directory (and
+subdirectories).
+
+* `help`
+
+  Display built-in help.
+
+  For help on a specific command, use `git annex help command`
+
+* `add [path ...]`
+
+  Adds files in the path to the annex. If no path is specified, adds
+  files from the current directory and below. 
+  
+  See [[git-annex-add]](1) for details.
+
+* `get [path ...]`
+
+  Makes the content of annexed files available in this repository.
+  
+  See [[git-annex-get]](1) for details.
+
+* `drop [path ...]`
+
+  Drops the content of annexed files from this repository.
+  
+  See [[git-annex-drop]](1) for details.
+
+* `move [path ...] [--from=remote|--to=remote]`
+
+  Moves the content of files from or to another remote.
+
+  See [[git-annex-move]](1) for details.
+
+* `copy [path ...] [--from=remote|--to=remote]`
+
+  Copies the content of files from or to another remote.
+
+  See [[git-annex-copy]](1) for details.
+
+* `status [path ...]`
+
+  Similar to `git status --short`, displays the status of the files in the
+  working tree. Particularly useful in direct mode.
+
+  See [[git-annex-status]](1) for details.
+
+* `unlock [path ...]`
+
+  Unlock annexed files for modification.
+  
+  See [[git-annex-unlock]](1) for details.
+
+* `edit [path ...]`
+
+  This is an alias for the unlock command. May be easier to remember,
+  if you think of this as allowing you to edit an annexed file.
+
+* `lock [path ...]`
+
+  Use this to undo an unlock command if you don't want to modify
+  the files, or have made modifications you want to discard.
+  
+  See [[git-annex-lock]](1) for details.
+
+* `sync [remote ...]`
+
+  Synchronize local repository with remotes.
+  
+  See [[git-annex-sync]](1) for details.
+
+* `mirror [path ...] [--to=remote|--from=remote]`
+
+  Mirror content of files to/from another repository.
+  
+  See [[git-annex-mirror]](1) for details.
+
+* `addurl [url ...]`
+
+  Downloads each url to its own file, which is added to the annex.
+  
+  See [[git-annex-addurl]](1) for details.
+
+* `rmurl file url`
+
+  Record that the file is no longer available at the url.
+  
+  See [[git-annex-rmurl]](1) for details.
+
+* `import [path ...]`
+
+  Move and add files from outside git working copy into the annex.
+  
+  See [[git-annex-import]](1) for details.
+
+* `importfeed [url ...]`
+
+  Imports the contents of podcast feeds into the annex.
+  
+  See [[git-annex-importfeed]](1) for details.
+
+* `export treeish --to remote`
+
+  Export content to a remote.
+
+  See [[git-annex-export]](1) for details.
+
+* `undo [filename|directory] ...`
+
+  Undo last change to a file or directory.
+  
+  See [[git-annex-undo]](1) for details.
+
+* `multicast`
+
+  Multicast file distribution.
+
+  See [[git-annex-multicast]](1) for details.
+
+* `watch`
+
+  Watch for changes and autocommit.
+  
+  See [[git-annex-watch]](1) for details.
+
+* `assistant`
+
+  Automatically sync folders between devices.
+
+  See [[git-annex-assistant]](1) for details.
+
+* `webapp`
+
+  Opens a web app, that allows easy setup of a git-annex repository,
+  and control of the git-annex assistant. If the assistant is not
+  already running, it will be started.
+
+  See [[git-annex-webapp]](1) for details.
+
+# REPOSITORY SETUP COMMANDS
+
+* `init [description]`
+
+  Until a repository (or one of its remotes) has been initialized,
+  git-annex will refuse to operate on it, to avoid accidentally
+  using it in a repository that was not intended to have an annex.
+  
+  See [[git-annex-init]](1) for details.
+
+* `describe repository description`
+
+  Changes the description of a repository.
+  
+  See [[git-annex-describe]](1) for details.
+
+* `initremote name type=value [param=value ...]`
+
+  Creates a new special remote, and adds it to `.git/config`.
+
+  See [[git-annex-initremote]](1) for details.
+  
+* `enableremote name [param=value ...]`
+
+  Enables use of an existing special remote in the current repository.
+  
+  See [[git-annex-enableremote]](1) for details.
+
+* `enable-tor`
+
+  Sets up tor hidden service.
+  
+  See [[git-annex-enable-tor]](1) for details.
+
+* `numcopies [N]`
+
+  Configure desired number of copies.
+  
+  See [[git-annex-numcopies]](1) for details.
+
+* `trust [repository ...]`
+
+  Records that a repository is trusted to not unexpectedly lose
+  content. Use with care.
+  
+  See [[git-annex-trust]](1) for details.
+
+* `untrust [repository ...]`
+
+  Records that a repository is not trusted and could lose content
+  at any time.
+  
+  See [[git-annex-untrust]](1) for details.
+
+* `semitrust [repository ...]`
+
+  Returns a repository to the default semi trusted state.
+  
+  See [[git-annex-semitrust]](1) for details.
+
+* `group repository groupname`
+
+  Add a repository to a group.
+  
+  See [[git-annex-group]](1) for details.
+
+* `ungroup repository groupname`
+
+  Removes a repository from a group.
+  
+  See [[git-annex-ungroup]](1) for details.
+
+* `wanted repository [expression]`
+  
+  Get or set preferred content expression.
+
+  See [[git-annex-wanted]](1) for details.
+
+* `groupwanted groupname [expression]`
+
+  Get or set groupwanted expression.
+
+  See [[git-annex-groupwanted]](1) for details.
+
+* `required repository [expression]`
+  
+  Get or set required content expression.
+  
+  See [[git-annex-required]](1) for details.
+
+* `schedule repository [expression]`
+
+  Get or set scheduled jobs.
+
+  See [[git-annex-schedule]](1) for details.
+
+* `config`
+
+  Get and set other configuration stored in git-annex branch.
+  
+  See [[git-annex-config]](1) for details.
+
+* `vicfg`
+
+  Opens EDITOR on a temp file containing most of the above configuration
+  settings, as well as a few others, and when it exits, stores any changes
+  made back to the git-annex branch.
+  
+  See [[git-annex-vicfg]](1) for details.
+
+* `direct`
+
+  Switches a repository to use direct mode, where rather than symlinks to
+  files, the files are directly present in the repository.
+  
+  See [[git-annex-direct]](1) for details.
+
+* `indirect`
+
+  Switches a repository back from direct mode to the default, indirect mode.
+  
+  See [[git-annex-indirect]](1) for details.
+
+* `adjust`
+
+  Switches a repository to use an adjusted branch, which can automatically
+  unlock all files, etc.
+  
+  See [[git-annex-adjust]](1) for details.
+
+# REPOSITORY MAINTENANCE COMMANDS
+
+* `fsck [path ...]`
+
+  Checks the annex consistency, and warns about or fixes any problems found. 
+  This is a good complement to `git fsck`.
+
+  See [[git-annex-fsck]](1) for details.
+
+* `expire [repository:]time ...`
+
+  Expires repositories that have not recently performed an activity
+  (such as a fsck).
+
+  See [[git-annex-expire]](1) for details.
+
+* `unused`
+
+  Checks the annex for data that does not correspond to any files present
+  in any tag or branch, and prints a numbered list of the data.
+  
+  See [[git-annex-unused]](1) for details.
+
+* `dropunused [number|range ...]`
+
+  Drops the data corresponding to the numbers, as listed by the last
+  `git annex unused`
+  
+  See [[git-annex-dropunused]](1) for details.
+
+* `addunused [number|range ...]`
+
+  Adds back files for the content corresponding to the numbers or ranges,
+  as listed by the last `git annex unused`.
+  
+  See [[git-annex-addunused]](1) for details.
+
+* `fix [path ...]`
+
+  Fixes up symlinks that have become broken to again point to annexed content.
+
+  See [[git-annex-fix]](1) for details.
+
+* `merge`
+
+  Automatically merge changes from remotes.
+
+  See [[git-annex-merge]](1) for details.
+
+* `upgrade`
+
+  Upgrades the repository to current layout.
+  
+  See [[git-annex-upgrade]](1) for details.
+
+* `dead [repository ...] [--key key]`
+
+  Indicates that a repository or a single key has been irretrievably lost.
+  
+  See [[git-annex-dead]](1) for details.
+
+* `forget`
+
+  Causes the git-annex branch to be rewritten, throwing away historical
+  data about past locations of files.
+  
+  See [[git-annex-forget]](1) for details.
+
+* `repair`
+
+  This can repair many of the problems with git repositories that `git fsck`
+  detects, but does not itself fix. It's useful if a repository has become
+  badly damaged. One way this can happen is if a repository used by git-annex
+  is on a removable drive that gets unplugged at the wrong time.
+  
+  See [[git-annex-repair]](1) for details.
+
+* `p2p`
+
+  Configure peer-2-Peer links between repositories.
+
+  See [[git-annex-p2p]](1) for details.
+
+# QUERY COMMANDS
+
+* `find [path ...]`
+
+  Outputs a list of annexed files in the specified path. With no path,
+  finds files in the current directory and its subdirectories.
+
+  See [[git-annex-find]](1) for details.
+
+* `whereis [path ...]`
+
+  Displays information about where the contents of files are located.
+  
+  See [[git-annex-whereis]](1) for details.
+
+* `list [path ...]`
+
+  Displays a table of remotes that contain the contents of the specified
+  files. This is similar to whereis but a more compact display.
+  
+  See [[git-annex-list]](1) for details.
+
+* `log [path ...]`
+
+  Displays the location log for the specified file or files,
+  showing each repository they were added to ("+") and removed from ("-").
+
+  See [[git-annex-log]](1) for details.
+
+* `info [directory|file|remote|uuid ...]`
+
+  Displays statistics and other information for the specified item,
+  which can be a directory, or a file, or a remote, or the uuid of a
+  repository. 
+
+  When no item is specified, displays statistics and information
+  for the repository as a whole.
+  
+  See [[git-annex-info]](1) for details.
+
+* `version`
+
+  Shows the version of git-annex, as well as repository version information.
+  
+  See [[git-annex-version]](1) for details.
+
+* `map`
+
+  Generate map of repositories.
+
+  See [[git-annex-map]](1) for details.
+
+# METADATA COMMANDS
+
+* `metadata [path ...]`
+
+  The content of an annexed file can have any number of metadata fields
+  attached to it to describe it. Each metadata field can in turn
+  have any number of values.
+
+  This command can be used to set metadata, or show the currently set
+  metadata.
+
+  See [[git-annex-metadata]](1) for details.
+
+* `view [tag ...] [field=value ...] [field=glob ...] [!tag ...] [field!=value ...]`
+
+  Uses metadata to build a view branch of the files in the current branch,
+  and checks out the view branch. Only files in the current branch whose
+  metadata matches all the specified field values and tags will be
+  shown in the view.
+
+  See [[git-annex-view]](1) for details.
+
+* `vpop [N]`
+
+  Switches from the currently active view back to the previous view.
+  Or, from the first view back to original branch.
+ 
+  See [[git-annex-vpop]](1) for details.
+
+* `vfilter [tag ...] [field=value ...] [!tag ...] [field!=value ...]`
+
+  Filters the current view to only the files that have the
+  specified field values and tags.
+  
+  See [[git-annex-vfilter]](1) for details.
+
+* `vadd [field=glob ...] [field=value ...] [tag ...]`
+
+  Changes the current view, adding an additional level of directories
+  to categorize the files.
+  
+  See [[git-annex-vfilter]](1) for details.
+
+* `vcycle`
+
+  When a view involves nested subdirectories, this cycles the order.
+  
+  See [[git-annex-vcycle]](1) for details.
+
+# UTILITY COMMANDS
+
+* `migrate [path ...]`
+
+  Changes the specified annexed files to use a different key-value backend.
+  
+  See [[git-annex-migrate]](1) for details.
+
+* `reinject src dest`
+
+  Moves the src file into the annex as the content of the dest file.
+  This can be useful if you have obtained the content of a file from
+  elsewhere and want to put it in the local annex.
+
+  See [[git-annex-reinject]](1) for details.
+
+* `unannex [path ...]`
+
+  Use this to undo an accidental `git annex add` command. It puts the
+  file back how it was before the add.
+  
+  See [[git-annex-unannex]](1) for details.
+
+* `uninit`
+
+  De-initialize git-annex and clean out repository.
+  
+  See [[git-annex-uninit]](1) for details.
+
+* `reinit uuid|description`
+
+  Initialize repository, reusing old UUID.
+  
+  See [[git-annex-reinit]](1) for details.
+
+# PLUMBING COMMANDS
+
+* `pre-commit [path ...]`
+
+  This is meant to be called from git's pre-commit hook. `git annex init`
+  automatically creates a pre-commit hook using this.
+  
+  See [[git-annex-pre-commit]](1) for details.
+
+* `post-receive`
+
+  This is meant to be called from git's post-receive hook. `git annex init`
+  automatically creates a post-receive hook using this.
+  
+  See [[git-annex-post-receive]](1) for details.
+
+* `lookupkey [file ...]`
+
+  Looks up key used for file.
+
+  See [[git-annex-lookupkey]](1) for details.
+
+* `calckey [file ...]`
+
+  Calculates the key that would be used to refer to a file.
+  
+  See [[git-annex-calckey]](1) for details.
+
+* `contentlocation [key ..]`
+
+  Looks up location of annexed content for a key.
+
+  See [[git-annex-contentlocation]](1) for details.
+
+* `examinekey [key ...]`
+
+  Print information that can be determined purely by looking at the key.
+  
+  See [[git-annex-examinekey]](1) for details.
+
+* `matchexpression`
+
+  Checks if a preferred content expression matches provided data.
+  
+  See [[git-annex-matchexpression]](1) for details.
+
+* `fromkey [key file]`
+
+  Manually set up a file in the git repository to link to a specified key.
+  
+  See [[git-annex-fromkey]](1) for details.
+
+* `registerurl [key url]`
+
+  Registers an url for a key.
+  
+  See [[git-annex-registerurl]](1) for details.
+
+* `setkey key file`
+
+  Moves a file into the annex as the content of a key.
+  
+  See [[git-annex-setkey]](1) for details.
+
+* `dropkey [key ...]`
+
+  Drops annexed content for specified keys.
+  
+  See [[git-annex-dropkey]](1) for details.
+
+* `transferkey key [--from=remote|--to=remote]`
+
+  Transfers a key from or to a remote.
+  
+  See [[git-annex-transferkey]](1) for details.
+
+* `transferkeys`
+  
+  Used internally by the assistant.
+
+  See [[git-annex-transferkey]](1) for details.
+
+* `setpresentkey key uuid [1|0]`
+
+  This plumbing-level command changes git-annex's records about whether
+  the specified key's content is present in a remote with the specified uuid.
+
+  See [[git-annex-setpresentkey]](1) for details.
+
+* `readpresentkey key uuid`
+
+  Read records of where key is present.
+
+  See [[git-annex-readpresentkey]](1) for details.
+
+* `checkpresentkey key remote`
+
+  Check if key is present in remote.
+  
+  See [[git-annex-checkpresentkey]](1) for details.
+
+* `rekey [file key ...]`
+
+  Change keys used for files.
+  
+  See [[git-annex-rekey]](1) for details.
+
+* `findref [ref]`
+
+  Lists files in a git ref.
+  
+  See [[git-annex-findref]](1) for details.
+
+* `proxy -- git cmd [options]`
+
+  Only useful in a direct mode repository, this runs the specified git
+  command with a temporary work tree, and updates the working tree to
+  reflect any changes staged or committed by the git command.
+  
+  See [[git-annex-proxy]](1) for details.
+
+* `resolvemerge`
+
+  Resolves a conflicted merge, by adding both conflicting versions of the
+  file to the tree, using variants of their filename. This is done
+  automatically when using `git annex sync` or `git annex merge`.
+
+  See [[git-annex-resolvemerge]](1) for details.
+
+* `diffdriver`
+
+  This can be used to make `git diff` use an external diff driver with
+  annexed files.
+
+  See [[git-annex-diffdriver]](1) for details.
+
+* `smudge`
+
+  This command lets git-annex be used as a git filter driver, allowing
+  annexed files in the git repository to be unlocked at all times, instead
+  of being symlinks.
+
+  See [[git-annex-smudge]](1) for details.
+
+* `remotedaemon`
+
+  Detects when network remotes have received git pushes and fetches from them.
+
+  See [[git-annex-remotedaemon]](1) for details.
+
+# TESTING COMMANDS
+
+* `test`
+
+  This runs git-annex's built-in test suite.
+  
+  See [[git-annex-test]](1) for details.
+
+* `testremote remote`
+
+  This tests a remote by generating some random objects and sending them to
+  the remote, then redownloading them, removing them from the remote, etc.
+
+  It's safe to run in an existing repository (the repository contents are
+  not altered), although it may perform expensive data transfers.
+  
+  See [[git-annex-testremote]](1) for details.
+
+* `fuzztest`
+
+  Generates random changes to files in the current repository,
+  for use in testing the assistant.
+  
+  See [[git-annex-fuzztest]](1) for details.
+
+* `benchmark`
+
+  This runs git-annex's built-in benchmarks, if it was built with
+  benchmarking support.
+
+# COMMON OPTIONS
+
+These common options are accepted by all git-annex commands, and
+may not be explicitly listed on their individual man pages.
+(Many commands also accept the [[git-annex-matching-options]](1).)
+
+* `--force`
+
+  Force unsafe actions, such as dropping a file's content when no other
+  source of it can be verified to still exist, or adding ignored files.
+  Use with care.
+
+* `--fast`
+
+  Enable less expensive, but also less thorough versions of some commands.
+  What is avoided depends on the command.
+
+* `--quiet`
+
+  Avoid the default verbose display of what is done; only show errors.
+
+* `--verbose`
+
+  Enable verbose display.
+
+* `--debug`
+
+  Show debug messages.
+
+* `--no-debug`
+
+  Disable debug messages.
+
+* `--numcopies=n`
+
+  Overrides the numcopies setting, forcing git-annex to ensure the
+  specified number of copies exist.
+
+  Note that setting numcopies to 0 is very unsafe.
+
+* `--time-limit=time`
+
+  Limits how long a git-annex command runs. The time can be something
+  like "5h", or "30m" or even "45s" or "10d".
+
+  Note that git-annex may continue running a little past the specified
+  time limit, in order to finish processing a file.
+
+  Also, note that if the time limit prevents git-annex from doing all it
+  was asked to, it will exit with a special code, 101.
+
+* `--trust=repository`
+* `--semitrust=repository`
+* `--untrust=repository`
+
+  Overrides trust settings for a repository. May be specified more than once.
+
+  The repository should be specified using the name of a configured remote,
+  or the UUID or description of a repository.
+
+* `--trust-glacier-inventory`
+
+  Amazon Glacier inventories take hours to retrieve, and may not represent
+  the current state of a repository. So git-annex does not trust that
+  files that the inventory claims are in Glacier are really there.
+  This switch can be used to allow it to trust the inventory.
+
+  Be careful using this, especially if you or someone else might have recently
+  removed a file from Glacier. If you try to drop the only other copy of the
+  file, and this switch is enabled, you could lose data!
+
+* `--backend=name`
+
+  Specifies which key-value backend to use. This can be used when
+  adding a file to the annex, or migrating a file. Once files
+  are in the annex, their backend is known and this option is not
+  necessary.
+
+* `--user-agent=value`
+
+  Overrides the User-Agent to use when downloading files from the web.
+
+* `--notify-finish`
+
+  Caused a desktop notification to be displayed after each successful
+  file download and upload.
+
+  (Only supported on some platforms, e.g. Linux with dbus. A no-op when
+  not supported.)
+
+* `--notify-start`
+
+  Caused a desktop notification to be displayed when a file upload
+  or download has started, or when a file is dropped.
+
+* `-c name=value`
+
+  Overrides git configuration settings. May be specified multiple times.
+
+# CONFIGURATION VIA .git/config
+
+Like other git commands, git-annex is configured via `.git/config`.
+Here are all the supported configuration settings.
+
+* `annex.uuid`
+
+  A unique UUID for this repository (automatically set).
+
+* `annex.backend`
+
+  Name of the default key-value backend to use when adding new files
+  to the repository.
+
+  This is overridden by annex annex.backend configuration in the
+  .gitattributes files, and by the --backend option.
+
+  (This used to be named `annex.backends`, and that will still be used
+  if set.)
+
+* `annex.securehashesonly`
+
+  Set to true to indicate that the repository should only use
+  cryptographically secure hashes
+  (SHA2, SHA3) and not insecure hashes (MD5, SHA1) for content.
+
+  When this is set, the contents of files using cryptographically
+  insecure hashes will not be allowed to be added to the repository.
+  
+  Also, git-annex fsck` will complain about any files present in
+  the repository that use insecure hashes.
+  
+  To configure the behavior in new clones of the repository,
+  this can be set in [[git-annex-config]].
+
+* `annex.diskreserve`
+
+  Amount of disk space to reserve. Disk space is checked when transferring
+  content to avoid running out, and additional free space can be reserved
+  via this option, to make space for more important content (such as git
+  commit logs). Can be specified with any commonly used units, for example,
+  "0.5 gb", "500M", or "100 KiloBytes"
+
+  The default reserve is 1 megabyte.
+
+* `annex.largefiles`
+
+  Used to configure which files are large enough to be added to the annex.
+  Default: All files.
+
+  Overrides any annex.largefiles attributes in `.gitattributes` files.
+
+  See <https://git-annex.branchable.com/tips/largefiles> for details.
+
+* `annex.addsmallfiles`
+
+  Controls whether small files (not matching annex.largefiles)
+  should be checked into git by `git annex add`. Defaults to true;
+  set to false to instead make small files be skipped.
+
+* `annex.addunlocked`
+
+  Set to true to make commands like `git-annex add` that add files to the
+  repository add them in unlocked form. The default is to add files in
+  locked form. This only has effect in version 6 repositories.
+
+  When a repository has core.symlinks set to false, it implicitly
+  sets annex.addunlocked to true.
+
+* `annex.numcopies`
+
+  This is a deprecated setting. You should instead use the
+  `git annex numcopies` command to configure how many copies of files
+  are kept across all repositories, or the annex.numcopies .gitattributes
+  setting.
+
+  This config setting is only looked at when `git annex numcopies` has
+  never been configured, and when there's no annex.numcopies setting in the
+  .gitattributes file.
+
+  Note that setting numcopies to 0 is very unsafe.
+
+* `annex.genmetadata`
+
+  Set this to `true` to make git-annex automatically generate some metadata
+  when adding files to the repository.
+
+  In particular, it stores year, month, and day metadata, from the file's
+  modification date.
+
+  When importfeed is used, it stores additional metadata from the feed,
+  such as the author, title, etc.
+
+* `annex.used-refspec`
+
+  This controls which refs `git-annex unused` considers to be used.
+  See REFSPEC FORMAT in [[git-annex-unused]](1) for details.
+
+* `annex.queuesize`
+
+  git-annex builds a queue of git commands, in order to combine similar
+  commands for speed. By default the size of the queue is limited to
+  10240 commands; this can be used to change the size. If you have plenty
+  of memory and are working with very large numbers of files, increasing
+  the queue size can speed it up.
+
+* `annex.bloomcapacity`
+
+  The `git annex unused` and `git annex sync --content` commands use
+  a bloom filter to determine what files are present in eg, the work tree.
+  The default bloom filter is sized to handle
+  up to 500000 files. If your repository is larger than that,
+  you should increase this value. Larger values will
+  make `git-annex unused` and `git annex sync --content` consume more memory;
+  run `git annex info` for memory usage numbers.
+
+* `annex.bloomaccuracy`
+
+  Adjusts the accuracy of the bloom filter used by
+  `git annex unused` and `git annex sync --content`. 
+  The default accuracy is 10000000 -- 1 unused file out of 10000000
+  will be missed by `git annex unused`. Increasing the accuracy will make
+  `git annex unused` consume more memory; run `git annex info`
+  for memory usage numbers.
+
+* `annex.sshcaching`
+
+  By default, git-annex caches ssh connections using ssh's
+  ControlMaster and ControlPersist settings
+  (if built using a new enough ssh). To disable this, set to `false`.
+
+* `annex.alwayscommit`
+
+  By default, git-annex automatically commits data to the git-annex branch
+  after each command is run. If you have a series
+  of commands that you want to make a single commit, you can
+  run the commands with `-c annex.alwayscommit=false`. You can later
+  commit the data by running `git annex merge` (or by automatic merges)
+  or `git annex sync`.
+
+  Note that you beware running `git gc` if using this configuration,
+  since it could garbage collect objects that are staged in git-annex's
+  index but not yet committed.
+
+* `annex.hardlink`
+
+  Set this to `true` to make file contents be hard linked between the
+  repository and its remotes when possible, instead of a more expensive copy.
+
+  Use with caution -- This can invalidate numcopies counting, since
+  with hard links, fewer copies of a file can exist. So, it is a good
+  idea to mark a repository using this setting as untrusted.
+
+  When a repository is set up using `git clone --shared`, git-annex init
+  will automatically set annex.hardlink and mark the repository as
+  untrusted.
+
+* `annex.thin`
+
+  Set this to `true` to make unlocked files be a hard link to their content
+  in the annex, rather than a second copy. (Only when supported by the file
+  system, and only in repository version 6.) This can save considerable
+  disk space, but when a modification is made to a file, you will lose the
+  local (and possibly only) copy of the old version. So, enable with care.
+
+  After setting (or unsetting) this, you should run `git annex fix` to
+  fix up the annexed files in the work tree to be hard links (or copies).
+
+  Note that `annex.thin` is not honored when git updates an annexed file
+  in the working tree. So when `git checkout` or `git merge` updates the
+  working tree, a second copy of annexed files will result. You can run
+  `git-annex fix` to fix up the hard links after running such git commands.
+
+* `annex.delayadd`
+
+  Makes the watch and assistant commands delay for the specified number of
+  seconds before adding a newly created file to the annex. Normally this
+  is not needed, because they already wait for all writers of the file
+  to close it. On Mac OSX, when not using direct mode this defaults to
+  1 second, to work around a bad interaction with software there.
+
+* `annex.expireunused`
+
+  Controls what the assistant does about unused file contents
+  that are stored in the repository.
+
+  The default is `false`, which causes
+  all old and unused file contents to be retained, unless the assistant
+  is able to move them to some other repository (such as a backup repository).
+
+  Can be set to a time specification, like "7d" or "1m", and then
+  file contents that have been known to be unused for a week or a
+  month will be deleted.
+
+* `annex.fscknudge`
+
+  When set to false, prevents the webapp from reminding you when using
+  repositories that lack consistency checks.
+
+* `annex.autoupgrade`
+
+  When set to ask (the default), the webapp will check for new versions
+  and prompt if they should be upgraded to. When set to true, automatically
+  upgrades without prompting (on some supported platforms). When set to
+  false, disables any upgrade checking.
+
+  Note that upgrade checking is only done when git-annex is installed
+  from one of the prebuilt images from its website. This does not
+  bypass e.g., a Linux distribution's own upgrade handling code.
+
+  This setting also controls whether to restart the git-annex assistant
+  when the git-annex binary is detected to have changed. That is useful
+  no matter how you installed git-annex.
+
+* `annex.autocommit`
+
+  Set to false to prevent the git-annex assistant and git-annex sync
+  from automatically committing changes to files in the repository.
+
+  To configure the behavior in all clones of the repository,
+  this can be set in [[git-annex-config]].
+
+* `annex.resolvemerge`
+
+  Set to false to prevent merge conflicts being automatically resolved
+  by the git-annex assitant, git-annex sync, git-annex merge,
+  and the git-annex post-receive hook.
+
+  To configure the behavior in all clones of the repository,
+  this can be set in [[git-annex-config]].
+
+* `annex.synccontent`
+
+  Set to true to make git-annex sync default to syncing content.
+
+  To configure the behavior in all clones of the repository,
+  this can be set in [[git-annex-config]].
+
+* `annex.startupscan`
+
+  Set to false to prevent the git-annex assistant from scanning the
+  repository for new and changed files on startup. This will prevent it
+  from noticing changes that were made while it was not running, but can be
+  a useful performance tweak for a large repository.
+
+* `annex.listen`
+
+  Configures which address the webapp listens on. The default is localhost.
+  Can be either an IP address, or a hostname that resolves to the desired
+  address.
+
+* `annex.debug`
+
+  Set to true to enable debug logging by default.
+
+* `annex.version`
+
+  Automatically maintained, and used to automate upgrades between versions.
+
+* `annex.direct`
+
+  Set to true when the repository is in direct mode. Should not be set
+  manually; use the "git annex direct" and "git annex indirect" commands
+  instead.
+
+* `annex.crippledfilesystem`
+
+  Set to true if the repository is on a crippled filesystem, such as FAT,
+  which does not support symbolic links, or hard links, or unix permissions.
+  This is automatically probed by "git annex init".
+
+* `annex.pidlock`
+
+  Normally, git-annex uses fine-grained lock files to allow multiple
+  processes to run concurrently without getting in each others' way.
+  That works great, unless you are using git-annex on a filesystem that
+  does not support POSIX fcntl locks. This is sometimes the case when
+  using NFS or Lustre filesystems. 
+  
+  To support such situations, you can set annex.pidlock to true, and it
+  will fall back to a single top-level pid file lock.
+
+  Although, often, you'd really be better off fixing your networked
+  filesystem configuration to support POSIX locks.. And, some networked
+  filesystems are so inconsistent that one node can't reliably tell when
+  the other node is holding a pid lock. Caveat emptor.
+
+* `annex.pidlocktimeout`
+
+  When using pid lock files, it's possible for a stale lock file to get
+  left behind by previous run of git-annex that crashed or was interrupted.
+  This is mostly avoided, but can occur especially when using a network
+  file system.
+
+  git-annex will wait up to this many seconds for the pid lock
+  file to go away, and will then abort if it cannot continue. Default: 300
+
+* `remote.<name>.annex-cost`
+
+  When determining which repository to
+  transfer annexed files from or to, ones with lower costs are preferred.
+  The default cost is 100 for local repositories, and 200 for remote
+  repositories.
+
+* `remote.<name>.annex-cost-command`
+
+  If set, the command is run, and the number it outputs is used as the cost.
+  This allows varying the cost based on e.g., the current network.
+
+* `remote.<name>.annex-start-command`
+
+  A command to run when git-annex begins to use the remote. This can
+  be used to, for example, mount the directory containing the remote.
+
+  The command may be run repeatedly when multiple git-annex processes
+  are running concurrently.
+
+* `remote.<name>.annex-stop-command`
+
+  A command to run when git-annex is done using the remote.
+
+  The command will only be run once *all* running git-annex processes
+  are finished using the remote.
+
+* `remote.<name>.annex-shell`
+
+  Specify an alternative git-annex-shell executable on the remote
+  instead of looking for "git-annex-shell" on the PATH.
+
+  This is useful if the git-annex-shell program is outside the PATH
+  or has a non-standard name.
+
+* `remote.<name>.annex-ignore`
+
+  If set to `true`, prevents git-annex
+  from storing file contents on this remote by default.
+  (You can still request it be used by the `--from` and `--to` options.)
+
+  This is, for example, useful if the remote is located somewhere
+  without git-annex-shell. (For example, if it's on GitHub).
+  Or, it could be used if the network connection between two
+  repositories is too slow to be used normally.
+
+  This does not prevent git-annex sync (or the git-annex assistant) from
+  syncing the git repository to the remote.
+
+* `remote.<name>.annex-ignore-command`
+
+  If set, the command is run, and if it exits nonzero, that's the same
+  as setting annex-ignore to true. This allows controlling behavior based
+  on e.g., the current network.
+
+* `remote.<name>.annex-sync`
+
+  If set to `false`, prevents git-annex sync (and the git-annex assistant)
+  from syncing with this remote by default. However, `git annex sync <name>`
+  can still be used to sync with the remote.
+
+* `remote.<name>.annex-sync-command`
+
+  If set, the command is run, and if it exits nonzero, that's the same
+  as setting annex-sync to false. This allows controlling behavior based
+  on e.g., the current network.
+
+* `remote.<name>.annex-pull`
+
+  If set to `false`, prevents git-annex sync (and the git-annex assistant
+  etc) from ever pulling (or fetching) from the remote.
+
+* `remote.<name>.annex-push`
+
+  If set to `false`, prevents git-annex sync (and the git-annex assistant
+  etc) from ever pushing to the remote.
+
+* `remote.<name>.annex-readonly`
+
+  If set to `true`, prevents git-annex from making changes to a remote.
+  This both prevents git-annex sync from pushing changes, and prevents
+  storing or removing files from read-only remote.
+
+* `remote.<name>.annex-verify`, `annex.verify`
+
+  By default, git-annex will verify the checksums of objects downloaded
+  from remotes. If you trust a remote and don't want the overhead
+  of these checksums, you can set this to `false`.
+
+* `remote.<name>.annex-export-tracking`
+
+  When set to a branch name or other treeish, this makes what's exported
+  to the special remote track changes to the branch. See
+  [[git-annex-export]](1). `git-annex sync --content` and the 
+  git-annex assistant update exports when changes have been
+  committed to the tracking branch.
+
+* `remote.<name>.annexUrl`
+
+  Can be used to specify a different url than the regular `remote.<name>.url`
+  for git-annex to use when talking with the remote. Similar to the `pushUrl`
+  used by git-push.
+
+* `remote.<name>.annex-uuid`
+
+  git-annex caches UUIDs of remote repositories here.
+
+* `remote.<name>.annex-trustlevel`
+
+  Configures a local trust level for the remote. This overrides the value
+  configured by the trust and untrust commands. The value can be any of
+  "trusted", "semitrusted" or "untrusted".
+
+* `remote.<name>.annex-availability`
+
+  Can be used to tell git-annex whether a remote is LocallyAvailable
+  or GloballyAvailable. Normally, git-annex determines this automatically.
+
+* `remote.<name>.annex-bare`
+
+  Can be used to tell git-annex if a remote is a bare repository
+  or not. Normally, git-annex determines this automatically.
+
+* `remote.<name>.annex-ssh-options`
+
+  Options to use when using ssh to talk to this remote.
+
+* `remote.<name>.annex-rsync-options`
+
+  Options to use when using rsync
+  to or from this remote. For example, to force IPv6, and limit
+  the bandwidth to 100Kbyte/s, set it to `-6 --bwlimit 100`
+
+  Note that git-annex-shell has a whitelist of allowed rsync options,
+  and others will not be be passed to the remote rsync. So using some
+  options may break the communication between the local and remote rsyncs.
+
+* `remote.<name>.annex-rsync-upload-options`
+
+  Options to use when using rsync to upload a file to a remote.
+
+  These options are passed after other applicable rsync options,
+  so can be used to override them. For example, to limit upload bandwidth
+  to 10Kbyte/s, set `--bwlimit 10`.
+
+* `remote.<name>.annex-rsync-download-options`
+
+  Options to use when using rsync to download a file from a remote.
+
+  These options are passed after other applicable rsync options,
+  so can be used to override them.
+
+* `remote.<name>.annex-rsync-transport`
+
+  The remote shell to use to connect to the rsync remote. Possible
+  values are `ssh` (the default) and `rsh`, together with their
+  arguments, for instance `ssh -p 2222 -c blowfish`; Note that the
+  remote hostname should not appear there, see rsync(1) for details.
+  When the transport used is `ssh`, connections are automatically cached
+  unless `annex.sshcaching` is unset.
+
+* `remote.<name>.annex-bup-split-options`
+
+  Options to pass to bup split when storing content in this remote.
+  For example, to limit the bandwidth to 100Kbyte/s, set it to `--bwlimit 100k`
+  (There is no corresponding option for bup join.)
+
+* `remote.<name>.annex-gnupg-options`
+
+  Options to pass to GnuPG when it's encrypting data. For instance, to
+  use the AES cipher with a 256 bits key and disable compression, set it
+  to `--cipher-algo AES256 --compress-algo none`. (These options take
+  precedence over the default GnuPG configuration, which is otherwise
+  used.)
+
+* `remote.<name>.annex-gnupg-decrypt-options`
+
+  Options to pass to GnuPG when it's decrypting data. (These options take
+  precedence over the default GnuPG configuration, which is otherwise
+  used.)
+
+* `annex.ssh-options`, `annex.rsync-options`,
+  `annex.rsync-upload-options`, `annex.rsync-download-options`,
+  `annex.bup-split-options`, `annex.gnupg-options`,
+  `annex.gnupg-decrypt-options`
+
+  Default options to use if a remote does not have more specific options
+  as described above.
+
+* `annex.web-options`
+
+  Options to pass when running wget or curl.
+  For example, to force IPv4 only, set it to "-4"
+
+* `annex.quvi-options`
+
+  Options to pass to quvi when using it to find the url to download for a
+  video.
+
+* `annex.aria-torrent-options`
+
+  Options to pass to aria2c when using it to download a torrent.
+
+* `annex.http-headers`
+
+  HTTP headers to send when downloading from the web. Multiple lines of
+  this option can be set, one per header.
+
+* `annex.http-headers-command`
+
+  If set, the command is run and each line of its output is used as a HTTP
+  header. This overrides annex.http-headers.
+
+* `annex.web-download-command`
+
+  Use to specify a command to run to download a file from the web.
+  (The default is to use wget or curl.)
+
+  In the command line, %url is replaced with the url to download,
+  and %file is replaced with the file that it should be saved to.
+
+* `annex.secure-erase-command`
+
+  This can be set to a command that should be run whenever git-annex
+  removes the content of a file from the repository.
+
+  In the command line, %file is replaced with the file that should be
+  erased.
+
+  For example, to use the wipe command, set it to `wipe -f %file`.
+
+* `remote.<name>.rsyncurl`
+
+  Used by rsync special remotes, this configures
+  the location of the rsync repository to use. Normally this is automatically
+  set up by `git annex initremote`, but you can change it if needed.
+
+* `remote.<name>.buprepo`
+
+  Used by bup special remotes, this configures
+  the location of the bup repository to use. Normally this is automatically
+  set up by `git annex initremote`, but you can change it if needed.
+
+* `remote.<name>.ddarrepo`
+
+  Used by ddar special remotes, this configures
+  the location of the ddar repository to use. Normally this is automatically
+  set up by `git annex initremote`, but you can change it if needed.
+
+* `remote.<name>.directory`
+
+  Used by directory special remotes, this configures
+  the location of the directory where annexed files are stored for this
+  remote. Normally this is automatically set up by `git annex initremote`,
+  but you can change it if needed.
+
+* `remote.<name>.s3`
+
+  Used to identify Amazon S3 special remotes.
+  Normally this is automatically set up by `git annex initremote`.
+
+* `remote.<name>.glacier`
+
+  Used to identify Amazon Glacier special remotes.
+  Normally this is automatically set up by `git annex initremote`.
+
+* `remote.<name>.webdav`
+
+  Used to identify webdav special remotes.
+  Normally this is automatically set up by `git annex initremote`.
+
+* `remote.<name>.tahoe`
+
+  Used to identify tahoe special remotes.
+  Points to the configuration directory for tahoe.
+
+* `remote.<name>.gcrypt`
+
+  Used to identify gcrypt special remotes.
+  Normally this is automatically set up by `git annex initremote`.
+
+  It is set to "true" if this is a gcrypt remote.
+  If the gcrypt remote is accessible over ssh and has git-annex-shell
+  available to manage it, it's set to "shell".
+
+* `remote.<name>.hooktype`, `remote.<name>.externaltype`
+
+  Used by hook special remotes and external special remotes to record
+  the type of the remote.
+
+* `annex.tune.objecthash1`, `annex.tune.objecthashlower`, `annex.tune.branchhash1`
+
+  These can be passed to `git annex init` to tune the repository.
+  They cannot be safely changed in a running repository and should never be
+  set in global git configuration.
+  For details, see <https://git-annex.branchable.com/tuning/>.
+
+# CONFIGURATION VIA .gitattributes
+
+The key-value backend used when adding a new file to the annex can be
+configured on a per-file-type basis via `.gitattributes` files. In the file,
+the `annex.backend` attribute can be set to the name of the backend to
+use. For example, this here's how to use the WORM backend by default,
+but the SHA256E backend for ogg files:
+
+	* annex.backend=WORM
+	*.ogg annex.backend=SHA256E
+
+There is a annex.largefiles attribute; which is used to configure which
+files are large enough to be added to the annex.
+See <https://git-annex.branchable.com/tips/largefiles> for details.
+
+The numcopies setting can also be configured on a per-file-type basis via
+the `annex.numcopies` attribute in `.gitattributes` files. This overrides
+other numcopies settings.
+For example, this makes two copies be needed for wav files and 3 copies
+for flac files:
+
+	*.wav annex.numcopies=2
+	*.flac annex.numcopies=3
+
+Note that setting numcopies to 0 is very unsafe.
+
+These settings are honored by git-annex whenever it's operating on a
+matching file. However, when using --all, --unused, or --key to specify
+keys to operate on, git-annex is operating on keys and not files, so will
+not honor the settings from .gitattributes. For this reason, the `git annex
+numcopies` command is useful to configure a global default for numcopies.
+
+Also note that when using views, only the toplevel .gitattributes file is
+preserved in the view, so other settings in other files won't have any
+effect.
+
+# EXIT STATUS
+
+git-annex, when called as a git subcommand, may return exit codes 0 or 1
+for success or failures, or, more rarely, 127 or 128 for certain very
+specific failures.  git-annex itself should return 0 on success and 1 on
+failure, unless the `--time-limit=time` option is hit, in which case it
+returns with exit code 101.
+
+# ENVIRONMENT
+
+These environment variables are used by git-annex when set:
+
+* `GIT_WORK_TREE`, `GIT_DIR`
+
+  Handled the same as they are by git, see git(1)
+
+* `GIT_SSH`, `GIT_SSH_COMMAND`
+
+  Handled similarly to the same as described in git(1).
+  The one difference is that git-annex will sometimes pass an additional
+  "-n" parameter to these, as the first parameter, to prevent ssh from
+  reading from stdin. Since that can break existing uses of these
+  environment variables that don't expect the extra parameter, you will
+  need to set `GIT_ANNEX_USE_GIT_SSH=1` to make git-annex support
+  these.
+
+  Note that setting either of these environment variables prevents
+  git-annex from automatically enabling ssh connection caching
+  (see `annex.sshcaching`), so it will slow down some operations with
+  remotes over ssh. It's up to you to enable ssh connection caching
+  if you need it; see ssh's documentation.
+
+  Also, `annex.ssh-options` and `remote.<name>.annex-ssh-options`
+  won't have any effect when these envionment variables are set.
+
+  Usually it's better to configure any desired options through your
+  ~/.ssh/config file, or by setting `annex.ssh-options`.
+
+* `GIT_ANNEX_VECTOR_CLOCK`
+
+  Normally git-annex timestamps lines in the log files committed to the
+  git-annex branch. Setting this environment variable to a number
+  will make git-annex use that rather than the current number of seconds
+  since the UNIX epoch. Note that decimal seconds are supported.
+  
+  This is only provided for advanced users who either have a better way to
+  tell which commit is current than the local clock, or who need to avoid
+  embedding timestamps for policy reasons. Misuse of this environment
+  variable can confuse git-annex's book-keeping, sometimes in ways that
+  `git annex fsck` is unable to repair.
+
+Some special remotes use additional environment variables
+for authentication etc. For example, `AWS_ACCESS_KEY_ID`
+and `GIT_ANNEX_P2P_AUTHTOKEN`. See special remote documentation.
+
+# FILES
+
+These files are used by git-annex:
+
+`.git/annex/objects/` in your git repository contains the annexed file
+contents that are currently available. Annexed files in your git
+repository symlink to that content.
+
+`.git/annex/` in your git repository contains other run-time information
+used by git-annex.
+
+`~/.config/git-annex/autostart` is a list of git repositories
+to start the git-annex assistant in.
+
+`.git/hooks/pre-commit-annex` in your git repository will be run whenever
+a commit is made to the HEAD branch, either by git commit, git-annex
+sync, or the git-annex assistant.
+
+`.git/hooks/post-update-annex` in your git repository will be run
+whenever the git-annex branch is updated. You can make this hook run
+`git update-server-info` when publishing a git-annex repository by http.
+
+# SEE ALSO
+
+More git-annex documentation is available on its web site,
+<https://git-annex.branchable.com/>
+
+If git-annex is installed from a package, a copy of its documentation
+should be included, in, for example, `/usr/share/doc/git-annex/`.
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+<https://git-annex.branchable.com/>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

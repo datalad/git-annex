@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-01-20T19:22:36Z"
+ content="""
+As to where the first byte went, it seems rather suggestive that the part
+of the server's code you pasted earlier reads out `$firstByte`. Perhaps it
+forgot to preserve that first byte in the file.
+
+Which is horrible, but then there's the "Conflict" error. All I can make of
+this is that the server is probably rejecting the MOVE request for some reason.
+That might be reasonable if the destination file already existed, 
+but I don't think it does in this case, so who knows.
+
+Only thing I'm sure of is, I never want to entrust this particular webdav
+server with any of my data!
+"""]]

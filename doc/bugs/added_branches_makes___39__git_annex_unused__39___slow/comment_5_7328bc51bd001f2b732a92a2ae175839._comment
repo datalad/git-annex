@@ -1,0 +1,114 @@
+[[!comment format=mdwn
+ username="arand"
+ ip="130.243.226.21"
+ subject="comment 5"
+ date="2013-08-11T20:43:22Z"
+ content="""
+I've compared my bash/coreutils implementation mentioned above [annex-funused](https://gitorious.org/arand-scripts/arand-scripts/blobs/918cc79b99e22cbdca01ea4de10e2ca64abfc27a/annex-funused) with `git annex unused` in various situations, and from what I've seen `annex-funused` is pretty much always faster.
+
+In the case of no unused files they seem to be about the same.
+
+In all other cases there is a very considerable difference, for example, in my current main annex I get:
+
+    $ time git annex unused                                                                                                      
+    unused . (checking for unused data...) (checking master...) (checking synced/master...) (checking barracuda160G/master...) ok
+    
+    real    5m13.830s
+    user    2m0.444s
+    sys     0m28.344s
+
+
+whereas
+
+    $ time annex-funused                                                                                                             
+     == WARNING ==
+    This program should NOT be trusted to reliably find unused files in the
+    git annex.
+    
+    
+    real    0m1.569s
+    user    0m2.024s
+    sys     0m0.184s
+
+I tried to check memory usage via `/usr/bin/time -v` as well, and that showed (re-running in the same annex as above)
+
+annex-funused
+
+    Maximum resident set size (kbytes): 13560
+
+git annex unused
+
+    Maximum resident set size (kbytes): 29120
+
+
+I've also written a comparison script [annex-testunused](https://gitorious.org/arand-scripts/arand-scripts/blobs/918cc79b99e22cbdca01ea4de10e2ca64abfc27a/annex-testunused) (needs annex-funused in $PATH) which creates an annex with a bunch of unused files and compares the running time for both versions:
+
+<pre>
+$ annex-testunused
+Initialized empty Git repository in /tmp/tmp.fmsAvsPTcd/.git/
+init  ok
+(Recording state in git...)
+###
+* b2840d7 (HEAD, master) delete ~1100 files
+* c4a1e3a add 3000 files
+* bc19777 (git-annex) update
+* b3e6539 update
+* bec2c8f branch created
+annex unused
+real 0m4.154s
+real 0m2.029s
+real 0m2.044s
+annex funused
+real 0m0.923s
+real 0m0.933s
+real 0m0.905s
+Initialized empty Git repository in /tmp/tmp.7qFoCRWzB3/.git/
+init  ok
+(Recording state in git...)
+###
+* a5ff392 (HEAD, master) empty
+* cca4810 (1) delete ~1100 files
+* 587c406 add 3000 files
+* de0afeb (git-annex) update
+* 37b7881 update
+* 1735062 branch created
+annex unused
+real 0m3.499s
+real 0m3.443s
+real 0m3.435s
+annex funused
+real 0m0.956s
+real 0m0.956s
+real 0m0.874s
+Initialized empty Git repository in /tmp/tmp.L5fjdAgnFv/.git/
+init  ok
+(Recording state in git...)
+###
+* 94463a0 (HEAD, master) empty
+* e115619 (10) empty
+* 20686d4 (9) empty
+* 2e01a3f (8) empty
+* 043289d (7) empty
+* 6a52966 (6) empty
+* 0dc866d (5) empty
+* 35db331 (4) empty
+* 48504bc (3) empty
+* e25cac7 (2) empty
+* 655d026 (1) delete ~1100 files
+* 91a07d1 add 3000 files
+* 3c9ac62 (git-annex) update
+* c5736e0 update
+* 862d5b8 branch created
+annex unused
+real 0m16.242s
+real 0m16.277s
+real 0m16.246s
+annex funused
+real 0m0.960s
+real 0m0.960s
+real 0m0.927s
+</pre>
+
+So, unless I've missed something fundamental (I keep thinking I might have...), it seems to be very consistently faster, and scale ok where `git annex unused` scales rather poorly.
+
+"""]]

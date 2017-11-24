@@ -1,0 +1,17 @@
+More Windows porting.. Seem to be getting near an end of the easy stuff,
+and also the webapp is getting pretty usable on Windows now, the only
+really important thing lacking is XMPP support.
+
+Made git-annex on Windows set HOME when it's not already set. Several of
+the bundled cygwin tools only look at HOME. This was made a lot harder and
+uglier due to there not being any way to modify the environment of the
+running process.. git-annex has to re-run itself with the fixed
+environment.
+
+Got rsync.net working in the webapp. Although with an extra rsync.net
+password prompt on Windows, which I cannot find a way to avoid.
+
+While testing that, I discovered that openssh 6.5p1 has broken support for
+~/.ssh/config Host lines that contain upper case letters! I have filed a
+bug about this and put a quick fix in git-annex, which sometimes generated
+such lines.

@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="http://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ subject="also affects `git annex get`"
+ date="2012-11-12T23:11:36Z"
+ content="""
+the same problem also shows up with `git annex get`:
+
+    get …filename… (from prometheus...) 
+    rsync: change_dir \"/home/shared/photos/encrypted_storage/63e/50b/GPGHMACSHA1--b83e8aaf05918ae2fc81652368f9d4068f938625\" failed: No such file or directory (2)
+    
+    sent 8 bytes  received 12 bytes  8.00 bytes/sec
+    total size is 0  speedup is 0.00
+    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1536) [Receiver=3.0.9]
+    
+      rsync failed -- run git annex again to resume file transfer
+    
+    GPGHMACSHA1--b83e8aaf05918ae2fc81652368f9d4068f938625
+          513214 100%   95.68kB/s    0:00:05 (xfer#1, to-check=0/1)
+    
+    sent 30 bytes  received 513396 bytes  44645.74 bytes/sec
+    total size is 513214  speedup is 1.00
+    ok
+
+again, it says \"ok\", but the \"no such file or directory\" / \"rsync failed\" is visually more prominent.
+"""]]

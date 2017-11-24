@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-03T16:55:42Z"
+ content="""
+That sounds like this bug:
+<http://git-annex.branchable.com/bugs/__34__git-annex__58___direct__58___1_failed__34___on_Windows/>
+
+Windows has some path length issues that come up especially when using
+git-annex in a deeply nested directory tree. Try cloning the repository to
+somewhere like c:\\ and see if that works around the problem.
+
+Although, the path it's complaining about is relative and only 113
+characters long, which should not be long enough to trigger that problem.
+So, this could be some other problem. I tried cloning a git-annex repo
+and git annex init did not fail like this, so any information you can
+provide to help me reproduce the problem would be good.
+"""]]

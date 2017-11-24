@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2017-08-17T15:56:25Z"
+ content="""
+There's the annex.addunlocked setting which controls this in v6
+repositories, but it's currently limited to true/false, can't configure
+different behavior in different directories.
+
+I'd probably need a motivating example to make it configurable in
+.gitattributes. Having a hard time currently understanding how that would
+be useful.
+"""]]

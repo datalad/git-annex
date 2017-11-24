@@ -1,0 +1,19 @@
+Made a significant change today: Enabled automatic retrying of transfers
+that fail. It's only done if the previous try managed to advance the
+progress by some amount. The assistant has already had that retrying for
+many years, but now it will also be done when using git-annex at the
+command line.
+
+One good reason for a transfer to fail and need a retry is when the network
+connection stalls. You'd think that TCP keepalives would detect this kind
+of thing and kill the connection but I've had enough complaints, that I
+suppose that doesn't always work or gets disabled. Ssh has a
+ServerAliveInterval that detects such stalls nicely for the kind of batch
+transfers git-annex uses ssh for, but it's not enabled by default. So I
+found a way to make git-annex enable it, while still letting ~/.ssh/config
+settings override that.
+
+Also got back to analizing an old bug report about proliferating
+".nfs*.lock" files when using git-annex on nfs; this was caused by the
+wacky NFS behavior of renaming deleted files, and I found a change to the
+ssh connection caching cleanup code that should avoid the problem.

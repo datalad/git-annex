@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Dilyin"
+ subject="comment 3"
+ date="2016-06-02T18:10:33Z"
+ content="""
+Actually you do want to exclude \"cover.jpg\" from being annexed because it will allow you to view the covers of all your books without getting them.
+Keeping metadata.opf out of annex is not that important because you cannot safely edit the metadata without getting the books first.
+
+It would be great to teach Calibre to see broken symlinks as normal zero length files and work with them accordingly.
+And we do need a Calibre plugin with buttons \"annex get\" and \"annex unlock\".
+"""]]

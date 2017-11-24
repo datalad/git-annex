@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="GLITTAH"
+ ip="37.130.227.133"
+ subject="comment 6"
+ date="2013-07-19T21:28:58Z"
+ content="""
+Obviously, Step 3 would only work on remotes that you have control of processes on, but if given login credentials to cloud storage remotes (potentially dangerous!) they could read/write to something like dropbox or rsync.
+
+Another thing, this would be completely trackerless.  You just use remote groups (or create swarm definitions) and share those with your remotes.  It's completely decentralized!
+"""]]

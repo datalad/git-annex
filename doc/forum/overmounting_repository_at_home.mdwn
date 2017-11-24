@@ -1,0 +1,12 @@
+Consider the following scenario:
+
+- A Server which holds the full repository
+- A Laptop with a small disk, cloned the repository
+
+Now when i am online i'd just like to mount the repository from the server on over to the client, shadowing the local repository. But when offline and the server is not
+mounted the local repository takes place.
+
+The Question is now what would be a viable concept to get this right. Especially will the assistant become confused when it runs on the server side and locally on the laptop
+while the mount is in effect. Would it be sensible not to mount the whole repository tree but only parts like `.git/annex` or `.git/annex/objects`?
+
+Not tried this yet, but I am wondering whats the most viable approach would be.

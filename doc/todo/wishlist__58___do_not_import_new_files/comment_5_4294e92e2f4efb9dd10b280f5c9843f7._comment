@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 5"
+ date="2014-07-15T19:13:05Z"
+ content="""
+A fundamental problem with this idea is that git-annex's keys can use any of many checksumming backends. So, which checksum should it try? Running every possible checksum on a file is going to re-read it repeatedly and be expensive.
+
+`git annex import` avoids this problem by using whatever the default backend is configured to be for the filename it's importing. This is good enough to make repeated runs of `git annex import` work ok, but when we get into trying to reinject whole directory trees like this, I don't think that's good enough.
+"""]]

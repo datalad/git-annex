@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="Xyem"
+ ip="178.79.137.64"
+ subject="comment 6"
+ date="2014-06-24T10:05:26Z"
+ content="""
+Now that git-annex has a proper metadata system now, can this be handled?
+
+Perhaps doing this:
+
+git annex metadata -s __executable 001
+
+could cause git-annex to set the executable bit (on get, fsck etc.) and that be set automatically on git annex add if the file has executable bit set (numbers are a bitmask for which execute bit to set..?).
+"""]]

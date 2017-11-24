@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 2"
+ date="2013-08-24T15:54:02Z"
+ content="""
+git-annex has always used cp --reflink=auto, including when it cp's the file in `git annex unlock`.
+
+You can verify this with --debug.
+"""]]

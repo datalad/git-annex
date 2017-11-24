@@ -1,0 +1,30 @@
+Pushed a release today. Rest of day spent beating head against Windows XMPP
+brick wall.
+
+Actually made a lot of progress -- Finally found the right approach, and
+got a clean build of the XMPP haskell libraries. But.. ghc fails to
+load the libraries when running Template Haskell. 
+"Misaligned section: 18206e5b".
+Filed [a bug report](https://ghc.haskell.org/trac/ghc/ticket/8830), 
+and I'm sure this alignment problem can be fixed,
+but I'm not hopeful about fixing it myself.
+
+One workaround would be to use the EvilSplicer, building once without the
+XMPP library linked in, to get the TH splices expanded, and then a second
+time with the XMPP library and no TH. Made a `winsplicehack` branch with
+tons of ifdefs that allows doing this. However, several dozen haskell libraries
+would need to be patched to get it to work. I have the patches from
+Android, but would rather avoid doing all that again on Windows.
+
+Another workaround would be to move XMPP into a separate process from the
+webapp. This is not very appealing either, the IPC between them would be
+fairly complicated since the webapp does stuff like show lists of XMPP
+buddies, etc. But, one thing this idea has to recommend it is I am already
+considering using a separate helper daemon like this for
+[[design/assistant/Telehash]].
+
+So there could be synergies between XMPP and Telehash support, possibly
+leading to some kind of plugin interface in git-annex for this sort of
+thing. But then, once Telehash or something like it is available and
+working well, I plan to deprecate XMPP entirely. It's been a flakey pain
+from the start, so that can't come too soon.

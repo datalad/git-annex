@@ -1,0 +1,51 @@
+`git annex p2p --pair` implemented, using Magic Wormhole codes
+that have to be exchanged between the repositories being paired.
+
+It looks like this, with the same thing being done at the same time
+in the other repository.
+
+	joey@elephant:~/tmp/bench3/a>git annex p2p --pair
+	p2p pair peer1 (using Magic Wormhole) 
+	
+	This repository's pairing code is: 1-select-bluebird
+	
+	Enter the other repository's pairing code: (here I entered 8-fascinate-sawdust) 
+	Exchanging pairing data...
+	Successfully exchanged pairing data. Connecting to peer1...
+	ok
+
+And just that simply, the two repositories find one another, 
+Tor onion addresses and authentication data is exchanged, and a git remote
+is set up connecting via Tor.
+
+	joey@elephant:~/tmp/bench3/a>git annex sync peer1
+	commit  
+	ok
+	pull peer1 
+	warning: no common commits
+	remote: Counting objects: 5, done.
+	remote: Compressing objects: 100% (3/3), done.
+	remote: Total 5 (delta 0), reused 0 (delta 0)
+	Unpacking objects: 100% (5/5), done.
+	From tor-annex::5vkpoyz723otbmzo.onion:61900
+	 * [new branch]      git-annex  -> peer1/git-annex
+
+Very pleased with this, and also the whole thing worked on the very first
+try!
+
+It might be slightly annoying to have to exchange two codes during pairing.
+It would be possible to make this work with only one code. I decided to go
+with two codes, even though it's only marginally more secure than one,
+mostly for UI reasons. The pairing interface and 
+[[instructions for using it|tips/peer_to_peer_network_with_tor]] is simplfied
+by being symmetric.
+
+(I also decided to revert the work I did on Friday to make `p2p --link`
+set up a bidirectional link. Better to keep `--link` the simplest possible
+primitive, and pairing makes bidirectional links more easily.)
+
+Next: Some more testing of this and the Tor hidden services, a webapp UI
+for P2P peering, and then finally removing XMPP support. I hope to finish
+that by New Years.
+
+Today's work was sponsored by Jake Vosloo on Patreon.

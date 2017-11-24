@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkvSZ1AFJdY_1FeutZr_KWeqtzjZta1PNE"
+ nickname="Thedward"
+ subject="comment 5"
+ date="2014-10-21T04:10:16Z"
+ content="""
+
+I am experiencing similar behavior on Ubuntu Trusty (x86_64) using a prebuilt Linux release:
+
+    Linux hostname 3.13.0-36-generic #63-Ubuntu SMP Wed Sep 3 21:30:07 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux
+
+    Distributor ID:	Ubuntu
+    Description:	Ubuntu 14.04.1 LTS
+    Release:	14.04
+    Codename:	trusty
+
+    git-annex version: 5.20141016-g26b38fd
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA CryptoHash
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar hook external
+
+Copying files to S3 consistently fails both from the command line and via the assistant:
+
+    [2014-10-20 22:34:32 CDT] read: git [\"--git-dir=/home/user/git-annex/.git\",\"--work-tree=/home/user/git-annex\",\"-c\",\"core.bare=false\",\"show-ref\",\"git-annex\"]
+    [2014-10-20 22:34:32 CDT] read: git [\"--git-dir=/home/user/git-annex/.git\",\"--work-tree=/home/user/git-annex\",\"-c\",\"core.bare=false\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2014-10-20 22:34:32 CDT] read: git [\"--git-dir=/home/user/git-annex/.git\",\"--work-tree=/home/user/git-annex\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..78e9b6b85f3b453d8ed4f66f63ff09e03ce13d06\",\"-n1\",\"--pretty=%H\"]
+    [2014-10-20 22:34:32 CDT] read: git [\"--git-dir=/home/user/git-annex/.git\",\"--work-tree=/home/user/git-annex\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..658720ba59a2fefee89c908b972971ca901f84dc\",\"-n1\",\"--pretty=%H\"]
+    [2014-10-20 22:34:32 CDT] chat: git [\"--git-dir=/home/user/git-annex/.git\",\"--work-tree=/home/user/git-annex\",\"-c\",\"core.bare=false\",\"cat-file\",\"--batch\"]
+    [2014-10-20 22:34:32 CDT] read: git [\"--git-dir=/home/user/git-annex/.git\",\"--work-tree=/home/user/git-annex\",\"-c\",\"core.bare=false\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"storage/data.bin\"]
+    [2014-10-20 22:34:32 CDT] chat: git [\"--git-dir=/home/user/git-annex/.git\",\"--work-tree=/home/user/git-annex\",\"-c\",\"core.bare=false\",\"cat-file\",\"--batch\"]
+    copy storage/data.bin (gpg) (checking S3git-annex...) (to S3git-annex...) 
+    0%            0.0 B/s 0s[2014-10-20 22:34:33 CDT] chat: gpg [\"--batch\",\"--no-tty\",\"--use-agent\",\"--quiet\",\"--trust-model\",\"always\",\"--batch\",\"--passphrase-fd\",\"14\",\"--symmetric\",\"--force-mdc\",\"--no-textmode\"]
+    8%         512.0KB/s 21s[2014-10-20 22:34:35 CDT] chat: gpg [\"--batch\",\"--no-tty\",\"--use-agent\",\"--quiet\",\"--trust-model\",\"always\",\"--batch\",\"--passphrase-fd\",\"14\",\"--symmetric\",\"--force-mdc\",\"--no-textmode\"]
+    8%         528.0KB/s 21s
+      ErrorClosed
+    failed                  
+    git-annex: copy: 1 failed
+
+Two files (out of several hundred) have succeeded.
+
+Any ideas?
+
+"""]]

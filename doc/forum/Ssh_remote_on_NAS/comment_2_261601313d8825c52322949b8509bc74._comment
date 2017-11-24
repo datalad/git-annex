@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="feulif"
+ ip="20.133.1.1"
+ subject="comment 2"
+ date="2014-07-15T18:03:56Z"
+ content="""
+> How did you set your PATH? Note that the bash shell provides a lot of dotfiles which you can set the PATH in -- and reuses to read any single one of them when a noninteractive login is made to run a command.
+
+Actually I didn't set the PATH: I've just sim-linked executable files from git-annex stand-alone folder to a directory that was in my PATH already.
+
+> It might help to install git on the NAS. It's included in the git-annex tarball, but not in a way that will put it on PATH; only in a way that will let git-annex use it.
+
+It was installed, bud I've removed it because it was \"conflicting\" with the one used by git-annex. That is, when I ran any \"git annex ...\" command, git was complaining it could not find git-annex (because my nas was running the installed git binary file).
+Without git, I don't have this conflict anymore and I can effectively use git-annex when I'm logged in my NAS, but I still can't add it as an SSH remote.
+
+"""]]

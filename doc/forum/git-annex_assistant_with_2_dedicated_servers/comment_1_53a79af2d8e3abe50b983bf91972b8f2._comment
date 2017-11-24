@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.246"
+ subject="comment 1"
+ date="2013-11-16T17:42:48Z"
+ content="""
+The [[assistant/remote sharing walkthrough]] assumes that the computers are not servers, so they might not be turned on at the same time, and cannot directly contect each other.
+
+With 2 servers, it's much simpler. Just add a git remote on each pointing at the git repository on the other server, and run the git-annex assistant on both to keep them in sync.
+
+You can add the git remote with `git remote add otherserver ssh://otherserver/path/to/repo`, or you can use the webapp to do it (Add another repository -> Remote server)
+
+(If your WAN puts the servers on the same virtual subnet, ie a VPN, you can also probably use local pairing over the WAN to get to the same setup by a different route.)
+"""]]

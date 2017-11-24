@@ -1,0 +1,7 @@
+### Recent [[news]]
+
+[[!inline pages="news/* and !*/Discussion" archive=yes show=2 feeds=no]]
+
+### [[devblog|devblog]]
+
+[[!inline pages="devblog/* and !*/Discussion" archive=yes show=5 feeds=no]]

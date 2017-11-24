@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://alan.petitepomme.net/"
+ nickname="Alan Schmitt"
+ subject="How is the binary found on the server?"
+ date="2014-06-05T12:05:40Z"
+ content="""
+Great screencast! There is one thing that intrigues me: since you simply uncompress the binary in some folder, how does gitannex figures out where the binary lives there?
+"""]]

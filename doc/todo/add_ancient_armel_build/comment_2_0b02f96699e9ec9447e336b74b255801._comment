@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://schnouki.net/"
+ nickname="Schnouki"
+ avatar="http://cdn.libravatar.org/avatar/5f6406e9db28564121169f0051645b8c30a12a20ca7bc40287ac9bf2cd3ad283"
+ subject="comment 2"
+ date="2017-02-02T22:05:23Z"
+ content="""
++1. Can't upgrade the kernel on my NAS (Synology DS413j, running Linux 2.6.32...), so I'm stuck with git-annex 5.20150731...
+"""]]

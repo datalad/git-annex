@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.146"
+ subject="comment 2"
+ date="2014-03-07T15:17:50Z"
+ content="""
+Probably this was because the OSX build was missing the webapp. Fixed now.
+"""]]

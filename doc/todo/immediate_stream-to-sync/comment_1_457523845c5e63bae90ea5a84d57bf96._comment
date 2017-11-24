@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="xloem"
+ subject="comment 1"
+ date="2016-05-06T11:19:42Z"
+ content="""
+This could be even more powerfully implemented with a FUSE filesystem.  Then locking/unlocking concerns would go away too.
+"""]]

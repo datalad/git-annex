@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.51"
+ subject="comment 2"
+ date="2013-09-12T16:53:02Z"
+ content="""
+Well, rsync and gcrypt use the same locations for annexed content, so it's theoretically possible.
+
+However, it seems a lot easier to just add a gcrypt remote and let git-annex use the existing rsync remote for the content that is already stored in it.
+"""]]

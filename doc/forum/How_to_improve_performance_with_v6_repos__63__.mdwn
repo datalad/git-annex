@@ -1,0 +1,3 @@
+I've been using git-annex to manage a repo of ~4000 files (an MP3 collection). I used to use direct mode, but switched to v6 and am using unlocked files instead. However, even small commits have been taking 10-20 minutes. Looking at `ps` output shows `git-annex smudge` processes running against all of the files in the repo, one by one.
+
+Is there any way I can speed things up?

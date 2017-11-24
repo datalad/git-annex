@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmqVi9eQjkZt8EC-byTXJ8TnY7VyOHzW2s"
+ nickname="Zahary"
+ subject="Jingle"
+ date="2012-11-12T12:00:50Z"
+ content="""
+Also, you probably know about Jingle:
+http://en.wikipedia.org/wiki/Jingle_(protocol)
+
+What are you thoughts about it? I guess it would have been harder to use the Google C++ library from Haskell and full mesh peer-to-peer is certainly more complicated than using the XMPP server to effectively multicast to all paired clients.
+"""]]

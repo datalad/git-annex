@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.149"
+ subject="comment 3"
+ date="2012-10-05T00:43:11Z"
+ content="""
+@Glen, for what it's worth, you can now manually \"git annex unlock\" a file and it'll stay unlocked until you manually \"git annex add\" the new version.
+"""]]

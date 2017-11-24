@@ -1,0 +1,1 @@
+How can I make one of my servers keep a copy of the files on the server, so I can easily SFTP in and download the files. I don't want to see the .git folder, I want to see the files synced there.

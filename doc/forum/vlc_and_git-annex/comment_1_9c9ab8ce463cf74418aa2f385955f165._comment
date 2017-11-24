@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-12-23T16:16:19Z"
+ content="""
+From what you say, it seems that vlc is following the symlink to the movie content, and then looking for subtitles next to the file the symlink points to. It would have to explicitly realpath the symlink to have this behavior, and this sounds like a misfeature.. perhaps you could point out to the vlc people the mistake in doing so?
+
+There's a simple use-case where this behavior is obviously wrong, without involving git-annex. Suppose I have a movie, and one version of subtitles for it, in directory `foo`. I want to modify the subtitles, so I make a new directory `bar`, symlink the large movie file from `foo` to save space, and copy over and edit the subtitles from `foo`. Now I run vlc in `bar` to test my new subtitles. If it ignores the locally present subtitles and goes off looking for the ones in `bar`, I say this is broken behavior.
+"""]]

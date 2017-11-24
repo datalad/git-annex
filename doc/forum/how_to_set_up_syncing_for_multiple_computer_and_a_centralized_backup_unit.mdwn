@@ -1,0 +1,9 @@
+Been using Unison for a while to sync a folder at three different computers (can be on or off simultanously). However, I've for different reasons been looking for a different solution. Here comes git annex.e
+
+I started out with one computer, generated a new repo locally and at the server (a synology nas) with the assistant. Then i put all my files into the local directory and the files uploaded to the server. All good. I put the local computer in client mode and the server in backup mode. Then i configured a second computer with an empty repo folder, was asked to join repos, did that. Also put this computer in client mode and the server in backup. After a while all the files was located in the second computers repo directory. Yes, I was confident this was the way to go. 
+
+Howewer, doing the same with my laptop was not successful at all. After similar setup as above it only downloaded about 5% of the data. Bummer. While I tried to study the logs I thought I should check the second computers repo. That was modified and a lot of files where gone. Wow...of course I have backup, but I was hoping for a proper and consistent operation.
+
+So what causes this? Should I not put the server in backup mode? Anyone have an idea?
+
+Other thoughts?

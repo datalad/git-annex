@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkMTPqZZWoz396ABpx6nh3osxKQCFaSW6M"
+ nickname="Mark"
+ subject="annex sync when inside an itinerant repository"
+ date="2015-02-12T12:54:21Z"
+ content="""
+I'm having trouble with this where the different remotes have the same URL but different UUIDs. My situation is a repository on a USB drive that can be plugged into one of two machines and used to transport large files between them. On each machine there is a local repository in a consistent location, so I can rely on paths to things in the repos being consistent across machines. Each repo obviously has a different UUID. The USB repo has remotes for local filesystem access and remotes for over-the-network access as a convenience - something like this:
+
+    [remote \"host1\"]
+        url = /m/stuff
+        fetch = +refs/heads/*:refs/remotes/host1/*
+        annex-uuid = ce6175ba-4a0d-49e6-88b1-615dac7a37c1
+    [remote \"host1-net\"]
+        url = ssh://host1.network/m/stuff
+        fetch = +refs/heads/*:refs/remotes/host1/*
+        annex-uuid = ce6175ba-4a0d-49e6-88b1-615dac7a37c1
+    [remote \"host2\"]
+        url = /m/stuff
+        fetch = +refs/heads/*:refs/remotes/host2/*
+        annex-uuid = f7e3fbe8-f7f5-4231-a885-a72a46680d0b
+    [remote \"host2-net\"]
+        url = ssh://host2.network/m/stuff
+        fetch = +refs/heads/*:refs/remotes/host2/*
+        annex-uuid = f7e3fbe8-f7f5-4231-a885-a72a46680d0b
+
+The over-the-network path is useful for keeping everything in sync, but it doesn't have enough bandwidth to sensibly sync the content as well.
+
+If I run 'git annex sync' in this repository while it's attached to host1 I'd hope it would sync with host1 and host2-net, as those are the URLs through which the two repositories can be reached. What actually happens is that it syncs with all of the repositories and updates the annex-uuid of remote 'host2' to be the UUID of the host1 repository. It also obviously gets a bit confused because it updates the remote branches for host2 from host1.
+
+Is there some way to configure it so that sync works with all repositories based on unique uuid values, rather than all remotes?
+
+
+"""]]

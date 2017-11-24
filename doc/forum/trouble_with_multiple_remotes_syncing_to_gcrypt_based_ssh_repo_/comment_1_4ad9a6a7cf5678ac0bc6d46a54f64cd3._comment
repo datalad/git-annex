@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnXybLxkPMYpP3yw4b_I6IdC3cKTD-xEdU"
+ nickname="Matt"
+ subject="comment 1"
+ date="2014-04-29T10:16:11Z"
+ content="""
+hmmm - a command line based git annex sync always works.  So either the assistant has a separate locking mechanism or the assistant is somehow losing the gpg-agent environment.  Does the assistant restart/respawn itself and lose access to the gpg-agent env?
+
+I'm somewhat clutching at straws here.
+"""]]

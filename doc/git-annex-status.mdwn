@@ -1,0 +1,41 @@
+# NAME
+
+git-annex status - show the working tree status
+
+# SYNOPSIS
+
+git annex status `[path ...]`
+
+# DESCRIPTION
+
+Similar to `git status --short`, this command displays the status of the files
+in the working tree. 
+
+Show files that are not checked into git (?), deleted (D),
+modified (M), added but not committed (A), and type changed/unlocked (T).
+
+Particularly useful in direct mode.
+
+# OPTIONS
+
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
+* `--ignore-submodules=when`
+
+  This option is passed on to git status, see its man page for
+  details.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+git-status(1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

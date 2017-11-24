@@ -1,0 +1,49 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnX1msQxnLoSeu7q-i-c9BWghonsN7Qmns"
+ nickname="Jan Ulrich"
+ subject="Same error after deleting .ssh/git-annex-shell"
+ date="2014-06-11T15:53:17Z"
+ content="""
+Hi,
+
+I get the error before and after I deleted .ssh/git-annex-shell on my Ubuntu desktop:
+
+    janulrimacbook2:Movies juh$ git annex sync
+    commit  ok
+    pull sokrates.local_Videos
+    bash: /home/juh/.ssh/git-annex-shell: Datei oder Verzeichnis nicht gefunden
+    fatal: Could not read from remote repository.
+
+    Please make sure you have the correct access rights
+    and the repository exists.
+    failed  
+    push sokrates.local_Videos
+    bash: /home/juh/.ssh/git-annex-shell: Datei oder Verzeichnis nicht gefunden 
+    fatal: Could not read from remote repository.
+
+    Please make sure you have the correct access rights
+    and the repository exists.
+
+      Pushing to sokrates.local_Videos failed.
+
+       (non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)
+    failed
+    git-annex: sync: 2 failed
+
+Git-annex version on macbook:
+
+    git-annex version: 5.20140605-gc2add53
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi TDFA CryptoHash
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar hook external
+    local repository version: 5
+    supported repository version: 5
+    upgrade supported from repository versions: 0 1 2 4
+
+Git-annex version on Ubuntu desktop:
+
+    git-annex version: 5.20140517
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA CryptoHash
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar hook external
+"""]]

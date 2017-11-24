@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="krig"
+ ip="46.194.28.123"
+ subject="Could not resolve dependencies for yesod"
+ date="2013-06-25T06:14:18Z"
+ content="""
+I'm having problems installing from cabal, and it seems related to yesod. I found an older discussion on something similar, where a constraint to require a newer version of yesod had been added, but I haven't figured out what was done to solve it.
+
+The problem seems to be that git-annex requires yesod < 1.2, but cabal is unable to install an older version.
+
+    $ cabal install git-annex --bindir=$HOME/bin
+    Resolving dependencies...
+    cabal: Could not resolve dependencies:
+    trying: git-annex-4.20130601
+    trying: git-annex-4.20130601:+webapp
+    rejecting: yesod-1.2.1.1, 1.2.1, 1.2.0.1, 1.2.0 (conflict:
+    git-annex-4.20130601:webapp => yesod(<1.2))
+    trying: yesod-1.1.9.3
+    $
+
+From what I can tell, the problem is fixed in github master since yesod >= 1.2 is supported again.
+"""]]

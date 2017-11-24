@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-02-09T20:37:49Z"
+ content="""
+Yes, it absolutely does. On Android, git-annex defaults to making
+its repository be a "source" repository, which means it doesn't try
+to get a copy of every file. You can edit the repository in the webapp,
+and select "client" and it will go ahead and download every file it can
+get. See [[preferred_content/standard_groups]].
+
+It sounds like you might want to have the android device only
+get copies of certian files, and ignore others (the raws).
+Doing that is a little more complicated; it involves writing a
+[[preferred_content]] expression. You can do this by first exiting
+the webapp, and the at the git-annex app's console:
+
+	cd /sdcard/annex
+	git annex wanted . "include=sheetmusic/* and exclude=raws/*"
+
+Then when you start the webapp back up, it will get the sheet music 
+and not the raws. Adjust paths in that to suite..
+"""]]

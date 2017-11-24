@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 4"
+ date="2013-10-03T00:06:11Z"
+ content="""
+Your fedora build apparently does not include the webapp, since `git annex webapp` is the right command. Install the [[install/Linux_standalone]] build instead.
+
+(Again this page is not a discussion forum. Next person to post here will waste my time since I will have to go configure the site to block comments here..)
+"""]]

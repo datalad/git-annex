@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkC0W3ZQERUaTkHoks6k68Tsp1tz510nGo"
+ nickname="Georg"
+ subject="git annex sync"
+ date="2013-10-06T08:59:24Z"
+ content="""
+Shouldn't it be
+git annex sync archivedrive
+instead of
+git annex sync archive
+in the first examples. As the name of the remote is \"archivedrive\", IMO \"sync\" should be called with the name of the remote.
+"""]]

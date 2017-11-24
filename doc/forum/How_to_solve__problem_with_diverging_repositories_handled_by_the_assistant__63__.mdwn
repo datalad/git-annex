@@ -1,0 +1,40 @@
+I have one Annex meant to be kept in sync across two computers by the assistant. These computers can't connect directly, so I use a transfer repository (at rsync.net) and xmpp. Recently the two repositories have started to diverge: files added here do not appear there and vice versa, files modified here are not updated there and vice versa. It may be related to this bug: [[bugs/Jabber__47__xmpp_not_supported_on_Debian_Wheezy_backport/]] since one of the two installed versions of git-annex is 5.20140117~bpo70+1, but I do not know whether the divergence started the day I upgraded to this version.
+
+I tried this:
+
+    git-annex fsck --from rsync.net_annex
+
+on both machines. No error is reported, but files are missing here and there and files differ here and there.
+
+I stopped the assistant on both machines and tried to sync with:
+
+    git-annex sync 
+
+and got:
+
+    commit  
+    ok
+    pull 'XXX'
+    fatal: Unable to find remote helper for 'xmpp'
+    failed
+    push 'XXX'
+        Pushing to XXX failed 
+        (non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)
+    failed
+    git-annex: sync: 2 failed
+
+where 'XXX' stands for my jabber account. I then tried:
+
+    git-annex sync rsync.net_annex
+
+but got:
+
+    git-annex: cannot sync special remotes: rsync.net_annex
+
+    
+
+This situation is unfortunate because the user is not made aware of anything failing. The assistant is running, the webapp shows files being uploaded to the transfer repository, but the two repositories are actually diverging.
+
+How can I synchronize these two repositories?
+
+Thanks,

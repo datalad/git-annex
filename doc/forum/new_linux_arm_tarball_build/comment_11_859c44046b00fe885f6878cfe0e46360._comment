@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.191"
+ subject="comment 11"
+ date="2014-04-17T19:39:41Z"
+ content="""
+I can't see any good way to prevent ld-linux.so from preloading things listed in `/etc/ld.so.preload`. I don't know why raspbian wants to preload that -- probably for optimisation purposes?
+
+I could modify the ld-linux.so shipped in the git-annex tarball, but that way lies pointless complication..
+"""]]

@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn3p4i4lk_zMilvjnJ9sS6g2nerpgz0Fjc"
+ nickname="Matthias"
+ subject="Build failure"
+ date="2014-03-20T09:10:44Z"
+ content="""
+I followed the instructions and the invocation of
+
+    cabal install git-annex --bindir=$HOME/bin -f\"-assistant -webapp -webdav -pairing -xmpp -dns\"
+
+resulted in the following error:
+
+    Test.hs:107:41: Not in scope: `errMessage'
+    Failed to install git-annex-5.20140306
+    cabal: Error: some packages failed to install:
+    git-annex-5.20140306 failed during the building phase. The exception was:
+    ExitFailure 1
+
+I used the Haskell Platform for Mac OS X (10.8)
+
+"""]]

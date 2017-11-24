@@ -1,0 +1,7 @@
+Been doing a little bit of optimisation work. Which meant, first improving
+the --debug output to show fractions of a second, and show when commands
+exit.
+
+That let me measure what takes up time when downloading files from ssh remotes.
+Found one place I could spawn a thread to run a cleanup action, and this simple
+change reduced the non-data-transfer overhead to 1/6th of what it had been!

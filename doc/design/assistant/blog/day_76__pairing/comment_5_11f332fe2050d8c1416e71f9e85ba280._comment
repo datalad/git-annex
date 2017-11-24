@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmubB1Sj2rwFoVdZYvGV0ACaQUJQyiJXJI"
+ nickname="Paul"
+ subject="comment 5"
+ date="2012-09-10T14:54:17Z"
+ content="""
+chunksize=2m was defined. I tried again, and the transfers again didn't seem to start. Then I did `killall git-annex`, cleaned the files from the box.com account, and tried again. This time it seems to be working, but the webapp isn't showing progress. Memory usage also stays reasonable, and doesn't seem to grow. Maybe it was just bad handling of unexpected repository state?
+"""]]

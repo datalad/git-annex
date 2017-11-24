@@ -1,0 +1,8 @@
+Succeeded fixing a few bugs today, and followed up on a lot of other ones..
+
+Fixed checking when content is present in a non-bare repository accessed via
+http.
+
+My changes a few days ago turned out to make uninit leave hard links behind
+in .git/annex. Luckily the test suite caught this bug, and it was easily
+fixed by making uninit delete objects with 2 or more hard links at the end.

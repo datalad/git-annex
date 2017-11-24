@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 1"
+ date="2014-07-14T19:05:32Z"
+ content="""
+git-annex stores the locations of repositories in `.config/git-annex/autostart` in what passes for a home directory on Windows.
+
+Are you sure it doesn't manage to at least open a web browser tab, possibly one with an error in it? This would be easy to miss if you have a lot of tabs open. I seem to have partially reproduced this, at least that's the behavior I see. 
+
+The root of the problem seems to be that it thinks the daemon is running, but it's not. So it just opens the web browser and then stops. After I deleted .git/annex/daemon*, and .git/annex/url and .git/annex/daemon.log, `git annex webapp` worked again. 
+"""]]

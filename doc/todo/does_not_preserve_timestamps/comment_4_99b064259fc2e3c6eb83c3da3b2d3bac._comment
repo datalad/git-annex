@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://svario.it/gioele"
+ nickname="gioele"
+ subject="comment 4"
+ date="2014-09-24T07:15:09Z"
+ content="""
+You can try to store the timestamps just before commit and restore them on checkout.
+
+Have a look at [metastore](https://github.com/przemoc/metastore): it is a ready-made solution for plain git. Maybe you can adapt it to git-annex.
+"""]]

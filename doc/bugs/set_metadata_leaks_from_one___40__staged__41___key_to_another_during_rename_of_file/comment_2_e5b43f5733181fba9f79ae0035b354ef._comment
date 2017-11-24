@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-09-26T18:36:48Z"
+ content="""
+Other than the always-popular "make it configurable",
+I wonder if it would suffice to simply output a note when copying metadata
+from the (presumed) old version of the file? Then there would be no
+confusion about why the metadata got set.
+"""]]

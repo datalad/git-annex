@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.7"
+ subject="comment 1"
+ date="2014-08-12T17:26:46Z"
+ content="""
+The way it's supposed to work is that `git annex direct` does not set the repository into direct mode until it's entirely done moving files around. So, if it is interrupted at any point, you are left with an indirect mode repository, with some unlocked files. Which can be put back to indirect by `git annex add`, or the conversion restarted with `git annex direct`.
+
+That seems to work in my tests; I can interrupt `git annex direct` and resume with `git annex direct` with a good result; `git annex add` reverts back to indirect mode. Even `git commit -a` reverts back to indirect mode, thanks to the pre-commit hook. I have tested that all these recovery methods work as intended.
+
+That leaves `git annex lock --force` (it has to be forced) after an interrupted switch to direct mode. I have reproduced that in this situation, that will delete your file's contents (I cannot reproduce them ending up in misctmp, but [[!commit d8be828734704c78f91029263b59eed75174e665]] may have had something to do with that). In a sense, `git annex lock --force` is doing what you told it to -- git-annex lock throws unlocked file contents away, under the assumption that they might contain modified changes. Since normally, `git annex unlock` makes a copy of the file, there is not normally data loss, unless the unlocked files got modified. But that's why it requires the --force; it can result in data loss.
+
+I a having a hard time thinking of a modification to `git annex lock` that would make sense. The best I can come up with is, if the file's content is not present in the annex, it could switch to what `git annex add` does, and re-add the file content to the annex if it's unchanged. While, I guess, throwing away the content if it is changed. That seems a bit complicated.
+
+(BTW, if you do still have the files in misctmp, you can `git annex import` their content back into the repository.)
+"""]]

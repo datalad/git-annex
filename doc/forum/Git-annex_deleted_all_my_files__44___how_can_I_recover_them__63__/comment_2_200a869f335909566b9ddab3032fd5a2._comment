@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkW9u-8uqR62QBZjeTNCXsL7Ds55dAMGbA"
+ nickname="Horea"
+ subject="comment 2"
+ date="2015-04-28T10:15:24Z"
+ content="""
+Apparently what happened is that whenever you want to set up git annex, you have to create just one repository, them *move* your files to a temporary folder on all your other media, *clone* the repository to the other media, and then copy all your files back to the clone and add them to git annex. This is a horrible workflow and not mentioned anywhere. If you do the intuitive thing and start by making a bunch of repos, because all repos are created equal, git annex will happily delete all your stuff on some of them. 
+
+Indeed, as you correctly mention, this can go horribly wrong if you use direct mode and cannot recover your files. A shame, really, that direct mode is the only mode in which you actually have write and copy access to your files, and thus, for most - including myself - the only sane way of managing your files. For the record, I was able to retrieve my files, but to this day git annex is the only software I ever used that ever managed to lose my data. 
+"""]]

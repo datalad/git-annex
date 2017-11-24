@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkbpbjP5j8MqWt_K4NASwv0WvB8T4rQ-pM"
+ nickname="Fabrice"
+ subject="Is there a way to specify a preferred pgp key?"
+ date="2013-11-01T18:57:38Z"
+ content="""
+Hi,
+
+I think the current behavior of the special remote is a bit annoying when one has several pgp keys. 
+
+Indeed, I've followed the encrypted backup drive example specifying the id of a dedicated key in the initremote step, so far so good. Doing that, I was prompted for my key phrase by the gnome keyring daemon, as expected. 
+
+The annoying part starts right at the git annex sync step. Indeed, when git-remote-gcrypt tries to decrypt the manifest from the encrypted remote, rather than trying only the key specified during the initremote step, it tries all my (secret) keys. This means that I get prompted for the key phrase of all those keys (minus the correct one which is already unlocked...). 
+
+In the future, this might possible to avoid by allowing gcrypt to fetch a preferred key from git config and to use with the --try-secret-key option available gnupg 2.1.x. But for 1.x or 2.0.x, the simpler option --default-key does not seem to alter the order in which keys are tried to decrypt the manifest. Also, it does not seem to be a problem of the gnome keyring daemon, but rather a gpg problem as when the daemon is replaced by the standard gpg-agent, the same problem occurs. 
+
+Meanwhile, is there any way to avoid this problem? 
+"""]]

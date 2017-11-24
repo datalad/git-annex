@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-02-15T16:51:20Z"
+ content="""
+There's --fast if you don't need the expensive to obtain data.
+
+AFAIK, the working tree traversal that makes up most of the overhead of
+info is mostly disk-bound.
+"""]]

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.235"
+ subject="comment 3"
+ date="2013-07-10T16:38:04Z"
+ content="""
+@Michael, like I said above, this use case is completely supported. That's why git-annex uses UUIDs to uniquely identify repositories, no matter where or how many urls are used for them. 
+
+Just set up the remotes you need, and if they end up pointing to the same repository by different routes, git-annex will automatically notice.
+
+---
+
+The directory= parameter used when initializing a directory remote is only used to set up the remote in the .git/config file. It is not stored anywhere else, since the directory could be mounted at different locations on different computers, eg when a drive is moved between computers.
+"""]]

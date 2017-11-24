@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="zardoz"
+ ip="134.147.14.84"
+ subject="comment 3"
+ date="2014-07-11T11:54:26Z"
+ content="""
+Ah, interesting, some caching ideas are already discussed at [https://git-annex.branchable.com/design/caching_database/].
+"""]]

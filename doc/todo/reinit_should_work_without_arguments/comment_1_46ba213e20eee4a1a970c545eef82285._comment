@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-01-30T17:24:27Z"
+ content="""
+I don't know that reinit is the best place to put this.
+It's a different use case, and a different operation than the current
+reinit; making a single command do two opposite things is often a bad idea.
+
+One way to accomplish what you want is to just delete the old
+annex.uuid from git config, and then `git annex init` will
+allocate a new uuid.
+"""]]

@@ -1,0 +1,14 @@
+Hey,
+
+I lost some symlinks to my data and I do not know how to recover them. I was in view mode  with some tag folders already there. I added _new_ files from outside annex into some folder and 'git annex add' those files.
+
+What I expected: Git-Annex should add those files to the annex, move the symlinks to the root of the annex (because there is no other way to tell where to put them) and tag them with the specific tag. That is the way I would like to work, first tag, then organize in folder structure.
+
+Now that seems not to be a scenario which has been respected? Because I don't see my files... anywhere. Not in master branch nor in the view branch (I already did 'git annex vpop'). If that is not supported and never will be git-annex should not accept data from the outside world if it is currently in view mode.
+
+Now, how do I get my symlinks back? I guess the content is still there, but the links are missing and I don't find any reference or history log to revert that. 'git annex unused' does not show them either.
+
+I hope somebody can help me :)
+
+Cheers,
+Stephan

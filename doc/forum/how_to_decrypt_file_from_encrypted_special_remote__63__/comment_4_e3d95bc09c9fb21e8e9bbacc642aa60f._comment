@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.110"
+ subject="comment 4"
+ date="2013-07-27T22:52:00Z"
+ content="""
+Great! And it should have also printed out the key it downloaded, if you're curious about looking where that file is used in your git repository.
+"""]]

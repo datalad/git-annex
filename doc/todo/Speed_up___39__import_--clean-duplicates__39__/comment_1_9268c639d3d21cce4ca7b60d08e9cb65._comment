@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="24.159.78.125"
+ subject="interesting idea"
+ date="2014-07-30T15:03:46Z"
+ content="""
+This could be done in constant space using a bloom filter of known file sizes. Files with wrong sizes would sometimes match, but no problem, it would then just do the work it does now.
+
+However, to build such a filter, git-annex would need to do a scan of all keys it knows about. This would take approximately as long to run as `git annex unused` does. It might make sense to only build the filter if it runs into a fairly large file. Alternatively, a bloom filter of file sizes could be cached and updated on the fly as things change (but this gets pretty complex).
+"""]]

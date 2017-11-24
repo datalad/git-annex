@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="24.159.78.125"
+ subject="comment 2"
+ date="2014-05-23T14:27:01Z"
+ content="""
+What are you clicking on in the webapp?
+
+What kind of repository did the remote have before it got deleted? Was it a repository encrypted with git-remote-gcrypt?
+
+Show the contents of ~/annex/.git/config on your local system.
+"""]]

@@ -1,0 +1,12 @@
+Converted the webdav special remote to the new API. 
+All done with converting everything now!
+
+I also updated the new API to support doing things like
+reusing the same http connection when removing and checking
+the presence of chunks.
+
+I've been working on improving the haskell DAV library, in a
+number of ways that will let me improve the webdav special remote.
+Including making changes that will let me do connection caching, and
+improving its API to support streaming content without buffering a whole
+file in memory.

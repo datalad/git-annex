@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-10-26T19:55:18Z"
+ content="""
+On the ssh config, one way to do it is to pass -F with a config
+file that git-annex generates. It could look like:
+
+	Include ~/.ssh/config
+	Include /etc/ssh/ssh_config
+	ServerAliveInterval 60
+
+Since ssh uses the first config setting it sees, if `~/.ssh/config`
+or `/etc/ssh/ssh_config` set a ServerAliveInterval that one will be used,
+and otherwise the value git-annex sets will be used.
+
+But.. Ssh enables TCPKeepAlive by default. You'd think that would be enough
+to detect this kind of problem.
+
+There do seem to be reasons for users to disable TCPKeepAlive;
+perhaps it causes annoying disconnects when there's a minor hiccough,
+or a firewall does not support it. 
+
+If the problem is that users are disabling TCPKeepAlive, then
+having git-annex enable ServerAliveInterval makes sense.
+
+Ok; implemented this.
+"""]]

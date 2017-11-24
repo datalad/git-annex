@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="Don"
+ subject="comment 2"
+ date="2016-04-14T19:31:52Z"
+ content="""
+I've been watching this thread because I have the same issue.  Joey, it seems like this error message is coming from the `get_verify_decrypt_pack()` function in git-remote-gcrypt.
+"""]]

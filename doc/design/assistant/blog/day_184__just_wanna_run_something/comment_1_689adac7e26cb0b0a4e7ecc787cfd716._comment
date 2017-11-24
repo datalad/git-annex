@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="hhm"
+ ip="108.17.80.177"
+ subject="Write and exec on unrooted Android."
+ date="2013-02-10T05:43:41Z"
+ content="""
+See <http://kevinboone.net/android_nonroot.html> for info on where in the android filesystem you have write, exec ability.
+
+Basically you have these abilities in `/data/local` from `adb shell` (and in debuggable app's folders using run-as with `adb shell`), and in `/data/data/<app_id>/` for each app (for example the terminal emulator's data dir when using the terminal emulator).
+
+It might be possible to just have temporary root using an old exploit and writing up a bit of code to just setuid on the process and exec sh (source for nachoroot exploit <https://github.com/CunningLogic/NachoRoot>).
+
+It *is* possible to install a distro without root using a chroot faker.
+
+I am working here <https://sites.google.com/site/taldewandroid/> on a way to install the OpenWrt distro on Android. This is working on my phone already for quite a while! So far only sketchy notes are up, but more to come, G-d willing.
+"""]]

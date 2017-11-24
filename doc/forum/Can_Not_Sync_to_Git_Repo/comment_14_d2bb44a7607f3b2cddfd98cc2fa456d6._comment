@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://www.ryantm.com/"
+ subject="Possible workaround"
+ date="2015-09-08T14:46:03Z"
+ content="""
+The `git annex checkout annex/direct/master` workaround mentioned above did not work for me, but this did:
+
+git annex indirect
+git annex direct
+
+after that, my repo was on the annex/direct/master branch
+"""]]

@@ -1,0 +1,7 @@
+Hello,
+
+I was recently evaluating git-annex as a file sync tool, but I've got my files in a state where they are a mess.  The short version is that I have a local repo, and then an Encrypted S3 remote.  Once I encrypted the files, they got renamed and so forth and the files are now just symbolic links to files within the .git directory somewhere.   This has made some of them unusable for me and I need to revert the files back to not being symlinks any longer.  How would I go about doing that?
+
+Thanks,
+
+Brandon

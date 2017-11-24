@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 2"
+ date="2014-06-16T17:52:34Z"
+ content="""
+View's don't scale to lots of files yet. Discussed in [[design/caching_database]]
+"""]]

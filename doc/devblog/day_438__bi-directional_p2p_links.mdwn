@@ -1,0 +1,6 @@
+Improved `git annex p2p --link` to create a bi-directional link
+automatically. Bi-directional links are desirable more often than not, so
+it's the default behavior.
+
+Also continued thinking about using magic wormhole for communicating
+p2p addresses for pairing. And filed some more bugs on magic wormhole.

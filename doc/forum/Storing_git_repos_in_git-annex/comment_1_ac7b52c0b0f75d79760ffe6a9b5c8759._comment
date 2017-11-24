@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-05-16T17:29:15Z"
+ content="""
+Why not just use git the way it's designed: Make a git repository on one computer. Clone to another computer. Commit changes on either whenever you like, and pull/push whenever you like. No need for any dropbox to help git sync, it can do so perfectly well on its own.
+
+If you have a lot of repositories, see <http://myrepos.branchable.com/>
+
+I continue to be unimpressed and unmotived by this use case. Posting more forum threads with the same lame reasons won't help. But at least you did say:
+
+> For some time I used Bazaar repos inside Dropbox.  A couple of times I accidentally modified files on one computer before another finished syncing
+, and the repo became mildly corrupted, but I recovered it okay.
+
+> Recently I switched to git, and so far, so good.  I'm careful not to make any changes to my files before Dropbox is finished syncing, so everythin
+g works fine.
+
+So, you used dropbox, and corrupted data.  But that was ok. And now you're very careful to avoid doing things that will corrupt data. But that's ok. Yeah, that seems like a really good decision, given all the excellent possibilities out there.`</snark>`
+"""]]

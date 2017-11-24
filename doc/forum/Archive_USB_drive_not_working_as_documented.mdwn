@@ -1,0 +1,171 @@
+I'm hoping to use git-annex in a project to manage large image files and maintain archived copies of them on removable USB drives. But I can't get this to work the way it's described in the walkthrough and in the "git-annex/tips/offline archive drives" example. Here's what I did:
+
+    marshal@home[~]> git-annex version
+    git-annex version: 5.20140412ubuntu1
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA CryptoHash
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier hook external
+
+Create the local repo:
+
+    marshal@home[~]> mkdir ~/annex
+    marshal@home[~]> cd ~/annex
+    marshal@home[~/annex]> git init
+    Initialized empty Git repository in /home/marshal/annex/.git/
+    marshal@home[~/annex]> git annex init "my laptop"
+    init my laptop ok
+    (Recording state in git...)
+
+Create the remote repo (assume the warning can be ignored?)
+
+    marshal@home[~/annex]> cd /media/marshal/Sony\ USB/
+    marshal@home[/media/marshal/Sony USB]> git clone ~/annex
+    Cloning into 'annex'...
+    done.
+    warning: remote HEAD refers to nonexistent ref, unable to checkout.
+    marshal@home[/media/marshal/Sony USB]> cd annex
+    marshal@home[/media/marshal/Sony USB/annex]> git annex init "usbdrive"
+    init usbdrive ok
+    (Recording state in git...)
+
+Make them remotes of each other
+
+    marshal@home[/media/marshal/Sony USB/annex]> git remote add laptop ~/annex
+    marshal@home[/media/marshal/Sony USB/annex]> cd ~/annex
+    marshal@home[~/annex]> git remote add usbdrive /media/marshal/Sony\ USB/annex/
+
+Add some files into the local repo
+
+    marshal@home[~/annex]> cp ~/Desktop/file* .
+    marshal@home[~/annex]> git annex add .
+    add file1.m3u ok
+    add file2.sh ok
+    add file3.pdf ok
+    (Recording state in git...)
+    marshal@home[~/annex]> git commit -a -m "added files"
+    [master (root-commit) 4ea3be7] added files
+     3 files changed, 3 insertions(+)
+     create mode 120000 file1.m3u
+     create mode 120000 file2.sh
+     create mode 120000 file3.pdf
+
+Change the preferred content settings
+
+    marshal@home[~/annex]> git annex group usbdrive archive
+    group usbdrive ok
+    (Recording state in git...)
+    marshal@home[~/annex]> git annex wanted usbdrive standard
+    wanted usbdrive ok
+    (Recording state in git...)
+
+Sync to the usbdrive repo
+
+    marshal@home[~/annex]> git annex sync usbdrive
+    commit  ok
+    pull usbdrive 
+    remote: Counting objects: 7, done.
+    remote: Compressing objects: 100% (3/3), done.
+    remote: Total 5 (delta 1), reused 0 (delta 0)
+    Unpacking objects: 100% (5/5), done.
+    From /media/marshal/Sony USB/annex
+     * [new branch]      git-annex  -> usbdrive/git-annex
+    ok
+    (merging usbdrive/git-annex into git-annex...)
+    (Recording state in git...)
+    push usbdrive 
+    Counting objects: 29, done.
+    Delta compression using up to 8 threads.
+    Compressing objects: 100% (22/22), done.
+    Writing objects: 100% (25/25), 2.44 KiB | 0 bytes/s, done.
+    Total 25 (delta 3), reused 0 (delta 0)
+    To /media/marshal/Sony USB/annex/
+     * [new branch]      git-annex -> synced/git-annex
+     * [new branch]      master -> synced/master
+    ok
+
+Copy eveything to the usbdrive repo
+
+    marshal@home[~/annex]> git-annex copy --auto --to usbdrive
+    copy file1.m3u (to usbdrive...) 
+    SHA256E-s64061--c388e2c927cb4c88c11b1b5a8e166c4d8080dc528d53954dad1ee6d4933ce3c7.m3u
+             64,061 100%   29.84MB/s    0:00:00 (xfr#1, to-chk=0/1)
+    ok
+    copy file2.sh (to usbdrive...) 
+    SHA256E-s318--b8729560cc759d2256903feaa4ba65994ccbac94f30515d52a39083ad52e1bad.sh
+                318 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+    ok
+    copy file3.pdf (to usbdrive...) 
+    SHA256E-s32239--9b051067d5ef9f0cb4a01750901bf6bee3f9348e5b10138c8ef416ac8d51e5df.pdf
+             32,239 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+    ok
+    (Recording state in git...)
+
+Check to see where git-annex "thinks" the files are
+
+    marshal@home[~/annex]> git-annex whereis file1.m3u 
+    whereis file1.m3u (2 copies) 
+          	80fa5a68-3843-4e25-b4c9-53a8c51ba9ff -- here (my laptop)
+           	d642b276-5f9b-4a5c-a42e-ea29cd9540b5 -- usbdrive
+    ok
+
+Check the filesystem results
+
+    marshal@home[~/annex]> ls -la ~/annex
+    total 48
+    drwxrwxr-x  3 marshal marshal  4096 Jul 19 14:59 .
+    drwxr-xr-x 99 marshal marshal 24576 Jul 19 14:55 ..
+    lrwxrwxrwx  1 marshal marshal   194 Jul 19 14:59 file1.m3u -> .git/annex/objects/jq/MW/SHA256E-s64061--c388e2c927cb4c88c11b1b5a8e166c4d8080dc528d53954dad1ee6d4933ce3c7.m3u/SHA256E-s64061--c388e2c927cb4c88c11b1b5a8e166c4d8080dc528d53954dad1ee6d4933ce3c7.m3u
+    lrwxrwxrwx  1 marshal marshal   188 Jul 19 14:59 file2.sh -> .git/annex/objects/1J/2K/SHA256E-s318--b8729560cc759d2256903feaa4ba65994ccbac94f30515d52a39083ad52e1bad.sh/SHA256E-    s318--b8729560cc759d2256903feaa4ba65994ccbac94f30515d52a39083ad52e1bad.sh
+    lrwxrwxrwx  1 marshal marshal   194 Jul 19 14:59 file3.pdf -> .git/annex/objects/77/Wj/SHA256E-s32239--9b051067d5ef9f0cb4a01750901bf6bee3f9348e5b10138c8ef416ac8d51e5df.pdf/SHA256E-s32239--9b051067d5ef9f0cb4a01750901bf6bee3f9348e5b10138c8ef416ac8d51e5df.pdf
+    drwxrwxr-x  9 marshal marshal  4096 Jul 19 15:04 .git
+    marshal@home[~/annex]> ls -la /media/marshal/Sony\ USB/annex/
+    total 4
+    drwx------ 1 marshal marshal  144 Jul 19 14:56 .
+    drwx------ 1 marshal marshal 4096 Jul 19 14:56 ..
+    drwx------ 1 marshal marshal  448 Jul 19 14:57 .git
+
+Why is there nothing in the usbdrive repo? And worse, why is the whereis command saying there are 2 copies?
+
+But if I sync from the usbdrive repo, the files are copied
+
+    marshal@home[~/annex]> cd /media/marshal/Sony\ USB/annex/
+    marshal@home[/media/marshal/Sony USB/annex]> git-annex sync laptop
+    (merging synced/git-annex origin/git-annex into git-annex...)
+    (Recording state in git...)
+    commit  ok
+    pull laptop 
+    remote: Counting objects: 23, done.
+    remote: Compressing objects: 100% (8/8), done.
+    remote: Total 11 (delta 3), reused 0 (delta 0)
+    Unpacking objects: 100% (11/11), done.
+    From /home/marshal/annex
+     * [new branch]      git-annex  -> laptop/git-annex
+     * [new branch]      master     -> laptop/master
+     * [new branch]      synced/master -> laptop/synced/master
+    
+    
+    Already up-to-date.
+    ok
+    (merging laptop/git-annex into git-annex...)
+    (Recording state in git...)
+    push laptop 
+    Counting objects: 56, done.
+    Delta compression using up to 8 threads.
+    Compressing objects: 100% (24/24), done.
+    Writing objects: 100% (33/33), 2.34 KiB | 0 bytes/s, done.
+    Total 33 (delta 15), reused 0 (delta 0)
+    To /home/marshal/annex
+     * [new branch]      git-annex -> synced/git-annex
+    ok
+    marshal@home[/media/marshal/Sony USB/annex]> ls -la /media/marshal/Sony\ USB/annex/
+    total 6
+    drwx------ 1 marshal marshal  456 Jul 19 15:07 .
+    drwx------ 1 marshal marshal 4096 Jul 19 14:56 ..
+    lrwxrwxrwx 1 marshal marshal  396 Jul 19 15:07 file1.m3u -> .git/annex/objects/jq/MW/SHA256E-s64061--c388e2c927cb4c88c11b1b5a8e166c4d8080dc528d53954dad1ee6d4933ce3c7.m3u/SHA256E-s64061--c388e2c927cb4c88c11b1b5a8e166c4d8080dc528d53954dad1ee6d4933ce3c7.m3u
+    lrwxrwxrwx 1 marshal marshal  384 Jul 19 15:07 file2.sh -> .git/annex/objects/1J/2K/SHA256E-s318--b8729560cc759d2256903feaa4ba65994ccbac94f30515d52a39083ad52e1bad.sh/SHA256E-s318--b8729560cc759d2256903feaa4ba65994ccbac94f30515d52a39083ad52e1bad.sh
+    lrwxrwxrwx 1 marshal marshal  396 Jul 19 15:07 file3.pdf -> .git/annex/objects/77/Wj/SHA256E-s32239--9b051067d5ef9f0cb4a01750901bf6bee3f9348e5b10138c8ef416ac8d51e5df.pdf/SHA256E-s32239--9b051067d5ef9f0cb4a01750901bf6bee3f9348e5b10138c8ef416ac8d51e5df.pdf
+    drwx------ 1 marshal marshal  448 Jul 19 15:07 .git
+
+Why did I have to sync from the usbdrive? I expected the repo setup and the --auto option to copy the files. What am I missing?
+
+Any help much appreciated.

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-04-14T19:57:58Z"
+ content="""
+Ok, so definitely not a bug in git-annex then.
+
+`get_verify_decrypt_pack` downloads an encrypted pack file, and then
+uses gpg to hash the pack file and compares this to the hash
+encoded in the name of the pack file.
+
+So, this could happen if the pack files in the gcrypt remote have gotten
+the wrong data into them. Or it could be a bug of some kind in
+git-remote-gcrypt.
+"""]]

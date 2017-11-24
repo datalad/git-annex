@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="Petter_petterson"
+ ip="89.160.15.173"
+ subject="comment 3"
+ date="2014-09-16T08:13:59Z"
+ content="""
+Thanks Justin, but that wont work. Even pointing out a normal, non-bare repo and then adding it as a ssh remote will convert it into a bare repo. I confirmed that, and then I read this post:
+
+    http://git-annex.branchable.com/forum/Local_and_remote_in_direct_mode/
+
+that states that
+> The \"Remote server using ssh\" option in the webapp is intended to set up a bare git repository on a server, not a non-bare git repository on a client.\"
+
+I even tried to do 
+    git remote add B ssh://machineB:/~/annex
+but to no avail, the created annex on machine B becomes a bare repo.
+
+The only way to do it for me was to do the following,
+Assume my cellphone is device A, and my desktop is device B:
+
+On machine B:
+
+    cd ~/DCIM
+    git init
+    git annex init \"B\"
+    git annex direct
+    echo '*/5 * * * * * cd ~/DCIM; git annex sync' > crontab
+
+On machine A:
+
+    git clone ssh://user@machineB:/home/user/DCIM
+    git annex sync
+    git annex webapp
+
+now pictures are synced to the computer in direct, non-bare format every 5 minutes. I have spent literally days on this and now I finally nailed it in a crude but working fashion. 
+"""]]

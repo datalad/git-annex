@@ -1,0 +1,55 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="git-annex-undo removes files, possibly destroying information? Please explain."
+ date="2016-10-14T07:02:42Z"
+ content="""
+Hello,
+
+## Context
+
+Thank you for git-annex. I'm progressing in learning how to use it. Seems to work as intended with only annexed files.
+
+I actually need mixed content repository and like the idea of `annex.largefiles` deciding which files go into the annex.
+
+While experimenting with mixed content repository, I had `git-annex-undo` destroy information twice.  Or perhaps I did something wrong?
+
+## What happened
+
+Here's my .gitattributes
+
+```
+*.NEF annex.largefiles=anything
+*.JPG annex.largefiles=anything
+*.jpg annex.largefiles=anything
+
+```
+
+I had a directory (say, `newdir`) with some jpg and some other files, not known by git or git-annex so far.
+
+Based on [https://git-annex.branchable.com/tips/largefiles/](https://git-annex.branchable.com/tips/largefiles/) I expected both `git add` and `git annex add` to add NEF JPG jpg to the annex, and other files as regular git files.  
+
+In case of problem, I expected `git annex undo` to revert state to the one just before the last command (which is: full of my regular files, not symlinks or empty).
+
+* `git add newdir` added them *all* as *regular* files, not partly in the annex as expected.  Surprised, I wanted to undo and try another command.
+* `git annex undo` emptied `newdir` completely. Wow! Fortunately these were copies, else they would have been gone forever! To be fair I have not checked at that point if files had been copied in annex, which as only copy would still be a mess because file names would have been lost anyway. 
+
+I used `git reset <hash>` to revert state git-style, checked with `git status` that state was indeed back to pre-add (newdir empty, not known to git), then copied the files again from their source.
+
+* `git annex add newdir` added them all as *annexed* files, replacing with links, not partly as regular files as expected.
+* `git annex undo` emptied `newdir` completely. I expected my regular files back in place. 
+
+I had the intended result by using `git add` on regular files and `git annex add` to add files to be annexed.  As if `.gitattributes` were absent.
+
+git-annex compiled on Debian unstable as of 2016-10-13 from git source, commit 3135d35094aa5453ef7a5f12762e00e0139a6dbb.
+
+## Questions
+
+* Have I explained situation clearly?
+* Did `git annex add` behave as intended by you? Wasn't it supposed to automatically decide which files go to the annex?
+* Did `git annex undo` behave as intended by you? Wasn't it supposed to revert working directory to the state just before the wrong \"add\"?
+* Have I used `.gitattributes`, `add` commands correctly?
+
+Thank you.
+"""]]

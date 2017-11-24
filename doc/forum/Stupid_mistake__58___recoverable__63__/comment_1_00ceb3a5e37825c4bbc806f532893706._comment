@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-04-01T18:24:20Z"
+ content="""
+The file contents are still there in `.git/annex/objects/`. 
+
+When I run `git reset --hard`, it deletes any files that have been added, but not committed. You say you still have symlinks to the content. If so, you can just `git add` the symlinks and be back how git-annex wants things to be.
+
+If, instead, you are missing the symlinks, then since you never committed the symlinks to git, there is no record anywhere in git of the filenames that go with the file contents. 
+
+What you can do is ask git-annex to put back symlinks to the file contents:
+
+<pre>
+git annex unused
+git annex addunused 1-10000
+</pre>
+
+This will make you have a bunch of files in the repository with names starting with \"unused\". You can then rename them manually.
+
+BTW, I would of course be interested in any error message from `git commit`.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 8"
+ date="2013-03-27T16:38:47Z"
+ content="""
+I don't think the checking of SSL certificates can currently be disabled.
+"""]]

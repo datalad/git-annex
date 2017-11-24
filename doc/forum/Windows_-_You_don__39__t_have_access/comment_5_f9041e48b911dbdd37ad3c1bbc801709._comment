@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="fusionx86@2cab672ef75a8502e153ceb90177dde38985dba9"
+ nickname="fusionx86"
+ subject="comment 5"
+ date="2015-07-20T20:41:00Z"
+ content="""
+Also, I created git-annex-shell.exe as a copy of git-annex.exe which you recommended here: https://git-annex.branchable.com/bugs/no_git-annex_shell_on_Windows/.
+
+I also made sure UAC and Windows Firewall were disabled and they already were.
+
+What environment variables should exist to support annex? I see references to GIT_ANNEX_SSHOPTION and GIT_SSH, but those aren't currently configured on my Windows server. The git, git-annex and git-annex-shell files are in the global path and accessible from anywhere.
+"""]]

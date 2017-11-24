@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-12-11T15:20:55Z"
+ content="""
+It's not plumbing level, but `git-annex import --deduplicate`
+or `git-annex import --skip-duplicates` are meant to handle this sort
+of thing.
+"""]]

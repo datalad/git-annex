@@ -1,0 +1,31 @@
+### Please describe the problem.
+
+Running `git-annex enableremote remote` without a suitable key available leaves a partially unconfigured git remote.
+
+Subsequently making the key available and running `git-annex enableremote remote` a second time fails as the remote now partially exists.
+
+Removing the remote with `git remote remove remote` and then re-running `git-annex enable remote` seems to do the trick.
+
+However, I notice that even after syncing my special remotes are missing some details in the git config file - namely the `annex-gcrypt` and `annex-uuid` (there may have been more).  I fixed by adding the details from a working repo.
+
+Finally, when I initially created the gcrypt repo (by hand) I specified the remote as a local directory on the machine in question i.e. `gcrypt::/matt/mnt/isilon/rss/zzalsmf3/git-annex/mus` I then decided to make it available and changed it (via `git remote rename` to `gcrypt::ssh://rss/home/matt/mnt/isilon/rss/zzalsmf3/git-annex/mus`.  Unfortunately on other machines when I `git enableremote` it recovers the original remote which obviously doesn't work - how can I update this setting?
+
+Phew!
+
+
+
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]

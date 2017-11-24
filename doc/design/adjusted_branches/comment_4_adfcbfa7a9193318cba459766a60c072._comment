@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-05-16T20:34:28Z"
+ content="""
+@thowz great idea! And not hard at all to implement! I've done so:
+`git annex adjust --fix`
+"""]]

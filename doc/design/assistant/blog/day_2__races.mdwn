@@ -1,0 +1,45 @@
+Last night I got `git annex watch` to also handle deletion of files.
+This was not as tricky as feared; the key is using `git rm --ignore-unmatch`,
+which avoids most problematic situations (such as a just deleted file
+being added back before git is run).
+
+Also fixed some races when `git annex watch` is doing its startup scan of
+the tree, which might be changed as it's being traversed. Now only one
+thread performs actions at a time, so inotify events are queued up during
+the scan, and dealt with once it completes. It's worth noting that inotify
+can only buffer so many events .. Which might have been a problem except
+for a very nice feature of Haskell's inotify interface: It has a thread
+that drains the limited inotify buffer and does its own buffering.
+
+----
+
+Right now, `git annex watch` is not as fast as it could be when doing
+something like adding a lot of files, or deleting a lot of files.
+For each file, it currently runs a git command that updates the index.
+I did some work toward coalescing these into one command (which `git annex`
+already does normally). It's not quite ready to be turned on yet,
+because of some races involving `git add` that become much worse
+if it's delayed by event coalescing.
+
+----
+
+And races were the theme of today. Spent most of the day really
+getting to grips with all the fun races that can occur between
+modification happening to files, and `git annex watch`. The [[inotify]]
+page now has a long list of known races, some benign, and several,
+all involving adding files, that are quite nasty.
+
+I fixed one of those races this evening. The rest will probably involve
+moving away from using `git add`, which necessarily examines the file
+on disk, to directly shoving the symlink into git's index.
+
+BTW, it turns out that `dvcs-autosync` has grappled with some of these same
+races: <http://comments.gmane.org/gmane.comp.version-control.home-dir/665>
+I hope that `git annex watch` will be in a better place to deal with them,
+since it's only dealing with git, and with a restricted portion of it
+relevant to git-annex.
+
+It's important that `git annex watch` be rock solid. It's the foundation
+of the git annex assistant. Users should not need to worry about races
+when using it. Most users won't know what race conditions are. If only I
+could be so lucky!

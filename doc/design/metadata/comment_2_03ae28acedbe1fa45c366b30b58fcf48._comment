@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 2"
+ date="2014-02-25T09:51:17Z"
+ content="""
+Some additional ideas for metadata...
+
+Instead of having a simplistic scheme like 'field=value' it might be advantageous to consider a scheme like 'attribute=XXX, value=YYY, unit=ZZZ' that way you could do intesting things with the metadata like adding counters to things, and allow for doing interesting queries like give me all 'things' tagged with a unit of \"audio_file\", this assumes one had trawled through an entire annex and then tagged all files based on type with the unix file tool or something like that.
+
+The above idea is already in use in irods and its a really nice and powerful way to let users add meta-data and to build up more interesting use cases and tools.
+
+btw, I plan on taking a look at seeing if I can map some of the meta that we have in work into this new git-annex feature to see how well/bad it works. Either way this feature looks cool! +1!!!
+"""]]

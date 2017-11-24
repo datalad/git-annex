@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-04-05T15:52:30Z"
+ content="""
+Good question! I don't have a perfect solution for this, 
+because what you really probably want is to be able to `git annex copy`
+files to the music player and have only the present files show up in
+its repository.
+
+One approach is to use a [[directory_special_remote|special_remotes/directory]]
+on the music player. This way, only present files will show up there,
+but they'll have git-annex's internal filenames. If the music player
+doesn't care about filenames, this can work ok.
+
+Another approach is to use a v6 git-annex repository
+on the media player, and use [[git-annex-adjust]] to generate
+a version of a branch where all files that are present are unlocked
+(and thus regular files with the expected filenames). Files
+that are not present will still show up in the working tree though,
+either as symlinks or as the small text files git uses when a filesystem
+does not support symlinks. So this is much like direct mode, but it has
+the benefit that you can use all the normal git branching features
+to create a trimmed down branch for the media player with just the files
+you want.
+"""]]

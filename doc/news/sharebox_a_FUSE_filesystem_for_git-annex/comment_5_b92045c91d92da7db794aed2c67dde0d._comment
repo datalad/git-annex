@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 5"
+ date="2014-12-18T09:26:17Z"
+ content="""
+Having the lean view would be easy to implement either as an option you pass when mounting or something you can toggle by touching a file ($MNT/.config/lean/{on,off}).
+
+Regarding fetching of files, how would you like it to behave? My previous one would return EBUSY while downloading a file and ENODATA if it wasn't available and couldn't be fetched. I could, for example, make unavailable files appear as normal files (containing text regarding the download state) until they are available, then they become symlinks. What would work best for you?
+"""]]

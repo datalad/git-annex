@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.3.125"
+ subject="comment 4"
+ date="2013-02-05T19:16:48Z"
+ content="""
+If you have not yet run `git annex sync` on the remotes, then they are still referring to the old unmigrated keys, which is why `unused` will not remove them.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 2"
+ date="2014-01-01T01:50:57Z"
+ content="""
+Is it possible to do it from command line? I was thinking with a time limit I would spread the fsck over a mount run it once a while to make sure all data is actually there when I need it. 
+"""]]

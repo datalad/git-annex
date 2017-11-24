@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmMLeU-zCzx2mc5pL2XT8a1UNkQwHAHjg8"
+ nickname="daniele"
+ subject="comment 5"
+ date="2014-07-22T00:29:20Z"
+ content="""
+wait, is the group working together with the preferred content?
+
+Usually you set a repository in a group and then you tell annex that particular group has this preferred content expression (which by default is set to 'standard'). So you could add the repo to 'client' group then set the group 'client' to that preferred content expression. If you only want that particular client to have that expression you can play around with \"groupwanted\", or even define your own group I guess.
+
+Use \"git annex vicfg\" to quickly check both \"group\" and \"wanted\" settings together.
+
+"""]]

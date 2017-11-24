@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 1"
+ date="2012-12-08T21:25:49Z"
+ content="""
+apologies if I misunderstand your question, but I believe that git-annex puts the metadata in the repository's sync/master branch, which you can merge into the repository's local master either manually or by running \"git annex sync\" in the repository.
+
+"""]]

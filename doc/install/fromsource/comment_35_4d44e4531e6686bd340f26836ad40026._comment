@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.102"
+ subject="comment 35"
+ date="2014-03-20T16:06:22Z"
+ content="""
+The `errMessage` build failure is due to a new version of optparse-applicative. I've added support for it in git master.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnXybLxkPMYpP3yw4b_I6IdC3cKTD-xEdU"
+ nickname="Matt"
+ subject="comment 1"
+ date="2014-04-29T10:10:04Z"
+ content="""
+Can you do something similar for gpg-agent?  Or do it instead with a ssh supported gpg-agent?
+"""]]

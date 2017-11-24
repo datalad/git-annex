@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnlwEMhiNYv__mEUABW4scn83yMraC3hqE"
+ nickname="Sean"
+ subject="NTFS symlinks"
+ date="2013-01-11T21:44:21Z"
+ content="""
+It seems that NTFS (from Vista forward) has full POSIX support for symlinks. At least, Wikipedia [seems to think so.](http://en.wikipedia.org/wiki/NTFS_symbolic_link). What about doing like GitHub and using MinGW for compatibility? Cygwin absolutely blows in terms of installation size and compatability with the rest of Windows.
+"""]]

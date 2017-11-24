@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmLB39PC89rfGaA8SwrsnB6tbumezj-aC0"
+ nickname="Tobias"
+ subject="comment 3"
+ date="2012-09-02T23:49:17Z"
+ content="""
+Updated to the latest trunk, and did some more testing.
+
+I'll retract the \"gpg being stupid\" comment. it just gives the normal \"(gpg)\".
+
+There really isn't anything interesting in the stdout(but a lot of defunct git's in ps auxw), but i still can't get any files larger than ~710kbyte to transfer. They just stall.
+
+http://pastebin.com/ZA8dzxZD <- stdout/stderr
+http://pastebin.com/f1J1T79E <- ps auxw | grep git
+
+"""]]

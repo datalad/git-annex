@@ -1,0 +1,16 @@
+I'm having trouble sharing an rsync remote between two users (as a "transfer" repository).  `git-annex` thinks `rsync` fails because it can't set the permissions on the root directory on the destination.  I've added `--perms --chmod=Dug+rwxs,Fug+rw,o-rwx` to `annex-rsync-options` so all users in the specified group on the destination can create and delete files.  However, I see in the logs errors like:
+
+    sending incremental file list
+    ./
+    rsync: failed to set permissions on "/home/shared-xfer/.": Operation not permitted (1)
+    2fe/985/GPGHMACSHA1--b36ce0a18718e7ea7cf9827c2748608df7152dfc/GPGHMACSHA1--b36ce0a18718e7ea7cf9827c2748608df7152dfc
+    
+             32,768   0%    0.00kB/s    0:00:00  
+          3,359,405 100%    4.78MB/s    0:00:00 (xfr#1, to-chk=0/5)
+    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1165) [sender=3.1.1]
+    [2014-10-18 15:16:24 EDT] chat: gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--batch","--passphrase-fd","22","--symmetric","--force-mdc","--no-textmode"]
+    [2014-10-18 15:16:24 EDT] read: rsync ["-e","'ssh' '-S' '.git/annex/ssh/blah@blah' '-o' 'ControlMaster=auto' '-o' 'ControlPersist=yes' '-l' 'blah' '-T'","--perms","--chmod=Dug+rwxs,Fug+rw,o-rwx","--progress","--recursive","--partial","--partial-dir=.rsync-partial","/blah/.git/annex/tmp/rsynctmp/24863/","blah@blah:/home/shared-xfer/"]
+
+      rsync failed -- run git annex again to resume file transfer
+
+The transfer actually completes fine, except for setting permissions of the root directory on the destination (which I don't really care about, because I have manually set them to be correct).  Is it possible for `git-annex` to copy the contents of the directory to rsync remotes?  For the example above, instead of `/blah/.git/annex/tmp/rsynctmp/24863/`, `/blah/.git/annex/tmp/rsynctmp/24863/2fe` would work.  I can't come up with an alternate solution for this server, except using the same remote user (which I'd prefer not to do).

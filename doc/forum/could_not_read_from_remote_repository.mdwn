@@ -1,0 +1,36 @@
+hi, i'm trying to set up my notebook and desktop pc to sync my documents. so i used local computers in the web app as a sync option, but on my notebook i get the following error:
+
+    [2013-11-26 11:29:03 CET] main: Pairing in progress
+    X11 forwarding request failed
+    /home/max/.ssh/git-annex-shell: line 4: exec: git-annex-shell: not found
+    X11 forwarding request failed on channel 0
+    /home/max/.ssh/git-annex-shell: line 4: exec: git-annex-shell: not found
+    fatal: Could not read from remote repository.
+    
+    Please make sure you have the correct access rights
+    and the repository exists.
+    [2013-11-26 11:29:31 CET] PairListener: Syncing with desk_Private_Dokumente 
+    X11 forwarding request failed on channel 0
+    /home/max/.ssh/git-annex-shell: line 4: exec: git-annex-shell: not found
+    fatal: Could not read from remote repository.
+
+    Please make sure you have the correct access rights
+    and the repository exists.
+
+    merge: refs/remotes/desk_Private_Dokumente/master - not something we can merge
+
+    merge: refs/remotes/desk_Private_Dokumente/synced/master - not something we can merge
+    X11 forwarding request failed
+    /home/max/.ssh/git-annex-shell: line 4: exec: git-annex-shell: not found
+    X11 forwarding request failed on channel 0
+    /home/max/.ssh/git-annex-shell: line 4: exec: git-annex-shell: not found
+    fatal: Could not read from remote repository.
+
+    Please make sure you have the correct access rights
+    and the repository exists.
+
+my desktop succeeded in adding the repository. 
+
+any idea whats going wrong ?
+
+thanks

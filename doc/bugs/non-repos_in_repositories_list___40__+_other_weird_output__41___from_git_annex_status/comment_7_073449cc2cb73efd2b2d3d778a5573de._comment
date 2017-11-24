@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://mey.vn/"
+ ip="46.65.14.106"
+ subject="comment 7"
+ date="2013-07-26T22:31:15Z"
+ content="""
+thanks Joey. i'm sending the output of ```git show $sha``` separately as it contains some non-public data; according to apt/dpkg logs, the rPi was actually using git-annex:armhf 4.20130521 from Debian testing at the time these commits were done. i did in fact install 4.20130709 and then 4.20130723 a couple of days after the issue showed up, but only yesterday i realised that both versions were segfaulting all the time (just invoking ```git-annex``` would segfault); 4.20130521 works reliably, instead (i have just downgraded to test), so my previous question about an interrupted operation possibly causing the metadata corruption is not valid as the git-annex executable in use at the time of the issue was not segfaulting (at least not under every circumstance as the more recent versions *in my setup* - but i'll dig into this separately - probably some library issue or so).
+
+the only change i can't really trace in terms of timing is when i deleted the remote i had originally set up on my rPi (using encrypted rsync) via the assistant's web interface on my laptop, and set it up again as plain unencrypted ssh remote (bare repo). i'm pretty sure this operation was done the day the commits in the ```git blame``` for ```uuid.log``` were done, but i'm not sure about the time and don't have logs going back to that moment.
+
+i could disconnect all the remotes from my laptop and redo the setup on the rPi to see if i can reproduce the issue, but i would need some pointers on how to revert my main annex on my laptop to the state it was in before i first started using the rPi as remote: can i just ```git reset --hard <some_sha>``` while on the ```git-annex``` branch? the annex is currently in direct mode (and as been so for a few months now).
+
+otherwise, i could easily copy all the data (or a subset, to start with) to a clean folder, set up a fresh annex there and pair the rPi again - if the corruption was due to some issue on the rPi it may not depend on the exact status the annex was at when the metadata corruption happened (although my full setup includes other remotes and i see some back-and-forth of merging going on throughout the history of the annex around the time the metadata issue started, so it may be hard to reproduce the exact same context).
+"""]]

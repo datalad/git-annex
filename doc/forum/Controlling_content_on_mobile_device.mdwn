@@ -1,0 +1,46 @@
+I have some questions about how to best manage content on mobile
+devices.  This is probably more of a wishlist discussion, although I
+haven't had enough experience with the assistant and preferred content
+features enough to know how much of this might already be possible.
+
+(While I did donate to both campaigns, I also didn't donate at the
+"personal git-annex assistant" level, so I also know not to expect
+personal undivided attention :) . Any tips would be appreciated.)
+
+In short, I don't think git-annex really fits with how I'd like to use
+it on my Android phone.  My current setup is as follows:
+
+- I have a large repository with various media files.  This is stored
+  on several computers, at least one of which generally has a copy of
+  everything.  I use a centralized bare repo to automatically
+  synchronize between computers with "`git annex sync origin`" using
+  cron, and manually control what is on each one using "`copy --to
+  host`", "`get`", "`drop`", etc.  It is *awesome*.
+
+What I would like for Android is:
+
+- The phone keeps in sync with the origin repository.
+
+- On the phone, I'd like to browse through and choose content to get
+  or drop.  I could use the command-line "`get`" and "`drop`" for
+  this, of course, but being able to do it through the webapp would be
+  better, as typing on a phone is no fun.
+
+- From _off_ the phone, I'd like to be able to choose which content
+  should be _on_ the phone.  For example, using the command line or
+  webapp on my desktop, I'd like to be able to choose media files that
+  should be downloaded to (or removed from) the phone.  However, I
+  don't want to have to move files between directories in the repository
+  to achieve this.
+
+- The only useful content that gets created on the phone is photos and
+  videos.  Those should get uploaded to the main server, but only the
+  most recent files should remain on the phone by default (say,
+  anything older than 2 weeks gets dropped).  Both on the phone, and
+  off the phone, I'd be able to override that using the previously
+  described features, so that certain photos remain on the phone
+  forever, or get dropped earlier.
+
+Thoughts?  I feel like git-annex is close to being able to do this.
+
+-jim

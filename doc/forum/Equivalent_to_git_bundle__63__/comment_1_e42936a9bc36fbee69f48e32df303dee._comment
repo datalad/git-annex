@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Bram"
+ ip="81.20.68.186"
+ subject="tar"
+ date="2014-10-03T13:44:50Z"
+ content="""
+I would say you're just looking for 'tar cf' or 'tar czf' of the root directory of your repository.
+Unless the (delta) compression that 'git bundle' would perform is a must-have...
+"""]]

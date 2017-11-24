@@ -1,0 +1,4 @@
+With yesterday's JSON groundwork in place, I quickly implemented `git annex
+metadata --batch` today in only 45 LoC. The interface is nicely elegant;
+the same JSON format that git-annex metadata outputs can be fed into it
+to get, set, delete, and modify metadata.

@@ -1,0 +1,31 @@
+Tobias has been busy again today, creating a [[/tips/flickrannex]]
+special remote! Meanwhile, I'm thinking about providing a
+[[more complete interface|/todo/support_for_writing_external_special_remotes]]
+so that special remote programs not written in Haskell can do some of the
+things the hook special remote's simplicity doesn't allow.
+
+Finally realized last night that the main problem with the XMPP push code
+was an inversion of control. Reworked it so now there are two new threads,
+XMPPSendpack and XMPPReceivePack, each with their own queue of push
+initiation requests, that run the pushes. This is a lot easier to
+understand, probably less buggy, and lets it apply some smarts to squash
+duplicate actions and pick the best request to handle next.
+
+Also made the XMPP client send pings to detect when it has been disconnected
+from the server. Currently every 120 seconds, though that may change. Testing
+showed that without this, it did not notice (for at least 20 minutes) when 
+it lost routing to the server. Not sure why -- I'd think the TCP connections
+should break and this throw an error -- but this will also handle any idle
+disconnection problems that some XMPP servers might have.
+
+While writing that, I found myself writing this jem using
+[async](http://hackage.haskell.org/package/async), which has a comment
+much longer than the code, but basically we get 4 threads that are all
+linked, so when any dies, all do.
+
+[[!format haskell """
+pinger `concurrently` sender `concurrently` receiver
+"""]]
+
+Anyway, I need to run some long-running XMPP push tests to see if I've
+really ironed out all the bugs.

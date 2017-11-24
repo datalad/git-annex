@@ -1,0 +1,4 @@
+I'm trying to distribute a large annex to a number of smaller archive drives.
+
+While copying to a directory special remote, the current behaviour is to continue trying copying files into a remote, even as diskspace there has been exhausted.
+It would make sense for git-annex copy to actually stop instead.

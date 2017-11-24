@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-10-28T20:39:41Z"
+ content="""
+The latest version of git-annex adds the ability to `git annex info
+$remote` and get all the info you asked for. Enjoy!
+"""]]

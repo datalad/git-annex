@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 1"
+ date="2012-08-02T23:29:38Z"
+ content="""
+git-annex ignores whatever git does. See `git-ls-files` and the gitignore configuration.
+"""]]

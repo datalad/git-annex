@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-20T19:14:23Z"
+ content="""
+What kind of special remote is this? In fact, can you just paste the output
+of `git annex info thenameoftheremote`
+
+There are plenty of reasons that an operation like a drop can fail,
+most of which are not bugs, but some kind of configuration problem,
+an inaccessible remote, etc. Most or all of them should come with a
+useful error message though..
+"""]]

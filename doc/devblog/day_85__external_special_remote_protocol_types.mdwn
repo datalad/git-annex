@@ -1,0 +1,25 @@
+Only did a few hours today, getting started on implementing the
+[[design/external_special_remote_protocol]].
+
+Mostly this involved writing down types for the various messages,
+and code to parse them. I'm very happy with how the parsing turned out;
+nearly all the work is handled by the data types and type classes,
+and so only one line of very simple code is needed to parse each message:
+
+[[!format haskell """
+instance Receivable Response where
+       parseCommand "PREPARE-SUCCESS" = parse0 PREPARE_SUCCESS
+       parseCommand "TRANSFER-SUCCESS" = parse2 TRANSFER_SUCCESS
+       parseCommand "TRANSFER-FAILURE" = parse3 TRANSFER_FAILURE
+"""]]
+
+An especially nice part of this implementation is that it knows exactly how
+many parameters each message should have (and their types of course), and so
+can both reject invalid messages, and avoid ambiguity in tokenizing the
+parameters. For example, the 3rd parameter of TRANSFER-FAILURE is an error
+message, and as it's the last parameter, it can contain multiple words.
+
+	*Remote.External> parseMessage "TRANSFER-FAILURE STORE SHA1--foo doesn't work on Christmas" :: Maybe Response
+	Just (TRANSFER_FAILURE Upload (Key {keyName = "foo", keyBackendName = "SHA1", keySize = Nothing, keyMtime = Nothing}) "doesn't work on Christmas")
+
+That's the easy groundwork for external special remotes, done.

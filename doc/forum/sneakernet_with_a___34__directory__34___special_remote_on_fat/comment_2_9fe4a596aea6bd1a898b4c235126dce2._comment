@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-05-09T17:48:24Z"
+ content="""
+The directory= parameter to enableremote only affects the local
+configuration of that remote, it's not stored anywhere. Which is why you
+have to pass that parameter each time you're enabling that same
+directory remote in different repositories.
+
+So, it's fine to have directory= set to different values in different
+repositories, or even to re-run enableremote with a new directory= setting
+as needed.
+"""]]

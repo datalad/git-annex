@@ -1,0 +1,29 @@
+### Please describe the problem.
+
+As described [elsewhere](http://git-annex.branchable.com/todo/make_addurl_respect_annex.largefiles_option/#comment-817c4d5c215ddc0ec7bc5c4c05dff091) but since that one is closed -- making a dedicated one
+
+unfortunately addurl doesn't care about large files if --fast (or --relaxed, although that one I guess I can understand ):
+
+[[!format sh """
+
+$ chmod a+w -R /tmp/123; rm -rf /tmp/123; mkdir /tmp/123; cd /tmp/123; git init; git annex init;
+Initialized empty Git repository in /tmp/123/.git/
+init  ok
+(recording state in git...)
+
+$ git -c annex.largefiles=exclude=*.txt annex addurl --file=test.txt --fast \"http://www.onerussian.com/tmp/banner.png\"
+addurl test.txt ok
+(recording state in git...)
+
+$ ls -l test.txt
+lrwxrwxrwx 1 yoh yoh 132 Jan 13 18:44 test.txt -> .git/annex/objects/KW/kj/URL-s25319--http&c%%www.onerussian.com%tmp%banner.png/URL-s25319--http&c%%www.onerussian.com%tmp%banner.png
+
+"""]]
+
+it does consider largefiles for if addurl without  --fast, or --relaxed
+
+[[!meta author=yoh]]
+
+> [[done]]; this can't really be done, but I added `git annex
+> matchexpression` to allow scripting that checks expressions such as
+> annex.largefiles. --[[Joey]]

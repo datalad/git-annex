@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="TroisSinges"
+ ip="82.227.207.5"
+ subject="comment 4"
+ date="2013-11-26T20:55:39Z"
+ content="""
+Thanks for your answer. On the second part of my problem, *why* should `git commit` be slow? It's only committing a file with a line (../.git/annex/...), isn't it?
+"""]]

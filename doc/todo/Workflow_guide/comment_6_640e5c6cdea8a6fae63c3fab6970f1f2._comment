@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2016-12-21T18:19:07Z"
+ content="""
+In a way the use cases on the front page of the website are trying to
+accomplish the same thing requested here. I think that section could be
+moved more in the direction of listing some ways to use git-annex and
+linking to walkthroughs for the different use cases.
+"""]]

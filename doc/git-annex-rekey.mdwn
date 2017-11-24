@@ -1,0 +1,37 @@
+# NAME
+
+git-annex rekey - change keys used for files
+
+# SYNOPSIS
+
+git annex rekey `[file key ...]`
+
+# DESCRIPTION
+
+This plumbing-level command is similar to migrate, but you specify
+both the file, and the new key to use for it.
+
+Multiple pairs of file and key can be given in a single command line.
+
+# OPTIONS
+
+* `--force`
+
+  Allow rekeying of even files whose content is not currently available.
+  Use with caution.
+
+* `--batch`
+
+  Enables batch mode, in which lines are read from stdin.
+  Each line should contain the file, and the new key to use for that file,
+  separated by a single space.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

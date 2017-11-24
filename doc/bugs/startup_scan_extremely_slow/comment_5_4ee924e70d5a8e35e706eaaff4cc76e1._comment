@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="zarel"
+ subject="comment 5"
+ date="2016-04-24T15:31:05Z"
+ content="""
+I exported GIT_TRACE and discovered that the assistant is re-adding to git the small files everytime I run it.
+Below there's a link to the trace (with filenames removed). All the files are not matching the annex.largefiles expression (which is okay), there are no duplicates (i.e. it's not a \"I'm adding the same files in the same run\" problem) and all of them were already added the first time I ran the assistant and are not new to git and git-annex as they are not shown in \"git status\" or in \"git annex status\".
+
+The daemon.log is pretty brief:
+
+    [2016-04-24 12:49:31.129582] main: starting assistant version 6.20160418
+    
+      No known network monitor available through dbus; falling back to polling
+    (scanning...) [2016-04-24 12:49:55.098167] Watcher: Performing startup scan
+    [2016-04-24 12:58:51.667861] Committer: Committing changes to git
+    (recording state in git...)
+    [2016-04-24 13:08:25.154713] Committer: Committing changes to git
+    (recording state in git...)
+
+You can find the trace here: <https://gist.github.com/zarelit/815de89d972314f2e6495a2cdab91aca>
+
+As you can see it almost takes ten minutes before reaching the first git-add.
+
+My git-annex version is now 6.20160418 and the git one is 2.8.0, what version of git did you use when tracing? I can try to reproduce in a different environment (e.g. Debian stable with backports) if it can be useful.
+
+Cheers,
+David
+"""]]

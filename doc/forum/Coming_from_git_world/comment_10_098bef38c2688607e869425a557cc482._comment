@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.235"
+ subject="comment 10"
+ date="2013-07-10T17:05:49Z"
+ content="""
+It has its own ssh server written in java too, which hardcodes the set of commands it supports. AFAICS it would require some java coding to add a command to this, it does not seem to be designed for easy extensability.
+"""]]

@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="http://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ subject="use mini-branches"
+ date="2011-03-09T23:47:48Z"
+ content="""
+if you go for the two-commits version, small intermediate branches (or git-commit-tree) could be used to create a tree like this:
+
+
+    *   commit 106eef2
+    |\  Merge: 436e46f 9395665
+    | | 
+    | |     the main commit
+    | |   
+    | * commit 9395665
+    |/  
+    |       intermediate move
+    |  
+    * commit 436e46f
+    | 
+    |     ...
+
+while the first commit (436e46f) has a \"`/subdir/foo → ../.git-annex/where_foo_is`\", the intermediate (9395665) has \"`/subdir/deeper/foo → ../.git-annex/where_foo_is`\", and the inal commit (106eef2) has \"`/subdir/deeper/foo → ../../.git-annex/where_foo_is`\".
+
+`--follow` uses the intermediate commit to find the history, but the intermediate commit would neither show up in `git log --first-parent` nor affect `git diff HEAD^..` & co. (there could still be confusion over `git show`, though).
+"""]]

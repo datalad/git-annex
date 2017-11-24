@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-03-27T20:53:23Z"
+ content="""
+To install gnuidn, you need to install the libidn C library.
+
+That is only needed for XMPP support. So you can avoid it with:
+cabal configure -f-XMPP
+
+There is already an openSUSE build, afaik.
+<https://git-annex.brachable.com/install/openSUSE/>
+"""]]

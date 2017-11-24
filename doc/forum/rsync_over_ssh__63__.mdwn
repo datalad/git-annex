@@ -1,0 +1,2 @@
+[Walkthrough](http://git-annex.branchable.com/walkthrough/using_ssh_remotes/) says that when using ssh remotes rsync is used for transfering files. Is rsync used via ssh or unsecure?
+-- Michael K.

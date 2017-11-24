@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-09-18T19:41:39Z"
+ content="""
+First, take a look at the output of `ps fax` .. you should see a `git-annex assistant` process and near it there ought to be a `git annex transferkeys` process. See if that process has any children under it, like perhaps a rsync. If so, it might just be stalled talking to the host for some reason.
+
+The best way to debug it further is probably to run `git annex copy --to $remote` at the command line, passing the name of your remote repository. See if it also stalls there. If so, add a --debug and you can see the actual rsync commands it's using, and perhaps work out the problem from there.
+"""]]

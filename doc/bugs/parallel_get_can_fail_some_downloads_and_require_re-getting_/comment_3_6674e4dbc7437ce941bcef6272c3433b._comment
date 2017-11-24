@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-05-25T19:08:59Z"
+ content="""
+That looks like concurrent `git config` setting remote.origin.annex-uuid
+are failing.
+
+I have not reproduced the `.git/config` error, but with a local
+clone of a repository, I have been able to reproduce some intermittent
+"transfer already in progress, or unable to take transfer lock" failures
+with `git annex get -J5`, happening after remote.origin.annex-uuid has been
+cached.
+
+So, two distinct bugs I think..
+
+---
+
+Debugging, the lock it fails to take always seems to be the lock on
+the remote side, which points to the local clone being involved somehow.
+
+Debugging further, Utility.LockPool.STM.tryTakeLock is what's failing.
+That's supposed to only fail when another thread holds a conflicting lock,
+but as it's implemented with `orElse`, if the main STM
+transaction retries due to other STM activity on the same TVar,
+it will give up when it shouldn't.
+
+That's probably why this is happening under heavier concurrency loads;
+it makes that failure case much more likely. And with a local clone,
+twice as much locking is done.
+
+I've fixed this part of it! 
+
+---
+
+The concurrent `git config` part remains.
+Since git-annex can potentially have multiple threads doing different `git
+config` for their own reasons concurrently, it seems it will need to add
+its own locking around that.
+"""]]

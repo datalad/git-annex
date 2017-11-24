@@ -1,0 +1,49 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-10-25T19:13:16Z"
+ content="""
+The strance output you pasted shows git-annex checking the *local*
+repository to see if it has a copy of the file. As far as I can see, that
+has nothing to do with any failure to get the file from a remote
+repository. 
+
+> Clone that to a remote server. Unfortunately I don't remember the exact commands - I think that was done with the rsync special backend.
+
+Are you talking about a git-annex rsync special remote,
+or a git repository accessed via a rsync:// url, or what?
+
+> /home/yaroslav/work.git/d0d/994/SHA256E-s81068--de1d8de99645d74ba1ea186b6cabd1fc116cb6c1823130756f33ff81807815ed.pdf/SHA256E-s81068--de1d8de99645d74ba1ea186b6cabd1fc116cb6c1823130756f33ff81807815ed.pdf
+
+What this path tells me is that, despite this being a bare git repository,
+the content of objects is not in work.git/annex/objects/ where it belongs,
+but at the top of the repository.
+
+Hypothesis: You created this bare git repository. But then rather than
+simply having git-annex send contents of files to it in the sane and
+regular way, you them proceeded to set up some kind of special remote,
+in the same directory. It could have been a rsync special remote, or
+a directory special remote. You copied the files to that special remote.
+
+Then, you deleted the original git repository, which was the only one that
+knew about the special remote, before syncing it to anywhere.
+
+That fits all the evidence. I don't think that's a mistake many people
+are likely to make.
+
+It should be possible to recover from this situation by:
+
+	cd /home/yaroslav/work.git/
+	mkdir -p annex/objects
+	mv d0d annex/objects
+	# also move any other 3 letter directories that have annex
+	# objects in them
+	git annex fsck
+
+Then after `git annex sync` in your clone, it should know where the content
+is and be able to get it from the bare repo.
+
+Assuming that works, I'm having a hard time treating this as any kind
+of bug in git-annex. You put the gun in a vise, bent its barrel
+to a 180 degree angle, and... ;)
+"""]]

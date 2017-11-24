@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnmF_9CAtfqdZkC4e-_dCX-rK5bqh4RWkw"
+ nickname="Carl"
+ subject="comment 7"
+ date="2015-10-12T18:21:21Z"
+ content="""
+I am not fluent in the webapp. Usually I use the commandline and follow the walktrough on the homepage. Your problem in not being able to see the files is that the NAS has a bare repo. You want a non bare.
+"""]]

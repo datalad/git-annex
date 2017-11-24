@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 1"
+ date="2014-02-06T13:30:33Z"
+ content="""
+You can tell git-annex to ignore the repo (assuming git repo is called origin)
+
+     git config remote.origin.annex-ignore true
+"""]]

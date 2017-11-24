@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-10-04T19:33:36Z"
+ content="""
+This message suggests that your git repository has somehow lost an object
+that was committed to it. Suggest you run `git annex repair` to fix
+whatever the problem might be.
+"""]]

@@ -1,0 +1,1 @@
+Is there a way to check if a special remote is setup to use GPG? And, if so, see the ID of keys that it is encrypting to?

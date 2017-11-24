@@ -1,0 +1,34 @@
+I've been trying to use git-annex with the following strategy.
+
+* Download podcasts into the annex `gpodder-downloads`
+* Check the podcasts into the annex using `git annex add`.
+* Copy the podcasts over to my mp3 player in the annex `usb-ariaz`.
+  This is a FAT-formatted mp3 player, so I have been using a bare
+  repository.  
+* Move the podcasts to a different annex called `gpodder-on-usbdisk`
+  to indicate that they have been successfully put on the mp3 player.
+* `chmod` the files on the mp3 player to `0600` so that I can delete
+  them from the player when I am done listening to them.
+  
+Then I go for a run or something and listen to a bunch of podcasts,
+deleting them after I have listened to them.  When I get back, I would
+like to find the files that I have listened to and remove them from
+the annexes that are not on the mp3 player.  What I have been hoping
+is that something like
+
+    ~/gpodder-on-usbdisk $ git annex find --not --in usb-ariaz --print0 | xargs -0 git rm
+    ~/gpodder-on-usbdisk $ git annex unused
+    ~/gpodder-on-usbdisk $ git annex dropunused `seq X`
+	
+would work.  However, it appears that `git-annex find` does not
+actually check to see that the file contents are present, but only
+looks at the `git-annex` branch of the `usb-ariaz` repository.  Since
+I have not changed that with my sneaky deletions, it has no way of
+knowing that the files have been deleted.
+
+Is there any way to do this properly?  (And by properly, I don't mean
+"don't delete the files".  That is really the only way I have of
+marking that I have listened to podcasts on this particular mp3 player.)
+
+I tried setting the `usb-ariaz` repository to be untrusted, but that
+did not change the behavior of `git annex find`.

@@ -1,0 +1,3 @@
+I have one main 4TB annex and 4 2TB drives that I would like to use for long-term backups. The plan is to have two complete backups, one at home and one in a different state, and swap + update them occasionally. If I put an annex on each drive, how can I tell git annex that every file should be duplicated to one or the other from each set? Like this:
+
+main and (backup1a or backup1b) and (backup2a or backup2b)

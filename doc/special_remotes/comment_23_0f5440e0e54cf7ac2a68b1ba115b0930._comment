@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 23"
+ date="2014-05-16T19:11:00Z"
+ content="""
+@donkeyicydragon one way to accomplish that would be to just tar up `.git` -- excluding `.git/annex/objects` and add that to git-annex like any other file. You could make a git post-commit hook that does that, but that seems overboard.
+
+Or, you could just make a git clone of your repo to a local removable drive, and use that as a local backup.
+"""]]

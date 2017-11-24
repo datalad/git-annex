@@ -1,0 +1,85 @@
+### Please describe the problem.
+
+i tried to sync my home music annex to a server. Half the files worked nicely, but on the rest it fails with rsync errors.
+
+### What steps will reproduce the problem?
+
+git annex -d sync --content
+
+### What version of git-annex are you using? On what operating system?
+
+Client:
+
+ubuntu trusty
+Version: 5.20140517.4
+
+Server:
+
+ubuntu trusty
+Version: 5.20140412ubuntu1
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+dirus-dom:/music$ git annex -d sync --content
+[2014-10-28 19:18:28 CET] read: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","show-ref","git-annex"]
+[2014-10-28 19:18:28 CET] read: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","show-ref","--hash","refs/heads/git-annex"]
+[2014-10-28 19:18:29 CET] read: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","log","refs/heads/git-annex..1599d29eba7a0ec50217c2b4a3f4cc1ecc8b2116","--oneline","-n1"]
+[2014-10-28 19:18:29 CET] read: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","log","refs/heads/git-annex..27b47301dcb5007705d1dcd5a414df964b840467","--oneline","-n1"]
+[2014-10-28 19:18:29 CET] read: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","log","refs/heads/git-annex..a95ca0282fefcd774ec8a00b6f33c11f08f789d8","--oneline","-n1"]
+[2014-10-28 19:18:29 CET] chat: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","cat-file","--batch"]
+commit  [2014-10-28 19:18:29 CET] read: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","commit","-a","-m","git-annex automatic sync"]
+ok
+[2014-10-28 19:18:31 CET] read: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","symbolic-ref","HEAD"]
+[2014-10-28 19:18:31 CET] read: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","show-ref","refs/heads/master"]
+[2014-10-28 19:18:31 CET] call: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","show-ref","--verify","-q","refs/heads/synced/master"]
+[2014-10-28 19:18:31 CET] read: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","log","refs/heads/master..refs/heads/synced/master","--oneline","-n1"]
+pull sync.poelzi.org__music
+[2014-10-28 19:18:31 CET] read: ssh ["-O","stop","-S","poelzigit@sync.poelzi.org","-o","ControlMaster=auto","-o","ControlPersist=yes","localhost"]
+[2014-10-28 19:18:31 CET] call: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","fetch","sync.poelzi.org__music"]
+[2014-10-28 19:18:33 CET] call: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","show-ref","--verify","-q","refs/remotes/sync.poelzi.org__music/master"]
+[2014-10-28 19:18:33 CET] read: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","log","refs/heads/master..refs/remotes/sync.poelzi.org__music/master","--oneline","-n1"]
+[2014-10-28 19:18:33 CET] call: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","show-ref","--verify","-q","refs/remotes/sync.poelzi.org__music/synced/master"]
+[2014-10-28 19:18:33 CET] read: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","log","refs/heads/synced/master..refs/remotes/sync.poelzi.org__music/synced/master","--oneline","-n1"]
+ok
+[2014-10-28 19:18:33 CET] read: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","show-ref","git-annex"]
+[2014-10-28 19:18:33 CET] read: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","show-ref","--hash","refs/heads/git-annex"]
+[2014-10-28 19:18:33 CET] read: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","log","refs/heads/git-annex..1599d29eba7a0ec50217c2b4a3f4cc1ecc8b2116","--oneline","-n1"]
+[2014-10-28 19:18:33 CET] read: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","log","refs/heads/git-annex..27b47301dcb5007705d1dcd5a414df964b840467","--oneline","-n1"]
+[2014-10-28 19:18:33 CET] read: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","log","refs/heads/git-annex..a95ca0282fefcd774ec8a00b6f33c11f08f789d8","--oneline","-n1"]
+[2014-10-28 19:18:33 CET] read: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","ls-files","--cached","-z","--"]
+[2014-10-28 19:18:33 CET] chat: git ["--git-dir=/exports/music/.git","--work-tree=/exports/music","check-attr","-z","--stdin","annex.backend","annex.numcopies","--"]
+copy Alan Parsons Project/Eye In The Sky/.07 - Psychobabble.mood copy Alan Parsons Project/Eye In The Sky/.07 - Psychobabble.mood (checking sync.poelzi.org__music...) [2014-10-28 19:18:43 CET] call: ssh ["-S",".git/annex/ssh/poelzigit@sync.poelzi.org","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","poelzigit@sync.poelzi.org","git-annex-shell 'inannex' '/music/' 'SHA256E-s3000--da8a3336a484a171a438c99660260cc35cbd37c339dd2c18447cd025064bc00b.mood' --uuid 35a89672-4ff5-4d9a-9bf2-cedb272bb7cb"]
+(to sync.poelzi.org__music...)
+[2014-10-28 19:18:43 CET] read: rsync ["--progress","--inplace","--perms","-e","'ssh' '-S' '.git/annex/ssh/poelzigit@sync.poelzi.org' '-o' 'ControlMaster=auto' '-o' 'ControlPersist=yes' '-T' 'poelzigit@sync.poelzi.org' 'git-annex-shell ''recvkey'' ''/music/'' ''SHA256E-s3000--da8a3336a484a171a438c99660260cc35cbd37c339dd2c18447cd025064bc00b.mood'' --uuid 35a89672-4ff5-4d9a-9bf2-cedb272bb7cb ''--'' ''remoteuuid=97a3cd71-ee6c-4437-8740-253cde0d32ae'' ''direct='' ''associatedfile=Alan Parsons Project/Eye In The Sky/.07 - Psychobabble.mood'' ''--'''","--","/exports/music/.git/annex/objects/20/Z4/SHA256E-s3000--da8a3336a484a171a438c99660260cc35cbd37c339dd2c18447cd025064bc00b.mood/SHA256E-s3000--da8a3336a484a171a438c99660260cc35cbd37c339dd2c18447cd025064bc00b.mood","dummy:"]
+rsync error: syntax or usage error (code 1) at main.c(1183) [sender=3.1.1]
+
+  rsync failed -- run git annex again to resume file transfer
+failed
+copy Alessandro Scarlatti/Motets - Gérard Lesne, Veronique Gens (1993) [300]/06 - Infirmata, Vulnerata - VI Semper Gratus.ogg copy Alessandro Scarlatti/Motets - Gérard Lesne, Veronique Gens (1993) [300]/06 - Infirmata, Vulnerata - VI Semper Gratus.ogg (checking sync.poelzi.org__music...) [2014-10-28 19:18:48 CET] call: ssh ["-S",".git/annex/ssh/poelzigit@sync.poelzi.org","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","poelzigit@sync.poelzi.org","git-annex-shell 'inannex' '/music/' 'SHA256E-s3847396--05c5498f08c727645ba84270cb8d82da69a3c9bede35520aa3128b938d003a3d.ogg' --uuid 35a89672-4ff5-4d9a-9bf2-cedb272bb7cb"]
+(to sync.poelzi.org__music...)
+[2014-10-28 19:18:48 CET] read: rsync ["--progress","--inplace","--perms","-e","'ssh' '-S' '.git/annex/ssh/poelzigit@sync.poelzi.org' '-o' 'ControlMaster=auto' '-o' 'ControlPersist=yes' '-T' 'poelzigit@sync.poelzi.org' 'git-annex-shell ''recvkey'' ''/music/'' ''SHA256E-s3847396--05c5498f08c727645ba84270cb8d82da69a3c9bede35520aa3128b938d003a3d.ogg'' --uuid 35a89672-4ff5-4d9a-9bf2-cedb272bb7cb ''--'' ''remoteuuid=97a3cd71-ee6c-4437-8740-253cde0d32ae'' ''direct='' ''associatedfile=Alessandro Scarlatti/Motets - G\233rard Lesne, Veronique Gens (1993) [300]/06 - Infirmata, Vulnerata - VI Semper Gratus.ogg'' ''--'''","--","/exports/music/.git/annex/objects/XJ/f9/SHA256E-s3847396--05c5498f08c727645ba84270cb8d82da69a3c9bede35520aa3128b938d003a3d.ogg/SHA256E-s3847396--05c5498f08c727645ba84270cb8d82da69a3c9bede35520aa3128b938d003a3d.ogg","dummy:"]
+rsync error: syntax or usage error (code 1) at main.c(1183) [sender=3.1.1]
+
+  rsync failed -- run git annex again to resume file transfer
+failed
+^C
+
+
+Calling this through python gives:
+
+In [5]: subprocess.call(["rsync", "--debug=all", "--progress","--inplace","--perms","-e","'ssh' '-S' '.git/annex/ssh/poelzigit@sync.poelzi.org' '-o' 'ControlMaster=auto' '-o' 'ControlPersist=yes' '-T' 'poelzigit@sync.poelzi.org' 'git-annex-shell ''recvkey'' ''/music/'' ''SHA256E-s3000--da8a3336a484a171a438c99660260cc35cbd37c339dd2c18447cd025064bc00b.mood'' --uuid 35a89672-4ff5-4d9a-9bf2-cedb272bb7cb ''--'' ''remoteuuid=97a3cd71-ee6c-4437-8740-253cde0d32ae'' ''direct='' ''associatedfile=Alan Parsons Project/Eye In The Sky/.07 - Psychobabble.mood'' ''--'''","--","/exports/music/.git/annex/objects/20/Z4/SHA256E-s3000--da8a3336a484a171a438c99660260cc35cbd37c339dd2c18447cd025064bc00b.mood/SHA256E-s3000--da8a3336a484a171a438c99660260cc35cbd37c339dd2c18447cd025064bc00b.mood","dummy:"])
+opening connection using: ssh -S .git/annex/ssh/poelzigit@sync.poelzi.org -o ControlMaster=auto -o ControlPersist=yes -T poelzigit@sync.poelzi.org "git-annex-shell 'recvkey' '/music/' 'SHA256E-s3000--da8a3336a484a171a438c99660260cc35cbd37c339dd2c18447cd025064bc00b.mood' --uuid 35a89672-4ff5-4d9a-9bf2-cedb272bb7cb '--' 'remoteuuid=97a3cd71-ee6c-4437-8740-253cde0d32ae' 'direct=' 'associatedfile=Alan Parsons Project/Eye In The Sky/.07 - Psychobabble.mood' '--'" dummy rsync --server -pe.Lsfx --log-format=X --debug=ALL --inplace . .  (19 args)
+(Client) Protocol versions: remote=31, negotiated=31
+[sender] change_dir(/exports/music/.git/annex/objects/20/Z4/SHA256E-s3000--da8a3336a484a171a438c99660260cc35cbd37c339dd2c18447cd025064bc00b.mood)
+send_files starting
+send_files phase=1
+send_files phase=2
+send files finished
+total: matches=0  hash_hits=0  false_alarms=0 data=0
+rsync error: syntax or usage error (code 1) at main.c(1183) [sender=3.1.1]
+[sender] _exit_cleanup(code=1, file=main.c, line=1183): about to call exit(1)
+
+
+"""]]

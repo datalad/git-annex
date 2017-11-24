@@ -1,0 +1,53 @@
+### Please describe the problem.
+Tried adding a removable drive repository through git-annex assistant on Mac, asked to encrypt it, got Internal server error with explanation: unable to determine gcrypt-id of remote
+
+### What steps will reproduce the problem?
+current (today's) version of git-annex build for Mountain Lion installed
+app launched
+default annex initialized, a couple file added
+a removable 2GB USB drive (ExFAT) mounted in OS
+click Add another repository
+choose removable drive
+choose to encrypt
+a window explaining the need to wait for entropy shows
+then we get the Internal server error: unable to determine gcrypt-id of remote
+
+### What version of git-annex are you using? On what operating system?
+git-annex version 4.20130922-g7dc188a
+Mac OS X 10.8.5
+
+### Please provide any additional information below.
+
+looking at transcript below, it appears the root cause is the lack of initial git/gcrypt configuration. perhaps this needs to be caught/addressed somehow
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+gpg: can't open `/usr/local/share/gnupg/options.skel': No such file or directory
+.......+++++
+.+++++
+gpg: key 71BFBC31 marked as ultimately trusted
+ok
+(Recording state in git...)
+(Recording state in git...)
+(encryption setup) (hybrid cipher with gpg key C4B2EA8D71BFBC31) gcrypt: Development version -- Repository format MAY CHANGE
+gpg: checking the trustdb
+gpg: 3 marginal(s) needed, 1 complete(s) needed, PGP trust model
+gpg: depth: 0  valid:   1  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 1u
+gcrypt: WARNING: Skipping missing key C4B2EA8D71BFBC31
+gcrypt: You have not configured any keys you can encrypt to for this repository
+gcrypt: Use ::
+gcrypt:   git config gcrypt.participants YOURKEYID
+gcrypt: Development version -- Repository format MAY CHANGE
+gcrypt: WARNING: Skipping missing key C4B2EA8D71BFBC31
+gcrypt: You have not configured any keys you can encrypt to for this repository
+gcrypt: Use ::
+gcrypt:   git config gcrypt.participants YOURKEYID
+03/Oct/2013:00:05:24 +0400 [Error#yesod-core] unable to determine gcrypt-id of remote @(yesod-core-1.1.8.3:Yesod.Internal.Core ./Yesod/Internal/Core.hs:550:5)
+
+
+# End of transcript or log.
+"""]]
+
+[[!tag moreinfo]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2016-04-04T18:48:34Z"
+ content="""
+@gavinwahl, it's a single shared key that any clone of the repository
+provides access to.
+
+If you use the [[tahoe]] special remote, storing files in tahoe-lafs does result
+in a new capability (a kind of key) being stored in the git repo.
+So someone with an old clone can't access the files from tahoe-lafs.
+Tahoe is unique in providing that ability.
+"""]]

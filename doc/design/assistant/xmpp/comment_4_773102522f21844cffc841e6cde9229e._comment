@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="hhm"
+ ip="108.17.80.177"
+ subject="file transfer?"
+ date="2013-04-23T10:22:51Z"
+ content="""
+Would it be possible to add optional support for transferring files over XMPP (possibly being disabled out-of-the-box so as not to suck up third-party bandwidth)?
+"""]]

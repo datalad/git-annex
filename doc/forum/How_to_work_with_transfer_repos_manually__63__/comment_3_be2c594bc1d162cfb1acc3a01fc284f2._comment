@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2014-10-20T18:53:31Z"
+ content="""
+git annex drop --auto --from server
+"""]]

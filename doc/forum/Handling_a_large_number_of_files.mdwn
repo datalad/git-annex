@@ -1,0 +1,3 @@
+I have noticed performance getting really slow when adding files (git annex add . ) to a directory already containing several hundred thousand files. When using git annex, is it more recommended to split large numbers of files into multiple directories containing fewer files? Is there a particular recommended way of handling large numbers of files (say getting into the millions) in git annex? 
+
+Thanks

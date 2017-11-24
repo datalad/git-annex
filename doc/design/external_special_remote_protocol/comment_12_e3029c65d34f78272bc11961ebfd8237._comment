@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm_YXzEdPHzbSGVwtmTR7g1BqDtTnIBB5s"
+ nickname="Matthias"
+ subject="Chunk it"
+ date="2014-01-20T16:22:09Z"
+ content="""
+> TODO: stream the file up/down the pipe, rather than using a temp file
+
+You might want to use chunked transfer, i.e. a series of \"EXPECT 65536\" followed by that many bytes of binary data and an EOF marker (EXPECT-END or EXPECT 0), instead of escaping three characters (newline, NUL, and the escape prefix) and the additional unnecessary tedious per-character processing that would require.
+"""]]

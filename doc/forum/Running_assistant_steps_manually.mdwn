@@ -1,0 +1,20 @@
+Unfortunately one of the machines that I am running git-annex on is too old to handle the watcher thread.
+
+The error message is:
+
+    Watcher crashed: Need at least OSX 10.7.0 for file-level FSEvents
+
+
+I am however interested in duplicating the assistant steps manually.  I'm happy to accept that I won't have the great, auto-magic, coverage, but, how I run the steps that the assistant runs?
+
+I'm guessing there is a:
+
+    git annex add .
+    git commit -m "[blah]"
+    git annex sync
+
+but how do I get the pushing to backup/transfer/whatever remotes to work?  And what order should I do these?
+
+What I would *like* to do is get a script that runs all of the needed annex steps and then kick it off in a cron job 2-5 times a day.
+
+Any thoughts?

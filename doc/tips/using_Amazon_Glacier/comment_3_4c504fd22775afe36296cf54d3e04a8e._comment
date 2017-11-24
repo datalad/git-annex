@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.172"
+ subject="comment 3"
+ date="2014-02-20T19:34:48Z"
+ content="""
+I've changed it to avoid running glacier value create when enabling an existing glacier remote. Hopefully that fixes it.
+"""]]

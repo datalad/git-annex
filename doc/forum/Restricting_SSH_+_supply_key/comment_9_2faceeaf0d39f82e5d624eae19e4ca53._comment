@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="divB"
+ ip="204.17.143.10"
+ subject="comment 9"
+ date="2014-07-16T20:54:54Z"
+ content="""
+Hi Joey,
+
+Thanks for taking care about all these Windows troubles (Windows and POSIX is unfortunately a big mess).
+
+I finally found the issue now and maybe the bug is related to msysgit. I guess you don't know too much about it so I will report to the msysgit folks.
+
+However, there is still an (easy to fix) \"bug\" related to git-annex I think. I shortly describe the issue and a possible fix:
+
+1.) As mentioned above, from the 3 git.exe, only the one in \"cmd\" should be called! It seems to be a wrapper for the \"bin\"-version. If the git.exe from \"bin\" is called something with the environment is wrong (e.g., ssh_config can not be found)
+
+2.) cmd/git.exe is in %PATH% so usually no problem
+
+3.) However, git-annex-autostart.vbs is in \"bin\" folder. Therefore, when called from there PWD is the \"bin\" folder and when calling \"git.exe\" without absolute path, this overwrites %PATH% because it's the current directory (of course, such behavior does not appear on UNIX).
+
+4.) Now the git-annex assistant daemon always calls the wrong git.exe resulting in a broken config
+
+
+Short term fix for users: Create a shortcut to git-annex-autostart.vbs and change the working directory to anything else
+
+Long term fix for git-annex option 1: Do a chdir in the vbs file before calling git. This is not so good because where to?
+
+Long term fix for git-annex option 2: Just place the vbs files in the parent directory (where \"Git Bash.vbs\" is). This looks like the cleanest solution to me.
+
+
+"""]]

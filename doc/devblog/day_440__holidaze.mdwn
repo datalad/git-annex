@@ -1,0 +1,11 @@
+Have been working on some improvements to `git annex enable-tor`. Made it
+su to root, using any su-like program that's available. And made it test
+the hidden service it sets up, and wait until it's propigated the the Tor
+directory authorities. The webapp will need these features, so I thought I
+might as well add them at the command-line level.
+
+Also some messing about with locale and encoding issues. About most of
+which the less said the better. One significant thing is that I've made the
+filesystem encoding be used for all IO by git-annex, rather than needing to
+explicitly enable it for each file and process. So, there should be much
+less bother with encoding problems going forward.

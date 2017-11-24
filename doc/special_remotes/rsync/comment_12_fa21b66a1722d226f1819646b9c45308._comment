@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="davidriod@e75b369a4b1cced29c14354bce7493c61f00b1c7"
+ nickname="davidriod"
+ avatar="http://cdn.libravatar.org/avatar/d6e327bd88b88802d6f0c20c83f682a2"
+ subject="ssh and encryption"
+ date="2016-11-03T06:50:26Z"
+ content="""
+I was wondering if the transmission of data was safe over ssh with encryption=none ?
+"""]]

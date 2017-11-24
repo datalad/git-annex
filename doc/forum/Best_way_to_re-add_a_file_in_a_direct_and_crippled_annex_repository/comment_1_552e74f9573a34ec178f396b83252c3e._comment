@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 1"
+ date="2013-11-26T19:54:21Z"
+ content="""
+There's a bug report asking that reinject work in direct mode. I just have not gotten around to it.
+
+Another way to do it would be to make a temp directory in your annex repository, move or copy the file to there, and `git annex add`. As long as you're not using the WORM backend, the checksum will be used, and so it'll see it's added the content of the file, and make the a.bin file have that content too.
+
+Off to see if I can easily add direct mode reinject now..
+"""]]

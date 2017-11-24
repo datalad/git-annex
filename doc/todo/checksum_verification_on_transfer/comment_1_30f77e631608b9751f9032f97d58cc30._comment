@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2013-09-09T11:50:05Z"
+ content="""
+Doing this during downloads would still be nice.
+
+While the files are easier to fsck, users will need to actually do this. If it happenend automatically, it would increase safety and reduce disk i/o.
+
+Of course, this will not detect degradation during/after writing.
+
+If you don't make it the default, please at least make it optional for us bordering on OCD when it comes to data storage.
+
+
+Richard
+"""]]

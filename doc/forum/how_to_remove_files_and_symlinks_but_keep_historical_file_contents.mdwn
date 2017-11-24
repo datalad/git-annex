@@ -1,0 +1,7 @@
+It would be nice to have a way to drop files without leaving broken symlinks around, at least while in direct mode.
+
+Here is my user case. I have a collection of music CDs ripped in FLAC formats. At the same time I convert all these files to MP3 files to that I can use them in various other devices and to save space.
+
+The problem is that if I `git annex drop` the FLAC files once they are converted and copied, they leave broken symlinks around; this result in various annoying error messages in almost all the music playback I tried. At the same time, if I `rm` or `git rm` these symlinks, the content of these files will be removed also from the remotes as they are signalled as no longer wanted.
+
+Couldn't git-annex keep a separate index of files that have been removed but are meant to be kept?

@@ -1,0 +1,7 @@
+When starting git-annex assistant with:
+
+    git-annex webapp
+
+an unwanted web browser is opened.
+
+How does one change the web browser with which the web interface is displayed?

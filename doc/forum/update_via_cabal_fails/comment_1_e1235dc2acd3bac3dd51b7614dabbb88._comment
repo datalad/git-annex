@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.55"
+ subject="comment 1"
+ date="2014-07-09T17:58:48Z"
+ content="""
+It seems like you must have transformers-compat 0.1.1, and lens's dependency is slightly wrong, accepting that extremly old version. You'll need to upgrade it.
+"""]]

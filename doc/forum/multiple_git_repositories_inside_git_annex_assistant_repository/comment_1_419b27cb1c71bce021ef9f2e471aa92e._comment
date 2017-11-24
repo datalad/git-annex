@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="jewel"
+ ip="23.30.55.105"
+ subject="comment 1"
+ date="2014-10-12T05:22:03Z"
+ content="""
+Now I've found the relevant bug: `http://git-annex.branchable.com/bugs/Can__39__t_add_a_git_repo_to_git_annex:___34__Invalid_path_repo__47__.git__47__X__34___for_many_X`.
+
+Note the symlink workaround near the end.  A quick test shows that it's working great.  I'll try it out for a few months and report back.
+"""]]

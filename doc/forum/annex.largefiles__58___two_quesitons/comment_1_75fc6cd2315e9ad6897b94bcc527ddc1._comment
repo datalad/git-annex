@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-03-26T15:56:59Z"
+ content="""
+1. No, annex.largefiles is a local git repository configuration.
+
+2. If you have a specific file in mind, and it is currently stored in the
+annex, you can always `git annex unannex $file` and then `git annex add` it
+back, which will re-check the current annex.largefiles configuration.
+"""]]

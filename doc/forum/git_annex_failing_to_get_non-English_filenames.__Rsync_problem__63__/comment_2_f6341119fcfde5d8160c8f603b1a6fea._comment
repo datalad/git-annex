@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.14.141"
+ subject="comment 2"
+ date="2012-09-21T23:23:04Z"
+ content="""
+git-annex 3.20120825 is not an actual release, just some version number used in git head.
+
+This bug, TTBOMK, was introduced in version 3.20120721, and fixed by git commit 0b12db64d834979d49ed378235b0c19b34e4a4d6 last Sunday.
+"""]]

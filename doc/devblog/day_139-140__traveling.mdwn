@@ -1,0 +1,17 @@
+Yesterday coded up one nice improvement on the plane -- `git annex unannex`
+(and `uninit`) is now tons faster. Before it did a git commit after every
+file processed, now there's just 1 commit at the end. This required using
+some locking to prevent the `pre-commit` hook from running in a confusing
+state.
+
+Today. LibrePlanet and a surprising amount of development. I've
+added [[tips/file_manager_integration]], only for Nautilus so far.
+The main part of this was adding --notify-start and --notify-finish, which
+use dbus desktop notifications to provide feedback. 
+
+(Made possible thanks to Max Rabkin for updating
+[fdo-notify](http://hackage.haskell.org/package/fdo-notify) to use the
+new dbus library, and ion for developing the initial Nautilus integration
+scripts.)
+
+Today's work and LibrePlanet visit was sponsored by Jürgen Lüters.

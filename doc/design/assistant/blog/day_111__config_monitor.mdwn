@@ -1,0 +1,18 @@
+Added yet another thread, the ConfigMonitor. Since that thread needs to run
+code to reload cached config values from the git-annex branch when files
+there change, writing it also let me review where config files are cached,
+and I found that every single config file in the git-annex branch does
+get cached, with the exception of the uuid.log. So, added a cache for that,
+and now I'm more sanguine about yesterday's removal of the lower-level
+cache, because the only thing not being cached is location log information.
+
+The ConfigMonitor thread seems to work, though I have not tested it
+extensively. The assistant should notice and apply config changes
+made locally, as well as any config changes pushed in from remotes.
+So, for example, if you add a S3 repo in the webapp, and are paired with
+another computer, that one's webapp will shortly include the new repo in
+its list. And all the preferred content, groups, etc settings will
+propigate over and be used as well.
+
+Well ... almost. Seems nothing causes git-annex branch changes to be
+pushed, until there's some file change to sync out.

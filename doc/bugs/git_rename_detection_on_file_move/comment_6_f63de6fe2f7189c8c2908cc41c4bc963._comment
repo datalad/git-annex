@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="http://adamspiers.myopenid.com/"
+ nickname="Adam"
+ subject="extra level of indirection"
+ date="2011-12-19T12:45:18Z"
+ content="""
+Surely this could be handled with an extra layer of indirection?
+
+git-annex would ensure that every directory containing annexed data contains a new symlink `.git-annex` which points to `$git_root/.git/annex`.  Then every symlink to an annexed object uses a relative symlink via this: `.git_annex/objects/xx/yy/ZZZZZZZZZZ`.  Even though this symlink is relative, moving it to a different directory would not break anything: if the move destination directory already contained other annexed data, it would also already contain `.git-annex` so git-annex wouldn't need to do anything.  And if it didn't, git-annex would simply create a new `.git-annex` symlink there.
+
+These `.git-annex` symlinks could either be added to `.gitignore`, or manually/automatically checked in to the current branch - I'm not sure which would be best.  There's also the option of using multiple levels of indirection:
+
+    foo/bar/baz/.git-annex -> ../.git-annex
+    foo/bar/.git-annex -> ../.git-annex
+    foo/.git-annex -> ../.git-annex
+    .git-annex -> .git/annex
+
+I'm not sure whether this would bring any advantages.  It might bring a performance hit due to the kernel having to traverse more symlinks, but without benchmarking it's difficult to say how much.  I'd expect it only to be an issue with a large number of deep directory trees.
+"""]]

@@ -1,0 +1,208 @@
+### Please describe the problem.
+
+git-annex will not build on OpenBSD 5.9-stable for amd64
+
+### What steps will reproduce the problem?
+
+$ stack install git-annex
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex-6.20160511, the version from stack resolver lts-6.7
+
+### Please provide any additional information below.
+
+[[!format sh """
+$ stack install git-annex
+Run from outside a project, using implicit global project config
+git-annex-6.20160511: configure
+git-annex-6.20160511: build
+
+--  While building package git-annex-6.20160511 using:
+      /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/setup --builddir=.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0 build --ghc-options " -ddump-hi -ddump-to-file"
+    Process exited with code: ExitFailure 1
+    Logs have been written to: /home/scott/.stack/global-project/.stack-work/logs/git-annex-6.20160511.log
+
+    [ 1 of 32] Compiling Utility.FileSize ( Utility/FileSize.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/FileSize.o )
+    [ 2 of 32] Compiling Utility.Process.Shim ( Utility/Process/Shim.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/Process/Shim.o )
+    [ 3 of 32] Compiling Utility.Applicative ( Utility/Applicative.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/Applicative.o )
+    [ 4 of 32] Compiling Utility.PosixFiles ( Utility/PosixFiles.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/PosixFiles.o )
+    [ 5 of 32] Compiling Utility.Env      ( Utility/Env.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/Env.o )
+    [ 6 of 32] Compiling Utility.UserInfo ( Utility/UserInfo.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/UserInfo.o )
+    [ 7 of 32] Compiling Utility.OSX      ( Utility/OSX.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/OSX.o )
+    [ 8 of 32] Compiling Utility.PartialPrelude ( Utility/PartialPrelude.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/PartialPrelude.o )
+    [ 9 of 32] Compiling Utility.Data     ( Utility/Data.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/Data.o )
+    [10 of 32] Compiling Utility.Exception ( Utility/Exception.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/Exception.o )
+    [11 of 32] Compiling Utility.FileSystemEncoding ( Utility/FileSystemEncoding.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/FileSystemEncoding.o )
+    [12 of 32] Compiling Utility.Tmp      ( Utility/Tmp.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/Tmp.o )
+    [13 of 32] Compiling Utility.Monad    ( Utility/Monad.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/Monad.o )
+    [14 of 32] Compiling Utility.Misc     ( Utility/Misc.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/Misc.o )
+    [15 of 32] Compiling Utility.Process  ( Utility/Process.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/Process.o )
+    [16 of 32] Compiling Utility.SafeCommand ( Utility/SafeCommand.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/SafeCommand.o )
+    [17 of 32] Compiling Utility.Directory ( Utility/Directory.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/Directory.o )
+    [18 of 32] Compiling Build.Version    ( Build/Version.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Build/Version.o )
+    [19 of 32] Compiling Utility.Network  ( Utility/Network.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/Network.o )
+    [20 of 32] Compiling Utility.ExternalSHA ( Utility/ExternalSHA.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/ExternalSHA.o )
+    [21 of 32] Compiling Utility.Path     ( Utility/Path.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/Path.o )
+    [22 of 32] Compiling Build.TestConfig ( Build/TestConfig.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Build/TestConfig.o )
+    [23 of 32] Compiling Common           ( Common.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Common.o )
+    [24 of 32] Compiling Utility.DottedVersion ( Utility/DottedVersion.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/DottedVersion.o )
+    [25 of 32] Compiling Git.Version      ( Git/Version.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Git/Version.o )
+    [26 of 32] Compiling Utility.FreeDesktop ( Utility/FreeDesktop.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Utility/FreeDesktop.o )
+    [27 of 32] Compiling Config.Files     ( Config/Files.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Config/Files.o )
+    [28 of 32] Compiling Assistant.Install.AutoStart ( Assistant/Install/AutoStart.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Assistant/Install/AutoStart.o )
+    [29 of 32] Compiling Assistant.Install.Menu ( Assistant/Install/Menu.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Assistant/Install/Menu.o )
+    [30 of 32] Compiling Build.Configure  ( Build/Configure.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Build/Configure.o )
+    [31 of 32] Compiling Build.DesktopFile ( Build/DesktopFile.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Build/DesktopFile.o )
+    [32 of 32] Compiling Main             ( /tmp/stack29275/git-annex-6.20160511/Setup.hs, /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/Main.o )
+    Linking /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/setup ...
+    /usr/local/lib/ghc/rts/libHSrts.a(RtsFlags.o): In function `copyArg':
+    
+    rts/RtsFlags.c:1685:0:
+         warning: warning: strcpy() is almost always misused, please use strlcpy()
+    /usr/local/lib/ghc/base_HQfYBxpPvuw8OunzQu6JGM/libHSbase-4.8.2.0-HQfYBxpPvuw8OunzQu6JGM.a(IO__1.o): In function `ghczuwrapperZC0ZCbaseZCSystemziIOZCrand':
+    (.text+0x1): warning: warning: rand() may return deterministic values, is that what you want?
+    /usr/local/lib/ghc/rts/libHSrts.a(RtsUtils.o): In function `showStgWord64':
+    
+    rts/RtsUtils.c:204:0:
+         warning: warning: sprintf() is often misused, please use snprintf()
+      checking version...fatal: Not a git repository (or any parent up to mount point /tmp)
+    Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+     6.20160511
+      checking UPGRADE_LOCATION... not available
+      checking git... yes
+      checking git version... 2.7.0
+      checking cp -a... no
+      checking cp -p... yes
+      checking cp --preserve=timestamps... no
+      checking cp --reflink=auto... no
+      checking xargs -0... yes
+      checking rsync... yes
+      checking curl... yes
+      checking wget... yes
+      checking wget supports -q --show-progress... yes
+      checking bup... no
+      checking nice... yes
+      checking ionice... no
+      checking nocache... no
+      checking gpg... not available
+      checking lsof... not available
+      checking git-remote-gcrypt... not available
+      checking ssh connection caching... yes
+      checking sha1... not available
+      checking sha256... not available
+      checking sha512... not available
+      checking sha224... not available
+      checking sha384... not available
+    Configuring git-annex-6.20160511...
+    Linking /tmp/stack29275/git-annex-6.20160511/.stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/setup/setup ...
+    /usr/local/lib/ghc/rts/libHSrts.a(RtsFlags.o): In function `copyArg':
+    
+    rts/RtsFlags.c:1685:0:
+         warning: warning: strcpy() is almost always misused, please use strlcpy()
+    /usr/local/lib/ghc/base_HQfYBxpPvuw8OunzQu6JGM/libHSbase-4.8.2.0-HQfYBxpPvuw8OunzQu6JGM.a(IO__1.o): In function `ghczuwrapperZC0ZCbaseZCSystemziIOZCrand':
+    (.text+0x1): warning: warning: rand() may return deterministic values, is that what you want?
+    /usr/local/lib/ghc/rts/libHSrts.a(RtsUtils.o): In function `showStgWord64':
+    
+    rts/RtsUtils.c:204:0:
+         warning: warning: sprintf() is often misused, please use snprintf()
+    Building git-annex-6.20160511...
+    Preprocessing executable 'git-annex' for git-annex-6.20160511...
+    
+    /tmp/stack29275/git-annex-6.20160511/Assistant/Threads/MountWatcher.hs:35:0:
+         warning: #warning Building without dbus support; will use mtab polling
+    [  1 of 538] Compiling Utility.Dot      ( Utility/Dot.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Dot.o )
+    [  2 of 538] Compiling Utility.Mounts   ( Utility/Mounts.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Mounts.o )
+    [  3 of 538] Compiling Utility.SRV      ( Utility/SRV.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/SRV.o )
+    [  4 of 538] Compiling BuildFlags       ( BuildFlags.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/BuildFlags.o )
+    [  5 of 538] Compiling Utility.Yesod    ( Utility/Yesod.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Yesod.o )
+    [  6 of 538] Compiling Utility.Touch    ( Utility/Touch.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Touch.o )
+    [  7 of 538] Compiling Assistant.Types.BranchChange ( Assistant/Types/BranchChange.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Assistant/Types/BranchChange.o )
+    [  8 of 538] Compiling Assistant.Types.TransferSlots ( Assistant/Types/TransferSlots.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Assistant/Types/TransferSlots.o )
+    [  9 of 538] Compiling Assistant.Types.ThreadName ( Assistant/Types/ThreadName.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Assistant/Types/ThreadName.o )
+    [ 10 of 538] Compiling Utility.Tense    ( Utility/Tense.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Tense.o )
+    [ 11 of 538] Compiling Assistant.Types.Alert ( Assistant/Types/Alert.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Assistant/Types/Alert.o )
+    [ 12 of 538] Compiling Utility.OptParse ( Utility/OptParse.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/OptParse.o )
+    [ 13 of 538] Compiling Utility.PID      ( Utility/PID.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/PID.o )
+    [ 14 of 538] Compiling Utility.Shell    ( Utility/Shell.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Shell.o )
+    [ 15 of 538] Compiling Logs.TimeStamp   ( Logs/TimeStamp.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Logs/TimeStamp.o )
+    [ 16 of 538] Compiling Utility.JSONStream ( Utility/JSONStream.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/JSONStream.o )
+    [ 17 of 538] Compiling Utility.HumanNumber ( Utility/HumanNumber.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/HumanNumber.o )
+    [ 18 of 538] Compiling Utility.Percentage ( Utility/Percentage.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Percentage.o )
+    [ 19 of 538] Compiling Utility.Glob     ( Utility/Glob.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Glob.o )
+    [ 20 of 538] Compiling Utility.DataUnits ( Utility/DataUnits.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/DataUnits.o )
+    [ 21 of 538] Compiling Types.Creds      ( Types/Creds.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Types/Creds.o )
+    [ 22 of 538] Compiling Assistant.Types.CredPairCache ( Assistant/Types/CredPairCache.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Assistant/Types/CredPairCache.o )
+    [ 23 of 538] Compiling Types.Availability ( Types/Availability.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Types/Availability.o )
+    [ 24 of 538] Compiling Utility.Bloom    ( Utility/Bloom.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Bloom.o )
+    [ 25 of 538] Compiling Utility.LockFile.LockStatus ( Utility/LockFile/LockStatus.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/LockFile/LockStatus.o )
+    [ 26 of 538] Compiling Utility.QuickCheck ( Utility/QuickCheck.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/QuickCheck.o )
+    
+    /tmp/stack29275/git-annex-6.20160511/Utility/QuickCheck.hs:19:1: Warning:
+        The qualified import of `Data.Map' is redundant
+          except perhaps to import instances from `Data.Map'
+        To import instances alone, use: import Data.Map()
+    
+    /tmp/stack29275/git-annex-6.20160511/Utility/QuickCheck.hs:20:1: Warning:
+        The qualified import of `Data.Set' is redundant
+          except perhaps to import instances from `Data.Set'
+        To import instances alone, use: import Data.Set()
+    [ 27 of 538] Compiling Types.DesktopNotify ( Types/DesktopNotify.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Types/DesktopNotify.o )
+    [ 28 of 538] Compiling Types.UUID       ( Types/UUID.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Types/UUID.o )
+    [ 29 of 538] Compiling Types.Group      ( Types/Group.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Types/Group.o )
+    [ 30 of 538] Compiling Types.BranchState ( Types/BranchState.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Types/BranchState.o )
+    [ 31 of 538] Compiling Utility.Process.Shim ( Utility/Process/Shim.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Process/Shim.o )
+    [ 32 of 538] Compiling Utility.FileSize ( Utility/FileSize.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/FileSize.o )
+    [ 33 of 538] Compiling Utility.PosixFiles ( Utility/PosixFiles.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/PosixFiles.o )
+    [ 34 of 538] Compiling Utility.Applicative ( Utility/Applicative.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Applicative.o )
+    [ 35 of 538] Compiling Utility.PartialPrelude ( Utility/PartialPrelude.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/PartialPrelude.o )
+    [ 36 of 538] Compiling Utility.ThreadScheduler ( Utility/ThreadScheduler.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/ThreadScheduler.o )
+    [ 37 of 538] Compiling Utility.HumanTime ( Utility/HumanTime.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/HumanTime.o )
+    [ 38 of 538] Compiling Utility.Hash     ( Utility/Hash.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Hash.o )
+    [ 39 of 538] Compiling Utility.Env      ( Utility/Env.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Env.o )
+    [ 40 of 538] Compiling Utility.UserInfo ( Utility/UserInfo.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/UserInfo.o )
+    [ 41 of 538] Compiling Utility.Verifiable ( Utility/Verifiable.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Verifiable.o )
+    [ 42 of 538] Compiling Utility.Format   ( Utility/Format.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Format.o )
+    [ 43 of 538] Compiling Build.SysConfig  ( Build/SysConfig.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Build/SysConfig.o )
+    [ 44 of 538] Compiling Config.Cost      ( Config/Cost.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Config/Cost.o )
+    [ 45 of 538] Compiling Types.Messages   ( Types/Messages.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Types/Messages.o )
+    [ 46 of 538] Compiling Types.TrustLevel ( Types/TrustLevel.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Types/TrustLevel.o )
+    [ 47 of 538] Compiling Types.Test       ( Types/Test.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Types/Test.o )
+    [ 48 of 538] Compiling Utility.Data     ( Utility/Data.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Data.o )
+    [ 49 of 538] Compiling Utility.Exception ( Utility/Exception.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Exception.o )
+    [ 50 of 538] Compiling Utility.FileMode ( Utility/FileMode.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/FileMode.o )
+    [ 51 of 538] Compiling Git.FileMode     ( Git/FileMode.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Git/FileMode.o )
+    [ 52 of 538] Compiling Utility.FileSystemEncoding ( Utility/FileSystemEncoding.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/FileSystemEncoding.o )
+    [ 53 of 538] Compiling Utility.Base64   ( Utility/Base64.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Base64.o )
+    [ 54 of 538] Compiling Utility.Tmp      ( Utility/Tmp.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Tmp.o )
+    [ 55 of 538] Compiling Database.Handle  ( Database/Handle.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Database/Handle.o )
+    [ 56 of 538] Compiling Utility.LockFile.Posix ( Utility/LockFile/Posix.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/LockFile/Posix.o )
+    [ 57 of 538] Compiling Utility.DiskFree ( Utility/DiskFree.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/DiskFree.o )
+    [ 58 of 538] Compiling Utility.Monad    ( Utility/Monad.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Monad.o )
+    [ 59 of 538] Compiling Utility.Misc     ( Utility/Misc.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Misc.o )
+    [ 60 of 538] Compiling Utility.Process  ( Utility/Process.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Process.o )
+    [ 61 of 538] Compiling Utility.SafeCommand ( Utility/SafeCommand.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/SafeCommand.o )
+    [ 62 of 538] Compiling Git.Types        ( Git/Types.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Git/Types.o )
+    [ 63 of 538] Compiling Utility.Network  ( Utility/Network.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Network.o )
+    [ 64 of 538] Compiling Utility.Scheduled ( Utility/Scheduled.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Scheduled.o )
+    [ 65 of 538] Compiling Utility.Scheduled.QuickCheck ( Utility/Scheduled/QuickCheck.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Scheduled/QuickCheck.o )
+    [ 66 of 538] Compiling Utility.ExternalSHA ( Utility/ExternalSHA.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/ExternalSHA.o )
+    [ 67 of 538] Compiling Utility.Directory ( Utility/Directory.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Directory.o )
+    [ 68 of 538] Compiling Utility.Path     ( Utility/Path.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/Path.o )
+    [ 69 of 538] Compiling Common           ( Common.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Common.o )
+    [ 70 of 538] Compiling Git              ( Git.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Git.o )
+    [ 71 of 538] Compiling Git.Filename     ( Git/Filename.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Git/Filename.o )
+    [ 72 of 538] Compiling Git.FilePath     ( Git/FilePath.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Git/FilePath.o )
+    [ 73 of 538] Compiling Git.DiffTreeItem ( Git/DiffTreeItem.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Git/DiffTreeItem.o )
+    [ 74 of 538] Compiling Logs.MapLog      ( Logs/MapLog.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Logs/MapLog.o )
+    [ 75 of 538] Compiling Types.MetaData   ( Types/MetaData.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Types/MetaData.o )
+    [ 76 of 538] Compiling Annex.MetaData.StandardFields ( Annex/MetaData/StandardFields.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Annex/MetaData/StandardFields.o )
+    [ 77 of 538] Compiling Types.Key        ( Types/Key.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Types/Key.o )
+    [ 78 of 538] Compiling Messages.JSON    ( Messages/JSON.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Messages/JSON.o )
+    [ 79 of 538] Compiling Utility.InodeCache ( Utility/InodeCache.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Utility/InodeCache.o )
+    [ 80 of 538] Compiling Types.KeySource  ( Types/KeySource.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Types/KeySource.o )
+    [ 81 of 538] Compiling Types.Backend    ( Types/Backend.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Types/Backend.o )
+    [ 82 of 538] Compiling Database.Types   ( Database/Types.hs, .stack-work/dist/x86_64-openbsd/Cabal-1.22.5.0/build/git-annex/git-annex-tmp/Database/Types.o )
+    ghc: /usr/local/lib/libidn.a: unknown symbol `libintl_bindtextdomain'
+    ghc: unable to load package `gnuidn-0.2.2'
+"""]]

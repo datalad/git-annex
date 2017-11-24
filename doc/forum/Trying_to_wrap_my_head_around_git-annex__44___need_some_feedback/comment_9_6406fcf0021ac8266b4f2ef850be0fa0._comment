@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2015-10-19T17:37:32Z"
+ content="""
+git init will never create a bare git repository (unless you specify
+--bare), and a normal bare repository doesn't have a .git directory.
+
+So I suspect that your repository is using git-annex's direct
+mode, which only sets core.bare as an implementation detail. Likely
+you trimmed off the end of the .git/config, where it said "direct = true"
+"""]]

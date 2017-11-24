@@ -1,0 +1,6 @@
+Based on an irc conversation earlier today:
+
+19:50 < warp> joeyh: what is the best way to figure out the (remote) filename for a file stored in an rsync remote?
+
+20:43 < joeyh> warp: re your other question, probably the best thing would be to make the whereis command print out locations for each remote, as it always does for the web special remotes
+

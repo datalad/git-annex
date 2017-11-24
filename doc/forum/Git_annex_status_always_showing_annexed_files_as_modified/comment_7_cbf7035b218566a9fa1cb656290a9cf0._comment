@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="neocryptek"
+ subject="comment 7"
+ date="2016-01-21T03:38:56Z"
+ content="""
+version 6.20160114 fixes the problem on windows and status seems to be faster now (probably due to all the overhead of printing text to the console).
+
+Thanks!
+"""]]

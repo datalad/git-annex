@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="https://lithitux.org/openidserver/users/pavel"
+ nickname="pavel"
+ subject="&quot;Me too&quot;"
+ date="2011-07-05T15:54:19Z"
+ content="""
+I've also seen this apparent hang during upgrade to v3. A few more details:
+
+The annex in question has just under 18k files (and hence that many log files), which can slow down directory operations when they're all in the same place (like, for example, .git/annex/journal).
+
+git-annex uses virtually no CPU time and disk IO when it's hanging like this; the first time it happened, 'ps' showed three defunct git processes, with two \"git-annex\" processes and three \"git\" procs:
+
+ * git --git-dir=/mnt/annex/.git --work-tree=/mnt/annex cat-file --batch
+ * git --git-dir=/mnt/annex/.git --work-tree=/mnt/annex hash-object -w --stdin-paths
+ * git --git-dir=/mnt/annex/.git --work-tree=/mnt/annex update-index -z --index-info
+
+I Ctrl+C'd that and tried again, but it hung again -- this time without the defunct gits.
+
+An strace of the process and its children at the time of hang can be found at http://pastebin.com/4kNh4zEJ . It showed somewhat weird behaviour: When I attached with strace, it would scroll through a whole bunch of syscalls making up the open-fstat-read-close-write loop on .git/annex/journal files, but then would block on a write (sorry, don't have that in my scrollback any more so can't give more details) until I Ctrl+C'd strace; when attaching again, it would again scroll through the syscalls for a second or so and then hang with no output.
+
+Ultimately I detached/reattached with strace about two dozen times and that caused it (?) to finish the upgrade; not really sure how to explain it, but it seems like too much of a timing coincidence.
+
+"""]]

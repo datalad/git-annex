@@ -1,0 +1,18 @@
+Worked on bug report and forum backlog (24 messages left), and made a few
+bug fixes. The main one was a fix for a Windows-specific direct mode merge
+bug.
+
+This month didn't go entirely to plan. I had not expected to work on the
+Windows assistant and webapp and get it so close to fully working. Nor had
+I expected to spend time and make significant progress on porting git-annex
+to *Linux* -- particularly to embedded NAS devices! I had hoped to
+encourage some others to develop git-annex, but only had one bite from a
+student and it didn't work out. Meanwhile, automatically rewarding
+committers with bitcoin is an interesting alternative approach to possibly
+motivating contributors, and I would like to set that up, but the software
+is new and I haven't had time yet. The only thing that went exactly as
+planned was the external special remote implementation.
+
+A special surprise this month is that I have started hearing privately from
+several institutions that are starting using git-annex in interesting ways.
+Hope I can share details of some of that 2014!

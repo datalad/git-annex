@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 7"
+ date="2013-11-16T23:04:29Z"
+ content="""
+In your situation, you do not have or need a repository whose only job is to transfer files between two other client repositories. So the right choice for your repositories is client -- or something else possibly -- but almost certainly not transfer.
+"""]]

@@ -1,0 +1,8 @@
+### Please describe the problem.
+The webapp does not offer me the option to delete a remote repository that it did not succeed to synchronize with. Status of the repository is sync enabled (metadata only) but in settings I may only edit the repo, but cannot delete it.
+
+### What steps will reproduce the problem?
+Set up git-annex on a new computer. Forget to enable ssh on the machine. Perform a local pairing (success). The sync fails for obvious reasons.
+
+### What version of git-annex are you using? On what operating system?
+System is ubuntu but I assume this is a general issue. Version of git-annex is 5.20140117

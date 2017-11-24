@@ -1,0 +1,7 @@
+Hi, 
+
+Is anyone having difficulties with the assistant and gpg-agent?  Particularly with multiple repos syncing to a crypt backup?
+
+It seems to work for a while and then according to the error logs I can't decrypt the manifest...I'm wondering if there is some sort of locking involved that only lets one repo sync to a gcrypt repo at a time?  I can't think why the gpg-agent would stop providing the key.
+
+I also have a rather horrible time with gpg-agent in general:  I now start each repos git annex assistant individually in the shell (from which I can confirm the gpg-agent is working) rather than launch the web-app direct. 

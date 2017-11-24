@@ -1,0 +1,13 @@
+ZSH users, here's some good news: after 2 years of silence, the completion function for git-annex has been updated. It now supports *all* git-annex commands (as of 5.20140517) and has many improvements for completing arguments, remotes, groups, and backends.
+
+To install it:
+
+1. make sure your have Python 3 installed (as `python3` somewhere in your `$PATH`; tested with 3.4, should work with 3.2+)
+2. get it from [GitHub](https://github.com/Schnouki/git-annex-zsh-completion)
+3. copy `_git-annex` to somewhere in your `$fpath` (I use `$HOME/.config/zsh/completion`)
+4. run `autoload -U path/to/_git-annex`
+5. type `git annex <TAB>`
+
+This is very far from being perfect, but it's (IMHO) better than nothing. If you have any issue or suggestion, please [tell me](https://github.com/Schnouki/git-annex-zsh-completion/issues)!
+
+Many thanks to Frank Terbeck and Valentin Haenel, the original authors of this completion function ([source](https://github.com/esc/git-annex-zsh-completion)).

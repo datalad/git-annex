@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="RaspberryPie"
+ ip="77.247.181.165"
+ subject="comment 2"
+ date="2013-10-28T18:31:21Z"
+ content="""
+I don't think I'm stressing too much. Rather, I'm inquiring about why git-annex is giving me wrong (or at least unclear) output that makes me worry about losing data. I plan to trust git-annex with a lot of important files, and in order to do that I want to make sure it's trustworthy. And that's where the inaccurate key numbers get in the way.
+
+So why do the local and known numbers diverge anyway? Would you consider adjusting the status output to be more accurate, or at least less confusing? I just want to be able to check that every single file in the repo is being backed up.
+"""]]

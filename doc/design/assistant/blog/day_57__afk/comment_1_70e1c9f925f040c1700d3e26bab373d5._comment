@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://claimid.com/strager"
+ nickname="strager"
+ subject="comment 1"
+ date="2012-08-11T04:50:52Z"
+ content="""
+What if `storeKey`, `retrieveKeyFile`, etc. return an `IO ()` which cancels the operation, if possible?  The implementation can be canceled regardless if it uses separate processes or Haskell threads.
+
+"""]]

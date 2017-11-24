@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-08-17T15:59:13Z"
+ content="""
+Cost settings only affect sort order, they don't allow completely blocking
+use of a remote.
+
+I feel that it would be perhaps the wrong design to extend cost settings
+into blocking a remote.
+
+There's also the `remote.<name>.annex-start-command` hook. However,
+failure to run its command does not prevent git-annex from trying to access
+a remote.
+
+I think it would be reasonable to add a hook
+`remote.<name>.annex-check-command`. If set, the command would have
+to succed, or git-annex would refuse to use the remote.
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.246"
+ subject="comment 3"
+ date="2013-11-09T18:07:56Z"
+ content="""
+Well, it does look like your git-annex did not pass the port to the second command. 
+
+What version are you using? I've just tested with a ssh server only listening on 2222 and it used the port throughout.
+
+You might try upgrading to a recent version. I know that version 4.20130627, at least, had a bug with the ssh port.
+"""]]

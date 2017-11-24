@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnx8kHW66N3BqmkVpgtXDlYMvr8TJ5VvfY"
+ nickname="Yaroslav"
+ subject="comment 4"
+ date="2014-12-16T20:42:28Z"
+ content="""
+what could I say to a \"much better one\" offer, besides \"GO AHEAD\" and \"Thank you in advance\"! :)
+
+I wonder though what joey thinks about possible utility of a basic fuse wrapper for annex, and possibly shipping it along?
+
+My primary use-case would be primarily oriented for testing, e.g. if I would like to run a (sub)collection of tests (e.g. on travis) which rely on having some data from annex available, now I would need either provide some project/language specific wrapping which would check if file is available or not and then fetch it.  With FUSE I thought I could just do that transparently without requiring any per-project coding/setup.  Similar use-case would be analysis of some large datasets, once again, without requiring pre-fetching them in entirety and/or piece-by-piece fetching.
+Another possible additional usecase/mode could also be -- expose only available files under FUSE.  If easy to \"trigger\" it would help to provide that \"lean\" view I was blurbing about (https://github.com/datalad/datalad/issues/25) although it would be quite a suboptimal workaround (since if directory is heavily loaded with broken links, it would take a while for FUSE handler to first traverse the tree anyways)
+"""]]

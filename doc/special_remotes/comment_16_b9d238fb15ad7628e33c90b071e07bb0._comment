@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://yarikoptic.myopenid.com/"
+ nickname="site-myopenid"
+ subject="compression -- storage and transfer"
+ date="2013-05-22T18:48:59Z"
+ content="""
+Is there any remote which would not only compress during transfer (I believe rsync does that, right?) but also store objects compressed?
+
+I thought bup would do both -- but it seems that git annex receives data uncompressed from a bup remote, and bup remote requires ssh access.
+
+In my case I want to make publicly available files which are binary blobs which could be compressed very well.  It would be a pity if I waste storage on my end and also incur significant traffic, which could be avoided if data load was transferred compressed.  May be HTTP compression (http://en.wikipedia.org/wiki/HTTP_compression) could somehow be used efficiently for this purpose (not sure if load then originally could already reside in a compressed form to avoid server time to re-compress it)?
+"""]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmqaNwDQ367zpW6cIRviLz6zJZZFODgoEI"
+ nickname="Zack"
+ subject="Almost there!"
+ date="2014-01-12T19:13:29Z"
+ content="""
+Thanks for the help (I can now clone the repo.), but I now get this.
+get file FATAL: bad git-annex-shell command: git-annex-shell 'configlist' '/annex2.git' at /opt/gitolite2/bin/commands/git-annex-shell line 25, <DATA> line 1.
+"""]]

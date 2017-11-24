@@ -1,0 +1,7 @@
+should be extremely helpful when adding many files one at a time ;)
+
+[[!meta author=yoh]]
+
+> Implemented; made it not recurse into directories and output a blank line
+> if it doesn't add the file, so there's aways 1 line of output for each
+> input. [[done]] --[[Joey]]

@@ -1,0 +1,72 @@
+I've been experiencing problems with Box.com for a few days now and I don't know what's causing them. Is anyone else experiencing anything similar?
+
+I paste the log.
+
+    [2013-09-02 12:27:26 CEST] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9", transferKey = Key {keyName = "c9e1d5421e78924c21e3d68e84f80a8d1f64f9488020107ca0eeee0c4f10e763.py", keyBackendName = "SHA256E", keySize = Just 1891, keyMtime = Nothing}}
+    [2013-09-02 12:27:26 CEST] TransferScanner: queued Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/kgp/kant.xml Nothing : expensive scan found missing object
+    [2013-09-02 12:27:26 CEST] Transferrer: Transferring: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/argecho.py Nothing
+    [2013-09-02 12:27:26 CEST] TransferWatcher: transfer starting: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/argecho.py Nothing
+    [2013-09-02 12:27:26 CEST] TransferWatcher: transfer starting: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/argecho.py Nothing
+    
+    
+    100%          0.0 B/s 0s[2013-09-02 12:27:26 CEST] TransferWatcher: transfer starting: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/argecho.py Just 437
+    ResponseTimeout
+    ResponseTimeout
+    
+                            
+    [2013-09-02 12:27:44 CEST] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9", transferKey = Key {keyName = "dd3cc45d91430c6f7d68eb807f4ac1561cd0297b11a2de77b5fe66017d125798.py", keyBackendName = "SHA256E", keySize = Just 437, keyMtime = Nothing}}
+    [2013-09-02 12:27:44 CEST] TransferScanner: queued Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/kgp/kgp.dtd Nothing : expensive scan found missing object
+    [2013-09-02 12:27:44 CEST] Transferrer: Transferring: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/autosize.py Nothing
+    [2013-09-02 12:27:44 CEST] TransferWatcher: transfer starting: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/autosize.py Nothing
+    [2013-09-02 12:27:44 CEST] TransferWatcher: transfer starting: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/autosize.py Nothing
+    
+    
+    100%          0.0 B/s 0s[2013-09-02 12:27:44 CEST] TransferWatcher: transfer starting: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/autosize.py Just 2861
+    ResponseTimeout
+    ResponseTimeout
+    
+                            
+    [2013-09-02 12:28:02 CEST] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9", transferKey = Key {keyName = "d6b7940ac68768a8e37e72f248e2d94f19fb0d47062084d9baf0ec08cebbf692.py", keyBackendName = "SHA256E", keySize = Just 2861, keyMtime = Nothing}}
+    [2013-09-02 12:28:02 CEST] TransferScanner: queued Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/kgp/kgp.py Nothing : expensive scan found missing object
+    [2013-09-02 12:28:02 CEST] Transferrer: Transferring: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/builddialectexamples.py Nothing
+    [2013-09-02 12:28:03 CEST] TransferWatcher: transfer starting: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/builddialectexamples.py Nothing
+    [2013-09-02 12:28:03 CEST] TransferWatcher: transfer starting: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/builddialectexamples.py Nothing
+    
+    
+    100%          0.0 B/s 0s[2013-09-02 12:28:03 CEST] TransferWatcher: transfer starting: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/builddialectexamples.py Just 1090
+    ResponseTimeout
+    ResponseTimeout
+    
+                            
+    [2013-09-02 12:28:21 CEST] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9", transferKey = Key {keyName = "f1492b80d05b96cc7cf2904d461c99d430fa86a4eb1d99f1b155c9147ff4420f.py", keyBackendName = "SHA256E", keySize = Just 1090, keyMtime = Nothing}}
+    [2013-09-02 12:28:21 CEST] TransferScanner: queued Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/kgp/russiansample.xml Nothing : expensive scan found missing object
+    [2013-09-02 12:28:21 CEST] Transferrer: Transferring: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/colorize.py Nothing
+    [2013-09-02 12:28:21 CEST] TransferWatcher: transfer starting: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/colorize.py Nothing
+    [2013-09-02 12:28:21 CEST] TransferWatcher: transfer starting: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/colorize.py Nothing
+    
+    
+    100%          0.0 B/s 0s[2013-09-02 12:28:21 CEST] TransferWatcher: transfer starting: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/colorize.py Just 4864
+    ResponseTimeout
+    ResponseTimeout
+    
+    
+    [2013-09-02 12:28:40 CEST] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9", transferKey = Key {keyName = "b577eaf8b6ddbf9fef866c455cae248aec3b22e3f2e91aa2b75ece90f1801689.py", keyBackendName = "SHA256E", keySize = Just 4864, keyMtime = Nothing}}
+    [2013-09-02 12:28:40 CEST] TransferScanner: queued Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/kgp/stderr.py Nothing : expensive scan found missing object
+    [2013-09-02 12:28:40 CEST] Transferrer: Transferring: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/dialect.py Nothing
+    [2013-09-02 12:28:40 CEST] TransferWatcher: transfer starting: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/dialect.py Nothing
+    [2013-09-02 12:28:40 CEST] TransferWatcher: transfer starting: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/dialect.py Nothing
+    
+    
+    100%          0.0 B/s 0s[2013-09-02 12:28:40 CEST] TransferWatcher: transfer starting: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/dialect.py Just 4449
+    ResponseTimeout
+    ResponseTimeout
+    
+                            
+    [2013-09-02 12:28:58 CEST] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9", transferKey = Key {keyName = "c5e5d9b1bee2710c7ed05270a363d3e93270b0fb6779c4c8d59ace06c11db684.py", keyBackendName = "SHA256E", keySize = Just 4449, keyMtime = Nothing}}
+    [2013-09-02 12:28:58 CEST] TransferScanner: queued Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/kgp/stdout.py Nothing : expensive scan found missing object
+    [2013-09-02 12:28:58 CEST] Transferrer: Transferring: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/fibonacci.py Nothing
+    [2013-09-02 12:28:58 CEST] TransferWatcher: transfer starting: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/fibonacci.py Nothing
+    [2013-09-02 12:28:58 CEST] TransferWatcher: transfer starting: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/fibonacci.py Nothing
+
+
+    100%          0.0 B/s 0s[2013-09-02 12:28:58 CEST] TransferWatcher: transfer starting: Upload UUID "72111b4c-28fe-42fd-a77b-e4cb9240a1c9" Documentos/diveintopython-5.4/py/fibonacci.py Just 532

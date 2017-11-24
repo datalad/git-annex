@@ -1,0 +1,29 @@
+There's been a lot of little bug fixes and improvements going on
+in the ... oops ... almost a month since I last updated the devblog.
+Including a release of git-annex on the 3rd, and another release
+that's almost ready to go now. Just have not had the energy to blog about
+it all.
+
+Anyway, today I spent way too long fixing a minor wart. When multiple
+annexed files have the same content, transferring them with concurrency
+enabled could make it complain that "transfer already in progress".
+Which is better than transferring the same content twice, but it did make
+there seem to be a failure.
+
+I implemented two and a half different fixes for that. The first half a fix
+was too intrusive and I couldn't get it to work. Then came a fix that
+avoided the problem pretty cleanly, except it actually led to worse
+behavior, because it would sometimes transfer the same content twice, and
+needed non-obvious tweaks here and there to prevent that. Finally, around
+an hour ago, having actually given up unhappily for the day, I realized a
+much better way to fix it, that was minimally intrusive and works
+perfectly. 
+
+So it goes.. I'd say "concurrency is hard", but it's more that big complex
+code bases can make things that seem simple not really that simple.
+Yesterday I had a much easier time fixing a related problem with `git annex
+add -J`, which was really a lot hairier (involving a race condition and
+a lack of atomicity), but didn't cut across the code base in the same broad
+way.
+
+Today's work was supported by the NSF-funded DataLad project.

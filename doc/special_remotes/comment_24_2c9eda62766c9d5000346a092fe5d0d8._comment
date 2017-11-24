@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 24"""
+ date="2015-10-19T17:32:16Z"
+ content="""
+@craig, all of git-annex's information about a special remote is stored in
+the git-annex branch in git, so any clone of the git repository is
+sufficient to back that up. You can run `git annex enableremote`
+in an clone to enable an existing special remote.
+
+The only catch is that, if you have chosen to initremote a special remote
+using a gpg key, with `encryption=shared keyid=whatever`, you'll of course
+also need that gpg key to to use it. If you run `git annex info $myremote`
+it will tell you amoung other things, any gpg keys that are used by that
+remote.
+"""]]

@@ -1,0 +1,7 @@
+I am in direct mode (managing music) and have no other repositories than the one I'm in.  I would like to delete a file and have git no longer track it at all.
+
+So far I've manually deleted the file and run "git annex add .", but when I run "git annex status" the file is still marked as deleted.  I would like to receive no message whatsoever.
+
+I tried "git annex drop path" , "git annex unannex path", and everything else I can think of but nothing will get git annex to forget the file.
+
+I'm sure this is easy, but how do you remove a deleted file in direct mode?

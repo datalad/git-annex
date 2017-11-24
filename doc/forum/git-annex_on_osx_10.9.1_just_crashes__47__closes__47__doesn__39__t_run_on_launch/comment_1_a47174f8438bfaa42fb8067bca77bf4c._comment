@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.146"
+ subject="comment 1"
+ date="2014-03-05T22:30:00Z"
+ content="""
+The thing to do is to try to start git-annex from the command line in a terminal. This should get an error message that will help find out what's going wrong.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="whereis labels"
+ date="2011-04-29T13:08:35Z"
+ content="""
+You should be able to fix the missing label by editing .git-annex/uuid.log and adding
+
+    1d1bc312-7243-11e0-a9ce-5f10c0ce9b0a tahoe
+"""]]

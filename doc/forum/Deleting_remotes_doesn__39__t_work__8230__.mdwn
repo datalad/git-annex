@@ -1,0 +1,1 @@
+I'm trying to get rid of two remotes through the assistant, but when I'm trying to delete it, it doesn't start deletion process, as far as I can tell, since the symbol where it say syncing enabled/disabled is not changed to "delete" or whatever it is.

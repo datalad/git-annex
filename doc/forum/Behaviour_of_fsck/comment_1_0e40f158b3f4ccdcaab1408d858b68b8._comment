@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-03-24T17:45:08Z"
+ content="""
+I tend to agree that the default output of fsck is not quite right. I often use git annex fsck -q. A progress spinner display is a good idea.
+"""]]

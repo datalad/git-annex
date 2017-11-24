@@ -1,0 +1,5 @@
+We're nearing the end of the year of development funded by Kickstarter. I'm curious to know what the future of the project looks like.
+
+I assume that development will decrease from its current levels as you focus more of your energy on activities that put bread on the table, but is git-annex still something that you foresee actively working on or will it be in more of a feature-freeze-bug-fix stage?
+
+As a backer my only regret is that during the campaign I wasn't able to donate as much as I would have liked. The project has exceeded my expectations since then. I don't know that another Kickstarter campaign is worth the effort, but if you were to ask for donations to fund another month or two or three I would gladly donate. Or perhaps implement a feature-bounty program where users could donate money toward development of a particular feature they would like to see added. Or perhaps you're sick of working for the Internet!

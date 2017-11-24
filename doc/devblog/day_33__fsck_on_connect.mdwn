@@ -1,0 +1,9 @@
+Built everything needed to run a fsck when a remote gets connected. Have
+not tested it; only testing is blocking merging the incrementalfsck branch
+now.
+
+Also updated the OSX and Android builds to use a new gpg release (denial of
+service security fix), and updated the Debian backport, and did a small
+amount of bug fixing. I need to do several more days of bug fixing once 
+I get this incremental fsck feature wrapped up before moving on to recovery
+of corrupt git repositories.

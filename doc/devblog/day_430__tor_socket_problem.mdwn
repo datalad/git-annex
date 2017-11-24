@@ -1,0 +1,13 @@
+Debian's tor daemon is very locked down in the directories it can read
+from, and so I've had a hard time finding a place to put the unix socket
+file for git-annex's tor hidden service. Painful details in 
+<http://bugs.debian.org/846275>. At least for now, I'm putting it under
+/etc/tor/, which is probably a FHS violation, but seems to be the only
+option that doesn't involve a lot of added complexity.
+
+--- 
+
+The Windows autobuilder is moving, since
+[NEST](http://nest-initiative.org/) is shutting down the server it has been
+using. Yury Zaytsev has set up a new Windows autobuilder, hosted at
+Dartmouth College this time.

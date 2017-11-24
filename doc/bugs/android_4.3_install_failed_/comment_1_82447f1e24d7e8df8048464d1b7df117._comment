@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="24.159.78.125"
+ subject="comment 1"
+ date="2014-06-02T16:28:42Z"
+ content="""
+git-annex needs a directory to use to store its repositories. If your android device does not have a /sdcard directory (which does not have to be a literal sd card, but just someplace you can write to), does it have any equivilant directory?
+"""]]

@@ -1,0 +1,15 @@
+Finished up webdav, and after running `testremote` for a long time, I'm
+satisfied it's good. The newchunks branch has now been merged into master
+completely.
+
+Spent the rest of the day beginning to rework the S3 special remote to use
+the aws library. This was pretty fiddly; I want to keep all the
+configuration exactly the same, so had to do a lot of mapping from hS3
+configuration to aws configuration. Also there is some hairy stuff
+involving escaping from the ResourceT monad with responses and http
+connection managers intact.
+
+Stopped once `initremote` worked. The rest should be pretty easy, although
+Internet Archive support is blocked by
+<https://github.com/aristidb/aws/issues/119>. This is in the `s3-aws`
+branch until it gets usable.

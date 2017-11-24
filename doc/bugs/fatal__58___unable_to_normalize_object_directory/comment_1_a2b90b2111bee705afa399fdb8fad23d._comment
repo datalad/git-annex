@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="jesrui@51c25da8d6f34e6df8e3e7ed0277335ed7ddf6a6"
+ nickname="jesrui"
+ avatar="http://cdn.libravatar.org/avatar/079b86efcbbb1c0c54be3759a0c2b223"
+ subject="comment 1"
+ date="2017-01-21T15:08:20Z"
+ content="""
+I found the problem: I was cd'ing into the local repository via a symbolic link, instead of using the \"canonical\" path.
+You can mark the bug as solved or delete it. Sorry for the noise.
+"""]]

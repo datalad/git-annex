@@ -1,0 +1,12 @@
+This bug seems to be somewhat reproducible:
+
+1. Set up ~/annex using webapp, keep empty.
+2. Add another local repo, eg /tmp/annex, and combine the 2 repositories.
+
+Now files written to ~/annex should quickly appear in /tmp/annex, and
+vice-versa. However, this seems not to happen at first. There's a pause
+for some reason until changes start propigating. Apparently a push from
+the repo that got the file to the other repo doesn't happen.
+After this pause, syncing of changes starts happening quickly, as expected.
+
+--[[Joey]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-02-19T19:55:20Z"
+ content="""
+v6 unlocked files don't have this problem; a repo containing them can be
+accessed over http.
+
+So, I think that's a better way to go than complicating the http support
+with direct mode stuff. Especially since direct mode is going away.
+
+Won't close this yet, but will when I get around to removing direct mode..
+"""]]

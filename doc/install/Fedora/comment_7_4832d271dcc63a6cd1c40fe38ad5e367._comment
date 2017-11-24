@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkJafmCf-sg9_OM0pynFYM3AO4WCgJiaMI"
+ nickname="Michele"
+ subject="building fails on fedora 19"
+ date="2014-05-26T15:31:10Z"
+ content="""
+latest version (git-annex-5.20140517) during cabal install git-annex I encounter this:
+
+[[!format sh \"\"\"
+[266 of 457] Compiling Remote.WebDAV    ( Remote/WebDAV.hs, dist/build/git-annex/git-annex-tmp/Remote/WebDAV.o )
+
+Remote/WebDAV.hs:380:32:
+    Constructor `StatusCodeException' should have 3 arguments, but has been given 2
+    In the pattern: StatusCodeException s _
+    In an equation for `matchStatusCodeException':
+        matchStatusCodeException want (StatusCodeException s _)
+          | s == want = Just ()
+          | otherwise = Nothing
+Failed to install git-annex-5.20140517
+cabal: Error: some packages failed to install:
+git-annex-5.20140517 failed during the building phase. The exception was:
+ExitFailure 1
+\"\"\"]]
+"""]]

@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""the obvious answer"""
+ date="2015-03-26T15:17:05Z"
+ content="""
+`git annex move file --to remote`
+"""]]

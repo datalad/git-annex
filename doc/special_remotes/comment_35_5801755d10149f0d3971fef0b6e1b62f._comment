@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 35"""
+ date="2016-05-03T17:12:42Z"
+ content="""
+@grawity yes, enableremote is the way to change configuration of an
+existing special remote.
+
+The special remote names are a bit funky; to keep the user from needing to
+enter in a long uuid when enabling a particular special remote, a name
+has to be recorded for the remote, and that becomes shared across clones
+of that repository, in a way that the names of git remotes are not
+normally. (Normally, my "origin" might be your "upstream" etc.) 
+
+While it could ignore dead remotes when initializing a new remote with an
+existing name, then if the old remote got brought back from the dead, there
+would be a naming conflict. So, I think it's best to not go down that path,
+to avoid the undead horrors lurking there. ;-)
+"""]]

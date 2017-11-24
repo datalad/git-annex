@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 1"
+ date="2014-07-10T19:37:38Z"
+ content="""
+Neither `git annex watch` nor the `assistant` persistently store any data about the files in the repository in memory. They cannot speed up `git annex status`.
+
+I'm not sure what's the point of running `git annex status` while the daemon is running, since the daemon will normally immediately notice changes and commit them. The status output should thus generally be empty.
+
+FWIW, `git annex status` takes 0.3s in my largest repo (55k files), on an SSD. That's in indirect mode, and the time is almost completely spent in running `git ls-files --modified`, which is probably about as fast as it can be. In a direct mode repository, it will be rather slower, since it has to query git for the key that was last committed for each file, in order to look up that key's info and see if the file has been modified. 
+"""]]

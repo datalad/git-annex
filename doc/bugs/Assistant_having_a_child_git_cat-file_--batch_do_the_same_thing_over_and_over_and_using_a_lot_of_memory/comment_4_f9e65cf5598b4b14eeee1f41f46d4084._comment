@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.244"
+ subject="comment 4"
+ date="2014-04-07T21:57:32Z"
+ content="""
+Does `git log git-annex` show a commit that was made at 23:30? 
+
+Does it show a commit 84068090af4bcd3d24f16d865ac07b0478f20ada?
+
+Is 84068090af4bcd3d24f16d865ac07b0478f20ada the parent of the 23:30 commit?
+"""]]

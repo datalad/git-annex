@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2012-04-23T14:29:03Z"
+ content="""
+You handle conflicts in annexed files the same as you would handle them in other binary files checked into git.
+
+For example, you might choose to `git rm` or `git add` the file to resolve the conflict.
+
+[[Previous_discussion|forum/A_really_stupid_question]]
+"""]]

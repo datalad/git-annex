@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawltxdgYMUK4CMJh3jC8AlegwyoiHA9Ka7o"
+ nickname="Justin"
+ subject="Trusty PPA"
+ date="2015-01-27T18:24:50Z"
+ content="""
+@Dennis, I just got a backport of the latest release (5.20150113) running under trusty.  This was my first attempt at backporting software and it ended up being a fairly big project.  I had to pull in a lot of haskell dependencies from vivid in order to get this to build.
+
+I'll attempt to keep this PPA up-to-date as long as I don't have to do too much more build dep wrangling.
+
+<https://launchpad.net/~jtgeibel/+archive/ubuntu/ppa?field.series_filter=trusty>
+"""]]

@@ -1,0 +1,161 @@
+### Please describe the problem
+Git annex assistant on windows exits with a failure upon large sync. It has done so about 6 times while messing with it. (I've been seeing if it is a good solution for my photos or not before taking the leap.) I am syncing between windows 10 and debian servers using the backup group and assistant/webapp. Debian is quite out of date, so I first used stable, then upped it to jessie-backports. Jessie backports is still, however, major version 5, so I upped it to neuro debian's build to see if it needed to match version numbers. I haven't quite matched the date though, so don't know if that could be an issue. I have tried the webapp as well, and it goes down during this issue. I have also had failures on the linux side. The second to last run git annex was using 85% of my system memory and the load was 2.5. I had to kill git annex assistant and restart. The Windows git annex assistant just became unresponsive that time and I had to reboot the system to get it to sense any files again. These could be separate issues, but it involved the same data set.
+
+### What steps will reproduce the problem?
+Setup git annex with assistant on windows 10 as a client and debian 8 latest neurodebian build running assistant. Copy in a lightroom catalog with previews, smart previews, and photos. Mine amounted to about 39 GB, 22k files, and 17k folders
+### What version of git-annex are you using? On what operating system?
+client, windows 10 running git bash window: 
+
+git-annex version: 6.20161231-gc8eeb17
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV ConcurrentOutput TorrentParser Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository versions: 3 5 6
+upgrade supported from repository versions: 2 3 4 5
+operating system: mingw32 i386
+
+server Debian 8:
+
+git-annex version: 6.20170209+gitg16be7b5cc-1~ndall+1
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository versions: 3 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+operating system: linux x86_64
+
+### Please provide any additional information below.
+This is happens for both my large and smaller lightroom catalogs. I'm wondering if it is a peculiarity with how some of the files are formatted or the fact that it is a huge GUID for a file name. I can fairly consistently reproduce this issue on my setup, and I'm a software engineer (just don't know haskell yet.) So, I'm willing to do further debugging steps to help out.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+$ git annex assistant --debug
+[2017-02-12 15:10:11.3151425] logging to .git\annex\daemon.log
+[2017-02-12 15:10:11.3151425] chat: C:\Program Files (x86)\Git\usr\bin\git-annex.exe ["assistant","--debug"]
+[2017-02-12 15:25:00.1479375] process done ExitFailure (-1073741819)
+
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+I assume you don't want the entire log in here right? It is 40k lines. I searched for ExitFailure and found only 3 instances, but none of them were at the end of the log.
+
+[2017-02-12 15:10:29.0507794] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","show-ref","--verify","-q","refs/remotes/origin/annex/direct/master"]
+[2017-02-12 15:10:29.1132817] process done ExitFailure 1
+
+[2017-02-12 15:10:30.1769265] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","push","origin","git-annex","master"]
+[2017-02-12 15:10:30.5990043] process done ExitFailure 1
+
+Last error:
+[2017-02-12 15:20:07.8259699] Watcher: add .\LR Main\LR Main Previews.lrdata\6\6D0A\6D0A45BF-E2F7-4094-A3C5-C0659456A383-05daea287739b47c27cea4102e72ecd9.lrprev
+[2017-02-12 15:20:07.8259699] process done ExitFailure 1
+
+
+Here are the last 100 or so lines, let me know if you want more:
+add .\LR Main\LR Main Previews.lrdata\5\5E0E\5E0EACCF-16F7-4D95-A01F-BA17EA4BFA48-05daea287739b47c27cea4102e72ecd9.lrprev ok
+add .\LR Main\LR Main Previews.lrdata\5\5E05\5E05C2FD-107F-4CC8-8B22-375F0B09F43F-a1140a4f04c71f00fb85fd8ac71d471c.lrfprev ok
+add .\LR Main\LR Main Previews.lrdata\5\5E05\5E05C2FD-107F-4CC8-8B22-375F0B09F43F-269826a76ee94c785b873f891dc7aa04.lrfprev ok
+add .\LR Main\LR Main Previews.lrdata\5\5E05\5E05C2FD-107F-4CC8-8B22-375F0B09F43F-05daea287739b47c27cea4102e72ecd9.lrprev [2017-02-12 15:24:05.2466023] read: sha256sum [".\\LR Main\\LR Main Previews.lrdata\\5\\5E05\\5E05C2FD-107F-4CC8-8B22-375F0B09F43F-05daea287739b47c27cea4102e72ecd9.lrprev"]
+[2017-02-12 15:24:05.293479] process done ExitSuccess
+ok
+add .\LR Main\LR Main Previews.lrdata\5\5DF5\5DF55627-D6A1-4E4D-96F3-00BFFBE07DE3-1c47c3bee58f7f7ae5b0b166edb1df35.lrprev [2017-02-12 15:24:05.3091052] read: sha256sum [".\\LR Main\\LR Main Previews.lrdata\\5\\5DF5\\5DF55627-D6A1-4E4D-96F3-00BFFBE07DE3-1c47c3bee58f7f7ae5b0b166edb1df35.lrprev"]
+[2017-02-12 15:24:05.355981] process done ExitSuccess
+ok
+add .\LR Main\LR Main Previews.lrdata\5\5DB9\5DB91865-DCDD-4987-8FBE-126861B802FC-05daea287739b47c27cea4102e72ecd9.lrprev ok
+add .\LR Main\LR Main Previews.lrdata\5\5DB3\5DB317AF-CE90-4B37-A65A-E7394E0D8364-d28c9daea957f6c969fa48154e27ccfa.lrfprev ok
+add .\LR Main\LR Main Previews.lrdata\5\5DB3\5DB317AF-CE90-4B37-A65A-E7394E0D8364-0dcfb6f1963162fa2616cf6950b64f23.lrfprev ok
+add .\LR Main\LR Main Previews.lrdata\5\5DB3\5DB317AF-CE90-4B37-A65A-E7394E0D8364-05daea287739b47c27cea4102e72ecd9.lrprev ok
+add .\LR Main\LR Main Previews.lrdata\5\5DAF\5DAFD546-32A8-4087-9DA9-E0C13C2EDE0E-077b070982fd42045ed5e932196fb988.lrprev ok
+add .\LR Main\LR Main Previews.lrdata\5\5D9E\5D9E0F0C-082F-4A2B-AF9C-3A3288B3A2AE-91a29824ad0a349e888a7db35e28325f.lrfprev ok
+add .\LR Main\LR Main Previews.lrdata\5\5D9E\5D9E0F0C-082F-4A2B-AF9C-3A3288B3A2AE-05daea287739b47c27cea4102e72ecd9.lrprev [2017-02-12 15:24:05.5123925] read: sha256sum [".\\LR Main\\LR Main Previews.lrdata\\5\\5D9E\\5D9E0F0C-082F-4A2B-AF9C-3A3288B3A2AE-05daea287739b47c27cea4102e72ecd9.lrprev"]
+[2017-02-12 15:24:05.559269] process done ExitSuccess
+ok
+add .\LR Main\LR Main Previews.lrdata\5\5D71\5D71BB4D-8322-47C0-B779-3542311E59DE-077b070982fd42045ed5e932196fb988.lrprev [2017-02-12 15:24:05.5748955] read: sha256sum [".\\LR Main\\LR Main Previews.lrdata\\5\\5D71\\5D71BB4D-8322-47C0-B779-3542311E59DE-077b070982fd42045ed5e932196fb988.lrprev"]
+[2017-02-12 15:24:05.6217725] process done ExitSuccess
+ok
+add .\LR Main\LR Main Previews.lrdata\5\5D6C\5D6C374E-FA1E-4526-A215-63B315BA82B2-9453b0b0faf115dd4cbf4a4ca3fd5ee7.lrprev ok
+add .\LR Main\LR Main Previews.lrdata\5\5D69\5D69C130-CDB9-4B67-8061-C0C0EF345D26-077b070982fd42045ed5e932196fb988.lrprev [2017-02-12 15:24:05.6842751] read: sha256sum [".\\LR Main\\LR Main Previews.lrdata\\5\\5D69\\5D69C130-CDB9-4B67-8061-C0C0EF345D26-077b070982fd42045ed5e932196fb988.lrprev"]
+[2017-02-12 15:24:05.7155263] process done ExitSuccess
+ok
+add .\LR Main\LR Main Previews.lrdata\5\5D47\5D479A01-2B69-4B85-AF2C-2CA2BF6BA66D-dfea411588b2a11b7e314d4691ee3d2f.lrprev ok
+add .\LR Main\LR Main Previews.lrdata\5\5D43\5D43DB0F-30D9-4071-B96C-25D2D82F6E40-05daea287739b47c27cea4102e72ecd9.lrprev ok
+add .\LR Main\LR Main Previews.lrdata\5\5D42\5D42D098-917E-46F6-AE24-2FB6242BE60D-05daea287739b47c27cea4102e72ecd9.lrprev [2017-02-12 15:24:05.7936545] read: sha256sum [".\\LR Main\\LR Main Previews.lrdata\\5\\5D42\\5D42D098-917E-46F6-AE24-2FB6242BE60D-05daea287739b47c27cea4102e72ecd9.lrprev"]
+[2017-02-12 15:24:05.8092806] process done ExitSuccess
+ok
+add .\LR Main\LR Main Previews.lrdata\5\5D3D\5D3DF631-9D24-446F-84F9-C858F398B23B-05daea287739b47c27cea4102e72ecd9.lrprev ok
+add .\LR Main\LR Main Previews.lrdata\5\5D36\5D3642E1-BBA6-4C0B-89B6-9451B375D47A-05daea287739b47c27cea4102e72ecd9.lrprev ok
+add .\LR Main\LR Main Previews.lrdata\5\5D29\5D29AB0B-E5A7-4930-BA0E-592675856EE8-b422a73fe8f4257d07ddd8c5d62692c9.lrfprev ok
+add .\LR Main\LR Main Previews.lrdata\5\5D29\5D29AB0B-E5A7-4930-BA0E-592675856EE8-05daea287739b47c27cea4102e72ecd9.lrprev [2017-02-12 15:24:05.9066036] read: sha256sum [".\\LR Main\\LR Main Previews.lrdata\\5\\5D29\\5D29AB0B-E5A7-4930-BA0E-592675856EE8-05daea287739b47c27cea4102e72ecd9.lrprev"]
+[2017-02-12 15:24:05.9509479] process done ExitSuccess
+ok
+add .\LR Main\LR Main Previews.lrdata\5\5D21\5D21CA81-F662-4566-8E69-B7587441A60B-c55693145cbd7408f494d96dc6feac77.lrfprev ok
+add .\LR Main\LR Main Previews.lrdata\5\5D21\5D21CA81-F662-4566-8E69-B7587441A60B-05daea287739b47c27cea4102e72ecd9.lrprev [2017-02-12 15:24:05.9978244] read: sha256sum [".\\LR Main\\LR Main Previews.lrdata\\5\\5D21\\5D21CA81-F662-4566-8E69-B7587441A60B-05daea287739b47c27cea4102e72ecd9.lrprev"]
+[2017-02-12 15:24:06.0134498] process done ExitSuccess
+ok
+add .\LR Main\LR Main Previews.lrdata\5\5D21\5D2174E4-5440-46C9-B852-0164DFB9912A-05daea287739b47c27cea4102e72ecd9.lrprev ok
+add .\LR Main\LR Main Previews.lrdata\5\5CF0\5CF09660-99B4-409F-8CF7-ADE34A6785B3-05daea287739b47c27cea4102e72ecd9.lrprev [2017-02-12 15:24:06.0603269] read: sha256sum [".\\LR Main\\LR Main Previews.lrdata\\5\\5CF0\\5CF09660-99B4-409F-8CF7-ADE34A6785B3-05daea287739b47c27cea4102e72ecd9.lrprev"]
+[2017-02-12 15:24:06.1072033] process done ExitSuccess
+ok
+add .\LR Main\LR Main Previews.lrdata\5\5CDA\5CDA3518-0AC4-4B77-9485-AC40246094C9-05daea287739b47c27cea4102e72ecd9.lrprev [2017-02-12 15:24:06.1228291] read: sha256sum [".\\LR Main\\LR Main Previews.lrdata\\5\\5CDA\\5CDA3518-0AC4-4B77-9485-AC40246094C9-05daea287739b47c27cea4102e72ecd9.lrprev"]
+[2017-02-12 15:24:06.1384542] process done ExitSuccess
+ok
+add .\LR Main\LR Main Previews.lrdata\5\5CCE\5CCE8E71-8668-45D7-9053-DBC59DBECEDA-05daea287739b47c27cea4102e72ecd9.lrprev [2017-02-12 15:24:06.1697055] read: sha256sum [".\\LR Main\\LR Main Previews.lrdata\\5\\5CCE\\5CCE8E71-8668-45D7-9053-DBC59DBECEDA-05daea287739b47c27cea4102e72ecd9.lrprev"]
+[2017-02-12 15:24:06.2165819] process done ExitSuccess
+ok
+add .\LR Main\LR Main Previews.lrdata\5\5CB2\5CB2A82E-E4E4-4999-B976-2650F63003D4-05daea287739b47c27cea4102e72ecd9.lrprev [2017-02-12 15:24:06.2322077] read: sha256sum [".\\LR Main\\LR Main Previews.lrdata\\5\\5CB2\\5CB2A82E-E4E4-4999-B976-2650F63003D4-05daea287739b47c27cea4102e72ecd9.lrprev"]
+[2017-02-12 15:24:06.2790841] process done ExitSuccess
+ok
+add .\LR Main\LR Main Previews.lrdata\5\5C8B\5C8BBE9D-4E0C-429E-BB54-0B39AA043ABA-05daea287739b47c27cea4102e72ecd9.lrprev ok
+add .\LR Main\LR Main Previews.lrdata\5\5C55\5C553361-7EF4-4B77-B568-FEAD5381CFCC-05daea287739b47c27cea4102e72ecd9.lrprev [2017-02-12 15:24:06.3103357] read: sha256sum [".\\LR Main\\LR Main Previews.lrdata\\5\\5C55\\5C553361-7EF4-4B77-B568-FEAD5381CFCC-05daea287739b47c27cea4102e72ecd9.lrprev"]
+[2017-02-12 15:24:06.3415866] process done ExitSuccess
+ok
+add .\LR Main\LR Main Previews.lrdata\5\5C2E\5C2EAB4B-3986-4038-855D-F9DB3A5EE390-05daea287739b47c27cea4102e72ecd9.lrprev ok
+add .\LR Main\LR Main Previews.lrdata\5\5C2D\5C2DE3F6-D523-4729-81E2-34DA2D66843D-05daea287739b47c27cea4102e72ecd9.lrprev [2017-02-12 15:24:06.3728379] read: sha256sum [".\\LR Main\\LR Main Previews.lrdata\\5\\5C2D\\5C2DE3F6-D523-4729-81E2-34DA2D66843D-05daea287739b47c27cea4102e72ecd9.lrprev"]
+[2017-02-12 15:24:06.4036538] process done ExitSuccess
+ok
+add .\LR Main\LR Main Previews.lrdata\5\5C21\5C21C472-7230-464F-ADFA-8F93D30280F1-05daea287739b47c27cea4102e72ecd9.lrprev ok
+add .\LR Main\LR Main Previews.lrdata\5\5C1C\5C1C2A2C-BFA9-42EA-A647-6F5138F5CEB4-077b070982fd42045ed5e932196fb988.lrprev ok
+[2017-02-12 15:24:06.449992] Committer: committing 5214 changes
+[2017-02-12 15:24:06.449992] Committer: Committing changes to git
+(recording state in git...)
+[2017-02-12 15:24:06.449992] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","update-index","-z","--index-info"]
+[2017-02-12 15:24:06.6687496] process done ExitSuccess
+[2017-02-12 15:24:06.6687496] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","symbolic-ref","-q","HEAD"]
+[2017-02-12 15:24:06.6843757] process done ExitSuccess
+[2017-02-12 15:24:06.6843757] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","show-ref","--hash","refs/heads/annex/direct/master"]
+[2017-02-12 15:24:06.7156263] process done ExitSuccess
+[2017-02-12 15:24:06.7156263] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","write-tree"]
+[2017-02-12 15:24:18.823257] process done ExitSuccess
+[2017-02-12 15:24:18.823257] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","rev-parse","e27617a27919a1942924c791c7963898b558f9c2:"]
+[2017-02-12 15:24:18.8388825] process done ExitSuccess
+[2017-02-12 15:24:18.8388825] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","commit-tree","c3f9659d704711122cfd83d3f4742635116ca96d","-p","e27617a27919a1942924c791c7963898b558f9c2"]
+[2017-02-12 15:24:19.0888926] process done ExitSuccess
+[2017-02-12 15:24:19.0888926] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","update-ref","refs/heads/annex/direct/master","8af641f066e30426a591bcf51a4244f127847431"]
+[2017-02-12 15:24:19.338833] process done ExitSuccess
+[2017-02-12 15:24:19.338833] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","symbolic-ref","-q","HEAD"]
+[2017-02-12 15:24:19.3700836] process done ExitSuccess
+[2017-02-12 15:24:19.3700836] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","show-ref","refs/heads/annex/direct/master"]
+[2017-02-12 15:24:19.3857092] process done ExitSuccess
+[2017-02-12 15:24:19.3857092] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","branch","-f","synced/master","refs/heads/annex/direct/master"]
+[2017-02-12 15:24:19.6400219] process done ExitSuccess
+[2017-02-12 15:24:19.6400219] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","branch","-f","master","refs/heads/annex/direct/master"]
+[2017-02-12 15:24:19.9025509] process done ExitSuccess
+[2017-02-12 15:24:19.9025509] Pusher: Syncing with origin 
+[2017-02-12 15:24:19.9025509] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","update-index","-z","--index-info"]
+[2017-02-12 15:24:34.1218776] process done ExitSuccess
+[2017-02-12 15:24:34.1218776] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","show-ref","--hash","refs/heads/git-annex"]
+[2017-02-12 15:24:34.1531288] process done ExitSuccess
+(recording state in git...)
+[2017-02-12 15:24:34.1531288] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","write-tree"]
+[2017-02-12 15:24:57.3948994] process done ExitSuccess
+[2017-02-12 15:24:57.3948994] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","commit-tree","df397eef838882ccb0cba9d6ceca056aad905520","-p","refs/heads/git-annex"]
+[2017-02-12 15:24:57.6449095] process done ExitSuccess
+[2017-02-12 15:24:57.6449095] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","update-ref","refs/heads/git-annex","14b3e08b23f938d901447b1b7fcbf020a8bc517c"]
+[2017-02-12 15:24:57.8960758] process done ExitSuccess
+[2017-02-12 15:25:00.0854341] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","core.bare=false","symbolic-ref","-q","HEAD"]
+[2017-02-12 15:25:00.1010592] process done ExitSuccess
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+I have had luck in manual mode using only linux. I only shied away from it, because I am chained to Windows in order to use some tools, e.g. lightroom, and it wasn't so nice there. Seeing support grow in Windows and the automatic features are amazing. It looks exactly like what I want, knowing where any of my files are at any given time and be able to setup more complicated transfer schemes to fit my needs exactly. Not to mention the ease of backing up over ssh to any of my linux boxes or offsite, etc. Oh and being able to checksum all of my photos and know they are all present and intact and being able to remove duplicate unorganized backups all over the place would be so great. I also need to work on a small subset on my macbook, so great solution for that as well.
+

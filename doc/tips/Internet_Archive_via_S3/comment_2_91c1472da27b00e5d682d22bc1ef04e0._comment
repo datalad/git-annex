@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.22"
+ subject="comment 2"
+ date="2013-10-11T17:08:27Z"
+ content="""
+This was a misleading error message. The url you are trying to add to the file does not match the size recorded for the file already in the annex. (Or possibly the file's key has no recorded size). If you really want to add the url to the file despite it being a different encoding, you can use --relaxed, although fsck may not like the result if you ever end up downloading that url..
+
+(Please file bug reports for problems in the future, rather than posting comments on only vaguely related pages which as we can see here can turn out to be entirely offtopic.)
+"""]]

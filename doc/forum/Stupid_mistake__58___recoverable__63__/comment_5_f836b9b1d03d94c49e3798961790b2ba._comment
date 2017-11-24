@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="Rasmus"
+ ip="213.120.148.111"
+ subject="comment 5"
+ date="2013-04-03T00:45:05Z"
+ content="""
+> [links not being added].
+Right.  Obliviously.  Sorry.
+
+
+I think the problem is more severe as all of the files have somehow ended up in the .git/objects folder.  I have no idea how, but I have been unsuccessful with both methods (the second methods gives me 
+    
+    getFileStatus: does not exist (No such file or directory)
+
+which I guess is related to the fact that my files somehow ended up in the git objects folder rather than the git annex objects folder.
+
+I appreciated the help.
+
+Cheers,
+Rasmus
+"""]]

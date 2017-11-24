@@ -1,0 +1,32 @@
+Normally, the git-annex assistant makes your files be available
+wherever you use it, and so a copy of each file is stored in each repository.
+That's perfect for files you're using right now, but what about files you're
+not using any more?
+
+You could just delete those files, but it's better to archive them, so
+you can access them later. All you need to get started archiving your old
+files is a USB drive, or an [Amazon Glacier](http://aws.amazon.com/glacier/)
+account.
+
+The webapp makes it easy to make a repository on either a USB drive,
+or on Amazon Glacier. Once the repository is created, be sure to
+put it in either the small archive, or full archive repository group.
+
+[[!img repogroups.png]]
+
+Now when you're done with a file, just move it into a directory named
+"archive". The assistant will notice you put it there, and next time it
+has the opportunity (when you plug in the USB drive, or when it can
+talk to Amazon Glacier over the network), will move the file's
+content to your archive repository.
+
+You'll no longer be able to open the file once it's been archived.
+If you later want to access it, you can just copy or move it out
+of the archive directory, and the assistant will retrieve its
+content from the archive.
+
+Note that retrieving data from Amazon Glacier takes 4 to 5 hours.
+
+### screencast
+
+[[!inline feeds=no template=bare pages=videos/git-annex_assistant_archiving]]

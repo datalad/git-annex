@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkzwmw_zyMpZC9_J7ey--woeYPoZkAOgGw"
+ nickname="dxtrish"
+ subject="comment 2"
+ date="2014-02-07T19:38:14Z"
+ content="""
+I do realize that it's not a fault in git-annex' code. I'm sorry if it was a stupid idea to post it here, but I was thinking if there exists some kind of workaround one could implement in the build system. I mean.. This isn't the first time someone compiles a program with libidn, gettext and/or gnutls (According to 'grep -R c_isascii /usr')
+"""]]

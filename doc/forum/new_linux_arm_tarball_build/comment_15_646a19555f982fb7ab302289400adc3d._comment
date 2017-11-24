@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="db"
+ subject="How do I start it?"
+ date="2016-01-23T22:42:52Z"
+ content="""
+This happens when I launch git-annex-webapp
+
+	[\u@\h \W]$ ./git-annex-webapp
+	Launching web browser on file:///tmp/webapp1804289383846930886.html
+	git-annex: xdg-open: createProcess: runInteractiveProcess: exec: does not exist (No such file or directory)
+
+
+And the webapp1804289383846930886.html file seem to be deleted immediately.
+
+This is on a headless NAS and obviously I don't have a browser or anything on it. I just want to run Annex as a server/service and admin it from a browser on another machine on my LAN.
+"""]]

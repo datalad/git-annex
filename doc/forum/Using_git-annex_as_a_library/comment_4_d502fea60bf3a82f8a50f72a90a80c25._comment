@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.41"
+ subject="comment 4"
+ date="2014-03-26T18:31:30Z"
+ content="""
+I didn't. I removed the --json options from commands that didn't necessarily output valid json when used with it. There are numerous commands that support --json (find, whereis, info, status, metadata, examinekey), and I'm open to adding it to other commands -- but it's probably not feasible to make commands like `get` output json, since their output includes progress info printed by rsync etc.
+"""]]

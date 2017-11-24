@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmH7o6q2l99M-PQolOfbR3_i5B_jtTIcAE"
+ nickname="Giovanni"
+ subject="Camlistore"
+ date="2014-09-17T20:36:43Z"
+ content="""
+anarcat, have you used it? I tried, but it is buggy. They seem to be at [\"the Archivist\"](http://git-annex.branchable.com/) group of people, but if you don't have a hard drive to store the things, everything breaks up. I paid a lot of money to Amazon because I believed I could use Camlistore to organize data stored at S3, but apparently S3 is \"just for backup\", and if it is your only storage, then Camlistore will keep fetching data over and over \"to index it\" and in the end you pay.
+
+Yes, it keeps working, so you need some server online at all times, with Camlistore running.
+"""]]

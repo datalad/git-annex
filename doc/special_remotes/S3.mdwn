@@ -1,0 +1,101 @@
+This special remote type stores file contents in a bucket in Amazon S3
+or a similar service.
+
+See [[tips/using_Amazon_S3]], 
+[[tips/Internet_Archive_via_S3]], and [[tips/using_Google_Cloud_Storage]]
+for usage examples.
+
+## configuration
+
+The standard environment variables `AWS_ACCESS_KEY_ID` and 
+`AWS_SECRET_ACCESS_KEY` are used to supply login credentials
+for Amazon. You need to set these only when running
+`git annex initremote`, as they will be cached in a file only you
+can read inside the local git repository.
+
+A number of parameters can be passed to `git annex initremote` to configure
+the S3 remote.
+
+* `encryption` - One of "none", "hybrid", "shared", or "pubkey".
+  See [[encryption]].
+
+* `keyid` - Specifies the gpg key to use for [[encryption]].
+
+* `chunk` - Enables [[chunking]] when storing large files.
+  `chunk=1MiB` is a good starting point for chunking.
+
+* `embedcreds` - Optional. Set to "yes" embed the login credentials inside
+  the git repository, which allows other clones to also access them. This is
+  the default when gpg encryption is enabled; the credentials are stored
+  encrypted and only those with the repository's keys can access them.
+
+  It is not the default when using shared encryption, or no encryption.
+  Think carefully about who can access your repository before using
+  embedcreds without gpg encryption.
+
+* `datacenter` - Defaults to "US". Other values include "EU" (which is EU/Ireland),
+  "us-west-1", "us-west-2", "ap-southeast-1", "ap-southeast-2", and
+  "sa-east-1".
+
+* `storageclass` - Default is "STANDARD".  
+  Consult S3 provider documentation for pricing details and available
+  storage classes.
+
+  When using Amazon S3, if you have configured git-annex to preserve
+  multiple [[copies]], consider setting this to "REDUCED_REDUNDANCY"
+  to save money. 
+  
+  Or, if the remote will be used for backup or archival,
+  and so its files are Infrequently Accessed, "STANDARD_IA" is also a
+  good choice to save money. (Requires a git-annex built with aws-0.13.0)
+
+  When using Google Cloud Storage, to make a nearline bucket, set this to
+  "NEARLINE". (Requires a git-annex built with aws-0.13.0)
+
+  Note that changing the storage class of an existing S3 remote will
+  affect new objects sent to the remote, but not objects already
+  stored there.
+
+* `host` and `port` - Specify in order to use a different, S3 compatable
+  service.
+
+* `requeststyle` - Set to "path" to use path style requests, instead of the
+  default DNS style requests. This is needed with some S3 services.
+
+* `bucket` - S3 requires that buckets have a globally unique name, 
+  so by default, a bucket name is chosen based on the remote name
+  and UUID. This can be specified to pick a bucket name.
+
+* `exporttree` - Set to "yes" to make this special remote usable
+  by [[git-annex-export]]. It will not be usable as a general-purpose
+  special remote.
+
+* `public` - Set to "yes" to allow public read access to files sent
+  to the S3 remote. This is accomplished by setting an ACL when each 
+  file is uploaded to the remote. So, changes to this setting will
+  only affect subseqent uploads.
+
+* `publicurl` - Configure the URL that is used to download files
+  from the bucket when they are available publically.
+  (This is automatically configured for Amazon S3 and the Internet Archive.)
+
+* `partsize` - Amazon S3 only accepts uploads up to a certian file size,
+  and storing larger files requires a multipart upload process.
+
+  Setting `partsize=1GiB` is recommended for Amazon S3 when not using
+  chunking; this will cause multipart uploads to be done using parts
+  up to 1GiB in size. Note that setting partsize to less than 100MiB
+  will cause Amazon S3 to reject uploads.
+
+  This is not enabled by default, since other S3 implementations may
+  not support multipart uploads or have different limits,
+  but can be enabled or changed at any time.
+
+* `fileprefix` - By default, git-annex places files in a tree rooted at the
+  top of the S3 bucket. When this is set, it's prefixed to the filenames
+  used. For example, you could set it to "foo/" in one special remote,
+  and to "bar/" in another special remote, and both special remotes could
+  then use the same bucket.
+
+* `x-amz-meta-*` are passed through as http headers when storing keys
+  in S3. see [the Internet Archive S3 interface documentation](https://archive.org/help/abouts3.txt) for example headers.

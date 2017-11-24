@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.210"
+ subject="comment 1"
+ date="2013-02-26T20:29:05Z"
+ content="""
+`git annex unused` finds content that is not used by the working tree or by *any* branch is unused. For the working tree, it can look at the symlinks on disk, which is the fastest option.
+
+For branches, it has to first use `git ls-tree` to find the files on the branch, and then use `git cat-file` to look up the key used by each file. It does this as fast as it can (eg, it runs a single `git cat-file --batch`, rather than one process per file). Still, this is pulling potentially a lot of data out of git, and it gets pretty slow.
+
+I've spent a lot of time optimising this as much as is possible with these constraints. One nice one is that, if it finds no unused keys after checking the working tree, it can stop, rather than checking any branches. Your example avoids this optimisation.
+
+Another optimisation is to only check each git ref once, even if multiple branches refer to it. You can see this optmisation firing in your transcript, when it only shows it's checking one branch of the two identical branches you've made.
+
+Indeed, if you go on and add 100 identical branches, you'll find it runs in just about the same time it ran with 2 branches. (There's a little overhead in getting the list of branches and throwing out the duplicates, but that's all.)
+
+What then explains your numbers? Well, I have no idea. I cannot replicate them; I tend to see about the same amount of time taken with two duplicate branches as with one branch. I suspect you just didn't get statistically valid results, which playing around with `time` at the command line often doesn't,
+due to caching, other active processes, etc.
+"""]]

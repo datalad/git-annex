@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawla7u6eLKNYZ09Z7xwBffqLaXquMQC07fU"
+ nickname="Matthias"
+ subject="Hint for Debian/Ubuntu"
+ date="2012-11-07T13:10:15Z"
+ content="""
+In Debian/Ubuntu the default .bashrc returns immediately if the shell is non-interactive. Make sure to setup the PATH such that it is updated with the location of git-annex-shell before this check! This just cost me an hour of debugging as I didn't notice the return statement early on...
+"""]]

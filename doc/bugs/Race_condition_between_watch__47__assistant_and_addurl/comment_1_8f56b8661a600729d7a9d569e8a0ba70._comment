@@ -1,0 +1,55 @@
+[[!comment format=mdwn
+ username="http://johan.kiviniemi.name/"
+ nickname="Johan"
+ subject="Another race condition"
+ date="2014-03-31T03:42:42Z"
+ content="""
+Here’s another race condition which seems related:
+
+[[!format sh \"\"\"
+% git annex addurl 'quvi:http://youtu.be/-CbFj9K9AQg'
+addurl David_Raymond_Christiansen___Dependently_Typed_Programming_in_Idris___A_Demo.webm 
+--2014-03-31 05:45:49--  http://r4---sn-oxc0a5-ixae.googlevideo.com/videoplayback?<cut>
+Resolving r4---sn-oxc0a5-ixae.googlevideo.com (r4---sn-oxc0a5-ixae.googlevideo.com)... 83.145.196.143, 2001:1bc8:100:1b::f
+Connecting to r4---sn-oxc0a5-ixae.googlevideo.com (r4---sn-oxc0a5-ixae.googlevideo.com)|83.145.196.143|:80... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: http://r13---sn-5go7dn7s.googlevideo.com/videoplayback?<cut> [following]
+--2014-03-31 05:45:49--  http://r13---sn-5go7dn7s.googlevideo.com/videoplayback?<cut>
+Resolving r13---sn-5go7dn7s.googlevideo.com (r13---sn-5go7dn7s.googlevideo.com)... 173.194.48.18, 2a00:1450:400f::12
+Connecting to r13---sn-5go7dn7s.googlevideo.com (r13---sn-5go7dn7s.googlevideo.com)|173.194.48.18|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 320557466 (306M) [video/webm]
+Saving to: ‘/home/ion/nobackup/media/video/.git/annex/tmp/URL--quvi&chttp&c%%youtu.be%-CbFj9K9AQg’
+
+100%[======================================>] 320,557,466  895KB/s   in 6m 14s 
+
+2014-03-31 05:52:04 (837 KB/s) - ‘/home/ion/nobackup/media/video/.git/annex/tmp/URL--quvi&chttp&c%%youtu.be%-CbFj9K9AQg’ saved [320557466/320557466]
+
+(Recording state in git...)
+fatal: Unable to create '/home/ion/nobackup/media/video/.git/index.lock': File exists.
+
+If no other git process is currently running, this probably means a
+git process crashed in this repository earlier. Make sure no other git
+process is running and remove the file manually to continue.
+
+git-annex: user error (xargs [\"-0\",\"git\",\"--git-dir=/home/ion/nobackup/media/video/.git\",\"--work-tree=/home/ion/nobackup/media/video\",\"-c\",\"core.bare=false\",\"add\",\"--\"] exited 123)
+failed
+git-annex: addurl: 1 failed
+
+% ls -l /home/ion/nobackup/media/video/.git/index.lock
+ls: cannot access /home/ion/nobackup/media/video/.git/index.lock: No such file or directory
+\"\"\"]]
+
+The only lines in daemon.log from that time:
+
+[[!format sh \"\"\"
+[2014-03-31 05:52:04 EEST] Committer: Committing changes to git
+[2014-03-31 05:52:04 EEST] Pusher: Syncing with heh.fi 
+Already up-to-date.
+To heh.fi:/storage/ion/media/video
+   3df241b..095d6c3  git-annex -> synced/git-annex
+   10b3166..98074c1  annex/direct/master -> synced/master
+Already up-to-date.
+\"\"\"]]
+
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://yarikoptic.myopenid.com/"
+ nickname="site-myopenid"
+ subject="Re: compression -- storage and transfer"
+ date="2013-05-22T19:17:33Z"
+ content="""
+ha -- apparently it is trivial to configure apache to serve pre-compressed files (e.g. see http://stackoverflow.com/questions/75482/how-can-i-pre-compress-files-with-mod-deflate-in-apache-2-x) and they arrive compressed to client with
+
+Content-Encoding: gzip
+
+but unfortunately git-annex doesn't like those (fails to \"verify\") -- do you think it could be implemented for web \"special remotes\"? that would be really nice -- then I could store such load on another website, and addurl links to the compressed content
+"""]]

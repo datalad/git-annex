@@ -1,0 +1,3 @@
+When I went to alternativeto.net I noticed that SpiderOak is a featured application. I decided to search git-annex and see how "Like"-ed it is in comparison... there were 0 "Like"-s.
+
+I suggest going to <http://alternativeto.net/software/git-annex/> and "Like" git-annex.

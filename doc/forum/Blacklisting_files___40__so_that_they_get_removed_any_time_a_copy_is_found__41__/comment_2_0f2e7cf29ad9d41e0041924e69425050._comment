@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-10-04T15:17:49Z"
+ content="""
+The answer to this question depends on how quickly you need to get rid of
+the files, and whether you want git-annex to generally keep the content of
+deleted and old versions of modified files or not.
+
+If you only want git-annex to keep the content of files that are present in
+the current branches and tags, then simply delete a file and commit will
+work. Later using `git annex unused` to finish getting rid of the content
+of deleted files that are not used by any branches/tags.
+
+If you want to keep the full history in general, but drop the content of
+specific files, then you need to use git-annex to drop the content before
+you delete the file. You can use `git annex whereis $file` to see everywhere that
+the content has gotten to, and then `git annex drop $file --from` each location
+(and from the local repository).
+
+If you need to immediately get rid of the content of some file, you can use
+the same procedure to check where it is and drop it from those locations.
+
+You don't need to filter old commits out of branches to use `git annex
+unused`; it only looks at the most recent commit in each branch, so once a
+file has been deleted from all branches it will be identified as unused.
+"""]]

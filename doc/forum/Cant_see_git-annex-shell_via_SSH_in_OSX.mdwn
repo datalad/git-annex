@@ -1,0 +1,119 @@
+### Sync Problems using SSH remote in OSX
+
+- Im trying to work out SSH remotes by trying to sync up repos on my home network, following the walkthrough. 
+- I have two machines (mini and mbp ) running OSX Mavericks, with RLogin enabled for all users to enable ssh.
+- I can SSH into the remote machine and see *git-annex-shell*, which seems to have ok permissions
+
+```
+
+    johns-mbp:annex johnmccallum$ ssh john@johns-mini-5.home 
+    
+    Last login: Sun Apr 12 07:31:07 2015 from johns-mbp.home
+
+    johns-mini-5:~ john$ which git-annex-shell
+
+    /usr/local/bin/git-annex-shell
+
+    johns-mini-5:~ john$ ls -l /usr/local/bin/git-annex-shell
+
+    -rwxr-xr-x@ 1 john  admin  668 12 Apr 07:03 /usr/local/bin/git-annex-shell
+
+```
+
+- Previously on mini I created and populated a repo
+
+``` 
+
+    494  mkdir annex
+
+    495  cd annex
+
+    496  git init
+
+    497  git annex init
+
+    498  cp ~/Pictures/*.png .
+
+    499  git annex add .
+
+    500  git commit -a -m 'added png'
+
+```
+
+- I can git clone this repo to MBP by SSH
+
+
+```
+	johns-mbp:~ johnmccallum$ git clone ssh://john@johns-mini-5.home/Users/john/annex ~/annex
+
+	Cloning into '/Users/johnmccallum/annex'...
+
+	remote: Counting objects: 24, done.
+
+	remote: Compressing objects: 100% (19/19), done.
+
+	remote: Total 24 (delta 3), reused 0 (delta 0)
+
+	Receiving objects: 100% (24/24), done.
+
+	Resolving deltas: 100% (3/3), done.
+
+	Checking connectivity... done
+
+	johns-mbp:~ johnmccallum$ cd annex
+
+	johns-mbp:annex johnmccallum$ git annex init 'MBP'
+
+	init MBP (merging origin/git-annex into git-annex...)
+
+	(recording state in git...)
+
+	ok
+
+	(recording state in git...)
+
+	johns-mbp:annex johnmccallum$ ls -l
+
+	total 16
+
+	lrwxr-xr-x  1 johnmccallum  staff  196 12 Apr 08:20 CoGe-Snapshot at 2013-03-22 - 11-27-20.png -> .git/annex/objects/gf/Xp/SHA256E-s367697--	fce3f47f218805cd9855ec3fd4203b52e83587148b34c8e706df512783eb7557.png/SHA256E-s367697--fce3f47f218805cd9855ec3fd4203b52e83587148b34c8e706df512783eb7557.png
+
+	lrwxr-xr-x  1 johnmccallum  staff  196 12 Apr 08:20 delicious.png -> .git/annex/objects/ZJ/vX/SHA256E-s112714--057d0faa464f8d588c053dae460838d68ea7803d7eaf7330798679e63f92cecb.png/SHA256E-s112714--057d0faa464f8d588c053dae460838d68ea7803d7eaf7330798679e63f92cecb.png
+
+
+```
+
+ **HOWEVER**   _git annex get_  fails as follows:
+
+```
+
+	johns-mbp:annex johnmccallum$ git annex get delicious.png 
+
+	get delicious.png bash: git-annex-shell: command not found
+
+ 	 Remote origin does not have git-annex installed; setting annex-ignore
+
+ 	 This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git config remote.origin.annex-ignore false
+	(not available) 
+ 	 Try making some of these repositories available:
+  		129620b2-91b1-4541-b7b1-9e5a9d31d5d3 -- john@johns-mini-5.home:~/annex
+	failed
+	git-annex: get: 1 failed
+
+```
+
+This is not the case on the remote host when I SSH in as the same user
+
+```
+
+    johns-mini-5:~ john$ which git-annex-shell
+
+
+    /usr/local/bin/git-annex-shell
+
+```
+
+
+ The only thread on this seems to be https://git-annex.branchable.com/forum/not_finding_git-annex-shell_on_remote/ and Im at a loss to understand it.  
+
+Any suggestions would be welcome

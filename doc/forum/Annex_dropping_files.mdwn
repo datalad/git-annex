@@ -1,0 +1,12 @@
+It seems like one of my repos dropped files by itself, my setup involved 3 distributed repos (non bare repos, not using assistant), A/B/C then one client died I've created another one in its place called D cloned from B and marked C as dead. I have now A/B/D. I have updated files in A synced it to D (central) I then tried dropping unused, it listed none (I've dropped the files from A which has full copy) at this point I thought B did not sync to it maybe thats why it did not drop them. I went home sync my laptop B (B dropped its share of unused files) but cental D still show no unused. 
+
+A-D has full copies of the repo
+B has partial.
+
+At this point I checked out a old commit from a week ago, checked where the links for the files are pointing to, they point to no where files are not there. Repo sized reported with du -hcs show both repos are the same size (132GB) looks like D managed to drop unused files by itself. I am wondering what caused this?
+
+My annex version is,
+
+git-annex version: 4.20130902-g307537a
+
+on all clients.

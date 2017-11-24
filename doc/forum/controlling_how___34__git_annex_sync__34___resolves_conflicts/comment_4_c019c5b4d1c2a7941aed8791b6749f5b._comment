@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2017-06-01T17:14:28Z"
+ content="""
+Well, a git `update` hook is the only way to utterly prevent non-ff's being
+pushed.
+
+Since you're checking out the repository fresh each time, your scripts
+could use `git annex sync --no-pull`. That would fail if someone else
+pushed work to the repo in the meantime, and you could then use whatever
+git commands make sense for you to fetch and rebase on top of the new changes.
+"""]]

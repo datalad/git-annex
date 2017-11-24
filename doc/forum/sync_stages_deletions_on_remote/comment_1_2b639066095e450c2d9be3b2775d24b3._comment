@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://schnouki.net/"
+ nickname="Schnouki"
+ subject="comment 1"
+ date="2014-04-17T12:16:41Z"
+ content="""
+Here's the output of `git annex sync --debug` (for a different commit): <http://ix.io/bJZ>
+"""]]

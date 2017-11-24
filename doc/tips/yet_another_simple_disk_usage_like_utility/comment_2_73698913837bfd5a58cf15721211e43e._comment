@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
+ nickname="John"
+ subject="comment 2"
+ date="2013-08-30T06:09:29Z"
+ content="""
+You may want to try my `sizes` tool on Hackage.  Just pass `-A` and it will be aware of the annex and report sizes as if no files were annexed.  The only downside is that it reports file usage for replicated content multiple times, as if you'd copied the data out of the annex rather than hardlinked all duplicate copies (although, this may be exactly the behavior some people want).
+"""]]

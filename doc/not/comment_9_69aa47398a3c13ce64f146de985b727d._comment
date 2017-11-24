@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkQafKy7hNSEolLs6TvbgUnkklTctUY9LI"
+ nickname="Zellyn"
+ subject="Not a backup system..."
+ date="2013-12-10T20:55:05Z"
+ content="""
+I'd like to understand the \"not a backup system\" point better. My current plan was to use git annex assistant to save my annex folder onto two hard drives, one at home and one at work. Step two is to move most big stuff into .../archive/... folders, and step three is to add an annex folder on my wife's laptop, so we can use the hard drives to back up everything.
+
+Does that sound unreasonable?
+"""]]

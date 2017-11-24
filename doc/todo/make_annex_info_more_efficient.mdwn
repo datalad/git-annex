@@ -1,0 +1,3 @@
+ATM it takes about a minute for 'git annex info' on a sizeable but not huge repository with only ~450 files under annex but a few thousand of files  (~7000) in the tree.  I am not quite sure why it takes that long since it seems to care only about annexed files.  Also it might be of benefit to parallelize some traversal operations to take advantage of multiple cpu/cores
+
+[[!meta author=yoh]]

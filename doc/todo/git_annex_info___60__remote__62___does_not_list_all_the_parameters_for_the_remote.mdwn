@@ -1,0 +1,29 @@
+[[!format sh """
+$> git annex info  gdrive2 --verbose    
+remote: gdrive2   
+description: [gdrive2]
+uuid: d7e13bf3-0c0e-44c9-a626-c7af6a628df7
+trust: semitrusted
+cost: 200.0
+type: external
+externaltype: rclone
+encryption: none
+chunking: 52.43 megabyteschunks
+remote annex keys: 3
+remote annex size: 112.51 megabytes
+(dev) 2 29865.....................................:Fri 21 Jul 2017 12:35:35 PM EDT:.
+hopa:/tmp/testds1
+$> git co git-annex
+Switched to branch 'git-annex'
+W: git-annex repositories not (yet) supported in the prompt                                                     
+(dev) 2 29866.....................................:Fri 21 Jul 2017 12:35:40 PM EDT:.
+hopa:/tmp/testds1
+$> cat remote.log 
+ace2983e-5e2b-4c6a-8251-5344392d563c chunk=50MiB encryption=none externaltype=rclone mac=HMACSHA512 name=gdrive1 prefix=git-annex/testds1 rclone_layout=lower target=google-drive1 type=external timestamp=1500494328.845312147s
+d7e13bf3-0c0e-44c9-a626-c7af6a628df7 chunk=50MiB encryption=none externaltype=rclone mac=HMACSHA512 name=gdrive2 prefix=git-annex/raiders2 rclone_layout=lower target=google-drive1 type=external timestamp=1500654564.923893997s
+
+"""]]
+
+needed to see what is the prefix -- which is stored in remote.log -- but not printed by 'git annex info' neither in --verbose nor --json mode
+
+[[!meta author=yoh]]

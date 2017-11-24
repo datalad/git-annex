@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmwjQzWgiD7_I3zw-_91rMRf_6qoThupis"
+ nickname="Mike"
+ subject="comment 15"
+ date="2014-06-19T21:19:01Z"
+ content="""
+Everything seems to be working fine now, but I have another question:
+
+Is there any way to speed up the copying of many small files? It looks like git-annex is calling rsync for each individual file, which is very fast for large files, but on my directories with many small files, the total speed is working on to just a few MB an hour - it has only transferred 1GB in the last 4 hours.
+
+I am using the WORM backed with the ``-b WORM`` flag, but I wonder if there is a different move method implemented? For example many calls to ``mv`` will be much faster than many calls to ``rsync``. 
+
+Thanks!
+"""]]

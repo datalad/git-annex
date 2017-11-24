@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.8.80"
+ subject="comment 1"
+ date="2013-09-30T16:08:40Z"
+ content="""
+You apparently at one point installed git-annex from the prebuilt tarball, in `/opt/git-annex.linux/`. It set up a ~/.ssh/git-annex-shell that points to this location. If you no longer have it installed that way, you can remove that file.
+"""]]

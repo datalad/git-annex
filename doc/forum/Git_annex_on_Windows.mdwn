@@ -1,0 +1,11 @@
+Hi,
+I want to download some files in git and git annex in Windows OS.
+I have installed msysgit for git-scm in D:\Git directory,
+Now I download git-annex assistant for Windows, and install it
+in D:\Git\cmd directory.
+But when I run the command "git annex" in git-bash, it says it can not
+found the "git annex" command.
+My question is that, how should I use git annex in Windows to download files?
+For example, git annex get <filename>.
+Doea anyone has any idear to help me figure it out?
+Thanks in advance!

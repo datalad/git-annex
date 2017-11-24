@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="99.54.57.201"
+ subject="comment 1"
+ date="2013-01-26T07:11:35Z"
+ content="""
+speaking strictly from the git point of view, you can create a new commit that reverses an old commit completely.
+
+    git revert <commit>
+
+creates a new commit which does the exact opposite of the commit you specify.  Theoretically it bring everything back to you quick and clean!
+
+
+
+"""]]

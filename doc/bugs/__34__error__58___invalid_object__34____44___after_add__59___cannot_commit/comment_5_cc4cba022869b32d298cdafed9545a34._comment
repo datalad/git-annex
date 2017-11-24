@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="zardoz"
+ ip="78.48.163.229"
+ subject="comment 5"
+ date="2014-08-22T13:07:34Z"
+ content="""
+I remembered I keep an hourly snapshot regimen and was able to get back the repository from before doing the «add» this morning. Both git fsck and git annex fsck return no errors, and yet, whenever anything is done to the git-annex branch (I tried add and forget), I get the above error.
+"""]]

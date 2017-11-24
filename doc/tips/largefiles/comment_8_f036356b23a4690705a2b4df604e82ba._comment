@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joern.mankiewicz@06fb5bc9b732f143dee3606866362f562531310d"
+ nickname="joern.mankiewicz"
+ avatar="http://cdn.libravatar.org/avatar/446365f4d50dddc42965fa0432e70cdb"
+ subject="Beware global configurations!"
+ date="2017-03-20T22:47:50Z"
+ content="""
+Thanks, joey.
+
+Your last comment brought me onto the right track. The Problem was not in the repository, but an old stale global .gitconfig in my homedir. I just checked $XDG_CONFIG_HOME/git/config were currently my global git-config is residing and totaly forgot about this old config. Stupid me!
+
+    git config --show-origin --get annex.largefiles
+
+was my savior here as it clearly indicated that there is indeed a (unintended) config setting and where to find the file. So i can strongly recommend anybody experiencing strange behavior to try this one-liner. It might have saved me hours of time.
+
+Thanks for your help! :)
+
+Cheers
+
+Jörn
+"""]]

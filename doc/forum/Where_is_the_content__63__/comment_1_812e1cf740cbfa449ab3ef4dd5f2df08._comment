@@ -1,0 +1,132 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkpIIYg6Fl7OFsOHVPEchZYj68A3dk4lVg"
+ nickname="Paul"
+ subject="install log"
+ date="2014-07-15T12:02:59Z"
+ content="""
+Installation starting to /data/data/ga.androidterm
+ac90d4f57076a59cac3a8017b89ac9b5ab4e5021
+installing busybox
+installing git-annex
+installing git-shell
+installing git-upload-pack
+installing git
+installing gpg
+installing rsync
+installing ssh
+installing ssh-keygen
+linking ./libexec/git-core/git-show to git
+linking ./libexec/git-core/git-cherry-pick to git
+linking ./libexec/git-core/git-revert to git
+linking ./libexec/git-core/git-rerere to git
+linking ./libexec/git-core/git to git
+linking ./libexec/git-core/git-cat-file to git
+linking ./libexec/git-core/git-archive to git
+linking ./libexec/git-core/git-apply to git
+linking ./libexec/git-core/git-repack to git
+linking ./libexec/git-core/git-replace to git
+linking ./libexec/git-core/git-verify-pack to git
+linking ./libexec/git-core/git-name-rev to git
+linking ./libexec/git-core/git-grep to git
+linking ./libexec/git-core/git-format-patch to git
+linking ./libexec/git-core/git-log to git
+linking ./libexec/git-core/git-read-tree to git
+linking ./libexec/git-core/git-fast-export to git
+linking ./libexec/git-core/git-mktag to git
+linking ./libexec/git-core/git-cherry to git
+linking ./libexec/git-core/git-stage to git
+linking ./libexec/git-core/git-blame to git
+linking ./libexec/git-core/git-help to git
+linking ./libexec/git-core/git-tag to git
+linking ./libexec/git-core/git-column to git
+linking ./libexec/git-core/git-clone to git
+linking ./libexec/git-core/git-pack-redundant to git
+linking ./libexec/git-core/git-rev-list to git
+linking ./libexec/git-core/git-ls-files to git
+linking ./libexec/git-core/git-update-index to git
+linking ./libexec/git-core/git-merge-tree to git
+linking ./libexec/git-core/git-shortlog to git
+linking ./libexec/git-core/git-pack-refs to git
+linking ./libexec/git-core/git-fsck to git
+linking ./libexec/git-core/git-mv to git
+linking ./libexec/git-core/git-index-pack to git
+linking ./libexec/git-core/git-upload-archive to git
+linking ./libexec/git-core/git-unpack-file to git
+linking ./libexec/git-core/git-merge-recursive to git
+linking ./libexec/git-core/git-checkout to git
+linking ./libexec/git-core/git-mailsplit to git
+linking ./libexec/git-core/git-whatchanged to git
+linking ./libexec/git-core/git-remote-fd to git
+linking ./libexec/git-core/git-fsck-objects to git
+linking ./libexec/git-core/git-diff to git
+linking ./libexec/git-core/git-diff-tree to git
+linking ./libexec/git-core/git-check-ref-format to git
+linking ./libexec/git-core/git-status to git
+linking ./libexec/git-core/git-annotate to git
+linking ./libexec/git-core/git-bisect--helper to git
+linking ./libexec/git-core/git-mktree to git
+linking ./libexec/git-core/git-check-ignore to git
+linking ./libexec/git-core/git-clean to git
+linking ./libexec/git-core/git-merge to git
+linking ./libexec/git-core/git-var to git
+linking ./libexec/git-core/git-get-tar-commit-id to git
+linking ./libexec/git-core/git-remote-ext to git
+linking ./libexec/git-core/git-stripspace to git
+linking ./libexec/git-core/git-send-pack to git
+linking ./libexec/git-core/git-fetch to git
+linking ./libexec/git-core/git-ls-remote to git
+linking ./libexec/git-core/git-init to git
+linking ./libexec/git-core/git-notes to git
+linking ./libexec/git-core/git-commit to git
+linking ./libexec/git-core/git-receive-pack to git
+linking ./libexec/git-core/git-prune to git
+linking ./libexec/git-core/git-update-server-info to git
+linking ./libexec/git-core/git-gc to git
+linking ./libexec/git-core/git-show-ref to git
+linking ./libexec/git-core/git-merge-subtree to git
+linking ./libexec/git-core/git-describe to git
+linking ./libexec/git-core/git-branch to git
+linking ./libexec/git-core/git-checkout-index to git
+linking ./libexec/git-core/git-prune-packed to git
+linking ./libexec/git-core/git-ls-tree to git
+linking ./libexec/git-core/git-hash-object to git
+linking ./libexec/git-core/git-push to git
+linking ./libexec/git-core/git-for-each-ref to git
+linking ./libexec/git-core/git-verify-tag to git
+linking ./libexec/git-core/git-diff-files to git
+linking ./libexec/git-core/git-check-attr to git
+linking ./libexec/git-core/git-mailinfo to git
+linking ./libexec/git-core/git-check-mailmap to git
+linking ./libexec/git-core/git-fetch-pack to git
+linking ./libexec/git-core/git-diff-index to git
+linking ./libexec/git-core/git-add to git
+linking ./libexec/git-core/git-config to git
+linking ./libexec/git-core/git-merge-ours to git
+linking ./libexec/git-core/git-symbolic-ref to git
+linking ./libexec/git-core/git-init-db to git
+linking ./libexec/git-core/git-pack-objects to git
+linking ./libexec/git-core/git-rm to git
+linking ./libexec/git-core/git-write-tree to git
+linking ./libexec/git-core/git-show-branch to git
+linking ./libexec/git-core/git-fmt-merge-msg to git
+linking ./libexec/git-core/git-count-objects to git
+linking ./libexec/git-core/git-reset to git
+linking ./libexec/git-core/git-reflog to git
+linking ./libexec/git-core/git-rev-parse to git
+linking ./libexec/git-core/git-update-ref to git
+linking ./libexec/git-core/git-patch-id to git
+linking ./libexec/git-core/git-commit-tree to git
+linking ./libexec/git-core/git-merge-file to git
+linking ./libexec/git-core/git-credential to git
+linking ./libexec/git-core/git-unpack-objects to git
+linking ./libexec/git-core/git-bundle to git
+linking ./libexec/git-core/git-merge-index to git
+linking ./libexec/git-core/git-remote to git
+linking ./libexec/git-core/git-merge-base to git
+linking ./bin/git-upload-archive to git
+linking ./bin/git-receive-pack to git
+linking ./libexec/git-core/git-shell to git-shell
+linking ./libexec/git-core/git-upload-pack to git-upload-pack
+Installation complete
+
+"""]]

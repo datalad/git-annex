@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="josch"
+ ip="2001:638:709:5:2ad2:44ff:fe4b:56aa"
+ subject="comment 2"
+ date="2014-06-27T04:50:03Z"
+ content="""
+Xyem, your method does not work well because it finds all regular files in the whole annex directory and does not only check for those that are to be committed.
+"""]]

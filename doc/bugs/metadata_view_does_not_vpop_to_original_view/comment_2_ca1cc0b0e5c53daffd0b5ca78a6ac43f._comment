@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 2"
+ date="2015-06-03T14:40:12Z"
+ content="""
+Oh, you may also need to clean up directories files left over from the view with:
+
+    git clean -fd
+
+This will remove everything not ignored or tracked!
+"""]]

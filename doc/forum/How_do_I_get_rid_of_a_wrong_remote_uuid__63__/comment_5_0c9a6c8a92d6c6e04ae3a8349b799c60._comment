@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="http://alan.petitepomme.net/"
+ nickname="Alan Schmitt"
+ subject="comment 5"
+ date="2014-03-14T18:11:52Z"
+ content="""
+Thanks, it worked!
+
+Regarding how I got into that state, here is what happened:
+- I configured a new repository (git init, git annex init) on machine B
+- I added that repository as a remote from machine A
+- I started pushing files from machine A to machine B, starting with the file that later showed this problem
+- I then noticed that, although the files were said to be successfully sent, I could not see them on machine B (no symbolic link was created), even after a \"git annex sync\" there
+- I decided to start over, deleting the annex, and creating it from a clone of an existing annex
+- This resulted in a duplicated UUID for the same path, which led to this problem
+
+Maybe some documentation on how to cleanly start over when things get in a bad state would be very useful.
+
+Thanks again,
+
+Alan
+"""]]

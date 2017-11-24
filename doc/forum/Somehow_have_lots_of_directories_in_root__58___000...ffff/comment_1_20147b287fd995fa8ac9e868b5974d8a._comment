@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 1"
+ date="2014-07-10T19:50:38Z"
+ content="""
+The files that you describe are normally tucked away on the git-annex branch of the git repository, where they're neither seen nor heard.
+
+The most likely cause of your problem would be if you have done a \"git checkout git-annex\"  ... or worse, a \"git merge git-annex\".
+
+So, check what branch you have checked out, and if it's the git-annex branch, you'll want to change back to master. If you've got master checked out and have these files, you can use `git log --stat` and see if there's a commit that added a bunch of these files to your master branch. Then you can revert that commit.
+"""]]

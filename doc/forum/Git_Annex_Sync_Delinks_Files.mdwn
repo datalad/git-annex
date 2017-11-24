@@ -1,0 +1,11 @@
+So, I'm using git-annex to manage a group of external hard drives that I use to store a bunch of big files.
+
+When syncing tonight, though, it decided to take a whole subdirectory and replace the symlinks with the content directly when merging, or something.
+
+The remote side is not like that, and I didn't tell it to do anything like that.
+It just seems to feel like that's the thing to do, then it syncs and fails because suddenly git has many gigs of objects, which is what git-annex is supposed to solve.
+
+I've reset master a bunch of times, and it keeps choosing that path, but I don't know why.
+I've also reset master and synced/master a few times. I'm not fully sure what that one actually encodes, so I didn't want to touch it too much, but setting it to the same thing as master didn't seem to fix things either.
+
+Any idea why?

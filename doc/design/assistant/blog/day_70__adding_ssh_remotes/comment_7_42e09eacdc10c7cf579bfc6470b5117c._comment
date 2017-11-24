@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.236"
+ subject="comment 7"
+ date="2012-09-06T16:20:49Z"
+ content="""
+From the strace, I can see it reading the file and feeding it to gpg. Either gpg is stalling after a while, or perhaps it is not reading the output back from gpg. What type of special remote is this (rsync/directory/S3)? Can you provide `strace -f` output for the same command you straced before?
+"""]]

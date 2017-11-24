@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlog_5wIICaMcrKTexlFNA6IO6UTp323aE"
+ nickname="Torkaly"
+ subject="comment 7"
+ date="2014-10-17T11:00:06Z"
+ content="""
+Is there a way just to sync *git-annex* branch with the *git annex sync* command? As we have an already existing git branch and want to push/pull *master* manually.
+"""]]

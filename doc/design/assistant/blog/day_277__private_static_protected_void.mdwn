@@ -1,0 +1,19 @@
+Yeah, Java hacking today. I have something that I think should deal with
+the [[bugs/Android_app_permission_denial_on_startup]] problem. Added a "Open
+WebApp" item to the terminal's menu, which should behave as advertised.
+This is available in the Android daily build now, if your device has that
+problem.
+
+I was not able to get the escape sequence hack to work. I had no difficulty
+modifying the terminal to send an intent to open an url when it received a
+custom escape sequence. But sending the intent just seemed to lock up the
+terminal for a minute without doing anything. No idea why. I had to propigate a
+context object in to the terminal emulator through several layers of objects.
+Perhaps that doesn't really work despite what I [read on stackoverflow](http://stackoverflow.com/questions/9051849/opening-a-link-in-the-browser/9052208#9052208).
+
+Anyway, that's all I have time to do. It would be nice if I, or some other
+interested developer who is more comfortable with Java, could write a custom
+Android frontend app, that embedded a web browser widget for the webapp,
+rather than abusing the terminal this way. OTOH, this way does provide the
+bonus of a pretty good terminal and git shell environment for Android to go
+with git-annex.

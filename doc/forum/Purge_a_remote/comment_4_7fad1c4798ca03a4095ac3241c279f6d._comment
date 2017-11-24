@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkzwmw_zyMpZC9_J7ey--woeYPoZkAOgGw"
+ nickname="dxtrish"
+ subject="comment 4"
+ date="2013-11-06T14:24:21Z"
+ content="""
+That is exactly what I have wanted to do a couple of times now and 'git remote remove' does not seem to remove it all either.
+When I try to create a new repository in the same place it still complains about that darn UUID :)
+
+What is working is to manually add the new UUID to .git/config
+"""]]

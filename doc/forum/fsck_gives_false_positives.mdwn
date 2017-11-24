@@ -1,0 +1,6 @@
+Hi,
+
+I use git-annex 3.20120123 on a debian-testing amd-64 machine with software RAID6 and LVM2 on it. I needed to move the whole `/home` directory to another LV (the new LV is on encrypted PV, the old LV is encrypted and not properly aligned; I'm changing from encrypted `/home` only to encrypted everything except `/boot`), so I have used the `rsync -aAXH` from a `ro` mounted `/home` to a new LV mounted on `/mnt/home_2`. After the move was complete I run the `git annex fsck` on my (4TB of) data. The fsck finds some files bad, and moves them to the `..../bad` directory. So far so good, this is how it should be, right? But then- I have a file with sha1sum of all my files. So - I checked the 'bad' file against that. It was OK. Then I computed the SHA256 of the file - this is used by `git annex fsck`. It was OK, too. So how did it happen, that the file was marked as bad? Do I miss something here? Could it be related to the hardware (HDDs) and silent data corruption? Or is it the undesirable effect of rsync? Or maybe the fsck is at fault here?
+
+Any ideas?
+

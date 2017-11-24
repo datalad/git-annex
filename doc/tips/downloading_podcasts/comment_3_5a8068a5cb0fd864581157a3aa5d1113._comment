@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://www.joachim-breitner.de/"
+ nickname="nomeata"
+ subject="Great stuff!"
+ date="2013-07-30T21:21:57Z"
+ content="""
+Looking forward to seeing it in Debian unstable; where it will definitely replace my hpodder setup.
+
+I guess there is no easy way to re-use the files already downloaded with hpodder? At first I thought that `git annex importfeed --relaxed` followed by adding the files to the git annex would work, but `importfeed` stores URLs, not content-based hashes, so it wouldn’t match up.
+"""]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://nanotech.nanotechcorp.net/"
+ nickname="NanoTech"
+ subject="SHA performance"
+ date="2012-08-10T04:37:32Z"
+ content="""
+It turns out that (at least on x86-64 machines) `SHA512` [is faster than][1] `SHA256`. In some benchmarks I performed<sup>1</sup> `SHA256` was 1.8–2.2x slower than `SHA1` while `SHA512` was only 1.5–1.6x slower.
+
+`SHA224` and `SHA384` are effectively just truncated versions of `SHA256` and `SHA512` so their performance characteristics are identical.
+
+[1]: https://community.emc.com/community/edn/rsashare/blog/2010/11/01/sha-2-algorithms-when-sha-512-is-more-secure-and-faster
+<sup>1</sup> `time head -c 100000000 /dev/zero | shasum -a 512`
+"""]]

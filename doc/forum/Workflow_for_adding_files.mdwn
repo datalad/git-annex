@@ -1,0 +1,32 @@
+What is the correct way to add/modify files such that the changes are synchronized?
+
+Suppose I have a server "server" and a windows client "client" (more after some time); everything direct mode.
+
+I created the repos on the server:
+
+     cd bin
+     git init
+     git annex init server
+     git annex direct
+     git annex add .
+     git annex sync
+
+On the (Windows) client using cygwin:
+
+     git annex clone ssh://me@server:/srv/bin
+     cd bin
+     git annex init client
+
+Then I want to add files on the client:
+
+     git annex add tools
+     git annex sync
+
+At this point I wonder that the data is not copied to the server but only metadata!
+I then used
+
+     git annex sync --content
+
+but then everything from the server is leeched as well (as if I could have called "git annex get .")
+
+What is the intented workflow such that added/modified files on the client always go to the server, modified/new files from the server are always pulled but ONLY if I previously got the file/directory via "get annex get"?

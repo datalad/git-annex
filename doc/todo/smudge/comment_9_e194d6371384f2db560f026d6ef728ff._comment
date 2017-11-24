@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="ExGen"
+ subject="Harlinks"
+ date="2016-04-03T11:21:02Z"
+ content="""
+Also I tried now and confirmed both git's ln and cygwin's ln work on windows with hardlink, and it's supported since XP.
+"""]]

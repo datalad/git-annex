@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 2"
+ date="2014-04-23T17:49:09Z"
+ content="""
+@Carl, I've fixed the formatting. To add a picture, you'd need to send me a pull request adding it to the git repo.
+"""]]

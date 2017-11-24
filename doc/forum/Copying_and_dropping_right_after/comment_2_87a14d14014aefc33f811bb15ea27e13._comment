@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk9SYh6N-JUMkYkW4aOk55zC3Vr9KonDV4"
+ nickname="Florian"
+ subject="comment 2"
+ date="2015-01-14T22:01:24Z"
+ content="""
+Sorry for the late reply. I had redone my git-annex repos, but I just had exactly this behaviour again
+
+    % git annex wanted astarte
+    standard 
+    % git annex group astarte 
+    transfer
+
+Best Regards...
+"""]]

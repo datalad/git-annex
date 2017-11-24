@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~arand"
+ nickname="arand"
+ subject="comment 1"
+ date="2013-03-10T23:29:55Z"
+ content="""
+Recursively adding urls is already feasiable with some simple scripting:
+
+[https://gitorious.org/arand-scripts/arand-scripts/blobs/master/annex-importdir](https://gitorious.org/arand-scripts/arand-scripts/blobs/master/annex-importdir)
+
+but this is obviously missing the checksumming bit though.
+"""]]

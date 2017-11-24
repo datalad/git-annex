@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="stp"
+ ip="84.56.21.11"
+ subject="New findings"
+ date="2014-02-24T12:28:03Z"
+ content="""
+Another thing I found, which was annoying is that I have objects in my annex not tracked anywhere it seems.
+\"git annex fsck --all\" complains about not having access to the object. \"git log --stat -S '$key'\" doesn't have any record. \"git annex fsck\" has no issues and \"git annex unused\" comes up empty too.
+I'm not sure where these objects still reside or why how to remove this annoying failure.
+
+So not only should \"git annex forget $key\" remove references from within all branches, but should also clean up the aforementioned loose objects, which are neither unused, nor available, nor referenced.
+"""]]

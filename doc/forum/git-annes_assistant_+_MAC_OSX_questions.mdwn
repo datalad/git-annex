@@ -1,0 +1,16 @@
+After spending the whole last night playing with it, I think I have it figured out:
+
+it runs on my Macbook and I have added a free 50GB box.com account as archive and an S3 bucket as full-backup and set the min. number of file occurrences to keep to 2 so IF I delete anything on my Macbook, this should make sure I definitely have 2 more occurrences of each file on two separate storages.
+
+BUT here come the problems/questions
+
+- say I add a folder called: Documents, it has now apparently successfully synced to box.com and S3. I say apparently because there is no tool in the assistant to check
+- I can't seem to figure out how to delete the log of the assistant, its getting quite longish
+- I can't seem to figure out how to upgrade from 5.20140420 to 5.20140421
+- I move a file from a local repo to the archive folder but nothing happens except git-annex recording the move: (Recording state in git...)  /Users/ovi/Sharing/git-annex/Finance/1-564 Erkl. z. Gebiets- u. Steuereigenschaft 08_04.pdf still has writers, not adding [2014-05-09 17:22:43 SAST] Committer: Committing changes to git
+- the assistant doesn'T have any kind of gui for retrieving/deleting/finding stuff - I'm no stranger to the command line but I can't figure out how to add the /Applications/gitannex.app.5.20140421/Contents/MacOS to my path and if I go there and run runshell, most git-annex commands tell me: not in a git repository so all I can do right now, is look at things :-/
+- reading the description on the kickstarter page I must say I expected more. This is in no way comparable to Dropbox. 
+
+Don't get me wrong, this is the most promising project of its kind I came across if I can be pointed in the right direction :-)
+
+P.S. How does it work on the "inside"? i.e. I edit a file and git-annex picks it up and "syncs" - what is synced? The whole file? A diff? How can one restore older versions or even look to see what versions are available?

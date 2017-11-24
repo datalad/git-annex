@@ -1,0 +1,13 @@
+I have a local repo on a computer with some folder on the path
+/computer1/annex/
+
+Then I tried to run git annex on my phone and added a remote ssh repo syncing to
+/computer1/annex/mobile/ from my mobile's picture folder.
+
+But the files ending up there are:
+ls /computer1/annex/mobile/
+annex  branches  config  description  HEAD  hooks  info  objects  refs 
+
+I chose "full backup"
+
+Why dont I see my pictures there, even if they are hiding in the metadata ?

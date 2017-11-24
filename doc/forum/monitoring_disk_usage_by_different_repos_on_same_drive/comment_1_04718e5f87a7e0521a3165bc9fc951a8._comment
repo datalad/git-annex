@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-29T15:34:08Z"
+ content="""
+If you go to one of the repos and run `git annex info --json --bytes`
+you'll get a json object that has keys including "local annex size".
+You can extract that value, and feed it into a graphing engine, such
+as graphite, or whatever to generate graphs of the repo sizes over time.
+
+(Of course, you could do the same thing with `du`)
+"""]]

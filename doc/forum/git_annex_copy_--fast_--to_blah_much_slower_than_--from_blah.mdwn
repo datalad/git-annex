@@ -1,0 +1,15 @@
+I keep a repo synced between machines over ssh. Assuming all the files are in sync, so no actual file transfer needs to takes place, when I do
+
+```
+git annex copy --fast --quiet --to blah
+```
+
+is quite slow, about 10 seconds, using 100% CPU on one core, just to decide nothing needs to be done. On the other hand, doing
+
+```
+  git annex copy --fast --quiet --from blah
+```
+
+takes about 1 second.
+
+I'm confused, as it seems to me that, since I'm using --fast, both transactions should use only locally available data, and both should need about the same amount of computing. Am I missing something? Can this be fixed?

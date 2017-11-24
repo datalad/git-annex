@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-02-04T18:38:09Z"
+ content="""
+Well, a signal 11 can be caused by several different things, including
+some messed up pointer stuff in a C library, or just bad memory on your
+computer. I think a memory test would be a good first step. 
+
+If the memory checks clean, running git-annex in gdb and getting a stack
+trace after a crash may help.
+"""]]

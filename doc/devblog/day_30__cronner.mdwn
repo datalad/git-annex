@@ -1,0 +1,17 @@
+Lots of progress from yesterday's modest start of building data types for
+scheduling. Last night I wrote the hairy calendar code to calculate when
+next to run a scheduled event. (This is actually quite superior to `cron`,
+which checks every second to see if it should run each event!) Today I
+built a "Cronner" thread that handles spawning threads to handle each
+scheduled event. It even notices when changes have been made to the its
+schedule and stops/starts event threads appropriately.
+
+Everything is hooked up, building, and there's a good chance it works
+without too many bugs, but while I've tested all the pure code (mostly
+automatically with quickcheck properties), I have not run the Cronner
+thread at all. And there is some tricky stuff in there, like noticing
+that the machine was asleep past when it expected to wake up, and deciding
+if it should still run a scheduled event, or should wait until next time.
+So tomorrow we'll see..
+
+Today's work was sponsored by Ethan Aubin.

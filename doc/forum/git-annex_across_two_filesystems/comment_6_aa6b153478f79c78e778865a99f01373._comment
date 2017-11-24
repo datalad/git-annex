@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="thomas.l.clune@39f0ca5621ddc6cbe4550be3ca9a22ec70edc9a6"
+ nickname="thomas.l.clune"
+ avatar="http://cdn.libravatar.org/avatar/31edb934c0c30a68a44617fa0eea0f8f"
+ subject="git-annex - many filesystems"
+ date="2017-01-30T14:24:11Z"
+ content="""
+I believe I understood the earlier discussion about managing git-annex across multiple file-systems, but I'm facing a more extreme case and am hoping for some useful advice.
+
+We are exploring use of git-annex to manage the large boundary conditions used within our weather model.     For the most part, this seems to be an excellent fit.   But one of our goals is to limit data duplication among end users, and here there is a problem.   Even in the era of multi-petabyte file systems, needless duplication of data s a concern.
+
+In our computing facility there are many O(10-20) filesystems from which users run our model.    If each user creates their own clone from some master repo on filesystem A, many (but by no means all) files will have multiple copies across the other filesystems.   Worse, if multiple users running on filesystem X both cloned from A, we'd have multiple copies even on X as they would not know about the other local clone.    The current ad hoc system (i.e., without git-annex)  uses symbolic links to file system A and avoids the copies, but is otherwise quite limited in terms of managing variant input files and running in other computing environments.      
+
+One halfway solution would be to have a \"master\" repo on _each_ filesystem and then ensure that users made their repos set upstream remotes to _all_ of them.    We'd still have multiple copies across filesystems, but at least there would then be at most one copy of any given file on each filesystem.
+
+The other possibility is to somehow enforce a policy that all input files are to be accessed on filesystem A.      This is what we'll probably end up doing.   We'd kludge our existing scripts that set up symbolic links to point at clones on filesystem A.
+
+I would very much like there to be another option.
+
+Thanks in advance.
+"""]]

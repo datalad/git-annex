@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkjvjLHW9Omza7x1VEzIFQ8Z5honhRB90I"
+ nickname="Asheesh"
+ subject="The fact that the keys changed causes merge conflicts"
+ date="2012-06-25T00:28:59Z"
+ content="""
+FYI, I have run into a problem where if you 'git annex sync' between various 'git annex v3' repositories, if the different repositories are using different encodings of the SHA1 information (one including size, one not), then the 'git merge' will declare that they conflict.
+
+There's no indication that 'git annex migrate' is the right tool to run, except from perusing the 'git annex' man page. In my opinion this is a major user interface problem.
+
+-- Asheesh.
+"""]]

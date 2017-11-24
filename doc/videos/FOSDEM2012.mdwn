@@ -1,0 +1,7 @@
+<video controls
+src="http://video.fosdem.org/2012/lightningtalks/git_annex___manage_files_with_git,_without_checking_their_contents_into_git.webm"></video><br>
+A <a href="http://video.fosdem.org/2012/lightningtalks/git_annex___manage_files_with_git,_without_checking_their_contents_into_git.webm">15 minute introduction to git-annex</a>,
+presented by Richard Hartmann at FOSDEM 2012.
+
+[[!meta date="1 Jan 2012"]]
+[[!meta title="git-annex presentation by Richard Hartmann at FOSDEM 2012"]]

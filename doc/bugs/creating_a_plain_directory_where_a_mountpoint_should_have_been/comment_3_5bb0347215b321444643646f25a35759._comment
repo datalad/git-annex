@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 3"
+ date="2013-05-06T16:52:07Z"
+ content="""
+It's possible, even likely, that there were indeed more directories and I didn't notice because they were hidden and I just looked at them with a vanilla \"ls\" command with no flags like \"-a\".
+
+So it's probably exactly what you're thinking --t here was something going on, a transfer queued or something, that I didn't realize was happening and I removed it and it went and created the directory as if it were there.  
+"""]]

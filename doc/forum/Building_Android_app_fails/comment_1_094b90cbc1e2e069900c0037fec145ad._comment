@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-06-09T19:27:03Z"
+ content="""
+FWIW, my android autobuilder currently has cryptonite-0.15 installed.
+
+Seems that version is not frozen in the cabal.config for android,
+so tried a newer one in your case. I'm not sure if that will fix your
+problem, but it may be worth a try.
+"""]]

@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="thnetos"
+ subject="How to get the URL of an added file?"
+ date="2014-12-18T18:56:57Z"
+ content="""
+Once a file has been added with either `addurl` or `importfeed`, how can I get the URL of the file or feed from git-annex?
+"""]]

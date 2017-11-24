@@ -1,0 +1,19 @@
+<div .col-sm-9>
+  ^{repolist}
+  <div .row>
+    <div .col-sm-6>
+      <h2>
+        Add more repositories
+
+      ^{makeMiscRepositories}
+
+    <div .col-sm-6>
+      <h2>
+        Store your data in the cloud
+
+      ^{makeCloudRepositories}
+
+      <h2>
+        Archive your data
+
+      ^{makeArchiveRepositories}

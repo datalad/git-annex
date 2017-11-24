@@ -1,0 +1,3 @@
+How safe (or not) is it to run the assistant as root?
+
+If not safe, what would be a good way to sync directories like /usr/local ?

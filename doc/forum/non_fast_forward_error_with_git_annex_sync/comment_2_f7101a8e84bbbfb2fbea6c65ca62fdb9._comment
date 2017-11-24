@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-10-11T15:14:18Z"
+ content="""
+You need to set the receive.denyNonFastforwards configuration in
+the remote git repository, not on the local git repository. It kind of
+sounds like you may have misunderstood where to set it.
+"""]]

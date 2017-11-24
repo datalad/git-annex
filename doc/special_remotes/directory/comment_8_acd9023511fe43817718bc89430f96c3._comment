@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmRFKwny4rArBaz-36xTcsJYqKIgdDaw5Q"
+ nickname="Andrew"
+ subject="comment 8"
+ date="2013-06-26T18:46:40Z"
+ content="""
+For the use case you're describing, it might be better to define the usb key as a remote set to \"manual.\" Then, you can copy over the things you want with git annex copy --to=usbkey and when you're done drop everything with git annex drop --from=usbkey and never destroy the remote.
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="fmarier"
+ ip="121.73.248.43"
+ subject="Exporting to a FAT filesystem?"
+ date="2011-04-04T07:40:41Z"
+ content="""
+I'm using git-annex to keep my music in sync between all of my different machines. What I'd love to be able to do is to also keep it in sync with my iRiver player. Unfortunately, the firmware, Rockbox, doesn't support ext3, so I'm stuck with a FAT filesystem.
+
+I can see how the design of git-annex makes it rather difficult to get rid of the symlinks, so how about taking a different approach: something like a \"git annex export DEST\" which would take a destination (not a git remote) and rsync the content over to there as regular files.
+
+Maybe \"git annex sync DEST\" or \"git annex rsync DEST\" would be better names if we want to convey the idea that the destination will be made to look like the source repo, including performing the necessary deletions.
+"""]]

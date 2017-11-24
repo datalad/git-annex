@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-05-16T16:32:05Z"
+ content="""
+If your NAS is accessed over SSH, it is not a removably drive, clearly.
+
+Try starting git-annex webapp from a console, you will probably see the ssh password prompt there. Or, install ssh-askpass, or, install a current daily build of git-annex, which will prompt for the ssh password from within the webapp.
+"""]]

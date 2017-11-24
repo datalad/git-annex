@@ -1,0 +1,15 @@
+More work on the display and control of transfers.
+
+* Hide redundant downloads from the transfer display. It seemed simplest
+  to keep the behavior of queuing downloads from every remote that has a
+  file, rather than going to some other data structure, but it's clutter
+  to display those to the user, especially when you often have 7 copies
+  of each file, like I do.
+* When canceling a download, cancel all other queued downloads of that
+  key too.
+* Fixed unsettting of the paused flag when resuming a paused transfer.
+* Implemented starting queued transfers by clicking on the start button.
+* Spent a long time debugging why pausing, then resuming, and then pausing
+  a transfer doesn't successfully pause it the second time. I see where
+  the code is seemingly locking up in a `throwTo`, but I don't understand
+  why that blocks forever. Urgh..

@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joakim.hovlandsvag@ad788ffa13d1ccbf03f2c485653900f8baa33950"
+ nickname="joakim.hovlandsvag"
+ subject="Repairing ignores disk space issues too"
+ date="2015-12-13T09:13:24Z"
+ content="""
+It seems that `git annex repair` also ignores such issues:
+
+    $ git annex repair
+    Running git fsck ...
+    Initialized empty Git repository in /tmp/tmprepo.0/.git/
+    Trying to recover missing objects from remote home.
+    Unpacking all pack files.
+    error: file write error (No space left on device)
+    fatal: unable to write sha1 file
+    Successfully recovered repository!
+    You should run \"git fsck\" to make sure, but it looks like everything was recovered ok.
+    ok
+
+"""]]

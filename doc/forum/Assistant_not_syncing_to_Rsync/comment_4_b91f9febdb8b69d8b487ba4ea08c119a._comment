@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkjWgG_L90szs6o4E8cBusol57zkcDhg7c"
+ nickname="Tom"
+ subject="comment 4"
+ date="2013-01-10T18:48:16Z"
+ content="""
+Sorry for lack of extra information: The sizes of the remote folder is still at 21MB, well below even the size of the PDF I posted about (that's about 75MB). Copy claims to work, but I see no network use and the remote repo doesn't grow. I install using cabal on my max yesterday, git-annex version: 3.20130107
+
+
+
+"""]]

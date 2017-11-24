@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.49"
+ subject="comment 3"
+ date="2012-11-25T18:56:01Z"
+ content="""
+On my Debian system, where it builds ok, I have the same ghc version, but version 2.1.1 of mtl. I suspect your old version of that is the problem. You can try using cabal to install a newer mtl:
+
+<pre>
+  cabal update
+  cabal install mtl
+</pre>
+"""]]

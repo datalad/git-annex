@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnlotDRSLW2JVXY3SLSwhrcHteqUHhTtoY"
+ nickname="Péter"
+ subject="comment 1"
+ date="2014-01-31T00:45:47Z"
+ content="""
+The correct old hash value for the empty file SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 is pX/ZJ .
+
+The text describes the old hash value computation incorrectly, because it doesn't mention that 1 bit is skipped between each group of 5 bits. See the sample implementation in display_32bits_as_dir in https://github.com/joeyh/git-annex/blob/master/Locations.hs
+"""]]

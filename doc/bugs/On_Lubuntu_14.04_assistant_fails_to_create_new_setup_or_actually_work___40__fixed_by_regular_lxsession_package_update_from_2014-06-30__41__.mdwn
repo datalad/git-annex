@@ -1,0 +1,93 @@
+### Please describe the problem.
+
+Following steps from http://git-annex.branchable.com/assistant/quickstart/ does not get past the first screen.
+
+### What steps will reproduce the problem?
+
+* On a nearly fresh Lubuntu system, nearly fresh account, Lubuntu session, run `git-annex` from the start menu.
+* Opens firefox, in `Create a git-annex repository` select my `~/Documents` folder, press `Make Repository`.
+
+* Expected: a new, different page opens.
+* Observed: the same page opens, only difference the path displayed is `/home/mylogin/Documents`. Pressing `Make Repository` again shows the same page again.
+
+I couldn't find any logs at the time. Now I see that they are in .git/annex/daemon.log but content from that time is already gone.
+
+### What version of git-annex are you using? On what operating system?
+
+A fresh Ubuntu 14.04 (actually Lubuntu but this shouldn't change anything, right ?), create a user, login.
+
+
+    LC_ALL=C apt-cache policy git-annex
+    git-annex:
+      Installed: 5.20140412ubuntu1
+      Candidate: 5.20140412ubuntu1
+      Version table:
+     *** 5.20140412ubuntu1 0
+            500 http://fr.archive.ubuntu.com/ubuntu/ trusty/universe i386 Packages
+            100 /var/lib/dpkg/status
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# No command line in bug occurrence.  This is the transcript of the workaround I found.
+# Actually, the PC was rebooted then I went command line.
+cd ~/Documents
+git status
+fatal: This operation must be run in a work tree
+# oh I see it's a bare repo
+git annex add .
+add (my file names... one line for each) ok
+(Recording state in git...)
+
+Now the webapp seems to run okay, I can see many pages, schedule checks, etc.
+
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+-> Ok but log shows only events after I manually dit git annex add.
+
+[2014-06-08 14:28:46 CEST] main: starting assistant version 5.20140412ubuntu1
+[2014-06-08 14:28:46 CEST] Cronner: You should enable consistency checking to protect your data.
+
+  dbus failed; falling back to mtab polling (ClientError {clientErrorMessage = "runClient: unable to determine DBUS address", clientErrorFatal = True})
+(scanning...) [2014-06-08 14:28:46 CEST] Watcher: Performing startup scan
+(started...) [2014-06-08 14:28:47 CEST] Committer: Adding (myfiles)
+
+add (my files...) ok
+[2014-06-08 14:32:51 CEST] Committer: Committing changes to git
+[2014-06-08 14:34:12 CEST] Committer: Committing changes to git
+[2014-06-08 14:34:13 CEST] Committer: Adding (myfiles)
+ok
+(Recording state in git...)
+(Recording state in git...)
+(Recording state in git...)
+(Recording state in git...)
+(Recording state in git...)
+add (myfile) ok
+add (myfile) [2014-06-08 14:34:13 CEST] Committer: Committing changes to git
+[2014-06-08 14:42:48 CEST] Cronner: Consistency check in progress
+fsck (myfile) (checksum...)
+ok
+
+# End of transcript or log.
+"""]]
+
+
+
+# Question:
+
+    cat /etc/xdg/autostart/git-annex.desktop
+    [Desktop Entry]
+    Type=Application
+    Version=1.0
+    Name=Git Annex Assistant
+    Comment=Autostart
+    Terminal=false
+    Exec=/usr/bin/git-annex assistant --autostart
+    Categories=
+
+Should there be a git-annex process whenever I log in even if I don't launch the webapp ?
+I can check that on next login.
+
+At the moment there is "git-annex webapp" and several child processes.
+
+[[!tag moreinfo]]

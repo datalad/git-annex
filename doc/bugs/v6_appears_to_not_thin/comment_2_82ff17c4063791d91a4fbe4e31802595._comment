@@ -1,0 +1,82 @@
+[[!comment format=mdwn
+ username="Stan"
+ subject="Success / failure scenarios"
+ date="2016-07-07T23:29:19Z"
+ content="""
+Thanks again Joey. My progress is detailed below. I can run/collect more detailed scenarios if it will help.
+
+Summary:
+
+Success with a VM on qemu.
+Failure with VMs on hyperv.
+
+* Hardlinks are not created for the VMs on hyperv, in spite of the VM filesystems being ext4.
+* This may only be associative, and not causal, but it is somewhat surprising. Yet, I am no hardlink expert.
+* I can however make it work if I use a VM on qemu, so far; so that is very good.
+
+Setup:
+
+* mkdir gitx1
+* git init
+* git annex init --version=6
+* git config annex.thin true
+* git annex fix
+* copy bigfile to gitx1
+* git annex add bigfile
+* git commit -m add
+* ls -li
+
+Test Procedure:
+
+* unlock bigfile
+* ls -li
+
+Pass criteria:
+
+* ls -li shows 2 links and the inode matches the SHA file inode in annex/objects/
+* gitx1 dir size is equal to one bigfile
+
+
+Fail criteria:
+
+* ls -li shows 1 link and the inode numbers are different: working dir compared to annex/objects
+* gitx1 dir size is equal to 2 bigfiles.
+
+
+Scenario 1:
+
+* VM arch linux
+* git-annex: 6.20160613-g1e4e6f4
+* Host: Centos, qemu
+* gnome-disk-utility: QEMU HARDDISK (1.5.3)
+* partition: MBR
+* file system: ext4
+* Result: Pass
+
+
+Scenario 2:
+
+* VM arch linux
+* git-annex: 6.20160613-g1e4e6f4
+* Host: Win10, hyperv
+* gnome-disk-utility: Msft Virtual Disk (1.0)
+* partition: MBR
+* file system: ext4
+* Result: Fail
+
+
+Scenario 3:
+
+* VM Debian 8.5
+* git-annex: 6.20160524+gitg2b7b2c4-1~ndall+1
+* Host: Win10, hyperv
+* gnome-disk-utility: /dev/...vg/root
+* partition: lvm
+* file system: ext4
+* Result: Fail
+
+
+
+
+
+"""]]

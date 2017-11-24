@@ -1,0 +1,26 @@
+`git commit $some_unlocked_file` seems like a reasonably common thing for
+someone to do, so it's surprising to find that it's a [[little bit broken|/bugs/modified_permissions_persist_after_unlock__44___commit]],
+leaving the file staged in the index after (correctly) committing the
+annexed symlink.
+
+This is caused by either a bug in git and/or by git-annex abusing the
+git post-commit hook to do something it shouldn't do, although it's not
+unique in using the post-commit hook this way. I'm talking this over with
+Junio, and the fix will depend on the result of that conversation. It might
+involve git-annex detecting this case and canceling the commit, asking the
+user to `git annex add` the file first. Or it might involve a new git hook,
+although I have not had good luck getting hooks added to git before.
+
+----
+
+Meanwhile, today I did some other bug fixing. Fixed the Internet Archive
+support for embedcreds=yes. Made `git annex map` work for remote repos
+in a directory with an implicit ".git" prefix. And fixed a
+strange problem where the repository repair code caused a `git gc` to run
+and then tripped over its pid file.
+
+I seem to have enough fixes to make another release pretty soon.
+Especially since the current release of git-annex doesn't build with yesod
+1.4.
+
+Backlog: 94 messages

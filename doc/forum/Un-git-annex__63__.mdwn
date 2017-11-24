@@ -1,0 +1,6 @@
+Hi,
+
+I am using git-annex assistant on my Fedora Linux computer. Everything seems to be working perfectly, however I have noticed that almost all of my files are now symbolic links to cryptic file names located in the .git/ directory. Oddly though it seems files inside git-annex assistant does not move/symbolic link files within git repositories inside my git-annex assist directories. My question is: how can I safely uninstall git-annex from my machine and restore all files to their non-symbolic link states? When I click on the settings drop-down for a repository inside git-annex assistant and choose disable it goes to the same page as the delete option. Any ideas?
+
+Regards,
+Blake

@@ -1,0 +1,75 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmiqeXJtP04fzHOjXs17kHO33v7dWR2xwA"
+ nickname="Jaco"
+ subject="Init Script"
+ date="2013-11-23T08:28:32Z"
+ content="""
+Hi Joey,
+
+Could you help out with writing an init.d script to safely start and stop the webapp on a headless server? 
+I made an attempt below based on examples from the internet, but have no idea if it will work.
+
+	#!/bin/bash
+	# git-annex
+	# chkconfig: 345 20 80
+	# description: Git Annex WebApp startup and shutdown script.
+	# processname: git-annex
+	
+	
+	DAEMON=git-annex webapp
+	
+	NAME=git-annex
+	DESC=\"Git Annex WebApp init script\"
+	PIDFILE=/var/run/$NAME.pid
+	SCRIPTNAME=/etc/init.d/$NAME
+	
+	case \"$1\" in
+	start)
+		printf \"%-50s\" \"Starting $NAME...\"
+		for dir in $(cat $HOME/.config/git-annex/autostart); do
+			cd $dir
+			PID=`$DAEMON > /dev/null 2>&1 & echo $!`
+			#echo \"Saving PID\" $PID \" to \" $PIDFILE
+		        if [ -z $PID ]; then
+	        		printf \"%s\n\" \"Fail\"
+		        else
+	        		echo $PID > $PIDFILE
+				printf \"%s\n\" \"Ok\"
+			fi
+		done
+	;;
+	status)
+	        printf \"%-50s\" \"Checking $NAME...\"
+	        if [ -f $PIDFILE ]; then
+			for PID in $(cat $PIDFILE); do
+				if [ -z \"`ps axf | grep ${PID} | grep -v grep`\" ]; then
+					printf \"%s\n\" \"Process dead but pidfile exists\"
+				else
+					echo \"Running\"
+				fi
+			done
+	        else
+	            printf \"%s\n\" \"Service not running\"
+	        fi
+	;;
+	stop)
+	        printf \"%-50s\" \"Stopping $NAME\"
+		if [ -f $PIDFILE ]; then
+			for PID in $(cat $PIDFILE); do
+				kill -HUP $PID
+				printf \"%s\n\" \"Ok\"
+			done
+			rm -f $PIDFILE
+	        else
+	            printf \"%s\n\" \"pidfile not found\"
+	        fi
+	;;
+	restart)
+	  	$0 stop
+	  	$0 start
+	;;
+	*)
+	        echo \"Usage: $0 {status|start|stop|restart}\"
+	        exit 1
+	esac
+"""]]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://www.openid.albertlash.com/openid/"
+ ip="71.178.29.218"
+ subject="comment 1"
+ date="2011-12-24T06:08:45Z"
+ content="""
+Looks like you are missing a closing double quote on the line:
+
+
+echo '$GL_ADC_PATH = \"/usr/local/lib/gitolite/adc/;' >>~gitolite/.gitolite.rc
+
+right after /;
+
+I got this working by the way - great stuff.
+"""]]

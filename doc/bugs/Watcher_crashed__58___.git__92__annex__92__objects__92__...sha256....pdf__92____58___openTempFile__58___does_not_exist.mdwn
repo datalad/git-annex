@@ -1,0 +1,10 @@
+### Please describe the problem.
+
+On windows 7 under assistant/webapp, we have the following message displayed :
+
+warning
+Watcher crashed: .git\annex\objects\56b\ff2\SHA256E-s298110--0ff71fda9236dbf84954969add770bfbf90c800916450823335a1bd6c6229a5e.pdf\: openTempFile: does not exist (No such file or directory)
+
+git annex fsck indeed complains that several such files are missing.
+
+Hope this helps.

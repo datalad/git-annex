@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.35"
+ subject="comment 1"
+ date="2014-01-06T15:44:15Z"
+ content="""
+AFAIK neither git nor git-annex creates a .gitrefs directory.
+"""]]

@@ -1,0 +1,16 @@
+I installed git-annex on my freenas running freebsd according to the instructions on this site. 
+every now and then it'll pop up (when using the webapp) telling me git-annex has been updated, do I want to restart. 
+if I say yes, the webapp dies, I have to manually stop git annex assistant --stop and after a few minutes of using the webapp it again tells me it has been updated...
+
+only saw this in the logs:
+UpgradeWatcher: A new version of git-annex has been installed. 
+
+
+Also, I connected 2 repos (on my NAS with freebsd and on my Macbook) but the NAS one can't connect to the MAcbook via SSH
+ssh: connect to host 192.168.178.33 port 22: Connection refused 
+
+How is this supposed to work? Obviously for now it shows its only syncing metadata with my MACbook: 
+syncing enabled (metadata only)
+
+Also, both repositories are bare, direct but when a file got pulled from the NAS to the MACbook it was a symlink and not the file itself, so what's wrong here?
+

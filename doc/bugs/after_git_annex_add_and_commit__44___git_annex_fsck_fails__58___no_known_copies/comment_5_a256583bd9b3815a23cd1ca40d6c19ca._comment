@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="emanuele.olivetti@47d88ed185b03191e25329caa6fabc2efb3118b2"
+ nickname="emanuele.olivetti"
+ subject="'git-annex semitrust' seems to solve the issue"
+ date="2016-02-18T21:51:00Z"
+ content="""
+Given that the repository is marked as dead, I tried to bring it back with 'git-annex semitrust laptop' - 'laptop' being the name of the git annex repository on my laptop. Apparently, this action solved the problem. Fsck now works as expected, and I could sync and get the new files on the clone on the external hard disk as usual.
+
+Now, if this the correct solution to my problem, I am wondering how it is possible that the repository was marked as dead. I carefully checked the history of previous command, but no sign of 'git annex dead' o similar. Are there scenarios where a repository is automatically marked as dead?
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="arand"
+ ip="130.243.226.21"
+ subject="comment 16"
+ date="2013-08-12T13:32:46Z"
+ content="""
+The filename extension is a known issue and already fixed in the development version, see <http://git-annex.branchable.com/bugs/importfeed_uses___34____95__foo__34___as_extension/>
+"""]]

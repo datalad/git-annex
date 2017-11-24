@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/e65e6d0e-58ba-41de-84cc-1f2ba54cf574"
+ nickname="Mica"
+ subject="comment 2"
+ date="2015-12-21T06:02:21Z"
+ content="""
+The gcrypt remotes are present in the remotes.log file, but I can't seem to push or sync to them.
+
+How do I get them added back to the repo such that using `git annex sync` syncs the content?
+"""]]

@@ -1,0 +1,19 @@
+Hi
+
+I am using git-annex even if people I exchange data with (currently) don‘t use it for there data. My idea behind this is that I would like to know from where I got a file, whom I gave a file and who does (probably) still have a copy of the file. To do this you need to trick git-annex location tracking feature a bit. I successfully managed to achieve this in a simple data exchange which only consisted of me coping over files to one of my git-annex repos. I did the following to make git-annex believe that the files are in two repos without the need to *copy* them around the repos.
+
+This is what I did in this simple case:
+
+1. mounted the drive from someone
+2. made a clone of my git-annex repo on the filesystem which should hold the copy of the data
+3. initialized the cloned repo with `git annex init "Drive from person X"`
+4. imported the files to the cloned repo with `git annex import --duplicate $path_to_files_from_person_x`
+5. `git annex sync` in the cloned repo
+6. `git annex sync` in main repo
+7. `git annex move . --to origin` in the cloned repo
+
+The impotent part (and the limit) here was that you can not sync these two repos after you moved files to the main repo. The problem is that there will be situations where I will have to sync them also after moving files around (for example if I want to store new files in multiple repos (and not just one main repo), or if I also want to copy files over to drives from someone).
+
+Note: I have also worked out a solution to allow someone to choose which files he/she would like to get as described [on superuser.com](http://superuser.com/a/717689).
+
+Are there better ways to fake location information then the thing I came up with (except making multiple repos for one person/drive)? Can multiple remotes be merged to one remote?

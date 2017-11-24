@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://dieter-be.myopenid.com/"
+ nickname="dieter"
+ subject="symlinks"
+ date="2011-04-03T20:30:21Z"
+ content="""
+> (Sadly, it cannot create a symlink, as git still wants to write the file afterwards.
+> So the nice current behavior of unavailable files being clearly missing due to dangling symlinks, would be lost when using smudge/clean filters. (Contact git developers to get an interface to do this?)
+
+Have you checked what the smudge filter sees when the input is a symlink? Because git supports tracking symlinks, so it should also support pushing symlinks through a smudge filter, right?
+Either way: yes, contact the git devs, one can only ask and hope.  And if you can demonstrate the awesomeness of git-annex they might get more 1interested :)
+"""]]

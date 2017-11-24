@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnftLWVOF0DUdXr2HSW4IKzuqtW8V7X3YU"
+ nickname="Adrian"
+ subject="How can the git annex init command be called on the server?"
+ date="2014-03-25T06:58:56Z"
+ content="""
+The latest commit in the gitolite repository \"git-annex support, finally in master!\" looks really promissing. I'm currently using ubuntu trusty with updated gitolite3 package and the configuration provided by Khaije. One line needs to be changed: 'git-annex-shell' => 'ua', instead of 'git-annex-shell' =>1,
+
+However, one little detail is still open for me. I need to call the server side \"git annex init\" on the server (sudo su gitolite3; cd ~/repositories/testing.git && git annex init). I cannot find a way to initialize the server from client side. E.g. git annex init && git push --all is not enough. The man page describes git annex initremote for other server types but not for gitolite remotes. Wouldn't we need something similar for gitolite as well? Or is there a better solution which I do not recognize?
+
+"""]]

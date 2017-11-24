@@ -1,0 +1,21 @@
+Here's a simple example on a repository with three branches, where we'll be adding images-annex as a subtree into master.
+
+    $ git branch
+        git-annex
+        images-annex
+      * master
+    $ git subtree add --squash --prefix=images/ images-annex
+      Added dir 'images'
+    $ ls
+      FILE_A        FILE_B        images/
+
+...checkout images-annex, make changes, commit...
+
+    $ git checkout master
+    $ git subtree pull --squash --prefix=images/ . images-annex
+      From .
+      * branch images-annex -> FETCH_HEAD
+      Merge made by the 'recursive' strategy.
+      ...(files created/modified/etc)
+
+I have tried a few different methods for merging the subtree in and so far have not been able to keep git-annex links up to date. Running `git-annex fix .` does what it's supposed to but then git sees everything as modified. Is this entirely the expected behavior because of the --prefix? I have not used subtrees much before but the model appears to be very helpful for what I'm trying to do.

@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="GLITTAH"
+ ip="37.130.227.133"
+ subject="comment 5"
+ date="2013-07-19T21:23:35Z"
+ content="""
+Disclaimer: I'm thinking out loud of what could make git-annex even more awesome.  I don't expect this to be implemented any time soon.  Please pardon any dumbassery.
+
+Much easier to implement, but having your remotes (optionally!) act like a swarm would be an awesome feature to have because you bring in a lot of new features that optimize storage, bandwidth, and overall traffic usage.  This would be made a lot easier if parts of it were implemented in small steps that added a nifty feature.  The best part is, each of these could be implemented by themselves, and they're all features that would be really useful.
+
+Step 1. Concurrent downloads of a file from remotes.
+
+This would make sense to have, it saves upload traffic on your remotes, and you also get faster DL speeds on the receiving end.
+
+
+Step 2. Implementing part of the super-seeding capabilities.
+
+You upload pieces of a file to different remotes from your laptop, and on your desktop you can download all those pieces and put them together again to get a complete file.  If you *really* wanted to get fancy, you could build in redundancy (ala RAID) so if a remote or two gets lost, you don't lose the entire file.  This would be a very efficient use of storage if you have a bunch of free cloud storage accounts (~1GB each) and some big files you want to back up.
+
+
+Step 3. Setting it up so that those remotes could talk to one another and share those pieces.  
+
+This is where it gets more like bittorrent.  Useful because you upload one copy and in a few hours, have say, 5 complete copies spread across your remotes.  You could add or remove remotes from a swarm locally, and push those changes to those remotes, which then adapt themselves to suit the new rules and share those with other remotes in the swarm (rules should be GPG-signed as a safety precaution).  Also, if/when deltas get implemented, you could push that delta to the swarm and have all the remotes adopt it.  This is cooler than regular bittorrent because the shared file can be updated.  As a safety precaution, the delta could be GPG signed so a corrupt file doesn't contaminate the entire swarm.  Each remote could have bandwidth/storage limits set in a dotfile.
+
+This is a high-level idea of how it might work, and it's also a HUGE set of features to add, but if implemented, you'd be saving a ton of resources, adding new use cases, and making git-annex more flexible.
+
+"""]]

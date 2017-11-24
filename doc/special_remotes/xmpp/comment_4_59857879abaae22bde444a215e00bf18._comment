@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.14.105"
+ subject="comment 4"
+ date="2013-09-19T21:07:35Z"
+ content="""
+If you have the XMPP flag in your git-annex build, it will support XMPP. Are you sure you set up the xmpp creds file and the xmpp special remote correctly on the ARM machine? (I assume it has no webapp, so you had to set that up manually..)
+
+Here's how you can do that manually:
+
+1. Run git-annex on a machine with the webapp, set up XMPP, and copy the .git/annex/creds/xmpp to the machine without the webapp.
+2. On the machine without the webapp, add a git remote that has its \"url = xmpp::loginname@xmppserver.com\" and its annex-uuid set to the annex.uuid of the repository on the first machine.
+3. Run git-annex assistant on the machine without the webapp.
+"""]]

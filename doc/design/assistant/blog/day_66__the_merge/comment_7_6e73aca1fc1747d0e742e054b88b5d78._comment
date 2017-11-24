@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.16"
+ subject="comment 7"
+ date="2012-08-30T17:15:58Z"
+ content="""
+It's hard to tell from that error message what's going on. I'd hope that there was actually a real error message printed earlier than that that.
+
+For now, I can only guess.. In order to install the haskell libxml-sax library, you need to have the GNOME XML2 library installed, including development headers. On Debian and derivatives, that is `apt-get install libxml2-dev`. 
+
+Alternatively, you can disable use of dbus by passing this to your cabal install: `--flags=-Dbus`
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-07-21T19:46:44Z"
+ content="""
+This is generally handled by using either `git annex sync --content`, which will make the laptops upload new files to the server before they push the git repository to it, or by using the git-annex assistant (on the laptops or perhaps on the server) to automatically copy files. Either way, you configure [[preferred_content]] settings to control which repositories want which  files.
+"""]]

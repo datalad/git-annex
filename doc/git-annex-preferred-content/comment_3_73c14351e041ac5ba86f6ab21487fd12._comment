@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="Don"
+ subject="want everything, but not old versions"
+ date="2016-03-31T18:50:55Z"
+ content="""
+I'm trying to make a custom `full` group that wants everything, but doesn't keep old versions like the `backup` group that wants `anything`.  I'm using `groupwanted full = (copies=1)`--will that work?  I guess the `anything` expression seems a bit magical to me, so I'm not sure how to avoid matching what it matches to collect old versions.  
+"""]]

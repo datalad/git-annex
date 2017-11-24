@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 1"
+ date="2013-08-24T19:22:05Z"
+ content="""
+The assistant is supposed to remove files from transfer repositories once the file has been transferred to all known clients.  This generally seems to work, with all the transfer repositories I've tested it with. Nothing is special about USB drives compared with other transfer repositories.
+
+Perhaps you have not configured the USB drive as a transfer repository? Or perhaps you have another client repository (even a client repository you had once but have now deleted).
+"""]]

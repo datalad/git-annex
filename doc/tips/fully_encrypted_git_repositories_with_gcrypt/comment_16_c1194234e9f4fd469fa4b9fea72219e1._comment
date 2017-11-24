@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="jonas@1491caea7d71fcf350b6f200807141f1b59857b8"
+ nickname="jonas"
+ subject="gcrypt and map"
+ date="2015-10-27T10:14:17Z"
+ content="""
+I'm having a problem generating a proper annex map where one of the remotes is gcrypt. Specifically, the map command fails as per below. I will concede that it's not clear though if the failure is that of encryptedown, or the third and final remote dsown, which is an rsync one.
+
+jonas@silk:~/own$ git annex map
+map /home/jonas/own ok
+map encryptedown 
+failed
+jonas@silk:~/own$ git annex info encryptedown
+remote: encryptedown
+description: VM / Montreal / gcrypt [encryptedown]
+uuid: 51ee1422-67d5-56f5-83f3-2718c9996080
+cost: 250.0
+type: gcrypt
+repository location: ssh://198.50.187.233/home/jonas/encryptedown/
+encryption: encrypted (to gpg keys: 0C5161298A31D11A) (hybrid mode)
+chunking: none
+jonas@silk:~/own$ git annex info dsown
+remote: dsown
+description: DiskStation NAS / Asgatan / rsync [dsown]
+uuid: ef3b81aa-47bd-41b4-8672-e371742306cf
+cost: 250.0
+type: rsync
+url: diskstation:/volume1/silkbackup/
+encryption: encrypted (encryption key stored in git repository)
+chunking: none
+
+"""]]

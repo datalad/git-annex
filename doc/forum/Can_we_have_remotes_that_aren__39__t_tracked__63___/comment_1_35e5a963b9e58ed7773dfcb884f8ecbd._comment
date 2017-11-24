@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 1"
+ date="2013-08-07T16:27:21Z"
+ content="""
+This seems like a reasonable request, so I've opened [[todo/untracked_remotes]]
+
+I will note that if you know the annex.uuid of the previous AAA repository, you can make the new one use that same uuid, just `git config annex.uuid $UUID`. (`git annex fsck --fast` would be a good idea after doing that.)
+"""]]

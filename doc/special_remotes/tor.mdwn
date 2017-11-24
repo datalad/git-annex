@@ -1,0 +1,10 @@
+git-annex can communicate over the Tor network. This allows direct
+communication between git-annex repositories, no matter where they are
+located.
+
+A git remote using tor has an url that looks like
+`tor-annex::2lssjzicvsxkdc2v.onion:19984`
+
+To set this up, use [[git-annex-enabletor]] and [[git-annex-p2p]],
+and run [[git-annex-remotedaemon]] to serve the Tor hidden service.
+It's explained in detail in [[tips/peer_to_peer_network_with_tor]].

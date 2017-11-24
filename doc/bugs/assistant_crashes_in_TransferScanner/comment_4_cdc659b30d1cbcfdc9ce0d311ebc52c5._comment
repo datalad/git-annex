@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-10-31T18:16:51Z"
+ content="""
+What is the output when using `git annex sync --content` ?
+I know, same basic error as the assistant, but it probably displays
+some filenames which will hint at the particular filename it's crashing on.
+
+Investigating, it looks like there may be a recently
+introduced bug in the standalone tarball where it contains
+`git-annex.linux/i18n/i18n`. If you move the contents of
+`git-annex.linux/i18n/i18n` to `git-annex.linux/i18n`, you might find that
+it causes the crash to go away. I'm committing a fix for that problem.
+
+(I'd still like information about the filename that causes the crash
+though, since that same crash could happen if the locale was misconfigured
+or if you were using a non-utf8 locale.)
+"""]]

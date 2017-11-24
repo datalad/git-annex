@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="http://www.joachim-breitner.de/"
+ nickname="nomeata"
+ subject="comment 14"
+ date="2012-01-02T14:02:04Z"
+ content="""
+Sorry for not replying earlier, but my non-mailinglist-communications-workflows are suboptimal :-)
+
+> Then in each repo, I found I had to pull from each of its remotes, to get the tracking branches that defaultSyncRemotes looks for to know those remotes are syncable.  This was the surprising thing for me, I had expected sync to somehow work out which remotes were syncable without my explicit pull. And it was not very obvious that sync was not doing its thing before I did that, since it still does a lot of \"stuff\".
+
+Right. But \"git fetch\" ought to be enough.
+
+Personally, I’d just pull and push everywhere, but you pointed out that it ought to be manageable. The existence of the synced/master branch is the flag that indicates this, so you need to propagate this once. Note that if the branch were already created by \"git annex init\", then this would not be a problem.
+
+It is not required to use \"git fetch\" once, you can also call \"git annex sync <remote>\" once with the remote explicitly mentioned; this would involve a fetch.
+
+> While this would lose the ability to control which remotes are synced, I think that being able to git annex sync origin and only sync from/to origin is sufficient, for the centralized use case.
+
+I’d leave this decision to you. But I see that you took the decision already, as your code now creates the synced/master branch when it does not exist (e290f4a8).
+
+> Why did you make branch strict?
+
+Because it did not work otherwise :-). It uses pipeRead, which is lazy, and for some reason git and/or your utility functions did not like that the output of the command was not consumed before the next git command was called. I did not investigate further. For better code, I’d suggest to add a function like pipeRead that completely reads the git output before returning, thus avoiding any issues with lazyIO.
+
+> mergeRemote merges from refs/remotes/foo/synced/master. But that will only be up-to-date if git annex sync has recently been run there. Is there any reason it couldn't merge from refs/remotes/foo/master?
+
+Hmm, good question. It is probably save to merge from both, and push only to synced/master. But which one first? synced/master can be ahead if the repo was synced to from somewhere else, master can be ahead if there are local changes. Maybe git merge should be called on all remote heads simultaniously, thus generating only one commit for the merge. I don’t know how well that works in practice.
+
+Thanks for including my code,
+Joachim
+
+"""]]

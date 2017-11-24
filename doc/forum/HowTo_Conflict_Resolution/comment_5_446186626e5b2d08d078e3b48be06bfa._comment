@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Horus"
+ subject="comment 5"
+ date="2016-05-05T10:00:20Z"
+ content="""
+Ok, that something I can understand.
+
+But still, I think, when using git-annex from the command line the situation of a merge conflict is still extremeley hard to handle. What is the reason against adding from which remote the conflicted data comes from?
+"""]]

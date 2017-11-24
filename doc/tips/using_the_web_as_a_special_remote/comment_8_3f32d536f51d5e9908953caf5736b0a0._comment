@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnvr2UPmp7ABeH0yI8KGAHCqFhl91Ju4Tc"
+ nickname="Calvin"
+ subject="HTTP Authentication?"
+ date="2014-09-29T21:37:44Z"
+ content="""
+Hi!
+
+I have a somewhat interesting use case. My course notes require HTTP authentication. This is possible with wget, but is there any way to make git annex do it?
+
+[wget authentication stuff!](http://stackoverflow.com/questions/4272770/wget-with-authentication)
+
+It would be nice to have the user and pass encrypted with GPG too. This might be a strange use case, but I can see other people wanting to do something like this in the future.
+
+Thanks!
+"""]]

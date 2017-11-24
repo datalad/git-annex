@@ -1,0 +1,24 @@
+I get this error after a hard reboot of the device when running git annex sync
+
+
+    fatal: Cannot open '/media/usbplatte/Podcasts/.git/annex/journal/e2f_ae4_SHA256E-s8388114--55d0a8881d06e24584ad9a94a6c5a369ea301309e0626497ea8c67bc65c3d0b2.mp3.log.web': Die Struktur muss bereinigt werden
+
+    git-annex: fd:15: hGetLine: end of file
+    fatal: Cannot open '/media/usbplatte/Podcasts/.git/annex/journal/e2f_ae4_SHA256E-s8388114--55d0a8881d06e24584ad9a94a6c5a369ea301309e0626497ea8c67bc65c3d0b2.mp3.log.web': Die Struktur muss bereinigt werden
+
+    git-annex: fd:15: hGetLine: end of file
+
+I ran 
+
+    git annex fsck
+
+and
+
+    git annex repair
+
+Both commands finished with Status Ok.
+
+How can I save the repo?
+
+TIA
+juh

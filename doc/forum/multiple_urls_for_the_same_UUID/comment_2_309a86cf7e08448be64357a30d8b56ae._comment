@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawln3ckqKx0x_xDZMYwa9Q1bn4I06oWjkog"
+ nickname="Michael"
+ subject="multiple ways to access a special remote?"
+ date="2013-07-10T05:52:28Z"
+ content="""
+The use case is like this: an external USB drive could be accessed both locally (as a special directory remote) or it could be mounted remotely (then it would need to be an rsync special remote).
+Is there a way to handle this?
+
+Failing that, can one switch the same remote from being a directory to an rsync without having to --move all of the content?
+
+Finally, what's the best way to check directory remote's directory= parameter?
+"""]]

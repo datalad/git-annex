@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-11-30T19:03:49Z"
+ content="""
+@spwhitton, you'd have to adjust annex.largefiles to not match the small
+files that you want to add to git.
+"""]]

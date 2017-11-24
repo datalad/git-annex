@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-05-29T16:50:35Z"
+ content="""
+Treating each version of a file as a separate object that is stored and transmitted separately is one of the core simplifying assumptions of git-annex. Among other things it makes it easy to have dumb special remotes that are mere key/value stores. And it keeps it easy to understand.
+
+I don't consider this a problem as far as storage goes. Disk space is cheap; git-annex allows dropping unused versions of files from repositories that are not on large cheap storage.
+
+For file transfer, it would be nice to find optimisations that don't require changing this simplifying assumption. This can be done at least for rsync I think. The [[design/assistant/deltas]] page is where the design of this is or will be worked on.
+"""]]

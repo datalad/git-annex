@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Bram"
+ ip="81.20.68.186"
+ subject="Group and wanted expression"
+ date="2014-10-09T12:09:58Z"
+ content="""
+What are the group and wanted expressions for your repository?
+
+    git annex group .
+    git annex wanted .
+"""]]

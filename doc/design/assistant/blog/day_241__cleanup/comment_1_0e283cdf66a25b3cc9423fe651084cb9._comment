@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlJ2utMQgMEYAOs3Dfc6eZRyUzt4acNXUU"
+ nickname="David"
+ subject="am start -a android.intent.action.VIEW -d http://localhost/etc"
+ date="2013-04-18T22:39:50Z"
+ content="""
+Just tested the command on an Android device, it works well.
+"""]]

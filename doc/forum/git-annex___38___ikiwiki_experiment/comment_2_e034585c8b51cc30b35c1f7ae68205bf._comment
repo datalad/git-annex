@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk3HGoDpnOPob5jOjvIootmkve1-nCpRiI"
+ nickname="Kalle"
+ subject="comment 2"
+ date="2013-09-25T11:58:42Z"
+ content="""
+I have very poor understanding of what ikiwiki actually does behind the scenes including how it uses the $srcdir and $gitdir.
+
+The only way I could see the web interface working would be to use the git-annex content expressions and having the assistant running on the server. That still doesn't prevent large files from being checked into git though? That all depends on which order ikiwiki can be made to do things.
+
+I might be able to test on a local wiki but that would have to wait a while.
+
+
+"""]]

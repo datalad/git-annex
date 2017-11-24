@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="vho"
+ subject="comment 4"
+ date="2014-12-02T21:11:39Z"
+ content="""
+Thanks for your time and help.
+
+http://hobeika.fr/~vincent/git/ls-tree
+
+    vincent@berlioz:~$ wc -l /tmp/ls-tree 
+    4103 /tmp/ls-tree
+
+    vincent@berlioz:~/photos2$ du -sh --exclude=.git/annex
+    863M	.
+
+I'll have to find some place to store that.
+
+Yet I don't think my repository holds such a big directory since there are no problems on other annexes.
+
+"""]]

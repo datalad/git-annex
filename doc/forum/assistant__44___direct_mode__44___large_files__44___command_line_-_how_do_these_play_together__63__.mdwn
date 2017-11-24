@@ -1,0 +1,10 @@
+Hi,
+
+I am trying to understand git-annex, and the walkthroughs on the page did help a lot. I *feel* that git-annex is the solution for my use case: having a large archive, several computers, NAS both at work and at home, being offline during commuting, …
+
+Everything seems to be clear for me when using the command line version. Using annex assistant looks promising, and it is easy to create repositories that match my usage. But now I see that these repositories are in direct mode by default; and I am not sure how this impacts my ability to work with large files. I do not want to end up with git (without annex) handling huge files.
+
+So - can somebody explain how direct mode affects this? Can I switch to indirect mode with the assistant? Am I asking the wrong questions? 
+
+thanks,
+Ulli

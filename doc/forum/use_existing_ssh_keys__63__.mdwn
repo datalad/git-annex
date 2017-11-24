@@ -1,0 +1,5 @@
+Hi, a new user trying out git-annex 3.20130124 here. So far looks really promising, thanks.
+
+I setup a local annex using the assistant webapp. I then created a rsync cloud repo over ssh to my shell box in a nearby data center for it. Works ok. I already have ssh key setup inclding ssh-agent for quick logins to the server. It would be great if you could configure the assistant to use these existing keys instead of creating a new set of keys. Maybe keep the defaults as is, but provide the config for this hidden behind "trust me, I know what I'm doing" check box or something.
+
+Thanks again, I keep researching.

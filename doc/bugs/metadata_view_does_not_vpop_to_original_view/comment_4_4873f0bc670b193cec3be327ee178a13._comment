@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="frederik@ffbea6a549cb3f460d110386c0f634c1ddc6a68a"
+ nickname="frederik"
+ subject="file name too long"
+ date="2015-06-04T04:49:23Z"
+ content="""
+OK, when I try git checkout master, it fails with some of these errors:
+
+    frederik@freo:~/Music$ git checkout master
+    error: cannot stat 'Händel, Georg Friedrich/Oregon Bach Festival Choir & Orchestra/09. George Frideric Handel - O Thou That Tellest Good Tidings to Zion--Air (Alto)_\%George Frideric Handel - The Messiah (feat. Oregon Bach Festival Choir & Orchestra -Rilling) (Disc 1 of 2)\%_%Händel, Georg Friedrich%Oregon Bach Festival Choir & Orchestra%.flac': File name too long
+
+These filenames have been created by git annex when creating the view. The original one is rather long too:
+
+    09. George Frideric Handel - O Thou That Tellest Good Tidings to Zion--Air (Alto).flac
+
+In directory:
+
+    Music/George Frideric Handel - The Messiah (feat. Oregon Bach Festival Choir & Orchestra -Rilling) (Disc 1 of 2)
+
+It looks like this has something to do with the problem.
+
+When I do git clean -fd, I only have the 2 directories left as created by the view. I still can't do git annex vpop anymore, as the reply is that I'm not in a view anymore.
+
+Some more info on that one file:
+
+    frederik@freo:~/Music/Händel, Georg Friedrich/Oregon Bach Festival Choir & Orchestra$ git annex metadata 09.\ George\ Frideric\ Handel\ -\ O\ Thou\ That\ Tellest\ Good\ Tidings\ to\ Zion--Air\ \(Alto\)_%George\ Frideric\ Handel\ -\ The\ Messiah\ \(feat.\ Oregon\ Bach\ Festival\ Choir\ \&\ Orchestra\ -Rilling\)\ \(Disc\ 1\ of\ 2\)%.flac
+    metadata 09. George Frideric Handel - O Thou That Tellest Good Tidings to Zion--Air (Alto)_%George Frideric Handel - The Messiah (feat. Oregon Bach Festival Choir & Orchestra -Rilling) (Disc 1 of 2)%.flac 
+      album=The Messiah
+      album-lastchanged=2015-06-03@13-27-45
+      codec=flac
+      codec-lastchanged=2015-06-03@13-27-45
+      composer=Händel, Georg Friedrich
+      composer-lastchanged=2015-06-03@13-27-45
+      genre=classical
+      genre-lastchanged=2015-06-03@13-27-45
+      lastchanged=2015-06-03@13-27-45
+      performer=Oregon Bach Festival Choir & Orchestra
+      performer-lastchanged=2015-06-03@13-27-45
+      tag=music
+      tag-lastchanged=2015-06-03@13-27-45
+    ok
+
+
+
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ganwell"
+ ip="46.14.43.36"
+ subject="brew doesn't include git-remote-gcrypt"
+ date="2014-08-19T21:54:16Z"
+ content="""
+Brew doesn't include git-remote-gcrypt, so I installed your fork of it manually. That works well and if you use a symlink to include it in the PATH you can easily update (pull) the repo. If one can install git-remote-gcrypt using brew, I don't know how.
+
+Best, Jean-Louis
+"""]]

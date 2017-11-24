@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2016-01-29T18:20:06Z"
+ content="""
+As someone else ran into a similar case of this, let me explain a little
+bit more..
+
+`git-annex unused` finds files that are not used by the currently checked
+out branch, or any other branch or tag. This includes remote branches.
+
+This is an important safeguard, because there might be a clone of the
+repository that intentionally still has that file checked out, and it
+wouldn't be good for `git-annex unused` to treat such a file as unused.
+
+But if there's an old remote, that's perhaps not getting updated any longer
+and has a branch that points to a file, `git annex unused` won't find that file
+as unused.
+
+So, one solution is to use `git remote rm` to delete the old remote. Or,
+otherwise get git to delete the old remote branch that is keeping the file
+around.
+
+The other solution is to run something like `git annex unused
+--used-refspec=+master` What this does is only considers the local master
+branch as used, and not any other branch or tags. I'd recommend only using
+this with caution.
+"""]]

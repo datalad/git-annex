@@ -1,0 +1,13 @@
+Got `git annex export` working to webdav and rsync special remotes. Tested
+exporting to the Internet Archive via S3, and to box.com via webdav. Both
+had little weirdnesses in their handling of the protocols, which were
+worked around, and it's quite nice to be able to export trees to those
+services, as well as Amazon S3.
+
+Also added connection caching for exports, so S3 and webdav exports only
+make one http connection, instead of one per file.
+
+Had to change the format of `git-annex:export.log`; the old format didn't
+take into account that a repository can export to several different remotes.
+
+Today's work was supported by the NSF-funded DataLad project.

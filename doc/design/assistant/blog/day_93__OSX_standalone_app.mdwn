@@ -1,0 +1,23 @@
+Various bug fixes, and work on the OSX app today:
+
+* Avoid crashing when ssh-keygen fails due to not being able to parse
+  `authorized_keys`.. seems a lot of people have crufty unparsable
+  `authorized_keys` files.
+* On OSX, for some reason the webapp was failing to start sometimes due
+  to bind failing with EINVAL. I don't understand why, as that should
+  only happen if the socket is already bound, which it should not as
+  it's just been created. I was able to work around this by retrying
+  with a new socket when bind fails.
+* When setting up `authorized_keys` to let `git-annex-shell` be run,
+  it had been inserting a perl oneliner into it. I changed that
+  to instead call a `~/.ssh/git-annex-shell` wrapper script that it sets
+  up. The benefits are it no longer needs perl, and it's less ugly,
+  and the standalone OSX app can modify the wrapper script to point to
+  wherever it's installed today (people like to move these things around I
+  guess).
+* Made the standalone OSX app set up autostarting when it's first run.
+* Spent rather a long time collecting the licenses of all the software that
+  will be bundled with the standalone OSX app. Ended up with a file
+  containing 3954 lines of legalese. Happily, all the software appears
+  redistributable, and free software; even the couple of OSX system libraries
+  we're bundling are licensed under the APSL.

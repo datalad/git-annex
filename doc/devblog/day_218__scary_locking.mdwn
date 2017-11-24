@@ -1,0 +1,24 @@
+Plan is to be on vacation and/or low activity this week before DebConf.
+However, today I got involved in fixing a bug that caused the assistant to
+keep files open after syncing with repositories on removable media.
+
+Part of that bug involved lock files not being opend close-on-exec, and
+while fixing that I noticed again that the locking code was scattered all
+around and rather repetitive. That led to a lot of refactoring, which is
+always fun when it involves scary locking code. Thanks goodness for
+referential transparency.
+
+Now there's a Utility.LockFile that works on both POSIX and Windows.
+Howver, that module actually exports very different functions for the two.
+While it might be tempting to try to do a portability layer, the
+two locking models are really very different, and there are lots of gotchas
+such a portability layer would face. The only API that's completely the
+same between the two is dropLock.
+
+This refactoring process and the cleaner, more expressive
+code it led to helped me spot a couple of bugs involving locking. See
+[[!commit e386e26ef207db742da6d406183ab851571047ff]]
+and [[!commit 0a4d301051e4933661b7b0a0791afa95bfe9a1d3]]
+Neither bug has ever seemed to cause
+a problem, but it's nice to be able to spot and fix such bugs before they
+do.

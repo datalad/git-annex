@@ -1,0 +1,16 @@
+Something that has come up repeatedly is that `git annex reinject` is
+too hard to use since you have to tell it which annexed file you're providing
+the content for. Now `git-annex reinject --known` can be passed a list of
+files and it will reinject any that hash to known annexed contents
+and ignore the rest. That works best when only one backend is used in a 
+repository; otherwise it would need to be run repeatedly with different
+`--backend` values.
+
+Turns out that the `GIT_COMMON_DIR` feature used by adjusted branches
+is only a couple years old, so don't let adjusted branches be used with
+a too old git.
+
+And, `git merge` is getting a new sanity check that prevents merging
+in a branch with a disconnected history. `git annex sync` will inherit that
+sanity check, but the assistant needs to let such merges happen when eg,
+pairing repositories, so more git version checking there.

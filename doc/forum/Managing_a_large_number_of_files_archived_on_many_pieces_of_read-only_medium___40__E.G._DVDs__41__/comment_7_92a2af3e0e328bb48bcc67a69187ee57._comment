@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Steve"
+ ip="92.104.175.136"
+ subject="web and hook special remotes"
+ date="2012-10-24T23:26:53Z"
+ content="""
+Hi Joey,
+
+Thanks for the advice.  I had thought of the web special remote; but as you may have noticed from my example, I don't use automount so my DVDs and CDs all get mounted in the same place. (/mnt/cdrom) so the web special remote won't work for me.
+
+I'll try to play around with the hook special remote this weekend.  I had a thought it might be interesting to have it search for the DVDs in some common places or even by parsing the mounted file systems, and allow an override or augmentation through git config.
+
+"""]]

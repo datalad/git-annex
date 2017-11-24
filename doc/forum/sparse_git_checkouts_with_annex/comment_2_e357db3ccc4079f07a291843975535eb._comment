@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2011-04-07T16:33:30Z"
+ content="""
+BTW, git-annex unused *will* have a problem that not all the symlinks are present. It will suggest dropping content belonging to the excluded symlinks.
+"""]]

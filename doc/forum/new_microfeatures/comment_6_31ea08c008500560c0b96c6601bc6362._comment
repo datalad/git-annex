@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnpdM9F8VbtQ_H5PaPMpGSxPe_d5L1eJ6w"
+ nickname="Rafaël"
+ subject="git annex fetch"
+ date="2011-07-03T14:39:41Z"
+ content="""
+I'm not sure it is worth adding a command for such a small feature, but I would certainly use it: having something like \"git annex fetch remote\" do \"git fetch remote && git annex copy --from=remote\", and \"git annex push remote\" do \"git push remote && git annex copy --to=remote\". And maybe the same for a pull operation?
+"""]]

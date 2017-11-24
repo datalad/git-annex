@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlPfB0_GcGJ827kZqRE1PF4D23rxpfOeg4"
+ nickname="Björn"
+ subject="Can't find developer API key and secret"
+ date="2014-06-01T21:25:54Z"
+ content="""
+According to the last comment, and this page:
+* https://developers.google.com/storage/docs/migrating#keys
+
+there's supposed to be a \"Interoperable Access\" menu option, something I can't find. Note that both the previous comment and this page refers to Googles old Developer Console.
+
+I can find a few things under \"APIs and Auth\" => \"Credentials\" under the heading \"Public API access\", but no matter what kind of key I try to create I can't get anything other than an API key. No secrets here, and no \"Show\"-button for newly created keys.
+
+Another thing worth mentioning is that these API keys I'm seeing do not like described in that first link in this comment. It's much longer, contains both upper- and lowercase and also contains dashes.
+"""]]

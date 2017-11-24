@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 3"
+ date="2014-10-06T15:51:38Z"
+ content="""
+Pieter, I suspect you didn't follow the part of the instructions where it says to run \"./runshell\" on the NAS. If you didn't do that, there will be no ~/.ssh/git-annex-shell script set up.
+
+You have put git-annex-shell in your PATH somehow, but you probably did it by editing a bash dotfile. Those files are used for interactive login shells, but not when git-annex is sshing noninteractively into the NAS to run git-annex-shell.
+"""]]

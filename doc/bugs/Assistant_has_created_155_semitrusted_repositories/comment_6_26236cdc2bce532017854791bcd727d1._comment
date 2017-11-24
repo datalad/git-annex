@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnNqLKszWk9EoD4CDCqNXJRIklKFBCN1Ao"
+ nickname="maurizio"
+ subject="comment 6"
+ date="2013-11-22T19:29:08Z"
+ content="""
+Some additional information (useful at least from user's point of view): the data that was in the annex but outside of the archive is still accessible from both clients. Part of the data that was in the archive does not seem to be accessible on one client: ```git annex get```  says it gets data in an amount which seems correct but the link to the data remains broken. Fortunately I can still access the data on the other client. Some of the data in the archive is still accessible in both clients. The part that is still accessible was put in the annex a few days ago, only the last directory which was added and seems to have triggered the problem is \"broken\" on one client. It is possible (not sure, sorry) that this directory was first added in the annex, and then moved to the archive shortly after, before the first addition had propagated to the other client.
+"""]]

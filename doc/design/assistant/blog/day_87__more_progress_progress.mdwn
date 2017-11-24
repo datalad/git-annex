@@ -1,0 +1,28 @@
+Worked more on upload progress tracking. I'm fairly happy with its state
+now:
+
+* It's fully implemented for rsync special remotes.
+
+* Git remotes also fully support it, with the
+  notable exception of file uploads run by `git-annex-shell recvkey`. That
+  runs `rsync --server --sender`, and in that mode, rsync refuses to output
+  progress info. Not sure what to do about this case. Maybe I should
+  write a parser for the rsync wire protocol that can tell what chunk of the
+  file is being sent, and shim it in front of the rsync server? That's
+  rather hardcore, but it seems the best of a bad grab bag of options that
+  include things like `LD_PRELOAD` hacks.
+
+* Also optimised the rsync progress bar reader to read whole
+  chunks of data rather than one byte at a time.
+
+* Also got progress bars to actually update in the webapp for uploads.
+
+  This turned out to be tricky because kqueue cannot be used to detect when
+  existing files have been modified. (One of kqueue's worst shortcomings vs
+  inotify.) Currently on kqueue systems it has to poll.
+
+I will probably upload add progress tracking to the directory special remote,
+which should be very easy (it already implements its own progress bars),
+and leave the other special remotes for later. I can add upload progress
+tracking to each special remote when I add support for configuring it in
+the webapp.

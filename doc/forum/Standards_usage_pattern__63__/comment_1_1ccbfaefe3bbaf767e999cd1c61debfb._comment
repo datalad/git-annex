@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk9SYh6N-JUMkYkW4aOk55zC3Vr9KonDV4"
+ nickname="Florian"
+ subject="comment 1"
+ date="2014-11-19T22:01:19Z"
+ content="""
+I think you need at least one server that is reachable from every device and serves as a transfer repository. XMPP is only needed to inform peers about changes. Usual the assistant performs a startup check and detects changes that way. You can't sync content over XMPP. 
+All that is very afaik, I hope for corrections if wrong. 
+"""]]

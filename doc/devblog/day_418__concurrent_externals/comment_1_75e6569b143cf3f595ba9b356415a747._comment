@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Adam"
+ subject="Question"
+ date="2016-10-04T05:27:31Z"
+ content="""
+Hi Joey,
+
+Does this mean that, for example, when uploading many small files to a special remote, that git-annex could upload more than one at a time?  Sometimes it seems like the time spent waiting for a small file to upload is mostly spent waiting for the server to begin accepting the file.   With lots of small files, this adds up (similar to how round-trip time slows down Obnam significantly when using a network repo).
+
+Thanks.
+"""]]

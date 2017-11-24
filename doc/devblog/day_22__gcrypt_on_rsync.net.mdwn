@@ -1,0 +1,20 @@
+Being still a little unsure of the UI and complexity
+for configuring gcrypt on ssh servers, I thought I'd start today with the
+special case of gcrypt on rsync.net. Since rsync.net allows running some git
+commands, gcrypt can be used to make encrypted git repositories on it.
+
+Here's the UI I came up with. It's complicated a bit by needing to explain
+the tradeoffs between the rsync and gcrypt special remotes.
+
+[[!img /assistant/rsync.net.encryption.png]]
+
+This works fine, but I did not get a chance to add support for enabling
+existing gcrypt repos on rsync.net. Anyway, most of the changes to make
+this work will also make it easier to add general support for gcrypt on ssh
+servers.
+
+Also spent a while fixing a bug in git-remote-gcrypt. Oddly 
+`gpg --list-keys --fast-list --fingerprint` does not show the fingerprints
+of some keys.
+
+Today's work was sponsored by Cloudier - Thomas Djärv.

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawln3ckqKx0x_xDZMYwa9Q1bn4I06oWjkog"
+ nickname="Michael"
+ subject="would git annex fsck also recreate location tracking info for special remotes?"
+ date="2013-07-17T17:02:50Z"
+ content="""
+Suppose I want to drop history like discussed in this entry. How well does this deal with special (e.g. directory on an offline disk) remotes?
+"""]]

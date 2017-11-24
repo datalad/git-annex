@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 8"
+ date="2011-03-21T08:52:18Z"
+ content="""
+Just tried building both of the code paths, and they seem to build and somewhat function on OSX. I have yet to confirm the functionality is working correctly, but so far it's looking good. (I somewhat care less about the utimes/mtimes of my files since I care more about the content :) )
+"""]]

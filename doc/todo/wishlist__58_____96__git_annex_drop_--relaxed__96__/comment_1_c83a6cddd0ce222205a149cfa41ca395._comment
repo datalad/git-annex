@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://cstork.org/"
+ nickname="Chris Stork"
+ subject="How should this interact with the trust model and location tracking?"
+ date="2013-10-04T11:13:11Z"
+ content="""
+This could become complicated.  AFAIU, right now git-annex keeps track of files as either present or absent.  With this feature it's tempting to introduce a third state 'potentially dropped' (or 'dropped in a relaxed fashion') but do you then treat them as if they were dropped depending in wether they are on a trusted or untrusted repo?  Or maybe a potentially dropped file in a trusted repo is treated as a file in a semitrusted repo?  This becomes convoluted.  You also need a command to undrop a file in case you decide that you really want to keep it and in order to do this you need a command to see which files are up for relaxed dropping....
+
+As an alternative approach maybe it makes sense to extend [[preferred content]] expressions to take file sizes and disk usage into account.
+"""]]

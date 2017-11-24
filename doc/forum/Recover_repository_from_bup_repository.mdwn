@@ -1,0 +1,1 @@
+I screwed up one of my repositories, so I decided to start from clean slate. I have a remote bup repository that has all of my previous repository data. Now, I want to get it back. How I can do this?

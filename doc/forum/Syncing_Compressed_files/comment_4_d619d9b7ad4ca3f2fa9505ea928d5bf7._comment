@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="moird"
+ subject="comment 4"
+ date="2016-01-29T19:43:21Z"
+ content="""
+yes, this is arch linux.  It seems to be more of an issue of the extension, I was toying with a zip file and renaming it and like if the extension was zipper then it would sync the file.  It would not sync the file if it was named with gz.  Was messing with inotifywatch and it is seeing the zip file creation:
+
+    total  create  filename
+    2      2       /home/daniel/annex/.git/refs/remotes/annex/synced/
+    2      2       /home/daniel/annex/.git/
+    1      1       /home/daniel/annex/.git/refs/heads/synced/
+    1      1       /home/daniel/annex/.git/refs/heads/
+    1      1       /home/daniel/annex/.git/refs/remotes/annex/
+    1      1       /home/daniel/annex/
+
+On successful files syncing will show the hashed annex folders 
+"""]]

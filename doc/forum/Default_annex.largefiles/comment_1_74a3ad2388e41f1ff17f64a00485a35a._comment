@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-10-20T15:26:35Z"
+ content="""
+The default is to treat all files as "large", so any file it sees
+should be added, except for those that are `.gitignored`.
+"""]]

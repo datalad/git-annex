@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.140"
+ subject="comment 1"
+ date="2013-07-20T19:51:19Z"
+ content="""
+It's pretty easy to configure ls to show broken symlinks in a different color. Run dircolors, and alias ls='ls --color==auto'. Then you can see which files are not there at a glance.
+
+The Linux file manager's I've tried (nautilus and thunar) also shows which files are present; you get a X on the icon of annexed files that are not present.
+"""]]

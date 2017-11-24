@@ -1,0 +1,7 @@
+Hello!
+
+I’ve got two repos, both are using git-annex.
+
+Can I somehow merge them together, into one?
+
+Thank you!

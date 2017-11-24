@@ -1,0 +1,7 @@
+Got a bit distracted improving Haskell's directory listing code.
+
+Only real git-annex work today was fixing [[bugs/Assistant_merge_loop]],
+which was caused by changes in the last release (that made direct mode
+merging crash/interrupt-safe). This is a kind of ugly bug, that can result
+in the assistant making lots of empty commits in direct mode repositories.
+So, I plan to make a new release on Monday.

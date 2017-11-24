@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 3"
+ date="2014-10-12T23:26:27Z"
+ content="""
+vicfg won't accept invalid input, if you make a type in the syntax it'll land you back in the editor with the problem line marked.
+
+But right, commenting out a line does not reset it to the default. Basically, once one of these settings is changed, there is no longer a default to go back to. You have to leave the line uncommented and change the value to what you want it to be. Ie, \"= semitrusted\" for the trust levels, and \"= \" for the wanted expressions.
+
+I think that vicfg should avoid this [[todo/vicfg_comment_gotcha]] and have filed that as a todo item.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://olivier.berger.myopenid.com/"
+ nickname="obergix"
+ subject="rsync remote is basically more intended for backups ?"
+ date="2013-08-17T17:40:47Z"
+ content="""
+If I get it correctly, it is mainly useable as a backup, which will accumulate contents of the objects managed by git-annex over time.
+
+It would be great to have a use case illustrating its use in concrete matters. Thanks in advance.
+"""]]

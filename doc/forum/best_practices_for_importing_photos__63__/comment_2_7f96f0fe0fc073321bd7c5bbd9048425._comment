@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.191"
+ subject="comment 2"
+ date="2014-04-17T20:11:59Z"
+ content="""
+It seems to me that there is a lot of cruft in EXIF that I would not want to bloat my git-annex branch with storing. That's why [[tips/automatically_adding_metadata]] imports only the listed fields. It's easy to add fields later and re-run the metadata importer on your existing files.
+
+I have not gotten as far as having any best practices to share. :)
+
+"""]]

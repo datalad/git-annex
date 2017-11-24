@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm7AuSfii_tCkLyspL6Mr0ATlO6OxLNYOo"
+ nickname="Georg"
+ subject="for OSX, package managers (homebrew and macports) are really second-class"
+ date="2013-07-24T07:24:49Z"
+ content="""
+at least with regards to wide spread use. I agree with Wichert, the average OSX user won't use them. I myself would go with homebrew (because it is far less of a pain than macports), but actually static built binaries that are just dragged from a DMG to your programs folder is the way to go if you can't go osx app store. It's just how most Apple users are wired. PKG would be fine, too, since most will know them, but those are really only needed if you need to place stuff in /Library/Frameworks or things like that. If it can be done as a all-inclusive OSX .app, do it that way and just pack it up in a .DMG.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.3.125"
+ subject="comment 3"
+ date="2013-02-05T17:46:56Z"
+ content="""
+@alip I've just fixed a bug which made the assistant get location tracking info wrong for files it added in direct mode. That probably explains what you're seeing. You can run `git annex fsck` to fix the location log info, and if you restart the assistant it'll probably then realize the files are locally present and drop them. Of course, the USB drive has to be connected for that to work; git-annex needs to verify the files have been moved to it before it can drop them.
+"""]]

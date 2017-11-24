@@ -1,0 +1,14 @@
+I would like to use git annex between two locations (work and home) where essentially the two computers are never on at the same time.
+
+I have set up a special remote (S3) to cater for file transfer between the sites, but still need some way of syncronising the git repositories between them.
+I have access to a git server, but which doesn't have git-annex on it. So, I think that is all the components I need to get this working.
+
+However, I don't want to have to manually sync my computers with the central server, so I would like the assistant to do it for me, in what is essentially the complement of the special remote.
+
+What is the best way to accomplish this? I guess that this is a general git question, not specific to git annex.
+I see some solutions [[http://stackoverflow.com/questions/3583061/automatically-mirror-a-git-repository]], but my git isn't really up to evaluating the options properly.
+
+So, what do other people do in this situation? 
+
+
+--Walter

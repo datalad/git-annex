@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-10-02T16:14:20Z"
+ content="""
+Well, I can confirm that only one instance of any 
+external special remote will be run per git-annex process currently. 
+
+Actually, it's a bit more than that -- If multiple threads try to use the
+same external special remote at the same time, everything is necessarily
+serialized, and so using -J won't let multiple downloads happen at once
+from a single external special remote, although it may still usefuly
+parallelize amoung several remotes.
+
+Since that seems like something worth dealing with, perhaps by having a
+pool of external special remote processes, I don't feel comfortable making
+any promises about the behavior. And as you note, it's easy to get multiple
+procesess by running multiple git-annex commands, so that is something an
+external special remote needs to deal with anyway.
+"""]]

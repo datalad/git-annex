@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2016-10-31T20:45:05Z"
+ content="""
+Was able to reproduce this pattern of output w/o filenames 
+by throwing an IOError from Command.Sync.syncFile,
+in code that is outside of callCommandAction or includeCommandAction block.
+
+Unfortunately that does not narrow it down 
+enough to know there the problem lies.
+I need a way to reproduce the bug to get any further.
+"""]]

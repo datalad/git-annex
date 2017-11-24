@@ -1,0 +1,30 @@
+Wow, 11 days off! I was busy with first dentistry and then DebConf.
+
+Yesterday I [visited CERN](http://joeyh.name/blog/entry/words_fail_me/) and
+got to talk with some of their IT guys about how they manage their tens of
+petabytes of data. Interested to hear they also have the equivilant of a
+per-subdirectory annex.numcopies setting. OTOH, they have half a billion
+more files than git's index file is likely to be able to scale to support. ;)
+
+Pushed a release out today despite not having many queued changes. 
+Also, I got git-annex migrated to Debian testing, and so was also
+able to update the wheezy backport to a just 2 week old version.
+
+Today is also the last day of the [campaign](https://campaign.joeyh.name/)!
+
+----
+
+There has been a ton of discussion about git-annex here at DebConf,
+including 3 BoF sessions that mostly focused on it, among other git stuff.
+Also, RichiH will be presenting his
+"[Gitify Your Life](http://penta.debconf.org/dc13_schedule/events/1025.en.html)"
+talk on Friday; you can catch it on the [live stream](http://blog.debconf.org/blog/2013/08/14#hl_dc13_recordings).
+
+I've also had a continual stream of in-person bug and feature requests.
+(Mostly features.)
+These have been added to the wiki and I look forward to working on that
+backlog when I get home.
+
+As for coding, I am doing little here, but I do have a branch cooking that
+adds some options to `git annex import` to control handling of duplicate
+files.

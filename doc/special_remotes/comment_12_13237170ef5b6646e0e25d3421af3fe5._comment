@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://yarikoptic.myopenid.com/"
+ nickname="site-myopenid"
+ subject="How to establish local preference for (special) remotes"
+ date="2013-05-22T14:06:48Z"
+ content="""
+Sorry if it is RTFM... If I have multiple original (reachable) remotes, how could I establish my preference for which one to be used in any given location?
+
+usecase: if I clone a repository within amazon cloud instance -- I would now prefer if this (or all -- user-wide configuration somehow?) repository 'get's load from URLs originating in the cloud of this zone (e.g. having us-east-1.s3.amazonaws.com/ in their URLs).
+"""]]

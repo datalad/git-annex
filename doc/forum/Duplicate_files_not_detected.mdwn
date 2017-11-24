@@ -1,0 +1,1 @@
+Using v6 repository and `git add .` / `git commit`, it appears that copying files to new names results in new files being stored (even though they are obviously the same file).  Is there some other command that needs to be executed to have duplicate files detected/removed/linked?

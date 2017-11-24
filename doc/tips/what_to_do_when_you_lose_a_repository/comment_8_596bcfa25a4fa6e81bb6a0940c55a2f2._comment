@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="fiatjaf"
+ subject="comment 8"
+ date="2016-04-23T15:01:23Z"
+ content="""
+I've issued `git annex dead` for a full git-annex repo (not a special remote) I had in a VPS, but my local machine keeps trying to sync with it on `git annex sync`, asking me to confirm the ssh public key and so on. Is that correct?
+"""]]

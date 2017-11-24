@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnNqLKszWk9EoD4CDCqNXJRIklKFBCN1Ao"
+ nickname="maurizio"
+ subject="comment 9"
+ date="2013-12-02T20:49:14Z"
+ content="""
+I had already tried ```git annex fsck``` and for all files the command returned ```ok```. Nevertheless, it was still not possible to get the data. Now after a few days it seems I can get all the data I tried from both clients. Maybe because the repository contains many files (about 1.5e6) the daily sanity check spawns git processes which do not seem to terminate even when the delay has expired but other than that the repository does not seem to be in a bad state, the only weirdness being the 155 nonrepositories in the status.
+"""]]

@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkQvRLq7nMMEGoEKuYx9oaf67IC0nZfmVI"
+ nickname="chung yan"
+ subject="owncloud hook exited nonzero"
+ date="2013-07-10T05:03:47Z"
+ content="""
+hi 
+
+I got the above message, and cannot sync to my owncloud. Here is the log file i had: 
+
+>[2013-07-10 12:30:31 HKT] main: starting assistant version 4.20130627
+(scanning...) [2013-07-10 12:30:31 HKT] Watcher: Performing startup scan
+(started...) git-annex: Daemon is already running.
+git-annex: Daemon is already running.
+[2013-07-10 12:44:04 HKT] Committer: Adding sync2Servers.sh
+
+>add syncByRsync/sync2Servers.sh (checksum...) [2013-07-10 12:44:04 HKT] Committer: Committing changes to git
+(gpg) 
+
+>owncloud hook exited nonzero!
+>git-annex: Daemon is already running.
+[2013-07-10 12:51:07 HKT] main: Syncing with owncloud 
+
+>owncloud hook exited nonzero!
+>[2013-07-10 12:53:10 HKT] Committer: Adding 2 files
+ok
+(Recording state in git...)
+(Recording state in git...)
+add syncByRsync/DSCN1810.JPG (checksum...) ok
+add syncByRsync/DSCN1810.JPG (checksum...) [2013-07-10 12:53:10 HKT] Committer: Committing changes to git
+
+>owncloud hook exited nonzero!
+[2013-07-10 12:53:50 HKT] main: Syncing with owncloud 
+  owncloud hook exited nonzero!
+  owncloud hook exited nonzero!
+
+thanks
+
+yan
+"""]]

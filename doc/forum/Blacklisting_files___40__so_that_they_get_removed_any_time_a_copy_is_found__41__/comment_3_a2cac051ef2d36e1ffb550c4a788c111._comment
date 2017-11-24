@@ -1,0 +1,101 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="Work-in-progress, yet already usable, solution"
+ date="2017-03-09T12:19:49Z"
+ content="""
+TL;DR:  Thanks for clarifying the possibilities.  I chose to maintain an explicit blacklist of files that are definitely uninteresting, because it is safer and more convenient at several level (protect against mistakes, makes reviewing easier, fewer assumptions).  I share the proof-of-concept here in case anyone is interested in the future.  I might share some scripts on a public repo, especially if anyone shows interest.
+
+## Discussion
+
+> You don't need to filter old commits out of branches to use git annex unused; it only looks at the most recent commit in each branch, so once a file has been deleted from all branches it will be identified as unused.
+
+Okay, this is important to know (perhaps something to add to the documentation there).
+
+> (...) depends on how quickly you need to get rid of the files, and whether you want git-annex to generally keep the content of deleted and old versions of modified files or not.
+>
+> If you only want git-annex to keep the content of files that are present in the current branches and tags (...)
+
+In a perfect world, that would be enough.
+
+> If you want to keep the full history in general, but drop the content of specific files, (...)
+
+I realize that I need to keep the full history in general, because (it already happened) although I almost always make small independent commits and review changes before commit, large changes are relatively common.   For example renaming a directory that has many sub-directories full of files.  If some files are removed by mistake since the last commit, the information is drowned in a big change.  As git does not always track renames, it sometimes shows many additions/removal.  Also, changes are sometimes committed by a `git annex sync` (which I avoid for this reason).
+
+So, a file reported by `git unused` is not a proof that it should be deleted.
+
+So all in all, yes I \"want to keep the full history in general, but drop the content of specific files\".
+
+> then you need to use git-annex to drop the content before you delete the file.
+
+Okay, this works locally.  Yet I have started to work another way, see below.
+
+> You can use git annex whereis $file to see everywhere that the content has gotten to, and then git annex drop $file --from each location (and from the local repository).
+>
+> If you need to immediately get rid of the content of some file, you can use the same procedure to check where it is and drop it from those locations.
+
+This somehow assumes connectivity to other repositories at cleanup time, which is not practical.
+
+I might make a number of commits including some that locally prune hundreds of files, several times, before having access to any other repository.
+
+This does not leave a clear state of \"globally blacklisted\" file.
+
+
+
+**It seems to me that the situation needs maintain some state allowing to defer the removal to the time when repositories are available.**
+
+
+## Work-in-progress solution
+
+This evolved to working another way:
+
+* maintain (grow) a list of blacklisted keys that's stored somewhere in the repository and synced like any other (regular git) file.
+* have some script that can be run at any time from any repo and locally delete any file that's blacklisted.
+* variant: before locally dropping the file, check if, as far as this repo knows, it's really unused anywhere.
+
+### Proof-of-concept implementation
+
+#### Script `git_annex_drop_all_files_in_blacklist.sh`
+
+Good for a small blacklist when `git annex unused` is slow.
+
+    #!/bin/bash
+
+    set -eu # Safety, abort on error.
+
+    while read KEY REASON
+    do
+            echo Will drop blacklisted \"$KEY\"
+            git annex dropkey --force \"$KEY\"
+    done <blacklist
+
+
+#### Script to show all unused files
+
+This presents all unused files in a directory.
+They can be presented ordered by date or EXIF date for review.
+
+    #!/bin/bash
+
+    mkdir -p review_unused ; cd review_unused ; time git annex unused | while read NUMBER KEY ; do ln -s $( git annex contentlocation $KEY ) $KEY ; done ; xdg-open . &
+
+Files can then be interactively moved to other directories for further processing: reuse with `git add`, blacklist, etc.
+
+#### Other
+
+I have also written another experimental script that processes the output of `git annex unused`, automatically blacklists them in some specific cases and assists in reviewing or `git annex drop`ing them.
+
+## Additional benefit
+
+Storing state in a blacklist has the advantage of being very explicit and global.
+
+This has the advantage that the blacklist can potentially apply to content outside of any repository.
+For example, I find one of my memory cards for digital camera, that I've not used for a long time.  It has old copies of some photos.  The blacklist allows to delete immediately uninteresting files, then git-annex can tell if the remaining files are known and can be also deleted.  Then, either the card becomes empty, or only the (fewer) remaining files can be manually reviewed.  Quick and safe.
+
+<!--  LocalWords:  whereis dropkey EXIF mkdir ln contentlocation xdg
+ -->
+<!--  LocalWords:  ing
+ -->
+
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.3"
+ subject="comment 2"
+ date="2014-05-21T18:11:45Z"
+ content="""
+It seems to me that simply running `git annex sync --content` before you go home would do what you need. Have you tried using git-annex? 
+
+Some of the things you're saying don't entirely make sense to me, and so I suspect you're perhaps worrying about problems that don't exist, or that git-annex deals with nicely.
+"""]]

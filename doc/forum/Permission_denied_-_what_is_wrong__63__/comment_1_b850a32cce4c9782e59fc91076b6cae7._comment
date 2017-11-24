@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-19T20:26:57Z"
+ content="""
+The remote server is rejecting your ssh key to log into it.
+
+If you used the web app to set this up, it will have generated a ssh key
+just for this server, and put it in `~/.ssh/git-annex/` on the client.
+
+You need to check your `~/.ssh/authorized_keys` file on the server
+and make sure that the ssh key is listed in it. Checking the server's
+ssh log file may also help track down why it's rejecting the login.
+"""]]

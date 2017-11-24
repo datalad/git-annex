@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-02-02T20:33:31Z"
+ content="""
+Try `git annex copy --fast --to server`
+
+That avoids checking if the server still has every file, and only sends
+files it knows the server does not have. If you've just synced with the
+server, it knows what's on the server, so this can't go wrong.
+
+That'll be almost as fast as `git annex get`
+"""]]

@@ -1,0 +1,20 @@
+Last night, built this nice user interface for configuring periodic fscks:
+
+[[!img assistant/fsckconfig.png]]
+
+Rather happy that that whole UI needed only 140 lines of code to build.
+Though rather more work behind it, as seen in this blog..
+
+Today I added some support to git-annex for smart fscking of remotes.
+So far only git repos on local drives, but this should get extended to
+git-annex-shell for ssh remotes. The assistant can also run periodic fscks
+of these.
+
+Still need to test that, and find a way to make a removable drive's fsck
+job run when the drive gets plugged in. That's where picking "any time"
+will be useful; it'll let you configure fscking of removable drives when
+they're available, as long as they have not been fscked too recently.
+
+----
+
+Today's work was sponsored by Georg Bauer.

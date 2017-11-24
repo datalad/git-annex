@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.244"
+ subject="comment 2"
+ date="2014-04-02T20:17:19Z"
+ content="""
+These races look beniegn, as far as I can see it doesn't cause any data to be lost, or indeed anything to happen that wouldn't have happened if addurl had been run without the assistant running.
+
+The first race probably has addurl and the assistant both trying to move the file object into the annex at the same time. One wins and moves it; the other loses and sulks.
+
+The second race has addurl trying to `git add` the file, while the assistant has already noticed the file appeared, `git add`ed it, and committed the add.
+
+The only way to really avoid these races would be to add a lot of lock checking. Or just make `git annex addurl` and presumably also `git annex add` and maybe several other commands refuse to run when the assistant is running.
+"""]]

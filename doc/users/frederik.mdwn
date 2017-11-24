@@ -1,0 +1,1 @@
+Hi, I am Frederik Vanrenterghem. I use git annex to manage my documents (mainly to have a backup and easy access) and my collection of ripped audio CDs (mainly to be able to save space on my laptop).

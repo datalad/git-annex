@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-11-27T17:56:31Z"
+ content="""
+Right, --in goes by git-annex's [[location_tracking]] information; actually checking if a remote still has the files would make --in too expensive in many cases.
+
+So you need to give `gpodder-on-usbdisk` current information. You can do that by going to `usb-ariaz` and doing a `git annex fsck`. That will find the deleted files and update the location information. Then, back on `gpodder-on-usbdisk`, `git pull usb-ariaz`, and then you can proceed with the commands you showed.
+"""]]

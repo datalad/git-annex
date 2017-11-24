@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 6"
+ date="2013-04-11T15:12:00Z"
+ content="""
+See [[tips/Using_Git-annex_as_a_web_browsing_assistant]].
+
+I am leaving this bug open for now, as some javascript that passes the url off to the webapp is still a nice idea to build.
+
+A solution to the webapp's url always changing could be to have a file:/// url that the webapp creates, and javascript submits to, that then passes the request off to the webapp, probably by using additional javadcript in the html file. Assuming javascript security allows this.
+"""]]

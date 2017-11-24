@@ -1,0 +1,3 @@
+in light of https://github.com/datalad/datalad/issues/1259 (conflicting remote names)  I wondered if both initremote and enableremote (and probably others) should acquire ability to set/refer to remotes by their UUIDs instead of relying purely on name which is not guaranteed to be unique.
+
+[[!meta name=yoh]]

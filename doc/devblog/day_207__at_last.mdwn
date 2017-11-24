@@ -1,0 +1,34 @@
+It took 9 hours, but I finally got to make [[!commit c0dc134cded6078bb2e5fa2d4420b9cc09a292f7]],
+which both removes 35 lines of code, and adds chunking support to all
+external special remotes!
+
+The groundwork for that commit involved taking the type scheme I sketched
+out yesterday, completely failing to make it work with such high-ranked
+types, and falling back to a simpler set of types that both I and GHC seem
+better at getting our heads around.
+
+Then I also had more fun with types, when it turned out I needed to
+run encryption in the Annex monad. So I had to go convert several parts of
+the utility libraries to use MonadIO and exception lifting. Yurk.
+
+The final and most fun stumbling block caused git-annex to crash when
+retriving a file from an external special remote that had neither
+encryption not chunking. Amusingly it was because I had not put in an
+optimation (namely, just renaming the file that was retrieved in this case,
+rather than unnecessarily reading it in and writing it back out). It's
+not often that a lack of an optimisation causes code to crash!
+
+So, fun day, great result, and it should now be very simple to convert
+the bup, ddar, gcrypt, glacier, rsync, S3, and WebDAV special remotes
+to the new system. Fingers crossed.
+
+But first, I will probably take half a day or so and write a 
+`git annex testremote` that can be run in a repository and does live
+testing of a special remote including uploading and downloading files.
+There are quite a lot of cases to test now, and it seems best to get
+that in place before I start changing a lot of remotes without a way to
+test everything.
+
+----
+
+Today's work was sponsored by Daniel Callahan.

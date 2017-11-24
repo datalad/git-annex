@@ -1,0 +1,10 @@
+(I put this in a separate topic because it is a different question)
+
+I still do not fully understand when (in direct mode!) a file is in the work copy and when in the repository.
+Because what git-annex always refers to a "repository" is actually a repository (i.e., the server part for subversion) *and* a work copy (the client part in subversion), right? (except for bare repositories which have only the former)
+
+When I change a file in the work copy, I still need to "git annex sync", right? But do I also need to "git annex sync --content" to move the changes from the work copy to the repository?
+
+Because I have a headless server where the annex should also be accessed via samba. When files are added/changed, the annex clients do not see the changes until I manually do a couple of "git annex sync" and "git annex sync --content" (it's not deterministic yet for me how often).
+
+Is this the intended behavior? If yes, is there a better way to automatically sync the changes on the headless server other than a cron job?

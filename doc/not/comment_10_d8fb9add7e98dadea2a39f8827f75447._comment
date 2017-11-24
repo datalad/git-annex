@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 10"
+ date="2013-12-11T15:40:35Z"
+ content="""
+@Zellyn, what you describe does not sound unreasonable. But it's hard to say if it's a backup. For example, if you delete a file from the archive folder, and that happened to be the only copy of the file, it's gone.
+
+It's definitely possible to use git-annex in backup-like ways, but what I want to discourage is users thinking that just putting files into git-annex means that they have a backup. Proper backups need to be designed, and tested. It helps to use software that is explicitly designed as a backup solution. git-annex is more about file distribution, and some archiving, than backups.
+"""]]

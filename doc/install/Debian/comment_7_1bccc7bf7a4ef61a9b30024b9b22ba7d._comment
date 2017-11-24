@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://mey.vn/"
+ ip="46.65.14.106"
+ subject="libc6 dep version on amd64"
+ date="2013-05-28T15:28:47Z"
+ content="""
+hi Joey,
+
+i see from the release notes of the 4.20130521 release that the Debian package should now be built with libc6 2.13, which appears to be the case except for the amd64 arch (hence the amd64 package won't install as is on Wheezy on amd64) - is this a build glitch or is 2.14 needed on amd64 (i imagine as a dependency of one of git-annex's deps on that arch)?
+
+thanks!
+"""]]

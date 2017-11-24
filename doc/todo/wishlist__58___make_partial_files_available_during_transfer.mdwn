@@ -1,0 +1,18 @@
+Imagine this situation:
+You have a laptop and a NAS.
+On your laptop you want to consume a large media file located on the NAS.
+So you type:
+
+    git annex get --from nas mediafile
+
+But now you have to wait for the download to complete, unless either 
+
+* rsync is pointed directly to the file in the object storage ("--inplace")
+or
+* the symlink temporarily points to the partial file during a transfer
+
+which would allow you instantaneous consumption of your media.
+It might make sense to make this behavior configurable, because not everyone might agree with having partial content (that mismatches its key) around.
+
+
+So what do you say?

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="paulvt"
+ ip="2001:1af8:ff19:0:a288:b4ff:fe2c:f600"
+ subject="comment 1"
+ date="2013-07-13T08:21:29Z"
+ content="""
+I've just checked and almost all of the depends that Debian Sid on my laptop has, the N9 has.  But in the case of build-depends, they are nowhere near since the entire Haskell stack is not available...
+"""]]

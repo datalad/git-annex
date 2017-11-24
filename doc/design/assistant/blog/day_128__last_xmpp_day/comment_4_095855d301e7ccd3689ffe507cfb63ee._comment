@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmqVi9eQjkZt8EC-byTXJ8TnY7VyOHzW2s"
+ nickname="Zahary"
+ subject="@Philipp Kern"
+ date="2012-11-12T12:13:33Z"
+ content="""
+Alright, I stand corrected, although I'm aware of some libraries that have already solved the problem so you don't really have to implement reliable UDP from scratch: http://code.google.com/p/openpgm/
+"""]]

@@ -1,0 +1,3 @@
+I have two copies of a large collection of photos on two computers. I have been using rsync to keep them synchronized, but I would like to use git annex instead. I finished initializing one repo, and now its time to initialize the other repo before I can sync them up. But it seems redundant that the other repo will compute its own hashes although I know that the two contents are identical. Can't I just copy the keys and tell git annex to assume that any files seen have already been hashed?
+
+As a start, I cloned the .git from the first machine to the second. But that wasn't enough ... I now have an empty git-annex repo in the second machine. What else is missing?

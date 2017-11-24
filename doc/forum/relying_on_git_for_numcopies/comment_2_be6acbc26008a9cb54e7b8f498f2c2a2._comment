@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ subject="comment 2"
+ date="2011-02-23T16:43:59Z"
+ content="""
+i'll comment on each of the points separately, well aware that even a single little leftover issue can show that my plan is faulty:
+
+* force removal: well, yes -- but the file that is currently force-removed on the laptop could just as well be the last of its kind itself. i see the problem, but am not sure if it's fatal (after all, if we rely on out-of-band knowledge when forcing something, we could just as well ask a little more)
+* non-bare repos: pushing is tricky with non-bare repos now just as well; a post-commit hook could auto-accept counter changes. (but pushing causes problems with counters anyway, doesn't it?)
+* merging: i'd have them auto-merge. git-annex will have to check the validity of the current state anyway, and a situation in which a counter-decrementing commit is not a fast-forward one would be reverted in the next step (or upon discovery, in case the next step never took place).
+* reverting: my wording was bad as \"revert\" is already taken in git-lingo. the correct term for what i was thinking of is \"reset\". (as the commit could not be pushed, it would be rolled back completely).
+    * we might have to resort to reverting, though, if the commit has already been pused to a first server of many.
+* [[todo/hidden files]]: yes, this solves pre-removal dropping :-)
+* round trips: it's not the number of servers, it's the number of files (up to 30k in my case). it seems to me that an individual request was made for every single file i wanted to drop (that would be N*M roundtrips for N affected servers and M files, and N roundtrips with git managed numcopies)
+
+all together, it seems to be a bit more complicated than i imagined, although not completely impossible. a combination of [[todo/hidden files]] and maybe a simpler reduction of the number of requests might though achieve the important goals as well.
+"""]]

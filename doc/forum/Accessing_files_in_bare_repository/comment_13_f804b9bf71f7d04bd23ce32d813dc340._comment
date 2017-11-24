@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 13"
+ date="2013-06-12T18:56:39Z"
+ content="""
+Regarding my comment above, I've changed things so now `git annex sync` to a bare repository *does* push to the regular branch. So `git clone` will work without this bother.
+"""]]

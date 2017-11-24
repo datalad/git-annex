@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn3p4i4lk_zMilvjnJ9sS6g2nerpgz0Fjc"
+ nickname="Matthias"
+ subject="merge for master branch?"
+ date="2014-03-23T23:02:23Z"
+ content="""
+As far as I observed, \"git annex merge\" only merges the \"git-annex\" branch. My wish is to have the conflict resolution from \"git annex sync\" in the \"master\" branch, but no automatic commit, such that the user can verify and possibly correct the merge. The proposed merge could go to the index. Consider the following scenario:
+
+1. We have repo A, B, and CENTRAL
+2. All three start with a root commit in \"master\" branch
+3. Then A commits a file \"test.txt\" with content \"a\" and syncs with CENTRAL
+4. Meanwhile, B commits \"test.txt\" with content \"b\"
+5. When B tries to sync with CENTRAL, the proposed conflict resolution having two files \"test.txt-variantXXXX\" and \"test.txt-variantYYYY\" should be staged in the index, but not committed yet.
+6. B can now commit a custom merge, e.g. with file content \"ab\".
+
+The point is that I really like the conflict resolution, but still want to force the user to check the result.
+"""]]

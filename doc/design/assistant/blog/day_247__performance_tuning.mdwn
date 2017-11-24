@@ -1,0 +1,16 @@
+Working on assistant's performance when it has to add a whole lot of files
+(10k to 100k). 
+
+Improved behavior in several ways, including fixing display
+of the alert in the webapp when the default inotify limit of 8192
+directories is exceeded.
+
+Created a new TList data type, a transactional DList. Much nicer
+implementation than the TChan based thing it was using to keep track of the
+changes, although it only improved runtime and memory usage a little bit.
+The way that this is internally storing a function in STM and modifying
+that function to add items to the list is way cool.
+
+Other tuning seems to have decreased the time it would take to import 100k
+files from somewhere in the range of a full day (too long to wait to see),
+to around 3.5 hours. I don't know if that's good, but it's certainly better.

@@ -1,0 +1,22 @@
+When I wasn't dealing with the snowstorm today, I was fixing more bugs.
+Rather serious bugs.
+
+One actually involved corruption to git-annex's location tracking info, due
+to a busted three-way merge. Takes an unusual set of circumstances for that
+bug to be triggered, which is why it was not noticed before now. Also,
+since git-annex is designed to not trust its location tracking info, and
+recover from it becoming inconsistent, someone could have experienced the
+bug and not really noticed it. Still it's a serious problem and I'm in debt
+to user a-or-b for developing a good test case that let me reproduce it and
+fix it. (Also added to the test suite.)
+[[This is how to make a perfect bug report|bugs/Annex_thinks_file_exists_afer_being_dropped]]
+
+Another bug made `git add; git commit` cause data loss in direct mode.
+I was able to make that not lose data, although it still does something
+that's unlikely to be desired, unless the goal is to move a file from an
+annexed direct mode file to having its entire contents stored in git.
+
+Also found a bug with sync's automatic resolution of git conflicts. It
+failed when two repositories both renamed a file to different names.
+I had neglected to explicitly `git rm` the old file name, which is
+necessary to resolve such a conflict.

@@ -1,0 +1,12 @@
+While trying to compile the current master I run in the following error:
+
+    Utility/Yesod.hs:21:14:
+        Couldn't match expected type `String'
+                    with actual type `WidgetFileSettings'
+        Expected type: String -> Q Exp
+          Actual type: WidgetFileSettings -> FilePath -> Q Exp
+        In the expression: widgetFileNoReload
+        In an equation for `widgetFile': widgetFile = widgetFileNoReload
+    make: *** [git-annex] Fehler 1
+
+I installed all dependencies from the INSTALL document. What is wrong?

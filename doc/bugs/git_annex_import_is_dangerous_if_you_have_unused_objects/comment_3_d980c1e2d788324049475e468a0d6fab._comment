@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="mbroadhead"
+ avatar="http://cdn.libravatar.org/avatar/f3d801c0c943caab1152c4ebe8c99d51"
+ subject="comment 3"
+ date="2017-03-02T22:48:08Z"
+ content="""
+Thanks for the insight.
+
+The `git stash` solution works assuming you are either:
+
+ a. Going to keep it in your stash forever
+ b. You are going to commit your stash eventually
+
+I think there are situations where I want to completely abort a commit and not have to worry about it biting me down the road.
+
+IMO from a end user perspective I think the best solution would be to have data only count as duplicate if it has a reachable file in your annex for options `--deduplicate`, `--clean-duplicates` and `--skip-duplicates` of `git annex import`.
+
+What would be the downside to this?
+
+Worst case scenario this re-wires up some symlinks to once dangling git objects. They still aren't duplicates, there will only be one symlink per formerly dangling git object. This seems better than data loss.
+
+Thoughts?
+"""]]

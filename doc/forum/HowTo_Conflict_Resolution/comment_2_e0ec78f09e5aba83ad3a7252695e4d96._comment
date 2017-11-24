@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="Horus"
+ subject="comment 2"
+ date="2016-04-17T14:10:15Z"
+ content="""
+A very belayed reply...
+
+I would really love to see a feature to make this easier! Like
+
+* Interactive merge: During merge the user is asked for each file that conflicts, if it wants to keep the local or the remote
+* A set merge tool: A tool that allows to either select the local or remote file, renames it accordingly and commits it.
+
+Currently, I really fear a merge conflict, because I work with sets of binary files that needs to be in a coherent state and a merge conflict gives me very much trouble restoring that state.
+
+Thanks!
+"""]]

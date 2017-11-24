@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawln3ckqKx0x_xDZMYwa9Q1bn4I06oWjkog"
+ nickname="Michael"
+ subject="post-receive hook looks troublesome"
+ date="2013-07-03T16:11:13Z"
+ content="""
+I just tried setting up a post-receive hook with just \"git annex sync\" in it.
+The end result is that files (git annex symlinks, really) are getting removed somehow as a result after a couple of git annex sync's done manually.
+It would be nice if this actually worked.
+
+"""]]

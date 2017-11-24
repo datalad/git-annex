@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="Chel"
+ subject="comment 1"
+ date="2015-06-30T06:32:59Z"
+ content="""
+If there are no branches, other than git-annex, then you do not have git history.
+
+If it is really the old repository with deleted branches and not a newly created
+one, then there is a possibility, that the git history has not been fully
+deleted/garbage-collected yet (i.e. there are old objects and packs in
+`.git/objects` and `.git/objects/pack`). It that case:
+
+1. *Do not run* git commands until you create a backup of the .git directory,
+   because some usual git commands automatically launch `git gc --auto`, which
+   removes some old unreachable objects (and maybe reflog entries).
+
+2. See if there are some reflogs of deleted branches or HEAD left in `.git/logs`.
+   Reflogs will give you commit ids that branches’ tips pointed to. But usually
+   reflogs are deleted with their branches.
+
+3. As the last resort, use `git fsck --dangling` to find objects, that may be
+   the commits of deleted branches. See also other options of `git fsck` command.
+
+Of course, all that is not necessary if you have a clone of the repo somewhere.
+Then just fetch the history from it.
+
+Git history will give you the history of modifications in the repository, the
+content of not annexed files (that were stored directly in git) and the names
+of annexed files (represented as symlinks).
+
+If all you need is just the contents of annexed files, then look at
+`.git/annex/objects`.  
+**But**: if the repository was in direct mode, then `.git/annex/objects` *may*
+contain only *old* versions of files. The current versions of annexed files
+in direct mode are stored in the working directory, which is empty in your case.
+
+The git-annex branch contains just the location log of the content of annexed
+files, i.e. which git-annex repositories and when stored the contents.
+
+"""]]

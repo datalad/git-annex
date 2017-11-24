@@ -1,0 +1,5 @@
+When I was checking out disk usage on my home directory, I noticed a bunch of files stored in .git/annex/tmp under their own filenames, rather than in .git/annex/objects.  Checking a couple, they seem to be redundant with stuff in .git/annex/objects.
+
+Is there any way to clean that stuff up?  Will the assistant eventually clean it up?
+
+Thanks!

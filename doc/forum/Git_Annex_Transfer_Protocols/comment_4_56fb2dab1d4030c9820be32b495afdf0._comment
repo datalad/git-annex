@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlYu7QmD7wrbHWkoxuriaA9XcijM-g5vrQ"
+ nickname="Royal"
+ subject="Git annex content transfer protocols"
+ date="2012-05-10T19:13:48Z"
+ content="""
+Sorry if I am not clear. Actually i meant to ask, if i have 2 git repositories which are not special remotes and I am transferring annexed file content between these repositories using git annex command (move or copy) then, which protocol it uses to transfer content? Is it uses git-send-pack git-recieve-pack or some other protocols. 
+"""]]

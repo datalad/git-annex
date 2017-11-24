@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.193"
+ subject="comment 2"
+ date="2013-07-03T18:13:25Z"
+ content="""
+`git annex get` and `git annex copy`, as well as `git annex move` can now be used in a bare repository. In this mode, they behave as if --all were specified, and so operate on every single version of every single file.
+"""]]

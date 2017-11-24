@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 28"
+ date="2013-11-02T17:40:18Z"
+ content="""
+Unfortunate about that. I've fixed it in git.
+
+(It would be best to file bug reports about build failures to avoid cluttering up this page.)
+"""]]

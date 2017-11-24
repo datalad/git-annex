@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.55"
+ subject="comment 7"
+ date="2014-07-03T19:03:52Z"
+ content="""
+That lubuntu bug explains why git-annex would not autostart on login.
+
+However, that does not explain the original problem description, which was that the `Make Repository` button seemed to make a repository but not switch to the webapp running in that repository. In the case of making a new repository, the webapp is started in it by git-annex, not by the desktop autostart mechanism.
+
+Can you reproduce the original problem?
+
+
+"""]]

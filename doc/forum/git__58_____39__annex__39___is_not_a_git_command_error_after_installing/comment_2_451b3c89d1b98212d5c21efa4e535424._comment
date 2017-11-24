@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-02-04T17:51:26Z"
+ content="""
+Msysgit will add itself to the PATH if you check that box at installation
+time. If not, you probably can't run "git" either..
+"""]]

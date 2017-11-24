@@ -1,0 +1,7 @@
+Quick question: I want to create a repository on my removable USB drive that will acquire all files (eg. "full backup" repository group), but where the files will be visible and usable if you load the drive on another computer.
+
+How do I do that from within the assistant?
+
+Thanks,
+
+Zellyn

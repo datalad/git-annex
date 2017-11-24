@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="comment 1"
+ date="2015-06-24T00:30:32Z"
+ content="""
+it depends how you configured encryption. this is pretty well described in the [[encryption]] page, but basically, unless you used \"shared\" encryption, only the holders of the GPG private key material will be able to decrypt the contents. Objects are encrypted with GPG using a symmetric key, and that key is then encrypted with OpenPGP public keys.
+
+This is all pretty well described in [[encryption]]. --[[anarcat]]
+"""]]

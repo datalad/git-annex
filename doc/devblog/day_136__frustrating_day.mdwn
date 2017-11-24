@@ -1,0 +1,10 @@
+The website broke and I spent several hours fixing it, changing the
+configuration to not let it break like this again, cleaning up after it,
+etc.
+
+Did manage to make a few minor bugfixes and improvements, but nothing
+stunning.
+
+----
+
+I'll be attending LibrePlanet at MIT this weekend.

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnNqLKszWk9EoD4CDCqNXJRIklKFBCN1Ao"
+ nickname="maurizio"
+ subject="even a client repository you had once but have now deleted"
+ date="2014-07-09T22:08:44Z"
+ content="""
+if this client repository has been deleted, why does it still have an impact? What is the user supposed to do to use a transfer repository if some day another client which was deleted has existed? 
+
+Old repositories seem to remain for ever in the webapp. You can try to delete them with the webapp, they will stay there. You can disable them, they will stay there. If you want to try to delete them again in the webapp, you first have to enable them again and nothing ever happens. There seems to be basically no way to delete repositories which have some day existed...
+"""]]

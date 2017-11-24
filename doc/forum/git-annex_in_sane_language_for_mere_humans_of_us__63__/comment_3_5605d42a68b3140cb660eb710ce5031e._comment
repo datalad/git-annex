@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawld54zdyk6b0W4jXnssSO_j2Nn3W1uVsUE"
+ nickname="Paul"
+ subject="comment 3"
+ date="2014-08-24T18:29:23Z"
+ content="""
+Sure, that's the plan. But first I'm doing my homework to understand how it got to that and how community copes with that. Maybe I don't get something and every open-source project should have a notice like: \"Installation from scratch. This is not recommended.\" (http://git-annex.branchable.com/install/). Interested in building software you run? Interested to help? Get lost, you won't get it. Am I surprised? Nope, I'm doing my homework and know where that Haskell thing came from. A piece of Microsoft was largely involved with it, so no surprise of such attitudes.
+
+Surely I'm not the only one who got jaundiced eye on git-annex: https://github.com/tv42/big : \"big is not like git-annex, because: it's not written in Haskell, so it might even work across distribution upgrades and platforms\". Certainly, stories of cvsup and unison, which are now where they should be - rest in peace, didn't help. So, once again, I'm interested to know how other people deal with this lack of proper compilation instructions, ability to get simple and easy tweaks, etc. - short of not using it, which seems to be a popular choice, despite all the git-annex coolness (I for one have been having its deployment in my queue fro half a year, instead of spending exactly a weekend to do tweaks I need and contribute them back).
+
+
+"""]]

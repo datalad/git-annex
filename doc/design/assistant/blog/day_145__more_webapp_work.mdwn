@@ -1,0 +1,12 @@
+One problem with the current configurators for remotes is they have a lot
+of notes and text to read at the top. I've worked on cut that down somewhat,
+mostly by adding links and help buttons next to fields in the form.
+
+I also made each form have a check box controlling whether encryption is
+enabled. Mostly as a way to declutter the text at the top, which always had
+to say encryption is enabled.
+
+---
+
+I have a fairly well worked out design for [[desymlink]]. Will wait a few
+days to work on it to let it jell.

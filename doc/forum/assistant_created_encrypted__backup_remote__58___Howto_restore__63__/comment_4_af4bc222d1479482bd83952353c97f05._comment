@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="216.145.95.162"
+ subject="comment 4"
+ date="2014-05-19T15:38:14Z"
+ content="""
+No, box.com cannot decrypt your files, because the git repository is not stored on box.com. 
+"""]]

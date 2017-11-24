@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 1"
+ date="2013-12-12T17:47:30Z"
+ content="""
+What version of OSX is the failing computer running? What version of git-annex? How did you install git-annex on it?
+"""]]

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkS6aFVrEwOrDuQBTMXxtGHtueA69NS_jo"
+ nickname="Hans"
+ subject="comment 7"
+ date="2012-08-15T19:16:10Z"
+ content="""
+Justin,
+
+thanks for clearing that up. It's great that git-annex has implemented mechanisms to work securely on untrusted hosts. My solution is thus only interesting for files that are impractical to manage with git-annex (e.g. data for/from applications that need rw-access to a large number of files). And, possibly, for providers that do not provide rsync.
+
+Your remark that my solution does not work with more than one client, is not entirely accurate. No more than one client can access the repository at any given time, but as long as access is not simultaneous, any number of clients can access the repository. Still, your point is taken, it's a limitation I should mention.
+
+It would be interesting to compare the performance of individually encrypted files to encrypted image-file. My intuition says that encrypted image-file should be faster, but that's just a guess.
+"""]]

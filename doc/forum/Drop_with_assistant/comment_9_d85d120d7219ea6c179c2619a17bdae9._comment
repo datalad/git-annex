@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="99.54.57.201"
+ subject="comment 9"
+ date="2013-04-17T03:37:48Z"
+ content="""
+Nice!  It sounds like there would be another way to accomplish what I'm currently accomplishing by using numcopies=2 and standard client/backup directories. (backup <--> client <--> backup)
+
+In order to get double backups, I *could* tweak the content settings for my laptop's annex, which is currently set to standard \"client\" mode, so that it's exactly like \"client\" mode except that \"archive\" directories want to drop content which is archived *twice*. (backup <--> tweaked-client <--> backup)
+
+Then I'd get content automatically copying itself out to two archives, and dropping it when it has done so, without touching numcopies.
+
+No reason not to keep doing it the way I'm doing it, since it's simpler, but it's cool to see the assistant getting smarter. :)
+
+"""]]

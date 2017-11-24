@@ -1,0 +1,14 @@
+I have encrypted directory remote on a usb drive over time it accumulated some unused files. I would like to drop them running,
+
+    git annex --unused --from external
+
+returns a list of unused files when I try to drop them with,
+
+
+    git annex dropunused --force --from external 1-XX
+
+I get,
+
+    dropunused XX (from external...) failed
+
+I can not seem to get rid of these files.

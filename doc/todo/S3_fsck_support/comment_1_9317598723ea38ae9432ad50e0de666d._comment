@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-06-16T17:50:56Z"
+ content="""
+You're incorrect; `git-annex fsck --from remote` works to fsck *any*
+remote. For remotes like S3, it has to download the content to check it
+locally, which is why `remoteFsck` is not provided.
+
+Since you passed -f (--fast) to fsck, it avoids checksuming the content,
+so avoids downloading it, and only verifies that S3 still says it has
+the content. As documented on the git-annex fsck man page.
+
+AFAICS, the Content-MD5 is only used by S3 to check that the data uploaded
+to S3 didn't get corrupted over the wire. I assume that S3 implements its
+own checksums to detect when data already stored on it gets corrupted, so
+it seems redundant and complicating for git-annex to query it for md5sums.
+It would work just as well for git-annex to verify a key after downloading
+it, using the key's own hash, per [[todo/ checksum verification on transfer]].
+
+It **might** be worth filling in the `poContentMD5` field with the md5 of
+the file when uploading it to S3. Of course, this requires hashing the file
+locally. And when storing an encrypted object on S3, it would require
+buffering the whole encrypted object to disk first, in order to hash it
+(but that's currently done anyway).
+"""]]

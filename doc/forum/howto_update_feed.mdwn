@@ -1,0 +1,14 @@
+I am using the importfeed [1] functionality.
+
+How am I supposed to update the feed/feeds?
+
+I understand that running
+
+    cd annex; git annex importfeed http://url/to/podcast
+
+a second time will 'do the right thing'.  But that is cumbersome as I have to know the url again.  Is there sth like git annex updatefeeds?
+
+
+
+
+[1] http://joeyh.name/blog/entry/git-annex_as_a_podcatcher/

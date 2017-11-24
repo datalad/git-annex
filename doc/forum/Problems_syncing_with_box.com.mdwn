@@ -1,0 +1,26 @@
+I have a repository synchronized between two PCs and box.com . I chose encryption for box.com. Today on my work computer I changed files, on box.com I see that there are changed files today. When I got home, I still see files with yesterday's date.
+One thing to mention is that currently the work PC is not accessible. 
+
+1. How do I debug this problem? I have logging set to debug via web console, saved, restarted daemon, but after restart the debug checkbox is unchecked.
+From logs it looks like that after failing to connect to work pc via ssh it gives up:
+
+    [2013-05-09 21:42:52 CEST] main: Syncing with box.com
+this is first and last line mentioning box today, I restarted the daemon several times around 22:14 :
+
+    [2013-05-09 22:11:40 CEST] TransferScanner: Syncing with [work pc repo]
+    Already up-to-date.
+    
+    (scanning...) [2013-05-09 22:11:40 CEST] Watcher: Performing startup scan
+    Already up-to-date.
+    
+    (started...) ssh: connect to host [work pc] port 22: No route to host
+    fatal: The remote end hung up unexpectedly
+
+
+2. where is the configuration for box.com stored? How can I check gpg key ID mentioned at http://git-annex.branchable.com/tips/using_box.com_as_a_special_remote/
+3. how do I manually trigger sync with box.com? git fetch box.com neither git annex sync box.com doesn't work.
+
+
+---
+Version: 4.20130501
+Build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP

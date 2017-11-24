@@ -1,0 +1,7 @@
+Hello,
+
+I have a repo Desktop (client), a repo Server (transfer) and a repo Notebook (Client). Usually first thing I do in the morning is go git annex sync --content the changes to the laptop. Today I accidently modified some files on the laptop before I synced. After I syncing I know have some files foo.variant-afd1 and foo.variant-a6d3 with which I don't know what to do.
+
+How can I discard local changes and copy all changes from the transfer repo to the laptop? Local changes should be overwritten.
+
+Thanks!

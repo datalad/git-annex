@@ -1,0 +1,5 @@
+After creating a new pairing, I stopped the daemon through the webapp while it was syncing.  The webapp shut down and was no longer accessible, but git-annex continued running in the background, along with git-annex-shell, and they continued to run new transfers with new rsync processes.  This continued until I killed them all.
+
+I expected that when I stopped the daemon in the webapp, all git-annex processes and all transfers would stop.
+
+Using the 20131101 tarball.

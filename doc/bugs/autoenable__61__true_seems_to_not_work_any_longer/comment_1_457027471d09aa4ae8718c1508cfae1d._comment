@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-09-21T17:37:39Z"
+ content="""
+`git annex init` does handle autoenable. When you bypass explicit init,
+it does not do autoenabling.
+
+This is not a change AFAICS. The changelog entry for autoenable
+says that it's done by `git annex init`. Presumably your test suite
+does run `git annex init`.
+
+My original notes on why not to have automaitic init handle autoenable were:
+
+> There was also the question of what to do when git-annex auto-inits
+> in a clone of a repository. It wouldn't do for a command like
+> `git annex find`'s output to include any messages that might be shown
+> while auto-enabling special remotes as a result of an auto-init.
+> Since I can't guarantee enabling special remotes will be quiet, I've not
+> tried to auto-enable special remotes in this case.
+> 
+> I think I'd have to
+> exec a git-annex init process with stdout sent to stderr to implement
+> this in a safe way, and due to calls to ensureInitialized in Remote.Git,
+> which can auto-init a local remote, that gets particularly tricky. Best,
+> I feel, to wait and see if anyone needs that.
+"""]]

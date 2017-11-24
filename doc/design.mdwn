@@ -1,0 +1,6 @@
+git-annex's high-level design is mostly inherent in the data that it
+stores in git, and alongside git. See [[internals]] for details.
+
+Here's the other design documents we have:
+
+[[!map pages="page(design/*) and !design/*/*"]]

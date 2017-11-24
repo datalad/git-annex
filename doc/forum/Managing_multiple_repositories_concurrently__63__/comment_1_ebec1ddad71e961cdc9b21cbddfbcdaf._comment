@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-03-17T18:53:26Z"
+ content="""
+Each repository gets its own git-annex assistant daemon, which is entirely separate from the daemons used by other repositories. 
+
+The only affect that switching which repository is in view in the webapp can have is it can start a daemon running on a repository that for some reason did not already have the daemon running. This could happen if it was not set to autostart on login, for example.
+"""]]

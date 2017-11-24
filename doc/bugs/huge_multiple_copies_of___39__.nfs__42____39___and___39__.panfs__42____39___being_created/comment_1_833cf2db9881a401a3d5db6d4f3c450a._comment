@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-02-04T19:31:32Z"
+ content="""
+git-annex uses posix file locking to avoid scenarios that could
+otherwise result in data loss when dropping a file. 
+
+This indeed involves keeping a file open and locked while removing it.
+
+Since NFS's posix file locking support ranges from poor to completely
+broken, it's not wise to use git-annex over NFS at all. It's much nicer
+to use it locally, with a git remote accessing the file server over
+eg, ssh.
+
+I can't see any changes to git-annex that could improve its handing
+of NFS, unless there's a good way to detect a NFS filesystem and make
+`git annex init` refuse to set up a repository there.
+"""]]

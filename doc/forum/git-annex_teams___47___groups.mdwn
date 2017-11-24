@@ -1,0 +1,5 @@
+Hi,
+
+Does git-annex (preferably assistant) have any management of users / groups or teams? Our use case is we have many users which should only have access to certain folders (repos). Is this a planned feature or any manual way to work around this for now?
+
+Thanks!

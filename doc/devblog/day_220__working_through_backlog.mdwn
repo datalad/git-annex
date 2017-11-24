@@ -1,0 +1,14 @@
+Made a release yesterday, which was all bugfixes.
+
+Today, a few more bug fixes. Looked into making the webapp
+create non-bare repositories on removable drives, but before I got too far
+into the code, I noticed [there's a big problem with that idea](http://git-annex.branchable.com/forum/usability:_creating_an_archive_on_a_new_external_drive/).
+
+Rest of day was spent getting caught up on forum posts etc. I'm happy to
+read lots of good answers that have been posted while I've been away.
+Here's an excellent example: <http://git-annex.branchable.com/install/fromsource/#comment-5f8ceb060643ae71cd2adc72f0fca3f0>
+
+That led to rewriting the docs for building git-annex from source.
+New page: [[install/fromsource]].
+
+Backlog is now down to 117.

@@ -1,0 +1,11 @@
+Hello, I'm not sure on how to proceed with a fairly simple workflow. I keep my music library in a debian box with plenty of space. I run the plex media server on it so it should be a direct repository to avoid strange player behavior.
+I also perform a monthly (more or less) backup on an external hard drive. This should be simple too, just add a remote and sync.
+My problem now is: I have also a portable music player that I want to keep in sync with the music library. Not the whole music library but only a small subset. This needs to be a direct repository too (the best would be also without the .git/ folder but I don't believe it's possible). How to create a small subset of files to keep in sync with a direct repository? I've tried with branches but they are not simple to use in direct mode.
+
+So, to recap: a (direct) main repository, a standard backup repository and another (direct) repository with only a subset of files.
+
+Anyone with a similar workflow wants to share some tips?
+
+Thanks,
+
+F

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmNvX8PQVP5sLzQ78sKpB6VeH3Fu8HvZ5g"
+ nickname="Jeff"
+ subject="comment 2"
+ date="2014-01-26T04:29:09Z"
+ content="""
+I've actually been having a pretty tough time with it. Could you point me in the right direction? There's not any Haskell infrastructure on Arch ARM yet so I'd either be compiling the whole Haskell Platform or cross-compiling on x86_64 right?
+Thanks
+Jeff
+"""]]

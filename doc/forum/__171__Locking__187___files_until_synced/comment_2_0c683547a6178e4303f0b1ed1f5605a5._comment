@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="zardoz"
+ ip="134.147.14.84"
+ subject="comment 2"
+ date="2014-07-09T07:07:27Z"
+ content="""
+Yea, it’s basically just the isolated one file that needs «locking», so one could just try a different route. The idea with keeping state on a server sounds like a pretty good idea. I could just «echo» via SSH to my webserver some info on who has the file locked; then I could wrap the program that uses the SQLite3 DB in a script that checks whether it’s safe.
+"""]]

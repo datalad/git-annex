@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn3p4i4lk_zMilvjnJ9sS6g2nerpgz0Fjc"
+ nickname="Matthias"
+ subject="Use automatic merge without syncing"
+ date="2014-03-20T10:03:41Z"
+ content="""
+Is there a possibility to use the automatic merge logic without using \"git annex sync\"? I don't want to have the \"synced\"-branches, but the auto-conflict-resolution is very nice.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlFd2EbAmGD0FjHmuoerXfT0GO_jPcgvQA"
+ nickname="Gert"
+ subject="Single bucket for S3"
+ date="2012-09-27T09:17:24Z"
+ content="""
+You can easily do that with IAM, checkout <http://andrewhitchcock.org/?post=325>.
+
+It boils down to creating a policy for each user/bucket. But allow read access to the full bucket list (otherwise the AWS Console won't work).
+"""]]

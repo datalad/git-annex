@@ -1,0 +1,20 @@
+Hi!
+
+I have few large files, which will be slightly modified from time to time. Consider the following example:
+
+    $ git init
+    $ git annex init "somerepo"
+    $ dd if=/dev/urandom of=foo bs=50M count=1
+    $ git annex add foo
+    $ git commit -m "foo added"
+    $ git annex unlock foo
+    $ echo "modification" >> foo
+    $ git annex add foo
+    $ git -m commit "modification 1 of foo"
+    $ echo "another modification" >> foo
+    $ git annex add foo
+    $ git -m commit "modification 2 of foo"
+
+I would have expected ending up with a full copy of foo, and a delta storage for the first version and the first modification. Instead, three full-sized copies are created within the .git/annex/objects directory, even though the modifications only added a few characters.
+
+Is there any way to not always store a full copy of each file for each modification, but only a delta?

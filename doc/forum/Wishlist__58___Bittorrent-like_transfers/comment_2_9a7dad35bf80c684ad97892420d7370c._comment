@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="GLITTAH"
+ ip="37.130.227.133"
+ subject="comment 2"
+ date="2013-07-19T07:38:47Z"
+ content="""
+Okay I've got some ideas, but they need refining.  I should be posting more tomorrow.
+
+One thing I thought of though, there could be two types of torrent support:
+
+1.  You use a torrent file or magnet link as a special remote URL.  This remote is read-only, naturally, and you'd only be able to leech (and seed, I suppose) the file in the torrent.  Neat feature maybe.  I wasn't previously thinking of this.
+
+2. This isn't really bittorrent, just inspired by it.  You use a bittorrent-type protocol to transfer between your private remotes.  You could download from multiple remotes at once to get a file (like leeching, without a tracker, just pre-defined peers...aka remotes), or you could superseed to remotes to push a file, and have the remotes then share the parts of the file amongst themselves to each get a complete copy.  Remote groups could possibly be built on, or special groups could be coded in to define the swarm.  You update (add/remove) the swarm members locally, and push the changes to each of the old swarm members so they can add/remove other remotes (or themselves) from the swarm.  Possibly, you could just push the updated swarm list to one remote already in the swarm, it adopts the new list, and shares it with the rest of the swarm.  Each remote does the same.  Maybe the swarm list should be GPG-signed and verified before adopted and passed forward?
+
+The more I think about it, the more awesome I think it could be, but holy shit it would be a LOT of work.
+"""]]

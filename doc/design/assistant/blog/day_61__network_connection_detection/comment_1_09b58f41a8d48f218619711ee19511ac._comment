@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmubB1Sj2rwFoVdZYvGV0ACaQUJQyiJXJI"
+ nickname="Paul"
+ subject="Amazon Glacier"
+ date="2012-08-23T06:32:24Z"
+ content="""
+Do you think git-annex could support [Amazon Glacier](http://aws.amazon.com/glacier/) as a backend?
+"""]]

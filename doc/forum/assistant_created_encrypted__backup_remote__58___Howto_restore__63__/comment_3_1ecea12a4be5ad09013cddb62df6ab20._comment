@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/W6vhceUml87q0GB9MGH1qEeteW8-#ee26a"
+ nickname="Leandro"
+ subject="comment 3"
+ date="2014-05-17T17:39:04Z"
+ content="""
+So, just to clarify things a little bit: Suppose that you have a remote at box.com (shared encrypted), then the CEO at box.com would eventually be able to decrypt your files easily since the keys are store in the git repository without encryption. Is that right? 
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2015-02-09T22:44:50Z"
+ content="""
+The only other thing I can think to do about this is to make git-annex block
+direct pushes to the git-annex branch, by setting up a pre-receive hook.
+
+Then, there should be no way for the race to occur
+(except for a locking failure, or a pull into the branch?),
+and git-annex wouldn't need to check for it
+"""]]

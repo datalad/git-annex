@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="clarified manpage"
+ date="2016-04-04T20:00:39Z"
+ content="""
+i have (hopefully) clarified the [[git-annex-shell]] manpage to clearly state how to setup a restricted repository. hopefully, that will avoid further mistakes. :) i am still unclear as to why the wrapper script is necessary, but that's a different issue. --[[anarcat]]
+"""]]

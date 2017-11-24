@@ -1,0 +1,41 @@
+After testing around git-annex on my mac using ntfs-3g to access the removable harddrive, I conclude that this is very dangerous. 
+
+Here are some example error snippets:
+
+    add man/man1/git-tar-tree.1 
+    git-annex: /Volumes/SeagateExpansion/annex/testdirect/.git/annex/objects/0K/JJ/SHA256E-s3805--948fd508a364e036ec28f5287d11825062aea2c0ed86a3a89ed871edc6ddc7a8.1/: openTempFile: interrupted (Interrupted system call)
+    failed
+
+    add man/man1/git-bundle.1 
+    git-annex: /Volumes/SeagateExpansion/annex/testdirect/.git/annex/tmp/e3f_804_SHA256E-s8739--569a4b4fe1072e17ff0aa9a2f67d0130b9ec3ed23f96c5a4ea38ada82f50b4aa.1.log: rename: does not exist (No such file or directory)
+    failed
+
+    add git-core/git-completion.bash failed
+    add man/man7/gitglossary.7 failed
+    (Recording state in git...)
+
+    git-annex: /Volumes/SeagateExpansion/annex/testdirect/.git/annex/journal/.fuse_hidden00005dd50000010a: removeLink: does not exist (No such file or directory)
+    failed
+    git-annex: add: 3 failed
+
+It's interesting that after each git-annex add ., it would got fewer failures. But in the end it stuck at 2 files. After 60 times doing: git-annex add .
+
+It went from this:
+
+    git-annex: add: 248 failed
+
+to this:
+
+    git-annex: add: 2 failed
+
+Now the repository has 246 objects, let's try to convert it into an indirect one:
+
+    git-annex indirect
+    ...
+    git-annex info
+    ...
+    annexed files in working tree: 9
+
+Only 9 files made into the indirect repository! Remaining files stay as original state. Now it would be a nightmare to try to recover form this mess.
+
+I discourage anyone from using ntfs-3g on mac for annexing. Especially direct & indirect mode. Bare repo seems to be fine however.

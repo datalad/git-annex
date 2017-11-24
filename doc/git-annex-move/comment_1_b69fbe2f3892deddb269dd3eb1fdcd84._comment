@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="lykos@d125a37d89b1cfac20829f12911656c40cb70018"
+ nickname="lykos"
+ avatar="http://cdn.libravatar.org/avatar/085df7b04d3408ba23c19f9c49be9ea2"
+ subject="Move from A to B"
+ date="2017-07-26T19:08:07Z"
+ content="""
+It would be awesome to be able to move (or copy) between remotes, 
+eg. `git annex copy --from=remote-a --to=remote-b`
+
+Use case: I have a repo of ~1TB, but only ~30GB free disk space on my laptop. Currently I have to manually `get` and `move` the files almost one by one to get them from one remote to the other.
+"""]]

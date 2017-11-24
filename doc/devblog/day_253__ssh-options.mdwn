@@ -1,0 +1,5 @@
+Spent a couple hours to make the ssh-options git config setting be used
+in more places. Now it's used everywhere that git-annex supports ssh
+caching, including the `git pull` and `git push` done by `sync` and by the
+assistant. Also the `remotedaemon` and the gcrypt, rsync, and ddar
+special remotes.

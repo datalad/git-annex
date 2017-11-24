@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://adamspiers.myopenid.com/"
+ nickname="Adam"
+ subject="Cool"
+ date="2011-12-23T19:16:50Z"
+ content="""
+Very nice :)  Just for reference, here's [my Perl implementation](https://github.com/aspiers/git-config/blob/master/bin/git-annex-finddups).  As per [this discussion](http://git-annex.branchable.com/todo/wishlist:_Provide_a___34__git_annex__34___command_that_will_skip_duplicates/#comment-fb15d5829a52cd05bcbd5dc53edaffb2) it would be interesting to benchmark these two approaches and see if one is substantially more efficient than the other w.r.t. CPU and memory usage.
+"""]]

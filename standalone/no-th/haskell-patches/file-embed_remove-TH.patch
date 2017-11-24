@@ -1,0 +1,132 @@
+From 497d09a91f9eb1e5979948cd128078491b0e8bca Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Fri, 12 Sep 2014 20:52:08 -0400
+Subject: [PATCH] remove TH
+
+---
+ Data/FileEmbed.hs | 87 ++++---------------------------------------------------
+ 1 file changed, 5 insertions(+), 82 deletions(-)
+
+diff --git a/Data/FileEmbed.hs b/Data/FileEmbed.hs
+index 5617493..adacdba 100644
+--- a/Data/FileEmbed.hs
++++ b/Data/FileEmbed.hs
+@@ -17,13 +17,13 @@
+ -- > {-# LANGUAGE TemplateHaskell #-}
+ module Data.FileEmbed
+     ( -- * Embed at compile time
+-      embedFile
+-    , embedOneFileOf
+-    , embedDir
+-    , getDir
++    --  embedFile
++    --, embedOneFileOf
++    --, embedDir
++      getDir
+       -- * Inject into an executable
+ #if MIN_VERSION_template_haskell(2,5,0)
+-    , dummySpace
++    --, dummySpace
+ #endif
+     , inject
+     , injectFile
+@@ -56,73 +56,12 @@ import Data.ByteString.Unsafe (unsafePackAddressLen)
+ import System.IO.Unsafe (unsafePerformIO)
+ import System.FilePath ((</>))
+ 
+--- | Embed a single file in your source code.
+---
+--- > import qualified Data.ByteString
+--- >
+--- > myFile :: Data.ByteString.ByteString
+--- > myFile = $(embedFile "dirName/fileName")
+-embedFile :: FilePath -> Q Exp
+-embedFile fp =
+-#if MIN_VERSION_template_haskell(2,7,0)
+-    qAddDependentFile fp >>
+-#endif
+-  (runIO $ B.readFile fp) >>= bsToExp
+-
+--- | Embed a single existing file in your source code
+--- out of list a list of paths supplied.
+---
+--- > import qualified Data.ByteString
+--- >
+--- > myFile :: Data.ByteString.ByteString
+--- > myFile = $(embedFile' [ "dirName/fileName", "src/dirName/fileName" ])
+-embedOneFileOf :: [FilePath] -> Q Exp
+-embedOneFileOf ps =
+-  (runIO $ readExistingFile ps) >>= \ ( path, content ) -> do
+-#if MIN_VERSION_template_haskell(2,7,0)
+-    qAddDependentFile path
+-#endif
+-    bsToExp content
+-  where
+-    readExistingFile :: [FilePath] -> IO ( FilePath, B.ByteString )
+-    readExistingFile xs = do
+-      ys <- filterM doesFileExist xs
+-      case ys of
+-        (p:_) -> B.readFile p >>= \ c -> return ( p, c )
+-        _ -> throw $ ErrorCall "Cannot find file to embed as resource"
+-
+--- | Embed a directory recursively in your source code.
+---
+--- > import qualified Data.ByteString
+--- >
+--- > myDir :: [(FilePath, Data.ByteString.ByteString)]
+--- > myDir = $(embedDir "dirName")
+-embedDir :: FilePath -> Q Exp
+-embedDir fp = do
+-    typ <- [t| [(FilePath, B.ByteString)] |]
+-    e <- ListE <$> ((runIO $ fileList fp) >>= mapM (pairToExp fp))
+-    return $ SigE e typ
+-
+ -- | Get a directory tree in the IO monad.
+ --
+ -- This is the workhorse of 'embedDir'
+ getDir :: FilePath -> IO [(FilePath, B.ByteString)]
+ getDir = fileList
+ 
+-pairToExp :: FilePath -> (FilePath, B.ByteString) -> Q Exp
+-pairToExp _root (path, bs) = do
+-#if MIN_VERSION_template_haskell(2,7,0)
+-    qAddDependentFile $ _root ++ '/' : path
+-#endif
+-    exp' <- bsToExp bs
+-    return $! TupE [LitE $ StringL path, exp']
+-
+-bsToExp :: B.ByteString -> Q Exp
+-bsToExp bs = do
+-    helper <- [| stringToBs |]
+-    let chars = B8.unpack bs
+-    return $! AppE helper $! LitE $! StringL chars
+-
+ stringToBs :: String -> B.ByteString
+ stringToBs = B8.pack
+ 
+@@ -164,22 +103,6 @@ padSize i =
+     let s = show i
+      in replicate (sizeLen - length s) '0' ++ s
+ 
+-#if MIN_VERSION_template_haskell(2,5,0)
+-dummySpace :: Int -> Q Exp
+-dummySpace space = do
+-    let size = padSize space
+-    let start = magic ++ size
+-    let chars = LitE $ StringPrimL $
+-#if MIN_VERSION_template_haskell(2,6,0)
+-            map (toEnum . fromEnum) $
+-#endif
+-            start ++ replicate space '0'
+-    let len = LitE $ IntegerL $ fromIntegral $ length start + space
+-    upi <- [|unsafePerformIO|]
+-    pack <- [|unsafePackAddressLen|]
+-    getInner' <- [|getInner|]
+-    return $ getInner' `AppE` (upi `AppE` (pack `AppE` len `AppE` chars))
+-#endif
+ 
+ inject :: B.ByteString -- ^ bs to inject
+        -> B.ByteString -- ^ original BS containing dummy
+-- 
+2.1.0
+

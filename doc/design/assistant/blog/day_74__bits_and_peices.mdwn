@@ -1,0 +1,7 @@
+* On OSX, install a launcher plist file, to run the assistant on login,
+  and a `git-annex-webapp.command` file in the desktop. This is not tested
+  yet.
+* Made the webapp display alerts when the inotify/kqueue layer has a
+  warning message.
+* Handle any crashes of each of the 15 or so named threads by displaying
+  an alert. (Of course, this should never happen.)

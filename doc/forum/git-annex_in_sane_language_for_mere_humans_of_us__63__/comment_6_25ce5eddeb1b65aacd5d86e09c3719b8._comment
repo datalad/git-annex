@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.22"
+ subject="comment 6"
+ date="2014-09-16T19:19:00Z"
+ content="""
+There is too much negativity on this page, starting perhaps with its title.
+
+The \"this is not recommended\" is not because we don't want people to build git-annex from source. It's to try to dissuade users who just want to get git-annex installed, and who would be scared off by a transient build failure, from building from source, when there are many builds provided by Linux distributions, etc that would be better choices for them to get started. Hopefully the new page and new wording gets this across better: \"Experienced users should not find it too hard to build and install it from source.\"
+
+If someone wants to reimplement git-annex, or parts of it, I think that the existing documentation (eg [[internals]]) should get them most of the way there.
+
+"""]]

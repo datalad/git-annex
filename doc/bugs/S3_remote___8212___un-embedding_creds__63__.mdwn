@@ -1,0 +1,34 @@
+### Please describe the problem.
+
+After once embedding credentials into a S3 remote, there’s no way to un-embed them.
+
+### What steps will reproduce the problem?
+
+1. Add a S3 remote with `embedcreds=yes`.
+1. Try to set `embedcreds=no`.
+1. `git annex sync` here, and in some other clone.
+1. Check `git annex info my-s3-remote` for the other clone. Credentials are still embedded.
+
+### What version of git-annex are you using? On what operating system?
+
+6.20170101 on NixOS 16.09 (stable).
+
+### Please provide any additional information below.
+
+[[!format sh """
+% g annex info test2 | grep '^creds'
+creds: embedded in git repository (gpg encrypted)
+
+% g annex enableremote test2 embedcreds=no
+enableremote test2 (encryption update) (to gpg keys: 134164FA6FAFE075) ok
+(recording state in git...)
+
+% g annex info test2 | grep '^creds'
+creds: embedded in git repository (gpg encrypted)
+
+%
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, it’s awesome! Thank you!

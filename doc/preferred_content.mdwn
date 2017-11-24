@@ -1,0 +1,71 @@
+git-annex tries to ensure that the configured number of [[copies]] of your
+data always exist, and leaves it up to you to use commands like `git annex
+get` and `git annex drop` to move the content to the repositories you want
+to contain it. But often, it can be good to have more fine-grained
+control over which content is wanted by which repositories. Configuring
+this allows the git-annex assistant as well as 
+`git annex get --auto`, `git annex drop --auto`, `git annex sync --content`,
+etc to do smarter things.
+
+Preferred content settings can be edited using `git
+annex vicfg`, or viewed and set at the command line with `git annex wanted`.
+Each repository can have its own settings, and other repositories will
+try to honor those settings when interacting with it.
+(So there's no local `.git/config` for preferred content settings.)
+
+The idea is that you write an expression that files are matched against.
+If a file matches, the repository wants to store its content.
+If it doesn't, the repository wants to drop its content
+(if there are enough copies elsewhere to allow removing it).
+
+## writing expressions
+
+[[!template id=note text="""
+### [[quickstart|standard_groups]]
+
+Rather than writing your own preferred content expression, you can use
+several standard ones included in git-annex that are tuned to cover different
+common use cases.
+
+You do this by putting a repository in a group,
+and simply setting its preferred content to "standard" to match whatever
+is standard for that group. See [[standard_groups]] for a list.
+"""]]
+
+See the man page [[git-annex-preferred-content]] for details on the syntax
+of preferred content expressions.
+
+An example:
+
+	include=*.mp3 and (not largerthan=100mb) and exclude=old/*
+
+This makes all .mp3 files, and all other files that are less than 100 mb in
+size be preferred content. It excludes all files under the "old" directory.
+
+## upgrades
+
+It's important that all clones of a repository can understand one-another's
+preferred content expressions, especially when using the git-annex
+assistant. So using newly added keywords can cause a problem if
+an older version of git-annex is in use elsewhere.
+
+Before git-annex version 5.20140320, when git-annex saw a keyword it
+did not understand, it defaulted to assuming *all* files were
+preferred content. From version 5.20140320, git-annex has a nicer fallback
+behavior: When it is unable to parse a preferred content expression,
+it assumes all files that are currently present are preferred content.
+
+Here are recent changes to preferred content expressions, and the version
+they were added in.
+
+* "securehash" 6.20170228
+* "nothing" 6.201600202
+* "anything" 5.20150616
+* "standard" 5.20140314  
+  (only when used in a more complicated expression; "standard" by
+  itself has been supported for a long time)
+* "groupwanted=" 5.20140314
+* "metadata=" 5.20140221
+* "lackingcopies=", "approxlackingcopies=", "unused=" 5.20140127
+* "inpreferreddir=" 4.20130501
+* "metadata=field&lt;number" etc 6.20160227

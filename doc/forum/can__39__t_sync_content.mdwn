@@ -1,0 +1,35 @@
+Hi,
+
+I'm completely new to git-annex, I'm trying to follow this guide:
+
+https://git-annex.branchable.com/tips/centralized_git_repository_tutorial/on_GitLab/
+
+All steps succeeded except the `git annex sync --content` which results in the following message:
+
+'Remote origin not usable by git-annex; setting annex-ignore'
+
+Here is an example of the output I receive:
+
+    $ git status
+    On branch master
+    Your branch is up-to-date with 'origin/master'.
+    nothing to commit, working directory clean
+    $
+    $ git push origin master git-annex
+    Everything up-to-date
+    $
+    $ git annex sync --content
+    
+      Remote origin not usable by git-annex; setting annex-ignore
+    commit  ok
+    pull origin
+    ok
+    pull origin
+    ok
+    $
+    $ git config remote.origin.url
+    https://user:pass@gitlab.com/user/repname.git
+
+Is it required to use the ssh protocol in order to get annex working?
+
+I'm using https since I'm behind a firewall, and the ssh protocol always time out. Is there anything I can do?

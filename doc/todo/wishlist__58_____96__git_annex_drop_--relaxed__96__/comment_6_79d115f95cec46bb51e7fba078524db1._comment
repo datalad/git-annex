@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="erics"
+ ip="76.10.136.8"
+ subject="Metadata vs &quot;drop --relaxed&quot;"
+ date="2014-06-03T18:20:50Z"
+ content="""
+[This isn't as much about my suggested implementation for \"drop --relaxed\" as about whether the feature is worth providing in the first place.  I'm not arguing strongly for it, actually; just continuing the discussion.]
+
+> I'd be inclinded to instead use the new metadata support.
+
+I see metadata as more for static attributes of a given file -- this thing is \"a picture\", \"related to project X\", \"from Mary\".  Thus, the combination of metadata plus preferred-content settings seems to me more suitable for static preferences (likely ones that implement some kind of policy, however informal); e.g. \"this repo wants pictures but not mp3s\", or \"Mary's stuff but not Alex's\".
+
+\"drop --relaxed\", on the other hand, would be good for more ad-hoc usage: \"disk space is getting tight; hmm, I'm not using *foo* today, so git-annex, please delete my local copy of *${myrepo}/foo* -- but only as much as you have to, because I'm going to want it again tomorrow\".
+
+One reason not to want to use metadata and preferred-content settings for such short-term, ad-hoc needs is that you then have to remember to go undo the changes later.  That's even worse if you had to add ad-hoc metadata, and now have to go delete it all again.  Undoing a \"drop --relaxed\", on the other hand, consists of a simple \"git annex get\".
+
+"""]]

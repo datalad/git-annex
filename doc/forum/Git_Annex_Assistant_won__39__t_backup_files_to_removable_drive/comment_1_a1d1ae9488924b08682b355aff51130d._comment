@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk3HGoDpnOPob5jOjvIootmkve1-nCpRiI"
+ nickname="Kalle"
+ subject="This is the expected default behavior"
+ date="2014-05-17T20:49:06Z"
+ content="""
+Your files should be on the removable drive but the file structure and file names are following git annex logic and is not meant to be human readable.
+
+The default assumption (which I question) is that you will use the removable drive to transfer files between git-annex repositories. So by default you cannot read the files on devices that do not have git-annex installed.
+
+You can configure git-annex to do what you want using the `post-receive` hook. It's a bit complicated and might leave git-annex hogging your drive when you wan't to eject it but see the following:
+
+ - [[forum/USB_backup_with_files_visible/]]
+ - [[forum/Can't_get_git-annex_merge_to_work_from_git_hook/#comment-d93181e69b8bea54bc03cb335dd1d7c8]]
+
+The last post on that second link tells you exactly what to put in the `post-receive` hook in the .git/hooks folder on your removable drive.
+"""]]

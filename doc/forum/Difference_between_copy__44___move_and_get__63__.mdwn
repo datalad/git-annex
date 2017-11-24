@@ -1,0 +1,24 @@
+I'm starting to experiment with git annex.  I'd like to use it for a centralized git repo that will be checked out often, but the clones will rarely need some large binary files (used for testing).  Therefore, I've set up a centralized/bare git repo and a clone of that repo using the instructions at [centralized_git_repository_tutorial](http://git-annex.branchable.com/tips/centralized_git_repository_tutorial/) and [bare_repositories](http://git-annex.branchable.com/bare_repositories/).  I've added some files to the annex in the clone.
+
+I'm struggling to understand the difference between copy, move, and get.  Here's a sequence of commands:
+
+    >> git annex add shared/1bel.maegz
+    >> git commit -m "added first file"
+    >> git push
+    >> git annex move shared/1bel.maegz --to origin
+    ## Now it no longer exists in my local repo
+    >> git annex get shared/1bel.maegz
+    fails.
+    >> git annex get shared/1bel.maegz --from origin
+    fails.
+    >> git annex copy shared/1bel.maegz --from origin
+    fails.
+    >> git annex move shared/1bel.maegz --from origin
+    succeeds! Now I have the file in my clone.
+
+Each failure message is:
+
+    fatal: Could not switch to '../.git/annex/objects/W8/gZ/SHA256-s99196--62874e9b58e652c9c01e796c2bf38b2234a80e0cef95c185bb7f0857d9765df2': No such file or directory
+    git-annex: <file descriptor: 6>: hGetLine: end of file
+
+How are copy, move, and get different? Which one *should* I be using to move my large data into the central (bare) repo?  Will it then be available to other clones?

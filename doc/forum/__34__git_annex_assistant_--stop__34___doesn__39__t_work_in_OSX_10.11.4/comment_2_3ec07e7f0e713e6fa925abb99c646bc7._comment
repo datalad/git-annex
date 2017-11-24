@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="openmedi"
+ subject="comment 2"
+ date="2016-05-12T07:49:33Z"
+ content="""
+I finally could reliably prevent git annex from fuzzinh with my skype sessions by using [little snitch](http://obdev.at/products/littlesnitch). I created a profile that prevents outgoing connections from git annex etc. and now I can leave git annex assistant running in the background. This is at the same time a good and a terrible solution, since I now need to run commercial software to prevent git annex from dictating how well my skype sessions are going and at the same time not relying on killing git annex processes by hand which in turn leads to git annex wanting repair itself all the time.
+"""]]

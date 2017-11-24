@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.191"
+ subject="comment 2"
+ date="2014-04-17T19:31:30Z"
+ content="""
+The daily builds are updated on a daily basis, so already include it.
+
+The release builds are updated on each release, and so do not.
+"""]]

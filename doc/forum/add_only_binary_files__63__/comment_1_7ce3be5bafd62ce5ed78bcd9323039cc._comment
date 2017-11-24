@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 1"
+ date="2014-10-06T15:36:54Z"
+ content="""
+If you can configure `annex.largefiles` to match only binary files, then `git annex add` will respect it, and only add those files.
+
+For example, if you were working on a game written in C, and wanted to use git-annex only for the game art, but not the source code, you could configure it:
+
+    git config annex.largefiles 'largerthan=100kb and not (include=*.c or include=*.h)'
+
+This doesn't currently support looking at the file content to determine eg, its MIME type. That's been suggested as an added feature before.
+
+More simply, if you `git add` the non-binary files yourself first, `git annex add` will skip over those files and only add the other files.
+"""]]

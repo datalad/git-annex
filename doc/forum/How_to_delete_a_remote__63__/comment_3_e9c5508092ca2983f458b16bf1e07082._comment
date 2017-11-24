@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="konubinix"
+ ip="82.243.233.186"
+ subject="Dropping dead repositories"
+ date="2013-09-04T07:40:22Z"
+ content="""
+Actually, it may be a good idea to remove repositories made for tests purposes.
+
+I now have 2 dead repositories that are USB_test1 and USB_test2 that I created before knowing I could reuse the annex uuid.
+
+They are now there and it is difficult to remove them.
+
+For that special case, the --drop-dead feature is very welcome.
+"""]]

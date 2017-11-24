@@ -1,0 +1,61 @@
+### Please describe the problem.
+One of my annexes has duplicate entries in one of the older trees. This causes git-annex repair to attempt to repair it.
+
+### What version of git-annex are you using? On what operating system?
+6.20161027-g27d824e (standalone x86_64 tarball) on ArchLinux latest as of 29th of Oct 2016 x86_64.
+
+### Please provide any additional information below.
+
+[[!format sh """
+[0 zerodogg@firefly annexed]$ git annex version
+git-annex version: 6.20161027-g27d824e
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 6
+supported repository versions: 3 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+operating system: linux x86_64
+[0 zerodogg@firefly annexed]$ git annex info                             
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 23
+# …snip
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 47.89 gigabytes (+500 megabytes reserved)
+local annex keys: 2300
+local annex size: 1.72 gigabytes
+annexed files in working tree: 2492
+size of annexed files in working tree: 1.89 gigabytes
+bloom filter size: 32 mebibytes (0.5% full)
+backend usage:
+        SHA256E: 2492
+[0 zerodogg@firefly annexed]$ git fsck
+Checking object directories: 100% (256/256), done.
+error in tree 3818a8ea201197ed355aa87133a718afca7c4a49: duplicateEntries: contains duplicate file entries
+error in tree 255f43cff847013439117a3fc4cfa517a90f38cb: duplicateEntries: contains duplicate file entries
+error in tree 404b4124800ece4772296d1f7559d982d0bc4cbd: duplicateEntries: contains duplicate file entries
+Checking objects: 100% (334784/334784), done.
+Checking connectivity: 334784, done.
+[4 zerodogg@firefly annexed]$ git annex repair -d
+Running git fsck ...
+[2016-10-29 09:55:24.652234] read: git ["--version"]
+[2016-10-29 09:55:24.668729] process done ExitSuccess
+[2016-10-29 09:55:24.668879] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","fsck","--no-dangling","--no-reflogs"]
+[2016-10-29 09:55:34.306776] process done ExitFailure 4
+Unpacking all pack files.
+[2016-10-29 09:55:34.307446] call: mv ["-f",".git/objects/pack/pack-18d920ca3181f59af68dc6b0061ca2430884a9bb.pack","/tmp/packsFokxCF/pack-18d920ca3181f59af68dc6b0061ca243
+0884a9bb.pack1804289383846930886.tmp"]
+[2016-10-29 09:55:34.334238] process done ExitSuccess
+[2016-10-29 09:55:34.336992] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","unpack-objects","-r"]
+Unpacking objects: 100% (334784/334784), done.
+[2016-10-29 09:56:39.505888] process done ExitSuccess
+[2016-10-29 09:56:39.560473] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show","10c1cc2127a7be7cf3ce4a0d69ed53e4c375f888"]
+[2016-10-29 09:56:39.607717] process done ExitSuccess
+# ^C
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+I use it for everything, around 3TB of data at the moment. It is awesome.

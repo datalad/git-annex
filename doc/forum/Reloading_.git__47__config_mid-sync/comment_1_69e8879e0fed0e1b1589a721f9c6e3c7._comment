@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="24.159.78.125"
+ subject="comment 1"
+ date="2014-07-23T15:02:04Z"
+ content="""
+Assistant does not support SIGHUP. There is a menu item (top right menu) that can restart it.
+"""]]

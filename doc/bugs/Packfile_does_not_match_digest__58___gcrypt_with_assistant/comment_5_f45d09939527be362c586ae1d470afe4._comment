@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="pot"
+ subject="Same issue"
+ date="2016-07-25T18:23:13Z"
+ content="""
+Anyone got any ideas on how to fix this, or move forward without starting again and trashing the gcrypt repos? Bit of a serious bug this, if it can't be repaired. I was using git-annex for backups, but finding your backups are corrupt would be a bit of a nightmare!
+"""]]

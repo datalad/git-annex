@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="rtwolf"
+ ip="69.165.155.234"
+ subject="comment 2"
+ date="2014-01-07T17:41:25Z"
+ content="""
+Correction to above. Don't run that command, just use git annex sync instead.
+
+Also, git annex drop gives just a blank line. Maybe it doesn't work in direct mode either?
+"""]]

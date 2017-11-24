@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 23"""
+ date="2016-04-04T20:17:05Z"
+ content="""
+@szrc, it's pretty expensive to pull encrypted creds out of the git 
+repository and run gpg to decrypt them. Doing so also tends to result
+in a gpg password prompt. 
+
+Rather than do that every time git-annex needs the creds to access the
+remote, it maintains a local cache file, which has its permissions set so
+only the local user (and root, naturally) can read it.
+"""]]

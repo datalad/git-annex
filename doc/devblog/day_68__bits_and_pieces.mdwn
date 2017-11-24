@@ -1,0 +1,14 @@
+Made a release yesterday to fix a bug that made git-annex init in a bare
+repository set core.bare=false. This bug only affected git-annex 5, it
+was introduced when building the direct mode guard. Currently recovering
+from it is a [manual (pretty easy) process](http://git-annex.branchable.com/bugs/assistant_creating_.git_directory_inside_bare_repo/#comment-73a8ce8aa100baa7c03861b769fdca29).
+Perhas I should automate that, but I mostly wanted to get a fix out
+before too many people encountered the bug.
+
+Today, I made the assistant run batch jobs with ionice and nocache, when
+those commands are available. Also, when the assistant transfers files,
+that also runs as a batch job.
+
+Changed how git-annex does commits, avoiding using `git commit` in direct
+mode, since in some situations `git commit` (not with `-a`!) wants to
+read the contents of files in the work tree, which can be very slow.

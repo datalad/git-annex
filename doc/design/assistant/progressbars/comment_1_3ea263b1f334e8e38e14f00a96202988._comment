@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://abhidg.myopenid.com/"
+ ip="129.67.132.87"
+ subject="librsync"
+ date="2012-06-13T02:14:29Z"
+ content="""
+There's librsync which might support reporting the progress through its API, but it seems to be in beta.
+"""]]

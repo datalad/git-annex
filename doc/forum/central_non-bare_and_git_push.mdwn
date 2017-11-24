@@ -1,0 +1,9 @@
+hi,
+
+i have a usecase that i think many people have. a cental server which should be non-bare to be able to browse the files also via webdav.
+multiple clients behind nat so only pushes via xmpp are possible.
+
+i set everything up without xmpp, it works but if files are updated, none of the clients gets a git push of course because ssh works only unidirectional.
+i couldnt figure out how to set up xmpp push and have a non-bare central repo at the same time because i have to choose between ssh and xmpp git remote on the clients to the server.
+
+thanks!

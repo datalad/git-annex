@@ -1,0 +1,28 @@
+Git annex is really amazing software, and this cute little scenario is actually Linux's fault. But it's a nasty situation nonetheless, and worth passing on.
+
+...
+
+Create a client repository on your laptop and two backup repositories on external USB drives. Keep all repositories mounted and connected. Now drop 60GB of data spread over 30,000 files into your annex, and watch git annex assistant start adding and syncing. So far, so good.
+
+Now wait a few hours, and watch some kernel crypto code—probably ecryptfs—fall over with a segfault.
+
+Since your laptop and USB drives are all running ext4, the sudden kernel panic will leave you with hundreds of 0-length files. Because git annex assistant was busily adding and syncing files, those 0-length files are spread randomly throughout all your git repositories (typically in `.git/objects`) and throughout all the associated annexes. Unfortunately, because `git annex assistant` generates _tons_ of commits, this is pretty much unrecoverable using standard git tools unless you're willing to get deep into the repositories' internals.
+
+So what should you do, if you want to add 10s of 1000s of files and there's some risk of kernel panic or accidentally bumping a USB cable? Here's my recommendation to limit the damage:
+
+1. Use the command line if possible.
+2. Add all your files with your remotes offline.
+3. Run `git gc` on your central repository, just on general principals.
+4. Mount one repository at a time.
+5. Sync the pure git data first, and then make sure that all disk I/O is flushed (`sync; sleep 10` is a good approximation).
+6. Use `git annex copy --to` to move the annex data.
+7. Unmount the USB repository cleanly and move onto the next one.
+
+If you _do_ bump a USB cable in the middle of step (6), then:
+
+1. Run 'git annex fsck' to clean up any garbage files.
+2. Try another 'git annex copy --to' where you left off.
+
+Wiser minds than I are encouraged to suggest optimizations for the recovery steps.
+
+The theory behind these steps is to only do one thing at a time, and to expose as few remotes as possible to a power failure or crash. A secondary goal is to make sure that pure git operations complete very quickly, limiting the risk that they will be interrupted, because they're the hardest operations to recover from after a crash.

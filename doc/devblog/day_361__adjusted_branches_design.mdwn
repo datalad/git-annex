@@ -1,0 +1,5 @@
+Working on a design for [[design/adjusted_branches]]. I've been kicking
+this idea around for a while to replace direct mode on crippled filesystems
+with v6 unlocked files. And the same thing would allow for hiding not
+present files. It's somewhat complicated, but the design I have seems like
+it would work.

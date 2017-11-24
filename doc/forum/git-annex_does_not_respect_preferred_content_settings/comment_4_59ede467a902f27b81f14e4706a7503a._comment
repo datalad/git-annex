@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-09-15T16:00:16Z"
+ content="""
+Are these repositories all in sync, so that git-annex in repo 1
+knows that repo 2 and repo 4 have already gotten the file?
+"""]]

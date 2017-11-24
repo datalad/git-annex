@@ -1,0 +1,57 @@
+#!/usr/bin/env perl
+# Warning: hack
+
+my $prog=shift;
+my $section=shift;
+
+print ".TH $prog $section\n";
+
+while (<>) {
+	s{(\\?)\[\[([^\s\|\]]+)(\|[^\s\]]+)?\]\]}{$1 ? "[[$2]]" : $2}eg;
+	s/\`([^\`]*)\`/\\fB$1\\fP/g;
+	s/\`//g;
+	s/^ *\./\\&./g;
+	if (/^#\s/) {
+		s/^#\s/.SH /;
+		<>; # blank;
+	}
+	s/^[ \n]+//;
+	s/^\t/ /;
+	s/-/\\-/g;
+	s/git\\-annex/git-annex/g;
+	s/^Warning:.*mdwn2man.*//g;
+	s/^$/.PP\n/;
+	s/^\*\s+(.*)/.IP "$1"/;
+	next if $_ eq ".PP\n" && $skippara;
+	if (/^.IP /) {
+		$inlist=1;
+		$spippara=0;
+	}
+	elsif (/^.SH/) {
+		$skippara=0;
+		$inlist=0;
+	}
+	elsif (/^\./) {
+		$skippara=1;
+	}
+	else {
+		$skippara=0;
+	}
+	if ($inlist && $_ eq ".PP\n") {
+		$_=".IP\n";
+	}
+
+	if ($inNAME) {
+		# make lexgrog happy
+		s/^git-annex (\w)/git-annex-$1/;
+	}
+	if ($_ eq ".SH NAME\n") {
+		$inNAME=1;
+	}
+	else {
+		$inNAME=0;
+	}
+	s/\\"/\\\\"/g; # hack for git-annex-shell's quotes around SSH_ORIGINAL_COMMAND
+
+	print $_;
+}

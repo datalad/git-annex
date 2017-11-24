@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="Certificate storage"
+ date="2013-04-09T00:43:12Z"
+ content="""
+Why not store the certificate within the repository? Either a common one in, e.g.
+
+    .git-annex.key-cert.pem
+
+or host-specific as per
+
+    .git-annex.key-cert.pem.$HOST
+
+-- Richard
+"""]]

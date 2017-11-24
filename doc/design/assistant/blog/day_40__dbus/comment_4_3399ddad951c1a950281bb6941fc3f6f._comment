@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 2"
+ date="2012-07-19T18:43:30Z"
+ content="""
+Joey, yes dbus is available from macports and homebrew, it's not installed by default (or as a dependancy) for most packages in macports.
+"""]]

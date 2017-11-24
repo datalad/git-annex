@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.176"
+ subject="comment 3"
+ date="2014-05-27T18:02:11Z"
+ content="""
+I tried with that filename, and had no difficulty committing it.
+
+<pre>
+oberon:repo joeyh$ git annex add George\'s\ Cafe\314\201 
+add George's Café ok
+(Recording state in git...)
+oberon:repo joeyh$ git commit -m foo
+[master (root-commit) 8acd5d4] foo
+ Committer: Joey Hess <joeyh@oberon.local.tam-lin.net>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name \"Your Name\"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 1 insertion(+)
+ create mode 120000 \"George's Caf\303\251\"
+
+</pre>
+
+I even tried running the assistant with all locale settings set to C, and it still had no problem adding and committing that filename.
+
+So, I need help reproducing this, or I need to see the error message you see when the problem happens to you.
+"""]]

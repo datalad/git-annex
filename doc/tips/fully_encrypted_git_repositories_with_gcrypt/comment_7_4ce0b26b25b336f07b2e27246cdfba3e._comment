@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="tanen"
+ ip="83.128.159.25"
+ subject="comment 7"
+ date="2013-11-04T09:01:13Z"
+ content="""
+Thanks for the responses. Please correct me if I'm wrong, but the way I understood it, using the shared encryption scheme creates a conflict between \"changes being synced between them, even if the two computers are never online simultaneously\" and \"encryption should be done locally: the (special) remote should not be able to view file listings or content.\"
+
+- If I use shared encryption \"the webapp way\", only the file contents will be rsynced to the remote, not the repository itself. This means that different hosts are unable to sync unless they are online simultaneously, so that commit data can be sent directly between them via XMPP. In practice, this would mean my hosts are never synced (because I don't keep my home computer running when I leave for work, and vice versa)
+
+- If I use shared encryption and additionally put the repository itself on a remote, that remote would have the keys to fully decrypt the repository, that's not acceptable.
+
+Reading through the docs again, the hybrid scheme actually seems to be closer to what I want than the shared scheme, but it still has a major downside: the encryption only applies to the files itself, so in order to get \"offline sync\" there still has to be a 'remote' for the repository itself, which will contain all your metadata unencrypted. And also it would depend on the user being able to manually setup and backup a set of gpg keys instead of just memorizing a secure passphrase.
+
+@Fabrice Looks like the bug you found could very well be the cause of the problem I had; I'll try it again when a new version is available.
+"""]]

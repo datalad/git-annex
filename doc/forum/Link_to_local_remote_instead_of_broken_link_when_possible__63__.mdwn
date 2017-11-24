@@ -1,0 +1,4 @@
+Hi,
+
+Suppose I have an annexed file whose content is stored on an extenal hard drive.
+When the hard drive is mounted, is it possible to have immediately access to this file without transfering it, by modifying the symlink to point to the file content on the hard drive instead of having a broken link?

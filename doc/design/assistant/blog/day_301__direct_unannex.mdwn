@@ -1,0 +1,21 @@
+No release today after all. Unexpected bandwidth failure. Maybe in a few
+days..
+
+Got unannex and uninit working in direct mode. This is one of the more
+subtle parts of git-annex, and took some doing to get it right.
+Surprisingly, unannex in direct mode actually turns out to be faster than
+in indirect mode. In direct mode it doesn't have to immediately commit the
+unannexing, it can just stage it to be committed later.
+
+Also worked on the ssh connection caching code. The perrennial problem with
+that code is that the fifo used to communicate with ssh has a small limit
+on its path, somewhere around 100 characters. This had caused problems when
+the hostname was rather long. I found a way to avoid needing to be able to
+reverse back from the fifo name to the hostname, and this let me take the
+md5sum of long hostnames, and use that shorter string for the fifo.
+
+Also various other bug followups.
+
+----
+
+[Campaign](https://campaign.joeyh.name/) is almost to 1 year!

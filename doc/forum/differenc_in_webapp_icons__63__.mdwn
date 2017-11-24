@@ -1,0 +1,4 @@
+Hi,
+
+I'm wondering what the difference between the network signal and network sync icons are in the web-app?  Nothing stands out to me why some repos have one some the other?
+

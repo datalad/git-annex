@@ -1,0 +1,4 @@
+I created an "full archive" repo on my local pc and an encrypted "full backup" repo on Box.com. I 'm copying files on the local repo and they are getting encrypted and uploaded to Box. Superb so far :)
+
+What I am wondering though is, suppose my local pc dies. How do I get the data out of Box unencrypted from a new pc?
+

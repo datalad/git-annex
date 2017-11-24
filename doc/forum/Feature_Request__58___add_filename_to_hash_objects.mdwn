@@ -1,0 +1,6 @@
+hi,  
+i just did git annex unused in 2 repos, one with WORM and one with SHA1.   
+with WORM i instantly could see which file it was, with SHA1 not.  
+
+so would it be possible to just add the first seen filename to the hashes identifier? the name could just be ignored but it would help with unused to see which file i am searching for.  
+thanks!

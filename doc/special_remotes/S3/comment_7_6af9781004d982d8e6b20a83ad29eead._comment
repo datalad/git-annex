@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmyFvkaewo432ELwtCoecUGou4v3jCP0Pc"
+ nickname="Eric"
+ subject="S3 Remote Future Proof?"
+ date="2013-01-20T09:21:50Z"
+ content="""
+Joey, I'm curious to understand how future proof an S3 remote is.  Can I restore my files without git-annex?
+"""]]

@@ -1,0 +1,22 @@
+Hi,
+
+On a linux server I created a (direct) git annex repository:
+
+    $ ls -a
+    .  ..  apps  attic  devel  games  .git  portable  tools
+
+On a Windows client, I want to check it out:
+
+    me@client /cygdrive/c/tmp
+    $ git clone ssh://me@server/srv/data/bin bin
+    Cloning into 'bin'...
+
+But git annex checks only half of it out :-(
+
+    me@client /cygdrive/c/tmp
+    $ ls -a bin
+    .  ..  .git  attic  games
+
+Any ideas? Sorry, I am very new to git-annex (and git).
+
+Thanks!

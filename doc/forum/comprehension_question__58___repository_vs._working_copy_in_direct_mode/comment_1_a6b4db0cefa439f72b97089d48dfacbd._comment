@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-07-21T19:54:15Z"
+ content="""
+A git repository is a `.git` directory (or `git.bare` for a bare repository).
+
+A working tree is the directory that contains the `.git` directory.
+
+That is standard git terminology; git-annex does not change this at all really. The only difference is that a file added to git-annex is in both the repository and the working tree at the same time, rather than their being 2 local copies of the file (which would need twice the disk space so not good for large files).
+
+`git annex sync` commits any changes to files in the working tree, and pushes those changes to other remotes. You need to pass --content to also make git-annex upload the files to other remotes. Once a remote has been pushed to, you can run `git annex merge` in it to update its working tree to reflect the pushed changes (`git annex sync` also does that merge).
+
+To automatically sync changes to remotes, you can run the git-annex assistant.
+"""]]

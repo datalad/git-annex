@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2016-03-01T20:52:38Z"
+ content="""
+	2456732 openat(AT_FDCWD, ".git/annex/ssh/", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+	2456732 mkdir(".git/annex/ssh", 0777)   = 0
+	2456732 open(".git/annex/ssh/smaug.lock", O_RDONLY|O_CREAT, 0666) = 11
+	2456732 fcntl(11, F_GETFD)              = 0
+	2456732 fcntl(11, F_SETFD, FD_CLOEXEC)  = 0
+	2456732 close(11)                       = 0
+
+Backs up what I thought git-annex should be doing; it's not fcntl locking that file.
+
+Ah, I'll bet it's not git-annex at all this time.
+It runs ssh with -S .git/annex/ssh/smaug, and ssh probably
+does its own locking around setting up that control socket.
+
+If so, disabling annex.sshcaching will avoid the problem.
+"""]]

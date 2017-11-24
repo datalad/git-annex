@@ -1,0 +1,8 @@
+After despairing of ever solving this yesterday (and for the past 6 months
+really), I've got the webapp running on Windows with no visible DOS box.
+Also have the assistant starting up in the background on login.
+
+It turns out a service was not the way to do. There is a way to write a VB
+Script that runs a "DOS" command in a hidden window, and this is what I
+used. Amazing how hard it was to work this out, probably partly because I
+don't have the Windows vocabulary to know what to look for.

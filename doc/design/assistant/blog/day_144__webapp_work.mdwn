@@ -1,0 +1,8 @@
+Made the webapp show runtime errors on a prettified page that includes version
+info, a bug reporting link, etc.
+
+Dealt with a bad interaction between required fields and the bootstrap modals
+displayed when submitting some configuration forms. This was long, complex,
+and had lots of blind alleys. In the end, I had to derive new password and
+text fields in yesod that don't set the required attribute in the generated
+html.

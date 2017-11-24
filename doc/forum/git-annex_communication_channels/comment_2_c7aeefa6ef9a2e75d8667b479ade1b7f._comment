@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 2"
+ date="2011-03-28T18:35:50Z"
+ content="""
+I think the forums/website currently is sufficient, I do at times wish there was a mailing list or anonymous git push to the wiki as I find editing posts through the web browser is some times tedious (the lack of !fmt or alt-q bugs me at times ;) ). The main advantage of keeping stuff on the site/forum is that everything gets saved and passed on to anyone who checks out the git repo of the code base.
+"""]]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://mylesenglish.myopenid.com/"
+ ip="217.39.94.195"
+ subject="comment 2"
+ date="2013-09-16T19:21:31Z"
+ content="""
+This shell function behaves more like ls and shows the files that are present:
+
+    ga-ls () {
+      CWD=`pwd`
+      cd ${1:-.} && git annex find | cut -d / -f 1 | uniq
+      cd ${CWD}
+    }
+
+"""]]

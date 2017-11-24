@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmWg4VvDTer9f49Y3z-R0AH16P4d1ygotA"
+ nickname="Tobias"
+ subject="comment 1"
+ date="2013-08-26T07:44:22Z"
+ content="""
+You should set your repository to \"manual\" mode instead of \"client\" mode.
+
+But then no data will be synced at all by the assistant, only metadata. You would have to do \"get/drop\" manually for commandline for all files.
+
+Alternatively you could use the special \"archive\" folders that are supported by the assistant.
+
+"""]]

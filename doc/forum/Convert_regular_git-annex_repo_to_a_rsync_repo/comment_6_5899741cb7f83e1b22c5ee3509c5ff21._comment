@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 6"
+ date="2014-02-25T09:34:16Z"
+ content="""
+assuming the remote I am converting is called some-repo should mark it as dead before converting and reinitting as rsync some-repo again?
+"""]]

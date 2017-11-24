@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-02-20T15:53:29Z"
+ content="""
+It is indeed to support things like `.tar.gz`, `.pdf.gz` etc.
+
+There's really no way to distinguish between what's desired to be part of
+the extension and not, other than heuristics. The heuristics for this are
+fairly narrow. Other than not allowing purely numeric parts in extenssions,
+or only taking the last extension, I don't see any change that could help
+with this case.
+
+Bear in mind that the only reason the extension is included at all is
+because some strange programs, especially on OSX, follow symlinks and look
+at the symlink of the link destination to try to guess what kind of file it
+is. There's no good reason for a program to do that, and if you're not
+using programs with that problem, you can just use the SHA256 backend and
+leave off the extensions.
+
+Bearing in mind that the extension is part of a big long ugly key name that
+you don't generally need to do anything with, including an extra short
+possibly not-really-extension part doesn't seem like a usability problem.
+The only real problem would be if you had two files with the same content,
+but different "extensions", since this would prevent them being
+deduplicated to the same key.
+"""]]

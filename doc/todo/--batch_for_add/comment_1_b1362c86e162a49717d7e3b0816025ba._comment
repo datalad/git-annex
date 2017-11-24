@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-19T15:32:48Z"
+ content="""
+Has similar problems to batching find; if a whole directory is added any
+number of lines can be output.
+
+So, either needs a similar thing to indicate end of output for current
+item, or perhaps it would make sense for the batched add to not recurse
+into directories, so it would always output exactly 1 line per input.
+"""]]

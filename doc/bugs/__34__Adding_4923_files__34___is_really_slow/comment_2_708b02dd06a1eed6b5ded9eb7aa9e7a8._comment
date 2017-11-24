@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.1.10"
+ subject="comment 2"
+ date="2013-07-22T20:15:03Z"
+ content="""
+I doubt that removing the junk files did anything, unless perhaps it deleted all the files that it had not yet gotten around to adding, and so short-circuited the slow part of the process.
+
+Adding a lot of files in a repository in direct mode can be slowed down some because it has to run `git hash-object` once per file to stage the symlink. It may be possible to speed this up by changing the code to write the symlink to disk in a temporary location, which would then allow it to use the single `git hash-object --batch` it keeps running, and just tell it to hash that file.
+
+It seems likely to me though that the sha256sum it has to run on every file before adding it is responsible for more of the slowdown. After all, that has to read every file from disk (here apparently from `/mnt` which, if it's a USB device etc could be pretty slow.) You can benchmark this at home: First look at the debug log to find the start and finish times of it adding all those files. Then clear all disk caches. Then run sha256sum on every file and time that. Compare & post here. ;)
+
+Adding to the overhead, the assistant is uploading every file it adds to the remote with uuid 8dbe75a4-b065-46fd-99f7-22599b2eaf06. Which means yet another read of the file, and more work depending on what kind of remote that is and how expensive it is to transfer to it.
+
+So, in summary, hashing, recording in git, and backing up a lot of files is really slow. It would be good to work out which parts are the slow parts, so we can think about whether that speed is acceptable for that part.
+"""]]

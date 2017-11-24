@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-05-29T16:45:03Z"
+ content="""
+I'm a little worried about -t being \"semi-deprecated\". I don't know if it would be possible to use either of the other commands the man page suggests to get the info needed by `stageDirect`. (Particularly the Sha of their staged contents.)
+
+All of git-annex's access to the repository tree goes via Git.LsFiles and AFAICS, all the other git commands used there do respect skip-worktree.
+
+I encourage you to work on this, since you're motivated.
+"""]]

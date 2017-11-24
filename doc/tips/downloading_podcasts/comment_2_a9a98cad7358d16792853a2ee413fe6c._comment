@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.21"
+ subject="comment 2"
+ date="2013-07-30T17:16:07Z"
+ content="""
+@ckeen You seem to be using a filesystem that does not support filenames 150 characters long. This is unusual -- even windows and android can support a filename up to 255 characters in length. `git-annex addurl` already deals with this sort of problem by limiting the filename to 255 characters. If you'd like to file a bug report with details about your system, I can try to make git-annex support its limitations, I suppose.
+"""]]

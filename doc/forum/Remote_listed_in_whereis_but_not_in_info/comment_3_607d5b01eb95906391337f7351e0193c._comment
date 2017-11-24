@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-11-07T19:35:17Z"
+ content="""
+Ah right, it looks in `uuid.log` to make sure the UUID provided is
+valid. Bit of a catch 22 there.
+
+Here's a way that will work:
+
+	git config remote.unknown.url foo
+	git config remote.unknown.annex-uuid 8bb266ed-453d-4489-9d8a-de38b2bc77c2
+	git annex dead unknown
+	git remote rm unknown
+"""]]

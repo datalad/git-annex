@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.2.134"
+ subject="comment 1"
+ date="2013-09-13T18:19:03Z"
+ content="""
+I suppose the assistant could try to add a git remote and pull from it, and only if this pull fails go try to run shell commands to create it. This might work with gitolite, gitosis, github, etc. Although only partially for ones that don't support running git-annex-shell..
+"""]]

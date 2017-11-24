@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmMLeU-zCzx2mc5pL2XT8a1UNkQwHAHjg8"
+ nickname="daniele"
+ subject="comment 2"
+ date="2014-07-19T00:38:58Z"
+ content="""
+    Generally only the structure should be synced, no contents (i.e. \"manual\" is the closest)
+    Currently it seems that when it changes remotely, it is \"dropped\" again so I need to manually use \"git annex get\" again
+
+Maybe this could work? 
+
+(in preferred content) exclude=\"*\" and present
+
+So that what is present is preferred and not dropped, everything else is not downloaded unless the user explicitly asks to get it.
+"""]]

@@ -1,0 +1,11 @@
+I have two machines A & B.  Each have their our repository.
+
+On machine A I have created a remotehost (S3) and have synced successfully.
+
+I am trying to link machine B to the same remote host.  I keep getting an error on the initremote command on machine B.
+
+I tried using the same command as I did on A and it is not working.   Is there a different command to link machine B to an existing remote repository?
+
+Any help is appreciated.
+
+Rob

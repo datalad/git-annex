@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2014-12-02T18:51:44Z"
+ content="""
+That will work fine as a git remote using that hostname. `git remote add home home:path`
+
+The webapp isn't currently aware of hostnames configured via .ssh/config,
+so it cannot be set up using the webapp.
+"""]]

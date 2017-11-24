@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnRaueN1AcM8pIMofH5-wQ1Kr4T0GBe8sA"
+ nickname="wayne"
+ subject="git-annex with gitolite-rc"
+ date="2013-10-19T17:03:32Z"
+ content="""
+@François
+
+The proper array in .gitolite.rc seems to be the \"ENABLE\" array, which it appears is parsed into the COMMANDS array in src/lib/Gitolite/Rc.pm
+
+@Khaije
+
+Using 'git-annex-shell' => 'ua' doesn't seem to work for me. The program still fails in src/gitolite-shell around line 163 (gitolite repo version b1d3c05):
+
+    _die \"suspicious characters loitering about '$soc'\"
+      if $rc{COMMANDS}{ words[0] } ne 'ua' and $soc !~ $REMOTE_COMMAND_PATT;
+
+When I insert $rc{COMMANDS}{ words[0] } into the _die message, it shows up as \"1\" instead of \"ua\" as I was expecting.
+
+When I manually set $rc{COMMANDS}{ words[0] } to 'ua' slightly earlier in the script, the git-annex-shell command gets run but it seems to fail to parse the result of the configlist command properly because then I get 
+
+    Failed to get annex.uuid configuration of repository origin
+
+    Instead, got: \"annex.uuid=\ncore.gcrypt=\n\"
+
+
+I am actually about to give up on the notion of using git-annex and gitolite together. Maybe. I am interested to know if anyone else is having similar problems.
+
+"""]]

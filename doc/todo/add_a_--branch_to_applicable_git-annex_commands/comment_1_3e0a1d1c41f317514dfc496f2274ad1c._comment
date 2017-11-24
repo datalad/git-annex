@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.154"
+ subject="comment 1"
+ date="2014-03-17T19:48:57Z"
+ content="""
+The difficulty with adding a --branch is that if it causes git-annex to operate on a list of (file, key) from the branch, then commands that actually modify the working tree would modify it, instead of the branch. So the options seem to be only generating a list of keys, and so only letting commands that operate on keys work (which rules out the `git annex find` example), or carefully arranging for commands that actually affect the work tree to not be usable with this option.
+
+I'm not sure how many commands are affected. The ones I can immediately think of are sync, lock, unlock. (Commands like get obviously affect the work tree in direct mode, but it's fine to have getting a file from a branch also update files in the work tree, if they pointed at the same key.)
+"""]]

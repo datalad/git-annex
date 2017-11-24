@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2013-08-06T12:44:11Z"
+ content="""
+* You could try metastore (not merge friendly), git-cache-meta (pretty minimal) or metamonger (not done yet) to sync your file permissions
+* Look into direct mode to avoid symlinks
+* Alternatively, check your taskwarrior files into git, not git-annex, to avoid symlinks
+"""]]

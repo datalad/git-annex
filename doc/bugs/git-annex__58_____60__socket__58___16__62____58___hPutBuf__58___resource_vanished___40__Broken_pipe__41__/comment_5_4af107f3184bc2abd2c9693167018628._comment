@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 5"
+ date="2013-05-31T18:17:59Z"
+ content="""
+It will now detect if any of the long-running git processes crash, and automatically restart them. I don't know if this addresses the crash that was originally reported.
+"""]]

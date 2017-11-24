@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-05-16T16:42:41Z"
+ content="""
+This is good spotting of a git configuration that git-annex does not support.
+
+However, I doubt that even if I made it use `GIT_SSH`, it would be useful. git-annex uses several features that are probably unique to openssh, including connection caching. While you could disable annex.sshcaching and perhaps get a different ssh to work, it would be much slower.
+"""]]

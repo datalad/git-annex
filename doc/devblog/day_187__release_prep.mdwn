@@ -1,0 +1,10 @@
+Last night, got logging to daemon.log working on Windows. Aside from XMPP
+not working (but it's near to being deprecated anyway), and some possible
+issues with unicode characters in filenames, the Windows port now seems in
+pretty good shape for a beta release.
+
+Today, mostly worked on fixing the release process so the metadata
+accurarely reflects the version from the autobuilder that is included in
+the release. Turns out there was version skew in the last release (now
+manually corrected). This should avoid that happening again, and also
+automates more of my release process.

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 1"
+ date="2014-01-01T20:31:21Z"
+ content="""
+I think you can fix at least the immediate problem by deleting the .git/MERGE_HEAD file.
+
+
+"""]]

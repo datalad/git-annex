@@ -1,0 +1,62 @@
+When a file is annexed, a key is generated from its content and/or metadata.
+The file checked into git symlinks to the key. This key can later be used
+to retrieve the file's content (its value).
+
+Multiple pluggable key-value backends are supported, and a single repository
+can use different ones for different files. 
+
+These are the recommended backends to use.
+
+* `SHA256E` -- The default backend for new files, combines a 256 bit SHA-2
+  hash of the file's content with the file's extension. This allows
+  verifying that the file content is right, and can avoid duplicates of
+  files with the same content. Its need to generate checksums
+  can make it slower for large files. 
+* `SHA256` -- SHA-2 hash that does not include the file extension in the
+  key, which can lead to better deduplication but can confuse some programs.
+* `SHA512`, `SHA512E` -- Best SHA-2 hash, for the very paranoid.
+* `SHA384`, `SHA384E`, `SHA224`, `SHA224E` -- SHA-2 hashes for
+  people who like unusual sizes.
+* `SHA3_512`, `SHA3_512E`, `SHA3_384`, `SHA3_384E`, `SHA3_256`, `SHA3_256E`, `SHA3_224`, `SHA3_224E`
+  -- SHA-3 hashes, for bleeding edge fun.
+* `SKEIN512`, `SKEIN512E`, `SKEIN256`, `SKEIN256E`
+  -- [Skein hash](http://en.wikipedia.org/wiki/Skein_hash),
+  a well-regarded SHA3 hash competition finalist.
+
+The backends below do not guarantee cryptographically that the
+content of an annexed file remains unchanged.
+
+* `SHA1`, `SHA1E`, `MD5`, `MD5E` -- Smaller hashes than `SHA256`
+   for those who want a checksum but are not concerned about security.
+* `WORM` ("Write Once, Read Many") -- This assumes that any file with
+  the same filename, size, and modification time has the same content.
+  This is the least expensive backend, recommended for really large
+  files or slow systems.
+* `URL` -- This is a key that is generated from the url to a file.
+  It's generated when using eg, `git annex addurl --fast`, when the file
+  content is not available for hashing.
+
+If you want to be able to prove that you're working with the same file
+contents that were checked into a repository earlier, you should avoid
+using the non-cryptographically-secure backends, and will need to use
+signed git commits. See [[tips/using_signed_git_commits]] for details.
+
+Note that the various 512 and 384 length hashes result in long paths,
+which are known to not work on Windows. If interoperability on Windows is a
+concern, avoid those.
+
+The `annex.backend` git-config setting can be used to configure the
+default backend to use when adding new files.
+
+For finer control of what backend is used when adding different types of
+files, the `.gitattributes` file can be used. The `annex.backend`
+attribute can be set to the name of the backend to use for matching files.
+
+For example, to use the SHA256E backend for sound files, which tend to be
+smallish and might be modified or copied over time,
+while using the WORM backend for everything else, you could set
+in `.gitattributes`:
+
+	* annex.backend=WORM
+	*.mp3 annex.backend=SHA256E
+	*.ogg annex.backend=SHA256E

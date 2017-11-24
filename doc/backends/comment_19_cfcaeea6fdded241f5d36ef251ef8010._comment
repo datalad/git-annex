@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 19"""
+ date="2016-09-05T19:47:48Z"
+ content="""
+@junk, this page is not really the place to ask such an unrelated question.
+Please use the [[forum]] for such questions.
+
+(Anyway, git-annex uses gpg to encrypt data, so you can perhaps use gpg to
+check the embedded checksum, but I have never done it, and git-annex
+certianly doesn't support doing it.)
+"""]]

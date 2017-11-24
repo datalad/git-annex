@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnZ0g2UAijV7RGrKtWPljCCAYHBJ3pwPvM"
+ nickname="Meng"
+ subject="comment 2"
+ date="2012-10-16T03:19:43Z"
+ content="""
+Thanks for getting back so quick; So, after doing
+
+    git annex initremote smb type=directory directory=/Volumes/subproject/ encryption=none
+    git annex describe smb \"smb://XXXhost.com/subproject\"
+
+What else do i need to do?  Do i need to `git init` and/or `git annex init` in `/Volumes/subproject/`?
+"""]]

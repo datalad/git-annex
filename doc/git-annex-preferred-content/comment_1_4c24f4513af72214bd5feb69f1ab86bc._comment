@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="grawity@2ea26be48562f66fcb9b66307da72b1e2e37453f"
+ nickname="grawity"
+ subject="comment 1"
+ date="2016-01-21T08:35:52Z"
+ content="""
+The `present` expression is mentioned in [standard_groups](https://git-annex.branchable.com/preferred_content/standard_groups/) but doesn't seem to be explicitly documented anywhere. Is it basically the preferred-content equivalent of `--in .`?
+"""]]

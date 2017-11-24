@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Branch names containing slashes"""
+ date="2016-09-21T18:56:22Z"
+ content="""
+@kartynnik, that's a bug: [[bugs/sync_uses_conflicting_names_for_deep_branches]]
+
+Please file bugs there and not as comments here, it's too easy to lose
+track of a comment deep in a thread.
+"""]]

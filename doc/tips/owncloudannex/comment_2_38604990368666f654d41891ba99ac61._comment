@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmLB39PC89rfGaA8SwrsnB6tbumezj-aC0"
+ nickname="Tobias"
+ subject="comment 2"
+ date="2013-07-10T08:21:39Z"
+ content="""
+Personally i've only seen that when the server ran out of space. But lets see what is going on.
+
+Please run this command
+
+git config annex.owncloud-hook '/usr/bin/python2 ~/owncloudannex/owncloudannex.py --dbglevel 1 --stderr'
+
+And then replicate the error. It should give me some debug information to work with.
+
+"""]]

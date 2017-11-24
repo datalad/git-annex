@@ -1,0 +1,23 @@
+> And so we waited. Tick-tock, blink-blink, thirty seconds stretched
+> themselves out one by one, a hole in human experience. -- The Bug
+
+I *think* I've managed to fully track down the [[webapp_hang]]. It is,
+apparently, a bug in the Warp web server's code intended to protect against
+the [Slowloris](http://ha.ckers.org/slowloris/) attack. It assumes,
+incorrectly, that a web browser won't reuse a connection it's left idle for
+30 seconds. Some bad error handling keeps a connection open with no thread
+to service it, leading to the hang.
+<https://github.com/yesodweb/wai/issues/146>
+
+Have put a 30 minute timeout into place as a workaround, and, unless
+a web browser sits on an idle connection for a full 30 minutes and then
+tries to reuse it, this should be sufficient.
+
+I was chasing that bug, quietly, for 6 months. Would see it now and
+then, but not be able to reproduce it or get anywhere with analysis.
+I had nearly given up. If you enjoy stories like that, read Ellen
+Ullman's excellent book The Bug.
+
+> To discover that between the blinks of the machine’s shuttered eye—going
+> on without pause or cease; simulated, imagined, but still not caught—was
+> life.

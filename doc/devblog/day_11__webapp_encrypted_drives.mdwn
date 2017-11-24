@@ -1,0 +1,12 @@
+Now the webapp can set up encrypted repositories on removable drives.
+
+[[assistant/encryptdrive.png]]
+
+This UI needs some work, and the button to create a new key is not wired
+up. Also if you have no gpg agent installed, there will be lots of password
+prompts at the console.
+
+Forked git-remote-gcrypt to fix a bug. Hopefully my patch will be merged;
+for now I recommend installing my worked version.
+
+Today's work was sponsored by Romain Lenglet.

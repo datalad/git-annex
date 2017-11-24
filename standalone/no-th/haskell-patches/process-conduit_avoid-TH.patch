@@ -1,0 +1,24 @@
+From ed77588c57704030a9d412dd49f11c172c6268ab Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Tue, 14 Oct 2014 03:46:03 +0000
+Subject: [PATCH] unused
+
+---
+ process-conduit.cabal |    1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/process-conduit.cabal b/process-conduit.cabal
+index 34bb168..2f137a8 100644
+--- a/process-conduit.cabal
++++ b/process-conduit.cabal
+@@ -22,7 +22,6 @@ source-repository head
+ 
+ library
+   exposed-modules:     Data.Conduit.ProcessOld
+-                       System.Process.QQ
+ 
+   build-depends:       base             == 4.*
+                      , template-haskell >= 2.4
+-- 
+1.7.10.4
+

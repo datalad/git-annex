@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-05-13T18:00:42Z"
+ content="""
+This sounds like one or more bugs that I should address, but I'm having trouble understanding exactly what you did, from your description, at the level of detail I need to replicate a problem.
+
+Do you still have a copy of the corrupted repository? Or any error messages to show me?
+
+It sounds like at least one problem might have been this bug: [[bugs/Unable_to_switch_back_to_direct_mode]]
+At least that is fixed in current git.
+"""]]

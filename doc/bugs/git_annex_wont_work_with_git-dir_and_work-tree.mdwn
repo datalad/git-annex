@@ -1,0 +1,29 @@
+### Please describe the problem.
+If using git annex with external .git dir webapp report a tread crashed and ever trying to restart it crash again and webapp is not able to upload/download/sync (also the download of git-annex updates is affected)
+
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 5.20150113-gcf247cf
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+
+Precompiled tarball from official git-annex download site
+
+Gentoo linux
+
+### Please provide any additional information below.
+
+[[!format sh """
+
+Launching web browser on file://../.git_annex_repos/pippo.git/annex/webapp.html      <-- note wrong path! should be /home/gioacchino/.git_annex_repos/pippo.git/annex/webapp.html
+
+RemoteControl crashed: user error (nice ["ionice","-c3","/home/gioacchino/opt/git-annex.linux/git-annex","remotedaemon"] exited 1)
+
+WebApp crashed: <file descriptor: 11>: hPutStr: illegal operation (handle is closed
+"""]]
+
+[[!meta title="assistant does not support nonstandard --git-dir"]]

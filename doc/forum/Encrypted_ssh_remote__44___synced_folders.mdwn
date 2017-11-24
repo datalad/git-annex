@@ -1,0 +1,87 @@
+Hello,
+
+I hope my understanding of the git-annex webapp is correct, and if not, please correct my wrong thought-pattern.
+
+I have 2 VPS servers and 5 computers. On the 5 computers, I want to sync one folder (with subfolders and files). All the computers are full-disk encrypted, and it is important for me that when the data leaves my computer, it stays encrypted in one way or another. I want to use the two VPS's as an encrypted ssh full backup repository.
+
+The computers are rarely on at the same time, some are off for two weeks, others are on more frequent. However, the VPS's are always on.
+
+Now, is it possible to set up git-annex to support this behaviour? Using an encrypted ssh remote to make sure the folder is in sync on all computers? 
+
+I've set git-annex up on one box, with the two servers as encrypted full backup remotes (without git-annex installed there), and configured my jabber account. That all works, and the files get synced.
+
+Then I've set up a second computer, while the first one is still on. There I've added my jabber account, and created a local repository. Then I selected "Share with your other devices". It now shows my jabber account on both machines, and I saw a few syncing messages, but then there came errors, "Unable to download files from your other devices". I've attached the log at the bottom of this page.
+
+It gives me the option to add a Cloud Repository. If I add the encrypted rsync full backup remote VPS there, will it work and keep my files in sync? is there something I'm doing wrong?
+
+Note that the computers I've set up now are two OS X machines running Mountain Lion, and the servers are CentOS 6.
+
+Log:
+
+
+    [2013-07-15 07:44:17 CEST] main: starting assistant version 4.20130709-g18e5f43
+
+    (scanning...) [2013-07-15 07:44:17 CEST] Watcher: Performing startup scan
+    (started...) [2013-07-15 07:45:08 CEST] main: starting assistant version 4.20130709-g18e5f43
+
+    (scanning...) [2013-07-15 07:45:08 CEST] Watcher: Performing startup scan
+    (started...) [2013-07-15 07:54:31 CEST] XMPPClient: Pairing with stnl in progress
+    rercrrrreveeeec:ccccv vvvv:r:::: e    rsrrrreoeeeesussssorooooucuuuurerrrrc cccceveeee a    vnvvvvaiaaaansnnnnihiiiisesssshdhhhhe eeeed(dddd C    (o((((CnCCCConoooonennnnncnnnneteeeecicccctottttiniiiio oooonrnnnn e    rsrrrreeeeeestsssse eeeetbtttt y    b bbbbypyyyy e    peppppereeeee)eeeer
+    rrrr)))))
+
+
+
+
+    recv: resource vanished (Connection reset by peer)
+    recv:r errceevcs:vo :ur rercseeos uovruacrneci esv havenadin si(hsCehoden dn( eC(coCtnoinnoennce tcriteoisnoe ntr  erbseyes tep teb eybr y)p
+    epeere)r
+    )
+    [2013-07-15 07:55:00 CEST] XMPPSendPack: Syncing with janwxmpp
+    Already up-to-date.
+    recv: resource vanished (Connection reset by peer)
+    [2013-07-15 07:55:04 CEST] XMPPReceivePack: Syncing with janwxmpp
+    To xmpp::janwxmpp@gmail.com
+     * [new branch]      git-annex -> refs/synced/0a41c397-09e8-4957-a6f4-2a6846a4f9d8/cmVsc3RubEBnbWFpbC5jb20=/git-annex
+     * [new branch]      master -> refs/synced/0a41c397-09e8-4957-a6f4-2a6846a4f9d8/cmVsc3RubEBnbWFpbC5jb20=/master
+    [2013-07-15 07:55:25 CEST] XMPPSendPack: Unable to download files from your other devices.
+    [2013-07-15 07:55:25 CEST] XMPPSendPack: Syncing with janwxmpp
+    recv: resource vanished (Connection reset by peer)
+    fatal: Could not read from remote repository.
+
+    Please make sure you have the correct access rights
+    and the repository exists.
+    [2013-07-15 07:57:25 CEST] XMPPSendPack: Unable to download files from your other devices.
+    recv: resource vanished (Connection reset by peer)
+    recv: resource vanished (Connection reset by peer)
+    recv: resource vanished (Connection reset by peer)
+    recv: resource vanished (Connection reset by peer)
+    recv: resource vanished (Connection reset by peer)
+
+    (Recording state in git...)
+
+    (scanning...) [2013-07-15 08:01:36 CEST] Watcher: Performing startup scan
+    (started...) recvr:rrrrrrre eeeeeeecrcccccccvevvvvvvv:s::::::: o       rurrrrrrrereeeeeeescsssssssoeooooooou uuuuuuurvrrrrrrrcaccccccceneeeeeee i       vsvvvvvvvahaaaaaaanennnnnnnidiiiiiiis sssssssh(hhhhhhheCeeeeeeedoddddddd n       (n(((((((CeCCCCCCCocooooooontnnnnnnnninnnnnnneoeeeeeeecnccccccct tttttttiriiiiiiioeooooooonsnnnnnnn e       rtrrrrrrre eeeeeeesbssssssseyeeeeeeet ttttttt p       bebbbbbbbyeyyyyyyy r       p)pppppppe
+    eeeeeeeeeeeeeeerrrrrrrr))))))))
+
+
+
+
+
+
+
+    [2013-07-15 08:44:42 CEST] XMPPSendPack: Syncing with janwxmpp
+    recv: resource vanished (Connection reset by peer)
+    recrvre:ec cvrv:e: s roreuesrsocoueur rcvceae n vivasanhnieisdsh he(edCd o (n(CnCoeoncnntneiecoctnti ioronen s reretes sebetyt   bpbyey e prpe)ee
+    err))
+
+    fatal: Could not read from remote repository.
+
+    Please make sure you have the correct access rights
+    and the repository exists.
+    [2013-07-15 08:46:42 CEST] XMPPSendPack: Unable to download files from your other devices.
+    [2013-07-15 08:46:42 CEST] XMPPSendPack: Syncing with janwxmpp
+    fatal: Could not read from remote repository.
+
+    Please make sure you have the correct access rights
+    and the repository exists.
+    [2013-07-15 08:48:42 CEST] XMPPSendPack: Unable to download files from your other devices.

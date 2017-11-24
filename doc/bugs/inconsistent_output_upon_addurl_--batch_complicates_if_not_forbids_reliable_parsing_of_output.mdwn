@@ -1,0 +1,24 @@
+### Please describe the problem.
+
+if using addurl in --batch mode, there is no --json formatting and text output is somewhat inconsistent.  It might include "downloading ..." with 'ok' on a separate line, possibly with a msg on recording state in git, or within the same line report 'ok', or 'failed' in upcoming lines.  This complicates parsing of such output to verify correct operation for a given addurl pair
+
+[[!format sh """
+
+$> echo 'http://127.0.0.1:33369/about.txt about.txt' | git -c receive.autogc=false annex addurl --with-files --batch --debug 2>/dev/null
+addurl about.txt (downloading http://127.0.0.1:33369/about.txt ...)                                                                     
+ok
+(recording state in git...)
+
+$> echo 'http://127.0.0.1:33369/about.txt about.txt' | git -c receive.autogc=false annex addurl --with-files --batch --debug 2>/dev/null
+addurl about.txt ok
+
+$> echo 'http://127.0.0.1:33369/about.stxt about.txt' | git -c receive.autogc=false annex addurl --with-files --batch --debug 2>/dev/null 
+addurl about.txt 
+failed
+
+"""]]
+
+[[!meta author=yoh]]
+
+> I've made --json work for addurl; I feel that's the way to go for parsing
+> its output. [[done]] --[[Joey]]

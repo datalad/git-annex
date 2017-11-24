@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="ooooh"
+ date="2014-07-16T22:21:36Z"
+ content="""
+Thank *you* for taking the time to figure that out!
+ 
+I agree on moving the .vbs files. I have done so. (Well, you have to run the git-annex-uninstall.exe to remove the old ones, but that shouldn't matter.)
+Testing of an autobuild would be appreciated.
+"""]]

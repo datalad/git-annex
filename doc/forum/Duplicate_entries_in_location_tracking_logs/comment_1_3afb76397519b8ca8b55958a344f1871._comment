@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.112"
+ subject="comment 1"
+ date="2014-08-03T18:59:58Z"
+ content="""
+This is perfectly normal. The next time that file in the git-annex branch is updated for any reason, git-annex will automatically compress the two entries down to a single one. In the meantime, it has no difficulty working out which entry is more recent. This is basically why it's called a log file. ;)
+
+It would be possible to make the union merge code compress as it merges, but this would slow down union merging some, and make it a more conceptually complicated operation. Also, whether the old entry is present in the file or not, git will be storing a copy of that old entry, so it doesn't actually tend to make the git repository any larger. For more on this, see <https://joeyh.name/blog/entry/databranches/>
+"""]]

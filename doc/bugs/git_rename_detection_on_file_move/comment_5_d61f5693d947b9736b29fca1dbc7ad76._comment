@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="praet"
+ ip="81.242.56.203"
+ subject="comment 5"
+ date="2011-03-21T19:58:34Z"
+ content="""
+In the meantime, would it be acceptable to split the pre-commit hook
+into two discrete parts?
+
+This would allow to (if preferred) defer \"git annex fix\" until
+post-commit while still keeping the safety net for unlocked files.
+"""]]

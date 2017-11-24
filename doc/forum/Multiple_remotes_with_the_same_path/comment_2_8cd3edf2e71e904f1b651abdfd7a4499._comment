@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="grawity@2ea26be48562f66fcb9b66307da72b1e2e37453f"
+ nickname="grawity"
+ subject="comment 2"
+ date="2016-02-29T17:25:17Z"
+ content="""
+Hmm, I still think that avoiding duplicating uuids would be smarter behavior, but the host symlinks will do just fine. Thanks for the suggestion.
+"""]]

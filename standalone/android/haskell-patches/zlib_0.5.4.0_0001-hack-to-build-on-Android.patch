@@ -1,0 +1,35 @@
+From 63d07ae4a1e3b77cbe023364599f7c2c3e853d5f Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Thu, 28 Feb 2013 23:40:57 -0400
+Subject: [PATCH] hack to build on Android
+
+---
+ Codec/Compression/Zlib/Stream.hsc |    4 ++--
+ zlib.cabal                        |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/Codec/Compression/Zlib/Stream.hsc b/Codec/Compression/Zlib/Stream.hsc
+index fe851e6..c6168f4 100644
+--- a/Codec/Compression/Zlib/Stream.hsc
++++ b/Codec/Compression/Zlib/Stream.hsc
+@@ -921,7 +921,7 @@ foreign import ccall unsafe "zlib.h inflateInit2_"
+ 
+ c_inflateInit2 :: StreamState -> CInt -> IO CInt
+ c_inflateInit2 z n =
+-  withCAString #{const_str ZLIB_VERSION} $ \versionStr ->
++  withCAString "1.2.5" $ \versionStr ->
+     c_inflateInit2_ z n versionStr (#{const sizeof(z_stream)} :: CInt)
+ 
+ foreign import ccall unsafe "zlib.h inflate"
+@@ -940,7 +940,7 @@ foreign import ccall unsafe "zlib.h deflateInit2_"
+ c_deflateInit2 :: StreamState
+                -> CInt -> CInt -> CInt -> CInt -> CInt -> IO CInt
+ c_deflateInit2 z a b c d e =
+-  withCAString #{const_str ZLIB_VERSION} $ \versionStr ->
++  withCAString "1.2.5" $ \versionStr ->
+     c_deflateInit2_ z a b c d e versionStr (#{const sizeof(z_stream)} :: CInt)
+ 
+ foreign import ccall unsafe "zlib.h deflateSetDictionary"
+-- 
+1.7.10.4
+

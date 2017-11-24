@@ -1,0 +1,22 @@
+This is work in progress, since there is now a [[special_remotes/hook]] for users to plug in whatever they want as a remote, here's my recipe for using tahoe-lafs as a remote, this is a copy and paste the relavent section from my .git/config file
+
+        tahoe-store-hook = tahoe put $ANNEX_FILE tahoe:$ANNEX_KEY
+        tahoe-retrieve-hook = tahoe get tahoe:$ANNEX_KEY $ANNEX_FILE
+        tahoe-remove-hook = tahoe rm tahoe:$ANNEX_KEY
+        tahoe-checkpresent-hook = tahoe ls tahoe:$ANNEX_KEY 2>&1 || echo FAIL
+
+Where `tahoe:` is a tahoe-lafs alias, ideally you should create a new alias (DIR-CAP or whatever the terminolgy is) to store your files, I just used the default `tahoe:` alias for testing.
+
+The only quirk I've noticed is this...
+
+<pre>
+$ git annex whereis .
+whereis frink.jar (2 copies) 
+  	084603a8-7243-11e0-b1f5-83102bcd7953  -- here (testtest)
+   	1d1bc312-7243-11e0-a9ce-5f10c0ce9b0a
+ok
+</pre>
+
+1d1bc312-7243-11e0-a9ce-5f10c0ce9b0a is my [[!google tahoe-lafs]] remote, but there is no label/description on it. The checkpresent-hook was a little confusing when I was setting it up, I'm currently unsure if I am doing the right thing or not with my hook. My get and put commands are a little verbose for now, i might redirect it to /dev/null once I am happier with the overall performance/behaviour my setup.
+
+Other than the quirks above, I am able to put and get files from my tahoe-lafs remote. The only thing that I have not figured out is how to "remove a file" on the remote to free up space on the remote.

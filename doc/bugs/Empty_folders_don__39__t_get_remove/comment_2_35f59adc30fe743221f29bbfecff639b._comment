@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="jgoerzen"
+ subject="Experienced this"
+ date="2016-06-14T22:08:43Z"
+ content="""
+Hi,
+
+I experienced this just now.  Have a git-annex assistant repo set up (so using direct mode).
+
+On one machine, I mv'd entire directories out of the git-annex repo.
+
+The other machine saw the files deleted, but the directories remained.
+
+On the machine on which I mv'd directories out, git-annex actually re-created some of them with symlinks to now-nonexistant hashes!  I have no idea why it did that.
+"""]]

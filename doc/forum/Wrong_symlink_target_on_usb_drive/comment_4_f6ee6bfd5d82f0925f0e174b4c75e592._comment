@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="pixunil"
+ subject="git config"
+ date="2016-05-10T17:59:10Z"
+ content="""
+```
+[core]
+	repositoryformatversion = 0
+	filemode = false
+	bare = false
+	logallrefupdates = true
+	symlinks = true
+[annex]
+	uuid = ebd16ddb-548c-4078-b35e-087132523924
+	crippledfilesystem = true
+	version = 6
+[filter \"annex\"]
+	smudge = git-annex smudge %f
+	clean = git-annex smudge --clean %f
+# remote and user omitted
+```
+
+Gotcha! `core.symlinks` is `true`!
+I set it to `false` and running `unlock` works fine, but after `lock` the file contents gets replaced with the two digits directories (not the three digits directories which are the place where the object is saved). Also, I can't unlock the file afterwards anymore.
+
+However, I would be fine if symlinks work fine on other file system (as mentioned, would be great for saving space and have the access to the files) or other method.
+"""]]

@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlEXAlu8qKv_FHYOv-uEohdGgMY_Lw-Ges"
+ nickname="Jonas"
+ subject="Just happened for me as well."
+ date="2013-11-12T08:10:56Z"
+ content="""
+This was the first search result when I googled the error message, I'm not sure what has happened (or if it is a problem since I don't change my files that often).
+
+git-annex version: 4.20131101
+
+Also running git annex with one ssh remote ( laptop1 & laptop2 synching through a ssh remote server ).
+
+Got a bunch of 
+    error: refs/synced/dbb70cea-4b83-416f-93af-e59082c4d633/git-annex does not point to a valid object!
+    error: refs/synced/dbb70cea-4b83-416f-93af-e59082c4d633/master does not point to a valid object!
+    error: refs/synced/dbb70cea-4b83-416f-93af-e59082c4d633/git-annex does not point to a valid object!
+    error: refs/synced/dbb70cea-4b83-416f-93af-e59082c4d633/master does not point to a valid object!
+when I tried a manual git annex sync, and noticed that I had a bunch of those in the log in the webapp as well... 
+
+The gui doesn't show that anything is wrong, and looking at the log it seems that things are atleast uploading
+
+    [2013-11-12 09:05:46 CET] Committer: Committing changes to git
+    [2013-11-12 09:05:46 CET] Pusher: Syncing with born 
+    error: refs/synced/dbb70cea-4b83-416f-93af-e59082c4d633/git-annex does not point to a valid object!
+    error: refs/synced/dbb70cea-4b83-416f-93af-e59082c4d633/master does not point to a valid object!
+    Everything up-to-date
+
+    FILE
+
+       32768  42%    0.00kB/s    0:00:00  
+       76972 100%   42.16MB/s    0:00:00 (xfer#1, to-check=0/1)
+
+    sent 77056 bytes  received 31 bytes  51391.33 bytes/sec
+    total size is 76972  speedup is 1.00
+    [2013-11-12 09:05:48 CET] Transferrer: Uploaded FILE
+    [2013-11-12 09:05:48 CET] Pusher: Syncing with born 
+    error: refs/synced/dbb70cea-4b83-416f-93af-e59082c4d633/git-annex does not point to a valid object!
+    error: refs/synced/dbb70cea-4b83-416f-93af-e59082c4d633/master does not point to a valid object!
+    error: refs/synced/dbb70cea-4b83-416f-93af-e59082c4d633/git-annex does not point to a valid object!
+    error: refs/synced/dbb70cea-4b83-416f-93af-e59082c4d633/master does not point to a valid object!
+    To ssh://me@born/annex
+      54e04cf..333cf10  git-annex -> synced/git-annex
+"""]]

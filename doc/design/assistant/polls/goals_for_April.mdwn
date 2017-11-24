@@ -1,0 +1,17 @@
+What should I work on in April? I expect I could get perhaps two of these
+features done in a month if I'm lucky. I have only 3 more funded months,
+and parts of one will be spent working on porting to Windows, so choose wisely!
+--[[Joey]]
+
+[[!poll open=yes expandable=yes 4 "upload and download rate limiting" 15 "get webapp working on Android" 5 "deltas: speed up syncing modified versions of existing files" 8 "encrypted git remotes using git-remote-gcrypt" 0 "add support for more cloud storage remotes" 19 "don't work on features, work on making it easier to install and use" 2 "Handle duplicate files" 6 "direct mode (aka real files instead of symlinks) [already done --joey]" 3 "start windows port now"]]
+
+References:
+
+* [[rate_limiting]]
+* [[Android]]
+* [[deltas]] to speed up syncing modified files (at least for remotes using rsync)
+* [[encrypted_git_remotes]]
+* [[more_cloud_providers]] (OpenStack Swift, Owncloud, Google drive,
+  Dropbox, Mediafire, nimbus.io, Mega, etc.)
+* [[old poll on "what is preventing me from using git-annex assistant"|what_is_preventing_me_from_using_git-annex_assistant]]
+  (many of the items on it should be fixed now, but I have plenty of bug reports to chew on still)

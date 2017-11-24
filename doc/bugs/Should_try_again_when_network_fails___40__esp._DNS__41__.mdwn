@@ -1,0 +1,50 @@
+### Please describe the problem.
+
+If you have a flaky connection big uploads and downloads will fail. git-annex should try again few times.
+
+This is an example of failed download.
+
+[[!format sh """
+$ git annex get --not --in here
+get File1.bin (from s3...) (gpg) 
+You need a passphrase to unlock the secret key for
+user: "Gioele"
+4096-bit RSA key, ....
+
+gpg: gpg-agent is not available in this session
+
+  ErrorMisc "<socket: 14>: hGetBuf: resource vanished (Connection reset by peer)"
+                        
+  Unable to access these remotes: s3
+
+  Try making some of these repositories available:
+        331fa184-799d-4511-1725-ef2a17ace8b4 -- s3
+        c2a0cfa0-8871-9721-9b81-5649281fabdc -- other
+failed
+get File2.bin (from s3...) 
+
+  Unable to access these remotes: s3
+
+  Try making some of these repositories available:
+        331fa184-799d-4511-1725-ef2a17ace8b4 -- s3
+        c2a0cfa0-8871-9721-9b81-5649281fabdc -- other
+failed
+git-annex: get: 2 failed
+"""]]
+
+This is especially annoying when the DNS is out of order for a few seconds every now and then. In such cases, git-annex will complain, skip very fast to the next file, and repeat this process until it runs out of files. In the end it will have uploaded or downloaded very few files.
+
+Please not that it may not possible to write a simple shell loop to try again as the are GPG passwords to be entered.
+
+Git-annex should try again to upload or download a file in case something goes wrong.
+
+### What version of git-annex are you using? On what operating system?
+
+    git-annex version: 4.20130709.1
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
+    local repository version: unknown
+    default repository version: 3
+    supported repository versions: 3 4
+    upgrade supported from repository versions: 0 1 2
+
+Ubuntu 12.04.2 LTS

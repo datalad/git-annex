@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 2"
+ date="2013-08-24T18:56:11Z"
+ content="""
+`git annex whereis` does not show dead repositories. 
+
+Anyway Justin is of course right: Provided the assistant is not running in a repository, the repository is just a collection of files in a directory, and can be moved around, tarred up, untarred, etc just like any other repository. If the assistant is running it may become unhappy if its repository vanishes out from underneath it.
+"""]]

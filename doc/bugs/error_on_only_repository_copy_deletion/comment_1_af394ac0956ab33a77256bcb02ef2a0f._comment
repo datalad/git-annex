@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-04-23T16:39:08Z"
+ content="""
+Do you still have a `~/annex` or `~/Desktop/annex`? What's in there?
+
+Also, please show me the content of your `~/.config/git-annex/autostart` file.
+
+The only bug I have been able to track down is that it fails to remove the repository from the autostart file, and so if the repository directory still exists, this will happen. I've fixed it to properly remove the repository from the file, but hesitate to close this bug as I don't understand how the repository directory could still exist after it's supposed to be deleted. 
+
+(When I try, it does get deleted, and starting the webapp again allows starting over with a new repository.)
+"""]]

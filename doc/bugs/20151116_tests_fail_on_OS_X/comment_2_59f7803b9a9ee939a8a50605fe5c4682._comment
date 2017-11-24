@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-12-06T20:02:49Z"
+ content="""
+Ok, this involves where the test suite is run.
+The addurl test adds `file://`pwd`/somefile`, and that will create a file
+with a name like `_home_you_sub_dir_path_here_somefile`. Which can easily
+exceed filename length limits of 255 bytes.
+
+There was indeed a reversion in addurl's handling of that.
+"""]]

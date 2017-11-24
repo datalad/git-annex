@@ -1,0 +1,64 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawln3ckqKx0x_xDZMYwa9Q1bn4I06oWjkog"
+ nickname="Michael"
+ subject="I just reproduced this with the latest version"
+ date="2013-08-11T03:17:11Z"
+ content="""
+At some point during a large copy, there's an ever increasing number of pipes in /proc/git-annex-pid/fd
+As soon as it hits the limit (1023 in my case), copies start failing
+
+    etc
+    r-x------ 1 michael michael 64 Aug 10 20:14 851 -> pipe:[2250609]
+    l-wx------ 1 michael michael 64 Aug 10 20:14 852 -> pipe:[2251549]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 853 -> pipe:[2251550]
+    l-wx------ 1 michael michael 64 Aug 10 20:14 854 -> pipe:[2250612]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 855 -> pipe:[2250613]
+    l-wx------ 1 michael michael 64 Aug 10 20:14 856 -> pipe:[2246639]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 857 -> pipe:[2246640]
+    l-wx------ 1 michael michael 64 Aug 10 20:14 858 -> pipe:[2246642]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 859 -> pipe:[2246643]
+    l-wx------ 1 michael michael 64 Aug 10 20:13 86 -> pipe:[2241378]
+    l-wx------ 1 michael michael 64 Aug 10 20:14 860 -> pipe:[2246645]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 861 -> pipe:[2246646]
+    l-wx------ 1 michael michael 64 Aug 10 20:14 862 -> pipe:[2246648]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 863 -> pipe:[2246649]
+    l-wx------ 1 michael michael 64 Aug 10 20:14 864 -> pipe:[2246653]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 865 -> pipe:[2246654]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 866 -> pipe:[2249407]
+    l-wx------ 1 michael michael 64 Aug 10 20:14 867 -> pipe:[2251789]
+    l-wx------ 1 michael michael 64 Aug 10 20:14 868 -> pipe:[2250627]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 869 -> pipe:[2250628]
+    lr-x------ 1 michael michael 64 Aug 10 20:13 87 -> pipe:[2241379]
+    l-wx------ 1 michael michael 64 Aug 10 20:14 870 -> pipe:[2251778]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 871 -> pipe:[2251779]
+    l-wx------ 1 michael michael 64 Aug 10 20:14 872 -> pipe:[2251781]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 873 -> pipe:[2251782]
+    l-wx------ 1 michael michael 64 Aug 10 20:14 874 -> pipe:[2250635]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 875 -> pipe:[2250636]
+    l-wx------ 1 michael michael 64 Aug 10 20:14 876 -> pipe:[2251575]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 877 -> pipe:[2251576]
+    l-wx------ 1 michael michael 64 Aug 10 20:14 878 -> pipe:[2251785]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 879 -> pipe:[2251786]
+    l-wx------ 1 michael michael 64 Aug 10 20:13 88 -> pipe:[2247853]
+    l-wx------ 1 michael michael 64 Aug 10 20:14 880 -> pipe:[2249430]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 881 -> pipe:[2249431]
+    l-wx------ 1 michael michael 64 Aug 10 20:14 882 -> pipe:[2251581]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 883 -> pipe:[2251582]
+    l-wx------ 1 michael michael 64 Aug 10 20:14 884 -> pipe:[2250653]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 885 -> pipe:[2250654]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 886 -> pipe:[2251790]
+    l-wx------ 1 michael michael 64 Aug 10 20:14 887 -> pipe:[2250670]
+    l-wx------ 1 michael michael 64 Aug 10 20:14 888 -> pipe:[2250663]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 889 -> pipe:[2250664]
+    lr-x------ 1 michael michael 64 Aug 10 20:13 89 -> pipe:[2247854]
+    l-wx------ 1 michael michael 64 Aug 10 20:14 890 -> pipe:[2250668]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 891 -> pipe:[2250669]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 892 -> pipe:[2250671]
+    l-wx------ 1 michael michael 64 Aug 10 20:14 894 -> pipe:[2251601]
+    lr-x------ 1 michael michael 64 Aug 10 20:14 895 -> pipe:[2251602]
+    lr-x------ 1 michael michael 64 Aug 10 20:13 9 -> pipe:[2241268]
+    lr-x------ 1 michael michael 64 Aug 10 20:13 90 -> pipe:[2242273]
+    l-wx------ 1 michael michael 64 Aug 10 20:13 91 -> pipe:[2245776]
+    etc
+
+"""]]

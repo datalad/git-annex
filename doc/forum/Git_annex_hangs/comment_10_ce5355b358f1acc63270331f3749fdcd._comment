@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="mario"
+ avatar="http://cdn.libravatar.org/avatar/4c63b0935789d29210d0bd8cad8d7ac7"
+ subject="p.s."
+ date="2017-05-17T14:34:40Z"
+ content="""
+Actually the situation is even more complex.
+
+\"The server\" where my repo is stored are actually 4 servers for load balancing that share a single file system.
+
+I just found out that on one of the servers the were still some git-annex-shell processes running. Probably the move command with -J10 logged in on different servers; maybe this confused git-annex.
+
+Now, I logged-in on all four servers and killed any remaining processes. Still the problem persists.
+
+    git-annex info --debug
+    [2017-05-17 16:29:07.197350961] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+    [2017-05-17 16:29:07.216435634] process done ExitSuccess
+    [2017-05-17 16:29:07.216539092] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2017-05-17 16:29:07.2214318] process done ExitSuccess
+    [2017-05-17 16:29:07.2220868] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..76cf27fbf3697af8843ddb82f1fffde35aaba0b2\",\"--pretty=%H\",\"-n1\"]
+    [2017-05-17 16:29:07.23077964] process done ExitSuccess
+
+What's interesting is that these killing actions apparently have changed the hash number on which the hang happens (76cf..). What I also did was git-annex sync at another host, this actually seemed to work. Maybe this changed the hash.. I'm not entirely sure..
+
+"""]]

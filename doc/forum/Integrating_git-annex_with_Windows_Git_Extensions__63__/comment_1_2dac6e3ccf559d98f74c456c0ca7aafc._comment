@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="browneej@96fb43ae83ff25c968e65939805b60f3e42f1e06"
+ nickname="browneej"
+ subject="git-annex on windows additional"
+ date="2016-05-10T23:26:48Z"
+ content="""
+PS Program Files (x86)\Git\cmd did get added to the path during install, but git-annex.cmd simply ran 'git annex %*' at the cli.
+"""]]

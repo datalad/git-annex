@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 1"
+ date="2015-01-06T17:41:45Z"
+ content="""
+The encrypted content size is not constant, and not known to git-annex.
+
+The only git-annex remote that checks the size in its checkpresent implementation is the web special remote, precisely because it's never encrypted. Also because files on the web change content from time to time and so that needs to be detected.
+
+What would make sense is to extend the reply to `CHECKPRESENT-SUCCESS Key [size]` or perhaps `CHECKPRESENT-SIZE Key size`. git-annex can then compare the value with the key's known size, if any. If the key is encrypted, it would need to skip this check.
+
+Note that chunk keys currently have their keySize inherited from the parent key, and the keyChunkSize of each chunk key is set to the key size. The last chunk of a key will typically be shorter than its keyChunkSize. That would need to be cleaned up.
+"""]]

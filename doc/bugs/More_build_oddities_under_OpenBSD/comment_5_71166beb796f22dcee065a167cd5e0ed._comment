@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkzwmw_zyMpZC9_J7ey--woeYPoZkAOgGw"
+ nickname="dxtrish"
+ subject="comment 5"
+ date="2014-02-08T14:46:10Z"
+ content="""
+Okay, so I did work around this with an ugly hack (I'm not even sure it will work properly) so I now have XMPP support, according to git-annex.
+
+But.. When I try to play around with XMPP I get:
+
+    setSocketOption: invalid argument (Invalid argument)
+"""]]

@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-11-30T20:00:20Z"
+ content="""
+I notice you also filed the bug report
+[[bugs/Unable_to_take_transfer_lock]], where you said something about having
+copied the repository over SMB using `cp` and some kind of OSX copy and
+paste. 
+
+So, if you did that, it seems likely that you have 2 git repositories with
+the same annex.uuid setting. In fact this is confirmed by [another bug
+report](http://git-annex.branchable.com/bugs/remote_repo_marked_as___34__here__34__/) you filed.
+
+Since git-annex expects each repository to have a unique annex.uuid, this is
+going to confuse it badly. Don't do that. Use `git clone` to make a clone of
+a git repository.
+"""]]

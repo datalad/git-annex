@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="konubinix"
+ ip="82.243.233.186"
+ subject="And with a lots of mails?"
+ date="2013-08-27T06:44:56Z"
+ content="""
+Hi,
+
+I have a question quite similar, but for a different purpose. I use OfflineImap for imap synchronisation, but in my current situation, I travel a lot between two places: one connected to the Internet and the other not connected.
+
+When I am connected to the Internet, I may synchronize mails, then I rsync my ~/Mail directory to a usb key so that I have access to them in the place without connection. The mails filenames may be changed as Joeyh mentioned while I read or delete them. I rsync them back to the usb key before going back to the place with Internet connection, where the OfflineImap synchronization may occur.
+
+This solution, with rsynced key, works well. But I would love a history of what was done with file names and may be able to retrieve an old mail.
+
+I figured out that that the git annex was a really good solution for that.
+
+The main drawback from my point of view is that I have around 100 000 mails (some would say that's \"[Not much mail](http://notmuchmail.org/)\"), and I am afraid that git will be quite slow with that amount of files.
+
+Did anyone experience an annexed repository with so many items it in?
+
+Best
+"""]]

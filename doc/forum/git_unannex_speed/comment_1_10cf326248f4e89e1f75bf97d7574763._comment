@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 1"
+ date="2012-08-02T16:58:41Z"
+ content="""
+It currently commits once per file, which is slow. `Command/Unannex.hs` explains why this is necessary. If I think of a way to avoid that, I will.
+"""]]

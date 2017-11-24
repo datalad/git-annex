@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 1"
+ date="2013-11-22T16:37:36Z"
+ content="""
+git-annex is a native binary, and is currently only being built for arm android.
+
+Is Android on x86 a thing used on real-world hardware? I have only seen it in the context of a developer's test environment.
+
+The instructions for building git-annex from source for Android should work on x86. The ghc-android build would need to be tweaked to build a cross compiler targeting that architecture. This can be done by editing settings near the top of ghc-android's `build.sh`.
+
+I am going to move this from bugs/ to todo/ after posting this comment, because it is certiantly not a bug, but a wishlist item at best.
+"""]]

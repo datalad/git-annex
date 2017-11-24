@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 13"
+ date="2013-12-03T20:23:43Z"
+ content="""
+Ok, that explains the weird results, because I get the same crazy data dumped when I try eg `git show git-annex:uuid.log @{0}` in a repository that is completely ok.
+
+The @{0} causes git show to show some commit. Not the commit that changed uuid.log however. So it first shows the uuid.log (always the most recent version), and then some random commit.
+
+This will work:
+
+<pre>
+git clone myrepo myrepo.tmp
+cd myrepo.tmp
+git checkout git-annex
+mkdir logs
+for r in $(git log --pretty='%H' uuid.log); do git show $r > logs/$r; done
+git log uuid.log > logs/gitlog
+</pre>
+"""]]

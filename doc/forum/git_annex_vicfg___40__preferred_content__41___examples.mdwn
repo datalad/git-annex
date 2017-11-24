@@ -1,0 +1,37 @@
+My problem: I want to free up some disk space by doing `git annex drop FOO`, but then when I do `git annex add BAR; git annex sync --content`, FOO reappears.
+
+Looking into the man pages, I need to set up `git annex vicfg` to make `sync --content` ignore (exclude) FOO.
+
+I am overwhelmed by the configuration file and would just like to see a minimal complete example configuration file that does what I want. In the long run I probably want to use options like "groupwanted" and such, but am not sure what a "group" is exactly.
+
+Grepping for 'exclude', my config file has this already in it:
+
+```
+# Standard preferred contents
+# (Used by wanted or groupwanted expressions containing "standard")
+# (For reference only; built-in and cannot be changed!)
+# standard client = (include=* and ((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1)))) or approxlackingcopies=1
+```
+
+but I am not sure how to go about it. For one, the comment hints that I need to use a secondary `wanted` or `groupwanted` expression to reference the `standard` keyword to actually use it, but I am just confused by all of these interlocking components.
+
+Also, I see stuff like this:
+
+```
+# Repository preferred contents
+# (Set to "standard" to use a repository's group's preferred contents)
+# (for web)
+#wanted 00000000-0000-0000-0000-000000000001 = 
+# (for bittorrent)
+#wanted 00000000-0000-0000-0000-000000000002 = 
+# (for l@k0:/dev/shm/annex)
+#wanted 56e6081b-4282-4f07-b53c-9042240cd75e = 
+# (for k0)
+#wanted a71d805d-df77-42e7-97b0-ba7686c05083 = 
+# (for l@m0:/mnt/a/annex.git [origin])
+#wanted c5c012cc-2080-481f-81bc-7f449f33490b =                                                                                                                                     
+```
+
+and am confused by these UUIDs. Where do these UUIDs come from? Am I supposed to use UUIDs?
+
+If there is a link or another doc I missed, please point me in the right direction.

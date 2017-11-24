@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkAUMhKOSkh9JaBA6xst3XxQIIsDEq5Zd4"
+ nickname="Ovidiu"
+ subject="spoke too soon"
+ date="2014-05-09T13:23:52Z"
+ content="""
+Stuck in a loop, now with every restart of git-annex it downloads the update and then uploads it to all my repositories again:
+http://screencast.com/t/Ow7SlPVaS68 
+
+And then it says: 
+ Finished upgrading git-annex to version 5.20140420-ga25b8bb 
+BUT that is the OLD version not the new one :-/
+
+NEXT TRY:
+
+killed all processes of git and git-annex, restart. 
+
+Was greeted by: 
+ An upgrade of git-annex is available.
+(version 5.20140421)
+
+Klicked the Upgrade button.
+Nothing happens, except that the upgrade notice disappeared :-/
+"""]]

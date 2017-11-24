@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="etset"
+ ip="82.155.112.106"
+ subject="comment 9"
+ date="2013-12-19T12:45:06Z"
+ content="""
+I seem to have the same problem. I have two repositories added as ssh remotes to one another with the assistant. `git-annex sync` works on one of these, but not on the other, failing with the same error as above. Also, running `git-annex sync --debug` results in the same output as in Remy's above post. `git-annex repair` doesn't find any problem. Running `git branch` on both shows that neither repository has an `annex/direct/master` branch, and both have `master` checked out. 
+
+One of the repositories has the current version from debian wheezy-backports, 4.20131106~bpo70+1, installed, and the other one had 5.20131130 from unstable as of when I discovered the problem (I upgraded it today, but the problem persists). I'm not sure, but I think those were the versions I used to create the repositores, too.
+
+Trying to reproduce the problem, I created a new repository via assistant on both computers, the one running 4.20131106~bpo70+1 and the one recently upgraded to 5.20131213. On the 5.* one, a `annex/direct/master` branch was created and checked out, but not on the 4.* one. However, adding each other as ssh remotes with the assistant makes the `annex/direct/master` on 5.* disappear and `master` to be checked out on both.
+
+Is there anything I can do to fix the repositories? Is there any other info I could provide to help with this?
+"""]]

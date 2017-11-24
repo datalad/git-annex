@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="mennucc1@6758d6a3817a0a6b29e8adbdb068c5ba35f6992b"
+ nickname="mennucc1"
+ subject="hack"
+ date="2015-07-18T09:16:03Z"
+ content="""
+hi  Joey, thanks for your interest;
+
+I created a script to address this problem
+
+<http://mennucc1.debian.net/git-annex/git-annex_de-re-link_hash-E>
+
+it can relink keys that are not hardlinked anymore (-L option) ; it can use an unsed key to recreate a missin key (-R option) ; it can also drop redundant keys (-D option)
+
+a.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://openid.fmarier.org/"
+ nickname="fmarier"
+ subject="Make sure your network is correctly set up in the first place!"
+ date="2013-05-12T08:37:38Z"
+ content="""
+It turns out that my internal network had badly broken IPv6 configs between the boxes. That was interfering with the multicast packets but not with anything else since all of my other internal traffic is over IPv4.
+
+Getting rid of these static IPv6 addresses has solved my problem. Local pairing is now working as advertised :)
+"""]]

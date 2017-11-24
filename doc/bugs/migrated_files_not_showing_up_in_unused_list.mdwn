@@ -1,0 +1,62 @@
+Word summary: After migrating from SHA256 to SHA256E I still have a ton of SHA256 files around that aren't being found by unused.
+
+Command outputs (see, specifically, the output of status showing number of SHA256 and SHA256E files):
+
+
+    greg@eeepc:/mnt/blackbox/Media/Pictures/Photos$ less .gitattributes
+    * annex.backend=SHA256E
+
+    greg@eeepc:/mnt/blackbox/Media/Pictures/Photos$ git-annex migrate .
+    (Recording state in git...)
+
+    greg@eeepc:/mnt/blackbox/Media/Pictures/Photos$ git-annex unused
+    unused . (checking for unused data...) (checking master...) (checking rose/master...) (checking x200s/master...)
+      Some partially transferred data exists in temporary files:
+        NUMBER  KEY
+        1       SHA256E-s15766010--8132a02a8b245eb9842e89c5e696df4e9c82d676f8dec3c6bb96892c19f99d51.jpg
+
+      To remove unwanted data: git-annex dropunused NUMBER
+
+    ok
+    (Recording state in git...)
+
+    greg@eeepc:/mnt/blackbox/Media/Pictures/Photos$ git-annex status
+    supported backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
+    supported remote types: git S3 bup directory rsync web hook
+    trusted repositories: 1
+            c0e4106e-2631-11e2-9749-1bfa37a61069 -- rose
+    semitrusted repositories: 3
+            00000000-0000-0000-0000-000000000001 -- web
+            9bd4077e-196c-11e2-9cc9-9faafb3e34ee -- x200s
+            c69d6fcc-18d1-11e2-9487-2fe6dbf0516b -- here (photos on eeepc)
+    untrusted repositories: 0
+    dead repositories: 1
+            3ebd5ac2-2092-11e2-856a-bb0203cce179 -- Photos on Rose
+    transfers in progress: 
+            downloading 2011/06/30/IMG_8180.jpg
+     from rose
+    available local disk space: 2 terabytes (+1 megabyte reserved)
+    temporary directory size: 9 megabytes (clean up with git-annex unused)
+    local annex keys: 36210
+    local annex size: 136 gigabytes
+    known annex keys: 23388
+    known annex size: 102 gigabytes
+    bloom filter size: 16 mebibytes (7.2% full)
+    backend usage: 
+            SHA256E: 37453
+            SHA256: 22145
+    (Recording state in git...)
+
+    greg@eeepc:/mnt/blackbox/Media/Pictures/Photos$ apt-cache policy git-annex
+    git-annex:
+      Installed: 3.20121017
+      Candidate: 3.20121017
+      Version table:
+     *** 3.20121017 0
+            600 http://ftp.us.debian.org/debian/ unstable/main i386 Packages
+            100 /var/lib/dpkg/status
+         3.20120629 0
+            650 http://ftp.us.debian.org/debian/ wheezy/main i386 Packages
+
+
+As Joey predicted, this took care of itself over time. Marking as [[bugs/done]].

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawniayrgSdVLUc3c6bf93VbO-_HT4hzxmyo"
+ nickname="Tobias"
+ subject="gitannex-install"
+ date="2013-11-22T07:13:02Z"
+ content="""
+To install and upgrade the prebuilt binary on Linux I use the fantastic [gitannex-install](https://github.com/zerodogg/scriptbucket/blob/master/gitannex-install) script, together with the upgrade alert this is just great.
+"""]]

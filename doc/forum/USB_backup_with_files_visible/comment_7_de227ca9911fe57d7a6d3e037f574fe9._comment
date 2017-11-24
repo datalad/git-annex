@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 7"
+ date="2013-11-03T01:09:16Z"
+ content="""
+You can set it up that way, but the often confusing behavior (including not being able to umount a drive that has the git-annex assistant deamon running in it!) is why the webapp attempt to steer users toward making bare reposotories on USB drives.
+
+If you click on \"Add another repository\" -> \"Removable drive\", you get a bare repository.
+
+If you click on upper-right menu -> \"Add another local repository\" and enter a path, and tell it to combine the repositories, you get a synced non-bare repository, and potentially problems unmounting the drive since you now have 2 assistant daemons running.
+
+I have now added a further link to the nice removable drive path to that second UI path.
+"""]]

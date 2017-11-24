@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlc1og3PqIGudOMkFNrCCNg66vB7s-jLpc"
+ nickname="Paul"
+ subject="can addurl use hashing once the file is downloaded?"
+ date="2012-09-20T21:01:30Z"
+ content="""
+There are resources that I want to add to my annex that are currently available
+via a URL, but it seems like if I add these using `git-annex addurl`, they get
+symlinked to file in the annex/objects directory that starts with `URL-...`,
+instead of the more typical `SHA256-...`, and this does not change even after
+the files are downloaded.
+
+My concern is that I really want to ensure that these files don't change, which
+is the appeal of content-addressable symlinking of normal files (as opposed to
+URL addressable ones).
+
+Would there be a way to automate the injection of hash-based symlinking for
+files that are added via addurl? Sometimes I add a bunch of files via ``addurl
+--fast``, and after I've download them via ``get``, it would be nice to have
+those files have the same level of data integrity as when I download them using
+something outside of git-annex, add them to the annex, and do an ``addurl
+--file`` afterward.
+
+Thanks for all of your hard work!
+
+"""]]

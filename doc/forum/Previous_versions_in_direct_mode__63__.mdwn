@@ -1,0 +1,3 @@
+I am in Windows and therefore forced to use direct mode. After reading for a long while I still have not found a way of "git annex get" previous versions. Is this supported? is it only the last version in the repository?
+
+any chance to use indirect mode in Windows? In theory Windows supports NTFS symlinks, why is this not supported?

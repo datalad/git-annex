@@ -1,0 +1,7 @@
+I am considering using git annex for an existing work project that is getting bloated with compressed tarballs. We have a team of 7, so making the annex invisible to day to day use is important.
+
+Are there any git hooks that will make the process of git checkout/merge etc automatically do a git annex get ..., our do I have to write these myself?
+
+
+
+

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="r@9dd621f83d4900d70d4ed2319f20160749f1343e"
+ nickname="r"
+ subject="How to get deleted files and older versions out of a full backup repository?"
+ date="2015-11-16T21:27:33Z"
+ content="""
+I'm sorry if I have overlooked something obvious, but after playing with a \"simple\" setup (2 desktops and 1 laptop all syncing their ~/annex directory with the assistant/webapp with direct ssh access and XMPP, including one \"full backup\" repository on an ssh server accessible by all) and moving a few directories in and out of ~/annex to verify that it syncs between the clients, the deleted files seem to be present only in the backup repository - simply judging by the size of the repositories on the different machines. However, how can I get them back after deleting them and letting that sync out by the assistant? 
+On the clients, git annex list/log will only print the files still there, not the deleted ones. On the backup repository (which seems to be a bare repository), git annex list/log is mostly empty. The backup repository was automatically created by the webapp on the first client I set up, I only created the (empty) directory and assigned appropriate user ACLs on the ssh server. I have not manually created a (non-bare) git repository there.
+
+Is this a supported/sane configuration for using assistant/webapp? The idea is to have the ~/annex directories behave like Dropbox (simplified point of view), but still be able to get to deleted or old versions of files. I am aware that there is no UI support for this yet, but I understood this to be supported by the \"full backup\" repositories.
+"""]]

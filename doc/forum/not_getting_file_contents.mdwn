@@ -1,0 +1,1 @@
+I have 2 computers successfully exchanging files, but the contexts are incomplete.  Used text files, documents, mp3s as tests. Both computers report in the webapp that they are synched and file names are there.  But file sizes are wrong by 75% less and contents are unusable.  Is there something in the config?  Both machines on LinuxMint 13. 

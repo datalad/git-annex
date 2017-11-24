@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnmF_9CAtfqdZkC4e-_dCX-rK5bqh4RWkw"
+ nickname="Carl"
+ subject="comment 5"
+ date="2015-10-10T18:53:58Z"
+ content="""
+The type of group you have does not change if you have the files accesable from the filenames or not. As long as it is a git remote, that in not bare, or a direct git-annex remote you are good to go. 
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-09-18T18:49:43Z"
+ content="""
+This is using the old hS3 library. So, each chunk is sent using a new http connection. It seems that the connection must be being closed by S3 part way through the upload of a chunk.
+
+It may be that the new aws library somehow avoids this problem. So, a git-annex built with the `s3-aws` branch merged in may help with this bug. OTOH, that new branch makes a single http connection be reused for all the chunks in a file, so it might also make things worse.
+"""]]

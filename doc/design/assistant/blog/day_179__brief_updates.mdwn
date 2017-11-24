@@ -1,0 +1,19 @@
+Not doing significant coding here at LCA2013, but stuff is still happening:
+
+* I'll be giving a talk and demo of git-annex and the assistant tomorrow.
+  Right after a keynote by Tim Berners-Lee! There's no streaming, but
+  a recording will be available later.
+* I've met numerous git-annex users and git-annex curious folk from down
+  under.
+* I had a suggestion that direct mode rename the `.git` directory to
+  something else, to prevent foot-shooting git commands being used.
+  A wrapper around git could be used to run git commands, and limit
+  to safe ones. Under consideration.
+* I finally updated the OSX 10.8.2 build to last week's release.
+  Been having some problems with the autobuilder, but it finally spat out
+  a build. Hopefully this build is good, and it should fix the javascript
+  issues with Safari and the webapp.
+* Ulrik Sverdrup has written <https://github.com/blake2-ppc/git-remote-gcrypt>,
+  which allows using gpg encrypted ssh remotes with git. The same idea
+  could be expanded to other types of remotes, like S3. I'm excited
+  about adding encrypted git remote support to the assistant!

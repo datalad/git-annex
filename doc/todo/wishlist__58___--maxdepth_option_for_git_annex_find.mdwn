@@ -1,0 +1,22 @@
+`git annex find` currently makes for a great way to find which files are already local, and don't need to get `git annex get` gotten; obviously `ls` just shows me all the files in a given directory, disregarding git-annex (and without recursing to subdirectories). I think that adding a '--maxdepth' option to `git annex find` would make it much easier to use at directories high up in the directory structure, since currently `git annex find` recurses all subdirectories necessarily, when I really just want to see whether or not there are git-annex files present from a given directory.
+
+Obviously, since directories themselves are not git-annex objects, there is no way to say whether or not they are "present", but perhaps the most intuitive would be to say whether or not any git-annex files under a given directory are present.
+
+For example, if I have:  
+./  
++-- subdir0/  
+|  +-- file0 (present in local git-annex repo)  
+|  +-- file1 (present in local git-annex repo)  
++-- subdir1/  
+|  +-- file0 (not present in local git-annex repo)  
+|  +-- file1 (not present in local git-annex repo)  
++-- file2 (present in local git-annex repo)  
+
+and I type `git annex find --maxdepth 1 .`, the output might look something like:  
+subdir0/  
+file2  
+
+rather than:  
+subdir0/file0  
+subdir0/file1  
+file2  

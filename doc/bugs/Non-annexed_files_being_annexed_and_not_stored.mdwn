@@ -1,0 +1,18 @@
+### Please describe the problem.
+Somehow in my repo, perhaps since I started using the webapp, some of the files which have been commited plain into git have become annexed and turned into broken symlinks.  However, they are not marked as stored in any repositories, so it is difficult to recover them (they need to be checked out again from git history).
+
+### What steps will reproduce the problem?
+I'm not sure how this happened.
+
+### What version of git-annex are you using? On what operating system?
+I've been using builds of git annex between february and april of 2016, on linux.
+
+### Please provide any additional information below.
+
+It looks like the problem occurred on Sun Apr 10 00:49:27 2016 -0400.  I'm mostly recording here that this problem happened, as a lot is on my backlog atm, but if somebody wanted to let me know what logs to investigate, I plan to still be using this repository into the future.
+
+It looks like the system which caused this problem had a looser largefiles setting than the system which added the files to git.  It looks like it was using the 6.20160229-g37a89cc build.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Git-annex rocks, I am a monthly flatr'r.

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.110"
+ subject="comment 5"
+ date="2013-07-27T20:12:33Z"
+ content="""
+Jeff, AFAIK the 3.20120406 in precise does not include the assistant at all. The Precise PPA is well up-to-date. 
+I don't think git-annex has anyone in Ubuntu updating the package, so it's whatever version is synced periodically from Debian.
+
+(AFAICS, all the problems Jeff had were due to manually creating an indirect mode repository when he expected direct mode.)
+"""]]

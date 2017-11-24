@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-02-07T17:48:05Z"
+ content="""
+These seem to be two separate git repositories and it's only crashing in
+one of them. 
+
+Perhaps annex.pidlock is set in the repository where it works, and not in
+the other repository?
+
+git-annex init probes to see if it can set a lock, and if not, enables
+annex.pidlock. Since 5.20151116.
+"""]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-11-24T14:22:37Z"
+ content="""
+Sure, it would be great to have a special remote supporting the git-lfs
+storage backend. This would let git-annex repos be uploaded to github along
+with the annexed files, which is a nice diversity to have in addition to
+gitlab's support for git-annex.
+
+The API is documented, so it's certianly doable, as an external special
+remote even.
+"""]]

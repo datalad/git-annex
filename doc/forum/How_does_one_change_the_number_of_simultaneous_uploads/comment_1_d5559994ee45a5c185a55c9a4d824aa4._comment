@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="71.80.94.56"
+ subject="comment 1"
+ date="2014-02-07T19:12:10Z"
+ content="""
+This is not currently supported. See [[todo/Slow_transfer_for_a_lot_of_small_files.]]
+
+ You can click on the button next to individual files in the transfer queue to force concurrent transfers.
+
+
+"""]]

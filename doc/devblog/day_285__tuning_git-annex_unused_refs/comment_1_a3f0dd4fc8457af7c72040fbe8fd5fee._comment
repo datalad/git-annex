@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="mailing lists and support sites"
+ date="2015-05-14T20:26:59Z"
+ content="""
+after years subscribing to zillions of them, i have acquired an allergy to mailing lists. it seems that i get this every once in a while: i'm subscribed to a bunch of them and i stop reading and just hit \"d\" on my mail client. :)
+
+i think there are very interesting alternatives, online web forums (yes yes, i know, bear with me) where knowledge is established and shared instead of just having a threaded conversation. i'm thinking of http://ask.debian.net/ or the stackexchange sites. as i [[analysed before|devblog/day_268_stressed_out/#comment-e0814585df0047e6d4e11515aebe1dec]], the forum is the biggest part of this website (and consequently the git-annex source code!), bug tracker coming in second, and the two together forming the majority of disk usage of the git repository.  there are alternative discussion tools like discourse.org that may also be interesting for people wanting to run such a service.
+
+anyways, the ideas of those is to converge on a set of FAQs and knowledge items more than just have random discussion, and force people to reuse existing topics.
+
+if i had more time, i'd probably setup something like this but really, i can only encourage those initiatives at this point. :)
+"""]]

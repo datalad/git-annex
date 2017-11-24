@@ -1,0 +1,7 @@
+If you cannot get a OSX build of git-annex suitable for your computer,
+from eg [[HomeBrew]] or the regular [[OSX]] prebuilt app, you
+can try building git-annex from source on OSX, using haskell's cabal package
+manager.
+
+For general instructions on building git-annex from source see
+[[install/fromsource]]

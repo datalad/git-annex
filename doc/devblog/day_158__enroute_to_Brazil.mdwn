@@ -1,0 +1,10 @@
+Next month the roadmap has me working on [[design/assistant/sshpassword]].
+That will be a nice UI improvement and I'd be very surprised if it takes
+more than a week, which is great.
+
+Getting a jump on it today, investigating using `SSH_ASKPASS`. It seems this
+will even work on Windows! Preliminary design in [[design/assistant/sshpassword]].
+
+Time to get on a plane to a plane to a plane to Brasilia!
+
+[[!meta date="Fri, 25 Apr 2014 16:32:36 -0400"]]

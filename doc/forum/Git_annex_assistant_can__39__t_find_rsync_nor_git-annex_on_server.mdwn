@@ -1,0 +1,14 @@
+Hi, I'm trying to setup git annex assistant (my first time).
+When I add the server (in "transfert" mode, if that matters) I get the following error:
+
+    "Neither rsync nor git-annex are installed on the server. Perhaps you should go install them?"
+
+I manually verified that both rsync and git/git-annex are installed and available from PATH in the "annex" account and all seems to be ok.
+
+Can you suggest a way to get a more specific information on the source of the error?
+
+My first guess was that this is due to the fact that rsync and git-annex are installed in "non-standard locations".  My server run NixOS (http://nixos.org) which has a completely different convention about directory hierarchy from traditional linux/unix OS (that is, no /usr/bin /usr/lib etc.).  However, I tried to "cheat" by manually adding symbolic links into a /usr/bin but this didn't work either, so I might be looking in the wrong direction.
+
+Any suggestion appreciated, thank you in advance,
+
+Marco

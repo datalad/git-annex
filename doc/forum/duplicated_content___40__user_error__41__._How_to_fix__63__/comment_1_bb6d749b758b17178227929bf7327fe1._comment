@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/e65e6d0e-58ba-41de-84cc-1f2ba54cf574"
+ nickname="Mica Semrick"
+ subject="comment 1"
+ date="2014-06-24T04:24:12Z"
+ content="""
+You should first try `git-annex unused` and if that doesn't work just `git-annex drop` the unwanted files.
+"""]]

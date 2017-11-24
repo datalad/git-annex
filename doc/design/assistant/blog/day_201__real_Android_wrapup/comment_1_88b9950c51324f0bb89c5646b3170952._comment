@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="http://ao2.it/"
+ nickname="ao2"
+ subject="Using the Emulator?"
+ date="2013-03-04T13:58:18Z"
+ content="""
+Hi Joey,
+
+while you wait for some actual Android device have you tried the emulator?
+
+I've recently started playing with Android without any physical device, and the emulator is pretty responsive with hardware acceleration on (you need to run an x86 AVD).
+
+Here are some instructions: http://git.ao2.it/android/android-app-development-getting-started.git/blob/HEAD:/android-app-development-getting-started.sh
+
+Also, are you going to use a WebView connecting to the haskell web server for the WebApp?
+
+Ciao,
+   Antonio
+"""]]

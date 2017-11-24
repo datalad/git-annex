@@ -1,0 +1,10 @@
+Add an armel build like the i386ancient build.
+
+The current arm autobuilder doesn't have enough free space for the chroot
+this would need. I need to upgrade its microsd card first, adding
+approximately 5 gb. (A 16 gb card would suffice.)
+
+Now, it would be possible to switch it to only do an ancient build,
+instead of the current modern build. The downside of that is the ancient
+build environment uses debian stable, so it has old versions of git,
+libraries etc, that go into the build. --[[Joey]]

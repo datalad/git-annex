@@ -1,0 +1,12 @@
+Hello,
+
+I have my music git annexed, direct mode. It's about 30k files of 429GB size. Some actions take considerable time (sync, add and of course transfer to/from other repos). During this time I don't hear music because of my player changes files. :-(
+
+When is it a problem when a files changes during git annex operations?
+
+git annex get gives a wrong checksum I guess and you need to re-transfer later.
+
+What about git annex add?
+
+Thx!
+Florian

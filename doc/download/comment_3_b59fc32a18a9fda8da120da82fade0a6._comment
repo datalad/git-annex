@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="jckuester@11e9fceb442172b6db63320bb545797a47a4c103"
+ nickname="jckuester"
+ subject="error during &quot;git clone git://git.kitenet.net/git-annex&quot;"
+ date="2015-11-22T15:38:57Z"
+ content="""
+error: unable to create file doc/bugs/On_Lubuntu_14.04_assistant_fails_to_create_new_setup_or_actually_work___40__fixed_by_regular_lxsession_package_update_from_2014-06-30__41__.mdwn (File name too long)
+fatal: unable to checkout working tree
+"""]]

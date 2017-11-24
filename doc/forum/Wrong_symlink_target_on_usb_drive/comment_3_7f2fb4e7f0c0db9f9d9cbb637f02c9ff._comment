@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-05-10T17:36:53Z"
+ content="""
+I suppose it must have something to do with NTFS, but I can't reproduce it
+on NTFS.. Normally git-annex will refuse to use symlinks on NTFS entirely.
+
+Can you please paste in the whole .git/config file of the repository?
+"""]]

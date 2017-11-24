@@ -1,0 +1,1 @@
+Having it named starting with "Add to ..." would improve its convenience visibility (would even position before "Add to Dropbox" ;) )

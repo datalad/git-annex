@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="grawity@2ea26be48562f66fcb9b66307da72b1e2e37453f"
+ nickname="grawity"
+ subject="comment 2"
+ date="2016-01-05T11:09:07Z"
+ content="""
+Git does have a `core.precomposeUnicode` option for converting NFD to NFC; would that work?
+"""]]

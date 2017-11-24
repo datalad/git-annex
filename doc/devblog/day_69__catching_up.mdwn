@@ -1,0 +1,14 @@
+Still working through thanksgiving backlog. Around 55 messages to go.
+
+Wrote hairy code to automatically fix up bad bare repositories created by
+recent versions of git-annex. Managed to do it with only 1 stat call
+overhead (per local repository). Will probably keep that code in git-annex
+for a year or so, despite the bug only being present for a few weeks,
+because the repositories that need to be fixed might be on removable drives
+that are rarely used.
+
+Various other small bug fixes, including dealing with box.com having
+changed their WebDAV endpoint url.
+
+Spent a while evaluating various key/value storage possibilities. 
+[[bugs/incremental_fsck_should_not_use_sticky_bit]] has the details.

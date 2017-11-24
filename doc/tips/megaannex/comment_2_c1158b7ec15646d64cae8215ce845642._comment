@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkzwmw_zyMpZC9_J7ey--woeYPoZkAOgGw"
+ nickname="dxtrish"
+ subject="comment 2"
+ date="2014-09-07T21:16:09Z"
+ content="""
+Because megaannex apparently isn't working nowadays I have created a compatible program in Go. I think it should handle everything except REMOVE right now.
+
+You can find it on github: https://github.com/dxtr/megaannex-go
+"""]]

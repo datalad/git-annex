@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkq0-zRhubO6kR9f85-5kALszIzxIokTUw"
+ nickname="James"
+ subject="Cloud Service Limitations"
+ date="2012-06-11T02:15:04Z"
+ content="""
+Hey Joey!
+
+I'm not very tech savvy, but here is my question. 
+I think for all cloud service providers, there is an upload limitation on how big one file may be.
+For example, I can't upload a file bigger than 100 MB on box.net. 
+Does this affect git-annex at all? Will git-annex automatically split the file depending on the cloud provider or will I have to create small RAR archives of one large file to upload them?
+
+Thanks!
+James
+"""]]

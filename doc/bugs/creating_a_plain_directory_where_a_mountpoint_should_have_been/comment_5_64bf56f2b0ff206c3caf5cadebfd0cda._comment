@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmTNrhkVQ26GBLaLD5-zNuEiR8syTj4mI8"
+ nickname="Juan"
+ subject="Same happening here"
+ date="2014-07-09T14:45:32Z"
+ content="""
+Any hint about how to stop this from happening again? This time I think I was careful and tried to stop git-annex, however I got ghosts.
+Whats the correct way to unplug the drive?
+
+My scenario is the following, I have two repos on HDD synced with a USB drive. I want to sync them to the USB drive from time to time when I plug it. I want a safe way to unplug drive without getting these ghost directories. 
+
+This time, I entered both directories in the HDD and made a git-annex assistant --stop, but after doing a ps aux | grep git-annex I still see many processes running so I'm not sure if I truly stopped it.
+The webapp gives me the impression of working on a per-repo basis, so I miss having some sort of general feedback about git-annex. Something like: \"at the moment you are syncing repos A and B\" or \"idle\".
+So I never have a clue about whats going on.
+I'm trying to set up this since long time, and I'm a very capable unix guy, and I still have the feeling that I can't trust git-annex.
+I really like the tool but I'm not sure how to use it properly.
+Thanks in advance.
+
+
+"""]]

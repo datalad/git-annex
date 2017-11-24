@@ -1,0 +1,2 @@
+How could I delete and purge a remote? I want to remove all traces of it
+but I can't find out how to achieve this.

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 16"""
+ date="2017-09-29T17:45:59Z"
+ content="""
+You can also use the --fast option to make git-annex use less entropy
+when generating the encryption key. That's a little less secure, but
+probably still secure enough.
+"""]]

@@ -1,0 +1,136 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnbPKLjBONawBd74MKJZo05juCqdsP1jAU"
+ nickname="Ramon"
+ subject="comment 1"
+ date="2015-03-02T01:47:32Z"
+ content="""
+Ooops, the formatting got all messed up. Here it is again:
+
+I am confused by the differences in the time between updates of different
+repositories in the same machines and of the same repository in different
+machines. I am using the assistant (in all machines, 
+'git annex assitant --autostart').
+
+
+
+For instance, I have three machines synced as
+
+A <-> B <-> C
+
+and I have two directories being synced. The configuration (except for
+directory names) is the same and looks like
+
+
+
+    [annex]
+            uuid = something
+            version = 5
+            direct = true
+            autoupgrade = true
+            autocommit = true
+            startupscan = true
+    [remote \"machine_repo\"]
+            url = ssh://xxxxxx/~/repo/
+            fetch = +refs/heads/*:refs/remotes/machine_repo/*
+            annex-uuid = xxxxxxxxxxxxx
+    
+
+
+
+I modify or add a file in one of the directories in A, and it quickly
+(less than 30 seconds) appears in B and shortly after that in C.
+
+In another directory, however, more than 30 minutes can go by without C
+ever changing (even if B gets the change almost immediately). Looking at
+the logs I cannot understand what is happening. This is the case of a
+file, ```A_sentinel_file_A ```, created at 01:46.
+
+In B (where it appears almost immediately)  I can see
+
+
+    [2015-03-02 01:46:17 CET] Pusher: Syncing with 123.456.789.101_somedir 
+    To ssh://ramon@git-annex-Machine_C-ramon_22_annex.2Done.2Dway.2F/~/some-dir/
+       794df9f..ae8c3f0  git-annex -> synced/git-annex
+    Automatic merge went well; stopped before committing as requested
+    [2015-03-02 01:47:03 CET] Committer: Committing changes to git
+    [2015-03-02 01:47:03 CET] Pusher: Syncing with 123.456.789.101_somedir 
+    
+    A_sentinel_file_A
+                 18 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+    [2015-03-02 01:47:04 CET] Transferrer: Uploaded A_sentinel_file_A
+    To ssh://ramon@git-annex-Machine_C-ramon_22_annex.2Done.2Dway.2F/~/some-dir/
+       ae8c3f0..b043335  git-annex -> synced/git-annex
+       75269bc..b61c7a5  annex/direct/master -> synced/master
+    [2015-03-02 01:47:04 CET] Committer: Committing changes to git
+    [2015-03-02 01:47:06 CET] Pusher: Syncing with 123.456.789.101_somedir 
+    To ssh://ramon@git-annex-Machine_C-ramon_22_annex.2Done.2Dway.2F/~/some-dir/
+       b043335..fc9279c  git-annex -> synced/git-annex
+
+
+
+And in C (the machine with IP 123.456.789.101, above)  I can see
+
+
+
+    [2015-03-02 01:46:13 CET] RemoteControl: Syncing with Machine_B_somedir 
+    From ssh://git-annex-Machine_B-ramon_22_annex.2Done.2Dway/~/some-dir
+       593d908..794df9f  git-annex  -> Machine_B_somedir/git-annex
+       593d908..235149d  synced/git-annex -> Machine_B_somedir/synced/git-annex
+       a1596b3..75269bc  synced/master -> Machine_B_somedir/synced/master
+    [2015-03-02 01:46:17 CET] RemoteControl: Syncing with Machine_B_somedir 
+    From ssh://git-annex-Machine_B-ramon_22_annex.2Done.2Dway/~/some-dir
+       a1596b3..75269bc  annex/direct/master -> Machine_B_somedir/annex/direct/master
+       794df9f..ae8c3f0  git-annex  -> Machine_B_somedir/git-annex
+       a1596b3..75269bc  master     -> Machine_B_somedir/master
+    [2015-03-02 01:46:27 CET] RemoteControl: Syncing with Machine_B_somedir 
+    From ssh://git-annex-Machine_B-ramon_22_annex.2Done.2Dway/~/some-dir
+       ae8c3f0..632caa4  git-annex  -> Machine_B_somedir/git-annex
+       235149d..632caa4  synced/git-annex -> Machine_B_somedir/synced/git-annex
+    [2015-03-02 01:47:02 CET] RemoteControl: Syncing with Machine_B_somedir 
+    From ssh://git-annex-Machine_B-ramon_22_annex.2Done.2Dway/~/some-dir
+       632caa4..56ac968  synced/git-annex -> Machine_B_somedir/synced/git-annex
+       75269bc..b61c7a5  synced/master -> Machine_B_somedir/synced/master
+    [2015-03-02 01:47:02 CET] RemoteControl: Syncing with Machine_B_somedir 
+    From ssh://git-annex-Machine_B-ramon_22_annex.2Done.2Dway/~/some-dir
+       632caa4..b043335  git-annex  -> Machine_B_somedir/git-annex
+    [2015-03-02 01:47:07 CET] RemoteControl: Syncing with Machine_B_somedir 
+    From ssh://git-annex-Machine_B-ramon_22_annex.2Done.2Dway/~/some-dir
+       75269bc..b61c7a5  annex/direct/master -> Machine_B_somedir/annex/direct/master
+       b043335..fc9279c  git-annex  -> Machine_B_somedir/git-annex
+       75269bc..b61c7a5  master     -> Machine_B_somedir/master
+    [2015-03-02 01:47:15 CET] RemoteControl: Syncing with Machine_B_somedir 
+    From ssh://git-annex-Machine_B-ramon_22_annex.2Done.2Dway/~/some-dir
+       fc9279c..a4642a8  git-annex  -> Machine_B_somedir/git-annex
+       56ac968..a4642a8  synced/git-annex -> Machine_B_somedir/synced/git-annex
+    (merging synced/git-annex Machine_B_somedir/git-annex into git-annex...)
+    (recording state in git...)
+    [2015-03-02 02:17:23 CET] RemoteControl: Syncing with Machine_B_somedir 
+    From ssh://git-annex-Machine_B-ramon_22_annex.2Done.2Dway/~/some-dir
+       a4642a8..bfaba72  git-annex  -> Machine_B_somedir/git-annex
+       a4642a8..bfaba72  synced/git-annex -> Machine_B_somedir/synced/git-annex
+       b61c7a5..29ff91e  synced/master -> Machine_B_somedir/synced/master   
+       
+
+
+Why did Machine C did not show the updated file at 01:47, which is when, I
+think, machine B pushes it there? Or at 02:17 when both machines again
+seem to talk to each other? Regardless, at 02:27 the file still was not
+there. Yes, of course, if I issue a
+
+```
+    git annex sync --content
+```
+
+then the file is shown in Machine C. But I should not need to do that.
+
+
+
+In contrast, as I said, there is another directory, with identical
+configuration, where these things do not happen and changes show
+immediately (both directories, for now, only have tiny test files).
+
+
+
+
+
+"""]]

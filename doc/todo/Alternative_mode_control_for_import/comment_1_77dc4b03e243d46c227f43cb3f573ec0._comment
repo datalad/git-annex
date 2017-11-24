@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 1"
+ date="2017-01-16T10:30:55Z"
+ content="""
+This [[TODO|todo/import_--reinject/]] (and \"reinject --known\") would then be:
+
+    git annex import --mode=Did
+
+"""]]

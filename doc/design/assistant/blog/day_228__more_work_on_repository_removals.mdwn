@@ -1,0 +1,27 @@
+Getting back to the repository removal handling from Sunday, I made the
+assistant detect when a repository that has been marked as unwanted becomes
+empty, and finish the removal process.
+
+I was able to add this to the expensive transfer scan without making it any
+more expensive than it already was, since that scan already looks at the
+location of all keys. Although when a remote is detected as empty, it then
+does one more check, equivilant to `git annex unused`, to find any
+remaining objects on the remote, and force them off.
+
+I think this should work pretty well, but it needs some testing and
+probably some UI work.
+
+----
+
+Andy spotted a bug in the preferred content expressions I was using to
+handle untrusted remotes. So he saved me several hours dealing with an ugly
+bug at some point down the line. I had misread my own preferred content
+expression documentation, and `copies=semitrusted:1` was not doing what I
+thought it was. Added a new syntax that does what I need,
+`copies=semitrusted+:1`
+
+----
+
+The 64 bit linux standalone builds are back. Apparently the 32 bit builds
+have stopped working on recent Fedora, for reasons that are unclear. I set
+up an autobuilder to produce the 64 bit builds.

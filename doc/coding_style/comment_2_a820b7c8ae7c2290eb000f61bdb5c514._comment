@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 2"
+ date="2014-07-10T20:24:03Z"
+ content="""
+safe does not prevent using the unsafe prelude functions. Utility.PartialPrelude does, and provides a few safe wrappers like lastMaybe. 
+"""]]

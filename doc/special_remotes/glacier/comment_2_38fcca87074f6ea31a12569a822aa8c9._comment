@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="basak"
+ ip="2001:8b0:1c8::2"
+ subject="comment 2"
+ date="2013-05-17T08:35:10Z"
+ content="""
+I'm the glacier-cli author. It is not abandoned!
+
+glacier-cli is supposed to map to Glacier exactly, so that it is compatible with all other tools. Most of the outstanding PRs break this essential behaviour, so I have not merged them. Many of the feature requests and bugs related to the upstream boto library, which is just about the best maintained client library that exists for AWS on any platform (and Amazon have adopted it now, IIRC). I have written appropriate reviews on all the PRs.
+
+If there is specific behaviour that git-annex needs, them I am happy to accept PRs for this, provided that they do not break the ability (and default) for glacier-cli to talk to Glacier natively without an extra layer of interpretation. If an extra layer of interpretation is needed (eg. forbidding duplicate \"keys\"), then this needs to be an option, or wrapped in a separate tool, or written into git-annex's Glacier special remote.
+"""]]

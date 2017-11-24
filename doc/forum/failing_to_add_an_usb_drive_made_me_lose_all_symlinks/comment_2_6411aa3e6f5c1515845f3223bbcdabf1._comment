@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmTNrhkVQ26GBLaLD5-zNuEiR8syTj4mI8"
+ nickname="Juan"
+ subject="I figured it out"
+ date="2014-12-02T01:48:38Z"
+ content="""
+I'm not new to git, and I perfectly know how to revert commits, however, I was confused about how git annex and git play together. In particular I tried to use it as a black box with the assistant and that was a bad idea.
+After adding the usb drive as remote with the assitant, all symlinks got deleted. However, doing a checkout to the commit that messed up everything I got thing back to normal.
+Sadly, your message arrived a couple of hours late, I could have saved me a lot of time.
+Thanks for taking the time to answer.
+Sorry for the previous rant.
+Best regards,
+                      Juan
+"""]]

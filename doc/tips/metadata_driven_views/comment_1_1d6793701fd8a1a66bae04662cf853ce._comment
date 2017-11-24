@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlFZFMFm-AapYAgV_V5X9HRJxWvhdiX9fY"
+ nickname="Reiner"
+ subject="comment 1"
+ date="2014-03-24T21:11:31Z"
+ content="""
+I have played around with views and found out that I can create new tags by creating directories in the view and that I can created files in those new directories that are not contained in the original working tree. The behavoiur of git annex in this behaviour is a bit strange.
+
+Assume for example you have a file \"foo\" with tag \"t1\" and switch to the tag view. Then create a directory \"t2\" and a file \"bar\" in it. Add the file, sync, and switch back to the master branch. If you enter the tag view again, the directory \"t2\" will be vanished, i.e. your newly created file is gone, too. This is not surprising, as the file has never been added to the original working tree. However, another \"git annex sync\" will restore the file.
+
+I am unsure what behaviour I would expect, maybe it shouldn't be possible to files to a view in the first place, or newly created files might be collected in a separate branch. On the other hand, it seems reasonable to add a new file with a new tag at the same time. Anyway, I found it confusing that I can seemingly lose a file like this. It took me a bit of time to figure out that another sync recovers the file.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.193"
+ subject="comment 1"
+ date="2013-07-02T16:56:42Z"
+ content="""
+Run: `git annex dead 40da403e-6f74-4705-aae0-433aa656b55e`
+"""]]

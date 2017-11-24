@@ -1,0 +1,12 @@
+I had two repositories, on different machines, created with the assistant, so they were both direct mode.
+
+After pairing each with the other, so that files were merrily flowing back and forth, I happened to do the following:
+ * on machine A, in the dashboard
+ * click on the 'actions' emnu for the repository on machine B
+ * select 'disable'
+
+Result: all references to the repo on machine B have disappeared from the assistant in machine A.
+
+On machine B, I still have the pairing with machine A, and selecting the 'sync now' action seems to be working.
+
+The thing I am curious about is the behaviour on machine A - why is it that I cannot find any reference to it any more in the assistant, so that I can re-enable it?

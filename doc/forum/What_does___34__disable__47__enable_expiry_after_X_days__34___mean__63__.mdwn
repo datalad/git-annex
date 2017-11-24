@@ -1,0 +1,1 @@
+Git-annex assistant configuration has an item saying "disable/enable expiry after X days".  What does it mean?  Am I the only one confused by this?

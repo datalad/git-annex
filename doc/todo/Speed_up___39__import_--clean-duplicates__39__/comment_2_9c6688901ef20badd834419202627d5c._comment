@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="Xyem"
+ ip="81.111.193.130"
+ subject="comment 2"
+ date="2014-08-01T09:05:45Z"
+ content="""
+Could be tested out with an additional flag `--with-size-bloom` on import?
+
+It would then build a bloom (and use a cached one with --fast) and do the usual import.
+
+So I could do this:
+
+    # Bloom is created and the import is done using it
+    git annex import --clean-duplicates --with-size-bloom $TARGET
+
+    # Previously created bloom is used
+    git annex import --clean-duplicates --with-size-bloom --fast $TARGET2
+    git annex import --clean-duplicates --with-size-bloom --fast $TARGET3
+
+I can implement this behaviour in Perl with Bloom::Filter and let you know how it performs if that would be useful to you..?
+"""]]

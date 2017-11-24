@@ -1,0 +1,39 @@
+A lil bit in the weeds on the chunking rewrite right now. I did succeed in
+writing the core chunk generation code, which can be used for every special
+remote. It was pretty hairy (needs to stream large files in constant
+memory, separating into chunks, and get the progress display right
+across operations on chunks, etc). That took most of the day.
+
+Ended up getting stuck in integrating the encryptable remote code, and had
+to revert changes that could have led to rewriting (or perhaps
+eliminating?) most of the per-remote encryption specific code.
+
+Up till now, this has supported both encrypted and non-encrypted remotes;
+it was simply passed encrypted keys for an encrypted remote:
+
+[[!format haskell """
+remove :: Key -> Annex Bool
+"""]]
+
+But with chunked encrypted keys, it seems it needs to be more complicated:
+
+[[!format haskell """
+remove' :: Maybe (Key -> Key) -> ChunkConfig -> Key -> Annex Bool
+"""]]
+
+So that when the remote is configured to use chunking, it can look up
+the chunk keys, and then encrypt them, in order to remove all the encrypted
+chunk keys.
+
+I don't like that complication, so want to find a cleaner
+abstraction. Will sleep on it.
+
+----
+
+While I was looking at the encryptable remote generator, I realized
+the remote cost was being calculated wrongly for special 
+remotes that are not encrypted. Fixed that bug.
+
+----
+
+Today's work was sponsored by bak.

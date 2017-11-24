@@ -1,0 +1,20 @@
+Recent work has included improving `fsck --from remote` (and fixing a
+reversion caused by the relative path changes in January), and making
+annex.diskreserve be checked in more cases. And added a `git annex
+required` command for setting [[required_content]].
+
+Also, I want to thank several people for their work:
+
+* Roy sent a patch to enable http proxy support.. despite
+  having only learned some haskell by "30 mins with YAHT". I investigated
+  that more, and no patch is actually necessary, but just a newer version
+  of the http-client library.
+* CandyAngel has been posting lots of helpful comments on the website,
+  including [this tip](http://git-annex.branchable.com/forum/__34__git_annex_sync__34___synced_after_8_hours/#comment-890ca1381d800ac833ccbb8c5db175ea)
+  that significantly speeds up a large git repository.
+* Øyvind fixed a lot of typos throughout the git-annex
+  documentation.
+* Yaroslav has created a `git-annex-standalone.deb` package
+  that will work on any system where debian packages can be installed,
+  no matter how out of date it is (within reason), using the same
+  methods as the standalone tarball.

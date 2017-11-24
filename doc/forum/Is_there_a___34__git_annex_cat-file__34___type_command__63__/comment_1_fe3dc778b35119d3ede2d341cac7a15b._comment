@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-09-29T19:49:29Z"
+ content="""
+Think of `git annex get` as more like `git pull` than `git cat-file`. 
+It necessarily needs to modify the repository to get the contents of files.
+
+What about making a temporary clone of the git repository that's
+writable in the sandbox?
+"""]]

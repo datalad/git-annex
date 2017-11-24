@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="http://mey.vn/"
+ ip="46.65.14.106"
+ subject="comment 7"
+ date="2013-07-26T18:11:25Z"
+ content="""
+thanks; the current ```uuid.log``` file carries content from 8 distinct commits :
+
+    335cb49c  2013-07-22 16:57:32 +0100
+    4ec397f7  2013-07-22 16:57:26 +0100
+    50542096  2013-07-22 17:19:21 +0100
+    621a1a03  2013-07-22 16:57:28 +0100
+    63dd4509  2013-07-22 16:57:26 +0100
+    8c2d3ff7  2013-07-22 16:57:19 +0100
+    9ba4166d  2013-07-22 18:38:29 +0100
+    e182ee60  2013-07-22 16:57:26 +0100
+
+would the whole diff for each commit be useful, or just the part related to uuid.log?
+
+all these commits were done by git-annex on my laptop; the earliest of these commits come seconds after two commits done on another node - a raspberry pi running armhf Raspbian, although i now see that ```git-annex``` and ```git-annex-shell``` on this rPi are constantly segfaulting (though i can't understand the reason from the strace output): perhaps a segfault while dealing with a git operation on the rPi started the metadata corruption somehow?
+
+btw - if this could be useful to track down a possible bug in git-annex (although only involving some metadata, not the actual data), i am happy to dig further to provide all the information needed to understand what might have happened, but if it's not something worth investigating further in the bigger scheme of things, from my point of view i'm ok with restarting a fresh annex with content moved from this annex, and pristine metadata :)
+
+"""]]

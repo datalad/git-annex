@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkAUMhKOSkh9JaBA6xst3XxQIIsDEq5Zd4"
+ nickname="Ovidiu"
+ subject="making some progress"
+ date="2014-05-17T19:08:16Z"
+ content="""
+Figured out how to solve that:
+    which python
+    /opt/local/bin/python
+    shiny-2:git-annex ovi$ sudo ln -s `which python` /usr/bin/python2
+
+The URL opened in my browser, I allowed access, waited for the redirect, copied the URL, hit the next problem:
+
+    OAUTH='https://login.live.com/oauth20_desktop.srf?code=hidden_on_purpose' git annex initremote skydrive type=external externaltype=skydrive encryption=shared folder=git-annex
+initremote skydrive (encryption setup) (shared cipher)  21:06:27 [skydriveannex-0.2.1] <module> : 'Starting'
+     21:06:27 [skydriveannex-0.2.1] login : 'EXCEPTION api.auth_get_token:ImportError('No module named requests',)'
+    git-annex: You need to set OAUTH environment variables and folder and encryption parameters when running initremote.
+"""]]

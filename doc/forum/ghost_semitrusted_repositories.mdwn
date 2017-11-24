@@ -1,0 +1,28 @@
+I had one repo on HDD and another in an USB drive. After mount point changed, I went to the HDD repo folder and tried to use git remote-set url to point it to the new location, however I think I ended in a weird state. git-annex info shows this:
+
+    git-annex info
+    repository mode: indirect
+    trusted repositories: 0
+    semitrusted repositories: 5
+        00000000-0000-0000-0000-000000000001 -- web
+        26c0c4ba-6489-4416-a054-670d373f09bd -- juan@invasor.local:/Volumes/sapo_hfs/live/papers
+        61158820-db14-45b9-b9f9-8619d956388e -- [usb_papers]
+        d4456c86-fa2b-43a7-a132-027915390cf6 -- usb_papers
+        fed56814-08c6-11e3-bf3c-af5da9f7f388 -- sapo [here]
+    untrusted repositories: 0
+    transfers in progress: none
+    available local disk space: 255.46 gigabytes (+1 megabyte reserved)
+    local annex keys: 1252
+    local annex size: 2.55 gigabytes
+    annexed files in working tree: 1297
+    size of annexed files in working tree: 2.7 gigabytes
+    bloom filter size: 16 mebibytes (0.3% full)
+    backend usage: 
+        SHA256E: 2549
+
+usb_papers was the original usb repo, and now a new one [usb_papers] shows. webapp shows only sapo[here] and [usb_papers], the other 2 repos are unknown. I was digging around but couldn't find a way to remove them.
+Seems that the webapp managed to use the new URL, but said something about "fixing repo".
+Any suggestions?
+Thanks in advance.
+Best regards,
+              Juan

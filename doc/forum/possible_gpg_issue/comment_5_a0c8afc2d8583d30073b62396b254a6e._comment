@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawknHkJJRE0K7_G4sG3YgOkAaihnw0eg9Ao"
+ nickname="Chad"
+ subject="comment 5"
+ date="2014-12-03T01:05:17Z"
+ content="""
+Yeah, it's close returning the error. As far as I can tell the calls involving that file are:
+
+    open(path, O_WRONLY|O_CREAT|O_NOCTTY|O_NONBLOCK, 0666) = fh
+    fstat(fh, {st_mode=S_IFREG|0755, st_size=sz, ...}) = 0
+    ftruncate(fh, 0) = 0
+    ioctl(fh, SNDCTL_TMR_TIMEBASE or SNDRV_TIMER_IOCTL_NEXT_DEVICE or TCGETS, ptr) = -1 ENOTTY (Inappropriate ioctl for device)
+    write(fh, data, len) x 60
+    close(fh) = -1 EHOSTDOWN (Host is down)
+
+All the calls to write appear to succeed, followed by the call to close that fails. Maybe the previously failed ioctl command has something to do with it? I guess as was mentioned previously, there may be an operation the device doesn't support, but the weird thing is this used to work fine.
+"""]]

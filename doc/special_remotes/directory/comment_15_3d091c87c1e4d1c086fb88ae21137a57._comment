@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="aslkdjasd@656d48eb766881455ee14c8cd4adabdd14aad892"
+ nickname="aslkdjasd"
+ subject="layout reasoning"
+ date="2016-05-14T01:23:42Z"
+ content="""
+@joeyh - trying to understand the purpose behind the layout for the directory and rsync remotes
+
+Format appears to be /BASE_DIR/xxx/yyy/FILEKEY/FILEKEY
+
+What's the purpose of the filekey directory? I.e. why have FILEKEY as both a directory and then a file of the same name inside that directory?
+"""]]

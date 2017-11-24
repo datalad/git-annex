@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/e65e6d0e-58ba-41de-84cc-1f2ba54cf574"
+ nickname="Mica Semrick"
+ subject="sounds like a bad idea... but..."
+ date="2014-06-24T04:18:51Z"
+ content="""
+From the few details you give, this sounds like a bad idea. git-annex tells different repos apart by using a UUID. You can see this UUID in `.git/config`.
+
+But if you are really insistent on doing this, you could always system link the folder to the spot you want it, then write a script that mounts the server in an arbitrary location and redoes the system link. I'd try this on a copy of the data or with some data that doesn't matter before going for it.
+"""]]

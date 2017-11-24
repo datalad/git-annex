@@ -1,0 +1,21 @@
+### Please describe the problem.
+
+Sometimes a consistency check is undesired, e.g. when one wants to unmount the external drive. Add a button (along Configure) to the bubble that says Consistency check in progress to the assistent.
+
+### What steps will reproduce the problem?
+
+Run an automatic conistency check.
+
+### What version of git-annex are you using? On what operating system?
+
+20141024
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]

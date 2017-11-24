@@ -1,0 +1,27 @@
+I'd like to have a Debian/Ubuntu package of the latest git-annex (f.e. to have it installed systemwide). In the source I can find the debian/ folder with all needed information to build the package. But it looks like I don't have all needed dependencies on my Ubuntu 12.10:
+
+    user@laptop(pc) ~/src/git/git-annex (git)-[master] % debuild -us -uc
+    dpkg-buildpackage -rfakeroot -D -us -uc
+    dpkg-buildpackage: source package git-annex
+    dpkg-buildpackage: source version 3.20130115
+    dpkg-buildpackage: source changed by Joey Hess <joeyh@debian.org>
+    dpkg-source --before-build git-annex
+    dpkg-buildpackage: host architecture amd64
+    dpkg-checkbuilddeps: Unmet build dependencies: libghc-dav-dev (>= 0.3) libghc-dbus-dev (>= 0.10.3) libghc-yesod-dev libghc-yesod-static-dev libghc-yesod-default-dev libghc-hamlet-dev libghc-clientsession-dev libghc-warp-dev libghc-wai-dev libghc-wai-logger-dev libghc-case-insensitive-dev libghc-http-types-dev libghc-blaze-builder-dev libghc-crypto-api-dev libghc-network-multicast-dev libghc-network-info-dev libghc-safesemaphore-dev libghc-network-protocol-xmpp-dev (>= 0.4.3-1+b1) libghc-gnutls-dev (>= 0.1.4) libghc-xml-types-dev
+    dpkg-buildpackage: warning: build dependencies/conflicts unsatisfied; aborting
+    dpkg-buildpackage: warning: (Use -d flag to override.)
+    debuild: fatal error at line 1357:
+    dpkg-buildpackage -rfakeroot -D -us -uc failed
+    user@laptop(pc) ~/src/git/git-annex (git)-[master] % apt-get install libghc-dav-dev libghc-dbus-dev libghc-yesod-dev libghc-yesod-static-dev libghc-yesod- default-dev libghc-hamlet-dev libghc-clientsession-dev libghc-warp-dev libghc-wai-dev libghc-wai-logger-dev libghc-case-insensitive-dev libghc-http-types-dev libghc-blaze-builder-dev libghc-crypto-api-dev libghc-network-multicast-dev libghc-network-info-dev libghc-safesemaphore-dev libghc-network-protocol-xmpp-dev libghc-gnutls-dev libghc-xml-types-dev
+    Reading package lists... Done
+    Building dependency tree       
+    Reading state information... Done
+    E: Unable to locate package libghc-dav-dev
+    E: Unable to locate package libghc-network-multicast-dev
+    E: Unable to locate package libghc-network-info-dev
+    E: Unable to locate package libghc-safesemaphore-dev
+
+How can I build the package? Or would it be possible for you to build the package and add it to the "Install" page (like the prebuilt linux tarball)? That would be great!
+
+Cheers and thanks for the hard work,
+Tobias

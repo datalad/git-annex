@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 3"
+ date="2014-05-16T19:07:10Z"
+ content="""
+Sounds to me like some GUI thing that is confused in some way. Which is, in my experience not unusual when it comes to GUI things and the actual size of files on disk. I'd trust `du`.
+"""]]

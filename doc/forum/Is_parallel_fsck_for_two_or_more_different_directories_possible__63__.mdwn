@@ -1,0 +1,31 @@
+I can put `git-annex fsck` in a loop to check a large directory like this:
+
+`-S` starts an incremental check, `-m` continues the started incremental check, `&>>` appends all output (both `stdout` and `stderr`) into the `fsck.log` file. 
+
+```
+$ git-annex fsck -S large-directory --from remote-repo --time-limit=60s &>>~/log/fsck.log
+#...
+#...
+#...
+$ while (sleep 10); do
+  git-annex fsck -m large-directory --from remote-repo --time-limit=1h &>>~/log/fsck.log
+#...
+#...
+#...
+done;
+```
+
+I need the loop because the connection to `remote-repo` fails after some time (or because remote server error) and needs a reconnect, after that, everything is ok.
+
+Suppose, I have many large directories and it would be faster to check them if I could run them parallelly. Many small files, they do not take too much bandwidth but more I/O and network communication.
+
+I know that the progress of `fsck` is stored in a database (now after every 1000 files or 5 minutes or `--time-limit`) but is the checked directory (large-directory) is taken into account when starting/storing the progress? 
+
+**Is the checked directory/path in the primary-key?** Or is it much more complicated?
+
+If I could start checking many directories in the same time, `fsck` would finish much faster (think about thousands of small icon files). Is it just me or somebody else could profit from this?
+
+(This is _not_ a feature request, I would like to know if anybody needs this, if possible at all.)
+
+Thanks,
+parhuzamos

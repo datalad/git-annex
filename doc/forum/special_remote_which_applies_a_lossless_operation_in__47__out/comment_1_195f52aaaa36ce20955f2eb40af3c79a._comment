@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-04-07T20:34:38Z"
+ content="""
+Of course that will work fine, as long as the operation is reversable.
+
+Plenty of existing special remotes
+compress/encrypt/slice/dice/mangle/obfuscate/whatever the content of files
+stored in them, and undo it all when the contents are retreived.
+"""]]

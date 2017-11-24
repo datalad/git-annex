@@ -1,0 +1,10 @@
+Thought I'd ask how y'all are finding the current communication by this forum/website/git repo only.
+
+Would there be a benefit to having an irc channel for git-annex?
+
+Maybe a mailing list? (Any persuasive reason why it would be better than this forum?)
+
+Are the existing RSS feeds on this site, for eg, new [[comments]] and posts to this forum, sufficient to keep up with
+things?
+
+--[[Joey]]

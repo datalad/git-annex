@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.68"
+ subject="comment 3"
+ date="2014-01-20T16:33:27Z"
+ content="""
+I see you're using encryption. That could have something to do with the problem. Which type of encryption was used for this special remote? encryption=shared or one of the other options?
+
+Look through the whole strace output for attempts to access the directory special remote and show those. Or put up the full strace somewhere.
+"""]]

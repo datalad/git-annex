@@ -1,0 +1,9 @@
+It would be really neat if there was a way to get just the `git-annex` binary on Android, without getting the entire APK. This can be useful when one is already using their own shell and rootfs, for example I work with <a href="https://sites.google.com/site/taldewandroid/">this</a>.
+
+This way, one can just use parts of git-annex, without having to have a whole APK and its dependencies, and the space it takes up, etc.
+
+So would you be able to add a download link for this?
+
+
+
+Thanks for the wonderful project!

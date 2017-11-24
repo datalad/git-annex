@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2016-09-21T21:36:18Z"
+content="""
+@Don and @pot, did you actually see un-encrypted data end up in the gcrypt
+repository? Or by "same issue" do you mean you saw the same error message,
+perhaps due to a very different cause?
+
+@jgoerzen, when you say that the gcrypt reposotory had an "unencrypted
+index", are you referring to a regular git index file, or to a pack's .idx
+file?
+
+It would be very strange if a gcrypt repository had an index file.
+I've never been able to use git-remote-gcrypt with a non-bare repository,
+and bare repositories don't normally have index files.
+"""]]

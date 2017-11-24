@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.244"
+ subject="comment 1"
+ date="2014-04-02T18:48:51Z"
+ content="""
+All I can tell from the strace is that it's looking at location logs, and it's looking at the same few keys, but not a single on in a tight loop.
+
+It would probably help a lot to run the assistant with --debug and get a debug log while this is going on. We need to pinpoint the part of the assistant that is affected, and there may be other activity too.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.43"
+ subject="comment 4"
+ date="2014-01-13T20:27:34Z"
+ content="""
+Many problems of this sort can happen if the disk that the git reposotory is on is losing data that's written to it, or is just removed (or the computer crashes) at the wrong time. `git-annex repair` can be run in the repository to recover from many problems like this, and it's getting better all the time.
+"""]]

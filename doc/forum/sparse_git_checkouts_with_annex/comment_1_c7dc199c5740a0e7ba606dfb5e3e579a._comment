@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-04-07T16:32:04Z"
+ content="""
+That's awesome, I had not heard of git sparse checkouts before. 
+
+It does not make sense to tie the log files to the directory of the corresponding files, as then the logs would have to move when the files are moved, which would be a PITA and likely make merging log file changes very complex. Also, of course, multiple files in different locations can point at the same content, which has the same log file. And, to cap it off, git-annex can need to access the log file for a given key without having the slightest idea what file in the repository might point to it, and it would be very expensive to scan the whole repository to find out what that file is in order to lookup the filename of the log file.
+
+The most likely change in git-annex that will make this better is in [[this_todo_item|todo/branching]] -- but it's unknown how to do it yet.
+"""]]

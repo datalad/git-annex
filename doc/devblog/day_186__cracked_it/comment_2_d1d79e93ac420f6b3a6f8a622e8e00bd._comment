@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://id.clacke.se/"
+ nickname="Claes"
+ subject="VBScript + wscript to avoid DOS window"
+ date="2014-06-21T02:09:58Z"
+ content="""
+I use this technique too, to run cygwin xterm without an ugly DOS box popup.
+"""]]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 1"
+ date="2015-06-05T07:21:44Z"
+ content="""
+Looks like you missed a step from your output (difficult to be sure because you don't show a full transcript showing a rename and it not being present in the other repo).
+
+Have you updated the remote repo where the changes aren't present? 'git annex sync' or 'git annex merge'?
+
+If you made the changes in repoA and ran sync there, it pushes the changes to repoB, but it can't update repoB's working directory remotely (restriction from git). You have to update it locally to see them.
+
+First few paragraphs of [sync](http://git-annex.branchable.com/sync/) mention this.
+
+So if you run sync or merge in the remote repository, you should see your changes.
+"""]]

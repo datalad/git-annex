@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawncukUQl56TwiBJb7dIyAqP1YirNg_wjR4"
+ nickname="Matthew"
+ subject="comment 7"
+ date="2014-07-16T21:23:00Z"
+ content="""
+git-annex version: 5.20140613 also behaves the same way, however it generates a new log message during the sync attempt:
+
+Automatic merge went well; stopped before committing as requested
+
+
+
+"""]]

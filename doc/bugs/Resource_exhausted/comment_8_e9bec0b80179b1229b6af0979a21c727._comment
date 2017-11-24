@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawln3ckqKx0x_xDZMYwa9Q1bn4I06oWjkog"
+ nickname="Michael"
+ subject="comment 8"
+ date="2013-08-11T20:44:19Z"
+ content="""
+It also looks like the location log has got corrupted (files are actually present, but not recorded in the location log) somewhere along the lines as I was trying to get/drop to figure out what's going on.
+Explicitly dropping files then getting files fixes the location log issue.
+"""]]

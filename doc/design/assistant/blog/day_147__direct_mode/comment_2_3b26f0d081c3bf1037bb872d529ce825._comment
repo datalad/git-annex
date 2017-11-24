@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.8.117"
+ subject="comment 2"
+ date="2012-12-12T23:45:42Z"
+ content="""
+`git annex drop` is a user-level operation built on top of lower-level object removal functions that are also used by other things.
+"""]]

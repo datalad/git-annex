@@ -1,0 +1,35 @@
+## Pick your OS
+
+[[!table format=dsv header=yes data="""
+detailed instructions             | quick install
+[[OSX]]                           |
+&nbsp;&nbsp;[[OSX/Homebrew]]      | `brew install git-annex`
+[[Android]]                       | **beta**
+[[Linux|linux_standalone]]        | 
+&nbsp;&nbsp;[[Debian]]            | `apt-get install git-annex`
+&nbsp;&nbsp;[[Ubuntu]]            | `apt-get install git-annex`
+&nbsp;&nbsp;[[Fedora]]            | `yum install git-annex`
+&nbsp;&nbsp;[[FreeBSD]]           | `pkg install hs-git-annex`
+&nbsp;&nbsp;[[ArchLinux]]         | `pacman -S git-annex`
+&nbsp;&nbsp;[[NixOS]]             | `nix-env -i git-annex`
+&nbsp;&nbsp;[[Gentoo]]            | `emerge git-annex`
+&nbsp;&nbsp;[[Void]]            | `xbps-install git-annex`
+&nbsp;&nbsp;[[ScientificLinux5]]  |
+&nbsp;&nbsp;[[openSUSE]]          | `zypper in git-annex`
+&nbsp;&nbsp;[[Docker]]            | 
+[[Windows]]                       | **beta**
+"""]]
+
+All the download links above use https for security. For added security, see
+[[verifying_downloads]].
+
+## Building it yourself
+
+git-annex is [[Free Software|license]], written in [Haskell](http://www.haskell.org/).
+Experienced users should not find it too hard to build and install
+it [[from source|fromsource]].
+
+## See also
+
+ * [[autobuild overview|builds]]
+ * [[upgrades]]

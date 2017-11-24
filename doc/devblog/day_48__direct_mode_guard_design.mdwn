@@ -1,0 +1,29 @@
+I've been investigating ways to implement a [[/todo/direct_mode_guard]].
+Preventing a stray `git commit -a` or `git add` doing bad things in a
+direct mode repository seems increasingly important.
+
+First, considered moving `.git`, so git won't know it's a git repository.
+This doesn't seem *too* hard to do, but there will certainly be unexpected
+places that assume `.git` is the directory name.
+
+I dislike it more and more as I think about it though, because it moves
+direct mode git-annex toward being entirely separate from git, and I don't
+want to write my own version control system. Nor do I want to complicate
+the git ecosystem with tools needing to know about git-annex to work in
+such a repository.
+
+So, I'm happy that one of the other ideas I tried today seems quite
+promising. Just set core.bare=true in a direct mode repository. This nicely
+blocks all git commands that operate on the working tree from doing
+anything, which is just what's needed in direct mode, since they don't know
+how to handle the direct mode files. But it lets all git commands and other
+tools that don't touch the working tree continue to be used. You can even
+run `git log file` in such a repository (surprisingly!)
+
+It also gives an easy out for anyone who really wants to use git commands
+that operate on the work tree of their direct mode repository, by just
+passing `-c core.bare=false`. And it's really easy to implement in
+git-annex too -- it can just notice if a repo has core.bare and
+annex.direct both set, and pass that parameter to every git command it
+runs. I should be able to get by with only modifying 2 functions to
+implement this.

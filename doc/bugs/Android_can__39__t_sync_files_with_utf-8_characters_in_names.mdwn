@@ -1,0 +1,36 @@
+### Please describe the problem.
+I have a repo where some files have utf-8 characters in their names. They are copied without problems between linux-running pcs, but on Android I only get a small, 206 bytes files with the hash data.
+
+### What steps will reproduce the problem?
+Add some files with utf-8 characters in names, try to sync to Android
+
+### What version of git-annex are you using? On what operating system?
+PC side: tried 5.20140412ubuntu1 from ubuntu repo and standalone tarball 5.20140517-gee56d21, both on Ubuntu Trusy
+Android side: Android 4.4.2 on Nexus 7
+
+### Please provide any additional information below.
+Part of daemon.log I believe is related to this. Lines starting with Number followed by dot are the filenames, but truncated at first non-ascii character.
+I suspect empty lines before the "rsync failed" represent files with names that start with non-ascii character.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+  rsync failed -- run git annex again to resume file transfer
+
+
+  rsync failed -- run git annex again to resume file transfer
+
+
+  rsync failed -- run git annex again to resume file transfer
+
+02. Wyspa W
+  rsync failed -- run git annex again to resume file transfer
+
+05. Ponad Krain
+  rsync failed -- run git annex again to resume file transfer
+
+
+# End of transcript or log.
+"""]]

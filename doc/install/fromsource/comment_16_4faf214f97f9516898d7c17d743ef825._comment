@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 16"
+ date="2013-08-23T17:37:52Z"
+ content="""
+The git-annex assistant can easily be built on arm. But not the webapp. It's entirely possible to use the assistant without the webapp though; you just have to make the git repository and configure the remotes by hand, and then the assistant will sync them the same way the webapp does.
+
+It is possible but very involved to build the webapp for arm. I do not anticipate doing it in the Debian package until ghc gets proper template haskell support for arm. See [[forum/Webapp_on_ARM]]
+"""]]

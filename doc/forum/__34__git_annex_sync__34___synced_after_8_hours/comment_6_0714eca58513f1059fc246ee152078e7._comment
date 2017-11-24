@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="candyangel@7b9260fff42e1f6f552e1348007f7409a9101e82"
+ nickname="candyangel"
+ subject="comment 6"
+ date="2015-05-20T14:14:32Z"
+ content="""
+I've just come across something else which has sped up git operations on the index a *lot*.
+
+My $annex/.git/index was over 500M which made operations on the index really slow (git add/rm etc.) as it gets rewritten out in its entirety, every time!
+
+    git update-index --index-version 4
+
+brought it down to 200M, making everything much, much faster!
+
+[There is a warning in the git documentation](http://git-scm.com/docs/git-update-index) that alternative git implementations might not understand it, so bear that in mind if you want to use it.
+"""]]

@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 4"
+ date="2011-04-29T16:17:11Z"
+ content="""
+I've just tried to use the ANNEX_HASH_ variables, example of my configuration
+
+<pre>
+    git config annex.tahoe-store-hook 'tahoe mkdir $ANNEX_HASH_1 && tahoe put $ANNEX_FILE tahoe:$ANNEX_HASH_1/$ANNEX_KEY'
+    git config annex.tahoe-retrieve-hook 'tahoe get tahoe:$ANNEX_HASH_1/$ANNEX_KEY $ANNEX_FILE'
+    git config annex.tahoe-remove-hook 'tahoe rm tahoe:$ANNEX_HASH_1/$ANNEX_KEY'
+    git config annex.tahoe-checkpresent-hook 'tahoe ls tahoe:$ANNEX_HASH_1/$ANNEX_KEY 2>&1 || echo FAIL'
+    git annex initremote library type=hook hooktype=tahoe encryption=none
+    git annex describe 1d1bc312-7243-11e0-a9ce-5f10c0ce9b0a library
+</pre>
+
+It's seems to work quite well for me now, I did run across this when I tried to drop a file locally, leaving the file on my remote
+
+<pre>
+jtang@x00:/tmp/annex3 $ git annex drop .
+drop frink.sh (checking library...) (unsafe) 
+  Could only verify the existence of 0 out of 1 necessary copies
+  Try making some of these repositories available:
+  	1d1bc312-7243-11e0-a9ce-5f10c0ce9b0a  -- library
+  (Use --force to override this check, or adjust annex.numcopies.)
+failed
+drop t/frink.jar (checking library...) (unsafe) 
+  Could only verify the existence of 0 out of 1 necessary copies
+  Try making some of these repositories available:
+  	1d1bc312-7243-11e0-a9ce-5f10c0ce9b0a  -- library
+  (Use --force to override this check, or adjust annex.numcopies.)
+failed
+git-annex: 2 failed
+1|jtang@x00:/tmp/annex3 $ 
+</pre>
+
+I do know that the files exist in my library as I have just inserted them, it seemed to work when I didnt have the hashing, it appears that the checkpresent doesn't seem to pass the ANNEX_HASH_* variables (from the limited debugging I did)
+"""]]

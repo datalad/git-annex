@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-04-21T20:01:26Z"
+ content="""
+What's going on here is that git-annex does not know that you want to
+use "neon" as a repository that transfers content between "ldk" and
+"storage". The configuration for "neon" only makes it want a specific
+set of files, so it doesn't get other files from "ldk", and so does
+not have them to send to "storage".
+
+The solution is to change "neon"'s preferred content settings so it wants
+files that are not yet present in "storage".
+
+The [[transfer repository expression|preferred_content/standard_groups]]
+is one way to configure preferred content settings so that a repo
+will want to download files that other repos want to have. 
+
+	not (inallgroup=client and copies=client:2) and ($client)
+
+But that expression only works for transfer repsitories in between client
+repositories. Your "storage" repo is set to be a backup repository.
+
+So, we need something a little bit different.
+
+	not inallgroup=backup and include=*
+
+I think that would work, but I don't see a way to reconcile it with
+the configuration you already have for "neon". If neon wants to
+"exclude=pictures/* and exclude=video/*" then it will never get those
+and so can never send them on to "storage". And if neon wants all
+"present" files, then anything it does get for whatever reason
+will stay in it, which is just not how a transfer repo needs to work.
+
+What might work better is to set up a separate repository that can talk
+to "ldk" and "storage" (as well as perhaps pulling files from "neon"
+when available), and make it have that preferred content expression.
+"""]]

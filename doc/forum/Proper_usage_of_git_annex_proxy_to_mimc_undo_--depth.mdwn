@@ -1,0 +1,15 @@
+[Thanks Joey for correcting the docs on `git annex undo --depth`, and thanks for the `git-revert` suggestion as a replacement!](http://git-annex.branchable.com/direct_mode/#comment-b6dcfc80842008e7f9f5b8f612b27867)
+
+**Context: Creating an OSX GUI for assistant managed direct mode repos to help with restoring old file versions.**
+
+I saw this in the `git revert` docs and thought that `git annex proxy -- git checkout annex/direct/master~$depth -- $filename` might best suit my needs of restoring a previous version of a file. (I liked the idea of presenting the user with a depth rather than a hash.)
+
+>Note: git revert is used to record some new commits to reverse the effect of some earlier commits (often only a faulty one). If you want to throw away all uncommitted changes in your working directory, you should see git-reset[1], particularly the --hard option. If you want to extract specific files as they were in another commit, you should see git-checkout[1], specifically the git checkout -- syntax. Take care with these alternatives as both will discard uncommitted changes in your working directory.
+
+What I've found is that your suggestion of `git revert` is nice because it wouldn't create a conflict, as `git checkout` does. 
+
+So annex, thorough as it is, creates a `$filename.variant-local.$ext` file after the auto conflict resolution to preserve the original. `git revert` is neater, history wise, because there is no conflict as git knows exactly what's changing and from whence it came, rather than just some new file content showing up from who knows where with `git checkout`. 
+
+The issue it seems is that `git revert` works on a commit basis, while `git checkout` can operate on files. If I'm correct in this it would be good to know if annex uses one commit per file, for sure, every time? If this is the case, there would be no problem using the better in most every other way `git revert`.
+
+Though, I'm still not clear how to use the "depth" referencing with `git revert` rather than hashes, any suggestions?

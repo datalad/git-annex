@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmNu4V5fvpLlBhaCUfXXOB0MI5NXwh8SkU"
+ nickname="Adam"
+ subject="comment 3"
+ date="2013-11-02T23:49:49Z"
+ content="""
+Dropbox handles permissions, e.g. if I \"chmod -x\" a file on one system, it does the same to my other systems.  It would be a bit of a step backward if git-annex can't do this.  :/  Just my two cents.
+"""]]

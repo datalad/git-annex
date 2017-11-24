@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk_bIB1Vadfc_GfPLKX_ScfWFCcaGyk8Ac"
+ nickname="Rob"
+ subject="Remove quotes"
+ date="2013-12-13T04:44:22Z"
+ content="""
+I tried the command with and without quotes it results in the same error.  I think the issue is that the host is trying to resolve a concatenation of the hostname and amazon.com when in fact it should be resolving to the host name only.
+"""]]

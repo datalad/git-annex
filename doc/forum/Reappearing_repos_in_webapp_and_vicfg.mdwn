@@ -1,0 +1,43 @@
+Hi,
+
+Whenever I do a git annex vicfg (as pasted below) the long gone repo 40da403e-6f74-4705-aae0-433aa656b55e keeps automatically being added back into the configuration.  Worse in the webapp this manifests itself as a repository list item that's empty of text (and when buttons are clicked there's a complaint about missing UUIDs).
+
+In addition to removing the lines via git-annex vicfg, I've switched my repository into indirect mode, manually checked out the the git-annex branch and deleted the offending key from the preferred content and group files (it oddly didn't appear in the uuid file).  However they keep coming back :-(
+
+Everything seems to be okay bar this rogue entry which in the web-app irrationally bothers me.
+
+I'm running the very latest git-annex release.
+
+Any thoughts?
+
+Cheers,
+
+Matt.
+
+
+    # git-annex configuration
+    #
+    # Changes saved to this file will be recorded in the git-annex branch.
+    #
+    # Lines in this file have the format:
+    #   setting uuid = value
+    
+    # Repository trust configuration
+    # (Valid trust levels: trusted semitrusted untrusted dead)
+    # (for mattford63 (matt@descartes.rss.mhs.man.ac.uk:~/current))
+    trust 88733342-45ef-420f-8f1b-9a5ed8d8e070 = semitrusted
+    
+    # Repository groups
+    # (Standard groups: client transfer backup incrementalbackup smallarchive archive source manual public unwanted)
+    # (Separate group names with spaces)
+    # (for )
+    group 40da403e-6f74-4705-aae0-433aa656b55e = client
+    # (for mattford63 (matt@descartes.rss.mhs.man.ac.uk:~/current))
+    group 88733342-45ef-420f-8f1b-9a5ed8d8e070 = client
+
+    # Repository preferred contents
+    # (for )
+    content 40da403e-6f74-4705-aae0-433aa656b55e = standard
+    # (for mattford63 (matt@descartes.rss.mhs.man.ac.uk:~/current))
+    content 88733342-45ef-420f-8f1b-9a5ed8d8e070 = standard
+    

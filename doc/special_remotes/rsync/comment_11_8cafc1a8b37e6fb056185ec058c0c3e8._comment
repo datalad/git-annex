@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 11"
+ date="2013-08-26T18:36:03Z"
+ content="""
+@Chris yes in that case you still need, a central git repository (which need not be on a host that supports git-annex), or the assistant can use xmpp to sync the git data.
+"""]]

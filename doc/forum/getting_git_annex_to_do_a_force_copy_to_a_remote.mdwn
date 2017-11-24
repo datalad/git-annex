@@ -1,0 +1,11 @@
+I'm not sure if this is my stupidity or if it's a bug, but
+
+    git annex copy --force --to REMOTE . 
+
+just zip's through really quickly and doesn't actually force a copy to a
+remote location. This is just following up on the
+[[bugs/git-annex_directory_hashing_problems_on_osx]]. I want to just do a force copy of all my data to my portable disk to really make sure that the data is really there. I would similarly would want to make sure I can force a 
+
+    git annex copy --force --from REMOTE .
+
+to pull down files from a remote.

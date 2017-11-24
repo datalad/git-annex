@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 2"
+ date="2011-03-16T16:49:18Z"
+ content="""
+Just pulled the changes, it still fails to build. utimensat doesn't seem to exist on OSX 10.6.6.
+"""]]

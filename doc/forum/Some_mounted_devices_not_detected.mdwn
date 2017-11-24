@@ -1,0 +1,3 @@
+Automounted USB devices are not detected by the git-annex webapp on my Debian testing/squeeze installation, only drives with entries in /etc/fstab show up in the device list. Is there any way to tweak/get around this?
+
+I'm running version 4.20131106 (couldn't manage to build the package for sid). 

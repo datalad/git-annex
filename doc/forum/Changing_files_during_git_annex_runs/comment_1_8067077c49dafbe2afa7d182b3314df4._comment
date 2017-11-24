@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.111"
+ subject="comment 1"
+ date="2014-10-13T21:33:35Z"
+ content="""
+git-annex will detect things like files being changed at the same time that `git annex add` is run. It doesn't currently do a full lsof check to make sure nothing has a file open when `git annex add` is run (the assistant does do such extra checks).
+
+I don't see why syncing or transferring files to other repos should prevent your music player or whatever from using the files that you have locally present.
+
+If you're using direct mode and your music player is modifying the contents of files in the repository, then that will prevent other repositories downloading older versions of those files, since the old version is no longer present in the direct mode repository. There is the possibility for some innefficient attempts to transfer a file, that would fail because it got modified in between. git-annex detects this, but it can still waste bandwidth.
+
+(If my music player was modifying files all the time,  I'd give it a good talking to; that's not the job of a music player. But, I keep my music in an indirect mode repo, so any music player would find it hard to modify annexed files anyway.)
+"""]]

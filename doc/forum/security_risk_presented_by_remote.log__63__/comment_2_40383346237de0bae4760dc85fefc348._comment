@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="digiuser"
+ subject="comment 2"
+ date="2015-06-24T00:51:44Z"
+ content="""
+I read the encryption page but I just want to know if I'm understanding it correctly.
+
+Let's say I initiated my remote with this command:
+
+    git annex initremote myremote type=S3 chunk=256MiB keyid=XXXXXXXX bucket=mybucket
+
+And then, I handed out my remote.log file to people publicly. Does that expose *any* security hole at all? Or is 100% of the information in remote.log secured using gpg?
+
+I would believe that people couldn't decrypt my file contents, but could they get into my bucket or my S3 account?
+"""]]

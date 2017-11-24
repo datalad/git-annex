@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="99.54.57.201"
+ subject="comment 1"
+ date="2013-01-25T14:07:36Z"
+ content="""
+seems I inadvertently got caught by Markdown -- I tried to write COMMITHASH-hat-1 and it turned into COMMITHASH superscript 1.
+
+Tilde (~) would also have worked instead of hat (^)
+"""]]

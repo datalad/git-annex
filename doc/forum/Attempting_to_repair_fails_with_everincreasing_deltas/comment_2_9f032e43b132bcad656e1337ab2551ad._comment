@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="anders7788"
+ ip="89.160.15.173"
+ subject="[Solved]"
+ date="2014-09-04T15:47:24Z"
+ content="""
+[Solved]
+
+The following of the steps at: http://git-annex.branchable.com/tips/what_to_do_when_a_repository_is_corrupted/ provided some clues and I discovered that the disk was broken. But a big thanks to git-annex which made it possible to discover this issue early!
+"""]]

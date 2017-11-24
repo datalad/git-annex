@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.246"
+ subject="comment 5"
+ date="2013-11-13T16:37:46Z"
+ content="""
+The git-annex app will download the files from any remote you set up that has a copy of the file. A transfer remote in the cloud would work well.
+"""]]

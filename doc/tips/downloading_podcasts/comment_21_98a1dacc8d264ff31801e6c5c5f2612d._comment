@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Sazius"
+ ip="62.78.213.233"
+ subject="comment 21"
+ date="2014-07-01T20:52:06Z"
+ content="""
+For some podcast feeds I typically wish to view the description of the show before I decide to download it or not. Is there some way to perform that use case using git annex? I know `itemdescription` is something I can include in the template for the filename, but the descriptions can be really long... doesn't seem very elegant to have that in the file name. Could the description for example be included as metadata of the item?
+"""]]

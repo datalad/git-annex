@@ -1,0 +1,4 @@
+Is there an easy way to export annexed files out of the repository? (e.g. to make a copy elsewhere, send a file by email...)
+
+Thanks,
+Denis.

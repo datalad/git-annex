@@ -1,0 +1,32 @@
+When copying to a megaannex remote, it hangs after a while, and I get this:
+
+    copy Boomarks/Android (gpg) Traceback (most recent call last):
+      File "/usr/local/bin//git-annex-remote-mega", line 511, in <module>
+        common.startRemote()
+      File "/home/zack/megaannex/lib/CommonFunctions.py", line 557, in startRemote
+        sys.modules["__main__"].checkpresent(line)
+      File "/usr/local/bin//git-annex-remote-mega", line 483, in checkpresent
+        folder = setFolder(conf["folder"], common.ask("DIRHASH " + line[1]))
+      File "/usr/local/bin//git-annex-remote-mega", line 401, in setFolder
+        folder = createFolder(conf["folder"], 2)
+      File "/usr/local/bin//git-annex-remote-mega", line 378, in createFolder
+        res = m.create_folder(subject, folder)
+      File "/usr/lib/python2.7/site-packages/mega/mega.py", line 617, in create_folder
+        'i': self.request_id})
+      File "/usr/lib/python2.7/site-packages/mega/mega.py", line 110, in _api_request
+        timeout=self.timeout)
+      File "/usr/lib/python2.7/site-packages/requests/api.py", line 88, in post
+        return request('post', url, data=data, **kwargs)
+      File "/usr/lib/python2.7/site-packages/requests/api.py", line 44, in request
+        return session.request(method=method, url=url, **kwargs)
+      File "/usr/lib/python2.7/site-packages/requests/sessions.py", line 354, in request
+        resp = self.send(prep, **send_kwargs)
+      File "/usr/lib/python2.7/site-packages/requests/sessions.py", line 460, in send
+        r = adapter.send(request, **kwargs)
+      File "/usr/lib/python2.7/site-packages/requests/adapters.py", line 250, in send
+        raise SSLError(e)
+    requests.exceptions.SSLError: The read operation timed out
+    (external special remote protocol error, unexpectedly received "" (unable to parse command)) failed
+
+
+Any help would be appreciated, thanks!

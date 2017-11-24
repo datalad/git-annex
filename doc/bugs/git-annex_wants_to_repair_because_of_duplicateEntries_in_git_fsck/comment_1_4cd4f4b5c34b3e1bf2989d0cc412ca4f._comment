@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-10-31T17:07:43Z"
+ content="""
+This was supposed to be dealt with in version 6.20161027. But, I see now
+that the parser I thought was triggering on those missing object lines,
+was not really (`extractSha` does not match in this case because of the
+colon after the sha). 
+
+Instead, the problem seems to be that `git fsck` is exiting nonzero. So it
+assumes that fsck is failing without printing out any shas, which is a
+condition that calls for repairs.
+
+About all I can think to do is, if fsck outputs "duplicateEntries" and
+no other lines at all, and exits nonzero, treat this as a success.
+This risks ignoring other reasons fsck might exit nonzero, but hopefully
+it would output something else in such a case. I've implemented this.
+
+---
+
+I am interested in getting at the root cause of the problem of
+duplicate directory entries. It seems pretty likely to result from using
+adjusted branches.
+
+It would be useful to get more information about the trees that fsck
+is warning about; are they part of existing or past adjusted branches
+or not? Are they merge commits?
+
+(Previously: [[forum/how_to_disaster_recovery]])
+
+Leaving this bug open since we really need to get at the root cause of
+the problem.
+"""]]

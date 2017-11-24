@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""fixed"""
+ date="2014-10-28T20:19:04Z"
+ content="""
+I seem to have forgotten to follow up here, but I think I fixed
+this problem some time ago, in [[!commit 5afc8b28e03f4d242fa81a9a93384714d12d4e5c]].
+"""]]

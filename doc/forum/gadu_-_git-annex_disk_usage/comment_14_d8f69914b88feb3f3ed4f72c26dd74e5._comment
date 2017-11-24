@@ -1,0 +1,231 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="it's git annex info, not status"
+ date="2015-06-23T04:15:24Z"
+ content="""
+so the previous comments by joeyh were correct 2 years ago, but now git annex status behaves more like git-status than anything else, and will *not* give you disk usage.
+
+however, `git annex info` will, and if you use `--fast`, it works pretty fast as well. example, on my pictures collection:
+
+<pre>
+[1044]anarcat@marcos:Photos$ time git annex info --fast *
+directory: 1969
+local annex keys: 5
+local annex size: 10.95 megabytes
+annexed files in working tree: 5
+size of annexed files in working tree: 10.95 megabytes
+directory: 1970
+local annex keys: 26
+local annex size: 827.5 megabytes
+annexed files in working tree: 26
+size of annexed files in working tree: 827.5 megabytes
+directory: 1998
+local annex keys: 10
+local annex size: 3.31 megabytes
+annexed files in working tree: 10
+size of annexed files in working tree: 3.31 megabytes
+directory: 2004
+local annex keys: 49
+local annex size: 42.01 megabytes
+annexed files in working tree: 49
+size of annexed files in working tree: 42.01 megabytes
+directory: 2005
+local annex keys: 561
+local annex size: 379.23 megabytes
+annexed files in working tree: 561
+size of annexed files in working tree: 379.23 megabytes
+directory: 2006
+local annex keys: 932
+local annex size: 995.95 megabytes
+annexed files in working tree: 932
+size of annexed files in working tree: 995.95 megabytes
+directory: 2007
+local annex keys: 1162
+local annex size: 2.33 gigabytes
+annexed files in working tree: 1162
+size of annexed files in working tree: 2.33 gigabytes
+directory: 2008
+local annex keys: 658
+local annex size: 934.88 megabytes
+annexed files in working tree: 658
+size of annexed files in working tree: 934.88 megabytes
+directory: 2009
+local annex keys: 500
+local annex size: 836.65 megabytes
+annexed files in working tree: 500
+size of annexed files in working tree: 836.65 megabytes
+directory: 2010
+local annex keys: 1049
+local annex size: 1.85 gigabytes
+annexed files in working tree: 1049
+size of annexed files in working tree: 1.85 gigabytes
+directory: 2011
+local annex keys: 1206
+local annex size: 1.54 gigabytes
+annexed files in working tree: 1206
+size of annexed files in working tree: 1.54 gigabytes
+directory: 2012
+local annex keys: 2767
+local annex size: 10.52 gigabytes
+annexed files in working tree: 2767
+size of annexed files in working tree: 10.52 gigabytes
+directory: 2013
+local annex keys: 4071
+local annex size: 32.49 gigabytes
+annexed files in working tree: 4071
+size of annexed files in working tree: 32.49 gigabytes
+directory: 2014
+local annex keys: 6930
+local annex size: 27.34 gigabytes
+annexed files in working tree: 6930
+size of annexed files in working tree: 27.34 gigabytes
+directory: 2015
+local annex keys: 2134
+local annex size: 8.07 gigabytes
+annexed files in working tree: 2134
+size of annexed files in working tree: 8.07 gigabytes
+directory: rando-velo
+local annex keys: 184
+local annex size: 537.58 megabytes
+annexed files in working tree: 184
+size of annexed files in working tree: 537.58 megabytes
+directory: RMLL2008-Koumbit
+local annex keys: 11
+local annex size: 25.58 megabytes
+annexed files in working tree: 11
+size of annexed files in working tree: 25.58 megabytes
+5.47user 1.75system 0:14.70elapsed 49%CPU (0avgtext+0avgdata 30524maxresident)k
+121136inputs+0outputs (2major+18418minor)pagefaults 0swaps
+</pre>
+
+whereas without `--fast` is much slower, presumably because it's fetching the tracking information:
+
+<pre>
+[1045]anarcat@marcos:Photos$ time git annex info  *
+directory: 1969
+local annex keys: 5
+local annex size: 10.95 megabytes
+annexed files in working tree: 5
+size of annexed files in working tree: 10.95 megabytes
+numcopies stats:
+        numcopies +0: 5
+directory: 1970
+local annex keys: 26
+local annex size: 827.5 megabytes
+annexed files in working tree: 26
+size of annexed files in working tree: 827.5 megabytes
+numcopies stats:
+        numcopies +0: 26
+directory: 1998
+local annex keys: 10
+local annex size: 3.31 megabytes
+annexed files in working tree: 10
+size of annexed files in working tree: 3.31 megabytes
+numcopies stats:
+        numcopies +0: 10
+directory: 2004
+local annex keys: 49
+local annex size: 42.01 megabytes
+annexed files in working tree: 49
+size of annexed files in working tree: 42.01 megabytes
+numcopies stats:
+        numcopies +0: 49
+directory: 2005
+local annex keys: 561
+local annex size: 379.23 megabytes
+annexed files in working tree: 561
+size of annexed files in working tree: 379.23 megabytes
+numcopies stats:
+        numcopies +0: 561
+directory: 2006
+local annex keys: 932
+local annex size: 995.95 megabytes
+annexed files in working tree: 932
+size of annexed files in working tree: 995.95 megabytes
+numcopies stats:
+        numcopies +0: 932
+directory: 2007
+local annex keys: 1162
+local annex size: 2.33 gigabytes
+annexed files in working tree: 1162
+size of annexed files in working tree: 2.33 gigabytes
+numcopies stats:
+        numcopies +0: 1162
+directory: 2008
+local annex keys: 658
+local annex size: 934.88 megabytes
+annexed files in working tree: 658
+size of annexed files in working tree: 934.88 megabytes
+numcopies stats:
+        numcopies +0: 658
+directory: 2009
+local annex keys: 500
+local annex size: 836.65 megabytes
+annexed files in working tree: 500
+size of annexed files in working tree: 836.65 megabytes
+numcopies stats:
+        numcopies +0: 500
+directory: 2010
+local annex keys: 1049
+local annex size: 1.85 gigabytes
+annexed files in working tree: 1049
+size of annexed files in working tree: 1.85 gigabytes
+numcopies stats:
+        numcopies +0: 1049
+directory: 2011
+local annex keys: 1206
+local annex size: 1.54 gigabytes
+annexed files in working tree: 1206
+size of annexed files in working tree: 1.54 gigabytes
+numcopies stats:
+        numcopies +0: 1206
+directory: 2012
+local annex keys: 2767
+local annex size: 10.52 gigabytes
+annexed files in working tree: 2767
+size of annexed files in working tree: 10.52 gigabytes
+numcopies stats:
+        numcopies +0: 2767
+directory: 2013
+local annex keys: 4071
+local annex size: 32.49 gigabytes
+annexed files in working tree: 4071
+size of annexed files in working tree: 32.49 gigabytes
+numcopies stats:
+        numcopies +0: 4071
+directory: 2014
+local annex keys: 6930
+local annex size: 27.34 gigabytes
+annexed files in working tree: 6930
+size of annexed files in working tree: 27.34 gigabytes
+numcopies stats:
+        numcopies +0: 6930
+directory: 2015
+local annex keys: 2134
+local annex size: 8.07 gigabytes
+annexed files in working tree: 2134
+size of annexed files in working tree: 8.07 gigabytes
+numcopies stats:
+        numcopies +0: 2134
+directory: rando-velo
+local annex keys: 184
+local annex size: 537.58 megabytes
+annexed files in working tree: 184
+size of annexed files in working tree: 537.58 megabytes
+numcopies stats:
+        numcopies +0: 184
+directory: RMLL2008-Koumbit
+local annex keys: 11
+local annex size: 25.58 megabytes
+annexed files in working tree: 11
+size of annexed files in working tree: 25.58 megabytes
+numcopies stats:
+        numcopies +0: 11
+37.46user 5.70system 1:54.20elapsed 37%CPU (0avgtext+0avgdata 30704maxresident)k
+107912inputs+0outputs (2major+19426minor)pagefaults 0swaps
+</pre>
+
+14 seconds vs 114 seconds! almost an order of magnitude of difference...
+
+still, it seems to me `git annex info --fast $path` should be more clearly put forward as an alternative du solution for now. maybe this should be made into a tips page?
+"""]]

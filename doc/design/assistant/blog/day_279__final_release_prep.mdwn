@@ -1,0 +1,14 @@
+Landed two final changes before the release..
+
+First, made git-annex detect if any of the several long-running git process
+it talks to have died, and, if yes, restart them. My stress test is reliably
+able to get at least `git cat-file` to crash, and while I don't know why (and
+obviously should follow up by getting a core dump and stack trace of it),
+the assistant needs to deal with this to be robust.
+
+Secondly, wrote rather a lot of Java code to better open the web browser
+when the Android app is started. A thread listens for URLs to be written to
+a FIFO. Creating a FIFO from fortran&#94;Wjava code is .. interesting. Glad to
+see the back of the `am` command; it did me no favors.
+
+AFK

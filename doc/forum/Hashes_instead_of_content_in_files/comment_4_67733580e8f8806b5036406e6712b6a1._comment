@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-09-21T16:51:02Z"
+ content="""
+Like I said, use `git annex get`. This will populate the unlocked files
+with the content instead of the hashes.
+"""]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 1"
+ date="2014-10-02T15:33:58Z"
+ content="""
+You can set it up manually at the command line, and one it's set up, the assistant will be able to transfer files to it using rsync. See [[special_remotes/rsync]] for some setup examples. Note that the rsync server will need to be configured, somehow, to let you log in without giving a password -- one typical way this might be set up is using .ssh/authorized_keys on the rsync server.
+
+The assistant doesn't try to set up rsync special remotes because this is not very common, and there's no one way it can use to set up a ssh key so it can log in without a password
+that will work across different rsync server setups. It does support setting up rsync.net just because that's one I know how to handle.
+
+
+"""]]

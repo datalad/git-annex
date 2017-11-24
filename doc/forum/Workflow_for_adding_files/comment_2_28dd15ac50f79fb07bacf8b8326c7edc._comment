@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk9SYh6N-JUMkYkW4aOk55zC3Vr9KonDV4"
+ nickname="Florian"
+ subject="comment 2"
+ date="2014-06-18T07:35:31Z"
+ content="""
+Just to be sure I understood the topic, this would be achieved in putting the repo in the manual transfer group?
+
+manual
+
+This gives you nearly full manual control over what content is stored in the repository. This allows using the assistant without it trying to keep a local copy of every file. Instead, you can manually run git annex get, git annex drop, etc to manage content. Only content that is already present is wanted.
+
+The exception to this manual control is that content that a client repository would not want is not wanted. So, files in archive directories are not wanted once their content has reached an archive repository.
+
+present and ($client)
+
+(Where $client is a copy of the preferred content expression used for clients.)
+<<<
+"""]]

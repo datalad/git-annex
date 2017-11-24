@@ -1,0 +1,35 @@
+The webapp now fully handles repairing damage to the repository.
+
+Along with all the git repository repair stuff already built, I added
+additional repairs of the git-annex branch and git-annex's index file.
+That was pretty easy actually, since git-annex already handles merging
+git-annex branches that can sometimes be quite out of date. So when git repo
+repair has to throw away recent changes to the git-annex branch, it just
+effectively becomes out of date. Added a `git annex fsck --fast` run to
+ensure that the git-annex branch reflects the current state of the
+repository.
+
+When the webapp runs a repair, it first stops the assistant from committing
+new files. Once the repair is done, that's started back up, and it runs a
+startup scan, which is just what is needed in this sitation; it will add
+any new files, as well as any old files that the git repository damange
+caused to be removed from the index.
+
+Also made `git annex repair` run the git repository repair code, 
+for those with a more command-line bent. It can be used in non-git-annex
+repos too!
+
+----
+
+So, I'm nearly ready to wrap up working on disaster recovery. Lots has been
+accomplished this month. And I have put off making a release for entirely
+too long!
+
+The big missing piece is repair of git remotes located on removable drive.
+I may make a release before adding that, but removable drives are probably
+where git repository corruption is most likely to occur, so I certainly
+need to add that.
+
+----
+
+Today's work was sponsored by Scott Robinson.

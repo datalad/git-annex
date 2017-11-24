@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-09-21T20:25:10Z"
+ content="""
+This is a documented behavior change in v6 mode. I'm willing to listen to
+arguments that the behavior change is a bad idea, but see below.
+
+To get the old behavior, you can use:
+
+	git -c 'annex.largefiles=exclude=*' add
+
+Unfortunately git won't let you alias git add to always pass that
+switch. But you could alias `git sadd` or something to use that switch.
+
+----
+
+The same behavior change also makes `git commit -a` use git-annex when file
+contents have changed, rather than the old hacky method which added the
+files to git and then undid that in a pre-commit hook. So there's quite a
+nice benefit there.
+
+And for that reason it doesn't make sense to add a configuration option to
+disable it, because such an option would break `git commit -a` of
+modified annexed files.
+
+Changing the gitattributes won't work because then the v6 repository won't
+get annexed files checked out properly.
+"""]]

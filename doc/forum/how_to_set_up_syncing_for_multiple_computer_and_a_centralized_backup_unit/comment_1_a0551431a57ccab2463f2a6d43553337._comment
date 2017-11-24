@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawncVeolylM8VoRbWhIYDlfGhIP69-aNXm4"
+ nickname="Espen"
+ subject="comment 1"
+ date="2014-10-10T07:14:36Z"
+ content="""
+Okey, came in to the office today to check the first computer I set up. It lacks all the files except the ones located on the third computer. So all sites are synced (only a lot of files are dropped). Seems something happened while the third computer was set up that caused just a few files to sync from the backup server and then git somehow thought that was it and then synced computer one, two and the server according to files present on computer three (obviously way to few files). This is slightly worrisome and I wonder what caused this. I'll inspect the log files for the transfer on computer three when I get home.
+
+Can anyone of you confirm that having this setup should not cause problems:
+
+computer 1 - client mode
+computer 2 - client mode
+computer 3 - client mode
+backup unit/nas - backup mode
+"""]]

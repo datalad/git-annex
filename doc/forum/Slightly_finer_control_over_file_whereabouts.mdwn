@@ -1,0 +1,18 @@
+I have previously been confused by how to have a bit more manual control over where files are (as in [[bugs/git-annex_immediately_re-gets_dropped_files/]]).
+
+I thought perhaps something like an archive directory would work, but as I might want different computers to have different content, perhaps a per-computer archive repository.
+
+To that end, I have
+
+<pre>walter@dionysus:~/annex$ git annex content .
+(exclude=archive/dionysus/* or (not (copies=archive:1 or copies=smallarchive:1))) or (not copies=semitrusted+:1)
+ok</pre>
+
+which is a modified version of the archive [[preferred_content]], but with the intention that I change the part after `exclude` to be different for each client.
+I also set the group to client for this client (dionysus).
+
+However, it does not seem to drop files when I move them into `archive/dionysus/`, and I cannot see anything in the logs to suggest why.
+
+What am I doing wrong here? Or, is this the wrong approach?
+
+--Walter

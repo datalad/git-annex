@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkQafKy7hNSEolLs6TvbgUnkklTctUY9LI"
+ nickname="Zellyn"
+ subject="Question about git-annex"
+ date="2013-01-11T21:05:55Z"
+ content="""
+Not sure where the correct place to ask this is...
+
+My use case for git-annex is to back up important files (pictures, videos, etc.) on a hard disk at work and one at home. Is there an easy way to do that? I'd like to be able to get git-annex to fill up my phone/laptop with files that it thinks are backed up in <2 of the locations, and ferry them back and forth. They can be deleted to free up space after that, if necessary.
+
+Thanks for all your work, by the way. I missed the kickstarter, but if there's a simple and direct way to donate (dwolla?, gittip?), I'd love to chip in.
+"""]]

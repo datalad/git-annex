@@ -1,0 +1,40 @@
+Hi,
+
+The git annex seem has problem with many files.
+
+For synchronize, the operation lasts 8 hours. Here the sample for synchronizing to my local remote server (sbackup)
+
+start at **20:12** / end at **04:13** / total time = ~ **8 hours**
+
+    git annex sync sbackup
+    
+    [2015-04-13 20:12:26 CEST] call: git ["--git-dir=.git","--work-tree=.","push","sbackup","+git-annex:synced/git-annex","master:synced/master"]
+    Counting objects: 792155, done.
+    Delta compression using up to 4 threads.
+    Compressing objects: 100% (789727/789727), done.
+    Writing objects: 100% (792155/792155), 75.73 MiB | 2.35 MiB/s, done.
+    Total 792155 (delta 449604), reused 1 (delta 0)
+    To partage@192.168.253.53:/data/samba/git-annex/docshare
+      ae182f0..fad3aca  git-annex -> synced/git-annex
+      e0e67fe..5226a6f  master -> synced/master
+    [2015-04-14 04:13:05 CEST] read: git ["--git-dir=.git","--work-tree=.","push","sbackup","git-annex","master"]
+    ok
+
+Another problem, I do not know exactly how many files I own (i use **find . | wc -l** )
+
+.git = 1250633
+
+documents = 61124
+
+medias = 199504
+
+it seem i own ~250000 files, but in the .git **1.2 millions files**.
+
+The following command also very slow
+
+    git annex info
+
+
+What the best pratices for use git annex with many files > 500 000 or maintenance & reduction/cleaning method
+
+Thanks

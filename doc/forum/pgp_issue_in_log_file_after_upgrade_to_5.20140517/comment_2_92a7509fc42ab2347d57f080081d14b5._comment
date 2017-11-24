@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.55"
+ subject="comment 2"
+ date="2014-07-03T19:49:03Z"
+ content="""
+That error message seems to occur when git-annex is trying to upgrade itself to a newer version, but for some reason the temporary directory it uses for gpg allows some other user to write to it. Perhaps because of a wacky umask, I don't know. AFAICS it's only a warning and the upgrade still works, but I have made git-annex force a sane umask when creating this temp directory.
+"""]]

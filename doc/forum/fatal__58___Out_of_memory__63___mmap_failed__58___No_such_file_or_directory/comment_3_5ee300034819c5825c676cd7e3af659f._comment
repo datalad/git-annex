@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Idhup"
+ ip="91.58.248.157"
+ subject="Didn't work"
+ date="2014-07-06T17:46:01Z"
+ content="""
+Repacking in cygwin towards a smaller packsize did not help. I shrinked it down to 2 MB per packfile, I still got the errors.
+
+When checking the debug output, you can see that git crashes when adding some large-ish .mov files. I'm not even sure if git's supposed to add them or if something went wrong with Windows/DirectMode. I executed git reset to remove pending additions that weren't supposed to be there, but to no avail.
+
+Any ideas on how to fix that?
+"""]]

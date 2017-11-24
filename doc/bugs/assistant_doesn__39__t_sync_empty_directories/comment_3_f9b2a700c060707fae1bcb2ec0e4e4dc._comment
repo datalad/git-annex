@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmOsy6nbvPyXLd--qqjPMLnVIzxgZwtKlQ"
+ nickname="Nicolas"
+ subject="comment 3"
+ date="2013-09-11T23:19:26Z"
+ content="""
+This behaviour is indeed very confusing when one attempts to use git-annex with the assistant only, without thinking about the underlying machinery.
+Having the assistant automatically put a .gitignore file in empty directories is a possible solution, but maybe printing a warning in the log when the watcher sees an empty directory could be an unobtrusive and helpful solution? (At least it would have helped me)
+"""]]

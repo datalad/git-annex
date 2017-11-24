@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="konubinix"
+ subject="recoll"
+ date="2015-08-18T13:30:21Z"
+ content="""
+I personally use recoll to do that. It is not perfect but works well.
+
+To extract the metadata, I use a script called git-annex_dump_tags.sh whose content is:
+	set -eu
+	FILE=\"${1}\"
+	DIR=\"$(dirname \"${FILE}\")\"
+	FILE_NO_DIR=\"$(basename \"${FILE}\")\"
+	cd \"${DIR}\"
+	git annex metadata \"${FILE_NO_DIR}\"|\
+	    tail -n+2|\
+	    head -n-1|\
+	    sed -r 's/^ +//'|\
+	    sed -r 's/^([^=]+)=(.+)$/\1 = \2/'
+
+Then in the recoll configuration, I added
+	[~/perso]
+	metadatacmds = ; rclmulti_gitannex = git-annex_dump_tags.sh %f
+
+More information can be found in [link the recoll manual](http://www.lesbonscomptes.com/recoll/usermanual/usermanual.html#RCL.INSTALL.CONFIG.RECOLLCONF).
+
+Then you'll have to indicate what key to use in the indexing by updating the \"fields\" file. For instance, you could add:
+	[prefixes]
+	ack = XYACK
+	year = XYMONTH
+	month = XYMONTH
+	day = XYDAY
+
+	[stored]
+	ack=
+	year=
+	month=
+	day=
+
+I generally use the ack metadata in my bibliography to indicate whether I read the paper or not (ack=no or ack=yes). I can get access to all the paper I did not read yet, that were added in August 2015, and that deal with gaussian processes with the query
+	recoll -t -q ack:no year:2015 month:8 gaussian processes
+
+It was not easy to setup, but it does the job.
+
+Hope that helps.
+"""]]

@@ -1,0 +1,21 @@
+Hello,
+
+I am using the latest git-annex with the webui having two local folders (one over nfs) connected as a full backup group. 
+
+On every reboot I get a jumping ball icon with the text:
+
+"Attempting to repair [tr2]"
+
+And the later the text:
+
+"failed to sync to tr2"
+
+The debug log is filled with entries like this, where the number of deltas is increasing:
+
+[2014-08-26 20:34:50 CEST] PushRetrier: Syncing with tr2 
+fatal: pack has 15 unresolved deltas
+error: unpack failed: index-pack abnormal exit
+To /nfs/backup
+ ! [remote rejected] git-annex -> synced/git-annex (n/a (unpacker error))
+ ! [remote rejected] annex/direct/master -> synced/master (n/a (unpacker error))
+error: failed to push some refs to '/nfs/backup''

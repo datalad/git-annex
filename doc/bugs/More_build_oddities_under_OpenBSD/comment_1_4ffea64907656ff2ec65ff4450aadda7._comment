@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="71.80.94.56"
+ subject="comment 1"
+ date="2014-02-07T18:49:38Z"
+ content="""
+This is definitely not an issue in git-annex's code. Two C libraries are exporting the same symbol (gnulib might be the other one, or it could be part of the OpenBSD libc as it's some deprecated POSIX symbol, I don't know) and this is simply not apparent until the linker tries to make a binary linking with both.
+
+I have dealt with a similar issue on Android by modifying C libraries to not export colliding symbols. See:
+<https://github.com/joeyh/ghc-android/blob/stable-ghc-snapshot/patches/gsasl-avoid-memxor-conflict.patch>
+"""]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk3gWkz5Qgy5qEa-myg8KWtiTrHSKW1x7Q"
+ nickname="Nicolas"
+ subject="Using Gitolite 3.6.1"
+ date="2014-09-11T00:11:32Z"
+ content="""
+Hi!
+
+I've made a fresh install of Gitolite 3.6.1 and got this error when trying to sync :
+
+FATAL: bad git-annex-shell command: git-annex-shell 'configlist' '/nicolas.git' at /home/git/bin/commands/git-annex-shell line 25, <DATA> line 1.
+
+"""]]

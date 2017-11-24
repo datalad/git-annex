@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlVB7wf1TFFrNPvM62fg78X-simVV-R1Cg"
+ nickname="Joe"
+ subject="comment 3"
+ date="2014-11-03T02:21:32Z"
+ content="""
+I was thinking that a call to `rsync /blah/.git/annex/tmp/rsynctmp/24863/2fe blah@blah:/home/shared-xfer/24863/` would work just as well, creating the necessary directories.  But this requires knowing all the subdirectories of `24863`.  Not sure if `git-annex` knows this.
+"""]]

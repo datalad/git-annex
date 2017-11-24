@@ -1,0 +1,11 @@
+Support configuring export remotes in the webapp
+
+Remember the little-used preferreddir= preferred content
+setting and the "public" repository group. The webapp uses
+those for IA, which could be replaced with setting up an export
+tracking branch.
+
+The UI for S3, WebDAV, directory special remote setup could also have a way
+to make it an export, and configure the directory to export. This would
+complicate the UI, so needs thought. --[[Joey]]
+

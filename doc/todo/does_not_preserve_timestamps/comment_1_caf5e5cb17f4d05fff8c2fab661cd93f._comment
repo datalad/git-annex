@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.144"
+ subject="comment 1"
+ date="2014-09-23T20:27:25Z"
+ content="""
+The closest git comes to storing a timestamp is the date of the last commit of a file for mtime, and first commit for ctime. However, those are pretty expensive to look up for a given file. And git doesn't try to preserve timestamps in checkouts at all, which argues that git-annex, at least at the command line, should not either.
+"""]]

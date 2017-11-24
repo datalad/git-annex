@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="stp"
+ ip="84.56.21.11"
+ subject="comment 6"
+ date="2014-02-20T22:19:12Z"
+ content="""
+As discussed on irc.
+Fsck --all does check more then the working tree and therefore for fsck to not complain this would be a worthy feature to be added. (git annex forget $key)
+"""]]

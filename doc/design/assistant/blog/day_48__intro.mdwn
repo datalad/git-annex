@@ -1,0 +1,8 @@
+Lots of WebApp UI improvements, mostly around the behavior when
+displaying alert messages. Trying to make the alerts informative
+without being intrusively annoying, think I've mostly succeeded now.
+
+Also, added an intro display. Shown is the display with only one repo;
+if there are more repos it also lists them all.
+
+[[!img screenshot/intro.png]]

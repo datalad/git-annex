@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="Xyem"
+ ip="87.194.19.134"
+ subject="comment 5"
+ date="2014-04-04T15:25:39Z"
+ content="""
+Adding videos from youtube ends up with it using the URL backend, even without fast.
+
+    $ git init quvitest
+    $ cd quvitest/
+    $ git annex init
+    $ git annex addurl https://www.youtube.com/watch?v=mghhLqu31cQ
+    (... file is downloaded ...)
+    $ find .git/annex/objects/ -type f
+    .git/annex/objects/1J/Wp/URL--quvi&chttps&c%%www.youtube.com%watch,63v,61mghhLqu31cQ/URL--quvi&chttps&c%%www.youtube.com%watch,63v,61mghhLqu31cQ
+
+Is migrating manually required or should I log a bug?
+"""]]

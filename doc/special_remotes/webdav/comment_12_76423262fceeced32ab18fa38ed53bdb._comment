@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnmF_9CAtfqdZkC4e-_dCX-rK5bqh4RWkw"
+ nickname="Carl"
+ subject="comment 12"
+ date="2014-05-17T20:47:00Z"
+ content="""
+I tried it, but I do have som troubles. Changing password seemed to have worked. At least I do think it did say OK. Any further action generates the following response:
+
+$ git annex fsck --from box.com3 Literatur/Science/Papers/Modén/2006.pdf
+
+fsck Literatur/Science/Papers/Modén/2006.pdf (gpg) (checking box.com3...) (StatusCodeException (Status {statusCode = 401, statusMessage = \"Unauthorized\"}) [(\"Server\",\"nginx\"),(\"Date\",\"Sat, 17 May 2014 19:04:51 GMT\"),(\"Content-Type\",\"application/xml; charset=utf-8\"),(\"Content-Length\",\"235\"),(\"Connection\",\"keep-alive\"),(\"Vary\",\"Host\"),(\"WWW-Authenticate\",\"Basic realm=\\"dav.box.com\\"\"),(\"X-Response-Body-Start\",\"<?xml version=\\"1.0\\" encoding=\\"utf-8\\"?>\n<d:error xmlns:d=\\"DAV:\\" xmlns:s=\\"http://sabredav.org/ns\\">\n  <s:exception>Sabre_DAV_Exception_NotAuthenticated</s:exception>\n  <s:message>Username or password does not match</s:message>\n</d:error>\n\")] (CJ {expose = []})) failed
+git-annex: fsck: 1 failed
+
+It seems it is not available to use the correct password. I tried to use initremote and create a new remote, and this works. In the end no data is lost, as three copies out of my four are still there. I will keep my old remote around for some time if there is any sort of errorfinding that can be done. 
+"""]]

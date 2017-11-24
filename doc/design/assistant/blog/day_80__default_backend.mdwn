@@ -1,0 +1,14 @@
+I've changed the default backend used by git-annex from SHA256 to SHA256E.
+Including the filename extension in the key is known to make repositories
+more usable on things like MP3 players, and I've recently learned it also
+avoids [[forum/Weird_behavior_with_OS_X_Finder_and_Preview.app]]. 
+
+I thought about only changing the default in repositories set up by the
+assistant, but it seemed simpler to change the main default. The old
+backend is really only better if you might have multiple copies of files
+with the same content that have different extensions.
+
+Fixed the socket leak in pairing that eluded me earlier.
+
+I've made a new [[polls]] page, and posted a poll:
+[[polls/prioritizing_special_remotes]]

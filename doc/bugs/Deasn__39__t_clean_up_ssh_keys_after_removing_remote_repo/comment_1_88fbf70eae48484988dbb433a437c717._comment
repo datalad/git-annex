@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.193"
+ subject="comment 1"
+ date="2013-06-25T18:20:05Z"
+ content="""
+It's true that deleting a ssh repository in the webapp does not delete any ssh keys that the webapp configured to access that repository. I'm a bit reluctant to try to clean it up entirely automatically, because the ssh configuration might have been manually altered, or might be used by another local repository. Particularly, if another local repo is set up to use the same ssh remote, the webapp will reuse the ssh key.
+
+> Create, delete and create again a new repo on remote ssh server with password auth.
+
+I tried doing this, and did not encounter any problem. Since the new repo had a different path on the ssh server, I simply ended up with two ssh keys configured in `~/.ssh/config` for two different repositories. The presence or absence of the first key did not affect the second key.
+
+I think you need to go into more detail about exactly what you did, or show the files in .ssh that were set up, so I can see what the actual problem is.
+"""]]

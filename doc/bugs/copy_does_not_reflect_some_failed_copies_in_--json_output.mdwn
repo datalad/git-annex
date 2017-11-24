@@ -1,0 +1,23 @@
+### Please describe the problem.
+
+see below.  expected: entries on failed copies with "success"=false, and not just error messages 
+
+
+[[!format sh """
+
+$> git annex copy --to=neurosmaug svgtune_0.2.0.orig.tar.gz nonexisting                         
+git-annex: nonexisting not found                                       
+copy svgtune_0.2.0.orig.tar.gz (checking neurosmaug...) ok
+git-annex: copy: 1 failed
+
+$> git annex copy --to=neurosmaug svgtune_0.2.0.orig.tar.gz nonexisting --json
+git-annex: nonexisting not found
+{"command":"copy","note":"checking neurosmaug...","success":true,"key":"SHA256E-s5121--6d8f7d10206a120a42bec2cd29bc2365d09889fdf070ac8c67d1cff0b1539f63.tar.gz","file":"svgtune_0.2.0.orig.tar.gz"}
+git-annex: copy: 1 failed
+
+$> git annex version
+git-annex version: 6.20170220+gitg75a15e1ad-1~ndall+1
+
+"""]]
+
+[[!meta author=yoh]]

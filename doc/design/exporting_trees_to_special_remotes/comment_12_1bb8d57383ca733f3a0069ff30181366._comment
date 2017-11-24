@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: export &quot;each revision&quot;"""
+ date="2017-08-15T18:13:38Z"
+ content="""
+That sounds much more like a regular remote with `git annex copy --all`.
+
+This entire design is preducated on exporting a single treeish. If you want
+to make a single treeish containing all versions of every file ...
+"""]]

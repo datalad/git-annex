@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 12"
+ date="2013-10-16T16:05:45Z"
+ content="""
+To make computers on your network directly communicate, they must be connected together using the user interface. This is normally using the local pairing interface. But local pairing does not yet work on Android. The best you can do to instead on your Android device, add the Linux PC as a ssh server. This will let the Android device send/receive files directly with it over the local network.
+"""]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2016-10-26T18:14:30Z"
+ content="""
+The first try at making git-annex ignore the fsck lines about duplicate
+entries didn't quite work; the second try landed 8 days ago and it's not
+been in a release yet so that's probably why you continue to see the
+problem.
+
+I don't see how deleting a special remote could lead to this. But we know
+that `git annex adjust --unlock` did, for another user.
+"""]]

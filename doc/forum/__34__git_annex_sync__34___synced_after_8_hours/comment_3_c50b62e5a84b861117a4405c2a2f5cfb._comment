@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 3"
+ date="2015-04-16T07:41:07Z"
+ content="""
+*git annex info* has check every file (not sure if it traverses *.git/annex/objects* specifically or not) to get \"local annex\" information. You can improve its performance by improving directory traversal in general (different filesystem or [changing the hashing method so it isn't Xx/Yy/KEY/FILE](https://github.com/datalad/datalad/issues/32)).
+
+The repack/gc speeds up operations for the git side of things, like syncing (pull/push), cloning and committing.
+
+Here's what I used:
+
+    git repack -ad
+    git gc
+
+This took git actions down from 1 hour+ to ~10 minutes (for a repo with 5.6 million objects).
+"""]]

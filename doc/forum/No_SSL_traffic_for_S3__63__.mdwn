@@ -1,0 +1,8 @@
+As far I can tell, the encryption mentioned on the wiki for S3 [1] refers to file-level encryption. That is, it encrypts files with GPG before storing them (or after retrieving them) from S3. However, even if I have GPG encryption off, I still want S3 requests to use SSL encryption. As far as I can tell, HTTPS isn't used with S3 remotes. Is there any way to enable it (if so, it should be the default)?
+
+I am using git-annex version: 3.20120406
+
+Cheers,
+--acrefoot
+
+[1] http://git-annex.branchable.com/special_remotes/S3/

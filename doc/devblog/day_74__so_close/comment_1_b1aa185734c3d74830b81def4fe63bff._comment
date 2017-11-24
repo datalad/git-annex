@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://nullroute.eu.org/~grawity/"
+ nickname="Mantas"
+ subject="comment 1"
+ date="2013-12-08T12:52:26Z"
+ content="""
+Take a look at how Process Hacker implements the \"Search for open handles\" function; it is rather close to `lsof`. (Unlocker probably does it the same way, too.)
+
+But locking (e.g. I think the \"share mode\" could prevent other programs from writing but not reading) may be more reliable, if a program starts writing to file *after* the lsof check happens...
+"""]]

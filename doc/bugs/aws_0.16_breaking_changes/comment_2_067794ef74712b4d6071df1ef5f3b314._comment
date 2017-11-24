@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="aristidb@4551cc1215222a56e271a796b92908680f3941b5"
+ nickname="aristidb"
+ avatar="http://cdn.libravatar.org/avatar/64e6cb35f87f56a7f13bac236afff510"
+ subject="comment 2"
+ date="2017-02-05T12:49:22Z"
+ content="""
+I made a typo in my previous response: It should be ETag, not Etag. Corrected:
+
+[[!haskell \"\"\"
+S3.UploadPartResponse { S3.uprETag = etag } <- sendS3Handle h req
+\"\"\"]
+"""]]

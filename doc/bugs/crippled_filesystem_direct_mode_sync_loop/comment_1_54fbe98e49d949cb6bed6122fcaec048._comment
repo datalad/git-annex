@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Asureus"
+ avatar="http://cdn.libravatar.org/avatar/f544d481d1e5adcd3b68c27d18680535"
+ subject="one more thing"
+ date="2016-12-25T14:46:46Z"
+ content="""
+Forgot to mention it, \"git annex test\" never passed on my Windows setup, always got 10-20 failed tests. Is that OK?
+"""]]

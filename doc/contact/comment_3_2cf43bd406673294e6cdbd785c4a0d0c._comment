@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlkA6XinbeOdnEDxEGQUWyjqPGh0kdMXr4"
+ nickname="Blake"
+ subject="Starting git-annex assistant"
+ date="2013-10-02T23:57:48Z"
+ content="""
+Hi Joey,
+
+I am one of your original funders for git-annex. I think you have done a great job and I am proud to say I helped fund your endeavor.
+
+How do I start the git-annex assistant webapp via command line? I installed the program on my Fedora 19 computer via YUM and it does not come packaged with a desktop icon as you show in your demonstration video. I try running `$ git annex assistant` but I cannot access `http://127.0.0.1:34795/` as you do in the video. Also, the quickstart page (http://git-annex.branchable.com/assistant/quickstart/) seems to have outdated information as it states you can start the webapp via `$ git annex webapp`, however when I try to run this I get the following error: `git-annex: unknown command webapp`.
+
+Regards,
+Blake
+
+"""]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Idhup"
+ ip="91.58.248.157"
+ subject="System"
+ date="2014-06-29T19:26:42Z"
+ content="""
+Forgot to tell: This is a Win7 x64 system, running git 1.9.2.msysgit.0 and
+
+git-annex version: 5.20140517-gee56d21
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV DNS Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar hook external
+"""]]

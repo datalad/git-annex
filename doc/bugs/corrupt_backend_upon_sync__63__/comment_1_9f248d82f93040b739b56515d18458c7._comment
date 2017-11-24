@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-04-09T17:39:28Z"
+ content="""
+The symink that you're showing is a file checked into git.
+
+So, you should be able to run `git log 'Pictures/2014/06/21/2014-06-21 13.52.34.png'`
+on the remote and find a commit that somehow changed the symlink to the
+broken one that the remote has.
+
+The only other possibilities are
+
+* Somehow the data in git in the remote got corrupted, and git didn't
+  notice. Seems very unlikely.
+* Somehow git decided to munge up the symlink when checking it out on the
+  remote. While there are some git features like smudge filters that could
+  perhaps be configured to do that, I don't see how git could do it on its
+  own.
+
+I've never seen git do anything like this.
+You're going to have to investigate this on your own and/or provide enough
+information to reproduce the problem.
+"""]]

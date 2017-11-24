@@ -1,0 +1,9 @@
+More work on S3 multipart uploads, since the aws library got fixed today
+to return the ETAGs for the parts. I got multipart uploads fully working,
+including progress display.
+
+The code takes care to stream each part in from the file and out the
+socket, so I'd hoped it would have good memory behavior. However, for
+reasons I have not tracked down, something in the aws library is causing
+each part to be buffered in memory. This is a problem, since I want to
+use 1 gb as the default part size.

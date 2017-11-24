@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2016-09-05T17:12:11Z"
+ content="""
+A couple others have reported dups of this bug.
+
+While this needs git changes to fix, it would be possible for git-annex to
+eg, warn and skip whenever a filename contains a newline. Probably better
+than crashing...
+"""]]

@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-02-12T18:21:38Z"
+ content="""
+I guess that fully getting rid of direct mode is a couple of years out.
+
+First, [[design/adjusted_branches]] needs to be implemented, to allow
+locked files to appear as unlocked automatically when a repository is
+checked out on a device that doesn't support symlinks.
+
+Then, a git-annex version with good enough support for v6 unlocked files
+needs to have been around long enough that basically everyone has upgraded.
+So in various stable and long term support version of linux distros, etc.
+Only at that point could direct mode repositories be automatically updated
+to v6 repositories.
+
+And yeah, it's potentially a problem that annex.thin doesn't work on
+Windows or FAT, and so converting such a repository doubles the disk use.
+I've added a note to [[todo/smudge]] to remember this is a potential thing
+to be improved before getting rid of direct mode. I think there are a
+couple of approaches that could avoid the problem.
+
+So, I recommend not being put off from using direct mode today out of
+worries that it might be removed 3 years from now.
+
+(You mentioned repeatedly unlocking. You shouldn't need to do that.
+In a V6 repository, when you unlock a file, that changes how it's
+represented in the git repository, so you can commit that change and it
+will be unlocked in other clones too. And if you `git add` large files,
+they'll be unlocked by default and you don't need to unlock them.)
+"""]]

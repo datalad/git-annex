@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.114"
+ subject="comment 1"
+ date="2014-04-26T23:03:46Z"
+ content="""
+The signal icon shows when there's a direct connection to another repositoriry. This leats your repository immediately learn when there is a change, triggering a sync. Without any signal icons, there's no fast syncing when changes are made, so the webapp will prompt for you to set up such a connection.
+"""]]

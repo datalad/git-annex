@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="comment 5"
+ date="2015-05-19T12:18:05Z"
+ content="""
+Well, no, i don't think they changed, unless i missed something: there
+shouldn't be a `.git` repository there.
+
+There are [various
+instructions](http://stackoverflow.com/questions/10637378/how-do-i-convert-a-bare-git-repository-into-a-normal-one-in-place)
+on how to do this online. They do seem to agree with the first comment
+above.
+
+Personnally, I would just `git clone` to a different repo and `git
+annex forget` the old one. Unless you have a very complex repository
+with a lot of files, this is simple enough... You could even use `git
+annex reinit` to recycle the previous uuid if that's a concern. So in
+short:
+
+   git clone repo.git repo
+   cd repo
+   git annex info --fast # find the UUID of repo.git
+   git annex move --from $UUID
+   git annex reinit $UUID
+
+Then `repo.git` can be removed if you are certain everything is
+correct in `repo`.
+
+Note that you may want to have backups of everything before you do
+anything, as usual.
+"""]]

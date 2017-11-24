@@ -1,0 +1,88 @@
+### Please describe the problem.
+I had also commented this on [[another bug|bugs/git-annex_fromkey_barfs_on_utf-8_input]], but the original issue there is fixed now.
+I tested `fromkey`, `calckey --batch`, `lookupkey --batch` (in standalone) after your fix, they work nicely.
+
+However, `git-annex metadata --batch --json` using the [[linux standalone|install/Linux_standalone]] (autobuild) still fails when it encounters UTF-8 characters (e.g. ü, ç, ä).
+Also, `git-annex metadata --json` gives `"file":"��.txt"` for `ü.txt`.
+
+This happens only in the standalone builds.
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+$ .../git-annex.linux/runshell
+$ touch u.txt ü.txt
+$ git-annex add .
+
+$ git-annex metadata --batch --json
+{"file":"ü.txt"}
+git-annex: Batch input parse failure: Error in $: Failed reading: Cannot decode byte '\xb3': Data.Text.Internal.Encoding.decodeUtf8: Invalid UTF-8 stream
+
+$ git-annex metadata --batch --json
+{"file":"u.txt","fields":{"ç":["b"]}}
+git-annex: Batch input parse failure: Error in $: Failed reading: Cannot decode byte '\xb3': Data.Text.Internal.Encoding.decodeUtf8: Invalid UTF-8 stream
+
+$ git-annex metadata --batch --json
+{"file":"u.txt","fields":{"b":["ä"]}}
+git-annex: Batch input parse failure: Error in $: Failed reading: Cannot decode byte '\xb3': Data.Text.Internal.Encoding.decodeUtf8: Invalid UTF-8 stream
+
+$ git-annex metadata --json
+{"command":"metadata","note":"","success":true,"key":"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.txt","file":"u.txt","fields":{}}
+{"command":"metadata","note":"","success":true,"key":"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.txt","file":"��.txt","fields":{}}
+# success, but the second line should have "file":"ü.txt"
+"""]]
+
+It's the same even if I call `.../git-annex.linux/git-annex` directly (without `runshell`)
+
+### What version of git-annex are you using? On what operating system?
+Using the Linux standalone: [git-annex-standalone-amd64.tar.gz](https://downloads.kitenet.net/git-annex/autobuild/amd64/git-annex-standalone-amd64.tar.gz) on Xubuntu 16.04
+
+[[!format sh """
+$ git-annex version
+git-annex version: 6.20161213-g55a34b493
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository versions: 3 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+operating system: linux x86_64
+"""]]
+
+### Please provide any additional information below.
+
+None of the characters I used have `\xb3` in it, but all the errors happen due to it:
+[[!format sh """
+$ .../git-annex.linux/runshell
+$ echo -n ü | xxd
+00000000: c3bc                                     ..
+$ echo -n ç | xxd
+00000000: c3a7                                     ..
+$ echo -n ä | xxd
+00000000: c3a4                                     ..
+"""]]
+
+In `runshell`, `ls` can't show UTF-8, but `git-annex status` can:
+[[!format sh """
+$ .../git-annex.linux/runshell
+$ ls
+u.txt  ??.txt
+$ git-annex status
+A u.txt
+A ü.txt
+"""]]
+
+`man` complains about locale in `runshell` as well:
+[[!format sh """
+$ .../git-annex.linux/runshell
+$ man
+man: can\'t set the locale; make sure $LC_* and $LANG are correct
+What manual page do you want?
+# I escaped that \', formatting was messy otherwise
+$ set | grep LANG
+GDM_LANG='en_GB'
+LANG='en_GB.UTF-8'
+LANGUAGE='en_GB:en'
+$ set | grep LC
+# nothing
+"""]]

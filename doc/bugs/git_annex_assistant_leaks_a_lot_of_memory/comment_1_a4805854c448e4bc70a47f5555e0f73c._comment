@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-11-06T19:53:02Z"
+ content="""
+Does the assistant's memory use go back to being small when you stop 
+and restart the daemon, or does it immediately go back up?
+
+Are there a lot of files in `.git/annex/transfer`? One possibility
+is it might be getting flooded with failed/pending file transfers.
+
+If you feel up to building git-annex from source, you could
+enable the EKG remote monitoring interface. This would let you see
+graphs of the memory use, and probably get a good idea of what's
+using memory. Or, you could do a full memory profiling build of
+git-annex, which will let us nail down exactly what's using the memory.
+
+See [[this_page|ekg]] for instructions for building git-annex for EKG
+and memory profiling. If it's too hard for you to do that, I can 
+probably provide you with a prebuilt version with memory profiling.
+"""]]

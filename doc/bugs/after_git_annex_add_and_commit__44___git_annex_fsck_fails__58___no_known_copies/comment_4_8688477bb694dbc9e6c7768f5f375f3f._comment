@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="emanuele.olivetti@47d88ed185b03191e25329caa6fabc2efb3118b2"
+ nickname="emanuele.olivetti"
+ subject="repository marked as dead (!)"
+ date="2016-02-18T14:33:56Z"
+ content="""
+Update: I've just tried to add a 'test' directory to the repository with only a 'foo' file inside, then git commit. Surprisingly, if I do 'git annex fsck .' of it, the repository is marked as **dead** and no known copies of foo are available:
+
+    (master)> mkdir test ; cd test
+    test (master) > cat > foo
+    bar
+    test (master)> git annex add .
+    add foo ok
+    (recording state in git...)
+    test (master)> git commit -m \"added fake content to test git annex repo\"
+    [master b9f0a8f] added fake content to test git annex repo
+     1 file changed, 1 insertion(+)
+     create mode 120000 events/2015/test/foo
+    test (master)> git annex fsck .
+    Warning: Fscking a repository that is currently marked as dead.
+    fsck foo (checksum...) 
+      ** No known copies exist of foo
+    failed
+    (recording state in git...)
+    git-annex: fsck: 1 failed
+
+At this point, I suspect that the repository on my laptop has some serious problem. Shall I move this discussion to the forum? It may be a git-annex bug but it can just be that the repository is damaged for other reasons. Moreover, what is the best course of action, at this point?
+"""]]

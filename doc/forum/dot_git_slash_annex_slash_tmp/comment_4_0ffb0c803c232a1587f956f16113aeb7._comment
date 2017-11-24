@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 4"
+ date="2012-11-29T20:33:09Z"
+ content="""
+They're the full actual filenames (but not directories) of particular files in my repository, sometimes with numeric suffixes (or rather, numbers before the file suffixes), like this:
+
+746.DS_Store
+747.DS_Store
+748.DS_Store
+749.DS_Store
+Birdplane87712.mp4
+Birdplane87713.mp4
+Bodyrock87712.mp4
+Bodyrock87713.mp4
+Dubstep Violin- Lindsey Stirling- Crystallize746.mp4
+Dubstep Violin- Lindsey Stirling- Crystallize87712.mp4
+Dubstep Violin- Lindsey Stirling- Crystallize87713.mp4
+Handlebars (fan video)87712.mp4
+Handlebars (fan video)87713.mp4
+Handlebars (official)87712.mp4
+Handlebars (official)87713.mp4
+
+Most of them are videos, and I've moved videos around a lot in my repository, and made some mistakes doing so from time to time when I was first learning git-annex, and fooling around on the command line -- breaking symlinks and figuring out how to fix that with git-annex fix.
+
+"""]]

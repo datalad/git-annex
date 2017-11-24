@@ -1,0 +1,9 @@
+I am working on rehauling my backup scripts here, and I was originally doing an rsync of everything to an external drive, but now I think I can be smarted and skip my annexes in that rsync, and use git-annex superpowers to do the sync instead.
+
+I have added this to my backup script:
+
+    ( cd /srv/video && git annex copy --to backup . )
+
+And it works, so yaaay. :) However, I feel it could be faster. This seems to check each file one at a time, but doesn't git-annex keep a state of the remote internally, which would allow it to copy over only the missing files, without checking if each file is present individually?
+
+I mean, it's still pretty fast considering the dataset, but I wonder if there isn't some fast/easier way. Keep in mind I am hesitant of using the assistant for this because I am [[confused_about_external_drives]], the [[bugs/webapp takes 100% of the cpu]] and the [[bugs/assistant eats all CPU]]. I would prefer to script this anyways. --[[anarcat]]

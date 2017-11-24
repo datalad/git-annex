@@ -1,0 +1,22 @@
+Hello,
+
+while reading the release notes of git 2.11 I noticed a cool new feature has been merged:
+
+> If the filter command (a string value) is defined via
+> `filter.<driver>.process` then Git can process all blobs with a
+> single filter invocation for the entire life of a single Git
+> command.
+
+see the [git documentation][1].
+
+This has been developed in the context of git-lfs (see [PR 1382] [2]).
+
+If I understand correctly how it works this could speed up v6 repos. Looking at the history/website 
+of git-annex there doesn't seem to be yet any work on this so I though it was worth calling the 
+attention on the feature.
+
+Thanks a lot for all the work on git-annex, it's a really amazing project! The more I study it the more cool features I discover :)
+
+
+[1]: https://github.com/git/git/blob/v2.11.0/Documentation/gitattributes.txt#L384
+[2]: https://github.com/git-lfs/git-lfs/pull/1382

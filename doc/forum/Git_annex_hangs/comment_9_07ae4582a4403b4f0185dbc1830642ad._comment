@@ -1,0 +1,54 @@
+[[!comment format=mdwn
+ username="mario"
+ avatar="http://cdn.libravatar.org/avatar/4c63b0935789d29210d0bd8cad8d7ac7"
+ subject="Hanging problem still there"
+ date="2017-05-17T14:05:41Z"
+ content="""
+Hi,
+
+it seems my git-annex repository is also affected by the \"hanging\" bug.
+
+Any operation of git-annex just hangs and doesn't do anything. Problem occurs with: sync, whereis, fsck (and with everything I tested).
+
+    git-annex whereis file --debug
+    [2017-05-17 15:57:34.895221948] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+    [2017-05-17 15:57:34.901449143] process done ExitSuccess
+    [2017-05-17 15:57:34.901536719] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2017-05-17 15:57:34.905894352] process done ExitSuccess
+    [2017-05-17 15:57:34.906485313] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..6ccd8cbac5fffa4763294ed88cb1ebc0920c3812\",\"--pretty=%H\",\"-n1\"]
+    [2017-05-17 15:57:34.917489743] process done ExitSuccess
+
+Then it just hangs..
+
+    git-annex sync --debug
+    [2017-05-17 15:58:26.366522677] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+    [2017-05-17 15:58:26.371989858] process done ExitSuccess
+    [2017-05-17 15:58:26.372083975] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2017-05-17 15:58:26.384517659] process done ExitSuccess
+    [2017-05-17 15:58:26.385061668] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..6ccd8cbac5fffa4763294ed88cb1ebc0920c3812\",\"--pretty=%H\",\"-n1\"]
+    [2017-05-17 15:58:26.390054368] process done ExitSuccess
+
+Also here, hangs..
+
+I \"installed\" git-annex from the pre-compiled binaries (i.e., copied it somewhere and put a simlink to git-annex and git-annex-shell into $HOME/bin).
+
+Versions are:
+
+    git --version
+    git version 1.8.3.1
+
+    git-annex version
+    git-annex version: 6.20170321-gf3dee9d65
+    build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+    local repository version: 5
+    supported repository versions: 3 5 6
+    upgrade supported from repository versions: 0 1 2 3 4 5
+    operating system: linux x86_64
+
+The setup was working quite fine for a while and now the problem just appeared. Actually, right before I noticed the problem I did git-annex move [...] -J10 from another machine to this repo but it didn't seem to work correctly, so I pressed CTRL-C..
+
+I cannot reboot the server, since I don't have root access.
+
+"""]]

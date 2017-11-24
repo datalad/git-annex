@@ -1,0 +1,28 @@
+The big news: Important behavior change in `git annex dropunused`. Now it
+checks, just like `git annex drop`, that it's not dropping the last copy of
+the file. So to lose data, you have to use `--force`. This continues the
+recent theme of making git-annex hold on more tenaciously to old data, and
+AFAIK it was the last place data could be removed without `--force`.
+
+Also a nice little fix to `git annex unused` so it doesn't identify
+temporary files as unused if they're being used to download a file.
+Fixing it was easy thanks to all the transfer logs and locking
+infrastucture built for the assistant.
+
+Fixed a bug in the assistant where even though syncing to a network
+remote was disabled, it would still sync with it every hour, or whenever
+a network connection was detected.
+
+Working on some direct mode scalability problems when thousands of the
+identical files are added. Fixing this may involvie replacing the current
+simple map files with something more scalable like a sqllite database.
+
+While tracking that down, I also found a bug with adding a ton of files
+in indirect mode, that could make the assistant stall.
+Turned out to be a laziness problem. (Worst kind of Haskell bug.) Fixed.
+
+----
+
+Today's sponsor is my sister, Anna Hess, who incidentially just put
+the manuscript of her latest ebook in the family's annex prior to its
+publication on Amazon this weekend.

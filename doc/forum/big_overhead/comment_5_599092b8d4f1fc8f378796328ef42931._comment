@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="rasmus"
+ ip="109.201.154.183"
+ subject="comment 5"
+ date="2014-09-08T13:48:03Z"
+ content="""
+So `git prune` worked wonders on my repos, getting rid of GBs of stuff in the `.git/objects` folders.  I don't know why they weren't picked up by `git gc`.  In retrospect, it was perhaps a bit careless of me to run `git prune` directly, but hopefully I will be OK. . .
+"""]]

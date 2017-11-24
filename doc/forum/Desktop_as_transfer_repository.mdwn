@@ -1,0 +1,33 @@
+Hi,
+
+I try to achieve this with my podcast repository:
+
+I have three repositories all in indirect mode:
+
+1. desktop
+2. backup on usb disk at desktop
+3. raspberrypi
+
+I want to use the desktop as transfer repository. 
+
+If I add a new url on the raspberrypi I want to sync the content via the desktop repository to the backup repository which is no directly accessible from the raspberrypi.
+
+If I add a new url on desktop the content should be moved to raspberrypi and backup. 
+
+So I don't want to have the content of the files on the desktop. All content should be in backup. 
+
+If content is not in raspberrypi I want to get it from backup via desktop.
+
+What is the best workflow to achieve this?
+
+Currently my problem is that if I do a "git annex sync --content" the content is also copied to desktop. Maybe because the desktop repo is origin? 
+
+- backup is in group backup
+- desktop is in group transfer
+- raspberrypi is in no special group
+
+To do further experiments I need a way to see in what group a repo is, but "git annex show" has no information about this.
+
+TIA
+
+juh

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="tdussa"
+ ip="217.84.78.25"
+ subject="tar -- not really"
+ date="2014-10-03T20:40:45Z"
+ content="""
+Hi,
+
+THX for your suggestion.  Unfortunately, git bundle is able to carve out particular slices of a repo, which a simple tar obviously cannot do.  This functionality is much desired.
+
+Cheers,
+Toby.
+"""]]

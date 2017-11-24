@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 64"""
+ date="2016-10-17T19:33:29Z"
+ content="""
+@stephane-gourichon, Control.Monad.Catch is in the haskell exceptions
+package, which is a dependency of git-annex. I don't know why it
+is failing to find it on your system.
+
+You appear to be in some variety of cabal hell; you probably need to delete
+your ~/.cabal and ~/.ghc and start over.
+
+Also, Debian 7.11 is quite old; to follow the "building from source on
+Debian" you need Debian unstable, testing, or sometimes stable
+(doesn't work currently); not oldstable.
+"""]]

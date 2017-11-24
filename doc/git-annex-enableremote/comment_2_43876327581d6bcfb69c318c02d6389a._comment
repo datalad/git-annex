@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-02-14T18:16:52Z"
+ content="""
+@Sundar, good question.
+
+`git annex enableremote` will always refuse to enable the remote if there's
+a missing parameter, and prompt for the parameter. Finding the right value
+is up to you. Most of the time, no additional parameters are needed, or
+the parameters are fairly self-explanatory, eg login passwords for remote
+services.
+
+The difficulty with directory special remotes is that my /foo may not be
+the same as your /foo, so it can't reuse the directory= that was provided
+to initremote, and it's up to you to enter the right directory path.
+
+I think this needs to come down to documentation in the repository. The
+description of the remote (set by `git annex describe` 
+is a reasonable place to put that, unless you have somewhere better.
+"""]]

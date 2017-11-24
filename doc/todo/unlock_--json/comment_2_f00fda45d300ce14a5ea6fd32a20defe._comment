@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-10-30T18:40:53Z"
+ content="""
+Why was I talking about batch mode here before? --json of course makes
+sense to support for unlock (and lock). Adding that now.
+
+And, to find the files that `git annex unlock` would operate on, you
+can simply use `git annex find`, because that does not list already
+unlocked files, and only files with their content present can be unlocked.
+""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="xloem"
+ subject="comment 2"
+ date="2016-04-25T21:25:58Z"
+ content="""
+The checksum of a file is the same as the generated symlink name.  
+For a file which had the issue, `git annex log` appears empty.
+I used `git checkout [revision] [filename]` to get the old version of the file in the newly versioned repo, not sure if that would confuse `git annex log`.
+
+"""]]

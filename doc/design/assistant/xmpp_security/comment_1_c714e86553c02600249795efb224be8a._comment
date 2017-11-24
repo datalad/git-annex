@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Sagi"
+ ip="2001:610:1908:8001:25ce:8a0b:53cc:c010"
+ subject="Why not use OTR?"
+ date="2013-07-23T23:53:12Z"
+ content="""
+[OTR](http://www.cypherpunks.ca/otr/) seems a natural fit for end-to-end encryption over xmpp. I can't find Haskell bindings for libotr at this moment, but creating those instead of inventing new protocols might be worth considering. There are also several [native implementations](http://www.cypherpunks.ca/otr/software.php) (Python, Go, Scheme), but I'm not sure if that's worth the effort.
+
+
+"""]]

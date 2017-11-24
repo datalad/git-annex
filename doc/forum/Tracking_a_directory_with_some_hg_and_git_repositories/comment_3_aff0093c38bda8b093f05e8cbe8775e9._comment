@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 3"
+ date="2013-12-27T20:08:07Z"
+ content="""
+Well, you can always use .gitignore to ignore the whole content of the directory that you don't want git-annex to handle.
+"""]]

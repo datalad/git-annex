@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnaH44G3QbxBAYyDwy0PbvL0ls60XoaR3Y"
+ nickname="Nigel"
+ subject="Unencrypted flickr can only accept picture and video files"
+ date="2013-06-06T10:24:58Z"
+ content="""
+Thanks and sorry to trouble you, it is my error, I picked unencrypted option (thinking it would be less of an issue) and am using a text file for test, gave an error line:
+
+    10:53:07 [flickrannex-0.1.5] main : 'Unencrypted flickr can only accept picture and video files'
+
+I've not looked through your code yet, but could that message be printed when not in debug mode?
+"""]]

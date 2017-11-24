@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-11-10T18:13:28Z"
+ content="""
+git-annex auto-init the local repository whenever it sees it's not
+enabled and there is a git-annex branch (or origin/git-annex etc).
+This is what adds the uuid of the local repository to remote.log.
+So, it's not specific to `enableremote`; many git-annex commands
+will do the same thing. And git-annex needs to allocate a uuid for the
+local repo in order to work.
+
+One way to deal with it is to use `git annex reinit` so it uses
+some already existing uuid. Although then getting files etc will
+update the records using that uuid. Might be ok if you have one
+uuid, perhaps one you've marked dead, that you use for this purpose
+and don't care what's recorded for that uuid.
+
+Or, it might be better to let git-annex auto-init a new uuid, 
+and just configure this test repo to not push changes out to
+elsewhere. For example, `git config remote.origin.annex-readonly true`
+will make `git annex sync` avoid pushing back to the origin remote.
+"""]]

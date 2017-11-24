@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="should work.."
+ date="2012-08-05T17:18:47Z"
+ content="""
+I see no need for `git annex fix` here.
+
+Web server default configurations may not allow following symlinks outside the web server document root. On apache, it can be enabled with `Options FollowSymLinks`
+"""]]

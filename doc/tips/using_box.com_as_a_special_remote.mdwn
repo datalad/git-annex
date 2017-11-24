@@ -1,0 +1,78 @@
+[Box.com](http://box.com/) is a file storage service.
+
+git-annex can use Box as a [[special remote|special_remotes]].
+Recent versions of git-annex make this very easy to set up
+and use.
+
+## git-annex setup
+
+Create the special remote, in your git-annex repository.
+** This example is non-encrypted; fill in your gpg key ID for a securely
+encrypted special remote! **
+
+	WEBDAV_USERNAME=you@example.com WEBDAV_PASSWORD=xxxxxxx git annex initremote box.com type=webdav url=https://dav.box.com/dav/git-annex chunk=50mb encryption=none
+
+Note the use of [[chunking]]. Box has a limit on the maximum size of file
+that can be stored there (currently 256 MB). git-annex can break up large
+files into chunks to avoid the size limit. This needs git-annex version
+3.20120303 or newer, which adds support for chunking.
+
+Now git-annex can copy files to box.com, get files from it, etc, just like
+with any other special remote.
+
+	% git annex copy bigfile --to box.com
+	bigfile (to box.com...) ok
+	% git annex drop bigfile
+	bigfile (checking box.com...) ok
+	% git annex get bigfile
+	bigfile (from box.com...) ok
+
+## exporting trees
+
+By default, files stored in Box will show up there named
+by their git-annex key, not the original filename. If the filenames
+are important, you can run `git annex initremote` with an additional
+parameter "exporttree=yes", and then use [[git-annex-export]] to publish
+a tree of files to Box.
+
+Note that chunking can't be used when exporting a tree of files,
+so Box's 250 mb limit will prevent exporting larger files.
+
+# old davfs2 method
+
+This method is deprecated, but still documented here just in case.
+Note that the files stored using this method cannot reliably be retreived
+using the webdav special remote.
+
+## davfs2 setup
+
+* First, install
+  the [davfs2](http://savannah.nongnu.org/projects/davfs2) program,
+  which can mount Box using WebDAV. On Debian, just `sudo apt-get install davfs2`
+* Allow users to mount davfs filesystems, by ensuring that
+  `/sbin/mount.davfs` is setuid root. On Debian, just `sudo dpkg-reconfigure davfs2`
+* Add yourself to the davfs2 group.
+
+        sudo adduser $(whoami) davfs2
+
+* Edit `/etc/fstab`, and add a line to mount Box using davfs.
+
+        sudo mkdir -p /media/box.com
+        echo "https://dav.box.com/dav/	/media/box.com	davfs	noauto,user	0 0" | sudo tee -a /etc/fstab
+
+* Create `~/.davfs2/davfs2.conf` with some important settings:
+
+        mkdir ~/.davfs2/
+        echo use_locks 0 > ~/.davfs2/davfs2.conf
+        echo cache_size 1 >> ~/.davfs2/davfs2.conf
+        echo delay_upload 0 >> ~/.davfs2/davfs2.conf
+
+* Create `~/.davfs2/secrets`. This file contains your Box.com login and password.
+  Your login is probably the email address you signed up with.
+
+        echo "/media/box.com id@joeyh.name mypassword" > ~/.davfs2/secrets
+        chmod 600 ~/.davfs2/secrets
+
+* Now you should be able to mount Box, as a non-root user:
+
+        mount /media/box.com

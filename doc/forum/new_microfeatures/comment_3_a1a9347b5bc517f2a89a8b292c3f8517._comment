@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnpdM9F8VbtQ_H5PaPMpGSxPe_d5L1eJ6w"
+ nickname="Rafaël"
+ subject="git annex unlock --readonly"
+ date="2011-06-02T11:34:42Z"
+ content="""
+This was already asked [here](http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=606577), but I have a use case where I need to unlock with the files being hardlinked instead of copied (my fs does not support CoW), even though 'git annex lock' is now much faster ;-) . The idea is that 1) I want the external world see my repo \"as if\" it wasn't annexed (because of its own limitation to deal with soft links), and 2) I know what I do, and am sure that files won't be written to but only read.
+
+My case is: the repo contains a snapshot A1 of a certain remote directory. Later I want to rsync this dir into a new snapshot A2. Of course, I want to transfer only new or changed files, with the --copy-dest=A1 (or --compare-dest) rsync's options. Unfortunately, rsync won't recognize soft-links from git-annex, and will re-transfer everything.
+
+
+Maybe I'm overusing git-annex ;-) but still, I find it is a legitimate use case, and even though there are workarounds (I don't even remember what I had to do), it would be much more straightforward to have 'git annex unlock --readonly' (or '--readonly-unsafe'?), ... or have rsync take soft-links into account, but I did not see the author ask for microfeatures ideas :) (it was discussed, and only some convoluted workarounds were proposed). Thanks.
+
+
+"""]]

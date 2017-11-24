@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="guilhem"
+ ip="46.239.117.180"
+ subject="comment 3"
+ date="2013-08-19T01:05:40Z"
+ content="""
+A nice feature would be to perform the `fsck` on the (encrypted) remote itself, as it would avoid to clutter either the network or the tmpdir. However, that requires some changes in git-annex's backend. Indeed it would no longer be enough to store a single digest per (plain) file: a new digest needs to be stored for each encrypted copy. It is not necessarily a big deal, but the backend would need to be reorganized carefully.
+"""]]

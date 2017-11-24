@@ -1,0 +1,24 @@
+Hi,
+
+I love the idea of git-annex, and I'm trying to do my first steps with it. I'm stuck on the following issue:
+
+When creating a git repository and annexing a file in the root directory, everything works as expected:
+
+    git init
+    git annex init "mytest"
+    echo 1 > annexfile
+    git annex add annexfile
+    # add annexfile ok
+    # (Recording state in git...)
+
+However, when I try to add a file in a subdirectory of the repository, the adding command fails without any error message:
+
+    mkdir mydir
+    echo 1 > mydir/myfile
+    git annex add mydir/myfile
+    # no message, no status change, nothing
+    # note that I can add the file in the root dir and then move it to `mydir`
+
+Am I doing something wrong here?
+
+Thank you!

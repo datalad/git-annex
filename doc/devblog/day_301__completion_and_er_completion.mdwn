@@ -1,0 +1,9 @@
+Worked on bash tab completion some more. Got "git annex" to also tab complete.
+However, for that to work perfectly when using bash-completion to demand-load
+completion scripts, a small improvement is needed in git's own completion
+script, to have it load git-annex's completion script. I sent a 
+[patch for that to the git developers](http://thread.gmane.org/gmane.comp.version-control.git/274034),
+and hopefully it'll get accepted soon.
+
+Then fixed a relatively long-standing bug that prevented uploads to
+chunked remotes from resuming after the last successfully uploaded chunk.

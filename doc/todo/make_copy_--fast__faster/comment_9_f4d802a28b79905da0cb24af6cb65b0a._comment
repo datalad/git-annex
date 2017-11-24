@@ -1,0 +1,42 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""more profiling"""
+ date="2016-09-26T19:59:43Z"
+ content="""
+Instead of profiling `git annex copy --to remote`, I profiled `git annex
+find --not --in web`, which needs to do the same kind of location log lookup.
+
+	        total time  =       12.41 secs   (12413 ticks @ 1000 us, 1 processor)
+	        total alloc = 8,645,057,104 bytes  (excludes profiling overheads)
+	
+	COST CENTRE               MODULE                      %time %alloc
+	
+	adjustGitEnv              Git.Env                      21.4   37.0
+	catchIO                   Utility.Exception            13.2    2.8
+	spanList                  Data.List.Utils              12.6   17.9
+	parsePOSIXTime            Logs.TimeStamp                6.1    5.0
+	catObjectDetails.receive  Git.CatFile                   5.9    2.1
+	startswith                Data.List.Utils               5.7    3.8
+	md5                       Data.Hash.MD5                 5.1    7.9
+	join                      Data.List.Utils               2.4    6.0
+	readFileStrictAnyEncoding Utility.Misc                  2.2    0.5
+
+The adjustGitEnv overhead is a surprise! It seems it is getting called once
+per file, and allocating a new copy of the environment each time. Call stack:
+withIndex calls withIndexFile calls addGitEnv calls adjustGitEnv.
+Looks like simply making gitEnv be cached at startup would avoid most of
+the adjustGitEnv slowdown.
+
+(The catchIO overhead is a false reading; the detailed profile shows
+that all its time and allocations are inherited. getAnnexLinkTarget
+is running catchIO in the expensive case, so readSymbolicLink is
+the actual expensive bit.)
+
+The parsePOSIXTime comes from reading location logs. It's implemented
+using a generic Data.Time.Format.parseTime, which uses a format string
+"%s%Qs". A custom parser that splits into seconds and picoseconds
+and simply reads both numbers might be more efficient.
+
+catObjectDetails.receive is implemented using mostly String and could
+probably be sped up by being converted to use ByteString.
+"""]]

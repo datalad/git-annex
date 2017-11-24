@@ -1,0 +1,33 @@
+When migrating large file repositories to git-annex that are backuped in a way that uses an rsync-style mechanism (e.g. [dirvish](http://www.dirvish.org/)) and thus keeps incremental backups small by using hardlinks, space can be saved by manually reflecting the migration on the backup. So, instead of making a last pre-git-annex backup, migrating, and duplicating all backupped data with the next backup, I used the <del>attached</del> migrate.py file below, and it saved me roughly a day of backuping.
+
+A note on terminology: "migrating" here means migrating from not using git-annex at all to using it, not to the ``git annex migrate`` command, for which a similar but different solution may be created.
+
+**WARNING**: This is a quickly hacked-together script. It worked for me, but is untested apart from that. It's just a dozen lines of code, so have a look at it and make sure you understand what it does, and what migrate.sh looks like. Take special care as this tampers with your backups, and if something goes wrong, well...
+
+First, have an up-to-date backup; then, git annex init / add etc as described in the [[walkthrough]]. In the directory in which you use git-annex, run:
+
+    $ python migrate.py > migrate.sh
+
+Then copy the resulting migrate.sh to the equivalent location inside your backups and run it there. It will move all files that are now symlinked on the master to their new positions according to the symlinks (inside .git/annex/objects), but not create the symlinks (you will do a backup later anyway).
+
+After that, do a backup as usual. As rsync sees the moved files at their new locations, it will accept them and not duplicate the data.
+
+**migrate.py**:
+
+    #!/usr/bin/env python
+    
+    import os
+    from pipes import quote
+    
+    print "#!/bin/sh"
+    print "set -e"
+    print ""
+    
+    for (dirpath, dirnames, filenames) in os.walk("."):
+    	for f in filenames:
+    		fn = os.path.join(dirpath, f)
+    		if os.path.islink(fn):
+    			link = os.path.normpath(os.path.join(dirpath, os.readlink(fn)))
+    			assert link.startswith(".git/annex/objects/")
+    			print "mkdir -p %s"%quote(os.path.dirname(link))
+    			print "mv %s %s"%(quote(fn), quote(link))

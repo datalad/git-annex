@@ -1,0 +1,14 @@
+Just finished converting both rsync and gcrypt to the new API,
+and testing them. Still need to fix 2 test suite failures for gcrypt.
+Otherwise, only WebDAV remains unconverted.
+
+Earlier today, I investigated switching from hS3 to
+<http://hackage.haskell.org/package/aws>. Learned its API, which seemed a
+lot easier to comprehend than the other two times I looked at it. Wrote
+some test programs, which are in the `s3-aws` branch. I was able to stream
+in large files to S3, without ever buffering them in memory (which hS3's
+API precludes). And for chunking, it can reuse an http connection.
+This seems very promising. (Also, it might eventually get Glacier support..)
+
+I have uploaded haskell-aws to Debian, and once it gets into testing and
+backports, I plan to switch git-annex over to it.

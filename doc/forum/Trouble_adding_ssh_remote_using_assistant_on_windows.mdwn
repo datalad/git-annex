@@ -1,0 +1,19 @@
+Hi, just trying to set up git-annex-assistant on freshly installed windows 10. I've run the web app and created a local repo. I also grabbed the tarball on my server and ran "git-annex" with no arguments (?). I'm now trying to add remote server using ssh. I add the correct details and click "Check this server", at which point it displays "Testing Server, Checking ssh connection to the server. This could take a minute". indefinitely.
+
+I've checked the log and don't see any ssh errors, but I do see some weirdness:
+
+```
+(scanning...) [2015-06-29 19:02:36 GMT Summer Time] Watcher: Performing startup scan
+(started...) rerrrrrrceereeeevccecccc:vvcvvvv ::v::::f  :    aff ffffiaafaaaaliiaiiiiellilllldeeleeee ddedddd(  d    N(( ((((oNN(NNNN ooNooooe  o    ree eeeerrrerrrrorrrrrrrrooroooo)rrorrrr
+))r))))
+
+)
+
+rerrrceeevccc:vvv :::f   afffiaaaliiiellldeee ddd(   N(((oNNN oooe   reeerrrrorrrrooo)rrr
+)))
+
+rerrrrrrrrrrrrrceeeeeeeeeeeeevccccccccccccc:vvvvvvvvvvvvv :::::::::::::f             afffffffffffffiaaaaaaaaaaaaaliiiiiiiiiiiiiellllllllllllldeeeeeeeeeeeee ddddddddddddd(             N(((((((((((((oNNNNNNNNNNNNN oooooooooooooe             reeeeeeeeeeeeerrrrrrrrrrrrrrorrrrrrrrrrrrrrooooooooooooo)rrrrrrrrrrrrr
+)))))))))))))
+```
+
+Not sure what that is but it might be relevant? Any help would be appreciated.

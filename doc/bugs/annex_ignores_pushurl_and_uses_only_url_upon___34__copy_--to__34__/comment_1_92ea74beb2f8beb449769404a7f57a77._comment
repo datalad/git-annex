@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-02-07T19:13:28Z"
+ content="""
+Thing is, pushUrl is documented in git-push as "The <pushurl> is used for
+pushes only.". And while git-annex is sending data to the remote,
+that's not really the same as a push.
+
+Following that logic, if git has a pullUrl, then git-annex should
+use that for `git annex get`, since that's similar to a pull.
+But then there are other operations git-annex does to remotes
+that are similar to neither a push or a pull. And if git doesn't have a
+pullUrl, then `git annex get` probably shouldn't use pushUrl, because
+perhaps git will later get a pullUrl.
+
+That's why annexUrl was added in 2011. Which is just used for all annex
+operations.
+
+So, I suggest you just set annexUrl at the same time you set pushUrl, 
+and be happy. ;)
+"""]]

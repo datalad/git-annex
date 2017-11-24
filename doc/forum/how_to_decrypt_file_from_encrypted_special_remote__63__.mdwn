@@ -1,0 +1,14 @@
+I have an encrypted S3 remote with which I recently ran: 
+
+$> git annex move . --from cloud
+
+which moved all my files to the local repo. When I looked at my S3 bucket, I saw some files left. I then ran:
+
+$> git annex unused --from cloud
+
+to get all the unused data. I dropped each unused data from cloud so that now I think git annex believes it has nothing on the cloud remote.
+
+However there is still one file left on the bucket. Is this normal? (if not I'll create a bug report)
+More importantly, how can I decrypt this file so I can run git log -S'KEY' to figure out what it is (I want to make sure I haven't lost any data).
+
+To be clear, when I currently run 'git annex move . --from cloud' it moves nothing and when I run 'git annex unused --from cloud' it reports no unused data.

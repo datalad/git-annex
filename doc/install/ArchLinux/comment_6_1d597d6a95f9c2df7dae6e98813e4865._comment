@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmqWbWVRH2k9spSMqKfIXBP1G3ekkj9Igg"
+ nickname="Rado"
+ subject="problem installing using cabal: language-javascript missing"
+ date="2014-03-28T22:38:04Z"
+ content="""
+Configuring gnuidn-0.2.1...
+cabal: The program c2hs is required but it could not be found.
+Failed to install gnuidn-0.2.1
+Configuring language-javascript-0.5.9...
+cabal: The program happy version >=1.18.5 is required but it could not be
+found.
+Failed to install language-javascript-0.5.9
+cabal: Error: some packages failed to install:
+git-annex-5.20140320 depends on language-javascript-0.5.9 which failed to
+install.
+gnuidn-0.2.1 failed during the configure step. The exception was:
+ExitFailure 1
+hjsmin-0.1.4.6 depends on language-javascript-0.5.9 which failed to install.
+language-javascript-0.5.9 failed during the configure step. The exception was:
+ExitFailure 1
+network-protocol-xmpp-0.4.6 depends on gnuidn-0.2.1 which failed to install.
+yesod-static-1.2.2.4 depends on language-javascript-0.5.9 which failed to
+install.
+[r-c@rc-laptop ~]$ cabal install language-javascript
+Resolving dependencies...
+Configuring language-javascript-0.5.9...
+cabal: The program happy version >=1.18.5 is required but it could not be
+found.
+Failed to install language-javascript-0.5.9
+cabal: Error: some packages failed to install:
+language-javascript-0.5.9 failed during the configure step. The exception was:
+ExitFailure 1
+
+Can you help how to solve?
+"""]]

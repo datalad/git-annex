@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnx8kHW66N3BqmkVpgtXDlYMvr8TJ5VvfY"
+ nickname="Yaroslav"
+ subject="comment 2"
+ date="2015-01-26T19:46:12Z"
+ content="""
+\"... merging repo A(v5) into repo B(v6)? This seems like it would be all to easy for a user to do.\"
+
+it would be easy if two separate repos are inited separately of different versions and then merged.  But how frequent could such situation arise?  I  don't think that it is not that common actually in non git-annex assistant initialized  repositories, especially if \"v6\" (or some other custom) layout would be non-default.
+
+This also somewhat reflects upon \"When it's receiving an object into a mixed v5 and v6 repo, it can't know which location that repo expects the object file to be located in.\" -- how plausible/frequent would be to see a mixed v5/6 repo?
+
+\".annex-version flag file\" -- I think it is a good idea.  (may be even better an .annex/version directory/file to reserve for possibly future other branch-specific, thus not for git-annex branch additions).  Indeed it would take time for repos to acquire it, but imho it is ok, if added automagically by new git-annex versions.  Also it is a tiny price to pay for users who do not really care about \"living on the edge\".    But it also might better be coupled with having git-annex:version (i.e. version file under git-annex branch) describing layout of the git-annex branch since those two are somewhat independent, right?
+
+Also a wild idea to mitigate inconvenience for users happen they migrate repositories from old to new formats: to provide 'git annex compat-layout  [version]' command which, for files with content, would  generate symlinks to files in new format to locations in old, with some command to clean them up  later on (e.g. 'git annex compat-layout --cleanup'). Although inefficient per-se it could be a big convenience since would eliminate need to \"migrate/rewrite\" entire history, while still making it possible to get access to previous versions.  With a handling in hooks could be automated to even hide that from users entirely.  or is there a big culprit I don't see?
+
+
+\"version numbers vs configuration\"
+
+having flexibility of configurations, possibly with versions simply providing enumerations to some of them, might be a great feature to have in the long run.  Not sure though if it would not blow up complexity :-/
+
+Overall -- if complete transition to improved/unified v6 is too big of undertaker, allowing for custom non-default configurations while sticking to v5 as the default one and forbidding merges between different versions, could be sufficient to scale up for atypical large uses.  If everyone to migrate to v6 -- more optimal layout should be well thought through to be worthwhile undertaking.
+
+"""]]

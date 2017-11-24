@@ -1,0 +1,8 @@
+The same parser was used for both preferred content expressions and
+annex.largefiles. Reworked that today, splitting it into two distinct
+parsers. It doesn't make any sense to use terms like "standard" or
+"lackingcopies" in annex.largefiles, and such are now rejected.
+
+That groundwork also let me add a feature that only makes sense for
+annex.largefiles, and not for preferred content expressions: Matching by
+mime type, such as `mimetype=text/*`

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.191"
+ subject="comment 3"
+ date="2014-04-17T20:15:07Z"
+ content="""
+@anarcat, I have modified [[pre-commit-annex]] so if it's passed already annexed files, it'll extract their metadata. 
+
+So this can be used to add metadata to files added before you installed the hook, or if you've configured more fields to be extracted.
+"""]]

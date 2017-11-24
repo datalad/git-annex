@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="Steve"
+ ip="92.104.175.136"
+ subject="comment 4"
+ date="2012-11-29T23:51:21Z"
+ content="""
+I've been thinking about writing a sort of git-annex du.  I'm surprised to find someone else looking for such a thing.  While \"du -L\" will tell you how much space is used by files you actually have, I was interested in knowing (approximately) how much space would be used if you were to git-annex get everything you don't yet have.
+
+There are many options and variations to think about, such as:
+
+* do you want to count duplicate files once or as many times as they appear (as if you 'git-annex lock'd them all)
+* maybe you want to know how much space is used by files that reside only on a certain remote or set of remotes
+* you might want to know how much space would be used by all the files you don't yet have, but not count the files you already have
+
+All of the backends so so far seem to store the size of the files in the filename, so my plan was to read it out of the links.  If anybody has a better idea about how to get the sizes of annexed files or options that would be handy for a git-annex du, let me know.  I'll see if I can get the start of something useful this weekend.  I'll post here when I have something to share.
+
+I'm also open to suggestions for the executable name.  Right now I'm thinking \"gadu\" for git-annex disk usage.
+"""]]

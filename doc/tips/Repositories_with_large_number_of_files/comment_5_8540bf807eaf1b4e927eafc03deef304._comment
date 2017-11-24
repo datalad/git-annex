@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 5"
+ date="2016-02-02T10:08:06Z"
+ content="""
+Splitting the index (git update-index --split-index) doesn't work for me at all. While it may initially reduce the size of .git/index, making a commit inflates it back to its original size anyway.
+
+I thought it might be some interaction with v4 index and its compression mechanics but it does the same if I set it to v3 index. For (manufactured) example:
+
+    $ git update-index --split-index
+    $ du -sh .git/*index*
+    4.0K    .git/index
+    76M     .git/sharedindex.70e661456302b51a7ec59bf5b32d630e74b34c7c
+
+    ... add 8000 files ...
+
+    $ git commit -m \"add files\"
+    $ du -sh .git/*index*
+    80M     .git/index
+    76M     .git/sharedindex.70e661456302b51a7ec59bf5b32d630e74b34c7c
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.7"
+ subject="comment 8"
+ date="2014-08-15T19:26:07Z"
+ content="""
+@David, the bundle contains the man page since a while.
+
+@Michael, the best way to get a git-annex that does not use those bundled programs is probably to instead install it using homebrew.
+"""]]

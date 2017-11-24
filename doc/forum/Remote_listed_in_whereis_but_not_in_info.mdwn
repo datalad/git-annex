@@ -1,0 +1,29 @@
+I came across the following strange behaviour:
+
+    $ git annex whereis "2013-WS/ecl/Algorithms for Scoring Coreference Chains.pdf"
+    whereis 2013-WS/ecl/Algorithms for Scoring Coreference Chains.pdf (4 copies) 
+   	    04140d86-2ad5-4807-a789-f478dbf477c7 -- [mojzesz]
+   	    622fce61-6702-448f-8eee-9a31d8a67e14 -- here
+   	    8bb266ed-453d-4489-9d8a-de38b2bc77c2
+   	    d8149441-8b4d-4d37-bed4-c0f709165f32 -- [alonzo]
+    ok
+
+I have no idea what that remote without a name is. Is there a way to find that out?
+
+Plus, it is not shown by
+
+    $ git annex info
+    repository mode: indirect
+    trusted repositories: 0
+    semitrusted repositories: 3
+	    04140d86-2ad5-4807-a789-f478dbf477c7 -- [mojzesz]
+ 	    622fce61-6702-448f-8eee-9a31d8a67e14 -- here
+ 	    d8149441-8b4d-4d37-bed4-c0f709165f32 -- [alonzo]
+    untrusted repositories: 4
+	    00000000-0000-0000-0000-000000000001 -- web
+ 	    00000000-0000-0000-0000-000000000002 -- bittorrent
+ 	    11d4b299-0170-49b3-8b71-7ea2c47f212b -- nexus5
+ 	    dd22c018-65f8-4fa7-b880-48616016e272 -- miracle
+    ...
+
+Also, is there a way to mark that remote as dead?

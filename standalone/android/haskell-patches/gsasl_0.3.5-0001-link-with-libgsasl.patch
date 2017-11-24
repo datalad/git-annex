@@ -1,0 +1,25 @@
+From df0f41f92d003f7d59ef927737ffec3a9bd61827 Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Tue, 7 May 2013 18:41:01 -0400
+Subject: [PATCH] avoid cabal hell
+
+---
+ gsasl.cabal |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gsasl.cabal b/gsasl.cabal
+index d991873..c5c2b19 100644
+--- a/gsasl.cabal
++++ b/gsasl.cabal
+@@ -31,7 +31,7 @@ library
+   build-depends:
+       base >= 4.0 && < 5.0
+     , transformers >= 0.2
+-    , bytestring >= 0.9
++    , bytestring >= 0.10.3.0
+ 
+   pkgconfig-depends: libgsasl >= 1.1
+ 
+-- 
+1.7.10.4
+

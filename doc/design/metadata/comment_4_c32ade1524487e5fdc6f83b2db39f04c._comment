@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="bremner"
+ ip="198.164.160.48"
+ subject="convenient way to query metadata?"
+ date="2014-03-15T20:58:28Z"
+ content="""
+I'd like to be able to do something like \"git annex metadata -q fieldname\" and have that output the value(s) of fieldname.  I see I could parse the json output but that isn't too convenient in a shell script. Or have I missed something that already exists?
+"""]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnpdM9F8VbtQ_H5PaPMpGSxPe_d5L1eJ6w"
+ nickname="Rafaël"
+ subject="comment 2"
+ date="2011-05-31T21:43:22Z"
+ content="""
+Nice!
+So if I understand correctly, 'git reset -- file' was there to discard staged (but not commited) changes made to 'file', before checking out, so that it is equivalent to directly 'git checkout HEAD -- file' ?
+I'm curious about the \"queueing machinery in git-annex\": does it end up calling the one git command with multiple files as arguments? does it correspond to the message \"(Recording state in git...)\" ?
+Thanks!
+
+
+"""]]

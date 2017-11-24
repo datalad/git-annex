@@ -1,0 +1,4 @@
+More Windows porting. Made the build completely `-Wall` safe on Windows.
+Fixed some DOS path separator bugs that were preventing WebDav from
+working. Have now tested both box.com and Amazon S3 to be completely
+working in the webapp on Windows.

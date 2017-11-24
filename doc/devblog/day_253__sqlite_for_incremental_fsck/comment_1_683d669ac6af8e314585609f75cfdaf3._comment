@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="comment 1"
+ date="2015-02-16T21:26:22Z"
+ content="""
+i am curious: why separate database files while you can have multiple tables in the same database file? --[[anarcat]]
+"""]]

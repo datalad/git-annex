@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="216.145.95.162"
+ subject="comment 1"
+ date="2014-05-19T15:50:34Z"
+ content="""
+There have been recent improvements in the assistant's handling of ssh keys. This includes no more prompting for ssh keys in the console, ever. Instead, the ssh remote setup would presumably fail if the ssh key didn't work for some reason.
+
+To debug your problem, you need to use the shell. I would first try running \"git annex get\" or \"git annex copy\" or \"git annex drop\" on a file, and verify that it prompts for the ssh password. Then, take a look at /sdcard/git-annex.home/.ssh/config, and see if you can ssh to the special hostname set up there, from android, and if it asks for a password. If so, ssh -v might be interesting, as it should show it presenting the ssh key to the server.
+"""]]

@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-09-21T16:55:47Z"
+ content="""
+Disabling a remote is a weak form of deleting it; the remote repository is
+left as-is, but the git remote is removed so git-annex won't sync with it,
+and the webapp won't show it.
+
+I don't know if it makes sense for the webapp to expose this possibility.
+It seems that it certianly doesn't makes sense to do it without getting
+confirmation, since to re-enable the repository, the user has to do some
+probably unknown to them process to set it back up.
+
+In your case, I think that re-doing the pairing process would get them back
+to how they were.
+
+On consideration, I am going to remove this feature from the webapp UI.
+"""]]

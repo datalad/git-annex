@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 50"""
+ date="2015-07-15T15:54:15Z"
+ content="""
+Yes, Debian has a by now very outdated version of git-annex.
+
+You can clone git-annex's git repo and build a debian package from there;
+it's been updated for these changes.
+"""]]

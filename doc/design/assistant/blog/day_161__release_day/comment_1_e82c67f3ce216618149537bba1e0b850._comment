@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="comment 1"
+ date="2013-01-02T21:26:32Z"
+ content="""
+1. Im not able to set direct mode (linux build, Version: 3.20130102 in about page).
+Is there something specific needed? I started fresh. I added a new directory (empty), once 
+git annex assistant started, I copied files to that directory, and the assistant 
+replaced all files with symlinks, just as before.
+What am I missing here?
+
+2. It is just minor usability remark:
+ I would like to see in the gui somewhere shown where the actual config is stored (~/.config/git-annex), 
+and an option to wipe it out and start fresh. Also a restart button.
+
+Best, Laszlo
+
+"""]]

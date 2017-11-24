@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 4"
+ date="2013-12-29T17:50:23Z"
+ content="""
+Added PREPARE-FAILURE
+
+git-annex enableremote causes INITREMOTE to be called, so any credentials can be stored etc. (Note that, as with built-in special remotes, credentials are only stored in the git-annex branch when the remote is encrypted. Otherwise, they're stored locally in a .git/annex/creds/ file.)
+
+Also, I'd recommend using environment variables for passing credentials to initremote/enableremote, because that avoids leaking them in `ps`.. but it probably doesn't make sense to use environment variables for other settings, but instead pass them as parameters of initremote/enableremote, which can be looked up using GETCONFIG. Only exception might be if the setting needs to vary between different machines.
+"""]]

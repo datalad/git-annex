@@ -1,0 +1,8 @@
+gcrpyt is fully working now. *Most* of the examples in
+[[tips/fully_encrypted_git_repositories_with_gcrypt]] should work.
+
+A few known problems:
+
+* `git annex sync` refuses to sync with gcrypt remotes. some url parsing issue.
+* Swapping two drives with gcrypt repositories on the same mount point doesn't work yet.
+* http urls are not supported

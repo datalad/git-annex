@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkgbXwQtPQSG8igdS7U8l031N8sqDmuyvk"
+ nickname="Albert"
+ subject="Error with bup and gnupg"
+ date="2012-10-22T20:56:56Z"
+ content="""
+Hello,
+
+I get this error when trying to use git-annex with bup and gnupg:
+
+<pre>
+move importable_pilot_surveys.tar (gpg) (checking localaseebup...) (to localaseebup...) 
+Traceback (most recent call last):
+  File \"/usr/lib/bup/cmd/bup-split\", line 133, in <module>
+    progress=prog)
+  File \"/usr/lib/bup/bup/hashsplit.py\", line 167, in split_to_shalist
+    for (sha,size,bits) in sl:
+  File \"/usr/lib/bup/bup/hashsplit.py\", line 118, in _split_to_blobs
+    for (blob, bits) in hashsplit_iter(files, keep_boundaries, progress):
+  File \"/usr/lib/bup/bup/hashsplit.py\", line 86, in _hashsplit_iter
+    bnew = next(fi)
+  File \"/usr/lib/bup/bup/helpers.py\", line 86, in next
+    return it.next()
+  File \"/usr/lib/bup/bup/hashsplit.py\", line 49, in blobiter
+    for filenum,f in enumerate(files):
+  File \"/usr/lib/bup/cmd/bup-split\", line 128, in <genexpr>
+    files = extra and (open(fn) for fn in extra) or [sys.stdin]
+IOError: [Errno 2] No such file or directory: '-'
+</pre>
+
+
+I was able to work-around this issue by altering /usr/lib/bup/cmd/bup-split (though I don't think its a bup bug) to just pull from stdin:
+
+files = [sys.stdin]
+
+on ~ line 128.
+
+Any ideas? Also, do you think that bup's data-deduplication does anything when gnupg is enabled, i.e. is it just as well to use a directory remote with gnupg?
+
+Thanks! Git annex rules!
+
+Albert
+"""]]

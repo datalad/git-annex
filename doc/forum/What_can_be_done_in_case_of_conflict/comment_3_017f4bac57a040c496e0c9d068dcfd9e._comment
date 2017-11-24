@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlYu7QmD7wrbHWkoxuriaA9XcijM-g5vrQ"
+ nickname="Royal"
+ subject="Resolving conflict"
+ date="2012-04-23T15:49:30Z"
+ content="""
+Thanks for the reply.
+
+I am executing the following commands.
+
+git init main
+cd main
+git annex init main
+echo a > a
+git annex add a
+git commit -m Initial
+git annex unlock a
+echo aa > a
+git annex add a
+git commit -m first
+git annex unlock a
+echo aaa > a
+git annex add a
+git commit -m second
+git log
+git cherry-pick <Hash of first commit>
+
+--------------------
+Error: 
+
+error: could not apply 2be8f38... first
+hint: after resolving the conflicts, mark the corrected paths
+hint: with 'git add <paths>' or 'git rm <paths>'
+hint: and commit the result with 'git commit'
+
+How can resolve the the above conflict.
+If I see the content of the file I will get the content of second commit.
+Is there any way I can get the content for first commit(Like in git we have 'theirs' option.)
+
+Thank you.
+"""]]

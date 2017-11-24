@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="justin.lebar@7a36fcafc322d9a381e89f08ab6289033c6dde91"
+ nickname="justin.lebar"
+ avatar="http://cdn.libravatar.org/avatar/9fca4b61a1ab555f231851e7543f9a3e"
+ subject="comment 3"
+ date="2016-12-04T04:30:38Z"
+ content="""
+For a while things were working, but now it's not working again, same problem as before.
+
+Do you think maybe it's a timestamp bug in the signature or something?  That could explain this \"mysteriously works then stops working\" behavior.
+"""]]

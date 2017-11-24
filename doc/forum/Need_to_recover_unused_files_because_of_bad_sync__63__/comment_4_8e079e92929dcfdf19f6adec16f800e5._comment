@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="feulif"
+ ip="151.27.145.89"
+ subject="comment 4"
+ date="2014-06-10T18:43:34Z"
+ content="""
+Here is the log of the \"bad\" commit:
+
+    commit 38e0e1ef009b820f008b46f53c24d9835ca0f9a6
+    Author: me <me@myself.com>
+    Date:   Wed Jun 4 00:04:37 2014 +0200
+    
+    git-annex automatic sync
+
+     folder/subfolder1/subfolder2/photo.jpg          | 1 +
+     [...]
+     [...]
+     [...]
+     folder/subfolder1/subfolderN/video.MOV          | 1 +
+     2266 files changed, 2266 insertions(+)
+
+I stopped (ctrl-c) when it was adding the video.
+"""]]

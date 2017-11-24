@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="RESOLVED"
+ date="2016-11-17T14:59:15Z"
+ content="""
+Ooops. I am on OS-X. I use brew for my gnupg installation. It appears I had removed gpg from the path when installing something. I just needed to run to fix:
+
+    brew link gnupg2
+
+Thanks,
+
+Andrew
+"""]]

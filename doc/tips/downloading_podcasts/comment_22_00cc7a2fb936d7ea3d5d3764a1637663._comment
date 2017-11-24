@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.55"
+ subject="metadata"
+ date="2014-07-03T18:25:32Z"
+ content="""
+Good idea, Sazius!
+
+I've made importfeed store the metadata, as long as annex.genmetadata is set in .git/config.
+"""]]

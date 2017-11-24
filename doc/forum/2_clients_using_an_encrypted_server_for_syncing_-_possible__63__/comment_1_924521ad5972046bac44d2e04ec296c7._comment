@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnvVfFLW4CTKs7UjdiLIsOn_cxj1Jnh64I"
+ nickname="Charl"
+ subject="Change the encrypted server repository group to &quot;full backup&quot;"
+ date="2014-03-23T21:00:01Z"
+ content="""
+Have you tried changing the repository group of the encrypted server to \"full backup\" instead of \"transfer\"?
+
+I've just started experimenting with git-annex, and this setup (two possibly remote laptops, one encrypted server) seems to be working after very limited testing. I'm currently importing a larger collection of about 40000 files, will see if it still does (it seems whilst one client is transferring to the remote server, the other client laptop is not beeing synced; it did sync after my first batch of copying however.)
+"""]]

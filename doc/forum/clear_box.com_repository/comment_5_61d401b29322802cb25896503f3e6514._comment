@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 5"
+ date="2013-06-17T23:53:24Z"
+ content="""
+Use the --debug switch to enable debugging on startup.
+"""]]

@@ -1,0 +1,68 @@
+Hi,
+
+Git-annex is really awesome. It has made my life really easier when having to
+move files around.
+
+Yet, I have been struggling with a use case that I cannot get working with git
+annex.
+
+In short, my request is: could it be possible to have --want-get and --want-drop
+accept a repository as argument to match the preferred content of that
+repository instead of here?
+
+Now, let me explain why I need this:a
+
+All my files are stored into a NAS accessible via a local network.
+
+I have an annex in my desktop computer. Using preferred content (via "git annex
+wanted") and "git annex get|drop --auto", I am able to almost automatically
+handle what files are put into my computer. What I do is to "git annex wanted"
+to indicate what I want to be here and launch a home made script that basically
+does "git annex get --auto" and "git annex drop --auto".
+
+Let's say I have a android phone to which I connect via ssh over adb. It
+contains a git repository but few files are in it. It has no wifi and so no
+access to the network, meaning no access to the NAS.
+
+The links between annexes then looks like:
+
+    NAS <-> Computer <-> Phone
+
+When I want to put a file into my phone, I generally launch "git annex get file"
+from my computer (then I get the file from the NAS) and "git annex copy --to
+phone file".
+
+I want to be able to automatise this a bit by playing with preferred content
+(like I do with my computer). This means that I want to launch "git annex
+wanted" to edit the preferred content of the phone annex and then "git annex get
+--auto" and launch "git annex copy --auto --to phone". This way, when I am not
+in front of my computer, I can still from my phone run "git annex wanted here
+'preferred content'" and hope for my synchronisation scripts (run in my
+computer) to put the good files into my phone.
+
+Obviously those commands won't work since the git annex get --auto command will
+only get what my computer wants, not what my phone wants.
+
+The intuitive (IMHO) way to do would be to launch:
+
+    git annex get --want-get phone
+	git annex copy --auto --to phone
+	git annex drop --auto
+
+With "--want-get repository" meaning, "Matches files that the preferred content
+settings for the repository make it want to get.".
+
+For the time being, I succeed in doing this with
+
+	OLD_WANTED=$(git annex wanted here)
+	git annex wanted here $(git annex wanted phone)
+	git annex copy --auto --to phone
+	git annex wanted ${OLD_WANTED}
+	git annex drop --auto
+
+This is complicated and adds two extra commits in the git-annex branch (one for
+each setting of git annex wanted) each time I call the script.
+
+What do you think?
+
+Thanks for reading.

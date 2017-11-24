@@ -1,0 +1,8 @@
+Seems I forgot why I was using debian stable chroots to make the
+autobuilds: Lots of people still using old glibc version. Had to rebuild
+the stable chroots that I had upgraded to unstable. Wasted several hours..
+I was able to catch up on recent traffic in between.
+
+Was able to reproduce a bug where `git annex initremote` hung with some
+encrypted special remotes. Turns out to be a deadlock when it's not built
+with the threaded GHC runtime. So I've forced that runtime to be used.

@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmwjQzWgiD7_I3zw-_91rMRf_6qoThupis"
+ nickname="Mike"
+ subject="comment 1"
+ date="2014-10-09T17:53:04Z"
+ content="""
+I experimented with this by making an empty directory with two empty files and one file with some content. I added them all, then ran ``git annex drop --numcopies=0 <file>; git rm <file>`` on one of the empty files.
+
+Interestingly, what happened is that git annex deleted the empty file from .git/annex/objects, but left the directory structure. In this case the link pointed to:
+
+.git/annex/objects/pX/ZJ/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
+After the drop command what was left was the following empty directory:
+
+.git/annex/objects/pX/ZJ/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/
+
+Also interestingly and terrifyingly, because there were two empty files, both pointed to the same object, the ``git annex drop`` command deleted the file in the objects directory, and now the second link points to nothing. The file is done.
+
+This means that if you have a git annex repository and you have two copies of a file, and you think to yourself, \"oh, let me just delete one, I don't need two\", and you use the method above, you will permanently and irrevocably delete both files.  Not good.
+
+Any better ideas on how to do this?
+"""]]

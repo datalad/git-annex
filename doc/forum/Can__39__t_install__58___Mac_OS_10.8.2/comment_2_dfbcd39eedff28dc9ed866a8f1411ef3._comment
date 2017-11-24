@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlxKQEwwP6J58W0Dmfq0-v0j3LXtT5gNAA"
+ nickname="Carlito"
+ subject="Thanks"
+ date="2012-12-06T19:23:48Z"
+ content="""
+Thanks joey!
+
+Sorry missed `cabal install c2hs` in the instruction. But got passed that and still can't install.
+
+    Resolving dependencies...
+    Configuring libxml-sax-0.7.3...
+    cabal: The pkg-config package libxml-2.0 is required but it could not be found.
+    cabal: Error: some packages failed to install:
+    git-annex-3.20121127.1 depends on libxml-sax-0.7.3 which failed to install.
+    libxml-sax-0.7.3 failed during the configure step. The exception was:
+    ExitFailure 1
+    network-protocol-xmpp-0.4.4 depends on libxml-sax-0.7.3 which failed to install.
+
+I tried
+
+    brew install libxml2
+    cabal install libxml
+
+Also I added $HOME/.cabal/bin to my path
+
+Thanks,
+
+Carlito
+"""]]

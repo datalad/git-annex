@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-01-01T20:04:02Z"
+ content="""
+All spaces and punctuation (other than '.') and other wacky stuff are replaced with
+'_' when git-annex builds a filename from some untrusted source like a
+feed.
+
+I think it makes sense to do that even for '-', at least if it's at the
+start of a filename. "--force" is not a filename you want to let a feed
+inject into your work tree. I could perhaps be convinced to let '-'
+elsewhere in the filename through unmunged, but simplicity and consistency
+suggests it's just as good to always munge it.
+"""]]

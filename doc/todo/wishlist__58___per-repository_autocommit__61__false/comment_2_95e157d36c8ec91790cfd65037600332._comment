@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-02-03T17:35:37Z"
+ content="""
+git annex config --set annex.autocommit false
+
+That works now, and will set the default autocommit behavior in all clones
+of the repository.
+"""]]

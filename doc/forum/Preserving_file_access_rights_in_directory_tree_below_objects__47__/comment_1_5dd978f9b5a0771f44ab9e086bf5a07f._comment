@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2012-01-23T19:00:40Z"
+ content="""
+You say you started the repo with \"git init --shared\" .. but what that's really meant for is bare repositories, which can have several users pushing into it, not a non-bare repository.
+
+The strange mode on the directories \"dr-x--S---\" and files \"-r--r-----\" must be due to your umask setting though. My umask is 022 and the directories and files under `.git/annex/objects` are \"drwxr-xr-x\" and \"-r--r--r--\", which allows anyone to read them unless an upper directory blocks it -- and with this umask, none do unless I explicitly remove permissions from one to lock down a repository.
+
+About mpd, the obvious fix is to run mpd not as a system user but as yourself. I put \"@reboot mpd\" in my crontab to do this.
+
+
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="andy"
+ ip="99.127.140.99"
+ subject="Another success story"
+ date="2013-06-27T02:03:00Z"
+ content="""
+I'm using Ubuntu, and I do a clean install about every 6 months when the new versions come out. I also have 2-3 systems I need to keep in sync. I use git annex to store files I want to keep between OS reinstalls, and to sync the various systems I need data on. I also use it to backup data to the cloud and to bup. I have 6+ repos, 235 GB of data, and 31,029 known annex keys (thanks `git annex map` and `git annex status`!); nevertheless git annex is generally pretty cooperative. I'm not using the assistant yet, but I'd like to eventually. I almost don't have to think about the stuff annex handles. It's really fun to install a fresh OS, clone the git annex repo, and have my entire annex directory tree available immediately.
+
+Thanks Joey! You've done a great job!
+"""]]

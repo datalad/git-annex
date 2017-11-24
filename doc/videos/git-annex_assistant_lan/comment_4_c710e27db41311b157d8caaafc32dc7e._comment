@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 4"
+ date="2014-06-11T19:56:49Z"
+ content="""
+Running git-annex will also register it on OSX. The registration just consists of making a ~/.ssh/git-annex-shell that runs the real git-annex-shell. The assistant detects when it needs to use that wrapper when setting up a repository.
+"""]]

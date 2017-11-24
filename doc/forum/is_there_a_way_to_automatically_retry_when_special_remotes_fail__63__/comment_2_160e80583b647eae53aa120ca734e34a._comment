@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://digiuser.livejournal.com/"
+ subject="Is there a way to make this upload all files that have not been uploaded yet?"
+ date="2015-01-08T02:37:51Z"
+ content="""
+Let's say I want my S3 repo to have all files in it that are in my current repo. Is there a variation of this while loop that will keep uploading until it's done?
+
+I recognize I could use annex assistant but let's say I just want to do it this way.
+"""]]

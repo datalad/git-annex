@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://inkwell.za.net/"
+ nickname="kwill"
+ subject="Confirmation"
+ date="2014-11-11T08:01:48Z"
+ content="""
+I can confirm this occurs for me on Android 4.4 with exactly the same symptoms: primary user account can install and run Git Annex (triggers repo setup, webapp opens), secondary user account can install, but gets this error when starting Git Annex (webapp does not open). Is there any additional info I can provide to resolve this?
+"""]]

@@ -1,0 +1,7 @@
+When the webapp is used to set up a ssh repository, it should detect if
+there is already a repository, and sshing in to the server forces running
+git-annex-shell (perhaps by it being set to the user's login shell). 
+
+In this case it should just use the already set up repository. Note that
+it would not be possible to add a new repository on the server using only
+git-annex-shell. --[[Joey]]

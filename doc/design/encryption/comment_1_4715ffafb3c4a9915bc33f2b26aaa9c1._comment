@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2011-04-03T20:03:14Z"
+ content="""
+New encryption keys could be used for different directories/files/patterns/times/whatever. One could then encrypt this new key for the public keys of other people/machines and push them out along with the actual data. This would allow some level of access restriction or future revocation. git-annex would need to keep track of which files can be decrypted with which keys. I am undecided if that information needs to be encrypted or not.
+
+Encrypted object files should be checksummed in encrypted form so that it's possible to verify integrity without knowing any keys. Same goes for encrypted keys, etc.
+
+Chunking files in this context seems like needless overkill. This might make sense to store a DVD image on CDs or similar, at some point. But not for encryption, imo. Coming up with sane chunk sizes for all use cases is literally impossible and as you pointed out, correlation by the remote admin is trivial.
+"""]]

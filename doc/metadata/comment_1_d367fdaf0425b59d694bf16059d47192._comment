@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="bremner"
+ ip="198.164.160.48"
+ subject="access metadata by key?"
+ date="2014-03-17T01:26:44Z"
+ content="""
+I'm hacking around with using metadata from an external special remote. Those work with keys, not files, so one option would be to add a GETMETADATA to the protocol. It also seems like it would not be too hard to add
+an option  to \"git annex metadata\" to take a key rather than a file.
+"""]]

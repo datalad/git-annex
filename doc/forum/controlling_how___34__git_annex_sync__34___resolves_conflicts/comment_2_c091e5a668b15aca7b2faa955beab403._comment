@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-06-01T16:16:44Z"
+ content="""
+I've implemented the annex.automerge configuration setting, for the next
+release. There's also a `git annex sync --no-resolvemerge`
+"""]]

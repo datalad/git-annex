@@ -1,0 +1,45 @@
+### Please describe the problem.
+See the logs. git-annex-shell tries to use not existing runshell
+
+
+### What steps will reproduce the problem?
+I am on Debian testing and have, some month ago, tried the tarball distribution.
+I have returned to deb packages later and  deleted the tarball installation. 
+Seems that there some traces left.  
+
+I have tried to find the runshell configuration, but failed to do so.
+
+I have destroyed the repo completely, has not helped.
+
+### What version of git-annex are you using? On what operating system?
+ii  git-annex      5.20140831   amd64      
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+[2014-09-07 17:15:04 CEST] main: starting assistant version 5.20140831
+[2014-09-07 17:15:04 CEST] Cronner: Consistency check in progress
+/home/<user>/.ssh/git-annex-shell: 4: exec: /home/<user>/git-annex.linux.5.20131213/runshell: not found
+/home/<user>/.ssh/git-annex-shell: 4: exec: /home/<user>/git-annex.linux.5.20131213/runshell: not found
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+/home/<user>/.ssh/git-annex-shell: 4: exec: /home/<user>/git-annex.linux.5.20131213/runshell: not found
+/home/<user>/.ssh/git-annex-shell: 4: exec: /home/<user>/git-annex.linux.5.20131213/runshell: not found
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+/home/<user>/.ssh/git-annex-shell: 4: exec: /home/<user>/git-annex.linux.5.20131213/runshell: not found
+(scanning...) [2014-09-07 17:16:47 CEST] Watcher: Performing startup scan
+/home/<user>/.ssh/git-annex-shell: 4: exec: /home/<user>/git-annex.linux.5.20131213/runshell: not found
+/home/<user>/.ssh/git-annex-shell: 4: exec: /home/<user>/git-annex.linux.5.2013121/
+/home/<user>/.ssh/git-annex-shell: 4: exec: /home/<user>/git-annex.linux.5.20131213/runshell: not found
+/home/<user>/.ssh/git-annex-shell: 4: exec: /home/<user>/git-annex.linux.5.20131213/runshell: not found
+
+# End of transcript or log.
+"""]]

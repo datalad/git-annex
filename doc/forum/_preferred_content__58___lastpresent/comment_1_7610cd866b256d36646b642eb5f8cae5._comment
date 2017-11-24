@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.246"
+ subject="comment 1"
+ date="2013-11-15T20:39:43Z"
+ content="""
+The idea seems to be to match files that have been deleted.
+
+I don't see how that could work; preferred content expressions are always matched against files in the working tree.
+
+Even if it were doable, it would be quite expensive if every preferred content query involved a `git log`...
+
+What are you trying to achieve with this?
+"""]]

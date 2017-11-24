@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.191"
+ subject="comment 1"
+ date="2014-04-20T17:11:02Z"
+ content="""
+Is there one commit with this long message, or 12 thousand commits each adding another (recovery from race) to the pyramid?
+
+<pre>
+ - Also safely handles a race that can occur if a change is being pushed
+ - into the branch at the same time. When the race happens, the commit will
+ - be made on top of the newly pushed change, but without the index file
+ - being updated to include it. The result is that the newly pushed
+ - change is reverted. This race is detected and another commit made
+ - to fix it.
+</pre>
+
+If there is only one message, then it must have tried 12k times to commit to the git-annex branch and each time something else pushed or commited to the git-annex branch and overwrote its commit. This seems statistically unlikely. (Also there's locking to prevent multiple local git-annex processes from committing at the same time.)
+
+There have been a few other unexplained reports of this race detection code repeatedly triggering.
+
+> \"shutdown the assistant in yet another panic\"
+
+This implies some hasty, perhaps unusual shutdown method, and some unusual situation. I think you could tell me more about what was going on.
+"""]]

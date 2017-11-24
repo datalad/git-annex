@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="azul"
+ ip="91.36.173.120"
+ subject="c2hs required for cabal to install dependencies"
+ date="2014-06-20T06:35:35Z"
+ content="""
+Next thing i ran into was missing c2hs.
+So
+`apt-get install c2hs` before running the cabal install otherwise...
+
+<pre>
+$ cabal install git-annex --only-dependencies
+Resolving dependencies...
+Configuring gnuidn-0.2.1...
+cabal: The program c2hs is required but it could not be found.
+Failed to install gnuidn-0.2.1
+cabal: Error: some packages failed to install:
+gnuidn-0.2.1 failed during the configure step. The exception was:
+ExitFailure 1
+network-protocol-xmpp-0.4.6 depends on gnuidn-0.2.1 which failed to install.
+</pre>
+
+"""]]

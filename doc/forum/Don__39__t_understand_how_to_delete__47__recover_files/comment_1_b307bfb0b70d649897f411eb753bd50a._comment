@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.60"
+ subject="comment 1"
+ date="2012-09-16T00:14:49Z"
+ content="""
+You can use any git command you like like `git rebase` or `git revert` to operate on the links.
+
+git-annex, like git, keeps data for files that have been deleted.
+
+The `git annex unused` command will find that data and let you remove it. See [[walkthrough/unused_data]].
+
+
+"""]]

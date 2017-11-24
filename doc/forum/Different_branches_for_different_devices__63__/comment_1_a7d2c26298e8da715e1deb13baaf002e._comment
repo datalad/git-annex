@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-05-24T17:41:08Z"
+ content="""
+Don't underestimate the simple power of branches for this kind of thing.
+If you have a limited `phone` branch, you can `git merge` it into a larger
+branch at home.
+"""]]

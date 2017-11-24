@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlog_5wIICaMcrKTexlFNA6IO6UTp323aE"
+ nickname="Torkaly"
+ subject="comment 4"
+ date="2014-09-19T18:22:36Z"
+ content="""
+delete the *synced/master* branch:
+```
+$ git branch -d synced/master
+Branch synced/master entfernt (war 20ec8b3).
+```
+
+then call *annex merge*:
+```
+$ git annex merge
+merge git-annex ok
+```
+
+check branches:
+```
+$ git branch -a
+  git-annex
+* master
+  synced/master
+  remotes/origin/git-annex
+  remotes/origin/master
+```
+and there is the *synced/master* branch again.
+
+But that's not my problem. My problem was: how to use annex with a central repository.
+I done that by deleting all remote synced/* branches. And now I'm updating the git-annex branch by `git fetch`ing and
+`git annex merge`ing again.
+
+PS: the MD for code blocks is broken
+
+"""]]

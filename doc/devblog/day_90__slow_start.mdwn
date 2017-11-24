@@ -1,0 +1,23 @@
+Various work on Debian, OSX, and Windows stuff. Mostly uninteresting, but
+took most of the day.
+
+Made `git annex mirror --all` work. I can see why I left it out; when the
+mirroring wants to drop an object, in --all mode it doesn't have an
+associated file in the tree, so it cannot look at the annex.numcopies in
+gitattributes. Same reason why `git annex drop --all` is not implemented.
+But decided to go ahead and only use other numcopies configuration for
+mirroring.
+
+Added GETWANTED and SETWANTED to the external special remote protocol, and
+that is as far as I want to go on adding git-annex plumbing stuff to the
+protocol. I expect Tobias will release a boatload of special remotes
+updated to the new protocol soon, which seems to prove it has everything
+that could reasonably be needed.
+
+This is a nice public git-annex repository containing a growing collection
+of tech conference videos. <https://github.com/RichiH/conference_proceedings>
+
+Did some design work on [[todo/untracked_remotes]], which I think will turn
+out to be read-only remotes. Being able to clone a repository and use
+git-annex in the clone without anything leaking back upstream is often
+desirable when using public repository, or a repository with many users.

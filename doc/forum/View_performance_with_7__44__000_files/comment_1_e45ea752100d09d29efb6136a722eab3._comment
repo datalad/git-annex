@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmvzzyDA8uXFz8yokeCrepbh8PwWe_WrjE"
+ nickname="Michael"
+ subject="debug output"
+ date="2014-06-16T14:17:06Z"
+ content="""
+So after looking for a debug flag, I see that it's spending all its time in cat-file, which I guess is probably not a surprise:
+
+    % /usr/bin/time -p git annex view \"Year=*\" \"Address=*\" -d
+    view  [2014-06-16 06:29:12 PDT] read: git [\"--git-dir=/Volumes/Four TB Backup/Photos/.git\",\"--work-tree=/Volumes/Four TB Backup/Photos\",\"symbolic-ref\",\"HEAD\"]
+    [2014-06-16 06:29:12 PDT] read: git [\"--git-dir=/Volumes/Four TB Backup/Photos/.git\",\"--work-tree=/Volumes/Four TB Backup/Photos\",\"show-ref\",\"refs/heads/master\"]
+    [2014-06-16 06:29:12 PDT] read: git [\"--git-dir=/Volumes/Four TB Backup/Photos/.git\",\"--work-tree=/Volumes/Four TB Backup/Photos\",\"symbolic-ref\",\"HEAD\"]
+    [2014-06-16 06:29:12 PDT] read: git [\"--git-dir=/Volumes/Four TB Backup/Photos/.git\",\"--work-tree=/Volumes/Four TB Backup/Photos\",\"show-ref\",\"refs/heads/master\"]
+    (searching...)
+    [2014-06-16 06:29:12 PDT] read: git [\"--git-dir=/Volumes/Four TB Backup/Photos/.git\",\"--work-tree=/Volumes/Four TB Backup/Photos\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"/Volumes/Four TB Backup/Photos\"]
+    [2014-06-16 06:29:12 PDT] feed: git [\"--git-dir=/Volumes/Four TB Backup/Photos/.git\",\"--work-tree=/Volumes/Four TB Backup/Photos\",\"update-index\",\"-z\",\"--index-info\"]
+    [2014-06-16 06:29:12 PDT] chat: git [\"--git-dir=/Volumes/Four TB Backup/Photos/.git\",\"--work-tree=/Volumes/Four TB Backup/Photos\",\"hash-object\",\"-w\",\"--stdin-paths\",\"--no-filters\"]
+    [2014-06-16 06:29:12 PDT] read: git [\"--git-dir=/Volumes/Four TB Backup/Photos/.git\",\"--work-tree=/Volumes/Four TB Backup/Photos\",\"show-ref\",\"git-annex\"]
+    [2014-06-16 06:29:12 PDT] read: git [\"--git-dir=/Volumes/Four TB Backup/Photos/.git\",\"--work-tree=/Volumes/Four TB Backup/Photos\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2014-06-16 06:29:12 PDT] read: git [\"--git-dir=/Volumes/Four TB Backup/Photos/.git\",\"--work-tree=/Volumes/Four TB Backup/Photos\",\"log\",\"refs/heads/git-annex..4e590d433e01886e2823c3316d18b7e3cbafe227\",\"--oneline\",\"-n1\"]
+    [2014-06-16 06:29:12 PDT] chat: git [\"--git-dir=/Volumes/Four TB Backup/Photos/.git\",\"--work-tree=/Volumes/Four TB Backup/Photos\",\"cat-file\",\"--batch\"]
+    [2014-06-16 06:34:54 PDT] read: git [\"--git-dir=/Volumes/Four TB Backup/Photos/.git\",\"--work-tree=/Volumes/Four TB Backup/Photos\",\"write-tree\"]
+    [2014-06-16 06:34:55 PDT] chat: git [\"--git-dir=/Volumes/Four TB Backup/Photos/.git\",\"--work-tree=/Volumes/Four TB Backup/Photos\",\"commit-tree\",\"c0fd1ea9ccae70a7353a2e787089b88115a42b7a\"]
+    [2014-06-16 06:34:55 PDT] call: git [\"--git-dir=/Volumes/Four TB Backup/Photos/.git\",\"--work-tree=/Volumes/Four TB Backup/Photos\",\"update-ref\",\"refs/heads/views/Year=_;Address=_\",\"249c37d78e45d1fccfcb00f40337e05cb69fb64c\"]
+    
+    [2014-06-16 06:34:55 PDT] call: git [\"--git-dir=/Volumes/Four TB Backup/Photos/.git\",\"--work-tree=/Volumes/Four TB Backup/Photos\",\"checkout\",\"views/Year=_;Address=_\"]
+    Checking out files: 100% (12789/12789), done.
+    Switched to branch 'views/Year=_;Address=_'
+    ok
+    real       362.14
+    user        18.16
+    sys          7.70
+
+"""]]

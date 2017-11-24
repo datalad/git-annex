@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnjX_O_VChwfDjcKlcRHbc2Aah8aYQlqts"
+ nickname="Ludovic"
+ subject="comment 3"
+ date="2014-10-05T11:01:39Z"
+ content="""
+I have the same problem.
+I checked again, removed the previous annex/ directory and created a new annex repository from the webapp. No annex/.git/index file is created.
+
+I then add a remore ssh server. The synchronisation fails with the error in the log: \"/storage/emulated/legacy/annex/.git/index: copyFile: does not exist (No such file or directory).\"
+
+Running \"git annex sync\" solved the problem.
+"""]]

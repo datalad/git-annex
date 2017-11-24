@@ -1,0 +1,16 @@
+Short day today, but I spent it all on testing the new FSEvents code,
+getting it working with the assistant in direct mode. This included fixing
+its handling of renaming, and various other bugs.
+
+The assistant in direct mode now seems to work well on OSX. So I made
+the assistant *default* to making direct mode repositories on OSX.
+
+That'll presumably flush out any bugs. :) More importantly,
+it let me close several OSX-specific bugs to do with interactions between
+git-annex's symlinks and OSX programs that were apparently written under the
+misprehension that it's a user-mode program's job to manually follow symlinks.
+
+Of course, defaulting to direct mode also means users can just modify files
+as they like and the assistant will commit and sync the changed files.
+I'm waiting to see if direct mode becomes popular enough to make it the
+default on all OS's.

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 1"
+ date="2014-07-14T18:47:21Z"
+ content="""
+You did not seem to paste the whole log, but it's clear that your git repository is corrupt. You might try running `git annex repair` inside it.
+
+This was probably caused by a disk corruption or if you're lucky just a hard shutdown that caused files to get truncated.
+
+The assistant tries to detect corrupt repositories on startup, but it's hard to detect when a repository has a few corrupt objects like this. This is why the webapp suggests you set up periodic repository consistency checks, which should eventually repair this kind of problem.
+
+Perhaps it would make sense for the webapp, when a thread crashes, to provide a button to run an consistency check immediately.
+"""]]

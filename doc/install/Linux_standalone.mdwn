@@ -1,0 +1,46 @@
+If your Linux distribution does not have git-annex packaged up for you,
+you can either build it [[fromsource]], or you can use a handy
+prebuilt tarball of the most recent release.
+
+This tarball should work on most Linux systems. It has basically no
+dependencies and is self-contained.
+
+* x86-32: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386.tar.gz)
+* x86-64: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz)
+* x86-32, for ancient kernels: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386-ancient.tar.gz)
+* arm: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-armel.tar.gz)
+
+To use, just unpack the tarball, `cd git-annex.linux` and run `./runshell`
+-- this sets up an environment where you can use `git annex`, as well
+as everything else included in the bundle.
+
+Alternatively, you can unpack the tarball, and add the directory to your
+`PATH`, or symlink the programs in the directory to a directory in your
+PATH. This lets you use `git annex`, without overriding your system's
+own versions of git, etc.
+
+The arm version can be installed on NAS devices and other embedded ARM
+linux systems.
+
+* [[tips/Synology_NAS_and_git_annex]]
+* [[forum_thread|forum/new_linux_arm_tarball_build]]
+
+The build for ancient kernels is for use with Linux kernel versions
+such as 2.6.32. It will work on both 32 and 64 bit systems.
+
+## autobuilds
+
+An hourly autobuild is also available, thanks to Mesar Hameed and the University
+of Bath CS department.
+
+* x86-32: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/i386/git-annex-standalone-i386.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/i386/))
+* x86-64: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/amd64/git-annex-standalone-amd64.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/amd64/))
+* x86-32, for ancient kernels: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/i386-ancient/git-annex-standalone-i386-ancient.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/i386-ancient/))
+
+The arm autobuilder runs daily (sun permitting), and is hosted by [[Joey]].
+
+* arm: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/armel/git-annex-standalone-armel.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/armel/))
+
+## technical details
+
+The way those tarballs are built is described in [joeyh's blog](http://joeyh.name/blog/entry/completely_linux_distribution-independent_packaging/).

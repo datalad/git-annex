@@ -1,0 +1,9 @@
+This is a app bundle for git-annex. Most users are going to want to
+just click on the icon to start up the git-annex webapp.
+
+To use git-annex at the command line, you can put the directory containing
+this README into your PATH.
+
+Or, you can use the runshell script in this directory to start a shell
+that is configured to use git-annex and the other utilities included in
+this bundle, including git, gpg, rsync, ssh, etc.

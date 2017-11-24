@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 1"
+ date="2013-10-28T16:56:20Z"
+ content="""
+I think you're stressing way too much about a number.
+
+It's quite possible for the known and local key counts to diverge while no data is missing. For example:
+
+<pre>
+joey@darkstar:~/tmp/test>touch foo
+joey@darkstar:~/tmp/test>touch bar
+joey@darkstar:~/tmp/test>git annex add foo bar
+
+local annex keys: 1
+known annex keys: 2
+</pre>
+
+"""]]

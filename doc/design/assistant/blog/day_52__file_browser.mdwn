@@ -1,0 +1,21 @@
+Today I added a "Files" link in the navbar of the WebApp. It looks like a
+regular hyperlink, but clicking on it opens up your desktop's native file
+manager, to manage the files in the repository!
+
+Quite fun to be able to do this kind of thing from a web page. :)
+
+---
+
+Made `git annex init` (and the WebApp) automatically generate a description
+of the repo when none is provided.
+
+---
+
+Also worked on the configuration pages some. I don't want to get ahead
+of myself by diving into the full configuration stage yet, but I am at
+least going to add a configuration screen to clone the repo to a removable
+drive.
+
+After that, the list of transfers on the dashboard needs some love.
+I'll probably start by adding UI to cancel running transfers, and then
+try to get drag and drop reordering of transfers working.

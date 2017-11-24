@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-29T17:20:38Z"
+ content="""
+`chmod -R u+w` will let you delete the directory.
+
+`git-annex test` normally takes care of removing the directory for you.
+Only because it crashed did it not in this case. It would be helpful if you
+could show the actual result of running it, including the real error
+message. Perhaps there's something that could be improved.
+"""]]

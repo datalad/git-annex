@@ -1,0 +1,3 @@
+I am just returning to git-annex after some time. The last time I was using it, the [[/todo/direct_mode_guard]] was not yet in place, and I could supply my own commit messages even in a direct mode repository using `git commit`. Now that the guard is in place, is there a built-in way to provide a commit message that will be used instead of "git-annex automatic sync" by `git annex sync`? 
+
+I have tried doing a manual commit with `git --git-dir=/path/to/local/.git --work-tree=/path/to/local -c core.bare=false commit -m 'Manual Commit Message'`, and it seems to work. Does this do the same thing as the part of `git annex sync` that commits any outstanding changes before syncing with remotes?

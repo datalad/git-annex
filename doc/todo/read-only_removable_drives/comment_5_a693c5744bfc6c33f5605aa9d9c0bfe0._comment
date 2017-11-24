@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 5"
+ date="2014-10-06T16:10:02Z"
+ content="""
+I guess that the actual problem encountered is entirely limited to the webapp, where if the user chooses \"Add another repository\", then enters the path to an existing, read-only repository, and clicks Make Repository, the webapp replies \"Cannot write a repository there.\"
+"""]]

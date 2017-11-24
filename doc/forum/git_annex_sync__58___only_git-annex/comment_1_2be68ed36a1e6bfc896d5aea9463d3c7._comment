@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-10-20T15:19:13Z"
+ content="""
+Sounds like you should just use normal `git push`/`git pull` commands.
+Works fine with git-annex. 
+
+Just be sure to include the `git-annex` branch in your pushes.
+Eg, `git push origin master git-annex`
+
+You'll probably want to run `git annex merge` after pulling, to merge the
+local and remote git-annex branches.
+"""]]

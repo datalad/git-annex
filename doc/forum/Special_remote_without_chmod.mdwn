@@ -1,0 +1,12 @@
+Apparently, the tablet computer I'm using (Galaxy Tab 2, non-rooted) does not export the sd cards via mass storage protocol (UMS) any more. In order to be able to use a special remote for my mp3-files,  I installed an ftp/ssh server on the tablet device and used curlftpfs/sshfs (fuse file systems) to mount the sd cards on my local Linux machine. In this way, it is is quite easy to setup the special remote (e.g. "git-annex initremote galaxy-tab type=directory directory=$HOME/mnt/galaxy-tab encryption=none"). 
+
+Problems arise, when files are transferred to the special remote. From the logs of the ftp server, I can see that the actual copy operation is successful (the data is written to the file system), but the subsequent "chmod" that changes the permissions to read-only fails. The output on the console of a "git-annex copy -t galaxy-tab" is 
+
+    copy 01 some.mp3 (to galaxy-tab...) 
+    failed                  
+    git-annex: copy: 1 failed
+
+
+Therefore my question: is it possible to perform a file transfer to a special remote (type=directory) without the final "chmod"-operation?
+
+Thank you.

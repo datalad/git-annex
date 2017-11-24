@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.163"
+ subject="comment 9"
+ date="2014-02-08T18:29:41Z"
+ content="""
+So you moved away libs in /usr/local to expose usable ones in /usr? 
+
+I've had luck before sending the network-info mantainer pull requests: <https://github.com/jystic/network-info/issues/3>
+
+git-annex does set ReuseAddr in one place; in Utility/Webapp.hs. The only time that would have a benefit would be when using `git annex webapp --listen=address:port` and starting and restarting the webapp. Normally the webapp chooses a random free port so it shouldn't need that.
+"""]]

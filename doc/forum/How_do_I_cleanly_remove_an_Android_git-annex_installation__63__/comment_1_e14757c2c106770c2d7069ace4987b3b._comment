@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 1"
+ date="2013-08-24T18:43:08Z"
+ content="""
+It should be sufficient to delete `/sdcard/git-annex.home` and delete the .git directory inside whatever directory you set up as the repository.
+"""]]

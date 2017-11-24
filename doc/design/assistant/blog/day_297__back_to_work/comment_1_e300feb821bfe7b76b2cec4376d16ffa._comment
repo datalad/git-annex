@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://grossmeier.net/"
+ nickname="greg"
+ subject="uninit"
+ date="2013-07-16T23:43:38Z"
+ content="""
+Hah, that bit me in the butt when I first started experimenting with git-annex. I didn't lose anything, but it taught me a very important lesson (that I've had to learn many a time).
+"""]]

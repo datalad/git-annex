@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 5"
+ date="2012-02-15T15:22:56Z"
+ content="""
+The symlinks are in the git repository. So if the rsync damanged one, git would see the change. And nothing that happens to the symlinks can affect fsck.
+
+git-annex does not use hard links at all.
+
+fsck corrects mangled file permissions. It is possible to screw up the permissions so badly that it cannot see the files at all (ie, chmod 000 on a file under .git/annex/objects), but then fsck will complain and give up, not move the files to bad.
+So I don't see how a botched rsync could result in fsck moving a file with correct content to bad.
+"""]]

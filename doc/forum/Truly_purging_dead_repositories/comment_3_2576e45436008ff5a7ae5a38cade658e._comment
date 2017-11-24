@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
+ nickname="John"
+ subject="Another idea"
+ date="2012-10-18T05:38:07Z"
+ content="""
+What if git annex status didnn't show dead repository unless I specified \"git annex status --dead\"?  If you're OK with that, I'll try adding it.
+"""]]

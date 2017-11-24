@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="zardoz"
+ ip="78.48.163.229"
+ subject="comment 7"
+ date="2014-08-22T14:00:42Z"
+ content="""
+I experimented on my snapshot a bit and found out something odd: When I reset the git-annex branch from dda9b06 to git-annex~1 (4246f73) my local file additions succeed, even though git-annex will fast-forward the branch to dda9b06 again before adding (when merging from origin/git-annex). dda9b06 is a large commit in which I dropped many unused WORM keys from another remote.
+"""]]

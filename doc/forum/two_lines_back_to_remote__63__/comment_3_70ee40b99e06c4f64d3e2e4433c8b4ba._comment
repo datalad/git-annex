@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-04-06T16:59:10Z"
+ content="""
+The map shows one line for each git remote. So if you have two git remotes
+configured that are both pointing at the laptop, that'll be the result.
+For example, you might have both "origin" and "laptop" remotes pointing to
+it, possibly via two different urls.
+
+There's nothing bad about this.
+"""]]

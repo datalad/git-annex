@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="131.252.200.111"
+ subject="comment 3"
+ date="2014-08-31T22:29:44Z"
+ content="""
+Occurs to me that your repo may not have a pre-commit hook; if not then `git commit -a` would not behave as I described..
+"""]]

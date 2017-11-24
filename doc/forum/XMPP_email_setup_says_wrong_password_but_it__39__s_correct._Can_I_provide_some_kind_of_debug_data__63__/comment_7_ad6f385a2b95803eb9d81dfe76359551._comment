@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlutNrg7ajiNAfi5gqJfD8crv0aimZa27k"
+ nickname="Chuck"
+ subject="I'm having this problem too"
+ date="2013-07-21T19:14:21Z"
+ content="""
+I'm a git-annex newbie looking for Dropbox-like functionality.  I've got git-annex and the webapp running on my desktop and laptop, and I believe I've got a Jabber account working since Kopete seems happy with my account info.  But when I enter the correct Gmail UID and password I get the above error.
+
+I'm running the version of git-annex that's current in the standard Ubuntu repos (I'm actually running Kubuntu if that matters), and that version is 20121112ubuntu2.  If this is an issue that was fixed in the 20121126 release, how would I get that?  Doing the standard install gets me the version I have now...
+"""]]

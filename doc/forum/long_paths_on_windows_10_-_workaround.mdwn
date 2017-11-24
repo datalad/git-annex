@@ -1,0 +1,9 @@
+It seems git-annex has some serious problems with long paths on windows systems. I would like to suggest a possible solution and a simple workaround.
+
+## Possible solution:
+Although by default winapi functions work only with paths up to MAX_PATH, their unicode versions can work with much longer paths, provided that the paths are prefixed with "\\\\?\\". Functions defined in System.Win32.File module (e.g. moveFileEx) call the unicode versions. Solving the length limitation problem might not be as simple as prefixing all arguments with "\\\\?\\", as it does not work with relative paths. I also do not know the git-annex internals so I have no idea how easy would it be to implement, but maybe it could be an easier way than trying to limit the paths' lengths to fit in the archaic MAX_PATH limit. The MSDN page linked below has some more information.
+
+## Workaround:
+It turns out that Windows 10 supports long paths without the "\\\\?\\" prefix, but this setting is by default turned off. According to [this MSDN page](https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85\).aspx#maxpath) one can enable it by setting HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\LongPathsEnabled to 1 or by using the group policy editor (Computer Configuration > Administrative Templates > System > Filesystem > Enable NTFS long paths). With default settings I was unable to "git annex get" some files in nested directories (it failed with a MoveFileEx error when moving a file from annex\tmp to annex\objects), but after I enabled the long paths option it worked!
+
+This is more of a workaround than a real solution because it requires modifying a global setting which can affect other applications. I also do not know if it solves all path problems with git-annex, but it worked for me so far. I hope this workaround will help others having similar problems.

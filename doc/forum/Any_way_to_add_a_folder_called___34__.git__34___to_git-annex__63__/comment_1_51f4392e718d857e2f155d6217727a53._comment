@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlq4ClC5EMN1Vq1DpWXAqP5TiDnCK1mSfk"
+ nickname="Jonas"
+ subject="comment 1"
+ date="2014-01-09T22:58:30Z"
+ content="""
+I just found [this thread](http://git-annex.branchable.com/forum/Tracking_a_directory_with_some_hg_and_git_repositories/) where a user was discouraged from syncing git repositories with annex.
+
+I've used unison in the past for this. Sure, it would occasionally create a few unneeded object files; but these got removed during the next \"git gc\", and never corrupted a repository... Do people know of any better way to handle this problem?
+"""]]

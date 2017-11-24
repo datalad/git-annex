@@ -1,0 +1,21 @@
+Last night, went over the new chunking interface, tightened up exception
+handling, and improved the API so that things like WebDAV will be able to
+reuse a single connection while all of a key's chunks are being downloaded.
+I am pretty happy with the interface now, and except to convert more
+special remotes to use it soon.
+
+Just finished adding a killer feature: Automatic resuming of interrupted
+downloads from chunked remotes. Sort of a poor man's rsync, that while less
+efficient and awesome, is going to work on *every* remote that gets the new
+chunking interface, from S3 to WebDAV, to all of Tobias's external special
+remotes! Even allows for things like starting a download
+from one remote, interrupting, and resuming from another one, and so on.
+
+I had forgotten about resuming while designing the chunking API. Luckily, I
+got the design right anyway. Implementation was almost trivial, and only
+took about 2 hours! (See [[!commit 9d4a766cd7b8e8b0fc7cd27b08249e4161b5380a]])
+
+I'll later add resuming of interrupted uploads. It's not hard to detect
+such uploads with only one extra query of the remote, but in principle,
+it should be possible to do it with no extra overhead, since git-annex
+already checks if all the chunks are there before starting an upload.

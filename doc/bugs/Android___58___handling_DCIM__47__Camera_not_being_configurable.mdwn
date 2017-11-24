@@ -1,0 +1,16 @@
+### Please describe the problem.
+
+In order to handle the fact that the directory where pictures are saved is not configurable on my phone, I set up a second git annex repository with the Repository group "file source".
+
+### What version of git-annex are you using? On what operating system?
+
+5.20140108-gce9652
+
+### Please provide any additional information below.
+
+In the log, there are many "too many open files" errors like these :
+
+git:createProcess: runInteractiveProcess: pipe: resource exhausted (Too many open files)
+
+[[!tag moreinfo]]
+[[!meta title="too many open files on android"]]

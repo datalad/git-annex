@@ -1,0 +1,7 @@
+I have added a new git-annex package in Arch Linux's official repository [1]. I plan to keep it tracking latest release, and the delay should be within a few days after a new release appears.
+
+It would be great to update the installation instructions for Arch,  also please let me know if there is any problem with the package.
+
+Thank you!
+
+[1] https://www.archlinux.org/packages/community/x86_64/git-annex/

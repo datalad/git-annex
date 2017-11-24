@@ -1,0 +1,102 @@
+### Please describe the problem.
+
+I have files that match annex.largefiles and therefore should be added to git but not to annex, they seem to be getting corrupted after cloning the repo.
+
+### What steps will reproduce the problem?
+
+I couldn't immediately find the exact steps to reproduce the issue but I have multiple git repositories showing this.
+
+### What version of git-annex are you using? On what operating system?
+
+The problem has occurred a while ago but I have just noticed it. This is on macOS if it helps. I also tend to use the latest released version of git-annex (installed via Homebrew)
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+$ cd Documents
+$ cat .gitattributes
+* annex.largefiles=((not(mimetype=text/*))or(largerthan=100kb))
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+
+*.mp3 binary
+*.fla binary
+
+*.mov binary
+*.mp4 binary
+*.flv binary
+*.swf binary
+*.avi binary
+*.mkv binary
+*.mpg binary
+*.mpeg binary
+
+*.gz binary
+*.zip binary
+*.7z binary
+*.rar binary
+*.bz2 binary
+
+*.ttf binary
+
+*.pdf binary
+
+$ ls -la Docs/2016-XXX/XXX/
+total 696
+drwx------@ 4 denis  staff     136 Jul 11 15:05 ./
+drwxr-xr-x@ 9 denis  staff     306 Dec 12 19:42 ../
+-rwxr-xr-x@ 1 denis  staff  265898 Jul 11 13:03 XXX.pdf*
+-rwxr-xr-x@ 1 denis  staff   89586 Jul 11 13:03 Summary.pdf*
+$ file --mime-type Docs/2016-XXX/XXX/XXX.pdf
+Docs/2016-XXX/XXX/XXX.pdf: application/pdf
+$ git show 60a76858a57a73967131b929af45a99703f67335
+commit 60a76858a57a73967131b929af45a99703f67335
+Author: Denis Dzyubenko <denis@ddenis.info>
+Date:   Mon Jul 11 15:05:37 2016 +0200
+
+    XXX
+
+diff --git a/Docs/2016-XXX/XXX/XXX.pdf b/Docs/2016-XXX/XXX/XXX.pdf
+new file mode 100755
+index 00000000..112f68d0
+Binary files /dev/null and b/Docs/2016-XXX/XXX/XXX.pdf differ
+diff --git a/Docs/2016-XXX/XXX/Summary.pdf b/Docs/2016-XXX/XXX/Summary.pdf
+new file mode 100755
+index 00000000..3828383e
+Binary files /dev/null and b/Docs/2016-XXX/XXX/Summary.pdf differ
+diff --git a/Docs/2016-XXX/XXX.pdf b/Docs/2016-XXX/XXX.pdf
+deleted file mode 120000
+index 6d347a22..00000000
+--- a/Docs/2016-XXX/XXX.pdf
++++ /dev/null
+@@ -1 +0,0 @@
+-../../.git/annex/objects/zJ/X1/SHA256E-s190749--ee0c8329c88f9c1656cc75cf37d4df64060a022e73d199164c5e5222ba1739d1.pdf/SHA256E-s190749--ee0c8329c88f9c1656cc
+\ No newline at end of file
+
+
+
+$ git clone Documents Documents.tmp
+Cloning into 'Documents.tmp'...
+done.
+$ cd ./Documents.tmp/
+$ ls -la Docs/2016-XXX/XXX/
+total 184
+drwxr-xr-x  4 denis  staff    136 Dec 19 00:09 ./
+drwxr-xr-x  8 denis  staff    272 Dec 19 00:09 ../
+-rwxr-xr-x  1 denis  staff    101 Dec 19 00:09 XXX.pdf*
+-rwxr-xr-x  1 denis  staff  89586 Dec 19 00:09 Summary.pdf*
+$ cat Docs/2016-XXX/XXX/XXX.pdf
+/annex/objects/SHA256E-s265898--9c750c01dce9689ac3880224d2e95da6287b0cc89759c0c882e7a9a0fe48d664.pdf
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+

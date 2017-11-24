@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/27ceb3c5-0762-42b8-8f8a-ed21c284748f"
+ nickname="g"
+ subject="comment 6"
+ date="2015-12-11T22:58:22Z"
+ content="""
+Thanks for the quick reply (and all your work on this!)
+
+Interesting, that change to git does sound like it should be relatively small compared to the workarounds needed. But in any case, glad to hear you're thinking about the issue.
+
+Also curious what your thoughts are on the performance issues you had identified previously with using smudge/clean on larger repos. Do the changes in git 2.5 address all your concerns? Or are there still some cases where this will potentially result in significant slow-down?
+"""]]

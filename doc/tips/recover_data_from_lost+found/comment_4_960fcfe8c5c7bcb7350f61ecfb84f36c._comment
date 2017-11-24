@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="Isn't this procedure assuming that lost+found contains only uncorrupted previously annexed files?"
+ date="2017-03-14T19:15:40Z"
+ content="""
+    git annex add recovered-content
+
+lost+found does not contain only annexed file, right? It may contain any kind of file not originally annexed.
+
+Examples:
+
+* a file that was imported in the regular git part of the git annex repository
+* a corrupted variant of an annexed file
+* a git pack, a git index or any git administrative file
+* a file totally unrelated that happened to be on the same filesystem.
+
+In all these cases, this command will result in new additions to the annex.
+
+This is not what a recovery should do, is it?
+
+Shouldn't that become rather something like:
+
+    git annex reinject --known 
+
+"""]]

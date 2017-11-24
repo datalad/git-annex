@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 13"
+ date="2012-09-20T16:21:11Z"
+ content="""
+@Jörn, two days ago I added support in the webapp for multiple independent repositories. So you can create independent repos using it, and switch between them from a menu. Under the hood there are multiple git-annex assistant daemons running, but this is an implementation detail; it's not like these use any more memory or other resources than would a single daemon that managed multiple repositories.
+"""]]

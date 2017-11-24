@@ -1,0 +1,10 @@
+Hey,
+
+I write an article for the univerity about git-annex assistant and I'm a little bit confused about the function of the assistant. 
+Because an advantage of git-annex is that you can hold different files at different places in one repository, but this isn't anymore, or? The assistant syncs every file to every place of the repository. And this makes it just to another Dropbox (not direct the same) pentant or I'm not correct?
+
+The transfer group is just for transfer files to other repositories, which are not connected with the network or?
+
+I'm using ppa, ubuntu 12.04 lts, vers, 2013-12-13
+
+JP Lührig

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.81.112"
+ subject="comment 2"
+ date="2012-05-27T20:53:05Z"
+ content="""
+When `git annex get` does nothing, it's because it doesn't know a place to get the file from.
+
+This can happen if the `git-annex` branch has not propigated from the place where the file was added.
+For example, if on the laptop you had run `git pull ssh master`, that would only pull the master branch, not the git-annex branch. 
+
+An easy way to ensure the git-annex branch is kept in sync is to run `git annex sync`
+"""]]

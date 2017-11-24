@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-05-22T19:12:37Z"
+ content="""
+I think I've seen this where the shell was running some command
+at (non-interactive) login that output stuff and so screwed up the rsync
+protocol.
+
+rsync with sufficient -vvvv will print out a lot of debugging info about
+the protocol.
+"""]]

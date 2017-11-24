@@ -1,0 +1,17 @@
+Turns out I was able to easily avoid the potential upload loops that would
+occur if each time a repo receives a download, it queues uploads to the
+repos it's connected to. With that done. I suspect, but have not proven,
+that the assistant is able to keep repos arranged in any shape of graph in
+sync, as long as it's connected (of course) and each connection is
+bi-directional. That's a good start .. or at least a nice improvement from
+only strongly connected graphs being kept in sync.
+
+Eliminated some empty commits that would be made sometimes, which is a nice
+optimisation.
+
+------
+
+I wanted to get back to some UI work after this week's deep dive into the
+internals. So I filled in a missing piece, the repository switcher in the
+upper right corner. Now the webapp's UI allows setting up different
+repositories for different purposes, and switching between them.

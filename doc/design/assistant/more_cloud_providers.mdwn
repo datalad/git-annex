@@ -1,0 +1,24 @@
+Git-annex already supports storing large files in 
+several cloud providers via [[special_remotes]].
+More should be added, such as:
+
+* Google drive (attractive because it's free, only 5 gb tho)
+* Owncloud (has several [providers](http://owncloud.org/providers/);
+  at least one provides 5 gb free; open DAV based API)
+* OpenStack Swift (teh future)
+* Box.com (it's free, and current method is hard to set up and a sorta
+  shakey; a better method would be to use its API) **done**
+* Dropbox? That would be ironic.. Via its API, presumably.
+* [[Amazon Glacier|todo/special_remote_for_amazon_glacier]] **done**
+* Internet Archive **done**
+* [nimbus.io](https://nimbus.io/) Fairly low prices ($0.06/GB);
+  REST API; free software
+* Mediafire provides 50gb free and has a REST API.
+* Flickr provides 1 tb (!!!!) to free accounts, and can store at least
+  photos and videos. <https://github.com/ricardobeat/filr> is a hack
+  to allow storing any type of file on Flickr.
+* mega.co.nz. Already supported via [[tips/megaannex]], would just need
+  webapp modifications to configure it. May want to use megaannex as-is to
+  build a non-hook special remote in haskell.
+
+See poll at [[polls/prioritizing_special_remotes]].

@@ -1,0 +1,185 @@
+The assistant should help the user recover their repository when things go
+wrong.
+
+[[!toc ]]
+
+## dangling lock files
+
+There are a few ways a git repository can get broken that are easily fixed.
+One is left over index.lck files. When a commit to a repository fails,
+check that nothing else is using it, fix the problem, and redo the commit.
+
+* **done** for .git/annex/index.lock, can be handled safely and automatically.
+* **done** for .git/index.lock, only when the assistant is starting up.
+* What about local remotes, eg removable drives? git-annex does attempt
+  to commit to the git-annex branch of those. It will use the automatic
+  fix if any are dangling. It does not commit to the master branch; indeed
+  a removable drive typically has a bare repository.
+  However, it does a scan for broken locks anyway if there's a problem
+  syncing. **done**
+* What about git-annex-shell? If the ssh remote has the assistant running,
+  it can take care of it, and if not, it's a server, and perhaps the user
+  should be required to fix up if it crashes during a commit. This should
+  not affect the assistant anyway.
+* **done** Seems that refs can also have stale lock files, for example
+  '/storage/emulated/legacy/DCIM/.git/refs/remotes/flick_phonecamera/synced/git-annex.lock'
+  All git lock files are now handled (except gc lock files).
+
+## incremental fsck
+
+Add webapp UI to enable incremental fsck **done**
+
+Of course, incremental fsck will run as an niced (and ioniced) background
+job. There will need to be a button in the webapp to stop it, in case it's
+annoying. **done**
+
+When fsck finds a damanged file, queue a download of the file from a
+remote. **done**
+
+Detect when a removable drive is connected in the Cronner, and check
+and try to run its remote fsck jobs. **done** (Same mechanism will work for
+network remotes becoming connected.)
+
+TODO: If no accessible remote has a file that fsck reported missing,
+prompt the user to eg, connect a drive containing it. Or perhaps this is a
+special case of a general problem, and the webapp should prompt the user
+when any desired file is available on a remote that's not mounted?
+
+## git-annex-shell remote fsck
+
+TODO: git-annex-shell fsck support, which would allow cheap fast fscks
+of ssh remotes.
+
+Would be nice; otherwise remote fsck is too expensive (downloads
+everything) to have the assistant do.
+
+Note that Remote.Git already tries to use this, but the assistant does not
+call it for non-local remotes.
+
+## git fsck and repair
+
+Add git fsck to scheduled self fsck **done**
+
+TODO: git fsck on ssh remotes? Probably not worth the complexity..
+
+TODO: If committing to the repository fails, after resolving any dangling
+lock files (see above), it should git fsck. This is difficult, because
+git commit will also fail if the commit turns out to be empty, or due to
+other transient problems.. So commit failures are currently ignored by the
+assistant.
+
+If git fsck finds problems, launch git repository repair. **done**
+
+git annex fsck --fast at end of repository repair to ensure
+git-annex branch is accurate. **done**
+
+If syncing with a local repository fails, try to repair it. **done**
+
+TODO: "Repair" gcrypt remotes, by removing all refs and objects,
+and re-pushing. (Since the objects are encrypted data, there is no way
+to pull missing ones from anywhere..) 
+Need to preserve gcrypt-id while doing this!
+
+TODO: along with displaying alert when there is a problem detected
+by consistency check, send an email alert. (Using system MTA?)
+
+## nudge user to schedule fscks
+
+Make the webapp encourage users to schedule fscks of their
+local repositories. The goal here was that it should not be obnoxious about
+repeatedly pestering the user to set that up, but should still encourage
+anyone who cares to set it up.
+
+Maybe: Display a message only once per week, and only after the repository
+has existed for at least one full day. But, this will require storing
+quite a lot of state.
+
+Or: Display a message whenever a removable drive is detected to have been
+connected. I like this, but what about nudging the main repo? Could do it
+every webapp startup, perhaps? **done**
+
+There should be a "No thanks" button that prevents it nudging again for a
+repo. **done**
+
+## git repository repair
+
+There are several ways git repositories can get damanged. 
+
+The most common is empty files in .git/annex/objects and commits that refer
+to those objects. When the objects have not yet been pushed anywhere.
+I've several times recovered from this manually by
+removing the bad files and resetting to before the commits that referred to
+them. Then re-staging any divergence in the working tree. This could
+perhaps be automated.
+
+As long as the git repository has at least one remote, another method is to
+clone the remote, sync from all other remotes, move over .git/config and
+.git/annex/objects, and tar up the old broken git repo and `git annex add`
+it. This should be automatable and get the user back on their feet. User
+could just click a button and have this be done.
+
+This is useful outside git-annex as well, so make it a
+git-recover-repository command.
+
+### detailed design
+
+Run `git fsck` and parse output to find bad objects. **done** Note that
+fsck may fall over and fail to print out all bad objects, when
+files are corrupt. So if the fsck exits nonzero, need to collect all
+bad objects it did find, and:
+
+1. If the local repository contains packs, the packs may be corrupt.
+   So, start by using `git unpack-objects` to unpack all
+   packs it can handle (which may include parts of corrupt packs) 
+   back to loose objects. And delete all packs. **done**
+2. Delete all loose corrupt objects. **done**
+
+Repeat until fsck finds no new problems. **done**
+
+Check if there's a remote. If so, and if the bad objects are all
+present on it, can simply get all bad objects from the remote,
+and inject them back into .git/objects to recover:
+
+3. Make a new (bare) clone from the remote.
+   (Note: git does not seem to provide a way to fetch specific missing
+   objects from the remote. Also, cannot use `--reference` against
+   a repository with missing refs. So this seems unavoidably
+   network-expensive.) **done**
+5. Rsync objects over. (Turned out to work better than git-cat-file, 
+   because we don't have to walk the graph to add missing objects.)
+   **done**
+6. If each bad object was able to be repaired this way, we're done!
+   (If not, can reuse the clone for getting objects from the next remote.)
+   **done**
+
+If some missing objects cannot be recovered from remotes, find commits in each
+local branch that are broken by all remaining missing objects. Some of this can
+be parsed from git fsck output, but for eg blobs, the commits need to
+be walked to walk the trees, to find trees that refer to the blobs. **done**
+
+For each branch that is affected, look in the reflog and/or `git log
+$branch` to find the last good commit that predates all broken commits. (If
+the head commit of a branch is broken, git log is not going to show
+anything useful, but the reflog can be used to find past refs for the
+branch -- have to first delete the .git/HEAD file if it points to the
+broken ref.) **done**
+
+The basic idea then is to reset the branch to the last good commit
+that was found for it.
+
+* For the HEAD branch, can just reset it. (If no last good commit was found
+  for the HEAD branch, reset it to a dummy empty commit.) This will
+  leave git showing any changes made since then as staged in the index and
+  uncommitted. Or if the index is missing/corrupt, any files in the tree will
+  show as modified and uncommitted. User (or git-annex assistant) can then
+  commit as appropriate. Print appropriate warning message. **done**
+* Special handling for git-annex branch and index. **done**
+* Remote tracking branches can just be removed, and then `git fetch`
+  from the remote, which will re-download missing objects from it and
+  reinstate the tracking branch. **done**
+* For other branches, reset them to last good commit, or delete
+  if none was found. **done**
+* (Decided not to touch tags.)
+
+The index file can still refer to objects that were missing.
+Rewrite to remove them. **done**

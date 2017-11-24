@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="mbroadhead"
+ avatar="http://cdn.libravatar.org/avatar/f3d801c0c943caab1152c4ebe8c99d51"
+ subject="comment 4"
+ date="2017-03-03T16:59:52Z"
+ content="""
+> I think there are situations where I want to completely abort a commit and
+> not have to worry about it biting me down the road.
+
+If you don't want to have to worry about a `git reset --hard` biting you down
+the road the way that it works now, just make sure you clean up after yourself.
+Example:
+
+```
+cd ~/annex
+cp /tmp/foo .
+git annex add foo
+
+# Oh, I decided I don't want \"foo\" in my annex right now, so I do a reset.
+# This will leave the data associated with \"foo\" in a git object in the git
+# store.  When running 'git annex import' sometime in the future, this will
+# make any files that contain the same data as \"foo\" to be considered
+# duplicate.  This will cause \"foo\" to be considered a duplicate by git annex
+# import, which we don't want in this scenario.
+git reset --hard
+
+# In order to avoid \"foo\" being a duplicate, find the dangling git object:
+git annex unused
+
+# And drop it:
+git annex dropunused N
+
+# Now \"foo\" won't be marked as a duplicate if you run any of the following
+# commands:
+git annex import /tmp/backup/foo --skip-duplicates
+git annex import /tmp/backup/foo --clean-duplicates
+git annex import /tmp/backup/foo --deduplicate
+```
+"""]]

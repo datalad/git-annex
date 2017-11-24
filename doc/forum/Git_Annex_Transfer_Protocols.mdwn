@@ -1,0 +1,9 @@
+Hi,
+
+May I know, which processes git-annex is using to move/copy/get file content between repositories?
+Is it using same processes which git uses, Like send-pack, receive-pack.
+I want to use Aspera to move file contents between repositories.
+Is it enough if I customize send-pack, receive-pack of git code to do Aspera file transfer or git-annex uses any other transfer mechanism.
+
+Many Thanks,
+Royal Pinto

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkwjBDXkP9HAQKhjTgThGOxUa1B99y_WRA"
+ nickname="Franck"
+ subject="comment 4"
+ date="2013-05-28T06:34:04Z"
+ content="""
+Thanks, but my server is a synology nas and as you know from another thread of comments, having git-annex work on it is not that simple. ;-)
+Moreover, I'd like to be able to use ssh accounts where I don't have a root access and not necessarily git. So, a general method to restrict ssh would interest me. 
+
+But your answer seems to suggest that almost arbitrary rsync commands may be given. If so, I agree that there are few hopes to build a secured jail around this... But if really a limited subset of commands is used, I think it should be possible to check them securely. 
+
+Now on I'm focused on having git-annex work because this looks like the most promising way. But I'll have another question regarding it: I noticed that we can restrict access to a specific repository using an appropriate environnement variable. But it's it possible to provide a list of repositories instead of just one? My collaborators will typically have access to several shares but not to all of them. 
+
+Thanks for your responsiveness, after trying tens of candidates git-annex appears to be the only serious solution to replace Dropbox and I'm really glad that you actively help your users! 
+"""]]

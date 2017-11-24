@@ -1,0 +1,30 @@
+Let me announce 'metatag', a simple metadata extraction utility.
+
+The Design Idea is to make it completely event driven. There are string matching rules over added metadata,
+who invoke engines when matched, which in turn add more metadata and so on.
+Thus the whole metadata extraction process is controlled by those easily configurable rules. Processing a file or
+directory just starts by adding "/=filename" to the metadata, everything else bootstraps from that. After metadata
+got extracted there are exporters which implement different backends for storing this metadata (currently only a
+'print' and a 'gitannex' exporter are implemented)
+
+While still in a infancy state it already works for me. It now needs more rules and engines for metadata extraction
+and some more efforts to 'standardize' generated metadata. I'd like to welcome comments and contributions.
+
+A README about it can be found at
+
+ <http://git.pipapo.org/?p=metatag;a=blob_plain;f=README>
+
+The code is available under git from
+
+    git clone git://git.pipapo.org/metatag
+
+To make the contribution barrier as low as possible there is a public pushable 'mob' repository where everyone can
+send changes too at `git://git.pipapo.org/mob/metatag`
+
+after installing it, using it on a annexed directory is like
+
+    metatag -r -O gitannex,gitexclude -o gitannex:-stat ./
+
+There is a mailinglist for the project, you can subscribe at
+
+ <http://lists.pipapo.org/cgi-bin/mailman/listinfo/metatag>

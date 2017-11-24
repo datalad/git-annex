@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlJemqsekZTC5dvc-MAByUWaBvsYE-mFUo"
+ nickname="Gábor"
+ subject="Cabal dependencies"
+ date="2013-05-12T12:52:20Z"
+ content="""
+After finishing the installation the cabal way, here are the packages I installed. It is possible that there are other packages I installed previously as dependency for other packages.
+
+    $ lsb_release -a
+    No LSB modules are available.
+    Distributor ID:	Ubuntu
+    Description:	Ubuntu 12.04.2 LTS
+    Release:	12.04
+    Codename:	precise
+    
+    $ apt-get install cabal-install libgnutls28-dev libgsasl7-dev c2hs libghc-libxml-sax-dev zlib1g-dev libghc-zlib-dev
+    $ cabal install git-annex --bindir=$HOME/bin
+"""]]

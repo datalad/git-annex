@@ -1,0 +1,21 @@
+In git, there can be multiple clones of a repository, each clone can 
+be independently modified, and clones can push or pull changes to
+one-another to get back in sync.
+
+git-annex preserves that fundamental distributed nature of git, while
+dropping the requirement that, once in sync, each clone contains all the data
+that was committed to each other clone. Instead of storing the content
+of a file in the repository, git-annex stores a pointer to the content.
+
+Each git-annex repository is responsible for storing some of the content,
+and can copy it to or from other repositories. [[Location_tracking]]
+information is committed to git, to let repositories inform other
+repositories what file contents they have available.
+
+---
+
+The [[walkthrough]] shows how to create a distributed set of git-annex
+repositories with no central repository.
+
+Prefer a central repository like GitHub? See the
+[[tips/centralized_git_repository_tutorial]].

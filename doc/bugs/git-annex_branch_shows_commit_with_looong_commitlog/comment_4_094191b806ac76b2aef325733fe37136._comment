@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Francois"
+ ip="2001:788:5:1:29c2:de49:9811:51c8"
+ subject="comment 4"
+ date="2014-08-15T20:51:12Z"
+ content="""
+Bonus question: is there any way to bring this repo back into a working state (for instance with git-filter-branch?) ?
+"""]]

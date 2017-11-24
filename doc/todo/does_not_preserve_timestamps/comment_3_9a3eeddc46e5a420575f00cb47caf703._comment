@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmK0703vNSIQsP1mGf-4MAPnsBZiSc6yVo"
+ nickname="Emre"
+ subject="comment 3"
+ date="2014-09-23T21:15:29Z"
+ content="""
+Btw, git storing the last commit time as Mtime is not enough, it shall store the original timestamp of the file, not the date of commit. Hope I could explain and hope this is something doable.
+"""]]

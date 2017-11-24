@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 1"
+ date="2014-07-10T19:41:54Z"
+ content="""
+1. Yes, use [[git-annex-shell]].
+
+2. The best way to do this is to use a dummy hostname in the git url for the remote. Then in .ssh/config, you can add a Host stanza that sets the real Hostname and also specifies the IdentityFile to use for that host.
+
+Incidentially, the git-annex webapp takes care of both of these things for you automatically when setting up a remote on a ssh server.
+"""]]

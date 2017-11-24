@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 3"
+ date="2013-11-01T16:42:33Z"
+ content="""
+Files in the git repository whose content has not yet been downloaded will appear as these short placeholder files when using a filesystem that does not support symlinks. Once the files have been downloaded, that is replaced with their actual content. You may need to set up a way to your android tablet to download the files from the place they're being created.
+"""]]

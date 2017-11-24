@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl2Jj8q2upJL4ZQAc2lp7ugTxJiGtcICv8"
+ nickname="Michael"
+ subject="comment 3"
+ date="2013-02-19T03:03:14Z"
+ content="""
+So, if I edit a \"content file\" (change a music file's metadata, say), what's the workflow to record that fact and then synchronise it to other repositories?
+
+I can't do a `git add`, so I don't understand what has to happen as a first step.  (Thanks for your quick reply above, BTW.)
+
+
+"""]]

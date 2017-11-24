@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.90"
+ subject="comment 1"
+ date="2013-07-17T19:06:59Z"
+ content="""
+We don't currently have a way to store a git repository on box.com, and you need such a git repo on a server somewhere if you're not using Jabber.
+
+Of course you can mount the box.com, using either davfs2 or something else, and put a bare git repository in its directory, and if you set this up on multiple computers, it might just work (or they might both try to write to it at the same time and fail.. I have not tried).
+"""]]

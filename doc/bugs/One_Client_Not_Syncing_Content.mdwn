@@ -1,0 +1,54 @@
+### Please describe the problem.
+
+I am fairly new to git annex - so I may have a misconception about how it should work.
+
+I have two laptop clients A and B that each have a single ssh remote, server C, setup as a full backup. Both of the laptops were setup through the web and have the assistant running.
+
+The problem I am seeing is that laptop A does not seem to sync contents created on laptop B. If i do the following:
+
+    laptopA# echo "foo" > bar
+    laptopB# cat bar
+    > foo
+
+    laptopB# echo "baz" > bang
+    laptopA# cat bang
+    > No such file or directory
+
+Laptop A has the symlink for bang but no contents. 
+
+if i run the following:
+
+    laptopA# git annex find --want-get --not --in .
+it returns 'bang'
+
+So it seems that laptopA wants the contents of the file created on laptopB, but doesn't sync it. If I manually run git annex sync --content everything is good. But when running the assistant should I not care about this?
+
+
+### What steps will reproduce the problem?
+
+See above.
+
+### What version of git-annex are you using? On what operating system?
+
+laptopA: OSX 10.10
+
+    git-annex version: 5.20150205
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi TDFA TorrentParser
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E MD5E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 MD5 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+    local repository version: 5
+    supported repository version: 5
+    upgrade supported from repository versions: 0 1 2 4
+
+laptopB: Archlinux
+
+    git-annex version: 5.20150219-g7751a05
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA TorrentParser
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E MD5E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 MD5 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web bittorrent glacier ddar hook external
+    local repository version: 5
+    supported repository version: 5
+    upgrade supported from repository versions: 0 1 2 4
+
+
+### Please provide any additional information below.

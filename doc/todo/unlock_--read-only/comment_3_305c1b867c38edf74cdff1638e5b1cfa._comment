@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ avatar="http://cdn.libravatar.org/avatar/8122123b4c2bc77187e32d7e025f7d445d7a08de1ba532237876a31159ac01da"
+ subject="why option vs manual chmod"
+ date="2016-10-17T23:11:10Z"
+ content="""
+as far as I see it
+
+- much easier to specify the option instead of figuring out which files were unlocked and need to be chmodded (some might be under git, etc)
+- probably would be notably (avoiding double file-tree traversal) faster in case of unlocking large number of files
+"""]]

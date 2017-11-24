@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="How about find .git/annex/transfer .git/annex/bad -type f -print0 | xargs -0 rm -fv"
+ date="2017-07-19T19:42:25Z"
+ content="""
+> I'm not certain, but I think
+> 
+> $> git annex unused --fast
+> $> git annex drop --unused
+> 
+> will work.
+
+This (quickly) finds only two entries: one regarding a file in `.git/annex/transfer` and one other in `.git/annex/bad/`.
+
+Anyway, `git annex drop --unused` is too general and would potentially involve a number of other files.
+
+I'm just considering something that should probably be safe:
+
+    find .git/annex/transfer .git/annex/bad -type f -print0 | xargs -0 rm -fv
+
+unless people tell me it's dangerous somehow.  Having to do a `git annex fsck` in the future is okay.  Having important features broken until I do a `git annex fsck` (or worse) is less cool. :-)
+
+"""]]

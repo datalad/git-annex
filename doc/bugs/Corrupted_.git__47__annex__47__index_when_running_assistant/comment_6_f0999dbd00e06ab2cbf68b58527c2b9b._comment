@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2015-07-02T19:14:40Z"
+ content="""
+Yeah, --prune=now is bad news when using git-annex. At least, if
+you might be doing it at the same time that git-annex is staging
+objects in the index.
+
+Using it in combination with annex.alwayscommit=false is a particularly
+foot-shootish thing. I've added a warning to its documentation.
+
+`git gc` uses a lock file, `.git/gc.pid`. It might be possible for
+git-annex to hold that lock when it's in the process of staging and
+committing objects, to avoid `git gc` running at such times.
+"""]]

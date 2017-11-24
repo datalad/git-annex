@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-12-02T18:53:32Z"
+ content="""
+Well, it's normal to have broken symlinks if the content of a file
+is not present. `git annex get` will get the file content
+and replace the symlink with it.
+
+If the symlink is not broken, you can run `git annex fsck` on the file
+and it will notice and fix this inconsistency. 
+
+Some old versions of git-annex had bugs in direct mode that could result
+in files being left as symlinks like that. I have not seen any bugs
+lately in that area. If you have a way to get a repository into that
+state, file a bug report with a test case.
+"""]]

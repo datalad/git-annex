@@ -1,0 +1,34 @@
+I've been organizing my music collection deleted/replaces some files but git-annex unused does not show any unused files even though they are deleted and all repos are in sync.
+
+
+    git log --stat --all -S'SHA256E-s8034842--5c3475d7fef6f0c3545721f34e7cbfb6727a00708bdde192f0f1d53af251b444'
+    commit a0fecdc02f7564f8bce9726f6b934fefc11de58b
+    Date:   Thu Sep 12 17:04:53 2013 +0300
+
+        Deleted
+
+     .../Dido - Sitting On the Roof of the World.mp3    |    1 -
+     1 file changed, 1 deletion(-)
+
+    commit 7f216228fc0e6298f0290ee1d8646bc9b16eca10
+    Date:   Mon Aug 5 03:49:55 2013 +0200
+
+        Initial Import
+
+     .../Dido - Sitting On the Roof of the World.mp3    |    1 +
+     1 file changed, 1 insertion(+)`
+
+even though the file is deleted its still present in annex objects,
+
+    find .git -name '*5c3475d7fef6f0c3545721f34e7cbfb6727a00708bdde192f0f1d53af251b444*' -exec ls -al '{}' \;
+    total 7856
+    dr-xr-xr-x 2 user user    4096 Sep  9 01:24 .
+    drwxrwxr-x 3 user user    4096 Sep  9 01:24 ..
+    -r--r--r-- 1 user user 8034842 Aug  5 04:52 SHA256E-s8034842--5c3475d7fef6f0c3545721f34e7cbfb6727a00708bdde192f0f1d53af251b444.mp3
+    -r--r--r-- 1 user user 8034842 Aug  5 04:52 .git/annex/objects/Jz/74/SHA256E-s8034842--5c3475d7fef6f0c3545721f34e7cbfb6727a00708bdde192f0f1d53af251b444.mp3/SHA256E-s8034842--5c3475d7fef6f0c3545721f34e7cbfb6727a00708bdde192f0f1d53af251b444.mp3
+
+I got around 200 files that should be deleted but not showing up in unused. I though maybe one of the dead repos is causing the problem so i did a,
+
+    git annex forget --drop-dead
+
+and synced all repos. Still I can not get them to drop.

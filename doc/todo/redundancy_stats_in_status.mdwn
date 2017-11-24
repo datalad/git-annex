@@ -1,0 +1,23 @@
+Currently, `git annex status` only shows the size of 1 copy of each file.
+If numcopies is being used for redundancy, much more disk can actually be
+in use than status shows.
+
+One idea:
+
+	known annex size: 2 terabytes (plus 4 terabytes of redundant copies)
+
+But, to get that number, it would have to walk every location log, 
+counting how many copies currently exist of each file. That would make
+status a lot slower than it is.
+
+One option is to just put it at the end of the status:
+
+	redundancy: 300% (4 terabytes of copies)
+
+And ctrl-c if it's taking too long.
+
+Hmm, fsck looks at that same info. Maybe it could cache the redundancy
+level it discovers? Since fsck can be run incrementally, it would be tricky
+to get an overall number. And the number would tend to be stale, but
+then again it might also be nice if status shows how long ago the last fsck
+was.

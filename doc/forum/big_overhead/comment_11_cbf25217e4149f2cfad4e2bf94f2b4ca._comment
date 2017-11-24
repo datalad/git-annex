@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 11"
+ date="2014-09-18T17:32:09Z"
+ content="""
+I knew I *had* used \"Initial commit\" somewhere ... etckeeper uses that message. And commits as root. Could an etckeeper repo have somehow gotten merged into your git-annex repo? Seems strange, and the filenames and contents don't really look like /etc to me, but it otherwise somewhat fits.
+"""]]

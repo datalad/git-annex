@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 5"
+ date="2013-01-10T18:58:49Z"
+ content="""
+Ok, so copy is checking if the file is present, and it seems to think it is, so doesn't try again to send it.
+
+Here's what you need to do: Run `git annex copy FrenchBasicCourserevised-Volume1-StudentText.pdf  --to Womb_MacDocuments --debug`
+
+It'll output something like this:
+
+    copy new (checking rsync...) [2013-01-10 14:51:43 JEST] read: rsync [\"localhost:/tmp/r/f87/4d5/'SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'\"]
+
+Now try running that command at the shell, and check its exit status. For the above, I ran:
+
+    rsync \"localhost:/tmp/r/f87/4d5/'SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'\"; echo $?
+
+It output:
+
+    -rw-r--r--           0 2013/01/10 14:51:40 SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    0
+
+Compare with the same command but with the filename mangled. 
+
+    rsync: link_stat \"/tmp/r/f87/4d5/'SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/mangled'\" failed: No such file or directory (2)
+    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1536) [Receiver=3.0.9]
+    27
+
+It seems that rsync might be exiting 0 for content that's not there, in your case. This test will confirm or disprove that hypothesis and might provide some useful debug info.
+"""]]

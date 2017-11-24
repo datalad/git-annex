@@ -1,0 +1,18 @@
+Got caught up on my backlog yesterday.
+
+Part of adding files in direct mode involved removing write permission from
+them temporarily. That turned out to cause problems with some programs that
+open a file repeatedly, and was generally against the principle that direct
+mode files are always directly available. Happily, I was able to get rid of
+that without sacrificing any safety.
+
+Improved syncing to bare repositories. Normally syncing pushes to a
+synced/master branch, which is good for non-bare repositories since git
+does not allow pushing to the currently checked out branch. But for bare
+repositories, this could leave them without a master branch, so cloning
+from them wouldn't work. A funny thing is that git does not really have any
+way to tell if a remote repository is bare or not. Anyway, I did put in a
+fix, at the expense of pushing twice (but the git data should only be
+transferred once anyway).
+
+

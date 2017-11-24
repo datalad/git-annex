@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-05-27T18:31:26Z"
+ content="""
+This page mentioned a --depth option, but no, it was never implemented.
+I have updated this page.
+
+If you need something simpler than the basic undo, you can use `git annex
+proxy` to run eg, a `git revert`.
+
+(Deleted a forum thread that duplicated the previous comment.)
+"""]]

@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2012-04-22T05:39:28Z"
+ content="""
+git-annex needs ghc 7.4, that's why it depends on that base version that comes with it. So you either need to upgrade your ghc, or you can build from the `ghc7.0` branch in [[git|download]], like this:
+
+<pre>
+git clone git://git-annex.branchable.com/ git-annex
+cd git-annex
+git checkout ghc7.0
+cabal update
+cabal install --only-dependencies
+cabal configure
+cabal build
+cabal install --bindir=$HOME/bin
+</pre>
+"""]]

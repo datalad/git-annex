@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""status update"""
+ date="2015-10-01T19:17:38Z"
+ content="""
+Checksum verification is now done for all downloads, unless disabled via
+annex.verify=false.
+
+When an object is uploaded to a regular git remote, checksum verification
+also also done. (For a local directory, git-annex runs a download from the
+perspective of the remote, so we get it for free, and when git-annex-shell
+recvkey is used, it checksums the data it receives and compares it with the
+key.)
+
+For uploads to special remotes, no checksum verification is done yet.
+Leaving this todo item open because of that gap in the coverage.
+"""]]

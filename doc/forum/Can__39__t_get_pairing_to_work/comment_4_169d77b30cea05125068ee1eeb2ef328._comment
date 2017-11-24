@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlZvtBCVyJw4O71OPsdwGpVh6iJ1W-xaPc"
+ nickname="Kilian"
+ subject="comment 4"
+ date="2012-10-18T22:44:40Z"
+ content="""
+Hmm... using avahi-discover the two machines can indeed see some services offered by each other. A git-annex-assistant specific problem after all?
+
+So when I initiate a pairing on 192.168.1.63, and run tcpdump on the same machine, it looks like this:
+
+ke@thot:~/opt/git-annex.linux$ sudo tcpdump -i eth1 host 224.0.0.1 -n
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on eth1, link-type EN10MB (Ethernet), capture size 65535 bytes
+00:33:47.723989 IP 192.168.1.63.56243 > 224.0.0.1.55556: UDP, length 691
+00:33:49.729242 IP 192.168.1.63.55072 > 224.0.0.1.55556: UDP, length 691
+00:33:51.733358 IP 192.168.1.63.55115 > 224.0.0.1.55556: UDP, length 691
+00:33:53.736730 IP 192.168.1.63.60249 > 224.0.0.1.55556: UDP, length 691
+00:33:55.741641 IP 192.168.1.63.59753 > 224.0.0.1.55556: UDP, length 691
+
+The same command (modulo different interface name) on the other machine (192.168.1.59) turns up nothing:
+
+ke@apis:~/opt/git-annex.linux$ sudo tcpdump -i wlan0 host 224.0.0.1 -n
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on wlan0, link-type EN10MB (Ethernet), capture size 96 bytes
+"""]]

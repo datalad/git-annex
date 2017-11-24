@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/27ceb3c5-0762-42b8-8f8a-ed21c284748f"
+ nickname="g"
+ subject="why not mimetypes for preferred content?"
+ date="2016-03-28T08:32:45Z"
+ content="""
+Why does matching by mimetype only make sense for annex.largefiles, but not for preferred content expressions? Sorry if this is a stupid question, but it seems it would in fact be quite useful to easily express that, for example, a certain repo have a preference for my photos and not my music files (though both should be considered large files)
+"""]]

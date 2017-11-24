@@ -1,0 +1,60 @@
+### Please describe the problem.
+
+git annex init  fails on a clone of a sub sub module from a git repo
+
+### What steps will reproduce the problem?
+
+This is the archive with sample repo which is used in example below
+[http://www.onerussian.com/tmp/repl_submodule.tgz]
+
+
+### What version of git-annex are you using? On what operating system?
+
+6.20160307+gitgb095561-1~ndall+1
+
+[[!format sh """
+> tar -xzf repl_submodule.tgz        
+
+> ls -ld datalad_temp_testrepo_Lb8lMD
+drwx------ 5 yoh yoh 180 Mar 29 09:06 datalad_temp_testrepo_Lb8lMD/
+
+> git clone datalad_temp_testrepo_Lb8lMD/sub1/sub1
+Cloning into 'sub1'...
+done.
+
+> cd sub1
+INFO.txt  sub1/  sub2/  test-annex.dat@  test.dat
+
+> git annex init
+init  fatal: Could not switch to '/sub1/': No such file or directory
+ok
+(recording state in git...)
+
+> cat .git/config 
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote "origin"]
+	url = /tmp/datalad_temp_testrepo_Lb8lMD/sub1/sub1
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "master"]
+	remote = origin
+	merge = refs/heads/master
+[annex]
+	uuid = 7293cd84-98c5-4f8c-b1ff-1c4fadd90ba3
+	version = 5
+
+> git annex --debug init 2>&1 | grep -3 "Could not"
+[2016-03-29 09:22:21.786669] read: git ["config","--null","--list"]
+[2016-03-29 09:22:21.792047] process done ExitSuccess
+[2016-03-29 09:22:21.792158] read: git ["--git-dir=../datalad_temp_testrepo_Lb8lMD/sub1/sub1/.git","--work-tree=/sub1/sub1","--literal-pathspecs","show-ref","git-annex"]
+fatal: Could not switch to '/sub1/': No such file or directory
+[2016-03-29 09:22:21.797597] process done ExitFailure 128
+ok
+[2016-03-29 09:22:21.800514] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","hash-object","-w","--stdin-paths","--no-filters"]
+
+"""]]
+
+[[!meta author=yoh]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.163"
+ subject="comment 12"
+ date="2014-02-08T20:03:30Z"
+ content="""
+WRT haskell static linking, AFAIK that only affects haskell libraries. If they in turn link with C libs, the linking is still dynamic. At least this is the case on both Linux and the limited BSDs I've used it on. Have no OpenBSD experience.
+
+`SOL_SOCKET` is 1 on linux, so you may have the culprit.
+
+However.. That's a really old version of network! 2.2.1.8 is from 2010. In a more current 2.4.x version, packSocketOption uses the `SOL_SOCKET` value and not 1, so should work AFAICS.
+"""]]

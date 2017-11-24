@@ -1,0 +1,1 @@
+I would like to be able to add files without having to hash its contents (like WORM) but being able to modify them and record its changes. Is this possible? In other words, I would like to provide other not-that-expensive mechanism for identifying files of a particular version.

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnxvt4mc32O0ctvPGhhII_ZKsHUiaD2o7I"
+ nickname="William"
+ subject="comment 2"
+ date="2014-05-28T04:40:27Z"
+ content="""
+Joey, thanks for clarifying that. I learned about the perils of using regular git commands in direct mode before the guard was implemented, so I will use with care. Specifying a commit message is really the only case where I am tempted to bypass the the `git annex` subcommands in direct mode. 
+
+
+"""]]

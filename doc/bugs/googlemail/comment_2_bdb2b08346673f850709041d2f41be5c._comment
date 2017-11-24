@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.7"
+ subject="comment 2"
+ date="2014-08-12T17:39:09Z"
+ content="""
+AFAICS, xmpp.l.google.com is the correct XMPP server; it's what the SRV record for googlemail.com says to use.
+
+Since it fails with an authentication error, I wonder if google's XMPP is rejecting a user@googlemail.com jid and expects the domain to be @gmail.com or something else. Would that be allowed by the XMPP spec? I don't know.
+
+
+"""]]

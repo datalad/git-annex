@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="barthalion@8758f91921f1def00205716519c57234f128c328"
+ nickname="barthalion"
+ subject="Compression level"
+ date="2016-10-08T18:31:00Z"
+ content="""
+Is it possible to specify compression level to be used for 'bup split'?
+"""]]

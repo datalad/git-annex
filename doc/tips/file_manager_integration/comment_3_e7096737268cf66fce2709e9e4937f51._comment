@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ ip="72.0.72.144"
+ subject="comment 3"
+ date="2014-10-01T02:02:39Z"
+ content="""
+for some reason this doesn't work in gnome2. i had to add the shortcuts in /usr/share/nautilus-scripts (iirc). --[[anarcat]]
+"""]]

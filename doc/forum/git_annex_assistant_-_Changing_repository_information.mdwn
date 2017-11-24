@@ -1,0 +1,1 @@
+Here's one thing I don't fully understand yet. If I add a remote repository, like an archive repository on Box—or if I want to change a transfer repository to an archive repository—do I need to add it or change it separately on each of my computers? Or just one? 

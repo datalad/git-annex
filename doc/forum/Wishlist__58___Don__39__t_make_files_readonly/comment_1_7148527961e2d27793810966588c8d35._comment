@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmL8pteP2jbYJUn1M3CbeLDvz2SWAA1wtg"
+ nickname="Kristian"
+ subject="comment 1"
+ date="2012-11-22T23:38:33Z"
+ content="""
+By using symlinks gits problems with big files goes away. You simply can't put 600 GB in a git repo - that's the way I use git-annex. Also having files read only by default eliminates the need to store two copies of all files in one form or another.
+
+
+"""]]

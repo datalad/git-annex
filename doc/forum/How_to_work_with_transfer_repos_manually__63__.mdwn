@@ -1,0 +1,18 @@
+Hello,
+
+I have 3 repos, desktop, external and server. desktop and server are sometimes connected, sometimes they should sync using the server. I want to do it manually without the assistent, since I love to learn it that way before I let the assistent do the work.
+
+client and desktop are "wanted standard" and "group client". server is "group transfer".
+
+desktop and server have each other and server in their remotes. server has no remotes.
+
+Is this setup fine that way?
+
+How to use it with the transfer repo?
+
+"git annex sync && git annex copy --to server --auto" after changing files?
+"git annex sync && git annex copy --from server --auto" to update?
+
+Will the on the server automatically be dropped? Or do the server needs to have a active role, i.e. called via ssh?
+
+Thanks!

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmsz4weoPXV2oEtv3zpo9dOxn_SEPz-7Iw"
+ nickname="Zooko"
+ subject="more notes about Tahoe-LAFS performance"
+ date="2014-04-21T07:18:06Z"
+ content="""
+In case anyone is reading this thread: https://github.com/zooko/tahoe-lafs/blob/3c13c138cf09e83d2f8001888e2a7de85564d406/docs/frontends/key-value-store.rst
+"""]]

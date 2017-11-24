@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="ovidiu@66ace8a8d99ce938b0538ffa0f26d30db02a9626"
+ nickname="ovidiu"
+ subject="comment 6"
+ date="2015-10-11T16:51:06Z"
+ content="""
+you lost me there. so I'm using the command line on the NAS not the webapp but on the MACbook I do use the webapp.
+so when creating a repo through the webapp I chose:  Remote server - Set up a repository on a remote server using ssh. and then I can chose between: Unencrypted repository, Simple shared encryption and Encrypt with GnuPG key
+
+Unfortunately the descriptions aren't quite that self-explanatory. So far I have tested the 3rd option but here files get stored inside .git/annex/objects so I cannot access the files straight away. 
+I'll be testing a few more option awaiting a reply here, maybe I'll figure it out on my own. 
+The config of hte created repo on the NAS contained this:
+[core]
+        repositoryformatversion = 0
+        filemode = true
+        bare = true
+        sharedrepository = 1
+"""]]

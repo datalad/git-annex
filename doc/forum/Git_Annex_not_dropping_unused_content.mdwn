@@ -1,0 +1,9 @@
+I've deleted some files, but their content remains in the objects directory, and *git annex unused* does not list them.
+
+I've read in this post <http://git-annex.branchable.com/forum/git-annex_unused_not_dropping_deleted_files/> that if other branches contain the files, then it won't count them as unused. My repo appears to have a few branches left over from views I've used.
+
+    remotes/sdrive/views/(added=14_09);(tag=Shared)
+    remotes/sdrive/views/(added=14_09);Images_=_
+    remotes/sdrive/views/added=_
+
+How can I delete these? Is git annex going to create a new branch for every new view I create?

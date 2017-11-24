@@ -1,0 +1,658 @@
+### Please describe the problem.
+I’ve noticed a repo in which I’m running the assistant wouldn’t push updates to its remote anymore. Inspecting the assistant log revealed that there was a problem with the index used for the git-annex branch. After deleting the index file, the assistant could sync to the remote again. (Could deleting the annex index have introduced any inconsistencies into the git-annex branch?)
+
+### What steps will reproduce the problem?
+Uncertain. However, I made a copy of .git/annex/index and can reproduce the error by cloning my original repo, checking out the git-annex branch, copying in the backed-up index file and doing git write-tree, which then yields an invalid object error.
+
+It looks like the respective object isn’t present in the git object store. The error is for b5f693aa67b6d185e6d967e0a45c3c57a4f4b4a8, but no directory .git/objects/b5 exists (even after unpacking packed objects).
+
+I could supply you with the index file; do you need anything else? If I don’t clone from my repo, I obviously get an invalid object for everything; should I supply you with a git-bundle of the git-annex ref?
+
+### What version of git-annex are you using? On what operating system?
+git-annex 5.20150508-1
+Linux 4.0.5
+
+### Please provide any additional information below.
+
+Below is the daemon.log* concatenated, starting with the earliest one. Grep for “invalid object” or “write tree”.
+
+[[!format sh """
+[2015-06-05 16:59:45 CEST] main: starting assistant version 5.20150508-g883d57f
+[2015-06-05 16:59:45 CEST] Cronner: You should enable consistency checking to protect your data. 
+[2015-06-05 16:59:57 CEST] TransferScanner: Syncing with origin 
+
+  No known network monitor available through dbus; falling back to polling
+(scanning...) [2015-06-05 16:59:57 CEST] Watcher: Performing startup scan
+(started...) [2015-06-05 16:59:58 CEST] RemoteControl: Syncing with origin 
+gpg: assuming signed data in '/tmp/git-annex.tmp.0/info'
+gpg: Signature made Thu May 28 19:01:58 2015 CEST using DSA key ID 89C809CB
+gpg: /tmp/git-annex-gpg.tmp.0/trustdb.gpg: trustdb created
+gpg: Good signature from "git-annex distribution signing key (for Joey Hess) <id@joeyh.name>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 4005 5C6A FD2D 526B 2961  E78F 5EE1 DBA7 89C8 09CB
+[2015-06-05 16:59:58 CEST] Upgrader: An upgrade of git-annex is available.  (version 5.20150528)
+[2015-06-05 16:59:59 CEST] Committer: Committing changes to git
+[2015-06-05 16:59:59 CEST] Pusher: Syncing with origin 
+error: Unable to create '/home/seb/Annex/.git/refs/remotes/origin/master.lock': File exists.
+
+If no other git process is currently running, this probably means a
+git process crashed in this repository earlier. Make sure no other git
+process is running and remove the file manually to continue.
+error: Cannot lock the ref 'refs/remotes/origin/master'.
+From ssh://redacted.net/srv/git/seb/annex/annex
+ ! d71a4e0..1f265ec  master     -> origin/master  (unable to update local ref)
+From ssh://redacted.net/srv/git/seb/annex/annex
+   d71a4e0..1f265ec  master     -> origin/master
+error: Unable to create '/home/seb/Annex/.git/refs/remotes/origin/git-annex.lock': File exists.
+
+If no other git process is currently running, this probably means a
+git process crashed in this repository earlier. Make sure no other git
+process is running and remove the file manually to continue.
+error: Cannot lock the ref 'refs/remotes/origin/git-annex'.
+ ! 33446d6..973fbda  git-annex  -> origin/git-annex  (unable to update local ref)
+   33446d6..973fbda  git-annex  -> origin/git-annex
+error: Unable to create '/home/seb/Annex/.git/refs/remotes/origin/synced/git-annex.lock': File exists.
+
+If no other git process is currently running, this probably means a
+git process crashed in this repository earlier. Make sure no other git
+process is running and remove the file manually to continue.
+error: Cannot lock the ref 'refs/remotes/origin/synced/git-annex'.
+ ! 33446d6..973fbda  synced/git-annex -> origin/synced/git-annex  (unable to update local ref)
+   d71a4e0..1f265ec  synced/master -> origin/synced/master
+   33446d6..973fbda  synced/git-annex -> origin/synced/git-annex
+error: Ref refs/remotes/origin/synced/master is at 1f265ecc6288ead453681794551c527f64660f8c but expected d71a4e027cdd61c1323fbdc67103dde97f613192
+error: Cannot lock the ref 'refs/remotes/origin/synced/master'.
+ ! d71a4e0..1f265ec  synced/master -> origin/synced/master  (unable to update local ref)
+Updating d71a4e0..1f265ec
+Fast-forward
+ org/software/software.org | 4 +++-
+ org/software/theming.org  | 7 +++++++
+ 2 files changed, 10 insertions(+), 1 deletion(-)
+Already up-to-date.
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+ + 973fbda...33446d6 git-annex -> synced/git-annex (forced update)
+ ! [rejected]        master -> synced/master (non-fast-forward)
+error: failed to push some refs to 'ssh://redacted.net/srv/git/seb/annex/annex.git'
+hint: Updates were rejected because a pushed branch tip is behind its remote
+hint: counterpart. Check out this branch and integrate the remote changes
+hint: (e.g. 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+[2015-06-05 17:00:00 CEST] Committer: Committing changes to git
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+   33446d6..973fbda  git-annex -> synced/git-annex
+Everything up-to-date
+[2015-06-05 17:00:05 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+Connection to redacted.net closed by remote host.
+ssh: connect to host redacted.nessh: connect to host redactedssh: connect to host redacted.n[2015-06-05 17:59:57 CEST] NetWatcherFallback: Syncing with origin 
+Everything up-to-date
+[2015-06-05 18:51:33 CEST] Committer: Committing changes to git
+[2015-06-05 18:51:33 CEST] Pusher: Syncing with origin 
+[2015-06-05 18:51:34 CEST] Committer: Committing changes to git
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+   1f265ec..1cee9eb  master -> synced/master
+[2015-06-05 18:51:37 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+[2015-06-05 19:00:01 CEST] NetWatcherFallback: Syncing with origin 
+Everything up-to-date
+packet_write_wait: Connection to 37.221.198.119: Broken pipe
+[2015-06-05 20:00:03 CEST] NetWatcherFallback: Syncing with origin 
+Everything up-to-date
+[2015-06-05 20:13:01 CEST] main: starting assistant version 5.20150508-g883d57f
+[2015-06-05 20:13:01 CEST] Cronner: You should enable consistency checking to protect your data. 
+[2015-06-05 20:13:12 CEST] TransferScanner: Syncing with origin 
+
+  No known network monitor available through dbus; falling back to polling
+(scanning...) [2015-06-05 20:13:12 CEST] Watcher: Performing startup scan
+(started...) gpg: assuming signed data in '/tmp/git-annex.tmp.0/info'
+gpg: Signature made Thu May 28 19:01:58 2015 CEST using DSA key ID 89C809CB
+gpg: /tmp/git-annex-gpg.tmp.0/trustdb.gpg: trustdb created
+gpg: Good signature from "git-annex distribution signing key (for Joey Hess) <id@joeyh.name>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 4005 5C6A FD2D 526B 2961  E78F 5EE1 DBA7 89C8 09CB
+[2015-06-05 20:13:13 CEST] Upgrader: An upgrade of git-annex is available.  (version 5.20150528)
+Everything up-to-date
+[2015-06-05 20:13:14 CEST] Committer: Committing changes to git
+[2015-06-05 20:13:14 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+[2015-06-05 21:13:12 CEST] NetWatcherFallback: Syncing with origin 
+Everything up-to-date
+[2015-06-05 22:13:14 CEST] NetWatcherFallback: Syncing with origin 
+Everything up-to-date
+[2015-06-05 22:33:04 CEST] Committer: Committing changes to git
+[2015-06-05 22:33:04 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+[2015-06-05 22:33:08 CEST] Committer: Committing changes to git
+[2015-06-05 22:33:08 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+[2015-06-05 22:33:11 CEST] Committer: Committing changes to git
+[2015-06-05 22:33:11 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+[2015-06-05 22:33:14 CEST] Committer: Committing changes to git
+[2015-06-05 22:33:14 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+[2015-06-05 22:33:16 CEST] Committer: Committing changes to git
+[2015-06-05 22:33:18 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+[2015-06-05 22:33:20 CEST] Committer: Committing changes to git
+[2015-06-05 22:33:21 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+[2015-06-05 22:33:27 CEST] Committer: Committing changes to git
+[2015-06-05 22:33:27 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+[2015-06-05 22:33:28 CEST] Committer: Committing changes to git
+[2015-06-05 22:33:30 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+[2015-06-05 22:33:37 CEST] Committer: Committing changes to git
+[2015-06-05 22:33:37 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+[2015-06-05 22:33:43 CEST] Committer: Committing changes to git
+[2015-06-05 22:33:43 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+[2015-06-05 22:34:12 CEST] Committer: Committing changes to git
+[2015-06-05 22:34:12 CEST] Pusher: Syncing with origin 
+[2015-06-05 22:34:13 CEST] Committer: Committing changes to git
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+   1cee9eb..46828df  master -> synced/master
+[2015-06-05 22:34:15 CEST] Pusher: Syncing with origin 
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+   46828df..8e93c98  master -> synced/master
+[2015-06-05 22:34:23 CEST] Committer: Committing changes to git
+[2015-06-05 22:34:23 CEST] Pusher: Syncing with origin 
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+   8e93c98..9bed0e6  master -> synced/master
+[2015-06-05 22:34:24 CEST] Committer: Committing changes to git
+[2015-06-05 22:34:27 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+[2015-06-05 23:04:49 CEST] Committer: Committing changes to git
+[2015-06-05 23:04:49 CEST] Pusher: Syncing with origin 
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+   9bed0e6..ec8f2c4  master -> synced/master
+[2015-06-05 23:04:50 CEST] Committer: Committing changes to git
+[2015-06-05 23:04:52 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+[2015-06-05 23:11:39 CEST] Committer: Committing changes to git
+[2015-06-05 23:11:39 CEST] Pusher: Syncing with origin 
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+   ec8f2c4..14bc26a  master -> synced/master
+[2015-06-05 23:11:40 CEST] Committer: Committing changes to git
+[2015-06-05 23:11:43 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+[2015-06-05 23:13:16 CEST] NetWatcherFallback: Syncing with origin 
+Everything up-to-date
+[2015-06-05 23:33:28 CEST] Committer: Committing changes to git
+[2015-06-05 23:33:28 CEST] Pusher: Syncing with origin 
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+   14bc26a..bd150f5  master -> synced/master
+[2015-06-05 23:33:29 CEST] Committer: Committing changes to git
+[2015-06-05 23:33:32 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+[2015-06-05 23:34:09 CEST] Committer: Committing changes to git
+[2015-06-05 23:34:09 CEST] Pusher: Syncing with origin 
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+   bd150f5..290c21c  master -> synced/master
+[2015-06-05 23:34:10 CEST] Committer: Committing changes to git
+[2015-06-05 23:34:12 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+[2015-06-05 23:34:15 CEST] Committer: Committing changes to git
+[2015-06-05 23:34:15 CEST] Pusher: Syncing with origin 
+[2015-06-05 23:34:16 CEST] Committer: Committing changes to git
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+   290c21c..a56091f  master -> synced/master
+[2015-06-05 23:34:19 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+[2015-06-05 23:35:17 CEST] Committer: Committing changes to git
+[2015-06-05 23:35:17 CEST] Pusher: Syncing with origin 
+[2015-06-05 23:35:18 CEST] Committer: Committing changes to git
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+   a56091f..2fb635b  master -> synced/master
+[2015-06-05 23:35:21 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+
+  lost dbus connection; falling back to polling (ClientError {clientErrorMessage = "Error reading message from socket: UnmarshalError \"Unexpected end of input while parsing message header.\"", clientErrorFatal = True})
+
+  dbus failed; falling back to mtab polling (ClientError {clientErrorMessage = "Error reading message from socket: UnmarshalError \"Unexpected end of input while parsing message header.\"", clientErrorFatal = True})
+[2015-06-06 07:17:17 CEST] main: starting assistant version 5.20150508-g883d57f
+[2015-06-06 07:17:17 CEST] Cronner: You should enable consistency checking to protect your data. 
+[2015-06-06 07:17:25 CEST] TransferScanner: Syncing with origin 
+
+  No known network monitor available through dbus; falling back to polling
+(scanning...) [2015-06-06 07:17:30 CEST] Watcher: Performing startup scan
+gpg: assuming signed data in '/tmp/git-annex.tmp.0/info'
+gpg: Signature made Thu May 28 19:01:58 2015 CEST using DSA key ID 89C809CB
+gpg: /tmp/git-annex-gpg.tmp.0/trustdb.gpg: trustdb created
+gpg: Good signature from "git-annex distribution signing key (for Joey Hess) <id@joeyh.name>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 4005 5C6A FD2D 526B 2961  E78F 5EE1 DBA7 89C8 09CB
+[2015-06-06 07:17:32 CEST] Upgrader: An upgrade of git-annex is available.  (version 5.20150528)
+Everything up-to-date
+(started...) [2015-06-06 07:17:36 CEST] Committer: Committing changes to git
+[2015-06-06 07:17:36 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+[2015-06-06 07:45:05 CEST] main: starting assistant version 5.20150508-g883d57f
+[2015-06-06 07:45:05 CEST] Cronner: You should enable consistency checking to protect your data. 
+[2015-06-06 07:45:10 CEST] TransferScanner: Syncing with origin 
+
+  No known network monitor available through dbus; falling back to polling
+(scanning...) [2015-06-06 07:45:10 CEST] Watcher: Performing startup scan
+(started...) /usr/lib/rsync/rrsync: SSH_ORIGINAL_COMMAND='git-annex-shell 'notifychanges' '/srv/git/seb/annex/annex.git' --uuid a2131774-31b2-47d2-9185-b2e344c16134' is not rsync
+gpg: assuming signed data in '/tmp/git-annex.tmp.0/info'
+gpg: Signature made Thu May 28 19:01:58 2015 CEST using DSA key ID 89C809CB
+gpg: /tmp/git-annex-gpg.tmp.0/trustdb.gpg: trustdb created
+gpg: Good signature from "git-annex distribution signing key (for Joey Hess) <id@joeyh.name>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 4005 5C6A FD2D 526B 2961  E78F 5EE1 DBA7 89C8 09CB
+[2015-06-06 07:45:12 CEST] Upgrader: An upgrade of git-annex is available.  (version 5.20150528)
+[2015-06-06 07:45:12 CEST] Committer: Committing changes to git
+[2015-06-06 07:45:12 CEST] Pusher: Syncing with origin 
+/usr/lib/rsync/rrsync: SSH_ORIGINAL_COMMAND='git-annex-shell 'notifychanges' '/srv/git/seb/annex/annex.git' --uuid a2131774-31b2-47d2-9185-b2e344c16134' is not rsync
+Everything up-to-date
+Everything up-to-date
+/usr/lib/rsync/rrsync: SSH_ORIGINAL_COMMAND='git-annex-shell 'notifychanges' '/srv/git/seb/annex/annex.git' --uuid a2131774-31b2-47d2-9185-b2e344c16134' is not rsync
+/usr/lib/rsync/rrsync: SSH_ORIGINAL_COMMAND='git-annex-shell 'notifychanges' '/srv/git/seb/annex/annex.git' --uuid a2131774-31b2-47d2-9185-b2e344c16134' is not rsync
+/usr/lib/rsync/rrsync: SSH_ORIGINAL_COMMAND='git-annex-shell 'notifychanges' '/srv/git/seb/annex/annex.git' --uuid a2131774-31b2-47d2-9185-b2e344c16134' is not rsync
+/usr/lib/rsync/rrsync: SSH_ORIGINAL_COMMAND='git-annex-shell 'notifychanges' '/srv/git/seb/annex/annex.git' --uuid a2131774-31b2-47d2-9185-b2e344c16134' is not rsync
+/usr/lib/rsync/rrsync: SSH_ORIGINAL_COMMAND='git-annex-shell 'notifychanges' '/srv/git/seb/annex/annex.git' --uuid a2131774-31b2-47d2-9185-b2e344c16134' is not rsync
+
+(recording state in git...)
+
+  bugs/nouveau-bug/nouveau.log.8 still has writers, not adding
+[2015-06-06 07:47:04 CEST] Committer: Adding nouveau.log.8
+add bugs/nouveau-bug/nouveau.log.8 [2015-06-06 07:47:04 CEST] Committer: Committing changes to git
+[2015-06-06 07:47:04 CEST] Pusher: Syncing with origin 
+error: invalid object 100644 b5f693aa67b6d185e6d967e0a45c3c57a4f4b4a8 for '88c/df4/SHA256E-s4644--eca6d831c0a94895a81296327bc21bdf417234c7ebfa3e93fd21a71523ac9da9.log.6.log'
+fatal: git-write-tree: error building trees
+Pusher crashed: failed to read sha from git write-tree
+[2015-06-06 07:47:04 CEST] Pusher: warning Pusher crashed: failed to read sha from git write-tree
+/usr/lib/rsync/rrsync: SSH_ORIGINAL_COMMAND='git-annex-shell 'recvkey' '/srv/git/seb/annex/annex.git' 'SHA256E-s4491--e35540a06d6839455b48ecd8f2a4c7714d420379bae55a7b383dc1a5dc60d8e0.log.8' --uuid a2131774-31b2-47d2-9185-b2e344c16134 '--' 'remoteuuid=1dda4b9a-1ff2-4a9b-aaf8-47dfdd02c8ae' 'direct=' 'associatedfile=bugs/nouveau-bug/nouveau.log.8' '--' dummy rsync --server -pe.Lsfx --log-format=X --inplace . .' is not rsync
+rsync: connection unexpectedly closed (0 bytes received so far) [sender]
+rsync error: unexplained error (code 255) at io.c(226) [sender=3.1.1]
+[2015-06-06 07:47:05 CEST] Committer: Committing changes to git
+/usr/lib/rsync/rrsync: SSH_ORIGINAL_COMMAND='git-annex-shell 'recvkey' '/srv/git/seb/annex/annex.git' 'SHA256E-s4491--e35540a06d6839455b48ecd8f2a4c7714d420379bae55a7b383dc1a5dc60d8e0.log.8' --uuid a2131774-31b2-47d2-9185-b2e344c16134 '--' 'remoteuuid=1dda4b9a-1ff2-4a9b-aaf8-47dfdd02c8ae' 'direct=' 'associatedfile=bugs/nouveau-bug/nouveau.log.8' '--' dummy rsync --server -pe.Lsfx --log-format=X --inplace . .' is not rsync
+rsync: connection unexpectedly closed (0 bytes received so far) [sender]
+rsync error: unexplained error (code 255) at io.c(226) [sender=3.1.1]
+/usr/lib/rsync/rrsync: SSH_ORIGINAL_COMMAND='git-annex-shell 'notifychanges' '/srv/git/seb/annex/annex.git' --uuid a2131774-31b2-47d2-9185-b2e344c16134' is not rsync
+/usr/lib/rsync/rrsync: SSH_ORIGINAL_COMMAND='git-annex-shell 'notifychanges' '/srv/git/seb/annex/annex.git' --uuid/usr/lib/rsync/rrsync: SSH_ORIGINAL_COMMAND='git-annex-shell 'notifychanges' '/srv/git/seb/annex/annex.git' --uuid a2131774-31b2-47d2-9185-b2e344c16134' is not rsync
+/usr/lib/rsync/rrsync: SSH_ORIGINAL_COMMAND='git-annex-shell 'notifychanges' '/srv/git/seb/annex/annex.git' --uuid a2131774-31b2-47d2-9185-b2e344c16134' is not rsync
+[2015-06-06 08:45:10 CEST] NetWatcherFallback: Syncing with origin 
+error: invalid object 100644 b5f693aa67b6d185e6d967e0a45c3c57a4f4b4a8 for '88c/df4/SHA256E-s4644--eca6d831c0a94895a81296327bc21bdf417234c7ebfa3e93fd21a71523ac9da9.log.6.log'
+fatal: git-write-tree: error building trees
+NetWatcherFallback crashed: failed to read sha from git write-tree
+[2015-06-06 08:45:12 CEST] NetWatcherFallback: warning NetWatcherFallback crashed: failed to read sha from git write-tree
+[2015-06-06 15:58:38 CEST] main: starting assistant version 5.20150508-g883d57f
+[2015-06-06 15:58:38 CEST] Cronner: You should enable consistency checking to protect your data. 
+[2015-06-06 15:58:44 CEST] TransferScanner: Syncing with origin 
+
+  No known network monitor available through dbus; falling back to polling
+(scanning...) [2015-06-06 15:58:44 CEST] Watcher: Performing startup scan
+(started...) gpg: assuming signed data in '/tmp/git-annex.tmp.0/info'
+gpg: Signature made Thu May 28 19:01:58 2015 CEST using DSA key ID 89C809CB
+gpg: /tmp/git-annex-gpg.tmp.0/trustdb.gpg: trustdb created
+gpg: Good signature from "git-annex distribution signing key (for Joey Hess) <id@joeyh.name>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 4005 5C6A FD2D 526B 2961  E78F 5EE1 DBA7 89C8 09CB
+[2015-06-06 15:58:45 CEST] Upgrader: An upgrade of git-annex is available.  (version 5.20150528)
+error: invalid object 100644 b5f693aa67b6d185e6d967e0a45c3c57a4f4b4a8 for '88c/df4/SHA256E-s4644--eca6d831c0a94895a81296327bc21bdf417234c7ebfa3e93fd21a71523ac9da9.log.6.log'
+fatal: git-write-tree: error building trees
+TransferScanner crashed: failed to read sha from git write-tree
+[2015-06-06 15:58:45 CEST] TransferScanner: warning TransferScanner crashed: failed to read sha from git write-tree
+[2015-06-06 15:58:46 CEST] Committer: Committing changes to git
+[2015-06-06 15:58:46 CEST] Pusher: Syncing with origin 
+error: invalid object 100644 b5f693aa67b6d185e6d967e0a45c3c57a4f4b4a8 for '88c/df4/SHA256E-s4644--eca6d831c0a94895a81296327bc21bdf417234c7ebfa3e93fd21a71523ac9da9.log.6.log'
+fatal: git-write-tree: error building trees
+Pusher crashed: failed to read sha from git write-tree
+[2015-06-06 15:58:46 CEST] Pusher: warning Pusher crashed: failed to read sha from git write-tree
+[2015-06-06 16:58:44 CEST] NetWatcherFallback: Syncing with origin 
+error: invalid object 100644 b5f693aa67b6d185e6d967e0a45c3c57a4f4b4a8 for '88c/df4/SHA256E-s4644--eca6d831c0a94895a81296327bc21bdf417234c7ebfa3e93fd21a71523ac9da9.log.6.log'
+fatal: git-write-tree: error building trees
+NetWatcherFallback crashed: failed to read sha from git write-tree
+[2015-06-06 16:58:47 CEST] NetWatcherFallback: warning NetWatcherFallback crashed: failed to read sha from git write-tree
+[2015-06-06 18:10:24 CEST] Committer: Committing changes to git
+[2015-06-06 18:10:25 CEST] Committer: Committing changes to git
+[2015-06-06 20:01:34 CEST] Committer: Committing changes to git
+[2015-06-06 20:01:35 CEST] Committer: Committing changes to git
+[2015-06-06 22:42:41 CEST] main: starting assistant version 5.20150508-g883d57f
+[2015-06-06 22:42:41 CEST] Cronner: You should enable consistency checking to protect your data. 
+[2015-06-06 22:42:47 CEST] TransferScanner: Syncing with origin 
+
+  No known network monitor available through dbus; falling back to polling
+(scanning...) [2015-06-06 22:42:47 CEST] Watcher: Performing startup scan
+(started...) error: invalid object 100644 b5f693aa67b6d185e6d967e0a45c3c57a4f4b4a8 for '88c/df4/SHA256E-s4644--eca6d831c0a94895a81296327bc21bdf417234c7ebfa3e93fd21a71523ac9da9.log.6.log'
+fatal: git-write-tree: error building trees
+TransferScanner crashed: failed to read sha from git write-tree
+[2015-06-06 22:42:48 CEST] TransferScanner: warning TransferScanner crashed: failed to read sha from git write-tree
+gpg: assuming signed data in '/tmp/git-annex.tmp.0/info'
+gpg: Signature made Thu May 28 19:01:58 2015 CEST using DSA key ID 89C809CB
+gpg: /tmp/git-annex-gpg.tmp.0/trustdb.gpg: trustdb created
+gpg: Good signature from "git-annex distribution signing key (for Joey Hess) <id@joeyh.name>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 4005 5C6A FD2D 526B 2961  E78F 5EE1 DBA7 89C8 09CB
+[2015-06-06 22:42:48 CEST] Upgrader: An upgrade of git-annex is available.  (version 5.20150528)
+[2015-06-06 22:42:49 CEST] Committer: Committing changes to git
+[2015-06-06 22:42:49 CEST] Pusher: Syncing with origin 
+error: invalid object 100644 b5f693aa67b6d185e6d967e0a45c3c57a4f4b4a8 for '88c/df4/SHA256E-s4644--eca6d831c0a94895a81296327bc21bdf417234c7ebfa3e93fd21a71523ac9da9.log.6.log'
+fatal: git-write-tree: error building trees
+Pusher crashed: failed to read sha from git write-tree
+[2015-06-06 22:42:49 CEST] Pusher: warning Pusher crashed: failed to read sha from git write-tree
+
+(recording state in git...)
+(recording state in git...)
+(recording state in git...)
+
+  bugs/nouveau-bug/nouveau.log.9 still has writers, not adding
+[2015-06-06 22:43:47 CEST] Committer: Adding nouveau.log.9
+add bugs/nouveau-bug/nouveau.log.9 [2015-06-06 22:43:48 CEST] Committer: Committing changes to git
+
+SHA256E-s4427--4e02ba661d0106ff4715a2cfda0fe39185865551bcb484539e618f2b64f9ec0c.log.9
+
+          4,427 100%    0.00kB/s    0:00:00  
+          4,427 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+[2015-06-06 22:43:48 CEST] Transferrer: Uploaded nouveau.log.9
+[2015-06-06 22:43:49 CEST] Committer: Committing changes to git
+ok
+(recording state in git...)
+
+  lost dbus connection; falling back to polling (ClientError {clientErrorMessage = "Error reading message from socket: UnmarshalError \"Unexpected end of input while parsing message header.\"", clientErrorFatal = True})
+[2015-06-07 07:41:35 CEST] main: starting assistant version 5.20150508-g883d57f
+[2015-06-07 07:41:35 CEST] Cronner: You should enable consistency checking to protect your data. 
+[2015-06-07 07:41:42 CEST] TransferScanner: Syncing with origin 
+
+  No known network monitor available through dbus; falling back to polling
+(scanning...) [2015-06-07 07:41:42 CEST] Watcher: Performing startup scan
+(started...) error: invalid object 100644 b5f693aa67b6d185e6d967e0a45c3c57a4f4b4a8 for '88c/df4/SHA256E-s4644--eca6d831c0a94895a81296327bc21bdf417234c7ebfa3e93fd21a71523ac9da9.log.6.log'
+fatal: git-write-tree: error building trees
+TransferScanner crashed: failed to read sha from git write-tree
+[2015-06-07 07:41:43 CEST] TransferScanner: warning TransferScanner crashed: failed to read sha from git write-tree
+gpg: assuming signed data in '/tmp/git-annex.tmp.0/info'
+gpg: Signature made Thu May 28 19:01:58 2015 CEST using DSA key ID 89C809CB
+gpg: /tmp/git-annex-gpg.tmp.0/trustdb.gpg: trustdb created
+gpg: Good signature from "git-annex distribution signing key (for Joey Hess) <id@joeyh.name>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 4005 5C6A FD2D 526B 2961  E78F 5EE1 DBA7 89C8 09CB
+[2015-06-07 07:41:43 CEST] Upgrader: An upgrade of git-annex is available.  (version 5.20150528)
+[2015-06-07 07:41:44 CEST] Committer: Committing changes to git
+[2015-06-07 07:41:44 CEST] Pusher: Syncing with origin 
+error: invalid object 100644 b5f693aa67b6d185e6d967e0a45c3c57a4f4b4a8 for '88c/df4/SHA256E-s4644--eca6d831c0a94895a81296327bc21bdf417234c7ebfa3e93fd21a71523ac9da9.log.6.log'
+fatal: git-write-tree: error building trees
+Pusher crashed: failed to read sha from git write-tree
+[2015-06-07 07:41:44 CEST] Pusher: warning Pusher crashed: failed to read sha from git write-tree
+[2015-06-07 08:41:42 CEST] NetWatcherFallback: Syncing with origin 
+error: invalid object 100644 b5f693aa67b6d185e6d967e0a45c3c57a4f4b4a8 for '88c/df4/SHA256E-s4644--eca6d831c0a94895a81296327bc21bdf417234c7ebfa3e93fd21a71523ac9da9.log.6.log'
+fatal: git-write-tree: error building trees
+NetWatcherFallback crashed: failed to read sha from git write-tree
+[2015-06-07 08:41:43 CEST] NetWatcherFallback: warning NetWatcherFallback crashed: failed to read sha from git write-tree
+[2015-06-07 09:21:46 CEST] main: starting assistant version 5.20150508-g883d57f
+[2015-06-07 09:21:46 CEST] Cronner: You should enable consistency checking to protect your data. 
+[2015-06-07 09:21:49 CEST] main: starting assistant version 5.20150508-g883d57f
+[2015-06-07 09:21:49 CEST] Cronner: You should enable consistency checking to protect your data. 
+[2015-06-07 09:21:54 CEST] TransferScanner: Syncing with origin 
+
+  No known network monitor available through dbus; falling back to polling
+(scanning...) [2015-06-07 09:21:55 CEST] Watcher: Performing startup scan
+(started...) 
+(recording state in git...)
+error: invalid object 100644 b5f693aa67b6d185e6d967e0a45c3c57a4f4b4a8 for '88c/df4/SHA256E-s4644--eca6d831c0a94895a81296327bc21bdf417234c7ebfa3e93fd21a71523ac9da9.log.6.log'
+fatal: git-write-tree: error building trees
+TransferScanner crashed: failed to read sha from git write-tree
+[2015-06-07 09:21:55 CEST] TransferScanner: warning TransferScanner crashed: failed to read sha from git write-tree
+gpg: assuming signed data in '/tmp/git-annex.tmp.0/info'
+gpg: Signature made Thu May 28 19:01:58 2015 CEST using DSA key ID 89C809CB
+gpg: /tmp/git-annex-gpg.tmp.0/trustdb.gpg: trustdb created
+gpg: Good signature from "git-annex distribution signing key (for Joey Hess) <id@joeyh.name>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 4005 5C6A FD2D 526B 2961  E78F 5EE1 DBA7 89C8 09CB
+[2015-06-07 09:21:56 CEST] Upgrader: An upgrade of git-annex is available.  (version 5.20150528)
+[2015-06-07 09:21:56 CEST] Committer: Committing changes to git
+(recording state in git...)
+[2015-06-07 09:21:56 CEST] Pusher: Syncing with origin 
+(recording state in git...)
+error: invalid object 100644 b5f693aa67b6d185e6d967e0a45c3c57a4f4b4a8 for '88c/df4/SHA256E-s4644--eca6d831c0a94895a81296327bc21bdf417234c7ebfa3e93fd21a71523ac9da9.log.6.log'
+fatal: git-write-tree: error building trees
+Pusher crashed: failed to read sha from git write-tree
+[2015-06-07 09:21:57 CEST] Pusher: warning Pusher crashed: failed to read sha from git write-tree
+[2015-06-07 09:23:07 CEST] main: starting assistant version 5.20150508-g883d57f
+[2015-06-07 09:23:07 CEST] Cronner: You should enable consistency checking to protect your data. 
+[2015-06-07 09:23:12 CEST] TransferScanner: Syncing with origin 
+
+  No known network monitor available through dbus; falling back to polling
+(scanning...) [2015-06-07 09:23:12 CEST] Watcher: Performing startup scan
+(started...) 
+(recording state in git...)
+gpg: assuming signed data in '/tmp/git-annex.tmp.0/info'
+gpg: Signature made Thu May 28 19:01:58 2015 CEST using DSA key ID 89C809CB
+gpg: /tmp/git-annex-gpg.tmp.0/trustdb.gpg: trustdb created
+gpg: Good signature from "git-annex distribution signing key (for Joey Hess) <id@joeyh.name>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 4005 5C6A FD2D 526B 2961  E78F 5EE1 DBA7 89C8 09CB
+[2015-06-07 09:23:13 CEST] Upgrader: An upgrade of git-annex is available.  (version 5.20150528)
+[2015-06-07 09:23:14 CEST] Committer: Committing changes to git
+(recording state in git...)
+[2015-06-07 09:23:14 CEST] Pusher: Syncing with origin 
+
+SHA256E-s4491--e35540a06d6839455b48ecd8f2a4c7714d420379bae55a7b383dc1a5dc60d8e0.log.8
+
+          4,491 100%    0.00kB/s    0:00:00  
+          4,491 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+[2015-06-07 09:23:15 CEST] Transferrer: Uploaded nouveau.log.8
+error: Unable to create '/srv/git/seb/annex/annex.git/refs/heads/synced/git-annex.lock': File exists.
+
+If no other git process is currently running, this probably means a
+git process crashed in this repository earlier. Make sure no other git
+process is running and remove the file manually to continue.
+remote: error: Cannot lock the ref 'refs/heads/synced/git-annex'.        
+error: Unable to create '/srv/git/seb/annex/annex.git/refs/heads/synced/master.lock': File exists.
+
+If no other git process is currently running, this probably means a
+git process crashed in this repository earlier. Make sure no other git
+process is running and remove the file manually to continue.
+remote: error: Cannot lock the ref 'refs/heads/synced/master'.        
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+   aec4d80..5cac670  master -> synced/master
+ ! [remote rejected] git-annex -> synced/git-annex (failed to update ref)
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+   973fbda..118a888  git-annex -> synced/git-annex
+ ! [remote rejected] master -> synced/master (failed to update ref)
+error: failed to push some refs to 'ssh://redacted.net/srv/git/seb/annex/annex.git'
+error: failed to push some refs to 'ssh://redacted.net/srv/git/seb/annex/annex.git'
+error: Ref refs/remotes/origin/master is at 5cac670bc3d15a2d1a976ab02b2717078717ad48 but expected aec4d80548993b2b6e126124153fab9c93de8375
+error: Cannot lock the ref 'refs/remotes/origin/master'.
+From ssh://redacted.net/srv/git/seb/annex/annex
+ ! aec4d80..5cac670  master     -> origin/master  (unable to update local ref)
+error: Ref refs/remotes/origin/git-annex is at 118a888e0244e644c2ec6c0bf100e787d25a222d but expected 973fbdad6d8b549c4db0633ef11fa5a8f9ec0ed1
+error: Cannot lock the ref 'refs/remotes/origin/git-annex'.
+ ! 973fbda..118a888  git-annex  -> origin/git-annex  (unable to update local ref)
+Everything up-to-date
+Everything up-to-date
+(recording state in git...)
+[2015-06-07 09:23:20 CEST] main: starting assistant version 5.20150508-g883d57f
+[2015-06-07 09:23:20 CEST] Cronner: You should enable consistency checking to protect your data. 
+[2015-06-07 09:23:25 CEST] TransferScanner: Syncing with origin 
+
+  No known network monitor available through dbus; falling back to polling
+(scanning...) [2015-06-07 09:23:25 CEST] Watcher: Performing startup scan
+(started...) 
+From ssh://redacted.net/srv/git/seb/annex/annex
+   118a888..e058e35  git-annex  -> origin/git-annex
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+gpg: assuming signed data in '/tmp/git-annex.tmp.0/info'
+gpg: Signature made Thu May 28 19:01:58 2015 CEST using DSA key ID 89C809CB
+gpg: /tmp/git-annex-gpg.tmp.0/trustdb.gpg: trustdb created
+gpg: Good signature from "git-annex distribution signing key (for Joey Hess) <id@joeyh.name>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 4005 5C6A FD2D 526B 2961  E78F 5EE1 DBA7 89C8 09CB
+[2015-06-07 09:23:26 CEST] Upgrader: An upgrade of git-annex is available.  (version 5.20150528)
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+   118a888..37bc288  git-annex -> synced/git-annex
+[2015-06-07 09:23:27 CEST] Committer: Committing changes to git
+(recording state in git...)
+[2015-06-07 09:23:27 CEST] Pusher: Syncing with origin 
+Everything up-to-date
+[2015-06-07 09:25:21 CEST] Committer: Adding daemon.log.4
+add bugs/git-annex/daemon.log.4 ok
+[2015-06-07 09:25:21 CEST] Committer: Committing changes to git
+(recording state in git...)
+[2015-06-07 09:25:21 CEST] Pusher: Syncing with origin 
+(recording state in git...)
+
+SHA256E-s2383--66aa385819f9ba961c3b4701dd68b6d1450af08ae24428461d342be8b12784a2.log.4
+
+          2,383 100%    0.00kB/s    0:00:00  
+          2,383 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+[2015-06-07 09:25:21 CEST] Transferrer: Uploaded daemon.log.4
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+   37bc288..5c63092  git-annex -> synced/git-annex
+   5cac670..3a5e7d0  master -> synced/master
+[2015-06-07 09:25:22 CEST] Committer: Committing changes to git
+[2015-06-07 09:25:24 CEST] Pusher: Syncing with origin 
+(recording state in git...)
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+   5c63092..07a3e47  git-annex -> synced/git-annex
+[2015-06-07 09:25:40 CEST] Committer: Adding index~
+add bugs/git-annex/index~ ok
+[2015-06-07 09:25:40 CEST] Committer: Committing changes to git
+(recording state in git...)
+[2015-06-07 09:25:40 CEST] Pusher: Syncing with origin 
+(recording state in git...)
+
+SHA256E-s178074--cf093bacc4367a5e86a07cb8523b183dd0a5401805dde646cf0b2b0ddc8ee282
+
+         32,768  18%    0.00kB/s    0:00:00  
+        178,074 100%   69.29MB/s    0:00:00 (xfr#1, to-chk=0/1)
+[2015-06-07 09:25:41 CEST] Committer: Committing changes to git
+[2015-06-07 09:25:41 CEST] Transferrer: Uploaded index~
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+   07a3e47..32d41fc  git-annex -> synced/git-annex
+   3a5e7d0..20e6e3c  master -> synced/master
+[2015-06-07 09:25:44 CEST] Pusher: Syncing with origin 
+(recording state in git...)
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+   32d41fc..b61b73e  git-annex -> synced/git-annex
+[2015-06-07 09:44:47 CEST] Committer: Adding daemon.log daemon.log.1 daemon.log.10 daemon.log.2 daemon.log.3
+add bugs/git-annex/daemon.log ok
+add bugs/git-annex/daemon.log.1 ok
+add bugs/git-annex/daemon.log.10 ok
+add bugs/git-annex/daemon.log.2 ok
+add bugs/git-annex/daemon.log.3 ok
+[2015-06-07 09:44:47 CEST] Committer: Committing changes to git
+(recording state in git...)
+[2015-06-07 09:44:47 CEST] Pusher: Syncing with origin 
+(recording state in git...)
+
+SHA256E-s3284--5784c99b359a5fdfb52f26e82165ffba54d62f9f5cd846fce25a3c6f694eb890.log
+
+          3,284 100%    0.00kB/s    0:00:00  
+          3,284 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+[2015-06-07 09:44:47 CEST] Transferrer: Uploaded daemon.log
+
+SHA256E-s178--704e1850cab9a6b074ba2a77344199b866e9408541b83bf1ad6b3bbd23dfc54a.log.3
+
+            178 100%    0.00kB/s    0:00:00  
+            178 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+[2015-06-07 09:44:48 CEST] Transferrer: Uploaded daemon.log.3
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+   b61b73e..854cbda  git-annex -> synced/git-annex
+   20e6e3c..0d8b74a  master -> synced/master
+
+SHA256E-s1993--7f1bec5289ebe07306bf57fb91e0dec25b1d8f5cf1efd15297815503f1290477.log.2
+
+          1,993 100%    0.00kB/s    0:00:00  
+          1,993 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+[2015-06-07 09:44:48 CEST] Committer: Committing changes to git
+(recording state in git...)
+[2015-06-07 09:44:48 CEST] Transferrer: Uploaded daemon.log.2
+
+SHA256E-s4969--ff59d2458e0b43a1965258bd0064626de1a0b7f911de693a02f34fc1bcb4959a.log.10
+
+          4,969 100%    0.00kB/s    0:00:00  
+          4,969 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+[2015-06-07 09:44:48 CEST] Transferrer: Uploaded daemon.log.10
+
+SHA256E-s3385--0e7aef46d502f1d3a583b642239cf1272b2410d5976603b65a104fc866c02e70.log.1
+
+          3,385 100%    0.00kB/s    0:00:00  
+          3,385 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+[2015-06-07 09:44:49 CEST] Transferrer: Uploaded daemon.log.1
+[2015-06-07 09:44:50 CEST] Committer: Adding daemon.log.5 daemon.log.6 daemon.log.7 daemon.log.8 daemon.log.9
+add bugs/git-annex/daemon.log.5 ok
+add bugs/git-annex/daemon.log.6 ok
+add bugs/git-annex/daemon.log.7 ok
+add bugs/git-annex/daemon.log.8 ok
+add bugs/git-annex/daemon.log.9 ok
+[2015-06-07 09:44:50 CEST] Committer: Committing changes to git
+(recording state in git...)
+
+SHA256E-s2792--313d72ecb598b18884602babaed667b71786a0f50edd291754bac0b70c666fa9.log.5
+
+          2,792 100%    0.00kB/s    0:00:00  
+          2,792 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+[2015-06-07 09:44:50 CEST] Transferrer: Uploaded daemon.log.5
+
+SHA256E-s6792--8aaddbb316719160b93305bc7a6698df1b2d6b0e6f3366c0fa9f7d258cf12303.log.9
+
+          6,792 100%    0.00kB/s    0:00:00  
+          6,792 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+[2015-06-07 09:44:50 CEST] Transferrer: Uploaded daemon.log.9
+[2015-06-07 09:44:50 CEST] Pusher: Syncing with origin 
+
+SHA256E-s1183--12703bbab3cd4db78fc4449b5c3dddfb82da77c9b4a750d2b7a902f3eb63547b.log.8
+
+          1,183 100%    0.00kB/s    0:00:00  
+          1,183 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+(recording state in git...)
+[2015-06-07 09:44:51 CEST] Transferrer: Uploaded daemon.log.8
+[2015-06-07 09:44:51 CEST] Committer: Committing changes to git
+(recording state in git...)
+
+SHA256E-s5310--51d80ffdcfdeff4e035f740de0f18afa660404fb448a72421bd7af85ae87ae6f.log.7
+
+          5,310 100%    0.00kB/s    0:00:00  
+          5,310 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+[2015-06-07 09:44:51 CEST] Transferrer: Uploaded daemon.log.7
+
+SHA256E-s2639--c7a0e874ae2dbc874732c000928a5c2a1a6c3d75dcb89b590fcb9e13415427cd.log.6
+
+          2,639 100%    0.00kB/s    0:00:00  
+          2,639 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+[2015-06-07 09:44:51 CEST] Transferrer: Uploaded daemon.log.6
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+   854cbda..c940c96  git-annex -> synced/git-annex
+   0d8b74a..3865343  master -> synced/master
+[2015-06-07 09:44:54 CEST] Pusher: Syncing with origin 
+(recording state in git...)
+To ssh://redacted.net/srv/git/seb/annex/annex.git
+   c940c96..95a399f  git-annex -> synced/git-annex
+   3865343..c04efc3  master -> synced/master
+
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 2"
+ date="2013-01-24T02:01:00Z"
+ content="""
+A recent commit allows you to just choose \"manual mode\" in the webapp to get the same effect.
+"""]]

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 6"
+ date="2012-10-30T08:44:32Z"
+ content="""
+Just so this does not get lost: For better or for worse, the vanilla Android devices stopped shipping with micro-SD support in 2011 (or 2010 if the Nexus S does not support them either; on sketchy GPRS so not googling around). Most higher-end Android devices ship with at least 8 GiB of on-board Flash storage, some even go up to 64 GiB.
+
+IMHO, this would make it viable to first get git-annex working on Android without regard for FAT.
+
+The obvious advantage is that porting should be easier and quicker.
+
+The obvious downside is that this may mean revisiting some parts of the code later.
+
+-- Richard
+"""]]

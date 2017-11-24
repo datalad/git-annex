@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmwjQzWgiD7_I3zw-_91rMRf_6qoThupis"
+ nickname="Mike"
+ subject="comment 8"
+ date="2014-06-18T17:31:58Z"
+ content="""
+The git available through yum is git 1.7.1, which looks like it was released in 2010 or earlier. (I really wish I had a different version of linux on this server). It is possible that in some way screwed up the repo.
+
+I figured out how to compile cabal and git-annex with rtsopts, so I can now set higher memory levels, but I am happy to help debug the problem too, as I would really love a fully functional git-annex.
+
+git commands now run quickly, thanks to the new git I think.
+
+``du -hsc .git/objects`` returns: ``8.1G    .git/objects``
+
+``du -h .git/index`` returns: ``437M    .git/index``
+
+I am currently running the command ``git-annex +RTS -K1000m -RTS add .``, it is chugging away doing something, but is not printing any messages yet after 11 minutes of running, it is a 6TB directory though, and there are a lot of concurrent IO operations on that disk right now.
+
+I am also running ``du -h --max-depth=1`` on the root repo directory, and also ``find | wc -l``, so that I can tell you the exact size of the dir and the total number of files too.  These operations combined may take more than an hour though, I will send details when the commands complete.
+
+Let me know if you want me to stop the ``git-annex +RTS -K1000m -RTS add .`` command and run git-annex some other way.
+"""]]

@@ -1,0 +1,20 @@
+Out of curiosity, is there an equivalent to `git cat-file` with `git annex`?
+
+The motivation is our usage of Bazel as a build system, which during test enforces hermiticity, and thus is very persnickity about modifying your workspace (e.g., the Git repository) while the test is being run, and usually isolates execution to a chroot'd sandbox of sorts.
+
+Ideally, the workflows I'd like are:
+
+A. Developer
+
+- 1. Clones repository.
+- 2. Inits `git annex`, and does `git annex get .` to fetch all required files.
+- 3. Runs `bazel test //repo:my_test`, which will symlink the existing large file into the sandbox, and run without a hitch.
+
+B. Tentative Contributor
+
+- 1. Clones repository. Pokes around.
+- 2. Runs `bazel test //repo:my_test`. Since the large file does not exist, under the hood `git annex cat-file` is called to directly add the file to sandbox (possibly caching it somewhere, such that `git annex get` will use the already fetch'd file).
+
+
+May I ask if this doable with simple visible commands?
+If not, is there a way to achieve this that is special remote-agnostic?

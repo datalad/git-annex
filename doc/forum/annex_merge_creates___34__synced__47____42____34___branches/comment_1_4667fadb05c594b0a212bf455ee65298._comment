@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.22"
+ subject="comment 1"
+ date="2014-09-16T18:22:11Z"
+ content="""
+Why is this a problem? You can delete the branch at any time of course if it's in the way.
+
+It would be possible for `git-annex sync` to avoid creating the synced/master branch at all when syncing with a bare git repository, but this would actually make it less efficient and slower. Where currently it makes one push, updating the remote's master branch when possible, and forcing an update of its synced/master branch at the same time, it would instead need to first try to update remote's master, then check if that succeeded and if not force the update of synced/master. Also, it's not clear how to check if the push to master succeeded, since something else might update it further in a race.
+
+I suppose that `git annex sync/merge` could delete the local synced/* branches once it was done merging them. This wouldn't prevent `git pull` from pulling down those branches, though.
+"""]]

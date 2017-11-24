@@ -1,0 +1,47 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-09-21T17:53:12Z"
+ content="""
+(Let's not discuss the behavior of copy --to when the file is not locally
+present here; there is plenty of other discussion of that in eg
+<http://bugs.debian.org/671179>)
+
+git-annex's special remote API does not allow remote-to-remote transfers
+without spooling it to a file on disk first. And it's not possible to do
+using rsync on either end, AFAICS. It would be possible in some other cases
+but this would need to be implemented for each type of remote as a new API
+call.
+
+Modern systems tend to have quite a large disk cache, so it's quite
+possible that going via a temp file on disk is not going to use a lot of
+disk IO to write and read it when the read and write occur fairly close
+together.
+
+The main benefit from streaming would probably be if it could run the
+download and the upload concurrently. But that would only be a benefit
+sometimes. With an asymmetric connection, saturating the uplink tends to
+swamp downloads. Also, if download is faster than upload, it would have to
+throttle downloads (which complicates the remote API much more), or buffer
+them to memory (which has its own complications).
+
+Streaming the download to the upload would at best speed things up by a
+factor of 2. It would probably work nearly as well to upload the previously
+downloaded file while downloading the next file.
+
+It would not be super hard to make `git annex copy --from --to` download a file,
+upload it, and then drop it, and parallelizing it with -J2 would
+keep both the --from and --to remotes bandwidth saturated pretty well.
+
+Alhough not perfectly, because two jobs could both be downloading while
+the uplink is left idle. To make it optimal, it would need to do the
+download and when done, push the upload+drop into another queue of actions
+that is processed concurrently with other downloads.
+
+And there is a complication with running that at the same time as eg `git
+annex get` of the same file. It would be surprising for get to succeed
+(because copy has already temporarily downloaded the file) and then have
+the file later get dropped. So, it seems that `copy --from --to` would need
+to stash the content away in a temp file somewhere instead of storing it
+in the annex proper.
+"""]]

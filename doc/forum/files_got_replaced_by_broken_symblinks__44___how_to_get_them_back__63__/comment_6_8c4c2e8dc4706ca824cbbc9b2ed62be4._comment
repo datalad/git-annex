@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="simon.parzer@f837bbade0d93f560dc574b04e835b7875c4026f"
+ nickname="simon.parzer"
+ subject="comment 6"
+ date="2016-05-05T11:26:03Z"
+ content="""
+To sort of follow up on this after 3 months, ```git annex info``` displays ```repository mode: direct```
+
+I have given up on git annex in the meantime, it is a nightmare to sync between different operating systems/file systems.
+What might be \"wrong\" with my setup is that I have at least two machines that are dual-boot. So I'm using the same folder both in Windows and Linux. I also have an external HD with an annex repository that I plug in to different machines, and it apparently causes problems.
+Now I have to write a python script to recover my lost files from the bottomless abyss that is the .git/annex folder.
+"""]]

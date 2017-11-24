@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 6"
+ date="2012-08-14T14:10:40Z"
+ content="""
+Hans,
+
+You are misunderstanding how git-annex encryption works.  The \"untrusted host\" and the \"local machine\" are not the same machine.  git-annex only transfers pre-encrypted files to the \"untrusted host\".
+
+You should setup a git-annex encrypted remote and watch how it works so you can see for yourself that it is not insecure.
+
+Your solution does not provide better security, it accomplishes the same thing as git-annex in a more complicated way.  In addition, since you are mounting the image from the client your solution will not work with multiple clients.
+"""]]

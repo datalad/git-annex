@@ -1,0 +1,25 @@
+From bfecbc7bd09cbbebdef12aa525dc17109326db3f Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Sun, 29 Dec 2013 21:31:07 +0000
+Subject: [PATCH] no NODELAY on android
+
+---
+ Network/Socket.hsc |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Network/Socket.hsc b/Network/Socket.hsc
+index 6c21209..c360889 100644
+--- a/Network/Socket.hsc
++++ b/Network/Socket.hsc
+@@ -923,7 +923,7 @@ packSocketOption so =
+     Just MaxSegment    -> Just ((#const IPPROTO_TCP), (#const TCP_MAXSEG))
+ #endif
+ #ifdef TCP_NODELAY
+-    Just NoDelay       -> Just ((#const IPPROTO_TCP), (#const TCP_NODELAY))
++    Just NoDelay       -> Nothing -- Just ((#const IPPROTO_TCP), (#const TCP_NODELAY))
+ #endif
+ #ifdef TCP_CORK
+     Just Cork          -> Just ((#const IPPROTO_TCP), (#const TCP_CORK))
+-- 
+1.7.10.4
+

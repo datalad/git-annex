@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmqz6wCn-Q1vzrsHGvEJHOt_T5ZESilxhc"
+ nickname="Sören"
+ subject="comment 11"
+ date="2014-05-28T17:30:43Z"
+ content="""
+Ok it seems like the linebreak at the end of each javascript file (0x0a) is replaced by a null byte on android. This probably causes the browser not to accept it as javascript so it's not executed.
+"""]]

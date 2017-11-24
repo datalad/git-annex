@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 6"
+ date="2013-01-11T15:06:47Z"
+ content="""
+Laszlo's concern about \"you can only select a drive and not a directory\" relates to a problem I had.
+
+I have two local directories, ~/annex indirect my main annex, and ~/directannex for playing with direct mode.
+
+I had hoped to back each up to the same shared drive, but didn't realize there was no option to select a directory within a shared drive, so when I tried to do that through the assistant I inadvertently connected the two by backing them up to the same directory on the shared drive!
+
+This is probably a \"power user problem\" which has a \"power user solution\" of setting up the separate repository manually.  But it did take me by surprise.
+
+"""]]

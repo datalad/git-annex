@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2016-12-20T19:04:12Z"
+ content="""
+Good start on the workflow page!
+
+I've added some links to it to make it discoverable.
+
+Not sure if the workflow page quite gets to what was originally requested:
+
+> I want to start keeping track of some files I have in a directory
+> I want to copy them to a second computer.
+> From a third place, I want to get them from the second computer.
+> I change the files on one computer, and I want to make sure the changes get synced to the others.
+> What are the commands you'd run at each step?
+
+Leaving this todo open for now..
+"""]]

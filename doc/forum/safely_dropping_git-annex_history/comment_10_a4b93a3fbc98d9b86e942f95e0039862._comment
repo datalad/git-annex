@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.140"
+ subject="comment 10"
+ date="2013-07-20T20:03:20Z"
+ content="""
+Since you seem to have found a way that works, I'm only answering for completeness: To resolve a conflicted merge on the git-annex branch, you can just add all lines present in either side of the merge, in any order. This won't necessarily be the most minimal resolution, but it is guaranteed to always be a valid one. There is a git-union-merge program in the git-annex source (not built by default) that can do that when merging any set of branches.
+"""]]

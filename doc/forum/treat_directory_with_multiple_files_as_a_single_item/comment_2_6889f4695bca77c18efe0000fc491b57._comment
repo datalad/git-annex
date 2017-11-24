@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="dav02.git@4d920fe040aa5df86fcd9f4dd57d3fcf85ee5641"
+ nickname="dav02.git"
+ avatar="http://cdn.libravatar.org/avatar/c452f62e60af3c49990973d008ca1b76"
+ subject="(compress/tar)ing the files"
+ date="2017-05-19T12:14:14Z"
+ content="""
+I considered this, but unfortunately in this form I cannot work with files.
+
+There are hacks like archivemount, but they are extremely slow for large number of files and not available on many systems.
+"""]]

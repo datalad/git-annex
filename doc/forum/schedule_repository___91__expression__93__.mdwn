@@ -1,0 +1,1 @@
+what sort of options can we use in the expression field? from the [git annex bible](http://git-annex.branchable.com/git-annex/) it suggests for incremental fscks, but I'm wondering if it can run shell scripts or `git annex importurl` lines too.

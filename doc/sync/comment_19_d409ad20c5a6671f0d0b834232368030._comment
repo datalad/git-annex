@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="http://id.clacke.se/"
+ nickname="clacke"
+ subject="git-config for manual sync-like operations"
+ date="2016-04-14T08:21:03Z"
+ content="""
+My way of working with git-annex doesn't seem to mesh well with the Assistant or even with `git annex sync`. I seem to have a bit of a control need when it comes to what gets committed when. But here's my workflow approximating what it does, with a twist. I have this in git config on `mylaptop`:
+
+    remote.myserver.fetch=+refs/heads/*:refs/remotes/myserver/*
+    remote.myserver.push=refs/heads/*:refs/remotes/mylaptop/*
+    remote.myserver.push=refs/heads/master:refs/heads/master
+    remote.myserver.push=refs/heads/git-annex:refs/heads/git-annex
+
+I don't need a `synced/git-annex`. If upstream is not up-to-date I fetch and merge. In this case upstream happens to be a bare git repo, so I don't need `synced/master` either. If upstream is non-bare, I use `synced/master` -- or sometimes I keep upstream usually checked out on an orphan branch and just switch into master to check things and then switch away to avoid conflict. If I can avoid it, I prefer not to have several branches where I don't know which one is the latest one.
+
+But here's the twist, look at this row:
+
+    remote.myserver.push=refs/heads/*:refs/remotes/mylaptop/*
+
+If I just do `git push`, close the lid and run into the forest, it may or may not have a non-fastforward event on master and git-annex ... but it always succeeds in pushing to the `mylaptop` remote on my server.
+
+If I have added a batch of files, I usually push first to all my remotes, to get that precious metadata up there. At that point I don't care if there's a conflict upstream. Then I `git annex copy` to wherever, fetch all remotes, `git annex merge`, maybe merge `master` if I have to (usually not), then push to all remotes again. It's less of a bother than it sounds like. I don't even have any handy aliases for this, I prefer to just get the for loop from my command-line history.
+"""]]

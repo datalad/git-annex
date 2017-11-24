@@ -1,0 +1,60 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawniayrgSdVLUc3c6bf93VbO-_HT4hzxmyo"
+ nickname="Tobias"
+ subject="Trying this feature"
+ date="2013-04-14T13:04:55Z"
+ content="""
+I just gave this feature a try, but it seems it doesn't work as expected or maybe I don't understand it:
+
+    ~/annex/largefilestest % git init
+    ~/annex/largefilestest (git)-[master] % git annex init \"test repo\"
+    ~/annex/largefilestest (git)-[master] % git config annex.largefiles \"not include=*.txt\"
+
+Now I copy two files to this directory and add both to the annex
+
+    ~/annex/largefilestest (git)-[master] % ll
+    total 100
+    -rw-rw-r-- 1 tobru tobru 93709 Oct 19 16:14 dpkg-get-selections.txt
+    -rw-rw-r-- 1 tobru tobru  7256 Jan  6 15:52 x3400.jpg
+    ~/annex/largefilestest (git)-[master] % git annex add .
+    add x3400.jpg (checksum...) ok
+    (Recording state in git...)
+    ~/annex/largefilestest (git)-[master] % git status
+    # On branch master
+    #
+    # Initial commit
+    #
+    # Changes to be committed:
+    #   (use \"git rm --cached <file>...\" to unstage)
+    #
+    #       new file:   x3400.jpg
+    #
+    # Untracked files:
+    #   (use \"git add <file>...\" to include in what will be committed)
+    #
+    #       dpkg-get-selections.txt
+    ~/annex/largefilestest (git)-[master] % ll
+    total 96
+    -rw-rw-r-- 1 tobru tobru 93709 Oct 19 16:14 dpkg-get-selections.txt
+    lrwxrwxrwx 1 tobru tobru   192 Jan  6 15:52 x3400.jpg -> .git/annex/objects/vf/QX/SHA256E-s7256--60e5b69ade5619e37f7fcaa964626da9c415959d861241aa13e2516fffc2dddf.jpg/SHA256E-s7256--60e5b69ade5619e37f7fcaa964626da9c415959d861241aa13e2516fffc2dddf.jpg
+
+So the picture is added to the annex as expected. But the .txt file is not added to git. Do I have to manually add this to git? And why is the picture seen as new file by git?
+
+The second question could be answered by: \"run git annex sync\". Is this correct? Because after running this command, git does not see this file as a new file anymore:
+
+    ~/annex/largefilestest (git)-[master] % git annex sync
+    commit  
+    [master (root-commit) a0afb14] git-annex automatic sync
+     1 file changed, 1 insertion(+)
+     create mode 120000 x3400.jpg
+    ok
+    git-annex: no branch is checked out
+    ~/annex/largefilestest (git)-[master] % git status
+    # On branch master
+    # Untracked files:
+    #   (use \"git add <file>...\" to include in what will be committed)
+    #
+    #       dpkg-get-selections.txt
+    nothing added to commit but untracked files present (use \"git add\" to track)
+
+"""]]

@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="pixunil"
+ subject="more information"
+ date="2016-05-10T17:27:46Z"
+ content="""
+```
+$ lsb_release -a
+Distributor ID:	LinuxMint
+Description:	Linux Mint 17.3 Rosa
+Release:	17.3
+Codename:	rosa
+$ git annex version
+git-annex version: 6.20160505-gddbe008
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 6
+supported repository versions: 5 6
+upgrade supported from repository versions: 0 1 2 4 5
+operating system: linux x86_64
+```
+
+OS is on both computers the same, on ext4.
+The usb drive has 8GB and is NTFS formatted. About NTFS, I wasn't sure, so I left the partition as it was.
+
+I built git-annex with `stack` three times on top of the latest tag, the version number differed in minor afaik (but can't remember the old ones).
+I'm aware that I'm using an unstable version (forgot to mention it, sry about that), but it was on the two latest builds.
+I also don't know where the information is what the stable release is…
+"""]]

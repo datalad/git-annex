@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 1"
+ date="2013-08-22T15:18:35Z"
+ content="""
+The only reason fsck is done locally for remotes is ease of implementation and it being a generic operation that supports any kind of special remote.
+
+Seems that the the only types of remotes where a remote fsck is a possibility are some rsync remotes and git remotes.
+git remotes already have git-annex installed, so the fsck could be run locally on the remote system using it.
+
+I don't know if I see a benefit with the MDC check. Any non-malicious data corruption on the remote is likely to affect the body of the file and not the small portion that holds the MDC. So checking the MDC does not seem much better than the current existence check done by `git annex fsck --fast --from remote`.
+
+As for storing the remote digest on the git-annex branch, my initial reaction was just that it's potentially a lot of bloat. Thinking about it some more, when using non-shared encryption, there is currently no way, given just a clone of a git repository, to match up files in git with encrypted objects stored on a special remote. So storing the remote digest might be considered to weaken the security.
+"""]]

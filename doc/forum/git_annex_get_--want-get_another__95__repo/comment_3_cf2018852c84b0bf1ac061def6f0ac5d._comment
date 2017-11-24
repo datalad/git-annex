@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm3vKzS4eOWYpKMoYXqMIjNsIg_nYF-loU"
+ nickname="Konubinix"
+ subject="That does it but not totally"
+ date="2014-03-13T11:36:02Z"
+ content="""
+I agree with the fact that it answers my initial question.
+
+Nevertheless, I guess it is really annoying to have to change the preferred content in two locations each time I change want to modify what is on my phone.
+Indeed, I quite often change what should be really present on my phone, depending on several factors (my mood, the time I will have in transports and the phase of the moon).
+
+The reason why I use \"git annex wanted\" is that it is straightforward: I just launch : \"git annex wanted phone include=some/file\" and that's all.
+
+With the solution you propose, I would have to each time additionally launch \"git annex wanted here '(not inallgroup=phones and (include=some/file)) or ($desktop_preferred_content)'\"
+
+Where I probably have to previously launch \"git annex wanted here\" to remember what is the preferred content of my computer (and put it in $desktop_preferred_content).
+
+Another option would be to run \"git annex vicfg\" and edit both fields manually, but IMHO this appears also to be too complicated relatively to the use case.
+
+About your second comment, I really enjoy the idea if \"git annex sync --content\", but it is really long in big repositories. I guess it is because I cannot restrict the command to a directory like I do with get, drop, move and copy.
+
+Besides, the use case wants to get the files whenever they are and copy them only to the phone. With git annex sync --content, the files are also put in the other repositories.
+
+For the time being, I prefer falling back to explicit commands that are much faster when I know a directory to sync \"git annex get --auto directory && git annex copy --auto --to phone directory\".
+
+For example, I just tried \"git annex sync --content phone\" and I killed it after 5 minutes and nothing was copied yet. With the set of two commands above, the synchronization of directory (get --to phone directory + drop --from here directory) took about 3 minutes.
+"""]]

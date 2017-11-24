@@ -1,0 +1,11 @@
+Ubuntu has a git-annex package, so to install simply run:
+	
+	sudo apt-get install git-annex
+
+## backport
+
+If the version shipped with Ubuntu is too old, 
+the [NeuroDebian team](http://neuro.debian.net/) provides a
+[standalone build package](http://neuro.debian.net/pkgs/git-annex-standalone.html)
+that is regularly updated and that should work across all releases of
+Ubuntu.

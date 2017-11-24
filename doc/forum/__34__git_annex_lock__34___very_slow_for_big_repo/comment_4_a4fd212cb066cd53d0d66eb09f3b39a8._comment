@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="josch"
+ ip="2001:638:709:5:2ad2:44ff:fe4b:56aa"
+ subject="thanks a lot!"
+ date="2014-06-23T15:13:34Z"
+ content="""
+Thank you for the answer to this problem!
+
+I put 150k emails in maildir format in git annex. Adding them took a couple of hours and so did the first full sync. But after that things didnt noticibly slow down - that was a surprise!
+
+What but then I wanted to do a one-time sync using rsync. I didnt find out how to tell rsync to follow symlinks at the destination instead of replacing symlinks with normal files. So I first unlocked the 150k emails (which was moderately quick and probably only I/O bound) and then did the rsync using the --checksum option which worked well as well. The problems started when I wanted to lock the whole thing again. This took ages and even after two days it did not output that it was adding files at all. So I used `find -type f | split -a3 -l100` and then `for f in x*; do echo $f; git annex add `echo \`cat $f\``; rm $f; done`. This started off well and I could finally see files being added. Unfortunately when I came back after a couple of hours, the progress slowed down to a crawl of only one file every few seconds.
+
+The solution was to just `git checkout -- Mail` everything. This finished in a matter of seconds and left the new mail which was copied over by rsync intact.
+
+Thanks a lot for the tip!
+
+Let me hereby also report that git annex seems to work without problems when using it with offlineimap and notmuch. At least I did not run into any problems with that setup yet.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.49"
+ subject="comment 1"
+ date="2012-11-29T19:35:41Z"
+ content="""
+These are partially downloaded files. You can use `git annex unused` to clean them up. The assistant doesn't yet explicitly clean these up, but it does keep retrying (and when possible, resuming) failed downloads until they succeed, at which point the temp file is moved into the objects directory.
+"""]]

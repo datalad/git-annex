@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="annexuser"
+ ip="24.16.193.140"
+ subject="comment 2"
+ date="2012-11-12T20:09:20Z"
+ content="""
+    $ git annex version                                                   
+    git-annex version: 3.20121017
+"""]]

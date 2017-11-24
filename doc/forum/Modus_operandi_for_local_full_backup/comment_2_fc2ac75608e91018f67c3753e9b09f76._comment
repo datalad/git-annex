@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="alejandro@2e9e229fdf45d44cd300a5681432552693d458ab"
+ nickname="alejandro"
+ subject="comment 2"
+ date="2015-11-11T08:29:09Z"
+ content="""
+Hi anarcat, if I understand you correctly you're using method 4) in my original post. That is, having the source of backups as a git annex repo. However, all my readings on this site seem to indicate poor interaction with nested git repositories, that I would have. Isn't that so?
+"""]]

@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Publishing subdir is publishing files but not subdir?"""
+ date="2017-10-30T16:06:36Z"
+ content="""
+The reason exporting a subdir puts the files at the root of the folder
+is that it's exporting a git tree, and files in the tree of a subdir
+are relative to that subdir.
+
+It's certianly possible to make git construct a tree object that
+contains a subdirectory containing the files you want to export, and
+then exporting that tree object would replicate that tree structure,
+including the subdir. One way is to check out a branch, delete the files
+you don't want to export and once things are arranged as you like,
+commit to that branch and then export it.
+
+(Or you could just make the webdav special remote's url include the
+subdir where you wanrt it to export stuff.)
+"""]]

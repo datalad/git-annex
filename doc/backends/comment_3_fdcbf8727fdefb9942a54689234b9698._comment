@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmicVKRM8vJX4wPuAwlLEoS2cjmFXQkjkE"
+ nickname="Thomas"
+ subject="Please be more specific about what information goes into the key"
+ date="2013-07-31T11:55:09Z"
+ content="""
+It's a bit confusing to read that SHA256 does not include the file extension from which I can deduct that SHA256E does include it. What else does it include? I used to \"seed\" my git-annex with localy available data by \"git-annex add\"-ing it in a temporary folder without doing a commit and than to initiate a copy from the slow remote annex repo. My theory was that remote copy sees the pre-seeded files and does not need to copy them again.
+
+But does this theory hold true for different file names, extensions, modification date, full path? Maybe you could also link to the code that implements the different backends so that curious readers can check for themselves.
+
+Thank you!
+"""]]

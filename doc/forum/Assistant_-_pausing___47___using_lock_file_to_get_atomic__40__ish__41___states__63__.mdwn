@@ -1,0 +1,10 @@
+Is there functionality to pause the assistant so that a group of changes all get committed at once?
+
+The case I'm thinking of is using git-annex to manage distribution of my bup backups.  I want to make sure that all the backup files are written - and then the par2 files generated from `fsck`ing - before they are committed and shipped.
+
+Naively, I'm looking for something as simple as a lockfile to touch at the start of the backup and then remove afterwards.
+
+Of course I could just run `git annex sync --content` after the backup is run, but, I'm was thinking that the assistant might be more set and forget...
+
+
+Does anyone do pausing or something similar?

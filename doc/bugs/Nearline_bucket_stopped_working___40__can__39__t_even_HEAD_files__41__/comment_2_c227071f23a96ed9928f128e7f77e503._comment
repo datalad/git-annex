@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="justin.lebar@7a36fcafc322d9a381e89f08ab6289033c6dde91"
+ nickname="justin.lebar"
+ avatar="http://cdn.libravatar.org/avatar/9fca4b61a1ab555f231851e7543f9a3e"
+ subject="comment 2"
+ date="2016-11-20T03:47:23Z"
+ content="""
+Thanks for your reply, Joey.  Sorry for the delay getting back to this -- I didn't realize I hadn't enabled notifications on the thread.
+
+The GCS docs suggest that 400 errors should be accompanied by an explanation in the reply body.
+
+> Error responses usually include a JSON document in the response body, which contains information about the error.
+
+https://cloud.google.com/storage/docs/json_api/v1/status-codes
+
+Do you think we're not getting an http response body here, or that it's not being printed out?
+"""]]

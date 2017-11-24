@@ -1,0 +1,8 @@
+Made a release today, with recent work, including the optparse-applicative
+transition and initial gitlab.com support in the webapp.
+
+I had time before the release to work out most of the wrinkles in the
+gitlab.com support, but was not able to get gcrypt encrypted repos to work
+with gitlab, for reasons that remain murky. Their git-annex-shell seems to
+be misbehaving somehow. Will need to get some debugging assistance from the
+gitlab.com developers to figure that out.

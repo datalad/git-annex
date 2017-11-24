@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmwjQzWgiD7_I3zw-_91rMRf_6qoThupis"
+ nickname="Mike"
+ subject="comment 5"
+ date="2014-10-13T14:51:47Z"
+ content="""
+Sorry about the misplacement, that was a complete accident.
+
+What I am trying to do is to delete files as quickly as possible from every repository. In this case we are using git annex to move non-critical data from our main RAID drive to an external drive while still maintaining the full directory structure on the RAID drive. This is very valuable because we sometimes won't need the data for months or years, but then we may suddenly need a few files, and git annex makes it very easy to get them back. But we are talking about many terabytes and thousands and thousands of files here, and sometimes we just want to completely get rid of that data, it just takes up too much drive space. I wanted to make it as easy and safe as possible for people to just delete files from every repository, hence the question.
+
+I am nervous about using ``git annex drop --force`` because it seems to me that if there are two identical copies of a file in a repository, that command will kill the content of both... or does that only happen with ``git annex drop --numcopies=0``?
+
+I think the best solution for me seems to be the ``git rm <file>; git annex unused; git annex dropunused; git annex sync`` series of commands. It would just be nice if it were possible to achieve the same results in every repository with a simple command such as ``git annex rm --all <file>``. I recognise that this would be a dangerous command, but frankly I feel like in linux, everyone should be aware just how dangerous ``rm`` is in every context :-)
+"""]]

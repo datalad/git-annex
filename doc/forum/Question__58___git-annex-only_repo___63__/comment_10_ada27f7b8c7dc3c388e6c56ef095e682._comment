@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="boustanihani@93604388a6a2b8df16f3e34157232801a67c1021"
+ nickname="boustanihani"
+ subject="comment 10"
+ date="2015-07-06T22:00:36Z"
+ content="""
+Thanks :) Just one last question, how what happens when 2 users edit the same file in parallel, how does git-annex deal with this by default? Does the newer one overwrite the old one or do we get some info like \"unable to auto-merge\"...
+"""]]

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 7"
+ date="2014-09-17T20:20:40Z"
+ content="""
+There are a few things that can cause git to leave unreachable objects. These include: Rebasing; interrupting a pull before it updates the refs; running git add on a file and then changing the file's content and adding it a second time before committing.
+
+I can think of one case where this happens when using git-annex at the command line: `git annex add $file; git mv $file other-directory; git commit` will result in a dangling object storing the old symlink target before the file was moved.
+
+It'd be useful to investigate, by using `git fsck --unreachable` to get a list of currently unreachable objects, and then use `git show` to look at the objects and try to determine where they came from. Ie, are they symlink targets or are they git-annex location log files (formatted as columns of timestamps and uuids). Any unreachable commits would be the most useful to investigate.
+
+I see a few loose objects here and there in my annexes, but not very many, and git-gc has cleaned up old ones (> 1 month old). Some of them seem to be location log files. I see those in both repositories where I use the assistant, and repositories where I use only command line git-annex. I was able to find 2 unreachable commits in a repository that runs the assistant full-time; both commits were \"merging origin/synced/git-annex into git-annex\". This suggests to me that perhaps the assistant merged the git-annex branch but that merge was overwritten by another thread that committed changes to the branch at the same time.
+
+You should also check the size of inodes on your system; a thousand small loose objects in .git/objects does not normally take up gigabytes of space; with typical inode sizes it might use up a few megabytes. With 1 mb inodes, those same thousand files would use 1 gb..
+"""]]

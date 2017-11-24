@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2015-01-05T20:38:40Z"
+ content="""
+My concern about using FUSE has always been that I don't much like it
+when open() hangs indefinitely, with no progress indication, and 
+is either downloading some large file from the network or .. just hung.
+
+That doesn't strike me as a nice user interface in general,
+which is why I avoided using FUSE for the assistant.
+
+It might make sense in the batch use cases Yaroslav gave. If something
+nice is developed, I would not be against including it in git-annex.
+(Bonus if it's implemented in haskell.)
+"""]]

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="David"
+ ip="178.21.48.117"
+ subject="comment 10"
+ date="2013-11-16T23:15:49Z"
+ content="""
+Great. Understood. :) Thanks.
+
+Although there is one more thing that I don't really understand. Why do we need 2 repositories. In my mind (without knowing git) I thout it would work with one repository, where both server1 and server2 can upload/download files and they got synced through this. 
+
+    server1 <-> repository (somewhere, eother server1 or server2) <-> server2
+
+Now they use different repositories and I don't get why. Also I don't get how conflict-handling can be done if there are 2 repositories for the 2 transfer-ways.
+
+Sorry to bother you with this.
+"""]]

@@ -1,0 +1,9 @@
+I have following usecase:
+
+I want to use a central repos for xbmc/kodi where I can play and delete files from kodi somethimes also with a random file manager. But I normaly if a file gets deleted and synced with git annex sync it deletes the file "head" in every repository.
+
+I would like if its only a git annex drop of the content, if thats was the last copy ok then its ok for me that its gone. But if its not the last copy it shhould just delete it from this repo but not delete the heads of the other repositories.
+
+I know that the actual file is still in the other repositories but the entry is gone, I would love if it would be more like a git annex drop instead of a git rm.
+
+Can I do that with setting this repos readonly or is my usecase not supported/doable with git annex?

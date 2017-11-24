@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.41"
+ subject="comment 20"
+ date="2014-03-26T18:24:30Z"
+ content="""
+@Adrian, that's good news. It would be helpful if someone could update the top of this page to document how to use git-annex with the new version of gitolite.
+This is a wiki..
+
+You're not supposed to need to use initremote when dealing with normal git remotes. It seems that something got lost that automatically initialize the remote repository in this situation. I've fixed it so that it will be set up when `git-annex-shell configlist` is run. 
+
+(@wayne, this fixes the problem you reported too..)
+"""]]

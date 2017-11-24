@@ -1,0 +1,69 @@
+After you've used git-annex for a while, you will have data in your repository
+that you don't want to keep in the limited disk space of a laptop or a server,
+but that you don't want to entirely delete.
+
+This is where git-annex's support for offline archive drives shines.
+You can move old files to an archive drive, which can be kept offline if
+it's not practical to keep it spinning. Better, you can move old files to
+two or more archive drives, in case one of them later fails to spin up.  
+(One consideration when [[future_proofing]] your archive.)
+
+To set up an archive drive, you can take any removable drive, format
+it with a filesystem you'll be able to read some years later, and then follow
+the [[walkthrough]] to set up a repository on it that is a git remote of 
+the repository in your computer you want to archive. In short:
+
+	cd /media/archive
+	git clone ~/annex
+	cd ~/annex
+	git remote add archivedrive /media/archive/annex
+	git annex sync archivedrive
+
+Don't forget to  tell git-annex this is an archive drive (or a backup
+drive; see [[preferred_content]].). Also, give the drive a description that matches something you write on
+its label, so you can find it later:
+
+	git annex group archivedrive archive
+	git annex wanted archivedrive standard
+	git annex describe archivedrive "my first archive drive (SATA)"
+
+Or you can use the assistant to set up the drive for you.  
+(Nice video tutorial here: [[videos/git-annex_assistant_archiving]])
+
+(Keeping the archive drive in an offsite location? Consider encrypting
+it! See [[fully_encrypted_git_repositories_with_gcrypt]].)
+
+Then, when the archive drive is plugged in, you can easily copy files to
+it:
+
+	cd ~/annex
+	git-annex copy --auto --to archivedrive
+
+Or, if you're using the assistant, it will automatically notice when the drive
+gets plugged in and copy files that need to be archived.
+
+When you want to get rid of the local file, leaving only the copy on the
+archive, you can just:
+
+	git annex drop file
+
+The archive drive has to be plugged in for this to work, so git-annex
+can verify it still has the file. If you had configured git-annex to
+always store 2 [[copies]], it will need 2 archive drives plugged in.
+You may find it useful to configure a [[trust]] setting for the drive to
+avoid needing to haul it out of storage to drop a file.
+
+Now the really nice thing. When your archive drive gets filled up, you
+can simply remove it, store it somewhere safe, and replace it with a new
+drive, which can be mounted at the same location for simplicity. Set up
+the new drive the same way described above, and use it to archive even more
+files.
+
+Finally, when you want to access one of the files you archived, you can
+just ask for it:
+
+	git annex get file
+
+If necessary git-annex will tell you which archive drive you need to
+pull out of storage to get the file back. This is where the description
+you entered earlier comes in handy.

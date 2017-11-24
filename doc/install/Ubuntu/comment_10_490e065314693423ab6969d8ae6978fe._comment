@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkdiXn5s1wX2Zncy1S7_h-yPTv2gt0bmmY"
+ nickname="Jacob"
+ subject="comment 10"
+ date="2013-10-16T11:43:36Z"
+ content="""
+would be great to get the PPA updated with the latest git-annex; i'm finding synchronisation bugs (ie. updates made to word documents aren't replicated), and discovered its rather old now.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 8"
+ date="2013-12-31T19:16:16Z"
+ content="""
+It makes sense to only implement one interface to things, unless there is a reason such as performance to do otherwise.
+"""]]

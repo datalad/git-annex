@@ -1,0 +1,9 @@
+Hi,
+
+I have a git-annex repository on a server managed by git annex assistant in indirect mode and as a backup group serving my org-mode files (organizer module for emacs) which are plain text files no more than a 100kb.
+
+I also have 2 clients in direct mode to sync the files across my computers.
+
+I save my files fairly often so the assistant might be a bit overwhelmed but I think it can managed that. At least it used to.
+
+Since maybe a couple months, the assistant running on the server has been leaking nearly 1Gb each day and I suspect it rises whenever I push files to it.

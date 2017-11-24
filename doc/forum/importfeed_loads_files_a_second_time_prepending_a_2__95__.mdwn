@@ -1,0 +1,8 @@
+I recognize that git annex importfeed is reloading old files for a second time while prepending the file name with "2_".
+
+So if there is a podcast file called "foo_bar_in_baz_20170101.mp3" it now imports the same file again naming it "2_foo_bar_in_baz_20170101.mp3".
+
+As I cannot imaging that the feed provider is renaming the files I guess that something else is triggerin this behaviour. Any ideas?
+
+TIA
+juh

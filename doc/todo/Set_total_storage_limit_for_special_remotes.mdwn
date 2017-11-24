@@ -1,0 +1,1 @@
+I'd like to be able to set a fixed limit on how much storage can be uploaded to a special remote. A use case for this may be that I want to spend no more than Y dollars, on a storage service that charges $X per gigabyte. I would thus set a limit where I a upload would be interrupted with a warning about the limit, and to continue I would need to use a --force option.

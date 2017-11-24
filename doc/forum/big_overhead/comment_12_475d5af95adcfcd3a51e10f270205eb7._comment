@@ -1,0 +1,71 @@
+[[!comment format=mdwn
+ username="rasmus"
+ ip="146.185.23.178"
+ subject="comment 12"
+ date="2014-09-19T00:43:56Z"
+ content="""
+Hi Joey,
+
+Thanks for giving the thread a more appropriate title and thanks for the helpful messages. 
+
+Let me start with the easy points:
+
+
+* Looking at my log file of installed packages I have never used `etckeeper` on my system.  So unless it could have entered through `annex` then I think we can rule that one out. 
+* According to `git log` the repos are from January 2014 where I restarted my repos. 
+
+
+        commit 029a8e76ab5f66aa4390987130985550a1ccd69c
+        Author: Rasmus <w530@domain.eu>
+        Date:   Thu Jan 23 21:06:13 2014 +0100
+
+        created repository
+
+
+* When I start git repos I typically just use \"init\" so I don't think I did the 2012 commits. 
+* I checked out one of the 74mb files.  When I do `file test.blob` it shows `test.blob: GPG symmetrically encrypted data (CAST5 cipher)`.  But none of my normal passwords worked.  Could such a gpg'ed file be from local network connections where the assistant asks for a passphrase?  I'm pretty sure that my transfer repo has only been using `gcrypt` and I believe I \"restarted\" my repos because I switched to `gcrypt` repos.  Also, my transfer repo is 10Gb as well which sounds big for transfer repo. 
+
+I performed a similar \"analysis\" on the `conf.annex` repo which should contain mostly no binary files (some 16x16 pngs etc).  
+
+`conf.annex` has 727 unreachable objects and 3477 commits in total.  Of these 338 are commits.  Here's an example of a larger commit message of an unreachable commit.
+
+    commit 601c10f9512e8d3502d9dd52ef409560ebb5b7e0
+    Author: root <root@localhost>
+    Date:   Mon Dec 31 19:00:01 2012 -0400
+
+         Initial commit
+
+     diff --git a/6fbbea493cdec9d912d256374199cc4c012022d35524c8789a7aceeb953442a5 b/6fbbea493cdec9d912d256374199cc4c012022d35524c8789a7aceeb953442a5
+     new file mode 100644
+     index 0000000..ea5fcc3
+     Binary files /dev/null and b/6fbbea493cdec9d912d256374199cc4c012022d35524c8789a7aceeb953442a5 differ
+     diff --git a/91bd0c092128cf2e60e1a608c31e92caf1f9c1595f83f2890ef17c0e4881aa0a b/91bd0c092128cf2e60e1a608c31e92caf1f9c1595f83f2890ef17c0e4881aa0a
+     new file mode 100644
+     index 0000000..a86c1a9
+     Binary files /dev/null and b/91bd0c092128cf2e60e1a608c31e92caf1f9c1595f83f2890ef17c0e4881aa0a differ
+     diff --git a/9da3fcfc1635c674012c35d90c21adce3c35440e629d64fe117fe349a6b3e194 b/9da3fcfc1635c674012c35d90c21adce3c35440e629d64fe117fe349a6b3e194
+     new file mode 100644
+     index 0000000..ef1d71c
+     Binary files /dev/null and b/9da3fcfc1635c674012c35d90c21adce3c35440e629d64fe117fe349a6b3e194 differ
+     diff --git a/ad4ae79c29b3756f7e41257db7454f3c319112d06385a8bc12d28209a82f2594 b/ad4ae79c29b3756f7e41257db7454f3c319112d06385a8bc12d28209a82f2594
+     new file mode 100644
+     index 0000000..61d3e5b
+     Binary files /dev/null and b/ad4ae79c29b3756f7e41257db7454f3c319112d06385a8bc12d28209a82f2594 differ
+     diff --git a/bd0e9cb492077e0c090bc62892c8de438c51a956c8215b2c68de7caa7e2431cc b/bd0e9cb492077e0c090bc62892c8de438c51a956c8215b2c68de7caa7e2431cc
+     new file mode 100644
+     index 0000000..92e9bd7
+     Binary files /dev/null and b/bd0e9cb492077e0c090bc62892c8de438c51a956c8215b2c68de7caa7e2431cc differ
+
+Across all commits 6006 objects are mentioned, but only 371 are unique. 
+
+I checked out one blob and again `file` reports `GPG symmetrically encrypted data (CAST5 cipher)`.  Interesting for `conf.annex` I get this line when trying to decrypt
+
+    gpg: DBG: cleared passphrase cached with ID: SBF83A0F822D0F664
+
+
+For `doc.annex` I get
+
+    gpg: DBG: cleared passphrase cached with ID: S32DEAD1E8DD06A4D
+
+And on my other computer I see a third ID.  I'm not sure if this means anything when files are symmetrically encrypted, though. 
+"""]]

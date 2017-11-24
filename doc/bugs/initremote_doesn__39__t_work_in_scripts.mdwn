@@ -1,0 +1,25 @@
+### Please describe the problem.
+
+
+### What steps will reproduce the problem?
+
+Run "git-annex initremote" from an environment (cron, CI, etc.) where /dev/tty doesn't exist.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 6.20160613-g35dbe35 on debian jessie
+
+### Please provide any additional information below.
+
+Example of the error @ https://gitlab.com/DanielDent/git-annex-remote-rclone/builds/2166644
+
+Error:
+gpg: cannot open tty `/dev/tty': No such device or address
+
+failed
+
+Rumour on the internets is that the "--no-tty" parameter to GPG may fix the problem.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes! It's great!

@@ -1,0 +1,5 @@
+I believe cloning a repository on the same filesystem already makes use of cp --reflink=auto, but it appears that git-annex-{get,copy} use rsync even when both repositories involved in the copy/get are on the same filesystem.
+
+Would it be possible for git-annex-get and git-annex-copy to use cp --reflink=auto when the source and destination repositories are on the same filesystem?
+
+[[!meta title="allow remotes to do their own, smarter diskreserve checking"]]

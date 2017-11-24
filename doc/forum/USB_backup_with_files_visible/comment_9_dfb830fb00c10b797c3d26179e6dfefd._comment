@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmicVKRM8vJX4wPuAwlLEoS2cjmFXQkjkE"
+ nickname="Thomas"
+ subject="post-receive hook is not an option with FAT drives"
+ date="2014-11-20T15:53:29Z"
+ content="""
+Hi Joey,
+
+I tried to solve this use case with a post-receive hook and had to realize that FAT does not support the executable bit and thus the hook doesn't run. I've found several requests for the use case described here and I think it would be desirable, if the assistant/webapp could solve it without commandline-hacks.
+
+So I want to stick my thumbdrive in my work desktop and the assistant notices that it's available and starts copying stuff on it and runs git annex merge afterwards.
+
+I also had to manually set annex.diskreserve to a smaller value since annex wants to reserve more space (10G) than is available on most thumb drives. I think git-annex init should be more clever about the default diskreserve value, e.g. set it to a percentage of the total disk size.
+"""]]

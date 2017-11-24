@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 5"
+ date="2013-05-19T19:46:14Z"
+ content="""
+@Chris, that is a known bug: [[bugs/Android_app_permission_denial_on_startup]]
+"""]]

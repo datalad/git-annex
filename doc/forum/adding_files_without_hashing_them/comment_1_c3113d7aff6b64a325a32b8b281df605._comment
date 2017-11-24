@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.22"
+ subject="comment 1"
+ date="2014-09-16T19:50:41Z"
+ content="""
+You can edit files that use the WORM backend, as long as the editing changes their size or mtime, or both. If neither changes, git-annex won't be able to keep your edits separate when using WORM.
+
+A perhaps safer compromise can be to use the WORM backend initially, but them `git annex migrate --backend=SHA256E` when you have spare CPU cycles. 
+
+Or, when you commit a change to a file that had been using WORM, use `git annex add $wormy_file --backend=SHA256E` to make the new version use the better backend.
+"""]]

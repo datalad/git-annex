@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-10-31T20:21:52Z"
+ content="""
+Well, let's see.. You've gone into the Configuration and picked "Unused
+files". The full text in front of you is:
+
+<pre>
+Managing unused files
+
+Old versions of files and deleted files can be preserved inside this repository.
+
+This might be useful, if you ever need to access those old or deleted files. But they'll also use up disk space. There are three ways to deal with this
+
+1. Set up a backup or archive repository, on a removable drive or in the cloud, and the unused files will be moved to it, freeing up space. 
+   [Add a new repository]
+2. Or, you can let unused files expire after a period of time. 
+   [Disable expiry / Enable expiry] after [7] days. [Save changes]
+</pre>
+
+So yes, if I read only item #2, and possibly skip the first sentence of it
+and look at only the "Disable expiry / Enable expiry",
+it seems a litte confusing, possibly, but if I read the 2 paragraphs
+of explaination above it, not so much?
+
+What do you find confusing about this form as a whole?
+"""]]

@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="http://identi.ca/cwebber/"
+ nickname="cwebber"
+ subject="Reasonable solution?"
+ date="2012-11-27T21:24:49Z"
+ content="""
+I think I have built a reasonable solution... this function checks a specific file into git and then immediately unlocks it.
+
+    function git-annex-unlocked-commit {
+        if [ $# -ne 2 ]; then
+            echo \"Wrong number of args.\"
+            return 1
+        fi
+    
+        if [ ! -e \"$1\" ]; then
+            echo \"Need a filename!\"
+            return 1
+        fi
+    
+        read -p \"Really do an unlocked commit? (y/n): \"
+        if [ \"$REPLY\" == \"y\" ]; then
+            git commit $1 -m \"$2\" && git annex unlock $1
+        fi
+    }
+
+Use it like:
+
+    git-annex-unlocked-commit mediagoblin_postcard.xcf \"Starting to fill in spencer\"
+"""]]

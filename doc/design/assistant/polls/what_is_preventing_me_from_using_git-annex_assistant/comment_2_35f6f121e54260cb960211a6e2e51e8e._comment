@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawniCRkhl_W87gOK5eElfsef3FoUsUFpAr4"
+ nickname="Alexandre"
+ subject="Two assistants with shared transfer repository"
+ date="2013-01-11T07:17:12Z"
+ content="""
+I voted for the Windows port, which unfortunately I must use at work.
+
+But another thing that Dropbox gets right is that you can [sync two clients with one shared repository](http://git-annex.branchable.com/forum/How_to_set_up_two_assistants_with_one_shared_transfer_repository__63__) that works without any configuration whether you are home or somewhere else. This use case is covered by sync over XMPP, but there are two small issues with this :
+- if I use Google XMPP servers to sync two assistants in the same network, everything goes through the slower Internet link
+- if I setup my own XMPP server, well, this is more setup, more open ports, etc.
+
+It would be nice to have repository pushs on a shared repository notified to the connected clients in the SSH connection.
+"""]]

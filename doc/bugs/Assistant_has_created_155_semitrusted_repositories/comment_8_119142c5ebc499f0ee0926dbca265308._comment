@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 8"
+ date="2013-11-26T16:34:13Z"
+ content="""
+Yes, it would be helpful to have the full history of the file.
+
+You might try running `git annex fsck` on the file in the client that it says it has gotten but that you cannot access.
+"""]]

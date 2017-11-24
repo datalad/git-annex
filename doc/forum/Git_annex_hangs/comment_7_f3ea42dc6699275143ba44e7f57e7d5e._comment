@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="parmour@1304ead3ef9008fa9fe66af7c8678dec867328da"
+ nickname="parmour"
+ subject="Similar sounding issue"
+ date="2016-01-28T15:02:31Z"
+ content="""
+I have seen a similar sounding version on Centos 6.5. I had git version 2.6.4 and installed git annex using:
+wget http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+rpm -ivh epel-release-6-8.noarch.rpm
+yum install git-annex
+
+git annex would hang when running 'git annex add'
+
+When I changed the git version to be 1.7.1 this problem went away. So it is something to do with the combination of client git version and git annex version.
+"""]]

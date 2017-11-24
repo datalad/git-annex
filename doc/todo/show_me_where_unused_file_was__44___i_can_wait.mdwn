@@ -1,0 +1,7 @@
+i know that `git annex unused` would be slower if, instead of just showing the hash, it would also show the pathname where the file was. it does tell me that i can use `git log --stat -SKEY` to find that out myself, but then i would need to make some silly shell script to loop over multiple files. i'm hoping that git-annex has more efficient and clever ways of doing that, and even if it's slower, i'd be ready to wait if there was an extra flag to show me where it was...
+
+i have used this oneliner so far, but it's ugly and painful, especially since `git annex unused` doesn't have a very parseable output format...
+
+    git annex unused 2>&1 | grep '^  *[0-9][0-9]*' | sed 's/^ *[0-9][0-9]* *//' | xargs -I'{}' git log --oneline --stat -S'{}' -1
+
+any way to do this more easily? --[[anarcat]]

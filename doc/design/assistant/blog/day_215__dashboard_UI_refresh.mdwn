@@ -1,0 +1,25 @@
+I've reworked the UI of the webapp's dashboard. Now the repository list is
+included, above the transfers. I found I was spending a lot of time
+switching between the dashboard and repository list, so might as well
+combine them into a single screen. Yesod's type safe urls and widgets
+made this quite easy to do, despite it being a thousand line commit.
+Liking the result ... Even though it does make all my screencasts dated.
+
+[[!img /assistant/dashboard.png]]
+
+----
+
+Rest of my time was spent on XMPP pairing UI. Using the same pages for both
+pairing with a friend and for self-pairing was confusing, so now the two
+options are split.
+
+Now every time an XMPP git push is received or sent, it checks if there's
+a cloud repository configured, which is needed to send the contents of
+files. If not, it'll display this alert. Hopefully this
+will be enough to get users fully set up.
+
+[[!img /assistant/cloudnudge.png]]
+
+At this point I'm finally happy enough with the XMPP pairing + cloud
+repository setup process to film a screencast of it. As soon as I have
+some time & bandwidth someplace quiet. Expect one by the end of the month.

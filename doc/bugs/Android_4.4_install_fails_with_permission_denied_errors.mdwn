@@ -1,0 +1,295 @@
+### Please describe the problem.
+
+Installing git-annex on a new Nexus 5 with Android 4.4.4 using [Android 4.4 and 4.3 git-annex.apk](http://downloads.kitenet.net/git-annex/android/current/4.3/git-annex.apk) does not give me a working git-annex environment. It seems permission is denied to install many of the app files.
+
+
+### What steps will reproduce the problem?
+
+1. Install git-annex
+2. From within `adb shell`, run: `/data/data/ga.androidterm/runshell`
+3. Try one of the included programs, e.g., `git`
+
+
+### What version of git-annex are you using? On what operating system?
+
+The current (as of 2014-08-30) git-annex for Android 4.3 and up on Android 4.4.4.
+
+
+### Please provide any additional information below.
+
+Running `/data/data/ga.androidterm/runshell` from `adb shell` gives me:
+
+[[!format txt """
+shell@hammerhead:/ $ /data/data/ga.androidterm/runshell                        
+Falling back to hardcoded app location; cannot find expected files in /data/app-lib
+shell@hammerhead:/sdcard/git-annex.home $ ls
+git-annex-install.log
+shell@hammerhead:/sdcard/git-annex.home $ cat git-annex-install.log
+Installation starting to /data/data/ga.androidterm
+71c22504d777380dd59d2128b97715fde9ef6bec
+mv: can't rename '/data/data/ga.androidterm/bin': Permission denied
+installing busybox
+ln: /data/data/ga.androidterm/bin/busybox: Permission denied
+installing git-annex
+ln: /data/data/ga.androidterm/bin/git-annex: Permission denied
+installing git-shell
+ln: /data/data/ga.androidterm/bin/git-shell: Permission denied
+installing git-upload-pack
+ln: /data/data/ga.androidterm/bin/git-upload-pack: Permission denied
+installing git
+ln: /data/data/ga.androidterm/bin/git: Permission denied
+installing gpg
+ln: /data/data/ga.androidterm/bin/gpg: Permission denied
+installing rsync
+ln: /data/data/ga.androidterm/bin/rsync: Permission denied
+installing ssh
+ln: /data/data/ga.androidterm/bin/ssh: Permission denied
+installing ssh-keygen
+ln: /data/data/ga.androidterm/bin/ssh-keygen: Permission denied
+busybox: /data/data/ga.androidterm/bin/[: Permission denied
+busybox: /data/data/ga.androidterm/bin/[[: Permission denied
+busybox: /data/data/ga.androidterm/bin/ar: Permission denied
+busybox: /data/data/ga.androidterm/bin/arp: Permission denied
+busybox: /data/data/ga.androidterm/bin/ash: Permission denied
+busybox: /data/data/ga.androidterm/bin/base64: Permission denied
+busybox: /data/data/ga.androidterm/bin/basename: Permission denied
+busybox: /data/data/ga.androidterm/bin/beep: Permission denied
+busybox: /data/data/ga.androidterm/bin/blkid: Permission denied
+busybox: /data/data/ga.androidterm/bin/blockdev: Permission denied
+busybox: /data/data/ga.androidterm/bin/bunzip2: Permission denied
+busybox: /data/data/ga.androidterm/bin/bzcat: Permission denied
+busybox: /data/data/ga.androidterm/bin/bzip2: Permission denied
+busybox: /data/data/ga.androidterm/bin/cal: Permission denied
+busybox: /data/data/ga.androidterm/bin/cat: Permission denied
+busybox: /data/data/ga.androidterm/bin/catv: Permission denied
+busybox: /data/data/ga.androidterm/bin/chat: Permission denied
+busybox: /data/data/ga.androidterm/bin/chattr: Permission denied
+busybox: /data/data/ga.androidterm/bin/chgrp: Permission denied
+busybox: /data/data/ga.androidterm/bin/chmod: Permission denied
+busybox: /data/data/ga.androidterm/bin/chown: Permission denied
+busybox: /data/data/ga.androidterm/bin/chpst: Permission denied
+busybox: /data/data/ga.androidterm/bin/chroot: Permission denied
+busybox: /data/data/ga.androidterm/bin/chrt: Permission denied
+busybox: /data/data/ga.androidterm/bin/chvt: Permission denied
+busybox: /data/data/ga.androidterm/bin/cksum: Permission denied
+busybox: /data/data/ga.androidterm/bin/clear: Permission denied
+busybox: /data/data/ga.androidterm/bin/cmp: Permission denied
+busybox: /data/data/ga.androidterm/bin/comm: Permission denied
+busybox: /data/data/ga.androidterm/bin/cp: Permission denied
+busybox: /data/data/ga.androidterm/bin/cpio: Permission denied
+busybox: /data/data/ga.androidterm/bin/cttyhack: Permission denied
+busybox: /data/data/ga.androidterm/bin/cut: Permission denied
+busybox: /data/data/ga.androidterm/bin/dc: Permission denied
+busybox: /data/data/ga.androidterm/bin/dd: Permission denied
+busybox: /data/data/ga.androidterm/bin/deallocvt: Permission denied
+busybox: /data/data/ga.androidterm/bin/devmem: Permission denied
+busybox: /data/data/ga.androidterm/bin/diff: Permission denied
+busybox: /data/data/ga.androidterm/bin/dirname: Permission denied
+busybox: /data/data/ga.androidterm/bin/dmesg: Permission denied
+busybox: /data/data/ga.androidterm/bin/dnsd: Permission denied
+busybox: /data/data/ga.androidterm/bin/dos2unix: Permission denied
+busybox: /data/data/ga.androidterm/bin/dpkg: Permission denied
+busybox: /data/data/ga.androidterm/bin/dpkg-deb: Permission denied
+busybox: /data/data/ga.androidterm/bin/du: Permission denied
+busybox: /data/data/ga.androidterm/bin/dumpkmap: Permission denied
+busybox: /data/data/ga.androidterm/bin/echo: Permission denied
+busybox: /data/data/ga.androidterm/bin/envdir: Permission denied
+busybox: /data/data/ga.androidterm/bin/envuidgid: Permission denied
+busybox: /data/data/ga.androidterm/bin/expand: Permission denied
+busybox: /data/data/ga.androidterm/bin/fakeidentd: Permission denied
+busybox: /data/data/ga.androidterm/bin/false: Permission denied
+busybox: /data/data/ga.androidterm/bin/fbset: Permission denied
+busybox: /data/data/ga.androidterm/bin/fbsplash: Permission denied
+busybox: /data/data/ga.androidterm/bin/fdflush: Permission denied
+busybox: /data/data/ga.androidterm/bin/fdformat: Permission denied
+busybox: /data/data/ga.androidterm/bin/fdisk: Permission denied
+busybox: /data/data/ga.androidterm/bin/fgconsole: Permission denied
+busybox: /data/data/ga.androidterm/bin/find: Permission denied
+busybox: /data/data/ga.androidterm/bin/findfs: Permission denied
+busybox: /data/data/ga.androidterm/bin/flash_lock: Permission denied
+busybox: /data/data/ga.androidterm/bin/flash_unlock: Permission denied
+busybox: /data/data/ga.androidterm/bin/flashcp: Permission denied
+busybox: /data/data/ga.androidterm/bin/flock: Permission denied
+busybox: /data/data/ga.androidterm/bin/fold: Permission denied
+busybox: /data/data/ga.androidterm/bin/freeramdisk: Permission denied
+busybox: /data/data/ga.androidterm/bin/ftpd: Permission denied
+busybox: /data/data/ga.androidterm/bin/ftpget: Permission denied
+busybox: /data/data/ga.androidterm/bin/ftpput: Permission denied
+busybox: /data/data/ga.androidterm/bin/fuser: Permission denied
+busybox: /data/data/ga.androidterm/bin/getopt: Permission denied
+busybox: /data/data/ga.androidterm/bin/grep: Permission denied
+busybox: /data/data/ga.androidterm/bin/gunzip: Permission denied
+busybox: /data/data/ga.androidterm/bin/gzip: Permission denied
+busybox: /data/data/ga.androidterm/bin/hd: Permission denied
+busybox: /data/data/ga.androidterm/bin/hdparm: Permission denied
+busybox: /data/data/ga.androidterm/bin/head: Permission denied
+busybox: /data/data/ga.androidterm/bin/hexdump: Permission denied
+busybox: /data/data/ga.androidterm/bin/httpd: Permission denied
+busybox: /data/data/ga.androidterm/bin/ifconfig: Permission denied
+busybox: /data/data/ga.androidterm/bin/ifdown: Permission denied
+busybox: /data/data/ga.androidterm/bin/ifup: Permission denied
+busybox: /data/data/ga.androidterm/bin/inotifyd: Permission denied
+busybox: /data/data/ga.androidterm/bin/install: Permission denied
+busybox: /data/data/ga.androidterm/bin/iostat: Permission denied
+busybox: /data/data/ga.androidterm/bin/ip: Permission denied
+busybox: /data/data/ga.androidterm/bin/ipaddr: Permission denied
+busybox: /data/data/ga.androidterm/bin/ipcalc: Permission denied
+busybox: /data/data/ga.androidterm/bin/iplink: Permission denied
+busybox: /data/data/ga.androidterm/bin/iproute: Permission denied
+busybox: /data/data/ga.androidterm/bin/iprule: Permission denied
+busybox: /data/data/ga.androidterm/bin/iptunnel: Permission denied
+busybox: /data/data/ga.androidterm/bin/klogd: Permission denied
+busybox: /data/data/ga.androidterm/bin/ln: Permission denied
+busybox: /data/data/ga.androidterm/bin/loadkmap: Permission denied
+busybox: /data/data/ga.androidterm/bin/losetup: Permission denied
+busybox: /data/data/ga.androidterm/bin/lpd: Permission denied
+busybox: /data/data/ga.androidterm/bin/lpq: Permission denied
+busybox: /data/data/ga.androidterm/bin/lpr: Permission denied
+busybox: /data/data/ga.androidterm/bin/ls: Permission denied
+busybox: /data/data/ga.androidterm/bin/lsattr: Permission denied
+busybox: /data/data/ga.androidterm/bin/lsof: Permission denied
+busybox: /data/data/ga.androidterm/bin/lspci: Permission denied
+busybox: /data/data/ga.androidterm/bin/lsusb: Permission denied
+busybox: /data/data/ga.androidterm/bin/lzcat: Permission denied
+busybox: /data/data/ga.androidterm/bin/lzma: Permission denied
+busybox: /data/data/ga.androidterm/bin/lzop: Permission denied
+busybox: /data/data/ga.androidterm/bin/lzopcat: Permission denied
+busybox: /data/data/ga.androidterm/bin/makedevs: Permission denied
+busybox: /data/data/ga.androidterm/bin/makemime: Permission denied
+busybox: /data/data/ga.androidterm/bin/man: Permission denied
+busybox: /data/data/ga.androidterm/bin/md5sum: Permission denied
+busybox: /data/data/ga.androidterm/bin/mkdir: Permission denied
+busybox: /data/data/ga.androidterm/bin/mkfifo: Permission denied
+busybox: /data/data/ga.androidterm/bin/mknod: Permission denied
+busybox: /data/data/ga.androidterm/bin/mkswap: Permission denied
+busybox: /data/data/ga.androidterm/bin/mktemp: Permission denied
+busybox: /data/data/ga.androidterm/bin/more: Permission denied
+busybox: /data/data/ga.androidterm/bin/mpstat: Permission denied
+busybox: /data/data/ga.androidterm/bin/mv: Permission denied
+busybox: /data/data/ga.androidterm/bin/nbd-client: Permission denied
+busybox: /data/data/ga.androidterm/bin/nc: Permission denied
+busybox: /data/data/ga.androidterm/bin/netstat: Permission denied
+busybox: /data/data/ga.androidterm/bin/nice: Permission denied
+busybox: /data/data/ga.androidterm/bin/nmeter: Permission denied
+busybox: /data/data/ga.androidterm/bin/nohup: Permission denied
+busybox: /data/data/ga.androidterm/bin/od: Permission denied
+busybox: /data/data/ga.androidterm/bin/openvt: Permission denied
+busybox: /data/data/ga.androidterm/bin/patch: Permission denied
+busybox: /data/data/ga.androidterm/bin/pidof: Permission denied
+busybox: /data/data/ga.androidterm/bin/pipe_progress: Permission denied
+busybox: /data/data/ga.androidterm/bin/pmap: Permission denied
+busybox: /data/data/ga.androidterm/bin/popmaildir: Permission denied
+busybox: /data/data/ga.androidterm/bin/printenv: Permission denied
+busybox: /data/data/ga.androidterm/bin/printf: Permission denied
+busybox: /data/data/ga.androidterm/bin/pscan: Permission denied
+busybox: /data/data/ga.androidterm/bin/pstree: Permission denied
+busybox: /data/data/ga.androidterm/bin/pwd: Permission denied
+busybox: /data/data/ga.androidterm/bin/pwdx: Permission denied
+busybox: /data/data/ga.androidterm/bin/raidautorun: Permission denied
+busybox: /data/data/ga.androidterm/bin/rdev: Permission denied
+busybox: /data/data/ga.androidterm/bin/readlink: Permission denied
+busybox: /data/data/ga.androidterm/bin/readprofile: Permission denied
+busybox: /data/data/ga.androidterm/bin/realpath: Permission denied
+busybox: /data/data/ga.androidterm/bin/reformime: Permission denied
+busybox: /data/data/ga.androidterm/bin/renice: Permission denied
+busybox: /data/data/ga.androidterm/bin/reset: Permission denied
+busybox: /data/data/ga.androidterm/bin/resize: Permission denied
+busybox: /data/data/ga.androidterm/bin/rev: Permission denied
+busybox: /data/data/ga.androidterm/bin/rm: Permission denied
+busybox: /data/data/ga.androidterm/bin/rmdir: Permission denied
+busybox: /data/data/ga.androidterm/bin/route: Permission denied
+busybox: /data/data/ga.androidterm/bin/rpm: Permission denied
+busybox: /data/data/ga.androidterm/bin/rpm2cpio: Permission denied
+busybox: /data/data/ga.androidterm/bin/rtcwake: Permission denied
+busybox: /data/data/ga.androidterm/bin/run-parts: Permission denied
+busybox: /data/data/ga.androidterm/bin/runsv: Permission denied
+busybox: /data/data/ga.androidterm/bin/runsvdir: Permission denied
+busybox: /data/data/ga.androidterm/bin/rx: Permission denied
+busybox: /data/data/ga.androidterm/bin/script: Permission denied
+busybox: /data/data/ga.androidterm/bin/scriptreplay: Permission denied
+busybox: /data/data/ga.androidterm/bin/sed: Permission denied
+busybox: /data/data/ga.androidterm/bin/sendmail: Permission denied
+busybox: /data/data/ga.androidterm/bin/seq: Permission denied
+busybox: /data/data/ga.androidterm/bin/setconsole: Permission denied
+busybox: /data/data/ga.androidterm/bin/setkeycodes: Permission denied
+busybox: /data/data/ga.androidterm/bin/setlogcons: Permission denied
+busybox: /data/data/ga.androidterm/bin/setserial: Permission denied
+busybox: /data/data/ga.androidterm/bin/setsid: Permission denied
+busybox: /data/data/ga.androidterm/bin/setuidgid: Permission denied
+busybox: /data/data/ga.androidterm/bin/sh: Permission denied
+busybox: /data/data/ga.androidterm/bin/sha1sum: Permission denied
+busybox: /data/data/ga.androidterm/bin/sha256sum: Permission denied
+busybox: /data/data/ga.androidterm/bin/sha512sum: Permission denied
+busybox: /data/data/ga.androidterm/bin/showkey: Permission denied
+busybox: /data/data/ga.androidterm/bin/sleep: Permission denied
+busybox: /data/data/ga.androidterm/bin/smemcap: Permission denied
+busybox: /data/data/ga.androidterm/bin/softlimit: Permission denied
+busybox: /data/data/ga.androidterm/bin/sort: Permission denied
+busybox: /data/data/ga.androidterm/bin/split: Permission denied
+busybox: /data/data/ga.androidterm/bin/start-stop-daemon: Permission denied
+busybox: /data/data/ga.androidterm/bin/strings: Permission denied
+busybox: /data/data/ga.androidterm/bin/stty: Permission denied
+busybox: /data/data/ga.androidterm/bin/sum: Permission denied
+busybox: /data/data/ga.androidterm/bin/sv: Permission denied
+busybox: /data/data/ga.androidterm/bin/svlogd: Permission denied
+busybox: /data/data/ga.androidterm/bin/sync: Permission denied
+busybox: /data/data/ga.androidterm/bin/sysctl: Permission denied
+busybox: /data/data/ga.androidterm/bin/tac: Permission denied
+busybox: /data/data/ga.androidterm/bin/tail: Permission denied
+busybox: /data/data/ga.androidterm/bin/tar: Permission denied
+busybox: /data/data/ga.androidterm/bin/tcpsvd: Permission denied
+busybox: /data/data/ga.androidterm/bin/tee: Permission denied
+busybox: /data/data/ga.androidterm/bin/test: Permission denied
+busybox: /data/data/ga.androidterm/bin/time: Permission denied
+busybox: /data/data/ga.androidterm/bin/timeout: Permission denied
+busybox: /data/data/ga.androidterm/bin/top: Permission denied
+busybox: /data/data/ga.androidterm/bin/touch: Permission denied
+busybox: /data/data/ga.androidterm/bin/tr: Permission denied
+busybox: /data/data/ga.androidterm/bin/true: Permission denied
+busybox: /data/data/ga.androidterm/bin/ttysize: Permission denied
+busybox: /data/data/ga.androidterm/bin/tunctl: Permission denied
+busybox: /data/data/ga.androidterm/bin/tune2fs: Permission denied
+busybox: /data/data/ga.androidterm/bin/udhcpc: Permission denied
+busybox: /data/data/ga.androidterm/bin/uname: Permission denied
+busybox: /data/data/ga.androidterm/bin/uncompress: Permission denied
+busybox: /data/data/ga.androidterm/bin/unexpand: Permission denied
+busybox: /data/data/ga.androidterm/bin/uniq: Permission denied
+busybox: /data/data/ga.androidterm/bin/unix2dos: Permission denied
+busybox: /data/data/ga.androidterm/bin/unlzma: Permission denied
+busybox: /data/data/ga.androidterm/bin/unlzop: Permission denied
+busybox: /data/data/ga.androidterm/bin/unxz: Permission denied
+busybox: /data/data/ga.androidterm/bin/unzip: Permission denied
+busybox: /data/data/ga.androidterm/bin/uudecode: Permission denied
+busybox: /data/data/ga.androidterm/bin/uuencode: Permission denied
+busybox: /data/data/ga.androidterm/bin/vi: Permission denied
+busybox: /data/data/ga.androidterm/bin/volname: Permission denied
+busybox: /data/data/ga.androidterm/bin/watch: Permission denied
+busybox: /data/data/ga.androidterm/bin/wc: Permission denied
+busybox: /data/data/ga.androidterm/bin/wget: Permission denied
+busybox: /data/data/ga.androidterm/bin/which: Permission denied
+busybox: /data/data/ga.androidterm/bin/whoami: Permission denied
+busybox: /data/data/ga.androidterm/bin/whois: Permission denied
+busybox: /data/data/ga.androidterm/bin/xargs: Permission denied
+busybox: /data/data/ga.androidterm/bin/xz: Permission denied
+busybox: /data/data/ga.androidterm/bin/xzcat: Permission denied
+busybox: /data/data/ga.androidterm/bin/yes: Permission denied
+busybox: /data/data/ga.androidterm/bin/zcat: Permission denied
+tar: can't remove old file ./links/git-shell: Permission denied
+cat: can't open '/data/data/ga.androidterm/links/git': Permission denied
+rm: can't stat '/data/data/ga.androidterm/links/git': Permission denied
+cat: can't open '/data/data/ga.androidterm/links/git-shell': Permission denied
+rm: can't stat '/data/data/ga.androidterm/links/git-shell': Permission denied
+cat: can't open '/data/data/ga.androidterm/links/git-upload-pack': Permission denied
+rm: can't stat '/data/data/ga.androidterm/links/git-upload-pack': Permission denied
+lib/lib.runshell.so: line 133: can't create /data/data/ga.androidterm/runshell: Permission denied
+lib/lib.runshell.so: line 133: can't create /data/data/ga.androidterm/runshell: Permission denied
+chmod: runshell: Operation not permitted
+lib/lib.runshell.so: line 133: can't create /data/data/ga.androidterm/bin/trustedkeys.gpg: Permission denied
+lib/lib.runshell.so: line 133: can't create /data/data/ga.androidterm/installed-version: Permission denied
+Installation complete
+tar: write: Broken pipe
+shell@hammerhead:/sdcard/git-annex.home $ ^D
+shell@hammerhead:/ $
+"""]]
+
+Android is new to me, so it's possible I'm doing something utterly wrong.

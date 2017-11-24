@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 2"
+ date="2013-05-30T15:49:27Z"
+ content="""
+If you set this repository up using the git-annex webapp, and choosing \"remote ssh server\", it will generate a new ssh key, stored in `~/.ssh/git-annex/`, and it will configure `~/.ssh/config` to use this key for a special made-up hostname which is used in the url for the git remote. On the server, it will set up `~/.ssh/authorized_keys` to allow this ssh key to connect without a password and run git-annex-shell.
+
+I don't know if you used the webapp to set this up. If not, you can try to replicate this setup on your own. If you did and it's not working, you now know where all the peices it sets up are, to figure out what went wrong.
+"""]]

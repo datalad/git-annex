@@ -1,0 +1,22 @@
+After a less active than usual week (dentist), I made a release last Friday.
+Unfortunately, it turns out that the Linux standalone 
+builds in that release don't include the webapp. So, another release is
+planned tomorrow.
+
+Yesterday and part of today I dug into
+the [[bugs/windows_ssh_webapp_password_entry_broken]]
+reversion. Eventually cracked the problem; it seems that
+different versions of ssh for Windows do different things in a `isatty`
+check, and there's a flag that can be passed when starting ssh to make it
+not see a controlling tty. However, this neeeds changes to the
+`process` library, which db48x and I have now coded up. So a fix for this bug
+is waiting on a new release of that library. Oh well.
+
+Rest of today was catching up on recent traffic, and improving the behavior
+of `git annex fsck` when there's a disk IO error while checksumming a file.
+Now it'll detect a hardware fault exception, and take that to mean the file
+is bad, and move it to the bad files directory, instead of just crashing.
+
+I need better tooling to create disk IO errors on demand.
+Yanking disks out works, but is a blunt instrument. Anyone know of
+good tools for that?

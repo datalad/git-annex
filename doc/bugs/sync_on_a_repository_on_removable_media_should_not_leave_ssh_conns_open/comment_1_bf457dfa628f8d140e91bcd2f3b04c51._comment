@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-04-20T16:47:50Z"
+ content="""
+git-annex always registers a cleanup action when it starts using a ssh
+connection caching socket. As long as git-annex gets a change to shut down
+cleanly (ie is not interrupted), it should run the action to stop the ssh
+connection caching.
+
+For example, git-annex sync --debug here shows as its second to last line:
+
+	[2016-04-20 12:47:40.069633] read: ssh ["-O","stop","-S","server","-o","ControlMaster=auto","-o","ControlPersist=yes","server"]
+"""]]

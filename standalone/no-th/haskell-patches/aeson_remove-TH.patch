@@ -1,0 +1,40 @@
+From f147ec9aeaa03ca6e30232c84c413ef29b95fb62 Mon Sep 17 00:00:00 2001
+From: Your Name <you@example.com>
+Date: Tue, 20 May 2014 19:53:55 +0000
+Subject: [PATCH] avoid TH
+
+---
+ aeson.cabal | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/aeson.cabal b/aeson.cabal
+index 493d625..02dc6f4 100644
+--- a/aeson.cabal
++++ b/aeson.cabal
+@@ -88,7 +88,6 @@ library
+     Data.Aeson.Generic
+     Data.Aeson.Parser
+     Data.Aeson.Types
+-    Data.Aeson.TH
+ 
+   other-modules:
+     Data.Aeson.Functions
+@@ -121,7 +120,6 @@ library
+     old-locale,
+     scientific >= 0.3.1 && < 0.4,
+     syb,
+-    template-haskell >= 2.4,
+     time,
+     unordered-containers >= 0.2.3.0,
+     vector >= 0.7.1
+@@ -164,7 +162,6 @@ test-suite tests
+     base,
+     containers,
+     bytestring,
+-    template-haskell,
+     test-framework,
+     test-framework-quickcheck2,
+     test-framework-hunit,
+-- 
+2.0.0.rc2
+

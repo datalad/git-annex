@@ -1,0 +1,69 @@
+I have an annex that I use to store my digital photos.  I had a few false
+starts creating this annex, but now it's looking good on my server:
+
+    root@titan.local:/tank/Media/Pictures# git annex status
+    supported backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
+    supported remote types: git S3 bup directory rsync web hook
+    trusted repositories: 0
+    semitrusted repositories: 2
+            00000000-0000-0000-0000-000000000001 -- web
+            be88bc5a-17e2-11e2-a99b-d388d4437350 -- here (titan)
+    untrusted repositories: 0
+    dead repositories: 5
+            0A9F3136-A12A-43C7-9BE2-33F59954FD52 -- vulcan
+            57349F02-E497-4420-9230-6B15D8AB14EE -- vulcan
+            6195C912-2707-4B75-AC8C-11C51FAA8FE0 -- vulcan
+            D51DEDC4-9255-4A99-8520-2B1CED337674 -- hermes
+            EE327B34-3E20-4B5B-8F0E-D500CBC9738D -- hermes
+    transfers in progress: none
+    available local disk space: unknown
+    local annex keys: 20064
+    local annex size: 217 gigabytes
+    known annex keys: 21496
+    known annex size: 217 gigabytes
+    bloom filter size: 16 mebibytes (4% full)
+    backend usage: 
+            SHA256E: 41560
+    root@titan.local:/tank/Media/Pictures# git annex unused
+    unused . (checking for unused data...) ok
+
+It passes `git annex fsck` without any problems.  However, when I "git clone"
+this annex to my desktop machine and then do a `git annex sync`, I see this:
+
+    Vulcan /Volumes/tank/Media/Pictures (master) $ git annex status
+    supported backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
+    supported remote types: git S3 bup directory rsync web hook
+    trusted repositories: 0
+    semitrusted repositories: 5
+            00000000-0000-0000-0000-000000000001 -- web
+            0A9F3136-A12A-43C7-9BE2-33F59954FD52 -- vulcan
+            274D3474-7A25-44CD-8368-CF11C451014F -- here (vulcan)
+            EE327B34-3E20-4B5B-8F0E-D500CBC9738D -- hermes
+            be88bc5a-17e2-11e2-a99b-d388d4437350 -- titan
+    untrusted repositories: 0
+    dead repositories: 3
+            57349F02-E497-4420-9230-6B15D8AB14EE -- vulcan
+            6195C912-2707-4B75-AC8C-11C51FAA8FE0 -- vulcan
+            D51DEDC4-9255-4A99-8520-2B1CED337674 -- hermes
+    transfers in progress: none
+    available local disk space: 1 terabyte (+1 megabyte reserved)
+    local annex keys: 0
+    local annex size: 0 bytes
+    known annex keys: 21025
+    known annex size: 217 gigabytes
+    bloom filter size: 16 mebibytes (0% full)
+    backend usage: 
+            SHA256: 18707
+            SHA256E: 2318
+
+Where did all these `SHA256` keys come from?
+
+Why doesn't the known annex keys size match?
+
+Further, I cannot `git annex get` on most of the files, because it says that
+the `SHA256` key is not present.
+
+It looks like I'll have to rollback my ZFS snapshots and start over, but I'm
+wondering: how was I even able to create this situation?
+
+> [[Done]]; user error. --[[Joey]] 

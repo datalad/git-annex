@@ -1,0 +1,6 @@
+There is not yet a pre-built Docker image for git-annex. However, it's
+easy to add it to an image.
+
+For example:
+
+	docker run -i -t debian apt-get install git-annex

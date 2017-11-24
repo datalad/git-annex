@@ -1,0 +1,15 @@
+Spent the day catching up on the last week or so's traffic. Ended up
+making numerous small big fixes and improvements. Message backlog stands at
+44.
+
+Here's the [[screencast demoing views|videos/git-annex_views_demo]]!
+
+Added to the design today the idea of
+automatically deriving metadata from the location of files in the master
+branch's directory tree. Eg, `git annex view tag=* podcasts/=*` in a
+repository that has a `podcasts/` directory would make a tree like
+"$tag/$podcast". Seems promising. 
+
+So much still to do with views.. I have belatedly added them to
+the roadmap for this month; doing Windows and Android in the same month was
+too much to expect.

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="depends ..."
+ date="2011-11-04T19:59:24Z"
+ content="""
+It makes sense to have separate repositories when you have well-defined uses for them. 
+
+I have a separate repository just for music and podcasts, which I can put various places where I have no need of the overhead of a tree of other files.
+
+If you're using it for whatever arbitrary large files you accumulate, I find it's useful to have them in one repository. This way I can rearrange things as makes sense. It might make sense to have \"photos\" and \"isos\" as categories today, but next year you might prefer to move those under 2011/{photos,isos}. It would certainly make sense to have different repositories for home, work, etc.
+
+How to split repositories up for a home directory is a general problem that the [vcs-home](http://vcs-home.branchable.com)
+project has surely considered at one time or another.
+"""]]

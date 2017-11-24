@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://afoolishmanifesto.com/"
+ nickname="frioux"
+ subject="comment 24"
+ date="2013-07-18T11:35:06Z"
+ content="""
+ok, it eventually got the details from the remote server, but now I'm getting some other oddities.  here is some of my log that shows what I am running into
+
+Watcher crashed: addWatch: does not exist (No such file or directory) [2013-07-18 06:22:46 CDT] Watcher: warning Watcher crashed: addWatch: does not exist (No such file or directory) (scanning...) [2013-07-18 06:23:19 CDT] Watcher: Performing startup scan Watcher crashed: addWatch: does not exist (No such file or directory) [2013-07-18 06:24:28 CDT] Watcher: warning Watcher crashed: addWatch: does not exist (No such file or directory) (scanning...) [2013-07-18 06:24:31 CDT] Watcher: Performing startup scan Watcher crashed: addWatch: does not exist (No such file or directory) [2013-07-18 06:25:44 CDT] Watcher: warning Watcher crashed: addWatch: does not exist (No such file or directory)
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.246"
+ subject="comment 1"
+ date="2013-11-13T16:51:40Z"
+ content="""
+I've tried to reproduce this, and cannot; it enabled the repository without trouble.
+
+Also, I have never seen the webapp fail with a blank screen, so that's strange.
+
+I think you need to show your `~/annex/.git/annex/daemon.log` from B.
+"""]]

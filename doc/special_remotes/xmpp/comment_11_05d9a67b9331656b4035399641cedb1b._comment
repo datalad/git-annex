@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm0yDI6AsAuXPDHIDXm5H9EGDXkuwb1efA"
+ nickname="Yann"
+ subject="XMPP not working in Raspberry PI build"
+ date="2013-12-27T23:16:23Z"
+ content="""
+Hi,
+
+I have the same problem that users Carlo and RaspberryPie have: XMPP not working and no XMPP log in the build.
+
+I did a quick strace during the daemon start and I noticed than the raspberry pi build doesn't even try to read the creds/xmpp files contrary to the standard git-annex package on my ubuntu workstation.
+
+To me, it seems the XMPP thread is not started at all.
+Does someone know any reason why the XMPP thread could not be started ?
+
+If there is anything I can do to help debug this issue, let me know.
+
+Yann
+
+
+
+"""]]

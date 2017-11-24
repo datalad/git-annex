@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="trickle"
+ date="2013-01-22T22:44:52Z"
+ content="""
+not exactly integrated, but you can easily use trickle for this.
+
+    trickle -d 50 git annex ...
+"""]]

@@ -1,0 +1,12 @@
+Hello,
+
+I went through several of the questions on the forum but could not find the answer to this. I have the following scenario, which seems very similar to the nomad case.
+
+I have a server at home with many big media files. I want to keep a subset of these files on my laptop, to watch when I travel. When I'm done watching the files, I want to either delete them (i.e, they should no longer be on any machine) or archive them (i.e., they should remain on the server, but no longer be on the laptop). I think I know how to do this from the command line, but I still have a few questions.
+
+- How do I drop a file from _every_ repository? If I understood correctly, `git annex drop foo` will only drop foo locally.
+- Is it possible to follow this use case using the assistant, or should I use the command line instead (which would be very fine with me)? In particular, how do I choose the file I want to put on the laptop? (It seems `git annex get` is the command line way, is there an assistant equivalent?)
+- Can I use both the assistant and the command line at the same time? Is there a description of the command-line version of what the assistant is doing behind the scenes?
+- Can the server repository be both a "transfer" repository (to hold the files I haven't watch) and an "archive" repository (to keep the files I've watched and decided to keep), or do I need two repositories (on the server) for that?
+
+Thanks a lot for any suggestion.

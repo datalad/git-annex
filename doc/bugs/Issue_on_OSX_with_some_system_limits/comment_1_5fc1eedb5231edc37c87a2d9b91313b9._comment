@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.2.25"
+ subject="comment 1"
+ date="2012-06-25T15:42:48Z"
+ content="""
+Yes, this is a known problem with kqueue, it has to keep every directory in the tree open. On [[design/assistant/inotify]] I have a note that it may need to fork off extra watcher processes to deal with this. Of course that adds significant complication.
+
+In the meantime, you may be able to increase your system's maximum allowed number of open files per process somehow.
+
+(I doubt that the ssh-agent is related; git-annex does not use ssh-agent directly anyway..)
+"""]]

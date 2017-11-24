@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlfIVXjkzrYE9qJAO2A0H7K6tKGMaSgc3U"
+ nickname="Daniel"
+ subject="Problems with cryptocipher"
+ date="2013-08-22T01:36:50Z"
+ content="""
+I had problems following these directions on recent releases of Fedora/Ubuntu. The install attempts failed on cryptocipher-0.3.1, which I think came as a dependency of Yesod.
+I was able to work around this by installing yesod-platform with cabal first, then installing git-annex.
+"""]]

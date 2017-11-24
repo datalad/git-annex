@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 4"
+ date="2014-07-15T19:01:24Z"
+ content="""
+So the goal is to inject any known objects from the dump into the local annex to avoid needing to re-transfer them.
+
+It seems to me that in this case, you would not even want to create new symlinks in the git repository.
+
+`git annex reinject` might be a better place to put code to handle this than `git annex import`.
+"""]]

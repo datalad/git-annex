@@ -1,0 +1,9 @@
+I am confused on how to invoke the web app. I am learning how to use this tool, however I don't feel quite confident yet. I wanted to test out the web app, to play around with configurations and auto syncing, however I stumbled over this:
+
+    ➜  ~  git annex help webapp // works fine
+    ➜  ~  git annex webapp
+    Invalid argument `webapp' // uhh what.
+
+git-annex-webapp didn't work either.
+
+I installed with brew. El Capitan, latest update as of right now.

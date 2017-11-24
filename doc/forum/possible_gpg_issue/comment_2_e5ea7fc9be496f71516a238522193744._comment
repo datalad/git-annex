@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawknHkJJRE0K7_G4sG3YgOkAaihnw0eg9Ao"
+ nickname="Chad"
+ subject="comment 2"
+ date="2014-11-10T18:06:11Z"
+ content="""
+Yes, the drive is mounted rw for all users with no username or password required to connect. There is no problem copying from the drive, and no problem reading or writing to it outside of git-annex.
+"""]]

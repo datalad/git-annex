@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.55"
+ subject="comment 1"
+ date="2014-07-03T19:35:21Z"
+ content="""
+There's not a way to do it yet.
+
+The fundamental problem is that there is a variety of information stored on the git-annex branch, including location tracking information that you don't want (locations on non-public repositories), location tracking information you do want (locations on public repositories), urls, metadata, repository configurations and descriptions (some for public and some for non-public repositories). It seems fairly hard to draw a line. And once a line is drawn, there would be two diverged git-annex branches on the public and private repos, and the private repo would need to synthesize an updated version of the public branch every time it synced.
+
+Instead, the last time this came up, I added the remote.<name>.annex-readonly setting. This allows for at least having a private repository (or a whole network of repositories that all communicate together but remain private) that pulls changes from a public repo, but avoids making changes to it. Certainly not a complete solution, since changes have to be contributed to the public repo in some out-of-band way, like perhaps using git-format-patch and git-am.
+"""]]

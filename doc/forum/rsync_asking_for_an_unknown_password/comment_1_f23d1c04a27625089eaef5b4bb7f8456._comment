@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 1"
+ date="2014-07-11T18:41:32Z"
+ content="""
+Re brew not being built with support for the webapp, I suggest you file a bug on brew about this. IIRC they were, or were planning to include the webapp in the build. They may have lost track of that.
+
+Now, what does rsyncurl=me@localhost:/Users/me/Documents/annex-tests/target say? It says to use rsync with the \"url\" me@localhost:/Users/me/Documents/annex-tests/target. What does rsync do with that url? It tries to ssh into localhost, as user \"me\". There's no magic here. I don't know why your login password isn't working, but you can verify by passing --debug to git-annex that it just runs rsync with the url you've given it.
+
+BTW, are you sure you want to use a rsync special remote at all, rather than a regular git remote using ssh?
+"""]]

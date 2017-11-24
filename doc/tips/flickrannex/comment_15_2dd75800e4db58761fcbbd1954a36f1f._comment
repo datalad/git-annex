@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmvzzyDA8uXFz8yokeCrepbh8PwWe_WrjE"
+ nickname="Michael"
+ subject="current status?"
+ date="2014-08-08T16:00:18Z"
+ content="""
+Hi, just wondering what the current status of this plugin is.
+The repo at TobiasTheViking looks a little odd - it has a few large commits from January with an unknown author, and the last one appears to completely remove the main script.
+
+What's going on? does it need a fork?
+"""]]

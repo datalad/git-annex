@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk2BFMjJW081uX4aJdhStmSFPBUGzL92ZU"
+ nickname="Frédéric"
+ subject="where do I put the SSH keys on Android"
+ date="2014-02-26T20:26:38Z"
+ content="""
+@mebus :
+You can put your SSH keys here :
+
+/sdcard/git-annex.home/.ssh/id_rsa
+
+/sdcard/git-annex.home/.ssh/id_rsa.pub
+"""]]

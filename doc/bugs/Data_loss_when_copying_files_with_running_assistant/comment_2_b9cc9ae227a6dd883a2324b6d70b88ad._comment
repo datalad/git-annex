@@ -1,0 +1,111 @@
+[[!comment format=mdwn
+ username="michalrus"
+ avatar="http://cdn.libravatar.org/avatar/83c0b6e7f9d20f09a892263c4903bbae"
+ subject="comment 2"
+ date="2017-08-20T16:45:09Z"
+ content="""
+I’ve got some `git log -S'KEY'` of what happened. Names censored. So it seems like peers are deleting and re-adding this files, and at the end they end up deleted. :( The last commit is me manually re-adding them one last time.
+
+Please note, that these are completely new files, it’s not possible that merges are deleting them.
+
+```
+commit 38134b87fdd6957c578f2a9d06d6c50aefee361b
+Author: Elzbieta
+Date:   Sun Aug 20 18:21:04 2017 +0200
+
+    Re-add unused files
+
+ ...7e4a6e20cba47b04eefef5ad0a85e16b00e8f5bbc5bcfade24ad0b934738d790.docx | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit 9d3be6aafe84fa7e114f5de12c0a15adc0b2704e
+Author: Elzbieta
+Date:   Sun Aug 20 12:20:13 2017 +0200
+
+    git-annex in elzbietarus
+
+ .../SA\305\201ATKA \305\232LEDZIOWA, SA\305\201ATKA Z SZYNKI.docx\"       | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit 92c1e62f8483c6b4fa263180a8a506bf5d0a46c7
+Author: Elzbieta
+Date:   Sun Aug 20 12:20:10 2017 +0200
+
+    git-annex in elzbietarus
+
+ .../SA\305\201ATKA \305\232LEDZIOWA, SA\305\201ATKA Z SZYNKI.docx\"       | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit cd51d4dfed402a0929d357bb9557923618fdadff
+Author: Robert
+Date:   Sun Aug 20 12:19:56 2017 +0200
+
+    git-annex in robertrus-qx511
+
+ .../SA\305\201ATKA \305\232LEDZIOWA, SA\305\201ATKA Z SZYNKI.docx\"       | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit 879256502d8047f0a3ed5487a57854076459f9a7
+Author: Robert
+Date:   Sun Aug 20 12:19:54 2017 +0200
+
+    git-annex in robertrus-qx511
+
+ .../SA\305\201ATKA \305\232LEDZIOWA, SA\305\201ATKA Z SZYNKI.docx\"       | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit 7196eb855f2ca3ca87959002c3e61c7e060d7ae6
+Author: Elzbieta
+Date:   Sun Aug 20 12:19:50 2017 +0200
+
+    git-annex in elzbietarus
+
+ .../SA\305\201ATKA \305\232LEDZIOWA, SA\305\201ATKA Z SZYNKI.docx\"       | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit f566cb65b19aa6144e7587cdcb2a8b910584391c
+Author: Elzbieta
+Date:   Sun Aug 20 12:19:42 2017 +0200
+
+    git-annex in elzbietarus
+
+ .../SA\305\201ATKA \305\232LEDZIOWA, SA\305\201ATKA Z SZYNKI.docx\"       | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit de732718be3c25580463ddc5cd8abaf5eb6ca4be
+Author: Michal Rus <m@michalrus.com>
+Date:   Sun Aug 20 12:19:28 2017 +0200
+
+    git-annex in michalrus
+
+ .../SA\305\201ATKA \305\232LEDZIOWA, SA\305\201ATKA Z SZYNKI.docx\"       | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit b25b6274332bc5ac42dc0b6a0d69abe3bd32e0e0
+Author: Robert
+Date:   Sun Aug 20 12:19:24 2017 +0200
+
+    git-annex in robertrus-np300e5a
+
+ .../SA\305\201ATKA \305\232LEDZIOWA, SA\305\201ATKA Z SZYNKI.docx\"       | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit f26399a8a62ae54eec45355f60228bc55527302d
+Author: Robert
+Date:   Sun Aug 20 12:19:22 2017 +0200
+
+    git-annex in robertrus-np300e5a
+
+ .../SA\305\201ATKA \305\232LEDZIOWA, SA\305\201ATKA Z SZYNKI.docx\"       | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit 103a62866df6fa8c7e18b727865c6c354fd6fc12
+Author: Elzbieta
+Date:   Sun Aug 20 12:16:29 2017 +0200
+
+    git-annex in elzbietarus
+
+ .../SA\305\201ATKA \305\232LEDZIOWA, SA\305\201ATKA Z SZYNKI.docx\"       | 1 +
+ 1 file changed, 1 insertion(+)
+```
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.22"
+ subject="comment 1"
+ date="2014-09-16T18:13:18Z"
+ content="""
+Only fscking can be scheduled. From the man page:
+
+       These  actions  are available: \"fsck self\", \"fsck UUID\" 
+
+It won't be expanded to allow arbitrary commands, because that would let anyone who you share an annex with schedule arbitrary commands to run on your computer..
+"""]]

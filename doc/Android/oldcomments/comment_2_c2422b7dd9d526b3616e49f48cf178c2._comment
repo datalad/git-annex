@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 2"
+ date="2013-05-17T22:28:34Z"
+ content="""
+The Android app works on many non-rooted Android systems.
+
+The \"link busybox: Read-only file system\" means that `/data/data/ga.androidterm/lib/lib.busybox.so` cannot be hard linked to `/data/data/ga.androidterm/busybox`. That's not normal. I'd appreciate if you could provide more information on your Android device, like Android version and model number.
+"""]]

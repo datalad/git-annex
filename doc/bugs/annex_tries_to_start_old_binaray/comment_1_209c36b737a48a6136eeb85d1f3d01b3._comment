@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.132"
+ subject="comment 1"
+ date="2014-09-11T17:55:28Z"
+ content="""
+~/.ssh/git-annex-shell is a wrapper script that gets installed when you use the standalone build. You can delete it and your problem will be fixed.
+
+It would probably be good if the standalone build came with an uninstallation script.
+"""]]

@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 2"
+ date="2012-08-16T23:34:12Z"
+ content="""
+Yes, it's surprising to me when I see it work, and I wrote it. :) Since git-annex is running locally on the same system as the browser, it can open the file manager when the user clicks on a link in the web browser. To the web browser, this is just an AJAX request.
+"""]]

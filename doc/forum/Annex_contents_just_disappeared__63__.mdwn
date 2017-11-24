@@ -1,0 +1,12 @@
+Joey,
+
+I have git-annex now to manage many of the repositories on my system.  I have them both on my local machine, and on a very large file server, and a backup system on the Internet.
+
+Today I went to look at a file in one of my annexes and it wasn't there.  This really surprised me.  But what surprised me most is that around 90% of the files in *all* of my annexes on both my local system and my file server are completely missing.  Only the Internet backup system has them.
+
+How could something like this happen, when I haven't been interacting with these annexes at all during this time?  Can you think of any scenario that might lead to this?  This is pretty much the absolute worst case scenario for an archival data system.
+
+I am running on Mac OS X 10.8, using GHC 7.6.3 to build git-annex, and I keep my git-annex binary updated often.
+
+Thanks,
+  John

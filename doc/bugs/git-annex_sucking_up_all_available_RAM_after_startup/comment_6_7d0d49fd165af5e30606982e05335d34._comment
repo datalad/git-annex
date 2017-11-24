@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 6"
+ date="2014-03-10T19:24:45Z"
+ content="""
+I suppose it would be useful to look at the output of `git log git-annex..13d365f16ffdb5a393f66362b840d3f21bb4c59c --oneline -n1`
+
+Either than command is outputting a huge amount of stuff, or it's actually causing git (not git-annex) to use a lot of memory. Not sure which it is from the description.
+"""]]

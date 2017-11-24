@@ -1,0 +1,49 @@
+[[!comment format=mdwn
+ username="dave@2ab82f485adf7e2ce787066e35f5f9789bff430b"
+ nickname="dave"
+ subject="Build failure"
+ date="2016-09-07T18:25:19Z"
+ content="""
+I cloned the `git-annex` repo from github.com and checked out the `6.20160907` tag.
+
+Then I invoked `stack install` and that ended with the following.  Note, this is on Windows.
+
+    Configuring concurrent-output-1.7.6...
+    Building concurrent-output-1.7.6...
+    Preprocessing library concurrent-output-1.7.6...
+    [1 of 7] Compiling Utility.Data     ( Utility\Data.hs, .stack-work\dist\2672c1f3\build\Utility\Data.o )
+    [2 of 7] Compiling Utility.Exception ( Utility\Exception.hs, .stack-work\dist\2672c1f3\build\Utility\Exception.o )
+    [3 of 7] Compiling Utility.Monad    ( Utility\Monad.hs, .stack-work\dist\2672c1f3\build\Utility\Monad.o )
+    [4 of 7] Compiling System.Console.Concurrent.Internal ( System\Console\Concurrent\Internal.hs, .stack-work\dist\2672c1f3\build\System\Console\Concurrent\Internal.o )
+    [5 of 7] Compiling System.Console.Concurrent ( System\Console\Concurrent.hs, .stack-work\dist\2672c1f3\build\System\Console\Concurrent.o )
+    [6 of 7] Compiling System.Console.Regions ( System\Console\Regions.hs, .stack-work\dist\2672c1f3\build\System\Console\Regions.o )
+    
+    System\Console\Regions.hs:559:46: Warning:
+        Defined but not used: `oldt'
+    
+    System\Console\Regions.hs:719:1: Warning:
+        Defined but not used: `calcLineUpdate'
+    
+    System\Console\Regions.hs:746:1: Warning:
+        Defined but not used: `advanceLine'
+    
+    System\Console\Regions.hs:773:1: Warning:
+        Defined but not used: `isSGR'
+    
+    System\Console\Regions.hs:777:1: Warning:
+        Defined but not used: `genLineUpdate'
+    
+    System\Console\Regions.hs:791:1: Warning:
+        Defined but not used: `optimiseLineUpdate'
+    
+    System\Console\Regions.hs:807:1: Warning:
+        Defined but not used: `combineSGR'
+    
+    System\Console\Regions.hs:817:1: Warning:
+        Defined but not used: `combineSGRCodes'
+    [7 of 7] Compiling System.Process.Concurrent ( System\Process\Concurrent.hs, .stack-work\dist\2672c1f3\build\System\Process\Concurrent.o )
+    
+    System\Process\Concurrent.hs:24:49:
+        Not in scope: `createProcessConcurrent'
+    
+"""]]

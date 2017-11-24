@@ -1,0 +1,8 @@
+Just a quick question: Can anyone recomment me a good to handle a centralized repository which is used by different users?
+
+Requirements: must work in direct mode on both sides, server is Linux, clients are Windows and operated by 2 different users.
+
+- Should the repository create bare or not?
+- Must the repository created on the server or can it also be "pushed" from one client to the server (via SSH on the server)?
+- Is there a better way for data transfer than SSH (WebDAV as in SVN)? I am still struggling with an elegant way to handle public keys in windows
+- What is the best way to not only keep meta data in sync but also the data each of the users has checked out?

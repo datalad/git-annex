@@ -1,0 +1,94 @@
+[[!comment format=mdwn
+ username="michalrus"
+ avatar="http://cdn.libravatar.org/avatar/83c0b6e7f9d20f09a892263c4903bbae"
+ subject="comment 4"
+ date="2017-09-21T12:56:30Z"
+ content="""
+Look. What’s happening here? Reverse order. First, a file is saved and then assistant running on other machines makes a decision to remove it. Where does it come from? :o
+
+```
+commit cc61f6db3273c749ac2e4bdfb489457af919472c
+Author: Elzbieta Rus <rus.elzbieta@gmail.com>
+Date:   Sat Sep 2 14:23:13 2017 +0200
+
+    git-annex in elzbietarus
+
+ Dokumenty/Przepisy/SERNIK NA ZIMNO.docx | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit 30965f29f756f02ad5d617d6fd07ec7013e01226
+Merge: d69d69901f ec07710223
+Author: Robert Rus <rusrob@poczta.onet.pl>
+Date:   Sat Sep 2 14:17:20 2017 +0200
+
+    Merge remote-tracking branch 'refs/remotes/origin/master'
+
+commit d69d69901fc2a4c958077cfbf8b27f595465627c
+Author: Robert Rus <rusrob@poczta.onet.pl>
+Date:   Sat Sep 2 14:17:17 2017 +0200
+
+    git-annex in robertrus-asus-1225c
+
+ Dokumenty/Przepisy/SERNIK NA ZIMNO.odt | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit ec07710223770d1458de76004ec9baab5c20d508
+Merge: a60c530e9b 1cb58f2783
+Author: Robert Rus <rusrob@poczta.onet.pl>
+Date:   Sat Sep 2 14:17:17 2017 +0200
+
+    Merge remote-tracking branch 'refs/remotes/origin/master'
+
+commit 1e29dee284b5b9f4593cd7c0484c194ac2a9644c
+Merge: 1a36f09308 1cb58f2783
+Author: Robert Rus <rusrob@poczta.onet.pl>
+Date:   Sat Sep 2 14:17:16 2017 +0200
+
+    Merge remote-tracking branch 'refs/remotes/origin/master'
+
+commit a60c530e9b167c17b625e66f42e7282a1e275703
+Author: Robert Rus <rusrob@poczta.onet.pl>
+Date:   Sat Sep 2 14:17:16 2017 +0200
+
+    git-annex in robertrus-acer
+
+ Dokumenty/Przepisy/SERNIK NA ZIMNO.odt | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit 1a36f09308c4134646b7074f2e827c909ee7033a
+Author: Robert Rus <rusrob@poczta.onet.pl>
+Date:   Sat Sep 2 14:17:14 2017 +0200
+
+    git-annex in robertrus-asus-1225c
+
+ Dokumenty/Przepisy/SERNIK NA ZIMNO.odt | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit 1cb58f2783485e83d369ab9acb41f7e83cc3314c
+Author: Mikolaj Rus <mikolaj.rus6@gmail.com>
+Date:   Sat Sep 2 14:17:12 2017 +0200
+
+    git-annex in mikolajrus
+
+ Dokumenty/Przepisy/SERNIK NA ZIMNO.odt | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit 3542add42a050c5331cbfa67bffee38a05ce6bc6
+Author: Mikolaj Rus <mikolaj.rus6@gmail.com>
+Date:   Sat Sep 2 14:17:11 2017 +0200
+
+    git-annex in mikolajrus
+
+ Dokumenty/Przepisy/SERNIK NA ZIMNO.odt | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit 956243cab7b865f9e633f51d4376154a3478210a
+Author: Elzbieta Rus <rus.elzbieta@gmail.com>
+Date:   Sat Sep 2 14:17:00 2017 +0200
+
+    git-annex in elzbietarus
+
+ Dokumenty/Przepisy/SERNIK NA ZIMNO.odt | 1 +
+ 1 file changed, 1 insertion(+)
+```
+"""]]

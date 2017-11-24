@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2016-11-07T14:40:03Z"
+ content="""
+@spiderbit, to support recursively adding content, it would need
+to parse html, and that's simply too complex and too unlikely to
+be useful to many people.
+"""]]

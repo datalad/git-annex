@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-07-21T17:28:53Z"
+ content="""
+`find --maxdepth` is a nice optimisation because it can short-circuit when it gets deep in the tree. However, `git annex find` is built on top of `git ls-files --cached`, which has no equivilant way to short-circuit. I am not sure if the format of the index makes it practical for it to get a --maxdepth option (it may need to traverse the whole index, or might be able to short-circuit).
+
+I don't see any point in adding a --matdepth to git-annex if it doesn't actually make it any faster, so getting such a thing into `git ls-files` would be the first step. So, suggest filing a feature request on git.
+"""]]

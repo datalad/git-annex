@@ -1,0 +1,119 @@
+### Please describe the problem.
+
+git-annex assistant on Mac OSX 10.8.5 fails to download new repo files from SSH remote/rsync shared-encryption annex after initial startup.  The assistant does sync with the repo and create symlinks for new files, and file contents can manually be retrieved using 'git annex get $file' once the file is in the repository. However, assistant makes no subsequent attempt to download the new files until assistant is restarted.  Once restarted, assistant downloads all new files for which is previously only had symlinks.
+
+git-annex whereis $file does not indicate that the files represented as symlinks are located on the Mac OSX clients in question until after files are manually retrieved or assistant is retarted and files are automatically downloaded, replacing the symlinks.
+
+git-annex assistant on Mac OSX does not have problems uploading files to the remote as they are added.
+
+git-annex 5.20140517.4 on Ubuntu 12.04 behaves as expected and downloads new files (with content) properly as they are added to the repo.
+
+### What steps will reproduce the problem?
+
+(all using git-annex webapp)
+
+--create client repo on Mac OSX, direct mode (used two 10.8.5 machines)
+
+--create client repo on Ubuntu, direct mode (used several 12.04 VMs)
+
+--create repo (transfer mode) on VPS
+
+--create shared encryption repo (backup mode) on same VPS
+
+--add VPS transfer repo to each client (shared encryption repo appears and syncing is enabled for each client)
+
+--create file in Mac OSX annex - file gets distributed to VPS backup repo and each linux system. Symlink is created on 2nd Mac OS X machine.
+
+--create file in Ubuntu VM annex - file gets distributed to VPS backup repo and each linux system.  Symlink is created on both Mac OSX machines.
+
+
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 5.20140421 (installed using brew), Mac OSX 10.8.5
+
+I tested 5.20140613 (from brew) also and it appears to also not download new files automatically.
+
+
+
+### Please provide any additional information below.
+I've tested a few things I thought might be related.  Since restarting assistant seems to temporarily "fix" the problem, I thought there may be some SSH client caching problems... as in the existing connection not being reused properly.  However, I disabled annex.sshcaching as described elsewhere and that did not have any affect. 
+
+I've enabled XMPP and it only introduced more confusion as the XMPP messaging was not reliably consistent.
+
+daemon.log for Mac OS systems does not show the "Pusher" process getting initiated once new files are added to the repo if the assistant is currently running, however it is logged immediately after assistant is started if there are new files in the repo.  
+
+daemon.log for Ubuntu systems does contain the Pusher process event following the repo sync that takes place once the file has been added to the repo.
+
+
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+MACOSX:user$git-annex assistant --autostart
+
+daemon.log:
+
+[2014-06-25 11:52:04 CDT] main: starting assistant version 5.20140421
+[2014-06-25 11:52:09 CDT] TransferScanner: Syncing with serverrepo 
+
+Already up-to-date.
+(scanning...) [2014-06-25 11:52:09 CDT] Watcher: Performing startup scan
+
+Already up-to-date.
+(started...) 
+[2014-06-25 11:52:10 CDT] Committer: Committing changes to git
+(Recording state in git...)
+(gpg) 
+Already up-to-date.
+
+Already up-to-date.
+[2014-06-25 11:52:11 CDT] Pusher: Syncing with serverrepo 
+
+GPGHMACSHA1--3e18c6a4ee5aece84f4f00fc2e7fcb828d8fa7d8
+Everything up-to-date0.00kB/s    0:00:00
+Everything up-to-date4.56MB/s    0:00:00
+     8409197 100%    4.94MB/s    0:00:01 (xfer#1, to-check=0/1)
+
+sent 38 bytes  received 8411383 bytes  2403263.14 bytes/sec
+total size is 8409197  speedup is 1.00
+[2014-06-25 11:52:13 CDT] Transferrer: Downloaded 67-more-fromubuntu
+[2014-06-25 11:52:14 CDT] Committer: Adding 67-more-fromubuntu
+add /Users/user/computer_annex/67-more-fromubuntu ok
+[2014-06-25 11:52:14 CDT] Committer: Committing changes to git
+(Recording state in git...)
+[2014-06-25 11:52:20 CDT] Pusher: Syncing with serverrepo 
+(Recording state in git...)
+To ssh://user@git-annex-server.remotehost.net-user_.2Fhome.2Fuser.2Fserver_repo/home/user/server_repo/
+   7e375a8..1a64e4c  git-annex -> synced/git-annex
+[2014-06-25 11:52:36 CDT] RemoteControl: Syncing with serverrepo 
+From ssh://git-annex-server.remotehost.net-user_.2Fhome.2Fuser.2Fserver_repo/home/user/server_repo
+   1a64e4c..dee9f84  synced/git-annex -> serverrepo/synced/git-annex
+   d424057..989003e  synced/master -> serverrepo/synced/master
+(merging serverrepo/synced/git-annex into git-annex...)
+
+<<<File gets added to any other client annex, MAC OSX or Ubuntu>>>
+
+Updating d424057..989003e
+Fast-forward
+ 89-more-fromubuntu | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 120000 89-more-fromubuntu
+[2014-06-25 11:58:42 CDT] RemoteControl: Syncing with serverrepo 
+From ssh://git-annex-server.remotehost.net-user_.2Fhome.2Fuser.2Fserver_repo/home/user/server_repo
+   dee9f84..b24c8bf  synced/git-annex -> serverrepo/synced/git-annex
+(merging serverrepo/synced/git-annex into git-annex...)
+[2014-06-25 11:58:47 CDT] RemoteControl: Syncing with serverrepo 
+From ssh://git-annex-server.remotehost.net-user_.2Fhome.2Fuser.2Fserver_repo/home/user/server_repo
+   b24c8bf..6488b45  synced/git-annex -> serverrepo/synced/git-annex
+(merging serverrepo/synced/git-annex into git-annex...)
+[2014-06-25 11:58:56 CDT] RemoteControl: Syncing with serverrepo 
+From ssh://git-annex-server.remotehost.net-user_.2Fhome.2Fuser.2Fserver_repo/home/user/server_repo
+   6488b45..c73c180  synced/git-annex -> serverrepo/synced/git-annex
+(merging serverrepo/synced/git-annex into git-annex...)
+
+
+
+
+# End of transcript or log.
+"""]]

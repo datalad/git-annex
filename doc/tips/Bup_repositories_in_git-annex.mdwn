@@ -1,0 +1,51 @@
+I'd like to share my setup for keeping [bup](https://github.com/bup/bup/) repositories in git-annex.¹
+I'm not sure if this is a *good* tip, so comments are welcome.
+
+The purpose of this setup is to (kind of) bring encryption to bup,
+and make it easy to keep bup backups in untrusted storage by making use of the encryption modes and backends provided by git-annex.
+This approach can be used to make encrypted *backups of bup repositories*;
+it can not replace encrypted filesystems such as EncFS or S3QL
+which wouldn't necessarily require local bup repositories but also can't be combined with storage like Amazon Glacier.
+
+To add a bup repository to git-annex, initialize a regular indirect git-annex repository,
+and make the bup repository a subdirectory of it.²
+Then `git annex add $BUP_REPO/objects/packs`, i.e. the location of the large data files (.pack & .par2).
+The rest of the bup repository should be tracked by Git (`git add $BUP_REPO`).³
+This way the repository stays fully functional.
+
+After a bup-save the following steps will synchronize all remotes:⁴
+
+    git annex add $BUP_REPO/objects/pack
+    git add $BUP_REPO
+    git commit -m "Backup on $(date)"
+	git annex sync --content
+
+In my current setup, the git-annex repositories are located on a local file server.
+Various clients use bup to create backups on the server.
+This server also makes backups of other servers.
+Afterwards, it uploads the annexed data to Glacier
+(via an [encrypted S3 special remote](/special_remotes/S3/)),
+and pushes the small Git repositories to an S3QL filesystem and another off-site server.
+Using these repositories (and my GPG key) the bup repositories could be recovered.
+
+It may be important to note that in order to be able to *access* a bup repository,
+*all* files have to be available locally.
+Bup will not function if any pack files are missing (maybe this can be improved?).
+
+-----
+
+¹) Not to be confused with git-annex's [bup special remote](/special_remotes/bup/).
+
+²) You can't initialize git-annex repositories directly inside bup repositories
+because git-annex will (rightfully) identify them as bare git repositories and set itself up accordingly.
+
+³) I've come up with these .gitignore rules to exclude potentially large files not needed for recovery:
+
+    /bup_repo/bupindex*
+    /bup_repo/objects/pack/bup.bloom
+    /bup_repo/objects/pack/midx*midx
+    /bup_repo/objects/tmp*.pack
+    /bup_repo/index-cache/
+
+⁴) `git annex sync` might not be the safest command to use because it would merge changes from the remotes.
+However, assuming normal bup usage, external changes to the bup repository are not to be expected.

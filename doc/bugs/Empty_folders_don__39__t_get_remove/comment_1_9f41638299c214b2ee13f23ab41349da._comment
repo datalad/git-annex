@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 1"
+ date="2013-12-12T19:16:34Z"
+ content="""
+I can't reproduce this. Tested in direct mode (which I assume you're using, but you didn't say), using both command-line `git annex sync`, and using the assistant. In all cases, when the last file in a directory was removed, the directory was deleted.
+
+Please write back with a version number, and an example showing the problem happening.
+"""]]

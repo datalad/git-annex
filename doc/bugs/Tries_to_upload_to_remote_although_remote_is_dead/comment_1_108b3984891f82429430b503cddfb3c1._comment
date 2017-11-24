@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.194"
+ subject="comment 1"
+ date="2012-11-04T20:01:35Z"
+ content="""
+Are you using the git-annex assistant? It's supposed to have code in it to prevent it from using dead remotes. Perhaps that is not working.
+
+When not using the git-annex assistant, nothing prevents git-annex from trying to continue to use dead remotes. I think this is ok; maybe the dead remote is not 100% dead yet; if it is, the remote can be removed from git's configuration to prevent it being used of course.
+"""]]

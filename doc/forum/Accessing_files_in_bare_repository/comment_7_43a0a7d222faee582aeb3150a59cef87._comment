@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/bBy7WkgQicYHIiiyj.Vm0TcMbxi2quzbPFef#6f9f7"
+ nickname="Frederik Vanrenterghem"
+ subject="comment 7"
+ date="2013-05-12T14:04:29Z"
+ content="""
+That all sounded very plausible, but for some reason it failed to work for me. I went back to basics and tried getting there by replicating steps 1 to 3 of the walkthrough, but also to no aval. I'll still try one more thing - setting up a local repository on the VPS and syncing it to my main one over XMPP. That seems rather convoluted given the bare repository is on the same server, but who knows...
+"""]]

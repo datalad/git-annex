@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ ip="163.1.167.50"
+ subject="s3ql"
+ date="2012-11-29T17:58:35Z"
+ content="""
+I am achieving success on this issue using afuse to automatically mount an s3ql volume.  Though of course you have to manually push and pull from the git repo.
+"""]]

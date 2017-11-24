@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlScsufvQF7s8TVTwPd-h_QiP5Hn_i-hrs"
+ nickname="Jason"
+ subject="comment 2"
+ date="2014-07-21T18:37:19Z"
+ content="""
+I see your point, `git ls-files` may still have to walk the whole tree, precluding a speed advantage.
+But I guess the point of what I was saying was more that a way summarize from a high level what is here and what is not would be nice.
+I certainly understand if this is not something you see as worthwhile, but if someone were inclined to write a patch (if ever I find the time) that would add a `--maxdepth` option that would merely summarize the results of `git annex find` would it be something you would be inclined to include in the main repo (providing, of course, that you find the behavior sensible)?
+"""]]

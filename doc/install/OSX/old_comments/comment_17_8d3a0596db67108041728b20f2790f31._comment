@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 17"
+ date="2012-07-24T15:03:49Z"
+ content="""
+The instructions say to use cabal for a reason -- it's more likely to work. But I have made the Makefile detect the mismatched GHC and C compiler and force the C compiler to 32 bit.
+"""]]

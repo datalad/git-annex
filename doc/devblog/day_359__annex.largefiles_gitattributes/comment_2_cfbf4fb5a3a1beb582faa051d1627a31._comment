@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-02-03T21:00:55Z"
+ content="""
+Weirdly, that hack wouldn't work if I had used a more lisp-style format for
+the expressions. At least, I don't think lisp can be written with no
+whitespace at all, in general. It was just luck that the expression format
+happened to work out that way.
+
+Anyway, it's a hack, but it works. Would be nice if git got a way to put
+spaces in gitattribute values..
+"""]]

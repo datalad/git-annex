@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.246"
+ subject="comment 3"
+ date="2013-11-10T18:18:09Z"
+ content="""
+Seems to me this was probably fixed in [[!commit 6b37fcffd872b62fb78047a77e4cee5ab0bb57f1]].
+
+However, I don't know why permission problems would happen on Android, which typically uses a filesystem that does not have restricted permissions for the sdcard.
+
+If you upgrade, you should be able to see if it fixed the crash, and it will also mention any file or directory that it's unable to read in the log.
+"""]]

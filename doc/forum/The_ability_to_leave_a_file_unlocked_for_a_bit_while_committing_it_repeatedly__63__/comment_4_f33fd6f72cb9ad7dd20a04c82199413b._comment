@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="http://identi.ca/cwebber/"
+ nickname="cwebber"
+ subject="comment 4"
+ date="2012-11-27T23:58:10Z"
+ content="""
+Ah, thanks Joey... here's an updated version:
+
+    function git-annex-unlocked-commit {
+        if [ $# -ne 2 ]; then
+            echo \"Wrong number of args.\"
+            return 1
+        fi
+    
+        if [ ! -e \"$1\" ]; then
+            echo \"Need a filename!\"
+            return 1
+        fi
+    
+        read -p \"Really do an unlocked commit? (y/n): \"
+        if [ \"$REPLY\" == \"y\" ]; then
+            git add $1 && git commit $1 -m \"$2\" && git annex unlock $1
+        fi
+    }
+
+"""]]

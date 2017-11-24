@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnHrjHxJAm39x8DR4bnbazQO6H0nMNuY9c"
+ nickname="Damien"
+ subject="sha256 alternative"
+ date="2012-06-30T14:34:11Z"
+ content="""
+in reply to comment 6: On my Mac (10.7.4) there's `/usr/bin/shasum -a 256 <file>` command that will produce the same output as `sha256sum <file>`.
+"""]]

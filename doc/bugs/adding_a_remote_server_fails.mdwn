@@ -1,0 +1,27 @@
+### Please describe the problem.
+I tried to add a remote server to my annex repo using the webapp.
+
+### What steps will reproduce the problem?
+Configuration -> Repositories -> Remote server -> Fill in stuff, use public key auth -> click "check this server" -> enjoy
+
+### What version of git-annex are you using? On what operating system?
+OpenSUSE Tumbleweed, git-annex 5.20140709-gc75193e
+
+### Please provide any additional information below.
+Error message: `user error (gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--with-colons","--list-secret-keys","--fixed-list-mode"] exited 2)`
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+[2014-07-11 12:03:52 CEST] main: starting assistant version 5.20140709-gc75193e
+[2014-07-11 12:03:53 CEST] UpgradeWatcher: Finished upgrading git-annex to version 5.20140709-gc75193e 
+(scanning...) [2014-07-11 12:03:53 CEST] Watcher: Performing startup scan
+(started...) gpg: /home/zilti/.gnupg/gpg.conf:200: argument not expected
+gpg: /home/zilti/.gnupg/gpg.conf:201: invalid option
+gpg: /home/zilti/.gnupg/gpg.conf:200: argument not expected
+gpg: /home/zilti/.gnupg/gpg.conf:201: invalid option
+
+# End of transcript or log.
+"""]]
+
+[[!tag moreinfo]]

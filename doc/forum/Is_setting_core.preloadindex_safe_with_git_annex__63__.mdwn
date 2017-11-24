@@ -1,0 +1,1 @@
+I found [this suggestion](http://stackoverflow.com/a/2873039) on Stack Overflow. Is this safe to use in git annex? I don't know how the internals work. I have a very large annex and I don't want to screw it up.

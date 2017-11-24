@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 4"
+ date="2014-06-11T20:09:14Z"
+ content="""
+What happens if you run `git-annex assistant --autostart` ?
+"""]]

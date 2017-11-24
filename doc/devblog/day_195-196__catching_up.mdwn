@@ -1,0 +1,13 @@
+Spent past 2 days catching up on backlog and doing bug triage and some
+minor bug fixes and features. Backlog is 27, lowest in quite a while so I
+feel well on top of things.
+
+I was saddened to find [this bug](http://git-annex.branchable.com/bugs/files_lost_during_upgrade/#comment-b265c796b1599d2dde649699cb54fa86)
+where I almost managed to analize the [[ugy_bug|day_193-194__ugly_bug]]'s race
+condition, but not quite (and then went on vacation). BTW, I have not heard
+from anyone else who was hit by that bug so far.
+
+The linux autobuilders are still down; their host server had a disk crash
+in an electrical outage. Might be down for a while. I would not mind
+setting up a redundant autobuilder if anyone else would like to donate a
+linux VM with 4+ gb of ram.

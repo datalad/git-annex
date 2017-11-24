@@ -1,0 +1,33 @@
+Today, I've expanded `git annex info` to also be able to be used on annexed files
+and on remotes. Looking at the info for an individual remote is quite
+useful, especially for answering questions like: Does the remote have
+embedded creds? Are they encrypted? Does it use chunking? Is that old style
+chunking?
+
+<pre>
+remote: rsync.net
+description: rsync.net demo remote
+uuid: 15b42f18-ebf2-11e1-bea1-f71f1515f9f1
+cost: 250.0
+type: rsync
+url: xxx@usw-s002.rsync.net:foo
+encryption: encrypted (to gpg keys: 7321FC22AC211D23 C910D9222512E3C7)
+chunking: 1 MB chunks
+</pre>
+
+<pre>
+remote: ia3
+description: test [ia3]
+uuid: 12817311-a189-4de3-b806-5f339d304230
+cost: 200.0
+type: S3
+creds: embedded in git repository (not encrypted)
+bucket: joeyh-test-17oct-3
+internet archive item: http://archive.org/details/joeyh-test-17oct-3
+encryption: not encrypted
+chunking: none
+</pre>
+
+Should be quite useful info for debugging too..
+
+Yesterday, I fixed a bug that prevented retrieving files from Glacier.

@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="http://grossmeier.net/"
+ nickname="greg"
+ subject="missing steps?"
+ date="2014-02-18T23:51:00Z"
+ content="""
+I setup a glacier remote on one machine and it successfully created the vault and is syncing files to it.
+
+One another machine, after git-annex sync'ing, I did:
+
+
+[[!format sh \"\"\"
+greg@x200s:~/Photos$ git-annex enableremote glacier
+enableremote glacier 
+  Set both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY to use glacier
+git-annex: Failed creating glacier vault.
+\"\"\"]]
+
+So then I try:
+[[!format sh \"\"\"
+greg@x200s:~/Photos$ AWS_ACCESS_KEY_ID=HAHA AWS_SECRET_ACCESS_KEY=NOPE git-annex --debug enableremote glacier
+[2014-02-18 15:43:56 PST] read: git [\"--git-dir=/home/greg/Photos/.git\",\"--work-tree=/home/greg/Photos\",\"show-ref\",\"git-annex\"]
+[2014-02-18 15:43:56 PST] read: git [\"--git-dir=/home/greg/Photos/.git\",\"--work-tree=/home/greg/Photos\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2014-02-18 15:43:56 PST] read: git [\"--git-dir=/home/greg/Photos/.git\",\"--work-tree=/home/greg/Photos\",\"log\",\"refs/heads/git-annex..8108714116d08f93aa427b9ddced48cd5f2b4b72\",\"--oneline\",\"-n1\"]
+[2014-02-18 15:43:56 PST] read: git [\"--git-dir=/home/greg/Photos/.git\",\"--work-tree=/home/greg/Photos\",\"log\",\"refs/heads/git-annex..742ba908f791e440a6cc85073ef505a96dd66aa4\",\"--oneline\",\"-n1\"]
+[2014-02-18 15:43:56 PST] read: git [\"--git-dir=/home/greg/Photos/.git\",\"--work-tree=/home/greg/Photos\",\"log\",\"refs/heads/git-annex..071487394544a20253a70ada4ea71fcc28f9fc13\",\"--oneline\",\"-n1\"]
+[2014-02-18 15:43:56 PST] read: git [\"--git-dir=/home/greg/Photos/.git\",\"--work-tree=/home/greg/Photos\",\"log\",\"refs/heads/git-annex..c8aecc22da7b84bbb82f083ce783cc699cef1c67\",\"--oneline\",\"-n1\"]
+[2014-02-18 15:43:56 PST] chat: git [\"--git-dir=/home/greg/Photos/.git\",\"--work-tree=/home/greg/Photos\",\"cat-file\",\"--batch\"]
+enableremote glacier [2014-02-18 15:43:56 PST] call: glacier [\"--region=us-west-2\",\"vault\",\"create\",\"glacier-7e5c0010-2634-4a5e-bc7b-6fea84b8b947\"]
+git-annex: Failed creating glacier vault.
+\"\"\"]]
+
+What am I missing?
+
+Also, why is it trying to *create* the valut? It's already there with content in it!
+"""]]

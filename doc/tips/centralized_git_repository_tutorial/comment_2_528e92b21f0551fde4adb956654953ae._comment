@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.253.80"
+ subject="How can I resolve a non-fast-forware on the git-annex branch?"
+ date="2013-10-07T17:08:32Z"
+ content="""
+By either running `git annex sync`, or if you want to pull and push yourself, by running `git annex merge` before pushing.
+"""]]

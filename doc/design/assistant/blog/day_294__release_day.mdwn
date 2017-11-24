@@ -1,0 +1,7 @@
+Got the release out, after fixing test suite and windows build breakage.
+This release has all the features on the command line side (--all,
+--unused, etc), but several bugfixes on the assistant side, and a lot
+of Windows bug fixes.
+
+I've spent this evening adding icons to git-annex on Linux.
+Even got the Linux standalone tarball to automatically install icons.

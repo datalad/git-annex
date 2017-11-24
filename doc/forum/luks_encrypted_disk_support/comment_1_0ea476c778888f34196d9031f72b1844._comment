@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 1"
+ date="2013-12-29T17:53:39Z"
+ content="""
+Mount the drive and put a git repository or directory special remote on it.
+
+(This question seems to easy.. am I missing something?)
+"""]]

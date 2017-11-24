@@ -1,0 +1,17 @@
+Hi!
+
+So I am not sure how to deal with this issue right now. I have described in [[bugs/direct_cripple_mode_crippled_my_other_non-crippled_repos/]] how it takes a long time to replicate my `mp3` repository to another, crippled, filesystem (namely, FAT32). I am not sure what is going on there, but is seems difficult to setup an external device with only a subset of my music *and* keeping a proper directory structure in place.
+
+When I `git clone` the git-annex repository onto the device, it fails because it (apparently?) transfers all the files and runs out of space. I have also tried to `git init; git annex init; git remote add [...] ; git annex sync` with similar failure modes. All those tests take a long time and I would prefer avoiding to have to reproduce those again, but I will if necessary. :) There is over 20 000 files in the git-annex repository, and about 115GB of data in there. `.git` is about 130MB on a fresh clone on a non-crippled filesystem.
+
+Basically, my workaround so far has been to use a bare repository on the device: it works fairly well! I can transfer files to it with `git annex copy --to` and the clone is actually much faster. 
+
+This was working well on my Nokia N900 device, as the music player was fairly smart and could figure out that similar album tags belonged together. It did have trouble finding all the files (as it does a inotify on all the directories it finds, which obviously runs out of ram on that bit git-annex), but after a few restarts it worked.
+
+On this new Android 5.1 device (Cyanogenmod 12.1, to be more accurate), things don't go so well. The music player finds all the files much faster, but unfortunately, each song is put in a separate album, because they are all in different directories (because this is a bare repository).
+
+This is an issue that a [[todo/dumb__44___unsafe__44___human-readable_backend/]] would solve, but since that approach doesn't seem feasible right now, I am wondering how I can manage to deploy that repository more reliably.
+
+This is also similar to [[forum/usability__58___creating_an_archive_on_a_new_external_drive/]].
+
+Thanks for any advice! -- [[anarcat]]

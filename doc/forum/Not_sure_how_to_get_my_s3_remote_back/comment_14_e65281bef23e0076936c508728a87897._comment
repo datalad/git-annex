@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 14"
+ date="2013-04-26T22:25:04Z"
+ content="""
+Have now split out an enableremote command.
+
+<pre>
+joey@gnu:~/tmp/annex>git annex initremote foo                                 
+git-annex: There is already a special remote named \"foo\". (Use enableremote to enable an existing special remote.)
+joey@gnu:~/tmp/annex>git annex enableremote
+git-annex: Specify the name of the special remote to enable. Known special remotes: foo
+</pre>
+
+Also, I wrote something wrong before. It *is* possible to change the name used by initremote (now enableremote).
+
+With the current release of git-annex:
+
+`git annex initremote annex name=mys3`
+
+With the next release:
+
+`git annex enableremote annex name=mys3`
+"""]]

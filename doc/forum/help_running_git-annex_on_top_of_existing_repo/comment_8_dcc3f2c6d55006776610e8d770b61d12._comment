@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2014-10-20T15:25:13Z"
+ content="""
+@Torkaly just `git pull` as usual, and then run `git annex merge`
+to auto-merge the git-anne branches. Then `git push origin git-annex`
+to push the git-annex branch.
+"""]]

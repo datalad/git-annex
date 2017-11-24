@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="ColinW"
+ subject="Re Comment 1"
+ date="2016-01-01T22:39:14Z"
+ content="""
+Yes, it looks simple enough to setup. Just have to test all the git use-cases to ensure it all works before migrating everyone to (transparently) use it. There are only a few big files (~80Mb), so most people won't need to worry about the annex.
+The way I'm going to do it is:
+1. Put hook scripts into git under ./myhooks, so that a git pull will automatically update to latest hooks.
+2. After cloning the git repo, run a setup script to create symlinks from ./.git/hooks/post-checkout etc to the ./myhooks and also setup the annex with something like:
+   git annex init dummy-annex
+   git remote add dummy-annex {ip}:/dummy-annex.git
+
+So the developer does not have to notice the annex.
+Thanks Joey. 
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlr2Bj0Mzqwzl28cbrotcQUbOFoaPB3B_Y"
+ nickname="Tomasz"
+ subject="how to disable assistant"
+ date="2014-04-28T10:21:59Z"
+ content="""
+assistant daemon now starts at boot and pushes all annexed files to other repos... I'd like to do it on my own. I can stop daemon from webapp, but it starts again on boot -  how Do I disable it from autostarting ?
+"""]]

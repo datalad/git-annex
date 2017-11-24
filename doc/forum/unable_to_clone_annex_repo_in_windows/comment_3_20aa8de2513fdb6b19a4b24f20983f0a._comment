@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="drunken_sapo"
+ subject="The problem was path length"
+ date="2016-05-14T13:11:35Z"
+ content="""
+After fixing my ssh key problem I was able to test it appropiately.
+The path to the .git directory of my repo is 41 characters long (/d/juan/develop/git/xxxxxx_xxxxx_xxxxxxxx), if we add the offending file name: .git\annex\objects\fca\de3\SHA256E-s1312136--a79e30c5121f7843f023abbd36b211a245385b952926760d55a07baf8da1b24d.png\
+which is 114 characters long, it adds up to 155 characters.
+Moving the repo to /d/xxxxxx_xxxxx_xxxxxxxx solved the problem.
+However, I need it to be on that path, because some other projects use this on a relative path.
+Is there any way to circumvent this issue?
+"""]]

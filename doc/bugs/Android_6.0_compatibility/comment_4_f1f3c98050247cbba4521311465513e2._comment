@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-01-20T19:03:37Z"
+ content="""
+Unfortunately, I lack time, energy, or devices to do much work on the
+Android port. Patches would be welcome for any or all of these issues.
+
+(Although the relocations warning seems completely ignorable.)
+
+(Wow, they broke hard links? What core unix feature is next to go? Sheesh.)
+"""]]

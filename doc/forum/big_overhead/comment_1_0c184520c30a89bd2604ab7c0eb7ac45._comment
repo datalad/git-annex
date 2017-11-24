@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm8wY171R5c4u_jPmB6LU6n6Px2xePM4sE"
+ nickname="Efraim"
+ subject="comment 1"
+ date="2014-09-07T14:09:05Z"
+ content="""
+have you tried from the command line `git annex unused` to see if you have unused files in your repo? From the assistant, the option under configuration -> Unused files gives you an option to expire old files after a period of time so they get deleted from your repo.
+"""]]

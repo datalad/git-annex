@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmyEv6SesaYeke389mHdiHlavirPkGHzHI"
+ nickname="Albin"
+ subject="comment 4"
+ date="2013-11-27T17:33:22Z"
+ content="""
+Actually, that (write permissions) seems to have been the problem. Thanks! Can't imagine why pmount would not mount a device writable by my user, though.
+"""]]

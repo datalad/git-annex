@@ -1,0 +1,17 @@
+Spent a while tracking down a bug that causes a crash on OSX when setting
+up an XMPP account. I managed to find a small test case that reliably
+crashes, and sent it off to the author of the haskell-gnutls bindings,
+which had one similar segfault bug fixed before with a similar test case.
+Fingers crossed..
+
+Just finished tracking down a bug in the Android app that caused its
+terminal to spin and consume most CPU (and presumably a lot of battery).
+I introduced this bug when adding the code to open urls written to a fifo,
+due to misunderstanding how java objects are created, basically. This bug
+is bad enough to do a semi-immediate release for; luckily it's just about
+time for a release anyway with other improvements, so in the next few
+days..
+
+Have not managed to get a recent ghc-android to build so far.
+
+Guilhem fixed some bugs in `git annex unused`.

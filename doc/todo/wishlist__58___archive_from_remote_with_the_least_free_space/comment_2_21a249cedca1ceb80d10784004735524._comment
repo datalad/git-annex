@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmOsy6nbvPyXLd--qqjPMLnVIzxgZwtKlQ"
+ nickname="Nicolas"
+ subject="comment 2"
+ date="2013-09-20T19:03:13Z"
+ content="""
+I was not thinking of removable drives, but only of \"client\" repositories. Ideally, git-annex would query the remaining space of all connected client repositories to choose on which repositories to drop a copy.
+"""]]

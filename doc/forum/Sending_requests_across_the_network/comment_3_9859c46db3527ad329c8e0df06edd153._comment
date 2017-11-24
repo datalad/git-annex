@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="neocryptek@659edac901ffbc8e541a974f8f18987eeafc63bd"
+ nickname="neocryptek"
+ avatar="http://cdn.libravatar.org/avatar/d9bfdefa9b503f1ac4844a686618374e"
+ subject="comment 3"
+ date="2016-11-13T22:39:44Z"
+ content="""
+Thanks, that makes sense.
+
+All git annex repositories using the same branch will have the same (symlink) working directory right (assuming entire network has been synced eventually)?
+"""]]

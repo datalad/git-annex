@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="wsha.code+ga@b38779424f41c5701bbe5937340be43ff1474b2d"
+ nickname="wsha.code+ga"
+ subject="comment 4"
+ date="2015-06-02T21:37:36Z"
+ content="""
+Okay, sorry, in the previous posts, I misunderstood parts of how git annex works. Let me break down what I want to do again and how I have tried to set it up.
+
+Use case
+--------
+The basic use case is to have a client (could be more than one) generating content that is pushed to a server. The client would like to be able to drop any data at any time, while the server is expected to keep all data at all times. Additionally, the data stored in the server should be visible in the working tree to other users on the server (and the working tree should stay up to date). The client has push access to the server, but the server does not have pull access to the client.
+
+Set up
+------
+I have taken the following steps to try to set this up so far:
+
+* Create git annex repos on the client and server.
+* Add the server as a remote for the client.
+* Set the client's group as manual and the server's group as backup.
+* Set up the server so that its working tree is kept up to date
+  - This step was one of the ones I was expecting to work when I first asked the question
+  - To do this, I added `git merge synced/master master` to the `annex-content` hook described [here](https://git-annex.branchable.com/git-annex-shell/) and to the `post-receive` hook (I did this because the `annex-content` hook was not being called for updates pushed by the assistant -- should it be?).
+* Set up the server so its working tree remains visible to other users
+  - Set `git config core.sharedrepository group` on the server repo as described [here](http://git-annex.branchable.com/tips/shared_git_annex_directory_between_multiple_users/) so that the server's files are accessible to other users in the same group.
+  - I'm not sure if the previous step was doing anything because updated files were still being changed to the server's group. To deal with this, I added `chgrp -R shared \"$(git rev-parse --show-toplevel)\"` to the `annex-content`, `post-receive`, and `post-merge` hooks.
+
+Questions
+---------
+The above set up seems to be working now. My remaining questions are:
+
+1. Is it okay to auto merge synced/master like this? Is there a better way to do the same thing? The repo contents should only see light editing, but could I run into problems if the client is running the assistant and I try to edit files on the server directly (e.g. if some file is modified on the client and the assistant triggers it auto-merging into the server while I am modifying some other file in the server's working tree)? Should I use a separate client repo on the server if I want to modify files on the server?
+2. Is there a better way to make the group permissions stick?
+3. Is it okay to symlink just `git-annex` and `git-annex-shell` onto my path and not `git`, `git-upload-pack`, `git-receive-pack`, etc? Maybe there is no downside to using the versions that are packaged with git annex for all of my general git usage, but I'd rather just use the system git for things other than git annex.
+"""]]

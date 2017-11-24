@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2015-02-09T21:59:31Z"
+ content="""
+[[forum/repair_stuck_on_ls-tree_command]] is another case of that, and I got ahold of
+that repository for analysis.
+
+In that case, there was indeed an inverse pyramid effect where each commit
+added one more " (recovery from race)" to its parent commit.
+
+The code can clearly loop 
+if it keeps detecting a race and somehow fails to recover from it. Leading
+to a whole stack of commits with progressively longer messages.
+I don't see any way to get just one commit with a long message, which
+comment #1 seems to say happened.
+
+Apparently loops for a while and then succeeds in recovering from
+the race, since it then stops looping.
+
+I have added additional debug info to the commit message, in hopes of detecting
+what might be going wrong that causes it to loop.
+
+Seems to me there are two possibilities.
+
+One is that something else is continually changing the git-annex
+branch in a way that keeps triggering the race. If so, it might make
+sense for git-annex to do a brief random sleep (a few hundredths of a
+second) before recovering, to let whatever it is quiet down. I've done so.
+
+The other is some kind of bug where it detects a race when none
+occurred. Perhaps it's misparsing the commit or git cat-file is failing
+to output it, and so it's not finding the expected parent refs, for example.
+But in that case, why would it detect a race for many commits
+in a row, and then eventually not detect a race anymore?
+
+Also, I've made these messages no longer stack up even if it does go into a
+loop, which will at least help with the object size bloat, though not with the
+number of commits bloat.
+"""]]

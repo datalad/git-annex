@@ -1,0 +1,1 @@
+Is there a way to only add binary files with git annex add command?

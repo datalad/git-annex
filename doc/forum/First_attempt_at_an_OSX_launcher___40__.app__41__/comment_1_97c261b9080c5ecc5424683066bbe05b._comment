@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.14.141"
+ subject="comment 1"
+ date="2012-09-23T15:14:20Z"
+ content="""
+Aha! I had been fumbling trying to find the right way to do this. Looks very promising. Found the documentation for the file format: <http://developer.apple.com/library/ios/#documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html>
+
+Where do I install this thing? If I put the git-annex.app directory inside ~/Desktop/, will that put it on the user's desktop?
+
+Could you make a screenshot?
+
+I'm guessing that the NSAppleScriptEnabled is not needed, and perhaps the LSMinimumSystemVersionByArchitecture block could also be removed.
+"""]]

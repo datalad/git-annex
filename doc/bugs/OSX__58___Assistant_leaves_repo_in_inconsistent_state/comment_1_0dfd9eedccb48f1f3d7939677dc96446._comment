@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Marco"
+ subject="git annex repair --force"
+ date="2015-05-15T08:01:25Z"
+ content="""
+This command removed all history. It looks like no file was ever added.
+
+Any idea how I should handle this client repository? I could clone again from a backup. Is it possible to keep the annex UUID for a new clone?
+"""]]

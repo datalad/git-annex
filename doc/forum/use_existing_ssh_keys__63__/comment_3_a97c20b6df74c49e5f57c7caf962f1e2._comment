@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-03-03T16:57:22Z"
+ content="""
+When pairing with a local computer, both systems set up locked down ssh keys that only allow the pair to run git-annex on the repository being paired with. This does *not* involve full shell access.
+
+The \"remote server\" necessarily involves you already having shell access to the remote server. However, the ssh key that the assistant generates is again locked down to only being able to run git-annex on a single repository on the remote server.
+"""]]

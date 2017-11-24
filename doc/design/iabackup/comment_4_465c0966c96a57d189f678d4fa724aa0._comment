@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/idrn495us85k6mwfdMUolYIsyp4-#cf755"
+ subject="It's not so bad .. only about 10PB"
+ date="2015-04-30T01:19:38Z"
+ content="""
+The good news is that web-archive (.ARC) items are not publicly browsable, and that's about half of the archive's content, so you're only looking at about 10PB to backup.
+
+The bad news is that unless you can work something out with archive.org (which seems unlikely; web-archive items are restricted to protect them legally), or use the old waybackup interface (which I don't think works anymore), or use the wayback machine (which last I heard only supported a few hundred connections per second) you'll only be able to back up half their data.
+
+Still, non-web items seem like a nice place to start.
+
+
+"""]]

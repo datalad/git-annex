@@ -1,0 +1,8 @@
+Been working hard on the last several test suite failures for v6 unlocked
+files. Now I've solved almost all of them, which is a big improvement to
+my confidence in its (almost) correctness.
+
+Frustratingly, the test suite is still not green after all this work.
+There's some kind of intermittent failure related to the sqlite database.
+Only seems to happen when the test suite is running, and the error
+message is simply "Error" which is making it hard to track down..

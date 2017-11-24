@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-02-09T20:56:15Z"
+ content="""
+You see "-> ???" for symlink targets, and you are unable to delete
+files that you own, and git is unable to read objects that should be in the
+repository.
+
+This all suggests that your disk is broken. You need to check your
+filesystem for corruption, etc.
+"""]]

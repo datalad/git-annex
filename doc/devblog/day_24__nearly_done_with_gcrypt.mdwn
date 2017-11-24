@@ -1,0 +1,23 @@
+So close to being done with gcrypt support.. But still not quite there.
+
+Today I made the UI changes to support gcrypt when setting up a repository
+on a ssh server, and improved the probing and data types so it can tell
+which options the server supports. Fairly happy with how that is turning
+out.
+
+Have not yet hooked up the new buttons to make gcrypt repos. While I was
+testing that my changes didn't break other stuff, I found a bug in the
+webapp that caused it to sometimes fail to transfer one file to/from a
+remote that was just added, because the transferrer process didn't know
+about the new remote yet, and crashed (and was restarted knowing about it,
+so successfully sent any other files). So got sidetracked on fixing that.
+
+Also did some work to make the gpg bundled with git-annex on OSX be
+compatable with the config files written by MacGPG. At first I was going to
+hack it to not crash on the options it didn't support, but it turned out
+that upgrading to version 1.4.14 actually fixed the problem that was making
+it build without support for DNS.
+
+----
+
+Today's work was sponsored by Thomas Hochstein.

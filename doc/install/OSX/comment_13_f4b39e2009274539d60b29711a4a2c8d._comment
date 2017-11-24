@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="lhunath@3b4ff15f4600f3276d1776a490b734fca0f5c245"
+ nickname="lhunath"
+ subject="The application cannot be opened because its executable is missing."
+ date="2016-05-05T04:33:06Z"
+ content="""
+Just downloaded the DMG, copied the .app into /Applications and ran it; does nothing, from terminal:
+
+$ open -W /Applications/git-annex.app
+The application cannot be opened because its executable is missing.
+
+$ /Applications/git-annex.app/Contents/MacOS/git-annex-webapp
+$
+unable to start webapp in repository /Users/lhunath/annex: Not in a git repository.
+Launching web browser on file:///var/folders/np/v9byg9092bbf31jw5cydzszm0000gn/T/webapp1622650073984943658.html
+
+$ /Applications/git-annex.app/Contents/MacOS/git-annex version
+git-annex version: 6.20160427-gd0036b9
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV FsEvents XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+"""]]

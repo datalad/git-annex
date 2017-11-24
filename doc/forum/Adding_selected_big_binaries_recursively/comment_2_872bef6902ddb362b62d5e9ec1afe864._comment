@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="JohnFisher"
+ subject="didn't work for me, perhaps I did the attributes wrong?"
+ date="2016-08-04T20:43:15Z"
+ content="""
+I created .gitattributes in the root of my repo:
+jfisher@buildos1:~/annex$ cat .gitattributes
+* annex.largefiles=(largerthan=100mb)
+jfisher@buildos1:~/annex$ git config -l
+user.email=jfisher@intouchhealth.com
+user.name=John Fisher
+core.repositoryformatversion=0
+core.filemode=true
+core.bare=false
+core.logallrefupdates=true
+annex.uuid=75d91aa9-f5fc-45b8-b62c-e6050ed7c3d5
+annex.version=5
+
+where I intend for all users of the repo to automatically add all files larger than 100Mb as annexed and add all other files as conventional git.
+
+I ran 
+git annex add
+and small text files were staged as links, as well as a large file
+
+Comment? Ideas?
+"""]]

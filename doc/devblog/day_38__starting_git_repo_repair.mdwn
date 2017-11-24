@@ -1,0 +1,11 @@
+Goal for the rest of the month is to build automatic recovery git
+repository corruption. Spent today investigating how to do it and came up
+with a fairly [[detailed_design|design/assistant/disaster_recovery]]. It
+will have two parts, first to handle repository problems that can be fixed
+by fetching objects from remotes, and secondly to recover from problems
+where data never got sent to a remote, and has been lost.
+
+In either case, the assistant should be able to detect the problem and
+automatically recover well enough to keep running. Since this also affects
+non-git-annex repositories, it will also be available in a standalone
+`git-recover-repository` command.

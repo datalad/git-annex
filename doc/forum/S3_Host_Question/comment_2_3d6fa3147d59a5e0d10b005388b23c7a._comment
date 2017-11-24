@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnKhw0-Tu5oHjeoz_gAP4Nu5V9uo8ta3hM"
+ nickname="Robert"
+ subject="unknown special remote"
+ date="2013-12-13T15:12:37Z"
+ content="""
+How does machine B know about the remote?  Machines A & B are separate and don't share references. Am I missing a step? 
+"""]]

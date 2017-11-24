@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="aloukian@c071735c08bc04266b792aa478ad1bae2d6a8b50"
+ nickname="aloukian"
+ subject="comment 2"
+ date="2015-09-11T00:42:03Z"
+ content="""
+Sorry, I should have clarified. I was not sure how to add a commit message.
+
+I played with a test repo and I think I figured it out. What I tried was this:
+   
+```
+$ git init test-repo
+$ touch test.txt
+$ git add test.txt
+$ git commit -m \"initial commit\"
+$ git annex init
+$ git config annex.largefiles=\"*.pdf\"
+$ echo \"updated\" > test.txt
+$ git annex add test.txt
+$ git annex sync -m \"updated test.txt\"
+```
+
+So if I understand correctly, in direct mode 
+
+- ```git add``` ->  ```git annex add``` 
+- ```git commit -m MSG``` -> ```git annex sync -m MSG```
+
+```git log``` now shows the right message, but I am still not sure how to check whether a file is in the annex or directly in the git tree. I suppose I could just make aliases for git add and git commit, but I wouldn't be able to add arbitrary files to git annex without playing with annex.largefiles. For example, if I had many small ```.txt``` files and one large file and I wanted to just add that large file to the git annex, I'd have to change the largefiles setting.
+
+Is there a better way of doing this or is loss of functionality intrinsic until Windows symlinks work?
+"""]]

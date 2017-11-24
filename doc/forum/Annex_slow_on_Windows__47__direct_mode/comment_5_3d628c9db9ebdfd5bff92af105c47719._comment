@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="divB"
+ ip="171.67.172.69"
+ subject="comment 5"
+ date="2014-07-07T01:16:21Z"
+ content="""
+One more thing: integration in TortoiseGit would be sooooooooo great! You would then even be able to let novice computer users use git-annex.
+
+I added a feature request long time ago but it's on hold: http://code.google.com/p/tortoisegit/issues/detail?id=2166
+
+I do hope that git-annex becomes more popular to increase the chance that it will be built into that...
+
+"""]]

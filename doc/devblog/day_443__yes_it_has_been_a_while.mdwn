@@ -1,0 +1,30 @@
+First day working on git-annex in over a month. I've been away preparing
+for and giving two talks at Linux Conf Australia and then recovering from
+conference flu, but am now raring to dive back into git-annex development!
+
+The backlog stood at over 300 messages this morning, and is down to 274 now. So
+still lots of catching up to do. But nothing seems to have blown up badly in my
+absence. The [[tips/antipatterns]] page was a nice development while I was
+away, listing some ways people sometimes find to shoot their feet.
+Read and responded to lots of questions, including one user who mentioned
+a scientific use case: "We are exploring use of git-annex to manage the
+large boundary conditions used within our weather model."
+
+The main bit of coding today was adding a new `git annex config` command.
+This is fairly similar to `git config`, but it stores the settings in the
+git-annex branch, so they're visible in all clones of the repo (aka
+"global"). Not every
+setting will be configurable this way (that would be too expensive, and too
+foot-shooty), but starting with annex.autocommit I plan to enable
+selected settings that make sense to be able to set globally. 
+If you've wanted to be able to configure some part of git-annex in all
+clones of a repository, suggestions are welcome in the
+[todo item about this](https://git-annex.branchable.com/todo/wishlist__58___per-repository_autocommit__61__false/)
+
+`git annex vicfg` can also be used to edit the global settings, and I also
+made it able to edit the global `git annex numcopies` setting which was
+omitted before. There's no real reason to have a separate `git annex
+numcopies` command now, since `git annex config` could configure
+global annex.numcopies.. but it's probably not worth changing that.
+
+Today's work was sponsored by Trenton Cronholm on Patreon.

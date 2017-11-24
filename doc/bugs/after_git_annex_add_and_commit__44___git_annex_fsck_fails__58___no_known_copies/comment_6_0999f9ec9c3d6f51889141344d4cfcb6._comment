@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2016-02-19T18:52:25Z"
+ content="""
+Ok, the repository being dead certianly explains why fsck found a problem.
+
+It may be that fsck should have a better message in this case. Like
+"only dead repository had copies of the file".
+
+Repositories are only ever marked dead on user request. There are a few
+ways besides `git annex dead` that you could have done it. Perhaps trying
+to delete the repo in the webapp, or changing it in `git annex vicfg`.
+You can check out the git-annex branch and examine the history of the 
+trust.log file to see when it was changed to dead.
+"""]]

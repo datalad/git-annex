@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="Xyem"
+ ip="87.194.19.134"
+ subject="comment 1"
+ date="2014-03-25T08:54:23Z"
+ content="""
+This is a TODO:
+
+http://git-annex.branchable.com/design/metadata/
+
+    unmatched files in filtered branches
+
+    TODO Files not matching the view should be able to be included in the filtered branch, in a special location, an \"other\" directory.
+
+In the meantime, I do this before switching to the view:
+
+    git annex metadata -s fieldIwant?=untagged
+
+This shows the files without any \"fieldIwant\" in the directory \"untagged\". Afterwards, I could (but don't need to in my workflow, it automatically gets removed), do this to remove it:
+
+    git annex metadata -s fieldIwant-=untagged
+
+What the \"?=\" does is add that metadata only if the \"fieldIwant\" hasn't been set at all.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="206.74.132.139"
+ subject="comment 13"
+ date="2014-02-06T17:00:59Z"
+ content="""
+Yes, git-annex ensures your configured [[numcopies|copies]] is met before dropping a file.
+"""]]

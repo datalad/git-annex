@@ -1,0 +1,42 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="unable to reproduce, please provide transcript"
+ date="2014-07-11T19:36:37Z"
+ content="""
+I have tried to reproduce this problem on OSX, but it seems to work fine:
+
+<pre>
+oberon:xx joeyh$ git annex assistant 
+oberon:xx joeyh$ date > foo
+oberon:xx joeyh$ git log --stat
+commit 93a208c6aa0080e70a636181606f53af5f2c4441
+Author: Joey Hess <joeyh@oberon.local.tam-lin.net>
+Date:   Fri Jul 11 15:33:50 2014 -0400
+
+ foo | 1 +
+ 1 file changed, 1 insertion(+)
+oberon:xx joeyh$ mv foo bar
+oberon:xx joeyh$ git log --stat
+commit 495592b2977ee96029db99761d20396577ff3c51
+Author: Joey Hess <joeyh@oberon.local.tam-lin.net>
+Date:   Fri Jul 11 15:33:54 2014 -0400
+
+ bar | 1 +
+ foo | 1 -
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+
+commit 93a208c6aa0080e70a636181606f53af5f2c4441
+Author: Joey Hess <joeyh@oberon.local.tam-lin.net>
+Date:   Fri Jul 11 15:33:50 2014 -0400
+
+ foo | 1 +
+ 1 file changed, 1 insertion(+)
+oberon:xx joeyh$ git annex status
+oberon:xx joeyh$ 
+</pre>
+
+> when I run git annex add on the files it says it added them but instead they still show up as ??
+
+This must be the root of whatever the problem is, so please provide a transcript of you doing that.
+"""]]

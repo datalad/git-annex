@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-05-27T18:59:11Z"
+ content="""
+It might make sense to be added to some tip that's about setting up
+git-annex-shell with untrusted users. 
+
+The git-annex-shell man pages documents this already of course.
+"""]]

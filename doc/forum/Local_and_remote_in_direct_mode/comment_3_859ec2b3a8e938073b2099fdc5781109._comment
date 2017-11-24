@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 3"
+ date="2014-09-18T17:55:21Z"
+ content="""
+Petter_petterson, I think you're mistaken about that. If you were right, that would be a massive bug in git -- nothing git-annex specific about that command after all.
+"""]]

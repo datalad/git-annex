@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="binx"
+ avatar="http://cdn.libravatar.org/avatar/1c2b6fe37ed500f4b72c105e42e81ba9"
+ subject="comment 1"
+ date="2016-12-16T13:57:41Z"
+ content="""
+I updated git-annex on the server. I now *sometimes* get automatic two-way syncing to happen with assistant. But it is not really consistent or reliable. One thing that seems to consistently fail is when I drag and drop a file into the annex folder on the mac. When I drag filename.txt into ~/annex, and then run git annex sync, I get the message:
+
+    $ git annex sync
+    commit  
+    On branch adjusted/master(unlocked)
+    Your branch is up-to-date with 'origin/adjusted/master(unlocked)'.
+    Untracked files:
+    	.DS_Store
+    	filename.txt
+    
+    nothing added to commit but untracked files present
+    ok
+    pull u 
+    ok
+    pull origin 
+    ok
+
+"""]]

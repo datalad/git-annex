@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Farhan"
+ subject="Thanks"
+ date="2016-06-24T06:35:10Z"
+ content="""
+And the other repositories (which are syncing correctly), they are also marked as client? Clients should sync with each other whenever they can connect to each other, but perhaps your client repositories cannot connect to each other?
+
+[Here is a comment from Joey](https://git-annex.branchable.com/forum/Two_computer_setup__58_____34__transfer__34___or___34__full_backup__34___repository_groups__63__/) about a similar setup. He says you might need to set up an XMPP account for the various clients to message each other when they have new changes? But that was a long time ago. And anyways it seems like the webapp would be doing this automatically (yet in your post you say the computers do not use XMPP?).
+
+I think everyone would benefit from more info still. For example, what does the webapp look like when you are syncing this repo? Are all the clients and the backup on the same page? Is each client only combined to the backup itself and no other repos? What kind of remote repos are the other computers?
+
+Hope you don't mind the questions, I'm also curious about this issue myself. Thanks for bringing it up.
+"""]]

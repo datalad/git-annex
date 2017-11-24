@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="tomas"
+ ip="64.103.25.104"
+ subject="comment 2"
+ date="2013-04-23T11:50:21Z"
+ content="""
+According to documentation:
+http://git-annex.branchable.com/assistant/
+The git-annex assistant comes as part of git-annex, starting with version 3.20120924.
+
+So it should be there in 3.20121017, no?
+"""]]

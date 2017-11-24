@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawllyDAwjTPuM6G2d3eKE481V0qGXRKtF8s"
+ nickname="Pieter"
+ subject="Syncing metadata only with Synology NAS and git annex"
+ date="2014-10-06T12:03:35Z"
+ content="""
+I am not able to get full syncing working. It says \"syncing enabled (metadata only)\".
+When I click on Actions -> Edit it says:
+
+Just a git repository. 
+
+This repository is not currently set up as a git annex; only git metadata is synced with this repository.
+
+If this repository's ssh server has git-annex installed, you can upgrade this repository to a full git annex, which will store the contents of your files, not only their metadata.
+
+When I try to upgrade the repository it does not work. The log says:
+
+sh: git-annex-shell: not found
+
+rsync: connection unexpectedly closed (0 bytes received so far) [sender]
+
+rsync error: remote command not found (code 127) at io.c(226) [sender=3.1.1]
+
+I'm using Version: 5.20140717 on the Linux Ubuntu 14.10.
+
+Ssh'ing from Ubuntu to gituser@synology works fine and shows the git-annex-shell options
+
+Any ideas?
+
+"""]]

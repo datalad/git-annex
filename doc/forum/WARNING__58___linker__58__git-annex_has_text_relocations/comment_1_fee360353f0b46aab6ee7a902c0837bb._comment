@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.146"
+ subject="comment 1"
+ date="2014-03-05T20:38:03Z"
+ content="""
+<http://stackoverflow.com/questions/20141538/mylib-so-has-text-relocations-this-is-wasting-memory-and-is-a-security-risk-pl>  
+Says that should have been fixed in ndk-r8c's gcc, but git-annex is already built with ndk-r9b. It might be though, that the llvm compiler still has the problem. In any case, I doubt there is a real security issue here, it's probably just a binary exploit hardening thing.
+
+As for the git log, git users the less pager by default, but of course it's not necessary and so not included on Android. You can `git config core.pager cat` to get around this.
+"""]]

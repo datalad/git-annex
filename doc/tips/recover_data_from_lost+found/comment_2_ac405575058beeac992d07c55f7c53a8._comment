@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.35"
+ subject="comment 2"
+ date="2014-01-03T21:19:39Z"
+ content="""
+The `git annex fsck` at the end will verify if you've managed to recover all the files.
+"""]]

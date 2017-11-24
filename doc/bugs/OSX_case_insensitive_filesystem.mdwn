@@ -1,0 +1,56 @@
+### Please describe the problem.
+
+I copied one entire folder from my OSX local machine to a linux server.
+That folder was version controlled by git with git annex big files.
+On the linux machine the symlinks were broken.
+
+In particular, on my local machine, a file like:
+```
+file.vcf.gz.tbi -> ../../.git/annex/objects/J4/Pg/SHA256E-s572463--85b357849ddad75fc1138b27d6af62cf410876e329ff035f21a631bd53146224.gz.tbi/SHA256E-s572463--85b357849ddad75fc1138b27d6af62cf410876e329ff035f21a631bd53146224.gz.tbi
+```
+
+but the file resides in:
+
+```
+../../.git/annex/objects/j4/Pg/SHA256E-s572463--85b357849ddad75fc1138b27d6af62cf410876e329ff035f21a631bd53146224.gz.tbi/SHA256E-s572463--85b357849ddad75fc1138b27d6af62cf410876e329ff035f21a631bd53146224.gz.tbi
+```
+
+Notice the difference between `J4` and `j4`. This is not a problem on my OSX but becomes one on a linux machine.
+
+### What steps will reproduce the problem?
+
+on local machine:
+```rsync -aztv folder/ remote-machine:folder/```
+
+on server:
+```find . -type l -exec sh -c "file -b {} | grep -q ^broken" \; -print```
+listed every symlink as broken.
+
+### What version of git-annex are you using? On what operating system?
+
+git annex version 6.20160318
+
+my special remote is rsync.net
+
+OSX 10.11.4
+
+Not sure of which option were used when creating ther file system, but I suspect a HFS+ case insensitive.
+
+### Please provide any additional information below.
+
+I wanted to do this full copy because the transfer speed from the special remote was too slow.
+Since then I got decent speeds, and if I do `git annex get .` on the server, all is fine.
+So, my "problem" is solved but I'm still wondering why the discrepant folder capitalization.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Sure, it works marvels :-) Also what I was trying to do is perhaps not by the book...
+

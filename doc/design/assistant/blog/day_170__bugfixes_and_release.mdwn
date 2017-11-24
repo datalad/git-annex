@@ -1,0 +1,8 @@
+Fixed a goodly amount of bugs today.
+
+The most interesting change was that in direct mode, files using the same
+key are no longer hardlinked, as that could cause a surprising behavior if
+modifying one, where the other would also change.
+
+Made a release, which is almost entirely bug fixes. Debian amd64 build
+included this time. :)

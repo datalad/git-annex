@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-09-05T19:43:23Z"
+ content="""
+You're using a version of git-annex that is nearly 2 years old.
+Upgrading to a new version should be the very first thing you try in such a situation..
+
+Sounds like probably this changelog entry is relevant, from version 
+6.20160418.
+
+  * Fix hang when dropping content needs to lock the content on a
+    ssh remote, which occurred when the remote has git-annex version
+    5.20151019 or newer. (The bug was in the client side; the remote
+    git-annex-shell does not need to be upgraded.)
+
+And it appears that hang first appeared in git-annex version 5.20151009.
+"""]]

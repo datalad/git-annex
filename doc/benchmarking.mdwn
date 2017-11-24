@@ -1,0 +1,3 @@
+This page exsists to collect benchmarking data about git-annex, so it can
+be referred to later. If you have a specific instance where git-annex seems
+unncessarily slow, please file a bug report about it.

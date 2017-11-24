@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-05-16T17:40:20Z"
+ content="""
+I assume gitblit is something like gitosis or gitolite. These let a user ssh in to a server to access a git repository, but they limit the commands they can run to `git-shell`. In order to use git-annex get/copy to such a repository, it needs to be able to run `git-annex-shell`, which is like git-shell but with more commands available. If gitblit can be made allow git-annex-shell to be run, it will work.
+"""]]

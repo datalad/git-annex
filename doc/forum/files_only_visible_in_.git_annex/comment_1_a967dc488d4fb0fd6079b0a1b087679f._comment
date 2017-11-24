@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="cbaines"
+ subject="comment 1"
+ date="2015-06-17T17:20:26Z"
+ content="""
+Could you post the output of \"git annex info\" on both your laptop and desktop?
+
+Also, what operating system are you using on both device?
+"""]]

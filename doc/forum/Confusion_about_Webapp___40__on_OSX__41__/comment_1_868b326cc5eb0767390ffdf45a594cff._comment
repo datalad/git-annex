@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-11-30T20:13:39Z"
+ content="""
+git-annex can be built with or without support for the webapp. I suppose
+that your brew install is of the latter variety. For a build with the
+webappp included: <http://git-annex.branchable.com/install/OSX/> (or ask
+the brew developers to include the webapp in their build)
+"""]]

@@ -1,0 +1,73 @@
+[[!comment format=mdwn
+ username="RaspberryPie"
+ ip="37.221.161.234"
+ subject="Nope"
+ date="2013-09-24T22:05:55Z"
+ content="""
+Your guess is right, Joey, I'm configuring by hand as the ARM machine has no webapp. And yes, I'm mostly sure I set up everything correctly. The XMPP account is working, and my configuration of git-annex is all but identical to your example.
+
+Here's what I do. First on the machine with the webapp:
+
+    mkdir ~/test
+    cd ~/test
+    git init
+    git annex init
+    git annex webapp
+
+I set up XMPP from within the webapp. The file ~/test/.git/annex/creds/xmpp is created with the correct credentials. (BTW: The file's default permissions are 620 instead of 600 - is that a bug?)
+
+I add a file or two to the annex for good measure. Then, on the ARM machine:
+
+    mkdir ~/test
+    cd ~/test
+    git init
+    git annex init
+    mkdir .git/annex/creds
+    scp -2 webappmachine:~/test/.git/annex/creds/xmpp .git/annex/creds 
+    chmod 600 .git/annex/creds/xmpp
+    git remote add webappmachine xmpp::login@server
+
+The final step is to edit .git/config on the ARM machine. The [remote] section now looks like this:
+
+    [remote \"webappmachine\"]
+        url = xmpp::login@server
+        fetch = +refs/heads/*:refs/remotes/webappmachine/*
+        annex-uuid = aaaaaaaa-bbbb-cccc-dddddddddddd
+
+where aaaaaaaa-bbbb-cccc-dddddddddddd is the return value of `git config --get annex.uuid` on the webapp machine.
+
+I then run `git annex assistant` on the ARM machine and expect the two machines to synchronize their metadata, e.g. the number of knownn annex keys in the repo. But it doesn't happen.
+
+So I set `debug = true`, restart the assistants and check the log. This is what I get on the webapp machine:
+
+    [2013-09-24 17:45:41 EDT] XMPPClient: connected a5/25577ac4-3248-4c83-8391-bd93708bcf2b
+    [2013-09-24 17:45:41 EDT] XMPPClient: received: [\"Presence from a5/dc9bcde8-fe18-47de-807c-c620019279f2 Just (Element {elementName = Name {nameLocalName = \\"git-annex\\", nameNamespace = Just \\"git-annex\\", namePrefix = Nothing}, elementAttributes = [(Name {nameLocalName = \\"query\\", nameNamespace = Nothing, namePrefix = Nothing},[ContentText \\"\\"])], elementNodes = []})\",\"QueryPresence\"]
+    [2013-09-24 17:45:42 EDT] XMPPClient: received: [\"Presence from a5/900e3b6e-a7f4-4a6a-8d12-ed94de429258 Just (Element {elementName = Name {nameLocalName = \\"git-annex\\", nameNamespace = Just \\"git-annex\\", namePrefix = Nothing}, elementAttributes = [(Name {nameLocalName = \\"push\\", nameNamespace = Nothing, namePrefix = Nothing},[ContentText \\"43357474-abbb-4667-a334-e4615ea6d4a2\\"])], elementNodes = []})\",\"NotifyPush [UUID \\"43357474-abbb-4667-a334-e4615ea6d4a2\\"]\"]
+    [2013-09-24 17:45:42 EDT] XMPPClient: push notification for
+    [2013-09-24 17:45:42 EDT] read: git [\"--git-dir=/home/pi/test/.git\",\"--work-tree=/home/pi/test\",\"symbolic-ref\",\"HEAD\"]
+    [2013-09-24 17:45:42 EDT] read: git [\"--git-dir=/home/pi/test/.git\",\"--work-tree=/home/pi/test\",\"show-ref\",\"refs/heads/master\"]
+    [2013-09-24 17:45:42 EDT] XMPPClient: received: [\"Pushing \\"a59\\" (CanPush (UUID \\"d50c4cc9-e7c0-4ef0-84c6-f11012051eb9\\") [34f875cc7fa1198414f93990af9ab78e6cee893e,6fad42234060361435d6cf2ab4bd40e438c2d05c])\"]
+    [2013-09-24 17:45:42 EDT] read: git [\"--git-dir=/home/pi/test/.git\",\"--work-tree=/home/pi/test\",\"show-ref\",\"git-annex\"]
+    [2013-09-24 17:45:42 EDT] read: git [\"--git-dir=/home/pi/test/.git\",\"--work-tree=/home/pi/test\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-09-24 17:45:42 EDT] read: git [\"--git-dir=/home/pi/test/.git\",\"--work-tree=/home/pi/test\",\"log\",\"refs/heads/git-annex..6fad42234060361435d6cf2ab4bd40e438c2d05c\",\"--oneline\",\"-n1\"]
+    [2013-09-24 17:45:42 EDT] chat: git [\"--git-dir=/home/pi/test/.git\",\"--work-tree=/home/pi/test\",\"cat-file\",\"--batch\"]
+    [2013-09-24 17:45:42 EDT] XMPPClient: received: [\"Ignorable Presence from a5/25577ac4-3248-4c83-8391-bd93708bcf2b Just (Element {elementName = Name {nameLocalName = \\"git-annex\\", nameNamespace = Just \\"git-annex\\", namePrefix = Nothing}, elementAttributes = [], elementNodes = []})\"]
+    [2013-09-24 17:45:42 EDT] XMPPClient: received: [\"Unknown message\"]
+    [2013-09-24 17:45:42 EDT] XMPPClient: received: [\"Pushing \\"a59\\" (PushRequest (UUID \\"d50c4cc9-e7c0-4ef0-84c6-f11012051eb9\\"))\"]
+    [2013-09-24 17:45:42 EDT] XMPPSendPack: started running push Pushing \"a59\" (PushRequest (UUID \"d50c4cc9-e7c0-4ef0-84c6-f11012051eb9\"))
+    [2013-09-24 17:45:42 EDT] read: git [\"--git-dir=/home/pi/test/.git\",\"--work-tree=/home/pi/test\",\"symbolic-ref\",\"HEAD\"]
+    [2013-09-24 17:45:42 EDT] XMPPClient: received: [\"Ignorable Presence from a5/25577ac4-3248-4c83-8391-bd93708bcf2b Just (Element {elementName = Name {nameLocalName = \\"git-annex\\", nameNamespace = Just \\"git-annex\\", namePrefix = Nothing}, elementAttributes = [], elementNodes = []})\"]
+    [2013-09-24 17:45:42 EDT] read: git [\"--git-dir=/home/pi/test/.git\",\"--work-tree=/home/pi/test\",\"show-ref\",\"refs/heads/master\"]
+    [2013-09-24 17:45:42 EDT] call: git [\"--git-dir=/home/pi/test/.git\",\"--work-tree=/home/pi/test\",\"branch\",\"-f\",\"synced/master\"]
+    [2013-09-24 17:45:42 EDT] XMPPSendPack: finished running push Pushing \"a59\" (PushRequest (UUID \"d50c4cc9-e7c0-4ef0-84c6-f11012051eb9\")) False
+
+And from then on, in two-minute intervals:
+
+    [2013-09-24 17:47:42 EDT] XMPPClient: received: [\"Unknown message\"]
+    [2013-09-24 17:49:42 EDT] XMPPClient: received: [\"Unknown message\"]
+    [2013-09-24 17:51:42 EDT] XMPPClient: received: [\"Unknown message\"]
+    
+The log on the ARM machine is rather unhelpful. Actually it doesn't even contain the string \"XMPP\". This looks to me like the webapp machine tries to communicate via Jabber but doesn't get any intelligible answer. And this is the reason I wondered whether the problem lies with my self-compiled ARM git-annex  binary. I actually spent a while compiling 4.20130909 with all flags but webapp and webdav, but the result is still the same. 
+
+Any other ideas what I'm doing wrong here?
+"""]]

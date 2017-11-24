@@ -1,0 +1,11 @@
+Good progress on `git annex export` today. Changing the exported tree now
+works and is done efficiently. Resuming an export is working. Even
+detecting and resolving export conflicts should work (have not tested it).
+The necessary information about the export is recorded in the git-annex
+branch, including grafting in the exported tree there.
+
+There are some known problems when the tree that is exported contains
+multiple files with the same content. And git-annex is not yet able
+to download exported files from a special remote. Handling both of those
+needs way to get from keys to exported filenames. So, I plan to
+populate a sqlite database with that information next.

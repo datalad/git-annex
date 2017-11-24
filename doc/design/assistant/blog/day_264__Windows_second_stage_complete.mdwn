@@ -1,0 +1,21 @@
+The Windows port can now do everything in the [[walkthrough]]. It can use
+both local and remote git repositories. Some special remotes work
+(directory at least; probably rsync; likely any other special remote that
+can have its dependencies built). Missing features include most special
+remotes, gpg encryption, and of course, the assistant.
+
+Also built a NullSoft installer for git-annex today. This was made very
+easy when I found the Haskell ncis library, which provides a DSL embedding
+the language used to write NullSoft installers into Haskell. So I didn't
+need to learn a new language, yay! And could pull in all my helpful
+Haskell utility libraries in the program that builds the installer.
+
+The only tricky part was: How to get git-annex onto PATH? The standard way
+to do this seems to be to use a multiple-hundred line include file. Of
+course, that file does not have any declared license..  Instead of that,
+I used a hack. The git installer for Windows adds itself to PATH, and is
+a pre-requisite for git-annex. So the git-annex installer just installs
+it into the same directory as git.
+
+So.. I'll be including this first stage Windows port, with installer in
+the next release. Anyone want to run a Windows autobuilder?

@@ -1,0 +1,20 @@
+the git-annex branch of a repository i've had running since 2010 has grown to unmanagable dimensions (5gb in a fresh clone of the git-annex branch, while the master branch has merely 40mb, part of which is due to checked-in files), resulting in git-annex-merges to take in the order of magnitude of 15 minutes. getting an initial clone of the git-annex branch (not the data) takes hours alone in the "remote: Counting objects" phase (admittedly, the origin server is limited in ram, so it spends its time swapping the git process back and forth).
+
+is there a recommended way for how to reset the git-annex branch in a coordinated way? of course, this would have to happen on all copies of the repo at the same time.
+
+the workflow i currently imagine is
+
+* rename all copies of the repository (the_repo → the_repo-old, the_repo.git → the_repo-old.git)
+* clone the old origin repository to a new origin with --single-branch. (this would be *the* oportunity to ``git filter-branch --prune-empty --index-filter 'git rm --cached --ignore-unmatch .git-annex -r' master`` as well, to get rid of commits of pre-whatever versions)
+* ``git annex init`` on the master repository
+* clone it to all the other copies and ``git annex init`` there
+* set all the configuration options (untrusted repos etc) again
+* either
+  * ``git annex reinject`` the files that are already present on the respective machines, or
+  * move the .git/annex/objects files over from the original locations, and use ``git annex fsck`` to make git-annex discover which files it already has, if that works. (i have numcopies=2, thus i'd dare to move instead of copy even when trying this out the first time. complete copies, even of partially checked out clones, will exceed the capacities of most clients)
+
+my questions in that endeavor are:
+
+* is there already a standard workflow for this?
+* if not, will the above do the trick?
+* can anything be done to avoid such problems in future?

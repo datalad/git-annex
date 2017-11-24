@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 3"
+ date="2014-10-02T15:40:40Z"
+ content="""
+Using git does not affect the timestamps or other metadata of files stored by git-annex, which git knows nothing about. It will perhaps change the timestamps of the symlinks that git changes. It you really wanted to avoid that, you could `git clone` the repository and do all the git commands in the clone of the repository, without touching the original repo.
+
+Whether commands like `git checkout` and `git revert` are intuitive depends on how intuitive you find git, I suppose. It sure seems more intuitive to me to reuse git commands that work just fine, rather than adding a whole new set of commands.
+"""]]

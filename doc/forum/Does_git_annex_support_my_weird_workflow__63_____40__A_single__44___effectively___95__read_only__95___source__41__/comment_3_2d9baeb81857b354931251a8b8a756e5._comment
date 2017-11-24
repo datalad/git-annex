@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="rpglover64@acd6753c831cc132736943bec350391fcb2ff77d"
+ nickname="rpglover64"
+ subject="Third time's the charm?"
+ date="2016-02-08T20:44:11Z"
+ content="""
+So I tried again (I got read-write access to the top level of the directory I want to share, so creating a .git was straightforward), and I had two things get in my way. I have a lot of relatively large files (~10,000), so I decided to use the WORM backend rather than waiting for the SHA to complete. Even so, adding everything was slow-going.
+
+Since the most interesting feature of git-annex is queueing up downloads to sync on LAN, is there a way to add the files especially quickly by sacrificing some more safety? Essentially, I want to use git-annex as a glorified file server, letting my laptop do all the interesting work.
+
+Second, when I Ctrl-C during `git annex add`, progress is not preserved in a direct-mode repository, so the add needs to start all over again.
+"""]]

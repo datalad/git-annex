@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2017-06-07T16:30:29Z"
+ content="""
+I would not expect the behavior with a direct mode repo to be any
+different. Unless the file in direct mode is getting modified, or
+perhaps git-annex gets confused and thinks it's modified. Either would
+prevent dropping the content from the transfer repository to avoid losing
+the unmodified content.
+"""]]

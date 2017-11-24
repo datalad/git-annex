@@ -1,0 +1,104 @@
+The [2013 git-annex user survey](http://git-annex-survey.branchable.com/polls/2013/)
+has been running for several weeks and around 375 people have answered
+at least the first question. While I am going to leave it up through the
+end of the year, I went over the data today to see what interesting
+preliminary conclusions I can draw.
+
+* 11% build git-annex from source. More than I would have guessed.
+
+* 20% use the prebuilt versions from the git-annex website.
+  
+  This is a number to keep in mind later, when more people have upgraded to
+  the last release, which checks for upgrades. I can run some stats on
+  the number of upgrade checks I receive, and multiplying that by 5 would
+  give a good approximation of the total number of computers running
+  git-annex.
+
+* I'm surprised to see so many more Linux (79%) than OSX (15%) users.
+  Also surprising is there are more Windows (2%) than Android (1%) users.
+  (Android numbers may be artificially low since many users will use it in
+  addition to one of the other OSes.)
+
+* Android and Windows unsurprisingly lead in ports requested, but the 
+  Synology NAS is a surprise runner up, with 5% (more than IOS).
+
+  In theory it would not be too hard to make a standalone arm tarball,
+  which could be used on such a device, although IIRC the Synology had
+  problems with a too old linker and libc. It would help if I could make
+  the standalone tarball not depend on the system linker at all.
+  
+  A susprising number (3%) want some kind of port the the Raspberry Pi, which
+  is weird because I'd think they'd just be using Raspbian on it.. but a
+  standalone arm tarball would also cover that use case.
+
+* A minimum of 1664 (probably closer to 2000) git annex repositories are being
+  used by the 248 people who answered that question. Around 7 repositories
+  per person average, which is either one repository checked out on 7
+  different machines or two repositories on 3 machines, etc.
+
+* At least 143 terabytes of data are being stored in git-annex. This does
+  not count redundant data. (It also excludes several hundred terabytes from
+  one instituion that I don't think are fully online yet.)
+  Average user has more than half a terabyte of data.
+
+* 8% of users store scientific data in git-annex! :) A couple of users are
+  using it for game development assets, and 5% of users are using it for
+  some form of business data.
+
+* Only 10% of users are sharing a git-annex repository with at least one
+  other person. 27% use it by themselves, but want to get others using
+  their repositories. This probably points to it needing to be easier for
+  nontechnical users.
+
+* 61% of git-annex users have good or very good knowledge of git.
+  This question intentionally used the same wording as the 
+  [general git user survey](https://git.wiki.kernel.org/index.php/GitSurvey2012),
+  so the results can be compared. The curves have somewhat different
+  shapes, with git-annex's users being biased more toward the higher
+  knowledge levels than git's users.
+
+* The question about how happy users are also used the same wording.
+  While 74% of users are happy with git-annex, 94% are similarly happy with
+  git, and a while the median git-annex user is happy, the median git user
+  is very happy.
+  
+  The 10% who wrote in "very enthusiastic, but still often
+  bitten by quirks (so not very happy yet, but with lots of confidence in
+  the potential" might have thrown off this comparison some, but they
+  certianly made their point!
+
+* 3% of respondants say that a bug is preventing them from using git-annex,
+  but that they have not reported the bug yet. Frustrating! 1% say that a
+  bug that's been reported already is blocking them.
+
+* 18% wrote in that they need the webapp to support using github (etc)
+  as a central server. I've been moving in that direction with the
+  encryption and some other changes, so it's probably time to make a UI for
+  that.
+
+* 12% want more control over which files are stored locally when using the
+  assistant.
+
+* A really surprising thing happened when someone wrote in that I should
+  work on "not needing twice disk space of repo in direct mode", and 5% of
+  people then picked this choice. This is some kind of documentation
+  problem, because of course git-annex never needs 2x disk space, whether
+  using direct mode or not. That's one of its advantages over git!
+
+* Somewhere between 59 and 161 of the survey respondants use Debian.
+  I can compare this with [Debian popularity contest data](http://qa.debian.org/popcon-graph.php?packages=git-annex)
+  which has 400 active installations and 1000 total installations,
+  and make guesses about what fraction of all git-annex users have answered
+  the survey. By making different assumptions I got guesses that varied by
+  2 orders of magnitude, so not worth bothering with. Explicitly asking how
+  many people use each Linux distribution would be a good idea in next
+  year's survey.
+
+----
+
+Main work today was fixing Android DNS lookups, which was trying to use
+/etc/resolv.conf to look up SRV records for XMPP, and had to be changed to
+use a getprop command instead. Since I can't remember dealing with this
+before (not impossible I made some quick fix to the dns library before and
+lost it though), I'm wondering if XMPP was ever usable on Android before.
+Cannot remember. May work now, anyway...

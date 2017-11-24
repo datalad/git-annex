@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="http://jasonwoof.com/"
+ nickname="JasonWoof"
+ subject="It's been great!"
+ date="2013-06-29T03:48:08Z"
+ content="""
+Looks like I started using git-annex in November 2010.
+
+I'd already been tracking lots of small files in my home directory (settings, scripts, notes, todo list, timesheets, invoices, etc) with git.
+
+So awesome to get backups, syncing and manual merge conflict resolution.
+
+git-annex extended that to handle my larger files. git-annex's ability to be selective about what is stored where, allowed my to still be able to git clone my home directory onto small devices (I've got a debian chroot with only 6GB or so, and I installed debian on my new chromebook, that's only got 16GB of disk space (for the whole system.))
+
+I love having the full catalog visible on my filesystem with symlinks, and I can just request a file, and git-annex will figure out where to get it from, even if I'm away from home on my laptop.
+
+I just got a 2nd external hard drive, and I'm delighted with how easy it was to get a backup of everything on there.
+
+I was able to quickly and safely clear up space on my desktop computer! I'm confident that my data is safe because I've got git-annex configured to make sure there's at least two copies of my videos, and 3 copies of everything else.
+
+I've finally gone from either keeping hard drives from my past computers or keeping a full copy of the data, to having a proper archiving and backup system for all files I care about.
+
+I've got over 12,000 files stored on my main annex, and it's perfectly responsive.
+
+Joey does a great job, and has been very responsive on the rare occasions where I needed help.
+
+Three cheers!
+
+-- 
+Jason
+"""]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="annexuser"
+ subject="comment 8"
+ date="2016-05-11T20:32:54Z"
+ content="""
+I set `git config remote.s3.annex-verify false`, and `ignore-mdc-error` in my `gpg.conf`. That allowed me to succesfully download the files. From there I was able to recover the bulk of the files in the archives. Thanks!
+
+Any ideas what caused the files to become corrupted in the first place? Is there anything I can do different when adding new files and copying them to the s3 special remote to prevent corruption?
+"""]]

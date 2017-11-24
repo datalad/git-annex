@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.36"
+ subject="comment 3"
+ date="2014-05-24T18:29:03Z"
+ content="""
+@Maarten git clone from one of the other clones of the repository to the new drive. Also, recent versions of git-annex have a `git annex reinit` command that can be used to easily initialize a repository with the same settings as a repository that was lost. 
+"""]]

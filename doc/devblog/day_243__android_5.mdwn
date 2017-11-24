@@ -1,0 +1,16 @@
+I've finally been clued into why [git-annex isn't working on Android 5](http://git-annex.branchable.com/bugs/__91__Android__93___5.0_needs_PIE_executables___40__git_annex_does_not_work_on_android_5.0__41__/), and
+it seems fixing it is as easy as pie.. That is, passing -pie -FPIE to the
+linker. I've added a 5.0 build to the Android autobuilder. It is currently
+untested, so I hope to get feedback from someone with an Android 5 device;
+a [test build](http://downloads.kitenet.net/git-annex/autobuild/android/5.0/git-annex.apk) is now available.
+
+I've been working through the backlog of messages today, and gotten down
+from 170 to 128. Mostly answered a lot of interesting questions, 
+such as "[Where to start reading the source code?](http://git-annex.branchable.com/install/fromsource/#comment-cb68f2aa0a598d0150db852834ea07da)"
+
+Also did some work to make git-annex check git versions at runtime more
+often, instead of assuming the git version it was built against. 
+It turns out this could be done pretty inexpensively in 2 of 4 cases,
+and one of the 2 fixed was the git check-attr behavior change, 
+which could lead to git-annex add hanging if used with an old version of
+git.

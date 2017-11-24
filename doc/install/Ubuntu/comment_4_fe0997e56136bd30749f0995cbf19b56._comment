@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmhGq_ii5HaDkp9nx2m9qIMe-xxI4HV5wo"
+ nickname="Jeff"
+ subject="Packages way out of date"
+ date="2013-07-27T19:02:38Z"
+ content="""
+I'm setting up git-annex for myself (wanting to use the assistant to build myself a replacement for dropbox/box/ownCloud, etc.) and I installed the ubuntu package. Unfortunately, it is way out of date (3.20120406: amd64 i386). I didn't think to check the version. It's deceiving as the UI's are all the same, but it doesn't seem to work at all (syncing fails to remote servers, odd things happen with symlinking files to git object files, changing file permissions). 
+
+It gives a bad first intro into git-annex on ubuntu (*nix?) machines. It might be best just to point people at the cabal install for now so we get the lastest and greatest.
+
+Anyway, thanks for the great tool, I'm looking forward to using it.
+"""]]

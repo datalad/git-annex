@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmZilYULa6CDEGfuagoDlesyakBgnf-dF8"
+ nickname="Maarten"
+ subject="comment 1"
+ date="2014-05-21T22:21:37Z"
+ content="""
+I'd delete the repo and recreate it but I can't do that either - deleting works from webapp but when recreating it says there is already a repo by that name.  enableing that repo leads me to this situation again.
+"""]]

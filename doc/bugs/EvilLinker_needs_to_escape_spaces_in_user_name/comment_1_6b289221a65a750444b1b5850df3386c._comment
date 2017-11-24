@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.176"
+ subject="comment 1"
+ date="2014-05-28T22:29:05Z"
+ content="""
+Unfortunately, this is fairly intractable. It would be more productive to fix the [ghc bug](https://ghc.haskell.org/trac/ghc/ticket/8596) that the EvilLinker works around.
+
+Recommend building in a different directory in the meantime.
+"""]]

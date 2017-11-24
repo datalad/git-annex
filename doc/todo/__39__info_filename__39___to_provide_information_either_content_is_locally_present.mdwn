@@ -1,0 +1,6 @@
+ATM in DataLad we rely on 'git annex find' to determine either files have content locally.  Even though it could be used in a batch mode, I wondered if we could may be just use 'annex info' to obtain information either a file (or a key) has content locally?  Another benefit would be is that within single command output we could determine also if a file under annex or not (instead of first doing e.g. 'info' to figure out if under annex and then 'find' again to figure out if content is present locally)
+
+
+[[!meta author=yoh]]
+
+> sure, [[done]] --[[Joey]]

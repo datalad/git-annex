@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 3"
+ date="2013-10-23T15:27:40Z"
+ content="""
+Your screenshot shows git-annex is in the process of adding 6244 files. Depending on the size of those files, it could take some time to read their contents in order to calculate a checksum and add them to the repository. This would not normally take hours, unless your disk is very slow or the files are extremely big.
+
+You might get some useful information if you enable debugging (Configuration -> Preferences -> Enable debug logging) and look at the log.
+
+(This is not \"syncing\" btw. You have not set up any other repository for it to sync data with.)
+"""]]

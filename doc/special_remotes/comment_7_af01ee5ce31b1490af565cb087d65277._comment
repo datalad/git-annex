@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn-UoTjMBsVh6q4HNViGwJi-5FNaCVQB7E"
+ nickname="Nico"
+ subject="Rapidshare"
+ date="2013-02-02T16:49:58Z"
+ content="""
+Would it be possible to support Rapidshare as a new special remote?
+They offer unlimited storage for 6-10€ per month. It would be great for larger backups.
+Their API can be found here: http://images.rapidshare.com/apidoc.txt
+"""]]

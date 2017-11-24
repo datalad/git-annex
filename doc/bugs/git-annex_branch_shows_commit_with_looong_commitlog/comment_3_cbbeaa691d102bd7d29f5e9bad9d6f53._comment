@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="Francois"
+ ip="2001:788:5:1:29c2:de49:9811:51c8"
+ subject="comment 3"
+ date="2014-08-15T20:45:38Z"
+ content="""
+I've been experiencing the exact same problem and searching for **recovery from race** lead me to this bug report. Thanks for reporting it!
+
+For a few months, a repo storing ~19'000 files (mostly immutable pictures) started to launch memory hungry \"git log\" processes. For example:
+
+    4797 francois  20   0 8118296 7.719g   2032 D  22.3 50.2   0:11.61 git                                                                                                   
+
+    4797 pts/1    D+     0:12 git --git-dir=~/Pictures/.git --work-tree=~/Pictures -c core.bare=false log refs/heads/git-annex..52e44b967ad5d316d832562be02c5555c1f6d2a4 --oneline -n1
+
+Thanks to the hints found in this report, I was able to find many huge commit messages such as this one:
+
+    $ git show 6357b208 
+    commit 6357b2081e7c85dfe1ccc10824b75f3e212e6386
+    Author: Francois Deppierraz <francois@ctrlaltdel.ch>
+    Date:   Sat Jun 14 10:38:46 2014 +0200
+
+        update (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) [...]
+
+    $ git show 6357b208 | wc 
+      5  444026 3108236
+
+There were probably many new files added on Jun 14th and looking for a way to increase to sync speed, especially to a S3-like remote, I found the solution on this wiki for [multiple concurrent transfers](https://git-annex.branchable.com/forum/Feature_request:_Multiple_concurrent_transfers/).
+
+This looks like a likely culprit for generating race conditions. What do you think?
+
+    git-annex version: 5.20140412ubuntu1
+"""]]

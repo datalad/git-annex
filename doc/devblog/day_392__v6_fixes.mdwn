@@ -1,0 +1,12 @@
+Fixed several problems with v6 mode today. The assistant was doing some
+pretty wrong things when changes were synced into v6 repos, and that
+behavior is fixed. Also dealt with a race that caused updates made to the
+keys database by one process to not be seen by another process.
+And, made `git annex add` of a unlocked pointer file not annex the pointer
+file's content, but just add it to git as-is.
+
+Also, Thowz pointed out that adjusted branches could be used to locally adjust
+where annex symlinks point to, when a repository's git directory is not in
+the usual location. I've added that, as `git annex adjust --fix`. It
+was quite easy to implement this, which makes me very happy with the
+adjusted branches code!

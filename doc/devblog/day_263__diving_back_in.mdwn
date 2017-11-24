@@ -1,0 +1,7 @@
+After an intense week away, I didn't mean to work on git-annex today, but I
+got sucked back in..
+
+Worked on some plumbing commands for mass repository creation.
+Made `fromkey` be able to read a stream of files to create from stdin.
+Added a new `registerurl` plumbing command, that reads a stream of keys and
+urls from stdin.

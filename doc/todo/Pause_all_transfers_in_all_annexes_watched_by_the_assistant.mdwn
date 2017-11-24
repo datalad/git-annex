@@ -1,0 +1,11 @@
+## Use case:
+
+You have a few annexes that the assistant is watching for you. You're somewhere with poor wifi speed. You also just added a bunch of big files to a few annexes. Now all of a sudden your connection suffers and you want an easy way to pause all transfers until you're on a faster connection without losing the automatic 'add' and such of the assistant (iow: without having to shutdown the daemon).
+
+## Proposal:
+
+A "Pause all transfers" button in the webapp that pauses all transfers from all annexes the assistant is watching.
+
+It should toggle to "Resume all transfers" when pushed so you can also easily start the transfers again when you get somewhere else.
+
+This may or may not make more sense if the webapp showed all watched repos in a single view (instead of the separate pages/views as it is now).

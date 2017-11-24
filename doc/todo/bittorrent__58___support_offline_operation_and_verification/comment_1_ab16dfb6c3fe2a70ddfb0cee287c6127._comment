@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-10-17T20:05:51Z"
+ content="""
+The filename **sanitization** is needed for security reasons. A
+bittorrent file could contain `../` and similar evil which should not be
+allowed to be written to disk as-is. Or control characters which could
+cause an exploit via terminal key remapping. Or filenames starting with
+dashes to make an unguarded `rm *` end up expanding to `rm -rf something`.
+
+I'd not be surprised if whatever bittorrent program you used to download
+that does some filename sanitization too. Opinions on safe sanitization
+will vary, so it's not practical to expect git-annex and multiple
+bittorrent programs to behave identically.
+
+----
+
+It would be possible to make `addurl --file` usable with a multi-file
+torrent. Something like:
+
+	git annex addurl http://example.com/foo.torrent --file bar.mkv
+	That url contains multiple files; pick the one that corresponds to
+	local file "bar.mkv", and pass it in the --subfile option
+		bar.sub
+		bar.mkv
+		README.txt
+	Eg: git annex addurl 'http://example.com/foo.torrent' --file 'bar.mkv' --subfile 'bar.mkv'
+
+Of course this could be skipped if the torrent only contains one file
+with the same size and name as the `--file` file.
+
+I don't know if such an interface would be too annoying to be worth
+using in your use case or not?
+"""]]

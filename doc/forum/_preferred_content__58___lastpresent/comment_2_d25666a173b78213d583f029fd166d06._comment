@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn1QhtPvsRBV7pfaDW_ZTPFv_ZIxSzQ8Rg"
+ nickname="Paul Léo"
+ subject="comment 2"
+ date="2013-11-16T13:12:35Z"
+ content="""
+The aim is to be able to have some semi-automatic mode (using \"git-annex wanted . (lastpresent)\"), where file paths which you \"git-annex get\" one time always get updated to the latest version.
+
+Or, you could also use some variant of it the other way round (using \"git-annex wanted . (notlastpresent)\"): all files would be present by default, but paths which you \"git-annex drop\"ed once wouldn't become present again.
+"""]]

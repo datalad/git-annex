@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.176"
+ subject="comment 1"
+ date="2014-05-27T16:10:29Z"
+ content="""
+Yes, you can use the `-c core.bare=false` trick to bypass the direct mode guard if you want to. Just bear in mind that it's very easy to shoot yourself in the foot by passing -a or filenames to git commit, which then checks the whole large file into git..
+"""]]

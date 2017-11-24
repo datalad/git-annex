@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlJl0OCe6AJEnIFIcg-t5Rhk-lI_Y-tWUs"
+ nickname="Michael"
+ subject="comment 2"
+ date="2015-02-12T16:22:18Z"
+ content="""
+Ok, seems that I assumed incorrectly that `.gitignore` files were not valid for annex.
+
+However, if I `git add file_that_is_ignored`, I get an error message saying:
+
+    The following paths are ignored by one of your .gitignore files:
+    Use -f if you really want to add them.
+
+Would it be possible for git-annex to be consistent with git behaviour here?
+"""]]

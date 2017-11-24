@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnRRUUZo3W7pAoRoST8P_l0PtUBhvYuzDg"
+ nickname="Lyle"
+ subject="web storage"
+ date="2014-01-17T22:59:27Z"
+ content="""
+Is there a low cost web hosting solution that would support a public git-annex repo relatively simply with simple access to download the public files. 
+
+I figure I could set up an Amazon EC2 micro instance and mount an s3 share, hosting the git-annex remote, but this is a lot of overhead for something that dropbox does with 1 click \"share dropbox link\"?
+
+Any suggestions would be great!
+"""]]

@@ -1,0 +1,3 @@
+Hi,
+
+Does the Android app support encryption at all? The assistant allows me to create encrypted repositories but it just keeps telling me to install git-remote-gcrypt, which did not work.

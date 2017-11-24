@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ ip="82.36.235.9"
+ subject="Converting an rsync special remote to a gcrypt special remote"
+ date="2013-09-11T17:36:09Z"
+ content="""
+I'm guessing there is no way to convert an rsync special remote to a gcrypt special remote?  It would be cool not to have to upload 100GB across the Atlantic again!
+"""]]

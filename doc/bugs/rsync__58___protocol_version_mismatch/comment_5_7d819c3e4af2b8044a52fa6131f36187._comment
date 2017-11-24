@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-05-26T14:52:11Z"
+ content="""
+The stray recv-key is a good clue. git-annex-shell only allows one upload
+of a given file to run at a time. So if you get a transfer stalled out,
+it will reject another transfer attempt. This can sometimes happen when eg,
+migrating between networks and restarting an upload when the old one is
+still running on the server.
+
+However, normally there is an error message "transfer already in progress".
+
+It may be that your rsync is not forwarding that stderr through to display
+it, for some reason.
+
+It would probably help if you can run the same git-annex shell command line
+on the server, verify that it fails with "transfer already in progress"
+when an recvkey of that key is already running. Then you could try sshing
+to the server noninteractively and having it run the same git-annex-shell
+command, and see if the error makes it through that.
+"""]]

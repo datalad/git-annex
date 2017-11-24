@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.55"
+ subject="comment 18"
+ date="2014-07-04T18:03:54Z"
+ content="""
+You can manually move files and use `git annex fsck`, but it is not likely to be any faster.
+
+---
+
+After letting a 2 million file import run while I was away on vacation, I came back to it, and it indeed ran out of memory:
+
+<pre>
+add 999996 ok
+add 999997 ok
+(Recording state in git...)
+[2014-06-21 11:49:28 JEST] feed: xargs [\"-0\",\"git\",\"--git-dir=/home/joey/tmp/r/.git\",\"--work-tree=/home/joey/tmp/r\",\"add\",\"--\"]
+add 999998 ok
+add 999999 ok
+[2014-06-21 11:49:49 JEST] read: git [\"--git-dir=/home/joey/tmp/r/.git\",\"--work-tree=/home/joey/tmp/r\",\"diff\",\"--name-only\",\"--diff-filter=T\",\"-z\",\"--\",\".\"]
+(Recording state in git...)
+[2014-06-21 11:52:24 JEST] feed: xargs [\"-0\",\"git\",\"--git-dir=/home/joey/tmp/r/.git\",\"--work-tree=/home/joey/tmp/r\",\"add\",\"--\"]
+Stack space overflow: current size 8388608 bytes.
+Use `+RTS -Ksize -RTS' to increase it.
+</pre>
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.21"
+ subject="comment 7"
+ date="2013-07-31T17:42:22Z"
+ content="""
+If I were you I'd suppress that \"File not found\" error.
+
+Hook special remotes *can* output messages to stderr, and it's also fine to output eg, progress bars to stdout when seding/receving files. But unnecessary cluttery output should be avoided.
+"""]]

@@ -1,0 +1,5 @@
+As I tried to explain [here](http://git-annex.branchable.com/forum/__34__git_annex_assistant_--stop__34___doesn__39__t_work_in_OSX_10.11.4/): Every time I try to start annex, I have the problem that it wants to repair my repo. I'm not sure what's causing this and how to proceed. I would appreciate any pointers on how to triage the problem. There is a lot more info in the other thread.
+
+OS X: 10.11.4
+git: 2.8.3 (installed via brew)
+git annex: 6.20160527  (installed via brew)

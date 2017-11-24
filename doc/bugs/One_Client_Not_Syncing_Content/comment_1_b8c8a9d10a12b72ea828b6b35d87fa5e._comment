@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-03-26T18:17:57Z"
+ content="""
+What version of git-annex is installed on laptopA?
+
+If it's too old, it won't be getting change notifications from the server
+when laptopB pushes to it.
+
+Since laptopB immediately notices pushes from laptopA, I guess that
+both laptopB and the server have new enough versions of git-annex
+for that change noitification to work.
+"""]]

@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-07-19T19:05:16Z"
+ content="""
+Using `git annex info .` in combination with the
+[[git-annex-matching-options]] is a good way to do such queries.
+
+The "size of annexed files in working tree" line gives the total size of
+the files that match that query.
+
+If you're copying files to a remote, run something like:
+
+	git annex info . --not --in $remote
+
+And if you're getting files, run something like:
+
+	git annex info . --not --in here
+"""]]

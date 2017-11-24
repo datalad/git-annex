@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk3HGoDpnOPob5jOjvIootmkve1-nCpRiI"
+ nickname="Kalle"
+ subject="Some guesses"
+ date="2014-05-06T19:43:02Z"
+ content="""
+If you don't need human readable file structure on the server you don't have to initialize the annex repo. Just create a \"remote server\" repo with the assistant and set it to \"full backup\" if you want all the files there all the time. Without the \"full backup\" setting I believe only files it thinks someone else needs will be uploaded.* This might solve your problem with symlinks as `git annex sync` syncs metadata, only moving actual data if required.
+
+I'm not sure if the `git-annex find` command will work on a bare repo I can't test as all my repos are configured so that I can access the files in a normal way. Running `git-annex whereis $file` on the client should allow you to check if a file has been uploaded.
+
+
+*Massive caveat as I'm really not sure
+"""]]

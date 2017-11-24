@@ -1,0 +1,12 @@
+I am trying to get git-annex working on Ubuntu, specifically 13.04 and now 13.10 (I thought upgrading to a new distro. would fix the issue).
+
+I have tried:
+
+  * installing via apt-get install git-annex
+  * installing via cabal (full-build)
+
+Both times git-annex install successfully with no errors. I then start the webapp and create a repository (which git-annex creates successfully), I then add the folders and files I want it to sync. Git-annex finds the files and says it has began syncing them, but it never moves past the first batch of files it 'says' it had started syncing. I have waited 5+ hours at one point and nothing has changed. Also, the webapp is incredibly slow, it takes 15+ seconds to perform ANY action (such as saving options or viewing the logs). The issue definitely isn't my computer as I am using an high-end SSD, core i7, DDR3 RAM, etc... 
+
+Also the logs produce no errors of any kind and actually show git-annex adding files, most of the log entries say add 'filedirectory/filename.txt' as an example.
+
+I have gotten this to successfully work on Fedora, but Ubuntu (13.04/13.10) is having serious problems.

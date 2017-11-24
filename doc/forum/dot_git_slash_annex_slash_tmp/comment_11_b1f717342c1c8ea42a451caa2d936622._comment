@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="stoile"
+ ip="2a01:198:242:0:219:66ff:fef2:c021"
+ subject="Same problem here"
+ date="2013-11-16T12:10:55Z"
+ content="""
+I got the same problem on linux. Under what circumstances does \"git annex unused\" not find files in .git/annex/tmp? Maybe it is possible to improve \"git annex unused\"...
+"""]]

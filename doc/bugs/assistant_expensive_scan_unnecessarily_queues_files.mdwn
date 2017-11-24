@@ -1,0 +1,65 @@
+### Please describe the problem.
+Summary: The assistant pulls files from remote repos although they are stored on trusted repos (remote machine may be up or down).
+
+After starting the assistant via "git annex webapp --listen #ip# --verbose --debug" it starts to check for pending tasks and starts to queue lots of files (could be all of them). I checked the daemon.log and found the following line:
+
+[[!format sh """
+[2014-06-03 21:39:04 CEST] TransferScanner: queued Download UUID "541d2f88-16c3-11e2-aa7e-8f1a2c8e14c5" apps/Apache_OpenOffice_4.0.0_MacOS_x86_install_en-US.dmg Nothing : expensive scan found missing object
+"""]]
+
+The file is available in a remote repo:
+
+[[!format sh """
+$ git annex whereis apps/Apache_OpenOffice_4.0.0_MacOS_x86_install_en-US.dmg
+whereis apps/Apache_OpenOffice_4.0.0_MacOS_x86_install_en-US.dmg (1 copy) 
+  	541d2f88-16c3-11e2-aa7e-8f1a2c8e14c5 -- dump
+ok
+"""]]
+
+The remote "dump" is trusted and is configured as "backup" repo. The repo running the assistant is configured as "manual". The configuration settings for wanted, required and scheduled remained untouched.
+
+Num copies is unset and defaults to 1:
+
+[[!format sh """
+$ git annex numcopies
+global numcopies is not set
+(default is 1)
+"""]]
+
+When calling "git annex find --want-get" no files are listed as in my case, all are stored in the "dump" repo which is trusted.
+
+[[!format sh """
+$ git annex find --want-get
+$ 
+"""]]
+
+### What steps will reproduce the problem?
+Start the assistant and wait for it to finish startup checking. The assistant adds lots (all?) of the files due to “expensive scan found missing object”.
+
+### What version of git-annex are you using? On what operating system?
+Snapshot build from the annex branchable webpage running on an OSX 10.9.3 machine:
+[[!format sh """
+$ git annex version
+git-annex version: 5.20140411-g2503f43
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier hook external
+local repository version: 5
+supported repository version: 5
+upgrade supported from repository versions: 0 1 2 4
+"""]]
+
+Note: Updated to 5.20140529-g68a56a6 but same behavior is observed.
+
+### Please provide any additional information below.
+
+The backup node was down while the assistant starts up. However also files from another trusted node that is online 24/7 is pulled. Repo was upgraded from version 4 to 5. Is there a way to further check why a file was added e.g. to dump all variables of the evaluated term (approxlackingcopies, copies, etc)?
+
+[[!format sh """
+[2014-06-03 21:39:04 CEST] TransferScanner: starting scan of [Remote { name ="origin" },Remote { name ="dump" }]
+[2014-06-03 21:39:04 CEST] read: git ["--git-dir=/Volumes/DATA/annex/images/.git","--work-tree=/Volumes/DATA/annex/images","ls-files","--cached","-z","--"]
+[2014-06-03 21:39:04 CEST] chat: git ["--git-dir=/Volumes/DATA/annex/images/.git","--work-tree=/Volumes/DATA/annex/images","check-attr","-z","--stdin","annex.backend","annex.numcopies","--"]
+[2014-06-03 21:39:04 CEST] TransferScanner: queued Download UUID "541d2f88-16c3-11e2-aa7e-8f1a2c8e14c5" apps/Apache_OpenOffice_4.0.0_MacOS_x86_install_en-US.dmg Nothing : expensive scan found missing object
+[2014-06-03 21:39:04 CEST] Transferrer: Transferring: Download UUID "541d2f88-16c3-11e2-aa7e-8f1a2c8e14c5" apps/Apache_OpenOffice_4.0.0_MacOS_x86_install_en-US.dmg Nothing
+[2014-06-03 21:39:04 CEST] TransferScanner: queued Download UUID "541d2f88-16c3-11e2-aa7e-8f1a2c8e14c5" apps/Apache_OpenOffice_4.0.1_MacOS_x86_install_en-US.dmg Nothing : expensive scan found missing object
+"""]]

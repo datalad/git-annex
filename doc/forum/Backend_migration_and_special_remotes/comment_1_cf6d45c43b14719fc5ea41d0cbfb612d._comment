@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-18T16:47:02Z"
+ content="""
+A rename operation could be added to the interface for remotes. I suspect
+most remotes wouldn't be able to implement it (could hubic?), but it could
+be used when available.
+
+I'm not sure what to do in the migrate command to make it use such an
+interface though. It could try to move the files to their new names on each
+remote that supports the interface. But what about remotes that cannot be
+accessed?
+
+Could make a `git annex migrate --on remote`, to 
+migrate remotes peicemeal. Which would have to look back in the git history
+to find the old key that a file had been migrated from.
+Although then the user has to be careful to specify the same set of
+files that were migrated before.
+"""]]

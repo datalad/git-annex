@@ -1,0 +1,12 @@
+First off, thanks so much for your hard work, git-annex is amazing.
+
+I just started using the [web as a special remote](http://git-annex.branchable.com/tips/using_the_web_as_a_special_remote/) feature with the SHA256E backend, and I noticed that although the annexed file has the correct backend prefix (SHA256E) it does not have the extension of the file in the URL. The URL is `https://...IMG_1234.JPG` but the annexed file is `SHA256E-...832c99` with no extension.
+
+This is fine for most use cases, but I actually access an S3 remote directly from another app (independent of git-annex) to render photos, and in that app I'm using the extensions to figure out file types, so not having that info is slightly inconvenient.
+
+Is there any way to either:
+
+1. tell git-annex to preserve the extension of a file on the web in the annexed file, or
+2. alternatively, change the annexed filename (add the extension manually) without screwing anything up?
+
+Any help would be much appreciated, thanks!

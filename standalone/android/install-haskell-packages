@@ -1,0 +1,131 @@
+#!/bin/bash
+# Bootstraps from an empty cabal to all the necessary haskell packages
+# being installed, with the necessary patches to work on Android.
+#
+# You should install ghc-android first.
+#
+# The cabal.config is used to pin the haskell packages to the last
+# versions that have been gotten working. To update, delete the
+# cabal.config, run this script with an empty cabal and fix up the broken
+# patches, and then use cabal freeze to generate a new cabal.config.
+
+set -e
+
+if [ ! -d haskell-patches ]; then
+	cd standalone/android
+fi
+
+setupcabal () {
+	# Some packages fail to install in a non unicode locale.
+	LANG=en_US.UTF-8
+	export LANG
+}
+
+patched () {
+	pkg=$1
+	ver=$2
+	if [ -z "$ver" ]; then
+		ver="$(grep " $pkg " ../cabal.config | cut -d= -f 3 | sed 's/,$//')"
+	fi
+	if [ -z "$ver" ]; then
+		cabal unpack --pristine $pkg
+	else
+		cabal unpack --pristine $pkg-$ver
+	fi
+	cd $pkg*
+	git init
+	git config user.name dummy
+	git config user.email dummy@example.com
+	git add .
+	git commit -m "pre-patched state of $pkg"
+	ln -sf ../../cabal.config
+	for patch in ../../haskell-patches/${pkg}_* ../../../no-th/haskell-patches/${pkg}_*; do
+		if [ -e "$patch" ]; then
+			echo trying $patch
+			if ! patch -p1 < $patch; then
+				echo "failed to apply $patch"
+				echo "please resolve this, replace the patch with a new version, and exit the subshell to continue"
+				$SHELL
+			fi
+		fi
+	done
+	if [ -e config.sub ]; then
+		cp /usr/share/misc/config.sub .
+	fi
+	if [ -e config.guess ]; then
+		cp /usr/share/misc/config.guess .
+	fi
+	cabal install # --force-reinstalls --reinstall
+	rm -f cabal.config
+
+	rm -rf $pkg*
+	cd ..
+}
+
+installgitannexdeps () {
+	pushd ../..
+	ln -sf standalone/android/cabal.config
+	cabal install --only-dependencies --flags="-magicmime -concurrentoutput" "$@" # --force-reinstalls --reinstall
+	rm -f cabal.config
+	popd
+}
+
+install_pkgs () {
+	rm -rf tmp
+	mkdir tmp
+	cd tmp
+cat <<EOF
+EOF
+	patched network
+	patched unix-time
+	patched lifted-base
+	patched zlib
+	patched MissingH
+	patched distributive
+	patched comonad
+	patched iproute
+	patched primitive
+	patched socks
+	patched vector
+	patched stm-chans
+	patched persistent
+	patched profunctors
+	patched skein
+	patched lens
+	patched certificate
+	patched x509-system
+	patched persistent-template
+	patched system-filepath
+	patched optparse-applicative
+	patched wai-app-static
+	patched yesod-routes
+	patched shakespeare
+	patched yesod-core
+	patched yesod-persistent
+	patched yesod-form
+	patched crypto-numbers
+	patched clock
+	patched yesod-auth
+	patched yesod
+	patched process-conduit
+	patched DAV
+	patched yesod-static
+	patched dns
+	patched unbounded-delays
+	patched uuid
+
+	cd ..
+
+	installgitannexdeps -fAndroid -f-Pairing
+}
+
+cabal update
+setupcabal
+
+# Install packages for host ghc.
+installgitannexdeps
+
+# Install packages for cross ghc, with patches as necessary.
+PATH=$HOME/.ghc/$(cat abiversion)/bin:$HOME/.ghc/$(cat abiversion)/arm-linux-androideabi/bin:$PATH
+cabal update
+install_pkgs

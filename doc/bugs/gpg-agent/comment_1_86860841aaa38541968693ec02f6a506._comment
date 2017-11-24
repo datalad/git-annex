@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.176"
+ subject="comment 1"
+ date="2014-05-30T19:15:33Z"
+ content="""
+What I see in the log is git-annex is syncing files to/from the remote \"diskstation\". This remote is not encrypted at all, so git-annex is not using gpg. There is no mention of gpg in the log at all.
+
+So, I don't see any indication that whatever is causing too many gpg-agent processes to be spawned is git-annex. Can you share more information that would point toward git-annex being the cause of this problem?
+"""]]

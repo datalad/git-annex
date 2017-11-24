@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.2.25"
+ subject="comment 2"
+ date="2012-06-25T15:29:29Z"
+ content="""
+The directory and rsync special remotes intentionally use the same layout. So the same directory could be set up as both types of special remotes.
+
+The main reason to use this rather than a bare git repo is that it supports encryption.
+"""]]

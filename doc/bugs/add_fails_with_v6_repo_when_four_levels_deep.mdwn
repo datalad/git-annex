@@ -1,0 +1,136 @@
+### Please describe the problem.
+I've noticed that adding a modified file to a version 6 repo will throw a number of errors if 'git annex add' is executed four or more directories deep from the git directory.
+Though it throws a number of errors, it seems the file is still added normally.
+I have also experienced a problem whereby adding a file will replace it with its key (as if I had run 'git annex drop').
+I'm not sure if that problem is related.
+
+### What steps will reproduce the problem?
+In order to cause the exception, a file already in the repo has to be unlocked, edited, and re-added; this re-adding must take place from four levels below the git directory.
+Here is a minimal working example:
+
+    git init
+    git annex init --version=6
+    mkdir -p 1/2/3/4
+    touch 1/2/3/4/foo
+    git annex add 1/2/3/4/foo
+    git annex sync
+    git annex unlock 1/2/3/4/foo
+    echo "bar" >> 1/2/3/4/foo
+    cd 1/2/3/4
+    git annex add foo
+
+Specifically, trying to run 'git annex add foo' will result in the following errors being thrown:
+
+    fatal: '../1/2/3/4/foo' is outside repository
+    fatal: '../1/2/3/4/foo' is outside repository
+    fatal: '../1/2/3/4/foo' is outside repository
+    fatal: '../1/2/3/4/foo' is outside repository
+    fatal: '../1/2/3/4/foo' is outside repository
+    fatal: '../1/2/3/4/foo' is outside repository
+    fatal: '../1/2/3/4/foo' is outside repository
+    fatal: '../1/2/3/4/foo' is outside repository
+    fatal: '../1/2/3/4/foo' is outside repository
+    fatal: '../1/2/3/4/foo' is outside repository
+    fatal: '../1/2/3/4/foo' is outside repository
+    git-annex: git check-attr EOF: user error
+    git-annex: smudge: 1 failed
+    error: external filter git-annex smudge --clean %f failed 1
+    error: external filter git-annex smudge --clean %f failed
+    add foo ok
+    (recording state in git...)
+
+
+### What version of git-annex are you using? On what operating system?
+I'm currently running version 6.20160720-g9f0428e on Arch Linux (x86), though I've experienced this problem since at least February.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+$ git init; git annex init --version=6
+Initialized empty Git repository in /mnt/.git/
+init  ok 
+(recording state in git...)
+$ mkdir -p 1/2/3/4
+$ touch 1/2/3/4/foo
+$ git annex add 1/2/3/4/foo
+add 1/2/3/4/foo ok
+(recording state in git...)
+$ git annex sync
+commit 
+[master (root-commit) 25e1676] git-annex in
+:/mntt
+ 1 file changed, 1 insertion(+)
+ create mode 120000 1/2/3/4/foo
+ok
+$ git annex unlock 1/2/3/4/foo
+unlock 1/2/3/4/foo ok
+(recording state in git...)
+$ echo "bar" >> 1/2/3/4/foo
+$ cd 1/2/3/4
+$ git annex add foo --debug
+[2016-08-23 14:47:21.764271] read: git
+["--git-dir=../../../../.git","--work-tree=../../../..","--literal-pathspecs","ls-files","--others","--exclude-standard","-z","--","foo"]
+[2016-08-23 14:47:21.766481] read: git
+["--git-dir=../../../../.git","--work-tree=../../../..","--literal-pathspecs","ls-files","--modified","-z","--","foo"]
+fatal: '../1/2/3/4/foo' is outside repository
+fatal: '../1/2/3/4/foo' is outside repository
+fatal: '../1/2/3/4/foo' is outside repository
+fatal: '../1/2/3/4/foo' is outside repository
+fatal: '../1/2/3/4/foo' is outside repository
+fatal: '../1/2/3/4/foo' is outside repository
+fatal: '../1/2/3/4/foo' is outside repository
+fatal: '../1/2/3/4/foo' is outside repository
+fatal: '../1/2/3/4/foo' is outside repository
+fatal: '../1/2/3/4/foo' is outside repository
+fatal: '../1/2/3/4/foo' is outside repository
+git-annex: git check-attr EOF: user error
+git-annex: smudge: 1 failed
+error: external filter git-annex smudge --clean %f failed 1
+error: external filter git-annex smudge --clean %f failed
+[2016-08-23 14:47:21.806128] chat: git
+["--git-dir=../../../../.git","--work-tree=../../../..","--literal-pathspecs","check-attr","-z","--stdin","annex.backend","annex.numcopies","annex.largefiles","--"]
+[2016-08-23 14:47:21.806624] read: git ["--version"]
+[2016-08-23 14:47:21.809352] process done ExitSuccess
+[2016-08-23 14:47:21.813764] chat: git
+["--git-dir=../../../../.git","--work-tree=../../../..","--literal-pathspecs","cat-file","--batch"]
+add foo [2016-08-23 14:47:21.818268] read: git
+["--git-dir=../../../../.git","--work-tree=../../../..","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2016-08-23 14:47:21.82027] process done ExitSuccess
+[2016-08-23 14:47:21.822862] read: git
+["--git-dir=../../../../.git","--work-tree=../../../..","--literal-pathspecs","show-ref","git-annex"]
+[2016-08-23 14:47:21.825102] process done ExitSuccess
+[2016-08-23 14:47:21.825233] read: git
+["--git-dir=../../../../.git","--work-tree=../../../..","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2016-08-23 14:47:21.82715] process done ExitSuccess
+[2016-08-23 14:47:21.828549] chat: git
+["--git-dir=../../../../.git","--work-tree=../../../..","--literal-pathspecs","cat-file","--batch"]
+ok
+(recording state in git...)
+[2016-08-23 14:47:21.832848] feed: xargs
+["-0","git","--git-dir=../../../../.git","--work-tree=../../../..","--literal-pathspecs","add","--"]
+[2016-08-23 14:47:21.836822] process done ExitSuccess
+[2016-08-23 14:47:21.837518] chat: git
+["--git-dir=../../../.git","--work-tree=../../../..","--literal-pathspecs","hash-object","-w","--stdin-paths","--no-filters"]
+[2016-08-23 14:47:21.838061] feed: git
+["--git-dir=../../../.git","--work-tree=../../../..","--literal-pathspecs","update-index","-z","--index-info"]
+[2016-08-23 14:47:21.843259] process done ExitSuccess
+[2016-08-23 14:47:21.843444] read: git
+["--git-dir=../../../.git","--work-tree=../../../..","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2016-08-23 14:47:21.847287] process done ExitSuccess
+[2016-08-23 14:47:21.847602] read: git
+["--git-dir=../../../.git","--work-tree=../../../..","--literal-pathspecs","write-tree"]
+[2016-08-23 14:47:21.85106] process done ExitSuccess
+[2016-08-23 14:47:21.851221] chat: git
+["--git-dir=../../../.git","--work-tree=../../../..","--literal-pathspecs","commit-tree","b4a158d15da89e28ef5c2f1782c5b1e3c6f1176c","--no-gpg-sign","-p","refs/heads/git-annex"]
+[2016-08-23 14:47:21.85892] process done ExitSuccess
+[2016-08-23 14:47:21.85907] call: git
+["--git-dir=../../../.git","--work-tree=../../../..","--literal-pathspecs","update-ref","refs/heads/git-annex","68381bac2ba0f559d37214c30b5e41a404b9c98b"]
+[2016-08-23 14:47:21.861978] process done ExitSuccess
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+I've been happily using git-annex on my laptop and server for almost a year; it's saved me a great deal of time and effort.
+Thanks for all your work!

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-06-06T18:18:36Z"
+ content="""
+It's not clear from your description when the files got deleted or why, but you can use `git log --stat` to find out. Then you can `git revert` the problem commit.
+"""]]

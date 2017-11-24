@@ -1,0 +1,50 @@
+I am getting errors when I try to do `sync --content`. I have a git-annex repo on my laptop and I sync all content to an S3 compatible remote (Dreamhost DreamObjects). I ran the following command in my attempt to better understand the issue:
+
+    andrew@bumblebee ~/notes$ git-annex --verbose --debug sync --content cloud &> /tmp/sync_log_2016-11-7-7pm.log
+
+For reference the repos preferred content settings are:
+
+    andrew@bumblebee ~/notes$ git-annex wanted here
+    standard
+    andrew@bumblebee ~/notes$ git-annex group here
+    manual
+    andrew@bumblebee ~/notes$ git-annex wanted cloud
+    standard
+    andrew@bumblebee ~/notes$ git-annex group cloud
+    backup
+    andrew@bumblebee ~/notes$ 
+
+Looking at the log file I see errors like this, repeated dozens of times:
+
+    fatal: '../Users/andrew/notes/cv/submissions/BCA_Submission/small_images/macropavilion_2016_IMG_0297.jpg' is outside repository
+    [2016-11-07 19:34:37.542383] process done ExitFailure 128
+    [2016-11-07 19:34:37.542473] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","check-attr","-z","--stdin","annex.backend","annex.numcopies","annex.largefiles","--"]
+    fatal: '../Users/andrew/notes/cv/submissions/BCA_Submission/small_images/macropavilion_2016_IMG_0297.jpg' is outside repository
+    [2016-11-07 19:34:37.551241] process done ExitFailure 128
+    [2016-11-07 19:34:37.551382] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","check-attr","-z","--stdin","annex.backend","annex.numcopies","annex.largefiles","--"]
+
+The relative path `../Users` is curious. `/Users/andrew` is the absolute path of my home directory (I am on OS-X 10.11.6); `/Users/andrew/notes` is the absolute path of my git-annex repo.
+
+the above logs are followed by:
+
+    git-annex: git check-attr EOF: user error
+    failed
+
+    git-annex: fd:24: hFlush: resource vanished (Broken pipe)
+    failed
+
+hFlush lines appears hundreds of times, then change to:
+
+    git-annex: fd:24: commitBuffer: resource vanished (Broken pipe)
+    failed
+
+commitBuffer lines also apear hundreds of times.
+
+Then the logs move onto successful transfers, and similar errors repeat with different file names.
+
+I have tried `git annex fsck` on the local repo, and also tried `git annex fsck --fast --from=cloud` (although I didn't let it finish) and didn't see any errors. Thoughts?
+
+
+
+Thanks,
+Andrew

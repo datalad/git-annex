@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-11-07T14:43:46Z"
+ content="""
+Note that git is not entirely robust against being interrupted.
+In particular, interrupting a commit can leave a stale lock file in place,
+and committing will then fail until the user manually goes in and removes
+the lock file.
+
+I'd say that git-annex is overall more robust against interruptions
+than git is, except that git-annex uses git so of course inherits 
+its limitations.
+
+git-annex tries to handle all interruptions sanely. Ie, files are always
+moved into place atomically so partial writes are not a problem, stale lock
+files are not a problem, and any recordkeeping that might be lost by an
+interruption should be able to be recovered by running the interrupted
+command again, or perhaps `git annex fsck`.
+
+The only problem that I can think of with interuptions is that
+since git-annex uses temp files in `.git/annex/tmp` extensively, 
+if it's interrupted nothing will clean up those temp files.
+"""]]

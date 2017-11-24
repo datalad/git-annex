@@ -1,0 +1,18 @@
+I have a bunch of removable storage devices and was planning on storing my data across
+all of them.  I've run into an annoyance, and would like to see if anybody has any
+ideas.
+
+My goal was to have the full file tree on all the devices, but only a subset of the
+annexed data.  Where I have run into trouble is removing data from the system.  It
+seems that the "git annex unused" command checks remote branches as well as local ones
+when determining whether an object is referred to.
+
+This means that if I remove a file that is stored locally, "git annex unused" doesn't
+report the corresponding object as unused until I either connect and update all
+removable storage *or* remove the remote corresponding to the removable storage.  I
+posted a bug about this inconsistency named
+[[bugs/git annex unused considers remote branches which makes it inconsistent]].
+
+If I used the removable storage as a special remote, then I wouldn't have this issue,
+but I also wouldn't be able to conveniently use the files on it and manage the repo
+from it either.

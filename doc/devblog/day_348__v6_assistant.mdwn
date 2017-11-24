@@ -1,0 +1,8 @@
+Today was mostly spent making the assistant support v6 repositories.
+That was harder than expected, because I have not touched this part of the
+assistant's code much in a long time, and there are lots of tricky races
+and edge cases to deal with.
+
+The smudge branch has a 4500 diff from master now. Not counting
+documentation changes (Another 500 lines.) The todo list for it is
+shrinking slowly now. May not get it done before the new year.

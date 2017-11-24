@@ -1,0 +1,13 @@
+    [2014-05-18 22:38:21 SAST] main: starting assistant version 5.20140517-g0aed6d9
+    Already up-to-date.
+    
+    (scanning...) [2014-05-18 22:38:22 SAST] Watcher: Performing startup scan
+    gpg: WARNING: unsafe permissions on homedir `/var/folders/m6/zkd11n111m38ff37zbtgq0lr0000gp/T/git-annex-gpg.tmp.0'
+    gpg: keyring `/Applications/git-annex.app/Contents/MacOS/trustedkeys.gpg' created
+    gpg: Signature made Sun May 18 04:16:11 2014 SAST using DSA key ID XXXXXXXX
+    gpg: Can't check signature: public key not found
+    (started...) 
+
+And still facing:
+
+    git-annex-remote-skydrive is not installed in PATH (/Applications/git-annex.app/Contents/MacOS/bundle:/Applications/git-annex.app/Contents/MacOS/bundle:/usr/bin:/bin:/usr/sbin:/sbin)

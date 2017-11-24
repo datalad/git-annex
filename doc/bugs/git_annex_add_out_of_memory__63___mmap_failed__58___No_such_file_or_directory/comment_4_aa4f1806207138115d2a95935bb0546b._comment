@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnOSgFb3l7nL3Fs7Y9gPGJJjFiV7aJ1tek"
+ nickname="Phil"
+ subject="comment 4"
+ date="2014-07-04T22:30:45Z"
+ content="""
+There is no pack file, .git/objects/pack is empty. This is the first commit. I've queued up a load of files to commit, could this be it?
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-10-12T17:15:30Z"
+ content="""
+The assistant will use whatever git remotes and git-annex configuration is
+present in the repository when it's started up.
+"""]]

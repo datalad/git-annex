@@ -1,0 +1,31 @@
+Let's say you want to distribute some big files to the whole world.
+You can of course, just drop them onto a website. But perhaps you'd like to
+use git-annex to manage those files. And as an added bonus, why not let
+anyone in the world clone your site and use `git-annex get`!
+
+My site like this is [downloads.kitenet.net](https://downloads.kitenet.net).
+Here's how I set it up. --[[Joey]]
+
+1. Set up a web site. I used Apache, and configured it to follow symlinks.
+   `Options FollowSymLinks`
+2. Put some files on the website. Make sure it works.
+3. `git init; git annex init`
+4. `git config core.sharedrepository world` (Makes sure files
+   are always added with permissions that allow everyone to read them.)
+5. `git config receive.denyCurrentBranch updateInstead` (Makes the
+   [[working tree update when changes are pushed to it|making_a_remote_repo_update_when_changes_are_pushed_to_it]].)
+6. We want users to be able to clone the git repository over http, because
+   git-annex can download files from it over http as well. For this to
+   work, `git update-server-info` needs to get run on the server after
+   commits or pushes to it. The git `post-update` hook will take care of
+   this, you just need to enable the hook on the server.
+   `chmod +x .git/hooks/post-update`
+7. `git annex add; git commit -m added`
+8. Make sure users can still download files from the site directly.
+9. Instruct advanced users to clone a http url that ends with the "/.git/"
+   directory. For example, for downloads.kitenet.net, the clone url
+   is `https://downloads.kitenet.net/.git/`
+
+When users clone over http, and run git-annex, it will
+automatically learn all about your repository and be able to download files
+right out of it, also using http. 

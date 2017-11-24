@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="divergentdave@5c17d06f6d67c6f157b76a4cc95ca764b7d2f899"
+ nickname="divergentdave"
+ subject="Logcat output -- SELinux"
+ date="2015-12-30T03:01:56Z"
+ content="""
+I ran a sync again and captured output from logcat. It appears that an SELinux policy is preventing ssh from linking its socket file. (at [this line](https://github.com/openssh/openssh-portable/blob/master/mux.c#L1298)) There are several log messages similar to the one below, presumably one for each failed invocation of ssh.
+
+```
+12-29 20:49:07.308 29990 29990 W ssh     : type=1400 audit(0.0:64711): avc: denied { link } for name=\"annex-user@192.168.0.3.cAGquyBx4Z10RTYL\" dev=\"dm-2\" ino=392849 scontext=u:r:untrusted_app:s0:c512,c768 tcontext=u:object_r:app_data_file:s0:c512,c768 tclass=sock_file permissive=0
+```
+"""]]

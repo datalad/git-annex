@@ -1,0 +1,65 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkexhIpGcYa22aPQtLm-StpHiF-MHYPh5w"
+ nickname="Robie"
+ subject="Solved"
+ date="2014-06-01T13:55:58Z"
+ content="""
+Thanks to Joey for pointing me in the right direction. I got this working now.
+
+There are approximately three steps:
+
+1. Obtain a mapping of git-annex key to friendly name, and rename all entries
+in the special remote to their git-annex keys.
+
+2. Create and commit symlinks in the `master` branch (or wherever you want them).
+
+3. Add location tracking entries to the `git-annex` branch for all entries.
+
+First, I created an \"index\" file describing the contents of my special remote,
+in the form \"KEY NAME\" where KEY is the git-annex key (I used SHA256) and NAME
+is the name I want to use for each file.
+
+## Step 1: Map and rename
+
+In my case I was \"importing\" a ddar remote, so I wrote a quick script
+(https://github.com/basak/ddar/blob/master/contrib/git-annex-convert.py) to
+generate this index as well as rename all ddar archive members to their
+git-annex keys instead.
+
+## Step 2: Create and commit symlinks
+
+Then, I created symlinks in my master branch using:
+
+    exec 3<index
+    while read key name <&3; do ln -s `git annex examinekey --format='.git/annex/objects/${hashdirmixed}${key}/${key}' \"$key\"` \"$name\"; git add \"$name\"; done
+    git commit -m'Import ddar repository contents'
+    exec 3<&-
+
+## Step 3: Add to location tracking
+
+First I set three variables:
+
+    remote_name=ddar  # set to the name of the ddar git-annex special remote
+    
+    uuid=`git config remote.\"$remote_name\".annex-uuid`
+    now=`printf %6fs $(date +%s)`
+
+Then I added the entries from `index` into location tracking as follows:
+
+    git checkout git-annex
+    exec 3<index
+    while read key name <&3; do log=`git annex examinekey --format='${hashdirlower}${key}.log' \"$key\"`; mkdir -p `dirname \"$log\"`; echo \"$now 1 $uuid\" >> \"$log\";git add \"$log\";done
+    exec 3<&-
+    git commit -m'Import knowledge of ddar repository contents'
+
+## Verifying
+
+`git-annex fsck --from ddar --fast` checks that the keys expected in the
+special remote can be found (replace the special remote name as needed).
+
+Skipping `--fast` will download all data to verify it. I didn't do this -
+instead I just sampled one entry which seemed to be OK.
+
+
+
+"""]]

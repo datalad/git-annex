@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk_W9oOMDiBaU_xLIbeaTF8wW2wJzJ7bfw"
+ nickname="Christopher"
+ subject="comment 2"
+ date="2013-12-31T18:56:58Z"
+ content="""
+I am not in direct mode.
+I don't believe I did anything in the repo. I reset back to a commit and look in the folder and it's all symlinks and nothing in git status says anything about it.
+
+Then I run `git annex sync` and one of the thing it does is \"Checking out files\" which takes a long time, since it seems to be copying the data into the working directory and commiting it.
+I don't know why it's decided to do that.
+
+What steps can I take to either get you more information or fix things?
+
+Perhaps relatedly, if I make a mistake with git-annex, is git-reset master and git-reset synced/master the right approach?
+Are there other things I should try, etc?
+
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmVICFY2CDP08xdsPr3cgmScomy9HA-1sk"
+ nickname="Andrew"
+ subject="comment 1"
+ date="2013-04-04T00:33:15Z"
+ content="""
+\"Dumb NAS in direct mode, without git-annex installed\" would greatly expand the possible use cases IMO - it would transform git-annex from a distributed filesystem to a general sync tool. Or maybe I'm dreaming.
+"""]]

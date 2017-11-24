@@ -1,0 +1,5 @@
+I've noticed how, when files are synchronized/transferred from one repository (annex?) to another by the assistant, the files in the «remote» repository do no retain the modification time of the original files.
+From what I know git does not save file-specific metadata (ownership/timestamps/etc.).
+Since I've just started using git-annex, and I'd very much like for backup copies to retain the mtime of the originals, I would like to ask whether I am experiencing a malfunction or whether this is expected behaviour.
+
+Regards

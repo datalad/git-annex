@@ -1,0 +1,10 @@
+Today's release has a month's accumulated changes, including several nice
+new features: `git annex undo`, `git annex proxy`, `git annex diffdriver`,
+and I was able to land the s3-aws branch in this release too, so lots of
+improvements to the S3 support.
+
+Spent several hours getting the autobuilders updated, with the haskell
+`aws` library installed. Android and armel builds are still out of date.
+
+Also fixed two Windows bugs related to the location of the bundled ssh
+program.

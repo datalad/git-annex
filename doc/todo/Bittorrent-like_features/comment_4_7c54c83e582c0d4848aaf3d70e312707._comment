@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 4"
+ date="2014-01-02T01:32:37Z"
+ content="""
+There's a bittorrent library for Haskell, btw: http://hackage.haskell.org/package/bittorrent
+
+Native support in form of a special remote would arguably be best...
+"""]]

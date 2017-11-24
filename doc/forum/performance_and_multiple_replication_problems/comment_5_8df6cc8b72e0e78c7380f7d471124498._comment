@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="zardoz"
+ ip="134.147.14.84"
+ subject="comment 5"
+ date="2014-07-08T12:26:58Z"
+ content="""
+Something to keep in mind for some point in the future: btrfs supports an efficient method by which one can inquire exactly which files have changed since a specified point in time, where the point in time is measured by a unit called «generation».
+
+A program can request the current «generation» index, and later ask btrfs which files have changed after that index, without needing to walk the file-system. This is currently implemented in the user-space program «btrfs filesystem find-new». While it’s called «find-new», this not only find newly created files, but also changed files.
+
+Currently, it seems one needs to be super-user to use «find-new», because it lists changed files for complete subvolumes, but since generations are stored per-file, in the future there will likely be a user-space method for regular users.
+"""]]

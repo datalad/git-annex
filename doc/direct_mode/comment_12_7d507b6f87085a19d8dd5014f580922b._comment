@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="http://mildred.fr/"
+ ip="82.247.184.53"
+ subject="Fixing symlinks to the annex store in direct mode"
+ date="2014-07-16T06:52:33Z"
+ content="""
+I have an issue with direct mode: I have tons of symlinks that points to the git-annex store, while in direct mode. After investigation, I found that these files don't seem to be part of the repository. I can check with:
+
+    $ git -c core.bare=false status --porcelain tr.html
+    ?? Documentation/Mozilla/developer.mozilla.org/tr.html
+
+    $ ls -l tr.html
+    lrwxrwxrwx 1 mildred mildred 205 10 juin  16:22 tr.html -> ../../../.git/annex/objects/gF/z1/SHA256E-s31895--c873982bd742ba8db6e026afee26b7ab2f75f54f587304d8c2d877db3900c0f6.html/SHA256E-s31895--c873982bd742ba8db6e026afee26b7ab2f75f54f587304d8c2d877db3900c0f6.html
+
+The link is valid, and is probably pointing to a unused file in the annex store. How to add these files back?
+
+If I was in indirect mode, I could simply use `git add tr.html` (and **not** `git annex add`). This would stage to the git staging area the symlink, and all would be well.
+
+I found that in direct mode, the same was true. The command is: 
+
+    git -c core.bare=false add tr.html
+
+The file is added to the repository, and the link is converted to the target file. The question now is why? There is no hook on the add command. Could it be the annex assistant? If that didn't worked, my question would have been: how to checkout a file in direct mode?
+"""]]

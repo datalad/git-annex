@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.146"
+ subject="comment 3"
+ date="2014-02-26T18:34:18Z"
+ content="""
+AFAICS, the messages about locking are a red herring, since shared encryption is being used, the public and secret key rings are not used.
+
+This problem seems to be explained here: <http://crypto.stackexchange.com/questions/1468/how-does-gpg-verify-succesful-decryption>
+
+It seems there must be a problem with the symmetric key used for shared encryption. Either the repository somehow has the wrong key in it, or the key is not extracted from the repository correctly somehow, or it's not fed into gpg correctly somehow.
+"""]]

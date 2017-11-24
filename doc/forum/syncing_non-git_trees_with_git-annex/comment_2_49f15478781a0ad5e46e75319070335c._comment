@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmKPMUX0YHBjE93eBsEnacwZsddSDue3PY"
+ nickname="Oliver"
+ subject="comment 2"
+ date="2011-12-23T22:04:08Z"
+ content="""
+As joey points out the problem is B overwrites A, so that any files in A that aren't in B will be removed. But the suggestion to keep B in a separate subdirectory in the repository means I'll end up with duplicates of files in both A and B. What I want is to have the merged superset of all files from both A and B with only one copy of identical files. 
+
+The problem is that unique symlinks in A/master are deleted when B/master is merged in. To add back the deleted files after the merge you can do this:
+
+    git checkout master~1 deleted_file_name                                                              #checkout a single deleted file called deleted_file_name
+    git diff master~1 master --numstat --name-only --diff-filter=D                                       #get the names of all files deleted between master and master~1
+    git diff master~1 master --numstat --name-only --diff-filter=D | xargs git checkout master~1         #checkout all deleted files between master and master~1
+
+Once the first merge has been done after set up, you can continue to make changes to A and B and future merges won't require accounting for deleted files in this way.
+"""]]

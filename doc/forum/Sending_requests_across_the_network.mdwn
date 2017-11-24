@@ -1,0 +1,15 @@
+Hi,
+
+Is it possible to have git-annex send requests across the repository network? Say I have a network topology like this:  
+Home (annex) <-> Cloud (S3) <-> Laptop (annex)  
+
+Home has all files, cloud has zero, and laptop has subset of files. Let's also assume Laptop can't talk to Home directly (maybe it's behind a NAT), but both Home and Laptop are connected to the internet.  
+If I'm away on my laptop, can I retrieve a file from Home "through" Cloud?
+
+That is, Laptop checking its remotes and none of them have the file I want, so it checks remotes of remotes, etc. I'm not sure if git-annex knows the topology (seems likely considering it can generate the graphviz image). It also seems there is a communication medium of Jabber/XMPP where it could communicate between internet-connected git-annex servers (which might not otherwise be able to talk to each other directly)? So the fact that Cloud isn't a git-annex server, just a dumb key/value store would be okay?
+
+I realize that I could set it up so Home mirrors everything to Cloud and then that eventually mirrors over to Laptop, but let's assume both Cloud and Laptop have small storage capacities, so on-demand fetching would be needed.
+
+This is basically the same usecase as the USB transfer drive to sync two annexes not on the same network, but automated.
+
+Thanks!

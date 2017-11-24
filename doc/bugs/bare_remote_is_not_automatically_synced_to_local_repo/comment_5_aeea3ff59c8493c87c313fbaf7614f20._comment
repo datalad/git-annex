@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2017-06-07T16:40:18Z"
+ content="""
+This has nothing to do with repository groups; it's the git branch
+not getting synced by the assistant when master is updated in the
+bare repository.
+
+This is easy enough to repoduce.
+
+The assistant relies on `git annex remotedaemon` to notice changes in
+remotes, and the remotedaemon only supports remotes accessed via ssh, not
+on a local drive.
+
+The assistant has some special case handling for repositories on 
+removable drives, which lets those be plugged in and syncs with them.
+Removable drives are also why the remotedaemon does not watch repositories
+on a local drive. If the drive is removable, the remotedaemon would
+keep it always busy, by having directories open for inotify, 
+and so prevent a clean removal of the drive.
+
+So, I don't think anything can be done about this, at least in the default
+configuration. One workaround it using a ssh url for the remote will
+make the remotedaemon watch it for changes. 
+
+I could add a non-default configuration setting that
+makes a remote on a local drive be watched for changes.
+
+But, it's not clear to me why you'd want to have the changes be pushed
+in to a repository on a removable drive, rather than pushing/syncing
+with the repository where the assistant is running. The assistant would
+then sync changes it received on to the removable drive. That seems like a
+better setup, will still work when the drive is removed for a while,
+and is already supported.
+"""]]

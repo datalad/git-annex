@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.135"
+ subject="comment 1"
+ date="2012-06-15T19:25:59Z"
+ content="""
+Sure, you can simply:
+
+    cp annexedfile ~
+
+Or just attach the file right from the git repository to an email, like any other file. Should work fine.
+
+If you wanted to copy a whole directory to export, you'd need to use the -L flag to make cp follow the symlinks and copy the real contents:
+
+    cp -r -L annexeddirectory /media/usbdrive/
+"""]]

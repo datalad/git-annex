@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Joey"
+ subject="""comment 1"""
+ date="2014-10-20T15:11:49Z"
+ content="""
+The git-annex arm build is built using the libc from Debian stable,
+which needs a newer version of the Linux kerenl than is on your device.
+
+It would be possible to build git-annex against an older libc, but
+not easily, which is why I don't.
+"""]]

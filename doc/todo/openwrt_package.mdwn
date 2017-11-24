@@ -1,0 +1,6 @@
+hi
+
+recently i have installed openwrt on my mikrotik routerboard. i am verry suprised how well it works. it lacks git-annex package. openwrt has git and i can install it.
+
+how can i build one on a mips arch ?
+is it possible to build multiple architecture standalone binaries ?

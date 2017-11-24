@@ -1,0 +1,12 @@
+Hi,
+
+I'm on a centos 6.4 64bits & installed git-annex
+version : git-annex-3.20120522-2.1.el6.x86_64
+
+From my understanding of the help page, I should be able to sync content with :
+
+git annex sync --content
+
+but it is not recognized. The help tells me I may be able to use "get" but I'm unclear how...
+
+Thanks for any help

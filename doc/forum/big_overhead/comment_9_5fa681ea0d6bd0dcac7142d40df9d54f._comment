@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 9"
+ date="2014-09-18T16:54:10Z"
+ content="""
+That is a very strange commit by every metric. Weird author, weird date, weird filenames in it (not files that git-annex uses!), with apparently some weird binary content (which git-annex would not be committing). Even a weird commit message -- git-annex never makes a commit with a message of \"Initial commit\", and as far as I can tell using `git log -S`, it never has. (OTOH, it's a pretty common example message used in eg, git documentation.) So, I feel pretty sure that dangling commit was not made by git-annex.
+
+I think you need to take a look at some of the 4+mb unreachable blobs, to get some idea of what these files are. One way is to use git-show on the hash of one of the blobs to get its content, and then, perhaps pass it to `file` or `strings`. Or, you could stop the assistant, `git checkout 478425bef867782e8ff22aca24316e9421288c49` and have a look at this strange tree that was apparently committed in 2012 to see what's in there.
+
+It might be possible that the dangling commits come somehow from the remote server. I'm not 100% sure, but I think that a git pack can end up with dangling objects in it, and then git can pull down that pack to get other, non-dangling objects. You should use `git show` on the server on some of the dangling shas to see if they are present there.
+"""]]

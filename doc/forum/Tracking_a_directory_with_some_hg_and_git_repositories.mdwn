@@ -1,0 +1,1 @@
+In my documents folder I have some Mercurial and Git repositories. Are there any side effects if I track the whole directory with git annex?

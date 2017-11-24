@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.7"
+ subject="comment 1"
+ date="2014-08-12T18:24:57Z"
+ content="""
+Congrats on being the guy with newlines in his filenames.. someone had to do it!
+
+Similarly, `git annex add` on the file will fail with the same error and leave it where it is and not added.
+
+The problem here is that while git-annex is careful to use git commands with -z, so it gets \"foo\nbar\" with a literal newline from git ls-files, `git cat-file --batch` speaks a line-based protocol. And, it parses filenames like `git ref-parse` does -- and AFAICS, that does not provide a way to input something like \"foo\\nbar\" with an escaped newline. Normally this doesn't matter, since the whole line of input is taken to be a filename, so there's no need to escape anything, but of course it fails with newlines.
+
+IMHO, the solution to this is to make `git cat-file --batch` have a -z option that enables NUL-delimited input (and probably output). If you want to see this happen, take it to the git developers..
+
+(Should git annex import put files back if it fails to add them rather than leaving them sitting in the work tree?)
+"""]]

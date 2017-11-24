@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm8wY171R5c4u_jPmB6LU6n6Px2xePM4sE"
+ nickname="Efraim"
+ subject="comment 1"
+ date="2014-08-31T07:09:52Z"
+ content="""
+number of copies is the minimum number of copies that can exist when you try to drop a file from a repository/without git-annex telling you that you don't have enough copies and should protect your data better.  A full backup by default tries to get every file it can get its hands on, including old versions.
+"""]]

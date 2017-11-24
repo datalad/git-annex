@@ -1,0 +1,22 @@
+git-annex 6.20170925 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * git-annex export: New command, can create and efficiently update
+     exports of trees to special remotes.
+   * Use git-annex initremote with exporttree=yes to set up a special remote
+     for use by git-annex export.
+   * Implemented export to directory, S3, and webdav special remotes.
+   * External special remote protocol extended to support export.
+     Developers of external special remotes should consider if export makes
+     sense for them and add support.
+   * sync, assistant: Update tracking exports.
+   * Support building with feed-1.0, while still supporting older versions.
+   * init: Display an additional message when it detects a filesystem that
+     allows writing to files whose write bit is not set.
+   * S3: Allow removing files from IA.
+   * webdav: Checking if a non-existent file is present on Box.com
+     triggered a bug in its webdav support that generates an infinite series
+     of redirects. Deal with such problems by assuming such behavior means
+     the file is not present.
+   * webdav: Fix lack of url-escaping of filenames. Mostly impacted exports
+     of filenames containing eg spaces.
+   * webdav: Changed path used on webdav server for temporary files."""]]

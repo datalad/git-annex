@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawln3ckqKx0x_xDZMYwa9Q1bn4I06oWjkog"
+ nickname="Michael"
+ subject="comment 7"
+ date="2014-05-24T22:07:15Z"
+ content="""
+OK thought I'd use it with annex-ignore set, but:
+
+    git annex copy --to=kpf file.jpg
+    copy file.jpg (checking kpf...) git-annex-shell: git: createProcess: invalid argument (Invalid argument)
+(to kpf...) 
+    git-annex-shell: git: createProcess: invalid argument (Invalid argument)
+    rsync: connection unexpectedly closed (0 bytes received so far) [sender]
+    rsync error: error in rsync protocol data stream (code 12) at io.c(226) [sender=3.1.0]
+
+    rsync failed -- run git annex again to resume file transfer
+    failed
+git-annex: copy: 1 failed
+
+
+For reference, here's the .git/config section.
+
+I can either set receivepack/uploadpack like below or add /cygdrive/c/Program Files (x86)/Git/libexec/git-core to PATH in cygwin shell.
+
+Also, if I set url to kp:/cygdrive/f/backup/f, git complains that it's not a git repository (msysgit doesn't understand cygwin stuff?)
+
+    [remote \"kpf\"]
+            url = kp:f:/backup/ph
+            fetch = +refs/heads/*:refs/remotes/kpf/*
+            receivepack = git receive-pack
+            uploadpack = git upload-pack
+            annex-uuid = 99c498fc-e38e-11e3-8bb0-5368a291bd90
+            annex-ignore = true
+
+"""]]

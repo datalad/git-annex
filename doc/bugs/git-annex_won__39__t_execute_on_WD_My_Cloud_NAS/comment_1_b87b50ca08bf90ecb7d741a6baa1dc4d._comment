@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-10-15T17:04:07Z"
+ content="""
+I wonder if this ELF issue extends to other binaries included in the
+git-annex bundle, or does it only affect the git-annex (and
+git-annex-shell) binary?
+
+It looks like git is working when used inside runshell, and that is using a
+git binary from the git-annex bundle.
+
+If so, it could have something to do with how the haskell binary is being
+linked. I found this thread about fixing this problem in the gold linker:
+<https://sourceware.org/ml/binutils/2012-08/msg00486.html>. IIRC
+the arm build is currently using the bfd linker, not gold.
+"""]]

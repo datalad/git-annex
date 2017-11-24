@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="rupi"
+ ip="80.110.152.13"
+ subject="xdg-open"
+ date="2014-02-28T17:48:23Z"
+ content="""
+Since I discovered the same behavior mentioned above (git annex webapp
+tries to use 'winebrowser'). There is an easy way to work with the difference
+between http
+url and html files: enter preferences for both:
+
+In ~/.local/share/applications/mimeapps.list:
+
+		[Added Associations]
+		..
+		x-scheme-handler/http=iceweasel.desktop;
+		x-scheme-handler/https=iceweasel.desktop;
+		text/html=icewesel.desktop;
+
+
+		[Default Applications]
+		x-scheme-handler/http=iceweasel.desktop
+		x-scheme-handler/https=iceweasel.desktop
+		text/html=iceweasel.desktop
+
+
+Your preferred browser might be a different one off course. And I agree that this has to be the most logical place to store that information ever.. 
+
+"""]]

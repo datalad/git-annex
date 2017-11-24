@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkftzaCvV7EDKVDfJhsQZ3E1Vn-0db516w"
+ nickname="Edward"
+ subject="One snag"
+ date="2014-07-28T19:37:04Z"
+ content="""
+I setup a non-bare repo on a server by following the above steps (git init, git annex init, then add it as a Remote Server from elsewhere and combine repos). It worked, but I hit a snag and needed to add another step.
+
+After git init, you're not sitting on any branch yet, and that seems to have prevented the assistant from doing anything to synchronize the working tree on the server. After I did \"git checkout synced/master\", it started working.
+"""]]

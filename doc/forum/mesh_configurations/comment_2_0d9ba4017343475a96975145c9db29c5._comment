@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="clarifications"
+ date="2015-08-19T16:57:49Z"
+ content="""
+the assistant is runnin on repos a and b. i was expecting it to move the files automatically.
+
+about repo groups, if i understand correctly, it should be:
+
+* `a`: *source*
+* `b`: *transfer* (or *not inallgroup=backup*?)
+* `c`: *backup*
+
+is that correct?
+"""]]

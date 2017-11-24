@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://www.davidhaslem.com/"
+ nickname="David"
+ subject="comment 7"
+ date="2012-06-19T04:41:27Z"
+ content="""
+$(brew --prefix) should, in most cases, be /usr/local.  That's the recommended install location for homebrew.
+
+I already had git installed and homebrew as my package manager - my install steps were as follows:
+
+1. brew install haskell-platform ossp-uuid md5sha1sum coreutils pcre
+2. PATH=\"$(brew --prefix coreutils)/libexec/gnubin:$PATH\" cabal install git-annex
+
+"""]]

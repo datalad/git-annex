@@ -1,0 +1,23 @@
+Hey,
+
+I've found that git annex works great as a way to publish websites to a web server.  I can edit my website on my computer, `git annex sync` my working directory to the VPS, and then `git annex get files-I-want-to-publish`.  This works great.  I can maintain my normal working directory structure on the VPS and I don't have to worry about people seeing files I DIDN'T want to publish, since the dead symlinks just show up as 404s.
+
+There's one small problem.  
+
+Say:
+
+ 1) I've already published a file using `git annex get file-to-update`
+
+ 2) I update that file on my computer
+
+ 3) I do `git annex sync`
+
+ 4) I do `git annex get file-to-update`
+
+Between steps 3 and 4, file-to-update goes from being an accessible web resource to being a dead symlink.  It's not really a problem for me, as hardly anyone visits my site. But it would be nice if I could make `sync` leave the old symlink to the old file until I `get`ed the new one.
+
+Is this possible?
+
+PS: For those who might follow in my footsteps, remember that you probably don't want people reading the contents of your .git dir, so make a re-write rule for this!
+
+Timothy

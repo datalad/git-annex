@@ -1,0 +1,58 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnaH44G3QbxBAYyDwy0PbvL0ls60XoaR3Y"
+ nickname="Nigel"
+ subject="re: git annex get failed"
+ date="2013-08-02T15:02:14Z"
+ content="""
+Another try - this time a slightly simpler setup using my version of the walkthrough commands
+
+[[!format  bash \"\"\"
+
+nrb@nrb-ThinkPad-T61:~/repos/annex/laptop-annex$ git annex drop walkthrough.sh --from usbdrive
+drop usbdrive walkthrough.sh ok
+(Recording state in git...)
+nrb@nrb-ThinkPad-T61:~/repos/annex/laptop-annex$ git annex move walkthrough.sh --to flickr
+move walkthrough.sh (gpg) (checking flickr...) (to flickr...) 
+/home/nrb/repos/gits/flickrannex/flickrannex.py:92: FutureWarning: The behavior of this method will change in future versions.  Use specific 'len(elem)' or 'elem is not None' test instead.
+  if res:
+/home/nrb/repos/gits/flickrannex/flickrannex.py:100: FutureWarning: The behavior of this method will change in future versions.  Use specific 'len(elem)' or 'elem is not None' test instead.
+  if res:
+ok
+(Recording state in git...)
+nrb@nrb-ThinkPad-T61:~/repos/annex/laptop-annex$ git annex whereis
+whereis walkthrough.sh (1 copy) 
+  	161b7af0-2075-4314-9767-308a49b86018 -- flickr (the flickr library)
+ok
+whereis walkthrough.sh~ (3 copies) 
+  	161b7af0-2075-4314-9767-308a49b86018 -- flickr (the flickr library)
+   	7803d853-d231-4bb4-b696-f12a950fb96b -- here (my laptop)
+   	d60d75f9-d878-4214-af20-fa055134ae77 -- usbdrive (portable USB drive)
+ok
+nrb@nrb-ThinkPad-T61:~/repos/annex/laptop-annex$ git annex get walkthrough.sh
+get walkthrough.sh (from flickr...) (gpg) 
+git-annex: /home/nrb/repos/annex/laptop-annex/.git/annex/tmp/GPGHMACSHA1--02f600d7e8b071d2945270fd5e7fc26dd066ff31: openBinaryFile: does not exist (No such file or directory)
+gpg: decrypt_message failed: eof
+
+  Unable to access these remotes: flickr
+
+  Try making some of these repositories available:
+  	161b7af0-2075-4314-9767-308a49b86018 -- flickr (the flickr library)
+failed
+git-annex: get: 1 failed
+nrb@nrb-ThinkPad-T61:~/repos/annex/laptop-annex$ git annex fsck --from flickr
+fsck walkthrough.sh (gpg) (checking flickr...) (fixing location log) 
+  ** Based on the location log, walkthrough.sh
+  ** was expected to be present, but its content is missing.
+
+  ** No known copies exist of walkthrough.sh
+failed
+fsck walkthrough.sh~ (checking flickr...) (fixing location log) 
+  ** Based on the location log, walkthrough.sh~
+  ** was expected to be present, but its content is missing.
+failed
+(Recording state in git...)
+git-annex: fsck: 2 failed
+nrb@nrb-ThinkPad-T61:~/repos/annex/laptop-annex$ 
+
+\"\"\" ]]
+"""]]

@@ -1,0 +1,15 @@
+Test suite is 100% green! Fixed one remaining bug it found, and solved the
+strange sqlite crash, which turned out to be caused by the test suite deleting
+its temporary repository before sqlite was done with the database inside it.
+
+The only remaining blocker for using v6 unlocked files is a bad interaction
+with shared clones. That should be easy to fix, so release of git-annex
+version 6 is now not far away!
+
+While I've only talked about v6/[[todo/smudge]] stuff here lately, I have been
+fixing various other bugs along the way, and have accumulated a dozen bug
+fixes since the last release. Earlier this week I fixed a bug in `git annex
+unused`. Yesterday I noticed that `git annex migrate` didn't copy over
+metadata. Today, fixed a crash of `git annex view` in a non-unicode locale.
+Etc. So it'll be good not to have the release blocked any longer by v6
+stuff.

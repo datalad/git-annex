@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~timo-linux"
+ nickname="Tim O'Callaghan"
+ subject="How about automatically adding it as a submodule?"
+ date="2014-01-11T10:30:57Z"
+ content="""
+Adding as a submodule and automatically adding the annexe destination as a remote? that should work in most cases..
+"""]]

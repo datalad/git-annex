@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.111"
+ subject="comment 3"
+ date="2014-10-15T17:25:27Z"
+ content="""
+I think that if you have installed all the build deps for git-annex using homebrew, you should be able to just install git-annex from source.
+
+Or, ask the homebrewers to update the package there..
+"""]]

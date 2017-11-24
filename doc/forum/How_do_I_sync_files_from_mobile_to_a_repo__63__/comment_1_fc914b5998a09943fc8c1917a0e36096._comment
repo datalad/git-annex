@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Petter_petterson"
+ ip="89.160.15.173"
+ subject="addition"
+ date="2014-09-13T07:54:58Z"
+ content="""
+I understand that the copy of the cellphones' photos are stored on the server too, when typing git annex whereis <photo> I see that it exists on the server, but I need to be able to, at will copy out the jpg files for editing and using in other places.
+"""]]

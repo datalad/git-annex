@@ -1,0 +1,12 @@
+Can anybody help me locate content that seems to have gone missing? 
+
+Setup is two repos, connected via ssh, both direct mode, both debian machines, repo A with 5.20150731-1 (testing), repo B with 5.20141125 (stable).
+
+Both repos where synchronising (in this case transfering files from A to B), when I was copying a few more hundred files (second set) into a folder in repo A. In the webapp I have seen the assistant pick them up and transfer them to repo B. This took an hour or so, after which I can still see the name of nine files from the second set (and "... and 626 more") in the status messages on the right as added and the same number of files as uploaded.
+
+Unfortunately, from the second set of files only the first two files can be found in A and B, none of the other few hundred.
+
+Running git-annex fsck in repo A did not return any errors.
+
+I would appreciate any pointers,
+Felix

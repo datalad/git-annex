@@ -1,0 +1,47 @@
+git-annex repositories are often kept private, but here's a list of some of
+the public repositories that you can clone to try out git-annex.
+
+* [downloads.kitenet.net](http://downloads.kitenet.net/)  
+  `git clone https://downloads.kitenet.net/.git/`  
+  Various downloads of things produced by Joey Hess, including git-annex
+  builds and videos.
+
+* debconf-share (currently unavailable via IPv4)  
+  `git clone http://annex.debconf.org/debconf-share/.git/`  
+  [DebConf](http://debconf.org/) Media, photos, videos, etc.
+
+* [conference-proceedings](https://github.com/RichiH/conference_proceedings)  
+  `git clone https://github.com/RichiH/conference_proceedings.git`  
+  A growing collection of videos of technology conferences.
+  Submit a pull request to add your own!
+
+* [ocharles's papers](https://github.com/ocharles/papers)  
+  Lots of CS papers read by [Oliver](http://ocharles.org.uk/blog/).
+
+* [rejuvyesh's papers](https://github.com/rejuvyesh/papers)   
+  Quite a few AI papers read by [rejuvyesh](http://rejuvyVesh.com)
+
+* [MRI brain scan data](http://studyforrest.org/pages/access.html)  
+  `git clone http://psydata.ovgu.de/forrest_gump/.git studyforrest`  
+  High-resolution, ultra-highfield fMRI dataset on auditory perception.
+
+* [gst-integration-testsuites](http://cgit.freedesktop.org/gstreamer/gst-integration-testsuites)  
+  GStreamer integration testsuite media assets management
+
+* [ccc-media-annex](https://github.com/ntnn/ccc-media-annex)  
+  `git clone https://github.com/ntnn/ccc-media-annex`  
+  git-annex repository using [the CDN](http://media.ccc.de/) of the German [CCC](http://www.ccc.de/).  
+  Contains a lot of talks (mostly in German) held on events from the CCC as well as other stuff.
+
+* [ifarchive](https://gitlab.com/umeboshi2/ifarchive.git)  
+  A slightly outdated mirror of http://ifarchive.org.  Scripts should probably be written
+  to update the archive regularly.
+
+* [datasets.datalad.org](http://datasets.datalad.org)
+  A large (over 10TB of data) collection of DataLad (git-annex) datasets, providing access primarily 
+  to public neural data resources. Organized via git submodule mechanism. Although underlying
+  repositories are pure git/git-annex repositories, use of datalad tool is advised for more functionality
+  (search, recursive operation, etc). It is regularly updated and enriched.  
+
+This is a wiki -- add your own public repository to the list!
+See [[tips/centralized_git_repository_tutorial]].

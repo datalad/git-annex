@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="http://julien.lefrique.name/"
+ nickname="jlefrique"
+ subject="Many thanks!"
+ date="2013-06-27T19:59:47Z"
+ content="""
+Hi Joey,
+
+More than ten years ago, I was looking for a software to index the content of all my
+CD-ROMs in order to create a kind of \"table of content\". Today there is
+git-annex!
+
+I discovered git-annex few months ago and it really helps me to keep my file
+well organized. I missed the first crowd funding campaign but would be happy
+to contribute to the next one :D
+
+I mainly use four different annexes for:
+
+* my private photos and videos,
+* my music collection,
+* my other multimedia files (movies...),
+* my other files that are too large to be commited into git directly (pdf, binaries...).
+
+I use git-annex manually via the command line. I started to play with the
+assistant on my Android tablet and I plan to install it on my wife's
+Macbook to synchronize her data with the NAS.
+
+A standalone build for arm to run git-annex on my NAS (QNAP 219 PII) would be perfect :-P
+
+Thank you very much for all your great softwares (yes I also use etckeeper,
+some moreutils tools and more recently ikiwiki).
+
+-Julien
+
+"""]]

@@ -1,0 +1,5 @@
+I’m just experimenting with git-annex on a repo of ~150k files in about the same number of directories (WORM-backend). Calling, e.g., «git annex status» will take several minutes while stat()-ing all the files (for changes, I presume).
+
+This might already be on you todo list, but I was wondering whether it is possible to increase the performance of «annex status» (or related commands) when «annex watch» is running in the background. In that case, «status» could rely on cached data built-up at some point during initialization, plus based on the data that was accumulated via inotify. (Hopefully, all this won’t even be needed anymore on btrfs at some point in the future.)
+
+(I’m not very knowledgable in these things, so just out of curiosity: I noticed that, even though the «status» invocation takes ages, no HDD activity occurs and all the metadata is probably already in the Linux caches from a run I conducted immediately beforehand. Why do you figure that is? Is context switching so hugely expensive?)

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-07-11T16:14:37Z"
+ content="""
+The build error suggests a problem with either the libidn.a library in
+openbsd, or the haskell bindings to it in gnuidn.
+
+A similar problem is discussed in [[More_build_oddities_under_OpenBSD]].
+
+Disabling XMPP support in git-annex makes it not need either library,
+so should avoid the problem. Eg: `stack build --flag git-annex:-XMPP`
+
+(Although AFAICS, XMPP support is disabled by default in stack.yaml anyway,
+so I am not sure why your stack build included it.)
+"""]]

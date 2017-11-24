@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.144"
+ subject="comment 1"
+ date="2014-09-25T15:44:16Z"
+ content="""
+chmod u+w -R ~/annex/.git
+"""]]

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://svario.it/gioele"
+ nickname="gioele"
+ subject="comment 1"
+ date="2014-08-24T10:41:58Z"
+ content="""
+> git-annex implementation in a sane, interpreted, \"just works\" language, e.g. Python? Thanks.
+
+Good luck finding anything that works on OARM. Python itself does not support OABI:
+
+> This issue remains as \"won't fix\". ARM is supported; just OABI is not, and never will be. If anybody needs that, they will have to maintain their own fork of Python.
+
+(from <http://bugs.python.org/issue1762561#msg158974>)
+"""]]

@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="http://grossmeier.net/"
+ nickname="greg"
+ subject="comment 4"
+ date="2014-02-20T22:04:58Z"
+ content="""
+Along with stupid python problems which are now fixed (all my fault, and hopefully didn't cause more noise here than needed), the only thing that didn't go as stated was:
+
+[[!format sh \"\"\"
+greg@x200s:~/Photos$ git-annex enableremote glacier
+enableremote glacier 
+  Set both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY to use glacier
+git-annex: Failed creating glacier vault.
+greg@x200s:~/Photos$ AWS_ACCESS_KEY_ID=lolno AWS_SECRET_ACCESS_KEY=lolno git-annex enableremote glacier
+enableremote glacier ok
+(Recording state in git...)
+greg@x200s:~/Photos$ 
+\"\"\"]]
+
+The guide says that info is sync'd.
+"""]]

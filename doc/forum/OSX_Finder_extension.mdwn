@@ -1,0 +1,5 @@
+OSX 10.10 / Yosemite introduces the [Finder Sync extension][] which allows any app / extension to display informational badges in Finder. This could be used to indicate the sync status (there are some stories which claim the extensions got added because Dropbox used an undocumented API previously). I had a quick look and it would not be too difficult to implement a simple extension which reads the metadata from the `.git/annex` directory and shows a sync / transfer status icon.
+
+Just wanted to throw the idea out there, I might even start building it.
+
+[Finder Sync Extension]: https://developer.apple.com/library/prerelease/ios/documentation/General/Conceptual/ExtensibilityPG/Finder.html

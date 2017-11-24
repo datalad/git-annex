@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkVnM7Ol2kr_jfLg6h_oXpmNdxWHIiL9mk"
+ nickname="Hanno"
+ subject="comment 1"
+ date="2014-01-30T11:18:15Z"
+ content="""
+In case it helps:
+
+    $ grep \"race detected\" daemon.log.5 | wc -l
+    234986
+
+
+
+"""]]

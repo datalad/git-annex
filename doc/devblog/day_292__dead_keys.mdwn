@@ -1,0 +1,21 @@
+Ever since `git annex fsck --all` was added, people 
+[have](http://bugs.debian.org/753888)
+[[complained|bugs/fsck_reports_unsolvable_problem]] that
+there's no way to stop it complaining about keys whose content is gone for
+good. Well, there is now: `git annex dead --key` can be used when you know
+that a key is no longer available and want fsck to stop complaining about
+it.
+
+Running fsck on a directory will intentionally still complain about files
+in the directory with missing contents, even if the keys have been marked
+dead.
+
+The crucial part was finding a good way to store the information; luckily
+location log files are parsed in a way that lets it be added there without
+breaking backwards compatability. A bonus is that adding a key's content
+back to the annex will automatically bring it back from the dead.
+
+I'm pondering making `git annex drop --force` automatically mark a key as
+dead when the last copy is dropped, but I don't know if it's too DWIM or
+worth the complication. Another approach would be to let fsck mark keys as
+dead, but that would certianly need an extra flag.

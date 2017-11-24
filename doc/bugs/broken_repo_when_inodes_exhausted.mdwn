@@ -1,0 +1,62 @@
+### Please describe the problem.
+I found one of my repos damaged after letting the webapp sync with it for a while.  The filesystem inodes were exhausted and all the refs pointed to objects that do not exist.
+
+### What steps will reproduce the problem?
+I expect this issue to be reproduced by syncing to a filesystem without enough free inodes to hold the incoming files.
+
+### What version of git-annex are you using? On what operating system?
+This repo is using git-annex 6.20160229-g37a89cc
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+$ git status
+fatal: bad object HEAD
+$ git pull
+error: refs/heads/master does not point to a valid object!
+error: refs/heads/synced/git-annex does not point to a valid object!
+error: refs/heads/synced/master does not point to a valid object!
+error: refs/heads/master does not point to a valid object!
+error: refs/heads/synced/git-annex does not point to a valid object!
+error: refs/heads/synced/master does not point to a valid object!
+error: refs/heads/master does not point to a valid object!
+error: refs/heads/synced/git-annex does not point to a valid object!
+error: refs/heads/synced/master does not point to a valid object!
+error: refs/heads/master does not point to a valid object!
+error: refs/heads/synced/git-annex does not point to a valid object!
+error: refs/heads/synced/master does not point to a valid object!
+remote: Counting objects: 3, done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 3 (delta 0), reused 0 (delta 0)
+Unpacking objects: 100% (3/3), done.
+error: refs/heads/master does not point to a valid object!
+error: refs/heads/synced/git-annex does not point to a valid object!
+error: refs/heads/synced/master does not point to a valid object!
+fatal: bad object HEAD
+error: /home/olpc/annex-ext4 did not send all necessary objects
+
+Auto packing the repository in background for optimum performance.
+See "git help gc" for manual housekeeping.
+error: The last gc run reported the following. Please correct the root cause
+and remove .git/gc.log.
+Automatic cleanup will not be performed until the file is removed.
+
+error: refs/heads/master does not point to a valid object!
+error: refs/heads/synced/git-annex does not point to a valid object!
+error: refs/heads/synced/master does not point to a valid object!
+error: refs/remotes/beta/master does not point to a valid object!
+error: refs/remotes/beta/synced/master does not point to a valid object!
+error: refs/remotes/halloween/master does not point to a valid object!
+error: refs/remotes/halloween/synced/master does not point to a valid object!
+fatal: bad object HEAD
+error: failed to run repack
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I'm running into a few issues but I intend to work through them.  

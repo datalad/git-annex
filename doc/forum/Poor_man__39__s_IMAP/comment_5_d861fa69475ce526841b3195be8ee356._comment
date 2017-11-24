@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://spindritf.myopenid.com/"
+ nickname="spindritf"
+ subject="comment 5"
+ date="2013-08-14T18:08:22Z"
+ content="""
+> IMHO It is not the wrong tool for the job, after all the whole point of assistant is to sync folder across machines.
+
+That's what I thought. OK, so how do I do it? Should I set up this rsync special remote and run sync every once in a while. When starting the e-mail client for example? 
+"""]]

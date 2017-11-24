@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.244"
+ subject="comment 1"
+ date="2014-04-02T19:51:06Z"
+ content="""
+It might help if you think about these two different repositories as branches. You have 2 branches with different files in them, and you want to produce a third branch with some mix of the two.
+
+I think git is perfectly capable of doing that. Where it gets hairy is dealing with merges when either of the 2 repositories change going forward. The same as if you've forked and modified source code, you will need to do *something* to resolve merges.
+"""]]

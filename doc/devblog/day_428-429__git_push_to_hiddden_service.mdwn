@@ -1,0 +1,31 @@
+The `tor` branch is coming along nicely.
+
+This weekend, I continued working on the P2P protocol, implementing
+it for network sockets, and extending it to support connecting up
+git-send-pack/git-receive-pack. 
+
+There was a bit of a detour when I split the Free monad into two separate
+ones, one for Net operations and the other for Local filesystem operations.
+
+This weekend's work was sponsored by Thomas Hochstein on Patreon.
+
+----
+
+Today, implemented a `git-remote-tor-annex` command that git will
+use for tor-annex:: urls,  and made `git annex remotedaemon`
+serve the tor hidden service.
+
+Now I have git push/pull working to the hidden service, for example:
+
+	git pull tor-annex::eeaytkuhaupbarfi.onion:47651
+
+That works very well, but does not yet check that the user is authorized
+to use the repo, beyond knowing the onion address. And currently
+it only works in git-annex repos; with some tweaks it should
+also work in plain git repos.
+
+Next, I need to teach git-annex how to access tor-annex remotes.
+And after that, an interface in the webapp for setting them up and
+connecting them together.
+
+Today's work was sponsored by Josh Taylor on Patreon.

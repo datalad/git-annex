@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-11-18T17:35:10Z"
+ content="""
+All you need is a clone of the repository that is not using direct mode.
+(The assistant normally sets up repositories using direct mode.)
+So either stop the assistant and run "git annex direct" inside ~/annex,
+or `git clone` the backup repository to a temporary location.
+
+In that clone, you can use regular git commands to check out past versions
+of the tree. Inside such a checkout, you can use `git annex get` to get any
+of the files in that checkout from your backup repository or wherever the
+content of the file has been stored.
+
+For example, using the git-annex repository that I use to publish builds of
+git-annex:
+
+	# git clone https://downloads.kitenet.net/.git/ downloads
+	# cd downloads
+	# git log --stat git-annex/linux/current/
+	(shows a whole lot of past versions of files in that directory)
+	(I decide I want one from a few months ago)
+	# git checkout 81a0d7d
+	HEAD is now at 81a0d7d... publishing git-annex 5.20150731
+	# git annex get git-annex/linux/current/git-annex-standalone-i386.tar.gz
+	get git-annex/linux/current/git-annex-standalone-i386.tar.gz (from origin...) ok
+
+Your backup repository can be used the same way. 
+
+Deleted and old versions of files will be retained in it, as long as the
+assistant was able to send them to the backup repo in the first place
+before they got deleted or modified. When direct mode is used, if you
+change a file before it gets copied to the backup, its old contents are gone
+for good. To avoid that and make sure that all annexed files always get
+backed up, switch your ~/annex to use indirect mode.
+"""]]

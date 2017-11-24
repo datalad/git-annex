@@ -1,0 +1,4 @@
+I've looked for this feature in the webapp but can't find it...
+
+I mainly use the webapp and have been wondering 'how many copies of file X are there' and 'where are the copies of file Y'?
+This is available in the commandline interface but it would be nice to have this in the webapp too.

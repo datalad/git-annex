@@ -1,0 +1,28 @@
+Very productive & long day today, spent adding a new feature to the 
+webapp: Internet Archive support!
+
+[[!img /assistant/iaitem.png]]
+
+git-annex already supported using archive.org via its S3 special remotes,
+so this is just a nice UI around that.
+
+How does it decide which files to publish on archive.org? Well,
+the item has a unique name, which is based on the description
+field. Any files located in a directory with that name will be uploaded
+to that item. (This is done via a new preferred content expression I added.)
+
+So, you can have one repository with multiple IA items attached, and
+sort files between them however you like.
+I plan to make a screencast eventually demoing that. 
+
+Another interesting use case, once the Android webapp is done, would be add
+a repository on the DCIM directory, set the archive.org repository to
+prefer all content, and *bam*, you have a phone or tablet that
+auto-publishes and archives every picture it takes.
+
+Another nice little feature added today is that whenever a file is uploaded
+to the Internet Archive, its public url is automatically recorded, same
+as if you'd ran `git annex addurl`. So any users who can clone your
+repository can download the files from archive.org, without needing any
+login or password info. This makes the Internet Archive a nice way to
+publish the large files associated with a public git repository.

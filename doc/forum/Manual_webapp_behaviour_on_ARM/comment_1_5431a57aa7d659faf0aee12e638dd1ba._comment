@@ -1,0 +1,56 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnudiRFAyVAwehTACPhuNV_dhhWsHKIACw"
+ nickname="Jose"
+ subject="git annex on chromebook"
+ date="2015-03-12T18:32:18Z"
+ content="""
+I know I'm commenting on something old but I was looking this topic up and felt this may help any future questions. :S
+
+* its just like any other machine with git annex. You can connect your instance of git annex that runs in the chroot (crouton) with your existing set up like normal. usb, ssh, xmpp+cloud
+
+* you will need a transfer repository, that vps should do nicely (I use a few USB drives)
+
+    * this depends if the VPS also has git annex installed or not. 
+if it does, great! If you want it configured for you, you can run git annex webapp to add a remote server and give it the details to connect to your VPS via ssh. Then tell it where your transfer repository will be and that should be it. If you plan on sharing this repo with your friend, or if you want more control over the data, you may want to set up your ssh repo via the command line instead. you may be able to add encryption and share your repository without necessarily letting your friend have access to everything on your account (if you have separate accounts)
+
+
+if it does not, also doable. Again if you want simple configuration git annex webapp will prompt you for credentials; in this case it may as you to encrypt the data (http://git-annex.branchable.com/encryption/). 
+
+* how to add an ssh remote via commandline (please don't just copy paste, a simple google of the commands will help you understand what they are doing)
+
+$ cd ~/Downloads/Documents
+
+$ git init
+
+$ git annex init \"chromebook\"
+
+$ git remote add my-ssh ssh://user@google.com/home/user/annex/Documents #I recommend you use an 'ssh alias' so you can just do 'ssh://alias1/home/user/annex/Documents'
+
+$ git annex add
+
+$ git annex sync
+
+$ git annex sync --content #I do not remember but I believe it may be necessary to do this for some versions of git annex.
+
+git annex may or may not complain about git annex being installed on your machine. (it does for me each time I do this... perhaps I'm missing a step?)
+If you know git annex is installed in the $PATH of your server (also your machine) then you can just run
+
+$  git config remote.my-ssh.annex-ignore false
+
+$  git annex sync
+
+$  git annex sync --content
+
+
+* how come I can not see my annexed files on chromeos but I can on crouton?
+because you are using git annex in 'indirect' mode
+
+$ cd ~/Downloads/Documents
+
+$ git annex direct
+
+You can also 'unlock' the files too but you will need to run git annex unlock every time you need to read/write a file using. 
+
+$ git annex unlock 
+
+"""]]

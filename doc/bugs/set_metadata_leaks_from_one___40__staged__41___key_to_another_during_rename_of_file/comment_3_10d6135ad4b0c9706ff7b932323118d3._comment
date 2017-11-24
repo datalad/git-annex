@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-09-26T19:16:29Z"
+ content="""
+Hmm, if the file was not already in the index, that could be taken to
+indicate it was deleted/moved and replaced, rather than being modified,
+and so don't copy the metadata.
+
+But that would make these two sequences have different behavior:
+
+	git rm file; echo foo > file; git annex add file
+
+	echo foo > file; git annex add file
+
+As well as these two sequences:
+
+	git mv file other; echo foo > file; git annex add file
+
+	cp file other; echo foo > file; git annex add file other
+"""]]

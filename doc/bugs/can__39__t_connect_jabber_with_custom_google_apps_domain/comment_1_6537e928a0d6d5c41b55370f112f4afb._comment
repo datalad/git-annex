@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-07-02T17:28:01Z"
+ content="""
+This seems like the same problem as in [[bugs/googlemail]]. 
+
+git-annex uses SRV records to find the jabber server for a domain. What is google doing that makes this not work? Do you have a sample domain?
+"""]]

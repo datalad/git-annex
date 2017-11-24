@@ -1,0 +1,14 @@
+Hi, I'm using the webapp and created a repository on my local computer. Then I created another remote repository (encrypted remote with gcrypt), this remote repository is selected as type "full backup". 
+
+I've added some files to the local repository, then changed some of them and watched the sync happen. Then I deleted some files, and these also get synced to the remote.
+
+Now, how can I recover those files from the foreign repo, using the webapp or the command line? I could not find any solution.
+
+I tried:
+git log --diff-filter=D --summary
+and then
+git checkout 488408bfcd58eced685d9e3ca5daf55250850f5d -- .
+to recover the file listed in this remote but got the following response:
+fatal: This operation must be run in a work tree
+
+What do I miss and how does the "Restore" part work when using "full backup" remote repository?

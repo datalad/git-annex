@@ -1,0 +1,2 @@
+This tags is for bugs needing more information from their submitter.
+Please respond to the bug and provide the requested information.

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-11-30T19:05:36Z"
+ content="""
+@eren, some of the programs included with git-annex need to use libraries
+from Git for Windows. In particular, I think you'll find that rsync doesn't
+work if you use the 64 bit Git for Windows.
+"""]]

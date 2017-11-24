@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 16"
+ date="2014-05-15T19:54:54Z"
+ content="""
+@Matthias, `git annex sync --content` has to check each file to see if any other repository wants it. This is necessarily going to get slow when there are a lot of files. The assistant does a similar syncing but uses some tricks to avoid scanning all the files too often, while still managing to keep them all in sync -- it can do this since it's a long-running daemon and is aware when files have changed.
+"""]]

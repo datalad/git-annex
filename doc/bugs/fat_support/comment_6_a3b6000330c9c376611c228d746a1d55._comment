@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkZRoTRyW3tox-FD2DQWxskgI6_tkEtHL4"
+ nickname="Ben"
+ subject="comment 6"
+ date="2012-07-23T16:11:52Z"
+ content="""
+The above would work fine for me but the files in my annex (e.g. .git/annex/objects/xx/yy/blah.ogg) don't have extensions like that, so my media player doesn't recognize them as media files. How do I get the files under \"objects\" to keep the extensions of the original files like in Joey's example?
+"""]]

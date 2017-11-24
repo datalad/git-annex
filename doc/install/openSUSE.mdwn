@@ -1,0 +1,7 @@
+There are [packages of git-annex](https://build.opensuse.org/project/show/devel:languages:haskell)
+available for openSUSE.
+
+From openSUSE:Leap:42.2 git-annex will be part of the distribution.
+
+git-annex is included in the openSUSE:Tumbleweed distribution
+and can be installed by running `zypper in git-annex`

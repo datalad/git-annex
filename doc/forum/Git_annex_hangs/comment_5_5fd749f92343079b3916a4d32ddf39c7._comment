@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2014-10-20T15:28:01Z"
+ content="""
+Adding the files will take as long as it takes to read and hash 
+the conents of those files from disk. If that's too slow, `--backend=WORM`
+will bypass the hashing, so it will take seconds.
+
+Time required to sync files depends on the bandwidth to wherever it's
+syncing with, obviously.
+"""]]

@@ -1,0 +1,23 @@
+# NAME
+
+git-annex fuzztest - generates fuzz test files
+
+# SYNOPSIS
+
+git annex fuzztest
+
+# DESCRIPTION
+
+Generates random changes to files in the current repository,
+for use in testing the assistant. This is dangerous, so it will not
+do anything unless --forced.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

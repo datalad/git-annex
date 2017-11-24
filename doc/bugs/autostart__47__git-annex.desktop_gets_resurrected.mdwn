@@ -1,0 +1,9 @@
+### Please describe the problem.
+
+Due to the very unstable kernel on my laptop atm I need to reboot quite frequently... and this issue with annex assistant immediately starting synchronizing (although I did disable all synchronizations in webapp, so it would be another issue I guess), I wanted just to disable autostart of git-annex altogether.  I have removed $HOME/.config/autostart/git-annex.desktop but to my surprise upon gnome crashing/relogin I had the same ssh key passphrase dialog and that file reappeared.
+
+### What version of git-annex are you using? On what operating system?
+
+5.20151116+gitg5416a1a-1~ndall+1
+
+[[!meta author=yoh]]

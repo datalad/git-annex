@@ -1,0 +1,47 @@
+I currently am using 3 repositories for my personal annex, and on each of them I'm running the assistant (they are normal git annex repositories). However all my files are migrating to my work desktop. My other two repositories seem to keep dropping them.
+
+Last night on my laptop I did a "git annex get *" to pull _all_ the files onto it. I saw in the .git/annex/daemon.log that each file was being dropped as soon as it was gotten. The output of "git annex get" showed files being transfered across, and the .git/annex/daemon.log showed files being dropped straight away. Currently I'd like to keep all my files on all my repositories (and perhaps later I'll revise that).
+
+Could someone please help me understand why annex is dropping my files, and what I could do to keep them on all my repositories?
+
+Here is the output of a get for a single file:
+
+    ~/Documents/personal-annex $ git annex get 2014/09/15/IMG_1123.JPG
+    get 2014/09/15/IMG_1123.JPG (from pea15.local_Documents_annexpersonal...)
+    SHA256E-s1841221--deeaa13935907ad606f941397bb57432c1eccfd5c361b8c16d2b19bfbe8437a6.JPG
+          1,841,221 100%   11.40MB/s    0:00:00 (xfr#1, to-chk=0/1)
+    ok
+    (Recording state in git...)
+
+
+Here is the corresponding daemon.log output:
+
+    [2014-10-09 09:11:34 AEDT] Committer: Committing changes to git
+    [2ok
+    (Recording state in git...)
+    (Recording state in git...)
+    (Recording state in git...)
+    drop 2014/09/15/IMG_1123.JPG 01(checking pea15.local_Documents_annexpersonal...) 4-10-09 09:11:34 AEDT] Pusher: Syncing with pea15.local_Documents_annexpersonal 
+    [2014-10-09 09:11:35 AEDT] Committer: Committing changes to git
+    To ssh://geoffc@git-annex-pea-15-geoffc_Documents.2Fannex.2Dpersonal/~/Documents/annex-personal/
+       04742c0..d1a5a36  git-annex -> synced/git-annex
+    [2014-10-09 09:11:38 AEDT] Pusher: Syncing with pea15.local_Documents_annexpersonal 
+    Everything up-to-date
+
+
+And here is a snippet from my .git/config:
+
+    [annex]
+            uuid = 57c4e6d1-0c6b-4c49-a235-4119d3864c14
+            version = 5
+            direct = true
+            #diskreserve = 2 gigabyte
+            autoupgrade = ask
+            debug = false
+            expireunused = false
+            autocommit = true
+    [remote "pea15.local_Documents_annexpersonal"]
+            url = ssh://geoffc@git-annex-pea-15-geoffc_Documents.2Fannex.2Dpersonal/~/Documents/annex-personal/
+            fetch = +refs/heads/*:refs/remotes/pea15.local_Documents_annexpersonal/*
+            annex-uuid = 2ef6bbfe-662f-48ba-aa52-8e2f82bcfb15
+            annex-cost = 175.0

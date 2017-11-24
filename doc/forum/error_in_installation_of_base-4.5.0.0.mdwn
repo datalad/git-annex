@@ -1,0 +1,14 @@
+Hi,
+
+I was trying to install git-annex, but then, I got a warning saying that I need to install base-4.5.0.0 first.
+
+So, I did "sudo cabal install base-4.5.0.0". Everything was going well, until I got this error:
+
+config.status: error: cannot find input file: `base.buildinfo.in'
+cabal: Error: some packages failed to install:
+base-4.5.0.0 failed during the configure step. The exception was:
+ExitFailure 1
+
+I tried to look for information on the internet, but I did not find anything useful.
+
+I know that this is not totally related to git-annex, but anyone has any thoughts on this?

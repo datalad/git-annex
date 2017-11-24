@@ -1,0 +1,6 @@
+Today was a day off, really. However, I have a job running to try to
+build get a version of ghc-android that works on newer Android releases.
+
+Also, guilhem's `git annex unused` speedup patch landed. The results are
+extrordinary -- speedups on the order of 50 to 100 times faster should
+not be uncommon. Best of all (for me), it still runs in constant memory!

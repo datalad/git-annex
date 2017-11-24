@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-02-09T21:10:58Z"
+ content="""
+I guess the thing to do in this case is to run `git annex forget`
+"""]]

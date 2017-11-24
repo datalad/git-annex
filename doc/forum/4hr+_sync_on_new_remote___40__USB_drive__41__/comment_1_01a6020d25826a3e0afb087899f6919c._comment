@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-03-16T17:38:02Z"
+ content="""
+git gc is using the time here.
+
+It's easy to configure git to not do auto-gc. See the git-config man
+page's documentation of gc.auto.
+
+(It's impossible to use git-annex in indirect mode on a fat filesystem,
+unless FAT has suddenly grown symlink support overnight and I didn't
+notice..)
+"""]]

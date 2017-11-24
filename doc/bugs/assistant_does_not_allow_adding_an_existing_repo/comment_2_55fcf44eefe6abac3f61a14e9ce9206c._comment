@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="effigies"
+ subject="Strategy for getting up and running"
+ date="2015-03-09T17:32:19Z"
+ content="""
+The following is the set of steps I use when setting assistant up on a new repository:
+
+    git clone user@host:repo.git
+    pushd repo
+    git annex init
+        touch EMPTY
+        git annex add EMPTY
+        git commit -m 'Initial commit'
+        git push --all
+        git annex copy --to origin
+        git annex direct
+        git annex sync
+        git annex untrust .
+    popd
+
+Entering the folder path now lets the assistant take over.
+
+For an existing repository:
+
+    git clone user@host:repo.git
+    pushd repo
+        git annex get .
+        git annex direct
+        git annex sync
+        git annex untrust .
+    popd
+
+Not sure if this would be helpful for working out what the assistant behavior should be, but maybe it'll help others get to the point where the assistant works with a gitolite managed repo.
+"""]]

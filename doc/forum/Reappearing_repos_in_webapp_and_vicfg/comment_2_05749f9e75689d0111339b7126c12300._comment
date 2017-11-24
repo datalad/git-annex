@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnXybLxkPMYpP3yw4b_I6IdC3cKTD-xEdU"
+ nickname="Matt"
+ subject="comment 2"
+ date="2013-07-02T19:48:19Z"
+ content="""
+Hi,
+
+I should have mentioned I can't do this either:
+
+    ~/current $ git annex dead 40da403e-6f74-4705-aae0-433aa656b55e
+    dead 40da403e-6f74-4705-aae0-433aa656b55e git-annex: there is no available git remote named \"40da403e-6f74-4705-aae0-433aa656b55e\"
+
+I can't quite remember how I removed the remote - it was a whilst back, I think maybe I just edited it out of the git config file....
+"""]]

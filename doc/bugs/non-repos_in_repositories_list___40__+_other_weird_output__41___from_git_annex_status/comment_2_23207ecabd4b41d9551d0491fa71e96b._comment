@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 2"
+ date="2013-07-25T20:12:06Z"
+ content="""
+Please paste the output of: `git show git-annex:uuid.log`
+
+The file seems to have a lot of garbage in it. The \"merging -- 10.10.10.10__mnt_annex_00_annex/git-annex into git-annex (recovery from race)\" in particular is only ever passed to git as the commit message. It should not be possible for it to appear in a file unless data has somehow become corrupted.
+
+So, I think you should also run `git fsck`. You may also find that it helps to shut down any running git-annex, and move `.git/annex/index` away to a backup location. A corrupted index file would be kind of be the best scenario since git-annex can automatically rebuild it from the git repository..
+"""]]

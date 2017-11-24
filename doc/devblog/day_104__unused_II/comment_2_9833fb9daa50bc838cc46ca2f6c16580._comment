@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.199"
+ subject="comment 2"
+ date="2014-01-28T20:58:32Z"
+ content="""
+AFAICS, the Windows build does include WebDAV support.
+
+I don't know about Windows proxy stuff. If it requires the program to do something, git-annex almost certianly does not do it.
+"""]]

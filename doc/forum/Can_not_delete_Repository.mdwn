@@ -1,0 +1,3 @@
+I have one repository that I deleted a while back. When I mark it as dead in command line it disappears from git annex info however when I run webapp it pops back webapp shows it as syncing disabled. When I try to delete it from the webapp it does not delete. I tried shutting down the daemon mark it as dead again then run git annex forget --drop-dead --force but running it makes the repo active again instead of deleting it.
+
+Repo in question was a S3 repo. I tried deleting it using both its name and uuid.

@@ -1,0 +1,18 @@
+Hi,
+
+I'm using git-annex across a number of (indirect) repositories, making heavy use of deduplication for organizing files according to various different aspects.
+
+Now I want to keep part of the files also on a VFAT device, which doesn't let me use indirect mode.  In direct mode, however, git-annex "get" or "copy" places a separate copy of each file in the repository, whereas in indirect mode, it would just keep a single copy and maintain a number of (inexpensive) symbolic links.  Since space on the VFAT drive is limited, I would like to just keep one, specific copy, not caring about the others.  If I "drop" an unneeded copy of the file, it also gets replaced by the ASCII "link" in all other places that contained the same file.  Therefore, I can either have multiple copies of the same data or none at all.
+
+Imagine you have a bunch of photos sorted into a directories in meant to make it easy to find them (same file name means same file content):
+
+./photo1.jpg
+./photo2.jpg
+./by-date/2014-10-27/photo1.jpg
+./by-date/2014-10-28/photo2.jpg
+./by-event/holiday-by-the-sea/photo1.jpg
+./by-event/her-birthday/photo2.jpg
+
+I want to keep a copy of ./photo?.jpg in the VFAT repository, but not the other (identical) files.  How do I do that?  Or is there really no way of doing this?
+
+Thanks.

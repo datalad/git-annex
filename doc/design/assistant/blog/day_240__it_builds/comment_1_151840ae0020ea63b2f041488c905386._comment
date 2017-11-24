@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="Duplicated files resolved"
+ date="2013-04-18T05:52:35Z"
+ content="""
+Hi,
+
+Seems like the duplicated file issue finally resolved in this release, 
+also the logging is not so detailed, so it does not explode the disk space either.
+
+I think a new bug introduced in this release, 
+namely if you create a repository and a backup repository of it (pendrive), then this repository is not in direct mode by default.
+(and there is a missing direct = True variable in that repository (/mnt/dat/annex_backup/.git/annex/config)).
+
+Also I run into resource exhausted bug, and every thread is crashed.
+Can git-annex only watch a directory, and not every file in it?
+
+I will create a bugreport for resource exhausted.
+
+Best, 
+ Laszlo
+
+
+"""]]

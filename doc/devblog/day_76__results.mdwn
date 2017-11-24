@@ -1,0 +1,15 @@
+Fixed up a few problems with the Windows webapp, and it's now completely
+usable, using any browser other than MSIE. While there are missing
+features in the windows port, all the UI for the features it does have
+seems to just work in the webapp.
+
+Fixed a ugly problem with Firefox, which turned out to have been introduced
+a while ago by a workaround for an ugly problem in Chrome. Web browsers are
+so wonderful, until they're crap.
+
+Think I've fixed the bug in the EvilLinker that was causing it to hang on
+the autobuilder, but still don't have a Windows autobuild with the webapp
+just yet.
+
+Also improved `git annex import` some more, and worked on a bug in git
+repository repair, which I will need to spend some more time on tomorrow.

@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 2"
+ date="2014-05-25T15:16:33Z"
+ content="""
+I file name I remember messing is the following,
+
+    George's Café
+
+I experience this problem with any char that is not ascii. As for my locale,
+
+LANG=\"en_US.UTF-8\"
+LC_COLLATE=\"en_US.UTF-8\"
+LC_CTYPE=\"en_US.UTF-8\"
+LC_MESSAGES=\"en_US.UTF-8\"
+LC_MONETARY=\"en_US.UTF-8\"
+LC_NUMERIC=\"en_US.UTF-8\"
+LC_TIME=\"en_US.UTF-8\"
+LC_ALL=\"en_US.UTF-8\"
+
+There no errors other than the behaviour I've described.
+"""]]

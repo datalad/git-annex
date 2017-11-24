@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/e65e6d0e-58ba-41de-84cc-1f2ba54cf574"
+ nickname="Mica Semrick"
+ subject="is your samba share mounted?"
+ date="2014-11-10T05:08:39Z"
+ content="""
+You should make sure your samba share is mounted and you can read/write to it.
+"""]]

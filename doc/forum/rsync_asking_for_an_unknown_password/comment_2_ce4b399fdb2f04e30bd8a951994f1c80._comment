@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk3JJvaarUKd7xShCMze_kpHVcuCzFrWTI"
+ nickname="Lucas"
+ subject="comment 2"
+ date="2014-07-15T16:18:01Z"
+ content="""
+Well I got the password issue straightened out (was me, don't ask).
+
+Both the rsync and git via ssh are working well, thanks!
+"""]]

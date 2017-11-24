@@ -1,0 +1,90 @@
+[[!comment format=mdwn
+ username="craig@6ddb6e2c94325e18a0d631a06e63fdc111ab1f12"
+ nickname="craig"
+ subject="Replicating my key for encrypted special remotes"
+ date="2015-10-25T19:00:56Z"
+ content="""
+Cool, thanks.  I see the gpg key in remote.log in the git-annex branch, so it's saved, which is the thing I care about most.  I'm now sure I could recover my data in a DR scenario.  However, I seem to be missing something with enableremote and how this is all supposed to work.
+
+My main repo is ~/local/pics and here's the result of git annex info glacier:
+
+    11:45:24 [24623]; git annex info glacier
+    remote: glacier
+    description: glacier backup [glacier]
+    uuid: e34c5f10-2a97-4477-a248-b96e050557dc
+    trust: semitrusted
+    cost: 1050.0
+    type: glacier
+    creds: stored locally
+    glacier vault: ...snip...
+    encryption: encrypted (encryption key stored in git repository)
+    chunking: none
+    remote annex keys: 27519
+    remote annex size: 47.95 gigabytes
+
+I used git annex assistant to create a manual mode remote on my usb key.  This created a annex-pics directory on the usb key with a bare repo.
+
+    11:50:50 [24626]; pwd
+    /media/craig/KINGSTON/annex-pics
+    11:50:51 [24627]; ls
+    annex  branches  config  description  HEAD  hooks  info  objects  refs
+
+I then did a git clone from the bare repo into a tmp dir:
+
+    11:52:48 [24670]; git clone /media/craig/KINGSTON/annex-pics annex-pics
+    Cloning into 'annex-pics'...
+    done.
+
+But when I enable the glacier remote, which I'd have to do in a DR scenario, I get an error:
+
+    11:53:29 [24672]; git annex enableremote glacier
+    (merging origin/git-annex into git-annex...)
+    (recording state in git...)
+    git-annex: Unknown special remote name.
+    Known special remotes: gitannexpics
+
+It knows about the remote, but hasn't assigned a name to it:
+
+    11:53:36 [24673]; git annex info glacier
+    git-annex: glacier is not a directory or an annexed file or a remote or a uuid
+    11:53:49 [24674]; git annex info
+    repository mode: indirect
+    trusted repositories: 0
+    semitrusted repositories: 7
+            00000000-0000-0000-0000-000000000001 -- web
+            00000000-0000-0000-0000-000000000002 -- bittorrent
+            082b6805-3264-4f1b-8e15-a5cd0cef3e7f -- craig@jester:~/local/pics
+            71132283-1a3b-47f8-a548-1d5fb2f645d4 -- craig@jester:~/tmp/annex-pics [here]
+            a4598ad6-390c-40cf-a71d-edfe7511b20c -- craig@storage:~/local/pics
+            d4ee044d-e0e0-4012-b6cd-353da37b9867 -- KINGSTON [origin]
+            e34c5f10-2a97-4477-a248-b96e050557dc -- glacier backup
+    untrusted repositories: 1
+            3796b34c-61af-4e45-a276-07097c1ac6f9 -- craig@desktop:~/local/pics
+    transfers in progress: none
+    available local disk space: 414.4 gigabytes (+1 megabyte reserved)
+    local annex keys: 0
+    local annex size: 0 bytes
+    annexed files in working tree: 33204
+    size of annexed files in working tree: 48.38 gigabytes (+ 148 unknown size)
+    bloom filter size: 32 mebibytes (0% full)
+    backend usage: 
+            SHA1: 148
+            SHA256E: 33056
+
+Doing a git annex info on the uuid does something, but I'm not clear what it does:
+
+    11:53:56 [24675]; git annex info e34c5f10-2a97-4477-a248-b96e050557dc
+    remote annex keys: 27519
+    remote annex size: 47.95 gigabytes
+
+An enable remote on the uuid doesn't work either:
+
+    11:57:33 [24678]; git annex enableremote e34c5f10-2a97-4477-a248-b96e050557dc
+    git-annex: Unknown special remote name.
+    Known special remotes: gitannexpics
+
+I feel like I'm missing a step.  What am I missing?
+
+Thanks,
+Craig
+"""]]

@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkhdKAhe3l_UyGt5SdfRBPYVwe-9f8P2dM"
+ nickname="Justin"
+ subject="comment 4"
+ date="2011-04-05T21:14:12Z"
+ content="""
+@joey
+
+OK, I'll try increasing the stack size and see if that helps.
+
+For reference, I was running:
+
+git annex add .
+
+on a directory containing about 100k files spread over many nested subdirectories. I actually have more than a dozen projects like this that I plan to keep in git annex, possibly in separate repositories if necessary. I could probably tar the data and then archive that, but I like the idea of being able to see the structure of my data even though the contents of the files are on a different machine.
+
+After the crash, running:
+
+git annex unannex
+
+does nothing and returns instantly. What exactly is 'git annex add' doing? I know that it's moving files into the key-value store and adding symlinks, but I don't know what else it does.
+
+--Justin
+
+
+
+If 
+
+"""]]

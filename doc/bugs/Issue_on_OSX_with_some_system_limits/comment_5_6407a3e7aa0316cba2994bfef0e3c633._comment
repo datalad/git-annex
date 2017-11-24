@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 4"
+ date="2012-07-04T13:17:05Z"
+ content="""
+In relation to the system limits,
+
+    laplace:~ jtang$ sysctl kern.maxfilesperproc
+    kern.maxfilesperproc: 10240
+
+Also, the maxfiles for the whole system is
+
+    laplace:~ jtang$ sysctl kern.maxfiles
+    kern.maxfiles: 12288
+
+the above was the defaults as far as I recall. What you probably would be interested is the ulimits that the user see
+
+    laplace:~ jtang$ ulimit -a
+    core file size          (blocks, -c) 0
+    data seg size           (kbytes, -d) unlimited
+    file size               (blocks, -f) unlimited
+    max locked memory       (kbytes, -l) unlimited
+    max memory size         (kbytes, -m) unlimited
+    open files                      (-n) 256
+    pipe size            (512 bytes, -p) 1
+    stack size              (kbytes, -s) 8192
+    cpu time               (seconds, -t) unlimited
+    max user processes              (-u) 709
+    virtual memory          (kbytes, -v) unlimited
+
+I would imagine the limit that you are looking for is 256. Hope this helps.
+
+----
+
+On the point about deletions not being propagated, it does do a commit. I suspect that the kqueue code is just not picking up the changes and pushing the changes out. The watch command on a single annex with no remotes functions as expected.
+"""]]

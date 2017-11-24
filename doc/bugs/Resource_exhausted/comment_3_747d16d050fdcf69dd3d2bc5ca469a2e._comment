@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="http://adamspiers.myopenid.com/"
+ nickname="Adam"
+ subject="I just reproduced this"
+ date="2013-07-26T23:37:26Z"
+ content="""
+On openSUSE 12.3 with this version (which I'm sure is horribly old):
+
+    git-annex version: 4.20130314
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3 4
+    upgrade supported from repository versions: 0 1 2
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS
+
+I ran 'git annex get' on a large repository, and got this:
+
+    [snipped]
+    git-annex: /home/adam/music/.git/annex/transfer/failed/download/9c930baf-6b25-4294-b1f9-a90ba9663fb7/SHA1-s7227476--49d203960b062ec00c0d1d7042c4b6aa6720b976: openFile: resource exhausted (Too many open files)
+    failed
+    git-annex: runInteractiveProcess: pipe: Too many open files
+
+    git-annex: git: runInteractiveProcess: resource exhausted (Too many open files)
+    failed
+    git-annex: get: 1207 failed
+
+Then I ran it again and saw that after every file retrieved, git-annex leaks another lockfile.  lsof shows an ever increasing number of files like this:
+
+    [snipped]
+    git-annex 32498 adam   86rR  REG  253,3        0   787353 /home/adam/music/.git/annex/ssh/adam@atlantic.lock
+    git-annex 32498 adam   87rR  REG  253,3        0   787353 /home/adam/music/.git/annex/ssh/adam@atlantic.lock
+    git-annex 32498 adam   88rR  REG  253,3        0   787353 /home/adam/music/.git/annex/ssh/adam@atlantic.lock
+    git-annex 32498 adam   89rR  REG  253,3        0   787353 /home/adam/music/.git/annex/ssh/adam@atlantic.lock
+    git-annex 32498 adam   90rR  REG  253,3        0   787353 /home/adam/music/.git/annex/ssh/adam@atlantic.lock
+    git-annex 32498 adam   91rR  REG  253,3        0   787353 /home/adam/music/.git/annex/ssh/adam@atlantic.lock
+    git-annex 32498 adam   92rR  REG  253,3        0   787353 /home/adam/music/.git/annex/ssh/adam@atlantic.lock
+    git-annex 32498 adam   93r  FIFO    0,8      0t0 28752703 pipe
+    git-annex 32498 adam   94r  FIFO    0,8      0t0 28765910 pipe
+"""]]

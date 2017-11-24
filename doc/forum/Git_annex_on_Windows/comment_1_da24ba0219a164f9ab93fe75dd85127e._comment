@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.251.174"
+ subject="comment 1"
+ date="2013-09-07T17:00:03Z"
+ content="""
+Are you able to run git commands? IIRC msysgit prompts when it's installed about whether you want to put it in the path or not. git-annex just piggybacks on this path setting. It is installed in the same folder as the git.exe and should work as long as that is in path.
+Otherwise, consult windows documentation to add git-annex to the path, or you can copy the git-annex.exe to somewhere else I suppose.
+
+I built a clean Windows system yesterday and have just re-tested it and it does work.
+"""]]

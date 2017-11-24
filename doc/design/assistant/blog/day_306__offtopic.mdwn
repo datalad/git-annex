@@ -1,0 +1,2 @@
+Technically offtopic, but did a fun side project today:
+<http://joeyh.name/blog/entry/git-annex_as_a_podcatcher/>

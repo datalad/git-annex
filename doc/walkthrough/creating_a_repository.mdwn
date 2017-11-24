@@ -1,0 +1,6 @@
+This is very straightforward.
+
+	# mkdir ~/annex
+	# cd ~/annex
+	# git init
+	# git annex init

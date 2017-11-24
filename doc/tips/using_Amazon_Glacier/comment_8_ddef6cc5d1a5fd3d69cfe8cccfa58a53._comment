@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2015-12-08T15:12:59Z"
+ content="""
+@ben, it's generating the encryption key, and is blocked waiting on enropy.
+You can pass --fast to use lower-quality randomness.
+"""]]

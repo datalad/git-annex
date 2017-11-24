@@ -1,0 +1,17 @@
+I've been toying with the idea of auto archiving files (that is - removing them from .) based on a set of rules.
+
+Git already provides attribute management for files and I put together a simple script that tries to achieve the following:
+
+* Look for files with X copies (including a local one)
+* Verify that the file is not recent (defined as not having been dropped or getted within X days )
+* Verify that the file has an annex.archive attribute
+* Archive if the above is met
+
+Here is the script:
+http://pastebin.com/53iLqyPd
+
+You just add the annex.archive attribute to files via .gitattributes to use
+
+The script runs in preview mode... exec with autoArchive.sh commit to drop the files.
+
+Open to thoughts / suggestions

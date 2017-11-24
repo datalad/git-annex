@@ -1,0 +1,8 @@
+<div .col-sm-9>
+  <div .content-box>
+    <h2>
+      The world wide web
+    <p>
+      git-annex can download files from the web.
+    <p>
+      This is not a normal repository, and cannot be configured.

@@ -1,0 +1,15 @@
+Finished getting automatic merge conflict resolution working in direct
+mode. Turned out I was almost there yesterday, just a bug in a filename
+comparison needed to be fixed.
+
+Fixed a bug where the assistant dropped a file after transferring it,
+despite the preferred content settings saying it should keep its copy of
+the file. This turned out to be due to it reading the transfer info
+incorrectly, and adding a "\n" to the end of the filename, which caused the
+preferred content check to think it wasn't wanted after all. (Probably
+because it thought 0 copies of the file were wanted, but I didn't look into
+this in detail.)
+
+Worked on my test suite, particularly more QuickCheck tests. I need to
+use QuickCheck more, particularly when I've pairs of functions, like encode
+and decode, that make for easy QuickCheck properties.

@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ ip="72.0.72.144"
+ subject="comment 2"
+ date="2014-09-14T17:38:34Z"
+ content="""
+thanks so much for your work on git-annex, joeyh. it's hard to imagine that just 4 years ago, we didn't have anything even close to this tool and how far it went since then. 
+
+~~~~
+anarcat@marcos:git-annex$ pepper age
+Loading cache index... done
+git-annex is 3 years old
+git-annex's birthday is in about 1 month (October 19th)
+~~~~
+
+birthday is coming soon! :)
+
+it's also quite impressive how much work can be done in a single year with some (fairly minimal) funding to dedicate a full dev on a project. very inspiring - keep up the good work! -- [[anarcat]]
+"""]]

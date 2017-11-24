@@ -1,0 +1,3 @@
+I've made a first attempt at a .app launcher for git-annex webapp for OSX, please see <https://github.com/jcftang/git-annex/commits/master> the icon needs to be resized and made to look nicer at somepoint, the launcher assumes that git-annex is in the run time path.
+
+I would imagine it might be possible to fiddle with the paths and get all the needed components into the .app file for OSX users.

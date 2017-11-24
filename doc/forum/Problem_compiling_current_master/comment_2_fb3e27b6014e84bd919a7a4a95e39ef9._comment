@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmU_2tE75oyG0h2ZPN4lcroIKEMC8G-otE"
+ nickname="Michael"
+ subject="comment 2"
+ date="2012-08-30T11:32:24Z"
+ content="""
+That helped now the compile stops at:
+
+    Utility/WebApp.hs:106:9:
+        Ambiguous occurrence `liftIO'
+        It could refer to either `Yesod.liftIO',
+                                 imported from `Yesod' at Utility/WebApp.hs:14:1-12
+                                 (and originally defined in `transformers-0.2.2.0:Control.Monad.IO.Class')
+                              or `Control.Monad.IO.Class.liftIO',
+                                 imported from `Control.Monad.IO.Class' at Utility/WebApp.hs:18:1-29
+    make: *** [git-annex] Fehler 1
+
+
+
+"""]]

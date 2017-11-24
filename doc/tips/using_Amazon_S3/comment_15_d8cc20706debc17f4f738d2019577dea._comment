@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="NathanCollins"
+ avatar="http://cdn.libravatar.org/avatar/8354544a22bb5a0ac8005ca008f94ad1"
+ subject="The initremote command appears to hang due to low entropy"
+ date="2017-09-10T02:32:26Z"
+ content="""
+For me, the `git annex initremote amazon-s3 encryption=shared embedcreds=yes` [1] command hung for several minutes after printing
+
+    initremote amazon-s3 (encryption setup)
+
+Turns out the problem was that I was low on entropy. Figured this out by running
+
+    gpg --gen-random 2
+
+per [this bug comment](https://github.com/DanielDent/git-annex-remote-rclone/issues/6#issuecomment-231347642). According to [this blog post](https://delightlylinux.wordpress.com/2015/07/01/is-gpg-hanging-when-generating-a-key/) a solution is to
+
+    sudo aptitude install rng-tools
+    sudo rngd -r /dev/urandom
+
+The `git annex initremote` command had finished by the time I found that solution, but I verified that it made `gpg --gen-random 2` work.
+
+System: Ubuntu 16.04 with Git Annex 5.20151208-1build1 installed via package manager.
+
+[1] I'm using AWS credentials that are restricted to a specific bucket, so I'm not worried about the conjunction `encryption=shared` and `embedcreds=yes`.
+"""]]

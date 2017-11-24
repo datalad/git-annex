@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.235"
+ subject="comment 1"
+ date="2013-07-10T16:31:40Z"
+ content="""
+Everything you've described is expected behavior, when the content of the file has not yet been transferred to the repository.
+
+There should be something in daemon.log about the transfer of the file. If there's an error message for the transfer, it will certainly show up there. You can enable debugging to get more information in daemon.log about file transfers.
+"""]]

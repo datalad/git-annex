@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-08-29T16:10:38Z"
+ content="""
+You're right -- as long as nothing changes a file without letting the modification time update, editing WORM files is safe.
+"""]]

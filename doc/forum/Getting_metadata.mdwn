@@ -1,0 +1,30 @@
+Hi!
+
+what's wrong here with getting metadata back:
+
+    # setup
+    $ git init .
+    $ git annex init
+    init  ok
+    (Recording state in git...)
+    $ touch testfile
+    $ git add testfile 
+    $ git commit -m "imp"
+    [master (Basis-Commit) 55c385e] imp
+     1 file changed, 0 insertions(+), 0 deletions(-)
+     create mode 100644 testfile
+
+    # set metadata
+    $ git annex metadata testfile --set key=val
+
+    # retrieval doesn't work
+    $ git annex metadata testfile --get key
+    $ git annex metadata testfile
+    $ 
+
+What I would expect here is to get "val" back.
+
+What am I doing wrong?
+
+
+Thanks!

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkipQLNyt8RHREHpg2k5wdYeRSCCvSNSBg"
+ nickname="Tim"
+ subject="Having &quot;too many open files&quot; message show up"
+ date="2014-01-13T14:57:11Z"
+ content="""
+This is happening to me now about twice per day.  I've got a repo that is completely synced already and I'm working on a project in IntelliJ.  When I check git-annex I often see this message when it is doing a startup scan or consistency check.
+
+The message can be seen here: http://imgur.com/Xb4LA73
+
+Are there logs somewhere that I can gather and supply to you to help track this down?  I'm using the 2014-01-07 release of git-annex for Mac OS.
+"""]]

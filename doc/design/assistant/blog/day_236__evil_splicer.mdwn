@@ -1,0 +1,29 @@
+Spent today bulding the Evil Splicer, a program that parses `ghc -ddump-splices`
+output, and uses it to expand Template Haskell splices in source code.
+I hope to use this crazy hack to get the webapp working on Android.
+
+This was a good opportunity to use the
+[Parsec](http://hackage.haskell.org/package/parsec) library for parsing the
+ghc output. I've never really used it before, but found it quite nice to
+work with. The learning curve, if you already know monads and applicatives,
+is about 5 minutes. And instead of ugly regular expressions, you can work
+with nice code that's easily composable and refactorable. Even the ugly
+bits come out well:
+
+[[!format haskell """
+	{- All lines of the splice result will start with the same
+	- indent, which is stripped. Any other indentation is preserved. -}
+	i <- lookAhead indent
+	result <- unlines <$> many1 (string i >> restOfLine)
+"""]]
+
+Anyway, it works.. sorta. The parser works great! The splices that ghc
+outputs are put into the right places in the source files, and formatted in
+a way that ghc is able to build. Often though, they contain code that
+doesn't actually build as-is. I'm working to fix up the code to get closer
+to buildable.
+
+----
+
+Meanwhile, guilhem has made ssh connection caching work for rsync special
+remotes! It's very nice to have another developer working on git-annex. :)

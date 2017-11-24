@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-04-02T17:48:29Z"
+ content="""
+Either option should work fine, but git gc --aggressive will probably avoid most of git's seeking.
+"""]]

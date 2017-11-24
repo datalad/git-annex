@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkx5V3MTbzCXS3J7Mn9FEq8M9bPPYMkAHY"
+ nickname="Pedro"
+ subject="comment 2"
+ date="2013-12-16T23:00:48Z"
+ content="""
+What my transcript shows is that after the initial sync 1 doesn't get the changes from 2 and vice versa. This test is from scratch so it can't be something related to the old version. I'll try the fsck on my other machines to see if it fixes the issues there.
+"""]]

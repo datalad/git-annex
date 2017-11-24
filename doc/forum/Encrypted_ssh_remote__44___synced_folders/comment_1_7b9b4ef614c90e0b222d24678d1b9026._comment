@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.90"
+ subject="comment 1"
+ date="2013-07-16T19:40:20Z"
+ content="""
+Yes, you need to add the rsync remote to the second computer. Once it's set up, they will be able to exchange file contents using it, and using XMPP as a control channel.
+
+If the first computer already has that rsync remote configured, it should push some notes about the existance of that remote to the second one, over XMPP. Then in the webapp, you should just need to click on \"enable\" next to the rsync remote, and it'll prompt for the necessary info to set it up.
+"""]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="darkfeline"
+ subject="comment 4"
+ date="2015-10-18T23:58:08Z"
+ content="""
+Actually, I suspect that I may have done more damage than I had initially thought.
+
+Is there a way to check whether the repo still has information about a file's whereabouts, especially how it was chunked on an S3 remote?  I'm not sure if that information still exists or not.  If it doesn't exist anymore, then recovery is likely impossible.
+
+If this information still exists in the repo, I can reconstitute the files by hand (script) if necessary and reinject them.  I'm assuming that I can decrypt them using my private key?
+"""]]

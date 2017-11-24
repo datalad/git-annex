@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2017-09-29T20:23:21Z"
+ content="""
+The behavior is different when the remote repository is on the USB drive,
+because git-annex knows it can quickly check if the remote really contains
+a file, and so it always checks it, even with --fast.
+
+I'm not sure if you're actually seeing a significant speed difference, or
+are psycholicically feeling it's slower since it outputs more. Perhaps you
+should time it.
+"""]]

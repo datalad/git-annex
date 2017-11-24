@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnBJ6Dv1glxzzi4qIzGFNa6F-mfHIvv9Ck"
+ nickname="Jim"
+ subject="comment 3"
+ date="2011-10-17T19:50:06Z"
+ content="""
+No extra remotes (that I'm aware of); that output was only edited to change hostnames.
+
+On all three hosts, \"git push origin\" and \"git pull origin\" say everything is up to date.
+
+I'm using git-annex 3.20111011 on all hosts (although some were running 3.20110928 when I created the repositories).
+
+Regarding the multiple links, I've put a copy of the dot file [here](http://jim.sh/~jim/tmp/map.dot).
+It shows psychosis in three separate subgraphs, that are just getting rendered together as one,
+if that helps clarify anything.
+
+Wait, I just realized you said \"the git-annex branch\".  My origin only has \"master\".
+Do you mean the one specifically named \"git-annex\"?  I thought that was something that
+gets managed automatically, or is it something I need to manually check out and deal with?
+
+Any other info I could provide?
+
+
+"""]]

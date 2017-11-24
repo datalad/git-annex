@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.172"
+ subject="comment 2"
+ date="2014-02-23T19:07:59Z"
+ content="""
+However, if the only problem is that pushing and pulling with a git repository makes `git annex sync` take too long, another option is setting `git config remote.$foo.annex-sync false`. You can still then use git-annex commands to get and push data to the remote, and can even `git annex sync $foo` from time to time, but it won't slow down the normal `git annex sync`.
+
+However, this also prevents the assistant from uploading new files to the remote automatically.
+"""]]

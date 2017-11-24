@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkq2cjugiSvKWiWmcah3CPBqviQV_cin9I"
+ nickname="Yury"
+ subject="The world of Mac"
+ date="2014-01-19T14:13:55Z"
+ content="""
+I think that there is nothing fundamental about Mac OS X, which would prevent one from making a clean chroot that would work for non-root users. For instance, I believe that jailkit has been reported to work just fine. The problem is that you'll have to rebuild most of the stuff you need from scratch, which is very tedious. Might be easier to find instances where Homebrew has something like -march=native added to the $CFLAGS (not that I particularly fancy Homebrew of all 'missing' package managers on OS X).
+
+Anyways, it sounds like I'm going to get a Mac Mini donated sometime soon and I'm curious as to what would be the best way to make use of it for the CI system...
+"""]]

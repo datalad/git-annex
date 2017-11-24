@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 7"
+ date="2011-03-20T22:06:25Z"
+ content="""
+Fixed that, and removed the impossible cast so it can be built with #if 1
+"""]]

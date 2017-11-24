@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="206.74.132.139"
+ subject="comment 1"
+ date="2014-02-02T21:13:21Z"
+ content="""
+I think that this behavior of git-annex is quite useful once you get used to it. It can sometimes trip up new users, but new users would not know about some --explain switch that made it say why it skipped each file. So, I consider this a documentation issue, and I've added a section to the walkthrough to help users learn about it:
+
+<http://git-annex.branchable.com/walkthrough/quiet_please:_When_git-annex_seems_to_skip_files/>
+
+As far as copy --from --to, it has been suggested before; I think there is even a todo about it somewhere, but such remote-to-remote transfers are expensive and I would hope it would not normally be used.
+"""]]

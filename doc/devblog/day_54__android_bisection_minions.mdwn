@@ -1,0 +1,9 @@
+Finally found the [root cause](http://git-annex.branchable.com/bugs/git-annex_broken_on_Android_4.3/#comment-452bee7d0a816300ccb4a34f9758134e)
+of the Android 4.3/4.4 trouble, and a fix is now in place!
+
+As a bonus, it looks like I've fixed a problem accessing the
+environment on Android that had been worked around in an ugly way before.
+
+Big thanks to my remote hands Michael Alan, Sören, and subito. All
+told they ran 19 separate tests to help me narrow down this tricky
+problem, often repeating long command lines on software keyboards.

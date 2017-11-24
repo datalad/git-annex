@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="Xyem"
+ ip="87.194.19.134"
+ subject="comment 2"
+ date="2013-02-27T00:02:01Z"
+ content="""
+Struggling to get the assistant to behave properly, including a similar situation to the above.
+
+I start the assistant with 'git annex webapp' and create an annex from the webapp.
+Adding an SSH remote (even if just a different directory on localhost) with \"Remote server\", creates the remote directory with what looks like what the contents of .git should be (annex, branches, hooks, objects etc.), regardless of the group chosen.
+
+Judging from your above comment, this means it is creating a bare repository. Why would it be doing this for an SSH remote, where git-annex-shell is available?
+
+System: Arch Linux
+git-annex version: 3.20130216
+Installed with: yaourt -S git-annex-bin
+"""]]

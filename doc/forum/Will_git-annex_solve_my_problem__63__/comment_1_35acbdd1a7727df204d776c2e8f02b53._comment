@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-03-27T22:48:16Z"
+ content="""
+git-annex will not perform better than rsync. It uses rsync. It also does not yet use old versions of files as a rsync basis when transferring a new version of a file, so is not as efficient in this scenario.
+"""]]

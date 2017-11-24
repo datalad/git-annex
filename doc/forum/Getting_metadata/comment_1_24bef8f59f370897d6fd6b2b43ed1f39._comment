@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-11-10T19:12:57Z"
+ content="""
+`git-annex metadata` only works on annexed files. Your `testfile` is
+checked into git directly, so these git-annex commands silently skip
+it, the same as `git annex whereis` will.
+
+There's some chance this could change.. It would be kind of nice,
+for git-annex's metadata to be able to be applied to regular files
+in the git repository.
+"""]]

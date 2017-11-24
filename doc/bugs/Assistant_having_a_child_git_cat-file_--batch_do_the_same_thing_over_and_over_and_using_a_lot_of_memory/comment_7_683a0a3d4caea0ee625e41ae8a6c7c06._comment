@@ -1,0 +1,81 @@
+[[!comment format=mdwn
+ username="http://johan.kiviniemi.name/"
+ nickname="Johan"
+ subject="comment 7"
+ date="2014-04-07T22:44:33Z"
+ content="""
+In the git-annex branch, there is
+
+* [[!toggle id=\"4deec8203e0baf7bb5b7d5d868d82439261ab3bc\" text=\"a commit at 23:21:51\"]] from my desktop box where I added `test/hello`
+
+[[!toggleable id=\"4deec8203e0baf7bb5b7d5d868d82439261ab3bc\" text=\"\"\"
+    commit 4deec8203e0baf7bb5b7d5d868d82439261ab3bc
+    Author: Johan Kiviniemi <devel@johan.kiviniemi.name>
+    Date:   Mon Apr 7 23:21:51 2014 +0300
+    
+        update
+    
+    diff --git a/992/280/SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03.log b/992/280/SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03.log
+    new file mode 100644
+    index 0000000..1cf060c
+    --- /dev/null
+    +++ b/992/280/SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03.log
+    @@ -0,0 +1 @@
+    +1396902111.893785s 1 86e07a59-8bba-4878-8d0b-5dfe8c6366c4
+\"\"\"]]
+
+* [[!toggle id=\"2e0884d9c8859339855ceee396b9ea9ae05865b4\" text=\"a commit at 23:21:54\"]] when the desktop box synced to the server (from which the log excerpt came)
+
+[[!toggleable id=\"2e0884d9c8859339855ceee396b9ea9ae05865b4\" text=\"\"\"
+    commit 2e0884d9c8859339855ceee396b9ea9ae05865b4
+    Author: Johan Kiviniemi <devel@johan.kiviniemi.name>
+    Date:   Mon Apr 7 23:21:54 2014 +0300
+    
+        update
+    
+    diff --git a/992/280/SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e84
+    6f6be03.log b/992/280/SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e8
+    46f6be03.log
+    index 1cf060c..cd0bccc 100644
+    --- a/992/280/SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03
+    .log
+    +++ b/992/280/SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03
+    .log
+    @@ -1 +1,2 @@
+    +1396902112.657779s 1 09ada430-8802-47da-bbfa-f5256a3c55d2
+     1396902111.893785s 1 86e07a59-8bba-4878-8d0b-5dfe8c6366c4
+\"\"\"]]
+
+* [[!toggle id=\"214ed317536695b91c8dd5bed059c46c11ad00be\" text=\"a commit at 23:24:24\"]] (2.5 minutes later!) when the assistant on the server finally merged `synced/git-annex` into `git-annex` (`test/hello` became visible in the working tree at that time).
+
+[[!toggleable id=\"214ed317536695b91c8dd5bed059c46c11ad00be\" text=\"\"\"
+    commit 214ed317536695b91c8dd5bed059c46c11ad00be
+    Merge: 4deec82 2e0884d
+    Author: sarjat <sarjat@alku.heh.fi>
+    Date:   Mon Apr 7 23:24:24 2014 +0300
+    
+        merging synced/git-annex into git-annex
+\"\"\"]]
+
+There is no commit in the `git-annex` branch at 23:30. The next commit is from unrelated changes at 00:06.
+
+[[!toggle id=\"84068090af4bcd3d24f16d865ac07b0478f20ada\" text=\"84068090af4bcd3d24f16d865ac07b0478f20ada\"]] is the commit in `master` which added `test/hello` at 23:21:51.
+
+[[!toggleable id=\"84068090af4bcd3d24f16d865ac07b0478f20ada\" text=\"\"\"
+    commit 84068090af4bcd3d24f16d865ac07b0478f20ada
+    Author: Johan Kiviniemi <devel@johan.kiviniemi.name>
+    Date:   Mon Apr 7 23:21:51 2014 +0300
+    
+    diff --git a/test/hello b/test/hello
+    new file mode 120000
+    index 0000000..8c2678f
+    --- /dev/null
+    +++ b/test/hello
+    @@ -0,0 +1 @@
+    +../.git/annex/objects/zK/02/SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08
+    \ No newline at end of file
+\"\"\"]]
+
+The repository on the server is in indirect mode.
+
+"""]]

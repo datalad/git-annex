@@ -1,0 +1,9 @@
+I would like to be able to limit the amount of space git-annex will use on a remote.
+
+Obviously this would not limit the total amount of space used on whatever filesystem the remote is on, but would only apply to space used within the remote for the particular annex in question.
+
+Many of the cloud storage providers that git-annex supports through special remotes have free tiers. For instance, Google offers 15GB of free storage. If I have an annex with > 15 GB of storage I don't just want to add a Google Drive special remote and start attempting to copy everything over. But it would be great to be able to take advantage of that storage by adding a special remote to the annex and telling git-annex to only use a maximum of 13 GB (to leave myself a 2 GB buffer, in case things get added to the Google Drive through some mechanism outside of the annex). I could then add the remote to a preferred content group like `backup` and do a `git-annex copy --auto gdrive`, which would copy everything to Google Drive, unless transferring the next file would cause the remote to use over 13 GB.
+
+Currently I can see the size of a remote using `git annex info gdrive`, so git-annex appears to have the needed information.
+
+This is sort of like `annex.diskreserve`, but more useful for special remotes where setting an amount of space to keep free is not relevant.

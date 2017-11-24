@@ -1,0 +1,61 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2016-09-29T18:33:33Z"
+ content="""
+* Optimised key2file and file2key. 18% scanning time speedup.
+* Optimised adjustGitEnv. 50% git-annex branch query speedup
+* Optimised parsePOSIXTime. 10% git-annex branch query speedup
+* Tried making catObjectDetails.receive use ByteString for parsing, 
+  but that did not seem to speed it up significantly.
+  So it parsing is already fairly optimal, it's just that a
+  lot of data passes through it when querying the git-annex
+  branch.
+
+After all that, profiling `git-annex find`:
+
+	        Thu Sep 29 16:51 2016 Time and Allocation Profiling Report  (Final)
+	
+	           git-annex.1 +RTS -p -RTS find
+	
+	        total time  =        1.73 secs   (1730 ticks @ 1000 us, 1 processor)
+	        total alloc = 1,812,406,632 bytes  (excludes profiling overheads)
+	
+	COST CENTRE            MODULE                  %time %alloc
+	
+	md5                    Data.Hash.MD5            28.0   37.9
+	catchIO                Utility.Exception        10.2   12.5
+	inAnnex'.checkindirect Annex.Content             9.9    3.7
+	catches                Control.Monad.Catch       8.7    5.7
+	readish                Utility.PartialPrelude    5.7    3.0
+	isAnnexLink            Annex.Link                5.0    8.4
+	keyFile                Annex.Locations           4.2    5.8
+	spanList               Data.List.Utils           4.0    6.3
+	startswith             Data.List.Utils           2.0    1.3
+
+And `git-annex find --not --in web`:
+
+	        Thu Sep 29 16:35 2016 Time and Allocation Profiling Report  (Final)
+	
+	           git-annex +RTS -p -RTS find --not --in web
+	
+	        total time  =        5.24 secs   (5238 ticks @ 1000 us, 1 processor)
+	        total alloc = 3,293,314,472 bytes  (excludes profiling overheads)
+	
+	COST CENTRE               MODULE                      %time %alloc
+	
+	catObjectDetails.receive  Git.CatFile                  12.9    5.5
+	md5                       Data.Hash.MD5                10.6   20.8
+	readish                   Utility.PartialPrelude        7.3    8.2
+	catchIO                   Utility.Exception             6.7    7.3
+	spanList                  Data.List.Utils               4.1    7.4
+	readFileStrictAnyEncoding Utility.Misc                  3.5    1.3
+	catches                   Control.Monad.Catch           3.3    3.2
+
+So, quite a large speedup overall!
+
+This leaves md5 still unoptimised at 10-28% of CPU use. I looked at switching
+it to cryptohash's implementation, but it would require quite a lot of
+bit-banging math to pull the used values out of the ByteString containing
+the md5sum.
+"""]]

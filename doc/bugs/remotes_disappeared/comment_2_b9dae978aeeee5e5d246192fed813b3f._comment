@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-04-04T19:56:42Z"
+ content="""
+I see no ecidence of a file being damanged. I see evidence of the
+dead remote removal code removing dead remotes from uuid.log, which
+is what it's supposed to do, if enabled by 
+`git annex forget --drop-dead` having been run at some point.
+
+Based on the number of transitions listed in the commit message,
+you've run it repeatedly, even.
+"""]]

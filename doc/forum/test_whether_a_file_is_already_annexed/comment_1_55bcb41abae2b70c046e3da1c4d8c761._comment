@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="whereis"
+ date="2015-09-03T01:07:32Z"
+ content="""
+Thought to say that you could use 'info' but  http://git-annex.branchable.com/bugs/git_annex_info_is_reporting_file_as_not_annexed_in_direct_mode/ .
+What about 'git annex whereis FILE' ?  it should be empty output for non-annexed file
+"""]]

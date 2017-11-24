@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-04-20T18:25:20Z"
+ content="""
+It's documented in [[git-annex-matching-options]] and
+[[git-annex-preferred-content]].
+"""]]

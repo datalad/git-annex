@@ -1,0 +1,4 @@
+Continued working on the enhanced smudge/clean interface in git today.
+Sent in a third version of the patch set, which is now quite complete.
+
+I'll be away for the next week and a half, on vacation.

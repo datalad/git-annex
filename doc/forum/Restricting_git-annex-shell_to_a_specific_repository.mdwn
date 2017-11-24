@@ -1,0 +1,25 @@
+Is there a way to restrict git-annex-shell to a specific directory?
+Currently, if git-annex is paired to a remote repository, it adds this to the authorized_keys:
+
+
+    $ cat ~/.ssh/authorized_keys
+    command="~/.ssh/git-annex-shell",no-agent-forwarding,no-port-forwarding,no-X11-forwarding ssh-rsa AAAAB3...
+
+    $ cat ~/.ssh/git-annex-shell 
+    #!/bin/sh
+    set -e
+    exec git-annex-shell -c "$SSH_ORIGINAL_COMMAND"
+
+That gives whoever has the pubkey the right to access all repositories of one user.
+It would be nice to have a manual way to limit the access to a specific repository like 
+
+
+    $ cat ~/.ssh/git-annex-shell 
+    #!/bin/sh
+    set -e
+    export GIT_ANNEX_SHELL_REPO=~/annex
+    exec git-annex-shell -c "$SSH_ORIGINAL_COMMAND"
+
+
+Or maybe some chroot hackery is the way to go?
+

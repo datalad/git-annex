@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnWvnTWY6LrcPB4BzYEBn5mRTpNhg5EtEg"
+ nickname="Bence"
+ subject="checkpresent again"
+ date="2013-08-01T23:18:38Z"
+ content="""
+In the current [HEAD](https://github.com/joeyh/git-annex/commit/bb74db6ef094324062adcf26a677113ee6fd0e58) the \"checkpresent\" method in [Hook.hs](https://github.com/joeyh/git-annex/blob/master/Remote/Hook.hs#L145) is missing a \"return\" while other hooks have a return value eg. [Directory.hs](https://github.com/joeyh/git-annex/blob/master/Remote/Directory.hs#L241), [Rsync.hs](https://github.com/joeyh/git-annex/blob/master/Remote/Rsync.hs#L272), ...
+
+
+I noticed that if my *checkpresent* hook does not output anything (to be exact: I commented out all the lines in the block) it behaves strangely. I copied the test file to \"copyrepo\", removed it by hand (so git-annex does not know about the change) and executed a fsck.
+
+    ~/annex5/test1/123 $ git annex fsck --from copyrepo --fast
+    fsck somefile.1 (checking copyrepo...) (fixing location log) 
+      ** Based on the location log, somefile.1
+      ** was expected to be present, but its content is missing.
+    failed
+
+running the check again
+
+    ~/annex5/test1/123 $ ga fsck --from copyrepo --fast
+    fsck somefile.1 (checking copyrepo...) ok
+
+and running the check again without --fast
+
+    ~/annex5/test1/123 $ ga fsck --from copyrepo
+    fsck somefile.1 (checking copyrepo...) ok
+
+It thinks, the file is in the repo but it is not.
+
+"""]]

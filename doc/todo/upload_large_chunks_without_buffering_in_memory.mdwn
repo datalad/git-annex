@@ -1,0 +1,26 @@
+Currently, when chunk=100MiB is used with a special remote, git-annex will
+use 100 mb ram when uploading a large file to it. The current chunk is
+buffered in ram.
+
+See comment in Remote.Helper.Chunked:
+
+	- More optimal versions of this can be written, that rely
+	- on L.toChunks to split the lazy bytestring into chunks (typically
+	- smaller than the ChunkSize), and eg, write those chunks to a Handle.
+	- But this is the best that can be done with the storer interface that
+	- writes a whole L.ByteString at a time.
+
+The buffering is probably fine for smaller chunks, in the < 10 mb or
+whatever range. Reading such a chunk from gpg and converting it into a http
+request will generally need to buffer it all in memory anyway. But, for
+eg external special remotes, the content is going to be written to a file
+anyway, so there's no point in buffering the content in memory first.
+
+So, need something like:
+
+	prefersFileContent :: Storer -> Bool
+
+And then when storeChunks is given such a Storer, it can then avoid buffering
+and write chunk data to a temp file to pass it to the Storer.
+
+--[[Joey]]

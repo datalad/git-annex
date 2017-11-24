@@ -1,0 +1,13 @@
+Rethought distributed fsck. It's not really a fsck, but an expiration of
+inactive repositories, where fscking is one kind of activity. That insight
+let me reimplement it much more efficiently. Rather than updating all
+the location logs to prove it was active, `git annex fsck` can simply and
+inexpensively update an activity log. It's so cheap it'll do it by default.
+The `git annex expire` command then reads the activity log and expires
+(or unexpires) repositories that have not been active in the desired time
+period. Expiring a repository simply marks it as dead.
+
+Yesterday, finished making --quiet really be quiet. That sounds easy,
+but it took several hours. On the `concurrentprogress` branch, I have
+ascii-progress hooked up and working, but it's not quite ready for prime
+time.

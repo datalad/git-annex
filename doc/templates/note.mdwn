@@ -1,0 +1,12 @@
+[[!templatebody <<ENDBODY
+<div class="notebox">
+<TMPL_VAR text>
+</div>
+ENDBODY]]
+
+Use this template to insert a note into a page. The note will be styled to
+float to the right of other text on the page. This template has one
+parameter:
+<ul>
+<li>`text` - the text to display in the note
+</ul>

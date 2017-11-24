@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2016-03-01T20:17:35Z"
+ content="""
+That ssh lock file is created by this code:
+
+	-- The posix lock file is created even when using pid locks, in order to
+	-- avoid complicating any code that might expect to be able to see that
+	-- lock file. But, it's not locked.
+	dummyPosixLock :: Maybe FileMode -> LockFile -> IO ()
+	dummyPosixLock m f = closeFd =<< openLockFile ReadLock m f
+
+But, that does not ever actually take a lock on the file, so
+NFS should not make its .nfs thing in this case. Unless NFS does it when a
+FD is simply opened with close-on-exec set. 
+
+Can you get a strace of the creation of files under .git/annex/ssh/
+that result in these .nfs things?
+"""]]

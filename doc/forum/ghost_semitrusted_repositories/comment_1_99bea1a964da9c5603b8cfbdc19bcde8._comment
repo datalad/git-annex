@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 1"
+ date="2014-07-11T19:40:32Z"
+ content="""
+    61158820-db14-45b9-b9f9-8619d956388e -- [usb_papers]
+
+This is the git remote you currently have set up.
+
+    d4456c86-fa2b-43a7-a132-027915390cf6 -- usb_papers
+
+This is the old remote from before.
+
+Take a look at the repository in the USB drive, and see what its annex.uuid is set to. git-annex doesn't change the UUID after a repository is set up, so the fact that you have two different UUIDs is puzzling. 
+
+If you really wanted to, you could remove the old repository from the list by running: `git annex dead d4456c86-fa2b-43a7-a132-027915390cf6`  
+But I would want to get to the bottom of what happened before doing that.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Agenta"
+ subject="comment 4"
+ date="2015-11-17T10:32:41Z"
+ content="""
+Dear r,
+
+I did lots of testing about recovering deleted files or previous versions with git-annex but I didn't have much success. I really found it difficult to recover files from git-annex, too time consuming.
+At the end I found a chep and dirty solution. I write it here in case it may be useful to you or to somone else. I now run a daily backup of my git-annex repo with Bup (http://bup.github.io/) on a couple of my computers, so I can easily restore to a previous state if needed. Bup implements data deduplication so you can have daily backups without consuming too much space. Bup is extremely easy to use too, you can mount backups as fuse filesystems or view them via a web browser. The only problem with this approach is that if you change a file multiple times during a day you won't be able to recover those changes.
+"""]]

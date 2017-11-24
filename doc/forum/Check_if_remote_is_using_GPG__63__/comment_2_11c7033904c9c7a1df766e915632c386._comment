@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="annexuser"
+ ip="77.247.182.246"
+ subject="comment 2"
+ date="2013-03-17T22:25:58Z"
+ content="""
+If a special remote was setup using shared encryption, can I change it to using keys by simply doing `initremote myremote encryption=keyid`? Or should I remove the remote and start over?
+"""]]

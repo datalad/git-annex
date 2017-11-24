@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-05-25T17:29:08Z"
+ content="""
+Let's not diagnose a concurrency problem prematurely.
+
+I've run many concurrent gets and never seen masses of failures, or indeed any
+failures without either an error message explaining why it failed, or something
+obviously wrong (like the drive not being mounted).
+
+The json output is making it harder than necessary to understand what's going on.
+It seems you should be easily able to replicate the same problem without --json.
+"""]]

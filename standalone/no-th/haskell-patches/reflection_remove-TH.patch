@@ -1,0 +1,59 @@
+From c0f5dcfd6ba7a05bb84b6adc4664c8dde109e6ac Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Fri, 7 Mar 2014 04:30:22 +0000
+Subject: [PATCH] remove TH
+
+---
+ fast/Data/Reflection.hs | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/fast/Data/Reflection.hs b/fast/Data/Reflection.hs
+index ca57d35..d3f8356 100644
+--- a/fast/Data/Reflection.hs
++++ b/fast/Data/Reflection.hs
+@@ -59,7 +59,7 @@ module Data.Reflection
+     , Given(..)
+     , give
+     -- * Template Haskell reflection
+-    , int, nat
++    --, int, nat
+     -- * Useful compile time naturals
+     , Z, D, SD, PD
+     ) where
+@@ -161,6 +161,7 @@ instance Reifies n Int => Reifies (PD n) Int where
+ -- instead of @$(int 3)@. Sometimes the two will produce the same
+ -- representation (if compiled without the @-DUSE_TYPE_LITS@ preprocessor
+ -- directive).
++{-
+ int :: Int -> TypeQ
+ int n = case quotRem n 2 of
+   (0, 0) -> conT ''Z
+@@ -176,7 +177,7 @@ nat :: Int -> TypeQ
+ nat n
+   | n >= 0 = int n
+   | otherwise = error "nat: negative"
+-
++-}
+ #if defined(__GLASGOW_HASKELL__) && __GLASGOW_HASKELL < 704
+ instance Show (Q a)
+ instance Eq (Q a)
+@@ -195,6 +196,7 @@ instance Fractional a => Fractional (Q a) where
+   recip = fmap recip
+   fromRational = return . fromRational
+ 
++{-
+ -- | This permits the use of $(5) as a type splice.
+ instance Num Type where
+ #ifdef USE_TYPE_LITS
+@@ -254,7 +256,7 @@ instance Num Exp where
+   abs = onProxyType1 abs
+   signum = onProxyType1 signum
+   fromInteger n = ConE 'Proxy `SigE` (ConT ''Proxy `AppT` fromInteger n)
+-
++-}
+ #ifdef USE_TYPE_LITS
+ addProxy :: Proxy a -> Proxy b -> Proxy (a + b)
+ addProxy _ _ = Proxy
+-- 
+1.9.0
+

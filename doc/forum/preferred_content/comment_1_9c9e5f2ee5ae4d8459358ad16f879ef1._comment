@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 1"
+ date="2013-11-07T18:38:22Z"
+ content="""
+The first version of git-annex to support preferred content settings was 3.20121009.
+
+There is a quite up-to-date backport available for Debian stable.
+"""]]

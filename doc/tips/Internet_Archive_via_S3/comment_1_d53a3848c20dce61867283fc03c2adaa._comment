@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ ip="72.0.72.144"
+ subject="how to use with simply addurl?"
+ date="2013-10-09T22:27:27Z"
+ content="""
+It doesn't seem like git annex addurl by itself supports the archive.org urls...
+
+[[!format txt \"\"\"
+anarcat@marcos:presentations$ git annex addurl --file=re_publica_2012___Eben_Moglen___Freedom_of_Thought_Requires_Free_Media.webm http://archive.org/download/Republica2012-EbenMoglen-FreedomOfThoughtRequiresFreeMedia/re_publica_2012___Eben_Moglen___Freedom_of_Thought_Requires_Free_Media.webm
+addurl re_publica_2012___Eben_Moglen___Freedom_of_Thought_Requires_Free_Media.webm
+  failed to verify url exists: http://archive.org/download/Republica2012-EbenMoglen-FreedomOfThoughtRequiresFreeMedia/re_publica_2012___Eben_Moglen___Freedom_of_Thought_Requires_Free_Media.webm
+failed
+git-annex: addurl: 1 failed
+\"\"\"]]
+
+I also tried the \"details\" url (<http://archive.org/details/Republica2012-EbenMoglen-FreedomOfThoughtRequiresFreeMedia>) - but that just downloads the webpage, not the video either...
+
+Even the ultimate video URL doesn't work:
+
+[[!format txt \"\"\"
+anarcat@marcos:presentations$ git annex addurl --debug --file=re_publica_2012___Eben_Moglen___Freedom_of_Thought_Requires_Free_Media.webm http://ia601009.us.archive.org/9/items/Republica2012-EbenMoglen-FreedomOfThoughtRequiresFreeMedia/re_publica_2012___Eben_Moglen___Freedom_of_Thought_Requires_Free_Media.webm
+[2013-10-09 18:26:30 EDT] call: quvi [\"-v\",\"mute\",\"--support\",\"http://ia601009.us.archive.org/9/items/Republica2012-EbenMoglen-FreedomOfThoughtRequiresFreeMedia/re_publica_2012___Eben_Moglen___Freedom_of_Thought_Requires_Free_Media.webm\"]
+addurl re_publica_2012___Eben_Moglen___Freedom_of_Thought_Requires_Free_Media.webm [2013-10-09 18:26:30 EDT] read: curl [\"-s\",\"--head\",\"-L\",\"http://ia601009.us.archive.org/9/items/Republica2012-EbenMoglen-FreedomOfThoughtRequiresFreeMedia/re_publica_2012___Eben_Moglen___Freedom_of_Thought_Requires_Free_Media.webm\",\"-w\",\"%{http_code}\"]
+
+  failed to verify url exists: http://ia601009.us.archive.org/9/items/Republica2012-EbenMoglen-FreedomOfThoughtRequiresFreeMedia/re_publica_2012___Eben_Moglen___Freedom_of_Thought_Requires_Free_Media.webm
+failed
+git-annex: addurl: 1 failed
+\"\"\"]]
+
+... even though that URL actually gives out a proper 200 OK response code.
+
+Any ideas? --[[anarcat]]
+"""]]

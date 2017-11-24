@@ -1,0 +1,69 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmveNWaFIL1zEehHr_0416bKBzsul5tGlE"
+ nickname="Daniel"
+ subject="Install fails horribly"
+ date="2014-07-10T23:11:51Z"
+ content="""
+```
+lyriondesktop:/home/zilti/tmp # cabal install c2hs
+Resolving dependencies...
+Configuring c2hs-0.17.2...
+Building c2hs-0.17.2...
+Preprocessing executable 'c2hs' for c2hs-0.17.2...
+[ 1 of 26] Compiling Data.DLists      ( src/Data/DLists.hs, dist/build/c2hs/c2hs-tmp/Data/DLists.o )
+[ 2 of 26] Compiling Control.StateTrans ( src/Control/StateTrans.hs, dist/build/c2hs/c2hs-tmp/Control/StateTrans.o )
+
+src/Control/StateTrans.hs:77:1: Warning:
+    Module `Prelude' does not export `catch'
+[ 3 of 26] Compiling Data.Errors      ( src/Data/Errors.hs, dist/build/c2hs/c2hs-tmp/Data/Errors.o )
+[ 4 of 26] Compiling Data.Attributes  ( src/Data/Attributes.hs, dist/build/c2hs/c2hs-tmp/Data/Attributes.o )
+[ 5 of 26] Compiling Text.Lexers      ( src/Text/Lexers.hs, dist/build/c2hs/c2hs-tmp/Text/Lexers.o )
+[ 6 of 26] Compiling Control.StateBase ( src/Control/StateBase.hs, dist/build/c2hs/c2hs-tmp/Control/StateBase.o )
+[ 7 of 26] Compiling Data.NameSpaces  ( src/Data/NameSpaces.hs, dist/build/c2hs/c2hs-tmp/Data/NameSpaces.o )
+[ 8 of 26] Compiling C2HS.C.Attrs     ( src/C2HS/C/Attrs.hs, dist/build/c2hs/c2hs-tmp/C2HS/C/Attrs.o )
+[ 9 of 26] Compiling C2HS.C.Builtin   ( src/C2HS/C/Builtin.hs, dist/build/c2hs/c2hs-tmp/C2HS/C/Builtin.o )
+[10 of 26] Compiling Paths_c2hs       ( dist/build/autogen/Paths_c2hs.hs, dist/build/c2hs/c2hs-tmp/Paths_c2hs.o )
+[11 of 26] Compiling C2HS.Config      ( src/C2HS/Config.hs, dist/build/c2hs/c2hs-tmp/C2HS/Config.o )
+[12 of 26] Compiling C2HS.Switches    ( src/C2HS/Switches.hs, dist/build/c2hs/c2hs-tmp/C2HS/Switches.o )
+[13 of 26] Compiling C2HS.Version     ( src/C2HS/Version.hs, dist/build/c2hs/c2hs-tmp/C2HS/Version.o )
+[14 of 26] Compiling System.CIO       ( src/System/CIO.hs, dist/build/c2hs/c2hs-tmp/System/CIO.o )
+[15 of 26] Compiling Control.State    ( src/Control/State.hs, dist/build/c2hs/c2hs-tmp/Control/State.o )
+[16 of 26] Compiling C2HS.State       ( src/C2HS/State.hs, dist/build/c2hs/c2hs-tmp/C2HS/State.o )
+[17 of 26] Compiling C2HS.CHS.Lexer   ( src/C2HS/CHS/Lexer.hs, dist/build/c2hs/c2hs-tmp/C2HS/CHS/Lexer.o )
+
+src/C2HS/CHS/Lexer.hs:612:16: Warning:
+    Defined but not used: `lexeme'
+[18 of 26] Compiling C2HS.CHS         ( src/C2HS/CHS.hs, dist/build/c2hs/c2hs-tmp/C2HS/CHS.o )
+[19 of 26] Compiling C2HS.Gen.Header  ( src/C2HS/Gen/Header.hs, dist/build/c2hs/c2hs-tmp/C2HS/Gen/Header.o )
+[20 of 26] Compiling C2HS.C.Trav      ( src/C2HS/C/Trav.hs, dist/build/c2hs/c2hs-tmp/C2HS/C/Trav.o )
+[21 of 26] Compiling C2HS.C.Names     ( src/C2HS/C/Names.hs, dist/build/c2hs/c2hs-tmp/C2HS/C/Names.o )
+[22 of 26] Compiling C2HS.C           ( src/C2HS/C.hs, dist/build/c2hs/c2hs-tmp/C2HS/C.o )
+[23 of 26] Compiling C2HS.Gen.Monad   ( src/C2HS/Gen/Monad.hs, dist/build/c2hs/c2hs-tmp/C2HS/Gen/Monad.o )
+
+src/C2HS/Gen/Monad.hs:227:10: Warning:
+    Orphan instance: instance Read Ident
+[24 of 26] Compiling C2HS.C.Info      ( src/C2HS/C/Info.hs, dist/build/c2hs/c2hs-tmp/C2HS/C/Info.o )
+[25 of 26] Compiling C2HS.Gen.Bind    ( src/C2HS/Gen/Bind.hs, dist/build/c2hs/c2hs-tmp/C2HS/Gen/Bind.o )
+
+src/C2HS/Gen/Bind.hs:971:43: Warning:
+    In the use of `posColumn' (imported from Language.C.Data.Position):
+    Deprecated: \"column number information is inaccurate in presence of macros - do not rely on it.\"
+
+src/C2HS/Gen/Bind.hs:789:10: Warning:
+    Orphan instance: instance Num CInteger
+[26 of 26] Compiling Main             ( src/Main.hs, dist/build/c2hs/c2hs-tmp/Main.o )
+Linking dist/build/c2hs/c2hs ...
+Installing executable(s) in /root/.cabal/bin
+Installed c2hs-0.17.2
+lyriondesktop:/home/zilti/tmp # cabal install git-annex
+Resolving dependencies...
+Configuring gnuidn-0.2.1...
+cabal: The program c2hs is required but it could not be found.
+Failed to install gnuidn-0.2.1
+cabal: Error: some packages failed to install:
+git-annex-5.20140709 depends on gnuidn-0.2.1 which failed to install.
+gnuidn-0.2.1 failed during the configure step. The exception was:
+ExitFailure 1
+network-protocol-xmpp-0.4.6 depends on gnuidn-0.2.1 which failed to install.
+```
+"""]]

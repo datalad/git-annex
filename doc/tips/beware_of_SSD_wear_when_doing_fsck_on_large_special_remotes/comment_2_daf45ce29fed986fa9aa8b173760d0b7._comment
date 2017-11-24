@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawln3ckqKx0x_xDZMYwa9Q1bn4I06oWjkog"
+ nickname="Michael"
+ subject="there's a problem"
+ date="2013-08-04T17:15:05Z"
+ content="""
+If .git/annex/tmp is a symlink to another fs, then adding doesn't work:
+
+    add file1.jpg (checksum...) 
+    git-annex: /path/to/.git/annex/tmp/tmp30148: rename: unsupported operation (Invalid cross-device link)
+
+It looks like it would be good to have two types of tmp directories here, one for adding, another one for verifying (and that one could be redirected off SSD).
+
+"""]]

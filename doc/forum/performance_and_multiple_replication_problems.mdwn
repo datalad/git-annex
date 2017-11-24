@@ -1,0 +1,17 @@
+Hi,
+
+I just was setting um my git-annex repository and started to sync my whole stuff in it.
+
+Background: I have choosen git-annex to sync my whole stuff (pictures, mp3s, documents, etc) between my pc, notebook and a home-server
+
+My Problems:
+1) When I'm starting the git-annex deamon, the "Performing startup scan" message occurs for hours
+2) git-annex synchronizes folders from the server which already on my pc, and that every time I restart the deamon on client
+
+My Questions:
+For 1) is git-annex when running one repository suitable to manage > 100gb and > 50000 files?
+For 2) do I have to wait until every tasks are completed (everything is committed) to get rid of multiple downloads of the same folders/files
+3) what is the best schema to sync between >2 devices should I use a Mesh or Star Schema (where my server is in the middle)
+
+Thank You in advance!
+Regards J

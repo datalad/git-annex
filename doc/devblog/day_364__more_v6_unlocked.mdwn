@@ -1,0 +1,8 @@
+In a v6 repository on a filesystem not supporting symlinks,
+it makes sense for commands like `git annex add` and `git annex import`
+to add the files unlocked, since locked files are not usable there.
+After implementing that, I also added an `annex.addunlocked` config setting,
+so that the same behavior can be configured in other repositories.
+
+Rest of the day was spent fixing up the test suite's v6 repository tests
+to work on FAT and Windows.

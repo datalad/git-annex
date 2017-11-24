@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2015-01-20T18:51:06Z"
+ content="""
+Remi's idea of using [[preferred_content]] can be made to work.
+
+There's no `git annex copy --from A --to B`. It would need to locally spool
+each file into the current repo, and being an unusual corner case has not
+seemed worth doing so far.
+"""]]

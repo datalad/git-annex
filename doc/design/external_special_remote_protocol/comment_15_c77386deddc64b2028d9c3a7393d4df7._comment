@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://schnouki.net/"
+ nickname="Schnouki"
+ subject="comment 15"
+ date="2014-02-11T13:44:10Z"
+ content="""
+Joey, thanks for fixing that so quickly. Indeed it works in the webapp; I'll check the CLI version as soon as possible :)
+
+I just released the new remote on <https://github.com/Schnouki/git-annex-remote-hubic>. It's for [hubiC](https://hubic.com/), a French personal cloud storage service made by OVH that has free 25GB accounts and only charges €10/month for 10TB (VAT included). It's really experimental (hacked it over the weekend), but it seems to work for me so far.
+"""]]

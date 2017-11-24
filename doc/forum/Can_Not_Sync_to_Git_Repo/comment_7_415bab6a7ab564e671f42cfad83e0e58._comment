@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 7"
+ date="2013-12-12T17:07:37Z"
+ content="""
+What branch does `git branch` say is checked out?
+
+If you're using direct mode, you should not have the master branch checked out. Instead you should have an `annex/direct/master` branch that direct mode sets up and automatically switches you to. (Commits are still made to the master branch when syncing.)
+"""]]

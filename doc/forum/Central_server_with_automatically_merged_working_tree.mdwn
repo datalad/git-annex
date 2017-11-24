@@ -1,0 +1,30 @@
+I would appreciate some feedback on whether the following scheme is feasible or will prove unworkable. I have a few specific questions at the bottom.
+
+# Components
+* An archive of documents to be shared amongst computers
+* A server that stores the archive and retains all of its contents
+* A set of client machines that store only the files that they need and drop the rest
+
+# Desired behavior
+* Clients will run the assistant to handle sync'ing
+* On the server, the archive should be accessible in the working tree so that other users can read the files (they do not need write access).
+* It should be possible to modify the archive on the server while logged into the server
+* Clients can push and pull data. The server does not push or pull data.
+
+# Basic setup
+## Set up the server and one client
+* Create git annex repos on the client and server
+* Add the server as a remote in the client repo
+
+## Keep the server's working directory up to date
+* Add `git merge synced/master master` to the `annex-content` hook described [here](https://git-annex.branchable.com/git-annex-shell/).
+* Add `git merge synced/master master` to the `post-receive` hook.
+
+## Keep server working tree visible to a different group
+* Set `git config core.sharedrepository group` for the repository
+* Add `chgrp -R shared "$(git rev-parse --show-toplevel)"` to the `annex-content`, `post-receive`, and `post-merge` hooks, where `shared` is the name of the group that you want to be able to access the server files.
+
+# Questions
+* I had to add the `post-receive` hook because updates from the assistant were not trigger the `annex-content` hook. Should they trigger it?
+* Are there downsides to merging `synced/master` like this?
+* If I want to edit files on the server, is it safe to edit them in the repo with this set up? Or should I create a second client repo on the server, check out the necessary files there, and then push them to the server like I would from any other client?

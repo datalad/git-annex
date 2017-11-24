@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 15"""
+ date="2017-08-28T19:00:10Z"
+ content="""
+Since [[bugs/external_special_remote_protocol_broken_by_key_with_spaces]]
+was fixed, the Key can't contain spaces any longer.
+
+The File could still contain spaces, eg when exporting from a direct mode
+repository where the worktree filename contains spaces.
+
+In `RENAMEEXPORT`, both OldName and NewName could contain spaces.
+"""]]

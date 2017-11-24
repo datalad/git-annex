@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-11-02T14:59:08Z"
+ content="""
+Nice job bgilbert on the external special remote.
+
+git-annex's S3 special remote also supports nearline now:
+
+	git annex initremote cloud type=S3 encryption=none host=storage.googleapis.com port=80 storageclass=NEARLINE
+
+For the nearline support to work, git-annex has to be built with version 0.13.0 of
+the haskell aws library.
+
+But, it seems like bgilbert's external special remote is easier to set up,
+due to not needing to configure Google Cloud Storage for interoperable access.
+"""]]

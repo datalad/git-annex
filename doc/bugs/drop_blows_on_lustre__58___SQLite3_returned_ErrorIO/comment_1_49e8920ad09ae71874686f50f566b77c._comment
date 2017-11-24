@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-07-19T15:38:21Z"
+ content="""
+The v6 changes added a sqlite database. Some code will try to query or
+write that database even in v5 mode, although it's meant to give up if the
+database is not available.
+
+So, the easy fix, at least for the drop problem, is to avoid using the keys
+database at all in v5 mode. I've made this change and it will probably fix
+the case you reported.
+
+But, that won't help with v6 repos which need to use that sqlite database.
+And, incremental fsck uses its own sqlite database too. And,
+[[design/caching_database]] plans are to use sqlite databases more broadly
+in the future.
+
+I'm sure that it's not a good idea for git-annex to catch "disk IO error"
+exceptions from the database layer. So, it seems that most any other fix than
+avoiding using the database would need to be made in sqlite or in lustre,
+which it seems don't get along. At a guess, sqlite is trying to use some
+POSIX filesystem functionality, likely related to locking, that lustre does
+not support.
+
+Hmm, what could be done to hack in support for lustre is to 
+move the sqlite databases to a different filesystem. But, accessing the
+same repo from different hosts which have different sqlite databases would
+lead to inconsistent and buggy behavior. And repo setup would need to
+decide where to put the sqlite databases and manually configure that
+location. So this would be very much a caveat empror configuration.
+"""]]

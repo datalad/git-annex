@@ -1,0 +1,26 @@
+Finally fixed the bug causing repeated checksumming when a direct mode file
+contains duplicate files. I may need to add some cleaning of stale inode
+caches eventually.
+
+Meanwhile, Guilhem made `git annex initremote` use higher quality entropy,
+with `--fast` getting back to the old behavior of urandom quality entropy.
+The assistant doesn't use high quality entropy since I have no way to
+prompt when the user would need to generate more. I did have a fun idea to
+deal with this: Make a javascript game, that the user can play while
+waiting, which would generate enropy nicely. Maybe one day.. ;)
+
+Also made a small but significant change to [[archive directory handling|todo/assistant_smarter_archive_directory_handling]].
+Now the assistant syncs files that are in `archive` directories like any
+other file, until they reach an archive repository. Then they get dropped
+from all the clients. This way, users who don't set up archive repositories
+don't need to know about this special case, and users who do want to use
+them can, with no extra configuration.
+
+After recent changes, the preferred content expression for transfer
+repositories is becoming a bit unweidly, at 212 characters. Probably
+time to add support for macros..
+
+`(not (inallgroup=client and copies=client:2) and (((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) or (not copies=semitrusted+:1))) or (not copies=semitrusted+:1)`
+
+Still, it's pretty great how much this little language lets me express, so
+easily.

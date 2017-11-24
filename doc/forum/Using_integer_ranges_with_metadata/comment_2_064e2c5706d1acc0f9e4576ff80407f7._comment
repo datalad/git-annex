@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="pigmonkey"
+ subject="comment 2"
+ date="2016-04-20T18:20:43Z"
+ content="""
+Perfect. It works great! Thanks.
+
+Is this documented anywhere? I see it in the [release notes](https://git-annex.branchable.com/news/version_6.20160229/) now, but I didn't see anything mentioned in the metadata, metadata driven views or metadata design pages, or the git-annex-metadata man page. I'm not sure where I should look to see how else I can query the metadata.
+"""]]

@@ -1,0 +1,15 @@
+I get the following error message upon starting git-annex in a second user account on Android:
+
+    Falling back to hardcoded app location: cannot find expected files in /data/app-lib
+    git annex webapp
+    lib/lib.runshell.so: line 133: git: Permission denied
+
+    [Terminal session finished]
+
+The same version of git-annex works just fine for the primary user.
+(The primary user has root access which unfortunately can't be enabled for other user accounts.)
+
+### What version of git-annex are you using? On what operating system?
+
+  * git-annex: 5.20140710
+  * OS: CyanogenMod 10.1.3-p3110

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkwjBDXkP9HAQKhjTgThGOxUa1B99y_WRA"
+ nickname="Franck"
+ subject="Link issue"
+ date="2013-05-22T12:01:38Z"
+ content="""
+Hi, I have exactly the same problem with the link that fails on my phone. However, I checked the permissions and they are as you describe on your tablet (except for the app number). At the same time, everything is fine on my tablet... The phone runs an old Cyanogenmod 7.2.0 (Android 2.3.7) while the tablet is a more recent Asus TF700T (Android 4.1.1). Let me know if you want me to run tests.
+"""]]

@@ -1,0 +1,27 @@
+Made some good progress on the backlog today. Fixed some bugs, applied some
+patches. Noticing that without me around, things still get followed up
+on, to a point, for example incomplete test cases for bugs get corrected so
+they work. This is a very good thing. Community!
+
+I had to stop going through the backlog when I got to one message from
+Anarcat mentioning [quvi](http://quvi.sourceforge.net/). That turns
+out to be just what is needed to implement the often-requested feature
+of `git-annex addurl` supporting YouTube and other similar sites. So I
+spent the rest of the day making that work. For example:
+
+<pre>
+% git annex addurl --fast 'http://www.youtube.com/watch?v=1mxPFHBCfuU&list=PL4F80C7D2DC8D9B6C&index=1'
+addurl Star_Wars_X_Wing__Seth_Green__Clare_Grant__and_Mike_Lamond_Join_Wil_on_TableTop_SE2E09.webm ok
+</pre>
+
+Yes, that got the video title and used it as the filename, and yes,
+I can commit this file and run `git annex get` later, and it will be
+able to go download the video! I can even use `git annex fsck --fast`
+to make sure YouTube still has my videos. Awesome.
+
+The great thing about quvi is it takes the url to a video webpage, and
+returns an url that can be used to download the actual video file. So it
+simplifies ugly flash videos as far out of existence as is possible.
+However, since the direct url to the video file may not keep working for long.
+addurl actually records the page's url, with an added indication that quvi
+should be used to get it.

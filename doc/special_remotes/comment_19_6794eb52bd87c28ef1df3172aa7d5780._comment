@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://yarikoptic.myopenid.com/"
+ nickname="site-myopenid"
+ subject="compressed storage/transfer -- gzip Content-Type"
+ date="2013-05-25T06:41:37Z"
+ content="""
+FWIW -- eh -- unfortunately it seems not that transparent.  wget seems to not support decompression at all, curl can do with explicit --compressed, BUT it doesn't distinguish url to a \"natively\" .gz file and pre-compressed content.  And I am not sure if it is possible to anyhow reliably distinguish the two urls.  In the case of obtaining pre-compressed file from my sample apache server the only difference in the http response header is that it gets \"compound\" ETag:
+compare ETag: \"3acb0e-17b38-4dd5343744660\" (for directly asking zeros100.gz) vs \"3acb0e-17b38-4dd5343744660;4dd5344e1537e\" (requesting zeros100) where portion past \";\" I guess signals the caching tag for gzipping, but not exactly sure on that since it seems to be not a part of standard.  Also for zeros100 I am getting \"TCN: choice\"... once again not sure if that is any how reliably indicative for my purpose.  So I guess there is no good way ATM via Content-Type request.
+"""]]

@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-12-19T18:09:26Z"
+ content="""
+I'd say that method, or any similar set of steps, is the typical way to
+handle this.
+
+Sure, everything gets hashed twice. This is unlikely to waste enough time
+to make it worthwhile to develop a hack that only hashes once.
+
+If you really want to develop such a hack, the plumbing command that you
+can use to make it happen is `git annex setkey`. So, you'd add all the
+files to the first repository, and then use `git-annex find
+--format="${key} ${file}"` to list all the files and the keys that resulted
+from hashing them. Then in the second repository, you'd use that list to
+run `git annex setkey` and force the files into the annex without
+hashing them.
+
+This will probably turn out to be slower than just re-hashing the files
+would be, since you'll have to run `git annex setkey` once per file.
+Adding a `--batch` option that reads from stdin would probably be called
+for to get it fast enough to bother with. Although passing `-c
+annex.alwayscommit=false` might speed it up enough.
+"""]]

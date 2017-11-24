@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-07T17:23:51Z"
+ content="""
+The "cannot move" message is not an error message from an external "mv"
+command. This error comes from Win32.moveFileEx, which fails on cross-device
+renames.
+"""]]

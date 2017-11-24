@@ -1,0 +1,15 @@
+Earlier this week I had the opportunity to sit in on a workshop at MIT where
+students were taught how to use git-annex as part of a stack of tools for
+reproducible scientific data research. That was great!
+
+One thing we noticed there is, it can be hard to distribute files to such a
+class; downloading them individually wastes network bandwidth. Today, I
+added [[git annex multicast|git-annex-multicast]] which uses `uftp`
+to multicast files to other clones of a repository on a LAN.
+An "easy" 500 lines of code and 7 hour job.
+
+There is encryption and authentication, but the key management for this
+turned out to be simple, since the public key fingerprints can be stored on
+the git-annex branch, and easily synced around that way. So, I expect
+this should be not hard to use in a classroom setting such as the one
+I was in earlier this week.

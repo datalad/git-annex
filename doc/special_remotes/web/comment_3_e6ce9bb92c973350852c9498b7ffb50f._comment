@@ -1,0 +1,32 @@
+[[!comment format=sh
+ username="spiderbit"
+ avatar="http://cdn.libravatar.org/avatar/5c1baf041aa5516cb28a2618f7263a56"
+ subject="dont have success with other download commands"
+ date="2016-11-05T17:00:54Z"
+ content="""
+First a few questions:
+1. is this backend supposed to be recursive or does it supports that?
+2. does it need a download command in the following format: 
+  <program> <url>
+
+I assumed this 2 are true.
+
+Well rsync, sftp and scp need a second <to> paramater, they did not work.
+
+So I wrote a small wrapper to add the default \".\" as target location:
+
+filename: rsync-get
+#!/usr/bin/env bash
+rsync -r \"$1\" .
+
+sadly still no sucess:
+
+~/annex $ git annex addurl -c annex.web-download-command=rsync-get mars:/mnt/data/folder/
+addurl _mnt_data_folder_ (downloading mars:/mnt/data/folder/ ...) 
+failed
+git-annex: addurl: 1 failed
+CallStack (from HasCallStack):
+  error, called at ./CmdLine/Action.hs:41:28 in main:CmdLine.Action
+
+I also tried it with a url to a file, in the case that it not supports recursive operations, that did not work, too.
+"""]]

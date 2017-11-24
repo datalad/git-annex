@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 3"
+ date="2014-06-13T18:35:53Z"
+ content="""
+I need to look into why --want-get didn't behave as expected.
+
+It would probably make sense to make standard be the default. There could be upgrade concerns though.
+"""]]

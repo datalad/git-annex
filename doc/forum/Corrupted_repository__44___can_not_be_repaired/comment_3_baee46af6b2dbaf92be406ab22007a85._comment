@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 3"
+ date="2014-07-21T22:57:32Z"
+ content="""
+There was a bug in the repair code that could leave the repair incomplete like this; I've fixed it.
+
+> I recently moved a bunch of files to another location shortly after I renamed them. The assistant was running (repo: indirect mode) and I guess the assistant was confused
+
+No, I don't think that this was caused by the assistant somehow getting confused. Your git repository was missing objects that had been previously committed to git. The only way this can happen is if your computer lost data. Most commonly due to crashing or being powered off or the drive the repository is in being removed while git is in the middle of committing changes.
+"""]]

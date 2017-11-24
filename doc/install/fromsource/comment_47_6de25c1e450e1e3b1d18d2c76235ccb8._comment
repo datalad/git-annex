@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="thnetos"
+ subject="Where to start reading the source code?"
+ date="2014-12-15T22:04:06Z"
+ content="""
+Do you have any recommendations for the overall haskell architecture of the project? Where to start looking if I want to read through the source code?
+"""]]

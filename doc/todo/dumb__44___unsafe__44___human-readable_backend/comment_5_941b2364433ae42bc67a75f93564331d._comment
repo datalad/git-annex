@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="related issues and response to problems raised"
+ date="2016-06-23T14:44:06Z"
+ content="""
+there are two related issues that were closed as wontfix here, which i missed in my original search as well:
+
+* [[todo/clear file names in special remotes]] ([archive](http://web.archive.org/web/20160413162353/http://git-annex.branchable.com/todo/clear_file_names_in_special_remotes/))
+* [[todo/New special remote suggeston - clean directory]] ([archive](http://web.archive.org/web/20160413171909/http://git-annex.branchable.com/todo/New_special_remote_suggeston_-_clean_directory/))
+
+those issues were actually removed, but are still on the internet archive for future reference.
+
+to summarize those issues, the rationale there is that those remotes are potentially destructuve (lack of locking and checks) and have workarounds (`rsync -a` was suggested). it is also clearly stated that this is contrary to the git-annex design and is a \"pony\" feature.
+
+i would counter that this is an often requested feature that seems to be a major usability issue for a lot of people. there are other unsafe remotes out there, like the `bittorrent` special remote, which is explicitely documented as such, and where we recommend users `untrust` the remote when it is setup. yet, those remotes have their uses and the rich diversitry of such remotes makes git-annex one of the most interesting projects out there.
+
+furthermore, `rsync -a` is not the same as git-annex's excellent tracking features. in my use case ([[forum/syncing_music_to_my_android_device]]), there is no git annex repository that has the same set of files which I want present on the android device, so I cannot use `rsync` without incurring a large storage space cost.
+
+as for this being contrary to git-annex design, you obviously know more about this than me, but from the outside it doesn't seem *that* counter-intuitive. it seems that we have go through a lot of hoops to try to make stuff like [[todo/Facilitate_public_pretty_S3_URLs]] work at all. having a different backend for specially crafted remotes would be a huge gain in usability and impact on data security could be limited with the usual trust/untrust mechanisms.
+
+i would be curious to hear more about how such a backend would be contrary to git-annex's design. i am assuming here that my main repo could still have a SHA256E backend and *some* remotes could have *different* backends. Obviously, maybe that's a flawed assumption and I obviously see how such a dumb backend could break way more assumptions git-annex makes about its data, if it *has* to be used on all the remotes. Yet, there *are* backends right now like `URL` and `WORM` that could be considered \"unsafe\", yet do not provide as great usability gains as this dumb backend could provide.
+
+i understand you have been requested this feature often and would understand if this other request would just be closed again. but considering how often it comes up, from different users, i think it should at least be considered as something that should be more explicitely documented (in [[not]], [[backends]] and [[special_remotes]] maybe?) to keep further requests from coming in. keeping an issue like this opened would also help in avoiding duplicate requests.
+
+thank you for your time and efforts on git-annex, i cannot state enough how helpful it is to me. the fact that I could write a special remote to accomplish the above filthy todo is a testament to how flexible and powerful git-annex is. :)
+"""]]

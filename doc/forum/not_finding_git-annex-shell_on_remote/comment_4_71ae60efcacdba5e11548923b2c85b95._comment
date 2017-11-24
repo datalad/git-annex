@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.172"
+ subject="comment 4"
+ date="2014-02-20T19:41:05Z"
+ content="""
+@Srinath I wonder if the machine you are running git-annex sync on is a Windows machine? I have seen that \" refs/remotes/origin/synced/master - not something we can merge\" intermittently when testing on Windows, but not other times.
+
+(It's not related to the original PATH configuration problem on your server.)
+"""]]

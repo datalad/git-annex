@@ -1,0 +1,35 @@
+tags
+Setup
+*.hi
+*.o
+tmp
+test
+Build/SysConfig.hs
+Build/InstallDesktopFile
+Build/EvilSplicer
+Build/Standalone
+Build/OSXMkLibs
+Build/LinuxMkLibs
+Build/BuildVersion
+Build/MakeMans
+git-annex
+git-annex-shell
+man
+git-union-merge
+git-union-merge.1
+doc/.ikiwiki
+html
+*.tix
+.hpc
+dist
+# Sandboxed builds
+cabal-dev
+.cabal-sandbox
+cabal.sandbox.config
+.stack-work
+# Project-local emacs configuration
+.dir-locals.el
+# OSX related
+.DS_Store
+.virthualenv
+.tasty-rerun-log

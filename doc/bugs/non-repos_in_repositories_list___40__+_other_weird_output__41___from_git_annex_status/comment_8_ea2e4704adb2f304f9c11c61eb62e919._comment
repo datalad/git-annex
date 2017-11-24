@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://mey.vn/"
+ ip="46.65.14.106"
+ subject="comment 8"
+ date="2013-07-26T22:38:51Z"
+ content="""
+forgot to mention - git-annex:armhf 4.20130521 was installed on the rPi via apt-get after having added testing as extra source besides the base stable of Raspbian; the other two versions (the segfaulting ones) were installed via ```dpkg -i``` on the packages downloaded directly from packages.d.o.
+"""]]

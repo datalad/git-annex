@@ -1,0 +1,8 @@
+Yesterday I released version 6.20160412, which is the first to support
+adjusted branches.
+
+Today, some planning for ways to better support `annex.thin`, but that
+seems to be stuck on needing a way to update git's index file. Which is the
+main thing needed to fix various problems with v6 unlocked files.
+
+Dove back into the backlog, got it down to 144 messages. Several bug fixes.

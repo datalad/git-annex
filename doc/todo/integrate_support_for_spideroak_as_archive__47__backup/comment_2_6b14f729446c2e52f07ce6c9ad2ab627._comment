@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="not free software"
+ date="2015-06-04T14:37:33Z"
+ content="""
+According to [wikipedia](https://en.wikipedia.org/wiki/Spideroak):
+
+> *Some components of SpiderOak are open-source, and as early as 2009 the company announced their intent for the client to be fully open-source in the future.[4] As of 2015, SpiderOak's source code is not available.[5]*
+
+So that seems to be a dead end, since 2010 - total vaporware and a bunch of broken links. There is supposedly an API, but this is also a bunch of broken links. There's a copy of a very basic API [on archive.org](https://web.archive.org/web/20141019212745/https://spideroak.com/faq/questions/37/how_do_i_use_the_spideroak_web_api/) but it doesn't look like it answers the requirement here.
+
+There is a [Github page](https://github.com/SpiderOak/) with [some HTML5 client](https://github.com/SpiderOak/SpiderOakMobileClient) but it's unclear the status of this project...
+
+One has to wonder how or why Snowden gave his benediction to this project... --[[anarcat]]
+"""]]

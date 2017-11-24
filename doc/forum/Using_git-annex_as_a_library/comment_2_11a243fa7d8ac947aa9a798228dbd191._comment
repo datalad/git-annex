@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.193"
+ subject="comment 2"
+ date="2013-06-30T18:08:52Z"
+ content="""
+I think there are two approaches to doing this.
+
+1. Use the git-annex command line interface from your program. You can use the --json switch to enable machine-parsable output of many git-annex commands. If something needs work to be more suitable to be used as \"plumbing\" in this way, we can improve it to meet your needs.
+
+2. Use the git-annex Haskell code as a library for your program. The git-annex assistant is a great example of how far you can take this. It has the benefit that by accessing git-annex's internals, you can sometimes do things more efficiently than by using the CLI. Much of git-annex's code is already well modularized and suitable for use as a library in this way. The build system doesn't currently spit out git-annex libraries, but it would not be hard to make it do so. Of course this would entail writing at least some of your program in Haskell.
+"""]]

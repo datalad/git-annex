@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnaZYaspvzx1lQiM56UQo-X82BnPiAaiEY"
+ nickname="Martin"
+ subject="comment 1"
+ date="2013-08-19T18:07:04Z"
+ content="""
+One more question. When running the git-annex binary the webapp opens. After closing the window I cannot access the webapp anymore. Using the IP + port number (http://127.0.0.1:53027/) does not work. Would be handy to have a bookmark for the webapp that works as long as the assistant is running.
+"""]]

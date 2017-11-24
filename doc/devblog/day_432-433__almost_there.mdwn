@@ -1,0 +1,13 @@
+Friday and today were spent implementing both sides of the P2P protocol for
+git-annex content transfers.
+
+There were some tricky cases to deal with. For example, when a file is being
+sent from a direct mode repository, or v6 annex.thin repository, the
+content of the file can change as it's being transferred. Including being
+appended to or truncated. Had to find a way to deal with that, to avoid
+breaking the protocol by not sending the indicated number of bytes of data.
+
+It all seems to be done now, but it's not been tested at all, and there are
+probably some bugs to find. (And progress info is not wired up yet.)
+
+Today's work was sponsored by Trenton Cronholm on Patreon.

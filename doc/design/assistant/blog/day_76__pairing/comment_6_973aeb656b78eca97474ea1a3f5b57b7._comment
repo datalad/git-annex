@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.8.30"
+ subject="comment 6"
+ date="2012-09-10T17:31:20Z"
+ content="""
+Re transfer progress not being shown, that's expected as upload progress displays are not yet implemented in the webapp.
+
+I can't think of a way git-annex would care what was in your box.com repo. It just makes directories as needed, and will overwrite existing files in the rare case they already exist. And ignore any non-git-annex files.
+
+Are you sure it was git-annex's memory use blowing up, and not the memory use of the davfs2 daemon?
+"""]]

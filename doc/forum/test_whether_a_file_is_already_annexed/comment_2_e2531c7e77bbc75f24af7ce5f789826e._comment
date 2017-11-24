@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="emanuele.olivetti@47d88ed185b03191e25329caa6fabc2efb3118b2"
+ nickname="emanuele.olivetti"
+ subject="not whereis"
+ date="2015-09-03T07:44:49Z"
+ content="""
+First of all thank you for the answer and the bug report. Unfortunately git-annex whereis seems not to be the answer to my problem, because it works only when queried on already annexed files, while I'd like to test the yet-not-annexed ones. Here's an example using whereis:
+
+    git-annex whereis SAM_7198.m4v     # SAM_7198.m4v is an already annexed files in the current directory, so within the repository: whereis works well
+    whereis SAM_7198.m4v (2 copies)
+        5dd7f891-579a-45c6-a5bf-3ca42e3a5f9a -- laptop [here]
+        ebf56bea-2970-42b1-bace-9d72ac9ed8d1 -- emanuele@desktop:/home/emanuele/annex [origin]
+    ok
+    
+    cp -L SAM_7198.m4v zzz  # creating a copy of a that file
+    git-annex whereis zzz  # output is empty, so the file was not found, despite having the same content of SAM_7198.m4v and being in the repo dir
+    
+    cp -L SAM_7198.m4v /tmp/  # copying the annexed file outside the repo
+    git-annex whereis /tmp/SAM_7198.m4v 
+    fatal: /tmp/SAM_7198.m4v: '/tmp/SAM_7198.m4v' is outside repository
+
+"""]]

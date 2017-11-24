@@ -1,0 +1,25 @@
+From 86eca0993e1716b4db14570836efbe838626892f Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Sun, 25 May 2014 09:11:15 +0200
+Subject: [PATCH] cross build
+
+---
+ distributive.cabal | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/distributive.cabal b/distributive.cabal
+index 9be5133..3e72c65 100644
+--- a/distributive.cabal
++++ b/distributive.cabal
+@@ -12,7 +12,7 @@ bug-reports:   http://github.com/ekmett/distributive/issues
+ copyright:     Copyright (C) 2011-2014 Edward A. Kmett
+ synopsis:      Distributive functors -- Dual to Traversable
+ description:   Distributive functors -- Dual to Traversable
+-build-type:    Custom
++build-type:    Simple
+ extra-source-files:
+   .ghci
+   .travis.yml
+-- 
+2.0.0.rc2
+

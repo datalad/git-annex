@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 2"
+ date="2013-06-11T14:48:01Z"
+ content="""
+Also, if you're going to set up something like local pairing, why would you *not* want to commit that config to git along with your other ssh configs? Config files in $HOME are quite frequently edited by helper programs to configure changes, and I personally commit those changes all the time.
+
+Perhaps your real problem is that you have one `.ssh/config` that is shared between multiple hosts, and the git-annex settings are specific to a single host. Have you considered using [vcsh](https://github.com/RichiH/vcsh)?
+"""]]

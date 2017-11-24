@@ -1,0 +1,4 @@
+.form-inline input[type=number]
+  width: 5em
+select
+  width: 10em

@@ -1,0 +1,20 @@
+## Debian testing or unstable
+
+Debian unstable and testing are usually fairly up to date,
+so this should be enough:
+
+	sudo apt install git-annex
+
+## Debian 9.0 "stretch"
+
+Debian's stable release contains git-annex version 6.20170101.
+
+	sudo apt install git-annex
+
+## Standalone backports for all releases
+
+If the version shipped with Debian is too old, 
+the [NeuroDebian team](http://neuro.debian.net/) provides a
+[standalone build package](http://neuro.debian.net/pkgs/git-annex-standalone.html)
+that is regularly updated and that should work across all releases of
+Debian.

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 3"
+ date="2013-08-24T16:35:33Z"
+ content="""
+Seems to me that this could easily be dealt with by installing git-annex on the webserver, making the directory there a git repository, and using either a cron job or `git annex watch` to commit files as they were changed there.
+
+Then you can make a direct mode, indirect mode, or even a bare clone on your local machine and use git-annex to get the files.
+
+Maybe you have good reasons for not wanting to go that route. And rsync on a direct mode repository should work, provided to tell it to not delete `.git`. :P I don't see any way to make rsync work in an indirect mode repository. As for trying to make git-annex handle this import over rsync itself in a way that would work in an indirect mode repository, let alone a bare repository -- I don't see a good way to do it and it seems quite special case and likely to get quite complicated to implement.
+
+In the meantime, I did implement `git annex mirror`, which I think is a much more interesting and generally useful tool to have. And could even be used in my recommended solution above.
+"""]]

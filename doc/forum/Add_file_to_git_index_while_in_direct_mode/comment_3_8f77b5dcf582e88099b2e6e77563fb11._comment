@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-09-11T17:39:05Z"
+ content="""
+You can temporarily set annex.largefiles to match no files, while running
+git-annex add, to force it to add the file to git instead of the annex.
+
+git -c annex.largefiles='exclude=*' annex add somefile
+"""]]

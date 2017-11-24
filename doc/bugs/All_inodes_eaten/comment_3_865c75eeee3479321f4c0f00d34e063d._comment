@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-10-26T18:07:51Z"
+ content="""
+Well these look like the names I'd expect to see used for encrypted files.
+
+If you had the assistant watching some files that were frequently changing,
+then it could lead to something like this, since many commits would be made
+of many versions of a file, and each version backed up to a new encrypted
+file in the special remote. You can take a look at `git log -S` in the git
+repository and see if there are many commits of some of your files.
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-19T15:30:01Z"
+ content="""
+Couldn't you use the existing info --batch for the same purpose?
+
+batching find has the problem that it can output any number of lines
+(0 for a non-annexed file, 1 for an annexed file, N for a directory). So,
+the consumer has no way to tell when it reaches the end of output. So some
+additional thing would be needed to indicate end of output.
+"""]]

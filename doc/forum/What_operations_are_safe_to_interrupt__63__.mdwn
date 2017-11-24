@@ -1,0 +1,34 @@
+# Context
+
+* Git annex does a lot under the hood: replace files with symlinks, check and adjust moved links, etc.
+* Git annex allows to mix and match with plain git commands.
+* Operations may be interrupted by signal (Ctrl-C), by network failure (especially in mobile situation), by power failure (laptop on battery).
+
+Git itself is mostly transactional: most actions can be interrupted and everything looks like they were never started.
+
+I'm confident that you Joey have an eye for details and do the safe thing.  Yet parameters above open up for a lot of combinations, some of which might not actually do what's intended, or are perhaps safe only for someone who knows where *not* to put a foot.
+
+# Example
+
+For example, nearly 5 years ago you wrote about interrupted `git annex add`: in [git annex add crash and subsequent recovery](https://git-annex.branchable.com/forum/git_annex_add_crash_and_subsequent_recovery/) 
+
+> Thought I'd mention how to clean up from interrupting git annex add. When you do that, it doesn't get a chance to git add the files it's added (this is normally done at the end, or sometimes at points in the middle when you're adding a lot of files). Which is also why fsck, whereis, and unannex wouldn't operate on them, since they only deal with files in git.
+> So the first step is to manually use git add on any symlinks.
+>  I've made git annex add recover when ran a second time. 
+
+# Questions
+
+* Which operations are safe to interrupt? What will be the result? No change? Partial but valid result? Messy result? With what consequences?
+* What operations should *not* be performed after an interrupted one?
+
+For example, let's say I've started a `git annex sync`. While it works, I realize there are unwanted changes. If I interrupt what is the result? Can I safely use manual git commands to add or remove some files to index, make separated commits, then git sync again?
+
+I'm using a v5 repository, indirect mode, mixed content. Is it different in v6? In direct mode? In mixed vs non-mixed content repository?
+
+# Wish a dedicated page in git-annex documentation
+
+IMHO this is an important, difficult and changing topic, which would deserve its own "when things go wrong" topic pages, like [fsck: when things go wrong](https://git-annex.branchable.com/walkthrough/fsck__58___when_things_go_wrong/) and [transferring files: When things go wrong](https://git-annex.branchable.com/walkthrough/transferring_files__58___When_things_go_wrong/).
+
+Perhaps just starting with broad rules like "Commands foo and bar are ok, baz is mostly ok just repeat it" or "in any on-trivial case, do `git annex sync` last after you check twice that any necessary commit is done" would be very appreciated.
+
+Thank you.

@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn3p4i4lk_zMilvjnJ9sS6g2nerpgz0Fjc"
+ nickname="Matthias"
+ subject="build failure"
+ date="2014-06-09T15:13:18Z"
+ content="""
+Building git-annex with Nix 1.7 fails for me. Error:
+
+    trying https://git.samba.org/?p=rsync.git;a=commitdiff_plain;h=0dedfbce2c1b851684ba658861fe9d620636c56a
+      % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                     Dload  Upload   Total   Spent    Left  Speed
+    100  2277    0  2277    0     0   2805      0 --:--:-- --:--:-- --:--:--  5735
+    output path `/nix/store/w6l1c3cdr52arymv3zgwly7razwnsdll-CVE-2014-2855.patch' should have sha256 hash `1jpwwdf07naqxc8fv1lspc95jgk50j5j3wvf037bjay2qzpwjmvf', instead has `0j1pqmwsqc5mh815x28izi4baki2y2r5q8k7ma1sgs4xsgjc4rk8'
+    building path(s) `/nix/store/85v7c8b3ygpfj8m8bk98kcygf29qcbq7-cacert-20131205.pem.bz2'
+    cannot build derivation `/nix/store/im9p1y2xbh08yrwp5yggj1ii884wv3ql-rsync-3.1.0.drv': 1 dependencies couldn't be built
+    killing process 2599
+    cannot build derivation `/nix/store/sl48cnm06m7mcqxjfj2b0yv8am3blqr3-git-annex-5.20140517.drv': 1 dependencies couldn't be built
+    error: build of `/nix/store/sl48cnm06m7mcqxjfj2b0yv8am3blqr3-git-annex-5.20140517.drv' failed
+
+Someone has an idea what Nix expects me to do in this situation?
+"""]]

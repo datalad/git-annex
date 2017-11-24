@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.244"
+ subject="comment 5"
+ date="2014-04-07T22:12:14Z"
+ content="""
+Is the repository using direct mode?
+
+Another theory is that:
+
+* test/hello appears
+* watcher sees new symlink, tries to make a commit with it
+* master branch already has that symlink
+* this is why the write-tree is not followed by a commit-tree. The commit would have been empty. 
+
+If this is the case, then 84068090af4bcd3d24f16d865ac07b0478f20ada will be a ref on the master branch.
+
+And all of the above is normal operation. But it does suggest, that if this repo is in direct mode, it might be running a direct mode work tree update around then. Which requires a lot of cat-file queries of the git-annex branch. And would certainly make repeated queries at least if the repository has duplicate copies of some files..
+"""]]

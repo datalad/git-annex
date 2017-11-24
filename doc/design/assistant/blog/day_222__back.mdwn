@@ -1,0 +1,16 @@
+Back from my trip. Spent today getting caught up.
+
+Didn't do much while I was away. Pushed out a new release on Saturday.
+Made `git annex` usage display nicer.
+
+Fixed some minor webapp bugs today. The interesting bug was a
+race that sometimes caused alerts or other notifications to be
+missed and not be immediately displayed if they occurred while
+a page was loading. You sometimes had to hit reload to see them,
+but not anymore!
+
+Checked if the `push.default=simple` change in upcoming git release will
+affect git-annex. It shouldn't affect the assistant, or `git annex sync`,
+since they always list all branches to push explicitly. But if you `git push`
+manually, when the default changes that won't include the git-annex branch
+in the push any longer.

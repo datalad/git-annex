@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="memeplex"
+ avatar="http://cdn.libravatar.org/avatar/84a611000e819ef825421de06c9bca90"
+ subject="comment 3"
+ date="2017-04-14T22:35:49Z"
+ content="""
+Another use case is when you use annex for backup. For example I keep most of my files (dotfiles, scripts, music, books, etc) in a \"home\" git annex repo. Part of them is stored in google drive, part in a pendrive, part in my home computer, part in my work computer. Every once in a while I sync everything into my home computer and into an additional external hard drive remote that I keep as a backup. Sadly, my archived git projects can't be managed like that. Nevertheless, it's not a big deal since they are already in the cloud (gitlab or github) and in my local filesystem. Besides, since they are archived, I can just create tarballs and add them to the annex (and in case annex allowed to store .git directories, I'd not be really comfortable with the huge amount of symlinks that would produce).
+
+That said, it's kind of a bathos that the illusion of a distributed, decentralized, redundant, versioned, annotated, etc. filesystem over git is broken by git itself.   
+"""]]

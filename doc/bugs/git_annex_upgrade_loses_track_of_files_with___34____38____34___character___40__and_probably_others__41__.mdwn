@@ -1,0 +1,33 @@
+"git annex upgrade" has lost track of some of my files.  Most of them have "&" characters.  The others contain "%" characters (I haven't tried the testcase below with "%" however).
+
+Testcase:
+
+    # (With git annex v2)
+    mkdir ~/testannex1
+    cd ~/testannex1
+    git init
+    git annex init "testannex1"
+    touch '02 - Afternoons & Coffeespoons.mp3'
+    touch 'no ampersand.mp3'
+    git annex add '02 - Afternoons & Coffeespoons.mp3'
+    git annex add 'no ampersand.mp3'
+    git commit -m added
+    git annex whereis '02 - Afternoons & Coffeespoons.mp3'
+    git annex whereis 'no ampersand.mp3'
+    # (Upgrade git-annex binary to v3 and then...)
+    git annex upgrade
+    git annex whereis '02 - Afternoons & Coffeespoons.mp3'
+    git annex whereis 'no ampersand.mp3'
+
+This produces:
+
+    12:38:40 ~/testannex1 (master)$ git annex whereis '02 - Afternoons & Coffeespoons.mp3'
+    whereis 02 - Afternoons & Coffeespoons.mp3 (0 copies) 
+    failed
+    git-annex: 1 failed
+    12:38:40 ~/testannex1 (master)$ git annex whereis 'no ampersand.mp3'
+    whereis no ampersand.mp3 (1 copy) 
+      	a7b680fc-a8d0-11e0-b0fe-4f94e86d1fb7  -- testannex1 <-- here
+    ok
+
+[[!tag done]]

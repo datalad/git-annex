@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 3"
+ date="2013-01-24T01:55:10Z"
+ content="""
+In addition to trickle, the git-annex man page has examples of how to make rsync use --bwlimit
+
+Something like trickle is needed to limit rates for remotes not using rsync, however.
+"""]]

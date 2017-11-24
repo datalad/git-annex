@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.14.141"
+ subject="comment 2"
+ date="2012-09-27T15:29:56Z"
+ content="""
+I've made the assistant ignore ssh-keygen -F failing.
+"""]]

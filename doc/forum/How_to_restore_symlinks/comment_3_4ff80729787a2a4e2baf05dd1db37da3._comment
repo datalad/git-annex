@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="jbee"
+ ip="178.25.68.205"
+ subject="Thanks"
+ date="2012-11-28T11:52:24Z"
+ content="""
+> deletion has been committed to git, and then you'd use git log --stat to find the commit that deleted your files, and git revert could be used to undo it.
+
+That did the trick.
+
+Thanks Joey, for the answer and the magnificence that is git-annex.
+"""]]

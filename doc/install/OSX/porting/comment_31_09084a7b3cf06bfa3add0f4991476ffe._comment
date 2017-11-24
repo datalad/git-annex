@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://alan.petitepomme.net/"
+ nickname="Alan Schmitt"
+ subject="dbus and homebrew"
+ date="2013-10-20T17:25:04Z"
+ content="""
+I'm trying to build git-annex with dbus support, and even though I installed dbus (through homebrew), at the end of compilation I get the warning about \"building without dbus\". Is there something special I need to do for git-annex to see I have installed dbus?
+
+(Also, it tells me at the beginning that I don't have gcrypt, but libgcrypt is installed.)
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 1"
+ date="2013-10-22T17:57:27Z"
+ content="""
+I don't really understand the problem you're describing. Is the problem with it uploading the files it's added to another remote? Does it sit there saying \"syncing with $remote\" forever? Or what?
+
+As to the webapp speed problem, it seems likely to me this is not related to CPU speed or load. It sounds rather like a DNS timeout problem, or an ipv6 to ipv4 fallback problem. Although since the URL to the webapp is http://127.0.0.1, it can't really be either of those..
+"""]]

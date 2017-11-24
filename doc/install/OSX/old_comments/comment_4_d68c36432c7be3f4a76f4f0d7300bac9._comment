@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmY_4MvT5yEeztrS7UIJseStUe4mtgp6YE"
+ nickname="Сергей"
+ subject="Have error"
+ date="2012-10-10T11:47:09Z"
+ content="""
+[ 98 of 248] Compiling Utility.DiskFree ( Utility/DiskFree.hs, dist/build/git-annex/git-annex-tmp/Utility/DiskFree.o )
+[ 99 of 248] Compiling Utility.Url      ( Utility/Url.hs, dist/build/git-annex/git-annex-tmp/Utility/Url.o )
+
+Utility/Url.hs:111:88:
+    Couldn't match expected type `Maybe URI' with actual type `URI'
+    In the second argument of `fromMaybe', namely
+      `(newURI `relativeTo` u)'
+    In the expression: fromMaybe newURI (newURI `relativeTo` u)
+    In an equation for `newURI_abs':
+        newURI_abs = fromMaybe newURI (newURI `relativeTo` u)
+cabal: Error: some packages failed to install:
+git-annex-3.20121009 failed during the building phase. The exception was:
+ExitFailure 1
+"""]]

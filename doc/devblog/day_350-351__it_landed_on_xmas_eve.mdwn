@@ -1,0 +1,9 @@
+If you've got some free holiday time, the v6 repository mode is now
+available in many of the daily builds, and there's documentation at
+[[tips/unlocked_files]]. It would be very useful now if you can give
+it a try. Use a clone or new repository for safety.
+
+Yesterday I checked all parts of the code that special case direct mode,
+and found a few things that needed adjusting for v6 unlocked files. Today,
+I added the annex.thin config. Around 4 other major todo items need to be
+dealt with before this is ready for more than early adopters.

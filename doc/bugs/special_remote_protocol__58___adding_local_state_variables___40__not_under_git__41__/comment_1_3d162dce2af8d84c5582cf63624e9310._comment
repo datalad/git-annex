@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-02-07T16:49:40Z"
+ content="""
+A reasonable use case indeed.
+
+My initial feeling is, this can be handled well by storing the data
+yourself in the filesysystem. You only need to pick a place for your
+special remote to store the data. Presumably somewhere under `.git`
+or under `.git/annex`. (The protocol's GETGITDIR can be used to
+get the path to `.git`.)
+
+And you need to pick a filename that won't be used by something else.
+
+You can use the protocol's GETUUID to get the uuid of special remote,
+and using that in the path to the data pretty well guarantees nothing
+else is going to use that filename.
+"""]]

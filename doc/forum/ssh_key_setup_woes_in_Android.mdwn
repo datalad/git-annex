@@ -1,0 +1,15 @@
+I'm trying to set up a ssh remote on Android using the latest 5.20140421. For some
+reason the assistant fails to set up passwordless login on the remote server. It
+adds the required line in `.ssh/authorized_keys` on the server side, but it still
+keeps asking for the password for every connection. Nothing suspicious appears in
+the assistant's log. Also, if I set up a ssh remote on a different directory on the
+same server, a new key is generated and added to `authorized_keys`, but the passwordless
+login still doesn't work.
+
+I didn't file a bug since this would make for a very lousy bug report. How could I
+look more into what's causing this? Where should the generated keys reside on the
+Android filesystem?
+
+I think it would be useful for the assistant to check that the generated ssh keys are
+working properly, and inform the user and/or try to set them up again if there is a
+problem, instead of silently falling back to asking for the login password on the console.

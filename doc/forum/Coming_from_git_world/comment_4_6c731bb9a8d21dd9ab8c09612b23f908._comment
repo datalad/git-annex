@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.235"
+ subject="comment 4"
+ date="2013-07-09T18:14:07Z"
+ content="""
+I don't know where you got the \"git remote add backup\" step from. Obviously this is not necessary unless you want to add a remote named \"backup\".
+
+To use git-annex in a centralized git environment, which it sounds like you have here, you just need to install git-annex on the central git server, and arrange for all the developers to have ssh access to it. Then any git repository that is cloned from that server using ssh as the transport can support git-annex without the user needing to do anything special to set it up.
+
+This assumes that users have shell accounts on the server. git-annex includes the git-annex-shell program, which is similar to the git-shell in git. User accounts can be locked down to use this restricted shell if giving them full shell access to the server is not desired.
+
+If the server is using a git repository manager like gitolite or gitosis, those can also be adapted to use git-annex-shell. I got gitolite patched to support it earlier, see [[tips/using_gitolite_with_git-annex]].
+
+PS: I'm available for consulting on deploying git-annex in production environments. ;)
+"""]]

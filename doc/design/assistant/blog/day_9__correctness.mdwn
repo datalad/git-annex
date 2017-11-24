@@ -1,0 +1,30 @@
+	git merge watch_
+
+My cursor has been mentally poised here all day, but I've been reluctant to
+merge watch into master. It seems solid, but is it correct? I was able to
+think up a lot of races it'd be subject to, and deal with them, but did I
+find them all?
+
+Perhaps I need to do some automated fuzz testing to reassure myself.
+I looked into using [genbackupdata](http://liw.fi/genbackupdata/) to that
+end. It's not quite what I need, but could be
+[moved in that direction](http://bugs.debian.org/677542). Or I could write
+my own fuzz tester, but it seems better to use someone else's, because 
+a) laziness and b) they're less likely to have the same blind spots I do.
+
+My reluctance to merge isn't helped by the known bugs with files that are
+either already open before `git annex watch` starts, or are opened by two
+processes at once, and confuse it into annexing the still-open file when one
+process closes it.
+
+I've been thinking about just running `lsof` on every file as it's being
+annexed to check for that, but in the end, `lsof` is too slow. Since its
+check involves trawling through all of /proc, it takes it a good half a
+second to check a file, and adding 25 seconds to the time it takes to
+process 100 files is just not acceptable.
+
+But an option that could work is to run `lsof` after a bunch of new files
+have been annexed. It can check a lot of files nearly as fast as a single
+one. In the rare case that an annexed file is indeed still open, it could
+be moved back out of the annex. Then when its remaining writer finally
+closes it, another inotify event would re-annex it.

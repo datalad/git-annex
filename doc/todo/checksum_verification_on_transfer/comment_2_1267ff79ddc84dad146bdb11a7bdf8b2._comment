@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-10-01T15:45:18Z"
+ content="""
+My original reasoning makes sense for uploads, I think. 
+
+The checksum library used is a lot faster now, but it would still be best
+to do the checksum as part of the same file read used to transfer the file,
+when possible.
+
+There is a good reason to want to verify checksums when downloading objects
+too: Git does that, and so if git-annex does too, the same reasoning about
+security can be done about git-annex repositories as can be done about git
+repositories. In other words, not verifying checksums when downloading objects
+violates least surprise.
+
+A concrete example: If the user is uploading objects to gitlab, they should
+be able to git pull, and verify their signed commit, and git annex get, and
+not need to worry about whether gitlab (or a MITM) could do something evil
+to the downloaded objects.
+
+Similarly, a S3 special remote does not include the git repo, so users
+should be able to assume that, given their locally trusted git repo, git
+annex get will only ever get verified objects from the S3 remote.
+
+Question: What about local repositories, eg on a removable drive?
+Git does do checksum verification between local repositories, unless
+cloned with --shared. Probably follows git-annex should too.
+
+My current thinking is that this verification should be done by default.
+Security features that are not enabled by default are not very useful.
+It should, however, be able to be turned off, either globally, or on a
+per-remote basis.
+"""]]

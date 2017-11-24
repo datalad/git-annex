@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="http://bigasterisk.com/"
+ nickname="Drew Perttula"
+ subject="comment 4"
+ date="2013-07-25T05:02:16Z"
+ content="""
+I saw the 'syncing enabled'/'syncing disabled' switch in the webapp, which I think is what you're calling pause. That was always enabled.
+
+I never adjusted the groups, but I see in the webapp that my remote is busted in other ways. It has no title, and settings->edit makes an error page. The edit link is like this:
+
+http://127.0.0.1:38187/config/repository/edit/NoUUID?auth=4294a...333c
+
+and the error is 
+
+    Internal Server Error
+    Unknown UUID
+
+I'll try re-configuring that remote. I wish the webapp could tell me more about what is broken with the remote repo and where I might go to repair it. 
+"""]]

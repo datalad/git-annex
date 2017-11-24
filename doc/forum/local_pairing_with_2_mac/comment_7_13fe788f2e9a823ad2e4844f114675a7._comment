@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 7"
+ date="2013-12-12T21:53:56Z"
+ content="""
+So it does only fail on one machine and not the other. I wonder what is different?
+
+Can you also try running `/Volumes/git-annex/git-annex.app/Contents/MacOS/bundle/cp` on both? (I think it uses the same symbol.)
+"""]]

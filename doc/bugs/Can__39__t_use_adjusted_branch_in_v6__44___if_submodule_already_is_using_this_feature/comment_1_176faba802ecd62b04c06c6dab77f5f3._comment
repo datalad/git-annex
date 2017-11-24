@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-02-20T17:13:54Z"
+ content="""
+Error message is:
+
+	git-annex: unexpected object type "comm"
+
+What it's actually choking on is the "commit" object for the submodule,
+in git-ls-tree output. Doesn't matter if the submodule uses
+adjusted branches or not.
+
+The parser for ls-tree output is buggy;
+it's expecting only "blob" and "tree", so pulls out a fixed width 4
+characters: "comm"
+
+Also, the adjusted branch code needs to be made to skip over CommitObjects,
+once the parser is fixed to generate them.
+"""]]

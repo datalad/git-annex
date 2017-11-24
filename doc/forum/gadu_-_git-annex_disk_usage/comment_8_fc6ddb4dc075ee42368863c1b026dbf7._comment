@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Steve"
+ ip="92.104.175.136"
+ subject="git repo is now up"
+ date="2013-01-01T23:39:33Z"
+ content="""
+sunny256, the git repo is now accessible at <http://git.mysteryvortex.com>
+
+Markus, never used the -m option myself.  I added it in git it'll be in the next tarball.  (I plan to go through the du man page and add all appropriate options soon)
+
+John, I wasn't aware of your sizes utility.  I'll look into it.
+
+"""]]

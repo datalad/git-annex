@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkZktNHFhxC1kYA9KKdKpYJO4clq9WDsjE"
+ nickname="Jason"
+ subject="comment 2"
+ date="2013-04-25T00:20:59Z"
+ content="""
+When I run `git annex whereis $file` it tells me it's available at box, s3, my rsync remote, the original repo (from the machine I created the annex on), and my temporary usb stick repo (nothing wrong with redundancy...).  So it seems that git annex thinks the file is available in the s3 remote, even though it's refusing to download it.
+"""]]

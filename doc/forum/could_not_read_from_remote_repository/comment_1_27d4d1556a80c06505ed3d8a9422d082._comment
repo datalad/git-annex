@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 1"
+ date="2013-11-26T20:18:26Z"
+ content="""
+The problem seems to be on your desktop computer. /home/max/.ssh/git-annex-shell is a script that is created if you install git-annex from the standalone tarball (assuming you're using linux?). It seems that your desktop has that script, but you must have deleted that instalation of git-annex (perhaps you switched to installing it some other way), so the script doesn't work. As long as you have git-annex-shell in your PATH somehow, you can just remove /home/max/.ssh/git-annex-shell
+"""]]

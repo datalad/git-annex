@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 1"
+ date="2013-10-21T22:16:16Z"
+ content="""
+If you change a direct mode file and that file has not yet been transferred to some other repository, you've changed the only copy of the file, and so you cannot get back the old version.
+
+Other than that, git-annex always preserves old versions of direct mode files, the same as it preserves old versions of indirect mode files.
+
+To get back an old version of a file, use `git annex indirect` to get out of direct mode, use regular git commands to check out the version of the repository that has the file you need, and use `git annex get` to retrieve the file if it's not available in the local repository.
+"""]]

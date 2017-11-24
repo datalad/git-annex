@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-01-15T19:14:07Z"
+ content="""
+You can use git's post-receive hook to run `git annex merge` to update a
+direct mode repository. See example in
+[[tips/setup_a_public_repository_on_a_web_site]].
+
+It's fine to use --force with dropunused if you really want to force
+deleting the only copy of a file. git-annex will never delete the last copy
+of a file without being forced as a safety measure.
+"""]]

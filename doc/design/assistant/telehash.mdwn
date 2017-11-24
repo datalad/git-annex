@@ -1,0 +1,136 @@
+[Telehash](http://telehash.org/) for secure P2P communication between
+git-annex (assistant) repositories.
+
+Or something similar like [Snow](http://www.trustiosity.com/snow/)
+or [cjdns](https://github.com/cjdelisle/cjdns) or tor or i2p or [magic wormhole](http://magic-wormhole.io/).
+
+## telehash implementation status
+
+* node.js version seems almost complete
+* C version currently lacks channel support and seems buggy (13 Jan 2014)
+* No pure haskell implementation of telehash v2. There was one of
+  telehash v1 (even that seems incomplete). I have pinged its author
+  to see if he anticipates updating it.
+* Rapid development, situation may change in a month or 2. (2014)  
+  Not seeing many commits now (2015)
+* Is it secure? A security review should be done by competant people
+  (not Joey). See <https://github.com/telehash/telehash.org/issues/23>
+* **Haskell version** 
+  <https://github.com/alanz/htelehash/tree/v2/src/TeleHash>
+  May support v2; v3 support seems not started yet, and not in active
+  development at the moment, although there has been work on it a year ago.
+* Not very convinced this is going to be usable anytime soon, so would like
+  to find something that is. (2015)
+
+## snow status
+
+* Seems ready to use?
+* NAT punching works per docs; relies on a DHT network for hole punching,
+  and the reliabilty of that network is not known. I notice it has only 1
+  pre-seeded peer in the source tree for the DHT, and that peer was not up
+  when I tried it.
+* Only provides network-layer transport, still need to implement some 
+  file transfer protocol on top.
+
+## cjdns status
+
+* Has a network with "hundreds of active nodes"
+* Is not pure P2P; there's a network that does routing
+  of packets. This may be a good thing, or not.
+* Seems to require manual configuration of a "friend"
+  node that's already on the network, with address and password to connect
+  to it, so if you can't find someone you know to connect to their node,
+  you can't use it. Urk.
+
+## tor status
+
+* Awesome.
+* Easy to install, use; very well known.
+* Supported in git-annex now!
+
+## i2p status
+
+## magic wormhole
+
+* simple file transfer protocol with out of band shared secret
+* handles NAT transversal
+* easy to use
+* doesn't require a running daemon
+* can transfer arbitrary blobs (strings, directories, files)
+
+## general design
+
+* There is a generic P2P protocol, which should be usable with any P2P
+  system that can send messages between peers.
+* A p2p remote has an url like tor-annex::fijdksajdksjfkj, which connects
+  to a specific peer. The peer's address may be kept private, but 
+  the design allows the address to be public without giving access to
+  the peer.
+* An authtoken also needs to be presented when connecting with a peer.
+  This is stored in local creds storage and must be kept private.
+* The remotedaemon runs, and/or communicates with the program implementing
+  the P2P network. For example for tor, the remotedaemon runs the
+  hidden service.
+* The remotedaemon handles both sides of git push over the transport.
+* The remotedaemon may also support sending objects over the transport,
+  depending on the transport.
+
+## address exchange
+
+The address is a public key, and the authtoken is some large chunk of data,
+so won't want to type that in. Need discovery or exchange for peering.
+
+* Easy way is any set of repos that are already connected can communicate
+  them via address.log.
+* Address and authtoken can be communicated out of band (eg,
+  via an OTR session or gpg encrypted mail or phone call),
+  and pasted into the webapp.
+* Use eg, electrum-mnemonic to encode the address+authtoken so that
+  it can be read over the phone.
+* Users may not have a way to communicate with perfect forward secrecy.
+  So it would be good to have a address+authtoken that can only be used
+  one time during pairing.
+* Check out [PAKE](https://en.wikipedia.org/wiki/Password-authenticated_key_agreement)
+  for MITM resistance.
+* Possibly use magic wormhole to exchange the address, which avoids
+  the users needing to exchange so much data. The magic wormhole code
+  is just 3 words, and it uses PAKE.
+  
+  I tried it, and opened a couple of bug reports that would be useful in
+  integrating it with git-annex:
+
+  - [option to receive to a specific file](https://github.com/warner/magic-wormhole/issues/101)
+  - [machine readable wormhole code ](https://github.com/warner/magic-wormhole/issues/104])
+
+## local lan detection
+
+At connection time, after authentication, the remote can send
+(ip address, ssh host key). Try sshing to the ip address to check if
+the host key matches. If so, can enable a ssh remote, which will
+be cheaper than using the transport. Send the ssh public key back to the
+remote to get it authorized.
+
+## remotedaemon
+
+See [[git-remote-daemon]] for its design.
+
+Advantages:
+
+* `git annex sync` could also use the running daemon
+* `git-remote-$transport` could use the running daemon
+* c-telehash might end up linked to openssl, which has licence combination
+  problems with git-annex. A separate process not using git-annex's code
+  would avoid this.
+* Allows the daemon to be written in some other language if necessary
+  (for example, if c-telehash development stalls and the nodejs version is
+  already usable)
+* Potentially could be generalized to handle other similar protocols.
+  Or even the xmpp code moved into it. There could even be git-annex native
+  exchange protocols implemented in such a daemon to allow SSH-less
+  transfers.
+* Security holes in telehash would not need to compromise the entire
+  git-annex. daemon could be sandboxed in one way or another.
+
+Disadvantages:
+
+* Adds some complexity.

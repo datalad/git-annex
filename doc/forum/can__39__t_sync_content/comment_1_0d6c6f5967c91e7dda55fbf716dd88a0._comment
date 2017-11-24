@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-08-05T14:04:39Z"
+ content="""
+It's possible to set up a http repo such that git-annex can use it, but
+gitlab's http repos are not set up this way. It might be worth asking them
+to do it. [[tips/setup_a_public_repository_on_a_web_site]] explains
+one way to set up a http repo for git-annex.
+
+But, even when git-annex is able to use a http repo, it can only
+download files from it. There's no support for uploading git-annex managed
+files to a remote http repo. This would need additional server-side support
+of some kind.
+"""]]

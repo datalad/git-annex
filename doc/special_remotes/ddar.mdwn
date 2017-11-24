@@ -1,0 +1,40 @@
+This special remote type stores file contents in a
+[ddar](https://github.com/basak/ddar) repository. This provides easy
+de-duplication when you use git-annex to manage many files that are similar.
+
+Unlike bup, ddar uses its own storage format, which allows for both creation
+and deletion of de-deduplicated files. In addition to using local storage, ddar
+archives can be remote, providing that ddar is installed on the remote machine
+and ssh is available to it.
+
+See [[walkthrough/using_ddar]] for usage examples.
+
+## encryption
+
+Encryption is nominally supported, but is not useful. Since effective
+encryption necessarily obfuscates file contents, similar areas across different
+files are no longer visible to ddar and cannot be de-duplicated.
+
+## compression
+
+The same caveat with encryption also generally applies to compression, since
+file compression changes file contents such that similar regions across files
+no longer appear similar. An exception is `gzip --rsyncable`, which is
+specifically designed to work around this issue. This is the only compression
+mechanism with which de-duplication remains effective.
+
+## configuration
+
+These parameters can be passed to `git annex initremote` to configure ddar:
+
+* `encryption` - One of "none", "hybrid", "shared", or "pubkey".
+  See [[encryption]]. However, note that encryption renders all de-duplication
+ineffective.
+
+* `keyid` - Specifies the gpg key to use for [[encryption]].
+
+* `ddarrepo` - Required. This is passed to `ddar` as the path to the ddar
+  archive to use. If it doesn't exist, the ddar repository will be created
+  automatically when a file is first copied to it. To use a remote ddar
+  repository, use a colon (`:`) to separate the hostname from the remote path.
+  Example: "ddarrepo=example.com:/big/myddar" or "ddarrepo=/big/myddar"

@@ -1,0 +1,27 @@
+I recently replaced a disk that was failing with a new disk. Rather than just clone and create a new remote, I decided I'd reuse the existing anex.uuid, since I wanted to mount the replacement disk in the same spot/using the same name as before. The annex.uuid was the one I saw [here](http://git-annex.branchable.com/forum/Truly_purging_dead_repositories/#comment-b89d6a7ab50180c901f53761f8a1a99d). 
+
+I have multiple disks that I store full copies of each of my repositories on; several are just regular git-annex remotes, and some are gcrypt remotes. All of them are local disks. 
+
+When I ran a `git annex sync` in the repo with the reused UUID, the repo, and subsequently the other non-encrypted repos that I synced to, have lost knowledge of the encrypted repos, e.g. when I run `git-annex info`, I do not see the encrypted repos in that list. Even more strangely, this only happened in 2 out of 7 repos; 5 of the repos retained the knowledge of the gcrypt repos. 
+
+The steps I used to recreate all of the repos was:
+
+```
+mkdir resued-uuid
+cd reused-uuid
+git init
+git config annex.uuid xxxxxxxxxxx-xxxxxxxx-xxxxxxxxx
+git annex init "My reused uuid repo"
+git annex fsck (as directed to run in the linked comment, but this didn't do anything because there were no files in the repo and the repo did not have other repos' remotes added to it)
+git remote add existing-repo ~/some/repo/path
+git annex sync
+git annex sync --content (all content copied over; subsequent fscks' don't reveal any damaged files)
+```
+
+I'm curious as to any insight as to why this might have happened and what went wrong.
+
+How can I add existing gcrypt remotes to the repos that are missing them.
+
+Does git annex copy some part of .git/config around to different repos?  
+
+Can I just copy part of a .git/config with the grcrypt remotes listed there and sync them up? 

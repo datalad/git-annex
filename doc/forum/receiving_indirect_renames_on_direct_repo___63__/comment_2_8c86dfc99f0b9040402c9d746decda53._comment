@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkJafmCf-sg9_OM0pynFYM3AO4WCgJiaMI"
+ nickname="Michele"
+ subject="still cannot push when remote has renames"
+ date="2013-10-27T23:06:03Z"
+ content="""
+now, I went again through docs, and i realized how stupid was issuing a git pull on a direct repo. thanks for your patience.
+
+but, i double checked the configuration, I assume \"receive.denyNonFastForwards\" is false by default, but anyway I set it up explicitely so that now my git config (on the linux indirect repo - with respect to my previous example, I got rid of the \"extra\" bare repo in the middle) shows:
+
+    $ git config --list
+    user.email=m@g.com
+    user.name=michele
+    core.repositoryformatversion=0
+    core.filemode=true
+    core.bare=false
+    core.logallrefupdates=true
+    annex.uuid=d084e0fd-95a7-4c98-a206-fbf2c85b779d
+    annex.version=3
+    receive.denynonfastforwards=false
+
+still I am receiving the push refusal:
+
+    M:\win>git annex sync
+    commit
+    ok
+    pull origin
+    ok
+    push origin
+    To ssh://michele@home/home/michele/casa
+       ! [rejected]        master -> synced/master (non-fast-forward)
+    error: failed to push some refs to 'ssh://michele@home/home/michele/casa'
+    hint: Updates were rejected because a pushed branch tip is behind its remote
+    hint: counterpart. Check out this branch and merge the remote changes
+    hint: (e.g. 'git pull') before pushing again.
+    hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+    failed
+    git-annex: sync: 1 failed
+
+Same happens with a bare repository in the middle. BTW: the windows \"client\" repository is behind NAT, so that the linux indirect doesn't actively sync against it: could that be source of the problem ?
+"""]]

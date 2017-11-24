@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 15"
+ date="2014-05-16T18:59:47Z"
+ content="""
+@Jeff, why did you post that comment here? Please use the [[forum]] for questions.
+
+(You may find it useful to use direct mode, or `git annex import --skip-duplicates` or something.)
+"""]]

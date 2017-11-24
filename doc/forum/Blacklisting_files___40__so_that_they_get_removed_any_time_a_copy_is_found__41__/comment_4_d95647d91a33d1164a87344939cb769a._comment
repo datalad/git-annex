@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 4"
+ date="2017-03-10T08:11:13Z"
+ content="""
+I use git-annex-metadata to tag files I don't want, then drop the content with that tag[1]. Then it doesn't matter if the content reappears, it'll get pruned at some point. Also easy to find any symlinks pointing at the unwanted content using git-annex-find :)
+
+[1] I actually move it to another remote on a 3TB drive which only has such unwanted content, and then delete it on there when I need more space on it. Doesn't matter if that drive fails, but allows a bit of a window for an \"actually, I do need that\" recovery.
+"""]]

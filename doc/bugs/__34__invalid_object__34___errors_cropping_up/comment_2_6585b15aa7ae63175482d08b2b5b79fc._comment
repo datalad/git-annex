@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="xloem"
+ subject="comment 2"
+ date="2016-05-29T02:02:38Z"
+ content="""
+This has occurred for me yet again, after starting a new remote.
+
+Strangely 'git fsck' succeeds, showing only dangling objects, but 'git annex sync' fails on commit with this error.
+
+litelog is a set of service scripts I'm making which automatically record and log from devices when they are connected.  Voice recorder and sensor logs are copied off of android phones from a handful of supported apps.
+"""]]

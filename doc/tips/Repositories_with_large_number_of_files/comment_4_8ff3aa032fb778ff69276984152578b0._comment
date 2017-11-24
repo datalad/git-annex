@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 4"
+ date="2016-01-05T11:41:13Z"
+ content="""
+@umeboshi: Odd that you report your machine freezes during commits.. I find the exact opposite.. waiting for a long time with no load at all.
+
+My current setup for my sorting annex (where I import all the files off old HDDs) is to have the HDD plugged into my home server (Atom 330 @ 1.6Ghz) and import the files on a cloned (empty) annex. Doing so for 1.1M files (latest HDD) is a long wait, because 80% of the time is waiting for something to happen (but there being no load on the machine). Once that is done, the HDD is transferred to my desktop, where the annex is \"joined\" to the others and files are sorted in a dedicated VM[1], where commit times are reasonable.
+
+[1] Fully virtualising my desktop is possibly the best thing I've ever done, in terms of setup. Locking up any VM affects none of the others (which is handy, as I discovered an issue that causes X to almost hardlock whenever libvo is used..).
+"""]]

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 2"
+ date="2014-11-12T21:00:41Z"
+ content="""
+A new `git annex proxy` command was just added that allows safely running commands like `git revert` in a direct mode repsitory.
+
+So, you might do:
+
+    rm myfile # oops!
+    git annex sync
+    git annex proxy -- git revert HEAD
+    git annex get myfile
+
+The sync is needed to commit the deletion, and then that commit gets reverted. Finally, you can use git-annex get to download the file from some other repository that still has a copy. (Assuming you didn't delete the last copy.)
+"""]]

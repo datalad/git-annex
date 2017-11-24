@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ ip="192.76.7.217"
+ subject="comment 1"
+ date="2013-04-23T17:11:46Z"
+ content="""
+If I set my annex-ignore'd respository to `annex-sync = false` will this override the new behaviour?  My remote requires mounting a fuse mount, so this change will just result in my seeing lots of sync failure messages in the webapp.
+"""]]

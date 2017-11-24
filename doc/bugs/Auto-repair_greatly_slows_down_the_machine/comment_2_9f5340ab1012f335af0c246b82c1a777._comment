@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="EskildHustvedt"
+ ip="80.202.213.223"
+ subject="comment 2"
+ date="2014-02-27T14:16:11Z"
+ content="""
+That's the thing. The drive is fine, I've fscked it, and the machine is always shut down cleanly (and it is very stable, can't remember the last time it crashed). So there's no reason why this should be happening, and since git-annex doesn't say anything about why it started the auto-repair, I'm unable to track it down further.
+
+It's also always this repository. I have several assistant managed repos on the same machine, and this is the only one that git-annex regulary starts repairing (and the only one that it has auto-repaired on another box as well). No files in the repository itself has ever been noticed as corrupt, nor has there been any indications anywhere else about problems, hardware or filesystem (nothing wrong in the 40 or so git repos on the machine, no problems with software installed on the drive, never seen anything in dmesg).
+
+It's happening often enough for me to have to consider dropping use of the assistant. It could still be a problem with the machine (though it seems unlikely, given that it's consistently the same repo, and that it has done it with the same repo on other machines), but git-annex doesn't provide any information about it.
+
+Could you add some more information about what it thinks is wrong to the logging?
+
+Funnily enough, git-annex started repairing it again as I was writing this.
+"""]]

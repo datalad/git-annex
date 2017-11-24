@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnHRhCe3qwVKQ8_NOGGSYJnAMW6FFyKbOc"
+ nickname="Holger"
+ subject="comment 3"
+ date="2013-07-02T05:52:10Z"
+ content="""
+Thanks for your helpful response. The cleaning procedure that you propose is perfectly fine.
+
+I wasn't suggesting to put up a big warning sign; I just feel like the walkthrough would be a little smoother if it explained something like: hey, 'git annex add .' just moved all of your precious files to '.git/annex/' and renamed them in a way that may scare you. But don't worry: if, at any point, you want to get them out again and put them back in their original place, just run 'git annex unannex'.
+"""]]

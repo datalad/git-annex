@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.246"
+ subject="comment 2"
+ date="2013-11-16T17:23:02Z"
+ content="""
+.git/annex/tmp is not very interesting. It's a temporary file directory. When transferring a key's content, git-annex uses a stable filename, which allows resuming interrupted downloads, or cleaning up aborted downloads with `git annex unused`.
+"""]]

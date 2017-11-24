@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://mildred.fr/"
+ ip="82.247.184.53"
+ subject="Re: Fixing symlinks to the annex store in direct mode"
+ date="2014-07-16T07:04:08Z"
+ content="""
+What I said was just wrong. Instead of trying on tr.html, I tried with a copy of that file. But making the copy of that file had the wanted effect, transforming the symlink to the actual file. Probably the assistant monitoring file creation, and transforming indirect file to direct file. Or perhaps the `cp` command follows symlinks by default (I thought it didn't).
+"""]]

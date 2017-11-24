@@ -1,0 +1,67 @@
+Made a release on Friday. But I had to rebuild the OSX and Linux standalone
+builds today to fix a bug in them.
+
+Spent the past **three days** redoing the whole Android build environment.
+I've been progressively moving from my first hacked up Android build env to
+something more reproducible and sane. Finally I am at the point where I can
+run a shell script (well, actually, 3 shell scripts) and get an Android
+build chroot. It's still not immune to breaking when new versions of
+haskell libs are uploaded, but this is much better, and should be
+maintainable going forward. 
+
+This is a good starting point for getting git-annex into the F-Droid app
+store, or for trying to build with a newer version of the Android SDK and
+NDK, to perhaps get it working on Android 4.3. (Eventually. I am so sick
+of building Android stuff right now..)
+
+Friday was all spent struggling to get ghc-android to build. I had not built
+it successfully since February. I finally did,
+on Saturday, and I have made my own fork of it which builds using a
+known-good snapshot of the current development version of ghc. Building
+this in a Debian stable chroot means that there should be no possibility
+that upstream changes will break the build again.
+
+With ghc built, I moved on to building all the haskell libs git-annex
+needs. Unfortunately my build script for these also has stopped working
+since I made it in April. I failed to pin every package at a defined
+version, and things broke.
+
+So, I redid the build script, and updated all the haskell libs to the
+newest versions while I was at it. I have decided not to pin the library
+versions (at least until I find a foolproof way to do it), so this new
+script will break in the future, but it should break in a way I can fix up
+easily by just refreshing a patch.
+
+The new ghc-android build has a nice feature of at least being able to
+compile Template Haskell code (though still not run it at compile time.
+This made the patching needed in the Haskell libs quite a lot less. Offset
+somewhat by me needing to make general fixes to lots of libs to build with
+ghc head. Including some fun with `==#` changing its type from `Bool` to
+`Int#`. In all, I think I removed around 2.5 thousand lines of patches!
+(Only 6 thousand lines to go...)
+
+Today I improved ghc-android some more so it cross builds several C libraries
+that are needed to build several haskell libraries needed for XMPP.
+I had only ever built those once, and done it by hand, and very hackishly.
+Now they all build automatically too.
+
+And, I put together a script that builds the debian stable chroot and
+installs ghc-android.
+
+And, I hacked on the EvilSplicer (which is sadly still needed) to
+work with the new ghc/yesod/etc.
+
+At this point, I have git-annex successfully building, including the APK!
+
+----
+
+In a bored hour waiting for a compile, I also sped up `git annex add`
+on OSX by I think a factor of 10. Using cryptohash for hash calculation
+now, when external hash programs are not available. It's still a few
+percentage points slower than external hash programs, or I'd use it by
+default.
+
+----
+
+This period of important drudgery was sponsored by an unknown bitcoin
+user, and by Bradley Unterrheiner and Andreas Olsson.

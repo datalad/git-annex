@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ ip="72.0.72.144"
+ subject="this also affects ssh remotes"
+ date="2014-10-05T15:26:52Z"
+ content="""
+so i tried another experiment today: i tried to allow access to a remote user to my /srv/foo annex. the annex is writable by me, but not by the user, yet i was expecting the user to be able to sync with it. not push, mind you, but at least pull: in a \"git-only\" scenario, that would be perfectly possible. yet the assistant freaks out because it can't run git-annex on the repo because of a write failure on some pack files, and downgrades the repository to a \"git-only\" repo, which is also inaccurate: it can't sync the metadata either...
+
+i would have expected this repository to be marked as \"readonly\" and the user be capable of fetching new changes automatically from the \"central repo\".
+
+maybe that's the essence of the todo here... --[[anarcat]]
+"""]]

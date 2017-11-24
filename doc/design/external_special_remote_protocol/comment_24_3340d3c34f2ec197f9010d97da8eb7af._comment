@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="szrc"
+ subject="comment 24"
+ date="2016-04-05T01:18:53Z"
+ content="""
+Thanks for the response, Joey. It seems to me that many/most operations for which credentials are needed will require a gpg prompt anyway, but I can see why it might be too expensive in some cases.
+
+Anyway, if you ever saw fit to add the option to disable or limit local caching, I would definitely use it -- and I'm guessing I'm not the only one who would prefer not to store credentials in plaintext.
+
+Thanks for all of your great work on git-annex.
+"""]]

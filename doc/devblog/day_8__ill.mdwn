@@ -1,0 +1,20 @@
+I've been out sick. However, some things kept happening. Mesar contributed
+a build host, and the linux and android builds are now happening, hourly,
+there. (Thanks as well to the two other people who also offered hostng.)
+And I made a minor release to fix a bug in the test suite that I was pleased
+three different people reported.
+
+Today, my main work was getting git-annex to notice when a gcrypt remote
+located on some removable drive mount point is not the same gcrypt remote
+that was mounted there before. I was able to finesse this so it
+re-configures things to use the new gcrypt remote, as long as it's a
+special remote it knows about. (Otherwise it has to ignore the remote.)
+So, encrypted repos on removable drives will work just as well as
+non-encrypted repos!
+
+Also spent a while with rsync.net tech support trying to work out why
+someone's git-annex apparently opened a lot of concurrent ssh connections
+to rsync.net. Have not been able to reproduce the problem though.
+
+Also, a lot of catch-up to traffic. Still 63 messages backlogged however,
+and still not entirely well..

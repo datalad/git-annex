@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-07-11T16:23:57Z"
+ content="""
+Well, certinaly seems that hyperv is doing something to the environment
+that causes the problem. 
+
+I don't know anything about hyperv, so cannot venture an educated guess.
+But there are only three reasons that git-annex might not make hard links,
+assuming it's seeing the annex.thin setting:
+
+1. It thinks that the file already has a link count of more than 1.
+2. It tries to create a hard link, but that fails for some reason,
+   and so it falls back to a copy.
+3. It successfully creates a hard link, but code that tries to preserve
+   the mode of the file fails for some reason, and so it falls back to a
+   copy.
+
+Getting a `strace -v` might help narrow it down. Here for reference is a
+strace of the hard link successfully being made:
+
+	32624 stat(".git/annex/objects/P7/mF/SHA256E-s30--c5e0f3090f3658e908aa0a02bfc7eeb3e203c67c8ecd86c7acd501a32454ed6a/SHA256E-s30--c5e0f3090f3658e908aa0a02bfc7eeb3e203c67c8ecd86c7acd501a32454ed6a", {st_dev=makedev(8, 3), st_ino=3675012, st_mode=S_IFREG|0444, st_nlink=1, st_uid=1000, st_gid=1000, st_blksize=4096, st_blocks=8, st_size=30, st_atime=2016/07/11-12:30:25.203217806, st_mtime=2016/07/11-12:27:58.523091486, st_ctime=2016/07/11-12:30:25.207217809}) = 0
+	32624 link(".git/annex/objects/P7/mF/SHA256E-s30--c5e0f3090f3658e908aa0a02bfc7eeb3e203c67c8ecd86c7acd501a32454ed6a/SHA256E-s30--c5e0f3090f3658e908aa0a02bfc7eeb3e203c67c8ecd86c7acd501a32454ed6a", ".git/annex/misctmp/foo.0/foo") = 0
+	32624 stat(".git/annex/misctmp/foo.0/foo", {st_dev=makedev(8, 3), st_ino=3675012, st_mode=S_IFREG|0444, st_nlink=2, st_uid=1000, st_gid=1000, st_blksize=4096, st_blocks=8, st_size=30, st_atime=2016/07/11-12:30:25.203217806, st_mtime=2016/07/11-12:27:58.523091486, st_ctime=2016/07/11-12:30:49.819239094}) = 0
+	32624 stat(".git/annex/misctmp/foo.0/foo", {st_dev=makedev(8, 3), st_ino=3675012, st_mode=S_IFREG|0444, st_nlink=2, st_uid=1000, st_gid=1000, st_blksize=4096, st_blocks=8, st_size=30, st_atime=2016/07/11-12:30:25.203217806, st_mtime=2016/07/11-12:27:58.523091486, st_ctime=2016/07/11-12:30:49.819239094}) = 0
+	32624 chmod(".git/annex/misctmp/foo.0/foo", 0100644) = 0
+	32624 stat(".git/annex/objects/P7/mF/SHA256E-s30--c5e0f3090f3658e908aa0a02bfc7eeb3e203c67c8ecd86c7acd501a32454ed6a/SHA256E-s30--c5e0f3090f3658e908aa0a02bfc7eeb3e203c67c8ecd86c7acd501a32454ed6a", {st_dev=makedev(8, 3), st_ino=3675012, st_mode=S_IFREG|0644, st_nlink=2, st_uid=1000, st_gid=1000, st_blksize=4096, st_blocks=8, st_size=30, st_atime=2016/07/11-12:30:25.203217806, st_mtime=2016/07/11-12:27:58.523091486, st_ctime=2016/07/11-12:30:49.819239094}) = 0
+	32624 stat(".git/annex/misctmp/foo.0/foo", {st_dev=makedev(8, 3), st_ino=3675012, st_mode=S_IFREG|0644, st_nlink=2, st_uid=1000, st_gid=1000, st_blksize=4096, st_blocks=8, st_size=30, st_atime=2016/07/11-12:30:25.203217806, st_mtime=2016/07/11-12:27:58.523091486, st_ctime=2016/07/11-12:30:49.819239094}) = 0
+	32624 rename(".git/annex/misctmp/foo.0/foo", "foo") = 0
+"""]]

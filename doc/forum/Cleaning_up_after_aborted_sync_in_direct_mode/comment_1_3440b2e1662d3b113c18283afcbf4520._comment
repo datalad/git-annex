@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnkBYpLu_NOj7Uq0-acvLgWhxF8AUEIJbo"
+ nickname="Chris"
+ subject="comment 1"
+ date="2013-05-10T03:50:26Z"
+ content="""
+Maybe a simpler question: if I delete all the `.map` and `.cache` files that are leftover in the `.git/annex/objects` directory, will that effectively \"reset\" the status so that I can then switch to direct mode?
+"""]]

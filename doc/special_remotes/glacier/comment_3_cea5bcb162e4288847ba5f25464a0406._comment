@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmUJBh1lYmvfCCiGr3yrdx-QhuLCSRnU5c"
+ nickname="Justin"
+ subject="comment 3"
+ date="2013-05-19T05:56:45Z"
+ content="""
+Hi!  :)
+
+The main issue I'm hitting is the \"Multiple rows were found for one()\" error.  I think I get this when git-annex tries to upload the same file twice (which may be a bug in git-annex, which could apply de-duplication earlier), but I think I also get it when trying to upload a file whose upload I've canceled in the past.
+
+I don't quite understand what git-annex needs here, and I totally understand that you're writing a general-purpose tool.  But there does seem to be an issue that git-annex needs fixed one way or another.
+
+I'm happy to try fixing it myself if you can help me understand what's going on (I didn't quite understand your review in the PR), but if I'm the only person in the world using git-annex to back up to glacier, that scares me a little!
+
+    copy foo/bar/baz (checking glacier...) Traceback (most recent call last):
+      File \"/home/jlebar/code/glacier-cli/glacier\", line 694, in <module>
+        App().main()
+      File \"/home/jlebar/code/glacier-cli/glacier\", line 680, in main
+        args.func(args)
+      File \"/home/jlebar/code/glacier-cli/glacier\", line 579, in archive_checkpresent
+        last_seen = self.cache.get_archive_last_seen(args.vault, args.name)
+      File \"/home/jlebar/code/glacier-cli/glacier\", line 157, in get_archive_last_seen
+        result = self._get_archive_query_by_ref(vault, ref).one()
+      File \"/usr/local/lib/python2.7/dist-packages/sqlalchemy/orm/query.py\", line 2182, in one
+        \"Multiple rows were found for one()\")
+    sqlalchemy.orm.exc.MultipleResultsFound: Multiple rows were found for one()
+
+"""]]

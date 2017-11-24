@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmwjQzWgiD7_I3zw-_91rMRf_6qoThupis"
+ nickname="Mike"
+ subject="comment 14"
+ date="2014-06-18T22:51:28Z"
+ content="""
+As far as I know I am using the defaults, I didn't customize anything. I am thinking of switching to the WORM backend though as I think it will make things a little faster, but I haven't done that yet.
+
+Also, I actually compiled cabal-install with the ghc flag ``-rtsopts`` and git-annex with flags ``-rtsopts -with-rtsopts=-K1000m``. Due to the amount of memory available, I am not worried if git-annex leaks memory and uses 1GB of memory during operations, but I have been watching it with htop, and its memory usage is usually very small.
+
+
+"""]]

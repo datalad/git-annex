@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.90"
+ subject="comment 1"
+ date="2013-07-16T19:45:42Z"
+ content="""
+git-annex stores a clone of the git repository on the removable drive. To encrypt a git remote, you can use the [git-remote-gcrypt](https://github.com/blake2-ppc/git-remote-gcrypt) tool. This will work with git-annex, but it needs integration into the webapp to support setting it up, and further integration so git-annex can detect when a git remote is encrypted and also encrypt the contents of file is stores there.
+"""]]

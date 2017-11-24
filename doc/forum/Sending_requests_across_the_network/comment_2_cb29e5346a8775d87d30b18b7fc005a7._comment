@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 2"
+ date="2014-07-02T17:25:51Z"
+ content="""
+The network topology shown has only a S3 special remote connecting the two repositories. This only provides a place to store file contents, it does not allow syncing the contents of git repositories. 
+
+You need either XMPP(Jabber) for that, or a git remote on some other server. Once there is a way for the git repository to sync, the Home repository will see when Laptop is missing a file it wants (configured via the preferred content mentioned above), and upload it to S3.
+"""]]

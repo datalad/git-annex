@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 5"
+ date="2014-05-16T19:03:34Z"
+ content="""
+You have to run git-annex init before you can use other git-annex commands. I think if you run git annex initremote now, it will work.
+"""]]

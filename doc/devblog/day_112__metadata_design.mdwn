@@ -1,0 +1,18 @@
+There's a new design document for letting git-annex store arbitrary
+metadata. The really neat thing about this is the user can check out only
+files matching the tags or values they care about, and get an automatically
+structuted file tree layout that can be dynamically filtered. It's going to
+be awesome! [[design/metadata]]
+
+In the meantime, spent most of today working on Windows. Very good
+progress, possibly motivated by wanting to get it over with so I can spend
+some time this month on the above. ;)
+
+* webapp can make box.com and S3 remotes. This just involved fixing a hack
+  where the webapp set environment variables to communicate creds to
+  initremote. Can't change environment on Windows (or I don't know how to).
+* webapp can make repos on removable drives.
+* `git annex assistant --stop` works, although this is not likely to really
+  be useful
+* The source tree now has 0 `func = error "Windows TODO"` type stubbed out
+  functions to trip over.

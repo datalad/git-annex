@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-05-16T17:02:29Z"
+ content="""
+I don't have bandwidth to watch screencasts, so I can only guess.
+
+My first guess would be that you used `git add` to check the files into a git repository. This will exactly double the disk space, since each file is now stored in .git/ as well as in the working tree. This is a problem that git-annex solves.
+
+If you'd like to provide more information (cut and paste of details is useful), I can perhaps make more informed guesses. Or you could use `du` so see which files are taking up more space than you expect.
+"""]]

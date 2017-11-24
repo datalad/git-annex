@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-10-31T18:32:54Z"
+ content="""
+There have been some problems some time ago with the symlink bit getting
+lost on information in the git repository when git-annex makes commits
+on a FAT filesystem.
+
+That was resolved in early 2014, and there's a test case to make sure that
+particular problem doesn't come back, so make sure
+you are not using a git-annex version from before then.
+
+Please check that core.symlinks is set to false. Can check it by running
+`git config core.symlinks` and see if it outputs "false"
+
+I have tried to reproduce on FAT, `git annex drop` followed by `git annex
+sync`, does not seem to do anything to the symlink here. If you can
+reproduce such a thing happening, it's certianly a bug.
+"""]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn3p4i4lk_zMilvjnJ9sS6g2nerpgz0Fjc"
+ nickname="Matthias"
+ subject="Keep historical data, but delete data never referenced"
+ date="2014-10-26T12:06:25Z"
+ content="""
+Is there an easy solution for the following? There are two kinds of \"unused\" I would like to treat differently:
+
+1. Kind \"really unused\": Was added once to the annex, but symlink was never committed
+2. Kind \"only history\": A commit contains a symlink to the data, but no active branch
+
+I want to preserve \"only history\", and only drop \"really unused\". What is an elegant way to do this? Thanks for your suggestions.
+"""]]

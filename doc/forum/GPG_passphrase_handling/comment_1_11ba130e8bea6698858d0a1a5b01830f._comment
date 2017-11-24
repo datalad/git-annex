@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkzwmw_zyMpZC9_J7ey--woeYPoZkAOgGw"
+ nickname="dxtrish"
+ subject="comment 1"
+ date="2013-10-31T00:06:22Z"
+ content="""
+In fact I just tried this with a key without a passphrase and I STILL get:
+
+[2013-10-31 01:00:50 CET] Pusher: Syncing with rsync.net 
+gpg: no valid addressees
+gpg: [stdin]: encryption failed: no such user id
+
+In addition I also noticed a lot of:
+git-annex: fd:28: hPutBuf: resource vanished (Broken pipe)
+"""]]

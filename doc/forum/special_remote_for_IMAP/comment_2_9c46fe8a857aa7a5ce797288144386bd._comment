@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlFUH5H4OUj9vMJIoXQs8bheiptgANQ6fU"
+ nickname="lee"
+ subject="chunking"
+ date="2012-10-26T22:05:16Z"
+ content="""
+That's a good point. But the splitting could easily be added to the hooks, and wouldn't need to be built in to git-annex.
+"""]]

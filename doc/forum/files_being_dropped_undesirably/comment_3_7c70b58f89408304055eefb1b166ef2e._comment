@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="go8ose"
+ ip="203.26.118.202"
+ subject="comment 3"
+ date="2014-10-09T22:31:49Z"
+ content="""
+To answer my question about documentation on the 'groups' and 'wanted' features, I've found [[preferred_content]] and [[preferred_content/standard_groups]].
+
+In my case I've now setup my laptop to use group 'client' for the '.' repository. Similarly I've set 'client' on my desktop. I found my home server was already set to 'backup'. I still don't understand \"git annex\" well enough to know what's going on. I thought with these settings that running \"git annex get --auto\" on my laptop would have fetched all the files, but it didn't. A \"git annex get *\" is fetching all the files though, so I'm achieving what I want.
+"""]]

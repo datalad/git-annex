@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 16"
+ date="2015-07-05T15:00:46Z"
+ content="""
+Or I could not be an idiot and tell you the command specifically looking up a key for a file: lookupkey
+
+    ## git annex lookupkey CG\ Cookie/Compositing\ in\ Blender/01_CompositingInBlender_SourceFiles.zip 
+    SHA256E-s744506832--08d2daced60b5eb6509044d5eefca82e7a6899350f49adc0083014229739515e.zip
+
+So to get the backend (if the first component is always the backend):
+
+    ## git annex lookupkey CG\ Cookie/Compositing\ in\ Blender/01_CompositingInBlender_SourceFiles.zip | cut -d- -f1
+    SHA256E
+"""]]

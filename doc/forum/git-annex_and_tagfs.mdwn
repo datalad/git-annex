@@ -1,0 +1,14 @@
+Hi,
+
+Thanks for git-annex, really a great project.
+Another related feature which would be useful to have is described by tagfs [3][] [4][], experimental implementations such as [tagfs over fuse][1], and [tagsistant][2] exist, but having a solution within the power of git-annex would really be attractive.
+
+How hard would this be to implement within the existing infrastructure?
+Thanks.
+
+related post: [[multiple_sym_links___40__for_tagging_photos__41____63__]]
+
+[1]: http://code.google.com/p/tagfs/
+[2]: www.tagsistant.net/
+[3]: http://site.xam.de/2006/01-tagfs.pdf
+[4]: http://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=6&ved=0CE4QFjAF&url=http%3A%2F%2Fweb.mit.edu%2F6.033%2F2011%2Fwwwdocs%2Fwriting-samples%2Fsbezek_dp1.pdf&ei=ILQkUdqxMueR0QWgx4CwDw&usg=AFQjCNE1eWeFxmaxzOLZYVsb0tomqWNQaw&bvm=bv.42661473,d.d2k

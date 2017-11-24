@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnR7hb8IaKB3IKZptRukje0yahmhfLOO98"
+ nickname="Adam"
+ subject="comment 3"
+ date="2013-03-25T01:58:23Z"
+ content="""
+About the UI prompt for the webapp:
+
+> What's the difference between having git-annex available versus not?
+
+I can see from the UI that if you make it be a git repository, you get this:
+
+> All your data will be uploaded to the server, including the full git repository. This is a great choice if you want to set up other devices to use the same server, or share the repository with others.
+
+Versus an rsync repo:
+
+> The contents of your files will be stored, fully encrypted, on the server. The server will not store other information about your git repository. This is the best choice if you don't run the server yourself, or have sensitive data.
+
+Unfortunately I'm looking for a shared server (as per the git repo description), but **also fully encrypted** because I'll be storing sensitive data.
+"""]]

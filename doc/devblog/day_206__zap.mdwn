@@ -1,0 +1,83 @@
+Zap! ... My internet gateway was [destroyed by lightning](https://identi.ca/joeyh/note/xogvXTFDR9CZaCPsmKZipA).
+Limping along regardless, and replacement ordered.
+
+Got resuming of uploads to chunked remotes working. Easy!
+
+----
+
+Next I want to convert the external special remotes to have these nice
+new features. But there is a wrinkle: The new chunking interface works
+entirely on ByteStrings containing the content, but the external special
+remote interface passes content around in files.
+
+I could just make it write the ByteString to a temp file, and pass the temp
+file to the external special remote to store. But then, when chunking is
+not being used, it would pointlessly read a file's content, only to write
+it back out to a temp file.
+
+Similarly, when retrieving a key, the external special remote saves it to a
+file. But we want a ByteString. Except, when not doing chunking or
+encryption, letting the external special remote save the content directly
+to a file is optimal.
+
+One approach would be to change the protocol for external special
+remotes, so that the content is sent over the protocol rather than in temp
+files. But I think this would not be ideal for some kinds of external
+special remotes, and it would probably be quite a lot slower and more
+complicated.
+
+Instead, I am playing around with some type class trickery:
+
+[[!format haskell """
+{-# LANGUAGE Rank2Types TypeSynonymInstances FlexibleInstances MultiParamTypeClasses #-}
+
+type Storer p = Key -> p -> MeterUpdate -> IO Bool
+
+-- For Storers that want to be provided with a file to store.
+type FileStorer a = Storer (ContentPipe a FilePath)
+
+-- For Storers that want to be provided with a ByteString to store
+type ByteStringStorer a = Storer (ContentPipe a L.ByteString)
+
+class ContentPipe src dest where
+        contentPipe :: src -> (dest -> IO a) -> IO a
+
+instance ContentPipe L.ByteString L.ByteString where
+        contentPipe b a = a b
+
+-- This feels a lot like I could perhaps use pipes or conduit...
+instance ContentPipe FilePath FilePath where
+        contentPipe f a = a f
+
+instance ContentPipe L.ByteString FilePath where
+        contentPipe b a = withTmpFile "tmpXXXXXX" $ \f h -> do
+                L.hPut h b
+                hClose h
+                a f
+
+instance ContentPipe FilePath L.ByteString where
+        contentPipe f a = a =<< L.readFile f
+"""]]
+
+The external special remote would be a FileStorer, so when a non-chunked,
+non-encrypted file is provided, it just runs on the FilePath with no extra
+work. While when a ByteString is provided, it's swapped out to a temp file
+and the temp file provided. And many other special remotes are ByteStorers,
+so they will just pass the provided ByteStream through, or read in the
+content of a file.
+
+I think that would work. Thoigh it is not optimal for external special
+remotes that are chunked but not encrypted. For that case, it might be worth
+extending the special remote protocol with a way to say "store a chunk of
+this file from byte N to byte M".
+
+---
+
+Also, talked with ion about what would be involved in using rolling checksum
+based chunks. That would allow for rsync or zsync like behavior, where
+when a file changed, git-annex uploads only the chunks that changed, and the
+unchanged chunks are reused.
+
+I am not ready to work on that yet, but I made some changes to the parsing
+of the chunk log, so that additional chunking schemes like this can be added
+to git-annex later without breaking backwards compatability.

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~rubiojr"
+ nickname="rubiojr"
+ subject="git-annex PPA"
+ date="2013-01-15T14:16:35Z"
+ content="""
+Hey Joey,
+
+I do maintain a PPA with a more up2date version in fact:
+
+https://launchpad.net/~rubiojr/+archive/git-annex
+
+Now that the direct mode is in place, I guess it's probably a good time to backport again.
+
+Thanks for such a great piece of software.
+"""]]

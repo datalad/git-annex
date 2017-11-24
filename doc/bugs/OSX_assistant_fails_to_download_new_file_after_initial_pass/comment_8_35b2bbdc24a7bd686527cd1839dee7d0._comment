@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 8"
+ date="2014-07-16T22:23:50Z"
+ content="""
+Hmm, it looks to me like the transfer scan may not be getting run after the git branches get pulled. I would expect to see \"starting scan of\" in the debug log when it does that scan. Do you see that in the log?
+
+AIUI, when you click on Actions -> Sync Now in the webapp for the repository that contains the content, it gets downloaded right? That does the same scan that should be automatically run after a branch is pulled.
+"""]]

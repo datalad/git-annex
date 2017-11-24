@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.43"
+ subject="comment 4"
+ date="2014-01-18T15:42:59Z"
+ content="""
+git-annex sets core.bare=true for direct mode, but it also then sets annex.direct=true and so does not treat it as a bare mode repository. If you had eg, manually tried to change annex.direct to false, and left it in bare mode, that would explain everything.
+
+> git annex fix though now doesn't report any problems -- only 'ok', but none of those files mentioned 'ok' has a working symlink
+
+That is completely normal behavior; git annex fix does not care if the content is locally present or not; it just checks that the symlinks would point to it if it were present.
+
+(Fixed the partial function in dropunused.)
+"""]]

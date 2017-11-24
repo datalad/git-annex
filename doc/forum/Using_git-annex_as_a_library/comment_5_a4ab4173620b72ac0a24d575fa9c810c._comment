@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmkuFJVGp6WVvJtIV5JYb8IqN8mRvSGQdI"
+ nickname="Emilio Jesús"
+ subject="Would you accept a patch?"
+ date="2014-08-03T01:18:54Z"
+ content="""
+Dear Joey,
+
+I am also interested in using git-annex as a Haskell library, would you accept a patch to the .cabal file then?
+
+Thanks,
+Emilio
+"""]]

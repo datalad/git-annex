@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/5j.FKrMpxZS.luSB.5ahyosMU6RcaYq2#74c60"
+ nickname="Jarno"
+ subject="Proxy command"
+ date="2015-06-26T17:32:42Z"
+ content="""
+Have you tried the `git annex proxy --` command? Another way might be to just bypass the annex checks with `git -c core.bare=false`.
+Check <http://git-annex.branchable.com/direct_mode/> for details.
+"""]]

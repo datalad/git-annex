@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawleVyKk2kQsB_HgEdS7w1s0BmgRGy1aay0"
+ nickname="Milan"
+ subject="chunksize"
+ date="2013-06-07T09:09:56Z"
+ content="""
+Hi! Does this backend support chunksize option? If yes, is it possible to set it after the remote has been added to the repository?
+Thanks, Milan.
+"""]]

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="mca@8789632e0b00e8efb984c948c13d9de28665f534"
+ nickname="mca"
+ avatar="http://cdn.libravatar.org/avatar/758861fe4b6231b85e761a91d6f01a2e"
+ subject="https-only access, type=S3 port=443"
+ date="2017-01-05T13:10:43Z"
+ content="""
+(My own question, answered by Use The Source Luke method)
+
+If you need to point a `type=S3` special remote at a service which provides only https (in my case, a local CEPH RADOS gateway) then you can do it by setting `port=443`.
+
+This was implemented in 6fcca2f1 and next tag was 5.20141203 .  On Ubuntu, that version is available in Xenial but not Trusty.
+
+"""]]

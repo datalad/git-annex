@@ -1,0 +1,74 @@
+# Context: git annex "rules"
+
+First, I have to tell that `git-annex` is a big win so far (provided you have required git and other knowledge).
+
+My main use case for `git-annex` contains around 260,000 annexed files, for a total of 1.3 terabytes.
+
+Tried regular git on a subset of it and extrapolated.  Count 6-30 hours for simple operations like `git status`.  Plus huge space used for compressed copies of files.  All on current hardware: Intel i7 2.5GHz, 16GB RAM, hard disk raw performance 50-100+ MBytes/s.
+
+Using `git-annex` is a big win :
+
+* `git status` take not hours but about one to a few minutes (mostly thanks to decoupling voluntary data change and accidental data corruption and handling them at different times)
+* No space wasted.
+* "Just ask" push of data to remotes to maintain the required number of copies.
+* Easy fetch of missing data from remotes.
+* Corruption detection turns bad data into missing data which can just be fetched again.
+* Data is still there and readable without `git-annex` or even git.
+
+# Question
+
+**One to a few minutes for a `git status` is still long.  It is faster the second time (seconds) but still.  Can we reduce time for `git status` ?**
+
+
+
+This questions looks not `git-annex` specific.
+
+"Making `git status` fast is a git-level question".  In a sense it is, though `git-annex` repos are an extreme case of git-repository as they contain in most cases a lot of symlinks which look like small files at the filesystem level.
+
+Which makes the question more filesystem-level anyway, yet relevant to ask here.
+
+# Required features of a filesystem
+
+`git-annex` basically needs a filesystem that allows:
+
+* long file and directory names (hash in `.git/annex/objects` directory and file names)
+* long total paths
+* symlinks
+* hard links
+* unix permissions (to make hashed files immutable)
+
+More details e.g. on [day 188 crippled filesystem support](https://git-annex.branchable.com/design/assistant/blog/day_188__crippled_filesystem_support/)
+
+# Wished features of a filesystem
+
+Fast operations!
+
+Reiserfs, reiser4, btrs are said to be very efficient whe dealing with small files and symlinks thanks to [Block suballocation](https://en.wikipedia.org/wiki/Block_suballocation).
+
+# Question, restated.
+
+* Some users of `git-annex` will dedicate whole hard drives to `git-annex` repos, like I do.
+* Reading big files (from megabytes to gigabytes) from any decent filesystem implementation will yield similar performance.
+* Which leaves us to choose the filesystem based on safety and performance of reading a git repository with 100k to 1M symlinks.
+
+**Can anyone recommend a filesystem to use for fast git-annex level operations ?**
+
+## Anticipations
+
+Based on previous experience:
+
+* ext4: default choice, good.  Why chase for better?
+* "challenger filesystem X": might get better performance today (X=btrfs, X=reiser4)... or not. Might get dropped in the future (X=reiser4,X=btrfs). Might have bugs? All this might not be actually important, just do another git clone and reformat your drive to the new filesystem of the day.
+* btrfs: might waste a lot of space and actually have slower performance 
+* xfs?
+* a small and lightweight partition for metadata with a high performance filesystem and `.git/annex/objects` symlink to the big data-dedicated filesystem.  Might be better because of smaller head movements back and forth.  Size has to be decided in advance.
+
+Or perhaps all this is just nitpicking.
+
+Any thoughts?
+
+# References:
+
+* [Fast and slow symlinks - Unix & Linux Stack Exchange](http://unix.stackexchange.com/questions/147535/fast-and-slow-symlinks)
+* [Block suballocation - Wikipedia](https://en.wikipedia.org/wiki/Block_suballocation)
+* [git-annex across two filesystems](http://git-annex.branchable.com/forum/git-annex_across_two_filesystems/)

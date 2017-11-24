@@ -1,0 +1,15 @@
+I have no idea how to search for this here, so I'll just go the "lazy web" approach and just ask.
+
+Say I have two "conference" repos. One is the famous [conference procedings](https://github.com/RichiH/conference_proceedings) repo, and another one is a totally unrelated repo of local conferences that are not of world-wide significance. Let's call this second repo `presentations`.
+
+I would like to have my videos of both repos in a single repo.
+
+Can I add the `conference procedings` repo as a git remote to the `presentations` repo and have it do the right thing?
+
+In fact, I'm not even sure what the right thing would be here, I guess that's the first thing I would like to clear up. But I would like to do things like what the new [[metadata]] system does. For example, I would have only the "Debian" directory from `conference procedings` in my `presentations` repo.
+
+How would that work? Would I need to do some [subtree merging](http://git-scm.com/book/ch6-7.html) magic? or `git subtree`? or submodules? or should i just use myrepos and pretend I never brought up this idea?
+
+thanks! -- [[anarcat]]
+
+related: [[tips/migrating_two_seperate_disconnected_directories_to_git_annex/]] - but that creates a merged repo...

@@ -1,0 +1,9 @@
+Hi
+
+I created a git annex repo in one of my drives. But now all my files have turned into symbolic links.
+I need to remove the git repo and get my files back. How can I do that.
+
+Some of the softwares am using will not follow symbolic links, so need put the files back properly as soon as  possible.
+
+Please help.
+Thank you in advance :)

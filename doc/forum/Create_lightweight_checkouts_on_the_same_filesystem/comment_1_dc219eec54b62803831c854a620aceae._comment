@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="comment 1"
+ date="2017-07-20T17:47:42Z"
+ content="""
+Symbolic links point to `......./.git/annex/objects/.....`
+
+So, you can have them work by making your `.git/annex/objects` a link to the main repo's `.git/annex/objects`.
+
+    cd $mylightweightclone/.git/annex
+    mv objects objects.empty # move away but keep, just in case
+    ln -s $centralrepository/.git/annex/objects
+
+If the lightweight clone only performs read operations, I would expect things to work fine.
+
+I don't know if it can be dangerous to the health of your central repository besides that, so be careful.
+
+"""]]

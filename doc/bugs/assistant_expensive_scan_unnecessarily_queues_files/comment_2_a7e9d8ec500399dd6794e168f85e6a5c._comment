@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmXSkgjC_ypUQafVwvHTLsStrkiXH8CfHU"
+ nickname="Matthias"
+ subject="comment 2"
+ date="2014-06-13T18:30:25Z"
+ content="""
+Thanks for your fast reply, Joey. I appended the shortened config below. Wanted and groupwanted were untouched and therefore still commented out. I removed the hash from wanted to explicitly set it standard. Now the assistant behaves as expected. However I’m wondering:
+
+* Shouldn’t ‘standard’ be the default rule to apply for wanted/groupwanted in case both are not explicitly set in the config? I assumed this to be the case.
+* Shouldn’t “find --want-get” list the identical set of files that is also requested by the assistant? Especially this one confused me.
+
+[[!format sh \"\"\"
+# Repository trust configuration
+# (for macbook)
+#trust 3938865a-ce40-4166-a918-2012078846c7 = semitrusted
+
+# Repository groups
+# (for macbook)
+group 3938865a-ce40-4166-a918-2012078846c7 = manual
+
+# Repository preferred contents
+# (for macbook)
+#wanted 3938865a-ce40-4166-a918-2012078846c7 = standard
+
+# Group preferred contents
+# (Used by repositories with \"groupwanted\" in their preferred contents)
+(config defaults - all commented out)
+
+# Standard preferred contents
+(config defaults - all commented out)
+
+# Repository required contents
+# (for macbook)
+#required 3938865a-ce40-4166-a918-2012078846c7 = 
+
+# Scheduled activities
+# (for macbook)
+#schedule 3938865a-ce40-4166-a918-2012078846c7 = 
+\"\"\"]]
+"""]]

@@ -1,0 +1,27 @@
+Hello. I have been having some trouble with downloading podcasts. I have read the guide, but I was getting the following error message:
+
+```
+  verification of content failed
+
+  Unable to access these remotes: web
+
+  Try making some of these repositories available:
+  	00000000-0000-0000-0000-000000000001 -- web
+failed
+git-annex: get: 1 failed
+```
+I have tried several times. Some times it seemed to work, others it did not — it was not very structured, so I do not recall the details. Recently I recreated the entire stuff from scratch and was downloading files, and after I upgraded to 6.20160318 it stopped working and just gives me the error message above, after downloading the file.
+
+I tried looking up information about the web remote, but it mentions nothing about "making the web remote available" or something that I found to address this subject. So I am confused. What is wrong with my web repository? Why did it stop working? How can I fix it? How can I prevent this from happening in the future? Thank you.
+
+Here is the version information:
+
+```
+git-annex version: 6.20160318
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 6
+supported repository versions: 5 6
+upgrade supported from repository versions: 0 1 2 4 5
+```

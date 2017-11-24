@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="page"
+ subject="Some additional notes"
+ date="2016-02-28T11:44:39Z"
+ content="""
+Just to add some info here. I just started using git-annex and v6 sounded like the way to go. I tried to add my photo collection (around 50k files) and all operations take a huge amount of time. I did 'git add photos/' (to add them in unlocked mode), which took hours. Then I run 'git annex sync', which took >10h again to do the commit. After that i run 'git annex sync' from another remote, and it's syncing items at ~2/s (smudge processes as the op mentions, not blocked either by cpu nor io). I'm not sure if I'm doing something wrong, but this is completely unusable for me. I'm all ears if I can try something, otherwise I'm gonna give v5 a try, I guess.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.146"
+ subject="comment 1"
+ date="2014-03-05T20:45:32Z"
+ content="""
+The f-droid developers are willing to add git-annex in principle, their build environment just needs to have its build dependencies added to it. I've completely automated (except for occasional breakage due to changes on hackage) to setup of the necessary cross build environment. I have not had time to look into how to integrate that into the f-droid build system, and it would be great if someone with interest could do so.
+
+I suspect that setting up a custom f-droid repo would be just as much work, plus more work on an ongoing basis.
+"""]]

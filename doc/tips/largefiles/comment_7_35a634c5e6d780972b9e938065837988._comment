@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2017-03-20T21:18:24Z"
+ content="""
+Note that if annex.largefiles is set in git config (including global git
+config), it overrides the .gitattributes setting. So a reasonable guess
+would be that you set it in the git config.
+"""]]

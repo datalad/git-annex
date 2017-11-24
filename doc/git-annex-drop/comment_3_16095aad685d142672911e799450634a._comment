@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="zpeters"
+ avatar="http://cdn.libravatar.org/avatar/a8695228ff82f18c9a43c0763194c1cd"
+ subject="RE: choosing remotes and annex-cost-command"
+ date="2017-02-28T01:10:05Z"
+ content="""
+Finally got around to playing with this today figured i'd post an example for anyone looking fr this in the future.  Please forgive the TCL code if that isn't your thing.
+
+1. Adding the \"cost command\" to your remotes - Example here <https://gist.github.com/zpeters/d288531db95aa69a495944a261d17b1c>
+2. The actual script being referenced is really basic.  It's basically taking the name of the remote as an argument and depending on where i am it will give that remote a \"high\" or \"low\" cost.  Code here <https://gist.github.com/zpeters/89ba09289c89225ae5344e65c3562e6c>
+3. The cost script needs to know if I'm \"home\" or not.  Here is an example of \"whereami\" <https://gist.github.com/zpeters/cb8c2be53fd41b4d04a78fe81aaaea58>
+
+
+"""]]

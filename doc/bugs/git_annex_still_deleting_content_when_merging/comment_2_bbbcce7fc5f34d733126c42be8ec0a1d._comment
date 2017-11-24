@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmMLeU-zCzx2mc5pL2XT8a1UNkQwHAHjg8"
+ nickname="daniele"
+ subject="comment 2"
+ date="2014-07-22T01:47:29Z"
+ content="""
+> I am not familiar with the log syntax shown
+
+You mean the \"git log --stat\" part? Which git command would yield the most helpful syntax in this case?
+
+> AFAICS, the problem occurs on machine B. Which machine is the transcript from?
+
+Sorry I forgot to mention it: yes, it's from machine B.
+
+> Is this \"Removing\" message then printed out by another git command?
+
+Sorry I have no clue here. I didn't issue any git command from the terminal (nor did the user on computer A) if that was part of the question. It was all done in automatic.
+
+> Enabling debug logging would probably help a lot, to narrow that down the next time this occurs.
+
+Will do. I'll set 'annex.debug' to true in .git/config. Sadly, computer A is (a laptop) on vacation at the moment (well outside the local network), so I'll have to wait a couple of weeks to get back to debugging this. I'll have the logs with debug enabled when it happens again.
+
+Thanks again for your support and for developing git-annex.
+
+
+
+"""]]

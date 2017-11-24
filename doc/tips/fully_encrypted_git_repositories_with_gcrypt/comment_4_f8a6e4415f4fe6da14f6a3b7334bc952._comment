@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="tanen"
+ ip="83.128.159.25"
+ subject="comment 4"
+ date="2013-11-03T22:35:07Z"
+ content="""
+The way I would want to setup git-annex (assistant) is \"Wuala/Spideroak style\": two computers with a full checkout of the repository, changes automatically being synced between them, even if the two computers are never online simultaneously, and encryption should be done locally: the (special) remote should not be able to view file listings or content. 
+
+Do I understand it correctly that the gcrypt remote is the only way to make this happen? I tried to create such a setup via the webapp but failed. Adding the repository and remote (via \"Encrypt with GnuPG key\") on the first computer went OK*, but trying to enable that remote on the other computer fails: clicking enable asks me for the SSH password, but after that I just get redirected to a blank screen, with nothing to see in the logfile after the succesful call to ssh-keygen. No entry for the second computer is being added to authorized_keys on the remote.
+
+Perhaps this is because at this point the assistant is unable to actually parse the content of the encrypted repository? I tried importing the private key that was used while creating the repository on the other computer, but that made no difference.
+
+Thinking about this for a while, I believe gpg keys aren't actually particularly suited for this usecase. Even without the bug above, one would either have to awkwardly copy a private key to all hosts that are syncing to the repository; or, every time a new (or reinstalled) host wants to sync the repository, you would manually have to add the new keyid to the config and do the forced push + GCRYPT_FULL_REPACK, presumably having to reupload your entire history. Apart from this, having to backup a private key (outside of your git-annex based backups!) would be quite inconvenient.
+
+How would you feel about adding a new mode of operation where encryption is simply based on a passphrase? We could symetrically encrypt the repository with a keyfile that's stored in the repository itself, protecting the keyfile with a passphrase which - if stored at all - would be stored on the individual computers, outside of the repository.
+
+*although it erroneously used \"E0D2F776E7F674E3\" as key-id while the actual id is E7F674E3; where did that other half come from?
+"""]]

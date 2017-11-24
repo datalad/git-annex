@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4830:1600:187::2"
+ subject="comment 5"
+ date="2013-09-20T15:31:18Z"
+ content="""
+Ok. This seems to be a bug in git-annex then. While it's surprisingly difficult to do so, it tries to interpet preferred content expressions in a stable way -- that is, they should not want to get a file when it's missing and then want to drop it when it's present.
+"""]]

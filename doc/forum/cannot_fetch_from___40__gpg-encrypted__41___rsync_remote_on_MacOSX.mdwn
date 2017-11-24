@@ -1,0 +1,18 @@
+I have a remote rsync with gpg encryption and can restore without problems on my thinkpad (FreeBSD) - but not on my MacOSX:
+
+$ git annex whereis DSC_7615.JPG
+whereis DSC_7615.JPG (2 copies) 
+  	6855de17-c8fb-11e1-9948-f0def1c18073 -- thinkpad
+   	e388bcf6-c8fc-11e1-a96f-6ffcbceb4af4 -- backup (rsync xxxx)
+ok
+
+$ git annex get --from backup DSC_7615.JPG
+fatal: Could not switch to '../../../.git/annex/objects/Pw/XP/SHA256-s1028494--SHA256': No such file or directory
+
+git-annex: <file descriptor: 6>: hGetLine: end of file
+failed
+git-annex: get: 1 failed
+
+$ git annex version
+git-annex version: 3.20120629
+local repository version: 3

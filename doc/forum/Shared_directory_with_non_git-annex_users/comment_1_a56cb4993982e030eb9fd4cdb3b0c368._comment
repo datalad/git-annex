@@ -1,0 +1,50 @@
+[[!comment format=mdwn
+ username="http://xgm.de/oid/"
+ nickname="Florian"
+ avatar="http://cdn.libravatar.org/avatar/4c5c0e290374d76c713f482e41f60a3cbee0fa64bb94c6da94e5a61a50824811"
+ subject="comment 1"
+ date="2017-09-24T04:21:11Z"
+ content="""
+Ok, I tried it using ```GIT_DIR``` and ```GIT_WORK_TREE```:
+
+    Current directory is ~/git-annex, ./work exists and is populated with some files.
+
+    % GIT_DIR=~/git-annex/git GIT_WORK_TREE=~/git-annex/work git init
+    % GIT_DIR=~/git-annex/git GIT_WORK_TREE=~/git-annex/work git annex init \"server\"
+    % GIT_DIR=~/git-annex/git GIT_WORK_TREE=~/git-annex/work git annex direct
+    % GIT_DIR=~/git-annex/git GIT_WORK_TREE=~/git-annex/work git annex add .
+    [... file are addded ...]
+    % GIT_DIR=~/git-annex/git GIT_WORK_TREE=~/git-annex/work git annex sync
+    [... file are synced ...]
+    
+    % git clone git remote
+    % cd remote
+    % git annex init \"remote\"
+    % git annex sync
+    
+    
+    % git annex get a.out
+    get a.out
+      Unable to access these remotes: origin
+    
+      Try making some of these repositories available:
+            ed208c9f-a963-4000-a505-c3fe9dab0042 -- server [origin]
+    failed
+    git-annex: get: 1 failed
+    
+    
+    % git annex whereis a.out
+    whereis a.out (1 copy)
+            ed208c9f-a963-4000-a505-c3fe9dab0042 -- server [origin]
+    ok
+
+
+The remote is of course available, it's all local.
+
+What is still wrong?
+
+Thanks,
+Florian
+
+
+"""]]

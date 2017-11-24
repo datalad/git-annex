@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.22"
+ subject="comment 5"
+ date="2014-09-16T18:36:18Z"
+ content="""
+Note that --listen=address:port had to be removed.
+
+OTOH, the webapp can be run with a https certificate now, which makes remote access much more secure.
+
+The webapp will use HTTPS if it finds
+a .git/annex/privkey.pem and .git/annex/certificate.pem. Here's
+one way to generate those files, using a self-signed certificate:
+
+    openssl genrsa -out .git/annex/privkey.pem 4096
+    openssl req -new -x509 -key .git/annex/privkey.pem > .git/annex/certificate.pem
+
+"""]]

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkAUMhKOSkh9JaBA6xst3XxQIIsDEq5Zd4"
+ nickname="Ovidiu"
+ subject="Syncing not working :-/"
+ date="2014-05-17T19:52:33Z"
+ content="""
+Error log says:
+
+    git-annex-remote-skydrive is not installed in PATH (/Applications/git-annex.app/Contents/MacOS/bundle:/Applications/git-annex.app/Contents/MacOS/bundle:/Applications/git-annex.app/Contents/MacOS/bundle:/Applications/git-annex.app/Contents/MacOS/bundle:/Applications/git-annex.app/Contents/MacOS/bundle:/Applications/git-annex.app/Contents/MacOS/bundle:/Applications/git-annex.app/Contents/MacOS/bundle:/Applications/git-annex.app/Contents/MacOS/bundle:/usr/bin:/bin:/usr/sbin:/sbin)
+
+BUT I did a symlink, I even did 2 to 2 different locations that are in my path:
+
+    cd /Users/ovi/skydriveannex/
+    ln -sf `pwd`/git-annex-remote-skydrive /usr/bin/git-annex-remote-skydrive
+    ln -sf `pwd`/git-annex-remote-skydrive /opt/local/bin/git-annex-remote-skydrive
+"""]]

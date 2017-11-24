@@ -1,0 +1,9 @@
+<div .modal .fade #testmodal>
+  <div .modal-dialog>
+    <div .modal-content>
+      <div .modal-header>
+        <h3>
+          Testing server ...
+      <div .modal-body>
+        <p>
+          Checking ssh connection to the server. This could take a minute.

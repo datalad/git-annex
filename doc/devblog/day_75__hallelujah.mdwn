@@ -1,0 +1,8 @@
+I have seen the glory of the webapp running on Windows.
+
+One of the warp developers pointed me in the right direction and I
+developed a fix for the `recv` bug.
+
+My Windows and MSIE are old and fall over on some of the
+javascript, so it's not glorious enough for a screenshot. But large chunks
+of it do seem to work.

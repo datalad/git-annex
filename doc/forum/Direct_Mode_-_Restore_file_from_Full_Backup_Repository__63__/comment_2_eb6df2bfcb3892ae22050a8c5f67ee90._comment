@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmK0703vNSIQsP1mGf-4MAPnsBZiSc6yVo"
+ nickname="Emre"
+ subject="comment 2"
+ date="2014-09-25T19:25:06Z"
+ content="""
+Thanks Joeyh, of course i guess checking stuff in git would then lose my timestamps as in the previous post. I recommend, as a feature request, to make file recovery a bit easier if possible. I'm not a git expert and definitely wont use command line stuff for doing this on the long run, unless some more intuitive commands like \"git annex list-old-versions\" or \"git annex show-deleted\" and then \"git annex restore \"filename\" version_no  etc.
+"""]]

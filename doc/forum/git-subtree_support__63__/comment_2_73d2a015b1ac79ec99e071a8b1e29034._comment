@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://peter-simons.myopenid.com/"
+ ip="77.188.44.113"
+ subject="comment 2"
+ date="2012-01-03T18:11:37Z"
+ content="""
+The point of git-subtree is that I can import another repository into sub-directory, i.e. I can have a directory called \"work\" that contains all files from the annex I have at work. If I make the other annex a remote and merge its contents, then all contents is going to be merged at the top-level, which is somewhat undesirable in my particular case.
+"""]]

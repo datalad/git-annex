@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.81.112"
+ subject="comment 1"
+ date="2012-05-29T19:09:50Z"
+ content="""
+`git annex sync` only syncs git metadata, not file contents, and metadata is not stored on S3, so it does notthing (much).
+
+`git annex move . --to s3` or `git annex copy . --to s3` is the right way to send the files to S3. I'm not sure why you say it's not working. I'd try it but Amazon is not letting me sign up for S3 again right now. Can you show what goes wrong with copy?
+"""]]

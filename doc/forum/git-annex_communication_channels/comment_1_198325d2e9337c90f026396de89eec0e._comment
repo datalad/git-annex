@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2011-03-28T15:48:08Z"
+ content="""
+No matter what you end up doing, I would appreciate a git-annex-announce@ list.
+
+I really like the persistence of ikiwiki, but it's not ideal for quick communication. I would be fine with IRC and/or ML. The advantage of a ML over ikiwiki is that it doesn't seem to be as \"wasteful\" to mix normal chat with actual problem-solving.  But maybe that's merely my own perception.
+
+Speaking of RSS: I thought I had added a wishlist item to ikiwiki about providing per-subsite RSS feeds. For example there is no (obvious) way to subscribe to changes in http://git-annex.branchable.com/forum/git-annex_communication_channels/ .
+
+FWIW, I resorted to tagging my local clone of git-annex to keep track of what I've read, already.
+
+
+-- RichiH
+"""]]

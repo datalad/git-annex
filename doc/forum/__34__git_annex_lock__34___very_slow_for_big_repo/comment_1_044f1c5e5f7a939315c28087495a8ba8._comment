@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="fixed"
+ date="2011-05-31T18:51:13Z"
+ content="""
+Running `git checkout` by hand is fine, of course.
+
+Underlying problem is that git has some O(N) scalability of operations on the index with regards to the number of files in the repo. So a repo with a whole lot of files will have a big index, and any operation that changes the index, like the `git reset` this needs to do, has to read in the entire index, and write out a new, modified version. It seems that git could be much smarter about its index data structures here, but I confess I don't understand the index's data structures at all. I hope someone takes it on, as git's scalability to number of files in the repo is becoming a new pain point, now that scalability to large files is \"solved\". ;)
+
+Still, it is possible to speed this up at git-annex's level. Rather than doing a `git reset` followed by a git checkout, it can just `git checkout HEAD -- file`, and since that's one command, it can then be fed into the queueing machinery in git-annex (that exists mostly to work around this git malfescence), and so only a single git command will need to be run to lock multiple files.
+
+I've just implemented the above. In my music repo, this changed an lock of a CD's worth of files from taking ctrl-c long to 1.75 seconds. Enjoy!
+
+(Hey, this even speeds up the one file case greatly, since `git reset -- file` is slooooow -- it seems to scan the *entire* repository tree. Yipes.)
+"""]]

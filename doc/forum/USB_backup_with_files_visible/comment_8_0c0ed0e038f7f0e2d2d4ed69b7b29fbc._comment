@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmNu4V5fvpLlBhaCUfXXOB0MI5NXwh8SkU"
+ nickname="Adam"
+ subject="comment 8"
+ date="2013-11-03T01:13:26Z"
+ content="""
+Thanks for the explanation, Joey.  I just posted a [comment](http://git-annex.branchable.com/bugs/Unnecessary_remote_transfers/#comment-f7110e694a9951d8ab546b8dec568bfa) about this on the bug report too.  Maybe the problem is simply that the Removable Drive option doesn't allow using internal, non-removable drives.
+
+BTW, I don't know if this is relevant, but I only see one \"git-annex assistant\" process running.
+"""]]

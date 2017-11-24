@@ -1,0 +1,60 @@
+Help make git-annex better!
+
+## wiki gardening
+
+This website is a wiki, so you can edit and improve any page.
+
+Or, write a [[new_tip|tips]] explaining how to accomplish something with
+git-annex.
+
+## advanced wiki editing
+
+To make larger changes to the website, you can 
+`git clone git://git-annex.branchable.com/ git-annex` and will find the
+whole website source in `doc/`.
+
+You can even `git push` doc-only changes back without authentication,
+since it is a wiki!
+
+## bug triage
+
+People often file [[bugs]] on git-annex that are easily resolved by helping
+them with a problem, and perhaps writing some documentation.
+
+Many bugs are also filed without enough information
+to reproduce the problem, and need to be tagged moreinfo and a comment
+posted asking the submitter for details.
+
+Joey spends a lot of time dealing with this kind of bug triage. If you can
+take the time to pick a bug that is not marked as "confirmed" or "moreinfo"
+from the list of [[bugs]], try to reproduce it and follow up either
+confirming that the problem exists, or asking the submitter for more info,
+you'll make Joey more productive!
+
+## code contributions
+
+[[download]] the source code, [[build|install/fromsource]] it
+and send patches!
+
+If you know Haskell, git-annex has lots of Haskell code that
+could be improved. See the [[coding_style]] and have at it.
+
+If you don't know Haskell, git-annex has many other coding opportunities.
+You could work to improve the Android port (Java etc) or improve the
+Javascript and CSS of the git-annex webapp, or work on porting libraries
+needed by the Windows port.
+
+To send patches, either include the patch in a [[bug|bugs]] report (small
+patch) or put up a branch in a git repository containing your changes.
+
+## learning some Haskell
+
+Want to learn some Haskell to get hacking on git-annex?
+
+As Haskell programs go, git-annex does not use too many advanced features.
+[Learn You A Haskell](http://learnyouahaskell.com/) will teach you enough
+to get started.
+
+Of course git-annex does use monads, and particularly the `Annex``monad
+which gives access to its state about the git repository as well as
+lower-level IO.

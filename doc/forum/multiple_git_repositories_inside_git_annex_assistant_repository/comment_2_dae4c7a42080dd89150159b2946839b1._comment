@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 2"
+ date="2014-10-12T17:30:23Z"
+ content="""
+This is fundamentally not a good idea. All  it takes is one conflict inside the .git directories, and your git repositories will be trashed/corrupted. The page you link to has comments explaining why.
+"""]]

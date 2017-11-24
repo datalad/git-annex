@@ -1,0 +1,54 @@
+I've done a `git annex add` and `git commit` on my annex which included some files I don't want to add to the annex. I've tried to reverse it all out, but whenever I `git annex add` something, the unwanted files show up in the git-annex branch.
+
+    git init forgetmenot
+    cd forgetmenot
+    git commit -m "create" --allow-empty
+    git annex init fmn
+    
+    echo 'foo' > foo
+    echo 'bar' > bar
+    
+    git annex add
+    git commit -m "add foo"
+    
+    git log --oneline --name-only
+    # 28634c0 add foo
+    # bar
+    # foo
+    # 4a87050 create
+
+    git log --oneline --name-only git-annex
+    74e6969 update
+    41d/a26/SHA256E-s4--b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c.log
+    a70/4a5/SHA256E-s4--7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730.log
+    95285ed update
+    uuid.log
+    2135e07 branch created
+
+If you now try to get git-annex to forget by reverting *master* and *git-annex* and only adding/commiting *foo*, the master branch ends up correct, but git-annex magically remembers *bar*!
+
+    git reset --hard HEAD^
+    git branch -f git-annex git-annex^
+
+    echo 'foo' > foo
+    git annex add
+    git commit -m "add foo"
+
+    git log --oneline --name-only
+    # 1b4889e add foo
+    # foo
+    # 4a87050 create
+
+    git log --oneline --name-only git-annex
+    # 3d0b9bc update
+    # 41d/a26/SHA256E-s4--b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c.log
+    # a70/4a5/SHA256E-s4--7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730.log
+    # 2e17a19 update
+    # uuid.log
+    # 646776b branch created
+
+How is git-annex remembering this and how can I get it to completely forget?
+
+I have tried `git gc --aggressive --prune=all`, `git annex fsck --all` and `git annex drop unused` but somehow, git-annex is remembering bar existed.
+
+This is an exercise in micro-managing the git-annex branch a bit, but this situation does also cause git-annex to complain about the missing files on fsck (0 out of 2 copies) so it isn't just being a control freak! Honest! :)

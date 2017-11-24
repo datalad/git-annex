@@ -1,0 +1,7 @@
+Hello,
+
+I'm new to git-annex and I would like to know which is the best method to deploy it for my case. I would like to have a central repo in my Synology NAS but with files to be able to browse files (not a bare repo). This repo will not have remotes configured. The mobile clients will use the central repo to exchange files. I thinks that this setup is totally valid x-D. Now my question is more related to how to share the repo in the Synology NAS. I am considering to use cifs/webdav for LAN/WAN access to the repo or SSH for LAN/WAN access. Which is the recommended setup? Which is the most optimum setup in terms of bandwidth or cpu usage (the CPU of my synology NAS is ARM). Thanks in advance and for this great piece of software!
+
+Best regards,
+
+Christian

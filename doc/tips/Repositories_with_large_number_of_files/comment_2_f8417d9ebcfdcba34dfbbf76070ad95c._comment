@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-09-22T16:51:51Z"
+ content="""
+As writing the index file becomes the bottleneck, turning on split index
+mode might be a help as well. See git-update-index's man page.
+"""]]

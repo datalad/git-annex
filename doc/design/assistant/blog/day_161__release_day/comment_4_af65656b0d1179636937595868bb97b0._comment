@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="comment 4"
+ date="2013-01-03T22:33:54Z"
+ content="""
+Usecase:
+Keep two directories in sync on the same computer.
+
+\"Removable drive\" almost covers this, except you need an usb thumbdrive 
+permanently plugged into the computer.
+
+Would be nice, if I could select a \"sync to this local folder\" option 
+alongside the \"Select drive:\" option.
+
+So it is my choice if I want to sync to a partition or to a folder.
+
+Bug(?):
+I created two repositories:
+/mnt/dxd/annex 
+/mnt/dxd/annex2
+
+And I added a \"Removable drive\" syncing option to /mnt/dxd/annex2, and I selected the \"/mnt/dxd\" drive as removable drive.
+The two repositories got mixed together 
+(ie. broken symlinks pointing to nonexistent .git/annex/objects/.. file)
+
+Best, 
+ Laszlo
+
+"""]]

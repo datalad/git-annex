@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2014-10-20T15:40:38Z"
+ content="""
+Right. In the meantime, I've fixed the behavior of vicfg when deleting
+lines, so it resets them to the default automatically.
+"""]]

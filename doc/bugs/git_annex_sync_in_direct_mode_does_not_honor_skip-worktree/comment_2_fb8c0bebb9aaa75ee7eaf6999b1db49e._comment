@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="EvanDeaubl"
+ ip="12.130.123.174"
+ subject="comment 2"
+ date="2013-05-31T13:38:43Z"
+ content="""
+I share the concerns about the semi-deprecated status, although it's probably safer than they make it sound in the man page. The git test suite for sparse checkouts uses the same command to find files with skip-worktree set, and there are other tools that use it as well (magit being one example). The git maintainers couldn't remove it, or even fully deprecate it for eventual removal. It's been semi-deprecated for almost 3 years.
+
+I have a patch that fixes `git annex sync` and `git annex get` (it retrieved files marked skip-worktree) and it passes `git annex test`, but I'm going to more rigorously test it out on my particular use case before calling it good. When it is ready, I didn't see instructions on how you would like patches submitted anywhere in the wiki. How would you like to receive it?
+"""]]

@@ -1,0 +1,55 @@
+### Please describe the problem.
+
+I have got data which I was trying to add to an existing annex.  Unfortunately I have missed first that some files were not having write permissions so initial 'annex add' failed with similar to below messages, so I have pruned misctmp, adjusted permissions and have tried to add again -- but the same error keeps coming back
+
+[[!format sh """
+% chmod +w -R S1/DDA-Freeviewing/surf2anat
+
+% ls -l S1/DDA-Freeviewing/surf2anat/S1_run1_lh*
+-rw-r----- 2 yoh retino 241147956 Feb 28 21:46 S1/DDA-Freeviewing/surf2anat/S1_run1_lh_process_surf.nii.gz
+
+% rm -rf .git/annex/misctmp/*
+zsh: sure you want to delete all the files in /mnt/datasets/mikemp/data-annex/.git/annex/misctmp [yn]? y
+
+% git annex add S1/DDA-Freeviewing/surf2anat/S1_run1_lh_process_surf.nii.gz
+add S1/DDA-Freeviewing/surf2anat/S1_run1_lh_process_surf.nii.gz
+git-annex: .git/annex/misctmp/S1_run1_lh1804289383846930886: rename: permission denied (Permission denied)
+failed
+git-annex: add: 1 failed
+
+% ls -l S1/DDA-Freeviewing/surf2anat/S1_run1_lh*
+-r--r----- 2 yoh retino 241147956 Feb 28 21:46 S1/DDA-Freeviewing/surf2anat/S1_run1_lh_process_surf.nii.gz
+
+% git annex version
+git-annex version: 6.20160307+gitgb095561-1~ndall+1
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository versions: 5 6
+upgrade supported from repository versions: 0 1 2 4 5
+
+
+% rm -rf .git/annex/misctmp/*
+zsh: sure you want to delete all the files in /mnt/datasets/mikemp/data-annex/.git/annex/misctmp [yn]? y
+
+% chmod +w -R S1/DDA-Freeviewing/surf2anat
+
+% git annex add --debug S1/DDA-Freeviewing/surf2anat/S1_run1_lh_process_surf.nii.gz
+[2016-03-10 10:15:22.578786] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--others","--exclude-standard","-z","--","S1/DDA-Freeviewing/surf2anat/S1_run1_lh_process_surf.nii.gz"]
+[2016-03-10 10:15:22.583854] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","check-attr","-z","--stdin","annex.backend","annex.numcopies","annex.largefiles","--"]
+[2016-03-10 10:15:22.584443] read: git ["--version"]
+[2016-03-10 10:15:22.588703] process done ExitSuccess
+add S1/DDA-Freeviewing/surf2anat/S1_run1_lh_process_surf.nii.gz [2016-03-10 10:15:23.186056] read: sha256sum [".git/annex/misctmp/S1_run1_lh1804289383846930886"]
+[2016-03-10 10:15:24.611133] process done ExitSuccess
+
+git-annex: .git/annex/misctmp/S1_run1_lh1804289383846930886: rename: permission denied (Permission denied)
+failed
+[2016-03-10 10:15:24.648808] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff","--name-only","--diff-filter=T","-z","--","S1/DDA-Freeviewing/surf2anat/S1_run1_lh_process_surf.nii.gz"]
+git-annex: add: 1 failed
+% ls -l .git/annex/misctmp/S1_run1_lh1804289383846930886
+-r--r----- 2 yoh retino 241147956 Feb 28 21:46 .git/annex/misctmp/S1_run1_lh1804289383846930886
+
+"""]]
+
+[[!meta author=yoh]]

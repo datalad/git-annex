@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmYiJgOvC4IDYkr2KIjMlfVD9r_1Sij_jY"
+ nickname="Douglas"
+ subject="setup: standalone/macos/git-annex.app/Contents/Info.plist: does not exist"
+ date="2012-10-06T14:46:55Z"
+ content="""
+I tried installing with cabal and homebrew on Mountain Lion. After cabal install git-annex I get:
+
+    Linking dist/build/git-annex/git-annex ...
+    Installing executable(s) in /Users/dfc/.cabal/bin
+    setup: standalone/macos/git-annex.app/Contents/Info.plist: does not exist
+    cabal: Error: some packages failed to install:
+    git-annex-3.20121001 failed during the final install step. The exception was:
+    ExitFailure 1
+
+
+There is no directory named macos inside of standalone:
+
+    jumbo:git-annex-3.20121001 dfc$ ls -l standalone/
+    total 112
+    -rw-r--r--+ 1 dfc  staff  55614 Oct  6 10:40 licences.gz
+    drwxr-xr-x+ 6 dfc  staff    204 Oct  6 10:40 linux
+    drwxr-xr-x+ 3 dfc  staff    102 Oct  6 10:40 osx
+
+"""]]

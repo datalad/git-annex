@@ -1,0 +1,24 @@
+Hi,
+
+I store lots of books under annex and every once in a while one of them gets updated and I don't really want to keep the old version. I know about the `unused` subcommand but it makes a bit difficult to identify what I would be dropping. I mean, at the point in time when I'm replacing a file I already know I don't want to keep in the annex, maybe there is a method that directly referrs to that file instead of globally garbage collecting obscurely named files. Now, this is what comes to my mind:
+
+Alternative a
+
+1. git-annex drop f
+2. git rm f
+3. mv new-f f
+4. git-annex add f
+
+Alternative b
+
+1. git-annex unlock f
+2. mv new-f f
+3. git-annex add f
+4. git commit -am blah
+5. git checkout HEAD^
+6. git-annex drop f
+7. git checkout master
+
+As you can see neither option is that pretty. Is there any way to say 'drop f in revision r' or something similar?
+
+Thank you!

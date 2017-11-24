@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-02-10T16:11:09Z"
+ content="""
+This is because aria2c detects it's not outputting to a terminal, so it
+stops using \r for progress displays. You can get the same effect by piping
+aria2c to less. There does not seem to be any switch to force console-style
+output.
+
+The only solution would be the complexity of making git-annex use a pty
+internally, or just not showing aria2c progress output (or not intercepting
+it for metering).
+"""]]

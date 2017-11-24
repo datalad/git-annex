@@ -1,0 +1,45 @@
+there's a lot of good documentation on this wiki, but it's hard to find sometimes. it's also unclear if we should look in the [[git-annex]] manpage or elsewhere in the wiki or where. this is a typical problem with the use of wikis for documentation: it's there, but hard to find. it doesn't mean a wiki shouldn't be used but, as with any user manual, special care needs to be taken about structure, organisation and making sure the manual is exhaustive.
+
+a good example of this problem is [[todo/document_standard_groups_more_extensively_in_the_UI]]. --[[anarcat]]
+
+update: a beginning of this may be the the [[workflow]] page but it lacks a lot of details... 
+
+So we have those entry points so far:
+
+  * [[git-annex]] - the manpage
+  * [[walkthrough]] - "A walkthrough of some of the basic features of git-annex, using the command line", described as "only one possible workflow for using git-annex"
+  * [[assistant]] - a whole subtree of pages describing the assistant, includes a [[assistant/quickstart]] - introduction to the assistant with a series of screenshots, described in [[walkthrough]] as "If you don't want to use the command line, see quickstart instead.", linked from the [[assistant]] page
+  * [[workflow]] - a summary of the different workflows that git-annex can use
+  * [[special remotes]] - a good list of "supported backends", which may be a better wording
+  * inversely, [[not]] is what is *not* supported, obviously
+  * [[install]] - how to install git-annex, of course
+  * [[tips]] - a mish-mash list of "how to do X in git-annex", 68 pages at the time of writing
+  * there's the "details" section on the frontpage which covers lots of the [[internals]], [[design]] and so on
+  * there are also what i consider to be "leaf" pages like [[how it works]] or [[sync]] there
+
+So it seems the fundamentals of such a user guide are there. It's just a matter of grouping this in a meaningful way.
+
+I am thinking the following structure may be a good basis:
+
+ * Introduction
+   * [[how it works]]?
+   * ...?
+ * [[Install|install]]
+ * Walkthrough
+   * [[comandline|walkthrough]]
+   * [[graphical|assistant/quickstart]]?
+ * How do I...
+   * [[Supported backends|special remotes]]
+   * [[Unsupported features|not]]
+   * [[split repositories|tips/splitting_a_repository]]
+   * [[merge repositories|tips/migrating_two_seperate_disconnected_directories_to_git_annex]]
+   * deal with lots of files: [[tips/Repositories_with_large_number_of_files]] or merge into [[scalability/]]?
+   * decide which files go where? something about [[preferred_content]] and [[preferred_content/standard_groups/]]?
+   * sort and regroup the best [[tips]] pages
+ * Troubleshooting / FAQ?
+   * [[Common mistakes|tips/antipatterns]]
+   * sort out the best of [[forums]] and [[tips]] that commonly occur
+ * [[Design]]
+   * [[internals]]
+   * [[encryption]]
+   * ... etc - all the developer stuff users shouldn't usually have to know unless they care about performance or need to reimplement something

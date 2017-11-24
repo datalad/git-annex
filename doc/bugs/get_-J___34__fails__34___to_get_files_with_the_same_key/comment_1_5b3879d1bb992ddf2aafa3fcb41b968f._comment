@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-09-29T16:47:18Z"
+ content="""
+The only way I can see to improve this would be to keep track of which
+keys already have a thread working on them, and avoid a second thread
+working on the same key.
+
+I've started this in the avoid-dup-threads branch.
+
+Getting key information to commandAction would be quite the plumbing job;
+there are something like 50 call sites.
+
+More difficult, the key is not known yet when commandAction is called in a
+lot of cases, and looking up the key redundantly will slow down all
+git-annex scanning. Seems that nontrivial changes would be needed to every
+command.
+"""]]

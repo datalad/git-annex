@@ -1,0 +1,22 @@
+Built out the XMPP push notifier; around 200 lines of code.
+Haven't tested it yet, but it just might work. It's in the `xmpp` branch
+for now.
+
+I decided to send the UUID of the repo that was pushed to, otherwise
+peers would have to speculatively pull from every repo. A wrinkle in this
+is that not all git repos have a git-annex UUID. So it might notify that
+a push was sent to an unidentified repo, and then peers need to pull from
+every such repo. In the common case, there will only be one or a few such
+repos, at someplace like at github that doesn't support git-annex. I could
+send the URL, but there's no guarantee different clients have the same
+URLs for a git remote, and also sending the URL leaks rather more data than
+does a random UUID.
+
+Had a bit of a scare where it looked like I couldn't use the haskell
+`network-protocol-xmpp` package together with the `mtl` package that
+git-annex already depends on. With help from #haskell I found the way
+to get them co-existing, by using the PackageImports extension. Whew!
+
+Need to add configuration of the XMPP server to use in the webapp, and
+perhaps also a way to create `.git/annex/creds/notify-xmpp` from the
+command line.

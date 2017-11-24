@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.55"
+ subject="comment 2"
+ date="2014-07-04T17:58:10Z"
+ content="""
+If you run git-annex with the --debug flag, you can see the git command that is presumably what is failing. You could then probably run the same git command manually and see if it fails that way too.
+
+Does your git repository have a large pack file (in `.git/objects/pack`) as mentioned in the msysgit bug report?
+"""]]

@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-12-11T15:08:30Z"
+ content="""
+The first failure is git-annex sending MKCOL (make directory basically).
+The server fails with "Unauthorized". You say it also made the directory.
+That's got to be a bug in the server, no? It can't sanely have an
+authorization problem and also go on and do the unathorized action.
+(Sounds rather like a security hole..)
+
+As to the PUT failure, the chunked transfer encoding mentioned in that
+comment is a regular part of the HTTP protocol (this is not connected
+to git-annex's own chunking).
+<https://en.wikipedia.org/wiki/Chunked_transfer_encoding>
+
+Looks like this PHP webdav server might be delegating the actual HTTP
+to whatever web server it's running on somehow. Since chunked transfer
+encoding might not be supported by some web server, they are left trying to
+detect that. I don't know if their check for that is accurate.
+
+As to the implementation in git-annex,
+Network.Http.Client.RequestBodyStreamChunked is documented to be the only
+thing that causes a chunked request body to be sent, and git-annex is using
+RequestBodyLBS instead. Unless the documentation is wrong (and I also 
+looked at the http-client source code and the documentation seems accurate),
+I am doubtful that the chunked transfer encoding is actually being used by
+git-annex. If eg a protocol dump shows that it is in fact using chunked
+transfer encoding (ie, contains "Transfer-Encoding: chunked"),
+that would be grounds to file a bug on the http-client library.
+
+Aah, but.. git-annex is sending an empty file. And the webdav server's
+check consists of reading 1 byte. 
+Of course there's not a byte to read if an empty file is being sent!
+So that code you showed is certianly buggy.
+
+I've changed git-annex to send a non-empty file when testing the webdav
+server to work around this.
+"""]]

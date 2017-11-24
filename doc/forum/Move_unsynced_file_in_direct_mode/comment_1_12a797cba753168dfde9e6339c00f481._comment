@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-09-18T18:27:37Z"
+ content="""
+Well, you can run `git annex assistant` or `git annex watch` and it will automatically notice the moved file and commit it. I think this is what you were trying to do when you set annex.autocommit to true (which is the default so accomplished nothing).
+
+But your example does show a bug: `git annex add` should add the dangling symlink to git in direct mode, as it already does in indirect mode. Fixed in [[!commit 44e7d6e1fe6e13091adbd572f66412e3601df3c5]].
+"""]]

@@ -1,0 +1,56 @@
+Not sure if this is a bug or user error. I'm trying to use git-annex on Windows 2008 R2, but it isn't working for me. Works fine on Linux. I have a local git repo and then added some binary files to annex. Then I used git annex sync --content to push ennex'd files up to git server. Then I can clone that repo and sync again to pull all the files down. On windows I just get error messages when I try to clone the repo and use annex to init or sync.
+
+git version: 1.8.0.msysgit.0
+git-annex version:
+git-annex version: 5.20150710-g8fd7052
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV DNS Feeds Quvi TDFA TorrentP
+arser
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E MD5E SHA256 SHA1 SHA51
+2 SHA224 SHA384 SKEIN256 SKEIN512 MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook extern
+al
+local repository version: unknown
+supported repository version: 5
+upgrade supported from repository versions: 2 3 4
+
+If I try to init the cloned repo:
+
+$ git-annex init
+init  Unknown option: --literal-pathspecs
+usage: git [--version] [--exec-path[=<path>]] [--html-path] [--man-path] [--info-path]
+           [-p|--paginate|--no-pager] [--no-replace-objects] [--bare]
+           [--git-dir=<path>] [--work-tree=<path>] [--namespace=<name>]
+           [-c name=value] [--help]
+           <command> [<args>]
+Unknown option: --literal-pathspecs
+usage: git [--version] [--exec-path[=<path>]] [--html-path] [--man-path] [--info-path]
+           [-p|--paginate|--no-pager] [--no-replace-objects] [--bare]
+           [--git-dir=<path>] [--work-tree=<path>] [--namespace=<name>]
+           [-c name=value] [--help]
+           <command> [<args>]
+Unknown option: --literal-pathspecs
+usage: git [--version] [--exec-path[=<path>]] [--html-path] [--man-path] [--info-path]
+           [-p|--paginate|--no-pager] [--no-replace-objects] [--bare]
+           [--git-dir=<path>] [--work-tree=<path>] [--namespace=<name>]
+           [-c name=value] [--help]
+           <command> [<args>]
+Unknown option: --literal-pathspecs
+usage: git [--version] [--exec-path[=<path>]] [--html-path] [--man-path] [--info-path]
+           [-p|--paginate|--no-pager] [--no-replace-objects] [--bare]
+           [--git-dir=<path>] [--work-tree=<path>] [--namespace=<name>]
+           [-c name=value] [--help]
+           <command> [<args>]
+git-annex.exe: git [Param "config",Param "user.name",Param "user"] failed
+
+If I try to sync:
+
+$ git annex sync --content
+Unknown option: --literal-pathspecs
+usage: git [--version] [--exec-path[=<path>]] [--html-path] [--man-path] [--info-path]
+           [-p|--paginate|--no-pager] [--no-replace-objects] [--bare]
+           [--git-dir=<path>] [--work-tree=<path>] [--namespace=<name>]
+           [-c name=value] [--help]
+           <command> [<args>]
+git-annex: First run: git-annex init
+
+What am I missing? I love the idea of annex and really need it for an urgent project I'm working on, but unfortunately I need to use it with Windows...in addition to Linux.

@@ -1,0 +1,60 @@
+[[!comment format=mdwn
+ username="tyger"
+ ip="80.66.20.180"
+ subject="comment 2"
+ date="2011-03-01T14:07:50Z"
+ content="""
+My current workflow looks like this (I'm still experimenting):
+
+### Create backup clone for migration
+
+    git clone original migrate
+    cd migrate
+    for branch in $(git branch -a | grep remotes/origin | grep -v HEAD); do git checkout --track $branch; done
+
+### Inject git annex initialization at repository base
+
+    git symbolic-ref HEAD refs/heads/newroot
+    git rm --cached *.rpm
+    git clean -f -d
+    git annex init master
+    git cherry-pick $(git rev-list --reverse master | head -1)
+    git rebase --onto newroot newroot master
+    git rebase master mybranch # how to automate this for all branches?
+    git branch -d newroot
+
+### Start migration with tree filter
+
+    echo \*.rpm annex.backend=SHA1 > .git/info/attributes
+    MYWORKDIR=$(pwd) git filter-branch --tree-filter ' \
+        if [ ! -d .git-annex ]; then \
+            mkdir .git-annex; \
+            cp ${MYWORKDIR}/.git-annex/uuid.log .git-annex/; \
+            cp ${MYWORKDIR}/.gitattributes .; \
+        fi
+        for rpm in $(git ls-files | grep \"\.rpm$\"); do \
+            echo; \
+            git annex add $rpm; \
+            annexdest=$(readlink $rpm); \
+            if [ -e .git-annex/$(basename $annexdest).log ]; then \
+                echo \"FOUND $(basename $annexdest).log\"; \
+            else \
+                echo \"COPY $(basename $annexdest).log\"; \
+                cp ${MYWORKDIR}/.git-annex/$(basename $annexdest).log .git-annex/; \
+            fi; \
+            ln -sf ${annexdest#../../} $rpm; \
+        done; \
+        git reset HEAD .git-rewrite; \
+        : \
+        ' -- $(git branch | cut -c 3-)
+    rm -rf .temp
+    git reset --hard
+
+
+There are still some drawbacks:
+
+* git history shows that git annex log files are modified with each checkin
+* branches have to be rebased manually before starting migration
+
+
+"""]]

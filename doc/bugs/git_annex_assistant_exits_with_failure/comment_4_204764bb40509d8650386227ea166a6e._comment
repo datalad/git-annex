@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="lasitus"
+ avatar="http://cdn.libravatar.org/avatar/dfe778f28027aeb75876172022aa5de3"
+ subject="comment 4"
+ date="2017-02-14T19:08:38Z"
+ content="""
+The high memory use and load were on the Linux side.
+
+Again these were two different behaviors on separate runs. Most runs, the linux side was fine and the windows side crashed. This one I can reproduce easily by just copying my data into an empty repo. I'll try it a few times later tonight and see if it always happens on a particular file.
+
+One time, the windows side stopped sensing files and the Linux side had heavy cpu usage and high memory usage) Sadly, I don't recall the exact time as the hang up happened over night, so hard to find in the log file. So, I guess I will focus on the first one.
+"""]]

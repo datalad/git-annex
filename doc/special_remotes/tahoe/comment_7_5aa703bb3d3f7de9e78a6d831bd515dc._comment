@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2015-11-10T18:57:33Z"
+ content="""
+The Tahoe file cap is stored in the git-annex remote state log, which is
+checked into the git-annex branch of the git-annex repository. It can be
+displayed using `git-annex whereis`.
+"""]]

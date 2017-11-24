@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmCEE7m7pm6lqvYmgRSESRP9xqmmMm9ox8"
+ nickname="Daniel"
+ subject="comment 2"
+ date="2013-06-20T20:14:25Z"
+ content="""
+I'd rather use the package from the repositories. But this server is running an openSUSE install and the package manager could not resolve the Haskell dependencies of the unofficial git-annex rpm package.
+
+Indeed, performing the PATH extension in \".bashrc\", not in \".profile\", solved the issue. I feel like a newbie. Thanks for the express answer!
+"""]]

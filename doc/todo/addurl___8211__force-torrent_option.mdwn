@@ -1,0 +1,1 @@
+There are sites that don't provide direct links to `.torrent` files. Currently there is no way to download contents of such torrents with `git annex`, it simply uses web remote instead of bittorrent.  Something like `--force-torrent` option could help here.

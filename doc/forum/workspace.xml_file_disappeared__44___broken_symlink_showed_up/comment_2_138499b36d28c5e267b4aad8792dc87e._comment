@@ -1,0 +1,48 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkipQLNyt8RHREHpg2k5wdYeRSCCvSNSBg"
+ nickname="Tim"
+ subject="git log for workspace.xml"
+ date="2014-01-06T19:17:13Z"
+ content="""
+git log on the file gives a ton of output, is this what you need?
+
+commit 93157022d8ee57097db29fcc669e99e218b54657
+Author: Tim Mattison <tim.mattison@email.com>
+Date:   Fri Jan 3 17:08:03 2014 -0500
+
+commit 04dab5520f33140a21882515b4036f71729a5f89
+Author: Tim Mattison <tim.mattison@email.com>
+Date:   Fri Jan 3 17:06:54 2014 -0500
+
+commit b75be90bf91c9f9314e567d5a28e4497070de9af
+Author: Tim Mattison <tim.mattison@email.com>
+Date:   Fri Jan 3 16:58:24 2014 -0500
+
+commit 4045b2d7a71b9ab692c20eeab73bf196a280940d
+Author: Tim Mattison <tim.mattison@email.com>
+Date:   Fri Jan 3 16:58:05 2014 -0500
+
+commit 25de8a1fcd5cce53b8077443dccba1591255431f
+Author: Tim Mattison <tim.mattison@email.com>
+Date:   Fri Jan 3 16:57:32 2014 -0500
+
+commit dd118ae88cdccb5a7d68a7ae14033304865cfc4e
+Author: Tim Mattison <tim.mattison@email.com>
+Date:   Fri Jan 3 16:53:37 2014 -0500
+
+commit eaa5f85b7feed8ba17e3874763b4d7aa6e05b5c1
+Author: Tim Mattison <tim.mattison@email.com>
+Date:   Fri Jan 3 16:53:23 2014 -0500
+
+commit 4d310d7d16234a1a6bcf0f14ebae232c57d904a7
+Author: Tim Mattison <tim.mattison@email.com>
+Date:   Fri Jan 3 16:52:42 2014 -0500
+
+commit 2487ae7f99c7b81c1648fdc88d0b39a1cf6e4d03
+Author: Tim Mattison <tim.mattison@email.com>
+Date:   Fri Jan 3 16:52:21 2014 -0500
+
+commit 9e0040311c43e6e1f04ff3b8fdd3ac5570c8f2d1
+Author: Tim Mattison <tim.mattison@email.com>
+Date:   Fri Jan 3 16:51:54 2014 -0500
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 1"
+ date="2012-07-02T16:25:55Z"
+ content="""
+I've some binaries for OSX which can be found at <http://www.sgenomics.org/~jtang/gitbuilder-git-annex-x00-x86_64-apple-darwin10.8.0-binary/dist/> its just the master branch, and it's built on a system that runs macports. Binaries are built and updated whenever there are changes made to the master branch of git-annex.
+"""]]

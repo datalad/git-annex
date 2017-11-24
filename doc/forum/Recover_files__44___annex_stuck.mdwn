@@ -1,0 +1,28 @@
+I have a directory with 6TB of data in it. I tried to use git annex to back it up to three 3TB drives, I didn't want to use RAID as it sucks, and I didn't want to use tar as I wanted my files easily available.
+
+I added my remotes successfully, then I ran ``git annex add .``
+
+That mostly worked, although it understandably took ages, although it missed several GB of files here and there.
+
+Next I tried to do ``git commit -a -m added``, hoping that this would copy all of my files to the remotes.  It didn't it just died with the error 
+
+    fatal: No HEAD commit to compare with (yet)
+    fatal: No HEAD commit to compare with (yet)
+    Stack space overflow: current size 8388608 bytes.
+    Use `+RTS -Ksize -RTS' to increase it.
+
+So I freaked out and decided to undo the mess and just go with tar instead, since at this point every git command takes multiple minutes and fails with the same error as above.
+
+I tried to run ``git anne unannex .``, but I got this error:
+
+``
+unannex GWAS/by-download-number/27081.log.gz fatal: No HEAD commit to compare with (yet)
+``
+
+So now I can't do anything without committing the files it seems, and I somehow need to grow the git cache, although when I search online for `+RTS -Ksize -RTS', I get nothing. 
+
+Does anyone know how to increase the cache size, or how to unannex the files without this HEAD error?
+
+Thanks,
+
+Mike

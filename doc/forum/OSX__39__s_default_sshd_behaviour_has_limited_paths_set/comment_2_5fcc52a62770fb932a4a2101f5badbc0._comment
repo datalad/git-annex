@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="ewen"
+ subject="Linux to OS X ~/.ssh/git-annex-shell"
+ date="2014-11-15T00:02:02Z"
+ content="""
+I installed git-annex on OS/X 10.9 (Mavericks) from the DMG file (the 10.10 DMG file from 2014-11-11, since there was no longer one linked for Mavericks -- it does seem to work locally on 10.9).  Separately I installed git-annex 5.20141024~bpo70+1 on Debian Wheezy, from Backports.  I created a git-annex on the OS X system, and was then trying to set up another git-annex of that on the Linux system, initiated from the Linux system.  After some ssh tunnel magic (due to a firewall stopping git-annex's dream that everything can ssh into everything else without problems), I was able to \"git clone\" and \"git annex init\" on the Linux system.  But ran into problems trying to initiate a \"git annex sync\" from the Linux end.
+
+In particular I got this \"bash: git-annex-shell: command not found\" report, despite the fact that the OS X side *does* have \"~/.ssh/git-annex-shell\" (apparently set up when I ran git-annex on the OS X side first), and on the OS/X side running \"~/.ssh/git-annex-shell\" does work (well it says \"bad parameters\" and gives a list of commands).
+
+It's not clear to me how git-annex is expecting that ~/.ssh/git-annex-shell will end up being found by the ssh connection initiated from the Linux side.  AFAICT from \"git annex sync --debug REMOTE\" (and strace), all that the client end is running is a bare \"git-annex-shell\", so (a) it'd only be searching the path (as per original post), (b) it shouldn't be affected by the different expansion of ~ on Linux and OS/X (/home/ewen and /Users/ewen respectively -- the OS defaults), and (c) AFAICT nothing is adding ~/.ssh to the PATH.  Maybe running something more from the DMG than just the command line \"git-annex\" sets something else up, which I'm expected to set up by hand, that makes \"~/.ssh/git-annex-shell\" be found?
+
+I ended up working around it by noticing that the ssh shell was reading ~/.bashrc (which adds some of my local directories to the PATH), so I was able to add yet another helper script in that directory (~/.bin/, in my case).  Beware it does have to be a direct symlink to the directory with the rest of the git-annex files though, not via another symlink, because the helper scripts only do one level of readlink.  After that it seems to work.
+
+(Possibly these \"make this command available on the PATH at this time\" dependencies could stand to be better documented on the OS X install page?)
+
+Ewen
+"""]]

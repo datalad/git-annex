@@ -1,0 +1,35 @@
+### Please describe the problem.
+
+just want to check if that is "by design"... --force was demanded seem operation is dangerous, but I expected that it would still report success false if key was not actually dropped, at least if a key is a completely wrong key
+
+so is that "by design" and I shouldn't care to check success field...?
+
+### What version of git-annex are you using? On what operating system?
+6.20160425+gitgffe2ea2-1~ndall+1
+
+### Please provide any additional information below.
+
+[[!format sh """
+
+$> echo MD5E-s11--74d80f7d99b835e5189948c8d4297efd | git annex dropkey --batch --json --force
+{"command":"dropkey","key":"MD5E-s11--74d80f7d99b835e5189948c8d4297efd","success":true}
+
+$> ls -l
+total 0
+0 lrwxrwxrwx 1 yoh yoh 110 Apr 29 09:21 124 -> .git/annex/objects/MV/Jw/MD5E-s11--74d80f7d99b835e5189948c8d4297efd/MD5E-s11--74d80f7d99b835e5189948c8d4297efd
+
+$> echo MD5E-s11--74d80f7d99b835e5189948c8d4297efd | git annex dropkey --batch --json --force
+{"command":"dropkey","key":"MD5E-s11--74d80f7d99b835e5189948c8d4297efd","success":true}
+
+$> echo MD5E-s11--74d80f7dsd99b835e5189948c8d4297efd | git annex dropkey --batch --json --force 
+{"command":"dropkey","key":"MD5E-s11--74d80f7dsd99b835e5189948c8d4297efd","success":true}
+
+$> echo MD5E-s11--74d80f7dsd99b835e5189948c8d4297efdsdfsdf | git annex dropkey --batch --json --force 
+{"command":"dropkey","key":"MD5E-s11--74d80f7dsd99b835e5189948c8d4297efdsdfsdf","success":true}
+
+
+"""]]
+
+[[!meta author=yoh]]
+
+> [[notabug|done]] --[[Joey]]

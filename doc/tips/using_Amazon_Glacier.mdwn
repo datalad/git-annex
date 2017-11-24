@@ -1,0 +1,75 @@
+Amazon Glacier provides low-cost storage, well suited for archiving and
+backup. But it takes around 4 hours to get content out of Glacier.
+
+Recent versions of git-annex support Glacier. To use it, you need to have
+[glacier-cli](http://github.com/basak/glacier-cli) installed.
+
+First, export your Amazon AWS credentials:
+
+        # export AWS_ACCESS_KEY_ID="08TJMT99S3511WOZEP91"
+        # export AWS_SECRET_ACCESS_KEY="s3kr1t"
+
+Now, create a gpg key, if you don't already have one. This will be used
+to encrypt everything stored in Glacier, for your privacy. Once you have
+a gpg key, run `gpg --list-secret-keys` to look up its key id, something
+like "2512E3C7"
+
+Next, create the Glacier remote.
+
+	# git annex initremote glacier type=glacier keyid=2512E3C7
+	initremote glacier (encryption setup with gpg key C910D9222512E3C7) (gpg) ok
+
+The configuration for the Glacier remote is stored in git. So to make another
+repository use the same Glacier remote is easy:
+
+        # cd /media/usb/annex
+        # git pull laptop
+        # git annex enableremote glacier
+        initremote glacier (gpg) ok
+
+Now the remote can be used like any other remote.
+
+        # git annex move my_cool_big_file --to glacier
+        copy my_cool_big_file (gpg) (checking glacier...) (to glacier...) ok
+
+But, when you try to get a file out of Glacier, it'll queue a retrieval
+job:
+
+	# git annex get my_cool_big_file
+	get my_cool_big_file (from glacier...) (gpg)
+	glacier: queued retrieval job for archive 'GPGHMACSHA1--862afd4e67e3946587a9ef7fa5beb4e8f1aeb6b8'
+	  Recommend you wait up to 4 hours, and then run this command again.
+	failed
+
+Like it says, you'll need to run the command again later. Let's remember to
+do that:
+
+	# at now + 4 hours
+	at> git annex get my_cool_big_file
+
+Another oddity of Glacier is that git-annex is never entirely sure
+if a file is still in Glacier. Glacier inventories take hours to retrieve,
+and even when retrieved do not necessarily represent the current state.
+
+So, git-annex plays it safe, and avoids trusting the inventory:
+
+	# git annex copy important_file --to glacier
+	copy important_file (gpg) (checking glacier...) (to glacier...) ok
+	# git annex drop important_file
+	drop important_file (gpg) (checking glacier...)
+	  Glacier's inventory says it has a copy.
+	  However, the inventory could be out of date, if it was recently removed.
+	  (Use --trust-glacier if you're sure it's still in Glacier.)
+	
+	(unsafe) 
+	  Could only verify the existence of 0 out of 1 necessary copies
+
+Like it says, you can use `--trust-glacier` if you're sure
+Glacier's inventory is correct and up-to-date.
+
+A final potential gotcha with Glacier is that glacier-cli keeps a local
+mapping of file names to Glacier archives. If this cache is lost, or
+you want to retrieve files on a different box than the one that put them in
+glacier, you'll need to use `glacier vault sync` to rebuild this cache.
+
+See [[special_remotes/Glacier]] for details.

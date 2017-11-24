@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 1"
+ date="2013-08-26T18:14:17Z"
+ content="""
+The assistant is currently only able to transfer files that it has added itself. So if you disable syncing, you have to manually upload any files you add.
+
+I doubt that I will change this in the assistant, because supporting this use case would complicate it unnecessarily for a use case that is not what it's designed to do. It's more likely that `git annex sync` will get an option to also transfer file contents.
+"""]]

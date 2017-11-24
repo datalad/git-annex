@@ -1,0 +1,7 @@
+I'm sorry if this has been answered before, I did my best searching and couldn't find a fitting solution.
+
+I envision the following setup. There is one central git-annex repository where all modifications are to be performed. At the same time, I want to create lightweight clones of that repository on the same machine, the same filesystem, that would contain all git metadata (so that I can navigate the history inside the child repository), but would reuse binary objects from the parent repository. The child repositories can be read-only, I don't plan to use them for anything else but checking out the specific version of the parent repository.
+
+I found out about --shared flag and it seemed like it was exactly what I need. However, after cloning the parent repository with --shared, the symlinks in the child repository still pointed to nowhere. After I did `git annex sync --content`, the binary files were copied into the child repository's .git/ directory.
+
+Is it possible to achieve what I want? Thanks in advance!

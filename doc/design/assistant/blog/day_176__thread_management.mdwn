@@ -1,0 +1,13 @@
+Got back to hacking today, and did something I've wanted to do for some
+time. Made all the assistant's threads be managed by a thread manager. This
+allows restarting threads if they crash, by clicking a button in the
+webapp. It also will allow for other features later, like stopping and
+starting the watcher thread, to pause the assistant adding local files.
+
+[[!img /assistant/crashrecovery.png]]
+
+I added the haskell async library as a dependency, which made this pretty
+easy to implement. The only hitch is that async's documentation is not
+clear about how it handles asyncronous exceptions. It took me quite a while
+to work out why the errors I'd inserted into threads to test were crashing
+the whole program rather than being caught!

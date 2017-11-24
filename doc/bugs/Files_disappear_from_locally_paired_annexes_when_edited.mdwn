@@ -1,0 +1,36 @@
+**What steps will reproduce the problem?**
+
+Create two annexes from the command line on two separate machines:
+
+    mkdir ~/Files.annex
+    cd ~/Files.annex
+    git init
+    git annex init
+    git annex untrust .
+    git annex direct
+
+Add remote to each one pointing to the other:
+
+    git remote add [remote] [remote hostname]:Files.annex
+
+Start assistant on both repos:
+
+    git annex assistant
+
+Fill one repository with a few text files, and wait for them to propagate.
+
+Edit one of the text files using vim, and save.
+
+**What is the expected output? What do you see instead?**
+
+Edited file should remain in the repo, but a significant portion of the time, the file disappeared from the repo in which it was edited (the file is present and properly synced on the other repo).
+
+**What version of git-annex are you using? On what operating system?**
+
+git-annex 4.20130323, Mac OS X on the repo where the file was edited, Arch Linux for the other paired repo.
+
+**Please provide any additional information below.**
+
+I have observed this problem setting up the repos through the webapp as well, so I don't think it is related to setting up the repos manually. I think the way vim is writing the files seems to be tickling a race condition (both command-line vim and MacVim produce the behavior). I started trying to work around it by switching to emacs to edit those files, and the files haven't disappeared from the edited repo (so far at least).
+
+[[!tag /design/assistant moreinfo]]

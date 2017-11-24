@@ -1,0 +1,1 @@
+The settings don't seem to be saving. If I edit it, then immediately open the file again, the settings are what they were before. This happens no matter what repo I do it from.

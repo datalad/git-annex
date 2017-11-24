@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 1"
+ date="2011-06-01T17:36:50Z"
+ content="""
+I've been longing for an automated way of removing references to a remote assuming I know the exact uuid that I want to remove. i.e. I have lost a portable HDD due to a destructive process, I now want to delete all references to copies of data that was on that disk. Unless this feature exists, I would love to see it implemented.
+"""]]

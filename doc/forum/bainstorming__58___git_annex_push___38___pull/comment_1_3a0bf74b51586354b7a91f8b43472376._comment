@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-04-05T18:05:00Z"
+ content="""
+Maybe, otoh, part of the point of git-annex is that the data may be too large to pull down all of it.
+
+I find mr useful as a policy layer over top of git-annex, so \"mr update\" can pull down appropriate quantities of data from
+appropriate locations.
+"""]]

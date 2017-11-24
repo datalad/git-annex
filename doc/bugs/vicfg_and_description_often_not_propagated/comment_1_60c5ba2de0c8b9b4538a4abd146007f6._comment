@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.132"
+ subject="comment 1"
+ date="2014-09-11T18:11:43Z"
+ content="""
+vicfg makes changes to files in the git-annex branch, so you can use regular git commands to examine those changes, and look through the history to find any changes that are contrary to the settings you want, and see when and where they were committed. That should provide a strong pointer to what is causing this to happen.
+"""]]

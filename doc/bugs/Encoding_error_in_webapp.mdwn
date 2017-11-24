@@ -1,0 +1,24 @@
+### Please describe the problem.
+
+In the webapp, file names with UTF-8 characters are displayed correctly when they are in the queue but not when they are being transferred.
+
+
+### What steps will reproduce the problem?
+
+- Create a file with accented characters (éèà...) in their path
+- Run the webapp :)
+
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 6.20170612-ge4100fd60e (on Arch Linux)
+
+
+### Please provide any additional information below.
+
+![Screenshot](http://i.imgur.com/xHgdVKc.png)
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Oh yes! I love git-annex :) I've written the hubiC special remote for git-annex, the zsh completion, contributed to the crowdfunding campaigns, and I'm a supporter on Patreon :)

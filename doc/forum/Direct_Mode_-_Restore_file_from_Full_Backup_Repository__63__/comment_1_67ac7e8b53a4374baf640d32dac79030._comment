@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.144"
+ subject="comment 1"
+ date="2014-09-25T15:52:04Z"
+ content="""
+Yes, you need to use git to either revert the repository to a previous version that had the file, or perhaps just revert the commit where the file was deleted. Either way, this requires letting git modify files in the repository, which is prevented by direct mode. So, if you can `git annex indirect` to switch to indirect mode, your git commands will work then.
+"""]]

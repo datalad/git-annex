@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2014-12-06T20:25:06Z"
+ content="""
+@Julian, shimmed/git-annex-shell/git-annex-shell is supposed to be a hard
+link to shimmed/git-annex/git-annex. Maybe there's a problem with hard
+links on your NAS? A symlink would also work I think.
+"""]]

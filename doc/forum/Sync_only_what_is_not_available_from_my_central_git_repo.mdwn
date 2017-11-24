@@ -1,0 +1,7 @@
+I work in a distributed startup.  We have a master repository on GitHub.  At the office we have modern hunky Linux desktops (seriously more powerful than any of our laptops).
+
+I (and others) have hard deadlines at the end of the day (typically child commitments).  If I leave from a meeting or brainstorming session without having pushed all of my work into the cloud then I cannot continue working from home.  This is because our office is behind multiple levels of NAT over which we have no control.  Hence I am unable to remote into my machine in order to push work up to GitHub or scp it to my laptop.
+
+Is there a way to get git-annex to sync only files that do not correspond to git objects available from our GitHub repository?  Because our source tree is quite large (2.5GB including tests and test data) I would not want git-annex to sync the entire tree.  And when I checkout a different branch I would not want git-annex to sync all changes between the previously checked-out branch and the new branch.  Rather I would like git-annex to discard any previously synced objects, note the identity of the new branch and the values of all files (object) not available from the upstream state of that branch on GitHub.
+
+Thanks in advance for any suggestions.

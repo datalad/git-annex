@@ -1,0 +1,9 @@
+Hey there,
+
+I am playing around with git-annex to handle my files and backup's. Sometimes, I wish to delete a file entirely from my local repo and any other repo that contains the file.
+
+First, I drop the file from my local repo and run git-annex sync --content. Then I run git annex whereis and drop the file from other repo's. Subsequently, I run git annex whereis to ensure that the file has been dropped and does not exist in any repo.
+
+However, git annex still tracks the file, but I just have 0 copies of it. How do I remove/delete/disable tracking of a single file or multiple files?
+
+The reason why I have deleted the file is that I don't want it in any of my repo's any longer. 

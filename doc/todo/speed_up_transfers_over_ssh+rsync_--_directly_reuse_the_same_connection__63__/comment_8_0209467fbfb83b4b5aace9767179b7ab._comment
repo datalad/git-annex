@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="great!"
+ date="2015-08-17T04:07:28Z"
+ content="""
+it's great to see such improvements! i was wondering if git-annex was slower than an equivalent rsync transfer... 
+
+how does git-annex compare with rsync now?
+
+how should we decide how many -J we should use? are there good heuristics on that?
+
+should this todo be marked as done?
+"""]]

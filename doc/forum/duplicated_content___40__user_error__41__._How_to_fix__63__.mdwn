@@ -1,0 +1,24 @@
+I have Ubuntu and Debian systems, playing with git-annex. This is not mission critical data, just testing. I ended up with an extra duplicate of the media files on the laptop.
+
+The whereis listing is lots and lots like this:
+
+whereis 00-Unsorted/2008-RobustStats-AmerPsyc.pdf (3 copies)
+        67e69242-d57c-4b50-aaf9-74876b899962
+        9e0bc9e4-f8bf-11e3-b9c1-9b4158540a9d -- pols110.pols.ku.edu_mediashare (
+pdf and mp3)
+        d82d2e6f-9200-49cf-86a3-1d674a768971 -- here (pauljohn@dellap14:~/medias
+hare)
+ok
+
+(I'm pretty sure) This happened because I copied the media files to /home/pauljohn/mediashare/manuscripts manually, and then I used the git-annex assistant to set up the remote linkage to same content, from  the workstation, and it apparently copied in a whole new set. 
+
+How to clean this up? Without erasing everything and starting over?
+
+Can I guess? 
+
+Open a terminal and git remove manually 67e69242-d57c-4b50-aaf9-74876b899962 ???
+
+Thanks in advance if you care to advise me :)
+
+Paul Johnson
+http://pj.freefaculty.org

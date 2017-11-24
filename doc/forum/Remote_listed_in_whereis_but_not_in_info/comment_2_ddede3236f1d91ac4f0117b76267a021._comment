@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="robert.schuetz@7942237bf71a2ae4f5d3cb047d167612b8c9e311"
+ nickname="robert.schuetz"
+ avatar="http://cdn.libravatar.org/avatar/89879460a9e84b9c736d982d9489d3d9"
+ subject="comment 2"
+ date="2017-11-07T19:14:18Z"
+ content="""
+Surprisingly, I can't use the UUID:
+
+    $ git annex dead 8bb266ed-453d-4489-9d8a-de38b2bc77c2
+    dead 8bb266ed-453d-4489-9d8a-de38b2bc77c2 git-annex: there is no available git remote named \"8bb266ed-453d-4489-9d8a-de38b2bc77c2\"
+"""]]

@@ -1,0 +1,10 @@
+I tried 
+
+    git annex initremote encsharedtest type=directory encryption=shared directory=/home/lee/gitannexplay
+
+and got errors:
+
+    initremote encsharedtest gpg: error reading key: public key not found
+
+Looks like it thinks "shared" should be the name of a key rather than an instruction to use the shared cipher.
+Am I doing something wrong?

@@ -1,0 +1,29 @@
+Seems that the recent release of git 2.13.0 contained a reversion that
+broke `git-annex sync` in an adjusted branch. After bisecting git,
+producing a minimal test case, and reporting that to the git developers, I
+was able to work around it in git-annex. The workaround is normally not
+expensive, but could be when a repository has thousands of unpacked refs.
+So I hope this will get fixed in git and I can remove the workaround.
+
+I think I will hurry up the next git-annex release somewhat to get the
+workaround out. It's not a super bad bug, but it does make the test suite
+fail and I've already had 3 people report the problem.
+
+Seems it would be good to have an integration test that runs git-annex's
+test suite against new commits to git. Ævar Arnfjörð Bjarmason has stepped
+up to add that to git's test suite.
+
+----
+
+Also, I dealt with some fallout from removing MissingH; a exponential
+speed blowup in a directory traversal function.
+
+Getting back to the ssh password prompting with -J I was working on last
+week, dealt with the ssh prompt interfering with the regional display
+manager. The fix is not perfect, but good enough; before ssh prompts (and
+only if it prompts), git-annex temporarily clears the regional display.
+Then the display gets redrawn under the ssh output. That needed some
+changes to concurrent-output (which I did over the weekend), so will only
+be done when it's built with a new enough version. A better approach would
+be to save and restore the cursor position, but the ansi-terminal library
+does not yet support that.

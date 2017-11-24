@@ -1,0 +1,10 @@
+With the fundraiser having met its stretch goal of $15,000, I was thinking of how to keep git-annex going beyond another year.  What about selling stuff?  Not just merch (though being able to buy stickers would be neat), but useful things that would complement the software, like selling hardware for a small remote that you could plug into your home network, or even set up at a friend's house to have online, but offsite.
+
+
+Something like a CubieBoard2 and an HDD for annexes preloaded with all the necessary software and a git-annex apt repo for keeping it updated.  Everything would come in a nice little enclosure with a git-annex logo on it; you plug in the power, the ethernet, and boom it's ready to go, with no terminal magic (but it's there if you want it!).  You could create them on-demand without having to keep much of a stock (except maybe the enclosure), so there's practically no risk.
+
+
+
+Aesthetically, I was thinking of something that exposed as little of the insides as possible.  Basically just power, ethernet, and USB ports.
+
+Maybe material for another Kickstarter?

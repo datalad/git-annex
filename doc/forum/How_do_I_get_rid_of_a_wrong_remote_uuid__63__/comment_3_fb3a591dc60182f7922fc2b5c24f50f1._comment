@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://alan.petitepomme.net/"
+ nickname="Alan Schmitt"
+ subject="comment 3"
+ date="2014-03-13T20:05:53Z"
+ content="""
+Unfortunately git annex tells me there is no such remote:
+
+    cody:games schmitta$ git annex dead 70582c7b-0b57-4087-a9d1-77b5f5f3c75e
+    dead 70582c7b-0b57-4087-a9d1-77b5f5f3c75e git-annex: there is no available git remote named \"70582c7b-0b57-4087-a9d1-77b5f5f3c75e\"
+"""]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Marco"
+ subject="You need a copy of the git repo"
+ date="2015-07-29T12:20:06Z"
+ content="""
+It is not possible to recover just from a special remote. You need at least one copy of the git repository. This drive doesn't need to carry around the actual payload.
+Consider using an encrypted thumb drive as an additional destination. You can even fully encrypt this repo and sync it up once in a while to keep the information up to date.
+You can have a look at [[tips/fully_encrypted_git_repositories_with_gcrypt]] for detailed information.
+"""]]

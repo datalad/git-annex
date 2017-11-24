@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-03-31T18:26:06Z"
+ content="""
+Yes, you can pass any (unused) fields you like to git-annex enableremote.
+"""]]

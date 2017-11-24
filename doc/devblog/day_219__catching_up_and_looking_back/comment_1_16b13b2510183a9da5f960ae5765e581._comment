@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkRGMQkg9ck_pr47JXZV_C2DJQXrO8LgpI"
+ nickname="Michael"
+ subject="Hard linking on local clone"
+ date="2014-09-13T06:28:01Z"
+ content="""
+Thanks for this feature. It will save a lot of space when working on one-off projects with big scientific datasets.
+
+Unfortunately, there is probably no easy solution to achieve similar savings across file systems. On our shared cluster individual labs have their data in separate ZFS volumes (to ease individual backup handling), but data is often shared (i.e. copied) across volumes when cloning an annex. We need expensive de-duplication on the backup-server to, at least, prevent this kind of waste to hit the backups -- but the master file server still suffers (de-duplication ratio sometimes approaching a factor of 2.0).
+"""]]

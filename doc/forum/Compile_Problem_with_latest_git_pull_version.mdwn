@@ -1,0 +1,23 @@
+Hi,
+I try to compile the latest version of git annex on my server; 
+As you can see some package (WARP) failed to install : 
+
+    [root@git-annex]$ cat /home/reyman64/.cabal/logs/warp-3.1.11.log
+    Configuring warp-3.1.11...
+    Building warp-3.1.11...
+    Preprocessing library warp-3.1.11...
+    [ 1 of 35] Compiling Network.Wai.Handler.Warp.Windows ( Network/Wai/Handler/Warp/Windows.hs, dist/build/Network/Wai/Handler/Warp/Windows.o )
+    [ 2 of 35] Compiling Paths_warp       ( dist/build/autogen/Paths_warp.hs, dist/build/Paths_warp.o )
+    [ 3 of 35] Compiling Network.Wai.Handler.Warp.ReadInt ( Network/Wai/Handler/Warp/ReadInt.hs, dist/build/Network/Wai/Handler/Warp/ReadInt.o )
+    [ 4 of 35] Compiling Network.Wai.Handler.Warp.HTTP2.EncodeFrame ( Network/Wai/Handler/Warp/HTTP2/EncodeFrame.hs, dist/build/Network/Wai/Handler/Warp/HTTP2/EncodeFrame.o )
+    [ 5 of 35] Compiling Network.Wai.Handler.Warp.MultiMap ( Network/Wai/Handler/Warp/MultiMap.hs, dist/build/Network/Wai/Handler/Warp/MultiMap.o )
+    [ 6 of 35] Compiling Network.Wai.Handler.Warp.IORef ( Network/Wai/Handler/Warp/IORef.hs, dist/build/Network/Wai/Handler/Warp/IORef.o )
+    [ 7 of 35] Compiling Network.Wai.Handler.Warp.HTTP2.Manager ( Network/Wai/Handler/Warp/HTTP2/Manager.hs, dist/build/Network/Wai/Handler/Warp/HTTP2/Manager.o )
+    [ 8 of 35] Compiling Network.Wai.Handler.Warp.Counter ( Network/Wai/Handler/Warp/Counter.hs, dist/build/Network/Wai/Handler/Warp/Counter.o )
+    [ 9 of 35] Compiling Network.Wai.Handler.Warp.FileInfoCache ( Network/Wai/Handler/Warp/FileInfoCache.hs, dist/build/Network/Wai/Handler/Warp/FileInfoCache.o )
+    [10 of 35] Compiling Network.Wai.Handler.Warp.Timeout ( Network/Wai/Handler/Warp/Timeout.hs, dist/build/Network/Wai/Handler/Warp/Timeout.o )
+
+    Network/Wai/Handler/Warp/Timeout.hs:86:15:
+        Not in scope: ‘reaperKill’
+        Perhaps you meant ‘reaperNull’ (imported from Control.Reaper)
+

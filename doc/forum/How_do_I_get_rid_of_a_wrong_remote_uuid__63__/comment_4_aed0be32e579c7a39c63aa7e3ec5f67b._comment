@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.154"
+ subject="comment 4"
+ date="2014-03-14T17:46:23Z"
+ content="""
+It seems that the git-annex branch's uuid.log must somehow not list this uuid, but it's used in the location tracking log files. 
+
+The only way I can think of that this could happen is if you had set up a repository, run git-annex init, and then went in and changed the annex.uuid setting to this other uuid, and added files with that misconfiguration. Does that sound like what happened?
+
+The fix is just as evil as the cause -- you can edit .git/config to add a new, dummy git remote that has annex-uuid set to the problem uuid, and then `git-annex dead` can be used to kill the uuid via that remote. For example:
+
+[[!format sh \"\"\"
+joey@darkstar:~/tmp/x>git annex whereis eep
+whereis eep (1 copy) 
+  	00000a6d-e770-4ab9-a640-7d6272e9ffff
+ok
+joey@darkstar:~/tmp/x>git annex dead 00000a6d-e770-4ab9-a640-7d6272e9ffff
+dead 00000a6d-e770-4ab9-a640-7d6272e9ffff git-annex: there is no available git remote named \"00000a6d-e770-4ab9-a640-7d6272e9ffff\"
+- exit 1
+joey@darkstar:~/tmp/x>git remote add dummy dummy
+joey@darkstar:~/tmp/x>git config remote.dummy.annex-uuid 00000a6d-e770-4ab9-a640-7d6272e9ffff
+joey@darkstar:~/tmp/x>git annex dead dummy
+dead dummy ok
+(Recording state in git...)
+joey@darkstar:~/tmp/x>git annex whereis eep
+whereis eep (0 copies) failed
+\"\"\"]]
+"""]]

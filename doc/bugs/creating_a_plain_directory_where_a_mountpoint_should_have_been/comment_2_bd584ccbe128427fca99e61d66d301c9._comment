@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 2"
+ date="2013-05-06T14:50:01Z"
+ content="""
+Hmm.. One way I can think that this could happen is if git-annex was running, and doing something in the repository on the drive that involved making a directory, and the drive was removed. There are several places in git-annex where it has code, like this:
+
+<pre>
+createAnnexDirectory
+-- some action here that expects to have the git-annex directory
+</pre>
+
+Is the repo you have on the drive a direct mode repo by any chance? This is the only obvious way I can see that would cause it to create just the top level directory of the repository, and not a deeper directory tree like `.git/annex/tmp/`
+
+The assistant also has a MountWatcher that detects when repositories that were not accessible get mounted, but it does not do anything to stop the repository being used when its drive gets unmounted. Even if it did, it couldn't go anything about code that is already running using the previously mounted repository. However, as things stand, it would probably also be possible for the drive to be removed, and some time to pass before an action was run that tried to do something to the no longer present repository.
+So making the mountwatcher disable repositories when drives are unmounted would at least make this window narrower.
+"""]]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2017-05-11T19:23:02Z"
+ content="""
+What about when `GIT_SSH` is used? `prepSocket` is not used then,
+and git-annex can only use the `GIT_SSH` interface to ssh to the host.
+So, the approach above won't work.
+
+git-annex could then try to use `GIT_SSH` to ssh to the host and run eg `true`,
+in hopes that `GIT_SSH` is enabling ssh connection caching and that will
+get the ssh connection set up. If `GIT_SSH` is not enabling connection
+caching, that might add an additional password prompt, and not avoid
+other password prompts from overlapping.
+"""]]

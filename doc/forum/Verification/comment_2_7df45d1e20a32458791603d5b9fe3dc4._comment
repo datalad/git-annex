@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="Régis"
+ subject="comment 2"
+ date="2015-02-27T21:38:05Z"
+ content="""
+Thanks for this speedy answer !
+
+I have version 5.20150219 installed on all the clients and on the server.
+The ssh server is a gcrypt repository. Could this be the reason of the clients not being notificated of the  changes ??
+
+Also, in theory, some file on one of the repositories could get corrupted, deleted, whatever. How can I make the repo check if everything is like intended on the other repos ? 
+For example, I made a test renaming a file within the objects directory on the remote ssh server and ran git annex fchk, but it reported nothing...
+
+Many thanks again !
+"""]]

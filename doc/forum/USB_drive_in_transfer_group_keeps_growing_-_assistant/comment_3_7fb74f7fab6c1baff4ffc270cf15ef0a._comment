@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 3"
+ date="2014-07-11T19:29:06Z"
+ content="""
+The webapp certianly allows deleting repositories.
+
+But, you can always go in and manually do it:
+
+<pre>
+git annex dead $uuid
+git annex group $uuid unwanted
+</pre>
+"""]]

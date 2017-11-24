@@ -1,0 +1,16 @@
+Yesterday, finished converting S3 to use the aws library. Very happy with
+the result (no memory leaks! connection caching!), but s3-aws is not merged
+into master yet. Waiting on a new release of the aws library so as to not
+break Internet Archive S3 support.
+
+Today, spent a few hours adding more tests to `testremote`. The new tests
+take a remote, and construct a modified version that is intentionally
+unavailable. Then they make sure trying to use it fails in appropriate
+ways. This was a very good thing to test; two bugs were immediately found
+and fixed.
+
+And that wraps up several weeks of hacking on the core of git-annex's
+remotes support, which started with reworking chunking and kind of took
+on a life of its own. I plan a release of this new stuff in a week. The
+next week will be spent catching up on 117 messages of backlog that
+accumulated while I was in deep coding mode.

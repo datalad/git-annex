@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawne_amN4fko4p5cRY_9EYwaYuJKNn7LRio"
+ nickname="Tobias"
+ subject="measuring how-to"
+ date="2013-11-08T16:55:58Z"
+ content="""
+How can I measure how much time the startup scan takes? I tried to find it out using the debug log, but couldn't find any usable notice when the startup scan was finished. Maybe this two lines?
+
+    [...]
+    [2013-11-08 16:00:45 CET] Watcher: Performing startup scan
+    [...]
+    [2013-11-08 16:15:30 CET] Watcher: watching 
+"""]]

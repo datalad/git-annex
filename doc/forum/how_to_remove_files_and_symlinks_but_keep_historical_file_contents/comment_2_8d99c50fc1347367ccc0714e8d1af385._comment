@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 2"
+ date="2013-05-19T20:43:43Z"
+ content="""
+The original poster seems to have a misunderstanding of what git-annex does with the content of files. Deleting a file does not remove the content of the file. You can always use git to check out a previous version of a file, and the content from the annex will still be there (or you can `git annex get` it to get it from whereever git-annex stored the content).
+
+The only exception to this rule is is you, manually, chose to run `git annex unused` and then `git annex dropunused`. That can delete the contents of files, when no branch or tag refers to them. As long as some branch refers to the content of the files, even if it's not the currently checked out branch, the file content is retained.
+
+So a branch *is* the \"index of files that have been removed but are wanted to be kept\".
+
+For example, you could do:
+
+[[!format sh \"\"\"
+git checkout -b keepflacs
+
+cdrom-rip-command
+git annex add *.flac
+git commit -m \"ripped a cd\"
+flac-convert-command
+git annex add *.mp3
+git commit -m \"converted to mp3\"
+
+git checkout master
+git merge keepflacs
+git rm *.flac
+git commit -m \"removed flac files from this branch. They are still available in the keepflacs branch\"
+\"\"\"]]
+
+As long as you always switch to the keepflacs branch to add flac files, and never merge the master branch into keepflacs,
+but only merge keepflacs into master, keepflacs will have every flac file you have ripped. And so git-annex will retain those files
+even when you `git annex unused; git-annex dropunused`.
+
+Or, just make a promise to yourself that you'll never run `git-annex unused`, similarly to how you'd probably never run `rm -rf .git/objects/$rand`, and you don't need the branches; like git, git-annex will retain all data that has ever been checked into it.
+
+(The branches are still a good idea. For one thing, they let you run `git annex fsck` and other repository maintenance commands with the keepflacs branch checked out.)
+
+I am going to move this thread to the [[forum]], because it's not really a TODO item, but is something others may want to read.
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-06-04T18:04:30Z"
+ content="""
+You can delete the view branches if you like. I have considered making moving views clean up old branches, but I have also considered reusing existing view branches when popping back to an old view.
+
+git-annex unused can't look at branches that aren't there. Perhaps you have pushed the view branches to a remote repository, and it's checking those branches of the remote? See git branch -a.
+
+I think that it makes sense for unused to ignore (local) view branches, since these are by definition supposed to be views of an existing branch, so looking at the branch should be sufficient (and if the view is out of date and has files that have since been deleted from the branch, the user's intent is not to preserve those from unused reaping). So, made that change.
+"""]]

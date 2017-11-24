@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnOSgFb3l7nL3Fs7Y9gPGJJjFiV7aJ1tek"
+ nickname="Phil"
+ subject="Same boat"
+ date="2014-07-03T19:38:15Z"
+ content="""
+I'd love to know this too. I'm setting up on 2 Windows 8.1 machines (with a 3rd Windows 7 hopefully joining the party as well as a couple of Linux boxes) but doing anything is really slow. I just ran git annex status on a 50GB, 7000 file Music repo and it took 6 minutes. I've not even setup the remotes yet but as soon as I'd added and sync'd, things slowed down. I'm running on a nippy SSD and CPU usage is around 12%.
+
+"""]]

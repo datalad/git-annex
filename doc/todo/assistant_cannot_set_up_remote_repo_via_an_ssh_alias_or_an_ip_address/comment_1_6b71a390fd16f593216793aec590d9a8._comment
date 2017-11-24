@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 1"
+ date="2014-05-22T20:05:54Z"
+ content="""
+A temporary workaround is to add an entry to /etc/hosts until the remote is added.
+"""]]

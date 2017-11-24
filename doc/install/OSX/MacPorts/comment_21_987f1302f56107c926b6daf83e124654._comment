@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmJdzisfT6DhorwRz0kKJ_9-zQbccCopu4"
+ nickname="Alejandro"
+ subject="Macports _iconv"
+ date="2013-07-18T14:23:02Z"
+ content="""
+If you get an error like `undefined symbol _iconv for x86_64`, you're most likely using libiconv installed by macports. You can fix this by running
+
+    cabal install c2hs git-annex --bindir=$HOME/bin --extra-lib-dirs=/usr/lib
+
+"""]]

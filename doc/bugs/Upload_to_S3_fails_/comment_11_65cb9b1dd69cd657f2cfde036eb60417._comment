@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.96"
+ subject="comment 11"
+ date="2014-10-23T21:05:15Z"
+ content="""
+When it resumes, it will start at 0% but jump forward to the resume point pretty quickly, after verifying which chunks have already been sent.
+If any full chunk gets transferred, I'd expect it to resume. This may not be very obvious it's happening for smaller files.
+
+I have been running `git annex testremote` against S3 special remotes today, and have not managed to reproduce this problem (using either the old S3 or the new AWS libraries). It could be anything, including a problem with your network or the network between you and the S3 endpoint. Have you tried using a different S3 region?
+"""]]

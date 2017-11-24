@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="Horus"
+ avatar="http://cdn.libravatar.org/avatar/8f0ee08b98ea5bba76c3fe112c08851c"
+ subject="comment 3"
+ date="2017-05-29T18:10:55Z"
+ content="""
+Sorry, just saw your comment...
+
+Yes, I'm using the assistant, as I pointed out in my original posting. Just right now, I'm having the same situation:
+
+```
+florian@horus ~/.synced_configuration (git)-[annex/direct/master] % git annex whereis .emacs
+whereis .emacs (2 copies) 
+        c7fc42ca-49f7-4688-b81d-c9cfd4a42564 -- Asaru
+        d5b0586f-32dd-4aae-a7a2-b23d9edd0c32 -- Marduk [marduk]
+ok
+```
+
+```
+florian@horus ~/.synced_configuration (git)-[annex/direct/master] % git annex log .emacs    
++ Mon, 29 May 2017 20:04:11 CEST .emacs | c7fc42ca-49f7-4688-b81d-c9cfd4a42564 -- Asaru
+- Mon, 29 May 2017 20:04:10 CEST .emacs | 69902190-d4c1-4abb-a000-f0712769f1cd -- Horus
++ Mon, 29 May 2017 20:02:37 CEST .emacs | 69902190-d4c1-4abb-a000-f0712769f1cd -- Horus
++ Mon, 29 May 2017 20:02:37 CEST .emacs | d5b0586f-32dd-4aae-a7a2-b23d9edd0c32 -- Marduk [marduk]
+- Mon, 29 May 2017 20:02:36 CEST .emacs | 69902190-d4c1-4abb-a000-f0712769f1cd -- Horus
+- Mon, 29 May 2017 20:02:35 CEST .emacs | d5b0586f-32dd-4aae-a7a2-b23d9edd0c32 -- Marduk [marduk]
++ Mon, 29 May 2017 20:02:35 CEST .emacs | d5b0586f-32dd-4aae-a7a2-b23d9edd0c32 -- Marduk [marduk]
++ Mon, 29 May 2017 20:02:33 CEST .emacs | 69902190-d4c1-4abb-a000-f0712769f1cd -- Horus
+```
+
+Thanks!
+Florian
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.43"
+ subject="comment 4"
+ date="2014-01-16T03:03:48Z"
+ content="""
+Alex, the long polling is done almost entirely on the javascript side; the yesod handler only needs to block until the next change it wants to display. So I doubt any of what I have would make a useful library. (Although it would be very useful to have a library!)
+"""]]

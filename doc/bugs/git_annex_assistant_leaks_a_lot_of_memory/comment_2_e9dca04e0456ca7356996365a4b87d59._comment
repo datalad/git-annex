@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://renaud.casenave.fr/"
+ subject="comment 2"
+ date="2014-11-08T07:18:48Z"
+ content="""
+Hi,
+
+Yes, the assistant memory goes back to normal when I do `git annex assistant --stop && git annex assistant`. But when I look at htop the next day, it has already taken 1Gb.
+
+There are quite a lot of files in `.git/annex/transfer`… wc reports more than 200 entries, mainly in the upload folder, although the repository only manages 10 or so files.
+
+I tried building git-annex using cabal but `cabal configure -fEKG` exits with the code 9 and even without `-fEKG` cabal refuses to install some of the dependencies. I'll try again some other time…
+
+"""]]

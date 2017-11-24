@@ -1,0 +1,11 @@
+Did my taxes today. Not very pretty. Planning to run them by a professional.
+
+Reproduced a bug that prevents git-annex from authenticating to the ejabberd
+server, and passed the buck upstream with a test case to the author of the
+haskell XMPP library.
+
+Added some animations to the webapp to show when it's busy doing things.
+
+Made `git annex webapp --listen=address:port` work.
+
+Added a `annex.web-download-command` setting.

@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 68"""
+ date="2017-11-07T20:42:14Z"
+ content="""
+@erics, thanks for the useful feedback about stack. I've applied your
+patch to avoid the Build/InstallDesktopFile problem. And, I made it
+automatically set GHC when BUILDER=stack.
+
+Using the Makefile is documented, up in the "building from source on
+Debian" section. But there's a set of users who want to use stack,
+and don't want to mess around with Makefiles (including users on Windows
+without a "make"), and that's who the stack instructions are kind of
+targeted at. It's an unfortunate problem with stack that it doesn't provide
+any way to make the git-annex-shell symlink.
+
+I am doubtful that --allow-different-user is a good idea. I sometimes
+use stack to build git-annex for testing purposes, but I have never
+built it with stack and installed that with `sudo make install`.
+And it may well be that there's not a reasonable way to make that work;
+and the install target is mostly intended for use by distributions that
+are creating a package of git-annex, who probably set PREFIX and don't run
+it as root.
+"""]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ subject="Replies to questions"
+ date="2015-01-28T05:34:16Z"
+ content="""
+1. Yes, see [[/preferred content]].
+2. Every time you change a file, git-annex stores that version of it indefinitely, until manually dropped or automatically expired by the git annex assistant daemon.  So every time you checked out a branch or made a commit or whatever, you'd be cluttering your annex with many different versions of the same files.  Since git is a pretty good way of keeping track of versions of files, and indeed syncing with other machines using `git push` and `git pull`, why would you want to put your git repos into another synchronisation system?  (You can certainly tar up your git repos and put them in your annex as a backup.)
+3. Git-annex can run on Android phones but there is no iOS app.  You could have some other app uploading to the server, and then the git-annex assistant could watch the directory the files were being uploaded to and automatically add the files to the annex and sync it to your workstation.
+4. If it's just a normal git remote then you can access it in the usual ways.  Special remotes generally either lack knowledge of the names of your files, or this information is stored opaquely in git.  That means that access via e.g. WebDAV would only let you see your files organised by SHA checksum which would be useless.  So you'd want the git-annex remote you were accessing with a non-git interface to be a normal git remote, not a special remote.
+5. I think that Joey Hess wrote that git-annex is not a backup system to mean that what it does is quite different to something like duplicity, and also to mean that if you just install git-annex and create a repository, nothing is actually being backed up at all: you've got to manually add a remote, and instruct git-annex to send stuff there.  You can certainly use git-annex to backup so long as you understand to what extent it is doing so.
+"""]]

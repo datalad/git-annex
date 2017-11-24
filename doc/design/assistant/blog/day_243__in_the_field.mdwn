@@ -1,0 +1,21 @@
+Today was not a work day for me, but I did get a chance to install
+git-annex in real life while visiting. Was happy to download the standalone
+Linux tarball and see that it could be unpacked, and git-annex webapp
+started just by clicking around in the GUI. And in very short order got it
+set up.
+
+I was especially pleased to see my laptop noticed this new repository
+had appeared on the network via XMPP push, and started immediately
+uploading files to my rsync.net transfer repository so the new
+repository could get them.
+
+Did notice that the standalone tarball neglected to install a
+FDO menu file. Fixed that, and some other minor issues I noticed.
+
+
+I also got a brief chance to try the Android webapp. It fails to start;
+apparently `getaddrinfo` doesn't like the flags passed to it and is
+failing. As failure modes go, this isn't at all bad. I can certainly work
+around it with some hardcoded port numbers, but I want to fix it the right
+way. Have ordered a replacement battery for my dead phone so I can use it
+for Android testing.

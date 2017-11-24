@@ -1,0 +1,23 @@
+[[!comment format=sh
+ username="https://www.google.com/accounts/o8/id?id=AItOawkDqgw0JLrxLH3GIpg36Mp79F_1pxZxWxU"
+ nickname="Benjamin"
+ subject="comment 6"
+ date="2015-02-04T14:56:36Z"
+ content="""
+Hi,
+
+I experienced the same problem. In my case the path to the local clone is \"C:\Users\user\Documents\dev\testplay\studyforrest\". Trying to get a file within that repo (\"c:\Users\user\Documents\dev\testplay\studyforrest\stimulus\task001\annotations>git annex get german_audio_description.csv\") results in \"couldn't find path\".
+More precise git annex says: \"git-annex: MoveFileEx \"..\\..\\..\\.git\\annex\\tmp\\SHA256E-s49358--49140697bfd54e0d384b30efb7256c246b99f8c2cd63a48d54078e7d03e26286.csv\" \"..\\..\\..\\.git\\annex\\objects\\885\\a97\\SHA256E-s49358--
+49140697bfd54e0d384b30efb7256c246b99f8c2cd63a48d54078e7d03e26286.csv\\SHA256E-s49358--49140697bfd54e0d384b30efb7256c246b99f8c2cd63a48d54078e7d03e26286.csv\": does not exist (Das System kann den angegeb
+enen Pfad nicht finden.)
+failed
+git-annex: get: 1 failed\"
+
+
+Cloning to c:\studyforrest works.
+
+Now, I wonder why, since none of the mentioned paths exceeds the limit of 260. But as git annex mentioned it seems to use that relative path \"..\\..\\..\\.git\\annex\ [...]\". May be it internally composes it to something like
+\"c:\Users\user\Documents\dev\testplay\studyforrest\stimulus\task001\annotations\..\\..\\..\\.git\\annex\ [...]\" where the part \"stimulus\task001\annotations\..\..\..\\" is actually not needed to adress the desired file. So, if that is the case may be you could give some more room by eliminating this?
+
+
+"""]]

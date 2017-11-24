@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="GiovanniBiscuolo"
+ subject="hide files not present in the local annex: related forum post"
+ date="2015-04-23T11:00:56Z"
+ content="""
+[How to hide broken symlinks](http://git-annex.branchable.com/forum/How_to_hide_broken_symlinks/)
+
+using views (but see comments)
+"""]]

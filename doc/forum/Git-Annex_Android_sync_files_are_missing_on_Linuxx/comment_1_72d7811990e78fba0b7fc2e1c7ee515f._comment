@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="htun"
+ ip="5.104.224.15"
+ subject="comment 1"
+ date="2014-10-17T04:57:08Z"
+ content="""
+
+
+Here is what the file is looking for symlink 
+.git/annex/objects/MF/kG/SHA256E-s1589297--0ec542aabec66b1877699ef27549fe355339224680d7923078d03f375028fca1.apk/SHA256E-s1589297--0ec542aabec66b1877699ef27549fe355339224680d7923078d03f375028fca1.apk
+
+
+and here is what is in the objects SHA256E-s1589297--0ec542aabec66b1877699ef27549fe355339224680d7923078d03f375028fca1.apk/SHA256E-s1589297--0ec542aabec66b1877699ef27549fe355339224680d7923078d03f375028fca1.apk.map  
+
+"""]]

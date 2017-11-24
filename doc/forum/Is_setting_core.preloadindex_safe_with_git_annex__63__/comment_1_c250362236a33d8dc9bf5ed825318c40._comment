@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-17T15:59:16Z"
+ content="""
+I don't fully understand what core.preloadindex does, but according to
+git's documentation, it's enabled by default. So, it seems pretty safe. :)
+
+Let's anwser the general question: When is a git config tweak not safe to
+use with a git-annex repository? Well, git-annex just stores symlinks in
+git. And, it maintains a separate git-annex branch with its own data, which
+it makes commits to behind the scenes, using its own .git/annex/index file.
+Otherwise, a git-annex repo is like any other git repo.
+
+It follows that, unless the git config tweak somehow breaks symlink
+support, or somehow breaks git-annex's use of the .git/annex/index file,
+the git config tweak should be safe to use with git-annex.
+
+An example of a config tweak that's not entirely safe is to configure
+gc.pruneexpire to a very short time period. That could result in git
+objects that .git/annex/index refers to being pruned before git-annex can
+commit them to the git-annex branch.
+"""]]

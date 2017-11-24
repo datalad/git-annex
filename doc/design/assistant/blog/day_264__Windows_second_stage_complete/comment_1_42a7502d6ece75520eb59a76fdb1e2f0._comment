@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlJ2utMQgMEYAOs3Dfc6eZRyUzt4acNXUU"
+ nickname="David"
+ subject="git on windows"
+ date="2013-05-15T04:26:48Z"
+ content="""
+Adding git to the PATH variable is an optional step in the msysgit installer, fyi.
+
+"""]]

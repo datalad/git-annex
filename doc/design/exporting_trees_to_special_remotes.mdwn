@@ -1,0 +1,352 @@
+For publishing content from a git-annex repository, it would be useful to
+be able to export a tree of files to a special remote, using the filenames
+and content from the tree.
+
+(See also [[todo/export]] and [[todo/dumb, unsafe, human-readable_backend]])
+
+[[!toc ]]
+
+## configuring a special remote for tree export
+
+If a special remote already has files stored in it, switching it to be a
+tree export would result in a mix of files named by key and by filename.
+That's not desirable. So, the user should set up a new special remote
+when they want to export a tree. (It would also be possible to drop all content
+from an existing special remote and reuse it, but there does not seem much
+benefit in doing so.)
+
+Add a new `initremote` configuration `exporttree=yes`, that cannot be
+changed by `enableremote`:
+
+	git annex initremote myexport type=... exporttree=yes
+
+It does not make sense to encrypt an export, so exporttree=yes requires
+encryption=none.
+
+Note that the particular tree to export is not specified yet. This is
+because the tree that is exported to a special remote may change.
+
+## exporting a treeish
+
+To export a treeish, the user can run:
+
+	git annex export $treeish --to myexport
+
+That does all necessary uploads etc to make the special remote contain
+the tree of files. The treeish can be a tag, a branch, or a tree.
+
+If a file's content is not present, it won't be exported. Re-running the
+same export later should export files whose content has become present.
+(This likely means a second pass, and needs location tracking to track
+which files are in the export.)
+
+Users may sometimes want to export multiple treeishes to a single special 
+remote. For example, exporting several tags. This interface could be
+complicated to support that, putting the treeishes in subdirectories on the
+special remote etc. But that's not necessary, because the user can use git
+commands to graft trees together into a larger tree, and export that larger
+tree.
+
+If an export is interrupted, running it again should resume where it left
+off.
+
+## updating an export
+
+The user can at any time re-run git-annex export with a new treeish
+to change what's exported. While some use cases for git annex export
+involve publishing datasets that are intended to remain immutable,
+other use cases include eg, making a tree of files available to a computer
+that can't run git-annex, and in such use cases, the tree needs to be able
+to be updated.
+
+To efficiently update an export, git-annex can diff the tree
+that was exported with the new tree. The naive approach is to upload
+new and modified files and remove deleted files.
+
+With rename detection, if the special remote supports moving files,
+more efficient updates can be done. It gets complicated; consider two files
+that swap names.
+
+If the special remote supports copying files, that would also make some
+updates more efficient.
+
+## tracking exports
+
+This lets the user say, "I want to export the master branch", 
+and have git-annex sync and the assistant automatically update the export
+when master changes.
+
+git-annex export could do this by default (if the user doesn't want the
+export to track the branch, they could instead export a tree or a tag). Or
+it could be a --tracking parameter.
+
+How to record the export tracking branch? It could be stored
+as refs/remotes/myexport/master. This says that the master branch
+is being exported to myexport, and the ref points to the last treeish
+that was exported.
+
+But.. master:subdir is a valid treeish, referring to the subdir
+of the current master tree. This is a useful thing to want to export.
+But, that's not a legal ref name. So, perhaps better to record
+the export tracking branch some other way. Perhaps in git config?
+
+## changes to special remote interface
+
+This needs some additional methods added to special remotes, and to
+the [[external_special_remote_protocol]].
+
+Here's the changes to the latter:
+
+* `EXPORTSUPPORTED`  
+  Used to check if a special remote supports exports. The remote
+  responds with either `EXPORTSUPPORTED-SUCCESS` or
+  `EXPORTSUPPORTED-FAILURE`
+* `EXPORT Name`  
+  Comes immediately before each of the following requests, 
+  specifying the name of the exported file. It will be in the form
+  of a relative path, and may contain path separators, whitespace,
+  and other special characters.
+* `TRANSFEREXPORT STORE|RETRIEVE Key File`  
+  Requests the transfer of a File on local disk to or from the previously 
+  provided Name on the special remote.  
+  Note that it's important that, while a file is being stored,
+  CHECKPRESENTEXPORT not indicate it's present until all the data has
+  been transferred.  
+  The remote responds with either `TRANSFER-SUCCESS` or
+  `TRANSFER-FAILURE`, and a remote where exports do not make sense
+  may always fail.
+* `CHECKPRESENTEXPORT Key`  
+  Requests the remote to check if the previously provided Name is present
+  in it.  
+  The remote responds with `CHECKPRESENT-SUCCESS`, `CHECKPRESENT-FAILURE`,
+  or `CHECKPRESENT-UNKNOWN`.
+* `REMOVEEXPORT Key`  
+  Requests the remote to remove content stored by `TRANSFEREXPORT`
+  with the previously provided Name.  
+  The remote responds with either `REMOVE-SUCCESS` or
+  `REMOVE-FAILURE`.
+* `RENAMEEXPORT Key NewName`  
+  Requests the remote rename a file stored on it from the previously
+  provided Name to the NewName.  
+  The remote responds with `RENAMEEXPORT-SUCCESS` or with
+  `RENAMEEXPORT-FAILURE` if an efficient rename cannot be done.
+
+To support old external special remote programs that have not been updated
+to support exports, git-annex will need to handle an `ERROR` response
+when using any of the above.
+
+## location tracking
+
+Since not all the files in an exported treeish may have content
+present when the export is done, location tracking will be needed so that
+getting the files and exporting again transfers their content.
+
+Does a copy of a file exported to a special remote count as a copy
+of a file as far as [[numcopies]] goes? Should git-annex get download
+a file from an export?
+
+The problem is that special remotes with exports are not
+key/value stores. The content of a file can change, and if multiple
+repositories can export a special remote, they can be out of sync about
+what files are exported to it. 
+
+Possible solution: Make exporttree=yes cause the special remote to
+be untrusted, and rely on annex.verify to catch cases where the content
+of a file on a special remote has changed. This would work well enough
+except for when the WORM or URL backend is used. So, prevent the user
+from exporting such keys. Also, force verification on for such special
+remotes, don't let it be turned off.
+
+The same file contents may be in a treeish multiple times under different
+filenames. That complicates using location tracking. One file may have been
+exported and the other not, and location tracking says that the content
+is present in the export. A sqlite database is needed to keep track of
+this.
+
+## recording exported filenames in git-annex branch
+
+In order to download the content of a key from a file exported
+to a special remote, the filename that was exported needs to somehow
+be recorded in the git-annex branch. How to do this? The filename could
+be included in the location tracking log or a related log file, or 
+the exported tree could be grafted into the git-annex branch
+(under eg, `exported/uuid/`). Which way uses less space in the git repository?
+
+Grafting in the exported tree records the necessary data, but the
+file-to-key map needs to be reversed to support downloading from an export.
+It would be too expensive to traverse the tree each time to hunt for a key;
+instead would need a database that gets populated once by traversing the
+tree.
+
+On the other hand, for updating what's exported, having access to the old
+exported tree seems perfect, because it and the new tree can be diffed to
+find what changes need to be made to the special remote. 
+
+If the filenames are stored in the location tracking log, the exported tree
+could be reconstructed, but it would take O(N) queries to git, where N is
+the total number of keys git-annex knows about; updating exports of small
+subsets of large repositories would be expensive. So grafting in the
+exported tree seems the better approach.
+
+## export conflicts
+
+What if different repositories can access the same special remote,
+and different trees get exported to it concurrently?
+
+This would be very hard to untangle, because it's hard to know what
+content was exported to a file last, and thus what content the file
+actually has. The location log's timestamps might give a hint, 
+but clocks vary too much to trust it.
+
+Also, if the exported tree is grafted in to the git-annex branch, 
+there would be a merge conflict. Union merging would *scramble* the exported 
+tree, so even if a smart merge is added, old versions of git-annex would 
+corrupt the exported tree.
+
+To avoid that problem, add a log file `export.log` that contains the uuid
+of the remote that was exported to, and the sha1 of the exported tree.
+To avoid the exported tree being GCed, do graft it in to the git-annex
+branch, but follow that with a commit that removes the tree again,
+and only update `refs/heads/git-annex` after making both commits.
+
+If `export.log` contains multiple active exports of different trees,
+there was an export conflict. Short of downloading the whole export to
+checksum it, or deleting the whole export, what can be done to resolve it?
+
+In this case, git-annex knows both exported trees. Have the user provide
+a tree that resolves the conflict as they desire (it could be the same as
+one of the exported trees, or some merge of them or an entirely new tree).
+The UI to do this can just be another `git annex export $tree --to remote`.
+To resolve, diff each exported tree in turn against the resolving tree
+and delete all files that differ. Then, upload all missing files.
+
+## when to update export.log for efficient resuming of exports
+
+When should `export.log` be updated? Possibilities:
+
+* Before performing any work, to set the goal.
+* After the export is fully successful, to record the current state.
+* After some mid-point.
+
+Lots of things could go wrong during an export. A file might fail to be
+transferred or only part of it be transferred; a file's content might not
+be present to transfer at all. The export could be interrupted part way.
+Updating the export.log at the right point in time is important to handle
+these cases efficiently.
+
+If the export.log is updated first, then it's only a goal and does not tell
+us what's been done already.
+
+If the export.log is updated only after complete success, then the common
+case of some files not having content locally present will prevent it from
+being updated. When we resume, we again don't know what's been done
+already.
+
+If the export.log is updated after deleting any files from the
+remote that are not the same in the new treeish as in the old treeish,
+and as long as TRANSFEREXPORT STORE is atomic, then when resuming we can
+trust CHECKPRESENTEXPORT to only find files that have the correct content
+for the current treeish. (Unless a conflicting export was made from
+elsewhere, but in that case, the conflict resolution will have to fix up
+later.)
+
+## handling renames efficiently
+
+To handle two files that swap names, a temp name is required.
+
+Difficulty with a temp name is picking a name that won't ever be used by
+any exported file.
+
+Interrupted exports also complicate this. While a name could be picked that
+is in neither the old nor the new tree, an export could be interrupted,
+leaving the file at the temp name. There needs to be something to clean
+that up when the export is resumed, even if it's resumed with a different 
+tree.
+
+Could use something like ".git-annex-tmp-content-$key" as the temp name.
+This hides it from casual view, which is good, and it's not depedent on the
+tree, so no state needs to be maintained to clean it up. Also, using the
+key in the name simplifies calculation of complicated renames (eg, renaming
+A to B, B to C, C to A)
+
+Export can first try to rename all files that are deleted/modified
+to their key's temp name (falling back to deleting since not all
+special remotes support rename), and then, in a second pass, rename
+from the temp name to the new name. Followed by deleting the temp name
+of all keys whose files are deleted in the diff. That is more renames and
+deletes than strictly necessary, but it will statelessly clean up 
+an interruped export as long as it's run again with the same new tree.
+
+But, an export of tree B should clean up after 
+an interrupted export of tree A. Some state is needed to handle this.
+Before starting the export of tree A, record it somewhere. Then when
+resuming, diff A..B, and delete the temp names of the keys in the
+diff. (Can't rename here, because we don't know what was the content
+of a file when an export was interrupted.)
+
+So, before an export does anything, need to record the tree that's about
+to be exported to export.log, not as an exported tree, but as a goal.
+Then on resume, the temp files for that can be cleaned up.
+
+## renames and export conflicts
+
+What is there's an export conflict going on at the same time that a file
+in the export gets renamed?
+
+Suppose that there are two git repos A and B, each exporting to the same
+remote. A and B are not currently communicating. A exports T1 which
+contains F. B exports T2, which has a different content for F. 
+
+Then A exports T3, which renames F to G. If that rename is done
+on the remote, then A will think it's successfully exported T3,
+but G will have F's content from T2, not from T1.
+
+When A and B reconnect, the export conflict will be detected. 
+To resolve the export conflict, it says above to:
+
+> To resolve, diff each exported tree in turn against the resolving tree
+> and delete all files that differ. Then, upload all missing files.
+
+Assume that the resolving tree is T3. So B's export of T2 is diffed against
+T3. F differs and is deleted (no change). G differs and is deleted,
+which fixes up the problem that the wrong content was renamed to G.
+G is missing so gets uploaded.
+
+So, this works, as long as "delete all files that differ" means it
+deletes both old and new files. And as long as conflict resolution does not
+itself stash away files in the temp name for later renaming.
+
+## dropping from exports and copying to exports
+
+It might be nice for `git annex drop $file --from myexport` and
+`git annex copy $myfile --to export` to work. However, there are some
+very difficult issues in supporting those, and they don't really
+seem necessary to use exports. Re-running `git annex export`
+to resume an export handles all the cases that copying to an export
+would need to. And, deleting a file from a tree and exporting the new tree
+is the thing to do if a file no longer should be exported.
+
+Here's an example of the kind of problem supporting these needs to deal with:
+
+1. In repo A, file F with content K is exported
+2. In repo B, file F with content K' is exported, since F changed in the
+   exported treeish.
+3. In repo A, file F is removed from the export, which results in
+   K being removed from the location log for the export.
+
+But... did #3 happen before or after #2?
+If #3 occurred before #2, then K' is present in the export
+and the location log is correct.
+If #3 occurred after #2, and A and B's git-annex branches
+were not synced, then K' was accidentially removed
+from the export, and the location log is now wrong.
+
+Is there any reason to allow removeKey from an export?
+Why would someone want to drop a single file from an export?
+Why not remove the file from a tree, and export the new tree?
+
+(Alternatively, removeKey could itself update the exported tree,
+removing the file from it, and update the export log accordingly.
+This would avoid the problem. But that's complication and it would be
+rather slow and bloat the git repo with a lot of intermediate trees
+when dropping multiple keys.)

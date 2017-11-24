@@ -1,0 +1,17 @@
+Upgrades should be working on OSX Mavericks, Linux, and sort of on Android.
+This needs more testing, so I have temporarily made the daily builds think
+they are an older version than the last git-annex release. So when you
+install a daily build, and start the webapp, it should try to upgrade
+(really downgrade) to the last release. Tests appreciated.
+
+Looking over the whole upgrade code base, it took 700 lines of code
+to build the whole thing, of which 75 are platform specific (and mostly
+come down to just 3 or 4 shell commands). Not bad..
+
+----
+
+Last night, added support for quvi 0.9, which has a completely changed
+command line interface from the 0.4 version.
+
+Plan to spend tomorrow catching up on bug reports etc and then low activity
+for rest of the week.

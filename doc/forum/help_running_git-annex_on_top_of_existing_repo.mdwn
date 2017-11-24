@@ -1,0 +1,12 @@
+## Question
+Can git-annex run passively with an existing repo?
+
+## Scenario
+We have an existing web application with large binary assets spread throughout modules in the repo. The project is in constant development with weekly deploys to production and there are many developers working on the project.
+
+## Goal
+We need to maintain the directory structure for these assets without actually committing large binaries to the main remote (hosted on GitHub). I need a solution that has a low barrier of entry when on-boarding new developers. I was thinking maybe a script the is executed on every commit that would filter binaries files based on extensions and commit them to the git-annex remote instead. We are flexible on the type of remote storage type (SSH, S3, etc)
+
+## Notes
+I have gone through the last couple months of forum posts and done a bit of Googling but have come up empty. If anyone can point me in the right direction that would be great. 
+Thanks!

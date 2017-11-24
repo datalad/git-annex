@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="anarcat"
+ ip="70.83.139.100"
+ subject="camlistore"
+ date="2014-09-17T20:18:56Z"
+ content="""
+have you looked at [camlistore](http://camlistore.org/) at all? it's a fairly new project, but it seems like it could be an interesting backend, or at least inspiration for git-annex's design. --[[anarcat]]
+"""]]

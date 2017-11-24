@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-12-19T17:51:55Z"
+ content="""
+`git-annex init` sets up .git/hooks/pre-commit to run `git annex pre-commit`.
+It looks like when git commit is run, the git-annex program is not in PATH.
+This probably has something to do with the way you installed git-annex.
+
+(Why is git-annex | less blanking out? Because git-annex outputs usage
+messages to stderr, and less pages stdout. Use git-annex 2>&1 |less)
+"""]]

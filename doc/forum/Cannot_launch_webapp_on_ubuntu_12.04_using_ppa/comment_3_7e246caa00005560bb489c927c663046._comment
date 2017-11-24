@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-04-23T16:05:31Z"
+ content="""
+git-annex can be built without the webapp, and if some of the necessary dependencies for the webapp are not available, it will build without it by default. More recent versions than that one let you run `git annex version` and see the build flags, which can all be disabled due to missing dependencies. For example:
+
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
+
+Sergio does seem to be trying to backport all the dependencies of the webapp, but it looks to me like some of them, particularly haskell-xml-hamlet, have not successfully built yet.
+"""]]

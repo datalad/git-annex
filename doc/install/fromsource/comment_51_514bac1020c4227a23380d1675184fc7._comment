@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="reyman64@f52a9d695f5dc1d5b0788fbb9877e9401fae7421"
+ nickname="reyman64"
+ subject="Error with Url.hs"
+ date="2015-11-06T13:37:41Z"
+ content="""
+Hi,
+With minimal compilation for git-annex-5.20151102.1
+and
+Cabal version is : 1.22.4.0
+Ghc version is : 7.10.2 
+
+I have an error on url.hs:45
+binary operator not found before lexical element \" ( \"
+
+any idea ?
+
+"""]]

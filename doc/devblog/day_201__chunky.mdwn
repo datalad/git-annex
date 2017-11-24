@@ -1,0 +1,12 @@
+Working on designs for better [[chunking|design/assistant/chunks]]. Having
+a hard time finding a way to totally obscure file sizes, but otherwise a
+good design seems to be coming together. I particularly like that the new
+design puts the chunk count in the Key (which is then encrypted for special
+remotes, rather than having it be some special extension.
+
+While thinking through chunking, I realized that the current chunking
+method can fail if two repositories have different chunksize settings for
+the same special remote and both upload the same key at the same time.
+Arn't races fun? The new design will eliminate this problem; in the
+meantime updated the docs to recommend never changing a remote's
+chunksize setting.

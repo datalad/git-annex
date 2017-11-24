@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-05-25T17:51:26Z"
+ content="""
+You must have rsynced over the .git/config from A. That is where the UUID
+of the repository is stored. So B now has whatever git config settings you
+had in A. The reinit fixed the UUID; there could be other things, like
+remotes, that are configured wrong. Otherwise, the way you recovered seems
+fine.
+"""]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmWBvsZvSsAL8P2ye3F0OBStjFCVnOImzM"
+ nickname="Jarno"
+ subject="How about with the 'proxy' command?"
+ date="2014-11-28T18:47:17Z"
+ content="""
+Why does this not work?
+
+    git annex proxy -- git reset HEAD
+
+"""]]

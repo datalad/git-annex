@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="pigmonkey"
+ subject="comment 2"
+ date="2016-09-06T23:10:47Z"
+ content="""
+Is it not possible to implement per-annex?
+
+For instance, take the walkthrough example where you create an annex at `~/annex` and then clone it at `/media/usb/annex`. Take that setup and add a special remote -- say, a Google Drive remote called `annex-gdrive`. Now both `~/annex` and `/media/usb/annex` know which files are stored on the `annex-gdrive` remote. So we go into `~/annex` and set the maximum usable space for `annex-gdrive` and upload a couple files. Then we can go into `/media/usb/annex`, sync, and it will be able to determine the space still available on `annex-gdrive`, not through any special API but just by looking at the size of the files it knows are stored on that special remote.
+
+In the case that we create a brand new annex `~/foo` and add a Google Drive special remote to it `foo-gdrive` that happens to use the same Google account as the `annex-gdrive` remote from the previous annex, I would not expect that new annex to know about the storage used for `annex-gdrive`. That would need some sort of special API from the provider.
+
+I just want the annex `~/annex` to know about the storage used at `annex-gdrive` and the annex `~/foo` to know about the storage used at `foo-gdrive`.
+
+Hope that makes sense!
+"""]]

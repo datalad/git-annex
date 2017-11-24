@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-09-21T20:44:26Z"
+ content="""
+Gold star for @jimparis!
+
+Another way to get out of this situation would be to edit the files,
+and remove the initial lines so it contains a single line that is
+the link target of the symlink (the bit with .git/annex/objects in it).
+
+Then, `git annex fsck` would be able to fix up the files.
+"""]]

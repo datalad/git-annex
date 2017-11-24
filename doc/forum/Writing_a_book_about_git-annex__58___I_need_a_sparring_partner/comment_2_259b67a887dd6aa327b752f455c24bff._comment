@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 2"
+ date="2015-06-10T13:09:08Z"
+ content="""
+I'm happy to help if I can. Though I don't use the assistant (personally, though people \"at the other end\" of annexes I use do though) or special remotes, I do have at least one unusual use case which entails several terabytes over millions of files.
+
+In this case, I have a collection of harddrives and I am annexing all their contents into one large annex for quick backup/sorting later. This is well into git's problem with scaling to lots of files (I've posted a few tips on the site to minimise this impact).
+
+My other uses are more normal, such as managing photos and music and other digital assets such as games. I use the metadata quite a lot (e.g. I tag files I want to have available in Kodi, or tag game installer/archives to denote what operating system they are for).
+
+Being really picky about commits, several annexes I have have auto-commits on the git-annex branch disabled so I can control them. I'm even picky about doing things in such a way that they look nice in gitk! For example, I avoid cloning, because it makes the new annex appear at the bottom of gitk with its merge commit really far away, instead of a close merge (I can screenshot it if that isn't making any sense).
+
+I'm not sure if I would recommend it to someone who doesn't have someone who understands it nearby to help (just in case), but I would say it is definitely worth learning and using.
+
+In the book, I would say that you should mention that git-annex builds on git, and now people are building things on git-annex. For example, a project I am dabbling in is a VR environment which uses git and git-annex to manage its data: room definitions are stored as text files in git, with references to asset data (such as textures) which are 'git annex get'd as required. This is interesting as it means my co-developer can create/change rooms while I am in the VR environment and they change almost immediately. He changes the texture for the walls? It is downloaded and updated automatically. Imagine Second Life but with a (fully revertable) git-annex backend!
+"""]]

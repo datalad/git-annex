@@ -1,0 +1,7 @@
+This is a newb question. I don't know whether this is a bug or the way git-annex is intended to function.
+
+I have two annex repos connected to each other. My idea was to have the first repository add files, which would then be moved to the second repository for storage. After moving, repo1 would be empty again, empty and clean of any symlinks.
+
+But after I 'git-annex move * --to repo2' broken symlinks remain in repo1. I don't want any broken/unused symlinks to remain in repo1 for object data it doesn't currently have (even if those files remain in the repository itself).
+
+Is there a way I can clean/remove broken symlinks to object data when those objects aren't present, so the directory only contains symlinks when the repo currently has the object data for those files?

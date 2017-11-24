@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.235"
+ subject="comment 1"
+ date="2013-07-11T16:19:26Z"
+ content="""
+Directory special remotes do already honor annex.diskreserve, it turns out. Let's repurpose this bug to be about adding a per-remote configuration, in case the main annex.diskreserve is not appropriate.
+"""]]

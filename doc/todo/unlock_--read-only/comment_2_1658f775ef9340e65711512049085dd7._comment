@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-10-17T21:07:31Z"
+ content="""
+Actually, yoh is right: read-only would be sufficient protection here.
+Because, with annex.thin, the worktree file is a hard link to the annex
+object, and the annex object lives in a mode 400 directory. So, even if the
+file is deleted and a new version renamed into place, the annex object will
+still have captured the old version.
+
+Still don't like the self-contradition of "unlock read-only".
+
+Of course, you can do this yourself:
+
+	git annex unlock file
+	chmod 400 file
+
+So I wonder if there's any need for a git-annex command to do this.
+"""]]

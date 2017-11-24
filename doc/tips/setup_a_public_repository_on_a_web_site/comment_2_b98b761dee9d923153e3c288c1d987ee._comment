@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.90"
+ subject="comment 2"
+ date="2013-07-16T17:54:28Z"
+ content="""
+You can choose which files get stored in the public repository, and are thus accessible to the public.
+However, note that since the git repository is published, anyone could clone it and see all the names and hashes of your files, even if you've not pushed the file contents to the public repository.
+
+Currently the way the \"public\" [[repository group|preferred_content]] works only makes it be usable with special remotes. This is because it uses a `preferreddir` setting in the special remote configuration.
+"""]]

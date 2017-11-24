@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.172"
+ subject="comment 1"
+ date="2014-02-21T22:36:51Z"
+ content="""
+--metadata does not support globs, so your example is asking for all files that don't have an author field with a literal \"*\" value. When I try that command, it lists all files ... as expected.
+
+It seems that adding glob support to it would get to the result you want, and makes sense to parallel git annex view. Change made in git!
+"""]]

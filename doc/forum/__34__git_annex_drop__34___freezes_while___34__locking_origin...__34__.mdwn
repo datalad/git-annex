@@ -1,0 +1,12 @@
+Hi,
+
+I am using git annex 5.20151208-1build1 on my local machine and 5.20151208-g5ef6ed8 on "origin". I can not drop files anymore. "git annex sync --content" has the same problem when it tries to drop files:
+
+    $ git annex drop xyz
+    drop xyz (locking origin...)   <--  waits here for ever
+
+    $ git annex sync --content
+    [git annex is pulling and merging stuff]
+    drop xyz (locking origin...)   <--  waits here for ever
+
+What can I do? Thanks!

@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="Steve"
+ ip="92.104.175.136"
+ subject="comment 5"
+ date="2012-12-10T04:07:53Z"
+ content="""
+I pay attention to feedback ;)
+
+I'm not done with it yet, I want to add in some options to limit what gets counted.
+
+For example:  If you have two annexed files that contain the same content using the same backend, they will be stored only once in the .git/annex/objects directory but be counted twice by gadu.
+
+I want to fix that, but I'll leave an option to keep that behavior if you want.  I also want to add options to count or not count files that exist in a certain repo.  It will be very easy to add options to only count files that you have or don't have locally as well.
+
+Making it pay attention to environment variables that git and git-annex do would also be a good idea. (like GIT_DIR, etc...)
+
+I'm open to good ideas that anybody has, unfortunately I can only work on it on the weekends for now.
+"""]]

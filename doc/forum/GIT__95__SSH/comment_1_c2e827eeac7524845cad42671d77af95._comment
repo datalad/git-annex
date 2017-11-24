@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-03-17T17:26:56Z"
+ content="""
+I've added support for this now.
+
+However, since git's interface to this doesn't let any options other than
+-p be passed to the command run by this, git-annex can't either. Which
+means it can't pass options for ssh connection caching. So, I'm afraid that
+using `GIT_SSH` will slow things down somewhat. Of course, you can always
+enable ssh connection caching yourself in either the `GIT_SSH` script or
+the ssh configuration.
+"""]]

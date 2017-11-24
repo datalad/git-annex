@@ -1,0 +1,66 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="git-annex-undo: 3 issues and fix suggestions"
+ date="2016-10-21T09:21:16Z"
+ content="""
+Hello Joey.
+
+Thank you for your answer.  It makes things clearer. I believe the documentation should reflect it.  
+
+## Where the bug (1) is: not defining the level of operation
+
+> git annex undo undoes the last change that was committed to the file.
+
+Ah, *committed*. That's an important information.  It's not at all what I expected from reading the page.
+
+I was expecting tree-level undo, not commit-level undo. I've found the bug: *The documentation for git-annex undo does not define \"undo\" or the level at which it operates.*
+
+### Suggestion (1): define the level of operation
+
+What if the documentation included something like this?
+
+> Here, \"undo\" means: \"undo a commit\", that is \"add a commit in the history that undoes the previous commit\".  
+
+## Case (2) of staged changes
+
+> If the file has staged changes, git annex undo first commits those changes (to avoid losing data) and then undoes that commit.
+
+This sounds strange. 
+
+So, if I call git-annex-undo to undo a commit A, but there are staged changes, git-annex-undo will add a commit B then add another commit C to undo B? 
+
+This will not undo A.
+
+What use case where you thinking of?
+
+### Case of staged changes: suggestion (2)
+
+Perhaps in case when file has staged changes, it would be better to display a warning message, perhaps with a `--commit-staged` option to bypass it.
+
+## Internal rationale: got it
+
+> The reason that git annex undo deleted the files from your working tree is that the previous commit did not have those files in it, and it undid to the state at that commit.
+
+> So, you will never lose the content of a file by running git annex undo. If git annex undo deletes a file, you can always get it back by checking out a previous version of the branch. Or even by running git annex undo a second time, to undo the undo.
+
+Ok I understand the data was not lost.  But this kind of reasoning is only reachable when one knows what git-annex-undo really does.  So, this command is still dangerous to the unsavvy.  Perhaps document that?
+
+## Issue (3): What was actually needed (all this time)
+
+It seems that what I really needed was [[git-annex-unannex]].
+
+### Suggested changes to documentation (3)
+
+Perhaps in case when file has staged changes, it would be better to display a warning message *and* suggest using [[git-annex-unannex]] instead?
+
+> If you are looking for a way to undo changes in the directory tree, consider [[git-annex-unannex]].
+
+## Conclusion
+
+What do you think about the 3 issues and fix suggestions?
+
+Thanks again. `git-annex` has started to become useful here.
+
+"""]]

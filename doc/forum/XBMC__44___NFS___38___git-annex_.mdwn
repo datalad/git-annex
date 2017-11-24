@@ -1,0 +1,27 @@
+Hi,
+
+this is not a git-annex problem, but more likely a way some software handles symlinks and/or do file-type detection.
+
+my setup is a following:
+- multiple pc/laptop (linux)
+- one NAS (debian) - main repo for music/films/photos - all in git-annex
+- a Raspberry Pi (Raspbmc) - connected to the TV
+
+I want to share all my films/music/.. to the Pi.
+So, i setup a r/o NFS and mounted that in the XBMC.
+So far this works, I see directories but XBMC do not recognize the media files.
+It works, if I "git-annex edit ..." the file.
+
+My _assumption_ is, that it follows the symlink, finds a file with no extension - and ignores that.
+In XBMC-config there is a list of supported filetypes by extension. ( .avi,.mpg,.foo,.bar )
+
+What I have think of so far:
+- tell XBMC somehow to load all the files (did not work)
+- having some kind of (FUSE?) filter, which hides the symlink in a transparent way
+- creating via script hard-links in a seperate folder with same structure, mount that.
+- using some alternative to NFS ( like ftp, smb ) or a other kind of media-server (server-side)
+
+any comments, ideas ? 
+If i find a solution, I'll post it here.
+
+.ka

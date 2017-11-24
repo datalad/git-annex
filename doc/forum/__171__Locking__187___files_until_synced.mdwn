@@ -1,0 +1,7 @@
+I’m currently trying to set up a sync which involves an SQLite3 database file that should always be in the same state on all systems at all times (since there is no readily available way of merging the data). Basically, I’m looking for a practical way that gives me some help in making sure the files never drift apart between my remotes. Since I’m forgetful and might forget syncing the repo before going home from the office, I was wondering whether there might be a good way to assist me in this. Has anyone had some good ideas in this direction, or is there a canonical solution?
+
+It occurred to me one way would be to instate a hook somewhere that links the database to /dev/null in all other remotes (so the software will fail to work if I start it without having synced), but it seems tricky. I guess would have to involve per-remote branches, which will be hard to do, since I need to use direct mode.
+
+A less complex method might be forcing a sync before shutting down the system resp. when booting up.
+
+Maybe other folks have had ideas for a practical, yet robust solution.

@@ -1,0 +1,16 @@
+Got the release out after more struggling with ssh on windows and a last
+minute fix to the quvi support.
+
+The downloads.kitenet.net git annex repository had accumulated 6 gb of past
+builds that were not publically available. I am publishing those 
+[on the Internet Archive now](https://archive.org/details/git-annex-builds),
+so past builds can be downloaded using git-annex in that repository in the
+usual way. This worked great! :)
+
+I have ordered a CubieTruck with 2 gb of ram to use for the new Arm builder.
+Hosting still TBD.
+
+Looks like git-annex is almost ready to
+[be included in stackage](https://github.com/fpco/stackage/pull/519#issuecomment-98590181),
+which will make building it from source much less likely to fail due to
+broken libraries etc.

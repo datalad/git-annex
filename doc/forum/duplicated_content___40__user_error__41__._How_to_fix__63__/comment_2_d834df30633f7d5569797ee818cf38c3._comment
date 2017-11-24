@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkpIIYg6Fl7OFsOHVPEchZYj68A3dk4lVg"
+ nickname="Paul"
+ subject="please explain"
+ date="2014-07-01T13:45:08Z"
+ content="""
+Sorry. I just don't understand. 
+what am I doing wrong?  How to remove extra copy:
+
+<pre>
+whereis WaldTest/Vaeth_WaldTest.pdf (3 copies)
+        67e69242-d57c-4b50-aaf9-74876b899962
+        9e0bc9e4-f8bf-11e3-b9c1-9b4158540a9d -- pols110.pols.ku.edu_mediashare (pdf and mp3)
+        d82d2e6f-9200-49cf-86a3-1d674a768971 -- here (pauljohn@dellap14:~/mediashare)
+ok
+pauljohn@dellap14:~/mediashare/manuscripts$ git annex drop 67e69242-d57c-4b50-aaf9-74876b899962
+git-annex: 67e69242-d57c-4b50-aaf9-74876b899962 not found
+pauljohn@dellap14:~/mediashare/manuscripts$ git annex drop WaldTest/67e69242-d57c-4b50-aaf9-74876b899962
+git-annex: WaldTest/67e69242-d57c-4b50-aaf9-74876b899962 not found
+"""]]

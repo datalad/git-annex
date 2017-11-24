@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-20T17:51:33Z"
+ content="""
+The "GitLab: You don't have access" seems to be gitlab refusing to run
+git-annex-shell when asked to. Only the gitlab people could help you with
+that. (Gitlab does seem to work with git-annex today when I try it,
+I had some similar problems with their implementation refusing to
+start git-annex-shell earlier.)
+
+OTOH, the "git-annex.exe: unknown command git@gitlab.server.com"
+looks like you ran into this bug:
+<http://git-annex.branchable.com/bugs/git-annex_sync_under_windows_fails_by_using_itself_as_the_ssh_command/>
+Since I have still not managed to reproduce or get to the bottom of that
+bug report, any information about it would be useful.
+"""]]

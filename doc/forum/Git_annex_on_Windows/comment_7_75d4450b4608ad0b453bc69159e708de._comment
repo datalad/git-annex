@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.102"
+ subject="comment 7"
+ date="2014-03-20T16:04:36Z"
+ content="""
+Hmm, putting git-annex.exe in to bin and not cmd with mysysgit 1.8.5.2 will make \"git annex\" work, but \"git-annex\" will not.
+
+What version of msysgit has the problem with bin?
+"""]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-03-16T18:39:01Z"
+ content="""
+The lack of "live messaging" for gcrypt repos is a bug. I'm fixing
+it now and the next version of git-annex will have remotedaemon
+properly supporting gcrypt repos.
+"""]]

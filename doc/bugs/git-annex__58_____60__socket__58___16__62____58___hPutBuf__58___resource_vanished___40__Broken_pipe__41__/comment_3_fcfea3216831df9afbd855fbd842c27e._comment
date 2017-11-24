@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-05-27T05:03:05Z"
+ content="""
+I got a similar crash:
+
+<pre>
+fd:19: hGetLine: end of file
+fd:18: hFlush: resource vanished (Broken pipe)
+fd:18: hFlush: resource vanished (Broken pipe)
+</pre>
+
+I was able to determine that fd 18/19 is reliably used for one of the git cat-file processes on this system. It's quite likely that fd 16/17 would be similar. fd 27 less likely. (But could easily be some other less long running git command.)
+
+This would be consistent with git cat-file crashing as it's trying to write to it and read from it. 
+
+This took down the transferscanner thread, but the assistant continued running. 
+"""]]

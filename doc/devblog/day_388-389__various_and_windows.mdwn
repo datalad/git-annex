@@ -1,0 +1,13 @@
+Lots of little fixes and improvements here and there over the past couple
+days.
+
+The main thing was fixing several bugs with adjusted branches and Windows.
+They seem to work now, and commits made on the adjusted branch are
+propigated back to master correctly.
+
+It would be good to finish up the last todos for v6 mode this month.
+The sticking point is I need a way to update the file stat in the git index
+when git-annex gets/drops/etc an unlocked file. I have not decided yet if
+it makes the most sense to add a dependency on libgit2 for that, or extend
+`git update-index`, or even write a pure haskell library to manipulate
+index files. Each has its pluses and its minuses.

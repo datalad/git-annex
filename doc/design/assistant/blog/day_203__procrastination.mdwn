@@ -1,0 +1,25 @@
+Stuck on a bug or two, I instead built a new Preferences page:
+
+[[!img /assistant/preferences.png]]
+
+The main reason I wanted that was to allow enabling debug logging at
+runtime. But I've also wanted to expose annex.diskreserve and
+annex.numcopies settings to the webapp user. Might as well let them control
+whether it auto-starts too.
+
+Had some difficulty deciding where to put this. It could be considered
+additional configuration for the local repository, and so go in the
+local repository edit form. However, this stuff can only be configured for
+local repositories, and not remotes, and that same form is used to edit 
+remotes, which would lead to inconsistent UI and complicate the code.
+Also, it might grow to include things not tied to any repository,
+like choice of key/value backends. So, I put the preferences on their own
+page.
+
+---
+
+Also, based on some useful feedback from testing the assistant with a large
+number of files, I made the assistant disable git-gc auto packing in
+repositories it sets up. (Like fsck, git-gc always seems to run exactly
+when you are in a hurry.) Instead, it'll pack at most once a day, and with
+a rather higher threshold for the number of loose objects.

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.111"
+ subject="comment 1"
+ date="2014-10-15T15:25:14Z"
+ content="""
+You're using an old version of git-annex from before the recent complete rewrite of the chunking code. That old version did not support chunking for S3. QED. Upgrade.
+
+Note that your configuration has both the chunksize= and chunk= set. This is not a good idea, since they enable different types of chunking that are not compatible. If I were you, I'd delete that special remote and make a new one after upgrading, and be careful to only set `chunk=` in that new one.
+"""]]

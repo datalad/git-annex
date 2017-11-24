@@ -1,0 +1,30 @@
+Got Amazon Glacier working as a full-fledged special remote.
+
+(Well, I think it works... Since it takes 4 hours to get data out,
+which is longer than the time it took me to sign up for Glacier and
+write the special remote ... I've yet to fully test it!)
+
+Thanks to Robie Basak for writing glacier-cli, and developing the intial
+hook remote support. Also thanks to Peter Todd for pointing out that
+Glacier cannot store empty files, which had to be worked around in the
+special remote.
+
+Of course the 4 hour delay on retreval makes Glacier interesting. For now,
+you have to run "git annex get" twice, once to queue the retrieval, and a
+second time in 4 hours to get the file(s). There is a helpful example in
+[[tips/using_Amazon_Glacier]].
+
+The real complication though, is that Glacier's inventories take a long
+time to get, and can be out of date. So glacier-cli caches inventory info.
+I didn't feel comfortable making git-annex trust that information,
+so it'll refuse to trust that Glacier has a copy of a file when dropping
+it. There's a `--trust-glacier` switch to override this default paranoid
+behavior when dropping files.
+
+----
+
+Tomorrow ... er, tomorrow is Thanksgiving trip start.
+
+Next weekend: Webapp configurator for glacier, and maybe something
+to get the assistant to detect when jobs are complete and finish
+retrievals from Glacier, automatically.

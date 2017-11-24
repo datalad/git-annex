@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.96"
+ subject="comment 2"
+ date="2014-10-21T20:02:40Z"
+ content="""
+Can you please provide more information, like showing the commits made to the git-annex branch when the configuration was reverted?
+
+Also, might some of the clocks of computers where you're using git-annex be set wrong?
+
+I have tagged this report moreinfo because I don't have enough information to do anything else.
+"""]]

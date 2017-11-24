@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-01-05T20:08:52Z"
+ content="""
+Yes, it does; `git annex import` is implemented quite similarly to
+`copy /file .; git annex add $file'
+"""]]

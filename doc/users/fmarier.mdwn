@@ -1,0 +1,6 @@
+# François Marier
+
+Free Software and Debian Developer. Lead developer of [Libravatar](https://www.libravatar.org)
+
+* [Blog](http://feeding.cloud.geek.nz) and [homepage](http://fmarier.org)
+* [Identica](http://identi.ca/fmarier) / [Twitter](https://twitter.com/fmarier)

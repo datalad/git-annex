@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="ghen1"
+ ip="66.41.70.34"
+ subject="comment 2"
+ date="2014-10-09T02:20:14Z"
+ content="""
+Thank you for your reply and suggestions. How could I maintain an archive folder on a local repo without those changes (moved files) being reflected in the other repos? Would this require branching as well? How does the assistant do it?
+"""]]

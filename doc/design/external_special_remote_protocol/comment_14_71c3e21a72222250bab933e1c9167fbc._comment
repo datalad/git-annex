@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.172"
+ subject="comment 14"
+ date="2014-02-11T01:36:51Z"
+ content="""
+Schnouki, fixed SETCONFIG docs. Note that this is a wiki. :)
+
+I agree it's a little weird for SETCREDS to have a username and a password. This is just exposing git-annex's existing credential storage which has a tuple of values rather than using, say, a multivalue map. If you only need one it's fine to put in a dummy value for the other one.
+
+Re PROGRESS, it seems I hooked up the progress stuff, so it was visible in the webapp, but forgot to put up a progress display at the command line. Fixed in git.
+
+I look forward to seeing your special remote implementation!
+"""]]

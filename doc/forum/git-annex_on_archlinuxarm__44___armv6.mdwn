@@ -1,0 +1,20 @@
+Hi!
+
+I can't get git-annex to run on my archlinuxARM sytem. It fails with
+
+    $ git annex test
+    error: git-annex died of signal 11
+
+ Its a RaspberryPi (model B I think) so its an ARM11 (armv6h if I'm not mistaken). I use archlinuxarm because I am familiar with the distribution and you can have a very lean system. There is a very crude package for git-annex arm and armv7 that is build like this: https://github.com/archlinuxarm/PKGBUILDs/blob/master/alarm/git-annex/PKGBUILD . Crude, because it just takes the debian package, changes the version of libraries where apropriate and packs it as archlinux package. Two problems: 1) It's not been tested on armv6. 2) The 4.20130417 version does not exist anymore on the debian mirrors.
+
+1. The debian package is not marked as armv5 or armv7 specific and is runs on the RaspberryPi with Raspbian (but in an pretty old version if I remember correctly). So I would have imagined it runs on armv6h in general.\\
+2. I just did the same magic as in the linked PKGBUILD with a more current version to build the package but it still crashes. Can I get the old version anywhere to check if it works with that? 
+
+
+Cheers,
+  Hannes
+
+Background for whoever's interested :)
+I tried to set up a RaspberryPi to manage my files, contacts and calendars. That shouts out loud for owncloud because of its convenience (caldav, carddav, webdav and a nice interface bundled together). However, compared to git-annex owncloud is unbearably slow (on an RaspberryPi) and lacks git-annex's easy way to keep your files sorted even if you don't have them on your local disk.
+
+For these reasons I tried to install a hybrid git-annex/owncloud system. There, basically, the files are served by owncloud but at the same time also managed (and served) by git-annex (+ssh). As far as I can see that should not have any noticeable side effects in my use case (mostly single user). I have some external hard drives connected to the RaspberryPi of which I will just symlink the appropriate folders to the owncloud 'files' folder. This way I can also just take the drives with me and still have the same (UUID) git annex repository on them. Any comments?

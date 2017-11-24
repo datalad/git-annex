@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://jasonwoof.com/"
+ nickname="JasonWoof"
+ subject="phonegap might help"
+ date="2013-02-17T22:43:06Z"
+ content="""
+In your research to see how to bundle up a graphical android app, I suggest you read up on phonegap: http://phonegap.com/
+
+Essentially they bundle webkit so you can turn a web app into an android app. Not sure if they help you ship native/binary stuff along side the html/javascript/css, but phonegap should at least be useful as a reference for how to do some of the bundling-related stuff.
+"""]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-10-20T15:29:41Z"
+ content="""
+If you use `git annex sync --content`, it will do a full sync,
+including uploading any necessary files to the transfer repo,
+downloading any files that are on the transfer repo, and
+dropping files from the transfer repo once they've been
+transferred to the client repos.
+"""]]

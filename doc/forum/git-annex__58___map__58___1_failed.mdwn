@@ -1,0 +1,12 @@
+What exactly does that mean?
+I got that while exploring the git annex command:
+
+shiny-2:git-annex ovi$ pwd
+/Users/ovi/Sharing/git-annex
+shiny-2:git-annex ovi$ git annex map
+map /Users/ovi/Sharing/git-annex ok
+
+  running: dot -Tx11 /Users/ovi/Sharing/git-annex/.git/annex/map.dot
+
+failed
+git-annex: map: 1 failed

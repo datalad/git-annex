@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmwjQzWgiD7_I3zw-_91rMRf_6qoThupis"
+ nickname="Mike"
+ subject="comment 17"
+ date="2014-06-21T01:56:48Z"
+ content="""
+Would git-annex be able to detect if I manually moved some files? At this point it looks like the transfer will take multiple weeks... if I just moved the files from .git/annex directly from one repo to the other I could make the transfer significantly faster, but would that corrupt the repo?
+"""]]

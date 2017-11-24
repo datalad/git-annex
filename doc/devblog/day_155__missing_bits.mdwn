@@ -1,0 +1,27 @@
+Sometimes you don't notice something is missing for a long time until
+it suddenly demands attention. Like today.
+
+Seems the webapp never had a way to stop using XMPP and delete the XMPP
+password. So I added one.
+
+The new support for instantly noticing changes on a ssh remote forgot to
+start up a connection to a new remote after it was created. Fixed that.
+
+(While doing some testing on Android for unrelated reasons, I noticed that
+my android tablet was pushing photos to a ssh server and my laptop
+immediately noticed and downloaded them from tere, which is an excellent
+demo. I will deploy this on my trip in Brazil next week. Yes, I'm spending
+2 weeks in Brazil with git-annex users; more on this later.)
+
+Finally, it turns out that "installing" git-annex from the standalone
+tarball, or DMG, on a server didn't make it usable by the webapp. Because
+git-annex shell is not in PATH on the server, and indeed git and rsync may
+not be in PATH either if they were installed with the git-annex bundle.
+Fixed this by making the bundle install a ~/.ssh/git-annex-wrapper, which 
+the webapp will detect and use.
+
+Also, quite a lot of other bug chasing activity.
+
+----
+
+Today's work was sponsored by Thomas Koch.

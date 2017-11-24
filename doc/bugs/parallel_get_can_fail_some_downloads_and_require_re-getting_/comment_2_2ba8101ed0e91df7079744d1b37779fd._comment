@@ -1,0 +1,51 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2017-05-25T18:39:03Z"
+ content="""
+didn't need to go far ;)
+
+[[!format sh \"\"\"
+$> git annex get -J5 
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+get 10/10.1-None.txt.gz get 1000/1000.2-0.txt.gz get 1000/1000.1-0.txt.gz get 1000/1000.3-0.txt.gz get 1000/1000.4-1.txt.gz error: could not lock config file .git/config: File exists
+(from origin...) (from origin...) (from origin...) 
+
+(transfer already in progress, or unable to take transfer lock) 
+  Unable to access these remotes: origin
+(from origin...) 
+
+  Try making some of these repositories available:
+  	3db23446-8c40-441e-97ec-55ffc86b4fc0 -- yoh@smaug:~/proj/datalad/datalad/.git/travis-ci/origin-annex [origin]
+failed
+SHA256E-s55194--48621840b3a869ac27dfdb2a201c202ee1382aa0114337563da2c38262a0c9e8.txt.gz
+         55,194 100%   21.39MB/s    0:00:00 (xfr#1, to-chk=0/1)
+SHA256E-s56291--48af9865017aca9c8931c3b91c4f0ff9954273d21007ff25de1a2c73ca0df95cSHA256E-s7813--7861750b475c620012f1a76635749d89b86b7777130352b6adb844753d3822c2.txt.gz
+.txt.gz
+         32,768  58%    0.00kB/s    0:00:00  (checksum...)    0:00:00 (xfr#1, to-chk=0/1)
+         56,291 100%   22.43MB/s    0:00:00 (xfr#1, to-chk=0/1)
+(checksum...) (checksum...) ok
+ok
+ok
+git-annex: git [Param \"config\",Param \"remote.origin.annex-uuid\",Param \"3db23446-8c40-441e-97ec-55ffc86b4fc0\"] failed
+CallStack (from HasCallStack):
+  error, called at ./Git/Command.hs:39:17 in main:Git.Command
+
+$> git annex get 2>&1 | head
+get 1000/1000.2-0.txt.gz (from origin...) 
+SHA256E-s56206--1fa38270b23b4c700c4a998712549c65782613d4567b8650b1ebaa3fcfc884f4.txt.gz
+         56,206 100%   22.35MB/s    0:00:00 (xfr#1, to-chk=0/1)
+(checksum...) ok
+get 1000/1000.3-0.txt.gz (from origin...) 
+SHA256E-s55880--dea4463f7e42c51463e236d29c4c40486b56754cbd8340c260e481bdd506115b.txt.gz
+         55,880 100%   22.04MB/s    0:00:00 (xfr#1, to-chk=0/1)
+(checksum...) ok
+get 1000/1000.5-1.txt.gz (from origin...) 
+SHA256E-s55028--f6f8d5f25bed2bb51d9ba17275a956a97276cdcc74c6538c7e590919426e97df.txt.gz
+
+\"\"\"]]
+
+FWIW, the repository in question is this one: http://datasets.datalad.org/devel/travis-buildlogs/.git/
+"""]]

@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 2"
+ date="2013-04-23T19:44:04Z"
+ content="""
+I have tried repeatedly to reproduce this problem, and I cannot. 
+
+git-annex does *not* keep every file open. It tends to have less than 10 open file descriptors at any one time.
+
+I thought perhaps `lsof` opened every file, but it does not seem to, either.
+
+So far, I have no indication that the problem had to do with git-annex at all. If some other program on the system opened a great many files, it could cause this to happen to git-annex.
+
+You pasted a debug log that shows that the problem persisted for several minutes. So you should make it happen again, and in that time period, investigate what program has so many files open. You can do this with lsof, or, if lsof won't run, by looking in /proc/$pid/fd/
+
+Or, of course, give me enough information to reproduce the problem. \"I have 23459 files\" isn't much help..
+"""]]

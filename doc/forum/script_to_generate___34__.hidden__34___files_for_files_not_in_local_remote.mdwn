@@ -1,0 +1,8 @@
+Hello,
+
+I would like to know if someone made a script to generate ".hidden" files listing all files in a git annex repository which are not available in the local remote (and also listing all directories where all files within are not available in the local remote).
+
+I'm not a prgrammer myself, but I will try to make this with a script greping in "git annex whereis" all files which are not available "[here]". But if somebody has a better idea (git annex view?) or wants to try :-)
+
+Best,  
+Hugo

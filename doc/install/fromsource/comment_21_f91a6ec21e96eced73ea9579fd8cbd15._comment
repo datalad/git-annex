@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.22"
+ subject="comment 21"
+ date="2013-10-11T17:09:33Z"
+ content="""
+If you run the \"cabal update\" command followed by the \"cabal install\" command it'll upgrade git-annex.
+"""]]

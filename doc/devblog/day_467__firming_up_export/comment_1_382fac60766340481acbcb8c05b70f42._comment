@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="EskildHustvedt"
+ avatar="http://cdn.libravatar.org/avatar/0be1310904ded29624b9edb4824d451b"
+ subject="Partial exports"
+ date="2017-09-05T09:16:26Z"
+ content="""
+For what it's worth, partial exports (being able to only copy certain files to an export) would be very useful for me. My main usecase is exporting to my android phone (which has an sshd in termux that I use) from my desktop. I've got some large repos where having it all on my phone isn't possible, but it would be very useful to use git-annex to upload partials (right now I'm just using plain-old-rsync for that).
+"""]]

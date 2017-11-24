@@ -1,0 +1,19 @@
+Before turning this into a 'todo' item i'd like to discuss the possibilities...
+
+The idea is following:
+
+Having a Laptop with a rather small SSD or some other mobile device i'd like to move files away which are not needed anymore.
+The first thing is that the --to destination should be semi-automatically choosen, including ensuring enough replicas
+
+    git annex move --away <path..>
+
+should pick remotes which are suitable (either by configuration and/or other rules like disk utilization on the remote side).
+
+I am rather new to git-annex and wondering if there is currently already something which gives similar results, esp not need to hand pick the remotes where to move files.
+
+Further on there needs to be some way to find out which files are not needed anymore. On a first thought filtering by 'atime' would be nice, but nowadays mounting with noatime/relatime is common which would make this infeasible. To accomplish this, the assistant could (optionally) manage a lazy-atime by setting inotify or fanotify watches on all annexed files in a repository (close_nowrite) and queue/batch atime updates coarsely together. Then atimes on disk are only lazily updated (after some time expires, when the queue becomes full or at shutdown of the assistant), we can afford to loose some atime updates here in case of unexpected shutdowns (i rather wonder why the kernel has no lazy-atime option).
+
+Then the assistant (or by crontab) one can schedule some regular maintenance. There are certainly plenty of options to consider here, for example a mobile device might prefer only to send files if connected to Wlan, someone wants to move files away until a certain threshold of free disk space is reached etc...
+ 
+While at this, the assistant could also watch (fanotify) if someone tries to open a not available (dead symlinked) file, block that request, get the file and then proceed with the request.
+

@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="Just encountered this today"
+ date="2012-11-29T19:21:50Z"
+ content="""
+& it's killing my assistant.
+
+Found a workaround here: https://github.com/mockko/livereload/issues/1
+
+This fixes it for now:
+
+ulimit -n 4096
+
+Just posting here in case anybody else runs into this issue and, like me, finds themselves here via search engine.
+
+"""]]

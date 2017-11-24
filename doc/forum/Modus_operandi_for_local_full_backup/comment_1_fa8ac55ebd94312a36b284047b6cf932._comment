@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="why use rsync at all?"
+ date="2015-11-11T01:13:00Z"
+ content="""
+i basically exclude git-annex repositories from my backups now. i have a `numcopies` setting to a satisfactory number (say 2 or 3) that ensures that there are at least 2 copies of every file. then i send copies off to external drives, when they are full, i create a new repository on a new drive.
+
+old versions are kept as long as you don't `dropunused`. 
+"""]]

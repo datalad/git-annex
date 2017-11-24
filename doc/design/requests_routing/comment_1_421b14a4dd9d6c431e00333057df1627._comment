@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://johan.kiviniemi.name/"
+ nickname="Johan"
+ subject="comment 1"
+ date="2014-05-07T06:27:10Z"
+ content="""
+“Nodes generate a request for a specific file they want”
+
+It would be also convenient to be able to “push” a file to another node you do not have direct access to by creating a request for that file on behalf of the node.
+"""]]

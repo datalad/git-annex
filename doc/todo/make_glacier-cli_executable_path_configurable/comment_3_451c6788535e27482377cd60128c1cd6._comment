@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-04-24T17:23:10Z"
+ content="""
+I don't want to complicate git-annex more with configurable names for
+programs, and glacier is not at all special in this regard, any program
+could be installed under any namee. We pick non-conflicting names to
+avoid integration nightmares. Pick a name and I'll use it.
+"""]]

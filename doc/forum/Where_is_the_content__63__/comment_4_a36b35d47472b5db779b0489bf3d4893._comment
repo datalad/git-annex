@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 4"
+ date="2014-07-16T20:41:17Z"
+ content="""
+That warning about text relocations always happens on Android and is not relevant to whatever problem you're having.
+
+If git-annex status does not print anything else, then it seems you have a git-annex repository in /sdcard/annex. If you entered \"mediashare\" in the webapp, you might have another repository in another location. When you open the webapp, it tells you the location of the repository in the upper-right corner -- \"Repository: $location\"
+"""]]

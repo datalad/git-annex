@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-08-04T20:23:58Z"
+ content="""
+Well, the file is not uploaded to the bitbucket remote, because bitbucket
+doesn't support git-annex. Without git-annex-shell on the remote, git-annex
+cannot send files to it.
+
+Even if it did, it would need to be a ssh
+transport, not a http transport, since git-annex doesn't upload files over
+http (except to S3 or webdav remotes).
+
+I think that the assistant also assumes that http transport git remotes are
+read-only, and doesn't try to push to them. Which might be improvable,
+perhaps.
+"""]]

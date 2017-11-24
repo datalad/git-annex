@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="branchable@1f03006a73aeda463532c8138da071037870395b"
+ nickname="branchable"
+ subject="Transcrypt? "
+ date="2016-08-05T07:28:27Z"
+ content="""
+Any experience with using transcrypt instead of git crypt?
+
+
+https://github.com/elasticdog/transcrypt
+"""]]

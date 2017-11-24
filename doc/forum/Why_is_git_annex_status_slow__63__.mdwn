@@ -1,0 +1,20 @@
+It seems that `git annex status` is much slower than `git status`, at least in direct mode. The man page does not give any hint about why it should be slower.
+
+Does `git annex status` do something that `git status` does not?
+
+Here is an example in a repo with 8000+ files in direct mode and with no modified files:
+
+
+    $ time git -c core.bare=false status --porcelain > /dev/null
+
+    real   0m0.096s
+    user   0m0.042s
+    sys    0m0.071s
+
+    $ time git annex status
+
+    real   0m17.144s
+    user   0m10.555s
+    sys    0m1.934s
+
+It is strange to see that `git annex status` is ~200 times slower than the bare `git status`.

@@ -1,0 +1,3 @@
+Is there any fast way to rsync a direct-mode (assistant) git/annex directory from one machine to another?
+
+Scenario: I was already using unison to synchronize 40GB between my desktop and laptop. I've added git annex to my desktop, but is there a way to bootstrap on my laptop without needing to re-transfer all the files? (I don't have a .git on my laptop yet but all the files are there already.)

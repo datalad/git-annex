@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-09-13T16:12:22Z"
+ content="""
+I think you must have core.sharedRepository set to group or all or
+something like that, otherwise fsck never complains about modes.
+"""]]

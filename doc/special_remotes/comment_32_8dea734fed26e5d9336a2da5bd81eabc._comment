@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 32"""
+ date="2015-12-10T15:15:42Z"
+ content="""
+@openmedi git-annex doesn't currently keep track of how much space it's
+using on a special remote. It's actually quite a difficult problem to do
+that in general, since multiple distributed clones of a repository can be
+uploading to the same special remote at the same time.
+
+If it runs out of space and transfers fail, git-annex will handle the
+failures semi-gracefully, which is to say nothing will stop it from trying
+again or trying to send other data, but it will certianly be aware that
+files are not reaching the special remote.
+
+If a particular storage service has a way to check free space, it would not
+be hard to make git-annex's special remote implementation check it and
+avoid trying transfers when it's full.
+"""]]

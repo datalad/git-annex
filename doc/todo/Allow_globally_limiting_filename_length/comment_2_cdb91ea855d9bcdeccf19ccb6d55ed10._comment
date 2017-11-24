@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="interfect@b151490178830f44348aa57b77ad58c7d18e8fe7"
+ nickname="interfect"
+ subject="Pre Commit Hook"
+ date="2016-09-21T19:20:04Z"
+ content="""
+I'm basically stuck with whatever home directory encryption Canonical deigns to give me in their setup wizard, given my time and attention budget. I've looked a bit at the security problems with it and they mostly seem to be that it's a bit leaky due to not hiding structures and sizes. Hiding contents is better than not hiding contents, so that's what I've got.
+
+Anyway, a pre-commit hook, or maybe an update hook, would be a great solution. I'd like one to be on the wiki somewhere as a useful tip for actually using git annex effectively across a bunch of non-ideal environments. It would be great if a \"git annex init\" could set it up for me, too.
+
+Any ideas for writing a pre-commit script that works on Linux, Mac, Windows, Android, and whatever weird embedded NAS things people might want to use it on? If I went with an update script over a pre-commit, that would make platform support less of a problem, but then you'd get Git Annex into weird situations when syncing.
+
+How would Git Annex react if I made a commit on one system, but then my central syncing repo's update script rejected the commit for breaking the rules on file names? If I have a commit that isn't allowed to be pushed to a particular remote, how would I use git annex to get it out of the history of any repos it might have already gotten to?
+"""]]

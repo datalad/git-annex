@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="dave@2ab82f485adf7e2ce787066e35f5f9789bff430b"
+ nickname="dave"
+ subject="re: UnicodeDecodeError"
+ date="2015-08-26T21:54:08Z"
+ content="""
+This part:
+
+      File \"/usr/lib/python2.7/httplib.py\", line 833, in _send_output
+        msg += message_body
+    UnicodeDecodeError: 'ascii' codec can't decode byte 0x8c in position 0: ordinal not in range(128)
+
+Tells me that you need to read [glacier-cli problem report #61](https://github.com/basak/glacier-cli/issues/61).
+
+There is a one-line [code change in a library named boto](https://github.com/felixonmars/boto/commit/0676eaf014f56279908cdd3409a5bb6895e86bf6) (glacier-cli depends on it) which will fix this.  (And probably that change will get merged in sometime, so you won't have to do this anymore.)
+"""]]

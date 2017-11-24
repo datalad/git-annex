@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 2"
+ date="2015-08-04T15:28:29Z"
+ content="""
+since I am not sure what is the actual overhead here, can't provide any good advice, but may be it is worth looking at least into bundling multiple transfers within the same rsync call?  rsync man page says
+
+       The syntax for requesting multiple files from a remote host is done by specifying
+       additional remote-host args in the same style as the  first,  or
+       with the hostname omitted.  For instance, all these work:
+
+              rsync -av host:file1 :file2 host:file{3,4} /dest/
+
+so it should be quite possible to batch a hundred or two transfers into the same rsync call I guess.  Probably on other systems limit is different but on linux the cmdline size is quite hefty:
+
+    $> xargs --show-limits
+    Your environment variables take up 3441 bytes
+    POSIX upper limit on argument length (this system): 2091663
+    POSIX smallest allowable upper limit on argument length (all systems): 4096
+    Maximum length of command we could actually use: 2088222
+    Size of command buffer we are actually using: 131072
+
+not sure if there are inherent limits within ssh etc
+
+"""]]

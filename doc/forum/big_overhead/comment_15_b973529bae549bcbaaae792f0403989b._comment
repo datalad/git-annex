@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="rasmus"
+ ip="217.130.110.20"
+ subject="comment 15"
+ date="2014-09-19T06:29:58Z"
+ content="""
+Brilliant!  Thanks for taking time to analyze the issue and taking the bug to `gcrypt`.
+
+[I'm surprised that a different key than my git-annex key is used and that it's a symmetric key, but I will explore the technology on my own].
+"""]]

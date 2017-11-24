@@ -1,0 +1,27 @@
+Made the MountWatcher update state for remotes located in a drive that
+gets mounted. This was tricky code. First I had to make remotes declare
+when they're located in a local directory. Then it has to rescan git
+configs of git remotes (because the git repo mounted at a mount point may
+change), and update all the state that a newly available remote can affect.
+
+And it works: I plug in a drive containing one of my git remotes, and the
+assistant automatically notices it and syncs the git repositories.
+
+---
+
+But, data isn't transferred yet. When a disconnected remote becomes
+connected, keys should be transferred in both directions to get back into
+sync.
+
+To that end, added Yet Another Thread; the TransferScanner thread
+will scan newly available remotes to find keys, and queue low priority
+transfers to get them fully in sync.
+
+(Later, this will probably also be used for network remotes that become
+available when moving between networks. I think network-manager sends
+dbus events it could use..)
+
+This new thread is missing a crucial peice, it doesn't yet have a way to
+find the keys that need to be transferred. Doing that efficiently (without
+scanning the whole git working copy) is Hard. I'm considering design
+possibilities..

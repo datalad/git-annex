@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="go8ose"
+ ip="203.26.118.202"
+ subject="Group and wanted expression"
+ date="2014-10-09T22:19:01Z"
+ content="""
+Here is the group and wanted output on my laptop (that is dropping all the files):
+
+    ~/Documents/personal-annex $ git annex group .
+    unwanted
+    ~/Documents/personal-annex $ git annex wanted .
+    standard
+
+Here is the output on my desktop (that seems to be keeping all the files):
+
+    ~/Documents/annex-personal $ git annex group .
+    
+    ~/Documents/annex-personal $ git annex wanted .
+    
+
+
+
+Reading the manpage suggests I might want to change this. However I haven't seen in the man page a list of the standard predefined groups, nor an explanation of how each predefined group behaves. Is that documented somewhere else?
+"""]]

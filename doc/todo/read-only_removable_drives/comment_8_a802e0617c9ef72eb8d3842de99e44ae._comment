@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2016-02-12T18:08:18Z"
+ content="""
+I've made some changes today, which let files be downloaded from readonly
+repositories (both on local drives and remote, as long as git-annex-shell
+is updated to a version with the changes).
+
+The issues with the webapp probably remain.
+"""]]

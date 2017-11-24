@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 2"
+ date="2016-01-19T16:39:49Z"
+ content="""
+info -- nope, since it returns the same success and size = 0 bytes for a 0-length file which is under annex regardless either its precious load is present locally or not
+
+[[!format sh \"\"\"
+
+$> git annex find empty
+$> git annex info --json empty
+{\"command\":\"info empty\",\"file\":\"empty\",\"size\":\"0 bytes\",\"key\":\"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"success\":true}
+
+$> git annex get empty
+get empty (from web...) 
+/tmp/123/.git/annex/tmp/SHA256E-s0--e3b0c44298fc1c149af     [ <=>                                                                                                                            ]       0  --.-KB/s    in 0s      
+(checksum...) ok
+(recording state in git...)
+
+$> git annex info --json empty
+{\"command\":\"info empty\",\"file\":\"empty\",\"size\":\"0 bytes\",\"key\":\"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"success\":true}
+
+
+\"\"\"]]
+
+I could use whereis (--batch is TODO for it as well) and analyze output either any remote claims it to be \"here\" though.
+"""]]

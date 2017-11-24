@@ -1,0 +1,3 @@
+To start the webapp on a X-less server it's possible to use the parameter `--listen` and then connect from a client with X to it.
+
+How can I start the webapp on all annex repos on this server like on a client with `assistant --autostart`? Would be nice to start the assistant on all configured repos which listens on a defined port, f.e. `git annex assistant --autostart --listen 0.0.0.0:8888`. It would be even nicer to have a parameter to chose a autostart configuration file, f.e. `git annex assistant --autostart --autostart-config /etc/git-annex/autostart --listen 0.0.0.0:8888`, so this could end up in a real server application, a init script would be easy to write...

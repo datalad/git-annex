@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 26"""
+ date="2016-05-03T17:29:02Z"
+ content="""
+I don't think there's any particularly good reason why DIRHASH uses the
+mixed case format. However, it can't be changed without busting existing
+stuff.
+
+So yeah, I've gone ahead and added a `DIRHASH_LOWER`.
+"""]]

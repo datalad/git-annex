@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="GLITTAH"
+ ip="176.31.181.25"
+ subject="Forgot to add..."
+ date="2013-07-03T19:28:42Z"
+ content="""
+Forgot to add: I'm horrible at keeping things organized.  Git-annex is a huge help with that -- it keeps track of files and the number of their copies.  When I first started using it, I had old songs duplicated across 4 drives, while 2 of those drives had old tags and were obsolete, and one drive had the correct tags, but not the correct filenames.  Every few years I'd have to go through several TB of media files, hand checking each of them to see what was old, what was unwanted, etc.  Once my media libraries got larger than consumer-grade HDD's, I had to find a better solution.  Git-annex removes that burden, and keeps things organized for me.  Once I get an album or movie I tag/rename it the way I want, throw it in the annex and let my computer do the boring and tedious parts like automatically verifying and making sure there's enough copies.  If I change a file, that change propagates through all my repo clones.  It wasn't until after I started using git-annex that I realized how stressed out I was getting over simply maintaining a media library.
+
+If you do another fundraiser you've got my support!
+"""]]

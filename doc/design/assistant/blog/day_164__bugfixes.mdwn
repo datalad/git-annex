@@ -1,0 +1,17 @@
+Several bugfixes from user feedback today.
+
+Made the assistant detect misconfigured systems where git will fail to
+commit because it cannot determine the user's name or email address, and
+dummy up enough info to get git working. It makes sense for git and
+git-annex to fail at the command line on such a misconfigured system, so
+the user can fix it, but for the assistant it makes sense to plow on and just
+work.
+
+I found a big gap in direct mode -- all the special remotes expected to find
+content in the indirect mode location when transferring to the remote. It
+was easy to fix once I noticed the problem. This is a big enough bug that
+I will be making a new release in a day or so.
+
+Also, got fsck working in direct mode. It doesn't check as many things
+as in indirect mode, because direct mode files can be modified at any time.
+Still, it's usable, and useful.

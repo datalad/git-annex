@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="fiatjaf"
+ subject="How I got it working"
+ date="2016-08-06T23:51:48Z"
+ content="""
+I'm using [pipsi](https://github.com/mitsuhiko/pipsi) to install packages without polluting the system, [Michael's fork](https://github.com/mikemccracken/flickrannex) from magthe's fork from TobiasTheViking repo (I don't know if the other branches are better or worse, but this is working).
+
+## Instructions
+
+**First thing**: go to https://www.flickr.com/services/apps/create/noncommercial/? and create an app (if you use the keys provided in the flickrannex repository you'll be giving access to your flickr to everybody).
+
+Now follow the steps:
+
+```
+wget https://github.com/mikemccracken/flickrannex/archive/master.zip
+unzip master.zip
+cd flickrannex-master/
+edit setup.py # replace 'flickrapi' with 'flickrapi==1.4.5'
+              # otherwise it will install a wrong version of the dependency.
+edit flickrannex # on lines 46 and 47, replace the api_key and api_secret
+                 # with the values from the application you created in the
+                 # first step.
+pipsi install ./
+cd
+flickrannex # go through the oauth setup, will open a window in the browser
+            # some commands will appear after you're successful. ignore them.
+cd ~/annex # your git-annex folder
+git config annex.flickr-hook $HOME/.local/bin/flickrannex
+git annex initremote flickr type=hook hooktype=flickr encryption=none
+```
+"""]]

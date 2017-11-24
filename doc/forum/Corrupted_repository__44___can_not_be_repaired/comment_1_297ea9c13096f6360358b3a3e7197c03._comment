@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="sts"
+ ip="134.147.73.126"
+ subject="comment 1"
+ date="2014-07-18T09:46:01Z"
+ content="""
+I forgot, this might be interesting
+
+    git show ea4d4b5e09bfd10c714c24ca76ab5af0625bb6a7
+    
+    commit ea4d4b5e09bfd10c714c24ca76ab5af0625bb6a7
+    Author: Stephan Schindel <sts@tp1.rub.de>
+    Date:   Fri Jul 18 11:28:07 2014 +0200
+
+        branch created
+
+and
+
+    ~/private [master●] » git annex fsck
+    error: refs/remotes/extern/git-annex does not point to a valid object!
+    error: refs/remotes/extern/git-annex does not point to a valid object!
+    error: unable to resolve reference refs/heads/git-annex: Datei oder Verzeichnis nicht gefunden
+    fatal: Cannot lock the ref 'refs/heads/git-annex'.
+    git-annex: git [Param \"update-ref\",Param \"refs/heads/git-annex\",Param \"199fbe3e7ca1dbce99ffa04e440209eb93446374\"] failed
+
+
+and
+
+    git show 199fbe3e7ca1dbce99ffa04e440209eb93446374
+
+    commit 199fbe3e7ca1dbce99ffa04e440209eb93446374
+    Author: Stephan Schindel <sts@tp1.rub.de>
+    Date:   Fri Jul 18 11:46:29 2014 +0200
+
+        branch created
+
+"""]]

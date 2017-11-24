@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="sts"
+ ip="134.147.73.126"
+ subject="comment 1"
+ date="2014-07-18T21:16:50Z"
+ content="""
+> First, basic: Is the \"preferred content group\" an attribute of a repository or of a remote? E.g., when I use assistant, I can set this property for a remote repository. Will this property be synced to all other clients then or is it only valid for this particular client?
+
+Yeah, it syncs the content group between the remotes, so you have to set it only in one repository and the information gets synced across the network.
+
+> Second, I think the standard groups do still not cover what I want and I wonder if this could be done with preferred contents somehow? What I want:
+> Generally only the structure should be synced, no contents (i.e. \"manual\" is the closest)
+
+Well, I guess you have to manually create a git repo (but no annex repo!) on your remote. Once you add the remote the assistant should tell you that he can only sync the metadata, but no contents.
+
+"""]]

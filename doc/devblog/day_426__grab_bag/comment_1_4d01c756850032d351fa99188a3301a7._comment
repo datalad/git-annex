@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://anarc.at/openid/"
+ nickname="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/b36dcf65657dd36128161355d8920a99503def9461c1bb212410980fe6f07125"
+ subject="how about reusing the special remote protocol?"
+ date="2016-11-16T21:58:08Z"
+ content="""
+git-annex already has a custom protocol detailed in [[design/external_special_remote_protocol]]. it could be quite useful to have that protocol extended to support direct object transfer instead of having to mess around with temporary files like may remotes do, for example...
+
+maybe that makes no sense at all, i don't know. :) --[[anarcat]]
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-09-07T20:13:23Z"
+ content="""
+The new `git-annex export` feature allows you to export a tree
+to a special remote, with the origiginal filenames being visible there.
+
+S3 should support it soon.
+"""]]

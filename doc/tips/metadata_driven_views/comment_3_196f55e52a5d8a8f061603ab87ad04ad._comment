@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnPgn611P6ym5yyL0BS8rUzO0_ZKRldMt0"
+ nickname="Samuel"
+ subject="git annex view */=podcast"
+ date="2014-08-19T06:11:50Z"
+ content="""
+Hi,
+
+Would it be hard to handle the wildcard character in the location view before the = sign.
+
+    git annex foo/=*
+
+works but
+
+    git annex *=/bar
+
+does not.
+"""]]

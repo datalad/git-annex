@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkipQLNyt8RHREHpg2k5wdYeRSCCvSNSBg"
+ nickname="Tim"
+ subject="I had this same problem too"
+ date="2014-01-04T01:00:10Z"
+ content="""
+I was using the 2013-12-13 build and now I've upgrade to the 2014-01-03 build.  git-annex has symlinked some important workspace.xml files to nowhere.  One looks like this:
+
+workspace.xml -> ../../../.git/annex/objects/M2/8W/SHA256E-s68106--90e9cc4f617c9034db1bf462d058b82c59ade0be58de1d3a3e2f8c02606631c2.xml/SHA256E-s68106--90e9cc4f617c9034db1bf462d058b82c59ade0be58de1d3a3e2f8c02606631c2.xml
+
+The referenced file doesn't exist.  Actually, that entire M2 directory doesn't exist.
+
+This has cost me a lot of time trying to fix this.  I tried git-annex fsck and I get this message:
+
+ ** No known copies exist of XXXXXXX/workspace.xml
+
+\"XXXXXXX\" is a path I needed to obscure
+
+I can see it in the git-annex repo but it is a reference to a symlink that doesn't exist.  Is there any way to get this file back?  git-annex whereis tells me it is nowhere.  This appears to be real data loss.
+"""]]

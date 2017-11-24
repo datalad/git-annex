@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://afoolishmanifesto.com/"
+ nickname="frioux"
+ subject="SSH Keys?"
+ date="2013-07-17T16:50:46Z"
+ content="""
+Is there a way I can use an SSH Key to connect to a remote server?  What would be really cool, though maybe not feasible, would be to use connectbot as an ssh-agent.
+"""]]

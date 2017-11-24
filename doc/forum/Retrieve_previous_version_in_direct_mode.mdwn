@@ -1,0 +1,5 @@
+I use the assistant with a local directory in direct mode. I have read in different places that direct mode does not ensure that past versions of files are preserved.
+
+What precisely happens to past versions? Under which conditions are past versions kept?
+
+How would I go about retrieving the past version of a file in direct mode?

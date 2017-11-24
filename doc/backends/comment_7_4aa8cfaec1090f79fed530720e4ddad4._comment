@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmraN_ldJplGunVGmnjjLN6jL9s9TrVMGE"
+ nickname="Ævar Arnfjörð"
+ subject="Can annex use existing backends when amending existing files?"
+ date="2014-08-05T21:35:34Z"
+ content="""
+Related to the question posed in http://git-annex.branchable.com/forum/switching_backends/ can git annex be told to use the existing backend for a given file?
+
+The use case for this is that you have an existing repo that started out e.g. with SHA256, but new files are being added with SHA256E since that's the default now.
+
+But I was doing:
+
+    git annex edit .
+    rsync /some/old/copy/ .
+    git annex add .
+
+And was expecting it to show no changes for existing files, but it did, it would be nice if that was not the case.
+"""]]

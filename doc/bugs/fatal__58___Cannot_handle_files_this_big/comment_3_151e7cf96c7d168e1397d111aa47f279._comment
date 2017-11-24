@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-03-01T14:41:45Z"
+ content="""
+git (not git-annex) will throw this error if a file size is greater than
+`size_t`.
+
+This bug report seemed to originally concern git add being run on such a
+file, but I can't see how git-annex would do that, it doesn't add large
+files to git.
+
+I think that in the case of git-annex status, when it runs git status, that
+looks at work tree files, and so falls over if they're large, even if
+what's checked into git is a nice small git-annex symlink. This would also
+probably affect other places where git looks at worktree files, perhaps git
+diff (in v6 repo mode).
+
+Reopening bug report.
+"""]]

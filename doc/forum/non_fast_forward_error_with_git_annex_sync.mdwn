@@ -1,0 +1,34 @@
+I'm trying to sync from a direct repo to another direct repo but getting a non-fast-forward rejection:
+
+    push v-crateris 
+    Counting objects: 509, done.
+    Delta compression using up to 4 threads.
+    Compressing objects: 100% (455/455), done.
+    Writing objects: 100% (509/509), 33.21 KiB | 4.74 MiB/s, done.
+    Total 509 (delta 350), reused 0 (delta 0)
+    remote: Resolving deltas: 100% (350/350), completed with 174 local objects.
+    To v-crateris:/annex/Music
+       c60621302..803920707  git-annex -> synced/git-annex
+     ! [rejected]            annex/direct/master -> synced/master (non-fast-forward)
+    error: failed to push some refs to 'v-crateris:/annex/Music'
+    hint: Updates were rejected because a pushed branch tip is behind its remote
+    hint: counterpart. Check out this branch and integrate the remote changes
+    hint: (e.g. 'git pull ...') before pushing again.
+    hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+    To v-crateris:/annex/Music
+     ! [rejected]            master -> master (non-fast-forward)
+    error: failed to push some refs to 'v-crateris:/annex/Music'
+    hint: Updates were rejected because a pushed branch tip is behind its remote
+    hint: counterpart. Check out this branch and integrate the remote changes
+    hint: (e.g. 'git pull ...') before pushing again.
+    hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+
+      Pushing to v-crateris failed.
+
+      (non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)
+    failed
+
+I tried setting `receive.denyNonFastforwards` to `false` as the message said, but it made no difference.
+Both repos have `annex/direct/master` checked out.
+
+What should I do to resolve this?

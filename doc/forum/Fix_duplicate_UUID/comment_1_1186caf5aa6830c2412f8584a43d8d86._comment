@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~liori"
+ nickname="liori"
+ avatar="http://cdn.libravatar.org/avatar/e1d0fdc746b3d21bb147160d40815e37b257b9119774d21784939b2d3ba95a91"
+ subject="comment 1"
+ date="2017-07-16T13:08:41Z"
+ content="""
+So, the procedure that worked for me was:
+
+ 1. edit the annex.uuid configuration setting in one of the repositories that had a duplicate
+
+ 2. edit the remote.*.annex.uuid configuration setting in all repositories that had the repository edited in (1) as a remote
+
+ 3. `git annex fsck` in both repositories that had the duplicate uuid—this is because these repositories did not have correct information as to which files they contained, due to my previous syncing efforts
+
+ 4. `git annex sync` till convergence
+
+"""]]

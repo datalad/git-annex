@@ -1,0 +1,9 @@
+AWS S3 offers a feature to enable server-side encryption of files.  
+If I understand correctly, this is enabled by sending a specific HTTP header with the request to upload the file in question.   
+So, this header needs to be set every time we want to upload a new file.  
+
+Is this feature already supported / being considered for future versions?
+
+If not, am I correct in assuming it would have to be implemented in https://github.com/joeyh/git-annex/blob/master/Remote/S3.hs ?
+
+Thank you

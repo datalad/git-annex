@@ -1,0 +1,53 @@
+We've seen above that git-annex can be used to store files in
+regular git remotes, accessed either via ssh, or on a removable drive. But
+git-annex can also store files in Amazon S3, Glacier, on a rsync server, in
+WebDAV, or even pull files down from the web and bittorrent.
+This and much more is made possible by [[special_remotes]].
+
+These are not normal git repositories; indeed the git repository is not
+stored on a special remote. But git-annex can store the contents of files
+in special remotes, and operate on them much as it would on any other
+remote. Bonus: Files stored on special remotes can easily be
+[[encrypted|encryption]]!
+
+All you need to get started using a special remote is to initialize it.
+This is done using the `git annex initremote` command, which needs to be
+passed different parameters depending on the type of special remote.
+
+Some special remotes also need things like passwords to be set in
+environment variables. Don't worry -- it will prompt if you leave anything off.
+So feel free to make any kind of special remote instead of the S3 remote
+used in this example.
+
+	# export AWS_ACCESS_KEY_ID="somethingotherthanthis"
+	# export AWS_SECRET_ACCESS_KEY="s3kr1t"
+	# git annex initremote mys3 type=S3 chunk=1MiB encryption=shared
+	initremote mys3 (shared encryption) (checking bucket) (creating bucket in US) ok
+
+Now you can store files on the newly initialized special remote.
+
+	# git annex copy my_cool_big_file --to mys3
+	copy my_cool_big_file (to mys3...) ok
+
+Once you've initialized a special remote in one repository, you can enable
+use of the same special remote in other clones of the repository.
+If the mys3 remote above was initialized on your laptop, you'll also want
+to enable it on your desktop.
+
+To do so, first get git-annex in sync (so it knows about
+the special remote that was added in the other repository), and then
+use `git annex enableremote`.
+
+	desktop# git annex sync
+	desktop# export AWS_ACCESS_KEY_ID="somethingotherthanthis"
+	desktop# export AWS_SECRET_ACCESS_KEY="s3kr1t"
+	desktop# git annex enableremote mys3
+	enableremote mys3 (checking bucket) ok
+
+And now you can download files from the special remote:
+
+	desktop# git annex get my_cool_big_file --from mys3
+	get my_cool_big_file (from mys3...) ok
+
+This has only scratched the surface of what can be done with
+[[special_remotes]].

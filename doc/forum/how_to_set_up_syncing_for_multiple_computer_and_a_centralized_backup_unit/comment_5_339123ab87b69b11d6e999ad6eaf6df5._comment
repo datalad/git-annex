@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawncVeolylM8VoRbWhIYDlfGhIP69-aNXm4"
+ nickname="Espen"
+ subject="comment 5"
+ date="2014-10-15T17:44:55Z"
+ content="""
+Did a quick \"du -h\" on both directories. Local is 27 and remote is 23.7 GB, so some data is obviously missing on the remote. Also, how do I increase either the permitted size of one log file, or the number of log files stored? Seems the logs where rotated over the whole allowed log batch and size before the job was done during the night, so difficult to tell if there were more errors.
+"""]]

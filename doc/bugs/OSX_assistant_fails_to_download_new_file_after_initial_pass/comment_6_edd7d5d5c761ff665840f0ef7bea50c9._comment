@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 6"
+ date="2014-07-16T20:51:36Z"
+ content="""
+5.20140421 happens to be the very first version of git-annex to support notifychanges. I forget what bugs that first attempt may have had. Have you tried upgrading the macs to a newer version?
+
+
+"""]]

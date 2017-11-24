@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="Duplicate files"
+ date="2013-04-01T07:58:51Z"
+ content="""
+Having duplicate files is fairly easy. 
+a) Just a backup of your files, to not have accidental deleting.
+
+b) Some programs implements UNDO command (Ctrl-Z) as simply copying over the working text file
+to a backup directory. 
+
+c) If you tests precompiled programs, like git annex itself, it has identical files across releases.
+
+
+For more info about duplicate files, read hear these two bugreports:
+
+http://git-annex.branchable.com/bugs/When_syncing_two_repositories__44___git_annex_uses_9x_times_diskspace/
+(last comment)
+
+http://git-annex.branchable.com/bugs/Direct_mode_keeps_re-checksuming_duplicated_files/
+"""]]

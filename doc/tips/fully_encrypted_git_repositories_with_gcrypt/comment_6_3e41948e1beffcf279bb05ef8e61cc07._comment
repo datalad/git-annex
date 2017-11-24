@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkbpbjP5j8MqWt_K4NASwv0WvB8T4rQ-pM"
+ nickname="Fabrice"
+ subject="comment 6"
+ date="2013-11-04T07:39:21Z"
+ content="""
+> _How would you feel about adding a new mode of operation where encryption is simply based on a passphrase? We could symetrically encrypt the repository with a keyfile that's stored in the repository itself, protecting the keyfile with a passphrase which - if stored at all - would be stored on the individual computers, outside of the repository._
+
+As Adam wrote, without a passphrase, this is the shared encryption method. With an encrypted key, this is more or less the hybrid (default) scheme. The thing is that you have to share a secret to have a encrypted remote. I don't use the webapp, so I don't know what's happening in your case, but this is how it should work with the command line tools. First Alice create the encrypted remote with her pgp key. As far as I understand, git annex creates (via gpg) a  key for a symmetric cypher which is stored in the repository, encrypted with Alice public key. If Alice wants to share the repository with Bob, she must either give a key pair (so the private key also, of course) to Bob or ask Bob for his public key. In the first case, Bob can clone the repository directly (upon reception of the key pair), while in the second case, Alice has to active Bob's public key (with `git annex enableremote myremote keyid+=bobsId`). In this case, again as far as I understand, the symmetric key is reencrypted for both Alice and Bob in the repo. 
+
+I understand that you tried the first case with the webapp and that it did not work. I had a similar problem documented in this [http://git-annex.branchable.com/bugs/git-annex-shell:_gcryptsetup_permission_denied](bug). Maybe you could had some comments to this bug description? 
+
+> _*although it erroneously used \"E0D2F776E7F674E3\" as key-id while the actual id is E7F674E3; where did that other half come from?_
+
+This is the long id of your pgp key (16 characters as opposed to 8 for the short id).
+"""]]

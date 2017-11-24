@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-06-11T15:06:58Z"
+ content="""
+It sounds like you are using git-annex to sync a *lot* of files. The startup scan is a basic check that there are no new, deleted, or modified files since the last time it ran. This requires a little work, like statting the files, but won't take long for reasonable numbers of files. 
+
+The size of files doesn't affect the length of the scan. I have a repository with on the order of 50k files, and the startup scan takes only a few minutes. One thing that could matter is that my repository is in indirect mode. Direct mode is less efficient. You could try to switch your repository to indirect mode: `git annex indirect` (you can always switch back: `git annex direct`)
+
+It would be possible to disable that scan, but at the expense of not being able to sync changes made while git-annex is not running. There's also a trick you can use: Start the assistant running in a subdirectory and it will only scan that subdirectory (it will only notice new files in that subdirectory too..)
+
+I don't quite understand what you mean with problem #2. If files were repeatedly being uploaded or downloaded, that have already been sent, that would be a bug. Please file a bug report with full debug logs if that is the case.
+
+Which topology is best? I think the best way is to start with the one you like, and if it doesn't work well, add more links between repositories. A star topology will certainly work ok. A mesh can work ok but can be hard to maintain.
+"""]]

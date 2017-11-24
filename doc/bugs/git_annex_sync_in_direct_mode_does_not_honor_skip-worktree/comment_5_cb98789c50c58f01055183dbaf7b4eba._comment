@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="EvanDeaubl"
+ ip="24.251.129.149"
+ subject="comment 5"
+ date="2014-04-09T03:28:24Z"
+ content="""
+I'm afraid I abandoned this patch. It worked, but was still fidgety for being able to ignore parts of the tree. I found another way to do what I wanted by loading an indirect repo into /data and taking advantage of a surprise side effect in how the /sdcard filesystem translated the symlinks from the ext4 filesystem.
+
+I can probably scare it up from my archives, but it hasn't been kept up to date. The good news is (as I recall) the patch was pretty small.
+
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="obvious questions"
+ date="2014-07-11T18:12:44Z"
+ content="""
+From what source did you install git-annex?
+
+What version of gpg is installed on your system? What is the contents of line 200 and 201 of/home/zilti/.gnupg/gpg.conf? 
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 8"
+ date="2014-07-16T18:10:09Z"
+ content="""
+git-annex only ever runs git from PATH; I never hardcode paths to programs.
+
+You can verify this by running it with the --debug flag to see the exact commands it runs.
+"""]]

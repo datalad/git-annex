@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 11"
+ date="2014-10-02T16:09:37Z"
+ content="""
+It seems to me that the problem must be with .git/annex/index.
+
+I would be interested in looking at this git repository, if there's a way to get a copy (no .git/annex/objects needed).
+"""]]

@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm8BAEUyzYhORZmMuocRTk4M-3IumDm5VU"
+ nickname="luciusf0"
+ subject="Bug still valid"
+ date="2014-07-31T08:35:29Z"
+ content="""
+The bug is still valid. A lot of german users had to use the @googlemail.com extension as google couldn't get the gmail domain in Germany. 
+So it might be bothering not just a few people, but a whole country! Now, if that doesn't count ...
+
+	Mac OSX 10.9.4
+	Version: 5.20140717-g5a7d4ff 
+	Build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi TDFA CryptoHash
+
+This is the message I get
+
+	Unable to connect to the Jabber server. Maybe you entered the wrong password? (Error message: host xmpp.l.google.com.:5222 failed: AuthenticationFailure (Element {elementName = Name {nameLocalName = \"failure\", nameNamespace = Just \"urn:ietf:params:xml:ns:xmpp-sasl\", namePrefix = Nothing}, elementAttributes = [], elementNodes = [NodeElement (Element {elementName = Name {nameLocalName = \"not-authorized\", nameNamespace = Just \"urn:ietf:params:xml:ns:xmpp-sasl\", namePrefix = Nothing}, elementAttributes = [], elementNodes = []})]}); host alt2.xmpp.l.google.com.:5222 failed: AuthenticationFailure (Element {elementName = Name {nameLocalName = \"failure\", nameNamespace = Just \"urn:ietf:params:xml:ns:xmpp-sasl\", namePrefix = Nothing}, elementAttributes = [], elementNodes = [NodeElement (Element {elementName = Name {nameLocalName = \"not-authorized\", nameNamespace = Just \"urn:ietf:params:xml:ns:xmpp-sasl\", namePrefix = Nothing}, elementAttributes = [], elementNodes = []})]}); host alt1.xmpp.l.google.com.:5222 failed: AuthenticationFailure (Element {elementName = Name {nameLocalName = \"failure\", nameNamespace = Just \"urn:ietf:params:xml:ns:xmpp-sasl\", namePrefix = Nothing}, elementAttributes = [], elementNodes = [NodeElement (Element {elementName = Name {nameLocalName = \"not-authorized\", nameNamespace = Just \"urn:ietf:params:xml:ns:xmpp-sasl\", namePrefix = Nothing}, elementAttributes = [], elementNodes = []})]}); host alt4.xmpp.l.google.com.:5222 failed: AuthenticationFailure (Element {elementName = Name {nameLocalName = \"failure\", nameNamespace = Just \"urn:ietf:params:xml:ns:xmpp-sasl\", namePrefix = Nothing}, elementAttributes = [], elementNodes = [NodeElement (Element {elementName = Name {nameLocalName = \"not-authorized\", nameNamespace = Just \"urn:ietf:params:xml:ns:xmpp-sasl\", namePrefix = Nothing}, elementAttributes = [], elementNodes = []})]}); host alt3.xmpp.l.google.com.:5222 failed: AuthenticationFailure (Element {elementName = Name {nameLocalName = \"failure\", nameNamespace = Just \"urn:ietf:params:xml:ns:xmpp-sasl\", namePrefix = Nothing}, elementAttributes = [], elementNodes = [NodeElement (Element {elementName = Name {nameLocalName = \"not-authorized\", nameNamespace = Just \"urn:ietf:params:xml:ns:xmpp-sasl\", namePrefix = Nothing}, elementAttributes = [], elementNodes = []})]}))
+	
+
+"""]]

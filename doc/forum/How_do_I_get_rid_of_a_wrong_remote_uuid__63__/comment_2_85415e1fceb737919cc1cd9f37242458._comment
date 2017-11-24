@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.154"
+ subject="comment 2"
+ date="2014-03-12T19:35:26Z"
+ content="""
+Probably this will fix it:
+
+`git annex dead 70582c7b-0b57-4087-a9d1-77b5f5f3c75e`
+"""]]

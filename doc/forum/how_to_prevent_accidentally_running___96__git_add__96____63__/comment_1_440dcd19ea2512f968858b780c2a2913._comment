@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="Xyem"
+ ip="178.79.137.64"
+ subject="comment 1"
+ date="2014-06-25T10:35:07Z"
+ content="""
+I'm not sure if you can prevent 'git add' but you can at least prevent it getting commited with the pre-commit hook. Mine is this:
+
+    #!/bin/sh
+    
+    FILES=$(find -name \".git\" -prune -o -type f -not -name \".gitignore\" -print);
+    FILE_COUNT=$(echo -n \"$FILES\" | wc -l)
+    
+    if [ $FILE_COUNT -gt 0 ]; then
+            echo \"$FILE_COUNT non-symlink files found.\"
+            echo \"$FILES\"
+            exit 1
+    fi
+    
+    # automatically configured by git-annex
+    git annex pre-commit .
+"""]]

@@ -1,0 +1,8 @@
+Now I can build git-annex twice as fast! And a typical incremental build is
+down to 10 seconds, from 51 seconds.
+
+Spent a productive evening working with Guilhem to get his encryption
+patches reviewed and merged. Now there is a way to remove revoked gpg keys,
+and there is a new encryption scheme available that uses public key
+encryption by default rather than git-annex's usual approach. That's not
+for everyone, but it is a good option to have available.

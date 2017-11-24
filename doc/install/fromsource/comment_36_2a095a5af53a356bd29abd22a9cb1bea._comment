@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkNcHu5T1Pxzl-r2co9vf6SxXYWubv2P04"
+ nickname="Matthew"
+ subject="I did indeed get problems on Ubuntu 13.04"
+ date="2014-06-25T01:01:43Z"
+ content="""
+The issues I had were version mismatches when resolving dependencies of git-annex.
+
+It seems that when you install haskell-platform package with apt-get, it installs a bunch of haskell dependencies as apt packages, yet those aren't needed for any other system packages.  So some people here who complain about version mismatches might not have intended to install any Haskell libraries with apt, they just come along for the ride by default.
+
+I can't remember the exact ones, but I ended up uninstalling some of the stuff that gets auto-installed along with haskell-platform, and using cabal to build those.  Then all the git-annex dependencies worked.
+
+Why 13.04 in this day and age?  Using Zentyal as a home server/gateway, and it currently runs on 13.04.
+
+This method might not work if you installed other apt packages that _do_ need those apt-based Haskell libraries.   But if git-annex is all you need that uses the Haskell platform, might work.
+"""]]

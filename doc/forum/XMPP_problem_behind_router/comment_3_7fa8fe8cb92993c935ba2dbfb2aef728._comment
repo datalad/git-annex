@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/wbh0dY54mcPwTpeOweuPQ8JiZrH3hg--#9b726"
+ nickname="Joe"
+ subject="comment 3"
+ date="2014-09-29T01:38:14Z"
+ content="""
+Thanks, that seemed to be the problem!  My router's dnsmasq had the 'filterwin2k' option set, which apparently [blocks queries for SRV records](http://wiki.openwrt.org/doc/howto/dhcp.dnsmasq#sip-phones.and.dnsmasq).  This may be fixed in newer OpenWRT versions, but my device is no longer supported.
+"""]]

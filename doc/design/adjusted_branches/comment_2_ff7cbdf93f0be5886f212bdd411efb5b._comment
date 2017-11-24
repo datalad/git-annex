@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-03-14T20:38:09Z"
+ content="""
+Yes, lots of things are possible with this. Filtering to only annexed files
+probably. May be some hairyness around updating the branch when files are
+got or dropped. Matching a preferred content expression, maybe..
+"""]]

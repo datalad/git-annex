@@ -1,0 +1,24 @@
+What steps will reproduce the problem?
+
+I was trying to add a remote server repository. Unfortunately, this didn't work. Enter Host name, user name, directory, port
+(left most of them at their default), but there is no way, to specify a password.) Clicking check this server failed:
+
+ Failed to ssh to the server. Transcript: Permission denied, please try again. Permission denied, please try again. Permission denied (publickey,password). 
+
+(Problem was, I could never enter a password. Interestingly, on the konsole, I get a prompt for a password, but I can't enter anything there).
+
+
+What is the expected output? What do you see instead?
+
+Successfully create a connection and use the remote server.
+
+
+What version of git-annex are you using? On what operating system?
+Version: 3.20130124
+
+
+
+Please provide any additional information below.
+
+[[!tag /design/assistant done]]
+[[!meta title="ssh password prompting issue with assistant"]]

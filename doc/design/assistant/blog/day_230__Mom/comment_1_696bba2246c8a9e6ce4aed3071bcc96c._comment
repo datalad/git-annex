@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="68.35.120.66"
+ subject="comment 1"
+ date="2013-04-05T23:50:14Z"
+ content="""
+This is probably a Dumb Git Question, but is there a tag in the repo for the new release?  I go into my clone and type \"git tag\" and the latest one I see is 4.20130323.
+"""]]

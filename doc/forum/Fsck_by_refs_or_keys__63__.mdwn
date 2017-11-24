@@ -1,0 +1,5 @@
+Hello,
+
+I'm trying to wrote a cronjob to fsck my git-annex bare repository on a server. My problem is that there are a lot of keys with no known copies because they were file that weren't meant to stay. So I want to only check files that are live in HEAD of master. Is there anyway to tell `git-annex fsck` to only check file that are used in some refs?
+
+Thanks.

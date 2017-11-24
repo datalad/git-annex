@@ -1,0 +1,24 @@
+Today I revisited something from way back in [[day_7__bugfixes]].
+Back then, it wasn't practical to run `git ls-files` on every
+file the watcher noticed, to check if it was already in git. Revisiting
+this, I found I could efficiently do that check at the same point it checks
+`lsof`. When there's a lot of files being added, they're batched up at that
+point, so it won't be calling `git ls-files` repeatedly.
+
+Result: It's safe to mix use of the assistant with files stored in git
+in the normal way. And it's safe to mix use of `git annex unlock` with
+the assistant; it won't immediately re-lock files. Yay!
+
+----
+
+Also fixed a crash in the committer, and made `git annex status` display
+repository groups.
+
+----
+
+Been thinking through where to store the [[transfer_control]] expressions.
+Since repositories need to know about the transfer controls of other
+remotes, storing them in `.git/config` isn't right. I thought it might be
+nice to configure the expressions in `.gitattributes`, but it seems the
+file format doesn't allow complicated multi-word attributes. Instead,
+they'll be stored in the git-annex branch.

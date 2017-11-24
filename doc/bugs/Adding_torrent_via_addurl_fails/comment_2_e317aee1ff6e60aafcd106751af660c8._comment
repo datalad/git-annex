@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="annuges"
+ subject="comment 2"
+ date="2016-02-09T13:49:42Z"
+ content="""
+sorry looks like i hadd a litle mixup, the full magnet link that i used when checking btshowmetainfo was
+
+    magnet:?xt=urn:btih:88066b90278f2de655ee2dd44e784c340b54e45c&dn=archlinux-2016.02.01-dual.iso&tr=udp://tracker.archlinux.org:6969&tr=http://tracker.archlinux.org:6969/announce
+
+Using this one with aria2c --bt-save-metadata results in a torrent file with the announce-list entry only.
+Modifying the link to only contain one tracker url still results in an announce-list with a single entry.
+
+There also is a separate torrent file on the arch website that has the announce field set correctly.
+
+    https://www.archlinux.org/releng/releases/2016.02.01/torrent/
+
+They hide the actuall .torrent file though so addurl doesn't trigger the torrent parsing with led me to try the magnet link to begin with.
+
+Anyway, looks like aria2c is at fault because it doesn't generate standard compliant .torrent files from magnet links.
+
+
+
+
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="fusionx86@2cab672ef75a8502e153ceb90177dde38985dba9"
+ nickname="fusionx86"
+ subject="comment 6"
+ date="2015-07-24T18:10:20Z"
+ content="""
+Any other ideas on this problem? I was planning to use annex for large/binary files, but we have a lot of developers that would need to run it on Windows as well and I'm not sure how to roll it out when I can't get it working myself on a Windows build server. I think I saw somewhere that you have tested it on WinXP. Any chance you could download an evaluation copy of a later version (Win7/8.1/2008R2/2012R2) and try again? Annex is a great tool and would like to incorporate it into our SCM and deployment workflow if possible. Thanks.
+"""]]

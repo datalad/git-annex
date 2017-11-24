@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.54"
+ subject="comment 4"
+ date="2014-10-06T16:06:52Z"
+ content="""
+Of course, git-annex sync fails when it tries to git push to the removable repo. I don't see that causing any problems in practice.
+"""]]

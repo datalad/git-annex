@@ -1,0 +1,19 @@
+My use case is that I [import media](http://ix.io/h6m) from my iphone/gopro to my laptop. I then want to upload them to [Flickr](https://www.flickr.com/) (JPG/PNG) and S3 (MP4). However I want to keep a backup using git-annex onto a external USB drive.
+
+# How do I quickly copy and drop?
+
+I realise I can:
+
+1. git-annex add 2014-*
+* git-annex copy --to 2tbusbdrive
+* git-annex drop 2014-*
+
+But that's several steps. Is there a quicker way?
+
+# How do drop only files I've actually uploaded?
+
+In the past, I've just marked files as uploaded by `touch "$media.uploaded"` once my python Flickr script returns a successful error code. But I have no idea how to tell git-annex that this means the file can now be dropped, providing a copy exists on my **2tbusbdrive**.
+
+# Furthermore keeping a clean deck
+
+Tbh I don't want the old upload files/directories cluttering up my _uploadme_ directory. Can I just delete them or configure drop to remove the filename too?

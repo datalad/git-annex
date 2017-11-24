@@ -1,0 +1,24 @@
+### use case: The Nomad
+
+Alice is always on the move, often with her trusty netbook and a small
+handheld terabyte USB drive, or a smaller USB keydrive. She has a server
+out there on the net. She stores data, encrypted in the Cloud.
+
+All these things can have different files on them, but Alice no longer
+has to deal with the tedious process of keeping them manually in sync,
+or remembering where she put a file. git-annex manages all these data
+sources as if they were git remotes.  
+<small>[[more about special remotes|special_remotes]]</small>
+
+When she has 1 bar on her cell, Alice queues up interesting files on her
+server for later. At a coffee shop, she has git-annex download them to her
+USB drive. High in the sky or in a remote cabin, she catches up on
+podcasts, videos, and games, first letting git-annex copy them from
+her USB drive to the netbook (this saves battery power).  
+<small>[[more about transferring data|transferring_data]]</small>
+
+When she's done, she tells git-annex which to keep and which to remove.
+They're all removed from her netbook to save space, and Alice knows
+that next time she syncs up to the net, her changes will be synced back 
+to her server.  
+<small>[[more about distributed version control|distributed_version_control]]</small>

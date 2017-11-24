@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/bBy7WkgQicYHIiiyj.Vm0TcMbxi2quzbPFef#6f9f7"
+ nickname="Frederik Vanrenterghem"
+ subject="comment 6"
+ date="2015-05-21T06:14:33Z"
+ content="""
+Thanks Anarcat. I actually was dealing with a repository in direct mode, not bare mode. Only realised after today encountering one in bare mode, and reading [[internals]]. Your method worked too, but
+
+    git annex indirect 
+
+would have been quicker I guess.
+"""]]

@@ -1,0 +1,26 @@
+### Please describe the problem.
+
+I am using a ssh-host configured in .ssh/config in a corporate-environment like this:
+
+[[!format sh """
+  Host home
+        Hostname 1.2.3.4
+        Port 443
+        ProxyCommand corkscrew proxy.fqdn 8080 %h %p ~/.authfile
+        # http://www.agroman.net/corkscrew/
+"""]]
+
+I now want to be able to add this host as a remote repository, but don't have the ability to add it. A tunnel to localhost would be possible but then I would have to setup this portforwarding for git-annex separately every time it is started.
+
+### What steps will reproduce the problem?
+
+Add a remote host that is only reachable through a proxy.
+
+### What version of git-annex are you using? On what operating system?
+
+gentoo
+git-annex-5.20141125 {+assistant +cryptohash +dbus +desktop-notify +dns +feed +inotify +pairing +production +quvi +s3 +tahoe +tdfa +testsuite +webapp +webapp-secure +webdav +xmpp}
+
+
+
+Is it possible to use this predefined host, or add the possibility to configure git-annex like above?

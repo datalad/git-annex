@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnNqLKszWk9EoD4CDCqNXJRIklKFBCN1Ao"
+ nickname="maurizio"
+ subject="comment 5"
+ date="2013-11-22T18:22:55Z"
+ content="""
+One client is a thinkpad 121e, the other one a hp Z420 workstation. The archive is a basic Dell desktop. All of them run wheezy with git-annex and git  from official backports. The transfer repository is at rsync.net. 
+
+The daemon.log file was empty at the time I noticed the situation. Now git-annex has been scanning this repository for some time and the log has information again but it looks a bit too long to be posted here. I will email about the repository copy and the log.
+
+"""]]

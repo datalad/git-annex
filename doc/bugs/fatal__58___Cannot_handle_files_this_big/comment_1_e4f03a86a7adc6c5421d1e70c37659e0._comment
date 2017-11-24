@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-02-10T17:29:44Z"
+ content="""
+I recently fixed a bug that would
+likewise cause git-annex to fail on windows with a large file, although I
+didn't see it failing with this message.
+
+There's a good chance that git-annex version 5.20150205 might fix this
+problem. 
+
+I was able to successfully use git-annex with a 6 gb file, after the fixes.
+
+Please check, and followup. I'm closing this bug provisionally in the
+meantime.
+"""]]

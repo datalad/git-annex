@@ -1,0 +1,27 @@
+### Please describe the problem.
+
+I have recently switched to self hosted git. Gitbucket over SSL. When I swithced origin from rsync ssh to ssl url assistant stopped showing origin in the repositories list it also does not sync to it when a file changes. (It does sync to it every 5 6 hours.). Running sync on the command line does sync to the repo. Authentication is done using netrc file. Replacing the ssl based url to ssh based url, repo shows up in the list and assistant syncs to it.
+
+
+### What steps will reproduce the problem?
+
+Replacing the ssh url with ssl url.
+
+
+### What version of git-annex are you using? On what operating system?
+
+5.20150823-geb17375
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+

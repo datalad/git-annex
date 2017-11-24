@@ -1,0 +1,4 @@
+Hi, 
+May I know, how can I debug git-annex code.
+I am new to Haskell Platform, I would like to know which IDE can be used to debug haskell code.
+Thank You.

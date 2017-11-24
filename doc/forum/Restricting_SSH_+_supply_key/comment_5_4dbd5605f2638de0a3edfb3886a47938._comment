@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="divB"
+ ip="128.12.90.218"
+ subject="comment 5"
+ date="2014-07-15T04:03:16Z"
+ content="""
+After some debugging I found another weird thing which is I think the reason. If I execute
+    git annex get file.jpg
+
+everything works. But if I do
+
+    \"c:\program files (x86)\git\bin\git.exe\" annex get file.jpg
+
+it fails, claiming it can't connect to host \"annex\". I found that there are 3 (!) git.exe installed. When I choose
+
+    \"c:\program files (x86)\git\cmd\git.exe\" annex get file.jpg
+
+it works again. When I use \"which git\" in cygwin, it also points me to the \"cmd/git.exe\" version.
+So I think this is a bug and git annex assistant should call the executeable in \"cmd\" rather than \"bin\".
+Why are there three versions of git.exe at all (one more is in directory libexec/git-core)?
+
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="wsha.code+ga@b38779424f41c5701bbe5937340be43ff1474b2d"
+ nickname="wsha.code+ga"
+ subject="comment 8"
+ date="2016-01-08T06:56:02Z"
+ content="""
+Thanks for spending the time to check the script. It would have taken me quite a while to catch that issue. I was also a little bit surprised that the hybrid encryption mode uses the base64 encoded cipher string while the shared encryption mode uses the cipher after decoding from base64.
+
+I can now reproduce the HMAC'ed keys and decrypt the files all the supported forms of encryption using openssl and gpg which makes me feel comfortable using them for long term storage.
+"""]]

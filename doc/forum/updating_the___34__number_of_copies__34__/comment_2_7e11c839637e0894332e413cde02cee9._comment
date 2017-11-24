@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlgyVag95OnpvSzQofjyX0WjW__MOMKsl0"
+ nickname="Sehr"
+ subject="comment 2"
+ date="2012-12-01T19:27:59Z"
+ content="""
+Ok, that did the trick, except that it recalculates all cehcksums, which is exactly wat I do not want, as it is unnecessary and takes at 40MB/s just too long. Any other way? I think about adding the whereis info by hand, which simply feels wrong!
+"""]]

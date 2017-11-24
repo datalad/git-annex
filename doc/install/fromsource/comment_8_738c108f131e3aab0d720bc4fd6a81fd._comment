@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.193"
+ subject="comment 8"
+ date="2013-06-25T17:16:46Z"
+ content="""
+git-annex 4.20130621 once again builds with the current version of yesod.
+"""]]

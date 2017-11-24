@@ -1,0 +1,23 @@
+I knew that making `git annex export` handle renames efficiently would take
+a whole day somehow.
+
+Indeed, thinking it over, it is a seriously super hairy thing. Renames can swap
+contents between two or more files, and so temp files are needed. It has to
+handle cleaning up temp files after interrupted exports, which may be
+resumed with the same or a different tree. It also has to recover from
+export conflicts, which could cause the wrong content to be renamed to a file.
+
+I think I've thought through everything and found a way to deal with it all.
+Here's how it looks in operation swapping two files:
+
+	git annex export master --to dir
+	rename bar -> .git-annex-tmp-content-SHA256E-s30--472b01bf6234c98ce03d1386483ae578f6e58033974a1363da2606f9fa0e222a ok
+	rename foo -> .git-annex-tmp-content-SHA256E-s4--b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c ok
+	rename .git-annex-tmp-content-SHA256E-s4--b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c -> bar ok
+	rename .git-annex-tmp-content-SHA256E-s30--472b01bf6234c98ce03d1386483ae578f6e58033974a1363da2606f9fa0e222a -> foo ok
+	(recording state in git...)
+
+The export todo list is only getting longer.. But the branch may
+be close to being merged.
+
+Today's work was supported by the NSF-funded DataLad project.

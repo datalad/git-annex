@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Alan"
+ avatar="http://cdn.libravatar.org/avatar/9cbc26346f1c693d7df198e662a5fdae"
+ subject="No package for armhf on stretch"
+ date="2017-08-28T09:00:15Z"
+ content="""
+I cannot find a package in stretch for armhf (It's not listed here: https://packages.debian.org/stretch/git-annex). Is my only option to install from source?
+"""]]

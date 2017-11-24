@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmNvX8PQVP5sLzQ78sKpB6VeH3Fu8HvZ5g"
+ nickname="Jeff"
+ subject="comment 2"
+ date="2015-04-01T01:08:53Z"
+ content="""
+I'm getting a similar error on git-annex version: 5.20141203, but I'm not in direct mode. It happens when I call 'git annex unused'.
+"""]]

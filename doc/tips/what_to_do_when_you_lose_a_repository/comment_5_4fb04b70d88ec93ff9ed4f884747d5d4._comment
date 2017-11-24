@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/e65e6d0e-58ba-41de-84cc-1f2ba54cf574"
+ nickname="Mica Semrick"
+ subject="forget command"
+ date="2013-12-17T05:52:52Z"
+ content="""
+Unfortunately, I plugged in the drive and it was alive just long enough to clone the repo and pull down about half of the data. Then it just started clicking. I did my best to wipe the drive before I returned it, but it didn't even make it that far.
+
+Now I've got a replacement drive. Since my system auto-mounts based on the partition label; I had been using the label to identify external drives. So I want to describe the drive the same way to my system & git-annex. 
+
+In this case, I think I'd like to completely get rid of any notion the repos have of the old drive. 
+"""]]

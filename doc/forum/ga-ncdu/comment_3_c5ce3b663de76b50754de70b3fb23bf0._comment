@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 3"
+ date="2015-04-12T22:12:53Z"
+ content="""
+Whelp, didn't realise it had been over two weeks! Got caught up in other stuff (VR).
+
+[Here's the bitbucket repository!](https://bitbucket.org/CandyAngel/ga-ncdu)
+
+I've coded my own JSON output so it doesn't depend on any non-core Perl modules.
+
+Please let me know of any bugs, feature requests etc. Feedback would be appreciated, even just letting me know you are using it would be great!
+
+    ga-ncdu.pl ~/mah_annex | ncdu -f-
+"""]]

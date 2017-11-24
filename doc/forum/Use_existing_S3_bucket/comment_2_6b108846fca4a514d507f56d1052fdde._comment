@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://xgm.de/oid/"
+ nickname="Horus"
+ avatar="http://cdn.libravatar.org/avatar/4c5c0e290374d76c713f482e41f60a3cbee0fa64bb94c6da94e5a61a50824811"
+ subject="comment 2"
+ date="2017-02-14T18:03:27Z"
+ content="""
+Ok, I can confirm it works with an existing bucket in Europe/Ireland.
+
+Looks like I shouldn't count on being able to use Frankfurt anytime soon, since this PR has not been worked on since april last year.
+
+Best Thanks!
+"""]]

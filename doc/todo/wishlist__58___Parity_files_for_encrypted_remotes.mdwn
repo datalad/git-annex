@@ -1,0 +1,7 @@
+I have data that has accompanying parity files.  This is supposed to add some
+security to file integrity; however, it only works as long as the files are
+available unencrypted.  In case of encrypted special remotes the existing parity files
+won't be of any use if the encrypted versions of files get corrupted in the remote location.
+
+Would it be worthwhile for git-annex to generate its own
+parity files for the encrypted data in encrypted special remotes?

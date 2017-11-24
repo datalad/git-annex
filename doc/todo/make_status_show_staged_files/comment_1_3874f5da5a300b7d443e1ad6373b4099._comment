@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-11-03T17:03:34Z"
+ content="""
+It's documentation says it shows files that have been deleted/modified/are
+not checked into git. Not staged files.
+
+So, this is not a bug report, it's a request to make git annex status list
+more files.
+"""]]

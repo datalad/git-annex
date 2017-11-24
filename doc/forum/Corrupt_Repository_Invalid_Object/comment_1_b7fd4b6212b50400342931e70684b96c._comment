@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.191"
+ subject="comment 1"
+ date="2014-04-17T19:47:54Z"
+ content="""
+git is complaining about one of the files in `.git/objects` being missing or corrupt.
+
+It's not likely that some accidental command you ran caused this. More likely a disk error or an unclean shutdown could have left the repository in this state.
+
+You can try running `git annex repair` which should be able to repair git repositories with this kind of damage.
+
+Or you can just `git clone` the repository from any other place you have it and move over .git/annex/objects and .git/config to the new repository, discarding the damaged one.
+"""]]

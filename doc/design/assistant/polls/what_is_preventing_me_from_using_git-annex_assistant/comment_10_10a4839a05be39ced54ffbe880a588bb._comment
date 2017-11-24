@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="comment 10"
+ date="2013-01-11T21:57:29Z"
+ content="""
+@joey: My usecase is fairly simple. 
+I have a working directory where I do work 
+(not programing, but text editing with homecooked spreadsheet/texteditor).
+
+I work/type on spot/on site. So I'm walking while typing.
+
+Its easy to do stupid things while you work, 
+so would be really handy to have a backup automagically on the same computer to prevent mistakes, user errors.
+(The last mistake, I did is I copied all my daily files into a \"tmp\" directory, 
+then I launched my homebrew program which also created a tmp dir then deleted the whole content of it. 
+I fixed it, but my datas was lost. It is a simple user mistake which could be prevented if I would have a 
+live backup all the time. Creating a git repo for daily typing is just too much overhead. 
+It is like you create a git repo for your text messages...)
+
+So my usecase is a live backup. Or the broken file deleting thing on unix/linux since forever.
+
+Laszlo
+
+"""]]

@@ -1,0 +1,11 @@
+When i start the assistant, it's nicely telling me:
+
+<pre>
+[2015-05-27 20:15:20 UTC] Upgrader: An upgrade of git-annex is available.  (version 5.20150522)
+</pre>
+
+That's really cool, but it's not actually upgrading. I looked around the website to understand how that worked and i found [[git-annex-upgrade]] and [[upgrades]] but those pages were not really useful, as they talk more about repository upgrades, and not the automated upgrade system. I was expecting [[upgrades]] to talk a bit about automated upgrades, or maybe the [[install]] page... 
+
+i am running `5.20150508-g883d57f`, with a standalone image installed by root in `/opt`. Should that directory be writable by the user running git-annex to solve this?
+
+Thanks! --[[anarcat]]

@@ -1,0 +1,2 @@
+When git annex does fsck on (for example) a GPG-encrypted special directory remote, it first transfers the whole file into .git/annex/tmp directory.
+If your annex is on an SSD, it's a good idea to make .git/annex/tmp a symlink to say /var/tmp so SSD isn't worn down.  This actually may be a better default.

@@ -1,0 +1,5 @@
+Hi
+
+Is it possible to create a view which also includes files with no tag?
+
+I use something like `git annex view 'rating=*'` to view files sorted by rating but this view does not include files which don‘t have a rating yet. What I was looking for is a way to show tagged files and untagged files in one view.

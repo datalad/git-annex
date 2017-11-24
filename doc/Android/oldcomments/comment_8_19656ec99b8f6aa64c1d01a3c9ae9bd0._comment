@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://yarikoptic.myopenid.com/"
+ nickname="site-myopenid"
+ subject="why ln failed"
+ date="2013-05-23T13:27:39Z"
+ content="""
+Finally got to check it out:  so indeed hardlinking fails but not because of permissions but \"link failed Cross-device link\"  that lib is -> /mnt/asec/ga.androidterm-1/lib  which resides on a different partition (vfat, /dev/block/dm-2, ro) from /data (ext4, /dev/block/mmcblk0p10)
+"""]]

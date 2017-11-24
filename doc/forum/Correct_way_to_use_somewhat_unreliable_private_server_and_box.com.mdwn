@@ -1,0 +1,3 @@
+I have a private server (a computer at work) which I use as the "central repository" with git-annex. Unfortunately it sometimes goes down and occasionally I can't easilly put it on again (think holidays). So I'd like to use box.com as a backup.
+
+What's the most efficient way to do it? Simply add both my private serer and box.com as "transfer: distributes files to clients" repositiories? I'm afraid that if I do that then box.com will slow things down for me (I haven't tried it yet because I'm literally starting with git-annex today). Ideally I'd like all transfers to/from box.com to be somehow in the background so that they don't interfere with the transfers to/from my private server.

@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawniayrgSdVLUc3c6bf93VbO-_HT4hzxmyo"
+ nickname="Tobias"
+ subject="comment 2"
+ date="2012-08-30T10:01:24Z"
+ content="""
+thanks, that resolved the dependency trouble.
+But now:
+
+    Building git-annex-3.20120826...
+    Preprocessing executable 'git-annex' for git-annex-3.20120826...
+
+    Utility/Yesod.hs:15:8:
+        Could not find module `Data.Default'
+        It is a member of the hidden package `data-default-0.5.0'.
+        Perhaps you need to add `data-default' to the build-depends in your .cabal file.
+        Use -v to see a list of the files searched for.
+
+"""]]

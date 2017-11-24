@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn_3tllXjSmtgm__aGr9Z4gVNFgJgGyJ30"
+ nickname="David Alan"
+ subject="comment 1"
+ date="2014-04-02T15:58:57Z"
+ content="""
+This problem also exists, when connecting to other ssh remote servers.
+The error msg would be:
+
+ Failed to ssh to the server. Transcript: Permission denied, please try again. Received disconnect from 80.xxx.xxx.xxx: 2: Too many authentication failures for ssh-xxxxxx-git-annex-assist 
+"""]]

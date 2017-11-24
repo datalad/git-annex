@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-03-18T15:09:53Z"
+ content="""
+git-annex won't let you change a remote's encryption scheme, as this would make any data stored in the remote using the old scheme be no longer accessible. You need to make a new remote. It should be fine to point the new remote at the same location as the old one, though.
+"""]]

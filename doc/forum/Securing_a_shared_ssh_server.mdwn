@@ -1,0 +1,3 @@
+Hi, I'd like to share files with friends, to do so we need a shared server to exchange the files. I could setup an ssh access on one of my servers but I don't want others to have a full access. I assume I can restrict this using a `command='wrapper-around-git'` prefix in `.ssh/authorized_keys`, where `wrapper-around-git` is simply a script that checks if `SSH_ORIGINAL_COMMAND` is an authorised command and runs it. This is exactly the approach used with Mercurial (hg-ssh) and presumably git also relies on this mechanism.
+
+But to do so, I need to know what commands can be executed over ssh when using git-annex assistant. Could you document about this? Thanks!

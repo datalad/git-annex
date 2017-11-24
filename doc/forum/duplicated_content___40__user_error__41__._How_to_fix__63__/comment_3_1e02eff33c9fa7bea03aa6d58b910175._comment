@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.55"
+ subject="comment 3"
+ date="2014-07-03T19:20:49Z"
+ content="""
+\"67e69242-d57c-4b50-aaf9-74876b899962\" is the UUID of a git annnex repository that git-annex has on record as containing the file. Since it does not have a description set (which normally gets done automatically when setting up the repository), and is not one of the remotes of the repository where you ran `git annex whereis`, it's a bit hard to tell what repository that is.
+
+What I would do in this situation is:
+
+1. Look around my computers for a repository with that UUID. You can run this command in a repository to see its uuid: `git config annex.uuid`  
+2. If I found it, I'd run `git annex describe here \"something sensible\"` and maybe set it up as a remote of other repositories and then `git annex drop` the data from it if desired.
+3. If I was unable to find the repository, I might assume it was one I created before, and have removed. Then I'd tell git-annex that: `git annex dead 67e69242-d57c-4b50-aaf9-74876b899962` (if it turns out I was wrong and the repository turns up later, this can always be reversed by running `git annex semitrust 67e69242-d57c-4b50-aaf9-74876b899962`)
+"""]]

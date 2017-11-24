@@ -1,0 +1,54 @@
+[[!comment format=mdwn
+ username="fusionx86@2cab672ef75a8502e153ceb90177dde38985dba9"
+ nickname="fusionx86"
+ subject="comment 4"
+ date="2015-07-20T20:14:07Z"
+ content="""
+The bug you linked does look like the same thing I'm seeing. I decided to install cygwin on the same server to see if it made a difference. It started adding files this time and I thought I had a solution, but then it threw the same error about access.
+----
+$ git annex sync --verbose
+
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+
+  Enabling direct mode.
+commit  (recording state in git...)
+add Bin/FastMM_FullDebugMode.dll ok
+add Bin/Res/bar_blank.gif ok
+add Bin/Res/bar_blank_gray.gif ok
+add Bin/Res/bar_gray.gif ok
+add Bin/Res/bar_left.gif ok
+add Bin/Res/bar_middle.gif ok
+add Bin/Res/bar_right.gif ok
+add Bin/Res/btn_back_0.gif ok
+add Bin/Res/btn_back_1.gif ok
+add Bin/Res/btn_back_2.gif ok
+add Bin/Res/btn_back_3.gif ok
+...
+(recording state in git...)
+ok
+pull origin git-annex.exe: unknown command git@gitlab.company.com
+
+Usage: git-annex command [option ...]
+...
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+  Pushing to origin failed.
+
+  (non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)
+failed
+(recording state in git...)
+git-annex.exe: sync: 2 failed
+----
+
+So it seemed to get a little further, but still fails. The key $HOME/.ssh/id_rsa has full access to the repo and I'm able to push/pull with git just fine. Not sure what else to try for annex sync.
+
+"""]]

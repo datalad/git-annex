@@ -1,0 +1,14 @@
+3 days spent redoing the Android autobuilder! The new version of
+yesod-routes generates TH splices that break the EvilSplicer. So after
+updating everything to new versions for the Nth time, I instead went back
+to older versions. The autobuilder now uses Debian jessie, instead of
+wheezy. And all haskell packages are pinned to use the same version
+as in jessie, rather than the newest versions. Since jessie is quite near
+to being frozen, this should make the autobuilder much less prone to
+getting broken by new versions of haskell packages that need patches for
+Android.
+
+I happened to stumble over <http://hackage.haskell.org/package/setenv>
+while doing that. This supports setting and unsetting environment variables
+on Windows, which I had not known a way to do from Haskell. Cleaned up
+several ugly corners of the Windows port using it.

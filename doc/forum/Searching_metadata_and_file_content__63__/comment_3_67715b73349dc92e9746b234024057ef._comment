@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-08-19T17:11:41Z"
+ content="""
+Nice script to use recoil, and I imagine similar approaches could be used
+to integrate with other search engines.
+
+Note that `git annex metadata --json` yields a format better suited to
+machine parsing. Especially because metadata values can contain arbitrary
+content, even potentially newlines.
+
+There are plans to eventually make git-annex use a caching database for
+things, including metadata. This would automatically get updated whenever there
+are changes to the metadata, and SQL queries could then be run against it.
+Or, `git annex metadata` queries could boil down to SQL queries and so run
+a lot faster than they do now.
+"""]]

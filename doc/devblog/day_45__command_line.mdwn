@@ -1,0 +1,9 @@
+All command line stuff today..
+
+Added --want-get and --want-drop, which can be used to test preferred content settings
+of a repository. For example `git annex find --in . --want-drop` will list the same
+files that `git annex drop --auto` would try to drop. (Also renamed `git annex content`
+to `git annex wanted`.)
+
+Finally laid to rest problems with `git annex unannex` when multiple files point to the
+same key. It's a lot slower, but I'll stop getting bug reports about that.

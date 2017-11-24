@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2011-04-04T18:20:45Z"
+ content="""
+Hey @fmarier. Well, this bug report is closed because you can already get rid of the symlinks. Just put a bare git repo on your fat filesystem, and use git-annex copy --to/--from there.
+
+Now, that puts all the files that are on the device in .git/annex/objects/xx/yy/blah.mp3 -- how well rockbox would support that I don't know. And if it tries to modify or delete those files, git annex also can't help you manage those changes.
+
+Another recent option is the [[special_remotes/directory]] special remote type, which again uses \"xx/yy/blah.mp3\" and can't track changes made to the files. This could perhaps be extended in the direction you suggest, although trying to fit this into the special remote infrastructure might not be a good fit really.
+
+The most likely way this has to get dealt with is really by using [[todo/smudge]] filters, which would eliminate the symlinks and allow copying a non-bare git repo onto vfat. 
+"""]]

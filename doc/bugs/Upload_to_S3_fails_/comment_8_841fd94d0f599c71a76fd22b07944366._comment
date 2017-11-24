@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkvSZ1AFJdY_1FeutZr_KWeqtzjZta1PNE"
+ nickname="Thedward"
+ subject="comment 8"
+ date="2014-10-21T17:47:35Z"
+ content="""
+Additional info: I created both of the related git-annex repositories yesterday via the webapp. Then imported a number of files to each one. Then connected them via xmpp. Then created the S3 remote via the webapp so they could actually share files. I am using an IAM identity for S3 instead of my root access key; it has full S3 access (and data IS showing up in the bucket, so it's not a *simple* permissions problem).
+"""]]

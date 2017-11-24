@@ -1,0 +1,8 @@
+Got a handle on the Android webapp static file problems (no, they were not
+really encoding problems!), and hopefully
+that's all fixed now. Also, only 3 modules use Char8 now. And updated the
+git-annex backport. That's all I did today.
+
+Meanwhile, a complete [[tips/ZSH_completion]] has been contributed by
+Schnouki. And, Ben Gamari sent in a patch moving from the deprecated 
+MonadCatchIO-transformers library to the exceptions library.

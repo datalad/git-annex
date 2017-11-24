@@ -1,0 +1,36 @@
+git-annex has a powerful syntax for making it act on only certain files.
+
+The simplest thing is to exclude some files, using wild cards:
+
+	git annex get --exclude '*.mp3' --exclude '*.ogg'
+
+But you can also exclude files that git-annex's [[location_tracking]]
+information indicates are present in a given repository. For example,
+if you want to populate newarchive with files, but not those already
+on oldarchive, you could do it like this:
+
+	git annex copy --not --in oldarchive --to newarchive
+
+Without the --not, --in makes it act on files that *are* in the specified
+repository. So, to remove files that are on oldarchive:
+
+	git annex drop --in oldarchive
+
+Or maybe you're curious which files have a lot of copies, and then
+also want to know which files have only one copy:
+
+	git annex find --copies 7
+	git annex find --not --copies 2
+
+The above are the simple examples of specifying what files git-annex
+should act on. But you can specify anything you can dream up by combining
+the things above, with --and --or -( and -). Those last two strange-looking
+options are parentheses, for grouping other options. You will probably
+have to escape them from your shell.
+
+Here are the mp3 files that are in either of two repositories, but have
+less than 3 copies:
+
+	git annex find --not --exclude '*.mp3' --and \
+		-\( --in usbdrive --or --in archive -\) --and \
+		--not --copies 3

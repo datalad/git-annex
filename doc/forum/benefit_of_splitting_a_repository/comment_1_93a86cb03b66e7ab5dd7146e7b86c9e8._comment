@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.49"
+ subject="comment 1"
+ date="2012-11-28T18:16:10Z"
+ content="""
+`git-annex unused` needs to scan the entire repository. But it uses a bloom filter, so its complexity is O(n) to the number of keys.
+
+`git annex fsck` scans the entire repository and also reads all available file content. But we have incremental fsck support now.
+
+The rest of git-annex is designed to have good locality.
+
+The main problem you are likely to run into is innefficiencies with git's index file. This file records the status of every file in the repository, and commands like `git add` rewrite the whole file. git-annex uses a journal to minimise operations that need to rewrite the git index file, but this won't help you when you're using raw git commands in the repository.
+
+"""]]

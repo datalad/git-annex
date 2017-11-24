@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2017-10-02T20:07:23Z"
+ content="""
+In general, it's out of scope for fsck to make file permission sane,
+because "sane" has a fairly broad set of definitions when it comes
+to file permissions!
+
+See [[!commit bd516af734bf5e1f7a3d43c7e4dd0f6fb9fd5919]] for the
+backstory about why fsck wants to fix this one particular permission.
+In short, old versions of git-annex didn't set the write bit of content files
+in a shared repo, which prevented git-annex from locking the content
+files, which prevents dropping them or locking them to prevent removal
+while dropping them from another repo. So fsck is fixing up from that
+situation.
+
+With core.sharedrepository=1, isContentWritePermOk 
+wants owner and group write bits to be set on the content file.
+
+I can reproduce what seems to be the same problem as follows:
+
+	drwxrwxr-x 2 root netdev 4096 Oct  2 16:20 .git/annex/objects/2K/7F/SHA256E-s30--0d18b66aa72aeecad450963ec8f8951f4f5d27fc965d56bdfd3ff75e6d42ea3e/
+	-rw-r--r-- 1 root netdev 30 Oct  2 16:20 .git/annex/objects/2K/7F/SHA256E-s30--0d18b66aa72aeecad450963ec8f8951f4f5d27fc965d56bdfd3ff75e6d42ea3e/SHA256E-s30--0d18b66aa72aeecad450963ec8f8951f4f5d27fc965d56bdfd3ff75e6d42ea3e
+
+When I fsck as user joey, who is in group netdev, it complains it can't
+fix the permissions.
+
+While joey has write access to the directory containing
+the content file, this does not allow changing the permissions of the file.
+
+The directory perms do allow deleting the file and replacing it with a copy
+that has the permissions I want. But, that is an expensive operation, needing
+to copy a perhaps enormous file. So I don't think it's a reasonable thing for
+fsck to do.
+
+So, it seems to me that fsck complaining is ok.
+"""]]

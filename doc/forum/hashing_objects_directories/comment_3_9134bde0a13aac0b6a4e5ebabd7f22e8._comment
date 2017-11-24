@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 3"
+ date="2011-03-16T03:13:39Z"
+ content="""
+It is unfortunatly not possible to do system-dependant hashing, so long as git-annex stores symlinks to the content in git.
+
+It might be possible to start without hashing, and add hashing for new files after a cutoff point. It would add complexity.
+
+I'm currently looking at a 2 character hash directory segment, based on an md5sum of the key, which splits it into 1024 buckets. git uses just 256 buckets for its object directory, but then its objects tend to get packed away. I sorta hope that one level is enough, but guess I could go to 2 levels (objects/ab/cd/key), which would provide 1048576 buckets, probably plenty, as if you are storing more than a million files, you are probably using a modern enough system to have a filesystem that doesn't need hashing.
+"""]]

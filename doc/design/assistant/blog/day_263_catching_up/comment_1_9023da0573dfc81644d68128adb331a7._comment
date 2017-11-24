@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkHscTHMCNvjJ6nLI1VpsBrJFI5FTwhUT4"
+ nickname="David"
+ subject="Just use Unix Paths like git does?"
+ date="2013-05-15T20:43:34Z"
+ content="""
+Can't you just use unix-style paths for your internal data structures, and wrap/patch the filesystem I/O code to convert between the two?
+"""]]

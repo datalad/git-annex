@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="Ok, v6 not mature yet (as of 2016-10)."
+ date="2016-10-29T10:02:05Z"
+ content="""
+> with the newer v6 repository format, git annex unannex is able to safely handle files that have been added and not committed yet.
+
+I was puzzled, believing that recent versions used v6 repository format.
+
+Indeed, all my repositories have been created with 6.20161011-g3135d35 with default options (indirect mode).
+
+```
+git-annex version: 6.20161011-g3135d35
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository versions: 3 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+operating system: linux x86_64
+```
+
+I understand now that v6 is still experimental and not enabled by default ( ref http://git-annex.branchable.com/devblog/day_421__lost_in_the_trees/ ). 
+
+"""]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="lee@7614f42c1a6cc84dbc813df25d2f75ed54948e17"
+ nickname="lee"
+ avatar="http://cdn.libravatar.org/avatar/bcacd00a7f05c4772329cf9f446c7987"
+ subject="comment 2"
+ date="2017-04-07T21:10:34Z"
+ content="""
+> I wonder if you forgot to run git update-server-info?
+
+That was it! Thanks!
+
+I actually didn't forget to run this, but I did not realize that it needed to be run on the *server*, so I was running it on my local annex instead. Now that I've run it everything works!
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.144"
+ subject="comment 2"
+ date="2014-09-25T15:42:41Z"
+ content="""
+You need to be able to `ssh yourserver which rsync` and have it succeed. That's what git-annex uses to probe if rsync etc is present.
+
+Note that, since that does not start a login shell, bash doesn't source ~/.bash* at all, or even /etc/profile. So none of the ways people add nonstandard directories to PATH will work.
+
+So, use this to check the PATH that is available on the system: `ssh yourserver 'echo $PATH'`
+"""]]

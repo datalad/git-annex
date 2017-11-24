@@ -1,0 +1,16 @@
+Working on getting caught up with backlog. 73 messages remain.
+
+Several minor bugs were fixed today. All edge cases. The most edge case one
+of all, I could not fix: git-annex cannot add a file that has a newline
+in its filename, because `git cat-file --batch`'s interface does not support such
+filenames.
+
+Added a page [[documenting how verify the signatures of git-annex releases|install/verifying_downloads]].
+
+Over the past couple days, all the autobuilders have been updated to new
+dependencies needed by the recent work. Except for Windows, which needs to
+be updated to the new Haskell Platform first, so hopefully soon.
+
+Turns out that upgrading unix-compat means that inode(like) numbers are
+available even on Windows, which will make git-annex more robust there.
+Win win. ;)

@@ -1,0 +1,25 @@
+From 0e728d5b049224394908d793c73902a8c981e636 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Mon, 26 May 2014 01:04:40 +0000
+Subject: [PATCH] fix cross build
+
+---
+ system-filepath.cabal |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/system-filepath.cabal b/system-filepath.cabal
+index d6aa726..f4e5e0f 100644
+--- a/system-filepath.cabal
++++ b/system-filepath.cabal
+@@ -6,7 +6,7 @@ license-file: license.txt
+ author: John Millikin <jmillikin@gmail.com>
+ maintainer: John Millikin <jmillikin@gmail.com>
+ copyright: John Millikin 2010-2012
+-build-type: Custom
++build-type: Simple
+ cabal-version: >= 1.8
+ category: System
+ stability: experimental
+-- 
+1.7.10.4
+

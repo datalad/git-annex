@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2017-10-10T17:56:47Z"
+ content="""
+our comments crossed in the hyperspace... ;)  yeah -- I would have expected a separate lock file to be used for such cases.  Now data loss is really a possibility (almost made it happen since opened the file and wrote it without unlocking, good that I caught it and was able to modify back exactly the way it was).  Interactions among multiple versions of annex on the same repo is imho a lesser possibility (would require two different versions of annex being available)
+"""]]

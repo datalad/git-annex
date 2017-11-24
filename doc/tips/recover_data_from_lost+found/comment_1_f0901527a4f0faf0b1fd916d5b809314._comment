@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmWBvsZvSsAL8P2ye3F0OBStjFCVnOImzM"
+ nickname="Jarno"
+ subject="Why fsck?"
+ date="2014-01-02T22:09:03Z"
+ content="""
+Other steps I understand but what is the purpose of the last, \"git annex fsck\"?
+Shouldn't \"git annex add\" recreate any missing annex files and therefore fix dangling symlinks?
+"""]]

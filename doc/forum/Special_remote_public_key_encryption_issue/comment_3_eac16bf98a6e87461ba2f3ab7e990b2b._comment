@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="216.145.95.162"
+ subject="comment 3"
+ date="2014-05-17T17:02:15Z"
+ content="""
+I dont think it's possible for gpg to prompt for a passphrase when all it has is a public key, so I think you copied the private key too.
+
+gpg agents can cache your passphrase.
+"""]]

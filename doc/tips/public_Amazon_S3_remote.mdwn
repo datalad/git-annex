@@ -1,0 +1,57 @@
+Here's how to create a Amazon [[S3 special remote|special_remotes/S3]] that
+can be read by anyone who gets a clone of your git-annex repository,
+without them needing Amazon AWS credentials.
+
+If you want to publish files to S3 so they can be accessed without using
+git-annex, see [[publishing_your_files_to_the_public]].
+
+Note: Bear in mind that Amazon will charge the owner of the bucket
+for public downloads from that bucket.
+
+## create public remote
+
+First, export your Amazon AWS credentials:
+
+	# export AWS_ACCESS_KEY_ID="08TJMT99S3511WOZEP91"
+	# export AWS_SECRET_ACCESS_KEY="s3kr1t"
+
+Now, create the remote:
+
+	# git annex initremote pubs3 type=S3 encryption=none public=yes
+	initremote pubs3 (checking bucket) (creating bucket in US) ok
+
+The public=yes is the crtical part; this lets the public read the contents
+of the bucket. (This feature needs git-annex 5.20150617 or newer.)
+
+In the above example, no encryption was used, but it will also work
+if you enable encryption=shared. Then files will be encrypted on S3, and
+anyone with a clone of the git repository will be able to download and
+decrypt them.
+
+It's also ok to enable chunking when setting up the remote.
+
+Now, copy some files to the remote, in the usual way, and push your
+git repository to someplace where someone else can access it.
+
+## use public remote
+
+Once the S3 remote is set up, anyone who can clone the git repositry
+can get files from the remote, without needing any Amazon AWS credentials.
+
+Start by checking out the git repository. 
+
+In the checkout, enable the S3 remote:
+
+	# git annex enableremote pubs3
+	enableremote pubs3 ok
+
+Now, git-annex can be used as usual to download files from that remote.
+
+## sharing urls
+
+You can also share urls to files stored in a public S3 remote to people
+who are not using git-annex. To find the url, use `git annex whereis`.
+
+----
+
+See [[special_remotes/S3]] for details about configuring S3 remotes.

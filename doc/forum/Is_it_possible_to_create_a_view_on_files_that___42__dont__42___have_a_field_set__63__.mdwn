@@ -1,0 +1,3 @@
+I'm slowly adding metadata to https://github.com/ocharles/papers. For now, I'm mainly interested in setting `year` and `author` fields on files. There are a lot of files here though, so it's difficult to to work out which need metadata and which don't.
+
+Would it be possible to have a `git annex metadata -s author='*'` also have all files in the top level if they don't have an author set at all, or something? Basically, I'm looking for a way to get a view where files don't have `author` set at all, so I can fix that.

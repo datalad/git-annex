@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Miles"
+ ip="88.175.62.104"
+ subject="installed git-annex on debian but cannot find it"
+ date="2013-08-19T23:29:24Z"
+ content="""
+I am an absolute beginner when it comes to linux in debian in particular. I installed git-annex via the root terminal, but now I do not know where to find it. I searched for in the file system but could not locate it. Any help is appreciated.
+"""]]

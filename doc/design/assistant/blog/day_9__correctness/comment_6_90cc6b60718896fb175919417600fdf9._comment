@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.135"
+ subject="comment 6"
+ date="2012-06-15T15:23:21Z"
+ content="""
+But Rich is right, and I was thinking the same thing earlier this morning, that delaying the lsof allows the writer to change the file and exit, and only fsck can detect the problem then. Setting file permissions doesn't help once a process already has it open for write. Which has put me off the delayed lsof idea unfortunately. lsof *could* be run safely during the intial annexing.
+"""]]

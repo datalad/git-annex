@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 1"
+ date="2013-12-16T20:48:12Z"
+ content="""
+Sounds to me like it could be a messed up direct mode mapping file due to bugs in version 4.20130516. But I am not sure I follow your transcript; you don't seem to show how things looked when it went wrong. If it was the mapping, `git annex fsck` would correct the problem.
+"""]]

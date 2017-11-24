@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2015-01-20T17:19:34Z"
+ content="""
+@Michele after testing, git-annex on Windows seems to not see a file that
+does have the executable bit set as executable. I have opened a bug report
+[[bugs/windows_isExecutable_fail]], and worked around the problem now.
+"""]]

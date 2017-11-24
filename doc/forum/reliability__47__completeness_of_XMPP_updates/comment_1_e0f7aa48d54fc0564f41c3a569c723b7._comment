@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.90"
+ subject="comment 1"
+ date="2013-07-16T19:27:07Z"
+ content="""
+Both clients have to be online at the same time for XMPP push to work. Once they're able to see each other, they'll sync up, even if they've diverged since the last sync.
+
+If you tend to only have one client or the other online, you should set up a git repo on a ssh server. Then clients will drop off their changes there, and the other one will check it when it comes online. (You don't really need to use XMPP at all in this case.)
+
+The most robust and fast combo is to use XMPP pairing, and also have a git repo on a ssh server. This way, when both clients are online, they'll use XMPP to instantly propagate changes, and when not the server is there to fall back to.
+"""]]

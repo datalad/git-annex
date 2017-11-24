@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnOSgFb3l7nL3Fs7Y9gPGJJjFiV7aJ1tek"
+ nickname="Phil"
+ subject="comment 3"
+ date="2014-07-04T22:28:27Z"
+ content="""
+I thought it might be related to using WORM but I've just hit it again on the default backend.
+
+--debug just seems to fail on the folder I tried to add:
+
+[[!format sh \"\"\"
+
+git annex --debug add samples
+
+[2014-07-04 23:24:42 GMT Summer Time] read: git [\"--git-dir=c:\\Studio\\.git\",\"--work-tree=c:\\Studio\",\"-c\",\"core.bare=false\",\"ls-files\",\"--others\",\"--exclude-standard\",\"-z\",\"--\",\"samples\"]
+[2014-07-04 23:24:42 GMT Summer Time] chat: git [\"--git-dir=c:\\Studio\\.git\",\"--work-tree=c:\\Studio\",\"-c\",\"core.bare=false\",\"cat-file\",\"--batch\"]
+add samples/cr_info.sh [2014-07-04 23:24:42 GMT Summer Time] chat: git [\"--git-dir=c:\\Studio\\.git\",\"--work-tree=c:\\Studio\",\"-c\",\"core.bare=false\",\"check-attr\",\"-z\",\"--stdin\",\"annex.backend\",\"annex.numcopies\",\"--\"]
+[2014-07-04 23:24:42 GMT Summer Time] chat: git [\"--git-dir=c:\\Studio\\.git\",\"--work-tree=c:\\Studio\",\"-c\",\"core.bare=false\",\"hash-object\",\"-t\",\"blob\",\"-w\",\"--stdin\",\"--no-filters\"]
+[2014-07-04 23:24:42 GMT Summer Time] chat: git [\"--git-dir=c:\\Studio\\.git\",\"--work-tree=c:\\Studio\",\"-c\",\"core.bare=false\",\"cat-file\",\"--batch\"]
+ok
+[2014-07-04 23:24:42 GMT Summer Time] read: git [\"--git-dir=c:\\Studio\\.git\",\"--work-tree=c:\\Studio\",\"-c\",\"core.bare=false\",\"ls-files\",\"--modified\",\"-z\",\"--\",\"samples\"]
+fatal: Out of memory? mmap failed: No such file or directory
+(Recording state in git...)
+[2014-07-04 23:25:39 GMT Summer Time] feed: git [\"--git-dir=c:\\Studio\\.git\",\"--work-tree=c:\\Studio\",\"-c\",\"core.bare=false\",\"update-index\",\"-z\",\"--index-info\"]
+[2014-07-04 23:25:39 GMT Summer Time] chat: git [\"--git-dir=c:\\Studio\\.git\",\"--work-tree=c:\\Studio\",\"-c\",\"core.bare=false\",\"hash-object\",\"-w\",\"--stdin-paths\",\"--no-filters\"]
+[2014-07-04 23:25:39 GMT Summer Time] feed: git [\"--git-dir=c:\\Studio\\.git\",\"--work-tree=c:\\Studio\",\"-c\",\"core.bare=false\",\"update-index\",\"-z\",\"--index-info\"]
+[2014-07-04 23:25:39 GMT Summer Time] read: git [\"--git-dir=c:\\Studio\\.git\",\"--work-tree=c:\\Studio\",\"-c\",\"core.bare=false\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2014-07-04 23:25:39 GMT Summer Time] read: git [\"--git-dir=c:\\Studio\\.git\",\"--work-tree=c:\\Studio\",\"-c\",\"core.bare=false\",\"write-tree\"]
+[2014-07-04 23:25:39 GMT Summer Time] chat: git [\"--git-dir=c:\\Studio\\.git\",\"--work-tree=c:\\Studio\",\"-c\",\"core.bare=false\",\"commit-tree\",\"447be0c8a000f98e3c580c6dede7f0ba2208963d\",\"-p\",\"refs/heads/git-annex\"]
+[2014-07-04 23:25:39 GMT Summer Time] call: git [\"--git-dir=c:\\Studio\\.git\",\"--work-tree=c:\\Studio\",\"-c\",\"core.bare=false\",\"update-ref\",\"refs/heads/git-annex\",\"8551a4e2f5c4f42823f7da3169d1f630622359ef\"]
+
+\"\"\"]]
+"""]]

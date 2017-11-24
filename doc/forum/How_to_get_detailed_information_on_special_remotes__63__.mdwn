@@ -1,0 +1,1 @@
+How can I get information on already-configured special remotes in a repository?  I'd like to find out what type a given special remote is, and which URL/bucket, encryption mode, etc. was used to set it up.

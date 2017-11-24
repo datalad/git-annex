@@ -1,0 +1,9 @@
+I did not recieve feedback on my comment [1], so I try to post my question again but more clearly.
+
+Is it possible to run the assistent/the webapp without the functionality of 'git annex watch'?
+
+I'd like to use the assistant and to have the automatic syncing but I do not want the local repository to be watched.  Instead I prefer to manually add/drop my files.
+
+I do not see the 'pause button' mentioned in my earlier question [1].
+
+[1] http://git-annex.branchable.com/forum/webapp_and_manual_mode/

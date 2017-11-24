@@ -1,0 +1,8 @@
+<video controls>
+<source type="video/mp4" src="http://mirror.linux.org.au/linux.conf.au/2013/mp4/gitannex.mp4">
+<source type="video/ogg" src="http://mirror.linux.org.au/linux.conf.au/2013/ogv/gitannex.ogv">
+</video><br>
+A <a href="http://mirror.linux.org.au/linux.conf.au/2013/mp4/gitannex.mp4">45 minute talk and demo of git-annex and the assistant</a>), presented by Joey Hess at LCA 2013.
+
+[[!meta date="1 Feb 2013"]]
+[[!meta title="git-annex presentation by Joey Hess at Linux.Conf.Au 2013"]]

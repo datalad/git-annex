@@ -1,0 +1,7 @@
+I'm currently in the process of gutting old (some broken) git-annex's and cleaning out download directories from before I started using git-annex.
+
+To do this, I am running `git annex import --clean--duplicates $PATH` on the directories I want to clear out but sometimes, this takes a unnecessarily long time.
+
+For example, git-annex will calculate the digest for a huge file (30GB+) in $TARGET, even though there are no files in the annex of that size.
+
+It's a common shortcut to check for duplicate sizes first to eliminate definite non-matches really quickly. Can this be added to git-annex's `import` in some way or is this a no-go due to the constant memory constraint?

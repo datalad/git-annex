@@ -1,0 +1,11 @@
+Worked on metadata and views. Besides bugfixes, two features of note:
+
+Made git-annex run a hook script, pre-commit-annex. And I wrote a
+sample script that extracts metadata from lots of kinds of files,
+including photos and sound files, using extract(1) to do the heavy lifting.
+See [[tips/automatically_adding_metadata]].
+
+Views can be filtered to not include a tag or a field.
+For example, `git annex view tag=* !old year!=2013`
+
+Today's work was sponsored by Stephan Schulz

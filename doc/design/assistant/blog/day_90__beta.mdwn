@@ -1,0 +1,16 @@
+Just released git-annex 3.20120924, which includes beta versions of
+the assistant and webapp. Read the [[/assistant/errata]], then give it a
+try!
+
+I've uploaded it to Haskell's cabal, and to Debian unstable, and hope my
+helpers for other distributions will update them soon. (Although the
+additional dependencies to build the webapp may take a while on some.)
+I also hope something can be done to make a prebuilt version available on
+OSX soonish.
+
+I've decided to license the webapp under the
+[AGPL](http://www.gnu.org/licenses/agpl-3.0.html). This should not impact
+normal users of it, and git-annex can be built without the webapp as a pure
+GPL licensed program. This is just insurance to prevent someone turning the
+webapp into a propritary web-only service, by requiring that anyone who
+does so provide the source of the webapp.

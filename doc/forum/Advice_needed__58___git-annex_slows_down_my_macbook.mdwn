@@ -1,0 +1,21 @@
+I need some advice from more experienced users. 
+
+I've created four repositories on my macbook and paired them with repos on my ubuntu desktop. They are all created with the webapp so they might have some configurations that are not optimal for me.
+
+In fact, when I start my macbook it is unusual for more than an hour because git-annex is reading and writing to and from the disk in the background. 
+
+I don't change much in three of the four repos, only one repo contains my daily work. 
+
+What configuration would enhance my situation?
+
+The four repos are called:
+
+- movies
+- pictures
+- music
+- documents (many changes each day)
+
+I have also problems to switch to the documents repo in the webapp.
+
+TIA
+juh

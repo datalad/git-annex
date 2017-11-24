@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.110"
+ subject="comment 6"
+ date="2013-07-28T00:11:38Z"
+ content="""
+The first example on this page shows using rsync:// to store files on a system using the rsync daemon.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://id.clacke.se/"
+ nickname="Claes"
+ subject="repack parameters"
+ date="2014-09-07T21:53:10Z"
+ content="""
+Because git-annex tracks all the events of an annexed file for each repo -- added, dropped, copied etc -- and it tracks these in one object per file in the git-annex branch, it does indeed create a lot of objects. To improve both space and performance I made sure to add `git gc --auto` as a post-commit hook, as the objects in my case can quickly reach the tens or even hundreds of thousands.
+
+To further improve performance and space, you can choose to set `pack.window` and `pack.depth` to vastly higher values than the defaults (10 and 50, respectively), because there is a large amount of objects with very similar content. I did a `git repack --window 2500 --depth 1000 -f -a d` and brought down my repo from 3 GiB (packed!) to 300 MiB. Make sure to have a lot of memory and CPU available when doing this, or it will take forever. You can set `pack.window` ridiculously high if you like, as long as you limit it with `pack.windowMemory`, so that it makes use of all your available memory for comparing objects and finding the optimal delta.
+"""]]

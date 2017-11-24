@@ -1,0 +1,13 @@
+New AWS region in Germany announced today. git-annex doesn't support it
+yet, unless you're using the `s3-aws` branch.
+
+I cleaned up that branch, got it building again, and re-tested it with
+`testremote`, and then fixed a problem the test suite found that was
+caused by some changes in the haskell aws library.
+
+Unfortunately, s3-aws is [not ready to be merged](http://git-annex.branchable.com/bugs/new_AWS_region___40__eu-central-1__41__)
+because of some cabal dependency problems involving `dbus` and `random`. I did
+go ahead and update Debian's haskell-aws package to cherry-pick
+from a newer version the change needed for Inernet Archive
+support, which allows building the s3-aws branch on Debian.
+Getting closer..

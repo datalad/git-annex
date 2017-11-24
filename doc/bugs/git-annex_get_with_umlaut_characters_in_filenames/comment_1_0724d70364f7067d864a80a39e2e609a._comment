@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-08-13T21:29:41Z"
+ content="""
+`git annex get` only acts on files that are present in the working tree of
+the git repo, and which `git ls-files` lists. So, if git is somehow
+confused about these filenames, which is appears to be, it makes sense that
+git-annex wouldn't be operating on them.
+
+I don't know why git would have such a problem with files with umlaut in
+their names. AFAIK, git is quite agnostic about filename encodings.
+However, your git status seems to be the smoking gun; the files are either
+not known to git at all, or it thinks they were renamed. Does the git
+log --stat show the files being deleted. Have you tried (re)adding the
+files to git?
+"""]]

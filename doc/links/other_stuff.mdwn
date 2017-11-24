@@ -1,0 +1,9 @@
+### other stuff
+
+* [[testimonials]]
+* [[privacy]]
+* [[what git annex is not|not]]
+* [[related_software]]
+* [[public git-annex repos|publicrepos]]
+* [[thanks]]
+* [[sitemap]]

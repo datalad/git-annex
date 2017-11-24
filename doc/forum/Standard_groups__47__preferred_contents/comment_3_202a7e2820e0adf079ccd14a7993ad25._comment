@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="divB"
+ ip="204.17.143.10"
+ subject="comment 3"
+ date="2014-07-22T00:11:34Z"
+ content="""
+Unfortunately the same :(
+
+Testcase:
+1.) Create a file 'file' on the server, git annex add/sync etc.
+2.) On the client: git annex wanted here 'exclude=\"*\" and present'
+3.) On the client: git annex get file . The file is now present on the client
+4.) Change the file on the server, git annex sync
+5.) git annex sync --content on the client
+
+Result: File is dropped again on client
+
+
+
+
+"""]]

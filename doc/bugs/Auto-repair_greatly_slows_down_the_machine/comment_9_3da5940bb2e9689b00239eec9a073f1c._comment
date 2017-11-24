@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="EskildHustvedt"
+ ip="80.202.103.55"
+ subject="comment 9"
+ date="2014-06-06T16:13:55Z"
+ content="""
+Any chance of any progress on this? Either a way to disable it, or some additional logging to track down the problem? git-annex is currently repairing one particular repository several times a month accross different machines, rendering git-annex practically unusable.
+"""]]

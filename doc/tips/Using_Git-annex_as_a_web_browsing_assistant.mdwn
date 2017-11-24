@@ -1,0 +1,46 @@
+[[todo/wishlist: an "assistant" for web-browsing -- tracking the sources of the downloads]] suggests using git-annex as a tool to store downloads tied
+to their URLs. This also enables people to have their files stored offline,
+while being able to git annex drop them at any time and redownload them
+with git annex get. Additionally, a clone of the repo can be used to
+download whatever files are desired from online.
+
+This tip explains how to implement a similar system to the one described in
+the linked wishlist with existing software and features of git-annex.
+
+The first step is to install the Firefox plugin
+[FlashGot](http://flashgot.net/). We will use it to provide the Firefox
+shortcuts to add things to our annex.
+
+We also need a normal download manager, if we want to get status updates as
+the download is done. We'll need to configure git-annex to use it by
+setting `annex.web-download-command` as Joey describes in his comment on
+[[todo/wishlist: allow configuration of downloader for addurl]]. See the
+manpage [[git-annex]] for more information on setting configuration.
+
+Once we have installed all that, we need a script that has an interface
+which FlashGot can treat as a downloader, but which calls git-annex to do
+the actual downloading. Such a script is available from
+<https://gist.github.com/andyg0808/5342434>. Download it and store it
+somewhere it can live, or cut and paste:
+
+[[!format sh """
+#!/bin/bash
+# $1=folder to cd to (must be a git annex repo)
+# $2=URL to download
+
+cd "$1"
+git-annex addurl "$2"
+"""]]
+
+Finally, we need to configure FlashGot to use the script as a downloader.
+Go to Tools > Add-ons in Firefox. Click "Preferences" on FlashGot. Click
+the Add button next to the list of download managers. Enter a name for the
+git-annex downloader. Choose the script that was downloaded from the
+"Locate executable file" dialog that appears. Now set the command line
+arguments template to be "[FOLDER] [URL]" (you can find more substitution
+expressions in the Placeholders dropdown above the Command line arguments
+template field). You're done!
+
+Go ahead and test it by trying to download a file using FlashGot. It should
+offer as one of its available download managers the new manager you created
+just above. Select it and have fun!

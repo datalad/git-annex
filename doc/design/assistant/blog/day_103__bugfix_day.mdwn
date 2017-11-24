@@ -1,0 +1,25 @@
+Bugfixes all day.
+
+The most amusing bug, which I just stumbled over randomly on my own,
+after someone on IRC yesterday was possibly encountering the same issue,
+made `git annex webapp` go into an infinite memory-consuming loop on
+startup if the repository it had been using was no longer a valid git
+repository.
+
+Then there was the place where HOME got unset, with also sometimes amusing
+results.
+
+Also fixed several build problems, including a threaded runtime hang
+in the test suite. Hopefully the next release will build on all Debian
+architectures again.
+
+I'll be cutting that release tomorrow. I also updated the linux
+prebuilt tarballs today.
+
+----
+
+Hmm, not entirely bugfixes after all. Had time (and power) to work
+on the repository configuration form too, and added a check box to it that
+can be unchecked to disable syncing with a repository. 
+Also, made that form be displayed after the webapp creates a new
+repository.

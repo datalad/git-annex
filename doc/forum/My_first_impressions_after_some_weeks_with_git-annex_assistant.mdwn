@@ -1,0 +1,57 @@
+This post is a personal story, a bug report, and a feature request.
+
+I discovered `git-annex assistant` by accident a couple of weeks (months?) ago. I was very impressed by the technical smartness and decided it was worth a try. My current configuration (everything done through the assistant web GUI) is:
+
+* Two machines that act as client repositories and are usually in the same LAN. Both of them run OS X Mountain Lion.
+* One transfer repository which was Box.com, but then I switched to Amazon S3 (today, I’ll explain why).
+* The repository consists of mixed files and is ~4 GB big (very small plain text files, PDFs, some MP3 files, the biggest files are about 20–50 MB). The Finder reports that the repository is ~40 GB big while `du -sh` reports 4.4 GB. It’s probably just a silly Finder bug, but it would be great to know why this happens.
+* I have version 4.20130324 on both clients. The OS X versions seems to be always a little bit behind. It would be great if it could match with other platforms.
+
+Here are some issues which I think are worth mentioning:
+
+1. I had some issues with the assistant, because I initially launched it from the mounted DMG. `git-annex assistant` set the environment up, but it configured the wrong paths (to `/Volumes` instead `/Applications` where the bundle later went). This has caused issues with authentication and some ssh keys. `git-annex` was confused which keys to use and I had to manually remove the first ones from the `.ssh/` directory. This could be very confusing for technically not so savvy users, because the error messages in the GUI were confusing.
+
+2. I’m still very confused about the behavior of `git-annex assistant` when it launches. The application icon bounces in the Dock for quite a long time, then it looks like the process would’ve crashed (I can only *Force Quit* it from the Dock). Then the icon disappears after some minutes / half an hour. I was unsure if the assistant would run if I would *Force Quit* it (yes). The behavior is very strange on OS X. It would be great to have at least a normal icon which bounces a couple of times, stays in the Dock without appearing like a non-responding app, and that launches the web GUI when a user clicks on it. Optimal would be just a menu bar icon which would show the current progress, let me launch the web GUI, check for updates, pause & resume all transfers, and restart & quit `git-annex assistant`.
+
+3. The initial sync went great and pretty fast. I was also impressed by the speed `git-annex` picks up new changes and synchronizes them to other repositories. After adding the Box.com transfer repository everything got worse. Files that were added to one of the client repositories were never synced to the other machine, despite making sure that the client repositories appeared above the Box.com repository in `git-annex assistant`. The transfer was very slow (that’s probably due to the API rate limits of Box.com) and I got the impression that the files were uploaded multiple times (probably true, because the assistant couldn’t upload them in the first place and then just tried it again giving me the impression that it was stuck in some kind of loop). I tried to manually click on a couple of hundred play buttons in the queue in the hope that there would somewhere appear the item which should’ve been synced to the other machine in the first place. I also attached some log messages to the end of this post which could be helpful. At this point `git-annex assistant` basically stopped working for me. I lived somehow with it in the hope that it would upload everything to Box.com in the upcoming days, but it never got better, even after a couple of weeks (in the meantime we copied files manually over an attached network storage which lived outside of the repository). Today I bit the bullet and switched to Amazon S3. All files were uploaded in a couple of minutes and it looks like this setup would be more reliable. It’ll cost us a couple of $ each month, but it’s OK, because it actually works.
+
+4. I read somewhere that transfer repositories where meant to keep only files that are not present on all client repositories. With my configuration `git-annex` just uploads everything to the transfer repository (no matter if it’s Box.com or Amazon S3). Is this the correct behavior? Did I get something wrong or is this just not implemented yet? It’s OK in the current version, but it would be great to store only the missing files in the future.
+
+5. After I switched to Amazon S3 some encrypted file names appear in my queue. They are gone after I restart `git-annex assistant` or when I manually remove them with the `X` button. Is this a bug?
+
+6. It is confusing that the web GUI shows that the transfer failed when the second machine is offline. While technically this is true, it would be much more assuring to know that the client is just offline. If something fails I get the impression that it is broken, but the client was only unreachable and that’s just a temporary state that’ll get automatically fixed when the client goes online again. Adding green / red lights to the repository with a mouse over description would be probably a good idea. Reporting that the client is unreachable instead of showing the error message would also be more appropriate.
+
+7. The biggest issue I have now is that `git-annex assistant` randomly crashes on both machines. I don’t know if this is a known issue or if this an OS X only issue, but it is slightly annoying. If you want to make sure that files really synchronized, you’ve to start `git-annex assistant` just to check if it still runs. I hope that this will get fixed as soon as possible. I would love to help you with debug logs, but I don’t know where to look. There’s nothing meaningful in the system log or the debug log.
+
+8. If the issues with Box.com are because of their API rate limits, I would make this clearer when adding new Box.com repositories or I would remove the feature altogether, because they actually make `git-annex assistant` unusable.
+
+To sum everything up: my biggest issues so far are the constant crashes and the strange behavior of the Dock icon. I’m still pretty impressed by the technical smartness and that the software is available at all. Thank you very much—Joey—for letting us use this software on a daily basis. I’m glad that you launched the Kickstarter campaign. I don’t know if it’s much of a hassle, but a second Kickstarter to make sure that development will continue would be probably a good idea. I would like to help with logs, but I don’t know how. Please let me know if there’s something I can do.
+
+**Box.com logs:**
+
+    87%          16.0KB/s 2s[2013-04-22 15:14:35 CEST] Pusher: Syncing with 10.0.1.4_jcshared
+    To ssh://rafael@git-annex-10.0.1.4-rafael/~/jc-shared/
+       7428090..f0d2f9e  git-annex -> synced/git-annex
+       9d2cb35..1f7b678  master -> synced/master
+    Already up-to-date.
+    Already up-to-date.
+    gpg: [stdout]: write error: Broken pipe
+    gpg: DBG: deflate: iobuf_write failed
+    gpg: build_packet failed: file write error
+    gpg: [stdout]: write error: Broken pipe
+    gpg: iobuf_flush failed on close: file write error
+    gpg: symmetric encryption of `[stdin]' failed: file write error
+    ResponseTimeout
+    git-annex: fd:41: hPutBuf: resource vanished (Broken pipe)
+    ResponseTimeout
+    (gpg)
+    87%          16.0KB/s 2sgpg: [stdout]: write error: Broken pipe
+    gpg: DBG: deflate: iobuf_write failed
+    gpg: build_packet failed: file write error
+    gpg: [stdout]: write error: Broken pipe
+    gpg: iobuf_flush failed on close: file write error
+    gpg: symmetric encryption of `[stdin]' failed: file write error
+    ResponseTimeout
+    git-annex: fd:54: hPutBuf: resource vanished (Broken pipe)
+    send: resource vanished (Connection reset by peer)
+    ResponseTimeout

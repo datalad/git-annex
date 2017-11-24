@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="David"
+ ip="178.21.48.117"
+ subject="still need some clarification"
+ date="2013-11-16T22:02:46Z"
+ content="""
+Hello,
+
+Thanks for your reply. I guessed that there is an easier, direct way to do it. But unfortunately I still need some clarification. This is how I tried:
+
+1. Cleared everything to start from scratch.
+2. I started git-annex on server1: screen git annex webapp --listen=server1_ip, opened the webapp and created the local repository /media/mail
+3. I configured the XMPP account on server1.
+4. Started git-annex on server2: screen git annex webapp --listen=server2_ip, opened the webapp and created the local repository /media/mail
+5. I configured the XMPP account on server2.
+
+And here comes the confusing part:
+
+6. On server1 I clicked Add another repository / Remote server: and configured ssh server2 to the same folder: /media/mail. I chose client repository group instead of transfer. (I am not sure if I did it right) ... but server1 started sync-ing.
+7. On server2 I clicked Add another repository / Remote server: and configured ssh server1 to the same folder: /media/mail. Then I received an error message:
+
+    Failed to make repository
+    Something went wrong setting up the repository on the remote server.
+    
+    Transcript:
+    
+    init  error: could not lock config file /media/mail-test/mail/.git/config: Permission denied
+    git-annex: git [Param \"config\",Param \"annex.version\",Param \"3\"] failed
+
+Cold you please help me where I did wrong?
+
+Thanks,
+
+David
+"""]]

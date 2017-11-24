@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-05-24T15:50:45Z"
+ content="""
+I have seen this once on a similar system (family computer; XMPP being used). Unfortunatly it could be coming from anywhere -- and it's not at all clear how a crash in one thread could take it all down, since there are global top-level per-thread exception handlers that should run and log which thread crashed -- and normally seem to do this quite well.
+
+I may need to make a management process that ensures the assistant stays alive.
+
+I have also seen this happen when a computer is shutting down. But presumably in that case it's not really a bug.
+
+One thing you might try is see what is using socket 16 when it's running, assuming the socket will be the same. (Also, if you've had repeated crashes, it would be good to know if it's 16 each time..). You could do this by looking at `/proc/$pid/fd/16` Also, check the old logs, `.git/annex/daemon.log.*`
+"""]]

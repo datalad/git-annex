@@ -1,0 +1,20 @@
+In regular repos, objects are stored in files of the form: .git/annex/objects/xY/z1/SHA1-.../SHA1-.... (scheme 1)
+
+On (some) special remotes, the corresponding file is stored at: .../abc/def/SHA1-... (scheme 2)
+
+I'm not sure why the same scheme as in .git/objects isn't used, but it would be useful that the two-directory prefix were the same for all objects stores.
+
+My use case is: I synchronize a git repo, say containing photos, to a server on which I can't install git-annex. I want the server to store all annexed files. For the photos to be viewed online, the annex store must use the scheme 1 (because the symlinks point to files with scheme 1). So I need to rsync .git/annex/objects manually from my desktop, because a git-annex rsync remote uses scheme 2. On the other hand, the repo on this server is not known by git-annex (like it would if I used a rsync remote).
+
+At least it would be valuable (to get around above problem) to have a plumbing command giving the 2-directory prefix from a given key, for example:
+
+$ git annex prefix-dir SHA1-s2--3f786850e387550fdab836ed7e6dc881
+
+7w/88
+
+f18/122
+
+
+Even if the 2 schemes were unified, this prefix-dir command would still be useful when hacking around git-annex (for now I need to maintain a dictionary structure).
+
+Thanks a lot.

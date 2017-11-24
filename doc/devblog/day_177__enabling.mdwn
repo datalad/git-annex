@@ -1,0 +1,21 @@
+After making a release yesterday, I've been fixing some bugs in the
+webapp, all to do with repository configuration stored on the git-annex
+branch. I was led into this by a strange little bug where the webapp stored
+configuration in the wrong repo in one situation. From there, I noticed
+that often when enabling an existing repository, the webapp would stomp on
+its group and preferred content and description, replacing them with
+defaults.
+
+This was a systematic problem, it had to be fixed in several places. And
+some of the fixes were quite tricky. For example, when adding a ssh
+repository, and it turns out there's already a git-annex repository at the
+entered location, it needs to avoid changing its configuration. But also,
+the configuration of that repo won't be known until after the first git
+pull from it. So it doesn't make sense to show the repository edit form
+after enabling such a repository.
+
+Also worked on a couple other bugs, and further cleaned up the [[bugs]]
+page. I think I am finally happy with how the bug list is displayed,
+with confirmed/moreinfo/etc tags.
+
+Today's work was sponsored by François Deppierraz.

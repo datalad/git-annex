@@ -1,0 +1,21 @@
+Got the pid locks working pretty easily, as expected.
+
+But then... Detoured into some truely insane behavior of the Lustre
+filesystem. It seems that Lustre is perfectly happy to let link()
+succeed even when there's a file there that it would overwrite. Rather than
+overwriting the file, Lustre picks an even more crazy way to violate
+POSIX.. It lets there be 2 files in a directory with the **same name**, but
+different contents. Has to be seen to be believed:
+
+	hess$ ls pidlock
+	-r--r--r--  1 hess root    70 Nov 13 15:07 pidlock
+	-r--r--r--  1 hess root    70 Nov 13 15:07 pidlock
+	hess$ rm pidlock; ls pidlock
+	-r--r--r--  1 hess root    74 Nov 13 14:35 pidlock	
+
+git-annex's pid locking code now detects this and seems to work
+even on Lustre. Eep.
+
+I'm clutching my "NO WARRANTY" disclaimer pretty hard though, if anyone
+wants to use git-annex on Lustre. When POSIX is being violated this badly,
+it's hard to anticipate what other strangeness might result.

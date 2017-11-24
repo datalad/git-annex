@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-23T16:00:38Z"
+ content="""
+This is entirely down to the libc used on the build system and included in
+the tarball.
+
+Currently the builds use unstable or testing because this lets me get new
+library-driven features like sha3 into the build (nearly) ASAP.
+
+It would be possible to switch to using Debian stable. But then I either
+lose new library-driven features in the builds, or I have to start
+installing haskell libraries from source on the build machines, which would
+be a lot of additional work compared to letting Debian maintain hundreds of
+haskell library packages for me.
+
+Then too, while I am pretty much committed to keeping git-annex building on
+Debian stable (which is actually a lot of work, up to several thousand
+lines of ifdefs, and prevents me from using newer ghc features which would
+make my code happier), Debian stable does itself have a habit of updating to a
+new libc release every couple of years. So no matter what, as long as libc
+keeps requiring slightly less ancient kernels for whatever reasons it does,
+everything isn't going to be supported forever.
+
+(OTOH, I'd expect that some enterprise level ancient distros might start to
+include enterprise level ancient builds of git-annex themselves some time soon?
+git-annex version 3, which is broadly compatible with current versions was
+released a full 4 years ago already. Linux 2.6.32 is only, er, 3 years
+older than that.)
+"""]]

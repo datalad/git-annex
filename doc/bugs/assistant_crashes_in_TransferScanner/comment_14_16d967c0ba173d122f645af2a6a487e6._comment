@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2016-10-31T21:45:37Z"
+ content="""
+Tracked it back to Git.CheckAttr.checkAttr crashing when it sends the
+filename "foö" (note the non-ascii) to the handle.
+Which is odd as that handle is in filesystem encoding mode.
+
+But, I then unlocked an additional file in my repo and it stopped
+crashing, and I have yet to reproduce it again. Urgh.
+
+Also, found an unrelated filename encoding crash:
+
+	LANG=C git annex smudge --clean xx.oök < xx.oök
+	git-annex: recoverEncode: invalid argument (invalid character)
+"""]]

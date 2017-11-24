@@ -1,0 +1,35 @@
+It's possible for data to accumulate in the annex that no files in any
+branch point to anymore. One way it can happen is if you `git rm` a file
+without first calling `git annex drop`. And, when you modify an annexed
+file, the old content of the file remains in the annex. Another way is when
+migrating between key-value [[backends]].
+
+This might be historical data you want to preserve, so git-annex defaults to
+preserving it. So from time to time, you may want to check for such data:
+
+	# git annex unused
+	unused . (checking for unused data...) 
+	  Some annexed data is no longer used by any files in the repository.
+	    NUMBER  KEY
+	    1       SHA256-s86050597--6ae2688bc533437766a48aa19f2c06be14d1bab9c70b468af445d4f07b65f41e
+	    2       SHA1-s14--f1358ec1873d57350e3dc62054dc232bc93c2bd1
+	  (To see where data was previously used, try: git log --stat -S'KEY')
+	  (To remove unwanted data: git-annex dropunused NUMBER)
+	ok
+
+After running `git annex unused`, you can follow the instructions to examine
+the history of files that used the data, and if you decide you don't need that
+data anymore, you can easily remove it from your local repository.
+
+	# git annex dropunused 1
+	dropunused 1 ok
+
+Hint: To drop a lot of unused data, use a command like this:
+
+	# git annex dropunused 1-1000
+
+Rather than removing the data, you can instead send it to other
+repositories:
+
+	# git annex copy --unused --to backup
+	# git annex move --unused --to archive

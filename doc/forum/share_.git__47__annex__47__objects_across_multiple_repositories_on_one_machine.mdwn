@@ -1,0 +1,28 @@
+Hello,
+
+git-annex looks very interesting and I would like it to version large binary artifacts for testing in our source code repository.
+
+My question:
+
+I want to have/can have multiple clones of the same repository on the same machine.
+However, as the binary files can be huge, I would like to store the files only exactly ONCE per machine and not again in the .git/annex/objects folder of each similar cloned repository.
+
+To achieve that, I first created in
+
+    /tmp/repo-clone1/.git/annex/objects
+
+and then symlinked
+
+    ln -s /tmp/repo-clone1/.git/annex/objects /tmp/repo-clone2/.git/annex/objects
+
+such that
+
+    /tmp/repo-clone1
+    /tmp/repo-clone2
+
+share the same big files and the big files are only once on the machine.
+
+Is this a good idea? Is there a better way to achieve this? Looks a bit hacky. Would be nicer if you can specify a dedicated "objects" folder from the start?!
+
+Thanks and Regards,
+J

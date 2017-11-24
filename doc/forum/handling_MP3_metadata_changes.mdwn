@@ -1,0 +1,12 @@
+Hello,
+
+I'm still looking for a way to version control the metadata (title, artist, album name, ...) of my MP3s, I wonder if git annex could help for this problem ?
+The method I use now (without git annex) is to export the MP3 metadata to an textual format with one line per tag. 
+It's this textual file I handles with git. 
+The problem is to handle the mapping between the orignal file and the export file with file renaming or moving.
+I consider to use the checksum of the audio content (without metadata, this checksum never changes) to handle this problem.
+Maybe git annex has a different approach (better) to solve this problem ?
+How git annex would be use to solve the orignal problem ?
+
+Regards,
+Emmanuel Berry

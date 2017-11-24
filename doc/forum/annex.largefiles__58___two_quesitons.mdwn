@@ -1,0 +1,9 @@
+Hi,
+
+I have two questions related to `annex.largefiles`, for which I was unable to find the answers.
+
+1. Is there a way to transfer my `annex.largefiles` from one repo to the other?  I noticed that the property was not adopted when cloning a repo.
+2. On one repo I noticed that I had not set a good `annex.largefiles`.  Can I tell `git annex` to *reevaluate* whether a file should be controlled as a "normal" file or a "largefile" give the updated `annex.largefiles`?
+
+Thanks,
+Rasmus

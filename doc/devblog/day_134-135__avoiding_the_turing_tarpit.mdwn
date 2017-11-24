@@ -1,0 +1,18 @@
+Added some power and convenience to [[preferred_content]] expressions.
+
+Before, "standard" was a special case. Now it's a first-class keyword,
+so you can do things like "standard or present" to use the standard
+preferred content expression, modified to also want any file that happens
+to be present.
+
+Also added a way to write your own reusable preferred content expressions,
+tied to groups. To make a repository use them, set its preferred 
+content to "groupwanted". Of course, "groupwanted" is also a first-class
+keyword, so "not groupwanted" or something can also be done.
+
+While I was at it, I made `vicfg` show the built-in standard preferred
+content expressions, for reference. This little IDE should be pretty
+self-explanatory, I hope.
+
+So, preferred content is almost its own little programming language now.
+Except I was careful to not allow recursion. ;)

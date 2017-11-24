@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="EvanDeaubl"
+ ip="67.128.198.190"
+ subject="comment 14"
+ date="2013-06-28T18:35:55Z"
+ content="""
+git-annex has been working brilliantly for me. I have been slowly moving content out of the various places I've had it stored (file servers, folders hidden away on all my machines, Dropbox, Google Drive, etc.) into a single git-annex repo. The idea has been to mimic Dropbox's single folder, but with much more flexibility: I sync my working machines, my home fileserver, my VPS (for file access on the go), Android devices, and even a couple of dumb MP3 players from git-annex. Best of all, I have one place to go for all of my files, and if they're not on the device at the moment I need them, they're a download away. I didn't find git-annex until after the first crowdfunding campaign had completed, but if there's another, I would be a happy supporter.
+
+"""]]

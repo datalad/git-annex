@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://meep.pl/"
+ ip="193.23.174.18"
+ subject="Include/exclude"
+ date="2012-10-06T08:40:23Z"
+ content="""
+It seems that example 2 reads weird for filtering because exclude/include say *what to do* while copies/in say *what to test*. An alias (maybe \"glob\") for include  should be acceptable both ways (largerthan=10mb or glob=junk/\* or not glob=\*.mp3).
+
+That said, I would vote for keeping PCEs. And actually the simple \"not (copies=trusted:2 or in=usbdrive)\" does not read significantly worse than with \"dontwant\". (In *my bikeshed* we would have \"all\" == \"glob=\*\" and \"except\" == \"and not\").
+"""]]

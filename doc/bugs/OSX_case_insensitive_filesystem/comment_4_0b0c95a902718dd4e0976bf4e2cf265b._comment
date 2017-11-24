@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://id.clacke.se/"
+ nickname="clacke"
+ subject="objecthashlower"
+ date="2016-04-22T07:58:33Z"
+ content="""
+... i.e., can I just `git config --global annex.tune.objecthashlower true` and it will Just Work, managing old repos correctly and using the feature for new repos? And remote machines will handle things correctly just as long as they run a modern enough `git-annex`?
+"""]]

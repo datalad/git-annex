@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="zooko"
+ ip="97.118.97.117"
+ subject="request for information, plus some ideas"
+ date="2011-05-14T05:07:17Z"
+ content="""
+Hey Jimmy: how's this working for you now? I would expect it to go slower and slower since Tahoe-LAFS has an O(N) algorithm for reading or updating directories.
+
+Of course, if it is still fast enough for your uses then that's okay. :-)
+
+(We're working on optimizations of this for future releases of Tahoe-LAFS.)
+
+I'd like to understand the desired behavior of store-hook and retrieve-hook better, in order to see if there is a more efficient way to use Tahoe-LAFS for this.
+
+Off to look for docs.
+
+Regards,
+
+Zooko
+"""]]

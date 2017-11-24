@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmRFKwny4rArBaz-36xTcsJYqKIgdDaw5Q"
+ nickname="Andrew"
+ subject="comment 1"
+ date="2013-01-19T07:23:38Z"
+ content="""
+I'm finding a few circumstances where the per-host key never gets setup. Is there a way to force this probing or key setup to happen?
+"""]]

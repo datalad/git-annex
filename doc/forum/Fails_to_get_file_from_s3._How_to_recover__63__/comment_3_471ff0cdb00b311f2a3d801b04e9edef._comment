@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="annexuser"
+ subject="comment 3"
+ date="2016-05-04T19:15:16Z"
+ content="""
+Thanks. I will try that and see if I can recover the files. Here is the output of git annex info s3:
+
+    remote: s3
+    description: [s3]
+    uuid: 15ac19e4-223a-4c81-b7f7-797b9b026b86
+    trust: semitrusted
+    cost: 250.0
+    type: S3
+    creds: stored locally
+    bucket: s3-15ac19e4-223a-4c81-b7f7-797b9b026b86
+    endpoint: s3.amazonaws.com
+    port: 80
+    storage class: OtherStorageClass \"STANDARD_IA\"
+    partsize: 1.07 gigabytes
+    public: no
+    encryption: encrypted (encryption key stored in git repository)
+    chunking: none
+    remote annex keys: 121924
+    remote annex size: 680.42 gigabytes
+
+"""]]

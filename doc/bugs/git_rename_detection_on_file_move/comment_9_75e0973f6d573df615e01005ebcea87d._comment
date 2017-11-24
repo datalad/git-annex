@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 9"
+ date="2011-12-20T14:56:12Z"
+ content="""
+Git can follow the rename fine if the file is committed before `git annex fix` (you can git commit -n to see this), so 
+making git-annex pre-commit generate a fixup commit before the staged commit would be one way. Or the other two ways I originally mentioned when writing down this minor issue. I like all those approaches better than .git-annex clutter.
+"""]]

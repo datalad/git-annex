@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="separation of concerns"
+ date="2013-12-29T17:57:36Z"
+ content="""
+It doesn't make sense for the git-annex assistant to try to somehow detect and mount drives. Every OS has its own way to do that.
+
+The assistant simply detects drives that have been mounted by the OS.
+
+There is absolutely no problem with manually setting up a git repository on a removable drive and using it with the assistant. This is identical to what the assistant would set up for an external drive (except perhaps being a non-bare repository). The assistant simply detects if any git remote whose url is a directory is inside a mount point when it sees a new device be mounted.
+"""]]

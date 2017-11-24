@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="damien.courousse"
+ subject="same behaviour when the remote repo is not reachable"
+ date="2015-05-01T15:47:55Z"
+ content="""
+hello,
+
+I experience the same behaviour : once git-annex is started using the assistant, the ssh askpass window keeps asking me for a password. 
+The repo is not reachable at this time (the server is down).
+
+What's really annoying is that the askpass window is sometimes hidden behind other windows, but it keeps grabbing keyboard events: it looks like the keyboard \"does not work\" anymore. Hopefully pressing escape shuts closes askpass.
+
+The askpass window still pop ups from time to time even once the assistant has been closed.
+
+Running git-annex version 5.20141125  on Debian (amd64) on jessie.
+"""]]
