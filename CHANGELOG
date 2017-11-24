@@ -1,10 +1,10 @@
-git-annex (6.20171110) UNRELEASED; urgency=medium
+git-annex (6.20171124) unstable; urgency=medium
 
   * Display progress meter when uploading a key without size information,
     getting the size by statting the content file.
   * Fix build with dns-3.0.
 
- -- Joey Hess <id@joeyh.name>  Tue, 14 Nov 2017 16:14:20 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 24 Nov 2017 10:49:36 -0400
 
 git-annex (6.20171109) unstable; urgency=medium
 
