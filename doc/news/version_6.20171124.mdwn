@@ -1,0 +1,5 @@
+git-annex 6.20171124 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Display progress meter when uploading a key without size information,
+     getting the size by statting the content file.
+   * Fix build with dns-3.0."""]]
