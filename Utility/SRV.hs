@@ -44,7 +44,7 @@ lookupSRV (SRV srv) = do
   where
 	use = orderHosts . map tohosts
 	tohosts (priority, weight, port, hostname) =
-		( (priority, weight)
+		( (fromIntegral priority, fromIntegral weight)
 		, (B8.toString hostname, PortNumber $ fromIntegral port)
 		)
 
