@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-01-20T16:52:28Z"
+ content="""
+@Michele git annex sync in a direct mode repository does bypass the
+pre-commit hook. However, it will try to run the pre-commit-annex hook.
+
+Most likely, the hook script does not appear executable on Windows, so 
+git-annex cannot run it.
+"""]]

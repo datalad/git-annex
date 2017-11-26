@@ -1,0 +1,10 @@
+Hi!
+
+I am a teacher and I would like to organize my school-files with git-annex in combination with a wiki. In the wiki I would like to outline lessons with included pictures (and links) of work-sheets etc. git-annex would help me to transfer and organize all the files. 
+
+Now I'm searching for a web-browser for a git-annex-repository, like the source-browser of trac (or gitweb). Actually I would really like to use trac (or dokuwiki) for my school-project. I tried trac with a bare-annex-repos, but it only shows the hash-links. In the web-assistent of annex I couldn't find such a feature.
+
+
+Is there any web-browser for a git-annex-repository?
+
+-- Tobias 

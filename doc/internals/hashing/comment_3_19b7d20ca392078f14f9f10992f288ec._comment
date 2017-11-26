@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="josch"
+ subject="any particular reason for the chosen characters for base32 encoding"
+ date="2015-01-31T17:13:57Z"
+ content="""
+are the characters \"0123456789zqjxkmvwgpfZQJXKMVWGPF\" chosen randomly for the base32 encoding or was there a reason to choose exactly these?
+"""]]

@@ -1,11 +1,12 @@
 {- user info
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
 
 {-# LANGUAGE CPP #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.UserInfo (
 	myHomeDir,
@@ -13,16 +14,21 @@ module Utility.UserInfo (
 	myUserGecos,
 ) where
 
-import Control.Applicative
-import System.PosixCompat
-
 import Utility.Env
+import Utility.Exception
+#ifndef mingw32_HOST_OS
+import Utility.Data
+import Control.Applicative
+#endif
+
+import System.PosixCompat
+import Prelude
 
 {- Current user's home directory.
  -
  - getpwent will fail on LDAP or NIS, so use HOME if set. -}
 myHomeDir :: IO FilePath
-myHomeDir = myVal env homeDirectory
+myHomeDir = either giveup return =<< myVal env homeDirectory
   where
 #ifndef mingw32_HOST_OS
 	env = ["HOME"]
@@ -31,7 +37,7 @@ myHomeDir = myVal env homeDirectory
 #endif
 
 {- Current user's user name. -}
-myUserName :: IO String
+myUserName :: IO (Either String String)
 myUserName = myVal env userName
   where
 #ifndef mingw32_HOST_OS
@@ -45,15 +51,16 @@ myUserGecos :: IO (Maybe String)
 #if defined(__ANDROID__) || defined(mingw32_HOST_OS)
 myUserGecos = return Nothing
 #else
-myUserGecos = Just <$> myVal [] userGecos
+myUserGecos = eitherToMaybe <$> myVal [] userGecos
 #endif
 
-myVal :: [String] -> (UserEntry -> String) -> IO String
+myVal :: [String] -> (UserEntry -> String) -> IO (Either String String)
 myVal envvars extract = go envvars
   where
 #ifndef mingw32_HOST_OS
-	go [] = extract <$> (getUserEntryForID =<< getEffectiveUserID)
+	go [] = Right . extract <$> (getUserEntryForID =<< getEffectiveUserID)
 #else
-	go [] = error $ "environment not set: " ++ show envvars
+	go [] = return $ either Left (Right . extract) $
+		Left ("environment not set: " ++ show envvars)
 #endif
-	go (v:vs) = maybe (go vs) return =<< getEnv v
+	go (v:vs) = maybe (go vs) (return . Right) =<< getEnv v

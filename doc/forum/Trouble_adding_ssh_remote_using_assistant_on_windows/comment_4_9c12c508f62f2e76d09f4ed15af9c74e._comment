@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="graboluk@f6de53961ab0f884e203f602f65eb5cdc0fb7513"
+ nickname="graboluk"
+ subject="is it also broken in debian testing?"
+ date="2015-09-25T17:50:32Z"
+ content="""
+I'm using debian testing version 5.20150731. I've set up an account git-annex on my private server, I've checked that I can login to it just fine, but the box \"Testing server...\" is there indefinitely (I'm trying a login with password)
+"""]]

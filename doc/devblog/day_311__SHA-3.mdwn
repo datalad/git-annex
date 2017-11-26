@@ -1,0 +1,6 @@
+The SHA-3 specification was released yesterday; git-annex got support for
+using SHA-3 hashes today. I had to add support for building with the new
+cryptonite library, as cryptohash doesn't (correctly) implement SHA-3 yet.
+Of course, nobody is likely to find a use for this for years, since SHA-2
+is still prefectly fine, but it's nice to get support for new hashes
+in early. :)

@@ -1,11 +1,12 @@
-Want to share all the files in your repository with a friend?
+Want to share all the files in your repository securely with a friend?
 
-Let's suppose you use Google Mail, and so does your friend, and you
-sometimes also chat in Google Talk. The git-annex assistant will
-use your Google account to share with your friend. (This actually
-works with any Jabber account you use, not just Google Talk.)
+This connects to your friend's repository using
+[Tor](https://torproject.org/). Both you and your friend will need to
+install [Tor](https://torproject.org/) and
+[Magic Wormhole](https://github.com/warner/magic-wormhole), and then both
+follow these steps to connect your repositories.
 
-Start by opening up your git annex dashboard.
+Start by opening up your git annex webapp.
 
 [[!img local_pairing_walkthrough/addrepository.png alt="Add another repository button"]]
 
@@ -15,44 +16,21 @@ Start by opening up your git annex dashboard.
 
 `*click*`
 
-[[!img xmpp.png alt="Configuring Jabber account"]]
+[[!img enabletor.png alt="Enabling tor hidden service"]]
 
-Fill that out, and git-annex will be able to show you a list of your
-friends.
+You will probably be prompted to enter a password, to configure Tor.
+(Depending on how your system is configured, this may be the root password,
+or your user account's password.)
 
-[[!img buddylist.png alt="Buddy list"]]
+[[!img wormholepairing.png alt="Pairing with a friend form"]]
 
-This list will refresh as friends log on and off, so you can
-leave it open in a tab until a friend is available to start pairing.
+A pairing code will be generated. Tell it to your friend. Ask them
+for their pairing code, and enter it in the form.
 
-(If your friend is not using git-annex yet, now's a great time to spread
-the word!)
+Once you've exchanged pairing codes, your repositories will be connected
+over Tor. They will begin to sync files back and forth, which can take a
+while since Tor is not super-fast.
 
-Once you click on "Start Pairing", your friend will see this pop up
-on their git annex dashboard.
+---
 
-[[!img xmppalert.png alt="Pair request"]]
-
-Once your friend clicks on that, your repositories will be paired.
-
-### But, wait, there's one more step...
-
-Despite the repositories being paired now, you and your friend can't yet
-quite share files. You'll start to see your friend's files show up in your
-git-annex folder, but you won't be able to open them yet.
-
-What you need to do now is set up a repository out there in the cloud,
-that both you and your friend can access. This will be used to transfer
-files between the two of you.
-
-At the end of the pairing process, a number of cloud providers are
-suggested, and the git-annex assistant makes it easy to configure one of
-them. Once you or your friend sets it up, it'll show up in the other
-one's list of repositories:
-
-[[!img repolist.png alt="Repository list"]]
-
-The final step is to share the login information for the cloud repository
-with your friend, so they can enable it too.
-
-With that complete, you'll be able to open your friend's files!
+See [[tips/peer_to_peer_network_with_tor]] for more details.

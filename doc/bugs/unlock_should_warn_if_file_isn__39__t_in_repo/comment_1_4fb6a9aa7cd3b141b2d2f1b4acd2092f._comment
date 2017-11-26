@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-11-07T17:25:10Z"
+ content="""
+In general, git-annex silently skips files that are not known to git,
+or are not annexed files. That's what's happening here.
+
+This skipping behavior can sometimes be confusing, if you are not
+familiar with it. But it's also very convenient. For example `git annex
+unlock *` will unlock only annexed files and not complain about any other
+files; `git annex unlock .` will recursively unlock only annexed files and not
+complain about non-annexed files or files that are already unlocked.
+
+In your example, git-annex has no way to tell that the file has been
+renamed; a file that has never been added to git would look the same
+to it as that renamed file.
+"""]]

@@ -1,6 +1,6 @@
 {- git-annex assistant webapp dashboard
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -16,10 +16,10 @@ import Assistant.TransferQueue
 import Assistant.TransferSlots
 import Assistant.DaemonStatus
 import Utility.NotificationBroadcaster
+import Types.Transfer
 import Logs.Transfer
 import Utility.Percentage
 import Utility.DataUnits
-import Types.Key
 import qualified Remote
 import qualified Git
 
@@ -43,6 +43,9 @@ transfersDisplay = do
 	ident = "transfers"
 	isrunning info = not $
 		transferPaused info || isNothing (startedTime info)
+	desc transfer info = case associatedFile info of
+		AssociatedFile Nothing -> key2file $ transferKey transfer
+		AssociatedFile (Just af) -> af
 
 {- Simplifies a list of transfers, avoiding display of redundant
  - equivilant transfers. -}
@@ -115,7 +118,7 @@ getFileBrowserR = whenM openFileBrowser redirectBack
  - blocking the response to the browser on it. -}
 openFileBrowser :: Handler Bool
 openFileBrowser = do
-	path <- liftAnnex $ fromRepo Git.repoPath
+	path <- liftIO . absPath =<< liftAnnex (fromRepo Git.repoPath)
 #ifdef darwin_HOST_OS
 	let cmd = "open"
 	let p = proc cmd [path]
@@ -132,8 +135,9 @@ openFileBrowser = do
 #endif
 	ifM (liftIO $ inPath cmd)
 		( do
-			let run = void $ liftIO $ forkIO $ void $
-				createProcess p
+			let run = void $ liftIO $ forkIO $ do
+				(Nothing, Nothing, Nothing, pid) <- createProcess p
+				void $ waitForProcess pid
 			run
 #ifdef mingw32_HOST_OS
 			{- On windows, if the file browser is not

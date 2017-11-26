@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-12-10T15:00:52Z"
+ content="""
+I'm concerned about that too. But it may be possible to finesse it,
+when git-annex is running on a crippled filesystem, it may be able to
+unlock all files as it gets content for them, producing a local fork.
+
+The first difficulty would be avoiding or autoresolving conflicts
+between locked and unlocked when merging changes into that fork. I think
+this is very tractable; such a conflict comes down mostly to the symlink
+bit in the tree object.
+
+The real difficulty would be that any pushes from that fork would include
+its change converting all files to unlocked. Although it's fairly mechanical
+to convert such a commit into one that doesn't unlock files, so perhaps
+that could be automated somehow on push or merge.
+
+There's also a small and probably easy to implement git change that
+would avoid all this complexity: If git's smudge filters were optionally
+able to run on the link-text of symlinks, then a file could be unlocked
+locally without changing what's in the repo and all the smudge stuff
+would still work on it.
+
+Crippled filesystems aside, I think there's value in being able to unlock
+files across clones of a repo. For example, a repo could have a workflow
+where the files for the current episiode/experiment/whatever start out
+unlocked and are locked once it's complete.
+"""]]

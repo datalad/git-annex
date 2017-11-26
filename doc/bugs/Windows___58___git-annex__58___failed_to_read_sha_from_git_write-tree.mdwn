@@ -1,0 +1,46 @@
+### Please describe the problem.
+
+On windows, git-annex webapp reports a crash.
+
+On the command-line, I get :
+
+$ git annex fsck
+fatal: unable to read tree 6d692a016b7d772800ddc3993ffd68fc6aaa21f3
+error: invalid object 100644 39e3d739a15dc3ed11a0c324781bf3658ccb933a for '001/e8c/SHA256E-s38500--9017f32c23b4de6363d3e5105bc1c47dd3cd983e471e71e0a9d420daaf0e3e7b.html.log'
+fatal: git-write-tree: error building trees
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+git-annex: failed to read sha from git write-tree
+
+Then, I try :
+
+$ git annex repair
+Running git fsck ...
+Unpacking all pack files.
+
+git-annex: DeleteFile ".git\\objects\\pack\\pack-c53ea32e9514b6dda95af1d8d879d91d32240d76.idx": permission denied (Accès refusé.)
+failed
+git-annex: repair: 1 failed
+
+
+### What steps will reproduce the problem?
+
+Dunno how that got messed up, and what to do now...
+
+### What version of git-annex are you using? On what operating system?
+
+latest nightly build (2015/10/19) on win 7
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+

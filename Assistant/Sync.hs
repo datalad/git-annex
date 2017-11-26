@@ -1,6 +1,6 @@
 {- git-annex assistant repo syncing
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,8 +9,6 @@ module Assistant.Sync where
 
 import Assistant.Common
 import Assistant.Pushes
-import Assistant.NetMessager
-import Assistant.Types.NetMessager
 import Assistant.Alert
 import Assistant.Alert.Utility
 import Assistant.DaemonStatus
@@ -19,27 +17,28 @@ import Assistant.RemoteControl
 import qualified Command.Sync
 import Utility.Parallel
 import qualified Git
-import qualified Git.Branch
 import qualified Git.Command
-import qualified Git.Ref
 import qualified Remote
 import qualified Types.Remote as Remote
 import qualified Remote.List as Remote
 import qualified Annex.Branch
 import Annex.UUID
 import Annex.TaggedPush
+import Annex.Ssh
 import qualified Config
 import Git.Config
+import Config.DynamicConfig
 import Assistant.NamedThread
 import Assistant.Threads.Watcher (watchThread, WatcherControl(..))
 import Assistant.TransferSlots
 import Assistant.TransferQueue
 import Assistant.RepoProblem
-import Logs.Transfer
+import Assistant.Commits
+import Types.Transfer
+import Database.Export
 
 import Data.Time.Clock
 import qualified Data.Map as M
-import qualified Data.Set as S
 import Control.Concurrent
 
 {- Syncs with remotes that may have been disconnected for a while.
@@ -50,46 +49,40 @@ import Control.Concurrent
  - the remotes have diverged from the local git-annex branch. Otherwise,
  - it's sufficient to requeue failed transfers.
  -
- - XMPP remotes are also signaled that we can push to them, and we request
- - they push to us. Since XMPP pushes run ansynchronously, any scan of the
- - XMPP remotes has to be deferred until they're done pushing to us, so
- - all XMPP remotes are marked as possibly desynced.
- -
  - Also handles signaling any connectRemoteNotifiers, after the syncing is
- - done.
+ - done, and records an export commit to make any exports be updated.
  -}
-reconnectRemotes :: Bool -> [Remote] -> Assistant ()
-reconnectRemotes _ [] = noop
-reconnectRemotes notifypushes rs = void $ do
+reconnectRemotes :: [Remote] -> Assistant ()
+reconnectRemotes [] = recordExportCommit
+reconnectRemotes rs = void $ do
 	rs' <- liftIO $ filterM (Remote.checkAvailable True) rs
 	unless (null rs') $ do
-		modifyDaemonStatus_ $ \s -> s
-			{ desynced = S.union (S.fromList $ map Remote.uuid xmppremotes) (desynced s) }
 		failedrs <- syncAction rs' (const go)
 		forM_ failedrs $ \r ->
 			whenM (liftIO $ Remote.checkAvailable False r) $
 				repoHasProblem (Remote.uuid r) (syncRemote r)
 		mapM_ signal $ filter (`notElem` failedrs) rs'
+	recordExportCommit
   where
 	gitremotes = filter (notspecialremote . Remote.repo) rs
-	(xmppremotes, nonxmppremotes) = partition Remote.isXMPPRemote rs
+	(_xmppremotes, nonxmppremotes) = partition Remote.isXMPPRemote rs
 	notspecialremote r
 		| Git.repoIsUrl r = True
 		| Git.repoIsLocal r = True
 		| Git.repoIsLocalUnknown r = True
 		| otherwise = False
-	sync (Just branch) = do
-		(failedpull, diverged) <- manualPull (Just branch) gitremotes
+	sync currentbranch@(Just _, _) = do
+		(failedpull, diverged) <- manualPull currentbranch gitremotes
 		now <- liftIO getCurrentTime
-		failedpush <- pushToRemotes' now notifypushes gitremotes
+		failedpush <- pushToRemotes' now gitremotes
 		return (nub $ failedpull ++ failedpush, diverged)
 	{- No local branch exists yet, but we can try pulling. -}
-	sync Nothing = manualPull Nothing gitremotes
+	sync (Nothing, _) = manualPull (Nothing, Nothing) gitremotes
 	go = do
 		(failed, diverged) <- sync
-			=<< liftAnnex (inRepo Git.Branch.current)
-		addScanRemotes diverged $
-			filter (not . remoteAnnexIgnore . Remote.gitconfig)
+			=<< liftAnnex (join Command.Sync.getCurrBranch)
+		addScanRemotes diverged =<<
+			filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig)
 				nonxmppremotes
 		return failed
 	signal r = liftIO . mapM_ (flip tryPutMVar ())
@@ -100,9 +93,6 @@ reconnectRemotes notifypushes rs = void $ do
  - parallel, along with the git-annex branch. This is the same
  - as "git annex sync", except in parallel, and will co-exist with use of
  - "git annex sync".
- -
- - After the pushes to normal git remotes, also signals XMPP clients that
- - they can request an XMPP push.
  -
  - Avoids running possibly long-duration commands in the Annex monad, so
  - as not to block other threads.
@@ -121,73 +111,73 @@ reconnectRemotes notifypushes rs = void $ do
  -
  - Returns any remotes that it failed to push to.
  -}
-pushToRemotes :: Bool -> [Remote] -> Assistant [Remote]
-pushToRemotes notifypushes remotes = do
+pushToRemotes :: [Remote] -> Assistant [Remote]
+pushToRemotes remotes = do
 	now <- liftIO getCurrentTime
-	let remotes' = filter (not . remoteAnnexReadOnly . Remote.gitconfig) remotes
-	syncAction remotes' (pushToRemotes' now notifypushes)
-pushToRemotes' :: UTCTime -> Bool -> [Remote] -> Assistant [Remote]
-pushToRemotes' now notifypushes remotes = do
+	let remotes' = filter (wantpush . Remote.gitconfig) remotes
+	syncAction remotes' (pushToRemotes' now)
+  where
+	wantpush gc
+		| remoteAnnexReadOnly gc = False
+		| not (remoteAnnexPush gc) = False
+		| otherwise = True
+
+pushToRemotes' :: UTCTime -> [Remote] -> Assistant [Remote]
+pushToRemotes' now remotes = do
 	(g, branch, u) <- liftAnnex $ do
 		Annex.Branch.commit "update"
 		(,,)
 			<$> gitRepo
-			<*> inRepo Git.Branch.current
+			<*> join Command.Sync.getCurrBranch
 			<*> getUUID
-	let (xmppremotes, normalremotes) = partition Remote.isXMPPRemote remotes
+	let (_xmppremotes, normalremotes) = partition Remote.isXMPPRemote remotes
 	ret <- go True branch g u normalremotes
-	unless (null xmppremotes) $ do
-		shas <- liftAnnex $ map fst <$>
-			inRepo (Git.Ref.matchingWithHEAD
-				[Annex.Branch.fullname, Git.Ref.headRef])
-		forM_ xmppremotes $ \r -> sendNetMessage $
-			Pushing (getXMPPClientID r) (CanPush u shas)
 	return ret
   where
-	go _ Nothing _ _ _ = return [] -- no branch, so nothing to do
+	go _ (Nothing, _) _ _ _ = return [] -- no branch, so nothing to do
 	go _ _ _ _ [] = return [] -- no remotes, so nothing to do
-	go shouldretry (Just branch) g u rs =  do
+	go shouldretry currbranch@(Just branch, _) g u rs =  do
 		debug ["pushing to", show rs]
-		(succeeded, failed) <- liftIO $ inParallel (push g branch) rs
+		(succeeded, failed) <- parallelPush g rs (push branch)
 		updatemap succeeded []
 		if null failed
-			then do
-				when notifypushes $
-					sendNetMessage $ NotifyPush $
-						map Remote.uuid succeeded
-				return failed
+			then return []
 			else if shouldretry
-				then retry branch g u failed
+				then retry currbranch g u failed
 				else fallback branch g u failed
 
-	updatemap succeeded failed = changeFailedPushMap $ \m ->
-		M.union (makemap failed) $
-			M.difference m (makemap succeeded)
+	updatemap succeeded failed = do
+		v <- getAssistant failedPushMap 
+		changeFailedPushMap v $ \m ->
+			M.union (makemap failed) $
+				M.difference m (makemap succeeded)
 	makemap l = M.fromList $ zip l (repeat now)
 
-	retry branch g u rs = do
+	retry currbranch g u rs = do
 		debug ["trying manual pull to resolve failed pushes"]
-		void $ manualPull (Just branch) rs
-		go False (Just branch) g u rs
+		void $ manualPull currbranch rs
+		go False currbranch g u rs
 
 	fallback branch g u rs = do
 		debug ["fallback pushing to", show rs]
-		(succeeded, failed) <- liftIO $
-			inParallel (\r -> taggedPush u Nothing branch r g) rs
+		(succeeded, failed) <- parallelPush g rs (taggedPush u Nothing branch)
 		updatemap succeeded failed
-		when (notifypushes && (not $ null succeeded)) $
-			sendNetMessage $ NotifyPush $
-				map Remote.uuid succeeded
 		return failed
 		
-	push g branch remote = Command.Sync.pushBranch remote branch g
+	push branch remote = Command.Sync.pushBranch remote branch
+
+parallelPush :: Git.Repo -> [Remote] -> (Remote -> Git.Repo -> IO Bool)-> Assistant ([Remote], [Remote])
+parallelPush g rs a = do
+	rgs <- liftAnnex $ mapM topush rs
+	(succeededrgs, failedrgs) <- liftIO $ inParallel (uncurry a) rgs
+	return (map fst succeededrgs, map fst failedrgs)
+  where
+	topush r = (,)
+		<$> pure r
+		<*> sshOptionsTo (Remote.repo r) (Remote.gitconfig r) g
 
 {- Displays an alert while running an action that syncs with some remotes,
  - and returns any remotes that it failed to sync with.
- -
- - XMPP remotes are handled specially; since the action can only start
- - an async process for them, they are not included in the alert, but are
- - still passed to the action.
  -
  - Readonly remotes are also hidden (to hide the web special remote).
  -}
@@ -212,34 +202,35 @@ syncAction rs a
  - remotes that it failed to pull from, and a Bool indicating
  - whether the git-annex branches of the remotes and local had
  - diverged before the pull.
- -
- - After pulling from the normal git remotes, requests pushes from any
- - XMPP remotes. However, those pushes will run asynchronously, so their
- - results are not included in the return data.
  -}
-manualPull :: Maybe Git.Ref -> [Remote] -> Assistant ([Remote], Bool)
+manualPull :: Command.Sync.CurrBranch -> [Remote] -> Assistant ([Remote], Bool)
 manualPull currentbranch remotes = do
 	g <- liftAnnex gitRepo
-	let (xmppremotes, normalremotes) = partition Remote.isXMPPRemote remotes
-	failed <- liftIO $ forM normalremotes $ \r ->
-		ifM (Git.Command.runBool [Param "fetch", Param $ Remote.name r] g)
-			( return Nothing
-			, return $ Just r
-			)
+	let (_xmppremotes, normalremotes) = partition Remote.isXMPPRemote remotes
+	failed <- forM normalremotes $ \r -> if wantpull $ Remote.gitconfig r
+		then do
+			g' <- liftAnnex $ sshOptionsTo (Remote.repo r) (Remote.gitconfig r) g
+			ifM (liftIO $ Git.Command.runBool [Param "fetch", Param $ Remote.name r] g')
+				( return Nothing
+				, return $ Just r
+				)
+		else return Nothing
 	haddiverged <- liftAnnex Annex.Branch.forceUpdate
 	forM_ normalremotes $ \r ->
-		liftAnnex $ Command.Sync.mergeRemote r currentbranch
-	u <- liftAnnex getUUID
-	forM_ xmppremotes $ \r ->
-		sendNetMessage $ Pushing (getXMPPClientID r) (PushRequest u)
+		liftAnnex $ Command.Sync.mergeRemote r
+			currentbranch Command.Sync.mergeConfig def
+	when haddiverged $
+		updateExportTreeFromLogAll
 	return (catMaybes failed, haddiverged)
+  where
+	wantpull gc = remoteAnnexPull gc
 
 {- Start syncing a remote, using a background thread. -}
 syncRemote :: Remote -> Assistant ()
 syncRemote remote = do
 	updateSyncRemotes
 	thread <- asIO $ do
-		reconnectRemotes False [remote]
+		reconnectRemotes [remote]
 		addScanRemotes True [remote]
 	void $ liftIO $ forkIO $ thread
 
@@ -276,3 +267,9 @@ changeSyncFlag r enabled = do
 	void Remote.remoteListRefresh
   where
 	key = Config.remoteConfig (Remote.repo r) "sync"
+
+updateExportTreeFromLogAll :: Assistant ()
+updateExportTreeFromLogAll = do
+	rs <- exportRemotes <$> getDaemonStatus
+	forM_ rs $ \r -> liftAnnex $
+		openDb (Remote.uuid r) >>= updateExportTreeFromLog

@@ -1,0 +1,81 @@
+[[!comment format=mdwn
+ username="https://anarc.at/openid/"
+ nickname="anarcat"
+ subject="thanks for considering this!"
+ date="2016-09-22T12:43:11Z"
+ content="""
+> (Let's not discuss the behavior of copy --to when the file is not
+> locally present here; there is plenty of other discussion of that in
+> eg http://bugs.debian.org/671179)
+
+Agreed, it's kind of secondary.
+
+> git-annex's special remote API does not allow remote-to-remote
+> transfers without spooling it to a file on disk first.
+
+yeah, i noticed that when writing my own special remote.
+
+> And it's not possible to do using rsync on either end, AFAICS.
+
+That is correct.
+
+> It would be possible in some other cases but this would need to be
+> implemented for each type of remote as a new API call.
+
+... and would fail for most, so there's little benefit there.
+
+how about a socket or FIFO of some sort? i know those break a lot of
+semantics (e.g. `[ -f /tmp/fifo ]` fails in bash) but they could be a
+solution...
+
+> Modern systems tend to have quite a large disk cache, so it's quite
+> possible that going via a temp file on disk is not going to use a
+> lot of disk IO to write and read it when the read and write occur
+> fairly close together.
+
+true. there are also in-memory files that could be used, although I
+don't think this would work across different process spaces.
+
+> The main benefit from streaming would probably be if it could run
+> the download and the upload concurrently.
+
+for me, the main benefit would be to deal with low disk space
+conditions, which is quite common on my machines: i often cram the
+disk almost to capacity with good stuff i want to listen to
+later... git-annex allows me to freely remove stuff when i need the
+space, but it often means i am close to 99% capacity on the media
+drives i use.
+
+>  But that would only be a benefit sometimes. With an asymmetric
+>  connection, saturating the uplink tends to swamp downloads. Also,
+>  if download is faster than upload, it would have to throttle
+>  downloads (which complicates the remote API much more), or buffer
+>  them to memory (which has its own complications).
+
+that is true.
+
+> Streaming the download to the upload would at best speed things up
+> by a factor of 2. It would probably work nearly as well to upload
+> the previously downloaded file while downloading the next file.
+
+presented like that, it's true that the benefits of streaming are not
+good enough to justify the complexity - the only problem is large
+files and low local disk space... but maybe we can delegate that
+solution to the user: \"free up at least enough space for one of those
+files you want to transfer\".
+
+[... -J magic stuff ...]
+
+> And there is a complication with running that at the same time as eg
+> git annex get of the same file. It would be surprising for get to
+> succeed (because copy has already temporarily downloaded the file)
+> and then have the file later get dropped. So, it seems that copy
+> --from --to would need to stash the content away in a temp file
+> somewhere instead of storing it in the annex proper.
+
+My thoughts exactly: actually copying the files to the local repo
+introduces all sorts of weird --numcopies nastiness and race
+conditions, it seems to me.
+
+thanks for considering this!
+"""]]

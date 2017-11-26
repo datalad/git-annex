@@ -1,0 +1,42 @@
+### Please describe the problem.
+`git annex import` is dangerous when you have unused git objects in your git store. You have the potential to lose your filenames and only be left with git objects containing the data.
+
+
+### What steps will reproduce the problem?
+```
+echo "foo" > /tmp/foo
+echo "bar" > /tmp/bar
+echo "baz" > /tmp/baz
+cd ~/annex
+cp /tmp/{foo,bar,baz} .
+git annex add ./{foo,bar,baz}
+# I decide I want to abort this particular commit, so I reset
+git reset --hard
+# At this point, git reset removed the symlinks from our index, but the objects containing the file content still exist in the git store.
+
+# A few days later I decide to import another backup of my data from this location: /tmp/myotherbackup/files/{foo,bar,baz}
+
+# This command removes foo, bar and baz from the source directory, but does not add symlinks for them. They were considered duplicates because we had git objects associated with their content (even though they are unused git objects).
+git annex import --deduplicate
+
+# This command considers foo, bar and baz duplicates and removes them from the source directory. We are left with unused objects in the git store, but no idea what the filenames were.
+git annex import --clean-duplicates
+```
+
+### What version of git-annex are you using? On what operating system?
+$ ga version
+git-annex version: 5.20140717
+build flags: Assistant Inotify DBus TDFA
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
+remote types: git gcrypt bup directory rsync web glacier ddar hook external
+local repository version: 5
+supported repository version: 5
+upgrade supported from repository versions: 0 1 2 4
+
+OS: Fedora 25
+
+### Please provide any additional information below.
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+I love git-annex! I used it to manage my Pictures.

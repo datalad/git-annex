@@ -1,0 +1,71 @@
+# NAME
+
+git-annex whereis - lists repositories that have file content
+
+# SYNOPSIS
+
+git annex whereis `[path ...]`
+
+# DESCRIPTION
+
+Displays information about where the contents of files are located.
+
+For example:
+
+	# git annex whereis
+	whereis my_cool_big_file (1 copy)
+		0c443de8-e644-11df-acbf-f7cd7ca6210d  -- laptop
+	whereis other_file (3 copies)
+		0c443de8-e644-11df-acbf-f7cd7ca6210d  -- laptop
+		62b39bbe-4149-11e0-af01-bb89245a1e61  -- usb drive [here]
+		7570b02e-15e9-11e0-adf0-9f3f94cb2eaa  -- backup drive
+
+# OPTIONS
+
+* file matching options
+  
+  The [[git-annex-matching-options]](1)
+  can be used to specify files to act on.
+
+* `--key=keyname`
+
+  Show where a particular git-annex key is located.
+
+* `--all`
+
+  Show whereis information for all known keys.
+
+* `--branch=ref`
+
+  Show whereis information for files in the specified branch or treeish.
+
+* `--unused`
+
+  Show whereis information for files found by last run of git-annex unused.
+
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
+* `--batch`
+
+  Enables batch mode, in which a file is read in a line from stdin,
+  its information displayed, and repeat.
+
+  Note that if the file is not an annexed file, an empty line will be
+  output instead.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-find]](1)
+
+[[git-annex-list]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

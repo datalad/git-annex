@@ -1,8 +1,8 @@
 {- git-annex assistant upgrading
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU AGPL version 3 or higher.
+ - Licensed under the GNU GPL version 3 or higher.
  -}
 
 {-# LANGUAGE CPP #-}
@@ -16,11 +16,12 @@ import Assistant.Alert
 import Assistant.DaemonStatus
 import Utility.Env
 import Types.Distribution
-import Logs.Transfer
+import Types.Transfer
 import Logs.Web
 import Logs.Presence
 import Logs.Location
 import Annex.Content
+import Annex.UUID
 import qualified Backend
 import qualified Types.Backend
 import qualified Types.Key
@@ -38,9 +39,9 @@ import qualified Utility.Lsof as Lsof
 import qualified Build.SysConfig
 import qualified Utility.Url as Url
 import qualified Annex.Url as Url
+import Utility.Tuple
 
 import qualified Data.Map as M
-import Data.Tuple.Utils
 
 {- Upgrade without interaction in the webapp. -}
 unattendedUpgrade :: Assistant ()
@@ -80,11 +81,11 @@ startDistributionDownload d = go =<< liftIO . newVersionLocation d =<< liftIO ol
   where
 	go Nothing = debug ["Skipping redundant upgrade"]
 	go (Just dest) = do
-		liftAnnex $ setUrlPresent k u
+		liftAnnex $ setUrlPresent webUUID k u
 		hook <- asIO1 $ distributionDownloadComplete d dest cleanup
 		modifyDaemonStatus_ $ \s -> s
 			{ transferHook = M.insert k hook (transferHook s) }
-		maybe noop (queueTransfer "upgrade" Next (Just f) t)
+		maybe noop (queueTransfer "upgrade" Next (AssociatedFile (Just f)) t)
 			=<< liftAnnex (remoteFromUUID webUUID)
 		startTransfer t
 	k = distributionKey d
@@ -96,14 +97,14 @@ startDistributionDownload d = go =<< liftIO . newVersionLocation d =<< liftIO ol
 		, transferKey = k
 		}
 	cleanup = liftAnnex $ do
-		lockContent k removeAnnex
-		setUrlMissing k u
+		lockContentForRemoval k removeAnnex
+		setUrlMissing webUUID k u
 		logStatus k InfoMissing
 
 {- Called once the download is done.
  - Passed an action that can be used to clean up the downloaded file.
  -
- - Fsck the key to verify the download.
+ - Verifies the content of the downloaded key.
  -}
 distributionDownloadComplete :: GitAnnexDistribution -> FilePath -> Assistant () -> Transfer -> Assistant ()
 distributionDownloadComplete d dest cleanup t 
@@ -114,11 +115,11 @@ distributionDownloadComplete d dest cleanup t
 	| otherwise = cleanup
   where
 	k = distributionKey d
-	fsckit f = case Backend.maybeLookupBackendName (Types.Key.keyBackendName k) of
+	fsckit f = case Backend.maybeLookupBackendVariety (Types.Key.keyVariety k) of
 		Nothing -> return $ Just f
-		Just b -> case Types.Backend.fsckKey b of
+		Just b -> case Types.Backend.verifyKeyContent b of
 			Nothing -> return $ Just f
-			Just a -> ifM (a k f)
+			Just verifier -> ifM (verifier k f)
 				( return $ Just f
 				, return Nothing
 				)
@@ -152,7 +153,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
   where
 	changeprogram program = liftIO $ do
 		unlessM (boolSystem program [Param "version"]) $
-			error "New git-annex program failed to run! Not using."
+			giveup "New git-annex program failed to run! Not using."
 		pf <- programFile
 		liftIO $ writeFile pf program
 	
@@ -287,11 +288,8 @@ removeEmptyRecursive dir = do
 {- This is a file that the UpgradeWatcher can watch for modifications to
  - detect when git-annex has been upgraded.
  -}
-upgradeFlagFile :: IO (Maybe FilePath)
-upgradeFlagFile = ifM usingDistribution
-	( Just <$> programFile
-	, programPath
-	)
+upgradeFlagFile :: IO FilePath
+upgradeFlagFile = programPath
 
 {- Sanity check to see if an upgrade is complete and the program is ready
  - to be run. -}
@@ -302,13 +300,10 @@ upgradeSanityCheck = ifM usingDistribution
 		-- Ensure that the program is present, and has no writers,
 		-- and can be run. This should handle distribution
 		-- upgrades, manual upgrades, etc.
-		v <- programPath
-		case v of
-			Nothing -> return False
-			Just program -> do
-				untilM (doesFileExist program <&&> nowriter program) $
-					threadDelaySeconds (Seconds 60)
-				boolSystem program [Param "version"]
+		program <- programPath
+		untilM (doesFileExist program <&&> nowriter program) $
+			threadDelaySeconds (Seconds 60)
+		boolSystem program [Param "version"]
 	)
   where
 	nowriter f = null
@@ -322,13 +317,14 @@ usingDistribution = isJust <$> getEnv "GIT_ANNEX_STANDLONE_ENV"
 downloadDistributionInfo :: Assistant (Maybe GitAnnexDistribution)
 downloadDistributionInfo = do
 	uo <- liftAnnex Url.getUrlOptions
+	gpgcmd <- liftAnnex $ gpgCmd <$> Annex.getGitConfig
 	liftIO $ withTmpDir "git-annex.tmp" $ \tmpdir -> do
 		let infof = tmpdir </> "info"
 		let sigf = infof ++ ".sig"
 		ifM (Url.downloadQuiet distributionInfoUrl infof uo
 			<&&> Url.downloadQuiet distributionInfoSigUrl sigf uo
-			<&&> verifyDistributionSig sigf)
-			( readish <$> readFileStrict infof
+			<&&> verifyDistributionSig gpgcmd sigf)
+			( parseInfoFile <$> readFileStrict infof
 			, return Nothing
 			)
 
@@ -345,13 +341,13 @@ distributionInfoSigUrl = distributionInfoUrl ++ ".sig"
  - The gpg keyring used to verify the signature is located in
  - trustedkeys.gpg, next to the git-annex program.
  -}
-verifyDistributionSig :: FilePath -> IO Bool
-verifyDistributionSig sig = do
+verifyDistributionSig :: GpgCmd -> FilePath -> IO Bool
+verifyDistributionSig gpgcmd sig = do
 	p <- readProgramFile
 	if isAbsolute p
 		then withUmask 0o0077 $ withTmpDir "git-annex-gpg.tmp" $ \gpgtmp -> do
 			let trustedkeys = takeDirectory p </> "trustedkeys.gpg"
-			boolSystem gpgcmd
+			boolGpgCmd gpgcmd
 				[ Param "--no-default-keyring"
 				, Param "--no-auto-check-trustdb"
 				, Param "--no-options"

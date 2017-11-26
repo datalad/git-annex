@@ -1,6 +1,6 @@
 {- git-union-merge program
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,6 +14,7 @@ import qualified Git.CurrentRepo
 import qualified Git.Branch
 import qualified Git.Index
 import qualified Git
+import Utility.FileSystemEncoding
 
 header :: String
 header = "Usage: git-union-merge ref ref newref"
@@ -39,10 +40,11 @@ parseArgs = do
 
 main :: IO ()
 main = do
+	useFileSystemEncoding
 	[aref, bref, newref] <- map Git.Ref <$> parseArgs
 	g <- Git.Config.read =<< Git.CurrentRepo.get
-	_ <- Git.Index.override $ tmpIndex g
+	_ <- Git.Index.override (tmpIndex g) g
 	setup g
 	Git.UnionMerge.merge aref bref g
-	_ <- Git.Branch.commit "union merge" newref [aref, bref] g
+	_ <- Git.Branch.commit Git.Branch.ManualCommit False "union merge" newref [aref, bref] g
 	cleanup g

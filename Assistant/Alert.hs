@@ -1,6 +1,6 @@
 {- git-annex assistant alerts
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,12 +9,12 @@
 
 module Assistant.Alert where
 
-import Common.Annex
+import Annex.Common
 import Assistant.Types.Alert
 import Assistant.Alert.Utility
 import qualified Remote
 import Utility.Tense
-import Logs.Transfer
+import Types.Transfer
 import Types.Distribution
 import Git.Types (RemoteName)
 
@@ -26,7 +26,6 @@ import qualified Control.Exception as E
 import Assistant.DaemonStatus
 import Assistant.WebApp.Types
 import Assistant.WebApp (renderUrl)
-import Yesod
 #endif
 import Assistant.Monad
 import Assistant.Types.UrlRenderer

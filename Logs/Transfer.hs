@@ -1,6 +1,6 @@
 {- git-annex transfer information files and lock files
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,68 +9,28 @@
 
 module Logs.Transfer where
 
-import Common.Annex
+import Types.Transfer
+import Types.ActionItem
+import Annex.Common
 import Annex.Perms
 import qualified Git
-import Types.Key
 import Utility.Metered
 import Utility.Percentage
-import Utility.QuickCheck
 import Utility.PID
-import Utility.LockFile
+import Annex.LockPool
+import Logs.TimeStamp
 
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
-import Data.Time
-import System.Locale
 import Control.Concurrent
-
-{- Enough information to uniquely identify a transfer, used as the filename
- - of the transfer information file. -}
-data Transfer = Transfer
-	{ transferDirection :: Direction
-	, transferUUID :: UUID
-	, transferKey :: Key
-	}
-	deriving (Eq, Ord, Read, Show)
-
-{- Information about a Transfer, stored in the transfer information file.
- -
- - Note that the associatedFile may not correspond to a file in the local
- - git repository. It's some file, possibly relative to some directory,
- - of some repository, that was acted on to initiate the transfer.
- -}
-data TransferInfo = TransferInfo
-	{ startedTime :: Maybe POSIXTime
-	, transferPid :: Maybe PID
-	, transferTid :: Maybe ThreadId
-	, transferRemote :: Maybe Remote
-	, bytesComplete :: Maybe Integer
-	, associatedFile :: Maybe FilePath
-	, transferPaused :: Bool
-	}
-	deriving (Show, Eq, Ord)
-
-stubTransferInfo :: TransferInfo
-stubTransferInfo = TransferInfo Nothing Nothing Nothing Nothing Nothing Nothing False
-
-data Direction = Upload | Download
-	deriving (Eq, Ord, Read, Show)
-
-showLcDirection :: Direction -> String
-showLcDirection Upload = "upload"
-showLcDirection Download = "download"
-
-readLcDirection :: String -> Maybe Direction
-readLcDirection "upload" = Just Upload
-readLcDirection "download" = Just Download
-readLcDirection _ = Nothing
 
 describeTransfer :: Transfer -> TransferInfo -> String
 describeTransfer t info = unwords
 	[ show $ transferDirection t
 	, show $ transferUUID t
-	, fromMaybe (key2file $ transferKey t) (associatedFile info)
+	, actionItemDesc
+		(ActionItemAssociatedFile (associatedFile info))
+		(transferKey t)
 	, show $ bytesComplete info
 	]
 
@@ -110,8 +70,8 @@ mkProgressUpdater t info = do
 		Just sz -> sz `div` 100
 		Nothing -> 100 * 1024 -- arbitrarily, 100 kb
 
-startTransferInfo :: Maybe FilePath -> IO TransferInfo
-startTransferInfo file = TransferInfo
+startTransferInfo :: AssociatedFile -> IO TransferInfo
+startTransferInfo afile = TransferInfo
 	<$> (Just . utcTimeToPOSIXSeconds <$> getCurrentTime)
 #ifndef mingw32_HOST_OS
 	<*> pure Nothing -- pid not stored in file, so omitted for speed
@@ -121,42 +81,78 @@ startTransferInfo file = TransferInfo
 	<*> pure Nothing -- tid ditto
 	<*> pure Nothing -- not 0; transfer may be resuming
 	<*> pure Nothing
-	<*> pure file
+	<*> pure afile
 	<*> pure False
 
-{- If a transfer is still running, returns its TransferInfo. -}
+{- If a transfer is still running, returns its TransferInfo.
+ - 
+ - If no transfer is running, attempts to clean up the stale
+ - lock and info files. This can happen if a transfer process was
+ - interrupted.
+ -}
 checkTransfer :: Transfer -> Annex (Maybe TransferInfo)
 checkTransfer t = do
 	tfile <- fromRepo $ transferFile t
+	let lck = transferLockFile tfile
+	let cleanstale = do
+		void $ tryIO $ removeFile tfile
+		void $ tryIO $ removeFile lck
 #ifndef mingw32_HOST_OS
-	liftIO $ do
-		v <- getLockStatus (transferLockFile tfile)
-		case v of
-			Just (pid, _) -> catchDefaultIO Nothing $
-				readTransferInfoFile (Just pid) tfile
-			Nothing -> return Nothing
+	v <- getLockStatus lck
+	case v of
+		StatusLockedBy pid -> liftIO $ catchDefaultIO Nothing $
+			readTransferInfoFile (Just pid) tfile
+		_ -> do
+			-- Take a non-blocking lock while deleting
+			-- the stale lock file. Ignore failure
+			-- due to permissions problems, races, etc.
+			void $ tryIO $ do
+				mode <- annexFileMode
+				r <- tryLockExclusive (Just mode) lck
+				case r of
+					Just lockhandle -> liftIO $ do
+						cleanstale
+						dropLock lockhandle
+					_ -> noop
+			return Nothing
 #else
-	v <- liftIO $ lockShared $ transferLockFile tfile
+	v <- liftIO $ lockShared lck
 	liftIO $ case v of
 		Nothing -> catchDefaultIO Nothing $
 			readTransferInfoFile Nothing tfile
 		Just lockhandle -> do
 			dropLock lockhandle
-			void $ tryIO $ removeFile $ transferLockFile tfile
+			cleanstale
 			return Nothing
 #endif
 
 {- Gets all currently running transfers. -}
 getTransfers :: Annex [(Transfer, TransferInfo)]
-getTransfers = do
-	transfers <- mapMaybe parseTransferFile . concat <$> findfiles
+getTransfers = getTransfers' [Download, Upload] (const True)
+
+getTransfers' :: [Direction] -> (Key -> Bool) -> Annex [(Transfer, TransferInfo)]
+getTransfers' dirs wanted = do
+	transfers <- filter (wanted . transferKey)
+		<$> mapMaybe parseTransferFile . concat <$> findfiles
 	infos <- mapM checkTransfer transfers
 	return $ map (\(t, Just i) -> (t, i)) $
 		filter running $ zip transfers infos
   where
 	findfiles = liftIO . mapM dirContentsRecursive
-		=<< mapM (fromRepo . transferDir) [Download, Upload]
+		=<< mapM (fromRepo . transferDir) dirs
 	running (_, i) = isJust i
+
+{- Number of bytes remaining to download from matching downloads that are in
+ - progress. -}
+sizeOfDownloadsInProgress :: (Key -> Bool) -> Annex Integer
+sizeOfDownloadsInProgress wanted = sum . map remaining
+	<$> getTransfers' [Download] wanted
+  where
+	remaining (t, info) =
+		case (keySize (transferKey t), bytesComplete info) of
+			(Just sz, Just done) -> sz - done
+			(Just sz, Nothing) -> sz
+			(Nothing, _) -> 0
 
 {- Gets failed transfers for a given remote UUID. -}
 getFailedTransfers :: UUID -> Annex [(Transfer, TransferInfo)]
@@ -210,7 +206,7 @@ parseTransferFile file
 	| "lck." `isPrefixOf` takeFileName file = Nothing
 	| otherwise = case drop (length bits - 3) bits of
 		[direction, u, key] -> Transfer
-			<$> readLcDirection direction
+			<$> parseDirection direction
 			<*> pure (toUUID u)
 			<*> fileKey key
 		_ -> Nothing
@@ -218,8 +214,7 @@ parseTransferFile file
 	bits = splitDirectories file
 
 writeTransferInfoFile :: TransferInfo -> FilePath -> IO ()
-writeTransferInfoFile info tfile = writeFileAnyEncoding tfile $
-	writeTransferInfo info
+writeTransferInfoFile info tfile = writeFile tfile $ writeTransferInfo info
 
 {- File format is a header line containing the startedTime and any
  - bytesComplete value. Followed by a newline and the associatedFile.
@@ -236,12 +231,14 @@ writeTransferInfo info = unlines
 #ifdef mingw32_HOST_OS
 	, maybe "" show (transferPid info)
 #endif
-	, fromMaybe "" $ associatedFile info -- comes last; arbitrary content
+	-- comes last; arbitrary content
+	, let AssociatedFile afile = associatedFile info
+	  in fromMaybe "" afile
 	]
 
 readTransferInfoFile :: Maybe PID -> FilePath -> IO (Maybe TransferInfo)
 readTransferInfoFile mpid tfile = catchDefaultIO Nothing $
-	readTransferInfo mpid <$> readFileStrictAnyEncoding tfile
+	readTransferInfo mpid <$> readFileStrict tfile
 
 readTransferInfo :: Maybe PID -> String -> Maybe TransferInfo
 readTransferInfo mpid s = TransferInfo
@@ -254,7 +251,7 @@ readTransferInfo mpid s = TransferInfo
 	<*> pure Nothing
 	<*> pure Nothing
 	<*> bytes
-	<*> pure (if null filename then Nothing else Just filename)
+	<*> pure (AssociatedFile (if null filename then Nothing else Just filename))
 	<*> pure False
   where
 #ifdef mingw32_HOST_OS
@@ -267,7 +264,7 @@ readTransferInfo mpid s = TransferInfo
 	filename
 		| end rest == "\n" = beginning rest
 		| otherwise = rest
-	bits = split " " firstline
+	bits = splitc ' ' firstline
 	numbits = length bits
 	time = if numbits > 0
 		then Just <$> parsePOSIXTime =<< headMaybe bits
@@ -276,32 +273,17 @@ readTransferInfo mpid s = TransferInfo
 		then Just <$> readish =<< headMaybe (drop 1 bits)
 		else pure Nothing -- not failure
 
-parsePOSIXTime :: String -> Maybe POSIXTime
-parsePOSIXTime s = utcTimeToPOSIXSeconds
-	<$> parseTime defaultTimeLocale "%s%Qs" s
-
 {- The directory holding transfer information files for a given Direction. -}
 transferDir :: Direction -> Git.Repo -> FilePath
-transferDir direction r = gitAnnexTransferDir r </> showLcDirection direction
+transferDir direction r = gitAnnexTransferDir r </> formatDirection direction
 
 {- The directory holding failed transfer information files for a given
  - Direction and UUID -}
 failedTransferDir :: UUID -> Direction -> Git.Repo -> FilePath
 failedTransferDir u direction r = gitAnnexTransferDir r
 	</> "failed"
-	</> showLcDirection direction
+	</> formatDirection direction
 	</> filter (/= '/') (fromUUID u)
-
-instance Arbitrary TransferInfo where
-	arbitrary = TransferInfo
-		<$> arbitrary
-		<*> arbitrary
-		<*> pure Nothing -- cannot generate a ThreadID
-		<*> pure Nothing -- remote not needed
-		<*> arbitrary
-		-- associated file cannot be empty (but can be Nothing)
-		<*> arbitrary `suchThat` (/= Just "")
-		<*> arbitrary
 
 prop_read_write_transferinfo :: TransferInfo -> Bool
 prop_read_write_transferinfo info

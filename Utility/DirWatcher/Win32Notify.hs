@@ -1,6 +1,6 @@
 {- Win32-notify interface
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -11,16 +11,16 @@ import Common hiding (isDirectory)
 import Utility.DirWatcher.Types
 
 import System.Win32.Notify
-import qualified Utility.PosixFiles as Files
+import qualified System.PosixCompat.Files as Files
 
 watchDir :: FilePath -> (FilePath -> Bool) -> Bool -> WatchHooks -> IO WatchManager
 watchDir dir ignored scanevents hooks = do
 	scan dir
 	wm <- initWatchManager
-	void $ watchDirectory wm dir True [Create, Delete, Modify, Move] handle
+	void $ watchDirectory wm dir True [Create, Delete, Modify, Move] dispatch
 	return wm
   where
-	handle evt
+	dispatch evt
 		| ignoredPath ignored (filePath evt) = noop
 		| otherwise = case evt of
 			(Deleted _ _)

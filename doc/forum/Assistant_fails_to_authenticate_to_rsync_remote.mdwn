@@ -1,0 +1,17 @@
+I have an rsync special remote for rsync.net. Recently I noticed that the assistant was not uploading files to this remote. When I look at the log in the webapp I see that it fails to authenticate:
+
+    [2016-04-22 13:28:49.145178] NetWatcherFallback: Syncing with rsync.net
+    Permission denied, please try again.
+    Permission denied, please try again.
+    Received disconnect from 1.1.1.1 port 22:2: Too many authentication failures for 12345
+    Connection to host.rsync.net closed by remote host.
+    rsync: connection unexpectedly closed (0 bytes received so far) [sender]
+    rsync error: unexplained error (code 255) at io.c(226) [sender=3.1.2]
+
+(For privacy I replaced the IP of the rsync.net host with 1.1.1.1 and the numerical user with 12345 and the hostname with host.rsync.net. In the actual log output those 3 things have real values that are correct!)
+
+If I change into this annex in the terminal I can `git annex copy . --to rsync.net` and everything uploads properly, so it is just the assistant which is failing to authenticate. I'm not sure how to go about troubleshooting this. I do use an ssh key to authenticate to the remote. Maybe the assistant doesn't know about this key?
+
+I did create this repo and add the remote manually, only later telling the assistant about the repo through the webapp.
+
+What should I look into to debug this?

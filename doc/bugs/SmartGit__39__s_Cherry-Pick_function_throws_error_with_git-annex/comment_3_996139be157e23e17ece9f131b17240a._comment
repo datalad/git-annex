@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-01-15T20:04:19Z"
+ content="""
+If SmartGit is started from the OSX GUI, and
+/usr/local/bin is added to your PATH in eg .bashrc, there's a good chance
+that the PATH won't include it.
+
+If this were a Linux system, I'd suggest setting the PATH in `.xsessionrc`.
+I don't know what the equivilant is for OSX.
+"""]]

@@ -1,0 +1,59 @@
+### Please describe the problem.
+
+Files with umlauts were not copied from local system, all other files were copied successfully.
+
+### What steps will reproduce the problem?
+
+Trying to sync content from a repository on the same machine.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 5.20150727 / Darwin tba.lan 14.4.0 Darwin Kernel Version 14.4.0: Thu May 28 11:35:04 PDT 2015; root:xnu-2782.30.5~1/RELEASE_X86_64 x86_64
+
+### Please provide any additional information below.
+
+[[!format sh """
+$ git annex get .
+get Die Sterne/Flucht in die Flucht (Bonus Track Version)/03 Ihr wollt mich töten.m4a
+  Unable to access these remotes: tba
+
+  Try making some of these repositories available:
+  	2cabf5e0-00ae-4cc6-b9b7-5d303a7f3f06 -- Music [tba]
+   	8e315ed0-f318-45f7-98ca-1a791f9c92df -- jan@hostname:/srv/annex-Music
+failed
+get Die Sterne/Flucht in die Flucht (Bonus Track Version)/03 Ihr wollt mich töten.m4a
+  Unable to access these remotes: tba
+
+  Try making some of these repositories available:
+  	2cabf5e0-00ae-4cc6-b9b7-5d303a7f3f06 -- Music [tba]
+   	8e315ed0-f318-45f7-98ca-1a791f9c92df -- jan@hostname:/srv/annex-Music
+failed
+get Die Sterne/Flucht in die Flucht (Bonus Track Version)/10 Der Bär.m4a
+  Unable to access these remotes: tba
+
+  Try making some of these repositories available:
+  	2cabf5e0-00ae-4cc6-b9b7-5d303a7f3f06 -- Music [tba]
+   	8e315ed0-f318-45f7-98ca-1a791f9c92df -- jan@hostname:/srv/annex-Music
+failed
+get Die Sterne/Flucht in die Flucht (Bonus Track Version)/10 Der Bär.m4a
+  Unable to access these remotes: tba
+
+  Try making some of these repositories available:
+  	2cabf5e0-00ae-4cc6-b9b7-5d303a7f3f06 -- Music [tba]
+   	8e315ed0-f318-45f7-98ca-1a791f9c92df -- jan@hostname:/srv/annex-Music
+failed
+"""]]
+
+the *tba* repository is accessible since all the other files were synced correctly.
+
+Git status reports untracked files which look like they were renamed.
+
+[[!format sh """
+$ git status
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	"Ant\303\263nio Varia\303\247\303\265es/"
+	"B Fachada/B Fachada/01 sozinho no r\303\263que.mp3"
+	"B Fachada/B Fachada/03 D\303\241 mais m\303\272sica \303\240 b\303\263fia.mp3"
+"""]]

@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-20T16:32:29Z"
+ content="""
+This is a job for [[preferred_content]]!
+
+For example, you could configure the remote to not want
+any flac files, so only mp3, ogg, etc files should be stored on that
+remote:
+
+	git annex wanted myremotename 'exclude=*.flac'
+
+This configuration will automatically be honored if you use
+`git annex sync --content` (or the assistant). If you manually
+use `git annex copy` to copy files to the remote, you'll need to
+add the `--auto` flag to make it honor the preferred content settings.
+"""]]

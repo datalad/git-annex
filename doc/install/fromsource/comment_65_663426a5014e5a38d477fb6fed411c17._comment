@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="florian-git-annex@90936f45daa5a57ed4b867f7ebc35e23acad1a08"
+ nickname="florian-git-annex"
+ avatar="http://cdn.libravatar.org/avatar/87a7fe93a5233ee03438752229aa14f6"
+ subject="apt-get build-dep git-annex problem on Raspbian"
+ date="2017-06-01T07:09:58Z"
+ content="""
+I tried to build git-annex on a current raspbian system. Executing \"apt-get build-dep git-annex\" I get the following error:
+
+    Reading package lists... Done
+    Building dependency tree       
+    Reading state information... Done
+    E: Build-Depends dependency for git-annex cannot be satisfied because the package libghc-yesod-dev cannot be found
+
+
+"""]]

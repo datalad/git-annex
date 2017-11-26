@@ -1,6 +1,6 @@
 {- Posix lock files
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -9,17 +9,20 @@ module Utility.LockFile.Posix (
 	LockHandle,
 	lockShared,
 	lockExclusive,
+	tryLockShared,
 	tryLockExclusive,
-	createLockFile,
-	openExistingLockFile,
-	isLocked,
 	checkLocked,
 	getLockStatus,
+	LockStatus(..),
 	dropLock,
+	checkSaneLock,
+	LockRequest(..),
+	openLockFile,
 ) where
 
 import Utility.Exception
 import Utility.Applicative
+import Utility.LockFile.LockStatus
 
 import System.IO
 import System.Posix
@@ -37,63 +40,80 @@ lockShared = lock ReadLock
 lockExclusive :: Maybe FileMode -> LockFile -> IO LockHandle
 lockExclusive = lock WriteLock
 
+-- Tries to take a shared lock, but does not block.
+tryLockShared :: Maybe FileMode -> LockFile -> IO (Maybe LockHandle)
+tryLockShared = tryLock ReadLock
+
 -- Tries to take an exclusive lock, but does not block.
 tryLockExclusive :: Maybe FileMode -> LockFile -> IO (Maybe LockHandle)
-tryLockExclusive mode lockfile = do
-	l <- openLockFile mode lockfile
-	v <- tryIO $ setLock l (WriteLock, AbsoluteSeek, 0, 0)
+tryLockExclusive = tryLock WriteLock
+
+-- Setting the FileMode allows creation of a new lock file.
+-- If it's Nothing then this only succeeds when the lock file already exists.
+lock :: LockRequest -> Maybe FileMode -> LockFile -> IO LockHandle
+lock lockreq mode lockfile = do
+	l <- openLockFile lockreq mode lockfile
+	waitToSetLock l (lockreq, AbsoluteSeek, 0, 0)
+	return (LockHandle l)
+
+-- Tries to take an lock, but does not block.
+tryLock :: LockRequest -> Maybe FileMode -> LockFile -> IO (Maybe LockHandle)
+tryLock lockreq mode lockfile = do
+	l <- openLockFile lockreq mode lockfile
+	v <- tryIO $ setLock l (lockreq, AbsoluteSeek, 0, 0)
 	case v of
 		Left _ -> do
 			closeFd l
 			return Nothing
 		Right _ -> return $ Just $ LockHandle l
 
--- Setting the FileMode allows creation of a new lock file.
--- If it's Nothing then this only succeeds when the lock file already exists.
-lock :: LockRequest -> Maybe FileMode -> LockFile -> IO LockHandle
-lock lockreq mode lockfile = do
-	l <- openLockFile mode lockfile
-	waitToSetLock l (lockreq, AbsoluteSeek, 0, 0)
-	return (LockHandle l)
-
--- Create and opens lock file; does not lock it.
-createLockFile :: FileMode -> LockFile -> IO Fd
-createLockFile filemode = openLockFile (Just filemode)
-
--- Opens an existing lock file; does not lock it, and if it does not exist,
--- returns Nothing.
-openExistingLockFile :: LockFile -> IO (Maybe Fd)
-openExistingLockFile = catchMaybeIO . openLockFile Nothing
-
 -- Close on exec flag is set so child processes do not inherit the lock.
-openLockFile :: Maybe FileMode -> LockFile -> IO Fd
-openLockFile filemode lockfile = do
-	l <- openFd lockfile ReadWrite filemode defaultFileFlags
+openLockFile :: LockRequest -> Maybe FileMode -> LockFile -> IO Fd
+openLockFile lockreq filemode lockfile = do
+	l <- openFd lockfile openfor filemode defaultFileFlags
 	setFdOption l CloseOnExec True
 	return l
-
--- Check if a file is locked, either exclusively, or with shared lock.
--- When the file doesn't exist, it's considered not locked.
-isLocked :: LockFile -> IO Bool
-isLocked = fromMaybe False <$$> checkLocked
+  where
+	openfor = case lockreq of
+		ReadLock -> ReadOnly
+		_ -> ReadWrite
 
 -- Returns Nothing when the file doesn't exist, for cases where
 -- that is different from it not being locked.
 checkLocked :: LockFile -> IO (Maybe Bool)
 checkLocked = maybe Nothing (Just . isJust) <$$> getLockStatus'
 
-getLockStatus :: LockFile -> IO (Maybe (ProcessID, FileLock))
-getLockStatus = fromMaybe Nothing <$$> getLockStatus'
+getLockStatus :: LockFile -> IO LockStatus
+getLockStatus lockfile = do
+	v <- getLockStatus' lockfile
+	return $ case v of
+		Nothing -> StatusNoLockFile
+		Just Nothing -> StatusUnLocked
+		Just (Just pid) -> StatusLockedBy pid
 
-getLockStatus' :: LockFile -> IO (Maybe (Maybe (ProcessID, FileLock)))
+getLockStatus' :: LockFile -> IO (Maybe (Maybe ProcessID))
 getLockStatus' lockfile = go =<< catchMaybeIO open
   where
-	open = openFd lockfile ReadOnly Nothing defaultFileFlags
+	open = openLockFile ReadLock Nothing lockfile
 	go Nothing = return Nothing
 	go (Just h) = do
-		ret <- getLock h (ReadLock, AbsoluteSeek, 0, 0)
+		v <- getLock h (ReadLock, AbsoluteSeek, 0, 0)
 		closeFd h
-		return (Just ret)
+		return (Just (fmap fst v))
 
 dropLock :: LockHandle -> IO ()
 dropLock (LockHandle fd) = closeFd fd
+
+-- Checks that the lock file still exists, and is the same file that was
+-- locked to get the LockHandle.
+--
+-- This check is useful if the lock file might get deleted by something
+-- else.
+checkSaneLock :: LockFile -> LockHandle -> IO Bool
+checkSaneLock lockfile (LockHandle fd) =
+	go =<< catchMaybeIO (getFileStatus lockfile)
+  where
+	go Nothing = return False
+	go (Just st) = do
+		fdst <- getFdStatus fd
+		return $ deviceID fdst == deviceID st && fileID fdst == fileID st

@@ -1,0 +1,76 @@
+From 5be3bdfc5ec83eaa5defd42e99f73a685123bea0 Mon Sep 17 00:00:00 2001
+From: androidbuilder <androidbuilder@example.com>
+Date: Fri, 22 May 2015 18:35:43 +0000
+Subject: [PATCH] hack for android
+
+---
+ System/Clock.hsc | 32 ++------------------------------
+ 1 file changed, 2 insertions(+), 30 deletions(-)
+
+diff --git a/System/Clock.hsc b/System/Clock.hsc
+index b6a4968..92bcf8b 100644
+--- a/System/Clock.hsc
++++ b/System/Clock.hsc
+@@ -35,8 +35,6 @@ import GHC.Generics (Generic)
+ #  endif
+ #endif
+ 
+-#let alignment t = "%lu", (unsigned long)offsetof(struct {char x__; t (y__); }, y__)
+-
+ -- | Clock types. A clock may be system-wide (that is, visible to all processes)
+ --   or per-process (measuring time that is meaningful only within a process).
+ --   All implementations shall support CLOCK_REALTIME.
+@@ -119,7 +117,7 @@ getTime ThreadCPUTime = allocaAndPeek hs_clock_win32_gettime_threadtime
+ #elif defined(__MACH__)
+ getTime clk = allocaAndPeek $ hs_clock_darwin_gettime $ clockToConst clk
+ #else
+-getTime clk = allocaAndPeek $ clock_gettime $ clockToConst clk
++getTime clk = error "getTime clk not implemented"
+ #endif
+ 
+ #if defined(_WIN32)
+@@ -130,7 +128,7 @@ getRes ThreadCPUTime = allocaAndPeek hs_clock_win32_getres_threadtime
+ #elif defined(__MACH__)
+ getRes clk = allocaAndPeek $ hs_clock_darwin_getres $ clockToConst clk
+ #else
+-getRes clk = allocaAndPeek $ clock_getres $ clockToConst clk
++getRes clk = error "getRes clk not implemented"
+ #endif
+ 
+ -- | TimeSpec structure
+@@ -139,32 +137,6 @@ data TimeSpec = TimeSpec
+   , nsec :: {-# UNPACK #-} !Int64 -- ^ nanoseconds
+   } deriving (Eq, Generic, Read, Show, Typeable)
+ 
+-#if defined(_WIN32)
+-instance Storable TimeSpec where
+-  sizeOf _ = sizeOf (undefined :: Int64) * 2
+-  alignment _ = alignment (undefined :: Int64)
+-  poke ptr ts = do
+-      pokeByteOff ptr 0 (sec ts)
+-      pokeByteOff ptr (sizeOf (undefined :: Int64)) (nsec ts)
+-  peek ptr = do
+-      TimeSpec
+-        <$> peekByteOff ptr 0
+-        <*> peekByteOff ptr (sizeOf (undefined :: Int64))
+-#else
+-instance Storable TimeSpec where
+-  sizeOf _ = #{size struct timespec}
+-  alignment _ = #{alignment struct timespec}
+-  poke ptr ts = do
+-      let xs :: #{type time_t} = fromIntegral $ sec ts
+-          xn :: #{type long} = fromIntegral $ nsec ts
+-      #{poke struct timespec, tv_sec} ptr (xs)
+-      #{poke struct timespec, tv_nsec} ptr (xn)
+-  peek ptr = do
+-      xs :: #{type time_t} <- #{peek struct timespec, tv_sec} ptr
+-      xn :: #{type long} <- #{peek struct timespec, tv_nsec} ptr
+-      return $ TimeSpec (fromIntegral xs) (fromIntegral xn)
+-#endif
+-
+ normalize :: TimeSpec -> TimeSpec
+ normalize (TimeSpec xs xn) =
+     let (q, r) = xn `divMod` (10^9)
+-- 
+2.1.4
+

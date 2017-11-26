@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2017-08-15T18:00:42Z"
+ content="""
+Yes, I think that the git-annex-standalone.deb is potentially broken
+by mismatches between the system locales and the bundled version of glibc.
+
+The git-annex standalone tarball was designed to be unpacked by the user
+who's going to use it; having root install it is not using it as it was
+designed. If you're going to have root install something, why not have them
+install a docker container or some other container format designed to be
+installed by root, that can completely isolate the application inside it?
+
+(As to the getdelim error specifically, here's a link to the thread where
+that bug in git was tracked down and patched
+<https://public-inbox.org/git/20170810202942.s232yr5stjxmmz4t@hopa.kiewit.dartmouth.edu/>.
+I'm still not clear on how locale issues might contribute to the getdelim
+error. It seems like something before the getdelim call is failing in this
+situation for whatever reason, and that might be the actual root cause.)
+"""]]

@@ -5,7 +5,7 @@
  - top of the repository even when run in a subdirectory. Adding some
  - types helps keep that straight.
  -
- - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,8 +14,10 @@
 
 module Git.FilePath (
 	TopFilePath,
-	fromTopFilePath,
+	BranchFilePath(..),
+	descBranchFilePath,
 	getTopFilePath,
+	fromTopFilePath,
 	toTopFilePath,
 	asTopFilePath,
 	InternalGitPath,
@@ -31,16 +33,22 @@ import qualified System.FilePath.Posix
 
 {- A FilePath, relative to the top of the git repository. -}
 newtype TopFilePath = TopFilePath { getTopFilePath :: FilePath }
-	deriving (Show)
+	deriving (Show, Eq, Ord)
 
-{- Returns an absolute FilePath. -}
+{- A file in a branch or other treeish. -}
+data BranchFilePath = BranchFilePath Ref TopFilePath
+
+{- Git uses the branch:file form to refer to a BranchFilePath -}
+descBranchFilePath :: BranchFilePath -> String
+descBranchFilePath (BranchFilePath b f) = fromRef b ++ ':' : getTopFilePath f
+
+{- Path to a TopFilePath, within the provided git repo. -}
 fromTopFilePath :: TopFilePath -> Git.Repo -> FilePath
-fromTopFilePath p repo = absPathFrom (repoPath repo) (getTopFilePath p)
+fromTopFilePath p repo = combine (repoPath repo) (getTopFilePath p)
 
 {- The input FilePath can be absolute, or relative to the CWD. -}
 toTopFilePath :: FilePath -> Git.Repo -> IO TopFilePath
-toTopFilePath file repo = TopFilePath <$>
-	relPathDirToFile (repoPath repo) <$> absPath file
+toTopFilePath file repo = TopFilePath <$> relPathDirToFile (repoPath repo) file
 
 {- The input FilePath must already be relative to the top of the git
  - repository -}

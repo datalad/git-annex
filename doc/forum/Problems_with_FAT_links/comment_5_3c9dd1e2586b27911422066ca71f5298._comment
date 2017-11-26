@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="Gus"
+ avatar="http://cdn.libravatar.org/avatar/665626c67ab3ee7e842183f6f659e120"
+ subject="Why overwrite the files?"
+ date="2016-11-03T18:13:54Z"
+ content="""
+Thank you for looking into my problem.
+
+My version of git-annex is recent, and `core.symlinks` is set to *false*. So it must have been something else. I too have not been able to reproduce the error. It seems this problem will remain a mystery for now.
+
+-----
+
+On a related matter, when I `git-annex drop` a file on FAT direct mode, the file is replaced by the symlink-like file. I would like to understand the rational for that. I think that, on the past, `git-annex` may have added that file (or better, *I* may have done so, with a less careful `add`) and replaced the file's contents.
+
+I think that replacing the \"good\" data of a file with something \"useless\" is counter-intuitive, and may trip people. I would expect `git-annex drop` to either remove the file or to leave it alone for manual removal or manipulation.
+
+As you seem quite careful about the possibility of data loss, it seems there is a relevant detail that I am failing to grasp. Even if the \"proper\" way to remove a file in FAT direct mode is to use `rm`, `git-annex drop` does not seem like a bad choice.
+
+Would you mind saying a few words about this, Joey? I feel a bit uneasy without understanding *why* the file is overwritten.
+"""]]

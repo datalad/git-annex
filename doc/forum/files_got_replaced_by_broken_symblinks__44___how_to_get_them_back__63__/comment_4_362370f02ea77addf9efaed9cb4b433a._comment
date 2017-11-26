@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="simon.parzer@f837bbade0d93f560dc574b04e835b7875c4026f"
+ nickname="simon.parzer"
+ subject="comment 4"
+ date="2016-01-21T12:54:57Z"
+ content="""
+I already tried ```git annex fsck```, but it does not report any errors and the files remain unchanged. Here is the output.
+
+    simon@simon-desktop /d/Stuff/Music/Amy Kuney - Breaking Bad Habits EP (2006) ±annex/direct/master » git annex fsck 01\ So\ Help\ Me\ God.mp3
+    fsck 01 So Help Me God.mp3 (checksum...) ok
+    (recording state in git...)
+
+"""]]

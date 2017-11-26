@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="kanak@3c4f6e7d832d88751c617b25bdbac896417eb93b"
+ nickname="kanak"
+ avatar="http://cdn.libravatar.org/avatar/708121dfec06e554300b2a3a73a26818"
+ subject="get appears to be doing less work? (Part 2)"
+ date="2017-08-22T12:20:56Z"
+ content="""
+I tried git annex copy --to desktop from my laptop:
+
+without --fast, I see a \"(checking desktop)\" line
+with --fast, I only see the lines corresponding to transfer between files.
+
+Given that I don't see a \"checking\" line when I do this with my usb, I assume that it's not actually checking. However, I'm puzzled by the difference in output between the USB and the SSH scenarios.
+
+I still feel like I have a basic misunderstanding here, and I apologize in advance.
+"""]]

@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-12-11T14:42:32Z"
+ content="""
+That's what's "special" about special remotes vs regular git remotes: They
+only store the content of annexed files and not the git repository. Back up
+the git repository separately (and your gpg key if it's being used, and the
+credentials if you didn't use embedcreds=yes)
+
+To use your backup, you can make a clone of the backed up git repository and
+use `git annex enableremote` to enable it to use the special remote.
+
+See [[design/encryption]] for details of how the encryption is implemented.
+I've seen people follow that and manually use the data from the git repo to
+decrypt files, but I don't have a pointer to an example at the moment.
+"""]]

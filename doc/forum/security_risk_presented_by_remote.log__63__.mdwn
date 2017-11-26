@@ -1,0 +1,5 @@
+I am curious if remote.log in the repository (or anything in the repository for that matter) gives someone access to the data stored in the special remotes.
+
+If I'm using an encrypted s3 special remote, and someone gets access to the entire repository, will they be able to decrypt things? Or is the gpg stuff stored completely separately and therefore completely unaccessable, even if someone got access to the entire contents of the git repository?
+
+What is the cipher and the cipherkeys stored in git show git-annex:remote.log?

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkMTPqZZWoz396ABpx6nh3osxKQCFaSW6M"
+ nickname="Mark"
+ subject="comment 8"
+ date="2015-02-13T13:55:21Z"
+ content="""
+Ah, ok. So it doesn't cause any issues that the host/* remote branches will also keep getting swapped from one repository to another? The operation of `git annex sync` is sufficiently (and happily) opaque to me, so I was concerned that this might break some of its basic assumptions.
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-05-12T19:24:39Z"
+ content="""
+Git for Windows has an option at install time to add it to the path.
+What you pick there should control whether git-annex is in the path or not,
+outside of Git Bash.
+
+In Git Bash, /usr/bin/ is in PATH, so the git-annex.exe in there should be
+seen by git.
+"""]]

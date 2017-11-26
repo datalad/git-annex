@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-09-09T17:43:22Z"
+ content="""
+You can use either `git-annex import --deduplicate` 
+or `git annex import --skip-duplicates` to import files from a directory
+except for ones already in the repository. The former deletes the duplicate
+files, and the latter leaves them as-is.
+
+I don't think there's currently a good stand-alone way to check if a file is a
+duplicate of content already in the annex, before adding it.
+Would need a new command to be added. 
+
+Of course, if you simply `git annex add` everything, regular hash based
+deduplication will point the duplicate file to the same object used by
+the file when you added it earlier. So, you don't need to worry about
+adding duplicates wasting much space. They may make your repo more
+cluttered than you like, is all.
+
+See also this tip: [[tips/finding_duplicate_files]].
+"""]]

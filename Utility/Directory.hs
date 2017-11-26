@@ -1,32 +1,37 @@
 {- directory traversal and manipulation
  -
- - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2014 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
 
 {-# LANGUAGE CPP #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.Directory where
+module Utility.Directory (
+	module Utility.Directory,
+	module Utility.SystemDirectory
+) where
 
 import System.IO.Error
-import System.Directory
 import Control.Monad
-import Control.Monad.IfElse
 import System.FilePath
+import System.PosixCompat.Files
 import Control.Applicative
 import Control.Concurrent
 import System.IO.Unsafe (unsafeInterleaveIO)
 import Data.Maybe
+import Prelude
 
 #ifdef mingw32_HOST_OS
 import qualified System.Win32 as Win32
 #else
 import qualified System.Posix as Posix
+import Utility.SafeCommand
+import Control.Monad.IfElse
 #endif
 
-import Utility.PosixFiles
-import Utility.SafeCommand
+import Utility.SystemDirectory
 import Utility.Tmp
 import Utility.Exception
 import Utility.Monad
@@ -91,10 +96,10 @@ dirTreeRecursiveSkipping skipdir topdir = go [] [topdir]
 	go c (dir:dirs)
 		| skipdir (takeFileName dir) = go c dirs
 		| otherwise = unsafeInterleaveIO $ do
-			subdirs <- go c
+			subdirs <- go []
 				=<< filterM (isDirectory <$$> getSymbolicLinkStatus)
 				=<< catchDefaultIO [] (dirContents dir)
-			go (subdirs++[dir]) dirs
+			go (subdirs++dir:c) dirs
 
 {- Moves one filename to another.
  - First tries a rename, but falls back to moving across devices if needed. -}
@@ -105,27 +110,40 @@ moveFile src dest = tryIO (rename src dest) >>= onrename
 	onrename (Left e)
 		| isPermissionError e = rethrow
 		| isDoesNotExistError e = rethrow
-		| otherwise = do
-			-- copyFile is likely not as optimised as
-			-- the mv command, so we'll use the latter.
-			-- But, mv will move into a directory if
-			-- dest is one, which is not desired.
-			whenM (isdir dest) rethrow
-			viaTmp mv dest undefined
+		| otherwise = viaTmp mv dest ""
 	  where
 		rethrow = throwM e
+
 		mv tmp _ = do
+		-- copyFile is likely not as optimised as
+		-- the mv command, so we'll use the command.
+		--
+		-- But, while Windows has a "mv", it does not seem very
+		-- reliable, so use copyFile there.
+#ifndef mingw32_HOST_OS	
+			-- If dest is a directory, mv would move the file
+			-- into it, which is not desired.
+			whenM (isdir dest) rethrow
 			ok <- boolSystem "mv" [Param "-f", Param src, Param tmp]
+			let e' = e
+#else
+			r <- tryIO $ copyFile src tmp
+			let (ok, e') = case r of
+				Left err -> (False, err)
+				Right _ -> (True, e)
+#endif
 			unless ok $ do
 				-- delete any partial
 				_ <- tryIO $ removeFile tmp
-				rethrow
+				throwM e'
 
+#ifndef mingw32_HOST_OS	
 	isdir f = do
 		r <- tryIO $ getFileStatus f
 		case r of
 			(Left _) -> return False
 			(Right s) -> return $ isDirectory s
+#endif
 
 {- Removes a file, which may or may not exist, and does not have to
  - be a regular file.

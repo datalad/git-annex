@@ -1,0 +1,32 @@
+I've started work on [[todo/parallel_get]].
+Today, laid the groundwork in two areas:
+
+1. Evalulated the ascii-progress haskell library. It can display
+   multiple progress bars in the terminal, portably, and its author
+   Pedro Tacla Yamada has kindly offered to improve it to meet
+   git-annex's needs.
+
+   I ended up filing [10 issues](https://github.com/yamadapc/haskell-ascii-progress/issues)
+   on it today, around 3 of the are blockers for git-annex using it.
+
+2. Worked on making --quiet more quiet. Commands like rsync and wget
+   need to have thier progress output disabled when run in parallel.
+
+   Didn't quite finish this yet.
+
+---
+
+Yesterday I made some improvements to how git-annex behaves when it's
+passed a massive number of directories or files on the command line.
+Eg, when driven by xargs. There turned out to be some bugs in that
+scenario.
+
+One problem one I kind of had to paper over. While git-annex get
+normally is careful to get the files in the same order they were listed on
+the command line, it becomes very expensive to expand directories using
+git-ls-files, and reorder its output to preserve order, when a large number
+offiles are passed on the command line. There was a O(N*M) time blowup.
+
+I worked around it by making it only preserve the order of the first 100
+files. Assumption being that if you're specifying so many files on the
+command line, you probably have less of an attachment to their ordering. :)

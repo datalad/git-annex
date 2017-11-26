@@ -42,7 +42,7 @@ EDIT:
           Exception: .t/tmprepo9/.git/annex/journal: getDirectoryContents: permission denied (Access is denied.)
 
     2 out of 83 tests failed
-      (This could be due to a bug in git-annex, or an incompatability
+      (This could be due to a bug in git-annex, or an incompatibility
        with utilities, such as git, installed on this system.)
 
 

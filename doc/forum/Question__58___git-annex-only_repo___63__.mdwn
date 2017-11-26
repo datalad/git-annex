@@ -1,0 +1,3 @@
+Is there a way to declare (init) a git-annex-only repository?
+
+I mean if the repository will only contain large (or maybe binary) files without any source-code... In that case all files added to the repo should be managed by git-annex automatically. Is this currently possible?

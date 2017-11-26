@@ -1,0 +1,9 @@
+I have a git annex repository that contains only photos and videos. I am using an NTFS partition on Linux (because dual-boot), and recently did a `git annex upgrade` to version 6. (But the question below is general, and not about version 6). The size of my repo must be around 80G.
+
+When I run commands like status and sync, nothing happens for a really long time. I finished a `git annex fsck` today morning after the version upgrade, and so wanted to see what the repo now looks like:
+
+    git annex status --debug
+
+This is stuck at internally calling `git status -uall -z` with some other options. The process is stuck here for almost an hour, and I finally gave up and cancelled it. Like I said, this is not about the recent upgrade that I finished. I have previously seen the process succeed after one or two hours.
+
+Is it normal for `status` to take this long? Or is there something wrong with my repo? For example, maybe a large chunk of my files are checked into git without being annexed? My repo has a long history of making mistakes with git annex, so this is actually possible.

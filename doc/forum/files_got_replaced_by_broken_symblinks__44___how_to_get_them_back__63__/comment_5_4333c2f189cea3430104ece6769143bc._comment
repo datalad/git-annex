@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2016-01-29T17:49:47Z"
+ content="""
+Does `git annex info` show this repository as being in direct mode, or
+indirect mode? (It's the first line of its output.)
+
+I'm thinking you might somehow have a repository that is not really in
+direct mode despite the current branch being annex/direct/master.
+"""]]

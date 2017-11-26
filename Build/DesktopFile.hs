@@ -1,12 +1,13 @@
 {- Generating and installing a desktop menu entry file and icon,
  - and a desktop autostart file. (And OSX equivilants.)
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 {-# LANGUAGE CPP #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Build.DesktopFile where
 
@@ -14,18 +15,19 @@ import Utility.Exception
 import Utility.FreeDesktop
 import Utility.Path
 import Utility.Monad
+import Utility.Directory
 import Config.Files
 import Utility.OSX
 import Assistant.Install.AutoStart
 import Assistant.Install.Menu
 
-import Control.Applicative
-import System.Directory
 import System.Environment
 #ifndef mingw32_HOST_OS
 import System.Posix.User
 #endif
 import Data.Maybe
+import Control.Applicative
+import Prelude
 
 systemwideInstall :: IO Bool
 #ifndef mingw32_HOST_OS 
@@ -78,3 +80,9 @@ install command = do
 			createDirectoryIfMissing True (parentDir programfile)
 			writeFile programfile command
 		)
+
+installUser :: FilePath -> IO ()
+installUser command = ifM systemwideInstall
+	( return ()
+	, install command
+	)

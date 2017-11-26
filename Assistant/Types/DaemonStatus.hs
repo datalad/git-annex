@@ -1,18 +1,17 @@
 {- git-annex assistant daemon status
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Assistant.Types.DaemonStatus where
 
-import Common.Annex
+import Annex.Common
 import Assistant.Pairing
 import Utility.NotificationBroadcaster
-import Logs.Transfer
+import Types.Transfer
 import Assistant.Types.ThreadName
-import Assistant.Types.NetMessager
 import Assistant.Types.Alert
 import Utility.Url
 
@@ -50,12 +49,14 @@ data DaemonStatus = DaemonStatus
 	, syncGitRemotes :: [Remote]
 	-- Ordered list of remotes to sync data with
 	, syncDataRemotes :: [Remote]
+	-- Ordered list of remotes to export to
+	, exportRemotes :: [Remote]
+	-- Ordered list of remotes that data can be downloaded from
+	, downloadRemotes :: [Remote]
 	-- Are we syncing to any cloud remotes?
 	, syncingToCloudRemote :: Bool
 	-- Set of uuids of remotes that are currently connected.
 	, currentlyConnectedRemotes :: S.Set UUID
-	-- List of uuids of remotes that we may have gotten out of sync with.
-	, desynced :: S.Set UUID
 	-- Pairing request that is in progress.
 	, pairingInProgress :: Maybe PairingInProgress
 	-- Broadcasts notifications about all changes to the DaemonStatus.
@@ -77,17 +78,13 @@ data DaemonStatus = DaemonStatus
 	, globalRedirUrl :: Maybe URLString
 	-- Actions to run after a Key is transferred.
 	, transferHook :: M.Map Key (Transfer -> IO ())
-	-- When the XMPP client is connected, this will contain the XMPP
-	-- address.
-	, xmppClientID :: Maybe ClientID
 	-- MVars to signal when a remote gets connected.
 	, connectRemoteNotifiers :: M.Map UUID [MVar ()]
 	}
 
 type TransferMap = M.Map Transfer TransferInfo
 
-{- This TMVar is never left empty, so accessing it will never block. -}
-type DaemonStatusHandle = TMVar DaemonStatus
+type DaemonStatusHandle = TVar DaemonStatus
 
 newDaemonStatus :: IO DaemonStatus
 newDaemonStatus = DaemonStatus
@@ -104,8 +101,9 @@ newDaemonStatus = DaemonStatus
 	<*> pure []
 	<*> pure []
 	<*> pure []
+	<*> pure []
+	<*> pure []
 	<*> pure False
-	<*> pure S.empty
 	<*> pure S.empty
 	<*> pure Nothing
 	<*> newNotificationBroadcaster
@@ -118,5 +116,4 @@ newDaemonStatus = DaemonStatus
 	<*> newNotificationBroadcaster
 	<*> pure Nothing
 	<*> pure M.empty
-	<*> pure Nothing
 	<*> pure M.empty

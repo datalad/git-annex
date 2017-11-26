@@ -14,6 +14,5 @@ First, check out the git repository again. Then, in the new checkout:
 
 The way that works is that when git-annex adds the same content that was in
 the repository before, all the old links to that content start working
-again. This works particularly well if the SHA* backends are used, but even
-with the default backend it will work pretty well, as long as fsck
-preserved the modification time of the files.
+again. So, this works as long as you're using one of the SHA* or other
+checksumming backends, which is the default.

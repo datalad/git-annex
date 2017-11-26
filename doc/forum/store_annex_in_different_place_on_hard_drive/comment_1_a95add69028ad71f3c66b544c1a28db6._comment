@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-10-06T20:17:07Z"
+ content="""
+You should avoid making two repositories that share the same .git/annex
+or .git/annex/objects directories. Doing that can get git-annex confused,
+and let it drop a file that is only located in one place .. because it sees
+it existing in 2 places due to the symlink!
+
+IIRC, git-annex supports making .git/annex a symlink to some directory
+elsewhere, that is not itself used by another git repository.
+
+Or, you can use standard `GIT_DIR` settings to make git 
+(and git-annex) look for the .git directory elsewhere.
+"""]]

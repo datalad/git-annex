@@ -1,16 +1,15 @@
 {- git-annex .variant files for automatic merge conflict resolution
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Annex.VariantFile where
 
-import Common.Annex
-import Types.Key
-
-import Data.Hash.MD5
+import Annex.Common
+import Utility.FileSystemEncoding
+import Utility.Hash
 
 variantMarker :: String
 variantMarker = ".variant-"
@@ -42,4 +41,4 @@ variantFile file key
 	doubleconflict = variantMarker `isInfixOf` file
 
 shortHash :: String -> String
-shortHash = take 4 . md5s . md5FilePath
+shortHash = take 4 . show . md5 . encodeBS

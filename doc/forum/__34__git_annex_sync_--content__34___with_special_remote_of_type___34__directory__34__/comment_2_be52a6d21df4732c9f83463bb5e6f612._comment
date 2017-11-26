@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/wS4b1K9kooKjDS5nqjBuZsN4Czwko0ECcg--#2eff3"
+ nickname="Markus"
+ subject="comment 2"
+ date="2015-04-22T10:47:26Z"
+ content="""
+Thank you. I settled on using `present or (not inallgroup=backup) or (exclude=pictures/* and exclude=video/*)`, which seems to be doing what I want. The most important thing to me is that files are transferred to the backup group. Some files might be left in pictures/ or video/ on \"neon\", but I can drop those from time to time if disk space is low.
+"""]]

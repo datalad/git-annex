@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-03-14T17:41:38Z"
+ content="""
+The way autostart works is, the repository gets listed in
+`~/.config/git-annex/autostart` -- setting up that file is all that
+the webapp preferences does.
+
+`git annex assistant --autostart` looks at that files and gets the
+assistant running in each listed repository.
+
+Now, something has to take care of running that command when the system
+starts or you log in or whatever. At this point it gets OS dependant.
+
+For example, on Debian, this is handled by the git-annex package containing
+`/etc/xdg/autostart/git-annex.desktop`
+
+Sounds like they may have left this file out of the Arch package. 
+
+git-annex's `make install` handles building that desktop file. It only
+generates it if run as root, or with DESTDIR set. One or the other should
+normally be the case when building a package.
+
+Here's the content of `/etc/xdg/autostart/git-annex.desktop`
+
+	[Desktop Entry]
+	Type=Application
+	Version=1.0
+	Name=Git Annex Assistant
+	Comment=Autostart
+	Terminal=false
+	Exec=/usr/bin/git-annex assistant --autostart
+	Categories=
+"""]]

@@ -1,0 +1,29 @@
+# NAME
+
+git-annex transferkeys - transfers keys
+
+# SYNOPSIS
+
+git annex transferkeys
+
+# DESCRIPTION
+
+This plumbing-level command is used by the assistant to transfer data.
+It is a long-running process, which is fed instructions about the keys
+to transfer using an internal stdio protocol, which is
+intentionally not documented (as it may change at any time).
+
+It's normal to have a transferkeys process running when the assistant is
+running.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-assistant]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

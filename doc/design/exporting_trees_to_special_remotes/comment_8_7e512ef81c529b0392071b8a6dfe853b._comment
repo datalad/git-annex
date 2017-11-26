@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="regarding setting a URL by custom special remote"
+ date="2017-07-12T22:04:38Z"
+ content="""
+I also wonder if `SETURLPRESENT Key Url` could also be extended to be `SETURLPRESENT Key Url Remote`, i.e. that a custom remote could register a URL to Web remote?
+In many cases I expect a \"custom uploader/exporter\" but then public URL being available, so demanding a custom external remote to fetch it would be a bit overkill.
+
+N.B. I already was burnt once on a large scale with our custom remote truthfully replying to CLAIMURL (since it can handle them if needed) to public URLs, thus absorbing them into it instead of relaying responsibility to 'Web' remote. Had to traverse dozens of datasets and duplicate urls from 'datalad' to 'Web' remote.
+"""]]

@@ -1,0 +1,79 @@
+### Please describe the problem.
+
+whenever we 'git mv' some files from one dir to another, "git commit path_to_that_repo" seems to cause git annex to not fix up the symlinks
+
+### What steps will reproduce the problem?
+
+see below complete examples
+
+### What version of git-annex are you using? On what operating system?
+
+6.20170307+gitg24ade8a25-1~ndall+1
+
+### Please provide any additional information below.
+
+correct operation:
+
+[[!format sh """
+
+hopa:/tmp/testl
+$> builtin cd /tmp/; chmod +w -R /tmp/testl; rm -rf /tmp/testl; mkdir /tmp/testl && cd /tmp/testl && git init && git annex init && mkdir d && echo 123 > d/123 && git annex add d/123 && git commit -m added && git mv d/123 123 && git annex add . && echo -e '#!/bin/sh\ngit annex pre-commit --debug . >/tmp/precommit.log 2>&1\n' >| .git/hooks/pre-commit && git commit -m msg && ls -l 123 && git status && cat /tmp/precommit.log                                             
+Initialized empty Git repository in /tmp/testl/.git/
+init  ok
+(recording state in git...)
+add d/123 ok
+(recording state in git...)
+[master (root-commit) a04d6e9] added
+ 1 file changed, 1 insertion(+)
+ create mode 120000 d/123
+[master 1be2c88] msg
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+ create mode 120000 123
+ delete mode 120000 d/123
+lrwxrwxrwx 1 yoh yoh 178 Mar 22 14:52 123 -> .git/annex/objects/G6/qW/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b
+On branch master
+nothing to commit, working tree clean
+[2017-03-22 14:52:45.459507064] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff","--cached","--name-only","-z","--diff-filter=ACMRT","--","."]
+fix 123 ok
+[2017-03-22 14:52:45.46373033] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff","--name-only","--diff-filter=T","-z","--cached","--","."]
+[2017-03-22 14:52:45.46776695] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2017-03-22 14:52:45.471690183] process done ExitSuccess
+[2017-03-22 14:52:45.471781853] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2017-03-22 14:52:45.475456411] process done ExitSuccess
+(recording state in git...)
+[2017-03-22 14:52:45.475535994] feed: xargs ["-0","git","--git-dir=.git","--work-tree=.","--literal-pathspecs","add","--force","--"]
+[2017-03-22 14:52:45.482800008] process done ExitSuccess
+"""]]
+
+and this time commit with the path: (git commit -m msg /tmp/testl)
+
+[[!format sh """
+$> builtin cd /tmp/; chmod +w -R /tmp/testl; rm -rf /tmp/testl; mkdir /tmp/testl && cd /tmp/testl && git init && git annex init && mkdir d && echo 123 > d/123 && git annex add d/123 && git commit -m added && git mv d/123 123 && git annex add . && echo -e '#!/bin/sh\ngit annex pre-commit --debug . >/tmp/precommit.log 2>&1\n' >| .git/hooks/pre-commit && git commit -m msg /tmp/testl && ls -l 123 && git status && cat /tmp/precommit.log                                                                                                                                                      
+Initialized empty Git repository in /tmp/testl/.git/
+init  ok
+(recording state in git...)
+add d/123 ok
+(recording state in git...)
+[master (root-commit) 1438090] added
+ 1 file changed, 1 insertion(+)
+ create mode 120000 d/123
+[master 8912aa3] msg
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ rename d/123 => 123 (100%)
+lrwxrwxrwx 1 yoh yoh 181 Mar 22 14:52 123 -> ../.git/annex/objects/G6/qW/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b
+On branch master
+nothing to commit, working tree clean
+[2017-03-22 14:52:55.857221368] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff","--name-only","--diff-filter=T","-z","--cached","--","."]
+[2017-03-22 14:52:55.861708907] process done ExitSuccess
+[2017-03-22 14:52:55.861809182] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2017-03-22 14:52:55.865393029] process done ExitSuccess
+[2017-03-22 14:52:55.865471585] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2017-03-22 14:52:55.869145816] process done ExitSuccess
+
+
+"""]]
+
+
+note that there is no "(recording state in git...) ..." portion in the output!
+
+[[!meta author=yoh]]

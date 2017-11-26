@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawk5aY0oBmuQtnoTNtji-dPgDw9p7J24YeY"
- nickname="Jiří"
- subject="further info 2"
- date="2014-03-19T11:53:17Z"
- content="""
-And on my windows xp computer, git ls-files returns valid utf-8 too.
-"""]]

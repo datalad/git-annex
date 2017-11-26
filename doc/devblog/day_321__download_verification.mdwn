@@ -1,0 +1,13 @@
+While at the DerbyCon security conference, I got to thinking about
+verifying objects that git-annex downloads from remotes. This can be
+expensive for big files, so git-annex has never done it at download time,
+instead deferring it to fsck time. But, that is a divergence from git,
+which always verifies checksums of objects it receives. So, it violates
+least surprise for git-annex to not verify checksums too. And this could
+weaken security in some use cases.
+
+So, today I changed that. Now whenever git-annex accepts an object into
+.git/annex/objects, it first verifies its checksum and size. I did add a
+setting to disable that and get back the old behavior: `git config
+annex.verify false`, and there's also a per-remote setting if you want to
+verify content from some remotes but not others.

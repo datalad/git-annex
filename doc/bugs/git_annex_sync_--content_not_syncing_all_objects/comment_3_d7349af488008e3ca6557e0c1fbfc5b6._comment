@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="stp"
- ip="84.56.21.11"
- subject="Ídea"
- date="2014-02-23T14:25:22Z"
- content="""
-I thought about the implementation need for git annex sync --content --all. If preferred content expressions would work it would be needed. Everything else. could be done via a split usage.
-Run \"git annex sync --content\" to satisfy the preferred content expressions on the working tree and the numcopies on the working tree and then loop through all backup/archive repositories with \"git annex get --auto\" this should at least prevent archives from getting objects numcopies is already satisfying and sync the objects not yet satisfied right?
-"""]]

@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="openmedi"
+ subject="comment 1"
+ date="2016-05-12T06:52:50Z"
+ content="""
+This didn't work, because syncing was disabled before trying to delete the remote. Deleting involves putting the remote in the unwanted group and through active syncing remove all the content from it, before deleting it fully. The assistant should be able to handle starting deletion processes, even when synching is disabled. At least there should be a dialogue telling the user that synching is disabled and therefore the deletion process will not start.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="interfect@b151490178830f44348aa57b77ad58c7d18e8fe7"
+ nickname="interfect"
+ subject="comment 5"
+ date="2016-09-21T22:49:55Z"
+ content="""
+OK, I'll try something like that.
+
+(Full disk encryption is still there; I think on one system I just have ecryptfs, because I want to be able to get in over ssh sometimes, and on one I have *both* FDE and ecryptfs on, because I enjoy performance penalties.)
+"""]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Marco"
+ subject="Repository groups"
+ date="2015-06-23T12:21:58Z"
+ content="""
+Have a look at the [[preferred_content/standard_groups]] page. Backup Repositories want to get hold of anything.
+
+> anything
+>
+>Matches any version of any file.
+
+So if you have the assistant running it will take care of pushing the old versions in the backup.
+"""]]

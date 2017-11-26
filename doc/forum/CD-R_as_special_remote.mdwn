@@ -1,0 +1,10 @@
+I would like to use a CD-R as a special remote for one of my repositories. I'm not sure what the best way to do this is. I'm thinking aomething like:
+
+1. Make a new directory
+2. Add the directory as a special remote using type=directory
+3. Copy the files to the special remote
+4. Create an iso of the directory and burn it
+
+Does that sound right?
+
+I'm not sure how I can do stuff like tell git-annex that the maximum size of the remote is 700MB and that (after the initial push) the remote should be considered read only. I intend to have multiple of these CD-R/directory remotes for the one annex. Has anybody done anything like this before?

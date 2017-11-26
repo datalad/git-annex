@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="glasserc"
+ avatar="http://cdn.libravatar.org/avatar/8e865c04033751520601e9c15e58ddc4"
+ subject="comment 2"
+ date="2017-07-02T02:56:19Z"
+ content="""
+I agree that a human-readable commit message is probably the wrong place to put it. I didn't know about `git annex log` but that sounds helpful. I wouldn't need it to be fast -- it would be for rare interactive use.
+
+I'd like to not just be able to see what changed with the metadata but store a description of why as well, which is why I thought of commit messages. Would your design support that?
+
+Thanks for your consideration.
+"""]]

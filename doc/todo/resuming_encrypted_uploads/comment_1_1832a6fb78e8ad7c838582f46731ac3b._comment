@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://phil.0x539.de/"
- nickname="Philipp Kern"
- subject="comment 1"
- date="2012-12-28T23:23:29Z"
- content="""
-Doesn't the encryption part already write an encrypted version completely to disk before starting to upload? (At least with the rsync remote?) So the disk space and I/O usage is already there. (Except that it's probably a temporary file that's deleted after it was created, so that it's not kept around by the filesystem when certain destructive events strike.)
-"""]]

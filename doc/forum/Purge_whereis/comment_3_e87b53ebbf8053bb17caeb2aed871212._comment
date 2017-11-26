@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="cbaines"
+ subject="comment 3"
+ date="2015-12-21T13:33:34Z"
+ content="""
+I just did a quick test, running git annex sync does commit the removal of files for me.
+"""]]

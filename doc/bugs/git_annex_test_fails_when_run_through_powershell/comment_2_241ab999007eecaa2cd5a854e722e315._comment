@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-07-07T18:15:21Z"
+ content="""
+The import problem can be reproduced by running git annex import on a different
+drive in Windows. No powershell needed; it does fall back to the external
+mv command, but that fails for some reason. Was unable to determine why
+(running the same mv at the command line works ok). Fixed for Windows by
+avoiding using the external mv command there.
+
+Still need more details about the addurl failure. AFAICS, it does not
+involve "mv" at all. Probably it involves
+the generated file:// url not working for some reason. 
+What drive and path did you run the test suite in?
+"""]]

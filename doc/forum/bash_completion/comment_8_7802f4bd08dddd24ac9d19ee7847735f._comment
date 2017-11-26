@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="andrew@1d92abee601373fe09908b30706c97ffce3da255"
+ nickname="andrew"
+ subject="comment 8"
+ date="2016-01-23T14:24:18Z"
+ content="""
+I think it might still be useful to have in the tarball -- we can symlink it into the right place.
+"""]]

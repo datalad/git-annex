@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-11-10T19:45:36Z"
+ content="""
+I was able to completely reproduce this in every particular, except for one
+important thing:
+
+The webapp *was* able to advance; the repository was created, and 
+when I looked inside its .git/config, I saw as expected:
+
+	[user]
+	name = foo
+	email = bar
+
+So, as far as I can see, git-annex's existing code to detect when the
+system is so badly configured that git commit doesn't work, and fix the git
+configuration of the repository well enough for git commit to proceed, is
+working. The git error just occurs when git-annex is doing that probing.
+
+And, in your transcript, it says "(recording state in git...)" so
+it seems to have gotten past that git error just fine as well.
+
+If the webapp didn't advance beyond creating the repository, what error
+message was displayed **in the webapp**?
+
+Currently, my guess is you saw scary stuff on the console and assumed it
+meant it wouldn't work, but it did.
+"""]]

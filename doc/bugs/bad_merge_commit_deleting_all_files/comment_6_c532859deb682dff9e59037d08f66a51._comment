@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.55"
- subject="comment 6"
- date="2014-07-09T19:01:33Z"
- content="""
-Note that [[Assistant_merge_loop]], which contributes to this bug, is not actually fixed in 5.20140707, it seems.
-"""]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-21T16:11:30Z"
+ content="""
+Retrieval will work just fine.
+
+As for storing files with this storage class already set, it's implemented
+in the `s3-classes` branch, but merging that is blocked on a patch being
+made to the aws library.
+"""]]

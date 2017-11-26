@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="umeboshi"
+ subject="comment 3"
+ date="2016-01-04T21:26:05Z"
+ content="""
+I have been playing with tracking a large number of url's for about one month now.  Having already been disappointed by how git performs when there are a very large amount of files in the annex, I tested making multiple annexes.  I did find that splitting the url's into multiple annexes increased performance, but at the cost of extra housekeeping, duplicated url's, and more work needed to keep track of the url's.  Part of the duplication and tracking problem was mitigated by using a dumb remote, such as rsync or directory, where a very large amount of objects can be stored.  The dumb remotes perform very well, however each annex needed to be synced regularly with the dumb remote.
+
+I found the dumb remote to be great for multiple annexes.  I have noticed that a person can create a new annex and extract a tarball of symlinks into the repo, the ```git commit``` the links.  Subsequently, executing ```git-annex fsck --from dummy``` would setup the tracking info, which was pretty useful.
+
+However, I found that by the time I got to over fifty annexes, the overall performance far worse than just storing the url's and file paths in a postgresql database.  In fact, the url's are already being stored and accessed from such a database, but I had the desire to access the url's from multiple machines, which is a bit more difficult with a centralized database.
+
+After reading the tips and pages discussing splitting the files into multiple directories, and changing the index version, I decided to try a single annex to hold the url's.  Over the new year's weekend, I decided to write a script that generates rss files to use with importfeed to add url's to this annex.  I have noticed that when using ```git commit``` the load average of the host was in the mid twenties and persisted for hours until I had to kill the processes to be able to use the machine again (**I would really like to know if there is a git config setting that would keep the load down, so the machine can be used during a commit**).  I gave up on ```git-annex sync``` this morning, since it was taking longer than I was able to sit in the coffee shop and wait for it (~3 hrs).
+
+I came back to the office, and started ```git gc``` which has been running for ~1hr.
+
+When making the larger annex, I decided to use the hexidecimal value of uuid5(url) for each filename, and use the two high nybbles and the two low nybbles for a two state directory structure, with respect for the advice from [CandyAngel](http://git-annex.branchable.com/forum/Handling_a_large_number_of_files/#comment-48ac38361b131b18125f8c43eb6ad577).  When my url's are organized in this manner, I still need access to the database to perform the appropriate ```git-annex get``` which impairs the use of this strategy, but I'm still testing and playing around.  I suspended adding url's to this annex until I get at least one sync performed.
+
+The url annex itself is not very big, and I am guessing the average file size to be close to 500K.  The large number of url's seems to be a problem I have yet to solve.  I wanted to experiment with this to further the idea of the public git-annex repositories that seem to be a useful idea, even though the utility of this idea is very limited at the moment.
+"""]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-03-03T17:58:40Z"
+ content="""
+To clarify, this only prevents SHA1 collision attacks from causing problems
+with annexed files. Files checked into the git repository itself are still
+vulnerable to collision attacks.
+"""]]

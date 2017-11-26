@@ -1,6 +1,6 @@
 {- git-annex v1 -> v2 upgrade support
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,16 +9,17 @@ module Upgrade.V1 where
 
 import System.Posix.Types
 import Data.Char
+import Data.Default
 
-import Common.Annex
-import Types.Key
+import Annex.Common
 import Annex.Content
+import Annex.Link
+import Types.Key
 import Logs.Presence
 import qualified Annex.Queue
 import qualified Git
 import qualified Git.LsFiles as LsFiles
 import Backend
-import Annex.Version
 import Utility.FileMode
 import Utility.Tmp
 import qualified Upgrade.V2
@@ -51,16 +52,13 @@ upgrade = do
 	showAction "v1 to v2"
 	
 	ifM (fromRepo Git.repoIsLocalBare)
-		( do
-			moveContent
-			setVersion supportedVersion
+		( moveContent
 		, do
 			moveContent
 			updateSymlinks
 			moveLocationLogs
 	
 			Annex.Queue.flush
-			setVersion supportedVersion
 		)
 	
 	Upgrade.V2.upgrade
@@ -76,7 +74,7 @@ moveContent = do
 		let d = parentDir f
 		liftIO $ allowWrite d
 		liftIO $ allowWrite f
-		moveAnnex k f
+		_ <- moveAnnex k f
 		liftIO $ removeDirectory d
 
 updateSymlinks :: Annex ()
@@ -92,7 +90,7 @@ updateSymlinks = do
 		case r of
 			Nothing -> noop
 			Just (k, _) -> do
-				link <- inRepo $ gitAnnexLink f k
+				link <- calcRepo $ gitAnnexLink f k
 				liftIO $ removeFile f
 				liftIO $ createSymbolicLink link f
 				Annex.Queue.addCommand "add" [Param "--"] [f]
@@ -133,7 +131,7 @@ oldlog2key l
   where
 	len = length l - 4
 	k = readKey1 (take len l)
-	sane = (not . null $ keyName k) && (not . null $ keyBackendName k)
+	sane = (not . null $ keyName k) && (not . null $ formatKeyVariety $ keyVariety k)
 
 -- WORM backend keys: "WORM:mtime:size:filename"
 -- all the rest: "backend:key"
@@ -146,12 +144,12 @@ readKey1 v
 	| mixup = fromJust $ file2key $ intercalate ":" $ Prelude.tail bits
 	| otherwise = stubKey
 		{ keyName = n
-		, keyBackendName = b
+		, keyVariety = parseKeyVariety b
 		, keySize = s
 		, keyMtime = t
 		}
   where
-	bits = split ":" v
+	bits = splitc ':' v
 	b = Prelude.head bits
 	n = intercalate ":" $ drop (if wormy then 3 else 1) bits
 	t = if wormy
@@ -164,11 +162,12 @@ readKey1 v
 	mixup = wormy && isUpper (Prelude.head $ bits !! 1)
 
 showKey1 :: Key -> String
-showKey1 Key { keyName = n , keyBackendName = b, keySize = s, keyMtime = t } =
+showKey1 Key { keyName = n , keyVariety = v, keySize = s, keyMtime = t } =
 	intercalate ":" $ filter (not . null) [b, showifhere t, showifhere s, n]
   where
 	showifhere Nothing = ""
-	showifhere (Just v) = show v
+	showifhere (Just x) = show x
+	b = formatKeyVariety v
 
 keyFile1 :: Key -> FilePath
 keyFile1 key = replace "/" "%" $ replace "%" "&s" $ replace "&" "&a"  $ showKey1 key
@@ -192,7 +191,7 @@ lookupFile1 file = do
 		Right l -> makekey l
   where
 	getsymlink = takeFileName <$> readSymbolicLink file
-	makekey l = case maybeLookupBackendName bname of
+	makekey l = case maybeLookupBackendVariety (keyVariety k) of
 		Nothing -> do
 			unless (null kname || null bname ||
 			        not (isLinkToAnnex l)) $
@@ -201,7 +200,7 @@ lookupFile1 file = do
 		Just backend -> return $ Just (k, backend)
 	  where
 		k = fileKey1 l
-		bname = keyBackendName k
+		bname = formatKeyVariety (keyVariety k)
 		kname = keyName k
 		skip = "skipping " ++ file ++ 
 			" (unknown backend " ++ bname ++ ")"
@@ -228,7 +227,7 @@ logFile1 :: Git.Repo -> Key -> String
 logFile1 repo key = Upgrade.V2.gitStateDir repo ++ keyFile1 key ++ ".log"
 
 logFile2 :: Key -> Git.Repo -> String
-logFile2 = logFile' hashDirLower
+logFile2 = logFile' (hashDirLower def)
 
 logFile' :: (Key -> FilePath) -> Key -> Git.Repo -> String
 logFile' hasher key repo =

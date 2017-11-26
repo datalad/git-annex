@@ -1,6 +1,6 @@
 {- git-remote-daemon, git-annex-shell notifychanges protocol types
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,11 +16,11 @@ module RemoteDaemon.Transport.Ssh.Types (
 ) where
 
 import qualified Utility.SimpleProtocol as Proto
-import RemoteDaemon.Types (RefList)
+import Annex.ChangedRefs (ChangedRefs)
 
 data Notification
 	= READY
-	| CHANGED RefList
+	| CHANGED ChangedRefs
 
 instance Proto.Sendable Notification where
 	formatMessage READY = ["READY"]

@@ -1,0 +1,158 @@
+[[!comment format=mdwn
+ username="moird"
+ subject="comment 2"
+ date="2016-01-29T18:42:12Z"
+ content="""
+Using assistant on a folder.  Any files that are dropped in that folder will immediately be synced as far as I can tell except for a couple of zip files.  I turned on debug logging to look at it, and it looks like the watcher is not being called when the zip file is being copied into the folder, but is when the file is being removed from the folder.  Compared to when a regular file is dropped into the folder where it will run without issue:
+
+    [2016-01-27 06:51:26.988169] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"update-index\",\"-z\",\"--index-info\"]
+    [2016-01-27 06:51:26.990623] process done ExitSuccess
+    [2016-01-27 06:51:26.990908] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+    [2016-01-27 06:51:26.992654] process done ExitSuccess
+    [2016-01-27 06:51:26.992981] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"--hash\",\"refs/heads/annex/direct/master\"]
+    [2016-01-27 06:51:26.995703] process done ExitSuccess
+    [2016-01-27 06:51:26.995998] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"write-tree\"]
+    [2016-01-27 06:51:26.997896] process done ExitSuccess
+    [2016-01-27 06:51:26.998196] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"rev-parse\",\"db03e812e512e24afe7f4b440a6ca174aa33cbdd:\"]
+    [2016-01-27 06:51:27.000111] process done ExitSuccess
+    [2016-01-27 06:51:27.00038] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+    [2016-01-27 06:51:27.001926] process done ExitSuccess
+    [2016-01-27 06:51:27.002223] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"refs/heads/annex/direct/master\"]
+    [2016-01-27 06:51:27.00406] process done ExitSuccess
+    [2016-01-27 06:51:27.004382] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"branch\",\"-f\",\"synced/master\"]
+    [2016-01-27 06:51:27.006269] process done ExitSuccess
+    [2016-01-27 06:51:27.006567] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"branch\",\"-f\",\"master\"]
+    [2016-01-27 06:51:27.008293] process done ExitSuccess
+    [2016-01-27 06:51:27.008992] Pusher: Syncing with annex 
+    [2016-01-27 06:51:27.009551] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"hash-object\",\"-w\",\"--stdin-paths\",\"--no-filters\"]
+    [2016-01-27 06:51:27.010828] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"update-index\",\"-z\",\"--index-info\"]
+    [2016-01-27 06:51:27.013085] process done ExitSuccess
+    [2016-01-27 06:51:27.013608] process done ExitSuccess
+    [2016-01-27 06:51:27.014011] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2016-01-27 06:51:27.01584] process done ExitSuccess
+    (recording state in git...)
+    [2016-01-27 06:51:27.016212] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"write-tree\"]
+    [2016-01-27 06:51:27.018706] process done ExitSuccess
+    [2016-01-27 06:51:27.018978] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"commit-tree\",\"29075d2d02995138a1774809a34c5220f54cea52\",\"--no-gpg-sign\",\"-p\",\"refs/heads/git-annex\"]
+    [2016-01-27 06:51:27.021681] process done ExitSuccess
+    [2016-01-27 06:51:27.021966] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"update-ref\",\"refs/heads/git-annex\",\"c833bef56cf282eefb957347e2a1938ef8568da6\"]
+    [2016-01-27 06:51:27.024413] process done ExitSuccess
+    [2016-01-27 06:51:27.025057] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+    [2016-01-27 06:51:27.027394] process done ExitSuccess
+    [2016-01-27 06:51:27.027759] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"refs/heads/annex/direct/master\"]
+    [2016-01-27 06:51:27.030137] process done ExitSuccess
+    [2016-01-27 06:51:27.030507] Pusher: pushing to [Remote { name =\"annex\" }]
+    [2016-01-27 06:51:27.030554] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"git-annex\"]
+    [2016-01-27 06:51:27.033305] process done ExitSuccess
+    [2016-01-27 06:51:27.033621] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2016-01-27 06:51:27.035758] process done ExitSuccess
+    [2016-01-27 06:51:27.036238] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..c833bef56cf282eefb957347e2a1938ef8568da6\",\"-n1\",\"--pretty=%H\"]
+    [2016-01-27 06:51:27.039257] process done ExitSuccess
+    [2016-01-27 06:51:27.039752] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..7e6f7d4c9ff0bdb8f942c8edcb8a5a2581e7adb2\",\"-n1\",\"--pretty=%H\"]
+    [2016-01-27 06:51:27.043657] process done ExitSuccess
+    [2016-01-27 06:51:27.044082] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"ls-tree\",\"--full-tree\",\"-z\",\"--\",\"refs/heads/git-annex\",\"uuid.log\",\"remote.log\",\"trust.log\",\"group.log\",\"numcopies.log\",\"schedule.log\",\"preferred-content.log\",\"required-content.log\",\"group-preferred-content.log\"]
+    [2016-01-27 06:51:27.047843] process done ExitSuccess
+    [2016-01-27 06:51:27.048343] ConfigMonitor: reloading config numcopies.log
+    [2016-01-27 06:51:27.04847] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"push\",\"annex\",\"+git-annex:synced/git-annex\",\"annex/direct/master:synced/master\"]
+    [2016-01-27 06:51:27.050624] Cronner: reloading changed activities
+    To /home/daniel/store/annex
+       7e6f7d4..c833bef  git-annex -> synced/git-annex
+    [2016-01-27 06:51:27.290878] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"git-annex\"]
+    [2016-01-27 06:51:27.291094] process done ExitSuccess
+    [2016-01-27 06:51:27.292194] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"push\",\"annex\",\"git-annex\",\"master\"]
+    [2016-01-27 06:51:27.293901] process done ExitSuccess
+    [2016-01-27 06:51:27.294222] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2016-01-27 06:51:27.297276] process done ExitSuccess
+    [2016-01-27 06:51:27.297782] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..c833bef56cf282eefb957347e2a1938ef8568da6\",\"-n1\",\"--pretty=%H\"]
+    [2016-01-27 06:51:27.300978] process done ExitSuccess
+    [2016-01-27 06:51:27.301324] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..7e6f7d4c9ff0bdb8f942c8edcb8a5a2581e7adb2\",\"-n1\",\"--pretty=%H\"]
+    [2016-01-27 06:51:27.304226] process done ExitSuccess
+    [2016-01-27 06:51:27.309109] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"git-annex\"]
+    [2016-01-27 06:51:27.30931] process done ExitSuccess
+    [2016-01-27 06:51:27.3116] process done ExitSuccess
+    [2016-01-27 06:51:27.311946] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2016-01-27 06:51:27.314424] process done ExitSuccess
+    [2016-01-27 06:51:27.314803] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..c833bef56cf282eefb957347e2a1938ef8568da6\",\"-n1\",\"--pretty=%H\"]
+    [2016-01-27 06:51:27.317614] process done ExitSuccess
+    [2016-01-27 06:51:29.311876] Pusher: Syncing with annex 
+    [2016-01-27 06:51:29.312427] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+    [2016-01-27 06:51:29.315265] process done ExitSuccess
+    [2016-01-27 06:51:29.315673] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"refs/heads/annex/direct/master\"]
+    [2016-01-27 06:51:29.318964] process done ExitSuccess
+    [2016-01-27 06:51:29.319639] Pusher: pushing to [Remote { name =\"annex\" }]
+    [2016-01-27 06:51:29.32004] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"push\",\"annex\",\"+git-annex:synced/git-annex\",\"annex/direct/master:synced/master\"]
+    Everything up-to-date
+    [2016-01-27 06:51:29.329677] process done ExitSuccess
+    [2016-01-27 06:51:29.330047] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"push\",\"annex\",\"git-annex\",\"master\"]
+    [2016-01-27 06:51:29.339748] process done ExitSuccess
+    [2016-01-27 06:52:27.059869] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"ls-tree\",\"--full-tree\",\"-z\",\"--\",\"refs/heads/git-annex\",\"uuid.log\",\"remote.log\",\"trust.log\",\"group.log\",\"numcopies.log\",\"schedule.log\",\"preferred-content.log\",\"required-content.log\",\"group-preferred-content.log\"]
+    [2016-01-27 06:52:27.064751] process done ExitSuccess
+    [2016-01-27 06:55:25.738944] Watcher: file deleted Documents/Innovation.zip
+    [2016-01-27 06:55:25.75008] Committer: committing 1 changes
+    [2016-01-27 06:55:25.75047] Committer: Committing changes to git
+    (recording state in git...)
+    [2016-01-27 06:55:25.750868] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"update-index\",\"-z\",\"--index-info\"]
+    [2016-01-27 06:55:25.753501] process done ExitSuccess
+    [2016-01-27 06:55:25.753793] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+    [2016-01-27 06:55:25.755492] process done ExitSuccess
+    [2016-01-27 06:55:25.755827] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"--hash\",\"refs/heads/annex/direct/master\"]
+    [2016-01-27 06:55:25.75798] process done ExitSuccess
+    [2016-01-27 06:55:25.758268] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"write-tree\"]
+    [2016-01-27 06:55:25.760247] process done ExitSuccess
+    [2016-01-27 06:55:25.760524] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"rev-parse\",\"db03e812e512e24afe7f4b440a6ca174aa33cbdd:\"]
+    [2016-01-27 06:55:25.762615] process done ExitSuccess
+    [2016-01-27 06:55:25.762953] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+    [2016-01-27 06:55:25.764649] process done ExitSuccess
+    [2016-01-27 06:55:25.764895] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"refs/heads/annex/direct/master\"]
+    [2016-01-27 06:55:25.766833] process done ExitSuccess
+    [2016-01-27 06:55:25.767095] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"branch\",\"-f\",\"synced/master\"]
+    [2016-01-27 06:55:25.769018] process done ExitSuccess
+    [2016-01-27 06:55:25.769381] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"branch\",\"-f\",\"master\"]
+    [2016-01-27 06:55:25.771227] process done ExitSuccess
+    [2016-01-27 06:55:25.771526] Pusher: Syncing with annex 
+    [2016-01-27 06:55:25.771855] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+    [2016-01-27 06:55:25.773533] process done ExitSuccess
+    [2016-01-27 06:55:25.773778] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"refs/heads/annex/direct/master\"]
+    [2016-01-27 06:55:25.775489] process done ExitSuccess
+    [2016-01-27 06:55:25.775781] Pusher: pushing to [Remote { name =\"annex\" }]
+    [2016-01-27 06:55:25.776187] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"push\",\"annex\",\"+git-annex:synced/git-annex\",\"annex/direct/master:synced/master\"]
+    Everything up-to-date
+    [2016-01-27 06:55:25.783416] process done ExitSuccess
+    [2016-01-27 06:55:25.78379] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"push\",\"annex\",\"git-annex\",\"master\"]
+    [2016-01-27 06:55:25.792144] process done ExitSuccess
+    [2016-01-27 06:56:55.488921] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+    [2016-01-27 06:56:55.491198] process done ExitSuccess
+    [2016-01-27 06:56:55.491606] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"refs/heads/annex/direct/master\"]
+    [2016-01-27 06:56:55.494862] process done ExitSuccess
+    [2016-01-27 06:56:55.495272] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"git-annex\"]
+    [2016-01-27 06:56:55.49766] process done ExitSuccess
+    [2016-01-27 06:56:55.498193] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2016-01-27 06:56:55.50149] process done ExitSuccess
+    [2016-01-27 06:56:55.501967] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..c833bef56cf282eefb957347e2a1938ef8568da6\",\"-n1\",\"--pretty=%H\"]
+    [2016-01-27 06:56:55.505598] process done ExitSuccess
+    [2016-01-27 06:56:55.506265] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+    [2016-01-27 06:56:55.508634] process done ExitSuccess
+    [2016-01-27 06:56:55.50908] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"refs/heads/annex/direct/master\"]
+    [2016-01-27 06:56:55.512201] process done ExitSuccess
+    [2016-01-27 07:01:34.745946] Watcher: add Videos/SPOT0001.avi
+    [2016-01-27 07:01:34.757341] read: lsof [\"-F0can\",\"+d\",\".git/annex/misctmp/\"]
+    lsof: WARNING: can't stat() fuse.gvfsd-fuse file system /run/user/120/gvfs
+          Output information may be incomplete.
+    [2016-01-27 07:01:34.922312] process done ExitFailure 1
+
+      Videos/SPOT0001.avi still has writers, not adding
+    [2016-01-27 07:01:34.92397] Watcher: add Videos/SPOT0001.avi
+    [2016-01-27 07:01:35.93566] read: lsof [\"-F0can\",\"+d\",\".git/annex/misctmp/\"]
+    lsof: WARNING: can't stat() fuse.gvfsd-fuse file system /run/user/120/gvfs
+          Output information may be incomplete.
+    [2016-01-27 07:01:36.076194] process done ExitFailure 1
+    [2016-01-27 07:01:36.076529] Committer: Adding SPOT0001.avi
+    add Videos/SPOT0001.avi [2016-01-27 07:01:36.077018] read: sha256sum [\".git/annex/misctmp/SPOT00017523927541474612399.avi\"]
+    [2016-01-27 07:01:36.173532] process done ExitSuccess
+    [2016-01-27 07:01:36.18156] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"hash-object\",\"-t\",\"blob\",\"-w\",\"--stdin\",\"--no-filters\"]
+    [2016-01-27 07:01:36.183854] process done ExitSuccess
+    ok
+    << trimmed because it worked >>
+
+I did end up leaving the zip in the folder, but I have tried in different subfolders and different zips, just not tar.gzs...
+"""]]

@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-01-29T18:50:57Z"
+ content="""
+Is this on Linux? It may be some kind of problem with inotify..
+"""]]

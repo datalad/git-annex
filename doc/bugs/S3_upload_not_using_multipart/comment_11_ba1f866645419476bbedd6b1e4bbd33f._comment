@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 11"""
- date="2014-11-03T21:27:22Z"
- content="""
-Now implemented on s3-aws branch. Needs a version of the 
-haskell aws library that is not quite released yet (but available in git).
-"""]]

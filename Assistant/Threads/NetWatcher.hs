@@ -1,6 +1,6 @@
 {- git-annex assistant network connection watcher, using dbus
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,14 +15,13 @@ import Assistant.Sync
 import Utility.ThreadScheduler
 import qualified Types.Remote as Remote
 import Assistant.DaemonStatus
-import Assistant.RemoteControl
 import Utility.NotificationBroadcaster
 
 #if WITH_DBUS
+import Assistant.RemoteControl
 import Utility.DBus
 import DBus.Client
 import DBus
-import Assistant.NetMessager
 #else
 #ifdef linux_HOST_OS
 #warning Building without dbus support; will poll for network connection changes
@@ -44,9 +43,8 @@ netWatcherThread = thread noop
  - while (despite the local network staying up), are synced with
  - periodically.
  -
- - Note that it does not call notifyNetMessagerRestart, or
- - signal the RemoteControl, because it doesn't know that the
- - network has changed.
+ - Note that it does not signal the RemoteControl, because it doesn't 
+ - know that the network has changed.
  -}
 netWatcherFallbackThread :: NamedThread
 netWatcherFallbackThread = namedThread "NetWatcherFallback" $
@@ -65,6 +63,7 @@ dbusThread = do
 			callback <- asIO1 connchange
 			liftIO $ do
 				listenNMConnections client callback
+				listenNDConnections client callback
 				listenWicdConnections client callback
 		, do
 			liftAnnex $
@@ -75,7 +74,6 @@ dbusThread = do
 		sendRemoteControl LOSTNET
 	connchange True = do
 		debug ["detected network connection"]
-		notifyNetMessagerRestart
 		handleConnection
 		sendRemoteControl RESUME
 	onerr e _ = do
@@ -88,7 +86,7 @@ dbusThread = do
  - are any we can use to monitor network connections. -}
 checkNetMonitor :: Client -> Assistant Bool
 checkNetMonitor client = do
-	running <- liftIO $ filter (`elem` [networkmanager, wicd])
+	running <- liftIO $ filter (`elem` manager_addresses)
 		<$> listServiceNames client
 	case running of
 		[] -> return False
@@ -99,8 +97,36 @@ checkNetMonitor client = do
 				]
 			return True
   where
+	manager_addresses = [networkmanager, networkd, wicd]
 	networkmanager = "org.freedesktop.NetworkManager"
+	networkd = "org.freedesktop.network1"
 	wicd = "org.wicd.daemon"
+
+{- Listens for systemd-networkd connections and diconnections.
+ -
+ - Connection example (once fully connected):
+ - [Variant {"OperationalState": Variant "routable"}]
+ -
+ - Disconnection example:
+ - [Variant {"OperationalState": Variant _}]
+ -}
+listenNDConnections :: Client -> (Bool -> IO ()) -> IO ()
+listenNDConnections client setconnected =
+	void $ addMatch client matcher
+		$ \event -> mapM_ handleevent
+			(map dictionaryItems $ mapMaybe fromVariant $ signalBody event)
+  where
+	matcher = matchAny
+		{ matchInterface = Just "org.freedesktop.DBus.Properties"
+		, matchMember = Just "PropertiesChanged"
+		}
+	operational_state_key = toVariant ("OperationalState" :: String)
+	routable = toVariant $ toVariant ("routable" :: String)
+	handleevent m = case lookup operational_state_key m of
+				Just state -> if state == routable
+					then setconnected True
+					else setconnected False
+				Nothing -> noop
 
 {- Listens for NetworkManager connections and diconnections.
  -
@@ -112,11 +138,7 @@ checkNetMonitor client = do
  -}
 listenNMConnections :: Client -> (Bool -> IO ()) -> IO ()
 listenNMConnections client setconnected =
-#if MIN_VERSION_dbus(0,10,7)
 	void $ addMatch client matcher
-#else
-	listen client matcher
-#endif
 		$ \event -> mapM_ handleevent
 			(map dictionaryItems $ mapMaybe fromVariant $ signalBody event)
   where
@@ -166,17 +188,13 @@ listenWicdConnections client setconnected = do
 		| any (== wicd_disconnected) status = setconnected False
 		| otherwise = noop
 	match matcher a = 
-#if MIN_VERSION_dbus(0,10,7)
 		void $ addMatch client matcher a
-#else
-		listen client matcher a
-#endif
 #endif
 
 handleConnection :: Assistant ()
 handleConnection = do
 	liftIO . sendNotification . networkConnectedNotifier =<< getDaemonStatus
-	reconnectRemotes True =<< networkRemotes
+	reconnectRemotes =<< networkRemotes
 
 {- Network remotes to sync with. -}
 networkRemotes :: Assistant [Remote]

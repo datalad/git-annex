@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 3"
+ date="2015-09-03T08:05:52Z"
+ content="""
+Hm.. having some kind of exposure of the key generation code on the command line would actually be pretty useful. So you can do something like:
+
+    find -type f | xargs git annex genkey --format '${key} ${file}'
+
+Probably worth a TODO, really.
+
+Regarding your situation, one way of doing it would be to recursively copy the photo directory as hardlinks, `git annex import --clean-duplicates` the hardlinked copies, then diff the directories. This would give you a list of removals and those removals are already in the repo.
+
+Or if you just want to remove them, just run '*git annex import --clean-duplicates*' on the original photos directory. **NOTE: There was recently an issue with git-annex deleting files that it didn't have any known copies of, so a recent version is highly recommended if using --clean-duplicates.**
+"""]]

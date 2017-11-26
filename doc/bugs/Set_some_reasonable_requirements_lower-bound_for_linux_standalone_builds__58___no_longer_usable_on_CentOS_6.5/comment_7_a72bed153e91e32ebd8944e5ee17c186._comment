@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2015-09-30T17:09:49Z"
+ content="""
+I got stack working to build git-annex over the weekend, and it's now the
+recommended way to build from source, since it avoids library churn issues
+and automates everything. Upgrades can also be made to happen by increasing
+the lts version in the stack.yaml file.
+
+So using that and the haskell platform would be a way to get an even more
+ancient distribution autobuilding. (But, I had to leave out xmpp and dbus
+support to make the stack recipe work everywhere, so I don't want to make
+the regular autobuilds built using stack.)
+"""]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="erics"
+ subject="comment 4"
+ date="2016-09-25T00:33:56Z"
+ content="""
+> And there is a complication with running [`git annex copy --from --to`] at the same time as eg `git annex get` of the same file. It would be surprising for get to succeed (because copy has already temporarily downloaded the file) and then have the file later get dropped.
+
+A solution to this subproblem would transparently fall out of a facility for [logically dropping files](http://git-annex.branchable.com/todo/wishlist__58_____96__git_annex_drop_--relaxed__96__/#comment-9672d46a18a381971dd818cde6efbc33), which was briefly talked about a long time ago.  Just mark the file as *logically dropped*.  If the user `git annex get`s it while the copy-out is in progress, its status will change to \"present\", so *copy* will know not to physically delete it.
+
+(Of course there are race conditions involved, but I presume/hope that they're no worse than git-annex already has to deal with.)
+"""]]

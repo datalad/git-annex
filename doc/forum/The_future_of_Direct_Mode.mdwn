@@ -1,0 +1,32 @@
+Hello everyone. I could use some pointers from experienced users. Here is my use-case:
+
+I have a number of portable storage devices where I store media files. They serve a number of purposes:
+
+  1. as archives and backup where I put away the data I am not using to allow for more free space on my work PC;
+
+  2. as storage for the media I play on a media playing device (that only supports Windows filesystems);
+
+  3. as transport medium to share files with other people (that are Windows-users).
+
+I wanted to use git-annex to manage/organize/locate all these devices, but without breaking too much my system. Most files are not super-important, and I intend to keep multiple copies of those that are.
+The main issue is that points 2 and 3 require that the real files need to be accessible directly. I *could* work around this using an extra device, but that would be much less practical, as I would need to go to the PC and transfer the large files over USB, so I am trying to avoid that.
+
+Here is what I learned so far:
+
+  - Indirect mode is OK on my PC. No problem there. However, it won't work on VFAT or NTFS, so I can't use it on the portable devices.
+
+  - Direct mode seems to work fine on the portable devices, but is now deprecated. It won't work on the V6 repositories.
+
+  - The new V6 repositories allows for the unlocking of files, replacing the link-like files (on Windows filesystems) with the real files, that allows me to browse them on the media player (by path and name). I did not find a way to keep them always unlocked by default, so I guess I would need to unlock them manually. Also, I would be keeping an extra copy of each file, since `annex.thin` won't work. In addition, as I don't expect to be editing any these files (not on these devices, at least), the loss of half the storage capacity is wasteful and undesirable.
+
+  - Special remotes `directory` and `rsync` do not keep the original structure of the system, and for this reason do not fit for my purposes.
+
+For now I can create V5 repositories and use direct mode on the external devices. I think this could work quite well, but I have the following questions:
+
+  1. Am I missing something that could help me?
+
+  2. Will using V5 repositories be somewhat future-proof? I mean, will I be able to create V5 repositories in the future? How much of a bad idea would it be to start using git-annex depending on "old versions"? I understand that direct mode will continue to be supported, but deprecation indicates it is a bad idea.
+
+  3. I am guessing that "direct mode" will not be making a comeback, but it does have its uses — however, I did not expect that my case was an unusual one. Is there anything on V6 repositories that would make new version more adequate to my requirements? I would not mind having the files read-only or facing similar restrictions if it helped simplify things.
+
+Thank you for your time.

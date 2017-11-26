@@ -1,0 +1,5 @@
+Hi,
+
+For some reason, two of my repositories share the same UUID. Honestly I don't remember how this happened, as I set up these remotes years ago and not used them for a long time; maybe I just accidentally made a copy instead of git clone… no idea. Anyway, I'd like to use these remotes now. What's the best way to correct this problem? Is just editing UUID manually enough?
+
+Thank you,

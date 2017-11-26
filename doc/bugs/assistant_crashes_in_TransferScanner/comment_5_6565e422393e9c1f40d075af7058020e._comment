@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="johannes@12f1850a57e13cc234b5ebf88a5d3ac68915a6c2"
+ nickname="johannes"
+ avatar="http://cdn.libravatar.org/avatar/7acaf4a71b0b93cc419195f58f4cd54c"
+ subject="comment 5"
+ date="2016-10-31T18:51:17Z"
+ content="""
+The output of `git annex sync --content` looks like this:
+
+	commit  
+	[master 4b31758] git-annex in new latitude
+	 1 file changed, 2 insertions(+), 1 deletion(-)
+	ok
+	pull annexsyncbackup 
+	ok
+	pull origin 
+	Enter passphrase for key '/home/johanness/.ssh/id_rsa': 
+	ok
+	
+	git-annex: fd:30: commitBuffer: invalid argument (invalid character)
+	failed
+	
+	git-annex: fd:30: commitBuffer: invalid argument (invalid character)
+	failed
+	
+	git-annex: fd:30: commitBuffer: invalid argument (invalid character)
+	failed
+	
+	git-annex: fd:30: commitBuffer: invalid argument (invalid character)
+	failed
+	
+	git-annex: fd:30: commitBuffer: invalid argument (invalid character)
+	failed
+
+These lines are repeated a bunch of times. In between git annex successfully uploads and drops a couple of files to/from the remotes. After that it successfully records the state in git and pushes to the remotes finishing with:
+
+	git-annex: sync: 645 failed
+
+I moved the i18n folder but am still getting the same errors.
+
+`ls -l /opt/git-annex.linux/i18n`:
+
+	charmaps  locales  SUPPORTED
+
+"""]]

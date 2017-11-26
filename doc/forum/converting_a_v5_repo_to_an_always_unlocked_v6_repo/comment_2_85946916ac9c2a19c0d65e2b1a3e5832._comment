@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="susetux@ed6f4e20192c3eae018e1fc6442bf993d41b3848"
+ nickname="susetux"
+ subject="re"
+ date="2016-03-15T14:14:47Z"
+ content="""
+Hi, thanks for your quick feedback!
+
+So, I've investigated a bit and this is what I found:
+
+1. hardlinks are there: both \"ls -l\" and \"find -samefile\" report that most files (I haven't checked all of them though) are hardlinked, as expected, in the annex. So annex.thin is doing something.
+2. \"du -shc .git/annex/objects\" has the same size of the same command given on the whole annex, as expected  (du counts hard links only once, so it makes sense). It gives about 933G.
+3. 900G is well above what it should be: 530G of the indirect annex.
+4. This size is also reported in git annex info: \"local annex size: 933.19 gigabytes\"
+5. I tried locking the files again (and git annex fix), but the annex remained oversized.
+
+I currently deleted the annex and restored from a backup because I couldn't afford to keep it in an inconsistent state.
+It seems like this problem can be consistently reproduced. I had the same problem on a smaller annex (200G) which took a long time to commit and also inflated during the process. At the end of the process (it had enough space to finish) the size shrinked again, although it was still bigger than the original. I also tried with a test annex and random data a the problem seemed to still be there.
+
+
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-05-22T17:26:08Z"
+ content="""
+I think that mailman 3 could be a good solution for lots of different
+users.
+
+It is emphatically not the kind of thing I enjoy maintaining though! :)
+
+Example: <https://lists.stg.fedoraproject.org/archives/list/devel%40lists.fedoraproject.org/>
+"""]]

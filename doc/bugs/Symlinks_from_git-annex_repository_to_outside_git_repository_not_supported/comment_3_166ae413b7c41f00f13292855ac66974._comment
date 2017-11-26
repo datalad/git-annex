@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.87"
- subject="comment 3"
- date="2013-12-18T19:31:04Z"
- content="""
-I see that you're using OSX. I have replicated the bug there, and fixed it. (I think.)
-"""]]

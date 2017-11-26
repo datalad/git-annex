@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlcfH7xkyz1kyG_neK4GcFFfFWuIY7l_6A"
+ nickname="Primiano"
+ subject="large scale rewrite tips"
+ date="2015-01-06T22:55:20Z"
+ content="""
+I recently had the need of re-kind-of-annexing an unusually large repo (one of the largest?).
+With some tricks and the right code I managed to get it down to 170000 commits in 19 minutes and extracing ~8GB of blobs. 
+Attaching the link here as I feel it might be helpful for very large projects (where git-filter-branch can become prohibitively slow) 
+
+[https://www.primianotucci.com/blog/large-scale-git-history-rewrites](https://www.primianotucci.com/blog/large-scale-git-history-rewrites)
+
+"""]]

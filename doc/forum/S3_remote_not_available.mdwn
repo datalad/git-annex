@@ -1,0 +1,31 @@
+One of my remotes is S3 (named s3). I used to be able to run
+
+    $ git annex sync s3 --content
+
+But now I'm getting the following error:
+
+    commit  
+    On branch master
+    nothing to commit, working directory clean
+    ok
+    git-annex: there is no available git remote named "s3"
+
+My `.git/config` file contains following lines which I would assume mean that the remote is there:
+
+    [remote "s3"]
+            annex-s3 = true
+            annex-uuid = bd9af194-b736-4114-a689-9a8bf212fb18
+            fetch = 
+            annex-sync = false
+
+As far as I can tell only change I did was to install newer version of git-annex, currently I have:
+
+    git-annex version: 6.20160418
+    build flags: Assistant Webapp Pairing Testsuite WebDAV FsEvents XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+    local repository version: 6
+    supported repository versions: 5 6
+    upgrade supported from repository versions: 0 1 2 4 5
+
+How do I recover access to that remote?

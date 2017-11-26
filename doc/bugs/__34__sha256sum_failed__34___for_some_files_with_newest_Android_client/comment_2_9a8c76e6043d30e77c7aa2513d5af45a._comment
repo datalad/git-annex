@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/3ee5cf54-f022-4a71-8666-3c2b5ee231dd"
+ nickname="Anthony DeRobertis"
+ subject="comment 2"
+ date="2016-09-09T06:51:45Z"
+ content="""
+`sha256sum` isn't available on the tablet—at least not in the git-annex shell's PATH. 
+
+I tried checking if it's present in the apk, and I don't see it in there—but I'm also not sure exactly where in the jar file I should find it. Unfortunately, I couldn't find an older Android git-annex build to check—seems the download site only keeps the most recent.
+"""]]

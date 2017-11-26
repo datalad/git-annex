@@ -6,7 +6,8 @@ archival repositories, and also require that one copy be stored offsite.
 The format of required content expressions is the same as
 [[preferred_content]] expressions.
 
-Required content settings can be edited using `git annex vicfg`.
+Required content settings can be edited using `git annex vicfg`
+or set using `git annex required`.
 Each repository can have its own settings, and other repositories will
 try to honor those settings when interacting with it.
 

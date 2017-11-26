@@ -1,6 +1,6 @@
 {- daemon support
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -14,15 +14,13 @@ import Utility.PID
 #ifndef mingw32_HOST_OS
 import Utility.LogFile
 #else
-import Utility.WinProcess
+import System.Win32.Process (terminateProcessById)
 import Utility.LockFile
 #endif
 
 #ifndef mingw32_HOST_OS
 import System.Posix
 import Control.Concurrent.Async
-#else
-import System.Exit
 #endif
 
 #ifndef mingw32_HOST_OS
@@ -113,7 +111,7 @@ lockPidFile pidfile = do
 #endif
 
 alreadyRunning :: IO ()
-alreadyRunning = error "Daemon is already running."
+alreadyRunning = giveup "Daemon is already running."
 
 {- Checks if the daemon is running, by checking that the pid file
  - is locked by the same process that is listed in the pid file.
@@ -121,21 +119,23 @@ alreadyRunning = error "Daemon is already running."
  - If it's running, returns its pid. -}
 checkDaemon :: FilePath -> IO (Maybe PID)
 #ifndef mingw32_HOST_OS
-checkDaemon pidfile = do
-	v <- catchMaybeIO $
-		openFd pidfile ReadOnly (Just stdFileMode) defaultFileFlags
-	case v of
-		Just fd -> do
-			locked <- getLock fd (ReadLock, AbsoluteSeek, 0, 0)
-			p <- readish <$> readFile pidfile
-			closeFd fd `after` return (check locked p)
-		Nothing -> return Nothing
+checkDaemon pidfile = bracket setup cleanup go
   where
+	setup = catchMaybeIO $
+		openFd pidfile ReadOnly (Just stdFileMode) defaultFileFlags
+	cleanup (Just fd) = closeFd fd
+	cleanup Nothing = return ()
+	go (Just fd) = catchDefaultIO Nothing $ do
+		locked <- getLock fd (ReadLock, AbsoluteSeek, 0, 0)
+		p <- readish <$> readFile pidfile
+		return (check locked p)
+	go Nothing = return Nothing
+
 	check Nothing _ = Nothing
 	check _ Nothing = Nothing
 	check (Just (pid, _)) (Just pid')
 		| pid == pid' = Just pid
-		| otherwise = error $
+		| otherwise = giveup $
 			"stale pid in " ++ pidfile ++ 
 			" (got " ++ show pid' ++ 
 			"; expected " ++ show pid ++ " )"
@@ -162,7 +162,7 @@ stopDaemon pidfile = go =<< checkDaemon pidfile
 #ifndef mingw32_HOST_OS
 		signalProcess sigTERM pid
 #else
-		terminatePID pid
+		terminateProcessById pid
 #endif
 
 {- Windows locks a lock file that corresponds with the pid of the process.

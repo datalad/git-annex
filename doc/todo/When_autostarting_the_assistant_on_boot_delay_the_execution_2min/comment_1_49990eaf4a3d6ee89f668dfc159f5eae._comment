@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-11-02T15:14:20Z"
+ content="""
+There's actually an undocumented default startdelay of 5 seconds when using
+autostart. I've now documented it.
+
+Maybe 5 seconds is too little. OTOH, 2 minutes may be a bit too much;
+if the user is booting up their computer to access a new file in their
+annex they'd expect it to start syncing ASAP.
+
+I think my justification for the 5 seconds default was that about how long
+it seems to take a typical desktop system to get loaded (after the login
+screen) and for the user to open a web browser, on reasonably modern
+hardware. Even windows in an emulator doesn't take much longer than that.
+"""]]

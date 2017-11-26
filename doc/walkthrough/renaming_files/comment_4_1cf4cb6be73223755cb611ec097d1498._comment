@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="dusty@dba9614abc02e013134f95c2c59181a6c12a8468"
+ nickname="dusty"
+ subject="moving files with git mv can yield broken symlink"
+ date="2016-08-23T21:48:59Z"
+ content="""
+Hey Joey,
+
+Just wondering how we rename/move files around into different directories within a repository without breaking the symbolic links. If we move to a different directory and the depth is different than where the files were originally in the repo then the symbolic link is broken.
+
+Thanks
+"""]]

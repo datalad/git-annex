@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnm19dBCRphmtjXfopm_NpvnRwz-qIJ2Tw"
+ nickname="Remi"
+ subject="May be use a prefered content expression about what is in the usb stick"
+ date="2015-01-11T09:14:47Z"
+ content="""
+Is there a full git repos on the usb stick? if yes You could add a remote on it and run `git annex --content` from there.
+
+You could also try to change the preferred content of your local machine to include something like \"--not --in=usb\". With this you local repos will download file not in the usb stick, copy it to the usb stick and then remove it from the local repos. (I didn't check exactly the syntax of the preferred content, so my expression could be incorrect, but I hope you get the idea)
+"""]]

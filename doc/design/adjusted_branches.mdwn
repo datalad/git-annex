@@ -1,0 +1,316 @@
+Consider two use cases:
+
+1. Using a v6 repo with locked files on a crippled filesystem not
+   supporting symlinks. For the files to be usable, they need to be
+   unlocked. But, the user may not want to unlock the files everywhere,
+   just on this one crippled system.
+2. [[todo/hide_missing_files]]
+
+Both of these could be met by making `git-annex sync` maintain an adjusted
+version of the original branch, eg `adjusted/master`.
+
+There would be a adjustment function. For #1 above it would simply convert all
+annex symlinks to annex file pointers. For #2 above it would omit files
+whose content is not currently in the annex. Sometimes, both #1 and #2 would
+be wanted. The function is currently implemented as the [[git-annex-adjust]] command.
+
+[Alternatively, it could stay on the master branch, and only adjust the
+work tree and index. See WORKTREE notes below for how this choice would
+play out.]
+
+[[!toc]]
+
+## adjusting
+
+	master           adjusted/master
+	A
+	|--------------->A'
+	|                |
+
+When generating commit A', reuse the date of A and use a standard author,
+committer, and message. This means that two users with the adjusted branch
+checked out and using the same adjustments will get identical shas for A', and
+so can collaborate on them.
+
+## commit
+
+When committing changes, a commit is made as usual to the adjusted branch.
+So, the user can `git commit` as usual. This does not touch the
+original branch yet. 
+
+Then we need to get from that commit to one with the adjustments reversed,
+which should be the same as if the adjusted branch had not been used.
+This commit gets added onto the original branch.
+
+So, the branches would look like this:
+
+	master           adjusted/master
+	A
+	|--------------->A'
+	|                |
+	|                C (new commit)
+	B < - - - - - - -
+	|                
+	|--------------->B'
+	|                |
+
+Note particularly that B does not have A' or C in its history;
+the adjusted branch is not evident from outside.
+
+Also note that B gets adjusted and the adjusted branch is rebased on top of
+it, so C does not remain in the adjusted branch history either. This will
+make other checkouts that are in the same adjusted branch end up with the
+same B' commit when they pull B.
+
+There may be multiple commits made to the adjusted branch before any get
+applied back to the original branch. This is handled by reverse adjusting
+commits one at a time and rebasing the others on top.
+
+	master           adjusted/master
+	A
+	|--------------->A'
+	|                |
+	|                C1
+	|                |
+	|                C2
+
+
+	master           adjusted/master
+	A
+	|--------------->A'
+	|                |
+	|                C1
+	B1< - - - - - - -
+	|
+	|--------------->B1'
+	|                |
+	|                C2'
+	B2< - - - - - - -
+	|
+	|--------------->B2'
+
+
+[WORKTREE: A pre-commit hook would be needed to update the staged changes, 
+reversing the adjustment before the commit is made. All the other complications
+above are avoided.]
+
+## merge
+
+This would be done by `git annex merge` and `git annex sync`, with the goal
+of merging origin/master into master, and updating adjusted/master.
+
+Note that the adjusted files db needs to be updated to reflect the changes
+that are merged in, for object add/remove to work as described below.
+
+When merging, there should never be any commits present on the
+adjusted/master branch that have not yet been propigated back to the master
+branch. If there are any such commits, just propigate them into master
+before beginning the merge. There may be staged changes, or changes in the
+work tree.
+
+First, merge origin/master into master. This is done in a temp work
+tree and with a temp index, so does not affect the checked out adjusted
+branch.
+
+(Note that the reason this is done, rather than adjusting origin/master
+and merging it into the work tree, is that merge conflicts would be very
+common with the naive approach, because the adjusted branch often changes
+files, and origin/master may change the same files.)
+
+	origin/master  master   adjusted/master
+	A------------->A- - - ->A'
+	|              |
+	B------------->C
+
+While a fast-forward merge is shown here, other merges work the same way.
+There may be merge conflicts; if so they're auto-resolved.
+
+Then, adjust merge commit C, and merge that into adjusted/master.
+	
+	origin/master  master   adjusted/master
+	A------------->A- - - ->A'
+	|              |        |
+	B------------->C- - C'->D'
+
+This merge is done in-worktree, so the work tree gets updated.
+There may be more merge conflicts here; they're also auto-resolved.
+
+Now, D' is a merge commit, between A' and C'. 
+To finish, change that commit so it does not have A' as its parent.
+
+This can be accomplished by propigating the reverse-adjusted D'
+back to master, and then adjusting master to yield the final
+adjusted/master.
+	
+	origin/master  master   adjusted/master
+	A------------->A
+	|              |         
+	B------------->C         
+	               |         
+		       D - - -> D'
+
+Notice how similar this is to the commit graph. Indeed, "fast-forward" 
+merging the same B commit from origin/master will lead to an identical
+sha for B' as the original committer got!
+
+Since the adjusted/master branch is not present on the remote, if the user
+does a `git pull`, it won't merge in changes from origin/master. Which is
+good because the adjustment needs to be applied first.
+
+However, if the user does `git merge origin/master`, they'll get into a
+state where the adjustment has not been applied. The post-merge hook could be
+used to clean up after that. Or, let the user foot-shoot this way; they can
+always reset back once they notice the mistake.
+
+[WORKTREE: `git pull` would update the work tree, and may lead to conflicts
+between the adjusted work tree and pulled changes. A post-merge hook would
+be needed to re-adjust the work tree, and there would be a window where eg,
+not present files would appear in the work tree.]
+
+## annex object add/remove
+
+When objects are added/removed from the annex, the associated file has to
+be looked up, and the adjustment applied to it. So, dropping a file with the
+missing file adjustment would cause it to be removed from the adjusted branch,
+and receiving a file's content would cause it to appear in the adjusted
+branch. TODO
+
+These changes would need to be committed to the adjusted branch, otherwise
+`git diff` would show them.
+
+How to avoid making a new commit each time a single object is
+added/removed? That seems too expensive in both CPU and dangling git
+objects for old versions of the adjusted branch. It would be fine if
+`git annex get` and `git annex drop` only re-adjusted the branch one time
+at the end. OTOH, when should the assistant re-adjust the branch?
+
+Maybe instead of re-adjusting the branch after each file, stage the
+worktree change, and hold off on committing. Then when a commit is
+eventually made, the reverse adjusting to propigate it to master would need
+to make sure to not remove files that were deleted as part of the commit,
+if their content is not present.
+
+[WORKTREE: Simply adjust the work tree (and index) per the adjustment.]
+
+## reverse adjusting commits
+
+A user's commits on the adjusted branch have to be reverse adjusted
+to get changes to apply to the master branch.
+
+This reversal of one adjustment can be done as just another adjustment.
+Since only files touched by the commit will be reverse adjusted, it doesn't
+need to reverse all changes made by the original adjustment.
+
+For example, reversing the unlock adjustment might lock the file. Or, it might
+do nothing, which would make all committed files remain unlocked.
+
+## push
+
+The new master branch can then be pushed out to remotes. The
+adjusted/master branch is not pushed to remotes. `git-annex sync` should
+automatically push master when adjusted/master is checked out.
+
+When push.default is "simple" (the new default), running `git push` when in
+adjusted/master won't push anything. It would with "matching". Pity. (I
+continue to feel git picked the wrong default here.) Users may find that
+surprising. Users of `git-annex sync` won't need to worry about it though.
+
+[WORKTREE: push works as usual]
+
+## acting on filtered-out files
+
+If a file is filtered out due to not existing, there should be a way
+for `git annex get` to get it. Since the filtered out file is not in the
+index, that would not normally work. What to do?
+
+Maybe instead of making a branch where the file is deleted, it would be
+better to delete it from the work tree, but keep the branch as-is. Then
+`git annex get` would see the file, as it's in the index. 
+
+But, not maintaining an adjusted branch complicates other things. See
+WORKTREE notes throughout this page. Overall, the WORKTREE approach seems
+too problematic.
+
+Ah, but we know that when adjustment #2 is in place, any file that `git annex
+get` could act on is not in the index. So, it could look at the master branch
+instead. (Same for `git annex move --from` and `git annex copy --from` and
+the assistant.)
+
+OTOH, if adjustment #1 is in place and not #2, a file might be renamed in the
+index, and `git annex get $newname` should work. So, it should look at the
+index in that case.
+
+## problems
+
+Using `git checkout` when in an adjusted branch is problematic, because a
+non-adjusted branch would then be checked out. But, we can just say, if
+you want to get into an adjusted branch, you have to run git annex adjust
+Or, could make a post-checkout hook. This is would mostly be confusing when
+git-annex init switched into the adjusted branch due to lack of symlink
+support.
+
+After a commit to an adjusted branch, `git push` won't do anything. The
+user has to know to git-annex sync. (Even if a pre-commit hook propigated
+the commit back to the master branch, `git push` wouldn't push it with the
+default "matching" push strategy.)
+
+Tags are bit of a problem. If the user tags an ajusted branch, the tag
+includes the local adjustments.  
+[WORKTREE: not a problem]
+
+If the user refers to commit shas (in, eg commit messages), those won't be
+visible to anyone else.  
+[WORKTREE: not a problem]
+
+When a pull modifies a file, its content won't be available, and so it
+would be hidden temporarily by adjustment #2. So the file would seem to vanish,
+and come back later, which could be confusing. Could be fixed as discussed
+in [[todo/deferred_update_mode]]. Arguably, it's just as confusing for the
+file to remain visible but have its content temporarily replaced with a
+annex pointer.
+
+### master push overwrite race (fixed)
+
+There are potentially races in code that assumes a branch like
+master is not being changed by someone else. 
+  
+In particular, if propigateAdjustedCommits rebases the adjusted branch on
+top of master. That is called by sync. The assumption is that any changes
+in master have already been handled by updateAdjustedBranch. But, if
+another remote pushed a new master at just the right time, the adjusted
+branch could be rebased on top of a master that it doesn't incorporate,
+which is wrong.
+
+Best fix seems to be to maintain a basis ref, that is not a branch,
+like refs/adjusted/master(unlocked). Copy master's ref to it when
+entering the view branch. Then, make all adjustments via the basis
+ref, and propigate back to refs/heads/master.
+
+It's fine to overwrite changes that were pushed to master when
+propigating from the adjusted branch. Synced changes also go to
+synced/master so won't be lost. Pushes not made using git-annex sync
+of master are not really desired, just a possibility.
+
+## integration with view branches
+
+Entering a view from an adjusted branch should probably carry the adjusting
+over into the creation/updating of the view branch.
+
+Could go a step further, and implement view branches as another branch
+adjustment, albeit an extreme one. This might improve view branches.
+For example, it's not currently possible to update a view branch with
+changes fetched from a remote, and this could get us there.
+
+This would need the reverse adjust to be able to change metadata,
+so that a commit that moved files in the view updates their metadata.
+
+[WORKTREE: Wouldn't be able to integrate, unless view branches are changed
+into adjusted view worktrees.]
+
+## TODOs
+
+* Interface in webapp to enable adjustments.
+* Honor annex.thin when entering an adjusted branch. git checkout
+  will make copies of the content of annexed files, so this would need
+  to checkout the adjusted branch some other way. Maybe generalize so this
+  more efficient checkout is available as a git-annex command?

@@ -1,20 +1,20 @@
 ## Debian testing or unstable
 
-	sudo apt-get install git-annex
+Debian unstable and testing are usually fairly up to date,
+so this should be enough:
 
-## Debian 7.0 "wheezy":
+	sudo apt install git-annex
 
-	sudo apt-get install git-annex
+## Debian 9.0 "stretch"
 
-Note: This version does not include support for the [[assistant]].
-A backport is available with the assistant and other new features.
+Debian's stable release contains git-annex version 6.20170101.
 
-Follow the instructions to [enable backports](http://backports.debian.org/Instructions/).
+	sudo apt install git-annex
 
-	sudo apt-get -t wheezy-backports install git-annex
+## Standalone backports for all releases
 
-## Debian 6.0 "squeeze"
-
-Follow the instructions to [enable backports](http://backports.debian.org/Instructions/).
-
-	sudo apt-get -t squeeze-backports install git-annex
+If the version shipped with Debian is too old, 
+the [NeuroDebian team](http://neuro.debian.net/) provides a
+[standalone build package](http://neuro.debian.net/pkgs/git-annex-standalone.html)
+that is regularly updated and that should work across all releases of
+Debian.

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Kalle"
+ subject="comment 3"
+ date="2016-03-23T21:22:15Z"
+ content="""
+A normal direct mode repo with git annex installed on the server should give you a synced directory structure of files that you can browse with most directory listing software/modules and download files.
+
+Are you looking to enable something beyond browsing and downloading the files?
+"""]]

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="johannes@12f1850a57e13cc234b5ebf88a5d3ac68915a6c2"
+ nickname="johannes"
+ avatar="http://cdn.libravatar.org/avatar/7acaf4a71b0b93cc419195f58f4cd54c"
+ subject="comment 8"
+ date="2016-10-31T19:50:23Z"
+ content="""
+It's not printing any filenames. I modified my old PKGBUILD to create a package that only wraps the /opt/git-annex.linux directory. It still left me with the same error. I first suspected the Archlinux packaging of modifying the binaries in some awkward manner. But guess what, it's caused by the restrictive file/directory permissions on /opt/git-annex.linux.
+
+So here is how I can reproduce the error:
+
+- Step 1: Extract the git-annex standalone tarball to /opt/.
+- Step 2: Change the owner and group of /opt/git-annex.linux to `root` (`chown -R root:root /opt/git-annex.linux`).
+
+So, what happens here? On the first execution of git-annex, it creates a `locales` directory in /opt/git-annex.linux. If the permissions are too restrictive, it silently fails to do that. I get the above error messages if the locales directory is not initialised.
+"""]]

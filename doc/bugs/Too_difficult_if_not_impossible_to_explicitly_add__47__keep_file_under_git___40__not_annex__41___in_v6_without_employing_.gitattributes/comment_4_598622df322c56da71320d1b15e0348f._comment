@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="benjamin.poldrack@d09ccff6d42dd20277610b59867cf7462927b8e3"
+ nickname="benjamin.poldrack"
+ avatar="http://cdn.libravatar.org/avatar/5c1a901caa7c2cfeeb7e17e786c5230d"
+ subject="comment 4"
+ date="2017-02-09T09:05:34Z"
+ content="""
+I want to point out an issue, that seems to be unnoticed:
+While we (datalad) might be able to deal with this effect regarding git status in terms of space, it has another consequence. As the scripts are showing it also leads to the file marked as modified, if it is rewritten (very same content) and therefore leaves the repository dirty. To me this a pretty weird effect and I don't understand yet what this is caused by.
+"""]]

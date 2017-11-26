@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-10-31T18:04:04Z"
+ content="""
+`git annex unlock` only operates on files that are symlinks and link to
+.git/annex/objects.
+I don't think that `find` provides a way to check the link target
+of a symlink, so you'd have to write a program to do it. I suppose
+that `git annex find --locked` could be made to do that.
+
+`git annex unlock` often has to make a copy of the content of a file,
+which would be the majority of its IO. Only if you're using
+`annex.thin` with v6 might it not need to copy the file, and then a batch
+mode could speed it up. Are you?
+"""]]

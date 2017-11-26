@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlvmWVPaSpWJO5_rimCL0lEoJRoKOIjhHE"
+ nickname="Gioacchino"
+ subject="Why shoul git-annex support --git-dir"
+ date="2015-03-01T10:10:31Z"
+ content="""
+Hi!
+
+There are multiple use case as I explained on IRC and it is why I and probably more users need it, there are some git-annex repository that i share also with other programs like RetroShare and apache USERDIR (like http://efesto.eigenlab.org/~gioacchino/) i don't like .git directory to be shared by these programs as the file are publics but not the metadata stored on the .git ( http://efesto.eigenlab.org/~gioacchino/.git/config ) i know i can do that with other tricks like htaccess but it is application specific hack while the real solution is to keep the .git in a private place
+
+Another use case is when you are grepping or doing scripty stuff on your dir having the .git in another place allow you to do stuff without concern about what there is inside .git without using options like --exclude and similar
+
+The list of use cases can grow as they are all the one caused git to support --git-dir so for the sake of consistence and for your donors please propagate --git-dir on all git-annex components ;)
+
+P.S. I am not native english speaker so sorry if something sounds bad
+"""]]

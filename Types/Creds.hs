@@ -1,6 +1,6 @@
 {- credentials
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,4 +11,4 @@ type Creds = String -- can be any data that contains credentials
 
 type CredPair = (Login, Password)
 type Login = String
-type Password = String -- todo: use securemem
+type Password = String

@@ -1,6 +1,6 @@
 {- git ref stuff
  -
- - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -18,12 +18,20 @@ import Data.Char (chr)
 headRef :: Ref
 headRef = Ref "HEAD"
 
+headFile :: Repo -> FilePath
+headFile r = localGitDir r </> "HEAD"
+
+setHeadRef :: Ref -> Repo -> IO ()
+setHeadRef ref r = writeFile (headFile r) ("ref: " ++ fromRef ref)
+
 {- Converts a fully qualified git ref into a user-visible string. -}
 describe :: Ref -> String
 describe = fromRef . base
 
-{- Often git refs are fully qualified (eg: refs/heads/master).
- - Converts such a fully qualified ref into a base ref (eg: master). -}
+{- Often git refs are fully qualified 
+ - (eg refs/heads/master or refs/remotes/origin/master).
+ - Converts such a fully qualified ref into a base ref
+ - (eg: master or origin/master). -}
 base :: Ref -> Ref
 base = Ref . remove "refs/heads/" . remove "refs/remotes/" . fromRef
   where
@@ -31,17 +39,15 @@ base = Ref . remove "refs/heads/" . remove "refs/remotes/" . fromRef
 		| prefix `isPrefixOf` s = drop (length prefix) s
 		| otherwise = s
 
-{- Given a directory and any ref, takes the basename of the ref and puts
- - it under the directory. -}
-under :: String -> Ref -> Ref
-under dir r = Ref $ dir ++ "/" ++
-	(reverse $ takeWhile (/= '/') $ reverse $ fromRef r)
-
 {- Given a directory such as "refs/remotes/origin", and a ref such as
  - refs/heads/master, yields a version of that ref under the directory,
  - such as refs/remotes/origin/master. -}
 underBase :: String -> Ref -> Ref
 underBase dir r = Ref $ dir ++ "/" ++ fromRef (base r)
+
+{- Convert a branch such as "master" into a fully qualified ref. -}
+branchRef :: Branch -> Ref
+branchRef = underBase "refs/heads"
 
 {- A Ref that can be used to refer to a file in the repository, as staged
  - in the index.
@@ -88,6 +94,9 @@ sha branch repo = process <$> showref repo
 	process [] = Nothing
 	process s = Just $ Ref $ firstLine s
 
+headSha :: Repo -> IO (Maybe Sha)
+headSha = sha headRef
+
 {- List of (shas, branches) matching a given ref or refs. -}
 matching :: [Ref] -> Repo -> IO [(Sha, Branch)]
 matching refs repo =  matching' (map fromRef refs) repo
@@ -96,7 +105,7 @@ matching refs repo =  matching' (map fromRef refs) repo
 matchingWithHEAD :: [Ref] -> Repo -> IO [(Sha, Branch)]
 matchingWithHEAD refs repo = matching' ("--head" : map fromRef refs) repo
 
-{- List of (shas, branches) matching a given ref or refs. -}
+{- List of (shas, branches) matching a given ref spec. -}
 matching' :: [String] -> Repo -> IO [(Sha, Branch)]
 matching' ps repo = map gen . lines <$> 
 	pipeReadStrict (Param "show-ref" : map Param ps) repo
@@ -104,17 +113,36 @@ matching' ps repo = map gen . lines <$>
 	gen l = let (r, b) = separate (== ' ') l
 		in (Ref r, Ref b)
 
-{- List of (shas, branches) matching a given ref spec.
+{- List of (shas, branches) matching a given ref.
  - Duplicate shas are filtered out. -}
 matchingUniq :: [Ref] -> Repo -> IO [(Sha, Branch)]
 matchingUniq refs repo = nubBy uniqref <$> matching refs repo
   where
 	uniqref (a, _) (b, _) = a == b
 
+{- List of all refs. -}
+list :: Repo -> IO [(Sha, Ref)]
+list = matching' []
+
+{- Deletes a ref. This can delete refs that are not branches, 
+ - which git branch --delete refuses to delete. -}
+delete :: Sha -> Ref -> Repo -> IO ()
+delete oldvalue ref = run
+	[ Param "update-ref"
+	, Param "-d"
+	, Param $ fromRef ref
+	, Param $ fromRef oldvalue
+	]
+
 {- Gets the sha of the tree a ref uses. -}
 tree :: Ref -> Repo -> IO (Maybe Sha)
-tree ref = extractSha <$$> pipeReadStrict
-	[ Param "rev-parse", Param (fromRef ref ++ ":") ]
+tree (Ref ref) = extractSha <$$> pipeReadStrict
+	[ Param "rev-parse", Param ref' ]
+  where
+	ref' = if ":" `isInfixOf` ref
+		then ref
+		-- de-reference commit objects to the tree
+		else ref ++ ":"
 
 {- Checks if a String is a legal git ref name.
  -
@@ -139,6 +167,6 @@ legal allowonelevel s = all (== False) illegal
 	ends v = v `isSuffixOf` s
 	begins v = v `isPrefixOf` s
 
-	pathbits = split "/" s
+	pathbits = splitc '/' s
 	illegalchars = " ~^:?*[\\" ++ controlchars
 	controlchars = chr 0o177 : [chr 0 .. chr (0o40-1)]

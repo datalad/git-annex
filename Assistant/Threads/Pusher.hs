@@ -1,6 +1,6 @@
 {- git-annex assistant git pushing thread
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -22,9 +22,10 @@ pushRetryThread = namedThread "PushRetrier" $ runEvery (Seconds halfhour) <~> do
 	-- We already waited half an hour, now wait until there are failed
 	-- pushes to retry.
 	topush <- getFailedPushesBefore (fromIntegral halfhour)
+		=<< getAssistant failedPushMap
 	unless (null topush) $ do
 		debug ["retrying", show (length topush), "failed pushes"]
-		void $ pushToRemotes True topush
+		void $ pushToRemotes topush
   where
 	halfhour = 1800
 
@@ -35,7 +36,7 @@ pushThread = namedThread "Pusher" $ runEvery (Seconds 2) <~> do
 	-- Next, wait until at least one commit has been made
 	void getCommits
 	-- Now see if now's a good time to push.
-	void $ pushToRemotes True =<< pushTargets
+	void $ pushToRemotes =<< pushTargets
 
 {- We want to avoid pushing to remotes that are marked readonly.
  -

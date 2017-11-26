@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-10-15T18:46:50Z"
+ content="""
+This is basically the same as thinking that git should change the SHA1
+used to refer to a file in the repository just because it was renamed.
+That does not normally make sense.
+
+Including the original extension in the git-annex key is done to avoid
+confusing some poorly-behaved programs that expect to follow the symlink
+and find a file with an extension. It's best to ignore the extension part
+of the key, or if you like, you can change the [[backend|doc/backends]] from SHA256E to
+SHA256, and then new keys won't include that extension.
+"""]]

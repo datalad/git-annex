@@ -1,6 +1,6 @@
 {- git-annex assistant pending transfer queue
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -26,6 +26,7 @@ module Assistant.TransferQueue (
 import Assistant.Common
 import Assistant.DaemonStatus
 import Assistant.Types.TransferQueue
+import Types.Transfer
 import Logs.Transfer
 import Types.Remote
 import qualified Remote
@@ -65,9 +66,7 @@ queueTransfersMatching matching reason schedule k f direction
 	| otherwise = go
   where
 	go = do
-		
-		rs <- liftAnnex . selectremotes
-			=<< syncDataRemotes <$> getDaemonStatus
+		rs <- liftAnnex . selectremotes =<< getDaemonStatus
 		let matchingrs = filter (matching . Remote.uuid) rs
 		if null matchingrs
 			then do
@@ -77,20 +76,21 @@ queueTransfersMatching matching reason schedule k f direction
 				forM_ matchingrs $ \r ->
 					enqueue reason schedule (gentransfer r) (stubInfo f r)
 				return True
-	selectremotes rs
+	selectremotes st
 		{- Queue downloads from all remotes that
 		 - have the key. The list of remotes is ordered with
 		 - cheapest first. More expensive ones will only be tried
 		 - if downloading from a cheap one fails. -}
 		| direction == Download = do
 			s <- locs
-			return $ filter (inset s) rs
+			return $ filter (inset s) (downloadRemotes st)
 		{- Upload to all remotes that want the content and don't
 		 - already have it. -}
 		| otherwise = do
 			s <- locs
 			filterM (wantSend True (Just k) f . Remote.uuid) $
-				filter (\r -> not (inset s r || Remote.readonly r)) rs
+				filter (\r -> not (inset s r || Remote.readonly r))
+					(syncDataRemotes st)
 	  where
 		locs = S.fromList <$> Remote.keyLocations k
 		inset s r = S.member (Remote.uuid r) s
@@ -113,7 +113,7 @@ queueDeferredDownloads :: Reason -> Schedule -> Assistant ()
 queueDeferredDownloads reason schedule = do
 	q <- getAssistant transferQueue
 	l <- liftIO $ atomically $ readTList (deferreddownloads q)
-	rs <- syncDataRemotes <$> getDaemonStatus
+	rs <- downloadRemotes <$> getDaemonStatus
 	left <- filterM (queue rs) l
 	unless (null left) $
 		liftIO $ atomically $ appendTList (deferreddownloads q) left

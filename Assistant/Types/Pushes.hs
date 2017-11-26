@@ -1,13 +1,13 @@
 {- git-annex assistant push tracking
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Assistant.Types.Pushes where
 
-import Common.Annex
+import Annex.Common
 
 import Control.Concurrent.STM
 import Data.Time.Clock

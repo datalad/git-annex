@@ -1,0 +1,8 @@
+If you look at the transfer rates during a copy job to remotes, you see it going down to zero for a short time between files.
+
+While that's understandable from rsync's PoV, it's not as efficient as git-annex could be.
+
+Would parallelization be an option? Are there alternate improvements?
+
+
+-- Richard

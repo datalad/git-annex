@@ -1,6 +1,6 @@
 {- git repository recovery
  -
- - Copyright 2013-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2013-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -39,10 +39,10 @@ import qualified Git.Branch as Branch
 import Utility.Tmp
 import Utility.Rsync
 import Utility.FileMode
+import Utility.Tuple
 
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as L
-import Data.Tuple.Utils
 
 {- Given a set of bad objects found by git fsck, which may not
  - be complete, finds and removes all corrupt objects. -}
@@ -99,7 +99,7 @@ retrieveMissingObjects :: FsckResults -> Maybe FilePath -> Repo -> IO FsckResult
 retrieveMissingObjects missing referencerepo r
 	| not (foundBroken missing) = return missing
 	| otherwise = withTmpDir "tmprepo" $ \tmpdir -> do
-		unlessM (boolSystem "git" [Params "init", File tmpdir]) $
+		unlessM (boolSystem "git" [Param "init", File tmpdir]) $
 			error $ "failed to create temp repository in " ++ tmpdir
 		tmpr <- Config.read =<< Construct.fromAbsPath tmpdir
 		stillmissing <- pullremotes tmpr (remotes r) fetchrefstags missing
@@ -140,7 +140,9 @@ retrieveMissingObjects missing referencerepo r
 		ps' = 
 			[ Param "fetch"
 			, Param fetchurl
-			, Params "--force --update-head-ok --quiet"
+			, Param "--force"
+			, Param "--update-head-ok"
+			, Param "--quiet"
 			] ++ ps
 		fetchr' = fetchr { gitGlobalOpts = gitGlobalOpts fetchr ++ nogc }
 		nogc = [ Param "-c", Param "gc.auto=0" ]
@@ -225,10 +227,13 @@ badBranches missing r = filterM isbad =<< getAllRefs r
  - Relies on packed refs being exploded before it's called.
  -}
 getAllRefs :: Repo -> IO [Ref]
-getAllRefs r = map toref <$> dirContentsRecursive refdir
-  where
-	refdir = localGitDir r </> "refs"
-	toref = Ref . relPathDirToFile (localGitDir r)
+getAllRefs r = getAllRefs' (localGitDir r </> "refs")
+
+getAllRefs' :: FilePath -> IO [Ref]
+getAllRefs' refdir = do
+	let topsegs = length (splitPath refdir) - 1
+	let toref = Ref . joinPath . drop topsegs . splitPath
+	map toref <$> dirContentsRecursive refdir
 
 explodePackedRefsFile :: Repo -> IO ()
 explodePackedRefsFile r = do
@@ -336,9 +341,9 @@ verifyTree :: MissingObjects -> Sha -> Repo -> IO Bool
 verifyTree missing treesha r
 	| S.member treesha missing = return False
 	| otherwise = do
-		(ls, cleanup) <- pipeNullSplit (LsTree.lsTreeParams treesha) r
-		let objshas = map (extractSha . LsTree.sha . LsTree.parseLsTree) ls
-		if any isNothing objshas || any (`S.member` missing) (catMaybes objshas)
+		(ls, cleanup) <- pipeNullSplit (LsTree.lsTreeParams treesha []) r
+		let objshas = map (LsTree.sha . LsTree.parseLsTree) ls
+		if any (`S.member` missing) objshas
 			then do
 				void cleanup
 				return False
@@ -609,4 +614,4 @@ successfulRepair = fst
 safeReadFile :: FilePath -> IO String
 safeReadFile f = do
 	allowRead f
-	readFileStrictAnyEncoding f
+	readFileStrict f

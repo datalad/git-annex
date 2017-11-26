@@ -1,0 +1,59 @@
+[[!comment format=mdwn
+ username="git-annex,branchable.com@1fa4b21c7ece2d61d4730de8e83329049126cedc"
+ nickname="git-annex,branchable.com"
+ subject="Glacier-cli works, thanks, some encode / decode error now..."
+ date="2015-08-26T08:30:53Z"
+ content="""
+Hi Joey,
+
+Thanks for the hand, it started uploading once I had manually created the vault but then borked with:
+
+    fozz@cobol:~/Store/family_pictures $ git annex --verbose copy 201/2011/05/07/P1010004.RW2 --to familypictures-glacier
+    copy 201/2011/05/07/P1010004.RW2 (gpg) (checking familypictures-glacier...) (to familypictures-glacier...) 
+    81%           4.0MB/s 0sTraceback (most recent call last):
+      File \"/home/fozz/.vendor/bin/glacier\", line 730, in <module>
+        App().main()
+      File \"/home/fozz/.vendor/bin/glacier\", line 716, in main
+        self.args.func()
+      File \"/home/fozz/.vendor/bin/glacier\", line 498, in archive_upload
+        file_obj=self.args.file, description=name)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/vault.py\", line 177, in create_archive_from_file
+        writer.write(data)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/writer.py\", line 219, in write
+        self.partitioner.write(data)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/writer.py\", line 61, in write
+        self._send_part()
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/writer.py\", line 75, in _send_part
+        self.send_fn(part)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/writer.py\", line 222, in _upload_part
+        self.uploader.upload_part(self.next_part_index, part_data)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/writer.py\", line 129, in upload_part
+        content_range, part_data)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/layer1.py\", line 1279, in upload_part
+        response_headers=response_headers)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/layer1.py\", line 114, in make_request
+        data=data)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/connection.py\", line 1071, in make_request
+        retry_handler=retry_handler)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/connection.py\", line 943, in _mexe
+        request.body, request.headers)
+      File \"/usr/lib/python2.7/httplib.py\", line 979, in request
+        self._send_request(method, url, body, headers)
+      File \"/usr/lib/python2.7/httplib.py\", line 1013, in _send_request
+        self.endheaders(body)
+      File \"/usr/lib/python2.7/httplib.py\", line 975, in endheaders
+        self._send_output(message_body)
+      File \"/usr/lib/python2.7/httplib.py\", line 833, in _send_output
+        msg += message_body
+    UnicodeDecodeError: 'ascii' codec can't decode byte 0x8c in position 0: ordinal not in range(128)
+    gpg: [stdout]: write error: Broken pipe
+    gpg: DBG: deflate: iobuf_write failed
+    gpg: build_packet failed: file write error
+    gpg: [stdout]: write error: Broken pipe
+    gpg: iobuf_flush failed on close: file write error
+    gpg: symmetric encryption of `[stdin]' failed: file write error
+    git-annex: fd:17: hPutBuf: resource vanished (Broken pipe)
+    failed                  
+    git-annex: copy: 1 failed
+
+"""]]

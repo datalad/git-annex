@@ -1,0 +1,19 @@
+Depending on how I am getting my network connection there are cases where I want to never access a remote.  BUT it depends on the network connection.
+
+For example, when I'm roaming (and paying excessively for each byte)
+
+- I really don't want my music annex to *ever* hit some site (like S3 / Glacier), BUT
+- I do want to be able to get from a remote (like Glacier) for my work annex.
+
+But if I'm home, then all's fair.
+
+That means I can't do something simple like blocking a particular address/IP with DNS (or whatever).  Or even not having the remote listed.
+
+So... I was thinking of using `annex-cost-command` to allow me to set the cost of remotes, based on (say) my IP, but also the annex.  Thus it would result in
+
+- [roaming] + [work-annex] == veryExpensiveRemoteCost
+- [roaming] + [music-annex] == Blocked
+
+However I still need a way to say "never, ever, ever" for the cost of some remotes.
+
+Is this possible?  (With my cursory looking at the code, I can't see anything.)

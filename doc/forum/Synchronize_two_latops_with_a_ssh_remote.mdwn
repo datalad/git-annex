@@ -1,0 +1,3 @@
+Using the command `git-annex webapp` I was able to configure a local repository on my laptop A that is synchronized with a remote repository using ssh. This latter has sync enabled and it is encrypted. I also put it in the *full backup* group.
+
+Now, I would like to synchronize my laptop B with the remote repository with ssh. Using the webapp, I tried to do the same thing I did with my laptop A. However now, my both laptop are synchronized with the remote repository but they do not share any file between them. How can I achieve that ?

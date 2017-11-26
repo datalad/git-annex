@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="no easy fix, i guess then"
+ date="2015-05-31T16:51:36Z"
+ content="""
+right, that would be great. unfortunately, we use the `.IP` macro in the rendered groff output, which only has a leader and nothing on the right. i don't believe there's a macro that would answer the requirement, and i looked at `man(7)`, `mdoc(7)`, `man-pages(7)`, `groff_man(7)`, `groff_mdoc(7)`... which probably covers most of the man material i am aware of.
+
+there *is* the `\h'N'` macro that allows moving `N` spaces to the right, but that wouldn't align the references, so we'd be better off with something like:
+
+<pre>
+ * undo `[filename|directory]` # git-annex-undo(1)
+
+   Undo last change to a file or directory.
+</pre>
+
+... or something like that...
+"""]]

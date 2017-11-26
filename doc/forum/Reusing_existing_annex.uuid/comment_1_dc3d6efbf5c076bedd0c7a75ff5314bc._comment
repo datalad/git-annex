@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-12-19T17:48:48Z"
+ content="""
+Take a look at remote.log in the git-annex branch; it should list all your
+gcrypt and other special remotes. If some seem to be missing, you could
+examine the git log of that file and see what happened.
+
+I don't see how forcing reuse of a uuid could lead to this.
+"""]]

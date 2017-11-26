@@ -1,0 +1,8 @@
+I've merged the `export` branch, after fixing most of the remaining known
+warts, and testing clean-up from interrupted exports and export conflicts.
+
+The main thing remaining to be done is adding the new commands to the
+external special remote interface, and adding export support to S3, webdav,
+and rsync special remotes.
+
+Today's work was supported by the NSF-funded DataLad project.

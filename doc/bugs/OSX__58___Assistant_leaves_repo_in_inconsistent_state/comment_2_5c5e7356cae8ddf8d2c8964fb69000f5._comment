@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Marco"
+ subject="Disaster recovery"
+ date="2015-05-15T09:40:16Z"
+ content="""
+Ah, found it:
+
+https://git-annex.branchable.com/design/assistant/disaster_recovery/
+
+> As long as the git repository has at least one remote, another method is to clone the remote, sync from all other remotes, move over .git/config and .git/annex/objects, and tar up the old broken git repo and git annex add it
+"""]]

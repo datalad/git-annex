@@ -1,0 +1,25 @@
+Hi,
+
+I accidentally changed some metadata tags for all annexed files in a directory (by omitting the filename to the git annex metadata call). How can I revert that change?
+
+I tried a git reset --hard on the git-annex branch, but after checking out master and adding a new file the changes magically reappeared.
+
+git-annex version: 5.20141125
+
+To reproduce do:
+
+    git init; git annex init
+    echo Hi > a.txt; git annex add a.txt
+    git commit -m 'Initial add'
+    git annex metadata --set name=bla
+    git annex metadata --set name=blu
+    git checkout git-annex
+    git reset --hard HEAD^
+    git checkout master
+    git annex metadata a.txt # name=bla
+    echo Huch > b.txt; git annex add b.txt
+    git annex metadata a.txt # name=blu again
+
+Cheers,
+
+Markus

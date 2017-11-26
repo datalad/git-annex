@@ -1,0 +1,14 @@
+When a multipart S3 upload is being made, and gets interrupted,
+the parts remain in the bucket, and S3 may charge for them.
+
+I am not sure what happens if the same object gets uploaded again. Is S3
+nice enough to remove the old parts? I need to find out..
+
+If not, this needs to be dealt with somehow. One way would be to configure an
+expiry of the uploaded parts, but this is tricky as a huge upload could
+take arbitrarily long. Another way would be to record the uploadid and the
+etags of the parts, and then resume where it left off the next time the
+object is sent to S3. (Or at least cancel the old upload; resume isn't
+practical when uploading an encrypted object.) 
+
+It could store that info in either the local FS or the git-annex branch.

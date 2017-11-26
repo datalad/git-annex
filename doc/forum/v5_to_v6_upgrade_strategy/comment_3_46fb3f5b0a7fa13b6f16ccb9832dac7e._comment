@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-07-06T18:50:34Z"
+ content="""
+I'd encourage you to not upgrade any production repositories to v6 yet.
+It's still in beta state and has known problems. Currently all known
+problems are only innefficiencies, but there could also still be bugs.
+
+When you do upgrade, you can upgrade your distibuted set of repos
+peicemeal. v5 and v6 fully interoperate, until you start unlocking files in
+the v6 clones of the repo. Once those unlocks get committed, the v5 clones
+of the repo won't be able to access the unlocked file contents, and you'll
+need to upgrade the clones then.
+
+At some point in the future, I expect v6 mode to be done and then git-annex
+will automatically upgrade for you. So the easist approach is to just wait
+for that.
+
+(Not addressing your problems with annex.thin here as you filed a separate
+forum post and bug report about that.)
+"""]]

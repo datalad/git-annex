@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="ovidiu@66ace8a8d99ce938b0538ffa0f26d30db02a9626"
+ nickname="ovidiu"
+ subject="comment 2"
+ date="2015-10-07T20:22:16Z"
+ content="""
+Hi Carl, thanks for the feedback.
+
+I'll be very slowly in replying, taking some late night classes this week but I WILL ask more questions once I get around to try some tests with dummy data.
+
+Meanwhile here is one question that has been bugging me for days now:
+
+Take the following scenario:
+
+- client repo setup on NAS
+- client repo setup on MAcbook
+- backup and archive repos elsewhere (doesn't matter for this question)
+
+So NAS and MACbook are in sync when I decide I don't need a specific folder on the MACbook and archive it.
+
+The big question:
+Will it be archived on the NAS too or not? (assistant running on both devices and please assume there are enough copies of this folder in backup and archive repos)
+
+This is really an important part of understanding git-annex for me as it would simply be a sync tool if it archives on both devices but if it does not it solves my problem of being able to decide waht data to carry with me on my MACbook and still be able to use a VPN and access a share on the NAS (the client repo folder).
+"""]]

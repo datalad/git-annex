@@ -1,6 +1,6 @@
 {- git-annex assistant tree watcher
  -
- - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -28,23 +28,29 @@ import qualified Annex.Queue
 import qualified Git
 import qualified Git.UpdateIndex
 import qualified Git.LsFiles as LsFiles
-import qualified Backend
+import Annex.WorkTree
 import Annex.Direct
 import Annex.Content.Direct
 import Annex.CatFile
 import Annex.CheckIgnore
 import Annex.Link
 import Annex.FileMatcher
-import Types.FileMatcher
+import Annex.Content
 import Annex.ReplaceFile
+import Annex.Version
+import Annex.InodeSentinal
 import Git.Types
+import Git.FilePath
 import Config
+import Config.GitConfig
 import Utility.ThreadScheduler
+import Utility.FileSystemEncoding
+import Logs.Location
+import qualified Database.Keys
 #ifndef mingw32_HOST_OS
 import qualified Utility.Lsof as Lsof
 #endif
 
-import Data.Bits.Utils
 import Data.Typeable
 import qualified Data.ByteString.Lazy as L
 import qualified Control.Exception as E
@@ -60,10 +66,10 @@ checkCanWatch
 #else
 		noop
 #endif
-	| otherwise = error "watch mode is not available on this system"
+	| otherwise = giveup "watch mode is not available on this system"
 
 needLsof :: Annex ()
-needLsof = error $ unlines
+needLsof = giveup $ unlines
 	[ "The lsof command is needed for watch mode to be safe, and is not in PATH."
 	, "To override lsof checks to ensure that files are not open for writing"
 	, "when added to the annex, you can use --force"
@@ -78,7 +84,7 @@ instance E.Exception WatcherControl
 
 watchThread :: NamedThread
 watchThread = namedThread "Watcher" $
-	ifM (liftAnnex $ annexAutoCommit <$> Annex.getGitConfig)
+	ifM (liftAnnex $ getGitConfigVal annexAutoCommit)
 		( runWatcher
 		, waitFor ResumeWatcher runWatcher
 		)
@@ -88,10 +94,13 @@ runWatcher = do
 	startup <- asIO1 startupScan
 	matcher <- liftAnnex largeFilesMatcher
 	direct <- liftAnnex isDirect
+	unlocked <- liftAnnex versionSupportsUnlockedPointers
 	symlinkssupported <- liftAnnex $ coreSymlinks <$> Annex.getGitConfig
-	addhook <- hook $ if direct
-		then onAddDirect symlinkssupported matcher
-		else onAdd matcher
+	addhook <- hook $ if unlocked
+		then onAddUnlocked symlinkssupported matcher
+		else if direct
+			then onAddDirect symlinkssupported matcher
+			else onAdd matcher
 	delhook <- hook onDel
 	addsymlinkhook <- hook $ onAddSymlink direct
 	deldirhook <- hook onDelDir
@@ -186,27 +195,23 @@ runHandler handler file filestatus = void $ do
 	case r of
 		Left e -> liftIO $ warningIO $ show e
 		Right Nothing -> noop
-		Right (Just change) -> do
-			-- Just in case the commit thread is not
-			-- flushing the queue fast enough.
-			liftAnnex Annex.Queue.flushWhenFull
-			recordChange change
+		Right (Just change) -> recordChange change
   where
 	normalize f
 		| "./" `isPrefixOf` file = drop 2 f
 		| otherwise = f
 
 {- Small files are added to git as-is, while large ones go into the annex. -}
-add :: FileMatcher Annex -> FilePath -> Assistant (Maybe Change)
-add bigfilematcher file = ifM (liftAnnex $ checkFileMatcher bigfilematcher file)
+add :: GetFileMatcher -> FilePath -> Assistant (Maybe Change)
+add largefilematcher file = ifM (liftAnnex $ checkFileMatcher largefilematcher file)
 	( pendingAddChange file
 	, do
 		liftAnnex $ Annex.Queue.addCommand "add"
-			[Params "--force --"] [file]
+			[Param "--force", Param "--"] [file]
 		madeChange file AddFileChange
 	)
 
-onAdd :: FileMatcher Annex -> Handler
+onAdd :: GetFileMatcher -> Handler
 onAdd matcher file filestatus
 	| maybe False isRegularFile filestatus =
 		unlessIgnored file $
@@ -216,34 +221,75 @@ onAdd matcher file filestatus
 shouldRestage :: DaemonStatus -> Bool
 shouldRestage ds = scanComplete ds || forceRestage ds
 
+onAddUnlocked :: Bool -> GetFileMatcher -> Handler
+onAddUnlocked symlinkssupported matcher f fs = do
+	mk <- liftIO $ isPointerFile f
+	case mk of
+		Nothing -> onAddUnlocked' False contentchanged addassociatedfile addlink samefilestatus symlinkssupported matcher f fs
+		Just k -> addlink f k
+  where
+	addassociatedfile key file = 
+		Database.Keys.addAssociatedFile key
+			=<< inRepo (toTopFilePath file)
+	samefilestatus key file status = do
+		cache <- Database.Keys.getInodeCaches key
+		curr <- withTSDelta $ \delta -> liftIO $ toInodeCache delta file status
+		case (cache, curr) of
+			(_, Just c) -> elemInodeCaches c cache
+			([], Nothing) -> return True
+			_ -> return False
+	contentchanged oldkey file = do
+		Database.Keys.removeAssociatedFile oldkey
+			=<< inRepo (toTopFilePath file)
+		unlessM (inAnnex oldkey) $
+			logStatus oldkey InfoMissing
+	addlink file key = do
+		mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
+		liftAnnex $ stagePointerFile file mode =<< hashPointerFile key
+		madeChange file $ LinkChange (Just key)
+
 {- In direct mode, add events are received for both new files, and
  - modified existing files.
  -}
-onAddDirect :: Bool -> FileMatcher Annex -> Handler
-onAddDirect symlinkssupported matcher file fs = do
+onAddDirect :: Bool -> GetFileMatcher -> Handler
+onAddDirect = onAddUnlocked' True changedDirect addassociatedfile addlink sameFileStatus
+  where
+	addassociatedfile key file = void $ addAssociatedFile key file
+	addlink file key = do
+		link <- liftAnnex $ calcRepo $ gitAnnexLink file key
+		addLink file link (Just key)
+
+onAddUnlocked'
+	:: Bool
+	-> (Key -> FilePath -> Annex ())
+	-> (Key -> FilePath -> Annex ())
+	-> (FilePath -> Key -> Assistant (Maybe Change))
+	-> (Key -> FilePath -> FileStatus -> Annex Bool)
+	-> Bool
+	-> GetFileMatcher
+	-> Handler
+onAddUnlocked' isdirect contentchanged addassociatedfile addlink samefilestatus symlinkssupported matcher file fs = do
 	v <- liftAnnex $ catKeyFile file
 	case (v, fs) of
 		(Just key, Just filestatus) ->
-			ifM (liftAnnex $ sameFileStatus key filestatus)
+			ifM (liftAnnex $ samefilestatus key file filestatus)
 				{- It's possible to get an add event for
 				 - an existing file that is not
 				 - really modified, but it might have
 				 - just been deleted and been put back,
-				 - so it symlink is restaged to make sure. -}
+				 - so its annex link is restaged to make sure. -}
 				( ifM (shouldRestage <$> getDaemonStatus)
-					( do
-						link <- liftAnnex $ inRepo $ gitAnnexLink file key
-						addLink file link (Just key)
+					( addlink file key
 					, noChange
 					)
 				, guardSymlinkStandin (Just key) $ do
-					debug ["changed direct", file]
-					liftAnnex $ changedDirect key file
+					debug ["changed", file]
+					liftAnnex $ contentchanged key file
 					add matcher file
 				)
 		_ -> unlessIgnored file $
 			guardSymlinkStandin Nothing $ do
-				debug ["add direct", file]
+				debug ["add", file]
 				add matcher file
   where
 	{- On a filesystem without symlinks, we'll get changes for regular
@@ -259,9 +305,9 @@ onAddDirect symlinkssupported matcher file fs = do
 				Just lt -> do
 					case fileKey $ takeFileName lt of
 						Nothing -> noop
-						Just key -> void $ liftAnnex $
-							addAssociatedFile key file
-					onAddSymlink' linktarget mk True file fs
+						Just key -> liftAnnex $
+							addassociatedfile key file
+					onAddSymlink' linktarget mk isdirect file fs
 
 {- A symlink might be an arbitrary symlink, which is just added.
  - Or, if it is a git-annex symlink, ensure it points to the content
@@ -270,7 +316,7 @@ onAddDirect symlinkssupported matcher file fs = do
 onAddSymlink :: Bool -> Handler
 onAddSymlink isdirect file filestatus = unlessIgnored file $ do
 	linktarget <- liftIO (catchMaybeIO $ readSymbolicLink file)
-	kv <- liftAnnex (Backend.lookupFile file)
+	kv <- liftAnnex (lookupFile file)
 	onAddSymlink' linktarget kv isdirect file filestatus
 
 onAddSymlink' :: Maybe String -> Maybe Key -> Bool -> Handler
@@ -279,7 +325,7 @@ onAddSymlink' linktarget mk isdirect file filestatus = go mk
 	go (Just key) = do
 		when isdirect $
 			liftAnnex $ void $ addAssociatedFile key file
-		link <- liftAnnex $ inRepo $ gitAnnexLink file key
+		link <- liftAnnex $ calcRepo $ gitAnnexLink file key
 		if linktarget == Just link
 			then ensurestaged (Just link) =<< getDaemonStatus
 			else do
@@ -330,13 +376,16 @@ onDel file _ = do
 
 onDel' :: FilePath -> Annex ()
 onDel' file = do
-	whenM isDirect $ do
-		mkey <- catKeyFile file
-		case mkey of
-			Nothing -> noop
-			Just key -> void $ removeAssociatedFile key file
+	topfile <- inRepo (toTopFilePath file)
+	ifM versionSupportsUnlockedPointers
+		( withkey $ flip Database.Keys.removeAssociatedFile topfile
+		, whenM isDirect $
+			withkey $ \key -> void $ removeAssociatedFile key file
+		)
 	Annex.Queue.addUpdateIndex =<<
 		inRepo (Git.UpdateIndex.unstageFile file)
+  where
+	withkey a = maybe noop a =<< catKeyFile file
 
 {- A directory has been deleted, or moved, so tell git to remove anything
  - that was inside it from its cache. Since it could reappear at any time,
@@ -357,7 +406,6 @@ onDelDir dir _ = do
 	recordChanges $ map (\f -> Change now f RmChange) fs
 
 	void $ liftIO clean
-	liftAnnex Annex.Queue.flushWhenFull
 	noChange
 
 {- Called when there's an error with inotify or kqueue. -}

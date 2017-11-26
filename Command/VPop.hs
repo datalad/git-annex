@@ -1,13 +1,12 @@
 {- git-annex command
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.VPop where
 
-import Common.Annex
 import Command
 import qualified Git
 import qualified Git.Command
@@ -16,18 +15,18 @@ import Types.View
 import Logs.View
 import Command.View (checkoutViewBranch)
 
-cmd :: [Command]
-cmd = [notBareRepo $ notDirect $
-	command "vpop" (paramOptional paramNumber) seek SectionMetaData
-	"switch back to previous view"]
+cmd :: Command
+cmd = notBareRepo $ notDirect $
+	command "vpop" SectionMetaData "switch back to previous view"
+		paramNumber (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart
 start ps = go =<< currentView
   where
-	go Nothing = error "Not in a view."
+	go Nothing = giveup "Not in a view."
 	go (Just v) = do
 		showStart "vpop" (show num)
 		removeView v

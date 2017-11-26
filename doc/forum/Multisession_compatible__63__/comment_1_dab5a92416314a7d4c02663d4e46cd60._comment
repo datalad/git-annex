@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-02-04T16:30:30Z"
+ content="""
+git-annex has quite extensive locking, so it's entirely safe to run any
+combination of any git-annex commands at the same time.
+
+(It doesn't actually check out the git-annex branch when making commits to
+it BTW.)
+"""]]

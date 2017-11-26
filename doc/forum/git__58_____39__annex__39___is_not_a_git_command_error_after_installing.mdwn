@@ -1,0 +1,38 @@
+Installed git and git annex precisely as directed on my Windows 7 system, but 'git annex test' fails with above mentioned error - as if it's not been installed.
+I tried uninstalling and reinstalling
+
+These are the contents of my git directory (from git bash prompt):
+
+-rw-r--r--    1 iainso   Administ      708 Dec 17 21:23 Git Bash.vbs
+
+-rw-r--r--    1 iainso   Administ    46106 Dec 17 21:23 ReleaseNotes.rtf
+
+drwxr-xr-x  147 iainso   Administ    40960 Jan 29 14:44 bin
+
+drwxr-xr-x   51 iainso   Administ    12288 Jan 29 16:10 cmd
+
+drwxr-xr-x    3 iainso   Administ        0 Jan 29 14:44 doc
+
+drwxr-xr-x   13 iainso   Administ     4096 Jan 29 14:44 etc
+
+-rw-r--r--    1 iainso   Administ      103 Jan 28 18:38 git-annex-autostart.vbs
+
+-rw-r--r--    1 iainso   Administ   232368 Jan 28 18:38 git-annex-licenses.txt
+
+-rwxr-xr-x    1 iainso   Administ    49799 Jan 29 16:10 git-annex-uninstall.exe
+
+-rw-r--r--    1 iainso   Administ       88 Jan 28 18:38 git-annex-webapp.vbs
+
+drwxr-xr-x    4 iainso   Administ        0 Jan 29 14:44 git-cheetah
+
+drwxr-xr-x   11 iainso   Administ     4096 Jan 29 14:44 lib
+
+drwxr-xr-x    3 iainso   Administ        0 Jan 29 14:43 libexec
+
+drwxr-xr-x    9 iainso   Administ        0 Jan 29 14:44 share
+
+drwxr-xr-x    5 iainso   Administ        0 Jan 29 14:44 ssl
+
+-rw-r--r--    1 iainso   Administ   635621 Jan 29 14:44 unins000.dat
+
+-rwxr-xr-x    1 iainso   Administ  1244929 Jan 29 14:42 unins000.exe

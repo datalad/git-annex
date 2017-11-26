@@ -23,7 +23,7 @@
  - need modifications to compile.
  -
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -35,11 +35,9 @@ import Text.Parsec.String
 import Control.Applicative ((<$>))
 import Data.Either
 import Data.List hiding (find)
-import Data.String.Utils
 import Data.Char
 import System.Environment
 import System.FilePath
-import System.Directory
 import System.IO
 import Control.Monad
 import Prelude hiding (log)
@@ -49,6 +47,8 @@ import Utility.Misc
 import Utility.Exception hiding (try)
 import Utility.Path
 import Utility.FileSystemEncoding
+import Utility.Directory
+import Utility.Split
 
 data Coord = Coord
 	{ coordLine :: Int
@@ -203,14 +203,13 @@ applySplices _ _ [] = noop
 applySplices destdir imports splices@(first:_) = do
 	let f = splicedFile first
 	let dest = (destdir </> f)
-	lls <- map (++ "\n") . lines <$> readFileStrictAnyEncoding f
+	lls <- map (++ "\n") . lines <$> readFileStrict f
 	createDirectoryIfMissing True (parentDir dest)
 	let newcontent = concat $ addimports $ expand lls splices
-	oldcontent <- catchMaybeIO $ readFileStrictAnyEncoding dest
+	oldcontent <- catchMaybeIO $ readFileStrict dest
 	when (oldcontent /= Just newcontent) $ do
 		putStrLn $ "splicing " ++ f
 		withFile dest WriteMode $ \h -> do
-		        fileEncoding h
 			hPutStr h newcontent
 		        hClose h
   where
@@ -301,8 +300,11 @@ expandExpressionSplice sp lls = concat [before, spliced:padding, end]
 {- Tweaks code output by GHC in splices to actually build. Yipes. -}
 mangleCode :: String -> String
 mangleCode = flip_colon
+	. persist_dequalify_hack
+	. let_do
 	. remove_unnecessary_type_signatures
-	. lambdaparenhack
+	. lambdaparenhackyesod
+	. lambdaparenhackpersistent
 	. lambdaparens
 	. declaration_parens
 	. case_layout
@@ -383,7 +385,7 @@ mangleCode = flip_colon
 	 - FIXME: This is a hack. lambdaparens could just always add a
 	 - layer of parens even when a lambda seems to be in parent.
 	 -}
-	lambdaparenhack = parsecAndReplace $ do
+	lambdaparenhackyesod = parsecAndReplace $ do
 		indent1 <- many1 $ char ' '
 		staticr <- string "StaticR"
 		void newline
@@ -405,6 +407,44 @@ mangleCode = flip_colon
 			, indent1 ++ yesod_dispatch_env
 			, indent1 ++ "(" ++ lambdaprefix ++ l1
 			, indent1 ++ lambdaarrow ++ l2 ++ l3 ++ ")"
+			]
+
+	{- Hack to reorder misplaced paren in persistent code.
+	 -
+	 - = ((Right Fscked)
+         -    (\ persistValue_a36iM
+         -       -> case fromPersistValue persistValue_a36iM of {
+         -            Right r_a36iN -> Right r_a36iN
+         -            Left err_a36iO
+         -              -> (Left
+         -                  $ ((("field " `Data.Monoid.mappend` (packPTH "key"))
+         -                      `Data.Monoid.mappend` ": ")
+         -                     `Data.Monoid.mappend` err_a36iO)) }
+         -       x_a36iL))
+	 -
+	 - Fixed by adding another level of params around the lambda
+	 - (lambdaparams should be generalized to cover this case).
+	 -}
+	lambdaparenhackpersistent = parsecAndReplace $ do
+		indent1 <- many1 $ char ' '
+		start <- do
+			s1 <- string "(\\ "
+			s2 <- string "persistValue_"
+			s3 <- restofline
+			return $ s1 ++ s2 ++ s3
+		void $ string indent1
+		indent2 <- many1 $ char ' '
+		void $ string "-> "
+		l1 <- restofline
+		lambdalines <- many $ try $ do
+			void $ string $ indent1 ++ indent2 ++ " "
+			l <- restofline
+			return $ indent1 ++ indent2 ++ " " ++ l
+		return $ concat
+			[ indent1 ++ "(" ++ start ++ "\n"
+			, indent1 ++ indent2 ++ "-> " ++ l1 ++ "\n"
+			, intercalate "\n" lambdalines
+			, ")\n"
 			]
 
 	restofline = manyTill (noneOf "\n") newline
@@ -433,7 +473,7 @@ mangleCode = flip_colon
 	 -
 	 - To fix, we could just put a semicolon at the start of every line
 	 - containing " -> " ... Except that lambdas also contain that.
-	 - But we can get around that: GHC outputs lambas like this:
+	 - But we can get around that: GHC outputs lambdas like this:
 	 -
 	 - \ foo
 	 -   -> bar
@@ -446,11 +486,11 @@ mangleCode = flip_colon
 	 - containing " -> " unless there's a "\ " first, or it's
 	 - all whitespace up until it.
 	 -}
-	case_layout = parsecAndReplace $ do
+	case_layout = skipfree $ parsecAndReplace $ do
 		void newline
 		indent1 <- many1 $ char ' '
 		prefix <- manyTill (noneOf "\n") (try (string "-> "))
-		if length prefix > 10
+		if length prefix > 20
 			then unexpected "too long a prefix"
 			else if "\\ " `isInfixOf` prefix
 				then unexpected "lambda expression"
@@ -467,7 +507,7 @@ mangleCode = flip_colon
 	 -        var var
 	 -   -> foo
 	 -}
-	case_layout_multiline = parsecAndReplace $ do
+	case_layout_multiline = skipfree $ parsecAndReplace $ do
 		void newline
 		indent1 <- many1 $ char ' '
 		firstline <- restofline
@@ -479,6 +519,11 @@ mangleCode = flip_colon
 			then unexpected "lambda expression"
 			else return $ "\n" ++ indent1 ++ "; " ++ firstline ++ "\n"
 				++ indent1 ++ indent2 ++ "-> "
+
+	{- Type definitions for free monads triggers the case_* hacks, avoid. -}
+	skipfree f s
+		| "MonadFree" `isInfixOf` s = s
+		| otherwise = f s
 
 	{- (foo, \ -> bar) is not valid haskell, GHC.
 	 - Change to (foo, bar)
@@ -495,10 +540,13 @@ mangleCode = flip_colon
 	 -        ^^^^^^^^
 	 - The marked word should not be there.
 	 -
-	 - FIXME: This is a yesod-specific hack, it should look for the
-	 - outer instance.
+	 - FIXME: This is a yesod and persistent-specific hack,
+	 - it should look for the outer instance.
 	 -}
-	nested_instances = replace "  data instance Route" "  data Route" 
+	nested_instances = replace "  data instance Route" "  data Route"
+		. replace "  data instance Unique" "  data Unique"
+		. replace "  data instance EntityField" "  data EntityField"
+		. replace "  type instance PersistEntityBackend" "  type PersistEntityBackend"
 
 	{- GHC does not properly parenthesise generated data type
 	 - declarations. -}
@@ -554,7 +602,29 @@ mangleCode = flip_colon
 	 - The ; is added by case_layout. -}
 	flip_colon = replace "; : _ " "; _ : "
 
-{- Embedded files use unsafe packing, which is problimatic
+	{- TH for persistent has some qualified symbols in places
+	 - that are not allowed. -}
+	persist_dequalify_hack = replace "Database.Persist.TH.++" "`Data.Text.append`"
+		. replace "Database.Persist.Sql.Class.sqlType" "sqlType"
+		. replace "Database.Persist.Class.PersistField.toPersistValue" "toPersistValue"
+		. replace "Database.Persist.Class.PersistField.fromPersistValue" "fromPersistValue"
+
+	{- Sometimes generates invalid bracketed code with a let
+	 - expression:
+	 -
+	 - foo = do { let x = foo;
+	 -            use foo }
+	 -
+	 - Fix by converting the "let x = " to "x <- return $"
+	 -}
+	let_do = parsecAndReplace $ do
+		void $ string "= do { let "
+		x <- many $ noneOf "=\r\n"
+		_ <- many1 $ oneOf " \t\r\n"
+		void $ string "= "
+		return $ "= do { " ++ x ++ " <- return $ "
+
+{- Embedded files use unsafe packing, which is problematic
  - for several reasons, including that GHC sometimes omits trailing
  - newlines in the file content, which leads to the wrong byte
  - count. Also, GHC sometimes outputs unicode characters, which 
@@ -650,7 +720,9 @@ parsecAndReplace p s = case parse find "" s of
 	find = many $ try (Right <$> p) <|> (Left <$> anyChar)
 
 main :: IO ()
-main = go =<< getArgs
+main = do
+	useFileSystemEncoding
+	go =<< getArgs
   where
 	go (destdir:log:header:[]) = run destdir log (Just header)
 	go (destdir:log:[]) = run destdir log Nothing

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2015-08-19T18:27:53Z"
+ content="""
+@forbesmyester, I think that the "glacier" program you have installed is
+the one from boto, not the one from glacier-cli. git-annex only supports
+the glacier-cli one.
+
+Note that, since version 5.20150219, git-annex probes to see if the
+"glacier" program in PATH is the one from boto, and fails with a nicer
+error message.
+"""]]

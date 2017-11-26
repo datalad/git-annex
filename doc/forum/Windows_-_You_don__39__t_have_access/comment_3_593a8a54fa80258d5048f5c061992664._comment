@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-07-20T19:03:58Z"
+ content="""
+Pretty sure that the only difference gitlab can see between your Windows
+and Linux boxes there is the ssh key that they're using. So, maybe you need
+to add the Windows box's ssh key to the gitlab repo, or there's a problem
+in that area.
+"""]]

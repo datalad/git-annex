@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-06-14T16:53:22Z"
+ content="""
+Yeah, I did use wget for the read-only S3 downloads, so you can configure
+with `annex.web-download-command`. No rate limiting available for
+authenticated S3 access yet.
+
+Release tuesday or wednesday.
+"""]]

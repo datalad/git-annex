@@ -1,0 +1,7 @@
+Got unexpectedly far today on optimising the database that v6 repositories
+use to keep track of unlocked files. The database schema may still need
+optimization, but everything else to do with the database is optimised.
+Writes to the database are queued together. And reads to the database
+avoid creating the database if it doesn't exist yet. Which means v5
+repos, and v6 repos with no unlocked files will avoid any database
+overhead.

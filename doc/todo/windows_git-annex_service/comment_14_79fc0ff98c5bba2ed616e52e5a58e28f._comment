@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawm9ocq1Kb0WL-cz-LPpvd2Xm-q8tIQvqXA"
- nickname="Dominik"
- subject="multiple git-annex assistant processes"
- date="2014-05-16T23:05:28Z"
- content="""
-shouldn't be a problem though if all processes are spawned from the same service though, right? Or what problems did you have in mind?
-"""]]

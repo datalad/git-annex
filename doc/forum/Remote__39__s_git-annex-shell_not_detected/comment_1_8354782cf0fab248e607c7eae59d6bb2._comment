@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-08-09T14:13:50Z"
+ content="""
+I'd guess that however you have installed git-annex does not result in
+git-annex-shell being in PATH until .bashrc or similar is loaded. 
+
+Since bash refuses to load any such files when a command like "ssh thehost
+git-annex-shell" is run, you can't install git-annex-shell that way. You
+have to install it somewhere in the default PATH.
+"""]]

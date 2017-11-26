@@ -1,18 +1,17 @@
 {- git-annex output messages
  -
- - Copyright 2010-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Messages (
 	showStart,
+	ActionItem,
+	mkActionItem,
 	showStart',
 	showNote,
 	showAction,
-	showProgress,
-	metered,
-	meteredBytes,
 	showSideAction,
 	doSideAction,
 	doQuietSideAction,
@@ -22,10 +21,13 @@ module Messages (
 	showEndOk,
 	showEndFail,
 	showEndResult,
-	showErr,
+	endResult,
+	toplevelWarning,
 	warning,
+	earlyWarning,
 	warningIO,
 	indent,
+	JSON.JSONChunk(..),
 	maybeShowJSON,
 	showFullJSON,
 	showCustom,
@@ -33,70 +35,48 @@ module Messages (
 	showRaw,
 	setupConsole,
 	enableDebugOutput,
-	disableDebugOutput
+	disableDebugOutput,
+	debugEnabled,
+	commandProgressDisabled,
+	outputMessage,
+	implicitMessage,
+	withMessageState,
+	prompt,
 ) where
 
-import Text.JSON
-import Data.Progress.Meter
-import Data.Progress.Tracker
-import Data.Quantity
 import System.Log.Logger
 import System.Log.Formatter
-import System.Log.Handler (setFormatter, LogHandler)
+import System.Log.Handler (setFormatter)
 import System.Log.Handler.Simple
+import Control.Concurrent
 
-import Common hiding (handle)
+import Common
 import Types
 import Types.Messages
+import Types.ActionItem
+import Types.Concurrency
+import Messages.Internal
+import Messages.Concurrent
 import qualified Messages.JSON as JSON
-import Types.Key
 import qualified Annex
-import Utility.Metered
 
 showStart :: String -> FilePath -> Annex ()
-showStart command file = handle (JSON.start command $ Just file) $
-	flushed $ putStr $ command ++ " " ++ file ++ " "
+showStart command file = outputMessage json $
+	command ++ " " ++ file ++ " "
+  where
+	json = JSON.start command (Just file) Nothing
 
-showStart' :: String -> Key -> Maybe FilePath -> Annex ()
-showStart' command key afile = showStart command $
-	fromMaybe (key2file key) afile
+showStart' :: String -> Key -> ActionItem -> Annex ()
+showStart' command key i = outputMessage json $
+	command ++ " " ++ actionItemDesc i key ++ " "
+  where
+	json = JSON.start command (actionItemWorkTreeFile i) (Just key)
 
 showNote :: String -> Annex ()
-showNote s = handle (JSON.note s) $
-	flushed $ putStr $ "(" ++ s ++ ") "
+showNote s = outputMessage (JSON.note s) $ "(" ++ s ++ ") "
 
 showAction :: String -> Annex ()
 showAction s = showNote $ s ++ "..."
-
-{- Progress dots. -}
-showProgress :: Annex ()
-showProgress = handle q $
-	flushed $ putStr "."
-
-{- Shows a progress meter while performing a transfer of a key.
- - The action is passed a callback to use to update the meter. -}
-metered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
-metered combinemeterupdate key a = go (keySize key)
-  where
-	go (Just size) = meteredBytes combinemeterupdate size a
-	go _ = a (const noop)
-
-{- Shows a progress meter while performing an action on a given number
- - of bytes. -}
-meteredBytes :: Maybe MeterUpdate -> Integer -> (MeterUpdate -> Annex a) -> Annex a
-meteredBytes combinemeterupdate size a = withOutputType go
-  where
-	go NormalOutput = do
-		progress <- liftIO $ newProgress "" size
-		meter <- liftIO $ newMeter progress "B" 25 (renderNums binaryOpts 1)
-		showOutput
-		r <- a $ \n -> liftIO $ do
-			setP progress $ fromBytesProcessed n
-			displayMeter stdout meter
-			maybe noop (\m -> m n) combinemeterupdate
-		liftIO $ clearMeter stdout meter
-		return r
-	go _ = a (const noop)
 
 showSideAction :: String -> Annex ()
 showSideAction m = Annex.getState Annex.output >>= go
@@ -108,10 +88,10 @@ showSideAction m = Annex.getState Annex.output >>= go
 			Annex.changeState $ \s -> s { Annex.output = st' }
 		| sideActionBlock st == InBlock = return ()
 		| otherwise = p
-	p = handle q $ putStrLn $ "(" ++ m ++ "...)"
+	p = outputMessage JSON.none $ "(" ++ m ++ "...)\n"
 			
 showStoringStateAction :: Annex ()
-showStoringStateAction = showSideAction "Recording state in git"
+showStoringStateAction = showSideAction "recording state in git"
 
 {- Performs an action, supressing showSideAction messages. -}
 doQuietSideAction :: Annex a -> Annex a
@@ -130,13 +110,13 @@ doSideAction' b a = do
   where
 	set o = Annex.changeState $ \s -> s {  Annex.output = o }
 
+{- Make way for subsequent output of a command. -}
 showOutput :: Annex ()
-showOutput = handle q $
-	putStr "\n"
+showOutput = unlessM commandProgressDisabled $
+	outputMessage JSON.none "\n"
 
 showLongNote :: String -> Annex ()
-showLongNote s = handle (JSON.note s) $
-	putStrLn $ '\n' : indent s
+showLongNote s = outputMessage (JSON.note s) ('\n' : indent s ++ "\n")
 
 showEndOk :: Annex ()
 showEndOk = showEndResult True
@@ -145,25 +125,28 @@ showEndFail :: Annex ()
 showEndFail = showEndResult False
 
 showEndResult :: Bool -> Annex ()
-showEndResult ok = handle (JSON.end ok) $ putStrLn msg
-  where
-	msg
-		| ok = "ok"
-		| otherwise = "failed"
+showEndResult ok = outputMessage (JSON.end ok) $ endResult ok ++ "\n"
 
-showErr :: (Show a) => a -> Annex ()
-showErr e = warning' $ "git-annex: " ++ show e
+endResult :: Bool -> String
+endResult True = "ok"
+endResult False = "failed"
+
+toplevelWarning :: Bool -> String -> Annex ()
+toplevelWarning makeway s = warning' makeway ("git-annex: " ++ s)
 
 warning :: String -> Annex ()
-warning = warning' . indent
+warning = warning' True . indent
 
-warning' :: String -> Annex ()
-warning' w = do
-	handle q $ putStr "\n"
-	liftIO $ do
-		hFlush stdout
-		hPutStrLn stderr w
+earlyWarning :: String -> Annex ()
+earlyWarning = warning' False
 
+warning' :: Bool -> String -> Annex ()
+warning' makeway w = do
+	when makeway $
+		outputMessage JSON.none "\n"
+	outputError (w ++ "\n")
+
+{- Not concurrent output safe. -}
 warningIO :: String -> IO ()
 warningIO w = do
 	putStr "\n"
@@ -173,45 +156,46 @@ warningIO w = do
 indent :: String -> String
 indent = intercalate "\n" . map (\l -> "  " ++ l) . lines
 
-{- Shows a JSON fragment only when in json mode. -}
-maybeShowJSON :: JSON a => [(String, a)] -> Annex ()
-maybeShowJSON v = handle (JSON.add v) q
+{- Shows a JSON chunk only when in json mode. -}
+maybeShowJSON :: JSON.JSONChunk v -> Annex ()
+maybeShowJSON v = void $ withMessageState $ outputJSON (JSON.add v)
 
 {- Shows a complete JSON value, only when in json mode. -}
-showFullJSON :: JSON a => [(String, a)] -> Annex Bool
-showFullJSON v = withOutputType $ liftIO . go
-  where
-	go JSONOutput = JSON.complete v >> return True
-	go _ = return False
+showFullJSON :: JSON.JSONChunk v -> Annex Bool
+showFullJSON v = withMessageState $ outputJSON (JSON.complete v)
 
 {- Performs an action that outputs nonstandard/customized output, and
  - in JSON mode wraps its output in JSON.start and JSON.end, so it's
  - a complete JSON document.
- - This is only needed when showStart and showEndOk is not used. -}
+ - This is only needed when showStart and showEndOk is not used.
+ -}
 showCustom :: String -> Annex Bool -> Annex ()
 showCustom command a = do
-	handle (JSON.start command Nothing) q
+	outputMessage (JSON.start command Nothing Nothing) ""
 	r <- a
-	handle (JSON.end r) q
+	outputMessage (JSON.end r) ""
 
 showHeader :: String -> Annex ()
-showHeader h = handle q $
-	flushed $ putStr $ h ++ ": "
+showHeader h = outputMessage JSON.none $ (h ++ ": ")
 
 showRaw :: String -> Annex ()
-showRaw s = handle q $ putStrLn s
+showRaw s = outputMessage JSON.none (s ++ "\n")
 
 setupConsole :: IO ()
 setupConsole = do
 	s <- setFormatter
 		<$> streamHandler stderr DEBUG
-		<*> pure (simpleLogFormatter "[$time] $msg")
+		<*> pure preciseLogFormatter
 	updateGlobalLogger rootLoggerName (setLevel NOTICE . setHandlers [s])
-	{- This avoids ghc's output layer crashing on
-	 - invalid encoded characters in
-	 - filenames when printing them out. -}
-	fileEncoding stdout
-	fileEncoding stderr
+	{- Force output to be line buffered. This is normally the case when
+	 - it's connected to a terminal, but may not be when redirected to
+	 - a file or a pipe. -}
+	hSetBuffering stdout LineBuffering
+	hSetBuffering stderr LineBuffering
+
+{- Log formatter with precision into fractions of a second. -}
+preciseLogFormatter :: LogFormatter a
+preciseLogFormatter = tfLogFormatter "%F %X%Q" "[$time] $msg"
 
 enableDebugOutput :: IO ()
 enableDebugOutput = updateGlobalLogger rootLoggerName $ setLevel DEBUG
@@ -219,18 +203,38 @@ enableDebugOutput = updateGlobalLogger rootLoggerName $ setLevel DEBUG
 disableDebugOutput :: IO ()
 disableDebugOutput = updateGlobalLogger rootLoggerName $ setLevel NOTICE
 
-handle :: IO () -> IO () -> Annex ()
-handle json normal = withOutputType go
+{- Checks if debugging is enabled. -}
+debugEnabled :: IO Bool
+debugEnabled = do
+	l <- getRootLogger
+	return $ getLevel l <= Just DEBUG
+
+{- Should commands that normally output progress messages have that
+ - output disabled? -}
+commandProgressDisabled :: Annex Bool
+commandProgressDisabled = withMessageState $ \s -> return $
+	case outputType s of
+		QuietOutput -> True
+		JSONOutput _ -> True
+		NormalOutput -> concurrentOutputEnabled s
+
+{- Use to show a message that is displayed implicitly, and so might be
+ - disabled when running a certian command that needs more control over its
+ - output. -}
+implicitMessage :: Annex () -> Annex ()
+implicitMessage = whenM (implicitMessages <$> Annex.getState Annex.output)
+
+{- Prevents any concurrent console access while running an action, so
+ - that the action is the only thing using the console, and can eg prompt
+ - the user.
+ -}
+prompt :: Annex a -> Annex a
+prompt a = go =<< Annex.getState Annex.concurrency
   where
-	go NormalOutput = liftIO normal
-	go QuietOutput = q
-	go JSONOutput = liftIO $ flushed json
-
-q :: Monad m => m ()
-q = noop
-
-flushed :: IO () -> IO ()
-flushed a = a >> hFlush stdout
-
-withOutputType :: (OutputType -> Annex a) -> Annex a
-withOutputType a = outputType <$> Annex.getState Annex.output >>= a
+	go NonConcurrent = a
+	go (Concurrent {}) = withMessageState $ \s -> do
+		let l = promptLock s
+		bracketIO
+			(takeMVar l)
+			(putMVar l)
+			(const $ hideRegionsWhile a)

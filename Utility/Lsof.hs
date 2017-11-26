@@ -1,6 +1,6 @@
 {- lsof interface
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -47,9 +47,8 @@ queryDir path = query ["+d", path]
  -}
 query :: [String] -> IO [(FilePath, LsofOpenMode, ProcessInfo)]
 query opts =
-	withHandle StdoutHandle (createProcessChecked checkSuccessProcess) p $ \h -> do
-		fileEncoding h
-		parse <$> hGetContentsStrict h
+	withHandle StdoutHandle (createProcessChecked checkSuccessProcess) p $
+		parse <$$> hGetContentsStrict
   where
 	p = proc "lsof" ("-F0can" : opts)
 
@@ -93,18 +92,22 @@ parseFormatted s = bundle $ go [] $ lines s
 		_ -> parsefail
 
 	parsefiles c [] = (c, [])
-	parsefiles c (l:ls) = case splitnull l of
-		['a':mode, 'n':file, ""] ->
-			parsefiles ((file, parsemode mode):c) ls
-		(('p':_):_) -> (c, l:ls)
-		_ -> parsefail
+	parsefiles c (l:ls) = parsefiles' c (splitnull l) l ls
+
+	parsefiles' c ['a':mode, 'n':file, ""] _ ls =
+		parsefiles ((file, parsemode mode):c) ls
+	parsefiles' c (('p':_):_) l ls = (c, l:ls)
+	-- Some buggy versions of lsof emit a f field
+	-- that was not requested, so ignore it.
+	parsefiles' c (('f':_):rest) l ls = parsefiles' c rest l ls
+	parsefiles' _ _ _ _ = parsefail
 
 	parsemode ('r':_) = OpenReadOnly
 	parsemode ('w':_) = OpenWriteOnly
 	parsemode ('u':_) = OpenReadWrite
 	parsemode _ = OpenUnknown
 
-	splitnull = split "\0"
+	splitnull = splitc '\0'
 
 	parsefail = error $ "failed to parse lsof output: " ++ show s
 

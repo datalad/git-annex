@@ -81,7 +81,7 @@ it is a video and download the video content for offline viewing.
 Later, in another clone of the repository, you can run `git annex get` on
 the file and it will also be downloaded with the help of quvi. This works
 even if the video host has transcoded or otherwise changed the video
-in the meantime; the assumption is that these video files are equivilant.
+in the meantime; the assumption is that these video files are equivalent.
 
 There is an `annex.quvi-options` configuration setting that can be used
 to pass parameters to quvi. For example, you could set `git config
@@ -103,6 +103,18 @@ feed is "http://gdata.youtube.com/feeds/api/playlists/PL4F80C7D2DC8D9B6C"
 
 More details about youtube feeds at <http://googlesystem.blogspot.com/2008/01/youtube-feeds.html>
 -- `git-annex importfeed` should handle all of them.
+
+## bittorrent
+
+The [[bittorrent_special_remote|special_remotes/bittorrent]] lets git-annex
+also download the content of torrent files, and magnet links to torrents.
+
+You can simply pass the url to a torrent to `git annex addurl`
+the same as any other url.
+
+You have to have [aria2](http://aria2.sourceforge.net/) 
+and bittornado (or the original bittorrent) installed for this
+to work.
 
 ## podcasts
 

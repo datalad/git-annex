@@ -1,0 +1,15 @@
+Over the weekend, I noticed that a relative path to `GIT_INDEX_FILE` is
+interpreted in several different, inconsistent ways by git. git-annex
+mostly used absolute paths, but did use a relative path in `git annex
+view`. Now it will only use absolute paths to avoid git's wacky behavior.
+
+Integrated some patches to support building with ghc 8.0.1, which was
+recently released.
+
+The gnupg-options git configs were not always passed to gpg. Fixing this
+involved quite a lot of plumbing to get the options to the right functions,
+and consumed half of today.
+
+Also did some design work on [[design/external_special_remote_protocol]]
+to avoid backwards compatability problems when adding new protocol
+features.

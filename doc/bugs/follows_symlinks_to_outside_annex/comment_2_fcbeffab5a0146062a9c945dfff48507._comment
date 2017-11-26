@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.87"
- subject="comment 2"
- date="2013-12-18T19:32:06Z"
- content="""
-This was the same as the other bug, and only happened on OSX, in the startup scan.
-"""]]

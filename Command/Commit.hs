@@ -1,22 +1,22 @@
 {- git-annex command
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.Commit where
 
-import Common.Annex
 import Command
 import qualified Annex.Branch
 import qualified Git
 
-cmd :: [Command]
-cmd = [command "commit" paramNothing seek
-	SectionPlumbing "commits any staged changes to the git-annex branch"]
+cmd :: Command
+cmd = command "commit" SectionPlumbing 
+	"commits any staged changes to the git-annex branch"
+	paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start :: CommandStart

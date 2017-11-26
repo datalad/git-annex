@@ -1,0 +1,5 @@
+git-annex add . fails with:
+
+ git-annex: unknown response from git cat-file ("HEAD:./MYDIRECTORYNAME/Icon missing","HEAD:./MYDIRECTORYNAME/Icon\r")
+
+There's a file in the directory called Icon^M or Icon? (there's some kind of control character or unicode or other weirdness at the end)

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawmZilYULa6CDEGfuagoDlesyakBgnf-dF8"
- nickname="Maarten"
- subject="workaround?"
- date="2013-12-05T14:17:57Z"
- content="""
-Until this is fixed, how can I manually remove a file from git annex syncing?
-"""]]

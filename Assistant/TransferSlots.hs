@@ -1,6 +1,6 @@
 {- git-annex assistant transfer slots
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -21,6 +21,7 @@ import Assistant.Alert
 import Assistant.Alert.Utility
 import Assistant.Commits
 import Assistant.Drop
+import Types.Transfer
 import Logs.Transfer
 import Logs.Location
 import qualified Git
@@ -28,8 +29,9 @@ import qualified Remote
 import qualified Types.Remote as Remote
 import Annex.Content
 import Annex.Wanted
-import Config.Files
+import Annex.Path
 import Utility.Batch
+import Types.NumCopies
 
 import qualified Data.Map as M 
 import qualified Control.Exception as E
@@ -39,7 +41,7 @@ import qualified Control.Concurrent.MSemN as MSemN
 import System.Posix.Process (getProcessGroupIDOf)
 import System.Posix.Signals (signalProcessGroup, sigTERM, sigKILL)
 #else
-import Utility.WinProcess
+import System.Win32.Process (terminateProcessById)
 #endif
 
 type TransferGenerator = Assistant (Maybe (Transfer, TransferInfo, Transferrer -> Assistant ()))
@@ -151,16 +153,17 @@ genTransfer t info = case transferRemote info of
 	 -}
 	go remote transferrer = ifM (liftIO $ performTransfer transferrer t info)
 		( do
-			maybe noop
-				(void . addAlert . makeAlertFiller True 
-					. transferFileAlert direction True)
-				(associatedFile info)
+			case associatedFile info of
+				AssociatedFile Nothing -> noop
+				AssociatedFile (Just af) -> void $ 
+					addAlert $ makeAlertFiller True $
+						transferFileAlert direction True af
 			unless isdownload $
 				handleDrops
 					("object uploaded to " ++ show remote)
 					True (transferKey t)
 					(associatedFile info)
-					(Just remote)
+					[mkVerifiedCopy RecentlyVerifiedCopy remote]
 			void recordCommit
 		, whenM (liftAnnex $ isNothing <$> checkTransfer t) $
 			void $ removeTransfer t
@@ -225,7 +228,7 @@ finishedTransfer t (Just info)
   where
 	dodrops fromhere = handleDrops
 		("drop wanted after " ++ describeTransfer t info)
-		fromhere (transferKey t) (associatedFile info) Nothing
+		fromhere (transferKey t) (associatedFile info) []
 finishedTransfer _ _ = noop
 
 {- Pause a running transfer. -}
@@ -267,7 +270,7 @@ cancelTransfer pause t = do
 		threadDelay 50000 -- 0.05 second grace period
 		signal sigKILL
 #else
-		terminatePID pid
+		terminateProcessById pid
 #endif
 
 {- Start or resume a transfer. -}
@@ -284,7 +287,7 @@ startTransfer t = do
 		alterTransferInfo t $ \i -> i { transferPaused = False }
 		liftIO $ throwTo tid ResumeTransfer
 	start info = do
-		program <- liftIO readProgramFile
+		program <- liftIO programPath
 		batchmaker <- liftIO getBatchCommandMaker
 		inImmediateTransferSlot program batchmaker $
 			genTransfer t info

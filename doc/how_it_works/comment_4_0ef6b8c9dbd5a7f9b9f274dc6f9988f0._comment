@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-01-11T16:21:00Z"
+ content="""
+A git branch can be used to name any tree ref. In this case we're using
+"git-annex" as the name of a branch that is not connected to the rest of
+the content in the repository.
+"""]]

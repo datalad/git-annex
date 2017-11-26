@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-10-19T17:42:25Z"
+ content="""
+I don't know of any freebsd build of git-annex that would use its
+self-upgrade facility. I don't provide one, and I don't see why the
+freebsd porters would enable that feature.
+
+I wonder if you're somehow using the linux standalone build on freebsd via
+some linux syscall compatability layer. Which is interesting if it works,
+but not suprising if it fails.. 
+
+In particular, it seems likely that the
+linux version of lsof wouldn't be very happy when run in a freebsd
+system, and perhaps that's why it's running out of memory.
+"""]]

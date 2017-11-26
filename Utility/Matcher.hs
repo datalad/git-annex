@@ -10,7 +10,7 @@
  - Is forgiving about misplaced closing parens, so "foo and (bar or baz"
  - will be handled, as will "foo and ( bar or baz ) )"
  -
- - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2013 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -27,6 +27,7 @@ module Utility.Matcher (
 	matchM,
 	matchMrun,
 	isEmpty,
+	combineMatchers,
 
 	prop_matcher_sane
 ) where
@@ -141,6 +142,14 @@ matchMrun m run = go m
 isEmpty :: Matcher a -> Bool
 isEmpty MAny = True
 isEmpty _ = False
+
+{- Combines two matchers, yielding a matcher that will match anything
+ - both do. But, if one matcher contains no limits, yield the other one. -}
+combineMatchers :: Matcher a -> Matcher a -> Matcher a
+combineMatchers a b 
+	| isEmpty a = b
+	| isEmpty b = a
+	| otherwise = a `MOr` b
 
 prop_matcher_sane :: Bool
 prop_matcher_sane = all (\m -> match dummy m ()) $ map generate

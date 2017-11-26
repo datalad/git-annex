@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 1"
+ date="2015-06-03T14:33:35Z"
+ content="""
+You should be able to get back to the original state (in terms of working directory) by checking out the 'master' branch (or whatever branch you started the view from):
+
+    git checkout master
+"""]]

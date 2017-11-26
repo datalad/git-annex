@@ -1,6 +1,6 @@
 {- git-annex assistant remote deletion utilities
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,7 +12,7 @@ module Assistant.DeleteRemote where
 import Assistant.Common
 import Assistant.Types.UrlRenderer
 import Assistant.TransferQueue
-import Logs.Transfer
+import Types.Transfer
 import Logs.Location
 import Assistant.DaemonStatus
 import qualified Remote
@@ -64,7 +64,7 @@ removableRemote urlrenderer uuid = do
   where
 	queueremaining r k = 
 		queueTransferWhenSmall "remaining object in unwanted remote"
-			Nothing (Transfer Download uuid k) r
+			(AssociatedFile Nothing) (Transfer Download uuid k) r
 	{- Scanning for keys can take a long time; do not tie up
 	 - the Annex monad while doing it, so other threads continue to
 	 - run. -}

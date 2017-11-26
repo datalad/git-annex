@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="openmedi"
+ avatar="http://cdn.libravatar.org/avatar/563ffaff3b492c579bd8f094472e4506"
+ subject="comment 2"
+ date="2017-02-19T22:03:26Z"
+ content="""
+I am now trying to just start again. I have initiated a completely new repo to which I'm now adding files from the old repo manually or rather I have already done so, set up two remotes (flash drive and external hdd) and have now a repo which hold at least those files which were unproblematic to move over.
+
+I try now to recover any lost files and at the same time try to get rid of the repo on my laptop. Therefore I initiated on my external drive for disk space reasons a cloned copy of my local repo to which I'm now `get`ing  everything via `git annex get -A`. After this is done, I'll move the missing files, if there are any, over to the new repo by hand and will drop all files on my laptop's repo (to make sure that the new external hdd repo includes everything) and then delete any and all repos and special remotes.
+
+A fresh start seems to be the best way to go, since the old repo just couldn't be repaired by the assistant or me for that matter - or so it seemed.
+"""]]

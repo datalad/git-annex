@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-05-31T15:59:49Z"
+ content="""
+It may be that .git/annex/index is referring to an object that is somehow
+not present in the git object store. In this case, deleting the index file
+may recover.
+
+I can't see any way this can normally happen (short of the object file
+getting deleted somehow); git should always write
+objects to the object store before their sha1s are available to be put in
+an index file. But, a couple of people have reported something like this
+before.
+
+Any clues to reproducing it would be useful.
+"""]]

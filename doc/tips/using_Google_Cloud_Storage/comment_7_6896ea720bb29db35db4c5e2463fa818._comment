@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2016-09-05T18:24:37Z"
+ content="""
+@Dosenpfand at a guess, perhaps you have missed enabling
+"Interoperable Access" in google cloud storage?
+
+Or, maybe Google managed to break their S3 compatability..
+
+gcsannex is probably a better way to tie git-annex and GCS together than
+using the S3 interface.
+"""]]

@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-23T16:52:23Z"
+ content="""
+Try running `git fsck` and see if it complains about a corrupt object file.
+You may then need to delete the object file and fix up the repository to
+not refer to it. `git annex repair` can probably handle that.
+
+> Some object in the broken repo seems to be causing this issue somehow.
+
+Maybe, but you also say that the object it complains about has varied.
+Perhaps you have multiple corrupt objects in the git repo..
+
+You mention "litelog". What is that and how is it relevant? Is Android
+involved somehow?
+"""]]

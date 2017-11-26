@@ -1,0 +1,37 @@
+I'm storing hundreds of gigabytes of data on a S3 remote, and often when I try to copy to my remote using this type of command:
+
+    git annex copy newdir/* --to my-s3-remote
+
+I'll get a little bit of the way uploading some large file (which is in chunks) and then something like this:
+
+    copy newdir/file1.tgz (gpg) (checking my-s3-remote...) (to my-s3-remote...) 
+
+    3%        2.2MB/s 11h14m
+
+      ErrorMisc "<socket: 16>: Data.ByteString.hGetLine: timeout (Operation timed out)"
+
+    failed                  
+
+    copy newdir/file2.tgz (checking my-s3-remote...) (to my-s3-remote...) 
+
+    15%        2.3MB/s 3h40m
+
+      ErrorMisc "<socket: 16>: Data.ByteString.hGetLine: resource vanished (Connection reset by peer)"
+
+    failed                  
+
+    copy newdir/file3.tgz (checking my-s3-remote...) (checking my-s3-remote...) (checking my-s3-remote...) (checking my-s3-remote...) (checking my-s3-remote...) (checking my-s3-remote...) (checking my-s3-remote...) ok
+    
+One common cause of this is if my Internet connection is intermittent. But even when my connection seems steady, it can happen. I'm willing to chalk that up to network problems elsewhere though.
+
+If I keep just hitting "up enter" to re-execute the command each time it fails, eventually everything gets up there.
+
+But this can actually take weeks, because often uploading these big files, I'll let it go overnight, and then wake up every morning and find out with dismay that it has failed again.
+
+My questions:
+
+- Is there a way to make it automatically retry? I am sure that upon any of these errors, an immediate automatic reply would amost assuredly work.
+
+- If not, is there at least a way to make it pick up where it left off? Even though I'm using chunks, it seems to start the file over again.
+
+Thanks.

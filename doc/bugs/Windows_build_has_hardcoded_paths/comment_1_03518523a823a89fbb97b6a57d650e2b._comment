@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="24.159.78.125"
- subject="comment 1"
- date="2014-08-20T14:37:30Z"
- content="""
-git-annex does not hardcode any paths, and certianly not the path to git. Your system probably does not have the location you installed git added to the PATH. In that case, git-annex may do what windows programs do and look for git.exe in the same directory it was installed into.
-"""]]

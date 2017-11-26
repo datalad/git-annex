@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawk9nck8WX8-ADF3Fdh5vFo4Qrw1I_bJcR8"
- nickname="Jon Ander"
- subject="comment 10"
- date="2014-07-16T20:32:57Z"
- content="""
-I have two computers with Debian testing (5.20140529) that aren't having the issue, and one with Debian Sid (5.20140709) that is still creating the empty merge commits
-"""]]

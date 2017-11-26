@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="jajpater"
+ avatar="http://cdn.libravatar.org/avatar/17a62a7410a3ea7d62715efced72158e"
+ subject="Works when first using git annex get"
+ date="2017-10-20T09:59:29Z"
+ content="""
+I dropped the files from the local directory. Publishing does work when I first do a
+
+    git annex get *.*
+
+But now my question has changed:
+
+I have a git repository on a server. 
+Is there a possibility to publish/export directly from the server to a special remote?
+So without checking out the files locally?
+
+
+"""]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2015-07-06T22:08:11Z"
+ content="""
+I have also not been able to reproduce this using version 5.20141024. So,
+there must be some peice of information left out that's needed to reproduce
+this, or possibly it's an intermittent problem.
+
+I did verify that my attempts to reproduce it caused the code path that
+handles drops after transfers to fire; in my tests it decided not to drop
+the file.
+"""]]

@@ -1,6 +1,6 @@
 {- git-annex assistant webapp repository list
  -
- - Copyright 2012,2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012,2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -12,7 +12,6 @@ module Assistant.WebApp.RepoList where
 import Assistant.WebApp.Common
 import Assistant.DaemonStatus
 import Assistant.WebApp.Notifications
-import qualified Annex
 import qualified Remote
 import qualified Types.Remote as Remote
 import Remote.List (remoteListRefresh)
@@ -21,6 +20,7 @@ import Logs.Remote
 import Logs.Trust
 import Logs.Group
 import Config
+import Config.GitConfig
 import Git.Remote
 import Assistant.Sync
 import Config.Cost
@@ -138,7 +138,10 @@ repoList reposelector
 		liftAnnex $ do
 			unwanted <- S.fromList
 				<$> filterM inUnwantedGroup (map Remote.uuid syncremotes)
-			rs <- filter selectedrepo . concat . Remote.byCost
+			trustmap <- trustMap
+			rs <- filter (\r -> M.lookup (Remote.uuid r) trustmap /= Just DeadTrusted)
+				. filter selectedrepo 
+				. concat . Remote.byCost
 				<$> Remote.remoteList
 			let l = flip map (map mkRepoId rs) $ \r -> case r of
 				(RepoUUID u)
@@ -149,7 +152,7 @@ repoList reposelector
 			if includeHere reposelector
 				then do
 					r <- RepoUUID <$> getUUID
-					autocommit <- annexAutoCommit <$> Annex.getGitConfig
+					autocommit <- getGitConfigVal annexAutoCommit
 					let hereactions = if autocommit
 						then mkSyncingRepoActions r
 						else mkNotSyncingRepoActions r
@@ -257,7 +260,7 @@ getSyncNowRepositoryR uuid = do
 	if u == uuid
 		then do
 			thread <- liftAssistant $ asIO $
-				reconnectRemotes True
+				reconnectRemotes
 					=<< (syncRemotes <$> getDaemonStatus)
 			void $ liftIO $ forkIO thread
 		else maybe noop (liftAssistant . syncRemote)

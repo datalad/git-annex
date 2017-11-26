@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2017-10-17T17:21:27Z"
+ content="""
+Another way to approach the problem would be, when the transfer of
+the same key is already in progress by another thread of the same process, 
+wait for that thread to complete before running the requested transfer
+action.
+
+The assistant has a TransferMap of all transfers the process is running.
+That would need to be moved from the DaemonStatus to Annex state.
+
+To wait on the thread that's doing the transfer, would need to store
+a MVar or something in the TransferInfo; the ThreadId can't be waited on
+by itself.
+
+This seems much less intrusive, and just as fast as my initial approach.
+"""]]

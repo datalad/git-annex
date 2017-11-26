@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="comment 5"
+ date="2015-06-24T12:14:02Z"
+ content="""
+you are correct. \"git add\" *will* add a file into git directly. \"git annex add\" is like \"git track\"...
+"""]]

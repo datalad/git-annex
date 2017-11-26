@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-01-20T19:15:50Z"
+ content="""
+Since Alice and Bob are never online at the same time, you need
+a central git repository somewhere. 
+
+This could be on a linux server, perhaps even with git-annex installed.
+Or, you could just make a repository on github or gitorious. No need
+for git-annex.
+
+Wherever it is, add the central repository as a git remote on Alice and
+Bob, and they'll each use it to drop off the current state of their
+git repo, and sync up with the changes from each other.
+"""]]

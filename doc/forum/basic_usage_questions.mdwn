@@ -1,0 +1,5 @@
+Seeking some clarification:
+
+ 1. I'm using direct mode. When I run `git annex sync --content` on repo A, all files get copied to repo B, but they remain hidden under `.git/annex/objects`. Is there a way to _automatically_ put them in repo B's working tree, without having to go to repo B and run `git annex sync` there as well? _(I'm sure I saw that happen earlier, but not anymore?)_
+
+ 1. I have two PCs and a portable HD. There are git-annex repos on PC_1 and USB_HD, with each other listed under `git remote`. Now I want to set up git-annex on PC_2. Is it okay to use the same repo path (~/Videos/) on both PCs? I'm concerned that it would confuse the USB_HD repo greatly, as it would end up having two "remotes" with identical paths.

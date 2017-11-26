@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/yx5Y6EI1t.759Jsu63ZWqYclCmpOmxxd.ramtw--#7114a"
+ nickname="Ioanas"
+ subject="comment 2"
+ date="2015-08-20T09:37:21Z"
+ content="""
+Doesn't seem to be the case. I get nothing in my out.dat file, but still the same rsync complaint from git annex. 
+
+```
+guest@labhost ~ $ ssh clusterhost /bin/true > out.dat
+guest@labhost ~ $ cat out.dat
+guest@labhost ~ $ ls -l out.dat 
+-rw-r--r-- 1 guest guest 0 20. Aug 11:31 out.dat
+guest@labhost ~ $ cd /mnt/data/data/                
+guest@labhost /mnt/data/data $ git annex get gt.ep/pcr/
+get gt.ep/pcr/pcr_0000.csv (from clusterhost...) 
+protocol version mismatch -- is your shell clean?
+(see the rsync man page for an explanation)
+rsync error: protocol incompatibility (code 2) at compat.c(176) [Receiver=3.1.1]
+git-annex: ../chymera/data/.git/annex/transfer/upload/b8415264-4b9a-40ca-b450-7e57507cdc06/lck.SHA256E-s960--4689d3b876dfeabb3d9578204c8df7c4af0fd6c0f09691cffb3dfd86130e6a27.csv: openFd: does not exist (No such file or directory)
+git-annex-shell: sendkey: 1 failed
+
+  rsync failed -- run git annex again to resume file transfer
+
+  Unable to access these remotes: clusterhost
+
+  Try making some of these repositories available:
+  	809074b6-e079-4ea1-b2f8-2d7840deda7d -- zenbookhost
+   	a1ed6786-8b93-4a14-b00d-877b741e34da -- [clusterhost]
+failed
+```
+"""]]

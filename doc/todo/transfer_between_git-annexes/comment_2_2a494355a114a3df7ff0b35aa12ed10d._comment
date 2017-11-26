@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 2"
+ date="2015-07-15T10:20:55Z"
+ content="""
+Been thinking about this as I am getting close to needing it, but would like some advice.
+
+My current plan is to copy the symlink to the target annex, add it to the index (fix it?), copy the source file from $source/.git/annex/objects to $target/.git/annex/tmp, then use 'reinject $target/.git/annex/tmp/$keyed_file $path_to_symlink'.
+
+As far as I can tell, this is safest way (uses mostly git-annex) to transfer a file between annexes. However, when transferring a directory of files, this will end up with 1 commit per file on the git-annex branch, which may be a problem.
+
+Is there any easy way to make this \"atomic\", so that git-annex will only get a commit if everything went okay and if not, revert any changes to $target? Am I looking at 'git stash', recording the master/git-annex references before the move and resetting to them in case of an error or rebasing(fixup) git-annex on success?
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-04-27T16:55:36Z"
+ content="""
+Pretty much anything is going to break when you run out of inodes; 
+all the errors shown here are due to the git repository getting
+inconsistent because of it. I don't see any part that's git-annex specific.
+
+Is `git annex repair` able to repair it at all? I'd expect it would be able
+to, as long as `git fsck` reports that there are problems.
+"""]]

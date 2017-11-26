@@ -1,0 +1,30 @@
+I've been working on adding GitLab support to the webapp for the past 3
+days.
+
+That's not the only thing I've been working on; I've continued to work on
+the older parts of the backlog, which is now shrunk to 91 messages, and
+made some minor improvements and bugfixes.
+
+But, GitLab support in the webapp has certianly taken longer than I'd have
+expected. Only had to write 82 lines of GitLab specific code so far, but it
+went slowly. The user will need to cut and paste repository url and
+ssh public key back and forth between the webapp and GitLab for now. And
+the way GitLab repositories use git-annex makes it a bit tricky to set up;
+in one case the webapp has to do a forced push dry run to check if the
+repository on GitLab can be accessed by ssh.
+
+I found a way to adapt the existing code for setting up a ssh server to
+also support GitLab, so beyond the repo url prompt and ssh key setup,
+everything will be reused. I have something that works now, but there are
+lots of cases to test (encrypted repositories, enabling existing
+repositories, etc), so will need to work on it a bit more before merging
+this feature.
+
+Also took some time to split the [centralized git repository tutorial](http://git-annex.branchable.com/tips/centralized_git_repository_tutorial/)
+into three parts, one for each of GitHub, GitLab, and self-administered servers.
+
+----
+
+The git-annex package in Debian unstable hasn't been updated for 8 months.
+This is about to change; Richard Hartmann has stepped up and is preparing
+an upload of a recent version. Yay!

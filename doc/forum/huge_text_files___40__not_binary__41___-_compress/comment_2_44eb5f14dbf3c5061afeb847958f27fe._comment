@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="vgp"
+ avatar="http://cdn.libravatar.org/avatar/b332bfc1d3f49c196e1bff84b53d0f8b"
+ subject="comment 2"
+ date="2017-08-30T12:42:22Z"
+ content="""
+Thanks for your comments joey! 
+In fact, compress files in the working tree is not mandatory. The main question is compress then in the git server (quota reasons). When we were using only git, it was slow (caused by huge files) but the files were compressed. Now, using git-annex, the operations are faster but the size of the repository increases a lot (due to lack of compression) and that is the problem once we've reached the disk quota in the git server.
+"""]]

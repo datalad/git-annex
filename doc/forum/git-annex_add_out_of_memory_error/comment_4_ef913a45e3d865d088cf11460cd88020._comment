@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-10-04T16:23:12Z"
+ content="""
+NFS was a red herring.
+
+We've tracked this down to the linux standalone tarball not including
+locale-archive, so it uses the system one, which may have a different
+format and so breaks glibc.
+
+I'm committing a fix that adds locale-archive to the linux standalone
+tarball.
+"""]]

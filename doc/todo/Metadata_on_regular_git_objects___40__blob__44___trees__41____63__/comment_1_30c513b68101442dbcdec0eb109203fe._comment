@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-06-02T17:08:32Z"
+ content="""
+metadata can be attached to sha1 git-annex keys, which can correspond
+to the sha1's of git objects.
+
+	joey@darkstar:~/tmp/a>git annex metadata -t wow --key=SHA1--b4432e7473849adb8d408696c81355bc708a1bd0
+	metadata SHA1--b4432e7473849adb8d408696c81355bc708a1bd0 
+	  lastchanged=2015-06-02@17-10-37
+	  tag=wow
+	  tag-lastchanged=2015-06-02@17-10-37
+	ok
+	joey@darkstar:~/tmp/a>git annex metadata --key SHA1--$(git show-ref master -s)
+	metadata SHA1--b4432e7473849adb8d408696c81355bc708a1bd0 
+	  lastchanged=2015-06-02@17-10-37
+	  tag=wow
+	  tag-lastchanged=2015-06-02@17-10-37
+	ok
+
+Might be worth improving this interface. A `--sha1=` would be a minor
+improvement.
+
+It would certianly be possible for git-annex metadata to be taught that
+if the file is not annexed, and is in git, to look up the sha1 of its
+blob object, and attach the metadata to it.
+
+Of course, modifying a file would not carry over the metadata. But the 
+same problem exists when modifying annexed files that have metadata attached.
+
+This would also need changes to view generation, I guess that when building
+a view it would need to consider regular git-tracked files, look up 
+their metadata, and add matching ones to the view tree.
+"""]]

@@ -1,6 +1,6 @@
 {- git-annex numcopies log
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,7 +13,7 @@ module Logs.NumCopies (
 	globalNumCopiesLoad,
 ) where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import Types.NumCopies
 import Logs
@@ -24,7 +24,10 @@ instance SingleValueSerializable NumCopies where
 	deserialize = NumCopies <$$> readish
 
 setGlobalNumCopies :: NumCopies -> Annex ()
-setGlobalNumCopies = setLog numcopiesLog
+setGlobalNumCopies new = do
+	curr <- getGlobalNumCopies
+	when (curr /= Just new) $
+		setLog numcopiesLog new
 
 {- Value configured in the numcopies log. Cached for speed. -}
 getGlobalNumCopies :: Annex (Maybe NumCopies)

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.176"
- subject="comment 6"
- date="2014-05-28T00:33:48Z"
- content="""
-I've just noticed the the S3 backend used Char8 for reading/writing encrypted files. I don't know that this could result in this problem, but it at least seems possible. If you can still reproduce the bug, try getting the next daily build and see if perhaps it fixed it.
-"""]]

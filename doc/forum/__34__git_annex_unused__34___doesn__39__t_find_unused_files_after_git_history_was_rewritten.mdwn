@@ -1,0 +1,17 @@
+Hi,
+
+I recently cleaned my git history using:
+
+    git filter-branch --tree-filter 'rm -rf personal/Mail' --prune-empty HEAD
+    git for-each-ref --format="%(refname)" refs/original/ | xargs -n 1 git update-ref -d
+    git gc
+
+I then ran:
+
+    git annex unused
+
+But was surprised to find that it didn't report any unused files. Not surprisingly (given that I didn't touch the annex data at all so far), when looking into `.git/annex/objects/` I still find the content of all the files that are now not used anymore.
+
+Is there a way to clean these up besides creating a fresh clone of the repository?
+
+Thanks!

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Karl"
+ subject="Symbolic links are not supported by Windows applications"
+ date="2015-02-06T22:27:27Z"
+ content="""
+Hi!
+
+I did research the practical usage of (real) NTFS-links (junktions + links) when I was programming http://tagstore.org since it would have been a clean solution for that purpose as well.
+
+However, I have to say that NTFS-links only work in theory. First of all, you have to be Administrator to create links by mklink. And secondly, most end-user applications can't cope with links.
+
+The latter one is the real fun-killing issue: many applications (even from Microsoft) are renaming a freshly opened file to a temporary file name. When the user is appending data, the temporary file gets updated. Only when the user is (manually) saving, a *new* file with the original file name is created. This results in *replacing* the original file with the new copy. Unfortunately, links are not handled properly. This way, many applications end up replacing the original linked file with an ordinary file when saving.
+"""]]

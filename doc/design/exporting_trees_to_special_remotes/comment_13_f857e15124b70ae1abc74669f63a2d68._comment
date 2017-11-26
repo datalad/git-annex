@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: Git History"""
+ date="2017-08-15T18:16:31Z"
+ content="""
+That is entirely out of scope. You're looking for a way to store a git
+*repository* someplace like S3. Such things exist already, and are not
+git-annex and I'm not going to replicate them as part of this feature.
+"""]]

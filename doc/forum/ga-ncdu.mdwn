@@ -1,0 +1,5 @@
+I've just written a quick script which provides an output which ncdu will use.
+
+It uses the size from the key for apparent size and the size of the file (if present) for the disk size so 'a' toggles between total size of the annex and the actually used disk space.
+
+Is there anyone else interested in having this? If so, I'll tidy it up and release it :)

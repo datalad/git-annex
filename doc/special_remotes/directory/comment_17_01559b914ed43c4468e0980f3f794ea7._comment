@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="uwe.nagler@9f80ad68e498fcdb09e20b17ff4539f94ef73ea9"
+ nickname="uwe.nagler"
+ subject="subdirectories above FILEKEY directory"
+ date="2016-05-31T11:51:56Z"
+ content="""
+Format appears to be /BASE_DIR/xxx/yyy/FILEKEY/FILEKEY
+
+How can I get the xxx/yyy or the complete storage path of an annexed file in a fast way?
+
+Background:<br>
+I have to \"chmod\" the xxx/yyy within an '.git/hooks/pre-commit' action (shared used NFS location).<br>
+Following way using 'find' needs too much time in case of a big remote:
+
+    $ git annex info --fast inputbinaries | grep 'directory:' | awk '{print $2}'
+    /gitworkspace/inputbinaries/DWDM1830-all_playground
+
+    $ git annex info vendor-libs/x86/libsnmpdm.a | grep 'key:' | awk '{print $2}'
+    SHA256E-s3992448--82604383354b28f8efcdf8d83bb63607a8d5967551ded055e782ac342bb7f8e0.a
+
+    $ find /gitworkspace/inputbinaries/DWDM1830-all_playground -type f -name SHA256E-s3992448--82604383354b28f8efcdf8d83bb63607a8d5967551ded055e782ac342bb7f8e0.a
+    /gitworkspace/inputbinaries/DWDM1830-all_playground/28e/785/SHA256E-s3992448--82604383354b28f8efcdf8d83bb63607a8d5967551ded055e782ac342bb7f8e0.a/SHA256E-s3992448--82604383354b28f8efcdf8d83bb63607a8d5967551ded055e782ac342bb7f8e0.a
+"""]]

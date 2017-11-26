@@ -1,4 +1,5 @@
 {-# LANGUAGE NamedFieldPuns #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 {- cabal setup file -}
 
@@ -12,51 +13,60 @@ import System.FilePath
 import Control.Applicative
 import Control.Monad
 import System.Directory
+import Data.List
+import Data.Maybe
+import Control.Exception
+import qualified System.Info
 
 import qualified Build.DesktopFile as DesktopFile
 import qualified Build.Configure as Configure
+import Build.Mans (buildMans)
+import Utility.SafeCommand
 
 main :: IO ()
 main = defaultMainWithHooks simpleUserHooks
 	{ preConf = \_ _ -> do
 		Configure.run Configure.tests
 		return (Nothing, [])	
-	, postInst = myPostInst
+	, postCopy = myPostCopy
 	}
 
-myPostInst :: Args -> InstallFlags -> PackageDescription -> LocalBuildInfo -> IO ()
-myPostInst _ (InstallFlags { installVerbosity }) pkg lbi = do
-	installGitAnnexShell dest verbosity pkg lbi
+myPostCopy :: Args -> CopyFlags -> PackageDescription -> LocalBuildInfo -> IO ()
+myPostCopy _ flags pkg lbi = when (System.Info.os /= "mingw32") $ do
+	installGitAnnexLinks dest verbosity pkg lbi
 	installManpages      dest verbosity pkg lbi
 	installDesktopFile   dest verbosity pkg lbi
   where
-	dest      = NoCopyDest
-	verbosity = fromFlag installVerbosity
+	dest      = fromFlag $ copyDest flags
+	verbosity = fromFlag $ copyVerbosity flags
 
-installGitAnnexShell :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
-installGitAnnexShell copyDest verbosity pkg lbi =
+installGitAnnexLinks :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
+installGitAnnexLinks copyDest verbosity pkg lbi = do
 	rawSystemExit verbosity "ln"
 		["-sf", "git-annex", dstBinDir </> "git-annex-shell"]
+	rawSystemExit verbosity "ln"
+		["-sf", "git-annex", dstBinDir </> "git-remote-tor-annex"]
   where
 	dstBinDir = bindir $ absoluteInstallDirs pkg lbi copyDest
 
-{- See http://www.haskell.org/haskellwiki/Cabal/Developer-FAQ#Installing_manpages
- -
- - Man pages are provided prebuilt in the tarball in cabal,
- - but may not be available otherwise, in which case, skip installing them.
- -}
+{- See http://www.haskell.org/haskellwiki/Cabal/Developer-FAQ#Installing_manpages -}
 installManpages :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
 installManpages copyDest verbosity pkg lbi =
 	installOrdinaryFiles verbosity dstManDir =<< srcManpages
   where
 	dstManDir   = mandir (absoluteInstallDirs pkg lbi copyDest) </> "man1"
-	srcManpages = zip (repeat srcManDir)
-		<$> filterM doesFileExist manpages
-	srcManDir   = ""
-	manpages    = ["git-annex.1", "git-annex-shell.1"]
+	-- If mdwn2man fails, perhaps because perl is not available,
+	-- we just skip installing man pages.
+	srcManpages = zip (repeat "man") . map takeFileName . catMaybes
+		<$> buildMans
 
 installDesktopFile :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
-installDesktopFile copyDest _verbosity pkg lbi =
-	DesktopFile.install $ dstBinDir </> "git-annex"
+installDesktopFile copyDest _verbosity pkg lbi
+	| progfile copyDest == progfile NoCopyDest =
+		DesktopFile.installUser (progfile copyDest)
+			`catch` installerror
+	| otherwise = return ()
   where
-	dstBinDir = bindir $ absoluteInstallDirs pkg lbi copyDest
+	progfile cd = bindir (absoluteInstallDirs pkg lbi cd) </> "git-annex"
+	installerror :: SomeException -> IO ()
+	installerror e = putStrLn ("Warning: Installation of desktop integration files did not succeed (" ++ show e ++ "); skipping.")

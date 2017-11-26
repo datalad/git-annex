@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="rob.syme@92895c98b16fd7a88bed5f10913c522ebfd76c31"
+ nickname="rob.syme"
+ subject="Finding IPFS hash"
+ date="2015-11-18T14:55:33Z"
+ content="""
+The use case is only very silly - I just wanted to look directly at the data stored at that IPFS hash - it was not important and certainly not worth changing the way git-annex stores its keys.
+
+On a new machine with a new version of git-annex, I can no longer initialize a new IFPS remote:
+
+    ⟫ ipfs version
+    ipfs version 0.3.10-dev
+
+    ⟫ git annex version
+    git-annex version: 5.20151116-gbe86081
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput DNS Feeds Quvi TDFA TorrentParser Database
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+    local repository version: 5
+    supported repository version: 5
+    upgrade supported from repository versions: 0 1 2 4
+
+    ⟫ git annex initremote ipfs type=external externaltype=ipfs encryption=none
+    initremote ipfs 
+    git-annex: git-annex-remote-ipfs: createProcess: runInteractiveProcess: exec: does not exist (No such file or directory)
+    failed
+    git-annex: initremote: 1 failed
+
+It looks like I'm missing a binary somewhere, but I'm not sure which one is missing.
+"""]]

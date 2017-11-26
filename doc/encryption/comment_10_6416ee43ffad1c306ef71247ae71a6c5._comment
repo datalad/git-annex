@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2017-05-24T17:47:46Z"
+ content="""
+@Yurt, git-annex will let you specify the gpg key id using anything that gpg
+accepts, including a keyid with a appended '!'. However, when I tried that,
+gpg seemed to still pick the master key instead of the subkey. That
+happens because git-annex runs the input through `gpg --list-public-keys`
+(in order to convert eg, email addresses to key ids)
+which always lists the master key even when given a subkey.
+
+I made a small change to git-annex to special case this '!' suffix
+behavior. Seems to work in my very limited testing.
+
+Please file bug reports about this kind of thing!
+"""]]

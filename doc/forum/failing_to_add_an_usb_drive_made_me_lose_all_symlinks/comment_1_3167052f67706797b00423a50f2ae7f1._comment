@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-12-01T21:56:45Z"
+ content="""
+Well, git-annex just uses a regular git repo. It should not be possible to
+fully lose data. I suggest you run `git log
+--stat` and see if a commit deleted all your files. If so, you can revert
+that commit.
+
+If the git log really is only 4 commits deep, perhaps you got some other
+branch checked out somehow. Run `git reflog` to see the history of what
+branches have been checked out before, and you can use `git checkout` to go
+back to one of those past checkouts.
+
+Or, failing all that, you showed a commit
+a6362df13d728037875320a457182acb073d08ea which had one of your files,
+so `git checkout a6362df13d728037875320a457182acb073d08ea` will check out
+the tree as it appeared at the time of that commit.
+
+This is all git 101. AFAICS, you have not lost any data, and need to become
+more familiar with the basics of git.
+"""]]

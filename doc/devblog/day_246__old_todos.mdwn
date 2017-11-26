@@ -1,0 +1,9 @@
+Got a release out today.
+
+I'm feeling a little under the weather, so wanted something easy to do in
+the rest of the day that would be nice and constructive. Ended up going
+over the todo list. Old todos come in three groups; hard problems, already
+solved, and easy changes that never got done. I left the first group alone,
+closed many todos in the second group, and implemented a few easy changes.
+Including `git annex sync -m` and adding some more info to `git annex info
+remote`.

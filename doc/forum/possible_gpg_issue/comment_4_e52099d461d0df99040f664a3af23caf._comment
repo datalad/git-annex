@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawknHkJJRE0K7_G4sG3YgOkAaihnw0eg9Ao"
+ nickname="Chad"
+ subject="comment 4"
+ date="2014-12-02T22:51:24Z"
+ content="""
+Thanks so much. I'll try digging some more into the syscalls and see what I can figure out. We do have it set up as a directory remote.
+
+To clarify, when I said it was \"hanging\" maybe that wasn't a good word choice. What I meant was that it very quickly gets to 95% or 100% progress, then freezes and does nothing for a while, before ultimately reporting the error and exiting.
+
+Also I take back what I said about it not using encryption. It is. I was confused by the fact that there are unencrypted files on the disk, but it turns out they are all from a long time ago, perhaps before we started using encryption. Everything more recent is encrypted.
+
+Thanks!
+-c
+
+
+"""]]

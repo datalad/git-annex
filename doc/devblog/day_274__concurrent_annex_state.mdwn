@@ -1,0 +1,42 @@
+Back working on `git annex get --jobs=N` today. It was going very well,
+until I realized I had a hard problem on my hands.
+
+The hard problem is that the AnnexState structure at the core of git-annex
+is not able to be shared amoung multiple threads at all. There's too much
+complicated mutable state going on in there for that to be feasible at all.
+
+In the git-annex assistant, which uses many threads, I long ago worked
+around this problem, by having a single shared AnnexState and when a thread
+needs to run an Annex action, it blocks until no other thread is using it.
+This worked ok for the assistant, with a little bit of thought to avoid
+long-duration Annex actions that could stall the rest of it.
+
+That won't work for concurrent `get` etc. I spent a while investigating maybe
+making AnnexState thread safe, but it's just not built for it. Too many
+ways that can go wrong. For example, there's a CatFileHandle in the
+AnnexState. If two threads are running, they can both try to talk to the
+same `git cat-file --batch` command at once, with bad results. Worse, yet,
+some parts of the code do things like modifying the AnnexState's Git repo
+to add environment variables to use when running git commands.
+
+It's not all gloom and doom though. Only very isolated parts of the code
+change the working directory or set environment variables. And the
+assistant has surely smoked out other thread concurrency problems already.
+And, separate `git-annex` programs can be run concurrently with no problems
+at all; it uses file locking to avoid different processes getting in
+each-others' way. So AnnexState is the only remaining obstacle to concurrency.
+
+So, here's how I've worked around it: When `git annex get -J10` is run,
+it will start by allocating 10 job slots. A fresh AnnexState will be
+created, and copied into each slot. Each time a job runs, it uses its
+slot's own AnnexState. This means 10 `git cat-file` processes,
+and maybe some contention over lock files, but generally, a nice, easy,
+and hopefully trouble-free multithreaded mode.
+
+And indeed, I've gotten `git annex get -J10` working robustly!
+And from there it was trivial to enable -J for `move` and `copy` and `mirror`
+too!
+
+The only real blocker to merging the concurrentprogress branch is some bugs
+in the ascii-progress library that make it draw very scrambled progress
+bars the way git-annex uses it.

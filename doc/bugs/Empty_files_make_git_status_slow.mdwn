@@ -1,0 +1,28 @@
+### Please describe the problem.
+
+[[!meta title="Empty files make git status slow in v6 repo"]]
+
+When empty files are committed to a repository, git status becomes slow because git annex smudge is run for every empty file under git annex even with clean HEAD. I know git annex is for large files (rather than infinity small ones), but I'm using it to manage a GRASS GIS database, which oddly uses empty files for some things:/
+
+### What steps will reproduce the problem?
+```
+# slow
+touch emptyfile
+git add emptyfile
+git commit -a -m 'Added empty file.'
+GIT_TRACE=1 git status
+
+# fast
+cat 1 > emptyfile
+git commit -a -m 'Added a 1 to emptyfile.'
+GIT_TRACE=1 git status
+```
+
+### What version of git-annex are you using? On what operating system?
+- git-annex version: 6.20170228-g7a32e08c4
+- operating system: linux x86_64 (SLE 12.2)
+- local repository version: 6
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Yes, git with git annex has revolutionised my scientific project file organisation and thats why I want to improve it.

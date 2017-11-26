@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-03T19:18:29Z"
+ content="""
+The assistant just uses whatever ssh configuration you have.
+
+Desktop environments have password safes and ssh agents. If the assistant
+is being started up outside the desktop environment, it won't have access
+to those. Try stopping the assistant and re-starting it inside a terminal
+in your desktop environment.
+"""]]

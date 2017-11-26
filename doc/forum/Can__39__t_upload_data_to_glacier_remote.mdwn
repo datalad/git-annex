@@ -1,0 +1,55 @@
+I'm trying to follow the directions on [this tips page](https://git-annex.branchable.com/tips/using_Amazon_Glacier/) to easily back up some large home videos to Glacier. I followed the steps and everything worked fine until the `git annex copy`, at which point it claimed it was successful but had uploaded 0 bytes, as well as dumping the usage message for `glacier-cli` at the terminal (without any error):
+
+    Emily $ git annex copy --to glacier README
+    copy README (gpg) (checking glacier...) (to glacier...) 
+    100%          0.0 B/s 0s
+    glacier <command> [args]
+
+        Commands
+            vaults    - Operations with vaults
+            jobs      - Operations with jobs
+            upload    - Upload files to a vault. If the vault doesn't exits, it is
+                        created
+
+        Common args:
+            --access_key - Your AWS Access Key ID.  If not supplied, boto will
+                           use the value of the environment variable
+                           AWS_ACCESS_KEY_ID
+            --secret_key - Your AWS Secret Access Key.  If not supplied, boto
+                           will use the value of the environment variable
+                           AWS_SECRET_ACCESS_KEY
+            --region     - AWS region to use. Possible values: us-east-1, us-west-1,
+                           us-west-2, ap-northeast-1, eu-west-1.
+                           Default: us-east-1
+
+        Vaults operations:
+
+            List vaults:
+                glacier vaults 
+
+        Jobs operations:
+
+            List jobs:
+                glacier jobs <vault name>
+
+        Uploading files:
+
+            glacier upload <vault name> <files>
+
+            Examples : 
+                glacier upload pics *.jpg
+                glacier upload pics a.jpg b.jpg
+
+    ok                      
+    (Recording state in git...)
+
+Doing a `glacier vaults` also does not show any new vaults, and getting the usage message is obviously not normal.
+
+I tried doing a manual upload to a vault I already had sitting around from some years ago called `TVault`, and that looked to work fine:
+
+    Emily $ glacier upload TVault README 
+    Uploading README to TVault... done. Vault returned ArchiveID [omitted]
+
+(The update date hasn't updated on the management console yet, but I understand that may take up to a day.)
+
+Does anyone know what's going on, or is there at least a way to get a useful error message to output?

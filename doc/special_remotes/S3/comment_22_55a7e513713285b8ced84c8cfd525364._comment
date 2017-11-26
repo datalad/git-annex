@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="tim@5431dd39464df207b7d46d3cf1bc74c82123ac68"
+ nickname="tim"
+ subject="Sharing S3 bucket without fileprefix"
+ date="2016-04-13T19:02:24Z"
+ content="""
+I was hoping to use the same bucket for multiple repo's (100+) with a lot of files in common. Dropping unused files would not be an issue for me, so from what I read above this should be possible.
+However I cannot get initremote nor enableremote to add a repo with an existing uuid. How do I add an already initialized bucket to a new git annex repo?
+"""]]

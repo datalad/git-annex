@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2015-01-06T17:58:28Z"
+ content="""
+@Matthias, that directory structure is not controlled by the backend.
+It is explained in [[internals]]
+"""]]

@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2016-04-09T17:22:11Z"
+ content="""
+Hardlinks now used on windows when annex.thin is enabled.
+"""]]

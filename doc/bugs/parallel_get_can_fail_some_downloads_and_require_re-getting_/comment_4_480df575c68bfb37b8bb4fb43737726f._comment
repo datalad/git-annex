@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2017-05-25T21:52:37Z"
+ content="""
+The .git/config concurrent access happens because the remote
+list is only generated on demand, and nothing demands it when running with
+-J until all the threads are spun up and each thread has its own state
+then, so each generates the remote list.
+
+There don't look to be any other git-config settings that
+would cause problems for concurrency other than ones run while
+generating the remote list.
+
+So, generating the remote list before starting concurrent threads
+would avoid that problem, and also leads to a slightly faster startup
+since the remote git config only has to be read once, etc.
+
+The only risk in doing that would be if generating a Remote
+opens some kind of handle, which can't be used concurrently, or
+is less efficient if only opened once and then used by multiple threads.
+
+I've audited all the Remote.*.gen methods, and they all
+seem ok. For example, Remote.External.gen sets up a worker pool
+of external special remote processes, and new ones are allocated as needed.
+And Remote.P2P.chainGen sets up a connection pool.
+
+Ok, gone ahead with this fix.
+"""]]

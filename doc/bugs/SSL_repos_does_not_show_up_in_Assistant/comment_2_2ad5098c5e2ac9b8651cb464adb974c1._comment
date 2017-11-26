@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 2"
+ date="2015-10-13T16:57:24Z"
+ content="""
+You are right about https access, server does not support git-annex so it is set to meta data only. when using ssh changes are sync (git changes only) but with https changes are not synced (meta data). It is not even listed in repos. When using ssh it is listed in repos as meta data only. I do not store files in the repo just meta data.
+"""]]

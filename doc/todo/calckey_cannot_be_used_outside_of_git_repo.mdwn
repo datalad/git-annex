@@ -1,0 +1,11 @@
+Not sure if this is a bug or a feature request, but calckey can only be used while inside a git repository (though the specified file can be anywhere).
+
+Can this be changed so it can be run from anywhere?
+
+    ~$ git annex version
+    git-annex version: 6.20160613-g1e4e6f4
+
+    ~$ git annex calckey /some/file/some/wh.ere
+    git-annex: Not in a git repository.
+    CallStack (from HasCallStack):
+      error, called at ./Git/CurrentRepo.hs:55:37 in main:Git.CurrentRepo

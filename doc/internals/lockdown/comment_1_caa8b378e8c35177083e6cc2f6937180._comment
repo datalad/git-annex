@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnLM6CIUo2loSFNTLPDdBgAEoz9ehP2hz8"
+ nickname="Duncan"
+ subject="Having the write bit not set can cause problems with automated usage (e.g. build systems)"
+ date="2014-12-02T23:16:57Z"
+ content="""
+I'm using a git-annex to store build artefacts on a remote bare repo. Some of these artefacts are used in subsequent builds, which clone the artefacts repo, and use 'git annex get' to retrieve the artefacts of interest. 
+
+Unfortunately, I've had to add a little kludge along the following lines to my build script fragment:
+
+    git annex get ${file}
+    find .git/annex/objects -type d -exec chmod +w {} \;
+
+This is necessary because I need to ensure that the cloned git repo is able to be deleted at all times (I'm using yocto/openembedded and it may want to delete the clone for a variety of reasons).
+"""]]

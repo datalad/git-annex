@@ -1,13 +1,12 @@
 {- git-annex command
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.Indirect where
 
-import Common.Annex
 import Command
 import qualified Git
 import qualified Git.Branch
@@ -20,23 +19,23 @@ import Annex.Content
 import Annex.Content.Direct
 import Annex.CatFile
 import Annex.Init
-import qualified Command.Add
+import Annex.Ingest
 
-cmd :: [Command]
-cmd = [notBareRepo $ noDaemonRunning $
-	command "indirect" paramNothing seek
-		SectionSetup "switch repository to indirect mode"]
+cmd :: Command
+cmd = notBareRepo $ noDaemonRunning $
+	command "indirect" SectionSetup "switch repository to indirect mode"
+		paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start :: CommandStart
 start = ifM isDirect
 	( do
 		unlessM (coreSymlinks <$> Annex.getGitConfig) $
-			error "Git is configured to not use symlinks, so you must use direct mode."
+			giveup "Git is configured to not use symlinks, so you must use direct mode."
 		whenM probeCrippledFileSystem $
-			error "This repository seems to be on a crippled filesystem, you must use direct mode."
+			giveup "This repository seems to be on a crippled filesystem, you must use direct mode."
 		next perform
 	, stop
 	)
@@ -76,7 +75,7 @@ perform = do
 						return Nothing
 				| otherwise -> 
 					maybe noop (fromdirect f)
-						=<< catKey sha mode
+						=<< catKey sha
 			_ -> noop
 	go _ = noop
 
@@ -87,16 +86,16 @@ perform = do
 		whenM (liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f) $ do
 			v <- tryNonAsync (moveAnnex k f)
 			case v of
-				Right _ -> do 
-					l <- inRepo $ gitAnnexLink f k
+				Right True -> do 
+					l <- calcRepo $ gitAnnexLink f k
 					liftIO $ createSymbolicLink l f
-				Left e -> catchNonAsync (Command.Add.undo f k e)
-					warnlocked
+				Right False -> warnlocked "Failed to move file to annex"
+				Left e -> catchNonAsync (restoreFile f k e) $
+					warnlocked . show
 		showEndOk
 
-	warnlocked :: SomeException -> Annex ()
-	warnlocked e = do
-		warning $ show e
+	warnlocked msg = do
+		warning msg
 		warning "leaving this file as-is; correct this problem and run git annex add on it"
 	
 cleanup :: CommandCleanup

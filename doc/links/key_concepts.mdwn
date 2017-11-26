@@ -3,5 +3,6 @@
 * [[git-annex man page|git-annex]]
 * [[how_it_works]]
 * [[special_remotes]]
+* [[workflows|workflow]]
 * [[sync]]
 * [[direct_mode]]

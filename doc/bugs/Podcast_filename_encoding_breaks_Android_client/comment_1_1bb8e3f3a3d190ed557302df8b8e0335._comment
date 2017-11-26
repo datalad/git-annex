@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-04-04T18:59:05Z"
+ content="""
+The bug that caused merge to empty the repo was fixed in a newer
+version of git-annex than the 5.20150219 that you're using
+on your android device. So, you should upgrade.
+
+git-annex is supposed to be completely filename encoding agnostic.
+Need to investigate what might be breaking that on Android. 
+Perhaps it's really git, and not git-annex, that's
+crashing with the "unable to create file" error?
+
+Seems so; git's entry.c contains that message.
+"""]]

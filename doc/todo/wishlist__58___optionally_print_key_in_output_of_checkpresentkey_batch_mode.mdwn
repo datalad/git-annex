@@ -1,0 +1,3 @@
+For batch mode of `checkpresentkey`, it could be useful to have the option of outputting the key in a second (space- or tab-delimited?) column in addition to the `0/1` status indicator for that key; this could be useful for reporting, error recovery, or further key-specific action based on output. Presently it seems the only way to accomplish this would be to independently track corresponding input and output line indices, or externally join input and output (e.g., via the *nix `paste` command). 
+
+Thank you!

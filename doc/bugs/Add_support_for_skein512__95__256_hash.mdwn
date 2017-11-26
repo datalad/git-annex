@@ -1,0 +1,10 @@
+### Please describe the problem.
+
+cryptonite supports the hash skein512_256, which is just a truncated version of skein512. Could you please add support for using this as a key-value backend? Please note that cryptohash doesn't support this hash, so it'll have to go into the ifdef block alongside the sha3 hashes.
+
+Rationale: I've just done a benchmark of the different hash implementations in cryptonite, and the skein hashes beat all other hashes (except md5) by a large margin, so I'd like to use them. As with the other hashes, skein512 is a bit faster than skein256 (on x86-64), but I'd like to avoid the overly long file names it produces.
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I'm just trying git-annex for the first time, but it definitly looks great.

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 16"""
+ date="2016-05-16T21:31:43Z"
+ content="""
+@aslkdjasd this layout is the same as used for .git/annex/objects
+in the local repository. 
+
+This allows the FILEKEY directory to have its write bit removed.
+This prevents an accidental rm -rf from losing the contents of 
+annexed files. Since that might be the only copy of a file,
+git-annex adds this extra protection.
+"""]]

@@ -9,7 +9,7 @@ A few likely reasons:
 * If a 4th client repository had popped up. 
 * If you have configured a high number of copies, it might only be able to be met by keeping files on the transfer repository.
 * Similarly, if a repository that used to have the files has been marked as dead or deleted, more copies might be needed to make up for that.
-* For completeness, if the transfer repository accidentially had its type changed to some other kind of repository, like a full backup.
+* For completeness, if the transfer repository accidentally had its type changed to some other kind of repository, like a full backup.
 
 You can enable debugging (start with --debug or go into the webapp's preferences) and it might say a little more, but the debugging info is not very good.
 

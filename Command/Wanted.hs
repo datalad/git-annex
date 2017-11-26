@@ -1,51 +1,57 @@
 {- git-annex command
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.Wanted where
 
-import Common.Annex
-import qualified Annex
 import Command
 import qualified Remote
 import Logs.PreferredContent
-import Types.Messages
+import Types.StandardGroups
 
 import qualified Data.Map as M
 
-cmd :: [Command]
-cmd = [command "wanted" (paramPair paramRemote (paramOptional paramExpression)) seek
-	SectionSetup "get or set preferred content expression"]
+cmd :: Command
+cmd = cmd' "wanted" "get or set preferred content expression" 
+	preferredContentMapRaw
+	preferredContentSet
 
-seek :: CommandSeek
-seek = withWords start
-
-start :: [String] -> CommandStart
-start = parse
+cmd'
+	:: String
+	-> String
+	-> Annex (M.Map UUID PreferredContentExpression)
+	-> (UUID -> PreferredContentExpression -> Annex ())
+	-> Command
+cmd' name desc getter setter = noMessages $ 
+	command name SectionSetup desc pdesc (withParams seek)
   where
-	parse (name:[]) = go name performGet
-	parse (name:expr:[]) = go name $ \uuid -> do
-		showStart "wanted" name
-		performSet expr uuid
-	parse _ = error "Specify a repository."
+	pdesc = paramPair paramRemote (paramOptional paramExpression)
 
-	go name a = do
-		u <- Remote.nameToUUID name
+	seek = withWords start
+
+	start (rname:[]) = go rname (performGet getter)
+	start (rname:expr:[]) = go rname $ \uuid -> do
+		allowMessages
+		showStart name rname
+		performSet setter expr uuid
+	start _ = giveup "Specify a repository."
+		
+	go rname a = do
+		u <- Remote.nameToUUID rname
 		next $ a u
 
-performGet :: UUID -> CommandPerform
-performGet uuid = do
-	Annex.setOutput QuietOutput
-	m <- preferredContentMapRaw
-	liftIO $ putStrLn $ fromMaybe "" $ M.lookup uuid m
+performGet :: Ord a => Annex (M.Map a PreferredContentExpression) -> a -> CommandPerform
+performGet getter a = do
+	m <- getter
+	liftIO $ putStrLn $ fromMaybe "" $ M.lookup a m
 	next $ return True
 
-performSet :: String -> UUID -> CommandPerform
-performSet expr uuid = case checkPreferredContentExpression expr of
-	Just e -> error $ "Parse error: " ++ e
+performSet :: (a -> PreferredContentExpression -> Annex ()) -> String -> a -> CommandPerform
+performSet setter expr a = case checkPreferredContentExpression expr of
+	Just e -> giveup $ "Parse error: " ++ e
 	Nothing -> do
-		preferredContentSet uuid expr
+		setter a expr
 		next $ return True

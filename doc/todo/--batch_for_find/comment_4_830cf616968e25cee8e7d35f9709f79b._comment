@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 4"
+ date="2016-01-19T19:24:11Z"
+ content="""
+you caught me! ;) indeed in this case we could use 'info' for that purpose.  But if we decide if content is present under annex (which is what actually our function does, we just used it for determining \"if under annex\" after addurl) -- then find --batch would be needed, or whois --batch could be used.  So we are both correct! ;)
+"""]]

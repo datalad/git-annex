@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.55"
- subject="comment 1"
- date="2014-07-04T18:24:51Z"
- content="""
-The diff-filter=T comes from when Command.Add runs its pass to find unlocked files. It's finished adding all the files, so it must either be that or the git-annex branch commit that's running out of memory, I think.
-"""]]

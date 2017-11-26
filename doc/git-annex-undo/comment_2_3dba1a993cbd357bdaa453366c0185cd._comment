@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="comment 2"
+ date="2016-10-14T07:23:51Z"
+ content="""
+Adding this to `.gitattributes`:
+
+```
+*.xmp annex.largefiles=nothing
+```
+
+Causes `git-annex add` to behave as expected.  Questions about `git annex undo` behavior remain.
+
+"""]]

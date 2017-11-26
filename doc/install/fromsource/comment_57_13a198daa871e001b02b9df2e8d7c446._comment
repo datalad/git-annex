@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 57"""
+ date="2016-01-26T18:50:30Z"
+ content="""
+Check out the tag for the release of git-annex that you want to build to
+avoid building from master, which may not be ready. In this case, I was
+adjusting some build flags this morning and hadn't tried a stack build yet.
+
+git-annex-shell is just a symlink to git-annex. I guess that stack install 
+bypasses the code that makes cabal install set up that symlink. You can make
+the symlink yourself I suppose.
+"""]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2017-03-14T23:40:45Z"
+ content="""
+If you're worried about lost+found containing non-annexed content, you can
+copy (`cp`) the files, rather than moving them (`mv`). After adding the
+files, `git annex unused` will find any non-annexed ones that were added,
+and they can then be removed.
+
+This tip was written before `git annex reinject --known` existed, but that
+is also a good way to do it.
+"""]]

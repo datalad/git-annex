@@ -1,9 +1,34 @@
-Occasionally improvments are made to how git-annex stores its data,
+[[!toc levels=3]]
+
+# Software upgrades
+
+Upgrading the code base of git-annex will be done differently depending on
+your [[install]] method. For most distribution-based packages, it is
+handled by the package management software.
+
+For the standalone distribution, the [[git-annex-webapp]](1) will ask the
+user for confirmation when it detects a new version. Once that is
+confirmed, or if `annex.autoupgrade` is enabled (see the [[git-annex]](1)
+manpage) the assistant will start the upgrade. The upgrade process is
+fairly simple: the assistant will move the `git-annex.linux` directory out
+of the way and replace it with the new version, then re-execute itself. It
+therefore needs write access to the parent directory of the
+`git-annex.linux` directory.
+
+Note that "upgrading" from a distribution-based package to the
+[[install/Linux_standalone/]] version may cause weird problems, as an
+unexpected version of git-annex (e.g. the old one from packages) may be
+ran, see [[bugs/git-annex-shell_doesn__39__t_work_as_expected/]] for a full
+discussion.
+
+# Repository upgrades
+
+Occasionally improvements are made to how git-annex stores its data,
 that require an upgrade process to convert repositories made with an older
 version to be used by a newer version. It's annoying, it should happen
 rarely, but sometimes, it's worth it.
 
-There's a committment that git-annex will always support upgrades from all
+There's a commitment that git-annex will always support upgrades from all
 past versions. After all, you may have offline drives from an earlier
 git-annex, and might want to use them with a newer git-annex.
 
@@ -16,9 +41,48 @@ already have git conflicts in your repository or between repositories.
 Upgrading a repository with conflicts is not recommended; resolve the
 conflicts first before upgrading git-annex.
 
-## Upgrade events, so far
+The upgrade process needs to write to the repository. If the original
+repository cannot be written to (due to eg being on readonly media),
+the upgrade would need to be run in a copy of the repository.
 
-### v4 -> v5 (git-annex version 5.x)
+The upgrade events, so far:
+
+## v5 -> v6 (git-annex version 6.x)
+
+The upgrade from v5 to v6 is handled manually for now.
+Run `git-annex upgrade` to perform the upgrade.
+
+A v6 git-annex repository can have some files locked while other files are
+unlocked, and all git and git-annex commands can be used on both locked and
+unlocked files. (Although for locked files to be accessible, the filesystem
+must support symbolic links..
+
+Direct mode repositories are upgraded to instead use the new 
+[[adjusted branches feature|git-annex-adjust]], which transparently unlocks
+all locked files in the local repository.
+
+The behavior of some commands changes in an upgraded repository:
+
+* `git add` will add files to the annex, rather than adding them directly
+   to the git repository. To cause some files to be added directly
+   to git, you can configure `annex.largefiles`. For example:
+
+   	git config annex.largefiles "largerthan=100kb and not (include=*.c or include=*.h)"
+
+* `git annex unlock` and `git annex lock` change how the pointer to 
+  the annexed content is stored in git.
+
+There is also a new `annex.thin` setting, which makes unlocked files in v6
+repositories be hard linked to their content, instead of a copy. This saves
+disk space but means any modification of an unlocked file will lose the
+local (and possibly only) copy of the old version. This is automatically
+enabled when upgrading a direct mode repository, since direct mode made the
+same tradeoff.
+
+See [[tips/unlocked_files/]] for more details about locked files and thin
+mode.
+
+## v4 -> v5 (git-annex version 5.x)
 
 The upgrade from v4 to v5 is handled
 automatically, and only affects [[direct mode]] repositories.
@@ -26,12 +90,12 @@ automatically, and only affects [[direct mode]] repositories.
 This upgrade involves changing direct mode repositories to operate with
 core.bare=true.
 
-### v3 -> v4 (git-annex version 4.x)
+## v3 -> v4 (git-annex version 4.x)
 
 v4 was only used for [[direct_mode]], to ensure that a version of git-annex
 that understands direct mode was used with a direct mode repository. 
 
-### v2 -> v3 (git-annex version 3.x)
+## v2 -> v3 (git-annex version 3.x)
 
 Involved moving the .git-annex/ directory into a separate git-annex branch.
 
@@ -52,7 +116,7 @@ Example upgrade process:
 	git commit -m "upgrade v2 to v3"
 	git gc
 
-### v1 -> v2 (git-annex version 0.20110316)
+## v1 -> v2 (git-annex version 0.20110316)
 
 Involved adding hashing to .git/annex/ and changing the names of all keys.
 Symlinks changed.
@@ -94,7 +158,7 @@ Example upgrade process:
 	git annex upgrade
 	...
 
-### v0 -> v1 (git-annex version 0.04)
+## v0 -> v1 (git-annex version 0.04)
 
 Involved a reorganisation of the layout of .git/annex/. Symlinks changed.
 

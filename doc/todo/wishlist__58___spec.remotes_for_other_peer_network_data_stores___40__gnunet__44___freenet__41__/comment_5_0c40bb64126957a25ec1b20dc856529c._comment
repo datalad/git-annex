@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="xloem"
+ subject="Freenet Special Remote"
+ date="2016-05-19T03:02:18Z"
+ content="""
+The freenet external special remote at https://github.com/xloem/gitlakepy is working now.
+
+No bells and whistles, but you can install it and start git-annex copy --to=freenet and git-annex get --from=freenet .
+"""]]

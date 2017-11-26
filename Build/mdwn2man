@@ -10,7 +10,7 @@ while (<>) {
 	s{(\\?)\[\[([^\s\|\]]+)(\|[^\s\]]+)?\]\]}{$1 ? "[[$2]]" : $2}eg;
 	s/\`([^\`]*)\`/\\fB$1\\fP/g;
 	s/\`//g;
-	s/^\s*\./\\&./g;
+	s/^ *\./\\&./g;
 	if (/^#\s/) {
 		s/^#\s/.SH /;
 		<>; # blank;
@@ -18,7 +18,8 @@ while (<>) {
 	s/^[ \n]+//;
 	s/^\t/ /;
 	s/-/\\-/g;
-	s/^Warning:.*//g;
+	s/git\\-annex/git-annex/g;
+	s/^Warning:.*mdwn2man.*//g;
 	s/^$/.PP\n/;
 	s/^\*\s+(.*)/.IP "$1"/;
 	next if $_ eq ".PP\n" && $skippara;
@@ -39,6 +40,18 @@ while (<>) {
 	if ($inlist && $_ eq ".PP\n") {
 		$_=".IP\n";
 	}
+
+	if ($inNAME) {
+		# make lexgrog happy
+		s/^git-annex (\w)/git-annex-$1/;
+	}
+	if ($_ eq ".SH NAME\n") {
+		$inNAME=1;
+	}
+	else {
+		$inNAME=0;
+	}
+	s/\\"/\\\\"/g; # hack for git-annex-shell's quotes around SSH_ORIGINAL_COMMAND
 
 	print $_;
 }

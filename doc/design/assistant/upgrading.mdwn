@@ -21,7 +21,7 @@ restarts itself.
 
 To clean up the old installation, a git-annex.MANIFEST file is looked for
 in it, and the files listed, as well as empty directories, are deleted.
-I don't want to accidentially delete something I didn't ship!
+I don't want to accidentally delete something I didn't ship!
 
 ## restart on upgrade
 

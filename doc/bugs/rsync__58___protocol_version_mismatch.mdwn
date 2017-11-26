@@ -1,0 +1,38 @@
+### Please describe the problem.
+This is a weird one. I'm getting rsync `protocol version mismatch -- is your shell clean?` on a particular file.
+
+I have tried to reproduce it but not been able.
+
+ * First time it happened, I went to the problem repo and did a `get`, which worked, destroying the evidence. "Luckily", this happened again a few days later.
+ * I thought maybe it was because there was a partial transfer in `.git/annex/tmp` with some specific characteristics. Nope, if I remove the file in `tmp` the problem remains.
+ * I made another clone think it was the problem repo, transferred the file to that repo, no problem. Dropped it, pointed everything back to the original bad repo. Still bad.
+ * Both sides are running `rsync  version 3.1.0  protocol version 31`.
+
+
+### What steps will reproduce the problem?
+
+Working on it. But I want to put the preliminaries here, in case someone else has seen this.
+
+### What version of git-annex are you using? On what operating system?
+
+Both sides are running `git-annex version: 5.20150508-g883d57f`, on Ubuntu 14.04.2 LTS.
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+$ git annex copy --to acozed claes/colt/20150511_174818.jpg 
+copy claes/colt/20150511_174818.jpg (checking acozed...) (to acozed...) 
+protocol version mismatch -- is your shell clean?
+(see the rsync man page for an explanation)
+rsync error: protocol incompatibility (code 2) at compat.c(176) [sender=3.1.1]
+
+  rsync failed -- run git annex again to resume file transfer
+failed
+git-annex: copy: 1 failed
+
+
+# End of transcript or log.
+"""]]

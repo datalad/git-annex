@@ -1,0 +1,47 @@
+[[!comment format=mdwn
+ username="ovidiu@66ace8a8d99ce938b0538ffa0f26d30db02a9626"
+ nickname="ovidiu"
+ subject="comment 11"
+ date="2015-10-03T19:18:24Z"
+ content="""
+shiny:skydriveannex ovi$ git annex initremote skydrive type=external externaltype=skydrive encryption=shared folder=gitannex
+initremote skydrive (encryption setup) (shared cipher)  21:14:20 [skydriveannex-0.2.1] <module> : 'Starting'
+ 21:14:20 [skydriveannex-0.2.1] login : 'EXCEPTION api.auth_get_token:AuthenticationError(u\"Insufficient authentication data provided (missing keys: [u'code'])\",)'
+osascript: OpenScripting.framework - scripting addition \"/Library/ScriptingAdditions/AeroFSFinderExtension.osax\" cannot be used with the current OS because it has no OSAXHandlers entry in its Info.plist.
+git-annex: You need to set OAUTH environment variables and folder and encryption parameters when running initremote.
+
+the folder gitannex was created on my onedrive but that is all.
+
+Log files:
+[2015-10-03 21:12:43.322605] main: Syncing with onedrive 
+ 21:12:50 [skydriveannex-0.2.1] <module> : 'Starting'
+ 21:12:5
+
+9  [ sYkoyud rnieveeda ntnoe xs-e0t. 2O.A1U]T Hl oegnivni r:o n'mEeXnCtE PvTaIrOiNa balpeis. aauntdh _fgoeltd_etro kaennd: PernoctroycpotliEornr opra(r4a0m0e,t e'r4s0 0f oCrl itehnet  rEermrootre:. 
+Bad Request')'
+[2015-10-03 21:13:07.435901] main: Syncing with onedrive 
+
+
+  You need to set OAUTH environment variables and folder and encryption parameters for the remote.
+[2015-10-03 21:15:14.60821] main: Syncing with onedrive 
+
+
+  You need to set OAUTH environment variables and folder and encryption parameters for the remote.
+[2015-10-03 21:15:57.926083] main: starting assistant version 5.20150929-g7010007
+(scanning...) [2015-10-03 21:15:58.506776] Watcher: Performing startup scan
+(started...) gpg: Signature made Wed Sep 30 20:45:53 2015 CEST using DSA key ID 89C809CB
+gpg: /var/folders/m6/zkd11n111m38ff37zbtgq0lr0000gp/T/git-annex-gpg.tmp.0/trustdb.gpg: trustdb created
+gpg: Good signature from \"git-annex distribution signing key (for Joey Hess) <id@joeyh.name>\"
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 4005 5C6A FD2D 526B 2961  E78F 5EE1 DBA7 89C8 09CB
+ 21:16:01 [skydriveannex-0.2.1] <module> : 'Starting'
+ 21:16:
+
+01   [Ysokuy dnreievde atnon esxe-t0 .O2A.U1T]H  leongviinr o:n m'eEnXtC EvPaTrIiOaNb laepsi .aanudt hf_ogledte_rt oaknedn :ePnrcortyopctoiloEnr rpoarr(a4m0e0t,e r's4 0f0o rC ltiheen tr eEmrortoer.:
+ Bad Request')'
+[2015-10-03 21:16:34.655604] main: Syncing with onedrive 
+
+
+  You need to set OAUTH environment variables and folder and encryption parameters for the remote.
+"""]]

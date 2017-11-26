@@ -1,0 +1,38 @@
+Greetings all!
+
+I have only been using git-annex for a few days, but I am loving it so far.
+
+I have run into one problem:
+
+At the top of a directory tree with some very large (GB+) blobs, I issue this command:
+
+find . -size +5M  -exec git-annex add --debug {} \;  2>&1 | tee -a ./annex-add.log
+
+When the command completes, I see a number of these types of errors in the log:
+
+    [2015-10-05 21:14:13.502615] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+    [2015-10-05 21:14:13.521586] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+    [2015-10-05 21:14:13.533095] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff","--name-only","--diff-filter=T","-z","--","./application/mozilla/firefox/linux/firefox-39.0/media/firefox-39.0.tar.bz2"]
+    [2015-10-05 21:14:13.545739] feed: xargs ["-0","git","--git-dir=.git","--work-tree=.","--literal-pathspecs","add","--"]
+    [2015-10-05 21:14:13.562727] process done ExitSuccess
+    [2015-10-05 21:14:13.564103] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","hash-object","-w","--stdin-paths","--no-filters"]
+    [2015-10-05 21:14:13.56616] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-index","-z","--index-info"]
+    [2015-10-05 21:14:13.58032] process done ExitSuccess
+    fatal: Out of memory, getdelim failed
+    [2015-10-05 21:14:13.582109] process done ExitFailure 128
+    ok
+    (recording state in git...)
+    git-annex: user error (git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","hash-object","-w","--stdin-paths","--no-filters"] exited 128)
+
+I've googled around and searched the forums/bug reports here without much success.
+I have tried setting the queuesize to smaller values, but that does not seem to help.
+
+I am using git-annex version: 5.20150930-g40fdbe9 on RHEL 6.
+
+I am happy to help debug further...
+
+Thanks,
+
+JC
+
+P.S. - Is it normal that some links in the .git dir are created without user write access?

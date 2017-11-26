@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,7 +16,6 @@ import Data.Tuple (swap)
 import Data.Char (isSpace)
 import Data.Default
 
-import Common.Annex
 import Command
 import Annex.Perms
 import Types.TrustLevel
@@ -25,15 +24,18 @@ import Logs.Trust
 import Logs.Group
 import Logs.PreferredContent
 import Logs.Schedule
+import Logs.Config
+import Logs.NumCopies
 import Types.StandardGroups
 import Types.ScheduledActivity
+import Types.NumCopies
 import Remote
 
-cmd :: [Command]
-cmd = [command "vicfg" paramNothing seek
-	SectionSetup "edit git-annex's configuration"]
+cmd :: Command
+cmd = command "vicfg" SectionSetup "edit configuration in git-annex branch"
+	paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start :: CommandStart
@@ -51,7 +53,7 @@ vicfg curcfg f = do
 	vi <- liftIO $ catchDefaultIO "vi" $ getEnv "EDITOR"
 	-- Allow EDITOR to be processed by the shell, so it can contain options.
 	unlessM (liftIO $ boolSystem "sh" [Param "-c", Param $ unwords [vi, shellEscape f]]) $
-		error $ vi ++ " exited nonzero; aborting"
+		giveup $ vi ++ " exited nonzero; aborting"
 	r <- parseCfg (defCfg curcfg) <$> liftIO (readFileStrict f)
 	liftIO $ nukeFile f
 	case r of
@@ -67,6 +69,8 @@ data Cfg = Cfg
 	, cfgRequiredContentMap :: M.Map UUID PreferredContentExpression
 	, cfgGroupPreferredContentMap :: M.Map Group PreferredContentExpression
 	, cfgScheduleMap :: M.Map UUID [ScheduledActivity]
+	, cfgGlobalConfigs :: M.Map ConfigName ConfigValue
+	, cfgNumCopies :: Maybe NumCopies
 	}
 
 getCfg :: Annex Cfg
@@ -77,6 +81,8 @@ getCfg = Cfg
 	<*> requiredContentMapRaw
 	<*> groupPreferredContentMapRaw
 	<*> scheduleMap
+	<*> loadGlobalConfig
+	<*> getGlobalNumCopies
 
 setCfg :: Cfg -> Cfg -> Annex ()
 setCfg curcfg newcfg = do
@@ -87,6 +93,8 @@ setCfg curcfg newcfg = do
 	mapM_ (uncurry requiredContentSet) $ M.toList $ cfgRequiredContentMap diff
 	mapM_ (uncurry groupPreferredContentSet) $ M.toList $ cfgGroupPreferredContentMap diff
 	mapM_ (uncurry scheduleSet) $ M.toList $ cfgScheduleMap diff
+	mapM_ (uncurry setGlobalConfig) $ M.toList $ cfgGlobalConfigs diff
+	maybe noop setGlobalNumCopies $ cfgNumCopies diff
 
 {- Default config has all the keys from the input config, but with their
  - default values. -}
@@ -98,6 +106,8 @@ defCfg curcfg = Cfg
 	, cfgRequiredContentMap = mapdef $ cfgRequiredContentMap curcfg
 	, cfgGroupPreferredContentMap = mapdef $ cfgGroupPreferredContentMap curcfg
 	, cfgScheduleMap = mapdef $ cfgScheduleMap curcfg
+	, cfgGlobalConfigs = mapdef $ cfgGlobalConfigs curcfg
+	, cfgNumCopies = Nothing
 	}
   where
 	mapdef :: forall k v. Default v => M.Map k v -> M.Map k v
@@ -111,6 +121,8 @@ diffCfg curcfg newcfg = Cfg
 	, cfgRequiredContentMap = diff cfgRequiredContentMap
 	, cfgGroupPreferredContentMap = diff cfgGroupPreferredContentMap
 	, cfgScheduleMap = diff cfgScheduleMap
+	, cfgGlobalConfigs = diff cfgGlobalConfigs
+	, cfgNumCopies = cfgNumCopies newcfg
 	}
   where
 	diff f = M.differenceWith (\x y -> if x == y then Nothing else Just x)
@@ -126,6 +138,8 @@ genCfg cfg descs = unlines $ intercalate [""]
 	, standardgroups
 	, requiredcontent
 	, schedule
+	, numcopies
+	, globalconfigs
 	]
   where
 	intro =
@@ -175,7 +189,7 @@ genCfg cfg descs = unlines $ intercalate [""]
 		(\(s, g) -> gline g s)
 		(\g -> gline g "")
 	  where
-		gline g value = [ unwords ["groupwanted", g, "=", value] ]
+		gline g val = [ unwords ["groupwanted", g, "=", val] ]
 		allgroups = S.unions $ stdgroups : M.elems (cfgGroupMap cfg)
 		stdgroups = S.fromList $ map fromStandardGroup [minBound..maxBound]
 
@@ -198,9 +212,25 @@ genCfg cfg descs = unlines $ intercalate [""]
 		(\(l, u) -> line "schedule" u $ fromScheduledActivities l)
 		(\u -> line "schedule" u "")
 
-	line setting u value =
+	globalconfigs = settings' cfg S.empty cfgGlobalConfigs
+		[ com "Other global configuration"
+		]
+		(\(s, g) -> gline g s)
+		(\g -> gline g "")
+	  where
+		gline g val = [ unwords ["config", g, "=", val] ]
+
+	line setting u val =
 		[ com $ "(for " ++ fromMaybe "" (M.lookup u descs) ++ ")"
-		, unwords [setting, fromUUID u, "=", value]
+		, unwords [setting, fromUUID u, "=", val]
+		]
+
+	line' setting Nothing = com $ unwords [setting, "default", "="]
+	line' setting (Just val) = unwords [setting, "default", "=", val]
+
+	numcopies =
+		[ com "Numcopies configuration"
+		, line' "numcopies" (show . fromNumCopies <$> cfgNumCopies cfg)
 		]
 	
 settings :: Ord v => Cfg -> M.Map UUID String -> (Cfg -> M.Map UUID v) -> [String] -> ((v, UUID) -> [String]) -> (UUID -> [String]) -> [String]
@@ -235,46 +265,52 @@ parseCfg defcfg = go [] defcfg . lines
 		| null l = Right cfg
 		| "#" `isPrefixOf` l = Right cfg
 		| null setting || null f = Left "missing field"
-		| otherwise = parsed cfg f setting value'
+		| otherwise = parsed cfg f setting val'
 	  where
 		(setting, rest) = separate isSpace l
-		(r, value) = separate (== '=') rest
-		value' = trimspace value
+		(r, val) = separate (== '=') rest
+		val' = trimspace val
 		f = reverse $ trimspace $ reverse $ trimspace r
 		trimspace = dropWhile isSpace
 
-	parsed cfg f setting value
-		| setting == "trust" = case readTrustLevel value of
-			Nothing -> badval "trust value" value
+	parsed cfg f setting val
+		| setting == "trust" = case readTrustLevel val of
+			Nothing -> badval "trust value" val
 			Just t ->
 				let m = M.insert u t (cfgTrustMap cfg)
 				in Right $ cfg { cfgTrustMap = m }
 		| setting == "group" =
-			let m = M.insert u (S.fromList $ words value) (cfgGroupMap cfg)
+			let m = M.insert u (S.fromList $ words val) (cfgGroupMap cfg)
 			in Right $ cfg { cfgGroupMap = m }
 		| setting == "wanted" = 
-			case checkPreferredContentExpression value of
+			case checkPreferredContentExpression val of
 				Just e -> Left e
 				Nothing ->
-					let m = M.insert u value (cfgPreferredContentMap cfg)
+					let m = M.insert u val (cfgPreferredContentMap cfg)
 					in Right $ cfg { cfgPreferredContentMap = m }
 		| setting == "required" = 
-			case checkPreferredContentExpression value of
+			case checkPreferredContentExpression val of
 				Just e -> Left e
 				Nothing ->
-					let m = M.insert u value (cfgRequiredContentMap cfg)
+					let m = M.insert u val (cfgRequiredContentMap cfg)
 					in Right $ cfg { cfgRequiredContentMap = m }
 		| setting == "groupwanted" =
-			case checkPreferredContentExpression value of
+			case checkPreferredContentExpression val of
 				Just e -> Left e
 				Nothing ->
-					let m = M.insert f value (cfgGroupPreferredContentMap cfg)
+					let m = M.insert f val (cfgGroupPreferredContentMap cfg)
 					in Right $ cfg { cfgGroupPreferredContentMap = m }
-		| setting == "schedule" = case parseScheduledActivities value of
+		| setting == "schedule" = case parseScheduledActivities val of
 			Left e -> Left e
 			Right l -> 
 				let m = M.insert u l (cfgScheduleMap cfg)
 				in Right $ cfg { cfgScheduleMap = m }
+		| setting == "config" =
+			let m = M.insert f val (cfgGlobalConfigs cfg)
+			in Right $ cfg { cfgGlobalConfigs = m }
+		| setting == "numcopies" = case readish val of
+			Nothing -> Left "parse error (expected an integer)"
+			Just n -> Right $ cfg { cfgNumCopies = Just (NumCopies n) }
 		| otherwise = badval "setting" setting
 	  where
 		u = toUUID f

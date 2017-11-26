@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="openmedi"
+ subject="comment 31"
+ date="2015-12-09T20:18:48Z"
+ content="""
+How does git-annex handle space issues with special remotes? For example my Owncloud instance has 100 GB space. What happens if I run out of space on that remote? Does git-annex handle that gracefully? Do I have to do something? Can I set a sort of \"quota\"?
+"""]]

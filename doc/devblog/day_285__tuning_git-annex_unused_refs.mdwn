@@ -1,0 +1,20 @@
+Today I added a feature to `git annex unused` that lets the user tune which
+refs they are interested in using. Annexed objects that are used by other
+refs then are considered unused.
+
+Did a fairly complicated refspec format for this, with globs and
+include/exclude of refs. Example:
+
+	+refs/heads/*:+HEAD^:+refs/tags/*:-refs/tags/old-tag
+
+----
+
+I think that, since Google dropped openid support, there seems to have been
+less activity on this website. Although possibly also a higher signal to
+noise ratio. :) I have been working on some ikiwiki changes to make it
+easier for users who don't have an openid to contiribute. So git-annex's
+website should soon let you log in and make posts with just an email address.
+
+People sometimes ask for a git-annex mailing list. I wouldn't mind having
+one, and would certianly subscribe, but don't see any reason that I should
+be involved in running it.

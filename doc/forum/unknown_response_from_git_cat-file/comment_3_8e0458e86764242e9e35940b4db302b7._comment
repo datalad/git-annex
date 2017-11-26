@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="GregGrossmeier"
+ avatar="http://cdn.libravatar.org/avatar/66db9e436738991619a59e8ab8061e64"
+ subject="Recurring?"
+ date="2017-01-02T21:13:47Z"
+ content="""
+Still getting this myself. First I've ran into it (a few weeks ago, but I hadn't used these repos recently).
+
+	greg@x230 (git)-[master] ~/Photos % git-annex add .               
+	add 2016/10/16/2016-10-16 07.47.52.jpg git-annex: unknown response from git cat-file (\"HEAD:./2016/10/16/2016-10-16 07.47.52.jpg missing\",Ref \"HEAD:./2016/10/16/2016-10-16 07.47.52.jpg\")
+	greg@x230 (git)-[master] ~/Photos % apt-cache policy git-annex git
+	zsh: correct 'git' to '.git'? [N/y/a/e] n
+	git-annex:
+	  Installed: 6.20161012-1
+	  Candidate: 6.20161012-1
+	  Version table:
+	 *** 6.20161012-1 500
+	        500 http://httpredir.debian.org/debian testing/main amd64 Packages
+	        100 /var/lib/dpkg/status
+	     5.20141125 500
+	        500 http://httpredir.debian.org/debian stable/main amd64 Packages
+	git:
+	  Installed: 1:2.11.0-1
+	  Candidate: 1:2.11.0-1
+	  Version table:
+	 *** 1:2.11.0-1 500
+	        500 http://httpredir.debian.org/debian testing/main amd64 Packages
+	        100 /var/lib/dpkg/status
+	     1:2.1.4-2.1+deb8u2 500
+	        500 http://httpredir.debian.org/debian stable/main amd64 Packages
+	
+"""]]

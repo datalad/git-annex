@@ -1,20 +1,22 @@
 {- git-annex v2 -> v3 upgrade support
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Upgrade.V2 where
 
-import Common.Annex
+import Annex.Common
 import qualified Git
 import qualified Git.Command
 import qualified Git.Ref
 import qualified Annex.Branch
+import qualified Annex
 import Annex.Content
 import Utility.Tmp
 import Logs
+import Messages.Progress
 
 olddir :: Git.Repo -> FilePath
 olddir g
@@ -43,20 +45,21 @@ upgrade = do
 	old <- fromRepo olddir
 
 	Annex.Branch.create
-	showProgress
+	showProgressDots
 
 	e <- liftIO $ doesDirectoryExist old
 	when e $ do
-		mapM_ (\(k, f) -> inject f $ locationLogFile k) =<< locationLogs
+		config <- Annex.getGitConfig
+		mapM_ (\(k, f) -> inject f $ locationLogFile config k) =<< locationLogs
 		mapM_ (\f -> inject f f) =<< logFiles old
 
 	saveState False
-	showProgress
+	showProgressDots
 
 	when e $ do
 		inRepo $ Git.Command.run [Param "rm", Param "-r", Param "-f", Param "-q", File old]
 		unless bare $ inRepo gitAttributesUnWrite
-	showProgress
+	showProgressDots
 
 	unless bare push
 

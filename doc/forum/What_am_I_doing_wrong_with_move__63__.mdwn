@@ -1,0 +1,48 @@
+I still have little experience with git-annex, so I may be missing something fairly obvious.
+
+I have been moving files between two repositories. Things *seemed* to be going well, but today I noticed that I was missing some content that I have just moved. I would like some help to figure out where I went wrong to avoid doing worse mistakes in the future.
+
+What I did was to run the command `git-annex move --from=toshiba` to move a bunch of files from my USB unit to my current repository and then I ran `git-annex sync` on both ends. Afterwards I noticed that the content of the files was not available, so I tried to track one of them.
+What I could see in my local indirect repository was a broken symbolic link pointing to `../.git/annex/objects/ZQ/WF/SHA256E-s241--f3d7e5d1f788235b8eec0af58cc0c526b112b9e834a47ba7a475876c49dce343.jpg/SHA256E-s241--f3d7e5d1f788235b8eec0af58cc0c526b112b9e834a47ba7a475876c49dce343.jpg`.
+
+`git-annex info` gave me similar information:
+
+    file: Heavy Metal 1981.jpg
+    size: 241 bytes
+    key: SHA256E-s241--f3d7e5d1f788235b8eec0af58cc0c526b112b9e834a47ba7a475876c49dce343.jpg
+
+`git-annex whereis` locates the file still on its origin:
+
+    whereis Heavy Metal 1981.jpg (1 copy) 
+  	    49b5b3a4-56ac-4cf2-aed9-1c23d3181c97 -- Toshiba USB HDD [toshiba]
+    ok
+
+On my external HDD drive, where I have an indirect mode repository, the file has already been replaced by a reference (241 bytes).
+
+    $ cat "Heavy Metal 1981.jpg"
+    ../../../../../../../../../media/TOSHIBA EXT/annex/.git/annex/objects/4z/gf/SHA256E-s245--ae647e7ad31089255413a9290ca9344542f3cd15ecef66884613bf776387633d.jpg/SHA256E-s245--ae647e7ad31089255413a9290ca9344542f3cd15ecef66884613bf776387633d.jpg
+
+`git-annex log` remembers something about the operation:
+
+    + Tue, 17 May 2016 12:22:43 WEST Heavy Metal 1981.jpg | 49b5b3a4-56ac-4cf2-aed9-1c23d3181c97 -- Toshiba USB HDD [toshiba]
+
+I tried to `git-annex get "Heavy Metal 1981.jpg"`, and now I have a working symlink on my PC. However it does not point to the image, but to the same 241 bytes reference file that I have on my external HDD.
+
+`git-annex whereis` now mentions 2 locations to my file, but none of the working dirs holds its contents. So, where are the contents of the file? Lost somewhere? It appears that git-annex took the indirect mode reference file and took it for the real file contents -- and that is not good.
+
+I looked at the output of `git-annex unused`, cross-referenced with `git log --stat -S` and I managed to find it somewhere in the list of unused files in my PC's repository, but not on the external drive.
+
+Still, at this point I'm a little worried. I would like to understand what I could have done to cause this mess. Also, how I can clean it up (the rest of the files remain as broken links at the moment).
+
+I have a couple more drives I wanted to add to this setup, but you can understand that I hesitate a little bit at the moment. Maybe I have "lost" more data than I realize.
+
+The version details:
+
+    git-annex version: 6.20160511
+    build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+    local repository version: 5
+    supported repository versions: 5 6
+    upgrade supported from repository versions: 0 1 2 4 5
+    operating system: linux x86_64

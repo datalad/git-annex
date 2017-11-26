@@ -1,6 +1,6 @@
 {- git-annex assistant repo pairing, core data types
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,7 +9,7 @@
 
 module Assistant.Pairing where
 
-import Common.Annex
+import Annex.Common
 import Utility.Verifiable
 import Assistant.Ssh
 
@@ -58,6 +58,15 @@ data PairData = PairData
 	}
 	deriving (Eq, Read, Show)
 
+checkSane :: PairData -> Bool
+checkSane p = all (not . any isControl)
+	[ fromMaybe "" (remoteHostName p)
+	, remoteUserName p
+	, remoteDirectory p
+	, remoteSshPubKey p
+	, fromUUID (pairUUID p)
+	]
+
 type UserName = String
 
 {- A pairing that is in progress has a secret, a thread that is
@@ -71,6 +80,8 @@ data PairingInProgress = PairingInProgress
 	, inProgressPairStage :: PairStage
 	}
 	deriving (Show)
+
+data AddrClass = IPv4AddrClass | IPv6AddrClass
 
 data SomeAddr = IPv4Addr HostAddress
 {- My Android build of the Network library does not currently have IPV6

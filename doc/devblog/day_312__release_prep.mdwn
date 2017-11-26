@@ -1,0 +1,12 @@
+Catching up on weekend's traffic, and preparing for a release tomorrow.
+
+Found another place where the optparse-applicative conversion broke some
+command-line parsing; using git-annex metadata to dump metadata recursively
+got broken. This is the second known bug caused by that transition, which
+is not too surpising given how large it was.
+
+Tracked down and fixed a [very tricky encoding problem with metadata values](http://git-annex.branchable.com/bugs/view_fails_with___34__invalid_character__34__/).
+
+The arm autobuilder broke so it won't boot; got a serial console hooked up
+to it and looks like a botched upgrade resulting in a udev/systemd/linux
+version mismatch.

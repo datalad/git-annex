@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="IgorGanapolsky"
+ avatar="http://cdn.libravatar.org/avatar/6bc0985e3dedceb150f08ad6456c84b2"
+ subject="Assistant doesn't launch in Android N"
+ date="2016-10-25T01:43:58Z"
+ content="""
+Hello,
+I have installed the APK on Android N.  However, the assistant doesn't launch, gives an error on terminal:
+\"Cannot link executive git-annex.\"
+
+What is causing this?  Please help.
+"""]]

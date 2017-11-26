@@ -2,12 +2,12 @@ This special remote type rsyncs file contents to somewhere else.
 
 Setup example:
 
-	# git annex initremote myrsync type=rsync rsyncurl=rsync://rsync.example.com/myrsync keyid=joey@kitenet.net encryption=shared
+	# git annex initremote myrsync type=rsync rsyncurl=rsync://rsync.example.com/myrsync keyid=id@joeyh.name encryption=shared
 	# git annex describe myrsync "rsync server"
 
 Or for using rsync over SSH
 
-	# git annex initremote myrsync type=rsync rsyncurl=ssh.example.com:/myrsync keyid=joey@kitenet.net encryption=shared
+	# git annex initremote myrsync type=rsync rsyncurl=ssh.example.com:/myrsync keyid=id@joeyh.name encryption=shared
 	# git annex describe myrsync "rsync server"
 
 ## configuration

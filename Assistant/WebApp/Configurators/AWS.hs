@@ -1,6 +1,6 @@
 {- git-annex assistant webapp configurators for Amazon AWS services
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -13,12 +13,12 @@ import Assistant.WebApp.Common
 import Assistant.WebApp.MakeRemote
 #ifdef WITH_S3
 import qualified Remote.S3 as S3
-#endif
-import qualified Remote.Glacier as Glacier
-import qualified Remote.Helper.AWS as AWS
 import Logs.Remote
 import qualified Remote
 import qualified Types.Remote as Remote
+#endif
+import qualified Remote.Glacier as Glacier
+import qualified Remote.Helper.AWS as AWS
 import Types.Remote (RemoteConfig)
 import Types.StandardGroups
 import Creds
@@ -41,11 +41,12 @@ glacierConfigurator a = do
   where
 	needglaciercli = $(widgetFile "configurators/needglaciercli")
 
-data StorageClass = StandardRedundancy | ReducedRedundancy
+data StorageClass = StandardRedundancy | StandardInfrequentAccess | ReducedRedundancy
 	deriving (Eq, Enum, Bounded)
 
 instance Show StorageClass where
 	show StandardRedundancy = "STANDARD" 
+	show StandardInfrequentAccess = "STANDARD_IA"
 	show ReducedRedundancy = "REDUCED_REDUNDANCY"
 
 data AWSInput = AWSInput
@@ -75,6 +76,11 @@ s3InputAForm defcreds = AWSInput
 	storageclasses :: [(Text, StorageClass)]
 	storageclasses =
 		[ ("Standard redundancy", StandardRedundancy)
+#ifdef WITH_S3
+#if MIN_VERSION_aws(0,13,0)
+		, ("Infrequent access (cheaper for backups and archives)", StandardInfrequentAccess)
+#endif
+#endif
 		, ("Reduced redundancy (costs less)", ReducedRedundancy)
 		]
 
@@ -133,7 +139,7 @@ postAddS3R = awsConfigurator $ do
 				]
 		_ -> $(widgetFile "configurators/adds3")
 #else
-postAddS3R = error "S3 not supported by this build"
+postAddS3R = giveup "S3 not supported by this build"
 #endif
 
 getAddGlacierR :: Handler Html
@@ -155,7 +161,7 @@ postAddGlacierR = glacierConfigurator $ do
 				]
 		_ -> $(widgetFile "configurators/addglacier")
 #else
-postAddGlacierR = error "S3 not supported by this build"
+postAddGlacierR = giveup "S3 not supported by this build"
 #endif
 
 getEnableS3R :: UUID -> Handler Html
@@ -173,7 +179,7 @@ postEnableS3R :: UUID -> Handler Html
 #ifdef WITH_S3
 postEnableS3R uuid = awsConfigurator $ enableAWSRemote S3.remote uuid
 #else
-postEnableS3R _ = error "S3 not supported by this build"
+postEnableS3R _ = giveup "S3 not supported by this build"
 #endif
 
 getEnableGlacierR :: UUID -> Handler Html
@@ -199,7 +205,7 @@ enableAWSRemote remotetype uuid = do
 				T.pack <$> Remote.prettyUUID uuid
 			$(widgetFile "configurators/enableaws")
 #else
-enableAWSRemote _ _ = error "S3 not supported by this build"
+enableAWSRemote _ _ = giveup "S3 not supported by this build"
 #endif
 
 makeAWSRemote :: SpecialRemoteMaker -> RemoteType -> StandardGroup -> AWSCreds -> RemoteName -> RemoteConfig -> Handler ()

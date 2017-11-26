@@ -1,6 +1,6 @@
 {- A "remote" that is just a filesystem directory.
  -
- - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,27 +15,32 @@ module Remote.Directory (
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
+import Data.Default
 
-import Common.Annex
+import Annex.Common
 import Types.Remote
+import Types.Export
 import Types.Creds
 import qualified Git
 import Config.Cost
 import Config
 import Utility.FileMode
 import Remote.Helper.Special
+import Remote.Helper.Export
 import qualified Remote.Directory.LegacyChunked as Legacy
 import Annex.Content
 import Annex.UUID
 import Utility.Metered
+import Utility.Tmp
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "directory",
-	enumerate = findSpecialRemotes "directory",
-	generate = gen,
-	setup = directorySetup
-}
+remote = RemoteType
+	{ typename = "directory"
+	, enumerate = const (findSpecialRemotes "directory")
+	, generate = gen
+	, setup = directorySetup
+	, exportSupported = exportIsSupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
@@ -43,46 +48,59 @@ gen r u c gc = do
 	let chunkconfig = getChunkConfig c
 	return $ Just $ specialRemote c
 		(prepareStore dir chunkconfig)
-		(retrieve dir chunkconfig)
-		(simplyPrepare $ remove dir)
-		(simplyPrepare $ checkKey dir chunkconfig)
-		Remote {
-			uuid = u,
-			cost = cst,
-			name = Git.repoDescribe r,
-			storeKey = storeKeyDummy,
-			retrieveKeyFile = retreiveKeyFileDummy,
-			retrieveKeyFileCheap = retrieveCheap dir chunkconfig,
-			removeKey = removeKeyDummy,
-			checkPresent = checkPresentDummy,
-			checkPresentCheap = True,
-			whereisKey = Nothing,
-			remoteFsck = Nothing,
-			repairRepo = Nothing,
-			config = c,
-			repo = r,
-			gitconfig = gc,
-			localpath = Just dir,
-			readonly = False,
-			availability = LocallyAvailable,
-			remotetype = remote,
-			mkUnavailable = gen r u c $
-				gc { remoteAnnexDirectory = Just "/dev/null" },
-			getInfo = return [("directory", dir)]
-		}
+		(retrieveKeyFileM dir chunkconfig)
+		(simplyPrepare $ removeKeyM dir)
+		(simplyPrepare $ checkPresentM dir chunkconfig)
+		Remote
+			{ uuid = u
+			, cost = cst
+			, name = Git.repoDescribe r
+			, storeKey = storeKeyDummy
+			, retrieveKeyFile = retreiveKeyFileDummy
+			, retrieveKeyFileCheap = retrieveKeyFileCheapM dir chunkconfig
+			, removeKey = removeKeyDummy
+			, lockContent = Nothing
+			, checkPresent = checkPresentDummy
+			, checkPresentCheap = True
+			, exportActions = return $ ExportActions
+				{ storeExport = storeExportM dir
+				, retrieveExport = retrieveExportM dir
+				, removeExport = removeExportM dir
+				, checkPresentExport = checkPresentExportM dir
+				-- Not needed because removeExportLocation
+				-- auto-removes empty directories.
+				, removeExportDirectory = Nothing
+				, renameExport = renameExportM dir
+				}
+			, whereisKey = Nothing
+			, remoteFsck = Nothing
+			, repairRepo = Nothing
+			, config = c
+			, repo = r
+			, gitconfig = gc
+			, localpath = Just dir
+			, readonly = False
+			, availability = LocallyAvailable
+			, remotetype = remote
+			, mkUnavailable = gen r u c $
+				gc { remoteAnnexDirectory = Just "/dev/null" }
+			, getInfo = return [("directory", dir)]
+			, claimUrl = Nothing
+			, checkUrl = Nothing
+			}
   where
-	dir = fromMaybe (error "missing directory") $ remoteAnnexDirectory gc
+	dir = fromMaybe (giveup "missing directory") $ remoteAnnexDirectory gc
 
-directorySetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-directorySetup mu _ c = do
+directorySetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+directorySetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	-- verify configuration is sane
-	let dir = fromMaybe (error "Specify directory=") $
+	let dir = fromMaybe (giveup "Specify directory=") $
 		M.lookup "directory" c
 	absdir <- liftIO $ absPath dir
 	liftIO $ unlessM (doesDirectoryExist absdir) $
-		error $ "Directory does not exist: " ++ absdir
-	(c', _encsetup) <- encryptionSetup c
+		giveup $ "Directory does not exist: " ++ absdir
+	(c', _encsetup) <- encryptionSetup c gc
 
 	-- The directory is stored in git config, not in this remote's
 	-- persistant state, so it can vary between hosts.
@@ -105,19 +123,23 @@ getLocation d k = do
 
 {- Directory where the file(s) for a key are stored. -}
 storeDir :: FilePath -> Key -> FilePath
-storeDir d k = addTrailingPathSeparator $ d </> hashDirLower k </> keyFile k
-
-{- Where we store temporary data for a key, in the directory, as it's being
- - written. -}
-tmpDir :: FilePath -> Key -> FilePath
-tmpDir d k = addTrailingPathSeparator $ d </> "tmp" </> keyFile k
+storeDir d k = addTrailingPathSeparator $ d </> hashDirLower def k </> keyFile k
 
 {- Check if there is enough free disk space in the remote's directory to
  - store the key. Note that the unencrypted key size is checked. -}
 prepareStore :: FilePath -> ChunkConfig -> Preparer Storer
-prepareStore d chunkconfig = checkPrepare
-	(\k -> checkDiskSpace (Just d) k 0)
+prepareStore d chunkconfig = checkPrepare (checkDiskSpaceDirectory d)
 	(byteStorer $ store d chunkconfig)
+  where
+
+checkDiskSpaceDirectory :: FilePath -> Key -> Annex Bool
+checkDiskSpaceDirectory d k = do
+	annexdir <- fromRepo gitAnnexObjectDir
+	samefilesystem <- liftIO $ catchDefaultIO False $ 
+		(\a b -> deviceID a == deviceID b)
+			<$> getFileStatus d
+			<*> getFileStatus annexdir
+	checkDiskSpace (Just d) k 0 samefilesystem
 
 store :: FilePath -> ChunkConfig -> Key -> L.ByteString -> MeterUpdate -> Annex Bool
 store d chunkconfig k b p = liftIO $ do
@@ -130,7 +152,7 @@ store d chunkconfig k b p = liftIO $ do
 			finalizeStoreGeneric tmpdir destdir
 			return True
   where
-	tmpdir = tmpDir d k
+	tmpdir = addTrailingPathSeparator $ d </> "tmp" </> keyFile k
 	destdir = storeDir d k
 
 {- Passed a temp directory that contains the files that should be placed
@@ -148,26 +170,30 @@ finalizeStoreGeneric tmp dest = do
 		mapM_ preventWrite =<< dirContents dest
 		preventWrite dest
 
-retrieve :: FilePath -> ChunkConfig -> Preparer Retriever
-retrieve d (LegacyChunks _) = Legacy.retrieve locations d
-retrieve d _ = simplyPrepare $ byteRetriever $ \k sink ->
+retrieveKeyFileM :: FilePath -> ChunkConfig -> Preparer Retriever
+retrieveKeyFileM d (LegacyChunks _) = Legacy.retrieve locations d
+retrieveKeyFileM d _ = simplyPrepare $ byteRetriever $ \k sink ->
 	sink =<< liftIO (L.readFile =<< getLocation d k)
 
-retrieveCheap :: FilePath -> ChunkConfig -> Key -> FilePath -> Annex Bool
+retrieveKeyFileCheapM :: FilePath -> ChunkConfig -> Key -> AssociatedFile -> FilePath -> Annex Bool
 -- no cheap retrieval possible for chunks
-retrieveCheap _ (UnpaddedChunks _) _ _ = return False
-retrieveCheap _ (LegacyChunks _) _ _ = return False
+retrieveKeyFileCheapM _ (UnpaddedChunks _) _ _ _ = return False
+retrieveKeyFileCheapM _ (LegacyChunks _) _ _ _ = return False
 #ifndef mingw32_HOST_OS
-retrieveCheap d NoChunks k f = liftIO $ catchBoolIO $ do
-	file <- getLocation d k
-	createSymbolicLink file f
-	return True
+retrieveKeyFileCheapM d NoChunks k _af f = liftIO $ catchBoolIO $ do
+	file <- absPath =<< getLocation d k
+	ifM (doesFileExist file)
+		( do
+			createSymbolicLink file f
+			return True
+		, return False
+		)
 #else
-retrieveCheap _ _ _ _ = return False
+retrieveKeyFileCheapM _ _ _ _ _ = return False
 #endif
 
-remove :: FilePath -> Remover
-remove d k = liftIO $ removeDirGeneric d (storeDir d k)
+removeKeyM :: FilePath -> Remover
+removeKeyM d k = liftIO $ removeDirGeneric d (storeDir d k)
 
 {- Removes the directory, which must be located under the topdir.
  -
@@ -194,13 +220,69 @@ removeDirGeneric topdir dir = do
 		then return ok
 		else doesDirectoryExist topdir <&&> (not <$> doesDirectoryExist dir)
 
-checkKey :: FilePath -> ChunkConfig -> CheckPresent
-checkKey d (LegacyChunks _) k = Legacy.checkKey d locations k
-checkKey d _ k = liftIO $
-	ifM (anyM doesFileExist (locations d k))
+checkPresentM :: FilePath -> ChunkConfig -> CheckPresent
+checkPresentM d (LegacyChunks _) k = Legacy.checkKey d locations k
+checkPresentM d _ k = checkPresentGeneric d (locations d k)
+
+checkPresentGeneric :: FilePath -> [FilePath] -> Annex Bool
+checkPresentGeneric d ps = liftIO $
+	ifM (anyM doesFileExist ps)
 		( return True
 		, ifM (doesDirectoryExist d)
 			( return False
-			, error $ "directory " ++ d ++ " is not accessible"
+			, giveup $ "directory " ++ d ++ " is not accessible"
 			)
 		)
+
+storeExportM :: FilePath -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
+storeExportM d src _k loc p = liftIO $ catchBoolIO $ do
+	createDirectoryIfMissing True (takeDirectory dest)
+	-- Write via temp file so that checkPresentGeneric will not
+	-- see it until it's fully stored.
+	viaTmp (\tmp () -> withMeteredFile src p (L.writeFile tmp)) dest ()
+	return True
+  where
+	dest = exportPath d loc
+
+retrieveExportM :: FilePath -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
+retrieveExportM d _k loc dest p = liftIO $ catchBoolIO $ do
+	withMeteredFile src p (L.writeFile dest)
+	return True
+  where
+	src = exportPath d loc
+
+removeExportM :: FilePath -> Key -> ExportLocation -> Annex Bool
+removeExportM d _k loc = liftIO $ do
+	nukeFile src
+	removeExportLocation d loc
+	return True
+  where
+	src = exportPath d loc
+
+checkPresentExportM :: FilePath -> Key -> ExportLocation -> Annex Bool
+checkPresentExportM d _k loc =
+	checkPresentGeneric d [exportPath d loc]
+
+renameExportM :: FilePath -> Key -> ExportLocation -> ExportLocation -> Annex Bool
+renameExportM d _k oldloc newloc = liftIO $ catchBoolIO $ do
+	createDirectoryIfMissing True (takeDirectory dest)
+	renameFile src dest
+	removeExportLocation d oldloc
+	return True
+  where
+	src = exportPath d oldloc
+	dest = exportPath d newloc
+
+exportPath :: FilePath -> ExportLocation -> FilePath
+exportPath d loc = d </> fromExportLocation loc
+
+{- Removes the ExportLocation's parent directory and its parents, so long as
+ - they're empty, up to but not including the topdir. -}
+removeExportLocation :: FilePath -> ExportLocation -> IO ()
+removeExportLocation topdir loc = 
+	go (Just $ takeDirectory $ fromExportLocation loc) (Right ())
+  where
+	go _ (Left _e) = return ()
+	go Nothing _ = return ()
+	go (Just loc') _ = go (upFrom loc')
+		=<< tryIO (removeDirectory $ exportPath topdir (mkExportLocation loc'))

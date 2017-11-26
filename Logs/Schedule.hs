@@ -1,6 +1,6 @@
 {- git-annex scheduled activities log
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -19,10 +19,9 @@ module Logs.Schedule (
 
 import qualified Data.Map as M
 import qualified Data.Set as S
-import Data.Time.Clock.POSIX
 import Data.Time.LocalTime
 
-import Common.Annex
+import Annex.Common
 import Types.ScheduledActivity
 import qualified Annex.Branch
 import Logs
@@ -31,9 +30,9 @@ import Utility.Tmp
 
 scheduleSet :: UUID -> [ScheduledActivity] -> Annex ()
 scheduleSet uuid@(UUID _) activities = do
-	ts <- liftIO getPOSIXTime
+	c <- liftIO currentVectorClock
 	Annex.Branch.change scheduleLog $
-		showLog id . changeLog ts uuid val . parseLog Just
+		showLog id . changeLog c uuid val . parseLog Just
   where
 	val = fromScheduledActivities activities
 scheduleSet NoUUID _ = error "unknown UUID; cannot modify"

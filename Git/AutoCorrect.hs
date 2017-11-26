@@ -1,6 +1,6 @@
 {- git autocorrection using Damerau-Levenshtein edit distance
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -50,7 +50,7 @@ prepare input showmatch matches r =
 			| otherwise -> sleep n
 		Nothing -> list
   where
-	list = error $ unlines $
+	list = giveup $ unlines $
 		[ "Unknown command '" ++ input ++ "'"
 		, ""
 		, "Did you mean one of these?"

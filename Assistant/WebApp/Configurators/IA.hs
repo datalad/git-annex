@@ -1,6 +1,6 @@
 {- git-annex assistant webapp configurators for Internet Archive
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -15,15 +15,15 @@ import qualified Assistant.WebApp.Configurators.AWS as AWS
 import qualified Remote.S3 as S3
 import qualified Remote.Helper.AWS as AWS
 import Assistant.WebApp.MakeRemote
-#endif
 import qualified Remote
 import qualified Types.Remote as Remote
 import Types.StandardGroups
-import Types.Remote (RemoteConfig)
 import Logs.Remote
+import Assistant.Gpg
+#endif
+import Types.Remote (RemoteConfig)
 import qualified Annex.Url as Url
 import Creds
-import Assistant.Gpg
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -147,7 +147,7 @@ postAddIAR = iaConfigurator $ do
 					]
 		_ -> $(widgetFile "configurators/addia")
 #else
-postAddIAR = error "S3 not supported by this build"
+postAddIAR = giveup "S3 not supported by this build"
 #endif
 
 getEnableIAR :: UUID -> Handler Html
@@ -157,7 +157,7 @@ postEnableIAR :: UUID -> Handler Html
 #ifdef WITH_S3
 postEnableIAR = iaConfigurator . enableIARemote
 #else
-postEnableIAR _ = error "S3 not supported by this build"
+postEnableIAR _ = giveup "S3 not supported by this build"
 #endif
 
 #ifdef WITH_S3
@@ -191,7 +191,7 @@ escapeHeader = escapeURIString (\c -> isUnescapedInURI c && c /= ' ')
 getRepoInfo :: RemoteConfig -> Widget
 getRepoInfo c = do
 	uo <- liftAnnex Url.getUrlOptions
-	exists <- liftIO $ catchDefaultIO False $ fst <$> Url.exists url uo
+	exists <- liftIO $ catchDefaultIO False $ Url.exists url uo
 	[whamlet|
 <a href="#{url}">
   Internet Archive item

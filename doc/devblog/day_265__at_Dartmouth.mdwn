@@ -1,0 +1,4 @@
+Spent a couple of days at Dartmouth hanging out in the neuroscience
+department with the [Datalad](http://datalad.org/) developers.
+Added several new plumbing commands and a new post-update-annex hook,
+based on their feedback of how they're using git-annex.

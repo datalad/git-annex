@@ -1,6 +1,6 @@
 {- git-annex main program dispatch
  -
- - Copyright 2010-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,12 +9,13 @@
 
 import System.Environment (getArgs, getProgName)
 import System.FilePath
+import Network.Socket (withSocketsDo)
 
 import qualified CmdLine.GitAnnex
 import qualified CmdLine.GitAnnexShell
-#ifdef WITH_TESTSUITE
+import qualified CmdLine.GitRemoteTorAnnex
 import qualified Test
-#endif
+import Utility.FileSystemEncoding
 
 #ifdef mingw32_HOST_OS
 import Utility.UserInfo
@@ -22,29 +23,18 @@ import Utility.Env
 #endif
 
 main :: IO ()
-main = do
+main = withSocketsDo $ do
+	useFileSystemEncoding
 	ps <- getArgs
+#ifdef mingw32_HOST_OS
+	winEnv
+#endif
 	run ps =<< getProgName
   where
-	run ps n
-		| isshell n = CmdLine.GitAnnexShell.run ps
-		| otherwise =
-#ifdef mingw32_HOST_OS
-			do
-				winEnv
-				gitannex ps
-#else
-			gitannex ps
-#endif
-	gitannex ps = 
-#ifdef WITH_TESTSUITE
-		case ps of
-			("test":ps') -> Test.main ps'
-			_ -> CmdLine.GitAnnex.run ps
-#else
-		CmdLine.GitAnnex.run ps
-#endif
-	isshell n = takeFileName n == "git-annex-shell"
+	run ps n = case takeFileName n of
+		"git-annex-shell" -> CmdLine.GitAnnexShell.run ps
+		"git-remote-tor-annex" -> CmdLine.GitRemoteTorAnnex.run ps
+		_  -> CmdLine.GitAnnex.run Test.optParser Test.runner ps
 
 #ifdef mingw32_HOST_OS
 {- On Windows, if HOME is not set, probe it and set it.

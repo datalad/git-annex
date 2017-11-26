@@ -1,16 +1,16 @@
 {- git-annex desktop notifications
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 {-# LANGUAGE CPP #-}
 
-module Annex.Notification (NotifyWitness, notifyTransfer, notifyDrop) where
+module Annex.Notification (NotifyWitness, noNotification, notifyTransfer, notifyDrop) where
 
-import Common.Annex
-import Logs.Transfer
+import Annex.Common
+import Types.Transfer
 #ifdef WITH_DBUS_NOTIFICATIONS
 import qualified Annex
 import Types.DesktopNotify
@@ -21,13 +21,17 @@ import qualified DBus.Client
 -- Witness that notification has happened.
 data NotifyWitness = NotifyWitness
 
+-- Only use when no notification should be done.
+noNotification :: NotifyWitness
+noNotification = NotifyWitness
+
 {- Wrap around an action that performs a transfer, which may run multiple
  - attempts. Displays notification when supported and when the user asked
  - for it. -}
-notifyTransfer :: Direction -> Maybe FilePath -> (NotifyWitness -> Annex Bool) -> Annex Bool
-notifyTransfer _ Nothing a = a NotifyWitness
+notifyTransfer :: Direction -> AssociatedFile -> (NotifyWitness -> Annex Bool) -> Annex Bool
+notifyTransfer _ (AssociatedFile Nothing) a = a NotifyWitness
 #ifdef WITH_DBUS_NOTIFICATIONS
-notifyTransfer direction (Just f) a = do
+notifyTransfer direction (AssociatedFile (Just f)) a = do
 	wanted <- Annex.getState Annex.desktopnotify
 	if (notifyStart wanted || notifyFinish wanted)
 		then do
@@ -43,19 +47,19 @@ notifyTransfer direction (Just f) a = do
 			return ok
 		else a NotifyWitness
 #else
-notifyTransfer _ (Just _) a = do a NotifyWitness
+notifyTransfer _ (AssociatedFile (Just _)) a = a NotifyWitness
 #endif
 
-notifyDrop :: Maybe FilePath -> Bool -> Annex ()
-notifyDrop Nothing _ = noop
+notifyDrop :: AssociatedFile -> Bool -> Annex ()
+notifyDrop (AssociatedFile Nothing) _ = noop
 #ifdef WITH_DBUS_NOTIFICATIONS
-notifyDrop (Just f) ok = do
+notifyDrop (AssociatedFile (Just f)) ok = do
 	wanted <- Annex.getState Annex.desktopnotify
 	when (notifyFinish wanted) $ liftIO $ do
 		client <- DBus.Client.connectSession
 		void $ Notify.notify client (droppedNote ok f)
 #else
-notifyDrop (Just _) _ = noop
+notifyDrop (AssociatedFile (Just _)) _ = noop
 #endif
 
 #ifdef WITH_DBUS_NOTIFICATIONS

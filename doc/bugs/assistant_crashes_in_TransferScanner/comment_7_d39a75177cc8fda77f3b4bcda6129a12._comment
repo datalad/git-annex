@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2016-10-31T19:26:38Z"
+ content="""
+Ok so you're using that monstrosity where Arch repackages the git-annex
+standalone tarball into an Arch package? I never liked that because it's
+prone to this kind of breakage. AIUI, `pacman -S git-annex` will install
+a proper from-source build of git-annex and is the right thing to use.
+
+Anyway, I'm still wanting to get to the bottom of the problem
+since as I noted the same problem could occur if using a non-UTF8 locale.
+
+Did you leave out the filenames from the `git annex sync` output,
+or is it actually not printing any filenames there? It's very hard for me
+to understand output where some lines have been left out. It's fine
+if you replace all ASCII characters in your filenames with `X` in the paste
+you share.
+"""]]

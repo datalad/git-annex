@@ -1,0 +1,66 @@
+Hello,
+
+I have a repo alpha
+
+```
+florian@asaru ~/git-annex % tree
+.
+└── alpha
+    ├── archive
+    │   └── some_archived_file
+    └── some_file
+```
+
+which is standard/client.
+
+Another repo beta, cloned from alpha is also standard/client. ```git annex sync --content``` makes beta get all the content. Perfect!
+
+Another repo delta, also cloned from alpha is:
+
+```
+% git annex wanted . && git annex group .
+standard
+archive backup
+```
+Manpage of git-annex-group says a repo could be in multiple groups.
+
+I expect the groups to be combined. archive makes the other repos drop content in archive/ when it has reached this repo, backup to also retain deleted files.
+
+But ```git annex sync --content``` gets no files:
+
+```
+florian@asaru ~/git-annex/delta (git)-[master] % git annex sync --content
+commit  
+Auf Branch master
+Ihr Branch ist auf dem selben Stand wie 'origin/master'.
+nichts zu committen, Arbeitsverzeichnis unverändert
+ok
+pull origin 
+ok
+```
+```
+florian@asaru ~/git-annex/delta (git)-[master] % git annex info          
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 5
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        19d4aafe-0d6d-4bb8-913d-6f0541a6ee11 -- Alpha [origin]
+        6da720cc-4583-429d-bde0-724b7f9e494a -- Delta [here]
+        8523418a-0c1b-4987-a048-c967fc5ec1e7 -- Beta
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 123.11 gigabytes (+1 megabyte reserved)
+local annex keys: 0
+local annex size: 0 bytes
+annexed files in working tree: 2
+size of annexed files in working tree: 2.59 megabytes
+bloom filter size: 32 mebibytes (0% full)
+backend usage: 
+        SHA256E: 2
+```
+
+What is wrong there? My mental model or some git-annex issue?
+
+Thanks,
+Florian

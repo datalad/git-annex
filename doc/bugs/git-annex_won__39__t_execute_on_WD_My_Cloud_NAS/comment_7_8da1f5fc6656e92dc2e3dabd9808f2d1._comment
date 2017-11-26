@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="PaulK"
+ subject="comment 7"
+ date="2016-09-25T03:08:40Z"
+ content="""
+As an aside, just tried syncthing's arm verion, and I get a \"runtime: kernel page size (32768) is larger than runtime page size (4096)\" error. While their arm64 version also won't run.  
+
+Perhaps it's a similar issue with git-annex? Seems the page-size comes up in a number of contexts of people trying to get software running on the WD NAS.
+
+Is there any way to adjust  this page-size in the linker?
+
+Thanks
+"""]]

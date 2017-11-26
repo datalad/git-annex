@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="pixunil"
+ subject="comment 6"
+ date="2016-05-10T20:45:56Z"
+ content="""
+Thanks for clearing it up, so I guess it was me.
+Otherwise, I have some questions:
+
+- Could I set `annex.crippledfilesystem` to `false` or is that dangerous on NTFS?
+- Do symlinks also on Window work? (direction of the slash)
+- Wouldn't it be better to modify the link target than the location of the objects?
+
+I'm also fine with redirecting me to a FAQ, thanks again for your time and efforts.
+"""]]

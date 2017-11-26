@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="thowz"
+ subject="create symlinks inside .git/annex/objects"
+ date="2016-04-27T00:36:57Z"
+ content="""
+I also ran into this problem when copying a folder from Mac to Linux. Because the HFS+ filesystem is case-insensitive, directories that should be multiple directories are instead collapsed into one. For example, if there are four different files that are supposed to go into folders FG, fG, Fg, and fg, they will all end up in just one folder (whichever of the four was created first). But the symlinks will still point to different cases, so when everything gets moved to a case-sensitive filesystem, the symlinks break.
+
+I did a quick fix on the Linux side by making symlinks within .git/annex/objects to account for all the case variations (if folder FG exists and has more than one sub-folder, create symlinks  fG --> FG,  Fg --> FG,  fg --> FG).
+
+To do this for the whole set of directories and sub-directories, I made a perl script:
+
+    #!/usr/bin/perl 
+    
+    $dir=$ARGV[0];
+    $dir=substr($dir,2,2);
+    $link=$dir;
+    
+    if($dir =~ /[a-zA-Z]\d/){
+        substr($link,0,1) ^= \" \";
+        system(\"ln\", \"-s\", $dir, $link);
+    }
+    
+    if($dir =~ /\d[a-zA-Z]/){
+        substr($link,1,1) ^= \" \";
+        system(\"ln\", \"-s\", $dir, $link);
+    }
+    
+    if($dir =~ /[a-zA-Z]{2}/){
+        substr($link,0,1) ^= \" \";
+        system(\"ln\", \"-s\", $dir, $link);
+        substr($link,1,1) ^= \" \";
+        system(\"ln\", \"-s\", $dir, $link);
+        substr($link,0,1) ^= \" \";
+        system(\"ln\", \"-s\", $dir, $link);
+    }
+
+
+And ran it this way (with script made executable and placed in $PATH):
+
+    find .git/annex/objects -mindepth 1 -maxdepth 2 -links +3 -type d -execdir makelinks.pl {} \;
+
+It might be nice if git-annex-fsck could check whether a file was \"misfiled\" into the wrong directory due to case-insensitivity (before concluding that the file is missing). Although it also makes sense just to recommend cloning instead of copying when moving to a different filesystem (or remembering to set `annex.tune.objecthashlower true` when initiating a repo on a case-insensitive system).
+"""]]

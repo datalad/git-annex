@@ -42,3 +42,5 @@ repositories, but does not transfer the content of annexed files. If you
 want to fully synchronise two repositories content,
 you can use `git annex sync --content`. You can also configure
 [[preferred_content]] settings to make only some content be synced.
+
+See [[git-annex-sync]] for the command's man page.

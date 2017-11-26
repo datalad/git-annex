@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-03-07T17:25:08Z"
+ content="""
+`git reflog` is a handy command to get to know, for getting out of
+situations along the lines of "I did $something wrong and want to get back
+to a previous version of a branch"
+"""]]

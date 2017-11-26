@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-07-07T19:20:17Z"
+ content="""
+So, I was wrong about `git annex merge` creating the synced/master branch.
+
+There's no good reason for it to do that, so I've fixed it not to create
+it.
+"""]]

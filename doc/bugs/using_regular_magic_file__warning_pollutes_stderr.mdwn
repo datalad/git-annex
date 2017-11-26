@@ -1,0 +1,25 @@
+### Please describe the problem.
+
+Although probably not an annex issue but thought to let you know since you might see
+a quick resolution on your end
+
+Here is the log from datalad:
+
+[[!format sh """
+2016-02-25 22:53:32,886 [DEBUG] Running: ['git', '-c', 'receive.autogc=false', '-c', 'annex.alwayscommit=false', 'annex', 'add', '--debug', '--json', '-c', 'annex.largefiles=exclude=CHANGES* and exclude=README* and exclude=*.[mc] and exclude=dataset*.json and (exclude=*.txt or include=*/*.txt)  and (exclude=*.json or include=*/*.json) and (exclude=*.tsv or include=*/*.tsv)', 'README.txt'] (cmd.py:351)
+2016-02-25 22:53:32,979 [ERROR] stderr| /etc/magic, 4: Warning: using regular magic file `/usr/share/misc/magic' (cmd.py:351)
+
+
+or outside (file is already under annex)
+
+$> git annex --debug add -c 'annex.largefiles=exclude=CHANGES* and exclude=README*' README.txt
+/etc/magic, 4: Warning: using regular magic file `/usr/share/misc/magic'
+
+"""]]
+
+annex is up to date: 6.20160225+gitg229db26-1~ndall+1
+
+edit1: that is happening on jessie with file 1:5.22+15-2+deb8u1 if that is relevant
+[[!meta author=yoh]]
+
+> [[fixed|done]] --[[Joey]]

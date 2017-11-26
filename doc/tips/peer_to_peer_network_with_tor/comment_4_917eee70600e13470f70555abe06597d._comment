@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2017-04-05T15:47:55Z"
+ content="""
+@anarcat, I'm not sure I follow how git-annex would use that. It
+does not currently use the tor control port at all when setting up
+its tor hidden service. But please file a todo item if I'm wrong
+and there's something to be improved.
+
+(What would be useful is if tor came with the control port enabled
+by default, and perhaps protected by something like onion-grater.
+Then git-annex could use it when it installs its hidden service,
+instead of its current approach of prompting for the root password
+and modifying the torrc file.)
+"""]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="git-annex@31849d241f10c295b30a9707352ae5c7d743adb7"
+ nickname="git-annex"
+ avatar="http://cdn.libravatar.org/avatar/180f1a763647bfc099e97ac88b8f7b37"
+ subject="comment 1"
+ date="2017-03-02T16:16:05Z"
+ content="""
+If you're generating parity files for the content anyway, why not encrypt locally, generate parity files for the encrypted content, then check that in to git-annex?
+"""]]

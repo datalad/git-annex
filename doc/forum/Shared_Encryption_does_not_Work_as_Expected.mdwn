@@ -1,0 +1,11 @@
+I recently started to set up a share that would be synced between multiple machines.  Since I control all of them I thought it might be cool to try using the suggested "shared encryption".  This seems to have been a mistake.
+
+My project folder is now a big mess of symlinks to read-only files.  
+
+I can fix this with a "cp -RH" and get my data back and I can muddle through fixing the permissions but this leads me to two conclusions:
+
+1.  I did something wrong but I don't know what.  Should I have created the ssh remote first and the local repo second?  
+
+2.  This feature should either be hidden or the UI should be much more explicit about how to use it properly.  This cost me quite a bit of time and frustration.
+
+I really like git-annex so I would appreciate any comments or suggestions.

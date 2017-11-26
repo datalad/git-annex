@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="nanotech"
+ subject="comment 3"
+ date="2016-03-17T08:39:36Z"
+ content="""
+I think this is the same bug as [Moved files are not picked up by the assistant on OS X](https://git-annex.branchable.com/bugs/Moved_files_are_not_picked_up_by_the_assistant_on_OS_X/). To reproduce, run the first transcript there but drop the file before moving it.
+
+FSEvents fails to produce add events for dangling symlinks (<https://github.com/facebook/watchman/issues/172>), although it does produce removal events. Recompiling and using Kqueue with git-annex instead seems to detect dangling symlinks and add them correctly.
+"""]]

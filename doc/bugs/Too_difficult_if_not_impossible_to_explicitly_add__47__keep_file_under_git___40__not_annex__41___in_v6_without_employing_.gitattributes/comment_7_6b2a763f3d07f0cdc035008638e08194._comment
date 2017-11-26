@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="benjamin.poldrack@d09ccff6d42dd20277610b59867cf7462927b8e3"
+ nickname="benjamin.poldrack"
+ avatar="http://cdn.libravatar.org/avatar/5c1a901caa7c2cfeeb7e17e786c5230d"
+ subject="comment 7"
+ date="2017-03-27T09:03:10Z"
+ content="""
+You are right, if we stage that file again with annex.largefiles option, it stays in git.
+But still keeping a file in git is troublesome. For example: Take a repository with an annexed file and a file in git, clone it and the call git annex init --version=6 on the clone.
+This will lead to a dirty repository, where git status as well as git annex status are stating, that the file in git has unstaged modifications.
+I'm not sure, whether this is actually related but I guess it is. Causing fresh clones to be dirty is at least a strange consequence for having files directly in git.
+
+[[ben]]
+"""]]

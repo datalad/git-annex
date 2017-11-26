@@ -1,0 +1,16 @@
+While traveling for several days, I filled dead time with a rather massive
+reorganization of the git-annex man page, and I finished that up this
+morning.
+
+That man page had gotten rather massive, at around 3 thousand lines. I
+split out 87 man pages, one for each git-annex command. Many of these were
+expanded with additional details, and have become a lot better thanks
+to the added focus and space. See for example, [[git-annex-find]],
+or any of the links on the new [[git-annex]] man page. (Which is still over
+1 thousand lines long..)
+
+Also, `git annex help <command>` can be used to pull up a command's man
+page now!
+
+I'm taking the rest of the day off to R&R from the big trip north, and
+expect to get back into the backlog of 143 messages starting tomorrow.

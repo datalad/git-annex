@@ -1,19 +1,20 @@
 {- git-annex assistant ssh utilities
  -
- - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Assistant.Ssh where
 
-import Common.Annex
+import Annex.Common
 import Utility.Tmp
 import Utility.Shell
 import Utility.Rsync
 import Utility.FileMode
 import Utility.SshConfig
 import Git.Remote
+import Utility.SshHost
 
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -28,42 +29,54 @@ data SshData = SshData
 	, sshPort :: Int
 	, needsPubKey :: Bool
 	, sshCapabilities :: [SshServerCapability]
+	, sshRepoUrl :: Maybe String
 	}
 	deriving (Read, Show, Eq)
 
-data SshServerCapability = GitAnnexShellCapable | GitCapable | RsyncCapable
+data SshServerCapability
+	= GitAnnexShellCapable -- server has git-annex-shell installed
+	| GitCapable -- server has git installed
+	| RsyncCapable -- server supports raw rsync access (not only via git-annex-shell)
+	| PushCapable -- repo on server is set up already, and ready to accept pushes
 	deriving (Read, Show, Eq)
 
 hasCapability :: SshData -> SshServerCapability -> Bool
 hasCapability d c = c `elem` sshCapabilities d
 
+addCapability :: SshData -> SshServerCapability -> SshData
+addCapability d c = d { sshCapabilities = c : sshCapabilities d }
+
 onlyCapability :: SshData -> SshServerCapability -> Bool
 onlyCapability d c = all (== c) (sshCapabilities d)
 
+type SshPubKey = String
+type SshPrivKey = String
+
 data SshKeyPair = SshKeyPair
-	{ sshPubKey :: String
-	, sshPrivKey :: String
+	{ sshPubKey :: SshPubKey
+	, sshPrivKey :: SshPrivKey
 	}
 
 instance Show SshKeyPair where
 	show = sshPubKey
-
-type SshPubKey = String
 
 {- ssh -ofoo=bar command-line option -}
 sshOpt :: String -> String -> String
 sshOpt k v = concat ["-o", k, "=", v]
 
 {- user@host or host -}
-genSshHost :: Text -> Maybe Text -> String
-genSshHost host user = maybe "" (\v -> T.unpack v ++ "@") user ++ T.unpack host
+genSshHost :: Text -> Maybe Text -> SshHost
+genSshHost host user = either error id $ mkSshHost $
+	maybe "" (\v -> T.unpack v ++ "@") user ++ T.unpack host
 
 {- Generates a ssh or rsync url from a SshData. -}
 genSshUrl :: SshData -> String
-genSshUrl sshdata = addtrailingslash $ T.unpack $ T.concat $
-	if (onlyCapability sshdata RsyncCapable)
-		then [u, h, T.pack ":", sshDirectory sshdata]
-		else [T.pack "ssh://", u, h, d]
+genSshUrl sshdata = case sshRepoUrl sshdata of
+	Just repourl -> repourl
+	Nothing -> addtrailingslash $ T.unpack $ T.concat $
+		if (onlyCapability sshdata RsyncCapable)
+			then [u, h, T.pack ":", sshDirectory sshdata]
+			else [T.pack "ssh://", u, h, d]
   where
 	u = maybe (T.pack "") (\v -> T.concat [v, T.pack "@"]) $ sshUserName sshdata
 	h = sshHostName sshdata
@@ -90,6 +103,7 @@ parseSshUrl u
 		, sshPort = 22
 		, needsPubKey = True
 		, sshCapabilities = []
+		, sshRepoUrl = Nothing
 		}
 	  where
 		(user, host) = if '@' `elem` userhost
@@ -107,37 +121,30 @@ genSshRepoName host dir
 	| otherwise = makeLegalName $ host ++ "_" ++ dir
 
 {- The output of ssh, including both stdout and stderr. -}
-sshTranscript :: [String] -> (Maybe String) -> IO (String, Bool)
-sshTranscript opts input = processTranscript "ssh" opts input
+sshTranscript :: [String] -> SshHost -> String -> (Maybe String) -> IO (String, Bool)
+sshTranscript opts sshhost cmd input = processTranscript "ssh"
+	(opts ++ [fromSshHost sshhost, cmd]) input
 
 {- Ensure that the ssh public key doesn't include any ssh options, like
- - command=foo, or other weirdness -}
-validateSshPubKey :: SshPubKey -> IO ()
+ - command=foo, or other weirdness.
+ -
+ - The returned version of the key has its comment removed.
+ -}
+validateSshPubKey :: SshPubKey -> Either String SshPubKey
 validateSshPubKey pubkey
-	| length (lines pubkey) == 1 =
-		either error return $ check $ words pubkey
-	| otherwise = error "too many lines in ssh public key"
+	| length (lines pubkey) == 1 = check $ words pubkey
+	| otherwise = Left "too many lines in ssh public key"
   where
-	check [prefix, _key, comment] = do
-		checkprefix prefix
-		checkcomment comment
-	check [prefix, _key] =
-		checkprefix prefix
+	check (prefix:key:_) = checkprefix prefix (unwords [prefix, key])
 	check _ = err "wrong number of words in ssh public key"
 
-	ok = Right ()
 	err msg = Left $ unwords [msg, pubkey]
 
-	checkprefix prefix
-		| ssh == "ssh" && all isAlphaNum keytype = ok
+	checkprefix prefix validpubkey
+		| ssh == "ssh" && all isAlphaNum keytype = Right validpubkey
 		| otherwise = err "bad ssh public key prefix"
 	  where
 		(ssh, keytype) = separate (== '-') prefix
-
-	checkcomment comment = case filter (not . safeincomment) comment of
-		[] -> ok
-		badstuff -> err $ "bad comment in ssh public key (contains: \"" ++ badstuff ++ "\")"
-	safeincomment c = isAlphaNum c || c == '@' || c == '-' || c == '_' || c == '.'
 
 addAuthorizedKeys :: Bool -> FilePath -> SshPubKey -> IO Bool
 addAuthorizedKeys gitannexshellonly dir pubkey = boolSystem "sh"
@@ -230,24 +237,44 @@ genSshKeyPair = withTmpDir "git-annex-keygen" $ \dir -> do
  - when git-annex and git try to access the remote, if its
  - host key has changed.
  -}
-setupSshKeyPair :: SshKeyPair -> SshData -> IO SshData
-setupSshKeyPair sshkeypair sshdata = do
+installSshKeyPair :: SshKeyPair -> SshData -> IO SshData
+installSshKeyPair sshkeypair sshdata = do
 	sshdir <- sshDir
-	createDirectoryIfMissing True $ parentDir $ sshdir </> sshprivkeyfile
+	createDirectoryIfMissing True $ parentDir $ sshdir </> sshPrivKeyFile sshdata
 
-	unlessM (doesFileExist $ sshdir </> sshprivkeyfile) $
-		writeFileProtected (sshdir </> sshprivkeyfile) (sshPrivKey sshkeypair)
-	unlessM (doesFileExist $ sshdir </> sshpubkeyfile) $
-		writeFile (sshdir </> sshpubkeyfile) (sshPubKey sshkeypair)
+	unlessM (doesFileExist $ sshdir </> sshPrivKeyFile sshdata) $
+		writeFileProtected (sshdir </> sshPrivKeyFile sshdata) (sshPrivKey sshkeypair)
+	unlessM (doesFileExist $ sshdir </> sshPubKeyFile sshdata) $
+		writeFile (sshdir </> sshPubKeyFile sshdata) (sshPubKey sshkeypair)
 
 	setSshConfig sshdata
-		[ ("IdentityFile", "~/.ssh/" ++ sshprivkeyfile)
+		[ ("IdentityFile", "~/.ssh/" ++ sshPrivKeyFile sshdata)
 		, ("IdentitiesOnly", "yes")
 		, ("StrictHostKeyChecking", "yes")
 		]
-  where
-	sshprivkeyfile = "git-annex" </> "key." ++ mangleSshHostName sshdata
-	sshpubkeyfile = sshprivkeyfile ++ ".pub"
+
+sshPrivKeyFile :: SshData -> FilePath
+sshPrivKeyFile sshdata = "git-annex" </> "key." ++ mangleSshHostName sshdata
+
+sshPubKeyFile :: SshData -> FilePath
+sshPubKeyFile sshdata = sshPrivKeyFile sshdata ++ ".pub"
+
+{- Generates an installs a new ssh key pair if one is not already
+ - installed. Returns the modified SshData that will use the key pair,
+ - and the key pair. -}
+setupSshKeyPair :: SshData -> IO (SshData, SshKeyPair)
+setupSshKeyPair sshdata = do
+	sshdir <- sshDir
+	mprivkey <- catchMaybeIO $ readFile (sshdir </> sshPrivKeyFile sshdata)
+	mpubkey <- catchMaybeIO $ readFile (sshdir </> sshPubKeyFile sshdata)
+	keypair <- case (mprivkey, mpubkey) of
+		(Just privkey, Just pubkey) -> return $ SshKeyPair
+			{ sshPubKey = pubkey
+			, sshPrivKey = privkey
+			}
+		_ -> genSshKeyPair
+	sshdata' <- installSshKeyPair keypair sshdata
+	return (sshdata', keypair)
 
 {- Fixes git-annex ssh key pairs configured in .ssh/config 
  - by old versions to set IdentitiesOnly.
@@ -301,26 +328,47 @@ setSshConfig sshdata config = do
 				(settings ++ config)
 		setSshConfigMode configfile
 
-	return $ sshdata { sshHostName = T.pack mangledhost }
+	return $ sshdata
+		{ sshHostName = T.pack mangledhost
+		, sshRepoUrl = replace orighost mangledhost
+			<$> sshRepoUrl sshdata
+		}
   where
+	orighost = T.unpack $ sshHostName sshdata
 	mangledhost = mangleSshHostName sshdata
 	settings =
-		[ ("Hostname", T.unpack $ sshHostName sshdata)
+		[ ("Hostname", orighost)
 		, ("Port", show $ sshPort sshdata)
 		]
 
 {- This hostname is specific to a given repository on the ssh host,
  - so it is based on the real hostname, the username, and the directory.
  -
- - The mangled hostname has the form "git-annex-realhostname-username-port_dir".
- - The only use of "-" is to separate the parts shown; this is necessary
- - to allow unMangleSshHostName to work. Any unusual characters in the
- - username or directory are url encoded, except using "." rather than "%"
+ - The mangled hostname has the form:
+ - "git-annex-realhostname-username_port_dir"
+ - Note that "-" is only used in the realhostname and as a separator;
+ - this is necessary to allow unMangleSshHostName to work.
+ -
+ - Unusual characters are url encoded, but using "." rather than "%"
  - (the latter has special meaning to ssh).
+ -
+ - In the username and directory, unusual characters are any
+ - non-alphanumerics, other than "_"
+ -
+ - The real hostname is not normally encoded at all. This is done for
+ - backwards compatability and to avoid unnecessary ugliness in the
+ - filename. However, when it contains special characters
+ - (notably ":" which cannot be used on some filesystems), it is url
+ - encoded. To indicate it was encoded, the mangled hostname
+ - has the form
+ - "git-annex-.encodedhostname-username_port_dir"
  -}
 mangleSshHostName :: SshData -> String
-mangleSshHostName sshdata = "git-annex-" ++ T.unpack (sshHostName sshdata)
-	++ "-" ++ escape extra
+mangleSshHostName sshdata = intercalate "-" 
+	[ "git-annex"
+	, escapehostname (T.unpack (sshHostName sshdata))
+	, escape extra
+	]
   where
 	extra = intercalate "_" $ map T.unpack $ catMaybes
 		[ sshUserName sshdata
@@ -332,12 +380,18 @@ mangleSshHostName sshdata = "git-annex-" ++ T.unpack (sshHostName sshdata)
 		| c == '_' = True
 		| otherwise = False
 	escape s = replace "%" "." $ escapeURIString safe s
+	escapehostname s
+		| all (\c -> c == '.' || safe c) s = s
+		| otherwise = '.' : escape s
 
 {- Extracts the real hostname from a mangled ssh hostname. -}
 unMangleSshHostName :: String -> String
-unMangleSshHostName h = case split "-" h of
-	("git":"annex":rest) -> intercalate "-" (beginning rest)
+unMangleSshHostName h = case splitc '-' h of
+	("git":"annex":rest) -> unescape (intercalate "-" (beginning rest))
 	_ -> h
+  where
+	unescape ('.':s) = unEscapeString (replace "." "%" s)
+	unescape s = s
 
 {- Does ssh have known_hosts data for a hostname? -}
 knownHost :: Text -> IO Bool

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 2"
+ date="2015-04-20T14:37:03Z"
+ content="""
+I read the blog after my time abroad and chuckled about the timing of my request, yah :)
+
+Could git-annex reasonably detach generating the list of files to transfer from the actual transfer? That way, there is never a delay while git-annex looks for the next file.
+
+Richard
+"""]]

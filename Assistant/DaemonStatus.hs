@@ -1,6 +1,6 @@
 {- git-annex assistant daemon status
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,25 +12,24 @@ module Assistant.DaemonStatus where
 import Assistant.Common
 import Assistant.Alert.Utility
 import Utility.Tmp
-import Assistant.Types.NetMessager
 import Utility.NotificationBroadcaster
+import Types.Transfer
 import Logs.Transfer
 import Logs.Trust
+import Logs.TimeStamp
 import qualified Remote
 import qualified Types.Remote as Remote
-import qualified Git
+import Config.DynamicConfig
+import Annex.Export
 
 import Control.Concurrent.STM
 import System.Posix.Types
 import Data.Time.Clock.POSIX
-import Data.Time
-import System.Locale
 import qualified Data.Map as M
 import qualified Data.Set as S
-import qualified Data.Text as T
 
 getDaemonStatus :: Assistant DaemonStatus
-getDaemonStatus = (atomically . readTMVar) <<~ daemonStatusHandle
+getDaemonStatus = (atomically . readTVar) <<~ daemonStatusHandle
 
 modifyDaemonStatus_ :: (DaemonStatus -> DaemonStatus) -> Assistant ()
 modifyDaemonStatus_ a = modifyDaemonStatus $ \s -> (a s, ())
@@ -40,8 +39,8 @@ modifyDaemonStatus a = do
 	dstatus <- getAssistant daemonStatusHandle
 	liftIO $ do
 		(s, b) <- atomically $ do
-			r@(!s, _) <- a <$> takeTMVar dstatus
-			putTMVar dstatus s
+			r@(!s, _) <- a <$> readTVar dstatus
+			writeTVar dstatus s
 			return r
 		sendNotification $ changeNotifier s
 		return b
@@ -50,19 +49,23 @@ modifyDaemonStatus a = do
  - and other associated information. -}
 calcSyncRemotes :: Annex (DaemonStatus -> DaemonStatus)
 calcSyncRemotes = do
-	rs <- filter (remoteAnnexSync . Remote.gitconfig) .
-		concat . Remote.byCost <$> Remote.remoteList
+	rs <- filterM (liftIO . getDynamicConfig . remoteAnnexSync . Remote.gitconfig)
+		=<< (concat . Remote.byCost <$> Remote.remoteList)
 	alive <- trustExclude DeadTrusted (map Remote.uuid rs)
 	let good r = Remote.uuid r `elem` alive
 	let syncable = filter good rs
-	let syncdata = filter (not . remoteAnnexIgnore . Remote.gitconfig) $
+	contentremotes <- filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) $
+		filter (\r -> Remote.uuid r /= NoUUID) $
 		filter (not . Remote.isXMPPRemote) syncable
+	let (exportremotes, dataremotes) = partition (exportTree . Remote.config) contentremotes
 
 	return $ \dstatus -> dstatus
 		{ syncRemotes = syncable
 		, syncGitRemotes = filter Remote.gitSyncableRemote syncable
-		, syncDataRemotes = syncdata
-		, syncingToCloudRemote = any iscloud syncdata
+		, syncDataRemotes = dataremotes
+		, exportRemotes = exportremotes
+		, downloadRemotes = contentremotes
+		, syncingToCloudRemote = any iscloud contentremotes
 		}
   where
 	iscloud r = not (Remote.readonly r) && Remote.availability r == Remote.GloballyAvailable
@@ -101,7 +104,7 @@ startDaemonStatus = do
 		flip catchDefaultIO (readDaemonStatusFile file) =<< newDaemonStatus
 	transfers <- M.fromList <$> getTransfers
 	addsync <- calcSyncRemotes
-	liftIO $ atomically $ newTMVar $ addsync $ status
+	liftIO $ atomically $ newTVar $ addsync $ status
 		{ scanComplete = False
 		, sanityCheckRunning = False
 		, currentTransfers = transfers
@@ -125,21 +128,18 @@ readDaemonStatusFile file = parse <$> newDaemonStatus <*> readFile file
   where
 	parse status = foldr parseline status . lines
 	parseline line status
-		| key == "lastRunning" = parseval readtime $ \v ->
+		| key == "lastRunning" = parseval parsePOSIXTime $ \v ->
 			status { lastRunning = Just v }
 		| key == "scanComplete" = parseval readish $ \v ->
 			status { scanComplete = v }
 		| key == "sanityCheckRunning" = parseval readish $ \v ->
 			status { sanityCheckRunning = v }
-		| key == "lastSanityCheck" = parseval readtime $ \v ->
+		| key == "lastSanityCheck" = parseval parsePOSIXTime $ \v ->
 			status { lastSanityCheck = Just v }
 		| otherwise = status -- unparsable line
 	  where
 		(key, value) = separate (== ':') line
 		parseval parser a = maybe status a (parser value)
-		readtime s = do
-			d <- parseTime defaultTimeLocale "%s%Qs" s
-			Just $ utcTimeToPOSIXSeconds d
 
 {- Checks if a time stamp was made after the daemon was lastRunning.
  -
@@ -164,14 +164,14 @@ tenMinutes = 10 * 60
  - to the caller. -}
 adjustTransfersSTM :: DaemonStatusHandle -> (TransferMap -> TransferMap) -> STM ()
 adjustTransfersSTM dstatus a = do
-	s <- takeTMVar dstatus
+	s <- readTVar dstatus
 	let !v = a (currentTransfers s)
-	putTMVar dstatus $ s { currentTransfers = v }
+	writeTVar dstatus $ s { currentTransfers = v }
 
 {- Checks if a transfer is currently running. -}
 checkRunningTransferSTM :: DaemonStatusHandle -> Transfer -> STM Bool
 checkRunningTransferSTM dstatus t = M.member t . currentTransfers
-	<$> readTMVar dstatus
+	<$> readTVar dstatus
 
 {- Alters a transfer's info, if the transfer is in the map. -}
 alterTransferInfo :: Transfer -> (TransferInfo -> TransferInfo) -> Assistant ()
@@ -209,14 +209,14 @@ notifyTransfer :: Assistant ()
 notifyTransfer = do
 	dstatus <- getAssistant daemonStatusHandle
 	liftIO $ sendNotification
-		=<< transferNotifier <$> atomically (readTMVar dstatus)
+		=<< transferNotifier <$> atomically (readTVar dstatus)
 
 {- Send a notification when alerts are changed. -}
 notifyAlert :: Assistant ()
 notifyAlert = do
 	dstatus <- getAssistant daemonStatusHandle
 	liftIO $ sendNotification
-		=<< alertNotifier <$> atomically (readTMVar dstatus)
+		=<< alertNotifier <$> atomically (readTVar dstatus)
 
 {- Returns the alert's identifier, which can be used to remove it. -}
 addAlert :: Alert -> Assistant AlertId
@@ -266,6 +266,3 @@ alertDuring :: Alert -> Assistant a -> Assistant a
 alertDuring alert a = do
 	i <- addAlert $ alert { alertClass = Activity }
 	removeAlert  i `after` a
-
-getXMPPClientID :: Remote -> ClientID
-getXMPPClientID r = T.pack $ drop (length "xmpp::") (Git.repoLocation (Remote.repo r))

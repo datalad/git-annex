@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawmZgZuUhZlHpd_AbbcixY0QQiutb2I7GWY"
- nickname="Jimmy"
- subject="Works with git annex on command line"
- date="2013-11-09T20:18:38Z"
- content="""
-git annex initremote cloud type=S3 keyid=key correct creates an encrypted S3 repo and I'm able to upload files.
-"""]]

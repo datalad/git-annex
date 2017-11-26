@@ -1,0 +1,55 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmFe2gzaJequ06hlza8N1-lFqQfwtFnw68"
+ nickname="Michael"
+ subject="Works in a subfolder, but not from root of site"
+ date="2015-03-27T19:23:06Z"
+ content="""
+So if I drill all the way down into a folder containing images, the git annex add and git commit are successful. When trying to do the same from the root of the site, I get the add messages, but nothing appears to be staged when committing.
+
+
+Here is the output when trying to add all images recursively from the root of the site
+
+    macbook-pro:domain.com mhoskison$ git annex add *.jpg
+    add webroot/HTML/images/a-expanded.jpg ok
+    add webroot/HTML/images/about-logo1.jpg ok
+    <few hundred more lines add lines in-between>
+    add webroot/wp-content/uploads/2015/01/shutterstock_98870129-300x227.jpg ok
+    add webroot/wp-content/uploads/2015/01/shutterstock_98870129-940x198.jpg ok
+    add webroot/wp-content/uploads/2015/01/shutterstock_98870129.jpg ok
+    add webroot/wp-content/uploads/2015/01/smart-beauty-guide-logo.jpg ok
+    git-annex: *.jpg not found
+    macbook-pro:domain.com mhoskison$ git commit -m \"annex jpg wildcard\"
+    (recording state in git...)
+    On branch master
+    Your branch is up-to-date with 'origin/master'.
+    nothing added to commit but untracked files present
+    macbook-pro:domain.com mhoskison$ 
+
+
+Here is the successful output when I run the same commands from a subfolder
+
+    macbook-pro:04 mhoskison$ git annex add *.jpg
+    add april-150x150.jpg ok
+    add april.jpg ok
+    add images2-150x150.jpg ok
+    add images2.jpg ok
+    add p44242.tf_3B4F1611-AE82-BF8C-9E3190356674F495.Clear-and-Brilliant-logo-219x305_1_-150x150.jpg ok
+    add p44242.tf_3B4F1611-AE82-BF8C-9E3190356674F495.Clear-and-Brilliant-logo-219x305_1_-215x300.jpg ok
+    add p44242.tf_3B4F1611-AE82-BF8C-9E3190356674F495.Clear-and-Brilliant-logo-219x305_1_-219x198.jpg ok
+    add p44242.tf_3B4F1611-AE82-BF8C-9E3190356674F495.Clear-and-Brilliant-logo-219x305_1_.jpg ok
+    (recording state in git...)
+    macbook-pro:04 mhoskison$ git commit -m \"annex test from subfolder\"
+    [master 9859afd] annex test from subfolder
+     8 files changed, 8 insertions(+)
+     create mode 120000 webroot/wp-content/uploads/2014/04/april-150x150.jpg
+     create mode 120000 webroot/wp-content/uploads/2014/04/april.jpg
+     create mode 120000 webroot/wp-content/uploads/2014/04/images2-150x150.jpg
+     create mode 120000 webroot/wp-content/uploads/2014/04/images2.jpg
+     create mode 120000 webroot/wp-content/uploads/2014/04/p44242.tf_3B4F1611-AE82-BF8C-9E3190356674F495.Clear-and-Brilliant-logo-219x305_1_-
+    F8C-9E3190356674F495.Clear-and-Brilliant-logo-219x305_1_-150x150.jpg
+     create mode 120000 webroot/wp-content/uploads/2014/04/p44242.tf_3B4F1611-AE82-BF8C-9E3190356674F495.Clear-and-Brilliant-logo-219x305_1_-215x300.jpg
+     create mode 120000 webroot/wp-content/uploads/2014/04/p44242.tf_3B4F1611-AE82-BF8C-9E3190356674F495.Clear-and-Brilliant-logo-219x305_1_-219x198.jpg
+     create mode 120000 webroot/wp-content/uploads/2014/04/p44242.tf_3B4F1611-AE82-BF8C-9E3190356674F495.Clear-and-Brilliant-logo-219x305_1_.jpg
+
+
+"""]]

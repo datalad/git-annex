@@ -1,7 +1,0 @@
-Running a command like
-
-git annex unlock myfile
-
-is not atomic, that is if the execution is aborted you may end up with an incomplete version of myfile in the directory. If you don't notice this you may lock it again and then propagate this bad version of the file to your other repositories. A simple workaround is to simply name it something else while unlocking and then rename it to the correct filename once it's completely copied. I don't know Haskel yet so I can not fix this issue otherwise I would sure try. A part from this, I love git annex.
-
-> [[fixed|done]] --[[Joey]] 

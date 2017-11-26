@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 14"
+ date="2016-01-15T09:34:40Z"
+ content="""
+I think it is worth mentioning that in the script I showed above, the \"uniqueness\" key can be set to anything.
+
+Just recently, I ran a de-duplication where I set such a key to be the key *and* the file name, making it remove only files that are the same, but don't have different filenames. As I have a lot of files without their proper filenames (e.g. recovered with photorec), this prevents me removing the version with the proper filename and keeping the recovered one.
+
+Very useful (in my sorting-annex case anyway).
+"""]]

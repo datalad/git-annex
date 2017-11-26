@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Cyberthal"
+ avatar="http://cdn.libravatar.org/avatar/1c619d65ee07d2343295c8f70f23c9df"
+ subject="Deleting a repository UUID from vicfg"
+ date="2017-05-03T16:50:53Z"
+ content="""
+I followed these instructions, but a single entry for the targeted UUID persists in vicfg.
+
+For those of us with OCD, this is mildly irksome. Later I might have dead UUID's I actually want to remember, and that bit of spam will always be sitting there at the top of the file.
+
+However, deleting it is still worthwhile, because otherwise it is repeated in every list of remotes.
+"""]]

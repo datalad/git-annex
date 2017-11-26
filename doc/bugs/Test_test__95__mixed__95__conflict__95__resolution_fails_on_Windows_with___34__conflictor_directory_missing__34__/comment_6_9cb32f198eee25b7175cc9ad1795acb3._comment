@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.199"
- subject="comment 6"
- date="2014-01-29T21:24:34Z"
- content="""
-I missed that moveFile refuses to overwrite existing files. This is fixed in git, and the autobuild is updating.
-"""]]

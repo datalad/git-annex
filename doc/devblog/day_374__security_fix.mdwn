@@ -1,0 +1,4 @@
+Pushed out a git-annex release this morning mostly because of the recent
+[[bugs/git_security_fix]]. Several git-annex builds bundle a copy of git and
+needed to be updated. Note that the OSX autobuilder is temporarily down and
+so it's not been updated yet -- hopefully soon.

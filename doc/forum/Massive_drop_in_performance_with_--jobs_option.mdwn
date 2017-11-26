@@ -1,0 +1,9 @@
+Old version:  5.20150916-1
+New version:  5.20151208-1
+
+
+I have noticed that with the addition of the progress display, the actual overall performance of the transfer drop very noticeably from these two versions.  I am very tempted to keep the old version around to just handle the transfers.
+
+Also, I decided to build a newer version from git, using debuild.  I noticed that the libghc-persistant dependencies have no trailing commas.  I added the commas, built the package and had two errors in one of the tests.  I removed these dependencies from the control file and I am currently performing a rebuild (they were not present in 12/08 version).
+
+Build complete.  Tests passed.  Parallel transfers seem to be back up to speed.  Thanks!

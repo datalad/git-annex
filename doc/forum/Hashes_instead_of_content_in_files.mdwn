@@ -1,0 +1,1 @@
+I just cloned from a bare repo. The files I got aren't symlinks, but when I look inside them, they're just text SHA numbers, not the real content of the files. How can I get the real content?

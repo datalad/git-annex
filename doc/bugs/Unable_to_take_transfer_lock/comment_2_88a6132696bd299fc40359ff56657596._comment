@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="jhannwong@c9c7a67b5632a4bbc0c959cfeb3d340e02f28565"
+ nickname="jhannwong"
+ subject="Am pretty sure this is a filesystem issue"
+ date="2015-12-01T12:45:50Z"
+ content="""
+Same git-annex repo. One resides on Linux; the other on Mac OS.
+
+The one on Mac OS can be accessed (`git annex get') by git clones on Linux and on Mac OS.
+
+The one on Linux can only be accessed by git clones on Linux.
+
+I even tracked it down to folders having the same name --- 'Fs' vs 'FS'.
+"""]]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-12-13T16:51:03Z"
+ content="""
+`git annex copy --fast` has the same behavior as `--not --in REMOTE`
+
+The reason this is not the default behavior is that git-annex's location
+tracking information can sometimes be out of date, and then those
+two will not copy some files despite their content not being any longer
+in the remote. This won't lead to data loss, but could result
+in unexpected behavior, and so the slower, more understandable behavior
+is used by default. (Although I sometimes go back and forth on switching
+it.)
+"""]]

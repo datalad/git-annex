@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="whlabratz@d10941ab2681deb87122fd8f6da51f3dcdb8dbe5"
+ nickname="whlabratz"
+ subject="Listing GPG keys enabled for a remote with hybrid encryption"
+ date="2015-09-15T22:37:35Z"
+ content="""
+Is there a straight-forward way to list which GPG keys are enabled for a particular remote?
+"""]]

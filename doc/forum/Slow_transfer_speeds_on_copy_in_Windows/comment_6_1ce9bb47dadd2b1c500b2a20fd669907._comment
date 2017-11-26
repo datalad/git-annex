@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlh1G1u_AMJEyADqlfuzV2cePniocDyK6A"
+ nickname="Adam"
+ subject="comment 6"
+ date="2015-04-20T17:40:38Z"
+ content="""
+There are pathing issues with other applications if I add cygwin to the path or are you saying copy over cygwin's copy?  I did have issues with ssh and had to copy all the files to the bin dir rather than the cmd dir to get it to work.  This also screwed up my home dir, making c:\ my home.  I went with it, since I'm the only user, and copied my .ssh folder to C:\... not the most secure option, but it worked.  (Note: it seemed to ignore the $HOME env variable)
+
+"""]]

@@ -1,0 +1,33 @@
+### Please describe the problem.
+
+Well, I remember whining before on this issue.  It does cause some notable inconvenience when trying to automate use of annex -- I am left without a choice but try to reget files multiple times without knowing what was actual cause for it to fail to start with.  Originally I observed it while content had to be wget'ed, to which I thought "oh well -- might be some connection overload etc".  But now I have tried on a repository which is local to that drive -- there must be no problem accessing multiple files at once whatsoever.  But on a trial X with -J5 I have error: 613, ok: 255, on next call  error: 415,  ok: 198 and so on -- kinda converging but imho it must not be so difficult.  I do suspect some race condition in annex itself preventing correct operation.
+
+### What steps will reproduce the problem?
+
+git annex get -J10   on some well sized annex.  Possibly with original annex to fetch content from just right on the same drive
+
+### What version of git-annex are you using? On what operating system?
+
+6.20170408+gitg804f06baa-1~ndall+1
+
+### Please provide any additional information below.
+
+[[!format sh """
+$> git annex get -J5 --json | grep -v '"success":true' 2>&1 | head
+{"command":"get","wanted":[{"here":false,"uuid":"3db23446-8c40-441e-97ec-55ffc86b4fc0","description":"yoh@smaug:~/proj/datalad/datalad/.git/travis-ci/origin-annex [origin]"}],"note":"Try making some of these repositories available:\n\t3db23446-8c40-441e-97ec-55ffc86b4fc0 -- yoh@smaug:~/proj/datalad/datalad/.git/travis-ci/origin-annex [origin]\n","skipped":[],"success":false,"key":"SHA256E-s328--c2eb8088cdc71a0d4cbd660312bef5421a47ce7da3655efdb17712e7188be4a1.txt.gz","file":"3728/3728.9-None.txt.gz"}
+{"command":"get","wanted":[{"here":false,"uuid":"3db23446-8c40-441e-97ec-55ffc86b4fc0","description":"yoh@smaug:~/proj/datalad/datalad/.git/travis-ci/origin-annex [origin]"}],"note":"Try making some of these repositories available:\n\t3db23446-8c40-441e-97ec-55ffc86b4fc0 -- yoh@smaug:~/proj/datalad/datalad/.git/travis-ci/origin-annex [origin]\n","skipped":[],"success":false,"key":"SHA256E-s62840--c20189a229fac622bb781650af394cf40367b5563a833885480f
+825fdbf29b47.txt.gz","file":"3729/3729.1-0.txt.gz"}
+
+...
+$> git annex get --key SHA256E-s328--c2eb8088cdc71a0d4cbd660312bef5421a47ce7da3655efdb17712e7188be4a1.txt.gz
+get SHA256E-s328--c2eb8088cdc71a0d4cbd660312bef5421a47ce7da3655efdb17712e7188be4a1.txt.gz (from origin...)
+SHA256E-s328--c2eb8088cdc71a0d4cbd660312bef5421a47ce7da3655efdb17712e7188be4a1.txt.gz
+            328 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+(checksum...) ok
+(recording state in git...)
+
+"""]]
+
+[[!meta author=yoh]]
+
+> [[fixed|done]] --[[Joey]]

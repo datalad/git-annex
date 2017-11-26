@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="OlivierBerger"
+ subject="More details"
+ date="2015-11-09T14:52:24Z"
+ content="""
+AFAIU, this happened when we moved a lot of files at once, trying to dispatch files into subdirs, in direct mode. Hope this helps
+"""]]

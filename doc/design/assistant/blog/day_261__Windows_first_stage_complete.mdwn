@@ -7,7 +7,7 @@ I didn't have to add many stubs today, either. Many of the missing Windows
 features were only used in code paths that made git-annex faster, but I
 could fall back to a slower code path on Windows.
 
-The things that are most problimatic so far:
+The things that are most problematic so far:
 
 * POSIX file locking. This is used in git-annex in several places to 
   make it safe when multiple git-annex processes are running. I put in

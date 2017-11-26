@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="comment 2"
+ date="2015-06-16T20:10:50Z"
+ content="""
+understood: i thought `-f` was `--from`... hence my confusion.
+
+as for `remoteFsck`, i guess what i am saying is exactly that: there *does* seem to be a way to do a remote checksum of the file *without* downloading it. it seems to be a critical advantage over having to download the whole repository to check it... maybe `--fast` could use that technique and `non--fast` would download?
+
+as for the on-wire MD5 stuff, that does seem to be overkill...
+"""]]

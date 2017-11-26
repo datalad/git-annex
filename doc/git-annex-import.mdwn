@@ -1,0 +1,105 @@
+# NAME
+
+git-annex import - move and add files from outside git working copy
+
+# SYNOPSIS
+
+git annex import `[path ...]`
+
+# DESCRIPTION
+
+Moves files from somewhere outside the git working copy, and adds them to
+the annex. Individual files to import can be specified.
+If a directory is specified, the entire directory is imported.
+  
+        	git annex import /media/camera/DCIM/*
+
+When importing files, there's a possibility of importing a duplicate
+of a file that is already known to git-annex -- its content is either
+present in the local repository already, or git-annex knows of another
+repository that contains it, or it was present in the annex before but has
+been removed now.
+
+By default, importing a duplicate of a known file will result in
+a new filename being added to the repository, so the duplicate file
+is present in the repository twice. (With all checksumming backends,
+including the default SHA256E, only one copy of the data will be stored.)
+
+Several options can be used to adjust handling of duplicate files.
+
+# OPTIONS
+
+* `--duplicate`
+
+  Do not delete files from the import location.
+
+  Running with this option repeatedly can import the same files into
+  different git repositories, or branches, or different locations in a git
+  repository.
+
+* `--deduplicate`
+
+  Only import files that are not duplicates;
+  duplicate files will be deleted from the import location.
+
+* `--skip-duplicates`
+
+  Only import files that are not duplicates. Avoids deleting any
+  files from the import location.
+
+* `--clean-duplicates`
+
+  Does not import any files, but any files found in the import location
+  that are duplicates are deleted.
+
+* `--reinject-duplicates`
+
+  Imports files that are not duplicates. Files that are duplicates have
+  their content reinjected into the annex (similar to
+  [[git-annex-reinject]]).
+
+* `--force`
+
+  Allow existing files to be overwritten by newly imported files.
+
+  Also, causes .gitignore to not take effect when adding files.
+
+* file matching options
+
+  Many of the [[git-annex-matching-options]](1)
+  can be used to specify files to import.
+
+		git annex import /dir --include='*.png'
+
+* `--jobs=N` `-JN`
+
+  Imports multiple files in parallel. This may be faster.
+  For example: `-J4`  
+
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
+# CAVEATS
+
+Note that using `--deduplicate` or `--clean-duplicates` with the WORM
+backend does not look at file content, but filename and mtime.
+
+If annex.largefiles is configured, and does not match a file, `git annex
+import` will add the non-large file directly to the git repository,
+instead of to the annex.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-add]](1)
+
+[[git-annex-export]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -1,0 +1,7 @@
+The [external special remote protocol](http://git-annex.branchable.com/design/external_special_remote_protocol/) CHECKPRESENT command has no support for checking the file size.
+
+In many cases a special remote is able to fetch the size of an object as it checks its availability with no additional cost (for example when you use the `stat()` function: the size is already included in the response). The remote protocol could be extended so that the backend returns the size with the CHECKPRESENT-SUCCESS command, so that git-annex can provide a primitive but probably useful additional integrity check. This is helpful, for example, to detect bugs that result in the truncation of a file in the special remote; or to detect the case of an aborted upload that resulted in the file being checked into the remote anyway.
+
+When it is not easy to get the file size without incurring in additional costs, the backend can simply return a flag value like `-1` to tell git-annex to ignore it.
+
+There is a delicate point in how git-annex computes the expected object size for an encrypted remote. I do not know if there is a way to compute the size of a file after it has been encrypted with HMAC/GPG without actually performing all the computation. In line of principle it should not be difficult, but I do not know the details.

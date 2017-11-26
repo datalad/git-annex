@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-03-09T17:15:13Z"
+ content="""
+This is all down to those nfs lock files, so finding a way to probe for an
+NFS system and auto-enable pidlock is the best way to fix this.
+"""]]

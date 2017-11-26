@@ -1,0 +1,109 @@
+# NAME
+
+git-annex move - move content of files to/from another repository
+
+# SYNOPSIS
+
+git annex move `[path ...] [--from=remote|--to=remote|--to=here]`
+
+# DESCRIPTION
+
+Moves the content of files from or to another remote.
+
+# OPTIONS
+
+* `--from=remote`
+
+  Move the content of files from the specified remote to the local repository.
+
+* `--to=remote`
+
+  Move the content of files from the local repository to the specified remote.
+
+* `--to=here`
+
+  Move the content of files from all reachable remotes to the local
+  repository.
+
+* `--jobs=N` `-JN`
+
+  Enables parallel transfers with up to the specified number of jobs
+  running at once. For example: `-J10`
+
+* `--all`
+
+  Rather than specifying a filename or path to move, this option can be
+  used to move all available versions of all files.
+
+  This is the default behavior when running git-annex in a bare repository.
+
+* `--branch=ref`
+
+  Operate on files in the specified branch or treeish.
+
+* `--unused`
+
+  Operate on files found by last run of git-annex unused.
+
+* `--failed`
+
+  Operate on files that have recently failed to be transferred.
+
+* `--key=keyname`
+
+  Use this option to move a specified key.
+
+* `--fast`
+
+  When moving content to a remote, avoid a round trip to check if the remote
+  already has content. This can be faster, but might skip moving content
+  to the remote in some cases.
+
+* `--force`
+
+  When moving content from a remote, ignore location tracking information
+  and always check if the remote has content. Can be useful if the location
+  tracking information is out of date.
+
+* file matching options
+
+  The [[git-annex-matching-options]](1)
+  can be used to specify files to move.
+
+* `--batch`
+
+  Enables batch mode, in which lines containing names of files to move
+  are read from stdin.
+
+  As each specified file is processed, the usual progress output is
+  displayed. If a file's content does not need to be moved or it
+  is not an annexed file, a blank line is output in response instead.
+
+  Since the usual output while moving a file is verbose and not
+  machine-parseable, you may want to use --json in combination with
+  --batch.
+
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
+* `--json-progress`
+
+  Include progress objects in JSON output.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-get]](1)
+
+[[git-annex-copy]](1)
+
+[[git-annex-drop]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

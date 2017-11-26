@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="vgp"
+ avatar="http://cdn.libravatar.org/avatar/b332bfc1d3f49c196e1bff84b53d0f8b"
+ subject="comment 3"
+ date="2017-09-01T21:40:11Z"
+ content="""
+I've tried the \"directory\" special remote with encryption=shared. It works well and I got a total size of 3.5GB while the working tree .git/annex dir has 21GB :-). The problem is: the git server of my research lab gives me a disk quota of 10GB, however, I cannot access it directly to store these files using \"directory\" special remote. Is there a way to use compression (probably through encryption) with a normal git remote?  
+"""]]

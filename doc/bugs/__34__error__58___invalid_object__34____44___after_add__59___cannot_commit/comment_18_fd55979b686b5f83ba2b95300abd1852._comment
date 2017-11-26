@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="konubinix"
+ avatar="http://cdn.libravatar.org/avatar/72f2376231d98f52c59abd26745174fc"
+ subject="Same here"
+ date="2017-01-26T11:20:32Z"
+ content="""
+Instead of index, I removed index.lck, it looks like it resolved the problem also.
+"""]]

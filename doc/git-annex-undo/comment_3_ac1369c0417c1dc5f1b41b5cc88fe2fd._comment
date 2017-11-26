@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-10-17T19:24:35Z"
+ content="""
+`git annex undo` undoes the last change that was committed to the file.
+If the file has staged changes, `git annex undo` first commits those
+changes (to avoid losing data) and then undoes that commit.
+
+The reason that `git annex undo` deleted the files from your working tree
+is that the previous commit did not have those files in it, and it undid
+to the state at that commit.
+
+So, you will never lose the content of a file by running `git annex undo`.
+If `git annex undo` deletes a file, you can always get it back by
+checking out a previous version of the branch. Or even by running `git
+annex undo` a second time, to undo the undo.
+"""]]

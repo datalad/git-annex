@@ -1,0 +1,78 @@
+# NAME
+
+git-annex find - lists available files
+
+# SYNOPSIS
+
+git annex find `[path ...]`
+
+# DESCRIPTION
+
+Outputs a list of annexed files in the specified path. With no path,
+finds files in the current directory and its subdirectories.
+
+# OPTIONS
+
+* matching options
+    
+  The [[git-annex-matching-options]](1)
+  can be used to specify files to list.
+
+  By default, the find command only lists annexed files whose content is
+  currently present. Specifying any of the matching options will override
+  this default behavior.
+
+  To list all annexed files, present or not, specify `--include "*"`.
+
+  To list annexed files whose content is not present, specify `--not --in=here`
+
+* `--print0`
+
+  Output filenames terminated with nulls, for use with `xargs -0`
+
+* `--format=value`
+
+  Use custom output formatting.
+
+  The value is a format string, in which '${var}' is expanded to the
+  value of a variable. To right-justify a variable with whitespace,
+  use '${var;width}' ; to left-justify a variable, use '${var;-width}';
+  to escape unusual characters in a variable, use '${escaped_var}'
+
+  These variables are available for use in formats: file, key, backend,
+  bytesize, humansize, keyname, hashdirlower, hashdirmixed, mtime (for
+  the mtime field of a WORM key).
+
+  Also, '\\n' is a newline, '\\000' is a NULL, etc.
+
+  The default output format is the same as `--format='${file}\\n'`
+
+* `--json`
+
+  Output the list of files in JSON format.
+
+  This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
+* `--batch`
+
+  Enables batch mode, in which a file is read in a line from stdin,
+  its information displayed, and repeat.
+
+  Note that if the file is not an annexed file, or is not present,
+  or otherwise doesn't meet the matching options, an empty line
+  will be output instead.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-whereis]](1)
+
+[[git-annex-list]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

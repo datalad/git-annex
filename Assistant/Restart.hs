@@ -1,8 +1,8 @@
 {- git-annex assistant restarting
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU AGPL version 3 or higher.
+ - Licensed under the GNU GPL version 3 or higher.
  -}
 
 {-# LANGUAGE CPP #-}
@@ -19,17 +19,16 @@ import Utility.Url
 import Utility.PID
 import qualified Git.Construct
 import qualified Git.Config
-import Config.Files
 import qualified Annex
 import qualified Git
+import Annex.Path
 
 import Control.Concurrent
 #ifndef mingw32_HOST_OS
 import System.Posix (signalProcess, sigTERM)
 #else
-import Utility.WinProcess
+import System.Win32.Process (terminateProcessById)
 #endif
-import Data.Default
 import Network.URI
 
 {- Before the assistant can be restarted, have to remove our 
@@ -60,7 +59,7 @@ terminateSelf =
 #ifndef mingw32_HOST_OS
 		signalProcess sigTERM =<< getPID
 #else
-		terminatePID =<< getPID
+		terminateProcessById =<< getPID
 #endif
 
 runRestart :: Assistant URLString
@@ -92,11 +91,11 @@ newAssistantUrl repo = do
 
 {- Checks if the assistant is listening on an url.
  -
- - Always checks http, because https with self-signed cert is problimatic.
+ - Always checks http, because https with self-signed cert is problematic.
  - warp-tls listens to http, in order to show an error page, so this works.
  -}
 assistantListening :: URLString -> IO Bool
-assistantListening url = catchBoolIO $ fst <$> exists url' def
+assistantListening url = catchBoolIO $ exists url' def
   where
 	url' = case parseURI url of
 		Nothing -> url
@@ -111,7 +110,7 @@ assistantListening url = catchBoolIO $ fst <$> exists url' def
  -}
 startAssistant :: FilePath -> IO ()
 startAssistant repo = void $ forkIO $ do
-	program <- readProgramFile
+	program <- programPath
 	(_, _, _, pid) <- 
 		createProcess $
 			(proc program ["assistant"]) { cwd = Just repo }

@@ -1,0 +1,16 @@
+I'm on Windows 7 and msysgit. The rsync that comes with the git-annex installer downloaded on January 19 2015 works fine (rsync version 3.0.9, protocol version 30; git annex version 5.20150113-gcf247cf). The rsync that comes with the current git-annex installer errors out (rsync version 3.1.1  protocol version 31; git annex v ersion 5.20150420-gb0ebb23). I don't think it's a version/protocol mismatch, as I get the error against a server with the same version and protocol.
+
+[[!format sh """
+$ rsync -rvvp anton@myhost:wtmp/ wtmp
+opening connection using: ssh -l anton myhost rsync --server --sender -vv
+pre.iLsfx . wtmp/  (10 args)
+rsync: connection unexpectedly closed (0 bytes received so far) [Receiver]
+rsync error: error in rsync protocol data stream (code 12) at io.c(226) [Receiver=3.1.1]
+
+$ ssh -l anton myhost rsync --version
+rsync  version 3.1.1  protocol version 31
+...
+
+"""]]
+
+Bug or user error?

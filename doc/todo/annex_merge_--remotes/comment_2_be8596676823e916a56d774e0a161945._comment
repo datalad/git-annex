@@ -1,0 +1,68 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-10-13T17:27:36Z"
+ content="""
+For a `git annex merge --remotes` to be useful, there would need to be a
+config to disable the automatic merging of git-annex branches, which all
+git-annex commands do when they notice it needs to be done.
+So, this needs to be a git config and not a switch, so it can also
+control the automatic git-annex branch merging.
+
+Using remote.name.annex-ignore as the config does not make sense on second
+look, because that gets set automatically when the remote is on eg
+github.
+
+Using remote.name.annex-sync=false as the config makes some sense, although
+as noted above, that prevents `git annex sync` from fetching from the
+remote already, so unless `git pull` is run manually, the existing config
+should suffice.
+
+To implement that, git-annex would have to parse the remote.name.fetch
+config in order to tell what name a remote's git-annex branch is fetched
+to. I am reluctant to do this for several reasons:
+
+* The syntax of remote.name.fetch is only documented by example. It's
+  not clear what's supposed to be done if eg, the `*` appears twice
+  in a branch name or different numbers of times on the left and right hand
+  sides.
+
+* Two remotes can have remote.name.fetch set such that the same remote
+  tracking branch is locally used for fetches from both remotes. So
+  git-annex would not know if such a branch should be synced or not.
+
+* remote.name.fetch can be overridden when using git fetch or git pull at
+  the command line, so again git-annex can't know for sure what remote a
+  given tracking branch came from.
+
+Four approaches that could work:
+
+1. Add a config that is a list of remote tracking branches, and
+   make `git annex merge` and the automatic git-annex branch merging merge
+   only those tracking branches. For example, 
+   `annex.allowmerge=refs/remotes/origin/git-annex refs/remotes/origin/master`
+
+   Doable, but it seems this would be an annoying list to maintain,
+   especially when new branches are made.
+
+2. Embed some information in a branch that can be looked at to determine
+   that git-annex should not auto-merge this branch. Note that this would
+   need to be done for both the git-annex branch and the regular branch.
+   The latter seems particularly hard to do.
+
+3. Configure remote.name.fetch so that the remote git-annex branch is
+   either not fetched, or fetched to a tracking branch that does not end
+   in `/git-annex`. I think this is possible to do, but due to the lack of
+   documentation for that config, it would take some experimentation to
+   find how to do it. This would prevent the automatic merging of that
+   branch by git-annex. 
+   
+   And if you make the remote master branch be
+   fetched to eg refs/remotes/name/master/nomerge then `git annex merge`
+   won't merge that into master.
+
+4. Prevent adding a remote to a repository if that remote contains private
+   information that you don't want to get merged into the local repository.
+   This still seems like the best solution to me; if the information is
+   private it should not be possible to fetch it from the remote.
+"""]]

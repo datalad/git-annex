@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="boustanihani@93604388a6a2b8df16f3e34157232801a67c1021"
+ nickname="boustanihani"
+ subject="comment 6"
+ date="2015-06-24T14:06:35Z"
+ content="""
+cool thanks :)
+
+Is it also possible to version control large binary files using git-annex assistant ??
+
+I mean to be able to switch back to earlier versions when needed...
+
+Is there something like a way to specify how  many older versions should be kept in the repo? This would be a nice feature for preserving disk space...
+"""]]

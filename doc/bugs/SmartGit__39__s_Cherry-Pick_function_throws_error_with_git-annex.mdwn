@@ -1,0 +1,43 @@
+### Please describe the problem.
+
+In SmartGit, doing a cherry-pick invokes the following 2 commands.
+
+``git cherry-pick --no-commit <commit-id>``
+``git commit "--author='<name and email>'" "--date='<date-time>'" --file=/var/folders/bw/jh4pq43918gfd_r7qxzkkt_40000gq/T/smartgit3129597356340000806tmp/commit7268815197345344355.tmp``
+
+The error is _git 'annex' is not a git command_.
+
+
+### What steps will reproduce the problem?
+
+``git-annex init <some-name>``
+
+Do some commits in 2 branches.
+Do a cherry-pick in SmartGit.
+
+
+### What version of git-annex are you using? On what operating system?
+
+PLEASE provide instructions here on how to get the git-annex version.
+(It is ``git-annex version``. And why is ``git-annex | less`` blanking out when I press any key?)
+
+git-annex: 5.20151019
+
+OS: Mac OS El Capitan.
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes. Lots. Am an expert at it now.
+
+This can either be a problem with SmartGit, or a problem with the hacks that git-annex puts into a standard git repo.

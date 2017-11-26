@@ -1,9 +1,18 @@
 The git-annex Windows port is beta, but rapidly becoming polished and
 usable!
 
+
 ## status
 
-* XMPP library not yet built. (See below.)
+* There can be problems when the git-annex repository is in a deep
+  or long path. Ie, `C:\loooooooooooooooooongdir\`.
+  [Details here](http://git-annex.branchable.com/bugs/__34__git-annex:_direct:_1_failed__34___on_Windows)
+
+  Workaround: Put your git-annex repo in `C:\annex` or some similar short
+  path if possible.
+
+  Workaround: Enable long paths in the registry. See 
+  <https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247#maxpath>
 
 * Local pairing seems to fail, after acking on Linux box, it stalls.
   (Also, of course, the Windows box is unlikely to have a ssh server,
@@ -12,12 +21,10 @@ usable!
 * gcrypt is not ported to windows (and as a shell script, may need
   to be rewritten)
 
-* Incremental fsck sets the sticky bit to record when a file is fscked,
-  and this is not done on windows, so fsck doesn't behave incrementally
-  there.
-
 * Deleting a git repository from inside the webapp fails "RemoveDirectory
   permision denied ... file is being used by another process"
+
+* Tor remotes are not supported yet. Should not be very hard to get it working.
 
 ## potential encoding problems
 
@@ -57,22 +64,12 @@ seems unreliable/broken on Windows.
 
 ## minor problems
 
-* rsync special remotes with a rsyncurl of a local directory are known
-  buggy. (git-annex tells rsync C:foo and it thinks it means a remote host
-  named C...)
 * webapp lets user choose to encrypt repo, and generate gpg key,
   before checking that gcrypt is not installed
 * Ssh connection caching does not work on Windows, so `git annex get`
   has to connect twice to the remote system over ssh per file, which
   is much slower than on systems supporting connection caching.
 * glacier-cli is not easily available (probably)
-* user feedback: "Git on windows installer provides openssh 4.6. git-annex installer
-  provides openssh 6.2 . This seems to create problems regarding how
-  `known_hosts` file path is setup. Setting `GIT_SSH=` to the git-annex
-  openssh version fixes the problem."  
-  However, I don't know how to determine what that location is after
-  it's been installed. Maybe look for ssh.exe in same directory as
-  git-annex.exe? --[[Joey]]
 
 ## stuff needing testing
 
@@ -80,42 +77,43 @@ seems unreliable/broken on Windows.
   it and files can be transferred to it and back
 * Does stopping in progress transfers work in the webapp?
 
-## trying to build XMPP
+## do we need this port anymore?
 
-Lots of library deps:
+See <http://blog.dustinkirkland.com/2016/03/ubuntu-on-windows.html>
 
-1. gsasl-$LATEST.zip from <http://josefsson.org/gnutls4win/> (includes
-   gnuidn and gnutls)
-2. pkg-config from
-   <http://sourceforge.net/projects/pkgconfiglite/files/latest/download?source=files>
-3. libxml2 from mingw:
-   <http://sourceforge.net/projects/mingw/files/MSYS/Extension/libxml2/libxml2-2.7.6-1/>
-   both the -dll and the -dev
-3. Extract all the above into the Haskell platform's mingw directory. Note
-   that pkg-config needs to be moved out of a named subdirectory.
-4. Run in DOS prompt (not cygwin!): cabal install network-protocol-xmpp
+If windows has transparent support for running linux executables, and those
+executables can access files in "." which are on the windows system, then
+you could just use this to run linux git-annex on windows. No port needed.
 
-Current FAIL:
+That would be great!
 
-<pre>
-Loading package gnutls-0.1.5 ... ghc.exe: internal error: Misaligned section: 18206e5b
-    (GHC version 7.6.3 for i386_unknown_mingw32)
-        Please report this as a GHC bug:
-	http://www.haskell.org/ghc/reportabug
-</pre>
+Seems like this would need Windows 10.
 
-<https://ghc.haskell.org/trac/ghc/ticket/8830>
-
-Note: This only happens in the TH link stage. So building w/o the webapp
-works with XMPP.
-
-Options:
-
-1. Use EvilSplicer, building first without XMPP library, but with its UI,
-   and a second time without TH, but with the XMPP library. Partially done
-   on the `winsplicehack` branch, but requires building patched versions
-   of lots of yesod dependency chain to export modules referenced by TH
-   splices, like had to be done on Android. Horrible pain. Ugly as hell.
-2. Make a helper program with the XMPP support in it, that does not use TH.
-3. Swich to a different XMPP client library, like
-   <http://hackage.haskell.org/package/pontarius-xmpp>
+> The latest builds of Windows 10 (build 15063) can run git-annex in the
+> Windows Subsystem for Linux. After following the instructions at
+> <https://msdn.microsoft.com/en-us/commandline/wsl/about>, run:
+> `sudo apt-get install git-annex`
+> 
+> git-annex in WSL passes its full test suite, and it avoids all
+> the problems discussed in sections above.
+> 
+> git-annex can access Windows files in eg `/mnt/c`, so a git-annex
+> repository can be stored there. However, if the git-annex repository uses
+> indirect mode, the symlinks used by git-annex won't be usable by Windows
+> programs. Use either direct mode, or v6 mode to avoid the symlink
+> problem.
+> 
+> Also, see this important caveat:
+> <https://blogs.msdn.microsoft.com/commandline/2016/11/17/do-not-change-linux-files-using-windows-apps-and-tools/>
+> 
+> WSL is currently rather annoying to enable. *If* it became easy enough
+> to enable, note that "bash -c git-annex" works from a windows command
+> prompt, and would probably work in a .bat file as well, so git-annex from
+> the WSL could be transparently used on the windows side.
+> 
+> The webapp does not currently work. It doesn't know how to open a web
+> browser from the linux side. There are also what look like some emulation
+> problems around the daemonization code. `git annex assistant
+> --foreground` does run, but while it notices when new files are added, it
+> does not notice when existing files get modified. Probably an inotify
+> emulation bug. --[[Joey]]

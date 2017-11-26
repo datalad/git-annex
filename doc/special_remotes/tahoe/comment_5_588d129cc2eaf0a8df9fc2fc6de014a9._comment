@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-08-14T18:03:52Z"
+ content="""
+@sanket you need to get your git repositories on the two systems connected
+in some way (ie, push one to github, pull in the other one). Once the git
+repositories are in sync, `git annex get` can be run in the second repository
+and will know how to download files that were uploaded to tahoe from the
+first repository.
+
+Nothing tahoe specific here, that's how any git-annex special remote
+works..
+"""]]

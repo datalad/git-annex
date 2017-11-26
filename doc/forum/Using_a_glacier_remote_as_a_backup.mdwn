@@ -1,0 +1,28 @@
+Hallo everybody,
+
+I have an ARM based Synology NAS and I would like to use git annex to replace the "backup" solution provided by Synology. The basic idea is that I want files in a safe place when the house burns down or they get removed by accident.
+
+Since I only care about the latest version and want to make really sure local programs (cifs service, photostation and so on) do not run into trouble caused by symlinks, I guess direct mode is what I want. I have been tinkering around and things seem to be working for the most part. A few questions remain:
+
+Assuming I have all files synced to glacier and then accidentally remove all content and try to recover with the bare repo - with metadata but without content. the situation looks like this. 
+
+    ➜  syno-archive git:(annex/direct/master) git annex status test.txt
+    D test.txt
+    ➜  syno-archive git:(annex/direct/master)
+    
+I try to get my files back out of glacier:
+
+    ➜  syno-archive git:(annex/direct/master) git annex get test.txt   
+    get test.txt (from glacier...) 
+    ok                      
+    (Recording state in git...)
+    ➜  syno-archive git:(annex/direct/master)
+
+Contrary to my expectation, text.txt did not appear on disk.
+
+Given the bare repo, you would one recover all content (thousands of files)? I expected "git annex get --all" to do the trick. 
+
+PS: This is from git-annex version 5.20141125
+
+regards
+Andreas

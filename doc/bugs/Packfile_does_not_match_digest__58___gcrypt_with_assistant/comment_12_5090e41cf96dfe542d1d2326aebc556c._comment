@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="http://schnouki.net/"
+ nickname="Schnouki"
+ avatar="http://cdn.libravatar.org/avatar/5f6406e9db28564121169f0051645b8c30a12a20ca7bc40287ac9bf2cd3ad283"
+ subject="comment 12"
+ date="2017-05-29T09:56:59Z"
+ content="""
+Not sure how I did it, but I have 2 repos that give me the same error. (Perhaps it happened when killing the assistant in the middle of a sync? No idea…)
+
+However I \"solved\" the issue for one repo:
+
+1. cloned the gcrypt remote to a temporary directory
+2. removed all the (encrypted) files with `git rm`, committed that, and pushed it (the repo is hosted on Gitlab and I can't just remove the branch or do something like that)
+3. removed the `gcrypt-id| from my `.git/config`
+4. ran `git annex sync` again
+
+And voilà! It works :)
+
+I don't have any content in this remote, only metadata, so it's easy to do. But I still don't know what caused this.
+"""]]

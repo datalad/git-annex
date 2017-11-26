@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="stefan.huchler@5f110ab85a15aec7e2b38586eb7ec37b12e2e6aa"
+ nickname="stefan.huchler"
+ avatar="http://cdn.libravatar.org/avatar/5c1baf041aa5516cb28a2618f7263a56"
+ subject="how to use normal rm to files directly?"
+ date="2016-11-04T21:04:56Z"
+ content="""
+My problem is following, I delete files from a directory over normal delete functionality. I expect this files than be really deleted, at least on that repos. so that the diskspace for it is free.
+
+I thought direct mode or now v6 with addunlocked setting is the solution to that. But either with thinmode there is a hardlink still there or without there is a copy in the directory.
+
+I would rather not have to use dropunused to get rid of that, it would be good if git annex sync or assist could just add this changes to the history. I dont care if that would be the last copy, that does not matter for me in that usecase.
+
+I want:
+
+1. access files (or hard links) not soft links
+2. only saved space 1 time per file
+3. deleted files give free the full space without usind drop-unused
+4. files should be added/deleted in that repos, not only transfered from somewhere else.
+
+Do I need therefor a special repos like web/directory/rsync or can I do that somehow with such a normal repos? as far as I understand even if I would use web with a directory as parameter it would not save the files normaly in that directory?
+"""]]

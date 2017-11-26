@@ -1,10 +1,11 @@
 {- WebDAV remotes.
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Remote.WebDAV (remote, davCreds, configUrl) where
@@ -14,32 +15,45 @@ import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.UTF8 as B8
 import qualified Data.ByteString.Lazy.UTF8 as L8
-import Network.HTTP.Client (HttpException(..))
+import Network.HTTP.Client (HttpException(..), RequestBody)
+#if MIN_VERSION_http_client(0,5,0)
+import qualified Network.HTTP.Client as HTTP
+#endif
 import Network.HTTP.Types
 import System.IO.Error
 import Control.Monad.Catch
+import Control.Monad.IO.Class (MonadIO)
+import System.Log.Logger (debugM)
 
-import Common.Annex
+import Annex.Common
 import Types.Remote
+import Types.Export
 import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
+import Remote.Helper.Messages
 import Remote.Helper.Http
+import Remote.Helper.Export
 import qualified Remote.Helper.Chunked.Legacy as Legacy
 import Creds
 import Utility.Metered
-import Utility.Url (URLString)
+import Utility.Url (URLString, matchStatusCodeException, matchHttpExceptionContent)
 import Annex.UUID
 import Remote.WebDAV.DavLocation
 
+#if MIN_VERSION_http_client(0,5,0)
+import Network.HTTP.Client (HttpExceptionContent(..), responseStatus)
+#endif
+
 remote :: RemoteType
-remote = RemoteType {
-	typename = "webdav",
-	enumerate = findSpecialRemotes "webdav",
-	generate = gen,
-	setup = webdavSetup
-}
+remote = RemoteType
+	{ typename = "webdav"
+	, enumerate = const (findSpecialRemotes "webdav")
+	, generate = gen
+	, setup = webdavSetup
+	, exportSupported = exportIsSupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
@@ -51,43 +65,55 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 		(prepareDAV this $ checkKey this chunkconfig)
 		this
 	  where
-		this = Remote {
-			uuid = u,
-			cost = cst,
-			name = Git.repoDescribe r,
-			storeKey = storeKeyDummy,
-			retrieveKeyFile = retreiveKeyFileDummy,
-			retrieveKeyFileCheap = retrieveCheap,
-			removeKey = removeKeyDummy,
-			checkPresent = checkPresentDummy,
-			checkPresentCheap = False,
-			whereisKey = Nothing,
-			remoteFsck = Nothing,
-			repairRepo = Nothing,
-			config = c,
-			repo = r,
-			gitconfig = gc,
-			localpath = Nothing,
-			readonly = False,
-			availability = GloballyAvailable,
-			remotetype = remote,
-			mkUnavailable = gen r u (M.insert "url" "http://!dne!/" c) gc,
-			getInfo = includeCredsInfo c (davCreds u) $
+		this = Remote
+			{ uuid = u
+			, cost = cst
+			, name = Git.repoDescribe r
+			, storeKey = storeKeyDummy
+			, retrieveKeyFile = retreiveKeyFileDummy
+			, retrieveKeyFileCheap = retrieveCheap
+			, removeKey = removeKeyDummy
+			, lockContent = Nothing
+			, checkPresent = checkPresentDummy
+			, checkPresentCheap = False
+			, exportActions = withDAVHandle this $ \mh -> return $ ExportActions
+				{ storeExport = storeExportDav mh
+				, retrieveExport = retrieveExportDav mh
+				, checkPresentExport = checkPresentExportDav this mh
+				, removeExport = removeExportDav mh
+				, removeExportDirectory = Just $
+					removeExportDirectoryDav mh
+				, renameExport = renameExportDav mh
+				}
+			, whereisKey = Nothing
+			, remoteFsck = Nothing
+			, repairRepo = Nothing
+			, config = c
+			, repo = r
+			, gitconfig = gc
+			, localpath = Nothing
+			, readonly = False
+			, availability = GloballyAvailable
+			, remotetype = remote
+			, mkUnavailable = gen r u (M.insert "url" "http://!dne!/" c) gc
+			, getInfo = includeCredsInfo c (davCreds u) $
 				[("url", fromMaybe "unknown" (M.lookup "url" c))]
-		}
+			, claimUrl = Nothing
+			, checkUrl = Nothing
+			}
 		chunkconfig = getChunkConfig c
 
-webdavSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-webdavSetup mu mcreds c = do
+webdavSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+webdavSetup _ mu mcreds c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	url <- case M.lookup "url" c of
-		Nothing -> error "Specify url="
+		Nothing -> giveup "Specify url="
 		Just url -> return url
-	(c', encsetup) <- encryptionSetup c
-	creds <- maybe (getCreds c' u) (return . Just) mcreds
+	(c', encsetup) <- encryptionSetup c gc
+	creds <- maybe (getCreds c' gc u) (return . Just) mcreds
 	testDav url creds
 	gitConfigSpecialRemote u c' "webdav" "true"
-	c'' <- setRemoteCredPair encsetup c' (davCreds u) creds
+	c'' <- setRemoteCredPair encsetup c' gc (davCreds u) creds
 	return (c'', u)
 
 -- Opens a http connection to the DAV server, which will be reused
@@ -102,62 +128,121 @@ store (LegacyChunks chunksize) (Just dav) = fileStorer $ \k f p -> liftIO $
 store _  (Just dav) = httpStorer $ \k reqbody -> liftIO $ goDAV dav $ do
 	let tmp = keyTmpLocation k
 	let dest = keyLocation k
-	void $ mkColRecursive tmpDir
-	inLocation tmp $
-		putContentM' (contentType, reqbody)
-	finalizeStore (baseURL dav) tmp dest
+	storeHelper dav tmp dest reqbody
 	return True
 
-finalizeStore :: URLString -> DavLocation -> DavLocation -> DAVT IO ()
-finalizeStore baseurl tmp dest = do
+storeHelper :: DavHandle -> DavLocation -> DavLocation -> RequestBody -> DAVT IO ()
+storeHelper dav tmp dest reqbody = do
+	maybe noop (void . mkColRecursive) (locationParent tmp)
+	debugDav $ "putContent " ++ tmp
+	inLocation tmp $
+		putContentM' (contentType, reqbody)
+	finalizeStore dav tmp dest
+
+finalizeStore :: DavHandle -> DavLocation -> DavLocation -> DAVT IO ()
+finalizeStore dav tmp dest = do
+	debugDav $ "delContent " ++ dest
 	inLocation dest $ void $ safely $ delContentM
 	maybe noop (void . mkColRecursive) (locationParent dest)
-	moveDAV baseurl tmp dest
+	moveDAV (baseURL dav) tmp dest
 
-retrieveCheap :: Key -> FilePath -> Annex Bool
-retrieveCheap _ _ = return False
+retrieveCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
+retrieveCheap _ _ _ = return False
 
 retrieve :: ChunkConfig -> Maybe DavHandle -> Retriever
-retrieve _ Nothing = error "unable to connect"
+retrieve _ Nothing = giveup "unable to connect"
 retrieve (LegacyChunks _) (Just dav) = retrieveLegacyChunked dav
 retrieve _ (Just dav) = fileRetriever $ \d k p -> liftIO $
-	goDAV dav $
-		inLocation (keyLocation k) $
-			withContentM $
-				httpBodyRetriever d p
+	goDAV dav $ retrieveHelper (keyLocation k) d p
+
+retrieveHelper :: DavLocation -> FilePath -> MeterUpdate -> DAVT IO ()
+retrieveHelper loc d p = do
+	debugDav $ "retrieve " ++ loc
+	inLocation loc $
+		withContentM $ httpBodyRetriever d p
 
 remove :: Maybe DavHandle -> Remover
 remove Nothing _ = return False
-remove (Just dav) k = liftIO $ do
+remove (Just dav) k = liftIO $ goDAV dav $
 	-- Delete the key's whole directory, including any
 	-- legacy chunked files, etc, in a single action.
-	let d = keyDir k
-	goDAV dav $ do
-		v <- safely $ inLocation d delContentM
-		case v of
-			Just _ -> return True
-			Nothing -> do
-				v' <- existsDAV d
-				case v' of
-					Right False -> return True
-					_ -> return False
+	removeHelper (keyDir k)
+
+removeHelper :: DavLocation -> DAVT IO Bool
+removeHelper d = do
+	debugDav $ "delContent " ++ d
+	v <- safely $ inLocation d delContentM
+	case v of
+		Just _ -> return True
+		Nothing -> do
+			v' <- existsDAV d
+			case v' of
+				Right False -> return True
+				_ -> return False
 
 checkKey :: Remote -> ChunkConfig -> Maybe DavHandle -> CheckPresent
-checkKey r _ Nothing _ = error $ name r ++ " not configured"
+checkKey r _ Nothing _ = giveup $ name r ++ " not configured"
 checkKey r chunkconfig (Just dav) k = do
-	showAction $ "checking " ++ name r
+	showChecking r
 	case chunkconfig of
 		LegacyChunks _ -> checkKeyLegacyChunked dav k
 		_ -> do
 			v <- liftIO $ goDAV dav $
 				existsDAV (keyLocation k)
-			either error return v
+			either giveup return v
+
+storeExportDav :: Maybe DavHandle -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
+storeExportDav mh f k loc p = runExport mh $ \dav -> do
+	reqbody <- liftIO $ httpBodyStorer f p
+	storeHelper dav (keyTmpLocation k) (exportLocation loc) reqbody
+	return True
+
+retrieveExportDav :: Maybe DavHandle -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
+retrieveExportDav mh  _k loc d p = runExport mh $ \_dav -> do
+	retrieveHelper (exportLocation loc) d p
+	return True
+
+checkPresentExportDav :: Remote -> Maybe DavHandle -> Key -> ExportLocation -> Annex Bool
+checkPresentExportDav r mh _k loc = case mh of
+	Nothing -> giveup $ name r ++ " not configured"
+	Just h -> liftIO $ do
+		v <- goDAV h $ existsDAV (exportLocation loc)
+		either giveup return v
+
+removeExportDav :: Maybe DavHandle -> Key -> ExportLocation -> Annex Bool
+removeExportDav mh _k loc = runExport mh $ \_dav ->
+	removeHelper (exportLocation loc)
+
+removeExportDirectoryDav :: Maybe DavHandle -> ExportDirectory -> Annex Bool
+removeExportDirectoryDav mh dir = runExport mh $ \_dav -> do
+	let d = fromExportDirectory dir
+	debugDav $ "delContent " ++ d
+	safely (inLocation d delContentM)
+		>>= maybe (return False) (const $ return True)
+
+renameExportDav :: Maybe DavHandle -> Key -> ExportLocation -> ExportLocation -> Annex Bool
+renameExportDav Nothing _ _ _ = return False
+renameExportDav (Just h) _k src dest
+	-- box.com's DAV endpoint has buggy handling of renames,
+	-- so avoid renaming when using it.
+	| boxComUrl `isPrefixOf` baseURL h = return False
+	| otherwise = runExport (Just h) $ \dav -> do
+		maybe noop (void . mkColRecursive) (locationParent (exportLocation dest))
+		moveDAV (baseURL dav) (exportLocation src) (exportLocation dest)
+		return True
+
+runExport :: Maybe DavHandle -> (DavHandle -> DAVT IO Bool) -> Annex Bool
+runExport Nothing _ = return False
+runExport (Just h) a = fromMaybe False <$> liftIO (goDAV h $ safely (a h))
 
 configUrl :: Remote -> Maybe URLString
 configUrl r = fixup <$> M.lookup "url" (config r)
   where
 	-- box.com DAV url changed
-	fixup = replace "https://www.box.com/dav/" "https://dav.box.com/dav/"
+	fixup = replace "https://www.box.com/dav/" boxComUrl
+
+boxComUrl :: URLString
+boxComUrl = "https://dav.box.com/dav/"
 
 type DavUser = B8.ByteString
 type DavPass = B8.ByteString
@@ -181,13 +266,13 @@ toDavPass = B8.fromString
  -}
 testDav :: URLString -> Maybe CredPair -> Annex ()
 testDav url (Just (u, p)) = do
-	showSideAction "testing WebDAV server"
+	showAction "testing WebDAV server"
 	test $ liftIO $ evalDAVT url $ do
 		prepDAV user pass
 		makeParentDirs
-		void $ mkColRecursive tmpDir
-		inLocation (tmpLocation "git-annex-test") $ do
-			putContentM (Nothing, L.empty)
+		void $ mkColRecursive "/"
+		inLocation (tmpLocation "test") $ do
+			putContentM (Nothing, L8.fromString "test")
 			delContentM
   where
 	test a = liftIO $
@@ -221,17 +306,19 @@ mkColRecursive :: DavLocation -> DAVT IO Bool
 mkColRecursive d = go =<< existsDAV d
   where
 	go (Right True) = return True
-	go _ = ifM (inLocation d mkCol)
-		( return True
-		, do
-			case locationParent d of
-				Nothing -> makeParentDirs
-				Just parent -> void (mkColRecursive parent)
-			inLocation d mkCol
-		)
+	go _ = do
+		debugDav $ "mkCol " ++ d
+		ifM (inLocation d mkCol)
+			( return True
+			, do
+				case locationParent d of
+					Nothing -> makeParentDirs
+					Just parent -> void (mkColRecursive parent)
+				inLocation d mkCol
+			)
 
-getCreds :: RemoteConfig -> UUID -> Annex (Maybe CredPair)
-getCreds c u = getRemoteCredPairFor "webdav" c (davCreds u)
+getCreds :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex (Maybe CredPair)
+getCreds c gc u = getRemoteCredPairFor "webdav" c gc (davCreds u)
 
 davCreds :: UUID -> CredPairStorage
 davCreds u = CredPairStorage
@@ -248,28 +335,32 @@ throwIO :: String -> IO a
 throwIO msg = ioError $ mkIOError userErrorType msg Nothing Nothing
 
 moveDAV :: URLString -> DavLocation -> DavLocation -> DAVT IO ()
-moveDAV baseurl src dest = inLocation src $ moveContentM newurl
+moveDAV baseurl src dest = do
+	debugDav $ "moveContent " ++ src ++ " " ++ newurl
+	inLocation src $ moveContentM (B8.fromString newurl)
   where
-	newurl = B8.fromString (locationUrl baseurl dest)
+	newurl = locationUrl baseurl dest
 
 existsDAV :: DavLocation -> DAVT IO (Either String Bool)
-existsDAV l = inLocation l check `catchNonAsync` (\e -> return (Left $ show e))
+existsDAV l = do
+	debugDav $ "getProps " ++ l
+	inLocation l check `catchNonAsync` (\e -> return (Left $ show e))
   where
 	check = do
-		setDepth Nothing
-		catchJust
-			(matchStatusCodeException (== notFound404))
+		-- Some DAV services only support depth of 1, and
+		-- more depth is certainly not needed to check if a
+		-- location exists.
+		setDepth (Just Depth1)
+		catchJust missinghttpstatus
 			(getPropsM >> ispresent True)
 			(const $ ispresent False)
 	ispresent = return . Right
+	missinghttpstatus e = 
+		matchStatusCodeException (== notFound404) e
+		<|> matchHttpExceptionContent toomanyredirects e
+	toomanyredirects (TooManyRedirects _) = True
+	toomanyredirects _ = False
 
-matchStatusCodeException :: (Status -> Bool) -> HttpException -> Maybe HttpException
-matchStatusCodeException want e@(StatusCodeException s _ _)
-	| want s = Just e
-	| otherwise = Nothing
-matchStatusCodeException _ _ = Nothing
-
--- Ignores any exceptions when performing a DAV action.
 safely :: DAVT IO a -> DAVT IO (Maybe a)
 safely = eitherToMaybe <$$> tryNonAsync
 
@@ -284,7 +375,7 @@ data DavHandle = DavHandle DAVContext DavUser DavPass URLString
 
 withDAVHandle :: Remote -> (Maybe DavHandle -> Annex a) -> Annex a
 withDAVHandle r a = do
-	mcreds <- getCreds (config r) (uuid r)
+	mcreds <- getCreds (config r) (gitconfig r) (uuid r)
 	case (mcreds, configUrl r) of
 		(Just (user, pass), Just baseurl) ->
 			withDAVContext baseurl $ \ctx ->
@@ -301,15 +392,30 @@ goDAV (DavHandle ctx user pass _) a = choke $ run $ prettifyExceptions $ do
 {- Catch StatusCodeException and trim it to only the statusMessage part,
  - eliminating a lot of noise, which can include the whole request that
  - failed. The rethrown exception is no longer a StatusCodeException. -}
+#if MIN_VERSION_http_client(0,5,0)
 prettifyExceptions :: DAVT IO a -> DAVT IO a
 prettifyExceptions a = catchJust (matchStatusCodeException (const True)) a go
   where
-	go (StatusCodeException status _ _) = error $ unwords
+	go (HttpExceptionRequest req (StatusCodeException response message)) = giveup $ unwords
+		[ "DAV failure:"
+		, show (responseStatus response)
+		, show (message)
+		, "HTTP request:"
+		, show (HTTP.method req)
+		, show (HTTP.path req)
+		]
+	go e = throwM e
+#else
+prettifyExceptions :: DAVT IO a -> DAVT IO a
+prettifyExceptions a = catchJust (matchStatusCodeException (const True)) a go
+  where
+	go (StatusCodeException status _ _) = giveup $ unwords
 		[ "DAV failure:"
 		, show (statusCode status)
 		, show (statusMessage status)
 		]
 	go e = throwM e
+#endif
 
 prepDAV :: DavUser -> DavPass -> DAVT IO ()
 prepDAV user pass = do
@@ -326,20 +432,22 @@ storeLegacyChunked chunksize k dav b =
   where
 	storehttp l b' = void $ goDAV dav $ do
 		maybe noop (void . mkColRecursive) (locationParent l)
+		debugDav $ "putContent " ++ l
 		inLocation l $ putContentM (contentType, b')
 	storer locs = Legacy.storeChunked chunksize locs storehttp b
 	recorder l s = storehttp l (L8.fromString s)
 	finalizer tmp' dest' = goDAV dav $ 
-		finalizeStore (baseURL dav) tmp' (fromJust $ locationParent dest')
+		finalizeStore dav tmp' (fromJust $ locationParent dest')
 
-	tmp = keyTmpLocation k
+	tmp = addTrailingPathSeparator $ keyTmpLocation k
 	dest = keyLocation k
 
 retrieveLegacyChunked :: DavHandle -> Retriever
 retrieveLegacyChunked dav = fileRetriever $ \d k p -> liftIO $
 	withStoredFilesLegacyChunked k dav onerr $ \locs ->
 		Legacy.meteredWriteFileChunks p d locs $ \l ->
-			goDAV dav $
+			goDAV dav $ do
+				debugDav $ "getContent " ++ l
 				inLocation l $
 					snd <$> getContentM
   where
@@ -373,7 +481,8 @@ withStoredFilesLegacyChunked
 	-> IO a
 withStoredFilesLegacyChunked k dav onerr a = do
 	let chunkcount = keyloc ++ Legacy.chunkCount
-	v <- goDAV dav $ safely $ 
+	v <- goDAV dav $ safely $ do
+		debugDav $ "getContent " ++ chunkcount
 		inLocation chunkcount $
 			snd <$> getContentM
 	case v of
@@ -386,3 +495,6 @@ withStoredFilesLegacyChunked k dav onerr a = do
 				else a chunks
   where
 	keyloc = keyLocation k
+
+debugDav :: MonadIO m => String -> DAVT m ()
+debugDav msg = liftIO $ debugM "WebDAV" msg

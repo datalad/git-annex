@@ -1,0 +1,12 @@
+Have been working on a design for [[design/exporting_trees_to_special_remotes]].
+As well as being handy for publishing scientific data sets out of git-annex
+repositories, that covers long-requested features like
+[[todo/dumb, unsafe, human-readable_backend]].
+
+I had not been optimistic about such requests, which seemed half-baked, but
+Yoh came up with idea of exporting a git treeish, and remembering the last
+exported treeish so a subsequent export can be done incrementally, and can
+fully sync the exported tree.
+
+Please take a look at the design if you've wanted to use git-annex for some
+sort of tree export before, and see if it meets your needs.

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.172"
- subject="comment 1"
- date="2014-02-24T18:17:04Z"
- content="""
-All that should work fine. All metadata fields are multivalued, and the value can be any arbitrary data.
-"""]]

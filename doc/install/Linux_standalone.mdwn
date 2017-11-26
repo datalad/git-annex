@@ -7,6 +7,7 @@ dependencies and is self-contained.
 
 * x86-32: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386.tar.gz)
 * x86-64: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz)
+* x86-32, for ancient kernels: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386-ancient.tar.gz)
 * arm: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-armel.tar.gz)
 
 To use, just unpack the tarball, `cd git-annex.linux` and run `./runshell`
@@ -24,11 +25,22 @@ linux systems.
 * [[tips/Synology_NAS_and_git_annex]]
 * [[forum_thread|forum/new_linux_arm_tarball_build]]
 
+The build for ancient kernels is for use with Linux kernel versions
+such as 2.6.32. It will work on both 32 and 64 bit systems.
+
 ## autobuilds
 
-A daily build is also available, thanks to Mesar Hameed and the University
+An hourly autobuild is also available, thanks to Mesar Hameed and the University
 of Bath CS department.
 
 * x86-32: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/i386/git-annex-standalone-i386.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/i386/))
 * x86-64: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/amd64/git-annex-standalone-amd64.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/amd64/))
+* x86-32, for ancient kernels: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/i386-ancient/git-annex-standalone-i386-ancient.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/i386-ancient/))
+
+The arm autobuilder runs daily (sun permitting), and is hosted by [[Joey]].
+
 * arm: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/armel/git-annex-standalone-armel.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/armel/))
+
+## technical details
+
+The way those tarballs are built is described in [joeyh's blog](http://joeyh.name/blog/entry/completely_linux_distribution-independent_packaging/).

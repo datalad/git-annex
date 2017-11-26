@@ -1,12 +1,13 @@
 {- Caching a file's inode, size, and modification time
  - to see when it's changed.
  -
- - Copyright 2013, 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2013-2014 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
 
 {-# LANGUAGE CPP #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Utility.InodeCache (
 	InodeCache,
@@ -44,7 +45,7 @@ import Utility.QuickCheck
 import Data.Word (Word64)
 #endif
 
-data InodeCachePrim = InodeCachePrim FileID FileOffset EpochTime
+data InodeCachePrim = InodeCachePrim FileID Integer EpochTime
 	deriving (Show, Eq, Ord)
 
 newtype InodeCache = InodeCache InodeCachePrim
@@ -53,7 +54,7 @@ newtype InodeCache = InodeCache InodeCachePrim
 {- Inode caches can be compared in two different ways, either weakly
  - or strongly. -}
 data InodeComparisonType = Weakly | Strongly
-	deriving (Eq, Ord)
+	deriving (Eq, Ord, Show)
 
 {- Strong comparison, including inodes. -}
 compareStrong :: InodeCache -> InodeCache -> Bool
@@ -80,7 +81,7 @@ compareBy Weakly = compareWeak
 {- For use in a Map; it's determined at creation time whether this
  - uses strong or weak comparison for Eq. -}
 data InodeCacheKey = InodeCacheKey InodeComparisonType InodeCachePrim
-	deriving (Ord)
+	deriving (Ord, Show)
 
 instance Eq InodeCacheKey where
 	(InodeCacheKey ctx x) == (InodeCacheKey cty y) =
@@ -111,15 +112,16 @@ readInodeCache s = case words s of
 
 genInodeCache :: FilePath -> TSDelta -> IO (Maybe InodeCache)
 genInodeCache f delta = catchDefaultIO Nothing $
-	toInodeCache delta =<< getFileStatus f
+	toInodeCache delta f =<< getFileStatus f
 
-toInodeCache :: TSDelta -> FileStatus -> IO (Maybe InodeCache)
-toInodeCache (TSDelta getdelta) s
+toInodeCache :: TSDelta -> FilePath -> FileStatus -> IO (Maybe InodeCache)
+toInodeCache (TSDelta getdelta) f s
 	| isRegularFile s = do
 		delta <- getdelta
+		sz <- getFileSize' f s
 		return $ Just $ InodeCache $ InodeCachePrim
 			(fileID s)
-			(fileSize s)
+			sz
 			(modificationTime s + delta)
 	| otherwise = pure Nothing
 
@@ -182,7 +184,10 @@ checkSentinalFile s = do
 		SentinalStatus (not unchanged) tsdelta
 	  where
 #ifdef mingw32_HOST_OS
-		unchanged = oldinode == newinode && oldsize == newsize
+		-- Since mtime can appear to change when the time zone is
+		-- changed in windows, we cannot look at the mtime for the
+		-- sentinal file.
+		unchanged = oldinode == newinode && oldsize == newsize && (newmtime == newmtime)
 		tsdelta = TSDelta $ do
 			-- Run when generating an InodeCache, 
 			-- to get the current delta.
@@ -205,7 +210,8 @@ instance Arbitrary InodeCache where
 		let prim = InodeCachePrim
 			<$> arbitrary
 			<*> arbitrary
-			<*> arbitrary
+			-- timestamp cannot be negative
+			<*> (abs . fromInteger <$> arbitrary)
 		in InodeCache <$> prim
 
 #ifdef mingw32_HOST_OS

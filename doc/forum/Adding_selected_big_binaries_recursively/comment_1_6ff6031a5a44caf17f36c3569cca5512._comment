@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-07-30T16:36:51Z"
+ content="""
+It's fine to annex the big files and store the small files in git in
+the usual way.
+
+The `find | xargs` approach should work.
+
+You can also use the [[git-annex-matching-options]], eg:
+
+	git annex add --include='*.adi'
+
+Or:
+
+	git annex add --largerthan=1mb
+
+
+You can also configure git-annex to know which files you consider
+large, so that `git annex add` will annex the large ones and add 
+the rest to git not the annex. See [[tips/largefiles]]
+"""]]

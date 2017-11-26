@@ -1,3 +1,3 @@
-^{makeXMPPConnection}
-
 ^{makeSshRepository}
+
+^{makeWormholePairing}

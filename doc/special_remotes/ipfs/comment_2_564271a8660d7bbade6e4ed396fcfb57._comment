@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="rob.syme@92895c98b16fd7a88bed5f10913c522ebfd76c31"
+ nickname="rob.syme"
+ subject="Finding IPFS hash"
+ date="2015-05-26T04:55:32Z"
+ content="""
+I'm using git-annex version: 5.20150522-gb199d65
+
+The example above gives the ipfs hash for the file, but when I run whereis, the hash is not reported:
+
+    $ git annex whereis test.txt
+    whereis test.txt (2 copies) 
+            1bd0f840-2247-4888-9237-596515788671 -- rob@rob-G60JX:/tmp/gitannextest [here]
+            adf361b3-7b1a-43e1-8360-937f7e436e90 -- [ipfs]
+    ok
+
+Is there a way for git-annex to report the file's ipfs hash ID?
+"""]]

@@ -1,20 +1,20 @@
 {- OSX library copier
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Main where
 
-import Control.Applicative
 import System.Environment (getArgs)
 import Data.Maybe
 import System.FilePath
-import System.Directory
 import Control.Monad
+import Control.Monad.IfElse
 import Data.List
-import Data.String.Utils
+import Control.Applicative
+import Prelude
 
 import Utility.PartialPrelude
 import Utility.Directory
@@ -24,6 +24,7 @@ import Utility.SafeCommand
 import Utility.Path
 import Utility.Exception
 import Utility.Env
+import Utility.Split
 
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -47,14 +48,20 @@ installLibs appbase replacement_libs libmap = do
 		let fulllib = dropWhile (== '/') lib
 		let dest = appbase </> fulllib
 		let symdest = appbase </> shortlib
+		-- This is a hack; libraries need to be in the same
+		-- directory as the program, so also link them into the
+		-- extra directory.
+		let symdestextra = appbase </> "extra" </> shortlib
 		ifM (doesFileExist dest)
 			( return Nothing
 			, do
 				createDirectoryIfMissing True (parentDir dest)
 				putStrLn $ "installing " ++ pathlib ++ " as " ++ shortlib
-				_ <- boolSystem "cp" [File pathlib, File dest]
-				_ <- boolSystem "chmod" [Param "644", File dest]
-				_ <- boolSystem "ln" [Param "-s", File fulllib, File symdest]
+				unlessM (boolSystem "cp" [File pathlib, File dest]
+					<&&> boolSystem "chmod" [Param "644", File dest]
+					<&&> boolSystem "ln" [Param "-s", File fulllib, File symdest]
+					<&&> boolSystem "ln" [Param "-s", File (".." </> fulllib), File symdestextra]) $
+					error "library install failed"
 				return $ Just appbase
 			)
 	return (catMaybes libs, replacement_libs', libmap')
@@ -88,7 +95,7 @@ findLibPath l = go =<< getEnv "DYLD_LIBRARY_PATH"
   where
 	go Nothing = return l
 	go (Just p) = fromMaybe l
-		<$> firstM doesFileExist (map (</> f) (split ":" p))
+		<$> firstM doesFileExist (map (</> f) (splitc ':' p))
 	f = takeFileName l
 
 {- Expands any @rpath in the list of libraries.

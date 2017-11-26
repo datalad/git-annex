@@ -1,6 +1,6 @@
 {- helpers for special remotes
  -
- - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -32,18 +32,20 @@ module Remote.Helper.Special (
 	module X
 ) where
 
-import Common.Annex
+import Annex.Common
+import qualified Annex
 import Types.StoreRetrieve
 import Types.Remote
 import Crypto
+import Config
 import Config.Cost
 import Utility.Metered
 import Remote.Helper.Chunked as X
 import Remote.Helper.Encryptable as X
 import Remote.Helper.Messages
 import Annex.Content
+import Messages.Progress
 import qualified Git
-import qualified Git.Command
 import qualified Git.Construct
 
 import qualified Data.ByteString.Lazy as L
@@ -59,19 +61,16 @@ findSpecialRemotes s = do
 	liftIO $ mapM construct $ remotepairs m
   where
 	remotepairs = M.toList . M.filterWithKey match
-	construct (k,_) = Git.Construct.remoteNamedFromKey k Git.Construct.fromUnknown
-	match k _ = startswith "remote." k && endswith (".annex-"++s) k
+	construct (k,_) = Git.Construct.remoteNamedFromKey k (pure Git.Construct.fromUnknown)
+	match k _ = "remote." `isPrefixOf` k && (".annex-"++s) `isSuffixOf` k
 
 {- Sets up configuration for a special remote in .git/config. -}
 gitConfigSpecialRemote :: UUID -> RemoteConfig -> String -> String -> Annex ()
 gitConfigSpecialRemote u c k v = do
-	set ("annex-"++k) v
-	set ("annex-uuid") (fromUUID u)
+	setConfig (remoteConfig remotename k) v
+	setConfig (remoteConfig remotename "uuid") (fromUUID u)
   where
-	set a b = inRepo $ Git.Command.run
-		[Param "config", Param (configsetting a), Param b]
 	remotename = fromJust (M.lookup "name" c)
-	configsetting s = "remote." ++ remotename ++ "." ++ s
 
 -- Use when nothing needs to be done to prepare a helper.
 simplyPrepare :: helper -> Preparer helper
@@ -123,8 +122,8 @@ byteRetriever a k _m callback = a k (callback . ByteContent)
  -}
 storeKeyDummy :: Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 storeKeyDummy _ _ _ = return False
-retreiveKeyFileDummy :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-retreiveKeyFileDummy _ _ _ _ = return False
+retreiveKeyFileDummy :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
+retreiveKeyFileDummy _ _ _ _ = unVerified (return False)
 removeKeyDummy :: Key -> Annex Bool
 removeKeyDummy _ = return False
 checkPresentDummy :: Key -> Annex Bool
@@ -157,54 +156,60 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
   where
 	encr = baser
 		{ storeKey = \k _f p -> cip >>= storeKeyGen k p
-		, retrieveKeyFile = \k _f d p -> cip >>= retrieveKeyFileGen k d p
-		, retrieveKeyFileCheap = \k d -> cip >>= maybe
-			(retrieveKeyFileCheap baser k d)
+		, retrieveKeyFile = \k _f d p -> cip >>= unVerified . retrieveKeyFileGen k d p
+		, retrieveKeyFileCheap = \k f d -> cip >>= maybe
+			(retrieveKeyFileCheap baser k f d)
 			-- retrieval of encrypted keys is never cheap
 			(\_ -> return False)
 		, removeKey = \k -> cip >>= removeKeyGen k
 		, checkPresent = \k -> cip >>= checkPresentGen k
-		, cost = maybe
-			(cost baser)
-			(const $ cost baser + encryptedRemoteCostAdj)
-			(extractCipher c)
+		, cost = if isencrypted
+			then cost baser + encryptedRemoteCostAdj
+			else cost baser
 		, getInfo = do
 			l <- getInfo baser
 			return $ l ++
 				[ ("encryption", describeEncryption c)
 				, ("chunking", describeChunkConfig (chunkConfig cfg))
 				]
+		, whereisKey = if noChunks (chunkConfig cfg) && not isencrypted
+			then whereisKey baser
+			else Nothing
 		}
-	cip = cipherKey c
-	gpgopts = getGpgEncParams encr
+	cip = cipherKey c (gitconfig baser)
+	isencrypted = isJust (extractCipher c)
 
 	safely a = catchNonAsync a (\e -> warning (show e) >> return False)
 
 	-- chunk, then encrypt, then feed to the storer
 	storeKeyGen k p enc = safely $ preparestorer k $ safely . go
 	  where
-		go (Just storer) = sendAnnex k rollback $ \src ->
-			displayprogress p k $ \p' ->
-				storeChunks (uuid baser) chunkconfig k src p'
-					(storechunk enc storer)
-					(checkPresent baser)
+		go (Just storer) = preparecheckpresent k $ safely . go' storer
 		go Nothing = return False
+		go' storer (Just checker) = sendAnnex k rollback $ \src ->
+			displayprogress p k (Just src) $ \p' ->
+				storeChunks (uuid baser) chunkconfig enck k src p'
+					(storechunk enc storer)
+					checker
+		go' _ Nothing = return False
 		rollback = void $ removeKey encr k
+		enck = maybe id snd enc
 
 	storechunk Nothing storer k content p = storer k content p
-	storechunk (Just (cipher, enck)) storer k content p =
+	storechunk (Just (cipher, enck)) storer k content p = do
+		cmd <- gpgCmd <$> Annex.getGitConfig
 		withBytes content $ \b ->
-			encrypt gpgopts cipher (feedBytes b) $
+			encrypt cmd encr cipher (feedBytes b) $
 				readBytes $ \encb ->
 					storer (enck k) (ByteContent encb) p
 
-	-- call retrieve-r to get chunks; decrypt them; stream to dest file
+	-- call retriever to get chunks; decrypt them; stream to dest file
 	retrieveKeyFileGen k dest p enc =
 		safely $ prepareretriever k $ safely . go
 	  where
-		go (Just retriever) = displayprogress p k $ \p' ->
+		go (Just retriever) = displayprogress p k Nothing $ \p' ->
 			retrieveChunks retriever (uuid baser) chunkconfig
-				enck k dest p' (sink dest enc)
+				enck k dest p' (sink dest enc encr)
 		go Nothing = return False
 		enck = maybe id snd enc
 
@@ -222,8 +227,8 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 
 	chunkconfig = chunkConfig cfg
 
-	displayprogress p k a
-		| displayProgress cfg = metered (Just p) k a
+	displayprogress p k srcfile a
+		| displayProgress cfg = metered (Just p) k (return srcfile) a
 		| otherwise = a p
 
 {- Sink callback for retrieveChunks. Stores the file content into the
@@ -237,23 +242,27 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
  - into place. (And it may even already be in the right place..)
  -}
 sink
-	:: FilePath
+	:: LensGpgEncParams c
+	=> FilePath
 	-> Maybe (Cipher, EncKey)
+	-> c
 	-> Maybe Handle
 	-> Maybe MeterUpdate
 	-> ContentSource
 	-> Annex Bool
-sink dest enc mh mp content = do
+sink dest enc c mh mp content = do
 	case (enc, mh, content) of
 		(Nothing, Nothing, FileContent f)
 			| f == dest -> noop
 			| otherwise -> liftIO $ moveFile f dest
-		(Just (cipher, _), _, ByteContent b) ->
-			decrypt cipher (feedBytes b) $
+		(Just (cipher, _), _, ByteContent b) -> do
+			cmd <- gpgCmd <$> Annex.getGitConfig
+			decrypt cmd c cipher (feedBytes b) $
 				readBytes write
 		(Just (cipher, _), _, FileContent f) -> do
+			cmd <- gpgCmd <$> Annex.getGitConfig
 			withBytes content $ \b ->
-				decrypt cipher (feedBytes b) $
+				decrypt cmd c cipher (feedBytes b) $
 					readBytes write
 			liftIO $ nukeFile f
 		(Nothing, _, FileContent f) -> do

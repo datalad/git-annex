@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2016-09-05T20:02:39Z"
+ content="""
+Very interesting git fsck output!
+
+It seems like your git repository has somehow gotten a tree object in it
+which contains two files with the same name.
+
+While git's data structures allow this, it's pretty nonsensical, and it's
+not something that would normally ever happen. It would be interesting to
+take a look and see what commits use those tree objects, and where those
+strange trees came from.
+
+git-annex in turn is seeing that tree object's sha in the fsck output and
+assumes fsck means that the data for that object is broken or missing.
+So, I suppose what I'll do is make it skip over lines containing
+`duplicateEntries`, and then it won't try to repair this repository.
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-04-20T16:53:04Z"
+ content="""
+How many copies have you configured git-annex to keep of each file?
+
+If it's 1 copy, the clients should be able to contact the server, see that
+it has the file, and drop it as it's in the achive folder. But if 2 copies
+are needed, neither client can verify that the other client has a copy, so
+both will hold onto their own copy for safety.
+"""]]

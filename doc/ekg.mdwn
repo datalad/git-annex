@@ -20,11 +20,11 @@ git-annex will continue to work.
 For the really tricky memory leaks, here's how to make a profiling build of
 git-annex.
 
-1. `cabal configure` with only the flags you really need
-2. `cabal build --ghc-options="-prof -auto-all -caf-all"`
+1. `cabal configure --enable-profiling`  
   This will probably fail due to some missing profiling libraries.
   You have to get the profiling versions of all needed haskell libraries
   installed somehow.
+2. `cabal build`
 3. Run git-annex with the special flags `+RTS -hc -p`
 4. Reproduce the memory leak problem.
 5. If the assistant was run, stop it.

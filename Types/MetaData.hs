@@ -1,6 +1,6 @@
 {- git-annex general metadata
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -36,8 +36,6 @@ module Types.MetaData (
 	metaDataValues,
 	ModMeta(..),
 	modMeta,
-	parseModMeta,
-	parseMetaData,
 	prop_metadata_sane,
 	prop_metadata_serialize
 ) where
@@ -46,13 +44,31 @@ import Common
 import Utility.Base64
 import Utility.QuickCheck
 
+import qualified Data.Text as T
 import qualified Data.Set as S
 import qualified Data.Map as M
+import qualified Data.HashMap.Strict as HM
 import Data.Char
 import qualified Data.CaseInsensitive as CI
+import Data.Aeson
 
 newtype MetaData = MetaData (M.Map MetaField (S.Set MetaValue))
 	deriving (Show, Eq, Ord)
+
+instance ToJSON MetaData where
+	toJSON (MetaData m) = object $ map go (M.toList m)
+	  where
+		go (MetaField f, s) = (T.pack (CI.original f), toJSON s)
+
+instance FromJSON MetaData where
+	parseJSON (Object o) = do
+		l <- HM.toList <$> parseJSON (Object o)
+		MetaData . M.fromList <$> mapM go l
+	  where
+		go (t, l) = case mkMetaField (T.unpack t) of
+			Left e -> fail e
+			Right f -> (,) <$> pure f <*> parseJSON l
+	parseJSON _ = fail "expected an object"
 
 {- A metadata value can be currently be set (True), or may have been
  - set before and we're remembering it no longer is (False). -}
@@ -65,6 +81,13 @@ newtype MetaField = MetaField (CI.CI String)
 
 data MetaValue = MetaValue CurrentlySet String
 	deriving (Read, Show)
+
+instance ToJSON MetaValue where
+	toJSON (MetaValue _ v) = toJSON v
+
+instance FromJSON MetaValue where
+	parseJSON (String v) = return $ MetaValue (CurrentlySet True) (T.unpack v)
+	parseJSON _  = fail "expected a string"
 
 {- Metadata values compare and order the same whether currently set or not. -}
 instance Eq MetaValue where
@@ -97,7 +120,7 @@ instance MetaSerializable MetaField where
 	serialize (MetaField f) = CI.original f
 	deserialize = Just . mkMetaFieldUnchecked
 
-{- Base64 problimatic values. -}
+{- Base64 problematic values. -}
 instance MetaSerializable MetaValue where
 	serialize (MetaValue isset v) =
 		serialize isset ++
@@ -181,8 +204,11 @@ emptyMetaData = MetaData M.empty
 {- Can be used to set a value, or to unset it, depending on whether
  - the MetaValue has CurrentlySet or not. -}
 updateMetaData :: MetaField -> MetaValue -> MetaData -> MetaData
-updateMetaData f v (MetaData m) = MetaData $
-	M.insertWith' S.union f (S.singleton v) m
+updateMetaData f v = updateMetaData' f (S.singleton v)
+
+updateMetaData' :: MetaField -> S.Set MetaValue -> MetaData -> MetaData
+updateMetaData' f s (MetaData m) = MetaData $
+	M.insertWith' S.union f s m
 
 {- New metadata overrides old._-}
 unionMetaData :: MetaData -> MetaData -> MetaData
@@ -218,45 +244,41 @@ removeEmptyFields (MetaData m) = MetaData $ M.filter (not . S.null) m
 metaDataValues :: MetaField -> MetaData -> S.Set MetaValue
 metaDataValues f (MetaData m) = fromMaybe S.empty (M.lookup f m)
 
+mapMetaData :: (S.Set MetaValue -> S.Set MetaValue) -> MetaData -> MetaData
+mapMetaData f (MetaData m) = MetaData (M.map f m)
+
 {- Ways that existing metadata can be modified -}
 data ModMeta
 	= AddMeta MetaField MetaValue
-	| DelMeta MetaField MetaValue
-	| SetMeta MetaField MetaValue -- removes any existing values
-	| MaybeSetMeta MetaField MetaValue -- when field has no existing value
+	| DelMeta MetaField (Maybe MetaValue)
+	-- ^ delete value of a field. With Just, only that specific value
+	-- is deleted; with Nothing, all current values are deleted.a
+	| DelAllMeta
+	-- ^ delete all currently set metadata
+	| SetMeta MetaField (S.Set MetaValue)
+	-- ^ removes any existing values
+	| MaybeSetMeta MetaField MetaValue
+	-- ^ set when field has no existing value
+	deriving (Show)
 
 {- Applies a ModMeta, generating the new MetaData.
  - Note that the new MetaData does not include all the 
  - values set in the input metadata. It only contains changed values. -}
 modMeta :: MetaData -> ModMeta -> MetaData
 modMeta _ (AddMeta f v) = updateMetaData f v emptyMetaData
-modMeta _ (DelMeta f oldv) = updateMetaData f (unsetMetaValue oldv) emptyMetaData
-modMeta m (SetMeta f v) = updateMetaData f v $
+modMeta _ (DelMeta f (Just oldv)) =
+	updateMetaData f (unsetMetaValue oldv) emptyMetaData
+modMeta m (DelMeta f Nothing) = MetaData $ M.singleton f $
+	S.fromList $ map unsetMetaValue $ S.toList $ currentMetaDataValues f m
+modMeta m DelAllMeta = mapMetaData
+	(S.fromList . map unsetMetaValue . S.toList)
+	(currentMetaData m)
+modMeta m (SetMeta f s) = updateMetaData' f s $
 	foldr (updateMetaData f) emptyMetaData $
 		map unsetMetaValue $ S.toList $ currentMetaDataValues f m
 modMeta m (MaybeSetMeta f v)
 	| S.null (currentMetaDataValues f m) = updateMetaData f v emptyMetaData
 	| otherwise = emptyMetaData
-
-{- Parses field=value, field+=value, field-=value, field?=value -}
-parseModMeta :: String -> Either String ModMeta
-parseModMeta p = case lastMaybe f of
-	Just '+' -> AddMeta <$> mkMetaField f' <*> v
-	Just '-' -> DelMeta <$> mkMetaField f' <*> v
-	Just '?' -> MaybeSetMeta <$> mkMetaField f' <*> v
-	_ -> SetMeta <$> mkMetaField f <*> v
-  where
-	(f, sv) = separate (== '=') p
-	f' = beginning f
-	v = pure (toMetaValue sv)
-
-{- Parses field=value -}
-parseMetaData :: String -> Either String (MetaField, MetaValue)
-parseMetaData p = (,)
-	<$> mkMetaField f
-	<*> pure (toMetaValue v)
-  where
-	(f, v) = separate (== '=') p
 
 {- Avoid putting too many fields in the map; extremely large maps make
  - the seriaization test slow due to the sheer amount of data.
@@ -269,10 +291,16 @@ instance Arbitrary MetaData where
 		legal k _v = legalField $ fromMetaField k
 
 instance Arbitrary MetaValue where
-	arbitrary = MetaValue <$> arbitrary <*> arbitrary
+	arbitrary = MetaValue 
+		<$> arbitrary
+		-- Avoid non-ascii metavalues because fully arbitrary
+		-- strings may not be encoded using the filesystem
+		-- encoding, which is norally applied to all input.
+		<*> arbitrary `suchThat` all isAscii
 
 instance Arbitrary MetaField where
-	arbitrary = MetaField . CI.mk <$> arbitrary `suchThat` legalField 
+	arbitrary = MetaField . CI.mk 
+		<$> arbitrary `suchThat` legalField 
 
 prop_metadata_sane :: MetaData -> MetaField -> MetaValue -> Bool
 prop_metadata_sane m f v = and

@@ -1,84 +1,94 @@
 {- safely running shell commands
  -
- - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2015 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
+
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.SafeCommand where
 
 import System.Exit
 import Utility.Process
-import Data.String.Utils
-import Control.Applicative
+import Utility.Split
 import System.FilePath
 import Data.Char
+import Data.List
+import Control.Applicative
+import Prelude
 
-{- A type for parameters passed to a shell command. A command can
- - be passed either some Params (multiple parameters can be included,
- - whitespace-separated, or a single Param (for when parameters contain
- - whitespace), or a File.
- -}
-data CommandParam = Params String | Param String | File FilePath
+-- | Parameters that can be passed to a shell command.
+data CommandParam
+	= Param String -- ^ A parameter
+	| File FilePath -- ^ The name of a file
 	deriving (Eq, Show, Ord)
 
-{- Used to pass a list of CommandParams to a function that runs
- - a command and expects Strings. -}
+-- | Used to pass a list of CommandParams to a function that runs
+-- a command and expects Strings. -}
 toCommand :: [CommandParam] -> [String]
-toCommand = concatMap unwrap
+toCommand = map unwrap
   where
-	unwrap (Param s) = [s]
-	unwrap (Params s) = filter (not . null) (split " " s)
+	unwrap (Param s) = s
 	-- Files that start with a non-alphanumeric that is not a path
 	-- separator are modified to avoid the command interpreting them as
 	-- options or other special constructs.
 	unwrap (File s@(h:_))
-		| isAlphaNum h || h `elem` pathseps = [s]
-		| otherwise = ["./" ++ s]
-	unwrap (File s) = [s]
+		| isAlphaNum h || h `elem` pathseps = s
+		| otherwise = "./" ++ s
+	unwrap (File s) = s
 	-- '/' is explicitly included because it's an alternative
 	-- path separator on Windows.
 	pathseps = pathSeparator:"./"
 
-{- Run a system command, and returns True or False
- - if it succeeded or failed.
- -}
+-- | Run a system command, and returns True or False if it succeeded or failed.
+--
+-- This and other command running functions in this module log the commands
+-- run at debug level, using System.Log.Logger.
 boolSystem :: FilePath -> [CommandParam] -> IO Bool
-boolSystem command params = boolSystemEnv command params Nothing
+boolSystem command params = boolSystem' command params id
 
-boolSystemEnv :: FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO Bool
-boolSystemEnv command params environ = dispatch <$> safeSystemEnv command params environ
+boolSystem' :: FilePath -> [CommandParam] -> (CreateProcess -> CreateProcess) -> IO Bool
+boolSystem' command params mkprocess = dispatch <$> safeSystem' command params mkprocess
   where
 	dispatch ExitSuccess = True
 	dispatch _ = False
 
-{- Runs a system command, returning the exit status. -}
+boolSystemEnv :: FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO Bool
+boolSystemEnv command params environ = boolSystem' command params $
+	\p -> p { env = environ }
+
+-- | Runs a system command, returning the exit status.
 safeSystem :: FilePath -> [CommandParam] -> IO ExitCode
-safeSystem command params = safeSystemEnv command params Nothing
+safeSystem command params = safeSystem' command params id
+
+safeSystem' :: FilePath -> [CommandParam] -> (CreateProcess -> CreateProcess) -> IO ExitCode
+safeSystem' command params mkprocess = do
+	(_, _, _, pid) <- createProcess p
+	waitForProcess pid
+  where
+	p = mkprocess $ proc command (toCommand params)
 
 safeSystemEnv :: FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO ExitCode
-safeSystemEnv command params environ = do
-	(_, _, _, pid) <- createProcess (proc command $ toCommand params)
-		{ env = environ }
-	waitForProcess pid
+safeSystemEnv command params environ = safeSystem' command params $ 
+	\p -> p { env = environ }
 
-{- Wraps a shell command line inside sh -c, allowing it to be run in a
- - login shell that may not support POSIX shell, eg csh. -}
+-- | Wraps a shell command line inside sh -c, allowing it to be run in a
+-- login shell that may not support POSIX shell, eg csh.
 shellWrap :: String -> String
 shellWrap cmdline = "sh -c " ++ shellEscape cmdline
 
-{- Escapes a filename or other parameter to be safely able to be exposed to
- - the shell.
- -
- - This method works for POSIX shells, as well as other shells like csh.
- -}
+-- | Escapes a filename or other parameter to be safely able to be exposed to
+-- the shell.
+--
+-- This method works for POSIX shells, as well as other shells like csh.
 shellEscape :: String -> String
 shellEscape f = "'" ++ escaped ++ "'"
   where
 	-- replace ' with '"'"'
-	escaped = join "'\"'\"'" $ split "'" f
+	escaped = intercalate "'\"'\"'" $ splitc '\'' f
 
-{- Unescapes a set of shellEscaped words or filenames. -}
+-- | Unescapes a set of shellEscaped words or filenames.
 shellUnEscape :: String -> [String]
 shellUnEscape [] = []
 shellUnEscape s = word : shellUnEscape rest
@@ -95,25 +105,32 @@ shellUnEscape s = word : shellUnEscape rest
 		| c == q = findword w cs
 		| otherwise = inquote q (w++[c]) cs
 
-{- For quickcheck. -}
-prop_idempotent_shellEscape :: String -> Bool
-prop_idempotent_shellEscape s = [s] == (shellUnEscape . shellEscape) s
-prop_idempotent_shellEscape_multiword :: [String] -> Bool
-prop_idempotent_shellEscape_multiword s = s == (shellUnEscape . unwords . map shellEscape) s
+-- | For quickcheck.
+prop_isomorphic_shellEscape :: String -> Bool
+prop_isomorphic_shellEscape s = [s] == (shellUnEscape . shellEscape) s
+prop_isomorphic_shellEscape_multiword :: [String] -> Bool
+prop_isomorphic_shellEscape_multiword s = s == (shellUnEscape . unwords . map shellEscape) s
 
-{- Segements a list of filenames into groups that are all below the manximum
- - command-line length limit. Does not preserve order. -}
-segmentXargs :: [FilePath] -> [[FilePath]]
-segmentXargs l = go l [] 0 []
+-- | Segments a list of filenames into groups that are all below the maximum
+--  command-line length limit.
+segmentXargsOrdered :: [FilePath] -> [[FilePath]]
+segmentXargsOrdered = reverse . map reverse . segmentXargsUnordered
+
+-- | Not preserving order is a little faster, and streams better when
+-- there are a great many filenames.
+segmentXargsUnordered :: [FilePath] -> [[FilePath]]
+segmentXargsUnordered l = go l [] 0 []
   where
-	go [] c _ r = c:r
+	go [] c _ r = (c:r)
 	go (f:fs) c accumlen r
-		| len < maxlen && newlen > maxlen = go (f:fs) [] 0 (c:r)
+		| newlen > maxlen && len < maxlen = go (f:fs) [] 0 (c:r)
 		| otherwise = go fs (f:c) newlen r
 	  where
 		len = length f
 		newlen = accumlen + len
 
-	{- 10k of filenames per command, well under Linux's 20k limit;
-	 - allows room for other parameters etc. -}
+	{- 10k of filenames per command, well under 100k limit
+	 - of Linux (and OSX has a similar limit);
+	 - allows room for other parameters etc. Also allows for
+	 - eg, multibyte characters. -}
 	maxlen = 10240

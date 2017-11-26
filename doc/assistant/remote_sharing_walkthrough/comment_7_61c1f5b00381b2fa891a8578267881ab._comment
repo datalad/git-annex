@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.154"
- subject="comment 7"
- date="2014-03-17T19:50:48Z"
- content="""
-@severo the web app does not support setting up that use case. However, you can make a non-bare clone of your repository onto a removable drive, and if you do the assistant will use it just the same as if you'd set up a removable drive using the webapp. Note that you will need to run `git annex sync` inside that repository in order to update the tree it displays.
-"""]]

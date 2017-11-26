@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Alan"
+ avatar="http://cdn.libravatar.org/avatar/9cbc26346f1c693d7df198e662a5fdae"
+ subject="For stretch on armhf, install from unstable"
+ date="2017-08-28T09:25:22Z"
+ content="""
+I found that there is a git-annex package available on unstable, so I installed this one. Everything seems to work.
+"""]]

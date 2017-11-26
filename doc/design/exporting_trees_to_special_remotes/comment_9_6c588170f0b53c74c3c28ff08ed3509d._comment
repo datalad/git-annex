@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comments on protocol"
+ date="2017-07-12T22:09:54Z"
+ content="""
+- `TRANSFEREXPORT STORE|RETRIEVE Key File Name`  -- note that File could also contain spaces etc (not only the Name), so should be encoded somehow?
+- `old external special remote programs ... need to handle an ERROR response` -- why not just to boost protocol `VERSION` to e.g. `2` so those which implement this would reply with a new version #?
+"""]]

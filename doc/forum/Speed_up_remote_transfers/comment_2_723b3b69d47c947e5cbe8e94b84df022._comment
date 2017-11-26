@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-06-09T19:45:26Z"
+ content="""
+I'd suggest running 2 or more concurrent transfers. Either by just running
+the same "git annex get" command multiple times, or by using "git annex get -J2"
+if you've got a new enough version of git-annex that has that feature.
+"""]]

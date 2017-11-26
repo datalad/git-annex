@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="pkitslaar"
+ subject="Possible fix for rsync windows paths"
+ date="2016-01-11T10:25:22Z"
+ content="""
+I looked at the code that creates the paths for the rsync command on Windows.
+And it is using Cygwin style paths. However, the rsync version that is bundled with
+git-annex on Windows is taken from the MSYS2 distribution. This uses different path
+convention for drive letters (simply `/c` and `/d` for `C:\` and `D:\` etc..)
+
+I created a quick fix by adding a toMSYS2Path function and using that for rsync on Windows.
+I fix can be found here: <https://github.com/pkitslaar/git-annex/commit/6cd134ade1cf5b03259d04779e2767a07a2f6014>
+
+For me this works when I locally build git-annex and I can now \"get\" files from repositories on another drive.
+"""]]

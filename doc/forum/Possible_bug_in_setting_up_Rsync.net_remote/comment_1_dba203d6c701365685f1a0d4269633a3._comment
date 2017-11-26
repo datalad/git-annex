@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="dave@2ab82f485adf7e2ce787066e35f5f9789bff430b"
+ nickname="dave"
+ subject="output of git annex version"
+ date="2016-09-08T18:48:43Z"
+ content="""
+    $ git annex version
+    git-annex version: 6.20160907-gad0a7f6
+    build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV ConcurrentOutput TorrentParser Feeds Quvi
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E
+                        SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+    local repository version: unknown
+    supported repository versions: 5 6
+    upgrade supported from repository versions: 2 3 4 5
+    operating system: mingw32 x86_64
+
+"""]]

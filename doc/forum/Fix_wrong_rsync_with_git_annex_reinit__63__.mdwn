@@ -1,0 +1,38 @@
+# Context
+
+* Had two repo A and B. 
+* A had a lot of content not yet tracked and thus not available on B.
+* Filesystem problem on A: (relatively small) part of big repo content is lost.
+* In emergency, used rsync to propagate yet untracked content from failing A to sane B.
+* But forgot `ignore .git`, so rsync also partly rsync'ed `.git/annex` .
+* Now sane repo B believes it is the source one (same UUID A) as shown by `git annex info --fast`. 
+
+Both A and B show:
+
+    UUID-of-A -- A [here]
+    UUID-of-B -- B
+
+# Actions done
+
+Search on Google, see [[https://git-annex.branchable.com/git-annex-reinit/]] .
+
+On B:
+
+    git annex reinit UUID-of-B
+    git annex fsck
+
+Now `git annex info -fast` on B shows as expected:
+
+    UUID-of-A -- A
+    UUID-of-B -- B [here]
+
+
+I'm currently doing `git annex copy --from B` to repropagate lost parts of A.
+
+# Question
+
+* Were actions done best thing to do?
+* Is there something more to do?
+* Something to check?
+
+Thanks.

@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2017-09-28T16:03:28Z"
+ content="""
+Files are not unlocked before modifying in direct mode, and may be
+unlocked all the time in v6 mode. Also, in indirect mode it's of course
+fine to overwrite the symlink with a new version of a file. So detecting 
+if it's been unlocked doesn't seem to help with this.
+
+It may be that there are different sorts of metadata, some of which should
+be inherited by new versions of a file, and others not. If there was a way
+to tell git-annex which metadata was which, it could do the right thing.
+But it feels like stacking complications. Particularly since there might be
+some tags that should be inherited and others not, and tags are values..
+
+In the meantime, I've added the warning when it copies metadata. 
+I also added `git annex metadata --remove-all`, which the warning
+suggests running if you don't want the copied metadata.
+"""]]

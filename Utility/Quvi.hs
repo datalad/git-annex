@@ -1,11 +1,12 @@
 {- querying quvi (import qualified)
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
 
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Utility.Quvi where
 
@@ -13,7 +14,8 @@ import Common
 import Utility.Url
 
 import Data.Aeson
-import Data.ByteString.Lazy.UTF8 (fromString)
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Lazy as BL
 import qualified Data.Map as M
 import Network.URI (uriAuthority, uriRegName)
 import Data.Char
@@ -22,6 +24,7 @@ data QuviVersion
 	= Quvi04
 	| Quvi09
 	| NoQuvi
+	deriving (Show)
 
 data Page = Page
 	{ pageTitle :: String
@@ -29,7 +32,7 @@ data Page = Page
 	} deriving (Show)
 
 data Link = Link
-	{ linkSuffix :: String
+	{ linkSuffix :: Maybe String
 	, linkUrl :: URLString
 	} deriving (Show)
 
@@ -42,7 +45,7 @@ instance FromJSON Page where
 
 instance FromJSON Link where
 	parseJSON (Object v) = Link
-		<$> v .: "file_suffix"
+		<$> v .:? "file_suffix"
 		<*> v .: "url"
 	parseJSON _ = mzero
 
@@ -52,7 +55,7 @@ parseEnum s = Page
 	<$> get "QUVI_MEDIA_PROPERTY_TITLE"
 	<*> ((:[]) <$>
 		( Link
-			<$> get "QUVI_MEDIA_STREAM_PROPERTY_CONTAINER"
+			<$> Just <$> (get "QUVI_MEDIA_STREAM_PROPERTY_CONTAINER")
 			<*> get "QUVI_MEDIA_STREAM_PROPERTY_URL"
 		)
 	    )
@@ -61,7 +64,8 @@ parseEnum s = Page
 	m = M.fromList $ map (separate (== '=')) $ lines s
 
 probeVersion :: IO QuviVersion
-probeVersion = examine <$> processTranscript "quvi" ["--version"] Nothing
+probeVersion = catchDefaultIO NoQuvi $
+	examine <$> processTranscript "quvi" ["--version"] Nothing
   where
 	examine (s, True)
 		| "quvi v0.4" `isInfixOf` s = Quvi04
@@ -74,9 +78,9 @@ type Query a = QuviVersion -> [CommandParam] -> URLString -> IO a
 forceQuery :: Query (Maybe Page)
 forceQuery v ps url = query' v ps url `catchNonAsync` onerr
   where
-	onerr _ = ifM (inPath "quvi")
-		( error "quvi failed"
-		, error "quvi is not installed"
+	onerr e = ifM (inPath "quvi")
+		( giveup ("quvi failed: " ++ show e)
+		, giveup "quvi is not installed"
 		)
 
 {- Returns Nothing if the page is not a video page, or quvi is not
@@ -86,9 +90,11 @@ query v ps url = flip catchNonAsync (const $ return Nothing) (query' v ps url)
 
 query' :: Query (Maybe Page)
 query' Quvi09 ps url = parseEnum
-	<$> readProcess "quvi" (toCommand $ [Param "dump", Param "-p", Param "enum"] ++ ps ++ [Param url])
-query' Quvi04 ps url = decode . fromString
-	<$> readProcess "quvi" (toCommand $ ps ++ [Param url])
+	<$> readQuvi (toCommand $ [Param "dump", Param "-p", Param "enum"] ++ ps ++ [Param url])
+query' Quvi04 ps url = do
+	let p = proc "quvi" (toCommand $ ps ++ [Param url])
+	decode . BL.fromStrict
+		<$> withHandle StdoutHandle createProcessSuccess p B.hGetContents
 query' NoQuvi _ _ = return Nothing
 
 queryLinks :: Query [URLString]
@@ -105,7 +111,8 @@ check v ps url = maybe False (not . null . pageLinks) <$> query v ps url
 supported :: QuviVersion -> URLString -> IO Bool
 supported NoQuvi _ = return False
 supported Quvi04 url = boolSystem "quvi"
-		[ Params "--verbosity mute --support"
+		[ Param "--verbosity", Param "mute"
+		, Param "--support"
 		, Param url
 		]
 {- Use quvi-info to see if the url's domain is supported.
@@ -117,32 +124,39 @@ supported Quvi09 url = (firstlevel <&&> secondlevel)
 		Nothing -> return False
 		Just auth -> do
 			let domain = map toLower $ uriRegName auth
-			let basedomain = intercalate "." $ reverse $ take 2 $ reverse $ split "." domain
+			let basedomain = intercalate "." $ reverse $ take 2 $ reverse $ splitc '.' domain
 			any (\h -> domain `isSuffixOf` h || basedomain `isSuffixOf` h) 
 				. map (map toLower) <$> listdomains Quvi09
 	secondlevel = snd <$> processTranscript "quvi"
 		(toCommand [Param "dump", Param "-o", Param url]) Nothing
 
 listdomains :: QuviVersion -> IO [String]
-listdomains Quvi09 = concatMap (split ",") 
+listdomains Quvi09 = concatMap (splitc ',') 
 	. concatMap (drop 1 . words) 
 	. filter ("domains: " `isPrefixOf`) . lines
-	<$> readProcess "quvi"
-		(toCommand [Param "info", Param "-p", Param "domains"])
+	<$> readQuvi (toCommand [Param "info", Param "-p", Param "domains"])
 listdomains _ = return []
 
-type QuviParam = QuviVersion -> CommandParam
+type QuviParams = QuviVersion -> [CommandParam]
 
 {- Disables progress, but not information output. -}
-quiet :: QuviParam
+quiet :: QuviParams
 -- Cannot use quiet as it now disables informational output.
 -- No way to disable progress.
-quiet Quvi09 = Params "--verbosity verbose"
-quiet Quvi04 = Params "--verbosity quiet"
-quiet NoQuvi = Params ""
+quiet Quvi09 = [Param "--verbosity", Param "verbose"]
+quiet Quvi04 = [Param "--verbosity", Param "quiet"]
+quiet NoQuvi = []
 
 {- Only return http results, not streaming protocols. -}
-httponly :: QuviParam
+httponly :: QuviParams
 -- No way to do it with 0.9?
-httponly Quvi04 = Params "-c http"
-httponly _ = Params "" -- No way to do it with 0.9?
+httponly Quvi04 = [Param "-c", Param "http"]
+httponly _ = [] -- No way to do it with 0.9?
+
+readQuvi :: [String] -> IO String
+readQuvi ps = withHandle StdoutHandle createProcessSuccess p $ \h -> do
+	r <- hGetContentsStrict h
+	hClose h
+	return r
+  where
+	p = proc "quvi" ps

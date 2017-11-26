@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnDx6KWBl4PpP7qikNB7rp0hK_UvwQq_L0"
+ nickname="Александр"
+ subject="comment 2"
+ date="2014-11-06T21:15:14Z"
+ content="""
+Joey, thank you very much for the explanation. I completely agree that what I described in \"how to reproduce\" works as it should.
+
+Actually I was trying to isolate an issue I had where assistant drops files in a remote manual repo. I don't quite get what circumstances are, but sometimes assistant running in m1 starts to drop files in m2 (while still leaving a copy in A). In this test setting the issue doesn't appear... In my actual setup there is an archive and 3 manual live repos, everything connected via ssh, sometimes on slow links, one manual repo is on a linux phone. Assistants were running on several repos.
+
+I'll try to find a convinient way to reproduce this situation, or maybe discover that bug is in my head again ) Anyway I'll return with an update soon.
+
+"""]]

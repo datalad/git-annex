@@ -1,6 +1,6 @@
 {- git-remote-daemon utilities
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -8,14 +8,17 @@
 module RemoteDaemon.Common
 	( liftAnnex
 	, inLocalRepo
-	, checkNewShas
+	, checkShouldFetch
+	, ConnectionStatus(..)
+	, robustConnection
 	) where
 
 import qualified Annex
-import Common.Annex
+import Annex.Common
 import RemoteDaemon.Types
 import qualified Git
 import Annex.CatFile
+import Utility.ThreadScheduler
 
 import Control.Concurrent
 
@@ -30,7 +33,14 @@ liftAnnex (TransportHandle _ annexstate) a = do
 	return r
 
 inLocalRepo :: TransportHandle -> (Git.Repo -> IO a) -> IO a
-inLocalRepo (TransportHandle g _) a = a g
+inLocalRepo (TransportHandle (LocalRepo g) _) a = a g
+
+-- Check if some shas should be fetched from the remote,
+-- and presumably later merged.
+checkShouldFetch :: RemoteGitConfig -> TransportHandle -> [Git.Sha] -> IO Bool
+checkShouldFetch gc transporthandle shas
+	| remoteAnnexPull gc = checkNewShas transporthandle shas
+	| otherwise = return False
 
 -- Check if any of the shas are actally new in the local git repo,
 -- to avoid unnecessary fetching.
@@ -40,3 +50,22 @@ checkNewShas transporthandle = check
 	check [] = return True
 	check (r:rs) = maybe (check rs) (const $ return False)
 		=<< liftAnnex transporthandle (catObjectDetails r)
+
+data ConnectionStatus = ConnectionStopping | ConnectionClosed
+
+{- Make connection robust, retrying on error, with exponential backoff. -}
+robustConnection :: Int -> IO ConnectionStatus -> IO ()
+robustConnection backoff a = 
+	caught =<< a `catchNonAsync` (const $ return ConnectionClosed)
+  where
+	caught ConnectionStopping = return ()
+	caught ConnectionClosed = do
+		threadDelaySeconds (Seconds backoff)
+		robustConnection increasedbackoff a
+
+	increasedbackoff
+		| b2 > maxbackoff = maxbackoff
+		| otherwise = b2
+	  where
+		b2 = backoff * 2
+		maxbackoff = 3600 -- one hour

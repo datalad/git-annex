@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2016-05-10T16:26:03Z"
+ content="""
+I see now why remote.s3.annex-gnupg-options is not working: That is
+currently only passed to gpg when it's encrypting, not when it's
+decrypting.
+
+So, instead, edit ~/.gnupg/gpg.conf and put "ignore-mdc-error" in
+a line of its own in that file.
+"""]]

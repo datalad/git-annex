@@ -1,0 +1,9 @@
+Spent a couple of days catching up on backlog, and my backlog is down to 80
+messages now. Lowest in recent memory.
+
+Made the annex.largefiles config be honored by `git annex import`, `git
+annex addurl`, and even `git annex importfeed`.
+
+Planning to dive into smudge filters soon. The design seems ready to go,
+although there is some complication in needing to keep track of mappings
+between worktree files and annex keys.

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnwNDA50ZupMvOgpgDqzDRyu5B-mYlVwa4"
+ nickname="Andreas"
+ subject="comment 2"
+ date="2015-05-12T06:52:04Z"
+ content="""
+Actually, I just removed all annexed files to try out disaster recovery. I stumbled across the `undo` command. Unfortunately, it does not seem available on Ubuntu running version 5.20141125 shipped by vivid (`git-annex: Unknown command 'undo'`).
+
+Am I missing something, or how do I get a version supporting `undo`?
+
+thanks
+Andreas
+
+
+"""]]

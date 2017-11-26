@@ -1,6 +1,6 @@
 {- git-annex assistant thread to detect when git-annex is upgraded
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -36,8 +36,7 @@ upgradeWatcherThread urlrenderer = namedThread "UpgradeWatcher" $ do
 		showSuccessfulUpgrade urlrenderer
 	go =<< liftIO upgradeFlagFile
   where
-	go Nothing = debug [ "cannot determine program path" ]
-	go (Just flagfile) = do
+	go flagfile = do
 		mvar <- liftIO $ newMVar InStartupScan
 		changed <- Just <$> asIO2 (changedFile urlrenderer mvar flagfile)
 		let hooks = mkWatchHooks

@@ -1,24 +1,26 @@
 {- Package version determination, for configure script. -}
 
+{-# OPTIONS_GHC -fno-warn-tabs #-}
+
 module Build.Version where
 
-import Data.Maybe
-import Control.Applicative
 import Data.List
 import System.Environment
-import System.Directory
 import Data.Char
 import System.Process
+import Control.Applicative
+import Prelude
 
 import Utility.Monad
 import Utility.Exception
+import Utility.Directory
 
 type Version = String
 
 {- Set when making an official release. (Distribution vendors should set
  - this too.) -}
 isReleaseBuild :: IO Bool
-isReleaseBuild = isJust <$> catchMaybeIO (getEnv "RELEASE_BUILD")
+isReleaseBuild = (== Just "1") <$> catchMaybeIO (getEnv "RELEASE_BUILD")
 
 {- Version is usually based on the major version from the changelog, 
  - plus the date of the last commit, plus the git rev of that commit.
@@ -44,7 +46,7 @@ getVersion = do
 	
 getChangelogVersion :: IO Version
 getChangelogVersion = do
-	changelog <- readFile "debian/changelog"
+	changelog <- readFile "CHANGELOG"
 	let verline = takeWhile (/= '\n') changelog
 	return $ middle (words verline !! 1)
   where

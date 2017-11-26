@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-07-15T15:44:11Z"
+ content="""
+I've recently added built-in bash completion to git-annex, enabled by the
+`bash-completion.bash` file. It knows about all sub-commands,
+and all options, and will automatically always be up-to-date with the
+argument parser!
+
+Currently, it only works for completing "git-annex", not "git annex".
+I have submitted a patch to git's bash completion to make the latter work.
+"""]]

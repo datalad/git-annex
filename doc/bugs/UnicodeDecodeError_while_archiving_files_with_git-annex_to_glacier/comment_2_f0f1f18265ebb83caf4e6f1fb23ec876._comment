@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="mhubig"
+ subject="comment 2"
+ date="2015-08-17T11:44:40Z"
+ content="""
+Yes it's a glacier.cli related bug ... maybe git-annex should use boto3 for glacier support ...
+"""]]

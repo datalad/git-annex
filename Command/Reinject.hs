@@ -1,61 +1,81 @@
 {- git-annex command
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.Reinject where
 
-import Common.Annex
 import Command
 import Logs.Location
 import Annex.Content
-import qualified Command.Fsck
-import qualified Backend
+import Backend
+import Types.KeySource
 
-cmd :: [Command]
-cmd = [command "reinject" (paramPair "SRC" "DEST") seek
-	SectionUtility "sets content of annexed file"]
+cmd :: Command
+cmd = command "reinject" SectionUtility 
+	"inject content of file back into annex"
+	(paramRepeating (paramPair "SRC" "DEST"))
+	(seek <$$> optParser)
 
-seek :: CommandSeek
-seek = withWords start
+data ReinjectOptions = ReinjectOptions
+	{ params :: CmdParams
+	, knownOpt :: Bool
+	}
 
-start :: [FilePath] -> CommandStart
-start (src:dest:[])
+optParser :: CmdParamsDesc -> Parser ReinjectOptions
+optParser desc = ReinjectOptions
+	<$> cmdParams desc
+	<*> switch
+		( long "known"
+		<> help "inject all known files"
+		<> hidden
+		)
+
+seek :: ReinjectOptions -> CommandSeek
+seek os
+	| knownOpt os = withStrings startKnown (params os)
+	| otherwise = withWords startSrcDest (params os)
+
+startSrcDest :: [FilePath] -> CommandStart
+startSrcDest (src:dest:[])
 	| src == dest = stop
-	| otherwise =
-		ifAnnexed src
-			(error $ "cannot used annexed file as src: " ++ src)
-			go
-  where
-	go = do
+	| otherwise = notAnnexed src $ do
 		showStart "reinject" dest
-		next $ whenAnnexed (perform src) dest
-start _ = error "specify a src file and a dest file"
-
-perform :: FilePath -> FilePath -> Key -> CommandPerform
-perform src dest key = do
-	{- Check the content before accepting it. -}
-	v <- Backend.getBackend dest key
-	case v of
-		Nothing -> stop
-		Just backend ->
-			ifM (Command.Fsck.checkKeySizeOr reject key src
-				<&&> Command.Fsck.checkBackendOr reject backend key src)
-				( do
-					unlessM move $ error "mv failed!"
-					next $ cleanup key
-				, error "not reinjecting"
-				)
+		next $ ifAnnexed dest go stop
   where
-	-- the file might be on a different filesystem,
-	-- so mv is used rather than simply calling
-	-- moveToObjectDir; disk space is also
-	-- checked this way.
-	move = getViaTmp key $ \tmp ->
-		liftIO $ boolSystem "mv" [File src, File tmp]
-	reject = const $ return "wrong file?"
+	go key = ifM (verifyKeyContent DefaultVerify UnVerified key src)
+		( perform src key
+		, error "failed"
+		)
+startSrcDest _ = giveup "specify a src file and a dest file"
+
+startKnown :: FilePath -> CommandStart
+startKnown src = notAnnexed src $ do
+	showStart "reinject" src
+	mkb <- genKey (KeySource src src Nothing) Nothing
+	case mkb of
+		Nothing -> error "Failed to generate key"
+		Just (key, _) -> ifM (isKnownKey key)
+			( next $ perform src key
+			, do
+				warning "Not known content; skipping"
+				next $ next $ return True
+			)
+
+notAnnexed :: FilePath -> CommandStart -> CommandStart
+notAnnexed src = ifAnnexed src $
+	giveup $ "cannot used annexed file as src: " ++ src
+
+perform :: FilePath -> Key -> CommandPerform
+perform src key = ifM move
+	( next $ cleanup key
+	, error "failed"
+	)
+  where
+	move = checkDiskSpaceToGet key False $
+		moveAnnex key src
 
 cleanup :: Key -> CommandCleanup
 cleanup key = do

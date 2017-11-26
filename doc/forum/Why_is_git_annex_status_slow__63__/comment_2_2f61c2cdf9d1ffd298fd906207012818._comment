@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkutSE8_3fFAETmO_E598zja4gKwYXbb8E"
+ nickname="Сергей"
+ subject="Slow on windows but not on linux"
+ date="2015-04-07T18:20:23Z"
+ content="""
+If this is by design and `git annex status` should take more time in direct mode then what I'm experiencing is strange. On windows every 100M file adds approximately 1 second to `status` duration (on my laptop), but on linux it does not. On linux `git annex status` even in direct mode takes milliseconds. What is wrong with my setup?
+"""]]

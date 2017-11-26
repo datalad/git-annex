@@ -1,0 +1,92 @@
+### Please describe the problem.
+
+In the past archived issue ([[https://webcache.googleusercontent.com/search?q=cache:t2N25kWAWEsJ:https://git-annex.branchable.com/bugs/encfs_accused_of_being_crippled/+&cd=1&hl=en&ct=clnk&gl=us]]) you have left a comment 
+
+    So, it seems worthwhile to break out lack of hard links support from the other limitations currently lumped into "cripped file system". I've done so.
+
+did it mean that encfs should be supported without assuming it crippled any longer?
+
+I have just tried with annex 6.20160425+gitgffe2ea2-1~ndall+1  and it still considers it crippled (FWIW and for the record encfs is 1.8.1-3+b2) 
+
+
+[[!format sh """
+$> git annex init --debug
+init  [2016-04-27 11:55:41.20934] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2016-04-27 11:55:41.214794] process done ExitFailure 1
+[2016-04-27 11:55:41.21487] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--verify","-q","origin/git-annex"]
+[2016-04-27 11:55:41.218775] process done ExitFailure 1
+[2016-04-27 11:55:41.219362] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","write-tree"]
+[2016-04-27 11:55:41.225289] process done ExitSuccess
+[2016-04-27 11:55:41.225379] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit-tree","4b825dc642cb6eb9a060e54bf8d69288fbee4904","--no-gpg-sign"]
+[2016-04-27 11:55:41.232881] process done ExitSuccess
+[2016-04-27 11:55:41.233028] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/heads/git-annex","243e083b39dbf3ae84014dfd9be82d93ab57feb1"]
+[2016-04-27 11:55:41.240395] process done ExitSuccess
+[2016-04-27 11:55:41.252322] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","annex.uuid","75f66b80-d877-4f33-8b32-53dff9ac7da8"]
+[2016-04-27 11:55:41.25768] process done ExitSuccess
+[2016-04-27 11:55:41.257822] read: git ["config","--null","--list"]
+[2016-04-27 11:55:41.263729] process done ExitSuccess
+
+  Detected a crippled filesystem.
+[2016-04-27 11:55:41.283605] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","annex.crippledfilesystem","true"]
+[2016-04-27 11:55:41.288741] process done ExitSuccess
+[2016-04-27 11:55:41.289113] read: git ["config","--null","--list"]
+[2016-04-27 11:55:41.294897] process done ExitSuccess
+
+  Disabling core.symlinks.
+[2016-04-27 11:55:41.295002] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","core.symlinks","false"]
+[2016-04-27 11:55:41.29995] process done ExitSuccess
+[2016-04-27 11:55:41.300036] read: git ["config","--null","--list"]
+[2016-04-27 11:55:41.305809] process done ExitSuccess
+[2016-04-27 11:55:41.30591] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2016-04-27 11:55:41.310985] process done ExitSuccess
+[2016-04-27 11:55:41.311082] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2016-04-27 11:55:41.316091] process done ExitSuccess
+[2016-04-27 11:55:41.316284] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..243e083b39dbf3ae84014dfd9be82d93ab57feb1","--pretty=%H","-n1"]
+[2016-04-27 11:55:41.322238] process done ExitSuccess
+[2016-04-27 11:55:41.323989] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2016-04-27 11:55:41.330709] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","annex.version","5"]
+[2016-04-27 11:55:41.335578] process done ExitSuccess
+[2016-04-27 11:55:41.335656] read: git ["config","--null","--list"]
+[2016-04-27 11:55:41.340418] process done ExitSuccess
+
+  Enabling direct mode.
+[2016-04-27 11:55:41.340519] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--cached","-z","--","."]
+[2016-04-27 11:55:41.34474] process done ExitSuccess
+[2016-04-27 11:55:41.344828] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2016-04-27 11:55:41.349993] process done ExitSuccess
+[2016-04-27 11:55:41.352705] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/master"]
+[2016-04-27 11:55:41.357245] process done ExitFailure 1
+[2016-04-27 11:55:41.357309] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","checkout","-q","-B","annex/direct/master"]
+[2016-04-27 11:55:41.362052] process done ExitSuccess
+[2016-04-27 11:55:41.362117] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","core.bare","true"]
+[2016-04-27 11:55:41.368411] process done ExitSuccess
+[2016-04-27 11:55:41.368536] read: git ["config","--null","--list"]
+[2016-04-27 11:55:41.373468] process done ExitSuccess
+[2016-04-27 11:55:41.373556] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","annex.direct","true"]
+[2016-04-27 11:55:41.378578] process done ExitSuccess
+[2016-04-27 11:55:41.379147] read: git ["config","--null","--list"]
+[2016-04-27 11:55:41.38818] process done ExitSuccess
+[2016-04-27 11:55:41.388271] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2016-04-27 11:55:41.39251] process done ExitSuccess
+[2016-04-27 11:55:41.392591] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/annex/direct/master"]
+[2016-04-27 11:55:41.397179] process done ExitFailure 1
+[2016-04-27 11:55:41.416782] read: uname ["-n"]
+[2016-04-27 11:55:41.419832] process done ExitSuccess
+ok
+[2016-04-27 11:55:41.434629] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","hash-object","-w","--stdin-paths","--no-filters"]
+[2016-04-27 11:55:41.435418] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-index","-z","--index-info"]
+[2016-04-27 11:55:41.443936] process done ExitSuccess
+[2016-04-27 11:55:41.444038] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2016-04-27 11:55:41.449543] process done ExitSuccess
+(recording state in git...)
+[2016-04-27 11:55:41.450041] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","write-tree"]
+[2016-04-27 11:55:41.460223] process done ExitSuccess
+[2016-04-27 11:55:41.46035] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit-tree","a8504dac0ddbd154fff36b704b6d49c6eb573d6c","--no-gpg-sign","-p","refs/heads/git-annex"]
+[2016-04-27 11:55:41.467958] process done ExitSuccess
+[2016-04-27 11:55:41.468059] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/heads/git-annex","c163e24c747d665d51bfa3f13026193956ef1313"]
+[2016-04-27 11:55:41.475227] process done ExitSuccess
+
+"""]]
+
+[[!meta author=yoh]]
+

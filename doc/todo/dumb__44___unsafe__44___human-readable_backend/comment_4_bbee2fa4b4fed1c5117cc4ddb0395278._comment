@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="dumb external remote implemented"
+ date="2016-06-23T00:34:59Z"
+ content="""
+so I went ahead and scratched my itch of implementing this dumb special remote. i think it would be better implemented as a backend, but i am not sure how to implement that without going deep into haskell, and it seems like a mad idea anyways, because it would need to modify the hashing structure as well (to keep the directory structure).
+
+the remote is a simple shell script inspired by the example script, but that does some nasty (and slow) `git log -S` stuff to find a matching file path to a given key. ideally, this would be streamlined into a git-annex command that could then be optimized, because as it is now, each call is a separate history search.
+
+the script is here: <http://src.anarc.at/scripts.git/blob_plain/HEAD:/git-annex-remote-dumb>
+
+i haven't added it to the [[special_remotes]] list yet, because maybe it warrants a separate [[tips]] page. i also do not want to introduce what can be seen as a \"bad idea\" from git-annex's integrity principles to the list of special remotes before agreement here.
+"""]]

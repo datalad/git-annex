@@ -1,13 +1,13 @@
 {- types for metadata based branch views
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Types.View where
 
-import Common.Annex
+import Annex.Common
 import Types.MetaData
 import Utility.QuickCheck
 import qualified Git

@@ -1,0 +1,166 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnDx6KWBl4PpP7qikNB7rp0hK_UvwQq_L0"
+ nickname="Александр"
+ subject="comment 5"
+ date="2014-11-16T12:32:28Z"
+ content="""
+Thanks Walter, renaud.
+
+I was finally able to consitently reproduce the bug and record clean debug logs.
+
+There are 3 repos, \"arch\", \"man1\", \"man2\". They are on different machines connected via ssh. \"arch\" is archive, \"man1\" and \"man2\" are in manual mode. Assistant is started only at \"man1\" with args -v -d, after that some files are added. Assistant detects them, adds and then transfers to \"arch\", this works as expected.
+
+After that in \"man2\" I run command:
+
+    git annex get --from man1 random_1_24
+
+File is successfully transferred, and then assistant removes it from \"man1\". Here is corresponding part of logs at \"man1\":
+
+    [2014-11-16 15:10:12 MSK] TransferWatcher: transfer starting: Upload UUID \"d865391b-cf21-42d6-a04c-e1b32897c1af\" random_1_24 Nothing
+    [2014-11-16 15:10:12 MSK] TransferWatcher: transfer starting: Upload UUID \"d865391b-cf21-42d6-a04c-e1b32897c1af\" random_1_24 Nothing
+    [2014-11-16 15:10:13 MSK] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID \"d865391b-cf21-42d6-a04c-e1b32897c1af\", transferKey = Key {keyName = \"f91971893f882086488ca244c7c9e60a5ca23e088a95c171c21e40327de3278b\", keyBackendName = \"SHA256E\", keySize = Just 3145728, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}}
+    [2014-11-16 15:10:13 MSK] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID \"d865391b-cf21-42d6-a04c-e1b32897c1af\", transferKey = Key {keyName = \"f91971893f882086488ca244c7c9e60a5ca23e088a95c171c21e40327de3278b\", keyBackendName = \"SHA256E\", keySize = Just 3145728, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}}
+    [2014-11-16 15:10:14 MSK] RemoteControl: SYNCING ssh://jolla:2222//home/nemo/annex_test
+    [2014-11-16 15:10:14 MSK] RemoteControl: Syncing with man2 
+    From ssh://jolla:2222//home/nemo/annex_test
+    d20436c..f7aff95  git-annex  -> man1/git-annex
+    [2014-11-16 15:10:14 MSK] read: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"show-ref\",\"git-annex\"]
+    [2014-11-16 15:10:14 MSK] read: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2014-11-16 15:10:14 MSK] read: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"log\",\"refs/heads/git-annex..ea323207549cd5853213f1aeaf5f3c1f32e79fe9\",\"-n1\",\"--pretty=%H\"]
+    [2014-11-16 15:10:14 MSK] RemoteControl: DONESYNCING ssh://jolla:2222//home/nemo/annex_test 1
+    [2014-11-16 15:10:14 MSK] read: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"log\",\"refs/heads/git-annex..5701db750b10ae4d579bbccee828c808c8031e7e\",\"-n1\",\"--pretty=%H\"]
+    [2014-11-16 15:10:14 MSK] read: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"log\",\"refs/heads/git-annex..08e7fcc374ee7e233f5f26c0bb7ff825a673818e\",\"-n1\",\"--pretty=%H\"]
+    [2014-11-16 15:10:14 MSK] read: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"log\",\"refs/heads/git-annex..959215d3a9eae6a65ec5e6c68f345f9f623a0d1e\",\"-n1\",\"--pretty=%H\"]
+    [2014-11-16 15:10:14 MSK] read: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"log\",\"refs/heads/git-annex..f7aff95774a095ccf3a5b11bf2e27108d6aadf58\",\"-n1\",\"--pretty=%H\"]
+    [2014-11-16 15:10:14 MSK] read: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"log\",\"refs/heads/git-annex..4aae0d044273fd8716c4cf4946126b0ebf2e0db3\",\"-n1\",\"--pretty=%H\"]
+    (merging man1/git-annex into git-annex...)
+    [2014-11-16 15:10:14 MSK] feed: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"update-index\",\"-z\",\"--index-info\"]
+    [2014-11-16 15:10:14 MSK] read: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"diff-index\",\"--raw\",\"-z\",\"-r\",\"--no-renames\",\"-l0\",\"--cached\",\"f7aff95774a095ccf3a5b11bf2e27108d6aadf58\"]
+    [2014-11-16 15:10:14 MSK] chat: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"hash-object\",\"-t\",\"blob\",\"-w\",\"--stdin\",\"--no-filters\"]
+    [2014-11-16 15:10:14 MSK] read: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"log\",\"f7aff95774a095ccf3a5b11bf2e27108d6aadf58..refs/heads/git-annex\",\"-n1\",\"--pretty=%H\"]
+    (Recording state in git...)
+    [2014-11-16 15:10:14 MSK] read: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"write-tree\"]
+    [2014-11-16 15:10:14 MSK] chat: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"commit-tree\",\"dd91fafe3d6acfe88b41c677e66507c0f1905175\",\"--no-gpg-sign\",\"-p\",\"refs/heads/git-annex\",\"-p\",\"f7aff95774a095ccf3a5b11bf2e27108d6aadf58\"]
+    [2014-11-16 15:10:14 MSK] call: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"update-ref\",\"refs/heads/git-annex\",\"2ad4a45d95a29db1ecc84a49d5c68bf709f2b3db\"]
+    [2014-11-16 15:10:14 MSK] read: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"ls-tree\",\"--full-tree\",\"-z\",\"--\",\"refs/heads/git-annex\",\"uuid.log\",\"remote.log\",\"trust.log\",\"group.log\",\"numcopies.log\",\"schedule.log\",\"preferred-content.log\",\"required-content.log\",\"group-preferred-content.log\"]
+    [2014-11-16 15:10:14 MSK] read: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"show-ref\",\"git-annex\"]
+    [2014-11-16 15:10:14 MSK] read: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2014-11-16 15:10:14 MSK] read: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"log\",\"refs/heads/git-annex..2ad4a45d95a29db1ecc84a49d5c68bf709f2b3db\",\"-n1\",\"--pretty=%H\"]
+    [2014-11-16 15:10:14 MSK] read: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"log\",\"refs/heads/git-annex..5701db750b10ae4d579bbccee828c808c8031e7e\",\"-n1\",\"--pretty=%H\"]
+    [2014-11-16 15:10:14 MSK] read: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"log\",\"refs/heads/git-annex..08e7fcc374ee7e233f5f26c0bb7ff825a673818e\",\"-n1\",\"--pretty=%H\"]
+    [2014-11-16 15:10:14 MSK] read: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"log\",\"refs/heads/git-annex..959215d3a9eae6a65ec5e6c68f345f9f623a0d1e\",\"-n1\",\"--pretty=%H\"]
+    [2014-11-16 15:10:14 MSK] read: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"log\",\"refs/heads/git-annex..f7aff95774a095ccf3a5b11bf2e27108d6aadf58\",\"-n1\",\"--pretty=%H\"]
+    [2014-11-16 15:10:14 MSK] read: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"log\",\"refs/heads/git-annex..4aae0d044273fd8716c4cf4946126b0ebf2e0db3\",\"-n1\",\"--pretty=%H\"]
+    drop random_1_24 (checking arch...) [2014-11-16 15:10:23 MSK] call: ssh [\"-S\",\".git/annex/ssh/axe\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-T\",\"axe\",\"git-annex-shell 'inannex' '//home/butler/annex_test' 'SHA256E-s3145728--f91971893f882086488ca244c7c9e60a5ca23e088a95c171c21e40327de3278b' --uuid 5aaf3dc8-f94c-4949-8491-26d5d0de5127\"]
+    ok
+    [2014-11-16 15:10:23 MSK] dropped random_1_24 (from here) (copies now 2) : drop wanted after Upload UUID \"d865391b-cf21-42d6-a04c-e1b32897c1af\" random_1_24 Nothing
+    drop man2 random_1_24 (checking arch...) [2014-11-16 15:10:23 MSK] call: ssh [\"-S\",\".git/annex/ssh/axe\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-T\",\"axe\",\"git-annex-shell 'inannex' '//home/butler/annex_test' 'SHA256E-s3145728--f91971893f882086488ca244c7c9e60a5ca23e088a95c171c21e40327de3278b' --uuid 5aaf3dc8-f94c-4949-8491-26d5d0de5127\"]
+    [2014-11-16 15:10:23 MSK] call: ssh [\"-S\",\".git/annex/ssh/jolla!2222\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-p\",\"2222\",\"-T\",\"jolla\",\"git-annex-shell 'dropkey' '//home/nemo/annex_test' '--quiet' '--force' 'SHA256E-s3145728--f91971893f882086488ca244c7c9e60a5ca23e088a95c171c21e40327de3278b' --uuid d865391b-cf21-42d6-a04c-e1b32897c1af\"]
+    ok
+    [2014-11-16 15:10:23 MSK] dropped random_1_24 (from UUID \"d865391b-cf21-42d6-a04c-e1b32897c1af\") (copies now 1) : drop wanted after Upload UUID \"d865391b-cf21-42d6-a04c-e1b32897c1af\" random_1_24 Nothing
+    [2014-11-16 15:11:14 MSK] read: git [\"--git-dir=/home/butler/annex_test/.git\",\"--work-tree=/home/butler/annex_test\",\"ls-tree\",\"--full-tree\",\"-z\",\"--\",\"refs/heads/git-annex\",\"uuid.log\",\"remote.log\",\"trust.log\",\"group.log\",\"numcopies.log\",\"schedule.log\",\"preferred-content.log\",\"required-content.log\",\"group-preferred-content.log\"]
+
+Here is git annex vicfg at \"man1\":
+
+    # git-annex configuration
+    # 
+    # Changes saved to this file will be recorded in the git-annex branch.
+    # 
+    # Lines in this file have the format:
+    #   setting field = value
+
+    # Repository trust configuration
+    # (Valid trust levels: trusted semitrusted untrusted dead)
+    # (for web)
+    #trust 00000000-0000-0000-0000-000000000001 = semitrusted
+    # (for man2)
+    #trust 2104670a-6a96-11e4-a3ca-0f84dcf32d24 = semitrusted
+    # (for [arch])
+    #trust 5aaf3dc8-f94c-4949-8491-26d5d0de5127 = semitrusted
+    # (for [man2])
+    #trust d865391b-cf21-42d6-a04c-e1b32897c1af = semitrusted
+    # (for man1)
+    #trust f15688ce-14e0-43ba-a3a2-69ee9d5bdf45 = semitrusted
+
+    # Repository groups
+    # (Standard groups: client transfer backup incrementalbackup smallarchive archive source manual public unwanted)
+    # (Separate group names with spaces)
+    # (for [arch])
+    group 5aaf3dc8-f94c-4949-8491-26d5d0de5127 = archive
+    # (for [man2])
+    group d865391b-cf21-42d6-a04c-e1b32897c1af = manual
+    # (for man1)
+    group f15688ce-14e0-43ba-a3a2-69ee9d5bdf45 = manual
+    # (for web)
+    #group 00000000-0000-0000-0000-000000000001 = 
+    # (for man2)
+    #group 2104670a-6a96-11e4-a3ca-0f84dcf32d24 = 
+
+    # Repository preferred contents
+    # (Set to \"standard\" to use a repository's group's preferred contents)
+    # (for [arch])
+    wanted 5aaf3dc8-f94c-4949-8491-26d5d0de5127 = standard
+    # (for [man2])
+    wanted d865391b-cf21-42d6-a04c-e1b32897c1af = standard
+    # (for man1)
+    wanted f15688ce-14e0-43ba-a3a2-69ee9d5bdf45 = standard
+    # (for web)
+    #wanted 00000000-0000-0000-0000-000000000001 = 
+    # (for man2)
+    #wanted 2104670a-6a96-11e4-a3ca-0f84dcf32d24 = 
+
+    # Group preferred contents
+    # (Used by repositories with \"groupwanted\" in their preferred contents)
+    #groupwanted archive = 
+    #groupwanted backup = 
+    #groupwanted client = 
+    #groupwanted incrementalbackup = 
+    #groupwanted manual = 
+    #groupwanted public = 
+    #groupwanted smallarchive = 
+    #groupwanted source = 
+    #groupwanted transfer = 
+    #groupwanted unwanted = 
+
+    # Standard preferred contents
+    # (Used by wanted or groupwanted expressions containing \"standard\")
+    # (For reference only; built-in and cannot be changed!)
+    # standard client = (((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) and not unused) or approxlackingcopies=1
+    # standard transfer = (not (inallgroup=client and copies=client:2) and ((((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) and not unused) or approxlackingcopies=1)) or approxlackingcopies=1
+    # standard backup = include=* or unused
+    # standard incrementalbackup = ((include=* or unused) and (not copies=incrementalbackup:1)) or approxlackingcopies=1
+    # standard smallarchive = ((include=*/archive/* or include=archive/*) and ((not (copies=archive:1 or copies=smallarchive:1)) or approxlackingcopies=1)) or approxlackingcopies=1
+    # standard archive = (not (copies=archive:1 or copies=smallarchive:1)) or approxlackingcopies=1
+    # standard source = not (copies=1)
+    # standard manual = present and ((((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) and not unused) or approxlackingcopies=1)
+    # standard public = inpreferreddir
+    # standard unwanted = exclude=*
+
+    # Repository required contents
+    # (for web)
+    #required 00000000-0000-0000-0000-000000000001 =
+    # (for man2)
+    #required 2104670a-6a96-11e4-a3ca-0f84dcf32d24 =
+    # (for [arch])
+    #required 5aaf3dc8-f94c-4949-8491-26d5d0de5127 =
+    # (for [man2])
+    #required d865391b-cf21-42d6-a04c-e1b32897c1af =
+    # (for man1)
+    #required f15688ce-14e0-43ba-a3a2-69ee9d5bdf45 =
+
+    # Scheduled activities
+    # (Separate multiple activities with \"; \")
+    # (for web)
+    #schedule 00000000-0000-0000-0000-000000000001 =
+    # (for man2)
+    #schedule 2104670a-6a96-11e4-a3ca-0f84dcf32d24 =
+    # (for [arch])
+    #schedule 5aaf3dc8-f94c-4949-8491-26d5d0de5127 =
+    # (for [man2])
+    #schedule d865391b-cf21-42d6-a04c-e1b32897c1af =
+    # (for man1)
+    #schedule f15688ce-14e0-43ba-a3a2-69ee9d5bdf45 =                                                  
+
+Please let me know if I can provide more information, some extra logs, traces, recompile git-annex, etc.
+
+"""]]

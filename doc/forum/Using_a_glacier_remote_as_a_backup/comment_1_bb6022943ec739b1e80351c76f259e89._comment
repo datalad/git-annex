@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-05-11T16:58:01Z"
+ content="""
+Your status shows that test.txt is deleted.
+`git annex get` does not un-delete files, it just gets the *content*
+of a file (whether that file is deleted or not).
+
+You can use normal git commands to un-delete the file. Ie, "git checkout
+text.txt". If you're using direct mode, you can't use such commands, but
+can use "git annex undo" to undo a deletion.
+
+Normally, if you have a bare repo, you'll want to clone it to get a non-bare
+repo. I suspect you did something else that resulted in your repo being in
+this state were files are deleted.
+"""]]

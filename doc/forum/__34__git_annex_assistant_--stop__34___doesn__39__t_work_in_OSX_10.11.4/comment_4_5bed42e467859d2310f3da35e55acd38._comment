@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="openmedi"
+ subject="comment 4"
+ date="2016-05-14T13:24:06Z"
+ content="""
+I assume now that the problem is related to the [b2 special remote](https://github.com/encryptio/git-annex-remote-b2) which might be preventing git annex from shutting down. I don't know. What should I do and post here to help you triage this problem?
+"""]]

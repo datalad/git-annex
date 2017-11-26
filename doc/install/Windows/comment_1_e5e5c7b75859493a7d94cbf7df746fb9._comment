@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jpfeifer@4c6cf56b857caa324cbbc9f133705fb2fb3f9bef"
+ nickname="jpfeifer"
+ subject="Compatibility with recent version of Git for Windows"
+ date="2015-09-02T17:58:41Z"
+ content="""
+Git for Windows now has a 64 bit version. Thus, the installation path must be adjusted accordingly. This page should note that git annex must be installed in the same folder as git itself.
+"""]]

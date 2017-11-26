@@ -1,13 +1,12 @@
 {- git-annex plumbing command (for use by old assistant, and users)
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.TransferKey where
 
-import Common.Annex
 import Command
 import Annex.Content
 import Logs.Location
@@ -15,43 +14,54 @@ import Annex.Transfer
 import qualified Remote
 import Types.Remote
 
-cmd :: [Command]
-cmd = [withOptions transferKeyOptions $
-	noCommit $ command "transferkey" paramKey seek SectionPlumbing
-		"transfers a key from or to a remote"]
+cmd :: Command
+cmd = noCommit $
+	command "transferkey" SectionPlumbing
+		"transfers a key from or to a remote"
+		paramKey (seek <--< optParser)
 
-transferKeyOptions :: [Option]
-transferKeyOptions = fileOption : fromToOptions
+data TransferKeyOptions = TransferKeyOptions
+	{ keyOptions :: CmdParams 
+	, fromToOptions :: FromToOptions
+	, fileOption :: AssociatedFile
+	}
 
-fileOption :: Option
-fileOption = fieldOption [] "file" paramFile "the associated file"
+optParser :: CmdParamsDesc -> Parser TransferKeyOptions
+optParser desc  = TransferKeyOptions
+	<$> cmdParams desc
+	<*> parseFromToOptions
+	<*> (AssociatedFile <$> optional (strOption
+		( long "file" <> metavar paramFile
+		<> help "the associated file"
+		)))
 
-seek :: CommandSeek
-seek ps = do
-	to <- getOptionField toOption Remote.byNameWithUUID
-	from <- getOptionField fromOption Remote.byNameWithUUID
-	file <- getOptionField fileOption return
-	withKeys (start to from file) ps
+instance DeferredParseClass TransferKeyOptions where
+	finishParse v = TransferKeyOptions
+		<$> pure (keyOptions v)
+		<*> finishParse (fromToOptions v)
+		<*> pure (fileOption v)
 
-start :: Maybe Remote -> Maybe Remote -> AssociatedFile -> Key -> CommandStart
-start to from file key =
-	case (from, to) of
-		(Nothing, Just dest) -> next $ toPerform dest key file
-		(Just src, Nothing) -> next $ fromPerform src key file
-		_ -> error "specify either --from or --to"
+seek :: TransferKeyOptions -> CommandSeek
+seek o = withKeys (start o) (keyOptions o)
 
-toPerform :: Remote -> Key -> AssociatedFile -> CommandPerform
-toPerform remote key file = go Upload file $
+start :: TransferKeyOptions -> Key -> CommandStart
+start o key = case fromToOptions o of
+	ToRemote dest -> next $ toPerform key (fileOption o) =<< getParsed dest
+	FromRemote src -> next $ fromPerform key (fileOption o) =<< getParsed src
+
+toPerform :: Key -> AssociatedFile -> Remote -> CommandPerform
+toPerform key file remote = go Upload file $
 	upload (uuid remote) key file forwardRetry $ \p -> do
 		ok <- Remote.storeKey remote key file p
 		when ok $
 			Remote.logStatus remote key InfoPresent
 		return ok
 
-fromPerform :: Remote -> Key -> AssociatedFile -> CommandPerform
-fromPerform remote key file = go Upload file $
+fromPerform :: Key -> AssociatedFile -> Remote -> CommandPerform
+fromPerform key file remote = go Upload file $
 	download (uuid remote) key file forwardRetry $ \p ->
-		getViaTmp key $ \t -> Remote.retrieveKeyFile remote key file t p
+		getViaTmp (RemoteVerify remote) key $ 
+			\t -> Remote.retrieveKeyFile remote key file t p
 
 go :: Direction -> AssociatedFile -> (NotifyWitness -> Annex Bool) -> CommandPerform
 go direction file a = notifyTransfer direction file a >>= liftIO . exitBool

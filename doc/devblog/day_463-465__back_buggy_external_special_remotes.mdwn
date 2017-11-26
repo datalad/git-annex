@@ -1,0 +1,30 @@
+I'm back working on git-annex after a month away! It's good to be back, and
+I've made some decent improvements this week. 
+
+New features include a `GIT_ANNEX_VECTOR_CLOCK` environment variable that
+may be useful for those using git-annex in a HIPPA compliance setting,
+where timestamps are verboten (but verifying full compliance is up to
+you!), and remote.name.annex-ignore-command and
+remote.name.annex-sync-command configurations that let shell commands be
+run to vary what remotes are used depending on eg, what network it's on.
+
+Also, I took a look at the external special remote protocol, and noticed
+two problems with it. First, keys with spaces in their names can't be used
+with it. This only affects the WORM backend, and it seems no one has ever
+run into the problem. Rather than complicate the implementation of external
+special remotes, I decided to deprecate having spaces in key names. Which
+is just asking for trouble anyway. So now there's a nice error message, and
+a migration path.
+
+The other problem was that the external special remote documentation
+incorrectly said that a filename parameter never contained spaces. But in
+fact, there are situations where it can. This was not a problem with the
+protocol, but only with its documentation, and potentially with the
+implementation of some special remotes. So, I've spent some time today
+auditing every git-annex special remote that I know about. A few scripts
+that are bundled with git-annex were buggy and got fixed, and I
+filed bugs on 9 other external special remotes. A few did already get it
+right!
+
+Today's work was sponsored by Trenton Cronholm on 
+[Patreon](https://patreon.com/joeyh/)

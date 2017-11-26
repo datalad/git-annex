@@ -1,6 +1,6 @@
 {- data size display and parsing
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -
@@ -41,8 +41,11 @@ module Utility.DataUnits (
 	memoryUnits,
 	bandwidthUnits,
 	oldSchoolUnits,
+	Unit(..),
+	ByteSize,
 
 	roughSize,
+	roughSize',
 	compareSizes,
 	readSize
 ) where
@@ -107,7 +110,10 @@ oldSchoolUnits = zipWith (curry mingle) storageUnits memoryUnits
 
 {- approximate display of a particular number of bytes -}
 roughSize :: [Unit] -> Bool -> ByteSize -> String
-roughSize units short i
+roughSize units short i = roughSize' units short 2 i
+
+roughSize' :: [Unit] -> Bool -> Int -> ByteSize -> String
+roughSize' units short precision i
 	| i < 0 = '-' : findUnit units' (negate i)
 	| otherwise = findUnit units' i
   where
@@ -121,7 +127,7 @@ roughSize units short i
 	showUnit x (Unit size abbrev name) = s ++ " " ++ unit
 	  where
 		v = (fromInteger x :: Double) / fromInteger size
-		s = showImprecise 2 v
+		s = showImprecise precision v
 		unit
 			| short = abbrev
 			| s == "1" = name

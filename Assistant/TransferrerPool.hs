@@ -1,6 +1,6 @@
 {- A pool of "git-annex transferkeys" processes
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,7 +9,7 @@ module Assistant.TransferrerPool where
 
 import Assistant.Common
 import Assistant.Types.TransferrerPool
-import Logs.Transfer
+import Types.Transfer
 import Utility.Batch
 
 import qualified Command.TransferKeys as T
@@ -74,8 +74,6 @@ mkTransferrer program batchmaker = do
 		, std_in = CreatePipe
 		, std_out = CreatePipe
 		}
-	fileEncoding readh
-	fileEncoding writeh
 	return $ Transferrer
 		{ transferrerRead = readh
 		, transferrerWrite = writeh

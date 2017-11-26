@@ -1,0 +1,6 @@
+Turned out to not be very hard at all to make `git annex get -JN`
+assign different threads to different remotes that have the same cost.
+Something like that was requested back in 2011, but it didn't really make
+sense until parallel get was implemented last year.
+
+(Also spent too much time fixing up broken builds.)

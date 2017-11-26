@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="sts"
+ subject="comment 3"
+ date="2015-12-20T19:49:26Z"
+ content="""
+hey joey!
+
+thanks, it (kinda) worked :). At least the initialization works now pretty fine. But uploading files does not work as expected. It does upload  some data, but does not move the data to the corresponding folder (from 'tmp' to $hash):
+
+    git annex copy --debug --to webdav 1354580391258.jpg
+    [2015-12-20 20:31:36.985579] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+    [2015-12-20 20:31:36.990098] process done ExitSuccess
+    [2015-12-20 20:31:36.990584] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2015-12-20 20:31:36.993635] process done ExitSuccess
+    [2015-12-20 20:31:36.994311] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..2ff0c487bc1c92c11a45131b55f6fb2ba034071d\",\"-n1\",\"--pretty=%H\"]
+    [2015-12-20 20:31:36.998675] process done ExitSuccess
+    [2015-12-20 20:31:36.999747] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+    [2015-12-20 20:31:37.003483] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"1354580391258.jpg\"]
+    copy 1354580391258.jpg (checking webdav...) (to webdav...) 
+    100%        564.6KB/s 0s
+    DAV failure: 409 \"Conflict\"
+    failed
+    git-annex: copy: 1 failed
+
+In the 'tmp'-folder on the server I can find the file ('SHA256E-s1156230--...'), but this file is not 100% identical to the one I uploaded. Well, it seems that the first byte is missing ;) at least if I compare the files via vimdiff:
+
+    0000000: d8ff e000 104a 4649 4600 0101 0100 4800  .....JFIF.....H.               |  0000000: ffd8 ffe0 0010 4a46 4946 0001 0101 0048  ......JFIF.....H               
+    0000010: 4800 00ff db00 4300 0101 0101 0101 0101  H.....C.........               |  0000010: 0048 0000 ffdb 0043 0001 0101 0101 0101  .H.....C........               
+    0000020: 0101 0101 0102 0203 0202 0202 0204 0303  ................               |  0000020: 0101 0101 0101 0202 0302 0202 0202 0403  ................               
+    0000030: 0203 0504 0505 0504 0404 0506 0706 0505  ................               |  0000030: 0302 0305 0405 0505 0404 0405 0607 0605  ................               
+    0000040: 0706 0404 0609 0607 0808 0808 0805 0609  ................               |  0000040: 0507 0604 0406 0906 0708 0808 0808 0506  ................               
+    0000050: 0a09 080a 0708 0808 ffdb 0043 0101 0101  ...........C....               |  0000050: 090a 0908 0a07 0808 08ff db00 4301 0101  ............C...               
+    0000060: 0202 0204 0202 0408 0504 0508 0808 0808  ................               |  0000060: 0102 0202 0402 0204 0805 0405 0808 0808  ................
+
+As you can see, on the left side (aka 'the uploaded file') the first two hexadecimal values are missing in comparison to the right side (the source), so the first byte is missing.
+
+I guess in the end it is still the same problem, right :)?
+"""]]

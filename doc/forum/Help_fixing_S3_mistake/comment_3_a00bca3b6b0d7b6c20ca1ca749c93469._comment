@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="darkfeline"
+ subject="comment 3"
+ date="2015-10-18T20:15:56Z"
+ content="""
+Thanks for the help.  I'm currently stuck partway through fixing this.
+
+1. I changed the UUID of the remote \"amazon\" in .git/config to the UUID of B.
+2. I changed contents of the annex-uuid file in the S3 bucket from the UUID of A to the UUID of B (making sure to not include a newline).
+
+After this, I think I can follow your steps to fix the problem.  However, Git annex is now reporting the error whenever I try to run a command:
+
+    trusted repositories: git-annex: S3 bucket not configured
+
+My understanding of this message is that Git annex is not seeing the UUID it is expecting in the S3 bucket, and that it will be fixed when some cache expires.  Is this correct?
+"""]]

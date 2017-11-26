@@ -1,0 +1,53 @@
+### Please describe the problem.
+
+I'm seeing some inconsistent results between runs of `git annex fsck` and `git annex whereis` that I'm not able to explain. When I run `git annex fsck`, it reports a few keys that only have 1 copy, and advises me to make more copies. If I run `git annex whereis --key <key>`, git annex confirms that it only knows about 1 copy of this key. If I then use `git log --stat -S'<key>'` to find the actual file that it refers to, and run `git annex whereis <file>`, git annex report 9 copies of this file. Checking on remotes shows that these files do exist on the remote, so why does `git annex fsck` and `git annex whereis` mis-report the number of copies when querying for the key - but not for the actual filename? Additionally, `git annex find --lackingcopies 1` doesn't return any results, but should if there are actually files with not enough copies?
+
+
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+
+5.20151208-1build1 on Ubuntu Xenial, one remote running 5.20141024~bpo70+1 on Debian Wheezy
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+[william@hactar ~/Pictures/Photo Library]$ git annex whereis SHA256E-s1071765--dbaa7f32ee44c28d6a1f0c8095e8dfd8b4ec433b144085d5097425303a510ea9
+git-annex: SHA256E-s1071765--dbaa7f32ee44c28d6a1f0c8095e8dfd8b4ec433b144085d5097425303a510ea9 not found
+git-annex: whereis: 1 failed
+[william@hactar ~/Pictures/Photo Library]$ git annex whereis --key SHA256E-s1071765--dbaa7f32ee44c28d6a1f0c8095e8dfd8b4ec433b144085d5097425303a510ea9
+whereis SHA256E-s1071765--dbaa7f32ee44c28d6a1f0c8095e8dfd8b4ec433b144085d5097425303a510ea9 (1 copy) 
+        7691934f-2542-4103-9122-2db4e6cfc887 -- hactar [here]
+ok
+[william@hactar ~/Pictures/Photo Library]$ git annex fsck --key SHA256E-s1071765--dbaa7f32ee44c28d6a1f0c8095e8dfd8b4ec433b144085d5097425303a510ea9
+fsck SHA256E-s1071765--dbaa7f32ee44c28d6a1f0c8095e8dfd8b4ec433b144085d5097425303a510ea9 
+  Only 1 of 3 trustworthy copies exist of SHA256E-s1071765--dbaa7f32ee44c28d6a1f0c8095e8dfd8b4ec433b144085d5097425303a510ea9
+  Back it up with git-annex copy.
+failed
+(recording state in git...)
+git-annex: fsck: 1 failed
+[william@hactar ~/Pictures/Photo Library]$ git log --stat -S'SHA256E-s1071765--dbaa7f32ee44c28d6a1f0c8095e8dfd8b4ec433b144085d5097425303a510ea9'
+[william@hactar ~/Pictures/Photo Library]$ git annex whereis 2009/05/05/P1040890.JPG
+whereis 2009/05/05/P1040890.JPG (9 copies) 
+        0e825a69-1927-4f62-b731-6f3e98bba998 -- william@marvin:/media/backup/annex/photos [marvin]
+        1b728ab5-1e32-45a6-bc11-2a4bfdc9d6ab -- backup1
+        5c0caa42-b489-467b-a612-9590fa9d5a94 -- backup2
+        7691934f-2542-4103-9122-2db4e6cfc887 -- hactar [here]
+        894b2216-72e0-40e1-8765-1386e1e9e4b4 -- backup3
+        96f19fa8-d385-4e8b-b000-61ee15993a70 -- backup3
+        a862b121-d794-4af4-bb56-21adfe8962f2 -- S3
+        b083f8ae-42fb-41f0-a2a3-4e7c9f93aadb -- [guide]
+        bf021ce9-465b-4419-86e7-bddfd208fca4 -- git@newzaphod:~/repositories/annex/photos.git [zaphod]
+ok
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I trust Git Annex to keep hundreds of GB of data safe, and it has never failed me - despite my best efforts

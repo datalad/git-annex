@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm_YXzEdPHzbSGVwtmTR7g1BqDtTnIBB5s"
+ nickname="Matthias"
+ subject="comment 17"
+ date="2015-01-22T22:04:09Z"
+ content="""
+git sync … >> fetches from each remote
+
+Well, I have two git annex-ed repositories where \"git remote -v\" properly lists the other repo, and \"git annex sync foo\" manages to pull from foo, but \"git annex sync\" without a remote name simply does a local sync. Also, neither command pushes anything anywhere.
+
+So, where does \"git annex\" get its list of remotes from? What could prevent it from accessing them?
+
+
+"""]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="xloem"
+ subject="comment 2"
+ date="2016-05-18T09:43:13Z"
+ content="""
+Thanks.  It turns out I'd deleted that repo in order to free the inodes up.  Next time I will see if I can repair.
+
+But it would be nice if git-annex tracked inodes the way it tracks free space, so that it could refrain from causing the inode exhaustion.  This also would have alerted me to how few inodes I had remaining.
+"""]]

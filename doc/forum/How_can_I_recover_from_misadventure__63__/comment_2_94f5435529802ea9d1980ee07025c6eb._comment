@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="hiredman@b5864f8a30c0cafbc990313b56c39586ca7a21ec"
+ nickname="hiredman"
+ subject="comment 2"
+ date="2016-01-19T23:11:25Z"
+ content="""
+```
+$ git annex version
+git-annex version: 5.20151218-g5008846
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3(multipartupload) WebDAV Inotify DBus DesktopNotify XMPP ConcurrentOutput DNS Feeds Quvi TDFA TorrentParser Database
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL  
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+$ lsb_release -a
+No LSB modules are available.
+Distributor ID: Ubuntu
+Description:    Ubuntu 15.04
+Release:        15.04
+Codename:       vivid  
+$ uname -a
+Linux aktaios 4.2.0-040200rc2-generic #201507160938 SMP Thu Jul 16 09:49:19 UTC 2015 i686 i686 i686 GNU/Linux
+```
+
+The commands would exit successfully.
+
+
+I realize now that if I wanted to start from scratch the correct thing to do is likely 'git annex uninit' so I am running that now, but it fails often with an error like:
+
+```
+git-annex: Users/hiredman/.gem/specs/rubygems.org%80/quick/Marshal.4.8/bundler-1.0.15.gemspec points to annexed content, but is not checked into git.
+Perhaps this was left behind by an interrupted git annex add?
+Not continuing with uninit; either delete or git annex add the file and retry.
+```
+
+So I wrote in little shell loop to run 'git annex uninit', replace symlink with the contents out of .git/, and run 'git annex uinit' again. This is going slowly and seems to be getting slower, so I guess uninit does some kind of scan of all the files that is interrupted every time it hits the above error, and has to be done again from scratch every time, so as I remove those errors one by one uninit takes longer and longer to hit the next error. So what I need to do is write a script to fix the links up in a single scan. 
+
+"""]]

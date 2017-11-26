@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.152.246.110"
- subject="comment 4"
- date="2013-07-27T22:40:58Z"
- content="""
-I should add that it also seems to make sense to stat the file to see if it's present, like it does now. The location log can be out of date, and when more accurate info is right there, it should use it. And nor is the location log being out of date something that it should complain about, because it can easily happen eg when `git annex sync` has not been run recently.
-"""]]

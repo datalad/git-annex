@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="digiuser"
+ subject="comment 4"
+ date="2015-06-24T01:30:26Z"
+ content="""
+What is `s3creds` in `remote.log` then? Something base64 encoded that is named suspiciously like creds for logging into s3?
+"""]]

@@ -10,7 +10,7 @@
  -
  - Format: "timestamp uuid:chunksize chunkcount"
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -24,26 +24,29 @@ module Logs.Chunk (
 	getCurrentChunks,
 ) where
 
-import Common.Annex
+import Annex.Common
 import Logs
 import Logs.MapLog
 import qualified Annex.Branch
 import Logs.Chunk.Pure
+import qualified Annex
 
 import qualified Data.Map as M
-import Data.Time.Clock.POSIX
 
 chunksStored :: UUID -> Key -> ChunkMethod -> ChunkCount -> Annex ()
 chunksStored u k chunkmethod chunkcount = do
-	ts <- liftIO getPOSIXTime
-	Annex.Branch.change (chunkLogFile k) $
-		showLog . changeMapLog ts (u, chunkmethod) chunkcount . parseLog
+	c <- liftIO currentVectorClock
+	config <- Annex.getGitConfig
+	Annex.Branch.change (chunkLogFile config k) $
+		showLog . changeMapLog c (u, chunkmethod) chunkcount . parseLog
 
 chunksRemoved :: UUID -> Key -> ChunkMethod -> Annex ()
 chunksRemoved u k chunkmethod = chunksStored u k chunkmethod 0
 
 getCurrentChunks :: UUID -> Key -> Annex [(ChunkMethod, ChunkCount)]
-getCurrentChunks u k = select . parseLog <$> Annex.Branch.get (chunkLogFile k)
+getCurrentChunks u k = do
+	config <- Annex.getGitConfig
+	select . parseLog <$> Annex.Branch.get (chunkLogFile config k)
   where
 	select = filter (\(_m, ct) -> ct > 0)
 		. map (\((_ku, m), l) -> (m, value l))

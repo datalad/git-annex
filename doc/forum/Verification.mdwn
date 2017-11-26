@@ -1,0 +1,9 @@
+Hi,
+
+I have a simple Client Mac <> FullBackup on remote SSH <> Client On Mac setup which seems to work great.
+
+I have 2 questions :
+- Whenever a new file is created or changed it can takes a few hours until the second client gets the file. Is this normal ?
+- How Can I make sure, that all the files are on the FullBackup ?
+
+Many thank !

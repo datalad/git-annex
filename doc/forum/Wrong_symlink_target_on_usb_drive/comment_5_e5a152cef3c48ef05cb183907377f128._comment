@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2016-05-10T18:08:10Z"
+ content="""
+Ok, I reproduced the problem. Normally core.symlinks will be false
+by on NTFS. You have to manually set it to true to experience
+this problem AFAICS.
+
+I was able to lock a file (resulting in a broken symlink) and then successfully 
+unlock it and the content was back in place.
+
+git-annex always uses the lower case hash directory names when on a
+crippled filesystem, since that's more portable and avoids lots of
+potential problems. By configuring core.symlinks=true, you make git-annex
+support locking files using symlinks, but these symlinks can't point to the
+actual content location.
+
+I think it makes sense for git-annex to use the the mixed case hash
+directory names when core.symlinks=true even if the filesystem is crippled.
+There's some foot-shooting potential, since some crippled fileystems
+don't support the mixed-case hash directories. But, you have to manually
+set up this configuration. I've made a change along these lines.
+"""]]

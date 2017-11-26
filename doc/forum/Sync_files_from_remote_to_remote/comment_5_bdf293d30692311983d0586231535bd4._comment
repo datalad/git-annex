@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnm19dBCRphmtjXfopm_NpvnRwz-qIJ2Tw"
+ nickname="Remi"
+ subject="comment 5"
+ date="2015-01-13T12:45:47Z"
+ content="""
+Well my idea wasn't to have only this in the preferred content. You
+can use \"or\" expression.
+
+That said, I've just check the manual, and it seem that there is no --in for
+preferred content... But you could add your usb repos say to the
+archival group (git annex group usb archival), Then use something like
+like `\"include=* and ( exclude=*.mov or not inallgroup=archival )\"`
+(this is untested, but I hope you get the idea).
+
+With such a preferred content, you local repository should get (and
+keep) the .mov not in usb, and should drop them when they are send
+there.
+
+"""]]

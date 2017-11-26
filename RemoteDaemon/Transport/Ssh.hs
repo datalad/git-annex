@@ -1,13 +1,13 @@
 {- git-remote-daemon, git-annex-shell over ssh transport
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module RemoteDaemon.Transport.Ssh (transport) where
+module RemoteDaemon.Transport.Ssh (transport, transportUsingCmd) where
 
-import Common.Annex
+import Annex.Common
 import Annex.Ssh
 import RemoteDaemon.Types
 import RemoteDaemon.Common
@@ -16,29 +16,30 @@ import qualified RemoteDaemon.Transport.Ssh.Types as SshRemote
 import Utility.SimpleProtocol
 import qualified Git
 import Git.Command
-import Utility.ThreadScheduler
+import Annex.ChangedRefs
 
-import Control.Concurrent.Chan
+import Control.Concurrent.STM
 import Control.Concurrent.Async
 
 transport :: Transport
-transport r url h@(TransportHandle g s) ichan ochan = do
-	-- enable ssh connection caching wherever inLocalRepo is called
-	g' <- liftAnnex h $ sshCachingTo r g
-	transport' r url (TransportHandle g' s) ichan ochan
-
-transport' :: Transport
-transport' r url transporthandle ichan ochan = do
-
-	v <- liftAnnex transporthandle $ git_annex_shell r "notifychanges" [] []
+transport rr@(RemoteRepo r _) url h ichan ochan = do
+	v <- liftAnnex h $ git_annex_shell ConsumeStdin r "notifychanges" [] []
 	case v of
 		Nothing -> noop
-		Just (cmd, params) -> robustly 1 $
-			connect cmd (toCommand params)
-  where
-	connect cmd params = do
+		Just (cmd, params) -> transportUsingCmd cmd params rr url h ichan ochan
+
+transportUsingCmd :: FilePath -> [CommandParam] -> Transport
+transportUsingCmd cmd params rr@(RemoteRepo r gc) url h@(TransportHandle (LocalRepo g) s) ichan ochan = do
+	-- enable ssh connection caching wherever inLocalRepo is called
+	g' <- liftAnnex h $ sshOptionsTo r gc g
+	let transporthandle = TransportHandle (LocalRepo g') s
+	transportUsingCmd' cmd params rr url transporthandle ichan ochan
+
+transportUsingCmd' :: FilePath -> [CommandParam] -> Transport
+transportUsingCmd' cmd params (RemoteRepo r gc) url transporthandle ichan ochan =
+	robustConnection 1 $ do
 		(Just toh, Just fromh, Just errh, pid) <-
-			createProcess (proc cmd params)
+			createProcess (proc cmd (toCommand params))
 			{ std_in = CreatePipe
 			, std_out = CreatePipe
 			, std_err = CreatePipe
@@ -57,8 +58,8 @@ transport' r url transporthandle ichan ochan = do
 		void $ waitForProcess pid
 
 		return $ either (either id id) id status
-
-	send msg = writeChan ochan msg
+  where
+	send msg = atomically $ writeTChan ochan msg
 
 	fetch = do
 		send (SYNCING url)
@@ -67,23 +68,23 @@ transport' r url transporthandle ichan ochan = do
 		send (DONESYNCING url ok)
 		
 	handlestdout fromh = do
-		l <- hGetLine fromh
-		case parseMessage l of
+		ml <- getProtocolLine fromh
+		case parseMessage =<< ml of
 			Just SshRemote.READY -> do
 				send (CONNECTED url)
 				handlestdout fromh
-			Just (SshRemote.CHANGED shas) -> do
-				whenM (checkNewShas transporthandle shas) $
+			Just (SshRemote.CHANGED (ChangedRefs shas)) -> do
+				whenM (checkShouldFetch gc transporthandle shas) $
 					fetch
 				handlestdout fromh
 			-- avoid reconnect on protocol error
-			Nothing -> return Stopping
+			Nothing -> return ConnectionStopping
 	
 	handlecontrol = do
-		msg <- readChan ichan
+		msg <- atomically $ readTChan ichan
 		case msg of
-			STOP -> return Stopping
-			LOSTNET -> return Stopping
+			STOP -> return ConnectionStopping
+			LOSTNET -> return ConnectionStopping
 			_ -> handlecontrol
 
 	-- Old versions of git-annex-shell that do not support
@@ -101,23 +102,5 @@ transport' r url transporthandle ichan ochan = do
 					, "needs its git-annex upgraded"
 					, "to 5.20140405 or newer"
 					]
-				return Stopping
+				return ConnectionStopping
 			else handlestderr errh
-
-data Status = Stopping | ConnectionClosed
-
-{- Make connection robustly, with exponentioal backoff on failure. -}
-robustly :: Int -> IO Status -> IO ()
-robustly backoff a = caught =<< catchDefaultIO ConnectionClosed a
-  where
-	caught Stopping = return ()
-	caught ConnectionClosed = do
-		threadDelaySeconds (Seconds backoff)
-		robustly increasedbackoff a
-
-	increasedbackoff
-		| b2 > maxbackoff = maxbackoff
-		| otherwise = b2
-	  where
-		b2 = backoff * 2
-		maxbackoff = 3600 -- one hour

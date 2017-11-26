@@ -1,0 +1,9 @@
+Hi,
+
+I'd like to modify the directory special remote, to compress/deflate files before the store/retrieve operations. Purpose is to gain size, with a lossless compression, different depending on the file type (LZMA as a default, dropbox-lepton for jpegs, etc...).
+
+Before I go on, I wonder if the file content modification will interfere with git annex internals.
+It seems it won't, from what I see in the special remote basic exemple given in https://git-annex.branchable.com/special_remotes/external/
+Can someone confirm ?
+
+Thks

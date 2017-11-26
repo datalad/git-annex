@@ -1,0 +1,33 @@
+Getting started on [[design/adjusted_branches]], taking a top-down and
+bottom-up approach. Yesterday I worked on improving the design. Today,
+built a `git mktree` interface that supports recursive tree generation and
+filtering, which is the low-level core of what's needed to implement the
+adjusted branches.
+
+To test that, wrote a fun program that generates a git tree with all
+the filenames reversed.
+
+[[!format haskell """
+import Git.Tree
+import Git.CurrentRepo
+import Git.FilePath
+import Git.Types
+import System.FilePath
+
+main = do
+        r <- Git.CurrentRepo.get
+        (Tree t, cleanup) <- getTree (Ref "HEAD") r
+        print =<< recordTree r (Tree (map reverseTree t))
+        cleanup
+
+reverseTree :: TreeContent -> TreeContent
+reverseTree (TreeBlob f m s) = TreeBlob (reverseFile f) m s
+reverseTree (RecordedSubTree f s l) = NewSubTree (reverseFile f) (map reverseTree l)
+
+reverseFile :: TopFilePath -> TopFilePath
+reverseFile = asTopFilePath . joinPath . map reverse . splitPath . getTopFilePath
+"""]]
+
+Also, fixed problems with the Android, Windows, and OSX builds today.
+Made a point release of the OSX dmg, because the last several releases
+of it will SIGILL on some hardware.

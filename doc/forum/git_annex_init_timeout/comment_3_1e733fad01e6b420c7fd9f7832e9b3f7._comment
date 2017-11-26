@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="ewen"
+ avatar="http://cdn.libravatar.org/avatar/605b2981cb52b4af268455dee7a4f64e"
+ subject="git annex get ... transfer lock issues"
+ date="2017-04-23T07:36:08Z"
+ content="""
+The fix a couple of months ago appears to allow `git annex init` to complete on a SMB file share, which is great.  But FTR there are currently [issues with file transfers](https://git-annex.branchable.com/bugs/SMB__58___git_annex_clone_works__44___get_fails_on_transfer_lock/) (link is to bug report about failing to get transfer lock), so use with a NAS is still \"work in progress\".
+
+Ewen
+"""]]

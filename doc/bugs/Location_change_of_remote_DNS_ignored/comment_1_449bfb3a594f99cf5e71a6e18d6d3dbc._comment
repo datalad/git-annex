@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="torpidus"
+ subject="comment 1"
+ date="2015-12-06T20:29:25Z"
+ content="""
+**self-edit**:
+Changed location of .git/config once again as described but instead of re-starting assistant, I ran \"git-annex sync\" which ended with no errors. After that, assistant started correctly and also had the corrected remote location. From my point of view, this thread has been resolved - even though I wonder what changed the value back to the old one in the first place.
+"""]]

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
- nickname="Richard"
- subject="comment 1"
- date="2011-10-23T15:00:48Z"
- content="""
-Having run into the same issue again, I still think git-annex should ensure no merges take place. The clutter introduced by a .gitnomerge is neglible, imo.
-"""]]

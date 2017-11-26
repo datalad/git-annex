@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="comment 1"
+ date="2017-07-20T17:53:04Z"
+ content="""
+(Another user here.)
+
+I can't take you by the hand but all this seems like regular use of git-annex.
+
+I was overwhelmed at the beginning, followed http://git-annex.branchable.com/walkthrough , visited a number of pages.
+I finally had something that worked.
+
+In some cases you might consider, instead of moving files then using git annex add, using https://git-annex.branchable.com/git-annex-import/ with or without some of the options.
+
+If you have specific problems, ask a more specific question.
+
+Happy journey!
+
+"""]]

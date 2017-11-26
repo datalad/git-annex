@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-08-08T15:32:19Z"
+ content="""
+There's been discussion of keeping private forks of git-annex
+repositories before.
+
+IIRC, the remote.name.annex-sync and remote.name.annex-readonly
+settings can accomplish that. 
+
+For example, if the private repository A has a remote B, it can set
+annex-readonly, and this will prevent A from pushing any data to B. A
+can still pull from B. If A is on a locked down machine that B cannot
+itsef access, this guarantees that the changes in A remain private.
+I think this is the best way to accomplish this kind of scenario.
+
+If B has A as a remote, then B could set annex-sync to false, which
+would prevent it from pulling from A, and so B would never merge
+in git-annex branches from A, at least unless A pushed them to B.
+Of course, in this scenario, a manual `git pull A` on B bypasses
+the protection.
+
+It might make sense to make git-annex merge honor annex-ignore,
+and skip merging branches that belong to a remote, even if they
+were somehow pulled down. Unfortunately, git's remote branch
+name mapping can be quite complicated; IIRC it's not as simple
+as skipping branches remotes/B/*
+"""]]

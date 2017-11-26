@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="BojanNikolic"
+ subject="Publishing using rsync/directory layout"
+ date="2015-02-16T10:04:41Z"
+ content="""
+Is it possible to easily do the same with rsync/directory layout of the special remote? These have prefixes which are not shown when doing git annex lookupkey
+"""]]

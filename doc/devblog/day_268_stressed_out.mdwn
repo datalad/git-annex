@@ -1,0 +1,18 @@
+While I plowed through a lot of backlog the past several days,
+I still have some 120 messages piled deep.
+
+That work did result in a number of improvements, culminating in a rather
+rushed release of version 5.20150327 today, to fix a regression affecting
+`git annex sync` when using the standalone linux tarballs. Unfortunately, I
+then had to update those tarballs a second time after the release
+as the first fix was incomplete.
+
+And, I'm feeling super stressed out. At this point, I think I should step
+away until the end of the month. Unfortunately, this will mean more backlog
+later. Including lots of noise and hand-holding that I just don't seem to
+have time for if I want to continue making forward progress.
+
+Maybe I'll think of a way to deal with it while I'm away. Currently, all I
+have is that I may have to start ignoring irc and the forum, and
+de-prioritizing bug reports that don't have either a working reproduction
+recipe or multiple independent confirmations that it's a real bug.

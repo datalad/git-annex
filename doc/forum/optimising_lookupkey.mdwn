@@ -1,0 +1,13 @@
+to work around [[forum/original_filename_on_s3/]], i need to get the key from a file, and i'm not within the git-annex process. i know there's `git annex lookupkey $FILE`, but that incurs significant overhead because the whole git annex runtime needs to fire up. in my tests, this takes around 25ms on average.
+
+could i optimise this by simply doing a `readlink` call on the git checkout? it sure looks like `readlink | basename` is all I really need, and that can probably be done below 10ms (4ms in my tests). how reliable are those links anyways, and is that what lookupkey does?
+
+similarly, i wonder if it's safe to bypass git-annex and talk straight with git to extract location tracking? i can jump from 90ms to below 10ms for such requests if I turn `git annex find <file>` into the convoluted:
+
+<pre>
+git annex lookupkey $file
+printf $key | md5sum
+git cat-file -p refs/heads/git-annex:$hash/${key}.log
+</pre>
+
+thanks. --[[anarcat]]

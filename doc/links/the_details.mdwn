@@ -3,6 +3,7 @@
 * [[encryption]]
 * [[key-value backends|backends]]
 * [[bare_repositories]]
+* [[submodules]]
 * [[internals]]
 * [[scalability]]
 * [[design]]

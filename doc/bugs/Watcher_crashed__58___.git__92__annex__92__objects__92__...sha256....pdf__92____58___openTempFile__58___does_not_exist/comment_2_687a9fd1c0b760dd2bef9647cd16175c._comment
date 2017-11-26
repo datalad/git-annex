@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-12-02T17:32:32Z"
+ content="""
+What version of git-annex?
+
+Is it possible that the .git/annex/objects directory,
+or something related to it (maybe .git itself) is one of the 
+files you moved?
+"""]]

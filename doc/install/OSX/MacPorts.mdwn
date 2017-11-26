@@ -8,7 +8,7 @@ The version provided by Macports is too old to work with current versions of git
 Then execute
 
 <pre>
-sudo port install git-core ossp-uuid md5sha1sum coreutils gnutls libxml2 libgsasl pkgconfig
+sudo port install git ossp-uuid md5sha1sum coreutils gnutls libxml2 libgsasl pkgconfig
 sudo cabal update
 PATH=$HOME/bin:$PATH
 cabal install c2hs git-annex --bindir=$HOME/bin

@@ -1,6 +1,6 @@
 {- git-annex trust levels
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -21,7 +21,7 @@ import Types.UUID
 -- This order may seem backwards, but we generally want to list dead
 -- remotes last and trusted ones first.
 data TrustLevel = Trusted | SemiTrusted | UnTrusted | DeadTrusted
-	deriving (Eq, Enum, Ord, Bounded)
+	deriving (Eq, Enum, Ord, Bounded, Show)
 
 instance Default TrustLevel  where
 	def = SemiTrusted

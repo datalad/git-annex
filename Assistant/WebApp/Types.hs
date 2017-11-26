@@ -1,6 +1,6 @@
 {- git-annex assistant webapp types
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -8,23 +8,26 @@
 {-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell, OverloadedStrings, RankNTypes #-}
 {-# LANGUAGE FlexibleInstances, FlexibleContexts, ViewPatterns #-}
-{-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Assistant.WebApp.Types where
+module Assistant.WebApp.Types (
+	module Assistant.WebApp.Types,
+	Route
+) where
 
 import Assistant.Common
 import Assistant.Ssh
 import Assistant.Pairing
-import Assistant.Types.Buddies
 import Utility.NotificationBroadcaster
+import Utility.AuthToken
 import Utility.WebApp
 import Utility.Yesod
-import Logs.Transfer
+import Types.Transfer
 import Utility.Gpg (KeyId)
 import Build.SysConfig (packageversion)
 import Types.ScheduledActivity
 import Assistant.WebApp.RepoId
+import Assistant.WebApp.Pairing
 import Types.Distribution
 
 import Yesod.Static
@@ -37,8 +40,6 @@ publicFiles "static"
 staticRoutes :: Static
 staticRoutes = $(embed "static")
 
-mkYesodData "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
-
 data WebApp = WebApp
 	{ assistantData :: AssistantData
 	, authToken :: AuthToken
@@ -48,18 +49,22 @@ data WebApp = WebApp
 	, cannotRun :: Maybe String
 	, noAnnex :: Bool
 	, listenHost ::Maybe HostName
+	, wormholePairingState :: WormholePairingState
 	}
+
+mkYesodData "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
+
+excludeStatic :: [Text] -> Bool
+excludeStatic [] = True
+excludeStatic (p:_) = p /= "static"
 
 instance Yesod WebApp where
 	{- Require an auth token be set when accessing any (non-static) route -}
-	isAuthorized _ _ = checkAuthToken authToken
+	isAuthorized r _ = checkAuthToken authToken r excludeStatic
 
 	{- Add the auth token to every url generated, except static subsite
 	 - urls (which can show up in Permission Denied pages). -}
 	joinPath = insertAuthToken authToken excludeStatic
-	  where
-		excludeStatic [] = True
-		excludeStatic (p:_) = p /= "static"
 
 	makeSessionBackend = webAppSessionBackend
 	jsLoader _ = BottomOfHeadBlocking
@@ -83,58 +88,30 @@ instance Yesod WebApp where
 instance RenderMessage WebApp FormMessage where
 	renderMessage _ _ = defaultFormMessage
 
-#if MIN_VERSION_yesod(1,2,0)
 instance LiftAnnex Handler where
-#else
-instance LiftAnnex (GHandler sub WebApp) where
-#endif
 	liftAnnex a = ifM (noAnnex <$> getYesod)
 		( error "internal liftAnnex"
 		, liftAssistant $ liftAnnex a
 		)
 
-#if MIN_VERSION_yesod(1,2,0)
 instance LiftAnnex (WidgetT WebApp IO) where
-#else
-instance LiftAnnex (GWidget WebApp WebApp) where
-#endif
 	liftAnnex = liftH . liftAnnex
 
 class LiftAssistant m where
 	liftAssistant :: Assistant a -> m a
 
-#if MIN_VERSION_yesod(1,2,0)
 instance LiftAssistant Handler where
-#else
-instance LiftAssistant (GHandler sub WebApp) where
-#endif
 	liftAssistant a = liftIO . flip runAssistant a
 		=<< assistantData <$> getYesod
 
-#if MIN_VERSION_yesod(1,2,0)
 instance LiftAssistant (WidgetT WebApp IO) where
-#else
-instance LiftAssistant (GWidget WebApp WebApp) where
-#endif
 	liftAssistant = liftH . liftAssistant
 
-#if MIN_VERSION_yesod(1,2,0)
 type MkMForm x = MForm Handler (FormResult x, Widget)
-#else
-type MkMForm x = MForm WebApp WebApp (FormResult x, Widget)
-#endif
 
-#if MIN_VERSION_yesod(1,2,0)
 type MkAForm x = AForm Handler x
-#else
-type MkAForm x = AForm WebApp WebApp x
-#endif
 
-#if MIN_VERSION_yesod(1,2,0)
-type MkField x = Monad m => RenderMessage (HandlerSite m) FormMessage => Field m x
-#else
-type MkField x = RenderMessage master FormMessage => Field sub master x
-#endif
+type MkField x = forall m. Monad m => RenderMessage (HandlerSite m) FormMessage => Field m x
 
 data RepoSelector = RepoSelector
 	{ onlyCloud :: Bool
@@ -153,12 +130,6 @@ data RemovableDrive = RemovableDrive
 
 data RepoKey = RepoKey KeyId | NoRepoKey
 	deriving (Read, Show, Eq, Ord)
-
-#if ! MIN_VERSION_path_pieces(0,1,4)
-instance PathPiece Bool where
-	toPathPiece = pack . show
-	fromPathPiece = readish . unpack
-#endif
 
 instance PathPiece RemovableDrive where
 	toPathPiece = pack . show
@@ -196,14 +167,6 @@ instance PathPiece UUID where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack
 
-instance PathPiece BuddyKey where
-	toPathPiece = pack . show
-	fromPathPiece = readish . unpack
-
-instance PathPiece PairKey where
-	toPathPiece = pack . show
-	fromPathPiece = readish . unpack
-
 instance PathPiece RepoSelector where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack
@@ -221,5 +184,13 @@ instance PathPiece RepoId where
 	fromPathPiece = readish . unpack
 
 instance PathPiece GitAnnexDistribution where
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
+
+instance PathPiece PairingWith where
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
+
+instance PathPiece WormholePairingId where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack

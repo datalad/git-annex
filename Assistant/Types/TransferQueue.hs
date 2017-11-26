@@ -1,14 +1,14 @@
 {- git-annex assistant pending transfer queue
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Assistant.Types.TransferQueue where
 
-import Common.Annex
-import Logs.Transfer
+import Annex.Common
+import Types.Transfer
 
 import Control.Concurrent.STM
 import Utility.TList

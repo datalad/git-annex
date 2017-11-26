@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="somewhat"
+ date="2015-06-24T16:28:42Z"
+ content="""
+git-annex doesn't deliberately keep all versions of the files. however, if you change a file (using [[git-annex-edit]]), it will keep the old copy, which will become [[walkthrough/unused_data/]]. that data will be purged by the assistant after a while (if configured to do so) but you can also archive it, etc... 
+
+so in a way, yes, it is versionned, but the unused data is somewhat more 'brittle' than the current dataset.
+"""]]

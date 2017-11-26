@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="cbaines"
+ subject="comment 1"
+ date="2015-12-21T12:32:55Z"
+ content="""
+If you want to stop tracking a file, just delete it, and then run git annex sync.
+
+There are some other commands (and settings in the assistant) for managing unused content. That is, files in the annex that are no longer referenced/used.
+"""]]

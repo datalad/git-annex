@@ -1,6 +1,6 @@
 {- git data types
  -
- - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,7 +11,6 @@ import Network.URI
 import qualified Data.Map as M
 import System.Posix.Types
 import Utility.SafeCommand
-import Utility.URI ()
 
 {- Support repositories on local disk, and repositories accessed via an URL.
  -
@@ -40,6 +39,7 @@ data Repo = Repo
 	, remoteName :: Maybe RemoteName
 	-- alternate environment to use when running git commands
 	, gitEnv :: Maybe [(String, String)]
+	, gitEnvOverridesGitDir :: Bool
 	-- global options to pass to git when running git commands
 	, gitGlobalOpts :: [CommandParam]
 	} deriving (Show, Eq, Ord)
@@ -98,3 +98,24 @@ toBlobType 0o100644 = Just FileBlob
 toBlobType 0o100755 = Just ExecutableBlob
 toBlobType 0o120000 = Just SymlinkBlob
 toBlobType _ = Nothing
+
+fromBlobType :: BlobType -> FileMode
+fromBlobType FileBlob = 0o100644
+fromBlobType ExecutableBlob = 0o100755
+fromBlobType SymlinkBlob = 0o120000
+
+data Commit = Commit
+	{ commitTree :: Sha
+	, commitParent :: [Sha]
+	, commitAuthorMetaData :: CommitMetaData
+	, commitCommitterMetaData :: CommitMetaData
+	, commitMessage :: String
+	}
+	deriving (Show)
+
+data CommitMetaData = CommitMetaData
+	{ commitName :: Maybe String
+	, commitEmail :: Maybe String
+	, commitDate :: Maybe String -- In raw git form, "epoch -tzoffset"
+	}
+	deriving (Show)

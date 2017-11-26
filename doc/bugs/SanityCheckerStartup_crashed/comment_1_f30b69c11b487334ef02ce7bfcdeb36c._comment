@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="108.236.230.124"
- subject="comment 1"
- date="2014-06-04T18:07:11Z"
- content="""
-This was already fixed in [[!commit 9c0f3ae7e13cc8ed43ac73fbab565e07c10d2c90]].
-"""]]

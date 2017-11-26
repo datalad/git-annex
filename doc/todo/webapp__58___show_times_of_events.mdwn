@@ -1,0 +1,5 @@
+In the webapp 'dashboard' page there is a column of 'message boxes' on the right hand side that appear as events occur.
+
+I would find it helpful to be able to hover over a message box and have a timestamp appear so that I know whether the event is a recent one that I might need to go look in the log for more detail about, or that I can click on the 'X' to dismiss the message.
+
+A further improvement that occurred to me is adding a link within the message box (link text something like "view log entry") that takes you to the corresponding part of the 'view log' page.

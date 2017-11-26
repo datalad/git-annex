@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnx8kHW66N3BqmkVpgtXDlYMvr8TJ5VvfY"
+ nickname="Yaroslav"
+ subject="I wondered if there is any even simple fuse wrapper for git-annex?"
+ date="2014-12-16T16:34:06Z"
+ content="""
+sharebox seems aiming to achieve what assistant is aiming for (synchronization).  In my usecase I wondered if there is a simple(r) FUSE wrapper for git-annex which would just 'annex get' any file which is requested (for reading).
+"""]]

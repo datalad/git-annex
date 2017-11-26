@@ -1,25 +1,27 @@
 {- git-annex command
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.TransferInfo where
 
-import Common.Annex
 import Command
 import Annex.Content
+import Types.Transfer
 import Logs.Transfer
-import Types.Key
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Utility.Metered
+import Utility.SimpleProtocol
 
-cmd :: [Command]
-cmd = [noCommit $ command "transferinfo" paramKey seek SectionPlumbing
-	"updates sender on number of bytes of content received"]
+cmd :: Command
+cmd = noCommit $ 
+	command "transferinfo" SectionPlumbing
+		"updates sender on number of bytes of content received"
+		paramKey (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 {- Security:
@@ -39,7 +41,7 @@ start (k:[]) = do
 	case file2key k of
 		Nothing -> error "bad key"
 		(Just key) -> whenM (inAnnex key) $ do
-			file <- Fields.getField Fields.associatedFile
+			afile <- AssociatedFile <$> Fields.getField Fields.associatedFile
 			u <- maybe (error "missing remoteuuid") toUUID
 				<$> Fields.getField Fields.remoteUUID
 			let t = Transfer
@@ -47,8 +49,8 @@ start (k:[]) = do
 				, transferUUID = u
 				, transferKey = key
 				}
-			info <- liftIO $ startTransferInfo file
-			(update, tfile, _) <- mkProgressUpdater t info
+			tinfo <- liftIO $ startTransferInfo afile
+			(update, tfile, _) <- mkProgressUpdater t tinfo
 			liftIO $ mapM_ void
 				[ tryIO $ forever $ do
 					bytes <- readUpdate
@@ -58,7 +60,7 @@ start (k:[]) = do
 				, exitSuccess
 				]
 	stop
-start _ = error "wrong number of parameters"
+start _ = giveup "wrong number of parameters"
 
 readUpdate :: IO (Maybe Integer)
-readUpdate = readish <$> getLine
+readUpdate = maybe Nothing readish <$> getProtocolLine stdin

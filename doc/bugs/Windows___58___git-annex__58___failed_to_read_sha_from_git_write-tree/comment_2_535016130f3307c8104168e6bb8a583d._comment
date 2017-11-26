@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="aloukian"
+ subject="Your directory depth is too long"
+ date="2015-11-19T00:13:21Z"
+ content="""
+I've had a similar problem when the location of my annex was too deep. Windows only allows 256 char filenames. Git annex takes up a fair bit of that by storing files named according to their hash. I worked around the problem by creating my repo at the drive root and then creating a \"junction\" between the place where I wanted it to be and that location. It seems to work now.
+"""]]

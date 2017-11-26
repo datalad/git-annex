@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="mark@6b90344cdab3158eacb94a3944460d138afc9bef"
+ nickname="mark"
+ subject="comment 7"
+ date="2016-02-05T22:35:19Z"
+ content="""
+Seems to be working with \"+\" fetch. I did have to put the fetch before the git annex commands and the push afterward or some of the changed git state from the git annex operations was lost (for example a drop and subsequent get wouldn't work because the drop wasn't probably tracked).
+
+Mark
+"""]]

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawmZgZuUhZlHpd_AbbcixY0QQiutb2I7GWY"
- nickname="Jimmy"
- subject="comment 8"
- date="2013-11-15T21:31:40Z"
- content="""
-Thanks Joey - I was able to create an encrypted S3 repo using the new Mavericks build.  Files are transferring across and are encrypted.
-"""]]

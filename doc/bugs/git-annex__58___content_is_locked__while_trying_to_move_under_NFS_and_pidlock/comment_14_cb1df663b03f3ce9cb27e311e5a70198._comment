@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2016-10-26T17:19:39Z"
+ content="""
+Re detecting NFS, I'm not sure that ".nfs" files are always used for
+deleted files by all NFS configurations. And, there are probably NFS
+configurations that do properly support Posix locks, and others that
+don't. So connecting a check for ".nfs" files with turning on
+annex.pidlock seems problimatic.
+
+If we had a good way to detect systems that don't support Posix locks,
+annex.pidlock could be auto-enabled. But for some reason embedding a large
+portion of a Posix test suite into git-annex does not fill me with joy.
+"""]]

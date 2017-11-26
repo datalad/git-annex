@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2016-10-31T21:16:53Z"
+ content="""
+Aha! It's something to do with unlocked files in v6 mode.
+
+Reproduced by unlocking a file, and LANG=C git annex sync --content
+
+With 1 unlocked file, I see the message twice, which makes sense
+given --content's 2 passes.
+"""]]

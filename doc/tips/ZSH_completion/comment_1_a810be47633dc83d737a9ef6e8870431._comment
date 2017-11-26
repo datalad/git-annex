@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-06-09T15:34:59Z"
+ content="""
+When git-annex is built with optparse-applicative version 0.14.0.0,
+it can generate its own zsh completion file. The Makefile installs that,
+and it seems to work well.
+
+So, I think that the hand-built zsh completions won't need to be maintained
+much longer!
+"""]]

@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="madduck"
+ subject="Overwriting metadata from json"
+ date="2015-04-30T18:42:45Z"
+ content="""
+I see that --json allows me to export metadata in a well-parseable format. I'd really like to be able to pipe this into a file, edit the file and then pipe it back to git-annex, causing the metadata for each file to be rewritten from the JSON input. This would make it trivial to write an external metadata editor (like vidir, vorbistagedit, git annex vicfg even… etc.)
+"""]]

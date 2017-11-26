@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
- nickname="Richard"
- subject="comment 1"
- date="2013-07-29T23:49:12Z"
- content="""
-PS: Maybe adding tests that _all_ commands leave mtime in place would be an option? As it is, I keep (for some value of) finding places where mtimes are clobbered.
-"""]]

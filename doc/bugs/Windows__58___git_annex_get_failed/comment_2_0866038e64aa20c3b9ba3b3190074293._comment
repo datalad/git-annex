@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-04-04T19:24:08Z"
+ content="""
+Note that v6 mode is still considered experimental.
+
+I know that I saw a problem like this, where git-annex was reading the
+pointer file and didn't always get around to closing it before it tried to
+replace it. I thought I fixed it back in February though -- but that fix
+may have bit rotted; looking at the current code, I think it could leave
+the file open until a GC pass, so if the GC doesn't always 
+run in time, that could explain the reported indeterminacy.
+
+Please paste the actual version of git-annex you're using,
+"latest build from source" is a little bit vague.
+
+Since you are building from source, you might try pulling;
+I've made a change that may fix it again.
+"""]]

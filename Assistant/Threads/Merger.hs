@@ -1,6 +1,6 @@
 {- git-annex assistant git merge thread
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,19 +10,14 @@ module Assistant.Threads.Merger where
 import Assistant.Common
 import Assistant.TransferQueue
 import Assistant.BranchChange
-import Assistant.DaemonStatus
-import Assistant.ScanRemotes
+import Assistant.Sync
 import Utility.DirWatcher
 import Utility.DirWatcher.Types
 import qualified Annex.Branch
 import qualified Git
 import qualified Git.Branch
-import Annex.AutoMerge
-import Annex.TaggedPush
-import Remote (remoteFromUUID)
-
-import qualified Data.Set as S
-import qualified Data.Text as T
+import qualified Git.Ref
+import qualified Command.Sync
 
 {- This thread watches for changes to .git/refs/, and handles incoming
  - pushes. -}
@@ -68,45 +63,40 @@ onChange file
 	| isAnnexBranch file = do
 		branchChanged
 		diverged <- liftAnnex Annex.Branch.forceUpdate
-		when diverged $
-			unlessM handleDesynced $
-				queueDeferredDownloads "retrying deferred download" Later
-	| "/synced/" `isInfixOf` file =
-		mergecurrent =<< liftAnnex (inRepo Git.Branch.current)
-	| otherwise = noop
+		when diverged $ do
+			updateExportTreeFromLogAll
+			queueDeferredDownloads "retrying deferred download" Later
+	| otherwise = mergecurrent
   where
 	changedbranch = fileToBranch file
 
-	mergecurrent (Just current)
-		| equivBranches changedbranch current =
-			whenM (liftAnnex $ inRepo $ Git.Branch.changed current changedbranch) $ do
+	mergecurrent =
+		mergecurrent' =<< liftAnnex (join Command.Sync.getCurrBranch)
+	mergecurrent' currbranch@(Just b, _)
+		| changedbranch `isRelatedTo` b =
+			whenM (liftAnnex $ inRepo $ Git.Branch.changed b changedbranch) $ do
 				debug
 					[ "merging", Git.fromRef changedbranch
-					, "into", Git.fromRef current
+					, "into", Git.fromRef b
 					]
-				void $ liftAnnex $ autoMergeFrom changedbranch (Just current) Git.Branch.AutomaticCommit
-	mergecurrent _ = noop
+				void $ liftAnnex $ Command.Sync.merge
+					currbranch Command.Sync.mergeConfig
+					def
+					Git.Branch.AutomaticCommit
+					changedbranch
+	mergecurrent' _ = noop
 
-	handleDesynced = case fromTaggedBranch changedbranch of
-		Nothing -> return False
-		Just (u, info) -> do
-			mr <- liftAnnex $ remoteFromUUID u
-			case mr of
-				Nothing -> return False
-				Just r -> do
-					s <- desynced <$> getDaemonStatus
-					if S.member u s || Just (T.unpack $ getXMPPClientID r) == info
-						then do
-							modifyDaemonStatus_ $ \st -> st
-								{ desynced = S.delete u s }
-							addScanRemotes True [r]
-							return True
-						else return False
-
-equivBranches :: Git.Ref -> Git.Ref -> Bool
-equivBranches x y = base x == base y
+{- Is the first branch a synced branch or remote tracking branch related
+ - to the second branch, which should be merged into it? -}
+isRelatedTo :: Git.Ref -> Git.Ref -> Bool
+isRelatedTo x y
+	| basex /= takeDirectory basex ++ "/" ++ basey = False
+	| "/synced/" `isInfixOf` Git.fromRef x = True
+	| "refs/remotes/" `isPrefixOf` Git.fromRef x = True
+	| otherwise = False
   where
-	base = takeFileName . Git.fromRef
+	basex = Git.fromRef $ Git.Ref.base x
+	basey = Git.fromRef $ Git.Ref.base y
 
 isAnnexBranch :: FilePath -> Bool
 isAnnexBranch f = n `isSuffixOf` f

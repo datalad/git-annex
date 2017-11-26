@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-11-18T17:15:34Z"
+ content="""
+I suspect that if you run `git annex drop --auto` on desktop, it won't drop
+any files. This is because it's configured as a transfer repository, and
+transfer repositories wait for files to reach all client repositories
+before wanting to drop them.
+
+Since you have no client repositories, your transfer repository will prefer
+to hang onto files. In fact, transfer repositories assume there will
+eventually be at least 2 client repositories (otherwise what good would a
+transfer repository between clients be?) and so hang onto files that are
+not in 2 clients, even when less than 2 clients exist yet. That is generally
+useful behavior when setting things up in eg the webapp.
+
+So, the standard preferred content expression for a transfer repository
+won't work in this configuration. Let's instead express the things you want
+as a custom setting.
+
+> If I add a new url on desktop the content should be moved to raspberrypi and backup.
+> 
+> So I don't want to have the content of the files on the desktop. All
+> content should be in backup.
+> 
+> If content is not in raspberrypi I want to get it from backup via desktop.
+
+	git annex wanted desktop "not (inallgroup=backup and inallgroup=client)"
+
+That assumes you put the raspberrypi in the client group, which is what I think it
+basically is. Then desktop will want to get and hold any files that
+have not yet reached all backup and client repositories, at which point
+desktop will drop files.
+"""]]

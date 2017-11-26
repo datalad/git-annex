@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""where to start reading the source code"""
+ date="2015-01-05T20:58:50Z"
+ content="""
+@thnetos, great question!
+
+Annex.hs is a key starting place, as it defines git-annex's main monad.
+If you like learning code bases bottom-up, Types/* has files for
+the main data types used in git-annex, such as Key and UUID and Remote and
+GitConfig.
+
+Command/* gets you the implementation of any particular git-annex command
+you are interested in. Or Remote/* for any particular special remote.
+
+I recommend running "make tags" and then your editor should be able to use
+the tags file to bounce around in the source code.
+"""]]

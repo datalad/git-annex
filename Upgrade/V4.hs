@@ -1,13 +1,13 @@
 {- git-annex v4 -> v5 uppgrade support
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Upgrade.V4 where
 
-import Common.Annex
+import Annex.Common
 import Config
 import Annex.Direct
 

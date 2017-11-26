@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2016-02-19T18:49:38Z"
+ content="""
+Also, around the time you filed this, there was a change which turned out
+to cause all files in the work tree to be read in full, and buffered in
+memory for some time. This may have to do with some of the slowdown you
+saw, especially since you have a lot of non-annexed files in the tree.
+I fixed that problem in commit b0081598c7c580d6760374c42765e94e4750e793.
+"""]]

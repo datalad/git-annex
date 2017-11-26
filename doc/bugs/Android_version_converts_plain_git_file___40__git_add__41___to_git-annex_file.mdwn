@@ -1,0 +1,57 @@
+### Please describe the problem.
+
+I have a README file in my repository, which is an ordinary text file added with `git add` (not `git annex add`). This seems fine with all the Linux machines, including ones running the assistant. However, when I start the assistant on Android, it converts it to an annexed file. I don't have any other direct mode repositories to check if it's a direct mode problem or an Android problem.
+
+My setup is basically a star tolopogy with a Debian GNU/Linux (jessie) box in the middle. All the clients are Debian as well, mostly testing, except for an Android tablet.
+
+### What steps will reproduce the problem?
+
+On a Linux box:
+
+    git add README
+    git commit -m 'README'
+    git annex sync --content
+
+then on Android, start git-annex and let the assistant sync.
+
+You'll get a commit like this:
+
+    $ git show 4f1c76374c75a11702c14ea6a5dbe82c99c6dd08
+    commit 4f1c76374c75a11702c14ea6a5dbe82c99c6dd08
+    Author: android <git-annex@android>
+    Date:   Wed Dec 9 15:49:01 2015 -0500
+    
+        git-annex in Smoot /sdcard/Westerley-Board
+    
+    diff --git a/Contracts/Archive/README b/Contracts/Archive/README
+    deleted file mode 100644
+    index 8fe1349..0000000
+    --- a/Contracts/Archive/README
+    +++ /dev/null
+    @@ -1,3 +0,0 @@
+    -These are old, no longer active contracts. The year is the year of
+    -archival (typically when the contract ended, or the last year covered by
+    -the contract).
+    diff --git a/Contracts/Archive/README b/Contracts/Archive/README
+    new file mode 120000
+    index 0000000..38ba43f
+    --- /dev/null
+    +++ b/Contracts/Archive/README
+    @@ -0,0 +1 @@
+    +../../.git/annex/objects/0v/9K/SHA256E-s155--d0e49ec7e493366a5afea5bc12629ba579fd8407162795c22a6346c25bafbb6e/SHA256E-s155--d0e49ec7e493366a5afea5bc12629ba579fd8407162795c22a6346c25bafbb6e
+    \ No newline at end of file
+
+### What version of git-annex are you using? On what operating system?
+
+Android is fairly recent, unfortunately the battery is currently dead
+making it hard to check :-( Must be at least 5.20151019, but probably
+20151116.
+
+### Please provide any additional information below.
+
+If needed, I'll grab the assistant log from the tablet once the battery
+is charged.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes! I've been using git-annex quite a bit over the past year, for everything from my music collection to my personal files. Using it for a not-for-profit too. Even trying to get some Mac and Windows users to use it for our HOA's files. I'm looking forward to smudge mode to make direct mode work better.

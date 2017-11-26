@@ -1,0 +1,16 @@
+The new annex.securehashesonly config setting prevents annexed content
+that does not use a cryptographically secure hash from being downloaded or
+otherwise added to a repository.
+
+Using that and signed commits prevents SHA1 collisions from causing
+problems with annexed files. See [[tips/using_signed_git_commits]] for
+details about how to use it, and why I believe it makes git-annex
+safe despite git's vulnerability to SHA1 collisions in general.
+
+If you are using git-annex to publish binary files in a repository,
+you should follow the instructions in [[tips/using_signed_git_commits]].
+
+If you're using git to publish binary files, you can improve the security
+of your repository by switchingto git-annex and signed commits.
+
+Today's work was sponsored by Riku Voipio.

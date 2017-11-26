@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-02-20T18:30:54Z"
+ content="""
+Error is:
+
+	fatal: This operation must be run in a work tree
+	fatal: 'git status --porcelain' failed in submodule sub
+
+`git status` fails the same way, and it seems that the only way
+to make it work would be to pass --ignore-submodules to it.
+
+But I suppose then, it would need to replicate git status's submodule
+traversal.
+
+I'm not too keen on adding complicated stuff involving submodules to direct
+mode. My goal with direct mode is to eliminate the need for it.
+"""]]

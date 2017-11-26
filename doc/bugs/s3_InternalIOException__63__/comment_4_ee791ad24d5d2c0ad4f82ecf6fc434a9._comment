@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="comment 4"
+ date="2015-06-15T20:05:13Z"
+ content="""
+nevermind that: `move` doesn't actually work either, it just skipped files that seemed to have already been transfered. the remaining files are still untransferable:
+
+<pre>
+www-data@ip-10-87-135-88:/persistent/media$ git annex move --to s3
+move video/original/a_gente_luta_-_eng_0.mov (checking s3...) (to s3...)
+0%            0.0 B/s 0s
+  InternalIOException send: resource vanished (Broken pipe)
+failed
+move video/original/a_gente_luta_-_esp_0.mov (checking s3...) (to s3...)
+0%       255.9KB/s 9h23m
+  InternalIOException send: resource vanished (Broken pipe)
+failed
+move video/original/kinja_iakaha_-_dvcam_en.mov (checking s3...) (to s3...)
+0%            0.0 B/s 0s
+  InternalIOException send: resource vanished (Broken pipe)
+failed
+move video/original/quartet_for_deafblind_h264kbs18000_24.mov (checking s3...) (to s3...)
+0%            0.0 B/s 0s
+  InternalIOException send: resource vanished (Broken pipe)
+failed
+git-annex: move: 4 failed
+</pre>
+"""]]

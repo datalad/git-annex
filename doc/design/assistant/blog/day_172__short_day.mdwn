@@ -1,5 +1,5 @@
 Only one bug fix today, but it was a doozie. It seems that gpg2 has an
-incompatability with the gpg 1.x that git-annex was written for, that
+incompatibility with the gpg 1.x that git-annex was written for, that
 causes large numbers of excess passphrase prompts, when it's supposed to be
 using a remote's symmetric encryption key. Adding the --batch parameter
 fixed this.

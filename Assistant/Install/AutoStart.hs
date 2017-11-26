@@ -1,11 +1,12 @@
 {- Assistant autostart file installation
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 {-# LANGUAGE CPP #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Assistant.Install.AutoStart where
 
@@ -13,7 +14,7 @@ import Utility.FreeDesktop
 #ifdef darwin_HOST_OS
 import Utility.OSX
 import Utility.Path
-import System.Directory
+import Utility.Directory
 #endif
 
 installAutoStart :: FilePath -> FilePath -> IO ()

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
- nickname="Richard"
- subject="comment 8"
- date="2014-09-29T08:09:33Z"
- content="""
-PS: Chunking spams the S3 remote with individual objects whereas multipart uploads do not. Just something to keep in mind in case you turn on chunking for S3.
-"""]]

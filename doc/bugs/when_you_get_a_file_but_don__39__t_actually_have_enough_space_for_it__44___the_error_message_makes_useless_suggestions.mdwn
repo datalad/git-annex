@@ -1,0 +1,21 @@
+The suggestion to make remotes available isn't really applicable, since the error was local.
+
+This is with git annex 6.20161110-gd48f4ca.
+
+[[!format sh """
+  ../git-annex.linux/git-annex get archiveteam-fire/metro.co.uk-urls-2007-04-12-20150627/metro.co.uk-urls-2007-04-12-20150627_meta.xml
+get archiveteam-fire/metro.co.uk-urls-2007-04-12-20150627/metro.co.uk-urls-2007-04-12-20150627_meta.xml 
+  not enough free space, need 98.82 GB more (use --force to override this check or adjust annex.diskreserve)
+
+  Unable to access these remotes: web
+
+  Try making some of these repositories available:
+        00000000-0000-0000-0000-000000000001 -- web
+        9f8218c0-763f-463d-9152-ecdc56d4452c -- iabak@redwyne.jwintjen.de:~/IA.BAK/shard12
+failed
+git-annex: get: 1 failed
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+mixed success

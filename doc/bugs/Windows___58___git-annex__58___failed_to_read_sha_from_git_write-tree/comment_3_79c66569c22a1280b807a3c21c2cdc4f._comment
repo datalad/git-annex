@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-12-02T17:22:01Z"
+ content="""
+Windows certianly does cause problems with its short path limits. The
+SHA512 hash backend is known to not work at all on windows, for example.
+
+However, recent versions of git-annex use relative paths to files, so it
+shouldn't much matter if they're run in a directory deep in a tree; it'll
+refer to '.git/foo' rather than 'c:/verylong/path/to/.git/foo'
+
+Also, a long path is certianly not the cause of
+
+	DeleteFile ".git\\objects\\pack\\pack-c53ea32e9514b6dda95af1d8d879d91d32240d76.idx": permission denied
+
+Since the path there is relative, is plenty short to not bother Windows's
+tiny mind, and there's clearly some sort of permission problem preventing
+this user from modifying this file.
+"""]]

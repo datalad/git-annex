@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-10T17:04:20Z"
+ content="""
+fsck sees that the (lack of) location
+log accurately states that the content is not present, and so avoids
+writing to the log.
+
+If fsck always wrote to the log when content was not present, running
+fsck in sparse repos would bloat the location logs unncessarily.
+
+But I suppose that it makes sense for fsck to notice that the key
+was not known and write to the log in this particular case.
+I've gone ahead and made that change.
+
+It's not clear to me though, why this workflow of copying over symlinks,
+and adding them and reinjecting is better than just moving over content and
+adding it.
+"""]]

@@ -1,0 +1,77 @@
+adding torrents whose data is already present on disk or in the annex seems not
+to be supported right now.
+
+let's assume for example that the files were obtained by means outside of
+git-annex' scope, and that all files in here were `git annex add`ed and
+committed:
+
+    .
+    ├── chaos-math_multi-language_1080p_mkv.ea15601881aa1be1.torrent
+    └── chaos-math_multi-language_1080p_mkv
+        ├── 01. Motion and determinism - Panta Rhei [1080p].mkv
+        ├── [...]
+        ├── 10. Générique Chaos - French [1080p].mkv
+        └── subtitles
+            ├── Chaos1_ar.srt
+            ├── [...]
+            └── README.txt
+
+starting the `addurl` from a local file is supported as described in the
+comment to [[special_remotes/bittorrent]], but then goes ahead to download all
+the data in a different location. neither can be used the `--file` option
+(because it's a multi-file torrent) nor the `--pathdepth` option (because it
+would result in the very filename already used for the .torrent file), so first
+i'd have to rename the torrent directory, then start the addurl:
+
+    $ mv chaos-math_multi-language_1080p_mkv _tmp_annex_test_chaos_math_multi_language_1080p_mkv.ea15601881aa1be1.torrent
+    $ git annex addurl file:///tmp/annex-test/chaos-math_multi-language_1080p_mkv.ea15601881aa1be1.torrent
+
+even then, most of the files in the torrent are downloaded again, because the
+file names are meddled with by git-annex (`01. Motion and determinism - Panta Rhei [1080p].mkv`
+becomes `01._Motion_and_determinism___Panta_Rhei__1080p_.mkv`). and if the
+files come pre-renamed, their content does *not* get checked against the
+torrent info file (with all files pre-renamed and some subjected to random
+bit-flipping, the whole torrent was still accepted and entered as the wrong
+hash file's web remote).
+
+suggestions
+===========
+
+to make git-annex suitable for archiving torrents, i'd like to suggest the
+following additions:
+
+* add an option to switch off the file name meddling. (both file systems
+  and tools nowadays accept whitespace in file names, and all but
+  you-know-which do support colons and other characters except '\0' and '/').
+  this would have the additional benefit of making a http/ftp view of the
+  repository suitable as a [BEP19](http://bittorrent.org/beps/bep_0019.html)
+  web seed.
+
+* support `--file` to mean the base directory of a multi-file download, or just
+  pick the directory file name from inside the torrent info's directory name
+  (without that, the BEP19 use case would require explicit renaming).
+
+* before adding the `timestamp 1 $URL#n` line to the .log.web records of a
+  locally present file, check against the hashes from the torrent. (this may
+  require adjacent files from the torrent to be present, but it should be
+  complete anyway at check-in time).
+
+related issues / suggestions
+============================
+
+* especially on systems where file name meddling can not be turned off,
+  guessing suitable present files from their length could be worth considering,
+  as under those conditions, it might be impossible to find the already
+  downloaded file from its name (as the original downloading torrent client
+  might have used a different filename escaping scheme). with those guesses, it
+  would be up to aria2c to determine whether that file fits or not, and
+  download without complaining on demand.
+
+* to later allow seeding from the downloaed torrent, it'd be nice to have a
+  less convoluted way of always having the .torrent file present than
+  constructing a `file:///` url of it. having `addurl` (and thus also `get`
+  when dereferencing the .log.web entry) accept local file names would be
+  practical; a `--additionally-raw` option on `addurl` (or equivalent setting)
+  that stores the torrent file in git or git-annex would be nice.
+
+--[[chrysn]]

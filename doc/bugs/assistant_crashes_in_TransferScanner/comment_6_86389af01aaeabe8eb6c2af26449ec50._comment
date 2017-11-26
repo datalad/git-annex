@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="johannes@12f1850a57e13cc234b5ebf88a5d3ac68915a6c2"
+ nickname="johannes"
+ avatar="http://cdn.libravatar.org/avatar/7acaf4a71b0b93cc419195f58f4cd54c"
+ subject="SOLVED"
+ date="2016-10-31T19:08:16Z"
+ content="""
+I fixed it. It came to my mind that I'm using a rather antiquated PKGBUILD on my ArchLinux system to package the current git-annex tarball.
+
+(Fortunately, git-annex moved to the community repository a few months ago. Unfortunately, it's not maintained so that I was still using and updating the old PKGBUILD from the Archlinux User Repository (AUR).)
+
+Turned out this PKGBUILD removed some executables from the tarball. When I unpack the unmodified tarball, git annex works perfectly.
+"""]]

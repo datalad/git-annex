@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-17T18:04:53Z"
+ content="""
+It sounds like the symlink in the git repository has been changed to point
+to some other content that the content it had originally. Since git tracks
+past versions of files, you should be able to use `git log` on the file to
+find out when this hapened and you can use `git checkout` to check out the
+original version of the file, or `git revert` the commit that changed it to
+point to the wrong content. The content of the file should still be stored
+in the git annex, so you should be able to access it this way.
+
+Now, it kind of sounds like something added the git-annex link for a
+file, as it would appear on the FAT filesytem, to git-annex as the new 
+content of the file. It would certianly be a bug if a git-annex command
+did that.
+
+What does `git annex info` (with no other parameters) report when you run it in the repository on
+the USB drive? What filesystem is in use on the USB drive?
+"""]]

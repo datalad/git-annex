@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="avar"
+ avatar="http://cdn.libravatar.org/avatar/57332d67a86eb51e06bf78d2baf42c3c"
+ subject="comment 2"
+ date="2016-12-28T08:28:35Z"
+ content="""
+Great, this one-liner is then exactly what I needed:
+
+    git annex find --not --copies 1 --print0 | xargs -0 git rm
+"""]]

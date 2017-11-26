@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://johan.kiviniemi.name/"
- ip="83.145.237.224"
- subject="comment 2"
- date="2013-07-23T11:37:53Z"
- content="""
-Transferring the data over XMPP would almost certainly take too much XMPP server bandwidth, but using something like [libjingle](https://developers.google.com/talk/libjingle/) to set up P2P connections should work nicely. That would require libjingle (or equivalent) bindings for Haskell, though. Libjingle negotiates over XMPP to set up the P2P connection and provides a TCP-like layer for reliable, ordered communication. One could use that for both git metadata and the file transfers.
-"""]]

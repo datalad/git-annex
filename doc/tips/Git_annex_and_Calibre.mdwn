@@ -113,7 +113,7 @@ You could also use direct mode in place of the auto unlock feature
 
     git annex direct
 
-The remove the `post-commit` git hook (or do not add it). Its a
+Then remove the `post-commit` git hook (or do not add it). Its a
 simpler solution, but remember that interaction between git annex direct
 repositories and plain git are complex and sometimes downright dangerous. See [[direct mode]] for details.
 

@@ -3,7 +3,7 @@
  - This is written to be completely independant of git-annex and should be
  - suitable for other uses.
  -
- - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -26,10 +26,14 @@ module Git (
 	repoDescribe,
 	repoLocation,
 	repoPath,
+	repoWorkTree,
 	localGitDir,
 	attributes,
+	attributesLocal,
 	hookPath,
 	assertLocal,
+	adjustPath,
+	relPath,
 ) where
 
 import Network.URI (uriPath, uriScheme, unEscapeString)
@@ -58,7 +62,7 @@ repoLocation Repo { location = Url url } = show url
 repoLocation Repo { location = Local { worktree = Just dir } } = dir
 repoLocation Repo { location = Local { gitdir = dir } } = dir
 repoLocation Repo { location = LocalUnknown dir } = dir
-repoLocation Repo { location = Unknown } = undefined
+repoLocation Repo { location = Unknown } = error "unknown repoLocation"
 
 {- Path to a repository. For non-bare, this is the worktree, for bare, 
  - it's the gitdir, and for URL repositories, is the path on the remote
@@ -68,12 +72,16 @@ repoPath Repo { location = Url u } = unEscapeString $ uriPath u
 repoPath Repo { location = Local { worktree = Just d } } = d
 repoPath Repo { location = Local { gitdir = d } } = d
 repoPath Repo { location = LocalUnknown dir } = dir
-repoPath Repo { location = Unknown } = undefined
+repoPath Repo { location = Unknown } = error "unknown repoPath"
+
+repoWorkTree :: Repo -> Maybe FilePath
+repoWorkTree Repo { location = Local { worktree = Just d } } = Just d
+repoWorkTree _ = Nothing
 
 {- Path to a local repository's .git directory. -}
 localGitDir :: Repo -> FilePath
 localGitDir Repo { location = Local { gitdir = d } } = d
-localGitDir _ = undefined
+localGitDir _ = error "unknown localGitDir"
 
 {- Some code needs to vary between URL and normal repos,
  - or bare and non-bare, these functions help with that. -}
@@ -123,8 +131,11 @@ assertLocal repo action
 {- Path to a repository's gitattributes file. -}
 attributes :: Repo -> FilePath
 attributes repo
-	| repoIsLocalBare repo = repoPath repo ++ "/info/.gitattributes"
-	| otherwise = repoPath repo ++ "/.gitattributes"
+	| repoIsLocalBare repo = attributesLocal repo
+	| otherwise = repoPath repo </> ".gitattributes"
+
+attributesLocal :: Repo -> FilePath
+attributesLocal repo = localGitDir repo </> "info" </> "attributes"
 
 {- Path to a given hook script in a repository, only if the hook exists
  - and is executable. -}
@@ -139,3 +150,29 @@ hookPath script repo = do
 #else
 	isexecutable f = isExecutable . fileMode <$> getFileStatus f
 #endif
+
+{- Makes the path to a local Repo be relative to the cwd. -}
+relPath :: Repo -> IO Repo
+relPath = adjustPath torel
+  where
+	torel p = do
+		p' <- relPathCwdToFile p
+		if null p'
+			then return "."
+			else return p'
+
+{- Adusts the path to a local Repo using the provided function. -}
+adjustPath :: (FilePath -> IO FilePath) -> Repo -> IO Repo
+adjustPath f r@(Repo { location = l@(Local { gitdir = d, worktree = w }) }) = do
+	d' <- f d
+	w' <- maybe (pure Nothing) (Just <$$> f) w
+	return $ r 
+		{ location = l 
+			{ gitdir = d'
+			, worktree = w'
+			}
+		}
+adjustPath f r@(Repo { location = LocalUnknown d }) = do
+	d' <- f d
+	return $ r { location = LocalUnknown d' }
+adjustPath _ r = pure r

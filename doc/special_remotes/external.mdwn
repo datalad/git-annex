@@ -14,14 +14,18 @@ It's not hard!
 * Install it in PATH.
 * When the user runs `git annex initremote foo type=external externaltype=$bar`,
   it will use your program.
+* See [[design/external_special_remote_protocol]] for what the program
+  needs to do. There's an example at the end of this page.
 * If things don't seem to work, pass `--debug` and you'll see, amoung other
   things, a transcript of git-annex's communication with your program.
 * If you build a new special remote, please add it to the list
   of [[special_remotes]].
 
+Here's an example of using an external special remote to add torrent
+support to git-annex: [[external/git-annex-remote-torrent]]
+
 Here's a simple shell script example, which can easily be adapted
 to run whatever commands you need. Or better, re-written in some better
-language of your choice. See [[design/external_special_remote_protocol]]
-for the details.
+language of your choice.
 
 [[!inline pages="special_remotes/external/example.sh" feeds=no]]

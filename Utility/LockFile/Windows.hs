@@ -1,6 +1,6 @@
 {- Windows lock files
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -22,7 +22,7 @@ type LockFile = FilePath
 type LockHandle = HANDLE
 
 {- Tries to lock a file with a shared lock, which allows other processes to
- - also lock it shared. Fails is the file is exclusively locked. -}
+ - also lock it shared. Fails if the file is exclusively locked. -}
 lockShared :: LockFile -> IO (Maybe LockHandle)
 lockShared = openLock fILE_SHARE_READ
 
@@ -30,15 +30,15 @@ lockShared = openLock fILE_SHARE_READ
  - a shared or exclusive lock.
  -
  - Note that exclusive locking also prevents the file from being opened for
- - read or write by any other progess. So for advisory locking of a file's
- - content, a different LockFile should be used. -}
+ - read or write by any other process. So for advisory locking of a file's
+ - content, a separate LockFile should be used. -}
 lockExclusive :: LockFile -> IO (Maybe LockHandle)
 lockExclusive = openLock fILE_SHARE_NONE
 
 {- Windows considers just opening a file enough to lock it. This will
  - create the LockFile if it does not already exist.
  -
- - Will fail if the file is already open with an incompatable ShareMode.
+ - Will fail if the file is already open with an incompatible ShareMode.
  - Note that this may happen if an unrelated process, such as a virus
  - scanner, even looks at the file. See http://support.microsoft.com/kb/316609
  -
@@ -47,7 +47,7 @@ lockExclusive = openLock fILE_SHARE_NONE
  - much more expensive, so is not done here. Thus, the use of c_CreateFile.
  -
  - Also, passing Nothing for SECURITY_ATTRIBUTES ensures that the lock file
- - is not inheerited by any child process.
+ - is not inherited by any child process.
  -}
 openLock :: ShareMode -> LockFile -> IO (Maybe LockHandle)
 openLock sharemode f = do
@@ -65,7 +65,7 @@ dropLock = closeHandle
 
 {- If the initial lock fails, this is a BUSY wait, and does not
  - guarentee FIFO order of waiters. In other news, Windows is a POS. -}
-waitToLock :: IO (Maybe LockHandle) -> IO LockHandle
+waitToLock :: IO (Maybe lockhandle) -> IO lockhandle
 waitToLock locker = takelock
   where
 	takelock = go =<< locker

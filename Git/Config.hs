@@ -1,6 +1,6 @@
 {- git repository configuration handling
  -
- - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,6 +14,7 @@ import Common
 import Git
 import Git.Types
 import qualified Git.Construct
+import qualified Git.Command
 import Utility.UserInfo
 
 {- Returns a single git config setting, or a default value if not set. -}
@@ -66,10 +67,9 @@ global = do
 	home <- myHomeDir
 	ifM (doesFileExist $ home </> ".gitconfig")
 		( do
-			repo <- Git.Construct.fromUnknown
-			repo' <- withHandle StdoutHandle createProcessSuccess p $
-				hRead repo
-			return $ Just repo'
+			repo <- withHandle StdoutHandle createProcessSuccess p $
+				hRead (Git.Construct.fromUnknown)
+			return $ Just repo
 		, return Nothing
 		)
   where
@@ -79,10 +79,6 @@ global = do
 {- Reads git config from a handle and populates a repo with it. -}
 hRead :: Repo -> Handle -> IO Repo
 hRead repo h = do
-	-- We use the FileSystemEncoding when reading from git-config,
-	-- because it can contain arbitrary filepaths (and other strings)
-	-- in any encoding.
-	fileEncoding h
 	val <- hGetContentsStrict h
 	store val repo
 
@@ -136,7 +132,7 @@ parse s
 	-- --list output will have an = in the first line
 	| all ('=' `elem`) (take 1 ls) = sep '=' ls
 	-- --null --list output separates keys from values with newlines
-	| otherwise = sep '\n' $ split "\0" s
+	| otherwise = sep '\n' $ splitc '\0' s
   where
 	ls = lines s
 	sep c = M.fromListWith (++) . map (\(k,v) -> (k, [v])) .
@@ -167,7 +163,6 @@ coreBare = "core.bare"
 fromPipe :: Repo -> String -> [CommandParam] -> IO (Either SomeException (Repo, String))
 fromPipe r cmd params = try $
 	withHandle StdoutHandle createProcessSuccess p $ \h -> do
-		fileEncoding h
 		val <- hGetContentsStrict h
 		r' <- store val r
 		return (r', val)
@@ -194,3 +189,17 @@ changeFile f k v = boolSystem "git"
 	, Param k
 	, Param v
 	]
+
+{- Unsets a git config setting, in both the git repo,
+ - and the cached config in the Repo.
+ -
+ - If unsetting the config fails, including in a read-only repo, or
+ - when the config is not set, returns Nothing.
+ -}
+unset :: String -> Repo -> IO (Maybe Repo)
+unset k r = ifM (Git.Command.runBool ps r)
+	( return $ Just $ r { config = M.delete k (config r) }
+	, return Nothing
+	)
+  where
+	ps = [Param "config", Param "--unset-all", Param k]

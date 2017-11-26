@@ -1,13 +1,13 @@
 {- git-annex v0 -> v1 upgrade support
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Upgrade.V0 where
 
-import Common.Annex
+import Annex.Common
 import Annex.Content
 import qualified Upgrade.V1
 

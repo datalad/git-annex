@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnx8kHW66N3BqmkVpgtXDlYMvr8TJ5VvfY"
+ nickname="Yaroslav"
+ subject="annex.tune.objecthashlower=true is not just &quot;lower&quot; letters used but a different strategy altogether"
+ date="2015-02-01T02:58:26Z"
+ content="""
+it starts to use 2 levels (even if annex.tune.objecthash1=true) of hash directories having 3 characters in the filename at each level.  So it is not just \"taken existing hash directories (1 or 2 levels) and use their lower-case version.  It is a different way to create the hash directories:
+
+e.g.  one with objecthas1=true
+
+1 -> .git/annex/objects/qj/SHA256E-s6--ecdc5536f73bdae8816f0ea40726ef5e9b810d914493075903bb90623d97b1d8/SHA256E-s6--ecdc5536f73bdae8816f0ea40726ef5e9b810d914493075903bb90623d97b1d8
+
+and if I provide all three options at once:
+
+1 -> .git/annex/objects/ccf/a40/SHA256E-s6--ecdc5536f73bdae8816f0ea40726ef5e9b810d914493075903bb90623d97b1d8/SHA256E-s6--ecdc5536f73bdae8816f0ea40726ef5e9b810d914493075903bb90623d97b1d8
+
+"""]]

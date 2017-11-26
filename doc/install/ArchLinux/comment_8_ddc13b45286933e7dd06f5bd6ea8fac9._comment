@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 8"
+ date="2016-11-03T09:44:23Z"
+ content="""
+Right now, the git-annex package in community is quite outdated (2016-06).
+
+If you wish to install a newer version, you can use git-annex-git from AUR instead. You will need to disable S3 support in the PKGBUILD (and perhaps add haskell-core in pacman.conf), because haskell-hs3 doesn't seem to be available (Not that I looked too hard, as I don't use it..).
+"""]]

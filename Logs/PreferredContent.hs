@@ -1,6 +1,6 @@
 {- git-annex preferred content matcher configuration
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -20,13 +20,14 @@ module Logs.PreferredContent (
 	setStandardGroup,
 	defaultStandardGroup,
 	preferredRequiredMapsLoad,
+	prop_standardGroups_parse,
 ) where
 
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Either
 
-import Common.Annex
+import Annex.Common
 import Logs.PreferredContent.Raw
 import qualified Annex.Branch
 import qualified Annex
@@ -52,12 +53,12 @@ isRequiredContent :: Maybe UUID -> AssumeNotPresent -> Maybe Key -> AssociatedFi
 isRequiredContent = checkMap requiredContentMap
 
 checkMap :: Annex (FileMatcherMap Annex) -> Maybe UUID -> AssumeNotPresent -> Maybe Key -> AssociatedFile -> Bool -> Annex Bool
-checkMap getmap mu notpresent mkey afile def = do
+checkMap getmap mu notpresent mkey afile d = do
 	u <- maybe getUUID return mu
 	m <- getmap
 	case M.lookup u m of
-		Nothing -> return def
-		Just matcher -> checkMatcher matcher mkey afile notpresent def
+		Nothing -> return d
+		Just matcher -> checkMatcher matcher mkey afile notpresent d
 
 preferredContentMap :: Annex (FileMatcherMap Annex)
 preferredContentMap = maybe (fst <$> preferredRequiredMapsLoad) return
@@ -76,8 +77,9 @@ preferredRequiredMapsLoad = do
 		<$> Annex.Branch.get l
 	pc <- genmap preferredContentLog =<< groupPreferredContentMapRaw
 	rc <- genmap requiredContentLog M.empty
-	-- Required content is implicitly also preferred content, so OR
-	let m = M.unionWith MOr pc rc
+	-- Required content is implicitly also preferred content, so
+	-- combine.
+	let m = M.unionWith combineMatchers pc rc
 	Annex.changeState $ \s -> s
 		{ Annex.preferredcontentmap = Just m
 		, Annex.requiredcontentmap = Just rc
@@ -100,7 +102,7 @@ makeMatcher groupmap configmap groupwantedmap u = go True True
 		| null (lefts tokens) = generate $ rights tokens
 		| otherwise = unknownMatcher u
 	  where
-		tokens = exprParser matchstandard matchgroupwanted groupmap configmap (Just u) expr
+		tokens = preferredContentParser matchstandard matchgroupwanted (pure groupmap) configmap (Just u) expr
 		matchstandard
 			| expandstandard = maybe (unknownMatcher u) (go False False)
 				(standardPreferredContent <$> getStandardGroup mygroups)
@@ -123,7 +125,7 @@ makeMatcher groupmap configmap groupwantedmap u = go True True
 unknownMatcher :: UUID -> FileMatcher Annex
 unknownMatcher u = generate [present]
   where
-	present = Operation $ matchPresent (Just u)
+	present = Operation $ limitPresent (Just u)
 
 {- Checks if an expression can be parsed, if not returns Just error -}
 checkPreferredContentExpression :: PreferredContentExpression -> Maybe String
@@ -131,7 +133,7 @@ checkPreferredContentExpression expr = case parsedToMatcher tokens of
 	Left e -> Just e
 	Right _ -> Nothing
   where
-	tokens = exprParser matchAll matchAll emptyGroupMap M.empty Nothing expr
+	tokens = preferredContentParser matchAll matchAll (pure emptyGroupMap) M.empty Nothing expr
 
 {- Puts a UUID in a standard group, and sets its preferred content to use
  - the standard expression for that group (unless preferred content is
@@ -151,3 +153,8 @@ defaultStandardGroup u g =
   where
 	hasgroup = not . S.null <$> lookupGroups u
 	haspc = isJust . M.lookup u <$> preferredContentMap
+
+prop_standardGroups_parse :: Bool
+prop_standardGroups_parse = 
+	all (isNothing . checkPreferredContentExpression . standardPreferredContent)
+		[ minBound .. maxBound]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2015-02-09T18:41:23Z"
+ content="""
+Sorry about the delay getting back to this.. It's great you were able
+to provide the strace.
+
+I don't think that the ioctl is at fault. That seems to be something
+that's done by the IO layer when opening a handle. It does not involve
+locking.
+
+Looks to me like the writes get buffered and it fails to flush to the SMB
+server on close.
+"""]]

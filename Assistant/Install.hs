@@ -1,6 +1,6 @@
 {- Assistant installation
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -22,7 +22,6 @@ import Utility.SshConfig
 import Utility.OSX
 #else
 import Utility.FreeDesktop
-import Utility.UserInfo
 import Assistant.Install.Menu
 #endif
 
@@ -41,7 +40,10 @@ standaloneAppBase = getEnv "GIT_ANNEX_APP_BASE"
  - packaged apps, since it has to go into the user's home directory.
  -}
 ensureInstalled :: IO ()
-ensureInstalled = go =<< standaloneAppBase
+ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
+	( go Nothing
+	, go =<< standaloneAppBase
+	)
   where
 	go Nothing = installFileManagerHooks "git-annex"
 	go (Just base) = do
@@ -92,18 +94,20 @@ installWrapper file content = do
 installFileManagerHooks :: FilePath -> IO ()
 #ifdef linux_HOST_OS
 installFileManagerHooks program = do
+	let actions = ["get", "drop", "undo"]
+
 	-- Gnome
 	nautilusScriptdir <- (\d -> d </> "nautilus" </> "scripts") <$> userDataDir
 	createDirectoryIfMissing True nautilusScriptdir
-	genNautilusScript nautilusScriptdir "get"
-	genNautilusScript nautilusScriptdir "drop"
+	forM_ actions $
+		genNautilusScript nautilusScriptdir
 
 	-- KDE
-	home <- myHomeDir
-	let kdeServiceMenusdir = home </> ".kde" </> "share" </> "kde4" </> "services" </> "ServiceMenus"
+	userdata <- userDataDir
+	let kdeServiceMenusdir = userdata </> "kservices5" </> "ServiceMenus"
 	createDirectoryIfMissing True kdeServiceMenusdir
 	writeFile (kdeServiceMenusdir </> "git-annex.desktop")
-		(kdeDesktopFile ["get", "drop"])
+		(kdeDesktopFile actions)
   where
 	genNautilusScript scriptdir action =
 		installscript (scriptdir </> scriptname action) $ unlines
@@ -141,10 +145,12 @@ installFileManagerHooks program = do
 		, "Name=" ++ command
 		, "Icon=git-annex"
 		, unwords
-			[ "Exec=sh -c 'cd \"$(dirname '%U')\" &&"
+			[ "Exec=sh -c 'cd \"$(dirname \"$1\")\" &&"
 			, program
 			, command
-			, "--notify-start --notify-finish -- %U'"
+			, "--notify-start --notify-finish -- \"$1\"'"
+			, "false" -- this becomes $0 in sh, so unused
+			, "%f"
 			]
 		]
 #else

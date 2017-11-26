@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 12"
+ date="2015-05-21T15:39:07Z"
+ content="""
+My method uses Perl to do a lot of the work, cutting out the need to sort and being careful about spaces and such. Below is an (**untested**) command line version (my version has the perl in ~/bin/annex-dupe.pl):
+
+    git annex find --format='${key} ${file}\n' > ~/tmp/annex_kf.txt
+    perl -pe '($k,$f) = split / /, $_, 2; $cf{$k}++; $_ = sprintf \"%s%s\n\", ($cf{$k}>1?\"\":\"#\", $f;' ~/tmp/annex_kf.txt > ~/tmp/annex_dupes.txt
+    grep '^#' ~/tmp/annex_dupes.txt | xargs -d'\n' git rm
+
+And the equivalent \"one liner\":
+
+    git annex find --format='${key} ${file}\n' \
+    | perl -pe '($k,$f) = split / /, $_, 2; $cf{$k}++; $_ = sprintf \"%s%s\n\", ($cf{$k}>1?\"\":\"#\", $f;' \
+    | grep '^#' \
+    | xargs -d'\n' git rm
+
+It works by getting a list of keys and paths and passing them to Perl, which prefixes the first instance of each key's path with a '#', which is removed by grep, leaving only duplicate paths being passed to xargs and thus, to 'git rm'.
+
+This can be particularly handy as it lets you delete duplicates from specific subdirectories, just by adding another 'grep DIR/PATH' in front of xargs, without worrying you will lose all references if all instances are in DIR/PATH (because the first one will have been removed from the file list by the first grep!).
+
+For example, after outputting all the duplicates (~/tmp/annex_dupe.txt), I will then do a:
+
+    grep '^#' ~/tmp/annex_dupes.txt | grep 'some/sub/dir/somewhere' | xargs -d'\n' git rm
+    git commit -m \"Cleaned up 'some/sub/dir/somewhere'\"
+
+loop, if I want more control over where things are removed from.
+"""]]

@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-12-01T23:08:56Z"
+ content="""
+Well, if you set `remote.foo.annex-readonly` to true, then git-annex
+sync won't push changes to the remote named "foo".
+
+You could set that in .git/config, or you could do something like
+this to set it only when running the sync:
+
+git -c remote.foo.annex-readonly=true annex sync
+
+I am not sure about a good solution for sync-all-but-deletes.sh,
+although it seems like the new `git annex proxy` could perhaps
+be used to build it.
+
+discard-all-my-changes.sh could probably be implemented using the new
+`git annex proxy` command. It would be pretty unsafe though! Maybe
+instead make it first commit all local changes, and then use 
+`git annex proxy -- git reset --hard origin/master`
+"""]]

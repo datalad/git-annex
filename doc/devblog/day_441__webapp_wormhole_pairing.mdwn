@@ -1,0 +1,18 @@
+Added the Magic Wormhole UI to the webapp for pairing Tor remotes.
+This replaces the XMPP pairing UI when using "Share with a friend" 
+and "Share with your other devices" in the webapp.
+
+[[!img assistant/share_with_a_friend_walkthrough/enabletor.png]]
+
+[[!img assistant/share_with_a_friend_walkthrough/wormholepairing.png]]
+
+I have not been able to fully test it yet, and it's part of the `no-xmpp`
+branch until I can.
+
+It's been a while since I worked on the webapp. It was not as hard as I
+remembered to deal with Yesod. The inversion of control involved in coding
+for the web is as annoying as I remembered.
+
+----
+
+Today's work was sponsored by Riku Voipio.

@@ -1,14 +1,11 @@
+{-# LANGUAGE PackageImports #-}
+
 {- file globbing
  -
- - This uses TDFA when available, with a fallback to regex-compat.
- - TDFA is less buggy in its support for non-unicode characters.
- -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
-
-{-# LANGUAGE CPP #-}
 
 module Utility.Glob (
 	Glob,
@@ -17,15 +14,11 @@ module Utility.Glob (
 	matchGlob
 ) where
 
-import System.Path.WildMatch
+import Utility.Exception
 
-#ifdef WITH_TDFA
-import Text.Regex.TDFA
-import Text.Regex.TDFA.String
-#else
-import Text.Regex
-import Data.Maybe
-#endif
+import "regex-tdfa" Text.Regex.TDFA
+import "regex-tdfa" Text.Regex.TDFA.String
+import Data.Char
 
 newtype Glob = Glob Regex
 
@@ -34,25 +27,37 @@ data GlobCase = CaseSensative | CaseInsensative
 {- Compiles a glob to a regex, that can be repeatedly used. -}
 compileGlob :: String -> GlobCase -> Glob
 compileGlob glob globcase = Glob $
-#ifdef WITH_TDFA
 	case compile (defaultCompOpt {caseSensitive = casesentitive}) defaultExecOpt regex of
 		Right r -> r
-		Left _ -> error $ "failed to compile regex: " ++ regex
-#else
-	mkRegexWithOpts regex casesentitive True
-#endif
+		Left _ -> giveup $ "failed to compile regex: " ++ regex
   where
-	regex = '^':wildToRegex glob
+	regex = '^' : wildToRegex glob ++ "$"
 	casesentitive = case globcase of
 		CaseSensative -> True
 		CaseInsensative -> False
 
+wildToRegex :: String -> String
+wildToRegex = concat . go
+  where
+	go [] = []
+	go ('*':xs) = ".*" : go xs
+	go ('?':xs) = "." : go xs
+	go ('[':'!':xs) = "[^" : inpat xs
+	go ('[':xs) = "[" : inpat xs
+	go (x:xs)
+		| isDigit x || isAlpha x = [x] : go xs
+		| otherwise = esc x : go xs
+
+	inpat [] = []
+	inpat (x:xs) = case x of
+		']' -> "]" : go xs
+		'\\' -> esc x : inpat xs
+		_ -> [x] : inpat xs
+
+	esc c = ['\\', c]
+
 matchGlob :: Glob -> String -> Bool
 matchGlob (Glob regex) val = 
-#ifdef WITH_TDFA
 	case execute regex val of
 		Right (Just _) -> True
 		_ -> False
-#else
-	isJust $ matchRegex regex val
-#endif

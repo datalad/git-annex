@@ -1,31 +1,31 @@
 {- git-annex command
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.VCycle where
 
-import Common.Annex
 import Command
 import Annex.View
 import Types.View
 import Logs.View
 import Command.View (checkoutViewBranch)
 
-cmd :: [Command]
-cmd = [notBareRepo $ notDirect $
-	command "vcycle" paramNothing seek SectionUtility
-	"switch view to next layout"]
+cmd :: Command
+cmd = notBareRepo $ notDirect $
+	command "vcycle" SectionMetaData
+		"switch view to next layout"
+		paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start ::CommandStart
 start = go =<< currentView
   where
-	go Nothing = error "Not in a view."
+	go Nothing = giveup "Not in a view."
 	go (Just v) = do
 		showStart "vcycle" ""
 		let v' = v { viewComponents = vcycle [] (viewComponents v) }

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="BojanNikolic"
+ subject="comment 4"
+ date="2015-02-27T09:55:15Z"
+ content="""
+Many thanks. The command line I ended up using is:
+
+    fname=\"2015/01/04/myfile.pdf\" ;  git annex copy --to pubweb $fname; key=`git annex lookupkey \"$fname\"`;  git annex examinekey $key --format 'https://www.myweb.com/d/${hashdirlower}${key}/${key}\n'
+
+to publish selected documents in my git-annex repository onto the web via a rsync special remote on a conventional http server. 
+"""]]

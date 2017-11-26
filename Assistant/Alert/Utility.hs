@@ -1,13 +1,13 @@
 {- git-annex assistant alert utilities
  -
- - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Assistant.Alert.Utility where
 
-import Common.Annex
+import Annex.Common
 import Assistant.Types.Alert
 import Utility.Tense
 

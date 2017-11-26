@@ -1,0 +1,252 @@
+[[!comment format=mdwn
+ username="scorchgeek"
+ subject="Indeed"
+ date="2015-12-13T22:30:47Z"
+ content="""
+Nice catch! I couldn't find any install option for `glacier-cli`, so I just added a symlink to the source distribution and figured that would take care of it.
+
+    Emily $ ls /usr/bin -l | grep glacier
+    lrwxrwxrwx 1 root   root          38 Dec 11 16:19 glacier -> /home/soren/bin/glacier-cli/glacier.py
+
+But:
+
+    Emily $ which glacier
+    /usr/local/bin/glacier
+
+Oops. I changed the location of the symlink to somewhere earlier in the path, uninited and reinited the repository, and it uploaded the README.
+
+Unfortunately, now I'm getting a different error, some kind of Unicode issue, when I try to upload one of the files I actually want to back up:
+
+    Emily $ git annex add family-videos/Tape01.mpg
+    add family-videos/Tape01.mpg ok
+    (Recording state in git...)
+
+    Emily $ git commit
+    [master 5af0257] add tape01 as test
+    1 file changed, 1 insertion(+)
+    create mode 120000 family-videos/Tape01.mpg
+
+    Emily $ git annex copy --to glacier
+    copy family-videos/Tape01.mpg (gpg) (checking glacier...) (to glacier...) 
+    0%        8.1MB/s 11m32sTraceback (most recent call last):
+      File \"/home/soren/bin/glacier\", line 730, in <module>
+        App().main()
+      File \"/home/soren/bin/glacier\", line 716, in main
+        self.args.func()
+      File \"/home/soren/bin/glacier\", line 498, in archive_upload
+        file_obj=self.args.file, description=name)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/vault.py\", line 177, in create_archive_from_file
+        writer.write(data)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/writer.py\", line 219, in write
+        self.partitioner.write(data)
+      [...many more things in boto]
+      File \"/usr/lib/python2.7/httplib.py\", line 979, in request
+        self._send_request(method, url, body, headers)
+      File \"/usr/lib/python2.7/httplib.py\", line 1013, in _send_request
+        self.endheaders(body)
+      File \"/usr/lib/python2.7/httplib.py\", line 975, in endheaders
+        self._send_output(message_body)
+      File \"/usr/lib/python2.7/httplib.py\", line 833, in _send_output
+        msg += message_body
+    UnicodeDecodeError: 'ascii' codec can't decode byte 0x8c in position 0: ordinal not in range(128)
+    gpg: [stdout]: write error: Broken pipe
+    gpg: DBG: deflate: iobuf_write failed
+    gpg: build_packet failed: file write error
+    gpg: [stdout]: write error: Broken pipe
+    gpg: iobuf_flush failed on close: file write error
+    gpg: symmetric encryption of `[stdin]' failed: file write error
+    git-annex: fd:14: hPutBuf: resource vanished (Broken pipe)
+    failed
+    git-annex: copy: 1 failed
+
+Here's my complete session setting up the repository, in case it contains other useful information:
+
+    Emily 1020 [/media/backup/Videos]$ git init
+    Initialized empty Git repository in /media/backup/Videos/.git/
+    Emily 1021 [/media/backup/Videos](.)$ git remote add origin https://[myusername]@bitbucket.org/[myusername]/[myreponame].git
+    Emily 1022 [/media/backup/Videos](.)$ git push
+    fatal: The current branch master has no upstream branch.
+    To push the current branch and set the remote as upstream, use
+
+        git push --set-upstream origin master
+
+    Emily 1023 [/media/backup/Videos](.)$ git push -u origin master
+    error: src refspec master does not match any.
+    error: failed to push some refs to [URL]
+    Emily 1024 [/media/backup/Videos](.)$ git add README
+    Emily 1025 [/media/backup/Videos](@)$ ls
+    family-videos  README
+    Emily 1025 [/media/backup/Videos](@)$ git push -u origin master^C
+    Emily 1025 [/media/backup/Videos](@)$ git commit -am \"test commit\"
+    [master (root-commit) 03fb2a7] test commit
+     1 file changed, 1 insertion(+)
+     create mode 100644 README
+    Emily 1026 [/media/backup/Videos](.)$ git push -u origin master
+    Counting objects: 3, done.
+    Writing objects: 100% (3/3), 223 bytes | 0 bytes/s, done.
+    Total 3 (delta 0), reused 0 (delta 0)
+    remote:
+    remote: We're changing our IP addresses on 15 December 2015 at 00:00 UTC.
+    remote: Please make sure your firewalls are up to date:
+    remote: https://blog.bitbucket.org/?p=2677
+    To https://[myusername]@bitbucket.org/[myusername]/[myreponame].git
+     * [new branch]      master -> master
+    Branch master set up to track remote branch master from origin.
+    Emily 1027 [/media/backup/Videos](.)$ git annex init
+    init  ok
+    (Recording state in git...)
+    Emily 1028 [/media/backup/Videos](.)$ git annex --fast initremote glacier type=glacier encryption=hybrid keyid=[my GPG key ID]
+
+      Remote origin not usable by git-annex; setting annex-ignore
+    initremote glacier (encryption setup) (hybrid cipher with gpg key [hybrid key ID]) ok
+    (Recording state in git...)
+    Emily 1029 [/media/backup/Videos](.)$ git annex enableremote glacier
+    enableremote glacier (gpg) (encryption update) (hybrid cipher with gpg key [hybrid key ID]) ok
+    (Recording state in git...)
+    Emily 1030 [/media/backup/Videos](.)$ git annex copy README --to glacier
+    Emily 1031 [/media/backup/Videos](.)$ git annex sync
+    commit  ok
+    pull origin 
+    ok
+    push origin 
+    Counting objects: 13, done.
+    Delta compression using up to 4 threads.
+    Compressing objects: 100% (10/10), done.
+    Writing objects: 100% (12/12), 2.15 KiB | 0 bytes/s, done.
+    Total 12 (delta 3), reused 0 (delta 0)
+    remote: 
+    remote: We're changing our IP addresses on 15 December 2015 at 00:00 UTC.
+    remote: Please make sure your firewalls are up to date:
+    remote: https://blog.bitbucket.org/?p=2677
+    To [repository URL]
+     * [new branch]      git-annex -> synced/git-annex
+     * [new branch]      master -> synced/master
+    ok
+    Emily 1032 [/media/backup/Videos](.)$ git annex status
+    ? family-videos/Tape01.mpg
+    ? family-videos/Tape02.mpg
+    ? family-videos/Tape03.mpg
+    ? family-videos/Tape04.mpg
+    ? family-videos/Tape05.mpg
+    ? family-videos/Tape06.mpg
+    ? family-videos/Tape07.mpg
+    ? family-videos/Tape08.mpg
+    ? family-videos/Tape09.mpg
+    ? family-videos/Tape10.mpg
+    ? family-videos/Tape11.mpg
+    ? family-videos/Tape12.mpg
+    ? family-videos/Tape13.mpg
+    ? family-videos/Tape14.mpg
+    ? family-videos/Tape15.mpg
+    ? family-videos/Tape16.mpg
+    Emily 1033 [/media/backup/Videos](.)$ gitk
+    Emily 1034 [/media/backup/Videos](.)$ git annex copy README --to glacier^C
+    Emily 1034 [/media/backup/Videos](.)$ git annex add family-videos/Tap
+    ...01.mpg  ...04.mpg  ...07.mpg  ...10.mpg  ...13.mpg  ...16.mpg  
+    ...02.mpg  ...05.mpg  ...08.mpg  ...11.mpg  ...14.mpg  
+    ...03.mpg  ...06.mpg  ...09.mpg  ...12.mpg  ...15.mpg  
+    Emily 1034 [/media/backup/Videos](.)$ git annex add family-videos/Tape01.mpg
+    add family-videos/Tape01.mpg ok
+    (Recording state in git...)
+    Emily 1035 [/media/backup/Videos](@)$ git commit
+    [master 5af0257] add tape01 as test
+     1 file changed, 1 insertion(+)
+     create mode 120000 family-videos/Tape01.mpg
+    Emily 1036 [/media/backup/Videos](+)$ git annex copy --to glacier
+    copy family-videos/Tape01.mpg (gpg) (checking glacier...) (to glacier...) 
+    0%        8.1MB/s 11m32sTraceback (most recent call last):
+      File \"/home/soren/bin/glacier\", line 730, in <module>
+        App().main()
+      File \"/home/soren/bin/glacier\", line 716, in main
+        self.args.func()
+      File \"/home/soren/bin/glacier\", line 498, in archive_upload
+        file_obj=self.args.file, description=name)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/vault.py\", line 177, in create_archive_from_file
+        writer.write(data)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/writer.py\", line 219, in write
+        self.partitioner.write(data)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/writer.py\", line 61, in write
+        self._send_part()
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/writer.py\", line 75, in _send_part
+        self.send_fn(part)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/writer.py\", line 222, in _upload_part
+        self.uploader.upload_part(self.next_part_index, part_data)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/writer.py\", line 129, in upload_part
+        content_range, part_data)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/layer1.py\", line 1279, in upload_part
+        response_headers=response_headers)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/layer1.py\", line 114, in make_request
+        data=data)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/connection.py\", line 1071, in make_request
+        retry_handler=retry_handler)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/connection.py\", line 943, in _mexe
+        request.body, request.headers)
+      File \"/usr/lib/python2.7/httplib.py\", line 979, in request
+        self._send_request(method, url, body, headers)
+      File \"/usr/lib/python2.7/httplib.py\", line 1013, in _send_request
+        self.endheaders(body)
+      File \"/usr/lib/python2.7/httplib.py\", line 975, in endheaders
+        self._send_output(message_body)
+      File \"/usr/lib/python2.7/httplib.py\", line 833, in _send_output
+        msg += message_body
+    UnicodeDecodeError: 'ascii' codec can't decode byte 0x8c in position 0: ordinal not in range(128)
+    gpg: [stdout]: write error: Broken pipe
+    gpg: DBG: deflate: iobuf_write failed
+    gpg: build_packet failed: file write error
+    gpg: [stdout]: write error: Broken pipe
+    gpg: iobuf_flush failed on close: file write error
+    gpg: symmetric encryption of `[stdin]' failed: file write error
+    git-annex: fd:15: hPutBuf: resource vanished (Broken pipe)
+    failed
+    git-annex: copy: 1 failed
+    Emily 1037 [/media/backup/Videos](+)$ git annex copy --to glacier
+    copy family-videos/Tape01.mpg (gpg) (checking glacier...) (to glacier...) 
+    0%        8.1MB/s 11m32sTraceback (most recent call last):
+      File \"/home/soren/bin/glacier\", line 730, in <module>
+        App().main()
+      File \"/home/soren/bin/glacier\", line 716, in main
+        self.args.func()
+      File \"/home/soren/bin/glacier\", line 498, in archive_upload
+        file_obj=self.args.file, description=name)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/vault.py\", line 177, in create_archive_from_file
+        writer.write(data)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/writer.py\", line 219, in write
+        self.partitioner.write(data)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/writer.py\", line 61, in write
+        self._send_part()
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/writer.py\", line 75, in _send_part
+        self.send_fn(part)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/writer.py\", line 222, in _upload_part
+        self.uploader.upload_part(self.next_part_index, part_data)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/writer.py\", line 129, in upload_part
+        content_range, part_data)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/layer1.py\", line 1279, in upload_part
+        response_headers=response_headers)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/glacier/layer1.py\", line 114, in make_request
+        data=data)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/connection.py\", line 1071, in make_request
+        retry_handler=retry_handler)
+      File \"/usr/local/lib/python2.7/dist-packages/boto/connection.py\", line 943, in _mexe
+        request.body, request.headers)
+      File \"/usr/lib/python2.7/httplib.py\", line 979, in request
+        self._send_request(method, url, body, headers)
+      File \"/usr/lib/python2.7/httplib.py\", line 1013, in _send_request
+        self.endheaders(body)
+      File \"/usr/lib/python2.7/httplib.py\", line 975, in endheaders
+        self._send_output(message_body)
+      File \"/usr/lib/python2.7/httplib.py\", line 833, in _send_output
+        msg += message_body
+    UnicodeDecodeError: 'ascii' codec can't decode byte 0x8c in position 0: ordinal not in range(128)
+    gpg: [stdout]: write error: Broken pipe
+    gpg: DBG: deflate: iobuf_write failed
+    gpg: build_packet failed: file write error
+    gpg: [stdout]: write error: Broken pipe
+    gpg: iobuf_flush failed on close: file write error
+    gpg: symmetric encryption of `[stdin]' failed: file write error
+    git-annex: fd:14: hPutBuf: resource vanished (Broken pipe)
+    failed                  
+    git-annex: copy: 1 failed
+    Emily 1037 [/media/backup/Videos](+)$ 
+
+Thanks a lot for your help!
+"""]]

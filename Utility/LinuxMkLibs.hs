@@ -1,25 +1,26 @@
 {- Linux library copier and binary shimmer
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
 
 module Utility.LinuxMkLibs where
 
-import Control.Applicative
-import Data.Maybe
-import System.Directory
-import Data.List.Utils
-import System.Posix.Files
-import Data.Char
-import Control.Monad.IfElse
-
 import Utility.PartialPrelude
 import Utility.Directory
 import Utility.Process
 import Utility.Monad
 import Utility.Path
+import Utility.Split
+
+import Data.Maybe
+import System.FilePath
+import System.Posix.Files
+import Data.Char
+import Control.Monad.IfElse
+import Control.Applicative
+import Prelude
 
 {- Installs a library. If the library is a symlink to another file,
  - install the file it links to, and update the symlink to be relative. -}
@@ -35,7 +36,7 @@ installLib installfile top lib = ifM (doesFileExist lib)
 	checksymlink f = whenM (isSymbolicLink <$> getSymbolicLinkStatus (inTop top f)) $ do
 		l <- readSymbolicLink (inTop top f)
 		let absl = absPathFrom (parentDir f) l
-		let target = relPathDirToFile (parentDir f) absl
+		target <- relPathDirToFile (takeDirectory f) absl
 		installfile top absl
 		nukeFile (top ++ f)
 		createSymbolicLink target (inTop top f)

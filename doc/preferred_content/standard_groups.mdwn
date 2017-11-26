@@ -19,10 +19,10 @@ The following standard groups are available:
 
 ### client
 
-All content is wanted, unless it's for a file in a "archive" directory,
-which has reached an archive repository, or is unused.
+All content in the current working tree is wanted, unless it's for a
+file in a "archive" directory, which has reached an archive repository.
 
-`(((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) and not unused) or approxlackingcopies=1`
+`(include=* and ((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1)))) or approxlackingcopies=1`
 
 ### transfer
 
@@ -49,30 +49,30 @@ will be added later.
 
 All content is wanted. Even content of old/deleted files.
 
-`include=* or unused`
+`anything`
 
-### incremental backup
+### incrementalbackup
 
 Only wants content that's not already backed up to another backup
 or incremental backup repository.
 
-`((include=* or unused) and (not copies=backup:1) and (not copies=incrementalbackup:1)) or approxlackingcopies=1`
+`((not copies=backup:1) and (not copies=incrementalbackup:1)) or approxlackingcopies=1`
 
-### small archive
+### smallarchive
 
 Only wants content that's located in an "archive" directory, and
 only if it's not already been archived somewhere else.
 
 `((include=*/archive/* or include=archive/*) and not (copies=archive:1 or copies=smallarchive:1)) or approxlackingcopies=1`
 
-### full archive
+### archive
 
 All content is wanted, unless it's already been archived somewhere else.
 
 `(not (copies=archive:1 or copies=smallarchive:1)) or approxlackingcopies=1`
 
 Note that if you want to archive multiple copies (not a bad idea!),
-you can set `groupwanted archive` to a version of 
+you can set `git-annex groupwanted archive` to a version of 
 the above preferred content expression with a larger number of copies
 than 1. Then make the archive repositories have a preferred
 content expression of "groupwanted" in order to use your modified
@@ -114,6 +114,8 @@ publically accessed. Only files in a directory with a particular name
 will be published. (The directory can be located anywhere in the
 repository.)
 
+`inpreferreddir`
+
 The name of the directory can be configured using
 `git annex enableremote $remote preferreddir=$dirname`
 
@@ -123,4 +125,4 @@ Use for repositories that you don't want to exist. This will result
 in any content on them being moved away to other repositories. (Works
 best when the unwanted repository is also marked as untrusted or dead.)
 
-`exclude=*`
+`not anything`

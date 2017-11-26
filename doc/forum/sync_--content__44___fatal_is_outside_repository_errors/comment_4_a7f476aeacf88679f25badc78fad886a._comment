@@ -1,0 +1,57 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="git annex copy --auto --to cloud works"
+ date="2016-11-17T17:49:27Z"
+ content="""
+Yes, only `git annex sync --content` seems to fail. I am using v6 with a mix of unlocked and locked files. I did not know about the --auto flags for copy/get.
+
+* `git annex copy --auto --to cloud` works fine
+* `git annex get --auto --from cloud` works fine
+
+
+*Are there any symlinks in the path to /Users/andrew/notes ? Eg, is /Users a symlink, or /Users/andrew a symlink, or //Users/andrew/notes itself symlinked to elsewhere?*
+
+**No**
+
+*You say it's only failing for some files. Do the filenames that it's failing on contain any non-ascii characters?*
+
+**They seem normal.**
+
+*So, please paste in git annex version and git annex info output.*
+
+    git-annex version: 6.20161110-gd48f4ca
+    build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV FsEvents XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+    local repository version: 6
+    supported repository versions: 3 5 6
+    upgrade supported from repository versions: 0 1 2 3 4 5
+    operating system: darwin x86_64
+
+    repository mode: indirect
+    trusted repositories: 0
+    semitrusted repositories: 10
+    00000000-0000-0000-0000-000000000001 -- web
+    00000000-0000-0000-0000-000000000002 -- bittorrent
+    22de57a0-c9ca-4bfe-8349-3141b3a87c8f -- Dream Objects [cloud]
+    334791ca-c284-4a87-a233-fc29be00d31a -- [disc_May-2-2015_a]
+    4c57ac0e-b8fe-4b4b-98d3-fb0a1b6b9657 -- MacBook Air [here]
+    6a85150d-6ea2-4ba1-92ce-8f4ef575b8e0 -- prowl MacBook Mini
+    896c3d52-427a-41a1-867c-d18e6740d758 -- disc_May_4_2015_1
+    96391b13-3981-430f-ac3b-6210e3d4e759 -- [disc_May-2-2015_b]
+    b4a41e90-2398-4bba-aaf5-d8f8cd78a5bc -- 2TB USB Drive [usbdrive]
+    e42b223d-ec04-4ad8-bdf7-8429a45d844c -- disc_May-2-2015_a
+    untrusted repositories: 0
+    transfers in progress: none
+    available local disk space: 2.32 gigabytes (+1 megabyte reserved)
+    temporary object directory size: 29.47 megabytes (clean up with git-annex unused)
+    local annex keys: 4104
+    local annex size: 10.53 gigabytes
+    annexed files in working tree: 6417
+    size of annexed files in working tree: 80.75 gigabytes
+    bloom filter size: 32 mebibytes (0.8% full)
+    backend usage: 
+    SHA256E: 6417
+
+"""]]

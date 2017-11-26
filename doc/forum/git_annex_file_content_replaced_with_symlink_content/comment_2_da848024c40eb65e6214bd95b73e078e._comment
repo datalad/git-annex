@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="thnetos"
+ subject="RE: comment 1"
+ date="2016-08-16T20:39:38Z"
+ content="""
+Thanks for the info, that was very helpful. This is indeed a FAT partition I created on OSX.
+
+Unfortunately, I no longer use OSX, so I don't have a machine that can read this data. I'll write a script to grab it from the contents of the symlink file itself to hopefully retrieve everything. In the future, I'll partition my external harddrives with ext4 :)
+
+Thanks again!
+"""]]

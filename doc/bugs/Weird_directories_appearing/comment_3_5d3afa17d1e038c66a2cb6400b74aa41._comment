@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.43"
- subject="comment 3"
- date="2014-01-14T18:55:11Z"
- content="""
-This script does not produce the problem for me. How did you install git-annex from the tarball?
-"""]]

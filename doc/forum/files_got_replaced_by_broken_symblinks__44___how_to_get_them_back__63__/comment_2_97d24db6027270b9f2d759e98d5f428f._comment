@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="simon.parzer@f837bbade0d93f560dc574b04e835b7875c4026f"
+ nickname="simon.parzer"
+ subject="comment 2"
+ date="2016-01-15T19:37:57Z"
+ content="""
+Well here is where it gets weird. I used \"git annex get\" to retrieve the file and it did something.
+
+    simon@simon-desktop /run/media/simon/TOSHIBA EXT/Stuff/Music/Amy Kuney - Breaking Bad Habits EP (2006) ±annex/direct/master » git annex get 01\ So\ Help\ Me\ God.mp3
+    get 01 So Help Me God.mp3 (from desktop-linux...) 
+    01 So Help Me God.mp3
+                 213 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+    (checksum...) ok
+    (recording state in git...)
+
+    simon@simon-desktop /run/media/simon/TOSHIBA EXT/Stuff/Music/Amy Kuney - Breaking Bad Habits EP (2006) ±annex/direct/master » ls -l
+    insgesamt 4
+    -rwxrwxrwx 1 simon simon 213 15. Jän 20:30 01 So Help Me God.mp3
+    ....
+
+    simon@simon-desktop /run/media/simon/TOSHIBA EXT/Stuff/Music/Amy Kuney - Breaking Bad Habits EP (2006) ±annex/direct/master » cat 01\ So\ Help\ Me\ God.mp3 
+    ..\..\..\..\..\.git\annex\objects\K8\xx\SHA256E-s3460908--ad74d891fd20ef771f933d3fea6247eb640b2d8c0ca4848065735992a07a4eb7.mp3\SHA256E-s3460908--ad74d891fd20ef771f933d3fea6247eb640b2d8c0ca4848065735992a07a4eb7.mp3%                          
+
+Yet the file still is only a fake symlink.
+On the other computer (desktop-linux) where it got the file from it's also only a symlink, but the actual file is somewhere in annex/objects
+
+    simon@simon-desktop /d/Stuff/Music/Amy Kuney - Breaking Bad Habits EP (2006) ±annex/direct/master » git annex whereis 01\ So\ Help\ Me\ God.mp3 
+    whereis 01 So Help Me God.mp3 (1 copy) 
+      	5e0f083c-d81f-4a4b-b1a5-35b45e057dea -- desktop pc [here]
+    ok
+    simon@simon-desktop /d/Stuff/Music/Amy Kuney - Breaking Bad Habits EP (2006) ±annex/direct/master » cat 01\ So\ Help\ Me\ God.mp3 
+    ..\..\..\..\..\.git\annex\objects\K8\xx\SHA256E-s3460908--ad74d891fd20ef771f933d3fea6247eb640b2d8c0ca4848065735992a07a4eb7.mp3\SHA256E-s3460908--ad74d891fd20ef771f933d3fea6247eb640b2d8c0ca4848065735992a07a4eb7.mp3%
+    simon@simon-desktop /d/Stuff/Music/Amy Kuney - Breaking Bad Habits EP (2006) ±annex/direct/master » find /d/Stuff/.git/annex/objects | grep a6247eb640b2d8c0ca48480
+    /d/Stuff/.git/annex/objects/48d/eb4/SHA256E-s3460908--ad74d891fd20ef771f933d3fea6247eb640b2d8c0ca4848065735992a07a4eb7.mp3
+    /d/Stuff/.git/annex/objects/48d/eb4/SHA256E-s3460908--ad74d891fd20ef771f933d3fea6247eb640b2d8c0ca4848065735992a07a4eb7.mp3/SHA256E-s3460908--ad74d891fd20ef771f933d3fea6247eb640b2d8c0ca4848065735992a07a4eb7.mp3.map
+
+
+"""]]

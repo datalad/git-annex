@@ -1,13 +1,12 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.Drop where
 
-import Common.Annex
 import Command
 import qualified Remote
 import qualified Annex
@@ -15,65 +14,104 @@ import Annex.UUID
 import Logs.Location
 import Logs.Trust
 import Logs.PreferredContent
-import Config.NumCopies
+import Annex.NumCopies
 import Annex.Content
 import Annex.Wanted
 import Annex.Notification
 
+import System.Log.Logger (debugM)
 import qualified Data.Set as S
 
-cmd :: [Command]
-cmd = [withOptions [dropFromOption] $ command "drop" paramPaths seek
-	SectionCommon "indicate content of files not currently wanted"]
+cmd :: Command
+cmd = withGlobalOptions (jobsOption : jsonOption : annexedMatchingOptions) $
+	command "drop" SectionCommon
+		"remove content of files from repository"
+		paramPaths (seek <$$> optParser)
 
-dropFromOption :: Option
-dropFromOption = fieldOption ['f'] "from" paramRemote "drop content from a remote"
+data DropOptions = DropOptions
+	{ dropFiles :: CmdParams
+	, dropFrom :: Maybe (DeferredParse Remote)
+	, autoMode :: Bool
+	, keyOptions :: Maybe KeyOptions
+	, batchOption :: BatchMode
+	}
 
-seek :: CommandSeek
-seek ps = do
-	from <- getOptionField dropFromOption Remote.byNameWithUUID
-	withFilesInGit (whenAnnexed $ start from) ps
+optParser :: CmdParamsDesc -> Parser DropOptions
+optParser desc = DropOptions
+	<$> cmdParams desc
+	<*> optional parseDropFromOption
+	<*> parseAutoOption
+	<*> optional parseKeyOptions
+	<*> parseBatchOption
 
-start :: Maybe Remote -> FilePath -> Key -> CommandStart
-start from file key = checkDropAuto from file key $ \numcopies ->
-	stopUnless (checkAuto $ wantDrop False (Remote.uuid <$> from) (Just key) (Just file)) $
-		case from of
-			Nothing -> startLocal (Just file) numcopies key Nothing
-			Just remote -> do
-				u <- getUUID
-				if Remote.uuid remote == u
-					then startLocal (Just file) numcopies key Nothing
-					else startRemote (Just file) numcopies key remote
+parseDropFromOption :: Parser (DeferredParse Remote)
+parseDropFromOption = parseRemoteOption <$> strOption
+	( long "from" <> short 'f' <> metavar paramRemote
+	<> help "drop content from a remote"
+	<> completeRemotes
+	)
 
-startLocal :: AssociatedFile -> NumCopies -> Key -> Maybe Remote -> CommandStart
-startLocal afile numcopies key knownpresentremote = stopUnless (inAnnex key) $ do
-	showStart' "drop" key afile
-	next $ performLocal key afile numcopies knownpresentremote
+seek :: DropOptions -> CommandSeek
+seek o = allowConcurrentOutput $
+	case batchOption o of
+		Batch -> batchInput Right (batchCommandAction . go)
+		NoBatch -> withKeyOptions (keyOptions o) (autoMode o)
+			(startKeys o)
+			(withFilesInGit go)
+			=<< workTreeItems (dropFiles o)
+  where
+	go = whenAnnexed $ start o
 
-startRemote :: AssociatedFile -> NumCopies -> Key -> Remote -> CommandStart
-startRemote afile numcopies key remote = do
-	showStart' ("drop " ++ Remote.name remote) key afile
+start :: DropOptions -> FilePath -> Key -> CommandStart
+start o file key = start' o key afile (mkActionItem afile)
+  where
+	afile = AssociatedFile (Just file)
+
+start' :: DropOptions -> Key -> AssociatedFile -> ActionItem -> CommandStart
+start' o key afile ai = do
+	from <- maybe (pure Nothing) (Just <$$> getParsed) (dropFrom o)
+	checkDropAuto (autoMode o) from afile key $ \numcopies ->
+		stopUnless (want from) $
+			case from of
+				Nothing -> startLocal afile ai numcopies key []
+				Just remote -> do
+					u <- getUUID
+					if Remote.uuid remote == u
+						then startLocal afile ai numcopies key []
+						else startRemote afile ai numcopies key remote
+	  where
+		want from
+			| autoMode o = wantDrop False (Remote.uuid <$> from) (Just key) afile
+			| otherwise = return True
+
+startKeys :: DropOptions -> Key -> ActionItem -> CommandStart
+startKeys o key = start' o key (AssociatedFile Nothing)
+
+startLocal :: AssociatedFile -> ActionItem -> NumCopies -> Key -> [VerifiedCopy] -> CommandStart
+startLocal afile ai numcopies key preverified = stopUnless (inAnnex key) $ do
+	showStart' "drop" key ai
+	next $ performLocal key afile numcopies preverified
+
+startRemote :: AssociatedFile -> ActionItem -> NumCopies -> Key -> Remote -> CommandStart
+startRemote afile ai numcopies key remote = do
+	showStart' ("drop " ++ Remote.name remote) key ai
 	next $ performRemote key afile numcopies remote
 
--- Note that lockContent is called before checking if the key is present
--- on enough remotes to allow removal. This avoids a scenario where two
--- or more remotes are trying to remove a key at the same time, and each
--- see the key is present on the other.
-performLocal :: Key -> AssociatedFile -> NumCopies -> Maybe Remote -> CommandPerform
-performLocal key afile numcopies knownpresentremote = lockContent key $ \contentlock -> do
-	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
-	let trusteduuids' = case knownpresentremote of
-		Nothing -> trusteduuids
-		Just r -> nub (Remote.uuid r:trusteduuids)
-	untrusteduuids <- trustGet UnTrusted
-	let tocheck = Remote.remotesWithoutUUID remotes (trusteduuids'++untrusteduuids)
+performLocal :: Key -> AssociatedFile -> NumCopies -> [VerifiedCopy] -> CommandPerform
+performLocal key afile numcopies preverified = lockContentForRemoval key $ \contentlock -> do
 	u <- getUUID
-	ifM (canDrop u key afile numcopies trusteduuids' tocheck [])
-		( do
+	(tocheck, verified) <- verifiableCopies key [u]
+	doDrop u (Just contentlock) key afile numcopies [] (preverified ++ verified) tocheck
+		( \proof -> do
+			liftIO $ debugM "drop" $ unwords
+				[ "Dropping from here"
+				, "proof:"
+				, show proof
+				]
 			removeAnnex contentlock
 			notifyDrop afile True
 			next $ cleanupLocal key
-		, do
+		, do 
 			notifyDrop afile False
 			stop
 		)
@@ -83,23 +121,20 @@ performRemote key afile numcopies remote = do
 	-- Filter the remote it's being dropped from out of the lists of
 	-- places assumed to have the key, and places to check.
 	-- When the local repo has the key, that's one additional copy,
-	-- as long asthe local repo is not untrusted.
-	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
-	present <- inAnnex key
-	u <- getUUID
-	trusteduuids' <- if present
-		then ifM ((<= SemiTrusted) <$> lookupTrust u)
-			( pure (u:trusteduuids)
-			, pure trusteduuids
-			)
-		else pure trusteduuids
-	let have = filter (/= uuid) trusteduuids'
-	untrusteduuids <- trustGet UnTrusted
-	let tocheck = filter (/= remote) $
-		Remote.remotesWithoutUUID remotes (have++untrusteduuids)
-	stopUnless (canDrop uuid key afile numcopies have tocheck [uuid]) $ do
-		ok <- Remote.removeKey remote key
-		next $ cleanupRemote key remote ok
+	-- as long as the local repo is not untrusted.
+	(tocheck, verified) <- verifiableCopies key [uuid]
+	doDrop uuid Nothing key afile numcopies [uuid] verified tocheck
+		( \proof -> do 
+			liftIO $ debugM "drop" $ unwords
+				[ "Dropping from remote"
+				, show remote
+				, "proof:"
+				, show proof
+				]
+			ok <- Remote.removeKey remote key
+			next $ cleanupRemote key remote ok
+		, stop
+		)
   where
 	uuid = Remote.uuid remote
 
@@ -114,55 +149,42 @@ cleanupRemote key remote ok = do
 		Remote.logStatus remote key InfoMissing
 	return ok
 
-{- Checks specified remotes to verify that enough copies of a key exist to
- - allow it to be safely removed (with no data loss). Can be provided with
- - some locations where the key is known/assumed to be present.
+{- Before running the dropaction, checks specified remotes to
+ - verify that enough copies of a key exist to allow it to be
+ - safely removed (with no data loss).
  -
  - Also checks if it's required content, and refuses to drop if so.
  -
  - --force overrides and always allows dropping.
  -}
-canDrop :: UUID -> Key -> AssociatedFile -> NumCopies -> [UUID] -> [Remote] -> [UUID] -> Annex Bool
-canDrop dropfrom key afile numcopies have check skip = ifM (Annex.getState Annex.force)
-	( return True
-	, checkRequiredContent dropfrom key afile
-		<&&>
-	  findCopies key numcopies skip have check
-	)
-
-findCopies :: Key -> NumCopies -> [UUID] -> [UUID] -> [Remote] -> Annex Bool
-findCopies key need skip = helper [] []
+doDrop
+	:: UUID
+	-> Maybe ContentRemovalLock
+	-> Key
+	-> AssociatedFile
+	-> NumCopies
+	-> [UUID]
+	-> [VerifiedCopy]
+	-> [UnVerifiedCopy]
+	-> (Maybe SafeDropProof -> CommandPerform, CommandPerform)
+	-> CommandPerform
+doDrop dropfrom contentlock key afile numcopies skip preverified check (dropaction, nodropaction) = 
+	ifM (Annex.getState Annex.force)
+		( dropaction Nothing
+		, ifM (checkRequiredContent dropfrom key afile)
+			( verifyEnoughCopiesToDrop nolocmsg key 
+				contentlock numcopies
+				skip preverified check
+					(dropaction . Just)
+					(forcehint nodropaction)
+			, stop
+			)
+		)
   where
-	helper bad missing have []
-		| NumCopies (length have) >= need = return True
-		| otherwise = notEnoughCopies key need have (skip++missing) bad
-	helper bad missing have (r:rs)
-		| NumCopies (length have) >= need = return True
-		| otherwise = do
-			let u = Remote.uuid r
-			let duplicate = u `elem` have
-			haskey <- Remote.hasKey r key
-			case (duplicate, haskey) of
-				(False, Right True)  -> helper bad missing (u:have) rs
-				(False, Left _)      -> helper (r:bad) missing have rs
-				(False, Right False) -> helper bad (u:missing) have rs
-				_                    -> helper bad missing have rs
-
-notEnoughCopies :: Key -> NumCopies -> [UUID] -> [UUID] -> [Remote] -> Annex Bool
-notEnoughCopies key need have skip bad = do
-	unsafe
-	showLongNote $
-		"Could only verify the existence of " ++
-		show (length have) ++ " out of " ++ show (fromNumCopies need) ++ 
-		" necessary copies"
-	Remote.showTriedRemotes bad
-	Remote.showLocations key (have++skip)
-		"Rather than dropping this file, try using: git annex move"
-	hint
-	return False
-  where
-	unsafe = showNote "unsafe"
-	hint = showLongNote "(Use --force to override this check, or adjust numcopies.)"
+	nolocmsg = "Rather than dropping this file, try using: git annex move"
+	forcehint a = do
+		showLongNote "(Use --force to override this check, or adjust numcopies.)"
+		a
 
 checkRequiredContent :: UUID -> Key -> AssociatedFile -> Annex Bool
 checkRequiredContent u k afile =
@@ -179,17 +201,17 @@ requiredContent = do
 
 {- In auto mode, only runs the action if there are enough
  - copies on other semitrusted repositories. -}
-checkDropAuto :: Maybe Remote -> FilePath -> Key -> (NumCopies -> CommandStart) -> CommandStart
-checkDropAuto mremote file key a = do
-	numcopies <- getFileNumCopies file
-	Annex.getState Annex.auto >>= auto numcopies
+checkDropAuto :: Bool -> Maybe Remote -> AssociatedFile -> Key -> (NumCopies -> CommandStart) -> CommandStart
+checkDropAuto automode mremote (AssociatedFile afile) key a =
+	go =<< maybe getNumCopies getFileNumCopies afile
   where
-	auto numcopies False = a numcopies
-	auto numcopies True = do
-		locs <- Remote.keyLocations key
-		uuid <- getUUID
-		let remoteuuid = fromMaybe uuid $ Remote.uuid <$> mremote
-		locs' <- trustExclude UnTrusted $ filter (/= remoteuuid) locs
-		if NumCopies (length locs') >= numcopies
-			then a numcopies
-			else stop
+	go numcopies
+		| automode = do
+			locs <- Remote.keyLocations key
+			uuid <- getUUID
+			let remoteuuid = fromMaybe uuid $ Remote.uuid <$> mremote
+			locs' <- trustExclude UnTrusted $ filter (/= remoteuuid) locs
+			if NumCopies (length locs') >= numcopies
+				then a numcopies
+				else stop
+		| otherwise = a numcopies

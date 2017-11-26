@@ -1,6 +1,6 @@
 {- git-annex assistant general preferences
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -17,7 +17,7 @@ import qualified Annex
 import qualified Git
 import Config
 import Config.Files
-import Config.NumCopies
+import Annex.NumCopies
 import Utility.DataUnits
 import Git.Config
 import Types.Distribution
@@ -30,21 +30,21 @@ data PrefsForm = PrefsForm
 	, numCopies :: Int
 	, autoStart :: Bool
 	, autoUpgrade :: AutoUpgrade
-	, debugEnabled :: Bool
+	, enableDebug :: Bool
 	}
 
 prefsAForm :: PrefsForm -> MkAForm PrefsForm
-prefsAForm def = PrefsForm
+prefsAForm d = PrefsForm
 	<$> areq (storageField `withNote` diskreservenote)
-		(bfs "Disk reserve") (Just $ diskReserve def)
+		(bfs "Disk reserve") (Just $ diskReserve d)
 	<*> areq (positiveIntField `withNote` numcopiesnote)
-		(bfs "Number of copies") (Just $ numCopies def)
+		(bfs "Number of copies") (Just $ numCopies d)
 	<*> areq (checkBoxField `withNote` autostartnote)
-		"Auto start" (Just $ autoStart def)
+		"Auto start" (Just $ autoStart d)
 	<*> areq (selectFieldList autoUpgradeChoices)
-		(bfs autoUpgradeLabel) (Just $ autoUpgrade def)
+		(bfs autoUpgradeLabel) (Just $ autoUpgrade d)
 	<*> areq (checkBoxField `withNote` debugnote)
-		"Enable debug logging" (Just $ debugEnabled def)
+		"Enable debug logging" (Just $ enableDebug d)
   where
 	diskreservenote = [whamlet|<br>Avoid downloading files from other repositories when there is too little free disk space.|]
 	numcopiesnote = [whamlet|<br>Only drop a file after verifying that other repositories contain this many copies.|]
@@ -98,8 +98,8 @@ storePrefs p = do
 		liftIO $ if autoStart p
 			then addAutoStartFile here
 			else removeAutoStartFile here
-	setConfig (annexConfig "debug") (boolConfig $ debugEnabled p)
-	liftIO $ if debugEnabled p
+	setConfig (annexConfig "debug") (boolConfig $ enableDebug p)
+	liftIO $ if enableDebug p
 		then enableDebugOutput 
 		else disableDebugOutput
 
@@ -118,5 +118,5 @@ postPreferencesR = page "Preferences" (Just Configuration) $ do
 
 inAutoStartFile :: Annex Bool
 inAutoStartFile = do
-	here <- fromRepo Git.repoPath
+	here <- liftIO . absPath =<< fromRepo Git.repoPath
 	any (`equalFilePath` here) <$> liftIO readAutoStartFile

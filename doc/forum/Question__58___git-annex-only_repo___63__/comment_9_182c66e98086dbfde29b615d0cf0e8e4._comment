@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2015-07-06T18:47:23Z"
+ content="""
+If you use indirect mode, and avoid passing --force to any git-annex
+commands, then git-annex will ensure that it always keeps all versions of
+all files.
+
+Any command that would delete any data requires the --force option.
+
+If your repo uses direct mode, we can't make this guarantee, because
+the files are left directly in your work tree and you can edit or delete
+them manually and there's nothing git-annex can do to stop that.
+
+There is not currently a way to keep a particular number of old versions of
+a file. This comes down to picking the versions to keep or drop when
+running `git annex dropunused` (with --force of course).
+"""]]

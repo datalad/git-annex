@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-04-07T20:26:54Z"
+ content="""
+Yes, files in archive/ directories are only dropped from clients once they
+reach an archive. Backup repositories are not considered to be archives.
+
+Of course, you can tweak the preferred content expressions to change this
+behavior.
+
+I don't know if the arhive vs backup distinction makes sense really but
+I have heard of some users doing things that depend on it.
+"""]]

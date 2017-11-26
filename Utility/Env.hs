@@ -1,11 +1,12 @@
 {- portable environment variables
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
 
 {-# LANGUAGE CPP #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Env where
 
@@ -13,6 +14,7 @@ module Utility.Env where
 import Utility.Exception
 import Control.Applicative
 import Data.Maybe
+import Prelude
 import qualified System.Environment as E
 import qualified System.SetEnv
 #else

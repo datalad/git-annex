@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2016-01-01T20:35:18Z"
+ content="""
+Described behavior sounds right to me. If you've clicked on "syncing
+enabled" in the webapp for the local repository, so it's changed to
+"syncing disabled" then the webapp won't automatically commit file
+deletions/adds. Click on it again and it'll catch up with any changes you
+made while it was disabled.
+"""]]

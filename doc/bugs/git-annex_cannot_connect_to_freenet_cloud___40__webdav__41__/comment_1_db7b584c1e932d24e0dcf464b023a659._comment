@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="sts"
+ subject="comment 1"
+ date="2015-12-07T08:12:26Z"
+ content="""
+ok, I could find the source of the problem: they use sabredav as WebDAV server and sabredav does not support chunked transfers:
+
+        // Intercepting the Finder problem
+        if (($expected = $request->getHeader('X-Expected-Entity-Length')) && $expected > 0) {
+
+            /*
+            Many webservers will not cooperate well with Finder PUT requests,
+            because it uses 'Chunked' transfer encoding for the request body.
+
+            The symptom of this problem is that Finder sends files to the
+            server, but they arrive as 0-length files in PHP.
+
+            If we don't do anything, the user might think they are uploading
+            files successfully, but they end up empty on the server. Instead,
+            we throw back an error if we detect this.
+
+            The reason Finder uses Chunked, is because it thinks the files
+            might change as it's being uploaded, and therefore the
+            Content-Length can vary.
+
+            Instead it sends the X-Expected-Entity-Length header with the size
+            of the file at the very start of the request. If this header is set,
+            but we don't get a request body we will fail the request to
+            protect the end-user.
+            */
+
+            // Only reading first byte
+            $firstByte = fread($body, 1);
+            if (strlen($firstByte) !== 1) {
+                throw new Exception\Forbidden('This server is not compatible with OS/X finder. Consider using a different WebDAV client or webserver.');
+            }
+          
+            ...
+
+Although, I did not told git-annex to chunk the transfer :-/, because I did not append a 'chunk' parameter. Any ideas how to fix that?
+"""]]

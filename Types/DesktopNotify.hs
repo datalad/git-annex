@@ -1,6 +1,6 @@
 {- git-annex DesktopNotify type
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -8,6 +8,7 @@
 module Types.DesktopNotify where
 
 import Data.Monoid
+import Prelude
 
 data DesktopNotify = DesktopNotify
 	{ notifyStart :: Bool

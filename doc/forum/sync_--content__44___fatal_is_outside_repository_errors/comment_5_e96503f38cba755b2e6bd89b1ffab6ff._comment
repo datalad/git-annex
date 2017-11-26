@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="updates sync vs copy?"
+ date="2017-01-21T14:56:26Z"
+ content="""
+Any thoughts Joey? Reminder I have a v6 repo, that spits out errors `git-annex: fd:24: hFlush: resource vanished (Broken pipe)` when using sync --content.
+
+I am not sure why `git annex sync --content cloud` should spew errors, and `git annex copy --auto --to cloud` runs without issue. Anything I should do on my end to investigate this issue further?
+
+Thanks,
+
+Andrew
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""]]

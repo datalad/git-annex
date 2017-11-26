@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="Syncing between untuned and tuned repo?"
+ date="2017-07-18T11:49:10Z"
+ content="""
+> Also, it's not safe to merge two separate git repositories that have been tuned differently (or one tuned and the other one not). git-annex will prevent merging their git-annex branches together, but it cannot prevent git merge remote/master merging two branches, and the result will be ugly at best (git annex fix can fix up the mess somewhat).
+
+My main use repo is 1.7TB large and holds 172.000+ annexed files.
+Variations in filename case has lead to a number of file duplications that are still not solved (I have base scripts that can be used to flatten filename case and fix references in other files, but it will probably mean handling some corner cases and there are more urgent matters for now).  
+
+For these reasons I'm highly interested in the lowercase option and I'm probably not the only one in a similar case.
+
+Does migrating to a tuned repository mean unannexing everything and reimporting into a newly created annex, replica by replica then sync again? That's a high price in some setup.  Or is there a way to somehow `git annex sync` between a newly created repo and an old, untuned one?
+
+"""]]

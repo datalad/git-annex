@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-03-02T18:01:51Z"
+ content="""
+It depends, is it failing because the filenames checked into git are too
+long? Or because the symlinks are links to too long paths?
+
+In the former case, you can `git rename` files as you like.
+As with any change you make to files in a git repository, that will
+propigate to other git repositories in the usual ways.
+
+In the latter case, you might be using a hash like SHA512 that causes
+problimatically long paths, and then `git annex migrate --backend=SHA256` might
+help.
+"""]]

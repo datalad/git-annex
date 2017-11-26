@@ -1,31 +1,35 @@
 {- Temporary files and directories.
  -
- - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
 
 {-# LANGUAGE CPP #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Tmp where
 
 import System.IO
-import System.Directory
 import Control.Monad.IfElse
 import System.FilePath
+import System.Directory
 import Control.Monad.IO.Class
+import System.PosixCompat.Files
+#ifndef mingw32_HOST_OS
+import System.Posix.Temp (mkdtemp)
+#endif
 
 import Utility.Exception
 import Utility.FileSystemEncoding
-import Utility.PosixFiles
 
 type Template = String
 
 {- Runs an action like writeFile, writing to a temp file first and
  - then moving it into place. The temp file is stored in the same
  - directory as the final file to avoid cross-device renames. -}
-viaTmp :: (FilePath -> String -> IO ()) -> FilePath -> String -> IO ()
-viaTmp a file content = bracket setup cleanup use
+viaTmp :: (MonadMask m, MonadIO m) => (FilePath -> v -> m ()) -> FilePath -> v -> m ()
+viaTmp a file content = bracketIO setup cleanup use
   where
 	(dir, base) = splitFileName file
 	template = base ++ ".tmp"
@@ -36,9 +40,9 @@ viaTmp a file content = bracket setup cleanup use
 		_ <- tryIO $ hClose h
 		tryIO $ removeFile tmpfile
 	use (tmpfile, h) = do
-		hClose h
+		liftIO $ hClose h
 		a tmpfile content
-		rename tmpfile file
+		liftIO $ rename tmpfile file
 
 {- Runs an action with a tmp file located in the system's tmp directory
  - (or in "." if there is none) then removes the file. -}
@@ -61,34 +65,47 @@ withTmpFileIn tmpdir template a = bracket create remove use
 {- Runs an action with a tmp directory located within the system's tmp
  - directory (or within "." if there is none), then removes the tmp
  - directory and all its contents. -}
-withTmpDir :: Template -> (FilePath -> IO a) -> IO a
+withTmpDir :: (MonadMask m, MonadIO m) => Template -> (FilePath -> m a) -> m a
 withTmpDir template a = do
-	tmpdir <- catchDefaultIO "." getTemporaryDirectory
-	withTmpDirIn tmpdir template a
+	topleveltmpdir <- liftIO $ catchDefaultIO "." getTemporaryDirectory
+#ifndef mingw32_HOST_OS
+	-- Use mkdtemp to create a temp directory securely in /tmp.
+	bracket
+		(liftIO $ mkdtemp $ topleveltmpdir </> template)
+		removeTmpDir
+		a
+#else
+	withTmpDirIn topleveltmpdir template a
+#endif
 
 {- Runs an action with a tmp directory located within a specified directory,
  - then removes the tmp directory and all its contents. -}
-withTmpDirIn :: FilePath -> Template -> (FilePath -> IO a) -> IO a
-withTmpDirIn tmpdir template = bracket create remove
+withTmpDirIn :: (MonadMask m, MonadIO m) => FilePath -> Template -> (FilePath -> m a) -> m a
+withTmpDirIn tmpdir template = bracketIO create removeTmpDir
   where
-	remove d = whenM (doesDirectoryExist d) $ do
-#if mingw32_HOST_OS
-		-- Windows will often refuse to delete a file
-		-- after a process has just written to it and exited.
-		-- Because it's crap, presumably. So, ignore failure
-		-- to delete the temp directory.
-		_ <- tryIO $ removeDirectoryRecursive d
-		return ()
-#else
-		removeDirectoryRecursive d
-#endif
 	create = do
 		createDirectoryIfMissing True tmpdir
 		makenewdir (tmpdir </> template) (0 :: Int)
 	makenewdir t n = do
 		let dir = t ++ "." ++ show n
-		either (const $ makenewdir t $ n + 1) (const $ return dir)
-			=<< tryIO (createDirectory dir)
+		catchIOErrorType AlreadyExists (const $ makenewdir t $ n + 1) $ do
+			createDirectory dir
+			return dir
+
+{- Deletes the entire contents of the the temporary directory, if it
+ - exists. -}
+removeTmpDir :: MonadIO m => FilePath -> m ()
+removeTmpDir tmpdir = liftIO $ whenM (doesDirectoryExist tmpdir) $ do
+#if mingw32_HOST_OS
+	-- Windows will often refuse to delete a file
+	-- after a process has just written to it and exited.
+	-- Because it's crap, presumably. So, ignore failure
+	-- to delete the temp directory.
+	_ <- tryIO $ removeDirectoryRecursive tmpdir
+	return ()
+#else
+	removeDirectoryRecursive tmpdir
+#endif
 
 {- It's not safe to use a FilePath of an existing file as the template
  - for openTempFile, because if the FilePath is really long, the tmpfile

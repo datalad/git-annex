@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2015-11-30T19:36:03Z"
+ content="""
+Hmm, seems I was wrong about `git annex whereis` displaying the tahoe
+capability. That was not implemented. I have just made a commit that will
+implement it though.
+
+The git-annex branch is part of your git repository when you're using
+git-annex. See [[internals]].
+"""]]

@@ -1,0 +1,60 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-12-20T19:27:31Z"
+ content="""
+Yes, you can do this. Effectively, you have two branches. In the master
+branch, you have drawing.pdf with a single name and changes commited to it.
+In the coworkers branch, you have the multiple different versions. Git has
+no difficulty representing this, but it's up to you to maintain the
+different branches.
+
+For example:
+
+	joey@darkstar:~/tmp/shop>git commit -m 'updated drawing some more' 
+	[master 1403dd4] updated drawing some more
+	 1 file changed, 1 insertion(+), 1 deletion(-)
+	joey@darkstar:~/tmp/shop>git checkout coworkers 
+	Switched to branch 'coworkers'
+	joey@darkstar:~/tmp/shop#coworkers>git show master
+	commit 1403dd49b2c378e78b8b8ec82d73e295c486697b
+	Author: Joey Hess <joeyh@joeyh.name>
+	Date:   Tue Dec 20 15:31:17 2016 -0400
+	
+	    updated drawing some more
+	
+	diff --git a/drawing.pdf b/drawing.pdf
+	index b59371e..c05ed95 120000
+	--- a/drawing.pdf
+	+++ b/drawing.pdf
+	@@ -1 +1 @@
+	-.git/annex/objects/55/MZ/SHA256E-s13--c5f6529491f9e6d40e893d2ffc008bc297bcc56a680040c124e4019fb5c1a94d.pdf/SHA256E-s13--c5f6529491f9e6d40e893d2ffc008bc297bcc56a680040c124e4019fb5c1a94d.pdf
+	\ No newline at end of file
+	+.git/annex/objects/xj/XF/SHA256E-s17--7786e857a89634ff9242d899245cbcc5e009736af6b0553cb7283b2daef77d16.pdf/SHA256E-s17--7786e857a89634ff9242d899245cbcc5e009736af6b0553cb7283b2daef77d16.pdf
+	\ No newline at end of file
+	joey@darkstar:~/tmp/shop#coworkers>ln -s .git/annex/objects/xj/XF/SHA256E-s17--7786e857a89634ff9242d899245cbcc5e009736af6b0553cb7283b2daef77d16.pdf/SHA256E-s17--7786e857a89634ff9242d899245cbcc5e009736af6b0553cb7283b2daef77d16.pdf drawing_rev2.pdf
+	joey@darkstar:~/tmp/shop#coworkers>git add drawing_rev2.pdf 
+	joey@darkstar:~/tmp/shop#coworkers>ls
+	drawing.pdf@  drawing_rev2.pdf@
+	joey@darkstar:~/tmp/shop#coworkers>git commit -m 'added rev2 of drawing'
+	[coworkers cf27781] added rev2 of drawing
+	 1 file changed, 1 insertion(+)
+	  create mode 120000 drawing_rev2.pdf
+
+In the example, I looked at what was committed to master, and copied and
+pasted the git-annex symlink into a new drawing_rev2.pdf file.
+
+That's the basic idea. There might be a better way to do that. Another way,
+for example, would be to have 2 clones of the repo, one with master checked
+out and one with coworkers checked out. You could then run, in the
+coworkers checkout:
+
+	cp -a ../master/drawing.pdf drawing_rev2.pdf
+	git add drawing_rev2.pdf
+	git commit -m 'added rev2 of drawing'
+
+That results in the same commit as the method I showed.
+
+With some scripting, you should be able to automate keeping the two
+branches in sync.
+"""]]

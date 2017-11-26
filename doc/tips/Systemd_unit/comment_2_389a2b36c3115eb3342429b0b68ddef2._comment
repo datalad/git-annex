@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-04-05T15:43:21Z"
+ content="""
+@oberix, the --autostart --foreground combination is only supported
+properly since git-annex version 6.20170214. Before that, the --forground
+was ignored when using --autostart.
+"""]]

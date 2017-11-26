@@ -1,6 +1,6 @@
 {- git-annex assistant thread to listen for incoming pairing traffic
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,13 +16,14 @@ import Assistant.WebApp.Types
 import Assistant.Alert
 import Assistant.DaemonStatus
 import Utility.ThreadScheduler
-import Utility.Format
 import Git
 
 import Network.Multicast
 import Network.Socket
+import qualified Data.ByteString as B
+import qualified Data.ByteString.UTF8 as BU8
+import qualified Network.Socket.ByteString as B
 import qualified Data.Text as T
-import Data.Char
 
 pairListenerThread :: UrlRenderer -> NamedThread
 pairListenerThread urlrenderer = namedThread "PairListener" $ do
@@ -33,22 +34,24 @@ pairListenerThread urlrenderer = namedThread "PairListener" $ do
   where
 	{- Note this can crash if there's no network interface,
 	 - or only one like lo that doesn't support multicast. -}
-	getsock = multicastReceiver (multicastAddress $ IPv4Addr undefined) pairingPort
+	getsock = multicastReceiver (multicastAddress IPv4AddrClass) pairingPort
 		
-	go reqs cache sock = liftIO (getmsg sock []) >>= \msg -> case readish msg of
+	go reqs cache sock = liftIO (getmsg sock B.empty) >>= \msg -> case readish (BU8.toString msg) of
 		Nothing -> go reqs cache sock
 		Just m -> do
 			debug ["received", show msg]
-			sane <- checkSane msg
 			(pip, verified) <- verificationCheck m
 				=<< (pairingInProgress <$> getDaemonStatus)
 			let wrongstage = maybe False (\p -> pairMsgStage m <= inProgressPairStage p) pip
 			let fromus = maybe False (\p -> remoteSshPubKey (pairMsgData m) == remoteSshPubKey (inProgressPairData p)) pip
-			case (wrongstage, fromus, sane, pairMsgStage m) of
+			case (wrongstage, fromus, checkSane (pairMsgData m), pairMsgStage m) of
 				(_, True, _, _) -> do
 					debug ["ignoring message that looped back"]
 					go reqs cache sock
-				(_, _, False, _) -> go reqs cache sock
+				(_, _, False, _) -> do
+					liftAnnex $ warning $
+						"illegal control characters in pairing message; ignoring (" ++ show (pairMsgData m) ++ ")"
+					go reqs cache sock
 				-- PairReq starts a pairing process, so a
 				-- new one is always heeded, even if
 				-- some other pairing is in process.
@@ -83,19 +86,10 @@ pairListenerThread urlrenderer = namedThread "PairListener" $ do
 				"detected possible pairing brute force attempt; disabled pairing"
 			stopSending pip
 			return (Nothing, False)
-		|otherwise = return (Just pip, verified && sameuuid)
+		| otherwise = return (Just pip, verified && sameuuid)
 	  where
 		verified = verifiedPairMsg m pip
 		sameuuid = pairUUID (inProgressPairData pip) == pairUUID (pairMsgData m)
-		
-	checkSane msg
-		{- Control characters could be used in a
-		 - console poisoning attack. -}
-		| any isControl (filter (/= '\n') (decode_c msg)) = do
-			liftAnnex $ warning
-				"illegal control characters in pairing message; ignoring"
-			return False
-		| otherwise = return True
 
 	{- PairReqs invalidate the cache of recently finished pairings.
 	 - This is so that, if a new pairing is started with the
@@ -103,10 +97,10 @@ pairListenerThread urlrenderer = namedThread "PairListener" $ do
 	invalidateCache msg = filter (not . verifiedPairMsg msg)
 
 	getmsg sock c = do
-		(msg, n, _) <- recvFrom sock chunksz
-		if n < chunksz
-			then return $ c ++ msg
-			else getmsg sock $ c ++ msg
+		(msg, _) <- B.recvFrom sock chunksz
+		if B.length msg < chunksz
+			then return $ c <> msg
+			else getmsg sock $ c <> msg
 	  where
 		chunksz = 1024
 

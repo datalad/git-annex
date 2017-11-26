@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.55"
- subject="comment 4"
- date="2014-07-04T19:38:18Z"
- content="""
-While I fixed the problem analized above, it still runs out of memory in the same place. Must be other strictness problems..
-"""]]

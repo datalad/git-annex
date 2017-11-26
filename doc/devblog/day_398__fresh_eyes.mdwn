@@ -1,0 +1,11 @@
+Today I was indeed able to get to the bottom of and fix the bug that
+had stumped me the other day.
+
+Rest of the day was taken up by catching up to some bug requests and
+suggestions for v6 mode. Like making unlock and lock work for files
+that are not locally present. And, improving the behavior of the clean
+filter so it remembers what backend was used for a file before and
+continues using that same backend.
+
+About ready to make a release, but IIRC there's one remaining test suite
+failure on FAT.

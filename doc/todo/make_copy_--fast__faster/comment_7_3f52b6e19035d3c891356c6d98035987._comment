@@ -1,0 +1,58 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2016-09-14T15:28:23Z"
+ content="""
+First, note that git-annex 6.20160619 sped up the git-annex 
+command startup time significantly. Please be sure to use a current
+version in benchmarks, and state the version.
+
+`git archive` (and `git cat-file --batch --batch-all-objects`) are just
+reading packs and loose objects in disk order and dumping out the contents.
+`git cat-file --batch` has to look up objects in the pack index files, seek
+in the pack, etc. It's not a fair comparison.
+
+Note that `git annex find`, when used without options like --in or --copies, 
+does not need to read anything from `git cat-file` at all. The
+`GIT_TRACE_PERFORMANCE` you show is misleading; it's just showing how long
+the git command is left running, idle.
+
+`git annex find`'s overhead should be purely traversing the filesystem tree
+and checking what symlinks point to files. You can write programs that do
+the same thing without using git at all (or only `git ls-files`), and
+compare them to git-annex's time; that would be a fairer comparison.
+Ideally, `git annex find` would be entirely system call bound and would use
+very little CPU itself.
+
+By contrast, `git annex copy` makes significant use of `git cat-file --batch`,
+since it needs to look up location log information to see if the
+--to/--from remote has the files.
+
+`git annex copy -J` already parallelizes the parts of the code that look at
+the location log. Including spinning up a separate `git cat-file --batch`
+processes for each thread, so they won't contend on such queries. So I
+would expect that to make it faster, even leaving aside the speed benefits
+of doing the actual copies in parallel.
+
+My feeling is that the best way to speed these up is going to be in one 
+of these classes:
+
+* It's possible that `git cat-file --batch` is somehow slower than it needs
+  to be. Perhaps it's not doing good caching between queries or has
+  inneficient seralization/bad stdio buffering. It might just be the case 
+  that using something  like libgit2 instead would be faster.
+  (Due to libgit2's poor interface stability, it would have to be an
+  optional build flag.)
+
+* Many small optimisations to the code. The use of Strings throughout
+  git-annex could well be a source of systematic small innefficiences,
+  and using ByteString might eliminate those. (But this would be a huge job.)
+  (The `git cat-file --batch` communication is already done using
+  bytestrings.)
+
+* A completely lateral move. For example, if git-annex kept its own
+  database recording which files are present, then `git annex find`
+  could do a simple database query and not need to chase all the symlinks.
+  But such a database needs to somehow be kept in sync or reconciled
+  with the git index, it's not an easy thing.
+"""]]

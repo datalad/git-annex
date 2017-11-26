@@ -1,24 +1,26 @@
 {- git-annex command
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.Reinit where
 
-import Common.Annex
 import Command
 import Annex.Init
 import Annex.UUID
-import Types.UUID
 import qualified Remote
+import qualified Annex.SpecialRemote
 	
-cmd :: [Command]
-cmd = [dontCheck repoExists $
-	command "reinit" (paramUUID ++ " or " ++ paramDesc) seek SectionUtility ""]
+cmd :: Command
+cmd = dontCheck repoExists $
+	command "reinit" SectionUtility 
+		"initialize repository, reusing old UUID"
+		(paramUUID ++ "|" ++ paramDesc)
+		(withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart
@@ -34,5 +36,6 @@ perform s = do
 		then return $ toUUID s
 		else Remote.nameToUUID s
 	storeUUID u
-	initialize'
+	initialize' Nothing
+	Annex.SpecialRemote.autoEnable
 	next $ return True

@@ -1,0 +1,20 @@
+More improvements to tor support. Yesterday, debugged a reversion that
+broke push/pull over tor, and made actual useful error messages be
+displayed when there were problems. Also fixed a memory leak, although I
+fixed it by reorganizing code and could not figure out quite why it happened,
+other than that the ghc runtime was not managing to be as lazy as I would
+expect. 
+
+Today, added git ref change notification to the
+P2P protocol, and made the remotedaemon automatically fetch changes from
+tor remotes. So, it should work to use the assistant to keep
+repositories in sync over tor. I have not tried it yet, and linking over tor
+still needs to be done at the command line, so it's not really ready for
+webapp users yet.
+
+Also fixed a denial of service attack in git-annex-shell and git-annex when
+talking to a remote git-annex-shell. It was possible to feed either a large
+amount of data when they tried to read a line of data, and summon the OOM
+killer. Next release will be expedited some because of that.
+
+Today's work was sponsored by Thomas Hochstein on Patreon.

@@ -1,6 +1,6 @@
 {- The current git repository.
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -50,9 +50,9 @@ get = do
 	configure (Just d) _ = do
 		absd <- absPath d
 		curr <- getCurrentDirectory
-		r <- newFrom $ Local { gitdir = absd, worktree = Just curr }
-		Git.Config.read r
-	configure Nothing Nothing = error "Not in a git repository."
+		Git.Config.read $ newFrom $
+			Local { gitdir = absd, worktree = Just curr }
+	configure Nothing Nothing = giveup "Not in a git repository."
 
 	addworktree w r = changelocation r $
 		Local { gitdir = gitdir (location r), worktree = w }

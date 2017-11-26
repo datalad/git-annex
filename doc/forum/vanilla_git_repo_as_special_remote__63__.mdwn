@@ -1,0 +1,27 @@
+Right now I have separate "normal" Git repositories and separate Git annex repositories and I would love to have Git annex track and sync everything for me. The problem I have is I'd like to use "real" Git content tracking for some data (ex: text files) where I'd like to get normal Git features with (ex: diff). I'd like to combine normal Git content tracking with Git annex location tracking and syncing if possible. Ideally the cost (ex: increased git repo size and git slowdown) of content tracking would not need to be propagated across the entire git annex network, just on repos that want it (just like git annex only copies content to clients who want it and symlink the rest).
+
+The largefiles config provides a mechanism to add content to git directly in git annex, but that cost would be applied across the entire network, not opt-in per client.
+
+Ideally I'd like this situation:
+
+1. Git annex tracking everything as symlinks. No content is checked into these git repos.
+2. A subset of git annex content (ex: subfolder) synced to a normal remote non-annex git repository (ex: GitHub). This Git repo has content tracked in git itself.
+
+And I could use the git annex repos to sync everything. Somehow the git annex repo would know that the #2 remote was a "special content git remote" and push any content updates as normal git content commits.
+
+Or an adjusted branch that had the content tracked and I could sync that content branch around to only the remotes where I wanted the content history stored in git (since adjusted branches don't seem to annex sync by default). But master would just track the symlinks of those files and be synced around to all annexes.
+
+Can adjusted branches do this somehow?
+
+Some references:
+
+* [[special_remotes/external]]
+* [[design/adjusted_branches]]
+* [[todo/hide_missing_files]]
+* [[tips/largefiles]]
+* [[submodules]]
+* [[forum/git-subtree_support__63__]]
+
+Thanks!
+
+-neocryptek

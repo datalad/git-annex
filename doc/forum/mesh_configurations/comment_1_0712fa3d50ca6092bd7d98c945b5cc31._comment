@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-08-19T16:40:16Z"
+ content="""
+It's easy to see why a file is not copied from source repo A to source repo
+B: The preferred content expression for a source repo is "not (copies=1)",
+so a source repo will not want to get any files from any other repo.
+
+You probably want to make the central repo use transfer; that's basically
+what it's for. Note that a transfer repo hangs onto file content until it
+reaches all client repos. So you might want to change the preferred content
+expression to refer to backup repos. Something as simple as this might
+work:
+
+	not inallgroup=backup
+
+I don't see any reason why a file wouldn't move from B to backup repo C,
+but I don't see anything in your transcript that shows that not happening
+either. Your transcript doesn't actually show running any git-annex commands
+that move file contents at all; no git annex copy/move, and the sync is not
+run with --content...
+"""]]

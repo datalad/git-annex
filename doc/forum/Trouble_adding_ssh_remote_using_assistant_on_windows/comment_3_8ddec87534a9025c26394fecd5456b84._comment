@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-07-15T16:05:01Z"
+ content="""
+git-remote-gcrpyt unfortunately is written as a shell script, so getting it
+to work on windows would probably be very hard unless it can be run with
+cygwin's shell somehow.
+"""]]

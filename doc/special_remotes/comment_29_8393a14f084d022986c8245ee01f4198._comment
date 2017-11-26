@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="encryptio@2557a3f5b4ef0cddf8f011d7dbb3e76d46ed9c79"
+ nickname="encryptio"
+ subject="git-annex-remote-b2"
+ date="2015-12-04T03:19:29Z"
+ content="""
+I wrote an external remote for [Backblaze's B2](https://www.backblaze.com/b2/cloud-storage.html) object storage service: [git-annex-remote-b2](https://github.com/encryptio/git-annex-remote-b2). I can't be arsed to write a full page on it, but the README covers everything an experienced git-annex user needs to know to use it.
+"""]]

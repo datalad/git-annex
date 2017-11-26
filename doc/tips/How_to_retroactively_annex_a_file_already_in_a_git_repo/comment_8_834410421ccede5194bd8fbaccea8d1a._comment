@@ -1,0 +1,82 @@
+[[!comment format=mdwn
+ username="StephaneGourichon"
+ avatar="http://cdn.libravatar.org/avatar/8cea01af2c7a8bf529d0a3d918ed4abf"
+ subject="Walkthrough of a prudent retroactive annex."
+ date="2016-11-24T11:27:59Z"
+ content="""
+Been using the one-liner.  Despite the warning, I'm not dead yet.
+
+There's much more to do than the one-liner.
+
+This post offers instructions.
+
+# First simple try: slow
+
+Was slow (estimated >600s for 189 commits).
+
+# In tmpfs: about 6 times faster
+
+I have cloned repository into /run/user/1000/rewrite-git, which is a tmpfs mount point. (Machine has plenty of RAM.)
+
+There I also did `git annex init`, git-annex found its state branches.
+
+On second try I also did 
+
+    git checkout -t remotes/origin/synced/master
+
+So that filter-branch would clean that, too.
+
+There, `filter-branch` operation finished in 90s first try, 149s second try.
+
+`.git/objects` wasn't smaller.
+
+# Practicing reduction on clone
+
+This produced no visible benefit:
+
+time git gc --aggressive
+time git repack -a -d 
+
+Even cloning and retrying on clone. Oh, but I should have done `git clone file:///path` as said on git-filter-branch man page's section titled \"CHECKLIST FOR SHRINKING A REPOSITORY\" 
+
+This (as seen on https://rtyley.github.io/bfg-repo-cleaner/ ) was efficient:
+
+    git reflog expire --expire=now --all && git gc --prune=now --aggressive
+
+`.git/objects` shrunk from 148M to 58M
+
+All this was on a clone of the repo in tmpfs.
+
+# Propagating cleaned up branches to origin
+
+This confirmed that filter-branch did not change last tree:
+
+    git diff remotes/origin/master..master
+    git diff remotes/origin/synced/master synced/master
+
+This, expectedly, was refused:
+
+    git push origin master
+    git push origin synced/master
+
+On origin, I checked out the hash of current master, then on tmpfs clone
+
+    git push -f origin master
+    git push -f origin synced/master
+
+Looks good.
+
+I'm not doing the aggressive shrink now, because of the \"two orders of magnitude more caution than normal filter-branch\" recommended by arand.
+
+# Now what? Check if precious not broken
+
+I'm planning to do the same operation on the other repos, then :
+
+* if everything seems right, 
+* if `git annex sync` works between all those fellows
+* etc, 
+* then I would perform the reflog expire, gc prune on some then all of them, etc.
+
+Joey, does this seem okay?  Any comment?
+
+"""]]

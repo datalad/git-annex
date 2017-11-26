@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-09-21T19:54:43Z"
+ content="""
+Suggest you use git-remote-gcrypt to encrypt the git repository stored on
+the backup drive. This will encrypt the whole git repository with
+your gpg key, and git-annex can also use it as a remote, and will encrypt
+the annexed files stored there too.
+
+See [[tips/fully_encrypted_git_repositories_with_gcrypt]].
+"""]]

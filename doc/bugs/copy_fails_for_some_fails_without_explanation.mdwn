@@ -1,7 +1,0 @@
-I have a large direct-mode repository whose files I'm trying to copy to a non-direct-mode repository.  Both repositories live on an HDD attached to an rpi.
-
-When I do $ git annex copy --to pi dirs/to/copy, the copy starts out OK, but eventually many files fail to copy.  The only diagnostic I get is "failed".  Judging from the backscroll, I don't see a strong pattern to the files which fail to copy; they're kind of interspersed amongst files which were successfully copied.  If I try to copy one of these failed files explicitly (git annex copy --to pi file/which/failed), this succeeds.  I have plenty of free space on the disk.
-
-Is there a way to get more diagnostics out of git annex so I can see why these files are failing to copy?
-
-> [[fixed|done]] --[[Joey]] 

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="ewen"
+ subject="itempubdate"
+ date="2015-01-03T22:01:37Z"
+ content="""
+Using a `--template='${feedtitle}/${itempubdate}-${itemtitle}${extension}'` with a libsyn RSS feed (eg, [Poly Weekly](http://polyweekly.libsyn.com/rss)), I found that `itempubdate` was expanding to \"none\", even though there is a date with each entry in the RSS, eg,
+
+    <pubDate>Fri, 26 Dec 2014 15:25:38 +0000</pubDate>
+
+Maybe the date string cannot be parsed?  But it does look like a fairly typical datestamp to me.  If the cause is the mixed-case in the tag, could `pubDate` be supported in addition to `pubdate`?  (AFAICT [`pubDate` is the standardised mix of lower/upper case](http://validator.w3.org/feed/docs/rss2.html), but maybe not the most common, in which case supporting both `pubDate` and `pubdate` might help?)  As seen with `git-annex version: 5.20141024~bpo70+1`, installed from Debian Backports; AFAICT it's still the latest release to make it to backports.
+
+For now I'm just omitting \"itempubdate\" from my template.
+
+Ewen
+"""]]

@@ -1,0 +1,76 @@
+[[!comment format=mdwn
+ username="benjamin.poldrack@d09ccff6d42dd20277610b59867cf7462927b8e3"
+ nickname="benjamin.poldrack"
+ avatar="http://cdn.libravatar.org/avatar/5c1a901caa7c2cfeeb7e17e786c5230d"
+ subject="@joey: Sorry ..."
+ date="2017-09-14T12:00:09Z"
+ content="""
+... I somehow managed to miss your response. Now, since a somewhat related topic is emerging again with datalad, I looked into this one again.
+I reproduced, what I described before, but I noticed that it involves kind of an implicit upgrade from a V5 to V6 repository.
+
+First, let's have v5 repo with a file in git and a file in annex:
+
+
+    ben@tree /tmp % mkdir origin
+    ben@tree /tmp % cd origin
+    ben@tree /tmp/origin % git init
+    Initialized empty Git repository in /tmp/origin/.git/
+    ben@tree /tmp/origin % git annex init
+    init  ok
+    (recording state in git...)
+    ben@tree /tmp/origin % echo some > some
+    ben@tree /tmp/origin % git add some
+    ben@tree /tmp/origin % echo something different > annex
+    ben@tree /tmp/origin % git annex add annex
+    add annex ok
+    (recording state in git...)
+    ben@tree /tmp/origin % git commit -m \"initial\"
+    [master (root-commit) 8b96354] initial
+     2 files changed, 2 insertions(+)
+     create mode 120000 annex
+     create mode 100644 some
+    ben@tree /tmp/origin % ll
+    total 376
+    drwxr-xr-x  3 ben  ben    4096 Sep 14 13:34 .
+    drwxrwxrwt 24 root root 364544 Sep 14 13:33 ..
+    lrwxrwxrwx  1 ben  ben     180 Sep 14 13:34 annex -> .git/annex/objects/g7/4P/SHA256E-s20--b6105173f468fc7afa866aa469220cd56e5200db590be89922239a38631379c9/SHA256E-s20--b6105173f468fc7afa866aa469220cd56e5200db590be89922239a38631379c9
+    drwxr-xr-x  9 ben  ben    4096 Sep 14 13:34 .git
+    -rw-r--r--  1 ben  ben       5 Sep 14 13:34 some
+    ben@tree /tmp/origin % git ls-files
+    annex
+    some
+    ben@tree /tmp/origin % git annex find
+    annex
+
+Now, clone this repository:
+
+    ben@tree /tmp/origin % cd ..
+    ben@tree /tmp % git clone origin cloned
+    Cloning into 'cloned'...
+    done.
+    ben@tree /tmp % cd cloned
+
+And annex-init as a v6 repository:
+
+    ben@tree /tmp/cloned % git annex init --version=6
+    init  (merging origin/git-annex into git-annex...)
+    (recording state in git...)
+    (scanning for unlocked files...)
+    ok
+    (recording state in git...)
+    ben@tree /tmp/cloned % git status
+    On branch master
+    Your branch is up-to-date with 'origin/master'.
+
+    Changes not staged for commit:
+      (use \"git add <file>...\" to update what will be committed)
+      (use \"git checkout -- <file>...\" to discard changes in working directory)
+
+    	    modified:   some
+
+    no changes added to commit (use \"git add\" and/or \"git commit -a\")
+
+
+This kind of \"implicit\" upgrade might not be a common use case, but the result seems to be a bit weird nonetheless.
+
+"""]]

@@ -1,0 +1,17 @@
+Hi,
+
+I'm currently trying to figure out how to best use git-annex for my needs. And I have a specific use case on which I can't really wrap my head around:
+
+Having a large photo library that collects all photos from all my devices.
+
+What's special about that? Some devices (e.g. mobile phone, laptop, laptop at work) should have/keep their own "view" on the data. Meaning that, e.g., on my laptop at work I don't want to have private pictures, but I might want to have work pictures on my private laptop. Similar for my mobile phone: I want to have all photos for my mobile phone on my laptop, but I don't want all pictures I have ever made on my (tiny) phone.
+
+So, first of all, git-annex supports get, drop, preferred content, etc. which makes it perfect for this use case. Still there is one problem: It's not only that I don't want the content on some devices, I also don't want the respective directory names, simlinks, etc. Say, a directory name like "crazy party pictures" should not be visible on my work laptop, at all...
+
+For me, using directories like "phone", "work", etc. would be a start and a reasonable way to sort which content should be available on these devices. However, as far as I know, it's not possible with GIT to just check out a single (or a few) directories. So I thought different branches could be what I want. But I don't understand how I can copy/move content from one branch to another. Or even, how can I see all the content at once on some machines (e.g. private laptop) without switching branches all the time. I could have several copies of the same repo all set to a different branch, but does this make sense..?
+
+I think what I want is similar to git-annex view, but only for its filter capabilities. Still, subdirectories should work the same as before and filenames should not change. Also the repository should still be fully functional and behaving as usual but just hiding some of the content.
+
+Do you people have similar use cases? What are your best practices?
+
+Best, Mario

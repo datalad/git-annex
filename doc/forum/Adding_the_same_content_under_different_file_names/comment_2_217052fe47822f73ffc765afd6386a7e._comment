@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-01-31T16:35:15Z"
+ content="""
+This deduplication is generally considered a feature.
+(If you don't want it, you can eg use the WORM backend.)
+
+The `git annex unused` command can be used in this case. It looks through
+all files (in all branches) in the repo and finds content that no files
+are using, which can then be dropped.
+
+So the question is, if you've been using `git annex drop` before deleting a
+file, how do you know when you need to not do that, and 
+instead use `git annex unused` after deleting a file? Well, my suggestion
+is to just never get in the habit of `git annex drop` before deleting a
+file. Reserve using `git annex drop` for times when you are getting low on
+disk space and need to free some up by dropping content from local
+storage; don't try to manually manage which content is stored in the local
+repository as long as you have enough free disk space.
+"""]]

@@ -1,18 +1,25 @@
 The development of git-annex was made possible by the generous
 donations of many people. I want to say "Thank You!" to each of
-you individually, but until I meet all 1500 of you, this page will have to
+you individually, but until I meet all 1500+ of you, this page will have to
 do. You have my most sincere thanks. --[[Joey]]
 
-(If I got your name wrong, or you don't want it publically posted here,
-email <joey@kitenet.net>.)
+You can support my git-annex development
+[on Patreon](https://www.patreon.com/joeyh) or
+[other ways](https://joeyh.name/thanks/)
 
-## 2014-2015
+(If I got your name wrong, or you don't want it publically posted here,
+email <id@joeyh.name>.)
+
+## 2014-2017
 
 <img alt="NSF logo" src="https://www.nsf.gov/images/logos/nsf1.gif">
 
 git-annex development is partially supported by the
 [NSF](https://www.nsf.gov/awardsearch/showAward?AWD_ID=1429999) as a part of the
 [DataLad project](http://datalad.org/).
+
+Thanks also to these folks for their support: 
+[[!inline raw=yes pages="thanks/list"]] and anonymous supporters.
 
 ## 2013-2014
 
@@ -98,7 +105,7 @@ Wiberg, Sam Kleinman, Vincent Demeester, Tristan Helmich, Zero Art Radio,
 Bruno Bigras, Ævar Arnfjörð Bjarmason, Stanley Yamane, Christopher Browne,
 David Whittington, Fredrik Gustafsson, Peter Hogg, Tom Francart, Wouter
 Verhelst, Christian Savard, wundersolutions, Andreas Fuchs, Eric Kidd,
-Georg Lehner, Berin Martini, Stewart Wright, Bence Albertini, Stefan
+Georg Lehner, Berin Martini, Stewart Wright, Bence parhuzamos, Stefan
 Schmitt, Antoine Boegli, jscit, Christopher Kernahan, A Marshall, Jürgen
 Peters, Aaron Whitehouse, Jouni K Seppanen, Michael Albertson, Andreas
 Laas, Thomas Herok, Aurelien Gazagne, Bryan W Stitt, anonymous, Chris
@@ -132,7 +139,7 @@ Poobalasubramanian, Alexandre Garel, David Clark, Jeff Johnson,
 Mica Semrick, Paul Staab, Rémi Vanicat, Martin Holtschneider, Jan Ivar
 Beddari, Peter Simons, Thomas Koch, Justin Geibel, Guillaume DELVIT, Shanti
 Bouchez, Oliver Brandt, François Deppierraz, Chad Walstrom, Tim Mattison,
-Jakub Antoni Tyszko, Casa do Boneco, Florian Tham, 
+Jakub Antoni Tyszko, Casa do Boneco, Florian Tham,
 and 30 anonymous bitcoin users
 
 With an especial thanks to the WikiMedia foundation,
@@ -370,11 +377,11 @@ Tyree, Aaron Whitehouse
 * Rsync.net, for providing me a free account so I can make sure git-annex
   works well with it.
 * LeastAuthority.com, for providing me a free Tahoe-LAFS grid account,
-  so I can test git-annex with that, and back up the git-annex assistant
-  screencasts.
+  so I can test git-annex with that.
+* Yury V. Zaytsev for running the Windows autobuilder.
+* Kevin McKenzie for providing a OSX account for testing.
 * Anna and Mark, for the loan of the video camera; as well as the rest of
   my family, for your support. Even when I couldn't explain what I was
   working on.
-* The Hodges, for providing such a congenial place for me to live and work
-  on these first world problems, while you're off helping people in the
-  third world.
+* And Mom, for stamping and stuffing so many thank you envelopes, and all the
+  rhubarb pies.

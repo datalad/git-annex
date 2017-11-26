@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="konubinix"
+ subject="git-annex-getcopy.sh"
+ date="2016-02-03T12:32:55Z"
+ content="""
+To do that, I created a simple bash script that get locally the files and then copies them to the remote
+
+https://github.com/Konubinix/Devel/blob/master/bin/git-annex-getcopy.sh
+
+I hope that helps.
+"""]]

@@ -1,6 +1,6 @@
 {- git-annex assistant named threads.
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,7 +9,7 @@
 
 module Assistant.NamedThread where
 
-import Common.Annex
+import Annex.Common
 import Assistant.Types.NamedThread
 import Assistant.Types.ThreadName
 import Assistant.Types.DaemonStatus

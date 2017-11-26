@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="stefan.huchler@5f110ab85a15aec7e2b38586eb7ec37b12e2e6aa"
+ nickname="stefan.huchler"
+ avatar="http://cdn.libravatar.org/avatar/5c1baf041aa5516cb28a2618f7263a56"
+ subject="workaround to my request"
+ date="2016-11-05T14:53:36Z"
+ content="""
+I guess adding a hourly cronjob that drop all unused filed would be accaptable maybe?
+
+Or is there a better solution?
+"""]]

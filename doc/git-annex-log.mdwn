@@ -1,0 +1,53 @@
+# NAME
+
+git-annex log - shows location log
+
+# SYNOPSIS
+
+git annex log `[path ...]`
+
+# DESCRIPTION
+
+Displays the location log for the specified file or files,
+showing each repository they were added to ("+") and removed from ("-").
+
+# OPTIONS
+
+* `--since=date`, `--after=date`, `--until=date`, `--before=date`, `--max-count=N`
+
+  These options are passed through to `git log`, and can be used to limit
+  how far back to search for location log changes.
+  
+  For example: `--since "1 month ago"`
+
+* `--raw-date`
+
+  Rather than the normal display of a date in the local time zone,
+  displays seconds since the unix epoch.
+
+* `--gource`
+
+  Generates output suitable for the `gource` visualization program.
+
+* file matching options
+  
+  The [[git-annex-matching-options]](1)
+  can be used to specify files to act on.
+
+* `--all`
+
+  Shows location log changes to all files, with the most recent changes first.
+  In this mode, the names of files are not available and keys are displayed
+  instead.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-forget]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

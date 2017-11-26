@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="jec@8edf298ac8f8152bffcd4fdc1a310949d3547fe4"
+ nickname="jec"
+ subject="Git Version"
+ date="2015-10-07T20:24:05Z"
+ content="""
+Thank for the response Joey...
+
+Here's my git version:
+
+    [xxx@infrastructure ~]$ which git
+    /opt/git-annex.linux/git
+    [xxx@infrastructure ~]$ /opt/git-annex.linux/git --version
+    git version 2.6.0
+
+I've doubled the amount of RAM on that VM to 8GB - I'll see what happens when I try another run.
+
+"""]]

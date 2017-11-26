@@ -1,8 +1,8 @@
 {- git-remote-gcrypt support
  -
- - https://github.com/blake2-ppc/git-remote-gcrypt
+ - https://spwhitton.name/tech/code/git-remote-gcrypt/
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -46,7 +46,7 @@ encryptedRemote baserepo = go
 		u = show url
 		plen = length urlPrefix
 	go _ = notencrypted
-	notencrypted = error "not a gcrypt encrypted repository"
+	notencrypted = giveup "not a gcrypt encrypted repository"
 
 data ProbeResult = Decryptable | NotDecryptable | NotEncrypted
 

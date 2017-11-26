@@ -1,7 +1,7 @@
 {- Interface for running a shell command as a coprocess,
  - sending it queries and getting back results.
  -
- - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2013 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -13,7 +13,6 @@ module Utility.CoProcess (
 	start,
 	stop,
 	query,
-	rawMode
 ) where
 
 import Common
@@ -44,7 +43,15 @@ start numrestarts cmd params environ = do
 start' :: CoProcessSpec -> IO CoProcessState
 start' s = do
 	(pid, from, to) <- startInteractiveProcess (coProcessCmd s) (coProcessParams s) (coProcessEnv s)
+	rawMode from
+	rawMode to
 	return $ CoProcessState pid to from s
+  where
+#ifdef mingw32_HOST_OS
+	rawMode h = hSetNewlineMode h noNewlineTranslation
+#else
+	rawMode _ = return ()
+#endif
 
 stop :: CoProcessHandle -> IO ()
 stop ch = do
@@ -79,16 +86,3 @@ query ch send receive = do
 			{ coProcessNumRestarts = coProcessNumRestarts (coProcessSpec s) - 1 }
 		putMVar ch s'
 		query ch send receive
-
-rawMode :: CoProcessHandle -> IO CoProcessHandle
-rawMode ch = do
-	s <- readMVar ch
-	raw $ coProcessFrom s
-	raw $ coProcessTo s
-	return ch
-  where
-	raw h = do
-		fileEncoding h
-#ifdef mingw32_HOST_OS
-		hSetNewlineMode h noNewlineTranslation
-#endif

@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="comment 1"
+ date="2015-06-10T12:29:46Z"
+ content="""
+hi!
+
+I understand you may have had unicode problems with git-annex in the past: i had my [[own share|bugs/forget_corrupts_non-ascii_chars/]], but most bugs i filed were fixed (see [[users/anarcat/]] for a full list).
+
+I regularly use git-annex to manage my music, video and book collection. The total fileset is around 1-2TB, with thousands of files. Sometimes the music collection operations are a little slow because there are so many files, but in general i am *very* happy with the project. I don't use the webapp so much, because I feel the interface is too limited, and do a lot of things on the commandline.
+
+git-annex not only makes my life easier, it makes possible some things that were impossible before. I used to have a really hackish shell script to rsync part of my music collection to my laptop because it's too big to fit there completely. It wasn't working so well and there was no way to sync *new* music *back* in the main collection. Now I regularly can make changes to the music collection on the laptop without the files even being present. I can also import new files on the laptop easily when i meet people that want to share with me in my travels.
+
+i also work on the Isuma project, for which i will eventually do a longer write up here. For now, look at [[devblog/day_290__/]]. The project aims to manage over a terabyte of data across multiple devices spread over remote areas with limited bandwidth connexions. It's a distributed, two-way, CDN. So far it works well, and issues we have found have been quickly addressed by [[joeyh]].
+
+I would definitely recommend git-annex to film, music and university enthousiast. It is certainly worth the technical learning curve. For my parents, I am less sure. I mentioned the project, but they haven't found the use case for it yet, and they run Windows and OSX all over the place, which makes integration a little harder. With iPads, in particular, it seems that local storage is a thing of the past and everything goes \"in the cloud\". Which is in contradiction with git-annex a little, as it tries to take back control of your files.
+
+Anyways, happy to spar more if you have any more questions. Good luck with the book!
+"""]]

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.2"
- subject="comment 7"
- date="2014-07-15T19:15:13Z"
- content="""
-This bug and the other one are fixed in 5.20140709. I assume that your `git log` dates from an earlier version.
-"""]]

@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="moird"
+ subject="comment 5"
+ date="2016-01-30T19:01:28Z"
+ content="""
+well that figures... I forgot I had a global .gitignore file and it by default filtered out compressed files like zips and such.  Removed that restarted the agents, everything is good.
+"""]]

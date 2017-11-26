@@ -1,14 +1,16 @@
 {- Simple IO exception handling (and some more)
  -
- - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2016 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE CPP, ScopedTypeVariables #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Exception (
 	module X,
+	giveup,
 	catchBoolIO,
 	catchMaybeIO,
 	catchDefaultIO,
@@ -19,15 +21,40 @@ module Utility.Exception (
 	catchNonAsync,
 	tryNonAsync,
 	tryWhenExists,
+	catchIOErrorType,
+	IOErrorType(..),
+	catchPermissionDenied,
 ) where
 
 import Control.Monad.Catch as X hiding (Handler)
 import qualified Control.Monad.Catch as M
 import Control.Exception (IOException, AsyncException)
+#ifdef MIN_VERSION_GLASGOW_HASKELL
+#if MIN_VERSION_GLASGOW_HASKELL(7,10,0,0)
+import Control.Exception (SomeAsyncException)
+#endif
+#endif
 import Control.Monad
 import Control.Monad.IO.Class (liftIO, MonadIO)
-import System.IO.Error (isDoesNotExistError)
+import System.IO.Error (isDoesNotExistError, ioeGetErrorType)
+import GHC.IO.Exception (IOErrorType(..))
+
 import Utility.Data
+
+{- Like error, this throws an exception. Unlike error, if this exception
+ - is not caught, it won't generate a backtrace. So use this for situations
+ - where there's a problem that the user is excpected to see in some
+ - circumstances. -}
+giveup :: [Char] -> a
+#ifdef MIN_VERSION_base
+#if MIN_VERSION_base(4,9,0)
+giveup = errorWithoutStackTrace
+#else
+giveup = error
+#endif
+#else
+giveup = error
+#endif
 
 {- Catches IO errors and returns a Bool -}
 catchBoolIO :: MonadCatch m => m Bool -> m Bool
@@ -35,10 +62,7 @@ catchBoolIO = catchDefaultIO False
 
 {- Catches IO errors and returns a Maybe -}
 catchMaybeIO :: MonadCatch m => m a -> m (Maybe a)
-catchMaybeIO a = do
-	catchDefaultIO Nothing $ do
-		v <- a
-		return (Just v)
+catchMaybeIO a = catchDefaultIO Nothing $ a >>= (return . Just)
 
 {- Catches IO errors and returns a default value. -}
 catchDefaultIO :: MonadCatch m => a -> m a -> m a
@@ -71,6 +95,11 @@ bracketIO setup cleanup = bracket (liftIO setup) (liftIO . cleanup)
 catchNonAsync :: MonadCatch m => m a -> (SomeException -> m a) -> m a
 catchNonAsync a onerr = a `catches`
 	[ M.Handler (\ (e :: AsyncException) -> throwM e)
+#ifdef MIN_VERSION_GLASGOW_HASKELL
+#if MIN_VERSION_GLASGOW_HASKELL(7,10,0,0)
+	, M.Handler (\ (e :: SomeAsyncException) -> throwM e)
+#endif
+#endif
 	, M.Handler (\ (e :: SomeException) -> onerr e)
 	]
 
@@ -86,3 +115,15 @@ tryWhenExists :: MonadCatch m => m a -> m (Maybe a)
 tryWhenExists a = do
 	v <- tryJust (guard . isDoesNotExistError) a
 	return (eitherToMaybe v)
+
+{- Catches only IO exceptions of a particular type.
+ - Ie, use HardwareFault to catch disk IO errors. -}
+catchIOErrorType :: MonadCatch m => IOErrorType -> (IOException -> m a) -> m a -> m a
+catchIOErrorType errtype onmatchingerr a = catchIO a onlymatching
+  where
+	onlymatching e
+		| ioeGetErrorType e == errtype = onmatchingerr e
+		| otherwise = throwM e
+
+catchPermissionDenied :: MonadCatch m => (IOException -> m a) -> m a -> m a
+catchPermissionDenied = catchIOErrorType PermissionDenied

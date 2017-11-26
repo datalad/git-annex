@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-05-25T17:44:59Z"
+ content="""
+You'd need to checkout the phone branch on the laptop and make the changes
+to it. So there can be some extra work involved since you have to maintain
+two branches. In some cases `git cherry-pick` could be used to pick a
+change from one branch to the other.
+"""]]

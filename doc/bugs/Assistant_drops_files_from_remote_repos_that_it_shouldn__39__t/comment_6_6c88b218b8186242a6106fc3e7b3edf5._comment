@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2015-07-06T20:31:06Z"
+ content="""
+Well, you've provided some great information, and your setup seems sane,
+and I'd expect it to keep the file in manual mode and not drop it.
+
+The key part of the log is this:
+
+	[2014-11-16 15:10:23 MSK] dropped random_1_24 (from here) (copies now 2) : drop wanted after Upload UUID \"d865391b-cf21-42d6-a04c-e1b32897c1af\" random_1_24 Nothing
+
+So, after transferring the file to the remote where you're getting it, it
+has apparently checked the local repo's preferred content, and thinks it says
+that the local repo doesn't want the file anymore. Which certianly doesn't
+make sense if the repo is configured to be in manual mode.
+
+The only time I'd expect this to happen is if the file in question is one that
+a "client" repository wouldn't normally want. So, if "random_1_24" was in an
+archive directory, the preferred content expression would let it drop it then.
+
+I tried to replicate your configuration, and wasn't able to reproduce
+it deciding to drop the file, when testing with git-annex version 5.20150618.
+
+Can you reproduce this with the most recent release of git-annex?
+
+If so, can you verify that running "git annex drop --auto" doesn't try to drop any files when you run it 
+in the repository that's confgured to be in manual mode?
+"""]]

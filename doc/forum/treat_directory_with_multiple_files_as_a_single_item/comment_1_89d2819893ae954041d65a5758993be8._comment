@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="leavingchicago@c04c893e78d1c4c76cb3e32b5c227cf42bbf7682"
+ nickname="leavingchicago"
+ avatar="http://cdn.libravatar.org/avatar/4ae498d3d6ee558d6b65caa658f72572"
+ subject="comment 1"
+ date="2017-05-19T01:02:57Z"
+ content="""
+Have you thought about (compress/tar)ing the files and then only include the single object in the annex?
+
+Would give you the benefits of deduping any data too.
+"""]]

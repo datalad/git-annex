@@ -44,3 +44,4 @@ foo
     Linux durian 3.14-1-amd64 #1 SMP Debian 3.14.9-1 (2014-06-30) x86_64 GNU/Linux
 
 [[!tag confirmed git-bug]]
+[[!title git limitations prevent using git-annex on filenames containing newlines]]

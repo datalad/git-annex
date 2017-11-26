@@ -1,0 +1,1 @@
+I would like to make some thing. On windows one repo (R1) with files for work. On linux server the other (R2) is for syncing and the third (R3) on linux is for backup with bup. Is it any way to run remote backup command on R2 from R1 but not always when i sync them - only when i send special command? I am looking simple native solution avoiding cygwin or third scripts. Thanks.

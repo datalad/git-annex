@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 3"
+ date="2017-02-07T22:51:15Z"
+ content="""
+    An implementation of --mode=Did,Nsid seemed worth adding at first, perhaps as --reinject-duplicates. But thinking about it some more, that would be the same as
+
+        git annex reinject --known /path/*
+        git annex import /path/*
+
+
+--mode=Did,Nsid would be quite a bit faster because it wouldn't hash the files twice, which is an advantage this suggestion has over any multiple command alternative.
+
+If you want to keep it to certain points in space rather than deal with all combinations, you could whitelist which ones are acceptable and people can request more to be whitelisted as they discover use cases for those modes. The current commands would alias to the modes (which would also make their behaviour obvious if this alias is mentioned in the documentation).
+"""]]

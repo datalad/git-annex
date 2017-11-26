@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="grawity@2ea26be48562f66fcb9b66307da72b1e2e37453f"
+ nickname="grawity"
+ subject="comment 5"
+ date="2016-04-20T19:21:33Z"
+ content="""
+\"There's also the problem of different backends; it seems such a thing would need to hash a file 5 different ways to make sure no hash of it is known.\"
+
+Yeah, I guess you're right – and there might even be different 'hashes' in the same backend, e.g. SHA256E considers `Foo.ISO` different from `Foo.iso`...
+
+Actually I ended up doing this only twice, so manual `annex add everything` + duplicate cleaner wasn't really that bad in the end. And `annex calckey` and `annex find` with ${key} will be useful for the other scripts I have; thanks.
+"""]]

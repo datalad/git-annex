@@ -1,0 +1,30 @@
+### Please describe the problem.
+I have a repository that is being synced with a normal Bitbucket git repository (with `annex-ignore = true`). It's been created with the webapp in direct mode and I'm using the assistant.
+
+Everything is working fine, but after running `git annex forget` the git-annex branch in Bitbucket stopped being pushed. git-annex is still working correctly, but I have a lot of useless commits in the history.
+
+So currently I have this branches:
+
+    # git branch -a
+    * annex/direct/master
+      git-annex
+      master
+      synced/master
+      remotes/bitbucket/git-annex
+      remotes/bitbucket/master
+      remotes/bitbucket/synced/git-annex
+      remotes/bitbucket/synced/master
+
+And `remotes/bitbucket/git-annex` isn't being updated with the content of `git-annex`
+
+### What version of git-annex are you using? On what operating system?
+
+5.20150812 and 5.20150731 in Debian Sid and Testing
+
+### Please provide any additional information below.
+
+As I've said, git-annex is still working normally, so the solution might be to simply remove that branch.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I use `git-annex` daily with 3 repositories with a total of ~112GB, and I'm really happy with it. Thank you very much for the effort.

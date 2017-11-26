@@ -162,7 +162,7 @@ over stdio to inform when refs on the remote have changed.
 
 No pushing is done for CHANGED, since git handles ssh natively.
 
-TODO: test!
+This is implemented and seems to work well.
 
 ## telehash 
 

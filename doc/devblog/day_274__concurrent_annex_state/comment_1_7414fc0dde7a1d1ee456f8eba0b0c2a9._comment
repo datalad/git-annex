@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="comment 1"
+ date="2015-04-10T21:33:02Z"
+ content="""
+great news!
+
+one thing i've been wondering after fooling around with the git-annex branch outside of git-annex is why git-annex talks with the commandline git client at all? libgit, for example, seem to access the .git objects directly without a dependency on the git commandline... there doesn't seem to be any haskell shims for libgit, but it seems to me it would reduce the overhead of a bunch of stuff in git-annex...
+
+as an aside, any thoughts of making the [git-annex-specific git library](http://source.git-annex.branchable.com/?p=source.git;a=tree;f=Git;hb=HEAD) portable and standalone? maybe in collaboration with the existing [hs-libgit](https://hackage.haskell.org/package/libgit)?
+"""]]

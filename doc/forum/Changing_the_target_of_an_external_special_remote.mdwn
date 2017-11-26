@@ -1,0 +1,1 @@
+I've initialized an external special remote (specifically, an rclone remote). It is working great. However, I would like to edit my rclone config and change the name of the rclone remote. This is the value I passed as `target=` when running `git annex initremote`. Can I change the target of the special remote in git annex? I grepped through `~/.git`, but didn't see it anywhere.

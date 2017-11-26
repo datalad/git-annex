@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="spwhitton"
- ip="163.1.167.50"
- subject="comment 2"
- date="2012-12-01T18:34:10Z"
- content="""
-Thanks for the log advice.  I looked and it wants to drop a file `ttmik/TTMIK-Lesson-L1L1.mp3` from the encrypted rsync remote ma.  So I did `git annex whereis ttmik/TTMIK-Lesson-L1L1.mp3` and learnt that the file is not on ma.  I tried `git annex drop --from ma ttmik` to be sure, and the command was successful, but it still tries to drop the file from ma on startup.  Presumably it would try all the other files in the ttmik directory if I gave it the chance to try to drop this first one.  The only thing special about the ttmik directory is that every file in there was added using addurl, so I guess the problem has something to do with that.
-"""]]

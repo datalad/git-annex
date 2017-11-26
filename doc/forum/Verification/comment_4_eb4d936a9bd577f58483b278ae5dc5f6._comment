@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-03-16T18:36:45Z"
+ content="""
+You can use `git annex fsck` to verify your repository contents.
+If you want to verify a local repository, the best thing to do is
+to run `git annex fsck` there. If you cannot do that, you can use
+`git annex fsck --from remoterepo --fast` to verify a remote. If you leave
+off the --fast it will download all file contents to completely verify
+them.
+
+I suggest you read git-annex's documentation, there is plenty of it about
+using git-annex fsck to verify repositories.
+"""]]

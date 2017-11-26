@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""nice tip"""
+ date="2014-12-01T22:59:58Z"
+ content="""
+Thanks Giovanni for that nice tip!
+
+You can additionally publish the whole git repository
+by eg pushing it to github. (Not if it contains private files
+or if you have embedded encryption keys or credentials though.)
+
+You can tell git-annex the public url for the files too, and then others
+can just clone the git repository and use git-annex to download the files
+from S3.
+
+You could set that up by running something like this:
+
+	for filename in $(git annex find --in public-s3); do
+		git annex addurl --file "$filename" https://public-annex.s3.amazonaws.com/"$(git annex lookupkey $filename)"
+	done
+"""]]

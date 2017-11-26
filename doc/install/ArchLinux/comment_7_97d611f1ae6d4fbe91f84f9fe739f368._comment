@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="dropped"
+ subject="Correct way to install git-annex directly through cabal."
+ date="2015-07-27T12:01:34Z"
+ content="""
+The effective way to install git-annex and resolve dependencies:
+
+    $ sudo pacman -S gsasl git rsync curl wget gnupg openssh cabal-install
+    $ cabal update
+    $ cabal install c2hs
+    $ cabal install git-annex --bindir=$HOME/bin
+    $ sudo cp ~/bin/git-annex /usr/lib/git-core
+"""]]

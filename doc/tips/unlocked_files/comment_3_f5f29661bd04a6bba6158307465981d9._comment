@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="wsha.code+ga@b38779424f41c5701bbe5937340be43ff1474b2d"
+ nickname="wsha.code+ga"
+ subject="comment 3"
+ date="2016-01-16T13:03:26Z"
+ content="""
+1. If you want to save a committed version of a file, is there a way to do that, other than `sync`ing to a remote that does not have `annex.thin` set?
+2. If you `add` and `commit` a file multiple times in a repo without `sync`ing to a remote, what does the commit history look like on a remote when you do `sync` it? It just has several commits for which the file contents are not available?
+3. If you want to preserve history with `annex.thin` set, do you just have to `sync` manually after each commit? I guess you might want to set up a git commit hook to do that in that case.
+"""]]

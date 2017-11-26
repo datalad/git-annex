@@ -1,36 +1,40 @@
 {- git-annex command
  -
- - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Command.Unannex where
 
-import Common.Annex
 import Command
 import Config
 import qualified Annex
 import Annex.Content
+import Annex.Perms
 import Annex.Content.Direct
+import Annex.Version
 import qualified Git.Command
 import qualified Git.Branch
 import qualified Git.Ref
 import qualified Git.DiffTree as DiffTree
 import Utility.CopyFile
 import Command.PreCommit (lockPreCommitHook)
+import qualified Database.Keys
+import Git.FilePath
 
-cmd :: [Command]
-cmd = [command "unannex" paramPaths seek SectionUtility
-		"undo accidential add command"]
+cmd :: Command
+cmd = withGlobalOptions annexedMatchingOptions $
+	command "unannex" SectionUtility
+		"undo accidental add command"
+		paramPaths (withParams seek)
 
-seek :: CommandSeek
-seek = wrapUnannex . (withFilesInGit $ whenAnnexed start)
+seek :: CmdParams -> CommandSeek
+seek ps = wrapUnannex $ 
+	(withFilesInGit $ whenAnnexed start) =<< workTreeItems ps
 
 wrapUnannex :: Annex a -> Annex a
-wrapUnannex a = ifM isDirect
+wrapUnannex a = ifM (versionSupportsUnlockedPointers <||> isDirect)
 	( a
 	{- Run with the pre-commit hook disabled, to avoid confusing
 	 - behavior if an unannexed file is added back to git as
@@ -42,7 +46,7 @@ wrapUnannex a = ifM isDirect
 	 -}
 	, ifM cleanindex
 		( lockPreCommitHook $ commit `after` a
-		, error "Cannot proceed with uncommitted changes staged in the index. Recommend you: git commit"
+		, giveup "Cannot proceed with uncommitted changes staged in the index. Recommend you: git commit"
 		)
 	)
   where
@@ -52,11 +56,14 @@ wrapUnannex a = ifM isDirect
 		, Param "--no-verify"
 		, Param "-m", Param "content removed from git annex"
 		]
-	cleanindex = do
-		(diff, cleanup) <- inRepo $ DiffTree.diffIndex Git.Ref.headRef
-		if null diff
-			then void (liftIO cleanup) >> return True
-			else void (liftIO cleanup) >> return False
+	cleanindex = ifM (inRepo Git.Ref.headExists)
+		( do
+			(diff, cleanup) <- inRepo $ DiffTree.diffIndex Git.Ref.headRef
+			if null diff
+				then void (liftIO cleanup) >> return True
+				else void (liftIO cleanup) >> return False
+		, return False
+		)
 
 start :: FilePath -> Key -> CommandStart
 start file key = stopUnless (inAnnex key) $ do
@@ -68,11 +75,19 @@ start file key = stopUnless (inAnnex key) $ do
 performIndirect :: FilePath -> Key -> CommandPerform
 performIndirect file key = do
 	liftIO $ removeFile file
-	inRepo $ Git.Command.run [Params "rm --cached --force --quiet --", File file]
+	inRepo $ Git.Command.run
+		[ Param "rm"
+		, Param "--cached"
+		, Param "--force"
+		, Param "--quiet"
+		, Param "--"
+		, File file
+		]
 	next $ cleanupIndirect file key
 
 cleanupIndirect :: FilePath -> Key -> CommandCleanup
 cleanupIndirect file key = do
+	Database.Keys.removeAssociatedFile key =<< inRepo (toTopFilePath file)
 	src <- calcRepo $ gitAnnexLocation key
 	ifM (Annex.getState Annex.fast)
 		( do
@@ -91,20 +106,23 @@ cleanupIndirect file key = do
 	copyfrom src = 
 		thawContent file `after` liftIO (copyFileExternal CopyAllMetaData src file)
 	hardlinkfrom src =
-#ifndef mingw32_HOST_OS
 		-- creating a hard link could fall; fall back to copying
 		ifM (liftIO $ catchBoolIO $ createLink src file >> return True)
 			( return True
 			, copyfrom src
 			)
-#else
-		copyfrom src
-#endif
 
 performDirect :: FilePath -> Key -> CommandPerform
 performDirect file key = do
 	-- --force is needed when the file is not committed
-	inRepo $ Git.Command.run [Params "rm --cached --force --quiet --", File file]
+	inRepo $ Git.Command.run
+		[ Param "rm"
+		, Param "--cached"
+		, Param "--force"
+		, Param "--quiet"
+		, Param "--"
+		, File file
+		]
 	next $ cleanupDirect file key
 
 {- The direct mode file is not touched during unannex, so the content

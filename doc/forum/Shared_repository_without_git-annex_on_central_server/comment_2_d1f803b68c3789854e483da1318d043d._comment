@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-06-09T17:47:45Z"
+ content="""
+The gcrypt special remote will work without git-annex being installed
+on the server. The server only needs git and rsync. I think the
+tip is fairly clear about that when it says
+
+"While this will work without git-annex being installed on the server, it
+is recommended to have it installed."
+
+Without git-annex being available on the remote server, some things
+like `git annex notifychanges` and content locking during dropping won't
+work with that remote. The basics should work well enough to use it that
+way.
+"""]]

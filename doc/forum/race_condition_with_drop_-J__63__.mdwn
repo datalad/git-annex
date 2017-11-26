@@ -1,0 +1,7 @@
+When I run a command like: "git-annex drop . -J 20"
+
+I get: "git-annex: content is locked"
+
+Running with -J 5 works.
+
+EDIT: Even as low as -J 2 runs into problems. The issue is simply more likely to trigger with more threads.

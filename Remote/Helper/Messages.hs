@@ -1,27 +1,35 @@
 {- git-annex remote messages
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+
 module Remote.Helper.Messages where
 
-import Common.Annex
+import Annex.Common
 import qualified Git
 import qualified Types.Remote as Remote
 
-showChecking :: Git.Repo -> Annex ()
-showChecking r = showAction $ "checking " ++ Git.repoDescribe r
+class Describable a where
+	describe :: a -> String
 
-class Checkable a where
-	descCheckable :: a -> String
+instance Describable Git.Repo where
+	describe = Git.repoDescribe
 
-instance Checkable Git.Repo where
-	descCheckable = Git.repoDescribe
+instance Describable (Remote.RemoteA a) where
+	describe = Remote.name
 
-instance Checkable (Remote.RemoteA a) where
-	descCheckable = Remote.name
+instance Describable String where
+	describe = id
 
-cantCheck :: Checkable a => a -> e
-cantCheck v = error $ "unable to check " ++ descCheckable v
+showChecking :: Describable a => a -> Annex ()
+showChecking v = showAction $ "checking " ++ describe v
+
+cantCheck :: Describable a => a -> e
+cantCheck v = giveup $ "unable to check " ++ describe v
+
+showLocking :: Describable a => a -> Annex ()
+showLocking v = showAction $ "locking " ++ describe v

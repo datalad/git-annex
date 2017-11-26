@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="bup-cron has something"
+ date="2015-05-27T23:32:18Z"
+ content="""
+so the bup people has a little [bup-damage](https://github.com/bup/bup/blob/master/cmd/damage-cmd.py) command to insert noise into files. it doesn't simulate I/O problems per se, but maybe it could help? --[[anarcat]]
+"""]]

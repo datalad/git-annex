@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="zardoz"
- ip="134.147.14.84"
- subject="comment 1"
- date="2014-07-07T12:48:07Z"
- content="""
-Can it be considered safe adding symlinks via «git -c core.bare=false add symlink; git -c core.bare=false commit -m Update»? If not, is there a better way?
-"""]]

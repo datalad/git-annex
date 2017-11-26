@@ -1,0 +1,26 @@
+flags:
+  git-annex:
+    concurrentoutput: true
+    production: true
+    assistant: true
+    pairing: true
+    network-uri: true
+    s3: true
+    testsuite: true
+    webdav: true
+    torrentparser: true
+    webapp: true
+    magicmime: false
+    dbus: false
+    android: false
+    androidsplice: false
+packages:
+- '.'
+extra-deps:
+- aws-0.17.1
+- bloomfilter-2.0.1.0
+- torrent-10000.1.1
+- yesod-default-1.2.0
+explicit-setup-deps:
+  git-annex: true
+resolver: lts-9.9

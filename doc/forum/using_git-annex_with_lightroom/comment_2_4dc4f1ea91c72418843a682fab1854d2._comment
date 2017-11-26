@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="Jan"
+ subject="comment 2"
+ date="2015-01-10T10:37:11Z"
+ content="""
+I had the same problem an got Lightroom to work nicely with the following configuration.
+
+Place catalog and photo data in the same directory tree, for example:
+
+
+    /Lightroom/2015/2015-01-10/IMG_4432.JPG
+    /Lightroom/2015/2015-01-10/IMG_4433.JPG
+    ...
+    /Lightroom/Catalog/Lightroom 5 Catalog.lrcat
+    /Lightroom/Catalog/Lightroom 5 Catalog Previews.lrdata
+    /Lightroom/Catalog/Backups
+
+
+Now the image data and Lightroom metadata (= catalog) can be archived at the same time. In order to prevent temporary files and previews to get annexed use the following `.gitignore`:
+
+
+    */*.lrdata
+    Temporary Folder*/
+    */Temporary Import Data*/
+    *.lock
+
+The downside is that previews will have to get regenerated on other machines which pull this data, but I don't use it to share my Lightroom config across computers but as an archival tool.
+"""]]

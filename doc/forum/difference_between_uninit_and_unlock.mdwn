@@ -1,0 +1,10 @@
+What's the difference between
+
+    git annex uninit
+
+and 
+
+    git annex unlock *
+    rm -rf .git
+
+?

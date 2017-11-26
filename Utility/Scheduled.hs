@@ -1,6 +1,6 @@
 {- scheduled activities
  - 
- - Copyright 2013-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2013-2014 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -23,24 +23,24 @@ module Utility.Scheduled (
 	toRecurrance,
 	toSchedule,
 	parseSchedule,
-	prop_schedule_roundtrips,
 	prop_past_sane,
 ) where
 
 import Utility.Data
-import Utility.QuickCheck
 import Utility.PartialPrelude
 import Utility.Misc
+import Utility.Tuple
 
-import Control.Applicative
 import Data.List
 import Data.Time.Clock
 import Data.Time.LocalTime
 import Data.Time.Calendar
 import Data.Time.Calendar.WeekDate
 import Data.Time.Calendar.OrdinalDate
-import Data.Tuple.Utils
+import Data.Time.Format ()
 import Data.Char
+import Control.Applicative
+import Prelude
 
 {- Some sort of scheduled event. -}
 data Schedule = Schedule Recurrance ScheduledTime
@@ -285,7 +285,7 @@ fromScheduledTime AnyTime = "any time"
 fromScheduledTime (SpecificTime h m) = 
 	show h' ++ (if m > 0 then ":" ++ pad 2 (show m) else "") ++ " " ++ ampm
   where
-	pad n s = take (n - length s) (repeat '0') ++ s
+	pad n s = replicate (n - length s) '0' ++ s
 	(h', ampm)
 		| h == 0 = (12, "AM")
 		| h < 12 = (h, "AM")
@@ -335,41 +335,6 @@ parseSchedule s = do
 	(rws, tws) = separate (== "at") (words s)
 	recurrance = unwords rws
 	scheduledtime = unwords tws
-
-instance Arbitrary Schedule where
-	arbitrary = Schedule <$> arbitrary <*> arbitrary
-
-instance Arbitrary ScheduledTime where
-	arbitrary = oneof
-		[ pure AnyTime
-		, SpecificTime 
-			<$> choose (0, 23)
-			<*> choose (1, 59)
-		]
-
-instance Arbitrary Recurrance where
-	arbitrary = oneof
-		[ pure Daily
-		, Weekly <$> arbday
-		, Monthly <$> arbday
-		, Yearly <$> arbday
-		, Divisible
-			<$> positive arbitrary
-			<*> oneof -- no nested Divisibles
-				[ pure Daily
-				, Weekly <$> arbday
-				, Monthly <$> arbday
-				, Yearly <$> arbday
-				]
-		]
-	  where
-		arbday = oneof
-			[ Just <$> nonNegative arbitrary
-			, pure Nothing
-			]
-
-prop_schedule_roundtrips :: Schedule -> Bool
-prop_schedule_roundtrips s = toSchedule (fromSchedule s) == Just s
 
 prop_past_sane :: Bool
 prop_past_sane = and

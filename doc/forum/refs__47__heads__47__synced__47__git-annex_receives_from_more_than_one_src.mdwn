@@ -1,0 +1,12 @@
+Total newbie here, so I apologize in advice for asking dumb questions. I did my best to look through the branchable docs, Google, etc to no avail.     
+I'm trying to use git-annex to manage my music collection (on Windows). I added and pushed 669 songs to GitLab from my desktop.
+At this point, my music is on both the first folder and GitLab (worth noting that I still don't know where to find the binaries on GitLab...).      
+      
+Then just as a test, tried to clone the repo and run `git annex sync --content`.      
+      
+I get the following error:       
+`error: dst ref refs/heads/synced/git-annex receives from more than one src.`      
+`error: failed to push some refs to 'git@gitlab.com:repolocation/Songs.git'`      
+      
+I figure it's because the files are both on GitLab and the other folder, but I'm not sure how to proceed.      
+Would appreciate any help, thanks!

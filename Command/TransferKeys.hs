@@ -1,6 +1,6 @@
 {- git-annex command, used internally by assistant
  -
- - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,28 +9,27 @@
 
 module Command.TransferKeys where
 
-import Common.Annex
 import Command
 import Annex.Content
 import Logs.Location
 import Annex.Transfer
 import qualified Remote
-import Types.Key
-import Utility.SimpleProtocol (ioHandles)
+import Utility.SimpleProtocol (dupIoHandles)
 import Git.Types (RemoteName)
+import qualified Database.Keys
 
 data TransferRequest = TransferRequest Direction Remote Key AssociatedFile
 
-cmd :: [Command]
-cmd = [command "transferkeys" paramNothing seek
-	SectionPlumbing "transfers keys"]
+cmd :: Command
+cmd = command "transferkeys" SectionPlumbing "transfers keys"
+	paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start :: CommandStart
 start = do
-	(readh, writeh) <- liftIO ioHandles
+	(readh, writeh) <- liftIO dupIoHandles
 	runRequests readh writeh runner
 	stop
   where
@@ -43,7 +42,13 @@ start = do
 				return ok
 		| otherwise = notifyTransfer direction file $
 			download (Remote.uuid remote) key file forwardRetry $ \p ->
-				getViaTmp key $ \t -> Remote.retrieveKeyFile remote key file t p
+				getViaTmp (RemoteVerify remote) key $ \t -> do
+					r <- Remote.retrieveKeyFile remote key file t p
+					-- Make sure we get the current
+					-- associated files data for the key,
+					-- not old cached data.
+					Database.Keys.closeDb			
+					return r
 
 runRequests
 	:: Handle
@@ -51,10 +56,7 @@ runRequests
 	-> (TransferRequest -> Annex Bool)
 	-> Annex ()
 runRequests readh writeh a = do
-	liftIO $ do
-		hSetBuffering readh NoBuffering
-		fileEncoding readh
-		fileEncoding writeh
+	liftIO $ hSetBuffering readh NoBuffering
 	go =<< readrequests
   where
 	go (d:rn:k:f:rest) = do
@@ -77,14 +79,14 @@ runRequests readh writeh a = do
 		hFlush writeh
 
 sendRequest :: Transfer -> TransferInfo -> Handle -> IO ()
-sendRequest t info h = do
+sendRequest t tinfo h = do
 	hPutStr h $ intercalate fieldSep
 		[ serialize (transferDirection t)
 		, maybe (serialize (fromUUID (transferUUID t)))
 			(serialize . Remote.name)
-			(transferRemote info)
+			(transferRemote tinfo)
 		, serialize (transferKey t)
-		, serialize (associatedFile info)
+		, serialize (associatedFile tinfo)
 		, "" -- adds a trailing null
 		]
 	hFlush h
@@ -114,10 +116,10 @@ instance TCSerialized Direction where
 	deserialize _ = Nothing
 
 instance TCSerialized AssociatedFile where
-	serialize (Just f) = f
-	serialize Nothing = ""
-	deserialize "" = Just Nothing
-	deserialize f = Just $ Just f
+	serialize (AssociatedFile (Just f)) = f
+	serialize (AssociatedFile Nothing) = ""
+	deserialize "" = Just (AssociatedFile Nothing)
+	deserialize f = Just (AssociatedFile (Just f))
 
 instance TCSerialized RemoteName where
 	serialize n = n

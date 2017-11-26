@@ -1,0 +1,13 @@
+Hi!
+
+I just discovered *git-annex* as a great way to move away from Dropbox, but there are some open questions I couldn't find answers for and hope someone will be able to answer them here:
+
+I didn't completely understand how remotes are treated. As far as I understand there are two different parts to sync, the metadata (which is stored in a regular git repository) and the regular file data (or only chunks of it?). When syncing, I can choose whether I want to only sync the git (-metadata) part, or if I want to include the file contents, right?
+
+1. Is it possible to sync only a *part* of the file contents to certain remotes? For example I would want all my ebooks and photos to be synced to my remote server, but wouldn't want my private accounting and tax stuff to sync over the internet. 
+2. I have several (regular) git repositories used for e.g. development. Can I store a regular (bare) git repository within a git-annex repository? Does this make sense, or should I (for whatever reason) avoid it?
+3. A great feature of the Dropbox app is the automatic upload of photos taken with my iPhone. I would like to adopt this kind of backup. So considering a remotely accessible server. Is there some way to make use of *special remotes* like WebDAV to allow uploads over a *non-git interface*?
+4. Is there a way to access files (read-only) over a non-git interface from some git-annex remote? So could I access e.g. some pdf document from a git-annex repository, when there is a WebDAV special remote? Or do I just misunderstand the concept of *special remotes*? Is there another (useful) way? Maybe some kind of (remotely accessible) web interface? 
+5. Why is git-annex [not a backup system](http://git-annex.branchable.com/not/)?
+
+Thank you in advance!

@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="sanket"
+ subject="Integrating Tahoe and Git annex using special remote"
+ date="2015-08-12T00:00:09Z"
+ content="""
+I am trying to integrate Git annex and Tahoe filesystem with each other using special remote. We have 2 systems connected to same Tahoe grid and we managed to upload the file on Tahoe from 1 file system using Git annex and special remote. Now I need to download same file from other system. But for downloading the file from other system we will need the key which was generated when we uploaded the file from first system which was handled by Git annex on first system. We tried to sync only git annex repositories but we did not get the key.( We can not use Sync content because that will kill the purpose of using Tahoe, we need to somehow transfer only keys between 2 git annex systems). Is there any way using which we can share the keys of files uploaded on Tahoe between 2 systems using Git annex or is there any way to share the file between 2 systems on Tahoe grids using git annex and special remote?
+"""]]

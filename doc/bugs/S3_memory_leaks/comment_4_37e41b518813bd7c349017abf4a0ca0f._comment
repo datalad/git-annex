@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.112"
- subject="comment 4"
- date="2014-08-03T18:40:26Z"
- content="""
-Beginning work on a `s3-aws` branch using the aws library instead of hS3.
-"""]]

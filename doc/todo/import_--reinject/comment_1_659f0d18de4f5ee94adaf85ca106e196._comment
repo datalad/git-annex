@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 1"
+ date="2016-02-23T12:24:48Z"
+ content="""
+git-annex verifies the content in other repositories when you use --clean-duplicates because if it did not, it could delete the only copy of a file you had, because it was deleting files it knew about, but didn't have.
+
+As for what you are attempting, [maybe something like this](https://git-annex.branchable.com/tips/recover_data_from_lost+found/)?
+"""]]

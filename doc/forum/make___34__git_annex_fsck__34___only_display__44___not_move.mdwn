@@ -1,0 +1,3 @@
+Is there a way to make fsck only display corrupted files instead of move them to the internal /bad folder? 
+
+Especially since the -q option (to only print corrupted files) doesn't even print the filename, only that *a* file has been moved...it seems a bit aggressive to compulsorily move a file to some obfuscated name AND not indicate its original location anywhere...

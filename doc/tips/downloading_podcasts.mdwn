@@ -14,7 +14,9 @@ git-annex will avoid downloading a file from a feed if its url has already
 been stored in the repository before. So once a file is downloaded,
 you can move it around, delete it, `git annex drop` its content, etc,
 and it will not be downloaded again by repeated runs of
-`git annex importfeed`. Just how a podcatcher should behave.
+`git annex importfeed`. Just how a podcatcher should behave.  (git-annex versions 
+since 2015 also tracks the podcast `guid` values, as metadata, to help avoid 
+duplication if the media file url changes; use `git annex metadata ...` to inspect.)
 
 ## templates
 
@@ -48,6 +50,12 @@ Then you can run git-annex on all the feeds:
 
 `xargs git-annex importfeed < feeds`
 
+## recreating lost episodes
+
+If for some reason git-annex refuses to download files you are certain are in the podcast, it is quite possible it is because they have already been downloaded. In any case, you can use `--force` to redownload them:
+
+`git-annex importfeed --force http://example.com/feed`
+
 ## distributed podcatching
 
 A nice benefit of using git-annex as a podcatcher is that you can
@@ -68,6 +76,10 @@ and transferring to your laptop on demand.
 If your git-annex is also built with quvi support, you can also use
 `git annex importfeed` on youtube playlists. It will automatically download
 the videos linked to by the playlist.
+
+For this you need an rss file containing links to the videos.
+For example, this url currently works:
+<http://gdata.youtube.com/feeds/api/playlists/PLz8ZG1e9MPlzefklz1Gv79icjywTXycR->
 
 ## metadata
 

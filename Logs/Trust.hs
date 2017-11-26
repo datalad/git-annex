@@ -1,6 +1,6 @@
 {- git-annex trust log
  -
- - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,15 +15,13 @@ module Logs.Trust (
 	trustExclude,
 	lookupTrust,
 	trustMapLoad,
-	trustMapRaw,
 ) where
 
 import qualified Data.Map as M
 import Data.Default
 
-import Common.Annex
+import Annex.Common
 import Types.TrustLevel
-import qualified Annex.Branch
 import qualified Annex
 import Logs
 import Remote.List
@@ -67,18 +65,19 @@ trustMap = maybe trustMapLoad return =<< Annex.getState Annex.trustmap
 trustMapLoad :: Annex TrustMap
 trustMapLoad = do
 	overrides <- Annex.getState Annex.forcetrust
+	l <- remoteList
+	-- Exports are never trusted, since they are not key/value stores.
+	exports <- filterM Types.Remote.isExportSupported l
+	let exportoverrides = M.fromList $
+		map (\r -> (Types.Remote.uuid r, UnTrusted)) exports
 	logged <- trustMapRaw
-	configured <- M.fromList . catMaybes
-		<$> (map configuredtrust <$> remoteList)
-	let m = M.union overrides $ M.union configured logged
+	let configured = M.fromList $ mapMaybe configuredtrust l
+	let m = M.union exportoverrides $
+		M.union overrides $
+		M.union configured logged
 	Annex.changeState $ \s -> s { Annex.trustmap = Just m }
 	return m
   where
 	configuredtrust r = (\l -> Just (Types.Remote.uuid r, l))
 		=<< readTrustLevel 
 		=<< remoteAnnexTrustLevel (Types.Remote.gitconfig r)
-
-{- Does not include forcetrust or git config values, just those from the
- - log file. -}
-trustMapRaw :: Annex TrustMap
-trustMapRaw = calcTrustMap <$> Annex.Branch.get trustLog

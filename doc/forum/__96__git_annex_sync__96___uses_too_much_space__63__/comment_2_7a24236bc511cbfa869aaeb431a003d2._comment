@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-05-05T16:42:43Z"
+ content="""
+It's failing to pull the git repository from the remote because that
+git repository is apparently larger than 487 mb. That is not usual 
+when using git-annex, or even when using git unless you have millions
+of files in the git repository.
+
+Since you only have a few thousand files in the git repository,
+my guess is you have committed some large files directly to git,
+instead of using git-annex. So, you're seeing why git-annex exists...
+
+You should find the files in your git repository that are not git-annex
+symlinks, and are large files. You may need to use `git filter-branch`
+to remove the from your repository's history.
+"""]]

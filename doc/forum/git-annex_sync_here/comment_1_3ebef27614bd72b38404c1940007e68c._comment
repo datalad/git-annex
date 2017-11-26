@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-05-24T17:06:29Z"
+ content="""
+Well, that does the same thing as `git commit -a`, so I don't see
+any benefit complicating the command with additional syntax.
+"""]]

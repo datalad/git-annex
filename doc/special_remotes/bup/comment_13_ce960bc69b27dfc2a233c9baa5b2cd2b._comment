@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="darkfeline@e6d098788a13ce41f3141a2dfc1bd31b401e83f0"
+ nickname="darkfeline"
+ subject="buprepo doesn't work properly"
+ date="2015-08-17T12:59:25Z"
+ content="""
+The buprepo parameter doesn't seem to work properly, at least for local repos.  For example, I added a bup remote with buprepo=/media/hdd/bup, yet when I try to move files onto it, it still tries to use /home/foo/.bup (the default path).  I suppose git-annex should be setting the envvar BUP_DIR before calling bup?
+
+I can do it manually like BUP_DIR=/media/hdd/bup git annex move --to hdd foo, but that almost seems to defeat the purpose...
+"""]]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="note that some remotes could support files versioning &quot;natively&quot;"
+ date="2017-07-11T21:59:49Z"
+ content="""
+E.g. when exporting to the S3 bucket with versioning turned on, or OSF (AFAIK).  So upon successful upload special remote could SETURLPRESENT to signal availability of any particular key (associated with the file).
+
+Yet to grasp the cases you outlined better to see if I see any other applicable use-ase
+
+I hope that export would be implemented through extending externals special remote protocol? ;)
+
+[[!meta author=yoh]]
+
+"""]]

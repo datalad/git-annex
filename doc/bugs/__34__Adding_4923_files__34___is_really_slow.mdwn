@@ -100,3 +100,4 @@ add music/Pop/Various/Like, Omigod! The 80s Pop Culture Box (totally)/._4-08 Tal
 [[!meta title="direct mode mappings scale badly with thousands of identical files"]]
 
 [[!tag confirmed]]
+[[!meta tag=deprecateddirectmode]]

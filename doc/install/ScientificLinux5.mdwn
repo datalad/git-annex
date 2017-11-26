@@ -31,32 +31,7 @@ don't want things to be system wide)
 
     $ export PATH=/usr/hs/bin:$PATH
 
-Once the packages are installed and are in your execution path, using
-cabal to configure and build git-annex just makes life easier, it
-should install all the needed dependancies.
-
-    $ cabal update
-    $ git clone git://git.kitenet.net/git-annex
-    $ cd git-annex
-    $ make git-annex.1
-    $ cabal configure
-    $ cabal build
-    $ cabal install
-
-Or if you want to install it globallly for everyone (otherwise it will
-get installed into $HOME/.cabal/bin)
-
-    $ cabal install --global
-
-The above will take a while to compile and install the needed
-dependancies. I would suggest any user who does should run the tests
-that comes with git-annex to make sure everything is functioning as
-expected.
-
-I haven't had a chance or need to install git-annex on a SL6 based
-system yet, but I would assume something similar to the above steps
-would be required to do so.
-
-The above is almost a cut and paste of <http://jcftang.github.com/2012/06/15/installing-git-annex-on-sl5/>, the above could probably be refined, it was what worked for me on SL5. Please feel free to re-edit and chop out or add useless bits of text in the above!
-
-Note: from the minor testing, it appears the compiled binaries from SL5 will work on SL6.
+Once the GHC packages are installed and are in your execution path, using
+cabal to build git-annex just makes life easier, it
+should install all the needed dependancies. See "minimal build with cabal
+and stackage" in [[fromsource]] for instructions.

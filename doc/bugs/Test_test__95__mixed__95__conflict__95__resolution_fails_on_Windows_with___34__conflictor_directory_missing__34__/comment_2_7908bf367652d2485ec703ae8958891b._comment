@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.199"
- subject="comment 2"
- date="2014-01-29T17:52:27Z"
- content="""
-AFAICS, the test suite does not look at the contents of the files when testing this. Anyway, you said a lot about how it works when you try to reproduce the bug manually, but you didn't actually show how the test suite is failing.
-"""]]

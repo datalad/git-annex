@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-01-20T19:06:00Z"
+ content="""
+Try running `git-annex fsck` on the file; this may fix it up to make the
+content actually available. It might also output something useful to debug
+what went wrong.
+"""]]

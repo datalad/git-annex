@@ -1,13 +1,16 @@
 {- git-annex direct mode
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - This is deprecated, and will be removed when direct mode gets removed
+ - from git-annex.
+ -
+ - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Annex.Direct where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import qualified Git
 import qualified Git.LsFiles
@@ -34,8 +37,9 @@ import Annex.Perms
 import Annex.ReplaceFile
 import Annex.VariantFile
 import Git.Index
-import Annex.Index
+import Annex.GitOverlay
 import Annex.LockFile
+import Annex.InodeSentinal
 
 {- Uses git ls-files to find files that need to be committed, and stages
  - them into the index. Returns True if some changes were staged. -}
@@ -53,10 +57,10 @@ stageDirect = do
 	{- Determine what kind of modified or deleted file this is, as
 	 - efficiently as we can, by getting any key that's associated
 	 - with it in git, as well as its stat info. -}
-	go (file, Just sha, Just mode) = withTSDelta $ \delta -> do
-		shakey <- catKey sha mode
+	go (file, Just sha, Just _mode) = withTSDelta $ \delta -> do
+		shakey <- catKey sha
 		mstat <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
-		mcache <- liftIO $ maybe (pure Nothing) (toInodeCache delta) mstat
+		mcache <- liftIO $ maybe (pure Nothing) (toInodeCache delta file) mstat
 		filekey <- isAnnexLink file
 		case (shakey, filekey, mstat, mcache) of
 			(_, Just key, _, _)
@@ -86,7 +90,7 @@ stageDirect = do
 		deletegit file
 	
 	stageannexlink file key = do
-		l <- inRepo $ gitAnnexLink file key
+		l <- calcRepo $ gitAnnexLink file key
 		stageSymlink file =<< hashSymlink l
 		void $ addAssociatedFile key file
 
@@ -107,9 +111,8 @@ preCommitDirect = do
 		withkey (DiffTree.srcsha diff) (DiffTree.srcmode diff) removeAssociatedFile
 		withkey (DiffTree.dstsha diff) (DiffTree.dstmode diff) addAssociatedFile
 	  where
-		withkey sha mode a = when (sha /= nullSha) $ do
-			k <- catKey sha mode
-			case k of
+		withkey sha _mode a = when (sha /= nullSha) $
+			catKey sha >>= \case
 				Nothing -> noop
 				Just key -> void $ a key $
 					makeabs $ DiffTree.file diff
@@ -131,7 +134,7 @@ addDirect file cache = do
 		return False
 	got (Just (key, _)) = ifM (sameInodeCache file [cache])
 		( do
-			l <- inRepo $ gitAnnexLink file key
+			l <- calcRepo $ gitAnnexLink file key
 			stageSymlink file =<< hashSymlink l
 			addInodeCache key cache
 			void $ addAssociatedFile key file
@@ -153,16 +156,17 @@ addDirect file cache = do
  -
  - A lock file is used to avoid races with any other caller of mergeDirect.
  - 
- - To avoid other git processes from making change to the index while our
+ - To avoid other git processes from making changes to the index while our
  - merge is in progress, the index lock file is used as the temp index
  - file. This is the same as what git does when updating the index
  - normally.
  -}
-mergeDirect :: Maybe Git.Ref -> Maybe Git.Ref -> Git.Branch -> Annex Bool -> Git.Branch.CommitMode -> Annex Bool
-mergeDirect startbranch oldref branch resolvemerge commitmode = exclusively $ do
-	reali <- fromRepo indexFile
-	tmpi <- fromRepo indexFileLock
-	liftIO $ copyFile reali tmpi
+mergeDirect :: Maybe Git.Ref -> Maybe Git.Ref -> Git.Branch -> Annex Bool -> [Git.Merge.MergeConfig] -> Git.Branch.CommitMode -> Annex Bool
+mergeDirect startbranch oldref branch resolvemerge mergeconfig commitmode = exclusively $ do
+	reali <- liftIO . absPath =<< fromRepo indexFile
+	tmpi <- liftIO . absPath =<< fromRepo indexFileLock
+	liftIO $ whenM (doesFileExist reali) $
+		copyFile reali tmpi
 
 	d <- fromRepo gitAnnexMergeDir
 	liftIO $ do
@@ -171,36 +175,43 @@ mergeDirect startbranch oldref branch resolvemerge commitmode = exclusively $ do
 		createDirectoryIfMissing True d
 
 	withIndexFile tmpi $ do
-		merged <- stageMerge d branch commitmode
-		r <- if merged
+		merged <- stageMerge d branch mergeconfig commitmode
+		ok <- if merged
 			then return True
 			else resolvemerge
-		mergeDirectCleanup d (fromMaybe Git.Sha.emptyTree oldref)
-		mergeDirectCommit merged startbranch branch commitmode
-
-		liftIO $ rename tmpi reali
-
-		return r
+		if ok
+			then do
+				mergeDirectCleanup d (fromMaybe Git.Sha.emptyTree oldref)
+				mergeDirectCommit merged startbranch branch commitmode
+				liftIO $ whenM (doesFileExist tmpi) $
+					rename tmpi reali
+			else do
+				liftIO $ nukeFile tmpi
+		liftIO $ removeDirectoryRecursive d
+		return ok
   where
 	exclusively = withExclusiveLock gitAnnexMergeLock
 
 {- Stage a merge into the index, avoiding changing HEAD or the current
  - branch. -}
-stageMerge :: FilePath -> Git.Branch -> Git.Branch.CommitMode -> Annex Bool
-stageMerge d branch commitmode = do
+stageMerge :: FilePath -> Git.Branch -> [Git.Merge.MergeConfig] -> Git.Branch.CommitMode -> Annex Bool
+stageMerge d branch mergeconfig commitmode = do
 	-- XXX A bug in git makes stageMerge unsafe to use if the git repo
 	-- is configured with core.symlinks=false
-	-- Using mergeNonInteractive is not ideal though, since it will
+	-- Using merge is not ideal though, since it will
 	-- update the current branch immediately, before the work tree
 	-- has been updated, which would leave things in an inconsistent
 	-- state if mergeDirectCleanup is interrupted.
 	-- <http://marc.info/?l=git&m=140262402204212&w=2>
 	merger <- ifM (coreSymlinks <$> Annex.getGitConfig)
-		( return Git.Merge.stageMerge
-		, return $ \ref -> Git.Merge.mergeNonInteractive ref commitmode
-		) 
-	inRepo $ \g -> merger branch $ 
-		g { location = Local { gitdir = Git.localGitDir g, worktree = Just d } }
+		( return $ \ref -> Git.Merge.stageMerge ref mergeconfig
+		, return $ \ref -> Git.Merge.merge ref mergeconfig commitmode
+		)
+	inRepo $ \g -> do
+		wd <- liftIO $ absPath d
+		gd <- liftIO $ absPath $ Git.localGitDir g
+		merger branch $ 
+			g { location = Local { gitdir = gd, worktree = Just (addTrailingPathSeparator wd) } }
 
 {- Commits after a direct mode merge is complete, and after the work
  - tree has been updated by mergeDirectCleanup.
@@ -213,7 +224,7 @@ mergeDirectCommit allowff old branch commitmode = do
 	let merge_msg = d </> "MERGE_MSG"
 	let merge_mode = d </> "MERGE_MODE"
 	ifM (pure allowff <&&> canff)
-		( inRepo $ Git.Branch.update Git.Ref.headRef branch -- fast forward
+		( inRepo $ Git.Branch.update "merge" Git.Ref.headRef branch -- fast forward
 		, do
 			msg <- liftIO $
 				catchDefaultIO ("merge " ++ fromRef branch) $
@@ -225,9 +236,15 @@ mergeDirectCommit allowff old branch commitmode = do
   where
 	canff = maybe (return False) (\o -> inRepo $ Git.Branch.fastForwardable o branch) old
 
-{- Cleans up after a direct mode merge. The merge must have been staged
- - in the index. Uses diff-index to compare the staged changes with
- - the tree before the merge, and applies those changes to the work tree.
+mergeDirectCleanup :: FilePath -> Git.Ref -> Annex ()
+mergeDirectCleanup d oldref = updateWorkTree d oldref False
+
+{- Updates the direct mode work tree to reflect the changes staged in the
+ - index by a git command, that was run in a temporary work tree.
+ -
+ - Uses diff-index to compare the staged changes with provided ref
+ - which should be the tree before the merge, and applies those
+ - changes to the work tree.
  -
  - There are really only two types of changes: An old item can be deleted,
  - or a new item added. Two passes are made, first deleting and then
@@ -236,23 +253,22 @@ mergeDirectCommit allowff old branch commitmode = do
  - order, but we cannot add the directory until the file with the
  - same name is removed.)
  -}
-mergeDirectCleanup :: FilePath -> Git.Ref -> Annex ()
-mergeDirectCleanup d oldref = do
+updateWorkTree :: FilePath -> Git.Ref -> Bool -> Annex ()
+updateWorkTree d oldref force = do
 	(items, cleanup) <- inRepo $ DiffTree.diffIndex oldref
 	makeabs <- flip fromTopFilePath <$> gitRepo
 	let fsitems = zip (map (makeabs . DiffTree.file) items) items
 	forM_ fsitems $
-		go makeabs DiffTree.srcsha DiffTree.srcmode moveout moveout_raw
+		go makeabs DiffTree.srcsha moveout moveout_raw
 	forM_ fsitems $
-		go makeabs DiffTree.dstsha DiffTree.dstmode movein movein_raw
+		go makeabs DiffTree.dstsha movein movein_raw
 	void $ liftIO cleanup
-	liftIO $ removeDirectoryRecursive d
   where
-	go makeabs getsha getmode a araw (f, item)
+	go makeabs getsha a araw (f, item)
 		| getsha item == nullSha = noop
 		| otherwise = void $
 			tryNonAsync . maybe (araw item makeabs f) (\k -> void $ a item makeabs k f)
-				=<< catKey (getsha item) (getmode item)
+				=<< catKey (getsha item)
 
 	moveout _ _ = removeDirect
 
@@ -271,15 +287,15 @@ mergeDirectCleanup d oldref = do
 	 - Otherwise, create the symlink and then if possible, replace it
 	 - with the content. -}
 	movein item makeabs k f = unlessM (goodContent k f) $ do
-		preserveUnannexed item makeabs f oldref
-		l <- inRepo $ gitAnnexLink f k
+		unless force $ preserveUnannexed item makeabs f oldref
+		l <- calcRepo $ gitAnnexLink f k
 		replaceFile f $ makeAnnexLink l
 		toDirect k f
 	
 	{- Any new, modified, or renamed files were written to the temp
 	 - directory by the merge, and are moved to the real work tree. -}
 	movein_raw item makeabs f = do
-		preserveUnannexed item makeabs f oldref
+		unless force $ preserveUnannexed item makeabs f oldref
 		liftIO $ do
 			createDirectoryIfMissing True $ parentDir f
 			void $ tryIO $ rename (d </> getTopFilePath (DiffTree.file item)) f
@@ -298,10 +314,10 @@ preserveUnannexed item makeabs absf oldref = do
 		liftIO $ findnewname absf 0
 	checkdirs (DiffTree.file item)
   where
-	checkdirs from = do
-		let p = parentDir (getTopFilePath from)
-		let d = asTopFilePath p
-		unless (null p) $ do
+	checkdirs from = case upFrom (getTopFilePath from) of
+		Nothing -> noop
+		Just p -> do
+			let d = asTopFilePath p
 			let absd = makeabs d
 			whenM (liftIO (colliding_nondir absd) <&&> unannexed absd) $
 				liftIO $ findnewname absd 0
@@ -366,8 +382,11 @@ removeDirect :: Key -> FilePath -> Annex ()
 removeDirect k f = do
 	void $ removeAssociatedFileUnchecked k f
 	unlessM (inAnnex k) $
+		-- If moveAnnex rejects the content of the key,
+		-- treat that the same as its content having changed.
 		ifM (goodContent k f)
-			( moveAnnex k f
+			( unlessM (moveAnnex k f) $
+				logStatus k InfoMissing
 			, logStatus k InfoMissing
 			)
 	liftIO $ do
@@ -382,7 +401,7 @@ changedDirect oldk f = do
 	whenM (pure (null locs) <&&> not <$> inAnnex oldk) $
 		logStatus oldk InfoMissing
 
-{- Enable/disable direct mode. -}
+{- Git config settings to enable/disable direct mode. -}
 setDirect :: Bool -> Annex ()
 setDirect wantdirect = do
 	if wantdirect
@@ -396,7 +415,23 @@ setDirect wantdirect = do
 	Annex.changeGitConfig $ \c -> c { annexDirect = wantdirect }
   where
 	val = Git.Config.boolConfig wantdirect
-	setbare = setConfig (ConfigKey Git.Config.coreBare) val
+	coreworktree = ConfigKey "core.worktree"
+	indirectworktree = ConfigKey "core.indirect-worktree"
+	setbare = do
+		-- core.worktree is not compatable with
+		-- core.bare; git does not allow both to be set, so
+		-- unset it when enabling direct mode, caching in
+		-- core.indirect-worktree
+		if wantdirect
+			then moveconfig coreworktree indirectworktree
+			else moveconfig indirectworktree coreworktree
+		setConfig (ConfigKey Git.Config.coreBare) val
+	moveconfig src dest = getConfigMaybe src >>= \case
+		Nothing -> noop
+		Just wt -> do
+			unsetConfig src
+			setConfig dest wt
+			reloadConfig
 
 {- Since direct mode sets core.bare=true, incoming pushes could change
  - the currently checked out branch. To avoid this problem, HEAD
@@ -406,7 +441,7 @@ setDirect wantdirect = do
  - this way things that show HEAD (eg shell prompts) will
  - hopefully show just "master". -}
 directBranch :: Ref -> Ref
-directBranch orighead = case split "/" $ fromRef orighead of
+directBranch orighead = case splitc '/' $ fromRef orighead of
 	("refs":"heads":"annex":"direct":_) -> orighead
 	("refs":"heads":rest) ->
 		Ref $ "refs/heads/annex/direct/" ++ intercalate "/" rest
@@ -417,7 +452,7 @@ directBranch orighead = case split "/" $ fromRef orighead of
  - Any other ref is left unchanged.
  -}
 fromDirectBranch :: Ref -> Ref
-fromDirectBranch directhead = case split "/" $ fromRef directhead of
+fromDirectBranch directhead = case splitc '/' $ fromRef directhead of
 	("refs":"heads":"annex":"direct":rest) -> 
 		Ref $ "refs/heads/" ++ intercalate "/" rest
 	_ -> directhead
@@ -427,7 +462,7 @@ switchHEAD = maybe noop switch =<< inRepo Git.Branch.currentUnsafe
   where
 	switch orighead = do
 		let newhead = directBranch orighead
-		maybe noop (inRepo . Git.Branch.update newhead)
+		maybe noop (inRepo . Git.Branch.update "entering direct mode" newhead)
 			=<< inRepo (Git.Ref.sha orighead)
 		inRepo $ Git.Branch.checkout newhead
 
@@ -436,11 +471,10 @@ switchHEADBack = maybe noop switch =<< inRepo Git.Branch.currentUnsafe
   where
 	switch currhead = do
 		let orighead = fromDirectBranch currhead
-		v <- inRepo $ Git.Ref.sha currhead
-		case v of
+		inRepo (Git.Ref.sha currhead) >>= \case
 			Just headsha
 				| orighead /= currhead -> do
-					inRepo $ Git.Branch.update orighead headsha
+					inRepo $ Git.Branch.update "leaving direct mode" orighead headsha
 					inRepo $ Git.Branch.checkout orighead
 					inRepo $ Git.Branch.delete currhead
 			_ -> inRepo $ Git.Branch.checkout orighead

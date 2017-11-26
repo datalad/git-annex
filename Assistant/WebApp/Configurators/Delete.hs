@@ -1,6 +1,6 @@
 {- git-annex assistant webapp repository deletion
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -17,17 +17,15 @@ import Assistant.Sync
 import qualified Remote
 import qualified Git
 import Config.Files
-import Utility.FileMode
 import Logs.Trust
 import Logs.Remote
 import Logs.PreferredContent
 import Types.StandardGroups
 import Annex.UUID
+import Command.Uninit (prepareRemoveAnnexDir)
 
-import System.IO.HVFS (SystemFS(..))
 import qualified Data.Text as T
 import qualified Data.Map as M
-import System.Path
 
 notCurrentRepo :: UUID -> Handler Html -> Handler Html
 notCurrentRepo uuid a = do
@@ -39,21 +37,8 @@ notCurrentRepo uuid a = do
 	go Nothing = error "Unknown UUID"
 	go (Just _) = a
 
-handleXMPPRemoval :: UUID -> Handler Html -> Handler Html
-handleXMPPRemoval uuid nonxmpp = do
-	remote <- fromMaybe (error "unknown remote")
-		<$> liftAnnex (Remote.remoteFromUUID uuid)
-	if Remote.isXMPPRemote remote
-		then deletionPage $ $(widgetFile "configurators/delete/xmpp")
-		else nonxmpp
-
-getDisableRepositoryR :: UUID -> Handler Html
-getDisableRepositoryR uuid = notCurrentRepo uuid $ handleXMPPRemoval uuid $ do
-	void $ liftAssistant $ disableRemote uuid
-	redirect DashboardR
-
 getDeleteRepositoryR :: UUID -> Handler Html
-getDeleteRepositoryR uuid = notCurrentRepo uuid $ handleXMPPRemoval uuid $ do
+getDeleteRepositoryR uuid = notCurrentRepo uuid $ do
 	deletionPage $ do
 		reponame <- liftAnnex $ Remote.prettyUUID uuid
 		$(widgetFile "configurators/delete/start")
@@ -87,7 +72,7 @@ deleteCurrentRepository :: Handler Html
 deleteCurrentRepository = dangerPage $ do
 	reldir <- fromJust . relDir <$> liftH getYesod
 	havegitremotes <- haveremotes syncGitRemotes
-	havedataremotes <- haveremotes syncDataRemotes
+	havedataremotes <- haveremotes downloadRemotes
 	((result, form), enctype) <- liftH $
 		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $
 			sanityVerifierAForm $ SanityVerifier magicphrase
@@ -104,12 +89,8 @@ deleteCurrentRepository = dangerPage $ do
 				rs <- syncRemotes <$> getDaemonStatus
 				mapM_ (\r -> changeSyncable (Just r) False) rs
 
-			{- Make all directories writable and files writable
-			 - so all annexed content can be deleted. -}
-			liftIO $ do
-				recurseDir SystemFS dir
-					>>= mapM_ (void . tryIO . allowWrite)
-				removeDirectoryRecursive dir
+			liftAnnex $ prepareRemoveAnnexDir dir
+			liftIO $ removeDirectoryRecursive =<< absPath dir
 			
 			redirect ShutdownConfirmedR
 		_ -> $(widgetFile "configurators/delete/currentrepository")

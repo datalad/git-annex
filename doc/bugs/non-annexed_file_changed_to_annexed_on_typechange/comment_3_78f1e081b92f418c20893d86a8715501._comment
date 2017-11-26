@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="arand"
- ip="130.243.226.21"
- subject="comment 3"
- date="2013-08-12T20:48:42Z"
- content="""
-There are still no git-annex actions in the log, except for the init. So the end result for ls -la is not possible with those commands. You may want to try to reproduce it again and write down the exact command sequence used ;)
-"""]]

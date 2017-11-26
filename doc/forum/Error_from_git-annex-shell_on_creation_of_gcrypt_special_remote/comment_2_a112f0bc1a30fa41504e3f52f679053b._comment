@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ subject="comment 2"
+ date="2015-02-04T21:33:41Z"
+ content="""
+The `core.gcrypt-id` on the remote and local is correctly set (to the same thing) and `git.remote.ma.annex-gcrypt` (I assume you meant this and not `git.remote.ma.gcrypt`) on my local machine is indeed set to `true`.  And the remote seems to work for all purposes I've tried to use it for.  So I guess I'm okay.
+
+There is an older version in `/usr/bin` as you suggest: 3.20120523.  I don't know why I didn't notice this myself before I installed the standalone build.
+
+Thank you for taking the time to reply.
+"""]]

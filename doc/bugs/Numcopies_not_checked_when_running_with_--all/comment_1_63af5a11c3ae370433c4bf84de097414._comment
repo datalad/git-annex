@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="stp"
- ip="84.56.21.11"
- subject="Some suggestions"
- date="2014-02-20T21:22:21Z"
- content="""
-So I think it should at least for --all look at the global numcopies setting. As this could be essential to prevent data-loss.
-I agree that special working tree related numcopies don't need to be included.
-"""]]

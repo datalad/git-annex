@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="robert_hickman"
+ subject="comment 4"
+ date="2015-02-10T01:55:06Z"
+ content="""
+Last log content:
+
+(started...) Already up-to-date. error: duplicate parent c2aa8406693d1a3cdec09fb3be8002865cbc8d36 ignored warning: no threads support, ignoring --threads [2015-02-10 01:44:51 GMT] Pusher: Syncing with adesktop_annex warning: no threads support, ignoring --threads fatal: Unable to create '/home/annex/annex/gc.pid.lock': File exists. If no other git process is currently running, this probably means a git process crashed in this repository earlier. Make sure no other git process is running and remove the file manually to continue. To ssh://annex@git-annex-a-desktop-annex_22_annex/~/annex/ e99e004..5b09ad8 git-annex -> synced/git-annex c2aa840..f64d9e3 annex/direct/master -> synced/master error: Ref refs/heads/synced/git-annex is at 5b09ad85ff8d0ba013e4e135e386818eec0cc810 but expected e99e0040176275beb7553f89774f1b14697fccd8 error: Ref refs/heads/synced/master is at e3482dc007f109d0773cf50fd0de2ca2c213cc24 but expected c2aa8406693d1a3cdec09fb3be8002865cbc8d36 remote: error: failed to lock refs/heads/synced/git-annex remote: error: failed to lock refs/heads/synced/master To ssh://annex@git-annex-a-desktop-annex_22_annex/~/annex/ ! [remote rejected] git-annex -> synced/git-annex (failed to lock) ! [remote rejected] annex/direct/master -> synced/master (failed to lock) error: failed to push some refs to 'ssh://annex@git-annex-a-desktop-annex_22_annex/~/annex/' Already up-to-date. error: duplicate parent e3482dc007f109d0773cf50fd0de2ca2c213cc24 ignored warning: no threads support, ignoring --threads To ssh://annex@git-annex-a-desktop-annex_22_annex/~/annex/ e3482dc..e97d44a annex/direct/master -> synced/master
+"""]]

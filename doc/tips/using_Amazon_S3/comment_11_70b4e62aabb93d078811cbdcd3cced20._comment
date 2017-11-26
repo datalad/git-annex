@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn8d6WBPNtmyeANT-gjlN19QnCTQ0psRPs"
+ nickname="James"
+ subject="comment 11"
+ date="2015-01-22T22:16:46Z"
+ content="""
+Even after enableremote I can't get from s3.
+
+
+	get Docs.zip (from s3...)
+
+	  Unable to access these remotes: s3
+
+	  Try making some of these repositories available:
+	  	02b4e373-02b1-42b9-8285-c353c047895c -- my laptop
+	   	f287b4f7-4e5a-4734-bd6b-62b1f4498838 -- [s3]
+
+	  (Note that these git remotes have annex-ignore set: origin)
+	failed
+	git-annex: get: 1 failed
+
+
+This is after all branches are pushed from my original repo. Any suggestions?
+"""]]

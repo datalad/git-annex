@@ -1,4 +1,4 @@
-[git-remote-gcrypt](https://github.com/joeyh/git-remote-gcrypt/)
+[git-remote-gcrypt](https://spwhitton.name/tech/code/git-remote-gcrypt/)
 adds support for encrypted remotes to git. The git-annex gcrypt special
 remote allows git-annex to also store its files in such repositories.
 Naturally, git-annex encrypts the files it stores too, so everything

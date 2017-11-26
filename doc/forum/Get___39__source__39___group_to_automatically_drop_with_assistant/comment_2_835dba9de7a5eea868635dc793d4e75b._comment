@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="leavingchicago@c04c893e78d1c4c76cb3e32b5c227cf42bbf7682"
+ nickname="leavingchicago"
+ avatar="http://cdn.libravatar.org/avatar/4ae498d3d6ee558d6b65caa658f72572"
+ subject="comment 2"
+ date="2017-05-11T23:23:45Z"
+ content="""
+&lt;ASIDE&gt;</br>
+*Laughing* I wish the data collection was interesting.  Just a machine with locked down networking so that it's a tad more secure.  Closest example is an EC2 instance sitting in a VPC...</br> 
+&lt;/ASIDE&gt;
+
+Thanks for the feedback Joey.  I tried again and this approach works **except** where the downstream repo is direct mode - in this case the transfer repo doesn't drop.  I'm not sure if it's a bug or a feature I didn't read about.
+
+Happy to submit a bug report with steps if it's unexpected.
+"""]]

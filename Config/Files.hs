@@ -1,9 +1,11 @@
 {- git-annex extra config files
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
+
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Config.Files where
 
@@ -24,8 +26,11 @@ autoStartFile = userConfigFile "autostart"
 readAutoStartFile :: IO [FilePath]
 readAutoStartFile = do
 	f <- autoStartFile
-	nub . map dropTrailingPathSeparator . lines
+	filter valid . nub . map dropTrailingPathSeparator . lines
 		<$> catchDefaultIO "" (readFile f)
+  where
+	-- Ignore any relative paths; some old buggy versions added eg "."
+	valid = isAbsolute
 
 modifyAutoStartFile :: ([FilePath] -> [FilePath]) -> IO ()
 modifyAutoStartFile func = do
@@ -40,12 +45,16 @@ modifyAutoStartFile func = do
  - present, it's moved to the top, so it will be used as the default
  - when opening the webapp. -}
 addAutoStartFile :: FilePath -> IO ()
-addAutoStartFile path = modifyAutoStartFile $ (:) path
+addAutoStartFile path = do
+	path' <- absPath path
+	modifyAutoStartFile $ (:) path'
 
 {- Removes a directory from the autostart file. -}
 removeAutoStartFile :: FilePath -> IO ()
-removeAutoStartFile path = modifyAutoStartFile $
-	filter (not . equalFilePath path)
+removeAutoStartFile path = do
+	path' <- absPath path
+	modifyAutoStartFile $
+		filter (not . equalFilePath path')
 
 {- The path to git-annex is written here; which is useful when cabal
  - has installed it to some awful non-PATH location. -}
@@ -62,8 +71,13 @@ readProgramFile = do
 		( return p
 		, ifM (inPath cmd)
 			( return cmd
-			, error $ "cannot find git-annex program in PATH or in the location listed in " ++ programfile
+			, cannotFindProgram
 			)
 		)
   where
 	cmd = "git-annex"
+
+cannotFindProgram :: IO a
+cannotFindProgram = do
+	f <- programFile
+	giveup $ "cannot find git-annex program in PATH or in the location listed in " ++ f

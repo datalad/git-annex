@@ -1,6 +1,6 @@
 {- a simple graphviz / dot(1) digraph description generator library
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}

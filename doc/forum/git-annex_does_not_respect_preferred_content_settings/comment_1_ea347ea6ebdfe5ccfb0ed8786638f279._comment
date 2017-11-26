@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-09-11T17:49:32Z"
+ content="""
+Um, I'm pretty sure git-annex respects your preferred content settings.
+Whether the settings do what you think they do is another matter.
+
+When I tried replicating the same settings you show, "git annex get --auto"
+didn't want to get any files. That makes perfect sense, since
+"present" only succeeds if the file is already in the repo, so for files
+that are not, it fails, and so "present AND foo" fails, and so the file is
+not wanted.
+
+Lose the "present". All you need to make the files land on only 1 of the
+PodA repos is "not copies=PodA:1"
+"""]]

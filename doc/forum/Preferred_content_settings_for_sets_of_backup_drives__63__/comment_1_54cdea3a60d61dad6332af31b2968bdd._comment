@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-06-06T17:38:55Z"
+ content="""
+Repository groups are a good way to do this. Eg: 
+
+	git annex group backup1a backup1
+	git annex group backup1b backup1
+	git annex group backup2a backup2
+	git annex group backup2b backup2
+	git annex wanted backup1a "not copies=backup1:1"
+	git annex wanted backup1b "not copies=backup1:1"
+	git annex wanted backup2a "not copies=backup2:1"
+	git annex wanted backup2b "not copies=backup2:1"
+"""]]

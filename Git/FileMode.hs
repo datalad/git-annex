@@ -1,6 +1,6 @@
 {- git file modes
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,8 +10,6 @@
 module Git.FileMode where
 
 import Utility.FileMode
-
-import System.PosixCompat.Types
 
 symLinkMode :: FileMode
 symLinkMode = 40960

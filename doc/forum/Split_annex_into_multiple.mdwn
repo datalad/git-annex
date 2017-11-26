@@ -1,0 +1,16 @@
+Lets say I have an annex, called Global in some location A. The plan is to mirror it to some location B.
+
+I suddenly decide that Global has become too unwieldy, and I wish to split it up. 
+
+I "rsync -Lhav" the entire annex over to B, so it turns back into raw files (as I'm a little worried about the broken symlinks some have mentioned when using uninit).
+I then reorganize all the files in B into five new annexes. Yay.
+
+Now, I clone those five repos back onto A. How can I use the content of the original repo "Global" to populate the new annexes?
+
+**Approach 1**: delete Global, use git-annex copy (slow, wasteful use of precious disk life)
+
+**Approach 2**: uninit Global, deal with whatever broken symlink mess *may* occur, and then use reinject. Reinject doesn't seem to work recursively afaik (ok, I can use find -type f -exec I guess...), and doesn't seem to want to work on files that are sitting inside an annex already (i.e. the uninit is not optional)
+
+So besides these two, are there any approaches I'm overlooking?
+
+Context: entire photo collection. split into e.g. parents digitized photos, my photos, etc

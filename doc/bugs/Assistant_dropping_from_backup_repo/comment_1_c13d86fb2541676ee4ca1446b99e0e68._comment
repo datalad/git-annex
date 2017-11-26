@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://edheil.wordpress.com/"
- ip="173.162.44.162"
- subject="comment 1"
- date="2013-03-12T14:25:16Z"
- content="""
-This sounds very similar to [[http://git-annex.branchable.com/bugs/__39__client__39___repo_starts_pulling_in___39__archive__39___content/]]; my client was pulling in content prior to dropping it from a \"backup\" repo on a USB drive.
-"""]]

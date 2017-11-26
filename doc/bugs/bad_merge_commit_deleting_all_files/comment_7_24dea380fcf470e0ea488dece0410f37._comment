@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.55"
- subject="more confirmation of race theory"
- date="2014-07-09T19:26:55Z"
- content="""
-@purpleidea showed me his git log, and as I had expected, there were previous empty commits immediately before the 2 commits that removes all of his files (which happened independenctly on 2 different machines running the assistant). This is consistent with my suspicion it's a race. Note that the assistant's git ref watcher can easily run multiple merges concurrently if multiple refs change.
-"""]]

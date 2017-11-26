@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-09-07T19:54:41Z"
+ content="""
+Did not consider such a case. However, that's closely related to exporting
+files with same content being inefficient. There's a move
+operation but no copy operation. I might add a copy operation eventually,
+unsure.
+
+If a copy operation is added, then that rename case can be handled more
+efficiently, by moving to the single temp file and copying. Although it
+might still involve the special remote doing more work than strictly
+necessary depending on how it implements copy.
+
+Anyway, if the user is exporting copys of files, they're probably going to
+care more about that being somewhat more efficient than about renames of
+pairs of those copies being optimally efficient..
+
+Handling it fully optimally, with only one temp file per key,
+would require analizing the change and finding pairs of renames
+that swap filenames and handling each pair in turn. I suppose that
+is doable, just needs a better data structure than I have now.
+I've added a note to my todo list and the design document, but
+no promises.
+"""]]

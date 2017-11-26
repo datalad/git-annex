@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-01-05T20:12:56Z"
+ content="""
+Probably the best thing to do is to use `git log --stat` 
+to find the commits that were made on the remote that added the conflicting
+files. Also find the merge commit that created the variant
+files. You can then `git revert` the merge commit, and follow up by `git
+revert` the commits that added the conflicting files. This will bring your
+working tree back to the state it was in originally.
+
+Alternatively, if your current repo has the contents present for 
+the variants of the files you want to keep, while the remote repos contain
+the contents of the variants you want to delete, you could use this command
+to delete the variants that don't have their contents in the local repo:
+
+	git annex find --include='*.variant-*' --not --in here --print0 | xargs -0 rm
+"""]]

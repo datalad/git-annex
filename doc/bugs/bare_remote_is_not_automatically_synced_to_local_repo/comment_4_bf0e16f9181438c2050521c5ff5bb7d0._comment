@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="Don"
+ subject="comment 4"
+ date="2016-06-24T07:16:20Z"
+ content="""
+Good questions.  The setup is essentially a star topology where the central node is the full-backup, bare git repository on the external drive on the server.  It's not encrypted, if that matters.  Since it's a bare repo, nothing actually changes in that node except when changes are pushed from elsewhere.  
+
+Every other node is configured as a client and is connected to that repo on the server via SSH.  When a change is made to one of the client repos, syncing is happening automatically and nearly instantaneously--not just to the server repo, but the changes are very quickly propagated to the other SSH-connected clients.  (I think this is supposed to happen for SSH repos now without using XMPP.  In the release notes for version 5.20140421: \"This release begins to deprecate XMPP support. In particular, if you use the assistant with a ssh remote that has this version of git-annex installed, you don't need XMPP any longer to get immediate syncing of changes.\")
+
+But then there's this one other node in the star topology---the client repo (non-bare) that is actually on the same system as the bare, backup repo.  When changes are made to the client, they are synced immediately to the backup repo, and those changes are quickly synced to the other client repos on other computers connected by SSH.  The problem is changes in the other direction; when a client repo on a remote system is changed, the updates are synced to the backup repo on the server, but no farther.  The webapp running on the server never (or only very slowly) syncs those changes to that client repo that is on the same system.  The webapp on the server is running with that local client repo as the \"main\" repo (I mean, the upper right hand corner says \"Repository: ~/doc\", which is the client repo).  All of the status messages are green and say that the repos are synced.  You can, of course, force a sync from there, and and then the changes are noticed and propagated to the client.
+
+I did some testing and it seems like repositories with non-bare remotes on the same filesystem are synced immediately using inotify or something.  Maybe this just doesn't happen for bare repos?  That's the variable that seems to make syncing not happen automatically, in my limited testing.  I can test more to isolate exactly when it happens, but I was hoping Joey would know off the top of his head if this should be working or not.
+
+"""]]

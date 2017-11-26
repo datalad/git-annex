@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="also CPU (on git and git-annex processes) doesn't go to 100%"
+ date="2016-09-08T16:32:08Z"
+ content="""
+seems to wobble around 50% for each one of git and git-annex processes... probably would be an overkill but may be it is easy in haskell (so throwing idea around) if communication was done in async fashion (git-annex wouldn't wait for git to respond but would process its own queue of already returned from git results, while submitting new ones as soon as previous comes out from the --batch). That might make both processes busy to a 100%.
+
+another idea -- could may be 'annex find' get a -J flag thus starting multiple git ls-files querying processes?
+
+or both ideas are too overengineered/not tractable? ;)
+"""]]

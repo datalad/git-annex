@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-04-14T19:40:32Z"
+ content="""
+git-annex sets up its own ssh connection caching because this makes it a
+lot faster.
+
+To disable this feature, you can set annex.sshcaching=false, or set
+remote.origin.annex-ssh-options as you have.
+
+git-annex has no way to know if you have another ssh socket to use, so it
+seems fine for you to need to configure it if you want it to use one.
+"""]]

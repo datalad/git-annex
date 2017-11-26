@@ -1,0 +1,3 @@
+Automatic merge conflict resolver updated to work with unlocked files in v6
+repos. Fairly tricky and painful; thank goodness the test suite tests a lot
+of edge cases in that code. 

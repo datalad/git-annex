@@ -10,12 +10,10 @@
  - The timestamp indicates when the key was first determined to be unused.
  - Older versions of the log omit the timestamp.
  -
- - Copyright 2010-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
-
-{-# LANGUAGE CPP #-}
 
 module Logs.Unused (
 	UnusedMap,
@@ -32,12 +30,11 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Time.Clock.POSIX
 import Data.Time
-import System.Locale
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
-import Types.Key
 import Utility.Tmp
+import Logs.TimeStamp
 
 -- everything that is stored in the unused log
 type UnusedLog = M.Map Key (Int, Maybe POSIXTime)
@@ -67,7 +64,7 @@ updateUnusedLog prefix m = do
 writeUnusedLog :: FilePath -> UnusedLog -> Annex ()
 writeUnusedLog prefix l = do
 	logfile <- fromRepo $ gitAnnexUnusedLog prefix
-	liftIO $ viaTmp writeFileAnyEncoding logfile $ unlines $ map format $ M.toList l
+	liftIO $ viaTmp writeFile logfile $ unlines $ map format $ M.toList l
   where
 	format (k, (i, Just t)) = show i ++ " " ++ key2file k ++ " " ++ show t
 	format (k, (i, Nothing)) = show i ++ " " ++ key2file k
@@ -77,11 +74,11 @@ readUnusedLog prefix = do
 	f <- fromRepo $ gitAnnexUnusedLog prefix
 	ifM (liftIO $ doesFileExist f)
 		( M.fromList . mapMaybe parse . lines
-			<$> liftIO (readFileStrictAnyEncoding f)
+			<$> liftIO (readFileStrict f)
 		, return M.empty
 		)
   where
-	parse line = case (readish sint, file2key skey, utcTimeToPOSIXSeconds <$> parseTime defaultTimeLocale "%s%Qs" ts) of
+	parse line = case (readish sint, file2key skey, parsePOSIXTime ts) of
 		(Just int, Just key, mtimestamp) -> Just (key, (int, mtimestamp))
 		_ -> Nothing
 	  where
@@ -94,14 +91,9 @@ readUnusedMap :: FilePath -> Annex UnusedMap
 readUnusedMap = log2map <$$> readUnusedLog
 
 dateUnusedLog :: FilePath -> Annex (Maybe UTCTime)
-#if MIN_VERSION_directory(1,2,0)
 dateUnusedLog prefix = do
 	f <- fromRepo $ gitAnnexUnusedLog prefix
 	liftIO $ catchMaybeIO $ getModificationTime f
-#else
--- old ghc's getModificationTime returned a ClockTime
-dateUnusedLog _prefix = return Nothing
-#endif
 
 {- Set of unused keys. This is cached for speed. -}
 unusedKeys :: Annex (S.Set Key)

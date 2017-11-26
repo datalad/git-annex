@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="clacke"
+ subject="comment 2"
+ date="2015-05-22T21:08:26Z"
+ content="""
+It's weirder than that. I add a cow union mount over it, it works fine.
+
+I copy the file, I drop the file, I remove the union mount. Again it's back in the broken state. Rebooting does not help, so it's not some very insistent lock.
+
+Next I will try a copy of the repo, to see if that is able to carry over whatever strange state this thing is in.
+"""]]

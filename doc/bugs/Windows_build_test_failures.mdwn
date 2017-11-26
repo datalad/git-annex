@@ -1222,7 +1222,7 @@ crypto
 preferred content
 ----------------------------------------------------------------------
 Some tests failed!
-  (This could be due to a bug in git-annex, or an incompatability
+  (This could be due to a bug in git-annex, or an incompatibility
    with utilities, such as git, installed on this system.)
 
 

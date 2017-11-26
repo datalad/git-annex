@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-03-02T17:08:21Z"
+ content="""
+I get what you're saying, but there's a layering problem that prevents
+the JSON display of a higher layer being used by a lower layer that is
+finding files to operate on.
+
+Trying to copy a file that does not exist is a fundamentally
+different class of error that an error that occurs when copying a file
+that does exist. A memory read error resulting in a SIGBUS is a different
+class of error, as is a git failure due to a corrupted repository.
+git-annex fails in four entirely different ways in these four cases.
+"""]]

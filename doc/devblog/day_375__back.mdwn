@@ -1,0 +1,10 @@
+Back from Libreplanet and a week of spring break. Backlog is not too bad
+for two weeks mostly away; 143 messages.
+
+Finally got the OSX app updated for the git security fix yesterday. Had to
+drop builds for old OSX releases.
+
+Getting back into working on adjusted branches now. Polishing up the UI and
+docs today. Nearly ready to merge the feature; the only blocker is there
+seems to be something a little bit wrong with how pulled changes are merged
+into the adjusted branch that I noticed in testing.

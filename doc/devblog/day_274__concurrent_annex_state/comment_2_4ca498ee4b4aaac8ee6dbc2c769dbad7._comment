@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-04-11T14:41:47Z"
+ content="""
+Josh Tripplet has some haskell bindings for libgit2 somewhere.
+My reasons for not using it so far include:
+
+* ABI stability; at least it used to have none. soname is 21 already..
+* Josh told me parts of it are much less optimised than git.
+  (This was several years ago, but I still imagine the git code base
+  has much more work on speed.)
+* It's not even been in a stable release of Debian yet.
+* Adding a C library dependency will make git-annex much harder for
+  users to get started building.
+* The couple of things that I could really use a git library for, like
+  index file access and catting object contents, could be implemented
+  just as well (and likely as fast) in pure haskell
+  code, and would not be particularly hard to do either. There may even
+  be suitable pure haskell libraries for them; haven't checked.
+"""]]

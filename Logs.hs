@@ -1,14 +1,14 @@
 {- git-annex log file names
  -
- - Copyright 2013-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2013-2015 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Logs where
 
-import Common.Annex
-import Types.Key
+import Annex.Common
+import Annex.DirHashes
 
 {- There are several varieties of log file formats. -}
 data LogVariety
@@ -39,6 +39,10 @@ topLevelUUIDBasedLogs =
 	, preferredContentLog
 	, requiredContentLog
 	, scheduleLog
+	, activityLog
+	, differenceLog
+	, multicastLog
+	, exportLog
 	]
 
 {- All the ways to get a key from a presence log file -}
@@ -61,6 +65,9 @@ uuidLog = "uuid.log"
 numcopiesLog :: FilePath
 numcopiesLog = "numcopies.log"
 
+configLog :: FilePath
+configLog = "config.log"
+
 remoteLog :: FilePath
 remoteLog = "remote.log"
 
@@ -82,9 +89,21 @@ groupPreferredContentLog = "group-preferred-content.log"
 scheduleLog :: FilePath
 scheduleLog = "schedule.log"
 
+activityLog :: FilePath
+activityLog = "activity.log"
+
+differenceLog :: FilePath
+differenceLog = "difference.log"
+
+multicastLog :: FilePath
+multicastLog = "multicast.log"
+
+exportLog :: FilePath
+exportLog = "export.log"
+
 {- The pathname of the location log file for a given key. -}
-locationLogFile :: Key -> String
-locationLogFile key = hashDirLower key ++ keyFile key ++ ".log"
+locationLogFile :: GitConfig -> Key -> String
+locationLogFile config key = branchHashDir config key </> keyFile key ++ ".log"
 
 {- Converts a pathname into a key if it's a location log. -}
 locationLogFileKey :: FilePath -> Maybe Key
@@ -97,15 +116,17 @@ locationLogFileKey path
 	(base, ext) = splitAt (length file - 4) file
 
 {- The filename of the url log for a given key. -}
-urlLogFile :: Key -> FilePath
-urlLogFile key = hashDirLower key </> keyFile key ++ urlLogExt
+urlLogFile :: GitConfig -> Key -> FilePath
+urlLogFile config key = branchHashDir config key </> keyFile key ++ urlLogExt
 
 {- Old versions stored the urls elsewhere. -}
-oldurlLogs :: Key -> [FilePath]
-oldurlLogs key =
-	[ "remote/web" </> hashDirLower key </> key2file key ++ ".log"
-	, "remote/web" </> hashDirLower key </> keyFile key ++ ".log"
+oldurlLogs :: GitConfig -> Key -> [FilePath]
+oldurlLogs config key =
+	[ "remote/web" </> hdir </> key2file key ++ ".log"
+	, "remote/web" </> hdir </> keyFile key ++ ".log"
 	]
+  where
+	hdir = branchHashDir config key
 
 urlLogExt :: String
 urlLogExt = ".log.web"
@@ -126,8 +147,9 @@ isUrlLog :: FilePath -> Bool
 isUrlLog file = urlLogExt `isSuffixOf` file
 
 {- The filename of the remote state log for a given key. -}
-remoteStateLogFile :: Key -> FilePath
-remoteStateLogFile key = hashDirLower key </> keyFile key ++ remoteStateLogExt
+remoteStateLogFile :: GitConfig -> Key -> FilePath
+remoteStateLogFile config key = branchHashDir config key 
+	</> keyFile key ++ remoteStateLogExt
 
 remoteStateLogExt :: String
 remoteStateLogExt = ".log.rmt"
@@ -136,8 +158,8 @@ isRemoteStateLog :: FilePath -> Bool
 isRemoteStateLog path = remoteStateLogExt `isSuffixOf` path
 
 {- The filename of the chunk log for a given key. -}
-chunkLogFile :: Key -> FilePath
-chunkLogFile key = hashDirLower key </> keyFile key ++ chunkLogExt
+chunkLogFile :: GitConfig -> Key -> FilePath
+chunkLogFile config key = branchHashDir config key </> keyFile key ++ chunkLogExt
 
 chunkLogFileKey :: FilePath -> Maybe Key
 chunkLogFileKey path
@@ -155,35 +177,11 @@ isChunkLog :: FilePath -> Bool
 isChunkLog path = chunkLogExt `isSuffixOf` path
 
 {- The filename of the metadata log for a given key. -}
-metaDataLogFile :: Key -> FilePath
-metaDataLogFile key = hashDirLower key </> keyFile key ++ metaDataLogExt
+metaDataLogFile :: GitConfig -> Key -> FilePath
+metaDataLogFile config key = branchHashDir config key </> keyFile key ++ metaDataLogExt
 
 metaDataLogExt :: String
 metaDataLogExt = ".log.met"
 
 isMetaDataLog :: FilePath -> Bool
 isMetaDataLog path = metaDataLogExt `isSuffixOf` path
-
-prop_logs_sane :: Key -> Bool
-prop_logs_sane dummykey = and
-	[ isNothing (getLogVariety "unknown")
-	, expect gotUUIDBasedLog (getLogVariety uuidLog)
-	, expect gotPresenceLog (getLogVariety $ locationLogFile dummykey)
-	, expect gotPresenceLog (getLogVariety $ urlLogFile dummykey)
-	, expect gotNewUUIDBasedLog (getLogVariety $ remoteStateLogFile dummykey)
-	, expect gotChunkLog (getLogVariety $ chunkLogFile dummykey)
-	, expect gotOtherLog (getLogVariety $ metaDataLogFile dummykey)
-	, expect gotOtherLog (getLogVariety numcopiesLog)
-	]
-  where
-	expect = maybe False
-	gotUUIDBasedLog UUIDBasedLog = True
-	gotUUIDBasedLog _ = False
-	gotNewUUIDBasedLog NewUUIDBasedLog = True
-	gotNewUUIDBasedLog _ = False
-	gotChunkLog (ChunkLog k) = k == dummykey
-	gotChunkLog _ = False
-	gotPresenceLog (PresenceLog k) = k == dummykey
-	gotPresenceLog _ = False
-	gotOtherLog OtherLog = True
-	gotOtherLog _ = False

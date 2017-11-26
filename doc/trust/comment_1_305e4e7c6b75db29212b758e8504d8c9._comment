@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlJl0OCe6AJEnIFIcg-t5Rhk-lI_Y-tWUs"
+ nickname="Michael"
+ subject="default trust for hosts"
+ date="2015-05-01T21:41:05Z"
+ content="""
+Is it possible to set a default trust per host (e.g. in `~/.gitconfig`)?
+
+I have one server that does its own backups, and a client that I'd like to keep thin across multiple repositories.
+"""]]

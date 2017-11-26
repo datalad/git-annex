@@ -2,25 +2,23 @@
  -
  - Runtime state about the git-annex branch.
  -
- - Copyright 2011-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Annex.BranchState where
 
-import Common.Annex
+import Annex.Common
 import Types.BranchState
 import qualified Annex
 
 getState :: Annex BranchState
 getState = Annex.getState Annex.branchstate
 
-setState :: BranchState -> Annex ()
-setState state = Annex.changeState $ \s -> s { Annex.branchstate = state }
-
 changeState :: (BranchState -> BranchState) -> Annex ()
-changeState changer = setState =<< changer <$> getState
+changeState changer = Annex.changeState $ \s -> 
+	s { Annex.branchstate = changer (Annex.branchstate s) }
 
 {- Runs an action to check that the index file exists, if it's not been
  - checked before in this run of git-annex. -}

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/e65e6d0e-58ba-41de-84cc-1f2ba54cf574"
+ nickname="Mica"
+ subject="Copy from .git/config"
+ date="2016-01-09T06:44:59Z"
+ content="""
+Copying the values for the encrypted remotes from a back-up copy of .git/config seems to have worked. 
+"""]]

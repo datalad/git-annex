@@ -1,0 +1,27 @@
+# NAME
+
+git-annex findref - lists files in a git ref
+
+# SYNOPSIS
+
+git annex findref `[ref]`
+
+# DESCRIPTION
+
+This is very similar to the `git-annex find` command, but instead of
+finding files in the current work tree, it finds files in the
+specified git ref.
+
+# OPTIONS
+
+Same as [[git-annex-find]](1)
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

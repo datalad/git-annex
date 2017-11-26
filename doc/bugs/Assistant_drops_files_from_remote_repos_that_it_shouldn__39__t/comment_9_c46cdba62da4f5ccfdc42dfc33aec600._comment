@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="boh"
+ avatar="http://cdn.libravatar.org/avatar/e7fa2d1c5d95e323fe48887f7f827b1f"
+ subject="comment 9"
+ date="2016-11-27T12:23:20Z"
+ content="""
+Seems as if the problem still exists in 6.20161118 (Debian).
+
+I have three repositories (among others), `jolla`, `sts-3xx`, and `here`.  `jolla` and `here` are in group `manual`, `sts-3xx` is `backup`; `here` and `sts-3xx` have assistants running, `jolla` not.  `jolla` and `sts-3xx` have slightly older versions of git-annex installed.
+
+Now, when I copy a file from `here` to `jolla` like this
+
+    git annex copy real_programmers.png -t jolla
+
+the file is subsequently dropped by the assistant:
+
+```
+drop real_programmers.png (locking jolla...) [2016-11-27 13:00:02.667376556] chat: ssh [\"-S\",\".git/annex/ssh/jolla\",\"-o\",\"ControlMaster
+=auto\",\"-o\",\"ControlPersist=yes\",\"-F\",\".git/annex/ssh.config\",\"-T\",\"jolla\",\"git-annex-shell 'lockcontent' '/~/Music/media/' '--debug' '
+SHA256E-s84499--ff98a733cc0122858fb11433c720e2d038fec190a3d36380d0e7e8dab468f883.png' --uuid 5298e3ce-1106-4d5e-b052-0aee4b27a344\"]
+(locking sts-3xx...) [2016-11-27 13:00:03.252473676] chat: ssh [..., \"git-annex-shell 'lockcontent' '/backups/exot/media/' '--debug' 'SHA256E-s84499--ff98a733cc0122858fb11433c720e2d038fec190a3d 36380d0e7e8dab468f883.png' --uuid 1fec6253-171d-4f86-885b-e233be2d65ec\"]
+(lockcontent failed) [2016-11-27 13:00:03.486158016] process done ExitFailure 1
+(checking sts-3xx...) [2016-11-27 13:00:03.487047149] call: ssh [..., \"git-annex-shell 'inannex' '/backups/exot/media/' '--debug' 'SHA256E-s84499--ff98a733cc0122858fb11433c720e2d038fec190a3d363 80d0e7e8dab468f883.png' --uuid 1fec6253-171d-4f86-885b-e233be2d65ec\"]
+[2016-11-27 13:00:03.76435136] process done ExitSuccess
+[2016-11-27 13:00:03.764705754] Dropping from here proof: Just (SafeDropProof (NumCopies 2) [RecentlyVerifiedCopy UUID \"1fec6253-171d-4 f86-885b-e233be2d65ec\",LockedCopy UUID \"5298e3ce-1106-4d5e-b052-0aee4b27a344\"] (Just (ContentRemovalLock (Key {keyName = \"ff98a733cc012 2858fb11433c720e2d038fec190a3d36380d0e7e8dab468f883.png\", keyBackendName = \"SHA256E\", keySize = Just 84499, keyMtime = Nothing, keyChun kSize = Nothing, keyChunkNum = Nothing}))))
+[2016-11-27 13:00:04.24333081] process done ExitFailure 1
+ok
+[2016-11-27 13:00:04.251232455] dropped real_programmers.png (from here) (copies now 4) : drop wanted after Upload UUID \"5298e3ce-1106- 4d5e-b052-0aee4b27a344\" real_programmers.png Just 84499
+```
+
+However, I failed to reproduce the problem by replicating my setup with fresh repositories …
+
+Please let me know if you need more information, and *so* many thanks for git-annex!
+"""]]

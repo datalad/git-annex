@@ -1,0 +1,21 @@
+On Friday I installed the CubieTruck that is the new autobuilder
+for arm. This autobuilder is hosted at [WetKnee Books](http://www.wetknee.com/),
+so its physical security includes a swamp. 
+
+The hardware is not fast, but it's faster and far more stable than qemu arm
+emulation. By Saturday I got the build environment all installed nicely,
+including building libraries that use template haskell!
+
+But, ghc crashed with an internal error building git-annex.
+I upgraded to ghc 7.10.1 (which took another day), but it also crashed.
+Was almost giving up, but I looked at the ghc parameters, and -j2 stuck
+out in them. Removed the -j2, and the build works w/o crashing! \o/
+(Filed [a bug report on ghc](https://ghc.haskell.org/trac/ghc/ticket/10469).)
+
+----
+
+Anarcat has been working on improving the man pages, including lots of
+linking to related commands.
+
+The [2015 Haskell Communities and Activities Report](http://www.haskell.org/communities/05-2015/html/report.html)
+is out, and includes an entry for git-annex for the first time!

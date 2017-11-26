@@ -1,0 +1,25 @@
+# NAME
+
+git-annex setpresentkey - change records of where key is present
+
+# SYNOPSIS
+
+git annex setpresentkey `key uuid [1|0]`
+
+# DESCRIPTION
+
+This plumbing-level command changes git-annex's records about whether
+the specified key's content is present in a remote with the specified uuid.
+
+Use 1 to indicate the key is present, or 0 to indicate the key is
+not present.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

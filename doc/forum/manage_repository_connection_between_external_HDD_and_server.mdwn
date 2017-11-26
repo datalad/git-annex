@@ -1,0 +1,32 @@
+I have one server, two computers, and one external HDD.
+
+The git-annex repo on my server (`nhost`) has the following remotes:
+
+```
+qhost	qhost:NIdata (fetch)
+qhost	qhost:NIdata (push)
+zhost	zhost:NIdata (fetch)
+zhost	zhost:NIdata (push)
+```
+
+The repo on `zhost` has the following remotes:
+
+```
+data0	/run/media/mee/data0/NIdata/ (fetch)
+data0	/run/media/mee/data0/NIdata/ (push)
+nhost	nhost:NIdata (fetch)
+nhost	nhost:NIdata (push)
+```
+
+The repo on my HDD (`data0`) has thefollowing remotes:
+
+```
+nhost		nhost:NIdata (fetch)
+nhost		nhost:NIdata (push)
+qhost		/qhost/home/mee/NIdata/ (fetch)
+qhost		/qhost/home/mee/NIdata/ (push)
+zhost		/zhost/home/mee/NIdata/ (fetch)
+zhost		/zhost/home/mee/NIdata/ (push)
+```
+
+Any ideas how I can set up a remote from `nhost` to `data0`, without making the identity of data0 dependent on which machine I am using on each particular session?

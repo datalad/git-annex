@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-04-29T17:47:08Z"
+ content="""
+The --deduplicate option deals with duplicated file contents. This is 
+a filename that is already in your git repo, git annex import avoids
+overwriting that with a different imported file unless you tell it --force.
+"""]]

@@ -9,11 +9,11 @@
  - configuration, when embedcreds is enabled.
  -
  - Using those creds, git-annex sets up a tahoe configuration directory in
- - ~/.tahoe/git-annex/UUID/
+ - ~/.tahoe-git-annex/UUID/
  -
  - Tahoe has its own encryption, so git-annex's encryption is not used.
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -27,13 +27,14 @@ import Data.Aeson
 import Data.ByteString.Lazy.UTF8 (fromString)
 import Control.Concurrent.STM
 
-import Common.Annex
+import Annex.Common
 import Types.Remote
 import Types.Creds
 import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
+import Remote.Helper.Export
 import Annex.UUID
 import Annex.Content
 import Logs.RemoteState
@@ -51,12 +52,13 @@ type IntroducerFurl = String
 type Capability = String
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "tahoe",
-	enumerate = findSpecialRemotes "tahoe",
-	generate = gen,
-	setup = tahoeSetup
-}
+remote = RemoteType
+	{ typename = "tahoe"
+	, enumerate = const (findSpecialRemotes "tahoe")
+	, generate = gen
+	, setup = tahoeSetup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
@@ -64,32 +66,36 @@ gen r u c gc = do
 	hdl <- liftIO $ TahoeHandle
 		<$> maybe (defaultTahoeConfigDir u) return (remoteAnnexTahoe gc)
 		<*> newEmptyTMVarIO
-	return $ Just $ Remote {
-		uuid = u,
-		cost = cst,
-		name = Git.repoDescribe r,
-		storeKey = store u hdl,
-		retrieveKeyFile = retrieve u hdl,
-		retrieveKeyFileCheap = \_ _ -> return False,
-		removeKey = remove,
-		checkPresent = checkKey u hdl,
-		checkPresentCheap = False,
-		whereisKey = Nothing,
-		remoteFsck = Nothing,
-		repairRepo = Nothing,
-		config = c,
-		repo = r,
-		gitconfig = gc,
-		localpath = Nothing,
-		readonly = False,
-		availability = GloballyAvailable,
-		remotetype = remote,
-		mkUnavailable = return Nothing,
-		getInfo = return []
-	}
+	return $ Just $ Remote
+		{ uuid = u
+		, cost = cst
+		, name = Git.repoDescribe r
+		, storeKey = store u hdl
+		, retrieveKeyFile = retrieve u hdl
+		, retrieveKeyFileCheap = \_ _ _ -> return False
+		, removeKey = remove
+		, lockContent = Nothing
+		, checkPresent = checkKey u hdl
+		, checkPresentCheap = False
+		, exportActions = exportUnsupported
+		, whereisKey = Just (getWhereisKey u)
+		, remoteFsck = Nothing
+		, repairRepo = Nothing
+		, config = c
+		, repo = r
+		, gitconfig = gc
+		, localpath = Nothing
+		, readonly = False
+		, availability = GloballyAvailable
+		, remotetype = remote
+		, mkUnavailable = return Nothing
+		, getInfo = return []
+		, claimUrl = Nothing
+		, checkUrl = Nothing
+		}
 
-tahoeSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-tahoeSetup mu _ c = do
+tahoeSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+tahoeSetup _ mu _ c _ = do
 	furl <- fromMaybe (fromMaybe missingfurl $ M.lookup furlk c)
 		<$> liftIO (getEnv "TAHOE_FURL")
 	u <- maybe (liftIO genUUID) return mu
@@ -106,7 +112,7 @@ tahoeSetup mu _ c = do
   where
 	scsk = "shared-convergence-secret"
 	furlk = "introducer-furl"
-	missingfurl = error "Set TAHOE_FURL to the introducer furl to use."
+	missingfurl = giveup "Set TAHOE_FURL to the introducer furl to use."
 
 store :: UUID -> TahoeHandle -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store u hdl k _f _p = sendAnnex k noop $ \src ->
@@ -114,8 +120,8 @@ store u hdl k _f _p = sendAnnex k noop $ \src ->
 		(return False)
 		(\cap -> storeCapability u k cap >> return True)
 
-retrieve :: UUID -> TahoeHandle -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-retrieve u hdl k _f d _p = go =<< getCapability u k
+retrieve :: UUID -> TahoeHandle -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
+retrieve u hdl k _f d _p = unVerified $ go =<< getCapability u k
   where
 	go Nothing = return False
 	go (Just cap) = liftIO $ requestTahoe hdl "get" [Param cap, File d]
@@ -134,17 +140,17 @@ checkKey u hdl k = go =<< getCapability u k
 			[ Param "--raw"
 			, Param cap
 			]
-		either error return v
+		either giveup return v
 
 defaultTahoeConfigDir :: UUID -> IO TahoeConfigDir
 defaultTahoeConfigDir u = do
 	h <- myHomeDir 
-	return $ h </> ".tahoe" </> "git-annex" </> fromUUID u
+	return $ h </> ".tahoe-git-annex" </> fromUUID u
 
 tahoeConfigure :: TahoeConfigDir -> IntroducerFurl -> Maybe SharedConvergenceSecret -> IO SharedConvergenceSecret
 tahoeConfigure configdir furl mscs = do
 	unlessM (createClient configdir furl) $
-		error "tahoe create-client failed"
+		giveup "tahoe create-client failed"
 	maybe noop (writeSharedConvergenceSecret configdir) mscs
 	startTahoeDaemon configdir
 	getSharedConvergenceSecret configdir
@@ -170,12 +176,12 @@ getSharedConvergenceSecret configdir = go (60 :: Int)
   where
 	f = convergenceFile configdir
 	go n
-		| n == 0 = error $ "tahoe did not write " ++ f ++ " after 1 minute. Perhaps the daemon failed to start?"
+		| n == 0 = giveup $ "tahoe did not write " ++ f ++ " after 1 minute. Perhaps the daemon failed to start?"
 		| otherwise = do
 			v <- catchMaybeIO (readFile f)
 			case v of
 				Just s | "\n" `isSuffixOf` s || "\r" `isSuffixOf` s ->
-					return $ takeWhile (`notElem` "\n\r") s
+					return $ takeWhile (`notElem` ("\n\r" :: String)) s
 				_ -> do
 					threadDelaySeconds (Seconds 1)
 					go (n - 1)
@@ -227,6 +233,12 @@ storeCapability u k cap = setRemoteState u k cap
 
 getCapability :: UUID -> Key -> Annex (Maybe Capability)
 getCapability u k = getRemoteState u k
+
+getWhereisKey :: UUID -> Key -> Annex [String]
+getWhereisKey u k = disp <$> getCapability u k
+  where
+	disp Nothing = []
+	disp (Just c) = [c]
 
 {- tahoe put outputs a single line, containing the capability. -}
 parsePut :: String -> Maybe Capability

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2016-01-29T17:30:52Z"
+ content="""
+@grawity, the empty (or unset) preferred content setting causes a default behavior to
+be used. What the default is varies depending on what you're doing. For
+example, if you're running `git annex drop --auto`, it defaults to dropping
+everything when there's no preferred content setting. On the other hand,
+`git annex sync --content` defaults to getting everything. So, this is
+diffent than using "anything".
+
+If you use "standard" and the repo is not in exactly one of the standard
+groups, it behaves the same as if you'd given it an unparseable preferred
+content setting. It will want all files it has and none it doesn't have.
+"""]]

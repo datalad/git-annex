@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="Horus"
+ subject="comment 1"
+ date="2016-07-14T09:28:32Z"
+ content="""
+Addendum: It seems it is not really copying the files, but checking. The solution is probably using ```git annex copy --to=marduk.dynv6 --auto --fast``` which behaves like I expect it (copies nothing).
+"""]]

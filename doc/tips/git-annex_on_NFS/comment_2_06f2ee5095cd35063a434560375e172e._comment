@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-09-21T19:28:36Z"
+ content="""
+git-annex will probe to detect if the filesystem does not support FIFOs and
+disables `annex.sshcaching` in that case. It's done so since 2013. So I would
+be surprised if NFS had any problems with annex.sshcaching.
+
+`git config annex.pidlock true` will make git-annex avoid FCNTL locking,
+and so work on filesystems that don't support that. It should also
+avoid the ".nfs" files.
+
+It's not enabled by default on NFS because I don't currently have a good
+way to probe if a given directory is on NFS.
+
+Also, annex.pidlock makes git-annex significantly slower and less safe.
+But if you're using NFS, speed and safety must have already been
+de-prioritized.
+
+Seriously, my main advice for using git-annex on NFS is: 
+Don't. Make local clones of repositories and use git-annex to distribute
+the files around. Unless your institution forces you to use a networked
+filesystem to access gobs of disk space, and you need to have more files
+present in a repository than will fit locally.
+"""]]

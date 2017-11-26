@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="quisquous"
+ subject="comment 2"
+ date="2016-07-11T17:59:56Z"
+ content="""
+Perhaps running ````stack install git-annex```` (using the implicit global project) ignores the flags in stack.yaml, see [#1313](https://github.com/commercialhaskell/stack/issues/1313). Following your suggestion, I tried cloning the repo and building using `stack build` both with and without the XMPP flag. Without the flag works fine, it seems the default ````false```` setting form xmpp flag in stack.yaml is honored when building *this* way.
+
+In any case, this worked:
+
+````
+$ git clone git://git-annex.branchable.com/ git-annex
+$ cd git-annex
+$ git checkout 6.20160511
+$ stack build
+$ stack install
+````
+"""]]

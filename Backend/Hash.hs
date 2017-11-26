@@ -1,21 +1,19 @@
 {- git-annex hashing backends
  -
- - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
-
-{-# LANGUAGE CPP #-}
 
 module Backend.Hash (
 	backends,
 	testKeyBackend,
 ) where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
-import Types.Backend
 import Types.Key
+import Types.Backend
 import Types.KeySource
 import Utility.Hash
 import Utility.ExternalSHA
@@ -24,28 +22,33 @@ import qualified Build.SysConfig as SysConfig
 import qualified Data.ByteString.Lazy as L
 import Data.Char
 
-data Hash = SHAHash HashSize | SkeinHash HashSize
-type HashSize = Int
+data Hash
+	= MD5Hash
+	| SHA1Hash
+	| SHA2Hash HashSize
+	| SHA3Hash HashSize
+	| SkeinHash HashSize
 
 {- Order is slightly significant; want SHA256 first, and more general
  - sizes earlier. -}
 hashes :: [Hash]
 hashes = concat 
-	[ map SHAHash [256, 1, 512, 224, 384]
-#ifdef WITH_CRYPTOHASH
-	, map SkeinHash [256, 512]
-#endif
+	[ map (SHA2Hash . HashSize) [256, 512, 224, 384]
+	, map (SHA3Hash . HashSize) [256, 512, 224, 384]
+	, map (SkeinHash . HashSize) [256, 512]
+	, [SHA1Hash]
+	, [MD5Hash]
 	]
 
 {- The SHA256E backend is the default, so genBackendE comes first. -}
 backends :: [Backend]
-backends = map genBackendE hashes ++ map genBackend hashes
+backends = concatMap (\h -> [genBackendE h, genBackend h]) hashes
 
 genBackend :: Hash -> Backend
 genBackend hash = Backend
-	{ name = hashName hash
+	{ backendVariety = hashKeyVariety hash (HasExt False)
 	, getKey = keyValue hash
-	, fsckKey = Just $ checkKeyChecksum hash
+	, verifyKeyContent = Just $ checkKeyChecksum hash
 	, canUpgradeKey = Just needsUpgrade
 	, fastMigrate = Just trivialMigrate
 	, isStableKey = const True
@@ -53,27 +56,26 @@ genBackend hash = Backend
 
 genBackendE :: Hash -> Backend
 genBackendE hash = (genBackend hash)
-	{ name = hashNameE hash
+	{ backendVariety = hashKeyVariety hash (HasExt True)
 	, getKey = keyValueE hash
 	}
 
-hashName :: Hash -> String
-hashName (SHAHash size) = "SHA" ++ show size
-hashName (SkeinHash size) = "SKEIN" ++ show size
-
-hashNameE :: Hash -> String
-hashNameE hash = hashName hash ++ "E"
+hashKeyVariety :: Hash -> HasExt -> KeyVariety
+hashKeyVariety MD5Hash = MD5Key
+hashKeyVariety SHA1Hash = SHA1Key
+hashKeyVariety (SHA2Hash size) = SHA2Key size
+hashKeyVariety (SHA3Hash size) = SHA3Key size
+hashKeyVariety (SkeinHash size) = SKEINKey size
 
 {- A key is a hash of its contents. -}
 keyValue :: Hash -> KeySource -> Annex (Maybe Key)
 keyValue hash source = do
 	let file = contentLocation source
-	stat <- liftIO $ getFileStatus file
-	let filesize = fromIntegral $ fileSize stat
+	filesize <- liftIO $ getFileSize file
 	s <- hashFile hash file filesize
 	return $ Just $ stubKey
 		{ keyName = s
-		, keyBackendName = hashName hash
+		, keyVariety = hashKeyVariety hash (HasExt False)
 		, keySize = Just filesize
 		}
 
@@ -83,7 +85,7 @@ keyValueE hash source = keyValue hash source >>= maybe (return Nothing) addE
   where
 	addE k = return $ Just $ k
 		{ keyName = keyName k ++ selectExtension (keyFilename source)
-		, keyBackendName = hashNameE hash
+		, keyVariety = hashKeyVariety hash (HasExt True)
 		}
 
 selectExtension :: FilePath -> String
@@ -92,19 +94,20 @@ selectExtension f
 	| otherwise = intercalate "." ("":es)
   where
 	es = filter (not . null) $ reverse $
-		take 2 $ takeWhile shortenough $
-		reverse $ split "." $ filter validExtension $ takeExtensions f
+		take 2 $ map (filter validInExtension) $
+		takeWhile shortenough $
+		reverse $ splitc '.' $ takeExtensions f
 	shortenough e = length e <= 4 -- long enough for "jpeg"
 
 {- A key's checksum is checked during fsck. -}
 checkKeyChecksum :: Hash -> Key -> FilePath -> Annex Bool
-checkKeyChecksum hash key file = do
+checkKeyChecksum hash key file = catchIOErrorType HardwareFault hwfault $ do
 	fast <- Annex.getState Annex.fast
 	mstat <- liftIO $ catchMaybeIO $ getFileStatus file
 	case (mstat, fast) of
 		(Just stat, False) -> do
-			let filesize = fromIntegral $ fileSize stat
-			showSideAction "checksum"
+			filesize <- liftIO $ getFileSize' file stat
+			showAction "checksum"
 			check <$> hashFile hash file filesize
 		_ -> return True
   where
@@ -117,11 +120,15 @@ checkKeyChecksum hash key file = do
 		| '\\' : s == expected = True
 		| otherwise = False
 
+	hwfault e = do
+		warning $ "hardware fault: " ++ show e
+		return False
+
 keyHash :: Key -> String
 keyHash key = dropExtensions (keyName key)
 
-validExtension :: Char -> Bool
-validExtension c
+validInExtension :: Char -> Bool
+validInExtension c
 	| isAlphaNum c = True
 	| c == '.' = True
 	| otherwise = False
@@ -130,53 +137,91 @@ validExtension c
  - that contain non-alphanumeric characters in their extension. -}
 needsUpgrade :: Key -> Bool
 needsUpgrade key = "\\" `isPrefixOf` keyHash key ||
-	any (not . validExtension) (takeExtensions $ keyName key)
+	any (not . validInExtension) (takeExtensions $ keyName key)
 
-{- Fast migration from hashE to hash backend. (Optimisation) -}
-trivialMigrate :: Key -> Backend -> Maybe Key
-trivialMigrate oldkey newbackend
-	| keyBackendName oldkey == name newbackend ++ "E" = Just $ oldkey
+trivialMigrate :: Key -> Backend -> AssociatedFile -> Maybe Key
+trivialMigrate oldkey newbackend afile
+	{- Fast migration from hashE to hash backend. -}
+	| migratable && hasExt newvariety = Just $ oldkey
 		{ keyName = keyHash oldkey
-		, keyBackendName = name newbackend
+		, keyVariety = newvariety
 		}
+	{- Fast migration from hash to hashE backend. -}
+	| migratable && hasExt oldvariety = case afile of
+		AssociatedFile Nothing -> Nothing
+		AssociatedFile (Just file) -> Just $ oldkey
+			{ keyName = keyHash oldkey ++ selectExtension file
+			, keyVariety = newvariety
+			}
 	| otherwise = Nothing
+  where
+	migratable = oldvariety /= newvariety 
+		&& sameExceptExt oldvariety newvariety
+	oldvariety = keyVariety oldkey
+	newvariety = backendVariety newbackend
 
 hashFile :: Hash -> FilePath -> Integer -> Annex String
-hashFile hash file filesize = liftIO $ go hash
+hashFile hash file filesize = go hash
   where
-	go (SHAHash hashsize) = case shaHasher hashsize filesize of
-		Left sha -> sha <$> L.readFile file
-		Right command ->
-			either error return 
-				=<< externalSHA command hashsize file
-	go (SkeinHash hashsize) = skeinHasher hashsize <$> L.readFile file
+	go MD5Hash = use md5Hasher
+	go SHA1Hash = usehasher (HashSize 1)
+	go (SHA2Hash hashsize) = usehasher hashsize
+	go (SHA3Hash hashsize) = use (sha3Hasher hashsize)
+	go (SkeinHash hashsize) = use (skeinHasher hashsize)
+	
+	use hasher = liftIO $ do
+		h <- hasher <$> L.readFile file
+		-- Force full evaluation so file is read and closed.
+		return (length h `seq` h)
+	
+	usehasher hashsize@(HashSize sz) = case shaHasher hashsize filesize of
+		Left sha -> use sha
+		Right (external, internal) -> do
+			v <- liftIO $ externalSHA external sz file
+			case v of
+				Right r -> return r
+				Left e -> do
+					warning e
+					-- fall back to internal since
+					-- external command failed
+					use internal
 
-shaHasher :: HashSize -> Integer -> Either (L.ByteString -> String) String
-shaHasher hashsize filesize
+shaHasher :: HashSize -> Integer -> Either (L.ByteString -> String) (String, L.ByteString -> String)
+shaHasher (HashSize hashsize) filesize
 	| hashsize == 1 = use SysConfig.sha1 sha1
-	| hashsize == 256 = use SysConfig.sha256 sha256
-	| hashsize == 224 = use SysConfig.sha224 sha224
-	| hashsize == 384 = use SysConfig.sha384 sha384
-	| hashsize == 512 = use SysConfig.sha512 sha512
-	| otherwise = error $ "unsupported sha size " ++ show hashsize
+	| hashsize == 256 = use SysConfig.sha256 sha2_256
+	| hashsize == 224 = use SysConfig.sha224 sha2_224
+	| hashsize == 384 = use SysConfig.sha384 sha2_384
+	| hashsize == 512 = use SysConfig.sha512 sha2_512
+	| otherwise = error $ "unsupported SHA size " ++ show hashsize
   where
-	use Nothing hasher = Left $ show . hasher
+	use Nothing hasher = Left $ usehasher hasher
 	use (Just c) hasher
 		{- Use builtin, but slightly slower hashing for
 		 - smallish files. Cryptohash benchmarks 90 to 101%
 		 - faster than external hashers, depending on the hash
 		 - and system. So there is no point forking an external
 		 - process unless the file is large. -}
-		| filesize < 1048576 = use Nothing hasher
-		| otherwise = Right c
+		| filesize < 1048576 = Left $ usehasher hasher
+		| otherwise = Right (c, usehasher hasher)
+	usehasher hasher = show . hasher
+
+sha3Hasher :: HashSize -> (L.ByteString -> String)
+sha3Hasher (HashSize hashsize)
+	| hashsize == 256 = show . sha3_256
+	| hashsize == 224 = show . sha3_224
+	| hashsize == 384 = show . sha3_384
+	| hashsize == 512 = show . sha3_512
+	| otherwise = error $ "unsupported SHA3 size " ++ show hashsize
 
 skeinHasher :: HashSize -> (L.ByteString -> String)
-skeinHasher hashsize 
-#ifdef WITH_CRYPTOHASH
+skeinHasher (HashSize hashsize)
 	| hashsize == 256 = show . skein256
 	| hashsize == 512 = show . skein512
-#endif
-	| otherwise = error $ "unsupported skein size " ++ show hashsize
+	| otherwise = error $ "unsupported SKEIN size " ++ show hashsize
+
+md5Hasher :: L.ByteString -> String
+md5Hasher = show . md5
 
 {- A varient of the SHA256E backend, for testing that needs special keys
  - that cannot collide with legitimate keys in the repository.
@@ -187,7 +232,7 @@ skeinHasher hashsize
  -}
 testKeyBackend :: Backend
 testKeyBackend = 
-	let b = genBackendE (SHAHash 256)
+	let b = genBackendE (SHA2Hash (HashSize 256))
 	in b { getKey = (fmap addE) <$$> getKey b } 
   where
 	addE k = k { keyName = keyName k ++ longext }

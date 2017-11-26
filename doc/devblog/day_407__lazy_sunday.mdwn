@@ -1,0 +1,9 @@
+Noticed that in one of my git-annex repositories, git-annex was spending
+a full second at startup checking all the git-annex branches from remotes
+to see if they contained changes that needed to be merged in. So, I added a
+cache of recently merged branches to avoid that. I remember considering
+this optimisation years ago; don't know why I didn't do it then. Not every
+day that I can speed up git-annex so much!
+
+Also, made `git annex log --all` show location log changes for all keys.
+This was tricky to get right and fast.

@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-02-17T21:46:01Z"
+ content="""
+Yes, that's the same, except lookupkey only operates on files that are
+checked into git.
+
+(Also, lookupkey will work in a direct mode repo, while such a repo
+may not have a symlink to examine.)
+
+25ms doesn't seem bad for a "whole runtime" to fire up. :) I think most of
+the overhead probably involves reading the git config and running
+git-ls-files.
+
+Note that lookupkey can be passed a whole set of files, so you could avoid
+the startup overhead that way too.
+"""]]

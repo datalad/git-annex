@@ -1,6 +1,6 @@
 {- git-annex chunked remotes
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -8,6 +8,7 @@
 module Remote.Helper.Chunked (
 	ChunkSize,
 	ChunkConfig(..),
+	noChunks,
 	describeChunkConfig,
 	getChunkConfig,
 	storeChunks,
@@ -16,11 +17,10 @@ module Remote.Helper.Chunked (
 	checkPresentChunks,
 ) where
 
-import Common.Annex
+import Annex.Common
 import Utility.DataUnits
 import Types.StoreRetrieve
 import Types.Remote
-import Types.Key
 import Logs.Chunk
 import Utility.Metered
 import Crypto (EncKey)
@@ -59,7 +59,7 @@ getChunkConfig m =
 		Just size
 			| size == 0 -> NoChunks
 			| size > 0 -> c (fromInteger size)
-		_ -> error $ "bad configuration " ++ f ++ "=" ++ v
+		_ -> giveup $ "bad configuration " ++ f ++ "=" ++ v
 
 -- An infinite stream of chunk keys, starting from chunk 1.
 newtype ChunkKeyStream = ChunkKeyStream [Key]
@@ -72,7 +72,7 @@ chunkKeyStream basek chunksize = ChunkKeyStream $ map mk [1..]
 
 nextChunkKeyStream :: ChunkKeyStream -> (Key, ChunkKeyStream)
 nextChunkKeyStream (ChunkKeyStream (k:l)) = (k, ChunkKeyStream l)
-nextChunkKeyStream (ChunkKeyStream []) = undefined -- stream is infinite!
+nextChunkKeyStream (ChunkKeyStream []) = error "expected infinite ChunkKeyStream"
 
 takeChunkKeyStream :: ChunkCount -> ChunkKeyStream -> [Key]
 takeChunkKeyStream n (ChunkKeyStream l) = genericTake n l
@@ -99,13 +99,14 @@ numChunks = pred . fromJust . keyChunkNum . fst . nextChunkKeyStream
 storeChunks
 	:: UUID
 	-> ChunkConfig
+	-> EncKey
 	-> Key
 	-> FilePath
 	-> MeterUpdate
 	-> Storer
 	-> CheckPresent
 	-> Annex Bool
-storeChunks u chunkconfig k f p storer checker = 
+storeChunks u chunkconfig encryptor k f p storer checker = 
 	case chunkconfig of
 		(UnpaddedChunks chunksize) | isStableKey k -> 
 			bracketIO open close (go chunksize)
@@ -121,7 +122,7 @@ storeChunks u chunkconfig k f p storer checker =
 		return False
 	go chunksize (Right h) = do
 		let chunkkeys = chunkKeyStream k chunksize
-		(chunkkeys', startpos) <- seekResume h chunkkeys checker
+		(chunkkeys', startpos) <- seekResume h encryptor chunkkeys checker
 		b <- liftIO $ L.hGetContents h
 		gochunks p startpos chunksize b chunkkeys'
 
@@ -165,10 +166,11 @@ storeChunks u chunkconfig k f p storer checker =
  -}
 seekResume
 	:: Handle
+	-> EncKey
 	-> ChunkKeyStream
 	-> CheckPresent
 	-> Annex (ChunkKeyStream, BytesProcessed)
-seekResume h chunkkeys checker = do
+seekResume h encryptor chunkkeys checker = do
 	sz <- liftIO (hFileSize h)
 	if sz <= fromMaybe 0 (keyChunkSize $ fst $ nextChunkKeyStream chunkkeys)
 		then return (chunkkeys, zeroBytesProcessed)
@@ -180,7 +182,7 @@ seekResume h chunkkeys checker = do
 			liftIO $ hSeek h AbsoluteSeek sz
 			return (cks, toBytesProcessed sz)
 		| otherwise = do
-			v <- tryNonAsync (checker k)
+			v <- tryNonAsync (checker (encryptor k))
 			case v of
 				Right True ->
 					check pos' cks' sz
@@ -244,14 +246,13 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 	| otherwise = go =<< chunkKeys u chunkconfig basek
   where
 	go ls = do
-		currsize <- liftIO $ catchMaybeIO $
-			toInteger . fileSize <$> getFileStatus dest
+		currsize <- liftIO $ catchMaybeIO $ getFileSize dest
 		let ls' = maybe ls (setupResume ls) currsize
 		if any null ls'
 			then return True -- dest is already complete
-			else firstavail currsize ls' `catchNonAsync` giveup
+			else firstavail currsize ls' `catchNonAsync` unable
 
-	giveup e = do
+	unable e = do
 		warning (show e)
 		return False
 
@@ -272,10 +273,10 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 						let sz = toBytesProcessed $
 							fromMaybe 0 $ keyChunkSize k
 						getrest p h sz sz ks
-							`catchNonAsync` giveup
+							`catchNonAsync` unable
 			case v of
 				Left e
-					| null ls -> giveup e
+					| null ls -> unable e
 					| otherwise -> firstavail currsize ls
 				Right r -> return r
 
@@ -285,7 +286,7 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 		liftIO $ p' zeroBytesProcessed
 		ifM (retriever (encryptor k) p' $ tosink (Just h) p')
 			( getrest p h sz (addBytesProcessed bytesprocessed sz) ks
-			, giveup "chunk retrieval failed"
+			, unable "chunk retrieval failed"
 			)
 
 	getunchunked = retriever (encryptor basek) basep $ tosink Nothing basep

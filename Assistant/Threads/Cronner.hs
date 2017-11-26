@@ -1,6 +1,6 @@
 {- git-annex assistant sceduled jobs runner
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,7 +15,7 @@ import Assistant.Common
 import Assistant.DaemonStatus
 import Utility.NotificationBroadcaster
 import Annex.UUID
-import Config.Files
+import Annex.Path
 import Logs.Schedule
 import Utility.Scheduled
 import Types.ScheduledActivity
@@ -24,7 +24,7 @@ import Utility.HumanTime
 import Utility.Batch
 import Assistant.TransferQueue
 import Annex.Content
-import Logs.Transfer
+import Types.Transfer
 import Assistant.Types.UrlRenderer
 import Assistant.Alert
 import Remote
@@ -181,7 +181,7 @@ runActivity urlrenderer activity nowt = do
 
 runActivity' :: UrlRenderer -> ScheduledActivity -> Assistant ()
 runActivity' urlrenderer (ScheduledSelfFsck _ d) = do
-	program <- liftIO $ readProgramFile
+	program <- liftIO programPath
 	g <- liftAnnex gitRepo
 	fsckresults <- showFscking urlrenderer Nothing $ tryNonAsync $ do
 		void $ batchCommand program (Param "fsck" : annexFsckParams d)
@@ -190,13 +190,13 @@ runActivity' urlrenderer (ScheduledSelfFsck _ d) = do
 	void $ repairWhenNecessary urlrenderer u Nothing fsckresults
 	mapM_ reget =<< liftAnnex (dirKeys gitAnnexBadDir)
   where
-	reget k = queueTransfers "fsck found bad file; redownloading" Next k Nothing Download
+	reget k = queueTransfers "fsck found bad file; redownloading" Next k (AssociatedFile Nothing) Download
 runActivity' urlrenderer (ScheduledRemoteFsck u s d) = dispatch =<< liftAnnex (remoteFromUUID u)
   where
 	dispatch Nothing = debug ["skipping remote fsck of uuid without a configured remote", fromUUID u, fromSchedule s]
 	dispatch (Just rmt) = void $ case Remote.remoteFsck rmt of
 		Nothing -> go rmt $ do
-			program <- readProgramFile
+			program <- programPath
 			void $ batchCommand program $ 
 				[ Param "fsck"
 				-- avoid downloading files

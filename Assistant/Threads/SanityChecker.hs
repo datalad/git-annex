@@ -1,6 +1,6 @@
 {- git-annex assistant sanity checker
  -
- - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -38,17 +38,17 @@ import Git.Repair
 import Git.Index
 import Assistant.Unused
 import Logs.Unused
-import Logs.Transfer
-import Config.Files
-import Utility.DiskFree
+import Types.Transfer
+import Types.Key
+import Annex.Path
 import qualified Annex
 #ifdef WITH_WEBAPP
 import Assistant.WebApp.Types
 #endif
 #ifndef mingw32_HOST_OS
 import Utility.LogFile
+import Utility.DiskFree
 #endif
-import Types.Key (keyBackendName)
 
 import Data.Time.Clock.POSIX
 import qualified Data.Text as T
@@ -182,7 +182,7 @@ dailyCheck urlrenderer = do
 	{- Run git-annex unused once per day. This is run as a separate
 	 - process to stay out of the annex monad and so it can run as a
 	 - batch job. -}
-	program <- liftIO readProgramFile
+	program <- liftIO programPath
 	let (program', params') = batchmaker (program, [Param "unused"])
 	void $ liftIO $ boolSystem program' params'
 	{- Invalidate unused keys cache, and queue transfers of all unused
@@ -190,8 +190,8 @@ dailyCheck urlrenderer = do
 	unused <- liftAnnex unusedKeys'
 	void $ liftAnnex $ setUnusedKeys unused
 	forM_ unused $ \k -> do
-		unlessM (queueTransfers "unused" Later k Nothing Upload) $
-			handleDrops "unused" True k Nothing Nothing
+		unlessM (queueTransfers "unused" Later k (AssociatedFile Nothing) Upload) $
+			handleDrops "unused" True k (AssociatedFile Nothing) []
 
 	return True
   where
@@ -225,7 +225,7 @@ checkLogSize :: Int -> Assistant ()
 checkLogSize n = do
 	f <- liftAnnex $ fromRepo gitAnnexLogFile
 	logs <- liftIO $ listLogs f
-	totalsize <- liftIO $ sum <$> mapM filesize logs
+	totalsize <- liftIO $ sum <$> mapM getFileSize logs
 	when (totalsize > 2 * oneMegabyte) $ do
 		notice ["Rotated logs due to size:", show totalsize]
 		liftIO $ openLog f >>= handleToFd >>= redirLog
@@ -237,9 +237,7 @@ checkLogSize n = do
 						checkLogSize (n + 1)
 				_ -> noop
   where
-	filesize f = fromIntegral . fileSize <$> liftIO (getFileStatus f)
-
-	oneMegabyte :: Int
+	oneMegabyte :: Integer
 	oneMegabyte = 1000000
 #endif
 
@@ -259,9 +257,9 @@ checkOldUnused urlrenderer = go =<< annexExpireUnused <$> liftAnnex Annex.getGit
   where
 	go (Just Nothing) = noop
 	go (Just (Just expireunused)) = expireUnused (Just expireunused)
-	go Nothing = maybe noop prompt =<< describeUnusedWhenBig
+	go Nothing = maybe noop promptconfig =<< describeUnusedWhenBig
 
-	prompt msg = 
+	promptconfig msg = 
 #ifdef WITH_WEBAPP
 		do
 			button <- mkAlertButton True (T.pack "Configure") urlrenderer ConfigUnusedR
@@ -311,7 +309,7 @@ cleanReallyOldTmp = do
 	cleanjunk check f = case fileKey (takeFileName f) of
 		Nothing -> cleanOld check f
 		Just k
-			| "GPGHMAC" `isPrefixOf` keyBackendName k ->
+			| "GPGHMAC" `isPrefixOf` formatKeyVariety (keyVariety k) ->
 				cleanOld check f
 			| otherwise -> noop
 

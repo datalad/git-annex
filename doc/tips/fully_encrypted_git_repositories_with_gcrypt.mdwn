@@ -1,4 +1,4 @@
-[git-remote-gcrypt](https://github.com/joeyh/git-remote-gcrypt/)
+[git-remote-gcrypt](https://spwhitton.name/tech/code/git-remote-gcrypt/)
 adds support for encrypted remotes to git. The git-annex 
 [[gcrypt special remote|special_remotes/gcrypt]] allows git-annex to
 also store its files in such repositories. Naturally, git-annex encrypts
@@ -14,8 +14,7 @@ repositories.
 
 ## prerequisites
 
-* Install
-[git-remote-gcrypt](https://github.com/joeyh/git-remote-gcrypt/)
+* Install [git-remote-gcrypt](https://spwhitton.name/tech/code/git-remote-gcrypt/)
 * Install git-annex version 4.20130909 or newer.
 
 ## encrypted backup drive
@@ -49,7 +48,7 @@ data out of your encrypted backup. You need to find a secure way to store a
 backup of your gpg key. Printing it out and storing it in a safe deposit box,
 for example.
 
-You can actually specifiy keyid= as many times as you like to allow any one
+You can actually specify keyid= as many times as you like to allow any one
 of a set of gpg keys to access this repository. So you could add a friend's
 key, or another gpg key you have.
 

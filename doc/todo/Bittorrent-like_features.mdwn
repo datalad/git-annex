@@ -29,7 +29,23 @@ Another thing, this would be completely trackerless. You just use remote groups 
 
 This was originally posted [[as a forum post|forum/Wishlist:_Bittorrent-like_transfers]] by [[users/GLITTAH]].
 
-Update: note how [[design/assistant/telehash/]] may be able to answer this specific use case.
+Update: there are multiple projects trying to solve this problem space outside of git-annex, which git-annex should reuse.
+
+ * [[design/assistant/telehash/]] support is still not complete, as the upstream spec and implementation (particularly Haskell bits), need to mature
+ * [[special_remotes/ipfs/]] is now a special remote that does respond to some of the requirements (but [duplicates files around](https://github.com/ipfs/go-ipfs/issues/875) even more and is [kind of](https://github.com/ipfs/go-ipfs/issues/872) [slow](https://github.com/ipfs/go-ipfs/issues/898))
+ * [Maidsafe](http://maidsafe.net/) is another option, which provides storage and uses crypto-currency incentives
+ * [Storj](http://storj.io/) is similar
+ * [camlistore](https://camlistore.org/) is yet another option
+ * [syncthing](https://syncthing.net/) looks like a btsync replacement, and could also be interesting, see the [[todo/syncthing_special_remote]] discussion
+ * [gittorrent](http://blog.printf.net/articles/2015/05/29/announcing-gittorrent-a-decentralized-github/) allows for decentralised sharing of the git objects, which could replace pairing between repositories, except it [doesn't support push yet](https://github.com/cjb/GitTorrent/issues/3)
+ * [gitocalypse](https://github.com/SeekingFor/gitocalypse) is similar to gittorrent, except it uses Freenet and HG (Mercurial?!) instead of the bittorrent DHT
+ * [tox](https://tox.chat/) - DHT-enabled chat, file transfer and messaging platform, [no stable release](https://github.com/irungentoo/toxcore/issues/1353), [security concerns](http://lists.alioth.debian.org/pipermail/pkg-privacy-maintainers/Week-of-Mon-20150928/000046.html)
+ * [ricochet](https://ricochet.im/) - similar, but relies on Tor, unclear if it supports file transfers, packaged in Debian
+ * [pond](https://pond.imperialviolet.org/) - similar to ricochet
+ * [scout](https://github.com/bittorrent/scout) - DHT-based messaging and peer discovery, used for the Bittorrent-based [bleep messenger](http://www.bleep.pm), could be used to sync git history? [introduction article](http://blog.bittorrent.com/2016/09/09/scout-securely-locate-peers-without-central-servers/)
+ * [pwnat](http://samy.pl/pwnat/) can similarly be used to create tunnels to bypass NATs
+
+joeyh's approach for now is to [[wait and see what will emerge|devblog/day_219__catching_up_and_looking_back/]], but of course people are welcome to implement their own [[special_remotes]] to fix this problem!
 
 Using an external client (addurl torrent support)
 =================================================
@@ -45,3 +61,5 @@ or even better:
 This way, a torrent would just become another source for a specific file. When we `get` the file, it fires up `$YOUR_FAVORITE_TORRENT_CLIENT` to download the file.
 
 That way we avoid the implementation complexity of shoving a complete bittorrent client within the assistant. The `get` operation would block until the torrent is downloaded, i guess... --[[anarcat]]
+
+> This is now [[implemented|special_remotes/bittorrent/]]. Including magnet link support, and multi-file torrent support. Leaving todo item open for the blue-sky stuff at top. --[[Joey]]

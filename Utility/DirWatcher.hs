@@ -4,7 +4,7 @@
  - (and subdirectories) for changes, and runs hooks for different
  - sorts of events as they occur.
  -
- - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2013 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -57,28 +57,28 @@ eventsCoalesce = False
 #if (WITH_KQUEUE || WITH_FSEVENTS)
 eventsCoalesce = True
 #else
-eventsCoalesce = undefined
+eventsCoalesce = error "eventsCoalesce not defined"
 #endif
 #endif
 
 {- With inotify, file closing is tracked to some extent, so an add event
  - will always be received for a file once its writer closes it, and
  - (typically) not before. This may mean multiple add events for the same file.
- - 
- - fsevents behaves similarly, although different event types are used for
- - creating and modification of the file.
  -
  - OTOH, with kqueue, add events will often be received while a file is
  - still being written to, and then no add event will be received once the
- - writer closes it. -}
+ - writer closes it.
+ - 
+ - fsevents sometimes behaves similarly, but has sometimes been 
+ - seen to behave like kqueue. -}
 closingTracked :: Bool
-#if (WITH_INOTIFY || WITH_FSEVENTS || WITH_WIN32NOTIFY)
+#if (WITH_INOTIFY || WITH_WIN32NOTIFY)
 closingTracked = True
 #else
-#if WITH_KQUEUE
+#if (WITH_KQUEUE || WITH_FSEVENTS)
 closingTracked = False
 #else
-closingTracked = undefined
+closingTracked = error "closingTracked not defined"
 #endif
 #endif
 
@@ -93,7 +93,7 @@ modifyTracked = True
 #if WITH_KQUEUE
 modifyTracked = False
 #else
-modifyTracked = undefined
+modifyTracked = error "modifyTracked not defined"
 #endif
 #endif
 
@@ -131,7 +131,7 @@ watchDir dir prune scanevents hooks runstartup =
 #else
 type DirWatcherHandle = ()
 watchDir :: FilePath -> Pruner -> Bool -> WatchHooks -> (IO () -> IO ()) -> IO DirWatcherHandle
-watchDir = undefined
+watchDir = error "watchDir not defined"
 #endif
 #endif
 #endif
@@ -150,7 +150,7 @@ stopWatchDir = FSEvents.eventStreamDestroy
 #if WITH_WIN32NOTIFY
 stopWatchDir = Win32Notify.killWatchManager
 #else
-stopWatchDir = undefined
+stopWatchDir = error "stopWatchDir not defined"
 #endif
 #endif
 #endif

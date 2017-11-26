@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="luckcolorsgoo@ab4f3c1c44a7dbcbcb9d9a29315b59ad524ceaaa"
+ nickname="luckcolorsgoo"
+ avatar="http://cdn.libravatar.org/avatar/ddff84cd2a97252a05cccb4bc5010448"
+ subject="comment 2"
+ date="2016-11-16T22:56:46Z"
+ content="""
+In my case i was going to make a script for automatically downloading and updating an git portbale / git annex instance, by first fetching git portbale and then downloading the gitannex exe.
+
+So yeah it's more reliable to extract an archive rather than trying to extract the setup without executing it.
+That's why i'm asking for this feature. :)
+
+
+
+"""]]

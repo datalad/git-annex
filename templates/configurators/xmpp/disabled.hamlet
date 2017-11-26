@@ -1,6 +1,0 @@
-<div .col-sm-9>
-  <div .content-box>
-    <h2>
-      Jabber not supported
-    <p>
-      This build of git-annex does not support Jabber. Sorry!

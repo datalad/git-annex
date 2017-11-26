@@ -1,0 +1,14 @@
+ I'm using git-annex 5.20150205-gbf9058a and just used the WebApp to create a new remote SSH repo, and thought I'd try the encrypted option.
+
+It give me three GPG keys to choose from (all valid keys) but only displayed the email addresses which were all identical so I couldn't tell which was which.
+
+I then clicked the first key selection button, hoping it would display more info but it seemed to start doing things immediately. It requested the GPG passphrase which I cancelled but it was still doing things, and worse it wasn't clear what state the repo was in (encrypted or not), so I deleted it and started again (it's fine now).
+
+The passphrase dialog box does display the key fingerprint, but it's then too late to alter the key selection.
+
+Request: Could the WebApp always display the fingerprint after the email address?
+
+Some clarity on what happens when you cancel would be nice too.
+
+Thanks
+Giovanni

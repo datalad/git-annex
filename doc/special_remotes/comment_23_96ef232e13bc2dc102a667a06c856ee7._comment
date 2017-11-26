@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="craig@6ddb6e2c94325e18a0d631a06e63fdc111ab1f12"
+ nickname="craig"
+ subject="Replicating my key for encrypted special remotes"
+ date="2015-10-17T16:29:24Z"
+ content="""
+I'm using git annex assistant to auto backup my pictures off-site to glacier.  The files in glacier are encrypted.  However, if I lose my main machine, I've also lost the encryption key, which makes my off-site backup useless.  I figured I could fix this by creating a manual mode remote on a usb drive that I keep on my keychain.  I figured this would replicate the encryption key (as I might want to pull down files from the full backup glacier remote), but would not replicate the files themselves, as I have more pictures than space on the usb drive.
+
+However, it seems the that the new remote is configured to only talk to my main machine and not glacier; the encryption key is not in the .git/ directory.  How do I ensure that I've got an off-site copy of the glacier encryption key?
+
+Thanks,
+Craig
+"""]]

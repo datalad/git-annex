@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 10"
+ date="2014-11-25T20:41:56Z"
+ content="""
+When you actually think about how users would try to use this proposed system, you get here: <http://git-annex.branchable.com/forum/usability:_creating_an_archive_on_a_new_external_drive/> Ie, if a removable drive shows all of a user's files, then they'll  try to edit them, and since the assistant can't run on removable drives (makes them kinda hard to remove), such changes by the user won't get committed.
+"""]]

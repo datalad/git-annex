@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-09-07T20:15:10Z"
+ content="""
+The new `git annex export` command can be used for this. It exports the
+current tree of files to a special remote. If your Android device can be
+mounted to the filesystem, you can initremote a directory special remote on
+it, and then export to it.
+
+It would also be possible to make a special remote that uses `adb` or some
+other method to manipulate the files on the Android device, rather than
+going via the directory special remote.
+
+The main downside is, if you modify files on the Android device, or add new
+files, there's no way to commit the changes from there back to
+your git repository.
+"""]]

@@ -1,0 +1,5 @@
+I have two annex repositories A and B, the connection between them is terribly slow. There is a file in B that A wants to get, but incidentally A already has an exact copy of the file outside the annex repository. Is it possible for A to retrieve the content of that annexed file from its local copy rather than from B?
+
+The only idea I could come up with is to annex the file and then unannexing it, which does not seem optimal. I would prefer to not pollute the git log with these kinds of shenanigans.
+
+Any help is greatly appreciated!

@@ -1,13 +1,13 @@
 {- Types for Storer and Retriever actions for remotes.
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Types.StoreRetrieve where
 
-import Common.Annex
+import Annex.Common
 import Utility.Metered
 
 import qualified Data.ByteString.Lazy as L

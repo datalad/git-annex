@@ -1,6 +1,6 @@
 {- git-annex assistant webapp thread
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -26,7 +26,6 @@ import Assistant.WebApp.Configurators.Pairing
 import Assistant.WebApp.Configurators.AWS
 import Assistant.WebApp.Configurators.IA
 import Assistant.WebApp.Configurators.WebDAV
-import Assistant.WebApp.Configurators.XMPP
 import Assistant.WebApp.Configurators.Preferences
 import Assistant.WebApp.Configurators.Unused
 import Assistant.WebApp.Configurators.Edit
@@ -37,8 +36,10 @@ import Assistant.WebApp.Documentation
 import Assistant.WebApp.Control
 import Assistant.WebApp.OtherRepos
 import Assistant.WebApp.Repair
+import Assistant.WebApp.Pairing
 import Assistant.Types.ThreadedMonad
 import Utility.WebApp
+import Utility.AuthToken
 import Utility.Tmp
 import Utility.FileMode
 import Git
@@ -49,7 +50,6 @@ import Network.Socket (SockAddr, HostName)
 import Data.Text (pack, unpack)
 import qualified Network.Wai.Handler.WarpTLS as TLS
 import Network.Wai.Middleware.RequestLogger
-import System.Log.Logger
 
 mkYesodDispatch "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
 
@@ -72,17 +72,18 @@ webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost
 #ifdef __ANDROID__
 	when (isJust listenhost') $
 		-- See Utility.WebApp
-		error "Sorry, --listen is not currently supported on Android"
+		giveup "Sorry, --listen is not currently supported on Android"
 #endif
 	webapp <- WebApp
 		<$> pure assistantdata
-		<*> genAuthToken
+		<*> genAuthToken 128
 		<*> getreldir
 		<*> pure staticRoutes
 		<*> pure postfirstrun
 		<*> pure cannotrun
 		<*> pure noannex
 		<*> pure listenhost'
+		<*> newWormholePairingState
 	setUrlRenderer urlrenderer $ yesodRender webapp (pack "")
 	app <- toWaiAppPlain webapp
 	app' <- ifM debugEnabled
@@ -128,19 +129,9 @@ myUrl tlssettings webapp addr = unpack $ yesodRender webapp urlbase DashboardR [
 
 getTlsSettings :: Annex (Maybe TLS.TLSSettings)
 getTlsSettings = do
-#ifdef WITH_WEBAPP_SECURE
 	cert <- fromRepo gitAnnexWebCertificate
 	privkey <- fromRepo gitAnnexWebPrivKey
 	ifM (liftIO $ allM doesFileExist [cert, privkey])
 		( return $ Just $ TLS.tlsSettings cert privkey
 		, return Nothing
 		)
-#else
-	return Nothing
-#endif
-
-{- Checks if debugging is actually enabled. -}
-debugEnabled :: IO Bool
-debugEnabled = do
-	l <- getRootLogger
-	return $ getLevel l <= Just DEBUG

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-03-16T17:14:50Z"
+ content="""
+This control socket message sounds like the actual problem is
+that unix sockets cannot be used on this filesystem. git-annex
+puts the socket there to make ssh connection caching work.
+
+So, I think you need to disable ssh connection caching: 
+`git config annex.sshcaching false`
+
+I was able to reproduce a similar failure on nfts on linux.
+"""]]

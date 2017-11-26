@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-01-15T19:01:22Z"
+ content="""
+git-annex uses broken symlinks for files in the git repository whose
+content is not currently present.
+
+On filesystems not supporting symlinks, git represents them by putting the
+symlink target in a regular file. This seems to be what you have here.
+
+Your `find` command shows that the content is *not* located in
+.git/annex/objects. It only found a .map file, not the content file.
+
+So, `git annex get` seems like the most likely thing that will get the
+content of these files from wherever it's stored.
+"""]]

@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2014-11-05T16:14:06Z"
+ content="""
+You can set up a .gitignore file containing `*.swp` or whatever.
+"""]]

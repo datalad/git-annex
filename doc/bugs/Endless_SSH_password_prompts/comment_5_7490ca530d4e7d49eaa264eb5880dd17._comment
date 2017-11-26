@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawkdiXn5s1wX2Zncy1S7_h-yPTv2gt0bmmY"
- nickname="Jacob"
- subject="Same problem on ubuntu"
- date="2013-12-15T14:22:55Z"
- content="""
-Same problem, I even manually setup ssh keys between the two servers but it just loops and keeps asking for a password every sync.
-"""]]

@@ -158,7 +158,7 @@ B<^MyVideos.*\.db$> and will fail if none is found.
 Manually specify the path to B<.xbmc/userdata/Database>. This
 overrides B<--home>.
 
-Note that this doesn't point directly to the datbase itself, because
+Note that this doesn't point directly to the database itself, because
 there are usually many database files and we want to automatically
 find the latest. This may be a stupid limitation.
 

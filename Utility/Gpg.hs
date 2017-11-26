@@ -1,40 +1,44 @@
 {- gpg interface
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 {-# LANGUAGE CPP #-}
 
 module Utility.Gpg where
 
-import Control.Applicative
+import Common
+import qualified Build.SysConfig as SysConfig
+#ifndef mingw32_HOST_OS
+import System.Posix.Types
+import qualified System.Posix.IO
+import Utility.Env
+#endif
+import Utility.Tmp
+import Utility.Format (decode_c)
+
 import Control.Concurrent
 import Control.Monad.IO.Class
 import qualified Data.Map as M
-
-import Common
-import qualified Build.SysConfig as SysConfig
-
-#ifndef mingw32_HOST_OS
-import System.Posix.Types
-import System.Path
-import Utility.Env
-#else
-import Utility.Tmp
-#endif
-import Utility.Format (decode_c)
+import Data.Char
 
 type KeyId = String
 
 newtype KeyIds = KeyIds { keyIds :: [KeyId] }
 	deriving (Ord, Eq)
 
-{- If a specific gpg command was found at configure time, use it.
- - Otherwise, try to run gpg. -}
-gpgcmd :: FilePath
-gpgcmd = fromMaybe "gpg" SysConfig.gpg
+newtype GpgCmd = GpgCmd { unGpgCmd :: String }
+
+{- Get gpg command to use, Just what's specified or, if a specific gpg
+ - command was found at configure time, use it, or otherwise, "gpg". -}
+mkGpgCmd :: Maybe FilePath -> GpgCmd
+mkGpgCmd (Just c) = GpgCmd c
+mkGpgCmd Nothing = GpgCmd (fromMaybe "gpg" SysConfig.gpg)
+
+boolGpgCmd :: GpgCmd -> [CommandParam] -> IO Bool
+boolGpgCmd (GpgCmd cmd) = boolSystem cmd
 
 -- Generate an argument list to asymetrically encrypt to the given recipients.
 pkEncTo :: [String] -> [CommandParam]
@@ -61,32 +65,35 @@ stdParams params = do
 
 {- Usual options for symmetric / public-key encryption. -}
 stdEncryptionParams :: Bool -> [CommandParam]
-stdEncryptionParams symmetric =
-	[ enc symmetric
-	, Param "--force-mdc"
+stdEncryptionParams symmetric = enc symmetric ++
+	[ Param "--force-mdc"
 	, Param "--no-textmode"
 	]
   where
-	enc True = Param "--symmetric"
+	enc True = [ Param "--symmetric" ]
 	-- Force gpg to only encrypt to the specified recipients, not
 	-- configured defaults. Recipients are assumed to be specified in
 	-- elsewhere.
-	enc False = Params "--encrypt --no-encrypt-to --no-default-recipient"
+	enc False =
+		[ Param "--encrypt"
+		, Param "--no-encrypt-to"
+		, Param "--no-default-recipient"
+		]
 
 {- Runs gpg with some params and returns its stdout, strictly. -}
-readStrict :: [CommandParam] -> IO String
-readStrict params = do
+readStrict :: GpgCmd -> [CommandParam] -> IO String
+readStrict (GpgCmd cmd) params = do
 	params' <- stdParams params
-	withHandle StdoutHandle createProcessSuccess (proc gpgcmd params') $ \h -> do
+	withHandle StdoutHandle createProcessSuccess (proc cmd params') $ \h -> do
 		hSetBinaryMode h True
 		hGetContentsStrict h
 
 {- Runs gpg, piping an input value to it, and returning its stdout,
  - strictly. -}
-pipeStrict :: [CommandParam] -> String -> IO String
-pipeStrict params input = do
+pipeStrict :: GpgCmd -> [CommandParam] -> String -> IO String
+pipeStrict (GpgCmd cmd) params input = do
 	params' <- stdParams params
-	withBothHandles createProcessSuccess (proc gpgcmd params') $ \(to, from) -> do
+	withIOHandles createProcessSuccess (proc cmd params') $ \(to, from) -> do
 		hSetBinaryMode to True
 		hSetBinaryMode from True
 		hPutStr to input
@@ -104,11 +111,11 @@ pipeStrict params input = do
  -
  - Note that to avoid deadlock with the cleanup stage,
  - the reader must fully consume gpg's input before returning. -}
-feedRead :: (MonadIO m, MonadMask m) => [CommandParam] -> String -> (Handle -> IO ()) -> (Handle -> m a) -> m a
-feedRead params passphrase feeder reader = do
+feedRead :: (MonadIO m, MonadMask m) => GpgCmd -> [CommandParam] -> String -> (Handle -> IO ()) -> (Handle -> m a) -> m a
+feedRead cmd params passphrase feeder reader = do
 #ifndef mingw32_HOST_OS
 	-- pipe the passphrase into gpg on a fd
-	(frompipe, topipe) <- liftIO createPipe
+	(frompipe, topipe) <- liftIO System.Posix.IO.createPipe
 	liftIO $ void $ forkIO $ do
 		toh <- fdToHandle topipe
 		hPutStrLn toh passphrase
@@ -125,13 +132,13 @@ feedRead params passphrase feeder reader = do
 		go $ passphrasefile ++ params
 #endif
   where
-	go params' = pipeLazy params' feeder reader
+	go params' = pipeLazy cmd params' feeder reader
 
 {- Like feedRead, but without passphrase. -}
-pipeLazy :: (MonadIO m, MonadMask m) => [CommandParam] -> (Handle -> IO ()) -> (Handle -> m a) -> m a
-pipeLazy params feeder reader = do
+pipeLazy :: (MonadIO m, MonadMask m) => GpgCmd -> [CommandParam] -> (Handle -> IO ()) -> (Handle -> m a) -> m a
+pipeLazy (GpgCmd cmd) params feeder reader = do
 	params' <- liftIO $ stdParams $ Param "--batch" : params
-	let p = (proc gpgcmd params')
+	let p = (proc cmd params')
 		{ std_in = CreatePipe
 		, std_out = CreatePipe
 		, std_err = Inherit
@@ -141,7 +148,7 @@ pipeLazy params feeder reader = do
 	setup = liftIO . createProcess
 	cleanup p (_, _, _, pid) = liftIO $ forceSuccessProcess p pid
 	go p = do
-		let (to, from) = bothHandles p
+		let (to, from) = ioHandles p
 		liftIO $ void $ forkIO $ do
 			feeder to
 			hClose to
@@ -150,28 +157,41 @@ pipeLazy params feeder reader = do
 {- Finds gpg public keys matching some string. (Could be an email address,
  - a key id, or a name; See the section 'HOW TO SPECIFY A USER ID' of
  - GnuPG's manpage.) -}
-findPubKeys :: String -> IO KeyIds
-findPubKeys for = KeyIds . parse . lines <$> readStrict params
+findPubKeys :: GpgCmd -> String -> IO KeyIds
+findPubKeys cmd for
+	-- pass forced subkey through as-is rather than
+	-- looking up the master key.
+	| isForcedSubKey for = return $ KeyIds [for]
+	| otherwise = KeyIds . parse . lines <$> readStrict cmd params
   where
-	params = [Params "--with-colons --list-public-keys", Param for]
-	parse = mapMaybe (keyIdField . split ":")
+	params = [Param "--with-colons", Param "--list-public-keys", Param for]
+	parse = mapMaybe (keyIdField . splitc ':')
 	keyIdField ("pub":_:_:_:f:_) = Just f
 	keyIdField _ = Nothing
+
+{- "subkey!" tells gpg to force use of a specific subkey -}
+isForcedSubKey :: String -> Bool
+isForcedSubKey s = "!" `isSuffixOf` s && all isHexDigit (drop 1 s)
 
 type UserId = String
 
 {- All of the user's secret keys, with their UserIds.
  - Note that the UserId may be empty. -}
-secretKeys :: IO (M.Map KeyId UserId)
-secretKeys = catchDefaultIO M.empty makemap
+secretKeys :: GpgCmd -> IO (M.Map KeyId UserId)
+secretKeys cmd = catchDefaultIO M.empty makemap
   where
-	makemap = M.fromList . parse . lines <$> readStrict params
-	params = [Params "--with-colons --list-secret-keys --fixed-list-mode"]
-	parse = extract [] Nothing . map (split ":")
+	makemap = M.fromList . parse . lines <$> readStrict cmd params
+	params = [Param "--with-colons", Param "--list-secret-keys", Param "--fixed-list-mode"]
+	parse = extract [] Nothing . map (splitc ':')
 	extract c (Just keyid) (("uid":_:_:_:_:_:_:_:_:userid:_):rest) =
+		-- If the userid contains a ":" or a few other special
+		-- characters, gpg will hex-escape it. Use decode_c to
+		-- undo.
 		extract ((keyid, decode_c userid):c) Nothing rest
-	extract c (Just keyid) rest =
+	extract c (Just keyid) rest@(("sec":_):_) =
 		extract ((keyid, ""):c) Nothing rest
+	extract c (Just keyid) (_:rest) =
+		extract c (Just keyid) rest
 	extract c _ [] = c
 	extract c _ (("sec":_:_:_:keyid:_):rest) =
 		extract c (Just keyid) rest
@@ -191,9 +211,9 @@ maxRecommendedKeySize = 4096
  - The key is added to the secret key ring.
  - Can take a very long time, depending on system entropy levels.
  -}
-genSecretKey :: KeyType -> Passphrase -> UserId -> Size -> IO ()
-genSecretKey keytype passphrase userid keysize =
-	withHandle StdinHandle createProcessSuccess (proc gpgcmd params) feeder
+genSecretKey :: GpgCmd -> KeyType -> Passphrase -> UserId -> Size -> IO ()
+genSecretKey (GpgCmd cmd) keytype passphrase userid keysize =
+	withHandle StdinHandle createProcessSuccess (proc cmd params) feeder
   where
 	params = ["--batch", "--gen-key"]
 	feeder h = do
@@ -215,14 +235,15 @@ genSecretKey keytype passphrase userid keysize =
 {- Creates a block of high-quality random data suitable to use as a cipher.
  - It is armored, to avoid newlines, since gpg only reads ciphers up to the
  - first newline. -}
-genRandom :: Bool -> Size -> IO String
-genRandom highQuality size = checksize <$> readStrict
-	[ Params params
-	, Param $ show randomquality
-	, Param $ show size
-	]
+genRandom :: GpgCmd -> Bool -> Size -> IO String
+genRandom cmd highQuality size = checksize <$> readStrict cmd params
   where
-	params = "--gen-random --armor"
+	params = 
+		[ Param "--gen-random"
+		, Param "--armor"
+		, Param $ show randomquality
+		, Param $ show size
+		]
 
 	-- See http://www.gnupg.org/documentation/manuals/gcrypt/Quality-of-random-numbers.html
 	-- for the meaning of random quality levels.
@@ -242,8 +263,8 @@ genRandom highQuality size = checksize <$> readStrict
 			then s
 			else shortread len
 
-	shortread got = error $ unwords
-		[ "Not enough bytes returned from gpg", params
+	shortread got = giveup $ unwords
+		[ "Not enough bytes returned from gpg", show params
 		, "(got", show got, "; expected", show expectedlength, ")"
 		]
 
@@ -324,53 +345,58 @@ keyBlock public ls = unlines
 #ifndef mingw32_HOST_OS
 {- Runs an action using gpg in a test harness, in which gpg does
  - not use ~/.gpg/, but a directory with the test key set up to be used. -}
-testHarness :: IO a -> IO a
-testHarness a = do
-	orig <- getEnv var
-	bracket setup (cleanup orig) (const a)
+testHarness :: GpgCmd -> IO a -> IO a
+testHarness cmd a = withTmpDir "gpgtmpXXXXXX" $ \tmpdir ->
+	bracket (setup tmpdir) (cleanup tmpdir) (const a)
   where
 	var = "GNUPGHOME"		
 
-	setup = do
-		base <- getTemporaryDirectory
-		dir <- mktmpdir $ base </> "gpgtmpXXXXXX"
-		setEnv var dir True
+	setup tmpdir = do
+		orig <- getEnv var
+		setEnv var tmpdir True
 		-- For some reason, recent gpg needs a trustdb to be set up.
-		_ <- pipeStrict [Params "--trust-model auto --update-trustdb"] []
-		_ <- pipeStrict [Params "--import -q"] $ unlines
+		_ <- pipeStrict cmd [Param "--trust-model", Param "auto", Param "--update-trustdb"] []
+		_ <- pipeStrict cmd [Param "--import", Param "-q"] $ unlines
 			[testSecretKey, testKey]
-		return dir
+		return orig
 		
-	cleanup orig tmpdir = removeDirectoryRecursive tmpdir >> reset orig
+	cleanup tmpdir orig = do
+		removeDirectoryRecursive tmpdir
+			-- gpg-agent may be shutting down at the same time
+			-- and may delete its socket at the same time as
+			-- we're trying to, causing an exception. Retrying
+			-- will deal with this race.
+			`catchIO` (\_ -> removeDirectoryRecursive tmpdir)
+		reset orig
 	reset (Just v) = setEnv var v True
 	reset _ = unsetEnv var
 
 {- Tests the test harness. -}
-testTestHarness :: IO Bool
-testTestHarness = do
-	keys <- testHarness $ findPubKeys testKeyId
+testTestHarness :: GpgCmd -> IO Bool
+testTestHarness cmd = do
+	keys <- testHarness cmd $ findPubKeys cmd testKeyId
 	return $ KeyIds [testKeyId] == keys
 #endif
 
 #ifndef mingw32_HOST_OS
-checkEncryptionFile :: FilePath -> Maybe KeyIds -> IO Bool
-checkEncryptionFile filename keys =
-	checkGpgPackets keys =<< readStrict params
+checkEncryptionFile :: GpgCmd -> FilePath -> Maybe KeyIds -> IO Bool
+checkEncryptionFile cmd filename keys =
+	checkGpgPackets cmd keys =<< readStrict cmd params
   where
-	params = [Params "--list-packets --list-only", File filename]
+	params = [Param "--list-packets", Param "--list-only", File filename]
 
-checkEncryptionStream :: String -> Maybe KeyIds -> IO Bool
-checkEncryptionStream stream keys =
-	checkGpgPackets keys =<< pipeStrict params stream
+checkEncryptionStream :: GpgCmd -> String -> Maybe KeyIds -> IO Bool
+checkEncryptionStream cmd stream keys =
+	checkGpgPackets cmd keys =<< pipeStrict cmd params stream
   where
-	params = [Params "--list-packets --list-only"]
+	params = [Param "--list-packets", Param "--list-only"]
 
 {- Parses an OpenPGP packet list, and checks whether data is
  - symmetrically encrypted (keys is Nothing), or encrypted to some
  - public key(s).
  - /!\ The key needs to be in the keyring! -}
-checkGpgPackets :: Maybe KeyIds -> String -> IO Bool
-checkGpgPackets keys str = do
+checkGpgPackets :: GpgCmd -> Maybe KeyIds -> String -> IO Bool
+checkGpgPackets cmd keys str = do
 	let (asym,sym) = partition (pubkeyEncPacket `isPrefixOf`) $
 			filter (\l' -> pubkeyEncPacket `isPrefixOf` l' ||
 				symkeyEncPacket `isPrefixOf` l') $
@@ -381,7 +407,7 @@ checkGpgPackets keys str = do
 		(Just (KeyIds ks), ls, []) -> do
 			-- Find the master key associated with the
 			-- encryption subkey.
-			ks' <- concat <$> mapM (keyIds <$$> findPubKeys)
+			ks' <- concat <$> mapM (keyIds <$$> findPubKeys cmd)
 					[ k | k:"keyid":_ <- map (reverse . words) ls ]
 			return $ sort (nub ks) == sort (nub ks')
 		_ -> return False

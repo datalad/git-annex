@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-06T20:03:32Z"
+ content="""
+I'm having a hard time following what you're trying to say here.
+
+What is the bad behavior you are seeing? How does the fsck output you
+posted relate the the problem? What git remotes are configured? What is the
+contents of your .git/config? How did you disable the vagus repository?
+Have you restarted the assistant after disabling it?
+"""]]

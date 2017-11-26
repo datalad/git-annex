@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-05-04T17:23:41Z"
+ content="""
+@zpeters, the order that remotes are accessed are ordered by cost.
+
+You can configure the costs of remotes by setting remote.$name.annex-cost
+to eg 100 to make it be checked first or 300 to make it be checked later.
+
+There's also a remote.$name.annex-cost-command that runs a command to get
+the cost. You could perhaps use that to detect which network you're on and
+alter the costs appropriately.
+"""]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 1"
+ date="2015-04-08T14:29:59Z"
+ content="""
+'git annex fix' will only fix symlinks that git is tracking (either staged, or part of the repository) because git-annex uses git-ls-files (or something like that) to get the filenames to fix.
+
+'git annex add' adds the files to the annex and replaces them with symlinks, stages the symlinks but does not commit the symlinks.
+"""]]

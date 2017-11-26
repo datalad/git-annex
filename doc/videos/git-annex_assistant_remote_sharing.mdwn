@@ -1,6 +1,0 @@
-<video controls width=400>
-<source src="https://downloads.kitenet.net/videos/git-annex/git-annex-xmpp-pairing.ogv">
-</video><br>
-A <a href="https://downloads.kitenet.net/videos/git-annex/git-annex-xmpp-pairing.ogv">6 minute screencast</a>
-showing how to share files between your computers in different locations,
-such as home and work.

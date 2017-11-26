@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-08-04T20:14:00Z"
+ content="""
+This is actually something that got worse when fsck changed to using a
+database, rather than its old sticky-bit based hack. Parallel fsck used to
+work entirely perfectly, they could even be run on the same directories w/o
+processing files redundantly.
+
+Now, it's safe to run multiple fsck processes in parallel. However, since
+the database is only occasionally updated, if the two fscks are working on
+the same directory, one won't know that the other has already fscked a
+file, and they'll tend to do redundant work.
+
+It'll work fine if you give concurrent fscks different directories
+or sets of files to work on. The git-annex key (ie, symlink target of a
+file) is the primary-key.
+
+Also, I'd at some point like to make git-annex fsck -J work. With
+concurrent fsck jobs running in the same process, it could easily divide
+work up amoung them. The only tricky part is the output of the concurrent
+jobs would be scrambled and interleaved..
+"""]]

@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 9"
+ date="2016-03-01T20:43:17Z"
+ content="""
+ok -- see on smaug /mnt/nfs/scrap/datalad/test_nfs/123-clone-move.strace  .  Now you can experiment there as well -- the entire /mnt/btrfs/scrap is mounted also via nfs (under /mnt/nfs/scrap)
+"""]]

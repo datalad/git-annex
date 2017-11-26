@@ -2,7 +2,7 @@
  -
  - Can be removed eventually.
  -
- - Copyright 2011-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,7 +12,7 @@ module Remote.Directory.LegacyChunked where
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S
 
-import Common.Annex
+import Annex.Common
 import Utility.FileMode
 import Remote.Helper.Special
 import qualified Remote.Helper.Chunked.Legacy as Legacy

@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawn_3tllXjSmtgm__aGr9Z4gVNFgJgGyJ30"
- nickname="David Alan"
- subject="Partly fixed?"
- date="2014-01-15T01:35:19Z"
- content="""
-The new build fixed it for me on Mac OS 10.8.5 but not on 10.9.1
-Using the app, it won't start anything on 10.9.1 now.
-"""]]

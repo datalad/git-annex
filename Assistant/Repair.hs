@@ -1,8 +1,8 @@
 {- git-annex assistant repository repair
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU AGPL version 3 or higher.
+ - Licensed under the GNU GPL version 3 or higher.
  -}
 
 {-# LANGUAGE CPP #-}
@@ -19,7 +19,7 @@ import qualified Types.Remote as Remote
 import Logs.FsckResults
 import Annex.UUID
 import Utility.Batch
-import Config.Files
+import Annex.Path
 import Assistant.Sync
 import Assistant.Alert
 import Assistant.DaemonStatus
@@ -105,7 +105,7 @@ runRepair u mrmt destructiverepair = do
 		return ok
 	
 	backgroundfsck params = liftIO $ void $ async $ do
-		program <- readProgramFile
+		program <- programPath
 		batchCommand program (Param "fsck" : params)
 
 {- Detect when a git lock file exists and has no git process currently
@@ -140,8 +140,7 @@ repairStaleGitLocks r = do
 repairStaleLocks :: [FilePath] -> Assistant ()
 repairStaleLocks lockfiles = go =<< getsizes
   where
-	getsize lf = catchMaybeIO $ 
-		(\s -> (lf, fileSize s)) <$> getFileStatus lf
+	getsize lf = catchMaybeIO $ (\s -> (lf, s)) <$> getFileSize lf
 	getsizes = liftIO $ catMaybes <$> mapM getsize lockfiles
 	go [] = return ()
 	go l = ifM (liftIO $ null <$> Lsof.query ("--" : map fst l))

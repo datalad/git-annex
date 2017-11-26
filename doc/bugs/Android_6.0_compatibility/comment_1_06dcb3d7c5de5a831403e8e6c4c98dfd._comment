@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="divergentdave@5c17d06f6d67c6f157b76a4cc95ca764b7d2f899"
+ nickname="divergentdave"
+ subject="comment 1"
+ date="2015-12-24T22:44:16Z"
+ content="""
+FWIW, it appears that SSH caching is already turned off in this repository. If I cd to the repository and run `git config annex.sshcaching` I get back \"false\".
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jscinoz@dc383eb6c5526eeb832a38ef5e5e626cf282ee6c"
+ nickname="jscinoz"
+ subject="comment 1"
+ date="2016-07-18T06:17:57Z"
+ content="""
+Oh, my mistake. It appears git-annex already does this - I mistakenly had one of the repositories in a different btrfs subvolume.
+"""]]

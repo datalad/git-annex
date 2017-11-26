@@ -1,0 +1,10 @@
+`git annex export` can efficiently handle renames, including renames that swap
+content between files. However, when there are two pairs of duplicate files,
+and the filenames are swapped around, the current rename handling renames both
+dups to a single  temp file, and so the other file in the pair gets re-uploaded
+unncessarily. This could be improved.
+
+Perhaps: Find pairs of renames that swap content between two files.
+Run each pair in turn. Then run the current rename code. Although this
+still probably misses cases, where eg, content cycles amoung 3 files, and
+the same content amoung 3 other files. Is there a general algorythm?

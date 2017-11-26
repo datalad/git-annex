@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-01-20T16:44:21Z"
+ content="""
+I've added a new section to the walkthrough about this:
+<http://git-annex.branchable.com/walkthrough/using_special_remotes/>
+"""]]

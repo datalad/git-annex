@@ -1,0 +1,24 @@
+Seems that Git for Windows was released a few weeks ago, replacing msysgit.
+There were a couple problems using git-annex with that package of git,
+which I fixed on Thursday. The next release of git-annex won't work with
+msysgit any longer though; only with Git for Windows.
+
+On Friday, I improved the Windows package further, making it work even when
+git is not added to the system PATH. In such an installation, git-annex
+will now work inside the "git bash" window, and I even got the webapp
+starting from the menu working without git in PATH.
+
+----
+
+In other dependency fun, the daily builds for Linux got broken due to a
+glibc bug in Debian unstable/testing, which makes the bundled curl and ssh
+segfault. With some difficulty I tracked that down, and it turns out the
+bug has been [fixed upstream](https://sourceware.org/bugzilla/show_bug.cgi?id=16381)
+for quite a while. The daily builds are now using the fixed glibc 2.21.
+
+----
+
+Today, got back to making useful improvements, rather than chasing
+dependencies. Improved the bash completion for remotes and backends,
+made annex.hardlink be used more, and made special remotes that are
+configured with autoenable=true get automatically enabled by `git annex init`.

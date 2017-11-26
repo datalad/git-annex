@@ -1,6 +1,6 @@
 {- Chunk logs, pure operations.
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,7 +14,7 @@ module Logs.Chunk.Pure
 	, showLog
 	) where
 
-import Common.Annex
+import Annex.Common
 import Logs.MapLog
 import Data.Int
 

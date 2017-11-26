@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawnXybLxkPMYpP3yw4b_I6IdC3cKTD-xEdU"
- nickname="Matt"
- subject="comment 1"
- date="2014-04-25T07:36:09Z"
- content="""
-The upgrade notifications seem to appear when switching between repositories in the web-app - are repositories treated separately?  Or perhaps notifications sent per repo?
-
-"""]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ avatar="http://cdn.libravatar.org/avatar/02d4a0af59175f9123720b4481d55a769ba954e20f6dd9b2792217d9fa0c6089"
+ subject="comment 7"
+ date="2017-07-20T06:16:46Z"
+ content="""
+Hello.
+
+Any progress on this? (With regular git annex I now have a big repository with some corruption and `git annex repair` causes oom-kill.)
+"""]]

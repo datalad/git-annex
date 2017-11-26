@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-04-07T19:58:41Z"
+ content="""
+Well let's see.. To fix this would need some way for ssh to outsource its
+password prompting to another program, which could then serialize
+concurrent password requests, and perhaps reuse the same password when
+reconnecting to the same host.
+
+Sounds an aweful lot like ssh-agent, doesn't it?
+
+Now, it does happen to be the case that without -J, the password is only
+prompted for once to download multiple files from the same host. That works
+because of ssh connection caching. But in the -J case, the
+connection caching does not help, because multiple sshed are started before
+there's a connection to reuse, so each tries to make a new connection and
+prompts.
+
+Even if connection caching worked with -J, the general problem would remain
+when it did concurrent downloads from different hosts.
+
+So I tend to feel that this is just not fixable; if the user wants to use
+-J, they ought to use ssh-agent so it doesn't prompt for passwords.
+"""]]

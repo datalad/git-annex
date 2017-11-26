@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="ovidiu@66ace8a8d99ce938b0538ffa0f26d30db02a9626"
+ nickname="ovidiu"
+ subject="comment 8"
+ date="2015-10-17T14:54:12Z"
+ content="""
+Thanks for bearing with me Carl, you mention the walkthrough and the command line so lets see:
+
+on my nas I follow the walkthrough:
+
+# mkdir ~/annex
+# cd ~/annex
+# git init
+# git annex init
+
+which yields in a BARE repo:
+
+cat .git/config 
+[core]
+        repositoryformatversion = 0
+        filemode = true
+        bare = false
+        logallrefupdates = true
+[user]
+        name = gitannex
+        email = gitannex
+[annex]
+        uuid = 36bca403-027b-4e90-9504-123456789012
+        version = 5
+
+So where do I stand now? You mention I need a non-bare repo and suggested to follow the walkthrough. Kinda stuck here now and I really would like to get to use gitannex.
+
+
+Maybe joey will give some advice?
+
+Would you mind sharing more of your setup? Theory or practical advice welcome :-)
+
+
+regarding an earlier question of mine, about how the syncing works: 
+I understand its not possible to have git-annex running somewhere centrally and have two clients who only access parts of a repo?
+
+i.e. on \"server\" have Documents with subfolder a) and b)  then have 2 clients, i.e. Macbooka and Macbookb which would each only sync the a) respectively b) folders out of the complete repo?
+"""]]

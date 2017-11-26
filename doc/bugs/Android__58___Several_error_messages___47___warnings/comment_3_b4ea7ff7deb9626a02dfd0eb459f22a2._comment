@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-10-04T19:27:18Z"
+ content="""
+Note that you can close the web browser and the git-annex assistant can
+still be running, and doing its thing. This might be a viable alternative
+to using the command line manually for you.
+
+The message about hardcoded app location isn't a problem if git-annex
+works.
+"""]]

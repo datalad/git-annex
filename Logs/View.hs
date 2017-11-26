@@ -4,7 +4,7 @@
  -
  - This file is stored locally in .git/annex/, not in the git-annex branch.
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -19,7 +19,7 @@ module Logs.View (
 	prop_branchView_legal,
 ) where
 
-import Common.Annex
+import Annex.Common
 import Types.View
 import Types.MetaData
 import qualified Git

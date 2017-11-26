@@ -1,0 +1,1 @@
+git-annex can be installed in Void Linux by running: `xbps-install git-annex`.

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-15T15:59:10Z"
+ content="""
+These have not been removed.
+
+Since they were first added in git-annex version 5.20150205,
+the most likely reason for your problem is if you're using an older version
+of git-annex than that. `git annex version` will tell you.
+"""]]

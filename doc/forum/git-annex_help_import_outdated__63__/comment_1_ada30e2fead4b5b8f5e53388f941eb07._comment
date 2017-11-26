@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="mario"
+ avatar="http://cdn.libravatar.org/avatar/4c63b0935789d29210d0bd8cad8d7ac7"
+ subject="comment 1"
+ date="2017-05-19T12:00:01Z"
+ content="""
+Okay, I did the same on a machine when git-annex was not installed before. Here everything works fine.
+
+So does git-annex help [...] open the locally installed manpages?
+
+I think it should show the help message that belongs to the running binary..
+
+"""]]

@@ -6,75 +6,87 @@
 set -x
 set -e
 
-# Path to the Haskell Platform.
-#HP="/c/haskell/2014.2.0.0" # now in the default PATH
-
-PATH="/c/Program Files (x86)/NSIS:/c/msysgit/cmd:$PATH"
+PATH="/cygdrive/c/git/cmd:/cygdrive/c/Program Files (x86)/NSIS/Bin:/cygdrive/c/Program Files (x86)/NSIS:/usr/local/bin:/usr/bin:/cygdrive/c/Users/jenkins/AppData/Roaming/local/bin:$PATH"
 
 # Run a command with the cygwin environment available.
 # However, programs not from cygwin are preferred.
 withcyg () {
 	PATH="$PATH:/c/cygwin/bin" "$@"
 }
+
+# Prefer programs from cygwin.
 withcygpreferred () {
 	PATH="/c/cygwin/bin:$PATH" "$@"
 }
 
 # This tells git-annex where to upgrade itself from.
 UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe
+export UPGRADE_LOCATION
 
-# Uncomment to get rid of cabal installed libraries.
-#rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
+# This can be used to force git-annex to build supporting a particular
+# version of git, instead of the version installed at build time.
+#FORCE_GIT_VERSION=1.9.5
+#export FORCE_GIT_VERSION
 
 # Don't allow build artifact from a past successful build to be extracted
 # if we fail.
 rm -f git-annex-installer.exe
+rm -f git-annex.exe
+rm -rf dist
 
-# Install haskell dependencies.
-# cabal install is not run in cygwin, because we don't want configure scripts
-# for haskell libraries to link them with the cygwin library.
-cabal update || true
+# Get extra programs to bundle with git-annex.
+# These are msys2 programs, from https://msys2.github.io/.
+# Since git for windows uses msys2, and includes its libraries,
+# these programs will work well with it. Note that these are 32 bit
+# programs, so the 32 bit version of git for windows needs to be installed,
+# not the 64 bit.
+getextra () {
+	extrap="$1"
+	extrasha="$2"
+	curextrasha="$(sha1sum $extrap | sed 's/ .*//')"
+	if [ ! -e "$extrap" ] || [ "$curextrasha" != "$extrasha" ]; then
+		rm -f "$extrap" || true
+		wget https://downloads.kitenet.net/git-annex/windows/assets/$extrap
+		curextrasha="$(sha1sum $extrap | sed 's/ .*//')"
+		if [ "$curextrasha" != "$extrasha" ]; then
+			rm -f "$extrap"
+			echo "CHECKSUM FAILURE" >&2
+			exit 1
+		fi
+		chmod +x $extrap
+	fi
+}
+getextra rsync.exe 85cb7a4d16d274fcf8069b39042965ad26abd6aa
 
-# This workaround is still needed, it seems.
-#cabal install transformers-compat -fthree
-#cabal install DAV-1.0
-
-cabal install --only-dependencies || true
-
-# Detect when the last build was an incremental build and failed, 
-# and try a full build. Done this way because this shell seems a bit
-# broken.
-if [ -e last-incremental-failed ]; then
-	cabal clean || true
-	# windows breakage..
-	rm -rf dist dist.old || mv -v dist dist.old
-fi
-touch last-incremental-failed
+# Upgrade stack
+#stack --version
+#stack upgrade --git
+stack --version
 
 # Build git-annex
-withcyg cabal configure
-if ! withcyg cabal build; then
-	rm -f Build/EvilLinker.exe
-	ghc --make Build/EvilLinker
-	Build/EvilLinker
-fi
+stack setup --stack-yaml stack-windows.yaml
+stack install -j 1 --stack-yaml stack-windows.yaml --no-haddock \
+	--local-bin-path .
 
 # Build the installer
-cabal install nsis
-ghc --make Build/NullSoftInstaller.hs
-# Want to include cygwin programs in bundle, not others, since
-# it includes the cygwin libs that go with them.
-withcygpreferred Build/NullSoftInstaller.exe
+withcygpreferred stack ghc --stack-yaml stack-windows.yaml --no-haddock \
+	--package nsis Build/NullSoftInstaller.hs
+./Build/NullSoftInstaller
 
-rm -f last-incremental-failed
-
-rm -f dist/build-version
-ghc --make Build/BuildVersion.hs
-Build/BuildVersion > dist/build-version
+mkdir -p dist
+stack ghc --stack-yaml stack-windows.yaml --no-haddock Build/BuildVersion.hs
+./Build/BuildVersion > dist/build-version
 
 # Test git-annex
-# (doesn't currently work well on autobuilder, reason unknown)
-rm -rf .t
-PATH="$(pwd)/dist/build/git-annex/:$PATH"
+# The test is run in c:/WINDOWS/Temp, because running it in the autobuilder
+# directory runs afoul of Windows's short PATH_MAX.
+PATH="$(pwd):$PATH"
 export PATH
-withcyg dist/build/git-annex/git-annex.exe test || true
+mkdir -p c:/WINDOWS/Temp/git-annex-test/
+cd c:/WINDOWS/Temp/git-annex-test/
+rm -rf .t
+
+# Currently the test fails in the autobuilder environment for reasons not
+# yet understood. Windows users are encouraged to run the test suite
+# themseves, so we'll ignore these failures for now.
+withcyg git-annex.exe test || true

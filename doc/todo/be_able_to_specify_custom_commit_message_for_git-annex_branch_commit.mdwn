@@ -1,0 +1,3 @@
+ATM many commit messages in git-annex branch are just an "update".  But I wondered if it could be relatively simple to implement to be able to provide a custom commit message, e.g. by defining some environment variable (e.g. GIT_ANNEX_UPDATE_MESSAGE) during whatever process is initiating the actual commit?  sure thing there could be cases whenever multiple processes "contributed" to the changes which are finally "flushed" by committing, but imho it could provide a good way to annotate changes within git-annex branch at least to some degree.  E.g. I could use "update: added URLs to the files for datalad-archives remote" ;)
+
+[[!meta author=yoh]]

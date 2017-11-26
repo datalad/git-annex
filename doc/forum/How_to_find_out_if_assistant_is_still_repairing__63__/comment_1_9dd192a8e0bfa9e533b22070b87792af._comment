@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="openmedi"
+ subject="comment 1"
+ date="2016-05-10T14:42:21Z"
+ content="""
+The assistant was indeed still repairing, but there has to be a way to better indicate this. Also it would be nice to let the user know, that, while in repair mode, you can not change syncing settings of your remotes. [See also.](http://git-annex.branchable.com/forum/Remote_in_webapp_shows_syncing_disabled_but_is_enabled___40__maybe__41__/)
+"""]]

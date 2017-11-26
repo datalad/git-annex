@@ -1,0 +1,27 @@
+Hello,
+
+I ran into some issues with one repo (repo X). I didn't konw what to do, so I did several git annex sync on the other repos, and git annex repair on repo X.
+
+Now, git annex sync on repo X gives me:
+
+```
+
+pull repo W/Y/Z/etc.
+Compression automatique du dépôt en tâche de fond pour optimiser les performances.
+Voir "git help gc" pour toute information sur le nettoyage manuel.
+error: Le dernier lancement de gc a rapporté l'erreur suivante. Veuillez corriger
+la cause et supprimer .git/gc.log.
+Le nettoyage automatique n'aura pas lieu jusqu'à ce que le fichier soit supprimé.
+
+warning: reflog of 'refs/heads/git-annex' references pruned commits
+error: Could not read 7bb7bcb765b1fa81c92ac6746fe124da0f22b8b6
+fatal: Failed to traverse parents of commit 6bf9f29be6bcca7b1c0d93d0132c9e402ce433cd
+error: failed to run repack
+
+ok
+
+
+```
+
+What should I do?
+

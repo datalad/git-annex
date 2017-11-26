@@ -2,7 +2,7 @@
  -
  - There was no explicit v3 to v4 upgrade, so run v5 upgrade code.
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}

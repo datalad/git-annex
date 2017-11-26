@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-05-09T17:27:35Z"
+ content="""
+I think that the core primitive here may not be the bidirectional
+relationship, but instead setting a metadata field to a key.
+
+If the metadata is known to be a key rather than some other type
+of value, then key-specific things can be done with it.
+
+So perhaps the real core thing is to be able to define what the type of a
+metadata field is. That could be done using $field-type to define the type
+of $field, but it seems it would be better to define it somewhat
+globally so that fields with the same name can't have different types.
+
+(The datalad project does something similar for tarballs, using a custom
+special remote that retrieves the tarball as an annexed object and then
+explodes it to get the requested member object.)
+"""]]

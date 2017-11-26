@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 9"
+ date="2015-01-07T17:25:43Z"
+ content="""
+Lemao, make sure you have pushed your git-annex branch to your central git repository.
+
+When you clone that repo elsewhere, you can add the S3 remote by running `git annex enableremote cloud` (replace \"cloud\" with whatever name you originally picked when you used `git annex initremote` to set up the S3 remote in the first place.
+
+git-annex stores the necessary configuration of the S3 remote on the git-annex branch.
+"""]]

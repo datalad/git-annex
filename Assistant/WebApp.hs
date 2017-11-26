@@ -1,6 +1,6 @@
 {- git-annex assistant webapp core
  -
- - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -14,7 +14,7 @@ import Assistant.WebApp.Types
 import Assistant.Common
 import Utility.NotificationBroadcaster
 import Utility.Yesod
-import Utility.WebApp
+import Utility.AuthToken
 
 import Data.Text (Text)
 import Control.Concurrent

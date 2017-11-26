@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-02-05T16:37:48Z"
+ content="""
+Well obviously if you have the git-annex branch checked out, any operation
+involving the work tree is not going to operate on the usual work tree.
+So obviously `git add` and `git annex add` are not going to do what you
+want them to do (unless you want them to add files to the checked-out
+git-annex branch). I'm not sure what other problems you might run into
+doing that.
+
+git-annex uses the .git/annex/index file to stage commits to the git-annex
+branch. Using that index file might help with rebasing or other operations
+on the branch. 
+
+It's certianly
+theoretically possible to rebase without touching the work tree and only
+using such an index file, but I don't know if git's rebase works that way.
+I also don't see any particular benefit to rebasing the git-annex branch.
+"""]]

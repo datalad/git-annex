@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-04-13T18:10:03Z"
+ content="""
+That error message is certainly not coming from git-annex. It sounds like a
+git error message, but I don't find it in the current git source code.
+
+What it sounds like is some form of corruption of the git repository,
+probably to a pack file. Since git-annex doesn't have anything to do with
+writing such files, it's hard to see how this could be a bug in git-annex.
+
+This kind of corruption problem tends to happen when a disk loses data,
+perhaps having to do with an unclean shutdown. Or perhaps it received
+bad git repository data from the VPS.
+
+Suggest you run `git fsck` and if it reports problems, you may be ableo
+to fix them by running `git annex repair`.
+"""]]

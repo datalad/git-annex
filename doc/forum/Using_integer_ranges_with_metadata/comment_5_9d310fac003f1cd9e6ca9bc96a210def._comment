@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="pigmonkey"
+ subject="comment 5"
+ date="2016-04-21T16:57:03Z"
+ content="""
+Absolutely!
+
+<https://github.com/pigmonkey/metamovie>
+
+It's a quick hack job, but has been working so far. I haven't played around with [[tips/automatically adding metadata]] yet. The filename based search does the right thing 99% of the time (at least for my file names), but I still always want to confirm that it is using the right movie data, so I'm running the script manually and keeping it interactive.
+"""]]

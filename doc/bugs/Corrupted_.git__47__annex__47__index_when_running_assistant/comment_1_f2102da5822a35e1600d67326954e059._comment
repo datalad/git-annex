@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="eigengrau"
+ subject="comment 1"
+ date="2015-06-07T08:40:05Z"
+ content="""
+Hm, I wondered why there’s the “rrsync” stuff in the logs, because git-annex doesn’t use rrsync, right? I noticed I still had an old SSH key with a forced-command for rrsync in my authorized_keys on the remote. Could this have played into the problem, or would that have been dealt with gracefully?
+"""]]

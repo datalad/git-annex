@@ -1,6 +1,6 @@
 {- git-annex assistant thread to detect when upgrade is available
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -20,7 +20,7 @@ import Assistant.Alert
 import Utility.NotificationBroadcaster
 import qualified Annex
 import qualified Build.SysConfig
-import qualified Git.Version
+import qualified Utility.DottedVersion as DottedVersion
 import Types.Distribution
 #ifdef WITH_WEBAPP
 import Assistant.WebApp.Types
@@ -63,9 +63,9 @@ checkUpgrade urlrenderer = do
   where
 	go Nothing = debug [ "Failed to check if upgrade is available." ]
 	go (Just d) = do
-		let installed = Git.Version.normalize Build.SysConfig.packageversion
-		let avail = Git.Version.normalize $ distributionVersion d
-		let old = Git.Version.normalize <$> distributionUrgentUpgrade d
+		let installed = DottedVersion.normalize Build.SysConfig.packageversion
+		let avail = DottedVersion.normalize $ distributionVersion d
+		let old = DottedVersion.normalize <$> distributionUrgentUpgrade d
 		if Just installed <= old
 			then canUpgrade High urlrenderer d
 			else if installed < avail

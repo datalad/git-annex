@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2015-08-19T18:30:16Z"
+ content="""
+@darkfeline, setting buprepo= causes git-annex to run bup with -r. 
+You can verify this by using the --debug switch.
+
+IIRC, bup still creates ~/.bup when used this way, but doesn't store the
+contents of annexed files there. It uses it only to store some small index
+files, which are also stored in the repo specified with -r. This seems
+weird, but I don't think this is a bug on bup's part; it seems to
+intentionally do that, using path names in ~/.bup that are constructed to
+not conflict when -r is used with different repositories.
+I suppose bup has a good reason to do this, though I don't know what the
+reason is.
+
+I can blow ~/.bup away, run "bup init" to make a fresh clean ~/.bup,
+and then git-annex can still get the content of files from the buprepo=
+repository. So, it seems that buprepo= is working ok.
+"""]]

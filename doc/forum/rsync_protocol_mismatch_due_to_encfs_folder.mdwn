@@ -1,0 +1,24 @@
+One of my repositories worked just fine for months, until I have decided to put an encfs folder within it. Encfs is encrypting folders and files, resulting in weird file and folder names. However, rsync just seems to fail.
+
+
+This has already been a topic here a few times, for example [1] and [2].
+
+Unfortunately, I have not been lucky enough to recover the situation by the hints given.
+
+
+What I did to investigate is that I have re-run one of the shell commands stuck client-side and appended --debug to gain a deeper look. This is the output:
+
+    $ /opt/git-annex/2016-01-14/exe/ssh --library-path /opt/git-annex/2016-01-14//etc/ld.so.conf.d:/opt/git-annex/2016-01-14//usr/lib/x86_64-linux-gnu/gconv:/opt/git-annex/2016-01-14//usr/lib/x86_64-linux-gnu/audit:/opt/git-annex/2016-01-14//usr/lib:/opt/git-annex/2016-01-14//usr/lib/x86_64-linux-gnu:/opt/git-annex/2016-01-14//lib64:/opt/git-annex/2016-01-14//lib/x86_64-linux-gnu: /opt/git-annex/2016-01-14/shimmed/ssh/ssh -S .git/annex/ssh/user@10.0.0.1 -o ControlMaster=auto -o ControlPersist=yes -T user@10.0.0.1 git-annex-shell 'recvkey' '/mnt/path/to/share/' 'SHA256E-s262670--e004c6e3f87ad2b5d74d206de85de5449c9f263d83e6ef1c87ffb03be8b7e725' --debug --uuid e34522e4-1dab-459c-b295-1fe41e7692e4 '--' 'remoteuuid=07820aec-e2a3-4c60-bd57-b39b7213e056' 'unlocked=1' 'direct=1' 'associatedfile=.encfs_folder/CMG23xCwkemocE-Gq9WHpO-n/1vqfTkJChNm5CgjBsZ--,9r,ZOcSBTxE-Ogz5ytA8R23st52LWf4d9MjRref56VhbEB/4ezakoEn8dqOT8s,K4X,ueSs' '--' dummy rsync --server -pe.Lsfx --log-format=X --inplace . .
+    [2016-03-16 22:52:18.922914] transfer start
+    [2016-03-16 22:52:18.949417] call: rsync ["--server","-t","--inplace","-e.Lsf",".","../../mnt/path/to/share/.git/annex/tmp/SHA256E-s262670--e004c6e3f87ad2b5d74d206de85de5449c9f263d83e6ef1c87ffb03be8b7e725"]
+    protocol version mismatch -- is your shell clean?
+    (see the rsync man page for an explanation)
+    rsync error: protocol incompatibility (code 2) at compat.c(176) [Receiver=3.1.1]
+    [2016-03-16 22:59:05.890987] process done ExitFailure 2
+    [2016-03-16 22:59:05.899506] transfer done
+
+What can I do other than to just move the encfs outside my repository, which is of course the least favorable option for me to do?
+
+[1] <http://git-annex.branchable.com/bugs/protocol_mismatch_after_interrupt/>
+
+[2] <http://git-annex.branchable.com/bugs/rsync__58___protocol_version_mismatch/>

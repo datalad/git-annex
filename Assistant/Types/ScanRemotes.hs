@@ -1,13 +1,13 @@
 {- git-annex assistant remotes needing scanning
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Assistant.Types.ScanRemotes where
 
-import Common.Annex
+import Annex.Common
 
 import Control.Concurrent.STM
 import qualified Data.Map as M

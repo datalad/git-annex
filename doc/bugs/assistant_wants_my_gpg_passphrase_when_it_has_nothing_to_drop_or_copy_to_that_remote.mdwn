@@ -1,5 +1,0 @@
-I am running 3.20121112 and this bug appeared when I upgraded to that from 3.20121017.
-
-After performing the startup scan after I login, git-annex gets GPG to sends me a pinentry pop-up asking for my GPG passphrase.  However, I know that there is nothing to be dropped or copied to the encrypted SSH remote that I am being asked to provide access to.  So I can't see any good reason why I would be asked for the passphrase.
-
-> [[fixed|done]] --[[Joey]] 

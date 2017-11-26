@@ -11,9 +11,10 @@ comply with their [terms of service](http://www.archive.org/about/terms.php).
 A nice added feature is that whenever git-annex sends a file to the
 Internet Archive, it records its url, the same as if you'd run `git annex
 addurl`. So any users who can clone your repository can download the files
-from archive.org, without needing any login or password info. This makes
-the Internet Archive a nice way to publish the large files associated with
-a public git repository.
+from archive.org, without needing any login or password info. 
+The url to the content in the Internet Archive is also displayed by
+`git annex whereis`. This makes the Internet Archive a nice way to
+publish the large files associated with a public git repository.
 
 ## webapp setup
 
@@ -50,36 +51,25 @@ Then you can annex files and copy them to the remote as usual:
 	# git annex copy photo1.jpeg --fast --to archive-panama
 	copy (to archive-panama...) ok
 
-Once a file has been stored on archive.org, it cannot be (easily) removed
-from it. Also, git-annex whereis will tell you a public url for the file
-on archive.org. (It may take a while for archive.org to make the file
-publically visibile.)
+## update lag
 
-Note the use of the SHA256E [[backend|backends]] when adding files. That is
-the default backend used by git-annex, but even if you don't normally use
-it, it makes most sense to use the WORM or SHA256E backend for files that
-will be stored in the Internet Archive, since the key name will be exposed
-as the filename there, and since the Archive does special processing of
-files based on their extension.
+It may take a while for archive.org to make files publically visible after
+they've been uploaded.
 
-## publishing only one subdirectory
+While files can be removed from the Internet Archive, 
+[derived versions](https://archive.org/help/derivatives.php)
+of some files may continued to be stored there for a while
+after the originals were removed.
 
-Perhaps you have a repository with lots of files in it, and only want
-to publish some of them to a particular Internet Archive item. Of course
-you can specify which files to send manually, but it's useful to
-configure [[preferred_content]] settings so git-annex knows what content
-you want to store in the Internet Archive.
+## exporting trees
 
-One way to do this is using the "public" repository type.
+By default, files stored in the Internet Archive will show up there named
+by their git-annex key, not the original filename. If the filenames
+are important, you can run `git annex initremote` with an additional
+parameter "exporttree=yes", and then use [[git-annex-export]] to publish
+a tree of files to the Internet Archive.
 
-	git annex enableremote archive-panama preferreddir=panama
-	git annex wanted archive-panama standard
-	git annex group archive-panama public
-
-Now anything in a "panama" directory will be sent to that remote,
-and anything else won't. You can use `git annex copy --auto` or the
-assistant and it'll do the right thing.
-
-When setting up an Internet Archive item using the webapp, this
-configuration is automatically done, using an item name that the user
-enters as the name of the subdirectory.
+Note that the Internet Archive may not support certian characters
+in filenames ([see FAQ](http://archive.org/about/faqs.php#1099)).
+If exporting a filename fails due to such limitations, you would need
+to rename it in your git annex repository in order to export it.

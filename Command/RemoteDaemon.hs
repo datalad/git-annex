@@ -1,24 +1,32 @@
 {- git-annex command
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Command.RemoteDaemon where
 
-import Common.Annex
 import Command
 import RemoteDaemon.Core
+import Utility.Daemon
 
-cmd :: [Command]
-cmd = [noCommit $ command "remotedaemon" paramNothing seek SectionPlumbing
-	"detects when remotes have changed, and fetches from them"]
+cmd :: Command
+cmd = noCommit $
+	command "remotedaemon" SectionMaintenance
+		"persistent communication with remotes"
+		paramNothing (run <$$> const parseDaemonOptions)
 
-seek :: CommandSeek
-seek = withNothing start
-
-start :: CommandStart
-start = do
-	liftIO runForeground
-	stop
+run :: DaemonOptions -> CommandSeek
+run o
+	| stopDaemonOption o = error "--stop not implemented for remotedaemon"
+	| foregroundDaemonOption o = liftIO runInteractive
+	| otherwise = do
+#ifndef mingw32_HOST_OS
+		nullfd <- liftIO $ openFd "/dev/null" ReadOnly Nothing defaultFileFlags
+		liftIO $ daemonize nullfd Nothing False runNonInteractive
+#else
+		liftIO $ foreground Nothing runNonInteractive	
+#endif

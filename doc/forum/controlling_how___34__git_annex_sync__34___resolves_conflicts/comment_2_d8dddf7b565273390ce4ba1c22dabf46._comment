@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="pgunn01@39c747700d10e9e9e4557a407cba2f88c22b202d"
+ nickname="pgunn01"
+ avatar="http://cdn.libravatar.org/avatar/0ca97d677b2cc6c5a262f3709ad93381"
+ subject="reply to joey"
+ date="2017-06-01T16:47:25Z"
+ content="""
+In our case (Not claiming a broader usage), failing at push is exactly what we want. We're using git-annex, with wrappers, as a transport mechanism for many-gigabyte debian repos, and in the end there's only one correct notion of what's in our repos. There's no local work that's of any significance, and we can catch problems clientside and redo as needed.
+
+A user will log onto a small number of hosts, pulldown the repo (with scripts I wrote that wrap annex), add some debs, regenerate the apt metadata, and then commit/push all that to S3/git. And then they'll remove their checkout.
+
+On the other side, on many repo hosts they'll get new delivered versions of the git repo, then refresh from S3, and then they're ready to serve the contents to the rest of our infra.
+
+(I realise this is probably a weird edge case for how people use annex; we use it because it lets us use git and see who's doing things, because it works well with our centralised git repos, and because those centralised git repos are not burdened with gigantic files)
+"""]]

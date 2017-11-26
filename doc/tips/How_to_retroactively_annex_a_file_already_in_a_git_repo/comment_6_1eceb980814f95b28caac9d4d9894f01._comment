@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="Dilyin"
+ subject="Retroactively annex"
+ date="2016-06-01T18:36:40Z"
+ content="""
+Hmm, guyz? Are you serious with these scripts?
+
+1. git rm -r --cached large_files
+# files are indexed as both removed and untracked and are still in place
+2. commit the changes
+# files are seen as untracked
+3. git annex add large_files
+# files are replaced with symlinks and are in the index
+4. commit changes again
+
+Make sure that you don't have annex.largefiles settings that would prevent annexing the files.
+"""]]

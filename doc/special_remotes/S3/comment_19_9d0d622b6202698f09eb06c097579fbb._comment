@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 19"""
+ date="2015-10-12T17:10:21Z"
+ content="""
+@darkfeline I suppose you're talking about two completely disjoint git
+repositories, and not two clones of the same parent repo.
+
+If you don't use fileprefix, and have the same file in two disjoint
+repositories, git-annex will pick the same key for it in both cases, and
+so you'll get deduplication, but only if you don't use different
+fileprefixes.
+
+And this will mostly work pretty well. The danger is, if you drop the file
+from the S3 repo, because say, it's not used anymore in one repository,
+then you're also removing it from the S3 repo as used by the other
+repository. If that was the last copy of the file, that may not be what you
+want.
+"""]]

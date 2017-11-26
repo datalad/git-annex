@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-02-17T21:31:42Z"
+ content="""
+There is never a reason to run "git reset --hard git-annex"! For that matter,
+don't mess with the git-annex branch if you have not read and understand
+the [[internals]] documentation. Even if you have, it's entirely the wrong
+thing to be messing with in this situation. It has nothing at all to do
+with your problem, except that after running that completely random reset
+command, you now have two problems..
+
+The right answer to your interrupted add is something like:
+
+* `git reset --hard master`
+* Or, run the `git-annex add` command again and let it resume
+* Or, run `git commit` to commit any changes the add made,
+  followed by `git annex unannex` to back out adding those files.
+
+Or, if this is an entirely new git repo that you have
+never committed to before 
+(my guess based on the "bad default revision 'HEAD'"),
+just `rm -rf .git` and start over.
+"""]]

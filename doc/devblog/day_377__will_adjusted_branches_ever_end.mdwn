@@ -1,0 +1,21 @@
+Feels like I've been working on adjusted branches too long.
+
+Did make some excellent progress today. Upgrading a direct mode repo to v6
+will now enter an adjusted branch where all files are unlocked. Using an
+adjusted branch like this avoids unlocking all files in the master branch
+of the repo, which means that different clones of a repo can be
+upgraded to v6 mode at different times. This should let me advance the
+timetable for enabling v6 by default, and getting rid of direct mode.
+
+Also, cloning a repository that has an adjusted branch checked out will
+now work; the clone starts out in the same adjusted branch.
+
+But, I realized today that the way merges from origin/master into
+adjusted/master are done will often lead to merge conflicts. I have came up
+with a better way to handle these merges that won't unncessarily conflict,
+but didn't feel ready to implement that today.
+
+----
+
+Instead, I spent the latter half of the day getting caught up on some
+of the backlog. Got it down from some 200 messages to 150.

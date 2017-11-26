@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-04-07T20:16:45Z"
+ content="""
+There's nothing special about using the absolute path; "git commit ." 
+or "git commit thefile" will behave the same.
+
+This is the git false index problem. Since git commit in these situations
+runs the pre-commit hook with a false index file, changes made to that
+index file won't be visible after the commit.
+
+So, if `git annex pre-commit` fixes symlinks in this situation,
+the right thing will be committed, but then the old index will have the old
+symlinks staged, which will result in `git status` after the commit showing
+modification to the files you just staged and committed!
+
+Short of having a post-commit hook come along and fix up the index to match
+what was committed, I don't see anything git-annex can do better. Well, it
+could prevent such commits even being made, I suppose, or warn.
+
+It's a pity git uses this false index file in this situation.
+"""]]

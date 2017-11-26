@@ -1,6 +1,6 @@
 {- running git commands
  -
- - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,10 +16,12 @@ import qualified Utility.CoProcess as CoProcess
 
 {- Constructs a git command line operating on the specified repo. -}
 gitCommandLine :: [CommandParam] -> Repo -> [CommandParam]
-gitCommandLine params r@(Repo { location = l@(Local _ _ ) }) =
-	setdir : settree ++ gitGlobalOpts r ++ params
+gitCommandLine params r@(Repo { location = l@(Local { } ) }) =
+	setdir ++ settree ++ gitGlobalOpts r ++ params
   where
-	setdir = Param $ "--git-dir=" ++ gitdir l
+	setdir
+		| gitEnvOverridesGitDir r = []
+		| otherwise = [Param $ "--git-dir=" ++ gitdir l]
 	settree = case worktree l of
 		Nothing -> []
 		Just t -> [Param $ "--work-tree=" ++ t]
@@ -51,7 +53,6 @@ runQuiet params repo = withQuietOutput createProcessSuccess $
 pipeReadLazy :: [CommandParam] -> Repo -> IO (String, IO Bool)
 pipeReadLazy params repo = assertLocal repo $ do
 	(_, Just h, _, pid) <- createProcess p { std_out = CreatePipe }
-	fileEncoding h
 	c <- hGetContents h
 	return (c, checkSuccessProcess pid)
   where
@@ -64,7 +65,6 @@ pipeReadLazy params repo = assertLocal repo $ do
 pipeReadStrict :: [CommandParam] -> Repo -> IO String
 pipeReadStrict params repo = assertLocal repo $
 	withHandle StdoutHandle (createProcessChecked ignoreFailureProcess) p $ \h -> do
-		fileEncoding h
 		output <- hGetContentsStrict h
 		hClose h
 		return output
@@ -79,9 +79,7 @@ pipeWriteRead params writer repo = assertLocal repo $
 	writeReadProcessEnv "git" (toCommand $ gitCommandLine params repo) 
 		(gitEnv repo) writer (Just adjusthandle)
   where
-	adjusthandle h = do
-		fileEncoding h
-		hSetNewlineMode h noNewlineTranslation
+	adjusthandle h = hSetNewlineMode h noNewlineTranslation
 
 {- Runs a git command, feeding it input on a handle with an action. -}
 pipeWrite :: [CommandParam] -> Repo -> (Handle -> IO ()) -> IO ()
@@ -93,16 +91,16 @@ pipeWrite params repo = withHandle StdinHandle createProcessSuccess $
 pipeNullSplit :: [CommandParam] -> Repo -> IO ([String], IO Bool)
 pipeNullSplit params repo = do
 	(s, cleanup) <- pipeReadLazy params repo
-	return (filter (not . null) $ split sep s, cleanup)
+	return (filter (not . null) $ splitc sep s, cleanup)
   where
-	sep = "\0"
+	sep = '\0'
 
 pipeNullSplitStrict :: [CommandParam] -> Repo -> IO [String]
 pipeNullSplitStrict params repo = do
 	s <- pipeReadStrict params repo
-	return $ filter (not . null) $ split sep s
+	return $ filter (not . null) $ splitc sep s
   where
-	sep = "\0"
+	sep = '\0'
 
 pipeNullSplitZombie :: [CommandParam] -> Repo -> IO [String]
 pipeNullSplitZombie params repo = leaveZombie <$> pipeNullSplit params repo

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 2"
+ date="2015-11-20T08:37:39Z"
+ content="""
+I don't usually like any decals on my stuff.. but I've never come across this before and it looks interesting. I'm really tempted..
+
+However, I wouldn't be able to do it without having some nice way of dealing with tolerance stacking. The overlapping stickers (bottom-right) on the photo above would drive me mad! :)
+
+I went ahead and [raised an issue](https://github.com/terinjokes/StickerConstructorSpec/issues/18) in case they want to deal with this in the specification by having a(some?) guide specification(s) too.
+"""]]

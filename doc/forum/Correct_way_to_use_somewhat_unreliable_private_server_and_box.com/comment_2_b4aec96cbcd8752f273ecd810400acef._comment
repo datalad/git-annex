@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-09-29T15:42:46Z"
+ content="""
+I'm going to answer this both for the webapp and for command line usage.
+
+webapp:
+
+Drag and drop the box.com remote to be below the remote for your private
+server. This will adjust the cost settings, and let git-annex know it
+should try to get files from your private server first.
+
+Click on "syncing enabled" at any time to toggle it to disabled.
+You could choose to leave box.com disabled most of the time, to avoid files
+being uploaded to it etc. When your private server is not available, you
+can toggle box.com back to enabled to use it temporarily.
+
+command line:
+
+Let's assume the box.com remote is named "box".
+
+You can use `remote.box.annex-cost` in git config, to give that remote a
+higher use-cost than your private server's remote. git-annex will then know
+you prefer using your private server when possible, and so will prefer to
+use it when eg, downloading files. (Same as dragging and dropping in the
+webapp.)
+
+You could configure a cron job (or run the git-annex assistant) on the
+server to send the files on to box.com. Just `git annex enableremote box`
+on the server so it knows how to use that remote. This way, you don't
+need to upload the same file twice to both box.com and your server over
+your home network link, but files will end up in both locations.
+
+Uploading files with `git annex copy --to` can send them to your private
+server. Or, if you want to use `git annex sync --content` or the assistant,
+you could set `remote.box.annex-sync` to false for the box.com
+remote, to prevent sending content to it. When your private server is
+unavailable, you could override that setting temporarily and sync with
+box.com by running `git annex sync --content box`
+"""]]

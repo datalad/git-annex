@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawkZktNHFhxC1kYA9KKdKpYJO4clq9WDsjE"
- nickname="Jason"
- subject="comment 1"
- date="2013-04-15T15:58:04Z"
- content="""
-Or if that solution isn't acceptable, it seems that git commit has a --no-edit option that will guarantee that an editor isn't started.
-"""]]

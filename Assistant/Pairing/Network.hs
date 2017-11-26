@@ -4,7 +4,7 @@
  - each message is repeated until acknowledged. This is done using a
  - thread, that gets stopped before the next message is sent.
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -20,6 +20,8 @@ import Utility.Verifiable
 import Network.Multicast
 import Network.Info
 import Network.Socket
+import qualified Network.Socket.ByteString as B
+import qualified Data.ByteString.UTF8 as BU8
 import qualified Data.Map as M
 import Control.Concurrent
 
@@ -33,9 +35,9 @@ pairingPort = 55556
 {- Goal: Reach all hosts on the same network segment.
  - Method: Use same address that avahi uses. Other broadcast addresses seem
  - to not be let through some routers. -}
-multicastAddress :: SomeAddr -> HostName
-multicastAddress (IPv4Addr _) = "224.0.0.251"
-multicastAddress (IPv6Addr _) = "ff02::fb"
+multicastAddress :: AddrClass -> HostName
+multicastAddress IPv4AddrClass = "224.0.0.251"
+multicastAddress IPv6AddrClass = "ff02::fb"
 
 {- Multicasts a message repeatedly on all interfaces, with a 2 second
  - delay between each transmission. The message is repeated forever
@@ -62,11 +64,12 @@ multicastPairMsg repeats secret pairdata stage = go M.empty repeats
 	sendinterface cache i = void $ tryIO $
 		withSocketsDo $ bracket setup cleanup use
 	  where
-		setup = multicastSender (multicastAddress i) pairingPort
-		cleanup (sock, _) = sClose sock -- FIXME does not work
+		setup = multicastSender (multicastAddress IPv4AddrClass) pairingPort
+		cleanup (sock, _) = close sock -- FIXME does not work
 		use (sock, addr) = do
 			setInterface sock (showAddr i)
-			maybe noop (\s -> void $ sendTo sock s addr)
+			maybe noop
+				(\s -> void $ B.sendTo sock (BU8.fromString s) addr)
 				(M.lookup i cache)
 	updatecache cache [] = cache
 	updatecache cache (i:is)

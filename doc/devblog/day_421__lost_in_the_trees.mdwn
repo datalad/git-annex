@@ -1,0 +1,6 @@
+Finished up where I left off yesterday, writing test cases and fixing
+bugs with syncing in adjusted branches. While adjusted branches need v6
+mode, and v6 mode is still considered experimental, this is still a rather
+nasty bug, since it can make files go missing (though still available
+in git history of course). So, planning to release a new version with these
+fixes as soon as the autobuilders build it.

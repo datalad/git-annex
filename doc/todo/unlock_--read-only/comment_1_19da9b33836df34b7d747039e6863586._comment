@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-10-17T18:09:44Z"
+ content="""
+The protection offered by a read-only mode is pretty minimal; any program
+that writes a file atomically using rename will bypass it. So, as programs
+are implemented better, they'll bypass this "protection" more -- not much of
+a protection!
+
+Also, it doesn't make much sense to call this operation "unlock" if it's
+intended to not let programs modify the files.
+"""]]

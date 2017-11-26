@@ -4,16 +4,15 @@
  - the values a user passes to a command, and prepare actions operating
  - on them.
  -
- - Copyright 2010-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module CmdLine.Seek where
 
-import Common.Annex
+import Annex.Common
 import Types.Command
-import Types.Key
 import Types.FileMatcher
 import qualified Annex
 import qualified Git
@@ -22,155 +21,215 @@ import qualified Git.LsFiles as LsFiles
 import qualified Git.LsTree as LsTree
 import Git.FilePath
 import qualified Limit
-import CmdLine.Option
+import CmdLine.GitAnnex.Options
 import CmdLine.Action
 import Logs.Location
 import Logs.Unused
+import Types.Transfer
+import Logs.Transfer
+import Remote.List
+import qualified Remote
 import Annex.CatFile
+import Annex.Content
 
-withFilesInGit :: (FilePath -> CommandStart) -> CommandSeek
-withFilesInGit a params = seekActions $ prepFiltered a $
-	seekHelper LsFiles.inRepo params
+withFilesInGit :: (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
+withFilesInGit a l = seekActions $ prepFiltered a $
+	seekHelper LsFiles.inRepo l
 
-withFilesNotInGit :: Bool -> (FilePath -> CommandStart) -> CommandSeek
-withFilesNotInGit skipdotfiles a params
+withFilesInGitNonRecursive :: String -> (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
+withFilesInGitNonRecursive needforce a l = ifM (Annex.getState Annex.force)
+	( withFilesInGit a l
+	, if null l
+		then giveup needforce
+		else seekActions $ prepFiltered a (getfiles [] l)
+	)
+  where
+	getfiles c [] = return (reverse c)
+	getfiles c ((WorkTreeItem p):ps) = do
+		(fs, cleanup) <- inRepo $ LsFiles.inRepo [p]
+		case fs of
+			[f] -> do
+				void $ liftIO $ cleanup
+				getfiles (f:c) ps
+			[] -> do
+				void $ liftIO $ cleanup
+				getfiles c ps
+			_ -> giveup needforce
+
+withFilesNotInGit :: Bool -> (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
+withFilesNotInGit skipdotfiles a l
 	| skipdotfiles = do
 		{- dotfiles are not acted on unless explicitly listed -}
 		files <- filter (not . dotfile) <$>
-			seekunless (null ps && not (null params)) ps
+			seekunless (null ps && not (null l)) ps
 		dotfiles <- seekunless (null dotps) dotps
 		go (files++dotfiles)
-	| otherwise = go =<< seekunless False params
+	| otherwise = go =<< seekunless False l
   where
-	(dotps, ps) = partition dotfile params
+	(dotps, ps) = partition (\(WorkTreeItem f) -> dotfile f) l
 	seekunless True _ = return []
-	seekunless _ l = do
+	seekunless _ l' = do
 		force <- Annex.getState Annex.force
 		g <- gitRepo
-		liftIO $ Git.Command.leaveZombie <$> LsFiles.notInRepo force l g
-	go l = seekActions $ prepFiltered a $
-		return $ concat $ segmentPaths params l
+		liftIO $ Git.Command.leaveZombie
+			<$> LsFiles.notInRepo force (map (\(WorkTreeItem f) -> f) l') g
+	go fs = seekActions $ prepFiltered a $
+		return $ concat $ segmentPaths (map (\(WorkTreeItem f) -> f) l) fs
 
-withFilesInRefs :: (FilePath -> Key -> CommandStart) -> CommandSeek
+withFilesInRefs :: (FilePath -> Key -> CommandStart) -> [Git.Ref] -> CommandSeek
 withFilesInRefs a = mapM_ go
   where
 	go r = do	
 		matcher <- Limit.getMatcher
-		l <- inRepo $ LsTree.lsTree (Git.Ref r)
+		(l, cleanup) <- inRepo $ LsTree.lsTree r
 		forM_ l $ \i -> do
 			let f = getTopFilePath $ LsTree.file i
-			v <- catKey (Git.Ref $ LsTree.sha i) (LsTree.mode i)
+			v <- catKey (LsTree.sha i)
 			case v of
 				Nothing -> noop
 				Just k -> whenM (matcher $ MatchingKey k) $
-					void $ commandAction $ a f k
+					commandAction $ a f k
+		liftIO $ void cleanup
 
-withPathContents :: ((FilePath, FilePath) -> CommandStart) -> CommandSeek
-withPathContents a params = seekActions $ 
-	map a . concat <$> liftIO (mapM get params)
+withPathContents :: ((FilePath, FilePath) -> CommandStart) -> CmdParams -> CommandSeek
+withPathContents a params = do
+	matcher <- Limit.getMatcher
+	seekActions $ map a <$> (filterM (checkmatch matcher) =<< ps)
   where
+	ps = concat <$> liftIO (mapM get params)
 	get p = ifM (isDirectory <$> getFileStatus p)
 		( map (\f -> (f, makeRelative (parentDir p) f))
 			<$> dirContentsRecursiveSkipping (".git" `isSuffixOf`) True p
 		, return [(p, takeFileName p)]
 		)
+	checkmatch matcher (f, relf) = matcher $ MatchingFile $ FileInfo
+		{ currFile = f
+		, matchFile = relf
+		}
 
-withWords :: ([String] -> CommandStart) -> CommandSeek
+withWords :: ([String] -> CommandStart) -> CmdParams -> CommandSeek
 withWords a params = seekActions $ return [a params]
 
-withStrings :: (String -> CommandStart) -> CommandSeek
+withStrings :: (String -> CommandStart) -> CmdParams -> CommandSeek
 withStrings a params = seekActions $ return $ map a params
 
-withPairs :: ((String, String) -> CommandStart) -> CommandSeek
+withPairs :: ((String, String) -> CommandStart) -> CmdParams -> CommandSeek
 withPairs a params = seekActions $ return $ map a $ pairs [] params
   where
 	pairs c [] = reverse c
 	pairs c (x:y:xs) = pairs ((x,y):c) xs
-	pairs _ _ = error "expected pairs"
+	pairs _ _ = giveup "expected pairs"
 
-withFilesToBeCommitted :: (String -> CommandStart) -> CommandSeek
-withFilesToBeCommitted a params = seekActions $ prepFiltered a $
-	seekHelper LsFiles.stagedNotDeleted params
+withFilesToBeCommitted :: (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
+withFilesToBeCommitted a l = seekActions $ prepFiltered a $
+	seekHelper LsFiles.stagedNotDeleted l
 
-withFilesUnlocked :: (FilePath -> CommandStart) -> CommandSeek
-withFilesUnlocked = withFilesUnlocked' LsFiles.typeChanged
+withFilesOldUnlocked :: (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
+withFilesOldUnlocked = withFilesOldUnlocked' LsFiles.typeChanged
 
-withFilesUnlockedToBeCommitted :: (FilePath -> CommandStart) -> CommandSeek
-withFilesUnlockedToBeCommitted = withFilesUnlocked' LsFiles.typeChangedStaged
+withFilesOldUnlockedToBeCommitted :: (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
+withFilesOldUnlockedToBeCommitted = withFilesOldUnlocked' LsFiles.typeChangedStaged
 
-{- Unlocked files have changed type from a symlink to a regular file.
+{- Unlocked files before v6 have changed type from a symlink to a regular file.
  -
  - Furthermore, unlocked files used to be a git-annex symlink,
  - not some other sort of symlink.
  -}
-withFilesUnlocked' :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> (FilePath -> CommandStart) -> CommandSeek
-withFilesUnlocked' typechanged a params = seekActions $
+withFilesOldUnlocked' :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
+withFilesOldUnlocked' typechanged a l = seekActions $
 	prepFiltered a unlockedfiles
   where
-	check f = liftIO (notSymlink f) <&&> 
-		(isJust <$> catKeyFile f <||> isJust <$> catKeyFileHEAD f)
-	unlockedfiles = filterM check =<< seekHelper typechanged params
+	unlockedfiles = filterM isOldUnlocked =<< seekHelper typechanged l
+
+isOldUnlocked :: FilePath -> Annex Bool
+isOldUnlocked f = liftIO (notSymlink f) <&&> 
+	(isJust <$> catKeyFile f <||> isJust <$> catKeyFileHEAD f)
 
 {- Finds files that may be modified. -}
-withFilesMaybeModified :: (FilePath -> CommandStart) -> CommandSeek
+withFilesMaybeModified :: (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
 withFilesMaybeModified a params = seekActions $
 	prepFiltered a $ seekHelper LsFiles.modified params
 
-withKeys :: (Key -> CommandStart) -> CommandSeek
-withKeys a params = seekActions $ return $ map (a . parse) params
+withKeys :: (Key -> CommandStart) -> CmdParams -> CommandSeek
+withKeys a l = seekActions $ return $ map (a . parse) l
   where
-	parse p = fromMaybe (error "bad key") $ file2key p
+	parse p = fromMaybe (giveup "bad key") $ file2key p
 
-{- Gets the value of a field options, which is fed into
- - a conversion function.
- -}
-getOptionField :: Option -> (Maybe String -> Annex a) -> Annex a
-getOptionField option converter = converter <=< Annex.getField $ optionName option
-
-getOptionFlag :: Option -> Annex Bool
-getOptionFlag option = Annex.getFlag (optionName option)
-
-withNothing :: CommandStart -> CommandSeek
+withNothing :: CommandStart -> CmdParams -> CommandSeek
 withNothing a [] = seekActions $ return [a]
-withNothing _ _ = error "This command takes no parameters."
+withNothing _ _ = giveup "This command takes no parameters."
 
-{- If --all is specified, or in a bare repo, runs an action on all
- - known keys.
+{- Handles the --all, --branch, --unused, --failed, --key, and
+ - --incomplete options, which specify particular keys to run an
+ - action on.
  -
- - If --unused is specified, runs an action on all keys found by
- - the last git annex unused scan.
+ - In a bare repo, --all is the default.
  -
- - If --key is specified, operates only on that key.
- -
- - Otherwise, fall back to a regular CommandSeek action on
+ - Otherwise falls back to a regular CommandSeek action on
  - whatever params were passed. -}
-withKeyOptions :: (Key -> CommandStart) -> CommandSeek -> CommandSeek
-withKeyOptions keyop fallbackop params = do
-	bare <- fromRepo Git.repoIsLocalBare
-	allkeys <- Annex.getFlag "all"
-	unused <- Annex.getFlag "unused"
-	specifickey <- Annex.getField "key"
-	auto <- Annex.getState Annex.auto
-	when (auto && bare) $
-		error "Cannot use --auto in a bare repository"
-	case	(allkeys, unused, null params, specifickey) of
-		(False  , False , True       , Nothing)
-			| bare -> go auto loggedKeys
-			| otherwise -> fallbackop params
-		(False  , False , _          , Nothing) -> fallbackop params
-		(True   , False , True       , Nothing) -> go auto loggedKeys
-		(False  , True  , True       , Nothing) -> go auto unusedKeys'
-		(False  , False , True       , Just ks) -> case file2key ks of
-			Nothing -> error "Invalid key"
-			Just k -> go auto $ return [k]
-		_ -> error "Can only specify one of file names, --all, --unused, or --key"
+withKeyOptions 
+	:: Maybe KeyOptions
+	-> Bool
+	-> (Key -> ActionItem -> CommandStart)
+	-> ([WorkTreeItem] -> CommandSeek)
+	-> [WorkTreeItem]
+	-> CommandSeek
+withKeyOptions ko auto keyaction = withKeyOptions' ko auto mkkeyaction
   where
-	go True _ = error "Cannot use --auto with --all or --unused or --key"
-	go False a = do
+	mkkeyaction = do
 		matcher <- Limit.getMatcher
-		seekActions $ map (process matcher) <$> a
-	process matcher k = ifM (matcher $ MatchingKey k)
-		( keyop k , return Nothing)
+		return $ \k i ->
+			whenM (matcher $ MatchingKey k) $
+				commandAction $ keyaction k i
+
+withKeyOptions' 
+	:: Maybe KeyOptions
+	-> Bool
+	-> Annex (Key -> ActionItem -> Annex ())
+	-> ([WorkTreeItem] -> CommandSeek)
+	-> [WorkTreeItem]
+	-> CommandSeek
+withKeyOptions' ko auto mkkeyaction fallbackaction params = do
+	bare <- fromRepo Git.repoIsLocalBare
+	when (auto && bare) $
+		giveup "Cannot use --auto in a bare repository"
+	case (null params, ko) of
+		(True, Nothing)
+			| bare -> noauto $ runkeyaction loggedKeys
+			| otherwise -> fallbackaction params
+		(False, Nothing) -> fallbackaction params
+		(True, Just WantAllKeys) -> noauto $ runkeyaction loggedKeys
+		(True, Just WantUnusedKeys) -> noauto $ runkeyaction unusedKeys'
+		(True, Just WantFailedTransfers) -> noauto runfailedtransfers
+		(True, Just (WantSpecificKey k)) -> noauto $ runkeyaction (return [k])
+		(True, Just WantIncompleteKeys) -> noauto $ runkeyaction incompletekeys
+		(True, Just (WantBranchKeys bs)) -> noauto $ runbranchkeys bs
+		(False, Just _) -> giveup "Can only specify one of file names, --all, --branch, --unused, --failed, --key, or --incomplete"
+  where
+	noauto a
+		| auto = giveup "Cannot use --auto with --all or --branch or --unused or --key or --incomplete"
+		| otherwise = a
+	incompletekeys = staleKeysPrune gitAnnexTmpObjectDir True
+	runkeyaction getks = do
+		keyaction <- mkkeyaction
+		ks <- getks
+		forM_ ks $ \k -> keyaction k (mkActionItem k)
+	runbranchkeys bs = do
+		keyaction <- mkkeyaction
+		forM_ bs $ \b -> do
+			(l, cleanup) <- inRepo $ LsTree.lsTree b
+			forM_ l $ \i -> do
+				let bfp = mkActionItem $ BranchFilePath b (LsTree.file i)
+				maybe noop (\k -> keyaction k bfp)
+					=<< catKey (LsTree.sha i)
+			unlessM (liftIO cleanup) $
+				error ("git ls-tree " ++ Git.fromRef b ++ " failed")
+	runfailedtransfers = do
+		keyaction <- mkkeyaction
+		rs <- remoteList
+		ts <- concat <$> mapM (getFailedTransfers . Remote.uuid) rs
+		forM_ ts $ \(t, i) ->
+			keyaction (transferKey t) (mkActionItem (t, i))
 
 prepFiltered :: (FilePath -> CommandStart) -> Annex [FilePath] -> Annex [CommandStart]
 prepFiltered a fs = do
@@ -181,18 +240,29 @@ prepFiltered a fs = do
 		( a f , return Nothing )
 
 seekActions :: Annex [CommandStart] -> Annex ()
-seekActions gen = do
-	as <- gen
-	mapM_ commandAction as
+seekActions gen = mapM_ commandAction =<< gen
 
-seekHelper :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> [FilePath] -> Annex [FilePath]
-seekHelper a params = do
-	ll <- inRepo $ \g ->
-		runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a fs g) params
-	forM_ (map fst $ filter (null . snd) $ zip params ll) $ \p ->
-		unlessM (isJust <$> liftIO (catchMaybeIO $ getSymbolicLinkStatus p)) $
-			error $ p ++ " not found"
-	return $ concat ll
+seekHelper :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> [WorkTreeItem] -> Annex [FilePath]
+seekHelper a l = inRepo $ \g ->
+	concat . concat <$> forM (segmentXargsOrdered l')
+		(runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a fs g))
+  where
+	l' = map (\(WorkTreeItem f) -> f) l
+
+-- An item in the work tree, which may be a file or a directory.
+newtype WorkTreeItem = WorkTreeItem FilePath
+
+-- Many git commands seek work tree items matching some criteria,
+-- and silently skip over anything that does not exist. But users expect
+-- an error message when one of the files they provided as a command-line
+-- parameter doesn't exist, so this checks that each exists.
+workTreeItems :: CmdParams -> Annex [WorkTreeItem]
+workTreeItems ps = do
+	forM_ ps $ \p ->
+		unlessM (isJust <$> liftIO (catchMaybeIO $ getSymbolicLinkStatus p)) $ do
+			toplevelWarning False (p ++ " not found")
+			Annex.incError
+	return (map WorkTreeItem ps)
 
 notSymlink :: FilePath -> IO Bool
 notSymlink f = liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f

@@ -1,6 +1,6 @@
 {- git check-ignore interface
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -31,25 +31,36 @@ type CheckIgnoreHandle = CoProcess.CoProcessHandle
  -
  - The first version of git to support what we need is 1.8.4.
  - Nothing is returned if an older git is installed.
+ -
+ - check-ignore does not support --literal-pathspecs, so remove that
+ - from the gitGlobalOpts if set.
  -}
 checkIgnoreStart :: Repo -> IO (Maybe CheckIgnoreHandle)
 checkIgnoreStart repo = ifM supportedGitVersion
-	( Just <$> (CoProcess.rawMode =<< gitCoProcessStart True params repo)
+	( Just <$> gitCoProcessStart True params repo'
 	, return Nothing
 	)
   where
 	params =
 		[ Param "check-ignore" 
-		, Params "-z --stdin --verbose --non-matching"
+		, Param "-z"
+		, Param "--stdin"
+		, Param "--verbose"
+		, Param "--non-matching"
 		]
+	repo' = repo { gitGlobalOpts = filter (not . pathspecs) (gitGlobalOpts repo) }
+	pathspecs (Param "--literal-pathspecs") = True
+	pathspecs _ = False
 
 supportedGitVersion :: IO Bool
 supportedGitVersion = do
 	v <- Git.Version.installed
 	return $ v >= Git.Version.normalize "1.8.4"
 
+{- For some reason, check-ignore --batch always exits nonzero, 
+ - so ignore any error. -}
 checkIgnoreStop :: CheckIgnoreHandle -> IO ()
-checkIgnoreStop = CoProcess.stop
+checkIgnoreStop = void . tryIO . CoProcess.stop
 
 {- Returns True if a file is ignored. -}
 checkIgnored :: CheckIgnoreHandle -> FilePath -> IO Bool

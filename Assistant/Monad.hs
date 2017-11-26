@@ -1,6 +1,6 @@
 {- git-annex assistant monad
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -28,7 +28,7 @@ module Assistant.Monad (
 import "mtl" Control.Monad.Reader
 import System.Log.Logger
 
-import Common.Annex
+import Annex.Common
 import Assistant.Types.ThreadedMonad
 import Assistant.Types.DaemonStatus
 import Assistant.Types.ScanRemotes
@@ -40,8 +40,6 @@ import Assistant.Types.BranchChange
 import Assistant.Types.Commits
 import Assistant.Types.Changes
 import Assistant.Types.RepoProblem
-import Assistant.Types.Buddies
-import Assistant.Types.NetMessager
 import Assistant.Types.ThreadName
 import Assistant.Types.RemoteControl
 import Assistant.Types.CredPairCache
@@ -64,12 +62,12 @@ data AssistantData = AssistantData
 	, transferSlots :: TransferSlots
 	, transferrerPool :: TransferrerPool
 	, failedPushMap :: FailedPushMap
+	, failedExportMap :: FailedPushMap
 	, commitChan :: CommitChan
+	, exportCommitChan :: CommitChan
 	, changePool :: ChangePool
 	, repoProblemChan :: RepoProblemChan
 	, branchChangeHandle :: BranchChangeHandle
-	, buddyList :: BuddyList
-	, netMessager :: NetMessager
 	, remoteControl :: RemoteControl
 	, credPairCache :: CredPairCache
 	}
@@ -84,12 +82,12 @@ newAssistantData st dstatus = AssistantData
 	<*> newTransferSlots
 	<*> newTransferrerPool (checkNetworkConnections dstatus)
 	<*> newFailedPushMap
+	<*> newFailedPushMap
+	<*> newCommitChan
 	<*> newCommitChan
 	<*> newChangePool
 	<*> newRepoProblemChan
 	<*> newBranchChangeHandle
-	<*> newBuddyList
-	<*> newNetMessager
 	<*> newRemoteControl
 	<*> newCredPairCache
 

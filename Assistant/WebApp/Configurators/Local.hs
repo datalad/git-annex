@@ -1,11 +1,12 @@
 {- git-annex assistant webapp configurators for making local repositories
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, QuasiQuotes, TemplateHaskell, OverloadedStrings, RankNTypes, KindSignatures, TypeFamilies #-}
+{-# LANGUAGE CPP, QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE RankNTypes, KindSignatures, TypeFamilies, FlexibleContexts #-}
 
 module Assistant.WebApp.Configurators.Local where
 
@@ -15,14 +16,15 @@ import Assistant.WebApp.MakeRemote
 import Assistant.Sync
 import Assistant.Restart
 import Annex.MakeRepo
+import qualified Annex
 import qualified Git
 import qualified Git.Config
 import qualified Git.Command
-import qualified Git.Branch
+import qualified Command.Sync
 import Config.Files
 import Utility.FreeDesktop
 import Utility.DiskFree
-#ifdef WITH_CLIBS
+#ifndef mingw32_HOST_OS
 import Utility.Mounts
 #endif
 import Utility.DataUnits
@@ -50,18 +52,10 @@ data RepositoryPath = RepositoryPath Text
  -
  - Validates that the path entered is not empty, and is a safe value
  - to use as a repository. -}
-#if MIN_VERSION_yesod(1,2,0)
 repositoryPathField :: forall (m :: * -> *). (MonadIO m, HandlerSite m ~ WebApp) => Bool -> Field m Text
-#else
-repositoryPathField :: forall sub. Bool -> Field sub WebApp Text
-#endif
 repositoryPathField autofocus = Field
-#if ! MIN_VERSION_yesod_form(1,2,0)
-	{ fieldParse = parse
-#else
 	{ fieldParse = \l _ -> parse l
 	, fieldEnctype = UrlEncoded
-#endif
 	, fieldView = view
 	}
   where
@@ -157,7 +151,7 @@ getFirstRepositoryR = postFirstRepositoryR
 postFirstRepositoryR :: Handler Html
 postFirstRepositoryR = page "Getting started" (Just Configuration) $ do
 	unlessM (liftIO $ inPath "git") $
-		error "You need to install git in order to use git-annex!"
+		giveup "You need to install git in order to use git-annex!"
 #ifdef __ANDROID__
 	androidspecial <- liftIO $ doesDirectoryExist "/sdcard/DCIM"
 	let path = "/sdcard/annex"
@@ -208,7 +202,7 @@ postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
  - immediately pulling from it. Also spawns a sync to push to it as well. -}
 immediateSyncRemote :: Remote -> Assistant ()
 immediateSyncRemote r = do
-	currentbranch <- liftAnnex (inRepo Git.Branch.current)
+	currentbranch <- liftAnnex $ join Command.Sync.getCurrBranch
 	void $ manualPull currentbranch [r]
 	syncRemote r
 
@@ -276,8 +270,9 @@ getConfirmAddDriveR drive = ifM (liftIO $ probeRepoExists dir)
   where
 	dir = removableDriveRepository drive
 	newrepo = do
+		cmd <- liftAnnex $ gpgCmd <$> Annex.getGitConfig
 		secretkeys <- sortBy (comparing snd) . M.toList
-			<$> liftIO secretKeys
+			<$> liftIO (secretKeys cmd)
 		page "Encrypt repository?" (Just Configuration) $
 			$(widgetFile "configurators/adddrive/encrypt")
 	knownrepo = getFinishAddDriveR drive NoRepoKey
@@ -314,7 +309,7 @@ getFinishAddDriveR drive = go
 		mu <- liftAnnex $ probeGCryptRemoteUUID dir
 		case mu of
 			Just u -> enableexistinggcryptremote u
-			Nothing -> error "The drive contains a gcrypt repository that is not a git-annex special remote. This is not supported."
+			Nothing -> giveup "The drive contains a gcrypt repository that is not a git-annex special remote. This is not supported."
 	enableexistinggcryptremote u = do
 		remotename' <- liftAnnex $ getGCryptRemoteName u dir
 		makewith $ const $ do
@@ -347,8 +342,9 @@ getFinishAddDriveR drive = go
 combineRepos :: FilePath -> String -> Handler Remote
 combineRepos dir name = liftAnnex $ do
 	hostname <- fromMaybe "host" <$> liftIO getHostname
-	hostlocation <- fromRepo Git.repoLocation
-	liftIO $ inDir dir $ void $ makeGitRemote hostname hostlocation
+	mylocation <- fromRepo Git.repoLocation
+	mypath <- liftIO $ relPathDirToFile dir mylocation
+	liftIO $ inDir dir $ void $ makeGitRemote hostname mypath
 	addRemote $ makeGitRemote name dir
 
 getEnableDirectoryR :: UUID -> Handler Html
@@ -363,7 +359,6 @@ driveList :: IO [RemovableDrive]
 -- Could use wmic, but it only works for administrators.
 driveList = mapM (\d -> genRemovableDrive $ d:":\\") ['A'..'Z']
 #else
-#ifdef WITH_CLIBS
 driveList = mapM (genRemovableDrive . mnt_dir) =<< filter sane <$> getMounts
   where
 	-- filter out some things that are surely not removable drives
@@ -383,9 +378,6 @@ driveList = mapM (genRemovableDrive . mnt_dir) =<< filter sane <$> getMounts
 		| dir == "/sdcard" = False
 #endif
 		| otherwise = True
-#else
-driveList = return []
-#endif
 #endif
 
 genRemovableDrive :: FilePath -> IO RemovableDrive

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://renaud.casenave.fr/"
+ subject="comment 2"
+ date="2015-03-27T18:25:17Z"
+ content="""
+Well, I thought about that but it doesn't seem to work.
+with `git annex get --notify-start --notify-finish` I properly get the notifications but with `git annex assistant --notify-start --notify-finish` I get nothing when a file is uploaded or downloaded
+"""]]

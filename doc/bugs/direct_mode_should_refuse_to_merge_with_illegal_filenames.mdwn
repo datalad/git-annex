@@ -35,4 +35,4 @@ So, how to detect when `git merge` has skipped creating illegal filenames?
 Alternatively, git-annex could learn/probe the full set of characters not allowed in filenames, and examine merges before performing them, and refuse to do anything if the merge added an illegal filename.a
 
 [[!tag confirmed]]
-
+[[!meta tag=deprecateddirectmode]]

@@ -1,0 +1,43 @@
+# NAME
+
+git-annex required - get or set required content expression
+
+# SYNOPSIS
+
+git annex required `repository [expression]`
+
+# DESCRIPTION
+
+When run with an expression, configures the content that is required
+to be held in the archive.
+
+For example:
+
+	git annex required . "include=*.mp3 or include=*.ogg"
+
+Without an expression, displays the current required content setting
+of the repository.
+
+While [[git-annex-wanted]] is just a preference,
+[[git-annex-required]] designates content that should really not be
+removed. For example a file that is `wanted` can be removed with `git
+annex drop`, but if that file is `required`, it would need to be
+removed with `git annex drop --force`.
+
+# NOTES
+
+The `required` command was added in git-annex 5.20150420.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-wanted]](1)
+
+[[git-annex-preferred-content]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

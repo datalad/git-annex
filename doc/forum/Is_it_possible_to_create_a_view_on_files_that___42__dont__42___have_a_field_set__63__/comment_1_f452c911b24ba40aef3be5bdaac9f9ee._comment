@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 1"
+ date="2016-04-29T10:04:55Z"
+ content="""
+You can do this, but it involves setting that field's value to something.
+
+    git annex metadata -s field?=untagged
+
+This will tag all files that don't have any 'field' values with 'untagged', so when you switch to the view, they will show up under 'untagged' (and you move/commit them to tag them).
+"""]]

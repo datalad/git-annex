@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-04-18T20:05:42Z"
+ content="""
+This is a common gotcha; bash sources something like .bashrc
+or whatever that puts /usr/local/bin/ in your path when it's a login shell.
+However, when git-annex is sshing in, there is no login shell,
+and bash does not source any dotfiles, and so git-annex-shell in not in
+PATH.
+
+The solution is probably to move or symlink it to some other directory
+that is in PATH always.
+"""]]

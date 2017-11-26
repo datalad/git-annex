@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://grossmeier.net/"
- nickname="greg"
- subject="comment 2"
- date="2012-11-29T19:55:25Z"
- content="""
-Thanks, Joey. I've reported it [downstream in LP](https://bugs.launchpad.net/ubuntu/+source/git-annex/+bug/1084693).
-"""]]

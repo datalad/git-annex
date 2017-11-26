@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnW_CrhP9p50n9UUhTg_a9glyKWSvnrjRQ"
+ nickname="Michele"
+ subject="direct mode pre-commit hooks [on windows]"
+ date="2015-01-20T12:43:24Z"
+ content="""
+seemingly pre-commit hooks are not being called on windows, it could have to do with git annex sync bypassing them when doing commits ?
+
+on the other side genmetadata works. although that is not enough for me since I'd want to preserve complete last modification date/time and I was in the process of modifying the supplied pre-commit script to call for \"stat %Y\" (which btw is working fine on windows, while the last binaries for extract are failing there).
+
+am I correct in assuming that direct mode [on windows at least] bypasses hooks [namely pre-commit as well as pre-commit-annex] ?
+"""]]

@@ -1,28 +1,35 @@
 {- File mode utilities.
  -
- - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2017 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
 
 {-# LANGUAGE CPP #-}
 
-module Utility.FileMode where
+module Utility.FileMode (
+	module Utility.FileMode,
+	FileMode,
+) where
 
 import System.IO
 import Control.Monad
 import System.PosixCompat.Types
-import Utility.PosixFiles
+import System.PosixCompat.Files
 #ifndef mingw32_HOST_OS
 import System.Posix.Files
+import Control.Monad.IO.Class (liftIO)
 #endif
+import Control.Monad.IO.Class (MonadIO)
 import Foreign (complement)
+import Control.Monad.Catch
 
 import Utility.Exception
 
 {- Applies a conversion function to a file's mode. -}
 modifyFileMode :: FilePath -> (FileMode -> FileMode) -> IO ()
 modifyFileMode f convert = void $ modifyFileMode' f convert
+
 modifyFileMode' :: FilePath -> (FileMode -> FileMode) -> IO FileMode
 modifyFileMode' f convert = do
 	s <- getFileStatus f
@@ -32,6 +39,14 @@ modifyFileMode' f convert = do
 		setFileMode f new
 	return old
 
+{- Runs an action after changing a file's mode, then restores the old mode. -}
+withModifiedFileMode :: FilePath -> (FileMode -> FileMode) -> IO a -> IO a
+withModifiedFileMode file convert a = bracket setup cleanup go
+  where
+	setup = modifyFileMode' file convert
+	cleanup oldmode = modifyFileMode file (const oldmode)
+	go _ = a
+
 {- Adds the specified FileModes to the input mode, leaving the rest
  - unchanged. -}
 addModes :: [FileMode] -> FileMode -> FileMode
@@ -40,14 +55,6 @@ addModes ms m = combineModes (m:ms)
 {- Removes the specified FileModes from the input mode. -}
 removeModes :: [FileMode] -> FileMode -> FileMode
 removeModes ms m = m `intersectFileModes` complement (combineModes ms)
-
-{- Runs an action after changing a file's mode, then restores the old mode. -}
-withModifiedFileMode :: FilePath -> (FileMode -> FileMode) -> IO a -> IO a
-withModifiedFileMode file convert a = bracket setup cleanup go
-  where
-	setup = modifyFileMode' file convert
-	cleanup oldmode = modifyFileMode file (const oldmode)
-	go _ = a
 
 writeModes :: [FileMode]
 writeModes = [ownerWriteMode, groupWriteMode, otherWriteMode]
@@ -103,7 +110,7 @@ isExecutable mode = combineModes executeModes `intersectFileModes` mode /= 0
 
 {- Runs an action without that pesky umask influencing it, unless the
  - passed FileMode is the standard one. -}
-noUmask :: FileMode -> IO a -> IO a
+noUmask :: (MonadIO m, MonadMask m) => FileMode -> m a -> m a
 #ifndef mingw32_HOST_OS
 noUmask mode a
 	| mode == stdFileMode = a
@@ -112,19 +119,34 @@ noUmask mode a
 noUmask _ a = a
 #endif
 
-withUmask :: FileMode -> IO a -> IO a
+withUmask :: (MonadIO m, MonadMask m) => FileMode -> m a -> m a
 #ifndef mingw32_HOST_OS
 withUmask umask a = bracket setup cleanup go
   where
-	setup = setFileCreationMask umask
-	cleanup = setFileCreationMask
+	setup = liftIO $ setFileCreationMask umask
+	cleanup = liftIO . setFileCreationMask
 	go _ = a
 #else
 withUmask _ a = a
 #endif
 
+getUmask :: IO FileMode
+#ifndef mingw32_HOST_OS
+getUmask = bracket setup cleanup return
+  where
+	setup = setFileCreationMask nullFileMode
+	cleanup = setFileCreationMask
+#else
+getUmask = return nullFileMode
+#endif
+
+defaultFileMode :: IO FileMode
+defaultFileMode = do
+	umask <- getUmask
+	return $ intersectFileModes (complement umask) stdFileMode
+
 combineModes :: [FileMode] -> FileMode
-combineModes [] = undefined
+combineModes [] = 0
 combineModes [m] = m
 combineModes (m:ms) = foldl unionFileModes m ms
 
@@ -151,7 +173,14 @@ setSticky f = modifyFileMode f $ addModes [stickyMode]
  - as writeFile.
  -}
 writeFileProtected :: FilePath -> String -> IO ()
-writeFileProtected file content = withUmask 0o0077 $
+writeFileProtected file content = writeFileProtected' file 
+	(\h -> hPutStr h content)
+
+writeFileProtected' :: FilePath -> (Handle -> IO ()) -> IO ()
+writeFileProtected' file writer = protectedOutput $
 	withFile file WriteMode $ \h -> do
 		void $ tryIO $ modifyFileMode file $ removeModes otherGroupModes
-		hPutStr h content
+		writer h
+
+protectedOutput :: IO a -> IO a
+protectedOutput = withUmask 0o0077

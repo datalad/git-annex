@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="basak"
+ subject="comment 1"
+ date="2015-04-24T15:48:48Z"
+ content="""
+Well, it's supposed to be a command line command, and I don't type `cd-cli` and `ls-cli`. So while `glacier-cli` might be fine as a project name and is fine for a name for integration, I don't think it makes sense to call it that in `/usr/bin/`, which is why I didn't. I'd prefer to have seen that boto integrate an improved `glacier` command, or for packaging to provide this one as an alternative (like `mawk` vs. `gawk` as `/usr/bin/awk`). But upstream boto considers themselves deprecated, so that's not going to happen. One of these days I'll package glacier-cli up for Debian, at which point I'll see if the boto maintainer is interested in doing something, since I don't actually believe anybody uses boto's glacier command (since it's mostly useless).
+"""]]

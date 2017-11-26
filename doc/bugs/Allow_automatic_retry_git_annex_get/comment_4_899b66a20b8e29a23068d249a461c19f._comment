@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-12-13T16:05:42Z"
+ content="""
+Could the original bug reporter please show what your ~/.ssh/config
+contains? As far as I can tell, ssh's TCPKeepAlive option, which is
+supposed to be enabled by default, unless you have disabled it, should
+avoid such problems.
+
+It may also help to set ServerAliveInterval.
+
+Unfortunately, my attempt to make git-annex set ServerAliveInterval
+when running ssh broke too many systems with old sshed, and I have had to
+revert it.
+"""]]

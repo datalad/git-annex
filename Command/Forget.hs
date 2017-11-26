@@ -1,42 +1,44 @@
 {- git-annex command
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.Forget where
 
-import Common.Annex
 import Command
 import qualified Annex.Branch as Branch
 import Logs.Transitions
 import qualified Annex
+import Annex.VectorClock
 
-import Data.Time.Clock.POSIX
+cmd :: Command
+cmd = command "forget" SectionMaintenance 
+	"prune git-annex branch history"
+	paramNothing (seek <$$> optParser)
 
-cmd :: [Command]
-cmd = [withOptions forgetOptions $ command "forget" paramNothing seek
-		SectionMaintenance "prune git-annex branch history"]
+data ForgetOptions = ForgetOptions
+	{ dropDead :: Bool
+	}
 
-forgetOptions :: [Option]
-forgetOptions = [dropDeadOption]
+optParser :: CmdParamsDesc -> Parser ForgetOptions
+optParser _ = ForgetOptions
+	<$> switch
+		( long "drop-dead"
+		<> help "drop references to dead repositories"
+		)
 
-dropDeadOption :: Option
-dropDeadOption = flagOption [] "drop-dead" "drop references to dead repositories"
+seek :: ForgetOptions -> CommandSeek
+seek = commandAction . start
 
-seek :: CommandSeek
-seek ps = do
-	dropdead <- getOptionFlag dropDeadOption
-	withNothing (start dropdead) ps
-
-start :: Bool -> CommandStart
-start dropdead = do
+start :: ForgetOptions -> CommandStart
+start o = do
 	showStart "forget" "git-annex"
-	now <- liftIO getPOSIXTime
-	let basets = addTransition now ForgetGitHistory noTransitions
-	let ts = if dropdead
-		then addTransition now ForgetDeadRemotes basets
+	c <- liftIO currentVectorClock
+	let basets = addTransition c ForgetGitHistory noTransitions
+	let ts = if dropDead o
+		then addTransition c ForgetDeadRemotes basets
 		else basets
 	next $ perform ts =<< Annex.getState Annex.force
 

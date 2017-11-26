@@ -1,0 +1,44 @@
+### Please describe the problem.
+
+Syncing two repositories causes many files that are on both systems to be deleted.
+
+My computers A and B have a directory with 1600 files taking 500MB.   I'm trying to sync A to B thus:
+
+git annex sync --no-commit --no-push
+
+This immediately deletes those 1600 files from B.   (Before I added -no-push it also deleted those files from A).
+
+Recovering from this with git reset --hard takes 13 minutes, so it's difficult to run experiments.   However I have spent about a full day on this over the last week.
+
+### What steps will reproduce the problem?
+
+This repository has evolved over time so I can't give a MWE.   However, I created the git repository before initing annex, and did some more work before adding the largefiles option.   It's probable that something inside annex is now badly confused.
+
+I don't expect you to solve my particular problem from this report.   However, sync has a major hidden problem. 
+
+### What version of git-annex are you using? On what operating system?
+
+20160511-1.
+the annex is v6.
+the OS is Ubuntu linux  4.4.0-38-generic 
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+.git/annex has no log files, even in subdirs.
+
+There have been occasional reports going back years from other people reporting that sync destroyed massive amounts of their repositories.    That this bug persists suggests that the problem is subtle.
+
+I upgraded my annexes to v6 because the concept of locked and unlocked looks good.   Then, when researching my problem before posting this bug report, I found a comment that upgrading to v6 is not (now?) recommended because of possible bugs.   It would have been nice if this warning were more prominent.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+The idea is great.  Preliminary tests were quite positive.   That's why I tried it on my big repositories.
+

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Gus"
+ avatar="http://cdn.libravatar.org/avatar/665626c67ab3ee7e842183f6f659e120"
+ subject="comment 1"
+ date="2017-09-24T13:14:53Z"
+ content="""
+You should reat the [dirct mode page](https://git-annex.branchable.com/direct_mode/#index5h2).
+
+In short, use `git-annex sync` as a replacement for `git commit`.
+
+"""]]

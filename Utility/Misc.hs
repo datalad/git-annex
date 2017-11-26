@@ -1,11 +1,12 @@
 {- misc utility functions
  -
- - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2011 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
 
 {-# LANGUAGE CPP #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Misc where
 
@@ -14,15 +15,13 @@ import Control.Monad
 import Foreign
 import Data.Char
 import Data.List
-import Control.Applicative
 import System.Exit
 #ifndef mingw32_HOST_OS
 import System.Posix.Process (getAnyProcessStatus)
 import Utility.Exception
 #endif
-
-import Utility.FileSystemEncoding
-import Utility.Monad
+import Control.Applicative
+import Prelude
 
 {- A version of hgetContents that is not lazy. Ensures file is 
  - all read before it gets closed. -}
@@ -32,20 +31,6 @@ hGetContentsStrict = hGetContents >=> \s -> length s `seq` return s
 {- A version of readFile that is not lazy. -}
 readFileStrict :: FilePath -> IO String
 readFileStrict = readFile >=> \s -> length s `seq` return s
-
-{-  Reads a file strictly, and using the FileSystemEncoding, so it will
- -  never crash on a badly encoded file. -}
-readFileStrictAnyEncoding :: FilePath -> IO String
-readFileStrictAnyEncoding f = withFile f ReadMode $ \h -> do
-	fileEncoding h
-	hClose h `after` hGetContentsStrict h
-
-{- Writes a file, using the FileSystemEncoding so it will never crash
- - on a badly encoded content string. -}
-writeFileAnyEncoding :: FilePath -> String -> IO ()
-writeFileAnyEncoding f content = withFile f WriteMode $ \h -> do
-	fileEncoding h
-	hPutStr h content
 
 {- Like break, but the item matching the condition is not included
  - in the second result list.
@@ -127,14 +112,14 @@ hGetSomeString h sz = do
 	peekbytes :: Int -> Ptr Word8 -> IO [Word8]
 	peekbytes len buf = mapM (peekElemOff buf) [0..pred len]
 
-{- Reaps any zombie git processes. 
+{- Reaps any zombie processes that may be hanging around.
  -
  - Warning: Not thread safe. Anything that was expecting to wait
  - on a process and get back an exit status is going to be confused
  - if this reap gets there first. -}
 reapZombies :: IO ()
 #ifndef mingw32_HOST_OS
-reapZombies = do
+reapZombies =
 	-- throws an exception when there are no child processes
 	catchDefaultIO Nothing (getAnyProcessStatus False True)
 		>>= maybe (return ()) (const reapZombies)

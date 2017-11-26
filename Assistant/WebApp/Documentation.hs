@@ -1,6 +1,6 @@
 {- git-annex assistant webapp documentation
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -12,7 +12,7 @@ module Assistant.WebApp.Documentation where
 import Assistant.WebApp.Common
 import Assistant.Install (standaloneAppBase)
 import Build.SysConfig (packageversion)
-import BuildFlags
+import BuildInfo
 
 {- The full license info may be included in a file on disk that can
  - be read in and displayed. -}

@@ -1,0 +1,73 @@
+For git-annex version 6 with 'thin'. [I want 1) not store date twice 2) to be able to have self-sufficient repository at different machines (i.e. not special remotes, which don't contain the git tree)].
+
+Say I've two machines A and B and the server S. 
+
+I setup a local repository on A:
+
+    git init
+    git-annex init $HOSTNAME --version=6
+    git config annex.thin true
+    git add .
+
+on S:
+
+    mkdir test
+    cd test
+    git init
+    git-annex init $HOSTNAME --version=6
+    git config annex.thin true
+
+on A:
+
+    git remote add S:~/test.git
+    git-annex sync --content
+
+on B:
+
+    git clone S:~/test.git
+    cd test
+    git-annex init $HOSTNAME --version=6
+    git config annex.thin true
+    git-annex sync
+
+(the reply)
+
+    ...
+    merge: refs/remotes/origin/master - not something we can merge
+
+    failed
+    push origin 
+    Counting objects: 6, done.
+    Delta compression using up to 4 threads.
+    Compressing objects: 100% (5/5), done.
+    Writing objects: 100% (6/6), 714 bytes | 0 bytes/s, done.
+    Total 6 (delta 1), reused 1 (delta 0)
+    remote: git-annex: unknown command post-receive
+    ...
+
+and the file contains only '/annex/objects/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'.
+
+Another time with another repo which I tried to sync from S at B, I got
+
+    $ git-annex sync --content
+    Initial commit
+
+    Untracked files: 
+(all my files untracked)
+
+    merge: refs/remotes/origin/master - not something we can merge
+
+    error: Untracked working tree file 'applications/algorithms/file.pdf' would be overwritten by merge.
+    fatal: read-tree failed
+    failed
+    git-annex: sync: 1 failed
+
+On walkthrough it's written how to sync with USB. How should one initialize remote repositories and use them e.g. as central repositories (though they should work probably not depending on 'central' or not they are)? 
+
+I've read a lot of manuals on git-annex and the forum; the questions here remain unanswered: 
+
+<http://git-annex.branchable.com/forum/git-annex_SSH_server_+_cloud_remote/>
+
+<http://git-annex.branchable.com/forum/Synchronize_two_latops_with_a_ssh_remote/>
+
+I hope this is a basic and popular usage of git-annex and that one can write a howto for that or at least answer this question.

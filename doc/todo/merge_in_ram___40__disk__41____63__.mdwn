@@ -1,8 +1,0 @@
-git-annex is great. But for my repos the merge and recording state operations take forever.
-
-(merging fotos_enc_pg/synced/git-annex into git-annex...)
-
-Since git-annex is another branch (than master) and git usually needs a worktree for merging I assume that git-annex branch is temporarily checked out somewhere. Would it be possible to move this operation to RAM? Or a RAM-Disk?
-
-> No, it is not checked out. All operations are done with the most
-> effective available git plumbing. [[done]] --[[Joey]]

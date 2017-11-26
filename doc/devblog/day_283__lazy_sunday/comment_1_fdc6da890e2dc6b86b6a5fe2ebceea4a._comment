@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ subject="comment 1"
+ date="2015-05-11T09:02:10Z"
+ content="""
+I'd be interested to hear your reasons for preferring tabs over spaces, if it's anything more than an aesthetic preference.
+
+The [GHC trac](https://ghc.haskell.org/trac/ghc/ticket/9230) suggests that it was turned on by default because beginners accidentally mix tabs and spaces and get very confused.
+"""]]

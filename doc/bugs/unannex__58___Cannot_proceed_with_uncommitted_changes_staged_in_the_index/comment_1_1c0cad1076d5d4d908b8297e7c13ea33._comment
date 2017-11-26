@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-07-12T16:23:51Z"
+ content="""
+In v5 mode, there is a complex interaction between unannex and the
+pre-commit hook. An unannexed file looks quite a lot like an unlocked file,
+so the pre-commit hook is prone to want to lock it, and so add it back to
+the annex as an annexed file.
+
+To avoid that problem, unannex needs to commit the unannexing of the
+files.
+
+However, if you have other staged changes, they'll also be included in that
+commit. Which would be a bug if it were allowed to happen. This is why
+it checks for a clean index first.
+
+It would be possible to improve the behavior by explicitly committing only
+the files that got unannexed, rather than all staged changes. Why didn't I
+do that?
+
+Well, `git commit $file` stages any changes to the file's content before
+committing. When the file has been unannexed, this stages the entire large
+file content into git, and adds it back. Not the desired behavior!
+
+Git in fact has no interface to make it commit only staged changes to
+only specific files. I can't get there from here. It would certianly
+be nice if git got the ability to do that, if someone wants a project to
+improve git.
+
+It's very nice that v6 mode avoids this problem entirely!
+"""]]

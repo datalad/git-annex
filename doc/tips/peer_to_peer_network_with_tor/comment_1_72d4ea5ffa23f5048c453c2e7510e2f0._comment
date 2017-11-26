@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="dvicory"
+ avatar="http://cdn.libravatar.org/avatar/9e4b9df55a9c1440101dc66aa0a6b62d"
+ subject="Security of P2P repo is unclear"
+ date="2017-02-28T20:30:30Z"
+ content="""
+In the security section, you say that
+
+> Anyone who learns the address of a peer can connect to that peer, download the whole history of the git repository, and any available annexed files. They can also upload new files to the peer, and even remove annexed files from the peer. So consider ways that the address of a peer might be exposed.
+
+Do you mean the addresses from `git annex peer --gen-addresses` here? Say, if someone has only my onion service address, and none of the authentication data that is normally placed in `.git/annex/creds/`, what can they do with my git repository? I think I might be confused by the use of \"address\" because of onion addresses, which are not private.
+"""]]

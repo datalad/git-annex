@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="sunny256"
+ avatar="http://cdn.libravatar.org/avatar/8a221001f74d0e8f4dadee3c7d1996e4"
+ subject="Wrong permissions"
+ date="2017-01-16T11:17:31Z"
+ content="""
+Yes, confirmed. I tried to create a new test repository and chmod all directories with +s. I'm using umask 0002, so new files are created with perm 0664 and the correct shared group. But the SQLite files in .git/annex/keys/ are created with permission 0644, so other users in the group are not able to update the files there.
+"""]]

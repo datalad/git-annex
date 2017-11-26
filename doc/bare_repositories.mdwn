@@ -18,11 +18,13 @@ as non-bare repositories. Except for these caveats:
   branches that have been pushed to the bare repository. So use it with care..
 * Commands that need a work tree, like `git annex add` won't work in a bare
   repository, of course.
-* However, you can (with recent versions of git-annex) run `git annex copy`,
-  `git annex get`, and `git annex move` in a bare repository. These behave
-  as if the `--all` option were used, and just operate on every single
-  version of every single file that is present in the git repository
-  history.
+* However, you can run commands like `git annex copy`, `git annex get`, and
+  `git annex drop` in a bare repository. In a bare repository, these
+  behave as if the `--all` option were used, and so operate
+  on every single version of every single file that is present in the git
+  repository history. The `--branch` option can be used to make these
+  commands only operate on the files referenced by a specified branch.  
+  For example: `git annex get --branch master`
 
 ***
 
@@ -39,9 +41,12 @@ Now configure the remote and do the initial push:
     git remote add origin example.com:bare-annex.git
     git push origin master git-annex
 
-Now `git annex info` should show the configured bare remote. If it does not, you may have to pull from the remote first (older versions of `git-annex`)
+Now `git annex info` should show the configured bare remote. If it does
+not, you may have to pull from the remote first (older versions of
+`git-annex`).
 
-If you wish to configure git such that you can push/pull without arguments, set the upstream branch:
+If you wish to configure git such that you can push/pull without arguments,
+set the upstream branch:
 
     git branch master --set-upstream origin/master
 

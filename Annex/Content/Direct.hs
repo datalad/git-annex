@@ -1,11 +1,12 @@
 {- git-annex file content managing for direct mode
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - This is deprecated, and will be removed when direct mode gets removed
+ - from git-annex.
+ -
+ - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
-
-{-# LANGUAGE CPP #-}
 
 module Annex.Content.Direct (
 	associatedFiles,
@@ -20,21 +21,15 @@ module Annex.Content.Direct (
 	addInodeCache,
 	writeInodeCache,
 	compareInodeCaches,
-	compareInodeCachesWith,
 	sameInodeCache,
 	elemInodeCaches,
 	sameFileStatus,
 	removeInodeCache,
 	toInodeCache,
-	inodesChanged,
-	createInodeSentinalFile,
 	addContentWhenNotPresent,
-	withTSDelta,
-	getTSDelta,
 ) where
 
-import Common.Annex
-import qualified Annex
+import Annex.Common
 import Annex.Perms
 import qualified Git
 import Utility.Tmp
@@ -43,6 +38,7 @@ import Utility.InodeCache
 import Utility.CopyFile
 import Annex.ReplaceFile
 import Annex.Link
+import Annex.InodeSentinal
 
 {- Absolute FilePaths of Files in the tree that are associated with a key. -}
 associatedFiles :: Key -> Annex [FilePath]
@@ -56,8 +52,7 @@ associatedFiles key = do
 associatedFilesRelative :: Key -> Annex [FilePath] 
 associatedFilesRelative key = do
 	mapping <- calcRepo $ gitAnnexMapping key
-	liftIO $ catchDefaultIO [] $ withFile mapping ReadMode $ \h -> do
-		fileEncoding h
+	liftIO $ catchDefaultIO [] $ withFile mapping ReadMode $ \h ->
 		-- Read strictly to ensure the file is closed
 		-- before changeAssociatedFiles tries to write to it.
 		-- (Especially needed on Windows.)
@@ -72,8 +67,7 @@ changeAssociatedFiles key transform = do
 	let files' = transform files
 	when (files /= files') $
 		modifyContent mapping $
-			liftIO $ viaTmp writeFileAnyEncoding mapping $
-				unlines files'
+			liftIO $ viaTmp writeFile mapping $ unlines files'
 	top <- fromRepo Git.repoPath
 	return $ map (top </>) files'
 
@@ -114,7 +108,7 @@ addAssociatedFile key file = do
 normaliseAssociatedFile :: FilePath -> Annex FilePath
 normaliseAssociatedFile file = do
 	top <- fromRepo Git.repoPath
-	liftIO $ relPathDirToFile top <$> absPath file
+	liftIO $ relPathDirToFile top file
 
 {- Checks if a file in the tree, associated with a key, has not been modified.
  -
@@ -165,42 +159,15 @@ removeInodeCache key = withInodeCacheFile key $ \f ->
 withInodeCacheFile :: Key -> (FilePath -> Annex a) -> Annex a
 withInodeCacheFile key a = a =<< calcRepo (gitAnnexInodeCache key)
 
-{- Checks if a InodeCache matches the current version of a file. -}
-sameInodeCache :: FilePath -> [InodeCache] -> Annex Bool
-sameInodeCache _ [] = return False
-sameInodeCache file old = go =<< withTSDelta (liftIO . genInodeCache file)
-  where
-	go Nothing = return False
-	go (Just curr) = elemInodeCaches curr old
-
 {- Checks if a FileStatus matches the recorded InodeCache of a file. -}
-sameFileStatus :: Key -> FileStatus -> Annex Bool
-sameFileStatus key status = do
+sameFileStatus :: Key -> FilePath -> FileStatus -> Annex Bool
+sameFileStatus key f status = do
 	old <- recordedInodeCache key
-	curr <- withTSDelta $ \delta -> liftIO $ toInodeCache delta status
+	curr <- withTSDelta $ \delta -> liftIO $ toInodeCache delta f status
 	case (old, curr) of
 		(_, Just c) -> elemInodeCaches c old
 		([], Nothing) -> return True
 		_ -> return False
-
-{- If the inodes have changed, only the size and mtime are compared. -}
-compareInodeCaches :: InodeCache -> InodeCache -> Annex Bool
-compareInodeCaches x y
-	| compareStrong x y = return True
-	| otherwise = ifM inodesChanged
-		( return $ compareWeak x y
-		, return False
-		)
-
-elemInodeCaches :: InodeCache -> [InodeCache] -> Annex Bool
-elemInodeCaches _ [] = return False
-elemInodeCaches c (l:ls) = ifM (compareInodeCaches c l)
-	( return True
-	, elemInodeCaches c ls
-	)
-
-compareInodeCachesWith :: Annex InodeComparisonType
-compareInodeCachesWith = ifM inodesChanged ( return Weakly, return Strongly )
 
 {- Copies the contentfile to the associated file, if the associated
  - file has no content. If the associated file does have content,
@@ -212,52 +179,3 @@ addContentWhenNotPresent key contentfile associatedfile = do
 		replaceFile associatedfile $
 			liftIO . void . copyFileExternal CopyAllMetaData contentfile
 	updateInodeCache key associatedfile	
-
-{- Some filesystems get new inodes each time they are mounted.
- - In order to work on such a filesystem, a sentinal file is used to detect
- - when the inodes have changed.
- -
- - If the sentinal file does not exist, we have to assume that the
- - inodes have changed.
- -}
-inodesChanged :: Annex Bool
-inodesChanged = sentinalInodesChanged <$> sentinalStatus
-
-withTSDelta :: (TSDelta -> Annex a) -> Annex a
-withTSDelta a = a =<< getTSDelta
-
-getTSDelta :: Annex TSDelta
-#ifdef mingw32_HOST_OS
-getTSDelta = sentinalTSDelta <$> sentinalStatus
-#else
-getTSDelta = pure noTSDelta -- optimisation
-#endif
-
-sentinalStatus :: Annex SentinalStatus
-sentinalStatus = maybe check return =<< Annex.getState Annex.sentinalstatus
-  where
-	check = do
-		sc <- liftIO . checkSentinalFile =<< annexSentinalFile
-		Annex.changeState $ \s -> s { Annex.sentinalstatus = Just sc }
-		return sc
-
-{- The sentinal file is only created when first initializing a repository.
- - If there are any annexed objects in the repository already, creating
- - the file would invalidate their inode caches. -}
-createInodeSentinalFile :: Annex ()
-createInodeSentinalFile = unlessM (alreadyexists <||> hasobjects) $ do
-	s <- annexSentinalFile
-	createAnnexDirectory (parentDir (sentinalFile s))
-	liftIO $ writeSentinalFile s
-  where
-	alreadyexists = liftIO. sentinalFileExists =<< annexSentinalFile
-	hasobjects = liftIO . doesDirectoryExist =<< fromRepo gitAnnexObjectDir
-
-annexSentinalFile :: Annex SentinalFile
-annexSentinalFile = do
-	sentinalfile <- fromRepo gitAnnexInodeSentinal
-	sentinalcachefile <- fromRepo gitAnnexInodeSentinalCache
-	return $ SentinalFile
-		{ sentinalFile = sentinalfile
-		, sentinalCacheFile = sentinalcachefile
-		}

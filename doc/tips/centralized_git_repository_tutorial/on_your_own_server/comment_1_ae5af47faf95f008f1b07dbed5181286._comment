@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="tom_clune"
+ subject="git annex using the &quot;wrong&quot; ssh socket"
+ date="2016-02-24T19:23:13Z"
+ content="""
+To avoid frequent typing of pin + RSA passcode + password,  we typically establish an ssh control master just once.   This works fine with regular git commands, but the git-annex command apparently try to create a different socket.  Even that would be ok, except that apparently it is a new socket each time we enter a command.
+
+With sufficient \"-vvvv\" we see things like:  
+
+    ...
+    debug1: Executing proxy command: exec ssh -l fred proxy.xxx.yyy direct host
+    ...
+
+(Note I have eliminated references to the actual machine names and userid's.)
+
+If the command had instead been:
+
+     exec ssh -l fred proxy.xxx.yyy direct /home/fred/.ssh/master_host:22
+
+everything would have worked fine.  In fact, we are now using:
+
+     git config remote.origin.annex-ssh-options '-S /home/fred/.ssh/master_host:22'
+
+and this eliminates the issue.    But it would be nice if git annex could somehow automatically use
+the pre-existing connection.     Is there a better way to achieve this?
+
+
+"""]]

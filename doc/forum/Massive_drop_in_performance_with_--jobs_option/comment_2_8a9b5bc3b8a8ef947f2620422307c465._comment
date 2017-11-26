@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-01-07T22:13:14Z"
+ content="""
+Version 5.20151019 is right between the two versions given, and probably
+contains the reason for the drop in performance: That version started
+checksumming files after receiving them to verify that their content is
+good.
+
+If so, this will get back the old level of performance:
+
+	git config annex.verify false
+
+If the performance problem were actually related to the new progress
+display, passing --quiet will disable that display. If you can show that
+simply passing --quiet speeds up transfers significantly somehow,
+I'd be happy to investigate further.
+
+
+----
+
+@umeboshi I don't think your comment is really related to the original question.
+If you run gets of a bunch of files in parallel, and two of the files
+have the same content, you can get this situation where a transfer of
+the content is already in progress.
+"""]]

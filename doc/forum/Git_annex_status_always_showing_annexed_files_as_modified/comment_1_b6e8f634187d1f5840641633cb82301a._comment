@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="aloukian"
+ subject="comment 1"
+ date="2015-11-06T17:33:32Z"
+ content="""
+In particular, I have set up Gpg4Win to use a smart card for ssh-ing. It provides its own sha executables that are on the path and I wonder if that is the reason that the files always show up as modified.
+"""]]

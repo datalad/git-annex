@@ -1,0 +1,45 @@
+### Please describe the problem.
+Two androids, A and B, and a computer, C. All running git annex assistant.
+If you edit a file on A while A is offline, when A is back online and reconnects, that file will disappear from C and, in B, it will be substituted by a link
+If you create a new file on A, that file will appear as a link in B and in C
+
+
+### What steps will reproduce the problem?
+- Have A, B, and C be connected sharing some repo. Create a file, file1. Let it propagate, so file1 is on A, B, C.
+
+- Take A offline (e.g., turn wifi off).
+
+- Edit file1 in A.
+
+- Create file2 in A.
+
+- (Let those files appear in the repo in A as in
+[2015-02-27 20:55:04 CET] Committer: Adding file1
+add file1 ok
+)
+
+- Turn the wifi of A on again.
+
+- Sync A from the webapp (clik on sync now)
+
+- In B (the other android) both file1 and file2 will contain just links, not the actual content of file1 and file2.
+
+- In the computer, file1 will have disappeared and file2 will be a link that points nowhere. (The link that file2 points too, as a string, are the contents of file2 in B). 
+
+
+
+### What version of git-annex are you using? On what operating system?
+Computer: 5.20141125 
+
+Androids: 5.20150226-g9c72d37 and 5.20150224-g9dca034
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]

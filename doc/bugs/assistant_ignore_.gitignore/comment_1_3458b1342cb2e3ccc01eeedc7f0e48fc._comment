@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Johannes"
- ip="153.109.130.54"
- subject="comment 1"
- date="2013-07-30T11:34:15Z"
- content="""
-Any news on this or this or any other way to exclude unwanted files? (e.g. all the temporary files created by latex)
-"""]]

@@ -1,17 +1,11 @@
 {- git-annex assistant webapp notifications
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
-
-#if defined VERSION_yesod_default
-#if ! MIN_VERSION_yesod_default(1,1,0)
-#define WITH_OLD_YESOD
-#endif
-#endif
+{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 
 module Assistant.WebApp.Notifications where
 
@@ -19,16 +13,13 @@ import Assistant.Common
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.DaemonStatus
-import Assistant.Types.Buddies
 import Utility.NotificationBroadcaster
 import Utility.Yesod
-import Utility.WebApp
+import Utility.AuthToken
 
 import Data.Text (Text)
 import qualified Data.Text as T
-#ifndef WITH_OLD_YESOD
 import qualified Data.Aeson.Types as Aeson
-#endif
 
 {- Add to any widget to make it auto-update using long polling.
  -
@@ -42,15 +33,9 @@ import qualified Data.Aeson.Types as Aeson
  -}
 autoUpdate :: Text -> Route WebApp -> Int -> Int -> Widget
 autoUpdate tident geturl ms_delay ms_startdelay = do
-#ifdef WITH_OLD_YESOD
-	let delay = show ms_delay
-	let startdelay = show ms_startdelay
-	let ident = "'" ++ T.unpack tident ++ "'"
-#else
 	let delay = Aeson.String (T.pack (show ms_delay))
 	let startdelay = Aeson.String (T.pack (show ms_startdelay))
 	let ident = Aeson.String tident
-#endif
 	$(widgetFile "notifications/longpolling")
 
 {- Notifier urls are requested by the javascript, to avoid allocation
@@ -74,9 +59,6 @@ getNotifierTransfersR = notifierUrl TransfersR getTransferBroadcaster
 getNotifierSideBarR :: Handler RepPlain
 getNotifierSideBarR = notifierUrl SideBarR getAlertBroadcaster
 
-getNotifierBuddyListR :: Handler RepPlain
-getNotifierBuddyListR = notifierUrl BuddyListR getBuddyListBroadcaster
-
 getNotifierRepoListR :: RepoSelector -> Handler RepPlain
 getNotifierRepoListR reposelector = notifierUrl route getRepoListBroadcaster
   where
@@ -90,9 +72,6 @@ getTransferBroadcaster = transferNotifier <$> getDaemonStatus
 
 getAlertBroadcaster :: Assistant NotificationBroadcaster
 getAlertBroadcaster = alertNotifier <$> getDaemonStatus
-
-getBuddyListBroadcaster :: Assistant NotificationBroadcaster
-getBuddyListBroadcaster =  getBuddyBroadcaster <$> getAssistant buddyList
 
 getRepoListBroadcaster :: Assistant NotificationBroadcaster
 getRepoListBroadcaster =  syncRemotesNotifier <$> getDaemonStatus

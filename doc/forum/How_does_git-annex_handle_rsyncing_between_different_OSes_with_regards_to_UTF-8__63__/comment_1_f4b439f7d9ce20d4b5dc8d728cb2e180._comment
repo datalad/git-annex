@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-11-10T19:19:47Z"
+ content="""
+Both git and git-annex both treat filenames as strings of bytes, with no
+particular encoding, to the extent supported by the OS[1]. This may result
+in a checkout of git repository having filenames that don't display well on
+a different system.
+
+[1] Of course any reasonable Unix treats filenames like that too.. but
+Windows only supports unicode filenames.
+"""]]

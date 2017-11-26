@@ -1,0 +1,11 @@
+Hi,
+
+Our need is to create a JAVA application under Windows that manages programmatically the synchronisation of a local directory structure from a remote directory on a Linux machine:
+- locally the user may choose the content of the remote directory to synchronise
+- then the application is able to synchronize ths content on demand or on a regular basis
+
+Can git-annex + git a soluton that answer those requirements ?
+Does git-annex expose an API callable from JAVA ?
+
+Thank you in advance,
+Regards

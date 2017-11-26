@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="xloem"
+ subject="comment 2"
+ date="2016-10-09T12:13:38Z"
+ content="""
+I'm still running into this issue.  Although it is true that users can manually exhaust space, they are in control of what is happening, get more feedback, and there is no automatic process that will continue to fail further when the space is exhausted.
+
+I do not use the assistant because of its frequent syncing causing complete space exhaustion, and then its inability to recover because it cannot write temporary or log files.  Occasionally I have accidentally committed huge files directly to git, and this has also caused the issue.
+
+I think it would be really great if git annex prevented this workflow-halting event at least by refusing to pull/commit/etc if reserved space is not met unless --force is passed.  Additionally, it would really be great if actions that result in space exhaustion (fail, and then free space == 0) cleaned up their temporary files after the fact, certainly before trying to log anything.
+
+"""]]

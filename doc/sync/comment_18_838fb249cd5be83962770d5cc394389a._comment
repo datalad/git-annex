@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 18"""
+ date="2015-02-04T19:12:23Z"
+ content="""
+If a remote has "remote.<name>.annex-sync" set to false in the git
+config, `git-annex sync` will skip that remote unless you specify the name.
+That's probably what's going on in your case.
+"""]]

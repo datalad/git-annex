@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2015-07-06T18:58:17Z"
+ content="""
+Take a look at what git branch is checked out in your repository on the PC.
+It might have, eg, an old version of the "master" branch checked out,
+from before when the files were added.
+
+Checking out the right branch will get you your files visible.
+
+You might need to run `git annex sync` on the PC to pull in changes
+from the laptop.
+"""]]

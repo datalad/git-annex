@@ -1,0 +1,38 @@
+# NAME
+
+git-annex reinit - initialize repository, reusing old UUID
+
+# SYNOPSIS
+
+git annex reinit `uuid|description`
+
+# DESCRIPTION
+
+Normally, initializing a repository generates a new, unique identifier
+(UUID) for that repository. Occasionally it may be useful to reuse a
+UUID -- for example, if a repository got deleted, and you're
+setting it back up.
+
+Use this with caution; it can be confusing to have two existing
+repositories with the same UUID. 
+
+Make sure you run `git annex fsck` after changing the UUID of a
+repository to make sure location tracking information is recorded
+correctly.
+
+Like `git annex init`, this attempts to enable any special remotes
+that are configured with autoenable=true.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-init]](1)
+
+[[git-annex-fsck]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

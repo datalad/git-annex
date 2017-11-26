@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="IgorGanapolsky"
+ avatar="http://cdn.libravatar.org/avatar/6bc0985e3dedceb150f08ad6456c84b2"
+ subject="Cannot install c2hs"
+ date="2016-10-24T18:05:51Z"
+ content="""
+When I run the following command: **cabal install c2hs --bindir=$HOME/bin**
+
+I get the following error:
+
+Error: some packages failed to install: c2hs-0.28.1 depends on language-c-0.5.0 which failed to install. language-c-0.5.0 failed during the configure step. The exception was: ExitFailure 1
+"""]]

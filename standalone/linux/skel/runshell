@@ -26,59 +26,83 @@ cd "$base"
 base="$(pwd)"
 cd "$orig"
 
-# Install shim that's used to run git-annex-shell from ssh authorized_keys.
-# The assistant also does this when run, but the user may not be using the
-# assistant.
-if [ ! -e "$HOME/.ssh/git-annex-shell" ]; then
-	mkdir "$HOME/.ssh" >/dev/null 2>&1 || true
-	(
-		echo "#!/bin/sh"
-		echo "set -e"
-		echo "if [ \"x\$SSH_ORIGINAL_COMMAND\" != \"x\" ]; then"
-		echo "exec $base/runshell git-annex-shell -c \"\$SSH_ORIGINAL_COMMAND\""
-		echo "else"
-		echo "exec $base/runshell git-annex-shell -c \"\$@\""
-		echo "fi"
-	) > "$HOME/.ssh/git-annex-shell"
-	chmod +x "$HOME/.ssh/git-annex-shell"
+# --library-path won't work if $base contains : or ;
+# Detect this problem, and work around it by using a temp directory.
+if echo "$base" | grep -q '[:;]'; then
+	tbase=$(mktemp -d -p /tmp annexshimXXXXXXXXX 2>/dev/null || true)
+	if [ -z "$tbase" ]; then
+		tbase="/tmp/annexshim.$$"
+		mkdir "$tbase"
+	fi
+	ln -s "$base" "$tbase/link"
+	base="$tbase/link"
+	cleanuptbase () {
+		rm -rf "$tbase"
+	}
+	trap cleanuptbase EXIT
 fi
 
-# And this shim is used by the webapp when adding a remote ssh server.
-if [ ! -e "$HOME/.ssh/git-annex-wrapper" ]; then
-	mkdir "$HOME/.ssh" >/dev/null 2>&1 || true
-	(
-		echo "#!/bin/sh"
-		echo "set -e"
-		echo "exec $base/runshell \"\$@\""
-	) > "$HOME/.ssh/git-annex-wrapper"
-	chmod +x "$HOME/.ssh/git-annex-wrapper"
+# Set this variable when using this script inside a package of git-annex,
+# which arranges for git-annex, git-annex-shell, and git to all be in the
+# standard PATH.
+GIT_ANNEX_PACKAGE_INSTALL=
+if [ -z "$GIT_ANNEX_PACKAGE_INSTALL" ]; then
+	# Install shim that's used to run git-annex-shell from ssh authorized
+	# keys. The assistant also does this when run, but the user may not
+	# be using the assistant.
+	if [ ! -e "$HOME/.ssh/git-annex-shell" ]; then
+		mkdir "$HOME/.ssh" >/dev/null 2>&1 || true
+		if [ -e "$HOME/.ssh" ]; then
+			(
+				echo "#!/bin/sh"
+				echo "set -e"
+				echo "if [ \"x\$SSH_ORIGINAL_COMMAND\" != \"x\" ]; then"
+				echo "exec '$base/runshell' git-annex-shell -c \"\$SSH_ORIGINAL_COMMAND\""
+				echo "else"
+				echo "exec '$base/runshell' git-annex-shell -c \"\$@\""
+				echo "fi"
+			) > "$HOME/.ssh/git-annex-shell"
+			chmod +x "$HOME/.ssh/git-annex-shell"
+		fi
+	fi
+
+	# And this shim is used by the webapp when adding a remote ssh server.
+	if [ ! -e "$HOME/.ssh/git-annex-wrapper" ]; then
+		mkdir "$HOME/.ssh" >/dev/null 2>&1 || true
+		if [ -e "$HOME/.ssh" ]; then
+			(
+				echo "#!/bin/sh"
+				echo "set -e"
+				echo "exec '$base/runshell' \"\$@\""
+			) > "$HOME/.ssh/git-annex-wrapper"
+			chmod +x "$HOME/.ssh/git-annex-wrapper"
+		fi
+	fi
 fi
 
-# Put our binaries first, to avoid issues with out of date or incompatable
-# system binaries.
+# Put our binaries first, to avoid issues with out of date or incompatible
+# system binaries. Extra binaries come after system path.
 ORIG_PATH="$PATH"
 export ORIG_PATH
-PATH=$base/bin:$PATH
+PATH="$base/bin:$PATH:$base/extra"
 export PATH
 
-# This is used by the shim wrapper around each binary.
-for lib in $(cat $base/libdirs); do
+# These env vars are used by the shim wrapper around each binary.
+for lib in $(cat "$base/libdirs"); do
 	GIT_ANNEX_LD_LIBRARY_PATH="$base/$lib:$GIT_ANNEX_LD_LIBRARY_PATH"
 done
 export GIT_ANNEX_LD_LIBRARY_PATH
-GIT_ANNEX_LINKER="$base/$(cat $base/linker)"
-export GIT_ANNEX_LINKER
-GIT_ANNEX_SHIMMED="$base/shimmed"
-export GIT_ANNEX_SHIMMED
+GIT_ANNEX_DIR="$base"
+export GIT_ANNEX_DIR
 
 ORIG_GCONV_PATH="$GCONV_PATH"
 export ORIG_GCONV_PATH
-GCONV_PATH=$base/$(cat $base/gconvdir)
+GCONV_PATH="$base/$(cat "$base/gconvdir")"
 export GCONV_PATH
 
 ORIG_GIT_EXEC_PATH="$GIT_EXEC_PATH"
 export ORIG_GIT_EXEC_PATH
-GIT_EXEC_PATH=$base/git-core
+GIT_EXEC_PATH="$base/git-core"
 export GIT_EXEC_PATH
 
 ORIG_GIT_TEMPLATE_DIR="$GIT_TEMPLATE_DIR"
@@ -91,15 +115,53 @@ export ORIG_MANPATH
 MANPATH="$base/usr/share/man:$MANPATH"
 export MANPATH
 
+# Avoid using system locales, which may interact badly with bundled libc.
+ORIG_LOCPATH="$LOCPATH"
+export ORIG_LOCPATH
+LOCPATH="$base/locales"
+export LOCPATH
+
+# Generate locale definition files for the locales in use,
+# using the localedef and locale files from the bundle.
+# Currently only utf-8 locales are handled.
+lastlocaleenv=""
+for localeenv in "$LANG" "$LANGUAGE" "$LC_CTYPE" "$LC_NUMERIC" "$LC_TIME" \
+		"$LC_COLLATE" "$LC_MONETARY" "$LC_MESSAGES" "$LC_PAPER" \
+		"$LC_NAME" "$LC_ADDRESS" "$LC_TELEPHONE" "$LC_MEASUREMENT" \
+		"$LC_IDENTIFICATION" "$LC_ALL"; do
+	if [ "$localeenv" != "$lastlocaleenv" ]; then
+		lastlocaleenv="$localeenv"
+		if [ ! -d "$base/locales/$localeenv" ]; then
+			if [ "${localeenv##[!.]*.}" = "utf8" ] || [ "${localeenv##[!.]*.}" = "UTF-8" ]; then
+				(
+					rm -rf "$base/locales/$localeenv.new.$$" &&
+					mkdir -p "$base/locales/$localeenv.new.$$" &&
+					# cd to $base since localedef reads files from pwd
+					cd "$base" &&
+					# Run localedef using the bundled i18n files;
+					# use LANG=C to avoid it reading the system locale archive.
+					I18NPATH="$base/i18n" LANG=C localedef -i "${localeenv%%.*}" -c -f UTF-8 "$base/locales/$localeenv.new.$$" &&
+					mv "$base/locales/$localeenv.new.$$" "$base/locales/$localeenv"
+				) >/dev/null 2>/dev/null || true
+			fi
+		fi
+	fi
+done
+
 # Indicate which variables were exported above and should be cleaned
 # when running non-bundled programs.
-GIT_ANNEX_STANDLONE_ENV="PATH GCONV_PATH GIT_EXEC_PATH GIT_TEMPLATE_DIR MANPATH"
+GIT_ANNEX_STANDLONE_ENV="PATH GCONV_PATH GIT_EXEC_PATH GIT_TEMPLATE_DIR MANPATH LOCPATH"
 export GIT_ANNEX_STANDLONE_ENV
 
 if [ "$1" ]; then
 	cmd="$1"
 	shift 1
-	exec "$cmd" "$@"
+	if [ -z "$tbase" ]; then
+		exec "$cmd" "$@"
+	else
+		# allow EXIT trap to cleanup
+		"$cmd" "$@"
+	fi
 else
 	sh
 fi

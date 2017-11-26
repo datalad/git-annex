@@ -1,0 +1,6 @@
+I'm trying to migrate from dropbox to git-annex. But I'm learning that git-annex has "limitations", as in
+"but it can be used to sync files such a way, with certain limitations". So what exactly are these limitations? I've learned already the hard way that newline can't be a character in a filename, and apparently git directories can't be synced?
+
+These are two  big issues imo (especiall the second one) - right now I don't have any filenames with newlines, and no git directories, but the brilliant thing about dropbox is that I don't have to think about such things, everything gets synced.
+
+But in any case, if I'm to use git-annex as a dropbox replacement, I really need to know what precisely are its limitations, so that it doesn't become an issue in two months out of nowhere...

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="pweemeeuw@86491f921da15d6a4dc6e1878fd42750b33f6963"
+ nickname="pweemeeuw"
+ subject="Is android 6.0 supported?"
+ date="2015-11-30T16:05:13Z"
+ content="""
+I tried to install the version for android 5 on my nexus 5 with the most recent firmware. The initial sync (git clone) succeeds, the git annex stuff fails with \"remote origin does not have git-annex installed; setting annex-ignore\".
+
+I have the android 4 version working on my tablet for the same ssh remote, so I think the remote is OK.
+
+I can provide full logs of the terminal session if needed (I didn't use the assistant front end).
+
+BTW: this is great software, thanks you so very much! I hope to have it up and running on all my devices soon as a replacement for Google Drive. I happen to care about privacy.
+"""]]

@@ -1,0 +1,6 @@
+Should mention that there was a release two days ago. The main reason for
+the timing of that release is because the Linux wstandalone builds include
+glibc, which recently had a nasty security hole and had to be updated.
+
+Today, fixed a memory leak, and worked on getting caught up with backlog,
+which now stands at 112 messages.

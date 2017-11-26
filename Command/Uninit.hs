@@ -1,55 +1,55 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.Uninit where
 
-import Common.Annex
-import qualified Annex
 import Command
+import qualified Annex
 import qualified Git
 import qualified Git.Command
 import qualified Command.Unannex
 import qualified Annex.Branch
+import qualified Database.Keys
 import Annex.Content
 import Annex.Init
 import Utility.FileMode
 
-import System.IO.HVFS
-import System.IO.HVFS.Utils
-
-cmd :: [Command]
-cmd = [addCheck check $ command "uninit" paramPaths seek 
-	SectionUtility "de-initialize git-annex and clean out repository"]
+cmd :: Command
+cmd = addCheck check $ 
+	command "uninit" SectionUtility
+		"de-initialize git-annex and clean out repository"
+		paramPaths (withParams seek)
 
 check :: Annex ()
 check = do
 	b <- current_branch
-	when (b == Annex.Branch.name) $ error $
+	when (b == Annex.Branch.name) $ giveup $
 		"cannot uninit when the " ++ Git.fromRef b ++ " branch is checked out"
 	top <- fromRepo Git.repoPath
 	currdir <- liftIO getCurrentDirectory
 	whenM ((/=) <$> liftIO (absPath top) <*> liftIO (absPath currdir)) $
-		error "can only run uninit from the top of the git repository"
+		giveup "can only run uninit from the top of the git repository"
   where
 	current_branch = Git.Ref . Prelude.head . lines <$> revhead
 	revhead = inRepo $ Git.Command.pipeReadStrict
-		[Params "rev-parse --abbrev-ref HEAD"]
+		[Param "rev-parse", Param "--abbrev-ref", Param "HEAD"]
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek ps = do
-	withFilesNotInGit False (whenAnnexed startCheckIncomplete) ps
+	l <- workTreeItems ps
+	withFilesNotInGit False (whenAnnexed startCheckIncomplete) l
 	Annex.changeState $ \s -> s { Annex.fast = True }
-	withFilesInGit (whenAnnexed Command.Unannex.start) ps
+	withFilesInGit (whenAnnexed Command.Unannex.start) l
 	finish
 
 {- git annex symlinks that are not checked into git could be left by an
  - interrupted add. -}
 startCheckIncomplete :: FilePath -> Key -> CommandStart
-startCheckIncomplete file _ = error $ unlines
+startCheckIncomplete file _ = giveup $ unlines
 	[ file ++ " points to annexed content, but is not checked into git."
 	, "Perhaps this was left behind by an interrupted git annex add?"
 	, "Not continuing with uninit; either delete or git annex add the file and retry."
@@ -60,10 +60,10 @@ finish = do
 	annexdir <- fromRepo gitAnnexDir
 	annexobjectdir <- fromRepo gitAnnexObjectDir
 	leftovers <- removeUnannexed =<< getKeysPresent InAnnex
-	liftIO $ prepareRemoveAnnexDir annexdir
+	prepareRemoveAnnexDir annexdir
 	if null leftovers
 		then liftIO $ removeDirectoryRecursive annexdir
-		else error $ unlines
+		else giveup $ unlines
 			[ "Not fully uninitialized"
 			, "Some annexed data is still left in " ++ annexobjectdir
 			, "This may include deleted files, or old versions of modified files."
@@ -88,10 +88,19 @@ finish = do
 	liftIO exitSuccess
 
 {- Turn on write bits in all remaining files in the annex directory, in
- - preparation for removal. -}
-prepareRemoveAnnexDir :: FilePath -> IO ()
-prepareRemoveAnnexDir annexdir =
-	recurseDir SystemFS annexdir >>= mapM_ (void . tryIO . allowWrite)
+ - preparation for removal. 
+ -
+ - Also closes sqlite databases that might be in the directory,
+ - to avoid later failure to write any cached changes to them. -}
+prepareRemoveAnnexDir :: FilePath -> Annex ()
+prepareRemoveAnnexDir annexdir = do
+	Database.Keys.closeDb
+	liftIO $ prepareRemoveAnnexDir' annexdir
+
+prepareRemoveAnnexDir' :: FilePath -> IO ()
+prepareRemoveAnnexDir' annexdir =
+	dirTreeRecursiveSkipping (const False) annexdir 
+		>>= mapM_ (void . tryIO . allowWrite)
 
 {- Keys that were moved out of the annex have a hard link still in the
  - annex, with > 1 link count, and those can be removed.
@@ -103,7 +112,7 @@ removeUnannexed = go []
 	go c [] = return c
 	go c (k:ks) = ifM (inAnnexCheck k $ liftIO . enoughlinks)
 		( do
-			lockContent k removeAnnex
+			lockContentForRemoval k removeAnnex
 			go c ks
 		, go (k:c) ks
 		)

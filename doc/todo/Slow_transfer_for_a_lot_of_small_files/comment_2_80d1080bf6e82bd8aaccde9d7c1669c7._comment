@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~krastanov-stefan"
+ nickname="krastanov-stefan"
+ subject="Status of this issue"
+ date="2014-12-27T15:18:42Z"
+ content="""
+I was unable to find a way to tell git-annex that certain remotes should receive multiple transfers in parallel. Is this implemented yet or on the roadmap? If neither would modifying the webapp to bear this logic without touching git-annex itself be a solution (asking mainly because it can be done with a greasemonkey script)? 
+"""]]

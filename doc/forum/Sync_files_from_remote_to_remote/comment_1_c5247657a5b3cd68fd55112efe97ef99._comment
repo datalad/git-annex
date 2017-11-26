@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/e65e6d0e-58ba-41de-84cc-1f2ba54cf574"
+ nickname="Mica Semrick"
+ subject="assistant or cron"
+ date="2015-01-11T04:00:04Z"
+ content="""
+I'd either (1) run the assistant on your server or (2) write a simple cron script that runs git-annex sync --content on the server.
+"""]]

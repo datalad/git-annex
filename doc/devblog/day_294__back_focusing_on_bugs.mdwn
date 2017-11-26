@@ -1,0 +1,7 @@
+Back, and have spent all day focusing on new bug reports. All told, I fixed
+4 bugs, followed up on all other bugs reported while I was away, and fixed
+the android autobuilder.
+
+The message backlog started the day at 250 or something, and is down to 178
+now. Looks like others have been following up to forum posts while I was
+away (thanks!) so those should clear quickly.

@@ -1,0 +1,39 @@
+### Please describe the problem.
+When `git-annex add`ing files with multiple dots in them, the `SHA256E`, `MD5E` (and presumably other `*E`) backends take the extension from the second-to-last dot, instead of the last dot.
+This annoyed me because I have some photographs with names like `YYYY-mm-dd HH.MM.SS.jpg`. However, it might be intentional considering a `file.tar.gz` would have `tar.gz`.
+
+### What steps will reproduce the problem?
+[[!format sh """
+$ touch a a.b a.b.c a.b.c.d
+$ git-annex add .
+add a ok
+add a.b ok
+add a.b.c ok
+add a.b.c.d ok
+$ git-annex lookupkey *
+SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.b
+SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.b.c
+SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.c.d
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+[[!format sh """
+$ git-annex version
+git-annex version: 6.20170101+gitg93d69b1-1~ndall+1
+build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository versions: 3 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+operating system: linux x86_64
+"""]]
+
+NeuroDebian's `git-annex-standalone` package on Xubuntu 16.04. (Also with a Debian sid chroot with their own `git-annex 6.20161210-1`)
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I'm trying to analyze and organize my huge `Photos` folder into a neat git-annex repository (with yet another [project of mine](https://www.github.com/alpernebbi/albumin)). It's a huge mess.
+
+Keep up the great work! Also thanks for fixing [my UTF-8 problem](https://git-annex.branchable.com/bugs/Linux_standalone__39__s_metadata_--batch_can__39__t_parse_UTF-8/) as well. 

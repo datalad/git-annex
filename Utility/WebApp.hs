@@ -1,6 +1,6 @@
 {- Yesod webapp
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -12,7 +12,7 @@ module Utility.WebApp where
 import Common
 import Utility.Tmp
 import Utility.FileMode
-import Utility.Hash
+import Utility.AuthToken
 
 import qualified Yesod
 import qualified Network.Wai as Wai
@@ -23,7 +23,6 @@ import qualified Data.CaseInsensitive as CI
 import Network.Socket
 import "crypto-api" Crypto.Random
 import qualified Web.ClientSession as CS
-import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as B
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -31,10 +30,6 @@ import Blaze.ByteString.Builder.Char.Utf8 (fromText)
 import Blaze.ByteString.Builder (Builder)
 import Control.Arrow ((***))
 import Control.Concurrent
-#ifdef WITH_WEBAPP_SECURE
-import Data.SecureMem
-import Data.Byteable
-#endif
 #ifdef __ANDROID__
 import Data.Endian
 #endif
@@ -77,11 +72,7 @@ runWebApp tlssettings h app observer = withSocketsDo $ do
 	sockaddr <- fixSockAddr <$> getSocketName sock
 	observer sockaddr
   where
-#ifdef WITH_WEBAPP_SECURE
 	go = (maybe runSettingsSocket (\ts -> runTLSSocket ts) tlssettings)
-#else
-	go = runSettingsSocket
-#endif
 
 fixSockAddr :: SockAddr -> SockAddr
 #ifdef __ANDROID__
@@ -93,12 +84,7 @@ fixSockAddr addr = addr
 
 -- disable buggy sloworis attack prevention code
 webAppSettings :: Settings
-
-#if MIN_VERSION_warp(2,1,0)
 webAppSettings = setTimeout halfhour defaultSettings
-#else
-webAppSettings = defaultSettings { settingsTimeout = halfhour }
-#endif
   where
 	halfhour = 30 * 60
 
@@ -119,7 +105,7 @@ getSocket h = do
 	addr <- inet_addr "127.0.0.1"
 	sock <- socket AF_INET Stream defaultProtocol
 	preparesocket sock
-	bindSocket sock (SockAddrInet aNY_PORT addr)
+	bind sock (SockAddrInet aNY_PORT addr)
 	use sock
   where
 #else
@@ -137,12 +123,12 @@ getSocket h = do
 	go' :: Int -> AddrInfo -> IO Socket
 	go' 0 _ = error "unable to bind to local socket"
 	go' n addr = do
-		r <- tryIO $ bracketOnError (open addr) sClose (useaddr addr)
+		r <- tryIO $ bracketOnError (open addr) close (useaddr addr)
 		either (const $ go' (pred n) addr) return r
 	open addr = socket (addrFamily addr) (addrSocketType addr) (addrProtocol addr)
 	useaddr addr sock = do
 		preparesocket sock
-		bindSocket sock (addrAddress addr)
+		bind sock (addrAddress addr)
 		use sock
 #endif
 	preparesocket sock = setSocketOption sock ReuseAddr 1
@@ -155,11 +141,7 @@ lookupRequestField k req = fromMaybe "" . lookup k $ Wai.requestHeaders req
 
 {- Rather than storing a session key on disk, use a random key
  - that will only be valid for this run of the webapp. -}
-#if MIN_VERSION_yesod(1,2,0)
 webAppSessionBackend :: Yesod.Yesod y => y -> IO (Maybe Yesod.SessionBackend)
-#else
-webAppSessionBackend :: Yesod.Yesod y => y -> IO (Maybe (Yesod.SessionBackend y))
-#endif
 webAppSessionBackend _ = do
 	g <- newGenIO :: IO SystemRandom
 	case genBytes 96 g of
@@ -170,67 +152,28 @@ webAppSessionBackend _ = do
   where
 	timeout = 120 * 60 -- 120 minutes
 	use key =
-#if MIN_VERSION_yesod(1,2,0)
 		Just . Yesod.clientSessionBackend key . fst
 			<$> Yesod.clientSessionDateCacher timeout
-#else
-#if MIN_VERSION_yesod(1,1,7)
-		Just . Yesod.clientSessionBackend2 key . fst
-			<$> Yesod.clientSessionDateCacher timeout
-#else
-		return $ Just $
-			Yesod.clientSessionBackend key timeout
-#endif
-#endif
-
-#ifdef WITH_WEBAPP_SECURE
-type AuthToken = SecureMem
-#else
-type AuthToken = T.Text
-#endif
-
-toAuthToken :: T.Text -> AuthToken
-#ifdef WITH_WEBAPP_SECURE
-toAuthToken = secureMemFromByteString . TE.encodeUtf8
-#else
-toAuthToken = id
-#endif
-
-fromAuthToken :: AuthToken -> T.Text
-#ifdef WITH_WEBAPP_SECURE
-fromAuthToken = TE.decodeLatin1 . toBytes
-#else
-fromAuthToken = id
-#endif
-
-{- Generates a random sha512 string, encapsulated in a SecureMem,
- - suitable to be used for an authentication secret. -}
-genAuthToken :: IO AuthToken
-genAuthToken = do
-	g <- newGenIO :: IO SystemRandom
-	return $
-		case genBytes 512 g of
-			Left e -> error $ "failed to generate auth token: " ++ show e
-			Right (s, _) -> toAuthToken $ T.pack $ show $ sha512 $ L.fromChunks [s]
 
 {- A Yesod isAuthorized method, which checks the auth cgi parameter
  - against a token extracted from the Yesod application.
  -
  - Note that the usual Yesod error page is bypassed on error, to avoid
  - possibly leaking the auth token in urls on that page!
+ -
+ - If the predicate does not match the route, the auth parameter is not
+ - needed.
  -}
-#if MIN_VERSION_yesod(1,2,0)
-checkAuthToken :: (Monad m, Yesod.MonadHandler m) => (Yesod.HandlerSite m -> AuthToken) -> m Yesod.AuthResult
-#else
-checkAuthToken :: forall t sub. (t -> AuthToken) -> Yesod.GHandler sub t Yesod.AuthResult
-#endif
-checkAuthToken extractAuthToken = do
-	webapp <- Yesod.getYesod
-	req <- Yesod.getRequest
-	let params = Yesod.reqGetParams req
-	if (toAuthToken <$> lookup "auth" params) == Just (extractAuthToken webapp)
-		then return Yesod.Authorized
-		else Yesod.sendResponseStatus unauthorized401 ()
+checkAuthToken :: Yesod.MonadHandler m => Yesod.RenderRoute site => (Yesod.HandlerSite m -> AuthToken) -> Yesod.Route site -> ([T.Text] -> Bool) -> m Yesod.AuthResult
+checkAuthToken extractAuthToken r predicate
+	| not (predicate (fst (Yesod.renderRoute r))) = return Yesod.Authorized
+	| otherwise = do
+		webapp <- Yesod.getYesod
+		req <- Yesod.getRequest
+		let params = Yesod.reqGetParams req
+		if (toAuthToken =<< lookup "auth" params) == Just (extractAuthToken webapp)
+			then return Yesod.Authorized
+			else Yesod.sendResponseStatus unauthorized401 ()
 
 {- A Yesod joinPath method, which adds an auth cgi parameter to every
  - url matching a predicate, containing a token extracted from the

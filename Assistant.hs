@@ -1,6 +1,6 @@
 {- git-annex assistant daemon
  -
- - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -18,6 +18,7 @@ import Assistant.Threads.DaemonStatus
 import Assistant.Threads.Watcher
 import Assistant.Threads.Committer
 import Assistant.Threads.Pusher
+import Assistant.Threads.Exporter
 import Assistant.Threads.Merger
 import Assistant.Threads.TransferWatcher
 import Assistant.Threads.Transferrer
@@ -25,7 +26,7 @@ import Assistant.Threads.RemoteControl
 import Assistant.Threads.SanityChecker
 import Assistant.Threads.Cronner
 import Assistant.Threads.ProblemFixer
-#ifdef WITH_CLIBS
+#ifndef mingw32_HOST_OS
 import Assistant.Threads.MountWatcher
 #endif
 import Assistant.Threads.NetWatcher
@@ -41,10 +42,6 @@ import Assistant.Threads.WebApp
 #ifdef WITH_PAIRING
 import Assistant.Threads.PairListener
 #endif
-#ifdef WITH_XMPP
-import Assistant.Threads.XMPPClient
-import Assistant.Threads.XMPPPusher
-#endif
 #else
 import Assistant.Types.UrlRenderer
 #endif
@@ -56,7 +53,7 @@ import Annex.Perms
 import Utility.LogFile
 #ifdef mingw32_HOST_OS
 import Utility.Env
-import Config.Files
+import Annex.Path
 import System.Environment (getArgs)
 #endif
 
@@ -73,6 +70,7 @@ stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile
  - stdout and stderr descriptors. -}
 startDaemon :: Bool -> Bool -> Maybe Duration -> Maybe String -> Maybe HostName ->  Maybe (Maybe Handle -> Maybe Handle -> String -> FilePath -> IO ()) -> Annex ()
 startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = do
+	
 	Annex.changeState $ \s -> s { Annex.daemon = True }
 	pidfile <- fromRepo gitAnnexPidFile
 	logfile <- fromRepo gitAnnexLogFile
@@ -103,7 +101,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 			( liftIO $ withFile devNull WriteMode $ \nullh -> do
 				loghandle <- openLog logfile
 				e <- getEnvironment
-				cmd <- readProgramFile
+				cmd <- programPath
 				ps <- getArgs
 				(_, _, _, pid) <- createProcess (proc cmd ps)
 					{ env = Just (addEntry flag "1" e)
@@ -152,14 +150,11 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 #ifdef WITH_PAIRING
 				, assist $ pairListenerThread urlrenderer
 #endif
-#ifdef WITH_XMPP
-				, assist $ xmppClientThread urlrenderer
-				, assist $ xmppSendPackThread urlrenderer
-				, assist $ xmppReceivePackThread urlrenderer
-#endif
 #endif
 				, assist pushThread
 				, assist pushRetryThread
+				, assist exportThread
+				, assist exportRetryThread
 				, assist mergeThread
 				, assist transferWatcherThread
 				, assist transferPollerThread
@@ -169,7 +164,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 				, assist $ sanityCheckerDailyThread urlrenderer
 				, assist sanityCheckerHourlyThread
 				, assist $ problemFixerThread urlrenderer
-#ifdef WITH_CLIBS
+#ifndef mingw32_HOST_OS
 				, assist $ mountWatcherThread urlrenderer
 #endif
 				, assist netWatcherThread

@@ -1,0 +1,10 @@
+Hi,
+
+I went through the documentation but could not find a clear statement about central repositories (or I did not understand it).
+
+I plan to use a central server to store and sync documents from my local PC and my laptop. I do not trust this server so I want to use gcrypt to only save encrypted information remote. The server provides git and rsync access but does not have git-annex installed. My main source of information is: [fully encrypted git repositories with gcrypt](https://git-annex.branchable.com/tips/fully_encrypted_git_repositories_with_gcrypt/). On that page is a hint that you can use a server without git-annex but I am not sure if I really understand the documentation as the [centralized git repository tutorial](https://git-annex.branchable.com/tips/centralized_git_repository_tutorial/on_your_own_server/) states you need git-annex on the centralized server.
+
+Is there an option to use a centralized git repository without git-annex installed on the central server?
+
+Thank you very much and kind regards,
+Frank

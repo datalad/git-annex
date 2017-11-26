@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-08-19T16:12:12Z"
+ content="""
+From the rsync man page that the error directs you to:
+
+> rsync occasionally produces error messages that may seem a little cryp‐
+> tic. The one that seems to cause the most confusion is  "protocol  ver‐
+> sion mismatch -- is your shell clean?".
+
+> This  message is usually caused by your startup scripts or remote shell
+> facility producing unwanted garbage on the stream that rsync  is  using
+> for  its  transport.  The  way  to diagnose this problem is to run your
+> remote shell like this:
+
+>        ssh remotehost /bin/true > out.dat
+
+
+> then look at out.dat. If everything is working correctly  then  out.dat
+> should  be  a zero length file. If you are getting the above error from
+> rsync then you will probably find that out.dat contains  some  text  or
+> data.  Look  at  the contents and try to work out what is producing it.
+> The most common cause is incorrectly configured shell  startup  scripts
+> (such  as  .cshrc  or  .profile)  that  contain  output  statements for
+> non-interactive logins.
+
+"""]]

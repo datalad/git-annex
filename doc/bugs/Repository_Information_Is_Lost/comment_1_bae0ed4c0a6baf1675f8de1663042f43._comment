@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.244"
- subject="comment 1"
- date="2014-04-07T19:24:12Z"
- content="""
-Have you run `git-annex repair` or used the assistant to repair this repository? This can result in data going missing until the repository is able to pull the data from one of its remotes.
-"""]]

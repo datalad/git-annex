@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="Gus"
+ avatar="http://cdn.libravatar.org/avatar/665626c67ab3ee7e842183f6f659e120"
+ subject="Add more information"
+ date="2016-10-27T12:05:39Z"
+ content="""
+I looked up more information, and this is getting strange. I verified the time of last change for the \"FAT link\" files in my indirect repository. **All** of them say 2016-03-13 11:43:55.3, including the two files that, `git log` says were last manipulated in August 9, and reside in a different area of the repository.
+
+Here is my `git log` has to say about this particular moment:
+
+    commit 2fe1a5834031838563acda9cbdb33ca4c13ec413
+    Date:   Sun Mar 13 11:43:34 2016 +0000
+    
+        git-annex in Toshiba USB HDD
+
+I wish these logs were more descriptive. :-/ If it said the hostname, $PWD and the command line, I could follow along.
+"""]]

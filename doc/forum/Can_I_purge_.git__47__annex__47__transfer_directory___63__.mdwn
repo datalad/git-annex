@@ -1,0 +1,11 @@
+Hello.
+
+There is a git-annex repository managing about 172.000 annexed files (plus a number of small regular files in git history), for a total of about 1.7TB. At filesystem level, `find` reports about 924.000 entries (directories, files, symlinks).
+
+Inspecting it I see that `.git/annex/transfer` containes over 86000 entries (mostly files).
+
+I tried to find more information about it and only https://git-annex.branchable.com/design/assistant/syncing/ seemed to provide some information but not enough.
+
+Are they needed permanently? Can I just delete `.git/annex/transfer` without damage?
+
+Thanks.

@@ -1,6 +1,6 @@
 {- git-annex "URL" backend -- keys whose content is available from urls.
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,9 +10,9 @@ module Backend.URL (
 	fromUrl
 ) where
 
-import Common.Annex
-import Types.Backend
+import Annex.Common
 import Types.Key
+import Types.Backend
 import Backend.Utilities
 
 backends :: [Backend]
@@ -20,9 +20,9 @@ backends = [backend]
 
 backend :: Backend
 backend = Backend
-	{ name = "URL"
+	{ backendVariety = URLKey
 	, getKey = const $ return Nothing
-	, fsckKey = Nothing
+	, verifyKeyContent = Nothing
 	, canUpgradeKey = Nothing
 	, fastMigrate = Nothing
 	-- The content of an url can change at any time, so URL keys are
@@ -31,11 +31,9 @@ backend = Backend
 	}
 
 {- Every unique url has a corresponding key. -}
-fromUrl :: String -> Maybe Integer -> Annex Key
-fromUrl url size = do
-	n <- genKeyName url
-	return $ stubKey
-		{ keyName = n
-		, keyBackendName = "URL"
-		, keySize = size
-		}
+fromUrl :: String -> Maybe Integer -> Key
+fromUrl url size = stubKey
+	{ keyName = genKeyName url
+	, keyVariety = URLKey
+	, keySize = size
+	}

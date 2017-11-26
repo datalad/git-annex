@@ -1,3 +1,5 @@
+[[!meta title="hard links not synced"]]
+
 ### Please describe the problem.
 
 Direct mode repositories seem to initially ignore hard linked files and then when changes are done to them sync them as separate files. However, changes to one file are only propagated to that file and not to any of the others that are hardlinked to it.

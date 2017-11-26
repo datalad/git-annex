@@ -1,46 +1,48 @@
 {- git-annex command
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.Migrate where
 
-import Common.Annex
 import Command
 import Backend
-import qualified Types.Key
 import Types.Backend (canUpgradeKey, fastMigrate)
 import Types.KeySource
 import Annex.Content
 import qualified Command.ReKey
 import qualified Command.Fsck
+import qualified Annex
+import Logs.MetaData
+import Logs.Web
+import qualified Remote
 
-cmd :: [Command]
-cmd = [notDirect $ 
-	command "migrate" paramPaths seek
-		SectionUtility "switch data to different backend"]
+cmd :: Command
+cmd = notDirect $ withGlobalOptions annexedMatchingOptions $
+	command "migrate" SectionUtility 
+		"switch data to different backend"
+		paramPaths (withParams seek)
 
-seek :: CommandSeek
-seek = withFilesInGit $ whenAnnexed start
+seek :: CmdParams -> CommandSeek
+seek ps = withFilesInGit (whenAnnexed start) =<< workTreeItems ps
 
 start :: FilePath -> Key -> CommandStart
 start file key = do
+	forced <- Annex.getState Annex.force
 	v <- Backend.getBackend file key
 	case v of
 		Nothing -> stop
 		Just oldbackend -> do
 			exists <- inAnnex key
-			newbackend <- choosebackend =<< chooseBackend file
-			if (newbackend /= oldbackend || upgradableKey oldbackend key) && exists
+			newbackend <- maybe defaultBackend return 
+				=<< chooseBackend file
+			if (newbackend /= oldbackend || upgradableKey oldbackend key || forced) && exists
 				then do
 					showStart "migrate" file
 					next $ perform file key oldbackend newbackend
 				else stop
-  where
-	choosebackend Nothing = Prelude.head <$> orderedList
-	choosebackend (Just backend) = return backend
 
 {- Checks if a key is upgradable to a newer representation.
  - 
@@ -49,7 +51,7 @@ start file key = do
  -  - Something has changed in the backend, such as a bug fix.
  -}
 upgradableKey :: Backend -> Key -> Bool
-upgradableKey backend key = isNothing (Types.Key.keySize key) || backendupgradable
+upgradableKey backend key = isNothing (keySize key) || backendupgradable
   where
 	backendupgradable = maybe False (\a -> a key) (canUpgradeKey backend)
 
@@ -69,10 +71,20 @@ perform file oldkey oldbackend newbackend = go =<< genkey
 	go (Just (newkey, knowngoodcontent))
 		| knowngoodcontent = finish newkey
 		| otherwise = stopUnless checkcontent $ finish newkey
-	checkcontent = Command.Fsck.checkBackend oldbackend oldkey $ Just file
-	finish newkey = stopUnless (Command.ReKey.linkKey oldkey newkey) $
-		next $ Command.ReKey.cleanup file oldkey newkey
-	genkey = case maybe Nothing (\fm -> fm oldkey newbackend) (fastMigrate oldbackend) of
+	checkcontent = Command.Fsck.checkBackend oldbackend oldkey Command.Fsck.KeyLocked afile
+	finish newkey = ifM (Command.ReKey.linkKey file oldkey newkey)
+		( do
+			_ <- copyMetaData oldkey newkey
+			-- If the old key had some associated urls, record them for
+			-- the new key as well.
+			urls <- getUrls oldkey
+			forM_ urls $ \url -> do
+				r <- Remote.claimingUrl url
+				setUrlPresent (Remote.uuid r) newkey url
+			next $ Command.ReKey.cleanup file oldkey newkey
+		, error "failed"
+		)
+	genkey = case maybe Nothing (\fm -> fm oldkey newbackend afile) (fastMigrate oldbackend) of
 		Just newkey -> return $ Just (newkey, True)
 		Nothing -> do
 			content <- calcRepo $ gitAnnexLocation oldkey
@@ -85,3 +97,4 @@ perform file oldkey oldbackend newbackend = go =<< genkey
 			return $ case v of
 				Just (newkey, _) -> Just (newkey, False)
 				_ -> Nothing
+	afile = AssociatedFile (Just file)

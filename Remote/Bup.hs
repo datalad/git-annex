@@ -1,6 +1,6 @@
 {- Using bup as a remote.
  -
- - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,10 +11,9 @@ import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Lazy.UTF8 (fromString)
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import Types.Remote
-import Types.Key
 import Types.Creds
 import qualified Git
 import qualified Git.Command
@@ -26,20 +25,23 @@ import Config.Cost
 import qualified Remote.Helper.Ssh as Ssh
 import Remote.Helper.Special
 import Remote.Helper.Messages
+import Remote.Helper.Export
 import Utility.Hash
 import Utility.UserInfo
 import Annex.UUID
+import Annex.Ssh
 import Utility.Metered
 
 type BupRepo = String
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "bup",
-	enumerate = findSpecialRemotes "buprepo",
-	generate = gen,
-	setup = bupSetup
-}
+remote = RemoteType
+	{ typename = "bup"
+	, enumerate = const (findSpecialRemotes "buprepo")
+	, generate = gen
+	, setup = bupSetup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
@@ -58,8 +60,10 @@ gen r u c gc = do
 		, retrieveKeyFile = retreiveKeyFileDummy
 		, retrieveKeyFileCheap = retrieveCheap buprepo
 		, removeKey = removeKeyDummy
+		, lockContent = Nothing
 		, checkPresent = checkPresentDummy
 		, checkPresentCheap = bupLocal buprepo
+		, exportActions = exportUnsupported
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing
@@ -74,6 +78,8 @@ gen r u c gc = do
 		, readonly = False
 		, mkUnavailable = return Nothing
 		, getInfo = return [("repo", buprepo)]
+		, claimUrl = Nothing
+		, checkUrl = Nothing
 		}
 	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ store this buprepo)
@@ -82,25 +88,25 @@ gen r u c gc = do
 		(simplyPrepare $ checkKey r bupr')
 		this
   where
-	buprepo = fromMaybe (error "missing buprepo") $ remoteAnnexBupRepo gc
+	buprepo = fromMaybe (giveup "missing buprepo") $ remoteAnnexBupRepo gc
 	specialcfg = (specialRemoteCfg c)
 		-- chunking would not improve bup
 		{ chunkConfig = NoChunks
 		}
 
-bupSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-bupSetup mu _ c = do
+bupSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+bupSetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	-- verify configuration is sane
-	let buprepo = fromMaybe (error "Specify buprepo=") $
+	let buprepo = fromMaybe (giveup "Specify buprepo=") $
 		M.lookup "buprepo" c
-	(c', _encsetup) <- encryptionSetup c
+	(c', _encsetup) <- encryptionSetup c gc
 
 	-- bup init will create the repository.
 	-- (If the repository already exists, bup init again appears safe.)
 	showAction "bup init"
-	unlessM (bup "init" buprepo []) $ error "bup init failed"
+	unlessM (bup "init" buprepo []) $ giveup "bup init failed"
 
 	storeBupUUID u buprepo
 
@@ -119,20 +125,24 @@ bup command buprepo params = do
 	showOutput -- make way for bup output
 	liftIO $ boolSystem "bup" $ bupParams command buprepo params
 
-bupSplitParams :: Remote -> BupRepo -> Key -> [CommandParam] -> Annex [CommandParam]
-bupSplitParams r buprepo k src = do
+bupSplitParams :: Remote -> BupRepo -> Key -> [CommandParam] -> [CommandParam]
+bupSplitParams r buprepo k src =
 	let os = map Param $ remoteAnnexBupSplitOptions $ gitconfig r
-	showOutput -- make way for bup output
-	return $ bupParams "split" buprepo 
+	in bupParams "split" buprepo 
 		(os ++ [Param "-q", Param "-n", Param (bupRef k)] ++ src)
 
 store :: Remote -> BupRepo -> Storer
 store r buprepo = byteStorer $ \k b p -> do
-	params <- bupSplitParams r buprepo k []
+	let params = bupSplitParams r buprepo k []
+	showOutput -- make way for bup output
 	let cmd = proc "bup" (toCommand params)
-	liftIO $ withHandle StdinHandle createProcessSuccess cmd $ \h -> do
+	quiet <- commandProgressDisabled
+	let feeder = \h -> do
 		meteredWrite p h b
 		return True
+	liftIO $ if quiet
+		then feedWithQuietOutput createProcessSuccess cmd feeder
+		else withHandle StdinHandle createProcessSuccess cmd feeder
 
 retrieve :: BupRepo -> Retriever
 retrieve buprepo = byteRetriever $ \k sink -> do
@@ -142,8 +152,8 @@ retrieve buprepo = byteRetriever $ \k sink -> do
 	liftIO (hClose h >> forceSuccessProcess p pid)
 		`after` (sink =<< liftIO (L.hGetContents h))
 
-retrieveCheap :: BupRepo -> Key -> FilePath -> Annex Bool
-retrieveCheap _ _ _ = return False
+retrieveCheap :: BupRepo -> Key -> AssociatedFile -> FilePath -> Annex Bool
+retrieveCheap _ _ _ _ = return False
 
 {- Cannot revert having stored a key in bup, but at least the data for the
  - key will be used for deltaing data of other keys stored later.
@@ -161,7 +171,7 @@ remove buprepo k = do
 		| otherwise = void $ liftIO $ catchMaybeIO $ do
 			r' <- Git.Config.read r
 			boolSystem "git" $ Git.Command.gitCommandLine params r'
-	params = [ Params "branch -q -D", Param (bupRef k) ]
+	params = [ Param "branch", Param "-q", Param "-D", Param (bupRef k) ]
 
 {- Bup does not provide a way to tell if a given dataset is present
  - in a bup repository. One way it to check if the git repository has
@@ -176,7 +186,9 @@ checkKey r bupr k
 		Git.Command.gitCommandLine params bupr
   where
 	params = 
-		[ Params "show-ref --quiet --verify"
+		[ Param "show-ref"
+		, Param "--quiet"
+		, Param "--verify"
 		, Param $ "refs/heads/" ++ bupRef k
 		]
 
@@ -188,8 +200,8 @@ storeBupUUID u buprepo = do
 		then do
 			showAction "storing uuid"
 			unlessM (onBupRemote r boolSystem "git"
-				[Params $ "config annex.uuid " ++ v]) $
-					error "ssh failed"
+				[Param "config", Param "annex.uuid", Param v]) $
+					giveup "ssh failed"
 		else liftIO $ do
 			r' <- Git.Config.read r
 			let olduuid = Git.Config.get "annex.uuid" "" r'
@@ -203,11 +215,11 @@ storeBupUUID u buprepo = do
 	v = fromUUID u
 
 onBupRemote :: Git.Repo -> (FilePath -> [CommandParam] -> IO a) -> FilePath -> [CommandParam] -> Annex a
-onBupRemote r a command params = do
+onBupRemote r runner command params = do
 	c <- Annex.getRemoteGitConfig r
-	sshparams <- Ssh.toRepo r c [Param $
-			"cd " ++ dir ++ " && " ++ unwords (command : toCommand params)]
-	liftIO $ a "ssh" sshparams
+	let remotecmd = "cd " ++ dir ++ " && " ++ unwords (command : toCommand params)
+	(sshcmd, sshparams) <- Ssh.toRepo NoConsumeStdin r c remotecmd
+	liftIO $ runner sshcmd sshparams
   where
 	path = Git.repoPath r
 	base = fromMaybe path (stripPrefix "/~/" path)
@@ -243,10 +255,10 @@ bup2GitRemote r
 	| bupLocal r = 
 		if "/" `isPrefixOf` r
 			then Git.Construct.fromAbsPath r
-			else error "please specify an absolute path"
+			else giveup "please specify an absolute path"
 	| otherwise = Git.Construct.fromUrl $ "ssh://" ++ host ++ slash dir
   where
-	bits = split ":" r
+	bits = splitc ':' r
 	host = Prelude.head bits
 	dir = intercalate ":" $ drop 1 bits
 	-- "host:~user/dir" is not supported specially by bup;
@@ -262,7 +274,7 @@ bup2GitRemote r
 bupRef :: Key -> String
 bupRef k
 	| Git.Ref.legal True shown = shown
-	| otherwise = "git-annex-" ++ show (sha256 (fromString shown))
+	| otherwise = "git-annex-" ++ show (sha2_256 (fromString shown))
   where
 	shown = key2file k
 

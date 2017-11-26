@@ -1,6 +1,6 @@
 {- git-annex assistant transfer polling thread
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,6 +9,7 @@ module Assistant.Threads.TransferPoller where
 
 import Assistant.Common
 import Assistant.DaemonStatus
+import Types.Transfer
 import Logs.Transfer
 import Utility.NotificationBroadcaster
 import qualified Assistant.Threads.TransferWatcher as TransferWatcher
@@ -36,8 +37,7 @@ transferPollerThread = namedThread "TransferPoller" $ do
 		 - temp file being used for the transfer. -}
 		| transferDirection t == Download = do
 			let f = gitAnnexTmpObjectLocation (transferKey t) g
-			sz <- liftIO $ catchMaybeIO $
-				fromIntegral . fileSize <$> getFileStatus f
+			sz <- liftIO $ catchMaybeIO $ getFileSize f
 			newsize t info sz
 		{- Uploads don't need to be polled for when the TransferWatcher
 		 - thread can track file modifications. -}

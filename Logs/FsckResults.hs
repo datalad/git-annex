@@ -1,6 +1,6 @@
 {- git-annex fsck results log files
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,7 +11,7 @@ module Logs.FsckResults (
 	clearFsckResults,
 ) where
 
-import Common.Annex
+import Annex.Common
 import Utility.Tmp
 import Git.Fsck
 import Git.Types

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnVnsqEy82M-MuS2gLri-az83wSQ6lXSrc"
+ nickname="Jean"
+ subject="comment 4"
+ date="2015-04-26T01:19:21Z"
+ content="""
+If a file is dropped while in a view, how about letting the relevant symlinks become broken until the view is refreshed?
+"""]]

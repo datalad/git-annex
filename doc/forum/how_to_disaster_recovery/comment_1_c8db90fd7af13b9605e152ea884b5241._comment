@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="jd.schroeder@0c8632a8f2bffdd4b0de05a0a3660f32acdfeeca"
+ nickname="jd.schroeder"
+ subject="comment 1"
+ date="2016-08-17T21:18:40Z"
+ content="""
+I don't use the assistant myself, so I may not be much help.
+
+Have you tried opening the terminal and running 
+
+    cd (your repository path)
+    git annex fsck
+
+it may yield more information about what's wrong.
+"""]]

@@ -1,6 +1,6 @@
 {- git-annex metadata, standard fields
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,6 +9,7 @@ module Annex.MetaData.StandardFields (
 	tagMetaField,
 	yearMetaField,
 	monthMetaField,
+	dayMetaField,
 	lastChangedField,
 	mkLastChangedField,
 	isLastChangedField
@@ -26,6 +27,9 @@ yearMetaField = mkMetaFieldUnchecked "year"
 
 monthMetaField :: MetaField
 monthMetaField = mkMetaFieldUnchecked "month"
+
+dayMetaField :: MetaField
+dayMetaField = mkMetaFieldUnchecked "day"
 
 lastChangedField :: MetaField
 lastChangedField = mkMetaFieldUnchecked lastchanged

@@ -1,0 +1,37 @@
+# NAME
+
+git-annex forget - prune git-annex branch history
+
+# SYNOPSIS
+
+git annex forget
+
+# DESCRIPTION
+
+Causes the git-annex branch to be rewritten, throwing away historical
+data about past locations of files. The resulting branch will use less
+space, but `git annex log` will not be able to show where
+files used to be located.
+
+When this rewritten branch is merged into other clones of
+the repository, `git-annex` will automatically perform the same rewriting
+to their local `git-annex` branches. So the forgetfulness will automatically
+propagate out from its starting point until all repositories running
+git-annex have forgotten their old history. (You may need to force
+git to push the branch to any git repositories not running git-annex.)
+
+# OPTIONS
+
+* `--drop-dead`
+
+  Also prune references to repositories that have been marked as dead.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/EbvxpTI_xP9Aod7Mg4cwGhgjrCrdM5s-#7c0f4"
+ subject="comment 6"
+ date="2015-09-23T17:57:43Z"
+ content="""
+so far we are not bottlenecked in CPU power, so if needed could setup some CPU-intensive rebuilding of such environments (e.g. in a docker) so we could may be even have some \"collection\" of previous environments laying around
+"""]]

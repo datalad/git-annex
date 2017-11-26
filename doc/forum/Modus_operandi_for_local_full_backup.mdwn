@@ -1,0 +1,20 @@
+Hello, 
+I've been for several hours soaking up on git annex and I don't see how to efficiently achieve the following. Your thoughts welcome.
+
+Let's say I have a computer with a main disk and a backup disk. I currently use rsnapshot to rsync from main to backup and take periodic snapshots. Once the backup disk is filled up I archive it and I start with a fresh one.
+
+This is neat but for the lack of intelligent history. I'm contemplating moving to a VCS solution so changes through time can be tracked more easily.
+
+Let's say I want to move to git-annex as a way of keeping history, maybe even across backup disks. The common part would be to rsync from main to backup and then commit. I see the following showstoppers:
+
+1) If I put the backup repo in direct mode, past versions of files are lost since they never enter either plain git nor annex control.
+
+2) If I put the backup repo in indirect mode, rsync destroys all soft links resulting in unnecessary copying over. It also seems to cause further breakage when a regular file appears where there was a symlink. I know no rsync option to sync through links to the target files (rsync -K only works for folders).
+
+3) I could put the repo in direct mode, rsync, commit, put in indirect to save versions, and repeat at every backup. Seems kinda inefficient, there are hundreds of gigas in files.
+
+4) I can't have the main disk under annex and use the back disk as a remote because the main disk contains many git repos (whose history I don't mind losing with rsync -C, or I wouldn't consider git-annex for backup at all). Also I'm not partial to populate the main disk with something only related to backup.
+
+If rsync -K worked with files there would be no problem. I'm missing the right flag here? Or something else that can be done on the git-annex side?
+
+Thanks in advance.

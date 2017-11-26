@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- nickname="joey"
- subject="comment 3"
- date="2013-05-23T15:59:37Z"
- content="""
-It's also worth noting that the assistant always trusts the location log when deciding whether to send a key to a remote. So I think it will not trigger this bug. It seems only `git annex copy` will. (Well, maybe `git annex move` too in an edge case.)
-"""]]

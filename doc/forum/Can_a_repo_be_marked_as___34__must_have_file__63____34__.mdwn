@@ -1,0 +1,5 @@
+Is there a way to mark a repo as needing to have a copy of a file?
+
+I know there's the `remote.<name>.annex-cost` setting but that's done just on a single copy of the repo.
+
+Obviously the problem here would be determining the path to get a file to a repo, so maybe this isn't possible.

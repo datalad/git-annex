@@ -1,0 +1,8 @@
+Hi,
+
+I am currently trying to move nearly all of my files into git-annex, and I was wondering if there is a (plumbing-level?) way to easily figure out if a file I find on a random hard disk is already contained in my annex repository?
+
+I.e., is there an easy way to compute the key for a file (which is not in an annex) and look up if the file is already contained in a given annex repository? I've looked a bit at the plumbing-level commands but none seem to exactly fit the bill :-/
+
+Cheers,
+Alex

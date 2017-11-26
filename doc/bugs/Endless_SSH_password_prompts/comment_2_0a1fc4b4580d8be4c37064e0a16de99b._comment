@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawmNu4V5fvpLlBhaCUfXXOB0MI5NXwh8SkU"
- nickname="Adam"
- subject="comment 2"
- date="2013-11-03T00:39:38Z"
- content="""
-I'm not sure which program is doing the asking either.  The title bar says \"OpenSSH\".  It is asking for the SSH key password, but if I dismiss the dialog without entering the password, it will open another dialog asking for the user account's password, e.g. me@laptop, indicating it's SSH falling back to password auth.
-"""]]

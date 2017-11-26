@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="side-note about WebDAV&DeltaV"
+ date="2017-07-12T21:54:49Z"
+ content="""
+DAV = “Distributed Authoring and Versioning.”, but versioning was forgotten about in the original RFC. Only some servers/clients implement DeltaV spec (RFC 3253) which came later to fill that gap. 
+But in principle, any DeltaV-compliant WebDAV special remote could then be used for \"export\" while retaining access to all the versions.
+References: 
+- [WebDAV and Autoversioning - Version Control with Subversion](http://archive.oreilly.com/pub/a/opensource/excerpts/9780596510336/webdav-and-autoversioning.html)
+- [RFC 3253](http://www.webdav.org/specs/rfc3253.html)
+
+I have got interested whenever saw that box.com is supported through WebDAV but not sure if DeltaV is anyhow supported and apparently number of versions stored per file is anyways depends on type of the account (and no versions for a free personal one): https://community.box.com/t5/How-to-Guides-for-Managing/How-To-Track-Your-Files-and-File-Versions-Version-History/ta-p/329 
+"""]]

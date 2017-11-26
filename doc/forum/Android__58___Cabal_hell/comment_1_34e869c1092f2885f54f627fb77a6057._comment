@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-03-28T13:20:06Z"
+ content="""
+The android packages are all pinned at old versions, so the build is
+supposed to be reproducible using those versions. Diverging certainly
+invites cabal hell.
+
+Any chance you could show the original failure?
+
+I could probably integrate new icons if you want to just submit them.
+"""]]

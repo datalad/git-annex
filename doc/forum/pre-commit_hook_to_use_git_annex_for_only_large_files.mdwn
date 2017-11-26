@@ -1,0 +1,55 @@
+I've wanted to use git-annex for the longest time, but I really only wanted to use it if the files were over a certain size, otherwise, I just want to use regular git.
+
+After writing this pre-commit hook, I wanted to share and get some feedback.
+
+This would be saved as `.git/hooks/pre-commit`
+
+    #!/bin/sh
+    let MAX=1*1024*1024  # 1048576 == 1 MB
+    if [ ! -d '.git/annex/' ]; then
+      /usr/local/bin/git annex init >/dev/null 2>&1
+    fi
+    if git rev-parse --verify HEAD >/dev/null 2>&1; then
+      against=HEAD
+    else
+      # Initial commit: diff against an empty tree object
+      against=$(/usr/local/bin/git hash-object -t tree /dev/null)
+    fi
+    /usr/local/bin/git diff-index --cached $against | \
+      /usr/bin/tr '\t' ' ' | \
+      /usr/bin/cut -d ' ' -f4,6- | \
+      while read line; do
+        sha1=$(/usr/bin/cut -d ' ' -f1 <<< "$line")
+        if [ "$sha1" == "0000000000000000000000000000000000000000" ]; then
+          continue
+        fi
+        size=$(/usr/local/bin/git cat-file -s "$sha1")
+        if [ $size -ge $MAX ]; then
+          file=$(/usr/bin/cut -d ' ' -f2- <<< "$line")
+          /usr/local/bin/git update-index --force-remove "$file"
+          /usr/local/bin/git annex add "$file"
+          /usr/bin/killall -TERM Finder
+        fi
+    done
+    /usr/local/bin/git annex pre-commit .
+
+I also wrote an `Unlock Git Annex File.workflow` service for OS X:
+
+    set gitAnnex to "/Applications/git-annex.app/Contents/MacOS/git-annex"
+
+    tell application "Finder"
+            repeat with theItem in (get selection)
+                    if file type of theItem is "slnk" then
+                            set theFolder to quoted form of POSIX path of (container of theItem as alias)
+                            set filePath to do shell script "/usr/bin/basename " & quoted form of POSIX path of (theItem as text)
+                            set theCommand to "cd " & theFolder & "; " & gitAnnex & " unlock '" & filePath & "'"
+                            do shell script theCommand
+                    end if
+            end repeat
+    end tell
+
+Use Automator to create a new service that receives selected "files or folders" in "Finder.app". Then drag the "Run AppleScript" action to the workflow panel. The script above should be copied into the code area replacing all the default content.
+
+Am I all alone in wanting these types of scripts?
+
+- Peter

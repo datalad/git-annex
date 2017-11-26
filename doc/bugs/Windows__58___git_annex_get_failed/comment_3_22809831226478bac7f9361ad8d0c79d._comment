@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="ExGen"
+ subject="Found?"
+ date="2016-04-03T20:15:01Z"
+ content="""
+I think I found the problem: <br/>
+After I edit the file and commit, if I **lock** the file and **commit again**, the problem won't happen. <br/>
+I thought there shouldn't be a difference between committing a locked file and an unlocked file? <br/><br/>
+There is another problem too: When you unlock the file, git thinks you changed it. Maybe you could fix this too?
+"""]]

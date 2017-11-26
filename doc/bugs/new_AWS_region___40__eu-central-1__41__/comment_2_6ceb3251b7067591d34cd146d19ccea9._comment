@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.96"
- subject="comment 2"
- date="2014-10-23T19:51:46Z"
- content="""
-Looks like the cabal dependency hell is managable; if done in system without anything installed, cabal manages to install the new aws, and everything else, except for the dbus library. Still not ready to be merged though.
-"""]]

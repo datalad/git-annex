@@ -4,7 +4,7 @@ So, I synced it back up! :) --[[Joey]]
 
 <pre>
 commit 4151f4595fe6205d4aed653617ab23eb3335130a
-Author: Joey Hess <joey@kitenet.net>
+Author: Joey Hess <id@joeyh.name>
 Date:   Tue Oct 26 02:18:03 2010 -0400
 
 joey> git pull

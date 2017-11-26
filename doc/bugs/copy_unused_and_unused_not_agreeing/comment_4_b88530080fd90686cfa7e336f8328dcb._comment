@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.172"
- subject="comment 4"
- date="2014-02-20T19:49:21Z"
- content="""
-Well, if you had a newer git-annex than 5.20140127 temporarily in path, it would certianly explain it. I have tested --unused in direct mode and am not seeing any problems.
-"""]]

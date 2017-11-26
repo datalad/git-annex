@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="listx"
+ subject="comment 3"
+ date="2016-08-04T02:07:55Z"
+ content="""
+I went ahead and used `git annex wanted . \"exclude=FOO\"` and it did what I wanted. For posterity, here are some other observations:
+
+- The file that `git annex vicfg` shows was updated to include the invocation of `git annex wanted`, like this:
+
+```
+...(truncated for brevity)...
+# Repository preferred contents                                                                                                                                                    
+# (Set to \"standard\" to use a repository's group's preferred contents)
+# (for k0)
+wanted a71d805d-df77-42e7-97b0-ba7686c05083 = exclude=FOO
+# (for web)
+...(truncated for brevity)...
+```
+
+()- I noticed that the UUID above matches the UUID found in my `.git/config` file, which looks like this:
+
+```
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote \"origin\"]
+	url = m0:/mnt/a/annex.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+	annex-uuid = c5c012cc-2080-481f-81bc-7f449f33490b
+[branch \"master\"]
+	remote = origin
+	merge = refs/heads/master
+[annex]
+	uuid = a71d805d-df77-42e7-97b0-ba7686c05083
+	version = 5
+```
+
+.
+"""]]

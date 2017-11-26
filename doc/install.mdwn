@@ -2,21 +2,22 @@
 
 [[!table format=dsv header=yes data="""
 detailed instructions             | quick install
-[[OSX]]                           | [download git-annex.app](https://downloads.kitenet.net/git-annex/OSX/current/)
+[[OSX]]                           |
 &nbsp;&nbsp;[[OSX/Homebrew]]      | `brew install git-annex`
-[[Android]]                       | [download git-annex.apk](https://downloads.kitenet.net/git-annex/android/current/) **beta**
-[[Linux|linux_standalone]]        | [download prebuilt linux tarball](https://downloads.kitenet.net/git-annex/linux/current/)
+[[Android]]                       | **beta**
+[[Linux|linux_standalone]]        | 
 &nbsp;&nbsp;[[Debian]]            | `apt-get install git-annex`
 &nbsp;&nbsp;[[Ubuntu]]            | `apt-get install git-annex`
 &nbsp;&nbsp;[[Fedora]]            | `yum install git-annex`
-&nbsp;&nbsp;[[FreeBSD]]           | `pkg_add -r hs-git-annex`
-&nbsp;&nbsp;[[ArchLinux]]         | `yaourt -Sy git-annex-bin`
+&nbsp;&nbsp;[[FreeBSD]]           | `pkg install hs-git-annex`
+&nbsp;&nbsp;[[ArchLinux]]         | `pacman -S git-annex`
 &nbsp;&nbsp;[[NixOS]]             | `nix-env -i git-annex`
 &nbsp;&nbsp;[[Gentoo]]            | `emerge git-annex`
+&nbsp;&nbsp;[[Void]]            | `xbps-install git-annex`
 &nbsp;&nbsp;[[ScientificLinux5]]  |
-&nbsp;&nbsp;[[openSUSE]]          | 
+&nbsp;&nbsp;[[openSUSE]]          | `zypper in git-annex`
 &nbsp;&nbsp;[[Docker]]            | 
-[[Windows]]                       | [download installer](https://downloads.kitenet.net/git-annex/windows/current/) **beta**
+[[Windows]]                       | **beta**
 """]]
 
 All the download links above use https for security. For added security, see
@@ -30,5 +31,5 @@ it [[from source|fromsource]].
 
 ## See also
 
-
-[[autobuild overview|builds]]
+ * [[autobuild overview|builds]]
+ * [[upgrades]]

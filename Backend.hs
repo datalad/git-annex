@@ -1,32 +1,27 @@
 {- git-annex key/value backends
  -
- - Copyright 2010-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Backend (
 	list,
-	orderedList,
+	defaultBackend,
 	genKey,
-	lookupFile,
 	getBackend,
-	isAnnexLink,
 	chooseBackend,
-	lookupBackendName,
-	maybeLookupBackendName,
+	lookupBackendVariety,
+	maybeLookupBackendVariety,
 	isStableKey,
 ) where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import Annex.CheckAttr
-import Annex.CatFile
-import Annex.Link
 import Types.Key
 import Types.KeySource
 import qualified Types.Backend as B
-import Config
 
 -- When adding a new backend, import it here and add it to the list.
 import qualified Backend.Hash
@@ -38,39 +33,29 @@ import qualified Data.Map as M
 list :: [Backend]
 list = Backend.Hash.backends ++ Backend.WORM.backends ++ Backend.URL.backends
 
-{- List of backends in the order to try them when storing a new key. -}
-orderedList :: Annex [Backend]
-orderedList = do
-	l <- Annex.getState Annex.backends -- list is cached here
-	if not $ null l
-		then return l
-		else do
-			f <- Annex.getState Annex.forcebackend
-			case f of
-				Just name | not (null name) ->
-					return [lookupBackendName name]
-				_ -> do
-					l' <- gen . annexBackends <$> Annex.getGitConfig
-					Annex.changeState $ \s -> s { Annex.backends = l' }
-					return l'
+{- Backend to use by default when generating a new key. -}
+defaultBackend :: Annex Backend
+defaultBackend = maybe cache return =<< Annex.getState Annex.backend
   where
-	gen [] = list
-	gen l = map lookupBackendName l
+	cache = do
+		n <- maybe (annexBackend <$> Annex.getGitConfig) (return . Just)
+			=<< Annex.getState Annex.forcebackend
+		let b = case n of
+			Just name | valid name -> lookupname name
+			_ -> Prelude.head list
+		Annex.changeState $ \s -> s { Annex.backend = Just b }
+		return b
+	valid name = not (null name)
+	lookupname = lookupBackendVariety . parseKeyVariety
 
-{- Generates a key for a file, trying each backend in turn until one
- - accepts it. -}
+{- Generates a key for a file. -}
 genKey :: KeySource -> Maybe Backend -> Annex (Maybe (Key, Backend))
-genKey source trybackend = do
-	bs <- orderedList
-	let bs' = maybe bs (: bs) trybackend
-	genKey' bs' source
-genKey' :: [Backend] -> KeySource -> Annex (Maybe (Key, Backend))
-genKey' [] _ = return Nothing
-genKey' (b:bs) source = do
+genKey source preferredbackend = do
+	b <- maybe defaultBackend return preferredbackend
 	r <- B.getKey b source
-	case r of
-		Nothing -> genKey' bs source
-		Just k -> return $ Just (makesane k, b)
+	return $ case r of
+		Nothing -> Nothing
+		Just k -> Just (makesane k, b)
   where
 	-- keyNames should not contain newline characters.
 	makesane k = k { keyName = map fixbadchar (keyName k) }
@@ -78,54 +63,35 @@ genKey' (b:bs) source = do
 		| c == '\n' = '_'
 		| otherwise = c
 
-{- Looks up the key corresponding to an annexed file,
- - by examining what the file links to.
- -
- - In direct mode, there is often no link on disk, in which case
- - the symlink is looked up in git instead. However, a real link
- - on disk still takes precedence over what was committed to git in direct
- - mode.
- -}
-lookupFile :: FilePath -> Annex (Maybe Key)
-lookupFile file = do
-	mkey <- isAnnexLink file
-	case mkey of
-		Just key -> makeret key
-		Nothing -> ifM isDirect
-			( maybe (return Nothing) makeret =<< catKeyFile file
-			, return Nothing
-			)
-  where
-	makeret k = return $ Just k
-
 getBackend :: FilePath -> Key -> Annex (Maybe Backend)
-getBackend file k = let bname = keyBackendName k in
-	case maybeLookupBackendName bname of
-		Just backend -> return $ Just backend
-		Nothing -> do
-			warning $ "skipping " ++ file ++ " (unknown backend " ++ bname ++ ")"
-			return Nothing
+getBackend file k = case maybeLookupBackendVariety (keyVariety k) of
+	Just backend -> return $ Just backend
+	Nothing -> do
+		warning $ "skipping " ++ file ++ " (unknown backend " ++ formatKeyVariety (keyVariety k) ++ ")"
+		return Nothing
 
 {- Looks up the backend that should be used for a file.
- - That can be configured on a per-file basis in the gitattributes file. -}
+ - That can be configured on a per-file basis in the gitattributes file,
+ - or forced with --backend. -}
 chooseBackend :: FilePath -> Annex (Maybe Backend)
 chooseBackend f = Annex.getState Annex.forcebackend >>= go
   where
-	go Nothing =  maybeLookupBackendName <$> checkAttr "annex.backend" f
-	go (Just _) = Just . Prelude.head <$> orderedList
+	go Nothing = maybeLookupBackendVariety . parseKeyVariety
+		<$> checkAttr "annex.backend" f
+	go (Just _) = Just <$> defaultBackend
 
-{- Looks up a backend by name. May fail if unknown. -}
-lookupBackendName :: String -> Backend
-lookupBackendName s = fromMaybe unknown $ maybeLookupBackendName s
+{- Looks up a backend by variety. May fail if unsupported or disabled. -}
+lookupBackendVariety :: KeyVariety -> Backend
+lookupBackendVariety v = fromMaybe unknown $ maybeLookupBackendVariety v
   where
-	unknown = error $ "unknown backend " ++ s
+	unknown = giveup $ "unknown backend " ++ formatKeyVariety v
 
-maybeLookupBackendName :: String -> Maybe Backend
-maybeLookupBackendName s = M.lookup s nameMap
+maybeLookupBackendVariety :: KeyVariety -> Maybe Backend
+maybeLookupBackendVariety v = M.lookup v varietyMap
 
-nameMap :: M.Map String Backend
-nameMap = M.fromList $ zip (map B.name list) list
+varietyMap :: M.Map KeyVariety Backend
+varietyMap = M.fromList $ zip (map B.backendVariety list) list
 
 isStableKey :: Key -> Bool
 isStableKey k = maybe False (`B.isStableKey` k) 
-	(maybeLookupBackendName (keyBackendName k))
+	(maybeLookupBackendVariety (keyVariety k))

@@ -16,7 +16,7 @@ You can then download the public key, and check that the package is signed
 with it.
 
 	$ wget https://downloads.kitenet.net/git-annex/gpg-pubkey.asc
-	$ gpg --import gpg-pubey.asc
+	$ gpg --import gpg-pubkey.asc
 	$ gpg --verify git-annex-standalone-*.tar.gz.sig
 
 (The git-annex assistant can automatically upgrade git-annex, and when it

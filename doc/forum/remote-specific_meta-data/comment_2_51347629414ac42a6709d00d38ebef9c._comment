@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="remote.log or uuid.log?"
+ date="2015-03-31T04:29:49Z"
+ content="""
+`remote.log` is present only for \"special remotes\" - could i also use it for... well, \"non-special remotes\"? :) in other words, right now my `remote.log` is empty or even missing in most of the git-annex repos I used, because i don't use the special remotes so much. could i still store information in that file even though it's not being used by git-annex?
+
+or could i just use `uuid.log` instead, which is present for all types of remotes?
+"""]]

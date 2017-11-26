@@ -1,0 +1,21 @@
+[The first SHA1 collision](https://shattered.io/) was announced today,
+produced by an identical-prefix collision attack.
+
+After looking into it all day, it does not appear to impact git's security
+immediately, except for targeted attacks against specific projects by
+very wealthy attackers. But we're well past the time when it seemed ok that git
+uses SHA1. If this gets improved into a chosen-prefix collision
+attack, git will start to be rather insecure.
+
+Projects that store binary files in git, that might be worth $100k for an
+attacker to backdoor **should** be concerned by the SHA1 collisions.
+A good example of such a project is
+<git://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git>.
+
+Using git-annex (with a suitable backend like SHA256) and signed commits
+together is a good way to secure such repositories. 
+
+Update 12:25 am: However, there are some ways to embed SHA1-colliding data
+in the names of git-annex keys. That makes git-annex with signed
+commits be no more secure than git with signed commits. I am working
+to fix git-annex to not use keys that have such problems.

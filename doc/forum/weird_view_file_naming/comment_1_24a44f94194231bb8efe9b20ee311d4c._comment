@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkJafmCf-sg9_OM0pynFYM3AO4WCgJiaMI"
+ nickname="Michele"
+ subject="what I was trying to do is probabily done better with sparse checkouts"
+ date="2014-11-26T11:46:04Z"
+ content="""
+therefore instead of tagging the files _and_ placing them into subdirectories (which somehow seems confounding views reperesentation), i'll be using sparse checkout for the subdirectories I need.
+
+i'll be looking in sparse checkouts so that i have separate trees checked out from same annex ( see http://git-annex.branchable.com/forum/sparse_git_checkouts_with_annex/ )
+
+cheers
+"""]]

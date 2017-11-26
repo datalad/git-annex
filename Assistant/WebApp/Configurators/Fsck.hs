@@ -1,6 +1,6 @@
 {- git-annex assistant fsck configuration
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -167,8 +167,8 @@ getFsckPreferences = FsckPreferences
 	<$> (annexFsckNudge <$> Annex.getGitConfig)
 
 fsckPreferencesAForm :: FsckPreferences -> MkAForm FsckPreferences
-fsckPreferencesAForm def = FsckPreferences
-	<$> areq (checkBoxField `withNote` nudgenote) "Reminders" (Just $ enableFsckNudge def)
+fsckPreferencesAForm d = FsckPreferences
+	<$> areq (checkBoxField `withNote` nudgenote) "Reminders" (Just $ enableFsckNudge d)
   where
 	nudgenote = [whamlet|Remind me when using repositories that lack consistency checks.|]
 

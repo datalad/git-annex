@@ -1,0 +1,26 @@
+Hello everybody, I need some setup advice.
+
+I want to set up a portability and data security (in the sense of redundancy) scenario for a user with some, but not exulting, tech skills.
+A directory that contains progressing work should be synced with incoming data and backed up.
+
+## Locations
+
+- Main machine (laptop), containing all software to process data and write result files
+- USB thumb drive, will occassionally receive additional data at the faculty (no root access/possibility to install annex or even git there)
+- Offline file server (ssh/sftp through wired lan), backing up all data
+
+## Goals
+
+- The laptop and USB drive should stay in sync in both directions; processed work must appear on the USB, data copied onto the USB must appear on the main machine (copies of files, not links).
+- All data should be backed up on the file server.
+- The user should not be required to stage/commit files from the command line, this should be handled automatically (annex assistant?)
+
+
+## Questions
+
+- This sounds a bit like the "nomad" scenario described, but not totally like it. Is git annex the proper tool for the job?
+- How do I set that scenario up? Especially, who is a remote of what and why, and how do I make sure I got a copy of every file in every location without doing it all manually?
+
+At the moment this is all done with a number of grsync sessions. It works, but if anything is done in the wrong order, current data is overwritten by older one (this could be resolved using git, but would require manual staging/commiting, what we want to avoid).
+
+Can you help me on that?

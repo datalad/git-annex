@@ -1,0 +1,7 @@
+Took a half day and worked on making it simpler to set up ssh remotes.
+The complexity I've gotten rid of is there's no need to take any action to
+get a ssh remote initialized as a git-annex repository. Where before,
+either git-annex init needed to be ran on the remote, or a git-annex branch
+manually pushed to it, now the remote can simply be added and `git annex sync`
+will do the rest. This needed git-annex-shell changes, so will only work
+once servers are upgraded to use a newer version of git-annex.

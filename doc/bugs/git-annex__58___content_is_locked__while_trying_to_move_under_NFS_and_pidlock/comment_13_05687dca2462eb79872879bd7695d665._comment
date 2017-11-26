@@ -1,0 +1,51 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2016-10-26T16:34:38Z"
+ content="""
+Looking at the strace finally...
+
+Here's git-annex creating the dummy posix lock file, soon after
+the ssh socket is removed. (I think that's ssh removing the socket before,
+but the jumble of strace output is hard to follow here.)
+
+	2456732 unlink(".git/annex/ssh/smaug" <unfinished ...>
+	...
+	2456732 open(".git/annex/ssh/.nfs00000000099d85d000000002.lock", O_RDONLY|O_CREAT, 0666 <unfinished ...>
+
+And later ssh is told to stop using a related socket:
+
+	2456815 execve("/mnt/btrfs/scrap/datalad/test_nfs/git-annex.linux/bin/ssh", ["ssh", "-O", "stop", "-S", ".nfs00000000099d85d000000002", "-o", "ControlMaster=auto", "-o", "ControlPersist=yes", "localhost"], [/* 98 vars */] <unfinished ...>
+
+Which it seems does not exist by then:
+
+	2456815 connect(3, {sa_family=AF_LOCAL, sun_path=".nfs00000000099d85d000000002"}, 31) = -1 ENOENT (No such file or directory)
+	2456732 unlink(".git/annex/ssh/.nfs00000000099d85d000000002") = -1 ENOENT (No such file or directory)
+
+Seems like this would have to be `sshCleanup` running, and `enumSocketFiles`
+seeing ".nfs00000000099d85d000000002" existing at that point due
+probably to the ssh/smaug socket being in the process of being
+removed. 
+
+So, it assumes it's a socket file and tries to clean it up, creating
+the dummy posix lock file. And posix lock files don't get deleted
+(it's impossible to do so in a race-free way), so this results in more
+and more `.nfs*.lock` files.
+
+Need to find a way to prevent `enumSocketFiles` from listing these
+files. Seems that ".nfs00000000099d85d000000002" is probably the deleted
+form of the "smaug" socket, so it really is a socket file, so checking
+if a file is a socket won't help. Of course it could
+ explicitly filter out ".nfs" prefixed files. That could be a case of
+kicking the can down the road, since NFS could always choose to use
+another name for these files.
+
+Hmm.. Before a ssh socket file gets created, git-annex always locks the
+associated lock file. And as noted, the posix lock file is never
+removed. (On Windows the lock file is also created and never deleted.) 
+So, if $file does not have an associated $file.lock 
+then $file must not be a ssh socket, and `enumSocketFiles` can skip it.
+
+I've added that check. Unable to test it because the NFS mount has
+been lost in the intervening time. @yoh can you test this fixed it?
+"""]]

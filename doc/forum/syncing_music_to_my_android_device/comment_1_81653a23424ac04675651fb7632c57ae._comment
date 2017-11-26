@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="anarcat"
+ subject="special remote"
+ date="2016-06-23T13:03:48Z"
+ content="""
+I ended up writing a special remote for this, named [git-annex-remote-dumb](http://src.anarc.at/scripts.git/blob_plain/HEAD:/git-annex-remote-dumb) for lack of a better name. it mixes things up badly, is a abhorrent violation of protocol boundaries and is probably due to be taken to the back of the barn and shot, but it works for my case.
+
+this would be better implemented as [[todo/dumb, unsafe, human-readable_backend]], but I suspect this cannot be directly implemented either without significant changes of the git-annex design, something which is unlikely to happen since [[todo/hide missing files]] is likely to be implemented with [[design/adjusted branches]].
+
+more details about known problems, remaining tasks and limitations in the script header.
+"""]]

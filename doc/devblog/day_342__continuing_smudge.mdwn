@@ -1,0 +1,30 @@
+Made a lot of progress today. Implemented the database mapping a key to its
+associated files.  As expected this database, when updated by the
+smudge/clean filters, is not always consistent with the current git work tree.
+In particular, commands like `git mv` don't update the database with the
+new filename. So queries of the database will need to do some additional
+work first to get it updated with any staged changes. But the database is
+good enough for a proof of concept, I hope.
+
+Then I got git-annex commands treating smudged files as annexed files.
+So this works:
+
+	joey@darkstar:~/tmp/new>git annex init
+	init  ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/new>cp ~/some.mp3 .
+	joey@darkstar:~/tmp/new>git add some.mp3
+	joey@darkstar:~/tmp/new>git diff --cached
+	diff --git a/some.mp3 b/some.mp3
+	new file mode 100644
+	index 0000000..2df8868
+	--- /dev/null
+	+++ b/some.mp3
+	@@ -0,0 +1 @@
+	+/annex/objects/SHA256E-s191213--e4b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.mp3
+	joey@darkstar:~/tmp/new>git annex whereis some.mp3
+	whereis some.mp3 (1 copy) 
+	  	7de17427-329a-46ec-afd0-0a088f0d0b1b -- joey@darkstar:~/tmp/new [here]
+	ok
+
+get/drop don't yet update the smudged files, and that's the next step.

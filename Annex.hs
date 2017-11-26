@@ -1,11 +1,11 @@
 {- git-annex monad
  -
- - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, GeneralizedNewtypeDeriving, PackageImports #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, PackageImports, BangPatterns #-}
 
 module Annex (
 	Annex,
@@ -13,6 +13,7 @@ module Annex (
 	new,
 	run,
 	eval,
+	makeRunner,
 	getState,
 	changeState,
 	withState,
@@ -29,18 +30,21 @@ module Annex (
 	getGitConfig,
 	changeGitConfig,
 	changeGitRepo,
+	adjustGitRepo,
 	getRemoteGitConfig,
 	withCurrentState,
+	changeDirectory,
+	incError,
 ) where
 
 import Common
 import qualified Git
 import qualified Git.Config
-import Annex.Direct.Fixup
+import Annex.Fixup
 import Git.CatFile
+import Git.HashObject
 import Git.CheckAttr
 import Git.CheckIgnore
-import Git.SharedRepository
 import qualified Git.Hook
 import qualified Git.Queue
 import Types.Key
@@ -52,20 +56,22 @@ import Types.BranchState
 import Types.TrustLevel
 import Types.Group
 import Types.Messages
+import Types.Concurrency
 import Types.UUID
 import Types.FileMatcher
 import Types.NumCopies
-import Types.LockPool
-import Types.MetaData
+import Types.LockCache
 import Types.DesktopNotify
 import Types.CleanupActions
-#ifdef WITH_QUVI
+import qualified Database.Keys.Handle as Keys
 import Utility.Quvi (QuviVersion)
-#endif
 import Utility.InodeCache
+import Utility.Url
 
 import "mtl" Control.Monad.Reader
 import Control.Concurrent
+import Control.Concurrent.Async
+import Control.Concurrent.STM
 import qualified Data.Map as M
 import qualified Data.Set as S
 
@@ -73,7 +79,7 @@ import qualified Data.Set as S
  - The MVar is not exposed outside this module.
  -
  - Note that when an Annex action fails and the exception is caught,
- - ny changes the action has made to the AnnexState are retained,
+ - any changes the action has made to the AnnexState are retained,
  - due to the use of the MVar to store the state.
  -}
 newtype Annex a = Annex { runAnnex :: ReaderT (MVar AnnexState) IO a }
@@ -83,9 +89,7 @@ newtype Annex a = Annex { runAnnex :: ReaderT (MVar AnnexState) IO a }
 		MonadReader (MVar AnnexState),
 		MonadCatch,
 		MonadThrow,
-#if MIN_VERSION_exceptions(0,6,0)
 		MonadMask,
-#endif
 		Functor,
 		Applicative
 	)
@@ -93,18 +97,20 @@ newtype Annex a = Annex { runAnnex :: ReaderT (MVar AnnexState) IO a }
 -- internal state storage
 data AnnexState = AnnexState
 	{ repo :: Git.Repo
+	, repoadjustment :: (Git.Repo -> IO Git.Repo)
 	, gitconfig :: GitConfig
-	, backends :: [BackendA Annex]
+	, backend :: Maybe (BackendA Annex)
 	, remotes :: [Types.Remote.RemoteA Annex]
 	, remoteannexstate :: M.Map UUID AnnexState
 	, output :: MessageState
+	, concurrency :: Concurrency
 	, force :: Bool
 	, fast :: Bool
-	, auto :: Bool
 	, daemon :: Bool
 	, branchstate :: BranchState
 	, repoqueue :: Maybe Git.Queue.Queue
 	, catfilehandles :: M.Map FilePath CatFileHandle
+	, hashobjecthandle :: Maybe HashObjectHandle
 	, checkattrhandle :: Maybe CheckAttrHandle
 	, checkignorehandle :: Maybe (Maybe CheckIgnoreHandle)
 	, forcebackend :: Maybe String
@@ -114,95 +120,125 @@ data AnnexState = AnnexState
 	, uuidmap :: Maybe UUIDMap
 	, preferredcontentmap :: Maybe (FileMatcherMap Annex)
 	, requiredcontentmap :: Maybe (FileMatcherMap Annex)
-	, shared :: Maybe SharedRepository
 	, forcetrust :: TrustMap
 	, trustmap :: Maybe TrustMap
 	, groupmap :: Maybe GroupMap
 	, ciphers :: M.Map StorableCipher Cipher
-	, lockpool :: LockPool
+	, lockcache :: LockCache
+	, sshstalecleaned :: TMVar Bool
 	, flags :: M.Map String Bool
 	, fields :: M.Map String String
-	, modmeta :: [ModMeta]
 	, cleanup :: M.Map CleanupAction (Annex ())
 	, sentinalstatus :: Maybe SentinalStatus
 	, useragent :: Maybe String
 	, errcounter :: Integer
 	, unusedkeys :: Maybe (S.Set Key)
-#ifdef WITH_QUVI
+	, tempurls :: M.Map Key URLString
 	, quviversion :: Maybe QuviVersion
-#endif
 	, existinghooks :: M.Map Git.Hook.Hook Bool
 	, desktopnotify :: DesktopNotify
+	, workers :: [Either AnnexState (Async AnnexState)]
+	, activekeys :: TVar (M.Map Key ThreadId)
+	, activeremotes :: MVar (M.Map (Types.Remote.RemoteA Annex) Integer)
+	, keysdbhandle :: Maybe Keys.DbHandle
+	, cachedcurrentbranch :: Maybe Git.Branch
+	, cachedgitenv :: Maybe [(String, String)]
 	}
 
-newState :: GitConfig -> Git.Repo -> AnnexState
-newState c r = AnnexState
-	{ repo = r
-	, gitconfig = c
-	, backends = []
-	, remotes = []
-	, remoteannexstate = M.empty
-	, output = defaultMessageState
-	, force = False
-	, fast = False
-	, auto = False
-	, daemon = False
-	, branchstate = startBranchState
-	, repoqueue = Nothing
-	, catfilehandles = M.empty
-	, checkattrhandle = Nothing
-	, checkignorehandle = Nothing
-	, forcebackend = Nothing
-	, globalnumcopies = Nothing
-	, forcenumcopies = Nothing
-	, limit = BuildingMatcher []
-	, uuidmap = Nothing
-	, preferredcontentmap = Nothing
-	, requiredcontentmap = Nothing
-	, shared = Nothing
-	, forcetrust = M.empty
-	, trustmap = Nothing
-	, groupmap = Nothing
-	, ciphers = M.empty
-	, lockpool = M.empty
-	, flags = M.empty
-	, fields = M.empty
-	, modmeta = []
-	, cleanup = M.empty
-	, sentinalstatus = Nothing
-	, useragent = Nothing
-	, errcounter = 0
-	, unusedkeys = Nothing
-#ifdef WITH_QUVI
-	, quviversion = Nothing
-#endif
-	, existinghooks = M.empty
-	, desktopnotify = mempty
-	}
+newState :: GitConfig -> Git.Repo -> IO AnnexState
+newState c r = do
+	emptyactiveremotes <- newMVar M.empty
+	emptyactivekeys <- newTVarIO M.empty
+	o <- newMessageState
+	sc <- newTMVarIO False
+	return $ AnnexState
+		{ repo = r
+		, repoadjustment = return
+		, gitconfig = c
+		, backend = Nothing
+		, remotes = []
+		, remoteannexstate = M.empty
+		, output = o
+		, concurrency = NonConcurrent
+		, force = False
+		, fast = False
+		, daemon = False
+		, branchstate = startBranchState
+		, repoqueue = Nothing
+		, catfilehandles = M.empty
+		, hashobjecthandle = Nothing
+		, checkattrhandle = Nothing
+		, checkignorehandle = Nothing
+		, forcebackend = Nothing
+		, globalnumcopies = Nothing
+		, forcenumcopies = Nothing
+		, limit = BuildingMatcher []
+		, uuidmap = Nothing
+		, preferredcontentmap = Nothing
+		, requiredcontentmap = Nothing
+		, forcetrust = M.empty
+		, trustmap = Nothing
+		, groupmap = Nothing
+		, ciphers = M.empty
+		, lockcache = M.empty
+		, sshstalecleaned = sc
+		, flags = M.empty
+		, fields = M.empty
+		, cleanup = M.empty
+		, sentinalstatus = Nothing
+		, useragent = Nothing
+		, errcounter = 0
+		, unusedkeys = Nothing
+		, tempurls = M.empty
+		, quviversion = Nothing
+		, existinghooks = M.empty
+		, desktopnotify = mempty
+		, workers = []
+		, activekeys = emptyactivekeys
+		, activeremotes = emptyactiveremotes
+		, keysdbhandle = Nothing
+		, cachedcurrentbranch = Nothing
+		, cachedgitenv = Nothing
+		}
 
 {- Makes an Annex state object for the specified git repo.
- - Ensures the config is read, if it was not already. -}
+ - Ensures the config is read, if it was not already, and performs
+ - any necessary git repo fixups. -}
 new :: Git.Repo -> IO AnnexState
 new r = do
-	r' <- Git.Config.read r
+	r' <- Git.Config.read =<< Git.relPath r
 	let c = extractGitConfig r'
-	newState c <$> if annexDirect c then fixupDirect r' else return r'
+	newState c =<< fixupRepo r' c
 
 {- Performs an action in the Annex monad from a starting state,
  - returning a new state. -}
 run :: AnnexState -> Annex a -> IO (a, AnnexState)
-run s a = do
-	mvar <- newMVar s
+run s a = flip run' a =<< newMVar s
+
+run' :: MVar AnnexState -> Annex a -> IO (a, AnnexState)
+run' mvar a = do
 	r <- runReaderT (runAnnex a) mvar
+		`onException` (flush =<< readMVar mvar)
 	s' <- takeMVar mvar
+	flush s'
 	return (r, s')
+  where
+	flush = maybe noop Keys.flushDbQueue . keysdbhandle
 
 {- Performs an action in the Annex monad from a starting state, 
  - and throws away the new state. -}
 eval :: AnnexState -> Annex a -> IO a
-eval s a = do
-	mvar <- newMVar s
-	runReaderT (runAnnex a) mvar
+eval s a = fst <$> run s a
+
+{- Makes a runner action, that allows diving into IO and from inside
+ - the IO action, running an Annex action. -}
+makeRunner :: Annex (Annex a -> IO a)
+makeRunner = do
+	mvar <- ask
+	return $ \a -> do
+		(r, s) <- run' mvar a
+		putMVar mvar s
+		return r
 
 getState :: (AnnexState -> v) -> Annex v
 getState selector = do
@@ -215,10 +251,10 @@ changeState modifier = do
 	mvar <- ask
 	liftIO $ modifyMVar_ mvar $ return . modifier
 
-withState :: (AnnexState -> (AnnexState, b)) -> Annex b
+withState :: (AnnexState -> IO (AnnexState, b)) -> Annex b
 withState modifier = do
 	mvar <- ask
-	liftIO $ modifyMVar mvar $ return . modifier
+	liftIO $ modifyMVar mvar modifier
 
 {- Sets a flag to True -}
 setFlag :: String -> Annex ()
@@ -276,17 +312,27 @@ changeGitConfig a = changeState $ \s -> s { gitconfig = a (gitconfig s) }
 
 {- Changing the git Repo data also involves re-extracting its GitConfig. -}
 changeGitRepo :: Git.Repo -> Annex ()
-changeGitRepo r = changeState $ \s -> s
-	{ repo = r
-	, gitconfig = extractGitConfig r
-	}
+changeGitRepo r = do
+	adjuster <- getState repoadjustment
+	r' <- liftIO $ adjuster r
+	changeState $ \s -> s
+		{ repo = r'
+		, gitconfig = extractGitConfig r'
+		}
+
+{- Adds an adjustment to the Repo data. Adjustments persist across reloads
+ - of the repo's config. -}
+adjustGitRepo :: (Git.Repo -> IO Git.Repo) -> Annex ()
+adjustGitRepo a = do
+	changeState $ \s -> s { repoadjustment = \r -> repoadjustment s r >>= a }
+	changeGitRepo =<< gitRepo
 
 {- Gets the RemoteGitConfig from a remote, given the Git.Repo for that
  - remote. -}
 getRemoteGitConfig :: Git.Repo -> Annex RemoteGitConfig
 getRemoteGitConfig r = do
 	g <- gitRepo
-	return $ extractRemoteGitConfig g (Git.repoDescribe r)
+	liftIO $ atomically $ extractRemoteGitConfig g (Git.repoDescribe r)
 
 {- Converts an Annex action into an IO action, that runs with a copy
  - of the current Annex state. 
@@ -297,3 +343,20 @@ withCurrentState :: Annex a -> Annex (IO a)
 withCurrentState a = do
 	s <- getState id
 	return $ eval s a
+
+{- It's not safe to use setCurrentDirectory in the Annex monad,
+ - because the git repo paths are stored relative.
+ - Instead, use this.
+ -}
+changeDirectory :: FilePath -> Annex ()
+changeDirectory d = do
+	r <- liftIO . Git.adjustPath absPath =<< gitRepo
+	liftIO $ setCurrentDirectory d
+	r' <- liftIO $ Git.relPath r
+	changeState $ \s -> s { repo = r' }
+
+incError :: Annex ()
+incError = changeState $ \s -> 
+	let ! c = errcounter s + 1 
+	    ! s' = s { errcounter = c }
+	in s'

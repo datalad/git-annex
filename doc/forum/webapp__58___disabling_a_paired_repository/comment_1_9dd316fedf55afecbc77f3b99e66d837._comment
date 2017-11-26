@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="vincent.mcintyre@1318ebde5cb96fc17e59dfa86f399f5634b1facc"
+ nickname="vincent.mcintyre"
+ subject="addendum"
+ date="2015-08-25T10:45:56Z"
+ content="""
+Syncing seems to work only in one direction.
+
+If I  go to machine B and:
+ * change a file
+ * select 'sync now' from the 'actions' menu for machine A
+the webapp says it worked.
+
+But if I login to machine A and inspect the file I expect to have changed, it is 'not available'.
+
+If I run 'git annex get 'baz.txt' on machine A it complains and asks me to make available the reposiotry on machine B.
+
+"""]]

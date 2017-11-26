@@ -1,0 +1,9 @@
+Hello,
+
+I'm using the Arch git-annex package: https://www.archlinux.org/packages/community/x86_64/git-annex/
+
+Checking the autostart checkbox in the assistant's web interface has no effect. There is no git-annex desktop file in ~/.config/autostart/ or alike. Neither is one contained in the package, however in the tarball I haven't found either.
+
+How does autostarting the assistant works?
+
+Best Thanks!

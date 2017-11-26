@@ -9,7 +9,7 @@ If a data transfer is interrupted, git-annex retains the partial transfer
 to allow it to be automatically resumed later.
 
 It's equally easy to transfer a single file to or from a repository,
-or to launch a retrievel of a massive pile of files from whatever
+or to launch a retrieval of a massive pile of files from whatever
 repositories they are scattered amongst.
 
 git-annex automatically uses whatever remotes are currently accessible,

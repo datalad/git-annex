@@ -2,5 +2,9 @@ Users of the [Nix package manager](http://nixos.org/) can install it by running:
 
     nix-env -i git-annex
 
+When including it in a NixOS configuration.nix file, the name of the reference to the package is
+
+    haskellPackages.gitAnnex
+
 The build status of the package within Nix can be seen on the [Hydra Build
 Farm](http://hydra.nixos.org/job/nixpkgs/trunk/gitAndTools.gitAnnex).

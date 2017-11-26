@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.96"
- subject="comment 5"
- date="2014-10-21T19:59:06Z"
- content="""
-Recent autobuilds will also print out some useful info when you run `git annex info glacier`, including where it's getting the AWS credentials from.
-"""]]

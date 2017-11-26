@@ -1,0 +1,63 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~stephane-gourichon-lpad"
+ nickname="stephane-gourichon-lpad"
+ subject="Build on Debian 7.11 AMD64"
+ date="2016-10-10T06:43:49Z"
+ content="""
+Hello,
+
+Following https://git-annex.branchable.com/install/fromsource/ \"building from source on Debian\" succeeds on Xubuntu 16.04 but fails on Debian 7.11.
+First observed on recent commit `ade6ab4` (the one that was used on Xubuntu 16.04) then failed the same way with most recent commit `f244d94` and for tag `debian/6.20160719-1`.
+
+Haskell context was installed on the machine specifically to build git-annex, so there should not be any extraneous package.
+
+Surprisingly, \"make\" and \"cabal\" output rather different messages.
+
+```
+make
+
+if [ \"cabal\" = ./Setup ]; then ghc --make Setup; fi
+if [ \"cabal\" = stack ]; then \
+		cabal build ; \
+	else \
+		cabal configure --ghc-options=\"\"; \
+	fi
+Warning: git-annex.cabal: Ignoring unknown section type: custom-setup
+Resolving dependencies...
+Warning: git-annex.cabal: Ignoring unknown section type: custom-setup
+
+Utility/Exception.hs:29:18:
+    Could not find module `Control.Monad.Catch'
+    Perhaps you meant
+      Control.Monad.CatchIO (from MonadCatchIO-mtl-0.3.0.4)
+      Control.Monad.Base (from transformers-base-0.4.1)
+      Control.Monad.Cont (from mtl-2.1.1)
+    Use -v to see a list of the files searched for.
+make: *** [Build/SysConfig.hs] Erreur 1
+```
+
+```
+cabal install
+
+Warning: git-annex.cabal: Ignoring unknown section type: custom-setup
+Resolving dependencies...
+cabal: Could not resolve dependencies:
+next goal: git-annex (user goal)
+rejecting: git-annex-6.20160923, 6.20160907, 6.20160808 (global constraint
+requires ==6.20160619)
+trying: git-annex-6.20160619
+trying: base-4.5.0.0/installed-40b... (dependency of git-annex-6.20160619)
+trying: git-annex-6.20160619:+concurrentoutput
+next goal: concurrent-output (dependency of
+git-annex-6.20160619:+concurrentoutput)
+rejecting: concurrent-output-1.7.7, 1.7.6, 1.7.5, 1.7.4, 1.7.3, 1.7.2, 1.7.1,
+1.7.0, 1.6.1, 1.6.0 (conflict: base==4.5.0.0/installed-40b...,
+concurrent-output => base(>=4.6))
+rejecting: concurrent-output-1.5.0, 1.4.0, 1.3.0, 1.2.0, 1.1.0, 1.0.1, 1.0.0
+(conflict: git-annex-6.20160619:concurrentoutput => concurrent-output(>=1.6))
+```
+
+Any hint? When succeeding the pair of machines will be my first remote ssh-based repo. I need a recent enough build for [mixed content repository](https://git-annex.branchable.com/tips/largefiles/) that would automatically put some types of files in regular git and some other types in annex.
+Thanks.
+
+"""]]

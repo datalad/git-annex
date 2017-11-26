@@ -1,24 +1,24 @@
 {- git-annex command
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.AddUnused where
 
-import Common.Annex
 import Logs.Location
 import Command
-import qualified Command.Add
+import Annex.Ingest
 import Command.Unused (withUnusedMaps, UnusedMaps(..), startUnused)
-import Types.Key
 
-cmd :: [Command]
-cmd = [notDirect $ command "addunused" (paramRepeating paramNumRange)
-	seek SectionMaintenance "add back unused files"]
+cmd :: Command
+cmd = notDirect $ 
+	command "addunused" SectionMaintenance 
+		"add back unused files"
+		(paramRepeating paramNumRange) (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withUnusedMaps start
 
 start :: UnusedMaps -> Int -> CommandStart
@@ -29,7 +29,7 @@ start = startUnused "addunused" perform
 perform :: Key -> CommandPerform
 perform key = next $ do
 	logStatus key InfoPresent
-	Command.Add.addLink file key Nothing
+	addLink file key Nothing
 	return True
   where
 	file = "unused." ++ key2file key
@@ -38,4 +38,4 @@ perform key = next $ do
  - it seems better to error out, rather than moving bad/tmp content into
  - the annex. -}
 performOther :: String -> Key -> CommandPerform
-performOther other _ = error $ "cannot addunused " ++ other ++ "content"
+performOther other _ = giveup $ "cannot addunused " ++ other ++ "content"

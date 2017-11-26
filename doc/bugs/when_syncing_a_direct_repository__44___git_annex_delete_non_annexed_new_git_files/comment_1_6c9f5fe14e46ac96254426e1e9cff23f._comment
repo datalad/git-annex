@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawnm19dBCRphmtjXfopm_NpvnRwz-qIJ2Tw"
- nickname="Remi"
- subject="Checking out the file"
- date="2013-12-03T10:29:40Z"
- content="""
-If I run `GIT_WORK_TREE=/media/direct-repo git checkout bar.tex` I have my file back.
-"""]]

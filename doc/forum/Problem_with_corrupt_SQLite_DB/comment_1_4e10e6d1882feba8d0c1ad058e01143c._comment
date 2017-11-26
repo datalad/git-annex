@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-05-31T15:53:32Z"
+ content="""
+Delete .git/annex/keys/db
+
+This database is not really needed unless your repository is in v6 mode.
+"""]]

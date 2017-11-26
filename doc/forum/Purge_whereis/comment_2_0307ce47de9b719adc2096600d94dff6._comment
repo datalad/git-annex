@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="frost.kristian@75a6b6a25121f985cd8708f98c691d41716ac720"
+ nickname="frost.kristian"
+ subject="comment 2"
+ date="2015-12-21T13:08:49Z"
+ content="""
+It seems I have to enable syncing from the webapp. I thought doing git annex sync would do the same?
+"""]]

@@ -1,9 +1,11 @@
 {- git hash-object interface
  -
- - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
+
+{-# LANGUAGE CPP #-}
 
 module Git.HashObject where
 
@@ -18,7 +20,7 @@ import Utility.Tmp
 type HashObjectHandle = CoProcess.CoProcessHandle
 
 hashObjectStart :: Repo -> IO HashObjectHandle
-hashObjectStart = CoProcess.rawMode <=< gitCoProcessStart True
+hashObjectStart = gitCoProcessStart True
 	[ Param "hash-object"
 	, Param "-w"
 	, Param "--stdin-paths"
@@ -32,13 +34,16 @@ hashObjectStop = CoProcess.stop
 hashFile :: HashObjectHandle -> FilePath -> IO Sha
 hashFile h file = CoProcess.query h send receive
   where
-	send to = hPutStrLn to file
+	send to = hPutStrLn to =<< absPath file
 	receive from = getSha "hash-object" $ hGetLine from
 
 {- Injects a blob into git. Unfortunately, the current git-hash-object
  - interface does not allow batch hashing without using temp files. -}
 hashBlob :: HashObjectHandle -> String -> IO Sha
 hashBlob h s = withTmpFile "hash" $ \tmp tmph -> do
+#ifdef mingw32_HOST_OS
+	hSetNewlineMode tmph noNewlineTranslation
+#endif
 	hPutStr tmph s
 	hClose tmph
 	hashFile h tmp

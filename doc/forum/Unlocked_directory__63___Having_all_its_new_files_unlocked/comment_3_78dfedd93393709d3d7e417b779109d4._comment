@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="michalrus"
+ avatar="http://cdn.libravatar.org/avatar/83c0b6e7f9d20f09a892263c4903bbae"
+ subject="comment 3"
+ date="2017-08-16T12:58:24Z"
+ content="""
+But it’s better. As a dirty workaround, I could add a cron job/timer that would periodically git-annex-lock all files *except* that single directory I want unlocked.
+
+But a static configuration—say, in .gitattributes—would be way better. ♥
+
+Or is there a way to configure that already?
+"""]]

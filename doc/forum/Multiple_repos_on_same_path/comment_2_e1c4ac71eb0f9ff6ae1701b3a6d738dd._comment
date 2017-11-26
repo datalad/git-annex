@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-07-20T17:38:10Z"
+ content="""
+sunny256 has a nice approach with the symlinks to make the paths
+to the remores explicitly contain the machine name.
+
+However, if you want to keep it simple, it's perfectly fine for a
+remote's path to point to a directory which has different
+repositories mounted on it at different times. I do this in my own
+removable media drives, so the "host" remote uses /home/joey/sound,
+for example.
+
+This is safe to do because git-annex always checks the UUID of the
+remote before using it. For a local path like this, it will automatically
+update the cached annex-uuid of the remote when it finds a repo with a
+different UUID mounted. (For a path to a repo on a remote server, it uses
+other methods to verify that it's accessing the repo with the UUID it
+expected.)
+
+The only thing I'd be careful about doing is switching the repository that
+is mounted at a path with another one while git-annex is running, since it
+only checks at startup and won't notice the substitution and could get
+confused.
+"""]]

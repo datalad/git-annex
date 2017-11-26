@@ -1,0 +1,45 @@
+I have an annex repository with several of my CDs. They were ripped using MusicBrainz data, causing some directory names to be in Russian. This is something I wanted to change.
+
+I have cloned this repository on my laptop, where I wanted to implement the change.
+
+When I do a git mv Пётр_Ильич_Чайковский P_I_Tchaikovsky on my laptop, I can commit the change. git annex sync also doesn't object
+
+However, the original directory remains on the origin repository, and the renamed directory is not present.
+
+Am I doing something wrong?
+
+
+
+    [master e112a02] Renamed Tchaikovsky directory.
+     9 files changed, 0 insertions(+), 0 deletions(-)
+     rename "\320\237\321\221\321\202\321\200_\320\230\320\273\321\214\320\270\321\207_\320\247\320\260\320\271\320\272\320\276\320\262\321\201\320\272\320\270\320\271/Dvo\305\231\303\241k_ Cellokonzert _ Tschaikowsky_ Rokoko-Variationen/04 Variations on a Rococo Theme, Op. 33_ Moderato quasi Andante.flac" => "P_I_Tchaikovsky/Dvo\305\231\303\241k_ Cellokonzert _ Tschaikowsky_ Rokoko-Variationen/04 Variations on a Rococo Theme, Op. 33_ Moderato quasi Andante.flac" (100%)
+     rename "\320\237\321\221\321\202\321\200_\320\230\320\273\321\214\320\270\321\207_\320\247\320\260\320\271\320\272\320\276\320\262\321\201\320\272\320\270\320\271/Dvo\305\231\303\241k_ Cellokonzert _ Tschaikowsky_ Rokoko-Variationen/05 Variations on a Rococo Theme, Op. 33_ Tema. Moderato semplice.flac" => "P_I_Tchaikovsky/Dvo\305\231\303\241k_ Cellokonzert _ Tschaikowsky_ Rokoko-Variationen/05 Variations on a Rococo Theme, Op. 33_ Tema. Moderato semplice.flac" (100%)
+     rename "\320\237\321\221\321\202\321\200_\320\230\320\273\321\214\320\270\321\207_\320\247\320\260\320\271\320\272\320\276\320\262\321\201\320\272\320\270\320\271/Dvo\305\231\303\241k_ Cellokonzert _ Tschaikowsky_ Rokoko-Variationen/06 Variations on a Rococo Theme, Op. 33_ Variazione I. Tempo del Tema.flac" => "P_I_Tchaikovsky/Dvo\305\231\303\241k_ Cellokonzert _ Tschaikowsky_ Rokoko-Variationen/06 Variations on a Rococo Theme, Op. 33_ Variazione I. Tempo del Tema.flac" (100%)
+     rename "\320\237\321\221\321\202\321\200_\320\230\320\273\321\214\320\270\321\207_\320\247\320\260\320\271\320\272\320\276\320\262\321\201\320\272\320\270\320\271/Dvo\305\231\303\241k_ Cellokonzert _ Tschaikowsky_ Rokoko-Variationen/07 Variations on a Rococo Theme, Op. 33_ Variazione II. Tempo del Tema.flac" => "P_I_Tchaikovsky/Dvo\305\231\303\241k_ Cellokonzert _ Tschaikowsky_ Rokoko-Variationen/07 Variations on a Rococo Theme, Op. 33_ Variazione II. Tempo del Tema.flac" (100%)
+     rename "\320\237\321\221\321\202\321\200_\320\230\320\273\321\214\320\270\321\207_\320\247\320\260\320\271\320\272\320\276\320\262\321\201\320\272\320\270\320\271/Dvo\305\231\303\241k_ Cellokonzert _ Tschaikowsky_ Rokoko-Variationen/08 Variations on a Rococo Theme, Op. 33_ Variazione III. Andante sostenuto.flac" => "P_I_Tchaikovsky/Dvo\305\231\303\241k_ Cellokonzert _ Tschaikowsky_ Rokoko-Variationen/08 Variations on a Rococo Theme, Op. 33_ Variazione III. Andante sostenuto.flac" (100%)
+     rename "\320\237\321\221\321\202\321\200_\320\230\320\273\321\214\320\270\321\207_\320\247\320\260\320\271\320\272\320\276\320\262\321\201\320\272\320\270\320\271/Dvo\305\231\303\241k_ Cellokonzert _ Tschaikowsky_ Rokoko-Variationen/09 Variations on a Rococo Theme, Op. 33_ Variazione IV. Andante grazioso.flac" => "P_I_Tchaikovsky/Dvo\305\231\303\241k_ Cellokonzert _ Tschaikowsky_ Rokoko-Variationen/09 Variations on a Rococo Theme, Op. 33_ Variazione IV. Andante grazioso.flac" (100%)
+     rename "\320\237\321\221\321\202\321\200_\320\230\320\273\321\214\320\270\321\207_\320\247\320\260\320\271\320\272\320\276\320\262\321\201\320\272\320\270\320\271/Dvo\305\231\303\241k_ Cellokonzert _ Tschaikowsky_ Rokoko-Variationen/10 Variations on a Rococo Theme, Op.,33_ Variazione V. Allegro moderato.flac" => "P_I_Tchaikovsky/Dvo\305\231\303\241k_ Cellokonzert _ Tschaikowsky_ Rokoko-Variationen/10 Variations on a Rococo Theme, Op.,33_ Variazione V. Allegro moderato.flac" (100%)
+     rename "\320\237\321\221\321\202\321\200_\320\230\320\273\321\214\320\270\321\207_\320\247\320\260\320\271\320\272\320\276\320\262\321\201\320\272\320\270\320\271/Dvo\305\231\303\241k_ Cellokonzert _ Tschaikowsky_ Rokoko-Variationen/11 Variations on a Rococo Theme, Op. 33_ Variazione VI. Andante.flac" => "P_I_Tchaikovsky/Dvo\305\231\303\241k_ Cellokonzert _ Tschaikowsky_ Rokoko-Variationen/11 Variations on a Rococo Theme, Op. 33_ Variazione VI. Andante.flac" (100%)
+     rename "\320\237\321\221\321\202\321\200_\320\230\320\273\321\214\320\270\321\207_\320\247\320\260\320\271\320\272\320\276\320\262\321\201\320\272\320\270\320\271/Dvo\305\231\303\241k_ Cellokonzert _ Tschaikowsky_ Rokoko-Variationen/12 Variations on a Rococo Theme, Op. 33_ Variazione VII e Coda. Allegro vivo.flac" => "P_I_Tchaikovsky/Dvo\305\231\303\241k_ Cellokonzert _ Tschaikowsky_ Rokoko-Variationen/12 Variations on a Rococo Theme, Op. 33_ Variazione VII e Coda. Allegro vivo.flac" (100%)
+    frederik@freo:~/Music$ git annex sync
+    commit  ok
+    pull A20 
+    remote: Counting objects: 83, done.
+    remote: Compressing objects: 100% (74/74), done.
+    remote: Total 83 (delta 2), reused 0 (delta 0)
+    Unpacking objects: 100% (83/83), done.
+    From ssh://A20:/mnt/usb1/Music
+       5c0bae2..72eb235  git-annex  -> A20/git-annex
+    ok
+    (merging A20/git-annex into git-annex...)
+    (Recording state in git...)
+    push A20 
+    Counting objects: 284, done.
+    Delta compression using up to 4 threads.
+    Compressing objects: 100% (257/257), done.
+    Writing objects: 100% (284/284), 21.06 KiB | 0 bytes/s, done.
+    Total 284 (delta 153), reused 0 (delta 0)
+    To ssh://A20:/mnt/usb1/Music
+       0a391ea..ad7251c  git-annex -> synced/git-annex
+       4af0061..e112a02  master -> synced/master
+    ok

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2015-09-23T17:35:51Z"
+ content="""
+I've added an "ancient" autobuild, which is run on Debian stable plus
+minimal backports (currently of optparse-applicative only).
+"""]]

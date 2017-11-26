@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="supernaught"
+ avatar="http://cdn.libravatar.org/avatar/55f92a50f2617099e2dc7509130ce158"
+ subject="comment 1"
+ date="2017-07-18T17:03:54Z"
+ content="""
+I'm not certain, but I think 
+    
+    $> git annex unused --fast
+    $> git annex drop --unused
+
+will work.
+"""]]

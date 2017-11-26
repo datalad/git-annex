@@ -1,0 +1,60 @@
+# NAME
+
+git-annex info - shows information about the specified item or the repository as a whole
+
+# SYNOPSIS
+
+git annex info `[directory|file|treeish|remote|uuid ...]`
+
+# DESCRIPTION
+
+Displays statistics and other information for the specified item,
+which can be a directory, or a file, or a treeish, or a remote,
+or the uuid of a repository.
+  
+When no item is specified, displays statistics and information
+for the repository as a whole.
+
+# OPTIONS
+
+* `--fast`
+
+  Only show the data that can be gathered quickly.
+
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
+* `--bytes`
+
+  Show file sizes in bytes, disabling the default nicer units.
+
+* `--batch`
+
+  Enable batch mode, in which a line containing an item is read from stdin,
+  the information about it is output to stdout, and repeat.
+
+* file matching options
+
+  When a directory is specified, the [[git-annex-matching-options]](1)
+  can be used to select the files in the directory that are included
+  in the statistics.
+
+# EXAMPLES
+
+Suppose you want to run "git annex get .", but
+would first like to see how much disk space that will use.
+Then run:
+  
+	git annex info --fast . --not --in here
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

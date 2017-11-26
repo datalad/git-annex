@@ -2,8 +2,10 @@
  - bugs.
  -
  - This exports functions that conflict with the prelude, which avoids
- - them being accidentially used.
+ - them being accidentally used.
  -}
+
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.PartialPrelude where
 

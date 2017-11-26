@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-02-17T16:16:53Z"
+ content="""
+The solution to your build failure is to edit ~/.cabal/config and remove
+the extra-prog-path line. (It's unfortunate that Debian shipped 8.3 with
+that bug. I told them about it before the release, but they didn't get it
+fixed in time.)
+
+There are probably several other config settings that also break 
+the test suite if set in a global gitconfig. For example the
+annex.addunlocked setting I added yesterday will.
+
+I think the best approach is to isolate the the test suite from global git
+config settings. Making the test suite set `GIT_CONFIG` to the config of
+each test repo it runs git-annex in seems like it would
+work; this prevents git from reading the user and global configs.
+
+The test suite could set all config values to defaults
+in the test git repos. But this would need some restructuring of the code to
+be able to not just query, but also set those values.
+"""]]

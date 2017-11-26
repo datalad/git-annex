@@ -1,6 +1,6 @@
-This is very straightforward. Just tell it a description of the repository.
+This is very straightforward.
 
 	# mkdir ~/annex
 	# cd ~/annex
 	# git init
-	# git annex init "my laptop"
+	# git annex init

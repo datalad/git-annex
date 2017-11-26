@@ -1,0 +1,145 @@
+#!/bin/sh
+#
+# Cross-compiles utilities needed for git-annex on Android,
+# and builds the Android app.
+
+set -e
+
+androidversion=$1
+if [ -z "$androidversion" ]; then
+	echo "need android version (4 or 5) as parameter" >&2
+	exit 1
+fi
+
+VER="$(perl -e '$_=<>;print m/\((.*?)\)/'<../../CHANGELOG)"
+
+wrap () {
+	sed -e "s!PROG!$1!" -e "s!OPTS!$3!" < wrapper.pl > "$2"
+	chmod +x "$2"
+}
+
+# Add Android cross-compiler to PATH (as installed by ghc-android)
+androidtoolchain="$HOME/.ghc/$(cat abiversion)/bin"
+# For Android 5, use a wrapped version of the C compiler,
+# which sets PIE build flags.
+if [ "$androidversion" = 5 ]; then
+	rm -rf "$androidtoolchain/5"
+	mkdir -p "$androidtoolchain/5"
+	for f in $(find "$androidtoolchain" -maxdepth 1 -not -type d -printf '%f\n'); do
+		src="$androidtoolchain/$f"
+		dest="$androidtoolchain/5/$f"
+		case "$f" in
+		*-ld*)
+			wrap "$src" "$dest" "-pie"
+		;;
+		*-gcc)
+			wrap "$src" "$dest" "-pie -fPIE"
+		;;
+		*'-g++')
+			wrap "$src" "$dest" "-pie -fPIE"
+		;;
+		*)
+			cp -a "$src" "$dest"
+		;;
+		esac
+	done
+	PATH="$androidtoolchain/5:$PATH"
+else
+	PATH="$androidtoolchain:$PATH"
+fi
+export PATH
+
+# Paths to the Android SDK and NDK.
+export ANDROID_SDK_ROOT="$HOME/.android/adt-bundle-linux-x86/sdk"
+export ANDROID_NDK_ROOT="$HOME/.android/android-ndk"
+
+GIT_ANNEX_ANDROID_SOURCETREE="$HOME/.android/git-annex-sourcetree"
+export GIT_ANNEX_ANDROID_SOURCETREE
+if [ ! -e "$GIT_ANNEX_ANDROID_SOURCETREE" ]; then
+	make source
+fi
+src="$GIT_ANNEX_ANDROID_SOURCETREE-$androidversion"
+if [ ! -e "$src" ] ; then
+	cp -a "$GIT_ANNEX_ANDROID_SOURCETREE" "$src"
+fi
+GIT_ANNEX_ANDROID_SOURCETREE="$src"
+export GIT_ANNEX_ANDROID_SOURCETREE
+
+gittree="$GIT_ANNEX_ANDROID_SOURCETREE/git/installed-tree"
+
+make "$GIT_ANNEX_ANDROID_SOURCETREE/openssl/build-stamp"
+make "$GIT_ANNEX_ANDROID_SOURCETREE/openssh/build-stamp"
+make "$GIT_ANNEX_ANDROID_SOURCETREE/busybox/build-stamp"
+make "$GIT_ANNEX_ANDROID_SOURCETREE/rsync/build-stamp"
+make "$GIT_ANNEX_ANDROID_SOURCETREE/gnupg/build-stamp"
+make "$GIT_ANNEX_ANDROID_SOURCETREE/git/build-stamp"
+make "$GIT_ANNEX_ANDROID_SOURCETREE/term/build-stamp"
+
+perl -i -pe 's/(android:versionName=)"[^"]+"/$1"'"$VER"'"/' \
+	"$GIT_ANNEX_ANDROID_SOURCETREE/term/AndroidManifest.xml"
+
+# Debug build because it does not need signing keys.
+(cd "$GIT_ANNEX_ANDROID_SOURCETREE/term" && tools/build-debug)
+
+# Install executables as pseudo-libraries so they will be
+# unpacked from the .apk.
+mkdir -p "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi"
+cp "$GIT_ANNEX_ANDROID_SOURCETREE/busybox/busybox" "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.busybox.so"
+cp "$GIT_ANNEX_ANDROID_SOURCETREE/openssh/ssh" "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.ssh.so"
+cp "$GIT_ANNEX_ANDROID_SOURCETREE/openssh/ssh-keygen" "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.ssh-keygen.so"
+cp "$GIT_ANNEX_ANDROID_SOURCETREE/rsync/rsync" "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.rsync.so"
+cp "$GIT_ANNEX_ANDROID_SOURCETREE/gnupg/g10/gpg" "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.gpg.so"
+cp "$GIT_ANNEX_ANDROID_SOURCETREE/git/git" "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.git.so"
+cp "$GIT_ANNEX_ANDROID_SOURCETREE/git/git-shell" "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.git-shell.so"
+cp "$GIT_ANNEX_ANDROID_SOURCETREE/git/git-upload-pack" "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.git-upload-pack.so"
+arm-linux-androideabi-strip --strip-unneeded --remove-section=.comment --remove-section=.note "$GIT_ANNEX_ANDROID_SOURCETREE"/term/libs/armeabi/*
+cp runshell "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.runshell.so"
+cc start.c -o "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.start.so"
+
+# remove git stuff we don't need to save space
+rm -rf $gittree/bin/git-cvsserver \
+	$gittree/libexec/git-core/git-daemon \
+	$gittree/libexec/git-core/git-show-index \
+	$gittree/libexec/git-core/mergetools \
+	$gittree/libexec/git-core/git-credential-* \
+	$gittree/libexec/git-core/git-cvsserver \
+	$gittree/libexec/git-core/git-cvsimport \
+	$gittree/libexec/git-core/git-fast-import \
+	$gittree/libexec/git-core/git-http-backend \
+	$gittree/libexec/git-core/git-imap-send \
+	$gittree/libexec/git-core/git-instaweb \
+	$gittree/libexec/git-core/git-p4 \
+	$gittree/libexec/git-core/git-remote-test* \
+	$gittree/libexec/git-core/git-submodule \
+	$gittree/libexec/git-core/git-svn \
+	$gittree/libexec/git-core/git-web--browse
+
+# Most of git is in one multicall binary, but a few important
+# commands are still shell scripts. Those are put into
+# a tarball, along with a list of all the links that should be
+# set up.
+(cd $gittree && mkdir -p links)
+(cd $gittree && find -samefile bin/git -not -wholename ./bin/git > links/git)
+(cd $gittree && find -samefile bin/git-shell -not -wholename ./bin/git-shell > links/git-shell)
+(cd $gittree && find -samefile bin/git-upload-pack -not -wholename ./bin/git-upload-pack > links/git-upload-pack)
+(cd $gittree && find -type f -not -samefile bin/git -not -samefile bin/git-shell -not -samefile bin/git-upload-pack | tar czf ../git.tar.gz -T -)
+(cp "$GIT_ANNEX_ANDROID_SOURCETREE/git/git.tar.gz" "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.git.tar.gz.so")
+
+git rev-parse HEAD > "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.version.so"
+cp ../trustedkeys.gpg "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.trustedkeys.so"
+
+genapk () {
+	mkdir -p ../../tmp/$1; \
+	cp ../../tmp/androidtree/dist/build/git-annex/$1/git-annex "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.git-annex.so"
+	arm-linux-androideabi-strip --strip-unneeded --remove-section=.comment --remove-section=.note "$GIT_ANNEX_ANDROID_SOURCETREE/term/libs/armeabi/lib.git-annex.so"
+	(cd "$GIT_ANNEX_ANDROID_SOURCETREE/term" && ant debug)
+	cp "$GIT_ANNEX_ANDROID_SOURCETREE/term/bin/Term-debug.apk" ../../tmp/$1/git-annex.apk
+}
+
+if [ "$androidversion" = 4 ]; then
+	for v in 4.0 4.3; do
+		genapk $v
+	done
+else
+	genapk 5.0
+fi

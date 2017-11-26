@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-05-13T15:46:00Z"
+ content="""
+The symlink should point to the new version, unless git-annex is catastropically
+broken, and this can be easily demonstrated that git-annex is not catastropically
+broken:
+
+	joey@darkstar:~/tmp/demo>cat foo.pdf 
+	original pdf
+	joey@darkstar:~/tmp/demo>git annex edit foo.pdf
+	unlock foo.pdf (copying...) ok
+	joey@darkstar:~/tmp/demo>echo "added page" >> foo.pdf 
+	joey@darkstar:~/tmp/demo>git annex add foo.pdf
+	add foo.pdf ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/demo>git commit -m foo
+	[master 8d7f117] foo
+	 1 file changed, 1 insertion(+), 1 deletion(-)
+	joey@darkstar:~/tmp/demo>cat foo.pdf 
+	original pdf
+	added page
+
+So, what's really going on for you to see what you see when you look at the
+pdf? My guess is that your pdf editor/viewer is doing something bad/smart when
+it encounters the symlink. Perhaps it's loading an old cached version of the
+pdf rather than following the symlink or something.
+
+When you use `git annex edit`, the file stops being a symlink, and
+so whatever smart/bad behavior is causing the problem is avoided.
+
+If this is the case, switching to direct mode would avoid the problem.
+(`git annex direct`)
+
+If I were using a program and verfied that it has such bad/smart behavior
+on symlinks, I'd complain vigorously to its creators; it should't matter
+if a program is asked to open a symlink or not, it should behave the same either way.
+Unfortunately, it seems that some programs go out of their way to get
+this wrong and all we can do about it is filed bugs and/or use direct mode.
+"""]]

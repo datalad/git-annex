@@ -1,0 +1,22 @@
+I have a large repository that is backed up to hubiC with the [special remote that I wrote](https://github.com/Schnouki/git-annex-remote-hubic). When I created this repository I used the WORM backend. But as I have some duplicated files I'd like to migrate to SHA256E to avoid storing them twice. However, when migrating a file, its location on the remote is not kept:
+
+    % git annex whereis "2015-07-25 12.28.16.jpg"
+    whereis 2015-07-25 12.28.16.jpg (2 copies) 
+            23fa590d-682d-43be-9851-8ba47186d763 -- [hubic]
+            f6642b89-2a0f-4788-8e13-be540fdfec58 -- baldr [here]
+    ok
+    
+    % git annex migrate "2015-07-25 12.28.16.jpg" --backend SHA256E
+    migrate 2015-07-25 12.28.16.jpg ok 
+    (recording state in git...)
+    
+    % git annex whereis "2015-07-25 12.28.16.jpg"
+    whereis 2015-07-25 12.28.16.jpg (1 copy) 
+            f6642b89-2a0f-4788-8e13-be540fdfec58 -- baldr [here]
+    ok
+
+Is there any way to store in the git-annex branch that migrated files are still available on remotes without having to re-upload all of them? hubiC is quite slow and I don't really want to re-upload 90 GB from a DSL connection…
+
+Or would it be possible to add something in the special remote protocol to "move" a key without re-uploading it?
+
+Thanks!

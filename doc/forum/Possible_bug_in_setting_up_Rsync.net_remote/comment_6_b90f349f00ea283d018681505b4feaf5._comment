@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="dave@2ab82f485adf7e2ce787066e35f5f9789bff430b"
+ nickname="dave"
+ subject="re: regular ssh remote"
+ date="2016-09-21T21:30:24Z"
+ content="""
+I tried adding my rsync.net space as a regular (ssh) remote instead of as an rsync.net remote.  I got this in the webapp:
+
+    Failed to ssh to the server. Transcript: 
+
+(sic)
+
+This time the debug log shows this:
+
+    [2016-09-21 16:19:15.0106417] read: ssh-keygen [\"-F\",\"usw-s009.rsync.net\"]
+    [2016-09-21 16:19:15.2376417] process done ExitSuccess
+    [2016-09-21 16:19:15.2376417] chat: ssh [
+      \"-oNumberOfPasswordPrompts=0\",
+      \"-oStrictHostKeyChecking=yes\",
+      \"-n\",
+      \"-p\",
+      \"22\",
+      \"9553@usw-s009.rsync.net\",
+      \"sh -c 'echo '\\"'\\"'git-annex-probe loggedin'\\"'\\"';if which git-annex-shell; then echo '\\"'\\"'git-annex-probe git-annex-shell'\\"'\\"'; fi;if which git; then echo '\\"'\\"'git-annex-probe git'\\"'\\"'; fi;if which rsync; then echo '\\"'\\"'git-annex-probe rsync'\\"'\\"'; fi;if which ~/.ssh/git-annex-shell; then echo '\\"'\\"'git-annex-probe ~/.ssh/git-annex-shell'\\"'\\"'; fi;if which ~/.ssh/git-annex-wrapper; then echo '\\"'\\"'git-annex-probe ~/.ssh/git-annex-wrapper'\\"'\\"'; fi;cd '\\"'\\"'annex'\\"'\\"' && git config --list'\"]
+    [2016-09-21 16:19:17.4001417] process done ExitFailure 1
+
+
+For what it is worth:
+
+    $ ssh -oNumberOfPasswordPrompts=0 -oStrictHostKeyChecking=yes -n -p 22 9553@usw-s009.rsync.net sh -c 'echo hello'
+
+THAT fails with exit code 1.  But that's just because it's rsync.net, a restricted shell...  (The same command with just 'ls' works!)
+
+I'm back to thinking that it's actually trying to resolve the mangled string.  However, I've been known to be completely wrong before!
+"""]]

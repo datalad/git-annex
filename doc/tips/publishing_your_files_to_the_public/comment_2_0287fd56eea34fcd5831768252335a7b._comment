@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="jajpater"
+ avatar="http://cdn.libravatar.org/avatar/17a62a7410a3ea7d62715efced72158e"
+ subject="Also fails when using UUID but differently"
+ date="2017-10-20T09:47:24Z"
+ content="""
+I tried to use the dir UUID - found by using 
+
+    git ls-tree origin/master
+
+This however also fails:
+
+    git annex export fd94c0f44ff40b07bcbe58d4c3921c6fb35c7074 -t box.com
+    export box.com file1 (not available) failed
+    export box.com file2 (not available) failed
+    ...
+    export box.com file10 (not available) failed
+    (recording state in git...)
+    git-annex: export: 10 failed
+
+Does anybody know what's wrong?
+
+"""]]

@@ -1,9 +1,0 @@
-The automatic conflict resolution currently seems to only work within
-the context of sync, when merging «synced/foo» into «foo». It would be
-convenient if this functionality were exposed for manual merges
-between local branches.
-
-E.g., one might invoke «git annex merge» or «git annex autoresolve»
-after «git merge» when conflicts are found.
-
-> [[done]] as resolvemerge. --[[Joey]]

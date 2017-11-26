@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-03-01T16:52:16Z"
+ content="""
+I've fixed the STM transaction bug. Need either more info to reproduce this
+bug, or you could test and see if it still occurs when git-annex is
+upgraded to ad888a6b760e8f9d31f8d99c51912bcdaa7fb0c1
+"""]]

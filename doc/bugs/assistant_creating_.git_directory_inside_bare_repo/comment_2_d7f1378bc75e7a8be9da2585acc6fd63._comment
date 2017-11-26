@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.64"
- subject="comment 2"
- date="2013-12-02T16:35:41Z"
- content="""
-I've now made git-annex automatically detect these problem repositories, and fix them up. You should not need to do anything to recover, just upgrade git-annex eventually, and use it.
-"""]]

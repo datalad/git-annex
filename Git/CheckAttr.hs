@@ -1,6 +1,6 @@
 {- git check-attr interface
  -
- - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,12 +10,12 @@ module Git.CheckAttr where
 import Common
 import Git
 import Git.Command
-import qualified Git.BuildVersion
+import qualified Git.Version
 import qualified Utility.CoProcess as CoProcess
 
 import System.IO.Error
 
-type CheckAttrHandle = (CoProcess.CoProcessHandle, [Attr], String)
+type CheckAttrHandle = (CoProcess.CoProcessHandle, [Attr], Bool, String)
 
 type Attr = String
 
@@ -24,24 +24,28 @@ type Attr = String
 checkAttrStart :: [Attr] -> Repo -> IO CheckAttrHandle
 checkAttrStart attrs repo = do
 	currdir <- getCurrentDirectory
-	h <- CoProcess.rawMode =<< gitCoProcessStart True params repo
-	return (h, attrs, currdir)
+	h <- gitCoProcessStart True params repo
+	oldgit <- Git.Version.older "1.7.7"
+	return (h, attrs, oldgit, currdir)
   where
 	params =
 		[ Param "check-attr" 
-		, Params "-z --stdin"
+		, Param "-z"
+		, Param "--stdin"
 		] ++ map Param attrs ++
 		[ Param "--" ]
 
 checkAttrStop :: CheckAttrHandle -> IO ()
-checkAttrStop (h, _, _) = CoProcess.stop h
+checkAttrStop (h, _, _, _) = CoProcess.stop h
 
-{- Gets an attribute of a file. -}
+{- Gets an attribute of a file. When the attribute is not specified,
+ - returns "" -}
 checkAttr :: CheckAttrHandle -> Attr -> FilePath -> IO String
-checkAttr (h, attrs, currdir) want file = do
+checkAttr (h, attrs, oldgit, currdir) want file = do
 	pairs <- CoProcess.query h send (receive "")
 	let vals = map snd $ filter (\(attr, _) -> attr == want) pairs
 	case vals of
+		["unspecified"] -> return ""
 		[v] -> return v
 		_ -> error $ "unable to determine " ++ want ++ " attribute of " ++ file
   where
@@ -81,13 +85,17 @@ checkAttr (h, attrs, currdir) want file = do
 	 - With newer git, git check-attr chokes on some absolute
 	 - filenames, and the bugs that necessitated them were fixed,
 	 - so use relative filenames. -}
-	oldgit = Git.BuildVersion.older "1.7.7"
 	file'
 		| oldgit = absPathFrom currdir file
-		| otherwise = relPathDirToFile currdir $ absPathFrom currdir file
+		| otherwise = relPathDirToFileAbs currdir $ absPathFrom currdir file
 	oldattrvalue attr l = end bits !! 0
 	  where
 		bits = split sep l
 		sep = ": " ++ attr ++ ": "
 	getattrvalues (_filename:attr:val:rest) c = getattrvalues rest ((attr,val):c)
 	getattrvalues _ c = c
+
+{- User may enter this to override a previous attr setting, when they wish
+ - to not specify an attr for some files. -}
+unspecifiedAttr :: String
+unspecifiedAttr = "!"

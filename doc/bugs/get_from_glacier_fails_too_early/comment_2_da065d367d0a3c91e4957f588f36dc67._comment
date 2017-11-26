@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""creds"""
- date="2014-10-20T19:09:28Z"
- content="""
-Since you are using gpg encryption, your repository may have
-[[upgrades/insecure_embedded_creds]]. Strongly suggest you check if it
-does.
-"""]]

@@ -1,5 +1,0 @@
-Trying to move files from a local remote that is not mounted:
-
-	git-annex: Prelude.undefined
-
-> [[fixed|done]] --[[Joey]]

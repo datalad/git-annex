@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="emanuele.olivetti@47d88ed185b03191e25329caa6fabc2efb3118b2"
+ nickname="emanuele.olivetti"
+ subject="comment 3"
+ date="2016-02-15T09:47:24Z"
+ content="""
+Yes, the content is locally present. In the sense that each symlink in the current directory points to an actual file in .git/annex/objects/ . That is why, in my opinion, fsck incorrectly thinks the content is not present, despite it being present.
+
+Initially I thought that a possible explanation was that 'git commit' went wrong, so that I would have to do it again. I tried to git commit again, but git says there is nothing to commit.
+
+My repository is in indirect mode. All files in the repository, including the troubling ones are in .git/annex/objects.
+"""]]

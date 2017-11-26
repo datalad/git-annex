@@ -1,16 +1,23 @@
 <h3>
+  <a href="@{AddGitLabR}">
+    <span .glyphicon .glyphicon-plus-sign>
+    \ Gitlab.com
+<p>
+  Hosts git-annex repositories for free.
+
+<h3>
   <a href="@{AddBoxComR}">
     <span .glyphicon .glyphicon-plus-sign>
     \ Box.com
 <p>
-  Provides free cloud storage for small amounts of data.
+  Provides free storage for small amounts of data.
 
 <h3>
   <a href="@{AddRsyncNetR}">
     <span .glyphicon .glyphicon-plus-sign>
     \ Rsync.net
 <p>
-  Works very well with git-annex.
+  Works very well with git-annex for data storage.
   <br>
   Offers a discounted rate for git-annex users.
 

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-07-15T16:01:30Z"
+ content="""
+Right, the assistant doesn't have a way to get notified of your manual
+commits, so it doesn't promptly push them.
+
+While the assistant could be modified to watch git branch files for changes,
+I think that for most people wanting to make manual commits, running `git
+annex sync --content` is a better approach. It does all the same syncing
+that the assistant would.
+"""]]

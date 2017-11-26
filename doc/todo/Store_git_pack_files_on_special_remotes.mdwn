@@ -1,0 +1,1 @@
+It would be nice to be able to upload and download git history with special remotes.  This could be a move towards full special remote syncing.

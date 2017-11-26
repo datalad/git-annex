@@ -1,6 +1,6 @@
 {- git-annex assistant communication with remotedaemon
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,7 +9,7 @@ module Assistant.Threads.RemoteControl where
 
 import Assistant.Common
 import RemoteDaemon.Types
-import Config.Files
+import Annex.Path
 import Utility.Batch
 import Utility.SimpleProtocol
 import Assistant.Alert
@@ -28,9 +28,9 @@ import qualified Data.Set as S
 
 remoteControlThread :: NamedThread
 remoteControlThread = namedThread "RemoteControl" $ do
-	program <- liftIO readProgramFile
+	program <- liftIO programPath
 	(cmd, params) <- liftIO $ toBatchCommand
-		(program, [Param "remotedaemon"])
+		(program, [Param "remotedaemon", Param "--foreground"])
 	let p = proc cmd (toCommand params)
 	(Just toh, Just fromh, _, pid) <- liftIO $ createProcess p
 		{ std_in = CreatePipe

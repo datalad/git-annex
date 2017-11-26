@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="may be?"
+ date="2017-04-07T21:01:56Z"
+ content="""
+well, it kinda depends at either at which level parallelization is happening or how parallel jobs handling is done, or may be ...
+
+level of parallelization:
+I guess ATM annex just parallelizes at the level of \"get --key KEY\" jobs.
+But if central process decided to try to \"get --from=remote --key KEY\" -- call which it submits to parallel work pull -- then it could first check if remote is an ssh remote and connection caching is established, and if not -- establish it and then submit this and/or any subsequent get call.
+This would though over-complicate the design I guess considerably, so probably shouldn't be approached.
+
+jobs handling:
+if parallel jobs could 'yield' back to the original process (e.g. if there was some protocoled exchange between them and master process... somewhat similar to git annex special remotes in a way) demanding some action (e.g. - authenticate me to the host) and then proceed back with its dues, could work out I guess.
+But I guess that is also not current implementation
+
+
+may be...:
+since I guess (didn't check) GIT_SSH_COMMAND is used (or not yet but could be?) for ssh transfers, such activity as establishing shared ssh connection could be deferred to it (with some proper locking/waiting for parallel invocations)... or am I wrong?
+"""]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2016-01-11T16:22:02Z"
+ content="""
+It's not included in the standalone tarball because it wouldn't be
+installed in a usable location if it were included.
+
+I continue to think that the git-annex-bin package in Arch is not a good 
+choice. I get more complaints about problems with that package than any
+other distribution package of git-annex. Complicating the tarball to
+support that further is not appealing.
+"""]]

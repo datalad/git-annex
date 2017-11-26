@@ -1,6 +1,6 @@
 {- git-union-merge library
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -22,6 +22,7 @@ import Git.UpdateIndex
 import Git.HashObject
 import Git.Types
 import Git.FilePath
+import Utility.FileSystemEncoding
 
 {- Performs a union merge between two branches, staging it in the index.
  - Any previously staged changes in the index will be lost.
@@ -30,12 +31,14 @@ import Git.FilePath
  -}
 merge :: Ref -> Ref -> Repo -> IO ()
 merge x y repo = do
-	h <- catFileStart repo
+	hashhandle <- hashObjectStart repo
+	ch <- catFileStart repo
 	streamUpdateIndex repo
 		[ lsTree x repo
-		, mergeTrees x y h repo
+		, mergeTrees x y hashhandle ch repo
 		]
-	catFileStop h
+	catFileStop ch
+	hashObjectStop hashhandle
 
 {- Merges a list of branches into the index. Previously staged changes in
  - the index are preserved (and participate in the merge).
@@ -45,44 +48,45 @@ merge x y repo = do
  - harder to calculate a single union merge involving all the refs, as well
  - as the index.
  -}
-mergeIndex :: CatFileHandle -> Repo -> [Ref] -> IO ()
-mergeIndex h repo bs = forM_ bs $ \b ->
-	streamUpdateIndex repo [mergeTreeIndex b h repo]
+mergeIndex :: HashObjectHandle -> CatFileHandle -> Repo -> [Ref] -> IO ()
+mergeIndex hashhandle ch repo bs = forM_ bs $ \b ->
+	streamUpdateIndex repo [mergeTreeIndex b hashhandle ch repo]
 
 {- For merging two trees. -}
-mergeTrees :: Ref -> Ref -> CatFileHandle -> Repo -> Streamer
-mergeTrees (Ref x) (Ref y) h = doMerge h $ "diff-tree":diffOpts ++ [x, y]
+mergeTrees :: Ref -> Ref -> HashObjectHandle -> CatFileHandle -> Repo -> Streamer
+mergeTrees (Ref x) (Ref y) hashhandle ch = doMerge hashhandle ch
+	("diff-tree":diffOpts ++ [x, y, "--"])
 
 {- For merging a single tree into the index. -}
-mergeTreeIndex :: Ref -> CatFileHandle -> Repo -> Streamer
-mergeTreeIndex (Ref x) h = doMerge h $
-	"diff-index" : diffOpts ++ ["--cached", x]
+mergeTreeIndex :: Ref -> HashObjectHandle -> CatFileHandle -> Repo -> Streamer
+mergeTreeIndex (Ref r) hashhandle ch = doMerge hashhandle ch $
+	"diff-index" : diffOpts ++ ["--cached", r, "--"]
 
 diffOpts :: [String]
 diffOpts = ["--raw", "-z", "-r", "--no-renames", "-l0"]
 
 {- Streams update-index changes to perform a merge,
  - using git to get a raw diff. -}
-doMerge :: CatFileHandle -> [String] -> Repo -> Streamer
-doMerge ch differ repo streamer = do
+doMerge :: HashObjectHandle -> CatFileHandle -> [String] -> Repo -> Streamer
+doMerge hashhandle ch differ repo streamer = do
 	(diff, cleanup) <- pipeNullSplit (map Param differ) repo
 	go diff
 	void $ cleanup
   where
 	go [] = noop
-	go (info:file:rest) = mergeFile info file ch repo >>=
+	go (info:file:rest) = mergeFile info file hashhandle ch >>=
 		maybe (go rest) (\l -> streamer l >> go rest)
 	go (_:[]) = error $ "parse error " ++ show differ
 
 {- Given an info line from a git raw diff, and the filename, generates
  - a line suitable for update-index that union merges the two sides of the
  - diff. -}
-mergeFile :: String -> FilePath -> CatFileHandle -> Repo -> IO (Maybe String)
-mergeFile info file h repo = case filter (/= nullSha) [Ref asha, Ref bsha] of
+mergeFile :: String -> FilePath -> HashObjectHandle -> CatFileHandle -> IO (Maybe String)
+mergeFile info file hashhandle h = case filter (/= nullSha) [Ref asha, Ref bsha] of
 	[] -> return Nothing
 	(sha:[]) -> use sha
 	shas -> use
-		=<< either return (\s -> hashObject BlobObject (unlines s) repo)
+		=<< either return (\s -> hashBlob hashhandle (unlines s))
 		=<< calcMerge . zip shas <$> mapM getcontents shas
   where
 	[_colonmode, _bmode, asha, bsha, _status] = words info
@@ -91,9 +95,8 @@ mergeFile info file h repo = case filter (/= nullSha) [Ref asha, Ref bsha] of
 	-- We don't know how the file is encoded, but need to
 	-- split it into lines to union merge. Using the
 	-- FileSystemEncoding for this is a hack, but ensures there
-	-- are no decoding errors. Note that this works because
-	-- hashObject sets fileEncoding on its write handle.
-	getcontents s = lines . encodeW8 . L.unpack <$> catObject h s
+	-- are no decoding errors.
+	getcontents s = lines . encodeW8NUL . L.unpack <$> catObject h s
 
 {- Calculates a union merge between a list of refs, with contents.
  -

@@ -1,0 +1,6 @@
+Put together a prototype of `git annex export` in the "export" branch.
+Exporting to a directory special remote is basically working, but this is
+only the beginning.
+
+Today's work was sponsored by Jake Vosloo on
+[Patreon](https://patreon.com/joeyh/)

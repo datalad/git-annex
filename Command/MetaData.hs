@@ -1,98 +1,188 @@
 {- git-annex command
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.MetaData where
 
-import Common.Annex
-import qualified Annex
 import Command
 import Annex.MetaData
+import Annex.VectorClock
 import Logs.MetaData
+import Annex.WorkTree
+import Messages.JSON (JSONActionItem(..))
+import Types.Messages
 
 import qualified Data.Set as S
-import Data.Time.Clock.POSIX
+import qualified Data.Map as M
+import qualified Data.Text as T
+import qualified Data.ByteString.Lazy.UTF8 as BU
+import Data.Aeson
+import Control.Concurrent
 
-cmd :: [Command]
-cmd = [withOptions metaDataOptions $
-	command "metadata" paramPaths seek
-	SectionMetaData "sets metadata of a file"]
+cmd :: Command
+cmd = withGlobalOptions ([jsonOption] ++ annexedMatchingOptions) $ 
+	command "metadata" SectionMetaData
+		"sets or gets metadata of a file"
+		paramPaths (seek <$$> optParser)
 
-metaDataOptions :: [Option]
-metaDataOptions =
-	[ setOption
-	, tagOption
-	, untagOption
-	, getOption
-	, jsonOption
-	] ++ keyOptions
+data MetaDataOptions = MetaDataOptions
+	{ forFiles :: CmdParams
+	, getSet :: GetSet
+	, keyOptions :: Maybe KeyOptions
+	, batchOption :: BatchMode
+	}
 
-storeModMeta :: ModMeta -> Annex ()
-storeModMeta modmeta = Annex.changeState $
-	\s -> s { Annex.modmeta = modmeta:Annex.modmeta s }
+data GetSet = Get MetaField | GetAll | Set [ModMeta]
 
-setOption :: Option
-setOption = Option ['s'] ["set"] (ReqArg mkmod "FIELD[+-]=VALUE") "set metadata"
+optParser :: CmdParamsDesc -> Parser MetaDataOptions
+optParser desc = MetaDataOptions
+	<$> cmdParams desc
+	<*> ((Get <$> getopt) <|> (Set <$> some modopts) <|> pure GetAll)
+	<*> optional parseKeyOptions
+	<*> parseBatchOption
   where
-	mkmod = either error storeModMeta . parseModMeta
+	getopt = option (eitherReader mkMetaField)
+		( long "get" <> short 'g' <> metavar paramField
+		<> help "get single metadata field"
+		)
+	modopts = option (eitherReader parseModMeta)
+		( long "set" <> short 's' <> metavar "FIELD[+-]=VALUE"
+		<> help "set or unset metadata value"
+		)
+		<|> (AddMeta tagMetaField . toMetaValue <$> strOption
+			( long "tag" <> short 't' <> metavar "TAG"
+			<> help "set a tag"
+			))
+		<|> (DelMeta tagMetaField . Just . toMetaValue <$> strOption
+			( long "untag" <> short 'u' <> metavar "TAG"
+			<> help "remove a tag"
+			))
+		<|> option (eitherReader (\f -> DelMeta <$> mkMetaField f <*> pure Nothing))
+			( long "remove"  <> short 'r' <> metavar "FIELD"
+			<> help "remove all values of a field"
+			)
+		<|> flag' DelAllMeta
+			( long "remove-all"
+			<> help "remove all metadata"
+			)
 
-getOption :: Option
-getOption = fieldOption ['g'] "get" paramField "get single metadata field"
+seek :: MetaDataOptions -> CommandSeek
+seek o = case batchOption o of
+	NoBatch -> do
+		c <- liftIO currentVectorClock
+		let seeker = case getSet o of
+			Get _ -> withFilesInGit
+			GetAll -> withFilesInGit
+			Set _ -> withFilesInGitNonRecursive
+				"Not recursively setting metadata. Use --force to do that."
+		withKeyOptions (keyOptions o) False
+			(startKeys c o)
+			(seeker $ whenAnnexed $ start c o)
+			=<< workTreeItems (forFiles o)
+	Batch -> withMessageState $ \s -> case outputType s of
+		JSONOutput _ -> batchInput parseJSONInput $
+			commandAction . startBatch
+		_ -> giveup "--batch is currently only supported in --json mode"
 
-tagOption :: Option
-tagOption = Option ['t'] ["tag"] (ReqArg mkmod "TAG") "set a tag"
+start :: VectorClock -> MetaDataOptions -> FilePath -> Key -> CommandStart
+start c o file k = startKeys c o k (mkActionItem afile)
   where
-	mkmod = storeModMeta . AddMeta tagMetaField . toMetaValue
+	afile = AssociatedFile (Just file)
 
-untagOption :: Option
-untagOption = Option ['u'] ["untag"] (ReqArg mkmod "TAG") "remove a tag"
-  where
-	mkmod = storeModMeta . AddMeta tagMetaField . mkMetaValue (CurrentlySet False)
+startKeys :: VectorClock -> MetaDataOptions -> Key -> ActionItem -> CommandStart
+startKeys c o k ai = case getSet o of
+	Get f -> do
+		l <- S.toList . currentMetaDataValues f <$> getCurrentMetaData k
+		liftIO $ forM_ l $
+			putStrLn . fromMetaValue
+		stop
+	_ -> do
+		showStart' "metadata" k ai
+		next $ perform c o k
 
-seek :: CommandSeek
-seek ps = do
-	modmeta <- Annex.getState Annex.modmeta
-	getfield <- getOptionField getOption $ \ms ->
-		return $ either error id . mkMetaField <$> ms
-	now <- liftIO getPOSIXTime
-	withKeyOptions
-		(startKeys now getfield modmeta)
-		(withFilesInGit (whenAnnexed $ start now getfield modmeta))
-		ps
+perform :: VectorClock -> MetaDataOptions -> Key -> CommandPerform
+perform c o k = case getSet o of
+	Set ms -> do
+		oldm <- getCurrentMetaData k
+		let m = combineMetaData $ map (modMeta oldm) ms
+		addMetaData' k m c
+		next $ cleanup k
+	_ -> next $ cleanup k
 
-start :: POSIXTime -> Maybe MetaField -> [ModMeta] -> FilePath -> Key -> CommandStart
-start now f ms file = start' (Just file) now f ms
-
-startKeys :: POSIXTime -> Maybe MetaField -> [ModMeta] -> Key -> CommandStart
-startKeys = start' Nothing
-
-start' :: AssociatedFile -> POSIXTime -> Maybe MetaField -> [ModMeta] -> Key -> CommandStart
-start' afile now Nothing ms k = do
-	showStart' "metadata" k afile
-	next $ perform now ms k
-start' _ _ (Just f) _ k = do
-	l <- S.toList . currentMetaDataValues f <$> getCurrentMetaData k
-	liftIO $ forM_ l $
-		putStrLn . fromMetaValue
-	stop
-
-perform :: POSIXTime -> [ModMeta] -> Key -> CommandPerform
-perform _ [] k = next $ cleanup k
-perform now ms k = do
-	oldm <- getCurrentMetaData k
-	let m = combineMetaData $ map (modMeta oldm) ms
-	addMetaData' k m now
-	next $ cleanup k
-	
 cleanup :: Key -> CommandCleanup
 cleanup k = do
-	l <- map unwrapmeta . fromMetaData <$> getCurrentMetaData k
-	maybeShowJSON l
-	showLongNote $ unlines $ concatMap showmeta l
+	m <- getCurrentMetaData k
+	let Object o = toJSON (MetaDataFields m)
+	maybeShowJSON $ AesonObject o
+	showLongNote $ unlines $ concatMap showmeta $
+		map unwrapmeta (fromMetaData m)
 	return True
   where
 	unwrapmeta (f, v) = (fromMetaField f, map fromMetaValue (S.toList v))
 	showmeta (f, vs) = map ((f ++ "=") ++) vs
+
+-- Metadata serialized to JSON in the field named "fields" of
+-- a larger object.
+newtype MetaDataFields = MetaDataFields MetaData
+	deriving (Show)
+
+instance ToJSON MetaDataFields where
+	toJSON (MetaDataFields m) = object [ (fieldsField, toJSON m) ]
+
+instance FromJSON MetaDataFields where
+	parseJSON (Object v) = do
+		f <- v .: fieldsField
+		case f of
+			Nothing -> return (MetaDataFields emptyMetaData)
+			Just v' -> MetaDataFields <$> parseJSON v'
+	parseJSON _ = fail "expected an object"
+
+fieldsField :: T.Text
+fieldsField = T.pack "fields"
+
+parseJSONInput :: String -> Either String (Either FilePath Key, MetaData)
+parseJSONInput i = do
+	v <- eitherDecode (BU.fromString i)
+	let m = case itemAdded v of
+		Nothing -> emptyMetaData
+		Just (MetaDataFields m') -> m'
+	case (itemKey v, itemFile v) of
+		(Just k, _) -> Right (Right k, m)
+		(Nothing, Just f) -> Right (Left f, m)
+		(Nothing, Nothing) -> Left "JSON input is missing either file or key"
+
+startBatch :: (Either FilePath Key, MetaData) -> CommandStart
+startBatch (i, (MetaData m)) = case i of
+	Left f -> do
+		mk <- lookupFile f
+		case mk of
+			Just k -> go k (mkActionItem (AssociatedFile (Just f)))
+			Nothing -> giveup $ "not an annexed file: " ++ f
+	Right k -> go k (mkActionItem k)
+  where
+	go k ai = do
+		showStart' "metadata" k ai
+		let o = MetaDataOptions
+			{ forFiles = []
+			, getSet = if MetaData m == emptyMetaData
+				then GetAll
+				else Set $ map mkModMeta (M.toList m)
+			, keyOptions = Nothing
+			, batchOption = NoBatch
+			}
+		t <- liftIO currentVectorClock
+		-- It would be bad if two batch mode changes used exactly
+		-- the same timestamp, since the order of adds and removals
+		-- of the same metadata value would then be indeterminate.
+		-- To guarantee that never happens, delay 1 microsecond,
+		-- so the timestamp will always be different. This is
+		-- probably less expensive than cleaner methods,
+		-- such as taking from a list of increasing timestamps.
+		liftIO $ threadDelay 1
+		next $ perform t o k
+	mkModMeta (f, s)
+		| S.null s = DelMeta f Nothing
+		| otherwise = SetMeta f s

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-03-16T17:26:33Z"
+ content="""
+The url inculudes a secret token, so a new url is generated each time
+the assistant is started.
+
+The file `.git/annex/url` in your git-annex repository contains the current
+url.
+"""]]

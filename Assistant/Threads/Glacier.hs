@@ -1,6 +1,6 @@
 {- git-annex assistant Amazon Glacier retrieval
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,6 +14,7 @@ import Assistant.Common
 import Utility.ThreadScheduler
 import qualified Types.Remote as Remote
 import qualified Remote.Glacier as Glacier
+import Types.Transfer
 import Logs.Transfer
 import Assistant.DaemonStatus
 import Assistant.TransferQueue
@@ -28,7 +29,7 @@ glacierThread = namedThread "Glacier" $ runEvery (Seconds 3600) <~> go
   where
 	isglacier r = Remote.remotetype r == Glacier.remote
 	go = do
-		rs <- filter isglacier . syncDataRemotes <$> getDaemonStatus
+		rs <- filter isglacier . downloadRemotes <$> getDaemonStatus
 		forM_ rs $ \r -> 
 			check r =<< liftAnnex (getFailedTransfers $ Remote.uuid r)
 	check _ [] = noop

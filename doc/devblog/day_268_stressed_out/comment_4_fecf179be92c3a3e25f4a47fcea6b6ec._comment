@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/27ceb3c5-0762-42b8-8f8a-ed21c284748f"
+ nickname="g"
+ subject="SuperUser"
+ date="2015-03-31T01:09:20Z"
+ content="""
+Totally agree that the main developers, and especially you, Joey, shouldn't have to be handling most of the support you are now. There's already a reasonable amount of [git-annex-related action over on the SuperUser Stack Exchage](http://superuser.com/search?q=git-annex), though the actual [`git-annex` tag seems to only have been used once](http://superuser.com/questions/tagged/git-annex)
+
+Echoing #3, it does seem like it would make sense to move more of the basic support work over there from the forum. For this sort of Q&A, I find Stack Exchange a bit better structured, a little harder to miss past questions before re-posting, and like that it has a built-in community of people to help answer.
+"""]]

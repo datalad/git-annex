@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Régis"
+ subject="comment 1"
+ date="2015-02-23T09:20:54Z"
+ content="""
+Ok, I found PART of the answer here : <https://git-annex.branchable.com/forum/Two_computers__44___one_networked_repository__44___no_Jabber_-_how_to_setup_sync__63___/>
+
+It is mentioned to use Jabber to make both clients message each other when there is something new to sync. What about my setup with 2 groups of repos syncing together each for itself ? I read somewhere, that the jabber account will sync ALL repos. Is the solution to create 2 Jabber accounts ?
+"""]]

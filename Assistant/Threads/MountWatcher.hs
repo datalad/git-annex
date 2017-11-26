@@ -1,6 +1,6 @@
 {- git-annex assistant mount watcher, using either dbus or mtab polling
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -32,7 +32,9 @@ import Data.Word (Word32)
 import Control.Concurrent
 import qualified Control.Exception as E
 #else
+#ifdef linux_HOST_OS
 #warning Building without dbus support; will use mtab polling
+#endif
 #endif
 
 mountWatcherThread :: UrlRenderer -> NamedThread
@@ -48,7 +50,7 @@ mountWatcherThread urlrenderer = namedThread "MountWatcher" $
 dbusThread :: UrlRenderer -> Assistant ()
 dbusThread urlrenderer = do
 	runclient <- asIO1 go
-	r <- liftIO $ E.try $ runClient getSessionAddress runclient
+	r <- liftIO $ E.try $ runClient getSystemAddress runclient
 	either onerr (const noop) r
   where
 	go client = ifM (checkMountMonitor client)
@@ -63,11 +65,7 @@ dbusThread urlrenderer = do
 				wasmounted <- liftIO $ swapMVar mvar nowmounted
 				handleMounts urlrenderer wasmounted nowmounted
 			liftIO $ forM_ mountChanged $ \matcher ->
-#if MIN_VERSION_dbus(0,10,7)
 				void $ addMatch client matcher handleevent
-#else
-				listen client matcher handleevent
-#endif
 		, do
 			liftAnnex $
 				warning "No known volume monitor available through dbus; falling back to mtab polling"
@@ -75,11 +73,6 @@ dbusThread urlrenderer = do
 		)
 	onerr :: E.SomeException -> Assistant ()
 	onerr e = do
-		{- If the session dbus fails, the user probably
-		 - logged out of their desktop. Even if they log
-		 - back in, we won't have access to the dbus
-		 - session key, so polling is the best that can be
-		 - done in this situation. -}
 		liftAnnex $
 			warning $ "dbus failed; falling back to mtab polling (" ++ show e ++ ")"
 		pollingThread urlrenderer
@@ -99,11 +92,9 @@ checkMountMonitor client = do
 				]
 			return True
   where
-	startableservices = [gvfs, gvfsgdu]
-	usableservices = startableservices ++ [kde]
-	gvfs = "org.gtk.Private.UDisks2VolumeMonitor"
-	gvfsgdu = "org.gtk.Private.GduVolumeMonitor"
-	kde = "org.kde.DeviceNotifications"
+	startableservices = [udisks2]
+	usableservices = startableservices
+	udisks2 = "org.freedesktop.UDisks2"
 
 startOneService :: Client -> [ServiceName] -> Assistant Bool
 startOneService _ [] = return False
@@ -122,27 +113,18 @@ startOneService client (x:xs) = do
 
 {- Filter matching events recieved when drives are mounted and unmounted. -}	
 mountChanged :: [MatchRule]
-mountChanged = [gvfs True, gvfs False, kde, kdefallback]
+mountChanged = [udisks2mount, udisks2umount]
   where
-	{- gvfs reliably generates this event whenever a
-	 - drive is mounted/unmounted, whether automatically, or manually -}
-	gvfs mount = matchAny
-		{ matchInterface = Just "org.gtk.Private.RemoteVolumeMonitor"
-		, matchMember = Just $ if mount then "MountAdded" else "MountRemoved"
+	udisks2mount = matchAny
+		{ matchPath = Just "/org/freedesktop/UDisks2"
+		, matchInterface = Just "org.freedesktop.DBus.ObjectManager"
+		, matchMember = Just "InterfacesAdded"
 		}
-	{- This event fires when KDE prompts the user what to do with a drive,
-	 - but maybe not at other times. And it's not received -}
-	kde = matchAny
-		{ matchInterface = Just "org.kde.Solid.Device"
-		, matchMember = Just "setupDone"
+	udisks2umount = matchAny
+		{ matchPath = Just "/org/freedesktop/UDisks2"
+		, matchInterface = Just "org.freedesktop.DBus.ObjectManager"
+		, matchMember = Just "InterfacesRemoved"
 		}
-	{- This event may not be closely related to mounting a drive, but it's
-	 - observed reliably when a drive gets mounted or unmounted. -}
-	kdefallback = matchAny
-		{ matchInterface = Just "org.kde.KDirNotify"
-		, matchMember = Just "enteredDirectory"
-		}
-
 #endif
 
 pollingThread :: UrlRenderer -> Assistant ()
@@ -164,7 +146,7 @@ handleMount urlrenderer dir = do
 	debug ["detected mount of", dir]
 	rs <- filter (Git.repoIsLocal . Remote.repo) <$> remotesUnder dir
 	mapM_ (fsckNudge urlrenderer . Just) rs
-	reconnectRemotes True rs
+	reconnectRemotes rs
 
 {- Finds remotes located underneath the mount point.
  -

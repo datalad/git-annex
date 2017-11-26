@@ -1,0 +1,3 @@
+My PC froze while git-annex was in the process of importing a file. It was in the final stage of updating git status when the freeze occurred. git status shows the imported file under "changes to be committed" as "new file."
+
+I don't know how git-annex works under the hood, so I don't know how the freeze might've affected the repo. I don't want to lose my files. What do you recommend is the best way of recovering from this and making sure there are no errors?

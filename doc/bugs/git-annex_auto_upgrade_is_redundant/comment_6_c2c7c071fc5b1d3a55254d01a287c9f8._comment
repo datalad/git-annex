@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawnXybLxkPMYpP3yw4b_I6IdC3cKTD-xEdU"
- nickname="Matt"
- subject="comment 6"
- date="2014-04-27T11:14:40Z"
- content="""
-And I still think there is a slight bug in there somewhere.  If due to packaging errors an upgrade doesn't apply and the logs are smart enough to notice it's redundant then there shouldn't be continued notifications of an available upgrade...
-"""]]

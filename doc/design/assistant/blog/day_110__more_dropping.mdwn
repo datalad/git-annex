@@ -11,7 +11,7 @@ if this will slow down git-annex in some use cases; might need to add more
 higher-level caching. It was a very minimal cache anyway, just of one file.
 
 Removed support for "in=" from preferred content expressions. That was
-problimatic in two ways. First, it referred to a remote by name, but
+problematic in two ways. First, it referred to a remote by name, but
 preferred content expressions can be evaluated elsewhere, where that remote
 doesn't exist, or a different remote has the same name. This name lookup
 code could error out at runtime. Secondly, "in=" seemed pretty useless, and

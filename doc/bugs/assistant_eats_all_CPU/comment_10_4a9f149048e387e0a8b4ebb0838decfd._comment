@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.43"
- subject="comment 10"
- date="2014-01-15T21:14:07Z"
- content="""
-I was unable to reproduce the problem with a Debian stable VM running in virtualbox.
-"""]]

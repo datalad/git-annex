@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="git-starter"
+ subject="clarification"
+ date="2016-09-13T20:27:22Z"
+ content="""
+My previous posting looks like I'm not aware of largefiles, which would mostly answer my question.    My problem was that, after reading some doc that might not have been fully updated for v6, I got confused about the difference between an unlocked file in the annex, and a file not in the annex.    
+
+In any case, since I added some small files before using largefiles, those small files were put in the annex.   How do I change them to be in the git repository not in the annex?
+
+Thanks.
+
+
+
+"""]]

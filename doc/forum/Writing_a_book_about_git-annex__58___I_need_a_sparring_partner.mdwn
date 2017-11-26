@@ -1,0 +1,22 @@
+Hi all,
+
+the last few days I wrote the first 1200 words of a Git annex book (in German), but I am unsure whether I shall continue. 
+
+I've written two books about non mainstream software, namely about the documentation generator Sphinx and the document converter Pandoc. I am using these programs myself on a daily basis so that I was quite sure to cover most of their features in the books. I even narrowed the scope of the Pandoc book to "book production" as this is what I do with it, leaving out some use cases such as slides or HTML production.
+
+Before I really start writing the book, I would like to get a clear and robust understanding of the program. As you can see, I don't write books about very popular software in order to sell a lot of copies, I write about software I really like. But I would not write about software that isn't used at all. 
+
+So to get a clear understand of Git annex I need a sparring partner who is willing to discuss usecases, viewpoints and the outline of the book. The following questions and problems are blocking my work:
+
+Some time ago I used Git annex to sync my desktop and my laptop. I used the webapp. My experiences were very bad. Git annex had a very bad performance slowing down my computer making it nearly unusable. I had numerous Unicode errors which let to a duplication of files. So I stopped using Git annex and switched to Syncthing, which does the job without any problems. Syncing computers with the webapp obviously is not be the usecase I would like to cover in the book. Today I use Git annex as a feedreader. 
+
+So why do I want to write a book about a software I do not really use? First of all I like the concept. I like the idea to manage big files in one tree while the content of many files is stored in remote archives. So this could be the idea of the book: sustainable management of big files. And after reading https://git-annex.branchable.com/design/iabackup/ I think that this could be the main use case of Git annex. 
+
+When I wrote about Sphinx and Pandoc I talked to people who used the software to a great extent. Sphinx is the the de facto standard to document Python code. So I was able to evaluate the software before I invested half a year of writing a book. I am not able to say whether Git annex is good for doing x or y, because my setup is way too small. 
+
+So I am looking for power users, for people who use Git annex to manage at least 1TB of data or more. Would you recommend Git annex to film professionals, to music professionals, to data miners, to universities, to your parents? Does it really makes your life easier? What are your experiences with the webapp? 
+
+I would be happy if you are willing to discuss these questions here, privately by mail or by chat eg. via Firefox Hello. 
+
+TIA
+juh

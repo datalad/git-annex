@@ -1,36 +1,21 @@
 {- git-annex Key data type
- - 
- - Most things should not need this, using Types instead
  -
- - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Types.Key (
-	Key(..),
-	AssociatedFile,
-	stubKey,
-	key2file,
-	file2key,
-	nonChunkKey,
-	chunkKeyOffset,
-	isChunkKey,
+module Types.Key where
 
-	prop_idempotent_key_encode,
-	prop_idempotent_key_decode
-) where
+import Utility.PartialPrelude
 
 import System.Posix.Types
-
-import Common
-import Utility.QuickCheck
 
 {- A Key has a unique name, which is derived from a particular backend,
  - and may contain other optional metadata. -}
 data Key = Key
 	{ keyName :: String
-	, keyBackendName :: String
+	, keyVariety :: KeyVariety
 	, keySize :: Maybe Integer
 	, keyMtime :: Maybe EpochTime
 	, keyChunkSize :: Maybe Integer
@@ -38,103 +23,97 @@ data Key = Key
 	} deriving (Eq, Ord, Read, Show)
 
 {- A filename may be associated with a Key. -}
-type AssociatedFile = Maybe FilePath
+newtype AssociatedFile = AssociatedFile (Maybe FilePath)
+	deriving (Show, Eq, Ord)
 
-stubKey :: Key
-stubKey = Key
-	{ keyName = ""
-	, keyBackendName = ""
-	, keySize = Nothing
-	, keyMtime = Nothing
-	, keyChunkSize = Nothing
-	, keyChunkNum = Nothing
-	}
+{- There are several different varieties of keys. -}
+data KeyVariety
+	= SHA2Key HashSize HasExt
+	| SHA3Key HashSize HasExt
+	| SKEINKey HashSize HasExt
+	| SHA1Key HasExt
+	| MD5Key HasExt
+	| WORMKey
+	| URLKey
+ 	-- Some repositories may contain keys of other varieties,
+	-- which can still be processed to some extent.
+	| OtherKey String
+	deriving (Eq, Ord, Read, Show)
 
--- Gets the parent of a chunk key.
-nonChunkKey :: Key -> Key
-nonChunkKey k = k
-	{ keyChunkSize = Nothing
-	, keyChunkNum = Nothing
-	}
+{- Some varieties of keys may contain an extension at the end of the
+ - keyName -}
+newtype HasExt = HasExt Bool
+	deriving (Eq, Ord, Read, Show)
 
--- Where a chunk key is offset within its parent.
-chunkKeyOffset :: Key -> Maybe Integer
-chunkKeyOffset k = (*)
-	<$> keyChunkSize k
-	<*> (pred <$> keyChunkNum k)
+newtype HashSize = HashSize Int
+	deriving (Eq, Ord, Read, Show)
 
-isChunkKey :: Key -> Bool
-isChunkKey k = isJust (keyChunkSize k) && isJust (keyChunkNum k)
+hasExt :: KeyVariety -> Bool
+hasExt (SHA2Key _ (HasExt b)) = b
+hasExt (SHA3Key _ (HasExt b)) = b
+hasExt (SKEINKey _ (HasExt b)) = b
+hasExt (SHA1Key (HasExt b)) = b
+hasExt (MD5Key (HasExt b)) = b
+hasExt WORMKey = False
+hasExt URLKey = False
+hasExt (OtherKey s) =  end s == "E"
 
-fieldSep :: Char
-fieldSep = '-'
+sameExceptExt :: KeyVariety -> KeyVariety -> Bool
+sameExceptExt (SHA2Key sz1 _) (SHA2Key sz2 _) = sz1 == sz2
+sameExceptExt (SHA3Key sz1 _) (SHA3Key sz2 _) = sz1 == sz2
+sameExceptExt (SKEINKey sz1 _) (SKEINKey sz2 _) = sz1 == sz2
+sameExceptExt (SHA1Key _) (SHA1Key _) = True
+sameExceptExt (MD5Key _) (MD5Key _) = True
+sameExceptExt _ _ = False
 
-{- Converts a key to a string that is suitable for use as a filename.
- - The name field is always shown last, separated by doubled fieldSeps,
- - and is the only field allowed to contain the fieldSep. -}
-key2file :: Key -> FilePath
-key2file Key { keyBackendName = b, keySize = s, keyMtime = m, keyChunkSize = cs, keyChunkNum = cn, keyName = n } =
-	b +++ ('s' ?: s) +++ ('m' ?: m) +++ ('S' ?: cs) +++ ('C' ?: cn) +++ (fieldSep : n)
+{- Is the Key variety cryptographically secure, such that no two differing
+ - file contents can be mapped to the same Key? -}
+cryptographicallySecure :: KeyVariety -> Bool
+cryptographicallySecure (SHA2Key _ _) = True
+cryptographicallySecure (SHA3Key _ _) = True
+cryptographicallySecure (SKEINKey _ _) = True
+cryptographicallySecure _ = False
+
+formatKeyVariety :: KeyVariety -> String
+formatKeyVariety v = case v of
+	SHA2Key sz e -> adde e (addsz sz "SHA")
+	SHA3Key sz e -> adde e (addsz sz "SHA3_")
+	SKEINKey sz e -> adde e (addsz sz "SKEIN")
+	SHA1Key e -> adde e "SHA1"
+	MD5Key e -> adde e "MD5"
+	WORMKey -> "WORM"
+	URLKey -> "URL"
+	OtherKey s -> s
   where
-	"" +++ y = y
-	x +++ "" = x
-	x +++ y = x ++ fieldSep:y
-	f ?: (Just v) = f : show v
-	_ ?: _ = ""
+	adde (HasExt False) s = s
+	adde (HasExt True) s = s ++ "E"
+	addsz (HashSize n) s =  s ++ show n
 
-file2key :: FilePath -> Maybe Key
-file2key s
-	| key == Just stubKey || (keyName <$> key) == Just "" || (keyBackendName <$> key) == Just "" = Nothing
-	| otherwise = key
-  where
-	key = startbackend stubKey s
-
-	startbackend k v = sepfield k v addbackend
-		
-	sepfield k v a = case span (/= fieldSep) v of
-		(v', _:r) -> findfields r $ a k v'
-		_ -> Nothing
-
-	findfields (c:v) (Just k)
-		| c == fieldSep = Just $ k { keyName = v }
-		| otherwise = sepfield k v $ addfield c
-	findfields _ v = v
-
-	addbackend k v = Just k { keyBackendName = v }
-	addfield 's' k v = do
-		sz <- readish v
-		return $ k { keySize = Just sz }
-	addfield 'm' k v = do
-		mtime <- readish v
-		return $ k { keyMtime = Just mtime }
-	addfield 'S' k v = do
-		chunksize <- readish v
-		return $ k { keyChunkSize = Just chunksize }
-	addfield 'C' k v = case readish v of
-		Just chunknum | chunknum > 0 ->
-			return $ k { keyChunkNum = Just chunknum }
-		_ -> return k
-	addfield _ _ _ = Nothing
-
-instance Arbitrary Key where
-	arbitrary = Key
-		<$> (listOf1 $ elements $ ['A'..'Z'] ++ ['a'..'z'] ++ ['0'..'9'] ++ "-_\r\n \t")
-		<*> (listOf1 $ elements ['A'..'Z']) -- BACKEND
-		<*> ((abs <$>) <$> arbitrary) -- size cannot be negative
-		<*> arbitrary
-		<*> ((abs <$>) <$> arbitrary) -- chunksize cannot be negative
-		<*> ((succ . abs <$>) <$> arbitrary) -- chunknum cannot be 0 or negative
-
-prop_idempotent_key_encode :: Key -> Bool
-prop_idempotent_key_encode k = Just k == (file2key . key2file) k
-
-prop_idempotent_key_decode :: FilePath -> Bool
-prop_idempotent_key_decode f
-	| normalfieldorder = maybe True (\k -> key2file k == f) (file2key f)
-	| otherwise = True
-  where
-	-- file2key will accept the fields in any order, so don't
-	-- try the test unless the fields are in the normal order
-	normalfieldorder = fields `isPrefixOf` "smSC"
-	fields = map (f !!) $ filter (< length f) $ map succ $
-		elemIndices fieldSep f
+parseKeyVariety :: String -> KeyVariety
+parseKeyVariety "SHA256"    = SHA2Key (HashSize 256) (HasExt False)
+parseKeyVariety "SHA256E"   = SHA2Key (HashSize 256) (HasExt True)
+parseKeyVariety "SHA512"    = SHA2Key (HashSize 512) (HasExt False)
+parseKeyVariety "SHA512E"   = SHA2Key (HashSize 512) (HasExt True)
+parseKeyVariety "SHA224"    = SHA2Key (HashSize 224) (HasExt False)
+parseKeyVariety "SHA224E"   = SHA2Key (HashSize 224) (HasExt True)
+parseKeyVariety "SHA384"    = SHA2Key (HashSize 384) (HasExt False)
+parseKeyVariety "SHA384E"   = SHA2Key (HashSize 384) (HasExt True)
+parseKeyVariety "SHA3_512"  = SHA3Key (HashSize 512) (HasExt False)
+parseKeyVariety "SHA3_512E" = SHA3Key (HashSize 512) (HasExt True)
+parseKeyVariety "SHA3_384"  = SHA3Key (HashSize 384) (HasExt False)
+parseKeyVariety "SHA3_384E" = SHA3Key (HashSize 384) (HasExt True)
+parseKeyVariety "SHA3_256"  = SHA3Key (HashSize 256) (HasExt False)
+parseKeyVariety "SHA3_256E" = SHA3Key (HashSize 256) (HasExt True)
+parseKeyVariety "SHA3_224"  = SHA3Key (HashSize 224) (HasExt False)
+parseKeyVariety "SHA3_224E" = SHA3Key (HashSize 224) (HasExt True)
+parseKeyVariety "SKEIN512"  = SKEINKey (HashSize 512) (HasExt False)
+parseKeyVariety "SKEIN512E" = SKEINKey (HashSize 512) (HasExt True)
+parseKeyVariety "SKEIN256"  = SKEINKey (HashSize 256) (HasExt False)
+parseKeyVariety "SKEIN256E" = SKEINKey (HashSize 256) (HasExt True)
+parseKeyVariety "SHA1"      = SHA1Key (HasExt False)
+parseKeyVariety "SHA1E"     = SHA1Key (HasExt True)
+parseKeyVariety "MD5"       = MD5Key (HasExt False)
+parseKeyVariety "MD5E"      = MD5Key (HasExt True)
+parseKeyVariety "WORM"      = WORMKey
+parseKeyVariety "URL"       = URLKey
+parseKeyVariety s           = OtherKey s

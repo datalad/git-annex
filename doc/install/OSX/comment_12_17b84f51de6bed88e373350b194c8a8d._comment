@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="andrew.grangaard@bf525d11f8ebfbfb0976f7df2301aa0f36668f59"
+ nickname="andrew.grangaard"
+ subject="10.10 build works on El Capitan (10.11)"
+ date="2016-02-02T01:30:45Z"
+ content="""
+The OSX 10.10 build works fine on my 10.11 El Capitan machine.   Updated this page to reflect that.
+
+git-annex is also in 'brew cask', automating installation from the OSX binaries.   I've sent  [PR 18105](https://github.com/caskroom/homebrew-cask/pull/18105) to the brew cask team to get the cask to work for 10.11.
+"""]]

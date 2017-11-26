@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-07-19T19:09:07Z"
+ content="""
+The June 13th release of git-annex included the fix for this problem.
+
+The Windows autobuild is linked to from
+<http://git-annex.branchable.com/install/Windows/>
+"""]]

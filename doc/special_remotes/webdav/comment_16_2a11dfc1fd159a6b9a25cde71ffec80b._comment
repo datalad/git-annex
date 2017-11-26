@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="Marco"
+ avatar="http://cdn.libravatar.org/avatar/8cf5e1484973d4f4e58b00720e0dbb26"
+ subject="1und1 Online Speicher"
+ date="2016-10-19T03:42:42Z"
+ content="""
+1und1 (a german ISP) will give you up to 1 TB of space hooked to your DSL account. The setup is a bit weird, so here a short way through that worked for me.
+
+FIrst you need to create a service account to connect to your online storage. To create this account you need to go to the legacy control center. https://login.1und1.de/xml/config/ConfigMain;jsessionid=expired.TCpfix90a?__reuse=123
+Go to \"Online Speicher\" and activate it. Next go to \"Zugänge > Dienstepasswort\" and ensure that one is set up. It seems that you have to wait some time until the password is useable.
+
+The host you need to use is: https://sd2dav.1und1.de/ instead of the one that is mentioned in the manual.
+
+Now you can set the remote up:
+
+> WEBDAV_USERNAME='...' WEBDAV_PASSWORD='...' git annex initremote one type=webdav url=https://sd2dav.1und1.de/git-annex chunk=100mb encryption=shared
+"""]]

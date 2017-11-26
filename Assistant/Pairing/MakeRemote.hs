@@ -1,6 +1,6 @@
 {- git-annex assistant pairing remote creation
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -23,18 +23,18 @@ import qualified Data.Text as T
 {- Authorized keys are set up before pairing is complete, so that the other
  - side can immediately begin syncing. -}
 setupAuthorizedKeys :: PairMsg -> FilePath -> IO ()
-setupAuthorizedKeys msg repodir = do
-	validateSshPubKey pubkey
-	unlessM (liftIO $ addAuthorizedKeys True repodir pubkey) $
-		error "failed setting up ssh authorized keys"
-  where
-	pubkey = remoteSshPubKey $ pairMsgData msg
+setupAuthorizedKeys msg repodir = case validateSshPubKey $ remoteSshPubKey $ pairMsgData msg of
+	Left err -> error err
+	Right pubkey -> do
+		absdir <- absPath repodir
+		unlessM (liftIO $ addAuthorizedKeys True absdir pubkey) $
+			error "failed setting up ssh authorized keys"
 
 {- When local pairing is complete, this is used to set up the remote for
  - the host we paired with. -}
 finishedLocalPairing :: PairMsg -> SshKeyPair -> Assistant ()
 finishedLocalPairing msg keypair = do
-	sshdata <- liftIO $ setupSshKeyPair keypair =<< pairMsgToSshData msg
+	sshdata <- liftIO $ installSshKeyPair keypair =<< pairMsgToSshData msg
 	{- Ensure that we know the ssh host key for the host we paired with.
 	 - If we don't, ssh over to get it. -}
 	liftIO $ unlessM (knownHost $ sshHostName sshdata) $
@@ -42,9 +42,9 @@ finishedLocalPairing msg keypair = do
 			[ sshOpt "StrictHostKeyChecking" "no"
 			, sshOpt "NumberOfPasswordPrompts" "0"
 			, "-n"
-			, genSshHost (sshHostName sshdata) (sshUserName sshdata)
-			, "git-annex-shell -c configlist " ++ T.unpack (sshDirectory sshdata)
 			]
+			(genSshHost (sshHostName sshdata) (sshUserName sshdata))
+			("git-annex-shell -c configlist " ++ T.unpack (sshDirectory sshdata))
 			Nothing
 	r <- liftAnnex $ addRemote $ makeSshRemote sshdata
 	liftAnnex $ setRemoteCost (Remote.repo r) semiExpensiveRemoteCost
@@ -69,6 +69,7 @@ pairMsgToSshData msg = do
 		, sshPort = 22
 		, needsPubKey = True
 		, sshCapabilities = [GitAnnexShellCapable, GitCapable, RsyncCapable]
+		, sshRepoUrl = Nothing
 		}
 
 {- Finds the best hostname to use for the host that sent the PairMsg.
@@ -89,8 +90,8 @@ bestHostName msg = case remoteHostName $ pairMsgData msg of
 	fallback = do
 		let a = pairMsgAddr msg
 		let sockaddr = case a of
-			IPv4Addr addr -> SockAddrInet (PortNum 0) addr
-			IPv6Addr addr -> SockAddrInet6 (PortNum 0) 0 addr 0
+			IPv4Addr addr -> SockAddrInet (fromInteger 0) addr
+			IPv6Addr addr -> SockAddrInet6 (fromInteger 0) 0 addr 0
 		fromMaybe (showAddr a)
 			<$> catchDefaultIO Nothing
 				(fst <$> getNameInfo [] True False sockaddr)

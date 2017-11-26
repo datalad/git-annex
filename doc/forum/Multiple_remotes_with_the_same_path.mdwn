@@ -1,0 +1,67 @@
+This is a followup to <https://git-annex.branchable.com/forum/basic_usage_questions/> – I'm actually testing the "two repos at same URL" situation now, with git-annex 6.20160211 and 6.20160221.
+
+So I have a git-annex repo on two hosts at `rain:~/Attic/Software`, `frost:~/Attic/Software`, and a third clone at `/mnt/portable_HD/Attic/Software`. This means that the repo on the portable HD has two remotes with identical paths, but corresponding to different repositories:
+
+    rain    /home/grawity/Attic/Software
+    frost   /home/grawity/Attic/Software
+
+[I was told earlier](/forum/basic_usage_questions) that this configuration would work fine and git-annex would not get confused. However, that doesn't seem to be the case (unless I misunderstood what it considers to be the "right thing"?) I see that whenever I run a command like `git annex info` on the portable\_HD repo, it overrides `remote.{rain,frost}.annex-uuid` with whatever UUID it sees right now – resulting in `git annex info` output such as:
+
+    ┌ frost /run/media/grawity/vol4_grimoire/Attic/Software master
+    ┘ git config -l | grep annex-uuid
+    remote.origin.annex-uuid=0ebc2083-f95e-4637-bd3e-09db8471daf3
+    remote.rain.annex-uuid=3e342a37-6c35-40e5-99a1-1f140e6c363d    <--
+    remote.frost.annex-uuid=524b8690-9b3e-48d4-b1a8-c0edb35c1ccf   <--
+    remote.fs1.annex-uuid=ed83c81c-1a95-4acb-b76c-b6724fe88873
+    
+    ┌ frost /run/media/grawity/vol4_grimoire/Attic/Software master
+    ┘ git annex info --fast --verbose --debug
+    repository mode: indirect
+    trusted repositories: [2016-02-29 08:09:29.284136] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+    [2016-02-29 08:09:29.286872] process done ExitSuccess
+    [2016-02-29 08:09:29.286954] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+    [2016-02-29 08:09:29.289167] process done ExitSuccess
+    [2016-02-29 08:09:29.289316] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..fc873fc472a8c5d0db3c91a3868d9adc072f7076","-n1","--pretty=%H"]
+    [2016-02-29 08:09:29.291836] process done ExitSuccess
+    [2016-02-29 08:09:29.291941] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..23c27db2f2a02515ba39e7d0bb8653fa786b6aea","-n1","--pretty=%H"]
+    [2016-02-29 08:09:29.294762] process done ExitSuccess
+    [2016-02-29 08:09:29.294869] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..690a90da7fc28be67d5053c0a6c3050cca614eaa","-n1","--pretty=%H"]
+    [2016-02-29 08:09:29.301018] process done ExitSuccess
+    [2016-02-29 08:09:29.30112] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..94375fb892d1c9f5b70bdd5917c85c5c18a13168","-n1","--pretty=%H"]
+    [2016-02-29 08:09:29.3031] process done ExitSuccess
+    [2016-02-29 08:09:29.303182] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..4a7f17e644e86776b510606beb6f3cb3819d8256","-n1","--pretty=%H"]
+    [2016-02-29 08:09:29.304916] process done ExitSuccess
+    [2016-02-29 08:09:29.305455] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+    [2016-02-29 08:09:29.308946] read: git ["config","--null","--list"]
+    [2016-02-29 08:09:29.312347] process done ExitSuccess
+    [2016-02-29 08:09:29.312939] read: git ["config","--null","--list"]
+    [2016-02-29 08:09:29.3179] process done ExitSuccess
+    [2016-02-29 08:09:29.318494] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","remote.rain.annex-uuid","524b8690-9b3e-48d4-b1a8-c0edb35c1ccf"]
+    [2016-02-29 08:09:29.320648] process done ExitSuccess
+    [2016-02-29 08:09:29.320735] read: git ["config","--null","--list"]
+    [2016-02-29 08:09:29.327697] process done ExitSuccess
+    0
+    semitrusted repositories: 9
+    	00000000-0000-0000-0000-000000000001 -- web
+     	00000000-0000-0000-0000-000000000002 -- bittorrent
+     	0ebc2083-f95e-4637-bd3e-09db8471daf3 -- origin
+     	3e14eb23-1b16-4b52-8798-56efb550ab00 -- [vol4_grimoire]:/Attic/Software [here]
+     	3e342a37-6c35-40e5-99a1-1f140e6c363d -- grawity@rain:~/Attic/Software              <--
+     	524b8690-9b3e-48d4-b1a8-c0edb35c1ccf -- grawity@frost:~/Downloads/Software [rain]  <--
+     	b9c0c485-07e5-4166-b5ac-ba971faab98a -- [vol3_tombstone]:/Attic/Software
+     	c3c6dd39-ebc7-475a-9992-f99ca01a7f3a -- grawity@wolke:~/Attic/Software
+     	ed83c81c-1a95-4acb-b76c-b6724fe88873 -- fs1:/Attic/Software [fs1]
+    untrusted repositories: 0
+    transfers in progress: none
+    available local disk space: 920.96 gigabytes (+1 megabyte reserved)
+    
+    ┌ frost /run/media/grawity/vol4_grimoire/Attic/Software master
+    ┘ git config -l | grep annex-uuid
+    remote.origin.annex-uuid=0ebc2083-f95e-4637-bd3e-09db8471daf3
+    remote.rain.annex-uuid=524b8690-9b3e-48d4-b1a8-c0edb35c1ccf    <--
+    remote.frost.annex-uuid=524b8690-9b3e-48d4-b1a8-c0edb35c1ccf   <--
+    remote.fs1.annex-uuid=ed83c81c-1a95-4acb-b76c-b6724fe88873
+
+Notice how the `[rain]` remote tag now shows up next to the wrong remote. Among other things, **this means I cannot use `git annex find --in frost --not --in rain`** and similar commands (unless I specify all the UUIDs by hand). And even though I trust git-annex to not lose any data, this behavior is a bit confusing.
+
+Is it possible that git-annex could detect such situations and avoid updating an UUID if it's _already attached_ to another remote?

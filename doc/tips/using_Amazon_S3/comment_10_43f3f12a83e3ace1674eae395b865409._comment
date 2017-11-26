@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkPIqJZ88VZEVqLhLOd1LMdYXcy6bAW9qE"
+ nickname="Lemao"
+ subject="comment 10"
+ date="2015-01-07T23:53:32Z"
+ content="""
+My bad. I didn't realize git annex creates a new branch. After I pushed it, the clone was able to enableremote and I was able to get the file.
+
+"""]]

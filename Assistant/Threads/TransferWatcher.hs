@@ -1,6 +1,6 @@
 {- git-annex assistant transfer watching thread
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,6 +10,7 @@ module Assistant.Threads.TransferWatcher where
 import Assistant.Common
 import Assistant.DaemonStatus
 import Assistant.TransferSlots
+import Types.Transfer
 import Logs.Transfer
 import Utility.DirWatcher
 import Utility.DirWatcher.Types

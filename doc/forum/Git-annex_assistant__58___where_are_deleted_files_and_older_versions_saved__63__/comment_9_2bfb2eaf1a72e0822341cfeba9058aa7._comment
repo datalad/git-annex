@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2015-11-18T19:46:07Z"
+ content="""
+That's right, bup can store multiple versions of a file as efficiently as
+git itself can (or maybe a little more).
+
+You can use [bup as a special remote of git-annex](https://git-annex.branchable.com/special_remotes/bup/),
+and then your backup repository would be a bup repository.
+Restoring old versions of files from it would work the same way
+I described above.
+"""]]

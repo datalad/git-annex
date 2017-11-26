@@ -39,7 +39,7 @@ terminal. A fairly full set of tools is provided, including `git`, `ssh`,
 `rsync`, and `gpg`.
 
 To prevent the webapp from being automatically started
-when a terminal window opens, go into the terminal preferences, to "Inital
+when a terminal window opens, go into the terminal preferences, to "Initial
 Command", and clear out the default `git annex webapp` setting.
 
 Or, if you'd like to run the assistant automatically, but not open the

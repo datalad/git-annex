@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: WHEREIS -- is it better to just report failure to avoid duplicates?"""
+ date="2015-09-09T21:03:13Z"
+ content="""
+There's no point in implementing WHEREIS if it's going to reply with the
+same values that are passed to SETURIPRESENT.
+
+Some special remotes may not need to use SETURIPRESENT to work at
+all, and yet storing data on the remote makes it available from some public
+url. This is the kind of situation where it makes sense to implement
+WHEREIS.
+"""]]

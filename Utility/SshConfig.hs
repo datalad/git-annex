@@ -1,6 +1,6 @@
 {- ssh config file parsing and modification
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -81,7 +81,8 @@ genSshConfig = unlines . concatMap gen
 	gen (GlobalConfig s) = [setting s]
 	gen (HostConfig h cs) = ("Host " ++ h) : map (either comment setting) cs
 
-	setting (SshSetting indent k v) = indent ++ k ++ " " ++ v
+	setting (SshSetting indent k v) = indent ++ k ++ 
+		if null v then "" else " " ++ v
 	comment (Comment indent c) = indent ++ c
 
 findHostConfigKey :: SshConfig -> Key -> Maybe Value
@@ -117,8 +118,11 @@ changeUserSshConfig modifier = do
 	whenM (doesFileExist configfile) $ do
 		c <- readFileStrict configfile
 		let c' = modifier c
-		when (c /= c') $
-			viaTmp writeSshConfig configfile c'
+		when (c /= c') $ do
+			-- If it's a symlink, replace the file it
+			-- points to.
+			f <- catchDefaultIO configfile (canonicalizePath configfile)
+			viaTmp writeSshConfig f c'
 
 writeSshConfig :: FilePath -> String -> IO ()
 writeSshConfig f s = do

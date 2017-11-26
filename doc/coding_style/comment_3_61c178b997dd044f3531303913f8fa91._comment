@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Don"
+ subject="Style for man pages?"
+ date="2015-09-28T10:00:45Z"
+ content="""
+Could you add some suggestions for editing the .mdwn files?  I'd like to help clean up a few (really minor) things I noticed, but I don't want to make more work for you with the changes I make.  One thing I'm not sure about is where to set my fill column when editing--I can't seem to pick any single value (79? 80?) that doesn't make some paragraphs change when I rewrap them.  Also, it might be helpful to have a quick guide for when you surround commands and other computer-y words with quotes, backticks, or nothing at all.
+   
+"""]]

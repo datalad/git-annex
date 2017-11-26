@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="vvghadge@ec0c34f6cadf7a32fc6cf0b2bee34c3ce9c568f2"
+ nickname="vvghadge"
+ subject="location of Mapping of file to tahoe uri?"
+ date="2015-11-06T02:28:04Z"
+ content="""
+@JOEY
+
+Where is the TAHOE URI - the file cap in tahoe stored when we use git annex and tahoe?
+
+i am guessing: 1) in the meta data file in git annex 2) in ./git folder
+
+Where is the mapping maintained? That xyz.txt is this particular tahoe URI.
+"""]]

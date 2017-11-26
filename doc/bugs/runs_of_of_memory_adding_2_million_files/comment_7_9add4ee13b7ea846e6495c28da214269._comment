@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.55"
- subject="comment 7"
- date="2014-07-04T22:09:38Z"
- content="""
-I wrote my own getDirectoryContents' with different exception semantics and entirely fixed this now. git-annex's memory use remains stable at around 1.5 mb during the entire staging of the millions of files. git itself uses a few hundred mb ;)
-"""]]

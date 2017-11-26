@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="dfiorentino@645c87e5e4e39b138b9717d01441dc2e3914fe01"
+ nickname="dfiorentino"
+ subject="“Windows error: &quot;git: 'annex' is not a git command.&quot;” "
+ date="2015-09-22T18:54:38Z"
+ content="""
+I am having the same issue… “Windows error: \"git: 'annex' is not a git command.\"” I downloaded Git for Windows from https://downloads.kitenet.net/git-annex/windows/current/ and ran git-annex-installer.exe - 2015-09-16 11:43 	18M
+"""]]

@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="xloem"
+ subject="dangling objects"
+ date="2016-05-18T01:49:11Z"
+ content="""
+My repos have accumulated thousands of dangling objects recently (every one).  I'm wondering, would this issue be resolved with the syncing fix?  If so, should the objects just be deleted?
+"""]]

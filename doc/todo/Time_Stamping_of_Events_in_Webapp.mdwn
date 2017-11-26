@@ -1,3 +1,0 @@
-Currently events happening in the webapp (sync upload etc. on the right) has no time stamp thus user has no way to tell when was the last sync happened. Which is problematic when not using XMPP and repos lag behind.
-
-> [[dup|done]] of <http://git-annex.branchable.com/todo/wishlist__91__minor__93__:_add_time_stamps_to_annex_log_popups_in_webapp/> --[[Joey]] 

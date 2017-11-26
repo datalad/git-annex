@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Kalle"
+ subject="Different solution"
+ date="2016-03-21T21:02:57Z"
+ content="""
+Hi
+
+Are you able to install git-annex on the server? If so perhaps switching the server repo to **direct mode** will work. Then you should be able to use any directory listing method you like. My guess is that you need to make sure the file listing software is configured to ignore `.git` directories. I've never used TRAC so can't tell if this is possible or required.
+"""]]

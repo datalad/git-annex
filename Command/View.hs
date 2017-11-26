@@ -1,13 +1,12 @@
 {- git-annex command
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.View where
 
-import Common.Annex
 import Command
 import qualified Git
 import qualified Git.Command
@@ -17,46 +16,45 @@ import Types.View
 import Annex.View
 import Logs.View
 
-cmd :: [Command]
-cmd = [notBareRepo $ notDirect $
-	command "view" paramView seek SectionMetaData "enter a view branch"]
+cmd :: Command
+cmd = notBareRepo $ notDirect $
+	command "view" SectionMetaData "enter a view branch"
+		paramView (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart
-start [] = error "Specify metadata to include in view"
-start params = do
+start [] = giveup "Specify metadata to include in view"
+start ps = do
 	showStart "view" ""
-	view <- mkView params
+	view <- mkView ps
 	go view  =<< currentView
   where
 	go view Nothing = next $ perform view
 	go view (Just v)
 		| v == view = stop
-		| otherwise = error "Already in a view. Use the vfilter and vadd commands to further refine this view."
+		| otherwise = giveup "Already in a view. Use the vfilter and vadd commands to further refine this view."
 
 perform :: View -> CommandPerform
 perform view = do
-	showSideAction "searching"
+	showAction "searching"
 	next $ checkoutViewBranch view applyView
 
 paramView :: String
 paramView = paramRepeating "FIELD=VALUE"
 
 mkView :: [String] -> Annex View
-mkView params = go =<< inRepo Git.Branch.current
+mkView ps = go =<< inRepo Git.Branch.current
   where
-	go Nothing = error "not on any branch!"
+	go Nothing = giveup "not on any branch!"
 	go (Just b) = return $ fst $ refineView (View b []) $
-		map parseViewParam $ reverse params
+		map parseViewParam $ reverse ps
 
 checkoutViewBranch :: View -> (View -> Annex Git.Branch) -> CommandCleanup
 checkoutViewBranch view mkbranch = do
-	oldcwd <- liftIO getCurrentDirectory
+	here <- liftIO getCurrentDirectory
 
-	{- Change to top of repository before creating view branch. -}
-	liftIO . setCurrentDirectory =<< fromRepo Git.repoPath
 	branch <- mkbranch view
 	
 	showOutput
@@ -68,9 +66,9 @@ checkoutViewBranch view mkbranch = do
 		setView view
 		{- A git repo can easily have empty directories in it,
 		 - and this pollutes the view, so remove them. -}
-		liftIO $ removeemptydirs "."
-		unlessM (liftIO $ doesDirectoryExist oldcwd) $ do
-			top <- fromRepo Git.repoPath
+		top <- fromRepo Git.repoPath
+		liftIO $ removeemptydirs top
+		unlessM (liftIO $ doesDirectoryExist here) $ do
 			showLongNote (cwdmissing top)
 	return ok
   where

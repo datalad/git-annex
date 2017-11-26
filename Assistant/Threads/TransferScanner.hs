@@ -1,6 +1,6 @@
 {- git-annex assistant thread to scan remotes to find needed transfers
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,22 +16,23 @@ import Assistant.Drop
 import Assistant.Sync
 import Assistant.DeleteRemote
 import Assistant.Types.UrlRenderer
+import Types.Transfer
 import Logs.Transfer
 import Logs.Location
 import Logs.Group
-import Logs.Web (webUUID)
 import qualified Remote
 import qualified Types.Remote as Remote
 import Utility.ThreadScheduler
 import Utility.NotificationBroadcaster
 import Utility.Batch
 import qualified Git.LsFiles as LsFiles
-import qualified Backend
+import Annex.WorkTree
 import Annex.Content
 import Annex.Wanted
 import CmdLine.Action
 
 import qualified Data.Set as S
+import Control.Concurrent
 
 {- This thread waits until a remote needs to be scanned, to find transfers
  - that need to be made, to keep data in sync.
@@ -58,8 +59,9 @@ transferScannerThread urlrenderer = namedThread "TransferScanner" $ do
 			(s { transferScanRunning = b }, s)
 		liftIO $ sendNotification $ transferNotifier ds
 		
-	{- All git remotes are synced, and all available remotes
-	 - are scanned in full on startup, for multiple reasons, including:
+	{- All git remotes are synced, all exports are updated,
+	 - and all available remotes are scanned in full on startup,
+	 - for multiple reasons, including:
 	 -
 	 - * This may be the first run, and there may be remotes
 	 -   already in place, that need to be synced.
@@ -76,8 +78,8 @@ transferScannerThread urlrenderer = namedThread "TransferScanner" $ do
 	 -   to determine if the remote has been emptied.
 	 -}
 	startupScan = do
-		reconnectRemotes True =<< syncGitRemotes <$> getDaemonStatus
-		addScanRemotes True =<< syncDataRemotes <$> getDaemonStatus
+		reconnectRemotes =<< syncGitRemotes <$> getDaemonStatus
+		addScanRemotes True =<< scannableRemotes
 
 {- This is a cheap scan for failed transfers involving a remote. -}
 failedTransferScan :: Remote -> Assistant ()
@@ -115,7 +117,7 @@ failedTransferScan r = do
  - since we need to look at the locations of all keys anyway.
  -}
 expensiveScan :: UrlRenderer -> [Remote] -> Assistant ()
-expensiveScan urlrenderer rs = unless onlyweb $ batch <~> do
+expensiveScan urlrenderer rs = batch <~> do
 	debug ["starting scan of", show visiblers]
 
 	let us = map Remote.uuid rs
@@ -135,7 +137,6 @@ expensiveScan urlrenderer rs = unless onlyweb $ batch <~> do
 	remove <- asIO1 $ removableRemote urlrenderer
 	liftIO $ mapM_ (void . tryNonAsync . remove) $ S.toList removablers
   where
-	onlyweb = all (== webUUID) $ map Remote.uuid rs
 	visiblers = let rs' = filter (not . Remote.readonly) rs
 		in if null rs' then rs else rs'
 
@@ -144,32 +145,42 @@ expensiveScan urlrenderer rs = unless onlyweb $ batch <~> do
 		(unwanted', ts) <- maybe
 			(return (unwanted, []))
 			(findtransfers f unwanted)
-				=<< liftAnnex (Backend.lookupFile f)
+				=<< liftAnnex (lookupFile f)
 		mapM_ (enqueue f) ts
+
+		{- Delay for a short time to avoid using too much CPU. -}
+		liftIO $ threadDelay $ fromIntegral $ oneSecond `div` 200
+
 		scan unwanted' fs
 
 	enqueue f (r, t) =
 		queueTransferWhenSmall "expensive scan found missing object"
-			(Just f) t r
+			(AssociatedFile (Just f)) t r
 	findtransfers f unwanted key = do
-		{- The syncable remotes may have changed since this
-		 - scan began. -}
-		syncrs <- syncDataRemotes <$> getDaemonStatus
+		let af = AssociatedFile (Just f)
 		locs <- liftAnnex $ loggedLocations key
 		present <- liftAnnex $ inAnnex key
+		let slocs = S.fromList locs
+		
+		{- The remotes may have changed since this scan began. -}
+		syncrs <- syncDataRemotes <$> getDaemonStatus
+		let use l a = mapMaybe (a key slocs) . l <$> getDaemonStatus
+
 		liftAnnex $ handleDropsFrom locs syncrs
 			"expensive scan found too many copies of object"
-			present key (Just f) Nothing callCommandAction
-		liftAnnex $ do
-			let slocs = S.fromList locs
-			let use a = return $ mapMaybe (a key slocs) syncrs
-			ts <- if present
-				then filterM (wantSend True (Just key) (Just f) . Remote.uuid . fst)
-					=<< use (genTransfer Upload False)
-				else ifM (wantGet True (Just key) (Just f))
-					( use (genTransfer Download True) , return [] )
-			let unwanted' = S.difference unwanted slocs
-			return (unwanted', ts)
+			present key af [] callCommandAction
+		ts <- if present
+			then liftAnnex . filterM (wantSend True (Just key) af . Remote.uuid . fst)
+				=<< use syncDataRemotes (genTransfer Upload False)
+			else ifM (liftAnnex $ wantGet True (Just key) af)
+				( use downloadRemotes (genTransfer Download True) , return [] )
+		let unwanted' = S.difference unwanted slocs
+		return (unwanted', ts)
+
+-- Both syncDataRemotes and exportRemotes can be scanned.
+-- The downloadRemotes list contains both.
+scannableRemotes :: Assistant [Remote]
+scannableRemotes = downloadRemotes <$> getDaemonStatus
 
 genTransfer :: Direction -> Bool -> Key -> S.Set UUID -> Remote -> Maybe (Remote, Transfer)
 genTransfer direction want key slocs r

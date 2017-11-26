@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlh1G1u_AMJEyADqlfuzV2cePniocDyK6A"
+ nickname="Adam"
+ subject="comment 3"
+ date="2015-04-13T17:23:15Z"
+ content="""
+Verified to be rsync 3.0.9 that is bundled with git annex which is causing the slowdown. Updated to cwRsync 3.1.1 and it was fast again.
+"""]]

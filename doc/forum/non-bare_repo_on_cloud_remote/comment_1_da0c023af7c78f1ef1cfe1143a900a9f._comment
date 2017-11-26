@@ -6,5 +6,7 @@
  content="""
 Sure you can.. That's how <http://downloads.kitenet.net/> works, which is where people download git-annex builds from!
 
+[[tips/making_a_remote_repo_update_when_changes_are_pushed_to_it]]
+
 [[tips/setup_a_public_repository_on_a_web_site]]
 """]]

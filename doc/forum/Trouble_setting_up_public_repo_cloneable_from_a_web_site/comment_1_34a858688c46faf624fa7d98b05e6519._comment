@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-04-07T20:31:26Z"
+ content="""
+Hmm, that all looks ok. I wonder if you forgot to run `git
+update-server-info`?
+
+<https://downloads.kitenet.net/.git/> is an example of such a repo, which
+you can clone. So it certianly works if you set it up right.
+"""]]

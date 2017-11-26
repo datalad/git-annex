@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn8d6WBPNtmyeANT-gjlN19QnCTQ0psRPs"
+ nickname="James"
+ subject="RE: last comment"
+ date="2015-01-23T01:02:18Z"
+ content="""
+RE: my last comment
+
+The reason I couldn't get it to work is because I didn't have proper read access to the bucket. My bad for not checking first but it would be great it there was a clearer error message from git-annex and/or a way to get more detailed information on the s3 extension (-d doesn't do much).
+
+Regardless git-annex is pretty cool, thanks to all the maintainers for their hard work.
+"""]]

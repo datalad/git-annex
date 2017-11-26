@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 1"
+ date="2015-06-06T14:57:35Z"
+ content="""
+I did this using a couple of tools (off the top of my head):
+
+git annex find path/ --format '${key}\n' > /tmp/keyslist (outputs a list of keys)
+find .git/annex/objects -type f | grep -wFf /tmp/keyslist > /tmp/filelist (outputs a list of files)
+
+Then I use 'resync -avhP --files-from=/tmp/filelist . othermachine:some/tmp/dir' to transfer the files to the other machine.
+
+Then I 'git annex import some/tmp/dir' to inject the content, then just delete the additional symlinks (and reset the index).
+
+This speeds things up a bit. Even more speed can be had using tar/netcat.
+
+Hope this points you in the right direction.
+"""]]

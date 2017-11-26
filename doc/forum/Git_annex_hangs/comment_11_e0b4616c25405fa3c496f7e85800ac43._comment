@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2017-05-25T17:47:53Z"
+ content="""
+So there is some kind of networked filesystem involved? What kind?
+
+Do you have annex.pidlock enabled in the repository's `git config`?
+"""]]

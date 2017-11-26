@@ -1,26 +1,30 @@
 {- git-annex command
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.Upgrade where
 
-import Common.Annex
 import Command
 import Upgrade
+import Annex.Version
+import Annex.Init
 
-cmd :: [Command]
-cmd = [dontCheck repoExists $ -- because an old version may not seem to exist
-	command "upgrade" paramNothing seek
-		SectionMaintenance "upgrade repository layout"]
+cmd :: Command
+cmd = dontCheck repoExists $ -- because an old version may not seem to exist
+	noDaemonRunning $ -- avoid upgrading repo out from under daemon
+	command "upgrade" SectionMaintenance "upgrade repository layout"
+		paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start :: CommandStart
 start = do
 	showStart "upgrade" "."
-	r <- upgrade False
+	whenM (isNothing <$> getVersion) $ do
+		initialize Nothing Nothing
+	r <- upgrade False latestVersion
 	next $ next $ return r

@@ -1,22 +1,24 @@
 {- git-annex command
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.VAdd where
 
-import Common.Annex
 import Command
 import Annex.View
 import Command.View (checkoutViewBranch)
 
-cmd :: [Command]
-cmd = [notBareRepo $ notDirect $ command "vadd" (paramRepeating "FIELD=GLOB")
-	seek SectionMetaData "add subdirs to current view"]
+cmd :: Command
+cmd = notBareRepo $ notDirect $
+	command "vadd" SectionMetaData 
+		"add subdirs to current view"
+		(paramRepeating "FIELD=GLOB")
+		(withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart
@@ -31,6 +33,6 @@ start params = do
 				next $ next $ return True
 			Narrowing -> next $ next $ do
 				if visibleViewSize view' == visibleViewSize view
-					then error "That would not add an additional level of directory structure to the view. To filter the view, use vfilter instead of vadd."
+					then giveup "That would not add an additional level of directory structure to the view. To filter the view, use vfilter instead of vadd."
 					else checkoutViewBranch view' narrowView
-			Widening -> error "Widening view to match more files is not currently supported."
+			Widening -> giveup "Widening view to match more files is not currently supported."

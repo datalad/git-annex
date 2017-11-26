@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="cantora@432fae6be728a32ac472387df86a8922f059d4a6"
+ nickname="cantora"
+ subject="How to view configuration of special remotes?"
+ date="2015-12-08T08:29:12Z"
+ content="""
+I don't remember which gpg key my s3 remote is using, but I can't seem to get git annex to tell me about the configuration of my s3 remote, which has the gpg key ID that I need to find (I need to restore it from many backed up keys, but need to know which one). Is there a way to view the remote metadata? I was hoping to see a command like `git annex remoteinfo NAME`. (git annex version: `5.20140408-gb37d538`).
+"""]]

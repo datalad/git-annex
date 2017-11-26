@@ -4,7 +4,7 @@
  - git-annex branch. Among other things, it ensures that if git-annex is
  - interrupted, its recorded data is not lost.
  -
- - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,7 +13,7 @@
 
 module Annex.Journal where
 
-import Common.Annex
+import Annex.Common
 import qualified Git
 import Annex.Perms
 import Annex.LockFile
@@ -37,7 +37,6 @@ setJournalFile _jl file content = do
 	let tmpfile = tmp </> takeFileName jfile
 	liftIO $ do
 		withFile tmpfile WriteMode $ \h -> do
-			fileEncoding h
 #ifdef mingw32_HOST_OS
 			hSetNewlineMode h noNewlineTranslation
 #endif
@@ -53,7 +52,7 @@ getJournalFile _jl = getJournalFileStale
  - changes. -}
 getJournalFileStale :: FilePath -> Annex (Maybe String)
 getJournalFileStale file = inRepo $ \g -> catchMaybeIO $
-	readFileStrictAnyEncoding $ journalFile file g
+	readFileStrict $ journalFile file g
 
 {- List of files that have updated content in the journal. -}
 getJournalledFiles :: JournalLocked -> Annex [FilePath]

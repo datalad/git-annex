@@ -1,13 +1,12 @@
 {- git-annex command
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.Repair where
 
-import Common.Annex
 import Command
 import qualified Annex
 import qualified Git.Repair
@@ -16,11 +15,13 @@ import qualified Git.Ref
 import Git.Types
 import Annex.Version
 
-cmd :: [Command]
-cmd = [noCommit $ dontCheck repoExists $
-	command "repair" paramNothing seek SectionMaintenance "recover broken git repository"]
+cmd :: Command
+cmd = noCommit $ dontCheck repoExists $
+	command "repair" SectionMaintenance 
+		"recover broken git repository"
+		paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start :: CommandStart

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="jean.jordaan@4bb3bd508a9eb0a4bab5d1b587dadd2b6c4a7edc"
+ nickname="jean.jordaan"
+ subject="recoll: there's a Unity Lens for it"
+ date="2015-08-26T13:04:12Z"
+ content="""
+I see there is an Ubuntu Unity search lens for recoll: http://www.webupd8.org/2012/03/recoll-lens-full-text-search-unity-lens.html
+It should be possible to integrate git-annex metadata with that ..
+"""]]

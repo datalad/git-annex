@@ -1,6 +1,6 @@
 {- quvi options for git-annex
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,16 +9,16 @@
 
 module Annex.Quvi where
 
-import Common.Annex
+import Annex.Common
 import qualified Annex
 import Utility.Quvi
 import Utility.Url
 
-withQuviOptions :: forall a. Query a -> [QuviParam] -> URLString -> Annex a
+withQuviOptions :: forall a. Query a -> [QuviParams] -> URLString -> Annex a
 withQuviOptions a ps url = do
 	v <- quviVersion
 	opts <- map Param . annexQuviOptions <$> Annex.getGitConfig
-	liftIO $ a v (map (\mkp -> mkp v) ps++opts) url
+	liftIO $ a v (concatMap (\mkp -> mkp v) ps ++ opts) url
 
 quviSupported :: URLString -> Annex Bool
 quviSupported u = liftIO . flip supported u =<< quviVersion

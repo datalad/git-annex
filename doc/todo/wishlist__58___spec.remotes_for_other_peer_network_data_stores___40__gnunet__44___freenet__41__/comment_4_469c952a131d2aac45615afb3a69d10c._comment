@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="0xloem@0bd8a79a57e4f0dcade8fc81d162c37eae4d6730"
+ nickname="0xloem"
+ subject="freenet special remote"
+ date="2016-04-09T10:37:22Z"
+ content="""
+I've gotten derailed, but in case somebody else is interested for now, I've started a freenet special remote at https://github.com/xloem/gitlakepy .  Also includes beginnings of a generic python class for special remotes in the same scriptfile.
+
+SETSTATE is helpful but doesn't allow for any form of hashing the file offline, to ensure the hash matches.  It means there could be data corruption uploading the file and there would be no way to check that the hash matched the local data.  It would be nice to provide new hashing backends as well, perhaps then somebody could make a multi-hash which stores different hashes side-by-side to resolve such paranoia.
+
+I guess for now the right way to do these things is to add the new capabilities straight to the internals of git-annex, but learning haskell is an adventure when time is a constraint.
+"""]]

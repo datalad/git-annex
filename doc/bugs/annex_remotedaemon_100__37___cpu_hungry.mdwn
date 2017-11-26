@@ -1,0 +1,81 @@
+### Please describe the problem.
+
+Rebooted my laptop recently (after dunno how long of uptime) and annex assistant was shut off in previous uptime, but this time decided to leave it running. spotted that laptop is hot today to see that git-annex is busy.  And I am not sure what it is really doing:  top says
+
+     3087 yoh       30  10  520700  21084  14748 S 100.0  0.1  80:50.60 /usr/bin/git-annex remotedaemon 
+
+
+[[!format sh """
+
+$> tail -20 /proc/3087/cwd/.git/annex/daemon.log
+
+Please make sure you have the correct access rights
+and the repository exists.
+ssh: connect to host vagus.cns.dartmouth.edu port 22: Connection timed out
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+ssh: connect to host vagus.cns.dartmouth.edu port 22: Connection timed out
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+[2015-03-28 20:27:53 EDT] main: Syncing with debandy_Vault 
+hostname: Name or service not known
+hostname: Name or service not known
+To ssh://yoh@git-annex-andy-yoh_.2Fmedia.2FVault.2Fannex/media/Vault/annex/
+   8c181af..a0b0bd6  git-annex -> synced/git-annex
+   8352761..537d4a6  master -> synced/master
+
+"""]]
+
+in webapp I saw it struggling to connect  to vagus which is offline, I turned it off, then reanabled syncing to above yoh@git-annex-andy-yoh_.2Fmedia.2FVault.2Fannex .  I don't know if annex was busier or not before, but it is 100% busy now, but nothing seems to be done -- no traffic, no changing fd's for that annex process
+
+strace shows busy reading from fd 24:
+
+[[!format sh """
+[pid  3110] read(24, "", 8096)          = 0
+[pid  3110] read(24, "", 8096)          = 0
+[pid  3110] read(24, "", 8096)          = 0
+[pid  3110] read(24, "", 8096)          = 0
+"""]]
+
+
+    $> ls -l /proc/3087/fd/24                      
+    lr-x------ 1 yoh yoh 64 Mar 28 20:31 /proc/3087/fd/24 -> pipe:[794930]
+
+
+so what could it be doing?
+
+[[!format sh """
+ 2807 yoh        20   0  693M  110M 36948 S  1.4  0.7 11:15.32 ├─ /usr/bin/git-annex assistant --startdelay=5s
+ 3359 yoh        39  19 20996  3412  3096 S  0.0  0.0  0:00.01 │  ├─ git --git-dir=.git --work-tree=. check-attr -z --stdin annex.backend annex.numcopies --
+ 3140 yoh        20   0 21128  3504  3188 S  0.0  0.0  0:00.01 │  ├─ git --git-dir=.git --work-tree=. check-ignore -z --stdin --verbose --non-matching
+ 3117 yoh        20   0  693M  110M 36948 S  0.0  0.7  0:00.00 │  ├─ /usr/bin/git-annex assistant --startdelay=5s
+ 3108 yoh        20   0  693M  110M 36948 S  0.0  0.7  0:00.15 │  ├─ /usr/bin/git-annex assistant --startdelay=5s
+ 3087 yoh        30  10  508M 21084 14748 S 97.9  0.1  1h29:16 │  ├─ /usr/bin/git-annex remotedaemon
+24361 yoh        30  10  508M 21084 14748 S  0.0  0.1  0:00.00 │  │  ├─ /usr/bin/git-annex remotedaemon
+19799 yoh        30  10     0     0     0 Z  0.0  0.0  0:00.01 │  │  ├─ ssh
+19440 yoh        30  10  508M 21084 14748 S  0.0  0.1  0:00.00 │  │  ├─ /usr/bin/git-annex remotedaemon
+ 3222 yoh        30  10 27368  5796  3456 S  0.0  0.0  0:00.00 │  │  ├─ git --git-dir=.git --work-tree=. cat-file --batch
+ 3110 yoh        30  10  508M 21084 14748 R 97.5  0.1  1h29:10 │  │  ├─ /usr/bin/git-annex remotedaemon
+ 3090 yoh        30  10  508M 21084 14748 S  0.0  0.1  0:00.98 │  │  ├─ /usr/bin/git-annex remotedaemon
+ 3089 yoh        30  10  508M 21084 14748 S  0.0  0.1  0:00.03 │  │  └─ /usr/bin/git-annex remotedaemon
+"""]]
+
+how could I figure out what is doing??? meanwhile I have just sent STOP signal to 3087
+
+### What version of git-annex are you using? On what operating system?
+
+5.20150327+git27-g6af24b6-1
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]

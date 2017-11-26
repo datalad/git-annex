@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="madduck"
+ subject="TODO written"
+ date="2015-05-06T14:24:56Z"
+ content="""
+@joeyh, yes, it would overwrite all metadata. The idea would be to export with --json, manipulate, import…
+
+http://git-annex.branchable.com/todo/ability_to_set_metadata_from_json/?updated
+"""]]

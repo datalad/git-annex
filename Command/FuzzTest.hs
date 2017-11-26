@@ -1,15 +1,14 @@
 {- git-annex fuzz generator
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.FuzzTest where
 
-import Common.Annex
-import qualified Annex
 import Command
+import qualified Annex
 import qualified Git.Config
 import Config
 import Utility.ThreadScheduler
@@ -20,11 +19,13 @@ import System.Random (getStdRandom, random, randomR)
 import Test.QuickCheck
 import Control.Concurrent
 
-cmd :: [Command]
-cmd = [ notBareRepo $ command "fuzztest" paramNothing seek SectionTesting
-	"generates fuzz test files"]
+cmd :: Command
+cmd = notBareRepo $
+	command "fuzztest" SectionTesting
+		"generates fuzz test files"
+		paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start :: CommandStart
@@ -38,7 +39,7 @@ start = do
 
 guardTest :: Annex ()
 guardTest = unlessM (fromMaybe False . Git.Config.isTrue <$> getConfig key "") $
-	error $ unlines
+	giveup $ unlines
 		[ "Running fuzz tests *writes* to and *deletes* files in"
 		, "this repository, and pushes those changes to other"
 		, "repositories! This is a developer tool, not something"
@@ -53,9 +54,9 @@ guardTest = unlessM (fromMaybe False . Git.Config.isTrue <$> getConfig key "") $
 
 fuzz :: Handle -> Annex ()
 fuzz logh = do
-	action <- genFuzzAction
-	record logh $ flip Started action
-	result <- tryNonAsync $ runFuzzAction action
+	fuzzer <- genFuzzAction
+	record logh $ flip Started fuzzer
+	result <- tryNonAsync $ runFuzzAction fuzzer
 	record logh $ flip Finished $
 		either (const False) (const True) result
 

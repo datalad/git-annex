@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2016-04-20T16:56:01Z"
+ content="""
+The only supported way is to either run "make install", or use a
+distribution package that is built using "make install". 
+
+If your distribution is building the package in some other way, please file
+a bug with it to get its package fixed.
+"""]]

@@ -1,44 +1,42 @@
 {- git-annex command
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.NumCopies where
 
-import Common.Annex
-import qualified Annex
 import Command
-import Config.NumCopies
-import Types.Messages
+import qualified Annex
+import Annex.NumCopies
 
-cmd :: [Command]
-cmd = [command "numcopies" paramNumber seek
-	SectionSetup "configure desired number of copies"]
+cmd :: Command
+cmd = noMessages $ command "numcopies" SectionSetup 
+	"configure desired number of copies"
+	paramNumber (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withWords start
 
 start :: [String] -> CommandStart
 start [] = startGet
 start [s] = case readish s of
-	Nothing -> error $ "Bad number: " ++ s
+	Nothing -> giveup $ "Bad number: " ++ s
 	Just n
 		| n > 0 -> startSet n
 		| n == 0 -> ifM (Annex.getState Annex.force)
 			( startSet n
-			, error "Setting numcopies to 0 is very unsafe. You will lose data! If you really want to do that, specify --force."
+			, giveup "Setting numcopies to 0 is very unsafe. You will lose data! If you really want to do that, specify --force."
 			)
-		| otherwise -> error "Number cannot be negative!"
-start _ = error "Specify a single number."
+		| otherwise -> giveup "Number cannot be negative!"
+start _ = giveup "Specify a single number."
 
 startGet :: CommandStart
 startGet = next $ next $ do
-	Annex.setOutput QuietOutput
 	v <- getGlobalNumCopies
 	case v of
-		Just n -> liftIO $ print $ fromNumCopies n
+		Just n -> liftIO $ putStrLn $ show $ fromNumCopies n
 		Nothing -> do
 			liftIO $ putStrLn "global numcopies is not set"
 			old <- deprecatedNumCopies
@@ -49,6 +47,7 @@ startGet = next $ next $ do
 
 startSet :: Int -> CommandStart
 startSet n = do
+	allowMessages
 	showStart "numcopies" (show n)
 	next $ next $ do
 		setGlobalNumCopies $ NumCopies n

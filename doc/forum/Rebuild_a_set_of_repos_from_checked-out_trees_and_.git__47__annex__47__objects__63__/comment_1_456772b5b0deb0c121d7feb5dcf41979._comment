@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 1"
+ date="2017-07-21T09:25:25Z"
+ content="""
+My solution is very roundabout but preserves a lot of information, but did involve buying another drive (and exclusively using v5 indirect mode!).
+
+I create a new repository (on the new drive) which I import all the contents of the \"keyfiles\" (contents of .git/annex/objects). Then I create another repository with the filelinks (symlinks pointing to .git/annex/objects). After adding the keyfiles remote to this, this lets me see which content is present and valid, which got corrupted, is missing etc.
+
+Then I can move the valid content from this recovery annex into a proper annex and try and repair/find the corrupted/missing.
+"""]]

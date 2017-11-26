@@ -1,6 +1,6 @@
 {- git-annex assistant webapp configurators for WebDAV remotes
  -
- - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -19,12 +19,13 @@ import Types.Remote (RemoteConfig)
 import Types.StandardGroups
 import Logs.Remote
 import Git.Types (RemoteName)
+import Assistant.Gpg
+import Types.GitConfig
 
 import qualified Data.Map as M
 #endif
 import qualified Data.Text as T
 import Network.URI
-import Assistant.Gpg
 
 webDAVConfigurator :: Widget -> Handler Html
 webDAVConfigurator = page "Add a WebDAV repository" (Just Configuration)
@@ -78,11 +79,11 @@ postAddBoxComR = boxConfigurator $ do
 				-- Box.com has a max file size of 100 mb, but
 				-- using smaller chunks has better memory
 				-- performance.
-				, ("chunksize", "10mb")
+				, ("chunk", "10mb")
 				]
 		_ -> $(widgetFile "configurators/addbox.com")
 #else
-postAddBoxComR = error "WebDAV not supported by this build"
+postAddBoxComR = giveup "WebDAV not supported by this build"
 #endif
 
 getEnableWebDAVR :: UUID -> Handler Html
@@ -94,8 +95,9 @@ postEnableWebDAVR uuid = do
 	let c = fromJust $ M.lookup uuid m
 	let name = fromJust $ M.lookup "name" c
 	let url = fromJust $ M.lookup "url" c
-	mcreds <- liftAnnex $
-		getRemoteCredPairFor "webdav" c (WebDAV.davCreds uuid)
+	mcreds <- liftAnnex $ do
+		dummycfg <- liftIO dummyRemoteGitConfig
+		getRemoteCredPairFor "webdav" c dummycfg (WebDAV.davCreds uuid)
 	case mcreds of
 		Just creds -> webDAVConfigurator $ liftH $
 			makeWebDavRemote enableSpecialRemote name creds M.empty
@@ -120,7 +122,7 @@ postEnableWebDAVR uuid = do
 					T.pack <$> Remote.prettyUUID uuid
 				$(widgetFile "configurators/enablewebdav")
 #else
-postEnableWebDAVR _ = error "WebDAV not supported by this build"
+postEnableWebDAVR _ = giveup "WebDAV not supported by this build"
 #endif
 
 #ifdef WITH_WEBDAV

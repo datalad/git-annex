@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-01-05T16:47:16Z"
+ content="""
+Please show `ls -l` output listing one or more of the files with the
+problem. Also I'd need to know the filesystem your repository is using
+in order to reproduce the problem.
+
+Note that you can use `git annex migrate` to switch away from the WORM
+backend..
+"""]]

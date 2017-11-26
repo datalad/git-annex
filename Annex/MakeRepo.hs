@@ -1,6 +1,6 @@
 {- making local repositories (used by webapp mostly)
  -
- - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,6 +16,7 @@ import qualified Git.Branch
 import qualified Annex
 import Annex.UUID
 import Annex.Direct
+import Annex.Action
 import Types.StandardGroups
 import Logs.PreferredContent
 import qualified Annex.Branch
@@ -42,7 +43,7 @@ makeRepo path bare = ifM (probeRepoExists path)
 inDir :: FilePath -> Annex a -> IO a
 inDir dir a = do
 	state <- Annex.new =<< Git.Config.read =<< Git.Construct.fromPath dir
-	Annex.eval state a
+	Annex.eval state $ a `finally` stopCoProcesses
 
 {- Creates a new repository, and returns its UUID. -}
 initRepo :: Bool -> Bool -> FilePath -> Maybe String -> Maybe StandardGroup -> IO UUID
@@ -75,7 +76,7 @@ initRepo False _ dir desc mgroup = inDir dir $ do
 
 initRepo' :: Maybe String -> Maybe StandardGroup -> Annex ()
 initRepo' desc mgroup = unlessM isInitialized $ do
-	initialize desc
+	initialize desc Nothing
 	u <- getUUID
 	maybe noop (defaultStandardGroup u) mgroup
 	{- Ensure branch gets committed right away so it is

@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="zarel"
+ subject="comment 1"
+ date="2016-04-02T20:22:23Z"
+ content="""
+I suppose that the problem is strictly assistant related since both \"git annex status\" and \"git status\" give me the correct status when new files are present in a couple of seconds the first time and in a fraction of a second in the subsequent calls
+"""]]

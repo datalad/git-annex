@@ -1,23 +1,24 @@
 {- Amazon Glacier remotes.
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.Glacier (remote, jobList) where
+module Remote.Glacier (remote, jobList, checkSaneGlacierCommand) where
 
 import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as L
 
-import Common.Annex
+import Annex.Common
 import Types.Remote
-import Types.Key
 import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
+import Remote.Helper.Messages
+import Remote.Helper.Export
 import qualified Remote.Helper.AWS as AWS
 import Creds
 import Utility.Metered
@@ -29,12 +30,13 @@ type Vault = String
 type Archive = FilePath
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "glacier",
-	enumerate = findSpecialRemotes "glacier",
-	generate = gen,
-	setup = glacierSetup
-}
+remote = RemoteType
+	{ typename = "glacier"
+	, enumerate = const (findSpecialRemotes "glacier")
+	, generate = gen
+	, setup = glacierSetup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
@@ -46,46 +48,51 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 		(simplyPrepare $ checkKey this)
 		this
 	  where
-		this = Remote {
-			uuid = u,
-			cost = cst,
-			name = Git.repoDescribe r,
-			storeKey = storeKeyDummy,
-			retrieveKeyFile = retreiveKeyFileDummy,
-			retrieveKeyFileCheap = retrieveCheap this,
-			removeKey = removeKeyDummy,
-			checkPresent = checkPresentDummy,
-			checkPresentCheap = False,
-			whereisKey = Nothing,
-			remoteFsck = Nothing,
-			repairRepo = Nothing,
-			config = c,
-			repo = r,
-			gitconfig = gc,
-			localpath = Nothing,
-			readonly = False,
-			availability = GloballyAvailable,
-			remotetype = remote,
-			mkUnavailable = return Nothing,
-			getInfo = includeCredsInfo c (AWS.creds u) $
+		this = Remote
+			{ uuid = u
+			, cost = cst
+			, name = Git.repoDescribe r
+			, storeKey = storeKeyDummy
+			, retrieveKeyFile = retreiveKeyFileDummy
+			, retrieveKeyFileCheap = retrieveCheap this
+			, removeKey = removeKeyDummy
+			, lockContent = Nothing
+			, checkPresent = checkPresentDummy
+			, checkPresentCheap = False
+			, exportActions = exportUnsupported
+			, whereisKey = Nothing
+			, remoteFsck = Nothing
+			, repairRepo = Nothing
+			, config = c
+			, repo = r
+			, gitconfig = gc
+			, localpath = Nothing
+			, readonly = False
+			, availability = GloballyAvailable
+			, remotetype = remote
+			, mkUnavailable = return Nothing
+			, getInfo = includeCredsInfo c (AWS.creds u) $
 				[ ("glacier vault", getVault c) ]
-		}
+			, claimUrl = Nothing
+			, checkUrl = Nothing
+			}
 	specialcfg = (specialRemoteCfg c)
 		-- Disabled until jobList gets support for chunks.
 		{ chunkConfig = NoChunks
 		}
 
-glacierSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-glacierSetup mu mcreds c = do
+glacierSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+glacierSetup ss mu mcreds c gc = do
 	u <- maybe (liftIO genUUID) return mu
-	glacierSetup' (isJust mu) u mcreds c
-glacierSetup' :: Bool -> UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-glacierSetup' enabling u mcreds c = do
-	(c', encsetup) <- encryptionSetup c
-	c'' <- setRemoteCredPair encsetup c' (AWS.creds u) mcreds
+	glacierSetup' ss u mcreds c gc
+glacierSetup' :: SetupStage -> UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+glacierSetup' ss u mcreds c gc = do
+	(c', encsetup) <- encryptionSetup c gc
+	c'' <- setRemoteCredPair encsetup c' gc (AWS.creds u) mcreds
 	let fullconfig = c'' `M.union` defaults
-	unless enabling $
-		genVault fullconfig u
+	case ss of
+		Init -> genVault fullconfig gc u
+		_ -> return ()
 	gitConfigSpecialRemote u fullconfig "glacier" "true"
 	return (fullconfig, u)
   where
@@ -107,9 +114,10 @@ nonEmpty k
 	| otherwise = return True
 
 store :: Remote -> Key -> L.ByteString -> MeterUpdate -> Annex Bool
-store r k b p = go =<< glacierEnv c u
+store r k b p = go =<< glacierEnv c gc u
   where
 	c = config r
+	gc = gitconfig r
 	u = uuid r
 	params = glacierParams c
 		[ Param "archive"
@@ -130,9 +138,10 @@ prepareRetrieve :: Remote -> Preparer Retriever
 prepareRetrieve = simplyPrepare . byteRetriever . retrieve
 
 retrieve :: Remote -> Key -> (L.ByteString -> Annex Bool) -> Annex Bool
-retrieve r k sink = go =<< glacierEnv c u
+retrieve r k sink = go =<< glacierEnv c gc u
   where
 	c = config r
+	gc = gitconfig r
 	u = uuid r
 	params = glacierParams c
 		[ Param "archive"
@@ -141,7 +150,7 @@ retrieve r k sink = go =<< glacierEnv c u
 		, Param $ getVault $ config r
 		, Param $ archive r k
 		]
-	go Nothing = error "cannot retrieve from glacier"
+	go Nothing = giveup "cannot retrieve from glacier"
 	go (Just e) = do
 		let cmd = (proc "glacier" (toCommand params))
 			{ env = Just e
@@ -160,8 +169,8 @@ retrieve r k sink = go =<< glacierEnv c u
 			showLongNote "Recommend you wait up to 4 hours, and then run this command again."
 		return ok
 
-retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
-retrieveCheap _ _ _ = return False
+retrieveCheap :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
+retrieveCheap _ _ _ _ = return False
 
 remove :: Remote -> Remover
 remove r k = glacierAction r
@@ -174,10 +183,10 @@ remove r k = glacierAction r
 
 checkKey :: Remote -> CheckPresent
 checkKey r k = do
-	showAction $ "checking " ++ name r
-	go =<< glacierEnv (config r) (uuid r)
+	showChecking r
+	go =<< glacierEnv (config r) (gitconfig r) (uuid r)
   where
-	go Nothing = error "cannot check glacier"
+	go Nothing = giveup "cannot check glacier"
 	go (Just e) = do
 		{- glacier checkpresent outputs the archive name to stdout if
 		 - it's present. -}
@@ -185,7 +194,7 @@ checkKey r k = do
 		let probablypresent = key2file k `elem` lines s
 		if probablypresent
 			then ifM (Annex.getFlag "trustglacier")
-				( return True, error untrusted )
+				( return True, giveup untrusted )
 			else return False
 
 	params = glacierParams (config r)
@@ -204,10 +213,10 @@ checkKey r k = do
 			]
 
 glacierAction :: Remote -> [CommandParam] -> Annex Bool
-glacierAction r = runGlacier (config r) (uuid r)
+glacierAction r = runGlacier (config r) (gitconfig r) (uuid r)
 
-runGlacier :: RemoteConfig -> UUID -> [CommandParam] -> Annex Bool
-runGlacier c u params = go =<< glacierEnv c u
+runGlacier :: RemoteConfig -> RemoteGitConfig -> UUID -> [CommandParam] -> Annex Bool
+runGlacier c gc u params = go =<< glacierEnv c gc u
   where
 	go Nothing = return False
 	go (Just e) = liftIO $
@@ -217,11 +226,13 @@ glacierParams :: RemoteConfig -> [CommandParam] -> [CommandParam]
 glacierParams c params = datacenter:params
   where
 	datacenter = Param $ "--region=" ++
-		fromMaybe (error "Missing datacenter configuration")
+		fromMaybe (giveup "Missing datacenter configuration")
 			(M.lookup "datacenter" c)
 
-glacierEnv :: RemoteConfig -> UUID -> Annex (Maybe [(String, String)])
-glacierEnv c u = go =<< getRemoteCredPairFor "glacier" c creds
+glacierEnv :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex (Maybe [(String, String)])
+glacierEnv c gc u = do
+	liftIO checkSaneGlacierCommand
+	go =<< getRemoteCredPairFor "glacier" c gc creds
   where
 	go Nothing = return Nothing
 	go (Just (user, pass)) = do
@@ -232,7 +243,7 @@ glacierEnv c u = go =<< getRemoteCredPairFor "glacier" c creds
 	(uk, pk) = credPairEnvironment creds
 
 getVault :: RemoteConfig -> Vault
-getVault = fromMaybe (error "Missing vault configuration") 
+getVault = fromMaybe (giveup "Missing vault configuration") 
 	. M.lookup "vault"
 
 archive :: Remote -> Key -> Archive
@@ -240,9 +251,9 @@ archive r k = fileprefix ++ key2file k
   where
 	fileprefix = M.findWithDefault "" "fileprefix" $ config r
 
-genVault :: RemoteConfig -> UUID -> Annex ()
-genVault c u = unlessM (runGlacier c u params) $
-	error "Failed creating glacier vault."
+genVault :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex ()
+genVault c gc u = unlessM (runGlacier c gc u params) $
+	giveup "Failed creating glacier vault."
   where
 	params = 
 		[ Param "vault"
@@ -261,7 +272,7 @@ genVault c u = unlessM (runGlacier c u params) $
  - not supported.
  -}
 jobList :: Remote -> [Key] -> Annex ([Key], [Key])
-jobList r keys = go =<< glacierEnv (config r) (uuid r)
+jobList r keys = go =<< glacierEnv (config r) (gitconfig r) (uuid r)
   where
 	params = [ Param "job", Param "list" ]
 	nada = ([], [])
@@ -281,7 +292,7 @@ jobList r keys = go =<< glacierEnv (config r) (uuid r)
 			else do
 				enckeys <- forM keys $ \k ->
 					maybe k (\(_, enck) -> enck k)
-						<$> cipherKey (config r)
+						<$> cipherKey (config r) (gitconfig r)
 				let keymap = M.fromList $ zip enckeys keys
 				let convert = mapMaybe (`M.lookup` keymap)
 				return (convert succeeded, convert failed)
@@ -299,3 +310,14 @@ jobList r keys = go =<< glacierEnv (config r) (uuid r)
 					| otherwise ->
 						parse c rest
 	parse c (_:rest) = parse c rest
+
+-- boto's version of glacier exits 0 when given a parameter it doesn't
+-- understand. See https://github.com/boto/boto/issues/2942
+checkSaneGlacierCommand :: IO ()
+checkSaneGlacierCommand = 
+	whenM ((Nothing /=) <$> catchMaybeIO shouldfail) $
+		giveup wrongcmd
+  where
+	test = proc "glacier" ["--compatibility-test-git-annex"]
+	shouldfail = withQuietOutput createProcessSuccess test
+	wrongcmd = "The glacier program in PATH seems to be from boto, not glacier-cli. Cannot use this program."

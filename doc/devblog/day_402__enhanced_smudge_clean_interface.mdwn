@@ -1,0 +1,14 @@
+Continued working on the enhancaed smudge/clean interface in git,
+incorporating feedback from the git developers.
+
+In a spare half an hour, I made an `improved-smudge-filters` branch
+that teaches git-annex smudge to use the new interface. 
+
+Doing a quick benchmark, `git checkout` of a deleted 1 gb file took:
+
+* 19 seconds before
+* 11 seconds with the new interface
+* 0.1 seconds with the new interface and annex.thin set  
+  (while also saving 1 gb of disk space!)
+
+So, this new interface is very much worthwhile.

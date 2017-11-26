@@ -1,0 +1,36 @@
+### Please describe the problem.
+
+I have a main annex with ~2TB of data. In the past is was using SHA256 then I migrated to SHA256E . Recently it was becoming quite full so I took some spare HD and cloned it and moved data from the main to the spares. To my surprise, the main annex disk usage did not go down a bit.
+
+It took me some time to understand why . The problem is exemplified by the  shell script  <http://mennucc1.debian.net/git-annex/git-annex-no-dedup.sh> .
+
+In short, if a annex is migrated to a new backend and afterwards files are moved, then the hardlinks are broken, and disk usage doubles.
+
+### What steps will reproduce the problem?
+
+run above script
+
+### What version of git-annex are you using? On what operating system?
+
+ 5.20141125  on Debian Jessie amd64
+
+### Please provide any additional information below.
+
+Of course a simple solution would be to drop all unused files. This is ugly , though, because it does not distinguish between
+(1) unused files that are previous copies of files I care about (2) unused files that are due to the problem described in the example, and that I do not care about.
+
+A more complex but more elegant solution would be:
+
+(a) when a file is migrated , the old and new objects in the annex are hardlinked; moreover two symlinks should be creates, so that git-annex knows at a glance which two files are hardlinked (see <http://mennucc1.debian.net/git-annex/cross_links.txt> for example)
+
+(b) when moving of copying files, all hardlinked versions whould be move/copied
+
+(c) when dropping , an option may be used to specify if all hardlinked versions should be dropped alltogether
+
+### bye
+
+and thanks, A.
+
+### ps
+
+I tried to attach two files to this bug report but failed

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-12-11T15:24:44Z"
+ content="""
+It seems likely that you didn't stop the assistant. There's no
+caching of urls to git remotes; git-annex just uses whatever's there in
+.git/config.
+"""]]

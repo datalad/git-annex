@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/26f3c692-0460-4cbc-8712-e9bfb5889fb2"
+ nickname="Tobias Kienzler"
+ avatar="http://cdn.libravatar.org/avatar/f66be680ced3f9dc4786e308ceade73902e185d407be873e98266fc745c8c075"
+ subject="&quot;WSL adds inotify & filesystem change notification support&quot;"
+ date="2017-08-07T06:22:07Z"
+ content="""
+https://blogs.msdn.microsoft.com/commandline/2016/10/07/wsl-adds-inotify-filesystem-change-notification-support/
+
+So it should work now, right?
+"""]]

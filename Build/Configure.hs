@@ -1,34 +1,40 @@
 {- Checks system configuration and generates SysConfig.hs. -}
 
+{-# OPTIONS_GHC -fno-warn-tabs #-}
+
 module Build.Configure where
 
-import System.Directory
 import Control.Applicative
-import System.Environment (getArgs)
 import Control.Monad.IfElse
 import Control.Monad
 
 import Build.TestConfig
 import Build.Version
+import Utility.PartialPrelude
+import Utility.Process
 import Utility.SafeCommand
 import Utility.ExternalSHA
 import Utility.Env
+import Utility.Exception
 import qualified Git.Version
+import Utility.DottedVersion
+import Utility.Directory
 
 tests :: [TestCase]
 tests =
 	[ TestCase "version" (Config "packageversion" . StringConfig <$> getVersion)
 	, TestCase "UPGRADE_LOCATION" getUpgradeLocation
-	, TestCase "git" $ requireCmd "git" "git --version >/dev/null"
+	, TestCase "git" $ testCmd "git" "git --version >/dev/null"
 	, TestCase "git version" getGitVersion
 	, testCp "cp_a" "-a"
 	, testCp "cp_p" "-p"
 	, testCp "cp_preserve_timestamps" "--preserve=timestamps"
 	, testCp "cp_reflink_auto" "--reflink=auto"
-	, TestCase "xargs -0" $ requireCmd "xargs_0" "xargs -0 </dev/null"
-	, TestCase "rsync" $ requireCmd "rsync" "rsync --version >/dev/null"
+	, TestCase "xargs -0" $ testCmd "xargs_0" "xargs -0 </dev/null"
+	, TestCase "rsync" $ testCmd "rsync" "rsync --version >/dev/null"
 	, TestCase "curl" $ testCmd "curl" "curl --version >/dev/null"
 	, TestCase "wget" $ testCmd "wget" "wget --version >/dev/null"
+	, TestCase "wget unclutter options" checkWgetUnclutter
 	, TestCase "bup" $ testCmd "bup" "bup --version >/dev/null"
 	, TestCase "nice" $ testCmd "nice" "nice true >/dev/null"
 	, TestCase "ionice" $ testCmd "ionice" "ionice -c3 true >/dev/null"
@@ -89,12 +95,28 @@ getUpgradeLocation = do
 	return $ Config "upgradelocation" $ MaybeStringConfig e
 
 getGitVersion :: Test
-getGitVersion = do
-	v <- Git.Version.installed
-	let oldestallowed = Git.Version.normalize "1.7.1.0"
-	when (v < oldestallowed) $
-		error $ "installed git version " ++ show v ++ " is too old! (Need " ++ show oldestallowed ++ " or newer)"
-	return $ Config "gitversion" $ StringConfig $ show v
+getGitVersion = go =<< getEnv "FORCE_GIT_VERSION"
+  where
+	go (Just s) = return $ Config "gitversion" $ StringConfig s
+	go Nothing = do
+		v <- Git.Version.installed
+		let oldestallowed = Git.Version.normalize "1.7.1.0"
+		when (v < oldestallowed) $
+			error $ "installed git version " ++ show v ++ " is too old! (Need " ++ show oldestallowed ++ " or newer)"
+		return $ Config "gitversion" $ StringConfig $ show v
+
+checkWgetUnclutter :: Test
+checkWgetUnclutter = Config "wgetunclutter" . BoolConfig
+	. maybe False (>= normalize "1.16")
+	<$> getWgetVersion 
+
+getWgetVersion :: IO (Maybe DottedVersion)
+getWgetVersion = catchDefaultIO Nothing $
+	extract <$> readProcess "wget" ["--version"]
+  where
+	extract s = case lines s of
+		[] -> Nothing
+		(l:_) -> normalize <$> headMaybe (drop 2 $ words l)
 
 getSshConnectionCaching :: Test
 getSshConnectionCaching = Config "sshconnectioncaching" . BoolConfig <$>
@@ -110,12 +132,12 @@ cleanup = removeDirectoryRecursive tmpDir
 
 run :: [TestCase] -> IO ()
 run ts = do
-	args <- getArgs
 	setup
 	config <- runTests ts
-	if args == ["Android"]
-		then writeSysConfig $ androidConfig config
-		else writeSysConfig config
+	v <- getEnv "CROSS_COMPILE"
+	case v of
+		Just "Android" -> writeSysConfig $ androidConfig config
+		_ -> writeSysConfig config
 	cleanup
 	whenM isReleaseBuild $
 		cabalSetup "git-annex.cabal"

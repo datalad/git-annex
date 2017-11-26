@@ -1,0 +1,3 @@
+Having by mistake annex a full repo i look for a way of unannex some file to make them
+managed by the "standard" git proccess again - mostly some source code file -
+Is there a way  to do that ?

@@ -15,9 +15,9 @@ Emacs, which aims to integrate with the standard facilities
 <https://github.com/jwiegley/git-annex-el>
 
 He has also added support to org-attach; if
-`org-attach-git-annex-cutoff' is non-nil and smaller than the size
- of the file you're attaching then org-attach will `git annex add the
-file`; otherwise it will "git add" it.
+`org-attach-git-annex-cutoff` is non-nil and smaller than the size
+ of the file you're attaching then org-attach will `git annex add` the
+file; otherwise it will `git add` it.
 
 ----
 

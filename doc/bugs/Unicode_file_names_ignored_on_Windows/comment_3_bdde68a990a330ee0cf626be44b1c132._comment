@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.154"
- subject="comment 3"
- date="2014-03-18T18:14:57Z"
- content="""
-ghc docs on FileSystemEncoding: \"On Windows, this encoding *should not* be used if possible because the use of code pages is deprecated: Strings should be retrieved via the wide W-family of UTF-16 APIs instead\"
-"""]]

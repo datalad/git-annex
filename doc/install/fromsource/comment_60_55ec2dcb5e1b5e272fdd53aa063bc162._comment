@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="dave@2ab82f485adf7e2ce787066e35f5f9789bff430b"
+ nickname="dave"
+ subject="This seems relevant to the comment directly previous this one."
+ date="2016-09-07T20:27:48Z"
+ content="""
+https://git.joeyh.name/?p=concurrent-output.git;a=blobdiff;f=System/Console/Concurrent.hs;h=d8cea13a3816eba44f8d70a855db21e2dd58a27d;hp=124476379264a94e44b51eb1407fd7d80d0348e7;hb=HEAD;hpb=021358c5a033335e05ec9cff72107ab401217c30
+"""]]

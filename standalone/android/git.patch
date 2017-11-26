@@ -1,4 +1,4 @@
-From 6134cc328f513e32895462e884487513b28029ba Mon Sep 17 00:00:00 2001
+From e0fffe80a8815e64dbc1d690c79bf006651c7642 Mon Sep 17 00:00:00 2001
 From: Joey Hess <joey@kitenet.net>
 Date: Wed, 13 Aug 2014 13:50:56 -0400
 Subject: [PATCH] avoid using of chmod on android when changing config
@@ -10,17 +10,17 @@ implentations, all total shite.
  1 file changed, 4 insertions(+)
 
 diff --git a/config.c b/config.c
-index 058505c..16854b2 100644
+index 9ba40bc..a350638 100644
 --- a/config.c
 +++ b/config.c
-@@ -1634,12 +1634,14 @@ int git_config_set_multivar_in_file(const char *config_filename,
- 			MAP_PRIVATE, in_fd, 0);
+@@ -2124,12 +2124,14 @@ int git_config_set_multivar_in_file_gently(const char *config_filename,
  		close(in_fd);
+ 		in_fd = -1;
  
 +		/* not on android
- 		if (chmod(lock->filename, st.st_mode & 07777) < 0) {
+ 		if (chmod(get_lock_file_path(lock), st.st_mode & 07777) < 0) {
  			error("chmod on %s failed: %s",
- 				lock->filename, strerror(errno));
+ 			      get_lock_file_path(lock), strerror(errno));
  			ret = CONFIG_NO_WRITE;
  			goto out_free;
  		}
@@ -28,14 +28,14 @@ index 058505c..16854b2 100644
  
  		if (store.seen == 0)
  			store.seen = 1;
-@@ -1813,11 +1815,13 @@ int git_config_rename_section_in_file(const char *config_filename,
+@@ -2329,11 +2331,13 @@ int git_config_rename_section_in_file(const char *config_filename,
  
  	fstat(fileno(config_file), &st);
  
 +	/* not on android
- 	if (chmod(lock->filename, st.st_mode & 07777) < 0) {
+ 	if (chmod(get_lock_file_path(lock), st.st_mode & 07777) < 0) {
  		ret = error("chmod on %s failed: %s",
- 				lock->filename, strerror(errno));
+ 			    get_lock_file_path(lock), strerror(errno));
  		goto out;
  	}
 +	*/
@@ -43,5 +43,5 @@ index 058505c..16854b2 100644
  	while (fgets(buf, sizeof(buf), config_file)) {
  		int i;
 -- 
-2.1.0.rc1
+2.1.4
 

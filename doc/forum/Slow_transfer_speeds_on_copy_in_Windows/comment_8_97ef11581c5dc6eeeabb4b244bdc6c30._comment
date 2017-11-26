@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 8"
+ date="2015-04-20T17:43:48Z"
+ content="""
+We've updated the autobuilder, so the daily build now has the most recent rsync and ssh from cygwin included in it. I'd be curious if that improves the speed any.
+"""]]

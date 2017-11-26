@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://schnouki.net/"
+ nickname="Schnouki"
+ subject="comment 3"
+ date="2015-05-29T12:20:08Z"
+ content="""
+A while ago I needed a tool to emulate slow IO (low bandwidth and high latency). I ended writing a small FUSE driver (in Go, just for fun) that did this by adding some delay to each function call. Hacky, but simpler than setting up a device mapper or NBD. I guess you could also emulate IO errors with something like this. If you're interested I can clean up my code and push it to a public repo.
+"""]]

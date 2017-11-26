@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2015-08-11T16:57:45Z"
+ content="""
+Well, you can certianly use --work-tree with git-annex. As a global git
+option, it has to be passed after the "git" and before the "annex". However,
+since the view is constructed by making symlinks to the annexed content,
+the result will be a directory full of symlinks, rather than the contents
+of the files. Also, it'll still update the repo  to think it has this view
+checked out, with confusing results.
+
+rsync seems to be a perfectly good way to do what you want, if you want
+to have copies of the files.
+
+Or, you might consider making a shared clone of the git repo wherever you 
+want that tree of files, and checking out the desired view in the clone.
+In a shared clone with a recent version of git-annex, running `git annex
+get` will quickly hard-link the files from the main repo (when possible).
+"""]]

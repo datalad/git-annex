@@ -1,0 +1,35 @@
+In our quest to find dumb replacements for [[todo/wishlist: 'get' queue and schedule.]] (and a more complete [[git-annex-schedule]]), we have setup a cronjob that would start and stop the assistant during certain time windows, to ensure that it would not download during prime bandwidth time.
+
+But that isn't exactly what we're looking for: we would like the assistant to continue doing its usual thing of adding and removing files, and even syncing the git branches. Just not get/move files around.
+
+One way I thought of doing this was to disable a remote locally. [[git-annex-dead]] of course comes to mind, but that applies to all repositories, so it's not an option. If the remote was in git, i could just `git remote rm origin` and `git remote add origin` and be done with it, but this is the *web* remote, so it doesn't even show up in `git remote -v`.
+
+But this doesn't work with [[special remotes]]. Another solution is
+simply to use the `remote.name.annex-ignore` configuration documented
+in the main [[git-annex]] manpage. For example, to disable the web
+remote, you would use:
+
+    git config remote.web.annex-ignore false
+
+The result would be:
+
+	joey@darkstar:~/tmp/a>git annex addurl --fast http://localhost
+	addurl localhost ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/a>git config remote.web.annex-ignore true
+	joey@darkstar:~/tmp/a>git annex get localhost
+	get localhost (not available) 
+	  Try making some of these repositories available:
+	  	00000000-0000-0000-0000-000000000001 -- web
+	
+	  (Note that these git remotes have annex-ignore set: web)
+	failed
+	git-annex: get: 1 failed
+	joey@darkstar:~/tmp/a>git config remote.web.annex-ignore false
+	joey@darkstar:~/tmp/a>git annex get localhost
+	get localhost (from web...) 
+	/home/joey/tmp/a/.g 100%[=====================>]      10  --.-KB/s   in 0s     
+	ok
+
+The assistant (probably?) needs to be restarted for those changes to
+take effect.  --[[anarcat]] and [[joeyh]].

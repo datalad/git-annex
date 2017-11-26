@@ -1,0 +1,1 @@
+How is it possible to view the URL etc of a special remote with git annex? I checked out a git annex repository and would like to know where the files where fetched from. 

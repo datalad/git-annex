@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-02-04T17:09:41Z"
+ content="""
+Right, it's not simply lower-casing but a different hash strategy
+as described in [[internals/hashing]].
+
+Combining annex.tune.objecthashlower and annex.tune.objecthash1 will
+result in one level of hash directories. If you get two levels then
+you probabaly typoed "objecthas1" ...
+"""]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 5"
+ date="2015-01-07T02:35:46Z"
+ content="""
+I've beat on the relativepaths branch some more and am probably as confident about it as I'm going to get. Will have to merge it and see what else it breaks.
+
+Also, I've documented that SHA512  and other large hashes are not recommended if one wants to interop with Windows.
+
+None of which completely fixes this bug, but short of teaching git about the magic filename prefix to make windows not be so broken, I don't see anything more I can do.
+"""]]

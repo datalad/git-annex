@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="cstork"
+ subject="comment 2"
+ date="2016-04-21T06:46:40Z"
+ content="""
+Just to prevent a potential misunderstanding: There are two ways to configure annex.largefiles.
+
+1. in `.git/config`, e.g., via `git config annex.largefiles=...`
+2. in `.gitattributes`
+
+The first configuration is specific to your local copy of the repository and does not travel with the content,
+whereas the second one does carry the configuration over to the other repos.
+"""]]

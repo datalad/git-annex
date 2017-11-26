@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="grawity@2ea26be48562f66fcb9b66307da72b1e2e37453f"
+ nickname="grawity"
+ subject="comment 33"
+ date="2016-05-02T18:41:53Z"
+ content="""
+I'm trying to write a remote (for smb:// support via GNOME's Gvfs), and I can't seem to find a way to change an existing special remote's parameters?
+
+Even when marked as \"dead\" (the closest to deleting a remote that I could find), it still blocks subsequent `annex initremote` calls with the same name.
+
+Also, ideally I'd want to reuse the same name _and_ keep the same UUID (e.g. when the backend is moved/renamed). Though of course there are situations where a new UUID would be wanted as well... (I guess that could depend on whether the remote is currently \"dead\" or not?)
+"""]]

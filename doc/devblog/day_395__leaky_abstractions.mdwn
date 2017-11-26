@@ -1,0 +1,7 @@
+Release today includes a last-minute fix to parsing lines from the
+git-annex branch that might have one or more carriage returns at the end.
+This comes from Windows of course, where since some things transparently
+add/remove `\r` before the end of lines, while other things don't,
+it could result in quite a mess. Luckily it was not hard or expensive to
+handle. If you are lucky enough not to use Windows, the release also
+has several more interesting improvements.

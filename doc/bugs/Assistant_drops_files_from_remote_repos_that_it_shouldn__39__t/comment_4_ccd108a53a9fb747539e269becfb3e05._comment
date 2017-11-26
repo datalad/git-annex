@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://renaud.casenave.fr/"
+ subject="comment 4"
+ date="2014-11-07T04:43:44Z"
+ content="""
+This is the same problem I try to report here: http://git-annex.branchable.com/bugs/file_in_manual_mode_repository_is_dropped_when_it_is_copied_to_another_manual_mode_repository/
+
+It is as Walter said, `git annex get file --from repo2` will add the file to the current repo but will drop it in repo2
+"""]]

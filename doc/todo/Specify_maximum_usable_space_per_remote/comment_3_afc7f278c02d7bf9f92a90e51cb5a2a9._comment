@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2016-09-07T15:08:37Z"
+ content="""
+git-annex repositories can all be clones of one another, but not currently
+connected. They can stay disconnected for an arbitrary amount of time,
+up to forever.
+
+For example, /media/usb/annex can be packed up, sent half way around the
+world and used with a different computer, which has no way to communicate
+with its parent ~/annex on the original computer.
+
+So, git-annex has to deal with split-brain and other distributed
+inconsistencies. And it does. However, a keeping count of how much space is
+used on a remote can't be consistent in these kinds of situations, unless,
+as I said, the count is kept in sync using the remote in question, and not
+information in the git-annex repositories.
+"""]]

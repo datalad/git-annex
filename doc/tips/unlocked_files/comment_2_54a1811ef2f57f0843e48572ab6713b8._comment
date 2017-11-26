@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2016-01-15T19:07:24Z"
+ content="""
+Direct mode is not going away any time soon.
+
+`git add` adds the file to the annex in unlocked mode, and `git annex sync`
+commits any such adds the same as any other changes, so all you need is
+`git add --all; git annex sync --content`
+
+Whether a file is locked or unlocked is a property of the file, that gets
+committed to git, so when you commit some unlocked files, they'll be
+unlocked when they appear in other clones of the repository.
+"""]]

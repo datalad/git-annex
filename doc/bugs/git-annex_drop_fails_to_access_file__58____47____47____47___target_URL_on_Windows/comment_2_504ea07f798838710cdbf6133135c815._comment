@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2015-09-09T16:36:13Z"
+ content="""
+I can't reproduce that behavior on linux. 
+
+	joey@darkstar:~/tmp/xx>git annex addurl  --file=annexed file:///./data
+	addurl annexed (downloading file:///./data ...) 
+	curl: (37) Couldn't open file /data
+
+Here, curl seems to be doing the right thing; the url is not relative; it's 
+for `/./data`, which doesn't exist.
+
+Relative `file:` urls shouldn't be valid at all, I think?
+
+---
+
+For checking if a file: url exits, git-annex parses the url and stats
+the file itself. The first screenshot
+shows this check for file: url existance failing on Windows for 
+the url `file:///C:/tmp/test/test.dat`
+
+I guess this might come down to problems with parsing file: urls on
+Windows; seems especially complicated by drive letters. git-annex and curl
+seem to parse this url in different ways.
+
+Checking how that url parses, the uriScheme is "file:" and the uriPath is
+"/C:/tmp/test/test.dat". So, it seems clear why it fails to stat that file.
+
+Is there actually a valid way to produce a file: url that refers to a drive
+letter? curl seems to think so, since it found the file when `git annex
+addurl` ran it. I don't know if the above parse is valid, but it's not
+git-annex's code doing the parse, but the URI parsing library.
+
+(Possibly related bug report: 
+<http://git-annex.branchable.com/bugs/git_annex_test_fails_when_run_through_powershell/>
+)
+"""]]

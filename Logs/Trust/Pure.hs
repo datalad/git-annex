@@ -1,13 +1,13 @@
 {- git-annex trust log, pure operations
  -
- - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Logs.Trust.Pure where
 
-import Common.Annex
+import Annex.Common
 import Types.TrustLevel
 import Logs.UUIDBased
 

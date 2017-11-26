@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2017-01-30T17:54:47Z"
+ content="""
+Hmm, this is a rather old forum thread to be reactivating, maybe a new
+thread more about your specific use case, Thomas?
+
+Your master repository idea seems like a good one. If the master
+repository is cloned with `git clone --shared` then that clone will
+hard link files between it and the master repository (assuming
+a git-annex rather newer than the start date of this forum thread!), 
+so multiple repositories will only have one copy of the file. 
+Of course, since it uses hard links, master and clone need to
+be on the same drive.
+
+There are probably ways to improve git-annex to handle this kind of use
+case better. Maybe `git clone --shared` across filesystems should
+use symlinks rather than hard links or something like that.
+That might take some time to design and implement (it changes a core
+invariant of git-annex, that .git/annex/objects/ contains files, not
+symlinks).
+
+Happy to discuss other options..
+"""]]

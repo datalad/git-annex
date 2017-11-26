@@ -1,21 +1,21 @@
 {- Linux library copier and binary shimmer
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Main where
 
-import Control.Applicative
 import System.Environment
 import Data.Maybe
 import System.FilePath
-import System.Directory
 import Control.Monad
 import Data.List
 import System.Posix.Files
 import Control.Monad.IfElse
+import Control.Applicative
+import Prelude
 
 import Utility.LinuxMkLibs
 import Utility.Directory
@@ -34,7 +34,6 @@ main = getArgs >>= go
 mklibs :: FilePath -> IO ()
 mklibs top = do
 	fs <- dirContentsRecursive top
-	mapM_ symToHardLink fs
 	exes <- filterM checkExe fs
 	libs <- parseLdd <$> readProcess "ldd" exes
 	glibclibs <- glibcLibs
@@ -44,40 +43,52 @@ mklibs top = do
 	-- Various files used by runshell to set up env vars used by the
 	-- linker shims.
 	writeFile (top </> "libdirs") (unlines libdirs)
-	writeFile (top </> "linker")
-		(Prelude.head $ filter ("ld-linux" `isInfixOf`) libs')
 	writeFile (top </> "gconvdir")
 		(parentDir $ Prelude.head $ filter ("/gconv/" `isInfixOf`) glibclibs)
 	
-	mapM_ (installLinkerShim top) exes
+	let linker = Prelude.head $ filter ("ld-linux" `isInfixOf`) libs'
+	mapM_ (installLinkerShim top linker) exes
 
 {- Installs a linker shim script around a binary.
  -
  - Note that each binary is put into its own separate directory,
  - to avoid eg git looking for binaries in its directory rather
- - than in PATH.-}
-installLinkerShim :: FilePath -> FilePath -> IO ()
-installLinkerShim top exe = do
-	createDirectoryIfMissing True shimdir
-	renameFile exe exedest
+ - than in PATH.
+ -
+ - The linker is symlinked to a file with the same basename as the binary,
+ - since that looks better in ps than "ld-linux.so".
+ -}
+installLinkerShim :: FilePath -> FilePath -> FilePath -> IO ()
+installLinkerShim top linker exe = do
+	createDirectoryIfMissing True (top </> shimdir)
+	createDirectoryIfMissing True (top </> exedir)
+	ifM (isSymbolicLink <$> getSymbolicLinkStatus exe)
+		( do
+			sl <- readSymbolicLink exe
+			nukeFile exe
+			nukeFile exedest
+			-- Assume that for a symlink, the destination
+			-- will also be shimmed.
+			let sl' = ".." </> takeFileName sl </> takeFileName sl
+			createSymbolicLink sl' exedest
+		, renameFile exe exedest
+		)
+	link <- relPathDirToFile (top </> exedir) (top ++ linker)
+	unlessM (doesFileExist (top </> exelink)) $
+		createSymbolicLink link (top </> exelink)
 	writeFile exe $ unlines
 		[ "#!/bin/sh"
-		, "exec \"$GIT_ANNEX_LINKER\" --library-path \"$GIT_ANNEX_LD_LIBRARY_PATH\" \"$GIT_ANNEX_SHIMMED/" ++ base ++ "/" ++ base ++ "\" \"$@\""
+		, "GIT_ANNEX_PROGRAMPATH=\"$0\""
+		, "export GIT_ANNEX_PROGRAMPATH"
+		, "exec \"$GIT_ANNEX_DIR/" ++ exelink ++ "\" --library-path \"$GIT_ANNEX_LD_LIBRARY_PATH\" \"$GIT_ANNEX_DIR/shimmed/" ++ base ++ "/" ++ base ++ "\" \"$@\""
 		]
 	modifyFileMode exe $ addModes executeModes
   where
 	base = takeFileName exe
-	shimdir = top </> "shimmed" </> base
-	exedest = shimdir </> base
-
-{- Converting symlinks to hard links simplifies the binary shimming
- - process. -}
-symToHardLink :: FilePath -> IO ()
-symToHardLink f = whenM (isSymbolicLink <$> getSymbolicLinkStatus f) $ do
-	l <- readSymbolicLink f
-	let absl = absPathFrom (parentDir f) l
-	nukeFile f
-	createLink absl f
+	shimdir = "shimmed" </> base
+	exedir = "exe"
+	exedest = top </> shimdir </> base
+	exelink = exedir </> base
 
 installFile :: FilePath -> FilePath -> IO ()
 installFile top f = do
@@ -90,7 +101,7 @@ checkExe :: FilePath -> IO Bool
 checkExe f
 	| ".so" `isSuffixOf` f = return False
 	| otherwise = ifM (isExecutable . fileMode <$> getFileStatus f)
-		( checkFileExe <$> readProcess "file" [f]
+		( checkFileExe <$> readProcess "file" ["-L", f]
 		, return False
 		)
 

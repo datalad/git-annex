@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ subject="comment 1"
+ date="2015-04-14T08:40:33Z"
+ content="""
+If you want a file count:
+
+    git annex find | wc -l
+
+is probably the best measure.
+
+I have an annex with about several million files in it and it is slow, but not as slow as you are describing. Have you done a repack/gc cycle?
+"""]]

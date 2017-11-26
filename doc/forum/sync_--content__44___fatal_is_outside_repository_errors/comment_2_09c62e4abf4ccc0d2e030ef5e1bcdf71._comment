@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="how to investigate"
+ date="2016-11-16T15:37:01Z"
+ content="""
+Any thoughts? I am unsure how to investigate where this problem is. I assume these files are in my git repo or git-annex objects but I can't seem to find them using any search commands.
+
+Thanks,
+
+Andrew
+"""]]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ subject="use hardlinks"
+ date="2015-05-29T01:40:21Z"
+ content="""
+that is a pretty bad idea! :) git-annex will believe it has two copy of the files and could allow you to drop the last copy, and loose data.
+
+instead, you should clone the repo with `--shared`, like this:
+
+    git clone --shared /tmp/repo-clone1 /tmp/repo-clone2
+
+according to the [[git-annex]] manpage, this will set the `annex.hardlink` setting and mark the repo as \"untrusted\". files will be hardlinked between the two repositories, using only the space once.
+
+see also [[todo/wishlist:_use_hardlinks_for_local_clones/]]. --[[anarcat]]
+"""]]

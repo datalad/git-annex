@@ -17,6 +17,8 @@ They cannot be used by other git commands though.
 * [[webdav]]
 * [[tahoe]]
 * [[web]]
+* [[bittorrent]]
+* [[tor]]
 * [[xmpp]]
 * [[hook]]
 
@@ -28,9 +30,11 @@ for using git-annex with various services:
 
 * [[Amazon_S3|tips/using_Amazon_S3]]
 * [[Amazon_Glacier|tips/using_Amazon_Glacier]]
+* [Amazon Cloud drive](https://github.com/DanielDent/git-annex-remote-rclone)
 * [[tips/Internet_Archive_via_S3]]
 * [[Box.com|tips/using_box.com_as_a_special_remote]]
-* [[Google drive|tips/googledriveannex]]
+* [Google Drive](https://github.com/Lykos153/git-annex-remote-gdrive)
+* [[Google Drive (old)|tips/googledriveannex]]
 * [[Google Cloud Storage|tips/using_Google_Cloud_Storage]]
 * [[Mega.co.nz|tips/megaannex]]
 * [[SkyDrive|tips/skydriveannex]]
@@ -41,6 +45,14 @@ for using git-annex with various services:
 * [chef-vault](https://github.com/3ofcoins/knife-annex/)
 * [hubiC](https://github.com/Schnouki/git-annex-remote-hubic)
 * [pCloud](https://github.com/tochev/git-annex-remote-pcloud)
+* [[ipfs]]
+* [Ceph](https://github.com/mhameed/git-annex-remote-ceph)
+* [Backblaze's B2](https://github.com/encryptio/git-annex-remote-b2)
+* [Dropbox](https://github.com/DanielDent/git-annex-remote-rclone)
+* [Openstack Swift / Rackspace cloud files / Memset Memstore](https://github.com/DanielDent/git-annex-remote-rclone)
+* [Microsoft One Drive](https://github.com/DanielDent/git-annex-remote-rclone)
+* [Yandex Disk](https://github.com/DanielDent/git-annex-remote-rclone)
+* [smb / sftp](https://github.com/grawity/code/blob/master/net/git-annex-remote-gvfs)
 
 Want to add support for something else? [[Write your own!|external]]
 
@@ -90,7 +102,7 @@ as usual, and it then runs a lot of tests, using random data. It's
 particularly useful to test new implementations of special remotes.
 
 By default it will upload and download files of around 1MiB to the remote
-it tests; the `--size` parameter can adjust it test using smaller files.
+it tests; the `--size` parameter can adjust it to test using smaller files.
 
 It's safe to use this command even when you're already storing data in a
 remote; it won't touch your existing files stored on the remote.

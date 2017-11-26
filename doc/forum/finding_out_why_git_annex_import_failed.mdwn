@@ -1,0 +1,43 @@
+Hi,
+
+I keep importing data to my git annex, which gets bigger.
+
+Today while importing an old archive (with lots of files), git import failed with this unhelpful message:
+
+    $ git annex import /Users/public/Documents
+    import Documents/.DS_Store
+      not importing Documents/.DS_Store which is .gitignored (use --force to override)
+    failed
+    ...
+    import Documents/Recettes/recettes nicoises/20130511_201509.jpg ok
+    (recording state in git...)
+    git-annex: import: 10 failed
+    CallStack (from HasCallStack):
+      error, called at ./CmdLine/Action.hs:41:28 in main:CmdLine.Action
+
+It seems no data was lost: I could finish the import with "git commit" (and diff -R with the backup shows no difference). But I would like to know what did happen.
+And also what does the "10" mean in this context and how to get more information?
+
+Note that I might have a real problem on this system
+
+* many filenames have extend chars
+* I'm not sure the mac OS locale setup is OK
+* I'm quite low on disk space and inodes:
+
+      $ df
+      Filesystem    512-blocks       Used Available Capacity   iused   ifree %iused  Mounted on
+      /dev/disk1    1462744832 1441994016  20238816    99% 180313250 2529852   99%   /
+
+The version is
+
+    $ git annex version
+    git-annex version: 6.20161111
+    build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV FsEvents XMPP ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+    local repository version: 5
+    supported repository versions: 3 5 6
+    upgrade supported from repository versions: 0 1 2 3 4 5
+    operating system: darwin x86_64
+
+Thank you!

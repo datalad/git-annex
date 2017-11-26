@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="ynikitenko"
+ avatar="http://cdn.libravatar.org/avatar/168d629704097ddc596f75ca32a687a3"
+ subject="tutorial up to date?"
+ date="2017-11-03T20:23:12Z"
+ content="""
+When I follow the tutorial and run
+
+    git push origin master git-annex
+
+it replies
+
+    error: src refspec master does not match any.
+    error: failed to push some refs to 'vds:~/test.git'
+
+However one can use `git-annex sync` instead and that works fine.
+"""]]

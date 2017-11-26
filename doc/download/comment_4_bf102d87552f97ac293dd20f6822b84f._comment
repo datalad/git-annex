@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-11-30T19:13:34Z"
+ content="""
+I guess you guys with the badly limited filename lenghs are using encfs or
+something like that. encfs is [really shoddy](https://defuse.ca/audits/encfs.htm),
+and I feel kind of like someone is complaining that the git repo can't be
+checked out on MS-DOS. 
+8.3 filenames are so 1985, and 128 filenames are so.. 1995?
+"""]]

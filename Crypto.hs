@@ -3,7 +3,7 @@
  - Currently using gpg; could later be modified to support different
  - crypto backends if neccessary.
  -
- - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -18,8 +18,8 @@ module Crypto (
 	StorableCipher(..),
 	genEncryptedCipher,
 	genSharedCipher,
-	updateEncryptedCipher,
-	describeCipher,
+	genSharedPubKeyCipher,
+	updateCipherKeyIds,
 	decryptCipher,		
 	encryptKey,
 	isEncKey,
@@ -28,22 +28,21 @@ module Crypto (
 	readBytes,
 	encrypt,
 	decrypt,
-	getGpgEncParams,
+	LensGpgEncParams(..),
 
 	prop_HmacSha1WithCipher_sane
 ) where
 
 import qualified Data.ByteString.Lazy as L
-import Data.ByteString.Lazy.UTF8 (fromString)
-import Control.Applicative
+import Data.ByteString.UTF8 (fromString)
 import qualified Data.Map as M
 import Control.Monad.IO.Class
 
-import Common.Annex
+import Annex.Common
 import qualified Utility.Gpg as Gpg
-import Types.Key
 import Types.Crypto
 import Types.Remote
+import Types.Key
 
 {- The beginning of a Cipher is used for MAC'ing; the remainder is used
  - as the GPG symmetric encryption passphrase when using the hybrid
@@ -75,72 +74,83 @@ cipherMac (Cipher c) = take cipherBeginning c
 cipherMac (MacOnlyCipher c) = c
 
 {- Creates a new Cipher, encrypted to the specified key id. -}
-genEncryptedCipher :: String -> EncryptedCipherVariant -> Bool -> IO StorableCipher
-genEncryptedCipher keyid variant highQuality = do
-	ks <- Gpg.findPubKeys keyid
-	random <- Gpg.genRandom highQuality size
-	encryptCipher (mkCipher random) variant ks
+genEncryptedCipher :: LensGpgEncParams c => Gpg.GpgCmd -> c -> Gpg.KeyId -> EncryptedCipherVariant -> Bool -> IO StorableCipher
+genEncryptedCipher cmd c keyid variant highQuality = do
+	ks <- Gpg.findPubKeys cmd keyid
+	random <- Gpg.genRandom cmd highQuality size
+	encryptCipher cmd c (mkCipher random) variant ks
   where
 	(mkCipher, size) = case variant of
 		Hybrid -> (Cipher, cipherSize) -- used for MAC + symmetric
 		PubKey -> (MacOnlyCipher, cipherBeginning) -- only used for MAC
 
 {- Creates a new, shared Cipher. -}
-genSharedCipher :: Bool -> IO StorableCipher
-genSharedCipher highQuality =
-	SharedCipher <$> Gpg.genRandom highQuality cipherSize
+genSharedCipher :: Gpg.GpgCmd -> Bool -> IO StorableCipher
+genSharedCipher cmd highQuality =
+	SharedCipher <$> Gpg.genRandom cmd highQuality cipherSize
 
-{- Updates an existing Cipher, re-encrypting it to add or remove keyids,
- - depending on whether the first component is True or False. -}
-updateEncryptedCipher :: [(Bool, String)] -> StorableCipher -> IO StorableCipher
-updateEncryptedCipher _ SharedCipher{} = undefined
-updateEncryptedCipher [] encipher = return encipher
-updateEncryptedCipher newkeys encipher@(EncryptedCipher _ variant (KeyIds ks)) = do
-	dropKeys <- listKeyIds [ k | (False, k) <- newkeys ]
-	forM_ dropKeys $ \k -> unless (k `elem` ks) $
-		error $ "Key " ++ k ++ " was not present; cannot remove."
-	addKeys <- listKeyIds [ k | (True, k) <- newkeys ]
-	let ks' = (addKeys ++ ks) \\ dropKeys
+{- Creates a new, shared Cipher, and looks up the gpg public key that will
+ - be used for encrypting content. -}
+genSharedPubKeyCipher :: Gpg.GpgCmd -> Gpg.KeyId -> Bool -> IO StorableCipher
+genSharedPubKeyCipher cmd keyid highQuality = do
+	ks <- Gpg.findPubKeys cmd keyid
+	random <- Gpg.genRandom cmd highQuality cipherSize
+	return $ SharedPubKeyCipher random ks
+
+{- Updates an existing Cipher, making changes to its keyids.
+ -
+ - When the Cipher is encrypted, re-encrypts it. -}
+updateCipherKeyIds :: LensGpgEncParams encparams => Gpg.GpgCmd -> encparams -> [(Bool, Gpg.KeyId)] -> StorableCipher -> IO StorableCipher
+updateCipherKeyIds _ _ _ SharedCipher{} = giveup "Cannot update shared cipher"
+updateCipherKeyIds _ _ [] c = return c
+updateCipherKeyIds cmd encparams changes encipher@(EncryptedCipher _ variant ks) = do
+	ks' <- updateCipherKeyIds' cmd changes ks
+	cipher <- decryptCipher cmd encparams encipher
+	encryptCipher cmd encparams cipher variant ks'
+updateCipherKeyIds cmd _ changes (SharedPubKeyCipher cipher ks) =
+	SharedPubKeyCipher cipher <$> updateCipherKeyIds' cmd changes ks
+
+updateCipherKeyIds' :: Gpg.GpgCmd -> [(Bool, Gpg.KeyId)] -> KeyIds -> IO KeyIds
+updateCipherKeyIds' cmd changes (KeyIds ks) = do
+	dropkeys <- listKeyIds [ k | (False, k) <- changes ]
+	forM_ dropkeys $ \k -> unless (k `elem` ks) $
+		giveup $ "Key " ++ k ++ " was not present; cannot remove."
+	addkeys <- listKeyIds [ k | (True, k) <- changes ]
+	let ks' = (addkeys ++ ks) \\ dropkeys
 	when (null ks') $
-		error "Cannot remove the last key."
-	cipher <- decryptCipher encipher
-	encryptCipher cipher variant $ KeyIds ks'
+		giveup "Cannot remove the last key."
+	return $ KeyIds ks'
   where
-	listKeyIds = concat <$$> mapM (keyIds <$$> Gpg.findPubKeys)
-
-describeCipher :: StorableCipher -> String
-describeCipher (SharedCipher _) = "shared cipher"
-describeCipher (EncryptedCipher _ variant (KeyIds ks)) =
-	scheme ++ " with gpg " ++ keys ks ++ " " ++ unwords ks
-  where
-	scheme = case variant of
-		Hybrid -> "hybrid cipher"
-		PubKey -> "pubkey crypto"
-	keys [_] = "key"
-	keys _ = "keys"
+	listKeyIds = concat <$$> mapM (keyIds <$$> Gpg.findPubKeys cmd)
 
 {- Encrypts a Cipher to the specified KeyIds. -}
-encryptCipher :: Cipher -> EncryptedCipherVariant -> KeyIds -> IO StorableCipher
-encryptCipher c variant (KeyIds ks) = do
+encryptCipher :: LensGpgEncParams c => Gpg.GpgCmd -> c -> Cipher -> EncryptedCipherVariant -> KeyIds -> IO StorableCipher
+encryptCipher cmd c cip variant (KeyIds ks) = do
 	-- gpg complains about duplicate recipient keyids
 	let ks' = nub $ sort ks
-	let params = Gpg.pkEncTo ks' ++ Gpg.stdEncryptionParams False
-	encipher <- Gpg.pipeStrict params cipher
+	let params = concat
+		[ getGpgEncParamsBase c
+		, Gpg.pkEncTo ks'
+		, Gpg.stdEncryptionParams False
+		]
+	encipher <- Gpg.pipeStrict cmd params cipher
 	return $ EncryptedCipher encipher variant (KeyIds ks')
   where
-	cipher = case c of
+	cipher = case cip of
 		Cipher x -> x
 		MacOnlyCipher x -> x
 
 {- Decrypting an EncryptedCipher is expensive; the Cipher should be cached. -}
-decryptCipher :: StorableCipher -> IO Cipher
-decryptCipher (SharedCipher t) = return $ Cipher t
-decryptCipher (EncryptedCipher t variant _) =
-	mkCipher <$> Gpg.pipeStrict [ Param "--decrypt" ] t
+decryptCipher :: LensGpgEncParams c => Gpg.GpgCmd -> c -> StorableCipher -> IO Cipher
+decryptCipher _ _ (SharedCipher t) = return $ Cipher t
+decryptCipher _ _ (SharedPubKeyCipher t _) = return $ MacOnlyCipher t
+decryptCipher cmd c (EncryptedCipher t variant _) =
+	mkCipher <$> Gpg.pipeStrict cmd params t
   where
 	mkCipher = case variant of
 		Hybrid -> Cipher
 		PubKey -> MacOnlyCipher
+	params = Param "--decrypt" : getGpgDecParams c
 
 type EncKey = Key -> Key
 
@@ -150,14 +160,16 @@ type EncKey = Key -> Key
 encryptKey :: Mac -> Cipher -> EncKey
 encryptKey mac c k = stubKey
 	{ keyName = macWithCipher mac c (key2file k)
-	, keyBackendName = encryptedBackendNamePrefix ++ showMac mac
+	, keyVariety = OtherKey (encryptedBackendNamePrefix ++ showMac mac)
 	}
 
 encryptedBackendNamePrefix :: String
 encryptedBackendNamePrefix = "GPG"
 
 isEncKey :: Key -> Bool
-isEncKey k = encryptedBackendNamePrefix `isPrefixOf` keyBackendName k
+isEncKey k = case keyVariety k of
+	OtherKey s ->  encryptedBackendNamePrefix `isPrefixOf` s
+	_ -> False
 
 type Feeder = Handle -> IO ()
 type Reader m a = Handle -> m a
@@ -174,22 +186,24 @@ readBytes a h = liftIO (L.hGetContents h) >>= a
 {- Runs a Feeder action, that generates content that is symmetrically
  - encrypted with the Cipher (unless it is empty, in which case
  - public-key encryption is used) using the given gpg options, and then
- - read by the Reader action.  Note: For public-key encryption,
- - recipients MUST be included in 'params' (for instance using
- - 'getGpgEncParams'). -}
-encrypt :: (MonadIO m, MonadMask m) => [CommandParam] -> Cipher -> Feeder -> Reader m a -> m a
-encrypt params cipher = case cipher of
-	Cipher{} -> Gpg.feedRead (params ++ Gpg.stdEncryptionParams True) $
+ - read by the Reader action. -}
+encrypt :: (MonadIO m, MonadMask m, LensGpgEncParams c) => Gpg.GpgCmd -> c -> Cipher -> Feeder -> Reader m a -> m a
+encrypt cmd c cipher = case cipher of
+	Cipher{} -> Gpg.feedRead cmd (params ++ Gpg.stdEncryptionParams True) $
 			cipherPassphrase cipher
-	MacOnlyCipher{} -> Gpg.pipeLazy $ params ++ Gpg.stdEncryptionParams False
+	MacOnlyCipher{} -> Gpg.pipeLazy cmd $ params ++ Gpg.stdEncryptionParams False
+  where
+	params = getGpgEncParams c
 
 {- Runs a Feeder action, that generates content that is decrypted with the
  - Cipher (or using a private key if the Cipher is empty), and read by the
  - Reader action. -}
-decrypt :: (MonadIO m, MonadMask m) => Cipher -> Feeder -> Reader m a -> m a
-decrypt cipher = case cipher of
-	Cipher{} -> Gpg.feedRead [Param "--decrypt"] $ cipherPassphrase cipher
-	MacOnlyCipher{} -> Gpg.pipeLazy [Param "--decrypt"]
+decrypt :: (MonadIO m, MonadMask m, LensGpgEncParams c) => Gpg.GpgCmd -> c -> Cipher -> Feeder -> Reader m a -> m a
+decrypt cmd c cipher = case cipher of
+	Cipher{} -> Gpg.feedRead cmd params $ cipherPassphrase cipher
+	MacOnlyCipher{} -> Gpg.pipeLazy cmd params
+  where
+	params = Param "--decrypt" : getGpgDecParams c
 
 macWithCipher :: Mac -> Cipher -> String -> String
 macWithCipher mac c = macWithCipher' mac (cipherMac c)
@@ -202,26 +216,31 @@ prop_HmacSha1WithCipher_sane = known_good == macWithCipher' HmacSha1 "foo" "bar"
   where
 	known_good = "46b4ec586117154dacd49d664e5d63fdc88efb51"
 
-{- Return some options suitable for GnuPG encryption, symmetric or not. -}
-class LensGpgEncParams a where getGpgEncParams :: a -> [CommandParam]
+class LensGpgEncParams a where
+	{- Base parameters for encrypting. Does not include specification
+	 - of recipient keys. -}
+	getGpgEncParamsBase :: a -> [CommandParam]
+	{- Parameters for encrypting. When the remote is configured to use
+	 - public-key encryption, includes specification of recipient keys. -}
+	getGpgEncParams :: a -> [CommandParam]
+	{- Parameters for decrypting. -}
+	getGpgDecParams :: a -> [CommandParam]
 
 {- Extract the GnuPG options from a pair of a Remote Config and a Remote
  - Git Config. -}
 instance LensGpgEncParams (RemoteConfig, RemoteGitConfig) where
-	getGpgEncParams (c,gc) = map Param (remoteAnnexGnupgOptions gc) ++ getGpgEncParams c
-	  where
-
-{- Extract the GnuPG options from a Remote Config, ignoring any
- - git config settings. (Which is ok if the remote is just being set up 
- - and so doesn't have any.)
- -
- - If the remote is configured to use public-key encryption,
- - look up the recipient keys and add them to the option list.-}
-instance LensGpgEncParams RemoteConfig where
-	getGpgEncParams c = case M.lookup "encryption" c of
-		Just "pubkey" -> Gpg.pkEncTo $ maybe [] (split ",") $ M.lookup "cipherkeys" c
-		_ -> []
+	getGpgEncParamsBase (_c,gc) = map Param (remoteAnnexGnupgOptions gc)
+	getGpgEncParams (c,gc) = getGpgEncParamsBase (c,gc) ++
+ 		{- When the remote is configured to use public-key encryption,
+		 - look up the recipient keys and add them to the option list. -}
+		case M.lookup "encryption" c of
+			Just "pubkey" -> Gpg.pkEncTo $ maybe [] (splitc ',') $ M.lookup "cipherkeys" c
+			Just "sharedpubkey" -> Gpg.pkEncTo $ maybe [] (splitc ',') $ M.lookup "pubkeys" c
+			_ -> []
+	getGpgDecParams (_c,gc) = map Param (remoteAnnexGnupgDecryptOptions gc)
 
 {- Extract the GnuPG options from a Remote. -}
 instance LensGpgEncParams (RemoteA a) where
+	getGpgEncParamsBase r = getGpgEncParamsBase (config r, gitconfig r)
 	getGpgEncParams r = getGpgEncParams (config r, gitconfig r)
+	getGpgDecParams r = getGpgDecParams (config r, gitconfig r)

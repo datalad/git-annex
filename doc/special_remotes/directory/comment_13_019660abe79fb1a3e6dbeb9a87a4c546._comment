@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="dmitry.olyenyov@6d65bb07071e5517960a647c097dd453b91773dd"
+ nickname="dmitry.olyenyov"
+ subject="Limit max size of remote"
+ date="2015-06-17T11:24:54Z"
+ content="""
+Is there any way to limit size of directory remote except of mounting it from loop device?
+"""]]

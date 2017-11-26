@@ -1,11 +1,12 @@
 {- git-annex assistant webapp configurator for editing existing repos
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 {-# LANGUAGE CPP, QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Assistant.WebApp.Configurators.Edit where
 
@@ -18,8 +19,8 @@ import Assistant.ScanRemotes
 import Assistant.Sync
 import Assistant.Alert
 import qualified Assistant.WebApp.Configurators.AWS as AWS
-import qualified Assistant.WebApp.Configurators.IA as IA
 #ifdef WITH_S3
+import qualified Assistant.WebApp.Configurators.IA as IA
 import qualified Remote.S3 as S3
 #endif
 import qualified Remote
@@ -42,7 +43,8 @@ import Utility.Gpg
 import Annex.UUID
 import Assistant.Ssh
 import Config
-import Logs.Web (webUUID)
+import Config.GitConfig
+import Config.DynamicConfig
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -75,8 +77,8 @@ getRepoConfig uuid mremote = do
 	description <- fmap T.pack . M.lookup uuid <$> uuidMap
 
 	syncable <- case mremote of
-		Just r -> return $ remoteAnnexSync $ Remote.gitconfig r
-		Nothing -> annexAutoCommit <$> Annex.getGitConfig
+		Just r -> liftIO $ getDynamicConfig $ remoteAnnexSync $ Remote.gitconfig r
+		Nothing -> getGitConfigVal annexAutoCommit
 
 	return $ RepoConfig
 		(T.pack $ maybe "here" Remote.name mremote)
@@ -145,13 +147,13 @@ setRepoConfig uuid mremote oldc newc = do
 	legalName = makeLegalName . T.unpack . repoName
 
 editRepositoryAForm :: Maybe Remote -> RepoConfig -> MkAForm RepoConfig
-editRepositoryAForm mremote def = RepoConfig
+editRepositoryAForm mremote d = RepoConfig
 	<$> areq (if ishere then readonlyTextField else textField)
-		(bfs "Name") (Just $ repoName def)
-	<*> aopt textField (bfs "Description") (Just $ repoDescription def)
-	<*> areq (selectFieldList groups `withNote` help) (bfs "Repository group") (Just $ repoGroup def)
+		(bfs "Name") (Just $ repoName d)
+	<*> aopt textField (bfs "Description") (Just $ repoDescription d)
+	<*> areq (selectFieldList groups `withNote` help) (bfs "Repository group") (Just $ repoGroup d)
 	<*> associateddirectory
-	<*> areq checkBoxField "Syncing enabled" (Just $ repoSyncable def)
+	<*> areq checkBoxField "Syncing enabled" (Just $ repoSyncable d)
   where
 	ishere = isNothing mremote
 	isspecial = fromMaybe False $
@@ -164,14 +166,14 @@ editRepositoryAForm mremote def = RepoConfig
 		| isspecial = const True
 		| otherwise = not . specialRemoteOnly
 	customgroups :: [(Text, RepoGroup)]
-	customgroups = case repoGroup def of
+	customgroups = case repoGroup d of
 		RepoGroupCustom s -> [(T.pack s, RepoGroupCustom s)]
 		_ -> []
 	help = [whamlet|<a href="@{RepoGroupR}">What's this?</a>|]
 
-	associateddirectory = case repoAssociatedDirectory def of
+	associateddirectory = case repoAssociatedDirectory d of
 		Nothing -> aopt hiddenField "" Nothing
-		Just d -> aopt textField (bfs "Associated directory") (Just $ Just d)
+		Just dir -> aopt textField (bfs "Associated directory") (Just $ Just dir)
 
 getEditRepositoryR :: RepoId -> Handler Html
 getEditRepositoryR = postEditRepositoryR
@@ -193,7 +195,7 @@ postEditNewCloudRepositoryR uuid = connectionNeeded >> editForm True (RepoUUID u
 
 editForm :: Bool -> RepoId -> Handler Html
 editForm new (RepoUUID uuid)
-	| uuid == webUUID = page "The web" (Just Configuration) $ do
+	| uuid == webUUID || uuid == bitTorrentUUID = page "The web" (Just Configuration) $ do
 		$(widgetFile "configurators/edit/webrepository")
 	| otherwise = page "Edit repository" (Just Configuration) $ do
 		mremote <- liftAnnex $ Remote.remoteFromUUID uuid
@@ -259,8 +261,12 @@ getRepoEncryption (Just _) (Just c) = case extractCipher c of
 		[whamlet|not encrypted|]
 	(Just (SharedCipher _)) ->
 		[whamlet|encrypted: encryption key stored in git repository|]
-	(Just (EncryptedCipher _ _ (KeyIds { keyIds = ks }))) -> do
-		knownkeys <- liftIO secretKeys
+	(Just (EncryptedCipher _ _ ks)) -> desckeys ks
+	(Just (SharedPubKeyCipher _ ks)) -> desckeys ks
+  where
+	desckeys (KeyIds { keyIds = ks }) = do
+		cmd <- liftAnnex $ gpgCmd <$> Annex.getGitConfig
+		knownkeys <- liftIO (secretKeys cmd)
 		[whamlet|
 encrypted using gpg key:
 <ul style="list-style: none">

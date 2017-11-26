@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.163"
- subject="doubt this has anything to do with spaces"
- date="2014-02-08T17:44:45Z"
- content="""
-If you want to drop the files from the remote, you need to also pass the --from option to dropunused. Otherwise, it defaults to dropping any of the unused files that are present in the local repository.
-"""]]

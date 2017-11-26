@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="grawity@2ea26be48562f66fcb9b66307da72b1e2e37453f"
+ nickname="grawity"
+ subject="comment 2"
+ date="2016-03-01T07:10:55Z"
+ content="""
+Thanks, but you missed my point entirely... I wasn't asking for a mode that would delete data without checking. I was asking for the complete opposite – a mode that would _inject an extra copy_ of the data without checking.
+
+Yeah, I guess I could `annex add` the files, then un-annex them, and _then_ `annex import --clean-duplicates`, but that's a somewhat long-winded approach, needing twice the space and twice the time.
+
+(...speaking of losing data, it seems that `git annex reinject` is perfectly happy to delete files if I accidentally give it the wrong target. I.e. after failing content verification, it still throws away the source.)
+
+---
+
+It doesn't have to be part of git-annex; I could _script_ this feature myself, though there aren't nearly enough plumbing commands either. (For example, a command to hash a file and give its key (like `git hash-object`), or a command to find all paths for a key.)
+
+Having an equivalent of `git hash-object -w` (inject an arbitrary object) would make it even easier, but I couldn't find anything like that either.
+
+---
+
+Anyway, let's cancel this todo, I'll find other ways.
+"""]]

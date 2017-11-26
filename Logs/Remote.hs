@@ -1,6 +1,6 @@
 {- git-annex remote log
  - 
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  - 
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,26 +14,25 @@ module Logs.Remote (
 	showConfig,
 	parseConfig,
 
-	prop_idempotent_configEscape,
+	prop_isomorphic_configEscape,
 	prop_parse_show_Config,
 ) where
 
-import qualified Data.Map as M
-import Data.Time.Clock.POSIX
-import Data.Char
-
-import Common.Annex
+import Annex.Common
 import qualified Annex.Branch
 import Types.Remote
 import Logs
 import Logs.UUIDBased
 
+import qualified Data.Map as M
+import Data.Char
+
 {- Adds or updates a remote's config in the log. -}
 configSet :: UUID -> RemoteConfig -> Annex ()
-configSet u c = do
-	ts <- liftIO getPOSIXTime
+configSet u cfg = do
+	c <- liftIO currentVectorClock
 	Annex.Branch.change remoteLog $
-		showLog showConfig . changeLog ts u c . parseLog parseConfig
+		showLog showConfig . changeLog c u cfg . parseLog parseConfig
 
 {- Map of remotes by uuid containing key/value config maps. -}
 readRemoteLog :: Annex (M.Map UUID RemoteConfig)
@@ -84,8 +83,8 @@ configUnEscape = unescape
 		rest = drop 1 r
 
 {- for quickcheck -}
-prop_idempotent_configEscape :: String -> Bool
-prop_idempotent_configEscape s = s == (configUnEscape . configEscape) s
+prop_isomorphic_configEscape :: String -> Bool
+prop_isomorphic_configEscape s = s == (configUnEscape . configEscape) s
 
 prop_parse_show_Config :: RemoteConfig -> Bool
 prop_parse_show_Config c

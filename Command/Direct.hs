@@ -1,30 +1,33 @@
 {- git-annex command
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.Direct where
 
-import Common.Annex
 import Command
 import qualified Git
 import qualified Git.LsFiles
 import qualified Git.Branch
 import Config
 import Annex.Direct
+import Annex.Version
 
-cmd :: [Command]
-cmd = [notBareRepo $ noDaemonRunning $
-	command "direct" paramNothing seek
-		SectionSetup "switch repository to direct mode"]
+cmd :: Command
+cmd = notBareRepo $ noDaemonRunning $
+	command "direct" SectionSetup "switch repository to direct mode"
+		paramNothing (withParams seek)
 
-seek :: CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing start
 
 start :: CommandStart
-start = ifM isDirect ( stop , next perform )
+start = ifM versionSupportsDirectMode
+	( ifM isDirect ( stop , next perform )
+	, giveup "Direct mode is not supported by this repository version. Use git-annex unlock instead."
+	)
 
 perform :: CommandPerform
 perform = do

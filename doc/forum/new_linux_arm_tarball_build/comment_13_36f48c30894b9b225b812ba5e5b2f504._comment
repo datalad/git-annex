@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnClfG_kAo0drU5dVZiTRXo9WnqjW4I5dA"
+ nickname="Julian"
+ subject="comment 13"
+ date="2014-12-06T17:04:04Z"
+ content="""
+Unfortunately, it isn't working for me on DS214 (MARVELL Armada XP MV78230) and DSM 5.1-5004 Update 2.
+git is installed, git-annex tar extracted and runshell worked. Within this shell git-annex seems to work (e.g. git-annex init works)
+
+However, git-annex is complaining that git-annex is not installed on remote when I try to add the NAS as a remote.
+
+I guess it is related to the fact that git-annex-shell is not working on the NAS. When I execute git-annex-shell it gives:
+/volume1/homes/julian/bin/git-annex.linux/shimmed/git-annex-shell/git-annex-shell: error while loading shared libraries: /volume1/homes/julian/bin/git-annex.linux/shimmed/git-annex-shell/git-annex-shell: file too short
+Actually /volume1/homes/julian/bin/git-annex.linux/shimmed/git-annex-shell/git-annex-shell has 0 Bytes.
+
+I can't execute git-annex-shell inside the bin folder due to permission issues. I tried to change the file permissions but it didn't help.
+"""]]

@@ -1,0 +1,5 @@
+Spent my time today porting concurrent-output to Windows, fixing a
+tricky problem with error handling/thread joining with git-annex -J,
+and improving the concurrent state handling to support the git command
+queue. Got add/addurl working in concurrent mode.
+No concurrent progress bars yet.. maybe tomorrow?

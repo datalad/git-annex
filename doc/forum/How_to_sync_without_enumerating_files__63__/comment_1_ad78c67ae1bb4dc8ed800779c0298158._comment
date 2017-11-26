@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-10-31T17:15:33Z"
+ content="""
+Well, `git annex sync` does not itself run `git status`. 
+
+Try running git-annex with the --debug option, it will say what git
+commands it runs, and that should help find out which git command is
+complaining.
+
+My guess is it's `git commit`, which  is probably getting the status
+unncessarily for a commit message template, despite a commit message
+being specified. If so, `git annex sync --no-commit` would avoid
+that.
+"""]]

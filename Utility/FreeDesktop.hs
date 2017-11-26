@@ -5,10 +5,12 @@
  - http://standards.freedesktop.org/menu-spec/latest/
  - http://standards.freedesktop.org/icon-theme-spec/latest/
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
+
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.FreeDesktop (
 	DesktopEntry,	
@@ -27,18 +29,16 @@ module Utility.FreeDesktop (
 ) where
 
 import Utility.Exception
-import Utility.Path
 import Utility.UserInfo
 import Utility.Process
-import Utility.PartialPrelude
 
 import System.Environment
-import System.Directory
 import System.FilePath
+import System.Directory
 import Data.List
-import Data.String.Utils
 import Data.Maybe
 import Control.Applicative
+import Prelude
 
 type DesktopEntry = [(Key, Value)]
 
@@ -51,12 +51,13 @@ toString (StringV s) = s
 toString (BoolV b)
 	| b = "true"
 	| otherwise = "false"
-toString(NumericV f) = show f
+toString (NumericV f) = show f
 toString (ListV l)
 	| null l = ""
-	| otherwise = (intercalate ";" $ map (escapesemi . toString) l) ++ ";"
+	| otherwise = (intercalate ";" $ map (concatMap escapesemi . toString) l) ++ ";"
   where
-	escapesemi = join "\\;" . split ";"
+	escapesemi ';' = "\\;"
+	escapesemi c = [c]
 
 genDesktopEntry :: String -> String -> Bool -> FilePath -> Maybe String -> [String] -> DesktopEntry
 genDesktopEntry name comment terminal program icon categories = catMaybes
@@ -79,7 +80,7 @@ buildDesktopMenuFile d = unlines ("[Desktop Entry]" : map keyvalue d) ++ "\n"
 
 writeDesktopMenuFile :: DesktopEntry -> String -> IO ()
 writeDesktopMenuFile d file = do
-	createDirectoryIfMissing True (parentDir file)
+	createDirectoryIfMissing True (takeDirectory file)
 	writeFile file $ buildDesktopMenuFile d
 
 {- Path to use for a desktop menu file, in either the systemDataDir or
@@ -133,7 +134,9 @@ userConfigDir = xdgEnvHome "CONFIG_HOME" ".config"
 userDesktopDir :: IO FilePath
 userDesktopDir = maybe fallback return =<< (parse <$> xdg_user_dir)
   where
-	parse = maybe Nothing (headMaybe . lines)
+	parse s = case lines <$> s of
+		Just (l:_) -> Just l
+		_ -> Nothing
 	xdg_user_dir = catchMaybeIO $ readProcess "xdg-user-dir" ["DESKTOP"]
 	fallback = xdgEnvHome "DESKTOP_DIR" "Desktop"
 

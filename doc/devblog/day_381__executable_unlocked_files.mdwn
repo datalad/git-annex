@@ -1,0 +1,2 @@
+Seems I forgot about executable files entirely when implementing v6
+unlocked files. Fixed that oversight today.

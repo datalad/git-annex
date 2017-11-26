@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="68.119.96.78"
- subject="comment 5"
- date="2013-12-21T16:26:51Z"
- content="""
-<http://hackage.haskell.org/package/TCache> looks potentially good. It seems that it may allow storing stuff on disk and only loading it into cache when accessed, but I am not sure. Need to run some tests to try it out.
-"""]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="tom_clune"
+ subject="dropping files after changing branches/tags"
+ date="2016-02-24T22:19:00Z"
+ content="""
+I have a use case in which a colleague wishes to have a working copy of my data repository to use with the current version of my model.    When a new version of the model is available they would likewise update their git-annex clone of my data.    The colleague wants to drop any files that have been made obsolete by this change, but I do not see an efficient way to make this determination.   They could of course drop everything and then do git annex get .   but that could be very expensive if only a small subset of the files have actually changed.
+
+I'm probably just missing something basic, as this seems to be a reasonably frequent use case.
+
+
+"""]]

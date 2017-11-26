@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 4"
+ date="2015-01-06T21:59:15Z"
+ content="""
+Even with relative paths, Edward's example would use a path of 253 characters, and so a slightly longer url would still break it, even with relative paths.
+
+So, I think reducing url key length needs to be done anyway, and I've done that. Which hardly closes this bug.
+"""]]

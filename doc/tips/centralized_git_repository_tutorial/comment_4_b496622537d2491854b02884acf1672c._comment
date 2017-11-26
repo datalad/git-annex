@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2015-02-04T19:29:01Z"
+ content="""
+You can add any kind of special remotes to such a repository.
+
+Each clone from the central repository will need to have `git annex
+enableremote` used to enable any special remote(s) you need to use
+from that clone.
+"""]]

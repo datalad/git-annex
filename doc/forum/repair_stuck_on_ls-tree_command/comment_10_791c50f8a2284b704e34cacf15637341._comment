@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="vho"
+ subject="comment 10"
+ date="2014-12-18T10:27:07Z"
+ content="""
+This one should work:
+https://www.dropbox.com/s/t7b406wm6m3vm6c/photos2.tar.xz.gpg?dl=0
+
+    $ md5sum photos2.tar.xz.gpg
+    df2b9bde3d1ad23d9f3c4247d2f5b21a  photos2.tar.xz.gpg
+    $ sha1sum photos2.tar.xz.gpg
+    cac6f8c07a1d95fb48e3d9aa0f4699a2c77c00d598  photos2.tar.xz.gpg
+
+"""]]

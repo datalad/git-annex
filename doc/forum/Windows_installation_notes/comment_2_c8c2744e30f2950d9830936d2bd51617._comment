@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkQOUUx4LVAk6EnstSLvdv7gZc0NsRlHXw"
+ nickname="Dave"
+ subject="comment 2"
+ date="2015-04-09T20:37:51Z"
+ content="""
+Sorry, joey, I haven't played with git annex on windows since my original post.
+
+I only have one new piece of information: some git annex related auto-start entry was added to the user profile of the account I used to perform the installation.  I noticed this when I logged in interactively as that user...
+
+See what I'm saying?  I have DOMAIN\dave.loyall and WORKSTATION\local.admin.  I have to use the latter to carry out installation, via \"Run as...\", but I need stuff to be installed into DOMAIN\dave.loyall's profile or the AllUsers profile (or whatever it is called).
+
+Meanwhile, more and more of my daily work is carried out in my GNU/Linux virtual machines.  I don't personally want/need anyone to prioritize windows-only deficiencies.
+"""]]

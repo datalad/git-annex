@@ -1,13 +1,13 @@
 {- git-annex tagged pushes
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Annex.TaggedPush where
 
-import Common.Annex
+import Annex.Common
 import qualified Remote
 import qualified Annex.Branch
 import qualified Git
@@ -30,7 +30,7 @@ import Utility.Base64
  - Both UUIDs and Base64 encoded data are always legal to be used in git
  - refs, per git-check-ref-format.
  -}
-toTaggedBranch :: UUID -> Maybe String -> Git.Branch -> Git.Branch
+toTaggedBranch :: UUID -> Maybe String -> Git.Branch -> Git.Ref
 toTaggedBranch u info b = Git.Ref $ intercalate "/" $ catMaybes
 	[ Just "refs/synced"
 	, Just $ fromUUID u
@@ -38,14 +38,17 @@ toTaggedBranch u info b = Git.Ref $ intercalate "/" $ catMaybes
 	, Just $ Git.fromRef $ Git.Ref.base b
 	]
 
-fromTaggedBranch :: Git.Branch -> Maybe (UUID, Maybe String)
-fromTaggedBranch b = case split "/" $ Git.fromRef b of
+fromTaggedBranch :: Git.Ref -> Maybe (UUID, Maybe String)
+fromTaggedBranch b = case splitc '/' $ Git.fromRef b of
 	("refs":"synced":u:info:_base) ->
 		Just (toUUID u, fromB64Maybe info)
 	("refs":"synced":u:_base) ->
 		Just (toUUID u, Nothing)
 	_ -> Nothing
-  where
+
+listTaggedBranches :: Annex [(Git.Sha, Git.Ref)]
+listTaggedBranches = filter (isJust . fromTaggedBranch . snd)
+	<$> inRepo Git.Ref.list
 
 taggedPush :: UUID -> Maybe String -> Git.Ref -> Remote -> Git.Repo -> IO Bool
 taggedPush u info branch remote = Git.Command.runBool

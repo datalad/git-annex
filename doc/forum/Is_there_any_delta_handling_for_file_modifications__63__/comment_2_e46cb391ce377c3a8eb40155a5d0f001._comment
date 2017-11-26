@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="git-annex@c063eec406e857662ac6bbb814defa6aebde6417"
+ nickname="git-annex"
+ subject="any plans to add this?"
+ date="2016-02-21T12:12:43Z"
+ content="""
+Presumably this is a desirable feature for faster syncing of modifications to large files, so are there any plans to add it?
+"""]]

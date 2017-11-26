@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-09-15T04:53:16Z"
+ content="""
+Have you tried `git annex get`?
+
+The most common way this can happen is if using Windows or a FAT
+filesystem, or something else that does not support symbolic links.
+It also happens when using v6 repository mode with unlocked files.
+"""]]

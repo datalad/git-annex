@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="http://jspk.clavid.com/"
- nickname="flabbergast"
- subject="comment 18"
- date="2013-10-27T19:29:01Z"
- content="""
-I've also just upgraded and had to compile git-annex (following @calmyournerves' instructions). I've made a dmg, so if anyone out there doesn't feel like compiling, you can get 4.20131027-g9230b07 for Mavericks temporarily [here (7z for saving bandwidth)](https://freeshell.de/~teatime/git-annex-4.20131027-g9230b07.dmg.7z).
-(I've used my laptop, and I don't want to set it up for automatic building; I'll see if I can set up my work mac for that.)
-"""]]

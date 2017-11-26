@@ -4,7 +4,6 @@ Setup
 *.o
 tmp
 test
-build-stamp
 Build/SysConfig.hs
 Build/InstallDesktopFile
 Build/EvilSplicer
@@ -12,9 +11,10 @@ Build/Standalone
 Build/OSXMkLibs
 Build/LinuxMkLibs
 Build/BuildVersion
+Build/MakeMans
 git-annex
-git-annex.1
-git-annex-shell.1
+git-annex-shell
+man
 git-union-merge
 git-union-merge.1
 doc/.ikiwiki
@@ -26,7 +26,7 @@ dist
 cabal-dev
 .cabal-sandbox
 cabal.sandbox.config
-cabal.config
+.stack-work
 # Project-local emacs configuration
 .dir-locals.el
 # OSX related

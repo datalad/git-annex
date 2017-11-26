@@ -1,0 +1,32 @@
+I tried to build the Android app according to the instructions on [the install page](https://git-annex.branchable.com/install/Android/).
+
+But during step 2 (In the chroot, run install-haskell-packages) cabal fails to handle the dependencies correctly. So I tried to change the standalone/android/cabal.config file to update all the dependencies, but this had me running into something I think is unresolvable in another package's
+dependencies. Eventually I had the following output:
+
+    # ./standalone/android/install-haskell-packages 
+    Downloading the latest package list from hackage.haskell.org
+    Skipping download: Local and remote files match.
+    /home/repo/git-annex /home/repo/git-annex/standalone/android
+    Resolving dependencies...
+    cabal: Could not resolve dependencies:
+    trying: git-annex-6.20160318 (user goal)
+    trying: persistent-template-2.1.6/installed-08b... (dependency of
+    git-annex-6.20160318)
+    next goal: monad-control (dependency of git-annex-6.20160318)
+    rejecting: monad-control-1.0.0.5/installed-cac..., 1.0.0.5, 1.0.0.4, 1.0.0.3,
+    1.0.0.2, 1.0.0.1, 1.0.0.0, 0.3.3.1, 0.3.3.0, 0.3.2.3 (global constraint
+    requires ==0.3.2.2)
+    rejecting: monad-control-0.3.2.2 (conflict: persistent-template =>
+    monad-control==1.0.0.5/installed-cac...)
+    rejecting: monad-control-0.3.2.1, 0.3.2, 0.3.1.4, 0.3.1.3, 0.3.1.2, 0.3.1.1,
+    0.3.1, 0.3.0.1, 0.3, 0.2.0.3, 0.2.0.2, 0.2.0.1, 0.2, 0.1 (global constraint
+    requires ==0.3.2.2)
+
+This tells me that the package persistent-template depends on the package monad-control at a version of 1.0.0.5. So I look at the [persistent-template hackage page](https://hackage.haskell.org/package/persistent-template-2.1.6) and see that it lists its dependency on monad-control as:
+
+    monad-control (>=0.2 && <1.1)
+
+And I don't think that's possible to resolve.
+
+All I wanted to do was change the icons on the Android package, so if you'll just accept the changed
+icons folder, I can submit the patch without testing the Android build, but currently I'm unable to build the Android port of git-annex.

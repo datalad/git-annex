@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="tomekwi"
+ subject="Linux-Windows repo"
+ date="2015-08-10T18:22:22Z"
+ content="""
+Hi, what’s the recommended way to manage a repo accessed from both a Linux and a Windows box? Has anyone had success with that?
+
+I’m dual-booting Fedora 22 and Windows 8.1. I do most of my work on Linux, but I need Windows programs to edit some of my files. I’ve had a go at two approaches:
+
+1) Have a “central” repo on an NTFS external drive which also holds the contents of files. This fails because Windows fails to check out the contents of most files. It isn’t random – specific files at specific points of the commit history fail to check out. Perhaps it has something to do with filenames? Characters in filenames?
+
+2) Keep a “direct” clone of my repo on a Windows NTFS partition. I do my work on Windows, and after rebooting to Linux I mount the partition and commit my changes directly in the repo. Here Windows seems to outsmart me. git-annex sometimes takes many files without content as modified – and commits them as empty.
+"""]]

@@ -1,0 +1,3 @@
+Is there any way to get git-annex to respect the GIT_SSH environment variable just like git?  This would be super helpful for specifying ssh options (keys in my application)
+
+Hacks like a ~/.ssh/config with a fake hostname to specify the key are not appropriate in my case, because keys are generated on the fly by a server-side application that may be distributed across multiple servers.  So I really need to be able to specify a key file at run time and then use the normal remote URI.  I can do this with git and GIT_SSH, but have not found a solution for git-annex yet.

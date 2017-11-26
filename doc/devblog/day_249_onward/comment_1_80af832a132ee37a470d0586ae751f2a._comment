@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlOl_Hf78lWy2iVDHYIey_zc1qVBQjlJgw"
+ nickname="Stefan"
+ subject="comment 1"
+ date="2015-02-07T10:04:31Z"
+ content="""
+Please announce that deprecation well in advance, though. I feel your pain and have started to migrate to an S3->Glacier setup myself, but getting data out of Glacier is fairly expensive if done quickly. 
+
+(And due to git-annex' ease of adding more data, I got a fairly large amount of backups, and would also prefer not to be stuck on an old version of git-annex just for Glacier support.)
+"""]]

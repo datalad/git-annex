@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="G.nius.ck@d885edcfde63422ee84e5ee501b7aa545e91298d"
+ nickname="G.nius.ck"
+ subject="What do you mean by &quot;git-annex&quot; branch?"
+ date="2016-01-09T16:04:29Z"
+ content="""
+Branches usually mean different versions of your repo, not entirely different content! Why are branches being used for this?
+"""]]

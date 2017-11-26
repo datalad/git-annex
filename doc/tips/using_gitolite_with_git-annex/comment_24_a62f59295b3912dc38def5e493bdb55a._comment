@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="git-annex@5b470e1f6ed6d30997d729f0a8b1c841dea886f1"
+ nickname="git-annex"
+ subject="Using gitolite 3.6.6 mirror not working with annex"
+ date="2016-09-28T18:12:56Z"
+ content="""
+I find out that I need to add the following lines to the gitolite.rc
+in the server side.
+
+'git-annex-shell ua'
+
+The signal repository works with gitolite as expected.
+However, the mirroring feature is not working for slaves.
+When I do
+
+git annex copy --to origin
+
+The master server store the annex file correctly.
+The file managed by annex is not syncing to the slave
+mirrors at all.
+
+
+"""]]

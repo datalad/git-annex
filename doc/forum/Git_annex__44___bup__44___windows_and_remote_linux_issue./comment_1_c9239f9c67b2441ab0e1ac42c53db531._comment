@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-07-12T18:34:13Z"
+ content="""
+Well, you can ssh into the linux box and cd to R2 and run `git annex sync
+---content` and that should cause it to download any new files that it can
+(if it can contact R1), and send them along to R3.
+"""]]

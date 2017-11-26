@@ -1,0 +1,6 @@
+Hi,
+I'd like to know if there's an easy way to control how "git annex sync" resolves conflicts. I use git annex (with wrappers I have written) to manage repos full of debs. The debs themselves never conflict, but the metadata does. So far this works great if people check out the repo, add some debs in, regenerate the metadata from the debs (using external scripts), and then shove it back into the central repo. Many people can do this for our shared project.
+
+This doesn't work well if two people have the repo checked out at the same time; when they "git annex sync" to shove the data back up, annex detects the merge conflict in the metadata and renames the files.
+
+What I'd like is a flag saying that while pushing the changes upstream, the sync will only perform fast-forwards and fail if that doesn't work so my wrappers can abort the user's workflow. Any advice would be appreciated.

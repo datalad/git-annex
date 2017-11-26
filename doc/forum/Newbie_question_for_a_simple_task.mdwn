@@ -1,0 +1,11 @@
+Hi,
+
+I am pretty confident, that this is a newbie question. Nevertheless, I did not find the answer (or the solution) event after looking at the screencasts and reading through the files.
+
+I want to sync 2 clients on different networks though a ssh cloud server begin a full backup.
+Also, I would like to do this for 2 different folders on the clients and server.
+I mean : client 1, 2 and the server sync a repo named "DATA" and also sync another repo named "IMAGES"
+
+Setting the client1 as local client repo and also ssh remote repo works quite well, it uploads everything to the server. Then I make the same on the second client, and it does not start to download everything from the server...
+
+Any clue ?

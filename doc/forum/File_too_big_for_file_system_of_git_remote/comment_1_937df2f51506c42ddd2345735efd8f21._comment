@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-06-06T15:33:17Z"
+ content="""
+You can add a directory special remote to the same flash drive,
+and enable chunking in that special remote, and store the file in there.
+
+Alternatively, there might be a less limited filesystem that you could
+reformat the drive with. Depending on the operating systems that this
+needs to work with..
+"""]]

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-02-10T17:56:32Z"
+ content="""
+Seems unlikely that the init-time check would not have worked in this
+repository. Probably the repository was either initialized by an old
+version of git-annex, or perhaps init was run on the NFS server,
+or perhaps the repository was initted elsewhere and moved into place.
+
+I don't want to complicate locking with fallbacks involving changing
+configuration. ENOLCK can be raised for other reasons, so it's not
+necessarily an indication of a NFS system anyway.
+"""]]

@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="eigengrau"
+ subject="comment 3"
+ date="2016-01-03T07:52:36Z"
+ content="""
+I recently experimented with shared repos a bit and came across this rsync issue. I’ve found that instead of setting `rsync-options` to `--chmod=755`, you can also set it to `--chmod=ugo=rX`. This will cause the executable bit to be set only when the source file is already executable.
+"""]]

@@ -1,0 +1,24 @@
+Today was all about writing
+[[tips/making_a_remote_repo_update_when_changes_are_pushed_to_it]].
+
+That's a fairly simple page, because I added workarounds for all the
+complexity of making it work in direct mode repos, adjusted branches, and
+repos on filesystems not supporting executable git hooks. Basically,
+the user should be able to set the standard
+receive.denyCurrentBranch=updateInstead configuration on a remote, and 
+then `git push` or `git annex sync` should update that remote's working tree.
+
+There are a couple of unhandled cases; `git push` to a remote on a
+filesystem like FAT won't update it, and `git annex sync` will only update
+it if it's local, not accessed over ssh. Also, the emulation of git's
+updateInstead behavior is not perfect for direct mode repos and adjusted
+branches.
+
+Still, it's good enough that most users should find it meets
+their needs, I hope. How to set this kind of thing up is a fairly common
+FAQ, and this makes it much simpler.
+
+(Oh yeah, the first ancient kernel arm build is *still*
+running. May finish before tomorrow.)
+
+Today's work was sponsored by Jake Vosloo on Patreon.

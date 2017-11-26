@@ -1,0 +1,20 @@
+Hi, 
+
+Is there a preferred way to add files to git's index (instead of the annex) while in direct mode? 
+
+I am trying to use git-annex for scientific data. On linux and mac in indirect mode, the git workflow is basically unchanged, and I really like the way git annex works. Unfortunately when I use git-annex on Windows, I have not found a good way to add things to git's tree. 
+
+I've tried two things:
+
+```
+$ git annex proxy -- git add smallfile
+```
+
+This is slow because it has to copy things over to create a work tree
+
+```
+$ git config annex.largefiles="*.pdf or *.h5"
+$ git annex add largefile.pdf
+```
+
+This doesn't seem to work as well as I'd like either. I'd like the equivalent of a ```git add``` command in direct mode.

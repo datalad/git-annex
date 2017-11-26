@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnx8kHW66N3BqmkVpgtXDlYMvr8TJ5VvfY"
+ nickname="Yaroslav"
+ subject="typical repos"
+ date="2014-12-19T14:05:22Z"
+ content="""
+Thanks for doing it and asking for detail!!!
+Repositories will vary quite a bit.  I am currently testing how big we could actually make them (see https://github.com/datalad/datalad/issues/17) ;)
+
+Meanwhile here are sample few available for git clone/testing:
+
+https://github.com/datalad/nih--videocast   a good collection of heavyish video files
+http://psydata.ovgu.de/forrest_gump/.git/   a good single dataset with probably a somewhat typical amount of data
+http://data.pymvpa.org/datasets/haxby2001/.git/  relatively small dataset with typical data sizes
+"""]]

@@ -1,6 +1,6 @@
 {- git-annex assistant unused file preferences
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -26,11 +26,11 @@ data UnusedForm = UnusedForm
 	}
 
 unusedForm :: UnusedForm -> Hamlet.Html -> MkMForm UnusedForm
-unusedForm def msg = do
+unusedForm d msg = do
 	(enableRes, enableView) <- mreq (selectFieldList enabledisable) (bfs "")
-		(Just $ enableExpire def)
+		(Just $ enableExpire d)
 	(whenRes, whenView) <- mreq intField (bfs "")
-		(Just $ expireWhen def)
+		(Just $ expireWhen d)
 	let form = do
 		webAppFormAuthToken
 		$(widgetFile "configurators/unused/form")

@@ -1,0 +1,9 @@
+I want to import from an SD card to a mounted annex:
+
+    user@laptop:/media/.../annex/Pictures/(master)$ git annex import /media/.../sdcard/Download/QuickTransfer
+    [...]
+    git-annex: /media/.../sdcard/Download/QuickTransfer/20150428_192110.jpg: rename: unsupported operation (Invalid cross-device link)
+    [...]
+
+Why is it trying to make a cross-device link? As long as it can read the files, 
+it should be OK, no?

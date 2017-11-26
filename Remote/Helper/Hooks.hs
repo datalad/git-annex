@@ -1,6 +1,6 @@
 {- Adds hooks to remotes.
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,12 +11,12 @@ module Remote.Helper.Hooks (addHooks) where
 
 import qualified Data.Map as M
 
-import Common.Annex
+import Annex.Common
 import Types.Remote
 import Types.CleanupActions
 import qualified Annex
 import Annex.LockFile
-import Utility.LockFile
+import Annex.LockPool
 #ifndef mingw32_HOST_OS
 import Annex.Perms
 #endif
@@ -36,7 +36,7 @@ addHooks' r starthook stophook = r'
 	r' = r
 		{ storeKey = \k f p -> wrapper $ storeKey r k f p
 		, retrieveKeyFile = \k f d p -> wrapper $ retrieveKeyFile r k f d p
-		, retrieveKeyFileCheap = \k f -> wrapper $ retrieveKeyFileCheap r k f
+		, retrieveKeyFileCheap = \k af f -> wrapper $ retrieveKeyFileCheap r k af f
 		, removeKey = wrapper . removeKey r
 		, checkPresent = wrapper . checkPresent r
 		}
@@ -47,7 +47,7 @@ runHooks :: Remote -> Maybe String -> Maybe String -> Annex a -> Annex a
 runHooks r starthook stophook a = do
 	dir <- fromRepo gitAnnexRemotesDir
 	let lck = dir </> remoteid ++ ".lck"
-	whenM (notElem lck . M.keys <$> getLockPool) $ do
+	whenM (notElem lck . M.keys <$> getLockCache) $ do
 		liftIO $ createDirectoryIfMissing True dir
 		firstrun lck
 	a
@@ -62,7 +62,7 @@ runHooks r starthook stophook a = do
 		-- of it from running the stophook. If another
 		-- instance is shutting down right now, this
 		-- will block waiting for its exclusive lock to clear.
-		lockFileShared lck
+		lockFileCached lck
 
 		-- The starthook is run even if some other git-annex
 		-- is already running, and ran it before.
@@ -83,7 +83,7 @@ runHooks r starthook stophook a = do
 		unlockFile lck
 #ifndef mingw32_HOST_OS
 		mode <- annexFileMode
-		v <- liftIO $ noUmask mode $ tryLockExclusive (Just mode) lck
+		v <- noUmask mode $ tryLockExclusive (Just mode) lck
 #else
 		v <- liftIO $ lockExclusive lck
 #endif

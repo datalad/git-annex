@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="ynikitenko"
+ avatar="http://cdn.libravatar.org/avatar/168d629704097ddc596f75ca32a687a3"
+ subject="Is it essential to clone from the server?"
+ date="2017-11-03T11:28:01Z"
+ content="""
+    Now on your laptop, clone the git repository from the server:
+
+Is it possible to init git-annex repo on your local machine, add git-remote there and push local data to the server? Won't there be any problems with this 'non-official' approach?
+"""]]

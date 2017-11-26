@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2016-09-05T16:52:24Z"
+ content="""
+Googling for that message suggests it's pretty common for large file
+uploads amoung different AWS implementations for different programming
+languages. The error message is coming from AWS not git-annex.
+
+If this is happening with a single file transfer, I'm pretty sure git-annex
+is not keeping the S3 connection idle. (If one file transfer succeeded, and
+then a later one in the same git-annex run failed, that might indicate that
+the S3 connection was being reused and timed out in between.)
+
+Based on things like <https://github.com/aws/aws-cli/issues/401>,
+this seems to be down to a network connection problem, especially on
+residential internet connections, such as the link
+getting saturated by something else and so the transfer stalling out.
+
+I think that finding a chunk size that works is your best bet. That
+will let uploads be resumed more or less where they left off.
+
+It might make sense for git-annex to retry an upload that fails this way,
+but imagine if it were a non-chunked 1 gb file and it failed part way
+through every time. That would waste a lot of bandwidth.
+"""]]

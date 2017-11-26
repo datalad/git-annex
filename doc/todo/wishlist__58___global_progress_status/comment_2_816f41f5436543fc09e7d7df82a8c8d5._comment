@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="atrent"
+ subject="adding a simple counter?"
+ date="2016-02-03T07:48:10Z"
+ content="""
+could you add a simple file counter?
+
+i.e. for a single \"git annex copy/get/etc.\" operation initiating a file counter and incrementing it on every examined file (transferred or not), thus giving a very rough idea of the progress on the whole set (the user should know the amount of files in the annex)
+"""]]

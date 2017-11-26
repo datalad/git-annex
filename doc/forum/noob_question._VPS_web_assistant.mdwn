@@ -1,0 +1,7 @@
+Hi
+
+So I've installed git-annex on my Debian VPS.
+
+How do I find out the URL to access the web UI / assistant?
+
+Thanks!

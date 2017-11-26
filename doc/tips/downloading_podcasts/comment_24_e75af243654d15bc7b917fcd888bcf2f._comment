@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""pubDate"""
+ date="2015-01-05T22:55:06Z"
+ content="""
+@ewen, I tested that feed and it is able to get the pubDate from it and
+parses it ok.
+
+Most likely, your version of git-annex is not built with a new enough
+version of the haskell feed library. Version 0.3.9 or newer is needed to be
+able to extract pubdates. For example, Debian stable doesn't have a new
+enough version.
+"""]]

@@ -1,6 +1,6 @@
 {- A remote that is only accessible by rsync.
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -18,7 +18,7 @@ module Remote.Rsync (
 	RsyncOpts
 ) where
 
-import Common.Annex
+import Annex.Common
 import Types.Remote
 import qualified Git
 import Config
@@ -27,32 +27,36 @@ import Annex.Content
 import Annex.UUID
 import Annex.Ssh
 import Remote.Helper.Special
+import Remote.Helper.Messages
+import Remote.Helper.Export
 import Remote.Rsync.RsyncUrl
 import Crypto
 import Utility.Rsync
 import Utility.CopyFile
+import Messages.Progress
 import Utility.Metered
-import Utility.PID
-import Annex.Perms
-import Logs.Transfer
+import Types.Transfer
 import Types.Creds
-import Types.Key (isChunkKey)
+import Annex.DirHashes
+import Utility.Tmp
+import Utility.SshHost
 
 import qualified Data.Map as M
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "rsync",
-	enumerate = findSpecialRemotes "rsyncurl",
-	generate = gen,
-	setup = rsyncSetup
-}
+remote = RemoteType
+	{ typename = "rsync"
+	, enumerate = const (findSpecialRemotes "rsyncurl")
+	, generate = gen
+	, setup = rsyncSetup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
 	cst <- remoteCost gc expensiveRemoteCost
 	(transport, url) <- rsyncTransport gc $
-		fromMaybe (error "missing rsyncurl") $ remoteAnnexRsyncUrl gc
+		fromMaybe (giveup "missing rsyncurl") $ remoteAnnexRsyncUrl gc
 	let o = genRsyncOpts c gc transport url
 	let islocal = rsyncUrlIsPath $ rsyncUrl o
 	return $ Just $ specialRemote' specialcfg c
@@ -68,8 +72,10 @@ gen r u c gc = do
 			, retrieveKeyFile = retreiveKeyFileDummy
 			, retrieveKeyFileCheap = retrieveCheap o
 			, removeKey = removeKeyDummy
+			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
+			, exportActions = exportUnsupported
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
@@ -84,6 +90,8 @@ gen r u c gc = do
 			, remotetype = remote
 			, mkUnavailable = return Nothing
 			, getInfo = return [("url", url)]
+			, claimUrl = Nothing
+			, checkUrl = Nothing
 			}
   where
 	specialcfg = (specialRemoteCfg c)
@@ -116,14 +124,14 @@ rsyncTransport gc url
 		case fromNull ["ssh"] (remoteAnnexRsyncTransport gc) of
 			"ssh":sshopts -> do
 				let (port, sshopts') = sshReadPort sshopts
-				    userhost = takeWhile (/=':') url
-				-- Connection caching
-				(Param "ssh":) <$> sshCachingOptions
-					(userhost, port)
+				    userhost = either error id $ mkSshHost $ 
+				    	takeWhile (/= ':') url
+				(Param "ssh":) <$> sshOptions ConsumeStdin
+					(userhost, port) gc
 					(map Param $ loginopt ++ sshopts')
 			"rsh":rshopts -> return $ map Param $ "rsh" :
 				loginopt ++ rshopts
-			rsh -> error $ "Unknown Rsync transport: "
+			rsh -> giveup $ "Unknown Rsync transport: "
 				++ unwords rsh
 	| otherwise = return ([], url)
   where
@@ -133,13 +141,13 @@ rsyncTransport gc url
 	loginopt = maybe [] (\l -> ["-l",l]) login
 	fromNull as xs = if null xs then as else xs
 
-rsyncSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
-rsyncSetup mu _ c = do
+rsyncSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+rsyncSetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	-- verify configuration is sane
-	let url = fromMaybe (error "Specify rsyncurl=") $
+	let url = fromMaybe (giveup "Specify rsyncurl=") $
 		M.lookup "rsyncurl" c
-	(c', _encsetup) <- encryptionSetup c
+	(c', _encsetup) <- encryptionSetup c gc
 
 	-- The rsyncurl is stored in git config, not only in this remote's
 	-- persistant state, so it can vary between hosts.
@@ -168,10 +176,9 @@ store o k src meterupdate = withRsyncScratchDir $ \tmp -> do
 	ps <- sendParams
 	if ok
 		then showResumable $ rsyncRemote Upload o (Just meterupdate) $ ps ++
-			[ Param "--recursive"
-			, partialParams
+			Param "--recursive" : partialParams ++
 			-- tmp/ to send contents of tmp dir
-			, File $ addTrailingPathSeparator tmp
+			[ File $ addTrailingPathSeparator tmp
 			, Param $ rsyncUrl o
 			]
 		else return False
@@ -185,10 +192,10 @@ store o k src meterupdate = withRsyncScratchDir $ \tmp -> do
 retrieve :: RsyncOpts -> FilePath -> Key -> MeterUpdate -> Annex ()
 retrieve o f k p = 
 	unlessM (rsyncRetrieve o k f (Just p)) $
-		error "rsync failed"
+		giveup "rsync failed"
 
-retrieveCheap :: RsyncOpts -> Key -> FilePath -> Annex Bool
-retrieveCheap o k f = ifM (preseedTmp k f) ( rsyncRetrieve o k f Nothing , return False )
+retrieveCheap :: RsyncOpts -> Key -> AssociatedFile -> FilePath -> Annex Bool
+retrieveCheap o k _af f = ifM (preseedTmp k f) ( rsyncRetrieve o k f Nothing , return False )
 
 remove :: RsyncOpts -> Remover
 remove o k = do
@@ -200,9 +207,9 @@ remove o k = do
 		rsync $ rsyncOptions o ++ ps ++
 			map (\s -> Param $ "--include=" ++ s) includes ++
 			[ Param "--exclude=*" -- exclude everything else
-			, Params "--quiet --delete --recursive"
-			, partialParams
-			, Param $ addTrailingPathSeparator dummy
+			, Param "--quiet", Param "--delete", Param "--recursive"
+			] ++ partialParams ++ 
+			[ Param $ addTrailingPathSeparator dummy
 			, Param $ rsyncUrl o
 			]
   where
@@ -210,8 +217,8 @@ remove o k = do
 	 - content could be. Note that the parent directories have
 	 - to also be explicitly included, due to how rsync
 	 - traverses directories. -}
-	includes = concatMap use annexHashes
-	use h = let dir = h k in
+	includes = concatMap use dirHashes
+	use h = let dir = h def k in
 		[ parentDir dir
 		, dir
 		-- match content directory and anything in it
@@ -220,7 +227,7 @@ remove o k = do
 
 checkKey :: Git.Repo -> RsyncOpts -> CheckPresent
 checkKey r o k = do
-	showAction $ "checking " ++ Git.repoDescribe r
+	showChecking r
 	-- note: Does not currently differentiate between rsync failing
 	-- to connect, and the file not being present.
 	untilTrue (rsyncUrls o k) $ \u -> 
@@ -233,8 +240,8 @@ checkKey r o k = do
 {- Rsync params to enable resumes of sending files safely,
  - ensure that files are only moved into place once complete
  -}
-partialParams :: CommandParam
-partialParams = Params "--partial --partial-dir=.rsync-partial"
+partialParams :: [CommandParam]
+partialParams = [Param "--partial", Param "--partial-dir=.rsync-partial"]
 
 {- When sending files from crippled filesystems, the permissions can be all
  - messed up, and it's better to use the default permissions on the
@@ -249,16 +256,8 @@ sendParams = ifM crippledFileSystem
  - up trees for rsync. -}
 withRsyncScratchDir :: (FilePath -> Annex a) -> Annex a
 withRsyncScratchDir a = do
-	p <- liftIO getPID
 	t <- fromRepo gitAnnexTmpObjectDir
-	createAnnexDirectory t
-	let tmp = t </> "rsynctmp" </> show p
-	nuke tmp
-	liftIO $ createDirectoryIfMissing True tmp
-	nuke tmp `after` a tmp
-  where
-	nuke d = liftIO $ whenM (doesDirectoryExist d) $
-		removeDirectoryRecursive d
+	withTmpDirIn t "rsynctmp" a
 
 rsyncRetrieve :: RsyncOpts -> Key -> FilePath -> Maybe MeterUpdate -> Annex Bool
 rsyncRetrieve o k dest meterupdate =
@@ -278,11 +277,15 @@ showResumable a = ifM a
 	)
 
 rsyncRemote :: Direction -> RsyncOpts -> Maybe MeterUpdate -> [CommandParam] -> Annex Bool
-rsyncRemote direction o callback params = do
+rsyncRemote direction o m params = do
 	showOutput -- make way for progress bar
-	liftIO $ (maybe rsync rsyncProgress callback) $
-		opts ++ [Params "--progress"] ++ params
+	case m of
+		Nothing -> liftIO $ rsync ps
+		Just meter -> do
+			oh <- mkOutputHandler
+			liftIO $ rsyncProgress oh meter ps
   where
+	ps = opts ++ Param "--progress" : params
 	opts
 		| direction == Download = rsyncDownloadOptions o
 		| otherwise = rsyncUploadOptions o

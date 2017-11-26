@@ -1,6 +1,6 @@
 {- git-annex assistant commit thread
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -17,27 +17,30 @@ import Assistant.Alert
 import Assistant.DaemonStatus
 import Assistant.TransferQueue
 import Assistant.Drop
-import Logs.Transfer
+import Types.Transfer
 import Logs.Location
 import qualified Annex.Queue
 import qualified Git.LsFiles
-import qualified Command.Add
 import Utility.ThreadScheduler
 import qualified Utility.Lsof as Lsof
 import qualified Utility.DirWatcher as DirWatcher
 import Types.KeySource
 import Config
 import Annex.Content
+import Annex.Ingest
 import Annex.Link
 import Annex.CatFile
+import Annex.InodeSentinal
+import Annex.Version
 import qualified Annex
 import Utility.InodeCache
 import Annex.Content.Direct
+import qualified Database.Keys
 import qualified Command.Sync
 import qualified Git.Branch
+import Utility.Tuple
 
 import Data.Time.Clock
-import Data.Tuple.Utils
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Either
@@ -50,8 +53,10 @@ commitThread = namedThread "Committer" $ do
 	delayadd <- liftAnnex $
 		maybe delayaddDefault (return . Just . Seconds)
 			=<< annexDelayAdd <$> Annex.getGitConfig
+	msg <- liftAnnex Command.Sync.commitMsg
 	waitChangeTime $ \(changes, time) -> do
-		readychanges <- handleAdds havelsof delayadd changes
+		readychanges <- handleAdds havelsof delayadd $
+			simplifyChanges changes
 		if shouldCommit False time (length readychanges) readychanges
 			then do
 				debug
@@ -60,8 +65,9 @@ commitThread = namedThread "Committer" $ do
 					, "changes"
 					]
 				void $ alertWhile commitAlert $
-					liftAnnex commitStaged
+					liftAnnex $ commitStaged msg
 				recordCommit
+				recordExportCommit
 				let numchanges = length readychanges
 				mapM_ checkChangeContent readychanges
 				return numchanges
@@ -195,7 +201,7 @@ maxCommitSize :: Int
 maxCommitSize = 5000
 
 {- Decide if now is a good time to make a commit.
- - Note that the list of changes has an undefined order.
+ - Note that the list of changes has a random order.
  -
  - Current strategy: If there have been 10 changes within the past second,
  - a batch activity is taking place, so wait for later.
@@ -212,26 +218,25 @@ shouldCommit scanning now len changes
 	recentchanges = filter thissecond changes
 	timeDelta c = now `diffUTCTime` changeTime c
 
-commitStaged :: Annex Bool
-commitStaged = do
+commitStaged :: String -> Annex Bool
+commitStaged msg = do
 	{- This could fail if there's another commit being made by
 	 - something else. -}
 	v <- tryNonAsync Annex.Queue.flush
 	case v of
 		Left _ -> return False
 		Right _ -> do
-			ok <- Command.Sync.commitStaged Git.Branch.AutomaticCommit ""
+			ok <- Command.Sync.commitStaged Git.Branch.AutomaticCommit msg
 			when ok $
-				Command.Sync.updateSyncBranch =<< inRepo Git.Branch.current
+				Command.Sync.updateSyncBranch =<< join Command.Sync.getCurrBranch
 			return ok
 
 {- OSX needs a short delay after a file is added before locking it down,
- - when using a non-direct mode repository, as pasting a file seems to
- - try to set file permissions or otherwise access the file after closing
- - it. -}
+ - as pasting a file seems to try to set file permissions or otherwise
+ - access the file after closing it. -}
 delayaddDefault :: Annex (Maybe Seconds)
 #ifdef darwin_HOST_OS
-delayaddDefault = ifM isDirect
+delayaddDefault = ifM (isDirect <||> versionSupportsUnlockedPointers)
 	( return Nothing
 	, return $ Just $ Seconds 1
 	)
@@ -248,12 +253,11 @@ delayaddDefault = return Nothing
  - for write by some other process, and faster checking with git-ls-files
  - that the files are not already checked into git.
  -
- - When a file is added, Inotify will notice the new symlink. So this waits
- - for additional Changes to arrive, so that the symlink has hopefully been
- - staged before returning, and will be committed immediately.
- -
- - OTOH, for kqueue, eventsCoalesce, so instead the symlink is directly
- - created and staged.
+ - When a file is added in locked mode, Inotify will notice the new symlink.
+ - So this waits for additional Changes to arrive, so that the symlink has
+ - hopefully been staged before returning, and will be committed immediately.
+ - (OTOH, for kqueue, eventsCoalesce, so instead the symlink is directly
+ - created and staged.)
  -
  - Returns a list of all changes that are ready to be committed.
  - Any pending adds that are not ready yet are put back into the ChangeChan,
@@ -263,10 +267,17 @@ handleAdds :: Bool -> Maybe Seconds -> [Change] -> Assistant [Change]
 handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 	let (pending, inprocess) = partition isPendingAddChange incomplete
 	direct <- liftAnnex isDirect
-	(pending', cleanup) <- if direct
+	unlocked <- liftAnnex versionSupportsUnlockedPointers
+	let lockingfiles = not (unlocked || direct)
+	let lockdownconfig = LockDownConfig
+		{ lockingFile = lockingfiles
+		, hardlinkFileTmp = True
+		}
+	(pending', cleanup) <- if unlocked || direct
 		then return (pending, noop)
 		else findnew pending
-	(postponed, toadd) <- partitionEithers <$> safeToAdd havelsof delayadd pending' inprocess
+	(postponed, toadd) <- partitionEithers
+		<$> safeToAdd lockdownconfig havelsof delayadd pending' inprocess
 	cleanup
 
 	unless (null postponed) $
@@ -274,21 +285,28 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 
 	returnWhen (null toadd) $ do
 		added <- addaction toadd $
-			catMaybes <$> if direct
-				then adddirect toadd
-				else forM toadd add
-		if DirWatcher.eventsCoalesce || null added || direct
+			catMaybes <$>
+				if not lockingfiles
+					then addunlocked direct toadd
+					else forM toadd (add lockdownconfig)
+		if DirWatcher.eventsCoalesce || null added || unlocked || direct
 			then return $ added ++ otherchanges
 			else do
 				r <- handleAdds havelsof delayadd =<< getChanges
 				return $ r ++ added ++ otherchanges
   where
 	(incomplete, otherchanges) = partition (\c -> isPendingAddChange c || isInProcessAddChange c) cs
-		
+	
+	-- Find files that are actually new, and not unlocked annexed
+	-- files. The ls-files is run on a batch of files.
 	findnew [] = return ([], noop)
 	findnew pending@(exemplar:_) = do
-		(newfiles, cleanup) <- liftAnnex $
-			inRepo (Git.LsFiles.notInRepo False $ map changeFile pending)
+		let segments = segmentXargsUnordered $ map changeFile pending
+		rs <- liftAnnex $ forM segments $ \fs ->
+			inRepo (Git.LsFiles.notInRepo False fs)
+		let (newfiles, cleanup) = foldl'
+			(\(l1, a1) (l2, a2) -> (l1 ++ l2, a1 >> a2))
+			([], return True) rs
 		-- note: timestamp info is lost here
 		let ts = changeTime exemplar
 		return (map (PendingAddChange ts) newfiles, void $ liftIO cleanup)
@@ -297,52 +315,61 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 		| c = return otherchanges
 		| otherwise = a
 
-	add :: Change -> Assistant (Maybe Change)
-	add change@(InProcessAddChange { keySource = ks }) = 
+	add :: LockDownConfig -> Change -> Assistant (Maybe Change)
+	add lockdownconfig change@(InProcessAddChange { lockedDown = ld }) = 
 		catchDefaultIO Nothing <~> doadd
 	  where
+	  	ks = keySource ld
 		doadd = sanitycheck ks $ do
 			(mkey, mcache) <- liftAnnex $ do
 				showStart "add" $ keyFilename ks
-				Command.Add.ingest $ Just ks
+				ingest (Just $ LockedDown lockdownconfig ks) Nothing
 			maybe (failedingest change) (done change mcache $ keyFilename ks) mkey
-	add _ = return Nothing
+	add _ _ = return Nothing
 
-	{- In direct mode, avoid overhead of re-injesting a renamed
-	 - file, by examining the other Changes to see if a removed
-	 - file has the same InodeCache as the new file. If so,
-	 - we can just update bookkeeping, and stage the file in git.
+	{- Avoid overhead of re-injesting a renamed unlocked file, by
+	 - examining the other Changes to see if a removed file has the
+	 - same InodeCache as the new file. If so, we can just update
+	 - bookkeeping, and stage the file in git.
 	 -}
-	adddirect :: [Change] -> Assistant [Maybe Change]
-	adddirect toadd = do
+	addunlocked :: Bool -> [Change] -> Assistant [Maybe Change]
+	addunlocked isdirect toadd = do
 		ct <- liftAnnex compareInodeCachesWith
-		m <- liftAnnex $ removedKeysMap ct cs
+		m <- liftAnnex $ removedKeysMap isdirect ct cs
 		delta <- liftAnnex getTSDelta
+		let cfg = LockDownConfig
+			{ lockingFile = False
+			, hardlinkFileTmp = True
+			}
 		if M.null m
-			then forM toadd add
+			then forM toadd (add cfg)
 			else forM toadd $ \c -> do
 				mcache <- liftIO $ genInodeCache (changeFile c) delta
 				case mcache of
-					Nothing -> add c
+					Nothing -> add cfg c
 					Just cache ->
 						case M.lookup (inodeCacheToKey ct cache) m of
-							Nothing -> add c
-							Just k -> fastadd c k
+							Nothing -> add cfg c
+							Just k -> fastadd isdirect c k
 
-	fastadd :: Change -> Key -> Assistant (Maybe Change)
-	fastadd change key = do
-		let source = keySource change
-		liftAnnex $ Command.Add.finishIngestDirect key source
+	fastadd :: Bool -> Change -> Key -> Assistant (Maybe Change)
+	fastadd isdirect change key = do
+		let source = keySource $ lockedDown change
+		liftAnnex $ if isdirect
+			then finishIngestDirect key source
+			else finishIngestUnlocked key source
 		done change Nothing (keyFilename source) key
 
-	removedKeysMap :: InodeComparisonType -> [Change] -> Annex (M.Map InodeCacheKey Key)
-	removedKeysMap ct l = do
+	removedKeysMap :: Bool -> InodeComparisonType -> [Change] -> Annex (M.Map InodeCacheKey Key)
+	removedKeysMap isdirect ct l = do
 		mks <- forM (filter isRmChange l) $ \c ->
 			catKeyFile $ changeFile c
 		M.fromList . concat <$> mapM mkpairs (catMaybes mks)
 	  where
 		mkpairs k = map (\c -> (inodeCacheToKey ct c, k)) <$>
-			recordedInodeCache k
+			if isdirect
+				then recordedInodeCache k
+				else Database.Keys.getInodeCaches k
 
 	failedingest change = do
 		refill [retryChange change]
@@ -351,12 +378,18 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 
 	done change mcache file key = liftAnnex $ do
 		logStatus key InfoPresent
-		link <- ifM isDirect
-			( inRepo $ gitAnnexLink file key
-			, Command.Add.link file key mcache
+		ifM versionSupportsUnlockedPointers
+			( do
+				mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
+				stagePointerFile file mode =<< hashPointerFile key
+			, do
+				link <- ifM isDirect
+					( calcRepo $ gitAnnexLink file key
+					, makeLink file key mcache
+					)
+				whenM (pure DirWatcher.eventsCoalesce <||> isDirect) $
+					stageSymlink file =<< hashSymlink link
 			)
-		whenM (pure DirWatcher.eventsCoalesce <||> isDirect) $
-			stageSymlink file =<< hashSymlink link
 		showEndOk
 		return $ Just $ finishedChange change key
 
@@ -394,16 +427,16 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
  -
  - Check by running lsof on the repository.
  -}
-safeToAdd :: Bool -> Maybe Seconds -> [Change] -> [Change] -> Assistant [Either Change Change]
-safeToAdd _ _ [] [] = return []
-safeToAdd havelsof delayadd pending inprocess = do
+safeToAdd :: LockDownConfig -> Bool -> Maybe Seconds -> [Change] -> [Change] -> Assistant [Either Change Change]
+safeToAdd _ _ _ [] [] = return []
+safeToAdd lockdownconfig havelsof delayadd pending inprocess = do
 	maybe noop (liftIO . threadDelaySeconds) delayadd
 	liftAnnex $ do
-		keysources <- forM pending $ Command.Add.lockDown . changeFile
-		let inprocess' = inprocess ++ mapMaybe mkinprocess (zip pending keysources)
+		lockeddown <- forM pending $ lockDown lockdownconfig . changeFile
+		let inprocess' = inprocess ++ mapMaybe mkinprocess (zip pending lockeddown)
 		openfiles <- if havelsof
 			then S.fromList . map fst3 . filter openwrite <$>
-				findopenfiles (map keySource inprocess')
+				findopenfiles (map (keySource . lockedDown) inprocess')
 			else pure S.empty
 		let checked = map (check openfiles) inprocess'
 
@@ -416,17 +449,18 @@ safeToAdd havelsof delayadd pending inprocess = do
 				allRight $ rights checked
 			else return checked
   where
-	check openfiles change@(InProcessAddChange { keySource = ks })
-		| S.member (contentLocation ks) openfiles = Left change
+	check openfiles change@(InProcessAddChange { lockedDown = ld })
+		| S.member (contentLocation (keySource ld)) openfiles = Left change
 	check _ change = Right change
 
-	mkinprocess (c, Just ks) = Just InProcessAddChange
+	mkinprocess (c, Just ld) = Just InProcessAddChange
 		{ changeTime = changeTime c
-		, keySource = ks
+		, lockedDown = ld
 		}
 	mkinprocess (_, Nothing) = Nothing
 
-	canceladd (InProcessAddChange { keySource = ks }) = do
+	canceladd (InProcessAddChange { lockedDown = ld }) = do
+		let ks = keySource ld
 		warning $ keyFilename ks
 			++ " still has writers, not adding"
 		-- remove the hard link
@@ -450,7 +484,7 @@ safeToAdd havelsof delayadd pending inprocess = do
 	 -}
 	findopenfiles keysources = ifM crippledFileSystem
 		( liftIO $ do
-			let segments = segmentXargs $ map keyFilename keysources
+			let segments = segmentXargsUnordered $ map keyFilename keysources
 			concat <$> forM segments (\fs -> Lsof.query $ "--" : fs)
 		, do
 			tmpdir <- fromRepo gitAnnexTmpMiscDir
@@ -470,9 +504,10 @@ checkChangeContent change@(Change { changeInfo = i }) =
 		Just k -> whenM (scanComplete <$> getDaemonStatus) $ do
 			present <- liftAnnex $ inAnnex k
 			void $ if present
-				then queueTransfers "new file created" Next k (Just f) Upload
-				else queueTransfers "new or renamed file wanted" Next k (Just f) Download
-			handleDrops "file renamed" present k (Just f) Nothing
+				then queueTransfers "new file created" Next k af Upload
+				else queueTransfers "new or renamed file wanted" Next k af Download
+			handleDrops "file renamed" present k af []
   where
 	f = changeFile change
+	af = AssociatedFile (Just f)
 checkChangeContent _ = noop

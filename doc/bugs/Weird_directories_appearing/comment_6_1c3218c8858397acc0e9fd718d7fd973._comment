@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.43"
- subject="comment 6"
- date="2014-01-14T19:16:15Z"
- content="""
-Problem is that git-annex prepends `GIT_INDEX_FILE` to the environment; it does not overwrite it. So environment ends up with 2 copies of the var, and which will be used is undefined.
-"""]]

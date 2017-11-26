@@ -1,0 +1,3 @@
+so i mistakenly merged two unrelated repos together. i have "canceled" the merge as in reverted it by removing the created files, but then those zillion of small files will stick around the git repository forever.
+
+is there a way to use something like `git annex forget` for this? i know about things like [git rebase --onto](https://sethrobertson.github.io/GitFixUm/fixup.html#remove_deep) but that won't propagate across all repositories... can git-annex give me a hand here? --[[anarcat]]

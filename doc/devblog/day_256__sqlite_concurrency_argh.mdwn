@@ -1,0 +1,28 @@
+Breaking news: gitlab.com repositories now support git-annex!
+
+* [GitLab Annex solves the problem of versioning large binaries with git](https://about.gitlab.com/2015/02/17/gitlab-annex-solves-the-problem-of-versioning-large-binaries-with-git/)
+* [freely licensed source code](https://gitlab.com/gitlab-org/gitlab-shell)
+
+A very nice surprise! More git hosters should do this..
+
+----
+
+Back to sqlite concurrency, I thought I had it dealt with, but more testing
+today has turned up a lot more problems with sqlite and concurrent writers
+(and readers).
+
+First, I noticed that a process can be happily writing changes to the
+database, but if a second process starts reading from the database, this
+will make the writier start failing with BUSY, and keep failing until the
+second process goes idle. It turns out the solution to this is to use WAL 
+mode, which prevents readers from blocking writers.
+
+After several hours (persistent doesn't make it easy to enable WAL mode),
+it seemed pretty robust with concurrent fsck.
+
+But then I saw SELECT fail with BUSY. I don't understand why a reader would
+fail in WAL mode; that's counter to the documentation. My best guess is
+that this happens when a checkpoint is being made.
+
+This seems to be a real bug in sqlite. It may only affect the older
+versions bundled with persistent.

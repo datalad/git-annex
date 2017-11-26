@@ -1,47 +1,49 @@
 {- git diff-tree interface
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Git.DiffTree (
 	DiffTreeItem(..),
+	isDiffOf,
 	diffTree,
 	diffTreeRecursive,
 	diffIndex,
 	diffWorkTree,
+	diffFiles,
+	diffLog,
+	commitDiff,
 ) where
 
 import Numeric
-import System.Posix.Types
 
 import Common
 import Git
 import Git.Sha
 import Git.Command
 import Git.FilePath
+import Git.DiffTreeItem
 import qualified Git.Filename
 import qualified Git.Ref
 
-data DiffTreeItem = DiffTreeItem
-	{ srcmode :: FileMode
-	, dstmode :: FileMode
-	, srcsha :: Sha -- nullSha if file was added
-	, dstsha :: Sha -- nullSha if file was deleted
-	, status :: String
-	, file :: TopFilePath
-	} deriving Show
+{- Checks if the DiffTreeItem modifies a file with a given name
+ - or under a directory by that name. -}
+isDiffOf :: DiffTreeItem -> TopFilePath -> Bool
+isDiffOf diff f = case getTopFilePath f of
+	"" -> True -- top of repo contains all
+	d -> d `dirContains` getTopFilePath (file diff)
 
 {- Diffs two tree Refs. -}
 diffTree :: Ref -> Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
 diffTree src dst = getdiff (Param "diff-tree")
-	[Param (fromRef src), Param (fromRef dst)]
+	[Param (fromRef src), Param (fromRef dst), Param "--"]
 
 {- Diffs two tree Refs, recursing into sub-trees -}
 diffTreeRecursive :: Ref -> Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
 diffTreeRecursive src dst = getdiff (Param "diff-tree")
-	[Param "-r", Param (fromRef src), Param (fromRef dst)]
+	[Param "-r", Param (fromRef src), Param (fromRef dst), Param "--"]
 
 {- Diffs between a tree and the index. Does nothing if there is not yet a
  - commit in the repository. -}
@@ -61,27 +63,51 @@ diffIndex' :: Ref -> [CommandParam] -> Repo -> IO ([DiffTreeItem], IO Bool)
 diffIndex' ref params repo =
 	ifM (Git.Ref.headExists repo)
 		( getdiff (Param "diff-index")
-			( params ++ [Param $ fromRef ref] )
+			( params ++ [Param $ fromRef ref] ++ [Param "--"] )
 			repo
 		, return ([], return True)
 		)
 
+{- Diff between the index and work tree. -}
+diffFiles :: [CommandParam] -> Repo -> IO ([DiffTreeItem], IO Bool)
+diffFiles = getdiff (Param "diff-files")
+
+{- Runs git log in --raw mode to get the changes that were made in
+ - a particular commit to particular files. The output format
+ - is adjusted to be the same as diff-tree --raw._-}
+diffLog :: [CommandParam] -> Repo -> IO ([DiffTreeItem], IO Bool)
+diffLog params = getdiff (Param "log")
+	(Param "-n1" : Param "--abbrev=40" : Param "--pretty=format:" : params)
+
+{- Uses git show to get the changes made by a commit.
+ -
+ - Does not support merge commits, and will fail on them. -}
+commitDiff :: Sha -> Repo -> IO ([DiffTreeItem], IO Bool)
+commitDiff ref = getdiff (Param "show")
+	[ Param "--abbrev=40", Param "--pretty=", Param "--raw", Param (fromRef ref) ]
+
 getdiff :: CommandParam -> [CommandParam] -> Repo -> IO ([DiffTreeItem], IO Bool)
 getdiff command params repo = do
 	(diff, cleanup) <- pipeNullSplit ps repo
-	return (parseDiffTree diff, cleanup)
+	return (parseDiffRaw diff, cleanup)
   where
-	ps = command : Params "-z --raw --no-renames -l0" : params
+	ps = 
+		command :
+		Param "-z" :
+		Param "--raw" :
+		Param "--no-renames" :
+		Param "-l0" :
+		params
 
-{- Parses diff-tree output. -}
-parseDiffTree :: [String] -> [DiffTreeItem]
-parseDiffTree l = go l []
+{- Parses --raw output used by diff-tree and git-log. -}
+parseDiffRaw :: [String] -> [DiffTreeItem]
+parseDiffRaw l = go l
   where
-	go [] c = c
-	go (info:f:rest) c = go rest (mk info f : c)
-	go (s:[]) _ = error $ "diff-tree parse error " ++ s
+	go [] = []
+	go (info:f:rest) = mk info f : go rest
+	go (s:[]) = error $ "diff-tree parse error near \"" ++ s ++ "\""
 
-	mk info f = DiffTreeItem 
+	mk info f = DiffTreeItem
 		{ srcmode = readmode srcm
 		, dstmode = readmode dstm
 		, srcsha = fromMaybe (error "bad srcsha") $ extractSha ssha

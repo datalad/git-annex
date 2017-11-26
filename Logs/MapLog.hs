@@ -1,55 +1,57 @@
+{-# LANGUAGE CPP #-}
+
 {- git-annex Map log
  -
  - This is used to store a Map, in a way that can be union merged.
  -
  - A line of the log will look like: "timestamp field value"
  -
- - Copyright 2014 Joey Hess <joey@kitenet.net>
+ - Copyright 2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Logs.MapLog where
-
-import qualified Data.Map as M
-import Data.Time.Clock.POSIX
-import Data.Time
-import System.Locale
+module Logs.MapLog (
+	module Logs.MapLog,
+	VectorClock,
+	currentVectorClock,
+) where
 
 import Common
+import Annex.VectorClock
+import Logs.Line
 
-data TimeStamp = Unknown | Date POSIXTime
-	deriving (Eq, Ord, Show)
+import qualified Data.Map as M
 
 data LogEntry v = LogEntry
-	{ changed :: TimeStamp
+	{ changed :: VectorClock
 	, value :: v
-	} deriving (Eq, Show)
+	} deriving (Eq)
 
 type MapLog f v = M.Map f (LogEntry v)
 
 showMapLog :: (f -> String) -> (v -> String) -> MapLog f v -> String
 showMapLog fieldshower valueshower = unlines . map showpair . M.toList
   where
-	showpair (f, LogEntry (Date p) v) =
-		unwords [show p, fieldshower f, valueshower v]
+	showpair (f, LogEntry (VectorClock c) v) =
+		unwords [show c, fieldshower f, valueshower v]
 	showpair (f, LogEntry Unknown v) =
 		unwords ["0", fieldshower f, valueshower v]
 
 parseMapLog :: Ord f => (String -> Maybe f) -> (String -> Maybe v) -> String -> MapLog f v
-parseMapLog fieldparser valueparser = M.fromListWith best . mapMaybe parse . lines
+parseMapLog fieldparser valueparser = M.fromListWith best . mapMaybe parse . splitLines
   where
 	parse line = do
-		let (ts, rest) = splitword line
+		let (sc, rest) = splitword line
 		    (sf, sv) = splitword rest
-		date <- Date . utcTimeToPOSIXSeconds <$> parseTime defaultTimeLocale "%s%Qs" ts
+		c <- parseVectorClock sc
 		f <- fieldparser sf
 		v <- valueparser sv
-		Just (f, LogEntry date v)
+		Just (f, LogEntry c v)
 	splitword = separate (== ' ')
 
-changeMapLog :: Ord f => POSIXTime -> f -> v -> MapLog f v -> MapLog f v
-changeMapLog t f v = M.insert f $ LogEntry (Date t) v
+changeMapLog :: Ord f => VectorClock -> f -> v -> MapLog f v -> MapLog f v
+changeMapLog c f v = M.insert f $ LogEntry c v
 
 {- Only add an LogEntry if it's newer (or at least as new as) than any
  - existing LogEntry for a field. -}
@@ -67,15 +69,11 @@ best new old
 	| changed old > changed new = old
 	| otherwise = new
 
--- Unknown is oldest.
-prop_TimeStamp_sane :: Bool
-prop_TimeStamp_sane = Unknown < Date 1
-
 prop_addMapLog_sane :: Bool
 prop_addMapLog_sane = newWins && newestWins
   where
-	newWins = addMapLog ("foo") (LogEntry (Date 1) "new") l == l2
-	newestWins = addMapLog ("foo") (LogEntry (Date 1) "newest") l2 /= l2
+	newWins = addMapLog ("foo") (LogEntry (VectorClock 1) "new") l == l2
+	newestWins = addMapLog ("foo") (LogEntry (VectorClock 1) "newest") l2 /= l2
 
-	l = M.fromList [("foo", LogEntry (Date 0) "old")]
-	l2 = M.fromList [("foo", LogEntry (Date 1) "new")]
+	l = M.fromList [("foo", LogEntry (VectorClock 0) "old")]
+	l2 = M.fromList [("foo", LogEntry (VectorClock 1) "new")]

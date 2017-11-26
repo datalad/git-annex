@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-10-30T15:48:34Z"
+ content="""
+You could try running `git annex unused` in the repository of unusual size
+and see if it perhaps finds something to remove.
+
+Always happy to improve documentation if you have ideas.
+"""]]

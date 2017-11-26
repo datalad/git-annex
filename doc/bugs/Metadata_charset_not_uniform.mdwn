@@ -1,0 +1,66 @@
+### Please describe the problem.
+
+Metadata are not stored in a consistent format. It seems more like git-annex chooses the "smallest" charset able to hold the data, i.e. US-ASCII, unless there are latin1 characters, and only UTF-8 if there are UTF-8 characters that are not in latin1
+
+### What steps will reproduce the problem?
+
+    % git init
+    Initialized empty Git repository in /home/madduck/.tmp/cdt.GlIevu/.git/
+    
+    % git annex init
+    init  ok
+    (recording state in git...)
+    
+    % date > a
+    
+    % git annex add a
+    add a ok
+    (recording state in git...)
+    
+    % git annex metadata -s one=$(echo US-ASCII | iconv -tus-ascii) a
+    metadata a 
+      lastchanged=2016-09-25@13-18-57
+      one=US-ASCII
+      one-lastchanged=2016-09-25@13-18-57
+    ok
+    (recording state in git...)
+    
+    % git annex metadata -s two=$(echo lätin1 | iconv -tlatin1) a
+    metadata a 
+      lastchanged=2016-09-25@13-19-37
+      one=US-ASCII
+      one-lastchanged=2016-09-25@13-18-57
+      two=lätin1
+      two-lastchanged=2016-09-25@13-19-37
+    ok
+    (recording state in git...)
+    
+    % git annex metadata -s three=$(echo unicode… | iconv -tutf8) a  
+    metadata a 
+      lastchanged=2016-09-25@13-19-41
+      one=US-ASCII
+      one-lastchanged=2016-09-25@13-18-57
+      three=unicode…
+      three-lastchanged=2016-09-25@13-19-41
+      two=lätin1
+      two-lastchanged=2016-09-25@13-19-37
+    ok
+    (recording state in git...)
+    
+    % git annex metadata -g three a | iconv -tutf8                 
+    unicode…
+    
+    % git annex metadata -g two a | iconv -tutf8 
+    liconv: illegal input sequence at position 1
+    
+    % git annex metadata -g one a | iconv -tutf8 
+    US-ASCII
+    
+    % git annex metadata -g two a | iconv -flatin1 -tutf8 
+    lätin1
+
+### What version of git-annex are you using? On what operating system?
+
+6.20160808-1
+
+[[!tag moreinfo]]

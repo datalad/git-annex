@@ -1,6 +1,6 @@
 {- git-annex webapp gpg stuff
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -12,6 +12,7 @@ module Assistant.WebApp.Gpg where
 import Assistant.WebApp.Common
 import Assistant.Gpg
 import Utility.Gpg
+import qualified Annex
 import qualified Git.Command
 import qualified Git.Remote.Remove
 import qualified Git.Construct
@@ -50,11 +51,12 @@ whenGcryptInstalled a = ifM (liftIO isGcryptInstalled)
 
 withNewSecretKey :: (KeyId -> Handler Html) -> Handler Html
 withNewSecretKey use = do
-	userid <- liftIO newUserId
-	liftIO $ genSecretKey RSA "" userid maxRecommendedKeySize
-	results <- M.keys . M.filter (== userid) <$> liftIO secretKeys
+	cmd <- liftAnnex $ gpgCmd <$> Annex.getGitConfig
+	userid <- liftIO $ newUserId cmd
+	liftIO $ genSecretKey cmd RSA "" userid maxRecommendedKeySize
+	results <- M.keys . M.filter (== userid) <$> liftIO (secretKeys cmd)
 	case results of
-		[] -> error "Failed to generate gpg key!"
+		[] -> giveup "Failed to generate gpg key!"
 		(key:_) -> use key
 
 {- Tries to find the name used in remote.log for a gcrypt repository
@@ -69,7 +71,11 @@ getGCryptRemoteName :: UUID -> String -> Annex RemoteName
 getGCryptRemoteName u repoloc = do
 	tmpremote <- uniqueRemoteName "tmpgcryptremote" 0 <$> gitRepo
 	void $ inRepo $ Git.Command.runBool
-		[Params "remote add", Param tmpremote, Param $ Git.GCrypt.urlPrefix ++ repoloc]
+		[ Param "remote"
+		, Param "add"
+		, Param tmpremote
+		, Param $ Git.GCrypt.urlPrefix ++ repoloc
+		]
 	mname <- ifM (inRepo $ Git.Command.runBool [Param "fetch", Param tmpremote])
 		( do
 			void Annex.Branch.forceUpdate
@@ -79,7 +85,7 @@ getGCryptRemoteName u repoloc = do
 	void $ inRepo $ Git.Remote.Remove.remove tmpremote
 	maybe missing return mname
   where
-	missing = error $ "Cannot find configuration for the gcrypt remote at " ++ repoloc
+	missing = giveup $ "Cannot find configuration for the gcrypt remote at " ++ repoloc
 
 {- Checks to see if a repo is encrypted with gcrypt, and runs one action if
  - it's not an another if it is.
@@ -97,7 +103,7 @@ checkGCryptRepoEncryption location notencrypted notinstalled encrypted =
 	dispatch Git.GCrypt.Decryptable = encrypted
 	dispatch Git.GCrypt.NotEncrypted = notencrypted
 	dispatch Git.GCrypt.NotDecryptable =
-		error "This git repository is encrypted with a GnuPG key that you do not have."
+		giveup "This git repository is encrypted with a GnuPG key that you do not have."
 
 {- Gets the UUID of the gcrypt repo at a location, which may not exist.
  - Only works if the gcrypt repo was created as a git-annex remote. -}

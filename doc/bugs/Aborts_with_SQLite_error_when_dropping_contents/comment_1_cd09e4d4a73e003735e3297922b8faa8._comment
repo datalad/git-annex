@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="sunny256"
+ avatar="http://cdn.libravatar.org/avatar/8a221001f74d0e8f4dadee3c7d1996e4"
+ subject="Found the reason"
+ date="2017-01-16T11:03:45Z"
+ content="""
+I managed to find the reason why it failed. The files in .git/annex/keys/ had wrong permissions, so I wasn't able to write to them. This is a shared repository where everyone within the Unix group can read and write. All the directories including .git/annex/keys have chmod +s so any additions or edits are stored within the correct group. But the SQLite files were stored with permission 0644 instead of 0664, and my umask in the shell is 0002. Maybe SQLite is creating the database with wrong permissions?
+"""]]
