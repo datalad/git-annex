@@ -1,6 +1,6 @@
 {- git-annex command-line actions
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -18,9 +18,12 @@ import Messages.Concurrent
 import Types.Messages
 import Remote.List
 
+import Control.Concurrent
 import Control.Concurrent.Async
+import Control.Concurrent.STM
 import Control.Exception (throwIO)
 import Data.Either
+import qualified Data.Map.Strict as M
 
 #ifdef WITH_CONCURRENTOUTPUT
 import qualified System.Console.Regions as Regions
@@ -177,3 +180,36 @@ allowConcurrentOutput a = go =<< Annex.getState Annex.concurrency
 #else
 allowConcurrentOutput = id
 #endif
+
+{- Ensures that only one thread processes a key at a time.
+ - Other threads will block until it's done. -}
+onlyActionOn :: Key -> CommandStart -> CommandStart
+onlyActionOn k a = onlyActionOn' k run
+  where
+	run = do
+		-- Run whole action, not just start stage, so other threads
+		-- block until it's done.
+		r <- callCommandAction' a
+		case r of
+			Nothing -> return Nothing
+			Just r' -> return $ Just $ return $ Just $ return r'
+
+onlyActionOn' :: Key -> Annex a -> Annex a
+onlyActionOn' k a = go =<< Annex.getState Annex.concurrency
+  where
+	go NonConcurrent = a
+	go (Concurrent _) = do
+		tv <- Annex.getState Annex.activekeys
+		bracket (setup tv) id (const a)
+	setup tv = liftIO $ do
+		mytid <- myThreadId
+		atomically $ do
+			m <- readTVar tv
+			case M.lookup k m of
+				Just tid
+					| tid /= mytid -> retry
+					| otherwise -> return (return ())
+				Nothing -> do
+					writeTVar tv $! M.insert k mytid m
+					return $ liftIO $ atomically $
+						modifyTVar tv $ M.delete k

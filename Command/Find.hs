@@ -50,7 +50,7 @@ parseFormatOption =
 
 seek :: FindOptions -> CommandSeek
 seek o = case batchOption o of
-	NoBatch -> withFilesInGit go (findThese o)
+	NoBatch -> withFilesInGit go =<< workTreeItems (findThese o)
 	Batch -> batchFiles go
   where
 	go = whenAnnexed $ start o

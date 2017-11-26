@@ -1,0 +1,73 @@
+Hello,
+
+I use git annex to sync files between my home linux server and my mac os laptop (macbook).
+This is a report about some troubles I had recovering git-annexed files from the macbook hard-drive.
+
+The laptop had some hardware failure, so I bought another laptop (this time running linux), 
+and plugged the macbook hard drive on yet another linux computer to recover the data (some files which were
+added to the macbook annex but never synchronized to the server):
+
+* mount the hfsplus FS as read-only
+* cp -a (as root) the annex to /home/seb/macbook
+* use git annex as usual (from the linux computer) to push the files to the linux server.
+
+Later on, I noticed that some files were missing (for instance "Le retour du printemps.mp4").
+I eventually understood that it was related to HFS+ being case-insensitive (case-preserving. actually), and that by copying the annex to the linux partition I lost that property.
+
+here are commands which I run from the linux computer to reproduce the issue:
+
+    $ cd /home/seb/macbook
+    $ git annex version
+    git-annex version: 5.20140412ubuntu1
+    $ git annex whereis  "public/Videos/Documentaries/Nature/Le retour du printemps.mp4"
+    whereis public/Videos/Documentaries/Nature/Le retour du printemps.mp4 (1 copy) 
+            18b9c2cc-e3c1-4002-a0a2-7e07782fae2c -- here (navimac/annex)
+
+Trying to copy the file to the linux server
+
+    $ git annex copy  "public/Videos/Documentaries/Nature/Le retour du printemps.mp4" --to origin ; echo $?
+    0
+
+Here git-annex did not copy anything, but reported success, maybe a bug.
+Fsck does account the issue:
+
+    $ git annex fsck  "public/Videos/Documentaries/Nature/Le retour du printemps.mp4" 
+    fsck public/Videos/Documentaries/Nature/Le retour du printemps.mp4 (fixing location log) 
+      ** Based on the location log, public/Videos/Documentaries/Nature/Le retour du printemps.mp4
+      ** was expected to be present, but its content is missing.
+      ** No known copies exist of public/Videos/Documentaries/Nature/Le retour du printemps.mp4
+    failed
+    git-annex: fsck: 1 failed
+
+It turn out the file is there, but in gm/29 instead of gM/29:
+
+    $ ls -l  "public/Videos/Documentaries/Nature/Le retour du printemps.mp4"
+    lrwxrwxrwx 1 seb root 214 Apr 17  2017 public/Videos/Documentaries/Nature/Le retour du printemps.mp4 -> ../../../../.git/annex/objects/gM/29/SHA256E-s915126032--79eb20cad1b56adf4831b8a665b02c7de68aaaa4c9ca424a5a90e288abcec2aa.mp4/SHA256E-s915126032--79eb20cad1b56adf4831b8a665b02c7de68aaaa4c9ca424a5a90e288abcec2aa.mp4
+    $ ls -l .git/annex/objects/g{M,m}/29/SHA256E-s915126032--79eb20cad1b56adf4831b8a665b02c7de68aaaa4c9ca424a5a90e288abcec2aa.mp4/SHA256E-s915126032--79eb20cad1b56adf4831b8a665b02c7de68aaaa4c9ca424a5a90e288abcec2aa.mp4
+    ls: cannot access .git/annex/objects/gM/29/SHA256E-s915126032--79eb20cad1b56adf4831b8a665b02c7de68aaaa4c9ca424a5a90e288abcec2aa.mp4/SHA256E-s915126032--79eb20cad1b56adf4831b8a665b02c7de68aaaa4c9ca424a5a90e288abcec2aa.mp4: No such file or directory
+    -r--r--r-- 1 seb root 915126032 Apr 17  2017 .git/annex/objects/gm/29/SHA256E-s915126032--79eb20cad1b56adf4831b8a665b02c7de68aaaa4c9ca424a5a90e288abcec2aa.mp4/SHA256E-s915126032--79eb20cad1b56adf4831b8a665b02c7de68aaaa4c9ca424a5a90e288abcec2aa.mp4
+
+I think that if ran the git annex from the hfsplus partition directly (ie. not copying the annex to /home/seb/macbook), it would have worked.
+
+Moving the file where git annex expects to find it solves it all:
+
+    $ mkdir .git/annex/objects/gM
+    $ mv  .git/annex/objects/gm/29 .git/annex/objects/gM/
+    $ git annex fsck  "public/Videos/Documentaries/Nature/Le retour du printemps.mp4" 
+    fsck public/Videos/Documentaries/Nature/Le retour du printemps.mp4 (fixing location log) (checksum...)
+    ok
+    (Recording state in git...)
+
+    $ git annex copy  "public/Videos/Documentaries/Nature/Le retour du printemps.mp4" --to origin ; echo $?                                                                                                                                                 
+    copy public/Videos/Documentaries/Nature/Le retour du printemps.mp4 (checking origin...)
+    seb@192.168.0.1's password: 
+    (to origin...) 
+    SHA256E-s915126032--79eb20cad1b56adf4831b8a665b02c7de68aaaa4c9ca424a5a90e288abcec2aa.mp4
+        915,126,032 100%    3.44MB/s    0:04:13 (xfr#1, to-chk=0/1)
+    ok
+    (Recording state in git...)
+    0
+
+Maybe I could instead have used cpiofs to avoid renaming files. (But I have less than 10 files to rename anyway).
+
+I learned a lot about git annex today! Thank you again fot git-annex.

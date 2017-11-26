@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-10-11T15:17:41Z"
+ content="""
+RSS feeds have unique IDs that are attached to a post in the feed.
+They are supposed to be allocated once and remain unchanged. It's not
+entirely uncommon for the unique IDs to change (due to broken feed
+generation software, changing feed generation software, etc), and then git-annex
+thinks this is a new file in the feed, that happens to have the same
+title as another file, so it makes up a unique name for it with the "2_".
+
+Since the alternative is to miss downloading new files from the RSS feed
+if they happen to have the same title as a previous file, I think we have
+to live with this.
+
+(git-annex was improved in version 5.20150727 to avoid some cases
+of this)
+"""]]

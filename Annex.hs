@@ -138,6 +138,7 @@ data AnnexState = AnnexState
 	, existinghooks :: M.Map Git.Hook.Hook Bool
 	, desktopnotify :: DesktopNotify
 	, workers :: [Either AnnexState (Async AnnexState)]
+	, activekeys :: TVar (M.Map Key ThreadId)
 	, activeremotes :: MVar (M.Map (Types.Remote.RemoteA Annex) Integer)
 	, keysdbhandle :: Maybe Keys.DbHandle
 	, cachedcurrentbranch :: Maybe Git.Branch
@@ -147,6 +148,7 @@ data AnnexState = AnnexState
 newState :: GitConfig -> Git.Repo -> IO AnnexState
 newState c r = do
 	emptyactiveremotes <- newMVar M.empty
+	emptyactivekeys <- newTVarIO M.empty
 	o <- newMessageState
 	sc <- newTMVarIO False
 	return $ AnnexState
@@ -192,6 +194,7 @@ newState c r = do
 		, existinghooks = M.empty
 		, desktopnotify = mempty
 		, workers = []
+		, activekeys = emptyactivekeys
 		, activeremotes = emptyactiveremotes
 		, keysdbhandle = Nothing
 		, cachedcurrentbranch = Nothing

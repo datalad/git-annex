@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="xloem"
+ avatar="http://cdn.libravatar.org/avatar/b8c087f7c5e6a9358748f0727c077f3b"
+ subject="IPFS Deduplication"
+ date="2017-10-07T19:46:12Z"
+ content="""
+IPFS now has an experimental feature for not duplicating file content in the ipfs store, which could be very helpful for this use.  See description at [[https://github.com/ipfs/go-ipfs/issues/3397#issuecomment-284337564]] .
+
+To use this, git-annex needs to pass the `--nocopy` flag when running `ipfs add`.
+"""]]

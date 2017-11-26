@@ -12,14 +12,11 @@ module Utility.Shell where
 import Utility.SafeCommand
 #ifdef mingw32_HOST_OS
 import Utility.Path
-import Utility.FileSystemEncoding
 import Utility.Exception
 import Utility.PartialPrelude
-import Utility.Applicative
 #endif
 
 #ifdef mingw32_HOST_OS
-import System.IO
 import System.FilePath
 #endif
 

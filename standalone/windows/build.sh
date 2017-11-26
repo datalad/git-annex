@@ -6,15 +6,17 @@
 set -x
 set -e
 
-# Path to the Haskell Platform.
-#HP="/c/haskell/2014.2.0.0" # now in the default PATH
-
-PATH="/c/Program Files (x86)/NSIS:/c/msysgit/cmd:/c/msysgit/bin:$PATH"
+PATH="/cygdrive/c/git/cmd:/cygdrive/c/Program Files (x86)/NSIS/Bin:/cygdrive/c/Program Files (x86)/NSIS:/usr/local/bin:/usr/bin:/cygdrive/c/Users/jenkins/AppData/Roaming/local/bin:$PATH"
 
 # Run a command with the cygwin environment available.
 # However, programs not from cygwin are preferred.
 withcyg () {
 	PATH="$PATH:/c/cygwin/bin" "$@"
+}
+
+# Prefer programs from cygwin.
+withcygpreferred () {
+	PATH="/c/cygwin/bin:$PATH" "$@"
 }
 
 # This tells git-annex where to upgrade itself from.
@@ -26,87 +28,64 @@ export UPGRADE_LOCATION
 #FORCE_GIT_VERSION=1.9.5
 #export FORCE_GIT_VERSION
 
-# Uncomment to get rid of cabal installed libraries.
-cabal list --installed
-rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
-
 # Don't allow build artifact from a past successful build to be extracted
 # if we fail.
 rm -f git-annex-installer.exe
-
-# Install haskell dependencies.
-# cabal install is not run in cygwin, because we don't want configure scripts
-# for haskell libraries to link them with the cygwin library.
-cabal update || true
-
-cabal install --only-dependencies \
-		--constraint='persistent-sqlite ==2.2' \
-		--constraint='cryptonite ==0.7' \
-		--constraint='mwc-random ==0.13.3.2' \
-		--constraint='xss-sanitize ==0.3.5.6' \
-		--force-reinstalls \
-		|| true
-
-# Detect when the last build was an incremental build and failed, 
-# and try a full build. Done this way because this shell seems a bit
-# broken.
-if [ -e last-incremental-failed ]; then
-	cabal clean || true
-	# windows breakage..
-	rm -rf dist dist.old || mv -v dist dist.old
-fi
-touch last-incremental-failed
-
-# Build git-annex
-withcyg cabal configure
-if ! withcyg cabal build; then
-	rm -f Build/EvilLinker.exe
-	ghc --make Build/EvilLinker -fno-warn-tabs
-	Build/EvilLinker
-fi
+rm -f git-annex.exe
+rm -rf dist
 
 # Get extra programs to bundle with git-annex.
 # These are msys2 programs, from https://msys2.github.io/.
 # Since git for windows uses msys2, and includes its libraries,
-# these programs will work well with it.
+# these programs will work well with it. Note that these are 32 bit
+# programs, so the 32 bit version of git for windows needs to be installed,
+# not the 64 bit.
 getextra () {
 	extrap="$1"
 	extrasha="$2"
-	curextrasha="$(withcyg sha1sum $extrap | sed 's/ .*//')"
+	curextrasha="$(sha1sum $extrap | sed 's/ .*//')"
 	if [ ! -e "$extrap" ] || [ "$curextrasha" != "$extrasha" ]; then
 		rm -f "$extrap" || true
-		withcyg wget https://downloads.kitenet.net/git-annex/windows/assets/$extrap
-		curextrasha="$(withcyg sha1sum $extrap | sed 's/ .*//')"
+		wget https://downloads.kitenet.net/git-annex/windows/assets/$extrap
+		curextrasha="$(sha1sum $extrap | sed 's/ .*//')"
 		if [ "$curextrasha" != "$extrasha" ]; then
 			rm -f "$extrap"
 			echo "CHECKSUM FAILURE" >&2
 			exit 1
 		fi
-		withcyg chmod +x $extrap
+		chmod +x $extrap
 	fi
 }
 getextra rsync.exe 85cb7a4d16d274fcf8069b39042965ad26abd6aa
-getextra wget.exe 044380729200d5762965b10123a4f134806b01cf
+
+# Upgrade stack
+#stack --version
+#stack upgrade --git
+stack --version
+
+# Build git-annex
+stack setup --stack-yaml stack-windows.yaml
+stack install -j 1 --stack-yaml stack-windows.yaml --no-haddock \
+	--local-bin-path .
 
 # Build the installer
-cabal install nsis
-ghc -fforce-recomp --make Build/NullSoftInstaller.hs -fno-warn-tabs
-PATH=".:/c/cygwin/bin:$PATH" Build/NullSoftInstaller.exe
+withcygpreferred stack ghc --stack-yaml stack-windows.yaml --no-haddock \
+	--package nsis Build/NullSoftInstaller.hs
+./Build/NullSoftInstaller
 
-rm -f last-incremental-failed
-
-rm -f dist/build-version
-ghc --make Build/BuildVersion.hs
-Build/BuildVersion > dist/build-version
+mkdir -p dist
+stack ghc --stack-yaml stack-windows.yaml --no-haddock Build/BuildVersion.hs
+./Build/BuildVersion > dist/build-version
 
 # Test git-annex
 # The test is run in c:/WINDOWS/Temp, because running it in the autobuilder
 # directory runs afoul of Windows's short PATH_MAX.
-PATH="$(pwd)/dist/build/git-annex/:$PATH"
+PATH="$(pwd):$PATH"
 export PATH
 mkdir -p c:/WINDOWS/Temp/git-annex-test/
 cd c:/WINDOWS/Temp/git-annex-test/
 rm -rf .t
+
 # Currently the test fails in the autobuilder environment for reasons not
 # yet understood. Windows users are encouraged to run the test suite
 # themseves, so we'll ignore these failures for now.

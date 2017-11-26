@@ -9,6 +9,7 @@
 
 module Database.Queue (
 	DbQueue,
+	DbConcurrency(..),
 	openDbQueue,
 	queryDbQueue,
 	closeDbQueue,
@@ -35,9 +36,9 @@ data DbQueue = DQ DbHandle (MVar Queue)
 {- Opens the database queue, but does not perform any migrations. Only use
  - if the database is known to exist and have the right tables; ie after
  - running initDb. -}
-openDbQueue :: FilePath -> TableName -> IO DbQueue
-openDbQueue db tablename = DQ
-	<$> openDb db tablename
+openDbQueue :: DbConcurrency -> FilePath -> TableName -> IO DbQueue
+openDbQueue dbconcurrency db tablename = DQ
+	<$> openDb dbconcurrency db tablename
 	<*> (newMVar =<< emptyQueue)
 
 {- This or flushDbQueue must be called, eg at program exit to ensure
@@ -60,8 +61,11 @@ flushDbQueue (DQ hdl qvar) = do
 {- Makes a query using the DbQueue's database connection.
  - This should not be used to make changes to the database!
  -
- - Queries will not return changes that have been recently queued,
+ - Queries will not see changes that have been recently queued,
  - so use with care.
+ -
+ - Also, when the database was opened in MultiWriter mode,
+ - queries may not see changes even after flushDbQueue.
  -}
 queryDbQueue :: DbQueue -> SqlPersistM a -> IO a
 queryDbQueue (DQ hdl _) = queryDb hdl

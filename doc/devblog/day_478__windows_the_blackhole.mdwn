@@ -1,0 +1,14 @@
+Good grief, I've spent another whole day on Windows porting issues.
+
+Tested the new windows builds. Got win32 patched with terminateProcessId,
+and got the windows build using that. Unfortunately this made stack not
+incrementally rebuild very well, so Windows builds 
+got very slow. ([Bug report](https://github.com/commercialhaskell/stack/issues/2960))
+
+Found and fixed an ugly bug with annex link generation on Windows,
+which probably dates back to this spring. Code was comparing `"C:\"` with
+`"C:/"` and thinking the drives were different, argh. Still waiting on
+sloooow builds to test that.
+
+There will probably be an almost Windows-dedicated release tomorrow. Only
+"almost" because Sean T Parsons sent in some patches.

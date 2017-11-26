@@ -15,20 +15,20 @@ import Control.Monad.IfElse
 import System.FilePath
 import System.Directory
 import Control.Monad.IO.Class
+import System.PosixCompat.Files
 #ifndef mingw32_HOST_OS
 import System.Posix.Temp (mkdtemp)
 #endif
 
 import Utility.Exception
 import Utility.FileSystemEncoding
-import Utility.PosixFiles
 
 type Template = String
 
 {- Runs an action like writeFile, writing to a temp file first and
  - then moving it into place. The temp file is stored in the same
  - directory as the final file to avoid cross-device renames. -}
-viaTmp :: (MonadMask m, MonadIO m) => (FilePath -> String -> m ()) -> FilePath -> String -> m ()
+viaTmp :: (MonadMask m, MonadIO m) => (FilePath -> v -> m ()) -> FilePath -> v -> m ()
 viaTmp a file content = bracketIO setup cleanup use
   where
 	(dir, base) = splitFileName file

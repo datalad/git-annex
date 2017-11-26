@@ -50,6 +50,7 @@ import Utility.Batch
 import Utility.SimpleProtocol
 import Remote.Helper.Git
 import Remote.Helper.Messages
+import Remote.Helper.Export
 import qualified Remote.Helper.Ssh as Ssh
 import qualified Remote.GCrypt
 import qualified Remote.P2P
@@ -58,7 +59,7 @@ import Annex.Path
 import Creds
 import Messages.Progress
 import Types.NumCopies
-import Annex.Concurrent
+import Annex.Action
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
@@ -66,12 +67,13 @@ import qualified Data.Map as M
 import Network.URI
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "git",
-	enumerate = list,
-	generate = gen,
-	setup = gitSetup
-}
+remote = RemoteType
+	{ typename = "git"
+	, enumerate = list
+	, generate = gen
+	, setup = gitSetup
+	, exportSupported = exportUnsupported
+	}
 
 list :: Bool -> Annex [Git.Repo]
 list autoinit = do
@@ -110,7 +112,7 @@ gitSetup Init mu _ c _ = do
 	if isNothing mu || mu == Just u
 		then return (c, u)
 		else error "git remote did not have specified uuid"
-gitSetup Enable (Just u) _ c _ = do
+gitSetup (Enable _) (Just u) _ c _ = do
 	inRepo $ Git.Command.run
 		[ Param "remote"
 		, Param "add"
@@ -118,7 +120,7 @@ gitSetup Enable (Just u) _ c _ = do
 		, Param $ fromMaybe (giveup "no location") (M.lookup "location" c)
 		]
 	return (c, u)
-gitSetup Enable Nothing _ _ _ = error "unable to enable git remote with no specified uuid"
+gitSetup (Enable _) Nothing _ _ _ = error "unable to enable git remote with no specified uuid"
 
 {- It's assumed to be cheap to read the config of non-URL remotes, so this is
  - done each time git-annex is run in a way that uses remotes.
@@ -157,6 +159,7 @@ gen r u c gc
 			, lockContent = Just (lockKey new)
 			, checkPresent = inAnnex new
 			, checkPresentCheap = repoCheap r
+			, exportActions = exportUnsupported
 			, whereisKey = Nothing
 			, remoteFsck = if Git.repoIsUrl r
 				then Nothing
@@ -308,11 +311,12 @@ tryGitConfigRead autoinit r
 	 - it if allowed. However, if that fails, still return the read
 	 - git config. -}
 	readlocalannexconfig = do
-		s <- Annex.new r
-		Annex.eval s $ do
+		let check = do
 			Annex.BranchState.disableUpdate
 			void $ tryNonAsync $ ensureInitialized
 			Annex.getState Annex.repo
+		s <- Annex.new r
+		Annex.eval s $ check `finally` stopCoProcesses
 		
 	configlistfields = if autoinit
 		then [(Fields.autoInit, "1")]
@@ -431,7 +435,7 @@ copyFromRemote :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> 
 copyFromRemote r key file dest p
 	| Git.repoIsHttp (repo r) = unVerified $
 		Annex.Content.downloadUrl key p (keyUrls r key) dest
-	| otherwise = commandMetered (Just p) key $
+	| otherwise = commandMetered (Just p) key (return Nothing) $
 		copyFromRemote' r key file dest
 
 copyFromRemote' :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
@@ -542,27 +546,24 @@ copyFromRemoteCheap _ _ _ _ = return False
 
 {- Tries to copy a key's content to a remote's annex. -}
 copyToRemote :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-copyToRemote r key file meterupdate = 
-	commandMetered (Just meterupdate) key $
-		copyToRemote' r key file
-
-copyToRemote' :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-copyToRemote' r key file meterupdate
+copyToRemote r key file meterupdate
 	| not $ Git.repoIsUrl (repo r) =
 		guardUsable (repo r) (return False) $ commitOnCleanup r $
 			copylocal =<< Annex.Content.prepSendAnnex key
 	| Git.repoIsSsh (repo r) = commitOnCleanup r $
-		Annex.Content.sendAnnex key noop $ \object -> do
-			-- This is too broad really, but recvkey normally
-			-- verifies content anyway, so avoid complicating
-			-- it with a local sendAnnex check and rollback.
-			unlocked <- isDirect <||> versionSupportsUnlockedPointers
-			Ssh.rsyncHelper (Just meterupdate)
-				=<< Ssh.rsyncParamsRemote unlocked r Upload key object file
+		Annex.Content.sendAnnex key noop $ \object ->
+			withmeter object $ \p -> do
+				-- This is too broad really, but recvkey normally
+				-- verifies content anyway, so avoid complicating
+				-- it with a local sendAnnex check and rollback.
+				unlocked <- isDirect <||> versionSupportsUnlockedPointers
+				Ssh.rsyncHelper (Just p)
+					=<< Ssh.rsyncParamsRemote unlocked r Upload key object file
 	| otherwise = giveup "copying to non-ssh repo not supported"
   where
+	withmeter object = commandMetered (Just meterupdate) key (return $ Just object)
 	copylocal Nothing = return False
-	copylocal (Just (object, checksuccess)) = do
+	copylocal (Just (object, checksuccess)) = withmeter object $ \p -> do
 		-- The checksuccess action is going to be run in
 		-- the remote's Annex, but it needs access to the local
 		-- Annex monad's state.
@@ -577,11 +578,11 @@ copyToRemote' r key file meterupdate
 				ensureInitialized
 				copier <- mkCopier hardlink params
 				let verify = Annex.Content.RemoteVerify r
-				runTransfer (Transfer Download u key) file forwardRetry $ \p ->
-					let p' = combineMeterUpdate meterupdate p
+				runTransfer (Transfer Download u key) file forwardRetry $ \p' ->
+					let p'' = combineMeterUpdate p p'
 					in Annex.Content.saveState True `after`
 						Annex.Content.getViaTmp verify key
-							(\dest -> copier object dest p' (liftIO checksuccessio))
+							(\dest -> copier object dest p'' (liftIO checksuccessio))
 			)
 
 fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)
@@ -608,7 +609,7 @@ repairRemote r a = return $ do
 	Annex.eval s $ do
 		Annex.BranchState.disableUpdate
 		ensureInitialized
-		a
+		a `finally` stopCoProcesses
 
 {- Runs an action from the perspective of a local remote.
  -
@@ -629,7 +630,7 @@ onLocal r a = do
 	go st = do
 		curro <- Annex.getState Annex.output
 		(ret, st') <- liftIO $ Annex.run (st { Annex.output = curro }) $
-			stopCoProcesses `after` a
+			a `finally` stopCoProcesses
 		cache st'
 		return ret
 

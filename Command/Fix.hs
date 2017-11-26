@@ -34,7 +34,8 @@ seek ps = unlessM crippledFileSystem $ do
 		( return FixAll
 		, return FixSymlinks
 		)
-	flip withFilesInGit ps $ whenAnnexed $ start fixwhat
+	l <- workTreeItems ps
+	flip withFilesInGit l $ whenAnnexed $ start fixwhat
 
 data FixWhat = FixSymlinks | FixAll
 

@@ -7,3 +7,7 @@ TRANSFER-SUCCESS STORE Key URL
 response when upon STORE success special remote provides a url under which content should be registered available from.
 
 [[!meta author=yoh]]
+
+> I think this was trying to implement something like what `git annex
+> export`, and since that's implemented now, we shouldn't need to worry
+> about this. [[done]] --[[Joey]]

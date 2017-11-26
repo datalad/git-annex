@@ -22,6 +22,7 @@ pushRetryThread = namedThread "PushRetrier" $ runEvery (Seconds halfhour) <~> do
 	-- We already waited half an hour, now wait until there are failed
 	-- pushes to retry.
 	topush <- getFailedPushesBefore (fromIntegral halfhour)
+		=<< getAssistant failedPushMap
 	unless (null topush) $ do
 		debug ["retrying", show (length topush), "failed pushes"]
 		void $ pushToRemotes topush

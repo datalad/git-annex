@@ -33,7 +33,9 @@ import Assistant.Threads.Watcher (watchThread, WatcherControl(..))
 import Assistant.TransferSlots
 import Assistant.TransferQueue
 import Assistant.RepoProblem
+import Assistant.Commits
 import Types.Transfer
+import Database.Export
 
 import Data.Time.Clock
 import qualified Data.Map as M
@@ -48,10 +50,10 @@ import Control.Concurrent
  - it's sufficient to requeue failed transfers.
  -
  - Also handles signaling any connectRemoteNotifiers, after the syncing is
- - done.
+ - done, and records an export commit to make any exports be updated.
  -}
 reconnectRemotes :: [Remote] -> Assistant ()
-reconnectRemotes [] = noop
+reconnectRemotes [] = recordExportCommit
 reconnectRemotes rs = void $ do
 	rs' <- liftIO $ filterM (Remote.checkAvailable True) rs
 	unless (null rs') $ do
@@ -60,6 +62,7 @@ reconnectRemotes rs = void $ do
 			whenM (liftIO $ Remote.checkAvailable False r) $
 				repoHasProblem (Remote.uuid r) (syncRemote r)
 		mapM_ signal $ filter (`notElem` failedrs) rs'
+	recordExportCommit
   where
 	gitremotes = filter (notspecialremote . Remote.repo) rs
 	(_xmppremotes, nonxmppremotes) = partition Remote.isXMPPRemote rs
@@ -143,9 +146,11 @@ pushToRemotes' now remotes = do
 				then retry currbranch g u failed
 				else fallback branch g u failed
 
-	updatemap succeeded failed = changeFailedPushMap $ \m ->
-		M.union (makemap failed) $
-			M.difference m (makemap succeeded)
+	updatemap succeeded failed = do
+		v <- getAssistant failedPushMap 
+		changeFailedPushMap v $ \m ->
+			M.union (makemap failed) $
+				M.difference m (makemap succeeded)
 	makemap l = M.fromList $ zip l (repeat now)
 
 	retry currbranch g u rs = do
@@ -214,6 +219,8 @@ manualPull currentbranch remotes = do
 	forM_ normalremotes $ \r ->
 		liftAnnex $ Command.Sync.mergeRemote r
 			currentbranch Command.Sync.mergeConfig def
+	when haddiverged $
+		updateExportTreeFromLogAll
 	return (catMaybes failed, haddiverged)
   where
 	wantpull gc = remoteAnnexPull gc
@@ -260,3 +267,9 @@ changeSyncFlag r enabled = do
 	void Remote.remoteListRefresh
   where
 	key = Config.remoteConfig (Remote.repo r) "sync"
+
+updateExportTreeFromLogAll :: Assistant ()
+updateExportTreeFromLogAll = do
+	rs <- exportRemotes <$> getDaemonStatus
+	forM_ rs $ \r -> liftAnnex $
+		openDb (Remote.uuid r) >>= updateExportTreeFromLog

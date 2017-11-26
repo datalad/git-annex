@@ -53,6 +53,7 @@ module Remote (
 	checkAvailable,
 	isXMPPRemote,
 	claimingUrl,
+	isExportSupported,
 ) where
 
 import Data.Ord

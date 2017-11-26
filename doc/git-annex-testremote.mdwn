@@ -14,9 +14,13 @@ the remote, then redownloading them, removing them from the remote, etc.
 It's safe to run in an existing repository (the repository contents are
 not altered), although it may perform expensive data transfers.
 
-Testing a single remote will use the remote's configuration,
-automatically varying the chunk sizes, and with simple shared encryption
-enabled and disabled.
+It's best to make a new remote for testing purposes. While the test
+tries to clean up after itself, if the remote being tested had a bug,
+the cleanup might fail, leaving test data in the remote.
+
+Testing will use the remote's configuration, automatically varying
+the chunk sizes, and with simple shared encryption disabled and enabled,
+and exporttree disabled and enabled.
 
 # OPTIONS
 
@@ -31,6 +35,8 @@ enabled and disabled.
 # SEE ALSO
 
 [[git-annex]](1)
+
+[[git-annex-test]](1)
 
 # AUTHOR
 

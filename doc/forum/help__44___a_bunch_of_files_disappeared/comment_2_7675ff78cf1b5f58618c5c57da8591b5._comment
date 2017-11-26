@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-11-14T17:16:54Z"
+ content="""
+There are two possible things that could have happened.
+
+1. Maybe something somehow wrong got committed to the git repository
+   for the missing files. 
+   
+   If so, you can *always* use git to check out
+   the older version before that commit, and will then be able to see
+   the files; git-annex will know where the content of them is, etc.
+   You can also use `git revert` to revert such a bad commit.
+
+2. Maybe you accidentially dropped the content of the files with --force,
+   and if so, you may have lost the content.
+
+   If you run `git annex log` on one of the files, and look at the lines
+   starting with "-", you can see when the file content was removed from
+   repositories. But there's no way to get it back unless you have another
+   copy somewhere.
+"""]]

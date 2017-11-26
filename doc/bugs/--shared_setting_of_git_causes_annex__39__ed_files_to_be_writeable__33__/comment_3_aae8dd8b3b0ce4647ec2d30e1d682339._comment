@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2017-10-10T17:40:08Z"
+ content="""
+Found a following comment in the code
+[[!format haskell \"\"\"
+{- Normally, blocks writing to an annexed file, and modifies file
+ - permissions to allow reading it.
+ -
+ - When core.sharedRepository is set, the write bits are not removed from
+ - the file, but instead the appropriate group write bits are set. This is
+ - necessary to let other users in the group lock the file. But, in a
+ - shared repository, the current user may not be able to change a file
+ - owned by another user, so failure to set this mode is ignored.
+ -}
+\"\"\"]]
+So may be it is a \"Feature\" although killing the whole premise of data safety while using git-annex.
+
+In my case, shared permissions are primarily to make files/repositories readable by others, so may be I should have not used 'shared' mode anyways, since reading does not need the shared setting
+"""]]

@@ -38,6 +38,7 @@ import Remote.Helper.Git
 import Remote.Helper.Encryptable
 import Remote.Helper.Special
 import Remote.Helper.Messages
+import Remote.Helper.Export
 import qualified Remote.Helper.Ssh as Ssh
 import Utility.Metered
 import Annex.UUID
@@ -51,14 +52,15 @@ import Utility.Gpg
 import Utility.SshHost
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "gcrypt",
+remote = RemoteType
+	{ typename = "gcrypt"
 	-- Remote.Git takes care of enumerating gcrypt remotes too,
 	-- and will call our gen on them.
-	enumerate = const (return []),
-	generate = gen,
-	setup = gCryptSetup
-}
+	, enumerate = const (return [])
+	, generate = gen
+	, setup = gCryptSetup
+	, exportSupported = exportUnsupported
+	}
 
 chainGen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 chainGen gcryptr u c gc = do
@@ -114,6 +116,7 @@ gen' r u c gc = do
 		, lockContent = Nothing
 		, checkPresent = checkPresentDummy
 		, checkPresentCheap = repoCheap r
+		, exportActions = exportUnsupported
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing

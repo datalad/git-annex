@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-10-10T17:23:14Z"
+ content="""
+The write bit is necessary so that the files can be opened in write mode to
+lock them. Normally the write bit is temporarily enabled and then disabled
+for locking, but in a shared repository, some other user may own the file,
+which prevents the user from changing its permissions.
+
+Similarly, the parent directory is not made unwritable in a shared
+repository, because other users won't be able to temporarily flip the write
+bit on when making changes.
+
+[[!commit 0d432dd1a4f718225c4192d0834a4e0a34b3e4bd]] used the latter as a
+rationalle to allow the former.
+
+I suppose it could use separate lock files from the content file, 
+as is already done in direct mode. However interaction between different
+versions of git-annex with different ideas about locking could result in
+`git annex drop` losing data.
+"""]]

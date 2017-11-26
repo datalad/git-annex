@@ -16,6 +16,7 @@ import Config.Cost
 import Annex.UUID
 import Remote.Helper.Special
 import Remote.Helper.Messages
+import Remote.Helper.Export
 import Utility.Env
 import Messages.Progress
 
@@ -25,12 +26,13 @@ type Action = String
 type HookName = String
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "hook",
-	enumerate = const (findSpecialRemotes "hooktype"),
-	generate = gen,
-	setup = hookSetup
-}
+remote = RemoteType
+	{ typename = "hook"
+	, enumerate = const (findSpecialRemotes "hooktype")
+	, generate = gen
+	, setup = hookSetup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
@@ -51,6 +53,7 @@ gen r u c gc = do
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
+			, exportActions = exportUnsupported
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
 			, repairRepo = Nothing

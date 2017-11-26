@@ -16,7 +16,6 @@
 module Logs.UUID (
 	uuidLog,
 	describeUUID,
-	recordUUID,
 	uuidMap,
 	uuidMapLoad
 ) where
@@ -67,15 +66,6 @@ fixBadUUID = M.fromList . map fixup . M.toList
 	newertime (LogEntry Unknown _) = VectorClock minimumPOSIXTimeSlice
 	minimumPOSIXTimeSlice = 0.000001
 	isuuid s = length s == 36 && length (splitc '-' s) == 5
-
-{- Records the uuid in the log, if it's not already there. -}
-recordUUID :: UUID -> Annex ()
-recordUUID u = go . M.lookup u =<< uuidMap 
-  where
-	go (Just "") = set
-	go Nothing = set
-	go _ = noop
-	set = describeUUID u ""
 
 {- The map is cached for speed. -}
 uuidMap :: Annex UUIDMap

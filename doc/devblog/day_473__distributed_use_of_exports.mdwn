@@ -1,0 +1,17 @@
+The tricky part of the `git annex export` feature has definitely been
+making it work in a distributed situation. The last details of that seem to
+have been worked out now.
+
+I had to remove support for dropping individual files from export remotes.
+The [[design|design/exporting_trees_to_special_remotes]] has a scenario
+where that makes distributed use of exports inconsistent.
+
+But, what is working now is `git annex export` being run in one repository,
+and then another repository, after syncing, can get files from the export.
+
+Most of export is done now. The only thing I'm thinking about adding is
+a way to make an export track a branch. so `git annex sync` can update
+the export.
+
+Today's work was sponsored by Jake Vosloo on
+[Patreon](https://patreon.com/joeyh/).

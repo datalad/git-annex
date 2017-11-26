@@ -52,7 +52,9 @@ import qualified Git.Ref
 import qualified Git.LsTree
 import qualified Git.FilePath
 import qualified Annex.Locations
+#ifndef mingw32_HOST_OS
 import qualified Types.GitConfig
+#endif
 import qualified Types.KeySource
 import qualified Types.Backend
 import qualified Types.TrustLevel
@@ -82,6 +84,7 @@ import qualified Annex.AdjustedBranch
 import qualified Annex.VectorClock
 import qualified Annex.View
 import qualified Annex.View.ViewedFile
+import qualified Annex.Action
 import qualified Logs.View
 import qualified Utility.Path
 import qualified Utility.FileMode
@@ -147,7 +150,7 @@ runner = Just go
 		exitWith exitcode
 	runsubprocesstests opts (Just _) = isolateGitConfig $ do
 		ensuretmpdir
-		crippledfilesystem <- Annex.Init.probeCrippledFileSystem' tmpdir
+		crippledfilesystem <- fst <$> Annex.Init.probeCrippledFileSystem' tmpdir
 		case tryIngredients ingredients (tastyOptionSet opts) (tests crippledfilesystem opts) of
 			Nothing -> error "No tests found!?"
 			Just act -> ifM act
@@ -1778,7 +1781,7 @@ annexeval a = do
 	s <- Annex.new =<< Git.CurrentRepo.get
 	Annex.eval s $ do
 		Annex.setOutput Types.Messages.QuietOutput
-		a
+		a `finally` Annex.Action.stopCoProcesses
 
 innewrepo :: Assertion -> Assertion
 innewrepo a = withgitrepo $ \r -> indir r a
@@ -1813,7 +1816,8 @@ intmpclonerepoInDirect a = intmpclonerepo $
 checkRepo :: Types.Annex a -> FilePath -> IO a
 checkRepo getval d = do
 	s <- Annex.new =<< Git.Construct.fromPath d
-	Annex.eval s getval
+	Annex.eval s $
+		getval `finally` Annex.Action.stopCoProcesses
 
 isInDirect :: FilePath -> IO Bool
 isInDirect = checkRepo (not <$> Config.isDirect)

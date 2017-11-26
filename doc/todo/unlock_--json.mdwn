@@ -5,3 +5,5 @@ Unlock is quite heavy in terms of I/O and thus waiting time, so we (in datalad) 
 2. could there be a --json mode of output (consistent with add --json etc)?
 
 [[!meta author=yoh]]
+
+> added --json option [[done]] --[[Joey]]

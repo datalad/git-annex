@@ -93,8 +93,7 @@ initialize' mversion = do
 	whenM versionSupportsUnlockedPointers $ do
 		configureSmudgeFilter
 		scanUnlockedFiles
-	v <- checkAdjustedClone
-	case v of
+	checkAdjustedClone >>= \case
 		NeedUpgradeForAdjustedClone -> 
 			void $ upgrade True  versionForAdjustedClone
 		InAdjustedClone -> return ()
@@ -146,21 +145,23 @@ probeCrippledFileSystem :: Annex Bool
 probeCrippledFileSystem = do
 	tmp <- fromRepo gitAnnexTmpMiscDir
 	createAnnexDirectory tmp
-	liftIO $ probeCrippledFileSystem' tmp
+	(r, warnings) <- liftIO $ probeCrippledFileSystem' tmp
+	mapM_ warning warnings
+	return r
 
-probeCrippledFileSystem' :: FilePath -> IO Bool
+probeCrippledFileSystem' :: FilePath -> IO (Bool, [String])
 #ifdef mingw32_HOST_OS
-probeCrippledFileSystem' _ = return True
+probeCrippledFileSystem' _ = return (True, [])
 #else
 probeCrippledFileSystem' tmp = do
 	let f = tmp </> "gaprobe"
 	writeFile f ""
-	uncrippled <- probe f
+	r <- probe f
 	void $ tryIO $ allowWrite f
 	removeFile f
-	return $ not uncrippled
+	return r
   where
-	probe f = catchBoolIO $ do
+	probe f = catchDefaultIO (True, []) $ do
 		let f2 = f ++ "2"
 		nukeFile f2
 		createSymbolicLink f f2
@@ -170,8 +171,14 @@ probeCrippledFileSystem' tmp = do
 		-- running as root, but some crippled
 		-- filesystems ignore write bit removals.
 		ifM ((== 0) <$> getRealUserID)
-			( return True
-			, not <$> catchBoolIO (writeFile f "2" >> return True)
+			( return (False, [])
+			, do
+				r <- catchBoolIO $ do
+					writeFile f "2"
+					return True
+				if r
+					then return (True, ["Filesystem allows writing to files whose write bit is not set."])
+					else return (False, [])
 			)
 #endif
 

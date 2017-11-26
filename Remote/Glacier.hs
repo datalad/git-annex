@@ -18,6 +18,7 @@ import Config
 import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.Messages
+import Remote.Helper.Export
 import qualified Remote.Helper.AWS as AWS
 import Creds
 import Utility.Metered
@@ -29,12 +30,13 @@ type Vault = String
 type Archive = FilePath
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "glacier",
-	enumerate = const (findSpecialRemotes "glacier"),
-	generate = gen,
-	setup = glacierSetup
-}
+remote = RemoteType
+	{ typename = "glacier"
+	, enumerate = const (findSpecialRemotes "glacier")
+	, generate = gen
+	, setup = glacierSetup
+	, exportSupported = exportUnsupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
@@ -57,6 +59,7 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
+			, exportActions = exportUnsupported
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
@@ -87,8 +90,9 @@ glacierSetup' ss u mcreds c gc = do
 	(c', encsetup) <- encryptionSetup c gc
 	c'' <- setRemoteCredPair encsetup c' gc (AWS.creds u) mcreds
 	let fullconfig = c'' `M.union` defaults
-	when (ss == Init) $
-		genVault fullconfig gc u
+	case ss of
+		Init -> genVault fullconfig gc u
+		_ -> return ()
 	gitConfigSpecialRemote u fullconfig "glacier" "true"
 	return (fullconfig, u)
   where

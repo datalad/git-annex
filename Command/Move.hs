@@ -63,7 +63,7 @@ seek o = allowConcurrentOutput $ do
 		NoBatch -> withKeyOptions (keyOptions o) False
 			(startKey o True)
 			(withFilesInGit go)
-			(moveFiles o)
+			=<< workTreeItems (moveFiles o)
 
 start :: MoveOptions -> Bool -> FilePath -> Key -> CommandStart
 start o move f k = start' o move afile k (mkActionItem afile)
@@ -74,7 +74,7 @@ startKey :: MoveOptions -> Bool -> Key -> ActionItem -> CommandStart
 startKey o move = start' o move (AssociatedFile Nothing)
 
 start' :: MoveOptions -> Bool -> AssociatedFile -> Key -> ActionItem -> CommandStart
-start' o move afile key ai = 
+start' o move afile key ai = onlyActionOn key $
 	case fromToOptions o of
 		Right (FromRemote src) ->
 			checkFailedTransferDirection ai Download $
@@ -109,7 +109,7 @@ toStart move afile key ai dest = do
 toStart' :: Remote -> Bool -> AssociatedFile -> Key -> ActionItem -> CommandStart
 toStart' dest move afile key ai = do
 	fast <- Annex.getState Annex.fast
-	if fast && not move && not (Remote.hasKeyCheap dest)
+	if fast && not move
 		then ifM (expectedPresent dest key)
 			( stop
 			, go True (pure $ Right False)

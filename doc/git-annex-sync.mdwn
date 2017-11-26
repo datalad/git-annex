@@ -82,6 +82,10 @@ by running "git annex sync" on the remote.
   This behavior can be overridden by configuring the preferred content
   of a repository. See [[git-annex-preferred-content]](1).
 
+  When a special remote is configured as an export and is tracking a branch,
+  the export will be updated to the current content of the branch.
+  See [[git-annex-export]](1).
+
 * `--content-of=path` `-C path`
 
   While --content operates on all annexed files in the work tree,
@@ -120,6 +124,19 @@ by running "git annex sync" on the remote.
   Use `--no-resolvemerge` to disable this automatic merge conflict
   resolution. It can also be disabled by setting annex.resolvemerge
   to false.
+
+* `--cleanup`
+
+  Removes the local and remote `synced/` branches, which were created
+  and pushed by `git-annex sync`.
+
+  This can come in handy when you've synced a change to remotes and now
+  want to reset your master branch back before that change. So you
+  run `git reset` and force-push the master branch to remotes, only
+  to find that the next `git annex merge` or `git annex sync` brings the
+  changes back. Why? Because the `synced/master` branch is hanging
+  around and still has the change in it. Cleaning up the `synced/` branches
+  prevents that problem.
 
 # SEE ALSO
 

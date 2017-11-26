@@ -1,0 +1,54 @@
+[[!comment format=mdwn
+ username="spam@9590d16798fd27f4e38472862e296fc9828e3d39"
+ nickname="spam"
+ avatar="http://cdn.libravatar.org/avatar/838ad52bf6bddd532ff179811be47f52"
+ subject="remote &quot;origin&quot; missing some gcrypt commands?"
+ date="2017-11-11T19:51:56Z"
+ content="""
+
+I just discovered that cloning over ssh an gcrypt encrypted repository and enabling the remote afterwards is somehow messing up the git config:
+
+git clone grypt::ssh://user@ip.com:/mnt/encrypted_backup
+cd encrypted_backup
+git annex enableremote encrypted_backup gitrepo=/.../encrypted_backup
+
+leads to following in the .git/config of the just cloned repository:
+
+...
+[remote \"origin\"]
+url = grypt::ssh://user@ip.com:/mnt/encrypted_backup
+gcrypt-id = :id:12312312
+fetch = +refs/heads/*:refs/remotes/origin/*
+
+[remote \"encrypted_backup\"]
+url = grypt::ssh://user@ip.com:/mnt/encrypted_backup
+fetch = +refs/heads/*:refs/remotes/server/*
+gcrypt-participants = keyid
+gcrypt-signingkey = keyid
+gcrypt-publish-participants = true
+gcrypt-id = :id:adsasd
+annex-gcrypt = shell
+annex-uuid = 312312312
+...
+
+Note, that for the remote \"origin\" some config like the signingkey is missing compared to the remote \"encrypted_backup\"
+
+Then, running
+git annex sync --content
+
+leads to a error saying
+
+\"gcrypt: Failed to decrypt manifest!\"
+
+during the push process.
+After that I am not able to sync the repository anymore, even with the original repostitory, which initiated the remote.
+The encrypted_backup is then somehow messed up.
+
+Removing the \"origin\" remote via
+git remote remove origin
+
+solves the problem for me. But that command has to be launched right before the first sync, pull or push command! Otherwise the sync process cannot be done anymore.
+
+
+
+"""]]

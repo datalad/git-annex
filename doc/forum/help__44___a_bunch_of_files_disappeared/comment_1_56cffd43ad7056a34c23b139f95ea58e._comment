@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="astrophoenix"
+ avatar="http://cdn.libravatar.org/avatar/cb0b7982b6877c58c3860d8ad5fb3148"
+ subject="possible cause (my error)"
+ date="2017-11-12T21:01:28Z"
+ content="""
+oh, it might have been something dumb i did:
+
+at some point I wanted to delete a few files, so trying to be cute I did this:
+
+m=OneMovie.m4v git annex drop --force $m; git rm $m; git ci -m \"rm $m\"
+
+I noted that didn't work, but didn't realize it might've taken out most/all the files in the folder
+
+"""]]

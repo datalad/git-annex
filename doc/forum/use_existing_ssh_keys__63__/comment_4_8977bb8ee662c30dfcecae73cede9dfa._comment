@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="80d8aa@c71d4a9510ad0353dbcf7df399c2e6bde0012474"
+ nickname="80d8aa"
+ avatar="http://cdn.libravatar.org/avatar/b3f9ee295805d0758d569ca97157fb65"
+ subject="Use existing ssh keys"
+ date="2017-09-30T17:07:39Z"
+ content="""
+Is there an argument against the original request of being able to use an existing *non-default* ssh key when setting up a remote ssh repo with the webapp?
+
+As suggested above, one could reasonably have different identities, not all of which should have access to the git-annex repo. AFAIU, the way things are one has to either use their default identity with a remote ssh repo OR temporarily enable password authentication on the server so that the webapp will generate and install its own key, then turn it off. That is a tall order and might not even be possible if the server is not under the user's control. Am I missing something?
+
+"""]]

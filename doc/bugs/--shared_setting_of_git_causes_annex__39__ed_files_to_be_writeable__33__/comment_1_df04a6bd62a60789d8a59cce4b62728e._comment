@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="annex fsck reverts them back to incorrect!"
+ date="2017-10-10T17:17:12Z"
+ content="""
+even if I fix them, and then rerun 'annex fsck' to verify that I am 'ok' -- it would revert to the bad state:
+
+[[!format sh \"\"\"
+$ find -ipath '*.git/annex/objects' | while read d; do chmod a-w -R $d/*/*/*; done
+ls -ld ./.git/annex/objects/Kj/ZJ/MD5E-s3500--157855c754113321d3f6621abe0fe71d.tsv
+dr-xr-sr-x 2 bids bids 3 Oct  3 08:36 ./.git/annex/objects/Kj/ZJ/MD5E-s3500--157855c754113321d3f6621abe0fe71d.tsv
+
+$ git annex fsck >/dev/null
+
+$ ls -ld ./.git/annex/objects/Kj/ZJ/MD5E-s3500--157855c754113321d3f6621abe0fe71d.tsv
+drwxrwsr-x 2 bids bids 3 Oct  3 08:36 ./.git/annex/objects/Kj/ZJ/MD5E-s3500--157855c754113321d3f6621abe0fe71d.tsv
+
+$ ls -ld ./.git/annex/objects/Kj/ZJ/MD5E-s3500--157855c754113321d3f6621abe0fe71d.tsv/*
+-rw-rw-rw- 1 bids bids 3500 Oct  3 07:57 ./.git/annex/objects/Kj/ZJ/MD5E-s3500--157855c754113321d3f6621abe0fe71d.tsv/MD5E-s3500--157855c754113321d3f6621abe0fe71d.tsv
+\"\"\"]]
+"""]]

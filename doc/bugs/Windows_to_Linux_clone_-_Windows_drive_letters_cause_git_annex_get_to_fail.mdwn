@@ -129,3 +129,6 @@ lrwxrwxrwx 1 voltagex voltagex 192 Aug 11 23:05 Thumbs.db -> .git/annex/objects/
 
 # End of transcript or log.
 """]]
+
+> Closing since bug submitter did not follow up with requested information.
+> [[done]] --[[Joey]]

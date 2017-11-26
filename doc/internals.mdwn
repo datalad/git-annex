@@ -176,9 +176,37 @@ File format is identical to preferred-content.log.
 Contains standard preferred content settings for groups. (Overriding or
 supplementing the ones built into git-annex.)
 
-The file format is one line per group, staring with a timestamp, then a
+The file format is one line per group, starting with a timestamp, then a
 space, then the group name followed by a space and then the preferred
 content expression.
+
+## `export.log`
+
+Tracks what trees have been exported to special remotes by
+[[git-annex-export]](1).
+
+Each line starts with a timestamp, then the uuid of the repository
+that exported to the special remote, followed by a colon (`:`) and
+the uuid of the special remote. Then, separated by a spaces,
+the sha1 of the tree that was exported, and optionally any number of
+subsequent sha1s, of trees that have started to be exported but whose
+export is not yet complete. 
+
+In order to record the beginning of the first export, where nothing
+has been exported yet, the sha1 of the exported tree can be
+the empty tree (4b825dc642cb6eb9a060e54bf8d69288fbee4904).
+
+For example:
+
+	1317929100.012345s e605dca6-446a-11e0-8b2a-002170d25c55:26339d22-446b-11e0-9101-002170d25c55 4b825dc642cb6eb9a060e54bf8d69288fbee4904 bb08b1abd207aeecccbc7060e523b011d80cb35b
+	1317929100.012345s e605dca6-446a-11e0-8b2a-002170d25c55:26339d22-446b-11e0-9101-002170d25c55 bb08b1abd207aeecccbc7060e523b011d80cb35b 
+	1317929189.157237s e605dca6-446a-11e0-8b2a-002170d25c55:26339d22-446b-11e0-9101-002170d25c55 bb08b1abd207aeecccbc7060e523b011d80cb35b 7c7af825782b7c8706039b855c72709993542be4
+	1317923000.251111s e605dca6-446a-11e0-8b2a-002170d25c55:26339d22-446b-11e0-9101-002170d25c55 7c7af825782b7c8706039b855c72709993542be4 
+
+(The trees are also grafted into the git-annex branch, at
+`export.tree`, to prevent git from garbage collecting it. However, the head
+of the git-annex branch should never contain such a grafted in tree;
+the grafted tree is removed in the same commit that updates `export.log`.)
 
 ## `aaa/bbb/*.log`
 

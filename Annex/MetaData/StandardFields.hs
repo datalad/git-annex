@@ -9,6 +9,7 @@ module Annex.MetaData.StandardFields (
 	tagMetaField,
 	yearMetaField,
 	monthMetaField,
+	dayMetaField,
 	lastChangedField,
 	mkLastChangedField,
 	isLastChangedField
@@ -26,6 +27,9 @@ yearMetaField = mkMetaFieldUnchecked "year"
 
 monthMetaField :: MetaField
 monthMetaField = mkMetaFieldUnchecked "month"
+
+dayMetaField :: MetaField
+dayMetaField = mkMetaFieldUnchecked "day"
 
 lastChangedField :: MetaField
 lastChangedField = mkMetaFieldUnchecked lastchanged

@@ -1,6 +1,6 @@
 {- management of the git-annex branch
  -
- - Copyright 2011-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -21,9 +21,11 @@ module Annex.Branch (
 	maybeChange,
 	commit,
 	forceCommit,
+	getBranch,
 	files,
-	withIndex,
+	graftTreeish,
 	performTransitions,
+	withIndex,
 ) where
 
 import qualified Data.ByteString.Lazy as L
@@ -45,6 +47,7 @@ import qualified Git.Sha
 import qualified Git.Branch
 import qualified Git.UnionMerge
 import qualified Git.UpdateIndex
+import qualified Git.Tree
 import Git.LsTree (lsTreeParams)
 import qualified Git.HashObject
 import Annex.HashObject
@@ -443,18 +446,16 @@ stageJournal jl = withIndex $ do
 			[genstream dir h jh jlogh]
 	return $ cleanup dir jlogh jlogf
   where
-	genstream dir h jh jlogh streamer = do
-		v <- readDirectory jh
-		case v of
-			Nothing -> return ()
-			Just file -> do
-				unless (dirCruft file) $ do
-					let path = dir </> file
-					sha <- Git.HashObject.hashFile h path
-					hPutStrLn jlogh file
-					streamer $ Git.UpdateIndex.updateIndexLine
-						sha FileBlob (asTopFilePath $ fileJournal file)
-				genstream dir h jh jlogh streamer
+	genstream dir h jh jlogh streamer = readDirectory jh >>= \case
+		Nothing -> return ()
+		Just file -> do
+			unless (dirCruft file) $ do
+				let path = dir </> file
+				sha <- Git.HashObject.hashFile h path
+				hPutStrLn jlogh file
+				streamer $ Git.UpdateIndex.updateIndexLine
+					sha FileBlob (asTopFilePath $ fileJournal file)
+			genstream dir h jh jlogh streamer
 	-- Clean up the staged files, as listed in the temp log file.
 	-- The temp file is used to avoid needing to buffer all the
 	-- filenames in memory.
@@ -613,3 +614,25 @@ getMergedRefs' = do
 	parse l = 
 		let (s, b) = separate (== '\t') l
 		in (Ref s, Ref b)
+
+{- Grafts a treeish into the branch at the specified location,
+ - and then removes it. This ensures that the treeish won't get garbage
+ - collected, and will always be available as long as the git-annex branch
+ - is available. -}
+graftTreeish :: Git.Ref -> TopFilePath -> Annex ()
+graftTreeish treeish graftpoint = lockJournal $ \jl -> do
+	branchref <- getBranch
+	updateIndex jl branchref
+	Git.Tree.Tree t <- inRepo $ Git.Tree.getTree branchref
+	t' <- inRepo $ Git.Tree.recordTree $ Git.Tree.Tree $
+		Git.Tree.RecordedSubTree graftpoint treeish [] : t
+	c <- inRepo $ Git.Branch.commitTree Git.Branch.AutomaticCommit
+		"graft" [branchref] t'
+	origtree <- inRepo $ Git.Tree.recordTree (Git.Tree.Tree t)
+	c' <- inRepo $ Git.Branch.commitTree Git.Branch.AutomaticCommit
+		"graft cleanup" [c] origtree
+	inRepo $ Git.Branch.update' fullname c'
+	-- The tree in c' is the same as the tree in branchref,
+	-- and the index was updated to that above, so it's safe to
+	-- say that the index contains c'.
+	setIndexSha c'

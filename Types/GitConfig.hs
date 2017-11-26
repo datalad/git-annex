@@ -199,6 +199,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexPush :: Bool
 	, remoteAnnexReadOnly :: Bool
 	, remoteAnnexVerify :: Bool
+	, remoteAnnexExportTracking :: Maybe Git.Ref
 	, remoteAnnexTrustLevel :: Maybe String
 	, remoteAnnexStartCommand :: Maybe String
 	, remoteAnnexStopCommand :: Maybe String
@@ -247,6 +248,8 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexPush = getbool "push" True
 		, remoteAnnexReadOnly = getbool "readonly" False
 		, remoteAnnexVerify = getbool "verify" True
+		, remoteAnnexExportTracking = Git.Ref
+			<$> notempty (getmaybe "export-tracking")
 		, remoteAnnexTrustLevel = notempty $ getmaybe "trustlevel"
 		, remoteAnnexStartCommand = notempty $ getmaybe "start-command"
 		, remoteAnnexStopCommand = notempty $ getmaybe "stop-command"

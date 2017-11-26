@@ -1,3 +1,0 @@
-subject.  IMHO yet another useful command to be batched
-
-> [[done]] --[[Joey]]

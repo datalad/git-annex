@@ -133,12 +133,10 @@ mkLargeFilesParser = do
 #ifdef WITH_MAGICMIME
 	magicmime <- liftIO $ catchMaybeIO $ do
 		m <- magicOpen [MagicMimeType]
-		liftIO $ do
-			md <- getEnv "GIT_ANNEX_DIR"
-			case md of
-				Nothing -> magicLoadDefault m
-				Just d -> magicLoad m
-					(d </> "magic" </> "magic.mgc")
+		liftIO $ getEnv "GIT_ANNEX_DIR" >>= \case
+			Nothing -> magicLoadDefault m
+			Just d -> magicLoad m
+				(d </> "magic" </> "magic.mgc")
 		return m
 #endif
 	let parse = parseToken $ commonTokens

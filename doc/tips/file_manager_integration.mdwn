@@ -22,7 +22,7 @@ Even more recent git-annex comes with built-in integration with Konqueror.
 [[!img assistant/konquerormenu.png]]
 
 This is set up by git-annex creating a 
-`~/.kde/share/kde4/services/ServiceMenus/git-annex.desktop file.
+`$XDG_DATA_HOME/kservices5/ServiceMenus/git-annex.desktop` file.
 
 ## Xfce (Thunar)
 

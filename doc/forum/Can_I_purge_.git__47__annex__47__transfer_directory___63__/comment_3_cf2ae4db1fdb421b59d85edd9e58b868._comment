@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-10-02T16:55:59Z"
+ content="""
+It's fine to delete .git/annex/transfer/ at any time.
+
+Those files are used to make `git annex info` (and the webapp) be able to
+show what transfers are in progress. Normally they're cleaned up when a
+transfer finishes; if you interrupt git-annex they will be left behind.
+
+Running `git annex info` is also supposed to clean up the stale transfer
+info files, but it was broken -- now fixed.
+
+The only time you get files in .git/annex/bad/ is when fsck finds a file
+got corrupted somehow and moves its content there. It's fine to delete
+those unless you were planning to recover or examine the corrupted file in
+some way.
+"""]]

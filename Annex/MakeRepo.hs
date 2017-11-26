@@ -16,6 +16,7 @@ import qualified Git.Branch
 import qualified Annex
 import Annex.UUID
 import Annex.Direct
+import Annex.Action
 import Types.StandardGroups
 import Logs.PreferredContent
 import qualified Annex.Branch
@@ -42,7 +43,7 @@ makeRepo path bare = ifM (probeRepoExists path)
 inDir :: FilePath -> Annex a -> IO a
 inDir dir a = do
 	state <- Annex.new =<< Git.Config.read =<< Git.Construct.fromPath dir
-	Annex.eval state a
+	Annex.eval state $ a `finally` stopCoProcesses
 
 {- Creates a new repository, and returns its UUID. -}
 initRepo :: Bool -> Bool -> FilePath -> Maybe String -> Maybe StandardGroup -> IO UUID

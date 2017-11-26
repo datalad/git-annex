@@ -26,7 +26,7 @@ cmd = notDirect $ withGlobalOptions annexedMatchingOptions $
 		paramPaths (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withFilesInGit $ whenAnnexed start
+seek ps = withFilesInGit (whenAnnexed start) =<< workTreeItems ps
 
 start :: FilePath -> Key -> CommandStart
 start file key = do
@@ -74,7 +74,7 @@ perform file oldkey oldbackend newbackend = go =<< genkey
 	checkcontent = Command.Fsck.checkBackend oldbackend oldkey Command.Fsck.KeyLocked afile
 	finish newkey = ifM (Command.ReKey.linkKey file oldkey newkey)
 		( do
-			copyMetaData oldkey newkey
+			_ <- copyMetaData oldkey newkey
 			-- If the old key had some associated urls, record them for
 			-- the new key as well.
 			urls <- getUrls oldkey

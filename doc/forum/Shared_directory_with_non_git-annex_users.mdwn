@@ -1,0 +1,15 @@
+Hello,
+
+I want to use git-annex on a directory that also other persons, without git-annex use, i.e. modify, add and remove files to.
+
+What need I consider when doing that?
+
+ * Use indirect mode
+ * The the .git directory somewhere else?
+ * Be prepared that a ```git annex get``` can always bring up checksum problems because someone modified the file
+
+I assume git-annex checksums before pushing to the repo, so that I don't otherwrite someone elses changes.
+
+What else?
+
+Thanks!

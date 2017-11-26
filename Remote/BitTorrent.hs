@@ -26,6 +26,7 @@ import Backend.URL
 import Annex.Perms
 import Annex.UUID
 import qualified Annex.Url as Url
+import Remote.Helper.Export
 
 import Network.URI
 
@@ -35,12 +36,13 @@ import qualified Data.ByteString.Lazy as B
 #endif
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "bittorrent",
-	enumerate = list,
-	generate = gen,
-	setup = error "not supported"
-}
+remote = RemoteType
+	{ typename = "bittorrent"
+	, enumerate = list
+	, generate = gen
+	, setup = error "not supported"
+	, exportSupported = exportUnsupported
+	}
 
 -- There is only one bittorrent remote, and it always exists.
 list :: Bool -> Annex [Git.Repo]
@@ -61,6 +63,7 @@ gen r _ c gc =
 		, lockContent = Nothing
 		, checkPresent = checkKey
 		, checkPresentCheap = False
+		, exportActions = exportUnsupported
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing

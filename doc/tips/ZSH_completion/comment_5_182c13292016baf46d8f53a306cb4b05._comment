@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-11-09T16:11:10Z"
+ content="""
+Well, the code that generates the zsh completions could
+always be improved.
+<https://github.com/pcapriotti/optparse-applicative/issues>
+
+I don't really understand why completing options before filenames makes
+it unusable. It means that "git-annex tabtabtab" cycles through options
+first, but if you type part of the filename tab will complete the rest.
+It does seem that someone else agrees with you though, as they filed
+this issue: <https://github.com/pcapriotti/optparse-applicative/issues/173>
+"""]]

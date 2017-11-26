@@ -7,12 +7,9 @@
 
 module Annex.Concurrent where
 
-import Annex.Common
 import Annex
-import Annex.CatFile
-import Annex.CheckAttr
-import Annex.HashObject
-import Annex.CheckIgnore
+import Annex.Common
+import Annex.Action
 import qualified Annex.Queue
 
 import qualified Data.Map as M
@@ -61,11 +58,3 @@ mergeState st = do
 		uncurry addCleanup
 	Annex.Queue.mergeFrom st'
 	changeState $ \s -> s { errcounter = errcounter s + errcounter st' }
-
-{- Stops all long-running git query processes. -}
-stopCoProcesses :: Annex ()
-stopCoProcesses = do
-	catFileStop
-	checkAttrStop
-	hashObjectStop
-	checkIgnoreStop

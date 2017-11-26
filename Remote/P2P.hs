@@ -21,9 +21,11 @@ import Types.Remote
 import Types.GitConfig
 import qualified Git
 import Annex.UUID
+import Annex.Content
 import Config
 import Config.Cost
 import Remote.Helper.Git
+import Remote.Helper.Export
 import Messages.Progress
 import Utility.Metered
 import Utility.AuthToken
@@ -33,14 +35,15 @@ import Control.Concurrent
 import Control.Concurrent.STM
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "p2p",
+remote = RemoteType
+	{ typename = "p2p"
 	-- Remote.Git takes care of enumerating P2P remotes,
 	-- and will call chainGen on them.
-	enumerate = const (return []),
-	generate = \_ _ _ _ -> return Nothing,
-	setup = error "P2P remotes are set up using git-annex p2p"
-}
+	, enumerate = const (return [])
+	, generate = \_ _ _ _ -> return Nothing
+	, setup = error "P2P remotes are set up using git-annex p2p"
+	, exportSupported = exportUnsupported
+	}
 
 chainGen :: P2PAddress -> Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 chainGen addr r u c gc = do
@@ -57,6 +60,7 @@ chainGen addr r u c gc = do
 		, lockContent = Just (lock u addr connpool)
 		, checkPresent = checkpresent u addr connpool
 		, checkPresentCheap = False
+		, exportActions = exportUnsupported
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing
@@ -75,13 +79,15 @@ chainGen addr r u c gc = do
 	return (Just this)
 
 store :: UUID -> P2PAddress -> ConnectionPool -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store u addr connpool k af p = 
-	metered (Just p) k $ \p' -> fromMaybe False
-		<$> runProto u addr connpool (P2P.put k af p')
+store u addr connpool k af p = do
+	let getsrcfile = fmap fst <$> prepSendAnnex k
+	metered (Just p) k getsrcfile $ \p' -> 
+		fromMaybe False
+			<$> runProto u addr connpool (P2P.put k af p')
 
 retrieve :: UUID -> P2PAddress -> ConnectionPool -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
 retrieve u addr connpool k af dest p = unVerified $ 
-	metered (Just p) k $ \p' -> fromMaybe False 
+	metered (Just p) k (return Nothing) $ \p' -> fromMaybe False 
 		<$> runProto u addr connpool (P2P.get dest k af p')
 
 remove :: UUID -> P2PAddress -> ConnectionPool -> Key -> Annex Bool

@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-11-07T20:18:19Z"
+ content="""
+`git annex fix` fixes up the symlinks before they're committed.
+It's run by the pre-commit hook, so even when annexed files are
+manually moved around, the symlinks that get committed are always
+right.
+
+So then, if the symlinks committed are always right,
+how would `git annex adjust --fix` be useful? Well,
+there are ways to check out git repositories that make
+the .git directory not be in the usual place. For example,
+when using submodules, git puts that directory in a different place.
+And then the committed symlinks won't point to .git. So,
+`git annex adjust --fix` is useful as a way to adjust the symlinks
+locally, without committing any changes to them, in that kind of
+situation.
+"""]]

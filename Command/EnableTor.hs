@@ -15,7 +15,9 @@ import P2P.Address
 import P2P.Annex
 import Utility.Tor
 import Annex.UUID
+#ifndef mingw32_HOST_OS
 import Config.Files
+#endif
 import P2P.IO
 import qualified P2P.Protocol as P2P
 import Utility.ThreadScheduler

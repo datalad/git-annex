@@ -17,4 +17,7 @@ Thank you!
 
 > I don't think this is something git-annex can usefully do.
 > Instead, see
-> <http://git-annex.branchable.com/tips/public_Amazon_S3_remote/>. [[done]] --[[Joey]]
+> <http://git-annex.branchable.com/tips/public_Amazon_S3_remote/>. --[[Joey]]
+
+> [[done]]; the new `git-annex export` feature allows you to export a tree
+> to a special remote. --[[Joey]]

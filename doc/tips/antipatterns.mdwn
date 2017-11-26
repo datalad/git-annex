@@ -22,7 +22,7 @@ disk space, is a horrible idea. The general antipattern is:
     mv repoB/.git/annex repoB/.git/annex.bak
     ln -s repoA/.git/annex repoB/.git/annex
 
-This is bad because git-annex will believe it has two copy of the
+This is bad because git-annex will believe it has two copies of the
 files and then would let you drop the single copy, therefore leading
 to data loss.
 

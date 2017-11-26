@@ -21,6 +21,8 @@ import Utility.Metered
 import Utility.DataUnits
 import Utility.CopyFile
 import Types.Messages
+import Types.Export
+import Remote.Helper.Export
 import Remote.Helper.Chunked
 import Git.Types
 
@@ -57,21 +59,24 @@ seek o = commandAction $ start (fromInteger $ sizeOption o) (testRemote o)
 start :: Int -> RemoteName -> CommandStart
 start basesz name = do
 	showStart "testremote" name
-	r <- either giveup id <$> Remote.byName' name
-	showAction "generating test keys"
 	fast <- Annex.getState Annex.fast
-	ks <- mapM randKey (keySizes basesz fast)
+	r <- either giveup disableExportTree =<< Remote.byName' name
 	rs <- catMaybes <$> mapM (adjustChunkSize r) (chunkSizes basesz fast)
 	rs' <- concat <$> mapM encryptionVariants rs
 	unavailrs  <- catMaybes <$> mapM Remote.mkUnavailable [r]
-	next $ perform rs' unavailrs ks
+	exportr <- exportTreeVariant r
+	showAction "generating test keys"
+	ks <- mapM randKey (keySizes basesz fast)
+	next $ perform rs' unavailrs exportr ks
 
-perform :: [Remote] -> [Remote] -> [Key] -> CommandPerform
-perform rs unavailrs ks = do
+perform :: [Remote] -> [Remote] -> Maybe Remote -> [Key] -> CommandPerform
+perform rs unavailrs exportr ks = do
+	ea <- maybe exportUnsupported Remote.exportActions exportr
 	st <- Annex.getState id
 	let tests = testGroup "Remote Tests" $ concat
 		[ [ testGroup "unavailable remote" (testUnavailable st r (Prelude.head ks)) | r <- unavailrs ]
 		, [ testGroup (desc r k) (test st r k) | k <- ks, r <- rs ]
+		, [ testGroup (descexport k1 k2) (testExportTree st exportr ea k1 k2) | k1 <- take 2 ks, k2 <- take 2 (reverse ks) ]
 		]
 	ok <- case tryIngredients [consoleTestReporter] mempty tests of
 		Nothing -> error "No tests found!?"
@@ -82,6 +87,11 @@ perform rs unavailrs ks = do
 		[ [ "key size", show (keySize k) ]
 		, [ show (getChunkConfig (Remote.config r')) ]
 		, ["encryption", fromMaybe "none" (M.lookup "encryption" (Remote.config r'))]
+		]
+	descexport k1 k2 = intercalate "; " $ map unwords
+		[ [ "exporttree=yes" ]
+		, [ "key1 size", show (keySize k1) ]
+		, [ "key2 size", show (keySize k2) ]
 		]
 
 adjustChunkSize :: Remote -> Int -> Annex (Maybe Remote)
@@ -97,6 +107,19 @@ encryptionVariants r = do
 		M.insert "encryption" "shared" .
 		M.insert "highRandomQuality" "false"
 	return $ catMaybes [noenc, sharedenc]
+
+-- Variant of a remote with exporttree disabled.
+disableExportTree :: Remote -> Annex Remote
+disableExportTree r = maybe (error "failed disabling exportreee") return 
+		=<< adjustRemoteConfig r (M.delete "exporttree")
+
+-- Variant of a remote with exporttree enabled.
+exportTreeVariant :: Remote -> Annex (Maybe Remote)
+exportTreeVariant r = ifM (Remote.isExportSupported r)
+	( adjustRemoteConfig r $
+		M.insert "encryption" "none" . M.insert "exporttree" "yes"
+	, return Nothing
+	)
 
 -- Regenerate a remote with a modified config.
 adjustRemoteConfig :: Remote -> (Remote.RemoteConfig -> Remote.RemoteConfig) -> Annex (Maybe Remote)
@@ -159,6 +182,50 @@ test st r k =
 			dest nullMeterUpdate
 	store = Remote.storeKey r k (AssociatedFile Nothing) nullMeterUpdate
 	remove = Remote.removeKey r k
+
+testExportTree :: Annex.AnnexState -> Maybe Remote -> Remote.ExportActions Annex -> Key -> Key -> [TestTree]
+testExportTree _ Nothing _ _ _ = []
+testExportTree st (Just _) ea k1 k2 =
+	[ check "check present export when not present" $
+		not <$> checkpresentexport k1
+	, check "remove export when not present" (removeexport k1)
+	, check "store export" (storeexport k1)
+	, check "check present export after store" $
+		checkpresentexport k1
+	, check "store export when already present" (storeexport k1)
+	, check "retrieve export" (retrieveexport k1)
+	, check "store new content to export" (storeexport k2)
+	, check "check present export after store of new content" $
+		checkpresentexport k2
+	, check "retrieve export new content" (retrieveexport k2)
+	, check "remove export" (removeexport k2)
+	, check "check present export after remove" $
+		not <$> checkpresentexport k2
+	, check "retrieve export fails after removal" $
+		not <$> retrieveexport k2
+	, check "remove export directory" removeexportdirectory
+	, check "remove export directory that is already removed" removeexportdirectory
+	-- renames are not tested because remotes do not need to support them
+	]
+  where
+	testexportdirectory = "testremote-export"
+	testexportlocation = mkExportLocation (testexportdirectory </> "location")
+	check desc a = testCase desc $
+		Annex.eval st (Annex.setOutput QuietOutput >> a) @? "failed"
+	storeexport k = do
+		loc <- Annex.calcRepo (gitAnnexLocation k)
+		Remote.storeExport ea loc k testexportlocation nullMeterUpdate
+	retrieveexport k = withTmpFile "exported" $ \tmp h -> do
+		liftIO $ hClose h
+		ifM (Remote.retrieveExport ea k testexportlocation tmp nullMeterUpdate)
+			( verifyKeyContent AlwaysVerify UnVerified k tmp
+			, return False
+			)
+	checkpresentexport k = Remote.checkPresentExport ea k testexportlocation
+	removeexport k = Remote.removeExport ea k testexportlocation
+	removeexportdirectory = case Remote.removeExportDirectory ea of
+		Nothing -> return True
+		Just a -> a (mkExportDirectory testexportdirectory)
 
 testUnavailable :: Annex.AnnexState -> Remote -> Key -> [TestTree]
 testUnavailable st r k =

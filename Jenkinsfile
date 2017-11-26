@@ -19,7 +19,7 @@ try {
             }
 
             stage('Build') {
-                bat 'c:/msysgit/bin/sh standalone/windows/build.sh'
+                bat 'c:/cygwin/bin/sh standalone/windows/build.sh'
             }
 
             stage('Archive') {

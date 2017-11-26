@@ -74,6 +74,81 @@ getcreds () {
 
 }
 
+dostore () {
+	local key="$1"
+	local file="$2"
+	local loc="$3"
+	mkdir -p "$(dirname "$loc")"
+	# Store in temp file first, so that CHECKPRESENT does not see it
+	# until it is all stored.
+	mkdir -p "$mydirectory/tmp"
+	tmp="$mydirectory/tmp/$key"
+	# XXX when at all possible, send PROGRESS while transferring
+	# the file.
+	rm -f "$tmp"
+	if runcmd cp "$file" "$tmp" \
+	   && runcmd mv -f "$tmp" "$loc"; then
+		echo TRANSFER-SUCCESS STORE "$key"
+	else
+		echo TRANSFER-FAILURE STORE "$key"
+	fi
+	rmdir "$mydirectory/tmp"
+}
+
+doretrieve () {
+	local key="$1"
+	local file="$2"
+	local loc="$3"
+	
+	# XXX when easy to do, send PROGRESS while transferring the file
+	if [ -e "$loc" ]; then
+		if runcmd cp "$loc" "$file"; then
+			echo TRANSFER-SUCCESS RETRIEVE "$key"
+		else
+			echo TRANSFER-FAILURE RETRIEVE "$key"
+		fi
+	else
+		echo TRANSFER-FAILURE RETRIEVE "$key"
+	fi
+}
+
+docheckpresent () {
+	local key="$1"
+	local loc="$2"
+
+	if [ -e "$loc" ]; then
+		echo CHECKPRESENT-SUCCESS "$key"
+	else
+		if [ -d "$mydirectory" ]; then
+			echo CHECKPRESENT-FAILURE "$key"
+		else
+			# When the directory does not exist,
+			# the remote is not available.
+			# (A network remote would similarly
+			# fail with CHECKPRESENT-UNKNOWN
+			# if it couldn't be contacted).
+			echo CHECKPRESENT-UNKNOWN "$key" "this remote is not currently available"
+		fi
+	fi
+}
+
+doremove () {
+	local key="$1"
+	local loc="$2"
+
+	# Note that it's not a failure to remove a
+	# fike that is not present.
+	if [ -e "$loc" ]; then
+		if runcmd rm -f "$loc"; then
+			echo REMOVE-SUCCESS "$key"
+		else
+			echo REMOVE-FAILURE "$key"
+		fi
+	else
+		echo REMOVE-SUCCESS "$key"
+	fi
+}
+
 # This has to come first, to get the protocol started.
 echo VERSION 1
 
@@ -130,76 +205,87 @@ while read line; do
 				STORE)
 					# Store the file to a location
 					# based on the key.
-					# XXX when at all possible, send PROGRESS
 					calclocation "$key"
-					mkdir -p "$(dirname "$LOC")"
-					# Store in temp file first, so that
-					# CHECKPRESENT does not see it
-					# until it is all stored.
-					mkdir -p "$mydirectory/tmp"
-					tmp="$mydirectory/tmp/$key"
-					if runcmd cp "$file" "$tmp" \
-					   && runcmd mv -f "$tmp" "$LOC"; then
-						echo TRANSFER-SUCCESS STORE "$key"
-					else
-						echo TRANSFER-FAILURE STORE "$key"
-					fi
-
-					mkdir -p "$(dirname "$LOC")"
-					# The file may already exist, so
-					# make sure we can overwrite it.
-					chmod 644 "$LOC" 2>/dev/null || true
+					dostore "$key" "$file" "$LOC"
 				;;
 				RETRIEVE)
 					# Retrieve from a location based on
 					# the key, outputting to the file.
-					# XXX when easy to do, send PROGRESS
 					calclocation "$key"
-					if runcmd cp "$LOC" "$file"; then
-						echo TRANSFER-SUCCESS RETRIEVE "$key"
-					else
-						echo TRANSFER-FAILURE RETRIEVE "$key"
-					fi
+					doretrieve "$key" "$file" "$LOC"
 				;;
 			esac
 		;;
 		CHECKPRESENT)
 			key="$2"
 			calclocation "$key"
-			if [ -e "$LOC" ]; then
-				echo CHECKPRESENT-SUCCESS "$key"
-			else
-				if [ -d "$mydirectory" ]; then
-					echo CHECKPRESENT-FAILURE "$key"
-				else
-					# When the directory does not exist,
-					# the remote is not available.
-					# (A network remote would similarly
-					# fail with CHECKPRESENT-UNKNOWN
-					# if it couldn't be contacted).
-					echo CHECKPRESENT-UNKNOWN "$key" "this remote is not currently available"
-				fi
-			fi
+			docheckpresent "$key" "$LOC"
 		;;
 		REMOVE)
 			key="$2"
 			calclocation "$key"
-			# Note that it's not a failure to remove a
-			# key that is not present.
-			if [ -e "$LOC" ]; then
-				if runcmd rm -f "$LOC"; then
-					echo REMOVE-SUCCESS "$key"
-				else
-					echo REMOVE-FAILURE "$key"
-				fi
+			doremove "$key" "$LOC"
+		;;
+		# The requests listed above are all the ones
+		# that are required to be supported, so it's fine
+		# to respond to any others with UNSUPPORTED-REQUEST.
+
+		# Let's also support exporting...
+		EXPORTSUPPORTED)
+			echo EXPORTSUPPORTED-SUCCESS
+		;;
+		EXPORT)
+			shift 1
+			exportlocation="$mydirectory/$@"
+			# No response to this one; this value is used below.
+		;;
+		TRANSFEREXPORT)
+			op="$2"
+			key="$3"
+			shift 3
+			file="$@"
+			case "$op" in
+				STORE)
+					# Store the file to the exportlocation
+					dostore "$key" "$file" "$exportlocation"
+				;;
+				RETRIEVE)
+					# Retrieve from the exportlocation,
+					# outputting to the file.
+					doretrieve "$key" "$exportlocation" "$file"
+				;;
+			esac
+		;;
+		CHECKPRESENTEXPORT)
+			key="$2"
+			docheckpresent "$key" "$exportlocation"
+		;;
+		REMOVEEXPORT)
+			key="$2"
+			doremove "$key" "$exportlocation"
+		;;
+		REMOVEEXPORTDIRECTORY)
+			shift 1
+			dir="$@"
+			if [ ! -d "$dir" ] || rm -rf "$mydirectory/$dir"; then
+				echo REMOVEEXPORTDIRECTORY-SUCCESS
 			else
-				echo REMOVE-SUCCESS "$key"
+				echo REMOVEEXPORTDIRECTORY-FAILURE
 			fi
 		;;
+		RENAMEEXPORT)
+			key="$2"
+			shift 2
+			newexportlocation="$mydirectory/$@"
+			mkdir -p "$(dirname "$newexportlocation")"
+			if runcmd mv -f "$exportlocation" "$newexportlocation"; then
+				echo RENAMEEXPORT-SUCCESS "$key"
+			else
+				echo RENAMEEXPORT-FAILURE "$key"
+			fi
+		;;
+
 		*)
-			# The requests listed above are all the ones
-			# that are required to be supported, so it's fine
-			# to say that any other request is unsupported.
 			echo UNSUPPORTED-REQUEST
 		;;
 	esac	

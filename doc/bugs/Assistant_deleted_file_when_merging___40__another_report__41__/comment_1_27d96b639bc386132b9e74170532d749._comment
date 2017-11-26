@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="olaf"
+ avatar="http://cdn.libravatar.org/avatar/4ae498d3d6ee558d6b65caa658f72572"
+ subject="Similar(ish) bug reports"
+ date="2017-08-23T05:55:50Z"
+ content="""
+- [git annex sync deleted a bunch of files (not expected)](/bugs/git_annex_sync_deleted_a_bunch_of_files___40__not_expected__41__/)
+- [Assistant deleted file when merging](/bugs/git_annex_still_deleting_content_when_merging/)
+"""]]

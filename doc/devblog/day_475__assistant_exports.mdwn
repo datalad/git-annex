@@ -1,0 +1,4 @@
+Got the git-annex assistant updating exports. The assistant is pretty
+complicated, so that took most of the day.
+
+Exports are done!

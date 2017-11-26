@@ -1,0 +1,27 @@
+More work on `git annex export`. Made `initremote exporttree=yes` be
+required to enable exporting to a special remote. Added a sqlite database
+to keep track of what files have been exported. That let me fix the known
+problems with exporting multiple files that have the same content. 
+
+The same database lets `git annex get` (etc) download content from exports.
+Since an export is not a key/value store, git-annex has to do more
+verification of content downloaded from an export. Some types of keys,
+that are not based on checksums (eg WORM and URL), 
+cannot be downloaded from an export. And, git-annex will never trust
+an export to retain the content of a key, since some other tree could
+be exported over it at any time.
+
+With `git annex get` working from exports, it might be nice to also support
+`git annex copy --to export` for exporting specific files to them. However,
+that needs information that is not currently stored in the sqlite database
+until the export has already completed. One way it could work is for `git
+annex export --fast treeish --to export` to put all the filenames in the
+database but not export anything, and then `git annex copy --to export` (or
+even `git annex sync --content` to send the contents). I don't know if this
+complication is worth it.
+
+Otherwise, the export feature is fairly close to being complete now.
+Still need to make renames be handled efficiently, and add support for
+exporting to more special remotes.
+
+Today's work was supported by the NSF-funded DataLad project.

@@ -1,0 +1,13 @@
+git-annex 6.20171109 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Fix export of subdir of a branch.
+   * Fix exporting of non-annexed files to external special remotes.
+   * unlock, lock: Support --json.
+   * When there are multiple urls for a file, still treat it as being present
+     in the web when some urls don't work, as long as at least one url does
+     work.
+   * Makefile improvement for sudo make install.
+     Thanks, Eric Siegerman
+   * Makefile improvement for BUILDER=stack, use stack to run ghc.
+   * testremote: Test exporttree.
+   * Fix directory special remote's cleanup of empty export directories."""]]

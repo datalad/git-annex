@@ -45,7 +45,7 @@ seek o = allowConcurrentOutput $
 	withKeyOptions (keyOptions o) False
 		(startKey o (AssociatedFile Nothing))
 		(withFilesInGit $ whenAnnexed $ start o)
-		(mirrorFiles o)
+		=<< workTreeItems (mirrorFiles o)
 
 start :: MirrorOptions -> FilePath -> Key -> CommandStart
 start o file k = startKey o afile k (mkActionItem afile)
@@ -53,7 +53,7 @@ start o file k = startKey o afile k (mkActionItem afile)
 	afile = AssociatedFile (Just file)
 
 startKey :: MirrorOptions -> AssociatedFile -> Key -> ActionItem -> CommandStart
-startKey o afile key ai = case fromToOptions o of
+startKey o afile key ai = onlyActionOn key $ case fromToOptions o of
 	ToRemote r -> checkFailedTransferDirection ai Upload $ ifM (inAnnex key)
 		( Command.Move.toStart False afile key ai =<< getParsed r
 		, do

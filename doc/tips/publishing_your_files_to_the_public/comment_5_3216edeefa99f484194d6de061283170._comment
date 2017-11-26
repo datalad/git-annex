@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Problem with publishing subdir. Subdir does not exist, but it does."""
+ date="2017-10-30T15:53:33Z"
+ content="""
+I reproduced export of master:subdir not working. It's a bug in git-annex,
+now fixed!
+"""]]

@@ -1,0 +1,114 @@
+# NAME
+
+git-annex export - export content to a remote
+
+# SYNOPSIS
+
+git annex export `treeish --to remote`
+
+git annex export `--tracking treeish --to remote`
+
+# DESCRIPTION
+
+Use this command to export a tree of files from a git-annex repository.
+
+Normally files are stored on a git-annex special remote named by their
+keys. That is great for reliable data storage, but your filenames are
+obscured. Exporting replicates the tree to the special remote as-is.
+
+Mixing key/value storage and exports in the same remote would be a mess and
+so is not allowed. You have to configure a special remote with
+`exporttree=yes` when initially setting it up with
+[[git-annex-initremote]](1).
+
+The treeish to export can be the name of a git branch, or a tag, or any
+other treeish accepted by git, including eg master:subdir to only export a
+subdirectory from a branch.
+
+Repeated exports are done efficiently, by diffing the old and new tree,
+and transferring only the changed files, and renaming files as necessary.
+
+Exports can be interrupted and resumed. However, partially uploaded files
+will be re-started from the beginning.
+
+Once content has been exported to a remote, commands like `git annex get`
+can download content from there the same as from other remotes. However,
+since an export is not a key/value store, git-annex has to do more
+verification of content downloaded from an export. Some types of keys,
+that are not based on checksums, cannot be downloaded from an export.
+And, git-annex will never trust an export to retain the content of a key.
+
+# OPTIONS
+
+* `--to=remote`
+
+  Specify the special remote to export to.
+
+* `--tracking`
+
+  This makes the export track changes that are committed to
+  the branch. `git annex sync --content` and the git-annex assistant
+  will update exports when it commits to the branch they are tracking.
+
+* `--fast`
+
+  This sets up an export of a tree, but avoids any expensive file uploads to
+  the remote. You can later run `git annex sync --content` to upload
+  the files to the export.
+
+# EXAMPLE
+
+	git annex initremote myexport type=directory directory=/mnt/myexport \
+		exporttree=yes encryption=none
+	git annex export master --to myexport
+
+After that, /mnt/myexport will contain the same tree of files as the master
+branch does.
+
+	git mv myfile subdir/myfile
+	git commit -m renamed
+	git annex export master --to myexport
+
+That updates /mnt/myexport to reflect the renamed file.
+
+	git annex export master:subdir --to myexport
+
+That updates /mnt/myexport, to contain only the files in the "subdir"
+directory of the master branch.
+
+	git annex export --tracking master --to myexport
+
+That makes myexport track changes that are committed to the master branch.
+
+# EXPORT CONFLICTS
+
+If two different git-annex repositories are both exporting different trees
+to the same special remote, it's possible for an export conflict to occur.
+This leaves the special remote with some files from one tree, and some
+files from the other. Files in the special remote may have entirely the
+wrong content as well.
+
+It's not possible for git-annex to detect when making an export will result
+in an export conflict. The best way to avoid export conflicts is to either
+only ever export to a special remote from a single repository, or to have a
+rule about the tree that you export to the special remote. For example, if
+you always export origin/master after pushing to origin, then an export
+conflict can't happen.
+
+An export conflict can only be detected after the two git repositories
+that produced it get back in sync. Then the next time you run `git annex
+export`, it will detect the export conflict, and resolve it.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-initremote]](1)
+
+[[git-annex-sync]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

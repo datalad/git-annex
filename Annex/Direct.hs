@@ -111,9 +111,8 @@ preCommitDirect = do
 		withkey (DiffTree.srcsha diff) (DiffTree.srcmode diff) removeAssociatedFile
 		withkey (DiffTree.dstsha diff) (DiffTree.dstmode diff) addAssociatedFile
 	  where
-		withkey sha _mode a = when (sha /= nullSha) $ do
-			k <- catKey sha
-			case k of
+		withkey sha _mode a = when (sha /= nullSha) $
+			catKey sha >>= \case
 				Nothing -> noop
 				Just key -> void $ a key $
 					makeabs $ DiffTree.file diff
@@ -427,14 +426,12 @@ setDirect wantdirect = do
 			then moveconfig coreworktree indirectworktree
 			else moveconfig indirectworktree coreworktree
 		setConfig (ConfigKey Git.Config.coreBare) val
-	moveconfig src dest = do
-		v <- getConfigMaybe src
-		case v of
-			Nothing -> noop
-			Just wt -> do
-				unsetConfig src
-				setConfig dest wt
-				reloadConfig
+	moveconfig src dest = getConfigMaybe src >>= \case
+		Nothing -> noop
+		Just wt -> do
+			unsetConfig src
+			setConfig dest wt
+			reloadConfig
 
 {- Since direct mode sets core.bare=true, incoming pushes could change
  - the currently checked out branch. To avoid this problem, HEAD
@@ -474,8 +471,7 @@ switchHEADBack = maybe noop switch =<< inRepo Git.Branch.currentUnsafe
   where
 	switch currhead = do
 		let orighead = fromDirectBranch currhead
-		v <- inRepo $ Git.Ref.sha currhead
-		case v of
+		inRepo (Git.Ref.sha currhead) >>= \case
 			Just headsha
 				| orighead /= currhead -> do
 					inRepo $ Git.Branch.update "leaving direct mode" orighead headsha

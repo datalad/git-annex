@@ -158,6 +158,12 @@ subdirectories).
   
   See [[git-annex-importfeed]](1) for details.
 
+* `export treeish --to remote`
+
+  Export content to a remote.
+
+  See [[git-annex-export]](1) for details.
+
 * `undo [filename|directory] ...`
 
   Undo last change to a file or directory.
@@ -905,7 +911,7 @@ Here are all the supported configuration settings.
   Set this to `true` to make git-annex automatically generate some metadata
   when adding files to the repository.
 
-  In particular, it stores year and month metadata, from the file's
+  In particular, it stores year, month, and day metadata, from the file's
   modification date.
 
   When importfeed is used, it stores additional metadata from the feed,
@@ -1203,6 +1209,14 @@ Here are all the supported configuration settings.
   By default, git-annex will verify the checksums of objects downloaded
   from remotes. If you trust a remote and don't want the overhead
   of these checksums, you can set this to `false`.
+
+* `remote.<name>.annex-export-tracking`
+
+  When set to a branch name or other treeish, this makes what's exported
+  to the special remote track changes to the branch. See
+  [[git-annex-export]](1). `git-annex sync --content` and the 
+  git-annex assistant update exports when changes have been
+  committed to the tracking branch.
 
 * `remote.<name>.annexUrl`
 

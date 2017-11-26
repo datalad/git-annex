@@ -1,17 +1,16 @@
 {- Generates a NullSoft installer program for git-annex on Windows.
  -
- - This uses the Haskell nsis package (cabal install nsis)
- - to generate a .nsi file, which is then used to produce
- - git-annex-installer.exe
+ - This uses the Haskell nsis package to generate a .nsi file,
+ - which is then used to produce git-annex-installer.exe
  - 
  - The installer includes git-annex, and utilities it uses, with the
  - exception of git and some utilities that are bundled with git.
  - The user needs to install git separately, and the installer checks
  - for that.
  - 
- - To build the installer, git-annex should already be built by cabal,
- - and the necessary utility programs (rsync and wget) already installed
- - in PATH from msys32.
+ - To build the installer, git-annex should already be built to
+ - ./git-annex.exe and the necessary utility programs (rsync and wget)
+ - already installed in PATH from msys32.
  -
  - Copyright 2013-2015 Joey Hess <id@joeyh.name>
  -
@@ -41,7 +40,7 @@ import Build.BundledPrograms
 main = do
 	withTmpDir "nsis-build" $ \tmpdir -> do
 		let gitannex = tmpdir </> gitannexprogram
-		mustSucceed "ln" [File "dist/build/git-annex/git-annex.exe", File gitannex]
+		mustSucceed "ln" [File "git-annex.exe", File gitannex]
 		let license = tmpdir </> licensefile
 		mustSucceed "sh" [Param "-c", Param $ "zcat standalone/licences.gz > '" ++ license ++ "'"]
 		webappscript <- vbsLauncher tmpdir "git-annex-webapp" "git annex webapp"

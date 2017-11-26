@@ -46,7 +46,7 @@ seek o = allowConcurrentOutput $ do
 		NoBatch -> withKeyOptions (keyOptions o) (autoMode o)
 			(startKeys from)
 			(withFilesInGit go)
-			(getFiles o)
+			=<< workTreeItems (getFiles o)
 
 start :: GetOptions -> Maybe Remote -> FilePath -> Key -> CommandStart
 start o from file key = start' expensivecheck from key afile (mkActionItem afile)
@@ -62,8 +62,8 @@ startKeys from key ai = checkFailedTransferDirection ai Download $
 	start' (return True) from key (AssociatedFile Nothing) ai
 
 start' :: Annex Bool -> Maybe Remote -> Key -> AssociatedFile -> ActionItem -> CommandStart
-start' expensivecheck from key afile ai = stopUnless (not <$> inAnnex key) $
-	stopUnless expensivecheck $
+start' expensivecheck from key afile ai = onlyActionOn key $
+	stopUnless (not <$> inAnnex key) $ stopUnless expensivecheck $
 		case from of
 			Nothing -> go $ perform key afile
 			Just src ->

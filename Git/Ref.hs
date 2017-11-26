@@ -45,6 +45,10 @@ base = Ref . remove "refs/heads/" . remove "refs/remotes/" . fromRef
 underBase :: String -> Ref -> Ref
 underBase dir r = Ref $ dir ++ "/" ++ fromRef (base r)
 
+{- Convert a branch such as "master" into a fully qualified ref. -}
+branchRef :: Branch -> Ref
+branchRef = underBase "refs/heads"
+
 {- A Ref that can be used to refer to a file in the repository, as staged
  - in the index.
  -
@@ -101,7 +105,7 @@ matching refs repo =  matching' (map fromRef refs) repo
 matchingWithHEAD :: [Ref] -> Repo -> IO [(Sha, Branch)]
 matchingWithHEAD refs repo = matching' ("--head" : map fromRef refs) repo
 
-{- List of (shas, branches) matching a given ref or refs. -}
+{- List of (shas, branches) matching a given ref spec. -}
 matching' :: [String] -> Repo -> IO [(Sha, Branch)]
 matching' ps repo = map gen . lines <$> 
 	pipeReadStrict (Param "show-ref" : map Param ps) repo
@@ -109,17 +113,36 @@ matching' ps repo = map gen . lines <$>
 	gen l = let (r, b) = separate (== ' ') l
 		in (Ref r, Ref b)
 
-{- List of (shas, branches) matching a given ref spec.
+{- List of (shas, branches) matching a given ref.
  - Duplicate shas are filtered out. -}
 matchingUniq :: [Ref] -> Repo -> IO [(Sha, Branch)]
 matchingUniq refs repo = nubBy uniqref <$> matching refs repo
   where
 	uniqref (a, _) (b, _) = a == b
 
+{- List of all refs. -}
+list :: Repo -> IO [(Sha, Ref)]
+list = matching' []
+
+{- Deletes a ref. This can delete refs that are not branches, 
+ - which git branch --delete refuses to delete. -}
+delete :: Sha -> Ref -> Repo -> IO ()
+delete oldvalue ref = run
+	[ Param "update-ref"
+	, Param "-d"
+	, Param $ fromRef ref
+	, Param $ fromRef oldvalue
+	]
+
 {- Gets the sha of the tree a ref uses. -}
 tree :: Ref -> Repo -> IO (Maybe Sha)
-tree ref = extractSha <$$> pipeReadStrict
-	[ Param "rev-parse", Param (fromRef ref ++ ":") ]
+tree (Ref ref) = extractSha <$$> pipeReadStrict
+	[ Param "rev-parse", Param ref' ]
+  where
+	ref' = if ":" `isInfixOf` ref
+		then ref
+		-- de-reference commit objects to the tree
+		else ref ++ ":"
 
 {- Checks if a String is a legal git ref name.
  -

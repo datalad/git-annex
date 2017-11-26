@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-10-25T18:56:49Z"
+ content="""
+They're really needed. Squashing them together would make the tree ref
+that's being grafted in not be reachable, so it would be subject to GC,
+which would lose data that the export feature needs to make sure is
+retained for later.
+
+It would be possible to squash the graft cleanup with the export.log update
+commit. However, I was unable to stage the graft
+into the git-annex branch index file using git update-index, due to
+possibly a bug in git, so I was not able to find a way to do that.
+See [[!commit 5483ea90eca33f61c799fb6a3c2675657caa9c75]]
+
+The diff makes it look somehow big and expensive, but the actual overhead
+on disk is two commit objects. The tree object being grafted in is the
+exported tree, so retaining it does not really add any overhead. So
+something in the area of 2 kb overhead, per export of a tree.
+"""]]

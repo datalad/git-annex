@@ -1,6 +1,6 @@
 {- types for SQL databases
  -
- - Copyright 2015-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,6 +16,7 @@ import Data.Char
 import Utility.PartialPrelude
 import Key
 import Utility.InodeCache
+import Git.Types (Ref(..))
 
 -- A serialized Key
 newtype SKey = SKey String
@@ -93,3 +94,21 @@ fromSFilePath (SFilePath s) = s
 
 derivePersistField "SFilePath"
 
+-- A serialized Ref
+newtype SRef = SRef Ref
+
+-- Note that Read instance does not work when used in any kind of complex
+-- data structure.
+instance Read SRef where
+	readsPrec _ s = [(SRef (Ref s), "")]
+
+instance Show SRef where
+	show (SRef (Ref s)) = s
+
+derivePersistField "SRef"
+
+toSRef :: Ref -> SRef
+toSRef = SRef
+
+fromSRef :: SRef -> Ref
+fromSRef (SRef r) = r

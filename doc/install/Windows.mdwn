@@ -21,7 +21,7 @@ important thing is that it should end with "All tests passed".
 
 ## autobuilds
 
-A daily build is also available, thanks to Yury V. Zaytsev and
+An hourly autobuild is also available, thanks to Yury V. Zaytsev and
 Dartmouth College.
 
 * [download](https://downloads.kitenet.net/git-annex/autobuild/windows/)
@@ -32,15 +32,16 @@ To build git-annex from source on Windows, you need to install
 [Git for Windows](http://git-scm.com/downloads), and
 [Stack](http://haskellstack.org/).
 
-You also need to install rsync and wget for windows.
-They need to be linked with the same MINGW32 libraries that come with Git
-for Windows. One way is to download them from
+You also need to install rsync for windows.
+It needs to be linked with the same MINGW32 libraries that come with Git
+for Windows. One way is to download it from
 <https://downloads.kitenet.net/git-annex/windows/assets/>.
-Put them somewhere in PATH.
+Put it somewhere in PATH.
 
-Then open Git Bash, [[clone git-annex|download]], and in
-git-annex's source tree, run "stack build" to download and build
-all dependencies and git-annex. "stack install" will install git-annex.
+Then open Git Bash, [[clone git-annex|download]], and in git-annex's source
+tree, run "stack build --stack-yaml stack-windows.yaml" to download and
+build all dependencies and git-annex. "stack install --stack-yaml
+stack-windows.yaml" will install git-annex.
 
 (To build the git-annex installer, you also need to install the NullSoft
 installer system. The script `standalone/windows/build.sh` is

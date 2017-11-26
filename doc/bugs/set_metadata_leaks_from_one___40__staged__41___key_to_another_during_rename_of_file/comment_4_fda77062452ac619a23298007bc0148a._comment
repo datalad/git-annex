@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2017-09-27T05:30:52Z"
+ content="""
+Thanks for the analysis/explaining.  My POV, I somewhat got used to the notion \"git annex cares about content/keys, and files are mere pointers\".  That is easy to explain, in particular why two files pointing to the same key would have the same meta-data. So I assumed that no meta-data would be copied over to the new content/key.  But I now do see how retaining the meta-data could be useful, e.g. if I unlock/modify/add a file where meta-data should be carried over (e.g. for music could be all the author/album/etc)... But if file was not unlocked, then may be such \"copying\" shouldn't happen?  not sure  what to suggest otherwise :-/.
+
+In my specific case in one case (newly assigned meta-data) I could simply workaround by first renaming and then assigning meta-data to the renamed file, but in the other (if meta-data is already assigned for the key), I would need to explicitly reset it then but it seems can't do it without committing since that \"copy metadata for the filename\" happens upon committing... so not sure on how to workaround without explicitly removing it from those files after committing... heh
+"""]]

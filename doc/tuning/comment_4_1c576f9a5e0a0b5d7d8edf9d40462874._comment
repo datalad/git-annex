@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2017-08-28T17:40:06Z"
+ content="""
+It should be possible to write a `git-filter-branch` that converts
+a repository from one tuning to aonther, but it would not be trivial, and
+noone has done it yet. You'd still have to run it in every clone of the
+repository. Tuned and non-tuned repositories can't interoperate.
+"""]]

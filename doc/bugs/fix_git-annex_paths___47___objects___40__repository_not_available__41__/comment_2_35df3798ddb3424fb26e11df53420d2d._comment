@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="ynikitenko"
+ avatar="http://cdn.libravatar.org/avatar/168d629704097ddc596f75ca32a687a3"
+ subject="thanks"
+ date="2017-10-29T16:28:33Z"
+ content="""
+Dear Joey, many thanks for your useful reply. Now I understand that better. I tried your fix and it worked - no there are no complaints and the files are being synced.
+
+However, in my /annex/objects there is 1.9Gb, while in the cloned repo there are only 20 Mb of data synced. Do you have any ideas of what could be done? Should I ask at the forum? Many thanks anyway. 
+
+Now I think this is not a bug of git-annex, but I still think that the documentation for that could be improved. Should I delete this report, move it to the forum or anything?
+
+"""]]

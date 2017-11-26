@@ -10,9 +10,9 @@
 module Utility.Su where
 
 import Common
-import Utility.Env
 
 #ifndef mingw32_HOST_OS
+import Utility.Env
 import System.Posix.Terminal
 #endif
 

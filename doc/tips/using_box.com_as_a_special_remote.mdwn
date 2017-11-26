@@ -1,14 +1,42 @@
-[Box.com](http://box.com/) is a file storage service, currently notable 
-for providing 50 gb of free storage if you sign up with its Android client.
-(Or a few gb free otherwise.)
+[Box.com](http://box.com/) is a file storage service.
 
 git-annex can use Box as a [[special remote|special_remotes]].
-Recent versions of git-annex make this very easy to set up:
+Recent versions of git-annex make this very easy to set up
+and use.
 
-	WEBDAV_USERNAME=you@example.com WEBDAV_PASSWORD=xxxxxxx git annex initremote box.com type=webdav url=https://dav.box.com/dav/git-annex chunk=50mb encryption=shared
+## git-annex setup
 
-Note the use of [[chunking]]; Box has a 100 mb maximum file size, and this
-breaks up large files into chunks before that limit is reached.
+Create the special remote, in your git-annex repository.
+** This example is non-encrypted; fill in your gpg key ID for a securely
+encrypted special remote! **
+
+	WEBDAV_USERNAME=you@example.com WEBDAV_PASSWORD=xxxxxxx git annex initremote box.com type=webdav url=https://dav.box.com/dav/git-annex chunk=50mb encryption=none
+
+Note the use of [[chunking]]. Box has a limit on the maximum size of file
+that can be stored there (currently 256 MB). git-annex can break up large
+files into chunks to avoid the size limit. This needs git-annex version
+3.20120303 or newer, which adds support for chunking.
+
+Now git-annex can copy files to box.com, get files from it, etc, just like
+with any other special remote.
+
+	% git annex copy bigfile --to box.com
+	bigfile (to box.com...) ok
+	% git annex drop bigfile
+	bigfile (checking box.com...) ok
+	% git annex get bigfile
+	bigfile (from box.com...) ok
+
+## exporting trees
+
+By default, files stored in Box will show up there named
+by their git-annex key, not the original filename. If the filenames
+are important, you can run `git annex initremote` with an additional
+parameter "exporttree=yes", and then use [[git-annex-export]] to publish
+a tree of files to Box.
+
+Note that chunking can't be used when exporting a tree of files,
+so Box's 250 mb limit will prevent exporting larger files.
 
 # old davfs2 method
 
@@ -48,24 +76,3 @@ using the webdav special remote.
 * Now you should be able to mount Box, as a non-root user:
 
         mount /media/box.com
-
-## git-annex setup
-
-You need git-annex version 3.20120303 or newer, which adds support for chunking
-files larger than Box's 100 mb limit.
-
-Create the special remote, in your git-annex repository.
-** This example is non-encrypted; fill in your gpg key ID for a securely
-encrypted special remote! **
-
-	git annex initremote box.com type=directory directory=/media/box.com chunk=2mb encryption=none
-
-Now git-annex can copy files to box.com, get files from it, etc, just like
-with any other special remote.
-
-	% git annex copy bigfile --to box.com
-	bigfile (to box.com...) ok
-	% git annex drop bigfile
-	bigfile (checking box.com...) ok
-	% git annex get bigfile
-	bigfile (from box.com...) ok

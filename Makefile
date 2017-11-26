@@ -2,7 +2,11 @@ all=git-annex git-annex-shell mans docs
 
 # set to "./Setup" if you lack a cabal program. Or can be set to "stack"
 BUILDER?=cabal
+ifeq ($(BUILDER),stack)
+GHC?=stack ghc --
+else
 GHC?=ghc
+endif
 
 PREFIX?=/usr
 SHAREDIR?=share
@@ -67,10 +71,10 @@ install-misc: build Build/InstallDesktopFile
 	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/bash-completion/completions
 	install -m 0644 bash-completion.bash $(DESTDIR)$(PREFIX)/$(SHAREDIR)/bash-completion/completions/git-annex
 	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/zsh/vendor-completions
-	@./git-annex --zsh-completion-script git-annex > $(DESTDIR)$(PREFIX)/$(SHAREDIR)/zsh/vendor-completions/_git-annex || \
+	@./git-annex --zsh-completion-script git-annex 2>/dev/null > $(DESTDIR)$(PREFIX)/$(SHAREDIR)/zsh/vendor-completions/_git-annex || \
 		echo "** zsh completions not installed; built with too old version of optparse-applicative"
 	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/fish/completions
-	@./git-annex --fish-completion-script git-annex > $(DESTDIR)$(PREFIX)/$(SHAREDIR)/fish/completions/git-annex.fish || \
+	@./git-annex --fish-completion-script git-annex 2>/dev/null > $(DESTDIR)$(PREFIX)/$(SHAREDIR)/fish/completions/git-annex.fish || \
 		echo "** fish completions not installed; built with too old version of optparse-applicative"
 
 install: install-bins install-docs install-misc
@@ -85,28 +89,26 @@ retest: git-annex
 tags:
 	(for f in $$(find . | grep -v /.git/ | grep -v /tmp/ | grep -v /dist/ | grep -v /doc/ | egrep '\.hs$$'); do hothasktags -c --cpp -c -traditional -c --include=dist/build/autogen/cabal_macros.h $$f; done) 2>/dev/null | sort > tags
 
-# If ikiwiki is available, build static html docs suitable for being
-# shipped in the software package.
-ifeq ($(shell which ikiwiki),)
-IKIWIKI=echo "** ikiwiki not found, skipping building docs" >&2; true
-else
-IKIWIKI=ikiwiki
-endif
-
 mans: Build/MakeMans
 	./Build/MakeMans
 
+# If ikiwiki is available, build static html docs suitable for being
+# shipped in the software package.
 docs: mans
-	LC_ALL=C TZ=UTC $(IKIWIKI) doc html -v --wikiname git-annex \
-		--plugin=goodstuff \
-		--no-usedirs --disable-plugin=openid --plugin=sidebar \
-		--plugin theme --set theme=actiontabs --set deterministic=1 \
-		--disable-plugin=shortcut --disable-plugin=smiley \
-		--plugin=comments --set comments_pagespec="*" \
-		--exclude='ikiwiki/*' \
-		--exclude='news/.*' --exclude='design/assistant/blog/*' \
-		--exclude='bugs/*' --exclude='todo/*' --exclude='forum/*' \
-		--exclude='users/*' --exclude='devblog/*' --exclude='thanks'
+	@if [ -n "`which ikiwiki`" ]; then \
+		LC_ALL=C TZ=UTC ikiwiki doc html -v --wikiname git-annex \
+			--plugin=goodstuff \
+			--no-usedirs --disable-plugin=openid --plugin=sidebar \
+			--plugin theme --set theme=actiontabs --set deterministic=1 \
+			--disable-plugin=shortcut --disable-plugin=smiley \
+			--plugin=comments --set comments_pagespec="*" \
+			--exclude='ikiwiki/*' \
+			--exclude='news/.*' --exclude='design/assistant/blog/*' \
+			--exclude='bugs/*' --exclude='todo/*' --exclude='forum/*' \
+			--exclude='users/*' --exclude='devblog/*' --exclude='thanks'; \
+	else \
+		echo "** ikiwiki not found, skipping building docs" >&2; \
+	fi
 
 clean:
 	if [ "$(BUILDER)" != ./Setup ] && [ "$(BUILDER)" != cabal ]; then $(BUILDER) clean; fi

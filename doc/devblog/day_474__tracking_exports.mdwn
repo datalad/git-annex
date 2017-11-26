@@ -1,0 +1,26 @@
+Built a way to make an export track changes to a branch.
+
+	git annex export --tracking master --to myexport
+
+That ties in nicely with `git annex sync`:
+
+	joey@darkstar:~/tmp/bench/a> echo hello > foo
+	joey@darkstar:~/tmp/bench/a> git annex add
+	add foo ok
+	joey@darkstar:~/tmp/bench/a> git annex sync --content
+	commit  
+	[master 8edbc6f] git-annex in joey@darkstar:~/tmp/bench/a
+	 1 file changed, 1 insertion(+)
+	 create mode 120000 foo
+	ok
+	export myexport foo 
+	ok                          
+	joey@darkstar:~/tmp/bench/a> git mv foo bar
+	joey@darkstar:~/tmp/bench/a> git annex sync --content
+	commit  
+	[master 3ab6e73] git-annex in joey@darkstar:~/tmp/bench/a
+	 1 file changed, 0 insertions(+), 0 deletions(-)
+	 rename foo => bar (100%)
+	ok
+	rename myexport foo -> .git-annex-tmp-content-SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03 ok
+	rename myexport .git-annex-tmp-content-SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03 -> bar ok

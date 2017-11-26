@@ -58,7 +58,7 @@ seek o = allowConcurrentOutput $
 		NoBatch -> withKeyOptions (keyOptions o) (autoMode o)
 			(startKeys o)
 			(withFilesInGit go)
-			(dropFiles o)
+			=<< workTreeItems (dropFiles o)
   where
 	go = whenAnnexed $ start o
 

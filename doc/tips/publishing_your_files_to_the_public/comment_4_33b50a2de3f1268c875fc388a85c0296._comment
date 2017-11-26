@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="jajpater"
+ avatar="http://cdn.libravatar.org/avatar/17a62a7410a3ea7d62715efced72158e"
+ subject="Publishing subdir is publishing files but not subdir?"
+ date="2017-10-20T10:22:25Z"
+ content="""
+When using the uuid the files get exported to the root of the specified webdav folder.
+Is there a possibility to keep the directory structure intact, so that the special remote has the same folder structure as has the repository?
+
+Thanks in advance
+"""]]

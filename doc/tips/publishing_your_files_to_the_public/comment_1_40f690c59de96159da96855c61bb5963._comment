@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="jajpater"
+ avatar="http://cdn.libravatar.org/avatar/17a62a7410a3ea7d62715efced72158e"
+ subject="Problem with publishing subdir. Subdir does not exist, but it does."
+ date="2017-10-20T09:21:33Z"
+ content="""
+When trying this, I get the following error. 
+
+    git annex export master:subdir -t box.com   
+    fatal: Path 'subdir:' does not exist in 'master'
+    git-annex: unknown tree
+
+I really don't get it, since as far as I can see the subdir actually does exist in master
+"""]]

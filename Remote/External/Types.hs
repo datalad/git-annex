@@ -37,6 +37,7 @@ import Utility.Metered (BytesProcessed(..))
 import Types.Transfer (Direction(..))
 import Config.Cost (Cost)
 import Types.Remote (RemoteConfig)
+import Types.Export
 import Types.Availability (Availability(..))
 import Types.Key
 import Utility.Url (URLString)
@@ -116,12 +117,20 @@ data Request
 	| CHECKPRESENT SafeKey
 	| REMOVE SafeKey
 	| WHEREIS SafeKey
+	| EXPORTSUPPORTED
+	| EXPORT ExportLocation
+	| TRANSFEREXPORT Direction SafeKey FilePath
+	| CHECKPRESENTEXPORT SafeKey
+	| REMOVEEXPORT SafeKey
+	| REMOVEEXPORTDIRECTORY ExportDirectory
+	| RENAMEEXPORT SafeKey ExportLocation
 	deriving (Show)
 
 -- Does PREPARE need to have been sent before this request?
 needsPREPARE :: Request -> Bool
 needsPREPARE PREPARE = False
 needsPREPARE INITREMOTE = False
+needsPREPARE EXPORTSUPPORTED = False
 needsPREPARE _ = True
 
 instance Proto.Sendable Request where
@@ -137,9 +146,29 @@ instance Proto.Sendable Request where
 		, Proto.serialize key
 		, Proto.serialize file
 		]
-	formatMessage (CHECKPRESENT key) = [ "CHECKPRESENT", Proto.serialize key ]
+	formatMessage (CHECKPRESENT key) =
+		[ "CHECKPRESENT", Proto.serialize key ]
 	formatMessage (REMOVE key) = [ "REMOVE", Proto.serialize key ]
 	formatMessage (WHEREIS key) = [ "WHEREIS", Proto.serialize key ]
+	formatMessage EXPORTSUPPORTED = ["EXPORTSUPPORTED"]
+	formatMessage (EXPORT loc) = [ "EXPORT", Proto.serialize loc ]
+	formatMessage (TRANSFEREXPORT direction key file) = 
+		[ "TRANSFEREXPORT"
+		, Proto.serialize direction
+		, Proto.serialize key
+		, Proto.serialize file
+		]
+	formatMessage (CHECKPRESENTEXPORT key) =
+		[ "CHECKPRESENTEXPORT", Proto.serialize key ]
+	formatMessage (REMOVEEXPORT key) =
+		[ "REMOVEEXPORT", Proto.serialize key ]
+	formatMessage (REMOVEEXPORTDIRECTORY dir) =
+		[ "REMOVEEXPORTDIRECTORY", Proto.serialize dir ]
+	formatMessage (RENAMEEXPORT key newloc) =
+		[ "RENAMEEXPORT"
+		, Proto.serialize key
+		, Proto.serialize newloc
+		]
 
 -- Responses the external remote can make to requests.
 data Response
@@ -163,6 +192,12 @@ data Response
 	| CHECKURL_FAILURE ErrorMsg
 	| WHEREIS_SUCCESS String
 	| WHEREIS_FAILURE
+	| EXPORTSUPPORTED_SUCCESS
+	| EXPORTSUPPORTED_FAILURE
+	| REMOVEEXPORTDIRECTORY_SUCCESS
+	| REMOVEEXPORTDIRECTORY_FAILURE
+	| RENAMEEXPORT_SUCCESS Key
+	| RENAMEEXPORT_FAILURE Key
 	| UNSUPPORTED_REQUEST
 	deriving (Show)
 
@@ -187,6 +222,12 @@ instance Proto.Receivable Response where
 	parseCommand "CHECKURL-FAILURE" = Proto.parse1 CHECKURL_FAILURE
 	parseCommand "WHEREIS-SUCCESS" = Just . WHEREIS_SUCCESS
 	parseCommand "WHEREIS-FAILURE" = Proto.parse0 WHEREIS_FAILURE
+	parseCommand "EXPORTSUPPORTED-SUCCESS" = Proto.parse0 EXPORTSUPPORTED_SUCCESS
+	parseCommand "EXPORTSUPPORTED-FAILURE" = Proto.parse0 EXPORTSUPPORTED_FAILURE
+	parseCommand "REMOVEEXPORTDIRECTORY-SUCCESS" = Proto.parse0 REMOVEEXPORTDIRECTORY_SUCCESS
+	parseCommand "REMOVEEXPORTDIRECTORY-FAILURE" = Proto.parse0 REMOVEEXPORTDIRECTORY_FAILURE
+	parseCommand "RENAMEEXPORT-SUCCESS" = Proto.parse1 RENAMEEXPORT_SUCCESS
+	parseCommand "RENAMEEXPORT-FAILURE" = Proto.parse1 RENAMEEXPORT_FAILURE
 	parseCommand "UNSUPPORTED-REQUEST" = Proto.parse0 UNSUPPORTED_REQUEST
 	parseCommand _ = Proto.parseFail
 
@@ -315,3 +356,11 @@ instance Proto.Serializable [(URLString, Size, FilePath)] where
 instance Proto.Serializable URI where
 	serialize = show
 	deserialize = parseURI
+
+instance Proto.Serializable ExportLocation where
+	serialize = fromExportLocation
+	deserialize = Just . mkExportLocation
+
+instance Proto.Serializable ExportDirectory where
+	serialize = fromExportDirectory
+	deserialize = Just . mkExportDirectory

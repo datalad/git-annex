@@ -1,0 +1,42 @@
+In a v6 repository, `git annex get` of a particular file re-downloaded it
+each time it was run. `git annex whereis` said the content was locally
+present. But, `git annex fsck` of the file said the content was
+missing, and removed it from the location log.
+
+The file was locked, and the repository was on ext4.
+
+Reported by gleachkr on IRC. Don't have enough information to reproduce
+the problem yet. --[[Joey]]
+
+> My initial analysis is that this must be a problem with
+> `Annex.Content.inAnnex`. Note that checks the cached inode for the
+> content and if it finds a mismatch, it behaves as if the content is not
+> present. That would be consistent with the problem as reported.
+> 
+> When I init a v6 repository and add some locked files, no inode cache is
+> recorded, which makes sense as they're locked.
+> 
+> Hypothesis: A cached inode for the key got into the keys database,
+> despite the file being locked, and that is messing up inAnnex.
+> 
+> Should inAnnex even be checking the inode cache for locked content?
+> This seems unncessary, and note that it's done for v4 mode as well as v6.
+> 
+> How could a cached inode for a locked file leak in? Perhaps the file
+> was earlier unlocked. Or perhaps another, unlocked file, had the same
+> content. I tried both these scenarios, and was able to get a cached
+> inode to be listed for a file, but in my tests at least, it also cached
+> the inode of the locked file, and I did not replicate the problem.
+> 
+> --[[Joey]]
+
+## more information needed
+
+If gleachkr comes back to IRC, it would be good to find out:
+
+* Was this file previously unlocked? `git log` on the file would probably
+  tell, unless it was briefly unlocked in between commits.
+* Run `git annex info` on the file to see what its key is.  
+  Then, run `sqlite3 .git/annex/keys/db` and .dump and see
+  what is recorded for that key, in both the "content" and "associated"
+  tables.

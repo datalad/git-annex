@@ -1,0 +1,209 @@
+    [470 of 574] Compiling Command.ImportFeed ( Command/ImportFeed.hs, dist/build/git-annex/git-annex-tmp/Command/ImportFeed.dyn_o )
+
+    Command/ImportFeed.hs:139:61: error:
+        • Couldn't match type ‘Data.Text.Internal.Text’ with ‘[Char]’
+        Expected type: URLString
+            Actual type: Text.Atom.Feed.URI
+        • In the first argument of ‘Enclosure’, namely ‘enclosureurl’
+        In the second argument of ‘($)’, namely ‘Enclosure enclosureurl’
+        In the second argument of ‘($)’, namely
+            ‘ToDownload f u i $ Enclosure enclosureurl’
+        |
+    139 |                         Just $ ToDownload f u i $ Enclosure enclosureurl
+        |                                                             ^^^^^^^^^^^^
+
+    Command/ImportFeed.hs:142:49: error:
+        • Couldn't match type ‘Data.Text.Internal.Text’ with ‘[Char]’
+        Expected type: URLString
+            Actual type: Data.Text.Internal.Text
+        • In the first argument of ‘quviSupported’, namely ‘link’
+        In the first argument of ‘ifM’, namely ‘(quviSupported link)’
+        In the expression:
+            ifM
+            (quviSupported link)
+            (return $ Just $ ToDownload f u i $ QuviLink link, return Nothing)
+        |
+    142 |                 Just link -> ifM (quviSupported link)
+        |                                                 ^^^^
+
+    Command/ImportFeed.hs:143:71: error:
+        • Couldn't match type ‘Data.Text.Internal.Text’ with ‘[Char]’
+        Expected type: URLString
+            Actual type: Data.Text.Internal.Text
+        • In the first argument of ‘QuviLink’, namely ‘link’
+        In the second argument of ‘($)’, namely ‘QuviLink link’
+        In the second argument of ‘($)’, namely
+            ‘ToDownload f u i $ QuviLink link’
+        |
+    143 |                         ( return $ Just $ ToDownload f u i $ QuviLink link
+        |                                                                       ^^^^
+
+    Command/ImportFeed.hs:214:54: error:
+        • Couldn't match type ‘[Char]’ with ‘Data.Text.Internal.Text’
+        Expected type: S.Set Data.Text.Internal.Text
+            Actual type: S.Set ItemId
+        • In the second argument of ‘S.member’, namely ‘(knownitems cache)’
+        In the expression: S.member itemid (knownitems cache)
+        In a case alternative:
+            Just (_, itemid) -> S.member itemid (knownitems cache)
+        |
+    214 |                 Just (_, itemid) -> S.member itemid (knownitems cache)
+        |                                                      ^^^^^^^^^^^^^^^^
+
+    Command/ImportFeed.hs:279:42: error:
+        • Couldn't match type ‘Data.Text.Internal.Text’ with ‘[Char]’
+        Expected type: Maybe [Char]
+            Actual type: Maybe Text.RSS.Syntax.DateString
+        • In the second argument of ‘(<$>)’, namely
+            ‘getItemPublishDateString itm’
+        In the expression: replace "/" "-" <$> getItemPublishDateString itm
+        In a case alternative:
+            _ -> replace "/" "-" <$> getItemPublishDateString itm
+        |
+    279 |                 _ -> replace "/" "-" <$> getItemPublishDateString itm
+        |                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    Command/ImportFeed.hs:293:44: error:
+        • Couldn't match type ‘Data.Text.Internal.Text’ with ‘[Char]’
+        Expected type: String
+            Actual type: Data.Text.Internal.Text
+        • In the first argument of ‘toMetaValue’, namely ‘itemid’
+        In the second argument of ‘($)’, namely ‘toMetaValue itemid’
+        In the second argument of ‘M.singleton’, namely
+            ‘(S.singleton $ toMetaValue itemid)’
+        |
+    293 |                 (S.singleton $ toMetaValue itemid)
+        |                                            ^^^^^^
+
+    Command/ImportFeed.hs:299:26: error:
+        • Couldn't match type ‘Data.Text.Internal.Text’ with ‘[Char]’
+        Expected type: Maybe String
+            Actual type: Maybe Data.Text.Internal.Text
+        • In the expression: feedtitle
+        In the expression: [feedtitle]
+        In the expression: ("feedtitle", [feedtitle])
+        |
+    299 |         [ ("feedtitle", [feedtitle])
+        |                          ^^^^^^^^^
+
+    Command/ImportFeed.hs:300:26: error:
+        • Couldn't match type ‘Data.Text.Internal.Text’ with ‘[Char]’
+        Expected type: Maybe String
+            Actual type: Maybe Data.Text.Internal.Text
+        • In the expression: itemtitle
+        In the expression: [itemtitle]
+        In the expression: ("itemtitle", [itemtitle])
+        |
+    300 |         , ("itemtitle", [itemtitle])
+        |                          ^^^^^^^^^
+
+    Command/ImportFeed.hs:301:27: error:
+        • Couldn't match type ‘Data.Text.Internal.Text’ with ‘[Char]’
+        Expected type: Maybe String
+            Actual type: Maybe Data.Text.Internal.Text
+        • In the expression: feedauthor
+        In the expression: [feedauthor]
+        In the expression: ("feedauthor", [feedauthor])
+        |
+    301 |         , ("feedauthor", [feedauthor])
+        |                           ^^^^^^^^^^
+
+    Command/ImportFeed.hs:302:27: error:
+        • Couldn't match type ‘Data.Text.Internal.Text’ with ‘[Char]’
+        Expected type: Maybe String
+            Actual type: Maybe Data.Text.Internal.Text
+        • In the expression: itemauthor
+        In the expression: [itemauthor]
+        In the expression: ("itemauthor", [itemauthor])
+        |
+    302 |         , ("itemauthor", [itemauthor])
+        |                           ^^^^^^^^^^
+
+    Command/ImportFeed.hs:303:28: error:
+        • Couldn't match type ‘Data.Text.Internal.Text’ with ‘[Char]’
+        Expected type: Maybe String
+            Actual type: Maybe Data.Text.Internal.Text
+        • In the expression: getItemSummary $ item i
+        In the expression: [getItemSummary $ item i]
+        In the expression: ("itemsummary", [getItemSummary $ item i])
+        |
+    303 |         , ("itemsummary", [getItemSummary $ item i])
+        |                            ^^^^^^^^^^^^^^^^^^^^^^^
+
+    Command/ImportFeed.hs:304:32: error:
+        • Couldn't match type ‘Data.Text.Internal.Text’ with ‘[Char]’
+        Expected type: Maybe String
+            Actual type: Maybe Data.Text.Internal.Text
+        • In the expression: getItemDescription $ item i
+        In the expression: [getItemDescription $ item i]
+        In the expression:
+            ("itemdescription", [getItemDescription $ item i])
+        |
+    304 |         , ("itemdescription", [getItemDescription $ item i])
+        |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    Command/ImportFeed.hs:305:27: error:
+        • Couldn't match type ‘Data.Text.Internal.Text’ with ‘[Char]’
+        Expected type: Maybe String
+            Actual type: Maybe Data.Text.Internal.Text
+        • In the expression: getItemRights $ item i
+        In the expression: [getItemRights $ item i]
+        In the expression: ("itemrights", [getItemRights $ item i])
+        |
+    305 |         , ("itemrights", [getItemRights $ item i])
+        |                           ^^^^^^^^^^^^^^^^^^^^^^
+
+    Command/ImportFeed.hs:306:23: error:
+        • Couldn't match type ‘Data.Text.Internal.Text’ with ‘[Char]’
+        Expected type: Maybe String
+            Actual type: Maybe Data.Text.Internal.Text
+        • In the expression: snd <$> getItemId (item i)
+        In the expression: [snd <$> getItemId (item i)]
+        In the expression: ("itemid", [snd <$> getItemId (item i)])
+        |
+    306 |         , ("itemid", [snd <$> getItemId (item i)])
+        |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    Command/ImportFeed.hs:307:22: error:
+        • Couldn't match type ‘Data.Text.Internal.Text’ with ‘[Char]’
+        Expected type: Maybe String
+            Actual type: Maybe Data.Text.Internal.Text
+        • In the expression: itemtitle
+        In the expression: [itemtitle, feedtitle]
+        In the expression: ("title", [itemtitle, feedtitle])
+        |
+    307 |         , ("title", [itemtitle, feedtitle])
+        |                      ^^^^^^^^^
+
+    Command/ImportFeed.hs:307:33: error:
+        • Couldn't match type ‘Data.Text.Internal.Text’ with ‘[Char]’
+        Expected type: Maybe String
+            Actual type: Maybe Data.Text.Internal.Text
+        • In the expression: feedtitle
+        In the expression: [itemtitle, feedtitle]
+        In the expression: ("title", [itemtitle, feedtitle])
+        |
+    307 |         , ("title", [itemtitle, feedtitle])
+        |                                 ^^^^^^^^^
+
+    Command/ImportFeed.hs:308:23: error:
+        • Couldn't match type ‘Data.Text.Internal.Text’ with ‘[Char]’
+        Expected type: Maybe String
+            Actual type: Maybe Data.Text.Internal.Text
+        • In the expression: itemauthor
+        In the expression: [itemauthor, feedauthor]
+        In the expression: ("author", [itemauthor, feedauthor])
+        |
+    308 |         , ("author", [itemauthor, feedauthor])
+        |                       ^^^^^^^^^^
+
+    Command/ImportFeed.hs:308:35: error:
+        • Couldn't match type ‘Data.Text.Internal.Text’ with ‘[Char]’
+        Expected type: Maybe String
+            Actual type: Maybe Data.Text.Internal.Text
+        • In the expression: feedauthor
+        In the expression: [itemauthor, feedauthor]
+        In the expression: ("author", [itemauthor, feedauthor])
+        |
+    308 |         , ("author", [itemauthor, feedauthor])
+        |                                   ^^^^^^^^^^

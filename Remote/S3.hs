@@ -1,6 +1,6 @@
 {- S3 remotes
  -
- - Copyright 2011-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -33,12 +33,15 @@ import System.Log.Logger
 
 import Annex.Common
 import Types.Remote
+import Types.Export
+import Annex.Export
 import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.Http
 import Remote.Helper.Messages
+import Remote.Helper.Export
 import qualified Remote.Helper.AWS as AWS
 import Creds
 import Annex.UUID
@@ -53,12 +56,13 @@ import Utility.Url (checkBoth, managerSettings, closeManager)
 type BucketName = String
 
 remote :: RemoteType
-remote = RemoteType {
-	typename = "S3",
-	enumerate = const (findSpecialRemotes "s3"),
-	generate = gen,
-	setup = s3Setup
-}
+remote = RemoteType
+	{ typename = "S3"
+	, enumerate = const (findSpecialRemotes "s3")
+	, generate = gen
+	, setup = s3Setup
+	, exportSupported = exportIsSupported
+	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
@@ -84,7 +88,17 @@ gen r u c gc = do
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
-			, whereisKey = Just (getWebUrls info)
+			, exportActions = withS3Handle c gc u $ \h -> 
+				return $ ExportActions
+					{ storeExport = storeExportS3 info h
+					, retrieveExport = retrieveExportS3 info h
+					, removeExport = removeExportS3 info h
+					, checkPresentExport = checkPresentExportS3 info h
+					-- S3 does not have directories.
+					, removeExportDirectory = Nothing
+					, renameExport = renameExportS3 info h
+					}
+			, whereisKey = Just (getWebUrls info c)
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
 			, config = c
@@ -104,6 +118,7 @@ s3Setup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteG
 s3Setup ss mu mcreds c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	s3Setup' ss u mcreds c gc
+
 s3Setup' :: SetupStage -> UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 s3Setup' ss u mcreds c gc
 	| configIA c = archiveorg
@@ -127,8 +142,9 @@ s3Setup' ss u mcreds c gc
 		(c', encsetup) <- encryptionSetup c gc
 		c'' <- setRemoteCredPair encsetup c' gc (AWS.creds u) mcreds
 		let fullconfig = c'' `M.union` defaults
-		when (ss == Init) $
-			genBucket fullconfig gc u
+		case ss of
+			Init -> genBucket fullconfig gc u
+			_ -> return ()
 		use fullconfig
 
 	archiveorg = do
@@ -166,25 +182,26 @@ prepareS3HandleMaybe r = resourcePrepare $ const $
 
 store :: Remote -> S3Info -> S3Handle -> Storer
 store _r info h = fileStorer $ \k f p -> do
-	case partSize info of
-		Just partsz | partsz > 0 -> do
-			fsz <- liftIO $ getFileSize f
-			if fsz > partsz
-				then multipartupload fsz partsz k f p
-				else singlepartupload k f p
-		_ -> singlepartupload k f p	
+	storeHelper info h f (T.pack $ bucketObject info k) p
 	-- Store public URL to item in Internet Archive.
 	when (isIA info && not (isChunkKey k)) $
 		setUrlPresent webUUID k (iaPublicKeyUrl info k)
 	return True
-  where
-	singlepartupload k f p = do
-		rbody <- liftIO $ httpBodyStorer f p
-		void $ sendS3Handle h $ putObject info (T.pack $ bucketObject info k) rbody
-	multipartupload fsz partsz k f p = do
-#if MIN_VERSION_aws(0,10,6)
-		let object = T.pack (bucketObject info k)
 
+storeHelper :: S3Info -> S3Handle -> FilePath -> S3.Object -> MeterUpdate -> Annex ()
+storeHelper info h f object p = case partSize info of
+	Just partsz | partsz > 0 -> do
+		fsz <- liftIO $ getFileSize f
+		if fsz > partsz
+			then multipartupload fsz partsz
+			else singlepartupload
+	_ -> singlepartupload
+  where
+	singlepartupload = do
+		rbody <- liftIO $ httpBodyStorer f p
+		void $ sendS3Handle h $ putObject info object rbody
+	multipartupload fsz partsz = do
+#if MIN_VERSION_aws(0,10,6)
 		let startreq = (S3.postInitiateMultipartUpload (bucket info) object)
 				{ S3.imuStorageClass = Just (storageClass info)
 				, S3.imuMetadata = metaHeaders info
@@ -223,16 +240,27 @@ store _r info h = fileStorer $ \k f p -> do
 			(bucket info) object uploadid (zip [1..] etags)
 #else
 		warning $ "Cannot do multipart upload (partsize " ++ show partsz ++ ") of large file (" ++ show fsz ++ "); built with too old a version of the aws library."
-		singlepartupload k f p
+		singlepartupload
 #endif
 
 {- Implemented as a fileRetriever, that uses conduit to stream the chunks
  - out to the file. Would be better to implement a byteRetriever, but
  - that is difficult. -}
 retrieve :: Remote -> S3Info -> Maybe S3Handle -> Retriever
-retrieve _ info (Just h) = fileRetriever $ \f k p -> liftIO $ runResourceT $ do
+retrieve _ info (Just h) = fileRetriever $ \f k p ->
+	retrieveHelper info h (T.pack $ bucketObject info k) f p
+retrieve r info Nothing = case getpublicurl info of
+	Nothing -> \_ _ _ -> do
+		warnMissingCredPairFor "S3" (AWS.creds $ uuid r)
+		return False
+	Just geturl -> fileRetriever $ \f k p ->
+		unlessM (downloadUrl k p [geturl k] f) $
+			giveup "failed to download content"
+
+retrieveHelper :: S3Info -> S3Handle -> S3.Object -> FilePath -> MeterUpdate -> Annex ()
+retrieveHelper info h object f p = liftIO $ runResourceT $ do
 	(fr, fh) <- allocate (openFile f WriteMode) hClose
-	let req = S3.getObject (bucket info) (T.pack $ bucketObject info k)
+	let req = S3.getObject (bucket info) object
 	S3.GetObjectResponse { S3.gorResponse = rsp } <- sendS3Handle' h req
 	responseBody rsp $$+- sinkprogressfile fh p zeroBytesProcessed
 	release fr
@@ -247,13 +275,6 @@ retrieve _ info (Just h) = fileRetriever $ \f k p -> liftIO $ runResourceT $ do
 					void $ meterupdate sofar'
 					S.hPut fh bs
 				sinkprogressfile fh meterupdate sofar'
-retrieve r info Nothing = case getpublicurl info of
-	Nothing -> \_ _ _ -> do
-		warnMissingCredPairFor "S3" (AWS.creds $ uuid r)
-		return False
-	Just geturl -> fileRetriever $ \f k p ->
-		unlessM (downloadUrl k p [geturl k] f) $
-			giveup "failed to download content"
 
 retrieveCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
@@ -262,18 +283,25 @@ retrieveCheap _ _ _ = return False
  - While it may remove the file, there are generally other files
  - derived from it that it does not remove. -}
 remove :: S3Info -> S3Handle -> Remover
-remove info h k
-	| isIA info = do
-		warning "Cannot remove content from the Internet Archive"
-		return False
-	| otherwise = do
-		res <- tryNonAsync $ sendS3Handle h $
-			S3.DeleteObject (T.pack $ bucketObject info k) (bucket info)
-		return $ either (const False) (const True) res
+remove info h k = do
+	res <- tryNonAsync $ sendS3Handle h $
+		S3.DeleteObject (T.pack $ bucketObject info k) (bucket info)
+	return $ either (const False) (const True) res
 
 checkKey :: Remote -> S3Info -> Maybe S3Handle -> CheckPresent
+checkKey r info Nothing k = case getpublicurl info of
+	Nothing -> do
+		warnMissingCredPairFor "S3" (AWS.creds $ uuid r)
+		giveup "No S3 credentials configured"
+	Just geturl -> do
+		showChecking r
+		withUrlOptions $ checkBoth (geturl k) (keySize k)
 checkKey r info (Just h) k = do
 	showChecking r
+	checkKeyHelper info h (T.pack $ bucketObject info k)
+
+checkKeyHelper :: S3Info -> S3Handle -> S3.Object -> Annex Bool
+checkKeyHelper info h object = do
 #if MIN_VERSION_aws(0,10,0)
 	rsp <- go
 	return (isJust $ S3.horMetadata rsp)
@@ -283,8 +311,7 @@ checkKey r info (Just h) k = do
 		return True
 #endif
   where
-	go = sendS3Handle h $
-		S3.headObject (bucket info) (T.pack $ bucketObject info k)
+	go = sendS3Handle h $ S3.headObject (bucket info) object
 
 #if ! MIN_VERSION_aws(0,10,0)
 	{- Catch exception headObject returns when an object is not present
@@ -299,13 +326,49 @@ checkKey r info (Just h) k = do
 			| otherwise = Nothing
 #endif
 
-checkKey r info Nothing k = case getpublicurl info of
-	Nothing -> do
-		warnMissingCredPairFor "S3" (AWS.creds $ uuid r)
-		giveup "No S3 credentials configured"
-	Just geturl -> do
-		showChecking r
-		withUrlOptions $ checkBoth (geturl k) (keySize k)
+storeExportS3 :: S3Info -> S3Handle -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
+storeExportS3 info h f _k loc p = 
+	catchNonAsync go (\e -> warning (show e) >> return False)
+  where
+	go = do
+		storeHelper info h f (T.pack $ bucketExportLocation info loc) p
+		return True
+
+retrieveExportS3 :: S3Info -> S3Handle -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
+retrieveExportS3 info h _k loc f p =
+	catchNonAsync go (\e -> warning (show e) >> return False)
+  where
+	go = do
+		retrieveHelper info h (T.pack $ bucketExportLocation info loc) f p
+		return True
+
+removeExportS3 :: S3Info -> S3Handle -> Key -> ExportLocation -> Annex Bool
+removeExportS3 info h _k loc = 
+	catchNonAsync go (\e -> warning (show e) >> return False)
+  where
+	go = do
+		res <- tryNonAsync $ sendS3Handle h $
+			S3.DeleteObject (T.pack $ bucketExportLocation info loc) (bucket info)
+		return $ either (const False) (const True) res
+
+checkPresentExportS3 :: S3Info -> S3Handle -> Key -> ExportLocation -> Annex Bool
+checkPresentExportS3 info h _k loc =
+	checkKeyHelper info h (T.pack $ bucketExportLocation info loc)
+
+-- S3 has no move primitive; copy and delete.
+renameExportS3 :: S3Info -> S3Handle -> Key -> ExportLocation -> ExportLocation -> Annex Bool
+renameExportS3 info h _k src dest = catchNonAsync go (\_ -> return False)
+  where
+	go = do
+		let co = S3.copyObject (bucket info) dstobject
+			(S3.ObjectId (bucket info) srcobject Nothing)
+			S3.CopyMetadata
+		-- ACL is not preserved by copy.
+		void $ sendS3Handle h $ co { S3.coAcl = acl info }
+		void $ sendS3Handle h $ S3.DeleteObject srcobject (bucket info)
+		return True
+	srcobject = T.pack $ bucketExportLocation info src
+	dstobject = T.pack $ bucketExportLocation info dest
 
 {- Generate the bucket if it does not already exist, including creating the
  - UUID file within the bucket.
@@ -434,6 +497,9 @@ withS3HandleMaybe c gc u a = do
 		Just creds -> do
 			awscreds <- liftIO $ genCredentials creds
 			let awscfg = AWS.Configuration AWS.Timestamp awscreds debugMapper
+#if MIN_VERSION_aws(0,17,0)
+				Nothing
+#endif
 			bracketIO (newManager managerSettings) closeManager $ \mgr -> 
 				a $ Just $ S3Handle mgr awscfg s3cfg
 		Nothing -> a Nothing
@@ -470,6 +536,7 @@ data S3Info = S3Info
 	{ bucket :: S3.Bucket
 	, storageClass :: S3.StorageClass
 	, bucketObject :: Key -> String
+	, bucketExportLocation :: ExportLocation -> String
 	, metaHeaders :: [(T.Text, T.Text)]
 	, partSize :: Maybe Integer
 	, isIA :: Bool
@@ -487,6 +554,7 @@ extractS3Info c = do
 		{ bucket = b
 		, storageClass = getStorageClass c
 		, bucketObject = getBucketObject c
+		, bucketExportLocation = getBucketExportLocation c
 		, metaHeaders = getMetaHeaders c
 		, partSize = getPartSize c
 		, isIA = configIA c
@@ -550,9 +618,12 @@ getBucketObject c = munge . key2file
 		Just "ia" -> iaMunge $ getFilePrefix c ++ s
 		_ -> getFilePrefix c ++ s
 
-{- Internet Archive limits filenames to a subset of ascii,
- - with no whitespace. Other characters are xml entity
- - encoded. -}
+getBucketExportLocation :: RemoteConfig -> ExportLocation -> FilePath
+getBucketExportLocation c loc = getFilePrefix c ++ fromExportLocation loc
+
+{- Internet Archive documentation limits filenames to a subset of ascii.
+ - While other characters seem to work now, this entity encodes everything
+ - else to avoid problems. -}
 iaMunge :: String -> String
 iaMunge = (>>= munge)
   where
@@ -625,8 +696,10 @@ s3Info c info = catMaybes
 #endif
 	showstorageclass sc = show sc
 
-getWebUrls :: S3Info -> Key -> Annex [URLString]
-getWebUrls info k = case (public info, getpublicurl info) of
-	(True, Just geturl) -> return [geturl k]
-	_ -> return []
+getWebUrls :: S3Info -> RemoteConfig -> Key -> Annex [URLString]
+getWebUrls info c k
+	| exportTree c = return []
+	| otherwise = case (public info, getpublicurl info) of
+		(True, Just geturl) -> return [geturl k]
+		_ -> return []
 

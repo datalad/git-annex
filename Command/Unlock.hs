@@ -26,11 +26,11 @@ editcmd :: Command
 editcmd = mkcmd "edit" "same as unlock"
 
 mkcmd :: String -> String -> Command
-mkcmd n d = notDirect $ withGlobalOptions annexedMatchingOptions $
+mkcmd n d = notDirect $ withGlobalOptions (jsonOption : annexedMatchingOptions) $
 	command n SectionCommon d paramPaths (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withFilesInGit $ whenAnnexed start
+seek ps = withFilesInGit (whenAnnexed start) =<< workTreeItems ps
 
 {- Before v6, the unlock subcommand replaces the symlink with a copy of
  - the file's content. In v6 and above, it converts the file from a symlink

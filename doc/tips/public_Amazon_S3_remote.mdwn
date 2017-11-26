@@ -2,6 +2,9 @@ Here's how to create a Amazon [[S3 special remote|special_remotes/S3]] that
 can be read by anyone who gets a clone of your git-annex repository,
 without them needing Amazon AWS credentials.
 
+If you want to publish files to S3 so they can be accessed without using
+git-annex, see [[publishing_your_files_to_the_public]].
+
 Note: Bear in mind that Amazon will charge the owner of the bucket
 for public downloads from that bucket.
 
@@ -52,6 +55,3 @@ who are not using git-annex. To find the url, use `git annex whereis`.
 ----
 
 See [[special_remotes/S3]] for details about configuring S3 remotes.
-
-See [[publishing_your_files_to_the_public]] for other ways to use a public
-S3 bucket.

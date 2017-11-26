@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="kanak@3c4f6e7d832d88751c617b25bdbac896417eb93b"
+ nickname="kanak"
+ avatar="http://cdn.libravatar.org/avatar/708121dfec06e554300b2a3a73a26818"
+ subject="get appears to be doing less work?"
+ date="2017-08-22T11:55:41Z"
+ content="""
+I'm running v6.20170519 on Fedora. Syncing between my desktop and my external drive (USB3).
+
+When I do the following:
+
+1. desktop$ git annex sync usbdrive
+2. desktop$ git annex copy --fast --to usbdrive
+
+The output shows every single file in the respository followed quickly by an OK. Output-wise it's no different than if i omitted the --fast flag. 
+
+However, when I do the following, 
+
+1. usbdrive$ git annex sync desktop
+2. usbdrive$ git annex get .
+
+The only output is the files being copied over. It also appears to be faster for me than a copy.
+
+I feel like i'm missing something basic or some step? Is copy --fast doing the same amount of work as get but just displaying more output?
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-10-16T18:52:52Z"
+ content="""
+Unfortunately this is an open bug in git-annex:
+[[bugs/indeterminite_preferred_content_state_for_duplicated_file]]
+"""]]

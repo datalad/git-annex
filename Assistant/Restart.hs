@@ -27,7 +27,7 @@ import Control.Concurrent
 #ifndef mingw32_HOST_OS
 import System.Posix (signalProcess, sigTERM)
 #else
-import Utility.WinProcess
+import System.Win32.Process (terminateProcessById)
 #endif
 import Network.URI
 
@@ -59,7 +59,7 @@ terminateSelf =
 #ifndef mingw32_HOST_OS
 		signalProcess sigTERM =<< getPID
 #else
-		terminatePID =<< getPID
+		terminateProcessById =<< getPID
 #endif
 
 runRestart :: Assistant URLString

@@ -124,7 +124,7 @@ openDb createdb _ = catchPermissionDenied permerr $ withExclusiveLock gitAnnexKe
 			open db
 		(False, False) -> return DbUnavailable
   where
-	open db = liftIO $ DbOpen <$> H.openDbQueue db SQL.containedTable
+	open db = liftIO $ DbOpen <$> H.openDbQueue H.MultiWriter db SQL.containedTable
 	-- If permissions don't allow opening the database, treat it as if
 	-- it does not exist.
 	permerr e = case createdb of

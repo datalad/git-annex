@@ -18,6 +18,11 @@ the files any longer, or have made modifications you want to discard.
   The [[git-annex-matching-options]](1)
   can be used to specify files to lock.
 
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
 # SEE ALSO
 
 [[git-annex]](1)

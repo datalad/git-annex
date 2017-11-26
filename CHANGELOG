@@ -1,9 +1,120 @@
+git-annex (6.20171124) unstable; urgency=medium
+
+  * Display progress meter when uploading a key without size information,
+    getting the size by statting the content file.
+  * Fix build with dns-3.0.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 24 Nov 2017 10:49:36 -0400
+
+git-annex (6.20171109) unstable; urgency=medium
+
+  * Fix export of subdir of a branch.
+  * Fix exporting of non-annexed files to external special remotes.
+  * unlock, lock: Support --json.
+  * When there are multiple urls for a file, still treat it as being present
+    in the web when some urls don't work, as long as at least one url does
+    work.
+  * Makefile improvement for sudo make install.
+    Thanks, Eric Siegerman 
+  * Makefile improvement for BUILDER=stack, use stack to run ghc.
+  * testremote: Test exporttree.
+  * Fix directory special remote's cleanup of empty export directories.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 09 Nov 2017 12:21:49 -0400
+
+git-annex (6.20171026) unstable; urgency=medium
+
+  * Windows: Fix reversion that caused the path used to link
+    to annexed content to include the drive letter and full path, rather
+    than being relative. (`git annex fix` will fix up after this problem).
+  * Windows build fixed, and changed to use stack for more reliable build
+    environment.
+  * Windows: Remove wget from bundle; it needs libraries that are not
+    included, and git for windows includes curl which git-annex will use
+    instead.
+  * Add day to metadata when annex.genmetadata is enabled.
+    Thanks, Sean T Parsons
+  * stack.yaml: Added nix packages section.
+    Thanks, Sean T Parsons 
+
+ -- Joey Hess <id@joeyh.name>  Thu, 26 Oct 2017 13:56:18 -0400
+
+git-annex (6.20171018) unstable; urgency=medium
+
+  * add: Replace work tree file atomically on systems supporting hard
+    links. Avoids a window where interrupting an add could result in
+    the file being moved into the annex, with no symlink yet created.
+  * webdav: Avoid unncessisarily creating the collection at the top
+    of the repository when storing files there, since that collection
+    is created by initremote.
+    (This seems to work around some brokenness of the box.com webdav
+    server, which caused uploads to be very slow or sometimes fail.)
+  * webdav: Make --debug show all webdav operations.
+  * get -J/move -J/copy -J/mirror -J/sync -J: Avoid "transfer already in
+    progress" errors when two files use the same key.
+  * Konqueror desktop file location changed to one used by plasma 5.
+    Thanks, Félix Sipma.
+  * Avoid repeated checking that files passed on the command line exist.
+  * Fix build with aws-0.17.
+  * stack.yaml: Update to lts-9.9.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 18 Oct 2017 15:40:06 -0400
+
+git-annex (6.20171003) unstable; urgency=medium
+
+  * webdav: Improve error message for failed request to include the request
+    method and path.
+  * metadata: Added --remove-all.
+  * Warn when metadata is inherited from a previous version of a file,
+    to avoid the user being surprised in cases where that behavior is not
+    desired or expected.
+  * sync: Added --cleanup, which removes local and remote synced/ branches.
+  * external: When the external special remote program crashed, a newline
+    could be output, which messed up the expected output for --batch mode.
+  * external: Avoid checking EXPORTSUPPORTED for special remotes that are
+    not configured to use exports.
+  * test: Fix reversion that made it only run inside a git repository.
+  * copy, move: Behave same with --fast when sending to remotes located
+    on a local disk as when sending to other remotes.
+  * Fix process and file descriptor leak that was exposed when
+    git-annex was built with ghc 8.2.1. Broke git-annex test on OSX
+    due to running out of FDs, and may have also leaked in other situations.
+  * info: Improve cleanup of stale transfer info files.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 03 Oct 2017 13:18:15 -0400
+
+git-annex (6.20170925) unstable; urgency=medium
+
+  * git-annex export: New command, can create and efficiently update
+    exports of trees to special remotes.
+  * Use git-annex initremote with exporttree=yes to set up a special remote
+    for use by git-annex export.
+  * Implemented export to directory, S3, and webdav special remotes.
+  * External special remote protocol extended to support export.
+    Developers of external special remotes should consider if export makes
+    sense for them and add support.
+  * sync, assistant: Update tracking exports.
+  * Support building with feed-1.0, while still supporting older versions.
+  * init: Display an additional message when it detects a filesystem that
+    allows writing to files whose write bit is not set.
+  * S3: Allow removing files from IA.
+  * webdav: Checking if a non-existent file is present on Box.com
+    triggered a bug in its webdav support that generates an infinite series
+    of redirects. Deal with such problems by assuming such behavior means
+    the file is not present.
+  * webdav: Fix lack of url-escaping of filenames. Mostly impacted exports
+    of filenames containing eg spaces.
+  * webdav: Changed path used on webdav server for temporary files.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 25 Sep 2017 11:13:58 -0400
+
 git-annex (6.20170818) unstable; urgency=high
 
   * Security fix: Disallow hostname starting with a dash, which
     would get passed to ssh and be treated an option. This could
     be used by an attacker who provides a crafted repository url
     to cause the victim to execute arbitrary code via -oProxyCommand.
+    CVE-2017-12976
     (The same class of security hole recently affected git itself.)
   * git-annex.cabal: Deal with breaking changes in Cabal 2.0.
   * Fix build with QuickCheck 2.10.

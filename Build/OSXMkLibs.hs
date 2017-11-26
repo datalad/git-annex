@@ -24,7 +24,6 @@ import Utility.SafeCommand
 import Utility.Path
 import Utility.Exception
 import Utility.Env
-import Utility.Misc
 import Utility.Split
 
 import qualified Data.Map as M
