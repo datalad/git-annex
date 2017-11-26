@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="ganewbie01"
+ avatar="http://cdn.libravatar.org/avatar/a3b7d6e560486cb87c51cb0cf3328c8e"
+ subject="development branches inaccessible?"
+ date="2017-11-26T13:12:16Z"
+ content="""
+To not sit idle, I've been looking for development branches (specifically the one containing code that gave the rise to Joey's claim \"Querying for 30000 keys that all have a particular tag in their metadata takes 0.65s.\"), but could find only repos with the one branch - the master branch, which doesn't (naturally seem to) include the code for SQLite metadata tinkering.
+
+Is there someplace I could find such development branches please?
+"""]]
