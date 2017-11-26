@@ -1,0 +1,4 @@
+Tests: basics
+Depends: @, git, rsync, gnupg
+Restrictions: allow-stderr
+

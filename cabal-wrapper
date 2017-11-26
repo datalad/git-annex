@@ -1,0 +1,14 @@
+#!/bin/sh
+# It would be more usual to use:
+#   export BUILDER=./Setup
+# But Setup currently has a very bad dependency resolver, and very bad
+# debugging output, and tends to eat all memory and die on small buildds.
+# See https://github.com/haskell/cabal/issues/2777
+set -e
+
+# Avoid cabal writing to HOME, and avoid local cabal settings
+# influencing the build.
+HOME=$(mktemp -d)
+export HOME
+
+cabal "$@"
