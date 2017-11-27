@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="olaf"
+ avatar="http://cdn.libravatar.org/avatar/4ae498d3d6ee558d6b65caa658f72572"
+ subject="comment 2"
+ date="2017-11-27T05:30:06Z"
+ content="""
+Did you clone the git repository?
+
+    $ git clone git://git-annex.branchable.com/
+
+I see a whole lot of branches  (they're *remote* branches initially, so don't forget the `-a`):
+
+    $ git branch -a
+    * master
+      remotes/origin/HEAD -> origin/master
+      remotes/origin/atomic-store-test
+      remotes/origin/debian
+      remotes/origin/debian-jessie-backport
+      remotes/origin/debian-squeeze-backport
+      remotes/origin/debian-stable-security-fix
+      remotes/origin/debian-wheezy-backport
+      remotes/origin/ghc7.0
+      remotes/origin/improved-smudge-filters
+      remotes/origin/master
+      remotes/origin/newwinrelease
+      remotes/origin/no-direct-mode
+      remotes/origin/p2p-map
+      remotes/origin/setup
+      remotes/origin/smudge
+      remotes/origin/tweak-fetch
+      remotes/origin/uuid-type-rework
+      remotes/origin/winsplicehack
+
+You can checkout one of the branches like:
+
+    $ git checkout remotes/origin/ghc7.0
+
+
+Does that help?
+
+"""]]
