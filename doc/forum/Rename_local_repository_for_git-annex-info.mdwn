@@ -1,0 +1,32 @@
+I initialized local repository with
+
+    git-annex init $HOSTNAME --version=6
+
+unfortunately I didn't change HOSTNAME on a new machine and it was 'localhost.localdomain'. I didn't notice that before I cloned a git-annex repository.
+
+Now in the remote repository when I run `git-annex info` (and same in local repository), I see
+
+    $ git-annex info
+    ...
+    semitrusted repositories: 6
+	00000000-0000-0000-0000-000000000001 -- web
+ 	00000000-0000-0000-0000-000000000002 -- bittorrent
+ 	0085(maybe it's not secure to write it on the internet)-e8f803a -- localhost.localdomain
+    ...
+
+(and other repositories. By the way, I never initialized 'web' and 'bittorent', where did they get from?)
+
+I would like 'localhost.localdomain' to become my real $HOSTNAME, so that I would distinguish that machine. How could I do that?
+
+I found [How to rename a remote](https://git-annex.branchable.com/forum/How_to_rename_a_remote__63__/), but my 'localhost' is not listed in git-remotes. 
+
+I grep-ed .git for 'localhost.localdomain', and changed `.git/COMMIT_EDITMSG`. However, after running git-annex sync it returns to 'localhost.localdomain'.
+
+    $ more .git/COMMIT_EDITMSG
+    git-annex in Acer
+    $ git-annex sync
+    ...
+    $ more .git/COMMIT_EDITMSG
+    git-annex in localhost.localdomain
+
+I would like to change 'localhost' to my real machine name both on the remote repository from which I cloned and on local repository. Thank you.
