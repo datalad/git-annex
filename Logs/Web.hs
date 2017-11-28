@@ -100,15 +100,15 @@ removeTempUrl :: Key -> Annex ()
 removeTempUrl key = Annex.changeState $ \s ->
 	s { Annex.tempurls = M.delete key (Annex.tempurls s) }
 
-data Downloader = WebDownloader | QuviDownloader | OtherDownloader
+data Downloader = WebDownloader | YoutubeDownloader | QuviDownloader | OtherDownloader
 	deriving (Eq, Show)
 
 {- To keep track of how an url is downloaded, it's mangled slightly in
- - the log. For quvi, "quvi:" is prefixed. For urls that are handled by
- - some other remote, ":" is prefixed. -}
+ - the log, with a prefix indicating when a Downloader is used. -}
 setDownloader :: URLString -> Downloader -> String
 setDownloader u WebDownloader = u
 setDownloader u QuviDownloader = "quvi:" ++ u
+setDownloader u YoutubeDownloader = "yt:" ++ u
 setDownloader u OtherDownloader = ":" ++ u
 
 setDownloader' :: URLString -> Remote -> String
@@ -118,6 +118,9 @@ setDownloader' u r
 
 getDownloader :: URLString -> (URLString, Downloader)
 getDownloader u = case separate (== ':') u of
-	("quvi", u') -> (u', QuviDownloader)
+	("yt", u') -> (u', YoutubeDownloader)
+	-- quvi is not used any longer; youtube-dl should be able to handle
+	-- all urls it did.
+	("quvi", u') -> (u', YoutubeDownloader)
 	("", u') -> (u', OtherDownloader)
 	_ -> (u, WebDownloader)

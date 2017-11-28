@@ -10,8 +10,8 @@ git annex addurl `[url ...]`
 
 Downloads each url to its own file, which is added to the annex.
 
-When `youtube-dl` is installed, and the url is to a web page,
-it's used to download any video that the web page embeds.
+When `youtube-dl` is installed, it's used to download videos
+embedded on web pages.
   
 Urls to torrent files (including magnet links) will cause the content of
 the torrent to be downloaded, using `aria2c`.
@@ -28,10 +28,20 @@ be used to get better filenames.
   Avoid immediately downloading the url. The url is still checked
   (via HEAD) to verify that it exists, and to get its size if possible.
 
+  When `youtube-dl` is installed, videos embedded on web pages
+  will be added. To avoid the extra work of checking for videos,
+  add the `--raw` option.
+
 * `--relaxed`
 
-  Avoid storing the size of the url's content, and accept whatever
-  content is there at a future point. (Implies `--fast`.)
+  Don't immediately download the url, and avoid storing the size of the
+  url's content. This makes git-annex accept whatever content is there
+  at a future point. This is also the fastest option, since it does not
+  hit the network at all.
+
+  Note that this does *not* check for embedded videos using `youtube-dl`,
+  although it used to in previous versions of git-annex. 
+  Use --fast instead if you want to do that.
 
 * `--raw`
 

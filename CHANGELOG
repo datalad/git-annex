@@ -3,6 +3,10 @@ git-annex (6.20171125) UNRELEASED; urgency=medium
   * Use youtube-dl rather than quvi to download media from web pages,
     since quvi is not being actively developed and youtube-dl supports
     many more sites.
+  * addurl --relaxed no longer checks for embedded media, since youtube-dl
+    does not allow doing so without hitting the network, which would make
+    this no faster than addurl --fast. Use addurl --fast instead if you
+    want embedded media to be downloaded.
 
  -- Joey Hess <id@joeyh.name>  Tue, 28 Nov 2017 13:48:44 -0400
 

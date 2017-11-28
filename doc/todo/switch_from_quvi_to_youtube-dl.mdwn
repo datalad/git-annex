@@ -16,12 +16,12 @@ urls, see for example http://bugs.debian.org/874321)
 So, switching to youtube-dl would probably need a new switch, like `git
 annex addurl --rip` that enables using it.
 
-Currently `git annex importfeed` automatically tests for video urls with
-quvi; it would also need to support `--rip`.
+(Importfeed only treats links in the feed as video urls, not enclosures,
+so this problem does not affect it and it would not need a new switch.)
 
-Both of those changes would need changes to user's workflows and cron jobs.
-git-annex could keep supporting quvi for some time, and warn when it uses
-quvi, to help with the transition.
+That would need changes to users' workflows. git-annex could keep
+supporting quvi for some time, and warn when it uses quvi, to
+help with the transition.
 
 > Alternatively, git-annex addurl could download the url first, and then
 > check the file to see if it looks like html. If so, run youtube-dl (which
@@ -30,12 +30,22 @@ quvi, to help with the transition.
 > overhead, and the redundant download is fairly small compared to ripping
 > the media. Only the unusual case where addurl is being used on html that
 > does not contain media becomes more expensive.
+> 
+> However, for --relaxed, running youtube-dl --get-filename would be
+> significantly more expensive since it hits the network. It seems that
+> --relaxed would need to change to not rip videos; users who want that
+> could use --fast.
+> 
+> --fast already hits the network, but
+> if it uses youtube-dl --get-filename, it would fall afoul of
+> bugs like <http://bugs.debian.org/874321>, although those can be worked
+> around (/dev/null stderr in cast youtube-dl crashes)
 
 Another gotcha is playlists. youtube-dl downloads playlists automatically.
 But, git-annex needs to record an url that downloads a single file so that
 `git annex get` works right. So, playlists will need to be disabled when
 git-annex runs youtube-dl. But, `--no-playlist` does not always disable
-playlists. Best option seems to be `--playlist-items 0` which works for
+playlists. Best option seems to be `--no-playlist --playlist-items 0` which works for
 non-playlists, and downloads only 1 item from playlists (hopefully a fairly
 stable item, but who knows..).
 

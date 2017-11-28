@@ -28,9 +28,8 @@ import Annex.FileMatcher
 import Logs.Location
 import Utility.Metered
 import Utility.FileSystemEncoding
+import Utility.HtmlDetect
 import qualified Annex.Transfer as Transfer
-import Annex.Quvi
-import qualified Utility.Quvi as Quvi
 
 cmd :: Command
 cmd = notBareRepo $ withGlobalOptions [jobsOption, jsonOption, jsonProgressOption] $
@@ -85,7 +84,7 @@ parseRelaxedOption = switch
 parseRawOption :: Parser Bool
 parseRawOption = switch
 	( long "raw"
-	<> help "disable special handling for torrents, quvi, etc"
+	<> help "disable special handling for torrents, youtube-dl, etc"
 	)
 
 seek :: AddUrlOptions -> CommandSeek
@@ -121,7 +120,7 @@ checkUrl r o u = do
   where
 
 	go _ (Left e) = void $ commandAction $ do
-		showStart "addurl" u
+		showStart' "addurl" (Just u)
 		warning (show e)
 		next $ next $ return False
 	go deffile (Right (UrlContents sz mf)) = do
@@ -144,8 +143,9 @@ startRemote :: Remote -> Bool -> FilePath -> URLString -> Maybe Integer -> Comma
 startRemote r relaxed file uri sz = do
 	pathmax <- liftIO $ fileNameLengthLimit "."
 	let file' = joinPath $ map (truncateFilePath pathmax) $ splitDirectories file
-	showStart "addurl" file'
+	showStart' "addurl" (Just uri)
 	showNote $ "from " ++ Remote.name r 
+	showDestinationFile file'
 	next $ performRemote r relaxed uri file' sz
 
 performRemote :: Remote -> Bool -> URLString -> FilePath -> Maybe Integer -> CommandPerform
@@ -181,19 +181,13 @@ downloadRemoteFile r relaxed uri file sz = checkCanAdd file $ do
   where
 	loguri = setDownloader uri OtherDownloader
 
-startWeb :: AddUrlOptions -> String -> CommandStart
-startWeb o s = go $ fromMaybe bad $ parseURI urlstring
+startWeb :: AddUrlOptions -> URLString -> CommandStart
+startWeb o urlstring = go $ fromMaybe bad $ parseURI urlstring
   where
-	(urlstring, downloader) = getDownloader s
 	bad = fromMaybe (giveup $ "bad url " ++ urlstring) $
 		Url.parseURIRelaxed $ urlstring
-	go url = case downloader of
-		QuviDownloader -> usequvi
-		_ -> ifM (quviSupported urlstring)
-			( usequvi
-			, regulardownload url
-			)
-	regulardownload url = do
+	go url = do
+		showStart' "addurl" (Just urlstring)
 		pathmax <- liftIO $ fileNameLengthLimit "."
 		urlinfo <- if relaxedOption o
 			then pure Url.assumeUrlExists
@@ -209,25 +203,14 @@ startWeb o s = go $ fromMaybe bad $ parseURI urlstring
 						( pure $ url2file url (pathdepthOption o) pathmax
 						, pure f
 						)
-		showStart "addurl" file
-		next $ performWeb (relaxedOption o) urlstring file urlinfo
-	badquvi = giveup $ "quvi does not know how to download url " ++ urlstring
-	usequvi = do
-		page <- fromMaybe badquvi
-			<$> withQuviOptions Quvi.forceQuery [Quvi.quiet, Quvi.httponly] urlstring
-		let link = fromMaybe badquvi $ headMaybe $ Quvi.pageLinks page
-		pathmax <- liftIO $ fileNameLengthLimit "."
-		let file = adjustFile o $ flip fromMaybe (fileOption o) $
-			truncateFilePath pathmax $ sanitizeFilePath $
-				Quvi.pageTitle page ++ "." ++ fromMaybe "m" (Quvi.linkSuffix link)
-		showStart "addurl" file
-		next $ performQuvi (relaxedOption o) urlstring (Quvi.linkUrl link) file
+		next $ performWeb o urlstring file urlinfo
 
-performWeb :: Bool -> URLString -> FilePath -> Url.UrlInfo -> CommandPerform
-performWeb relaxed url file urlinfo = ifAnnexed file addurl geturl
+performWeb :: AddUrlOptions -> URLString -> FilePath -> Url.UrlInfo -> CommandPerform
+performWeb o url file urlinfo = ifAnnexed file addurl geturl
   where
-	geturl = next $ isJust <$> addUrlFile relaxed url urlinfo file
-	addurl = addUrlChecked relaxed url webUUID $ \k -> return $
+	geturl = next $ isJust <$> addUrlFile (relaxedOption o) url urlinfo file
+	-- TODO youtube-dl
+	addurl = addUrlChecked (relaxedOption o) url webUUID $ \k -> return $
 		(Url.urlExists urlinfo, Url.urlSize urlinfo == keySize k)
 
 performQuvi :: Bool -> URLString -> URLString -> FilePath -> CommandPerform
@@ -290,53 +273,111 @@ addUrlChecked relaxed url u checkexistssize key
 					stop
 		)
 
+{- Adds an url, normally to the specified FilePath. But, if youtube-dl
+ - supports the url, it will be written to a different file, based on the
+ - title of the media.
+ -}
 addUrlFile :: Bool -> URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
-addUrlFile relaxed url urlinfo file = checkCanAdd file $ do
-	liftIO $ createDirectoryIfMissing True (parentDir file)
-	ifM (Annex.getState Annex.fast <||> pure relaxed)
-		( nodownload url urlinfo file
+addUrlFile relaxed url urlinfo file
+	| relaxed = checkCanAdd file $ do
+		liftIO $ createDirectoryIfMissing True (parentDir file)
+		nodownload url urlinfo file
+	| otherwise = ifM (Annex.getState Annex.fast)
+		( checkCanAdd file $ do
+			liftIO $ createDirectoryIfMissing True (parentDir file)
+			nodownload url urlinfo file
 		, downloadWeb url urlinfo file
 		)
 
 downloadWeb :: URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
-downloadWeb url urlinfo file = do
-	let dummykey = addSizeUrlKey urlinfo $ Backend.URL.fromUrl url Nothing
-	let downloader f p = do
+downloadWeb url urlinfo file =
+	go =<< downloadWith' downloader dummykey webUUID url (AssociatedFile (Just file))
+  where
+	dummykey = addSizeUrlKey urlinfo $ Backend.URL.fromUrl url Nothing
+	downloader f p = do
 		showOutput
 		downloadUrl dummykey p [url] f
-	showAction $ "downloading " ++ url ++ " "
-	downloadWith downloader dummykey webUUID url file
+	go Nothing = return Nothing
+	-- If we downloaded a html file, try to use youtube-dl to
+	-- extract embedded media.
+	go (Just tmp) = ifM (liftIO $ isHtml <$> readFile tmp)
+		( do
+			-- TODO need a directory based on dummykey,
+			-- which unused needs to clean up like
+			-- it does gitAnnexTmpObjectLocation
+			tmpdir <- undefined
+			liftIO $ createDirectoryIfMissing True tmpdir
+			mf <- youtubeDl url tmpdir
+			case mf of
+				Just mediafile -> do
+					liftIO $ nukeFile tmp
+					let mediaurl = setDownloader url YoutubeDownloader
+					let key = Backend.URL.fromUrl mediaurl Nothing
+					let dest = takeFileName mediafile
+					showDestinationFile dest
+					cleanup webUUID mediaurl dest key (Just mediafile)
+					return (Just key)
+				Nothing -> normalfinish tmp
+		, normalfinish tmp
+		)
+	normalfinish tmp = do
+		showDestinationFile file
+		liftIO $ createDirectoryIfMissing True (parentDir file)
+		finishDownloadWith tmp webUUID url file
+
+youtubeDl :: URLString -> FilePath -> Annex (Maybe FilePath)
+youtubeDl = undefined -- TODO
+
+showDestinationFile :: FilePath -> Annex ()
+showDestinationFile file = do
+	showNote ("to " ++ file)
+	maybeShowJSON $ JSONChunk [("file", file)]
 
 {- The Key should be a dummy key, based on the URL, which is used
  - for this download, before we can examine the file and find its real key.
  - For resuming downloads to work, the dummy key for a given url should be
- - stable. -}
+ - stable. For disk space checking to work, the dummy key should have
+ - the size of the url already set.
+ -
+ - Downloads the url, sets up the worktree file, and returns the
+ - real key.
+ -}
 downloadWith :: (FilePath -> MeterUpdate -> Annex Bool) -> Key -> UUID -> URLString -> FilePath -> Annex (Maybe Key)
 downloadWith downloader dummykey u url file =
+	go =<< downloadWith' downloader dummykey u url afile
+  where
+	afile = AssociatedFile (Just file)
+	go Nothing = return Nothing
+	go (Just tmp) = finishDownloadWith tmp u url file
+
+{- Like downloadWith, but leaves the dummy key content in
+ - the returned location. -}
+downloadWith' :: (FilePath -> MeterUpdate -> Annex Bool) -> Key -> UUID -> URLString -> AssociatedFile -> Annex (Maybe FilePath)
+downloadWith' downloader dummykey u url afile =
 	checkDiskSpaceToGet dummykey Nothing $ do
 		tmp <- fromRepo $ gitAnnexTmpObjectLocation dummykey
-		ifM (runtransfer tmp)
-			( do
-				backend <- chooseBackend file
-				let source = KeySource
-					{ keyFilename = file
-					, contentLocation = tmp
-					, inodeCache = Nothing
-					}
-				k <- genKey source backend
-				case k of
-					Nothing -> return Nothing
-					Just (key, _) -> do
-						cleanup u url file key (Just tmp)
-						return (Just key)
-			, return Nothing
-			)
-  where
-	runtransfer tmp =  Transfer.notifyTransfer Transfer.Download afile $
-		Transfer.download u dummykey afile Transfer.forwardRetry $ \p -> do
-			liftIO $ createDirectoryIfMissing True (parentDir tmp)
-			downloader tmp p
-	afile = AssociatedFile (Just file)
+		ok <- Transfer.notifyTransfer Transfer.Download url $
+			Transfer.download u dummykey afile Transfer.forwardRetry $ \p -> do
+				liftIO $ createDirectoryIfMissing True (parentDir tmp)
+				downloader tmp p
+		if ok
+			then return (Just tmp)
+			else return Nothing
+
+finishDownloadWith :: FilePath -> UUID -> URLString -> FilePath -> Annex (Maybe Key)
+finishDownloadWith tmp u url file = do
+	backend <- chooseBackend file
+	let source = KeySource
+		{ keyFilename = file
+		, contentLocation = tmp
+		, inodeCache = Nothing
+		}
+	k <- genKey source backend
+	case k of
+		Nothing -> return Nothing
+		Just (key, _) -> do
+			cleanup u url file key (Just tmp)
+			return (Just key)
 
 {- Adds the url size to the Key. -}
 addSizeUrlKey :: Url.UrlInfo -> Key -> Key
@@ -369,6 +410,7 @@ cleanup u url file key mtmp = case mtmp of
 			, liftIO $ maybe noop nukeFile mtmp
 			)
 
+-- TODO youtube-dl
 nodownload :: URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
 nodownload url urlinfo file
 	| Url.urlExists urlinfo = do

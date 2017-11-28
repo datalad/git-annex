@@ -18,11 +18,11 @@ import Data.Char
 -- Html fragments like "<p>this</p>" are not detected as being html,
 -- although some browsers may chose to render them as html.
 isHtml :: String -> Bool
-isHtml = evaluate . canonicalizeTags . parseTags . truncate
+isHtml = evaluate . canonicalizeTags . parseTags . shorten
   where
 	-- We only care about the beginning of the file,
 	-- so although tagsoup parses lazily anyway, truncate it.
-	truncate = take 16384
+	shorten = take 16384
 	evaluate (TagOpen "!DOCTYPE" ((t, _):_):_) = map toLower t == "html"
 	evaluate (TagOpen "html" _:_) = True
 	-- Allow some leading whitespace before the tag.
