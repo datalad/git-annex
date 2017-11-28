@@ -74,8 +74,8 @@ and transferring to your laptop on demand.
 ## youtube playlists
 
 You can also use `git annex importfeed` on youtube playlists. 
-It will use quvi to automatically download the videos linked to
-by the playlist.
+It will use [youtube-dl](https://rg3.github.io/youtube-dl/) to automatically
+download the videos linked to by the playlist.
 
 To download a youtube playlist, you need to find the feed associated with that
 playlist, and pass it to `git annex importfeed`. There does not seem to be

@@ -1315,10 +1315,19 @@ Here are all the supported configuration settings.
   Options to pass when running wget or curl.
   For example, to force IPv4 only, set it to "-4"
 
-* `annex.quvi-options`
+* `annex.youtube-dl-options`
 
-  Options to pass to quvi when using it to find the url to download for a
-  video.
+  Options to pass to youtube-dl when using it to find the url to download
+  for a video.
+
+  Some options may break git-annex's integration with youtube-dl. For
+  example, the --output option could cause it to store files somewhere
+  git-annex won't find them. Avoid any options that cause youtube-dl
+  to download more than one file, or to store the file anywhere
+  other than the current working directory.
+
+  Note that git-annex runs youtube-dl with --ignore-config, to avoid
+  any configuration file settings that break its integration.
 
 * `annex.aria-torrent-options`
 

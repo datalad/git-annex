@@ -1,3 +1,11 @@
+git-annex (6.20171125) UNRELEASED; urgency=medium
+
+  * Use youtube-dl rather than quvi to download media from web pages,
+    since quvi is not being actively developed and youtube-dl supports
+    many more sites.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 28 Nov 2017 13:48:44 -0400
+
 git-annex (6.20171124) unstable; urgency=medium
 
   * Display progress meter when uploading a key without size information,
