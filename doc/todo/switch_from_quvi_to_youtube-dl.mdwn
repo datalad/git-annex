@@ -23,6 +23,14 @@ Both of those changes would need changes to user's workflows and cron jobs.
 git-annex could keep supporting quvi for some time, and warn when it uses
 quvi, to help with the transition.
 
+> Alternatively, git-annex addurl could download the url first, and then
+> check the file to see if it looks like html. If so, run youtube-dl (which
+> unfortunately has to download it again) and see if it manages to rip
+> media from it. This way, addurl of non-html files does not have extra
+> overhead, and the redundant download is fairly small compared to ripping
+> the media. Only the unusual case where addurl is being used on html that
+> does not contain media becomes more expensive.
+
 Another gotcha is playlists. youtube-dl downloads playlists automatically.
 But, git-annex needs to record an url that downloads a single file so that
 `git annex get` works right. So, playlists will need to be disabled when

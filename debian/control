@@ -25,6 +25,7 @@ Build-Depends:
 	libghc-dlist-dev,
 	libghc-uuid-dev,
 	libghc-aeson-dev,
+	libghc-tagsoup-dev,
 	libghc-unordered-containers-dev,
 	libghc-ifelse-dev,
 	libghc-bloomfilter-dev,
