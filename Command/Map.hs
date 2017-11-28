@@ -189,7 +189,7 @@ same a b
 {- reads the config of a remote, with progress display -}
 scan :: Git.Repo -> Annex Git.Repo
 scan r = do
-	showStart "map" $ Git.repoDescribe r
+	showStart' "map" (Just $ Git.repoDescribe r)
 	v <- tryScan r
 	case v of
 		Just r' -> do

@@ -100,7 +100,7 @@ startKeys c o k ai = case getSet o of
 			putStrLn . fromMetaValue
 		stop
 	_ -> do
-		showStart' "metadata" k ai
+		showStartKey "metadata" k ai
 		next $ perform c o k
 
 perform :: VectorClock -> MetaDataOptions -> Key -> CommandPerform
@@ -164,7 +164,7 @@ startBatch (i, (MetaData m)) = case i of
 	Right k -> go k (mkActionItem k)
   where
 	go k ai = do
-		showStart' "metadata" k ai
+		showStartKey "metadata" k ai
 		let o = MetaDataOptions
 			{ forFiles = []
 			, getSet = if MetaData m == emptyMetaData

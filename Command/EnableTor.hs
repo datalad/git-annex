@@ -51,7 +51,7 @@ start os = do
 			Nothing -> giveup "Need user-id parameter."
 			Just userid -> go uuid userid
 		else do
-			showStart "enable-tor" ""
+			showStart' "enable-tor" Nothing
 			gitannex <- liftIO readProgramFile
 			let ps = [Param (cmdname cmd), Param (show curruserid)]
 			sucommand <- liftIO $ mkSuCommand gitannex ps

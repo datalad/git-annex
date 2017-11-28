@@ -27,10 +27,10 @@ seek = withWords start
 start :: [String] -> CommandStart
 start (keyname:url:[]) = do
 	let key = mkKey keyname
-	showStart "registerurl" url
+	showStart' "registerurl" (Just url)
 	next $ perform key url
 start [] = do
-	showStart "registerurl" "stdin"
+	showStart' "registerurl" (Just "stdin")
 	next massAdd
 start _ = giveup "specify a key and an url"
 

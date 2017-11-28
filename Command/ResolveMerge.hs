@@ -23,7 +23,7 @@ seek = withNothing start
 
 start :: CommandStart
 start = do
-	showStart "resolvemerge" ""
+	showStart' "resolvemerge" Nothing
 	us <- fromMaybe nobranch <$> inRepo Git.Branch.current
 	d <- fromRepo Git.localGitDir
 	let merge_head = d </> "MERGE_HEAD"

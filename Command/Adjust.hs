@@ -38,5 +38,5 @@ seek = commandAction . start
 start :: Adjustment -> CommandStart
 start adj = do
 	checkVersionSupported
-	showStart "adjust" ""
+	showStart' "adjust" Nothing
 	next $ next $ enterAdjustedBranch adj

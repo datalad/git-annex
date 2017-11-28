@@ -40,7 +40,7 @@ seek = commandAction . start
 
 start :: InitOptions -> CommandStart
 start os = do
-	showStart "init" (initDesc os)
+	showStart' "init" (Just $ initDesc os)
 	next $ perform os
 
 perform :: InitOptions -> CommandPerform

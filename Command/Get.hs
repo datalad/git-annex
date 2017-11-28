@@ -71,7 +71,7 @@ start' expensivecheck from key afile ai = onlyActionOn key $
 					go $ Command.Move.fromPerform src False key afile
   where
 	go a = do
-		showStart' "get" key ai
+		showStartKey "get" key ai
 		next a
 
 perform :: Key -> AssociatedFile -> CommandPerform

@@ -27,7 +27,7 @@ start = go =<< currentView
   where
 	go Nothing = giveup "Not in a view."
 	go (Just v) = do
-		showStart "vcycle" ""
+		showStart' "vcycle" Nothing
 		let v' = v { viewComponents = vcycle [] (viewComponents v) }
 		if v == v'
 			then do

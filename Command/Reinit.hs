@@ -25,7 +25,7 @@ seek = withWords start
 
 start :: [String] -> CommandStart
 start ws = do
-	showStart "reinit" s
+	showStart' "reinit" (Just s)
 	next $ perform s
   where
 	s = unwords ws

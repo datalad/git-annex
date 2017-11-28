@@ -536,7 +536,7 @@ badContentRemote remote localcopy key = do
 runFsck :: Incremental -> ActionItem -> Key -> Annex Bool -> CommandStart
 runFsck inc ai key a = ifM (needFsck inc key)
 	( do
-		showStart' "fsck" key ai
+		showStartKey "fsck" key ai
 		next $ do
 			ok <- a
 			when ok $

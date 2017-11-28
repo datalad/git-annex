@@ -33,7 +33,7 @@ seek (DeadKeys ks) = seekActions $ pure $ map startKey ks
 
 startKey :: Key -> CommandStart
 startKey key = do
-	showStart "dead" (key2file key)
+	showStart' "dead" (Just $ key2file key)
 	ls <- keyLocations key
 	case ls of
 		[] -> next $ performKey key

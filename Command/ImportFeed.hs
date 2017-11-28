@@ -72,7 +72,7 @@ seek o = do
 
 start :: ImportFeedOptions -> Cache -> URLString -> CommandStart
 start opts cache url = do
-	showStart "importfeed" url
+	showStart' "importfeed" (Just url)
 	next $ perform opts cache url
 
 perform :: ImportFeedOptions -> Cache -> URLString -> CommandPerform

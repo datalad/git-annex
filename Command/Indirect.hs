@@ -42,7 +42,7 @@ start = ifM isDirect
 
 perform :: CommandPerform
 perform = do
-	showStart "commit" ""
+	showStart' "commit" Nothing
 	whenM stageDirect $ do
 		showOutput
 		void $ inRepo $ Git.Branch.commitCommand Git.Branch.ManualCommit
@@ -100,6 +100,6 @@ perform = do
 	
 cleanup :: CommandCleanup
 cleanup = do
-	showStart "indirect" ""
+	showStart' "indirect" Nothing
 	showEndOk
 	return True

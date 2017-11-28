@@ -48,7 +48,7 @@ startGet = next $ next $ do
 startSet :: Int -> CommandStart
 startSet n = do
 	allowMessages
-	showStart "numcopies" (show n)
+	showStart' "numcopies" (Just $ show n)
 	next $ next $ do
 		setGlobalNumCopies $ NumCopies n
 		return True

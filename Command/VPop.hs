@@ -28,7 +28,7 @@ start ps = go =<< currentView
   where
 	go Nothing = giveup "Not in a view."
 	go (Just v) = do
-		showStart "vpop" (show num)
+		showStart' "vpop" (Just $ show num)
 		removeView v
 		(oldvs, vs) <- splitAt (num - 1) . filter (sameparentbranch v)
 			<$> recentViews

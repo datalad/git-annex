@@ -31,7 +31,7 @@ start = ifM versionSupportsDirectMode
 
 perform :: CommandPerform
 perform = do
-	showStart "commit" ""
+	showStart' "commit" Nothing
 	showOutput
 	_ <- inRepo $ Git.Branch.commitCommand Git.Branch.ManualCommit
 		[ Param "-a"
@@ -65,6 +65,6 @@ perform = do
 
 cleanup :: CommandCleanup
 cleanup = do
-	showStart "direct" ""
+	showStart' "direct" Nothing
 	setDirect True
 	return True

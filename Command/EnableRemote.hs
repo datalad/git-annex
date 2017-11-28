@@ -55,7 +55,7 @@ start (name:rest) = go =<< filter matchingname <$> Annex.fromRepo Git.remotes
 startNormalRemote :: Git.RemoteName -> [String] -> Git.Repo -> CommandStart
 startNormalRemote name restparams r
 	| null restparams = do
-		showStart "enableremote" name
+		showStart' "enableremote" (Just name)
 		next $ next $ do
 			setRemoteIgnore r False
 			r' <- Remote.Git.configRead False r
@@ -77,7 +77,7 @@ startSpecialRemote name config Nothing = do
 startSpecialRemote name config (Just (u, c)) = do
 	let fullconfig = config `M.union` c	
 	t <- either giveup return (Annex.SpecialRemote.findType fullconfig)
-	showStart "enableremote" name
+	showStart' "enableremote" (Just name)
 	gc <- maybe (liftIO dummyRemoteGitConfig) 
 		(return . Remote.gitconfig)
 		=<< Remote.byUUID u

@@ -299,7 +299,7 @@ syncRemotes' ps available =
 commit :: SyncOptions -> CommandStart
 commit o = stopUnless shouldcommit $ next $ next $ do
 	commitmessage <- maybe commitMsg return (messageOption o)
-	showStart "commit" ""
+	showStart' "commit" Nothing
 	Annex.Branch.commit "update"
 	ifM isDirect
 		( do
@@ -342,7 +342,7 @@ mergeLocal mergeconfig resolvemergeoverride currbranch@(Just _, _) =
   where
 	go Nothing = stop
 	go (Just syncbranch) = do
-		showStart "merge" $ Git.Ref.describe syncbranch
+		showStart' "merge" (Just $ Git.Ref.describe syncbranch)
 		next $ next $ merge currbranch mergeconfig resolvemergeoverride Git.Branch.ManualCommit syncbranch
 mergeLocal _ _ (Nothing, madj) = do
 	b <- inRepo Git.Branch.currentUnsafe
@@ -401,7 +401,7 @@ updateBranch syncbranch updateto g =
 
 pullRemote :: SyncOptions -> [Git.Merge.MergeConfig] -> Remote -> CurrBranch -> CommandStart
 pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o && wantpull) $ do
-	showStart "pull" (Remote.name remote)
+	showStart' "pull" (Just (Remote.name remote))
 	next $ do
 		showOutput
 		stopUnless fetch $
@@ -438,7 +438,7 @@ mergeRemote remote currbranch mergeconfig resolvemergeoverride = ifM isBareRepo
 pushRemote :: SyncOptions -> Remote -> CurrBranch -> CommandStart
 pushRemote _o _remote (Nothing, _) = stop
 pushRemote o remote (Just branch, _) = stopUnless (pure (pushOption o) <&&> needpush) $ do
-	showStart "push" (Remote.name remote)
+	showStart' "push" (Just (Remote.name remote))
 	next $ next $ do
 		showOutput
 		ok <- inRepoWithSshOptionsTo (Remote.repo remote) gc $
@@ -651,7 +651,7 @@ syncFile ebloom rs af k = onlyActionOn' k $ do
 		, return []
 		)
 	get have = includeCommandAction $ do
-		showStart' "get" k (mkActionItem af)
+		showStartKey "get" k (mkActionItem af)
 		next $ next $ getKey' k af have
 
 	wantput r
@@ -703,7 +703,7 @@ seekExportContent rs = or <$> forM rs go
 cleanupLocal :: CurrBranch -> CommandStart
 cleanupLocal (Nothing, _) = stop
 cleanupLocal (Just currb, _) = do
-	showStart "cleanup" "local"
+	showStart' "cleanup" (Just "local")
 	next $ next $ do
 		delbranch $ syncBranch currb
 		delbranch $ syncBranch $ Git.Ref.base $ Annex.Branch.name
@@ -717,7 +717,7 @@ cleanupLocal (Just currb, _) = do
 cleanupRemote :: Remote -> CurrBranch -> CommandStart
 cleanupRemote _ (Nothing, _) = stop
 cleanupRemote remote (Just b, _) = do
-	showStart "cleanup" (Remote.name remote)
+	showStart' "cleanup" (Just (Remote.name remote))
 	next $ next $
 		inRepo $ Git.Command.runBool
 			[ Param "push"

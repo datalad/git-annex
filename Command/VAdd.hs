@@ -23,7 +23,7 @@ seek = withWords start
 
 start :: [String] -> CommandStart
 start params = do
-	showStart "vadd" ""
+	showStart' "vadd" Nothing
 	withCurrentView $ \view -> do
 		let (view', change) = refineView view $
 			map parseViewParam $ reverse params

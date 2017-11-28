@@ -7,9 +7,10 @@
 
 module Messages (
 	showStart,
+	showStart',
+	showStartKey,
 	ActionItem,
 	mkActionItem,
-	showStart',
 	showNote,
 	showAction,
 	showSideAction,
@@ -66,8 +67,14 @@ showStart command file = outputMessage json $
   where
 	json = JSON.start command (Just file) Nothing
 
-showStart' :: String -> Key -> ActionItem -> Annex ()
-showStart' command key i = outputMessage json $
+showStart' :: String -> Maybe String -> Annex ()
+showStart' command mdesc = outputMessage json $
+	command ++ (maybe "" (" " ++) mdesc) ++ " "
+  where
+	json = JSON.start command Nothing Nothing
+
+showStartKey :: String -> Key -> ActionItem -> Annex ()
+showStartKey command key i = outputMessage json $
 	command ++ " " ++ actionItemDesc i key ++ " "
   where
 	json = JSON.start command (actionItemWorkTreeFile i) (Just key)
