@@ -39,6 +39,10 @@ playlists. Best option seems to be `--playlist-items 0` which works for
 non-playlists, and downloads only 1 item from playlists (hopefully a fairly
 stable item, but who knows..).
 
+(`git annex importfeed` handles youtube playlist downloads, but needs the
+user to find the url to the rss feed for the playlist. Youtube still has
+these, although it makes them hard to find.)
+
 Another gotcha is that youtube-dl's -o option does not fully determine the
 filename it downloads to. Sometims it will tack on an additional extension
 (seen with youtube videos where it added a ".mkv").
