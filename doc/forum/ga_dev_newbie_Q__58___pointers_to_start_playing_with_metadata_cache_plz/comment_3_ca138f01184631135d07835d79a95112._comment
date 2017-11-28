@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="ganewbie01"
+ avatar="http://cdn.libravatar.org/avatar/a3b7d6e560486cb87c51cb0cf3328c8e"
+ subject="found it! ( I think ... or should I be still looking for &quot;database&quot; branch? )"
+ date="2017-11-28T01:03:05Z"
+ content="""
+hi, thanks for your reply;
+I've spent several hours today looking through the git-annex repo. I think it was a great idea to place the forums and everything in one repo! It provides sort of a \"running commentary\" on what was going on and why ...
+
+After a couple of hours looking through the repo using tig, I checked out the key commit \"bb242bdd82a438ebfc937609d8d13b512cb49943\" and found the foo.hs and fooes.hs files which are most likely the ones that Joey was writing about when he expressed hopes for metadata in an sqlite file. ( I didn't find a way to see \"old branches\" though, e.g. the one named `database`. Maybe if I study git more ... )
+
+Thanks for your reply to a silly newbie question anyway! I'll study this some more and see if I have some on-topic questions (hopefully they will be more educated by then :) )
+
+g'day!
+"""]]
