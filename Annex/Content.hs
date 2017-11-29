@@ -42,11 +42,13 @@ module Annex.Content (
 	dirKeys,
 	withObjectLoc,
 	staleKeysPrune,
+	pruneTmpWorkDirBefore,
 	isUnmodified,
 	verifyKeyContent,
 	VerifyConfig(..),
 	Verification(..),
 	unVerified,
+	withTmpWorkDir,
 ) where
 
 import System.IO.Unsafe (unsafeInterleaveIO)
@@ -303,7 +305,7 @@ getViaTmp' v key action = do
 	(ok, verification) <- action tmpfile
 	if ok
 		then ifM (verifyKeyContent v verification key tmpfile)
-			( ifM (moveAnnex key tmpfile)
+			( ifM (pruneTmpWorkDirBefore tmpfile (moveAnnex key))
 				( do
 					logStatus key InfoPresent
 					return True
@@ -311,7 +313,7 @@ getViaTmp' v key action = do
 				)
 			, do
 				warning "verification of content failed"
-				liftIO $ nukeFile tmpfile
+				pruneTmpWorkDirBefore tmpfile (liftIO . nukeFile)
 				return False
 			)
 		-- On transfer failure, the tmp file is left behind, in case
@@ -386,7 +388,7 @@ prepTmp key = do
 	createAnnexDirectory (parentDir tmp)
 	return tmp
 
-{- Creates a temp file for a key, runs an action on it, and cleans up
+{- Prepares a temp file for a key, runs an action on it, and cleans up
  - the temp file. If the action throws an exception, the temp file is
  - left behind, which allows for resuming.
  -}
@@ -394,7 +396,7 @@ withTmp :: Key -> (FilePath -> Annex a) -> Annex a
 withTmp key action = do
 	tmp <- prepTmp key
 	res <- action tmp
-	liftIO $ nukeFile tmp
+	pruneTmpWorkDirBefore tmp (liftIO . nukeFile)
 	return res
 
 {- Checks that there is disk space available to store a given key,
@@ -989,7 +991,8 @@ staleKeysPrune dirspec nottransferred = do
 	let stale = contents `exclude` dups
 
 	dir <- fromRepo dirspec
-	liftIO $ forM_ dups $ \t -> removeFile $ dir </> keyFile t
+	forM_ dups $ \k ->
+		pruneTmpWorkDirBefore (dir </> keyFile k) (liftIO . removeFile)
 
 	if nottransferred
 		then do
@@ -997,6 +1000,40 @@ staleKeysPrune dirspec nottransferred = do
 				<$> getTransfers
 			return $ filter (`S.notMember` inprogress) stale
 		else return stale
+
+{- Prune the work dir associated with the specified content file,
+ - before performing an action that deletes the file, or moves it away.
+ -
+ - This preserves the invariant that the workdir never exists without
+ - the content file.
+ -}
+pruneTmpWorkDirBefore :: FilePath -> (FilePath -> Annex a) -> Annex a
+pruneTmpWorkDirBefore f action = do
+	let workdir = gitAnnexTmpWorkDir f
+	liftIO $ whenM (doesDirectoryExist workdir) $
+		removeDirectoryRecursive workdir
+	action f
+
+{- Runs an action, passing it a temporary work directory where
+ - it can write files while receiving the content of a key.
+ -
+ - On exception, the temporary work directory is left, so resumes can
+ - use it.
+ -}
+withTmpWorkDir :: Key -> (FilePath -> Annex a) -> Annex a
+withTmpWorkDir key action = withTmp key $ \obj -> do
+	-- Create the object file if it does not exist. This way,
+	-- staleKeysPrune only has to look for object files, and can
+	-- clean up gitAnnexTmpWorkDir for those it finds.
+	unlessM (liftIO $ doesFileExist obj) $ do
+		liftIO $ writeFile obj ""
+		setAnnexFilePerm obj
+	let tmpdir = gitAnnexTmpWorkDir obj
+	liftIO $ createDirectoryIfMissing True tmpdir
+	setAnnexDirPerm tmpdir
+	res <- action tmpdir
+	liftIO $ removeDirectoryRecursive tmpdir
+	return res
 
 {- Finds items in the first, smaller list, that are not
  - present in the second, larger list.
