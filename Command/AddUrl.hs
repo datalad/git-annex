@@ -21,6 +21,7 @@ import Annex.Content
 import Annex.Ingest
 import Annex.CheckIgnore
 import Annex.UUID
+import Annex.YoutubeDl
 import Logs.Web
 import Types.KeySource
 import Types.UrlContents
@@ -291,42 +292,44 @@ addUrlFile relaxed url urlinfo file
 
 downloadWeb :: URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
 downloadWeb url urlinfo file =
-	go =<< downloadWith' downloader dummykey webUUID url (AssociatedFile (Just file))
+	go =<< downloadWith' downloader urlkey webUUID url (AssociatedFile (Just file))
   where
-	dummykey = addSizeUrlKey urlinfo $ Backend.URL.fromUrl url Nothing
+	urlkey = addSizeUrlKey urlinfo $ Backend.URL.fromUrl url Nothing
 	downloader f p = do
 		showOutput
-		downloadUrl dummykey p [url] f
+		downloadUrl urlkey p [url] f
 	go Nothing = return Nothing
 	-- If we downloaded a html file, try to use youtube-dl to
 	-- extract embedded media.
 	go (Just tmp) = ifM (liftIO $ isHtml <$> readFile tmp)
-		( do
-			-- TODO need a directory based on dummykey,
-			-- which unused needs to clean up like
-			-- it does gitAnnexTmpObjectLocation
-			tmpdir <- undefined
-			liftIO $ createDirectoryIfMissing True tmpdir
-			mf <- youtubeDl url tmpdir
-			case mf of
-				Just mediafile -> do
-					liftIO $ nukeFile tmp
-					let mediaurl = setDownloader url YoutubeDownloader
-					let key = Backend.URL.fromUrl mediaurl Nothing
-					let dest = takeFileName mediafile
-					showDestinationFile dest
-					cleanup webUUID mediaurl dest key (Just mediafile)
-					return (Just key)
-				Nothing -> normalfinish tmp
+		( tryyoutubedl tmp
 		, normalfinish tmp
 		)
 	normalfinish tmp = do
 		showDestinationFile file
 		liftIO $ createDirectoryIfMissing True (parentDir file)
 		finishDownloadWith tmp webUUID url file
-
-youtubeDl :: URLString -> FilePath -> Annex (Maybe FilePath)
-youtubeDl = undefined -- TODO
+	tryyoutubedl tmp = do
+		let mediaurl = setDownloader url YoutubeDownloader
+		let mediakey = Backend.URL.fromUrl mediaurl Nothing
+		res <- withTmpWorkDir mediakey $ \workdir ->
+			Transfer.notifyTransfer Transfer.Download url $
+				Transfer.download webUUID mediakey (AssociatedFile Nothing) Transfer.noRetry $ \_p -> do
+					dl <- youtubeDl url workdir
+					case dl of
+						Right (Just mediafile) -> do
+							pruneTmpWorkDirBefore tmp (liftIO . nukeFile)
+							let dest = takeFileName mediafile
+							showDestinationFile dest
+							cleanup webUUID mediaurl dest mediakey (Just mediafile)
+							return $ Right $ Just mediakey
+						Right Nothing -> Right <$> normalfinish tmp
+						Left msg -> return $ Left msg
+		case res of
+			Left msg -> do
+				warning msg
+				return Nothing
+			Right r -> return r
 
 showDestinationFile :: FilePath -> Annex ()
 showDestinationFile file = do
@@ -388,7 +391,7 @@ cleanup u url file key mtmp = case mtmp of
 	Nothing -> go
 	Just tmp -> do
 		-- Move to final location for large file check.
-		liftIO $ renameFile tmp file
+		pruneTmpWorkDirBefore tmp (\_ -> liftIO $ renameFile tmp file)
 		largematcher <- largeFilesMatcher
 		large <- checkFileMatcher largematcher file
 		if large
@@ -407,7 +410,7 @@ cleanup u url file key mtmp = case mtmp of
 			( do
 				when (isJust mtmp) $
 					logStatus key InfoPresent
-			, liftIO $ maybe noop nukeFile mtmp
+			, maybe noop (\tmp -> pruneTmpWorkDirBefore tmp (liftIO . nukeFile)) mtmp
 			)
 
 -- TODO youtube-dl

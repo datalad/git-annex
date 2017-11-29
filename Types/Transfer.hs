@@ -5,9 +5,12 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE FlexibleInstances #-}
+
 module Types.Transfer where
 
 import Types
+import Types.Remote (Verification(..))
 import Utility.PID
 import Utility.QuickCheck
 
@@ -66,3 +69,25 @@ instance Arbitrary TransferInfo where
 		-- associated file cannot be empty (but can be Nothing)
 		<*> (AssociatedFile <$> arbitrary `suchThat` (/= Just ""))
 		<*> arbitrary
+
+class Observable a where
+	observeBool :: a -> Bool
+	observeFailure :: a
+
+instance Observable Bool where
+	observeBool = id
+	observeFailure = False
+
+instance Observable (Bool, Verification) where
+	observeBool = fst
+	observeFailure = (False, UnVerified)
+
+instance Observable (Either e Bool) where
+	observeBool (Left _) = False
+	observeBool (Right b) = b
+	observeFailure = Right False
+
+instance Observable (Either e (Maybe a)) where
+	observeBool (Right (Just _)) = True
+	observeBool _ = False
+	observeFailure = Right Nothing

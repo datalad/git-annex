@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, FlexibleInstances, BangPatterns #-}
+{-# LANGUAGE CPP, BangPatterns #-}
 
 module Annex.Transfer (
 	module X,
@@ -27,30 +27,12 @@ import Annex.Perms
 import Utility.Metered
 import Annex.LockPool
 import Types.Key
-import Types.Remote (Verification(..))
 import qualified Types.Remote as Remote
 import Types.Concurrency
 
 import Control.Concurrent
 import qualified Data.Map.Strict as M
 import Data.Ord
-
-class Observable a where
-	observeBool :: a -> Bool
-	observeFailure :: a
-
-instance Observable Bool where
-	observeBool = id
-	observeFailure = False
-
-instance Observable (Bool, Verification) where
-	observeBool = fst
-	observeFailure = (False, UnVerified)
-
-instance Observable (Either e Bool) where
-	observeBool (Left _) = False
-	observeBool (Right b) = b
-	observeFailure = Right False
 
 upload :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
 upload u key f d a _witness = guardHaveUUID u $ 

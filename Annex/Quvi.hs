@@ -17,7 +17,7 @@ import Utility.Url
 withQuviOptions :: forall a. Query a -> [QuviParams] -> URLString -> Annex a
 withQuviOptions a ps url = do
 	v <- quviVersion
-	opts <- map Param . annexQuviOptions <$> Annex.getGitConfig
+	opts <- return []
 	liftIO $ a v (concatMap (\mkp -> mkp v) ps ++ opts) url
 
 quviSupported :: URLString -> Annex Bool

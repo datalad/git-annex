@@ -547,6 +547,7 @@ Executable git-annex
     Annex.View.ViewedFile
     Annex.Wanted
     Annex.WorkTree
+    Annex.YoutubeDl
     Assistant
     Assistant.Alert
     Assistant.Alert.Utility

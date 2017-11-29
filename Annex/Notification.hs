@@ -39,7 +39,7 @@ instance Transferrable URLString where
 {- Wrap around an action that performs a transfer, which may run multiple
  - attempts. Displays notification when supported and when the user asked
  - for it. -}
-notifyTransfer :: Transferrable t => Direction -> t -> (NotifyWitness -> Annex Bool) -> Annex Bool
+notifyTransfer :: Transferrable t => Observable v => Direction -> t -> (NotifyWitness -> Annex v) -> Annex v
 notifyTransfer direction t a = case descTransfrerrable t of
 	Nothing -> a NotifyWitness
 	Just desc -> do
@@ -51,12 +51,13 @@ notifyTransfer direction t a = case descTransfrerrable t of
 				startnotification <- liftIO $ if notifyStart wanted
 					then Just <$> Notify.notify client (startedTransferNote direction desc)
 					else pure Nothing
-				ok <- a NotifyWitness
+				res <- a NotifyWitness
+				let ok = observeBool res
 				when (notifyFinish wanted) $ liftIO $ void $ maybe 
 					(Notify.notify client $ finishedTransferNote ok direction desc)
 					(\n -> Notify.replace client n $ finishedTransferNote ok direction desc)
 					startnotification
-				return ok
+				return res
 			else a NotifyWitness
 #else
 		a NotifyWitness

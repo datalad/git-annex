@@ -67,7 +67,7 @@ data GitConfig = GitConfig
 	, annexSyncContent :: Configurable Bool
 	, annexDebug :: Bool
 	, annexWebOptions :: [String]
-	, annexQuviOptions :: [String]
+	, annexYoutubeDlOptions :: [String]
 	, annexAriaTorrentOptions :: [String]
 	, annexWebDownloadCommand :: Maybe String
 	, annexCrippledFileSystem :: Bool
@@ -127,7 +127,7 @@ extractGitConfig r = GitConfig
 		getmaybebool (annex "synccontent")
 	, annexDebug = getbool (annex "debug") False
 	, annexWebOptions = getwords (annex "web-options")
-	, annexQuviOptions = getwords (annex "quvi-options")
+	, annexYoutubeDlOptions = getwords (annex "youtube-dl-options")
 	, annexAriaTorrentOptions = getwords (annex "aria-torrent-options")
 	, annexWebDownloadCommand = getmaybe (annex "web-download-command")
 	, annexCrippledFileSystem = getbool (annex "crippledfilesystem") False

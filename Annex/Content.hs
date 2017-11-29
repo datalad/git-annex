@@ -1017,14 +1017,15 @@ pruneTmpWorkDirBefore f action = do
 {- Runs an action, passing it a temporary work directory where
  - it can write files while receiving the content of a key.
  -
- - On exception, the temporary work directory is left, so resumes can
- - use it.
+ - On exception, or when the action returns a Left value,
+ - the temporary work directory is left, so resumes can use it.
  -}
-withTmpWorkDir :: Key -> (FilePath -> Annex a) -> Annex a
-withTmpWorkDir key action = withTmp key $ \obj -> do
+withTmpWorkDir :: Key -> (FilePath -> Annex (Either a b)) -> Annex (Either a b)
+withTmpWorkDir key action = do
 	-- Create the object file if it does not exist. This way,
 	-- staleKeysPrune only has to look for object files, and can
 	-- clean up gitAnnexTmpWorkDir for those it finds.
+	obj <- prepTmp key
 	unlessM (liftIO $ doesFileExist obj) $ do
 		liftIO $ writeFile obj ""
 		setAnnexFilePerm obj
@@ -1032,7 +1033,9 @@ withTmpWorkDir key action = withTmp key $ \obj -> do
 	liftIO $ createDirectoryIfMissing True tmpdir
 	setAnnexDirPerm tmpdir
 	res <- action tmpdir
-	liftIO $ removeDirectoryRecursive tmpdir
+	case res of
+		Right _ -> liftIO $ removeDirectoryRecursive tmpdir
+		Left _ -> noop
 	return res
 
 {- Finds items in the first, smaller list, that are not

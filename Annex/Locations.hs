@@ -263,7 +263,7 @@ gitAnnexTmpWorkDir :: FilePath -> FilePath
 gitAnnexTmpWorkDir p =
 	let (dir, f) = splitFileName p
 	-- Using a prefix avoids name conflict with any other keys.
-	in dir </> "work." </> f
+	in dir </> "work." ++ f
 
 {- .git/annex/bad/ is used for bad files found during fsck -}
 gitAnnexBadDir :: Git.Repo -> FilePath
