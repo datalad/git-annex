@@ -165,7 +165,7 @@ downloadRemoteFile r relaxed uri file sz = checkCanAdd file $ do
 	liftIO $ createDirectoryIfMissing True (parentDir file)
 	ifM (Annex.getState Annex.fast <||> pure relaxed)
 		( do
-			cleanup (Remote.uuid r) loguri file urlkey Nothing
+			addWorkTree (Remote.uuid r) loguri file urlkey Nothing
 			return (Just urlkey)
 		, do
 			-- Set temporary url for the urlkey
@@ -213,46 +213,6 @@ performWeb o url file urlinfo = ifAnnexed file addurl geturl
 	-- TODO youtube-dl
 	addurl = addUrlChecked (relaxedOption o) url webUUID $ \k -> return $
 		(Url.urlExists urlinfo, Url.urlSize urlinfo == keySize k)
-
-performQuvi :: Bool -> URLString -> URLString -> FilePath -> CommandPerform
-performQuvi relaxed pageurl videourl file = ifAnnexed file addurl geturl
-  where
-	quviurl = setDownloader pageurl QuviDownloader
-	addurl key = next $ do
-		cleanup webUUID quviurl file key Nothing
-		return True
-	geturl = next $ isJust <$> addUrlFileQuvi relaxed quviurl videourl file
-
-addUrlFileQuvi :: Bool -> URLString -> URLString -> FilePath -> Annex (Maybe Key)
-addUrlFileQuvi relaxed quviurl videourl file = checkCanAdd file $ do
-	let key = Backend.URL.fromUrl quviurl Nothing
-	ifM (pure relaxed <||> Annex.getState Annex.fast)
-		( do
-			cleanup webUUID quviurl file key Nothing
-			return (Just key)
-		, do
-			{- Get the size, and use that to check
-			 - disk space. However, the size info is not
-			 - retained, because the size of a video stream
-			 - might change and we want to be able to download
-			 - it later. -}
-			urlinfo <- Url.withUrlOptions (Url.getUrlInfo videourl)
-			let sizedkey = addSizeUrlKey urlinfo key
-			checkDiskSpaceToGet sizedkey Nothing $ do
-				tmp <- fromRepo $ gitAnnexTmpObjectLocation key
-				showOutput
-				ok <- Transfer.notifyTransfer Transfer.Download afile $
-					Transfer.download webUUID key afile Transfer.forwardRetry $ \p -> do
-						liftIO $ createDirectoryIfMissing True (parentDir tmp)
-						downloadUrl key p [videourl] tmp
-				if ok
-					then do
-						cleanup webUUID quviurl file key (Just tmp)
-						return (Just key)
-					else return Nothing
-		)
-  where
-	afile = AssociatedFile (Just file)
 
 addUrlChecked :: Bool -> URLString -> UUID -> (Key -> Annex (Bool, Bool)) -> Key -> CommandPerform
 addUrlChecked relaxed url u checkexistssize key
@@ -321,7 +281,7 @@ downloadWeb url urlinfo file =
 							pruneTmpWorkDirBefore tmp (liftIO . nukeFile)
 							let dest = takeFileName mediafile
 							showDestinationFile dest
-							cleanup webUUID mediaurl dest mediakey (Just mediafile)
+							addWorkTree webUUID mediaurl dest mediakey (Just mediafile)
 							return $ Right $ Just mediakey
 						Right Nothing -> Right <$> normalfinish tmp
 						Left msg -> return $ Left msg
@@ -379,15 +339,16 @@ finishDownloadWith tmp u url file = do
 	case k of
 		Nothing -> return Nothing
 		Just (key, _) -> do
-			cleanup u url file key (Just tmp)
+			addWorkTree u url file key (Just tmp)
 			return (Just key)
 
 {- Adds the url size to the Key. -}
 addSizeUrlKey :: Url.UrlInfo -> Key -> Key
 addSizeUrlKey urlinfo key = key { keySize = Url.urlSize urlinfo }
 
-cleanup :: UUID -> URLString -> FilePath -> Key -> Maybe FilePath -> Annex ()
-cleanup u url file key mtmp = case mtmp of
+{- Adds worktree file to the repository. -}
+addWorkTree :: UUID -> URLString -> FilePath -> Key -> Maybe FilePath -> Annex ()
+addWorkTree u url file key mtmp = case mtmp of
 	Nothing -> go
 	Just tmp -> do
 		-- Move to final location for large file check.
@@ -418,7 +379,7 @@ nodownload :: URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
 nodownload url urlinfo file
 	| Url.urlExists urlinfo = do
 		let key = Backend.URL.fromUrl url (Url.urlSize urlinfo)
-		cleanup webUUID url file key Nothing
+		addWorkTree webUUID url file key Nothing
 		return (Just key)
 	| otherwise = do
 		warning $ "unable to access url: " ++ url

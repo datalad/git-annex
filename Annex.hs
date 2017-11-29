@@ -64,7 +64,6 @@ import Types.LockCache
 import Types.DesktopNotify
 import Types.CleanupActions
 import qualified Database.Keys.Handle as Keys
-import Utility.Quvi (QuviVersion)
 import Utility.InodeCache
 import Utility.Url
 
@@ -134,7 +133,6 @@ data AnnexState = AnnexState
 	, errcounter :: Integer
 	, unusedkeys :: Maybe (S.Set Key)
 	, tempurls :: M.Map Key URLString
-	, quviversion :: Maybe QuviVersion
 	, existinghooks :: M.Map Git.Hook.Hook Bool
 	, desktopnotify :: DesktopNotify
 	, workers :: [Either AnnexState (Async AnnexState)]
@@ -190,7 +188,6 @@ newState c r = do
 		, errcounter = 0
 		, unusedkeys = Nothing
 		, tempurls = M.empty
-		, quviversion = Nothing
 		, existinghooks = M.empty
 		, desktopnotify = mempty
 		, workers = []

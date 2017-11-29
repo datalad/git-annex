@@ -531,7 +531,6 @@ Executable git-annex
     Annex.Path
     Annex.Perms
     Annex.Queue
-    Annex.Quvi
     Annex.ReplaceFile
     Annex.SpecialRemote
     Annex.Ssh
@@ -1035,7 +1034,6 @@ Executable git-annex
     Utility.Process
     Utility.Process.Shim
     Utility.QuickCheck
-    Utility.Quvi
     Utility.Rsync
     Utility.SRV
     Utility.SafeCommand

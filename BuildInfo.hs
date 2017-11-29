@@ -81,7 +81,6 @@ buildFlags = filter (not . null)
 	-- Always enabled now, but users may be used to seeing these flags
 	-- listed.
 	, "Feeds"
-	, "Quvi"
 	]
 
 -- Not a complete list, let alone a listing transitive deps, but only

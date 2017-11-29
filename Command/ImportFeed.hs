@@ -36,12 +36,12 @@ import Command.AddUrl (addUrlFile, downloadRemoteFile, parseRelaxedOption, parse
 import Annex.Perms
 import Annex.UUID
 import Backend.URL (fromUrl)
-import Annex.Quvi
-import qualified Utility.Quvi as Quvi
-import Command.AddUrl (addUrlFileQuvi)
+import Annex.Content
+import Annex.YoutubeDl
 import Types.MetaData
 import Logs.MetaData
 import Annex.MetaData
+import Command.AddUrl (addWorkTree)
 
 cmd :: Command
 cmd = notBareRepo $
@@ -101,7 +101,7 @@ data ToDownload = ToDownload
 	, location :: DownloadLocation
 	}
 
-data DownloadLocation = Enclosure URLString | QuviLink URLString
+data DownloadLocation = Enclosure URLString | MediaLink URLString
 
 type ItemId = String
 
@@ -141,14 +141,10 @@ findDownloads u = go =<< downloadFeed u
 		Just (enclosureurl, _, _) -> return $ 
 			Just $ ToDownload f u i $ Enclosure $ 
 				fromFeed enclosureurl
-		Nothing -> mkquvi f i
-	mkquvi f i = case getItemLink i of
-		Just link -> ifM (quviSupported $ fromFeed link)
-			( return $ Just $ ToDownload f u i $ QuviLink $ 
-				fromFeed link
-			, return Nothing
-			)
-		Nothing -> return Nothing
+		Nothing -> case getItemLink i of
+			Just link -> return $ Just $ ToDownload f u i $ 
+				MediaLink $ fromFeed link
+			Nothing -> return Nothing
 
 {- Feeds change, so a feed download cannot be resumed. -}
 downloadFeed :: URLString -> Annex (Maybe Feed)
@@ -192,19 +188,18 @@ performDownload opts cache todownload = case location todownload of
 								then catMaybes kl
 								else []
 							
-	QuviLink pageurl -> do
-		let quviurl = setDownloader pageurl QuviDownloader
-		checkknown quviurl $ do
-			mp <- withQuviOptions Quvi.query [Quvi.quiet, Quvi.httponly] pageurl
-			case mp of
-				Nothing -> return False
-				Just page -> case headMaybe $ Quvi.pageLinks page of
-					Nothing -> return False
-					Just link -> do
-						let videourl = Quvi.linkUrl link
-						checkknown videourl $
-							rundownload videourl ("." ++ fromMaybe "m" (Quvi.linkSuffix link)) $ \f ->
-								maybeToList <$> addUrlFileQuvi (relaxedOption opts) quviurl videourl f
+	MediaLink linkurl -> do
+		let mediaurl = setDownloader linkurl YoutubeDownloader
+		let mediakey = Backend.URL.fromUrl mediaurl Nothing
+		-- Old versions of git-annex that used quvi might have
+		-- used the quviurl for this, so check i/f it's known
+		-- to avoid adding it a second time.
+		let quviurl = setDownloader linkurl QuviDownloader
+		checkknown mediaurl $ checkknown quviurl $
+			ifM (Annex.getState Annex.fast <||> pure (relaxedOption opts)) 
+				( addmediafast linkurl mediaurl mediakey
+				, downloadmedia linkurl mediaurl mediakey
+				)
   where
 	forced = Annex.getState Annex.force
 
@@ -265,6 +260,44 @@ performDownload opts cache todownload = case location todownload of
 			( return Nothing
 			, tryanother
 			)
+	
+	downloadmedia linkurl mediaurl mediakey = do
+		r <- withTmpWorkDir mediakey $ \workdir -> do
+			dl <- youtubeDl linkurl workdir
+			case dl of
+				Right (Just mediafile) -> do
+					let ext = case takeExtension mediafile of
+						[] -> ".m"
+						s -> s
+					ok <- rundownload linkurl ext $ \f -> do
+						addWorkTree webUUID mediaurl f mediakey (Just mediafile)
+						return [mediakey]
+					return (Right ok)
+				-- youtude-dl didn't support it, so
+				-- download it as if the link were
+				-- an enclosure.
+				Right Nothing -> Right <$> 
+					performDownload opts cache todownload
+						{ location = Enclosure linkurl }
+				Left msg -> return (Left msg)
+		case r of
+			Left msg -> do
+				warning msg
+				return False
+			Right b -> return b
+
+	addmediafast linkurl mediaurl mediakey =
+		youtubeDlSupported linkurl >>= \case
+			Right True ->
+				rundownload linkurl ".m" $ \f -> do
+					addWorkTree webUUID mediaurl f mediakey Nothing
+					return [mediakey]
+			Right False ->
+				performDownload opts cache todownload
+					{ location = Enclosure linkurl }
+			Left msg -> do
+				warning msg
+				return False
 
 defaultTemplate :: String
 defaultTemplate = "${feedtitle}/${itemtitle}${extension}"
