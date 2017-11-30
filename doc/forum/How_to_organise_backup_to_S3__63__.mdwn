@@ -1,0 +1,10 @@
+Hello,
+
+what is the best way to use git-annex as a backup tool to S3? As far as I know, even if all data is copied to S3, I need a checkout of the git repo, correct? And of course the private key used.
+
+- Is there a way to also save the repository data to S3? To have something like ```git annex restore-from-external-remote ...```
+
+- If not, how do you organise the backup so that it is disaster proof? Upload the repo to some other external server regularly?
+
+Thanks,
+Florian
