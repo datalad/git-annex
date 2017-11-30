@@ -82,5 +82,7 @@ youtubeDlTo key url dest = do
 
 -- Check if youtube-dl can still find media in an url.
 youtubeDlSupported :: URLString -> Annex (Either String Bool)
-youtubeDlSupported url = liftIO $ catchMsgIO $
-	snd <$> processTranscript "youtube-dl" [ url, "--simulate" ] Nothing
+youtubeDlSupported url = catchMsgIO $ do
+	opts <- map Param . annexYoutubeDlOptions <$> Annex.getGitConfig
+	let opts' = opts ++ [ url, "--simulate" ]
+	liftIO $ snd <$> processTranscript "youtube-dl" opts' Nothing

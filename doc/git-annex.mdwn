@@ -1322,12 +1322,9 @@ Here are all the supported configuration settings.
 
   Some options may break git-annex's integration with youtube-dl. For
   example, the --output option could cause it to store files somewhere
-  git-annex won't find them. Avoid any options that cause youtube-dl
-  to download more than one file, or to store the file anywhere
-  other than the current working directory.
-
-  Note that git-annex runs youtube-dl with --ignore-config, to avoid
-  any configuration file settings that break its integration.
+  git-annex won't find them. Avoid setting here or in the youtube-dl config
+  file any options that cause youtube-dl to download more than one file,
+  or to store the file anywhere other than the current working directory.
 
 * `annex.aria-torrent-options`
 
