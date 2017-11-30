@@ -286,18 +286,13 @@ performDownload opts cache todownload = case location todownload of
 				return False
 			Right b -> return b
 
-	addmediafast linkurl mediaurl mediakey =
-		youtubeDlSupported linkurl >>= \case
-			Right True ->
-				rundownload linkurl ".m" $ \f -> do
-					addWorkTree webUUID mediaurl f mediakey Nothing
-					return [mediakey]
-			Right False ->
-				performDownload opts cache todownload
-					{ location = Enclosure linkurl }
-			Left msg -> do
-				warning msg
-				return False
+	addmediafast linkurl mediaurl mediakey = ifM (youtubeDlSupported linkurl)
+		( rundownload linkurl ".m" $ \f -> do
+			addWorkTree webUUID mediaurl f mediakey Nothing
+			return [mediakey]
+		, performDownload opts cache todownload
+			{ location = Enclosure linkurl }
+		)
 
 defaultTemplate :: String
 defaultTemplate = "${feedtitle}/${itemtitle}${extension}"

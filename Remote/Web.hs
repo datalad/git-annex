@@ -106,7 +106,7 @@ checkKey' key us = firsthit us (Right False) $ \u -> do
 	let (u', downloader) = getDownloader u
 	showChecking u'
 	case downloader of
-		YoutubeDownloader -> youtubeDlSupported u'
+		YoutubeDownloader -> youtubeDlCheck u'
 		_ -> do
 			Url.withUrlOptions $ catchMsgIO .
 				Url.checkBoth u' (keySize key)
