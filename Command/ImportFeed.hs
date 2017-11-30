@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2013 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -32,7 +32,7 @@ import Types.UrlContents
 import Logs.Web
 import qualified Utility.Format
 import Utility.Tmp
-import Command.AddUrl (addUrlFile, downloadRemoteFile, parseRelaxedOption, parseRawOption)
+import Command.AddUrl (addUrlFile, downloadRemoteFile, parseDownloadOptions, DownloadOptions(..))
 import Annex.Perms
 import Annex.UUID
 import Backend.URL (fromUrl)
@@ -51,8 +51,7 @@ cmd = notBareRepo $
 data ImportFeedOptions = ImportFeedOptions
 	{ feedUrls :: CmdParams
 	, templateOption :: Maybe String
-	, relaxedOption :: Bool
-	, rawOption :: Bool
+	, downloadOptions :: DownloadOptions
 	}
 
 optParser :: CmdParamsDesc -> Parser ImportFeedOptions
@@ -62,8 +61,7 @@ optParser desc = ImportFeedOptions
 		( long "template" <> metavar paramFormat
 		<> help "template for filenames"
 		))
-	<*> parseRelaxedOption
-	<*> parseRawOption
+	<*> parseDownloadOptions False
 
 seek :: ImportFeedOptions -> CommandSeek
 seek o = do
@@ -165,12 +163,19 @@ performDownload opts cache todownload = case location todownload of
 	Enclosure url -> checkknown url $
 		rundownload url (takeWhile (/= '?') $ takeExtension url) $ \f -> do
 			r <- Remote.claimingUrl url
-			if Remote.uuid r == webUUID || rawOption opts
+			if Remote.uuid r == webUUID || rawOption (downloadOptions opts)
 				then do
-					urlinfo <- if relaxedOption opts
+					urlinfo <- if relaxedOption (downloadOptions opts)
 						then pure Url.assumeUrlExists
 						else Url.withUrlOptions (Url.getUrlInfo url)
-					maybeToList <$> addUrlFile Nothing (relaxedOption opts) url urlinfo f
+					let dlopts = (downloadOptions opts)
+						-- force using the filename
+						-- chosen here
+						{ fileOption = Just f
+						-- don't use youtube-dl
+						, rawOption = True
+						}
+					maybeToList <$> addUrlFile dlopts url urlinfo f
 				else do
 					res <- tryNonAsync $ maybe
 						(error $ "unable to checkUrl of " ++ Remote.name r)
@@ -180,10 +185,10 @@ performDownload opts cache todownload = case location todownload of
 						Left _ -> return []
 						Right (UrlContents sz _) ->
 							maybeToList <$>
-								downloadRemoteFile r (relaxedOption opts) url f sz
+								downloadRemoteFile r (downloadOptions opts) url f sz
 						Right (UrlMulti l) -> do
 							kl <- forM l $ \(url', sz, subf) ->
-								downloadRemoteFile r (relaxedOption opts) url' (f </> fromSafeFilePath subf) sz
+								downloadRemoteFile r (downloadOptions opts) url' (f </> fromSafeFilePath subf) sz
 							return $ if all isJust kl
 								then catMaybes kl
 								else []
@@ -196,7 +201,7 @@ performDownload opts cache todownload = case location todownload of
 		-- to avoid adding it a second time.
 		let quviurl = setDownloader linkurl QuviDownloader
 		checkknown mediaurl $ checkknown quviurl $
-			ifM (Annex.getState Annex.fast <||> pure (relaxedOption opts)) 
+			ifM (Annex.getState Annex.fast <||> pure (relaxedOption (downloadOptions opts)))
 				( addmediafast linkurl mediaurl mediakey
 				, downloadmedia linkurl mediaurl mediakey
 				)
@@ -261,36 +266,41 @@ performDownload opts cache todownload = case location todownload of
 			, tryanother
 			)
 	
-	downloadmedia linkurl mediaurl mediakey = do
-		r <- withTmpWorkDir mediakey $ \workdir -> do
-			dl <- youtubeDl linkurl workdir
-			case dl of
-				Right (Just mediafile) -> do
-					let ext = case takeExtension mediafile of
-						[] -> ".m"
-						s -> s
-					ok <- rundownload linkurl ext $ \f -> do
-						addWorkTree webUUID mediaurl f mediakey (Just mediafile)
-						return [mediakey]
-					return (Just ok)
-				-- youtude-dl didn't support it, so
-				-- download it as if the link were
-				-- an enclosure.
-				Right Nothing -> Just <$> 
-					performDownload opts cache todownload
-						{ location = Enclosure linkurl }
-				Left msg -> do
-					warning msg
-					return Nothing
-		return (fromMaybe False r)
-
-	addmediafast linkurl mediaurl mediakey = ifM (youtubeDlSupported linkurl)
-		( rundownload linkurl ".m" $ \f -> do
-			addWorkTree webUUID mediaurl f mediakey Nothing
-			return [mediakey]
-		, performDownload opts cache todownload
+	downloadmedia linkurl mediaurl mediakey
+		| rawOption (downloadOptions opts) = downloadlink
+		| otherwise = do
+			r <- withTmpWorkDir mediakey $ \workdir -> do
+				dl <- youtubeDl linkurl workdir
+				case dl of
+					Right (Just mediafile) -> do
+						let ext = case takeExtension mediafile of
+							[] -> ".m"
+							s -> s
+						ok <- rundownload linkurl ext $ \f -> do
+							addWorkTree webUUID mediaurl f mediakey (Just mediafile)
+							return [mediakey]
+						return (Just ok)
+					-- youtude-dl didn't support it, so
+					-- download it as if the link were
+					-- an enclosure.
+					Right Nothing -> Just <$> downloadlink
+					Left msg -> do
+						warning msg
+						return Nothing
+			return (fromMaybe False r)
+	  where
+		downloadlink = performDownload opts cache todownload
 			{ location = Enclosure linkurl }
-		)
+
+	addmediafast linkurl mediaurl mediakey =
+		ifM (pure (not (rawOption (downloadOptions opts)))
+		     <&&> youtubeDlSupported linkurl)
+			( rundownload linkurl ".m" $ \f -> do
+				addWorkTree webUUID mediaurl f mediakey Nothing
+				return [mediakey]
+			, performDownload opts cache todownload
+				{ location = Enclosure linkurl }
+			)
 
 defaultTemplate :: String
 defaultTemplate = "${feedtitle}/${itemtitle}${extension}"
