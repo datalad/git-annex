@@ -21,6 +21,7 @@ module Annex.Content (
 	prepTmp,
 	withTmp,
 	checkDiskSpace,
+	needMoreDiskSpace,
 	moveAnnex,
 	populatePointerFile,
 	linkToAnnex,
@@ -431,16 +432,17 @@ checkDiskSpace' need destdir key alreadythere samefilesystem = ifM (Annex.getSta
 				let delta = need + reserve - have - alreadythere + inprogress
 				let ok = delta <= 0
 				unless ok $
-					needmorespace delta
+					warning $ needMoreDiskSpace delta
 				return ok
 			_ -> return True
 	)
   where
 	dir = maybe (fromRepo gitAnnexDir) return destdir
-	needmorespace n =
-		warning $ "not enough free space, need " ++ 
-			roughSize storageUnits True n ++
-			" more" ++ forcemsg
+
+needMoreDiskSpace :: Integer -> String
+needMoreDiskSpace n = "not enough free space, need " ++ 
+	roughSize storageUnits True n ++ " more" ++ forcemsg
+  where
 	forcemsg = " (use --force to override this check or adjust annex.diskreserve)"
 
 {- Moves a key's content into .git/annex/objects/

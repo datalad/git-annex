@@ -11,6 +11,8 @@ import Annex.Common
 import qualified Annex
 import Annex.Content
 import Utility.Url (URLString)
+import Utility.DiskFree
+import Logs.Transfer
 
 -- Runs youtube-dl in a work directory, to download a single media file
 -- from the url. Reutrns the path to the media file in the work directory.
@@ -26,41 +28,70 @@ import Utility.Url (URLString)
 -- (Note that we can't use --output to specifiy the file to download to,
 -- due to <https://github.com/rg3/youtube-dl/issues/14864>)
 youtubeDl :: URLString -> FilePath -> Annex (Either String (Maybe FilePath))
-youtubeDl url workdir = ifM (liftIO (inPath "youtube-dl") <&&> runcmd)
-	( do
-		fs <- liftIO $ filterM (doesFileExist) =<< dirContents workdir
-		case fs of
-			(f:[]) -> return (Right (Just f))
-			[] -> return nofiles
-			_ -> return (toomanyfiles fs)
-	, do
-		fs <- liftIO $ filterM (doesFileExist) =<< dirContents workdir
-		if null fs
-			then return (Right Nothing)
-			else return (Left "youtube-dl download is incomplete. Run the command again to resume.")
+youtubeDl url workdir = ifM (liftIO $ inPath "youtube-dl")
+	( runcmd >>= \case
+		Right True -> do
+			fs <- liftIO $ filterM (doesFileExist) =<< dirContents workdir
+			case fs of
+				(f:[]) -> return (Right (Just f))
+				[] -> return nofiles
+				_ -> return (toomanyfiles fs)
+		Right False -> do
+			fs <- liftIO $ filterM (doesFileExist) =<< dirContents workdir
+			if null fs
+				then return (Right Nothing)
+				else return (Left "youtube-dl download is incomplete. Run the command again to resume.")
+		Left msg -> return (Left msg)
+	, return (Right Nothing)
 	)
   where
 	nofiles = Left "youtube-dl did not put any media in its work directory, perhaps it's been configured to store files somewhere else?"
 	toomanyfiles fs = Left $ "youtube-dl downloaded multiple media files; git-annex is only able to deal with one per url: " ++ show fs
-	runcmd = do
-		quiet <- commandProgressDisabled
-		opts <- youtubeDlOpts $
-			[ Param url
-			-- To make youtube-dl only download one file,
-			-- when given a page with a video and a playlist,
-			-- download only the video.
-			, Param "--no-playlist"
-			-- And when given a page with only a playlist,
-			-- download only the first video on the playlist.
-			-- (Assumes the video is somewhat stable, but
-			-- this is the only way to prevent youtube-dl
-			-- from downloading the whole playlist.)
-			, Param "--playlist-items", Param "0"
-			-- TODO --max-filesize
-			] ++
-			if quiet then [ Param "--quiet" ] else []
-		liftIO $ boolSystem' "youtube-dl" opts $
-			\p -> p { cwd = Just workdir }
+	runcmd = youtubeDlMaxSize workdir >>= \case
+		Left msg -> return (Left msg)
+		Right maxsize -> do
+			quiet <- commandProgressDisabled
+			opts <- youtubeDlOpts $ dlopts ++ maxsize ++ 
+				if quiet then [ Param "--quiet" ] else []
+			ok <- liftIO $ boolSystem' "youtube-dl" opts $
+				\p -> p { cwd = Just workdir }
+			return (Right ok)
+	dlopts = 
+		[ Param url
+		-- To make youtube-dl only download one file when given a
+		-- page with a video and a playlist, download only the video.
+		, Param "--no-playlist"
+		-- And when given a page with only a playlist, download only
+		-- the first video on the playlist. (Assumes the video is
+		-- somewhat stable, but this is the only way to prevent
+		-- youtube-dl from downloading the whole playlist.)
+		, Param "--playlist-items", Param "0"
+		]
+
+-- To honor annex.diskreserve, ask youtube-dl to not download too
+-- large a media file. Factors in other downloads that are in progress,
+-- and any files in the workdir that it may have partially downloaded
+-- before.
+youtubeDlMaxSize :: FilePath -> Annex (Either String [CommandParam])
+youtubeDlMaxSize workdir = ifM (Annex.getState Annex.force)
+	( return $ Right []
+	, liftIO (getDiskFree workdir) >>= \case
+		Just have -> do
+			inprogress <- sizeOfDownloadsInProgress (const True)
+			partial <- liftIO $ sum 
+				<$> (mapM getFileSize =<< dirContents workdir)
+			reserve <- annexDiskReserve <$> Annex.getGitConfig
+			let maxsize = have - reserve - inprogress + partial
+			if maxsize > 0
+				then return $ Right
+					[ Param "--max-filesize"
+					, Param (show maxsize)
+					]
+				else return $ Left $
+					needMoreDiskSpace $
+						negate maxsize + 1024
+		Nothing -> return $ Right []
+	)
 
 -- Download a media file to a destination, 
 youtubeDlTo :: Key -> URLString -> FilePath -> Annex Bool
