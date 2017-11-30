@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2017-11-28T21:47:54Z"
+ content="""
+Yeah, you found the stuff. That's as far as the metadata cache idea has
+gotten yet. I've restored the missing "database" branch, which was just
+that commit you found.
+
+I do hope to circle back around to this eventually to speed up generating
+views and other metadata queries.
+
+But, as a programmer, you could create your own sqlite database and put
+metadata about your git-annex repository in it. Using
+`git annex metadata --batch --json` you can query git-annex
+for metadata about your files as fast as it can pull it out of git,
+and shove it into your database, and then write your own sql queries.
+
+That would be a good first step, because working with real-world
+data would help develop the sql schema and see if it'll be fast enough to
+bother with putting into git-annex.
+"""]]
