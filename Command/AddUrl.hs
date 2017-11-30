@@ -153,7 +153,7 @@ performRemote :: Remote -> Bool -> URLString -> FilePath -> Maybe Integer -> Com
 performRemote r relaxed uri file sz = ifAnnexed file adduri geturi
   where
 	loguri = setDownloader uri OtherDownloader
-	adduri = addUrlChecked relaxed loguri (Remote.uuid r) checkexistssize
+	adduri = addUrlChecked relaxed loguri file (Remote.uuid r) checkexistssize
 	checkexistssize key = return $ case sz of
 		Nothing -> (True, True, uri)
 		Just n -> (True, n == fromMaybe n (keySize key), uri)
@@ -210,7 +210,7 @@ performWeb :: AddUrlOptions -> URLString -> FilePath -> Url.UrlInfo -> CommandPe
 performWeb o url file urlinfo = ifAnnexed file addurl geturl
   where
 	geturl = next $ isJust <$> addUrlFile (Just o) (relaxedOption o) url urlinfo file
-	addurl = addUrlChecked (relaxedOption o) url webUUID $ \k -> 
+	addurl = addUrlChecked (relaxedOption o) url file webUUID $ \k -> 
 		ifM (youtubeDlSupported url)
 			( return (True, True, setDownloader url YoutubeDownloader)
 			, return (Url.urlExists urlinfo, Url.urlSize urlinfo == keySize k, url)
@@ -218,10 +218,12 @@ performWeb o url file urlinfo = ifAnnexed file addurl geturl
 
 {- Check that the url exists, and has the same size as the key,
  - and add it as an url to the key. -}
-addUrlChecked :: Bool -> URLString -> UUID -> (Key -> Annex (Bool, Bool, URLString)) -> Key -> CommandPerform
-addUrlChecked relaxed url u checkexistssize key =
+addUrlChecked :: Bool -> URLString -> FilePath -> UUID -> (Key -> Annex (Bool, Bool, URLString)) -> Key -> CommandPerform
+addUrlChecked relaxed url file u checkexistssize key =
 	ifM ((elem url <$> getUrls key) <&&> (elem u <$> loggedLocations key))
-		( next $ return True -- nothing to do
+		( do
+			showDestinationFile file
+			next $ return True
 		, do
 			(exists, samesize, url') <- checkexistssize key
 			if exists && (samesize || relaxed)
