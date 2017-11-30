@@ -84,5 +84,5 @@ youtubeDlTo key url dest = do
 youtubeDlSupported :: URLString -> Annex (Either String Bool)
 youtubeDlSupported url = catchMsgIO $ do
 	opts <- map Param . annexYoutubeDlOptions <$> Annex.getGitConfig
-	let opts' = opts ++ [ url, "--simulate" ]
-	liftIO $ snd <$> processTranscript "youtube-dl" opts' Nothing
+	let opts' = opts ++ [ Param url, Param "--simulate" ]
+	liftIO $ snd <$> processTranscript "youtube-dl" (toCommand opts') Nothing
