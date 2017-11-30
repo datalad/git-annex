@@ -244,7 +244,7 @@ addUrlChecked relaxed url u checkexistssize key =
 addUrlFile :: Maybe AddUrlOptions -> Bool -> URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
 addUrlFile mo relaxed url urlinfo file =
 	ifM (Annex.getState Annex.fast <||> pure relaxed)
-		( nodownloadWeb url urlinfo file
+		( nodownloadWeb mo url urlinfo file
 		, downloadWeb mo url urlinfo file
 		)
 
@@ -274,7 +274,7 @@ downloadWeb mo url urlinfo file =
 				case dl of
 					Right (Just mediafile) -> do
 						pruneTmpWorkDirBefore tmp (liftIO . nukeFile)
-						let dest = if isJust (fileOption <$> mo)
+						let dest = if isJust (fileOption =<< mo)
 							then file
 							else takeFileName mediafile
 						checkCanAdd dest $ do
@@ -372,17 +372,30 @@ addWorkTree u url file key mtmp = case mtmp of
 			, maybe noop (\tmp -> pruneTmpWorkDirBefore tmp (liftIO . nukeFile)) mtmp
 			)
 
--- TODO youtube-dl
-nodownloadWeb :: URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
-nodownloadWeb url urlinfo file
-	| Url.urlExists urlinfo = checkCanAdd file $ do
-		liftIO $ createDirectoryIfMissing True (parentDir file)
-		let key = Backend.URL.fromUrl url (Url.urlSize urlinfo)
-		addWorkTree webUUID url file key Nothing
-		return (Just key)
+nodownloadWeb :: Maybe AddUrlOptions -> URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
+nodownloadWeb mo url urlinfo file
+	| Url.urlExists urlinfo = go =<< youtubeDlFileName url
 	| otherwise = do
 		warning $ "unable to access url: " ++ url
 		return Nothing
+  where
+	go (Left _) = do
+		let key = Backend.URL.fromUrl url (Url.urlSize urlinfo)
+		nodownloadWeb' url key file
+	go (Right mediafile) = do
+		let dest = if isJust (fileOption =<< mo)
+			then file
+			else takeFileName mediafile
+		let mediaurl = setDownloader url YoutubeDownloader
+		let mediakey = Backend.URL.fromUrl mediaurl Nothing
+		nodownloadWeb' mediaurl mediakey dest
+
+nodownloadWeb' :: URLString -> Key -> FilePath -> Annex (Maybe Key)
+nodownloadWeb' url key file = checkCanAdd file $ do
+	showDestinationFile file
+	liftIO $ createDirectoryIfMissing True (parentDir file)
+	addWorkTree webUUID url file key Nothing
+	return (Just key)
 
 url2file :: URI -> Maybe Int -> Int -> FilePath
 url2file url pathdepth pathmax = case pathdepth of

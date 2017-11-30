@@ -43,9 +43,8 @@ youtubeDl url workdir = ifM (liftIO (inPath "youtube-dl") <&&> runcmd)
 	nofiles = Left "youtube-dl did not put any media in its work directory, perhaps it's been configured to store files somewhere else?"
 	toomanyfiles fs = Left $ "youtube-dl downloaded multiple media files; git-annex is only able to deal with one per url: " ++ show fs
 	runcmd = do
-		opts <- map Param . annexYoutubeDlOptions <$> Annex.getGitConfig
 		quiet <- commandProgressDisabled
-		let opts' = opts ++
+		opts <- youtubeDlOpts $
 			[ Param url
 			-- To make youtube-dl only download one file,
 			-- when given a page with a video and a playlist,
@@ -60,7 +59,7 @@ youtubeDl url workdir = ifM (liftIO (inPath "youtube-dl") <&&> runcmd)
 			-- TODO --max-filesize
 			] ++
 			if quiet then [ Param "--quiet" ] else []
-		liftIO $ boolSystem' "youtube-dl" opts' $
+		liftIO $ boolSystem' "youtube-dl" opts $
 			\p -> p { cwd = Just workdir }
 
 -- Download a media file to a destination, 
@@ -81,9 +80,32 @@ youtubeDlTo key url dest = do
 youtubeDlSupported :: URLString -> Annex Bool
 youtubeDlSupported url = either (const False) id <$> youtubeDlCheck url
 
--- Check if youtube-dl can still find media in an url.
+-- Check if youtube-dl can find media in an url.
 youtubeDlCheck :: URLString -> Annex (Either String Bool)
 youtubeDlCheck url = catchMsgIO $ do
+	opts <- youtubeDlOpts [ Param url, Param "--simulate" ]
+	liftIO $ snd <$> processTranscript "youtube-dl" (toCommand opts) Nothing
+
+-- Ask youtube-dl for the filename of media in an url.
+--
+-- (This is not always identical to the filename it uses when downloading.)
+youtubeDlFileName :: URLString -> Annex (Either String FilePath)
+youtubeDlFileName url = flip catchIO (pure . Left . show) $ do
+	-- Sometimes youtube-dl will fail with an ugly backtrace
+	-- (eg, http://bugs.debian.org/874321)
+	-- so catch stderr as well as stdout to avoid the user seeing it. 
+	-- --no-warnings avoids warning messages that are output to stdout.
+	opts <- youtubeDlOpts
+		[ Param url
+		, Param "--get-filename"
+		, Param "--no-warnings"
+		]
+	(output, ok) <- liftIO $ processTranscript "youtube-dl" (toCommand opts) Nothing
+	return $ case (ok, lines output) of
+		(True, (f:_)) | not (null f) -> Right f
+		_ -> Left "no media in url"
+
+youtubeDlOpts :: [CommandParam] -> Annex [CommandParam]
+youtubeDlOpts addopts = do
 	opts <- map Param . annexYoutubeDlOptions <$> Annex.getGitConfig
-	let opts' = opts ++ [ Param url, Param "--simulate" ]
-	liftIO $ snd <$> processTranscript "youtube-dl" (toCommand opts') Nothing
+	return (opts ++ addopts)
