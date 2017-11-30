@@ -209,7 +209,7 @@ startWeb o urlstring = go $ fromMaybe bad $ parseURI urlstring
 performWeb :: AddUrlOptions -> URLString -> FilePath -> Url.UrlInfo -> CommandPerform
 performWeb o url file urlinfo = ifAnnexed file addurl geturl
   where
-	geturl = next $ isJust <$> addUrlFile (relaxedOption o) url urlinfo file
+	geturl = next $ isJust <$> addUrlFile (Just o) (relaxedOption o) url urlinfo file
 	-- TODO youtube-dl
 	addurl = addUrlChecked (relaxedOption o) url webUUID $ \k -> return $
 		(Url.urlExists urlinfo, Url.urlSize urlinfo == keySize k)
@@ -234,12 +234,13 @@ addUrlChecked relaxed url u checkexistssize key
 					stop
 		)
 
-{- Adds an url, normally to the specified FilePath. But, if youtube-dl
- - supports the url, it will be written to a different file, based on the
- - title of the media.
+{- Downloads an url and adds it to the repository, normally at the specified
+ - FilePath. But, if youtube-dl supports the url, it will be written to a
+ - different file, based on the title of the media. Unless the user
+ - specified fileOption, which then forces using the FilePath.
  -}
-addUrlFile :: Bool -> URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
-addUrlFile relaxed url urlinfo file
+addUrlFile :: Maybe AddUrlOptions -> Bool -> URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
+addUrlFile mo relaxed url urlinfo file
 	| relaxed = checkCanAdd file $ do
 		liftIO $ createDirectoryIfMissing True (parentDir file)
 		nodownload url urlinfo file
@@ -247,11 +248,11 @@ addUrlFile relaxed url urlinfo file
 		( checkCanAdd file $ do
 			liftIO $ createDirectoryIfMissing True (parentDir file)
 			nodownload url urlinfo file
-		, downloadWeb url urlinfo file
+		, downloadWeb mo url urlinfo file
 		)
 
-downloadWeb :: URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
-downloadWeb url urlinfo file =
+downloadWeb :: Maybe AddUrlOptions -> URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
+downloadWeb mo url urlinfo file =
 	go =<< downloadWith' downloader urlkey webUUID url (AssociatedFile (Just file))
   where
 	urlkey = addSizeUrlKey urlinfo $ Backend.URL.fromUrl url Nothing
@@ -279,7 +280,9 @@ downloadWeb url urlinfo file =
 					case dl of
 						Right (Just mediafile) -> do
 							pruneTmpWorkDirBefore tmp (liftIO . nukeFile)
-							let dest = takeFileName mediafile
+							let dest = if isJust (fileOption <$> mo)
+								then file
+								else takeFileName mediafile
 							showDestinationFile dest
 							addWorkTree webUUID mediaurl dest mediakey (Just mediafile)
 							return $ Right $ Just mediakey

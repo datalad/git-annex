@@ -170,7 +170,7 @@ performDownload opts cache todownload = case location todownload of
 					urlinfo <- if relaxedOption opts
 						then pure Url.assumeUrlExists
 						else Url.withUrlOptions (Url.getUrlInfo url)
-					maybeToList <$> addUrlFile (relaxedOption opts) url urlinfo f
+					maybeToList <$> addUrlFile Nothing (relaxedOption opts) url urlinfo f
 				else do
 					res <- tryNonAsync $ maybe
 						(error $ "unable to checkUrl of " ++ Remote.name r)
