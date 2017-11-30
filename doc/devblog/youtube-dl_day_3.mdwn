@@ -1,0 +1,7 @@
+Finished up youtube-dl integration today, including all the edge cases in
+`addurl` and honoring annex.diskreserve.
+
+I changed my mind about `git annex addurl --relaxed`; it seems better for
+it to be slower than before, but not have surprising behavior, than to be
+fast but potentially surprising. If it's too slow, add `--raw` to avoid
+using youtube-dl.

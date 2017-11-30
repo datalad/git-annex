@@ -67,3 +67,5 @@ query for size. Could use --dump-json, but that would require downloading
 the web page yet again, so too expensive.. and, the json seems to have
 "filesize: null" for youtube videos. What does work is the --max-filesize
 option, which makes youtube-dl abort if it's too big.
+
+> [[done]] --[[Joey]]
