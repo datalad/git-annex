@@ -71,14 +71,12 @@ youtubeDlTo key url dest = do
 		case dl of
 			Right (Just mediafile) -> do
 				liftIO $ renameFile mediafile dest
-				return (Right True)
-			Right Nothing -> return (Right False)
-			Left msg -> return (Left msg)
-	case res of
-		Left msg -> do
-			warning msg
-			return False
-		Right r -> return r
+				return (Just True)
+			Right Nothing -> return (Just False)
+			Left msg -> do
+				warning msg
+				return Nothing
+	return (fromMaybe False res)
 
 youtubeDlSupported :: URLString -> Annex Bool
 youtubeDlSupported url = either (const False) id <$> youtubeDlCheck url

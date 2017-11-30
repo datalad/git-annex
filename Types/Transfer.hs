@@ -87,7 +87,7 @@ instance Observable (Either e Bool) where
 	observeBool (Right b) = b
 	observeFailure = Right False
 
-instance Observable (Either e (Maybe a)) where
-	observeBool (Right (Just _)) = True
-	observeBool _ = False
-	observeFailure = Right Nothing
+instance Observable (Maybe a) where
+	observeBool (Just _) = True
+	observeBool Nothing = False
+	observeFailure = Nothing

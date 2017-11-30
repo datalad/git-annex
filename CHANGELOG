@@ -3,10 +3,10 @@ git-annex (6.20171125) UNRELEASED; urgency=medium
   * Use youtube-dl rather than quvi to download media from web pages,
     since quvi is not being actively developed and youtube-dl supports
     many more sites.
-  * addurl --relaxed no longer checks for embedded media, since youtube-dl
-    does not allow doing so without hitting the network, which would make
-    this no faster than addurl --fast. Use addurl --fast instead if you
-    want embedded media to be downloaded.
+  * addurl --relaxed got slower, since youtube-dl has to hit the network
+    to check for embedded media. If you relied on --relaxed not hitting the
+    network for speed reasons, using --relaxed --raw will get the old level
+    of speed, but can't be used for urls with embedded videos.
   * importfeed now downloads things linked to by feeds, even when they are
     not media files.
 

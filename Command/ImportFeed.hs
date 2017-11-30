@@ -272,19 +272,17 @@ performDownload opts cache todownload = case location todownload of
 					ok <- rundownload linkurl ext $ \f -> do
 						addWorkTree webUUID mediaurl f mediakey (Just mediafile)
 						return [mediakey]
-					return (Right ok)
+					return (Just ok)
 				-- youtude-dl didn't support it, so
 				-- download it as if the link were
 				-- an enclosure.
-				Right Nothing -> Right <$> 
+				Right Nothing -> Just <$> 
 					performDownload opts cache todownload
 						{ location = Enclosure linkurl }
-				Left msg -> return (Left msg)
-		case r of
-			Left msg -> do
-				warning msg
-				return False
-			Right b -> return b
+				Left msg -> do
+					warning msg
+					return Nothing
+		return (fromMaybe False r)
 
 	addmediafast linkurl mediaurl mediakey = ifM (youtubeDlSupported linkurl)
 		( rundownload linkurl ".m" $ \f -> do

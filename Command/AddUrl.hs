@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -155,8 +155,8 @@ performRemote r relaxed uri file sz = ifAnnexed file adduri geturi
 	loguri = setDownloader uri OtherDownloader
 	adduri = addUrlChecked relaxed loguri (Remote.uuid r) checkexistssize
 	checkexistssize key = return $ case sz of
-		Nothing -> (True, True)
-		Just n -> (True, n == fromMaybe n (keySize key))
+		Nothing -> (True, True, uri)
+		Just n -> (True, n == fromMaybe n (keySize key), uri)
 	geturi = next $ isJust <$> downloadRemoteFile r relaxed uri file sz
 
 downloadRemoteFile :: Remote -> Bool -> URLString -> FilePath -> Maybe Integer -> Annex (Maybe Key)
@@ -210,22 +210,23 @@ performWeb :: AddUrlOptions -> URLString -> FilePath -> Url.UrlInfo -> CommandPe
 performWeb o url file urlinfo = ifAnnexed file addurl geturl
   where
 	geturl = next $ isJust <$> addUrlFile (Just o) (relaxedOption o) url urlinfo file
-	-- TODO youtube-dl
-	addurl = addUrlChecked (relaxedOption o) url webUUID $ \k -> return $
-		(Url.urlExists urlinfo, Url.urlSize urlinfo == keySize k)
+	addurl = addUrlChecked (relaxedOption o) url webUUID $ \k -> 
+		ifM (youtubeDlSupported url)
+			( return (True, True, setDownloader url YoutubeDownloader)
+			, return (Url.urlExists urlinfo, Url.urlSize urlinfo == keySize k, url)
+			)
 
-addUrlChecked :: Bool -> URLString -> UUID -> (Key -> Annex (Bool, Bool)) -> Key -> CommandPerform
-addUrlChecked relaxed url u checkexistssize key
-	| relaxed = do
-		setUrlPresent u key url
-		next $ return True
-	| otherwise = ifM ((elem url <$> getUrls key) <&&> (elem u <$> loggedLocations key))
+{- Check that the url exists, and has the same size as the key,
+ - and add it as an url to the key. -}
+addUrlChecked :: Bool -> URLString -> UUID -> (Key -> Annex (Bool, Bool, URLString)) -> Key -> CommandPerform
+addUrlChecked relaxed url u checkexistssize key =
+	ifM ((elem url <$> getUrls key) <&&> (elem u <$> loggedLocations key))
 		( next $ return True -- nothing to do
 		, do
-			(exists, samesize) <- checkexistssize key
-			if exists && samesize
+			(exists, samesize, url') <- checkexistssize key
+			if exists && (samesize || relaxed)
 				then do
-					setUrlPresent u key url
+					setUrlPresent u key url'
 					next $ return True
 				else do
 					warning $ "while adding a new url to an already annexed file, " ++ if exists
@@ -234,20 +235,16 @@ addUrlChecked relaxed url u checkexistssize key
 					stop
 		)
 
-{- Downloads an url and adds it to the repository, normally at the specified
- - FilePath. But, if youtube-dl supports the url, it will be written to a
+{- Downloads an url (except in fast or relaxed mode) and adds it to the
+ - repository, normally at the specified FilePath. 
+ - But, if youtube-dl supports the url, it will be written to a
  - different file, based on the title of the media. Unless the user
  - specified fileOption, which then forces using the FilePath.
  -}
 addUrlFile :: Maybe AddUrlOptions -> Bool -> URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
-addUrlFile mo relaxed url urlinfo file
-	| relaxed = checkCanAdd file $ do
-		liftIO $ createDirectoryIfMissing True (parentDir file)
-		nodownload url urlinfo file
-	| otherwise = ifM (Annex.getState Annex.fast)
-		( checkCanAdd file $ do
-			liftIO $ createDirectoryIfMissing True (parentDir file)
-			nodownload url urlinfo file
+addUrlFile mo relaxed url urlinfo file =
+	ifM (Annex.getState Annex.fast <||> pure relaxed)
+		( nodownloadWeb url urlinfo file
 		, downloadWeb mo url urlinfo file
 		)
 
@@ -266,33 +263,31 @@ downloadWeb mo url urlinfo file =
 		( tryyoutubedl tmp
 		, normalfinish tmp
 		)
-	normalfinish tmp = do
+	normalfinish tmp = checkCanAdd file $ do
 		showDestinationFile file
 		liftIO $ createDirectoryIfMissing True (parentDir file)
 		finishDownloadWith tmp webUUID url file
-	tryyoutubedl tmp = do
-		let mediaurl = setDownloader url YoutubeDownloader
-		let mediakey = Backend.URL.fromUrl mediaurl Nothing
-		res <- withTmpWorkDir mediakey $ \workdir ->
-			Transfer.notifyTransfer Transfer.Download url $
-				Transfer.download webUUID mediakey (AssociatedFile Nothing) Transfer.noRetry $ \_p -> do
-					dl <- youtubeDl url workdir
-					case dl of
-						Right (Just mediafile) -> do
-							pruneTmpWorkDirBefore tmp (liftIO . nukeFile)
-							let dest = if isJust (fileOption <$> mo)
-								then file
-								else takeFileName mediafile
+	tryyoutubedl tmp = withTmpWorkDir mediakey $ \workdir ->
+		Transfer.notifyTransfer Transfer.Download url $
+			Transfer.download webUUID mediakey (AssociatedFile Nothing) Transfer.noRetry $ \_p -> do
+				dl <- youtubeDl url workdir
+				case dl of
+					Right (Just mediafile) -> do
+						pruneTmpWorkDirBefore tmp (liftIO . nukeFile)
+						let dest = if isJust (fileOption <$> mo)
+							then file
+							else takeFileName mediafile
+						checkCanAdd dest $ do
 							showDestinationFile dest
 							addWorkTree webUUID mediaurl dest mediakey (Just mediafile)
-							return $ Right $ Just mediakey
-						Right Nothing -> Right <$> normalfinish tmp
-						Left msg -> return $ Left msg
-		case res of
-			Left msg -> do
-				warning msg
-				return Nothing
-			Right r -> return r
+							return $ Just mediakey
+					Right Nothing -> normalfinish tmp
+					Left msg -> do
+						warning msg
+						return Nothing
+	  where
+		mediaurl = setDownloader url YoutubeDownloader
+		mediakey = Backend.URL.fromUrl mediaurl Nothing
 
 showDestinationFile :: FilePath -> Annex ()
 showDestinationFile file = do
@@ -378,9 +373,10 @@ addWorkTree u url file key mtmp = case mtmp of
 			)
 
 -- TODO youtube-dl
-nodownload :: URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
-nodownload url urlinfo file
-	| Url.urlExists urlinfo = do
+nodownloadWeb :: URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
+nodownloadWeb url urlinfo file
+	| Url.urlExists urlinfo = checkCanAdd file $ do
+		liftIO $ createDirectoryIfMissing True (parentDir file)
 		let key = Backend.URL.fromUrl url (Url.urlSize urlinfo)
 		addWorkTree webUUID url file key Nothing
 		return (Just key)

@@ -32,13 +32,12 @@ be used to get better filenames.
 
   Don't immediately download the url, and avoid storing the size of the
   url's content. This makes git-annex accept whatever content is there
-  at a future point. This is also the fastest option, since it does not
-  hit the network at all.
+  at a future point.
 
-  Note that this does *not* check for embedded videos using `youtube-dl`,
-  although it used to in previous versions of git-annex. 
-  Use --fast instead if you want to do that.
-
+  This is the fastest option, but it still has to access the network
+  to check if the url contains embedded media. When adding large numbers
+  of urls, using `--relaxed --raw` is much faster.
+  
 * `--raw`
 
   Prevent special handling of urls by youtube-dl, bittorrent, and other
