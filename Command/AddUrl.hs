@@ -429,7 +429,7 @@ adjustFile o = addprefix . addsuffix
 checkCanAdd :: FilePath -> Annex (Maybe a) -> Annex (Maybe a)
 checkCanAdd file a = ifM (isJust <$> (liftIO $ catchMaybeIO $ getSymbolicLinkStatus file))
 	( do
-		warning $ file ++ " already exists and is not annexed; not overwriting"
+		warning $ file ++ " already exists; not overwriting"
 		return Nothing
 	, ifM ((not <$> Annex.getState Annex.force) <&&> checkIgnored file)
 		( do
