@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-12-05T17:37:21Z"
+ content="""
+Lack of a Content-Length header does not prevent `git annex addurl` from
+working as far as I can see. Perhaps you should show what the problem
+you're experiencing looks like.
+"""]]
