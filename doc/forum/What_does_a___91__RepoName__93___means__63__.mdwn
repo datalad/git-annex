@@ -1,0 +1,5 @@
+Hello,
+
+sometimes, ```git annex info``` shows a (special remote) repository's name in [Brackets], sometimes not. Every theory (depending on enabled / not enabled) I had so far, is disproved by my next step. What does it means when the name is in brackets?
+
+Thanks!
