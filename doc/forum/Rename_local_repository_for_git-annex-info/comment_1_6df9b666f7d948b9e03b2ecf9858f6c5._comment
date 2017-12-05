@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-12-05T17:32:58Z"
+ content="""
+That's not the name of the repository, it's a description of the
+repository.
+
+You can use `git annex describe` to adjust the description of that
+or any repository. This will affect all clones of the repository
+once the description change is synced out to them.
+"""]]
