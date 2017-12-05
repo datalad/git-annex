@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2017-12-05T18:26:43Z"
+ content="""
+FWIW regarding
+
+> But, that is an expensive operation, needing to copy a perhaps enormous file. So I don't think it's a reasonable thing for fsck to do.
+
+I prefer machines to do the job instead of me, even though they need to sweat may be more than I for some of those ;)  not sure if needs to be an option or default behavior. But altogether, I am trying to get away from shared mode (ref: http://git-annex.branchable.com/bugs/--shared_setting_of_git_causes_annex__39__ed_files_to_be_writeable__33__/) with write permissions set on fiels since it is simply too dangerous if that repository is the single source of correct data/files.
+"""]]

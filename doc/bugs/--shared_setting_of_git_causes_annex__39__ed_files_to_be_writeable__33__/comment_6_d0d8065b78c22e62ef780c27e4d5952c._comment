@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 6"
+ date="2017-12-05T18:20:41Z"
+ content="""
+> Making the file read-only will not prevent a lot of things renaming over top of it. (Including vim!)
+
+not exactly... removing write permission from the key file at least makes vim report that the file read-only and disallowing (without force) to overwrite it.  That is my use case where I keep burning myself constantly (e.g. this morning again).  Need to not forget to switch all \"shared\" repos back to the single user mode.  One of the promises of git-annex is that data is safe, and this mode just violates it wildly. 
+"""]]
