@@ -171,7 +171,7 @@ findPubKeys cmd for
 
 {- "subkey!" tells gpg to force use of a specific subkey -}
 isForcedSubKey :: String -> Bool
-isForcedSubKey s = "!" `isSuffixOf` s && all isHexDigit (drop 1 s)
+isForcedSubKey s = "!" `isSuffixOf` s && all isHexDigit (drop 1 (reverse s))
 
 type UserId = String
 

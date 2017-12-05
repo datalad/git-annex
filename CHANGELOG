@@ -11,6 +11,9 @@ git-annex (6.20171125) UNRELEASED; urgency=medium
     not media files.
   * Removed no longer needed dependency on yesod-default.
   * Allow exporttree remotes to be marked as dead.
+  * initremote, enableremote: Really support gpg subkeys suffixed with an
+    exclamation mark, which forces gpg to use a specific subkey.
+    (Previous try had a bug.)
 
  -- Joey Hess <id@joeyh.name>  Tue, 28 Nov 2017 13:48:44 -0400
 
