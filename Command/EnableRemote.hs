@@ -68,8 +68,7 @@ startSpecialRemote :: Git.RemoteName -> Remote.RemoteConfig -> Maybe (UUID, Remo
 startSpecialRemote name config Nothing = do
 	m <- Annex.SpecialRemote.specialRemoteMap
 	confm <- Logs.Remote.readRemoteLog
-	v <- Remote.nameToUUID' name
-	case v of
+	Remote.nameToUUID' name >>= \case
 		Right u | u `M.member` m ->
 			startSpecialRemote name config $
 				Just (u, fromMaybe M.empty (M.lookup u confm))
@@ -91,8 +90,7 @@ performSpecialRemote t u oldc c gc = do
 cleanupSpecialRemote :: UUID -> R.RemoteConfig -> CommandCleanup
 cleanupSpecialRemote u c = do
 	Logs.Remote.configSet u c
-	mr <- Remote.byUUID u
-	case mr of
+	Remote.byUUID u >>= \case
 		Nothing -> noop
 		Just r -> setRemoteIgnore (R.repo r) False
 	return True

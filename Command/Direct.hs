@@ -47,13 +47,11 @@ perform = do
 	next cleanup
   where
 	go = whenAnnexed $ \f k -> do
-		r <- toDirectGen k f
-		case r of
+		toDirectGen k f >>= \case
 			Nothing -> noop
 			Just a -> do
 				showStart "direct" f
-				r' <- tryNonAsync a
-				case r' of
+				tryNonAsync a >>= \case
 					Left e -> warnlocked e
 					Right _ -> showEndOk
 		return Nothing

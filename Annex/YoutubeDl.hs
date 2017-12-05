@@ -30,23 +30,20 @@ import Logs.Transfer
 youtubeDl :: URLString -> FilePath -> Annex (Either String (Maybe FilePath))
 youtubeDl url workdir = ifM (liftIO $ inPath "youtube-dl")
 	( runcmd >>= \case
-		Right True -> do
-			fs <- liftIO $ filterM (doesFileExist) =<< dirContents workdir
-			case fs of
-				(f:[]) -> return (Right (Just f))
-				[] -> return nofiles
-				_ -> return (toomanyfiles fs)
-		Right False -> do
-			fs <- liftIO $ filterM (doesFileExist) =<< dirContents workdir
-			if null fs
-				then return (Right Nothing)
-				else return (Left "youtube-dl download is incomplete. Run the command again to resume.")
+		Right True -> workdirfiles >>= \case
+			(f:[]) -> return (Right (Just f))
+			[] -> return nofiles
+			fs -> return (toomanyfiles fs)
+		Right False -> workdirfiles >>= \case
+			[] -> return (Right Nothing)
+			_ -> return (Left "youtube-dl download is incomplete. Run the command again to resume.")
 		Left msg -> return (Left msg)
 	, return (Right Nothing)
 	)
   where
 	nofiles = Left "youtube-dl did not put any media in its work directory, perhaps it's been configured to store files somewhere else?"
 	toomanyfiles fs = Left $ "youtube-dl downloaded multiple media files; git-annex is only able to deal with one per url: " ++ show fs
+	workdirfiles = liftIO $ filterM (doesFileExist) =<< dirContents workdir
 	runcmd = youtubeDlMaxSize workdir >>= \case
 		Left msg -> return (Left msg)
 		Right maxsize -> do
@@ -96,9 +93,8 @@ youtubeDlMaxSize workdir = ifM (Annex.getState Annex.force)
 -- Download a media file to a destination, 
 youtubeDlTo :: Key -> URLString -> FilePath -> Annex Bool
 youtubeDlTo key url dest = do
-	res <- withTmpWorkDir key $ \workdir -> do
-		dl <- youtubeDl url workdir
-		case dl of
+	res <- withTmpWorkDir key $ \workdir ->
+		youtubeDl url workdir >>= \case
 			Right (Just mediafile) -> do
 				liftIO $ renameFile mediafile dest
 				return (Just True)

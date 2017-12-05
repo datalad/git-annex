@@ -176,9 +176,8 @@ hashFile hash file filesize = go hash
 	
 	usehasher hashsize@(HashSize sz) = case shaHasher hashsize filesize of
 		Left sha -> use sha
-		Right (external, internal) -> do
-			v <- liftIO $ externalSHA external sz file
-			case v of
+		Right (external, internal) ->
+			liftIO (externalSHA external sz file) >>= \case
 				Right r -> return r
 				Left e -> do
 					warning e

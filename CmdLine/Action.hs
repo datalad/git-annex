@@ -186,13 +186,11 @@ allowConcurrentOutput = id
 onlyActionOn :: Key -> CommandStart -> CommandStart
 onlyActionOn k a = onlyActionOn' k run
   where
-	run = do
-		-- Run whole action, not just start stage, so other threads
-		-- block until it's done.
-		r <- callCommandAction' a
-		case r of
-			Nothing -> return Nothing
-			Just r' -> return $ Just $ return $ Just $ return r'
+	-- Run whole action, not just start stage, so other threads
+	-- block until it's done.
+	run = callCommandAction' a >>= \case
+		Nothing -> return Nothing
+		Just r' -> return $ Just $ return $ Just $ return r'
 
 onlyActionOn' :: Key -> Annex a -> Annex a
 onlyActionOn' k a = go =<< Annex.getState Annex.concurrency

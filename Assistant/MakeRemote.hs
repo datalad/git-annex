@@ -79,17 +79,15 @@ initSpecialRemote name remotetype mcreds config = go 0
 	go :: Int -> Annex RemoteName
 	go n = do
 		let fullname = if n == 0  then name else name ++ show n
-		r <- Annex.SpecialRemote.findExisting fullname
-		case r of
+		Annex.SpecialRemote.findExisting fullname >>= \case
 			Nothing -> setupSpecialRemote fullname remotetype config mcreds
 				(Nothing, R.Init, Annex.SpecialRemote.newConfig fullname)
 			Just _ -> go (n + 1)
 
 {- Enables an existing special remote. -}
 enableSpecialRemote :: SpecialRemoteMaker
-enableSpecialRemote name remotetype mcreds config = do
-	r <- Annex.SpecialRemote.findExisting name
-	case r of
+enableSpecialRemote name remotetype mcreds config =
+	Annex.SpecialRemote.findExisting name >>= \case
 		Nothing -> error $ "Cannot find a special remote named " ++ name
 		Just (u, c) -> setupSpecialRemote' False name remotetype config mcreds (Just u, R.Enable c, c)
 

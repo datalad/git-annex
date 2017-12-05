@@ -121,24 +121,21 @@ verifyEnoughCopiesToDrop
 verifyEnoughCopiesToDrop nolocmsg key removallock need skip preverified tocheck dropaction nodropaction = 
 	helper [] [] preverified (nub tocheck)
   where
-	helper bad missing have [] = do
-		p <- liftIO $ mkSafeDropProof need have removallock
-		case p of
+	helper bad missing have [] =
+		liftIO (mkSafeDropProof need have removallock) >>= \case
 			Right proof -> dropaction proof
 			Left stillhave -> do
 				notEnoughCopies key need stillhave (skip++missing) bad nolocmsg
 				nodropaction
 	helper bad missing have (c:cs)
-		| isSafeDrop need have removallock = do
-			p <- liftIO $ mkSafeDropProof need have removallock
-			case p of
+		| isSafeDrop need have removallock =
+			liftIO (mkSafeDropProof need have removallock) >>= \case
 				Right proof -> dropaction proof
 				Left stillhave -> helper bad missing stillhave (c:cs)
 		| otherwise = case c of
 			UnVerifiedHere -> lockContentShared key contverified
-			UnVerifiedRemote r -> checkremote r contverified $ do
-				haskey <- Remote.hasKey r key
-				case haskey of
+			UnVerifiedRemote r -> checkremote r contverified $
+				Remote.hasKey r key >>= \case
 					Right True  -> helper bad missing (mkVerifiedCopy RecentlyVerifiedCopy r : have) cs
 					Left _      -> helper (r:bad) missing have cs
 					Right False -> helper bad (Remote.uuid r:missing) have cs

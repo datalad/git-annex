@@ -52,8 +52,7 @@ defaultBackend = maybe cache return =<< Annex.getState Annex.backend
 genKey :: KeySource -> Maybe Backend -> Annex (Maybe (Key, Backend))
 genKey source preferredbackend = do
 	b <- maybe defaultBackend return preferredbackend
-	r <- B.getKey b source
-	return $ case r of
+	B.getKey b source >>= return . \case
 		Nothing -> Nothing
 		Just k -> Just (makesane k, b)
   where

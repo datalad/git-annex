@@ -68,8 +68,7 @@ noMessages c = c { cmdnomessages = True }
 {- Undoes noMessages -}
 allowMessages :: Annex ()
 allowMessages = do
-	curr <- Annex.getState Annex.output
-	case outputType curr of
+	outputType <$> Annex.getState Annex.output >>= \case
 		QuietOutput -> Annex.setOutput NormalOutput
 		_ -> noop
 	Annex.changeState $ \s -> s

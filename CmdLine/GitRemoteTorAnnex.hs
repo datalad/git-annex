@@ -19,14 +19,12 @@ import P2P.Address
 import P2P.Auth
 
 run :: [String] -> IO ()
-run (_remotename:address:[]) = forever $ do
-	-- gitremote-helpers protocol
-	l <- getLine
-	case l of
+run (_remotename:address:[]) = forever $
+	getLine >>= \case
 		"capabilities" -> putStrLn "connect" >> ready
 		"connect git-upload-pack" -> go UploadPack
 		"connect git-receive-pack" -> go ReceivePack
-		_ -> error $ "git-remote-helpers protocol error at " ++ show l
+		l -> error $ "git-remote-helpers protocol error at " ++ show l
   where
 	(onionaddress, onionport)
 		| '/' `elem` address = parseAddressPort $
@@ -59,8 +57,6 @@ connectService address port service = do
 		myuuid <- getUUID
 		g <- Annex.gitRepo
 		conn <- liftIO $ connectPeer g (TorAnnex address port)
-		liftIO $ runNetProto conn $ do
-			v <- auth myuuid authtoken
-			case v of
-				Just _theiruuid -> connect service stdin stdout
-				Nothing -> giveup $ "authentication failed, perhaps you need to set " ++ p2pAuthTokenEnv
+		liftIO $ runNetProto conn $ auth myuuid authtoken >>= \case
+			Just _theiruuid -> connect service stdin stdout
+			Nothing -> giveup $ "authentication failed, perhaps you need to set " ++ p2pAuthTokenEnv

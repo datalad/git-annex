@@ -98,31 +98,25 @@ start file = do
 		)
   where
 	go = ifAnnexed file addpresent add
-	add = do
-		ms <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
-		case ms of
-			Nothing -> stop
-			Just s 
-				| not (isRegularFile s) && not (isSymbolicLink s) -> stop
-				| otherwise -> do
-					showStart "add" file
-					next $ if isSymbolicLink s
-						then next $ addFile file
-						else perform file
+	add = liftIO (catchMaybeIO $ getSymbolicLinkStatus file) >>= \case
+		Nothing -> stop
+		Just s 
+			| not (isRegularFile s) && not (isSymbolicLink s) -> stop
+			| otherwise -> do
+				showStart "add" file
+				next $ if isSymbolicLink s
+					then next $ addFile file
+					else perform file
 	addpresent key = ifM versionSupportsUnlockedPointers
-		( do
-			ms <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
-			case ms of
-				Just s | isSymbolicLink s -> fixuplink key
-				_ -> ifM (sameInodeCache file =<< Database.Keys.getInodeCaches key)
-						( stop, add )
+		( liftIO (catchMaybeIO $ getSymbolicLinkStatus file) >>= \case
+			Just s | isSymbolicLink s -> fixuplink key
+			_ -> ifM (sameInodeCache file =<< Database.Keys.getInodeCaches key)
+				( stop, add )
 		, ifM isDirect
-			( do
-				ms <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
-				case ms of
-					Just s | isSymbolicLink s -> fixuplink key
-					_ -> ifM (goodContent key file)
-						( stop , add )
+			( liftIO (catchMaybeIO $ getSymbolicLinkStatus file) >>= \case
+				Just s | isSymbolicLink s -> fixuplink key
+				_ -> ifM (goodContent key file)
+					( stop , add )
 			, fixuplink key
 			)
 		)

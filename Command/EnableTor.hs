@@ -91,8 +91,7 @@ checkHiddenService = bracket setup cleanup go
 		g <- Annex.gitRepo
 		-- Connect but don't bother trying to auth,
 		-- we just want to know if the tor circuit works.
-		cv <- liftIO $ tryNonAsync $ connectPeer g addr
-		case cv of
+		liftIO (tryNonAsync $ connectPeer g addr) >>= \case
 			Left e -> do
 				warning $ "Unable to connect to hidden service. It may not yet have propigated to the Tor network. (" ++ show e ++ ") Will retry.."
 				liftIO $ threadDelaySeconds (Seconds 2)

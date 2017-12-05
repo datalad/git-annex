@@ -31,11 +31,9 @@ getUrlOptions = mkUrlOptions
 	<*> headers
 	<*> options
   where
-	headers = do
-		v <- annexHttpHeadersCommand <$> Annex.getGitConfig
-		case v of
-			Just cmd -> lines <$> liftIO (readProcess "sh" ["-c", cmd])
-			Nothing -> annexHttpHeaders <$> Annex.getGitConfig
+	headers = annexHttpHeadersCommand <$> Annex.getGitConfig >>= \case
+		Just cmd -> lines <$> liftIO (readProcess "sh" ["-c", cmd])
+		Nothing -> annexHttpHeaders <$> Annex.getGitConfig
 	options = map Param . annexWebOptions <$> Annex.getGitConfig
 
 withUrlOptions :: (U.UrlOptions -> IO a) -> Annex a

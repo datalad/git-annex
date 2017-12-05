@@ -52,12 +52,10 @@ check ks mr = case mr of
 	k = toKey ks
 	go Nothing [] = return NotPresent
 	go (Just e) [] = return $ CheckFailure e
-	go olderr (r:rs) = do
-		v <- Remote.hasKey r k
-		case v of
-			Right True -> return Present
-			Right False -> go olderr rs
-			Left e -> go (Just e) rs
+	go olderr (r:rs) = Remote.hasKey r k >>= \case
+		Right True -> return Present
+		Right False -> go olderr rs
+		Left e -> go (Just e) rs
 
 exitResult :: Result -> Annex a
 exitResult Present = liftIO exitSuccess

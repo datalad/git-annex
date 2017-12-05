@@ -274,9 +274,8 @@ downloadWeb o url urlinfo file =
 		finishDownloadWith tmp webUUID url file
 	tryyoutubedl tmp = withTmpWorkDir mediakey $ \workdir ->
 		Transfer.notifyTransfer Transfer.Download url $
-			Transfer.download webUUID mediakey (AssociatedFile Nothing) Transfer.noRetry $ \_p -> do
-				dl <- youtubeDl url workdir
-				case dl of
+			Transfer.download webUUID mediakey (AssociatedFile Nothing) Transfer.noRetry $ \_p ->
+				youtubeDl url workdir >>= \case
 					Right (Just mediafile) -> do
 						pruneTmpWorkDirBefore tmp (liftIO . nukeFile)
 						let dest = if isJust (fileOption o)
@@ -338,8 +337,7 @@ finishDownloadWith tmp u url file = do
 		, contentLocation = tmp
 		, inodeCache = Nothing
 		}
-	k <- genKey source backend
-	case k of
+	genKey source backend >>= \case
 		Nothing -> return Nothing
 		Just (key, _) -> do
 			addWorkTree u url file key (Just tmp)

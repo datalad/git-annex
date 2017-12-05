@@ -62,9 +62,8 @@ seek (UnsetConfig name) = commandAction $ do
 		unsetGlobalConfig name
 		unsetConfig (ConfigKey name)
 		return True
-seek (GetConfig name) = commandAction $ do
-	mv <- getGlobalConfig name
-	case mv of
+seek (GetConfig name) = commandAction $
+	getGlobalConfig name >>= \case
 		Nothing -> stop
 		Just v -> do
 			liftIO $ putStrLn v

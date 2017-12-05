@@ -84,8 +84,7 @@ withFilesInRefs a = mapM_ go
 		(l, cleanup) <- inRepo $ LsTree.lsTree r
 		forM_ l $ \i -> do
 			let f = getTopFilePath $ LsTree.file i
-			v <- catKey (LsTree.sha i)
-			case v of
+			catKey (LsTree.sha i) >>= \case
 				Nothing -> noop
 				Just k -> whenM (matcher $ MatchingKey k) $
 					commandAction $ a f k

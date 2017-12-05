@@ -30,17 +30,15 @@ import qualified Database.Keys.SQL
  - looking for a pointer to a key in git.
  -}
 lookupFile :: FilePath -> Annex (Maybe Key)
-lookupFile file = do
-	mkey <- isAnnexLink file
-	case mkey of
-		Just key -> makeret key
-		Nothing -> ifM (versionSupportsUnlockedPointers <||> isDirect)
-			( ifM (liftIO $ doesFileExist file)
-				( maybe (return Nothing) makeret =<< catKeyFile file
-				, return Nothing
-				)
-			, return Nothing 
+lookupFile file = isAnnexLink file >>= \case
+	Just key -> makeret key
+	Nothing -> ifM (versionSupportsUnlockedPointers <||> isDirect)
+		( ifM (liftIO $ doesFileExist file)
+			( maybe (return Nothing) makeret =<< catKeyFile file
+			, return Nothing
 			)
+		, return Nothing 
+		)
   where
 	makeret = return . Just
 
@@ -84,9 +82,8 @@ scanUnlockedFiles = whenM (isJust <$> inRepo Git.Branch.current) $ do
 		whenM (inAnnex k) $ do
 			f <- fromRepo $ fromTopFilePath tf
 			destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus f
-			replaceFile f $ \tmp -> do
-				r <- linkFromAnnex k tmp destmode
-				case r of
+			replaceFile f $ \tmp ->
+				linkFromAnnex k tmp destmode >>= \case
 					LinkAnnexOk -> return ()
 					LinkAnnexNoop -> return ()
 					LinkAnnexFailed -> liftIO $

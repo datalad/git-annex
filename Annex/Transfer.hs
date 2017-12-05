@@ -92,8 +92,7 @@ runTransfer' ignorelock t afile shouldretry transferaction = checkSecureHashes t
 	prep tfile mode info = catchPermissionDenied (const prepfailed) $ do
 		let lck = transferLockFile tfile
 		createAnnexDirectory $ takeDirectory lck
-		r <- tryLockExclusive (Just mode) lck
-		case r of
+		tryLockExclusive (Just mode) lck >>= \case
 			Nothing -> return (Nothing, True)
 			Just lockhandle -> ifM (checkSaneLock lck lockhandle)
 				( do
@@ -108,8 +107,7 @@ runTransfer' ignorelock t afile shouldretry transferaction = checkSecureHashes t
 	prep tfile _mode info = catchPermissionDenied (const prepfailed) $ do
 		let lck = transferLockFile tfile
 		createAnnexDirectory $ takeDirectory lck
-		v <- catchMaybeIO $ liftIO $ lockExclusive lck
-		case v of
+		catchMaybeIO (liftIO $ lockExclusive lck) >>= \case
 			Nothing -> return (Nothing, False)
 			Just Nothing -> return (Nothing, True)
 			Just (Just lockhandle) -> do
@@ -135,17 +133,15 @@ runTransfer' ignorelock t afile shouldretry transferaction = checkSecureHashes t
 		dropLock lockhandle
 		void $ tryIO $ removeFile lck
 #endif
-	retry oldinfo metervar run = do
-		v <- tryNonAsync run
-		case v of
-			Right b -> return b
-			Left e -> do
-				warning (show e)
-				b <- getbytescomplete metervar
-				let newinfo = oldinfo { bytesComplete = Just b }
-				if shouldretry oldinfo newinfo
-					then retry newinfo metervar run
-					else return observeFailure
+	retry oldinfo metervar run = tryNonAsync run >>= \case
+		Right b -> return b
+		Left e -> do
+			warning (show e)
+			b <- getbytescomplete metervar
+			let newinfo = oldinfo { bytesComplete = Just b }
+			if shouldretry oldinfo newinfo
+				then retry newinfo metervar run
+				else return observeFailure
 	getbytescomplete metervar
 		| transferDirection t == Upload =
 			liftIO $ readMVar metervar

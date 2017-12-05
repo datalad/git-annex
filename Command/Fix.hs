@@ -82,8 +82,7 @@ makeHardLink :: FilePath -> Key -> CommandPerform
 makeHardLink file key = do
 	replaceFile file $ \tmp -> do
 		mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
-		r <- linkFromAnnex key tmp mode
-		case r of
+		linkFromAnnex key tmp mode >>= \case
 			LinkAnnexFailed -> error "unable to make hard link"
 			_ -> noop
 	next $ return True
