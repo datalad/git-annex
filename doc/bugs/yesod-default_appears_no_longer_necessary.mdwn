@@ -19,3 +19,5 @@ Just build from source.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Sure, this is not really a "problem" anyway.
+
+> Thanks for noticing this, I've made the changes. [[done]] --[[Joey]]

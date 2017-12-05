@@ -9,6 +9,7 @@ git-annex (6.20171125) UNRELEASED; urgency=medium
     of speed, but can't be used for urls with embedded videos.
   * importfeed now downloads things linked to by feeds, even when they are
     not media files.
+  * Removed no longer needed dependency on yesod-default.
 
  -- Joey Hess <id@joeyh.name>  Tue, 28 Nov 2017 13:48:44 -0400
 
