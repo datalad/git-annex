@@ -675,7 +675,7 @@ test_lock_v6_force = intmpclonerepoInDirect $ do
 		annexeval $ do
 			Database.Keys.closeDb
 			dbdir <- Annex.fromRepo Annex.Locations.gitAnnexKeysDb
-			liftIO $ removeDirectoryRecursive dbdir
+			liftIO $ renameDirectory dbdir (dbdir ++ ".old")
 		writeFile annexedfile "test_lock_v6_force content"
 		not <$> git_annex "lock" [annexedfile] @? "lock of modified file failed to fail in v6 mode"
 		git_annex "lock" ["--force", annexedfile] @? "lock --force of modified file failed in v6 mode"
