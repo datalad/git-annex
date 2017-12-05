@@ -170,7 +170,7 @@ inAnnexSafe key = inAnnex' (fromMaybe True) (Just False) go key
 	checkdirect contentfile lockfile =
 		ifM (liftIO $ doesFileExist contentfile)
 			( modifyContent lockfile $ liftIO $
-				lockShared >>= \case
+				lockShared lockfile >>= \case
 					Nothing -> return is_locked
 					Just lockhandle -> do
 						dropLock lockhandle
