@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="http://xgm.de/oid/"
+ nickname="Flo"
+ avatar="http://cdn.libravatar.org/avatar/4c5c0e290374d76c713f482e41f60a3cbee0fa64bb94c6da94e5a61a50824811"
+ subject="comment 2"
+ date="2017-12-06T08:33:41Z"
+ content="""
+Sure, that I know. But what does it mean for a S3 type special remote?
+```
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 6
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        4cc98291-9ee9-4331-b089-b57d3d03ab0e -- Horus [horus]
+        8c201bd1-9089-4a4c-a795-7b5def64e470 -- [S3]
+        a2d60179-3e1e-49d9-90bf-f98b8a77590d -- Asaru [local]
+        ebb96a27-c997-46b5-b896-bb4f313f6e76 -- External_2TB [here]
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 536.31 gigabytes (+1 megabyte reserved)
+```
+
+I have seen the S3 remote without brackets at some repo, with at others.
+"""]]
