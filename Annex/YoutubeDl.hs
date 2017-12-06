@@ -10,8 +10,10 @@ module Annex.YoutubeDl where
 import Annex.Common
 import qualified Annex
 import Annex.Content
+import Annex.Url
 import Utility.Url (URLString)
 import Utility.DiskFree
+import Utility.HtmlDetect
 import Logs.Transfer
 
 -- Runs youtube-dl in a work directory, to download a single media file
@@ -108,10 +110,19 @@ youtubeDlSupported :: URLString -> Annex Bool
 youtubeDlSupported url = either (const False) id <$> youtubeDlCheck url
 
 -- Check if youtube-dl can find media in an url.
+--
+-- youtube-dl supports downloading urls that are not html pages,
+-- but we don't want to use it for such urls, since they can be downloaded
+-- without it. So, this first downloads part of the content and checks 
+-- if it's a html page; only then is youtube-dl used.
 youtubeDlCheck :: URLString -> Annex (Either String Bool)
 youtubeDlCheck url = catchMsgIO $ do
-	opts <- youtubeDlOpts [ Param url, Param "--simulate" ]
-	liftIO $ snd <$> processTranscript "youtube-dl" (toCommand opts) Nothing
+	uo <- getUrlOptions
+	liftIO (downloadPartial url uo htmlPrefixLength) >>= \case
+		Just bs | isHtmlBs bs -> do
+			opts <- youtubeDlOpts [ Param url, Param "--simulate" ]
+			liftIO $ snd <$> processTranscript "youtube-dl" (toCommand opts) Nothing
+		_ -> return False
 
 -- Ask youtube-dl for the filename of media in an url.
 --
