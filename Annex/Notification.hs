@@ -40,10 +40,10 @@ instance Transferrable URLString where
  - attempts. Displays notification when supported and when the user asked
  - for it. -}
 notifyTransfer :: Transferrable t => Observable v => Direction -> t -> (NotifyWitness -> Annex v) -> Annex v
+#ifdef WITH_DBUS_NOTIFICATIONS
 notifyTransfer direction t a = case descTransfrerrable t of
 	Nothing -> a NotifyWitness
 	Just desc -> do
-#ifdef WITH_DBUS_NOTIFICATIONS
 		wanted <- Annex.getState Annex.desktopnotify
 		if (notifyStart wanted || notifyFinish wanted)
 			then do
@@ -60,7 +60,7 @@ notifyTransfer direction t a = case descTransfrerrable t of
 				return res
 			else a NotifyWitness
 #else
-		a NotifyWitness
+notifyTransfer _ _ a = a NotifyWitness
 #endif
 
 notifyDrop :: AssociatedFile -> Bool -> Annex ()
