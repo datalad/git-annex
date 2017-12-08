@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2017-12-08T18:48:46Z"
+ content="""
+That one happened with `git annex addurl --fast $url` so a different code
+path. Had to add a html page check to youtubeDlFileName to fix it.
+"""]]

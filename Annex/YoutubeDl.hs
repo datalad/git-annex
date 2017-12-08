@@ -106,42 +106,49 @@ youtubeDlTo key url dest = do
 				return Nothing
 	return (fromMaybe False res)
 
-youtubeDlSupported :: URLString -> Annex Bool
-youtubeDlSupported url = either (const False) id <$> youtubeDlCheck url
-
--- Check if youtube-dl can find media in an url.
---
 -- youtube-dl supports downloading urls that are not html pages,
 -- but we don't want to use it for such urls, since they can be downloaded
 -- without it. So, this first downloads part of the content and checks 
 -- if it's a html page; only then is youtube-dl used.
-youtubeDlCheck :: URLString -> Annex (Either String Bool)
-youtubeDlCheck url = catchMsgIO $ do
+htmlOnly :: URLString -> a -> Annex a -> Annex a
+htmlOnly url fallback a = do
 	uo <- getUrlOptions
 	liftIO (downloadPartial url uo htmlPrefixLength) >>= \case
-		Just bs | isHtmlBs bs -> do
-			opts <- youtubeDlOpts [ Param url, Param "--simulate" ]
-			liftIO $ snd <$> processTranscript "youtube-dl" (toCommand opts) Nothing
-		_ -> return False
+		Just bs | isHtmlBs bs -> a
+		_ -> return fallback
+
+youtubeDlSupported :: URLString -> Annex Bool
+youtubeDlSupported url = either (const False) id <$> youtubeDlCheck url
+
+-- Check if youtube-dl can find media in an url.
+youtubeDlCheck :: URLString -> Annex (Either String Bool)
+youtubeDlCheck url = catchMsgIO $ htmlOnly url False $ do
+	opts <- youtubeDlOpts [ Param url, Param "--simulate" ]
+	liftIO $ snd <$> processTranscript "youtube-dl" (toCommand opts) Nothing
 
 -- Ask youtube-dl for the filename of media in an url.
 --
 -- (This is not always identical to the filename it uses when downloading.)
 youtubeDlFileName :: URLString -> Annex (Either String FilePath)
-youtubeDlFileName url = flip catchIO (pure . Left . show) $ do
-	-- Sometimes youtube-dl will fail with an ugly backtrace
-	-- (eg, http://bugs.debian.org/874321)
-	-- so catch stderr as well as stdout to avoid the user seeing it. 
-	-- --no-warnings avoids warning messages that are output to stdout.
-	opts <- youtubeDlOpts
-		[ Param url
-		, Param "--get-filename"
-		, Param "--no-warnings"
-		]
-	(output, ok) <- liftIO $ processTranscript "youtube-dl" (toCommand opts) Nothing
-	return $ case (ok, lines output) of
-		(True, (f:_)) | not (null f) -> Right f
-		_ -> Left "no media in url"
+youtubeDlFileName url = flip catchIO (pure . Left . show) $
+	htmlOnly url nomedia $ do
+		-- Sometimes youtube-dl will fail with an ugly backtrace
+		-- (eg, http://bugs.debian.org/874321)
+		-- so catch stderr as well as stdout to avoid the user
+		-- seeing it. --no-warnings avoids warning messages that
+		-- are output to stdout.
+		opts <- youtubeDlOpts
+			[ Param url
+			, Param "--get-filename"
+			, Param "--no-warnings"
+			]
+		(output, ok) <- liftIO $ processTranscript "youtube-dl"
+			(toCommand opts) Nothing
+		return $ case (ok, lines output) of
+			(True, (f:_)) | not (null f) -> Right f
+			_ -> nomedia
+  where
+	nomedia = Left "no media in url"
 
 youtubeDlOpts :: [CommandParam] -> Annex [CommandParam]
 youtubeDlOpts addopts = do
