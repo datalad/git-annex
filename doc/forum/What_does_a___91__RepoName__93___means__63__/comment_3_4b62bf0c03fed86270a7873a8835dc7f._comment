@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-12-08T19:36:59Z"
+ content="""
+The "[S3]" means that the special remote's name is "S3".
+So, you can run `git annex copy --to S3` or something like that and it will
+use that special remote.
+
+This particular remote has no description set, which is why it only
+displays the name.
+"""]]
