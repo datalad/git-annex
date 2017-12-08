@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/x4ddlZwKw9O9IsCHmNZz7tSJn2h0H3vX#23f03"
+ nickname="Karl"
+ avatar="http://cdn.libravatar.org/avatar/7bc6190890ad7485f9913c49aa13165cecf2d98a54bc7934749771a1b91290f6"
+ subject="additional information"
+ date="2017-12-08T10:17:40Z"
+ content="""
+in the same git repository, some files will not be hardlinked even if unlocked individually, e.g.
+
+    ll -i bucket/dev/nkt-16-358-01/data/nkt-16-358-01_flow_annotation.csv
+    33292708 lrwxrwxrwx 1 karl qbstaff 208 Nov 29 14:19 bucket/dev/nkt-16-358-01/data/nkt-16-358-01_flow_annotation.csv -> ../../../../.git/annex/objects/74/mK/SHA256E-s798268--3ae6c93d5b03cae3b7fb3d9920a4728e3ba572419f8918a938ef50efccdcfc1b.csv/SHA256E-   s798268--3ae6c93d5b03cae3b7fb3d9920a4728e3ba572419f8918a938ef50efccdcfc1b.csv*
+    
+    ll -i .git/annex/objects/74/mK/SHA256E-s798268--3ae6c93d5b03cae3b7fb3d9920a4728e3ba572419f8918a938ef50efccdcfc1b.csv/SHA256E-s798268--3ae6c93d5b03cae3b7fb3d9920a4728e3ba572419f8918a938ef50efccdcfc1b.csv
+    33161645 -rwxrw---- 1 karl qbstaff 798268 Nov 29 14:19 .git/annex/objects/74/mK/SHA256E-s798268--3ae6c93d5b03cae3b7fb3d9920a4728e3ba572419f8918a938ef50efccdcfc1b.csv/SHA256E-s798268--3ae6c93d5b03cae3b7fb3d9920a4728e3ba572419f8918a938ef50efccdcfc1b.csv*
+    # so the inode of the object is 33161645
+    # unlock it
+    git annex unlock bucket/dev/nkt-16-358-01/data/nkt-16-358-01_flow_annotation.csv
+    # check the inum of the unlocked file
+    # ll -i bucket/dev/nkt-16-358-01/data/nkt-16-358-01_flow_annotation.csv
+    33292719 -rwxrwx--x 1 karl qbstaff 798268 Nov 29 14:19 bucket/dev/nkt-16-358-01/data/nkt-16-358-01_flow_annotation.csv
+    # inodes do not match
+
+
+
+"""]]
