@@ -50,3 +50,7 @@ Apparently, git-annex-lookupkey can't handle absolute paths to files to look for
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I do! I wouldn't even have my job, if it wasn't for git-annex. ;-)
+
+> Which warms the cockles of my heart, Ben! :)
+> 
+> [[fixed|done]] --[[Joey]]

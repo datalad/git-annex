@@ -14,6 +14,8 @@ git-annex (6.20171125) UNRELEASED; urgency=medium
   * initremote, enableremote: Really support gpg subkeys suffixed with an
     exclamation mark, which forces gpg to use a specific subkey.
     (Previous try had a bug.)
+  * lookupkey: Support being given an absolute filename to a file
+    within the current git repository.
 
  -- Joey Hess <id@joeyh.name>  Tue, 28 Nov 2017 13:48:44 -0400
 
