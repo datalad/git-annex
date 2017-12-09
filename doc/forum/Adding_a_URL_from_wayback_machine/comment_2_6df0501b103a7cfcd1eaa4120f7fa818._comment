@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="robert.schuetz@7942237bf71a2ae4f5d3cb047d167612b8c9e311"
+ nickname="robert.schuetz"
+ avatar="http://cdn.libravatar.org/avatar/89879460a9e84b9c736d982d9489d3d9"
+ subject="comment 2"
+ date="2017-12-09T11:50:09Z"
+ content="""
+I'm adding a file and later want to add a URL, that doesn't give a Content-Length header, to the file.
+
+It is essantially the following:
+
+    mkdir test
+    cd test
+    git init
+    git annex init
+    wget http://web.archive.org/web/20171117120847/https://downloads.kitenet.net/videos/git-annex/git-annex_views_demo.ogg
+    git annex add
+    git annex addurl \"http://web.archive.org/web/20171117120847/https://downloads.kitenet.net/videos/git-annex/git-annex_views_demo.ogg\" --file git-annex_views_demo.ogg
+
+and the last command gives me the result
+
+    addurl git-annex_views_demo.ogg 
+      while adding a new url to an already annexed file, url does not have expected file size (use --relaxed to bypass this check) http://web.archive.org/web/20171117120847/https://downloads.kitenet.net/videos/git-annex/git-annex_views_demo.ogg
+    failed
+    git-annex: addurl: 1 failed
+"""]]
