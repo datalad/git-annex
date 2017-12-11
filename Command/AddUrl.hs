@@ -158,8 +158,8 @@ performRemote r o uri file sz = ifAnnexed file adduri geturi
 	loguri = setDownloader uri OtherDownloader
 	adduri = addUrlChecked o loguri file (Remote.uuid r) checkexistssize
 	checkexistssize key = return $ case sz of
-		Nothing -> (True, True, uri)
-		Just n -> (True, n == fromMaybe n (keySize key), uri)
+		Nothing -> (True, True, loguri)
+		Just n -> (True, n == fromMaybe n (keySize key), loguri)
 	geturi = next $ isJust <$> downloadRemoteFile r (downloadOptions o) uri file sz
 
 downloadRemoteFile :: Remote -> DownloadOptions -> URLString -> FilePath -> Maybe Integer -> Annex (Maybe Key)
