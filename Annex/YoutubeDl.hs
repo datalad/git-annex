@@ -5,7 +5,13 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Annex.YoutubeDl where
+module Annex.YoutubeDl (
+	youtubeDl,
+	youtubeDlTo,
+	youtubeDlSupported,
+	youtubeDlCheck,
+	youtubeDlFileName,
+) where
 
 import Annex.Common
 import qualified Annex
@@ -15,6 +21,8 @@ import Utility.Url (URLString)
 import Utility.DiskFree
 import Utility.HtmlDetect
 import Logs.Transfer
+
+import Network.URI
 
 -- Runs youtube-dl in a work directory, to download a single media file
 -- from the url. Reutrns the path to the media file in the work directory.
@@ -30,18 +38,20 @@ import Logs.Transfer
 -- (Note that we can't use --output to specifiy the file to download to,
 -- due to <https://github.com/rg3/youtube-dl/issues/14864>)
 youtubeDl :: URLString -> FilePath -> Annex (Either String (Maybe FilePath))
-youtubeDl url workdir = ifM (liftIO $ inPath "youtube-dl")
-	( runcmd >>= \case
-		Right True -> workdirfiles >>= \case
-			(f:[]) -> return (Right (Just f))
-			[] -> return nofiles
-			fs -> return (toomanyfiles fs)
-		Right False -> workdirfiles >>= \case
-			[] -> return (Right Nothing)
-			_ -> return (Left "youtube-dl download is incomplete. Run the command again to resume.")
-		Left msg -> return (Left msg)
-	, return (Right Nothing)
-	)
+youtubeDl url workdir
+	| supportedScheme url = ifM (liftIO $ inPath "youtube-dl")
+		( runcmd >>= \case
+			Right True -> workdirfiles >>= \case
+				(f:[]) -> return (Right (Just f))
+				[] -> return nofiles
+				fs -> return (toomanyfiles fs)
+			Right False -> workdirfiles >>= \case
+				[] -> return (Right Nothing)
+				_ -> return (Left "youtube-dl download is incomplete. Run the command again to resume.")
+			Left msg -> return (Left msg)
+		, return (Right Nothing)
+		)
+	| otherwise = return (Right Nothing)
   where
 	nofiles = Left "youtube-dl did not put any media in its work directory, perhaps it's been configured to store files somewhere else?"
 	toomanyfiles fs = Left $ "youtube-dl downloaded multiple media files; git-annex is only able to deal with one per url: " ++ show fs
@@ -122,16 +132,22 @@ youtubeDlSupported url = either (const False) id <$> youtubeDlCheck url
 
 -- Check if youtube-dl can find media in an url.
 youtubeDlCheck :: URLString -> Annex (Either String Bool)
-youtubeDlCheck url = catchMsgIO $ htmlOnly url False $ do
-	opts <- youtubeDlOpts [ Param url, Param "--simulate" ]
-	liftIO $ snd <$> processTranscript "youtube-dl" (toCommand opts) Nothing
+youtubeDlCheck url
+	| supportedScheme url = catchMsgIO $ htmlOnly url False $ do
+		opts <- youtubeDlOpts [ Param url, Param "--simulate" ]
+		liftIO $ snd <$> processTranscript "youtube-dl" (toCommand opts) Nothing
+	| otherwise = return (Right False)
 
 -- Ask youtube-dl for the filename of media in an url.
 --
 -- (This is not always identical to the filename it uses when downloading.)
 youtubeDlFileName :: URLString -> Annex (Either String FilePath)
-youtubeDlFileName url = flip catchIO (pure . Left . show) $
-	htmlOnly url nomedia $ do
+youtubeDlFileName url
+	| supportedScheme url = flip catchIO (pure . Left . show) $
+		htmlOnly url nomedia go
+	| otherwise = return nomedia
+  where
+	go = do
 		-- Sometimes youtube-dl will fail with an ugly backtrace
 		-- (eg, http://bugs.debian.org/874321)
 		-- so catch stderr as well as stdout to avoid the user
@@ -147,10 +163,19 @@ youtubeDlFileName url = flip catchIO (pure . Left . show) $
 		return $ case (ok, lines output) of
 			(True, (f:_)) | not (null f) -> Right f
 			_ -> nomedia
-  where
 	nomedia = Left "no media in url"
 
 youtubeDlOpts :: [CommandParam] -> Annex [CommandParam]
 youtubeDlOpts addopts = do
 	opts <- map Param . annexYoutubeDlOptions <$> Annex.getGitConfig
 	return (opts ++ addopts)
+
+supportedScheme :: URLString -> Bool
+supportedScheme url = case uriScheme <$> parseURIRelaxed url of
+	Nothing -> False
+	-- avoid ugly message from youtube-dl about not supporting file:
+	Just "file:" -> False
+	-- ftp indexes may look like html pages, and there's no point
+	-- involving youtube-dl in a ftp download
+	Just "ftp:" -> False
+	Just _ -> True
