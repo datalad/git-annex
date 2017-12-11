@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2017-12-11T18:23:58Z"
+ content="""
+@woffs hmm, the hook script seems to quote every use of the filename,
+which should avoid such problems. I tested it, using both extract
+and exiftool, and a file named "foo'bar.jpg", and it worked fine.
+
+If you have a case where it does not work, suggest you file a bug
+report with enough information to reproduce the problem.
+"""]]
