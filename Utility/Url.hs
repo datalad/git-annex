@@ -350,8 +350,8 @@ parseURIRelaxed :: URLString -> Maybe URI
 parseURIRelaxed s = maybe (parseURIRelaxed' s) Just $
 	parseURI $ escapeURIString isAllowedInURI s
 
-#if MIN_VERSION_http_client(0,4,30)
 parseUrlConduit :: URLString -> Maybe Request
+#if MIN_VERSION_http_client(0,4,30)
 parseUrlConduit = parseUrlThrow
 #else
 parseUrlConduit = parseUrl
