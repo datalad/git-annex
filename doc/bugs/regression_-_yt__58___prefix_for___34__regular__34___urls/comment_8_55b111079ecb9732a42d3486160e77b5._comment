@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2017-12-11T17:43:30Z"
+ content="""
+Above problem fixed in [[!commit bd7f8be121a5cd310ffbc32c6020326ef437a151]
+
+Good thing you have such a good test suite.
+"""]]
