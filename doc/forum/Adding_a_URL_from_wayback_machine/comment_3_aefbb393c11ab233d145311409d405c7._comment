@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2017-12-11T17:56:53Z"
+ content="""
+Ah, gotcha.
+
+When adding an url to an annexed file, git-annex doesn't download the
+content again, because that could be a lot of work, instead it checks
+if the size is the same, which is the same check that git-annex always uses
+to see if the web still seems to have the content of a file.
+
+It doesn't feel safe to relax the size check when the web server doesn't
+send a Content-Length, because then there's no indication at all 
+that this url really has the same content as the file. It *might* make
+sense for git-annex to download all the content again in that case, and
+check if it's the expected content and only then add it. However, that
+could be a whole lot of unwanted work to do.
+
+If the user is sure that the url has the same content, it does make sense
+for them to add --relaxed. So, perhaps what's needed is a --strict
+for the users who are not sure and want to force a full download to check.
+
+Here's how to check it yourself, without any changes to git-annex.
+
+	wget -O tmp.git-annex_views_demo.ogg http://web.archive.org/web/20171117120847/https://downloads.kitenet.net/videos/git-annex/git-annex_views_demo.ogg
+	if [ "$(git annex calckey tmp.git-annex_views_demo.ogg)" == "$(git annex find --format '${key}' git-annex_views_demo.ogg)" ]; then
+		git annex addurl \"http://web.archive.org/web/20171117120847/https://downloads.kitenet.net/videos/git-annex/git-annex_views_demo.ogg\" --file git-annex_views_demo.ogg --relaxed
+	fi
+	rm tmp.git-annex_views_demo.ogg
+"""]]
