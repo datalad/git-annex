@@ -16,6 +16,10 @@ git-annex (6.20171125) UNRELEASED; urgency=medium
     (Previous try had a bug.)
   * lookupkey: Support being given an absolute filename to a file
     within the current git repository.
+  * A top-level .noannex file will prevent git-annex init from being used
+    in a repository. This is useful for repositories that have a policy
+    reason not to use git-annex. The content of the file will be displayed
+    to the user who tries to run git-annex init.
 
  -- Joey Hess <id@joeyh.name>  Tue, 28 Nov 2017 13:48:44 -0400
 

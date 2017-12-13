@@ -6,3 +6,5 @@ annoying. --[[Joey]]
 This could be a git configuration setting, or it could be something
 checked into the repo. Either might make sense depending on the scope
 in which one wants to prevent the accidental init.
+
+> [[done]] using .noannex file. --[[Joey]]
