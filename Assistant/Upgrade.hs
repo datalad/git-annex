@@ -36,7 +36,7 @@ import Utility.UserInfo
 import Utility.Gpg
 import Utility.FileMode
 import qualified Utility.Lsof as Lsof
-import qualified Build.SysConfig
+import qualified BuildInfo
 import qualified Utility.Url as Url
 import qualified Annex.Url as Url
 import Utility.Tuple
@@ -329,7 +329,7 @@ downloadDistributionInfo = do
 			)
 
 distributionInfoUrl :: String
-distributionInfoUrl = fromJust Build.SysConfig.upgradelocation ++ ".info"
+distributionInfoUrl = fromJust BuildInfo.upgradelocation ++ ".info"
 
 distributionInfoSigUrl :: String
 distributionInfoSigUrl = distributionInfoUrl ++ ".sig"

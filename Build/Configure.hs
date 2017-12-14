@@ -1,4 +1,4 @@
-{- Checks system configuration and generates SysConfig.hs. -}
+{- Checks system configuration and generates SysConfig. -}
 
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 

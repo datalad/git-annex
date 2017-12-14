@@ -33,7 +33,7 @@ module Utility.Url (
 
 import Common
 import Utility.Tmp
-import qualified Build.SysConfig
+import qualified BuildInfo
 
 import Network.URI
 import Network.HTTP.Types
@@ -163,7 +163,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 						sz <- getFileSize' f stat
 						found (Just sz) Nothing
 					Nothing -> dne
-			| Build.SysConfig.curl -> existscurl u
+			| BuildInfo.curl -> existscurl u
 			| otherwise -> dne
 	Nothing -> dne
   where
@@ -281,7 +281,7 @@ download' quiet url file uo = do
 	 -}
 #ifndef __ANDROID__
 	wgetparams = concat
-		[ if Build.SysConfig.wgetunclutter && not quiet
+		[ if BuildInfo.wgetunclutter && not quiet
 			then [Param "-nv", Param "--show-progress"]
 			else []
 		, [ Param "--clobber", Param "-c", Param "-O"]

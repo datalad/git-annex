@@ -11,7 +11,7 @@ module Assistant.WebApp.Documentation where
 
 import Assistant.WebApp.Common
 import Assistant.Install (standaloneAppBase)
-import Build.SysConfig (packageversion)
+import BuildInfo (packageversion)
 import BuildInfo
 
 {- The full license info may be included in a file on disk that can

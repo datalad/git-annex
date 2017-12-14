@@ -11,7 +11,7 @@ module Build.BundledPrograms where
 
 import Data.Maybe
 
-import Build.SysConfig as SysConfig
+import BuildInfo
 
 {- Programs that git-annex uses, to include in the bundle.
  -
@@ -28,7 +28,7 @@ extraBundledPrograms = catMaybes
 	-- integrate with the system gpg-agent, etc.
 	-- On Windows, gpg is bundled with git for windows.
 #ifndef mingw32_HOST_OS
-	[ SysConfig.gpg
+	[ BuildInfo.gpg
 #else
 	[
 #endif
@@ -75,19 +75,19 @@ preferredBundledPrograms = catMaybes
 	-- wget on OSX has been problematic, looking for certs in the wrong
 	-- places. Don't ship it, use curl or the OSX's own wget if it has
 	-- one.
-	, ifset SysConfig.wget "wget"
+	, ifset BuildInfo.wget "wget"
 #endif
 #endif
-	, SysConfig.lsof
-	, SysConfig.gcrypt
+	, BuildInfo.lsof
+	, BuildInfo.gcrypt
 #ifndef mingw32_HOST_OS
 	-- All these utilities are included in git for Windows
-	, ifset SysConfig.curl "curl"
-	, SysConfig.sha1
-	, SysConfig.sha256
-	, SysConfig.sha512
-	, SysConfig.sha224
-	, SysConfig.sha384
+	, ifset BuildInfo.curl "curl"
+	, BuildInfo.sha1
+	, BuildInfo.sha256
+	, BuildInfo.sha512
+	, BuildInfo.sha224
+	, BuildInfo.sha384
 	, Just "cp"
 #endif
 #ifdef linux_HOST_OS

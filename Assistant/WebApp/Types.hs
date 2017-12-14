@@ -24,7 +24,7 @@ import Utility.WebApp
 import Utility.Yesod
 import Types.Transfer
 import Utility.Gpg (KeyId)
-import Build.SysConfig (packageversion)
+import BuildInfo (packageversion)
 import Types.ScheduledActivity
 import Assistant.WebApp.RepoId
 import Assistant.WebApp.Pairing

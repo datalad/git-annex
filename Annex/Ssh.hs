@@ -25,7 +25,7 @@ module Annex.Ssh (
 
 import Annex.Common
 import Annex.LockFile
-import qualified Build.SysConfig as SysConfig
+import qualified BuildInfo
 import qualified Annex
 import qualified Git
 import qualified Git.Url
@@ -138,7 +138,7 @@ sshConnectionCachingParams socketfile =
  - a different filesystem. -}
 sshCacheDir :: Annex (Maybe FilePath)
 sshCacheDir
-	| SysConfig.sshconnectioncaching = 
+	| BuildInfo.sshconnectioncaching = 
 		ifM (fromMaybe True . annexSshCaching <$> Annex.getGitConfig)
 			( ifM crippledFileSystem
 				( maybe (return Nothing) usetmpdir =<< gettmpdir

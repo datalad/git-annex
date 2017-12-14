@@ -14,7 +14,7 @@ module Utility.CopyFile (
 ) where
 
 import Common
-import qualified Build.SysConfig as SysConfig
+import qualified BuildInfo
 
 data CopyMetaData 
 	-- Copy timestamps when possible, but no other metadata, and
@@ -34,11 +34,11 @@ copyFileExternal meta src dest = do
   where
 #ifndef __ANDROID__
 	params = map snd $ filter fst
-		[ (SysConfig.cp_reflink_auto, Param "--reflink=auto")
-		, (allmeta && SysConfig.cp_a, Param "-a")
-		, (allmeta && SysConfig.cp_p && not SysConfig.cp_a
+		[ (BuildInfo.cp_reflink_auto, Param "--reflink=auto")
+		, (allmeta && BuildInfo.cp_a, Param "-a")
+		, (allmeta && BuildInfo.cp_p && not BuildInfo.cp_a
 			, Param "-p")
-		, (not allmeta && SysConfig.cp_preserve_timestamps
+		, (not allmeta && BuildInfo.cp_preserve_timestamps
 			, Param "--preserve=timestamps")
 		]
 #else

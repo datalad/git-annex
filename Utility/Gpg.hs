@@ -10,7 +10,7 @@
 module Utility.Gpg where
 
 import Common
-import qualified Build.SysConfig as SysConfig
+import qualified BuildInfo
 #ifndef mingw32_HOST_OS
 import System.Posix.Types
 import qualified System.Posix.IO
@@ -35,7 +35,7 @@ newtype GpgCmd = GpgCmd { unGpgCmd :: String }
  - command was found at configure time, use it, or otherwise, "gpg". -}
 mkGpgCmd :: Maybe FilePath -> GpgCmd
 mkGpgCmd (Just c) = GpgCmd c
-mkGpgCmd Nothing = GpgCmd (fromMaybe "gpg" SysConfig.gpg)
+mkGpgCmd Nothing = GpgCmd (fromMaybe "gpg" BuildInfo.gpg)
 
 boolGpgCmd :: GpgCmd -> [CommandParam] -> IO Bool
 boolGpgCmd (GpgCmd cmd) = boolSystem cmd

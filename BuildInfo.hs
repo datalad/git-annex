@@ -1,4 +1,4 @@
-{- git-annex build info reporting
+{- git-annex build info
  -
  - Copyright 2013-2017 Joey Hess <id@joeyh.name>
  -
@@ -12,6 +12,8 @@ module BuildInfo where
 import Data.List
 import Data.Ord
 import qualified Data.CaseInsensitive as CI
+
+#include "Build/SysConfig"
 
 buildFlags :: [String]
 buildFlags = filter (not . null)

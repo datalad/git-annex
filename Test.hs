@@ -88,7 +88,7 @@ import qualified Annex.Action
 import qualified Logs.View
 import qualified Utility.Path
 import qualified Utility.FileMode
-import qualified Build.SysConfig
+import qualified BuildInfo
 import qualified Utility.Format
 import qualified Utility.Verifiable
 import qualified Utility.Process
@@ -1622,7 +1622,7 @@ test_rsync_remote = intmpclonerepo $ do
 	annexed_present annexedfile
 
 test_bup_remote :: Assertion
-test_bup_remote = intmpclonerepo $ when Build.SysConfig.bup $ do
+test_bup_remote = intmpclonerepo $ when BuildInfo.bup $ do
 	dir <- absPath "dir" -- bup special remote needs an absolute path
 	createDirectory dir
 	git_annex "initremote" (words $ "foo type=bup encryption=none buprepo="++dir) @? "initremote failed"

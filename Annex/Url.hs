@@ -16,10 +16,10 @@ module Annex.Url (
 import Annex.Common
 import qualified Annex
 import Utility.Url as U
-import qualified Build.SysConfig as SysConfig
+import qualified BuildInfo
 
 defaultUserAgent :: U.UserAgent
-defaultUserAgent = "git-annex/" ++ SysConfig.packageversion
+defaultUserAgent = "git-annex/" ++ BuildInfo.packageversion
 
 getUserAgent :: Annex (Maybe U.UserAgent)
 getUserAgent = Annex.getState $ 
