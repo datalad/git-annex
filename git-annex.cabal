@@ -62,6 +62,7 @@ Extra-Source-Files:
   doc/git-annex-enable-tor.mdwn
   doc/git-annex-examinekey.mdwn
   doc/git-annex-expire.mdwn
+  doc/git-annex-export.mdwn
   doc/git-annex-find.mdwn
   doc/git-annex-findref.mdwn
   doc/git-annex-fix.mdwn
