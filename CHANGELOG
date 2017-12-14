@@ -1,4 +1,4 @@
-git-annex (6.20171125) UNRELEASED; urgency=medium
+git-annex (6.20171214) unstable; urgency=medium
 
   * Use youtube-dl rather than quvi to download media from web pages,
     since quvi is not being actively developed and youtube-dl supports
@@ -21,7 +21,7 @@ git-annex (6.20171125) UNRELEASED; urgency=medium
     reason not to use git-annex. The content of the file will be displayed
     to the user who tries to run git-annex init.
 
- -- Joey Hess <id@joeyh.name>  Tue, 28 Nov 2017 13:48:44 -0400
+ -- Joey Hess <id@joeyh.name>  Thu, 14 Dec 2017 11:50:48 -0400
 
 git-annex (6.20171124) unstable; urgency=medium
 
