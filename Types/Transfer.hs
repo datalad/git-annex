@@ -13,6 +13,7 @@ import Types
 import Types.Remote (Verification(..))
 import Utility.PID
 import Utility.QuickCheck
+import Utility.Url
 
 import Data.Time.Clock.POSIX
 import Control.Concurrent
@@ -91,3 +92,12 @@ instance Observable (Maybe a) where
 	observeBool (Just _) = True
 	observeBool Nothing = False
 	observeFailure = Nothing
+
+class Transferrable t where
+	descTransfrerrable :: t -> Maybe String
+
+instance Transferrable AssociatedFile where
+	descTransfrerrable (AssociatedFile af) = af
+
+instance Transferrable URLString where
+	descTransfrerrable = Just

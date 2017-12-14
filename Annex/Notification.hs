@@ -12,7 +12,6 @@ module Annex.Notification (NotifyWitness, noNotification, notifyTransfer, notify
 
 import Annex.Common
 import Types.Transfer
-import Utility.Url
 #ifdef WITH_DBUS_NOTIFICATIONS
 import qualified Annex
 import Types.DesktopNotify
@@ -26,15 +25,6 @@ data NotifyWitness = NotifyWitness
 -- Only use when no notification should be done.
 noNotification :: NotifyWitness
 noNotification = NotifyWitness
-
-class Transferrable t where
-	descTransfrerrable :: t -> Maybe String
-
-instance Transferrable AssociatedFile where
-	descTransfrerrable (AssociatedFile af) = af
-
-instance Transferrable URLString where
-	descTransfrerrable = Just
 
 {- Wrap around an action that performs a transfer, which may run multiple
  - attempts. Displays notification when supported and when the user asked
