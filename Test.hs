@@ -12,18 +12,6 @@ module Test where
 import Types.Test
 import Options.Applicative.Types
 
-#ifndef WITH_TESTSUITE
-
-import Options.Applicative (pure)
-
-optParser :: Parser ()
-optParser = pure ()
-
-runner :: Maybe (() -> IO ())
-runner = Nothing
-
-#else
-
 import Test.Tasty
 import Test.Tasty.Runners
 import Test.Tasty.HUnit
@@ -2235,5 +2223,3 @@ getKey b f = fromJust <$> annexeval go
 			, Types.KeySource.contentLocation = f
 			, Types.KeySource.inodeCache = Nothing
 			}
-
-#endif

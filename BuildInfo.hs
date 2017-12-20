@@ -33,11 +33,6 @@ buildFlags = filter (not . null)
 #else
 #warning Building without local pairing.
 #endif
-#ifdef WITH_TESTSUITE
-	, "Testsuite"
-#else
-#warning Building without the testsuite.
-#endif
 #ifdef WITH_S3
 	, "S3"
 #if MIN_VERSION_aws(0,10,6)
@@ -83,6 +78,7 @@ buildFlags = filter (not . null)
 	-- Always enabled now, but users may be used to seeing these flags
 	-- listed.
 	, "Feeds"
+	, "Testsuite"
 	]
 
 -- Not a complete list, let alone a listing transitive deps, but only

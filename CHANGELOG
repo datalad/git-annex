@@ -1,3 +1,9 @@
+git-annex (6.20171215) UNRELEASED; urgency=medium
+
+  * Removed the testsuite build flag; test suite is always included.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 20 Dec 2017 12:11:46 -0400
+
 git-annex (6.20171214) unstable; urgency=medium
 
   * Use youtube-dl rather than quvi to download media from web pages,
