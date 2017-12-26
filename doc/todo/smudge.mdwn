@@ -32,10 +32,9 @@ git-annex should use smudge/clean filters.
   read the file itself would let git-annex short-circuit when the file it's
   cleaning is one it already knows about. I've proposed extending git with
   such an interface:
-  <http://news.gmane.org/find-root.php?message_id=20160512182432.GA27427%40kitenet.net>
+  <http://git.661346.n2.nabble.com/proposal-for-extending-smudge-clean-filters-with-raw-file-access-td7656150.html>
 
-  And developed a patch set:
-  <http://thread.gmane.org/gmane.comp.version-control.git/297475>
+  And developed a patch set: [[git-patches]]
 
 * Implement git's new `filter.<driver>.process` interface, which will
   let only 1 git-annex process be started by git when processing
