@@ -149,15 +149,20 @@ callCommandAction = fromMaybe True <$$> callCommandAction'
 {- Like callCommandAction, but returns Nothing when the command did not
  - perform any action. -}
 callCommandAction' :: CommandStart -> Annex (Maybe Bool)
-callCommandAction' = start
+callCommandAction' a = callCommandActionQuiet a >>= \case
+	Nothing -> return Nothing
+	Just r -> implicitMessage (showEndResult r) >> return (Just r)
+
+callCommandActionQuiet :: CommandStart -> Annex (Maybe Bool)
+callCommandActionQuiet = start
   where
 	start   = stage $ maybe skip perform
 	perform = stage $ maybe failure cleanup
 	cleanup = stage $ status
 	stage = (=<<)
 	skip = return Nothing
-	failure = implicitMessage showEndFail >> return (Just False)
-	status r = implicitMessage (showEndResult r) >> return (Just r)
+	failure = return (Just False)
+	status = return . Just
 
 {- Do concurrent output when that has been requested. -}
 allowConcurrentOutput :: Annex a -> Annex a
@@ -188,7 +193,7 @@ onlyActionOn k a = onlyActionOn' k run
   where
 	-- Run whole action, not just start stage, so other threads
 	-- block until it's done.
-	run = callCommandAction' a >>= \case
+	run = callCommandActionQuiet a >>= \case
 		Nothing -> return Nothing
 		Just r' -> return $ Just $ return $ Just $ return r'
 
