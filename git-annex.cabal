@@ -79,6 +79,7 @@ Extra-Source-Files:
   doc/git-annex-info.mdwn
   doc/git-annex-init.mdwn
   doc/git-annex-initremote.mdwn
+  doc/git-annex-inprogress.mdwn
   doc/git-annex-list.mdwn
   doc/git-annex-lock.mdwn
   doc/git-annex-log.mdwn
@@ -717,6 +718,7 @@ Executable git-annex
     Command.Info
     Command.Init
     Command.InitRemote
+    Command.Inprogress
     Command.List
     Command.Lock
     Command.LockContent

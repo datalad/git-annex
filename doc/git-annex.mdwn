@@ -461,6 +461,12 @@ subdirectories).
 
   See [[git-annex-map]](1) for details.
 
+* `inprogress`
+
+  Access files while they're being downloaded.
+
+  See [[git-annex-inprogress]](1) for details.
+
 # METADATA COMMANDS
 
 * `metadata [path ...]`

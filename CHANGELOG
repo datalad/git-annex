@@ -1,6 +1,8 @@
 git-annex (6.20171215) UNRELEASED; urgency=medium
 
   * Removed the testsuite build flag; test suite is always included.
+  * Added inprogress command for accessing files as they are being
+    downloaded.
 
  -- Joey Hess <id@joeyh.name>  Wed, 20 Dec 2017 12:11:46 -0400
 

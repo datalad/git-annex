@@ -73,6 +73,7 @@ import qualified Command.Merge
 import qualified Command.ResolveMerge
 import qualified Command.Info
 import qualified Command.Status
+import qualified Command.Inprogress
 import qualified Command.Migrate
 import qualified Command.Uninit
 import qualified Command.Reinit
@@ -203,6 +204,7 @@ cmds testoptparser testrunner =
 	, Command.ResolveMerge.cmd
 	, Command.Info.cmd
 	, Command.Status.cmd
+	, Command.Inprogress.cmd
 	, Command.Migrate.cmd
 	, Command.Map.cmd
 	, Command.Direct.cmd
