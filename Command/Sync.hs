@@ -63,6 +63,7 @@ import Annex.TaggedPush
 import qualified Database.Export as Export
 import Utility.Bloom
 import Utility.OptParse
+import Utility.Process.Transcript
 
 import Control.Concurrent.MVar
 import qualified Data.Map as M

@@ -34,6 +34,7 @@ import Annex.Path
 import Utility.Env
 import Utility.FileSystemEncoding
 import Utility.Hash
+import Utility.Process.Transcript
 import Types.CleanupActions
 import Types.Concurrency
 import Git.Env

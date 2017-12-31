@@ -83,6 +83,7 @@ import qualified Utility.Process
 import qualified Utility.Misc
 import qualified Utility.InodeCache
 import qualified Utility.Env
+import qualified Utility.Env.Set
 import qualified Utility.Matcher
 import qualified Utility.Exception
 import qualified Utility.Hash
@@ -91,7 +92,7 @@ import qualified Utility.Scheduled.QuickCheck
 import qualified Utility.HumanTime
 import qualified Utility.ThreadScheduler
 import qualified Utility.Base64
-import qualified Utility.Tmp
+import qualified Utility.Tmp.Dir
 import qualified Utility.FileSystemEncoding
 import qualified Command.Uninit
 import qualified CmdLine.GitAnnex as GitAnnex
@@ -130,7 +131,7 @@ runner = Just go
 	subenv = "GIT_ANNEX_TEST_SUBPROCESS"
 	runsubprocesstests opts Nothing = do
 		pp <- Annex.Path.programPath
-		Utility.Env.setEnv subenv "1" True
+		Utility.Env.Set.setEnv subenv "1" True
 		ps <- getArgs
 		(Nothing, Nothing, Nothing, pid) <-createProcess (proc pp ps)
 		exitcode <- waitForProcess pid
@@ -356,7 +357,7 @@ test_log = intmpclonerepo $ do
 	git_annex "log" [annexedfile] @? "log failed"
 
 test_import :: Assertion
-test_import = intmpclonerepo $ Utility.Tmp.withTmpDir "importtest" $ \importdir -> do
+test_import = intmpclonerepo $ Utility.Tmp.Dir.withTmpDir "importtest" $ \importdir -> do
 	(toimport1, importf1, imported1) <- mktoimport importdir "import1"
 	git_annex "import" [toimport1] @? "import failed"
 	annexed_present_imported imported1
@@ -1917,11 +1918,11 @@ ensuretmpdir = do
 	
 {- Prevent global git configs from affecting the test suite. -}
 isolateGitConfig :: IO a -> IO a
-isolateGitConfig a = Utility.Tmp.withTmpDir "testhome" $ \tmphome -> do
+isolateGitConfig a = Utility.Tmp.Dir.withTmpDir "testhome" $ \tmphome -> do
 	tmphomeabs <- absPath tmphome
-	Utility.Env.setEnv "HOME" tmphomeabs True
-	Utility.Env.setEnv "XDG_CONFIG_HOME" tmphomeabs True
-	Utility.Env.setEnv "GIT_CONFIG_NOSYSTEM" "1" True
+	Utility.Env.Set.setEnv "HOME" tmphomeabs True
+	Utility.Env.Set.setEnv "XDG_CONFIG_HOME" tmphomeabs True
+	Utility.Env.Set.setEnv "GIT_CONFIG_NOSYSTEM" "1" True
 	a
 
 cleanup :: FilePath -> IO ()
@@ -1933,7 +1934,7 @@ cleanup dir = whenM (doesDirectoryExist dir) $ do
 
 finalCleanup :: IO ()
 finalCleanup = whenM (doesDirectoryExist tmpdir) $ do
-	Utility.Misc.reapZombies
+	Annex.Action.reapZombies
 	Command.Uninit.prepareRemoveAnnexDir' tmpdir
 	catchIO (removeDirectoryRecursive tmpdir) $ \e -> do
 		print e
@@ -1941,7 +1942,7 @@ finalCleanup = whenM (doesDirectoryExist tmpdir) $ do
 		Utility.ThreadScheduler.threadDelaySeconds $
 			Utility.ThreadScheduler.Seconds 10
 		whenM (doesDirectoryExist tmpdir) $ do
-			Utility.Misc.reapZombies
+			Annex.Action.reapZombies
 			removeDirectoryRecursive tmpdir
 	
 checklink :: FilePath -> Assertion
@@ -2107,7 +2108,7 @@ setTestMode testmode = do
 	currdir <- getCurrentDirectory
 	p <- Utility.Env.getEnvDefault "PATH" ""
 
-	mapM_ (\(var, val) -> Utility.Env.setEnv var val True)
+	mapM_ (\(var, val) -> Utility.Env.Set.setEnv var val True)
 		-- Ensure that the just-built git annex is used.
 		[ ("PATH", currdir ++ [searchPathSeparator] ++ p)
 		, ("TOPDIR", currdir)

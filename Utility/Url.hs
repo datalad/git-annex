@@ -32,7 +32,7 @@ module Utility.Url (
 ) where
 
 import Common
-import Utility.Tmp
+import Utility.Tmp.Dir
 import qualified BuildInfo
 
 import Network.URI

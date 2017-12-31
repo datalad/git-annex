@@ -19,7 +19,7 @@ import qualified Annex
 import Annex.UUID
 import Config
 import Utility.AuthToken
-import Utility.Tmp
+import Utility.Tmp.Dir
 import Utility.FileMode
 import Utility.ThreadScheduler
 import qualified Utility.MagicWormhole as Wormhole

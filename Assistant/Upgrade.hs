@@ -15,6 +15,7 @@ import qualified Annex
 import Assistant.Alert
 import Assistant.DaemonStatus
 import Utility.Env
+import Utility.Env.Set
 import Types.Distribution
 import Types.Transfer
 import Logs.Web
@@ -31,7 +32,7 @@ import Remote (remoteFromUUID)
 import Annex.Path
 import Config.Files
 import Utility.ThreadScheduler
-import Utility.Tmp
+import Utility.Tmp.Dir
 import Utility.UserInfo
 import Utility.Gpg
 import Utility.FileMode

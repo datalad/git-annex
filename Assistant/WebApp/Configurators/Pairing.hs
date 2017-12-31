@@ -34,6 +34,7 @@ import Command.P2P (unusedPeerRemoteName, PairingResult(..))
 import P2P.Address
 import Git
 import Config.Files
+import Utility.Process.Transcript
 
 import qualified Data.Map as M
 import qualified Data.Text as T

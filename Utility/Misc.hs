@@ -5,7 +5,6 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Misc where
@@ -16,10 +15,6 @@ import Foreign
 import Data.Char
 import Data.List
 import System.Exit
-#ifndef mingw32_HOST_OS
-import System.Posix.Process (getAnyProcessStatus)
-import Utility.Exception
-#endif
 import Control.Applicative
 import Prelude
 
@@ -111,22 +106,6 @@ hGetSomeString h sz = do
   where
 	peekbytes :: Int -> Ptr Word8 -> IO [Word8]
 	peekbytes len buf = mapM (peekElemOff buf) [0..pred len]
-
-{- Reaps any zombie processes that may be hanging around.
- -
- - Warning: Not thread safe. Anything that was expecting to wait
- - on a process and get back an exit status is going to be confused
- - if this reap gets there first. -}
-reapZombies :: IO ()
-#ifndef mingw32_HOST_OS
-reapZombies =
-	-- throws an exception when there are no child processes
-	catchDefaultIO Nothing (getAnyProcessStatus False True)
-		>>= maybe (return ()) (const reapZombies)
-
-#else
-reapZombies = return ()
-#endif
 
 exitBool :: Bool -> IO a
 exitBool False = exitFailure

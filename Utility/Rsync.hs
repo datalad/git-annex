@@ -13,6 +13,10 @@ import Common
 import Utility.Metered
 import Utility.Tuple
 
+#ifdef mingw32_HOST_OS
+import qualified System.FilePath.Posix as Posix
+#endif
+
 import Data.Char
 import System.Console.GetOpt
 
@@ -139,3 +143,29 @@ filterRsyncSafeOptions = fst3 . getOpt Permute
 	[ Option [] ["bwlimit"] (reqArgLong "bwlimit") "" ]
   where
 	reqArgLong x = ReqArg (\v -> "--" ++ x ++ "=" ++ v) ""
+
+{- Converts a DOS style path to a msys2 style path. Only on Windows.
+ - Any trailing '\' is preserved as a trailing '/' 
+ - 
+ - Taken from: http://sourceforge.net/p/msys2/wiki/MSYS2%20introduction/i
+ -
+ - The virtual filesystem contains:
+ -  /c, /d, ...	mount points for Windows drives
+ -}
+toMSYS2Path :: FilePath -> FilePath
+#ifndef mingw32_HOST_OS
+toMSYS2Path = id
+#else
+toMSYS2Path p
+	| null drive = recombine parts
+	| otherwise = recombine $ "/" : driveletter drive : parts
+  where
+	(drive, p') = splitDrive p
+	parts = splitDirectories p'
+	driveletter = map toLower . takeWhile (/= ':')
+	recombine = fixtrailing . Posix.joinPath
+	fixtrailing s
+		| hasTrailingPathSeparator p = Posix.addTrailingPathSeparator s
+		| otherwise = s
+#endif
+

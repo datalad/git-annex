@@ -25,6 +25,8 @@ import Types.FileMatcher
 import qualified Git.LsFiles as LsFiles
 import Utility.Hash
 import Utility.Tmp
+import Utility.Tmp.Dir
+import Utility.Process.Transcript
 import Config
 
 import Data.Char

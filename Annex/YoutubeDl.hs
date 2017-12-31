@@ -21,6 +21,7 @@ import Annex.Url
 import Utility.Url (URLString)
 import Utility.DiskFree
 import Utility.HtmlDetect
+import Utility.Process.Transcript
 import Logs.Transfer
 
 import Network.URI

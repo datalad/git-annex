@@ -12,6 +12,7 @@ import Git.Types
 import Git.Construct
 import qualified Git.Config
 import Utility.Env
+import Utility.Env.Set
 
 {- Gets the current git repository.
  -

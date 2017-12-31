@@ -13,10 +13,11 @@ import Common
 import qualified BuildInfo
 #ifndef mingw32_HOST_OS
 import System.Posix.Types
-import qualified System.Posix.IO
+import System.Posix.IO
 import Utility.Env
+import Utility.Env.Set
 #endif
-import Utility.Tmp
+import Utility.Tmp.Dir
 import Utility.Format (decode_c)
 
 import Control.Concurrent

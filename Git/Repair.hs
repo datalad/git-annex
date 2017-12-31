@@ -36,7 +36,7 @@ import qualified Git.Ref as Ref
 import qualified Git.RefLog as RefLog
 import qualified Git.UpdateIndex as UpdateIndex
 import qualified Git.Branch as Branch
-import Utility.Tmp
+import Utility.Tmp.Dir
 import Utility.Rsync
 import Utility.FileMode
 import Utility.Tuple

@@ -13,6 +13,7 @@ import Common
 
 #ifndef mingw32_HOST_OS
 import System.Posix.Types
+import System.Posix.IO
 #else
 import System.Win32.Types
 import System.Win32.File

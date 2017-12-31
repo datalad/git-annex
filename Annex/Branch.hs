@@ -65,6 +65,7 @@ import Annex.Branch.Transitions
 import qualified Annex
 import Annex.Hook
 import Utility.FileSystemEncoding
+import Utility.Directory.Stream
 
 {- Name of the branch that is used to store git-annex's information. -}
 name :: Git.Ref

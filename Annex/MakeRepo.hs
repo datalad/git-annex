@@ -20,6 +20,7 @@ import Annex.Action
 import Types.StandardGroups
 import Logs.PreferredContent
 import qualified Annex.Branch
+import Utility.Process.Transcript
 
 {- Makes a new git repository. Or, if a git repository already
  - exists, returns False. -}

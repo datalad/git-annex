@@ -11,7 +11,8 @@ module Annex.ReplaceFile where
 
 import Annex.Common
 import Annex.Perms
-import Utility.Tmp
+import Utility.Tmp.Dir
+import Utility.Path.Max
 
 {- Replaces a possibly already existing file with a new version, 
  - atomically, by running an action.

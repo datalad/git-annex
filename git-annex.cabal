@@ -302,6 +302,11 @@ source-repository head
   type: git
   location: git://git-annex.branchable.com/
 
+custom-setup
+  Setup-Depends: base (>= 4.6), hslogger, split, unix-compat, process,
+    filepath, exceptions, bytestring, directory, IfElse, data-default,
+    utf8-string, Cabal
+
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends:
@@ -987,10 +992,13 @@ Executable git-annex
     Utility.DirWatcher
     Utility.DirWatcher.Types
     Utility.Directory
+    Utility.Directory.Stream
     Utility.DiskFree
     Utility.Dot
     Utility.DottedVersion
     Utility.Env
+    Utility.Env.Basic
+    Utility.Env.Set
     Utility.Exception
     Utility.ExternalSHA
     Utility.FileMode
@@ -1029,9 +1037,11 @@ Executable git-annex
     Utility.Parallel
     Utility.PartialPrelude
     Utility.Path
+    Utility.Path.Max
     Utility.Percentage
     Utility.Process
     Utility.Process.Shim
+    Utility.Process.Transcript
     Utility.QuickCheck
     Utility.Rsync
     Utility.SRV
@@ -1050,6 +1060,7 @@ Executable git-annex
     Utility.ThreadLock
     Utility.ThreadScheduler
     Utility.Tmp
+    Utility.Tmp.Dir
     Utility.Tor
     Utility.Touch
     Utility.Tuple

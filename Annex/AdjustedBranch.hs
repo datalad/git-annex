@@ -50,7 +50,7 @@ import Annex.AutoMerge
 import Annex.Content
 import Annex.Perms
 import Annex.GitOverlay
-import Utility.Tmp
+import Utility.Tmp.Dir
 import Utility.CopyFile
 import qualified Database.Keys
 import Config

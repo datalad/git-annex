@@ -5,7 +5,7 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE PackageImports, CPP #-}
+{-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Path where
@@ -16,13 +16,6 @@ import Data.Maybe
 import Data.Char
 import Control.Applicative
 import Prelude
-
-#ifdef mingw32_HOST_OS
-import qualified System.FilePath.Posix as Posix
-#else
-import System.Posix.Files
-import Utility.Exception
-#endif
 
 import Utility.Monad
 import Utility.UserInfo
@@ -246,50 +239,6 @@ dotfile file
 	| otherwise = "." `isPrefixOf` f || dotfile (takeDirectory file)
   where
 	f = takeFileName file
-
-{- Converts a DOS style path to a msys2 style path. Only on Windows.
- - Any trailing '\' is preserved as a trailing '/' 
- - 
- - Taken from: http://sourceforge.net/p/msys2/wiki/MSYS2%20introduction/i
- -
- - The virtual filesystem contains:
- -  /c, /d, ...	mount points for Windows drives
- -}
-toMSYS2Path :: FilePath -> FilePath
-#ifndef mingw32_HOST_OS
-toMSYS2Path = id
-#else
-toMSYS2Path p
-	| null drive = recombine parts
-	| otherwise = recombine $ "/" : driveletter drive : parts
-  where
-	(drive, p') = splitDrive p
-	parts = splitDirectories p'
-	driveletter = map toLower . takeWhile (/= ':')
-	recombine = fixtrailing . Posix.joinPath
-	fixtrailing s
-		| hasTrailingPathSeparator p = Posix.addTrailingPathSeparator s
-		| otherwise = s
-#endif
-
-{- Maximum size to use for a file in a specified directory.
- -
- - Many systems have a 255 byte limit to the name of a file, 
- - so that's taken as the max if the system has a larger limit, or has no
- - limit.
- -}
-fileNameLengthLimit :: FilePath -> IO Int
-#ifdef mingw32_HOST_OS
-fileNameLengthLimit _ = return 255
-#else
-fileNameLengthLimit dir = do
-	-- getPathVar can fail due to statfs(2) overflow
-	l <- catchDefaultIO 0 $
-		fromIntegral <$> getPathVar dir FileNameLimit
-	if l <= 0
-		then return 255
-		else return $ minimum [l, 255]
-#endif
 
 {- Given a string that we'd like to use as the basis for FilePath, but that
  - was provided by a third party and is not to be trusted, returns the closest
