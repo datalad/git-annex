@@ -11,6 +11,7 @@ module Annex.YoutubeDl (
 	youtubeDlSupported,
 	youtubeDlCheck,
 	youtubeDlFileName,
+	youtubeDlFileName',
 ) where
 
 import Annex.Common
@@ -144,7 +145,16 @@ youtubeDlCheck url
 youtubeDlFileName :: URLString -> Annex (Either String FilePath)
 youtubeDlFileName url
 	| supportedScheme url = flip catchIO (pure . Left . show) $
-		htmlOnly url nomedia go
+		htmlOnly url nomedia (youtubeDlFileName' url)
+	| otherwise = return nomedia
+  where
+	nomedia = Left "no media in url"
+
+-- Does not check if the url contains htmlOnly; use when that's already
+-- been verified.
+youtubeDlFileName' :: URLString -> Annex (Either String FilePath)
+youtubeDlFileName' url
+	| supportedScheme url = flip catchIO (pure . Left . show) go
 	| otherwise = return nomedia
   where
 	go = do

@@ -272,26 +272,42 @@ downloadWeb o url urlinfo file =
 		showDestinationFile file
 		liftIO $ createDirectoryIfMissing True (parentDir file)
 		finishDownloadWith tmp webUUID url file
-	tryyoutubedl tmp = withTmpWorkDir mediakey $ \workdir ->
-		Transfer.notifyTransfer Transfer.Download url $
-			Transfer.download webUUID mediakey (AssociatedFile Nothing) Transfer.noRetry $ \_p ->
-				youtubeDl url workdir >>= \case
-					Right (Just mediafile) -> do
-						pruneTmpWorkDirBefore tmp (liftIO . nukeFile)
-						let dest = if isJust (fileOption o)
-							then file
-							else takeFileName mediafile
-						checkCanAdd dest $ do
-							showDestinationFile dest
-							addWorkTree webUUID mediaurl dest mediakey (Just mediafile)
-							return $ Just mediakey
-					Right Nothing -> normalfinish tmp
-					Left msg -> do
-						warning msg
-						return Nothing
+	tryyoutubedl tmp
+		| isJust (fileOption o) = go file
+		-- Ask youtube-dl what filename it will download
+		-- first, and check if that is already an annexed file,
+		-- to avoid unnecessary work in that case.
+		| otherwise = youtubeDlFileName' url >>= \case
+			Right dest -> ifAnnexed dest 
+				(alreadyannexed dest)
+				(dl dest)
+			Left _ -> normalfinish tmp
 	  where
+		dl dest = withTmpWorkDir mediakey $ \workdir ->
+			Transfer.notifyTransfer Transfer.Download url $
+				Transfer.download webUUID mediakey (AssociatedFile Nothing) Transfer.noRetry $ \_p ->
+					youtubeDl url workdir >>= \case
+						Right (Just mediafile) -> do
+							pruneTmpWorkDirBefore tmp (liftIO . nukeFile)
+							checkCanAdd dest $ do
+								showDestinationFile dest
+								addWorkTree webUUID mediaurl dest mediakey (Just mediafile)
+								return $ Just mediakey
+						Right Nothing -> normalfinish tmp
+						Left msg -> do
+							warning msg
+							return Nothing
 		mediaurl = setDownloader url YoutubeDownloader
 		mediakey = Backend.URL.fromUrl mediaurl Nothing
+		-- Does the already annexed file have the mediaurl
+		-- as an url? If so nothing to do.
+		alreadyannexed dest k = do
+			us <- getUrls k
+			if mediaurl `elem` us
+				then return (Just k)
+				else do
+					warning $ dest ++ " already exists; not overwriting"
+					return Nothing
 
 showDestinationFile :: FilePath -> Annex ()
 showDestinationFile file = do

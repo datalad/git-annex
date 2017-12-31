@@ -5,6 +5,9 @@ git-annex (6.20171215) UNRELEASED; urgency=medium
     downloaded.
   * Fix bug introduced in version 6.20171018 that caused some commands
     to print out "ok" twice after processing a file.
+  * addurl: When the file youtube-dl will download is already an annexed
+    file, don't download it again and fail to overwrite it, instead just do
+    nothing, like it used to when quvi was used.
 
  -- Joey Hess <id@joeyh.name>  Wed, 20 Dec 2017 12:11:46 -0400
 

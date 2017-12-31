@@ -15,3 +15,5 @@ show-stopper, but just something I noticed.  I generally do "addurl" manually.
 > if the local file already exists and already has the url, to get back to
 > the old behavior.
 > -- [[Joey]]
+
+[[fixed|done]] --[[Joey]]
