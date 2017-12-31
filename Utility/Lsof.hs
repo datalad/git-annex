@@ -11,7 +11,7 @@ module Utility.Lsof where
 
 import Common
 import BuildInfo
-import Utility.Env.Set
+import Utility.Env
 
 import System.Posix.Types
 

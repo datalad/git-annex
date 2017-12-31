@@ -44,6 +44,3 @@ Use -v to see a list of the files searched for.
 
 Yeah, it's amazing! I've been using the version from the Debian repos and then
 wanted to try building the new version for youtube-dl support.
-
-> Revisited it and seem to have managed to add custom-setup back. [[done]]
-> --[[Joey]]
