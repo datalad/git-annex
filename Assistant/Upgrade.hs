@@ -15,6 +15,7 @@ import qualified Annex
 import Assistant.Alert
 import Assistant.DaemonStatus
 import Utility.Env
+import Utility.Env.Set
 import Types.Distribution
 import Types.Transfer
 import Logs.Web
