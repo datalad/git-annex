@@ -273,7 +273,7 @@ downloadWeb o url urlinfo file =
 		liftIO $ createDirectoryIfMissing True (parentDir file)
 		finishDownloadWith tmp webUUID url file
 	tryyoutubedl tmp
-		| isJust (fileOption o) = go file
+		| isJust (fileOption o) = dl file
 		-- Ask youtube-dl what filename it will download
 		-- first, and check if that is already an annexed file,
 		-- to avoid unnecessary work in that case.
