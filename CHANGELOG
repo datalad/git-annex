@@ -8,6 +8,8 @@ git-annex (6.20171215) UNRELEASED; urgency=medium
   * addurl: When the file youtube-dl will download is already an annexed
     file, don't download it again and fail to overwrite it, instead just do
     nothing, like it used to when quvi was used.
+  * addurl: Fix encoding of filename queried from youtube-dl when in
+    --fast mode.
 
  -- Joey Hess <id@joeyh.name>  Wed, 20 Dec 2017 12:11:46 -0400
 

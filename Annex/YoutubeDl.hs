@@ -24,6 +24,7 @@ import Utility.HtmlDetect
 import Logs.Transfer
 
 import Network.URI
+import Control.Concurrent.Async
 
 -- Runs youtube-dl in a work directory, to download a single media file
 -- from the url. Reutrns the path to the media file in the work directory.
@@ -168,8 +169,16 @@ youtubeDlFileName' url
 			, Param "--get-filename"
 			, Param "--no-warnings"
 			]
-		(output, ok) <- liftIO $ processTranscript "youtube-dl"
-			(toCommand opts) Nothing
+		(Nothing, Just o, Just e, pid) <- liftIO $ createProcess
+			(proc "youtube-dl" (toCommand opts))
+				{ std_out = CreatePipe
+				, std_err = CreatePipe
+				}
+		output <- liftIO $ fmap fst $ 
+			hGetContentsStrict o
+				`concurrently`
+			hGetContentsStrict e
+		ok <- liftIO $ checkSuccessProcess pid
 		return $ case (ok, lines output) of
 			(True, (f:_)) | not (null f) -> Right f
 			_ -> nomedia
