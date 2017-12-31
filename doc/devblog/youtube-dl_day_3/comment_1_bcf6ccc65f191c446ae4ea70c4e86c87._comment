@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="Joseph Rawson"
+ subject="""comment 1"""
+ date="2017-12-31T16:23:04Z"
+ content="""
+Merry Christmas!  Thanks for adding this.  I was falling back to yt-dl when
+quvi failed.  I built from git last night and tested this.  I have a few
+comments and questions.
+
+- I am using debian/stretch.  Is yt-dl being used from system python package,
+or my virtualenv? (I have been preparing for py3 being default version in a
+couple of years.)
+
+- I have often used a terminal window and prefixed my input with "git-annex
+addurl" then drag links to the window for pasting.  Often, I have to press the
+up-arrow and run the command again.  The addurl behavior with urls that are
+already locally present, quvi responds "ok."  However, when repeating a command
+using yt-dl, when the url is already local, yt-dl refuses to overwrite, yet
+returns "failed."  I didn't know if you were aware of this.  This isn't a
+show-stopper, but just something I noticed.  I generally do "addurl" manually.
+
+- Playlist support.  Currently youtube-dl will allow you to download a whole
+playlist.  When I add a url "yt.com/watch?v=vidID&list=playlistID" only the
+video identified is downloaded.  This is a good default behavior.  When I add "
+yt.com/watch?list=listID" yt-dl successfully parses the whole list, but will
+only download one video from the list.
+"""]]
