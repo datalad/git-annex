@@ -69,3 +69,5 @@ This is somewhat expected, because the permissions of `unused`, `badunused` and 
     -rw------- 1 ele testgroup  101 dic 19 14:50 unused
 
 If this is the intended behavior, could you please explain me how to use `git annex unused` and `dropunused` in a shared repository?
+
+> Fixed all of this I was able to reproduce. [[done]] --[[Joey]]

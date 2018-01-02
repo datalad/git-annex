@@ -33,6 +33,7 @@ import Data.Time
 
 import Annex.Common
 import qualified Annex
+import Annex.Perms
 import Utility.Tmp
 import Logs.TimeStamp
 
@@ -64,10 +65,13 @@ updateUnusedLog prefix m = do
 writeUnusedLog :: FilePath -> UnusedLog -> Annex ()
 writeUnusedLog prefix l = do
 	logfile <- fromRepo $ gitAnnexUnusedLog prefix
-	liftIO $ viaTmp writeFile logfile $ unlines $ map format $ M.toList l
+	viaTmp writelog logfile $ unlines $ map format $ M.toList l
   where
 	format (k, (i, Just t)) = show i ++ " " ++ key2file k ++ " " ++ show t
 	format (k, (i, Nothing)) = show i ++ " " ++ key2file k
+	writelog f c = do
+		liftIO $ writeFile f c
+		setAnnexFilePerm f
 
 readUnusedLog :: FilePath -> Annex UnusedLog
 readUnusedLog prefix = do
