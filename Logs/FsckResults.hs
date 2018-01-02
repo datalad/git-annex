@@ -12,25 +12,22 @@ module Logs.FsckResults (
 ) where
 
 import Annex.Common
-import Utility.Tmp
 import Git.Fsck
 import Git.Types
+import Logs.File
 
 import qualified Data.Set as S
 
 writeFsckResults :: UUID -> FsckResults -> Annex ()
 writeFsckResults u fsckresults = do
 	logfile <- fromRepo $ gitAnnexFsckResultsLog u
-	liftIO $ 
-		case fsckresults of
-			FsckFailed -> store S.empty False logfile
-			FsckFoundMissing s t
-				| S.null s -> nukeFile logfile
-				| otherwise -> store s t logfile
+	case fsckresults of
+		FsckFailed -> store S.empty False logfile
+		FsckFoundMissing s t
+			| S.null s -> liftIO $ nukeFile logfile
+			| otherwise -> store s t logfile
   where
-	store s t logfile = do 
-		createDirectoryIfMissing True (parentDir logfile)
-		liftIO $ viaTmp writeFile logfile $ serialize s t
+	store s t logfile = writeLogFile logfile $ serialize s t
 	serialize s t =
 		let ls = map fromRef (S.toList s)
 		in if t

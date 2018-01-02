@@ -11,8 +11,8 @@ git-annex (6.20171215) UNRELEASED; urgency=medium
   * addurl: Fix encoding of filename queried from youtube-dl when in
     --fast mode.
   * git-annex.cabal: Add back custom-setup stanza, so cabal new-build works.
-  * unused: Write .git/annex/unused etc files with appropriate permissions
-    for the core.sharedRepository config.
+  * Fix several places where files in .git/annex/ were written with modes
+    that did not take the core.sharedRepository config into account.
 
  -- Joey Hess <id@joeyh.name>  Wed, 20 Dec 2017 12:11:46 -0400
 

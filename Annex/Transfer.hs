@@ -96,7 +96,7 @@ runTransfer' ignorelock t afile shouldretry transferaction = checkSecureHashes t
 			Nothing -> return (Nothing, True)
 			Just lockhandle -> ifM (checkSaneLock lck lockhandle)
 				( do
-					void $ liftIO $ tryIO $
+					void $ tryIO $
 						writeTransferInfoFile info tfile
 					return (Just lockhandle, False)
 				, do
@@ -111,7 +111,7 @@ runTransfer' ignorelock t afile shouldretry transferaction = checkSecureHashes t
 			Nothing -> return (Nothing, False)
 			Just Nothing -> return (Nothing, True)
 			Just (Just lockhandle) -> do
-				void $ liftIO $ tryIO $
+				void $ tryIO $
 					writeTransferInfoFile info tfile
 				return (Just lockhandle, False)
 #endif

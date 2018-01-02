@@ -19,6 +19,7 @@ import Utility.Percentage
 import Utility.PID
 import Annex.LockPool
 import Logs.TimeStamp
+import Logs.File
 
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
@@ -51,7 +52,7 @@ percentComplete (Transfer { transferKey = key }) info =
 mkProgressUpdater :: Transfer -> TransferInfo -> Annex (MeterUpdate, FilePath, MVar Integer)
 mkProgressUpdater t info = do
 	tfile <- fromRepo $ transferFile t
-	_ <- tryNonAsync $ createAnnexDirectory $ takeDirectory tfile
+	_ <- tryNonAsync $ writeTransferInfoFile info tfile
 	mvar <- liftIO $ newMVar 0
 	return (liftIO . updater tfile mvar, tfile, mvar)
   where
@@ -60,7 +61,7 @@ mkProgressUpdater t info = do
 		if newbytes - oldbytes >= mindelta
 			then do
 				let info' = info { bytesComplete = Just newbytes }
-				_ <- tryIO $ writeTransferInfoFile info' tfile
+				_ <- tryIO $ updateTransferInfoFile info' tfile
 				return newbytes
 			else return oldbytes
 	{- The minimum change in bytesComplete that is worth
@@ -181,8 +182,7 @@ removeFailedTransfer t = do
 recordFailedTransfer :: Transfer -> TransferInfo -> Annex ()
 recordFailedTransfer t info = do
 	failedtfile <- fromRepo $ failedTransferFile t
-	createAnnexDirectory $ takeDirectory failedtfile
-	liftIO $ writeTransferInfoFile info failedtfile
+	writeTransferInfoFile info failedtfile
 
 {- The transfer information file to use for a given Transfer. -}
 transferFile :: Transfer -> Git.Repo -> FilePath
@@ -213,8 +213,13 @@ parseTransferFile file
   where
 	bits = splitDirectories file
 
-writeTransferInfoFile :: TransferInfo -> FilePath -> IO ()
-writeTransferInfoFile info tfile = writeFile tfile $ writeTransferInfo info
+writeTransferInfoFile :: TransferInfo -> FilePath -> Annex ()
+writeTransferInfoFile info tfile = writeLogFile tfile $ writeTransferInfo info
+
+-- The file keeps whatever permissions it has, so should be used only
+-- after it's been created with the right perms by writeTransferInfoFile.
+updateTransferInfoFile :: TransferInfo -> FilePath -> IO ()
+updateTransferInfoFile info tfile = writeFile tfile $ writeTransferInfo info
 
 {- File format is a header line containing the startedTime and any
  - bytesComplete value. Followed by a newline and the associatedFile.

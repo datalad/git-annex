@@ -30,10 +30,10 @@ import qualified Remote
 import qualified Types.Remote as Remote
 import Types.UrlContents
 import Logs.Web
+import Logs.File
 import qualified Utility.Format
 import Utility.Tmp
 import Command.AddUrl (addUrlFile, downloadRemoteFile, parseDownloadOptions, DownloadOptions(..))
-import Annex.Perms
 import Annex.UUID
 import Backend.URL (fromUrl)
 import Annex.Content
@@ -386,8 +386,7 @@ checkFeedBroken' url f = do
 	now <- liftIO getCurrentTime
 	case prev of
 		Nothing -> do
-			createAnnexDirectory (parentDir f)
-			liftIO $ writeFile f $ show now
+			writeLogFile f $ show now
 			return False
 		Just prevtime -> do
 			let broken = diffUTCTime now prevtime > 60 * 60 * 23

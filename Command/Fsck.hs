@@ -563,15 +563,15 @@ recordStartTime :: UUID -> Annex ()
 recordStartTime u = do
 	f <- fromRepo (gitAnnexFsckState u)
 	createAnnexDirectory $ parentDir f
-	liftIO $ do
-		nukeFile f
-		withFile f WriteMode $ \h -> do
+	liftIO $ nukeFile f
+	liftIO $ withFile f WriteMode $ \h -> do
 #ifndef mingw32_HOST_OS
-			t <- modificationTime <$> getFileStatus f
+		t <- modificationTime <$> getFileStatus f
 #else
-			t <- getPOSIXTime
+		t <- getPOSIXTime
 #endif
-			hPutStr h $ showTime $ realToFrac t
+		hPutStr h $ showTime $ realToFrac t
+	setAnnexFilePerm f
   where
 	showTime :: POSIXTime -> String
 	showTime = show
