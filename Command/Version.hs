@@ -8,9 +8,9 @@
 module Command.Version where
 
 import Command
-import qualified BuildInfo
 import Annex.Version
 import BuildInfo
+import BuildFlags
 import Types.Key
 import qualified Types.Backend as B
 import qualified Types.Remote as R

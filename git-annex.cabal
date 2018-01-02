@@ -666,6 +666,7 @@ Executable git-annex
     Build.TestConfig
     Build.Version
     BuildInfo
+    BuildFlags
     CmdLine
     CmdLine.Action
     CmdLine.Batch
