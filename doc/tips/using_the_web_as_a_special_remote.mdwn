@@ -90,12 +90,12 @@ quality videos from YouTube. Note that the youtube-dl configuration files
 are not read when git-annex runs youtube-dl, to avoid config settings that
 break its integration.
 
-To download a youtube playlist, you need to find the RSS feed associated with
-that playlist, and pass it to `git annex importfeed`. There does not seem to
+To download a youtube channel, you need to find the RSS feed associated with
+that channel, and pass it to `git annex importfeed`. There does not seem to
 be an easy link anywhere to get the RSS feed, but you can construct its url
-manually. For a playlist like
-"https://www.youtube.com/playlist?list=PL4F80C7D2DC8D9B6C", the
-feed is "https://www.youtube.com/feeds/videos.xml?playlist_id=PL4F80C7D2DC8D9B6C"
+manually. For a channel like
+"https://www.youtube.com/channel/$foo", the
+feed is "https://www.youtube.com/feeds/videos.xml?channel_id=$foo"
 
 ## bittorrent
 

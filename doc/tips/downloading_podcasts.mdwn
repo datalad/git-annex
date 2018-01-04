@@ -71,18 +71,18 @@ downloads upstream by podcatching to a server with ample bandwidth or work
 around a slow local Internet connection by podcatching to your home server
 and transferring to your laptop on demand.
 
-## youtube playlists
+## youtube channels
 
-You can also use `git annex importfeed` on youtube playlists. 
+You can also use `git annex importfeed` on youtube channels.
 It will use [youtube-dl](https://rg3.github.io/youtube-dl/) to automatically
-download the videos linked to by the playlist.
+download the videos.
 
-To download a youtube playlist, you need to find the feed associated with that
-playlist, and pass it to `git annex importfeed`. There does not seem to be
+To download a youtube channel, you need to find the feed associated with that
+channel, and pass it to `git annex importfeed`. There does not seem to be
 an easy link anywhere to get the feed, but you can construct its url
-manually. For a playlist like
-"https://www.youtube.com/playlist?list=PL4F80C7D2DC8D9B6C", the
-feed is "https://www.youtube.com/feeds/videos.xml?playlist_id=PL4F80C7D2DC8D9B6C"
+manually. For a channel url like
+"https://www.youtube.com/channel/$foo", the
+feed is "https://www.youtube.com/feeds/videos.xml?channel_id=$foo"
 
 ## metadata
 
