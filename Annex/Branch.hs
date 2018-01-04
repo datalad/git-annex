@@ -57,6 +57,7 @@ import Annex.CatFile
 import Annex.Perms
 import Logs
 import Logs.Transitions
+import Logs.File
 import Logs.Trust.Pure
 import Logs.Difference.Pure
 import Annex.ReplaceFile
@@ -420,8 +421,7 @@ needUpdateIndex branchref = do
 setIndexSha :: Git.Ref -> Annex ()
 setIndexSha ref = do
 	f <- fromRepo gitAnnexIndexStatus
-	liftIO $ writeFile f $ fromRef ref ++ "\n"
-	setAnnexFilePerm f
+	writeLogFile f $ fromRef ref ++ "\n"
 	runAnnexHook postUpdateAnnexHook
 
 {- Stages the journal into the index and returns an action that will
@@ -583,7 +583,7 @@ ignoreRefs rs = do
 	old <- getIgnoredRefs
 	let s = S.unions [old, S.fromList rs]
 	f <- fromRepo gitAnnexIgnoredRefs
-	replaceFile f $ \tmp -> liftIO $ writeFile tmp $
+	writeLogFile f $
 		unlines $ map fromRef $ S.elems s
 
 getIgnoredRefs :: Annex (S.Set Git.Sha)
@@ -600,7 +600,7 @@ addMergedRefs new = do
 	-- Keep only the newest sha for each branch.
 	let l = nubBy ((==) `on` snd) (new ++ old)
 	f <- fromRepo gitAnnexMergedRefs
-	replaceFile f $ \tmp -> liftIO $ writeFile tmp $
+	writeLogFile f $
 		unlines $ map (\(s, b) -> fromRef s ++ '\t' : fromRef b) l
 
 getMergedRefs :: Annex (S.Set Git.Sha)
