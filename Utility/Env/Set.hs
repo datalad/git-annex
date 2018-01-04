@@ -12,6 +12,7 @@ module Utility.Env.Set where
 #ifdef mingw32_HOST_OS
 import qualified System.Environment as E
 import qualified System.SetEnv
+import Utility.Env
 #else
 import qualified System.Posix.Env as PE
 #endif
