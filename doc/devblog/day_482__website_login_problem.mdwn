@@ -1,0 +1,31 @@
+I noticed a large drop in bug reports and comments on the git-annex website
+over the holiday period of December. At first I thought this was just due
+to the holidays, even though holidays are often busy times for free
+software projects since lots of people have more time. But, traffic is
+still down this week, and several people emailed me about problems logging
+into the website.
+
+So, lacking much detail at all about what people were doing that didn't
+work, I've the past day and a some trying to guess at and reproduce
+the problem. And I think I have, <http://ikiwiki.info/bugs/login_problem/>,
+and once reproduced it was of course easily fixed.
+
+If you tried to post something and got a login prompt instead of seeing it
+on the website, now would be a good time to post it again.
+
+If you still have login problems with the website (other than openid which
+has lot of broken providers and badly specified protocol and stuff), please
+get in touch and try to provide enough detail to reproduce the problem, cuz
+my guessing muscles are feeling sprained after this experience.
+
+In the meantime, there has still been git-annex development happening.
+I added a new `git annex inprogress` command over the holidays that 
+allows doing things like streaming videos while `git annex get` is still
+downloading them. Several fixes to problems with the switch to youtube-dl 
+are fixed, core.sharedRepository is handled better, and the cabal file's
+custom-setup stanza was added back after quite a lot of refactoring of
+library code.
+
+---
+
+Today's work was sponsored by an anonymous bitcoin donor.
