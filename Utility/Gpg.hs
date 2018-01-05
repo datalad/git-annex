@@ -16,6 +16,8 @@ import System.Posix.Types
 import System.Posix.IO
 import Utility.Env
 import Utility.Env.Set
+#else
+import Utility.Tmp
 #endif
 import Utility.Tmp.Dir
 import Utility.Format (decode_c)
