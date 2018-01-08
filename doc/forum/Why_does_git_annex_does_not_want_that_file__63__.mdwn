@@ -1,0 +1,33 @@
+Hello,
+
+I have an repo that uses standard groups / wanted expressions:
+
+    % git annex wanted . && git annex group .               
+    standard
+    archive backup
+
+I use the two groups so that the repo wants anything (backup) and is recognized as an archive repo, so other repos drop files in archive/.
+
+    % git annex drop fortune
+    drop fortune (checking S3...) ok
+    (recording state in git...)
+
+fine. But:
+
+    % git annex get --auto
+
+does nothing. I do not understand, why the repo does not want the file. Same for git annex sync --content.
+
+    % git annex whereis fortune
+    whereis fortune (3 copies) 
+            19317658-7d40-4412-94ba-a2525e625283 -- Asaru
+            2f41eb74-5f33-4737-bb6b-1cd31dd67ee5 -- External
+            728648bf-5276-4a86-9df9-9a30f4783027 -- [S3]
+    ok
+
+Asaru is standard/client, S3 is standard/backup and External has no group / wanted set.
+
+
+
+Thanks,
+Florian
