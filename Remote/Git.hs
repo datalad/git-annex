@@ -78,7 +78,7 @@ remote = RemoteType
 list :: Bool -> Annex [Git.Repo]
 list autoinit = do
 	c <- fromRepo Git.config
-	rs <- mapM (tweakurl c) =<< fromRepo Git.remotes
+	rs <- mapM (tweakurl c) =<< Annex.getGitRemotes
 	mapM (configRead autoinit) rs
   where
 	annexurl n = "remote." ++ n ++ ".annexurl"
@@ -104,8 +104,8 @@ gitSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> Remote
 gitSetup Init mu _ c _ = do
 	let location = fromMaybe (giveup "Specify location=url") $
 		Url.parseURIRelaxed =<< M.lookup "location" c
-	g <- Annex.gitRepo
-	u <- case filter (\r -> Git.location r == Git.Url location) (Git.remotes g) of
+	rs <- Annex.getGitRemotes
+	u <- case filter (\r -> Git.location r == Git.Url location) rs of
 		[r] -> getRepoUUID r
 		[] -> giveup "could not find existing git remote with specified location"
 		_ -> giveup "found multiple git remotes with specified location"
@@ -263,10 +263,9 @@ tryGitConfigRead autoinit r
 				return r
 
 	store = observe $ \r' -> do
-		g <- gitRepo
-		let l = Git.remotes g
-		let g' = g { Git.remotes = exchange l r' }
-		Annex.changeState $ \s -> s { Annex.repo = g' }
+		l <- Annex.getGitRemotes
+		let rs = exchange l r'
+		Annex.changeState $ \s -> s { Annex.gitremotes = Just rs }
 
 	exchange [] _ = []
 	exchange (old:ls) new

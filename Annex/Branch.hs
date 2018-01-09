@@ -60,7 +60,6 @@ import Logs.Transitions
 import Logs.File
 import Logs.Trust.Pure
 import Logs.Difference.Pure
-import Annex.ReplaceFile
 import qualified Annex.Queue
 import Annex.Branch.Transitions
 import qualified Annex

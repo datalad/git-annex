@@ -36,7 +36,7 @@ seek = withWords start
 
 start :: [String] -> CommandStart
 start [] = unknownNameError "Specify the remote to enable."
-start (name:rest) = go =<< filter matchingname <$> Annex.fromRepo Git.remotes
+start (name:rest) = go =<< filter matchingname <$> Annex.getGitRemotes
   where
 	matchingname r = Git.remoteName r == Just name
 	go [] = startSpecialRemote name (Logs.Remote.keyValToConfig rest)
@@ -104,7 +104,7 @@ unknownNameError prefix = do
 			else Remote.prettyPrintUUIDsDescs
 				"known special remotes"
 				descm (M.keys m)
-	disabledremotes <- filterM isdisabled =<< Annex.fromRepo Git.remotes
+	disabledremotes <- filterM isdisabled =<< Annex.getGitRemotes
 	let remotesmsg = unlines $ map ("\t" ++) $
 		mapMaybe Git.remoteName disabledremotes
 	giveup $ concat $ filter (not . null) [prefix ++ "\n", remotesmsg, specialmsg]

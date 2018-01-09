@@ -76,7 +76,7 @@ seek (Pair, Nothing) = commandAction $ do
 unusedPeerRemoteName :: Annex RemoteName
 unusedPeerRemoteName = go (1 :: Integer) =<< usednames
   where
-	usednames = mapMaybe remoteName . remotes <$> Annex.gitRepo
+	usednames = mapMaybe remoteName <$> Annex.getGitRemotes
 	go n names = do
 		let name = "peer" ++ show n
 		if name `elem` names

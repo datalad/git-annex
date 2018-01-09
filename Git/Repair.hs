@@ -11,7 +11,6 @@ module Git.Repair (
 	removeBadBranches,
 	successfulRepair,
 	cleanCorruptObjects,
-	retrieveMissingObjects,
 	resetLocalBranches,
 	checkIndex,
 	checkIndexFast,
@@ -102,10 +101,11 @@ retrieveMissingObjects missing referencerepo r
 		unlessM (boolSystem "git" [Param "init", File tmpdir]) $
 			error $ "failed to create temp repository in " ++ tmpdir
 		tmpr <- Config.read =<< Construct.fromAbsPath tmpdir
-		stillmissing <- pullremotes tmpr (remotes r) fetchrefstags missing
+		rs <- Construct.fromRemotes r
+		stillmissing <- pullremotes tmpr rs fetchrefstags missing
 		if S.null (knownMissing stillmissing)
 			then return stillmissing
-			else pullremotes tmpr (remotes r) fetchallrefs stillmissing
+			else pullremotes tmpr rs fetchallrefs stillmissing
   where
 	pullremotes tmpr [] fetchrefs stillmissing = case referencerepo of
 		Nothing -> return stillmissing

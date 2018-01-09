@@ -94,7 +94,7 @@ setRepoConfig uuid mremote oldc newc = do
 		void uuidMapLoad
 	when nameChanged $ do
 		liftAnnex $ do
-			name <- fromRepo $ uniqueRemoteName (legalName newc) 0
+			name <- uniqueRemoteName (legalName newc) 0 <$> Annex.getGitRemotes
 			{- git remote rename expects there to be a
 			 - remote.<name>.fetch, and exits nonzero if
 			 - there's not. Special remotes don't normally

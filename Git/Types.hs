@@ -34,8 +34,8 @@ data Repo = Repo
 	, config :: M.Map String String
 	-- a given git config key can actually have multiple values
 	, fullconfig :: M.Map String [String]
-	, remotes :: [Repo]
-	-- remoteName holds the name used for this repo in remotes
+	-- remoteName holds the name used for this repo in some other
+	-- repo's list of remotes, when this repo is such a remote
 	, remoteName :: Maybe RemoteName
 	-- alternate environment to use when running git commands
 	, gitEnv :: Maybe [(String, String)]

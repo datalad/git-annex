@@ -32,7 +32,6 @@ module Annex.Content.Direct (
 import Annex.Common
 import Annex.Perms
 import qualified Git
-import Utility.Tmp
 import Logs.Location
 import Logs.File
 import Utility.InodeCache

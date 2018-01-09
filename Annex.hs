@@ -1,6 +1,6 @@
 {- git-annex monad
  -
- - Copyright 2010-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -34,12 +34,14 @@ module Annex (
 	getRemoteGitConfig,
 	withCurrentState,
 	changeDirectory,
+	getGitRemotes,
 	incError,
 ) where
 
 import Common
 import qualified Git
 import qualified Git.Config
+import qualified Git.Construct
 import Annex.Fixup
 import Git.CatFile
 import Git.HashObject
@@ -98,6 +100,7 @@ data AnnexState = AnnexState
 	{ repo :: Git.Repo
 	, repoadjustment :: (Git.Repo -> IO Git.Repo)
 	, gitconfig :: GitConfig
+	, gitremotes :: Maybe [Git.Repo]
 	, backend :: Maybe (BackendA Annex)
 	, remotes :: [Types.Remote.RemoteA Annex]
 	, remoteannexstate :: M.Map UUID AnnexState
@@ -153,6 +156,7 @@ newState c r = do
 		{ repo = r
 		, repoadjustment = return
 		, gitconfig = c
+		, gitremotes = Nothing
 		, backend = Nothing
 		, remotes = []
 		, remoteannexstate = M.empty
@@ -357,3 +361,13 @@ incError = changeState $ \s ->
 	let ! c = errcounter s + 1 
 	    ! s' = s { errcounter = c }
 	in s'
+
+getGitRemotes :: Annex [Git.Repo]
+getGitRemotes = do
+	s <- getState id
+	case gitremotes s of
+		Just rs -> return rs
+		Nothing -> do
+			rs <- liftIO $ Git.Construct.fromRemotes (repo s)
+			changeState $ \s' -> s' { gitremotes = Just rs }
+			return rs
