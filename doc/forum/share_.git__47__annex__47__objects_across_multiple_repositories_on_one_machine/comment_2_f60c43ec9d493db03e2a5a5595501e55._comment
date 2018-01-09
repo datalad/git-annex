@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="davicastro"
+ avatar="http://cdn.libravatar.org/avatar/4e708663cf4d5b9e8cfea74caf4307fc"
+ subject="any drawbacks in using --shared (hardlinks) clones on same Linux machine?"
+ date="2018-01-07T00:37:10Z"
+ content="""
+Hi, I'm new to git and we might be adopting it on next project solely because of git annex!
+As our files are quite big, having users cloning the repository with --shared is very very nice!
+We use Linux, so no issue with hardlinks. I did some testing and so far so good. No duplicated space is very very nice!
+But I'm wondering: is there any disadvantage on this approach?
+"""]]
