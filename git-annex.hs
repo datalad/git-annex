@@ -19,7 +19,7 @@ import Utility.FileSystemEncoding
 
 #ifdef mingw32_HOST_OS
 import Utility.UserInfo
-import Utility.Env
+import Utility.Env.Set
 #endif
 
 main :: IO ()
