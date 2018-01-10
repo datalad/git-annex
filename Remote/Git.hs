@@ -1,6 +1,6 @@
 {- Standard git remotes.
  -
- - Copyright 2011-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -123,7 +123,8 @@ gitSetup (Enable _) (Just u) _ c _ = do
 gitSetup (Enable _) Nothing _ _ _ = error "unable to enable git remote with no specified uuid"
 
 {- It's assumed to be cheap to read the config of non-URL remotes, so this is
- - done each time git-annex is run in a way that uses remotes.
+ - done each time git-annex is run in a way that uses remotes, unless
+ - annex-checkuuid is false.
  -
  - Conversely, the config of an URL remote is only read when there is no
  - cached UUID value. -}
@@ -134,7 +135,9 @@ configRead autoinit r = do
 	annexignore <- liftIO $ getDynamicConfig (remoteAnnexIgnore gc)
 	case (repoCheap r, annexignore, u) of
 		(_, True, _) -> return r
-		(True, _, _) -> tryGitConfigRead autoinit r
+		(True, _, _)
+			| remoteAnnexCheckUUID gc -> tryGitConfigRead autoinit r
+			| otherwise -> return r
 		(False, _, NoUUID) -> tryGitConfigRead autoinit r
 		_ -> return r
 
@@ -142,22 +145,24 @@ gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remot
 gen r u c gc
 	| Git.GCrypt.isEncrypted r = Remote.GCrypt.chainGen r u c gc
 	| otherwise = case repoP2PAddress r of
-		Nothing -> go <$> remoteCost gc defcst
+		Nothing -> do
+			duc <- mkDeferredUUIDCheck r u gc
+			go duc <$> remoteCost gc defcst
 		Just addr -> Remote.P2P.chainGen addr r u c gc
   where
 	defcst = if repoCheap r then cheapRemoteCost else expensiveRemoteCost
-	go cst = Just new
+	go duc cst = Just new
 	  where
 		new = Remote 
 			{ uuid = u
 			, cost = cst
 			, name = Git.repoDescribe r
-			, storeKey = copyToRemote new
+			, storeKey = copyToRemote new duc
 			, retrieveKeyFile = copyFromRemote new
 			, retrieveKeyFileCheap = copyFromRemoteCheap new
-			, removeKey = dropKey new
-			, lockContent = Just (lockKey new)
-			, checkPresent = inAnnex new
+			, removeKey = dropKey new duc
+			, lockContent = Just (lockKey new duc)
+			, checkPresent = inAnnex new duc
 			, checkPresentCheap = repoCheap r
 			, exportActions = exportUnsupported
 			, whereisKey = Nothing
@@ -322,8 +327,8 @@ tryGitConfigRead autoinit r
 		else []
 
 {- Checks if a given remote has the content for a key in its annex. -}
-inAnnex :: Remote -> Key -> Annex Bool
-inAnnex rmt key
+inAnnex :: Remote -> DeferredUUIDCheck -> Key -> Annex Bool
+inAnnex rmt duc key
 	| Git.repoIsHttp r = checkhttp
 	| Git.repoIsUrl r = checkremote
 	| otherwise = checklocal
@@ -336,9 +341,12 @@ inAnnex rmt key
 			, giveup "not found"
 			)
 	checkremote = Ssh.inAnnex r key
-	checklocal = guardUsable r (cantCheck r) $
-		maybe (cantCheck r) return
-			=<< onLocalFast rmt (Annex.Content.inAnnexSafe key)
+	checklocal = ifM duc
+		( guardUsable r (cantCheck r) $
+			maybe (cantCheck r) return
+				=<< onLocalFast rmt (Annex.Content.inAnnexSafe key)
+		, cantCheck r
+		)
 
 keyUrls :: Remote -> Key -> [String]
 keyUrls r key = map tourl locs'
@@ -357,10 +365,10 @@ keyUrls r key = map tourl locs'
 	remoteconfig = gitconfig r
 	cfg = remoteGitConfig remoteconfig
 
-dropKey :: Remote -> Key -> Annex Bool
-dropKey r key
-	| not $ Git.repoIsUrl (repo r) =
-		guardUsable (repo r) (return False) $
+dropKey :: Remote -> DeferredUUIDCheck -> Key -> Annex Bool
+dropKey r duc key
+	| not $ Git.repoIsUrl (repo r) = ifM duc
+		( guardUsable (repo r) (return False) $
 			commitOnCleanup r $ onLocalFast r $ do
 				ensureInitialized
 				whenM (Annex.Content.inAnnex key) $ do
@@ -369,13 +377,15 @@ dropKey r key
 						logStatus key InfoMissing
 					Annex.Content.saveState True
 				return True
+		, return False
+		)
 	| Git.repoIsHttp (repo r) = giveup "dropping from http remote not supported"
 	| otherwise = commitOnCleanup r $ Ssh.dropKey (repo r) key
 
-lockKey :: Remote -> Key -> (VerifiedCopy -> Annex r) -> Annex r
-lockKey r key callback
-	| not $ Git.repoIsUrl (repo r) =
-		guardUsable (repo r) failedlock $ do
+lockKey :: Remote -> DeferredUUIDCheck -> Key -> (VerifiedCopy -> Annex r) -> Annex r
+lockKey r duc key callback
+	| not $ Git.repoIsUrl (repo r) = ifM duc
+		( guardUsable (repo r) failedlock $ do
 			inorigrepo <- Annex.makeRunner
 			-- Lock content from perspective of remote,
 			-- and then run the callback in the original
@@ -386,6 +396,8 @@ lockKey r key callback
 						( liftIO $ inorigrepo $ callback vc
 						, failedlock
 						)
+		, failedlock
+		)
 	| Git.repoIsSsh (repo r) = do
 		showLocking r
 		Just (cmd, params) <- Ssh.git_annex_shell ConsumeStdin
@@ -544,11 +556,13 @@ copyFromRemoteCheap _ _ _ _ = return False
 #endif
 
 {- Tries to copy a key's content to a remote's annex. -}
-copyToRemote :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-copyToRemote r key file meterupdate
-	| not $ Git.repoIsUrl (repo r) =
-		guardUsable (repo r) (return False) $ commitOnCleanup r $
+copyToRemote :: Remote -> DeferredUUIDCheck -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
+copyToRemote r duc key file meterupdate
+	| not $ Git.repoIsUrl (repo r) = ifM duc
+		( guardUsable (repo r) (return False) $ commitOnCleanup r $
 			copylocal =<< Annex.Content.prepSendAnnex key
+		, return False
+		)
 	| Git.repoIsSsh (repo r) = commitOnCleanup r $
 		Annex.Content.sendAnnex key noop $ \object ->
 			withmeter object $ \p -> do
@@ -717,3 +731,26 @@ mkCopier remotewanthardlink rsyncparams = do
 				)
 		, return copier
 		)
+
+{- Normally the UUID is checked at startup, but annex-checkuuid config
+ - can prevent that. To avoid getting confused, a deferred
+ - check is done just before the repository is used. This returns False
+ - when the repository UUID is not as expected. -}
+type DeferredUUIDCheck = Annex Bool
+
+mkDeferredUUIDCheck :: Git.Repo -> UUID -> RemoteGitConfig -> Annex DeferredUUIDCheck
+mkDeferredUUIDCheck r u gc
+	| remoteAnnexCheckUUID gc = return (return True)
+	| otherwise = do
+		v <- liftIO newEmptyMVar
+		return $ ifM (liftIO $ isEmptyMVar v)
+			( do
+				r' <- tryGitConfigRead False r
+				u' <- getRepoUUID r'
+				let ok = u' == u
+				void $ liftIO $ tryPutMVar v ok
+				unless ok $
+					warning $ Git.repoDescribe r ++ " is not the expected repository. The remote's annex-checkuuid configuration prevented noticing the change until now."
+				return ok
+			, liftIO $ readMVar v
+			)

@@ -16,6 +16,10 @@ git-annex (6.20171215) UNRELEASED; urgency=medium
   * Improve startup time for commands that do not operate on remotes,
     and for tab completion, by not unnessessarily statting paths to
     remotes, which used to cause eg, spin-up of removable drives.
+  * Added remote.<name>.annex-checkuuid config, which can be set to false
+    to disable the default checking of the uuid of remotes that point to
+    directories. This can be useful to avoid unncessary drive spin-ups and
+    automounting.
 
  -- Joey Hess <id@joeyh.name>  Wed, 20 Dec 2017 12:11:46 -0400
 

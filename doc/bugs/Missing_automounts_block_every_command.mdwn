@@ -42,3 +42,6 @@ Use any git-annex command and wait for at least `x-systemd.device-timeout`:
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I’m very happy with git-annex (thanks) and use it frequently enough to notice this behavior.
+
+> [[fixed|done]] via the `remote.<name>.annex-checkuuid` config setting
+> that can disable this behavior. --[[Joey]]
