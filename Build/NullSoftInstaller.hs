@@ -28,7 +28,7 @@ import Data.Maybe
 import Data.Char
 import Data.List (nub, isPrefixOf)
 
-import Utility.Tmp
+import Utility.Tmp.Dir
 import Utility.Path
 import Utility.CopyFile
 import Utility.SafeCommand
