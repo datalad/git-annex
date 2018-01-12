@@ -1,6 +1,5 @@
-git-annex (6.20171215) UNRELEASED; urgency=medium
+git-annex (6.20180112) upstream; urgency=medium
 
-  * Removed the testsuite build flag; test suite is always included.
   * Added inprogress command for accessing files as they are being
     downloaded.
   * Fix bug introduced in version 6.20171018 that caused some commands
@@ -10,7 +9,6 @@ git-annex (6.20171215) UNRELEASED; urgency=medium
     nothing, like it used to when quvi was used.
   * addurl: Fix encoding of filename queried from youtube-dl when in
     --fast mode.
-  * git-annex.cabal: Add back custom-setup stanza, so cabal new-build works.
   * Fix several places where files in .git/annex/ were written with modes
     that did not take the core.sharedRepository config into account.
   * Improve startup time for commands that do not operate on remotes,
@@ -20,8 +18,11 @@ git-annex (6.20171215) UNRELEASED; urgency=medium
     to disable the default checking of the uuid of remotes that point to
     directories. This can be useful to avoid unncessary drive spin-ups and
     automounting.
+  * git-annex.cabal: Add back custom-setup stanza, so cabal new-build works.
+  * git-annex.cabal: Removed the testsuite build flag; test suite is always
+    included.
 
- -- Joey Hess <id@joeyh.name>  Wed, 20 Dec 2017 12:11:46 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 12 Jan 2018 15:45:48 -0400
 
 git-annex (6.20171214) upstream; urgency=medium
 
