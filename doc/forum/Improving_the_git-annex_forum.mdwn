@@ -7,7 +7,7 @@ git-annex has a great documentation, consisting of the wiki articles and the con
 - Bump threads on new replies (that may be a matter of taste)
 - Reply via mail
 - Ability to pin posts (at least I've never seen it)
-- Weird markdown formatting, e.g. marking code by indenting by 4 characters, which is hard to achieve for many lines at once inside a browsers text field (Joey already told me <pre> does job, too)
+- Weird markdown formatting, e.g. marking code by indenting by 4 characters, which is hard to achieve for many lines at once inside a browsers text field (Joey already told me pre does job, too)
 - no private messages
 and more...
 
