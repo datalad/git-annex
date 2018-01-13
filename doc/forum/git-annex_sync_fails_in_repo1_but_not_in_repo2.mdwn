@@ -1,0 +1,45 @@
+Hello,
+
+I am using two repos in direct mode that are connected via ssh.
+Syncing fails in one direction but works in the other, I don't understand how to fix that.
+
+## repo2 -> repo1 works:
+
+    server$ git-annex sync
+    commit  ok
+    pull repo1 
+    From client:~/media/img/db
+     + be62780...2d74673 master     -> client/master  (forced update)
+     + be62780...2d74673 synced/master -> client/synced/master  (forced update)
+    ok
+    push repo1 
+    Total 0 (delta 0), reused 0 (delta 0)
+    To client:~/media/img/db
+       2d74673..be62780  annex/direct/master -> synced/master
+    ok
+    server$ git-annex status
+    ? .t/repo
+    ? .t/tmprepo0
+    server$
+
+## repo1 -> repo2 fails:
+
+    client$ git-annex sync
+    commit  ok
+    pull repo2 
+    
+    fatal: You have not concluded your merge (MERGE_HEAD exists).
+    Please, commit your changes before you merge.
+    
+    fatal: You have not concluded your merge (MERGE_HEAD exists).
+    Please, commit your changes before you merge.
+    failed
+    git-annex: sync: 1 failed
+    client$ git-annex status
+    client$
+
+Hopefully somebody knows how to fix that.
+
+Regards,
+
+Felix
