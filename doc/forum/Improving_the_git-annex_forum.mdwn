@@ -1,0 +1,23 @@
+Dear git-annex community,
+
+git-annex has a great documentation, consisting of the wiki articles and the converted man page. On the other hand, in my opinion there is room for improvement when it comes to the forum. It's lacking quite some features you expect from a modern forum, e.g.
+
+- Slick UI
+- User friendly way to (un)subscribe to threads
+- Bump threads on new replies (that may be a matter of taste)
+- Reply via mail
+- Ability to pin posts (at least I've never seen it)
+- Weird markdown formatting, e.g. marking code by indenting by 4 characters, which is hard to achieve for many lines at once inside a browsers text field (Joey already told me <pre> does job, too)
+- no private messages
+and more...
+
+Therefore I think, that a better forum would significantly improve git-annex's user experience!
+
+I'm hosting a Discourse forum for some time now and think it's quite a decent, user- and admin friendly software. I would be happy to host a forum for git-annex on my own server, e.g. on a subdomain of git-annex.branchable.com.
+
+I had exchanged some mails with Joey about that, he asked me to take this discussion to the forum...
+
+What are your opinions on that matter?
+
+Best,
+Florian
