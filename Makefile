@@ -304,7 +304,7 @@ hdevtools:
 distributionupdate:
 	git pull
 	cabal configure
-	ghc -Wall -fno-warn-tabs --make Build/DistributionUpdate -XLambdaCase -XPackageImports -optP-include -optPdist/build/autogen/cabal_macros.h
+	ghc -Wall -fno-warn-tabs --make Build/DistributionUpdate -XLambdaCase -XPackageImports
 	./Build/DistributionUpdate
 
 .PHONY: git-annex git-union-merge tags
