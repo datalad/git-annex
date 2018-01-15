@@ -1,0 +1,16 @@
+Hi there,
+
+In my repos, I want files larger than 500MB to use the WORM backend. So when I'm adding large files, I do it in 2 passes. I first run this:
+    
+    git annex add --largerthan=500MB --backend=WORM .
+
+to add only files larger than 500MB. The remaining files that are smaller than 500MB I then add using default backend:
+
+    git annex add
+
+Is it possible to set annex.backend in .gitattributes so that adding files larger than 500MB automatically use the WORM backend? Can I use expressions such as largerthan or smallerthan? From the example [here](https://git-annex.branchable.com/backends/), it seems that it can only be set based on file type. 
+
+
+Regards,
+
+Eric
