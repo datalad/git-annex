@@ -54,3 +54,4 @@ git-annex: failed to parse torrent: Name not found in dictionary: announce
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 
+> This was fixed in haskell-torrent version 10000.1.0. [[done]]
