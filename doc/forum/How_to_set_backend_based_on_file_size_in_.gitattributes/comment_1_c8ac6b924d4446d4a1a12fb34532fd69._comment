@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-01-15T16:15:39Z"
+ content="""
+annex.backend only matches on file name, so can't be used for this. I think
+your current two pass approach is the only way to do it currently.
+"""]]
