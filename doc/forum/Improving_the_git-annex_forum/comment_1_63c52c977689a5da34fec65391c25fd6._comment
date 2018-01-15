@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-01-15T17:33:12Z"
+ content="""
+Thanks, Florian for raising this topic.
+
+Granting the missing features you list (and perhaps adding that people seem
+to sometimes find it annoying to log in successfully here), I wonder how
+much those features are limiting use of this forum, if at all. I suppose
+one way to find out would be to move to another forum and see if traffic
+increases (or SNR or engagement improves).
+
+For myself, having the forum integrated in the git-annex repo is quite
+helpful to me, since I automatically track it along with all the other
+changes to the website, and am sure to see every single post here,
+and it meets my offline/low bandwidth needs. Also I sometimes promote
+forum posts to bug reports or make a commit following up to a forum
+post with a requested feature or fix.
+
+I suspect that the git-annex community is kind of split between people who
+are more comfortable in web forums, and people who are used to mailing
+lists, who are currently being left entirely out in the cold (and probably
+using the irc channel more). It could be that mailman3 with its mix of
+forum and mailing list could better unify the two groups. Or perhaps
+there's no point in trying to do that, and a simple mailing list would be a
+bigger win than changing the forum?
+
+I'm ok with however git-annex users choose to get together and
+talk about it, including ways that I can't/won't use myself (including
+non-free stuff like Slack..). To that end, if people want to get a
+git-annex community going somewhere, be it another forum, or reddit, or
+whatever, I'm fine with the website directing users to it.
+"""]]
