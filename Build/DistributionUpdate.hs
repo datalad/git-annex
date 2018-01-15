@@ -13,7 +13,7 @@ import Types.Distribution
 import Build.Version (getChangelogVersion, Version)
 import Utility.UserInfo
 import Utility.Url
-import Utility.Tmp
+import Utility.TmpDir
 import Utility.FileSystemEncoding
 import qualified Git.Construct
 import qualified Annex
