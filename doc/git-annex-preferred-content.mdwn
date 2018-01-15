@@ -164,8 +164,6 @@ elsewhere to allow removing it).
   When a repository is in exactly one such group, you can use the "standard"
   keyword in its preferred content expression, to match whatever content
   the group's expression matches.
-  (If a repository is put into multiple standard
-  groups, "standard" will match anything.. so don't do that!)
 
   Most often, the whole preferred content expression is simply "standard".
   But, you can do more complicated things, for example:
