@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="felix.hagemann@b76e9ea0928cf33dacffc37ec3dbecf33171a8a5"
+ nickname="felix.hagemann"
+ avatar="http://cdn.libravatar.org/avatar/1f7e89860de517a494f35ebfb385288e"
+ subject="comment 2"
+ date="2018-01-16T19:26:03Z"
+ content="""
+Deleting `.git/MERGE_HEAD` sort of fixed the problem:
+
+        client$ git-annex sync
+        commit  ok
+        pull repo2 
+
+        Already up to date!
+        Automatic merge went well; stopped before committing as requested
+
+        error: duplicate parent be6278073504cfd19400c100b1871ba4324f55db ignored
+        ok
+        push repo2 
+        Counting objects: 1, done.
+        Writing objects: 100% (1/1), 209 bytes | 209.00 KiB/s, done.
+        Total 1 (delta 0), reused 0 (delta 0)
+        To repo2:/media/srv/img
+           be62780735..020ce83c1f  annex/direct/master -> synced/master
+        ok
+        client$ git-annex sync
+        commit  ok
+        pull repo2 
+        ok
+        client$
+
+Thanks!
+
+I have no idea how the repo got in that state. Syncing started to fail some time early December and for a few months I've been only using `git-annex assistant` and `git-annex webapp`.
+"""]]
