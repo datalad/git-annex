@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="arseny-n@6aba76e573dcdf2fd9e033fb3132944c8466125a"
+ nickname="arseny-n"
+ avatar="http://cdn.libravatar.org/avatar/0c138544ac6dfffb07d6a60dbe430587"
+ subject=".git/annex/misctmp very large"
+ date="2018-01-17T13:05:04Z"
+ content="""
+Why is .git/annex/misctmp so large ? Currently I use git annex to manage pytorch models, 
+basically I have a large amount (1500 folder) of 4 Kilobytes files, some files are are bigger,
+misctmp occupies 6.2 GB, is  it ok ?
+ 
+PS. Sorry, if I write this here but failed to post to the forum.
+
+"""]]
