@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="elmimmo"
+ avatar="http://cdn.libravatar.org/avatar/4f00dfc3ad590ef7492788b854ceba78"
+ subject="Remotes when using multiple repos"
+ date="2018-01-18T07:02:18Z"
+ content="""
+I see that you manually add the first repo as a remote of the external drive, and the external drive as a remote of the original.
+
+What about when you add a second external drive? Should you then be adding the first two repos as remotes of the new one, and then go to the first two ones and add the new drive as a remote of them too? Doesn't this permutation scale out of control when you add a new drive to, say, a git annex made of 10 disks, 20 disks, etc?
+"""]]
