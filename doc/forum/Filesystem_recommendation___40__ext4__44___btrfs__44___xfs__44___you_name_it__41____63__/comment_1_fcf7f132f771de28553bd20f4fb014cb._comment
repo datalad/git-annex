@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2018-01-24T03:10:53Z"
+ content="""
+Just ran into this question.  Might still be of interest: for our datalad.org project I did some benchmarking of various filesystems a few years back. Here you can find the final report: [http://old.datalad.org/test_fs_analysis.html](http://old.datalad.org/test_fs_analysis.html) -- I settled on a bunch of software raid5s with BTRFS on top of them.  So far (for years), quite good.  snapshots and [btrbk](http://digint.ch/btrbk/) are also a blessing.  I use the same btrfs also as docker backend.
+"""]]
