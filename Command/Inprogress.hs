@@ -57,4 +57,4 @@ start' k = do
 		)
 
 notInprogress :: CommandStart
-notInprogress = next stop
+notInprogress = stop

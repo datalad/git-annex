@@ -1,3 +1,9 @@
+git-annex (6.20180113) UNRELEASED; urgency=medium
+
+  * inprogress: Avoid showing failures for files not in progress. 
+
+ -- Joey Hess <id@joeyh.name>  Wed, 24 Jan 2018 20:42:55 -0400
+
 git-annex (6.20180112) upstream; urgency=medium
 
   * Added inprogress command for accessing files as they are being
