@@ -407,6 +407,9 @@ Executable git-annex
   if flag(WebDAV)
     Build-Depends: DAV (>= 1.0)
     CPP-Options: -DWITH_WEBDAV
+    Other-Modules:
+      Remote.WebDAV
+      Remote.WebDAV.DavLocation
 
   if flag(Assistant) && ! os(solaris)
     Build-Depends: dns (>= 1.0.0), mountpoints
@@ -465,6 +468,43 @@ Executable git-annex
      template-haskell,
      shakespeare (>= 2.0.0)
     CPP-Options: -DWITH_WEBAPP
+    Other-Modules:
+      Command.WebApp
+      Assistant.Threads.WebApp
+      Assistant.Threads.PairListener
+      Assistant.WebApp
+      Assistant.WebApp.Common
+      Assistant.WebApp.Configurators
+      Assistant.WebApp.Configurators.AWS
+      Assistant.WebApp.Configurators.Delete
+      Assistant.WebApp.Configurators.Edit
+      Assistant.WebApp.Configurators.Fsck
+      Assistant.WebApp.Configurators.IA
+      Assistant.WebApp.Configurators.Local
+      Assistant.WebApp.Configurators.Pairing
+      Assistant.WebApp.Configurators.Preferences
+      Assistant.WebApp.Configurators.Ssh
+      Assistant.WebApp.Configurators.Unused
+      Assistant.WebApp.Configurators.Upgrade
+      Assistant.WebApp.Configurators.WebDAV
+      Assistant.WebApp.Control
+      Assistant.WebApp.DashBoard
+      Assistant.WebApp.Documentation
+      Assistant.WebApp.Form
+      Assistant.WebApp.Gpg
+      Assistant.WebApp.MakeRemote
+      Assistant.WebApp.Notifications
+      Assistant.WebApp.OtherRepos
+      Assistant.WebApp.Page
+      Assistant.WebApp.Pairing
+      Assistant.WebApp.Repair
+      Assistant.WebApp.RepoId
+      Assistant.WebApp.RepoList
+      Assistant.WebApp.SideBar
+      Assistant.WebApp.Types
+      Annex.MakeRepo
+      Utility.Yesod
+      Utility.WebApp
 
   if flag(Pairing)
     Build-Depends: network-multicast, network-info
@@ -525,7 +565,6 @@ Executable git-annex
     Annex.LockFile
     Annex.LockPool
     Annex.LockPool.PosixOrPid
-    Annex.MakeRepo
     Annex.MetaData
     Annex.MetaData.StandardFields
     Annex.Multicast
@@ -589,7 +628,6 @@ Executable git-annex
     Assistant.Threads.Merger
     Assistant.Threads.MountWatcher
     Assistant.Threads.NetWatcher
-    Assistant.Threads.PairListener
     Assistant.Threads.ProblemFixer
     Assistant.Threads.Pusher
     Assistant.Threads.RemoteControl
@@ -601,7 +639,6 @@ Executable git-annex
     Assistant.Threads.UpgradeWatcher
     Assistant.Threads.Upgrader
     Assistant.Threads.Watcher
-    Assistant.Threads.WebApp
     Assistant.TransferQueue
     Assistant.TransferSlots
     Assistant.TransferrerPool
@@ -624,36 +661,6 @@ Executable git-annex
     Assistant.Types.UrlRenderer
     Assistant.Unused
     Assistant.Upgrade
-    Assistant.WebApp
-    Assistant.WebApp.Common
-    Assistant.WebApp.Configurators
-    Assistant.WebApp.Configurators.AWS
-    Assistant.WebApp.Configurators.Delete
-    Assistant.WebApp.Configurators.Edit
-    Assistant.WebApp.Configurators.Fsck
-    Assistant.WebApp.Configurators.IA
-    Assistant.WebApp.Configurators.Local
-    Assistant.WebApp.Configurators.Pairing
-    Assistant.WebApp.Configurators.Preferences
-    Assistant.WebApp.Configurators.Ssh
-    Assistant.WebApp.Configurators.Unused
-    Assistant.WebApp.Configurators.Upgrade
-    Assistant.WebApp.Configurators.WebDAV
-    Assistant.WebApp.Control
-    Assistant.WebApp.DashBoard
-    Assistant.WebApp.Documentation
-    Assistant.WebApp.Form
-    Assistant.WebApp.Gpg
-    Assistant.WebApp.MakeRemote
-    Assistant.WebApp.Notifications
-    Assistant.WebApp.OtherRepos
-    Assistant.WebApp.Page
-    Assistant.WebApp.Pairing
-    Assistant.WebApp.Repair
-    Assistant.WebApp.RepoId
-    Assistant.WebApp.RepoList
-    Assistant.WebApp.SideBar
-    Assistant.WebApp.Types
     Backend
     Backend.Hash
     Backend.URL
@@ -786,7 +793,6 @@ Executable git-annex
     Command.View
     Command.Wanted
     Command.Watch
-    Command.WebApp
     Command.Whereis
     Common
     Config
@@ -928,8 +934,6 @@ Executable git-annex
     Remote.Rsync.RsyncUrl
     Remote.Tahoe
     Remote.Web
-    Remote.WebDAV
-    Remote.WebDAV.DavLocation
     RemoteDaemon.Common
     RemoteDaemon.Core
     RemoteDaemon.Transport
@@ -1069,8 +1073,6 @@ Executable git-annex
     Utility.Url
     Utility.UserInfo
     Utility.Verifiable
-    Utility.WebApp
-    Utility.Yesod
 
   if (os(windows))
     Other-Modules:
