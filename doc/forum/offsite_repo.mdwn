@@ -1,0 +1,8 @@
+Hi there,
+
+Let's say I have a Pictures repo in my laptop. I want to have a local copy in an external backup drive and an offsite copy in google-drive. I set numcopies to 3. Is it possible to require that files in a repository have a copy in an offsite repo e.g. a google-drive special remote? So that when I run e.g. git annex fsck, I will be reminded that some local files are not yet backed up in an offsite repo. Probably via .git/config, I can declare a remote repo as an "offsite" repo. Something like: 
+
+    remote.repo_name.offsite = true
+
+
+Eric
