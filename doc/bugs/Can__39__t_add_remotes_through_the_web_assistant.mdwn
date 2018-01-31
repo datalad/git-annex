@@ -7,6 +7,11 @@ Create a repository, try to add a remote. An external disk in this case.
 ### What version of git-annex are you using? On what operating system?
 Fedora 27
 
+    $ cat /etc/fedora-release
+    Fedora release 27 (Twenty Seven)
+    $ uname -a
+    Linux greger 4.14.14-300.fc27.x86_64 #1 SMP Fri Jan 19 13:19:54 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux
+
     $ git annex version
     git-annex version: 6.20180130-g39d97867a
     build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify ConcurrentOutput TorrentParser Feeds Testsuite
