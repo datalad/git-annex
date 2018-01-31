@@ -95,6 +95,7 @@ Debug log:
     31/Jan/2018:14:47:52 +0100 [Error#yesod-core] there is no available git remote named "archive" @(yesod-core-1.4.37-GCI7RasEcSMIU2vku0fHJ1:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:693:5)
 
 The interesting part here is that if I try to run the failing git commands in the repository it works:
+
     $ git --git-dir=../../../../run/media/dxtr/archive/annex --literal-pathspecs show-ref git-annex
     26bcec3f33162a9c1c5b7a39c4828eedfdeae41b refs/heads/git-annex
 
