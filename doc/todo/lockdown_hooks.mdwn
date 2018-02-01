@@ -1,0 +1,39 @@
+Add git hooks that are used to [[internals/lockdown]] annexed objects.
+--[[Joey]]
+
+Use cases include:
+
+* Setting immutable bit on systems where git-annex is given the ability to
+  do so, to fully guard against accidental deletion in all circumstances.
+
+* For systems that ignore the write bit, but have some other way to prevent
+  write to a file (eg, ACLs or something).
+
+  Note that in such a case, `git-annex init`'s probe of the write bit
+  handling fails; as long as the hook is configured globally, it should
+  run the hook instead, and if it works, can avoid direct mode.
+
+Design:
+
+Configs: annex.lockdown-command, annex.unlockdown-command
+In these, "%path" is replaced with the file/directory to act on.
+
+Locking down a directory only needs to do the equivilant of removing its
+write bit, does not need to lockdown the files within it.
+
+It would be up to the command to decide how to handle the 
+core.sharedRepository configuration.
+
+Perfomance:
+
+Hook would be called twice per store/drop of an annexed object, 
+once for the file and once for the parent directory.
+
+On windows, called four times per lock of an annexed object, to first thaw
+it and then freeze it. This could be reduced to 2, I think. 
+On posix, the file is locked without being thawed, 
+as only read access is needed.
+
+Probably running a shell script is not too much overhead in many cases,
+if it was too slow, there could be a variant that is run once and 
+fed the names of files to operate on via stdin.
