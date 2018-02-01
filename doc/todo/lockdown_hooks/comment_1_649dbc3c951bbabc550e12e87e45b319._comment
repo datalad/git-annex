@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="any chance to avoid necessity to config the hook(s)?"
+ date="2018-02-01T18:54:18Z"
+ content="""
+Thank you Joey for looking into this issue!  I am though a bit worried that necessity to configure using some kind of a hook would be ... suboptimal for a number of reasons.  Before laying out my argumentation, let me first ask:  why alternative \"lockdown\" mechanisms could not be sensed/configured per each repository during `init` and implemented within git-annex?
+
+As you have noted ```git-annex init's probe of the write bit handling fails...``` so git-annex already checks for a possible way to establish the \"lockdown\" for a given repository location. It just tries one possible mechanism ATM. But it could as well try multiple ways to achieve it, starting from current \"POSIX\", and then trying \"ACL\" if appropriate (i.e. tools found). Then if non-POSIX handling is needed, would simple add yet another configuration to .git/config of that repository, and consult to it to switch to corresponding lockdown implementation **within git-annex**.  This would be much more user friendly, and it would allow 3rd party tools using git-annex (such as datalad) to not worry about necessity to configure some additional hooks for a particular location, etc.
+"""]]
