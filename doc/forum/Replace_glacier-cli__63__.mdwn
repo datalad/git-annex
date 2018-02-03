@@ -1,0 +1,13 @@
+I was looking for a good way to archive files to Glacier, and git-annex seems like an excellent approach.
+
+After struggling for a while with the glacier-cli project, I just don't feel that it is well maintained.
+
+ - I have to manually symlink it in place of its dependency's glacier binary.
+ - There are patches to boto that are required for it to work, which are have never been merged. And it seems from the errors I am getting that similar edits are now required in many more places.
+ - It is locked into supporting only an older version of boto.
+
+That just seems like not a great place to be starting out with an archiving project.
+
+I was wondering if you thought it might be feasible to get rid of that dependency with something else, perhaps this haskell aws project that seems to be actively maintained?
+
+https://github.com/aristidb/aws
