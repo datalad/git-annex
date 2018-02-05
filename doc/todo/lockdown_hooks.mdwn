@@ -24,6 +24,13 @@ write bit, does not need to lockdown the files within it.
 It would be up to the command to decide how to handle the 
 core.sharedRepository configuration.
 
+These could be set in the global gitconfig file. The IncludeIf directive
+can be used to make them be used only for repositories located within a given
+mount point.
+
+git-annex test disables use of global gitconfig settings. There would need
+to be a way to let it use these.
+
 Perfomance:
 
 Hook would be called twice per store/drop of an annexed object, 

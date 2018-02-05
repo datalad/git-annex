@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-02-05T17:04:36Z"
+ content="""
+Seems likely that there are a couple of different ways to use
+ACLs to remove write access. In the simple case, any existing ACL can be
+overwritten. In other cases, some other existing ACLs will need to be
+preserved and only a single part changed. In some cases, the ACL for a user
+should be changed, in others the ACL for a group.
+
+And there are several different varieties of ACLs (POSIX, NFS, Windows). 
+And there's the immutable bit, which might be wanted in some specific
+circumstances but certianly not by most people.
+
+So it makes sense to me to not embed specific knowledge of this into git-annex.
+
+This feels to me like something that the system administrator is going to
+want to set up. It would mostly be limited to repositories inside a given
+mount point that needs the unusual lockdown method due to using NFS or
+whatever. The global gitconfig can be set up to switch on the config only
+for those repositories, and the system administrator can set up hooks
+for the particular use case.
+
+I don't see why something like datalad would need to worry about this
+detail, any more than they worry about the PATH to system programs or other
+such things that the administrator sets up.
+"""]]
