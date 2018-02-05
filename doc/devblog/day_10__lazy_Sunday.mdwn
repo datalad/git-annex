@@ -6,7 +6,7 @@ Now there's an easy way to get an overview of how close your repository
 is to meeting the configured numcopies settings (or when it exceeds them).
 
 <pre>
-# time git annex status . 
+# time git annex info . 
 [...]
 numcopies stats: 
 	numcopies +0: 6686
@@ -19,5 +19,5 @@ numcopies stats:
 	numcopies +4: 372
 </pre>
 
-This does make `git annex status` slow when run on a large directory tree,
+This does make `git annex info` slow when run on a large directory tree,
 so --fast disables that.
