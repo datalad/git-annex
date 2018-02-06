@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="timotejs@7102fe834ef5514c095ceb7e09b525bafa7b1af4"
+ nickname="timotejs"
+ avatar="http://cdn.libravatar.org/avatar/3b2d892080bb891056a77a0be9ee8176"
+ subject="Did' nyone make it work?"
+ date="2018-02-06T08:15:06Z"
+ content="""
+I try to use SSH to connect to Win10 machine with annex repo.
+I am using the OpenSSH integrated into the Windows 10 (one you can install from Windows additional features thingy).
+
+it didn't know git-annex-shell so i created symlink
+
+    mklink \"C:\Program Files (x86)\Git\bin\git-annex-shell\" \"C:\Program Files (x86)\Git\bin\git-annex.exe\"
+
+and added ';.' to PATHEX
+
+Currently git-annex-shell is found but i get error:
+
+    Invalid argument `'configlist''
+
+when i try to sync remote on that W10 machine
+"""]]
