@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="protocol message "
+ date="2018-02-06T20:03:27Z"
+ content="""
+joey wrote:
+
+    The protocol VERSION is picked by the special remote, it's not negotiated.
+
+`VERSION ` is provided to git-annex by the special remote to git-annex process.  There is no need to 'negotiate' anything - you could make git-annex understand either of:
+
+- higher `VERSION `, e.g. 
+
+  - `VERSION 2` which would support some new features which that special remote would need.  If parent git-annex is old/doesn't support that version - would fail and demand git annex upgrade
+  - `VERSION 6.20171124` (where `6.20171124` is an example of git-annex version) so if git-annex parent process is older than that it could provide a meaningful message that `git annex >= 6.20171124` is needed
+
+- `VERSION 1 feature1 feature2 ...` where those features could be the ones needed (e.g. `INFO_MSG` for [recent addition](http://git-annex.branchable.com/todo/INFO_message_for_custom_special_remotes/#comment-4dcfb7d4e6db9d5ba8a1bfeb782346b1)). And if parent git-annex doesn't know/support any particular feature, it could fail and inform user that a new annex with that feature support is needed.
+
+In either of those cases the custom special remotes page could outline added features/versions of git-annex supporting them, so may be even those above error messages could point to it.
+
+Overall, it is just a minor change to be done on git-annex side while allowing for clear(er) specification, and I do not see any need for actual \"negotiation\" -- features are either supported or not by the parent process.
+"""]]
