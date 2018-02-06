@@ -490,4 +490,7 @@ It works like this:
   PREPARE or INITREMOTE after VERSION, so this change would break them.
   I mean, they shouldn't.. But a quickly/badly written one might.
   Probably want to review all the linked external special remote programs
-  before doing this.
+  before doing this. Update: Reviewed them all, all are ok.
+  However, datalad's  datalad's customremotes/base.py reacts to an unknown
+  request by calling self.error and so seems it would crash if git-annex
+  sent PROTOCOLKEYWORDS..
