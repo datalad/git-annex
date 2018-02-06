@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2018-02-06T17:04:51Z"
+ content="""
+If you copy git-annex.exe to git-annex-shell.exe, it should work.
+
+The installer doesn't do it, because doubling the installation size footprint
+for a feature that involves sshing into a Windows machine (not very common
+I suspect) didn't seem worth it.
+"""]]
