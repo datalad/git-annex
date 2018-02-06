@@ -1,0 +1,18 @@
+ATM errors are output into stderr while json record lacks any hints on what went wrong
+
+[[!format sh """
+$> git annex add --json longfilenametogetlotsoferrorsandevenlonger4 
+  longfilenametogetlotsoferrorsandevenlonger4: setFileMode: permission denied (Operation not permitted)
+{"command":"add","success":false,"file":"longfilenametogetlotsoferrorsandevenlonger4"}
+"""]]
+
+would be nice(r) to have
+
+[[!format sh """
+$> git annex add --json longfilenametogetlotsoferrorsandevenlonger4 
+{"command":"add","success":false,"file":"longfilenametogetlotsoferrorsandevenlonger4", "msg": "setFileMode: permission denied (Operation not permitted)"}
+"""]]
+or may be even an explicit "errormsg" or alike instead of just a generic "msg"
+
+
+[[!meta author=yoh]]
