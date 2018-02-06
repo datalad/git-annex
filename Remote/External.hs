@@ -421,6 +421,7 @@ handleRequest' st external req mp responsehandler
 		mapM_ (send . VALUE) =<< getUrlsWithPrefix key prefix
 		send (VALUE "") -- end of list
 	handleRemoteRequest (DEBUG msg) = liftIO $ debugM "external" msg
+	handleRemoteRequest (INFO msg) = showInfo msg
 	handleRemoteRequest (VERSION _) =
 		sendMessage st external (ERROR "too late to send VERSION")
 

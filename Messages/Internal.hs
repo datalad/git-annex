@@ -17,16 +17,19 @@ withMessageState :: (MessageState -> Annex a) -> Annex a
 withMessageState a = Annex.getState Annex.output >>= a
 
 outputMessage :: JSONBuilder -> String -> Annex ()
-outputMessage jsonbuilder msg = withMessageState $ \s -> case outputType s of
+outputMessage = outputMessage' bufferJSON
+
+outputMessage' :: (JSONBuilder -> MessageState -> Annex Bool) -> JSONBuilder -> String -> Annex ()
+outputMessage' jsonoutputter jsonbuilder msg = withMessageState $ \s -> case outputType s of
 	NormalOutput
 		| concurrentOutputEnabled s -> concurrentMessage s False msg q
 		| otherwise -> liftIO $ flushed $ putStr msg
-	JSONOutput _ -> void $ outputJSON jsonbuilder s
+	JSONOutput _ -> void $ jsonoutputter jsonbuilder s
 	QuietOutput -> q
 
 -- Buffer changes to JSON until end is reached and then emit it.
-outputJSON :: JSONBuilder -> MessageState -> Annex Bool
-outputJSON jsonbuilder s = case outputType s of
+bufferJSON :: JSONBuilder -> MessageState -> Annex Bool
+bufferJSON jsonbuilder s = case outputType s of
 	JSONOutput _
 		| endjson -> do
 			Annex.changeState $ \st -> 
@@ -45,6 +48,15 @@ outputJSON jsonbuilder s = case outputType s of
 	i = case jsonBuffer s of
 		Nothing -> Nothing
 		Just b -> Just (b, False)
+
+-- Immediately output JSON.
+outputJSON :: JSONBuilder -> MessageState -> Annex Bool
+outputJSON jsonbuilder s = case outputType s of
+	JSONOutput _ -> do
+		maybe noop (liftIO . flushed . emit)
+			(fst <$> jsonbuilder Nothing)
+		return True
+	_ -> return False
 
 outputError :: String -> Annex ()
 outputError msg = withMessageState $ \s ->

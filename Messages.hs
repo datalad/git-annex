@@ -19,6 +19,7 @@ module Messages (
 	showStoringStateAction,
 	showOutput,
 	showLongNote,
+	showInfo,
 	showEndOk,
 	showEndFail,
 	showEndResult,
@@ -123,7 +124,15 @@ showOutput = unlessM commandProgressDisabled $
 	outputMessage JSON.none "\n"
 
 showLongNote :: String -> Annex ()
-showLongNote s = outputMessage (JSON.note s) ('\n' : indent s ++ "\n")
+showLongNote s = outputMessage (JSON.note s) (formatLongNote s)
+
+formatLongNote :: String -> String
+formatLongNote s = '\n' : indent s ++ "\n"
+
+-- Used by external special remote, displayed same as showLongNote
+-- to console, but json object containing the info is emitted immediately.
+showInfo :: String -> Annex ()
+showInfo s = outputMessage' outputJSON (JSON.info s) (formatLongNote s)
 
 showEndOk :: Annex ()
 showEndOk = showEndResult True
@@ -165,11 +174,11 @@ indent = intercalate "\n" . map (\l -> "  " ++ l) . lines
 
 {- Shows a JSON chunk only when in json mode. -}
 maybeShowJSON :: JSON.JSONChunk v -> Annex ()
-maybeShowJSON v = void $ withMessageState $ outputJSON (JSON.add v)
+maybeShowJSON v = void $ withMessageState $ bufferJSON (JSON.add v)
 
 {- Shows a complete JSON value, only when in json mode. -}
 showFullJSON :: JSON.JSONChunk v -> Annex Bool
-showFullJSON v = withMessageState $ outputJSON (JSON.complete v)
+showFullJSON v = withMessageState $ bufferJSON (JSON.complete v)
 
 {- Performs an action that outputs nonstandard/customized output, and
  - in JSON mode wraps its output in JSON.start and JSON.end, so it's

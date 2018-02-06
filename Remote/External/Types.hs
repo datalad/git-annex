@@ -253,6 +253,7 @@ data RemoteRequest
 	| SETURIMISSING Key URI
 	| GETURLS Key String
 	| DEBUG String
+	| INFO String
 	deriving (Show)
 
 instance Proto.Receivable RemoteRequest where
@@ -276,6 +277,7 @@ instance Proto.Receivable RemoteRequest where
 	parseCommand "SETURIMISSING" = Proto.parse2 SETURIMISSING
 	parseCommand "GETURLS" = Proto.parse2 GETURLS
 	parseCommand "DEBUG" = Proto.parse1 DEBUG
+	parseCommand "INFO" = Proto.parse1 INFO
 	parseCommand _ = Proto.parseFail
 
 -- Responses to RemoteRequest.

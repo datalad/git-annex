@@ -15,6 +15,7 @@ module Messages.JSON (
 	start,
 	end,
 	note,
+	info,
 	add,
 	complete,
 	progress,
@@ -76,6 +77,11 @@ end _ Nothing = Nothing
 note :: String -> JSONBuilder
 note s (Just (o, e)) = Just (HM.insert "note" (toJSON s) o, e)
 note _ Nothing = Nothing
+
+info :: String -> JSONBuilder
+info s _ = Just (o, True)
+  where
+	Object o = object ["info" .= toJSON s]
 
 data JSONChunk v where
 	AesonObject :: Object -> JSONChunk Object
