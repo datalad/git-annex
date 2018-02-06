@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2018-02-06T20:15:35Z"
+ content="""
+Great!  I will give it a shot.  No problem checking version of git-annex available so I will make it conditional on git-annex version.
+
+As for \"todo on protocol...\" -- FWIW I left some comments [close to original discussion](http://git-annex.branchable.com/design/exporting_trees_to_special_remotes/#comment-b3876cc7b791c6b8cb12949bdbbf8268)
+"""]]
