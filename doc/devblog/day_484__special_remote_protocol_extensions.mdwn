@@ -1,0 +1,12 @@
+The 
+[[external special remote protocol|design/external_special_remote_protocol]]
+had extensibility built into it for messages git-annex sends, but not
+for messages that the remote sends back to git-annex. To fix this
+asymmetry, I've added a new EXTENSIONS to the protocol, which can be used
+to find out about what new protocol extensions are supported.
+
+There was the possibility that adding that might break some external
+special remote that hardcoded the intial protocol messages. So, I checked
+all of them that I know of, and all were ok, except for older versions of
+datalad, which we were able to deal with. If you have your own external
+special remote implementation, now would be a good time to check it.
