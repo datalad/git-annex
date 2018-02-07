@@ -1,6 +1,6 @@
 {- External special remote data types.
  -
- - Copyright 2013 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,6 +14,7 @@ module Remote.External.Types (
 	ExternalType,
 	ExternalState(..),
 	PrepareStatus(..),
+	supportedExtensionList,
 	Proto.parseMessage,
 	Proto.Sendable(..),
 	Proto.Receivable(..),
@@ -80,6 +81,14 @@ data ExternalState = ExternalState
 
 type PID = Int
 
+-- List of extensions to the protocol.
+newtype ExtensionList = ExtensionList [String]
+	deriving (Show)
+
+-- When adding a new RemoteRequest, also add it to the list here.
+supportedExtensionList :: ExtensionList
+supportedExtensionList = ExtensionList ["INFO"]
+
 data PrepareStatus = Unprepared | Prepared | FailedPrepare ErrorMsg
 
 -- The protocol does not support keys with spaces in their names;
@@ -107,7 +116,8 @@ instance Proto.Serializable SafeKey where
 
 -- Messages that can be sent to the external remote to request it do something.
 data Request 
-	= PREPARE 
+	= EXTENSIONS ExtensionList
+	| PREPARE
 	| INITREMOTE
 	| GETCOST
 	| GETAVAILABILITY
@@ -129,11 +139,13 @@ data Request
 -- Does PREPARE need to have been sent before this request?
 needsPREPARE :: Request -> Bool
 needsPREPARE PREPARE = False
+needsPREPARE (EXTENSIONS _) = False
 needsPREPARE INITREMOTE = False
 needsPREPARE EXPORTSUPPORTED = False
 needsPREPARE _ = True
 
 instance Proto.Sendable Request where
+	formatMessage (EXTENSIONS l) = ["EXTENSIONS", Proto.serialize l]
 	formatMessage PREPARE = ["PREPARE"]
 	formatMessage INITREMOTE = ["INITREMOTE"]
 	formatMessage GETCOST = ["GETCOST"]
@@ -172,7 +184,8 @@ instance Proto.Sendable Request where
 
 -- Responses the external remote can make to requests.
 data Response
-	= PREPARE_SUCCESS
+	= EXTENSIONS_RESPONSE ExtensionList
+	| PREPARE_SUCCESS
 	| PREPARE_FAILURE ErrorMsg
 	| TRANSFER_SUCCESS Direction Key
 	| TRANSFER_FAILURE Direction Key ErrorMsg
@@ -202,6 +215,7 @@ data Response
 	deriving (Show)
 
 instance Proto.Receivable Response where
+	parseCommand "EXTENSIONS" = Proto.parse1 EXTENSIONS_RESPONSE
 	parseCommand "PREPARE-SUCCESS" = Proto.parse0 PREPARE_SUCCESS
 	parseCommand "PREPARE-FAILURE" = Proto.parse1 PREPARE_FAILURE
 	parseCommand "TRANSFER-SUCCESS" = Proto.parse2 TRANSFER_SUCCESS
@@ -366,3 +380,7 @@ instance Proto.Serializable ExportLocation where
 instance Proto.Serializable ExportDirectory where
 	serialize = fromExportDirectory
 	deserialize = Just . mkExportDirectory
+
+instance Proto.Serializable ExtensionList where
+	serialize (ExtensionList l) = unwords l
+	deserialize = Just . ExtensionList . words

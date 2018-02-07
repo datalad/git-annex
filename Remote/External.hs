@@ -505,7 +505,8 @@ withExternalState external = bracket alloc dealloc
 	
 	dealloc st = liftIO $ atomically $ modifyTVar' v (st:)
 
-{- Starts an external remote process running, and checks VERSION. -}
+{- Starts an external remote process running, and checks VERSION and
+ - exchanges EXTENSIONS. -}
 startExternal :: External -> Annex ExternalState
 startExternal external = do
 	errrelayer <- mkStderrRelayer
@@ -513,6 +514,18 @@ startExternal external = do
 	receiveMessage st external
 		(const Nothing)
 		(checkVersion st external)
+		(const Nothing)
+	sendMessage st external (EXTENSIONS supportedExtensionList)
+	-- It responds with a EXTENSIONS_RESPONSE; that extensions list
+	-- is reserved for future expansion. UNSUPPORTED_REQUEST is also
+	-- accepted.
+	receiveMessage st external
+		(\resp -> case resp of
+			EXTENSIONS_RESPONSE _ -> Just (return ())
+			UNSUPPORTED_REQUEST -> Just (return ())
+			_ -> Nothing
+		)
+		(const Nothing)
 		(const Nothing)
 	return st
   where

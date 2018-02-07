@@ -41,9 +41,20 @@ the version of the protocol it is using.
 
 	VERSION 1
 
-Once it knows the version, git-annex will generally 
-send a message telling the special remote to start up.
-(Or it might send an INITREMOTE or EXPORTSUPPORTED,
+Recent versions of git-annex respond with a message indicating
+protocol extensions that it supports. Older versions of
+git-annex do not send this message. 
+
+	EXTENSIONS INFO
+
+The special remote can respond to that with its own EXTENSIONS message, which
+could have its own protocol extension details, but none are currently used.
+(It's also fine to reply with UNSUPPORTED-REQUEST.)
+
+	EXTENSIONS 
+
+Next, git-annex will generally send a message telling the special
+remote to start up. (Or it might send an INITREMOTE or EXPORTSUPPORTED,
 so don't hardcode this order.)
 
 	PREPARE
@@ -103,7 +114,7 @@ The following requests *must* all be supported by the special remote.
   So any one-time setup tasks should be done idempotently.
 * `PREPARE`  
   Tells the remote that it's time to prepare itself to be used.  
-  Only INITREMOTE or EXPORTSUPPORTED can come before this.
+  Only EXTENSIONS and INITREMOTE or EXPORTSUPPORTED can come before this.
 * `TRANSFER STORE|RETRIEVE Key File`  
   Requests the transfer of a key. For STORE, the File is the file to upload;
   for RETRIEVE the File is where to store the download.  
@@ -119,6 +130,10 @@ The following requests *must* all be supported by the special remote.
 The following requests can optionally be supported. If not handled,
 replying with `UNSUPPORTED-REQUEST` is acceptable.
 
+* `EXTENSIONS List`  
+  Sent to indicate protocol extensions which git-annex is capable
+  of using. The list is a space-delimited list of protocol extension
+  keywords. The remote can reply to this with its own EXTENSIONS list.
 * `GETCOST`  
   Requests the remote to return a use cost. Higher costs are more expensive.
   (See Config/Cost.hs for some standard costs.)
@@ -229,6 +244,10 @@ while it's handling a request.
   the remote didn't have the key at the point removal was requested.
 * `REMOVE-FAILURE Key ErrorMsg`  
   Indicates that the key was unable to be removed from the remote.
+* `EXTENSIONS List`  
+  Sent in response to a EXTENSIONS request, the List could be used to indicate
+  protocol extensions that the special remote uses, but there are currently
+  no such extensions, so the List is empty.
 * `COST Int`  
   Indicates the cost of the remote.
 * `AVAILABILITY GLOBAL|LOCAL`
@@ -402,13 +421,15 @@ handling a request.
 * `DEBUG message`
   Tells git-annex to display the message if --debug is enabled.  
   (git-annex does not send a reply to this message.)
+
+These messages are protocol extensions; it's only safe to send them to
+git-annex after it sent a EXTENSIONS that included the name of the message.
+
 * `INFO message`
   Tells git-annex to display the message to the user.  
   When git-annex is in --json mode, the message will be emitted immediately
   in its own json object, with an "info" field.  
   (git-annex does not send a reply to this message.)  
-  This message was first supported by git-annex version 
-  6.20180206
 
 ## general messages
 
@@ -470,27 +491,3 @@ It works like this:
 * uuid discovery during INITREMOTE.
 * Hook into webapp. Needs a way to provide some kind of prompt to the user
   in the webapp, etc.
-
-* When a new "special remote message" is added to this protocol, and a
-  program wants to use it,  an old version of git-annex will reject the
-  message as unknown, and fail to use the remote with a protocol error.
-
-  The program can check `git-annex version`, but that's not very
-  satisfactory. Version comparison can be hard and
-  PATH might not point to the same git-annex that's running the program.
-
-  One way to fix this would be to make git-annex reply to VERSION
-  with a PROTOCOLKEYWORDS message listing all the keywords in the
-  protocol that it knows.
-  The program could then check if the new message it wants to send is on
-  the list. PROTOCOLKEYWORDS would be ignored by any program that doesn't
-  care/know about it; programs are required to send UNSUPPORTED-REQUEST.
-
-  I worry that some special remote programs might expect to get only 
-  PREPARE or INITREMOTE after VERSION, so this change would break them.
-  I mean, they shouldn't.. But a quickly/badly written one might.
-  Probably want to review all the linked external special remote programs
-  before doing this. Update: Reviewed them all, all are ok.
-  However, datalad's  datalad's customremotes/base.py reacts to an unknown
-  request by calling self.error and so seems it would crash if git-annex
-  sent PROTOCOLKEYWORDS..
