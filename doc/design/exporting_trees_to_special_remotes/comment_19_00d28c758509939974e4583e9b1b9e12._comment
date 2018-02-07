@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 19"
+ date="2018-02-07T18:31:45Z"
+ content="""
+> Changing VERSION would prevent any older versions of git-annex from working with that external special remote, since they would reject the unknown version. (The current parsing of VERSION also happens to preclude adding some fields after the number.)
+
+I still do not get it, sorry -- If there is an older git-annex, and a special remote requests some higher VERSION (thus stating that it needs some features older git-annex does not support), IMHO it would be perfectly fine to fail to use that remote since it wouldn't be usable anyways with that older git-annex (i.e. require some special features it does not provide).  If special remote does not need any feature not present in version `1`, it (like all of them ATM) could still keep requesting `VERSION 1` thus staying compatible with whatever old git-annex is out there.
+"""]]
