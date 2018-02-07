@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 18"""
+ date="2018-02-07T16:43:02Z"
+ content="""
+Changing VERSION would prevent any older versions of git-annex from working
+with that external special remote, since they would reject the unknown
+version. (The current parsing of VERSION also happens to preclude adding
+some fields after the number.)
+
+Since it seems completely possible to make the protocol be changed in a way
+that is backwards compatible both ways, while still letting new features to
+be used, I'd rather reserve changing VERSION for whatever future thing
+needs a full breaking bump.
+"""]]
