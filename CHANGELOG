@@ -2,6 +2,7 @@ git-annex (6.20180113) UNRELEASED; urgency=medium
 
   * inprogress: Avoid showing failures for files not in progress. 
   * Added INFO to external special remote protocol.
+  * Added EXTENSIONS to external special remote protocol.
 
  -- Joey Hess <id@joeyh.name>  Wed, 24 Jan 2018 20:42:55 -0400
 
