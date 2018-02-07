@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 19"""
+ date="2018-02-07T19:04:03Z"
+ content="""
+What if the remote wants to use some feature like NOTE, but can still
+manage to work when an old git-annex does not support it? Hard bumping the
+VERSION cannot support that. If the remote requires to be able to use NOTE
+and sees it cannot, it can still throw an error.
+
+There are a bunch of requests in the protocol that are optional for the
+remote to support; git-annex deals with remotes that don't support them in
+better ways than throwing up its hands because the special remote is too
+old. It's very good that the protocol allowed adding those extensions
+without bumping a version. The protocol is less extensible when it comes
+replies and other messages sent by the special remote, and I want to get
+the same extensibility for those.
+"""]]
