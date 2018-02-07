@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 21"
+ date="2018-02-07T20:01:53Z"
+ content="""
+Ok, gotcha.  Shouldn't then EXTENSION entries also be somehow versioned per each one of them? or if needed a new extension would be born by appending a version to its name (e.g. as with all those imap, imap2, imap3, ... ;-))
+"""]]
