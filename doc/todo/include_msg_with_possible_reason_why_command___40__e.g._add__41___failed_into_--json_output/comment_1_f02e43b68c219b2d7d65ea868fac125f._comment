@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-02-08T16:59:16Z"
+ content="""
+Is the benefit of doing this being able to correlate the error message with
+the filename whose processing caused the error?
+
+For that benefit to be realized, the error message would have to be included
+in the same json object with the file being processed. If a separate json
+object were emitted containing only the error message it would not be clear
+what file it was related to (especially when git-annex is running
+concurrent jobs), and so that does not seem any better than
+output to stderr.
+
+Looks like implementation would just involve making outputError 
+check if there is a jsonBuffer, and add the error message to it,
+probably using an array since there could be multiple warning messages.
+
+I kind of feel like they should still go to stderr in addition to any json
+output, because any existing json consumers may rely on the current stderr
+behavior to let the user know what went wrong.
+"""]]
