@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2018-02-08T18:06:54Z"
+ content="""
+yes -- I could have been clearer that association to the file (if present, may be error is generic and still would be worth to communicate via a simple json message, alike recently added INFO passed from custom special remotes) would be valuable!
+As for stderr output -- would lead to duplication (we just changed to output at least a \"tip\" of stderr output which might be heavy).  If it is a matter of not breaking tools which would not support this new behavior, having a config or --option-hate-to-suggest-to-addone, would be  valuable so we could disable \"double-casting\" the error messages
+"""]]
