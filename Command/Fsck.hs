@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -23,6 +23,7 @@ import Logs.Location
 import Logs.Trust
 import Logs.Activity
 import Logs.TimeStamp
+import Logs.PreferredContent
 import Annex.NumCopies
 import Annex.UUID
 import Annex.ReplaceFile
@@ -40,6 +41,8 @@ import Types.ActionItem
 
 import Data.Time.Clock.POSIX
 import System.Posix.Types (EpochTime)
+import qualified Data.Set as S
+import qualified Data.Map as M
 
 cmd :: Command
 cmd = withGlobalOptions (jobsOption : jsonOption : annexedMatchingOptions) $
@@ -121,6 +124,7 @@ perform key file backend numcopies = do
 		-- order matters
 		[ fixLink key file
 		, verifyLocationLog key keystatus ai
+		, verifyRequiredContent key ai
 		, verifyAssociatedFiles key keystatus file
 		, verifyWorkTree key file
 		, checkKeySize key keystatus ai
@@ -151,6 +155,7 @@ performRemote key afile backend numcopies remote =
 	dispatch (Right False) = go False Nothing
 	go present localcopy = check
 		[ verifyLocationLogRemote key ai remote present
+		, verifyRequiredContent key ai
 		, withLocalCopy localcopy $ checkKeySizeRemote key remote ai
 		, withLocalCopy localcopy $ checkBackendRemote backend key remote ai
 		, checkKeyNumCopies key afile numcopies
@@ -285,6 +290,27 @@ verifyLocationLog' key ai present u updatestatus = do
 	fix s = do
 		showNote "fixing location log"
 		updatestatus s
+
+{- Verifies that all repos that are required to contain the content do,
+ - checking against the location log. -}
+verifyRequiredContent :: Key -> ActionItem -> Annex Bool
+verifyRequiredContent key ai@(ActionItemAssociatedFile afile) = do
+	presentlocs <- S.fromList <$> loggedLocations key
+	requiredlocs <- S.fromList . M.keys <$> requiredContentMap
+	missinglocs <- filterM
+		(\u -> isRequiredContent (Just u) S.empty (Just key) afile False)
+		(S.toList $ S.difference requiredlocs presentlocs)
+	if null missinglocs
+		then return True
+		else do
+			missingrequired <- Remote.prettyPrintUUIDs "missingrequired" missinglocs
+			warning $
+				"** Required content " ++
+				actionItemDesc ai key ++
+				" is missing from these repositories:\n" ++
+				missingrequired
+			return False
+verifyRequiredContent _ _ = return True
 
 {- Verifies the associated file records. -}
 verifyAssociatedFiles :: Key -> KeyStatus -> FilePath -> Annex Bool

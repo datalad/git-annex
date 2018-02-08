@@ -16,3 +16,7 @@ by simply using `git annex drop`. On the other hand, required content
 settings are enforced; `git annex drop` will refuse to drop a file if
 doing so would violate its required content settings.
 (Although even this can be overridden using `--force`).
+
+Also, `git-annex fsck` will warn about required contents that are not
+present.
+

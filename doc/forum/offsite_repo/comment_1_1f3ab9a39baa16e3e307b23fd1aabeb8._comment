@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-02-08T17:32:00Z"
+ content="""
+What you're looking for is probably the [[required_content]] settings.
+
+However, `git annex fsck` did not perform any checks that required content
+was present. Now it does. Enjoy!
+"""]]

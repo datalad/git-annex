@@ -6,6 +6,8 @@ git-annex (6.20180113) UNRELEASED; urgency=medium
   * datalad < 0.9.1 had a problem in its special remote protocol handling
     which is broken by EXTENSIONS. Make the debian git-annex package
     conflict with the problem version of datalad.
+  * fsck: Warn when required content is not present in the repository that
+    requires it.
 
  -- Joey Hess <id@joeyh.name>  Wed, 24 Jan 2018 20:42:55 -0400
 
