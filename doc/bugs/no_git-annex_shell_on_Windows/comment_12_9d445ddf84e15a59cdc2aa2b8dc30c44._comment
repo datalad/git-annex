@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2018-02-08T17:13:41Z"
+ content="""
+That error message seems to indicate that git-annex does not realize it's
+being run with the git-annex-shell program name. When I run "git-annex -c
+configlist /path/to/repo" I get that error message; when I run
+git-annex-shell with the same parameters, I get the expected repository
+config output.
+
+I'm guessing that the windows symlink thing you tried to use confuses the
+program path name lookup that it tries to do. I'm pretty sure that a copy
+of the file would work.
+"""]]
