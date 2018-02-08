@@ -295,21 +295,24 @@ verifyLocationLog' key ai present u updatestatus = do
  - checking against the location log. -}
 verifyRequiredContent :: Key -> ActionItem -> Annex Bool
 verifyRequiredContent key ai@(ActionItemAssociatedFile afile) = do
-	presentlocs <- S.fromList <$> loggedLocations key
 	requiredlocs <- S.fromList . M.keys <$> requiredContentMap
-	missinglocs <- filterM
-		(\u -> isRequiredContent (Just u) S.empty (Just key) afile False)
-		(S.toList $ S.difference requiredlocs presentlocs)
-	if null missinglocs
+	if S.null requiredlocs
 		then return True
 		else do
-			missingrequired <- Remote.prettyPrintUUIDs "missingrequired" missinglocs
-			warning $
-				"** Required content " ++
-				actionItemDesc ai key ++
-				" is missing from these repositories:\n" ++
-				missingrequired
-			return False
+			presentlocs <- S.fromList <$> loggedLocations key
+			missinglocs <- filterM
+				(\u -> isRequiredContent (Just u) S.empty (Just key) afile False)
+				(S.toList $ S.difference requiredlocs presentlocs)
+			if null missinglocs
+				then return True
+				else do
+					missingrequired <- Remote.prettyPrintUUIDs "missingrequired" missinglocs
+					warning $
+						"** Required content " ++
+						actionItemDesc ai key ++
+						" is missing from these repositories:\n" ++
+						missingrequired
+					return False
 verifyRequiredContent _ _ = return True
 
 {- Verifies the associated file records. -}
