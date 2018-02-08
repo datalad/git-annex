@@ -20,8 +20,8 @@ of the repository.
 
 While [[git-annex-wanted]] is just a preference,
 [[git-annex-required]] designates content that should really not be
-removed. For example a file that is `wanted` can be removed with `git
-annex drop`, but if that file is `required`, it would need to be
+removed. For example a file that is `wanted` can be removed with 
+`git annex drop`, but if that file is `required`, it would need to be
 removed with `git annex drop --force`.
 
 # NOTES
