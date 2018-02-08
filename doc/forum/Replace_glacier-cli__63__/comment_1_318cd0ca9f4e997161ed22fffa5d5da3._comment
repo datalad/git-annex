@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-02-08T17:17:10Z"
+ content="""
+There's been an open feature request on the haskell aws
+for 5 years to support glacier <https://github.com/aristidb/aws/issues/81>
+at this point I am doubtful anything will ever happen there.
+
+The most likely approach seems to be to use the amazonka library, which
+supports S3 with a Glacier lifecycle. git-annex's S3 remote could be
+rewritten to use that.
+
+I think it should be possible to set up a S3 bucket and configure it with
+some web tool to have a Glacier lifecycle, and then use the existing
+git-annex S3 support to access it. Except for the problem documented at
+[[todo/wishlist__58___Restore_s3_files_moved_to_Glacier]].
+"""]]
