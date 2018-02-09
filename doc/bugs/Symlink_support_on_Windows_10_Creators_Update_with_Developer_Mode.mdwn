@@ -9,7 +9,7 @@ On a Windows 10 machine with Creators update (v1709) and Developer mode enabled,
 Additionally, if a `git annex sync` is performed, the symlinks are deleted.
 
 ### What version of git-annex are you using? On what operating system?
-v6.20180112
+v6.20180112 on Windows 10 with update 1709.
 
 ### Please provide any additional information below.
 Since the aforementioned Windows update (commonly referred to as Creators Update), the mklink command can be executed without requiring elevated privileges if Developer mode is enabled.
