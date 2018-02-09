@@ -12,8 +12,10 @@ v6.20180112
 ### Please provide any additional information below.
 Since the aforementioned Windows update (commonly referred to as Creators Update), the mklink command can be executed without requiring elevated privileges if Developer mode is enabled.
 See the following two articles for some background:
-- https://www.ghacks.net/2016/12/04/windows-10-creators-update-symlinks-without-elevation/
-- https://www.howtogeek.com/292914/what-is-developer-mode-in-windows-10/ 
+
+- [Windows 10 Creators Update: Symlinks without elevation
+ [ghacks.net]](https://www.ghacks.net/2016/12/04/windows-10-creators-update-symlinks-without-elevation/)
+- [What Is “Developer Mode” in Windows 10? [howtogeek.com]](https://www.howtogeek.com/292914/what-is-developer-mode-in-windows-10/)
 
 It would seem that git detects this and does not disable symlinks as git-annex expects it to do on Windows.
 
