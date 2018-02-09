@@ -4,7 +4,9 @@ Since the Win10 Creators Update, if Developer Mode is enabled, symlinks can be c
 When symlinks are created, git-annex breaks in many wonderful ways. The symlinks are not detected as annexed files and `git annex info` shows that no files are in the annex.
 
 ### What steps will reproduce the problem?
-On a Windows 10 machine with Creators update (v1709) and Developer mode enabled, do a `git clone` of a git-annex repository.
+On a Windows 10 machine with Creators update (v1709) and Developer mode enabled, do a `git clone` of a git-annex repository. Then `git annex init` and `git annex info`.
+
+Additionally, if a `git annex sync` is performed, the symlinks are deleted.
 
 ### What version of git-annex are you using? On what operating system?
 v6.20180112
