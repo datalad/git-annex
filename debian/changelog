@@ -5,6 +5,8 @@ git-annex (6.20180112-1) UNRELEASED; urgency=medium
     - Move Richard Hartmann to Uploaders.
     - Add myself as an uploader.
     - Point Vcs-* at salsa.
+  * Add gpg-agent to Build-Depends.
+    Needed to run the test suite.
   * Restore upstream's (harmless) .gitattributes.
     This means that we can `dgit push{,-source}` without any special options.
 
