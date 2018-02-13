@@ -11,6 +11,12 @@ git-annex (6.20180112-1) UNRELEASED; urgency=medium
     Needed to run the test suite.
   * Restore upstream's (harmless) .gitattributes.
     This means that we can `dgit push{,-source}` without any special options.
+  * Update debian/gbp.conf
+    - Update packaging branch 'debian' -> 'master'.
+    - No longer maintaining an upstream branch.  Instead, invoke `git
+      merge` on upstream's release tags directly.  E.g. `git merge
+      6.20180112`.
+    - Trim some cruft.
 
  -- Sean Whitton <spwhitton@spwhitton.name>  Tue, 13 Feb 2018 14:08:41 -0700
 
