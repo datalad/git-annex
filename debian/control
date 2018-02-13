@@ -93,7 +93,8 @@ Uploaders:
  Richard Hartmann <richih@debian.org>,
  Sean Whitton <spwhitton@spwhitton.name>,
 Standards-Version: 3.9.8
-Vcs-Git: git://git.kitenet.net/git-annex
+Vcs-Git: https://salsa.debian.org/haskell-team/git-annex.git/
+Vcs-Browser: https://salsa.debian.org/haskell-team/git-annex
 Homepage: http://git-annex.branchable.com/
 XS-Testsuite: autopkgtest
 
