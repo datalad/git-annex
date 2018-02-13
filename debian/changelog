@@ -5,6 +5,8 @@ git-annex (6.20180112-1) UNRELEASED; urgency=medium
     - Move Richard Hartmann to Uploaders.
     - Add myself as an uploader.
     - Point Vcs-* at salsa.
+  * Restore upstream's (harmless) .gitattributes.
+    This means that we can `dgit push{,-source}` without any special options.
 
  -- Sean Whitton <spwhitton@spwhitton.name>  Tue, 13 Feb 2018 14:08:41 -0700
 
