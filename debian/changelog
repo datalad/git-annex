@@ -5,6 +5,8 @@ git-annex (6.20180112-1) UNRELEASED; urgency=medium
     - Move Richard Hartmann to Uploaders.
     - Add myself as an uploader.
     - Point Vcs-* at salsa.
+  * Stop copying upstream's changelog entries into the Debian changelog.
+    See /usr/share/doc/git-annex/changelog.gz for the upstream changelog.
   * Add gpg-agent to Build-Depends.
     Needed to run the test suite.
   * Restore upstream's (harmless) .gitattributes.
