@@ -1,4 +1,4 @@
-git-annex (6.20180112-1) UNRELEASED; urgency=medium
+git-annex (6.20180112-1) unstable; urgency=medium
 
   * New upstream release.
   * Adopt package into Debian Haskell Group team maintainership.
@@ -18,7 +18,7 @@ git-annex (6.20180112-1) UNRELEASED; urgency=medium
       6.20180112`.
     - Trim some cruft.
 
- -- Sean Whitton <spwhitton@spwhitton.name>  Tue, 13 Feb 2018 14:08:41 -0700
+ -- Sean Whitton <spwhitton@spwhitton.name>  Tue, 13 Feb 2018 15:02:09 -0700
 
 git-annex (6.20171124-1) unstable; urgency=medium
 
