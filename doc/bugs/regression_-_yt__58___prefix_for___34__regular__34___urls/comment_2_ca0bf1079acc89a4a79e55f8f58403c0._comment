@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2017-12-08T02:32:15Z"
+ content="""
+Thanks for the fix... seems to be a bit incomplete though -- in the --fast mode, url still has yt: prefix, reflected in the key as well:
+
+[[!format sh \"\"\"
+
+$> ls -l
+total 4
+lrwxrwxrwx 1 yoh yoh 110 Dec  7 21:27 1-copy.dat -> .git/annex/objects/gw/pw/URL--yt&chttp&c%%127.0.0.1&c34337%d1%1.dat/URL--yt&chttp&c%%127.0.0.1&c34337%d1%1.dat
+
+$> git annex whereis 1-copy.dat
+whereis 1-copy.dat (1 copy) 
+  	00000000-0000-0000-0000-000000000001 -- web
+
+  web: yt:http://127.0.0.1:34337/d1/1.dat
+ok
+
+$> git annex version
+git-annex version: 6.20171206+gitgc6e4bc0a2-1~ndall+1
+
+\"\"\"]]
+"""]]

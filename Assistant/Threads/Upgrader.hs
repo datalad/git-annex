@@ -19,7 +19,7 @@ import Assistant.DaemonStatus
 import Assistant.Alert
 import Utility.NotificationBroadcaster
 import qualified Annex
-import qualified Build.SysConfig
+import qualified BuildInfo
 import qualified Utility.DottedVersion as DottedVersion
 import Types.Distribution
 #ifdef WITH_WEBAPP
@@ -31,7 +31,7 @@ import qualified Data.Text as T
 
 upgraderThread :: UrlRenderer -> NamedThread
 upgraderThread urlrenderer = namedThread "Upgrader" $
-	when (isJust Build.SysConfig.upgradelocation) $ do
+	when (isJust BuildInfo.upgradelocation) $ do
 		{- Check for upgrade on startup, unless it was just
 		 - upgraded. -}
 		unlessM (liftIO checkSuccessfulUpgrade) $
@@ -63,7 +63,7 @@ checkUpgrade urlrenderer = do
   where
 	go Nothing = debug [ "Failed to check if upgrade is available." ]
 	go (Just d) = do
-		let installed = DottedVersion.normalize Build.SysConfig.packageversion
+		let installed = DottedVersion.normalize BuildInfo.packageversion
 		let avail = DottedVersion.normalize $ distributionVersion d
 		let old = DottedVersion.normalize <$> distributionUrgentUpgrade d
 		if Just installed <= old

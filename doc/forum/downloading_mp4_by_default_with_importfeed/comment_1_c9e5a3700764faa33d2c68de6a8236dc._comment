@@ -8,4 +8,8 @@ option to make it prefer mp4, you can pass it using the annex.quvi-options
 git configuration setting. Or maybe it has a config file. I don't
 know how to configure quvi to do that, but if it's possible to, you should
 be able to get git-annex to run it with that configuration.
+
+Update: Now git-annex uses youtube-dl, so you can use the
+annex.youtube-dl-options git configuration setting to configure youtube-dl
+to download your preferred format.
 """]]

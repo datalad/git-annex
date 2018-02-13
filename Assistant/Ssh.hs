@@ -9,12 +9,14 @@ module Assistant.Ssh where
 
 import Annex.Common
 import Utility.Tmp
+import Utility.Tmp.Dir
 import Utility.Shell
 import Utility.Rsync
 import Utility.FileMode
 import Utility.SshConfig
 import Git.Remote
 import Utility.SshHost
+import Utility.Process.Transcript
 
 import Data.Text (Text)
 import qualified Data.Text as T

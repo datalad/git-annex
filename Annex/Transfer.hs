@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, FlexibleInstances, BangPatterns #-}
+{-# LANGUAGE CPP, BangPatterns #-}
 
 module Annex.Transfer (
 	module X,
@@ -27,30 +27,12 @@ import Annex.Perms
 import Utility.Metered
 import Annex.LockPool
 import Types.Key
-import Types.Remote (Verification(..))
 import qualified Types.Remote as Remote
 import Types.Concurrency
 
 import Control.Concurrent
 import qualified Data.Map.Strict as M
 import Data.Ord
-
-class Observable a where
-	observeBool :: a -> Bool
-	observeFailure :: a
-
-instance Observable Bool where
-	observeBool = id
-	observeFailure = False
-
-instance Observable (Bool, Verification) where
-	observeBool = fst
-	observeFailure = (False, UnVerified)
-
-instance Observable (Either e Bool) where
-	observeBool (Left _) = False
-	observeBool (Right b) = b
-	observeFailure = Right False
 
 upload :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
 upload u key f d a _witness = guardHaveUUID u $ 
@@ -110,12 +92,11 @@ runTransfer' ignorelock t afile shouldretry transferaction = checkSecureHashes t
 	prep tfile mode info = catchPermissionDenied (const prepfailed) $ do
 		let lck = transferLockFile tfile
 		createAnnexDirectory $ takeDirectory lck
-		r <- tryLockExclusive (Just mode) lck
-		case r of
+		tryLockExclusive (Just mode) lck >>= \case
 			Nothing -> return (Nothing, True)
 			Just lockhandle -> ifM (checkSaneLock lck lockhandle)
 				( do
-					void $ liftIO $ tryIO $
+					void $ tryIO $
 						writeTransferInfoFile info tfile
 					return (Just lockhandle, False)
 				, do
@@ -126,12 +107,11 @@ runTransfer' ignorelock t afile shouldretry transferaction = checkSecureHashes t
 	prep tfile _mode info = catchPermissionDenied (const prepfailed) $ do
 		let lck = transferLockFile tfile
 		createAnnexDirectory $ takeDirectory lck
-		v <- catchMaybeIO $ liftIO $ lockExclusive lck
-		case v of
+		catchMaybeIO (liftIO $ lockExclusive lck) >>= \case
 			Nothing -> return (Nothing, False)
 			Just Nothing -> return (Nothing, True)
 			Just (Just lockhandle) -> do
-				void $ liftIO $ tryIO $
+				void $ tryIO $
 					writeTransferInfoFile info tfile
 				return (Just lockhandle, False)
 #endif
@@ -153,17 +133,15 @@ runTransfer' ignorelock t afile shouldretry transferaction = checkSecureHashes t
 		dropLock lockhandle
 		void $ tryIO $ removeFile lck
 #endif
-	retry oldinfo metervar run = do
-		v <- tryNonAsync run
-		case v of
-			Right b -> return b
-			Left e -> do
-				warning (show e)
-				b <- getbytescomplete metervar
-				let newinfo = oldinfo { bytesComplete = Just b }
-				if shouldretry oldinfo newinfo
-					then retry newinfo metervar run
-					else return observeFailure
+	retry oldinfo metervar run = tryNonAsync run >>= \case
+		Right b -> return b
+		Left e -> do
+			warning (show e)
+			b <- getbytescomplete metervar
+			let newinfo = oldinfo { bytesComplete = Just b }
+			if shouldretry oldinfo newinfo
+				then retry newinfo metervar run
+				else return observeFailure
 	getbytescomplete metervar
 		| transferDirection t == Upload =
 			liftIO $ readMVar metervar

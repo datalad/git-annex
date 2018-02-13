@@ -41,7 +41,7 @@ start force (keyname, file) = do
 
 startMass :: CommandStart
 startMass = do
-	showStart "fromkey" "stdin"
+	showStart' "fromkey" (Just "stdin")
 	next massAdd
 
 massAdd :: CommandPerform

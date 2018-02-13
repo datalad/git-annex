@@ -1,0 +1,105 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 6"
+ date="2017-12-11T14:40:26Z"
+ content="""
+ok, first initial bit of information:  there is a difference in interactions with the special remote now. Here is the diff between old and new runs (sorry - content was also changing so there is difference in keys as well):
+
+[[!format sh \"\"\"
+$> diff -Nar -u6 /tmp/datalad_temp_tree_check_basic_scenarioVEOIhb/.git/bin/git-annex-remote-datalad-archive /tmp/datalad_temp_tree_check_basic_scenarioIfsLo7/.git/bin/git-annex-remote-datalad-archive
+--- /tmp/datalad_temp_tree_check_basic_scenarioVEOIhb/.git/bin/git-annex-remote-datalad-archive	2017-12-11 08:56:38.381298365 -0500
++++ /tmp/datalad_temp_tree_check_basic_scenarioIfsLo7/.git/bin/git-annex-remote-datalad-archive	2017-12-11 08:56:14.885677071 -0500
+@@ -48,66 +48,72 @@
+ ### ['git', '-c', 'receive.autogc=0', '-c', 'gc.auto=0', 'annex', 'add', '--debug', '--json', 'simple.txt']
+ 
+ ### ['git', '-c', 'receive.autogc=0', '-c', 'gc.auto=0', 'commit', '-m', 'Added the load file']
+ 
+ ### ['git', '-c', 'receive.autogc=0', '-c', 'gc.auto=0', 'annex', 'lookupkey', '--debug', 'a.tar.gz']
+ 
+-### ['git', '-c', 'receive.autogc=0', '-c', 'gc.auto=0', 'annex', 'addurl', '--debug', '--relaxed', '--file=simple.txt', 'dl+archive:SHA256E-s172--70cf6dd95738e5d3672a7139a2785b0a979f0f7955d0f6da0d94cc03c84a63b7.tar.gz#path=a/d/+%22%27%3Ba%26b%26cd+%60%7C+']
++### ['git', '-c', 'receive.autogc=0', '-c', 'gc.auto=0', 'annex', 'addurl', '--debug', '--relaxed', '--file=simple.txt', 'dl+archive:SHA256E-s173--db0a9680f8d15578de8e4a5b5c1e87f36d9372d6118fb24c1c60f390e71ad3c1.tar.gz#path=a/d/+%22%27%3Ba%26b%26cd+%60%7C+']
+ #send VERSION 1
+ #recv PREPARE
+ #send PREPARE-SUCCESS
+ #recv GETCOST
+ #send COST 500
+ #recv GETAVAILABILITY
+ #send AVAILABILITY LOCAL
+-#recv CLAIMURL dl+archive:SHA256E-s172--70cf6dd95738e5d3672a7139a2785b0a979f0f7955d0f6da0d94cc03c84a63b7.tar.gz#path=a/d/+%22%27%3Ba%26b%26cd+%60%7C+
+-#send DEBUG Claiming url 'dl+archive:SHA256E-s172--70cf6dd95738e5d3672a7139a2785b0a979f0f7955d0f6da0d94cc03c84a63b7.tar.gz#path=a/d/+%22%27%3Ba%26b%26cd+%60%7C+'
++#recv CLAIMURL dl+archive:SHA256E-s173--db0a9680f8d15578de8e4a5b5c1e87f36d9372d6118fb24c1c60f390e71ad3c1.tar.gz#path=a/d/+%22%27%3Ba%26b%26cd+%60%7C+
++#send DEBUG Claiming url 'dl+archive:SHA256E-s173--db0a9680f8d15578de8e4a5b5c1e87f36d9372d6118fb24c1c60f390e71ad3c1.tar.gz#path=a/d/+%22%27%3Ba%26b%26cd+%60%7C+'
+ #send CLAIMURL-SUCCESS
+-#recv CHECKURL dl+archive:SHA256E-s172--70cf6dd95738e5d3672a7139a2785b0a979f0f7955d0f6da0d94cc03c84a63b7.tar.gz#path=a/d/+%22%27%3Ba%26b%26cd+%60%7C+
++#recv CHECKURL dl+archive:SHA256E-s173--db0a9680f8d15578de8e4a5b5c1e87f36d9372d6118fb24c1c60f390e71ad3c1.tar.gz#path=a/d/+%22%27%3Ba%26b%26cd+%60%7C+
+ #send CHECKURL-CONTENTS UNKNOWN
+ #recv 
+ 
+ ### ['git', '-c', 'receive.autogc=0', '-c', 'gc.auto=0', 'annex', 'drop', '--debug', '--json', 'simple.txt']
+ #send VERSION 1
+ #recv PREPARE
+ #send PREPARE-SUCCESS
+ #recv CHECKPRESENT SHA256E-s3--a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3.txt
+ #send GETURLS SHA256E-s3--a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3.txt dl+archive:
+-#recv VALUE dl+archive:SHA256E-s172--70cf6dd95738e5d3672a7139a2785b0a979f0f7955d0f6da0d94cc03c84a63b7.tar.gz#path=a/d/+%22%27%3Ba%26b%26cd+%60%7C+
++#recv VALUE dl+archive:SHA256E-s173--db0a9680f8d15578de8e4a5b5c1e87f36d9372d6118fb24c1c60f390e71ad3c1.tar.gz#path=a/d/+%22%27%3Ba%26b%26cd+%60%7C+
+ #recv VALUE 
+ #send CHECKPRESENT-SUCCESS SHA256E-s3--a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3.txt
+ #recv 
+ 
+ ### ['git', '-c', 'receive.autogc=0', '-c', 'gc.auto=0', 'annex', 'whereis', '--debug', '--json', 'simple.txt']
+ #send VERSION 1
+ #recv PREPARE
+ #send PREPARE-SUCCESS
+ #recv WHEREIS SHA256E-s3--a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3.txt
+ #send WHEREIS-FAILURE
+-#recv CLAIMURL dl+archive:SHA256E-s172--70cf6dd95738e5d3672a7139a2785b0a979f0f7955d0f6da0d94cc03c84a63b7.tar.gz#path=a/d/+%22%27%3Ba%26b%26cd+%60%7C+
+-#send DEBUG Claiming url 'dl+archive:SHA256E-s172--70cf6dd95738e5d3672a7139a2785b0a979f0f7955d0f6da0d94cc03c84a63b7.tar.gz#path=a/d/+%22%27%3Ba%26b%26cd+%60%7C+'
+-#send CLAIMURL-SUCCESS
+ #recv 
+ 
+ ### ['git', '-c', 'receive.autogc=0', '-c', 'gc.auto=0', 'annex', 'find', '--debug', '--json', '--not', '--in', 'here', 'simple.txt']
+ 
+ ### ['git', '-c', 'receive.autogc=0', '-c', 'gc.auto=0', 'annex', 'get', '--debug', '--json', '--json-progress', 'simple.txt']
+ #send VERSION 1
+ #recv PREPARE
+ #send PREPARE-SUCCESS
+ #recv TRANSFER RETRIEVE SHA256E-s3--a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3.txt .git/annex/tmp/SHA256E-s3--a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3.txt
+ #send GETURLS SHA256E-s3--a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3.txt dl+archive:
+-#recv VALUE dl+archive:SHA256E-s172--70cf6dd95738e5d3672a7139a2785b0a979f0f7955d0f6da0d94cc03c84a63b7.tar.gz#path=a/d/+%22%27%3Ba%26b%26cd+%60%7C+
++#recv VALUE dl+archive:SHA256E-s173--db0a9680f8d15578de8e4a5b5c1e87f36d9372d6118fb24c1c60f390e71ad3c1.tar.gz#path=a/d/+%22%27%3Ba%26b%26cd+%60%7C+
+ #recv VALUE 
+ #send TRANSFER-SUCCESS RETRIEVE SHA256E-s3--a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3.txt
+ #recv 
+ 
+-### ['git', '-c', 'receive.autogc=0', '-c', 'gc.auto=0', 'annex', 'rmurl', '--debug', 'simple.txt', 'dl+archive:SHA256E-s172--70cf6dd95738e5d3672a7139a2785b0a979f0f7955d0f6da0d94cc03c84a63b7.tar.gz#path=a/d/+%22%27%3Ba%26b%26cd+%60%7C+']
++### ['git', '-c', 'receive.autogc=0', '-c', 'gc.auto=0', 'annex', 'rmurl', '--debug', 'simple.txt', 'dl+archive:SHA256E-s173--db0a9680f8d15578de8e4a5b5c1e87f36d9372d6118fb24c1c60f390e71ad3c1.tar.gz#path=a/d/+%22%27%3Ba%26b%26cd+%60%7C+']
++#send VERSION 1
++#recv PREPARE
++#send PREPARE-SUCCESS
++#recv CLAIMURL dl+archive:SHA256E-s173--db0a9680f8d15578de8e4a5b5c1e87f36d9372d6118fb24c1c60f390e71ad3c1.tar.gz#path=a/d/+%22%27%3Ba%26b%26cd+%60%7C+
++#send DEBUG Claiming url 'dl+archive:SHA256E-s173--db0a9680f8d15578de8e4a5b5c1e87f36d9372d6118fb24c1c60f390e71ad3c1.tar.gz#path=a/d/+%22%27%3Ba%26b%26cd+%60%7C+'
++#send CLAIMURL-SUCCESS
++#recv 
++
++### ['git', '-c', 'receive.autogc=0', '-c', 'gc.auto=0', 'annex', 'drop', '--debug', '--json', 'simple.txt']
+ send VERSION 1
+ recv PREPARE
+ send PREPARE-SUCCESS
+-recv CLAIMURL dl+archive:SHA256E-s172--70cf6dd95738e5d3672a7139a2785b0a979f0f7955d0f6da0d94cc03c84a63b7.tar.gz#path=a/d/+%22%27%3Ba%26b%26cd+%60%7C+
+-send DEBUG Claiming url 'dl+archive:SHA256E-s172--70cf6dd95738e5d3672a7139a2785b0a979f0f7955d0f6da0d94cc03c84a63b7.tar.gz#path=a/d/+%22%27%3Ba%26b%26cd+%60%7C+'
+-send CLAIMURL-SUCCESS
++recv CHECKPRESENT SHA256E-s3--a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3.txt
++send GETURLS SHA256E-s3--a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3.txt dl+archive:
++recv VALUE dl+archive:SHA256E-s173--db0a9680f8d15578de8e4a5b5c1e87f36d9372d6118fb24c1c60f390e71ad3c1.tar.gz#path=a/d/+%22%27%3Ba%26b%26cd+%60%7C+
++recv VALUE 
++send CHECKPRESENT-SUCCESS SHA256E-s3--a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3.txt
+ recv 
+-
+-### ['git', '-c', 'receive.autogc=0', '-c', 'gc.auto=0', 'annex', 'drop', '--debug', '--json', 'simple.txt']
+
+
+\"\"\"]]
+[our test](https://github.com/datalad/datalad/blob/master/datalad/customremotes/tests/test_archives.py#L86) verifies that annex refuses  to drop the content if we remove the dl+archive link for  the key, and now it fails
+"""]]

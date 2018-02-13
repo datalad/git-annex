@@ -127,8 +127,7 @@ fromRemotes repo = mapM construct remotepairs
   where
 	filterconfig f = filter f $ M.toList $ config repo
 	filterkeys f = filterconfig (\(k,_) -> f k)
-	remotepairs = filterkeys isremote
-	isremote k = "remote." `isPrefixOf` k && ".url" `isSuffixOf` k
+	remotepairs = filterkeys isRemoteKey
 	construct (k,v) = remoteNamedFromKey k $ fromRemoteLocation v repo
 
 {- Sets the name of a remote when constructing the Repo to represent it. -}
@@ -140,10 +139,7 @@ remoteNamed n constructor = do
 {- Sets the name of a remote based on the git config key, such as
  - "remote.foo.url". -}
 remoteNamedFromKey :: String -> IO Repo -> IO Repo
-remoteNamedFromKey k = remoteNamed basename
-  where
-	basename = intercalate "." $ 
-		reverse $ drop 1 $ reverse $ drop 1 $ splitc '.' k
+remoteNamedFromKey = remoteNamed . remoteKeyToRemoteName
 
 {- Constructs a new Repo for one of a Repo's remotes using a given
  - location (ie, an url). -}
@@ -233,7 +229,6 @@ newFrom l = Repo
 	{ location = l
 	, config = M.empty
 	, fullconfig = M.empty
-	, remotes = []
 	, remoteName = Nothing
 	, gitEnv = Nothing
 	, gitEnvOverridesGitDir = False

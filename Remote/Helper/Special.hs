@@ -107,7 +107,7 @@ fileRetriever :: (FilePath -> Key -> MeterUpdate -> Annex ()) -> Retriever
 fileRetriever a k m callback = do
 	f <- prepTmp k
 	a f k m
-	callback (FileContent f)
+	pruneTmpWorkDirBefore f (callback . FileContent)
 
 -- A Retriever that generates a lazy ByteString containing the Key's
 -- content, and passes it to a callback action which will fully consume it

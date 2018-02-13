@@ -13,8 +13,8 @@ import Data.Char
 import Common
 import Git
 import Git.Types
-import qualified Git.Construct
 import qualified Git.Command
+import qualified Git.Construct
 import Utility.UserInfo
 
 {- Returns a single git config setting, or a default value if not set. -}
@@ -89,12 +89,10 @@ hRead repo h = do
 store :: String -> Repo -> IO Repo
 store s repo = do
 	let c = parse s
-	repo' <- updateLocation $ repo
+	updateLocation $ repo
 		{ config = (M.map Prelude.head c) `M.union` config repo
 		, fullconfig = M.unionWith (++) c (fullconfig repo)
 		}
-	rs <- Git.Construct.fromRemotes repo'
-	return $ repo' { remotes = rs }
 
 {- Updates the location of a repo, based on its configuration.
  -

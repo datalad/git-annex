@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-01-10T17:24:04Z"
+ content="""
+@davicastro using --shared makes git-annex not trust the shared clone, 
+which is necessary to avoid situations that could result in data loss.
+The downside though, is that the lack of trust can change git-annex
+behavior in some situations.
+
+For example, normally you can run `git annex get myfile` and then `git
+annex drop myfile --from someremote` will remove it from the remote, since
+you now have a local copy. But, with the shared clone being untrusted, the
+drop will fail if it would be the only remaining copy of the file. In
+this situation, you would need to first `git annex copy myfile --to origin`
+or something like that before dropping.
+
+Of course, that copy would run fast and cheap since it only has to make a
+hardlink!
+"""]]

@@ -69,7 +69,7 @@ withNewSecretKey use = do
  -}
 getGCryptRemoteName :: UUID -> String -> Annex RemoteName
 getGCryptRemoteName u repoloc = do
-	tmpremote <- uniqueRemoteName "tmpgcryptremote" 0 <$> gitRepo
+	tmpremote <- uniqueRemoteName "tmpgcryptremote" 0 <$> Annex.getGitRemotes
 	void $ inRepo $ Git.Command.runBool
 		[ Param "remote"
 		, Param "add"

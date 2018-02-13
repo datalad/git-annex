@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 6.20171124
+Version: 6.20180112
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <id@joeyh.name>
@@ -62,6 +62,7 @@ Extra-Source-Files:
   doc/git-annex-enable-tor.mdwn
   doc/git-annex-examinekey.mdwn
   doc/git-annex-expire.mdwn
+  doc/git-annex-export.mdwn
   doc/git-annex-find.mdwn
   doc/git-annex-findref.mdwn
   doc/git-annex-fix.mdwn
@@ -78,6 +79,7 @@ Extra-Source-Files:
   doc/git-annex-info.mdwn
   doc/git-annex-init.mdwn
   doc/git-annex-initremote.mdwn
+  doc/git-annex-inprogress.mdwn
   doc/git-annex-list.mdwn
   doc/git-annex-lock.mdwn
   doc/git-annex-log.mdwn
@@ -276,9 +278,6 @@ Flag AndroidSplice
   Description: Building to get TH splices for Android
   Default: False
 
-Flag TestSuite
-  Description: Embed the test suite into git-annex
-
 Flag TorrentParser
   Description: Use haskell torrent library to parse torrent files
 
@@ -303,6 +302,11 @@ source-repository head
   type: git
   location: git://git-annex.branchable.com/
 
+custom-setup
+  Setup-Depends: base (>= 4.6), hslogger, split, unix-compat, process,
+    filepath, exceptions, bytestring, directory, IfElse, data-default,
+    utf8-string, Cabal
+
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends:
@@ -310,7 +314,6 @@ Executable git-annex
    optparse-applicative (>= 0.11.0), 
    containers (>= 0.5.0.0),
    exceptions (>= 0.6),
-   QuickCheck (>= 2.1),
    stm (>= 2.3),
    mtl (>= 2),
    uuid (>= 1.2.6),
@@ -347,6 +350,7 @@ Executable git-annex
    persistent,
    persistent-template,
    aeson,
+   tagsoup,
    unordered-containers,
    feed (>= 0.3.9),
    regex-tdfa,
@@ -357,7 +361,12 @@ Executable git-annex
    crypto-api,
    cryptonite,
    memory,
-   split
+   split,
+   QuickCheck (>= 2.1),
+   tasty (>= 0.7),
+   tasty-hunit,
+   tasty-quickcheck,
+   tasty-rerun
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs
   Extensions: PackageImports, LambdaCase
@@ -389,10 +398,6 @@ Executable git-annex
     Build-Depends: unix
     if impl(ghc <= 7.6.3)
       Other-Modules: Utility.Touch.Old
-
-  if flag(TestSuite)
-    Build-Depends: tasty (>= 0.7), tasty-hunit, tasty-quickcheck, tasty-rerun
-    CPP-Options: -DWITH_TESTSUITE
 
   if flag(S3)
     Build-Depends: conduit, conduit-extra, aws (>= 0.9.2)
@@ -447,7 +452,6 @@ Executable git-annex
   if flag(Webapp)
     Build-Depends:
      yesod (>= 1.2.6), 
-     yesod-default (>= 1.2.0),
      yesod-static (>= 1.2.4),
      yesod-form (>= 1.3.15),
      yesod-core (>= 1.2.19),
@@ -530,7 +534,6 @@ Executable git-annex
     Annex.Path
     Annex.Perms
     Annex.Queue
-    Annex.Quvi
     Annex.ReplaceFile
     Annex.SpecialRemote
     Annex.Ssh
@@ -546,6 +549,7 @@ Executable git-annex
     Annex.View.ViewedFile
     Annex.Wanted
     Annex.WorkTree
+    Annex.YoutubeDl
     Assistant
     Assistant.Alert
     Assistant.Alert.Utility
@@ -662,6 +666,7 @@ Executable git-annex
     Build.TestConfig
     Build.Version
     BuildInfo
+    BuildFlags
     CmdLine
     CmdLine.Action
     CmdLine.Batch
@@ -719,6 +724,7 @@ Executable git-annex
     Command.Info
     Command.Init
     Command.InitRemote
+    Command.Inprogress
     Command.List
     Command.Lock
     Command.LockContent
@@ -854,6 +860,7 @@ Executable git-annex
     Logs.Difference
     Logs.Difference.Pure
     Logs.Export
+    Logs.File
     Logs.FsckResults
     Logs.Group
     Logs.Line
@@ -987,10 +994,13 @@ Executable git-annex
     Utility.DirWatcher
     Utility.DirWatcher.Types
     Utility.Directory
+    Utility.Directory.Stream
     Utility.DiskFree
     Utility.Dot
     Utility.DottedVersion
     Utility.Env
+    Utility.Env.Basic
+    Utility.Env.Set
     Utility.Exception
     Utility.ExternalSHA
     Utility.FileMode
@@ -1001,6 +1011,7 @@ Executable git-annex
     Utility.Glob
     Utility.Gpg
     Utility.Hash
+    Utility.HtmlDetect
     Utility.HumanNumber
     Utility.HumanTime
     Utility.InodeCache
@@ -1028,11 +1039,12 @@ Executable git-annex
     Utility.Parallel
     Utility.PartialPrelude
     Utility.Path
+    Utility.Path.Max
     Utility.Percentage
     Utility.Process
     Utility.Process.Shim
+    Utility.Process.Transcript
     Utility.QuickCheck
-    Utility.Quvi
     Utility.Rsync
     Utility.SRV
     Utility.SafeCommand
@@ -1050,6 +1062,7 @@ Executable git-annex
     Utility.ThreadLock
     Utility.ThreadScheduler
     Utility.Tmp
+    Utility.Tmp.Dir
     Utility.Tor
     Utility.Touch
     Utility.Tuple

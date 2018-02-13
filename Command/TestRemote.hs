@@ -58,7 +58,7 @@ seek o = commandAction $ start (fromInteger $ sizeOption o) (testRemote o)
 
 start :: Int -> RemoteName -> CommandStart
 start basesz name = do
-	showStart "testremote" name
+	showStart' "testremote" (Just name)
 	fast <- Annex.getState Annex.fast
 	r <- either giveup disableExportTree =<< Remote.byName' name
 	rs <- catMaybes <$> mapM (adjustChunkSize r) (chunkSizes basesz fast)

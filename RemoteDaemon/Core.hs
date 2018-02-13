@@ -17,6 +17,7 @@ import RemoteDaemon.Transport
 import qualified Git
 import qualified Git.Types as Git
 import qualified Git.CurrentRepo
+import qualified Git.Construct
 import Utility.SimpleProtocol
 import Utility.ThreadScheduler
 import Config
@@ -137,8 +138,9 @@ runController ichan ochan = do
 -- Generates a map with a transport for each supported remote in the git repo,
 -- except those that have annex.sync = false
 genRemoteMap :: TransportHandle -> TChan Emitted -> IO RemoteMap
-genRemoteMap h@(TransportHandle (LocalRepo g) _) ochan = 
-	M.fromList . catMaybes <$> mapM gen (Git.remotes g)
+genRemoteMap h@(TransportHandle (LocalRepo g) _) ochan = do
+	rs <- Git.Construct.fromRemotes g
+	M.fromList . catMaybes <$> mapM gen rs
   where
 	gen r = do
 		gc <- atomically $ extractRemoteGitConfig g (Git.repoDescribe r)

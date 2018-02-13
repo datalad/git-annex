@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2017-12-11T05:27:15Z"
+ content="""
+ok, tested with 6.20171208+gitg01f78e877-1~ndall+1 -- --fast mode issue is indeed resolved.  Thanks!
+Failing tests now only relate to our special remote (datalad-archives) which interfaces urls, so I thought it might relate... I will try to distill more info tomorrow unless you beat me to it figuring out where that regression could be (upon quick look didn't spot any yt: anywhere, so probably another issue) 
+"""]]

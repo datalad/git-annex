@@ -1,4 +1,4 @@
-{- Tests the system and generates Build.SysConfig.hs. -}
+{- Tests the system and generates SysConfig. -}
 
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
@@ -42,12 +42,11 @@ instance Show Config where
 		valuetype (MaybeBoolConfig _) = "Maybe Bool"
 
 writeSysConfig :: [Config] -> IO ()
-writeSysConfig config = writeFile "Build/SysConfig.hs" body
+writeSysConfig config = writeFile "Build/SysConfig" body
   where
 	body = unlines $ header ++ map show config ++ footer
 	header = [
 		  "{- Automatically generated. -}"
-		, "module Build.SysConfig where"
 		, ""
 		]
 	footer = []

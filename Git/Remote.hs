@@ -20,6 +20,15 @@ import Network.URI
 import Git.FilePath
 #endif
 
+{- Is a git config key one that specifies the location of a remote? -}
+isRemoteKey :: String -> Bool
+isRemoteKey k = "remote." `isPrefixOf` k && ".url" `isSuffixOf` k
+
+{- Get a remote's name from the config key that specifies its location. -}
+remoteKeyToRemoteName :: String -> RemoteName
+remoteKeyToRemoteName k = intercalate "." $
+	reverse $ drop 1 $ reverse $ drop 1 $ splitc '.' k
+
 {- Construct a legal git remote name out of an arbitrary input string.
  -
  - There seems to be no formal definition of this in the git source,

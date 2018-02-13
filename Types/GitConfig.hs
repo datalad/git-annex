@@ -67,7 +67,7 @@ data GitConfig = GitConfig
 	, annexSyncContent :: Configurable Bool
 	, annexDebug :: Bool
 	, annexWebOptions :: [String]
-	, annexQuviOptions :: [String]
+	, annexYoutubeDlOptions :: [String]
 	, annexAriaTorrentOptions :: [String]
 	, annexWebDownloadCommand :: Maybe String
 	, annexCrippledFileSystem :: Bool
@@ -127,7 +127,7 @@ extractGitConfig r = GitConfig
 		getmaybebool (annex "synccontent")
 	, annexDebug = getbool (annex "debug") False
 	, annexWebOptions = getwords (annex "web-options")
-	, annexQuviOptions = getwords (annex "quvi-options")
+	, annexYoutubeDlOptions = getwords (annex "youtube-dl-options")
 	, annexAriaTorrentOptions = getwords (annex "aria-torrent-options")
 	, annexWebDownloadCommand = getmaybe (annex "web-download-command")
 	, annexCrippledFileSystem = getbool (annex "crippledfilesystem") False
@@ -199,6 +199,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexPush :: Bool
 	, remoteAnnexReadOnly :: Bool
 	, remoteAnnexVerify :: Bool
+	, remoteAnnexCheckUUID :: Bool
 	, remoteAnnexExportTracking :: Maybe Git.Ref
 	, remoteAnnexTrustLevel :: Maybe String
 	, remoteAnnexStartCommand :: Maybe String
@@ -247,6 +248,7 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexPull = getbool "pull" True
 		, remoteAnnexPush = getbool "push" True
 		, remoteAnnexReadOnly = getbool "readonly" False
+		, remoteAnnexCheckUUID = getbool "checkuuid" True
 		, remoteAnnexVerify = getbool "verify" True
 		, remoteAnnexExportTracking = Git.Ref
 			<$> notempty (getmaybe "export-tracking")

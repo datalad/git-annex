@@ -1,6 +1,6 @@
 {- git-annex command-line option parsing
  -
- - Copyright 2010-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,10 +10,12 @@ module CmdLine.GitAnnex.Options where
 import Options.Applicative
 import Options.Applicative.Builder.Internal
 import Control.Concurrent
+import qualified Data.Map as M
 
 import Annex.Common
 import qualified Git.Config
 import qualified Git.Construct
+import Git.Remote
 import Git.Types
 import Types.Key
 import Types.TrustLevel
@@ -348,9 +350,10 @@ completeRemotes :: HasCompleter f => Mod f a
 completeRemotes = completer $ mkCompleter $ \input -> do
 	r <- maybe (pure Nothing) (Just <$$> Git.Config.read)
 		=<< Git.Construct.fromCwd
-	return $ filter (input `isPrefixOf`) 
-		(maybe [] (mapMaybe remoteName . remotes) r)
-		
+	return $ filter (input `isPrefixOf`) $
+		map remoteKeyToRemoteName $
+			filter isRemoteKey $
+				maybe [] (M.keys . config) r
 		
 completeBackends :: HasCompleter f => Mod f a
 completeBackends = completeWith $

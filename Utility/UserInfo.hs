@@ -14,7 +14,7 @@ module Utility.UserInfo (
 	myUserGecos,
 ) where
 
-import Utility.Env
+import Utility.Env.Basic
 import Utility.Exception
 #ifndef mingw32_HOST_OS
 import Utility.Data

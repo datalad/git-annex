@@ -25,7 +25,7 @@ seek = withWords start
 
 start :: [String] -> CommandStart
 start ws = do
-	showStart "reinit" s
+	showStart' "reinit" (Just s)
 	next $ perform s
   where
 	s = unwords ws
@@ -36,6 +36,6 @@ perform s = do
 		then return $ toUUID s
 		else Remote.nameToUUID s
 	storeUUID u
-	initialize' Nothing
+	initialize' (AutoInit False) Nothing
 	Annex.SpecialRemote.autoEnable
 	next $ return True

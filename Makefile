@@ -38,7 +38,7 @@ git-annex: tmp/configure-stamp
 # Work around https://github.com/haskell/cabal/issues/3524
 # when not linked dynamically to haskell libs
 	@if ! ldd git-annex | grep -q libHS; then \
-		chrpath -d git-annex || echo "** unable to chrpath git-annex; it will be a little bit slower than necessary"; \
+		chrpath -d git-annex || echo "** warning: unable to chrpath git-annex; it will be a little bit slower than necessary"; \
 	fi
 
 git-annex-shell: git-annex
@@ -113,7 +113,7 @@ docs: mans
 clean:
 	if [ "$(BUILDER)" != ./Setup ] && [ "$(BUILDER)" != cabal ]; then $(BUILDER) clean; fi
 	rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \
-		doc/.ikiwiki html dist tags Build/SysConfig.hs \
+		doc/.ikiwiki html dist tags Build/SysConfig \
 		Setup Build/InstallDesktopFile Build/EvilSplicer \
 		Build/Standalone Build/OSXMkLibs Build/LinuxMkLibs \
 		Build/DistributionUpdate Build/BuildVersion Build/MakeMans \
@@ -299,12 +299,12 @@ dist/caballog: git-annex.cabal
 # TODO should be possible to derive this from caballog.
 hdevtools:
 	hdevtools --stop-server || true
-	hdevtools check git-annex.hs -g -cpp -g -i -g -idist/build/git-annex/git-annex-tmp -g -i. -g -idist/build/autogen -g -Idist/build/autogen -g -Idist/build/git-annex/git-annex-tmp -g -IUtility -g -DWITH_TESTSUITE -g -DWITH_S3 -g -DWITH_ASSISTANT -g -DWITH_INOTIFY -g -DWITH_DBUS -g -DWITH_PAIRING -g -g -optP-include -g -optPdist/build/autogen/cabal_macros.h -g -odir -g dist/build/git-annex/git-annex-tmp -g -hidir -g dist/build/git-annex/git-annex-tmp -g -stubdir -g dist/build/git-annex/git-annex-tmp -g -threaded -g -Wall -g -XHaskell98 -g -XPackageImports
+	hdevtools check git-annex.hs -g -cpp -g -i -g -idist/build/git-annex/git-annex-tmp -g -i. -g -idist/build/autogen -g -Idist/build/autogen -g -Idist/build/git-annex/git-annex-tmp -g -IUtility -g -DWITH_S3 -g -DWITH_ASSISTANT -g -DWITH_INOTIFY -g -DWITH_DBUS -g -DWITH_PAIRING -g -g -optP-include -g -optPdist/build/autogen/cabal_macros.h -g -odir -g dist/build/git-annex/git-annex-tmp -g -hidir -g dist/build/git-annex/git-annex-tmp -g -stubdir -g dist/build/git-annex/git-annex-tmp -g -threaded -g -Wall -g -XHaskell98 -g -XPackageImports -g -XLambdaCase
 
 distributionupdate:
 	git pull
 	cabal configure
-	ghc -Wall -fno-warn-tabs --make Build/DistributionUpdate -XPackageImports -optP-include -optPdist/build/autogen/cabal_macros.h
+	ghc -Wall -fno-warn-tabs --make Build/DistributionUpdate -XLambdaCase -XPackageImports -optP-include -optPdist/build/autogen/cabal_macros.h
 	./Build/DistributionUpdate
 
 .PHONY: git-annex git-union-merge tags

@@ -1,0 +1,53 @@
+# NAME
+
+git-annex inprogress - access files while they're being downloaded
+
+# SYNOPSIS
+
+git annex inprogress `[path ...]`
+
+# DESCRIPTION
+
+This command allows accessing the content of an annexed file while
+it is still being downloaded. It outputs to standard output the
+name of the temporary file that is being used to download the specified
+annexed file.
+
+This can sometimes be used to stream a file before it's been fully
+downloaded, for example:
+
+	git annex get video.mpeg &
+	vlc $(git annex inprogress video.mpeg)
+
+Of course if the file is downloading too slowly, the media player will
+reach the end too soon and not show the whole thing. And of course, only
+some file formats can be usefully streamed in this way.
+
+# OPTIONS
+
+* file matching options
+ 
+  The [[git-annex-matching-options]](1)
+  can be used to specify files to access.
+
+* `--all`
+
+  Rather than specifying a filename or path, this option can be
+  used to access all files that are currently being downloaded.
+
+# EXIT STATUS
+
+If any of the requested files are not currently being downloaded,
+the exit status will be 1.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-get]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -182,7 +182,7 @@ gCryptSetup _ mu _ c gc = go $ M.lookup "gitrepo" c
 		(c', _encsetup) <- encryptionSetup c gc
 
 		let url = Git.GCrypt.urlPrefix ++ gitrepo
-		rs <- fromRepo Git.remotes
+		rs <- Annex.getGitRemotes
 		case filter (\r -> Git.remoteName r == Just remotename) rs of
 			[] -> inRepo $ Git.Command.run 
 				[ Param "remote", Param "add"

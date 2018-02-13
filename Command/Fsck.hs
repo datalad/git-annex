@@ -103,15 +103,13 @@ checkDeadRepo u =
 		earlyWarning "Warning: Fscking a repository that is currently marked as dead."
 
 start :: Maybe Remote -> Incremental -> FilePath -> Key -> CommandStart
-start from inc file key = do
-	v <- Backend.getBackend file key
-	case v of
-		Nothing -> stop
-		Just backend -> do
-			numcopies <- getFileNumCopies file
-			case from of
-				Nothing -> go $ perform key file backend numcopies
-				Just r -> go $ performRemote key afile backend numcopies r
+start from inc file key = Backend.getBackend file key >>= \case
+	Nothing -> stop
+	Just backend -> do
+		numcopies <- getFileNumCopies file
+		case from of
+			Nothing -> go $ perform key file backend numcopies
+			Just r -> go $ performRemote key afile backend numcopies r
   where
 	go = runFsck inc (mkActionItem afile) key
 	afile = AssociatedFile (Just file)
@@ -142,9 +140,8 @@ performRemote key afile backend numcopies remote =
 	dispatch (Left err) = do
 		showNote err
 		return False
-	dispatch (Right True) = withtmp $ \tmpfile -> do
-		r <- getfile tmpfile
-		case r of
+	dispatch (Right True) = withtmp $ \tmpfile ->
+		getfile tmpfile >>= \case
 			Nothing -> go True Nothing
 			Just True -> go True (Just tmpfile)
 			Just False -> do
@@ -536,7 +533,7 @@ badContentRemote remote localcopy key = do
 runFsck :: Incremental -> ActionItem -> Key -> Annex Bool -> CommandStart
 runFsck inc ai key a = ifM (needFsck inc key)
 	( do
-		showStart' "fsck" key ai
+		showStartKey "fsck" key ai
 		next $ do
 			ok <- a
 			when ok $
@@ -566,15 +563,15 @@ recordStartTime :: UUID -> Annex ()
 recordStartTime u = do
 	f <- fromRepo (gitAnnexFsckState u)
 	createAnnexDirectory $ parentDir f
-	liftIO $ do
-		nukeFile f
-		withFile f WriteMode $ \h -> do
+	liftIO $ nukeFile f
+	liftIO $ withFile f WriteMode $ \h -> do
 #ifndef mingw32_HOST_OS
-			t <- modificationTime <$> getFileStatus f
+		t <- modificationTime <$> getFileStatus f
 #else
-			t <- getPOSIXTime
+		t <- getPOSIXTime
 #endif
-			hPutStr h $ showTime $ realToFrac t
+		hPutStr h $ showTime $ realToFrac t
+	setAnnexFilePerm f
   where
 	showTime :: POSIXTime -> String
 	showTime = show

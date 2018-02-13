@@ -23,8 +23,8 @@ seek = withNothing start
 
 start :: CommandStart
 start = do
-	showStart "upgrade" "."
+	showStart' "upgrade" Nothing
 	whenM (isNothing <$> getVersion) $ do
-		initialize Nothing Nothing
+		initialize (AutoInit False) Nothing Nothing
 	r <- upgrade False latestVersion
 	next $ next $ return r

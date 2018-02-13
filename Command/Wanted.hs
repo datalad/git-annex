@@ -35,7 +35,7 @@ cmd' name desc getter setter = noMessages $
 	start (rname:[]) = go rname (performGet getter)
 	start (rname:expr:[]) = go rname $ \uuid -> do
 		allowMessages
-		showStart name rname
+		showStart' name (Just rname)
 		performSet setter expr uuid
 	start _ = giveup "Specify a repository."
 		

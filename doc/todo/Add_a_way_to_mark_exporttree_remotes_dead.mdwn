@@ -6,3 +6,5 @@ There is currently no way to get rid of an exporttree remote, because the trust 
       This remote's trust level is overridden to untrusted.
     ok
     (recording state in git...)
+
+> Fun bug! I've fixed it so that will work. [[done]] --[[Joey]]

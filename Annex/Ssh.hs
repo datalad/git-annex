@@ -25,7 +25,7 @@ module Annex.Ssh (
 
 import Annex.Common
 import Annex.LockFile
-import qualified Build.SysConfig as SysConfig
+import qualified BuildInfo
 import qualified Annex
 import qualified Git
 import qualified Git.Url
@@ -34,6 +34,7 @@ import Annex.Path
 import Utility.Env
 import Utility.FileSystemEncoding
 import Utility.Hash
+import Utility.Process.Transcript
 import Types.CleanupActions
 import Types.Concurrency
 import Git.Env
@@ -101,9 +102,8 @@ sshCachingInfo :: (SshHost, Maybe Integer) -> Annex (Maybe FilePath, [CommandPar
 sshCachingInfo (host, port) = go =<< sshCacheDir
   where
 	go Nothing = return (Nothing, [])
-	go (Just dir) = do
-		r <- liftIO $ bestSocketPath $ dir </> hostport2socket host port
-		return $ case r of
+	go (Just dir) =
+		liftIO (bestSocketPath $ dir </> hostport2socket host port) >>= return . \case
 			Nothing -> (Nothing, [])
 			Just socketfile -> (Just socketfile, sshConnectionCachingParams socketfile)
 
@@ -139,7 +139,7 @@ sshConnectionCachingParams socketfile =
  - a different filesystem. -}
 sshCacheDir :: Annex (Maybe FilePath)
 sshCacheDir
-	| SysConfig.sshconnectioncaching = 
+	| BuildInfo.sshconnectioncaching = 
 		ifM (fromMaybe True . annexSshCaching <$> Annex.getGitConfig)
 			( ifM crippledFileSystem
 				( maybe (return Nothing) usetmpdir =<< gettmpdir
@@ -190,8 +190,7 @@ prepSocket socketfile gc sshhost sshparams = do
 	liftIO $ createDirectoryIfMissing True $ parentDir socketfile
 	let socketlock = socket2lock socketfile
 
-	c <- Annex.getState Annex.concurrency
-	case c of
+	Annex.getState Annex.concurrency >>= \case
 		Concurrent {}
 			| annexUUID (remoteGitConfig gc) /= NoUUID ->
 				makeconnection socketlock
@@ -267,8 +266,7 @@ sshCleanup = mapM_ cleanup =<< enumSocketFiles
 		let lockfile = socket2lock socketfile
 		unlockFile lockfile
 		mode <- annexFileMode
-		v <- noUmask mode $ tryLockExclusive (Just mode) lockfile
-		case v of
+		noUmask mode (tryLockExclusive (Just mode) lockfile) >>= \case
 			Nothing -> noop
 			Just lck -> do
 				forceStopSsh socketfile

@@ -81,8 +81,7 @@ autoEnable = do
 			(Just name, Right t) -> whenM (canenable u) $ do
 				showSideAction $ "Auto enabling special remote " ++ name
 				dummycfg <- liftIO dummyRemoteGitConfig
-				res <- tryNonAsync $ setup t (Enable c) (Just u) Nothing c dummycfg
-				case res of
+				tryNonAsync (setup t (Enable c) (Just u) Nothing c dummycfg) >>= \case
 					Left e -> warning (show e)
 					Right _ -> return ()
 			_ -> return ()

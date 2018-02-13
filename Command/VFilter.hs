@@ -21,7 +21,7 @@ seek = withWords start
 
 start :: [String] -> CommandStart
 start params = do
-	showStart "vfilter" ""
+	showStart' "vfilter" Nothing
 	withCurrentView $ \view -> do
 		let view' = filterView view $
 			map parseViewParam $ reverse params

@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-12-31T16:41:06Z"
+ content="""
+I can only give the same anwser I gave in
+<https://github.com/conda-forge/staged-recipes/pull/4157>,
+that it seems to be using the wrong version of the iconv library, and that
+the `LIBRARY_PATH`, `LDFLAGS` etc settings your using seem likely to be
+causing the problem.
+
+I mean, you're simply using haskell's stack tool, you've not started to
+build git-annex at all at this point. If haskell's stack is really this
+broken on OSX, I'd think that a lot of people would have noticed. But if
+you can reproduce the problem without any strange environment variables
+being set, why not file a bug report at <https://github.com/commercialhaskell/stack/issues/new>.
+"""]]

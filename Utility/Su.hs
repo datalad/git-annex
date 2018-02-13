@@ -13,6 +13,7 @@ import Common
 
 #ifndef mingw32_HOST_OS
 import Utility.Env
+import System.Posix.IO
 import System.Posix.Terminal
 #endif
 

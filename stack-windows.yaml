@@ -6,7 +6,6 @@ flags:
     pairing: true
     network-uri: true
     s3: true
-    testsuite: true
     webdav: true
     torrentparser: true
     webapp: true
@@ -16,24 +15,15 @@ flags:
     androidsplice: false
 packages:
 - '.'
-- location:
-    git: https://github.com/joeyh/http-client
-    commit: dbaee53b5a5cfe2dd0f971837c61eccfce05c729
-  subdirs:
-  - http-client
-  extra-dep: true
-- location:
-    git: https://github.com/joeyh/unix-compat
-    commit: 806b33c98fb9eb31c71d384a2456e0402e20bce9
-  extra-dep: true
 extra-deps:
 - aws-0.17.1
 - bloomfilter-2.0.1.0
 - torrent-10000.1.1
-- yesod-default-1.2.0
 - Win32-2.6.1.0
 - directory-1.3.1.5
 - process-1.6.2.0
+- http-client-0.5.7.1
+- unix-compat-0.5.0.1
 allow-newer: true
 explicit-setup-deps:
   git-annex: true

@@ -31,7 +31,7 @@ start = ifM versionSupportsDirectMode
 
 perform :: CommandPerform
 perform = do
-	showStart "commit" ""
+	showStart' "commit" Nothing
 	showOutput
 	_ <- inRepo $ Git.Branch.commitCommand Git.Branch.ManualCommit
 		[ Param "-a"
@@ -47,13 +47,11 @@ perform = do
 	next cleanup
   where
 	go = whenAnnexed $ \f k -> do
-		r <- toDirectGen k f
-		case r of
+		toDirectGen k f >>= \case
 			Nothing -> noop
 			Just a -> do
 				showStart "direct" f
-				r' <- tryNonAsync a
-				case r' of
+				tryNonAsync a >>= \case
 					Left e -> warnlocked e
 					Right _ -> showEndOk
 		return Nothing
@@ -65,6 +63,6 @@ perform = do
 
 cleanup :: CommandCleanup
 cleanup = do
-	showStart "direct" ""
+	showStart' "direct" Nothing
 	setDirect True
 	return True

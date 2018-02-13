@@ -35,9 +35,8 @@ import qualified Data.Text as T
  - Named threads are run by a management thread, so if they crash
  - an alert is displayed, allowing the thread to be restarted. -}
 startNamedThread :: UrlRenderer -> NamedThread -> Assistant ()
-startNamedThread urlrenderer (NamedThread afterstartupsanitycheck name a) = do
-	m <- startedThreads <$> getDaemonStatus
-	case M.lookup name m of
+startNamedThread urlrenderer (NamedThread afterstartupsanitycheck name a) =
+	M.lookup name . startedThreads <$> getDaemonStatus >>= \case
 		Nothing -> start
 		Just (aid, _) -> do
 			r <- liftIO (E.try (poll aid) :: IO (Either E.SomeException (Maybe (Either E.SomeException ()))))
@@ -65,24 +64,22 @@ startNamedThread urlrenderer (NamedThread afterstartupsanitycheck name a) = do
 			a
 		void $ forkIO $ manager d aid
 		return aid
-	manager d aid = do
-		r <- E.try (wait aid) :: IO (Either E.SomeException ())
-		case r of
-			Right _ -> noop
-			Left e -> do
-				let msg = unwords
-					[ fromThreadName $ threadName d
-					, "crashed:", show e
-					]
-				hPutStrLn stderr msg
+	manager d aid = (E.try (wait aid) :: IO (Either E.SomeException ())) >>= \case
+		Right _ -> noop
+		Left e -> do
+			let msg = unwords
+				[ fromThreadName $ threadName d
+				, "crashed:", show e
+				]
+			hPutStrLn stderr msg
 #ifdef WITH_WEBAPP
-				button <- runAssistant d $ mkAlertButton True
-					(T.pack "Restart Thread")
-					urlrenderer 
-					(RestartThreadR name)
-				runAssistant d $ void $ addAlert $
-					(warningAlert (fromThreadName name) msg)
-						{ alertButtons = [button] }
+			button <- runAssistant d $ mkAlertButton True
+				(T.pack "Restart Thread")
+				urlrenderer 
+				(RestartThreadR name)
+			runAssistant d $ void $ addAlert $
+				(warningAlert (fromThreadName name) msg)
+					{ alertButtons = [button] }
 #endif
 
 namedThreadId :: NamedThread -> Assistant (Maybe ThreadId)

@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2017-12-31T16:25:07Z"
+ content="""
+It uses whatever youtube-dl you have in PATH.
+
+I was not aware of the changed behavior when adding an url that's already
+locally present. I've opened [[bugs/addurl_youtube-dl_behavior_change]]
+to remember to look into it.
+
+The reason it only downloads one video from a playlist or channel is that
+git-annex needs to associate an url with the annexed file, so it can later
+download that single file when git-annex get is used, and there's no clear
+way to associate an url with a particular file that youtube-dl downloaded
+from a playlist or channel or whatever. [[tips/downloading_podcasts]] has a
+way to use `git annex importfeed` with a youtube playlist though.
+"""]]

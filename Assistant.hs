@@ -48,7 +48,7 @@ import Assistant.Types.UrlRenderer
 import qualified Utility.Daemon
 import Utility.ThreadScheduler
 import Utility.HumanTime
-import qualified Build.SysConfig as SysConfig
+import qualified BuildInfo
 import Annex.Perms
 import Utility.LogFile
 #ifdef mingw32_HOST_OS
@@ -135,7 +135,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 #else
 	go _webappwaiter = do
 #endif
-		notice ["starting", desc, "version", SysConfig.packageversion]
+		notice ["starting", desc, "version", BuildInfo.packageversion]
 		urlrenderer <- liftIO newUrlRenderer
 #ifdef WITH_WEBAPP
 		let webappthread = [ assist $ webAppThread d urlrenderer False cannotrun Nothing listenhost webappwaiter ]

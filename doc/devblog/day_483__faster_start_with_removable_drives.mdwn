@@ -1,0 +1,27 @@
+git-annex does a little bit of work at startup to learn about the git
+repository it's running in. That's been optimised some before, but
+not entirely eliminated; it's just too useful to have that information
+always available inside git-annex. But it turned out that it was doing more work
+than needed for many commands, by checking the git config of local remotes.
+Thas caused unncessary spin up of removable drives, or automount timeouts,
+or generally more work than needed when running commands like `git annex
+find` and even tab completing git-annex. That's fixed now, so it
+avoids checking the git config of remotes except when running commands that
+access some remote.
+
+There's also a new config setting, `remote.<name>.annex-checkuuid` that can
+be set to false to defer checking the uuid of local repositories until
+git-annex actually uses them. That can avoid even more spinup/automounts,
+but that config prevents git-annex from transparently handling the case
+where different removable drives get mounted to the same place at different
+times.
+
+Speaking of speed, I benchmarked linux kernel mitigation for the meltdown
+attack making `git status` 5% slower from a warm cache. It did not
+slow down `git annex find` or `git annex find --in remote` enough to be
+measured by my benchmark. I expect that git-annex commands that transfer
+data are bottlenecked on IO and won't be slowed down appreciably by the
+meltdown mitigation either.
+
+Today's work was sponsored by Jake Vosloo on
+[Patreon](https://patreon.com/joeyh/).

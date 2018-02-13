@@ -53,7 +53,7 @@ start remotemap file key = startKeys remotemap key (mkActionItem afile)
 
 startKeys :: M.Map UUID Remote -> Key -> ActionItem -> CommandStart
 startKeys remotemap key ai = do
-	showStart' "whereis" key ai
+	showStartKey "whereis" key ai
 	next $ perform remotemap key
 
 perform :: M.Map UUID Remote -> Key -> CommandPerform

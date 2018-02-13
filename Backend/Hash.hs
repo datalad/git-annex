@@ -18,7 +18,7 @@ import Types.KeySource
 import Utility.Hash
 import Utility.ExternalSHA
 
-import qualified Build.SysConfig as SysConfig
+import qualified BuildInfo
 import qualified Data.ByteString.Lazy as L
 import Data.Char
 
@@ -176,9 +176,8 @@ hashFile hash file filesize = go hash
 	
 	usehasher hashsize@(HashSize sz) = case shaHasher hashsize filesize of
 		Left sha -> use sha
-		Right (external, internal) -> do
-			v <- liftIO $ externalSHA external sz file
-			case v of
+		Right (external, internal) ->
+			liftIO (externalSHA external sz file) >>= \case
 				Right r -> return r
 				Left e -> do
 					warning e
@@ -188,11 +187,11 @@ hashFile hash file filesize = go hash
 
 shaHasher :: HashSize -> Integer -> Either (L.ByteString -> String) (String, L.ByteString -> String)
 shaHasher (HashSize hashsize) filesize
-	| hashsize == 1 = use SysConfig.sha1 sha1
-	| hashsize == 256 = use SysConfig.sha256 sha2_256
-	| hashsize == 224 = use SysConfig.sha224 sha2_224
-	| hashsize == 384 = use SysConfig.sha384 sha2_384
-	| hashsize == 512 = use SysConfig.sha512 sha2_512
+	| hashsize == 1 = use BuildInfo.sha1 sha1
+	| hashsize == 256 = use BuildInfo.sha256 sha2_256
+	| hashsize == 224 = use BuildInfo.sha224 sha2_224
+	| hashsize == 384 = use BuildInfo.sha384 sha2_384
+	| hashsize == 512 = use BuildInfo.sha512 sha2_512
 	| otherwise = error $ "unsupported SHA size " ++ show hashsize
   where
 	use Nothing hasher = Left $ usehasher hasher

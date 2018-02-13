@@ -461,6 +461,12 @@ subdirectories).
 
   See [[git-annex-map]](1) for details.
 
+* `inprogress`
+
+  Access files while they're being downloaded.
+
+  See [[git-annex-inprogress]](1) for details.
+
 # METADATA COMMANDS
 
 * `metadata [path ...]`
@@ -1228,6 +1234,18 @@ Here are all the supported configuration settings.
 
   git-annex caches UUIDs of remote repositories here.
 
+- `remote.<name>.annex-checkuuid`
+
+  This only affects remotes that have their url pointing to a directory on
+  the same system. git-annex normally checks the uuid of such
+  remotes each time it's run, which lets it transparently deal with
+  different drives being mounted to the location at different times.
+
+  Setting annex-checkuuid to false will prevent it from checking the uuid 
+  at startup (although the uuid is still verified before making any
+  changes to the remote repository). This may be useful to set to prevent
+  unncessary spin-up or automounting of a drive.
+
 * `remote.<name>.annex-trustlevel`
 
   Configures a local trust level for the remote. This overrides the value
@@ -1315,10 +1333,16 @@ Here are all the supported configuration settings.
   Options to pass when running wget or curl.
   For example, to force IPv4 only, set it to "-4"
 
-* `annex.quvi-options`
+* `annex.youtube-dl-options`
 
-  Options to pass to quvi when using it to find the url to download for a
-  video.
+  Options to pass to youtube-dl when using it to find the url to download
+  for a video.
+
+  Some options may break git-annex's integration with youtube-dl. For
+  example, the --output option could cause it to store files somewhere
+  git-annex won't find them. Avoid setting here or in the youtube-dl config
+  file any options that cause youtube-dl to download more than one file,
+  or to store the file anywhere other than the current working directory.
 
 * `annex.aria-torrent-options`
 

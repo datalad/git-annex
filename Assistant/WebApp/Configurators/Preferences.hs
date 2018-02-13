@@ -21,7 +21,7 @@ import Annex.NumCopies
 import Utility.DataUnits
 import Git.Config
 import Types.Distribution
-import qualified Build.SysConfig
+import qualified BuildInfo
 
 import qualified Data.Text as T
 
@@ -58,7 +58,7 @@ prefsAForm d = PrefsForm
 		, ("disabled", NoAutoUpgrade)
 		]
 	autoUpgradeLabel
-		| isJust Build.SysConfig.upgradelocation = "Auto upgrade"
+		| isJust BuildInfo.upgradelocation = "Auto upgrade"
 		| otherwise = "Auto restart on upgrade"
 
 	positiveIntField = check isPositive intField

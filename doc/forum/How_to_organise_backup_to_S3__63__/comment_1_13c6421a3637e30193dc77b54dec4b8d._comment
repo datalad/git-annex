@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-12-05T17:30:31Z"
+ content="""
+You can use any git addon that allows git repositories to be pushed to S3
+to store your git repository there, and then everything is on S3. 
+
+Or yes, you can push the git repository to any other git hosting provider
+you want to, to back it up.
+"""]]

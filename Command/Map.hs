@@ -27,6 +27,9 @@ import qualified Utility.Dot as Dot
 -- a link from the first repository to the second (its remote)
 data Link = Link Git.Repo Git.Repo
 
+-- a repo and its remotes
+type RepoRemotes = (Git.Repo, [Git.Repo])
+
 cmd :: Command
 cmd = dontCheck repoExists $
 	command "map" SectionQuery
@@ -76,11 +79,11 @@ runViewer file ((c, ps):rest) = ifM (liftIO $ inPath c)
  - the repositories first, followed by uuids that were not matched
  - to a repository.
  -}
-drawMap :: [Git.Repo] -> TrustMap -> M.Map UUID String -> String
+drawMap :: [RepoRemotes] -> TrustMap -> M.Map UUID String -> String
 drawMap rs trustmap umap = Dot.graph $ repos ++ others
   where
-	repos = map (node umap rs trustmap) rs
-	ruuids = map getUncachedUUID rs
+	repos = map (node umap (map fst rs) trustmap) rs
+	ruuids = map (getUncachedUUID . fst) rs
 	others = map uuidnode $ 
 		filter (\u -> M.lookup u trustmap /= Just DeadTrusted) $
 		filter (`notElem` ruuids) (M.keys umap)
@@ -113,13 +116,13 @@ nodeId r =
 		UUID u -> u
 
 {- A node representing a repo. -}
-node :: M.Map UUID String -> [Git.Repo] -> TrustMap -> Git.Repo -> String
-node umap fullinfo trustmap r = unlines $ n:edges
+node :: M.Map UUID String -> [Git.Repo] -> TrustMap -> RepoRemotes -> String
+node umap fullinfo trustmap (r, rs) = unlines $ n:edges
   where
 	n = Dot.subGraph (hostname r) (basehostname r) "lightblue" $
 		trustDecorate trustmap (getUncachedUUID r) $
 			Dot.graphNode (nodeId r) (repoName umap r)
-	edges = map (edge umap fullinfo r) (Git.remotes r)
+	edges = map (edge umap fullinfo r) rs
 
 {- An edge between two repos. The second repo is a remote of the first. -}
 edge :: M.Map UUID String -> [Git.Repo] -> Git.Repo -> Git.Repo -> String	
@@ -149,21 +152,21 @@ trustDecorate trustmap u s = case M.lookup u trustmap of
 	Nothing -> Dot.fillColor "white" s
 
 {- Recursively searches out remotes starting with the specified repo. -}
-spider :: Git.Repo -> Annex [Git.Repo]
+spider :: Git.Repo -> Annex [RepoRemotes]
 spider r = spider' [r] []
-spider' :: [Git.Repo] -> [Git.Repo] -> Annex [Git.Repo]
+spider' :: [Git.Repo] -> [RepoRemotes] -> Annex [RepoRemotes]
 spider' [] known = return known
 spider' (r:rs) known
-	| any (same r) known = spider' rs known
+	| any (same r) (map fst known) = spider' rs known
 	| otherwise = do
 		r' <- scan r
 
 		-- The remotes will be relative to r', and need to be
 		-- made absolute for later use.
-		remotes <- mapM (absRepo r') (Git.remotes r')
-		let r'' = r' { Git.remotes = remotes }
-
-		spider' (rs ++ remotes) (r'':known)
+		remotes <- mapM (absRepo r')
+			=<< (liftIO $ Git.Construct.fromRemotes r')
+	
+		spider' (rs ++ remotes) ((r', remotes):known)
 
 {- Converts repos to a common absolute form. -}
 absRepo :: Git.Repo -> Git.Repo -> Annex Git.Repo
@@ -189,7 +192,7 @@ same a b
 {- reads the config of a remote, with progress display -}
 scan :: Git.Repo -> Annex Git.Repo
 scan r = do
-	showStart "map" $ Git.repoDescribe r
+	showStart' "map" (Just $ Git.repoDescribe r)
 	v <- tryScan r
 	case v of
 		Just r' -> do
@@ -260,11 +263,11 @@ tryScan r
 
 {- Spidering can find multiple paths to the same repo, so this is used
  - to combine (really remove) duplicate repos with the same UUID. -}
-combineSame :: [Git.Repo] -> [Git.Repo]
+combineSame :: [RepoRemotes] -> [RepoRemotes]
 combineSame = map snd . nubBy sameuuid . map pair
   where
 	sameuuid (u1, _) (u2, _) = u1 == u2 && u1 /= NoUUID
-	pair r = (getUncachedUUID r, r)
+	pair (r, rs) = (getUncachedUUID r, (r, rs))
 
 safely :: IO Git.Repo -> IO (Maybe Git.Repo)
 safely a = do

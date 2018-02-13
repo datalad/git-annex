@@ -10,8 +10,8 @@
 module Utility.Lsof where
 
 import Common
-import Build.SysConfig as SysConfig
-import Utility.Env
+import BuildInfo
+import Utility.Env.Set
 
 import System.Posix.Types
 
@@ -23,12 +23,12 @@ type CmdLine = String
 data ProcessInfo = ProcessInfo ProcessID CmdLine
 	deriving (Show)
 
-{- lsof is not in PATH on all systems, so SysConfig may have the absolute
+{- lsof is not in PATH on all systems, so BuildInfo may have the absolute
  - path where the program was found. Make sure at runtime that lsof is
  - available, and if it's not in PATH, adjust PATH to contain it. -}
 setup :: IO ()
 setup = do
-	let cmd = fromMaybe "lsof" SysConfig.lsof
+	let cmd = fromMaybe "lsof" BuildInfo.lsof
 	when (isAbsolute cmd) $ do
 		path <- getSearchPath
 		let path' = takeDirectory cmd : path

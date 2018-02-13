@@ -12,7 +12,7 @@ import qualified Command.Watch
 import Annex.Init
 import Annex.Path
 import Config.Files
-import qualified Build.SysConfig
+import qualified BuildInfo
 import Utility.HumanTime
 import Assistant.Install
 
@@ -78,7 +78,7 @@ autoStart o = do
 		f <- autoStartFile
 		giveup $ "Nothing listed in " ++ f
 	program <- programPath
-	haveionice <- pure Build.SysConfig.ionice <&&> inPath "ionice"
+	haveionice <- pure BuildInfo.ionice <&&> inPath "ionice"
 	pids <- forM dirs $ \d -> do
 		putStrLn $ "git-annex autostart in " ++ d
 		mpid <- catchMaybeIO $ go haveionice program d

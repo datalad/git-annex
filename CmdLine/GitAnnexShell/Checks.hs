@@ -21,12 +21,10 @@ checkNotReadOnly :: IO ()
 checkNotReadOnly = checkEnv "GIT_ANNEX_SHELL_READONLY"
 
 checkEnv :: String -> IO ()
-checkEnv var = do
-	v <- getEnv var
-	case v of
-		Nothing -> noop
-		Just "" -> noop
-		Just _ -> giveup $ "Action blocked by " ++ var
+checkEnv var = getEnv var >>= \case
+	Nothing -> noop
+	Just "" -> noop
+	Just _ -> giveup $ "Action blocked by " ++ var
 
 checkDirectory :: Maybe FilePath -> IO ()
 checkDirectory mdir = do

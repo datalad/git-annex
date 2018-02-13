@@ -40,12 +40,12 @@ seek = commandAction . start
 
 start :: InitOptions -> CommandStart
 start os = do
-	showStart "init" (initDesc os)
+	showStart' "init" (Just $ initDesc os)
 	next $ perform os
 
 perform :: InitOptions -> CommandPerform
 perform os = do
-	initialize 
+	initialize (AutoInit False)
 		(if null (initDesc os) then Nothing else Just (initDesc os))
 		(initVersion os)
 	Annex.SpecialRemote.autoEnable

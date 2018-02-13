@@ -1,6 +1,6 @@
 {- Url downloading.
  -
- - Copyright 2011-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2017 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -25,22 +25,25 @@ module Utility.Url (
 	assumeUrlExists,
 	download,
 	downloadQuiet,
+	downloadPartial,
 	parseURIRelaxed,
 	matchStatusCodeException,
 	matchHttpExceptionContent,
 ) where
 
 import Common
-import Utility.Tmp
-import qualified Build.SysConfig
+import Utility.Tmp.Dir
+import qualified BuildInfo
 
 import Network.URI
 import Network.HTTP.Types
 import qualified Data.CaseInsensitive as CI
 import qualified Data.ByteString as B
 import qualified Data.ByteString.UTF8 as B8
+import qualified Data.ByteString.Lazy as L
 import Control.Monad.Trans.Resource
 import Network.HTTP.Conduit hiding (closeManager)
+import Network.HTTP.Client (brRead, withResponse)
 
 -- closeManager is needed with older versions of http-client,
 -- but not new versions, which warn about using it. Urgh.
@@ -140,7 +143,7 @@ assumeUrlExists = UrlInfo True Nothing Nothing
  - also returning its size and suggested filename if available. -}
 getUrlInfo :: URLString -> UrlOptions -> IO UrlInfo
 getUrlInfo url uo = case parseURIRelaxed url of
-	Just u -> case parseurlconduit (show u) of
+	Just u -> case parseUrlConduit (show u) of
 		Just req -> catchJust
 			-- When http redirects to a protocol which 
 			-- conduit does not support, it will throw
@@ -160,7 +163,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 						sz <- getFileSize' f stat
 						found (Just sz) Nothing
 					Nothing -> dne
-			| Build.SysConfig.curl -> existscurl u
+			| BuildInfo.curl -> existscurl u
 			| otherwise -> dne
 	Nothing -> dne
   where
@@ -220,12 +223,6 @@ getUrlInfo url uo = case parseURIRelaxed url of
 			_ | isftp && isJust len -> good
 			_ -> dne
 
-#if MIN_VERSION_http_client(0,4,30)
-	parseurlconduit = parseUrlThrow
-#else
-	parseurlconduit = parseUrl
-#endif
-
 -- Parse eg: attachment; filename="fname.ext"
 -- per RFC 2616
 contentDispositionFilename :: String -> Maybe FilePath
@@ -284,7 +281,7 @@ download' quiet url file uo = do
 	 -}
 #ifndef __ANDROID__
 	wgetparams = concat
-		[ if Build.SysConfig.wgetunclutter && not quiet
+		[ if BuildInfo.wgetunclutter && not quiet
 			then [Param "-nv", Param "--show-progress"]
 			else []
 		, [ Param "--clobber", Param "-c", Param "-O"]
@@ -321,10 +318,44 @@ download' quiet url file uo = do
 		| quiet = [Param s]
 		| otherwise = []
 
+{- Downloads at least the specified number of bytes from an url. -}
+downloadPartial :: URLString -> UrlOptions -> Int -> IO (Maybe L.ByteString)
+downloadPartial url uo n = case parseURIRelaxed url of
+	Nothing -> return Nothing
+	Just u -> go u `catchNonAsync` const (return Nothing)
+  where
+	go u = case parseUrlConduit (show u) of
+		Nothing -> return Nothing
+		Just req -> do
+			mgr <- newManager managerSettings
+			let req' = applyRequest uo req
+			ret <- withResponse req' mgr $ \resp ->
+				if responseStatus resp == ok200
+					then Just <$> brread n [] (responseBody resp)
+					else return Nothing
+			liftIO $ closeManager mgr
+			return ret
+
+	-- could use brReadSome here, needs newer http-client dependency
+	brread n' l rb
+		| n' <= 0 = return (L.fromChunks (reverse l))
+		| otherwise = do
+			bs <- brRead rb
+			if B.null bs
+				then return (L.fromChunks (reverse l))
+				else brread (n' - B.length bs) (bs:l) rb
+
 {- Allows for spaces and other stuff in urls, properly escaping them. -}
 parseURIRelaxed :: URLString -> Maybe URI
 parseURIRelaxed s = maybe (parseURIRelaxed' s) Just $
 	parseURI $ escapeURIString isAllowedInURI s
+
+parseUrlConduit :: URLString -> Maybe Request
+#if MIN_VERSION_http_client(0,4,30)
+parseUrlConduit = parseUrlThrow
+#else
+parseUrlConduit = parseUrl
+#endif
 
 {- Some characters like '[' are allowed in eg, the address of
  - an uri, but cannot appear unescaped further along in the uri.

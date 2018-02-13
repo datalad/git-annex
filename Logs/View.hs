@@ -26,7 +26,7 @@ import qualified Git
 import qualified Git.Branch
 import qualified Git.Ref
 import Git.Types
-import Utility.Tmp
+import Logs.File
 
 import qualified Data.Set as S
 import Data.Char
@@ -39,7 +39,7 @@ setView v = do
 writeViews :: [View] -> Annex ()
 writeViews l = do
 	f <- fromRepo gitAnnexViewLog
-	liftIO $ viaTmp writeFile f $ unlines $ map show l
+	writeLogFile f $ unlines $ map show l
 
 removeView :: View -> Annex ()
 removeView v = writeViews =<< filter (/= v) <$> recentViews

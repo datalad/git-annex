@@ -20,3 +20,5 @@
 		fi
 	 
 	 git-annex-shell: git-annex
+
+> Added "warning:" [[done]] --[[Joey]]

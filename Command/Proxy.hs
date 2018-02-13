@@ -9,7 +9,7 @@ module Command.Proxy where
 
 import Command
 import Config
-import Utility.Tmp
+import Utility.Tmp.Dir
 import Utility.Env
 import Annex.Direct
 import qualified Git

@@ -107,6 +107,10 @@ export`, it will detect the export conflict, and resolve it.
 
 [[git-annex-sync]](1)
 
+# HISTORY
+
+The `export` command was introduced in git-annex version 6.20170925.
+
 # AUTHOR
 
 Joey Hess <id@joeyh.name>

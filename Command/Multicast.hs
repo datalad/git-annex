@@ -25,6 +25,8 @@ import Types.FileMatcher
 import qualified Git.LsFiles as LsFiles
 import Utility.Hash
 import Utility.Tmp
+import Utility.Tmp.Dir
+import Utility.Process.Transcript
 import Config
 
 import Data.Char
@@ -78,7 +80,7 @@ seek (MultiCastOptions Receive _ _) = giveup "Cannot specify list of files with 
 
 genAddress :: CommandStart
 genAddress = do
-	showStart "gen-address" ""
+	showStart' "gen-address" Nothing
 	k <- uftpKey
 	(s, ok) <- case k of
 		KeyContainer s -> liftIO $ genkey (Param s)
@@ -130,7 +132,7 @@ send ups fs = withTmpFile "send" $ \t h -> do
 	whenM isDirect $
 		giveup "Sorry, multicast send cannot be done from a direct mode repository."
 	
-	showStart "generating file list" ""
+	showStart' "generating file list" Nothing
 	fs' <- seekHelper LsFiles.inRepo =<< workTreeItems fs
 	matcher <- Limit.getMatcher
 	let addlist f o = whenM (matcher $ MatchingFile $ FileInfo f f) $
@@ -143,7 +145,7 @@ send ups fs = withTmpFile "send" $ \t h -> do
 	liftIO $ hClose h
 	showEndOk
 
-	showStart "sending files" ""
+	showStart' "sending files" Nothing
 	showOutput
 	serverkey <- uftpKey
 	u <- getUUID
@@ -169,7 +171,7 @@ send ups fs = withTmpFile "send" $ \t h -> do
 
 receive :: [CommandParam] -> CommandStart
 receive ups = do
-	showStart "receiving multicast files" ""
+	showStart' "receiving multicast files" Nothing
 	showNote "Will continue to run until stopped by ctrl-c"
 	
 	showOutput

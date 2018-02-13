@@ -87,7 +87,7 @@ start' o move afile key ai = onlyActionOn key $
 				toHereStart move afile key ai
 
 showMoveAction :: Bool -> Key -> ActionItem -> Annex ()
-showMoveAction move = showStart' (if move then "move" else "copy")
+showMoveAction move = showStartKey (if move then "move" else "copy")
 
 {- Moves (or copies) the content of an annexed file to a remote.
  -

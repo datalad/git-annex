@@ -28,7 +28,7 @@ start = parse
 	parse (name:[]) = go name performGet
 	parse (name:expr:[]) = go name $ \uuid -> do
 		allowMessages
-		showStart "schedule" name
+		showStart' "schedule" (Just name)
 		performSet expr uuid
 	parse _ = giveup "Specify a repository."
 

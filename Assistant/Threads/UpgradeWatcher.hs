@@ -21,7 +21,7 @@ import Assistant.Alert
 import Assistant.DaemonStatus
 #ifdef WITH_WEBAPP
 import Assistant.WebApp.Types
-import qualified Build.SysConfig
+import qualified BuildInfo
 #endif
 
 import Control.Concurrent.MVar
@@ -103,7 +103,7 @@ showSuccessfulUpgrade urlrenderer = do
 			(T.pack "Enable Automatic Upgrades")
 			urlrenderer ConfigEnableAutomaticUpgradeR
 		)
-	void $ addAlert $ upgradeFinishedAlert button Build.SysConfig.packageversion
+	void $ addAlert $ upgradeFinishedAlert button BuildInfo.packageversion
 #else
 	noop
 #endif

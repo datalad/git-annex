@@ -59,12 +59,12 @@ start :: Expire -> Bool -> Log Activity -> M.Map UUID String -> UUID -> CommandS
 start (Expire expire) noact actlog descs u =
 	case lastact of
 		Just ent | notexpired ent -> checktrust (== DeadTrusted) $ do
-			showStart "unexpire" desc
+			showStart' "unexpire" (Just desc)
 			showNote =<< whenactive
 			unless noact $
 				trustSet u SemiTrusted
 		_ -> checktrust (/= DeadTrusted) $ do
-			showStart "expire" desc
+			showStart' "expire" (Just desc)
 			showNote =<< whenactive
 			unless noact $
 				trustSet u DeadTrusted

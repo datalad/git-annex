@@ -1,0 +1,22 @@
+git-annex 6.20171214 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Use youtube-dl rather than quvi to download media from web pages,
+     since quvi is not being actively developed and youtube-dl supports
+     many more sites.
+   * addurl --relaxed got slower, since youtube-dl has to hit the network
+     to check for embedded media. If you relied on --relaxed not hitting the
+     network for speed reasons, using --relaxed --raw will get the old level
+     of speed, but can't be used for urls with embedded videos.
+   * importfeed now downloads things linked to by feeds, even when they are
+     not media files.
+   * Removed no longer needed dependency on yesod-default.
+   * Allow exporttree remotes to be marked as dead.
+   * initremote, enableremote: Really support gpg subkeys suffixed with an
+     exclamation mark, which forces gpg to use a specific subkey.
+     (Previous try had a bug.)
+   * lookupkey: Support being given an absolute filename to a file
+     within the current git repository.
+   * A top-level .noannex file will prevent git-annex init from being used
+     in a repository. This is useful for repositories that have a policy
+     reason not to use git-annex. The content of the file will be displayed
+     to the user who tries to run git-annex init."""]]

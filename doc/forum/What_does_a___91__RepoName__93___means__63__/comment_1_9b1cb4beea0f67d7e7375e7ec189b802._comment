@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-12-05T16:44:45Z"
+ content="""
+The name in brackets is the name of the git remote, if any, corresponding
+to the repository.
+"""]]

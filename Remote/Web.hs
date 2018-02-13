@@ -19,8 +19,7 @@ import Logs.Web
 import Annex.UUID
 import Utility.Metered
 import qualified Annex.Url as Url
-import Annex.Quvi
-import qualified Utility.Quvi as Quvi
+import Annex.YoutubeDl
 
 remote :: RemoteType
 remote = RemoteType
@@ -80,9 +79,7 @@ downloadKey key _af dest p = unVerified $ get =<< getWebUrls key
 		untilTrue urls $ \u -> do
 			let (u', downloader) = getDownloader u
 			case downloader of
-				QuviDownloader -> do
-					flip (downloadUrl key p) dest
-						=<< withQuviOptions Quvi.queryLinks [Quvi.httponly, Quvi.quiet] u'
+				YoutubeDownloader -> youtubeDlTo key u' dest
 				_ -> downloadUrl key p [u'] dest
 
 downloadKeyCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
@@ -109,8 +106,7 @@ checkKey' key us = firsthit us (Right False) $ \u -> do
 	let (u', downloader) = getDownloader u
 	showChecking u'
 	case downloader of
-		QuviDownloader ->
-			Right <$> withQuviOptions Quvi.check [Quvi.httponly, Quvi.quiet] u'
+		YoutubeDownloader -> youtubeDlCheck u'
 		_ -> do
 			Url.withUrlOptions $ catchMsgIO .
 				Url.checkBoth u' (keySize key)
@@ -126,4 +122,4 @@ getWebUrls :: Key -> Annex [URLString]
 getWebUrls key = filter supported <$> getUrls key
   where
 	supported u = snd (getDownloader u) 
-		`elem` [WebDownloader, QuviDownloader]
+		`elem` [WebDownloader, YoutubeDownloader]

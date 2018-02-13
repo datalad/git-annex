@@ -1,0 +1,30 @@
+Working on [[todo/switch_from_quvi_to_youtube-dl]], because
+quvi is not being maintained and youtube-dl can download a lot more stuff.
+
+Unfortunately, youtube-dl's interface is not a good fit for git-annex,
+compared with quvi's interface which was a near-perfect fit. Two things
+git-annex relied on quvi for are a way to check if a url has embedded media
+without downloading the url, and a way to get the url from which the
+embedded media can be downloaded. Youtube-dl supports neither. Also it has
+some other warts that make it unncessarily hard to interface with, like not
+always [storing the download in the location specified by --output](https://github.com/rg3/youtube-dl/issues/14864),
+and [sometimes crashing when downloading non-media urls (eg over my satellite internet)](http://bugs.debian.org/874321).
+
+I've found ways to avoid all these problems. For example, to make
+`git annex addurl` avoid unncessarily overhead of running youtube-dl
+in the common case of downloading some non-web-page file, I'll have it
+download the url content, and check if it looks like a html page.
+Only then will it use youtube-dl. So addurl of html pages without
+embedded media will get slower, but addurl of everything else
+will be as fast as before.
+
+But there's an unavoidable change to `addurl --relaxed`. It will not check
+for embedded media and more, because that would make it a lot slower, since
+it would have to hit the network. `addurl --fast` will have to be used for
+such urls instead. I hope this behavior change won't affect workflows
+badly.
+
+Today was all coding groundwork, and I just got to the point that I'm
+ready to have it run youtube-dl. Hope to finish it tomorrow.
+
+Today's work was sponsored by Jake Vosloo [on Patreon](https://www.patreon.com/joeyh).

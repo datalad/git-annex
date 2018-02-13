@@ -36,7 +36,7 @@ seek = withWords start
 
 start :: [String] -> CommandStart
 start [] = unknownNameError "Specify the remote to enable."
-start (name:rest) = go =<< filter matchingname <$> Annex.fromRepo Git.remotes
+start (name:rest) = go =<< filter matchingname <$> Annex.getGitRemotes
   where
 	matchingname r = Git.remoteName r == Just name
 	go [] = startSpecialRemote name (Logs.Remote.keyValToConfig rest)
@@ -55,7 +55,7 @@ start (name:rest) = go =<< filter matchingname <$> Annex.fromRepo Git.remotes
 startNormalRemote :: Git.RemoteName -> [String] -> Git.Repo -> CommandStart
 startNormalRemote name restparams r
 	| null restparams = do
-		showStart "enableremote" name
+		showStart' "enableremote" (Just name)
 		next $ next $ do
 			setRemoteIgnore r False
 			r' <- Remote.Git.configRead False r
@@ -68,8 +68,7 @@ startSpecialRemote :: Git.RemoteName -> Remote.RemoteConfig -> Maybe (UUID, Remo
 startSpecialRemote name config Nothing = do
 	m <- Annex.SpecialRemote.specialRemoteMap
 	confm <- Logs.Remote.readRemoteLog
-	v <- Remote.nameToUUID' name
-	case v of
+	Remote.nameToUUID' name >>= \case
 		Right u | u `M.member` m ->
 			startSpecialRemote name config $
 				Just (u, fromMaybe M.empty (M.lookup u confm))
@@ -77,7 +76,7 @@ startSpecialRemote name config Nothing = do
 startSpecialRemote name config (Just (u, c)) = do
 	let fullconfig = config `M.union` c	
 	t <- either giveup return (Annex.SpecialRemote.findType fullconfig)
-	showStart "enableremote" name
+	showStart' "enableremote" (Just name)
 	gc <- maybe (liftIO dummyRemoteGitConfig) 
 		(return . Remote.gitconfig)
 		=<< Remote.byUUID u
@@ -91,8 +90,7 @@ performSpecialRemote t u oldc c gc = do
 cleanupSpecialRemote :: UUID -> R.RemoteConfig -> CommandCleanup
 cleanupSpecialRemote u c = do
 	Logs.Remote.configSet u c
-	mr <- Remote.byUUID u
-	case mr of
+	Remote.byUUID u >>= \case
 		Nothing -> noop
 		Just r -> setRemoteIgnore (R.repo r) False
 	return True
@@ -106,7 +104,7 @@ unknownNameError prefix = do
 			else Remote.prettyPrintUUIDsDescs
 				"known special remotes"
 				descm (M.keys m)
-	disabledremotes <- filterM isdisabled =<< Annex.fromRepo Git.remotes
+	disabledremotes <- filterM isdisabled =<< Annex.getGitRemotes
 	let remotesmsg = unlines $ map ("\t" ++) $
 		mapMaybe Git.remoteName disabledremotes
 	giveup $ concat $ filter (not . null) [prefix ++ "\n", remotesmsg, specialmsg]

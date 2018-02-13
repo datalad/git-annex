@@ -20,6 +20,7 @@ import Annex.Action
 import Types.StandardGroups
 import Logs.PreferredContent
 import qualified Annex.Branch
+import Utility.Process.Transcript
 
 {- Makes a new git repository. Or, if a git repository already
  - exists, returns False. -}
@@ -76,7 +77,7 @@ initRepo False _ dir desc mgroup = inDir dir $ do
 
 initRepo' :: Maybe String -> Maybe StandardGroup -> Annex ()
 initRepo' desc mgroup = unlessM isInitialized $ do
-	initialize desc Nothing
+	initialize (AutoInit False) desc Nothing
 	u <- getUUID
 	maybe noop (defaultStandardGroup u) mgroup
 	{- Ensure branch gets committed right away so it is

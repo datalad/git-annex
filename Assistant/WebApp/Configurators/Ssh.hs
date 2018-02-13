@@ -40,6 +40,7 @@ import Utility.FileMode
 import Utility.ThreadScheduler
 import Utility.Env
 import Utility.SshHost
+import Utility.Process.Transcript
 
 import qualified Data.Text as T
 import qualified Data.Map as M

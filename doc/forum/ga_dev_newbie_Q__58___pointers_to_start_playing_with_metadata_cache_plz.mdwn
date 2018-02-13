@@ -1,0 +1,13 @@
+Hello. Am a newbie to Git Annex(ga), but love it already. I kept trying to index own important files for the past long time, but ended up all tangled up. With ga I now see a light at the end of the tunnel! (Hope it's not a train heading my way :)
+
+So thanks a bucket for writing Git Annex!
+
+I am an "archiver": Every file I add to ga repo is a never-to-be-changed file (it's checksum stays same throughout eternity, only metadata keeps changin). All I need ga for atm is to tag all files. Unfortunately we are talking about few hundred thousand files and the performance with the master git-annex-6.20170519 is not quite what one might hope for.
+
+From your design/caching_database doc I gather that the outlook with metadata is positive ( "For metadata, the story is much nicer. Querying for 30000 keys that all have a particular tag in their metadata takes 0.65s. So fast enough to be used in views." ), but  is not in a db (sqlite) yet in the master (git-annex-6.20170519) . I tried to dig through some of the Links there to find out which commit could I checkout and build to try out a cached metadata, but no avail.
+
+Since I don't ever change any file once it gets checked into the ga repo, does that simplify my possible use of current metadata cache code, or will I have to try to learn haskell and will I need to code stuff to get performance (creating views and such).
+
+TIA for any pointers, tips and cavats and THANKS AGAIN FOR WRITING GIT-ANNEX.
+
+  ganewbie01

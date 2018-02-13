@@ -12,18 +12,6 @@ module Test where
 import Types.Test
 import Options.Applicative.Types
 
-#ifndef WITH_TESTSUITE
-
-import Options.Applicative (pure)
-
-optParser :: Parser ()
-optParser = pure ()
-
-runner :: Maybe (() -> IO ())
-runner = Nothing
-
-#else
-
 import Test.Tasty
 import Test.Tasty.Runners
 import Test.Tasty.HUnit
@@ -88,13 +76,14 @@ import qualified Annex.Action
 import qualified Logs.View
 import qualified Utility.Path
 import qualified Utility.FileMode
-import qualified Build.SysConfig
+import qualified BuildInfo
 import qualified Utility.Format
 import qualified Utility.Verifiable
 import qualified Utility.Process
 import qualified Utility.Misc
 import qualified Utility.InodeCache
 import qualified Utility.Env
+import qualified Utility.Env.Set
 import qualified Utility.Matcher
 import qualified Utility.Exception
 import qualified Utility.Hash
@@ -103,7 +92,7 @@ import qualified Utility.Scheduled.QuickCheck
 import qualified Utility.HumanTime
 import qualified Utility.ThreadScheduler
 import qualified Utility.Base64
-import qualified Utility.Tmp
+import qualified Utility.Tmp.Dir
 import qualified Utility.FileSystemEncoding
 import qualified Command.Uninit
 import qualified CmdLine.GitAnnex as GitAnnex
@@ -142,7 +131,7 @@ runner = Just go
 	subenv = "GIT_ANNEX_TEST_SUBPROCESS"
 	runsubprocesstests opts Nothing = do
 		pp <- Annex.Path.programPath
-		Utility.Env.setEnv subenv "1" True
+		Utility.Env.Set.setEnv subenv "1" True
 		ps <- getArgs
 		(Nothing, Nothing, Nothing, pid) <-createProcess (proc pp ps)
 		exitcode <- waitForProcess pid
@@ -368,7 +357,7 @@ test_log = intmpclonerepo $ do
 	git_annex "log" [annexedfile] @? "log failed"
 
 test_import :: Assertion
-test_import = intmpclonerepo $ Utility.Tmp.withTmpDir "importtest" $ \importdir -> do
+test_import = intmpclonerepo $ Utility.Tmp.Dir.withTmpDir "importtest" $ \importdir -> do
 	(toimport1, importf1, imported1) <- mktoimport importdir "import1"
 	git_annex "import" [toimport1] @? "import failed"
 	annexed_present_imported imported1
@@ -675,7 +664,7 @@ test_lock_v6_force = intmpclonerepoInDirect $ do
 		annexeval $ do
 			Database.Keys.closeDb
 			dbdir <- Annex.fromRepo Annex.Locations.gitAnnexKeysDb
-			liftIO $ removeDirectoryRecursive dbdir
+			liftIO $ renameDirectory dbdir (dbdir ++ ".old")
 		writeFile annexedfile "test_lock_v6_force content"
 		not <$> git_annex "lock" [annexedfile] @? "lock of modified file failed to fail in v6 mode"
 		git_annex "lock" ["--force", annexedfile] @? "lock --force of modified file failed in v6 mode"
@@ -1622,7 +1611,7 @@ test_rsync_remote = intmpclonerepo $ do
 	annexed_present annexedfile
 
 test_bup_remote :: Assertion
-test_bup_remote = intmpclonerepo $ when Build.SysConfig.bup $ do
+test_bup_remote = intmpclonerepo $ when BuildInfo.bup $ do
 	dir <- absPath "dir" -- bup special remote needs an absolute path
 	createDirectory dir
 	git_annex "initremote" (words $ "foo type=bup encryption=none buprepo="++dir) @? "initremote failed"
@@ -1810,7 +1799,7 @@ intmpclonerepoInDirect a = intmpclonerepo $
 		)
   where
 	isdirect = annexeval $ do
-		Annex.Init.initialize Nothing Nothing
+		Annex.Init.initialize (Annex.Init.AutoInit False) Nothing Nothing
 		Config.isDirect
 
 checkRepo :: Types.Annex a -> FilePath -> IO a
@@ -1929,11 +1918,11 @@ ensuretmpdir = do
 	
 {- Prevent global git configs from affecting the test suite. -}
 isolateGitConfig :: IO a -> IO a
-isolateGitConfig a = Utility.Tmp.withTmpDir "testhome" $ \tmphome -> do
+isolateGitConfig a = Utility.Tmp.Dir.withTmpDir "testhome" $ \tmphome -> do
 	tmphomeabs <- absPath tmphome
-	Utility.Env.setEnv "HOME" tmphomeabs True
-	Utility.Env.setEnv "XDG_CONFIG_HOME" tmphomeabs True
-	Utility.Env.setEnv "GIT_CONFIG_NOSYSTEM" "1" True
+	Utility.Env.Set.setEnv "HOME" tmphomeabs True
+	Utility.Env.Set.setEnv "XDG_CONFIG_HOME" tmphomeabs True
+	Utility.Env.Set.setEnv "GIT_CONFIG_NOSYSTEM" "1" True
 	a
 
 cleanup :: FilePath -> IO ()
@@ -1945,7 +1934,7 @@ cleanup dir = whenM (doesDirectoryExist dir) $ do
 
 finalCleanup :: IO ()
 finalCleanup = whenM (doesDirectoryExist tmpdir) $ do
-	Utility.Misc.reapZombies
+	Annex.Action.reapZombies
 	Command.Uninit.prepareRemoveAnnexDir' tmpdir
 	catchIO (removeDirectoryRecursive tmpdir) $ \e -> do
 		print e
@@ -1953,7 +1942,7 @@ finalCleanup = whenM (doesDirectoryExist tmpdir) $ do
 		Utility.ThreadScheduler.threadDelaySeconds $
 			Utility.ThreadScheduler.Seconds 10
 		whenM (doesDirectoryExist tmpdir) $ do
-			Utility.Misc.reapZombies
+			Annex.Action.reapZombies
 			removeDirectoryRecursive tmpdir
 	
 checklink :: FilePath -> Assertion
@@ -2119,7 +2108,7 @@ setTestMode testmode = do
 	currdir <- getCurrentDirectory
 	p <- Utility.Env.getEnvDefault "PATH" ""
 
-	mapM_ (\(var, val) -> Utility.Env.setEnv var val True)
+	mapM_ (\(var, val) -> Utility.Env.Set.setEnv var val True)
 		-- Ensure that the just-built git annex is used.
 		[ ("PATH", currdir ++ [searchPathSeparator] ++ p)
 		, ("TOPDIR", currdir)
@@ -2235,5 +2224,3 @@ getKey b f = fromJust <$> annexeval go
 			, Types.KeySource.contentLocation = f
 			, Types.KeySource.inodeCache = Nothing
 			}
-
-#endif

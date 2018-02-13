@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2017-12-11T17:12:41Z"
+ content="""
+The diff shows `git annex whereis` used to send CLAIMURL to the external,
+and no longer does.
+
+Reproduction recipe using git-annex-remote-ipfs:
+
+	git annex initremote ipfs type=external externaltype=ipfs encryption=none
+	date > somefile
+	git annex add somefile
+	git annex addurl --debug --relaxed ipfs:dummy --file somefile
+
+Which results in `git annex whereis somefile` saying it's present in ipfs,
+but not listing the ipfs url for it. And again, whereis does not sent
+CLAIMURL.
+
+And, in log.web, I see why:
+
+	+1513013502.312530881s 1 ipfs:dummy
+
+That is not an OtherDownloader url, it's lacking the ":" prefix.
+
+This seems to be particular to the addurl --relaxed --file code path;
+letting addurl add a new file does result in an OtherDownloader url
+being recorded.
+
+I guess the reason the test suite then fails is, the url it removes is not
+the one git-annex recorded, and so git-annex still thinks it's at the wrongly
+recorded url, and so dropping succeeds.
+"""]]

@@ -28,3 +28,20 @@ OS X 10.10.5
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 I love git annex. Thank you for your work on it. 
 
+> Yeah, so I had that working before but then I tightened the
+> code to determine what is a forced subkey and broke it.
+> 
+> [Fixed now; use a "!" at the _end_ to force subkey use:
+
+	joey@darkstar:~/tmp/a>git annex initremote testing type=directory directory=../d encryption=hybrid keyid='A4FEC0B5F031BA70!'
+	initremote testing (encryption setup) gpg: A4FEC0B5F031BA70!: skipped: Unusable public key
+	gpg: [stdin]: encryption failed: Unusable public key
+
+> It failed to use that subkey because it is a sign-only key,
+> and git-annex needs to encrypt, but that certainly shows I got
+> git-annex to use the subkey..
+> 
+> I made an encrypt-only subkey, and git-annex is able to use it,
+> and it fully works as far as I can tell.
+> 
+> [[done]] --[[Joey]]

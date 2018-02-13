@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -21,6 +21,7 @@ import Annex.Content
 import Annex.Ingest
 import Annex.CheckIgnore
 import Annex.UUID
+import Annex.YoutubeDl
 import Logs.Web
 import Types.KeySource
 import Types.UrlContents
@@ -28,9 +29,9 @@ import Annex.FileMatcher
 import Logs.Location
 import Utility.Metered
 import Utility.FileSystemEncoding
+import Utility.HtmlDetect
+import Utility.Path.Max
 import qualified Annex.Transfer as Transfer
-import Annex.Quvi
-import qualified Utility.Quvi as Quvi
 
 cmd :: Command
 cmd = notBareRepo $ withGlobalOptions [jobsOption, jsonOption, jsonProgressOption] $
@@ -39,23 +40,23 @@ cmd = notBareRepo $ withGlobalOptions [jobsOption, jsonOption, jsonProgressOptio
 
 data AddUrlOptions = AddUrlOptions
 	{ addUrls :: CmdParams
-	, fileOption :: Maybe FilePath
 	, pathdepthOption :: Maybe Int
 	, prefixOption :: Maybe String
 	, suffixOption :: Maybe String
-	, relaxedOption :: Bool
-	, rawOption :: Bool
+	, downloadOptions :: DownloadOptions
 	, batchOption :: BatchMode
 	, batchFilesOption :: Bool
+	}
+
+data DownloadOptions = DownloadOptions
+	{ relaxedOption :: Bool
+	, rawOption :: Bool
+	, fileOption :: Maybe FilePath
 	}
 
 optParser :: CmdParamsDesc -> Parser AddUrlOptions
 optParser desc = AddUrlOptions
 	<$> cmdParams desc
-	<*> optional (strOption
-		( long "file" <> metavar paramFile
-		<> help "specify what file the url is added to"
-		))
 	<*> optional (option auto
 		( long "pathdepth" <> metavar paramNumber
 		<> help "number of url path components to use in filename"
@@ -68,25 +69,29 @@ optParser desc = AddUrlOptions
 		( long "suffix" <> metavar paramValue
 		<> help "add a suffix to the filename"
 		))
-	<*> parseRelaxedOption
-	<*> parseRawOption
+	<*> parseDownloadOptions True
 	<*> parseBatchOption
 	<*> switch
 		( long "with-files"
 		<> help "parse batch mode lines of the form \"$url $file\""
 		)
 
-parseRelaxedOption :: Parser Bool
-parseRelaxedOption = switch
-	( long "relaxed"
-	<> help "skip size check"
-	)
-
-parseRawOption :: Parser Bool
-parseRawOption = switch
-	( long "raw"
-	<> help "disable special handling for torrents, quvi, etc"
-	)
+parseDownloadOptions :: Bool -> Parser DownloadOptions
+parseDownloadOptions withfileoption = DownloadOptions
+	<$> switch
+		( long "relaxed"
+		<> help "skip size check"
+		)
+	<*> switch
+		( long "raw"
+		<> help "disable special handling for torrents, youtube-dl, etc"
+		)
+	<*> if withfileoption
+		then optional (strOption
+			( long "file" <> metavar paramFile
+			<> help "specify what file the url is added to"
+			))
+		else pure Nothing
 
 seek :: AddUrlOptions -> CommandSeek
 seek o = allowConcurrentOutput $ do
@@ -97,7 +102,7 @@ seek o = allowConcurrentOutput $ do
   where
 	go (o', u) = do
 		r <- Remote.claimingUrl u
-		if Remote.uuid r == webUUID || rawOption o'
+		if Remote.uuid r == webUUID || rawOption (downloadOptions o')
 			then void $ commandAction $ startWeb o' u
 			else checkUrl r o' u
 
@@ -107,13 +112,13 @@ parseBatchInput o s
 		let (u, f) = separate (== ' ') s
 		in if null u || null f
 			then Left ("parsed empty url or filename in input: " ++ s)
-			else Right (o { fileOption = Just f }, u)
+			else Right (o { downloadOptions = (downloadOptions o) { fileOption = Just f } }, u)
 	| otherwise = Right (o, s)
 
 checkUrl :: Remote -> AddUrlOptions -> URLString -> Annex ()
 checkUrl r o u = do
 	pathmax <- liftIO $ fileNameLengthLimit "."
-	let deffile = fromMaybe (urlString2file u (pathdepthOption o) pathmax) (fileOption o)
+	let deffile = fromMaybe (urlString2file u (pathdepthOption o) pathmax) (fileOption (downloadOptions o))
 	go deffile =<< maybe
 		(error $ "unable to checkUrl of " ++ Remote.name r)
 		(tryNonAsync . flip id u)
@@ -121,50 +126,50 @@ checkUrl r o u = do
   where
 
 	go _ (Left e) = void $ commandAction $ do
-		showStart "addurl" u
+		showStart' "addurl" (Just u)
 		warning (show e)
 		next $ next $ return False
 	go deffile (Right (UrlContents sz mf)) = do
-		let f = adjustFile o (fromMaybe (maybe deffile fromSafeFilePath mf) (fileOption o))
-		void $ commandAction $
-			startRemote r (relaxedOption o) f u sz
+		let f = adjustFile o (fromMaybe (maybe deffile fromSafeFilePath mf) (fileOption (downloadOptions o)))
+		void $ commandAction $ startRemote r o f u sz
 	go deffile (Right (UrlMulti l))
-		| isNothing (fileOption o) =
+		| isNothing (fileOption (downloadOptions o)) =
 			forM_ l $ \(u', sz, f) -> do
 				let f' = adjustFile o (deffile </> fromSafeFilePath f)
 				void $ commandAction $
-					startRemote r (relaxedOption o) f' u' sz
+					startRemote r o f' u' sz
 		| otherwise = giveup $ unwords
 			[ "That url contains multiple files according to the"
 			, Remote.name r
 			, " remote; cannot add it to a single file."
 			]
 
-startRemote :: Remote -> Bool -> FilePath -> URLString -> Maybe Integer -> CommandStart
-startRemote r relaxed file uri sz = do
+startRemote :: Remote -> AddUrlOptions -> FilePath -> URLString -> Maybe Integer -> CommandStart
+startRemote r o file uri sz = do
 	pathmax <- liftIO $ fileNameLengthLimit "."
 	let file' = joinPath $ map (truncateFilePath pathmax) $ splitDirectories file
-	showStart "addurl" file'
+	showStart' "addurl" (Just uri)
 	showNote $ "from " ++ Remote.name r 
-	next $ performRemote r relaxed uri file' sz
+	showDestinationFile file'
+	next $ performRemote r o uri file' sz
 
-performRemote :: Remote -> Bool -> URLString -> FilePath -> Maybe Integer -> CommandPerform
-performRemote r relaxed uri file sz = ifAnnexed file adduri geturi
+performRemote :: Remote -> AddUrlOptions -> URLString -> FilePath -> Maybe Integer -> CommandPerform
+performRemote r o uri file sz = ifAnnexed file adduri geturi
   where
 	loguri = setDownloader uri OtherDownloader
-	adduri = addUrlChecked relaxed loguri (Remote.uuid r) checkexistssize
+	adduri = addUrlChecked o loguri file (Remote.uuid r) checkexistssize
 	checkexistssize key = return $ case sz of
-		Nothing -> (True, True)
-		Just n -> (True, n == fromMaybe n (keySize key))
-	geturi = next $ isJust <$> downloadRemoteFile r relaxed uri file sz
+		Nothing -> (True, True, loguri)
+		Just n -> (True, n == fromMaybe n (keySize key), loguri)
+	geturi = next $ isJust <$> downloadRemoteFile r (downloadOptions o) uri file sz
 
-downloadRemoteFile :: Remote -> Bool -> URLString -> FilePath -> Maybe Integer -> Annex (Maybe Key)
-downloadRemoteFile r relaxed uri file sz = checkCanAdd file $ do
+downloadRemoteFile :: Remote -> DownloadOptions -> URLString -> FilePath -> Maybe Integer -> Annex (Maybe Key)
+downloadRemoteFile r o uri file sz = checkCanAdd file $ do
 	let urlkey = Backend.URL.fromUrl uri sz
 	liftIO $ createDirectoryIfMissing True (parentDir file)
-	ifM (Annex.getState Annex.fast <||> pure relaxed)
+	ifM (Annex.getState Annex.fast <||> pure (relaxedOption o))
 		( do
-			cleanup (Remote.uuid r) loguri file urlkey Nothing
+			addWorkTree (Remote.uuid r) loguri file urlkey Nothing
 			return (Just urlkey)
 		, do
 			-- Set temporary url for the urlkey
@@ -181,24 +186,18 @@ downloadRemoteFile r relaxed uri file sz = checkCanAdd file $ do
   where
 	loguri = setDownloader uri OtherDownloader
 
-startWeb :: AddUrlOptions -> String -> CommandStart
-startWeb o s = go $ fromMaybe bad $ parseURI urlstring
+startWeb :: AddUrlOptions -> URLString -> CommandStart
+startWeb o urlstring = go $ fromMaybe bad $ parseURI urlstring
   where
-	(urlstring, downloader) = getDownloader s
 	bad = fromMaybe (giveup $ "bad url " ++ urlstring) $
 		Url.parseURIRelaxed $ urlstring
-	go url = case downloader of
-		QuviDownloader -> usequvi
-		_ -> ifM (quviSupported urlstring)
-			( usequvi
-			, regulardownload url
-			)
-	regulardownload url = do
+	go url = do
+		showStart' "addurl" (Just urlstring)
 		pathmax <- liftIO $ fileNameLengthLimit "."
-		urlinfo <- if relaxedOption o
+		urlinfo <- if relaxedOption (downloadOptions o)
 			then pure Url.assumeUrlExists
 			else Url.withUrlOptions (Url.getUrlInfo urlstring)
-		file <- adjustFile o <$> case fileOption o of
+		file <- adjustFile o <$> case fileOption (downloadOptions o) of
 			Just f -> pure f
 			Nothing -> case Url.urlSuggestedFile urlinfo of
 				Nothing -> pure $ url2file url (pathdepthOption o) pathmax
@@ -209,79 +208,31 @@ startWeb o s = go $ fromMaybe bad $ parseURI urlstring
 						( pure $ url2file url (pathdepthOption o) pathmax
 						, pure f
 						)
-		showStart "addurl" file
-		next $ performWeb (relaxedOption o) urlstring file urlinfo
-	badquvi = giveup $ "quvi does not know how to download url " ++ urlstring
-	usequvi = do
-		page <- fromMaybe badquvi
-			<$> withQuviOptions Quvi.forceQuery [Quvi.quiet, Quvi.httponly] urlstring
-		let link = fromMaybe badquvi $ headMaybe $ Quvi.pageLinks page
-		pathmax <- liftIO $ fileNameLengthLimit "."
-		let file = adjustFile o $ flip fromMaybe (fileOption o) $
-			truncateFilePath pathmax $ sanitizeFilePath $
-				Quvi.pageTitle page ++ "." ++ fromMaybe "m" (Quvi.linkSuffix link)
-		showStart "addurl" file
-		next $ performQuvi (relaxedOption o) urlstring (Quvi.linkUrl link) file
+		next $ performWeb o urlstring file urlinfo
 
-performWeb :: Bool -> URLString -> FilePath -> Url.UrlInfo -> CommandPerform
-performWeb relaxed url file urlinfo = ifAnnexed file addurl geturl
+performWeb :: AddUrlOptions -> URLString -> FilePath -> Url.UrlInfo -> CommandPerform
+performWeb o url file urlinfo = ifAnnexed file addurl geturl
   where
-	geturl = next $ isJust <$> addUrlFile relaxed url urlinfo file
-	addurl = addUrlChecked relaxed url webUUID $ \k -> return $
-		(Url.urlExists urlinfo, Url.urlSize urlinfo == keySize k)
+	geturl = next $ isJust <$> addUrlFile (downloadOptions o) url urlinfo file
+	addurl = addUrlChecked o url file webUUID $ \k -> 
+		ifM (pure (not (rawOption (downloadOptions o))) <&&> youtubeDlSupported url)
+			( return (True, True, setDownloader url YoutubeDownloader)
+			, return (Url.urlExists urlinfo, Url.urlSize urlinfo == keySize k, url)
+			)
 
-performQuvi :: Bool -> URLString -> URLString -> FilePath -> CommandPerform
-performQuvi relaxed pageurl videourl file = ifAnnexed file addurl geturl
-  where
-	quviurl = setDownloader pageurl QuviDownloader
-	addurl key = next $ do
-		cleanup webUUID quviurl file key Nothing
-		return True
-	geturl = next $ isJust <$> addUrlFileQuvi relaxed quviurl videourl file
-
-addUrlFileQuvi :: Bool -> URLString -> URLString -> FilePath -> Annex (Maybe Key)
-addUrlFileQuvi relaxed quviurl videourl file = checkCanAdd file $ do
-	let key = Backend.URL.fromUrl quviurl Nothing
-	ifM (pure relaxed <||> Annex.getState Annex.fast)
+{- Check that the url exists, and has the same size as the key,
+ - and add it as an url to the key. -}
+addUrlChecked :: AddUrlOptions -> URLString -> FilePath -> UUID -> (Key -> Annex (Bool, Bool, URLString)) -> Key -> CommandPerform
+addUrlChecked o url file u checkexistssize key =
+	ifM ((elem url <$> getUrls key) <&&> (elem u <$> loggedLocations key))
 		( do
-			cleanup webUUID quviurl file key Nothing
-			return (Just key)
+			showDestinationFile file
+			next $ return True
 		, do
-			{- Get the size, and use that to check
-			 - disk space. However, the size info is not
-			 - retained, because the size of a video stream
-			 - might change and we want to be able to download
-			 - it later. -}
-			urlinfo <- Url.withUrlOptions (Url.getUrlInfo videourl)
-			let sizedkey = addSizeUrlKey urlinfo key
-			checkDiskSpaceToGet sizedkey Nothing $ do
-				tmp <- fromRepo $ gitAnnexTmpObjectLocation key
-				showOutput
-				ok <- Transfer.notifyTransfer Transfer.Download afile $
-					Transfer.download webUUID key afile Transfer.forwardRetry $ \p -> do
-						liftIO $ createDirectoryIfMissing True (parentDir tmp)
-						downloadUrl key p [videourl] tmp
-				if ok
-					then do
-						cleanup webUUID quviurl file key (Just tmp)
-						return (Just key)
-					else return Nothing
-		)
-  where
-	afile = AssociatedFile (Just file)
-
-addUrlChecked :: Bool -> URLString -> UUID -> (Key -> Annex (Bool, Bool)) -> Key -> CommandPerform
-addUrlChecked relaxed url u checkexistssize key
-	| relaxed = do
-		setUrlPresent u key url
-		next $ return True
-	| otherwise = ifM ((elem url <$> getUrls key) <&&> (elem u <$> loggedLocations key))
-		( next $ return True -- nothing to do
-		, do
-			(exists, samesize) <- checkexistssize key
-			if exists && samesize
+			(exists, samesize, url') <- checkexistssize key
+			if exists && (samesize || relaxedOption (downloadOptions o))
 				then do
-					setUrlPresent u key url
+					setUrlPresent u key url'
 					next $ return True
 				else do
 					warning $ "while adding a new url to an already annexed file, " ++ if exists
@@ -290,64 +241,136 @@ addUrlChecked relaxed url u checkexistssize key
 					stop
 		)
 
-addUrlFile :: Bool -> URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
-addUrlFile relaxed url urlinfo file = checkCanAdd file $ do
-	liftIO $ createDirectoryIfMissing True (parentDir file)
-	ifM (Annex.getState Annex.fast <||> pure relaxed)
-		( nodownload url urlinfo file
-		, downloadWeb url urlinfo file
+{- Downloads an url (except in fast or relaxed mode) and adds it to the
+ - repository, normally at the specified FilePath. 
+ - But, if youtube-dl supports the url, it will be written to a
+ - different file, based on the title of the media. Unless the user
+ - specified fileOption, which then forces using the FilePath.
+ -}
+addUrlFile :: DownloadOptions -> URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
+addUrlFile o url urlinfo file =
+	ifM (Annex.getState Annex.fast <||> pure (relaxedOption o))
+		( nodownloadWeb o url urlinfo file
+		, downloadWeb o url urlinfo file
 		)
 
-downloadWeb :: URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
-downloadWeb url urlinfo file = do
-	let dummykey = addSizeUrlKey urlinfo $ Backend.URL.fromUrl url Nothing
-	let downloader f p = do
+downloadWeb :: DownloadOptions -> URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
+downloadWeb o url urlinfo file =
+	go =<< downloadWith' downloader urlkey webUUID url (AssociatedFile (Just file))
+  where
+	urlkey = addSizeUrlKey urlinfo $ Backend.URL.fromUrl url Nothing
+	downloader f p = do
 		showOutput
-		downloadUrl dummykey p [url] f
-	showAction $ "downloading " ++ url ++ " "
-	downloadWith downloader dummykey webUUID url file
+		downloadUrl urlkey p [url] f
+	go Nothing = return Nothing
+	-- If we downloaded a html file, try to use youtube-dl to
+	-- extract embedded media.
+	go (Just tmp) = ifM (pure (not (rawOption o)) <&&> liftIO (isHtml <$> readFile tmp))
+		( tryyoutubedl tmp
+		, normalfinish tmp
+		)
+	normalfinish tmp = checkCanAdd file $ do
+		showDestinationFile file
+		liftIO $ createDirectoryIfMissing True (parentDir file)
+		finishDownloadWith tmp webUUID url file
+	tryyoutubedl tmp
+		| isJust (fileOption o) = dl file
+		-- Ask youtube-dl what filename it will download
+		-- first, and check if that is already an annexed file,
+		-- to avoid unnecessary work in that case.
+		| otherwise = youtubeDlFileName' url >>= \case
+			Right dest -> ifAnnexed dest 
+				(alreadyannexed dest)
+				(dl dest)
+			Left _ -> normalfinish tmp
+	  where
+		dl dest = withTmpWorkDir mediakey $ \workdir ->
+			Transfer.notifyTransfer Transfer.Download url $
+				Transfer.download webUUID mediakey (AssociatedFile Nothing) Transfer.noRetry $ \_p ->
+					youtubeDl url workdir >>= \case
+						Right (Just mediafile) -> do
+							pruneTmpWorkDirBefore tmp (liftIO . nukeFile)
+							checkCanAdd dest $ do
+								showDestinationFile dest
+								addWorkTree webUUID mediaurl dest mediakey (Just mediafile)
+								return $ Just mediakey
+						Right Nothing -> normalfinish tmp
+						Left msg -> do
+							warning msg
+							return Nothing
+		mediaurl = setDownloader url YoutubeDownloader
+		mediakey = Backend.URL.fromUrl mediaurl Nothing
+		-- Does the already annexed file have the mediaurl
+		-- as an url? If so nothing to do.
+		alreadyannexed dest k = do
+			us <- getUrls k
+			if mediaurl `elem` us
+				then return (Just k)
+				else do
+					warning $ dest ++ " already exists; not overwriting"
+					return Nothing
+
+showDestinationFile :: FilePath -> Annex ()
+showDestinationFile file = do
+	showNote ("to " ++ file)
+	maybeShowJSON $ JSONChunk [("file", file)]
 
 {- The Key should be a dummy key, based on the URL, which is used
  - for this download, before we can examine the file and find its real key.
  - For resuming downloads to work, the dummy key for a given url should be
- - stable. -}
+ - stable. For disk space checking to work, the dummy key should have
+ - the size of the url already set.
+ -
+ - Downloads the url, sets up the worktree file, and returns the
+ - real key.
+ -}
 downloadWith :: (FilePath -> MeterUpdate -> Annex Bool) -> Key -> UUID -> URLString -> FilePath -> Annex (Maybe Key)
 downloadWith downloader dummykey u url file =
+	go =<< downloadWith' downloader dummykey u url afile
+  where
+	afile = AssociatedFile (Just file)
+	go Nothing = return Nothing
+	go (Just tmp) = finishDownloadWith tmp u url file
+
+{- Like downloadWith, but leaves the dummy key content in
+ - the returned location. -}
+downloadWith' :: (FilePath -> MeterUpdate -> Annex Bool) -> Key -> UUID -> URLString -> AssociatedFile -> Annex (Maybe FilePath)
+downloadWith' downloader dummykey u url afile =
 	checkDiskSpaceToGet dummykey Nothing $ do
 		tmp <- fromRepo $ gitAnnexTmpObjectLocation dummykey
-		ifM (runtransfer tmp)
-			( do
-				backend <- chooseBackend file
-				let source = KeySource
-					{ keyFilename = file
-					, contentLocation = tmp
-					, inodeCache = Nothing
-					}
-				k <- genKey source backend
-				case k of
-					Nothing -> return Nothing
-					Just (key, _) -> do
-						cleanup u url file key (Just tmp)
-						return (Just key)
-			, return Nothing
-			)
-  where
-	runtransfer tmp =  Transfer.notifyTransfer Transfer.Download afile $
-		Transfer.download u dummykey afile Transfer.forwardRetry $ \p -> do
-			liftIO $ createDirectoryIfMissing True (parentDir tmp)
-			downloader tmp p
-	afile = AssociatedFile (Just file)
+		ok <- Transfer.notifyTransfer Transfer.Download url $
+			Transfer.download u dummykey afile Transfer.forwardRetry $ \p -> do
+				liftIO $ createDirectoryIfMissing True (parentDir tmp)
+				downloader tmp p
+		if ok
+			then return (Just tmp)
+			else return Nothing
+
+finishDownloadWith :: FilePath -> UUID -> URLString -> FilePath -> Annex (Maybe Key)
+finishDownloadWith tmp u url file = do
+	backend <- chooseBackend file
+	let source = KeySource
+		{ keyFilename = file
+		, contentLocation = tmp
+		, inodeCache = Nothing
+		}
+	genKey source backend >>= \case
+		Nothing -> return Nothing
+		Just (key, _) -> do
+			addWorkTree u url file key (Just tmp)
+			return (Just key)
 
 {- Adds the url size to the Key. -}
 addSizeUrlKey :: Url.UrlInfo -> Key -> Key
 addSizeUrlKey urlinfo key = key { keySize = Url.urlSize urlinfo }
 
-cleanup :: UUID -> URLString -> FilePath -> Key -> Maybe FilePath -> Annex ()
-cleanup u url file key mtmp = case mtmp of
+{- Adds worktree file to the repository. -}
+addWorkTree :: UUID -> URLString -> FilePath -> Key -> Maybe FilePath -> Annex ()
+addWorkTree u url file key mtmp = case mtmp of
 	Nothing -> go
 	Just tmp -> do
 		-- Move to final location for large file check.
-		liftIO $ renameFile tmp file
+		pruneTmpWorkDirBefore tmp (\_ -> liftIO $ renameFile tmp file)
 		largematcher <- largeFilesMatcher
 		large <- checkFileMatcher largematcher file
 		if large
@@ -366,18 +389,36 @@ cleanup u url file key mtmp = case mtmp of
 			( do
 				when (isJust mtmp) $
 					logStatus key InfoPresent
-			, liftIO $ maybe noop nukeFile mtmp
+			, maybe noop (\tmp -> pruneTmpWorkDirBefore tmp (liftIO . nukeFile)) mtmp
 			)
 
-nodownload :: URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
-nodownload url urlinfo file
-	| Url.urlExists urlinfo = do
-		let key = Backend.URL.fromUrl url (Url.urlSize urlinfo)
-		cleanup webUUID url file key Nothing
-		return (Just key)
+nodownloadWeb :: DownloadOptions -> URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
+nodownloadWeb o url urlinfo file
+	| Url.urlExists urlinfo = if rawOption o
+		then nomedia
+		else either (const nomedia) usemedia
+			=<< youtubeDlFileName url
 	| otherwise = do
 		warning $ "unable to access url: " ++ url
 		return Nothing
+  where
+	nomedia = do
+		let key = Backend.URL.fromUrl url (Url.urlSize urlinfo)
+		nodownloadWeb' url key file
+	usemedia mediafile = do
+		let dest = if isJust (fileOption o)
+			then file
+			else takeFileName mediafile
+		let mediaurl = setDownloader url YoutubeDownloader
+		let mediakey = Backend.URL.fromUrl mediaurl Nothing
+		nodownloadWeb' mediaurl mediakey dest
+
+nodownloadWeb' :: URLString -> Key -> FilePath -> Annex (Maybe Key)
+nodownloadWeb' url key file = checkCanAdd file $ do
+	showDestinationFile file
+	liftIO $ createDirectoryIfMissing True (parentDir file)
+	addWorkTree webUUID url file key Nothing
+	return (Just key)
 
 url2file :: URI -> Maybe Int -> Int -> FilePath
 url2file url pathdepth pathmax = case pathdepth of
@@ -411,7 +452,7 @@ adjustFile o = addprefix . addsuffix
 checkCanAdd :: FilePath -> Annex (Maybe a) -> Annex (Maybe a)
 checkCanAdd file a = ifM (isJust <$> (liftIO $ catchMaybeIO $ getSymbolicLinkStatus file))
 	( do
-		warning $ file ++ " already exists and is not annexed; not overwriting"
+		warning $ file ++ " already exists; not overwriting"
 		return Nothing
 	, ifM ((not <$> Annex.getState Annex.force) <&&> checkIgnored file)
 		( do

@@ -23,7 +23,7 @@ seek _ = do
 
 mergeBranch :: CommandStart
 mergeBranch = do
-	showStart "merge" "git-annex"
+	showStart' "merge" (Just "git-annex")
 	next $ do
 		Annex.Branch.update
 		-- commit explicitly, in case no remote branches were merged

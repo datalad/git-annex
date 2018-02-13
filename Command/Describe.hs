@@ -22,7 +22,7 @@ seek = withWords start
 
 start :: [String] -> CommandStart
 start (name:description) = do
-	showStart "describe" name
+	showStart' "describe" (Just name)
 	u <- Remote.nameToUUID name
 	next $ perform u $ unwords description
 start _ = giveup "Specify a repository and a description."	

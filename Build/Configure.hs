@@ -1,12 +1,8 @@
-{- Checks system configuration and generates SysConfig.hs. -}
+{- Checks system configuration and generates SysConfig. -}
 
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Build.Configure where
-
-import Control.Applicative
-import Control.Monad.IfElse
-import Control.Monad
 
 import Build.TestConfig
 import Build.Version
@@ -14,11 +10,16 @@ import Utility.PartialPrelude
 import Utility.Process
 import Utility.SafeCommand
 import Utility.ExternalSHA
-import Utility.Env
+import Utility.Env.Basic
 import Utility.Exception
 import qualified Git.Version
 import Utility.DottedVersion
 import Utility.Directory
+
+import Control.Monad.IfElse
+import Control.Monad
+import Control.Applicative
+import Prelude
 
 tests :: [TestCase]
 tests =

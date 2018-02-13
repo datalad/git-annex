@@ -1,3 +1,54 @@
+git-annex (6.20180112) upstream; urgency=medium
+
+  * Added inprogress command for accessing files as they are being
+    downloaded.
+  * Fix bug introduced in version 6.20171018 that caused some commands
+    to print out "ok" twice after processing a file.
+  * addurl: When the file youtube-dl will download is already an annexed
+    file, don't download it again and fail to overwrite it, instead just do
+    nothing, like it used to when quvi was used.
+  * addurl: Fix encoding of filename queried from youtube-dl when in
+    --fast mode.
+  * Fix several places where files in .git/annex/ were written with modes
+    that did not take the core.sharedRepository config into account.
+  * Improve startup time for commands that do not operate on remotes,
+    and for tab completion, by not unnessessarily statting paths to
+    remotes, which used to cause eg, spin-up of removable drives.
+  * Added remote.<name>.annex-checkuuid config, which can be set to false
+    to disable the default checking of the uuid of remotes that point to
+    directories. This can be useful to avoid unncessary drive spin-ups and
+    automounting.
+  * git-annex.cabal: Add back custom-setup stanza, so cabal new-build works.
+  * git-annex.cabal: Removed the testsuite build flag; test suite is always
+    included.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 12 Jan 2018 15:45:48 -0400
+
+git-annex (6.20171214) upstream; urgency=medium
+
+  * Use youtube-dl rather than quvi to download media from web pages,
+    since quvi is not being actively developed and youtube-dl supports
+    many more sites.
+  * addurl --relaxed got slower, since youtube-dl has to hit the network
+    to check for embedded media. If you relied on --relaxed not hitting the
+    network for speed reasons, using --relaxed --raw will get the old level
+    of speed, but can't be used for urls with embedded videos.
+  * importfeed now downloads things linked to by feeds, even when they are
+    not media files.
+  * Removed no longer needed dependency on yesod-default.
+  * Allow exporttree remotes to be marked as dead.
+  * initremote, enableremote: Really support gpg subkeys suffixed with an
+    exclamation mark, which forces gpg to use a specific subkey.
+    (Previous try had a bug.)
+  * lookupkey: Support being given an absolute filename to a file
+    within the current git repository.
+  * A top-level .noannex file will prevent git-annex init from being used
+    in a repository. This is useful for repositories that have a policy
+    reason not to use git-annex. The content of the file will be displayed
+    to the user who tries to run git-annex init.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 14 Dec 2017 11:50:48 -0400
+
 git-annex (6.20171124) unstable; urgency=medium
 
   * Display progress meter when uploading a key without size information,

@@ -24,6 +24,6 @@ start :: [String] -> CommandStart
 start (g:[]) = next $ performGet groupPreferredContentMapRaw g
 start (g:expr:[]) = do
 	allowMessages
-	showStart "groupwanted" g
+	showStart' "groupwanted" (Just g)
 	next $ performSet groupPreferredContentSet expr g
 start _ = giveup "Specify a group."

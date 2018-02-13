@@ -27,7 +27,7 @@ trustCommand c level = withWords start
   where
 	start ws = do
 		let name = unwords ws
-		showStart c name
+		showStart' c (Just name)
 		u <- Remote.nameToUUID name
 		next $ perform u
 	perform uuid = do

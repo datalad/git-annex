@@ -50,21 +50,20 @@ optParser _ = setconfig <|> getconfig <|> unsetconfig
 seek :: Action -> CommandSeek
 seek (SetConfig name val) = commandAction $ do
 	allowMessages
-	showStart name val
+	showStart' name (Just val)
 	next $ next $ do
 		setGlobalConfig name val
 		setConfig (ConfigKey name) val
 		return True
 seek (UnsetConfig name) = commandAction $ do
 	allowMessages
-	showStart name "unset"
+	showStart' name (Just "unset")
 	next $ next $ do
 		unsetGlobalConfig name
 		unsetConfig (ConfigKey name)
 		return True
-seek (GetConfig name) = commandAction $ do
-	mv <- getGlobalConfig name
-	case mv of
+seek (GetConfig name) = commandAction $
+	getGlobalConfig name >>= \case
 		Nothing -> stop
 		Just v -> do
 			liftIO $ putStrLn v

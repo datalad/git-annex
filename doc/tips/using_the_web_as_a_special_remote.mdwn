@@ -68,41 +68,34 @@ number takes that many paths from the end.
 
 ## videos
 
-<a name=quvi></a>
+<a name=videos></a>
 
 There's support for downloading videos from sites like YouTube, Vimeo,
-and many more. This relies on [quvi](http://quvi.sourceforge.net/) to find
-urls to the actual videos files.
+and many more. This relies on [youtube-dl](https://rg3.github.io/youtube-dl/)
+to download the videos.
 
-When you have quvi installed, you can just 
+When you have youtube-dl installed, you can just 
 `git annex addurl http://youtube.com/foo` and it will detect that
 it is a video and download the video content for offline viewing.
 
 Later, in another clone of the repository, you can run `git annex get` on
-the file and it will also be downloaded with the help of quvi. This works
+the file and it will also be downloaded with youtube-dl. This works
 even if the video host has transcoded or otherwise changed the video
 in the meantime; the assumption is that these video files are equivalent.
 
-There is an `annex.quvi-options` configuration setting that can be used
+There is an `annex.youtube-dl-options` configuration setting that can be used
 to pass parameters to quvi. For example, you could set `git config
-annex.quvi-options "--format low"` to configure it to download low
-quality videos from YouTube.
+annex.youtube-dl-options "--format worst"` to configure it to download low
+quality videos from YouTube. Note that the youtube-dl configuration files
+are not read when git-annex runs youtube-dl, to avoid config settings that
+break its integration.
 
-Note that for performance reasons, the url is not checked for redirects,
-so some shortened urls will not be detected. You can
-either load the short url in a browser to get the full url, or you
-can force use of quvi with redirect detection, by prepending "quvi:" to the
-url.
-
-To download a youtube playlist, you need to find the feed associated with that
-playlist, and pass it to `git annex importfeed`. There does not seem to be
-an easy link anywhere to get the feed, but you can construct its url
-manually. For a playlist like
-"https://www.youtube.com/playlist?list=PL4F80C7D2DC8D9B6C", the
-feed is "http://gdata.youtube.com/feeds/api/playlists/PL4F80C7D2DC8D9B6C"
-
-More details about youtube feeds at <http://googlesystem.blogspot.com/2008/01/youtube-feeds.html>
--- `git-annex importfeed` should handle all of them.
+To download a youtube channel, you need to find the RSS feed associated with
+that channel, and pass it to `git annex importfeed`. There does not seem to
+be an easy link anywhere to get the RSS feed, but you can construct its url
+manually. For a channel like
+"https://www.youtube.com/channel/$foo", the
+feed is "https://www.youtube.com/feeds/videos.xml?channel_id=$foo"
 
 ## bittorrent
 

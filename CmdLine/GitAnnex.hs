@@ -73,6 +73,7 @@ import qualified Command.Merge
 import qualified Command.ResolveMerge
 import qualified Command.Info
 import qualified Command.Status
+import qualified Command.Inprogress
 import qualified Command.Migrate
 import qualified Command.Uninit
 import qualified Command.Reinit
@@ -116,10 +117,8 @@ import qualified Command.WebApp
 #endif
 #endif
 import qualified Command.Test
-#ifdef WITH_TESTSUITE
 import qualified Command.FuzzTest
 import qualified Command.TestRemote
-#endif
 #ifdef WITH_BENCHMARK
 import qualified Command.Benchmark
 #endif
@@ -205,6 +204,7 @@ cmds testoptparser testrunner =
 	, Command.ResolveMerge.cmd
 	, Command.Info.cmd
 	, Command.Status.cmd
+	, Command.Inprogress.cmd
 	, Command.Migrate.cmd
 	, Command.Map.cmd
 	, Command.Direct.cmd
@@ -226,10 +226,8 @@ cmds testoptparser testrunner =
 #endif
 #endif
 	, Command.Test.cmd testoptparser testrunner
-#ifdef WITH_TESTSUITE
 	, Command.FuzzTest.cmd
 	, Command.TestRemote.cmd
-#endif
 #ifdef WITH_BENCHMARK
 	, Command.Benchmark.cmd
 #endif

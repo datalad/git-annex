@@ -8,9 +8,9 @@
 module Command.Version where
 
 import Command
-import qualified Build.SysConfig as SysConfig
 import Annex.Version
 import BuildInfo
+import BuildFlags
 import Types.Key
 import qualified Types.Backend as B
 import qualified Types.Remote as R
@@ -61,7 +61,7 @@ showVersion = do
 
 showPackageVersion :: IO ()
 showPackageVersion = do
-	vinfo "git-annex version" SysConfig.packageversion
+	vinfo "git-annex version" BuildInfo.packageversion
 	vinfo "build flags" $ unwords buildFlags
 	vinfo "dependency versions" $ unwords dependencyVersions
 	vinfo "key/value backends" $ unwords $
@@ -70,7 +70,7 @@ showPackageVersion = do
 
 showRawVersion :: IO ()
 showRawVersion = do
-	putStr SysConfig.packageversion
+	putStr BuildInfo.packageversion
 	hFlush stdout -- no newline, so flush
 
 vinfo :: String -> String -> IO ()

@@ -10,13 +10,16 @@
 module Utility.Gpg where
 
 import Common
-import qualified Build.SysConfig as SysConfig
+import qualified BuildInfo
 #ifndef mingw32_HOST_OS
 import System.Posix.Types
-import qualified System.Posix.IO
+import System.Posix.IO
 import Utility.Env
-#endif
+import Utility.Env.Set
+#else
 import Utility.Tmp
+#endif
+import Utility.Tmp.Dir
 import Utility.Format (decode_c)
 
 import Control.Concurrent
@@ -35,7 +38,7 @@ newtype GpgCmd = GpgCmd { unGpgCmd :: String }
  - command was found at configure time, use it, or otherwise, "gpg". -}
 mkGpgCmd :: Maybe FilePath -> GpgCmd
 mkGpgCmd (Just c) = GpgCmd c
-mkGpgCmd Nothing = GpgCmd (fromMaybe "gpg" SysConfig.gpg)
+mkGpgCmd Nothing = GpgCmd (fromMaybe "gpg" BuildInfo.gpg)
 
 boolGpgCmd :: GpgCmd -> [CommandParam] -> IO Bool
 boolGpgCmd (GpgCmd cmd) = boolSystem cmd
@@ -171,7 +174,7 @@ findPubKeys cmd for
 
 {- "subkey!" tells gpg to force use of a specific subkey -}
 isForcedSubKey :: String -> Bool
-isForcedSubKey s = "!" `isSuffixOf` s && all isHexDigit (drop 1 s)
+isForcedSubKey s = "!" `isSuffixOf` s && all isHexDigit (drop 1 (reverse s))
 
 type UserId = String
 

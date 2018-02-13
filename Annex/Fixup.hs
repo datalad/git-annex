@@ -10,7 +10,6 @@ module Annex.Fixup where
 import Git.Types
 import Git.Config
 import Types.GitConfig
-import qualified Git.Construct as Construct
 import qualified Git.BuildVersion
 import Utility.Path
 import Utility.SafeCommand
@@ -30,7 +29,7 @@ fixupRepo r c = do
 	let r' = disableWildcardExpansion r
 	r'' <- fixupSubmodule r' c
 	if annexDirect c
-		then fixupDirect r''
+		then return (fixupDirect r'')
 		else return r''
 
 {- Disable git's built-in wildcard expansion, which is not wanted
@@ -44,19 +43,16 @@ disableWildcardExpansion r
 {- Direct mode repos have core.bare=true, but are not really bare.
  - Fix up the Repo to be a non-bare repo, and arrange for git commands
  - run by git-annex to be passed parameters that override this setting. -}
-fixupDirect :: Repo -> IO Repo
+fixupDirect :: Repo -> Repo
 fixupDirect r@(Repo { location = l@(Local { gitdir = d, worktree = Nothing }) }) = do
-	let r' = r
+	r
 		{ location = l { worktree = Just (parentDir d) }
 		, gitGlobalOpts = gitGlobalOpts r ++
 			[ Param "-c"
 			, Param $ coreBare ++ "=" ++ boolConfig False
 			]
 		}
-	-- Recalc now that the worktree is correct.
-	rs' <- Construct.fromRemotes r'
-	return $ r' { remotes = rs' }
-fixupDirect r = return r
+fixupDirect r = r
 
 {- Submodules have their gitdir containing ".git/modules/", and
  - have core.worktree set, and also have a .git file in the top

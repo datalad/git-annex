@@ -8,6 +8,7 @@
 {-# LANGUAGE CPP #-}
 
 module Annex.Init (
+	AutoInit(..),
 	ensureInitialized,
 	isInitialized,
 	initialize,
@@ -48,6 +49,23 @@ import System.Posix.User
 import qualified Utility.LockFile.Posix as Posix
 #endif
 
+newtype AutoInit = AutoInit Bool
+
+checkCanInitialize :: AutoInit -> Annex a -> Annex a
+checkCanInitialize (AutoInit True) a = a
+checkCanInitialize (AutoInit False) a = fromRepo Git.repoWorkTree >>= \case
+	Nothing -> a
+	Just wt -> liftIO (catchMaybeIO (readFile (wt </> ".noannex"))) >>= \case
+		Nothing -> a
+		Just noannexmsg -> ifM (Annex.getState Annex.force)
+			( a
+			, do
+				warning "Initialization prevented by .noannex file (use --force to override)"
+				unless (null noannexmsg) $
+					warning noannexmsg
+				giveup "Not initialized."
+			)
+
 genDescription :: Maybe String -> Annex String
 genDescription (Just d) = return d
 genDescription Nothing = do
@@ -59,8 +77,8 @@ genDescription Nothing = do
 		Right username -> [username, at, hostname, ":", reldir]
 		Left _ -> [hostname, ":", reldir]
 
-initialize :: Maybe String -> Maybe Version -> Annex ()
-initialize mdescription mversion = do
+initialize :: AutoInit -> Maybe String -> Maybe Version -> Annex ()
+initialize ai mdescription mversion = checkCanInitialize ai $ do
 	{- Has to come before any commits are made as the shared
 	 - clone heuristic expects no local objects. -}
 	sharedclone <- checkSharedClone
@@ -70,7 +88,7 @@ initialize mdescription mversion = do
 	ensureCommit $ Annex.Branch.create
 
 	prepUUID
-	initialize' mversion
+	initialize' (AutoInit True) mversion
 	
 	initSharedClone sharedclone
 
@@ -79,8 +97,8 @@ initialize mdescription mversion = do
 
 -- Everything except for uuid setup, shared clone setup, and initial
 -- description.
-initialize' :: Maybe Version -> Annex ()
-initialize' mversion = do
+initialize' :: AutoInit -> Maybe Version -> Annex ()
+initialize' ai mversion = checkCanInitialize ai $ do
 	checkLockSupport
 	checkFifoSupport
 	checkCrippledFileSystem
@@ -131,7 +149,7 @@ ensureInitialized :: Annex ()
 ensureInitialized = getVersion >>= maybe needsinit checkUpgrade
   where
 	needsinit = ifM Annex.Branch.hasSibling
-			( initialize Nothing Nothing
+			( initialize (AutoInit True) Nothing Nothing
 			, giveup "First run: git-annex init"
 			)
 

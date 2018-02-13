@@ -1,0 +1,13 @@
+It's mostly working now. Still need to fix --fast and --relaxed, and avoid
+youtube-dl running out of the annex.diskreserve.
+
+The first hour or two was spent adding support for per-key temp
+directories. youtube-dl is run inside such a directory, to let it write
+whatever files it needs. Like the per-key temp files, these temp directories
+are not cleaned up when a download fails or is interrupted, so resuming can
+pick up where it left off. Taught `git annex dropunused` and everything
+else that cleans up per-key temp files to also clean up the temp
+directories.
+
+Today's work was sponsored by Trenton Cronholm on
+[Patreon](https://patreon.com/joeyh/)

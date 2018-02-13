@@ -16,6 +16,7 @@ import qualified Remote.Rsync as Rsync
 import qualified Remote.GCrypt as GCrypt
 import qualified Git
 import qualified Git.Command
+import qualified Annex
 import qualified Annex.SpecialRemote
 import Logs.UUID
 import Logs.Remote
@@ -79,17 +80,15 @@ initSpecialRemote name remotetype mcreds config = go 0
 	go :: Int -> Annex RemoteName
 	go n = do
 		let fullname = if n == 0  then name else name ++ show n
-		r <- Annex.SpecialRemote.findExisting fullname
-		case r of
+		Annex.SpecialRemote.findExisting fullname >>= \case
 			Nothing -> setupSpecialRemote fullname remotetype config mcreds
 				(Nothing, R.Init, Annex.SpecialRemote.newConfig fullname)
 			Just _ -> go (n + 1)
 
 {- Enables an existing special remote. -}
 enableSpecialRemote :: SpecialRemoteMaker
-enableSpecialRemote name remotetype mcreds config = do
-	r <- Annex.SpecialRemote.findExisting name
-	case r of
+enableSpecialRemote name remotetype mcreds config =
+	Annex.SpecialRemote.findExisting name >>= \case
 		Nothing -> error $ "Cannot find a special remote named " ++ name
 		Just (u, c) -> setupSpecialRemote' False name remotetype config mcreds (Just u, R.Enable c, c)
 
@@ -124,26 +123,26 @@ makeGitRemote basename location = makeRemote basename location $ \name ->
  - Returns the name of the remote. -}
 makeRemote :: String -> String -> (RemoteName -> Annex ()) -> Annex RemoteName
 makeRemote basename location a = do
-	g <- gitRepo
-	if not (any samelocation $ Git.remotes g)
+	rs <- Annex.getGitRemotes
+	if not (any samelocation rs)
 		then do
-			let name = uniqueRemoteName basename 0 g
+			let name = uniqueRemoteName basename 0 rs
 			a name
 			return name
 		else return basename
   where
 	samelocation x = Git.repoLocation x == location
 
-{- Generate an unused name for a remote, adding a number if
- - necessary.
+{- Given a list of all remotes, generate an unused name for a new
+ - remote, adding a number if necessary.
  -
  - Ensures that the returned name is a legal git remote name. -}
-uniqueRemoteName :: String -> Int -> Git.Repo -> RemoteName
-uniqueRemoteName basename n r
+uniqueRemoteName :: String -> Int -> [Git.Repo] -> RemoteName
+uniqueRemoteName basename n rs
 	| null namecollision = name
-	| otherwise = uniqueRemoteName legalbasename (succ n) r
+	| otherwise = uniqueRemoteName legalbasename (succ n) rs
   where
-	namecollision = filter samename (Git.remotes r)
+	namecollision = filter samename rs
 	samename x = Git.remoteName x == Just name
 	name
 		| n == 0 = legalbasename

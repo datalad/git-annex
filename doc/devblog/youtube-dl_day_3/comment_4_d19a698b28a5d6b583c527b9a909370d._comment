@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joseph.rawson.works@85a210ab8c0e37a0b2d6bb235738b20e23e8878f"
+ nickname="joseph.rawson.works"
+ avatar="http://cdn.libravatar.org/avatar/6b473d5484b68803e8c47eeff9197397"
+ subject="testing importfeed"
+ date="2018-01-06T21:57:06Z"
+ content="""
+I tested importfeed.  It seemed to be stuck on ```importfeed checking known urls```.  The first playlist I tried had 70+ videos, so I tested a shorter playlist and got the same response.  I noticed that on the [[tips/downloading_podcasts]] page, only channels are mentions, but not playlists.  However, you mentioned playlists in your response.  I was able to work around the issue:
+
+```for _id in `youtube-dl 'https://www.youtube.com/watch?v=ps40Uminvno&list=PLWnVxuqvY7Jj2Z8aeR-qKXACCXUN4Ouv_' --get-id` ; do echo \"https://www.youtube.com/watch?v=${_id}\" ; done | git-annex addurl --batch --jobs 2```
+
+"""]]

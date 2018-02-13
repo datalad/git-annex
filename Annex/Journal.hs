@@ -17,6 +17,7 @@ import Annex.Common
 import qualified Git
 import Annex.Perms
 import Annex.LockFile
+import Utility.Directory.Stream
 
 {- Records content for a file in the branch to the journal.
  -

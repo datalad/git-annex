@@ -21,6 +21,7 @@ module Annex.Content (
 	prepTmp,
 	withTmp,
 	checkDiskSpace,
+	needMoreDiskSpace,
 	moveAnnex,
 	populatePointerFile,
 	linkToAnnex,
@@ -42,11 +43,13 @@ module Annex.Content (
 	dirKeys,
 	withObjectLoc,
 	staleKeysPrune,
+	pruneTmpWorkDirBefore,
 	isUnmodified,
 	verifyKeyContent,
 	VerifyConfig(..),
 	Verification(..),
 	unVerified,
+	withTmpWorkDir,
 ) where
 
 import System.IO.Unsafe (unsafeInterleaveIO)
@@ -167,7 +170,7 @@ inAnnexSafe key = inAnnex' (fromMaybe True) (Just False) go key
 	checkdirect contentfile lockfile =
 		ifM (liftIO $ doesFileExist contentfile)
 			( modifyContent lockfile $ liftIO $
-				lockShared >>= \case
+				lockShared lockfile >>= \case
 					Nothing -> return is_locked
 					Just lockhandle -> do
 						dropLock lockhandle
@@ -303,7 +306,7 @@ getViaTmp' v key action = do
 	(ok, verification) <- action tmpfile
 	if ok
 		then ifM (verifyKeyContent v verification key tmpfile)
-			( ifM (moveAnnex key tmpfile)
+			( ifM (pruneTmpWorkDirBefore tmpfile (moveAnnex key))
 				( do
 					logStatus key InfoPresent
 					return True
@@ -311,7 +314,7 @@ getViaTmp' v key action = do
 				)
 			, do
 				warning "verification of content failed"
-				liftIO $ nukeFile tmpfile
+				pruneTmpWorkDirBefore tmpfile (liftIO . nukeFile)
 				return False
 			)
 		-- On transfer failure, the tmp file is left behind, in case
@@ -386,7 +389,7 @@ prepTmp key = do
 	createAnnexDirectory (parentDir tmp)
 	return tmp
 
-{- Creates a temp file for a key, runs an action on it, and cleans up
+{- Prepares a temp file for a key, runs an action on it, and cleans up
  - the temp file. If the action throws an exception, the temp file is
  - left behind, which allows for resuming.
  -}
@@ -394,7 +397,7 @@ withTmp :: Key -> (FilePath -> Annex a) -> Annex a
 withTmp key action = do
 	tmp <- prepTmp key
 	res <- action tmp
-	liftIO $ nukeFile tmp
+	pruneTmpWorkDirBefore tmp (liftIO . nukeFile)
 	return res
 
 {- Checks that there is disk space available to store a given key,
@@ -429,16 +432,17 @@ checkDiskSpace' need destdir key alreadythere samefilesystem = ifM (Annex.getSta
 				let delta = need + reserve - have - alreadythere + inprogress
 				let ok = delta <= 0
 				unless ok $
-					needmorespace delta
+					warning $ needMoreDiskSpace delta
 				return ok
 			_ -> return True
 	)
   where
 	dir = maybe (fromRepo gitAnnexDir) return destdir
-	needmorespace n =
-		warning $ "not enough free space, need " ++ 
-			roughSize storageUnits True n ++
-			" more" ++ forcemsg
+
+needMoreDiskSpace :: Integer -> String
+needMoreDiskSpace n = "not enough free space, need " ++ 
+	roughSize storageUnits True n ++ " more" ++ forcemsg
+  where
 	forcemsg = " (use --force to override this check or adjust annex.diskreserve)"
 
 {- Moves a key's content into .git/annex/objects/
@@ -989,7 +993,8 @@ staleKeysPrune dirspec nottransferred = do
 	let stale = contents `exclude` dups
 
 	dir <- fromRepo dirspec
-	liftIO $ forM_ dups $ \t -> removeFile $ dir </> keyFile t
+	forM_ dups $ \k ->
+		pruneTmpWorkDirBefore (dir </> keyFile k) (liftIO . removeFile)
 
 	if nottransferred
 		then do
@@ -997,6 +1002,43 @@ staleKeysPrune dirspec nottransferred = do
 				<$> getTransfers
 			return $ filter (`S.notMember` inprogress) stale
 		else return stale
+
+{- Prune the work dir associated with the specified content file,
+ - before performing an action that deletes the file, or moves it away.
+ -
+ - This preserves the invariant that the workdir never exists without
+ - the content file.
+ -}
+pruneTmpWorkDirBefore :: FilePath -> (FilePath -> Annex a) -> Annex a
+pruneTmpWorkDirBefore f action = do
+	let workdir = gitAnnexTmpWorkDir f
+	liftIO $ whenM (doesDirectoryExist workdir) $
+		removeDirectoryRecursive workdir
+	action f
+
+{- Runs an action, passing it a temporary work directory where
+ - it can write files while receiving the content of a key.
+ -
+ - On exception, or when the action returns Nothing,
+ - the temporary work directory is left, so resumes can use it.
+ -}
+withTmpWorkDir :: Key -> (FilePath -> Annex (Maybe a)) -> Annex (Maybe a)
+withTmpWorkDir key action = do
+	-- Create the object file if it does not exist. This way,
+	-- staleKeysPrune only has to look for object files, and can
+	-- clean up gitAnnexTmpWorkDir for those it finds.
+	obj <- prepTmp key
+	unlessM (liftIO $ doesFileExist obj) $ do
+		liftIO $ writeFile obj ""
+		setAnnexFilePerm obj
+	let tmpdir = gitAnnexTmpWorkDir obj
+	liftIO $ createDirectoryIfMissing True tmpdir
+	setAnnexDirPerm tmpdir
+	res <- action tmpdir
+	case res of
+		Just _ -> liftIO $ removeDirectoryRecursive tmpdir
+		Nothing -> noop
+	return res
 
 {- Finds items in the first, smaller list, that are not
  - present in the second, larger list.

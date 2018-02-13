@@ -12,6 +12,8 @@ module Annex.Action where
 import qualified Data.Map as M
 #ifndef mingw32_HOST_OS
 import System.Posix.Signals
+import System.Posix.Process (getAnyProcessStatus)
+import Utility.Exception
 #endif
 
 import Annex.Common
@@ -46,3 +48,19 @@ stopCoProcesses = do
 	checkAttrStop
 	hashObjectStop
 	checkIgnoreStop
+
+{- Reaps any zombie processes that may be hanging around.
+ -
+ - Warning: Not thread safe. Anything that was expecting to wait
+ - on a process and get back an exit status is going to be confused
+ - if this reap gets there first. -}
+reapZombies :: IO ()
+#ifndef mingw32_HOST_OS
+reapZombies =
+	-- throws an exception when there are no child processes
+	catchDefaultIO Nothing (getAnyProcessStatus False True)
+		>>= maybe (return ()) (const reapZombies)
+
+#else
+reapZombies = return ()
+#endif

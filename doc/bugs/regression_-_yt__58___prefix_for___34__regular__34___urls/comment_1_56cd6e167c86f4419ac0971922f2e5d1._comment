@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2017-12-06T15:51:03Z"
+ content="""
+Reporoduced by putting "Lots of abouts" in a http://localhost/about.txt file,
+and running git annex addurl --file with an existing file and that url.
+"""]]

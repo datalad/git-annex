@@ -55,11 +55,10 @@ getAnnexLinkTarget' file coresymlinks = if coresymlinks
 		check probefilecontent $
 			return Nothing
   where
-	check getlinktarget fallback = do
-		v <- liftIO $ catchMaybeIO $ getlinktarget file
-		case v of
+	check getlinktarget fallback = 
+		liftIO (catchMaybeIO $ getlinktarget file) >>= \case
 			Just l
-				| isLinkToAnnex (fromInternalGitPath l) -> return v
+				| isLinkToAnnex (fromInternalGitPath l) -> return (Just l)
 				| otherwise -> return Nothing
 			Nothing -> fallback
 

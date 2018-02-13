@@ -1,4 +1,4 @@
-{-# LANGUAGE PackageImports, CPP #-}
+{-# LANGUAGE PackageImports #-}
 
 module Common (module X) where
 
@@ -14,9 +14,6 @@ import Data.Default as X
 
 import System.FilePath as X
 import System.IO as X hiding (FilePath)
-#ifndef mingw32_HOST_OS
-import System.Posix.IO as X hiding (createPipe)
-#endif
 import System.Exit as X
 import System.PosixCompat.Files as X hiding (fileSize)
 

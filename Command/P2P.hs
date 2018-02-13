@@ -19,7 +19,7 @@ import qualified Annex
 import Annex.UUID
 import Config
 import Utility.AuthToken
-import Utility.Tmp
+import Utility.Tmp.Dir
 import Utility.FileMode
 import Utility.ThreadScheduler
 import qualified Utility.MagicWormhole as Wormhole
@@ -76,7 +76,7 @@ seek (Pair, Nothing) = commandAction $ do
 unusedPeerRemoteName :: Annex RemoteName
 unusedPeerRemoteName = go (1 :: Integer) =<< usednames
   where
-	usednames = mapMaybe remoteName . remotes <$> Annex.gitRepo
+	usednames = mapMaybe remoteName <$> Annex.getGitRemotes
 	go n names = do
 		let name = "peer" ++ show n
 		if name `elem` names
@@ -97,7 +97,7 @@ genAddresses addrs = do
 -- Address is read from stdin, to avoid leaking it in shell history.
 linkRemote :: RemoteName -> CommandStart
 linkRemote remotename = do
-	showStart "p2p link" remotename
+	showStart' "p2p link" (Just remotename)
 	next $ next promptaddr
   where
 	promptaddr = do
@@ -123,7 +123,7 @@ linkRemote remotename = do
 startPairing :: RemoteName -> [P2PAddress] -> CommandStart
 startPairing _ [] = giveup "No P2P networks are currrently available."
 startPairing remotename addrs = do
-	showStart "p2p pair" remotename
+	showStart' "p2p pair" (Just remotename)
 	ifM (liftIO Wormhole.isInstalled)
 		( next $ performPairing remotename addrs
 		, giveup "Magic Wormhole is not installed, and is needed for pairing. Install it from your distribution or from https://github.com/warner/magic-wormhole/"

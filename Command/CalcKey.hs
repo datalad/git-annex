@@ -19,10 +19,8 @@ cmd = noCommit $ noMessages $ dontCheck repoExists $
 		(batchable run (pure ()))
 
 run :: () -> String -> Annex Bool
-run _ file = do
-	mkb <- genKey (KeySource file file Nothing) Nothing
-	case mkb of
-		Just (k, _) -> do
-			liftIO $ putStrLn $ key2file k
-			return True
-		Nothing -> return False
+run _ file = genKey (KeySource file file Nothing) Nothing >>= \case
+	Just (k, _) -> do
+		liftIO $ putStrLn $ key2file k
+		return True
+	Nothing -> return False

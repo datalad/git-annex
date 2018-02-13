@@ -1,0 +1,31 @@
+### Please describe the problem.
+
+some tests started to fail in datalad when tried current master version of annex
+
+### What version of git-annex are you using? On what operating system?
+
+6.20171205+gitgcf05ebbeb-1~ndall+1
+
+### Please provide any additional information below.
+
+[[!format sh """
+(git-annex)hopa:/tmp/datalad_temp_test_AnnexRepo_web_remoteRusdWA[master]git
+$> git annex whereis --json 127.0.0.1_about.txt
+{"command":"whereis","note":"web: http://example.com/someurl\nweb: yt:http://127.0.0.1:33587/about.txt\n","success":true,"untrusted":[],"key":"SHA256E-s14--198775960d0d9827f134da4e219e5793949d24b62bfcb92aa9e2dc16d411b776.txt","whereis":[{"here":false,"uuid":"00000000-0000-0000-0000-000000000001","urls":["http://example.com/someurl","yt:http://127.0.0.1:33587/about.txt"],"description":"web"}],"file":"127.0.0.1_about.txt"}
+
+$> git annex whereis 127.0.0.1_about.txt      
+whereis 127.0.0.1_about.txt (1 copy) 
+  	00000000-0000-0000-0000-000000000001 -- web
+
+  web: http://example.com/someurl
+  web: yt:http://127.0.0.1:33587/about.txt
+
+"""]]
+
+This is a new behavior, this test was passing before, and I do not think we suggested that those test files are anyhow related to youtube before.
+
+Some tests also failed related to our datalad archives git annex special remote but I didn't look into them yet -- I guess though that it is related ;-)
+
+[[!meta author=yoh]]
+
+> [[fixed|done]] --[[Joey]]

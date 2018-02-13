@@ -34,7 +34,7 @@ seek = commandAction . start
 
 start :: ForgetOptions -> CommandStart
 start o = do
-	showStart "forget" "git-annex"
+	showStart' "forget" (Just "git-annex")
 	c <- liftIO currentVectorClock
 	let basets = addTransition c ForgetGitHistory noTransitions
 	let ts = if dropDead o

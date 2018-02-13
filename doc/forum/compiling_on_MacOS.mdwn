@@ -1,0 +1,3 @@
+When compiling on MacOS using Stack, I get errors related to the iconv library:
+https://travis-ci.org/conda-forge/staged-recipes/builds/315444536?utm_source=github_status&utm_medium=notification
+Any suggestions on how to fix this?

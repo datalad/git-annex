@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="woffs"
+ avatar="http://cdn.libravatar.org/avatar/198790d74209efe4896fd4cfc37ec2a6"
+ subject="hook and quoting"
+ date="2017-12-09T11:18:10Z"
+ content="""
+Hi,
+
+just detected that the provided pre-commit-annex script is broken for filenames containing a '
+"""]]

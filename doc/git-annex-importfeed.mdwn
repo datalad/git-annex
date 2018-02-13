@@ -8,14 +8,13 @@ git annex importfeed `[url ...]`
 
 # DESCRIPTION
 
-Imports the contents of podcast feeds. Only downloads files whose
+Imports the contents of podcasts and other feeds. Only downloads files whose
 content has not already been added to the repository before, so you can
 delete, rename, etc the resulting files and repeated runs won't duplicate
 them.
 
-When quvi is installed, links in the feed are tested to see if they
-are on a video hosting site, and the video is downloaded. This allows
-importing e.g., YouTube playlists.
+When `youtube-dl` is installed, it's used to download links in the feed.
+This allows importing e.g., YouTube playlists.
 
 To make the import process add metadata to the imported files from the feed,
 `git config annex.genmetadata true`
@@ -37,6 +36,23 @@ To make the import process add metadata to the imported files from the feed,
 * `--relaxed`, `--fast`, `--raw`
 
   These options behave the same as when using [[git-annex-addurl]](1).
+
+* `--fast`
+
+  Avoid immediately downloading urls. The url is still checked
+  (via HEAD) to verify that it exists, and to get its size if possible.
+
+* `--relaxed`
+
+  Don't immediately download urls, and avoid storing the size of the
+  url's content. This makes git-annex accept whatever content is there
+  at a future point.
+
+* `--raw`
+
+  Prevent special handling of urls by youtube-dl, bittorrent, and other
+  special remotes. This will for example, make importfeed
+  download a .torrent file and not the contents it points to.
 
 # SEE ALSO
 

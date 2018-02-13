@@ -1,0 +1,76 @@
+### Please describe the problem.
+
+when unlocking multiple files, files are not hard linked, but they are if unlocked individually
+
+
+### What steps will reproduce the problem?
+
+I don't really know. 
+Currently I have a repository that exhibits the problem:
+
+    %git status --> all clean
+    
+    # this works as expected
+    %git annex unlock bucket/tata
+    %ls -li bucket/tata
+    33292697 -rw-rw-r-- 2 karl qbstaff 102400000 Dec  7 19:02 bucket/tata
+    %find . -inum 33292697
+    ./bucket/tata
+    ./.git/annex/objects/V0/3Z/SHA256E-s102400000--c50bbc52a81112507134d764ec570ab373be5c4a3b1dd1d87ce609d14d031a17/SHA256E-s102400000--c50bbc52a81112507134d764ec570ab373be5c4a3b1dd1d87ce609d14d031a17
+    git annex lock bucket/tata
+
+
+
+This does not:
+
+    %git annex unlock bucket/
+    %ls -li bucket/tata 
+    33292708 -rw-rw-r-- 1 karl qbstaff 102400000 Dec  7 19:02 bucket/tata
+    %find . -inum 33292708
+    ./bucket/tata
+
+As you can see, now the inode is wrong (different from the annex object file), and the unlocked file is not a hard link. The only difference is the argument to git annex unlock
+This is really annoying, I switched to V6 for this particular feature, I have a large repository to update and it takes ages since files are copied instead of hard linked.
+
+
+### What version of git-annex are you using? On what operating system?
+
+    %git config annex.thin 
+    true
+
+    %git annex version
+    git-annex version: 6.20171018+gitgbb20b1ed3-1~ndall+1
+    build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+    dependency versions: aws-0.14.1 bloomfilter-2.0.1.0 cryptonite-0.20 DAV-1.3.1 feed-0.3.11.1 ghc-8.0.1 http-client-0.4.31.1 persistent-sqlite-2.6 torrent-10000.0.0 uuid-1.3.12 yesod-1.4.3
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+    local repository version: 6
+    supported repository versions: 3 5 6
+    upgrade supported from repository versions: 0 1 2 3 4 5
+    operating system: linux x86_64
+
+    %lsb_release -a
+    No LSB modules are available.
+    Distributor ID:	Ubuntu
+    Description:	Ubuntu 14.04.5 LTS
+    Release:	14.04
+    Codename:	trusty
+
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, we use it on a daily basis and love it.
+Note that we will have to switch to LFS for a lot of use cases because gitlab no longer supports git annex from v9 release.
+
+

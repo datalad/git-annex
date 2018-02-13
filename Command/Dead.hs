@@ -33,9 +33,8 @@ seek (DeadKeys ks) = seekActions $ pure $ map startKey ks
 
 startKey :: Key -> CommandStart
 startKey key = do
-	showStart "dead" (key2file key)
-	ls <- keyLocations key
-	case ls of
+	showStart' "dead" (Just $ key2file key)
+	keyLocations key >>= \case
 		[] -> next $ performKey key
 		_ -> giveup "This key is still known to be present in some locations; not marking as dead."
 		

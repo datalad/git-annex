@@ -23,7 +23,7 @@ seek = withWords start
 
 start :: [String] -> CommandStart
 start (name:g:[]) = do
-	showStart "ungroup" name
+	showStart' "ungroup" (Just name)
 	u <- Remote.nameToUUID name
 	next $ perform u g
 start _ = giveup "Specify a repository and a group."

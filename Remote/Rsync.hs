@@ -38,7 +38,7 @@ import Utility.Metered
 import Types.Transfer
 import Types.Creds
 import Annex.DirHashes
-import Utility.Tmp
+import Utility.Tmp.Dir
 import Utility.SshHost
 
 import qualified Data.Map as M

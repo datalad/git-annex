@@ -27,7 +27,7 @@ seek = withWords start
 start :: [String] -> CommandStart
 start [] = giveup "Specify metadata to include in view"
 start ps = do
-	showStart "view" ""
+	showStart' "view" Nothing
 	view <- mkView ps
 	go view  =<< currentView
   where

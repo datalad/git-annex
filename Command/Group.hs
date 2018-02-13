@@ -24,7 +24,7 @@ seek = withWords start
 start :: [String] -> CommandStart
 start (name:g:[]) = do
 	allowMessages
-	showStart "group" name
+	showStart' "group" (Just name)
 	u <- Remote.nameToUUID name
 	next $ setGroup u g
 start (name:[]) = do

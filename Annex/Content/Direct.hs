@@ -32,8 +32,8 @@ module Annex.Content.Direct (
 import Annex.Common
 import Annex.Perms
 import qualified Git
-import Utility.Tmp
 import Logs.Location
+import Logs.File
 import Utility.InodeCache
 import Utility.CopyFile
 import Annex.ReplaceFile
@@ -67,7 +67,7 @@ changeAssociatedFiles key transform = do
 	let files' = transform files
 	when (files /= files') $
 		modifyContent mapping $
-			liftIO $ viaTmp writeFile mapping $ unlines files'
+			writeLogFile mapping $ unlines files'
 	top <- fromRepo Git.repoPath
 	return $ map (top </>) files'
 

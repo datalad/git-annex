@@ -1,6 +1,6 @@
 {- git-annex file locations
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2017 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -27,6 +27,7 @@ module Annex.Locations (
 	gitAnnexTmpMiscDir,
 	gitAnnexTmpObjectDir,
 	gitAnnexTmpObjectLocation,
+	gitAnnexTmpWorkDir,
 	gitAnnexBadDir,
 	gitAnnexBadLocation,
 	gitAnnexUnusedLog,
@@ -250,6 +251,19 @@ gitAnnexTmpObjectDir r = addTrailingPathSeparator $ gitAnnexDir r </> "tmp"
 {- The temp file to use for a given key's content. -}
 gitAnnexTmpObjectLocation :: Key -> Git.Repo -> FilePath
 gitAnnexTmpObjectLocation key r = gitAnnexTmpObjectDir r </> keyFile key
+
+{- Given a temp file such as gitAnnexTmpObjectLocation, makes a name for a
+ - subdirectory in the same location, that can be used as a work area
+ - when receiving the key's content.
+ -
+ - There are ordering requirements for creating these directories;
+ - use Annex.Content.withTmpWorkDir to set them up.
+ -}
+gitAnnexTmpWorkDir :: FilePath -> FilePath
+gitAnnexTmpWorkDir p =
+	let (dir, f) = splitFileName p
+	-- Using a prefix avoids name conflict with any other keys.
+	in dir </> "work." ++ f
 
 {- .git/annex/bad/ is used for bad files found during fsck -}
 gitAnnexBadDir :: Git.Repo -> FilePath
