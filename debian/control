@@ -88,7 +88,10 @@ Build-Depends:
 	openssh-client,
 	git-remote-gcrypt (>= 0.20130908-6),
 	chrpath,
-Maintainer: Richard Hartmann <richih@debian.org>
+Maintainer: Debian Haskell Group <pkg-haskell-maintainers@lists.alioth.debian.org>
+Uploaders:
+ Richard Hartmann <richih@debian.org>,
+ Sean Whitton <spwhitton@spwhitton.name>,
 Standards-Version: 3.9.8
 Vcs-Git: git://git.kitenet.net/git-annex
 Homepage: http://git-annex.branchable.com/
