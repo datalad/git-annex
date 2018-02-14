@@ -87,6 +87,8 @@ Build-Depends:
 	openssh-client,
 	git-remote-gcrypt (>= 0.20130908-6),
 	chrpath,
+	gnupg,
+	gpg-agent,
 Maintainer: Richard Hartmann <richih@debian.org>
 Standards-Version: 3.9.8
 Vcs-Git: git://git.kitenet.net/git-annex
