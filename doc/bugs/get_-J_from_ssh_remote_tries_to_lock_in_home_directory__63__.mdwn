@@ -1,0 +1,49 @@
+### Please describe the problem.
+
+had `datalad get -J4` lockup ... interrupted it, ran git annex directly to observe some errors reported and what looks like to be an attempt to determine if the home directory on remote end is a git repo... see below for details of such a run.  
+
+may be unrelated but also experiencing some lock ups [while "interacting" with this remote  from datalad](https://github.com/datalad/datalad/issues/2128)
+
+### What version of git-annex are you using? On what operating system?
+6.20180206+gitg638032f3a-1~ndall+1 on the local
+6.20180115-g56b56033a on remote
+
+### Please provide any additional information below.
+
+[[!format sh """
+$> 'git' '-c' 'receive.autogc=0' '-c' 'gc.auto=0' 'annex' 'get' '--debug' '-c' 'remote.rolando.annex-ssh-options=-o ControlMaster=auto -S /home/yoh/.cache/datalad/sockets/810d3ac4' '--json' '--json-progress' -J4  --from rolando --key SHA256E-s4295588--8db39d197775c7372bb1afff197ea724f158f3217ad064eef7ff8427a1502f15.tgz    
+fatal: Not a git repository: '../../../home/bids/.git'
+git-annex-shell: Not a git-annex or gcrypt repository.
+  Unable to run git-annex-shell on remote .
+{"byte-progress":4295588,"action":{"command":"get","note":"from rolando...","key":"SHA256E-s4295588--8db39d197775c7372bb1afff197ea724f158f3217ad064eef7ff8427a1502f15.tgz","file":null},"total-size":4295588,"percent-progress":"100%"}
+{"byte-progress":4295588,"action":{"command":"get","note":"from rolando...","key":"SHA256E-s4295588--8db39d197775c7372bb1afff197ea724f158f3217ad064eef7ff8427a1502f15.tgz","file":null},"total-size":4295588,"percent-progress":"100%"}
+{"command":"get","note":"checksum...","success":true,"key":"SHA256E-s4295588--8db39d197775c7372bb1afff197ea724f1  Unable to run git-annex-shell on remote .
+
+$> git annex drop 'sourcedata/sub-qa/ses-20180102'
+drop sourcedata/sub-qa/ses-20180102/anat/sub-qa_ses-20180102_scout.dicom.tgz (locking rolando...) ok
+(recording state in git...)
+
+$> 'git' '-c' 'receive.autogc=0' '-c' 'gc.auto=0' 'annex' 'get' '--debug' '-c' 'remote.rolando.annex-ssh-options=-o ControlMaster=auto -S /home/yoh/.cache/datalad/sockets/810d3ac4' '--json' '--json-progress' --from rolando --key SHA256E-s4295588--8db39d197775c7372bb1afff197ea724f158f3217ad064eef7ff8427a1502f15.tgz     
+{"byte-progress":4295588,"action":{"command":"get","note":"from rolando...","key":"SHA256E-s4295588--8db39d197775c7372bb1afff197ea724f158f3217ad064eef7ff8427a1502f15.tgz","file":null},"total-size":4295588,"percent-progress":"100%"}
+{"byte-progress":4295588,"action":{"command":"get","note":"from rolando...","key":"SHA256E-s4295588--8db39d197775c7372bb1afff197ea724f158f3217ad064eef7ff8427a1502f15.tgz","file":null},"total-size":4295588,"percent-progress":"100%"}
+{"command":"get","note":"checksum...","success":true,"key":"SHA256E-s4295588--8db39d197775c7372bb1afff197ea724f158f3217ad064eef7ff8427a1502f15.tgz","file":null}
+
+$> cat .git/config
+ ...
+[remote "rolando"]
+	url = bids@rolando.cns.dartmouth.edu:/inbox/BIDS/dbic/QA
+	fetch = +refs/heads/*:refs/remotes/rolando/*
+	annex-uuid = 6384a551-a41d-4290-b186-9258befede97
+	annex-ignore = false
+
+"""]]
+
+To get to that host I have `ProxyCommand ssh -q -A smaug.dartmouth.edu 'nc -w1 %h %p'` in my ~/.ssh/config for it (if relevant)
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Most of the days of the week. Friday is a tricky one
+
+[[!meta author=yoh]]
+
+
