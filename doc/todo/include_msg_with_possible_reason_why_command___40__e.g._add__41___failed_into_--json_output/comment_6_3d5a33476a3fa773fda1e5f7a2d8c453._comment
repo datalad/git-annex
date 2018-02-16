@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 6"
+ date="2018-02-16T18:42:28Z"
+ content="""
+FWIW `--json-error-messages` would be great to have. 
+
+`The consumer would need to use select() over stdin+stderr to observe the order they were interleaved.` would not work for us atm without major refactoring (if possible at all without significant pains)
+"""]]
