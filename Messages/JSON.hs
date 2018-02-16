@@ -75,8 +75,12 @@ end b (Just (o, _)) = Just (HM.insert "success" (toJSON b) o, True)
 end _ Nothing = Nothing
 
 note :: String -> JSONBuilder
-note s (Just (o, e)) = Just (HM.insert "note" (toJSON s) o, e)
 note _ Nothing = Nothing
+note s (Just (o, e)) = Just (HM.insertWith combinelines "note" (toJSON s) o, e)
+  where
+	combinelines (String new) (String old) =
+		String (old <> T.pack "\n" <> new)
+	combinelines new _old = new
 
 info :: String -> JSONBuilder
 info s _ = Just (o, True)
