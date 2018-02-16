@@ -15,5 +15,6 @@ would always precede the json for the same file.
 
 The consumer would need to use select() over stdin+stderr to observe
 the order they were interleaved. May be too much to expect consumers
-to get that right.
+to get that right. Oh, and still would not help untangle the stream
+when run with -J.
 """]]
