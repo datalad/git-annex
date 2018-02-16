@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2018-02-16T17:29:56Z"
+ content="""
+Currently when there's an exception in processing a file, the error is thrown
+and then caught and output to stderr, and this prevents the accumulated
+json buffer for the file from being output, since the processing never
+finishes. So, you get some error message on stderr, and no indication
+in the json what file it belongs to.
+
+So, perhaps an easier fix would be to emit the json buffer in this case
+after the error message. Then stderr output, whether error or warning,
+would always precede the json for the same file.
+
+The consumer would need to use select() over stdin+stderr to observe
+the order they were interleaved. May be too much to expect consumers
+to get that right.
+"""]]
