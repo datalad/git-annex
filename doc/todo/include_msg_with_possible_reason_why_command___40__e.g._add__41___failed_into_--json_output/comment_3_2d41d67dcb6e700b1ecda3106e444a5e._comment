@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-02-16T16:50:27Z"
+ content="""
+A problem with this idea is that error messages are relatively uncommon,
+and if they're hidden away in an extra field of an existing json message,
+it would be easy for the consumer to forget to handle that uncommon case.
+
+Note that git-annex currently doesn't document the actual json structure it
+uses, which is more or less ok because any given git-annex subcommand will
+always output the same json structure (except some note fields that
+only sometimes appear, whose data is targeted at humans).
+It's self-documenting. Using json for errors breaks that pattern.
+"""]]
