@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2018-02-16T17:59:43Z"
+ content="""
+I think I'm tending toward adding a new --json-error-messages option, and
+making it add "error-messages:[]" to the json when there are no errors,
+thus keeping the json self-documenting.
+
+The json buffer will need to be flushed in the exception handler,
+as noted in my previous comment.
+"""]]
