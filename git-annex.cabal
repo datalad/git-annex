@@ -943,6 +943,7 @@ Executable git-annex
     RemoteDaemon.Transport.Ssh.Types
     RemoteDaemon.Types
     Test
+    Test.Framework
     Types
     Types.ActionItem
     Types.Availability
