@@ -13,6 +13,8 @@ git-annex (6.20180113) UNRELEASED; urgency=medium
   * --json: When there are multiple lines of notes about a file, make the note
     field multiline, rather than the old behavior of only including the
     last line.
+  * git-annex.cabal: Once more try to not build the assistant on the hurd,
+    hopefully hackage finally recognises that OS.
 
  -- Joey Hess <id@joeyh.name>  Wed, 24 Jan 2018 20:42:55 -0400
 

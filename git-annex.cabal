@@ -411,7 +411,7 @@ Executable git-annex
       Remote.WebDAV
       Remote.WebDAV.DavLocation
 
-  if flag(Assistant) && ! os(solaris)
+  if flag(Assistant) && ! os(solaris) && ! os(gnu)
     Build-Depends: dns (>= 1.0.0), mountpoints
     CPP-Options: -DWITH_ASSISTANT
 
@@ -431,7 +431,7 @@ Executable git-annex
           CPP-Options: -DWITH_WIN32NOTIFY
           Other-Modules: Utility.DirWatcher.Win32Notify
         else
-          if (! os(solaris) && ! os(linux))
+          if (! os(solaris) && ! os(gnu) && ! os(linux))
             CPP-Options: -DWITH_KQUEUE
             C-Sources: Utility/libkqueue.c
             Includes: Utility/libkqueue.h
