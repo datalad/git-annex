@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="ericm"
+ avatar="http://cdn.libravatar.org/avatar/67ca64c5a99fb142fc2e3916333881ca"
+ subject="comment 3"
+ date="2018-02-18T13:46:00Z"
+ content="""
+Hi,
+
+I first tried messing around with required content settings in a test repo in direct mode. This is what I did to initialize a test repo:
+
+    git clone existing-repo
+    git annex init
+    git annex required . \"include=*.jpg\"
+
+Then I run fsck:
+
+    git annex fsck 
+
+And I get this output:
+
+    fsck viber/0.02.01.0e411306e0b3fc90.jpg (fixing link) ok
+    fsck viber/0.02.01.20943bf9c18e42.jpg (fixing link) ok
+    fsck viber/0.02.01.5126da68987493.jpg (fixing link) ok
+    ...
+
+I expected the fsck command to complain that the required jpg files are not present in the current repo and fail. However, that is not what I'm getting.
+
+Is this the expected behavior for a direct-mode repository? If not, is there something I missed?
+"""]]
