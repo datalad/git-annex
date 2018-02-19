@@ -40,7 +40,7 @@ data LogChange = Added | Removed
 type Outputter = LogChange -> POSIXTime -> [UUID] -> Annex ()
 
 cmd :: Command
-cmd = withGlobalOptions annexedMatchingOptions $
+cmd = withGlobalOptions [annexedMatchingOptions] $
 	command "log" SectionQuery "shows location log"
 		paramPaths (seek <$$> optParser)
 

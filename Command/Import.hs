@@ -24,10 +24,11 @@ import Utility.InodeCache
 import Logs.Location
 
 cmd :: Command
-cmd = withGlobalOptions (jobsOption : jsonOption : fileMatchingOptions) $ notBareRepo $
-	command "import" SectionCommon 
-		"move and add files from outside git working copy"
-		paramPaths (seek <$$> optParser)
+cmd = notBareRepo $
+	withGlobalOptions [jobsOption, jsonOptions, fileMatchingOptions] $
+		command "import" SectionCommon 
+			"move and add files from outside git working copy"
+			paramPaths (seek <$$> optParser)
 
 data DuplicateMode = Default | Duplicate | DeDuplicate | CleanDuplicates | SkipDuplicates | ReinjectDuplicates
 	deriving (Eq)

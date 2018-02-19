@@ -20,7 +20,7 @@ import Logs.Web
 import qualified Remote
 
 cmd :: Command
-cmd = notDirect $ withGlobalOptions annexedMatchingOptions $
+cmd = notDirect $ withGlobalOptions [annexedMatchingOptions] $
 	command "migrate" SectionUtility 
 		"switch data to different backend"
 		paramPaths (withParams seek)

@@ -13,7 +13,7 @@ import Logs.Location
 import Annex.Content
 
 cmd :: Command
-cmd = noCommit $ withGlobalOptions [jsonOption] $
+cmd = noCommit $ withGlobalOptions [jsonOptions] $
 	command "dropkey" SectionPlumbing
 		"drops annexed content for specified keys"
 		(paramRepeating paramKey)

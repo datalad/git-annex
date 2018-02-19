@@ -106,6 +106,10 @@ or transferring them from some kind of key-value store.
 
   Include progress objects in JSON output.
 
+* `--json-error-messages`
+
+  Include any error messages in the json, rather than output to stderr.
+
 # SEE ALSO
 
 [[git-annex]](1)

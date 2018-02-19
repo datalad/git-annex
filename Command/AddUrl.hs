@@ -34,7 +34,7 @@ import Utility.Path.Max
 import qualified Annex.Transfer as Transfer
 
 cmd :: Command
-cmd = notBareRepo $ withGlobalOptions [jobsOption, jsonOption, jsonProgressOption] $
+cmd = notBareRepo $ withGlobalOptions [jobsOption, jsonOptions, jsonProgressOption] $
 	command "addurl" SectionCommon "add urls to annex"
 		(paramRepeating paramUrl) (seek <$$> optParser)
 

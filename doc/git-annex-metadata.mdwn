@@ -112,6 +112,10 @@ automatically.
 
 	{"command":"metadata","file":"foo","key":"...","author":["bar"],...,"note":"...","success":true}
 
+* `--json-error-messages`
+
+  Include any error messages in the json, rather than output to stderr.
+
 * `--batch`
 
   Enables batch mode, which can be used to both get, store, and unset

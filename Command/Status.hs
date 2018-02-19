@@ -17,7 +17,7 @@ import Git.FilePath
 
 cmd :: Command
 cmd = notBareRepo $ noCommit $ noMessages $
-	withGlobalOptions [jsonOption] $
+	withGlobalOptions [jsonOptions] $
 		command "status" SectionCommon
 			"show the working tree status"
 			paramPaths (seek <$$> optParser)

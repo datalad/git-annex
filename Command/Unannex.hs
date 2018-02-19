@@ -24,7 +24,7 @@ import qualified Database.Keys
 import Git.FilePath
 
 cmd :: Command
-cmd = withGlobalOptions annexedMatchingOptions $
+cmd = withGlobalOptions [annexedMatchingOptions] $
 	command "unannex" SectionUtility
 		"undo accidental add command"
 		paramPaths (withParams seek)

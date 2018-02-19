@@ -79,9 +79,9 @@ allowMessages = do
 noRepo :: (String -> Parser (IO ())) -> Command -> Command
 noRepo a c = c { cmdnorepo = Just (a (cmdparamdesc c)) }
 
-{- Adds global options to a command's. -}
-withGlobalOptions :: [GlobalOption] -> Command -> Command
-withGlobalOptions os c = c { cmdglobaloptions = cmdglobaloptions c ++ os }
+{- Adds global options to a command. -}
+withGlobalOptions :: [[GlobalOption]] -> Command -> Command
+withGlobalOptions os c = c { cmdglobaloptions = cmdglobaloptions c ++ concat os }
 
 {- For start and perform stages to indicate what step to run next. -}
 next :: a -> Annex (Maybe a)

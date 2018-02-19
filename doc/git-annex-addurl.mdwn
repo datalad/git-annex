@@ -97,6 +97,10 @@ be used to get better filenames.
 
   Include progress objects in JSON output.
 
+* `--json-error-messages`
+
+  Include any error messages in the json, rather than output to stderr.
+
 # CAVEATS
 
 If annex.largefiles is configured, and does not match a file, `git annex

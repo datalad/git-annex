@@ -18,12 +18,12 @@ import qualified Utility.Format
 import Utility.DataUnits
 
 cmd :: Command
-cmd = withGlobalOptions annexedMatchingOptions $ mkCommand $
+cmd = withGlobalOptions [annexedMatchingOptions] $ mkCommand $
 	command "find" SectionQuery "lists available files"
 		paramPaths (seek <$$> optParser)
 
 mkCommand :: Command -> Command
-mkCommand = noCommit . noMessages . withGlobalOptions [jsonOption]
+mkCommand = noCommit . noMessages . withGlobalOptions [jsonOptions]
 
 data FindOptions = FindOptions
 	{ findThese :: CmdParams

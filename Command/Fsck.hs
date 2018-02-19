@@ -45,7 +45,7 @@ import qualified Data.Set as S
 import qualified Data.Map as M
 
 cmd :: Command
-cmd = withGlobalOptions (jobsOption : jsonOption : annexedMatchingOptions) $
+cmd = withGlobalOptions [jobsOption, jsonOptions, annexedMatchingOptions] $
 	command "fsck" SectionMaintenance
 		"find and fix problems"
 		paramPaths (seek <$$> optParser)

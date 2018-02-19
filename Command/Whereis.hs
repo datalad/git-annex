@@ -17,7 +17,7 @@ import Annex.UUID
 import qualified Data.Map as M
 
 cmd :: Command
-cmd = noCommit $ withGlobalOptions (jsonOption : annexedMatchingOptions) $
+cmd = noCommit $ withGlobalOptions [jsonOptions, annexedMatchingOptions] $
 	command "whereis" SectionQuery
 		"lists repositories that have file content"
 		paramPaths (seek <$$> optParser)

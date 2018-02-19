@@ -191,7 +191,7 @@ annexedMatchingOptions = concat
 	[ nonWorkTreeMatchingOptions'
 	, fileMatchingOptions'
 	, combiningOptions
-	, [timeLimitOption]
+	, timeLimitOption
 	]
 
 -- Matching options that don't need to examine work tree files.
@@ -294,37 +294,51 @@ combiningOptions =
 	longopt o h = globalFlag (Limit.addToken o) ( long o <> help h <> hidden )
 	shortopt o h = globalFlag (Limit.addToken [o]) ( short o <> help h <> hidden )
 
-jsonOption :: GlobalOption
-jsonOption = globalFlag (Annex.setOutput (JSONOutput jsonoptions))
-	( long "json" <> short 'j'
-	<> help "enable JSON output"
-	<> hidden
-	)
+jsonOptions :: [GlobalOption]
+jsonOptions = 
+	[ globalFlag (Annex.setOutput (JSONOutput stdjsonoptions))
+		( long "json" <> short 'j'
+		<> help "enable JSON output"
+		<> hidden
+		)
+	, globalFlag (Annex.setOutput (JSONOutput jsonerrormessagesoptions))
+		( long "json-error-messages"
+		<> help "include error messages in JSON"
+		<> hidden
+		)
+	]
   where
-	jsonoptions = JSONOptions
+	stdjsonoptions = JSONOptions
 		{ jsonProgress = False
+		, jsonErrorMessages = False
 		}
+	jsonerrormessagesoptions = stdjsonoptions { jsonErrorMessages = True }
 
-jsonProgressOption :: GlobalOption
-jsonProgressOption = globalFlag (Annex.setOutput (JSONOutput jsonoptions))
-	( long "json-progress"
-	<> help "include progress in JSON output"
-	<> hidden
-	)
+jsonProgressOption :: [GlobalOption]
+jsonProgressOption = 
+	[ globalFlag (Annex.setOutput (JSONOutput jsonoptions))
+		( long "json-progress"
+		<> help "include progress in JSON output"
+		<> hidden
+		)
+	]
   where
 	jsonoptions = JSONOptions
 		{ jsonProgress = True
+		, jsonErrorMessages = False
 		}
 
 -- Note that a command that adds this option should wrap its seek
 -- action in `allowConcurrentOutput`.
-jobsOption :: GlobalOption
-jobsOption = globalSetter set $ 
-	option auto
-		( long "jobs" <> short 'J' <> metavar paramNumber
-		<> help "enable concurrent jobs"
-		<> hidden
-		)
+jobsOption :: [GlobalOption]
+jobsOption = 
+	[ globalSetter set $ 
+		option auto
+			( long "jobs" <> short 'J' <> metavar paramNumber
+			<> help "enable concurrent jobs"
+			<> hidden
+			)
+	]
   where
 	set n = do
 		Annex.changeState $ \s -> s { Annex.concurrency = Concurrent n }
@@ -332,12 +346,14 @@ jobsOption = globalSetter set $
 		when (n > c) $
 			liftIO $ setNumCapabilities n
 
-timeLimitOption :: GlobalOption
-timeLimitOption = globalSetter Limit.addTimeLimit $ strOption
-	( long "time-limit" <> short 'T' <> metavar paramTime
-	<> help "stop after the specified amount of time"
-	<> hidden
-	)
+timeLimitOption :: [GlobalOption]
+timeLimitOption = 
+	[ globalSetter Limit.addTimeLimit $ strOption
+		( long "time-limit" <> short 'T' <> metavar paramTime
+		<> help "stop after the specified amount of time"
+		<> hidden
+		)
+	]
 
 data DaemonOptions = DaemonOptions
 	{ foregroundDaemonOption :: Bool

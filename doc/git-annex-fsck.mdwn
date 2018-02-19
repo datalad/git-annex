@@ -98,6 +98,10 @@ With parameters, only the specified files are checked.
   Enable JSON output. This is intended to be parsed by programs that use
   git-annex. Each line of output is a JSON object.
 
+* `--json-error-messages`
+
+  Include any error messages in the json, rather than output to stderr.
+
 # OPTIONS
 
 # SEE ALSO

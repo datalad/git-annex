@@ -13,7 +13,7 @@ import Command.Find (parseFormatOption, showFormatted, keyVars)
 
 cmd :: Command
 cmd = noCommit $ noMessages $ dontCheck repoExists $ 
-	withGlobalOptions [jsonOption] $
+	withGlobalOptions [jsonOptions] $
 		command "examinekey" SectionPlumbing 
 			"prints information from a key"
 			(paramRepeating paramKey)

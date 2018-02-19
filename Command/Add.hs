@@ -22,9 +22,10 @@ import Annex.Version
 import Git.FilePath
 
 cmd :: Command
-cmd = notBareRepo $ withGlobalOptions (jobsOption : jsonOption : fileMatchingOptions) $
-	command "add" SectionCommon "add files to annex"
-		paramPaths (seek <$$> optParser)
+cmd = notBareRepo $ 
+	withGlobalOptions [jobsOption, jsonOptions, fileMatchingOptions] $
+		command "add" SectionCommon "add files to annex"
+			paramPaths (seek <$$> optParser)
 
 data AddOptions = AddOptions
 	{ addThese :: CmdParams

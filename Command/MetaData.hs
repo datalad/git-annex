@@ -23,7 +23,7 @@ import Data.Aeson
 import Control.Concurrent
 
 cmd :: Command
-cmd = withGlobalOptions ([jsonOption] ++ annexedMatchingOptions) $ 
+cmd = withGlobalOptions [jsonOptions, annexedMatchingOptions] $ 
 	command "metadata" SectionMetaData
 		"sets or gets metadata of a file"
 		paramPaths (seek <$$> optParser)

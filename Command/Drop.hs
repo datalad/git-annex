@@ -23,7 +23,7 @@ import System.Log.Logger (debugM)
 import qualified Data.Set as S
 
 cmd :: Command
-cmd = withGlobalOptions (jobsOption : jsonOption : annexedMatchingOptions) $
+cmd = withGlobalOptions [jobsOption, jsonOptions, annexedMatchingOptions] $
 	command "drop" SectionCommon
 		"remove content of files from repository"
 		paramPaths (seek <$$> optParser)

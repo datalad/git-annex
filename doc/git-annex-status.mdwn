@@ -18,15 +18,19 @@ Particularly useful in direct mode.
 
 # OPTIONS
 
+* `--ignore-submodules=when`
+
+  This option is passed on to git status, see its man page for
+  details.
+
 * `--json`
 
   Enable JSON output. This is intended to be parsed by programs that use
   git-annex. Each line of output is a JSON object.
 
-* `--ignore-submodules=when`
+* `--json-error-messages`
 
-  This option is passed on to git status, see its man page for
-  details.
+  Include any error messages in the json, rather than output to stderr.
 
 # SEE ALSO
 

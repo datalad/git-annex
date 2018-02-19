@@ -66,6 +66,10 @@ annexed content, and other symlinks.
   Enable JSON output. This is intended to be parsed by programs that use
   git-annex. Each line of output is a JSON object.
 
+* `--json-error-messages`
+
+  Include any error messages in the json, rather than output to stderr.
+
 * `--batch`
 
   Enables batch mode, in which a file to add is read in a line from stdin,

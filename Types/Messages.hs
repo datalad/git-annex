@@ -21,12 +21,14 @@ data OutputType = NormalOutput | QuietOutput | JSONOutput JSONOptions
 
 data JSONOptions = JSONOptions
 	{ jsonProgress :: Bool
+	, jsonErrorMessages :: Bool
 	}
 	deriving (Show)
 
 adjustOutputType :: OutputType -> OutputType -> OutputType
 adjustOutputType (JSONOutput old) (JSONOutput new) = JSONOutput $ JSONOptions
 	{ jsonProgress = jsonProgress old || jsonProgress new
+	, jsonErrorMessages = jsonErrorMessages old || jsonErrorMessages new
 	}
 adjustOutputType _old new = new
 
