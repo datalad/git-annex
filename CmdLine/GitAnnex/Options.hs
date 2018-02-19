@@ -295,18 +295,26 @@ combiningOptions =
 	shortopt o h = globalFlag (Limit.addToken [o]) ( short o <> help h <> hidden )
 
 jsonOption :: GlobalOption
-jsonOption = globalFlag (Annex.setOutput (JSONOutput False))
+jsonOption = globalFlag (Annex.setOutput (JSONOutput jsonoptions))
 	( long "json" <> short 'j'
 	<> help "enable JSON output"
 	<> hidden
 	)
+  where
+	jsonoptions = JSONOptions
+		{ jsonProgress = False
+		}
 
 jsonProgressOption :: GlobalOption
-jsonProgressOption = globalFlag (Annex.setOutput (JSONOutput True))
+jsonProgressOption = globalFlag (Annex.setOutput (JSONOutput jsonoptions))
 	( long "json-progress"
 	<> help "include progress in JSON output"
 	<> hidden
 	)
+  where
+	jsonoptions = JSONOptions
+		{ jsonProgress = True
+		}
 
 -- Note that a command that adds this option should wrap its seek
 -- action in `allowConcurrentOutput`.

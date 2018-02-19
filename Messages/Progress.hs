@@ -55,12 +55,13 @@ metered othermeter key getsrcfile a = withMessageState $ \st ->
 #else
 		nometer
 #endif
-	go _ (MessageState { outputType = JSONOutput False }) = nometer
-	go msize (MessageState { outputType = JSONOutput True }) = do
-		buf <- withMessageState $ return . jsonBuffer
-		m <- liftIO $ rateLimitMeterUpdate 0.1 msize $
-			JSON.progress buf msize
-		a (combinemeter m)
+	go msize (MessageState { outputType = JSONOutput jsonoptions })
+		| jsonProgress jsonoptions = do
+			buf <- withMessageState $ return . jsonBuffer
+			m <- liftIO $ rateLimitMeterUpdate 0.1 msize $
+				JSON.progress buf msize
+			a (combinemeter m)
+		| otherwise = nometer
 
 	nometer = a $ combinemeter (const noop)
 
@@ -96,7 +97,7 @@ meteredFile file combinemeterupdate key a =
 
 needOutputMeter :: MessageState -> Bool
 needOutputMeter s = case outputType s of
-	JSONOutput True -> True
+	JSONOutput jsonoptions -> jsonProgress jsonoptions
 	NormalOutput | concurrentOutputEnabled s -> True
 	_ -> False
 

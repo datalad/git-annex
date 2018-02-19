@@ -275,7 +275,8 @@ addCleanup k a = changeState $ \s ->
 {- Sets the type of output to emit. -}
 setOutput :: OutputType -> Annex ()
 setOutput o = changeState $ \s ->
-	s { output = (output s) { outputType = o } }
+	let m = output s
+	in s { output = m { outputType = adjustOutputType (outputType m) o } }
 
 {- Checks if a flag was set. -}
 getFlag :: String -> Annex Bool

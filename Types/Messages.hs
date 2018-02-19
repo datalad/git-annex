@@ -1,6 +1,6 @@
 {- git-annex Messages data types
  - 
- - Copyright 2012-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,8 +16,19 @@ import Control.Concurrent
 import System.Console.Regions (ConsoleRegion)
 #endif
 
-data OutputType = NormalOutput | QuietOutput | JSONOutput Bool
+data OutputType = NormalOutput | QuietOutput | JSONOutput JSONOptions
 	deriving (Show)
+
+data JSONOptions = JSONOptions
+	{ jsonProgress :: Bool
+	}
+	deriving (Show)
+
+adjustOutputType :: OutputType -> OutputType -> OutputType
+adjustOutputType (JSONOutput old) (JSONOutput new) = JSONOutput $ JSONOptions
+	{ jsonProgress = jsonProgress old || jsonProgress new
+	}
+adjustOutputType _old new = new
 
 data SideActionBlock = NoBlock | StartBlock | InBlock
 	deriving (Eq)
