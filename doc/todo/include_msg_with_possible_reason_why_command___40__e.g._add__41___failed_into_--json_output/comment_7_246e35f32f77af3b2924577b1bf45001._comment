@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2018-02-19T19:49:11Z"
+ content="""
+Basic --json-error-messages implemented after 4 hours work.
+
+Still needing to be done:
+
+* A few commands like `git annex info` have a custom json outputter,
+  and may not output the error-messages field by default, or may not make
+  sense to support the option.
+* Flush json buffer after fatal error.
+"""]]
