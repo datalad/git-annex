@@ -1,6 +1,6 @@
 {- git-annex command-line JSON output and input
  -
- - Copyright 2011-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,6 +14,7 @@ module Messages.JSON (
 	none,
 	start,
 	end,
+	finalize,
 	note,
 	info,
 	add,
@@ -37,6 +38,7 @@ import Data.Maybe
 import Data.Monoid
 import Prelude
 
+import Types.Messages
 import Key
 import Utility.Metered
 import Utility.Percentage
@@ -73,6 +75,17 @@ start command file key _ = Just (o, False)
 end :: Bool -> JSONBuilder
 end b (Just (o, _)) = Just (HM.insert "success" (toJSON b) o, True)
 end _ Nothing = Nothing
+
+finalize :: JSONOptions -> Object -> Object
+finalize jsonoptions o
+	-- Always include error-messages field, even if empty,
+	-- to make the json be self-documenting.
+	| jsonErrorMessages jsonoptions = 
+		HM.insertWith combinearray "error-messages" (Array mempty) o
+	| otherwise = o
+  where
+	combinearray (Array new) (Array old) = Array (old <> new)
+	combinearray new _old = new
 
 note :: String -> JSONBuilder
 note _ Nothing = Nothing

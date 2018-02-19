@@ -11,7 +11,8 @@ import Common
 import Annex
 import Types.Messages
 import Messages.Concurrent
-import Messages.JSON
+import qualified Messages.JSON as JSON
+import Messages.JSON (JSONBuilder)
 
 withMessageState :: (MessageState -> Annex a) -> Annex a
 withMessageState a = Annex.getState Annex.output >>= a
@@ -30,11 +31,11 @@ outputMessage' jsonoutputter jsonbuilder msg = withMessageState $ \s -> case out
 -- Buffer changes to JSON until end is reached and then emit it.
 bufferJSON :: JSONBuilder -> MessageState -> Annex Bool
 bufferJSON jsonbuilder s = case outputType s of
-	JSONOutput _
+	JSONOutput jsonoptions
 		| endjson -> do
 			Annex.changeState $ \st -> 
 				st { Annex.output = s { jsonBuffer = Nothing } }
-			maybe noop (liftIO . flushed . emit) json
+			maybe noop (liftIO . flushed . JSON.emit . JSON.finalize jsonoptions) json
 			return True
 		| otherwise -> do
 			Annex.changeState $ \st ->
@@ -53,7 +54,7 @@ bufferJSON jsonbuilder s = case outputType s of
 outputJSON :: JSONBuilder -> MessageState -> Annex Bool
 outputJSON jsonbuilder s = case outputType s of
 	JSONOutput _ -> do
-		maybe noop (liftIO . flushed . emit)
+		maybe noop (liftIO . flushed . JSON.emit)
 			(fst <$> jsonbuilder Nothing)
 		return True
 	_ -> return False
