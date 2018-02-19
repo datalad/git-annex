@@ -1,6 +1,6 @@
 {- git-annex output messages, including concurrent output to display regions
  -
- - Copyright 2010-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -64,7 +64,7 @@ outputError msg = withMessageState $ \s -> case (outputType s, jsonBuffer s) of
         (JSONOutput jsonoptions, Just jb) | jsonErrorMessages jsonoptions ->
 		let jb' = Just (JSON.addErrorMessage [msg] jb)
 		in Annex.changeState $ \st ->
-			st { Annex.output = s { jsonBuffer = jb' }
+			st { Annex.output = s { jsonBuffer = jb' } }
 	_
 		| concurrentOutputEnabled s -> concurrentMessage s True msg go
 		| otherwise -> go

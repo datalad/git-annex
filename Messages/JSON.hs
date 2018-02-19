@@ -87,10 +87,11 @@ finalize jsonoptions o
 
 addErrorMessage :: [String] -> Object -> Object
 addErrorMessage msg o =
-	HM.insertWith combinearray "error-messages" (Array $ V.fromList msg ) o
+	HM.insertWith combinearray "error-messages" v o
   where
 	combinearray (Array new) (Array old) = Array (old <> new)
 	combinearray new _old = new
+	v = Array $ V.fromList $ map (String . T.pack) msg
 
 note :: String -> JSONBuilder
 note _ Nothing = Nothing
