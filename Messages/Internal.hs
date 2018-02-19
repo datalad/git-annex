@@ -62,7 +62,7 @@ outputJSON jsonbuilder s = case outputType s of
 outputError :: String -> Annex ()
 outputError msg = withMessageState $ \s -> case (outputType s, jsonBuffer s) of
         (JSONOutput jsonoptions, Just jb) | jsonErrorMessages jsonoptions ->
-		let jb' = Just (JSON.addErrorMessage [msg] jb)
+		let jb' = Just (JSON.addErrorMessage (lines msg) jb)
 		in Annex.changeState $ \st ->
 			st { Annex.output = s { jsonBuffer = jb' } }
 	_
