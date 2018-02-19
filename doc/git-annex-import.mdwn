@@ -83,7 +83,8 @@ Several options can be used to adjust handling of duplicate files.
 
 * `--json-error-messages`
 
-  Include any error messages in the json, rather than output to stderr.
+  Messages that would normally be output to standard error are included in
+  the json instead.
 
 # CAVEATS
 

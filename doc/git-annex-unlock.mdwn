@@ -44,7 +44,8 @@ file to be lost from the local repository. So, enable annex.thin with care.
 
 * `--json-error-messages`
 
-  Include any error messages in the json, rather than output to stderr.
+  Messages that would normally be output to standard error are included in
+  the json instead.
 
 # SEE ALSO
 

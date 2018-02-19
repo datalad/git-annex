@@ -25,7 +25,8 @@ the files any longer, or have made modifications you want to discard.
 
 * `--json-error-messages`
 
-  Include any error messages in the json, rather than output to stderr.
+  Messages that would normally be output to standard error are included in
+  the json instead.
 
 # SEE ALSO
 
