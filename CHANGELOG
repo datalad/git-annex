@@ -19,8 +19,9 @@ git-annex (6.20180113) UNRELEASED; urgency=medium
     compile.
   * Fix behavior of --json-progress followed by --json, in which
     the latter option disabled the former.
-  * Added --json-error-messages option, which includes error messages
-    in the json output, rather than outputting them to stderr.
+  * Added --json-error-messages option, which makes messages
+    that would normally be output to standard error be included in
+    the json output.
 
  -- Joey Hess <id@joeyh.name>  Wed, 24 Jan 2018 20:42:55 -0400
 
