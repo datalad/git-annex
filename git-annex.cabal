@@ -350,6 +350,7 @@ Executable git-annex
    persistent,
    persistent-template,
    aeson,
+   vector,
    tagsoup,
    unordered-containers,
    feed (>= 0.3.9),

@@ -15,6 +15,7 @@ module Messages.JSON (
 	start,
 	end,
 	finalize,
+	addErrorMessage,
 	note,
 	info,
 	add,
@@ -29,6 +30,7 @@ import Data.Aeson
 import Control.Applicative
 import qualified Data.Map as M
 import qualified Data.Text as T
+import qualified Data.Vector as V
 import qualified Data.ByteString.Lazy as B
 import qualified Data.HashMap.Strict as HM
 import System.IO
@@ -80,9 +82,12 @@ finalize :: JSONOptions -> Object -> Object
 finalize jsonoptions o
 	-- Always include error-messages field, even if empty,
 	-- to make the json be self-documenting.
-	| jsonErrorMessages jsonoptions = 
-		HM.insertWith combinearray "error-messages" (Array mempty) o
+	| jsonErrorMessages jsonoptions = addErrorMessage [] o
 	| otherwise = o
+
+addErrorMessage :: [String] -> Object -> Object
+addErrorMessage msg o =
+	HM.insertWith combinearray "error-messages" (Array $ V.fromList msg ) o
   where
 	combinearray (Array new) (Array old) = Array (old <> new)
 	combinearray new _old = new

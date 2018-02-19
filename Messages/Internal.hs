@@ -60,10 +60,14 @@ outputJSON jsonbuilder s = case outputType s of
 	_ -> return False
 
 outputError :: String -> Annex ()
-outputError msg = withMessageState $ \s ->
-	if concurrentOutputEnabled s
-		then concurrentMessage s True msg go
-		else go
+outputError msg = withMessageState $ \s -> case (outputType s, jsonBuffer s) of
+        (JSONOutput jsonoptions, Just jb) | jsonErrorMessages jsonoptions ->
+		let jb' = Just (JSON.addErrorMessage [msg] jb)
+		in Annex.changeState $ \st ->
+			st { Annex.output = s { jsonBuffer = jb' }
+	_
+		| concurrentOutputEnabled s -> concurrentMessage s True msg go
+		| otherwise -> go
   where
 	go = liftIO $ do
 		hFlush stdout
