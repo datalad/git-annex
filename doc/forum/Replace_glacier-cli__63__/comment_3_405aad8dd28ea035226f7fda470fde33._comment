@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="switching to amazonka"
+ date="2018-02-21T18:15:05Z"
+ content="""
+Switching to amazonka would have the benefit of supporting SSL traffic for S3, which is a feature I would enjoy (see git-annex forum thread [No SSL traffic for S3?](http://git-annex.branchable.com/forum/No_SSL_traffic_for_S3__63__/)). I have no experience with the amazonka library though, so I can't comment on it.
+
+—Andrew
+"""]]
