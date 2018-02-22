@@ -163,10 +163,6 @@ updateTo pairs = do
 				 - a commit needs to be done. -}
 				when dirty $
 					go branchref True [] jl
-			{- Only needed for a while, to populate the
-			 - newly added merged refs cache with already
-			 - merged refs. Can be safely removed at any time. -}
-			addMergedRefs unignoredrefs
 		else lockJournal $ go branchref dirty tomerge
 	return $ not $ null tomerge
   where

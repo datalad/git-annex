@@ -22,6 +22,8 @@ git-annex (6.20180113) UNRELEASED; urgency=medium
   * Added --json-error-messages option, which makes messages
     that would normally be output to standard error be included in
     the json output.
+  * Remove temporary code added in 6.20160619 to prime the mergedrefs
+    log.
 
  -- Joey Hess <id@joeyh.name>  Wed, 24 Jan 2018 20:42:55 -0400
 

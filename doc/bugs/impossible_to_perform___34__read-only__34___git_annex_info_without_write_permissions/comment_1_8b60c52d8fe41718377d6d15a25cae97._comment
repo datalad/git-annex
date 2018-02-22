@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-02-22T16:17:35Z"
+ content="""
+The mergedrefs directory is used while building the commit to merge
+git-annex branches. So even if it was written someplace else, that commit
+would fail.
+
+I think this may be happening even when there are no
+git-annex refs to merge in, due to the transition code
+in Annex.Branch.updateTo that temporarily calls addMergedRefs
+in the "null tomerge" case. That was added in 2016, and is flagged as able
+to be safely removed. I've removed it.
+
+However, when there actually is a git-annex branch to merge, if a
+hypothetical readonly mode avoided doing so, it would necessarily see a
+different state of the git-annex branch than would be seen in non-readonly
+mode. That behavior difference could be fairly confusing potentially..
+"""]]
