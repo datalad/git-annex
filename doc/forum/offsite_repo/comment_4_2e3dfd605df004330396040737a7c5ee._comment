@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2018-02-22T16:51:34Z"
+ content="""
+It seems likely that you have not upgraded git-annex to a version where
+fsck checks the required content yet, especially since that change has not
+yet made it into a release of git-annex. It will be in the next release, or
+you can download a daily build to get it now.
+"""]]
