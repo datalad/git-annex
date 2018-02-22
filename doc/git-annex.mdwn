@@ -970,7 +970,7 @@ Here are all the supported configuration settings.
   commit the data by running `git annex merge` (or by automatic merges)
   or `git annex sync`.
 
-  Note that you beware running `git gc` if using this configuration,
+  You should beware running `git gc` when using this configuration,
   since it could garbage collect objects that are staged in git-annex's
   index but not yet committed.
 
