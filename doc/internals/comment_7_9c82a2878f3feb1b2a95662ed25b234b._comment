@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2018-02-22T16:56:13Z"
+ content="""
+@arseny-n the misctemp directory does not normally contain anything, or
+only temp files in use by the currently running git-annex process for a
+short amount of time. The only way I know of that it can get files piled up
+in it is when you kill the git-annex process while it's using such a file.
+
+It's always safe to delete the files in misctemp as long as git-annex is
+not running. Also, the names of the files should give a pretty good clue
+about what git-annex was using the file for. For example "jlog" files are
+used for staging the journal.
+"""]]
