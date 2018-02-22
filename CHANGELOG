@@ -24,6 +24,8 @@ git-annex (6.20180113) UNRELEASED; urgency=medium
     the json output.
   * Remove temporary code added in 6.20160619 to prime the mergedrefs
     log.
+  * importfeed: Fix a failure when downloading with youtube-dl
+    and the destination subdirectory does not exist yet.
 
  -- Joey Hess <id@joeyh.name>  Wed, 24 Jan 2018 20:42:55 -0400
 

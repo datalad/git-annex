@@ -370,7 +370,9 @@ addWorkTree u url file key mtmp = case mtmp of
 	Nothing -> go
 	Just tmp -> do
 		-- Move to final location for large file check.
-		pruneTmpWorkDirBefore tmp (\_ -> liftIO $ renameFile tmp file)
+		pruneTmpWorkDirBefore tmp $ \_ -> liftIO $ do
+			createDirectoryIfMissing True (takeDirectory file)
+			renameFile tmp file
 		largematcher <- largeFilesMatcher
 		large <- checkFileMatcher largematcher file
 		if large
