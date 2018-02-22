@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="--read-only flag?"
+ date="2018-02-22T17:18:18Z"
+ content="""
+I hear you... so far though I was confused by the fact that what I thought would be a read-only operation was actually changing the state of the things (doing the annex merge).  Although I would have preferred just a warning like \"Cannot merge git-annex branch because of lacking permissions to do so, some information might be not up-to-date\", I wondered if then may be a generic resolution could be to add `--read-only` flag to such commands as `info` and `whereis`.  Then we (datalad) would be the one to explicitly check if there is write-permissions and if not -- issue the command in `--read-only` mode.  We might even make it a default mode of operation for some of our usecases where it would be confusing if things were changing in the background (e.g. with `ls` command)
+"""]]
