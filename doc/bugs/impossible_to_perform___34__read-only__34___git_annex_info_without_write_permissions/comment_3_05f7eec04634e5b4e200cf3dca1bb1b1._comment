@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-02-22T17:27:06Z"
+ content="""
+There are situations where a git command that appears to be read-only,
+such as `git status` actually writes to the repository behind the scenes.
+It looks like git ignores write errors in at least some such cases. So
+there is precident for implicit read-only support, but I think not in cases
+where it would involve significant behavior changes, like it would for the
+git-annex branch auto-merging. In git's case the behavior change probably
+only involves repeated `git status` runs being slower than otherwise,
+or something like that.
+
+As well as populating the .git/annex/index file with information merged in from
+recently fetched git-annex branches, git-annex may need to write to other files
+in order to prepare caches needed to perform what appears to be "read-only"
+query operation, or to lock files in order to prevent someone who does have
+write access from dropping them in a situation where that will lose data.
+An example of the latter is running `git annex drop` in a repository you do have
+write access to, and it needing to exclusively lock files in origin,
+which requires write access to origin as well. Without write access,
+the drop may fail.
+
+The --read-only flag seems to be setting up a situation where git-annex handles
+some things being read-only, but then someone expects the flag to 
+make some other thing work read-only, which git-annex can't manage to support
+for whatever reason. 
+
+So I prefer a more specific name, like annex.merge-annex-branches=false.
+
+Implemented that.
+"""]]

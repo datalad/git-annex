@@ -140,7 +140,13 @@ forceUpdate = updateTo =<< siblingBranches
  - Returns True if any refs were merged in, False otherwise.
  -}
 updateTo :: [(Git.Sha, Git.Branch)] -> Annex Bool
-updateTo pairs = do
+updateTo pairs = ifM (annexMergeAnnexBranches <$> Annex.getGitConfig)
+	( updateTo' pairs
+	, return False
+	)
+
+updateTo' :: [(Git.Sha, Git.Branch)] -> Annex Bool
+updateTo' pairs = do
 	-- ensure branch exists, and get its current ref
 	branchref <- getBranch
 	dirty <- journalDirty

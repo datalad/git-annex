@@ -59,6 +59,7 @@ data GitConfig = GitConfig
 	, annexBloomAccuracy :: Maybe Int
 	, annexSshCaching :: Maybe Bool
 	, annexAlwaysCommit :: Bool
+	, annexMergeAnnexBranches :: Bool
 	, annexDelayAdd :: Maybe Int
 	, annexHttpHeaders :: [String]
 	, annexHttpHeadersCommand :: Maybe String
@@ -116,6 +117,7 @@ extractGitConfig r = GitConfig
 	, annexBloomAccuracy = getmayberead (annex "bloomaccuracy")
 	, annexSshCaching = getmaybebool (annex "sshcaching")
 	, annexAlwaysCommit = getbool (annex "alwayscommit") True
+	, annexMergeAnnexBranches = getbool (annex "merge-annex-branches") True
 	, annexDelayAdd = getmayberead (annex "delayadd")
 	, annexHttpHeaders = getlist (annex "http-headers")
 	, annexHttpHeadersCommand = getmaybe (annex "http-headers-command")

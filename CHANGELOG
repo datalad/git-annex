@@ -26,6 +26,8 @@ git-annex (6.20180113) UNRELEASED; urgency=medium
     log.
   * importfeed: Fix a failure when downloading with youtube-dl
     and the destination subdirectory does not exist yet.
+  * Added annex.merge-annex-branches config setting which
+    can be used to disable automatic merge of git-annex branches.
 
  -- Joey Hess <id@joeyh.name>  Wed, 24 Jan 2018 20:42:55 -0400
 

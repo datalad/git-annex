@@ -974,6 +974,15 @@ Here are all the supported configuration settings.
   since it could garbage collect objects that are staged in git-annex's
   index but not yet committed.
 
+* `annex.merge-annex-branches`
+
+  By default, git-annex branches that have been pulled from remotes
+  are automatically merged into the local git-annex branch, so that
+  git-annex has the most up-to-date possible knowledge.
+
+  To avoid that merging, set this to "false". This can be useful
+  particularly when you don't have write permission to the repository.
+
 * `annex.hardlink`
 
   Set this to `true` to make file contents be hard linked between the
@@ -1054,8 +1063,9 @@ Here are all the supported configuration settings.
 
 * `annex.resolvemerge`
 
-  Set to false to prevent merge conflicts being automatically resolved
-  by the git-annex assitant, git-annex sync, git-annex merge,
+  Set to false to prevent merge conflicts in the checked out branch
+  being automatically resolved by the git-annex assitant,
+  git-annex sync, git-annex merge,
   and the git-annex post-receive hook.
 
   To configure the behavior in all clones of the repository,
