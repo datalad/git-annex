@@ -1,0 +1,114 @@
+### Please describe the problem.
+
+ref: [datalad#1713](https://github.com/datalad/datalad/issues/1713#issuecomment-368091458) so it seems to work when origin remote on http, but fails (as demoed below) for local paths (and ssh)
+
+### What steps will reproduce the problem?
+
+It works correctly in indirect mode (commands below are the same besides switching to direct mode in the clone, sorry for "sudo rm" but that was the fast non-datalad method to remove them ;) )
+
+[[!format sh """
+*yoh@hopa:/tmp/test-clone> cd /tmp/; sudo rm -r /tmp/test-{clone,origin}; mkdir /tmp/test-origin; cd /tmp/test-origin; git init; git annex init; echo "1" > 1; git add 1; git commit -m 'added 1'; git clone /tmp/test-origin /tmp/test-clone; echo 2 > 2; git add 2; git commit -m 'added 2'; cd /tmp/test-clone; git annex sync  --no-content --no-push --pull origin; git show
+Initialized empty Git repository in /tmp/test-origin/.git/
+init  ok
+(recording state in git...)
+[master (root-commit) 2fc9be3] added 1
+ 1 file changed, 1 insertion(+)
+ create mode 100644 1
+Cloning into '/tmp/test-clone'...
+done.
+[master 1caaa64] added 2
+ 1 file changed, 1 insertion(+)
+ create mode 100644 2
+(merging origin/git-annex into git-annex...)
+commit (recording state in git...)
+
+On branch master
+Your branch is up-to-date with 'origin/master'.
+nothing to commit, working tree clean
+ok
+pull origin 
+remote: Counting objects: 3, done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 3 (delta 0), reused 0 (delta 0)
+Unpacking objects: 100% (3/3), done.
+From /tmp/test-origin
+   2fc9be3..1caaa64  master     -> origin/master
+
+Updating 2fc9be3..1caaa64
+Fast-forward
+ 2 | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 2
+ok
+commit 1caaa64da380d82641356be46a5f6bc4b012a54d (HEAD -> master, origin/master, origin/HEAD, synced/master)
+Author: Yaroslav Halchenko <debian@onerussian.com>
+Date:   Fri Feb 23 14:16:43 2018 -0500
+
+    added 2
+
+diff --git a/2 b/2
+new file mode 100644
+index 0000000..0cfbf08
+--- /dev/null
++++ b/2
+@@ -0,0 +1 @@
++2
+
+"""]]
+
+but in direct you will see that you are still on 1:
+
+[[!format sh """
+*yoh@hopa:/tmp/test-clone> cd /tmp/; sudo rm -r /tmp/test-{clone,origin}; mkdir /tmp/test-origin; cd /tmp/test-origin; git init; git annex init; echo "1" > 1; git add 1; git commit -m 'added 1'; git clone /tmp/test-origin /tmp/test-clone; echo 2 > 2; git add 2; git commit -m 'added 2'; cd /tmp/test-clone; git annex direct; git annex sync  --no-content --no-push --pull origin; git show
+Initialized empty Git repository in /tmp/test-origin/.git/
+init  ok
+(recording state in git...)
+[master (root-commit) 06b75e1] added 1
+ 1 file changed, 1 insertion(+)
+ create mode 100644 1
+Cloning into '/tmp/test-clone'...
+done.
+[master e147893] added 2
+ 1 file changed, 1 insertion(+)
+ create mode 100644 2
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+commit 
+(recording state in git...)
+On branch master
+Your branch is up-to-date with 'origin/master'.
+nothing to commit, working tree clean
+ok
+direct ok
+commit (recording state in git...)
+ok
+pull origin 
+remote: Counting objects: 3, done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 3 (delta 0), reused 0 (delta 0)
+Unpacking objects: 100% (3/3), done.
+From /tmp/test-origin
+   06b75e1..e147893  master     -> origin/master
+ok
+commit 06b75e18594f89d5af0bc2b083a90b02dd5e3f21 (HEAD -> annex/direct/master, synced/master, master)
+Author: Yaroslav Halchenko <debian@onerussian.com>
+Date:   Fri Feb 23 14:18:27 2018 -0500
+
+    added 1
+
+diff --git a/1 b/1
+new file mode 100644
+index 0000000..d00491f
+--- /dev/null
++++ b/1
+@@ -0,0 +1 @@
++1
+
+"""]]
+
+
+### What version of git-annex are you using? On what operating system?
+
+6.20180206+gitg638032f3a-1~ndall+1
+
+[[!meta author=yoh]]
