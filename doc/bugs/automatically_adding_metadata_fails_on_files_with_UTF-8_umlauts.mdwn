@@ -18,8 +18,8 @@ Leeres Git-Repository in /tmp/test/.git/ initialisiert
 init  ok
 (recording state in git...)
 [woffs@lapdoepp:/tmp/test] (master #) $ git config metadata.exiftool "CreateDate Model ImageSize FocusRange GPS FileType: NominalBitrate Title Artist Album Date: TrackNumber Year"l "CreateDate Model ImageSize FocusRange GPS FileType: NominalBitrate Title Artist Album Date: TrackNum
-                                                                                                                                                        git config annex.[woffs@lapdoepp:/tmp/test] (master #) $ git config annex.genmetadata true
-                                                                                                                                                        wget -O ./.git/ho[woffs@lapdoepp:/tmp/test] (master #) $ wget -O ./.git/hooks/pre-commit-annex http://git-annex.branchable.com/tips/automatically_adding_metadata/pre-commit-annex
+                                                                                                                                                        [woffs@lapdoepp:/tmp/test] (master #) $ git config annex.genmetadata true
+                                                                                                                                                        [woffs@lapdoepp:/tmp/test] (master #) $ wget -O ./.git/hooks/pre-commit-annex http://git-annex.branchable.com/tips/automatically_adding_metadata/pre-commit-annex
 --2018-02-26 10:28:42--  http://git-annex.branchable.com/tips/automatically_adding_metadata/pre-commit-annex
 Auflösen des Hostnamens git-annex.branchable.com (git-annex.branchable.com)… 66.228.46.55, 2600:3c03::f03c:91ff:fedf:c0e5
 Verbindungsaufbau zu git-annex.branchable.com (git-annex.branchable.com)|66.228.46.55|:80 … verbunden.
@@ -31,7 +31,7 @@ Wird in »./.git/hooks/pre-commit-annex« gespeichert.
 
 2018-02-26 10:28:42 (75,8 MB/s) - »./.git/hooks/pre-commit-annex« gespeichert [3035/3035]
 
-                                                                                                                                                        chmod +x ./.git/h[woffs@lapdoepp:/tmp/test] (master #) $ chmod +x ./.git/hooks/pre-commit-annex
+                                                                                                                                                        [woffs@lapdoepp:/tmp/test] (master #) $ chmod +x ./.git/hooks/pre-commit-annex
                                                                                                                                                         wget http://git-a[woffs@lapdoepp:/tmp/test] (master #) $ wget http://git-annex.branchable.com/logo_small.png
 --2018-02-26 10:28:52--  http://git-annex.branchable.com/logo_small.png
 Auflösen des Hostnamens git-annex.branchable.com (git-annex.branchable.com)… 66.228.46.55, 2600:3c03::f03c:91ff:fedf:c0e5
@@ -44,7 +44,7 @@ logo_small.png                             100%[================================
 
 2018-02-26 10:28:52 (108 MB/s) - »logo_small.png« gespeichert [4749/4749]
 
-                                                                                                                                                        cp logo_small.png[woffs@lapdoepp:/tmp/test] (master #%) $ cp logo_small.png lögö_smäll.png
+                                                                                                                                                        [woffs@lapdoepp:/tmp/test] (master #%) $ cp logo_small.png lögö_smäll.png
 [woffs@lapdoepp:/tmp/test] (master #%) $ git annex add
 add logo_small.png ok
 add lögö_smäll.png ok
