@@ -112,7 +112,7 @@ if [ -n "$*" ]; then
 		process "$f"
 	done
 else
-	git diff-index --name-only --cached $against | while read f; do
+	git diff-index -z --name-only --cached $against | sed 's/\x00/\n/g' | while read f; do
 		process "$f"
 	done
 fi

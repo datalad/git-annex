@@ -65,3 +65,6 @@ ok
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 git annex is great. :)
+
+> [[fixed|done]]; caused by git diff-index defaulting to not emitting such
+> characters, got it to by using -z. --[[Joey]]
