@@ -434,7 +434,7 @@ mergeRemote remote currbranch mergeconfig resolvemergeoverride = ifM isBareRepo
 		(mapM (merge currbranch mergeconfig resolvemergeoverride Git.Branch.ManualCommit . remoteBranch remote) =<< getlist)
 	tomerge = filterM (changed remote)
 	branchlist Nothing = []
-	branchlist (Just branch) = [branch, syncBranch branch]
+	branchlist (Just branch) = [fromDirectBranch (fromAdjustedBranch branch), syncBranch branch]
 
 pushRemote :: SyncOptions -> Remote -> CurrBranch -> CommandStart
 pushRemote _o _remote (Nothing, _) = stop

@@ -30,6 +30,9 @@ git-annex (6.20180113) UNRELEASED; urgency=medium
     can be used to disable automatic merge of git-annex branches.
   * tips/automatically_adding_metadata/pre-commit-annex: Fix to not
     silently skip filenames containing non-ascii characters.
+  * sync: Fix bug that prevented pulling changes into direct mode
+    repositories that were committed to remotes using git commit
+    rather than git-annex sync.
 
  -- Joey Hess <id@joeyh.name>  Wed, 24 Jan 2018 20:42:55 -0400
 
