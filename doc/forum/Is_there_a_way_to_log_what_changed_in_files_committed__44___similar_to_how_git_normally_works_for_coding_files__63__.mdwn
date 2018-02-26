@@ -1,0 +1,11 @@
+Hello all,
+
+I work for a company that produces books using InDesign and marketing assets for these books in Photoshop/Illustrator.
+
+What we're ultimately looking for is a system that allows us to make changes (primarily to the books) and log the changes to the file so we can keep track of what has been edited when.
+
+Ideally, we'd also be able to pull up an older version of the file if needed. So if we have 10 commits and are on commit #10, we could pull up commit #7 if needed and see that file as it was back when it was committed the 7th time.
+
+I hope I explained what I'm looking for clearly. Is this something git-annex could help wtih?
+
+Thanks
