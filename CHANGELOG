@@ -17,8 +17,8 @@ git-annex (6.20180113) UNRELEASED; urgency=medium
     hopefully hackage finally recognises that OS.
   * Split Test.hs and avoid optimising it much, to need less memory to
     compile.
-  * Fix behavior of --json-progress followed by --json, in which
-    the latter option disabled the former.
+  * Fix behavior of --json-progress followed by --json, the latter option
+    used to disable the former.
   * Added --json-error-messages option, which makes messages
     that would normally be output to standard error be included in
     the json output.
