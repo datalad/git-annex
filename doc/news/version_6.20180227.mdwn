@@ -1,0 +1,37 @@
+git-annex 6.20180227 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * inprogress: Avoid showing failures for files not in progress.
+   * Added INFO to external special remote protocol.
+   * Added EXTENSIONS to external special remote protocol.
+   * datalad &lt; 0.9.1 had a problem in its special remote protocol handling
+     which is broken by EXTENSIONS. Make the debian git-annex package
+     conflict with the problem version of datalad.
+   * fsck: Warn when required content is not present in the repository that
+     requires it.
+   * Add gpg-agent to Build-Depends.
+     Needed to run the test suite.
+   * --json: When there are multiple lines of notes about a file, make the note
+     field multiline, rather than the old behavior of only including the
+     last line.
+   * git-annex.cabal: Once more try to not build the assistant on the hurd,
+     hopefully hackage finally recognises that OS.
+   * Split Test.hs and avoid optimising it much, to need less memory to
+     compile.
+   * Fix behavior of --json-progress followed by --json, the latter option
+     used to disable the former.
+   * Added --json-error-messages option, which makes messages
+     that would normally be output to standard error be included in
+     the json output.
+   * Remove temporary code added in 6.20160619 to prime the mergedrefs
+     log.
+   * importfeed: Fix a failure when downloading with youtube-dl
+     and the destination subdirectory does not exist yet.
+   * Added annex.merge-annex-branches config setting which
+     can be used to disable automatic merge of git-annex branches.
+   * tips/automatically\_adding\_metadata/pre-commit-annex: Fix to not
+     silently skip filenames containing non-ascii characters.
+   * sync: Fix bug that prevented pulling changes into direct mode
+     repositories that were committed to remotes using git commit
+     rather than git-annex sync.
+   * Makefile: Remove chrpath workaround for bug in cabal,
+     which is no longer needed."""]]
