@@ -33,6 +33,8 @@ git-annex (6.20180113) UNRELEASED; urgency=medium
   * sync: Fix bug that prevented pulling changes into direct mode
     repositories that were committed to remotes using git commit
     rather than git-annex sync.
+  * Makefile: Remove chrpath workaround for bug in cabal, 
+    which is no longer needed.
 
  -- Joey Hess <id@joeyh.name>  Wed, 24 Jan 2018 20:42:55 -0400
 

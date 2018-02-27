@@ -35,11 +35,6 @@ git-annex: tmp/configure-stamp
 	else \
 		ln -sf dist/build/git-annex/git-annex git-annex; \
 	fi
-# Work around https://github.com/haskell/cabal/issues/3524
-# when not linked dynamically to haskell libs
-	@if ! ldd git-annex | grep -q libHS; then \
-		chrpath -d git-annex || echo "** warning: unable to chrpath git-annex; it will be a little bit slower than necessary"; \
-	fi
 
 git-annex-shell: git-annex
 	ln -sf git-annex git-annex-shell
