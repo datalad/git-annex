@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-02-28T18:02:04Z"
+ content="""
+Yes, git-annex retains all past versions of files, just like git does. You
+can check out a past version of the repository, the same as you would in a
+git repository (because it is a git repository..)
+
+(There are exceptions, like then `git annex unused` has been used to
+save space and delete some past revisions.)
+"""]]
