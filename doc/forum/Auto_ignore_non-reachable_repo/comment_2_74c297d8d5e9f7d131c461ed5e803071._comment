@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-02-28T15:55:39Z"
+ content="""
+You can temporarily enable annex-ignore for a remote.
+
+For example:
+
+git -c remote.horus.annex-ignore=true git annex drop ...
+
+Adjusting the annex-cost of the remote may also be useful, so git-annex
+will avoid using that remote when it can use a lower-cost remote instead.
+The annex-cost-command could be used to detect the network where the remote
+access times out and make its cost be very high then.
+"""]]
