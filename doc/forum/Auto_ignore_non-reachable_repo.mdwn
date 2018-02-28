@@ -1,0 +1,15 @@
+Hello,
+
+having multiple remotes, which are often unreachable, I get command output like:
+
+    git annex drop .
+    drop 2017 Haus Idstein/26108065_10212412239435248_1115645256_o.jpg (locking horus...) (lockcontent failed) (checking horus...) ssh: Could not resolve hostname horus.local: Name or service not known
+    (checking S3...) ok
+    drop 2017 Haus Idstein/26177516_10212412238475224_326557077_o.jpg (locking horus...) (lockcontent failed) (checking horus...) ssh: Could not resolve hostname horus.local: Name or service not known
+    (checking S3...) ok
+    drop 2017 Haus Idstein/26178378_10212412238835233_820819105_o.jpg (locking horus...) (lockcontent failed) (checking horus...) ssh: Could not resolve hostname horus.local: Name or service not known
+    (checking S3...) ok
+
+which takes a long time, because it tries to lock horus first for each, waits for timeout and then tries the next remote. Of course I could use ```git annex drop --from=S3``` but I do not always remember that. Is there a way to auto ignore a remote which is not reachable?
+
+Thanks!
