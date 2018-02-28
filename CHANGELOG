@@ -1,3 +1,9 @@
+git-annex (6.20180228) UNRELEASED; urgency=medium
+
+  * Support exporttree=yes for rsync special remotes.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 28 Feb 2018 11:53:03 -0400
+
 git-annex (6.20180227) upstream; urgency=medium
 
   * inprogress: Avoid showing failures for files not in progress. 

@@ -22,6 +22,10 @@ These parameters can be passed to `git annex initremote` to configure rsync:
 
 * `keyid` - Specifies the gpg key to use for [[encryption]].
 
+* `exporttree` - Set to "yes" to make this special remote usable
+  by [[git-annex-export]]. It will not be usable as a general-purpose
+  special remote.
+
 * `shellescape` - Optional. Set to "no" to avoid shell escaping normally
   done when using rsync over ssh. That escaping is needed with typical
   setups, but not with some hosting providers that do not expose rsynced

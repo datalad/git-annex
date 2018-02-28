@@ -29,7 +29,7 @@ Repeated exports are done efficiently, by diffing the old and new tree,
 and transferring only the changed files, and renaming files as necessary.
 
 Exports can be interrupted and resumed. However, partially uploaded files
-will be re-started from the beginning.
+will be re-started from the beginning in most cases.
 
 Once content has been exported to a remote, commands like `git annex get`
 can download content from there the same as from other remotes. However,

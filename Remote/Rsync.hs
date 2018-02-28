@@ -1,6 +1,6 @@
 {- A remote that is only accessible by rsync.
  -
- - Copyright 2011 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -29,6 +29,7 @@ import Annex.Ssh
 import Remote.Helper.Special
 import Remote.Helper.Messages
 import Remote.Helper.Export
+import Types.Export
 import Remote.Rsync.RsyncUrl
 import Crypto
 import Utility.Rsync
@@ -49,7 +50,7 @@ remote = RemoteType
 	, enumerate = const (findSpecialRemotes "rsyncurl")
 	, generate = gen
 	, setup = rsyncSetup
-	, exportSupported = exportUnsupported
+	, exportSupported = exportIsSupported
 	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -75,7 +76,14 @@ gen r u c gc = do
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
-			, exportActions = exportUnsupported
+			, exportActions = return $ ExportActions
+				{ storeExport = storeExportM o
+				, retrieveExport = retrieveExportM o
+				, removeExport = removeExportM o
+				, checkPresentExport = checkPresentExportM o
+				, removeExportDirectory = Just (removeExportDirectoryM o)
+				, renameExport = renameExportM o
+				}
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
@@ -165,14 +173,25 @@ rsyncSetup _ mu _ c gc = do
  - pass --include=X --include=X/Y --include=X/Y/file --exclude=*)
  -}
 store :: RsyncOpts -> Key -> FilePath -> MeterUpdate -> Annex Bool
-store o k src meterupdate = withRsyncScratchDir $ \tmp -> do
-	let dest = tmp </> Prelude.head (keyPaths k)
-	liftIO $ createDirectoryIfMissing True $ parentDir dest
-	ok <- liftIO $ if canrename
+store o k src meterupdate = storeGeneric o meterupdate basedest populatedest
+  where
+	basedest = Prelude.head (keyPaths k)
+	populatedest dest = liftIO $ if canrename
 		then do
 			rename src dest
 			return True
 		else createLinkOrCopy src dest
+	{- If the key being sent is encrypted or chunked, the file
+	 - containing its content is a temp file, and so can be
+	 - renamed into place. Otherwise, the file is the annexed
+	 - object file, and has to be copied or hard linked into place. -}
+	canrename = isEncKey k || isChunkKey k
+
+storeGeneric :: RsyncOpts -> MeterUpdate -> FilePath -> (FilePath -> Annex Bool) -> Annex Bool
+storeGeneric o meterupdate basedest populatedest = withRsyncScratchDir $ \tmp -> do
+	let dest = tmp </> basedest
+	liftIO $ createDirectoryIfMissing True $ parentDir dest
+	ok <- populatedest dest
 	ps <- sendParams
 	if ok
 		then showResumable $ rsyncRemote Upload o (Just meterupdate) $ ps ++
@@ -182,41 +201,18 @@ store o k src meterupdate = withRsyncScratchDir $ \tmp -> do
 			, Param $ rsyncUrl o
 			]
 		else return False
-  where
-	{- If the key being sent is encrypted or chunked, the file
-	 - containing its content is a temp file, and so can be
-	 - renamed into place. Otherwise, the file is the annexed
-	 - object file, and has to be copied or hard linked into place. -}
-	canrename = isEncKey k || isChunkKey k
 
 retrieve :: RsyncOpts -> FilePath -> Key -> MeterUpdate -> Annex ()
 retrieve o f k p = 
-	unlessM (rsyncRetrieve o k f (Just p)) $
+	unlessM (rsyncRetrieveKey o k f (Just p)) $
 		giveup "rsync failed"
 
 retrieveCheap :: RsyncOpts -> Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieveCheap o k _af f = ifM (preseedTmp k f) ( rsyncRetrieve o k f Nothing , return False )
+retrieveCheap o k _af f = ifM (preseedTmp k f) ( rsyncRetrieveKey o k f Nothing , return False )
 
 remove :: RsyncOpts -> Remover
-remove o k = do
-	ps <- sendParams
-	withRsyncScratchDir $ \tmp -> liftIO $ do
-		{- Send an empty directory to rysnc to make it delete. -}
-		let dummy = tmp </> keyFile k
-		createDirectoryIfMissing True dummy
-		rsync $ rsyncOptions o ++ ps ++
-			map (\s -> Param $ "--include=" ++ s) includes ++
-			[ Param "--exclude=*" -- exclude everything else
-			, Param "--quiet", Param "--delete", Param "--recursive"
-			] ++ partialParams ++ 
-			[ Param $ addTrailingPathSeparator dummy
-			, Param $ rsyncUrl o
-			]
+remove o k = removeGeneric o includes
   where
-	{- Specify include rules to match the directories where the
-	 - content could be. Note that the parent directories have
-	 - to also be explicitly included, due to how rsync
-	 - traverses directories. -}
 	includes = concatMap use dirHashes
 	use h = let dir = h def k in
 		[ parentDir dir
@@ -225,17 +221,76 @@ remove o k = do
 		, dir </> keyFile k </> "***"
 		]
 
+{- An empty directory is rsynced to make it delete. Everything is excluded,
+ - except for the specified includes. Due to the way rsync traverses
+ - directories, the includes must match both the file to be deleted, and
+ - its parent directories, but not their other contents. -}
+removeGeneric :: RsyncOpts -> [String] -> Annex Bool
+removeGeneric o includes = do
+	ps <- sendParams
+	withRsyncScratchDir $ \tmp -> liftIO $ do
+		{- Send an empty directory to rysnc to make it delete. -}
+		rsync $ rsyncOptions o ++ ps ++
+			map (\s -> Param $ "--include=" ++ s) includes ++
+			[ Param "--exclude=*" -- exclude everything else
+			, Param "--quiet", Param "--delete", Param "--recursive"
+			] ++ partialParams ++ 
+			[ Param $ addTrailingPathSeparator tmp
+			, Param $ rsyncUrl o
+			]
+
 checkKey :: Git.Repo -> RsyncOpts -> CheckPresent
 checkKey r o k = do
 	showChecking r
+	checkPresentGeneric o (rsyncUrls o k)
+
+checkPresentGeneric :: RsyncOpts -> [RsyncUrl] -> Annex Bool
+checkPresentGeneric o rsyncurls =
 	-- note: Does not currently differentiate between rsync failing
 	-- to connect, and the file not being present.
-	untilTrue (rsyncUrls o k) $ \u -> 
+	untilTrue rsyncurls $ \u -> 
 		liftIO $ catchBoolIO $ do
 			withQuietOutput createProcessSuccess $
 				proc "rsync" $ toCommand $
 					rsyncOptions o ++ [Param u]
 			return True
+
+storeExportM :: RsyncOpts -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
+storeExportM o src _k loc meterupdate =
+	storeGeneric o meterupdate basedest populatedest
+  where
+	basedest = fromExportLocation loc
+	populatedest = liftIO . createLinkOrCopy src
+
+retrieveExportM :: RsyncOpts -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
+retrieveExportM o _k loc dest p = rsyncRetrieve o [rsyncurl] dest (Just p)
+  where
+	rsyncurl = mkRsyncUrl o (fromExportLocation loc)
+
+checkPresentExportM :: RsyncOpts -> Key -> ExportLocation -> Annex Bool
+checkPresentExportM o _k loc = checkPresentGeneric o [rsyncurl]
+  where
+	rsyncurl = mkRsyncUrl o (fromExportLocation loc)
+
+removeExportM :: RsyncOpts -> Key -> ExportLocation -> Annex Bool
+removeExportM o _k loc =
+	removeGeneric o (includes (fromExportLocation loc))
+  where
+	includes f = f : case upFrom f of
+		Nothing -> []
+		Just f' -> includes f'
+
+removeExportDirectoryM :: RsyncOpts -> ExportDirectory -> Annex Bool
+removeExportDirectoryM o ed = removeGeneric o (allbelow d : includes d)
+  where
+	d = fromExportDirectory ed
+	allbelow f = f </> "***"
+	includes f = f : case upFrom f of
+		Nothing -> []
+		Just f' -> includes f'
+
+renameExportM :: RsyncOpts -> Key -> ExportLocation -> ExportLocation -> Annex Bool
+renameExportM _ _ _ _ = return False
 
 {- Rsync params to enable resumes of sending files safely,
  - ensure that files are only moved into place once complete
@@ -259,14 +314,17 @@ withRsyncScratchDir a = do
 	t <- fromRepo gitAnnexTmpObjectDir
 	withTmpDirIn t "rsynctmp" a
 
-rsyncRetrieve :: RsyncOpts -> Key -> FilePath -> Maybe MeterUpdate -> Annex Bool
-rsyncRetrieve o k dest meterupdate =
-	showResumable $ untilTrue (rsyncUrls o k) $ \u -> rsyncRemote Download o meterupdate
+rsyncRetrieve :: RsyncOpts -> [RsyncUrl] -> FilePath -> Maybe MeterUpdate -> Annex Bool
+rsyncRetrieve o rsyncurls dest meterupdate =
+	showResumable $ untilTrue rsyncurls $ \u -> rsyncRemote Download o meterupdate
 		-- use inplace when retrieving to support resuming
 		[ Param "--inplace"
 		, Param u
 		, File dest
 		]
+
+rsyncRetrieveKey :: RsyncOpts -> Key -> FilePath -> Maybe MeterUpdate -> Annex Bool
+rsyncRetrieveKey o k dest meterupdate = rsyncRetrieve o (rsyncUrls o k) dest meterupdate
 
 showResumable :: Annex Bool -> Annex Bool
 showResumable a = ifM a

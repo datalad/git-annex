@@ -1,6 +1,6 @@
 {- Rsync urls.
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -35,6 +35,9 @@ rsyncEscape :: RsyncOpts -> RsyncUrl -> RsyncUrl
 rsyncEscape o u
 	| rsyncShellEscape o && rsyncUrlIsShell (rsyncUrl o) = shellEscape u
 	| otherwise = u
+
+mkRsyncUrl :: RsyncOpts -> FilePath -> RsyncUrl
+mkRsyncUrl o f = rsyncUrl o </> rsyncEscape o f
 
 rsyncUrls :: RsyncOpts -> Key -> [RsyncUrl]
 rsyncUrls o k = map use dirHashes
