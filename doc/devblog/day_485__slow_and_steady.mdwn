@@ -1,0 +1,9 @@
+I've been recovering from some stuff over the past month, so
+progress lately has been slow, but still steadily progressing. Yesterday's
+release of git-annex had a month and a half of improvements, including JSON
+enhancements, adding extension support to the external special remote
+protocol, and making fsck warn about required content that's missing.
+
+Today I've been working on `git annex export` to rsync special remotes.
+
+Today's work was sponsored by Jake Vosloo [on Patreon](https://www.patreon.com/joeyh).
