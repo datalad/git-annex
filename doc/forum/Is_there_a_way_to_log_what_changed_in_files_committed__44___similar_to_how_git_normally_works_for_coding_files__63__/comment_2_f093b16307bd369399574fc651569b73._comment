@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Jeff"
+ avatar="http://cdn.libravatar.org/avatar/99a3c8987afede93f4e5d3212b43ad5f"
+ subject="comment 2"
+ date="2018-02-28T14:43:52Z"
+ content="""
+Yep, that's what I mean! And would I be able to revert to previous commits like if I were using Github to track code? If it's for large files, does it just make a hidden copy of each version of a file every time I add a new commit?
+
+Thanks!
+"""]]
