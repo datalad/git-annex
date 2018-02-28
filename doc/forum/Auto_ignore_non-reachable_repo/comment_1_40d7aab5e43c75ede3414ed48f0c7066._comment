@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Horus"
+ avatar="http://cdn.libravatar.org/avatar/8f0ee08b98ea5bba76c3fe112c08851c"
+ subject="comment 1"
+ date="2018-02-28T09:31:26Z"
+ content="""
+Should be a edit: ```git annex drop --from=S3``` does not force checking the repo S3, but drops from S3.
+"""]]
