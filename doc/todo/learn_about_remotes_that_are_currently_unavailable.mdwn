@@ -1,0 +1,28 @@
+If a remote is only available on some networks, a command like `git annex drop`
+or `git annex get` may try to access the remote each time a file is
+processed, and suffer a long timeout each time. It seems git-annex could
+remember that a previous access of a remote failed, and automatically
+de-prioritize that remote, eg adjust its cost to below the next remote on
+the list. So it would learn about the current situation the process finds
+itself in.
+
+Seems this would be easy for checkPresent, since it throws an exception
+if the remote cannot be accessed.
+
+Other methods like storeKey and retrieveKeyFile don't differentiate between
+the remote not being accessible, and the action failing. It could be a lot
+of work and complication to add that distinction, including needing to
+change the external special remote protocol.
+
+Implementing it for at least checkPresent would be a good start. That would
+cover `git annex drop` and `git annex copy --to` and probably a few other
+commands.
+
+This learning could be unwanted behavior if git-annex is running while the
+computer is migrating between networks. Then it might de-prioritize a
+remote before it travels to the network where it can use that remote. This
+would mostly affect the assistant since it's run for long periods of time.
+It could undo the de-prioritization when it sees that the network has
+changed.
+
+--[[Joey]]
