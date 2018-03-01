@@ -1,5 +1,5 @@
 Hello, I'm running git-annex version: 5.20151208-1build1.  I am trying to add a public key to my git annex repo but it tells me the repo already exists.  I worked around this by marking the repo as dead and re-enabling but I feel like this isn't the correct course of action.  Is there another way to avoid this error?
 
-$ git annex enableremote annex.repo keyid+=920D7A56
-enableremote annex.repo (encryption update) (hybrid cipher with gpg keys 97A273201BA73A76 A50E9160920D7A56) fatal: remote annex.repo already exists.
-git-annex: git [Param "remote",Param "add",Param "annex.repo",Param "gcrypt::ssh://ben@annex/dataset/annex/share"] failed
+    $ git annex enableremote annex.repo keyid+=920D7A56
+    enableremote annex.repo (encryption update) (hybrid cipher with gpg keys 97A273201BA73A76 A50E9160920D7A56) fatal: remote annex.repo already exists.
+    git-annex: git [Param "remote",Param "add",Param "annex.repo",Param "gcrypt::ssh://ben@annex/dataset/annex/share"] failed
