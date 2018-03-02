@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-03-02T19:04:08Z"
+ content="""
+Your version of git-annex is impressively out of date.
+When I try this with the current version, it works ok.
+"""]]
