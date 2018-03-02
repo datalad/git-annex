@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2018-03-02T19:09:36Z"
+ content="""
+@elmimmo, you could add all those permutations, but there's no need to
+connect repositories that you don't need git-annex to transfer data
+between.
+"""]]
