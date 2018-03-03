@@ -3,8 +3,7 @@ Files with special unicode characters(in this case japanese) for some reason hav
 
 This is an issue because it causes errors when using glacier-cli when uploading copies to Glacier vault.
 
-### What steps will reproduce t
-lrwxrwxrwx 1 sochan sochan 221 Mar  3 13:37 12. Change The he problem?
+### What steps will reproduce the problem?
 Here's how it looks for me:
 
 [[!format sh """
