@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="i@f4fc1d4ed8c7cc91fc284462cb631c270a5195e9"
+ nickname="i"
+ avatar="http://cdn.libravatar.org/avatar/661785c9bf4c87cc795f130b47a1c4ae"
+ subject="it seems to affect regular text too."
+ date="2018-03-03T16:49:10Z"
+ content="""
+Oh man, yes, yes it does have something to do with extensions, it doesn't matter what it is, it gets added at the end if it's prefixed by a dot, even if there's something like a closing bracket in there:
+
+[[!format sh \"\"\"
+ % g an calckey test.wtf.mp3 
+SHA256E-s7479642--957208748ae03fe4fc8d7877b2c9d82b7f31be0726e4a3dec9063b84cc64cf09.wtf.mp3
+ % g an calckey test.wtf\).mp3
+SHA256E-s7479642--957208748ae03fe4fc8d7877b2c9d82b7f31be0726e4a3dec9063b84cc64cf09.wtf.mp3
+\"\"]]
+"""]]
