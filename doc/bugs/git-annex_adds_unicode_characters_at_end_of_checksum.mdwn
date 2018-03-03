@@ -35,7 +35,9 @@ operating system: linux x86_64
 % lsb_release -a
 No LSB modules are available.
 Distributor ID:	Debian
-Description:	Debian GNU/LinHere's how it looks for me:
+Description:	Debian GNU/Linux 9.3 (stretch)
+Release:	9.3
+Codename:	stretch
 """]]
 
 ### Please provide any additional information below.
