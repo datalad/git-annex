@@ -377,7 +377,12 @@ Executable git-annex
 
   -- Fully optimize for production.
   if flag(Production)
-    GHC-Options: -O2
+    -- Lower memory systems can run out of memory with -O2, so
+    -- optimise slightly less.
+    if arch(arm)
+      GHC-Options: -O1 -optlo-O2
+    else
+      GHC-Options: -O2
 
   -- Avoid linking with unused dynamic libaries.
   -- (Only tested on Linux).

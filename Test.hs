@@ -6,8 +6,6 @@
  -}
 
 {-# LANGUAGE CPP #-}
-{- Avoid optimising this file much, since it's large and does not need it._-}
-{-# OPTIONS_GHC -O1 -optlo-O2 #-}
 
 module Test where
 
