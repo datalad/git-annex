@@ -94,7 +94,7 @@ selectExtension f
 	| otherwise = intercalate "." ("":es)
   where
 	es = filter (not . null) $ reverse $
-		take 2 $ map (filter validInExtension) $
+		take 2 $ filter (all validInExtension) $
 		takeWhile shortenough $
 		reverse $ splitc '.' $ takeExtensions f
 	shortenough e = length e <= 4 -- long enough for "jpeg"

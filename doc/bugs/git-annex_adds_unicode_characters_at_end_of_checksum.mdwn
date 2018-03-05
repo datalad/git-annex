@@ -3,6 +3,8 @@ Files with special unicode characters(in this case japanese) for some reason hav
 
 This is an issue because it causes errors when using glacier-cli when uploading copies to Glacier vault.
 
+[[!meta title="kanji in key extension cause glacier-cli upload error"]]
+
 ### What steps will reproduce the problem?
 Here's how it looks for me:
 
