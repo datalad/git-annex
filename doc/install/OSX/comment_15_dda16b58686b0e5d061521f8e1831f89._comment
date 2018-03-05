@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="drunken_sapo"
+ avatar="http://cdn.libravatar.org/avatar/95a4912e969b86df221626188ecc8f94"
+ subject="It is better to provide osx dmgs"
+ date="2018-03-05T11:48:11Z"
+ content="""
+I've just installed git-annex in OSX High Sierra, and it pulls a LOT of dependencies, many of them already installed. For instance, yet another python distro. It is kind of overkill just to install annex.
+
+"""]]
