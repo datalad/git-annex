@@ -21,7 +21,8 @@ But it seems to be not the case:
 [2018-03-05 14:23:07.019917528] git-annex-remote-datalad-archives[2] --> PREPARE-SUCCESS
 [2018-03-05 14:23:07.019972279] git-annex-remote-datalad-archives[1] <-- PREPARE
 [2018-03-05 14:23:07.02001778] git-annex-remote-datalad-archives[2] <-- TRANSFER RETRIEVE MD5E-s5238--ead47341c9363e7f49c1a50c895d170b.txt .git/annex/tmp/MD5E-s5238--ead47341c9363e7f49c1a50c895d170b.txt
-[2018-03-05 14:23:0detailed-methods.txt (from datalad-archives...) ] --> PREPARE-FAILURE Failed to prepare <datalad.customremotes.archives.ArchiveAnnexCustomRemote object at 0x7f7c1ce84390> due to Cannot lock repo /home/yoh/datalad__/crcnget docs/crcns-aa1-conditions.txt (from datalad-archives...) failed
+[2018-03-05 14:23:0detailed-methods.txt (from datalad-archives...) ] --> PREPARE-FAILURE Failed to prepare <datalad.customremotes.archives.ArchiveAnnexCustomRemote object at 0x7f7c1ce84390> due to Cannot lock repo /home/yoh/datalad__/crcn
+get docs/crcns-aa1-conditions.txt (from datalad-archives...) failed
 get docs/crcns-aa1-detailed-methods.txt (from datalad-archives...) 
 """]]
 
