@@ -1,0 +1,35 @@
+### Please describe the problem.
+
+Sorry if it doesn't really fit into the "bug" category, although may be I could have titled it "does not consider another instance of the same special remote in case one fails to initialize in parallel (-J) mode" may be?
+
+### What steps will reproduce the problem?
+
+In datalad-archives we probably should restrict to having just a single instance of that special remote running to avoid messing with tracking of which instance is taking care about which archive and stage (download, extraction, etc).  So I thought I would just implement that by assuring that there is a single instance of the special remote running per repository and all others just reporting 'PREPARE-FAILURE' and then git-annex would try another instance it has in the pool.
+
+But it seems to be not the case:
+
+
+[[!format sh """
+[2018-03-05 14:23:06.725630284] chat: /home/yoh/proj/datalad/datalad/venvs/dev/bin/git-annex-remote-datalad-archives []
+[2018-03-05 14:23:07.019016095] git-annex-remote-datalad-archives[2] --> VERSION 1
+[2018-03-05 14:23:07.019267772] git-annex-remote-datalad-archives[2] <-- EXTENSIONS INFO
+[2018-03-05 14:23:07.019461422] git-annex-remote-datalad-archives[2] --> UNSUPPORTED-REQUEST
+[2018-03-05 14:23:07.019596061] git-annex-remote-datalad-archives[2] <-- PREPARE
+[2018-03-05 14:23:07.019643377] git-annex-remote-datalad-archives[1] --> VERSION 1
+[2018-03-05 14:23:07.01973844] git-annex-remote-datalad-archives[1] <-- EXTENSIONS INFO
+[2018-03-05 14:23:07.019888855] git-annex-remote-datalad-archives[1] --> UNSUPPORTED-REQUEST
+[2018-03-05 14:23:07.019917528] git-annex-remote-datalad-archives[2] --> PREPARE-SUCCESS
+[2018-03-05 14:23:07.019972279] git-annex-remote-datalad-archives[1] <-- PREPARE
+[2018-03-05 14:23:07.02001778] git-annex-remote-datalad-archives[2] <-- TRANSFER RETRIEVE MD5E-s5238--ead47341c9363e7f49c1a50c895d170b.txt .git/annex/tmp/MD5E-s5238--ead47341c9363e7f49c1a50c895d170b.txt
+[2018-03-05 14:23:0detailed-methods.txt (from datalad-archives...) ] --> PREPARE-FAILURE Failed to prepare <datalad.customremotes.archives.ArchiveAnnexCustomRemote object at 0x7f7c1ce84390> due to Cannot lock repo /home/yoh/datalad__/crcnget docs/crcns-aa1-conditions.txt (from datalad-archives...) failed
+get docs/crcns-aa1-detailed-methods.txt (from datalad-archives...) 
+"""]]
+
+if one instance fails -- annex immediately reports that the url failed to download and doesn't try another instance it had to be ran in parallel.
+
+I wondered if there is an easy way to restrict a single instance for some special remotes (may be with recently added "FEATURES" to describe special remotes) or adjust parallel download logic to loop through available (not failed) instances thus reusing only one instance if all others fail?
+
+### What version of git-annex are you using? On what operating system?
+6.20180220+gitg811d0d313-1~ndall+1
+
+
