@@ -32,4 +32,5 @@ I wondered if there is an easy way to restrict a single instance for some specia
 ### What version of git-annex are you using? On what operating system?
 6.20180220+gitg811d0d313-1~ndall+1
 
+[[!meta author=yoh]]
 
