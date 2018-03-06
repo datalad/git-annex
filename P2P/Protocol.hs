@@ -39,7 +39,7 @@ newtype Offset = Offset Integer
 newtype Len = Len Integer
 	deriving (Show)
 
--- | Service as used by the connect message is gitremote-helpers(1)
+-- | Service as used by the connect message in gitremote-helpers(1)
 data Service = UploadPack | ReceivePack
 	deriving (Show)
 
