@@ -5,7 +5,9 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module RemoteDaemon.Transport.Tor (server, transport) where
+{-# LANGUAGE CPP #-}
+
+module RemoteDaemon.Transport.Tor (server, transport, torSocketFile) where
 
 import Common
 import qualified Annex
@@ -14,6 +16,7 @@ import Annex.ChangedRefs
 import RemoteDaemon.Types
 import RemoteDaemon.Common
 import Utility.AuthToken
+import Utility.Tor
 import P2P.Protocol as P2P
 import P2P.IO
 import P2P.Annex
@@ -30,6 +33,9 @@ import System.Log.Logger (debugM)
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TBMQueue
 import Control.Concurrent.Async
+#ifndef mingw32_HOST_OS
+import System.Posix.User
+#endif
 
 -- Run tor hidden service.
 server :: Server
@@ -178,3 +184,14 @@ transport (RemoteRepo r gc) url@(RemoteURI uri) th ichan ochan =
 		ok <- inLocalRepo th $
 			runBool [Param "fetch", Param $ Git.repoDescribe r]
 		send (DONESYNCING url ok)
+
+torSocketFile :: Annex.Annex (Maybe FilePath)
+torSocketFile = do
+	u <- getUUID
+	let ident = fromUUID u
+#ifndef mingw32_HOST_OS
+	uid <- liftIO getRealUserID
+#else
+	let uid = 0
+#endif
+	liftIO $ getHiddenServiceSocketFile torAppName uid ident

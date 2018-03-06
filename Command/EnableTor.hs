@@ -21,6 +21,7 @@ import Config.Files
 import P2P.IO
 import qualified P2P.Protocol as P2P
 import Utility.ThreadScheduler
+import RemoteDaemon.Transport.Tor
 
 import Control.Concurrent.Async
 import qualified Network.Socket as S
