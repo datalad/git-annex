@@ -32,3 +32,6 @@ ATM, even with ControlPersist=yes, on a fast interconnection between hosts (so i
 
 
 both hosts do not show any high CPU load
+
+> [[closed|done]]; wrung out all the perf gains we can without
+> [[accellerate_ssh_remotes_with_git-annex-shell_mass_protocol]] --[[Joey]]
