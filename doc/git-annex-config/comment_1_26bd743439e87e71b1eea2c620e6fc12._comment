@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="davi.castro@13c06889d1a1aef6321227888bd7d6b73d5692ea"
+ nickname="davi.castro"
+ avatar="http://cdn.libravatar.org/avatar/615c6641965d1fa6b58b96d52f8a96b3"
+ subject="Is git annex config still supported?"
+ date="2018-03-06T03:03:45Z"
+ content="""
+I`m using version: 5.20151208 and there is no such command as git annex config. 
+It is also not listed on git annex help
+"""]]
