@@ -1,0 +1,14 @@
+I'm excited by this new design
+[[todo/accellerate_ssh_remotes_with_git-annex-shell_mass_protocol]].
+
+git-annex's use of rsync got transfers over ssh working quickly early on,
+but other than resuming interrupted transfers, using rsync doesn't really
+gain git-annex much, since annexed objects don't change over time. And
+rsync has always involved a certian amount of overhead that a custom
+protocol would avoid.
+
+It's especially handy that such a protocol was already developed for
+`git-annex p2p` when using tor. I've not heard of a lot of people using that
+feature (but maybe people who do have reason not to talk about it), but
+it's a good solid thing, implemented very generically with a free monad,
+and reusing it for git-annex-shell would be great.
