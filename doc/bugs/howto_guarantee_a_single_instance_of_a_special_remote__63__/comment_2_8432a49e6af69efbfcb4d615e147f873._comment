@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-03-06T16:33:41Z"
+ content="""
+Ok, audited all exceptions thrown in there, 
+and the only other one that stood out is 
+that TRANSFER-FAILURE throws an exception -- but that one
+is ok because it's in a Retriever, all of which exceptions are caught.
+
+But hmm, PREPARE-FAILURE throwing an exception when git-annex is preparing
+before retrieving a key is in the same Retriever, so that exception also
+should not be a problem. There might be other cases where PREPARE-FAILURE
+throwing an exception is not desirable, but this is not one.
+
+---
+
+Oh, I see, the bug report is really about some -J specific issue!
+
+I'm having difficulty reproducing it. I have two external special remotes
+that both send PREPARE-FAILURE, and when a file is present in both,
+`git annex get -J2` does try both of them:
+
+	[2018-03-06 12:45:21.123121045] chat: /home/joey/bin/git-annex-remote-directory []
+	[2018-03-06 12:45:21.125524418] git-annex-remote-directory[1] --> VERSION 1
+	[2018-03-06 12:45:21.125702152] git-annex-remote-directory[1] <-- EXTENSIONS INFO
+	[2018-03-06 12:45:21.126005492] git-annex-remote-directory[1] --> UNSUPPORTED-REQUEST
+	[2018-03-06 12:45:21.126186941] git-annex-remote-directory[1] <-- PREPARE
+	[2018-03-06 12:45:21.126518978] git-annex-remote-directory[1] --> PREPARE_FAILURE OOK
+	[2018-03-06 12:45:21.129247706] chat: /home/joey/bin/git-annex-remote-directory []
+	[2018-03-06 12:45:21.131475605] git-annex-remote-directory[1] --> VERSION 1
+	[2018-03-06 12:45:21.131636898] git-annex-remote-directory[1] <-- EXTENSIONS INFO
+	[2018-03-06 12:45:21.131848068] git-annex-remote-directory[1] --> UNSUPPORTED-REQUEST
+	[2018-03-06 12:45:21.131953342] git-annex-remote-directory[1] <-- PREPARE
+	[2018-03-06 12:45:21.132127177] git-annex-remote-directory[1] --> PREPARE_FAILURE OOK
+	get foo (from d1...) (from d2...)
+	  Unable to access these remotes: d1, d2
+"""]]
