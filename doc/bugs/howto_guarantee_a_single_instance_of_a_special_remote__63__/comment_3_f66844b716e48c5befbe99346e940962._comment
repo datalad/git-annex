@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2018-03-06T19:07:37Z"
+ content="""
+re reproduce:  may be it is relevant that in my case it is THE SAME (the same uuid, hardcoded similarly to web \"remote\" uuid) remote.
+
+re locking: have some ugly (almost) working fix -- but yet to troubleshoot why some files still manage to get \"failed\" status (may be it is somehow related to above)
+"""]]
