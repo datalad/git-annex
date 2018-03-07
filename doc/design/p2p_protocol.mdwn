@@ -61,7 +61,7 @@ message will come immediately after it.
 
 ## Checking if content is present
 
-To check if a key is present on the server, the client sends:
+To check if a key is currently present on the server, the client sends:
 
 	CHECKPRESENT Key
 
