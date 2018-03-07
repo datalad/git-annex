@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="released Finder integration"
+ date="2018-03-07T23:23:47Z"
+ content="""
+I just released an app, still in beta that provides Finder integration for git-annex. It relies on Core Data so it actually requires macOS 10.12 or later. If there is enough need/requests it could probably be updated to support OS-X 10.10 by switching from Core Data to sqllite directly.
+
+The app is called [git-annex-turtle](https://github.com/andrewringler/git-annex-turtle) and available on github.
+
+—Andrew
+"""]]
