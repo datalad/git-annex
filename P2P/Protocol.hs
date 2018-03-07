@@ -351,10 +351,13 @@ serveAuth myuuid = serverLoop handler
 				return ServerContinue
 	handler _ = return ServerUnexpected
 
+data ServerMode = ServeReadOnly | ServeReadWrite
+
 -- | Serve the protocol, with a peer that has authenticated.
-serveAuthed :: UUID -> Proto ()
-serveAuthed myuuid = void $ serverLoop handler
+serveAuthed :: ServerMode -> UUID -> Proto ()
+serveAuthed servermode myuuid = void $ serverLoop handler
   where
+	readonlyerror = net $ sendMessage (ERROR "this repository is read-only; write access denied")
 	handler (LOCKCONTENT key) = do
 		local $ tryLockContent key $ \locked -> do
 			sendSuccess locked
@@ -367,27 +370,39 @@ serveAuthed myuuid = void $ serverLoop handler
 	handler (CHECKPRESENT key) = do
 		sendSuccess =<< local (checkContentPresent key)
 		return ServerContinue
-	handler (REMOVE key) = do
-		sendSuccess =<< local (removeContent key)
-		return ServerContinue
-	handler (PUT af key) = do
-		have <- local $ checkContentPresent key
-		if have
-			then net $ sendMessage ALREADY_HAVE
-			else do
-				let sizer = tmpContentSize key
-				let storer = storeContent key af
-				ok <- receiveContent nullMeterUpdate sizer storer PUT_FROM
-				when ok $
-					local $ setPresent key myuuid
-		return ServerContinue
+	handler (REMOVE key) = case servermode of
+		ServeReadWrite -> do
+			sendSuccess =<< local (removeContent key)
+			return ServerContinue
+		ServeReadOnly -> do
+			readonlyerror
+			return ServerContinue
+	handler (PUT af key) = case servermode of
+		ServeReadWrite -> do
+			have <- local $ checkContentPresent key
+			if have
+				then net $ sendMessage ALREADY_HAVE
+				else do
+					let sizer = tmpContentSize key
+					let storer = storeContent key af
+					ok <- receiveContent nullMeterUpdate sizer storer PUT_FROM
+					when ok $
+						local $ setPresent key myuuid
+			return ServerContinue
+		ServeReadOnly -> do
+			readonlyerror
+			return ServerContinue
 	handler (GET offset key af) = do
 		void $ sendContent af key offset nullMeterUpdate
 		-- setPresent not called because the peer may have
 		-- requested the data but not permanently stored it.
 		return ServerContinue
 	handler (CONNECT service) = do
-		net $ relayService service
+		let goahead = net $ relayService service
+		case (servermode, service) of
+			(ServeReadWrite, _) -> goahead
+			(ServeReadOnly, UploadPack) -> goahead
+			(ServeReadOnly, ReceivePack) -> readonlyerror
 		-- After connecting to git, there may be unconsumed data
 		-- from the git processes hanging around (even if they
 		-- exited successfully), so stop serving this connection.

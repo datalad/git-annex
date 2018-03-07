@@ -128,7 +128,7 @@ serveClient th u r q = bracket setup cleanup start
 	authed conn theiruuid = 
 		bracket watchChangedRefs (liftIO . maybe noop stopWatchingChangedRefs) $ \crh -> do
 			v' <- runFullProto (Serving theiruuid crh) conn $
-				P2P.serveAuthed u
+				P2P.serveAuthed P2P.ServeReadWrite u
 			case v' of
 				Right () -> return ()
 				Left e -> liftIO $ debugM "remotedaemon" ("Tor connection error: " ++ e)
