@@ -233,8 +233,8 @@ data LocalF c
 	| TryLockContent Key (Bool -> Proto ()) c
 	-- ^ Try to lock the content of a key,  preventing it
 	-- from being deleted, while running the provided protocol
-	-- action. If unable to lock the content, runs the protocol action
-	-- with False.
+	-- action. If unable to lock the content, or the content is not
+	-- present, runs the protocol action with False.
 	| WaitRefChange (ChangedRefs -> c)
 	-- ^ Waits for one or more git refs to change and returns them.
 	deriving (Functor)

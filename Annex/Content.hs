@@ -196,19 +196,19 @@ contentLockFile key = Just <$> calcRepo (gitAnnexContentLock key)
 {- Prevents the content from being removed while the action is running.
  - Uses a shared lock.
  -
- - Does not actually check if the content is present. Use inAnnex for that.
- - However, since the contentLockFile is the content file in indirect mode,
- - if the content is not present, locking it will fail.
- -
- - If locking fails, throws an exception rather than running the action.
+ - If locking fails, or the content is not present, throws an exception
+ - rather than running the action.
  -
  - Note that, in direct mode, nothing prevents the user from directly
  - editing or removing the content, even while it's locked by this.
  -}
 lockContentShared :: Key -> (VerifiedCopy -> Annex a) -> Annex a
-lockContentShared key a = lockContentUsing lock key $ do
-	u <- getUUID
-	withVerifiedCopy LockedCopy u (return True) a
+lockContentShared key a = lockContentUsing lock key $ ifM (inAnnex key)
+	( do
+		u <- getUUID
+		withVerifiedCopy LockedCopy u (return True) a
+	, giveup $ "failed to lock content: not present"
+	)
   where
 #ifndef mingw32_HOST_OS
 	lock contentfile Nothing = tryLockShared Nothing contentfile

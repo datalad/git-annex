@@ -22,9 +22,8 @@ cmd = noCommit $
 seek :: CmdParams -> CommandSeek
 seek = withWords start
 
--- First, lock the content. Then, make sure the content is actually
--- present, and print out "OK". Wait for the caller to send a line before
--- dropping the lock.
+-- First, lock the content, then print out "OK". 
+-- Wait for the caller to send a line before dropping the lock.
 start :: [String] -> CommandStart
 start [ks] = do
 	ok <- lockContentShared k (const locksuccess)
@@ -34,12 +33,9 @@ start [ks] = do
 		else exitFailure
   where
 	k = fromMaybe (giveup "bad key") (file2key ks)
-	locksuccess = ifM (inAnnex k)
-		( liftIO $ do
-			putStrLn contentLockedMarker
-			hFlush stdout
-			_ <- getProtocolLine stdin
-			return True
-		, return False
-		)
+	locksuccess = liftIO $ do
+		putStrLn contentLockedMarker
+		hFlush stdout
+		_ <- getProtocolLine stdin
+		return True
 start _ = giveup "Specify exactly 1 key."

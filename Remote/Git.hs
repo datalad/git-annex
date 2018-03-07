@@ -391,11 +391,8 @@ lockKey r duc key callback
 			-- and then run the callback in the original
 			-- annex monad, not the remote's.
 			onLocalFast r $ 
-				Annex.Content.lockContentShared key $ \vc ->
-					ifM (Annex.Content.inAnnex key)
-						( liftIO $ inorigrepo $ callback vc
-						, failedlock
-						)
+				Annex.Content.lockContentShared key $
+					liftIO . inorigrepo . callback
 		, failedlock
 		)
 	| Git.repoIsSsh (repo r) = do
