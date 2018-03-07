@@ -202,36 +202,33 @@ prepSocket socketfile gc sshhost sshparams = do
 	-- the connection has already been started. Otherwise,
 	-- get the connection started now.
 	makeconnection socketlock =
-		whenM (isNothing <$> fromLockCache socketlock) $ do
-			let startps = Param (fromSshHost sshhost) :
-				sshparams ++ startSshConnection gc
-			-- When we can start the connection in batch mode,
-			-- ssh won't prompt to the console.
-			(_, connected) <- liftIO $ processTranscript "ssh"
-				(["-o", "BatchMode=true"]
-				++ toCommand startps)
-				Nothing
-			unless connected $ do
-				ok <- prompt $ liftIO $
-					boolSystem "ssh" startps
-				unless ok $
-					warning $ "Unable to run git-annex-shell on remote " ++
-						Git.repoDescribe (gitConfigRepo (remoteGitConfig gc))
-
--- Parameters to get ssh connected to the remote host,
--- by asking it to run a no-op command.
---
--- Could simply run "true", but the remote host may only
--- allow git-annex-shell to run. So, run git-annex-shell inannex
--- with the path to the remote repository and no other parameters,
--- which is a no-op supported by all versions of git-annex-shell.
-startSshConnection :: RemoteGitConfig -> [CommandParam]
-startSshConnection gc =
-	[ Param "git-annex-shell"
-	, Param "inannex"
-	, File $ Git.repoPath $ gitConfigRepo $
-		remoteGitConfig gc
-	]
+		whenM (isNothing <$> fromLockCache socketlock) $
+			-- See if ssh can connect in batch mode,
+			-- if so there's no need to block for a password
+			-- prompt.
+			unlessM (tryssh ["-o", "BatchMode=true"]) $
+				-- ssh needs to prompt (probably)
+				-- If the user enters the wrong password,
+				-- ssh will tell them, so we can ignore
+				-- failure.
+				void $ prompt $ tryssh []
+	-- Try to ssh to the host quietly. Returns True if ssh apparently
+	-- connected to the host successfully. If ssh failed to connect,
+	-- returns False.
+	-- Even if ssh is forced to run some specific command, this will
+	-- return True.
+	-- (Except there's an unlikely false positive where a forced
+	-- ssh command exits 255.)
+	tryssh extraps = liftIO $ do
+		let p = proc "ssh" $ concat
+			[ extraps
+			, toCommand sshparams
+			, [fromSshHost sshhost, "true"]
+			]
+		(_, exitcode) <- processTranscript'' p Nothing
+		return $ case exitcode of
+			ExitFailure 255 -> False
+			_ -> True
 
 {- Find ssh socket files.
  -

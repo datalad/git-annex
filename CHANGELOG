@@ -17,6 +17,8 @@ git-annex (6.20180228) UNRELEASED; urgency=medium
     present when locking it. This could cause git annex drop to remove
     the only copy of a file when it thought the tor remote had a copy.
   * git-annex-shell: Added p2pstdio mode.
+  * Better ssh connection warmup when using -J for concurrency.
+    Avoids ugly messages when forced ssh command is not git-annex-shell.
 
  -- Joey Hess <id@joeyh.name>  Wed, 28 Feb 2018 11:53:03 -0400
 
