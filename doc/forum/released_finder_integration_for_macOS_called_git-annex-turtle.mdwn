@@ -1,0 +1,12 @@
+I just released a new app (in beta) for macOS called [git-annex-turtle](https://github.com/andrewringler/git-annex-turtle). It provides badges in finder, context menus and very limited status updates via a menubar icon. **Requires** macOS 10.12 or later.
+
+Badges indicate whether files are present or not, how many copies they have and if they are lacking copies. Context menus (currently very limited) allow for add/get/drop/lock and unlock. A menubar icon gives (currently very limited) feedback on current operations.
+
+The is definitely a preview beta release so there are bound to be bugs. Please report any feature requests or bugs with github issues, by emailing me directly at <a href="mailto:public@andrewringler.com">public@andrewringler.com</a> or posting comments to this thread.
+
+Thanks!
+
+
+Andrew
+
+**[Download git-annex-turtle](https://github.com/andrewringler/git-annex-turtle)**
