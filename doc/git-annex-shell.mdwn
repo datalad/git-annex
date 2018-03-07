@@ -90,6 +90,12 @@ first "/~/" or "/~user/" is expanded to the specified home directory.
 
   Sets up a repository as a gcrypt repository.
 
+* p2pstdio directory
+
+  This causes git-annex-shell to communicate using the git-annex p2p
+  protocol over stdio. When supported by git-annex-shell, this allows
+  multiple actions to be run over a single connection, improving speed.
+
 # OPTIONS
 
 Most options are the same as in git-annex. The ones specific

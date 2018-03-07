@@ -10,6 +10,7 @@
 module P2P.IO
 	( RunProto
 	, P2PConnection(..)
+	, stdioP2PConnection
 	, connectPeer
 	, closeConnection
 	, serveUnixSocket
@@ -48,6 +49,15 @@ data P2PConnection = P2PConnection
 	, connCheckAuth :: (AuthToken -> Bool)
 	, connIhdl :: Handle
 	, connOhdl :: Handle
+	}
+
+-- P2PConnection using stdio.
+stdioP2PConnection :: Git.Repo -> P2PConnection
+stdioP2PConnection g = P2PConnection
+	{ connRepo = g
+	, connCheckAuth = const False
+	, connIhdl = stdin
+	, connOhdl = stdout
 	}
 
 -- Opens a connection to a peer. Does not authenticate with it.

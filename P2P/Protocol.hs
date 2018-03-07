@@ -1,5 +1,7 @@
 {- P2P protocol
  -
+ - See doc/design/p2p_protocol.mdwn
+ -
  - Copyright 2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.

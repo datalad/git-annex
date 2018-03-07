@@ -3,7 +3,7 @@ communicate between peers.
 
 There's a common line-based serialization of the protocol, but other
 serializations are also possible. The line-based serialization is spoken
-by [[git-annex-shell], and by [[git-annex-remotedaemon]] when serving tor.
+by [[git-annex-shell], and by git-annex over tor.
 
 One peer is known as the client, and is the peer that initiates the
 connection. The other peer is known as the server, and is the peer that the
@@ -28,6 +28,10 @@ connection.
 
 	AUTH_SUCCESS UUID
 	AUTH_FAILURE
+
+Note that authentication does not guarantee that the client is talking to
+who they expect to be talking to. This, and encryption of the connection,
+are handled at a lower level.
 
 ## Errors
 

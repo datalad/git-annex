@@ -1,6 +1,6 @@
 {- git-annex-shell main program
  -
- - Copyright 2010-2012 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -28,6 +28,7 @@ import qualified Command.TransferInfo
 import qualified Command.Commit
 import qualified Command.NotifyChanges
 import qualified Command.GCryptSetup
+import qualified Command.P2PStdIO
 
 cmds_readonly :: [Command]
 cmds_readonly =
@@ -47,8 +48,18 @@ cmds_notreadonly =
 	, Command.GCryptSetup.cmd
 	]
 
+-- Commands that can operate readonly or not; they use checkNotReadOnly.
+cmds_readonly_capable :: [Command]
+cmds_readonly_capable =
+	[ gitAnnexShellCheck Command.P2PStdIO.cmd
+	]
+
+cmds_readonly_safe :: [Command]
+cmds_readonly_safe = cmds_readonly ++ cmds_readonly_capable
+
 cmds :: [Command]
-cmds = map (adddirparam . noMessages) (cmds_readonly ++ cmds_notreadonly)
+cmds = map (adddirparam . noMessages)
+	(cmds_readonly ++ cmds_notreadonly ++ cmds_readonly_capable)
   where
 	adddirparam c = c { cmdparamdesc = "DIRECTORY " ++ cmdparamdesc c }
 
@@ -94,7 +105,7 @@ builtins = map cmdname cmds
 
 builtin :: String -> String -> [String] -> IO ()
 builtin cmd dir params = do
-	unless (cmd `elem` map cmdname cmds_readonly)
+	unless (cmd `elem` map cmdname cmds_readonly_safe)
 		checkNotReadOnly
 	checkDirectory $ Just dir
 	let (params', fieldparams, opts) = partitionParams params

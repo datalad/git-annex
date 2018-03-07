@@ -23,7 +23,7 @@ letting git-annex-shell on the remote work that out.
 So, it seems better to not use sftp, and instead roll our own simple
 file transfer protocol.
 
-So, "git-annex-shell -c multi" would speak a protocol over stdin/stdout
+So, "git-annex-shell -c p2pstdio" would speak a protocol over stdin/stdout
 that essentially contains the commands inannex, lockcontent, dropkey,
 recvkey, and sendkey.
 
@@ -31,3 +31,12 @@ P2P.Protocol already contains such a similar protocol, used over tor.
 That protocol even supports resuming interrupted transfers.
 It has stuff including auth that this wouldn't need, but it would be
 good to unify with it as much as possible.
+
+----
+
+Implementation todos:
+
+* git-annex-shell p2pstdio currently always verifies content it receives.
+  git-annex-shell recvkey has a speed optimisation, when it's told the file
+  being sent is locked, it can avoid an expensive verification.
+* Maybe similar for transfers in the other direction?

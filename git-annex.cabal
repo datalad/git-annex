@@ -754,6 +754,7 @@ Executable git-annex
     Command.NotifyChanges
     Command.NumCopies
     Command.P2P
+    Command.P2PStdIO
     Command.PostReceive
     Command.PreCommit
     Command.Proxy

@@ -14,17 +14,28 @@ import Annex.Init
 import Utility.UserInfo
 import Utility.Env
 
+limitedEnv :: String
+limitedEnv = "GIT_ANNEX_SHELL_LIMITED"
+
 checkNotLimited :: IO ()
-checkNotLimited = checkEnv "GIT_ANNEX_SHELL_LIMITED"
+checkNotLimited = checkEnv limitedEnv
+
+readOnlyEnv :: String
+readOnlyEnv = "GIT_ANNEX_SHELL_READONLY"
 
 checkNotReadOnly :: IO ()
-checkNotReadOnly = checkEnv "GIT_ANNEX_SHELL_READONLY"
+checkNotReadOnly = checkEnv readOnlyEnv
 
 checkEnv :: String -> IO ()
-checkEnv var = getEnv var >>= \case
-	Nothing -> noop
-	Just "" -> noop
-	Just _ -> giveup $ "Action blocked by " ++ var
+checkEnv var = checkEnvSet var >>= \case
+	False -> noop
+	True -> giveup $ "Action blocked by " ++ var
+
+checkEnvSet :: String -> IO Bool
+checkEnvSet var = getEnv var >>= return . \case
+	Nothing -> False
+	Just "" -> False
+	Just _ -> True
 
 checkDirectory :: Maybe FilePath -> IO ()
 checkDirectory mdir = do
