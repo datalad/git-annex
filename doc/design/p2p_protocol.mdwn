@@ -1,0 +1,168 @@
+The git-annex P2P protocol is a custom protocol that git-annex uses to
+communicate between peers.
+
+There's a common line-based serialization of the protocol, but other
+serializations are also possible. The line-based serialization is spoken
+by [[git-annex-shell], and by [[git-annex-remotedaemon]] when serving tor.
+
+One peer is known as the client, and is the peer that initiates the
+connection. The other peer is known as the server, and is the peer that the
+client connects to. It's possible for two connections to be run at the same
+time between the same two peers, in different directions.
+
+## Authentication
+
+The protocol genernally starts with authentication. However, if
+authentication already occurs on another layer, as is the case with
+git-annex-shell, authentication will be skipped.
+
+The client starts by sending an authentication to the server,
+along with its UUID. The AuthToken is some arbitrary token that has been
+agreed upon beforehand.
+
+	AUTH UUID AuthToken
+
+The server responds with either its own UUID when authentication
+is successful. Or, it can fail the authentication, and close the
+connection.
+
+	AUTH_SUCCESS UUID
+	AUTH_FAILURE
+
+## Errors
+
+Either the client or the server may send an error message at any
+time. 
+
+When the client sends an ERROR, the server will close the connection.
+
+If the server sends an ERROR in response to the client's
+request, the connection will remain open, and the client can make
+another request.
+
+	ERROR this repository is read-only; write access denied
+
+## Binary data
+
+The protocol allows raw binary data to be sent. This is done
+using a DATA message. In the line-based serialization, this comes
+on its own line, followed by a newline and the binary data.
+The Len value tells how many bytes of data to read.
+
+	DATA 3
+	foo
+
+Note that there is no newline after the binary data; the next protocol
+message will come immediately after it.
+
+## Checking if content is present
+
+To check if a key is present on the server, the client sends:
+
+	CHECKPRESENT Key
+
+The server responds with either SUCCESS or FAILURE.
+
+## Locking content
+
+To lock content on the server, preventing it from being removed,
+the client sends:
+
+	LOCKCONTENT Key
+
+The server responds with either SUCCESS or FAILURE.
+The former indicates the content is locked. It will remain
+locked until the connection is broken, or the client
+sends:
+
+	UNLOCKCONTENT Key
+
+The server makes no response to that.
+
+## Removing content
+
+To remove a key's content from the server, the client sends:
+
+	REMOVE Key
+
+The server responds with either SUCCESS or FAILURE.
+
+## Storing content on the server
+
+To store content on the server, the client sends:
+
+	PUT AssociatedFile Key
+
+Here AssociatedFile may be the name of a file in the git
+repository, for information purposes only. Or it can be the
+empty string. It will always have unix directory separators.
+
+(Note that in the line-based serialization. AssociatedFile may not contain any
+spaces, since it's not the last token in the line. Use '%' to indicate
+whitespace.)
+
+The server may respond with ALREADY-HAVE if it already
+had the conent of that key. Otherwise, it responds with:
+
+	PUT-FROM Offset
+
+Offset is the number of bytes into the file that the server wants
+the client to start. This allows resuming transfers.
+
+The client then sends a DATA message with content of the file from
+the offset to the end of file.
+
+If the server successfully receives the data and stores the content,
+it replies with SUCCESS. Otherwise, FAILURE.
+
+## Getting content from the server
+
+To get content from the server, the client sends:
+
+	GET Offset AssociatedFile Key
+
+The Offset is the number of bytes into the file that the client wants
+the server to skip, which allows resuming transfers.
+See description of AssociatedFile above.
+
+The server then sends a DATA message with the content of the file
+from the offset to end of file.
+
+The client replies with SUCCESS or FAILURE.
+
+## Connection to services
+
+This is used to connect to services like git-upload-pack and
+git-receive-pack that speak their own protocol.
+
+The client sends a message to request the connection.
+Service is the name of the service, eg "git-upload-pack".
+
+	CONNECT Service
+
+Both client and server may now exchange DATA messages in any order,
+encapsulating the service's protocol.
+
+When the service exits, the server indicates this by telling the client
+its exit code.
+
+	CONNECTDONE ExitCode
+
+## Change notification
+
+The client can request to be notified when a ref in 
+the git repository on the server changes.
+
+	NOTIFYCHANGE
+
+The server will block until at least
+one of the refs changes, and send a list of changed
+refs.
+
+	CHANGED ChangedRefs
+
+For example:
+
+	CHANGED refs/heads/master refs/heads/git-annex
+
+Some servers may not support this command.
