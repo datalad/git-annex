@@ -1,0 +1,38 @@
+It was rather easy to implement `git-annex-shell p2pstdio`, the P2P
+protocol implementation done for tor is quite generic and easy to adapt for
+this. 
+
+The only complication was that git-annex-shell has a readonly mode,
+so the protocol server needed modifications to support that.
+Well, there's also some innefficiency around unncessary verification
+of transferred content in some cases, which will probably need extensions
+to the P2P protocol later.
+
+Also wrote up some documentation of what the P2P protocol looks like,
+for anyone who might want to communiate with git-annex-shell using it,
+for some reason, and doesn't understand Haskell and free monads.
+[[design/P2P_protocol]]
+
+While comparing the code of the P2P server and git-annex-shell commands, I
+noticed that the P2P server didn't check inAnnex when locking content,
+while `git-annex-shell lockcontent` did check inAnnex. This turned out to
+be a ugly data loss bug involving direct mode repositories, where a
+modified direct mode file was allowed when locking a key in the repository.
+Turned out that the bug happened when locking a file over tor to drop it
+locally, but also when locking a file locally in a direct mode repository
+to allow dropping it from any remote. 
+
+Very glad I noticed that, and I've changed the API to prevent that class of
+bug. I feel this is not a severe data loss bug, because when a direct mode
+repository is involved, dropping from somewhere and then modifying the file
+in the direct mode repository can have the same effect of losing the old copy.
+The bug just made data loss happen when running the same operations in the
+other order.
+
+Next will be making git-annex use this new git-annex-shell feature
+when available.
+
+----
+
+Today's work was sponsored by Trenton Cronholm on
+[Patreon](https://patreon.com/joeyh)
