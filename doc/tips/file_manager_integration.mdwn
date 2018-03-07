@@ -74,7 +74,11 @@ This gives me the resulting config on disk, in `.config/Thunar/uca.xml`:
 
 The complete instructions on how to setup actions is [in the Xfce documentation](http://docs.xfce.org/xfce/thunar/custom-actions).
 
-## OS X (Finder)
+## OS X (Finder) Full Integration
+
+Download and install the [git-annex-turtle](https://github.com/andrewringler/git-annex-turtle) app (beta software). Provides Finder integration, badges and context menus.
+
+## OS X (Finder) Context Menus
 
 For OS X, it is possible to get context menus in Finder. Due to how OS X
 deals with symlinks, one needs to operate on folders if using indirect
