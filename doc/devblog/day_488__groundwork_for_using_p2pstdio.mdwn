@@ -1,0 +1,30 @@
+Spent most of the day laying groundwork for using git-annex-shell p2pstdio.
+Implemented pools of ssh connections to it, and added uuid verification.
+Then generalized code from the p2p remote so it can be reused in the git
+remote. The types got super hairy in there, but the code reuse level is
+excellent.
+
+Finally it was time to convert the first ssh remote method
+to use the P2P protocol. I chose key removal, since benchmarking it doesn't
+involve the size of annexed objects.
+
+Here's the P2P protocol in action over ssh:
+
+	[2018-03-08 17:02:47.688627136] chat: ssh ["localhost","-S",".git/annex/ssh/localhost","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","git-annex-shell 'p2pstdio' '/~/tmp/bench/a' '--debug' 'da72c285-2615-4a67-828f-eaae4f42fc3d' --uuid db017fac-eb8f-42d9-9d09-2780b193cef1"]
+	[2018-03-08 17:02:47.901897195] P2P < AUTH-SUCCESS db017fac-eb8f-42d9-9d09-2780b193cef1
+	[2018-03-08 17:02:47.902025504] P2P > REMOVE SHA256E-s4--97b912eb4a61df5f806ca6239dde3e1a4f51ad20aced1642cbb83dc510a5fa6b
+	[2018-03-08 17:02:47.910074003] P2P < SUCCESS
+	[2018-03-08 17:02:47.914181701] P2P > REMOVE SHA256E-s4--6af2f5b785a8930f0bd3edc833e18fa191167ab0535ef359b19a1982a6984e96
+	[2018-03-08 17:02:47.918699806] P2P < SUCCESS
+
+For a benchmark, I set up a repository with 1000 annexed files,
+and cloned it from localhost, then ran `git annex drop --from origin`.
+
+before: 41 seconds  
+after: 10 seconds
+
+400% speedup for dropping is pretty great.. And when there's more latency
+than loopback has, the improvement should be more pronounced. 
+Will test it this evening over my satellite internet. :)
+
+Today's work was sponsored by Trenton Cronholm on [Patreon](https://patreon.com/joeyh/).
