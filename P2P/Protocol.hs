@@ -250,6 +250,10 @@ $(makeFree ''LocalF)
 auth :: UUID -> AuthToken -> Proto (Maybe UUID)
 auth myuuid t = do
 	net $ sendMessage (AUTH myuuid t)
+	postAuth
+
+postAuth :: Proto (Maybe UUID)
+postAuth = do
 	r <- net receiveMessage
 	case r of
 		AUTH_SUCCESS theiruuid -> return $ Just theiruuid

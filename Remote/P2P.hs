@@ -116,10 +116,8 @@ lock u addr connpool k callback =
 	go False = giveup "can't lock content"
 	go True = withVerifiedCopy LockedCopy u (return True) callback
 
--- | A connection to the peer.
-data Connection 
-	= OpenConnection P2PConnection
-	| ClosedConnection
+-- | A connection to the peer, which can be closed.
+type Connection = ClosableConnection P2PConnection
 
 type ConnectionPool = TVar [Connection]
 

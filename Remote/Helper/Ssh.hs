@@ -1,6 +1,6 @@
 {- git-annex remote access with ssh and git-annex-shell
  -
- - Copyright 2011-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -23,6 +23,11 @@ import Utility.SshHost
 import Types.Remote
 import Types.Transfer
 import Config
+import qualified P2P.Protocol as P2P
+import qualified P2P.IO as P2P
+
+import Control.Concurrent.Async
+import Control.Concurrent.STM
 
 toRepo :: ConsumeStdin -> Git.Repo -> RemoteGitConfig -> SshCommand -> Annex (FilePath, [CommandParam])
 toRepo cs r gc remotecmd = do
@@ -91,9 +96,9 @@ onRemote cs r (with, errorval) command params fields = do
 inAnnex :: Git.Repo -> Key -> Annex Bool
 inAnnex r k = do
 	showChecking r
-	onRemote NoConsumeStdin r (check, cantCheck r) "inannex" [Param $ key2file k] []
+	onRemote NoConsumeStdin r (runcheck, cantCheck r) "inannex" [Param $ key2file k] []
   where
-	check c p = dispatch =<< safeSystem c p
+	runcheck c p = dispatch =<< safeSystem c p
 	dispatch ExitSuccess = return True
 	dispatch (ExitFailure 1) = return False
 	dispatch _ = cantCheck r
@@ -179,3 +184,89 @@ rsyncParams r direction = do
 -- successfully locked.
 contentLockedMarker :: String
 contentLockedMarker = "OK"
+
+-- A connection over ssh to git-annex shell speaking the P2P protocol.
+type P2PSshConnection = P2P.ClosableConnection (P2P.P2PConnection, ProcessHandle)
+
+closeP2PSshConnection :: P2PSshConnection -> IO P2PSshConnection
+closeP2PSshConnection P2P.ClosedConnection = return P2P.ClosedConnection
+closeP2PSshConnection (P2P.OpenConnection (conn, pid)) = do
+	P2P.closeConnection conn
+	void $ async $ waitForProcess pid
+	return P2P.ClosedConnection
+
+-- Pool of connections over ssh to git-annex-shell p2pstdio.
+type P2PSshConnectionPool = TVar (Maybe P2PSshConnectionPoolState)
+
+data P2PSshConnectionPoolState
+	= P2PSshConnections [P2PSshConnection]
+	-- Remotes using an old version of git-annex-shell don't support P2P
+	| P2PSshUnsupported
+
+mkP2PSshConnectionPool :: Annex P2PSshConnectionPool
+mkP2PSshConnectionPool = liftIO $ newTVarIO Nothing
+
+-- Takes a connection from the pool, if any are available, otherwise
+-- tries to open a new one.
+getP2PSshConnection :: Remote -> P2PSshConnectionPool -> Annex (Maybe P2PSshConnection)
+getP2PSshConnection r connpool = getexistingconn >>= \case
+	Nothing -> return Nothing
+	Just Nothing -> openP2PSshConnection r connpool
+	Just (Just c) -> return (Just c)
+  where
+	getexistingconn = liftIO $ atomically $ readTVar connpool >>= \case
+		Just P2PSshUnsupported -> return Nothing
+		Just (P2PSshConnections (c:cs)) -> do
+			writeTVar connpool (Just (P2PSshConnections cs))
+			return (Just (Just c))
+		Just (P2PSshConnections []) -> return (Just Nothing)
+		Nothing -> return (Just Nothing)
+
+-- Add a connection to the pool, unless it's closed.
+storeP2PSshConnection :: P2PSshConnectionPool -> P2PSshConnection -> IO ()
+storeP2PSshConnection _ P2P.ClosedConnection = return ()
+storeP2PSshConnection connpool conn = atomically $ modifyTVar' connpool $ \case
+	Just (P2PSshConnections cs) -> Just (P2PSshConnections (conn:cs))
+	_ -> Just (P2PSshConnections [conn])
+
+-- Try to open a P2PSshConnection.
+-- The new connection is not added to the pool, so it's available
+-- for the caller to use.
+-- If the remote does not support the P2P protocol, that's remembered in 
+-- the connection pool.
+openP2PSshConnection :: Remote -> P2PSshConnectionPool -> Annex (Maybe P2PSshConnection)
+openP2PSshConnection r connpool = 
+	git_annex_shell ConsumeStdin (repo r) "p2pstdio" [] [] >>= \case
+		Nothing -> do
+			liftIO $ rememberunsupported
+			return Nothing
+		Just (cmd, params) -> start cmd params
+  where
+	start cmd params = liftIO $ withNullHandle $ \nullh -> do
+		-- stderr is discarded because old versions of git-annex
+		-- shell always error
+		(Just from, Just to, Nothing, pid) <- createProcess $
+			(proc cmd (toCommand params))
+				{ std_in = CreatePipe
+				, std_out = CreatePipe
+				, std_err = UseHandle nullh
+				}
+		let conn = P2P.P2PConnection
+			{ P2P.connRepo = repo r
+			, P2P.connCheckAuth = const False
+			, P2P.connIhdl = from
+			, P2P.connOhdl = to
+			}
+		let c = P2P.OpenConnection (conn, pid)
+		-- When the connection is successful, the peer
+		-- will send an AUTH_SUCCESS with its uuid.
+		tryNonAsync (P2P.runNetProto conn $ P2P.postAuth) >>= \case
+			Right (Right (Just theiruuid)) | theiruuid == uuid r ->
+				return $ Just c
+			_ -> do
+				void $ closeP2PSshConnection c
+				rememberunsupported
+				return Nothing
+	rememberunsupported = atomically $
+		modifyTVar' connpool $
+			maybe (Just P2PSshUnsupported) Just

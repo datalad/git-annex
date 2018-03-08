@@ -55,6 +55,9 @@ import qualified Remote.Helper.Ssh as Ssh
 import qualified Remote.GCrypt
 import qualified Remote.P2P
 import P2P.Address
+import qualified P2P.Protocol as P2P
+import qualified P2P.Annex as P2P
+import qualified P2P.IO as P2P
 import Annex.Path
 import Creds
 import Messages.Progress
@@ -729,10 +732,11 @@ mkCopier remotewanthardlink rsyncparams = do
 		, return copier
 		)
 
-{- Normally the UUID is checked at startup, but annex-checkuuid config
- - can prevent that. To avoid getting confused, a deferred
- - check is done just before the repository is used. This returns False
- - when the repository UUID is not as expected. -}
+{- Normally the UUID of a local repository is checked at startup,
+ - but annex-checkuuid config can prevent that. To avoid getting
+ - confused, a deferred check is done just before the repository
+ - is used.
+ - This returns False when the repository UUID is not as expected. -}
 type DeferredUUIDCheck = Annex Bool
 
 mkDeferredUUIDCheck :: Git.Repo -> UUID -> RemoteGitConfig -> Annex DeferredUUIDCheck
@@ -751,3 +755,32 @@ mkDeferredUUIDCheck r u gc
 				return ok
 			, liftIO $ readMVar v
 			)
+
+-- Runs a P2P Proto action on a remote when it supports that,
+-- otherwise the fallback action.
+runSsh :: Remote -> Ssh.P2PSshConnectionPool -> P2P.Proto a -> Annex a -> Annex a
+runSsh r connpool proto fallback =
+	Ssh.getP2PSshConnection r connpool >>= maybe fallback go
+  where
+	go c = do
+		(c', v) <- runSsh' proto c
+		case v of
+			Just res -> do
+				liftIO $ Ssh.storeP2PSshConnection connpool c'
+				return res
+			-- Running the proto failed, either due to a protocol
+			-- error or a network error, so discard the
+			-- connection, and run the fallback.
+			Nothing -> fallback
+
+runSsh' :: P2P.Proto a -> Ssh.P2PSshConnection -> Annex (Ssh.P2PSshConnection, Maybe a)
+runSsh' _ P2P.ClosedConnection = return (P2P.ClosedConnection, Nothing)
+runSsh' a conn@(P2P.OpenConnection (c, _pid)) =
+	P2P.runFullProto P2P.Client c a >>= \case
+		Right r -> return (conn, Just r)
+		-- When runFullProto fails, the connection is no longer
+		-- usable, so close it.
+		Left e -> do
+			warning $ "Lost connection (" ++ e ++ ")"
+			conn' <- liftIO $ Ssh.closeP2PSshConnection conn
+			return (conn', Nothing)

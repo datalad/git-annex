@@ -10,6 +10,7 @@
 module P2P.IO
 	( RunProto
 	, P2PConnection(..)
+	, ClosableConnection(..)
 	, stdioP2PConnection
 	, connectPeer
 	, closeConnection
@@ -50,6 +51,10 @@ data P2PConnection = P2PConnection
 	, connIhdl :: Handle
 	, connOhdl :: Handle
 	}
+
+data ClosableConnection conn
+	= OpenConnection conn
+	| ClosedConnection
 
 -- P2PConnection using stdio.
 stdioP2PConnection :: Git.Repo -> P2PConnection

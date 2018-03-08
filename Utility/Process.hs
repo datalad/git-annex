@@ -27,6 +27,7 @@ module Utility.Process (
 	withHandle,
 	withIOHandles,
 	withOEHandles,
+	withNullHandle,
 	withQuietOutput,
 	feedWithQuietOutput,
 	createProcess,
@@ -213,13 +214,16 @@ withOEHandles creator p a = creator p' $ a . oeHandles
 		, std_err = CreatePipe
 		}
 
+withNullHandle :: (Handle -> IO a) -> IO a
+withNullHandle = withFile devNull WriteMode
+
 -- | Forces the CreateProcessRunner to run quietly;
 -- both stdout and stderr are discarded.
 withQuietOutput
 	:: CreateProcessRunner
 	-> CreateProcess
 	-> IO ()
-withQuietOutput creator p = withFile devNull WriteMode $ \nullh -> do
+withQuietOutput creator p = withNullHandle $ \nullh -> do
 	let p' = p
 		{ std_out = UseHandle nullh
 		, std_err = UseHandle nullh

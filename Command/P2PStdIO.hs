@@ -11,13 +11,10 @@ import Command
 import P2P.IO
 import P2P.Annex
 import qualified P2P.Protocol as P2P
-import Git.Types
 import qualified Annex
 import Annex.UUID
 import qualified CmdLine.GitAnnexShell.Checks as Checks
 import qualified CmdLine.GitAnnexShell.Fields as Fields
-import Utility.AuthToken
-import Utility.Tmp.Dir
 
 cmd :: Command
 cmd = noMessages $ command "p2pstdio" SectionPlumbing
@@ -38,7 +35,9 @@ start = do
 		Just u -> return (toUUID u)
 	myuuid <- getUUID
 	conn <- stdioP2PConnection <$> Annex.gitRepo
-	let server = P2P.serveAuthed servermode myuuid
+	let server = do
+		P2P.net $ P2P.sendMessage (P2P.AUTH_SUCCESS myuuid)
+		P2P.serveAuthed servermode myuuid
 	runFullProto (Serving theiruuid Nothing) conn server >>= \case
 		Right () -> next $ next $ return True
 		Left e -> giveup e
