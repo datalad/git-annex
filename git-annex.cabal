@@ -931,6 +931,7 @@ Executable git-annex
     Remote.Helper.Hooks
     Remote.Helper.Http
     Remote.Helper.Messages
+    Remote.Helper.P2P
     Remote.Helper.ReadOnly
     Remote.Helper.Special
     Remote.Helper.Ssh

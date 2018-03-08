@@ -758,8 +758,8 @@ mkDeferredUUIDCheck r u gc
 
 -- Runs a P2P Proto action on a remote when it supports that,
 -- otherwise the fallback action.
-runSsh :: Remote -> Ssh.P2PSshConnectionPool -> P2P.Proto a -> Annex a -> Annex a
-runSsh r connpool proto fallback =
+runSsh :: Remote -> Ssh.P2PSshConnectionPool -> Annex a -> P2P.Proto a -> Annex a
+runSsh r connpool fallback proto =
 	Ssh.getP2PSshConnection r connpool >>= maybe fallback go
   where
 	go c = do
