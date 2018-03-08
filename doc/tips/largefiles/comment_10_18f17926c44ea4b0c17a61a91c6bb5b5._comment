@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="davicastro"
+ avatar="http://cdn.libravatar.org/avatar/4e708663cf4d5b9e8cfea74caf4307fc"
+ subject="Adopting &quot;git annex add&quot; as default command in workflow"
+ date="2018-03-08T11:21:55Z"
+ content="""
+Hi, from technical point of view, are there any drawbacks/limitations on adopting a workflow of everyone in the project using \"git annex add\" and relying on the annex.largefiles settings instead of them having to use the separate commands?
+* I would use repo v5 as repo v6 seems to still need work to do, and I don't need it's features. I just would like to avoid human error of people not using by mistake regular git add for bigfiles. I understand that repo v6 would allow, but I don't like it's default behavior of using unlocked mode when I add things with git add (although it would properly annex the files, but in unlocked mode these files would occupy space in the work copy, and I don't want that). Thanks.
+"""]]
