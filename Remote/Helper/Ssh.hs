@@ -26,7 +26,6 @@ import Config
 import qualified P2P.Protocol as P2P
 import qualified P2P.IO as P2P
 
-import Control.Concurrent.Async
 import Control.Concurrent.STM
 
 toRepo :: ConsumeStdin -> Git.Repo -> RemoteGitConfig -> SshCommand -> Annex (FilePath, [CommandParam])
@@ -192,7 +191,7 @@ closeP2PSshConnection :: P2PSshConnection -> IO P2PSshConnection
 closeP2PSshConnection P2P.ClosedConnection = return P2P.ClosedConnection
 closeP2PSshConnection (P2P.OpenConnection (conn, pid)) = do
 	P2P.closeConnection conn
-	void $ async $ waitForProcess pid
+	void $ waitForProcess pid
 	return P2P.ClosedConnection
 
 -- Pool of connections over ssh to git-annex-shell p2pstdio.
@@ -235,8 +234,10 @@ storeP2PSshConnection connpool conn = atomically $ modifyTVar' connpool $ \case
 -- If the remote does not support the P2P protocol, that's remembered in 
 -- the connection pool.
 openP2PSshConnection :: Remote -> P2PSshConnectionPool -> Annex (Maybe P2PSshConnection)
-openP2PSshConnection r connpool = 
-	git_annex_shell ConsumeStdin (repo r) "p2pstdio" [] [] >>= \case
+openP2PSshConnection r connpool = do
+	u <- getUUID
+	let ps = [Param (fromUUID u)]
+	git_annex_shell ConsumeStdin (repo r) "p2pstdio" ps [] >>= \case
 		Nothing -> do
 			liftIO $ rememberunsupported
 			return Nothing
@@ -254,11 +255,11 @@ openP2PSshConnection r connpool =
 		let conn = P2P.P2PConnection
 			{ P2P.connRepo = repo r
 			, P2P.connCheckAuth = const False
-			, P2P.connIhdl = from
-			, P2P.connOhdl = to
+			, P2P.connIhdl = to
+			, P2P.connOhdl = from
 			}
 		let c = P2P.OpenConnection (conn, pid)
-		-- When the connection is successful, the peer
+		-- When the connection is successful, the remote
 		-- will send an AUTH_SUCCESS with its uuid.
 		tryNonAsync (P2P.runNetProto conn $ P2P.postAuth) >>= \case
 			Right (Right (Just theiruuid)) | theiruuid == uuid r ->

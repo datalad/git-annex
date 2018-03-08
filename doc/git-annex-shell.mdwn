@@ -90,11 +90,14 @@ first "/~/" or "/~user/" is expanded to the specified home directory.
 
   Sets up a repository as a gcrypt repository.
 
-* p2pstdio directory
+* p2pstdio directory uuid
 
   This causes git-annex-shell to communicate using the git-annex p2p
   protocol over stdio. When supported by git-annex-shell, this allows
   multiple actions to be run over a single connection, improving speed.
+
+  The uuid is the one belonging to the repository that will be
+  communicating with git-annex-shell.
 
 # OPTIONS
 

@@ -54,10 +54,11 @@ import Remote.Helper.Export
 import qualified Remote.Helper.Ssh as Ssh
 import qualified Remote.GCrypt
 import qualified Remote.P2P
-import P2P.Address
+import qualified Remote.Helper.P2P as P2PHelper
 import qualified P2P.Protocol as P2P
 import qualified P2P.Annex as P2P
 import qualified P2P.IO as P2P
+import P2P.Address
 import Annex.Path
 import Creds
 import Messages.Progress
@@ -150,11 +151,12 @@ gen r u c gc
 	| otherwise = case repoP2PAddress r of
 		Nothing -> do
 			duc <- mkDeferredUUIDCheck r u gc
-			go duc <$> remoteCost gc defcst
+			connpool <- Ssh.mkP2PSshConnectionPool
+			go duc connpool <$> remoteCost gc defcst
 		Just addr -> Remote.P2P.chainGen addr r u c gc
   where
 	defcst = if repoCheap r then cheapRemoteCost else expensiveRemoteCost
-	go duc cst = Just new
+	go duc connpool cst = Just new
 	  where
 		new = Remote 
 			{ uuid = u
@@ -163,7 +165,7 @@ gen r u c gc
 			, storeKey = copyToRemote new duc
 			, retrieveKeyFile = copyFromRemote new
 			, retrieveKeyFileCheap = copyFromRemoteCheap new
-			, removeKey = dropKey new duc
+			, removeKey = dropKey new duc connpool
 			, lockContent = Just (lockKey new duc)
 			, checkPresent = inAnnex new duc
 			, checkPresentCheap = repoCheap r
@@ -368,8 +370,8 @@ keyUrls r key = map tourl locs'
 	remoteconfig = gitconfig r
 	cfg = remoteGitConfig remoteconfig
 
-dropKey :: Remote -> DeferredUUIDCheck -> Key -> Annex Bool
-dropKey r duc key
+dropKey :: Remote -> DeferredUUIDCheck -> Ssh.P2PSshConnectionPool -> Key -> Annex Bool
+dropKey r duc connpool key
 	| not $ Git.repoIsUrl (repo r) = ifM duc
 		( guardUsable (repo r) (return False) $
 			commitOnCleanup r $ onLocalFast r $ do
@@ -383,7 +385,9 @@ dropKey r duc key
 		, return False
 		)
 	| Git.repoIsHttp (repo r) = giveup "dropping from http remote not supported"
-	| otherwise = commitOnCleanup r $ Ssh.dropKey (repo r) key
+	| otherwise = commitOnCleanup r $ do
+		let fallback = Ssh.dropKey (repo r) key
+		P2PHelper.remove (runProto r connpool fallback) key
 
 lockKey :: Remote -> DeferredUUIDCheck -> Key -> (VerifiedCopy -> Annex r) -> Annex r
 lockKey r duc key callback
@@ -758,12 +762,12 @@ mkDeferredUUIDCheck r u gc
 
 -- Runs a P2P Proto action on a remote when it supports that,
 -- otherwise the fallback action.
-runSsh :: Remote -> Ssh.P2PSshConnectionPool -> Annex a -> P2P.Proto a -> Annex a
-runSsh r connpool fallback proto =
-	Ssh.getP2PSshConnection r connpool >>= maybe fallback go
+runProto :: Remote -> Ssh.P2PSshConnectionPool -> Annex a -> P2P.Proto a -> Annex (Maybe a)
+runProto r connpool fallback proto = Just <$>
+	(Ssh.getP2PSshConnection r connpool >>= maybe fallback go)
   where
 	go c = do
-		(c', v) <- runSsh' proto c
+		(c', v) <- runProtoConn proto c
 		case v of
 			Just res -> do
 				liftIO $ Ssh.storeP2PSshConnection connpool c'
@@ -773,9 +777,9 @@ runSsh r connpool fallback proto =
 			-- connection, and run the fallback.
 			Nothing -> fallback
 
-runSsh' :: P2P.Proto a -> Ssh.P2PSshConnection -> Annex (Ssh.P2PSshConnection, Maybe a)
-runSsh' _ P2P.ClosedConnection = return (P2P.ClosedConnection, Nothing)
-runSsh' a conn@(P2P.OpenConnection (c, _pid)) =
+runProtoConn :: P2P.Proto a -> Ssh.P2PSshConnection -> Annex (Ssh.P2PSshConnection, Maybe a)
+runProtoConn _ P2P.ClosedConnection = return (P2P.ClosedConnection, Nothing)
+runProtoConn a conn@(P2P.OpenConnection (c, _pid)) =
 	P2P.runFullProto P2P.Client c a >>= \case
 		Right r -> return (conn, Just r)
 		-- When runFullProto fails, the connection is no longer

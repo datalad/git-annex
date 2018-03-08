@@ -14,25 +14,22 @@ import qualified P2P.Protocol as P2P
 import qualified Annex
 import Annex.UUID
 import qualified CmdLine.GitAnnexShell.Checks as Checks
-import qualified CmdLine.GitAnnexShell.Fields as Fields
 
 cmd :: Command
 cmd = noMessages $ command "p2pstdio" SectionPlumbing
 	"communicate in P2P protocol over stdio"
-	paramNothing (withParams seek)
+	paramUUID (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withNothing start
+seek [u] = commandAction $ start $ toUUID u
+seek _ = giveup "missing UUID parameter"
 
-start :: CommandStart
-start = do
+start :: UUID -> CommandStart
+start theiruuid = do
 	servermode <- liftIO $ 
 		Checks.checkEnvSet Checks.readOnlyEnv >>= return . \case
 			True -> P2P.ServeReadOnly
 			False -> P2P.ServeReadWrite
-	theiruuid <- Fields.getField Fields.remoteUUID >>= \case
-		Nothing -> giveup "missing remoteuuid field"
-		Just u -> return (toUUID u)
 	myuuid <- getUUID
 	conn <- stdioP2PConnection <$> Annex.gitRepo
 	let server = do
