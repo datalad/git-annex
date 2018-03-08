@@ -1244,7 +1244,7 @@ Here are all the supported configuration settings.
 
   git-annex caches UUIDs of remote repositories here.
 
-- `remote.<name>.annex-checkuuid`
+* `remote.<name>.annex-checkuuid`
 
   This only affects remotes that have their url pointing to a directory on
   the same system. git-annex normally checks the uuid of such
