@@ -1,6 +1,6 @@
 git-annex (6.20180309) upstream; urgency=medium
 
-  Note that, due to not using rsync to transfer files to ssh remotes
+  Note that, due to not using rsync to transfer files over ssh
   any longer, permissions and other file metadata of annexed files
   will no longer be preserved when copying them to and from ssh remotes.
   Other remotes never supported preserving that information, so
