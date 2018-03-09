@@ -44,3 +44,20 @@ Implementation todos:
   and it moves between networks?
 * If it's unable to ssh to a host to run p2pstdio, it will fall back to the
   old method. What if the host is down, does this double the timeout?
+
+----
+
+Benchmarks
+
+Dropping 200 files from a remote over a satellite internet connection,
+speed increased from 364s to 183s.
+
+Dropping 1000 files from a remote over ssh to localhost, with -J4, 
+speed increased from 20s to 6s. Without -J4, speed increased from 41s to
+10s.
+
+(By comparison, dropping 1000 files from a remote on the same filesystem
+took 12s, so remote access over localhost seems faster now! Possibly
+there's a little bit more concurrency when git-annex and git-annex-shell
+are both running?)
+
