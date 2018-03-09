@@ -1,5 +1,15 @@
 git-annex (6.20180228) UNRELEASED; urgency=medium
 
+  * New protocol for communicating with git-annex-shell increases speed
+    of operations involving ssh remotes. When not transferring large files,
+    git-annex is between 200% and 400% faster using the new protocol.
+    (When the remote has an old git-annex-shell, git-annex falls back
+    to the old slower code.)
+  * Note that, due to not using rsync to transfer files to ssh remotes
+    any longer, permissions and other file metadata of annexed files
+    will no longer be preserved when copying them to and from ssh remotes.
+    Other remotes never supported preserving that information, so
+    this is not considered a regression.
   * Support exporttree=yes for rsync special remotes.
   * Dial back optimisation when building on arm, which prevents
     ghc and llc from running out of memory when optimising some files.
@@ -16,7 +26,6 @@ git-annex (6.20180228) UNRELEASED; urgency=medium
     in direct mode, it neglected to check that the content was actually
     present when locking it. This could cause git annex drop to remove
     the only copy of a file when it thought the tor remote had a copy.
-  * git-annex-shell: Added p2pstdio mode.
   * Better ssh connection warmup when using -J for concurrency.
     Avoids ugly messages when forced ssh command is not git-annex-shell.
   * Note that Remote/Git.hs now contains AGPL licensed code,

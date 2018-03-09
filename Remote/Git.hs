@@ -61,7 +61,6 @@ import qualified P2P.IO as P2P
 import P2P.Address
 import Annex.Path
 import Creds
-import Messages.Progress
 import Types.NumCopies
 import Annex.Action
 
@@ -150,24 +149,23 @@ gen r u c gc
 	| Git.GCrypt.isEncrypted r = Remote.GCrypt.chainGen r u c gc
 	| otherwise = case repoP2PAddress r of
 		Nothing -> do
-			duc <- mkDeferredUUIDCheck r u gc
-			connpool <- Ssh.mkP2PSshConnectionPool
-			go duc connpool <$> remoteCost gc defcst
+			st <- mkState r u gc
+			go st <$> remoteCost gc defcst
 		Just addr -> Remote.P2P.chainGen addr r u c gc
   where
 	defcst = if repoCheap r then cheapRemoteCost else expensiveRemoteCost
-	go duc connpool cst = Just new
+	go st cst = Just new
 	  where
 		new = Remote 
 			{ uuid = u
 			, cost = cst
 			, name = Git.repoDescribe r
-			, storeKey = copyToRemote new duc
-			, retrieveKeyFile = copyFromRemote new
-			, retrieveKeyFileCheap = copyFromRemoteCheap new
-			, removeKey = dropKey new duc connpool
-			, lockContent = Just (lockKey new duc)
-			, checkPresent = inAnnex new duc
+			, storeKey = copyToRemote new st
+			, retrieveKeyFile = copyFromRemote new st
+			, retrieveKeyFileCheap = copyFromRemoteCheap new st
+			, removeKey = dropKey new st
+			, lockContent = Just (lockKey new st)
+			, checkPresent = inAnnex new st
 			, checkPresentCheap = repoCheap r
 			, exportActions = exportUnsupported
 			, whereisKey = Nothing
@@ -332,8 +330,8 @@ tryGitConfigRead autoinit r
 		else []
 
 {- Checks if a given remote has the content for a key in its annex. -}
-inAnnex :: Remote -> DeferredUUIDCheck -> Key -> Annex Bool
-inAnnex rmt duc key
+inAnnex :: Remote -> State -> Key -> Annex Bool
+inAnnex rmt (State connpool duc) key
 	| Git.repoIsHttp r = checkhttp
 	| Git.repoIsUrl r = checkremote
 	| otherwise = checklocal
@@ -345,7 +343,9 @@ inAnnex rmt duc key
 			( return True
 			, giveup "not found"
 			)
-	checkremote = Ssh.inAnnex r key
+	checkremote = 
+		let fallback = Ssh.inAnnex r key
+		in P2PHelper.checkpresent (runProto rmt connpool fallback) key
 	checklocal = ifM duc
 		( guardUsable r (cantCheck r) $
 			maybe (cantCheck r) return
@@ -370,8 +370,8 @@ keyUrls r key = map tourl locs'
 	remoteconfig = gitconfig r
 	cfg = remoteGitConfig remoteconfig
 
-dropKey :: Remote -> DeferredUUIDCheck -> Ssh.P2PSshConnectionPool -> Key -> Annex Bool
-dropKey r duc connpool key
+dropKey :: Remote -> State -> Key -> Annex Bool
+dropKey r (State connpool duc) key
 	| not $ Git.repoIsUrl (repo r) = ifM duc
 		( guardUsable (repo r) (return False) $
 			commitOnCleanup r $ onLocalFast r $ do
@@ -389,8 +389,8 @@ dropKey r duc connpool key
 		let fallback = Ssh.dropKey (repo r) key
 		P2PHelper.remove (runProto r connpool fallback) key
 
-lockKey :: Remote -> DeferredUUIDCheck -> Key -> (VerifiedCopy -> Annex r) -> Annex r
-lockKey r duc key callback
+lockKey :: Remote -> State -> Key -> (VerifiedCopy -> Annex r) -> Annex r
+lockKey r (State _ duc) key callback
 	| not $ Git.repoIsUrl (repo r) = ifM duc
 		( guardUsable (repo r) failedlock $ do
 			inorigrepo <- Annex.makeRunner
@@ -446,15 +446,13 @@ lockKey r duc key callback
 	failedlock = giveup "can't lock content"
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
-copyFromRemote :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
-copyFromRemote r key file dest p
-	| Git.repoIsHttp (repo r) = unVerified $
-		Annex.Content.downloadUrl key p (keyUrls r key) dest
-	| otherwise = commandMetered (Just p) key (return Nothing) $
-		copyFromRemote' r key file dest
+copyFromRemote :: Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
+copyFromRemote = copyFromRemote' False
 
-copyFromRemote' :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
-copyFromRemote' r key file dest meterupdate
+copyFromRemote' :: Bool -> Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
+copyFromRemote' forcersync r (State connpool _) key file dest meterupdate
+	| Git.repoIsHttp (repo r) = unVerified $
+		Annex.Content.downloadUrl key meterupdate (keyUrls r key) dest
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (unVerified (return False)) $ do
 		params <- Ssh.rsyncParams r Download
 		u <- getUUID
@@ -470,11 +468,16 @@ copyFromRemote' r key file dest meterupdate
 					runTransfer (Transfer Download u key)
 						file forwardRetry
 						(\p -> copier object dest (combineMeterUpdate p meterupdate) checksuccess)
-	| Git.repoIsSsh (repo r) = unVerified $ feedprogressback $ \p -> do
-		Ssh.rsyncHelper (Just (combineMeterUpdate meterupdate p))
-			=<< Ssh.rsyncParamsRemote False r Download key dest file
+	| Git.repoIsSsh (repo r) = if forcersync
+		then unVerified fallback
+		else P2PHelper.retrieve
+			(runProto r connpool fallback)
+			key file dest meterupdate
 	| otherwise = giveup "copying from non-ssh, non-http remote not supported"
   where
+	fallback = feedprogressback $ \p -> do
+		Ssh.rsyncHelper (Just (combineMeterUpdate meterupdate p))
+			=<< Ssh.rsyncParamsRemote False r Download key dest file
 	{- Feed local rsync's progress info back to the remote,
 	 - by forking a feeder thread that runs
 	 - git-annex-shell transferinfo at the same time
@@ -535,9 +538,9 @@ copyFromRemote' r key file dest meterupdate
 					=<< tryTakeMVar pidv
 		bracketIO noop (const cleanup) (const $ a feeder)
 
-copyFromRemoteCheap :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
+copyFromRemoteCheap :: Remote -> State -> Key -> AssociatedFile -> FilePath -> Annex Bool
 #ifndef mingw32_HOST_OS
-copyFromRemoteCheap r key af file
+copyFromRemoteCheap r st key af file
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $ liftIO $ do
 		loc <- gitAnnexLocation key (repo r) $
 			remoteGitConfig $ gitconfig r
@@ -551,36 +554,31 @@ copyFromRemoteCheap r key af file
 			)
 	| Git.repoIsSsh (repo r) =
 		ifM (Annex.Content.preseedTmp key file)
-			( fst <$> copyFromRemote r key af file nullMeterUpdate
+			( fst <$> copyFromRemote' True r st key af file nullMeterUpdate
 			, return False
 			)
 	| otherwise = return False
 #else
-copyFromRemoteCheap _ _ _ _ = return False
+copyFromRemoteCheap _ _ _ _ _ = return False
 #endif
 
 {- Tries to copy a key's content to a remote's annex. -}
-copyToRemote :: Remote -> DeferredUUIDCheck -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-copyToRemote r duc key file meterupdate
+copyToRemote :: Remote -> State -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
+copyToRemote r (State connpool duc) key file meterupdate
 	| not $ Git.repoIsUrl (repo r) = ifM duc
 		( guardUsable (repo r) (return False) $ commitOnCleanup r $
 			copylocal =<< Annex.Content.prepSendAnnex key
 		, return False
 		)
 	| Git.repoIsSsh (repo r) = commitOnCleanup r $
-		Annex.Content.sendAnnex key noop $ \object ->
-			withmeter object $ \p -> do
-				-- This is too broad really, but recvkey normally
-				-- verifies content anyway, so avoid complicating
-				-- it with a local sendAnnex check and rollback.
-				unlocked <- isDirect <||> versionSupportsUnlockedPointers
-				Ssh.rsyncHelper (Just p)
-					=<< Ssh.rsyncParamsRemote unlocked r Upload key object file
+		P2PHelper.store
+			(runProto r connpool copyremotefallback)
+			key file meterupdate
+		
 	| otherwise = giveup "copying to non-ssh repo not supported"
   where
-	withmeter object = commandMetered (Just meterupdate) key (return $ Just object)
 	copylocal Nothing = return False
-	copylocal (Just (object, checksuccess)) = withmeter object $ \p -> do
+	copylocal (Just (object, checksuccess)) = do
 		-- The checksuccess action is going to be run in
 		-- the remote's Annex, but it needs access to the local
 		-- Annex monad's state.
@@ -595,12 +593,19 @@ copyToRemote r duc key file meterupdate
 				ensureInitialized
 				copier <- mkCopier hardlink params
 				let verify = Annex.Content.RemoteVerify r
-				runTransfer (Transfer Download u key) file forwardRetry $ \p' ->
-					let p'' = combineMeterUpdate p p'
+				runTransfer (Transfer Download u key) file forwardRetry $ \p ->
+					let p' = combineMeterUpdate meterupdate p
 					in Annex.Content.saveState True `after`
 						Annex.Content.getViaTmp verify key
-							(\dest -> copier object dest p'' (liftIO checksuccessio))
+							(\dest -> copier object dest p' (liftIO checksuccessio))
 			)
+	copyremotefallback = Annex.Content.sendAnnex key noop $ \object -> do
+		-- This is too broad really, but recvkey normally
+		-- verifies content anyway, so avoid complicating
+		-- it with a local sendAnnex check and rollback.
+		unlocked <- isDirect <||> versionSupportsUnlockedPointers
+		Ssh.rsyncHelper (Just meterupdate)
+			=<< Ssh.rsyncParamsRemote unlocked r Upload key object file
 
 fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)
 fsckOnRemote r params
@@ -735,6 +740,13 @@ mkCopier remotewanthardlink rsyncparams = do
 				)
 		, return copier
 		)
+
+data State = State Ssh.P2PSshConnectionPool DeferredUUIDCheck
+
+mkState :: Git.Repo -> UUID -> RemoteGitConfig -> Annex State
+mkState r u gc = State
+	<$> Ssh.mkP2PSshConnectionPool
+	<*> mkDeferredUUIDCheck r u gc
 
 {- Normally the UUID of a local repository is checked at startup,
  - but annex-checkuuid config can prevent that. To avoid getting

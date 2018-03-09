@@ -1,4 +1,14 @@
-git-annex (6.20170228) unstable; urgency=medium
+git-annex (6.20180309) upstream; urgency=medium
+
+  Note that, due to not using rsync to transfer files to ssh remotes
+  any longer, permissions and other file metadata of annexed files
+  will no longer be preserved when copying them to and from ssh remotes.
+  Other remotes never supported preserving that information, so
+  this is not considered a regression.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 09 Mar 2018 13:22:47 -0400
+
+git-annex (6.20170228) upstream; urgency=medium
 
   This version of git-annex has mitigations for SHA1 hash collision
   problems.
@@ -10,7 +20,7 @@ git-annex (6.20170228) unstable; urgency=medium
 
  -- Joey Hess <id@joeyh.name>  Tue, 28 Feb 2017 13:28:50 -0400
 
-git-annex (6.20170101) unstable; urgency=medium
+git-annex (6.20170101) upstream; urgency=medium
 
   XMPP support has been removed from the assistant in this release.
 
@@ -20,7 +30,7 @@ git-annex (6.20170101) unstable; urgency=medium
 
  -- Joey Hess <id@joeyh.name>  Tue, 27 Dec 2016 16:37:46 -0400
 
-git-annex (4.20131002) unstable; urgency=low
+git-annex (4.20131002) upstream; urgency=low
 
    The layout of gcrypt repositories has changed, and
    if you created one you must manually upgrade it.
@@ -28,7 +38,7 @@ git-annex (4.20131002) unstable; urgency=low
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Sep 2013 13:55:23 -0400
 
-git-annex (3.20120123) unstable; urgency=low
+git-annex (3.20120123) upstream; urgency=low
 
   There was a bug in the handling of directory special remotes that
   could cause partial file contents to be stored in them. If you use
@@ -39,7 +49,7 @@ git-annex (3.20120123) unstable; urgency=low
 
  -- Joey Hess <joeyh@debian.org>  Thu, 19 Jan 2012 15:24:23 -0400
 
-git-annex (3.20110624) experimental; urgency=low
+git-annex (3.20110624) upstream; urgency=low
 
   There has been another change to the git-annex data store.
   Use `git annex upgrade` to migrate your repositories to the new
@@ -56,7 +66,7 @@ git-annex (3.20110624) experimental; urgency=low
 
  -- Joey Hess <joeyh@debian.org>  Tue, 21 Jun 2011 20:18:00 -0400
 
-git-annex (0.20110316) experimental; urgency=low
+git-annex (0.20110316) upstream; urgency=low
 
   This version reorganises the layout of git-annex's files in your repository.
   There is an upgrade process to convert a repository from the old git-annex

@@ -61,3 +61,5 @@ took 12s, so remote access over localhost seems faster now! Possibly
 there's a little bit more concurrency when git-annex and git-annex-shell
 are both running?)
 
+Transferring a 30 mb file over ssh to localhost, speed increased from
+3.288s to 3.031s. Due to rsync's several levels of checksumming?

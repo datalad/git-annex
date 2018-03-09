@@ -77,15 +77,6 @@ metered othermeter key getsrcfile a = withMessageState $ \st ->
 				Nothing -> return Nothing
 				Just f -> catchMaybeIO $ liftIO $ getFileSize f
 
-{- Use when the command's own progress output is preferred.
- - The command's output will be suppressed and git-annex's progress meter
- - used for concurrent output, and json progress. -}
-commandMetered :: Maybe MeterUpdate -> Key -> Annex (Maybe FilePath) -> (MeterUpdate -> Annex a) -> Annex a
-commandMetered combinemeterupdate key getsrcfile a = 
-	withMessageState $ \s -> if needOutputMeter s
-		then metered combinemeterupdate key getsrcfile a
-		else a (fromMaybe nullMeterUpdate combinemeterupdate)
-
 {- Poll file size to display meter, but only when concurrent output or
  - json progress needs the information. -}
 meteredFile :: FilePath -> Maybe MeterUpdate -> Key -> Annex a -> Annex a

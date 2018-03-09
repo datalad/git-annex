@@ -14,7 +14,6 @@ import qualified P2P.Protocol as P2P
 import P2P.IO
 import Types.Remote
 import Annex.Content
-import Config.Cost
 import Messages.Progress
 import Utility.Metered
 import Types.NumCopies
