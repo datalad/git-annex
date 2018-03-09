@@ -1,0 +1,29 @@
+### Please describe the problem.
+
+Unclear reason why some files/keys fail to get in parallel.
+
+### What steps will reproduce the problem?
+
+In my case it is getting files from the datalad-archives special remote which fetches the tarball key, extracts, and copies for annex.
+I've implemented locking in datalad-archives on getting the tarball key and extracting the archive, so now we can run `get -JX` and it generally works. But when there is lots of files in the tarball, for some of them (seems to be up to the X in -JX) transfer fails.
+
+git annex simply reports
+[[!format sh """
+$> grep already git-annex-getJ5-5.log                               
+{"command":"get","wanted":[{"here":false,"uuid":"79080a38-0e94-4a0a-bd89-9022eada547b","description":"yoh@smaug:/mnt/btrfs/datasets/datalad/crawl/crcns/aa-1"},{"here":false,"uuid":"895b9a07-6613-4c8a-95ae-280d8119475c","description":"[datalad-archives]"}],"note":"transfer already in progress, or unable to take transfer lock\nUnable to access these remotes: datalad-archives\nTry making some of these repositories available:\n\t79080a38-0e94-4a0a-bd89-9022eada547b -- yoh@smaug:/mnt/btrfs/datasets/datalad/crawl/crcns/aa-1\n \t895b9a07-6613-4c8a-95ae-280d8119475c -- [datalad-archives]\n","skipped":[],"success":false,"key":"MD5E-s1001--2cd1bc42ddd745e7d5c00edb07d8c9d4","file":"MLd_cells/gg0304_6_A/conspecific/spike20"}
+.... 4 more
+
+$> find -lname */MD5E-s1001--2cd1bc42ddd745e7d5c00edb07d8c9d4 
+./MLd_cells/gg0304_6_A/conspecific/spike20
+"""]]
+
+so it is not that the key is used for multiple files (I remember we had that before, so checked for that first).
+According to the logs ([git-annex](http://www.onerussian.com/tmp/git-annex-getJ5-5.log) and [datalad](http://www.onerussian.com/tmp/datalad-getJ5-5.log)) that key is not even passed from annex to our special remote so somehow it freaks out and skips it.
+
+If needed, I could probably provide you a singularity image with the environment with datalad pre-installed with that branch so you could troubleshoot.
+
+
+### What version of git-annex are you using? On what operating system?
+
+Tried with bleeding edge 6.20180308+gitg3962ca71b-1~ndall+1 although originally detected with 6.20180220+gitg811d0d313-1~ndall+1
+
