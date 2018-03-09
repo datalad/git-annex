@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-03-09T18:10:11Z"
+ content="""
+Thanks very much for building this. It looks great.
+
+I especially appreciated the notes in DESIGN.md about how it uses git-annex
+interfaces and what is fast/too slow. Please do file todo requests if there
+are interface improvements that git-annex can offer to query for the data
+you need.
+
+I suppose it does not make sense to integrate the code into git-annex,
+as is done for the much simpler Nautilus and Konqueror file
+manager integration. git-annex-turtle is something like 33M large with all
+the assets, and has a significant quantity of source code that I would 
+only get in the way of maintaining.
+
+And it looks like it's easy enough to install it from the zip file.
+But I do wonder if it would make sense for the git-annex.app to bundle
+git-annex-turtle, so users don't need that extra step. What do you think?
+"""]]
