@@ -390,7 +390,7 @@ dropKey r (State connpool duc) key
 		P2PHelper.remove (runProto r connpool fallback) key
 
 lockKey :: Remote -> State -> Key -> (VerifiedCopy -> Annex r) -> Annex r
-lockKey r (State _ duc) key callback
+lockKey r (State connpool duc) key callback
 	| not $ Git.repoIsUrl (repo r) = ifM duc
 		( guardUsable (repo r) failedlock $ do
 			inorigrepo <- Annex.makeRunner
@@ -404,6 +404,11 @@ lockKey r (State _ duc) key callback
 		)
 	| Git.repoIsSsh (repo r) = do
 		showLocking r
+		let withconn = withConnection r connpool fallback
+		P2PHelper.lock withconn runProtoConn (uuid r) key callback
+	| otherwise = failedlock
+  where
+	fallback = do
 		Just (cmd, params) <- Ssh.git_annex_shell ConsumeStdin
 			(repo r) "lockcontent"
 			[Param $ key2file key] []
@@ -441,8 +446,6 @@ lockKey r (State _ duc) key callback
 					showNote "lockcontent failed"
 					signaldone
 					failedlock
-	| otherwise = failedlock
-  where
 	failedlock = giveup "can't lock content"
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
@@ -800,3 +803,25 @@ runProtoConn a conn@(P2P.OpenConnection (c, _pid)) =
 			warning $ "Lost connection (" ++ e ++ ")"
 			conn' <- liftIO $ Ssh.closeP2PSshConnection conn
 			return (conn', Nothing)
+
+-- Allocates a P2P ssh connection, and runs the action with it,
+-- returning the connection to the pool.
+--
+-- If the remote does not support the P2P protocol, runs the fallback
+-- action instead.
+withConnection
+	:: Remote
+	-> Ssh.P2PSshConnectionPool
+	-> Annex a
+	-> (Ssh.P2PSshConnection -> Annex (Ssh.P2PSshConnection, a))
+	-> Annex a
+withConnection r connpool fallback a = bracketOnError get cache go
+  where
+	get = Ssh.getP2PSshConnection r connpool
+	cache (Just conn) = liftIO $ Ssh.storeP2PSshConnection connpool conn
+	cache Nothing = return ()
+	go (Just conn) = do
+		(conn', res) <- a conn
+		cache (Just conn')
+		return res
+	go Nothing = fallback
