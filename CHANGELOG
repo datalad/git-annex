@@ -19,6 +19,9 @@ git-annex (6.20180228) UNRELEASED; urgency=medium
   * git-annex-shell: Added p2pstdio mode.
   * Better ssh connection warmup when using -J for concurrency.
     Avoids ugly messages when forced ssh command is not git-annex-shell.
+  * Note that Remote/Git.hs now contains AGPL licensed code,
+    thus the license of git-annex as a whole is AGPL. This was already
+    the case when git-annex was built with the webapp enabled.
 
  -- Joey Hess <id@joeyh.name>  Wed, 28 Feb 2018 11:53:03 -0400
 
