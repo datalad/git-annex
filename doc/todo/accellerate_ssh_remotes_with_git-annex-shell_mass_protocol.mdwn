@@ -34,7 +34,8 @@ good to unify with it as much as possible.
 
 ----
 
-Implementation todos:
+Mostly implemented now, but need to test and think about these 
+implementation todos:
 
 * git-annex-shell p2pstdio currently always verifies content it receives.
   git-annex-shell recvkey has a speed optimisation, when it's told the file
@@ -63,3 +64,6 @@ are both running?)
 
 Transferring a 30 mb file over ssh to localhost, speed increased from
 3.288s to 3.031s. Due to rsync's several levels of checksumming?
+
+Dropping 1000 files from local, with each being locked on a ssh localhost
+remote, speed increased from 30s to 7s.
