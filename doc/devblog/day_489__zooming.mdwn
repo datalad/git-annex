@@ -1,0 +1,31 @@
+Andrew Wringler has released
+[git-annex-turtle](https://github.com/andrewringler/git-annex-turtle)
+which provides Apple Finder integration for git-annex on macOS,
+including custom badge icons, contextual menus and a Menubar icon.
+This looks really nice!
+
+---
+
+I've completed the P2P protocol with git-annex-shell. It turned out just as
+fast and good as I'd hoped. 
+[[accellerate_ssh_remotes_with_git-annex-shell_mass_protocol]] has the
+benchmark details. 
+
+Even transferring of large files speeds up somewhat;
+git-annex is actually faster than rsync at shoving bytes down a pipe.
+(Though rsync still wins in lots of other benchmarks I'm sure.)
+
+Surprisingly, in one benchmark, I found accessing a repository on localhost
+via ssh is now slightly *faster* than accessing that same repository by
+path. I think that this is because when git-annex is talking to
+git-annex-ssh, the programs run on different CPU cores, so there's some
+extra concurrency.
+
+There are still some implementation todos, some of which will make it
+faster yet, and others involving potential edge cases. This is a big change
+and will need some time to be considered stable.
+
+----
+
+Today's work was sponsored by Jake Vosloo on
+[Patreon](https://patreon.com/joeyh)
