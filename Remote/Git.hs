@@ -55,9 +55,6 @@ import qualified Remote.Helper.Ssh as Ssh
 import qualified Remote.GCrypt
 import qualified Remote.P2P
 import qualified Remote.Helper.P2P as P2PHelper
-import qualified P2P.Protocol as P2P
-import qualified P2P.Annex as P2P
-import qualified P2P.IO as P2P
 import P2P.Address
 import Annex.Path
 import Creds
@@ -345,7 +342,7 @@ inAnnex rmt (State connpool duc) key
 			)
 	checkremote = 
 		let fallback = Ssh.inAnnex r key
-		in P2PHelper.checkpresent (runProto rmt connpool fallback) key
+		in P2PHelper.checkpresent (Ssh.runProto rmt connpool fallback) key
 	checklocal = ifM duc
 		( guardUsable r (cantCheck r) $
 			maybe (cantCheck r) return
@@ -387,7 +384,7 @@ dropKey r (State connpool duc) key
 	| Git.repoIsHttp (repo r) = giveup "dropping from http remote not supported"
 	| otherwise = commitOnCleanup r $ do
 		let fallback = Ssh.dropKey (repo r) key
-		P2PHelper.remove (runProto r connpool fallback) key
+		P2PHelper.remove (Ssh.runProto r connpool fallback) key
 
 lockKey :: Remote -> State -> Key -> (VerifiedCopy -> Annex r) -> Annex r
 lockKey r (State connpool duc) key callback
@@ -404,8 +401,8 @@ lockKey r (State connpool duc) key callback
 		)
 	| Git.repoIsSsh (repo r) = do
 		showLocking r
-		let withconn = withConnection r connpool fallback
-		P2PHelper.lock withconn runProtoConn (uuid r) key callback
+		let withconn = Ssh.withP2PSshConnection r connpool fallback
+		P2PHelper.lock withconn Ssh.runProtoConn (uuid r) key callback
 	| otherwise = failedlock
   where
 	fallback = do
@@ -474,7 +471,7 @@ copyFromRemote' forcersync r (State connpool _) key file dest meterupdate
 	| Git.repoIsSsh (repo r) = if forcersync
 		then unVerified fallback
 		else P2PHelper.retrieve
-			(runProto r connpool fallback)
+			(Ssh.runProto r connpool fallback)
 			key file dest meterupdate
 	| otherwise = giveup "copying from non-ssh, non-http remote not supported"
   where
@@ -575,7 +572,7 @@ copyToRemote r (State connpool duc) key file meterupdate
 		)
 	| Git.repoIsSsh (repo r) = commitOnCleanup r $
 		P2PHelper.store
-			(runProto r connpool copyremotefallback)
+			(Ssh.runProto r connpool copyremotefallback)
 			key file meterupdate
 		
 	| otherwise = giveup "copying to non-ssh repo not supported"
@@ -774,54 +771,3 @@ mkDeferredUUIDCheck r u gc
 				return ok
 			, liftIO $ readMVar v
 			)
-
--- Runs a P2P Proto action on a remote when it supports that,
--- otherwise the fallback action.
-runProto :: Remote -> Ssh.P2PSshConnectionPool -> Annex a -> P2P.Proto a -> Annex (Maybe a)
-runProto r connpool fallback proto = Just <$>
-	(Ssh.getP2PSshConnection r connpool >>= maybe fallback go)
-  where
-	go c = do
-		(c', v) <- runProtoConn proto c
-		case v of
-			Just res -> do
-				liftIO $ Ssh.storeP2PSshConnection connpool c'
-				return res
-			-- Running the proto failed, either due to a protocol
-			-- error or a network error, so discard the
-			-- connection, and run the fallback.
-			Nothing -> fallback
-
-runProtoConn :: P2P.Proto a -> Ssh.P2PSshConnection -> Annex (Ssh.P2PSshConnection, Maybe a)
-runProtoConn _ P2P.ClosedConnection = return (P2P.ClosedConnection, Nothing)
-runProtoConn a conn@(P2P.OpenConnection (c, _pid)) =
-	P2P.runFullProto P2P.Client c a >>= \case
-		Right r -> return (conn, Just r)
-		-- When runFullProto fails, the connection is no longer
-		-- usable, so close it.
-		Left e -> do
-			warning $ "Lost connection (" ++ e ++ ")"
-			conn' <- liftIO $ Ssh.closeP2PSshConnection conn
-			return (conn', Nothing)
-
--- Allocates a P2P ssh connection, and runs the action with it,
--- returning the connection to the pool.
---
--- If the remote does not support the P2P protocol, runs the fallback
--- action instead.
-withConnection
-	:: Remote
-	-> Ssh.P2PSshConnectionPool
-	-> Annex a
-	-> (Ssh.P2PSshConnection -> Annex (Ssh.P2PSshConnection, a))
-	-> Annex a
-withConnection r connpool fallback a = bracketOnError get cache go
-  where
-	get = Ssh.getP2PSshConnection r connpool
-	cache (Just conn) = liftIO $ Ssh.storeP2PSshConnection connpool conn
-	cache Nothing = return ()
-	go (Just conn) = do
-		(conn', res) <- a conn
-		cache (Just conn')
-		return res
-	go Nothing = fallback

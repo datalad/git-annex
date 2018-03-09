@@ -2,7 +2,7 @@
  -
  - Copyright 2011-2018 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 module Remote.Helper.Ssh where
@@ -25,6 +25,7 @@ import Types.Transfer
 import Config
 import qualified P2P.Protocol as P2P
 import qualified P2P.IO as P2P
+import qualified P2P.Annex as P2P
 
 import Control.Concurrent.STM
 
@@ -271,3 +272,54 @@ openP2PSshConnection r connpool = do
 	rememberunsupported = atomically $
 		modifyTVar' connpool $
 			maybe (Just P2PSshUnsupported) Just
+
+-- Runs a P2P Proto action on a remote when it supports that,
+-- otherwise the fallback action.
+runProto :: Remote -> P2PSshConnectionPool -> Annex a -> P2P.Proto a -> Annex (Maybe a)
+runProto r connpool fallback proto = Just <$>
+	(getP2PSshConnection r connpool >>= maybe fallback go)
+  where
+	go c = do
+		(c', v) <- runProtoConn proto c
+		case v of
+			Just res -> do
+				liftIO $ storeP2PSshConnection connpool c'
+				return res
+			-- Running the proto failed, either due to a protocol
+			-- error or a network error, so discard the
+			-- connection, and run the fallback.
+			Nothing -> fallback
+
+runProtoConn :: P2P.Proto a -> P2PSshConnection -> Annex (P2PSshConnection, Maybe a)
+runProtoConn _ P2P.ClosedConnection = return (P2P.ClosedConnection, Nothing)
+runProtoConn a conn@(P2P.OpenConnection (c, _pid)) =
+	P2P.runFullProto P2P.Client c a >>= \case
+		Right r -> return (conn, Just r)
+		-- When runFullProto fails, the connection is no longer
+		-- usable, so close it.
+		Left e -> do
+			warning $ "Lost connection (" ++ e ++ ")"
+			conn' <- liftIO $ closeP2PSshConnection conn
+			return (conn', Nothing)
+
+-- Allocates a P2P ssh connection, and runs the action with it,
+-- returning the connection to the pool.
+--
+-- If the remote does not support the P2P protocol, runs the fallback
+-- action instead.
+withP2PSshConnection
+	:: Remote
+	-> P2PSshConnectionPool
+	-> Annex a
+	-> (P2PSshConnection -> Annex (P2PSshConnection, a))
+	-> Annex a
+withP2PSshConnection r connpool fallback a = bracketOnError get cache go
+  where
+	get = getP2PSshConnection r connpool
+	cache (Just conn) = liftIO $ storeP2PSshConnection connpool conn
+	cache Nothing = return ()
+	go (Just conn) = do
+		(conn', res) <- a conn
+		cache (Just conn')
+		return res
+	go Nothing = fallback
