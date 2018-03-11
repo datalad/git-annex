@@ -33,8 +33,7 @@ for using git-annex with various services:
 * [Amazon Cloud drive](https://github.com/DanielDent/git-annex-remote-rclone)
 * [[tips/Internet_Archive_via_S3]]
 * [[Box.com|tips/using_box.com_as_a_special_remote]]
-* [Google Drive](https://github.com/Lykos153/git-annex-remote-gdrive)
-* [[Google Drive (old)|tips/googledriveannex]]
+* [Google Drive](https://github.com/Lykos153/git-annex-remote-googledrive)
 * [[Google Cloud Storage|tips/using_Google_Cloud_Storage]]
 * [[Mega.co.nz|tips/megaannex]]
 * [[SkyDrive|tips/skydriveannex]]
