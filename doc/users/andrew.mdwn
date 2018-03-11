@@ -1,0 +1,4 @@
+Andrew Ringler <a href="mailto:public@andrewringler.com">public@andrewringler.com</a>
+<br><https://andrewringler.com/>
+
+[git-annex-turtle](https://github.com/andrewringler/git-annex-turtle) —Apple Finder integration for git-annex on macOS, including custom badge icons, contextual menus and a Menubar icon
