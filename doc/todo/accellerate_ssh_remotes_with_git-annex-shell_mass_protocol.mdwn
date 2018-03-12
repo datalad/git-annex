@@ -34,14 +34,6 @@ good to unify with it as much as possible.
 
 ----
 
-Mostly implemented now, but need to test and think about these 
-implementation todos:
-
-* What happens when the assistant is running and some connections are open
-  and it moves between networks?
-
-----
-
 Benchmarks
 
 Dropping 200 files from a remote over a satellite internet connection,
