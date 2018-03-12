@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
+ subject="progress bars?"
+ date="2018-03-12T13:44:50Z"
+ content="""
+how do progress bars work in this new design? we had those for free with rsync before (i assume?), do we still have them now?
+
+how about [[todo/wishlist__58___global_progress_status]]? is that more feasible now?
+
+thanks!
+"""]]
