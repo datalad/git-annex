@@ -11,6 +11,8 @@ git-annex (6.20180228) UNRELEASED; urgency=medium
     will no longer be preserved when copying them to and from ssh remotes.
     Other remotes never supported preserving that information, so
     this is not considered a regression.
+  * Note that annex.verify=false does not currently prevent verification
+    of contents received from git-annex-shell when using the new protocol.
   * Support exporttree=yes for rsync special remotes.
   * Dial back optimisation when building on arm, which prevents
     ghc and llc from running out of memory when optimising some files.

@@ -53,3 +53,5 @@ Transferring a 30 mb file over ssh to localhost, speed increased from
 
 Dropping 1000 files from local, with each being locked on a ssh localhost
 remote, speed increased from 30s to 7s.
+
+[[done]]

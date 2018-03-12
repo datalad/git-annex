@@ -1,0 +1,28 @@
+Working on getting the git-annex-shell P2P protocol into a releasable
+state. This was kind of annoying.
+
+I started out wanting to make annex.verify=false disable verification when
+using the P2P protocol. But, that needed protocol changes, and
+unfortunately the protocol was not extensible. I thought it was supposed to
+reject unknown commands and keep the connection open, which would make
+extensions easy, but unfortunately it actually closed the connection after
+an unknown command.
+
+So, I added a version negotiation to the P2P protocol, but it's not done
+for tor remotes yet, and will be turned on for them in some
+[[future flag day|todo/p2p_protocol_flag_days]], once all of them get
+upgraded.
+
+After all that, I got completely stuck on the annex.verify change.
+Multiple problems are preventing me from seeing a way to do it at all.
+[[todo/support_disabling_verification_of_transfer_over_p2p_protocol]]
+This must be why I didn't support it in the first place when building the
+P2P protocol two years ago.
+
+Also fixed performance when a ssh remote is unavailable, where it was
+trying to connect twice to the remote for each action. And confirmed that
+the assistant will behave ok when moving between networks while it has
+P2P connections open. So, other than annex.verify not being supported,
+I feel fairly ready to release this new feature.
+
+Today's work was supported by an anonymous bitcoin donor.
