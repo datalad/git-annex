@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
+ subject="late to the party"
+ date="2018-03-12T13:50:33Z"
+ content="""
+eh... i look elsewhere for a week and you design another line
+protocol! ;) so I guess it's too late to do anything to change this,
+but I wanted to share that similar efforts are being done over the
+backup software world, in particular in [restic][],
+which is working with the [rclone][] project to implement an abstract
+get/pull mechanism to store blobs, a lot like what git-annex needs to
+be doing.
+
+they wrote this using a binary protocol for speed (it's basically RPC
+at this point) and I encouraged them to at least use a standard one
+(they use protobufs + HTTP2 AKA gRPC, iirc, and it works over
+stdin/out). you might find the  [full thread][] interesting... it
+would be great if git-annex would support this natively instead of
+rolling its own protocol, because it would mean it could talk with
+other services like rclone or restic servers out of the box, without
+*those* endpoints having to implement yet another custom protocol.
+
+but yeah, i'm way too late it seems. figured you might find it
+interesting anyways... congrats on the performance improvements!
+
+[restic]: https://restic.net
+[rclone]: https://rclone.org/
+[full thread]: https://github.com/restic/restic/issues/1561
+"""]]
