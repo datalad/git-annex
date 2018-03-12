@@ -64,13 +64,6 @@ that is less than or equal to the version the client sent:
 
 Now both client and server should use version 1.
 
-(Note that old versions of git-annex, which speak the P2P protocol
-over tor, don't support this, and attempting to negotiate a version
-will cause the server to hang up the connection. To deal with this
-historical bug, the version is not currently negotiated when using the
-protocol over tor. At some point in the future, when all peers can be
-assumed to be upgraded, this will be changed.)
-
 ## Binary data
 
 The protocol allows raw binary data to be sent. This is done

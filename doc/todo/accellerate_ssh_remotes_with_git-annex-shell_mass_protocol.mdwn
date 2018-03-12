@@ -48,11 +48,11 @@ implementation todos:
   It would be nice to support that, but if it added an extra round trip
   to the P2P protocol, that could lose some of the speed gains.
 
+  My first attempt to implement this failed miserably due to a Free monad
+  type check problem I could not see a way around.
+
 * What happens when the assistant is running and some connections are open
   and it moves between networks?
-
-* If it's unable to ssh to a host to run p2pstdio, it will fall back to the
-  old method. What if the host is down, does this double the timeout?
 
 ----
 
