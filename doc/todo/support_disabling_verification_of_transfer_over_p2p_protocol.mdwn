@@ -1,0 +1,16 @@
+git-annex-shell p2pstdio currently always verifies content it receives.
+git-annex-shell recvkey has a speed optimisation, when it's told the file
+being sent is locked, it can avoid an expensive verification, when
+annex.verify=false. (Similar for transfers in the other direction.)
+
+The P2P protocol does not have a way to communicate when that happens,
+and forces AlwaysVerify.
+
+It would be nice to support that, but if it added an extra round trip
+to the P2P protocol, that could lose some of the speed gains.
+The best way seems to be to add a new protocol version, where DATA
+has an extra byte at the end that is "1" when the file didn't change
+as it was transferred, and "0" when it did.
+
+My first attempt to implement this failed miserably due to a Free monad
+type check problem I could not see a way around.

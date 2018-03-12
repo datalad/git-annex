@@ -20,8 +20,3 @@ At some point in the future, once all git-annex and git-annex-shell
 can be assumed to be upgraded to 6.20180312, this fallback can be removed.
 It will allows removing a lot of code from git-annex-shell and a lot of
 fallback code from Remote.Git.
-
-Removing the fallback code will also improve speed of dealing with remotes
-that are not reachable, since currently git-annex tries first to open a p2p
-connection, and then tries the fallback, so it has to wait for two 
-TCP connection timeouts.

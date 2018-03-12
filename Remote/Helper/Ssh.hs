@@ -189,12 +189,12 @@ contentLockedMarker = "OK"
 type P2PSshConnection = P2P.ClosableConnection
 	(P2P.RunState, P2P.P2PConnection, ProcessHandle)
 
-closeP2PSshConnection :: P2PSshConnection -> IO P2PSshConnection
-closeP2PSshConnection P2P.ClosedConnection = return P2P.ClosedConnection
+closeP2PSshConnection :: P2PSshConnection -> IO (P2PSshConnection, Maybe ExitCode)
+closeP2PSshConnection P2P.ClosedConnection = return (P2P.ClosedConnection, Nothing)
 closeP2PSshConnection (P2P.OpenConnection (_st, conn, pid)) = do
 	P2P.closeConnection conn
-	void $ waitForProcess pid
-	return P2P.ClosedConnection
+	exitcode <- waitForProcess pid
+	return (P2P.ClosedConnection, Just exitcode)
 
 -- Pool of connections over ssh to git-annex-shell p2pstdio.
 type P2PSshConnectionPool = TVar (Maybe P2PSshConnectionPoolState)
@@ -270,17 +270,26 @@ openP2PSshConnection r connpool = do
 			Right (Right (Just theiruuid)) | theiruuid == uuid r ->
 				return $ Just c
 			_ -> do
-				void $ closeP2PSshConnection c
-				rememberunsupported
-				return Nothing
+				(cclosed, exitcode) <- closeP2PSshConnection c
+				-- ssh exits 255 when unable to connect to
+				-- server. Return a closed connection in
+				-- this case, to avoid the fallback action
+				-- being run instead, which would mean a
+				-- second connection attempt to this server
+				-- that is down.
+				if exitcode == Just (ExitFailure 255)
+					then return (Just cclosed)
+					else do
+						rememberunsupported
+						return Nothing
 	rememberunsupported = atomically $
 		modifyTVar' connpool $
 			maybe (Just P2PSshUnsupported) Just
 
 -- Runs a P2P Proto action on a remote when it supports that,
 -- otherwise the fallback action.
-runProto :: Remote -> P2PSshConnectionPool -> Annex a -> P2P.Proto a -> Annex (Maybe a)
-runProto r connpool fallback proto = Just <$>
+runProto :: Remote -> P2PSshConnectionPool -> a -> Annex a -> P2P.Proto a -> Annex (Maybe a)
+runProto r connpool bad fallback proto = Just <$>
 	(getP2PSshConnection r connpool >>= maybe fallback go)
   where
 	go c = do
@@ -290,9 +299,8 @@ runProto r connpool fallback proto = Just <$>
 				liftIO $ storeP2PSshConnection connpool c'
 				return res
 			-- Running the proto failed, either due to a protocol
-			-- error or a network error, so discard the
-			-- connection, and run the fallback.
-			Nothing -> fallback
+			-- error or a network error.
+			Nothing -> return bad
 
 runProtoConn :: P2P.Proto a -> P2PSshConnection -> Annex (P2PSshConnection, Maybe a)
 runProtoConn _ P2P.ClosedConnection = return (P2P.ClosedConnection, Nothing)
@@ -303,7 +311,7 @@ runProtoConn a conn@(P2P.OpenConnection (runst, c, _pid)) = do
 		-- usable, so close it.
 		Left e -> do
 			warning $ "Lost connection (" ++ e ++ ")"
-			conn' <- liftIO $ closeP2PSshConnection conn
+			conn' <- fst <$> liftIO (closeP2PSshConnection conn)
 			return (conn', Nothing)
 
 -- Allocates a P2P ssh connection from the pool, and runs the action with it,

@@ -2,7 +2,8 @@ git-annex (6.20180228) UNRELEASED; urgency=medium
 
   * New protocol for communicating with git-annex-shell increases speed
     of operations involving ssh remotes. When not transferring large files,
-    git-annex is between 200% and 400% faster using the new protocol.
+    git-annex is between 200% and 400% faster using the new protocol,
+    and it's just as fast as before when transferring large files.
     (When the remote has an old git-annex-shell, git-annex falls back
     to the old slower code.)
   * Note that, due to not using rsync to transfer files over ssh

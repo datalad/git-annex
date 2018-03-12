@@ -342,7 +342,7 @@ inAnnex rmt (State connpool duc) key
 			)
 	checkremote = 
 		let fallback = Ssh.inAnnex r key
-		in P2PHelper.checkpresent (Ssh.runProto rmt connpool fallback) key
+		in P2PHelper.checkpresent (Ssh.runProto rmt connpool (cantCheck rmt) fallback) key
 	checklocal = ifM duc
 		( guardUsable r (cantCheck r) $
 			maybe (cantCheck r) return
@@ -384,7 +384,7 @@ dropKey r (State connpool duc) key
 	| Git.repoIsHttp (repo r) = giveup "dropping from http remote not supported"
 	| otherwise = commitOnCleanup r $ do
 		let fallback = Ssh.dropKey (repo r) key
-		P2PHelper.remove (Ssh.runProto r connpool fallback) key
+		P2PHelper.remove (Ssh.runProto r connpool False fallback) key
 
 lockKey :: Remote -> State -> Key -> (VerifiedCopy -> Annex r) -> Annex r
 lockKey r (State connpool duc) key callback
@@ -471,7 +471,7 @@ copyFromRemote' forcersync r (State connpool _) key file dest meterupdate
 	| Git.repoIsSsh (repo r) = if forcersync
 		then unVerified fallback
 		else P2PHelper.retrieve
-			(Ssh.runProto r connpool fallback)
+			(Ssh.runProto r connpool False fallback)
 			key file dest meterupdate
 	| otherwise = giveup "copying from non-ssh, non-http remote not supported"
   where
@@ -572,7 +572,7 @@ copyToRemote r (State connpool duc) key file meterupdate
 		)
 	| Git.repoIsSsh (repo r) = commitOnCleanup r $
 		P2PHelper.store
-			(Ssh.runProto r connpool copyremotefallback)
+			(Ssh.runProto r connpool False copyremotefallback)
 			key file meterupdate
 		
 	| otherwise = giveup "copying to non-ssh repo not supported"

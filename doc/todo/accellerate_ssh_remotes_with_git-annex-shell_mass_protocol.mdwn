@@ -37,20 +37,6 @@ good to unify with it as much as possible.
 Mostly implemented now, but need to test and think about these 
 implementation todos:
 
-* git-annex-shell p2pstdio currently always verifies content it receives.
-  git-annex-shell recvkey has a speed optimisation, when it's told the file
-  being sent is locked, it can avoid an expensive verification, when
-  annex.verify=false. (Similar for transfers in the other direction.)
-
-  The P2P protocol does not have a way to communicate when that happens,
-  and forces AlwaysVerify.
-
-  It would be nice to support that, but if it added an extra round trip
-  to the P2P protocol, that could lose some of the speed gains.
-
-  My first attempt to implement this failed miserably due to a Free monad
-  type check problem I could not see a way around.
-
 * What happens when the assistant is running and some connections are open
   and it moves between networks?
 
