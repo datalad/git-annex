@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 4"
+ date="2018-03-12T19:24:56Z"
+ content="""
+Thanks [anarcat](http://git-annex.branchable.com/users/anarcat/)!
+
+[RabbitVCS](http://rabbitvcs.org/) provides Nautilus 3 icons for git, that might be a reasonable starting point for enhanced git-annex icons on Linux. Also, [nautilus-git](https://github.com/bil-elmoussaoui/nautilus-git) is minimal and quite pretty. I don't know what flavor of file manager they were using when they took their screenshots.
+"""]]
