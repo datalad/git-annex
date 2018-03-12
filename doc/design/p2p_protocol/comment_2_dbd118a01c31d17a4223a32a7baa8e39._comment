@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-03-12T21:59:26Z"
+ content="""
+This is not a new protocol, it was added 2 years ago for
+git-annex's tor hidden service support.
+
+git-annex already supports rclone via a special remote.
+
+This protocol is only used when there's a git-annex repository
+on the other end, so I don't see any benefit in making it compatible with
+any other programs. And it has stuff in it that I'm sure if not in the
+protocol you talked about, like LOCKCONTENT.
+"""]]
