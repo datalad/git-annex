@@ -112,6 +112,8 @@ dropKey r key = onRemote NoConsumeStdin r (boolSystem, return False) "dropkey"
 
 rsyncHelper :: OutputHandler -> Maybe MeterUpdate -> [CommandParam] -> Annex Bool
 rsyncHelper oh m params = do
+	unless (quietMode oh) $
+		showOutput -- make way for progress bar
 	a <- case m of
 		Nothing -> return $ rsync params
 		Just meter -> return $ rsyncProgress oh meter params
