@@ -14,3 +14,9 @@ as it was transferred, and "0" when it did.
 
 My first attempt to implement this failed miserably due to a Free monad
 type check problem I could not see a way around.
+
+Also, resumes make this difficult. What if a file starts to be transferred,
+gets changed while it's transferred so some bad bytes are sent, then the
+transfer is interrupted, and later is resumed from a different remote
+that has the correct content. How can it tell that the bad data was sent
+in this case?
