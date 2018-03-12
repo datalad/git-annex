@@ -84,12 +84,6 @@ The Len value tells how many bytes of data to read.
 Note that there is no newline after the binary data; the next protocol
 message will come immediately after it.
 
-In protocol version 1 and higher, the binary data is suffixed with one 
-additional byte. Normally that is "1". "0" is used to indicate when the
-file being transferred changed content while it was being sent
-(eg, it was unlocked and got edited). In protocol version 0, this
-additional byte is not sent.
-
 If the sender finds itself unable to send as many bytes of data as it
 promised (perhaps because a file got truncated while it was being sent),
 its only option is to close the protocol connection.

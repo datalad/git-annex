@@ -48,7 +48,7 @@ defaultProtocolVersion :: ProtocolVersion
 defaultProtocolVersion = ProtocolVersion 0
 
 maxProtocolVersion :: ProtocolVersion
-maxProtocolVersion = ProtocolVersion 1
+maxProtocolVersion = ProtocolVersion 0
 
 -- | Service as used by the connect message in gitremote-helpers(1)
 data Service = UploadPack | ReceivePack
