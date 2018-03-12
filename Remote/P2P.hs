@@ -148,7 +148,7 @@ openConnection u addr = do
 				--P2P.negotiateProtocolVersion P2P.maxProtocolVersion
 				return ()
 			runst <- liftIO $ mkRunState Client
-			res <- runFullProto runst conn proto
+			res <- liftIO $ runNetProto runst conn proto
 			case res of
 				Right (Just theiruuid)
 					| u == theiruuid -> return (OpenConnection (runst, conn))

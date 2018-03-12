@@ -25,16 +25,6 @@ import Types.NumCopies
 import Utility.Metered
 
 import Control.Monad.Free
-import Control.Concurrent.STM
-
-data RunState
-	= Serving UUID (Maybe ChangedRefsHandle) (TVar ProtocolVersion)
-	| Client (TVar ProtocolVersion)
-
-mkRunState :: (TVar ProtocolVersion -> RunState) -> IO RunState
-mkRunState mk = do
-	tvar <- newTVarIO defaultProtocolVersion
-	return (mk tvar)
 
 -- Full interpreter for Proto, that can receive and send objects.
 runFullProto :: RunState -> P2PConnection -> Proto a -> Annex (Either String a)
@@ -42,7 +32,7 @@ runFullProto runst conn = go
   where
 	go :: RunProto Annex
 	go (Pure v) = return (Right v)
-	go (Free (Net n)) = runNet conn go n
+	go (Free (Net n)) = runNet runst conn go n
 	go (Free (Local l)) = runLocal runst go l
 
 runLocal :: RunState -> RunProto Annex -> LocalF (Proto a) -> Annex (Either String a)
@@ -127,11 +117,6 @@ runLocal runst runner a = case a of
 				Left e -> return (Left (show e))
 				Right changedrefs -> runner (next changedrefs)
 		_ -> return $ Left "change notification not available"
-	SetProtocolVersion v next -> do
-		liftIO $ atomically $ writeTVar versiontvar v
-		runner next
-	GetProtocolVersion next ->
-		liftIO (readTVarIO versiontvar) >>= runner . next
   where
 	transfer mk k af ta = case runst of
 		-- Update transfer logs when serving.
@@ -164,6 +149,3 @@ runLocal runst runner a = case a of
 				liftIO $ hSeek h AbsoluteSeek o
 			b <- liftIO $ hGetContentsMetered h p'
 			runner (sender b)
-	versiontvar = case runst of
-		Serving _ _ tv -> tv
-		Client tv -> tv

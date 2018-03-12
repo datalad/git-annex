@@ -9,6 +9,8 @@
 
 module P2P.IO
 	( RunProto
+	, RunState(..)
+	, mkRunState
 	, P2PConnection(..)
 	, ClosableConnection(..)
 	, stdioP2PConnection
@@ -30,6 +32,8 @@ import Utility.SimpleProtocol
 import Utility.Metered
 import Utility.Tor
 import Utility.FileMode
+import Types.UUID
+import Annex.ChangedRefs
 
 import Control.Monad.Free
 import Control.Monad.IO.Class
@@ -37,6 +41,7 @@ import System.Exit (ExitCode(..))
 import Network.Socket
 import Control.Concurrent
 import Control.Concurrent.Async
+import Control.Concurrent.STM
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import System.Log.Logger (debugM)
@@ -44,6 +49,15 @@ import qualified Network.Socket as S
 
 -- Type of interpreters of the Proto free monad.
 type RunProto m = forall a. (MonadIO m, MonadMask m) => Proto a -> m (Either String a)
+
+data RunState
+	= Serving UUID (Maybe ChangedRefsHandle) (TVar ProtocolVersion)
+	| Client (TVar ProtocolVersion)
+
+mkRunState :: (TVar ProtocolVersion -> RunState) -> IO RunState
+mkRunState mk = do
+	tvar <- newTVarIO defaultProtocolVersion
+	return (mk tvar)
 
 data P2PConnection = P2PConnection
 	{ connRepo :: Repo
@@ -121,20 +135,20 @@ setupHandle s = do
 -- This only runs Net actions. No Local actions will be run
 -- (those need the Annex monad) -- if the interpreter reaches any,
 -- it returns Nothing.
-runNetProto :: P2PConnection -> Proto a -> IO (Either String a)
-runNetProto conn = go
+runNetProto :: RunState -> P2PConnection -> Proto a -> IO (Either String a)
+runNetProto runst conn = go
   where
 	go :: RunProto IO
 	go (Pure v) = return (Right v)
-	go (Free (Net n)) = runNet conn go n
+	go (Free (Net n)) = runNet runst conn go n
 	go (Free (Local _)) = return (Left "unexpected annex operation attempted")
 
 -- Interpreter of the Net part of Proto.
 --
 -- An interpreter of Proto has to be provided, to handle the rest of Proto
 -- actions.
-runNet :: (MonadIO m, MonadMask m) => P2PConnection -> RunProto m -> NetF (Proto a) -> m (Either String a)
-runNet conn runner f = case f of
+runNet :: (MonadIO m, MonadMask m) => RunState -> P2PConnection -> RunProto m -> NetF (Proto a) -> m (Either String a)
+runNet runst conn runner f = case f of
 	SendMessage m next -> do
 		v <- liftIO $ tryNonAsync $ do
 			let l = unwords (formatMessage m)
@@ -181,11 +195,19 @@ runNet conn runner f = case f of
 		case v of
 			Left e -> return (Left e)
 			Right () -> runner next
+	SetProtocolVersion v next -> do
+		liftIO $ atomically $ writeTVar versiontvar v
+		runner next
+	GetProtocolVersion next ->
+		liftIO (readTVarIO versiontvar) >>= runner . next
   where
 	-- This is only used for running Net actions when relaying,
 	-- so it's ok to use runNetProto, despite it not supporting
 	-- all Proto actions.
-	runnerio = runNetProto conn
+	runnerio = runNetProto runst conn
+	versiontvar = case runst of
+		Serving _ _ tv -> tv
+		Client tv -> tv
 
 debugMessage :: String -> Message -> IO ()
 debugMessage prefix m = debugM "p2p" $

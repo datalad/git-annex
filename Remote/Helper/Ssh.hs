@@ -245,34 +245,33 @@ openP2PSshConnection r connpool = do
 			return Nothing
 		Just (cmd, params) -> start cmd params
   where
-	start cmd params = do
+	start cmd params = liftIO $ withNullHandle $ \nullh -> do
 		-- stderr is discarded because old versions of git-annex
 		-- shell always error
-		(Just from, Just to, Nothing, pid) <- liftIO $ 
-			withNullHandle $ \nullh -> createProcess $
-				(proc cmd (toCommand params))
-					{ std_in = CreatePipe
-					, std_out = CreatePipe
-					, std_err = UseHandle nullh
-					}
+		(Just from, Just to, Nothing, pid) <- createProcess $
+			(proc cmd (toCommand params))
+				{ std_in = CreatePipe
+				, std_out = CreatePipe
+				, std_err = UseHandle nullh
+				}
 		let conn = P2P.P2PConnection
 			{ P2P.connRepo = repo r
 			, P2P.connCheckAuth = const False
 			, P2P.connIhdl = to
 			, P2P.connOhdl = from
 			}
-		runst <- liftIO $ P2P.mkRunState P2P.Client
+		runst <- P2P.mkRunState P2P.Client
 		let c = P2P.OpenConnection (runst, conn, pid)
 		-- When the connection is successful, the remote
 		-- will send an AUTH_SUCCESS with its uuid.
 		let proto = P2P.postAuth $
 			P2P.negotiateProtocolVersion P2P.maxProtocolVersion
-		tryNonAsync (P2P.runFullProto runst conn proto) >>= \case
+		tryNonAsync (P2P.runNetProto runst conn proto) >>= \case
 			Right (Right (Just theiruuid)) | theiruuid == uuid r ->
 				return $ Just c
 			_ -> do
-				void $ liftIO $ closeP2PSshConnection c
-				liftIO rememberunsupported
+				void $ closeP2PSshConnection c
+				rememberunsupported
 				return Nothing
 	rememberunsupported = atomically $
 		modifyTVar' connpool $

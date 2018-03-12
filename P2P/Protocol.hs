@@ -208,6 +208,9 @@ data NetF c
 	-- peer, while at the same time accepting input from the peer
 	-- which is sent the the second RelayHandle. Continues until 
 	-- the peer sends an ExitCode.
+	| SetProtocolVersion ProtocolVersion c
+	--- ^ Called when a new protocol version has been negotiated.
+	| GetProtocolVersion (ProtocolVersion -> c)
 	deriving (Functor)
 
 type Net = Free NetF
@@ -255,9 +258,6 @@ data LocalF c
 	-- present, runs the protocol action with False.
 	| WaitRefChange (ChangedRefs -> c)
 	-- ^ Waits for one or more git refs to change and returns them.
-	| SetProtocolVersion ProtocolVersion c
-	--- ^ Called when a new protocol version has been negotiated.
-	| GetProtocolVersion (ProtocolVersion -> c)
 	deriving (Functor)
 
 type Local = Free LocalF
@@ -288,7 +288,7 @@ negotiateProtocolVersion preferredversion = do
 	net $ sendMessage (VERSION preferredversion)
 	r <- net receiveMessage
 	case r of
-		Just (VERSION v) -> local $ setProtocolVersion v
+		Just (VERSION v) -> net $ setProtocolVersion v
 		-- Old server doesn't know about the VERSION command.
 		Just (ERROR _) -> return ()
 		_ -> net $ sendMessage (ERROR "expected VERSION")
@@ -403,7 +403,7 @@ serveAuthed servermode myuuid = void $ serverLoop handler
 	readonlyerror = net $ sendMessage (ERROR "this repository is read-only; write access denied")
 	handler (VERSION theirversion) = do
 		let v = min theirversion maxProtocolVersion
-		local $ setProtocolVersion v
+		net $ setProtocolVersion v
 		net $ sendMessage (VERSION v)
 		return ServerContinue
 	handler (LOCKCONTENT key) = do

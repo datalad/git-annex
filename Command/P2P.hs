@@ -310,7 +310,8 @@ setupLink remotename (P2PAddressAuth addr authtoken) = do
 		Right conn -> do
 			u <- getUUID
 			let proto = P2P.auth u authtoken noop
-			go =<< liftIO (runNetProto conn proto)
+			runst <- liftIO $ mkRunState Client
+			go =<< liftIO (runNetProto runst conn proto)
   where
 	go (Right (Just theiruuid)) = do
 		ok <- inRepo $ Git.Command.runBool

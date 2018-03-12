@@ -123,7 +123,8 @@ checkHiddenService = bracket setup cleanup go
 			, connIhdl = h
 			, connOhdl = h
 			}
-		void $ runNetProto conn $ P2P.serveAuth u
+		runst <- mkRunState Client
+		void $ runNetProto runst conn $ P2P.serveAuth u
 		hClose h
 
 	haslistener sockfile = catchBoolIO $ do

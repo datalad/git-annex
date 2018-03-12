@@ -115,7 +115,9 @@ serveClient th u r q = bracket setup cleanup start
 				, connIhdl = h
 				, connOhdl = h
 				}
-			v <- liftIO $ runNetProto conn $ P2P.serveAuth u
+			-- not really Client, but we don't know their uuid yet
+			runstauth <- liftIO $ mkRunState Client
+			v <- liftIO $ runNetProto runstauth conn $ P2P.serveAuth u
 			case v of
 				Right (Just theiruuid) -> authed conn theiruuid
 				Right Nothing -> liftIO $
@@ -147,7 +149,8 @@ transport (RemoteRepo r gc) url@(RemoteURI uri) th ichan ochan =
 		myuuid <- liftAnnex th getUUID
 		authtoken <- fromMaybe nullAuthToken
 			<$> liftAnnex th (loadP2PRemoteAuthToken addr)
-		res <- runNetProto conn $ P2P.auth myuuid authtoken noop
+		runst <- mkRunState Client
+		res <- runNetProto runst conn $ P2P.auth myuuid authtoken noop
 		case res of
 			Right (Just theiruuid) -> do
 				expecteduuid <- liftAnnex th $ getRepoUUID r
@@ -155,7 +158,7 @@ transport (RemoteRepo r gc) url@(RemoteURI uri) th ichan ochan =
 					then do
 						send (CONNECTED url)
 						status <- handlecontrol
-							`race` handlepeer conn
+							`race` handlepeer runst conn
 						send (DISCONNECTED url)
 						return $ either id id status
 					else return ConnectionStopping
@@ -170,13 +173,13 @@ transport (RemoteRepo r gc) url@(RemoteURI uri) th ichan ochan =
 			LOSTNET -> return ConnectionStopping
 			_ -> handlecontrol
 
-	handlepeer conn = do
-		v <- runNetProto conn P2P.notifyChange
+	handlepeer runst conn = do
+		v <- runNetProto runst conn P2P.notifyChange
 		case v of
 			Right (Just (ChangedRefs shas)) -> do
 				whenM (checkShouldFetch gc th shas) $
 					fetch
-				handlepeer conn
+				handlepeer runst conn
 			_ -> return ConnectionClosed
 	
 	fetch = do
