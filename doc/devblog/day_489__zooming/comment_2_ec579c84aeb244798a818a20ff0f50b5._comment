@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-03-12T21:36:45Z"
+ content="""
+It will use git-annex's native progress display, same as it already did
+when -J is used.
+
+Rsync's progress display was not blocking
+[[todo/wishlist__58___global_progress_status]].
+"""]]

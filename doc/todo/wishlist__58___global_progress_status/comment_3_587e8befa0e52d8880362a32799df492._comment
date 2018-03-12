@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-03-12T21:38:17Z"
+ content="""
+git-annex does not display rsync progress any longer, but you do still 
+get the progress display on a per-file basis. This is at least a lot more
+compact than the rsync output.
+
+Any kind of global progress display would require a separate pass to
+identify all the files that git-annex will be operating on. That would make
+it slower in large repos, and people already complain about seek speed in
+large repos.
+"""]]
