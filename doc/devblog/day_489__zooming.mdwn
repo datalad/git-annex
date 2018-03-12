@@ -8,7 +8,7 @@ This looks really nice!
 
 I've completed the P2P protocol with git-annex-shell. It turned out just as
 fast and good as I'd hoped. 
-[[accellerate_ssh_remotes_with_git-annex-shell_mass_protocol]] has the
+[[todo/accellerate_ssh_remotes_with_git-annex-shell_mass_protocol]] has the
 benchmark details. 
 
 Even transferring of large files speeds up somewhat;

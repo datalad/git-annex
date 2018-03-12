@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="douglass.doug@f332d3f2822cae5f75accdf82fdab4a8f565e1f9"
+ nickname="douglass.doug"
+ avatar="http://cdn.libravatar.org/avatar/51567f932ee16ed200c339f44986d173"
+ subject="git-annex-bin package?"
+ date="2018-03-09T20:59:02Z"
+ content="""
+Seems the git-annex-bin package is no longer in AUR.
+
+@caleb any interesting in resurrecting the old git-annex-bin package?
+
+It would be a welcome option for users that have no other haskell-based packages installed vs. the community/git-annex package that now depends on ghc and *many* separate haskell packages. Reply or ping me, I can assist.
+"""]]

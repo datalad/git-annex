@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2018-03-09T18:55:51Z"
+ content="""
+May be would be of help: here datalad-archives spits out TRANSFER-SUCCESSes really fast since it takes it little time to just copy a little file... so it feels to me that issue is in some race condition within git-annex.  If I add 100ms delay before returning TRANSFER-SUCCESS from the special remote - number of failures goes down to 0-2 instead of 5ish. With 200ms delay seems to get no failures whatsoever.
+"""]]
