@@ -113,11 +113,12 @@ dropKey r key = onRemote NoConsumeStdin r (boolSystem, return False) "dropkey"
 
 rsyncHelper :: Maybe MeterUpdate -> [CommandParam] -> Annex Bool
 rsyncHelper m params = do
-	showOutput -- make way for progress bar
 	a <- case m of
-		Nothing -> return $ rsync params
+		Nothing -> do
+			showOutput -- make way for progress bar
+			return $ rsync params
 		Just meter -> do
-			oh <- mkOutputHandler
+			oh <- mkOutputHandlerQuiet
 			return $ rsyncProgress oh meter params
 	ifM (liftIO a)
 		( return True

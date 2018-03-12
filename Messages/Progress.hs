@@ -85,12 +85,11 @@ meteredFile file combinemeterupdate key a =
 		then metered combinemeterupdate key (return Nothing) $ \p ->
 			watchFileSize file p a
 		else a
-
-needOutputMeter :: MessageState -> Bool
-needOutputMeter s = case outputType s of
-	JSONOutput jsonoptions -> jsonProgress jsonoptions
-	NormalOutput | concurrentOutputEnabled s -> True
-	_ -> False
+  where
+	needOutputMeter s = case outputType s of
+		JSONOutput jsonoptions -> jsonProgress jsonoptions
+		NormalOutput | concurrentOutputEnabled s -> True
+		_ -> False
 
 {- Progress dots. -}
 showProgressDots :: Annex ()
@@ -115,6 +114,11 @@ progressCommandEnv cmd params environ = ifM commandProgressDisabled
 mkOutputHandler :: Annex OutputHandler
 mkOutputHandler = OutputHandler
 	<$> commandProgressDisabled
+	<*> mkStderrEmitter
+
+mkOutputHandlerQuiet :: Annex OutputHandler
+mkOutputHandlerQuiet = OutputHandler
+	<$> pure True
 	<*> mkStderrEmitter
 
 mkStderrRelayer :: Annex (Handle -> IO ())

@@ -60,6 +60,7 @@ import Annex.Path
 import Creds
 import Types.NumCopies
 import Annex.Action
+import Messages.Progress
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
@@ -475,9 +476,10 @@ copyFromRemote' forcersync r (State connpool _) key file dest meterupdate
 			key file dest meterupdate
 	| otherwise = giveup "copying from non-ssh, non-http remote not supported"
   where
-	fallback = feedprogressback $ \p -> do
-		Ssh.rsyncHelper (Just (combineMeterUpdate meterupdate p))
-			=<< Ssh.rsyncParamsRemote False r Download key dest file
+	fallback = metered (Just meterupdate) key (return Nothing) $ \p ->
+		feedprogressback $ \p' -> do
+			Ssh.rsyncHelper (Just (combineMeterUpdate p' p))
+				=<< Ssh.rsyncParamsRemote False r Download key dest file
 	{- Feed local rsync's progress info back to the remote,
 	 - by forking a feeder thread that runs
 	 - git-annex-shell transferinfo at the same time
@@ -599,13 +601,14 @@ copyToRemote r (State connpool duc) key file meterupdate
 						Annex.Content.getViaTmp verify key
 							(\dest -> copier object dest p' (liftIO checksuccessio))
 			)
-	copyremotefallback = Annex.Content.sendAnnex key noop $ \object -> do
-		-- This is too broad really, but recvkey normally
-		-- verifies content anyway, so avoid complicating
-		-- it with a local sendAnnex check and rollback.
-		unlocked <- isDirect <||> versionSupportsUnlockedPointers
-		Ssh.rsyncHelper (Just meterupdate)
-			=<< Ssh.rsyncParamsRemote unlocked r Upload key object file
+	copyremotefallback = Annex.Content.sendAnnex key noop $ \object ->
+			metered (Just meterupdate) key (return $ Just object) $ \p -> do
+				-- This is too broad really, but recvkey normally
+				-- verifies content anyway, so avoid complicating
+				-- it with a local sendAnnex check and rollback.
+				unlocked <- isDirect <||> versionSupportsUnlockedPointers
+				Ssh.rsyncHelper (Just p)
+					=<< Ssh.rsyncParamsRemote unlocked r Upload key object file
 
 fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)
 fsckOnRemote r params
