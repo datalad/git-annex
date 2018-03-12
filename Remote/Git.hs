@@ -470,17 +470,16 @@ copyFromRemote' forcersync r (State connpool _) key file dest meterupdate
 						file forwardRetry
 						(\p -> copier object dest (combineMeterUpdate p meterupdate) checksuccess)
 	| Git.repoIsSsh (repo r) = if forcersync
-		then unVerified fallback
+		then unVerified $ fallback meterupdate
 		else P2PHelper.retrieve
-			(Ssh.runProto r connpool False fallback)
+			(\p -> Ssh.runProto r connpool False (fallback p))
 			key file dest meterupdate
 	| otherwise = giveup "copying from non-ssh, non-http remote not supported"
   where
-	fallback = metered (Just meterupdate) key (return Nothing) $ \p ->
-		feedprogressback $ \p' -> do
-			oh <- mkOutputHandlerQuiet
-			Ssh.rsyncHelper oh (Just (combineMeterUpdate p' p))
-				=<< Ssh.rsyncParamsRemote False r Download key dest file
+	fallback p = feedprogressback $ \p' -> do
+		oh <- mkOutputHandlerQuiet
+		Ssh.rsyncHelper oh (Just (combineMeterUpdate p' p))
+			=<< Ssh.rsyncParamsRemote False r Download key dest file
 	{- Feed local rsync's progress info back to the remote,
 	 - by forking a feeder thread that runs
 	 - git-annex-shell transferinfo at the same time
@@ -575,7 +574,7 @@ copyToRemote r (State connpool duc) key file meterupdate
 		)
 	| Git.repoIsSsh (repo r) = commitOnCleanup r $
 		P2PHelper.store
-			(Ssh.runProto r connpool False copyremotefallback)
+			(\p -> Ssh.runProto r connpool False (copyremotefallback p))
 			key file meterupdate
 		
 	| otherwise = giveup "copying to non-ssh repo not supported"
@@ -602,15 +601,14 @@ copyToRemote r (State connpool duc) key file meterupdate
 						Annex.Content.getViaTmp verify key
 							(\dest -> copier object dest p' (liftIO checksuccessio))
 			)
-	copyremotefallback = Annex.Content.sendAnnex key noop $ \object ->
-			metered (Just meterupdate) key (return $ Just object) $ \p -> do
-				-- This is too broad really, but recvkey normally
-				-- verifies content anyway, so avoid complicating
-				-- it with a local sendAnnex check and rollback.
-				unlocked <- isDirect <||> versionSupportsUnlockedPointers
-				oh <- mkOutputHandlerQuiet
-				Ssh.rsyncHelper oh (Just p)
-					=<< Ssh.rsyncParamsRemote unlocked r Upload key object file
+	copyremotefallback p = Annex.Content.sendAnnex key noop $ \object -> do
+		-- This is too broad really, but recvkey normally
+		-- verifies content anyway, so avoid complicating
+		-- it with a local sendAnnex check and rollback.
+		unlocked <- isDirect <||> versionSupportsUnlockedPointers
+		oh <- mkOutputHandlerQuiet
+		Ssh.rsyncHelper oh (Just p)
+			=<< Ssh.rsyncParamsRemote unlocked r Upload key object file
 
 fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)
 fsckOnRemote r params

@@ -30,17 +30,17 @@ type ProtoConnRunner c = forall a. P2P.Proto a -> ClosableConnection c -> Annex 
 -- the pool when done.
 type WithConn a c = (ClosableConnection c -> Annex (ClosableConnection c, a)) -> Annex a
 
-store :: ProtoRunner Bool -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
+store :: (MeterUpdate -> ProtoRunner Bool) -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store runner k af p = do
 	let getsrcfile = fmap fst <$> prepSendAnnex k
 	metered (Just p) k getsrcfile $ \p' -> 
 		fromMaybe False
-			<$> runner (P2P.put k af p')
+			<$> runner p' (P2P.put k af p')
 
-retrieve :: ProtoRunner Bool -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
+retrieve :: (MeterUpdate -> ProtoRunner Bool) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
 retrieve runner k af dest p = unVerified $ 
 	metered (Just p) k (return Nothing) $ \p' -> fromMaybe False 
-		<$> runner (P2P.get dest k af p')
+		<$> runner p (P2P.get dest k af p')
 
 remove :: ProtoRunner Bool -> Key -> Annex Bool
 remove runner k = fromMaybe False <$> runner (P2P.remove k)
