@@ -478,7 +478,8 @@ copyFromRemote' forcersync r (State connpool _) key file dest meterupdate
   where
 	fallback = metered (Just meterupdate) key (return Nothing) $ \p ->
 		feedprogressback $ \p' -> do
-			Ssh.rsyncHelper (Just (combineMeterUpdate p' p))
+			oh <- mkOutputHandlerQuiet
+			Ssh.rsyncHelper oh (Just (combineMeterUpdate p' p))
 				=<< Ssh.rsyncParamsRemote False r Download key dest file
 	{- Feed local rsync's progress info back to the remote,
 	 - by forking a feeder thread that runs
@@ -607,7 +608,8 @@ copyToRemote r (State connpool duc) key file meterupdate
 				-- verifies content anyway, so avoid complicating
 				-- it with a local sendAnnex check and rollback.
 				unlocked <- isDirect <||> versionSupportsUnlockedPointers
-				Ssh.rsyncHelper (Just p)
+				oh <- mkOutputHandlerQuiet
+				Ssh.rsyncHelper oh (Just p)
 					=<< Ssh.rsyncParamsRemote unlocked r Upload key object file
 
 fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)
@@ -684,8 +686,10 @@ rsyncOrCopyFile rsyncparams src dest p =
 	docopy = liftIO $ watchFileSize dest p $
 		copyFileExternal CopyTimeStamps src dest
 #endif
-	dorsync = Ssh.rsyncHelper (Just p) $
-		rsyncparams ++ [File src, File dest]
+	dorsync = do
+		oh <- mkOutputHandler
+		Ssh.rsyncHelper oh (Just p) $
+			rsyncparams ++ [File src, File dest]
 
 commitOnCleanup :: Remote -> Annex a -> Annex a
 commitOnCleanup r a = go `after` a

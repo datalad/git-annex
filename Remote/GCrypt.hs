@@ -50,6 +50,7 @@ import Utility.Tmp
 import Logs.Remote
 import Utility.Gpg
 import Utility.SshHost
+import Messages.Progress
 
 remote :: RemoteType
 remote = RemoteType
@@ -338,9 +339,11 @@ store r rsyncopts
 			Remote.Directory.finalizeStoreGeneric tmpdir destdir
 			return True
 	| Git.repoIsSsh (repo r) = if accessShell r
-		then fileStorer $ \k f p -> Ssh.rsyncHelper (Just p)
-			=<< Ssh.rsyncParamsRemote False r Upload k f
-				(AssociatedFile Nothing)
+		then fileStorer $ \k f p -> do
+			oh <- mkOutputHandler
+			Ssh.rsyncHelper oh (Just p)
+				=<< Ssh.rsyncParamsRemote False r Upload k f
+					(AssociatedFile Nothing)
 		else fileStorer $ Remote.Rsync.store rsyncopts
 	| otherwise = unsupportedUrl
 
@@ -353,7 +356,8 @@ retrieve r rsyncopts
 		then fileRetriever $ \f k p -> do
 			ps <- Ssh.rsyncParamsRemote False r Download k f
 				(AssociatedFile Nothing)
-			unlessM (Ssh.rsyncHelper (Just p) ps) $
+			oh <- mkOutputHandler
+			unlessM (Ssh.rsyncHelper oh (Just p) ps) $
 				giveup "rsync failed"
 		else fileRetriever $ Remote.Rsync.retrieve rsyncopts
 	| otherwise = unsupportedUrl

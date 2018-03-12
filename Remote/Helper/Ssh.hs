@@ -16,7 +16,6 @@ import Annex.Ssh
 import CmdLine.GitAnnexShell.Fields (Field, fieldName)
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Remote.Helper.Messages
-import Messages.Progress
 import Utility.Metered
 import Utility.Rsync
 import Utility.SshHost
@@ -111,15 +110,11 @@ dropKey r key = onRemote NoConsumeStdin r (boolSystem, return False) "dropkey"
 	]
 	[]
 
-rsyncHelper :: Maybe MeterUpdate -> [CommandParam] -> Annex Bool
-rsyncHelper m params = do
+rsyncHelper :: OutputHandler -> Maybe MeterUpdate -> [CommandParam] -> Annex Bool
+rsyncHelper oh m params = do
 	a <- case m of
-		Nothing -> do
-			showOutput -- make way for progress bar
-			return $ rsync params
-		Just meter -> do
-			oh <- mkOutputHandlerQuiet
-			return $ rsyncProgress oh meter params
+		Nothing -> return $ rsync params
+		Just meter -> return $ rsyncProgress oh meter params
 	ifM (liftIO a)
 		( return True
 		, do
