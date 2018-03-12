@@ -77,7 +77,7 @@ chainGen addr r u c gc = do
 	return (Just this)
 
 -- | A connection to the peer, which can be closed.
-type Connection = ClosableConnection P2PConnection
+type Connection = ClosableConnection (RunState, P2PConnection)
 
 type ConnectionPool = TVar [Connection]
 
@@ -90,8 +90,8 @@ runProto u addr connpool a = withConnection u addr connpool (runProtoConn a)
 
 runProtoConn :: P2P.Proto a -> Connection -> Annex (Connection, Maybe a)
 runProtoConn _ ClosedConnection = return (ClosedConnection, Nothing)
-runProtoConn a (OpenConnection conn) = do
-	v <- runFullProto Client conn a
+runProtoConn a c@(OpenConnection (runst, conn)) = do
+	v <- runFullProto runst conn a
 	-- When runFullProto fails, the connection is no longer usable,
 	-- so close it.
 	case v of
@@ -99,7 +99,7 @@ runProtoConn a (OpenConnection conn) = do
 			warning $ "Lost connection to peer (" ++ e ++ ")"
 			liftIO $ closeConnection conn
 			return (ClosedConnection, Nothing)
-		Right r -> return (OpenConnection conn, Just r)
+		Right r -> return (c, Just r)
 
 -- Uses an open connection if one is available in the ConnectionPool;
 -- otherwise opens a new connection.
@@ -138,11 +138,20 @@ openConnection u addr = do
 			myuuid <- getUUID
 			authtoken <- fromMaybe nullAuthToken
 				<$> loadP2PRemoteAuthToken addr
-			res <- liftIO $ runNetProto conn $
-				P2P.auth myuuid authtoken
+			let proto = P2P.auth myuuid authtoken $
+				-- Before 6.20180312, the protocol server
+				-- had a bug that made negotiating the
+				-- protocol version terminate the
+				-- connection. So, this must stay disabled
+				-- until the old version is not in use
+				-- anywhere.
+				--P2P.negotiateProtocolVersion P2P.maxProtocolVersion
+				return ()
+			runst <- liftIO $ mkRunState Client
+			res <- runFullProto runst conn proto
 			case res of
 				Right (Just theiruuid)
-					| u == theiruuid -> return (OpenConnection conn)
+					| u == theiruuid -> return (OpenConnection (runst, conn))
 					| otherwise -> do
 						liftIO $ closeConnection conn
 						warning "Remote peer uuid seems to have changed."

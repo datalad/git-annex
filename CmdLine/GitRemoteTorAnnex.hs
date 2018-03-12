@@ -57,6 +57,6 @@ connectService address port service = do
 		myuuid <- getUUID
 		g <- Annex.gitRepo
 		conn <- liftIO $ connectPeer g (TorAnnex address port)
-		liftIO $ runNetProto conn $ auth myuuid authtoken >>= \case
+		liftIO $ runNetProto conn $ auth myuuid authtoken noop >>= \case
 			Just _theiruuid -> connect service stdin stdout
 			Nothing -> giveup $ "authentication failed, perhaps you need to set " ++ p2pAuthTokenEnv

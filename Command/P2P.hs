@@ -309,7 +309,8 @@ setupLink remotename (P2PAddressAuth addr authtoken) = do
 		Left e -> return $ ConnectionError $ "Unable to connect with peer. Please check that the peer is connected to the network, and try again. ("  ++ show e ++ ")"
 		Right conn -> do
 			u <- getUUID
-			go =<< liftIO (runNetProto conn $ P2P.auth u authtoken)
+			let proto = P2P.auth u authtoken noop
+			go =<< liftIO (runNetProto conn proto)
   where
 	go (Right (Just theiruuid)) = do
 		ok <- inRepo $ Git.Command.runBool

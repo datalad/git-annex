@@ -2,7 +2,7 @@
  -
  - See doc/design/p2p_protocol.mdwn
  -
- - Copyright 2016 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -41,6 +41,15 @@ newtype Offset = Offset Integer
 newtype Len = Len Integer
 	deriving (Show)
 
+newtype ProtocolVersion = ProtocolVersion Integer
+	deriving (Show, Eq, Ord)
+
+defaultProtocolVersion :: ProtocolVersion
+defaultProtocolVersion = ProtocolVersion 0
+
+maxProtocolVersion :: ProtocolVersion
+maxProtocolVersion = ProtocolVersion 1
+
 -- | Service as used by the connect message in gitremote-helpers(1)
 data Service = UploadPack | ReceivePack
 	deriving (Show)
@@ -51,6 +60,7 @@ data Message
 	= AUTH UUID AuthToken -- uuid of the peer that is authenticating
 	| AUTH_SUCCESS UUID -- uuid of the remote peer
 	| AUTH_FAILURE
+	| VERSION ProtocolVersion
 	| CONNECT Service
 	| CONNECTDONE ExitCode
 	| NOTIFYCHANGE
@@ -73,6 +83,7 @@ instance Proto.Sendable Message where
 	formatMessage (AUTH uuid authtoken) = ["AUTH", Proto.serialize uuid, Proto.serialize authtoken]
 	formatMessage (AUTH_SUCCESS uuid) = ["AUTH-SUCCESS",  Proto.serialize uuid]
 	formatMessage AUTH_FAILURE = ["AUTH-FAILURE"]
+	formatMessage (VERSION v) = ["VERSION", Proto.serialize v]
 	formatMessage (CONNECT service) = ["CONNECT", Proto.serialize service]
 	formatMessage (CONNECTDONE exitcode) = ["CONNECTDONE", Proto.serialize exitcode]
 	formatMessage NOTIFYCHANGE = ["NOTIFYCHANGE"]
@@ -94,6 +105,7 @@ instance Proto.Receivable Message where
 	parseCommand "AUTH" = Proto.parse2 AUTH
 	parseCommand "AUTH-SUCCESS" = Proto.parse1 AUTH_SUCCESS
 	parseCommand "AUTH-FAILURE" = Proto.parse0 AUTH_FAILURE
+	parseCommand "VERSION" = Proto.parse1 VERSION
 	parseCommand "CONNECT" = Proto.parse1 CONNECT
 	parseCommand "CONNECTDONE" = Proto.parse1 CONNECTDONE
 	parseCommand "NOTIFYCHANGE" = Proto.parse0 NOTIFYCHANGE
@@ -111,6 +123,10 @@ instance Proto.Receivable Message where
 	parseCommand "DATA" = Proto.parse1 DATA
 	parseCommand "ERROR" = Proto.parse1 ERROR
 	parseCommand _ = Proto.parseFail
+
+instance Proto.Serializable ProtocolVersion where
+	serialize (ProtocolVersion n) = show n
+	deserialize = ProtocolVersion <$$> readish
 
 instance Proto.Serializable Offset where
 	serialize (Offset n) = show n
@@ -175,7 +191,7 @@ local = hoistFree Local
 
 data NetF c
 	= SendMessage Message c
-	| ReceiveMessage (Message -> c)
+	| ReceiveMessage (Maybe Message -> c)
 	| SendBytes Len L.ByteString MeterUpdate c
 	-- ^ Sends exactly Len bytes of data. (Any more or less will
 	-- confuse the receiver.)
@@ -239,6 +255,9 @@ data LocalF c
 	-- present, runs the protocol action with False.
 	| WaitRefChange (ChangedRefs -> c)
 	-- ^ Waits for one or more git refs to change and returns them.
+	| SetProtocolVersion ProtocolVersion c
+	--- ^ Called when a new protocol version has been negotiated.
+	| GetProtocolVersion (ProtocolVersion -> c)
 	deriving (Functor)
 
 type Local = Free LocalF
@@ -247,20 +266,32 @@ type Local = Free LocalF
 $(makeFree ''NetF)
 $(makeFree ''LocalF)
 
-auth :: UUID -> AuthToken -> Proto (Maybe UUID)
-auth myuuid t = do
+auth :: UUID -> AuthToken -> Proto () -> Proto (Maybe UUID)
+auth myuuid t a = do
 	net $ sendMessage (AUTH myuuid t)
-	postAuth
+	postAuth a
 
-postAuth :: Proto (Maybe UUID)
-postAuth = do
+postAuth :: Proto () -> Proto (Maybe UUID)
+postAuth a = do
 	r <- net receiveMessage
 	case r of
-		AUTH_SUCCESS theiruuid -> return $ Just theiruuid
-		AUTH_FAILURE -> return Nothing
+		Just (AUTH_SUCCESS theiruuid) -> do
+			a
+			return $ Just theiruuid
+		Just AUTH_FAILURE -> return Nothing
 		_ -> do
 			net $ sendMessage (ERROR "auth failed")
 			return Nothing
+
+negotiateProtocolVersion :: ProtocolVersion -> Proto ()
+negotiateProtocolVersion preferredversion = do
+	net $ sendMessage (VERSION preferredversion)
+	r <- net receiveMessage
+	case r of
+		Just (VERSION v) -> local $ setProtocolVersion v
+		-- Old server doesn't know about the VERSION command.
+		Just (ERROR _) -> return ()
+		_ -> net $ sendMessage (ERROR "expected VERSION")
 
 checkPresent :: Key -> Proto Bool
 checkPresent key = do
@@ -303,10 +334,10 @@ put key af p = do
 	net $ sendMessage (PUT af key)
 	r <- net receiveMessage
 	case r of
-		PUT_FROM offset -> sendContent key af offset p
-		ALREADY_HAVE -> return True
+		Just (PUT_FROM offset) -> sendContent key af offset p
+		Just ALREADY_HAVE -> return True
 		_ -> do
-			net $ sendMessage (ERROR "expected PUT_FROM")
+			net $ sendMessage (ERROR "expected PUT_FROM or ALREADY_HAVE")
 			return False
 
 data ServerHandler a
@@ -317,13 +348,19 @@ data ServerHandler a
 -- Server loop, getting messages from the client and handling them
 serverLoop :: (Message -> Proto (ServerHandler a)) -> Proto (Maybe a)
 serverLoop a = do
-	cmd <- net receiveMessage
-	case cmd of
+	mcmd <- net receiveMessage
+	case mcmd of
 		-- When the client sends ERROR to the server, the server
 		-- gives up, since it's not clear what state the client
 		-- is in, and so not possible to recover.
-		ERROR _ -> return Nothing
-		_ -> do
+		Just (ERROR _) -> return Nothing
+		-- When the client sends an unparseable message, the server
+		-- responds with an error message, and loops. This allows
+		-- expanding the protocol with new messages.
+		Nothing -> do
+			net $ sendMessage (ERROR "unknown command")
+			serverLoop a
+		Just cmd -> do
 			v <- a cmd
 			case v of
 				ServerGot r -> return (Just r)
@@ -364,13 +401,18 @@ serveAuthed :: ServerMode -> UUID -> Proto ()
 serveAuthed servermode myuuid = void $ serverLoop handler
   where
 	readonlyerror = net $ sendMessage (ERROR "this repository is read-only; write access denied")
+	handler (VERSION theirversion) = do
+		let v = min theirversion maxProtocolVersion
+		local $ setProtocolVersion v
+		net $ sendMessage (VERSION v)
+		return ServerContinue
 	handler (LOCKCONTENT key) = do
 		local $ tryLockContent key $ \locked -> do
 			sendSuccess locked
 			when locked $ do
 				r' <- net receiveMessage
 				case r' of
-					UNLOCKCONTENT -> return ()
+					Just UNLOCKCONTENT -> return ()
 					_ -> net $ sendMessage (ERROR "expected UNLOCKCONTENT")
 		return ServerContinue
 	handler (CHECKPRESENT key) = do
@@ -443,7 +485,7 @@ receiveContent p sizer storer mkmsg = do
 	net $ sendMessage (mkmsg offset)
 	r <- net receiveMessage
 	case r of
-		DATA len -> do
+		Just (DATA len) -> do
 			ok <- local $ storer offset len
 				(net (receiveBytes len p'))
 			sendSuccess ok
@@ -456,8 +498,8 @@ checkSuccess :: Proto Bool
 checkSuccess = do
 	ack <- net receiveMessage
 	case ack of
-		SUCCESS -> return True
-		FAILURE -> return False
+		Just SUCCESS -> return True
+		Just FAILURE -> return False
 		_ -> do
 			net $ sendMessage (ERROR "expected SUCCESS or FAILURE")
 			return False
@@ -471,7 +513,7 @@ notifyChange = do
 	net $ sendMessage NOTIFYCHANGE
 	ack <- net receiveMessage
 	case ack of
-		CHANGED rs -> return (Just rs)
+		Just (CHANGED rs) -> return (Just rs)
 		_ -> do
 			net $ sendMessage (ERROR "expected CHANGED")
 			return Nothing
@@ -491,8 +533,8 @@ relayFromPeer :: Net RelayData
 relayFromPeer = do
 	r <- receiveMessage
 	case r of
-		CONNECTDONE exitcode -> return $ RelayDone exitcode
-		DATA len -> RelayFromPeer <$> receiveBytes len nullMeterUpdate
+		Just (CONNECTDONE exitcode) -> return $ RelayDone exitcode
+		Just (DATA len) -> RelayFromPeer <$> receiveBytes len nullMeterUpdate
 		_ -> do
 			sendMessage $ ERROR "expected DATA or CONNECTDONE"
 			return $ RelayDone $ ExitFailure 1

@@ -35,6 +35,7 @@ start theiruuid = do
 	let server = do
 		P2P.net $ P2P.sendMessage (P2P.AUTH_SUCCESS myuuid)
 		P2P.serveAuthed servermode myuuid
-	runFullProto (Serving theiruuid Nothing) conn server >>= \case
+	runst <- liftIO $ mkRunState $ Serving theiruuid Nothing
+	runFullProto runst conn server >>= \case
 		Right () -> next $ next $ return True
 		Left e -> giveup e

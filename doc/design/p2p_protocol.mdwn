@@ -6,9 +6,23 @@ serializations are also possible. The line-based serialization is spoken
 by [[git-annex-shell], and by git-annex over tor.
 
 One peer is known as the client, and is the peer that initiates the
-connection. The other peer is known as the server, and is the peer that the
-client connects to. It's possible for two connections to be run at the same
-time between the same two peers, in different directions.
+connection and sends commands. The other peer is known as the server, and
+is the peer that the client connects to. It's possible for two connections
+to be run at the same time between the same two peers, in different
+directions.
+
+## Errors
+
+Either the client or the server may send an error message at any
+time. 
+
+When the client sends an ERROR, the server will close the connection.
+
+If the server sends an ERROR in response to the client's
+request, the connection will remain open, and the client can make
+another request.
+
+	ERROR this repository is read-only; write access denied
 
 ## Authentication
 
@@ -16,7 +30,7 @@ The protocol genernally starts with authentication. However, if
 authentication already occurs on another layer, as is the case with
 git-annex-shell, authentication will be skipped.
 
-The client starts by sending an authentication to the server,
+The client starts by sending an authentication command to the server,
 along with its UUID. The AuthToken is some arbitrary token that has been
 agreed upon beforehand.
 
@@ -33,18 +47,29 @@ Note that authentication does not guarantee that the client is talking to
 who they expect to be talking to. This, and encryption of the connection,
 are handled at a lower level.
 
-## Errors
+## Protocol version
 
-Either the client or the server may send an error message at any
-time. 
+The default protocol version is 0. The client can choose to
+negotiate a new version with the server. This must come after
+any authentication.
 
-When the client sends an ERROR, the server will close the connection.
+The client sends the highest protocol version it supports:
 
-If the server sends an ERROR in response to the client's
-request, the connection will remain open, and the client can make
-another request.
+	VERSION 2
 
-	ERROR this repository is read-only; write access denied
+The server responds with the highest protocol version it supports
+that is less than or equal to the version the client sent:
+
+	VERSION 1
+
+Now both client and server should use version 1.
+
+(Note that old versions of git-annex, which speak the P2P protocol
+over tor, don't support this, and attempting to negotiate a version
+will cause the server to hang up the connection. To deal with this
+historical bug, the version is not currently negotiated when using the
+protocol over tor. At some point in the future, when all peers can be
+assumed to be upgraded, this will be changed.)
 
 ## Binary data
 
@@ -54,10 +79,20 @@ on its own line, followed by a newline and the binary data.
 The Len value tells how many bytes of data to read.
 
 	DATA 3
-	foo
+	foo1
 
 Note that there is no newline after the binary data; the next protocol
 message will come immediately after it.
+
+In protocol version 1 and higher, the binary data is suffixed with one 
+additional byte. Normally that is "1". "0" is used to indicate when the
+file being transferred changed content while it was being sent
+(eg, it was unlocked and got edited). In protocol version 0, this
+additional byte is not sent.
+
+If the sender finds itself unable to send as many bytes of data as it
+promised (perhaps because a file got truncated while it was being sent),
+its only option is to close the protocol connection.
 
 ## Checking if content is present
 

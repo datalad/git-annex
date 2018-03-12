@@ -127,7 +127,8 @@ serveClient th u r q = bracket setup cleanup start
 	
 	authed conn theiruuid = 
 		bracket watchChangedRefs (liftIO . maybe noop stopWatchingChangedRefs) $ \crh -> do
-			v' <- runFullProto (Serving theiruuid crh) conn $
+			runst <- liftIO $ mkRunState (Serving theiruuid crh)
+			v' <- runFullProto runst conn $
 				P2P.serveAuthed P2P.ServeReadWrite u
 			case v' of
 				Right () -> return ()
@@ -146,8 +147,7 @@ transport (RemoteRepo r gc) url@(RemoteURI uri) th ichan ochan =
 		myuuid <- liftAnnex th getUUID
 		authtoken <- fromMaybe nullAuthToken
 			<$> liftAnnex th (loadP2PRemoteAuthToken addr)
-		res <- runNetProto conn $
-			P2P.auth myuuid authtoken
+		res <- runNetProto conn $ P2P.auth myuuid authtoken noop
 		case res of
 			Right (Just theiruuid) -> do
 				expecteduuid <- liftAnnex th $ getRepoUUID r

@@ -186,11 +186,12 @@ contentLockedMarker :: String
 contentLockedMarker = "OK"
 
 -- A connection over ssh to git-annex shell speaking the P2P protocol.
-type P2PSshConnection = P2P.ClosableConnection (P2P.P2PConnection, ProcessHandle)
+type P2PSshConnection = P2P.ClosableConnection
+	(P2P.RunState, P2P.P2PConnection, ProcessHandle)
 
 closeP2PSshConnection :: P2PSshConnection -> IO P2PSshConnection
 closeP2PSshConnection P2P.ClosedConnection = return P2P.ClosedConnection
-closeP2PSshConnection (P2P.OpenConnection (conn, pid)) = do
+closeP2PSshConnection (P2P.OpenConnection (_st, conn, pid)) = do
 	P2P.closeConnection conn
 	void $ waitForProcess pid
 	return P2P.ClosedConnection
@@ -244,30 +245,34 @@ openP2PSshConnection r connpool = do
 			return Nothing
 		Just (cmd, params) -> start cmd params
   where
-	start cmd params = liftIO $ withNullHandle $ \nullh -> do
+	start cmd params = do
 		-- stderr is discarded because old versions of git-annex
 		-- shell always error
-		(Just from, Just to, Nothing, pid) <- createProcess $
-			(proc cmd (toCommand params))
-				{ std_in = CreatePipe
-				, std_out = CreatePipe
-				, std_err = UseHandle nullh
-				}
+		(Just from, Just to, Nothing, pid) <- liftIO $ 
+			withNullHandle $ \nullh -> createProcess $
+				(proc cmd (toCommand params))
+					{ std_in = CreatePipe
+					, std_out = CreatePipe
+					, std_err = UseHandle nullh
+					}
 		let conn = P2P.P2PConnection
 			{ P2P.connRepo = repo r
 			, P2P.connCheckAuth = const False
 			, P2P.connIhdl = to
 			, P2P.connOhdl = from
 			}
-		let c = P2P.OpenConnection (conn, pid)
+		runst <- liftIO $ P2P.mkRunState P2P.Client
+		let c = P2P.OpenConnection (runst, conn, pid)
 		-- When the connection is successful, the remote
 		-- will send an AUTH_SUCCESS with its uuid.
-		tryNonAsync (P2P.runNetProto conn $ P2P.postAuth) >>= \case
+		let proto = P2P.postAuth $
+			P2P.negotiateProtocolVersion P2P.maxProtocolVersion
+		tryNonAsync (P2P.runFullProto runst conn proto) >>= \case
 			Right (Right (Just theiruuid)) | theiruuid == uuid r ->
 				return $ Just c
 			_ -> do
-				void $ closeP2PSshConnection c
-				rememberunsupported
+				void $ liftIO $ closeP2PSshConnection c
+				liftIO rememberunsupported
 				return Nothing
 	rememberunsupported = atomically $
 		modifyTVar' connpool $
@@ -292,8 +297,8 @@ runProto r connpool fallback proto = Just <$>
 
 runProtoConn :: P2P.Proto a -> P2PSshConnection -> Annex (P2PSshConnection, Maybe a)
 runProtoConn _ P2P.ClosedConnection = return (P2P.ClosedConnection, Nothing)
-runProtoConn a conn@(P2P.OpenConnection (c, _pid)) =
-	P2P.runFullProto P2P.Client c a >>= \case
+runProtoConn a conn@(P2P.OpenConnection (runst, c, _pid)) = do
+	P2P.runFullProto runst c a >>= \case
 		Right r -> return (conn, Just r)
 		-- When runFullProto fails, the connection is no longer
 		-- usable, so close it.
@@ -302,8 +307,8 @@ runProtoConn a conn@(P2P.OpenConnection (c, _pid)) =
 			conn' <- liftIO $ closeP2PSshConnection conn
 			return (conn', Nothing)
 
--- Allocates a P2P ssh connection, and runs the action with it,
--- returning the connection to the pool.
+-- Allocates a P2P ssh connection from the pool, and runs the action with it,
+-- returning the connection to the pool once the action is done.
 --
 -- If the remote does not support the P2P protocol, runs the fallback
 -- action instead.
