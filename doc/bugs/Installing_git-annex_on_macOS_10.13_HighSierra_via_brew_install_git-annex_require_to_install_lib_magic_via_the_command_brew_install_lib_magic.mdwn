@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-Installing via brew install git-annex issues an error:
+Installing git annex on MacOS 10.13 HighSierra  via brew install git-annex issues an error:
 ...
 Trap 6
 
