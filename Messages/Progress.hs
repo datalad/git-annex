@@ -39,7 +39,7 @@ metered othermeter key getsrcfile a = withMessageState $ \st ->
 		showOutput
 		meter <- liftIO $ mkMeter msize $ 
 			displayMeterHandle stdout bandwidthMeter
-		m <- liftIO $ rateLimitMeterUpdate 0.1 meter $
+		m <- liftIO $ rateLimitMeterUpdate 0.2 meter $
 			updateMeter meter
 		r <- a meter (combinemeter m)
 		liftIO $ clearMeterHandle meter stdout
@@ -50,7 +50,7 @@ metered othermeter key getsrcfile a = withMessageState $ \st ->
 			meter <- liftIO $ mkMeter msize $ \_ msize' old new ->
 				let s = bandwidthMeter msize' old new
 				in Regions.setConsoleRegion r ('\n' : s)
-			m <- liftIO $ rateLimitMeterUpdate 0.1 meter $
+			m <- liftIO $ rateLimitMeterUpdate 0.2 meter $
 				updateMeter meter
 			a meter (combinemeter m)
 #else
