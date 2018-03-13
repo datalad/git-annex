@@ -117,6 +117,9 @@ runLocal runst runner a = case a of
 				Left e -> return (Left (show e))
 				Right changedrefs -> runner (next changedrefs)
 		_ -> return $ Left "change notification not available"
+	UpdateMeterTotalSize m sz next -> do
+		liftIO $ setMeterTotalSize m sz
+		runner next
   where
 	transfer mk k af ta = case runst of
 		-- Update transfer logs when serving.

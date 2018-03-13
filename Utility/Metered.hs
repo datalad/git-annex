@@ -1,6 +1,6 @@
 {- Metered IO and actions
  -
- - Copyright 2012-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2018 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -288,14 +288,14 @@ outputFilter cmd params environ outfilter errfilter = catchBoolIO $ do
 -- | Limit a meter to only update once per unit of time.
 --
 -- It's nice to display the final update to 100%, even if it comes soon
--- after a previous update. To make that happen, a total size has to be
--- provided.
-rateLimitMeterUpdate :: NominalDiffTime -> Maybe Integer -> MeterUpdate -> IO MeterUpdate
-rateLimitMeterUpdate delta totalsize meterupdate = do
+-- after a previous update. To make that happen, the Meter has to know
+-- its total size.
+rateLimitMeterUpdate :: NominalDiffTime -> Meter -> MeterUpdate -> IO MeterUpdate
+rateLimitMeterUpdate delta (Meter totalsizev _ _ _) meterupdate = do
 	lastupdate <- newMVar (toEnum 0 :: POSIXTime)
 	return $ mu lastupdate
   where
-	mu lastupdate n@(BytesProcessed i) = case totalsize of
+	mu lastupdate n@(BytesProcessed i) = tryReadMVar totalsizev >>= \case
 		Just t | i >= t -> meterupdate n
 		_ -> do
 			now <- getPOSIXTime
@@ -306,35 +306,40 @@ rateLimitMeterUpdate delta totalsize meterupdate = do
 					meterupdate n
 				else putMVar lastupdate prev
 
-data Meter = Meter (Maybe Integer) (MVar MeterState) (MVar String) RenderMeter DisplayMeter
+data Meter = Meter (MVar Integer) (MVar MeterState) (MVar String) DisplayMeter
 
 type MeterState = (BytesProcessed, POSIXTime)
 
-type DisplayMeter = MVar String -> String -> IO ()
+type DisplayMeter = MVar String -> Maybe Integer -> (BytesProcessed, POSIXTime) -> (BytesProcessed, POSIXTime) -> IO ()
 
 type RenderMeter = Maybe Integer -> (BytesProcessed, POSIXTime) -> (BytesProcessed, POSIXTime) -> String
 
 -- | Make a meter. Pass the total size, if it's known.
-mkMeter :: Maybe Integer -> RenderMeter -> DisplayMeter -> IO Meter
-mkMeter totalsize rendermeter displaymeter = Meter
-	<$> pure totalsize
+mkMeter :: Maybe Integer -> DisplayMeter -> IO Meter
+mkMeter totalsize displaymeter = Meter
+	<$> maybe newEmptyMVar newMVar totalsize
 	<*> ((\t -> newMVar (zeroBytesProcessed, t)) =<< getPOSIXTime)
 	<*> newMVar ""
-	<*> pure rendermeter
 	<*> pure displaymeter
+
+setMeterTotalSize :: Meter -> Integer -> IO ()
+setMeterTotalSize (Meter totalsizev _ _ _) totalsize = do
+	void $ tryTakeMVar totalsizev
+	putMVar totalsizev totalsize
 
 -- | Updates the meter, displaying it if necessary.
 updateMeter :: Meter -> BytesProcessed -> IO ()
-updateMeter (Meter totalsize sv bv rendermeter displaymeter) new = do
+updateMeter (Meter totalsizev sv bv displaymeter) new = do
 	now <- getPOSIXTime
 	(old, before) <- swapMVar sv (new, now)
-	when (old /= new) $
-		displaymeter bv $ 
-			rendermeter totalsize (old, before) (new, now)
+	when (old /= new) $ do
+		totalsize <- tryReadMVar totalsizev
+		displaymeter bv totalsize (old, before) (new, now)
 
 -- | Display meter to a Handle.
-displayMeterHandle :: Handle -> DisplayMeter
-displayMeterHandle h v s = do
+displayMeterHandle :: Handle -> RenderMeter -> DisplayMeter
+displayMeterHandle h rendermeter v msize old new = do
+	let s = rendermeter msize old new
 	olds <- swapMVar v s
 	-- Avoid writing when the rendered meter has not changed.
 	when (olds /= s) $ do
@@ -344,7 +349,7 @@ displayMeterHandle h v s = do
 
 -- | Clear meter displayed by displayMeterHandle.
 clearMeterHandle :: Meter -> Handle -> IO ()
-clearMeterHandle (Meter _ _ v _ _) h = do
+clearMeterHandle (Meter _ _ v _) h = do
 	olds <- readMVar v
 	hPutStr h $ '\r' : replicate (length olds) ' ' ++ "\r"
 	hFlush h

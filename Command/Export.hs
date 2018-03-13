@@ -220,7 +220,7 @@ performExport r ea db ek af contentsha loc = do
 					let rollback = void $
 						performUnexport r ea db [ek] loc
 					sendAnnex k rollback $ \f ->
-						metered Nothing k (return $ Just f) $ \m -> do
+						metered Nothing k (return $ Just f) $ \_ m -> do
 							let m' = combineMeterUpdate pm m
 							storer f k loc m'
 			, do
@@ -228,7 +228,7 @@ performExport r ea db ek af contentsha loc = do
 				return False
 			)
 		-- Sending a non-annexed file.
-		GitKey sha1k -> metered Nothing sha1k (return Nothing) $ \m ->
+		GitKey sha1k -> metered Nothing sha1k (return Nothing) $ \_ m ->
 			withTmpFile "export" $ \tmp h -> do
 				b <- catObject contentsha
 				liftIO $ L.hPut h b

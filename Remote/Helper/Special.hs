@@ -228,7 +228,7 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 	chunkconfig = chunkConfig cfg
 
 	displayprogress p k srcfile a
-		| displayProgress cfg = metered (Just p) k (return srcfile) a
+		| displayProgress cfg = metered (Just p) k (return srcfile) (const a)
 		| otherwise = a p
 
 {- Sink callback for retrieveChunks. Stores the file content into the

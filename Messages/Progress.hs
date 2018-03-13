@@ -24,46 +24,52 @@ import qualified System.Console.Concurrent as Console
 #endif
 
 {- Shows a progress meter while performing a transfer of a key.
- - The action is passed a callback to use to update the meter.
+ - The action is passed the meter and a callback to use to update the meter.
  -
  - When the key's size is not known, the srcfile is statted to get the size.
  - This allows uploads of keys without size to still have progress
  - displayed.
  --}
-metered :: Maybe MeterUpdate -> Key -> Annex (Maybe FilePath) -> (MeterUpdate -> Annex a) -> Annex a
+metered :: Maybe MeterUpdate -> Key -> Annex (Maybe FilePath) -> (Meter -> MeterUpdate -> Annex a) -> Annex a
 metered othermeter key getsrcfile a = withMessageState $ \st ->
 	flip go st =<< getsz
   where
 	go _ (MessageState { outputType = QuietOutput }) = nometer
 	go msize (MessageState { outputType = NormalOutput, concurrentOutputEnabled = False }) = do
 		showOutput
-		meter <- liftIO $ mkMeter msize bandwidthMeter $ 
-			displayMeterHandle stdout
-		m <- liftIO $ rateLimitMeterUpdate 0.1 msize $
+		meter <- liftIO $ mkMeter msize $ 
+			displayMeterHandle stdout bandwidthMeter
+		m <- liftIO $ rateLimitMeterUpdate 0.1 meter $
 			updateMeter meter
-		r <- a (combinemeter m)
+		r <- a meter (combinemeter m)
 		liftIO $ clearMeterHandle meter stdout
 		return r
 	go msize (MessageState { outputType = NormalOutput, concurrentOutputEnabled = True }) =
 #if WITH_CONCURRENTOUTPUT
 		withProgressRegion $ \r -> do
-			meter <- liftIO $ mkMeter msize bandwidthMeter $ \_ s ->
-				Regions.setConsoleRegion r ('\n' : s)
-			m <- liftIO $ rateLimitMeterUpdate 0.1 msize $
+			meter <- liftIO $ mkMeter msize $ \_ msize' old new ->
+				let s = bandwidthMeter msize' old new
+				in Regions.setConsoleRegion r ('\n' : s)
+			m <- liftIO $ rateLimitMeterUpdate 0.1 meter $
 				updateMeter meter
-			a (combinemeter m)
+			a meter (combinemeter m)
 #else
 		nometer
 #endif
 	go msize (MessageState { outputType = JSONOutput jsonoptions })
 		| jsonProgress jsonoptions = do
 			buf <- withMessageState $ return . jsonBuffer
-			m <- liftIO $ rateLimitMeterUpdate 0.1 msize $
-				JSON.progress buf msize
-			a (combinemeter m)
+			meter <- liftIO $ mkMeter msize $ \_ msize' _old (new, _now) ->
+				JSON.progress buf msize' new
+			m <- liftIO $ rateLimitMeterUpdate 0.1 meter $
+				updateMeter meter
+			a meter (combinemeter m)
 		| otherwise = nometer
 
-	nometer = a $ combinemeter (const noop)
+	nometer = do
+		dummymeter <- liftIO $ mkMeter Nothing $
+			\_ _ _ _ -> return ()
+		a dummymeter (combinemeter (const noop))
 
 	combinemeter m = case othermeter of
 		Nothing -> m
@@ -82,7 +88,7 @@ metered othermeter key getsrcfile a = withMessageState $ \st ->
 meteredFile :: FilePath -> Maybe MeterUpdate -> Key -> Annex a -> Annex a
 meteredFile file combinemeterupdate key a = 
 	withMessageState $ \s -> if needOutputMeter s
-		then metered combinemeterupdate key (return Nothing) $ \p ->
+		then metered combinemeterupdate key (return Nothing) $ \_ p ->
 			watchFileSize file p a
 		else a
   where

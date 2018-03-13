@@ -33,14 +33,14 @@ type WithConn a c = (ClosableConnection c -> Annex (ClosableConnection c, a)) ->
 store :: (MeterUpdate -> ProtoRunner Bool) -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store runner k af p = do
 	let getsrcfile = fmap fst <$> prepSendAnnex k
-	metered (Just p) k getsrcfile $ \p' -> 
+	metered (Just p) k getsrcfile $ \_ p' -> 
 		fromMaybe False
 			<$> runner p' (P2P.put k af p')
 
 retrieve :: (MeterUpdate -> ProtoRunner Bool) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
 retrieve runner k af dest p = unVerified $ 
-	metered (Just p) k (return Nothing) $ \p' -> fromMaybe False 
-		<$> runner p (P2P.get dest k af p')
+	metered (Just p) k (return Nothing) $ \m p' -> fromMaybe False 
+		<$> runner p' (P2P.get dest k af m p')
 
 remove :: ProtoRunner Bool -> Key -> Annex Bool
 remove runner k = fromMaybe False <$> runner (P2P.remove k)

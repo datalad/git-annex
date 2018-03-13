@@ -257,7 +257,10 @@ data LocalF c
 	-- action. If unable to lock the content, or the content is not
 	-- present, runs the protocol action with False.
 	| WaitRefChange (ChangedRefs -> c)
-	-- ^ Waits for one or more git refs to change and returns them.
+	-- ^ Waits for one or more git refs to change and returns them.a
+	| UpdateMeterTotalSize Meter Integer c
+	-- ^ Updates the total size of a Meter, for cases where the size is
+	-- not known until the data is being received.
 	deriving (Functor)
 
 type Local = Free LocalF
@@ -323,8 +326,9 @@ remove key = do
 	net $ sendMessage (REMOVE key)
 	checkSuccess
 
-get :: FilePath -> Key -> AssociatedFile -> MeterUpdate -> Proto Bool
-get dest key af p = receiveContent p sizer storer (\offset -> GET offset af key)
+get :: FilePath -> Key -> AssociatedFile -> Meter -> MeterUpdate -> Proto Bool
+get dest key af m p = 
+	receiveContent (Just m) p sizer storer (\offset -> GET offset af key)
   where
 	sizer = fileSize dest
 	storer = storeContentTo dest
@@ -433,7 +437,7 @@ serveAuthed servermode myuuid = void $ serverLoop handler
 				else do
 					let sizer = tmpContentSize key
 					let storer = storeContent key af
-					ok <- receiveContent nullMeterUpdate sizer storer PUT_FROM
+					ok <- receiveContent Nothing nullMeterUpdate sizer storer PUT_FROM
 					when ok $
 						local $ setPresent key myuuid
 			return ServerContinue
@@ -477,15 +481,18 @@ sendContent key af offset@(Offset n) p = go =<< local (contentSize key)
 		net $ sendBytes len content p'
 		checkSuccess
 
-receiveContent :: MeterUpdate -> Local Len -> (Offset -> Len -> Proto L.ByteString -> Local Bool) -> (Offset -> Message) -> Proto Bool
-receiveContent p sizer storer mkmsg = do
+receiveContent :: Maybe Meter -> MeterUpdate -> Local Len -> (Offset -> Len -> Proto L.ByteString -> Local Bool) -> (Offset -> Message) -> Proto Bool
+receiveContent mm p sizer storer mkmsg = do
 	Len n <- local sizer
 	let p' = offsetMeterUpdate p (toBytesProcessed n)
 	let offset = Offset n
 	net $ sendMessage (mkmsg offset)
 	r <- net receiveMessage
 	case r of
-		Just (DATA len) -> do
+		Just (DATA len@(Len l)) -> do
+			local $ case mm of
+				Nothing -> return ()
+				Just m -> updateMeterTotalSize m (n+l)
 			ok <- local $ storer offset len
 				(net (receiveBytes len p'))
 			sendSuccess ok
