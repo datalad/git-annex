@@ -470,13 +470,13 @@ copyFromRemote' forcersync r (State connpool _) key file dest meterupdate
 						file forwardRetry
 						(\p -> copier object dest (combineMeterUpdate p meterupdate) checksuccess)
 	| Git.repoIsSsh (repo r) = if forcersync
-		then unVerified $ fallback meterupdate
+		then fallback meterupdate
 		else P2PHelper.retrieve
-			(\p -> Ssh.runProto r connpool False (fallback p))
+			(\p -> Ssh.runProto r connpool (False, UnVerified) (fallback p))
 			key file dest meterupdate
 	| otherwise = giveup "copying from non-ssh, non-http remote not supported"
   where
-	fallback p = feedprogressback $ \p' -> do
+	fallback p = unVerified $ feedprogressback $ \p' -> do
 		oh <- mkOutputHandlerQuiet
 		Ssh.rsyncHelper oh (Just (combineMeterUpdate p' p))
 			=<< Ssh.rsyncParamsRemote False r Download key dest file

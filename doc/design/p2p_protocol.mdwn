@@ -138,6 +138,13 @@ the client to start. This allows resuming transfers.
 The client then sends a DATA message with content of the file from
 the offset to the end of file.
 
+In protocol version 1, after the data, the client sends an additional
+message, to indicate if the content of the file has changed while it
+was being sent.
+
+	INVALID
+	VALID
+
 If the server successfully receives the data and stores the content,
 it replies with SUCCESS. Otherwise, FAILURE.
 
@@ -153,6 +160,13 @@ See description of AssociatedFile above.
 
 The server then sends a DATA message with the content of the file
 from the offset to end of file.
+
+In protocol version 1, after the data, the server sends an additional
+message, to indicate if the content of the file has changed while it
+was being sent.
+
+	INVALID
+	VALID
 
 The client replies with SUCCESS or FAILURE.
 

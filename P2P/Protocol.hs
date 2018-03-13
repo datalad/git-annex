@@ -14,8 +14,10 @@
 module P2P.Protocol where
 
 import qualified Utility.SimpleProtocol as Proto
+import Types (Annex)
 import Types.Key
 import Types.UUID
+import Types.Remote (Verification(..), unVerified)
 import Utility.AuthToken
 import Utility.Applicative
 import Utility.PartialPrelude
@@ -48,10 +50,13 @@ defaultProtocolVersion :: ProtocolVersion
 defaultProtocolVersion = ProtocolVersion 0
 
 maxProtocolVersion :: ProtocolVersion
-maxProtocolVersion = ProtocolVersion 0
+maxProtocolVersion = ProtocolVersion 1
 
 -- | Service as used by the connect message in gitremote-helpers(1)
 data Service = UploadPack | ReceivePack
+	deriving (Show)
+
+data Validity = Valid | Invalid
 	deriving (Show)
 
 -- | Messages in the protocol. The peer that makes the connection
@@ -76,6 +81,7 @@ data Message
 	| SUCCESS
 	| FAILURE
 	| DATA Len -- followed by bytes of data
+	| VALIDITY Validity
 	| ERROR String
 	deriving (Show)
 
@@ -98,6 +104,8 @@ instance Proto.Sendable Message where
 	formatMessage ALREADY_HAVE = ["ALREADY-HAVE"]
 	formatMessage SUCCESS = ["SUCCESS"]
 	formatMessage FAILURE = ["FAILURE"]
+	formatMessage (VALIDITY Valid) = ["VALID"]
+	formatMessage (VALIDITY Invalid) = ["INVALID"]
 	formatMessage (DATA len) = ["DATA", Proto.serialize len]
 	formatMessage (ERROR err) = ["ERROR", Proto.serialize err]
 
@@ -122,6 +130,8 @@ instance Proto.Receivable Message where
 	parseCommand "FAILURE" = Proto.parse0 FAILURE
 	parseCommand "DATA" = Proto.parse1 DATA
 	parseCommand "ERROR" = Proto.parse1 ERROR
+	parseCommand "VALID" = Proto.parse0 (VALIDITY Valid)
+	parseCommand "INVALID" = Proto.parse0 (VALIDITY Invalid)
 	parseCommand _ = Proto.parseFail
 
 instance Proto.Serializable ProtocolVersion where
@@ -226,25 +236,26 @@ data LocalF c
 	| ContentSize Key (Maybe Len -> c)
 	-- ^ Gets size of the content of a key, when the full content is
 	-- present.
-	| ReadContent Key AssociatedFile Offset (L.ByteString -> Proto Bool) (Bool -> c)
+	| ReadContent Key AssociatedFile Offset (L.ByteString -> Proto Validity -> Proto Bool) (Bool -> c)
 	-- ^ Reads the content of a key and sends it to the callback.
-	-- Note that the content may change while it's being sent.
 	-- If the content is not available, sends L.empty to the callback.
-	| StoreContent Key AssociatedFile Offset Len (Proto L.ByteString) (Bool -> c)
+	-- Note that the content may change while it's being sent.
+	-- The callback is passed a validity check that it can run after
+	-- sending the content to detect when this happened.
+	| StoreContent Key AssociatedFile Offset Len (Proto L.ByteString) (Proto (Maybe Validity)) (Bool -> c)
 	-- ^ Stores content to the key's temp file starting at an offset.
 	-- Once the whole content of the key has been stored, moves the
 	-- temp file into place as the content of the key, and returns True.
 	--
-	-- Note: The ByteString may not contain the entire remaining content
-	-- of the key. Only once the temp file size == Len has the whole
-	-- content been transferred.
-	| StoreContentTo FilePath Offset Len (Proto L.ByteString) (Bool -> c)
-	-- ^ Stores the content to a temp file starting at an offset.
-	-- Once the whole content of the key has been stored, returns True.
+	-- If the validity check is provided and fails, the content was
+	-- changed while it was being sent, so verificiation of the
+	-- received content should be forced.
 	--
 	-- Note: The ByteString may not contain the entire remaining content
 	-- of the key. Only once the temp file size == Len has the whole
 	-- content been transferred.
+	| StoreContentTo FilePath Offset Len (Proto L.ByteString) (Proto (Maybe Validity)) ((Bool, Verification) -> c)
+	-- ^ Like StoreContent, but stores the content to a temp file.
 	| SetPresent Key UUID c
 	| CheckContentPresent Key (Bool -> c)
 	-- ^ Checks if the whole content of the key is locally present.
@@ -261,6 +272,8 @@ data LocalF c
 	| UpdateMeterTotalSize Meter Integer c
 	-- ^ Updates the total size of a Meter, for cases where the size is
 	-- not known until the data is being received.
+	| RunValidityCheck (Annex Validity) (Validity -> c)
+	-- ^ Runs a deferred validity check.
 	deriving (Functor)
 
 type Local = Free LocalF
@@ -326,7 +339,7 @@ remove key = do
 	net $ sendMessage (REMOVE key)
 	checkSuccess
 
-get :: FilePath -> Key -> AssociatedFile -> Meter -> MeterUpdate -> Proto Bool
+get :: FilePath -> Key -> AssociatedFile -> Meter -> MeterUpdate -> Proto (Bool, Verification)
 get dest key af m p = 
 	receiveContent (Just m) p sizer storer (\offset -> GET offset af key)
   where
@@ -436,8 +449,9 @@ serveAuthed servermode myuuid = void $ serverLoop handler
 				then net $ sendMessage ALREADY_HAVE
 				else do
 					let sizer = tmpContentSize key
-					let storer = storeContent key af
-					ok <- receiveContent Nothing nullMeterUpdate sizer storer PUT_FROM
+					let storer = \o l b v -> unVerified $
+						storeContent key af o l b v
+					(ok, _v) <- receiveContent Nothing nullMeterUpdate sizer storer PUT_FROM
 					when ok $
 						local $ setPresent key myuuid
 			return ServerContinue
@@ -468,20 +482,29 @@ serveAuthed servermode myuuid = void $ serverLoop handler
 sendContent :: Key -> AssociatedFile -> Offset -> MeterUpdate -> Proto Bool
 sendContent key af offset@(Offset n) p = go =<< local (contentSize key)
   where
- 	go Nothing = sender (Len 0) L.empty
+ 	go Nothing = sender (Len 0) L.empty (return Valid)
 	go (Just (Len totallen)) = do
 		let len = totallen - n
 		if len <= 0
-			then sender (Len 0) L.empty
+			then sender (Len 0) L.empty (return Valid)
 			else local $ readContent key af offset $
 				sender (Len len)
-	sender len content = do
+	sender len content validitycheck = do
 		let p' = offsetMeterUpdate p (toBytesProcessed n)
 		net $ sendMessage (DATA len)
 		net $ sendBytes len content p'
+		ver <- net getProtocolVersion
+		when (ver >= ProtocolVersion 1) $
+			net . sendMessage . VALIDITY =<< validitycheck
 		checkSuccess
 
-receiveContent :: Maybe Meter -> MeterUpdate -> Local Len -> (Offset -> Len -> Proto L.ByteString -> Local Bool) -> (Offset -> Message) -> Proto Bool
+receiveContent
+	:: Maybe Meter
+	-> MeterUpdate
+	-> Local Len
+	-> (Offset -> Len -> Proto L.ByteString -> Proto (Maybe Validity) -> Local (Bool, Verification))
+	-> (Offset -> Message)
+	-> Proto (Bool, Verification)
 receiveContent mm p sizer storer mkmsg = do
 	Len n <- local sizer
 	let p' = offsetMeterUpdate p (toBytesProcessed n)
@@ -493,13 +516,22 @@ receiveContent mm p sizer storer mkmsg = do
 			local $ case mm of
 				Nothing -> return ()
 				Just m -> updateMeterTotalSize m (n+l)
-			ok <- local $ storer offset len
+			ver <- net getProtocolVersion
+			let validitycheck = if ver >= ProtocolVersion 1
+				then net receiveMessage >>= \case
+					Just (VALIDITY v) -> return (Just v)
+					_ -> do
+						net $ sendMessage (ERROR "expected VALID or INVALID")
+						return Nothing
+				else return Nothing
+			(ok, v) <- local $ storer offset len
 				(net (receiveBytes len p'))
+				validitycheck
 			sendSuccess ok
-			return ok
+			return (ok, v)
 		_ -> do
 			net $ sendMessage (ERROR "expected DATA")
-			return False
+			return (False, UnVerified)
 
 checkSuccess :: Proto Bool
 checkSuccess = do

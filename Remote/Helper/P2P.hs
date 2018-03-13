@@ -37,10 +37,11 @@ store runner k af p = do
 		fromMaybe False
 			<$> runner p' (P2P.put k af p')
 
-retrieve :: (MeterUpdate -> ProtoRunner Bool) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
-retrieve runner k af dest p = unVerified $ 
-	metered (Just p) k (return Nothing) $ \m p' -> fromMaybe False 
-		<$> runner p' (P2P.get dest k af m p')
+retrieve :: (MeterUpdate -> ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
+retrieve runner k af dest p =
+	metered (Just p) k (return Nothing) $ \m p' -> 
+		fromMaybe (False, UnVerified)
+			<$> runner p' (P2P.get dest k af m p')
 
 remove :: ProtoRunner Bool -> Key -> Annex Bool
 remove runner k = fromMaybe False <$> runner (P2P.remove k)

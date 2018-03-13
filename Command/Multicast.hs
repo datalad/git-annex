@@ -213,7 +213,7 @@ storeReceived f = do
 			warning $ "Received a file " ++ f ++ " that is not a git-annex key. Deleting this file."
 			liftIO $ nukeFile f
 		Just k -> void $
-			getViaTmp' AlwaysVerify k $ \dest -> unVerified $
+			getViaTmpFromDisk AlwaysVerify k $ \dest -> unVerified $
 				liftIO $ catchBoolIO $ do
 					rename f dest
 					return True

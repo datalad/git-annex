@@ -51,14 +51,10 @@ runLocal runst runner a = case a of
 	ReadContent k af o sender next -> do
 		v <- tryNonAsync $ prepSendAnnex k
 		case v of
-			-- The check can detect if the file
-			-- changed while it was transferred, but we don't
-			-- use it. Instead, the receiving peer must
-			-- AlwaysVerify the content it receives.
-			Right (Just (f, _check)) -> do
+			Right (Just (f, checkchanged)) -> do
 				v' <- tryNonAsync $
 					transfer upload k af $
-						sinkfile f o sender
+						sinkfile f o checkchanged sender
 				case v' of
 					Left e -> return (Left (show e))
 					Right (Left e) -> return (Left (show e))
@@ -66,16 +62,16 @@ runLocal runst runner a = case a of
 			-- content not available
  			Right Nothing -> runner (next False)
 			Left e -> return (Left (show e))
-	StoreContent k af o l getb next -> do
+	StoreContent k af o l getb validitycheck next -> do
 		ok <- flip catchNonAsync (const $ return False) $
 			transfer download k af $ \p ->
-				getViaTmp AlwaysVerify k $ \tmp ->
-					unVerified $ storefile tmp o l getb p
+				getViaTmp DefaultVerify k $ \tmp -> do
+					storefile tmp o l getb validitycheck p
 		runner (next ok)
-	StoreContentTo dest o l getb next -> do
-		ok <- flip catchNonAsync (const $ return False) $
-			storefile dest o l getb nullMeterUpdate
-		runner (next ok)
+	StoreContentTo dest o l getb validitycheck next -> do
+		res <- flip catchNonAsync (const $ return (False, UnVerified)) $
+			storefile dest o l getb validitycheck nullMeterUpdate
+		runner (next res)
 	SetPresent k u next -> do
 		v <- tryNonAsync $ logChange k u InfoPresent
 		case v of
@@ -120,6 +116,7 @@ runLocal runst runner a = case a of
 	UpdateMeterTotalSize m sz next -> do
 		liftIO $ setMeterTotalSize m sz
 		runner next
+	RunValidityCheck check next -> runner . next =<< check
   where
 	transfer mk k af ta = case runst of
 		-- Update transfer logs when serving.
@@ -129,20 +126,31 @@ runLocal runst runner a = case a of
 		-- a client.
 		Client _ -> ta nullMeterUpdate
 	
-	storefile dest (Offset o) (Len l) getb p = do
+	storefile dest (Offset o) (Len l) getb validitycheck p = do
 		let p' = offsetMeterUpdate p (toBytesProcessed o)
 		v <- runner getb
 		case v of
-			Right b -> liftIO $ do
-				withBinaryFile dest ReadWriteMode $ \h -> do
+			Right b -> do
+				liftIO $ withBinaryFile dest ReadWriteMode $ \h -> do
 					when (o /= 0) $
 						hSeek h AbsoluteSeek o
 					meteredWrite p' h b
-				sz <- getFileSize dest
-				return (toInteger sz == l + o)
+				rightsize <- do
+					sz <- liftIO $ getFileSize dest
+					return (toInteger sz == l + o)
+					
+				runner validitycheck >>= \case
+					Right (Just Valid) ->
+						return (rightsize, UnVerified)
+					_ -> do
+						-- Invalid, or old protocol
+						-- version. Validity is not
+						-- known. Force content
+						-- verification.
+						return (rightsize, MustVerify)
 			Left e -> error e
 	
-	sinkfile f (Offset o) sender p = bracket setup cleanup go
+	sinkfile f (Offset o) checkchanged sender p = bracket setup cleanup go
 	  where
 		setup = liftIO $ openBinaryFile f ReadMode
 		cleanup = liftIO . hClose
@@ -151,4 +159,8 @@ runLocal runst runner a = case a of
 			when (o /= 0) $
 				liftIO $ hSeek h AbsoluteSeek o
 			b <- liftIO $ hGetContentsMetered h p'
-			runner (sender b)
+			let validitycheck = local $ runValidityCheck $ 
+				checkchanged >>= return . \case
+					False -> Invalid
+					True -> Valid
+			runner (sender b validitycheck)

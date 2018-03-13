@@ -149,9 +149,15 @@ instance Ord (RemoteA a) where
 instance ToUUID (RemoteA a) where
 	toUUID = uuid
 
--- Use Verified when the content of a key is verified as part of a
--- transfer, and so a separate verification step is not needed.
-data Verification = UnVerified | Verified
+data Verification
+	= UnVerified 
+	-- ^ content was not verified during transfer, but is probably
+	-- ok, so if verification is disabled, don't verify it
+	| Verified
+	-- ^ content of key was verified during transfer
+	| MustVerify
+	-- ^ content likely to have been altered during transfer,
+	-- verify even if verification is normally disabled
 
 unVerified :: Monad m => m Bool -> m (Bool, Verification)
 unVerified a = do

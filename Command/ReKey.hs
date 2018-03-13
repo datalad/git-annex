@@ -79,11 +79,11 @@ perform file oldkey newkey = do
 linkKey :: FilePath -> Key -> Key -> Annex Bool
 linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
  	{- If the object file is already hardlinked to elsewhere, a hard
-	 - link won't be made by getViaTmp', but a copy instead.
+	 - link won't be made by getViaTmpFromDisk, but a copy instead.
 	 - This avoids hard linking to content linked to an
 	 - unlocked file, which would leave the new key unlocked
 	 - and vulnerable to corruption. -}
-	( getViaTmp' DefaultVerify newkey $ \tmp -> unVerified $ do
+	( getViaTmpFromDisk DefaultVerify newkey $ \tmp -> unVerified $ do
 		oldobj <- calcRepo (gitAnnexLocation oldkey)
 		linkOrCopy' (return True) newkey oldobj tmp Nothing
 	, do

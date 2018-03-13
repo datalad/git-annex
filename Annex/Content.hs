@@ -16,7 +16,7 @@ module Annex.Content (
 	lockContentForRemoval,
 	ContentRemovalLock,
 	getViaTmp,
-	getViaTmp',
+	getViaTmpFromDisk,
 	checkDiskSpaceToGet,
 	prepTmp,
 	withTmp,
@@ -295,13 +295,13 @@ lockContentUsing locker key a = do
  - the key and moves the file into the annex as a key's content. -}
 getViaTmp :: VerifyConfig -> Key -> (FilePath -> Annex (Bool, Verification)) -> Annex Bool
 getViaTmp v key action = checkDiskSpaceToGet key False $
-	getViaTmp' v key action
+	getViaTmpFromDisk v key action
 
 {- Like getViaTmp, but does not check that there is enough disk space
  - for the incoming key. For use when the key content is already on disk
  - and not being copied into place. -}
-getViaTmp' :: VerifyConfig -> Key -> (FilePath -> Annex (Bool, Verification)) -> Annex Bool
-getViaTmp' v key action = do
+getViaTmpFromDisk :: VerifyConfig -> Key -> (FilePath -> Annex (Bool, Verification)) -> Annex Bool
+getViaTmpFromDisk v key action = do
 	tmpfile <- prepTmp key
 	(ok, verification) <- action tmpfile
 	if ok
@@ -331,12 +331,15 @@ getViaTmp' v key action = do
  - it is checked. 
  -}
 verifyKeyContent :: VerifyConfig -> Verification -> Key -> FilePath -> Annex Bool
-verifyKeyContent _ Verified _ _ = return True
-verifyKeyContent v UnVerified k f = ifM (shouldVerify v)
-	( verifysize <&&> verifycontent
-	, return True
-	)
+verifyKeyContent v verification k f = case verification of
+	Verified -> return True
+	UnVerified -> ifM (shouldVerify v)
+		( verify
+		, return True
+		)
+	MustVerify -> verify
   where
+	verify = verifysize <&&> verifycontent
 	verifysize = case keySize k of
 		Nothing -> return True
 		Just size -> do

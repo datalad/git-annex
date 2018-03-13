@@ -3,19 +3,15 @@ git-annex-shell recvkey has a speed optimisation, when it's told the file
 being sent is locked, it can avoid an expensive verification, when
 annex.verify=false. (Similar for transfers in the other direction.)
 
-The P2P protocol does not have a way to communicate when that happens,
-and forces AlwaysVerify.
+The P2P protocol does not have a way to communicate when that happens.
+File content can be modified while it's sent, and if annex.verify=false
+is allowed to take effect, bad data will get into the repository.
 
-It would be nice to support that, but if it added an extra round trip
+It would be nice to support annex.verify=false when it's safe but not
+when the file got modified, but if it added an extra round trip
 to the P2P protocol, that could lose some of the speed gains.
-The best way seems to be to add a new protocol version, where DATA
-has an extra byte at the end that is "1" when the file didn't change
-as it was transferred, and "0" when it did.
 
-My first attempt to implement this failed miserably due to a Free monad
-type check problem I could not see a way around.
-
-Also, resumes make this difficult. What if a file starts to be transferred,
+Resumes make this difficult. What if a file starts to be transferred,
 gets changed while it's transferred so some bad bytes are sent, then the
 transfer is interrupted, and later is resumed from a different remote
 that has the correct content. How can it tell that the bad data was sent
@@ -33,9 +29,10 @@ repository was unlocked, and the second is locked, it's safe for recvkey to
 treat it locked and skip verification.
 
 Seems the best we could do with the P2P protocol, barring adding
-rsync-style rolling hashing to it, is to allow skipping verification
-when the sender is locked..  But not when resuming, since we don't know
-where that resumed data comes from.
+rsync-style rolling hashing to it, is to detect when a file got modified
+as it was being sent, and inform the peer that the data it got is bad.
+It can then throw it away rather than putting the bad data into the
+repository.
 
 This is not really unique to the P2P protocol -- special remotes
 can be written to support resuming. The web special remote does; there may
@@ -48,9 +45,7 @@ the repository.
 So, let's solve this broadly. Whenever a download is resumed, force
 AlwaysVerify, unless the remote returns Verified. This can be done in
 Annex.Content.getViaTmp, so it will affect all downloads involving the tmp
-key for a file. (The P2P protocol still needs to prevent skipping
-verification when a download is not being resumed, if the sender is
-locked.)
+key for a file.
 
 This would change handling of resumes of downloads using rsync too.
 But those are always safe to skip verification of, although they don't
