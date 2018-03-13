@@ -1,0 +1,19 @@
+With fresh eyes I stopped being confused by P2P protocol free monad stuff,
+and got annex.verify=false supported when it's safe to skip verification.
+
+And, I found some cases where resuming a download with annex.verify=false
+could let corrupt data into the repository. This is not a new problem; as
+well as with the P2P protocol, it could happen when downloading from the
+web, and possibly with some external special remotes that support resuming.
+So, it seemed best to override annex.verify configuration when
+resuming a download.
+
+Also fixed up some progress bar stuff related to the P2P protocol. 
+Including dealing with the case where the size of a key being downloaded is
+not known until the peer starts sending its data. The progress bar will
+now be updated with the size from the P2P protocol, so it can display
+a percentage even in this case.
+
+I hope that's the end of the P2P protocol stuff for now.
+
+Today's work was supported by the NSF-funded DataLad project.
