@@ -1226,6 +1226,10 @@ Here are all the supported configuration settings.
   from remotes. If you trust a remote and don't want the overhead
   of these checksums, you can set this to `false`.
 
+  Note that even when this is set to `false`, git-annex does verification
+  in some edge cases, where it's likely the case than an
+  object was downloaded incorrectly.
+
 * `remote.<name>.annex-export-tracking`
 
   When set to a branch name or other treeish, this makes what's exported

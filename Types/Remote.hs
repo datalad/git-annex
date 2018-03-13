@@ -151,12 +151,13 @@ instance ToUUID (RemoteA a) where
 
 data Verification
 	= UnVerified 
-	-- ^ content was not verified during transfer, but is probably
+	-- ^ Content was not verified during transfer, but is probably
 	-- ok, so if verification is disabled, don't verify it
 	| Verified
-	-- ^ content of key was verified during transfer
+	-- ^ Content was verified during transfer, so don't verify it
+	-- again.
 	| MustVerify
-	-- ^ content likely to have been altered during transfer,
+	-- ^ Content likely to have been altered during transfer,
 	-- verify even if verification is normally disabled
 
 unVerified :: Monad m => m Bool -> m (Bool, Verification)

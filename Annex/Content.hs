@@ -303,9 +303,19 @@ getViaTmp v key action = checkDiskSpaceToGet key False $
 getViaTmpFromDisk :: VerifyConfig -> Key -> (FilePath -> Annex (Bool, Verification)) -> Annex Bool
 getViaTmpFromDisk v key action = do
 	tmpfile <- prepTmp key
+	resuming <- liftIO $ doesFileExist tmpfile
 	(ok, verification) <- action tmpfile
+	-- When the temp file already had content, we don't know if
+	-- that content is good or not, so only trust if it the action
+	-- Verified it in passing. Otherwise, force verification even
+	-- if the VerifyConfig normally disables it.
+	let verification' = if resuming
+		then case verification of
+			Verified -> Verified
+			_ -> MustVerify
+		else verification
 	if ok
-		then ifM (verifyKeyContent v verification key tmpfile)
+		then ifM (verifyKeyContent v verification' key tmpfile)
 			( ifM (pruneTmpWorkDirBefore tmpfile (moveAnnex key))
 				( do
 					logStatus key InfoPresent

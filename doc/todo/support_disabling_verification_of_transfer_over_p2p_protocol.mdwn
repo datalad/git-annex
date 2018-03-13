@@ -11,28 +11,29 @@ It would be nice to support annex.verify=false when it's safe but not
 when the file got modified, but if it added an extra round trip
 to the P2P protocol, that could lose some of the speed gains.
 
-Resumes make this difficult. What if a file starts to be transferred,
+The way that git-annex-shell recvkey handles this is the client
+communicates to it if it's sending an unlocked file, which forces
+verification. Otherwise, verification can be skipped.
+
+Seems the best we could do with the P2P protocol, barring adding
+rsync-style rolling hashing to it, is to detect when a file got modified
+as it was being sent, and inform the peer that the data it got is invalid.
+It can then force verification.
+
+> [[done]] --[[Joey]]
+
+----
+
+A related problem is resumes. What if a file starts to be transferred,
 gets changed while it's transferred so some bad bytes are sent, then the
 transfer is interrupted, and later is resumed from a different remote
 that has the correct content. How can it tell that the bad data was sent
 in this case?
 
-----
-
-The way that git-annex-shell recvkey handles this is the client
-communicates to it if it's sending an unlocked file, which forces
-verification. Otherwise, verification can be skipped.
-
 In the case where an upload is started from one repository and later
 resumed by another, rsync wipes out any differences, so if the first
 repository was unlocked, and the second is locked, it's safe for recvkey to
 treat it locked and skip verification.
-
-Seems the best we could do with the P2P protocol, barring adding
-rsync-style rolling hashing to it, is to detect when a file got modified
-as it was being sent, and inform the peer that the data it got is bad.
-It can then throw it away rather than putting the bad data into the
-repository.
 
 This is not really unique to the P2P protocol -- special remotes
 can be written to support resuming. The web special remote does; there may
@@ -47,9 +48,14 @@ AlwaysVerify, unless the remote returns Verified. This can be done in
 Annex.Content.getViaTmp, so it will affect all downloads involving the tmp
 key for a file.
 
+> [[done]] --[[Joey]]
+
 This would change handling of resumes of downloads using rsync too.
 But those are always safe to skip verification of, although they don't
 quite do a full verification of the key's hash. To still allow disabling of
 verification of those, could add a third state in between UnVerified and
 Verified, that means it's sure it's gotten exactly the same bytes as are on
 the remote.
+
+> Decided this added too much complexity for such an edge case, so
+> skipped dealing with it. --[[Joey]]
