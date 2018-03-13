@@ -15,6 +15,7 @@ git-annex (6.20180228) UNRELEASED; urgency=medium
     This is done in some edge cases where there's a likelyhood than an
     object was downloaded incorrectly.
   * Support exporttree=yes for rsync special remotes.
+  * Added backends for the BLAKE2 family of hashes.
   * Dial back optimisation when building on arm, which prevents
     ghc and llc from running out of memory when optimising some files.
   * Improve SHA*E extension extraction code to not treat parts of the

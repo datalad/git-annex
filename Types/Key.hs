@@ -31,6 +31,9 @@ data KeyVariety
 	= SHA2Key HashSize HasExt
 	| SHA3Key HashSize HasExt
 	| SKEINKey HashSize HasExt
+	| Blake2bKey HashSize HasExt
+	| Blake2sKey HashSize HasExt
+	| Blake2spKey HashSize HasExt
 	| SHA1Key HasExt
 	| MD5Key HasExt
 	| WORMKey
@@ -52,6 +55,9 @@ hasExt :: KeyVariety -> Bool
 hasExt (SHA2Key _ (HasExt b)) = b
 hasExt (SHA3Key _ (HasExt b)) = b
 hasExt (SKEINKey _ (HasExt b)) = b
+hasExt (Blake2bKey _ (HasExt b)) = b
+hasExt (Blake2sKey _ (HasExt b)) = b
+hasExt (Blake2spKey _ (HasExt b)) = b
 hasExt (SHA1Key (HasExt b)) = b
 hasExt (MD5Key (HasExt b)) = b
 hasExt WORMKey = False
@@ -62,6 +68,9 @@ sameExceptExt :: KeyVariety -> KeyVariety -> Bool
 sameExceptExt (SHA2Key sz1 _) (SHA2Key sz2 _) = sz1 == sz2
 sameExceptExt (SHA3Key sz1 _) (SHA3Key sz2 _) = sz1 == sz2
 sameExceptExt (SKEINKey sz1 _) (SKEINKey sz2 _) = sz1 == sz2
+sameExceptExt (Blake2bKey sz1 _) (Blake2bKey sz2 _) = sz1 == sz2
+sameExceptExt (Blake2sKey sz1 _) (Blake2sKey sz2 _) = sz1 == sz2
+sameExceptExt (Blake2spKey sz1 _) (Blake2spKey sz2 _) = sz1 == sz2
 sameExceptExt (SHA1Key _) (SHA1Key _) = True
 sameExceptExt (MD5Key _) (MD5Key _) = True
 sameExceptExt _ _ = False
@@ -72,6 +81,9 @@ cryptographicallySecure :: KeyVariety -> Bool
 cryptographicallySecure (SHA2Key _ _) = True
 cryptographicallySecure (SHA3Key _ _) = True
 cryptographicallySecure (SKEINKey _ _) = True
+cryptographicallySecure (Blake2bKey _ _) = True
+cryptographicallySecure (Blake2sKey _ _) = True
+cryptographicallySecure (Blake2spKey _ _) = True
 cryptographicallySecure _ = False
 
 formatKeyVariety :: KeyVariety -> String
@@ -79,6 +91,9 @@ formatKeyVariety v = case v of
 	SHA2Key sz e -> adde e (addsz sz "SHA")
 	SHA3Key sz e -> adde e (addsz sz "SHA3_")
 	SKEINKey sz e -> adde e (addsz sz "SKEIN")
+	Blake2bKey sz e -> adde e (addsz sz "BLAKE2B")
+	Blake2sKey sz e -> adde e (addsz sz "BLAKE2S")
+	Blake2spKey sz e -> adde e (addsz sz "BLAKE2SP")
 	SHA1Key e -> adde e "SHA1"
 	MD5Key e -> adde e "MD5"
 	WORMKey -> "WORM"
@@ -90,30 +105,50 @@ formatKeyVariety v = case v of
 	addsz (HashSize n) s =  s ++ show n
 
 parseKeyVariety :: String -> KeyVariety
-parseKeyVariety "SHA256"    = SHA2Key (HashSize 256) (HasExt False)
-parseKeyVariety "SHA256E"   = SHA2Key (HashSize 256) (HasExt True)
-parseKeyVariety "SHA512"    = SHA2Key (HashSize 512) (HasExt False)
-parseKeyVariety "SHA512E"   = SHA2Key (HashSize 512) (HasExt True)
-parseKeyVariety "SHA224"    = SHA2Key (HashSize 224) (HasExt False)
-parseKeyVariety "SHA224E"   = SHA2Key (HashSize 224) (HasExt True)
-parseKeyVariety "SHA384"    = SHA2Key (HashSize 384) (HasExt False)
-parseKeyVariety "SHA384E"   = SHA2Key (HashSize 384) (HasExt True)
-parseKeyVariety "SHA3_512"  = SHA3Key (HashSize 512) (HasExt False)
-parseKeyVariety "SHA3_512E" = SHA3Key (HashSize 512) (HasExt True)
-parseKeyVariety "SHA3_384"  = SHA3Key (HashSize 384) (HasExt False)
-parseKeyVariety "SHA3_384E" = SHA3Key (HashSize 384) (HasExt True)
-parseKeyVariety "SHA3_256"  = SHA3Key (HashSize 256) (HasExt False)
-parseKeyVariety "SHA3_256E" = SHA3Key (HashSize 256) (HasExt True)
-parseKeyVariety "SHA3_224"  = SHA3Key (HashSize 224) (HasExt False)
-parseKeyVariety "SHA3_224E" = SHA3Key (HashSize 224) (HasExt True)
-parseKeyVariety "SKEIN512"  = SKEINKey (HashSize 512) (HasExt False)
-parseKeyVariety "SKEIN512E" = SKEINKey (HashSize 512) (HasExt True)
-parseKeyVariety "SKEIN256"  = SKEINKey (HashSize 256) (HasExt False)
-parseKeyVariety "SKEIN256E" = SKEINKey (HashSize 256) (HasExt True)
-parseKeyVariety "SHA1"      = SHA1Key (HasExt False)
-parseKeyVariety "SHA1E"     = SHA1Key (HasExt True)
-parseKeyVariety "MD5"       = MD5Key (HasExt False)
-parseKeyVariety "MD5E"      = MD5Key (HasExt True)
-parseKeyVariety "WORM"      = WORMKey
-parseKeyVariety "URL"       = URLKey
-parseKeyVariety s           = OtherKey s
+parseKeyVariety "SHA256"       = SHA2Key (HashSize 256) (HasExt False)
+parseKeyVariety "SHA256E"      = SHA2Key (HashSize 256) (HasExt True)
+parseKeyVariety "SHA512"       = SHA2Key (HashSize 512) (HasExt False)
+parseKeyVariety "SHA512E"      = SHA2Key (HashSize 512) (HasExt True)
+parseKeyVariety "SHA224"       = SHA2Key (HashSize 224) (HasExt False)
+parseKeyVariety "SHA224E"      = SHA2Key (HashSize 224) (HasExt True)
+parseKeyVariety "SHA384"       = SHA2Key (HashSize 384) (HasExt False)
+parseKeyVariety "SHA384E"      = SHA2Key (HashSize 384) (HasExt True)
+parseKeyVariety "SHA3_512"     = SHA3Key (HashSize 512) (HasExt False)
+parseKeyVariety "SHA3_512E"    = SHA3Key (HashSize 512) (HasExt True)
+parseKeyVariety "SHA3_384"     = SHA3Key (HashSize 384) (HasExt False)
+parseKeyVariety "SHA3_384E"    = SHA3Key (HashSize 384) (HasExt True)
+parseKeyVariety "SHA3_256"     = SHA3Key (HashSize 256) (HasExt False)
+parseKeyVariety "SHA3_256E"    = SHA3Key (HashSize 256) (HasExt True)
+parseKeyVariety "SHA3_224"     = SHA3Key (HashSize 224) (HasExt False)
+parseKeyVariety "SHA3_224E"    = SHA3Key (HashSize 224) (HasExt True)
+parseKeyVariety "SKEIN512"     = SKEINKey (HashSize 512) (HasExt False)
+parseKeyVariety "SKEIN512E"    = SKEINKey (HashSize 512) (HasExt True)
+parseKeyVariety "SKEIN256"     = SKEINKey (HashSize 256) (HasExt False)
+parseKeyVariety "SKEIN256E"    = SKEINKey (HashSize 256) (HasExt True)
+parseKeyVariety "BLAKE2B160"   = Blake2bKey (HashSize 160) (HasExt False)
+parseKeyVariety "BLAKE2B160E"  = Blake2bKey (HashSize 160) (HasExt True)
+parseKeyVariety "BLAKE2B224"   = Blake2bKey (HashSize 224) (HasExt False)
+parseKeyVariety "BLAKE2B224E"  = Blake2bKey (HashSize 224) (HasExt True)
+parseKeyVariety "BLAKE2B256"   = Blake2bKey (HashSize 256) (HasExt False)
+parseKeyVariety "BLAKE2B256E"  = Blake2bKey (HashSize 256) (HasExt True)
+parseKeyVariety "BLAKE2B384"   = Blake2bKey (HashSize 384) (HasExt False)
+parseKeyVariety "BLAKE2B384E"  = Blake2bKey (HashSize 384) (HasExt True)
+parseKeyVariety "BLAKE2B512"   = Blake2bKey (HashSize 512) (HasExt False)
+parseKeyVariety "BLAKE2B512E"  = Blake2bKey (HashSize 512) (HasExt True)
+parseKeyVariety "BLAKE2S160"   = Blake2sKey (HashSize 160) (HasExt False)
+parseKeyVariety "BLAKE2S160E"  = Blake2sKey (HashSize 160) (HasExt True)
+parseKeyVariety "BLAKE2S224"   = Blake2sKey (HashSize 224) (HasExt False)
+parseKeyVariety "BLAKE2S224E"  = Blake2sKey (HashSize 224) (HasExt True)
+parseKeyVariety "BLAKE2S256"   = Blake2sKey (HashSize 256) (HasExt False)
+parseKeyVariety "BLAKE2S256E"  = Blake2sKey (HashSize 256) (HasExt True)
+parseKeyVariety "BLAKE2SP224"  = Blake2spKey (HashSize 224) (HasExt False)
+parseKeyVariety "BLAKE2SP224E" = Blake2spKey (HashSize 224) (HasExt True)
+parseKeyVariety "BLAKE2SP256"  = Blake2spKey (HashSize 256) (HasExt False)
+parseKeyVariety "BLAKE2SP256E" = Blake2spKey (HashSize 256) (HasExt True)
+parseKeyVariety "SHA1"        = SHA1Key (HasExt False)
+parseKeyVariety "SHA1E"       = SHA1Key (HasExt True)
+parseKeyVariety "MD5"         = MD5Key (HasExt False)
+parseKeyVariety "MD5E"        = MD5Key (HasExt True)
+parseKeyVariety "WORM"        = WORMKey
+parseKeyVariety "URL"         = URLKey
+parseKeyVariety s             = OtherKey s

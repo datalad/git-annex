@@ -22,6 +22,18 @@ These are the recommended backends to use.
 * `SKEIN512`, `SKEIN512E`, `SKEIN256`, `SKEIN256E`
   -- [Skein hash](http://en.wikipedia.org/wiki/Skein_hash),
   a well-regarded SHA3 hash competition finalist.
+* `BLAKE2B160`, `BLAKE2B224`, `BLAKE2B256`, `BLAKE2B384`, `BLAKE2B512`
+  `BLAKE2B160E`, `BLAKE2B224E`, `BLAKE2B256E`, `BLAKE2B384E`, `BLAKE2B512E`
+  -- Fast [Blake2 hash](https://blake2.net/) variants optimised for 64 bit
+  platforms.
+* `BLAKE2S160`, `BLAKE2S224`, `BLAKE2S256`
+  `BLAKE2S160E`, `BLAKE2S224E`, `BLAKE2S256E`
+  -- Fast [Blake2 hash](https://blake2.net/) variants optimised for 32 bit
+  platforms.
+* `BLAKE2SP224`, `BLAKE2SP256`
+  `BLAKE2SP224E`, `BLAKE2SP256E`
+  -- Fast [Blake2 hash](https://blake2.net/) variants optimised for 
+  8-way CPUs.
 
 The backends below do not guarantee cryptographically that the
 content of an annexed file remains unchanged.

@@ -360,7 +360,7 @@ Executable git-annex
    stm-chans,
    securemem,
    crypto-api,
-   cryptonite,
+   cryptonite (>= 0.16),
    memory,
    split,
    QuickCheck (>= 2.1),

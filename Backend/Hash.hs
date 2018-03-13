@@ -1,6 +1,6 @@
 {- git-annex hashing backends
  -
- - Copyright 2011-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -28,6 +28,9 @@ data Hash
 	| SHA2Hash HashSize
 	| SHA3Hash HashSize
 	| SkeinHash HashSize
+	| Blake2bHash HashSize
+	| Blake2sHash HashSize
+	| Blake2spHash HashSize
 
 {- Order is slightly significant; want SHA256 first, and more general
  - sizes earlier. -}
@@ -36,6 +39,9 @@ hashes = concat
 	[ map (SHA2Hash . HashSize) [256, 512, 224, 384]
 	, map (SHA3Hash . HashSize) [256, 512, 224, 384]
 	, map (SkeinHash . HashSize) [256, 512]
+	, map (Blake2bHash . HashSize) [256, 512, 160, 224, 384]
+	, map (Blake2sHash . HashSize) [256, 160, 224]
+	, map (Blake2spHash . HashSize) [256, 224]
 	, [SHA1Hash]
 	, [MD5Hash]
 	]
@@ -66,6 +72,9 @@ hashKeyVariety SHA1Hash = SHA1Key
 hashKeyVariety (SHA2Hash size) = SHA2Key size
 hashKeyVariety (SHA3Hash size) = SHA3Key size
 hashKeyVariety (SkeinHash size) = SKEINKey size
+hashKeyVariety (Blake2bHash size) = Blake2bKey size
+hashKeyVariety (Blake2sHash size) = Blake2sKey size
+hashKeyVariety (Blake2spHash size) = Blake2spKey size
 
 {- A key is a hash of its contents. -}
 keyValue :: Hash -> KeySource -> Annex (Maybe Key)
@@ -168,6 +177,9 @@ hashFile hash file filesize = go hash
 	go (SHA2Hash hashsize) = usehasher hashsize
 	go (SHA3Hash hashsize) = use (sha3Hasher hashsize)
 	go (SkeinHash hashsize) = use (skeinHasher hashsize)
+	go (Blake2bHash hashsize) = use (blake2bHasher hashsize)
+	go (Blake2sHash hashsize) = use (blake2sHasher hashsize)
+	go (Blake2spHash hashsize) = use (blake2spHasher hashsize)
 	
 	use hasher = liftIO $ do
 		h <- hasher <$> L.readFile file
@@ -218,6 +230,28 @@ skeinHasher (HashSize hashsize)
 	| hashsize == 256 = show . skein256
 	| hashsize == 512 = show . skein512
 	| otherwise = error $ "unsupported SKEIN size " ++ show hashsize
+
+blake2bHasher :: HashSize -> (L.ByteString -> String)
+blake2bHasher (HashSize hashsize)
+	| hashsize == 256 = show . blake2b_256
+	| hashsize == 512 = show . blake2b_512
+	| hashsize == 160 = show . blake2b_160
+	| hashsize == 224 = show . blake2b_224
+	| hashsize == 384 = show . blake2b_384
+	| otherwise = error $ "unsupported BLAKE2B size " ++ show hashsize
+
+blake2sHasher :: HashSize -> (L.ByteString -> String)
+blake2sHasher (HashSize hashsize)
+	| hashsize == 256 = show . blake2s_256
+	| hashsize == 160 = show . blake2s_160
+	| hashsize == 224 = show . blake2s_224
+	| otherwise = error $ "unsupported BLAKE2S size " ++ show hashsize
+
+blake2spHasher :: HashSize -> (L.ByteString -> String)
+blake2spHasher (HashSize hashsize)
+	| hashsize == 256 = show . blake2sp_256
+	| hashsize == 224 = show . blake2sp_224
+	| otherwise = error $ "unsupported BLAKE2SP size " ++ show hashsize
 
 md5Hasher :: L.ByteString -> String
 md5Hasher = show . md5
