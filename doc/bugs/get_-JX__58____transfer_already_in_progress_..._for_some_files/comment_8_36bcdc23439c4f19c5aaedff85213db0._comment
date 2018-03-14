@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2018-03-14T23:14:46Z"
+ content="""
+This same bug can happen without -J if two git-annex processes are running
+at the same time and both downloading (different) files.
+
+So, the way datalad special remote runs git-annex, for example...
+"""]]
