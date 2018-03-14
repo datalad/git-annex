@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2018-03-14T20:17:31Z"
+ content="""
+tryLockExclusive is returning Nothing when this happens.
+
+Which seems very similar to the problem fixed in
+[[parallel_get_can_fail_some_downloads_and_require_re-getting_]].
+Which really seemed to be fixed back then..
+"""]]
