@@ -355,23 +355,26 @@ clearMeterHandle (Meter _ _ v _) h = do
 	hFlush h
 
 -- | Display meter in the form:
---   10%         300 KiB/s 16m40s
+--   10%  1.3MiB  300 KiB/s 16m40s
 -- or when total size is not known:
---   1.3 MiB     300 KiB/s
+--   1.3 MiB      300 KiB/s
 bandwidthMeter :: RenderMeter
 bandwidthMeter mtotalsize (BytesProcessed old, before) (BytesProcessed new, now) =
 	unwords $ catMaybes
-		[ Just percentoramount
-		-- Pad enough for max width: "xxxx.xx KiB  xxxx KiB/s"
-		, Just $ replicate (23 - length percentoramount - length rate) ' '
+		[ Just percentamount
+		-- Pad enough for max width: "100%  xxxx.xx KiB  xxxx KiB/s"
+		, Just $ replicate (29 - length percentamount - length rate) ' '
 		, Just rate
 		, estimatedcompletion
 		]
   where
-	percentoramount = case mtotalsize of
-		Just totalsize -> showPercentage 0 $
-			percentage totalsize (min new totalsize)
-		Nothing -> roughSize' memoryUnits True 2 new
+	amount = roughSize' memoryUnits True 2 new
+	percentamount = case mtotalsize of
+		Just totalsize ->
+			let p = showPercentage 0 $
+				percentage totalsize (min new totalsize)
+			in p ++ replicate (6 - length p) ' ' ++ amount
+		Nothing -> amount
 	rate = roughSize' memoryUnits True 0 bytespersecond ++ "/s"
 	bytespersecond
 		| duration == 0 = fromIntegral transferred

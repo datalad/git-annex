@@ -36,6 +36,7 @@ git-annex (6.20180228) UNRELEASED; urgency=medium
   * Note that Remote/Git.hs now contains AGPL licensed code,
     thus the license of git-annex as a whole is AGPL. This was already
     the case when git-annex was built with the webapp enabled.
+  * Include amount of data transferred in progress display.
 
  -- Joey Hess <id@joeyh.name>  Wed, 28 Feb 2018 11:53:03 -0400
 
