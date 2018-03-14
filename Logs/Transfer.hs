@@ -47,14 +47,17 @@ percentComplete (Transfer { transferKey = key }) info =
 	percentage <$> keySize key <*> Just (fromMaybe 0 $ bytesComplete info)
 
 {- Generates a callback that can be called as transfer progresses to update
- - the transfer info file. Also returns the file it'll be updating, and a
- - MVar that can be used to read the number of bytesComplete. -}
-mkProgressUpdater :: Transfer -> TransferInfo -> Annex (MeterUpdate, FilePath, MVar Integer)
+ - the transfer info file. Also returns the file it'll be updating, 
+ - an action that sets up the file with appropriate permissions,
+ - which should be run after locking the transfer lock file, but
+ - before using the callback, and a MVar that can be used to read
+ - the number of bytesComplete. -}
+mkProgressUpdater :: Transfer -> TransferInfo -> Annex (MeterUpdate, FilePath, Annex (), MVar Integer)
 mkProgressUpdater t info = do
 	tfile <- fromRepo $ transferFile t
-	_ <- tryNonAsync $ writeTransferInfoFile info tfile
+	let createtfile = void $ tryNonAsync $ writeTransferInfoFile info tfile
 	mvar <- liftIO $ newMVar 0
-	return (liftIO . updater tfile mvar, tfile, mvar)
+	return (liftIO . updater tfile mvar, tfile, createtfile, mvar)
   where
 	updater tfile mvar b = modifyMVar_ mvar $ \oldbytes -> do
 		let newbytes = fromBytesProcessed b

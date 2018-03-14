@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2018-03-14T22:54:24Z"
+ content="""
+Ok, fixed the reversion in a fairly decent way,
+verified with 1000 files and -J10.
+"""]]

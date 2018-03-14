@@ -73,9 +73,9 @@ alwaysRunTransfer = runTransfer' True
 runTransfer' :: Observable v => Bool -> Transfer -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
 runTransfer' ignorelock t afile shouldretry transferaction = checkSecureHashes t $ do
 	info <- liftIO $ startTransferInfo afile
-	(meter, tfile, metervar) <- mkProgressUpdater t info
+	(meter, tfile, createtfile, metervar) <- mkProgressUpdater t info
 	mode <- annexFileMode
-	(lck, inprogress) <- prep tfile mode info
+	(lck, inprogress) <- prep tfile createtfile mode
 	if inprogress && not ignorelock
 		then do
 			showNote "transfer already in progress, or unable to take transfer lock"
@@ -89,30 +89,28 @@ runTransfer' ignorelock t afile shouldretry transferaction = checkSecureHashes t
 			return v
   where
 #ifndef mingw32_HOST_OS
-	prep tfile mode info = catchPermissionDenied (const prepfailed) $ do
+	prep tfile createtfile mode = catchPermissionDenied (const prepfailed) $ do
 		let lck = transferLockFile tfile
 		createAnnexDirectory $ takeDirectory lck
 		tryLockExclusive (Just mode) lck >>= \case
 			Nothing -> return (Nothing, True)
 			Just lockhandle -> ifM (checkSaneLock lck lockhandle)
 				( do
-					void $ tryIO $
-						writeTransferInfoFile info tfile
+					createtfile
 					return (Just lockhandle, False)
 				, do
 					liftIO $ dropLock lockhandle
 					return (Nothing, True)
 				)
 #else
-	prep tfile _mode info = catchPermissionDenied (const prepfailed) $ do
+	prep tfile createtfile _mode = catchPermissionDenied (const prepfailed) $ do
 		let lck = transferLockFile tfile
 		createAnnexDirectory $ takeDirectory lck
 		catchMaybeIO (liftIO $ lockExclusive lck) >>= \case
 			Nothing -> return (Nothing, False)
 			Just Nothing -> return (Nothing, True)
 			Just (Just lockhandle) -> do
-				void $ tryIO $
-					writeTransferInfoFile info tfile
+				createtfile
 				return (Just lockhandle, False)
 #endif
 	prepfailed = return (Nothing, False)
