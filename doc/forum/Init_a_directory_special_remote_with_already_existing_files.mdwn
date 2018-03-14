@@ -1,0 +1,17 @@
+Hi,
+
+I've been a git-annex user for few years now, and I'm progressively migrating old rsync backups into git-annex. Most of the time I create new fresh repos or special remotes and re-upload all data into it. But I'm now facing an issue with this workflow: one of the remote disk I use has a very low connection. Since it has already a complete up-to-date plain copy of all files, I'd like to avoid the "re-upload" phase.
+
+I was thinking of using a directory/rsync special remote, and feed it with the existing local content. But the file names & paths are not the usual plain ones. 
+
+- is this a good idea ?
+
+- if yes, what is the way to retrieve the "special remote" path of each file ? I'm not against scripting a little if necessary.
+
+- if no, what can I do ?
+
+Few additional notes:
+
+- I can't ssh to the remote, this is a windows share with a FAT fs underneath.
+
+- I think I can assume all the remote files are good, they are transfered and checked by rsync.
