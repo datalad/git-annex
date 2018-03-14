@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2018-03-14T20:38:48Z"
+ content="""
+This is not the same as the previous bug; the STM code seems ok.
+It is finding an open exclusive lock handle in the STM lock pool
+for the transfer lock file, and so tryLockExclusive fails.
+
+Instrumented tryLockExclusive, and it's somehow being called twice or more
+on the same transfer lock file despite there being no duplicate keys.
+
+Aha.. sizeOfDownloadsInProgress calls getTransfers,
+which locks the transfer info files in order to check
+which transfers are running. So one of the other worker threads
+is calling that at just the wrong time, and so contending with
+the thread that is starting up the transfer.
+
+Bug was introduced by [[!commit 3cd47f997873ff9d50b35c0f4440763364766d93]].
+
+It's interesting that the transfer info file is being created before
+the transfer lock file. If the lock file were always created first,
+then getTransfers would not see the transfer before its lock file is
+locked, and this bug would be avoided. On the other hand,
+this exact ordering of file creation is why
+3cd47f997873ff9d50b35c0f4440763364766d93 is necessary.
+
+There are a couple of ways the files could be created in the wrong
+order. 3cd47f997873ff9d50b35c0f4440763364766d93 commit message describes
+one, which does not apply to the test case for this bug.
+
+Hmm, mkProgressUpdater was very recently changed to write the transfer
+info file, in 24df95f0f6ab474119aff3bbd942251373754ab2, and that comes
+before the transfer lock is created. That is probably the recent change
+that exposed this mess.
+"""]]
