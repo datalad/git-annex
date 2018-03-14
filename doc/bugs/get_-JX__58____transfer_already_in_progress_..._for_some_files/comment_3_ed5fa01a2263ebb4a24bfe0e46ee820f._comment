@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-03-14T19:43:38Z"
+ content="""
+I was able to reproduce this with two normal git-annex repos
+and `git annex get -J10`. 6.20180227.
+"""]]
