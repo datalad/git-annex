@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Backend.Hash (
 	backends,
 	testKeyBackend,
@@ -28,9 +30,11 @@ data Hash
 	| SHA2Hash HashSize
 	| SHA3Hash HashSize
 	| SkeinHash HashSize
+#if MIN_VERSION_cryptonite(0,23,0)
 	| Blake2bHash HashSize
 	| Blake2sHash HashSize
 	| Blake2spHash HashSize
+#endif
 
 {- Order is slightly significant; want SHA256 first, and more general
  - sizes earlier. -}
@@ -39,9 +43,11 @@ hashes = concat
 	[ map (SHA2Hash . HashSize) [256, 512, 224, 384]
 	, map (SHA3Hash . HashSize) [256, 512, 224, 384]
 	, map (SkeinHash . HashSize) [256, 512]
+#if MIN_VERSION_cryptonite(0,23,0)
 	, map (Blake2bHash . HashSize) [256, 512, 160, 224, 384]
 	, map (Blake2sHash . HashSize) [256, 160, 224]
 	, map (Blake2spHash . HashSize) [256, 224]
+#endif
 	, [SHA1Hash]
 	, [MD5Hash]
 	]
@@ -72,9 +78,11 @@ hashKeyVariety SHA1Hash = SHA1Key
 hashKeyVariety (SHA2Hash size) = SHA2Key size
 hashKeyVariety (SHA3Hash size) = SHA3Key size
 hashKeyVariety (SkeinHash size) = SKEINKey size
+#if MIN_VERSION_cryptonite(0,23,0)
 hashKeyVariety (Blake2bHash size) = Blake2bKey size
 hashKeyVariety (Blake2sHash size) = Blake2sKey size
 hashKeyVariety (Blake2spHash size) = Blake2spKey size
+#endif
 
 {- A key is a hash of its contents. -}
 keyValue :: Hash -> KeySource -> Annex (Maybe Key)
@@ -177,9 +185,11 @@ hashFile hash file filesize = go hash
 	go (SHA2Hash hashsize) = usehasher hashsize
 	go (SHA3Hash hashsize) = use (sha3Hasher hashsize)
 	go (SkeinHash hashsize) = use (skeinHasher hashsize)
+#if MIN_VERSION_cryptonite(0,23,0)
 	go (Blake2bHash hashsize) = use (blake2bHasher hashsize)
 	go (Blake2sHash hashsize) = use (blake2sHasher hashsize)
 	go (Blake2spHash hashsize) = use (blake2spHasher hashsize)
+#endif
 	
 	use hasher = liftIO $ do
 		h <- hasher <$> L.readFile file
@@ -231,6 +241,7 @@ skeinHasher (HashSize hashsize)
 	| hashsize == 512 = show . skein512
 	| otherwise = error $ "unsupported SKEIN size " ++ show hashsize
 
+#if MIN_VERSION_cryptonite(0,23,0)
 blake2bHasher :: HashSize -> (L.ByteString -> String)
 blake2bHasher (HashSize hashsize)
 	| hashsize == 256 = show . blake2b_256
@@ -252,6 +263,7 @@ blake2spHasher (HashSize hashsize)
 	| hashsize == 256 = show . blake2sp_256
 	| hashsize == 224 = show . blake2sp_224
 	| otherwise = error $ "unsupported BLAKE2SP size " ++ show hashsize
+#endif
 
 md5Hasher :: L.ByteString -> String
 md5Hasher = show . md5
