@@ -1,0 +1,12 @@
+In the past 24 hours, I've fixed two extremely hairy problems with 
+`git annex get -J`. One was a locking problem.
+And the other involved thundering herds and ssh connection multiplexing
+and inherited file descriptors and races, and ...
+That took 4 hours of investigation to understand well enough to fix it.
+
+Neither of those involved the ssh P2P changes, other than perhaps they
+exposed one of the issues more than it was exposed before,
+but on the plus side I've been testing that new code
+quite a lot as I worked on them..
+
+Today's work was supported by the NSF-funded DataLad project.
