@@ -41,14 +41,26 @@ code.
 > (Arguably there should be locking to prevent multiple threads doing
 > this, but the actual overhead of multiple threads doing it may be
 > smaller than the overhead of such added locking.)
+> 
+> Converted makeconnection to not use processTranscript,
+> and that does seem to avoid the hang.
 >
 > Why is makeconnection's use of processTranscript hanging?
 > processTranscriot tries to read the process's output (ssh has none),
 > and waiting for the output to get read is for some reason hanging
-> forever, despite the ssh process becoming a zombie.
-> Converted makeconnection to not use processTranscript,
-> and that does seem to avoid the hang.
+> forever, despite the ssh process becoming a zombie. I actually
+> rewrote the part of processtranscript that reads the process's input,
+> to be a much simpler use of async, and that new implementation has the
+> same problem. It's hanging, not throwing an exception. Most puzzling!
+> 
+> Hmm.. Perhaps the write handle is staying open even after ssh exits?
+> processTranscript sets up a pipe for the process to write to, and
+> the ssh process may inherit the FDs for that pipe (other than as stdout and
+> stderr). If the write handle
+> remains open, reading from it would block. Since the ssh mux server is
+> involved, and the handle might be passed to it or something, that seems
+> at least possible as the cause. The windows version of createProcess
+> does not use that pipe, and switching to use it does avoid the hang.
+> Yep! Setting the pipe's FDs to close on exec did avoid the hang.
 >
-> So, this bug is left open only because processTranscript hangs in situations
-> like this. No other uses of it involve concurrency, but we still need to
-> get to the bottom of its hang.. --[[Joey]]
+> [[done]] --[[Joey]]

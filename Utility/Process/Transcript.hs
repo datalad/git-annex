@@ -42,6 +42,8 @@ processTranscript'' cp input = do
 {- This implementation interleves stdout and stderr in exactly the order
  - the process writes them. -}
 	(readf, writef) <- System.Posix.IO.createPipe
+	System.Posix.IO.setFdOption readf System.Posix.IO.CloseOnExec True
+	System.Posix.IO.setFdOption writef System.Posix.IO.CloseOnExec True
 	readh <- System.Posix.IO.fdToHandle readf
 	writeh <- System.Posix.IO.fdToHandle writef
 	p@(_, _, _, pid) <- createProcess $ cp
