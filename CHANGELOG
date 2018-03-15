@@ -33,6 +33,9 @@ git-annex (6.20180228) UNRELEASED; urgency=medium
     the only copy of a file when it thought the tor remote had a copy.
   * Better ssh connection warmup when using -J for concurrency.
     Avoids ugly messages when forced ssh command is not git-annex-shell.
+  * Fix race condition in ssh warmup that caused git-annex to get
+    stuck and never process some while when run with high levels of
+    concurrency.
   * Note that Remote/Git.hs now contains AGPL licensed code,
     thus the license of git-annex as a whole is AGPL. This was already
     the case when git-annex was built with the webapp enabled.

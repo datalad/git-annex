@@ -29,3 +29,26 @@ Interestingly, the debug log shows it only ran git-annex-shell p2pstdio
 6 times, despite the concurrency of 20. So, the other 14 must have stalled
 setting up the connection. Suggests the bug is in the connection pool
 code.
+
+> The hang does not involve the connection pool code itself; a call to
+> Annex.Ssh.sshCommand is hanging. So, this likely affected git-annex
+> before p2pstdio, although its timings of calls to sshCommand may be
+> exposing the problem.
+> 
+> The hang is in prepSocket; all the threads enter makeconnection near the
+> same time, and so all of them try to warm up the ssh connection at the
+> same time. And somehow many of those executions of ssh hang.
+> (Arguably there should be locking to prevent multiple threads doing
+> this, but the actual overhead of multiple threads doing it may be
+> smaller than the overhead of such added locking.)
+>
+> Why is makeconnection's use of processTranscript hanging?
+> processTranscriot tries to read the process's output (ssh has none),
+> and waiting for the output to get read is for some reason hanging
+> forever, despite the ssh process becoming a zombie.
+> Converted makeconnection to not use processTranscript,
+> and that does seem to avoid the hang.
+>
+> So, this bug is left open only because processTranscript hangs in situations
+> like this. No other uses of it involve concurrency, but we still need to
+> get to the bottom of its hang.. --[[Joey]]

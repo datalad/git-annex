@@ -34,7 +34,6 @@ import Annex.Path
 import Utility.Env
 import Utility.FileSystemEncoding
 import Utility.Hash
-import Utility.Process.Transcript
 import Types.CleanupActions
 import Types.Concurrency
 import Git.Env
@@ -219,13 +218,17 @@ prepSocket socketfile gc sshhost sshparams = do
 	-- return True.
 	-- (Except there's an unlikely false positive where a forced
 	-- ssh command exits 255.)
-	tryssh extraps = liftIO $ do
+	tryssh extraps = liftIO $ withNullHandle $ \nullh -> do
 		let p = proc "ssh" $ concat
 			[ extraps
 			, toCommand sshparams
 			, [fromSshHost sshhost, "true"]
 			]
-		(_, exitcode) <- processTranscript'' p Nothing
+		(Nothing, Nothing, Nothing, pid) <- createProcess $ p
+			{ std_out = UseHandle nullh
+			, std_err = UseHandle nullh
+			}
+		exitcode <- waitForProcess pid
 		return $ case exitcode of
 			ExitFailure 255 -> False
 			_ -> True
