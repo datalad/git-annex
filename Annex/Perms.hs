@@ -6,6 +6,7 @@
  -}
 
 module Annex.Perms (
+	FileMode,
 	setAnnexFilePerm,
 	setAnnexDirPerm,
 	annexFileMode,

@@ -15,7 +15,6 @@ import Annex.Version
 import Annex.Link
 import Annex.ReplaceFile
 import Utility.CopyFile
-import Utility.FileMode
 import Git.FilePath
 import qualified Database.Keys
 

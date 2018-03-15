@@ -88,6 +88,7 @@ runTransfer' ignorelock t afile shouldretry transferaction = checkSecureHashes t
 				else recordFailedTransfer t info
 			return v
   where
+	prep :: FilePath -> Annex () -> FileMode -> Annex (Maybe LockHandle, Bool)
 #ifndef mingw32_HOST_OS
 	prep tfile createtfile mode = catchPermissionDenied (const prepfailed) $ do
 		let lck = transferLockFile tfile
