@@ -11,11 +11,11 @@
 module Utility.Process.Transcript where
 
 import Utility.Process
+import Utility.Misc
 
 import System.IO
 import System.Exit
-import Control.Concurrent
-import qualified Control.Exception as E
+import Control.Concurrent.Async
 import Control.Monad
 #ifndef mingw32_HOST_OS
 import qualified System.Posix.IO
@@ -51,9 +51,9 @@ processTranscript'' cp input = do
 		}
 	hClose writeh
 
-	get <- mkreader readh
+	get <- asyncreader readh
 	writeinput input p
-	transcript <- get
+	transcript <- wait get
 #else
 {- This implementation for Windows puts stderr after stdout. -}
 	p@(_, _, _, pid) <- createProcess $ cp
@@ -62,27 +62,15 @@ processTranscript'' cp input = do
 		, std_err = CreatePipe
 		}
 
-	getout <- mkreader (stdoutHandle p)
-	geterr <- mkreader (stderrHandle p)
+	getout <- asyncreader (stdoutHandle p)
+	geterr <- asyncreader (stderrHandle p)
 	writeinput input p
-	transcript <- (++) <$> getout <*> geterr
+	transcript <- (++) <$> wait getout <*> wait geterr
 #endif
 	code <- waitForProcess pid
 	return (transcript, code)
   where
-	mkreader h = do
-		-- Start consuming the output immediately, because the
-		-- process may block on reading input until some
-		-- of its output is consumed.
-		s <- hGetContents h
-		v <- newEmptyMVar
-		void $ forkIO $ do
-			-- Wait for output to be fully consumed.
-			void $ E.evaluate (length s)
-			putMVar v ()
-		return $ do
-			takeMVar v
-			return s
+	asyncreader = async . hGetContentsStrict
 
 	writeinput (Just s) p = do
 		let inh = stdinHandle p
