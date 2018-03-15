@@ -71,9 +71,13 @@ processTranscript'' cp input = do
 	return (transcript, code)
   where
 	mkreader h = do
+		-- Start consuming the output immediately, because the
+		-- process may block on reading input until some
+		-- of its output is consumed.
 		s <- hGetContents h
 		v <- newEmptyMVar
 		void $ forkIO $ do
+			-- Wait for output to be fully consumed.
 			void $ E.evaluate (length s)
 			putMVar v ()
 		return $ do
