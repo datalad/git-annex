@@ -1,0 +1,20 @@
+I have three machines with the same repository in all of the machines.
+  
+  - cat-laptop:~/personal
+  - dog:~/personal
+  - turtle:~/personal
+ 
+All of them are connected to each other in `client mode`, and were
+paired via the `Assistant` as `Local Computers`.
+
+`dog:~/personal` is accessible through the LAN and externally to the
+internet.
+
+Will there be a problem if I add `dog:~/personal` as a `Remote Server`
+through the assistant  with a different hostname and port to
+`cat-laptop:~/personal`? And does git-annex know what remote to use if
+`cat-laptop` is connected to the same LAN as `dog`?
+
+My  worries are file collisions, missing commits, or any lose of
+updates because of one repository treated as multiple remotes in other
+client repositories.
