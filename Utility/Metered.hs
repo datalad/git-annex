@@ -295,7 +295,7 @@ rateLimitMeterUpdate delta (Meter totalsizev _ _ _) meterupdate = do
 	lastupdate <- newMVar (toEnum 0 :: POSIXTime)
 	return $ mu lastupdate
   where
-	mu lastupdate n@(BytesProcessed i) = tryReadMVar totalsizev >>= \case
+	mu lastupdate n@(BytesProcessed i) = readMVar totalsizev >>= \case
 		Just t | i >= t -> meterupdate n
 		_ -> do
 			now <- getPOSIXTime
@@ -306,7 +306,7 @@ rateLimitMeterUpdate delta (Meter totalsizev _ _ _) meterupdate = do
 					meterupdate n
 				else putMVar lastupdate prev
 
-data Meter = Meter (MVar Integer) (MVar MeterState) (MVar String) DisplayMeter
+data Meter = Meter (MVar (Maybe Integer)) (MVar MeterState) (MVar String) DisplayMeter
 
 type MeterState = (BytesProcessed, POSIXTime)
 
@@ -317,15 +317,13 @@ type RenderMeter = Maybe Integer -> (BytesProcessed, POSIXTime) -> (BytesProcess
 -- | Make a meter. Pass the total size, if it's known.
 mkMeter :: Maybe Integer -> DisplayMeter -> IO Meter
 mkMeter totalsize displaymeter = Meter
-	<$> maybe newEmptyMVar newMVar totalsize
+	<$> newMVar totalsize
 	<*> ((\t -> newMVar (zeroBytesProcessed, t)) =<< getPOSIXTime)
 	<*> newMVar ""
 	<*> pure displaymeter
 
 setMeterTotalSize :: Meter -> Integer -> IO ()
-setMeterTotalSize (Meter totalsizev _ _ _) totalsize = do
-	void $ tryTakeMVar totalsizev
-	putMVar totalsizev totalsize
+setMeterTotalSize (Meter totalsizev _ _ _) = void . swapMVar totalsizev . Just
 
 -- | Updates the meter, displaying it if necessary.
 updateMeter :: Meter -> BytesProcessed -> IO ()
@@ -333,7 +331,7 @@ updateMeter (Meter totalsizev sv bv displaymeter) new = do
 	now <- getPOSIXTime
 	(old, before) <- swapMVar sv (new, now)
 	when (old /= new) $ do
-		totalsize <- tryReadMVar totalsizev
+		totalsize <- readMVar totalsizev
 		displaymeter bv totalsize (old, before) (new, now)
 
 -- | Display meter to a Handle.
