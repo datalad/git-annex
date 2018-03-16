@@ -1,49 +1,52 @@
-git-annex (6.20180228) UNRELEASED; urgency=medium
+git-annex (6.20180316) upstream; urgency=medium
 
   * New protocol for communicating with git-annex-shell increases speed
     of operations involving ssh remotes. When not transferring large files,
     git-annex is between 200% and 400% faster using the new protocol,
     and it's just as fast as before when transferring large files.
     (When the remote has an old git-annex-shell, git-annex falls back
-    to the old slower code.)
+    to the old slower code. This fallback is planned to be removed 
+    after 5 years or so.)
   * Note that, due to not using rsync to transfer files over ssh
     any longer, permissions and other file metadata of annexed files
     will no longer be preserved when copying them to and from ssh remotes.
     Other remotes never supported preserving that information, so
     this is not considered a regression.
-  * Some downloads will be verified, even when annex.verify=false.
-    This is done in some edge cases where there's a likelyhood than an
-    object was downloaded incorrectly.
-  * Support exporttree=yes for rsync special remotes.
-  * Added backends for the BLAKE2 family of hashes.
-  * Dial back optimisation when building on arm, which prevents
-    ghc and llc from running out of memory when optimising some files.
-  * Improve SHA*E extension extraction code to not treat parts of the
-    filename that contain punctuation or other non-alphanumeric characters
-    as extensions. Before, such characters were filtered out.
+  * Fix data loss bug in content locking over tor, when the remote
+    repository is in direct mode, it neglected to check that the content
+    was actually present when locking it. This could cause git annex drop
+    to remove the only copy of a file when it thought the tor remote had
+    a copy.
   * Fix data loss bug when the local repository uses direct mode, and a
     locally modified file is dropped from a remote repsitory. The bug
     caused the modified file to be counted as a copy of the original file.
     (This is not a severe bug because in such a situation, dropping
     from the remote and then modifying the file is allowed and has the same
     end result.)
-  * Fix bug in content locking over tor, when the remote repository is
-    in direct mode, it neglected to check that the content was actually
-    present when locking it. This could cause git annex drop to remove
-    the only copy of a file when it thought the tor remote had a copy.
+  * Some downloads will be verified, even when annex.verify=false.
+    This is done in some edge cases where there's a likelyhood than an
+    object was downloaded incorrectly.
+  * Support exporttree=yes for rsync special remotes.
+  * Added backends for the BLAKE2 family of hashes, when built with
+    a new enough version of cryptonite.
+  * Improve SHA*E extension extraction code to not treat parts of the
+    filename that contain punctuation or other non-alphanumeric characters
+    as extensions. Before, such characters were filtered out.
   * Better ssh connection warmup when using -J for concurrency.
     Avoids ugly messages when forced ssh command is not git-annex-shell.
   * Fix race condition in ssh warmup that caused git-annex to get
-    stuck and never process some while when run with high levels of
+    stuck and never process some files when run with high levels of
     concurrency.
+  * Fix reversion introduced in 6.20171214 that caused concurrent
+    transfers to incorrectly fail with "transfer already in progress".
   * Note that Remote/Git.hs now contains AGPL licensed code,
     thus the license of git-annex as a whole is AGPL. This was already
     the case when git-annex was built with the webapp enabled.
   * Include amount of data transferred in progress display.
-  * Fix reversion introduced in 6.20171214 that caused concurrent
-    transfers to incorrectly fail with "transfer already in progress".
+  * Dial back optimisation when building on arm, which prevents
+    ghc and llc from running out of memory when optimising some files.
 
- -- Joey Hess <id@joeyh.name>  Wed, 28 Feb 2018 11:53:03 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 16 Mar 2018 12:10:40 -0400
 
 git-annex (6.20180227) upstream; urgency=medium
 
