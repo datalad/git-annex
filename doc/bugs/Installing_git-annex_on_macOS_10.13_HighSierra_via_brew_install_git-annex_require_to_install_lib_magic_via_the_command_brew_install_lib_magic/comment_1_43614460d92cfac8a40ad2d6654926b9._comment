@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-03-16T15:55:48Z"
+ content="""
+I don't think I can make any changes to git-annex to fix this, it's an
+issue with the homebrew packaging of it, which should pull in the libmagic
+dependency. Can you file a bug on homebrew about this?
+"""]]
