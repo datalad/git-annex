@@ -379,8 +379,11 @@ Executable git-annex
   if flag(Production)
     -- Lower memory systems can run out of memory with -O2, so
     -- optimise slightly less.
+    -- This needs -O1 before the -optlo, due to this bug:
+    -- https://ghc.haskell.org/trac/ghc/ticket/14821
+    -- But unfortunately, hackage currently refuses to accept -O1
     if arch(arm)
-      GHC-Options: -O1 -optlo-O2
+      GHC-Options: -optlo-O2
     else
       GHC-Options: -O2
 

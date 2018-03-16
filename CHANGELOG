@@ -45,6 +45,7 @@ git-annex (6.20180316) upstream; urgency=medium
   * Include amount of data transferred in progress display.
   * Dial back optimisation when building on arm, which prevents
     ghc and llc from running out of memory when optimising some files.
+    (Unfortunately this fix is incomplete due to a ghc bug.)
 
  -- Joey Hess <id@joeyh.name>  Fri, 16 Mar 2018 12:10:40 -0400
 
