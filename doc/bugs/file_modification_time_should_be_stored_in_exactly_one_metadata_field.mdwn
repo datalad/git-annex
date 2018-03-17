@@ -1,0 +1,10 @@
+### Please describe the problem.
+File modification metadata is stored separately as year, month and day according to the annex.genmetadata docs. This makes reading and writing it unnecessarily complicated. Also, every field has its own modification timestamp and two out of the three become meaningless once you change one. (Does the modification time field even need its own modification time field?)
+
+It would be easier to work with if it was represented as a UTC unix timestamp or ISO 8601 string or something similar, ideally something date(1) and/or touch(1) (GNU and BSD) will understand natively. Also, you could fit more precision in there for little cost.
+
+### What steps will reproduce the problem?
+`git annex metadata <any file with modification metadata>`
+
+### What version of git-annex are you using? On what operating system?
+git annex 6.20180227, various Linuxes.
