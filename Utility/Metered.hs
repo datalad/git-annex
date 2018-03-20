@@ -383,5 +383,5 @@ bandwidthMeter mtotalsize (BytesProcessed old, before) (BytesProcessed new, now)
 		Just totalsize
 			| bytespersecond > 0 -> 
 				Just $ fromDuration $ Duration $
-					totalsize `div` bytespersecond
+					(totalsize - new) `div` bytespersecond
 		_ -> Nothing
