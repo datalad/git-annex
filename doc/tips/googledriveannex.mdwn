@@ -1,3 +1,6 @@
+** The software documented below is not being maintained. **  
+Instead, use <https://github.com/Lykos153/git-annex-remote-googledrive>
+
 googledriveannex 0.2.0
 =========
 
