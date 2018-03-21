@@ -1,0 +1,32 @@
+When `git annex export treeish` is used to export to a remote, and the
+remote allows files to somehow be edited on it, then there ought to be a
+way to import the changes back from the remote into the git repository.
+
+The command could be `git annex import treeish` or something like that.
+
+It would ask the special remote to list changed/new files, and deleted
+files. Download the changed/new files and inject into the annex. 
+Generate a new treeish, with parent the treeish that was exported,
+that has the modifications in it.
+
+Updating the working copy is then done by merging the import treeish.
+This way, conflicts will be detected and handled as normal by git.
+
+The remote interface needs one new method, to list the changed/new and
+deleted files. It will be up to remotes to implement that if they can
+support importing.
+
+One way for a remote to do it, assuming it has mtimes, is to export
+files to the remote with their mtime set to the date of the treeish
+being exported (when the treeish is a commit, which has dates, and not
+a raw tree). Then the remote can simply enumerate all files,
+with their mtimes, and look for files that have mtimes
+newer than the last exported treeish's date, as well as noticing
+deleted and newly added/renamed files.
+
+A similar approach is for the remote to preserve object file timestamps,
+but keep a list somewhere (eg a file on the remote) of the timestamps of
+each exported file, and then it can later look for files with newer
+timestamps.
+
+See also, [[adb_special_remote]]
