@@ -1,0 +1,14 @@
+`git annex export` normally exports all files in the specified tree,
+which is generally what the user wants.
+But, in some situations, the user may want to export a subset of files,
+in a way that can be well expressed by a preferred content expression.
+
+For example, they may want to export .mp3 files but not the .wav
+files used to produce those.
+
+Or, export podcasts, but not ones in a "old" directory that have already
+been listened to.
+
+It seems doable to make `git annex export` honor whatever
+preferred content settings have been configured for the remote.
+(And `git annex sync --content` too.)
