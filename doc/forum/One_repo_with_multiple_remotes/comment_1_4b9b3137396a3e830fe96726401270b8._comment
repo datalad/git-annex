@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="lykos@d125a37d89b1cfac20829f12911656c40cb70018"
+ nickname="lykos"
+ avatar="http://cdn.libravatar.org/avatar/085df7b04d3408ba23c19f9c49be9ea2"
+ subject="comment 1"
+ date="2018-03-21T12:17:45Z"
+ content="""
+That's not a problem at all. The repositories are identified by their UUID, so there's no danger of annex counting too many copies. Local remotes have a lower cost, so git-annex should prefer them, but you're probably going to encounter connection errors when you're not inside the LAN, so have a look at the annex-ignore-command option (see [manpage](https://git-annex.branchable.com/git-annex)).
+"""]]
