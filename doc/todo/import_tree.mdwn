@@ -16,6 +16,8 @@ The remote interface needs one new method, to list the changed/new and
 deleted files. It will be up to remotes to implement that if they can
 support importing.
 
+----
+
 One way for a remote to do it, assuming it has mtimes, is to export
 files to the remote with their mtime set to the date of the treeish
 being exported (when the treeish is a commit, which has dates, and not
@@ -28,5 +30,13 @@ A similar approach is for the remote to preserve object file timestamps,
 but keep a list somewhere (eg a file on the remote) of the timestamps of
 each exported file, and then it can later look for files with newer
 timestamps.
+
+----
+
+If multiple repos can access the remote at the same time, then there's a
+potential problem when one is exporting a new tree, and the other one is
+importing from the remote.
+
+----
 
 See also, [[adb_special_remote]]
