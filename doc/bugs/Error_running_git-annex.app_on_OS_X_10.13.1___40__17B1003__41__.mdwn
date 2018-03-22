@@ -25,3 +25,5 @@ Abort trap: 6
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
+> OSX autobuild is updated and no longer contains the copy of libz.
+> [[done]]
