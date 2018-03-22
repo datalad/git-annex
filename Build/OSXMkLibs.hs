@@ -78,8 +78,16 @@ otool appbase replacement_libs libmap = do
 	process [] files replacement_libs libmap
   where
 	want s = not ("@executable_path" `isInfixOf` s)
+		-- OSX framekworks such as Cocoa are too tightly tied to
+		-- a specific OSX version, so don't bundle.
 		&& not (".framework" `isInfixOf` s)
+		-- libSystem.B is tightly tied to frameworks.
 		&& not ("libSystem.B" `isInfixOf` s)
+		-- ImageIO.framework uses libPng which is built against a
+		-- specific version of libz; other versions lack the
+		-- _inflateValidate symbol. So, avoid bundling libz unless
+		-- this incompatability is resolved.
+		&& not ("libz." `isInfixOf` s)
 	process c [] rls m = return (nub $ concat c, rls, m)
 	process c (file:rest) rls m = do
 		_ <- boolSystem "chmod" [Param "755", File file]
