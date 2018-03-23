@@ -1,0 +1,44 @@
+### Please describe the problem.
+
+I tried now for hours to understand why the filemanager inegration is just not working.
+Debug output in Assistent/Install.hs is basically none existent so I don't even know if anything is run at all.
+There is no dedicated process to get the .desktop files etc created or an example that you could use if the process fails.
+I'm out of ideas now.
+
+I tried running with GIT_ANNEX_PACKAGE_INSTALL=1 and without, tried to ensure directories exist. 
+
+### What steps will reproduce the problem?
+
+git annex assistant
+
+
+
+### What version of git-annex are you using? On what operating system?
+
+nixos
+
+git-annex version: 6.20171003
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+dependency versions: aws-0.16 bloomfilter-2.0.1.0 cryptonite-0.23 DAV-1.3.1 feed-0.3.12.0 ghc-8.0.2 http-client-0.5.7.0 persistent-sqlite-2.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.4.5
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository versions: 3 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+operating system: linux x86_64
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+yes
+
