@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="lykos@d125a37d89b1cfac20829f12911656c40cb70018"
+ nickname="lykos"
+ avatar="http://cdn.libravatar.org/avatar/085df7b04d3408ba23c19f9c49be9ea2"
+ subject="comment 1"
+ date="2018-03-23T19:01:02Z"
+ content="""
+The year, month and day fields are used when creating views that sort files by modification date, eg. `git annex view year=* month=* day=*`. This cannot be done using timestamps. I agree that an additional timestamp field is a good idea, so I modified the pre-commit-annex hook by adding
+
+    field=\"mtime\"
+    value=$(stat -Lc %Y \"$f\")
+    addmeta \"$f\" \"$field\" \"$value\"
+
+at the end of the process function.
+"""]]
