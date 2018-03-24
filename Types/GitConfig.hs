@@ -90,6 +90,8 @@ data GitConfig = GitConfig
 	, annexPidLockTimeout :: Seconds
 	, annexAddUnlocked :: Bool
 	, annexSecureHashesOnly :: Bool
+	, annexRetry :: Maybe Integer
+	, annexRetryDelay :: Maybe Seconds
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
 	, receiveDenyCurrentBranch :: DenyCurrentBranch
@@ -154,6 +156,9 @@ extractGitConfig r = GitConfig
 		getmayberead (annex "pidlocktimeout")
 	, annexAddUnlocked = getbool (annex "addunlocked") False
 	, annexSecureHashesOnly = getbool (annex "securehashesonly") False
+	, annexRetry = getmayberead (annex "retry")
+	, annexRetryDelay = Seconds
+		<$> getmayberead (annex "retrydelay")
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
 	, receiveDenyCurrentBranch = getDenyCurrentBranch r
@@ -208,6 +213,8 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexStopCommand :: Maybe String
 	, remoteAnnexAvailability :: Maybe Availability
 	, remoteAnnexBare :: Maybe Bool
+	, remoteAnnexRetry :: Maybe Integer
+	, remoteAnnexRetryDelay :: Maybe Seconds
 
 	{- These settings are specific to particular types of remotes
 	 - including special remotes. -}
@@ -259,7 +266,9 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexStopCommand = notempty $ getmaybe "stop-command"
 		, remoteAnnexAvailability = getmayberead "availability"
 		, remoteAnnexBare = getmaybebool "bare"
-	
+		, remoteAnnexRetry = getmayberead "retry"
+		, remoteAnnexRetryDelay = Seconds
+			<$> getmayberead "retrydelay"
 		, remoteAnnexShell = getmaybe "shell"
 		, remoteAnnexSshOptions = getoptions "ssh-options"
 		, remoteAnnexRsyncOptions = getoptions "rsync-options"

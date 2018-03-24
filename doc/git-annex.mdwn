@@ -1248,6 +1248,18 @@ Here are all the supported configuration settings.
 
   git-annex caches UUIDs of remote repositories here.
 
+* `remote.<name>.annex-retry`, `annex.retry`
+
+  Configure retries of failed transfers on a per-remote and general
+  basis, respectively. The value is the number of retries that can be
+  made of the same transfer. (default 0)
+
+* `remote.<name>.annex-retry-delay`, `annex.retry-delay`
+
+  Number of seconds to delay before the first retry of a transfer.
+  When making multiple retries of the same transfer, the delay 
+  doubles after each retry. (default 1)
+
 * `remote.<name>.annex-checkuuid`
 
   This only affects remotes that have their url pointing to a directory on
