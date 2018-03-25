@@ -1,0 +1,3 @@
+`git-annex-shell p2pstdio` hides error messages that were transported over
+ssh to display to the user before. For example, diskreserve problems or IO
+errors. --[[Joey]]
