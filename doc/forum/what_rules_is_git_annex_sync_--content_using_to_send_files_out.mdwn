@@ -1,0 +1,31 @@
+I have two regular git clones and 4 special remotes (cloud
+storage mostly).
+
+My `numcopies` is set to 2 which means I always need to have at
+least two copies.  One usually lives in one of my git clones
+which is a backup and so has everything.  The other is somewhere
+in the cloud.
+
+When I add a new file to my client clone and do `git annex sync
+--content` is this respecting the prefered content of each remote
+or is it only trying to satisfy the numcopy?
+
+These are my settings for archive and smallarchive
+
+    groupwanted smallarchive = ((include=*/archive/* or include=archive/*) and not (copies=archive:2 or copies=smallarchive:2 or (copies=archive:1 and copies=smallarchive:1))) or approxlackingcopies=1
+
+
+
+    groupwanted archive = (not (copies=archive:2 or copies=smallarchive:2 or (copies=archive:1 and copies=smallarchive:1)) or approxlackingcopies=1
+
+
+One of the remotes is set as archive and two as smallarchive yet `sync
+--content` only ever copies to one so as to satisfy `numcopies`.  Is
+this expected?  Shouldn't it always try to make two copies in archive
+or smallarchive? 
+
+Interestingly, it copies data to my `backup` also (which is an
+extarnal drive, so always present).  So it seems the prefered content
+is only respected for clones and not special remotes.  Is that true?
+
+Do I have to run `git annex copy --to <archive-remote> --auto` to satisfy the content preferences?
