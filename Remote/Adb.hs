@@ -98,28 +98,30 @@ adbSetup _ mu _ c gc = do
 	adir <- maybe (giveup "Specify androiddirectory=") (pure . AndroidPath)
 		(M.lookup "androiddirectory" c)
 	serial <- getserial =<< liftIO enumerateAdbConnected
+	let c' = M.insert "androidserial" (fromAndroidSerial serial) c
 
-	(c', _encsetup) <- encryptionSetup c gc
+	(c'', _encsetup) <- encryptionSetup c' gc
 
 	ok <- liftIO $ adbShellBool serial
 		[Param "mkdir", Param "-p", File (fromAndroidPath adir)]
 	unless ok $
 		giveup "Creating directory on Android device failed."
 
-	gitConfigSpecialRemote u c' 
+	gitConfigSpecialRemote u c''
 		[ ("adb", "true")
 		, ("androiddirectory", fromAndroidPath adir)
 		, ("androidserial", fromAndroidSerial serial)
 		]
 
-	return (c', u)
+	return (c'', u)
   where
 	getserial [] = giveup "adb does not list any connected android devices. Plug in an Android device, or configure adb, and try again.."
-	getserial (s:[]) = return s
 	getserial l = case M.lookup "androidserial" c of
-		Nothing -> giveup $ unlines $
-			"There are multiple connected android devices, specify which to use with androidserial="
-			: map fromAndroidSerial l
+		Nothing -> case l of
+			(s:[]) -> return s
+			_ -> giveup $ unlines $
+				"There are multiple connected android devices, specify which to use with androidserial="
+				: map fromAndroidSerial l
 		Just cs
 			| AndroidSerial cs `elem` l -> return (AndroidSerial cs)
 			| otherwise -> giveup $ "The device with androidserial=" ++ cs ++ " is not connected."
