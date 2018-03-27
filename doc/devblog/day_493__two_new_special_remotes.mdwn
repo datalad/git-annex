@@ -1,0 +1,17 @@
+I've been traveling and at conferences.
+
+In the meantime, Lykos has released
+[git-annex-remote-googledrive](https://github.com/Lykos153/git-annex-remote-googledrive),
+a replacement for an older, unmaintained Google Drive special remote.
+
+Today I added a special remote that stores files on an Android device
+using `adb`. It supports `git annex exporttree`, so the files stored on 
+the Android device can have the same filenames as in the git-annex
+repository. I have plans for implementing a `git annex importtree` and
+other features to make bi-directional sync with Android work well.
+
+Of course, there is some overlap between that and the Android port,
+but they probably serve different use cases.
+
+Today's work was sponsored by Trenton Cronholm on
+[Patreon](https://patreon.com/joeyh/)
