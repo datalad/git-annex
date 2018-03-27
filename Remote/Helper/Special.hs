@@ -65,9 +65,10 @@ findSpecialRemotes s = do
 	match k _ = "remote." `isPrefixOf` k && (".annex-"++s) `isSuffixOf` k
 
 {- Sets up configuration for a special remote in .git/config. -}
-gitConfigSpecialRemote :: UUID -> RemoteConfig -> String -> String -> Annex ()
-gitConfigSpecialRemote u c k v = do
-	setConfig (remoteConfig remotename k) v
+gitConfigSpecialRemote :: UUID -> RemoteConfig -> [(String, String)] -> Annex ()
+gitConfigSpecialRemote u c cfgs = do
+	forM_ cfgs $ \(k, v) -> 
+		setConfig (remoteConfig remotename k) v
 	setConfig (remoteConfig remotename "uuid") (fromUUID u)
   where
 	remotename = fromJust (M.lookup "name" c)

@@ -231,6 +231,8 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexTahoe :: Maybe FilePath
 	, remoteAnnexBupSplitOptions :: [String]
 	, remoteAnnexDirectory :: Maybe FilePath
+	, remoteAnnexAndroidDirectory :: Maybe FilePath
+	, remoteAnnexAndroidSerial :: Maybe String
 	, remoteAnnexGCrypt :: Maybe String
 	, remoteAnnexDdarRepo :: Maybe String
 	, remoteAnnexHookType :: Maybe String
@@ -282,6 +284,8 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexTahoe = getmaybe "tahoe"
 		, remoteAnnexBupSplitOptions = getoptions "bup-split-options"
 		, remoteAnnexDirectory = notempty $ getmaybe "directory"
+		, remoteAnnexAndroidDirectory = notempty $ getmaybe "androiddirectory"
+		, remoteAnnexAndroidSerial = notempty $ getmaybe "androidserial"
 		, remoteAnnexGCrypt = notempty $ getmaybe "gcrypt"
 		, remoteAnnexDdarRepo = getmaybe "ddarrepo"
 		, remoteAnnexHookType = notempty $ getmaybe "hooktype"

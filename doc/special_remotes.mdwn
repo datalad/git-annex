@@ -15,6 +15,7 @@ They cannot be used by other git commands though.
 * [[directory]]
 * [[rsync]]
 * [[webdav]]
+* [[adb]] (for Android devices)
 * [[tahoe]]
 * [[web]]
 * [[bittorrent]]

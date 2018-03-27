@@ -79,7 +79,7 @@ hookSetup _ mu _ c gc = do
 	let hooktype = fromMaybe (giveup "Specify hooktype=") $
 		M.lookup "hooktype" c
 	(c', _encsetup) <- encryptionSetup c gc
-	gitConfigSpecialRemote u c' "hooktype" hooktype
+	gitConfigSpecialRemote u c' [("hooktype", hooktype)]
 	return (c', u)
 
 hookEnv :: Action -> Key -> Maybe FilePath -> IO (Maybe [(String, String)])

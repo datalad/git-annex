@@ -915,6 +915,7 @@ Executable git-annex
     P2P.IO
     P2P.Protocol
     Remote
+    Remote.Adb
     Remote.BitTorrent
     Remote.Bup
     Remote.Ddar

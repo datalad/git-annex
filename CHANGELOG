@@ -1,5 +1,6 @@
 git-annex (6.20180317) UNRELEASED; urgency=medium
 
+  * Added adb special remote which allows exporting files to Android devices.
   * Fix calculation of estimated completion for progress meter.
   * OSX app: Work around libz/libPng/ImageIO.framework version skew
     by not bundling libz, assuming OSX includes a suitable libz.1.dylib.

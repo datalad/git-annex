@@ -218,7 +218,7 @@ gCryptSetup _ mu _ c gc = go $ M.lookup "gitrepo" c
 				if Just u == mu || isNothing mu
 					then do
 						method <- setupRepo gcryptid =<< inRepo (Git.Construct.fromRemoteLocation gitrepo)
-						gitConfigSpecialRemote u c' "gcrypt" (fromAccessMethod method)
+						gitConfigSpecialRemote u c' [("gcrypt", fromAccessMethod method)]
 						return (c', u)
 					else giveup $ "uuid mismatch; expected " ++ show mu ++ " but remote gitrepo has " ++ show u ++ " (" ++ show gcryptid ++ ")"
 

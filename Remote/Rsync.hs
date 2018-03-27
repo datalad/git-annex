@@ -159,7 +159,7 @@ rsyncSetup _ mu _ c gc = do
 
 	-- The rsyncurl is stored in git config, not only in this remote's
 	-- persistant state, so it can vary between hosts.
-	gitConfigSpecialRemote u c' "rsyncurl" url
+	gitConfigSpecialRemote u c' [("rsyncurl", url)]
 	return (c', u)
 
 {- To send a single key is slightly tricky; need to build up a temporary

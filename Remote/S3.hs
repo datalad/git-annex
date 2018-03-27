@@ -135,7 +135,7 @@ s3Setup' ss u mcreds c gc
 		]
 		
 	use fullconfig = do
-		gitConfigSpecialRemote u fullconfig "s3" "true"
+		gitConfigSpecialRemote u fullconfig [("s3", "true")]
 		return (fullconfig, u)
 
 	defaulthost = do

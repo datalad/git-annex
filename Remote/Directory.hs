@@ -104,7 +104,7 @@ directorySetup _ mu _ c gc = do
 
 	-- The directory is stored in git config, not in this remote's
 	-- persistant state, so it can vary between hosts.
-	gitConfigSpecialRemote u c' "directory" absdir
+	gitConfigSpecialRemote u c' [("directory", absdir)]
 	return (M.delete "directory" c', u)
 
 {- Locations to try to access a given Key in the directory.

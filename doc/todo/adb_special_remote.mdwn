@@ -15,7 +15,5 @@ repository.
 And, [[export preferred content]] would be a useful feature for
 excluding some files from a tree exported to android.
 
-----
-
-initremote will need to store the uuid of the remote in it, to avoid
-operating on the wrong device.
+> Status: Basic special remote now implemented. exporttree and import
+> not yet. --[[Joey]]

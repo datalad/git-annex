@@ -1,0 +1,28 @@
+This special remote stores files on an Android device.
+
+The `adb` program is used to access the Android device, which
+allows connecting to it in various ways like a USB cable or wifi.
+
+## configuration
+
+A number of parameters can be passed to `git annex initremote` to configure
+the adb remote.
+
+* `androiddirectory` - Set to the location on the Android device where
+  files for the special remote are stored.
+
+* `androidserial` - Normally this is not needed, but if multiple Android
+  devices are accessible, you'll be prompted to use it to specify which
+  one to use.
+
+* `exporttree` - Set to "yes" to make this special remote usable
+  by [[git-annex-export]]. It will not be usable as a general-purpose
+  special remote. Since this makes the exported files easily browsable
+  on the Android device, you will almost always want to enable this.
+
+* `encryption` - One of "none", "hybrid", "shared", or "pubkey".
+  See [[encryption]].
+
+* `keyid` - Specifies the gpg key to use for [[encryption]].
+
+* `chunk` - Enables [[chunking]] when storing large files.

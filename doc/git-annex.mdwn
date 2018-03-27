@@ -1427,6 +1427,25 @@ Here are all the supported configuration settings.
   remote. Normally this is automatically set up by `git annex initremote`,
   but you can change it if needed.
 
+* `remote.<name>.adb`
+
+  Used to identify remotes on Android devices accessed via adb.
+  Normally this is automatically set up by `git annex initremote`.
+
+* `remote.<name>.androiddirectory`
+
+  Used by adb special remotes, this is the directory on the Android
+  device where files are stored for this remote. Normally this is
+  automatically set up by `git annex initremote`, but you can change
+  it if needed.
+
+* `remote.<name>.androidserial`
+
+  Used by adb special remotes, this is the serial number of the Android
+  device used by the remote. Normally this is automatically set up by
+  `git annex initremote`, but you can change it if needed, eg when
+  upgrading to a new Android device.
+
 * `remote.<name>.s3`
 
   Used to identify Amazon S3 special remotes.

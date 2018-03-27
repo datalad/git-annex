@@ -115,6 +115,7 @@ Recommends:
 Suggests:
 	xdot,
 	bup,
+	adb,
 	tor,
 	magic-wormhole,
 	tahoe-lafs,

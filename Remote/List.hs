@@ -36,6 +36,7 @@ import qualified Remote.BitTorrent
 #ifdef WITH_WEBDAV
 import qualified Remote.WebDAV
 #endif
+import qualified Remote.Adb
 import qualified Remote.Tahoe
 import qualified Remote.Glacier
 import qualified Remote.Ddar
@@ -58,6 +59,7 @@ remoteTypes = map adjustExportableRemoteType
 #ifdef WITH_WEBDAV
 	, Remote.WebDAV.remote
 #endif
+	, Remote.Adb.remote
 	, Remote.Tahoe.remote
 	, Remote.Glacier.remote
 	, Remote.Ddar.remote

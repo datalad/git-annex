@@ -157,7 +157,7 @@ externalSetup _ mu _ c gc = do
 			withExternalState external $
 				liftIO . atomically . readTVar . externalConfig
 
-	gitConfigSpecialRemote u c'' "externaltype" externaltype
+	gitConfigSpecialRemote u c'' [("externaltype", externaltype)]
 	return (c'', u)
 
 checkExportSupported :: RemoteConfig -> RemoteGitConfig -> Annex Bool

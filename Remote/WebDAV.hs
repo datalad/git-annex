@@ -112,7 +112,7 @@ webdavSetup _ mu mcreds c gc = do
 	(c', encsetup) <- encryptionSetup c gc
 	creds <- maybe (getCreds c' gc u) (return . Just) mcreds
 	testDav url creds
-	gitConfigSpecialRemote u c' "webdav" "true"
+	gitConfigSpecialRemote u c' [("webdav", "true")]
 	c'' <- setRemoteCredPair encsetup c' gc (davCreds u) creds
 	return (c'', u)
 

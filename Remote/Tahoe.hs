@@ -107,7 +107,7 @@ tahoeSetup _ mu _ c _ = do
 			, (scsk, scs)
 			]
 		else c
-	gitConfigSpecialRemote u c' "tahoe" configdir
+	gitConfigSpecialRemote u c' [("tahoe", configdir)]
 	return (c', u)
   where
 	scsk = "shared-convergence-secret"

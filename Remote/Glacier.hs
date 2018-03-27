@@ -93,7 +93,7 @@ glacierSetup' ss u mcreds c gc = do
 	case ss of
 		Init -> genVault fullconfig gc u
 		_ -> return ()
-	gitConfigSpecialRemote u fullconfig "glacier" "true"
+	gitConfigSpecialRemote u fullconfig [("glacier", "true")]
 	return (fullconfig, u)
   where
 	remotename = fromJust (M.lookup "name" c)
