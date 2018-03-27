@@ -1,0 +1,35 @@
+### Please describe the problem.
+
+From our inspection,  `annex metadata` call relies on `ls-files` to determine if the file is known to annex.  But if there is an `addurl --batch` running which is adding those files, `git` is not immediately aware of them, thus `git annex metadata` returns "peacefully" without actually performing any operation on metadata.
+
+### What steps will reproduce the problem?
+
+this is an extract from what we are doing in datalad, so might be insufficient (let us know if so)
+
+1. run `git annex addurl --batch` and add a file
+2. run `git annex metadata` to assign some metadata to the just addurl'ed file
+
+
+### What version of git-annex are you using? On what operating system?
+
+
+6.20180316+gitg308f3ecf6-1~ndall+1
+
+### Please provide any additional information below.
+
+[[!format sh """
+$> git -c receive.autogc=0 -c gc.auto=0 annex --debug metadata --json -s verbal_iq+=116 -s performance_iq+=89 -s age+=16.77 -s handedness+=ambidextrous -s site_id+=pitt -s session_count+=1 -s dsm_iv_tr+=autism -s sex+=Male -s project+=abide_initiative -s full_iq+=103 -s MRI+=yes -s diagnosis+=autism -s participant_id+=50002 -s session_id+=1 -s species+=homo-sapiens -- sub-50002/ses-1/T1_rep-0.mgz                                                                             [2018-03-27 11:25:15.953624157] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--cached","-z","--","sub-50002/ses-1/T1_rep-0.mgz"]
+[2018-03-27 11:25:15.957761277] process done ExitSuccess
+
+# no error exit code
+$> px | grep addurl.*batch
+yoh      26767  0.0  0.0  17892  2184 pts/16   T    11:05   0:00  |       \_ /usr/lib/git-annex.linux/exe/git --library-path /usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv:/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit:/usr/lib/git-annex.linux//etc/ld.so.conf.d:/usr/lib/git-annex.linux//lib64:/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu:/usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git/git -c receive.autogc=0 -c gc.auto=0 annex addurl --with-files --json --batch
+yoh      26790  0.0  0.3 1074180296 63604 pts/16 Tl 11:05   0:00  |           \_ /usr/lib/git-annex.linux/exe/git-annex --library-path /usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv:/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit:/usr/lib/git-annex.linux//etc/ld.so.conf.d:/usr/lib/git-annex.linux//lib64:/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu:/usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git-annex/git-annex addurl --with-files --json --batch
+
+"""]]
+
+
+P.S.  It might be a related observation that git-annex metadata does exit with non-0 exit code whenever it is ran on a non-existing file, but it exits with 0 exit code (but without performing any action) when ran on the existing but not known to git file.  I wondered if there could be if not a change in behavior but a flag to make `annex metadata PATHs` exit with non-0 code if it didn't handle some path(s) from the provided.  Then we could use it within our "set metadata" to guarantee that we do not omit any file for which we thought we would get metadata operation performed.
+
+[[!meta author=yoh]]
+
