@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="numcopies"
+ date="2018-03-27T22:25:30Z"
+ content="""
+||| *When I add a new file to my client clone and do git annex sync --content is this respecting the … content of each remote or is it only trying to satisfy the numcopy?*
+
+Both.
+
+Running `git annex sync --content` will copy content to any remote where that content is wanted (IE look at the preferred content settings), and will drop files that are not wanted and don't violate numcopies totals (at the moment of the drop?).
+
+
+||| *One of the remotes is set as archive and two as smallarchive yet sync --content only ever copies to one so as to satisfy numcopies.*
+
+I don't believe that `git annex sync --content` is ever trying to “satisfy numcopies,” I would think of numcopies as more of a limit or restriction on when git-annex is allowed to drop content that is not wanted by a remote.
+
+
+
+
+||| *Shouldn't it always try to make two copies in archive or smallarchive?*
+
+Hmmmm. I would guess there is some issue with your archive or smallarchive expressions, or they aren't actually set (being used) or you have discovered an issue… You have overridden the standard groups, and can see your overrides with `git annex groupwanted archive` and `git annex groupwanted smallarchive`? And your remotes have `git annex group archive` and `git annex wanted groupwanted` set?
+
+So `(include=*/archive/* or include=archive/*) and` means you are only copying files in the archive directory, was that your intention?
+
+If so, the rest of your content expression seems like it should want 1 copy in an archive and 1 copy in a smallarchive, or 2 copies in 2 remotes marked archive or 2 copies in two remotes marked smallarchive.
+
+
+||| *Interestingly, it copies data to my backup*
+
+Right. If you are using a standard content group backup means “All content is wanted. Even content of old/deleted files.” This expression will want all content and never drop content.
+
+"""]]
