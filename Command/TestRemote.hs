@@ -110,7 +110,7 @@ encryptionVariants r = do
 
 -- Variant of a remote with exporttree disabled.
 disableExportTree :: Remote -> Annex Remote
-disableExportTree r = maybe (error "failed disabling exportreee") return 
+disableExportTree r = maybe (error "failed disabling exportree") return 
 		=<< adjustRemoteConfig r (M.delete "exporttree")
 
 -- Variant of a remote with exporttree enabled.

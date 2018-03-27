@@ -12,12 +12,14 @@ import qualified Data.Map as M
 import Annex.Common
 import Types.Remote
 import Types.Creds
+import Types.Export
 import qualified Git
 import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.Messages
 import Remote.Helper.Export
 import Annex.UUID
+import Utility.Metered
 
 -- | Each Android device has a serial number.
 newtype AndroidSerial = AndroidSerial { fromAndroidSerial :: String }
@@ -32,7 +34,7 @@ remote = RemoteType
 	, enumerate = const (findSpecialRemotes "adb")
 	, generate = gen
 	, setup = adbSetup
-	, exportSupported = exportUnsupported
+	, exportSupported = exportIsSupported
 	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -50,7 +52,14 @@ gen r u c gc = do
 		, lockContent = Nothing
 		, checkPresent = checkPresentDummy
 		, checkPresentCheap = False
-		, exportActions = exportUnsupported
+		, exportActions = return $ ExportActions
+			{ storeExport = storeExportM serial adir
+			, retrieveExport = retrieveExportM serial adir
+			, removeExport = removeExportM serial adir
+			, checkPresentExport = checkPresentExportM this serial adir
+			, removeExportDirectory = Just $ removeExportDirectoryM serial adir
+			, renameExport = renameExportM serial adir
+			}
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing
@@ -116,40 +125,52 @@ adbSetup _ mu _ c gc = do
 			| otherwise -> giveup $ "The device with androidserial=" ++ cs ++ " is not connected."
 
 store :: AndroidSerial -> AndroidPath -> Storer
-store serial adir = fileStorer $ \k src _p -> do
-	let hashdir = fromAndroidPath $ androidHashDir adir k
-	liftIO $ void $ adbShell serial [Param "mkdir", Param "-p", File hashdir]
+store serial adir = fileStorer $ \k src _p -> 
+	let dest = androidLocation adir k
+	in store' serial dest src
+
+store' :: AndroidSerial -> AndroidPath -> FilePath -> Annex Bool
+store' serial dest src = do
+	let destdir = takeDirectory $ fromAndroidPath dest
+	liftIO $ void $ adbShell serial [Param "mkdir", Param "-p", File destdir]
 	showOutput -- make way for adb push output
-	let dest = fromAndroidPath $ androidLocation adir k
-	let tmpdest = dest ++ ".tmp"
+	let tmpdest = fromAndroidPath dest ++ ".tmp"
 	ifM (liftIO $ boolSystem "adb" (mkAdbCommand serial [Param "push", File src, File tmpdest]))
 		-- move into place atomically
-		( liftIO $ adbShellBool serial [Param "mv", File tmpdest, File dest]
+		( liftIO $ adbShellBool serial [Param "mv", File tmpdest, File (fromAndroidPath dest)]
 		, return False
 		)
 
 retrieve :: AndroidSerial -> AndroidPath -> Retriever
-retrieve serial adir = fileRetriever $ \d k _p -> do
-	showOutput -- make way for adb pull output
-	ok <- liftIO $ boolSystem "adb" $ mkAdbCommand serial
-		[ Param "pull"
-		, File $ fromAndroidPath $ androidLocation adir k
-		, File d
-		]
-	unless ok $
+retrieve serial adir = fileRetriever $ \dest k _p ->
+	let src = androidLocation adir k
+	in unlessM (retrieve' serial src dest) $
 		giveup "adb pull failed"
 
+retrieve' :: AndroidSerial -> AndroidPath -> FilePath -> Annex Bool
+retrieve' serial src dest = do
+	showOutput -- make way for adb pull output
+	liftIO $ boolSystem "adb" $ mkAdbCommand serial
+		[ Param "pull"
+		, File $ fromAndroidPath src
+		, File dest
+		]
+
 remove :: AndroidSerial -> AndroidPath -> Remover
-remove serial adir k = liftIO $ adbShellBool serial
-	[Param "rm", Param "-f", File (fromAndroidPath loc)]
-  where
-	loc = androidLocation adir k
+remove serial adir k = remove' serial (androidLocation adir k)
+
+remove' :: AndroidSerial -> AndroidPath -> Annex Bool
+remove' serial aloc = liftIO $ adbShellBool serial
+	[Param "rm", Param "-f", File (fromAndroidPath aloc)]
 
 checkKey :: Remote -> AndroidSerial -> AndroidPath -> CheckPresent
-checkKey r serial adir k = do
+checkKey r serial adir k = checkKey' r serial (androidLocation adir k)
+
+checkKey' :: Remote -> AndroidSerial -> AndroidPath -> Annex Bool
+checkKey' r serial aloc = do
 	showChecking r
 	(out, st) <- liftIO $ adbShellRaw serial $ unwords
-		[ "if test -e ", shellEscape (fromAndroidPath loc)
+		[ "if test -e ", shellEscape (fromAndroidPath aloc)
 		, "; then echo y"
 		, "; else echo n"
 		, "; fi"
@@ -158,8 +179,6 @@ checkKey r serial adir k = do
 		(["y"], ExitSuccess) -> return True
 		(["n"], ExitSuccess) -> return False
 		_ -> giveup $ "unable to access Android device" ++ show out
-  where
-	loc = androidLocation adir k
 
 androidLocation :: AndroidPath -> Key -> AndroidPath
 androidLocation adir k = AndroidPath $
@@ -170,6 +189,43 @@ androidHashDir adir k = AndroidPath $
 	fromAndroidPath adir ++ "/" ++ hdir
   where
 	hdir = replace [pathSeparator] "/" (hashDirLower def k)
+
+storeExportM :: AndroidSerial -> AndroidPath -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool 
+storeExportM serial adir src _k loc _p = store' serial dest src
+  where
+	dest = androidExportLocation adir loc
+
+retrieveExportM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
+retrieveExportM serial adir _k loc dest _p = retrieve' serial src dest
+  where
+	src = androidExportLocation adir loc
+
+removeExportM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> Annex Bool
+removeExportM serial adir _k loc = remove' serial aloc
+  where
+	aloc = androidExportLocation adir loc
+
+removeExportDirectoryM :: AndroidSerial -> AndroidPath -> ExportDirectory -> Annex Bool
+removeExportDirectoryM serial abase dir = liftIO $ adbShellBool serial
+	[Param "rm", Param "-rf", File (fromAndroidPath adir)]
+  where
+	adir = androidExportLocation abase (mkExportLocation (fromExportDirectory dir))
+
+checkPresentExportM :: Remote -> AndroidSerial -> AndroidPath -> Key -> ExportLocation -> Annex Bool
+checkPresentExportM r serial adir _k loc = checkKey' r serial aloc
+  where
+	aloc = androidExportLocation adir loc
+
+renameExportM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> ExportLocation -> Annex Bool
+renameExportM serial adir _k old new = liftIO $ adbShellBool serial
+	[Param "mv", Param "-f", File oldloc, File newloc]
+  where
+	oldloc = fromAndroidPath $ androidExportLocation adir old
+	newloc = fromAndroidPath $ androidExportLocation adir new
+
+androidExportLocation :: AndroidPath -> ExportLocation -> AndroidPath
+androidExportLocation adir loc = AndroidPath $
+	fromAndroidPath adir ++ "/" ++ fromExportLocation loc
 
 -- | List all connected Android devices.
 enumerateAdbConnected :: IO [AndroidSerial]

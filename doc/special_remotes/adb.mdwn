@@ -3,6 +3,14 @@ This special remote stores files on an Android device.
 The `adb` program is used to access the Android device, which
 allows connecting to it in various ways like a USB cable or wifi.
 
+## example
+
+To make git-annex store files in the /sdcard/annex directory
+on the Android device, and export the current master tree to it:
+
+	git annex initremote android type=adb androiddirectory=/sdcard/annex encryption=none exporttree=yes
+	git annex export master --to android
+
 ## configuration
 
 A number of parameters can be passed to `git annex initremote` to configure
