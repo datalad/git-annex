@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="dittigas"
+ avatar="http://cdn.libravatar.org/avatar/58cabd2b30471004288fac2b535faaa8"
+ subject="git-annex-webapp missing from Fedora 27"
+ date="2018-03-27T07:43:53Z"
+ content="""
+My installation does not seem to include the webapp feature. I.e git-annex webapp, git annex webapp or git-annex-webapp are not abailble.
+"""]]

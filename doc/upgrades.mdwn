@@ -67,7 +67,7 @@ The behavior of some commands changes in an upgraded repository:
    to the git repository. To cause some files to be added directly
    to git, you can configure `annex.largefiles`. For example:
 
-   	git config annex.largefiles "largerthan=100kb and not (include=*.c or include=*.h)"
+   	`git config annex.largefiles "largerthan=100kb and not (include=*.c or include=*.h)"`
 
 * `git annex unlock` and `git annex lock` change how the pointer to 
   the annexed content is stored in git.

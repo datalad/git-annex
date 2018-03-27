@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="dittigas"
+ avatar="http://cdn.libravatar.org/avatar/58cabd2b30471004288fac2b535faaa8"
+ subject="How do I mark a specialremote (box.com) as being in the transfer group (cli)"
+ date="2018-03-27T07:39:28Z"
+ content="""
+I've got thing set up (2 client, with box.com as a special remote)... client one uploads it's content, but client 2 does not download anything. I'd like to have box.com set up as as a trandfer repo, which will loos it's content when client 2 got the files.
+"""]]
