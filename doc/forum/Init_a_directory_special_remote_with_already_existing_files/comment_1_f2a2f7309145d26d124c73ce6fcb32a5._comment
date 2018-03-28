@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 1"
+ date="2018-03-28T00:59:41Z"
+ content="""
+I think if you don't mind scripting checkout Joey's comment in this thread: [\"Preseeding\" a special remote](https://git-annex.branchable.com/forum/__34__Preseeding__34___a_special_remote/).
+
+Otherwise maybe the following will work. You'll still need to download all of the files to hash them.
+
+UNTESTED:
+Lets say your Windows share data is at mnt/share/data
+
+ * create a new repo on your Windows share at mnt/share/repo1
+ * [git-annex-import](https://git-annex.branchable.com/git-annex-import/) all of your files into the new repo. This probably would download all of the files to generate the hash, then hopefully do a file rename avoiding the re-upload step.
+ * then create a new [directory remote](http://git-annex.branchable.com/special_remotes/directory/) for repo1 at say, mnt/share/remote1
+ * then do a [git-annex-move](https://git-annex.branchable.com/git-annex-move/) of all the files from mnt/share/repo1 to your new empty remote
+ * you could then make a clone of that repo locally, now you have a nice looking working tree locally
+ * then add mnt/share/remote1 as a new remote to your local clone
+
+If you don't care about hashing you could use the [WORM](http://git-annex.branchable.com/backends/) backend avoiding the initial download.
+
+I think, If you don't care about having a nice working tree you could probably use the web special remote and just leave all the files in their messy rsynced state. IE create a local repo, then do `git annex addurl --fast <path>` for each file on your Windows share. See joey's comment on addurl in this [DVD thread](http://git-annex.branchable.com/forum/Managing_a_large_number_of_files_archived_on_many_pieces_of_read-only_medium___40__E.G._DVDs__41__/)
+
+
+"""]]
