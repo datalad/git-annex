@@ -25,3 +25,5 @@ here are options for wget and curl which could help us out here:
 """]]
 
 Could git-annex add those options to curl/wget invocations for more robust access to the web remote?
+
+> [[done]] --[[Joey]]
