@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2018-03-29T17:36:48Z"
+ content="""
+We have annex.retry etc configuration now to control retries of transfers.
+
+Stall detection would be good to have in git-annex. Currently, when a
+transfer is stalled, the progress meter stops updating, so displays
+an ETA that's wrong.
+
+Since the progress meter is already getting called periodically when
+a transfer is not stalled, a stall detector could perhaps be added
+into that, to abort stalled transfers. The tricky part being that a few
+types of transfers don't use the internal progress meters but rely on an
+external command's progress display, and the stall detection would need to
+be disabled for those. 
+
+Hmm, a password prompt for eg ssh can also "stall"
+a transfer for a long time. Perhaps the thing to do is wait until
+the meter gets updated once, and only then start the stall detector.
+"""]]
