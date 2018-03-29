@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="achilleas.k@14be77d42a1252fab5ec9dbf4e5ea03c5833e8c8"
+ nickname="achilleas.k"
+ avatar="http://cdn.libravatar.org/avatar/ed6c67c4d8e6c6850930e16eaf85a771"
+ subject="dmg (possibly) requires rebuild"
+ date="2018-03-29T15:31:23Z"
+ content="""
+On macOS High Sierra (10.13.3) trying to use git-annex from the latest .dmg shows the following error:
+
+    > git annex version
+    dyld: Symbol not found: _inflateValidate
+      Referenced from: /System/Library/Frameworks/ImageIO.framework/Versions/A/Resources/libPng.dylib
+      Expected in: /Applications/git-annex.app/Contents/MacOS/bundle/B
+     in /System/Library/Frameworks/ImageIO.framework/Versions/A/Resources/libPng.dylib
+    error: git-annex died of signal 6
+
+I ran it by opening the .app directory (Show Package Contents) and running the `runshell` script to set up the environment:
+
+    > which git
+    /Applications/git-annex.app/Contents/MacOS/bundle/git
+    > which git-annex
+    /Applications/git-annex.app/Contents/MacOS/bundle/git-annex
+
+"""]]

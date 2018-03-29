@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="MatusGoljer"
+ avatar="http://cdn.libravatar.org/avatar/8152eed1d594c570563ed46e7fd8356f"
+ subject="comment 2"
+ date="2018-03-28T23:16:51Z"
+ content="""
+Hi Andrew!
+
+Actually, you are entirely correct, I just misinterpreted the `smallarchive` formula.  What I was thinking it would do was it would upload the file in case there are not two copies in any combination of `archive` or `smallarchive` and as soon as there are two `archive` copies it would ideally drop the file if not in `*/archive/*` directory.
+
+But now I see that the formula does exactly what you say it would do, the whole long `and not` condition is additional to the first, which means a file will not get uploaded if not in those directories.
+
+I will play around with the expression, I'm sure it can be modified to do what I want.
+
+Thanks!  It was mostly me being silly, sometimes having other people re-state the obvious helps!
+"""]]
