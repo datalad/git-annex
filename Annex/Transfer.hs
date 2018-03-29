@@ -214,7 +214,7 @@ configuredRetry = do
 		if retries < maxretries
 			then do
 				let retrydelay = Seconds (initretrydelay * 2^(retries-1))
-				showSideAction $ "Delaying " ++ show (fromSeconds retrydelay) ++ " before retrying."
+				showSideAction $ "Delaying " ++ show (fromSeconds retrydelay) ++ "s before retrying."
 				liftIO $ threadDelaySeconds retrydelay
 				return True
 			else return False
