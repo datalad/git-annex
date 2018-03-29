@@ -120,6 +120,7 @@ runLocal runst runner a = case a of
   where
 	transfer mk k af ta = case runst of
 		-- Update transfer logs when serving.
+		-- Using noRetry because we're the sender.
 		Serving theiruuid _ _ -> 
 			mk theiruuid k af noRetry ta noNotification
 		-- Transfer logs are updated higher in the stack when

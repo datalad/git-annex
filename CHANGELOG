@@ -4,6 +4,8 @@ git-annex (6.20180317) UNRELEASED; urgency=medium
   * Fix calculation of estimated completion for progress meter.
   * OSX app: Work around libz/libPng/ImageIO.framework version skew
     by not bundling libz, assuming OSX includes a suitable libz.1.dylib.
+  * Added annex.retry, annex.retry-delay, and per-remote versions
+    to configure transfer retries.
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Mar 2018 23:13:59 -0400
 

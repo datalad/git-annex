@@ -134,7 +134,7 @@ toPerform dest move key afile fastcheck isthere =
 		Right False -> do
 			showAction $ "to " ++ Remote.name dest
 			ok <- notifyTransfer Upload afile $
-				upload (Remote.uuid dest) key afile forwardRetry $
+				upload (Remote.uuid dest) key afile stdRetry $
 					Remote.storeKey dest key afile
 			if ok
 				then finish $
@@ -199,7 +199,7 @@ fromPerform src move key afile = do
 		)
   where
 	go = notifyTransfer Download afile $ 
-		download (Remote.uuid src) key afile forwardRetry $ \p ->
+		download (Remote.uuid src) key afile stdRetry $ \p ->
 			getViaTmp (RemoteVerify src) key $ \t ->
 				Remote.retrieveKeyFile src key afile t p
 	dispatch _ False = stop -- failed

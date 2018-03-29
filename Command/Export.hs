@@ -216,6 +216,8 @@ performExport r ea db ek af contentsha loc = do
 	sent <- case ek of
 		AnnexKey k -> ifM (inAnnex k)
 			( notifyTransfer Upload af $
+				-- Using noRetry here because interrupted
+				-- exports cannot be resumed.
 				upload (uuid r) k af noRetry $ \pm -> do
 					let rollback = void $
 						performUnexport r ea db [ek] loc

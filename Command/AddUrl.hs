@@ -339,7 +339,7 @@ downloadWith' downloader dummykey u url afile =
 	checkDiskSpaceToGet dummykey Nothing $ do
 		tmp <- fromRepo $ gitAnnexTmpObjectLocation dummykey
 		ok <- Transfer.notifyTransfer Transfer.Download url $
-			Transfer.download u dummykey afile Transfer.forwardRetry $ \p -> do
+			Transfer.download u dummykey afile Transfer.stdRetry $ \p -> do
 				liftIO $ createDirectoryIfMissing True (parentDir tmp)
 				downloader tmp p
 		if ok

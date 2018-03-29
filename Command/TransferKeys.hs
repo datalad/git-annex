@@ -35,13 +35,13 @@ start = do
   where
 	runner (TransferRequest direction remote key file)
 		| direction == Upload = notifyTransfer direction file $
-			upload (Remote.uuid remote) key file forwardRetry $ \p -> do
+			upload (Remote.uuid remote) key file stdRetry $ \p -> do
 				ok <- Remote.storeKey remote key file p
 				when ok $
 					Remote.logStatus remote key InfoPresent
 				return ok
 		| otherwise = notifyTransfer direction file $
-			download (Remote.uuid remote) key file forwardRetry $ \p ->
+			download (Remote.uuid remote) key file stdRetry $ \p ->
 				getViaTmp (RemoteVerify remote) key $ \t -> do
 					r <- Remote.retrieveKeyFile remote key file t p
 					-- Make sure we get the current

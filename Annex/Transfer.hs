@@ -1,6 +1,6 @@
 {- git-annex transfers
  -
- - Copyright 2012-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,7 +14,7 @@ module Annex.Transfer (
 	runTransfer,
 	alwaysRunTransfer,
 	noRetry,
-	forwardRetry,
+	stdRetry,
 	pickRemote,
 ) where
 
@@ -25,6 +25,7 @@ import Types.Transfer as X
 import Annex.Notification as X
 import Annex.Perms
 import Utility.Metered
+import Utility.ThreadScheduler
 import Annex.LockPool
 import Types.Key
 import qualified Types.Remote as Remote
@@ -71,7 +72,8 @@ alwaysRunTransfer :: Observable v => Transfer -> AssociatedFile -> RetryDecider 
 alwaysRunTransfer = runTransfer' True
 
 runTransfer' :: Observable v => Bool -> Transfer -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
-runTransfer' ignorelock t afile shouldretry transferaction = checkSecureHashes t $ do
+runTransfer' ignorelock t afile retrydecider transferaction = checkSecureHashes t $ do
+	shouldretry <- retrydecider
 	info <- liftIO $ startTransferInfo afile
 	(meter, tfile, createtfile, metervar) <- mkProgressUpdater t info
 	mode <- annexFileMode
@@ -81,7 +83,7 @@ runTransfer' ignorelock t afile shouldretry transferaction = checkSecureHashes t
 			showNote "transfer already in progress, or unable to take transfer lock"
 			return observeFailure
 		else do
-			v <- retry info metervar $ transferaction meter
+			v <- retry shouldretry info metervar $ transferaction meter
 			liftIO $ cleanup tfile lck
 			if observeBool v
 				then removeFailedTransfer t
@@ -132,15 +134,16 @@ runTransfer' ignorelock t afile shouldretry transferaction = checkSecureHashes t
 		dropLock lockhandle
 		void $ tryIO $ removeFile lck
 #endif
-	retry oldinfo metervar run = tryNonAsync run >>= \case
+	retry shouldretry oldinfo metervar run = tryNonAsync run >>= \case
 		Right b -> return b
 		Left e -> do
 			warning (show e)
 			b <- getbytescomplete metervar
 			let newinfo = oldinfo { bytesComplete = Just b }
-			if shouldretry oldinfo newinfo
-				then retry newinfo metervar run
-				else return observeFailure
+			ifM (shouldretry oldinfo newinfo)
+				( retry shouldretry newinfo metervar run
+				, return observeFailure
+				)
 	getbytescomplete metervar
 		| transferDirection t == Upload =
 			liftIO $ readMVar metervar
@@ -172,15 +175,53 @@ checkSecureHashes t a
   where
 	variety = keyVariety (transferKey t)
 
-type RetryDecider = TransferInfo -> TransferInfo -> Bool
+type RetryDecider = Annex (TransferInfo -> TransferInfo -> Annex Bool)
+
+{- The first RetryDecider will be checked first; only if it says not to
+ - retry will the second one be checked. -}
+combineRetryDeciders :: RetryDecider -> RetryDecider -> RetryDecider
+combineRetryDeciders a b = do
+	ar <- a
+	br <- b
+	return $ \old new -> ar old new <||> br old new
 
 noRetry :: RetryDecider
-noRetry _ _ = False
+noRetry = pure $ \_ _ -> pure False
+
+stdRetry :: RetryDecider
+stdRetry = combineRetryDeciders forwardRetry configuredRetry
 
 {- Retries a transfer when it fails, as long as the failed transfer managed
  - to send some data. -}
 forwardRetry :: RetryDecider
-forwardRetry old new = bytesComplete old < bytesComplete new
+forwardRetry = pure $ \old new -> pure $ bytesComplete old < bytesComplete new
+
+{- Retries a number of times with growing delays in between when enabled
+ - by git configuration. -}
+configuredRetry :: RetryDecider
+configuredRetry = do
+	retrycounter <- liftIO $ newMVar 0
+	return $ \_old new -> do
+		(maxretries, Seconds initretrydelay) <- getcfg $ 
+			Remote.gitconfig <$> transferRemote new
+		retries <- liftIO $ modifyMVar retrycounter $
+			\n -> return (n + 1, n + 1)
+		if retries < maxretries
+			then do
+				let retrydelay = Seconds (initretrydelay * 2^(retries-1))
+				showSideAction $ "Delaying " ++ show (fromSeconds retrydelay) ++ " before retrying."
+				liftIO $ threadDelaySeconds retrydelay
+				return True
+			else return False
+  where
+	globalretrycfg = fromMaybe 0 . annexRetry
+		<$> Annex.getGitConfig
+	globalretrydelaycfg = fromMaybe (Seconds 1) . annexRetryDelay
+		<$> Annex.getGitConfig
+	getcfg Nothing = (,) <$> globalretrycfg <*> globalretrydelaycfg
+	getcfg (Just gc) = (,)
+		<$> maybe globalretrycfg return (remoteAnnexRetry gc)
+		<*> maybe globalretrydelaycfg return (remoteAnnexRetryDelay gc)
 
 {- Picks a remote from the list and tries a transfer to it. If the transfer
  - does not succeed, goes on to try other remotes from the list.

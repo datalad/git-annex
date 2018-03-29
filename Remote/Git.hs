@@ -467,7 +467,7 @@ copyFromRemote' forcersync r (State connpool _) key file dest meterupdate
 				Just (object, checksuccess) -> do
 					copier <- mkCopier hardlink params
 					runTransfer (Transfer Download u key)
-						file forwardRetry
+						file stdRetry
 						(\p -> copier object dest (combineMeterUpdate p meterupdate) checksuccess)
 	| Git.repoIsSsh (repo r) = if forcersync
 		then fallback meterupdate
@@ -595,7 +595,7 @@ copyToRemote r (State connpool duc) key file meterupdate
 				ensureInitialized
 				copier <- mkCopier hardlink params
 				let verify = Annex.Content.RemoteVerify r
-				runTransfer (Transfer Download u key) file forwardRetry $ \p ->
+				runTransfer (Transfer Download u key) file stdRetry $ \p ->
 					let p' = combineMeterUpdate meterupdate p
 					in Annex.Content.saveState True `after`
 						Annex.Content.getViaTmp verify key

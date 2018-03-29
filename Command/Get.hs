@@ -110,7 +110,7 @@ getKey' key afile = dispatch
 			either (const False) id <$> Remote.hasKey r key
 		| otherwise = return True
 	docopy r witness = getViaTmp (RemoteVerify r) key $ \dest ->
-		download (Remote.uuid r) key afile forwardRetry
+		download (Remote.uuid r) key afile stdRetry
 			(\p -> do
 				showAction $ "from " ++ Remote.name r
 				Remote.retrieveKeyFile r key afile dest p
