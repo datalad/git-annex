@@ -135,9 +135,14 @@ runTransfer' ignorelock t afile retrydecider transferaction = checkSecureHashes 
 		void $ tryIO $ removeFile lck
 #endif
 	retry shouldretry oldinfo metervar run = tryNonAsync run >>= \case
-		Right b -> return b
+		Right v
+			| observeBool v -> return v
+			| otherwise -> checkretry
 		Left e -> do
 			warning (show e)
+			checkretry
+	  where
+		checkretry = do
 			b <- getbytescomplete metervar
 			let newinfo = oldinfo { bytesComplete = Just b }
 			ifM (shouldretry oldinfo newinfo)
