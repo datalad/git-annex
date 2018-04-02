@@ -1,0 +1,1 @@
+In the webapp I can see which repos have syncing enabled or disabled, and toggle the property by clicking the current status. How can I do this in the terminal? I want to be able to see the current syncing status of the repository, and to change it, without opening the webapp.
