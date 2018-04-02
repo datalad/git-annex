@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2018-04-02T17:13:33Z"
+ content="""
+Ok so I misunderstood this, it's entirely about -J mode and external
+special remote processes. One is started per parallelism level, because
+otherwise nothing much would actually be done in parallel. 
+
+You wanted to start only one because reasons, which IIRC from talking
+with you were in the meantime fixed in your special remore program using
+locking.
+"""]]
