@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2018-04-03T19:17:32Z"
+ content="""
+PREPARE-FAILURE is documented as "the special remote cannot be used"
+and so I don't think it makes sense for git-annex to use the previously
+started instance of the program if a later one fails like that.
+
+It would need a new response to PREPARE. And some possibly not
+insignificant changes in Remote/External.hs to support it. In particular,
+Remote/External.hs currently delays sending PREPARE until the first time
+it uses a special remote, but this seems to need PREPARE to be sent
+earlier, when it starts up the special remote, so it can detect the new
+response and remember that it should not try to start up any more
+concurrent instances and instead use any already started instance.
+
+The best argument for doing it, I think, is if several different external
+special remote programs really only support a single instance running at a
+time, and if supporting that inside git-annex would be enough of a win,
+rather than making those programs do their own locking.
+
+Hmm, an external  special remote program can't just block its response to
+PREPARE when another instance is running, because it would never be able to
+un-block. So it seems they would have to use finer-grained locking when
+responding to eg TRANSFER. I don't know if anything other than datalad
+needs such locking (and IIUC datalad already got the necessary locking), 
+but it does seem like it would be worth adding an extra PREPARE response
+to avoid needing to so complicate external special remote programs.
+"""]]
