@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-04-04T16:40:19Z"
+ content="""
+One use case for the separate fields is `git-annex view`,
+where they allow creating view branches with yyyy/mm/ subdirectories
+or artist/yyyy/ or whatever kind of thing the user wants.
+
+Part of the original metadata design, which never got implemented,
+was to allow pure functions on metadata, that added to the set of available
+metadata. So a unix timestamp could be what's stored in metadata, and then
+the individual fields (and more fields that are currently omitted to avoid
+bloat) derived from it.
+
+I'd be happy to see that part of the metadata design actually happen.
+There are some potential problems with it that need to be thought about,
+such as:
+
+* What should happen if the user runs `git annex metadata` to change
+  or delete such a derived metadata field?
+* If a unix timestamp is stored, it's harder for the user to make
+  some simple edit, such as adjusting the year of a file to the year they
+  want. Should a change to a derived year field propigate back to the unix
+  timestamp? (Would need reversible functions.)
+
+(BTW, the timestamps on metadata fields come for "free" in that the
+underlying metadata storage log necessarily contains timestamps of when
+each part of the metadata was changed.)
+"""]]
