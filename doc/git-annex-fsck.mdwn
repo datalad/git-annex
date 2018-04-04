@@ -65,7 +65,7 @@ With parameters, only the specified files are checked.
   To verify data integrity only while disregarding required number of copies,
   use `--numcopies=1`.
 
-* `--all`
+* `--all` `-A`
 
   Normally only the files in the currently checked out branch
   are fscked. This option causes all versions of all files to be fscked.

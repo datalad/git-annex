@@ -94,7 +94,7 @@ by running "git annex sync" on the remote.
 
   This option can be repeated multiple times with different paths.
 
-* `--all`
+* `--all` `-A`
 
   This option, when combined with `--content`, makes all available versions
   of all files be synced, when preferred content settings allow.

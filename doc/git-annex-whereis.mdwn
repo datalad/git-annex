@@ -31,7 +31,7 @@ For example:
 
   Show where a particular git-annex key is located.
 
-* `--all`
+* `--all` `-A`
 
   Show whereis information for all known keys.
 

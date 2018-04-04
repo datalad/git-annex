@@ -80,7 +80,7 @@ automatically.
   The [[git-annex-matching-options]](1)
   can be used to specify files to act on.
 
-* `--all`
+* `--all` `-A`
 
   Specify instead of a file to get/set metadata on all known keys.
 

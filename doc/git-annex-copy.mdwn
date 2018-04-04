@@ -47,7 +47,7 @@ Copies the content of files from or to another remote.
   and always check if the remote has content. Can be useful if the location
   tracking information is out of date.
 
-* `--all`
+* `--all` `-A`
 
   Rather than specifying a filename or path to copy, this option can be
   used to copy all available versions of all files.

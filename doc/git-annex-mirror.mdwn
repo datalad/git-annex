@@ -36,7 +36,7 @@ contents. Use [[git-annex-sync]](1) for that.
   Enables parallel transfers with up to the specified number of jobs
   running at once. For example: `-J10`
 
-* `--all`
+* `--all` `-A`
 
   Mirror all objects stored in the git annex, not only objects used by
   currently existing files. 

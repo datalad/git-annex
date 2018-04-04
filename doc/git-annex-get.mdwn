@@ -58,7 +58,7 @@ or transferring them from some kind of key-value store.
   as git-annex does not know the associated file, and the associated file
   may not even be in the current git working directory.
 
-* `--all`
+* `--all` `-A`
 
   Rather than specifying a filename or path to get, this option can be
   used to get all available versions of all files.
