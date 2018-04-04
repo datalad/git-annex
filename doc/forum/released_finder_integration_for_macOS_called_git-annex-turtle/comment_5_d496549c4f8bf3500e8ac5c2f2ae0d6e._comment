@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2018-04-04T18:17:02Z"
+ content="""
+I guess what would be helpful is if you can take the current git-annex.app
+and copy its files to a directory and then add in the
+git-annex-turtle.app's files in a way that combines them both.
+I don't currently have an OSX desktop to play with that, but if you can
+show me the changes that need to be made to the file tree in git-annex.app
+to merge turtle into it, I can update the build scripts.
+"""]]
