@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: dmg (possibly) requires rebuild"""
+ date="2018-04-04T15:56:38Z"
+ content="""
+@achilleas.k, that was [this bug](https://git-annex.branchable.com/Error_running_git-annex.app_on_OS_X_10.13.1___40__17B1003__41__/) which should be fixed
+now.
+
+Please file bug reports for issues with the OSX build, don't report them
+here.
+"""]]
