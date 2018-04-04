@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: git-annex-webapp missing from Fedora 27"""
+ date="2018-04-04T15:59:51Z"
+ content="""
+@dittigas git-annex can be built without the webapp,
+if the libraries it uses are not made available at build time.
+I suggest you get in touch with the Fedora maintainers and ask them to
+enable the webapp in their builds.
+"""]]
