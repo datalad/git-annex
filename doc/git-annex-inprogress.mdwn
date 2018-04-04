@@ -25,15 +25,25 @@ some file formats can be usefully streamed in this way.
 
 # OPTIONS
 
-* file matching options
- 
-  The [[git-annex-matching-options]](1)
-  can be used to specify files to access.
+* `[path ..]`
+
+  The files or directories whose partially downloaded content you want to
+  access.
+
+  Note that, when no path is specified, it defaults to all files in the
+  current working directory, and subdirectories, which can take a while to
+  traverse. It's most efficient to specify a the file you are interested
+  in, or to use `--all`
 
 * `--all`
 
   Rather than specifying a filename or path, this option can be
   used to access all files that are currently being downloaded.
+
+* file matching options
+ 
+  The [[git-annex-matching-options]](1)
+  can be used to specify files to access.
 
 # EXIT STATUS
 
