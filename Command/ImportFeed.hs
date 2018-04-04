@@ -150,7 +150,7 @@ downloadFeed url
 	| Url.parseURIRelaxed url == Nothing = giveup "invalid feed url"
 	| otherwise = do
 		showOutput
-		Url.withUrlOptions $ \ou ->
+		Url.withUrlOptions $ \uo ->
 			liftIO $ withTmpFile "feed" $ \f h -> do
 				hClose h
 				ifM (Url.download url f uo)
@@ -167,7 +167,8 @@ performDownload opts cache todownload = case location todownload of
 				then do
 					urlinfo <- if relaxedOption (downloadOptions opts)
 						then pure Url.assumeUrlExists
-						else Url.withUrlOptions (Url.getUrlInfo url)
+						else Url.withUrlOptions $
+							liftIO . Url.getUrlInfo url
 					let dlopts = (downloadOptions opts)
 						-- force using the filename
 						-- chosen here

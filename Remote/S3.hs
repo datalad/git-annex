@@ -1,6 +1,6 @@
 {- S3 remotes
  -
- - Copyright 2011-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -22,7 +22,7 @@ import qualified Data.ByteString as S
 import qualified Data.Map as M
 import Data.Char
 import Network.Socket (HostName)
-import Network.HTTP.Conduit (Manager, newManager)
+import Network.HTTP.Conduit (Manager)
 import Network.HTTP.Client (responseStatus, responseBody, RequestBody(..))
 import Network.HTTP.Types
 import Control.Monad.Trans.Resource
@@ -51,7 +51,7 @@ import Utility.DataUnits
 import Utility.FileSystemEncoding
 import Annex.Content
 import Annex.Url (withUrlOptions)
-import Utility.Url (checkBoth, managerSettings, closeManager)
+import Utility.Url (checkBoth, UrlOptions(..))
 
 type BucketName = String
 
@@ -295,7 +295,7 @@ checkKey r info Nothing k = case getpublicurl info of
 		giveup "No S3 credentials configured"
 	Just geturl -> do
 		showChecking r
-		withUrlOptions $ checkBoth (geturl k) (keySize k)
+		withUrlOptions $ liftIO . checkBoth (geturl k) (keySize k)
 checkKey r info (Just h) k = do
 	showChecking r
 	checkKeyHelper info h (T.pack $ bucketObject info k)
@@ -500,8 +500,8 @@ withS3HandleMaybe c gc u a = do
 #if MIN_VERSION_aws(0,17,0)
 				Nothing
 #endif
-			bracketIO (newManager managerSettings) closeManager $ \mgr -> 
-				a $ Just $ S3Handle mgr awscfg s3cfg
+			withUrlOptions $ \ou ->
+				a $ Just $ S3Handle (httpManager ou) awscfg s3cfg
 		Nothing -> a Nothing
   where
 	s3cfg = s3Configuration c

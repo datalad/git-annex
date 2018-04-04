@@ -1,6 +1,6 @@
 {- Url downloading.
  -
- - Copyright 2011-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2018 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -11,11 +11,12 @@
 {-# LANGUAGE FlexibleContexts #-}
 
 module Utility.Url (
-	closeManager,
+	newManager,
 	managerSettings,
 	URLString,
 	UserAgent,
-	UrlOptions,
+	UrlOptions(..),
+	defUrlOptions,
 	mkUrlOptions,
 	check,
 	checkBoth,
@@ -42,17 +43,8 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.UTF8 as B8
 import qualified Data.ByteString.Lazy as L
 import Control.Monad.Trans.Resource
-import Network.HTTP.Conduit hiding (closeManager)
+import Network.HTTP.Conduit
 import Network.HTTP.Client (brRead, withResponse)
-
--- closeManager is needed with older versions of http-client,
--- but not new versions, which warn about using it. Urgh.
-#if ! MIN_VERSION_http_client(0,4,18)
-import Network.HTTP.Client (closeManager)
-#else
-closeManager :: Manager -> IO ()
-closeManager _ = return ()
-#endif
 
 #if ! MIN_VERSION_http_client(0,5,0)
 responseTimeoutNone :: Maybe Int
@@ -78,15 +70,20 @@ data UrlOptions = UrlOptions
 	, reqHeaders :: Headers
 	, reqParams :: [CommandParam]
 	, applyRequest :: Request -> Request
+	, httpManager :: Manager
 	}
 
-instance Default UrlOptions
-  where
-	def = UrlOptions Nothing [] [] id
+defUrlOptions :: IO UrlOptions
+defUrlOptions = UrlOptions
+	<$> pure Nothing
+	<*> pure []
+	<*> pure []
+	<*> pure id
+	<*> newManager managerSettings
 
-mkUrlOptions :: Maybe UserAgent -> Headers -> [CommandParam] -> UrlOptions
-mkUrlOptions defuseragent reqheaders reqparams =
-	UrlOptions useragent reqheaders reqparams applyrequest
+mkUrlOptions :: Maybe UserAgent -> Headers -> [CommandParam] -> Manager -> UrlOptions
+mkUrlOptions defuseragent reqheaders reqparams manager =
+	UrlOptions useragent reqheaders reqparams applyrequest manager
   where
 	applyrequest = \r -> r { requestHeaders = requestHeaders r ++ addedheaders }
 	addedheaders = uaheader ++ otherheaders
@@ -118,7 +115,7 @@ checkBoth url expected_size uo = do
 	return (fst v && snd v)
 
 check :: URLString -> Maybe Integer -> UrlOptions -> IO (Bool, Bool)
-check url expected_size = go <$$> getUrlInfo url
+check url expected_size uo = go <$> getUrlInfo url uo
   where
 	go (UrlInfo False _ _) = (False, False)
 	go (UrlInfo True Nothing _) = (True, True)
@@ -192,19 +189,16 @@ getUrlInfo url uo = case parseURIRelaxed url of
 		filter (\p -> fst p == h) . responseHeaders
 
 	existsconduit req = do
-		mgr <- newManager managerSettings
 		let req' = headRequest (applyRequest uo req)
-		ret <- runResourceT $ do
-			resp <- http req' mgr
-			-- forces processing the response before the
-			-- manager is closed
+		runResourceT $ do
+			resp <- http req' (httpManager uo)
+			-- forces processing the response while
+			-- within the runResourceT
 			liftIO $ if responseStatus resp == ok200
 				then found
 					(extractlen resp)
 					(extractfilename resp)
 				else dne
-		liftIO $ closeManager mgr
-		return ret
 
 	existscurl u = do
 		output <- catchDefaultIO "" $
@@ -327,14 +321,11 @@ downloadPartial url uo n = case parseURIRelaxed url of
 	go u = case parseUrlConduit (show u) of
 		Nothing -> return Nothing
 		Just req -> do
-			mgr <- newManager managerSettings
 			let req' = applyRequest uo req
-			ret <- withResponse req' mgr $ \resp ->
+			withResponse req' (httpManager uo) $ \resp ->
 				if responseStatus resp == ok200
 					then Just <$> brread n [] (responseBody resp)
 					else return Nothing
-			liftIO $ closeManager mgr
-			return ret
 
 	-- could use brReadSome here, needs newer http-client dependency
 	brread n' l rb

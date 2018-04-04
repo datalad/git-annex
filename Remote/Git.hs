@@ -336,10 +336,11 @@ inAnnex rmt (State connpool duc) key
 	r = repo rmt
 	checkhttp = do
 		showChecking r
-		ifM (Url.withUrlOptions $ \uo -> anyM (\u -> Url.checkBoth u (keySize key) uo) (keyUrls rmt key))
-			( return True
-			, giveup "not found"
-			)
+		ifM (Url.withUrlOptions $ \uo -> liftIO $
+			anyM (\u -> Url.checkBoth u (keySize key) uo) (keyUrls rmt key))
+				( return True
+				, giveup "not found"
+				)
 	checkremote = 
 		let fallback = Ssh.inAnnex r key
 		in P2PHelper.checkpresent (Ssh.runProto rmt connpool (cantCheck rmt) fallback) key

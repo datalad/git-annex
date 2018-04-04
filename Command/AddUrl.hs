@@ -196,7 +196,8 @@ startWeb o urlstring = go $ fromMaybe bad $ parseURI urlstring
 		pathmax <- liftIO $ fileNameLengthLimit "."
 		urlinfo <- if relaxedOption (downloadOptions o)
 			then pure Url.assumeUrlExists
-			else Url.withUrlOptions (Url.getUrlInfo urlstring)
+			else Url.withUrlOptions $
+				liftIO . Url.getUrlInfo urlstring
 		file <- adjustFile o <$> case fileOption (downloadOptions o) of
 			Just f -> pure f
 			Nothing -> case Url.urlSuggestedFile urlinfo of

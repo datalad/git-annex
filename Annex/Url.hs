@@ -9,6 +9,7 @@
 module Annex.Url (
 	module U,
 	withUrlOptions,
+	getUrlOptions,
 	getUserAgent,
 ) where
 
@@ -24,20 +25,24 @@ getUserAgent :: Annex (Maybe U.UserAgent)
 getUserAgent = Annex.getState $ 
 	Just . fromMaybe defaultUserAgent . Annex.useragent
 
-withUrlOptions :: (U.UrlOptions -> Annex a) -> Annex a
-withUrlOptions a = Annex.getState Annex.urloptions >>= \case
-	Just uo -> a uo
+getUrlOptions :: Annex U.UrlOptions
+getUrlOptions = Annex.getState Annex.urloptions >>= \case
+	Just uo -> return uo
 	Nothing -> do
 		uo <- mk
 		Annex.changeState $ \s -> s
 			{ Annex.urloptions = Just uo }
-		a uo
+		return uo
   where
 	mk = mkUrlOptions
 		<$> getUserAgent
 		<*> headers
 		<*> options
+		<*> liftIO (U.newManager U.managerSettings)
 	headers = annexHttpHeadersCommand <$> Annex.getGitConfig >>= \case
 		Just cmd -> lines <$> liftIO (readProcess "sh" ["-c", cmd])
 		Nothing -> annexHttpHeaders <$> Annex.getGitConfig
 	options = map Param . annexWebOptions <$> Annex.getGitConfig
+
+withUrlOptions :: (U.UrlOptions -> Annex a) -> Annex a
+withUrlOptions a = a =<< getUrlOptions

@@ -947,8 +947,8 @@ downloadUrl k p urls file = meteredFile file (Just p) k $
 			( return Url.downloadQuiet
 			, return Url.download
 			)
-		Url.withUrlOptions $ \uo ->
-			anyM (\u -> a u file uo) urls
+		Url.withUrlOptions $ \uo -> 
+			liftIO $ anyM (\u -> a u file uo) urls
 	go (Just basecmd) = anyM (downloadcmd basecmd) urls
 	downloadcmd basecmd url =
 		progressCommand "sh" [Param "-c", Param $ gencmd url basecmd]

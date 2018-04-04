@@ -12,6 +12,11 @@ and pipelining requests, so it makes mass url downloads a lot slower than
 if git-annex used http-conduit to do url downloads itself. [[users/yoh]]
 has requested http pipelining.
 
+(git-annex was creating a new http manager each time it hit an url,
+except for in the S3 remote which reused a single manager. That's now been
+improved, so all http-conduit use in git-annex reuses a http manager, and
+so will do http pipelining.)
+
 For file: ftp: and more unusual urls, http-conduit can't support them.
 git-annex does support those urls, and people rely on that, so it would
 still need to use wget or curl for those.

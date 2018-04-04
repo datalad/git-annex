@@ -95,7 +95,7 @@ newAssistantUrl repo = do
  - warp-tls listens to http, in order to show an error page, so this works.
  -}
 assistantListening :: URLString -> IO Bool
-assistantListening url = catchBoolIO $ exists url' def
+assistantListening url = catchBoolIO $ exists url' =<< defUrlOptions
   where
 	url' = case parseURI url of
 		Nothing -> url

@@ -316,7 +316,8 @@ usingDistribution :: IO Bool
 usingDistribution = isJust <$> getEnv "GIT_ANNEX_STANDLONE_ENV"
 
 downloadDistributionInfo :: Assistant (Maybe GitAnnexDistribution)
-downloadDistributionInfo = Url.withUrlOptions $ \uo -> do
+downloadDistributionInfo = do
+	uo <- liftAnnex Url.getUrlOptions
 	gpgcmd <- liftAnnex $ gpgCmd <$> Annex.getGitConfig
 	liftIO $ withTmpDir "git-annex.tmp" $ \tmpdir -> do
 		let infof = tmpdir </> "info"
