@@ -144,6 +144,7 @@ data AnnexState = AnnexState
 	, keysdbhandle :: Maybe Keys.DbHandle
 	, cachedcurrentbranch :: Maybe Git.Branch
 	, cachedgitenv :: Maybe [(String, String)]
+	, urloptions :: Maybe UrlOptions
 	}
 
 newState :: GitConfig -> Git.Repo -> IO AnnexState
@@ -200,6 +201,7 @@ newState c r = do
 		, keysdbhandle = Nothing
 		, cachedcurrentbranch = Nothing
 		, cachedgitenv = Nothing
+		, urloptions = Nothing
 		}
 
 {- Makes an Annex state object for the specified git repo.

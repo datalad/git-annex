@@ -189,8 +189,7 @@ escapeHeader :: String -> String
 escapeHeader = escapeURIString (\c -> isUnescapedInURI c && c /= ' ')
 
 getRepoInfo :: RemoteConfig -> Widget
-getRepoInfo c = do
-	uo <- liftAnnex Url.getUrlOptions
+getRepoInfo c = Url.withUrlOptions $ \uo ->
 	exists <- liftIO $ catchDefaultIO False $ Url.exists url uo
 	[whamlet|
 <a href="#{url}">

@@ -1,7 +1,7 @@
 {- Url downloading, with git-annex user agent and configured http
  - headers and wget/curl options.
  -
- - Copyright 2013-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,7 +9,6 @@
 module Annex.Url (
 	module U,
 	withUrlOptions,
-	getUrlOptions,
 	getUserAgent,
 ) where
 
@@ -25,16 +24,20 @@ getUserAgent :: Annex (Maybe U.UserAgent)
 getUserAgent = Annex.getState $ 
 	Just . fromMaybe defaultUserAgent . Annex.useragent
 
-getUrlOptions :: Annex U.UrlOptions
-getUrlOptions = mkUrlOptions
-	<$> getUserAgent
-	<*> headers
-	<*> options
+withUrlOptions :: (U.UrlOptions -> Annex a) -> Annex a
+withUrlOptions a = Annex.getState Annex.urloptions >>= \case
+	Just uo -> a uo
+	Nothing -> do
+		uo <- mk
+		Annex.changeState $ \s -> s
+			{ Annex.urloptions = Just uo }
+		a uo
   where
+	mk = mkUrlOptions
+		<$> getUserAgent
+		<*> headers
+		<*> options
 	headers = annexHttpHeadersCommand <$> Annex.getGitConfig >>= \case
 		Just cmd -> lines <$> liftIO (readProcess "sh" ["-c", cmd])
 		Nothing -> annexHttpHeaders <$> Annex.getGitConfig
 	options = map Param . annexWebOptions <$> Annex.getGitConfig
-
-withUrlOptions :: (U.UrlOptions -> IO a) -> Annex a
-withUrlOptions a = liftIO . a =<< getUrlOptions

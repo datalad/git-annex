@@ -683,7 +683,7 @@ checkKeyUrl :: Git.Repo -> CheckPresent
 checkKeyUrl r k = do
 	showChecking r
 	us <- getWebUrls k
-	anyM (\u -> withUrlOptions $ checkBoth u (keySize k)) us
+	anyM (\u -> withUrlOptions $ liftIO . checkBoth u (keySize k)) us
 
 getWebUrls :: Key -> Annex [URLString]
 getWebUrls key = filter supported <$> getUrls key

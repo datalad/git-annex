@@ -11,6 +11,7 @@ git-annex (6.20180317) UNRELEASED; urgency=medium
   * When adding a new version of a file, and annex.genmetadata is enabled,
     don't copy the data metadata from the old version of the file,
     instead use the mtime of the file.
+  * Avoid running annex.http-headers-command more than once.
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Mar 2018 23:13:59 -0400
 

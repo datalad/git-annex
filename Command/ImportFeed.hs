@@ -150,13 +150,13 @@ downloadFeed url
 	| Url.parseURIRelaxed url == Nothing = giveup "invalid feed url"
 	| otherwise = do
 		showOutput
-		uo <- Url.getUrlOptions
-		liftIO $ withTmpFile "feed" $ \f h -> do
-			hClose h
-			ifM (Url.download url f uo)
-				( parseFeedString <$> readFileStrict f
-				, return Nothing
-				)
+		Url.withUrlOptions $ \ou ->
+			liftIO $ withTmpFile "feed" $ \f h -> do
+				hClose h
+				ifM (Url.download url f uo)
+					( parseFeedString <$> readFileStrict f
+					, return Nothing
+					)
 
 performDownload :: ImportFeedOptions -> Cache -> ToDownload -> Annex Bool
 performDownload opts cache todownload = case location todownload of

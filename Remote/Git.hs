@@ -248,8 +248,7 @@ tryGitConfigRead autoinit r
 				return $ Right r'
 			Left l -> return $ Left l
 
-	geturlconfig = do
-		uo <- Url.getUrlOptions
+	geturlconfig = Url.withUrlOptions $ \uo -> do
 		v <- liftIO $ withTmpFile "git-annex.tmp" $ \tmpfile h -> do
 			hClose h
 			let url = Git.repoLocation r ++ "/config"

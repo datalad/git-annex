@@ -124,8 +124,7 @@ youtubeDlTo key url dest = do
 -- without it. So, this first downloads part of the content and checks 
 -- if it's a html page; only then is youtube-dl used.
 htmlOnly :: URLString -> a -> Annex a -> Annex a
-htmlOnly url fallback a = do
-	uo <- getUrlOptions
+htmlOnly url fallback a = withUrlOptions $ \uo -> 
 	liftIO (downloadPartial url uo htmlPrefixLength) >>= \case
 		Just bs | isHtmlBs bs -> a
 		_ -> return fallback
