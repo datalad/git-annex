@@ -40,3 +40,4 @@ git annex addurl --debug   6.49s user 0.32s system 18% cpu 35.834 total
 """]]
 
 
+> importfeed supports youtube playlists, once you look up their rss feed. [[done]] --[[Joey]]
