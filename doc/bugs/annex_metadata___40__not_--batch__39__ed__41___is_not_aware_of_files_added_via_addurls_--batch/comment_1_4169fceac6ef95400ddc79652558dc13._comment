@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-04-04T16:01:21Z"
+ content="""
+I guess you expected annex.queuesize to be set to 1.
+However, that would mean every single file that addurl adds
+needs the whole git index file to be rewritten so other commands can
+immediately know about it. Which could be very slow, which is why that is
+not the default.
+
+What you can do is use `git annex addurl --batch --json` and observe the
+key that it reports it's added. Then pass that key into `git annex metadata --batch --json`
+to add metadata to the key, which will work before the file ever gets
+added to the git index, and much more efficiently than relying on the
+index.
+
+(Pretty sure this has came up before and that I suggested the same thing
+then.)
+"""]]
