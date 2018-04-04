@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-04-04T16:26:07Z"
+ content="""
+Did you install git-annex from the nix package?
+
+The desktop file is supposed to be shipped with the OS's package of
+git-annex, in /etc so it's available for file managers to use as soon as
+it's installed. `make install` arranges for that to happen. 
+
+If nix is building
+git-annex in some other way, they may be leaving out such ancillary files.
+(And from what I know of nix, there would be some complication providing 
+files in /etc.)
+
+The other way the desktop file is installed was added for
+the git-annex standalone bundle, and installs it into the home directory
+of the user who starts the git-annex webapp. You've correctly
+identified the (undocumented) `GIT_ANNEX_PACKAGE_INSTALL=1` that informs
+git-annex that it's running in such a situation. But there's also a
+`GIT_ANNEX_APP_BASE`
+that it expects to point to where the standalone bundle is located
+(in order to use an icon file from there in the desktop file),
+and it doesn't install the desktop file when that's not set.
+
+I think that the nix package maintainer should be looped into this,
+so we can come up with some solution that works out of the box with those
+packages.
+"""]]
