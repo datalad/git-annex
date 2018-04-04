@@ -252,13 +252,15 @@ data ModMeta
 	= AddMeta MetaField MetaValue
 	| DelMeta MetaField (Maybe MetaValue)
 	-- ^ delete value of a field. With Just, only that specific value
-	-- is deleted; with Nothing, all current values are deleted.a
+	-- is deleted; with Nothing, all current values are deleted.
 	| DelAllMeta
 	-- ^ delete all currently set metadata
 	| SetMeta MetaField (S.Set MetaValue)
 	-- ^ removes any existing values
 	| MaybeSetMeta MetaField MetaValue
 	-- ^ set when field has no existing value
+	| ComposeModMeta ModMeta ModMeta
+	-- ^ composing multiple modifications
 	deriving (Show)
 
 {- Applies a ModMeta, generating the new MetaData.
@@ -279,6 +281,7 @@ modMeta m (SetMeta f s) = updateMetaData' f s $
 modMeta m (MaybeSetMeta f v)
 	| S.null (currentMetaDataValues f m) = updateMetaData f v emptyMetaData
 	| otherwise = emptyMetaData
+modMeta m (ComposeModMeta a b) = unionMetaData (modMeta m a) (modMeta m b)
 
 {- Avoid putting too many fields in the map; extremely large maps make
  - the seriaization test slow due to the sheer amount of data.

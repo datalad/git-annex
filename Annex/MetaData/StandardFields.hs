@@ -10,6 +10,7 @@ module Annex.MetaData.StandardFields (
 	yearMetaField,
 	monthMetaField,
 	dayMetaField,
+	isDateMetaField,
 	lastChangedField,
 	mkLastChangedField,
 	isLastChangedField
@@ -30,6 +31,12 @@ monthMetaField = mkMetaFieldUnchecked "month"
 
 dayMetaField :: MetaField
 dayMetaField = mkMetaFieldUnchecked "day"
+
+isDateMetaField :: MetaField -> Bool
+isDateMetaField yearMetaField = True
+isDateMetaField monthMetaField = True
+isDateMetaField datMetaField = True
+isDateMetaField _ = False
 
 lastChangedField :: MetaField
 lastChangedField = mkMetaFieldUnchecked lastchanged

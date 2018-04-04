@@ -8,6 +8,9 @@ git-annex (6.20180317) UNRELEASED; urgency=medium
     to configure transfer retries.
   * Also do forward retrying in cases where no exception is thrown,
     but the transfer failed.
+  * When adding a new version of a file, and annex.genmetadata is enabled,
+    don't copy the data metadata from the old version of the file,
+    instead use the mtime of the file.
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Mar 2018 23:13:59 -0400
 

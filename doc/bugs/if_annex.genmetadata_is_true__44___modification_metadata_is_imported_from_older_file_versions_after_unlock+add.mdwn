@@ -20,3 +20,4 @@ output: `Copied metadata from old version of bar to new version. If you don't wa
 ### What version of git-annex are you using? On what operating system?
 6.20180227, various Linuxes.
 
+> [[fixed|done]] --[[Joey]]

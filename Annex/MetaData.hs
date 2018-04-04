@@ -22,7 +22,6 @@ import Annex.CatFile
 import Utility.Glob
 
 import qualified Data.Set as S
-import qualified Data.Map as M
 import Data.Time.Calendar
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
@@ -41,28 +40,43 @@ genMetaData :: Key -> FilePath -> FileStatus -> Annex ()
 genMetaData key file status = do
 	catKeyFileHEAD file >>= \case
 		Nothing -> noop
-		Just oldkey -> 
-			whenM (copyMetaData oldkey key)
+		Just oldkey ->
+			-- Have to copy first, before adding any
+			-- more metadata, because copyMetaData does not
+			-- preserve any metadata already on key.
+			whenM (copyMetaData oldkey key <&&> (not <$> onlydatemeta oldkey)) $
 				warncopied
 	whenM (annexGenMetaData <$> Annex.getGitConfig) $ do
-		curr <- getCurrentMetaData key
-		addMetaData key (dateMetaData mtime curr)
+		old <- getCurrentMetaData key
+		addMetaData key (dateMetaData mtime old)
   where
 	mtime = posixSecondsToUTCTime $ realToFrac $ modificationTime status
 	warncopied = warning $ 
 		"Copied metadata from old version of " ++ file ++ " to new version. " ++ 
 		"If you don't want this copied metadata, run: git annex metadata --remove-all " ++ file
+	-- If the only fields copied were date metadata, and they'll
+	-- be overwritten with the current mtime, no need to warn about
+	-- copying.
+	onlydatemeta oldkey = ifM (annexGenMetaData <$> Annex.getGitConfig)
+		( null . filter (not . isDateMetaField . fst) . fromMetaData 
+			<$> getCurrentMetaData oldkey
+		, return False
+		)
 
 {- Generates metadata for a file's date stamp.
- - Does not overwrite any existing metadata values. -}
+ -
+ - Any date fields in the old metadata will be overwritten.
+ - 
+ - Note that the returned MetaData does not contain all the input MetaData,
+ - only changes to add the date fields. -}
 dateMetaData :: UTCTime -> MetaData -> MetaData
-dateMetaData mtime old = MetaData $ M.fromList $ filter isnew
-	[ (yearMetaField, S.singleton $ toMetaValue $ show y)
-	, (monthMetaField, S.singleton $ toMetaValue $ show m)
-	, (dayMetaField, S.singleton $ toMetaValue $ show d)
-	]
+dateMetaData mtime old = modMeta old $
+	(SetMeta yearMetaField $ S.singleton $ toMetaValue $ show y)
+		`ComposeModMeta`
+	(SetMeta monthMetaField $ S.singleton $ toMetaValue $ show m)
+		`ComposeModMeta`
+	(SetMeta dayMetaField $ S.singleton $ toMetaValue $ show d)
   where
-	isnew (f, _) = S.null (currentMetaDataValues f old)
 	(y, m, d) = toGregorian $ utctDay mtime
 
 {- Parses field=value, field+=value, field-=value, field?=value -}
