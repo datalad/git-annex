@@ -14,6 +14,8 @@ git-annex (6.20180317) UNRELEASED; urgency=medium
   * Avoid running annex.http-headers-command more than once.
   * Enable HTTP connection reuse across multiple files, when git-annex
     uses http-conduit.
+  * info: Added "combined size of repositories containing these files"
+    stat when run on a directory.
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Mar 2018 23:13:59 -0400
 

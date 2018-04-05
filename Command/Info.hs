@@ -56,6 +56,15 @@ data KeyData = KeyData
 	, backendsKeys :: M.Map KeyVariety Integer
 	}
 
+instance Monoid KeyData where
+	mempty = KeyData 0 0 0 M.empty
+	mappend a b = KeyData
+		{ countKeys = countKeys a + countKeys b
+		, sizeKeys = sizeKeys a + sizeKeys b
+		, unknownSizeKeys = unknownSizeKeys a + unknownSizeKeys b
+		, backendsKeys = backendsKeys a <> backendsKeys b
+		}
+
 data NumCopiesStats = NumCopiesStats
 	{ numCopiesVarianceMap :: M.Map Variance Integer
 	}
@@ -237,6 +246,7 @@ tree_slow_stats :: [FilePath -> Stat]
 tree_slow_stats =
 	[ const numcopies_stats
 	, const reposizes_stats
+	, const reposizes_total
 	]
 
 file_stats :: FilePath -> Key -> [Stat]
@@ -491,6 +501,10 @@ reposizes_stats = stat desc $ nojson $ do
 		, dispJson = sz
 		}
 	lpad n s = (replicate (n - length s) ' ') ++ s
+
+reposizes_total :: Stat
+reposizes_total = simpleStat "combined size of repositories containing these files" $
+	showSizeKeys . mconcat . M.elems =<< cachedRepoData
 
 cachedPresentData :: StatState KeyData
 cachedPresentData = do
