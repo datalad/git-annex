@@ -477,7 +477,7 @@ numcopies_stats = stat "numcopies stats" $ json fmt $
 	calc <$> (maybe M.empty numCopiesVarianceMap <$> cachedNumCopiesStats)
   where
 	calc = map (\(variance, count) -> (show variance, count)) 
-		. sortBy (flip (comparing snd))
+		. sortBy (flip (comparing fst))
 		. M.toList
 	fmt = multiLine . map (\(variance, count) -> "numcopies " ++ variance ++ ": " ++ show count)
 

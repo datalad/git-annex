@@ -16,6 +16,8 @@ git-annex (6.20180317) UNRELEASED; urgency=medium
     uses http-conduit.
   * info: Added "combined size of repositories containing these files"
     stat when run on a directory.
+  * info: Changed sorting of numcopies stats table, so it's ordered
+    by the variance from the desired number of copies.
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Mar 2018 23:13:59 -0400
 
