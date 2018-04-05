@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="vrs+annex@ea5fa24dbb279be61a8e50adb638bf8366300717"
+ nickname="vrs+annex"
+ avatar="http://cdn.libravatar.org/avatar/74219abcec6eece8e2c9d4351c2c912c"
+ subject="comment 3"
+ date="2018-04-05T02:11:41Z"
+ content="""
+If pure functions were part of the design anyway, why not avoid adding derived fields and introduce functions like `year()` etc instead? The semantics would be obvious (you don't assign to a function call) and existing workflows involving the year field would keep working.
+
+As for editing the timestamp in general, I'll post an answer to <https://git-annex.branchable.com/bugs/proposal_for_timestamp_semantics/> later that should address this.
+"""]]
