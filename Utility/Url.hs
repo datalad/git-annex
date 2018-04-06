@@ -295,7 +295,8 @@ download' quiet url file uo = do
 	curl = do
 		-- curl does not create destination file
 		-- if the url happens to be empty, so pre-create.
-		writeFile file ""
+		unlessM (doesFileExist file) $
+			writeFile file ""
 		go "curl" $ headerparams ++ quietopt "-sS" ++
 			[ Param "-f"
 			, Param "-L"
