@@ -47,6 +47,7 @@ import Creds
 import Annex.UUID
 import Logs.Web
 import Utility.Metered
+import qualified Utility.Url as Url
 import Utility.DataUnits
 import Utility.FileSystemEncoding
 import Annex.Content
@@ -259,22 +260,9 @@ retrieve r info Nothing = case getpublicurl info of
 
 retrieveHelper :: S3Info -> S3Handle -> S3.Object -> FilePath -> MeterUpdate -> Annex ()
 retrieveHelper info h object f p = liftIO $ runResourceT $ do
-	(fr, fh) <- allocate (openFile f WriteMode) hClose
 	let req = S3.getObject (bucket info) object
 	S3.GetObjectResponse { S3.gorResponse = rsp } <- sendS3Handle' h req
-	responseBody rsp $$+- sinkprogressfile fh p zeroBytesProcessed
-	release fr
-  where
-	sinkprogressfile fh meterupdate sofar = do
-		mbs <- await
-		case mbs of
-			Nothing -> return ()
-			Just bs -> do
-				let sofar' = addBytesProcessed sofar (S.length bs)
-				liftIO $ do
-					void $ meterupdate sofar'
-					S.hPut fh bs
-				sinkprogressfile fh meterupdate sofar'
+	Url.sinkResponseFile p zeroBytesProcessed f WriteMode rsp
 
 retrieveCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False

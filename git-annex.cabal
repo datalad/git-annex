@@ -343,6 +343,7 @@ Executable git-annex
    http-client,
    http-types (>= 0.7),
    http-conduit (>= 2.0),
+   conduit,
    time,
    old-locale,
    esqueleto,
@@ -409,7 +410,7 @@ Executable git-annex
       Other-Modules: Utility.Touch.Old
 
   if flag(S3)
-    Build-Depends: conduit, conduit-extra, aws (>= 0.9.2)
+    Build-Depends: aws (>= 0.9.2)
     CPP-Options: -DWITH_S3
     Other-Modules: Remote.S3
 

@@ -26,6 +26,8 @@ module Utility.Url (
 	assumeUrlExists,
 	download,
 	downloadQuiet,
+	downloadC,
+	sinkResponseFile,
 	downloadPartial,
 	parseURIRelaxed,
 	matchStatusCodeException,
@@ -34,6 +36,7 @@ module Utility.Url (
 
 import Common
 import Utility.Tmp.Dir
+import Utility.Metered
 import qualified BuildInfo
 
 import Network.URI
@@ -45,6 +48,7 @@ import qualified Data.ByteString.Lazy as L
 import Control.Monad.Trans.Resource
 import Network.HTTP.Conduit
 import Network.HTTP.Client (brRead, withResponse)
+import Data.Conduit
 
 #if ! MIN_VERSION_http_client(0,5,0)
 responseTimeoutNone :: Maybe Int
@@ -312,6 +316,111 @@ download' quiet url file uo = do
 		| quiet = [Param s]
 		| otherwise = []
 
+{- Download a perhaps large file, with auto-resume of incomplete downloads.
+ -
+ - By default, conduit is used for the download, except for file: urls,
+ - which are copied. If the url scheme is not supported by conduit, falls
+ - back to using curl.
+ -}
+downloadC :: MeterUpdate -> URLString -> FilePath -> UrlOptions -> IO Bool
+downloadC meterupdate url file uo = go `catchNonAsync` (const $ return False)
+  where
+	go = case parseURIRelaxed url of
+		Just u -> case parseUrlConduit (show u) of
+			Just req -> catchJust
+				-- When http redirects to a protocol which 
+				-- conduit does not support, it will throw
+				-- a StatusCodeException with found302.
+				(matchStatusCodeException (== found302))
+				(downloadconduit req)
+				(const downloadcurl)
+			Nothing
+				| uriScheme u == "file:" -> do
+					let src = unEscapeString (uriPath u)
+					withMeteredFile src meterupdate $
+						L.writeFile file
+					return True
+				| BuildInfo.curl -> downloadcurl
+				| otherwise -> return False
+		Nothing -> return False
+
+	downloadconduit req = catchMaybeIO (getFileSize file) >>= \case
+		Nothing -> runResourceT $ do
+			resp <- http req (httpManager uo)
+			if responseStatus resp == ok200
+				then store zeroBytesProcessed WriteMode resp
+				else return False
+		Just sz -> resumeconduit req sz
+	
+	alreadydownloaded sz s h = s == requestedRangeNotSatisfiable416 
+		&& case lookup hContentRange h of
+			-- This could be improved by fixing
+			-- https://github.com/aristidb/http-types/issues/87
+			Just crh -> crh == B8.fromString ("bytes */" ++ show sz)
+			Nothing -> False
+
+	-- Resume download from where a previous download was interrupted, 
+	-- when supported by the http server. The server may also opt to
+	-- send the whole file rather than resuming.
+	resumeconduit req sz = catchJust
+		(matchStatusCodeHeadersException (alreadydownloaded sz))
+		dl
+		(const $ return True)
+	  where
+		dl = runResourceT $ do
+			let req' = req { requestHeaders = resumeFromHeader sz : requestHeaders req }
+			resp <- http req' (httpManager uo)
+			liftIO $ print ("XXX", responseStatus resp)
+			if responseStatus resp == partialContent206
+				then store (BytesProcessed sz) AppendMode resp
+				else if responseStatus resp == ok200
+					then store zeroBytesProcessed WriteMode resp
+					else return False
+	
+	store initialp mode resp = do
+		sinkResponseFile meterupdate initialp file mode resp
+		return True
+	
+	downloadcurl = do
+		-- curl does not create destination file
+		-- if the url happens to be empty, so pre-create.
+		unlessM (doesFileExist file) $
+			writeFile file ""
+		let headerparams = map (\h -> Param $ "--header=" ++ h) (reqHeaders uo)
+		let opts =
+			[ Param "-sS"
+			, Param "-f"
+			, Param "-L"
+			, Param "-C", Param "-"
+			, Param "-o"
+			]
+		boolSystem "curl" $ addUserAgent uo $ concat
+			[ headerparams
+			, opts
+			, reqParams uo
+			, [File file, File url]
+			]
+
+{- Sinks a Response's body to a file. The file can either be opened in
+ - WriteMode or AppendMode. Updates the meter as data is received.
+ -
+ - Note that the responseStatus is not checked by this function.
+ -}
+sinkResponseFile :: MonadResource m => MeterUpdate -> BytesProcessed -> FilePath -> IOMode -> Response (ResumableSource m B8.ByteString) -> m ()
+sinkResponseFile meterupdate initialp file mode resp = do
+	(fr, fh) <- allocate (openBinaryFile file mode) hClose
+	responseBody resp $$+- go initialp fh
+	release fr
+  where
+	go sofar fh = await >>= \case
+		Nothing -> return ()
+		Just bs -> do
+			let sofar' = addBytesProcessed sofar (B.length bs)
+			liftIO $ do
+				void $ meterupdate sofar'
+				B.hPut fh bs
+			go sofar' fh
+
 {- Downloads at least the specified number of bytes from an url. -}
 downloadPartial :: URLString -> UrlOptions -> Int -> IO (Maybe L.ByteString)
 downloadPartial url uo n = case parseURIRelaxed url of
@@ -371,20 +480,29 @@ hAcceptEncoding = "Accept-Encoding"
 hContentDisposition :: CI.CI B.ByteString
 hContentDisposition = "Content-Disposition"
 
+hContentRange :: CI.CI B.ByteString
+hContentRange = "Content-Range"
+
+resumeFromHeader :: FileSize -> Header
+resumeFromHeader sz = (hRange, renderByteRanges [ByteRangeFrom sz])
+
 {- Use with eg:
  -
  - > catchJust (matchStatusCodeException (== notFound404))
  -}
+matchStatusCodeException :: (Status -> Bool) -> HttpException -> Maybe HttpException
+matchStatusCodeException want = matchStatusCodeHeadersException (\s _h -> want s)
+
 #if MIN_VERSION_http_client(0,5,0)
-matchStatusCodeException :: (Status -> Bool) -> HttpException -> Maybe HttpException
-matchStatusCodeException want e@(HttpExceptionRequest _ (StatusCodeException r _))
-	| want (responseStatus r) = Just e
+matchStatusCodeHeadersException :: (Status -> ResponseHeaders -> Bool) -> HttpException -> Maybe HttpException
+matchStatusCodeHeadersException want e@(HttpExceptionRequest _ (StatusCodeException r _))
+	| want (responseStatus r) (responseHeaders r) = Just e
 	| otherwise = Nothing
-matchStatusCodeException _ _ = Nothing
+matchStatusCodeHeadersException _ _ = Nothing
 #else
-matchStatusCodeException :: (Status -> Bool) -> HttpException -> Maybe HttpException
-matchStatusCodeException want e@(StatusCodeException s _ _)
-	| want s = Just e
+matchStatusCodeHeadersException :: (Status -> ResponseHeaders -> Bool) -> HttpException -> Maybe HttpException
+matchStatusCodeHeadersException want e@(StatusCodeException s r _)
+	| want s r = Just e
 	| otherwise = Nothing
 matchStatusCodeException _ _ = Nothing
 #endif

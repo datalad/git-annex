@@ -326,7 +326,7 @@ setMeterTotalSize :: Meter -> Integer -> IO ()
 setMeterTotalSize (Meter totalsizev _ _ _) = void . swapMVar totalsizev . Just
 
 -- | Updates the meter, displaying it if necessary.
-updateMeter :: Meter -> BytesProcessed -> IO ()
+updateMeter :: Meter -> MeterUpdate
 updateMeter (Meter totalsizev sv bv displaymeter) new = do
 	now <- getPOSIXTime
 	(old, before) <- swapMVar sv (new, now)

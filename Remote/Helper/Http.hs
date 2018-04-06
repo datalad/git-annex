@@ -15,6 +15,7 @@ import Utility.Metered
 import Remote.Helper.Special
 import Network.HTTP.Client (RequestBody(..), Response, responseStatus, responseBody, BodyReader, NeedsPopper)
 import Network.HTTP.Types
+import Network.HTTP.Conduit
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S
@@ -71,15 +72,5 @@ handlePopper numchunks chunksize meterupdate h sink = do
 httpBodyRetriever :: FilePath -> MeterUpdate -> Response BodyReader -> IO ()
 httpBodyRetriever dest meterupdate resp
 	| responseStatus resp /= ok200 = giveup $ show $ responseStatus resp
-	| otherwise = bracket (openBinaryFile dest WriteMode) hClose (go zeroBytesProcessed)
-  where
-	reader = responseBody resp
-	go sofar h = do
-		b <- reader
-		if S.null b
-			then return ()
-			else do
-				let sofar' = addBytesProcessed sofar $ S.length b
-				S.hPut h b
-				meterupdate sofar'
-				go sofar' h
+	| otherwise = runResourceT $
+		sinkResponseFile meterupdate zeroBytesProcessed dest WriteMode resp

@@ -32,3 +32,8 @@ to http-conduit which does not support it. Maybe require users to set
 supports netrc?
 
 --[[Joey]]
+
+> Implemented Utility.Url.downloadC that is the (nontrivial)
+> download a file with resume support using http-conduit.
+> It falls back to curl to handle urls that http-conduit does not support.
+> Now we only have to decide what to do about the above edge cases..
