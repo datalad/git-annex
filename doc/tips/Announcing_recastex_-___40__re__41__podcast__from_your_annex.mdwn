@@ -1,0 +1,15 @@
+Hi all,
+
+I've written a simple tool in Python to re-podcast from an annex:  [recastex](https://github.com/stewart123579/recastex)
+
+Starting with the [downloading podcasts](https://git-annex.branchable.com/tips/downloading_podcasts/) page, I've got a number of podcasts on my laptop, but they were not really synced to my podcast app on my phone.  Not a problem any longer.
+
+The app uses the metadata associated with *locally available* files to generate feeds for each of your "subscribed" podcasts - and collects anything else you have (like individual files) into a catch-all feed.
+
+It's designed with git-annex + limited network + privacy in mind separating the public internet queries from the things that can be done over git-annex.
+
+*(As the author of [git-annex-metadata-gui](https://git-annex.branchable.com/tips/a_gui_for_metadata_operations/) said...)*  I hope these can be useful to someone other than myself.
+
+
+
+
