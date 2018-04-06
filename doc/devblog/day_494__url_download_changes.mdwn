@@ -1,0 +1,25 @@
+To make git-annex faster when it's dealing with a lot of urls,
+I decided to make it use the http-conduit library for all url access by
+default. That way, http pipelining will speed up repeated requests to the
+same web servers. This is kind of a follow-up to the recent elimination of
+rsync.
+
+Some users rely on some annex.web-options or a .netrc file to configure
+how git-annex downloads urls. To keep that supported, when
+annex.web-options is set, git-annex will use curl.
+To use a .netrc file, curl needs an option, so you would configure:
+
+	git config annex.web-options --netrc
+
+I get the feeling that nobody has implemented resuming interrupted
+downloads of files using http-conduit before, because it was unexpectedly
+kind of hard and http-types lacks support for some of the necessary
+range-related HTTP stuff.
+
+Today's work was supported by the NSF-funded DataLad project.
+
+----
+
+Stewart V. Wright [announced recastex](http://git-annex.branchable.com/tips/Announcing_recastex_-___40__re__41__podcast__from_your_annex/),
+a program that publishes podcasts and other files from by git-annex to your
+phone.
