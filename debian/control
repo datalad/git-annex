@@ -83,7 +83,6 @@ Build-Depends:
 	libimage-magick-perl,
 	git (>= 1:1.8.1),
 	rsync,
-	wget,
 	curl,
 	openssh-client,
 	git-remote-gcrypt (>= 0.20130908-6),
@@ -101,7 +100,6 @@ Section: utils
 Depends: ${misc:Depends}, ${shlibs:Depends},
 	git (>= 1:1.8.1),
 	rsync,
-	wget,
 	curl,
 	openssh-client (>= 1:5.6p1)
 Recommends: 

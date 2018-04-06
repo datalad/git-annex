@@ -1,5 +1,5 @@
 {- Url downloading, with git-annex user agent and configured http
- - headers and wget/curl options.
+ - headers and curl options.
  -
  - Copyright 2013-2018 Joey Hess <id@joeyh.name>
  -

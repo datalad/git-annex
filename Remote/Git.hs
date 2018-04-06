@@ -252,7 +252,7 @@ tryGitConfigRead autoinit r
 		v <- liftIO $ withTmpFile "git-annex.tmp" $ \tmpfile h -> do
 			hClose h
 			let url = Git.repoLocation r ++ "/config"
-			ifM (Url.downloadQuiet url tmpfile uo)
+			ifM (Url.download nullMeterUpdate url tmpfile uo)
 				( Just <$> pipedconfig "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
 				, return Nothing
 				)

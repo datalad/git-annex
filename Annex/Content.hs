@@ -939,16 +939,14 @@ saveState nocommit = doSideAction $ do
 
 {- Downloads content from any of a list of urls. -}
 downloadUrl :: Key -> MeterUpdate -> [Url.URLString] -> FilePath -> Annex Bool
-downloadUrl k p urls file = meteredFile file (Just p) k $
-	go =<< annexWebDownloadCommand <$> Annex.getGitConfig
+downloadUrl k p urls file = 
+	-- Poll the file to handle configurations where an external
+	-- download command is used.
+	meteredFile file (Just p) k $
+		go =<< annexWebDownloadCommand <$> Annex.getGitConfig
   where
-	go Nothing = do
-		a <- ifM commandProgressDisabled
-			( return Url.downloadQuiet
-			, return Url.download
-			)
-		Url.withUrlOptions $ \uo -> 
-			liftIO $ anyM (\u -> a u file uo) urls
+	go Nothing = Url.withUrlOptions $ \uo -> 
+		liftIO $ anyM (\u -> Url.download p u file uo) urls
 	go (Just basecmd) = anyM (downloadcmd basecmd) urls
 	downloadcmd basecmd url =
 		progressCommand "sh" [Param "-c", Param $ gencmd url basecmd]

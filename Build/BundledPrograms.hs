@@ -70,14 +70,6 @@ preferredBundledPrograms = catMaybes
 #ifndef mingw32_HOST_OS
 	, Just "sh"
 #endif
-#ifndef mingw32_HOST_OS
-#ifndef darwin_HOST_OS
-	-- wget on OSX has been problematic, looking for certs in the wrong
-	-- places. Don't ship it, use curl or the OSX's own wget if it has
-	-- one.
-	, ifset BuildInfo.wget "wget"
-#endif
-#endif
 	, BuildInfo.lsof
 	, BuildInfo.gcrypt
 #ifndef mingw32_HOST_OS

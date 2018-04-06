@@ -27,6 +27,7 @@ import Types.KeySource
 import Types.UrlContents
 import Annex.FileMatcher
 import Logs.Location
+import Messages.Progress
 import Utility.Metered
 import Utility.FileSystemEncoding
 import Utility.HtmlDetect
@@ -260,9 +261,8 @@ downloadWeb o url urlinfo file =
 	go =<< downloadWith' downloader urlkey webUUID url (AssociatedFile (Just file))
   where
 	urlkey = addSizeUrlKey urlinfo $ Backend.URL.fromUrl url Nothing
-	downloader f p = do
-		showOutput
-		downloadUrl urlkey p [url] f
+	downloader f p = metered (Just p) urlkey (pure Nothing) $ 
+		\_ p' -> downloadUrl urlkey p' [url] f
 	go Nothing = return Nothing
 	-- If we downloaded a html file, try to use youtube-dl to
 	-- extract embedded media.

@@ -9,7 +9,8 @@
  - for that.
  - 
  - To build the installer, git-annex should already be built to
- - ./git-annex.exe and the necessary utility programs (rsync and wget)
+ - ./git-annex.exe and the necessary utility programs
+ - (specifically rsync)
  - already installed in PATH from msys32.
  -
  - Copyright 2013-2015 Joey Hess <id@joeyh.name>

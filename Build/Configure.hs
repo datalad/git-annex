@@ -6,14 +6,11 @@ module Build.Configure where
 
 import Build.TestConfig
 import Build.Version
-import Utility.PartialPrelude
-import Utility.Process
 import Utility.SafeCommand
 import Utility.ExternalSHA
 import Utility.Env.Basic
 import Utility.Exception
 import qualified Git.Version
-import Utility.DottedVersion
 import Utility.Directory
 
 import Control.Monad.IfElse
@@ -34,8 +31,6 @@ tests =
 	, TestCase "xargs -0" $ testCmd "xargs_0" "xargs -0 </dev/null"
 	, TestCase "rsync" $ testCmd "rsync" "rsync --version >/dev/null"
 	, TestCase "curl" $ testCmd "curl" "curl --version >/dev/null"
-	, TestCase "wget" $ testCmd "wget" "wget --version >/dev/null"
-	, TestCase "wget unclutter options" checkWgetUnclutter
 	, TestCase "bup" $ testCmd "bup" "bup --version >/dev/null"
 	, TestCase "nice" $ testCmd "nice" "nice true >/dev/null"
 	, TestCase "ionice" $ testCmd "ionice" "ionice -c3 true >/dev/null"
@@ -105,19 +100,6 @@ getGitVersion = go =<< getEnv "FORCE_GIT_VERSION"
 		when (v < oldestallowed) $
 			error $ "installed git version " ++ show v ++ " is too old! (Need " ++ show oldestallowed ++ " or newer)"
 		return $ Config "gitversion" $ StringConfig $ show v
-
-checkWgetUnclutter :: Test
-checkWgetUnclutter = Config "wgetunclutter" . BoolConfig
-	. maybe False (>= normalize "1.16")
-	<$> getWgetVersion 
-
-getWgetVersion :: IO (Maybe DottedVersion)
-getWgetVersion = catchDefaultIO Nothing $
-	extract <$> readProcess "wget" ["--version"]
-  where
-	extract s = case lines s of
-		[] -> Nothing
-		(l:_) -> normalize <$> headMaybe (drop 2 $ words l)
 
 getSshConnectionCaching :: Test
 getSshConnectionCaching = Config "sshconnectioncaching" . BoolConfig <$>

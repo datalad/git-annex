@@ -8,3 +8,11 @@ is gone permanently).
 I do not want to encode my credentials into the URLs (eg.
 username:password@example.com) because my password changes frequently and I would
 have to update all of the URLs.
+
+> git-annex 6.20180406 and onwards use http-conduit for everything
+> by default. To use the .netrc file, run:
+
+	git config annex.web-options --netrc
+
+> That will make git-annex use curl for all web accesses, and configures
+> curl to use your netrc file. [[done]] --[[Joey]] 

@@ -193,13 +193,13 @@ downloadTorrentFile u = do
 		( return True
 		, do
 			showAction "downloading torrent file"
-			showOutput
 			createAnnexDirectory (parentDir torrent)
 			if isTorrentMagnetUrl u
 				then do
 					tmpdir <- tmpTorrentDir u
 					let metadir = tmpdir </> "meta"
 					createAnnexDirectory metadir
+					showOutput
 					ok <- downloadMagnetLink u metadir torrent
 					liftIO $ removeDirectoryRecursive metadir
 					return ok
@@ -208,7 +208,7 @@ downloadTorrentFile u = do
 					withTmpFileIn misctmp "torrent" $ \f h -> do
 						liftIO $ hClose h
 						ok <- Url.withUrlOptions $ 
-							liftIO . Url.download u f
+							liftIO . Url.download nullMeterUpdate u f
 						when ok $
 							liftIO $ renameFile f torrent
 						return ok

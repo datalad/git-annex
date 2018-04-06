@@ -1356,8 +1356,11 @@ Here are all the supported configuration settings.
 
 * `annex.web-options`
 
-  Options to pass when running wget or curl.
-  For example, to force IPv4 only, set it to "-4"
+  Setting this makes git-annex use curl to download urls
+  (rather than the default built-in url downloader).
+
+  For example, to force IPv4 only, set it to "-4".
+  Or to make curl use your ~/.netrc file, set it to "--netrc".
 
 * `annex.youtube-dl-options`
 
@@ -1387,7 +1390,6 @@ Here are all the supported configuration settings.
 * `annex.web-download-command`
 
   Use to specify a command to run to download a file from the web.
-  (The default is to use wget or curl.)
 
   In the command line, %url is replaced with the url to download,
   and %file is replaced with the file that it should be saved to.

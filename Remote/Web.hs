@@ -17,6 +17,7 @@ import Annex.Content
 import Config.Cost
 import Logs.Web
 import Annex.UUID
+import Messages.Progress
 import Utility.Metered
 import qualified Annex.Url as Url
 import Annex.YoutubeDl
@@ -74,13 +75,14 @@ downloadKey key _af dest p = unVerified $ get =<< getWebUrls key
 	get [] = do
 		warning "no known url"
 		return False
-	get urls = do
-		showOutput -- make way for download progress bar
-		untilTrue urls $ \u -> do
-			let (u', downloader) = getDownloader u
-			case downloader of
-				YoutubeDownloader -> youtubeDlTo key u' dest
-				_ -> downloadUrl key p [u'] dest
+	get urls = untilTrue urls $ \u -> do
+		let (u', downloader) = getDownloader u
+		case downloader of
+			YoutubeDownloader -> do
+				showOutput
+				youtubeDlTo key u' dest
+			_ -> metered (Just p) key (pure Nothing) $ \_ p' -> 
+				downloadUrl key p' [u'] dest
 
 downloadKeyCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
 downloadKeyCheap _ _ _ = return False

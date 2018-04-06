@@ -33,6 +33,7 @@ import Logs.Web
 import Logs.File
 import qualified Utility.Format
 import Utility.Tmp
+import Utility.Metered
 import Command.AddUrl (addUrlFile, downloadRemoteFile, parseDownloadOptions, DownloadOptions(..))
 import Annex.UUID
 import Backend.URL (fromUrl)
@@ -148,15 +149,13 @@ findDownloads u = go =<< downloadFeed u
 downloadFeed :: URLString -> Annex (Maybe Feed)
 downloadFeed url
 	| Url.parseURIRelaxed url == Nothing = giveup "invalid feed url"
-	| otherwise = do
-		showOutput
-		Url.withUrlOptions $ \uo ->
-			liftIO $ withTmpFile "feed" $ \f h -> do
-				hClose h
-				ifM (Url.download url f uo)
-					( parseFeedString <$> readFileStrict f
-					, return Nothing
-					)
+	| otherwise = Url.withUrlOptions $ \uo ->
+		liftIO $ withTmpFile "feed" $ \f h -> do
+			hClose h
+			ifM (Url.download nullMeterUpdate url f uo)
+				( parseFeedString <$> readFileStrict f
+				, return Nothing
+				)
 
 performDownload :: ImportFeedOptions -> Cache -> ToDownload -> Annex Bool
 performDownload opts cache todownload = case location todownload of

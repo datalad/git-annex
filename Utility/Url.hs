@@ -25,8 +25,6 @@ module Utility.Url (
 	getUrlInfo,
 	assumeUrlExists,
 	download,
-	downloadQuiet,
-	downloadC,
 	sinkResponseFile,
 	downloadPartial,
 	parseURIRelaxed,
@@ -35,7 +33,6 @@ module Utility.Url (
 ) where
 
 import Common
-import Utility.Tmp.Dir
 import Utility.Metered
 import qualified BuildInfo
 
@@ -72,23 +69,30 @@ type UserAgent = String
 data UrlOptions = UrlOptions
 	{ userAgent :: Maybe UserAgent
 	, reqHeaders :: Headers
-	, reqParams :: [CommandParam]
+	, urlDownloader :: UrlDownloader
 	, applyRequest :: Request -> Request
 	, httpManager :: Manager
 	}
+
+data UrlDownloader
+	= DownloadWithConduit
+	| DownloadWithCurl [CommandParam]
 
 defUrlOptions :: IO UrlOptions
 defUrlOptions = UrlOptions
 	<$> pure Nothing
 	<*> pure []
-	<*> pure []
+	<*> pure DownloadWithConduit
 	<*> pure id
 	<*> newManager managerSettings
 
 mkUrlOptions :: Maybe UserAgent -> Headers -> [CommandParam] -> Manager -> UrlOptions
 mkUrlOptions defuseragent reqheaders reqparams manager =
-	UrlOptions useragent reqheaders reqparams applyrequest manager
+	UrlOptions useragent reqheaders urldownloader applyrequest manager
   where
+	urldownloader = if null reqparams
+		then DownloadWithConduit
+		else DownloadWithCurl reqparams
 	applyrequest = \r -> r { requestHeaders = requestHeaders r ++ addedheaders }
 	addedheaders = uaheader ++ otherheaders
 	useragent = maybe defuseragent (Just . B8.toString . snd)
@@ -105,11 +109,16 @@ mkUrlOptions defuseragent reqheaders reqparams manager =
 			(' ':v') -> (h', B8.fromString v')
 			_ -> (h', B8.fromString v)
 
-addUserAgent :: UrlOptions -> [CommandParam] -> [CommandParam]
-addUserAgent uo ps = case userAgent uo of
-	Nothing -> ps
-	-- --user-agent works for both wget and curl commands
-	Just ua -> ps ++ [Param "--user-agent", Param ua] 
+curlParams :: UrlOptions -> [CommandParam] -> [CommandParam]
+curlParams uo ps = ps ++ uaparams ++ headerparams ++ addedparams
+  where
+	uaparams = case userAgent uo of
+		Nothing -> []
+		Just ua -> [Param "--user-agent", Param ua]
+	headerparams = concatMap (\h -> [Param "-H", Param h]) (reqHeaders uo)
+	addedparams = case urlDownloader uo of
+		DownloadWithConduit -> []
+		DownloadWithCurl l -> l
 
 {- Checks that an url exists and could be successfully downloaded,
  - also checking that its size, if available, matches a specified size. -}
@@ -144,8 +153,8 @@ assumeUrlExists = UrlInfo True Nothing Nothing
  - also returning its size and suggested filename if available. -}
 getUrlInfo :: URLString -> UrlOptions -> IO UrlInfo
 getUrlInfo url uo = case parseURIRelaxed url of
-	Just u -> case parseUrlConduit (show u) of
-		Just req -> catchJust
+	Just u -> case (urlDownloader uo, parseUrlConduit (show u)) of
+		(DownloadWithConduit, Just req) -> catchJust
 			-- When http redirects to a protocol which 
 			-- conduit does not support, it will throw
 			-- a StatusCodeException with found302.
@@ -155,7 +164,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 			`catchNonAsync` (const dne)
 		-- http-conduit does not support file:, ftp:, etc urls,
 		-- so fall back to reading files and using curl.
-		Nothing
+		_
 			| uriScheme u == "file:" -> do
 				let f = unEscapeString (uriPath u)
 				s <- catchMaybeIO $ getFileStatus f
@@ -171,12 +180,12 @@ getUrlInfo url uo = case parseURIRelaxed url of
 	dne = return $ UrlInfo False Nothing Nothing
 	found sz f = return $ UrlInfo True sz f
 
-	curlparams = addUserAgent uo $
+	curlparams = curlParams uo $
 		[ Param "-s"
 		, Param "--head"
 		, Param "-L", Param url
 		, Param "-w", Param "%{http_code}"
-		] ++ concatMap (\h -> [Param "-H", Param h]) (reqHeaders uo) ++ (reqParams uo)
+		]
 
 	extractlencurl s = case lastMaybe $ filter ("Content-Length:" `isPrefixOf`) (lines s) of
 		Just l -> case lastMaybe $ words l of
@@ -184,13 +193,11 @@ getUrlInfo url uo = case parseURIRelaxed url of
 			_ -> Nothing
 		_ -> Nothing
 	
-	extractlen = readish . B8.toString <=< firstheader hContentLength
+	extractlen = readish . B8.toString
+		<=< lookup hContentLength . responseHeaders
 
 	extractfilename = contentDispositionFilename . B8.toString
-		<=< firstheader hContentDisposition
-
-	firstheader h = headMaybe . map snd .
-		filter (\p -> fst p == h) . responseHeaders
+		<=< lookup hContentDisposition . responseHeaders
 
 	existsconduit req = do
 		let req' = headRequest (applyRequest uo req)
@@ -242,100 +249,23 @@ headRequest r = r
 
 {- Download a perhaps large file, with auto-resume of incomplete downloads.
  -
- - Uses wget or curl program for its progress bar and resuming support. 
- - Which program to use is determined at run time depending on which is
- - in path and which works best in a particular situation.
- -}
-download :: URLString -> FilePath -> UrlOptions -> IO Bool
-download = download' False
-
-{- No output to stdout. -}
-downloadQuiet :: URLString -> FilePath -> UrlOptions -> IO Bool
-downloadQuiet = download' True
-
-download' :: Bool -> URLString -> FilePath -> UrlOptions -> IO Bool
-download' quiet url file uo = do
-	case parseURIRelaxed url of
-		Just u
-			| uriScheme u == "file:" -> curl
-			-- curl is preferred in quiet mode, because
-			-- it displays http errors to stderr, while wget
-			-- does not display them in quiet mode
-			| quiet -> ifM (inPath "curl") (curl, wget)
-			-- wget is preferred mostly because it has a better
-			-- progress bar
-			| otherwise -> ifM (inPath "wget") (wget , curl)
-		_ -> return False
-  where
-	headerparams = map (\h -> Param $ "--header=" ++ h) (reqHeaders uo)
-	wget = go "wget" $ headerparams ++ quietopt "-q" ++ wgetparams
-	{- Regular wget needs --clobber to continue downloading an existing
-	 - file. On Android, busybox wget is used, which does not
-	 - support, or need that option.
-	 -
-	 - When the wget version is new enough, pass options for
-	 - a less cluttered download display. Using -nv rather than -q
-	 - avoids most clutter while still displaying http errors.
-	 -}
-#ifndef __ANDROID__
-	wgetparams = concat
-		[ if BuildInfo.wgetunclutter && not quiet
-			then [Param "-nv", Param "--show-progress"]
-			else []
-		, [ Param "--clobber", Param "-c", Param "-O"]
-		]
-#else
-	wgetparams = [Param "-c", Param "-O"]
-#endif
-	{- Uses the -# progress display, because the normal
-	 - one is very confusing when resuming, showing
-	 - the remainder to download as the whole file,
-	 - and not indicating how much percent was
-	 - downloaded before the resume. -}
-	curl = do
-		-- curl does not create destination file
-		-- if the url happens to be empty, so pre-create.
-		unlessM (doesFileExist file) $
-			writeFile file ""
-		go "curl" $ headerparams ++ quietopt "-sS" ++
-			[ Param "-f"
-			, Param "-L"
-			, Param "-C", Param "-"
-			, Param "-#"
-			, Param "-o"
-			]
-	
-	{- Run wget in a temp directory because it has been buggy
-	 - and overwritten files in the current directory, even though
-	 - it was asked to write to a file elsewhere. -}
-	go cmd opts = withTmpDir "downloadurl" $ \tmp -> do
-		absfile <- absPath file
-		let ps = addUserAgent uo $ opts++reqParams uo++[File absfile, File url]
-		boolSystem' cmd ps $ \p -> p { cwd = Just tmp }
-	
-	quietopt s
-		| quiet = [Param s]
-		| otherwise = []
-
-{- Download a perhaps large file, with auto-resume of incomplete downloads.
- -
  - By default, conduit is used for the download, except for file: urls,
  - which are copied. If the url scheme is not supported by conduit, falls
  - back to using curl.
  -}
-downloadC :: MeterUpdate -> URLString -> FilePath -> UrlOptions -> IO Bool
-downloadC meterupdate url file uo = go `catchNonAsync` (const $ return False)
+download :: MeterUpdate -> URLString -> FilePath -> UrlOptions -> IO Bool
+download meterupdate url file uo = go `catchNonAsync` (const $ return False)
   where
 	go = case parseURIRelaxed url of
-		Just u -> case parseUrlConduit (show u) of
-			Just req -> catchJust
+		Just u -> case (urlDownloader uo, parseUrlConduit (show u)) of
+			(DownloadWithConduit, Just req) -> catchJust
 				-- When http redirects to a protocol which 
 				-- conduit does not support, it will throw
 				-- a StatusCodeException with found302.
 				(matchStatusCodeException (== found302))
 				(downloadconduit req)
 				(const downloadcurl)
-			Nothing
+			_
 				| uriScheme u == "file:" -> do
 					let src = unEscapeString (uriPath u)
 					withMeteredFile src meterupdate $
@@ -371,7 +301,6 @@ downloadC meterupdate url file uo = go `catchNonAsync` (const $ return False)
 		dl = runResourceT $ do
 			let req' = req { requestHeaders = resumeFromHeader sz : requestHeaders req }
 			resp <- http req' (httpManager uo)
-			liftIO $ print ("XXX", responseStatus resp)
 			if responseStatus resp == partialContent206
 				then store (BytesProcessed sz) AppendMode resp
 				else if responseStatus resp == ok200
@@ -387,20 +316,13 @@ downloadC meterupdate url file uo = go `catchNonAsync` (const $ return False)
 		-- if the url happens to be empty, so pre-create.
 		unlessM (doesFileExist file) $
 			writeFile file ""
-		let headerparams = map (\h -> Param $ "--header=" ++ h) (reqHeaders uo)
-		let opts =
+		let ps = curlParams uo
 			[ Param "-sS"
 			, Param "-f"
 			, Param "-L"
 			, Param "-C", Param "-"
-			, Param "-o"
 			]
-		boolSystem "curl" $ addUserAgent uo $ concat
-			[ headerparams
-			, opts
-			, reqParams uo
-			, [File file, File url]
-			]
+		boolSystem "curl" (ps ++ [Param "-o", File file, File url])
 
 {- Sinks a Response's body to a file. The file can either be opened in
  - WriteMode or AppendMode. Updates the meter as data is received.

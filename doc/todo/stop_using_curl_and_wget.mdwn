@@ -37,3 +37,16 @@ supports netrc?
 > download a file with resume support using http-conduit.
 > It falls back to curl to handle urls that http-conduit does not support.
 > Now we only have to decide what to do about the above edge cases..
+
+> > Let's drop use of wget entirely, as it was only using it because I
+> > preferred wget's progress bar to curl's. The user can still force wget
+> > with annex.web-download-command.
+> >
+> > That leaves users who have a .netrc file or want to use
+> > annex.web-options. Since curl requires --netrc in order to use the
+> > .netrc file, require users who want to use the .netrc to
+> > set "annex.web-options = --netrc". When "annex.web-options" is
+> > set, always use curl (unless overridden by annex.web-download-command).
+> > Otherwise, use conduit.
+
+[[done]] --[[Joey]]
