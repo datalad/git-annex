@@ -50,4 +50,7 @@ designed to interoperate with it.
 * [git-annex-turtle](https://github.com/andrewringler/git-annex-turtle)
   is a macOS app providing Finder integration to git-annex.
 
+* [recastex](http://git-annex.branchable.com/tips/Announcing_recastex_-___40__re__41__podcast__from_your_annex/)
+  publishes podcasts and other files from by git-annex to your phone.
+
 See also [[not]] for software that is *not* related to git-annex, but similar.
