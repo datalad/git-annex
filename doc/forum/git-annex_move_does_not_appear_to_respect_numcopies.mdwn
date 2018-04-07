@@ -1,0 +1,36 @@
+I have a git-annex repository checked out onto two separate drives (connected to the same machine). git-annex is aware of other copies of the repository on other drives that are not currently accessible. The local repository version is 5, and I'm running git-annex version 6.20170818. I have configured numcopies, and it displays correctly on both machines:
+
+```
+$ git annex numcopies
+2
+```
+
+However, I can't figure out how to use `git annex move` to match the behavior I'd expect. If I run:
+
+```
+$ git annex move my_file.txt --to otherdrive
+```
+
+it will copy `my_file.txt` to otherdrive and drop it from my primary drive, even though it's only aware of two copies. `git annex drop`, however, behaves as I'd expect.
+
+    $ git annex drop my_file.txt
+    drop my_file.txt (unsafe)
+        Could only verify the existence of 1 out of 2 necessary copies
+
+        Rather than dropping this file, try using: git annex move
+
+        (Use --force to override this check, or adjust numcopies.)
+
+It appears that `move` is equivalent to `git annex copy && git annex drop --force`, rather than `git annex copy && git annex drop`. That's surprising to me, but the message here implies that it's the intended behavior. In any case, I can't figure out which arguments to pass to `git-annex move` to simulate the behavior of `git annex copy && git annex drop` - that is, I want to move a file to a different drive (to free up space), but I do *not* want to drop it if I cannot ensure the correct number of copies exist. 
+
+
+Passing `--numcopies 2` doesn't do what I want either:
+
+```
+$ git annex move --numcopies 2 --to otherdrive my_file.txt 
+```
+
+will still copy the file to otherdrive and drop my local copy, leaving me with only one copy.
+
+
+Is there a mode for `git annex move` which behaves the desired way: moving a file to a different drive, while still ensuring that I don't end up with fewer than N verifiable copies (where N is the value already configured via `git-annex-numcopies`)?
