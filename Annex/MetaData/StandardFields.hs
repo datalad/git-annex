@@ -33,10 +33,11 @@ dayMetaField :: MetaField
 dayMetaField = mkMetaFieldUnchecked "day"
 
 isDateMetaField :: MetaField -> Bool
-isDateMetaField yearMetaField = True
-isDateMetaField monthMetaField = True
-isDateMetaField datMetaField = True
-isDateMetaField _ = False
+isDateMetaField f = case f of
+	yearMetaField -> True
+	monthMetaField -> True
+	dayMetaField -> True
+	_ -> False
 
 lastChangedField :: MetaField
 lastChangedField = mkMetaFieldUnchecked lastchanged
