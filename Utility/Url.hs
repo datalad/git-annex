@@ -34,7 +34,6 @@ module Utility.Url (
 
 import Common
 import Utility.Metered
-import qualified BuildInfo
 
 import Network.URI
 import Network.HTTP.Types
@@ -173,8 +172,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 						sz <- getFileSize' f stat
 						found (Just sz) Nothing
 					Nothing -> dne
-			| BuildInfo.curl -> existscurl u
-			| otherwise -> dne
+			| otherwise -> existscurl u
 	Nothing -> dne
   where
 	dne = return $ UrlInfo False Nothing Nothing
@@ -271,8 +269,7 @@ download meterupdate url file uo = go `catchNonAsync` (const $ return False)
 					withMeteredFile src meterupdate $
 						L.writeFile file
 					return True
-				| BuildInfo.curl -> downloadcurl
-				| otherwise -> return False
+				| otherwise -> downloadcurl
 		Nothing -> return False
 
 	downloadconduit req = catchMaybeIO (getFileSize file) >>= \case
