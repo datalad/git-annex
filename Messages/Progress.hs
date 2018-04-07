@@ -83,19 +83,11 @@ metered othermeter key getsrcfile a = withMessageState $ \st ->
 				Nothing -> return Nothing
 				Just f -> catchMaybeIO $ liftIO $ getFileSize f
 
-{- Poll file size to display meter, but only when concurrent output or
- - json progress needs the information. -}
+{- Poll file size to display meter. -}
 meteredFile :: FilePath -> Maybe MeterUpdate -> Key -> Annex a -> Annex a
 meteredFile file combinemeterupdate key a = 
-	withMessageState $ \s -> if needOutputMeter s
-		then metered combinemeterupdate key (return Nothing) $ \_ p ->
-			watchFileSize file p a
-		else a
-  where
-	needOutputMeter s = case outputType s of
-		JSONOutput jsonoptions -> jsonProgress jsonoptions
-		NormalOutput | concurrentOutputEnabled s -> True
-		_ -> False
+	metered combinemeterupdate key (return Nothing) $ \_ p ->
+		watchFileSize file p a
 
 {- Progress dots. -}
 showProgressDots :: Annex ()
