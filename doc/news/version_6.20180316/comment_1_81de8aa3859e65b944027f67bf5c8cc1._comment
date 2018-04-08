@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Michael"
+ avatar="http://cdn.libravatar.org/avatar/86811fdafa094c610ec8ef8858a78dbf"
+ subject="prebuilt i386 still at old version?"
+ date="2018-04-08T01:44:24Z"
+ content="""
+https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386.tar.gz - as of 2018-04-07 shows 6.20180227-g32d682dd8
+"""]]
