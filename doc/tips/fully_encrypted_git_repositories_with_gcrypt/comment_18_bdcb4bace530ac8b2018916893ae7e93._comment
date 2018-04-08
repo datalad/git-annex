@@ -1,0 +1,87 @@
+[[!comment format=mdwn
+ username="itn@23fdfea9e5c13d8bb24e4cbde30d2a98293154c1"
+ nickname="itn"
+ avatar="http://cdn.libravatar.org/avatar/09ed2f8a3623192b3d38df2e420cd09d"
+ subject="Cloning and syncing leads to confusing &quot;gcrypt: Failed to decrypt manifest!&quot; errors."
+ date="2018-04-08T00:50:14Z"
+ content="""
+# Details
+
+I followed the instructions to create a new encrypted ssh-accessible remote (gcrypt, hybrid). As an additional detail, I have a key generated with instructions from <https://alexcabal.com/creating-the-perfect-gpg-keypair>). Everything worked until I tried to setup another machine (which has the same encryption GPG subkey available) to use the repo. After that, neither machine could no longer sync successfully. Here is the result of the commands on the second machine (partially omitted):
+
+    $ git clone gcrypt::ssh://server/user/annex
+    <output omitted>
+    $ cd annex
+    $ git annex sync
+    (merging origin/git-annex into git-annex...)
+    (recording state in git...)
+    commit  (recording state in git...)
+    
+    On branch master
+    Your branch is up-to-date with 'origin/master'.
+    
+    nothing to commit, working tree clean
+    ok
+    pull origin
+    gcrypt: Decrypting manifest
+    gpg: Good signature from \"...\" [ultimate]
+    ok
+    push origin
+    gcrypt: Decrypting manifest
+    gpg: Good signature from \"...\" [ultimate]
+    Counting objects: 6, done.
+    Compressing objects: 100% (5/5), done.
+    Total 6 (delta 1), reused 1 (delta 0)
+    gcrypt: Encrypting to: --throw-keyids --default-recipient-self
+    gcrypt: Requesting manifest signature
+    To gcrypt::ssh://server/home/user/annex   
+       494c59d..935583f  git-annex -> synced/git-annex
+    gcrypt: Decrypting manifest
+    gpg: decryption failed: No secret key
+    gcrypt: Failed to decrypt manifest!
+    ok
+
+Looking at the output, I was convinced that the following line explained the issue:
+
+    gcrypt: Encrypting to: --throw-keyids --default-recipient-self
+
+So I did everything again and took copies of the repo on the server after each interaction. I found out that when the remote is initialized, the encrypted \"session key\" contained the information on the recipients, but if the remote in synced with the cloned repo, the session key is modified.
+
+I took a look at the encrypted session key in the remote repo before and after (I cloned it directly without trying to decrypt). Here, I've replaced the real key id with \"DEADBEEFDEADBEEF\":
+
+    $ gpg --list-packets --list-only <session-key-before>
+    # off=0 ctb=85 tag=1 hlen=3 plen=524
+    :pubkey enc packet: version 3, algo 1, keyid DEADBEEFDEADBEEF
+            data: [4096 bits]
+    # off=527 ctb=d2 tag=18 hlen=2 plen=0 partial new-ctb
+    :encrypted data packet:
+            length: unknown
+            mdc_method: 2
+
+  
+    $ gpg --list-packets --list-only <session-key-after>
+    # off=0 ctb=85 tag=1 hlen=3 plen=524
+    :pubkey enc packet: version 3, algo 1, keyid 0000000000000000
+            data: [4092 bits]
+    # off=527 ctb=d2 tag=18 hlen=2 plen=0 partial new-ctb
+    :encrypted data packet:
+            length: unknown
+            mdc_method: 2
+
+This means that the recipient information is not included in the file. In practice this means that you need to check if you are the recipient by trying to decrypt the file. 
+Unfortunately, it seems that no key is actually tried. The file is decrypted successfully with:
+
+    gpg --try-all-secrets <session-key-after>
+
+# Solution
+
+As the core issue is that GnuPG fails to use the correct key if recipients are not known, we can tell gpg which keys to try. This can be done by editing ~/.gnupg/gpg.conf. Set the 'default-key' or alternatively, if the key you are using for this purpose is not your default key, set the 'try-secret-key'
+ 
+The other issue is that the recipients are removed from the session key, you can make sure that the correct recipients are kept if you set the following options for the remote in the cloned repo (.git/config):
+
+    gcrypt-participants = <insert-key(s)-here>
+    gcrypt-signingkey = <insert-key-here>
+    gcrypt-publish-participants = true
+
+I suspect that many users who have multiple keys may run into this issue. The previous comment also seems to be a variant of this.
+"""]]
