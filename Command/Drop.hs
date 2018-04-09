@@ -202,8 +202,8 @@ requiredContent = do
 {- In auto mode, only runs the action if there are enough
  - copies on other semitrusted repositories. -}
 checkDropAuto :: Bool -> Maybe Remote -> AssociatedFile -> Key -> (NumCopies -> CommandStart) -> CommandStart
-checkDropAuto automode mremote (AssociatedFile afile) key a =
-	go =<< maybe getNumCopies getFileNumCopies afile
+checkDropAuto automode mremote afile key a =
+	go =<< getAssociatedFileNumCopies afile
   where
 	go numcopies
 		| automode = do

@@ -11,6 +11,7 @@ module Annex.NumCopies (
 	module Types.NumCopies,
 	module Logs.NumCopies,
 	getFileNumCopies,
+	getAssociatedFileNumCopies,
 	getGlobalFileNumCopies,
 	getNumCopies,
 	deprecatedNumCopies,
@@ -68,6 +69,10 @@ getFileNumCopies f = fromSources
 	, getFileNumCopies' f
 	, deprecatedNumCopies
 	]
+
+getAssociatedFileNumCopies :: AssociatedFile -> Annex NumCopies
+getAssociatedFileNumCopies (AssociatedFile afile) =
+	maybe getNumCopies getFileNumCopies afile
 
 {- This is the globally visible numcopies value for a file. So it does
  - not include local configuration in the git config or command line

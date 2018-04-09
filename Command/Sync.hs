@@ -667,7 +667,7 @@ syncFile ebloom rs af k = onlyActionOn' k $ do
 		, return []
 		)
 	put dest = includeCommandAction $ 
-		Command.Move.toStart' dest False af k (mkActionItem af)
+		Command.Move.toStart' dest Command.Move.RemoveNever af k (mkActionItem af)
 
 {- When a remote has an export-tracking branch, change the export to
  - follow the current content of the branch. Otherwise, transfer any files

@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-04-09T17:47:38Z"
+ content="""
+You're exactly right; the move command bypasses the normal numcopies check,
+in a way that is otherwise (AFAICR) only ever done when using --force.
+
+There's also no way to get exactly the behavior of a numcopies honoring
+move. As you note copy followed by drop has that behavior, but all the
+drops then happen at the end, which is clumsy. There's clearly a good case
+for an option to make move honor numcopies if it does not by default.
+I've added that as `git annex move --safe`.
+
+I feel that the divergence from everything else in honoring numcopies by
+default is important enough to treat as a bug, so I opened
+[[bugs/move_violates_numcopies]].
+"""]]

@@ -50,7 +50,7 @@ seek o = allowConcurrentOutput $ do
 		Batch -> batchInput Right (batchCommandAction . go)
 		NoBatch -> withKeyOptions
 			(keyOptions o) (autoMode o)
-			(Command.Move.startKey (fromToOptions o) False)
+			(Command.Move.startKey (fromToOptions o) Command.Move.RemoveNever)
 			(withFilesInGit go)
 			=<< workTreeItems (copyFiles o)
 
@@ -59,7 +59,7 @@ seek o = allowConcurrentOutput $ do
  - sending non-preferred content. -}
 start :: CopyOptions -> FilePath -> Key -> CommandStart
 start o file key = stopUnless shouldCopy $ 
-	Command.Move.start (fromToOptions o) False file key
+	Command.Move.start (fromToOptions o) Command.Move.RemoveNever file key
   where
 	shouldCopy
 		| autoMode o = want <||> numCopiesCheck file key (<)

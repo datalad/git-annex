@@ -1,3 +1,11 @@
+git-annex (6.20180410) UNRELEASED; urgency=medium
+
+  * move: Added --safe option, which makes move honor numcopies settings.
+    Also --unsafe enables the default behavior, anticipating that the
+    default may one day change.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 09 Apr 2018 14:03:28 -0400
+
 git-annex (6.20180409) upstream; urgency=medium
 
   * Added adb special remote which allows exporting files to Android devices.

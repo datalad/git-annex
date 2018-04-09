@@ -68,7 +68,7 @@ start' expensivecheck from key afile ai = onlyActionOn key $
 			Nothing -> go $ perform key afile
 			Just src ->
 				stopUnless (Command.Move.fromOk src key) $
-					go $ Command.Move.fromPerform src False key afile
+					go $ Command.Move.fromPerform src Command.Move.RemoveNever key afile
   where
 	go a = do
 		showStartKey "get" key ai
