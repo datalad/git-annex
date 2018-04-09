@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+
 module CmdLine.GitAnnex.Options where
 
 import Options.Applicative
@@ -113,6 +115,7 @@ parseRemoteOption = DeferredParse
 	. (fromJust <$$> Remote.byNameWithUUID)
 	. Just
 
+-- | From or To a remote.
 data FromToOptions
 	= FromRemote (DeferredParse Remote)
 	| ToRemote (DeferredParse Remote)
@@ -139,6 +142,24 @@ parseToOption = strOption
 	<> help "destination remote"
 	<> completeRemotes
 	)
+
+-- | Like FromToOptions, but with a special --to=here
+type FromToHereOptions = Either ToHere FromToOptions
+
+data ToHere = ToHere
+
+parseFromToHereOptions :: Parser FromToHereOptions
+parseFromToHereOptions = parsefrom <|> parseto
+  where
+	parsefrom = Right . FromRemote . parseRemoteOption <$> parseFromOption
+	parseto = herespecialcase <$> parseToOption
+	  where
+		herespecialcase "here" = Left ToHere
+		herespecialcase "." = Left ToHere
+		herespecialcase n = Right $ ToRemote $ parseRemoteOption n
+
+instance DeferredParseClass FromToHereOptions where
+	finishParse = either (pure . Left) (Right <$$> finishParse)
 
 -- Options for acting on keys, rather than work tree files.
 data KeyOptions

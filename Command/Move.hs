@@ -27,31 +27,22 @@ cmd = withGlobalOptions [jobsOption, jsonOptions, jsonProgressOption, annexedMat
 
 data MoveOptions = MoveOptions
 	{ moveFiles :: CmdParams
-	, fromToOptions :: Either ToHere FromToOptions
+	, fromToOptions :: FromToHereOptions
 	, keyOptions :: Maybe KeyOptions
 	, batchOption :: BatchMode
 	}
 
-data ToHere = ToHere
-
 optParser :: CmdParamsDesc -> Parser MoveOptions
 optParser desc = MoveOptions
 	<$> cmdParams desc
-	<*> (parsefrom <|> parseto)
+	<*> parseFromToHereOptions
 	<*> optional (parseKeyOptions <|> parseFailedTransfersOption)
 	<*> parseBatchOption
-  where
-	parsefrom = Right . FromRemote . parseRemoteOption <$> parseFromOption
-	parseto = herespecialcase <$> parseToOption
-	  where
-		herespecialcase "here" = Left ToHere
-		herespecialcase "." = Left ToHere
-		herespecialcase n = Right $ ToRemote $ parseRemoteOption n
 
 instance DeferredParseClass MoveOptions where
 	finishParse v = MoveOptions
 		<$> pure (moveFiles v)
-		<*> either (pure . Left) (Right <$$> finishParse) (fromToOptions v)
+		<*> finishParse (fromToOptions v)
 		<*> pure (keyOptions v)
 		<*> pure (batchOption v)
 
