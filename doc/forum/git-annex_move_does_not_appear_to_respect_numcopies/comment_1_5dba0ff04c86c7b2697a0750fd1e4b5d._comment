@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 1"
+ date="2018-04-09T14:56:52Z"
+ content="""
+Well.. it actually says this in the source code for the move command:
+
+    - Note that unlike drop, this does not honor numcopies.
+    - A file's content can be moved even if there are insufficient copies to
+    - allow it to be dropped.
+
+So the behaviour seems to be known/intended. You told it to move the file, so it did.
+Perhaps it should output a warning if numcopies is not satisfied after the move?
+"""]]
