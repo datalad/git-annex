@@ -1,0 +1,26 @@
+git-annex 6.20180409 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Added adb special remote which allows exporting files to Android devices.
+   * For url downloads, git-annex now defaults to using a http library,
+     rather than wget or curl. But, if annex.web-options is set, it will
+     use curl. To use the .netrc file, run:
+       git config annex.web-options --netrc
+   * git-annex no longer uses wget (and wget is no longer shipped with
+     git-annex builds).
+   * Enable HTTP connection reuse across multiple files for improved speed.
+   * Fix calculation of estimated completion for progress meter.
+   * OSX app: Work around libz/libPng/ImageIO.framework version skew
+     by not bundling libz, assuming OSX includes a suitable libz.1.dylib.
+   * Added annex.retry, annex.retry-delay, and per-remote versions
+     to configure transfer retries.
+   * Also do forward retrying in cases where no exception is thrown,
+     but the transfer failed.
+   * When adding a new version of a file, and annex.genmetadata is enabled,
+     don't copy the data metadata from the old version of the file,
+     instead use the mtime of the file.
+   * Avoid running annex.http-headers-command more than once.
+   * info: Added "combined size of repositories containing these files"
+     stat when run on a directory.
+   * info: Changed sorting of numcopies stats table, so it's ordered
+     by the variance from the desired number of copies.
+   * Fix resuming a download when using curl."""]]
