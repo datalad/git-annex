@@ -48,25 +48,25 @@ instance DeferredParseClass MoveOptions where
 
 seek :: MoveOptions -> CommandSeek
 seek o = allowConcurrentOutput $ do
-	let go = whenAnnexed $ start o True
+	let go = whenAnnexed $ start (fromToOptions o) True
 	case batchOption o of
 		Batch -> batchInput Right (batchCommandAction . go)
 		NoBatch -> withKeyOptions (keyOptions o) False
-			(startKey o True)
+			(startKey (fromToOptions o) True)
 			(withFilesInGit go)
 			=<< workTreeItems (moveFiles o)
 
-start :: MoveOptions -> Bool -> FilePath -> Key -> CommandStart
-start o move f k = start' o move afile k (mkActionItem afile)
+start :: FromToHereOptions -> Bool -> FilePath -> Key -> CommandStart
+start fromto move f k = start' fromto move afile k (mkActionItem afile)
   where
 	afile = AssociatedFile (Just f)
 
-startKey :: MoveOptions -> Bool -> Key -> ActionItem -> CommandStart
-startKey o move = start' o move (AssociatedFile Nothing)
+startKey :: FromToHereOptions -> Bool -> Key -> ActionItem -> CommandStart
+startKey fromto move = start' fromto move (AssociatedFile Nothing)
 
-start' :: MoveOptions -> Bool -> AssociatedFile -> Key -> ActionItem -> CommandStart
-start' o move afile key ai = onlyActionOn key $
-	case fromToOptions o of
+start' :: FromToHereOptions -> Bool -> AssociatedFile -> Key -> ActionItem -> CommandStart
+start' fromto move afile key ai = onlyActionOn key $
+	case fromto of
 		Right (FromRemote src) ->
 			checkFailedTransferDirection ai Download $
 				fromStart move afile key ai =<< getParsed src
