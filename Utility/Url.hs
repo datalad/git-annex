@@ -424,7 +424,7 @@ matchStatusCodeHeadersException :: (Status -> ResponseHeaders -> Bool) -> HttpEx
 matchStatusCodeHeadersException want e@(StatusCodeException s r _)
 	| want s r = Just e
 	| otherwise = Nothing
-matchStatusCodeException _ _ = Nothing
+matchStatusCodeHeadersException _ _ = Nothing
 #endif
 
 #if MIN_VERSION_http_client(0,5,0)
