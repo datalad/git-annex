@@ -1,0 +1,606 @@
+### Please describe the problem.
+Hi,
+
+I'm using git-annex assistant to sync my org-mode files between two hosts. Because these files are just plaintext, I configured git(-annex) to store the content inside git (and not annex). The setup is quite simple: On both hosts (laptop and server) there is a git-annex repository in `~/Org/Privat` which have a remote configured (over ssh) point to each other. I run "git-annex assistant" on both hosts and this works pretty well, except that `git-annex assistant` temporary delete and recommit files (probably during merge). This is no big deal because the file is still there but it unnecessarily messes up the `git log`. I'm not sure if this is a bug or just a side effect of how git-annex works.
+
+
+### What steps will reproduce the problem?
+
+    [Laptop]
+    mkdir -p ~/foo
+    cd ~/foo
+    git init
+    git annex init --version=6
+    git annex describe "laptop"
+    cat > .gitattributes << EOF
+    *.org annex.largefiles=nothing
+    *.org_archive annex.largefiles=nothing
+    EOF
+    git add .gitattributes
+    git commit -m "Versioning org-mode files with git"
+    git remote add server server:~/foo/
+
+
+
+    [Server]
+    git clone laptop:~/foo/ ~/foo/
+    cd ~/foo
+    git annex init "server"
+    git annex upgrade # update from v5 to v6
+    git annex assistant
+
+    [Laptop]
+    cd ~/foo
+    git annex assistant
+    echo "* this is a headline" >> test.org
+
+This is the basic setup. After editing test.org multiple times, the server get those changes, delete test.org and immediately recommit it. Unfortunately, I can't really reproduce the issue with the above instructions. I'm not sure if it's a timing problem, the content of the file matters or anything like that. Hopefully the attached `daemon.log` can provide more infos.
+
+
+### What version of git-annex are you using? On what operating system?
+    [Laptop, Debian stretch]
+    git-annex version: 6.20170101.1
+    build flags: Assistant Webapp Pairing Testsuite S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify ConcurrentOutput TorrentParser MagicMime Feeds Quvi
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+    local repository version: 6
+    supported repository versions: 3 5 6
+    upgrade supported from repository versions: 0 1 2 3 4 5
+    operating system: linux x86_64
+
+    [Server, Debian stretch]
+    git-annex version: 6.20180316
+    build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify ConcurrentOutput TorrentParser MagicMime Feeds Testsuite
+    dependency versions: aws-0.14.1 bloomfilter-2.0.1.0 cryptonite-0.20 DAV-1.3.1 feed-0.3.11.1 ghc-8.0.1 http-client-0.4.31.1 persistent-sqlite-2.6 torrent-10000.0.0 uuid-1.3.12 yesod-1.4.3
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
+    local repository version: 6
+    supported repository versions: 3 5 6
+    upgrade supported from repository versions: 0 1 2 3 4 5
+    operating system: linux x86_64
+
+
+### Please provide any additional information below.
+daemon.log from server, interesting part:
+    [2018-04-09 11:37:44.985603501] Watcher: file deleted Eingang.org
+
+
+I'm also not sure where the `.#Eingang.org` comes from. (autosave-mode and backup stuff is disabled in Emacs). Note that I also ignore `.#` files:
+
+    *~
+    .#*
+    \#*#
+    .gitignore (END)
+
+[[!format sh """
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+[2018-04-09 11:34:41.651229076] main: starting assistant version 6.20180316
+[2018-04-09 11:34:41.653000679] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2018-04-09 11:34:41.656349808] process done ExitSuccess
+[2018-04-09 11:34:41.656682497] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2018-04-09 11:34:41.660412588] process done ExitSuccess
+[2018-04-09 11:34:41.660905012] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..19354e4a5c6bd694a449992d5bd0d4bae48eba3b","--pretty=%H","-n1"]
+[2018-04-09 11:34:41.664232695] process done ExitSuccess
+[2018-04-09 11:34:41.66500315] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2018-04-09 11:34:41.666629464] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2018-04-09 11:34:41.668907654] Cronner: You should enable consistency checking to protect your data. 
+[2018-04-09 11:34:41.673213064] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--stage","-z","--","."]
+[2018-04-09 11:34:41.67746018] process done ExitSuccess
+[2018-04-09 11:34:41.677940071] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--stage","-z","--","."]
+[2018-04-09 11:34:41.680803467] process done ExitSuccess
+[2018-04-09 11:34:41.682995824] chat: nice ["ionice","-c3","nocache","/usr/bin/git-annex","remotedaemon","--foreground"]
+[2018-04-09 11:34:41.698996042] TransferScanner: Syncing with laptop 
+[2018-04-09 11:34:41.714084077] TransferWatcher: watching for transfers
+[2018-04-09 11:34:41.71886081] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-tree","--full-tree","-z","--","refs/heads/git-annex","uuid.log","remote.log","trust.log","group.log","numcopies.log","schedule.log","preferred-content.log","required-content.log","group-preferred-content.log"]
+[2018-04-09 11:34:41.736468728] process done ExitSuccess
+[2018-04-09 11:34:41.737473438] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:34:41.740351978] process done ExitSuccess
+[2018-04-09 11:34:41.740604847] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:34:41.743608301] process done ExitSuccess
+[2018-04-09 11:34:41.743883152] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:34:41.746600971] process done ExitSuccess
+[2018-04-09 11:34:41.746859505] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:34:41.749864575] process done ExitSuccess
+
+  No known network monitor available through dbus; falling back to polling
+
+  No known volume monitor available through dbus; falling back to mtab polling
+[2018-04-09 11:34:41.75133072] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2018-04-09 11:34:41.755913773] process done ExitSuccess
+[2018-04-09 11:34:41.756133988] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2018-04-09 11:34:41.759413558] process done ExitSuccess
+[2018-04-09 11:34:41.759874669] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..19354e4a5c6bd694a449992d5bd0d4bae48eba3b","--pretty=%H","-n1"]
+[2018-04-09 11:34:41.763534204] process done ExitSuccess
+[2018-04-09 11:34:41.764491559] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-tree","--full-tree","-z","--","refs/heads/git-annex","uuid.log","remote.log","trust.log","group.log","numcopies.log","schedule.log","preferred-content.log","required-content.log","group-preferred-content.log"]
+[2018-04-09 11:34:41.768098522] process done ExitSuccess
+[2018-04-09 11:34:41.769538385] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","fetch","laptop"]
+[2018-04-09 11:34:41.774051138] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:34:41.784145283] process done ExitSuccess
+[2018-04-09 11:34:41.784410291] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:34:41.790119006] process done ExitSuccess
+[2018-04-09 11:34:41.790448451] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/master..refs/heads/synced/master","--pretty=%H","-n1"]
+[2018-04-09 11:34:41.803315234] process done ExitSuccess
+[2018-04-09 11:34:41.803726537] Merger: merging refs/heads/synced/master into refs/heads/master
+
+[2018-04-09 11:34:41.803885147] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/master"]
+[2018-04-09 11:34:41.806791552] process done ExitSuccess
+[2018-04-09 11:34:41.807106639] read: git ["--version"]
+[2018-04-09 11:34:41.809213293] process done ExitSuccess
+[2018-04-09 11:34:41.809579548] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","commit.gpgsign=false","merge","--no-edit","refs/heads/synced/master","--allow-unrelated-histories"]
+Aktualisiere 9d81724..1f72868
+Fast-forward
+ Eingang.org | 146 +++++++++++++++++++++++++++++++
+ Privat.org  | 284 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 430 insertions(+)
+ create mode 100644 Eingang.org
+ create mode 100644 Privat.org
+[2018-04-09 11:34:41.869190999] process done ExitSuccess
+[2018-04-09 11:34:41.869616621] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2018-04-09 11:34:41.87263735] process done ExitSuccess
+[2018-04-09 11:34:41.872886362] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2018-04-09 11:34:41.876100082] process done ExitSuccess
+[2018-04-09 11:34:41.876526799] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..19354e4a5c6bd694a449992d5bd0d4bae48eba3b","--pretty=%H","-n1"]
+[2018-04-09 11:34:41.879793847] process done ExitSuccess
+(scanning...) [2018-04-09 11:34:41.880538361] Watcher: Performing startup scan
+[2018-04-09 11:34:41.880979369] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2018-04-09 11:34:41.884247108] process done ExitSuccess
+[2018-04-09 11:34:41.884492946] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2018-04-09 11:34:41.887468992] process done ExitSuccess
+[2018-04-09 11:34:41.88788752] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..19354e4a5c6bd694a449992d5bd0d4bae48eba3b","--pretty=%H","-n1"]
+[2018-04-09 11:34:41.891145787] process done ExitSuccess
+[2018-04-09 11:34:41.891582283] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2018-04-09 11:34:41.892133862] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2018-04-09 11:34:41.900436044] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:34:41.903468755] process done ExitSuccess
+[2018-04-09 11:34:41.903676566] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:34:41.906280325] process done ExitSuccess
+[2018-04-09 11:34:41.906524648] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:34:41.908819698] process done ExitSuccess
+[2018-04-09 11:34:41.909024433] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:34:41.911759505] process done ExitSuccess
+[2018-04-09 11:34:41.912398343] read: git ["--version"]
+[2018-04-09 11:34:41.914443754] process done ExitSuccess
+[2018-04-09 11:34:41.914752675] chat: git ["--git-dir=.git","--work-tree=.","check-ignore","-z","--stdin","--verbose","--non-matching"]
+[2018-04-09 11:34:41.917108907] Watcher: add Eingang.org
+[2018-04-09 11:34:41.91734644] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/master..refs/remotes/laptop/master","--pretty=%H","-n1"]
+[2018-04-09 11:34:41.920660043] process done ExitSuccess
+[2018-04-09 11:34:41.921055355] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","check-attr","-z","--stdin","annex.backend","annex.numcopies","annex.largefiles","--"]
+[2018-04-09 11:34:41.921800291] read: git ["--version"]
+[2018-04-09 11:34:41.925093152] process done ExitSuccess
+[2018-04-09 11:34:41.926328604] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:34:41.928840733] process done ExitSuccess
+[2018-04-09 11:34:41.929206878] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:34:41.934755521] process done ExitSuccess
+[2018-04-09 11:34:41.935152027] Merger: watching .git/refs
+[2018-04-09 11:34:41.958868627] Watcher: add Privat.org
+[2018-04-09 11:34:41.959579297] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--deleted","-z","--","."]
+[2018-04-09 11:34:41.962332644] process done ExitSuccess
+(started...) 
+[2018-04-09 11:34:41.962726051] Watcher: watching .
+Von laptop:Org/Privat
+   9d81724..1f72868  master        -> laptop/master
+   316555e..19354e4  git-annex     -> laptop/git-annex
+ * [neuer Branch]    synced/master -> laptop/synced/master
+[2018-04-09 11:34:41.997168884] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:34:42.004185608] process done ExitSuccess
+[2018-04-09 11:34:42.004431346] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:34:42.009686504] process done ExitSuccess
+[2018-04-09 11:34:42.010153632] process done ExitSuccess
+[2018-04-09 11:34:42.010482295] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2018-04-09 11:34:42.013335466] process done ExitSuccess
+[2018-04-09 11:34:42.013718719] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2018-04-09 11:34:42.019932467] process done ExitSuccess
+[2018-04-09 11:34:42.020329615] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..19354e4a5c6bd694a449992d5bd0d4bae48eba3b","--pretty=%H","-n1"]
+[2018-04-09 11:34:42.023886643] process done ExitSuccess
+[2018-04-09 11:34:42.024275073] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/master..refs/remotes/laptop/master","--pretty=%H","-n1"]
+[2018-04-09 11:34:42.027633095] process done ExitSuccess
+[2018-04-09 11:34:42.028007368] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","branch","-f","synced/master","refs/heads/master"]
+[2018-04-09 11:34:42.03206509] process done ExitSuccess
+[2018-04-09 11:34:42.03231932] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--verify","-q","refs/remotes/laptop/master"]
+[2018-04-09 11:34:42.034779842] process done ExitSuccess
+[2018-04-09 11:34:42.035052574] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/master..refs/remotes/laptop/master","--pretty=%H","-n1"]
+[2018-04-09 11:34:42.038557601] process done ExitSuccess
+[2018-04-09 11:34:42.038806754] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--verify","-q","refs/remotes/laptop/synced/master"]
+[2018-04-09 11:34:42.041302446] process done ExitSuccess
+[2018-04-09 11:34:42.041621633] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/synced/master..refs/remotes/laptop/synced/master","--pretty=%H","-n1"]
+[2018-04-09 11:34:42.044851439] process done ExitSuccess
+[2018-04-09 11:34:42.045116323] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2018-04-09 11:34:42.048082132] process done ExitSuccess
+[2018-04-09 11:34:42.048322864] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2018-04-09 11:34:42.051728257] process done ExitSuccess
+[2018-04-09 11:34:42.052150695] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..19354e4a5c6bd694a449992d5bd0d4bae48eba3b","--pretty=%H","-n1"]
+[2018-04-09 11:34:42.055676191] process done ExitSuccess
+[2018-04-09 11:34:42.056232266] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:34:42.058900877] process done ExitSuccess
+[2018-04-09 11:34:42.059140096] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:34:42.062072724] process done ExitSuccess
+[2018-04-09 11:34:42.062321782] TransferScanner: pushing to [Remote { name ="laptop" }]
+[2018-04-09 11:34:42.062448681] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:34:42.065011986] process done ExitSuccess
+[2018-04-09 11:34:42.065252161] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:34:42.068152308] process done ExitSuccess
+[2018-04-09 11:34:42.069095635] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/master..refs/remotes/laptop/synced/master","--pretty=%H","-n1"]
+[2018-04-09 11:34:42.069826395] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","+git-annex:synced/git-annex","master:synced/master"]
+[2018-04-09 11:34:42.073909169] process done ExitSuccess
+To laptop:Org/Privat
+ * [new branch]      git-annex -> synced/git-annex
+[2018-04-09 11:34:42.114149032] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2018-04-09 11:34:42.114953858] process done ExitSuccess
+[2018-04-09 11:34:42.115154911] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","git-annex"]
+[2018-04-09 11:34:42.118392157] process done ExitSuccess
+[2018-04-09 11:34:42.118622237] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2018-04-09 11:34:42.124076787] process done ExitSuccess
+[2018-04-09 11:34:42.124811487] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..19354e4a5c6bd694a449992d5bd0d4bae48eba3b","--pretty=%H","-n1"]
+[2018-04-09 11:34:42.131284656] process done ExitSuccess
+[2018-04-09 11:34:42.150151612] process done ExitSuccess
+[2018-04-09 11:34:42.150527374] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","master"]
+[2018-04-09 11:34:42.179702012] process done ExitSuccess
+[2018-04-09 11:34:42.700210723] Committer: committing 2 changes
+[2018-04-09 11:34:42.70055449] Committer: Committing changes to git
+(recording state in git...)
+[2018-04-09 11:34:42.70085964] feed: xargs ["-0","git","--git-dir=.git","--work-tree=.","--literal-pathspecs","add","--force","--"]
+[2018-04-09 11:34:42.784196514] process done ExitSuccess
+[2018-04-09 11:34:42.785257124] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:34:42.791617178] process done ExitSuccess
+[2018-04-09 11:34:42.791841318] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/master"]
+[2018-04-09 11:34:42.795239558] process done ExitSuccess
+[2018-04-09 11:34:42.795513253] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","write-tree"]
+[2018-04-09 11:34:42.799350469] process done ExitSuccess
+[2018-04-09 11:34:42.799629834] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","rev-parse","1f72868a7a2ebf60ca9e58ec154773d75115b9d8:"]
+[2018-04-09 11:34:42.803096203] process done ExitSuccess
+[2018-04-09 11:34:42.803365134] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:34:42.806041146] process done ExitSuccess
+[2018-04-09 11:34:42.80628186] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:34:42.809185013] process done ExitSuccess
+[2018-04-09 11:34:42.809474896] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","branch","-f","synced/master","refs/heads/master"]
+[2018-04-09 11:34:42.813085481] process done ExitSuccess
+[2018-04-09 11:34:43.682704066] Pusher: Syncing with laptop 
+[2018-04-09 11:34:43.685333086] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:34:43.68940378] process done ExitSuccess
+[2018-04-09 11:34:43.689881594] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:34:43.693390894] process done ExitSuccess
+[2018-04-09 11:34:43.693694954] Pusher: pushing to [Remote { name ="laptop" }]
+[2018-04-09 11:34:43.694609849] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","+git-annex:synced/git-annex","master:synced/master"]
+[2018-04-09 11:34:43.710791388] RemoteControl: CONNECTED ssh://laptop/~/Org/Privat
+[2018-04-09 11:34:43.71113574] RemoteControl: fromList [UUID "234c34d9-5493-44aa-967f-8b915796a618"]
+Everything up-to-date
+[2018-04-09 11:34:43.727077172] process done ExitSuccess
+[2018-04-09 11:34:43.727454237] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","git-annex"]
+[2018-04-09 11:34:43.766167107] process done ExitSuccess
+[2018-04-09 11:34:43.766500325] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","master"]
+[2018-04-09 11:34:43.811781891] process done ExitSuccess
+[2018-04-09 11:34:44.181196303] TransferScanner: starting scan of [Remote { name ="laptop" }]
+[2018-04-09 11:34:44.182448533] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--cached","-z","--"]
+[2018-04-09 11:34:44.228488077] process done ExitSuccess
+[2018-04-09 11:34:44.22870839] TransferScanner: finished scan of [Remote { name ="laptop" }]
+[2018-04-09 11:35:41.769179017] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-tree","--full-tree","-z","--","refs/heads/git-annex","uuid.log","remote.log","trust.log","group.log","numcopies.log","schedule.log","preferred-content.log","required-content.log","group-preferred-content.log"]
+[2018-04-09 11:35:41.774173415] process done ExitSuccess
+[2018-04-09 11:36:13.313726536] Watcher: add Eingang.org
+[2018-04-09 11:36:13.314592472] Watcher: file deleted .#Eingang.org
+[2018-04-09 11:36:13.314880376] Committer: committing 1 changes
+[2018-04-09 11:36:13.315012724] Committer: Committing changes to git
+[2018-04-09 11:36:13.315522929] feed: xargs ["-0","git","--git-dir=.git","--work-tree=.","--literal-pathspecs","add","--force","--"]
+[2018-04-09 11:36:13.348942513] process done ExitSuccess
+(recording state in git...)
+[2018-04-09 11:36:13.349347047] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-index","-z","--index-info"]
+[2018-04-09 11:36:13.386484644] process done ExitSuccess
+[2018-04-09 11:36:13.386779923] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:36:13.389185774] process done ExitSuccess
+[2018-04-09 11:36:13.389510587] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/master"]
+[2018-04-09 11:36:13.392440035] process done ExitSuccess
+[2018-04-09 11:36:13.392732949] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","write-tree"]
+[2018-04-09 11:36:13.427572223] process done ExitSuccess
+[2018-04-09 11:36:13.427923407] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","rev-parse","1f72868a7a2ebf60ca9e58ec154773d75115b9d8:"]
+[2018-04-09 11:36:13.431080357] process done ExitSuccess
+[2018-04-09 11:36:13.431414943] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:36:13.433986742] process done ExitSuccess
+[2018-04-09 11:36:13.434288205] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:36:13.43725448] process done ExitSuccess
+[2018-04-09 11:36:13.437592844] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","branch","-f","synced/master","refs/heads/master"]
+[2018-04-09 11:36:13.4409276] process done ExitSuccess
+[2018-04-09 11:36:13.441326536] Pusher: Syncing with laptop 
+[2018-04-09 11:36:13.441756651] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:36:13.444837303] process done ExitSuccess
+[2018-04-09 11:36:13.445166889] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:36:13.448357577] process done ExitSuccess
+[2018-04-09 11:36:13.448675589] Pusher: pushing to [Remote { name ="laptop" }]
+[2018-04-09 11:36:13.449509449] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","+git-annex:synced/git-annex","master:synced/master"]
+Everything up-to-date
+[2018-04-09 11:36:13.490272243] process done ExitSuccess
+[2018-04-09 11:36:13.490695983] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","git-annex"]
+[2018-04-09 11:36:13.528199661] process done ExitSuccess
+[2018-04-09 11:36:13.528538098] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","master"]
+[2018-04-09 11:36:13.562512923] process done ExitSuccess
+[2018-04-09 11:36:14.452568279] Committer: committing 1 changes
+[2018-04-09 11:36:14.452892251] Committer: Committing changes to git
+[2018-04-09 11:36:14.453110793] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:36:14.456921344] process done ExitSuccess
+[2018-04-09 11:36:14.45731823] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/master"]
+[2018-04-09 11:36:14.461828918] process done ExitSuccess
+[2018-04-09 11:36:14.462244454] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","write-tree"]
+[2018-04-09 11:36:14.465199856] process done ExitSuccess
+[2018-04-09 11:36:14.465582073] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","rev-parse","1f72868a7a2ebf60ca9e58ec154773d75115b9d8:"]
+[2018-04-09 11:36:14.468458637] process done ExitSuccess
+[2018-04-09 11:36:14.468799034] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:36:14.471547079] process done ExitSuccess
+[2018-04-09 11:36:14.471853595] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:36:14.474845478] process done ExitSuccess
+[2018-04-09 11:36:14.475161153] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","branch","-f","synced/master","refs/heads/master"]
+[2018-04-09 11:36:14.478481548] process done ExitSuccess
+[2018-04-09 11:36:15.563886253] Pusher: Syncing with laptop 
+[2018-04-09 11:36:15.564475349] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:36:15.56845368] process done ExitSuccess
+[2018-04-09 11:36:15.568873956] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:36:15.573271271] process done ExitSuccess
+[2018-04-09 11:36:15.573737154] Pusher: pushing to [Remote { name ="laptop" }]
+[2018-04-09 11:36:15.575005334] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","+git-annex:synced/git-annex","master:synced/master"]
+Everything up-to-date
+[2018-04-09 11:36:15.614114318] process done ExitSuccess
+[2018-04-09 11:36:15.614502392] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","git-annex"]
+[2018-04-09 11:36:15.653929632] process done ExitSuccess
+[2018-04-09 11:36:15.654325001] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","master"]
+[2018-04-09 11:36:15.693126157] process done ExitSuccess
+[2018-04-09 11:36:28.906543231] Watcher: add Eingang.org
+[2018-04-09 11:36:28.9075571] Watcher: file deleted .#Eingang.org
+[2018-04-09 11:36:28.907841012] Committer: committing 1 changes
+[2018-04-09 11:36:28.907976823] Committer: Committing changes to git
+[2018-04-09 11:36:28.908467825] feed: xargs ["-0","git","--git-dir=.git","--work-tree=.","--literal-pathspecs","add","--force","--"]
+[2018-04-09 11:36:28.942067906] process done ExitSuccess
+(recording state in git...)
+[2018-04-09 11:36:28.94239642] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-index","-z","--index-info"]
+[2018-04-09 11:36:28.982158922] process done ExitSuccess
+[2018-04-09 11:36:28.982429899] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:36:28.98502309] process done ExitSuccess
+[2018-04-09 11:36:28.985343324] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/master"]
+[2018-04-09 11:36:28.988397366] process done ExitSuccess
+[2018-04-09 11:36:28.988708167] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","write-tree"]
+[2018-04-09 11:36:29.023882235] process done ExitSuccess
+[2018-04-09 11:36:29.024232929] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","rev-parse","1f72868a7a2ebf60ca9e58ec154773d75115b9d8:"]
+[2018-04-09 11:36:29.027517239] process done ExitSuccess
+[2018-04-09 11:36:29.027864] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit-tree","f966ae65d12ccffc312af47ceff025cbad91c221","--no-gpg-sign","-p","1f72868a7a2ebf60ca9e58ec154773d75115b9d8"]
+[2018-04-09 11:36:29.031510789] process done ExitSuccess
+[2018-04-09 11:36:29.031851849] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/heads/master","4b4905f59851c29ddbf1c245d13098266c51be27"]
+[2018-04-09 11:36:29.035606493] process done ExitSuccess
+[2018-04-09 11:36:29.035905803] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:36:29.038544683] process done ExitSuccess
+[2018-04-09 11:36:29.039085199] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:36:29.042182652] process done ExitSuccess
+[2018-04-09 11:36:29.042514323] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","branch","-f","synced/master","refs/heads/master"]
+[2018-04-09 11:36:29.046951109] process done ExitSuccess
+[2018-04-09 11:36:29.047323546] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:36:29.048148357] Pusher: Syncing with laptop 
+[2018-04-09 11:36:29.050543182] process done ExitSuccess
+[2018-04-09 11:36:29.050886803] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:36:29.054442432] process done ExitSuccess
+[2018-04-09 11:36:29.055031142] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:36:29.057832869] process done ExitSuccess
+[2018-04-09 11:36:29.058164071] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:36:29.061083988] process done ExitSuccess
+[2018-04-09 11:36:29.061406465] Pusher: pushing to [Remote { name ="laptop" }]
+[2018-04-09 11:36:29.061573814] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:36:29.064134558] process done ExitSuccess
+[2018-04-09 11:36:29.064441998] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:36:29.067405287] process done ExitSuccess
+[2018-04-09 11:36:29.068528484] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/master..refs/heads/synced/master","--pretty=%H","-n1"]
+[2018-04-09 11:36:29.068801805] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","+git-annex:synced/git-annex","master:synced/master"]
+[2018-04-09 11:36:29.072287644] process done ExitSuccess
+To laptop:Org/Privat
+   1f72868..4b4905f  master -> synced/master
+[2018-04-09 11:36:29.126939523] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:36:29.129007245] process done ExitSuccess
+[2018-04-09 11:36:29.129421784] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","git-annex"]
+[2018-04-09 11:36:29.131751468] process done ExitSuccess
+[2018-04-09 11:36:29.132079594] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:36:29.136949419] process done ExitSuccess
+[2018-04-09 11:36:29.137239065] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/master..refs/remotes/laptop/synced/master","--pretty=%H","-n1"]
+[2018-04-09 11:36:29.140617503] process done ExitSuccess
+[2018-04-09 11:36:29.161862199] process done ExitSuccess
+[2018-04-09 11:36:29.16237389] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","master"]
+[2018-04-09 11:36:29.20090369] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:36:29.201988286] process done ExitSuccess
+[2018-04-09 11:36:29.204332853] process done ExitSuccess
+[2018-04-09 11:36:29.204687171] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:36:29.207943434] process done ExitSuccess
+[2018-04-09 11:36:29.208323263] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/master..refs/remotes/laptop/master","--pretty=%H","-n1"]
+[2018-04-09 11:36:29.211711264] process done ExitSuccess
+[2018-04-09 11:36:30.059006711] Committer: committing 1 changes
+[2018-04-09 11:36:30.059230003] Committer: Committing changes to git
+[2018-04-09 11:36:30.059357379] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:36:30.061820862] process done ExitSuccess
+[2018-04-09 11:36:30.062223878] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/master"]
+[2018-04-09 11:36:30.064990209] process done ExitSuccess
+[2018-04-09 11:36:30.065375169] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","write-tree"]
+[2018-04-09 11:36:30.069576223] process done ExitSuccess
+[2018-04-09 11:36:30.069919208] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","rev-parse","4b4905f59851c29ddbf1c245d13098266c51be27:"]
+[2018-04-09 11:36:30.072788736] process done ExitSuccess
+[2018-04-09 11:36:30.073110243] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:36:30.075829716] process done ExitSuccess
+[2018-04-09 11:36:30.076124925] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:36:30.079137617] process done ExitSuccess
+[2018-04-09 11:36:30.079480821] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","branch","-f","synced/master","refs/heads/master"]
+[2018-04-09 11:36:30.083511227] process done ExitSuccess
+[2018-04-09 11:36:31.203242705] Pusher: Syncing with laptop 
+[2018-04-09 11:36:31.203770975] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:36:31.20738917] process done ExitSuccess
+[2018-04-09 11:36:31.207759515] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:36:31.212090647] process done ExitSuccess
+[2018-04-09 11:36:31.212468233] Pusher: pushing to [Remote { name ="laptop" }]
+[2018-04-09 11:36:31.213635349] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","+git-annex:synced/git-annex","master:synced/master"]
+Everything up-to-date
+[2018-04-09 11:36:31.24862919] process done ExitSuccess
+[2018-04-09 11:36:31.249023428] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","git-annex"]
+[2018-04-09 11:36:31.284126372] process done ExitSuccess
+[2018-04-09 11:36:31.284485355] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","master"]
+[2018-04-09 11:36:31.319518403] process done ExitSuccess
+[2018-04-09 11:37:44.963088675] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:37:44.966932815] process done ExitSuccess
+[2018-04-09 11:37:44.967153854] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:37:44.971643779] process done ExitSuccess
+[2018-04-09 11:37:44.971907699] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/master..refs/heads/synced/master","--pretty=%H","-n1"]
+[2018-04-09 11:37:44.975334885] process done ExitSuccess
+[2018-04-09 11:37:44.975583378] Merger: merging refs/heads/synced/master into refs/heads/master
+
+[2018-04-09 11:37:44.975715785] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/master"]
+[2018-04-09 11:37:44.978548143] process done ExitSuccess
+[2018-04-09 11:37:44.97878846] read: git ["--version"]
+[2018-04-09 11:37:44.9809852] process done ExitSuccess
+[2018-04-09 11:37:44.981307187] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","commit.gpgsign=false","merge","--no-edit","refs/heads/synced/master","--allow-unrelated-histories"]
+Aktualisiere 4b4905f..1e93ab8
+[2018-04-09 11:37:44.985603501] Watcher: file deleted Eingang.org
+Fast-forward
+ Eingang.org | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+[2018-04-09 11:37:45.015531778] process done ExitSuccess
+[2018-04-09 11:37:45.020024283] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:37:45.023151518] process done ExitSuccess
+[2018-04-09 11:37:45.023371468] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:37:45.02639557] process done ExitSuccess
+[2018-04-09 11:37:45.031466881] Committer: committing 1 changes
+[2018-04-09 11:37:45.031772484] Committer: Committing changes to git
+[2018-04-09 11:37:45.031924501] Watcher: add Eingang.org
+(recording state in git...)
+[2018-04-09 11:37:45.032110655] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-index","-z","--index-info"]
+[2018-04-09 11:37:45.035283993] process done ExitSuccess
+[2018-04-09 11:37:45.036044409] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:37:45.039234835] process done ExitSuccess
+[2018-04-09 11:37:45.039492196] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/master"]
+[2018-04-09 11:37:45.042630173] process done ExitSuccess
+[2018-04-09 11:37:45.042981734] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","write-tree"]
+[2018-04-09 11:37:45.047116516] process done ExitSuccess
+[2018-04-09 11:37:45.047486142] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","rev-parse","1e93ab8142b8bb17e9e0c8905a1fd18ac21e4397:"]
+[2018-04-09 11:37:45.051027357] process done ExitSuccess
+[2018-04-09 11:37:45.051380622] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit-tree","3b9cd858a5dfefbde85709982d51c2cf70c2bae7","--no-gpg-sign","-p","1e93ab8142b8bb17e9e0c8905a1fd18ac21e4397"]
+[2018-04-09 11:37:45.055070888] process done ExitSuccess
+[2018-04-09 11:37:45.055575957] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/heads/master","23edac69fdf1974824411bbc4e962bb37ba877d0"]
+[2018-04-09 11:37:45.059674278] process done ExitSuccess
+[2018-04-09 11:37:45.059981691] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:37:45.063167888] process done ExitSuccess
+[2018-04-09 11:37:45.063491598] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:37:45.066642148] process done ExitSuccess
+[2018-04-09 11:37:45.066983555] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","branch","-f","synced/master","refs/heads/master"]
+[2018-04-09 11:37:45.071106509] process done ExitSuccess
+[2018-04-09 11:37:45.071691114] Pusher: Syncing with laptop 
+[2018-04-09 11:37:45.072263006] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:37:45.07493712] process done ExitSuccess
+[2018-04-09 11:37:45.075246682] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:37:45.078232243] process done ExitSuccess
+[2018-04-09 11:37:45.078881383] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:37:45.081568528] process done ExitSuccess
+[2018-04-09 11:37:45.081911449] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:37:45.084855103] process done ExitSuccess
+[2018-04-09 11:37:45.085170767] Pusher: pushing to [Remote { name ="laptop" }]
+[2018-04-09 11:37:45.085937221] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:37:45.088659937] process done ExitSuccess
+[2018-04-09 11:37:45.088961916] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:37:45.091923163] process done ExitSuccess
+[2018-04-09 11:37:45.093368856] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","+git-annex:synced/git-annex","master:synced/master"]
+[2018-04-09 11:37:45.095171302] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/master..refs/heads/synced/master","--pretty=%H","-n1"]
+[2018-04-09 11:37:45.09889799] process done ExitSuccess
+[2018-04-09 11:37:45.099297672] Watcher: add Eingang.org
+To laptop:Org/Privat
+   1e93ab8..23edac6  master -> synced/master
+[2018-04-09 11:37:45.142813244] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:37:45.14435156] process done ExitSuccess
+[2018-04-09 11:37:45.144680359] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","git-annex"]
+[2018-04-09 11:37:45.146874025] process done ExitSuccess
+[2018-04-09 11:37:45.147115536] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:37:45.150090387] process done ExitSuccess
+[2018-04-09 11:37:45.150528273] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/master..refs/remotes/laptop/synced/master","--pretty=%H","-n1"]
+[2018-04-09 11:37:45.154260324] process done ExitSuccess
+[2018-04-09 11:37:45.178355356] process done ExitSuccess
+[2018-04-09 11:37:45.178667467] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","master"]
+[2018-04-09 11:37:45.215080611] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:37:45.216096995] process done ExitSuccess
+[2018-04-09 11:37:45.218474735] process done ExitSuccess
+[2018-04-09 11:37:45.218797245] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:37:45.222475722] process done ExitSuccess
+[2018-04-09 11:37:45.222892395] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/master..refs/remotes/laptop/master","--pretty=%H","-n1"]
+[2018-04-09 11:37:45.22635232] process done ExitSuccess
+[2018-04-09 11:37:46.073054429] Committer: committing 2 changes
+[2018-04-09 11:37:46.073357348] Committer: Committing changes to git
+(recording state in git...)
+[2018-04-09 11:37:46.073668003] feed: xargs ["-0","git","--git-dir=.git","--work-tree=.","--literal-pathspecs","add","--force","--"]
+[2018-04-09 11:37:46.115020265] process done ExitSuccess
+[2018-04-09 11:37:46.115297828] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:37:46.117646357] process done ExitSuccess
+[2018-04-09 11:37:46.118005719] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/master"]
+[2018-04-09 11:37:46.121575344] process done ExitSuccess
+[2018-04-09 11:37:46.12191231] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","write-tree"]
+[2018-04-09 11:37:46.12567614] process done ExitSuccess
+[2018-04-09 11:37:46.126023972] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","rev-parse","23edac69fdf1974824411bbc4e962bb37ba877d0:"]
+[2018-04-09 11:37:46.129133505] process done ExitSuccess
+[2018-04-09 11:37:46.129595522] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit-tree","a53bcee98b7883dc9ab92cfdc8a40c02557ccf04","--no-gpg-sign","-p","23edac69fdf1974824411bbc4e962bb37ba877d0"]
+[2018-04-09 11:37:46.133911504] process done ExitSuccess
+[2018-04-09 11:37:46.134222417] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/heads/master","498b482206f92064205ba7b5dd057191ad278e3e"]
+[2018-04-09 11:37:46.13870126] process done ExitSuccess
+[2018-04-09 11:37:46.138982474] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:37:46.141654394] process done ExitSuccess
+[2018-04-09 11:37:46.142020296] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:37:46.145649381] process done ExitSuccess
+[2018-04-09 11:37:46.146010442] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","branch","-f","synced/master","refs/heads/master"]
+[2018-04-09 11:37:46.150654031] process done ExitSuccess
+[2018-04-09 11:37:46.151027708] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:37:46.153712467] process done ExitSuccess
+[2018-04-09 11:37:46.154031515] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:37:46.157608747] process done ExitSuccess
+[2018-04-09 11:37:46.158107189] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:37:46.161188313] process done ExitSuccess
+[2018-04-09 11:37:46.161500737] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:37:46.164460849] process done ExitSuccess
+[2018-04-09 11:37:46.165020868] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/master..refs/heads/synced/master","--pretty=%H","-n1"]
+[2018-04-09 11:37:46.169117625] process done ExitSuccess
+[2018-04-09 11:37:47.217100926] Pusher: Syncing with laptop 
+[2018-04-09 11:37:47.217699349] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:37:47.221401849] process done ExitSuccess
+[2018-04-09 11:37:47.221833584] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:37:47.225466461] process done ExitSuccess
+[2018-04-09 11:37:47.225805241] Pusher: pushing to [Remote { name ="laptop" }]
+[2018-04-09 11:37:47.22690315] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","+git-annex:synced/git-annex","master:synced/master"]
+Everything up-to-date
+[2018-04-09 11:37:47.262439321] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:37:47.263256084] process done ExitSuccess
+[2018-04-09 11:37:47.263663099] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","git-annex"]
+[2018-04-09 11:37:47.265655322] process done ExitSuccess
+[2018-04-09 11:37:47.266023431] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:37:47.270704463] process done ExitSuccess
+[2018-04-09 11:37:47.271058723] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/master..refs/remotes/laptop/synced/master","--pretty=%H","-n1"]
+[2018-04-09 11:37:47.274346464] process done ExitSuccess
+[2018-04-09 11:37:47.298748348] process done ExitSuccess
+[2018-04-09 11:37:47.299087186] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","laptop","master"]
+[2018-04-09 11:37:47.333645742] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2018-04-09 11:37:47.334812765] process done ExitSuccess
+[2018-04-09 11:37:47.33762396] process done ExitSuccess
+[2018-04-09 11:37:47.337963852] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2018-04-09 11:37:47.341750677] process done ExitSuccess
+[2018-04-09 11:37:47.342184466] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/master..refs/remotes/laptop/master","--pretty=%H","-n1"]
+[2018-04-09 11:37:47.345724578] process done ExitSuccess
+"""]]
+
+
+`git log`
+[[!format sh """
+commit 498b482206f92064205ba7b5dd057191ad278e3e
+Author: me
+Date:   Mon Apr 9 11:37:46 2018 +0200
+
+    git-annex in server
+
+:000000 100644 0000000... 0bf8613... A  Eingang.org
+
+commit 23edac69fdf1974824411bbc4e962bb37ba877d0
+Author: me
+Date:   Mon Apr 9 11:37:45 2018 +0200
+
+    git-annex in server
+
+:100644 000000 0bf8613... 0000000... D  Eingang.org
+
+commit 1e93ab8142b8bb17e9e0c8905a1fd18ac21e4397
+Author: me
+Date:   Mon Apr 9 11:37:44 2018 +0200
+
+    git-annex in laptop
+
+:100644 100644 450fc30... 0bf8613... M  Eingang.org
+
+"""]]
