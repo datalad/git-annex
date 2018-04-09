@@ -27,7 +27,6 @@ import Network.HTTP.Client (responseStatus, responseBody, RequestBody(..))
 import Network.HTTP.Types
 import Control.Monad.Trans.Resource
 import Control.Monad.Catch
-import Data.Conduit
 import Data.IORef
 import System.Log.Logger
 
