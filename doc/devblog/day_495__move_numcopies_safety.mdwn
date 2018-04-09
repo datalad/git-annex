@@ -1,0 +1,20 @@
+New version released today with adb special remote, http connection
+caching, improved progress displays, annex.retry, and other changes.
+
+I've been rethinking `git annex move` in the context of numcopies
+checking. Thanks to a user posting
+[[forum/git-annex_move_does_not_appear_to_respect_numcopies]].
+Of course, move is known not to do that, but it's useful to get a
+perspective that this is susprising behavior and not wanted by that user,
+and poorly documented besides.
+
+So, I added `git annex move --safe` which does honor numcopies, so 
+it only does a copy when there are not enough copies to move.
+
+I'm leaning toward making that the default behavior, and
+needing `git annex move --unsafe` to get the current behavior of moving
+without a net. Of course, lots of us probably use move and like the current
+behavior, and such a change can break workflows and scripts.
+There might be a transition period where move warns when run without --safe
+or --unsafe. Feedback welcomed on the bug report 
+[[bugs/move_violates_numcopies]].
