@@ -1,4 +1,4 @@
-git-annex (6.20180317) UNRELEASED; urgency=medium
+git-annex (6.20180409) upstream; urgency=medium
 
   * Added adb special remote which allows exporting files to Android devices.
   * For url downloads, git-annex now defaults to using a http library,
@@ -25,7 +25,7 @@ git-annex (6.20180317) UNRELEASED; urgency=medium
     by the variance from the desired number of copies.
   * Fix resuming a download when using curl.
 
- -- Joey Hess <id@joeyh.name>  Mon, 19 Mar 2018 23:13:59 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 09 Apr 2018 13:03:15 -0400
 
 git-annex (6.20180316) upstream; urgency=medium
 
