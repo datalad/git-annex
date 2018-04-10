@@ -15,6 +15,7 @@ import Utility.UserInfo
 import Utility.Url
 import Utility.Tmp.Dir
 import Utility.FileSystemEncoding
+import Utility.Metered
 import qualified Git.Construct
 import qualified Annex
 import Annex.Content
@@ -75,7 +76,8 @@ getbuild repodir (url, f) = do
 		nukeFile tmp
 		putStrLn $ "*** " ++ s
 		return Nothing
-	ifM (download url tmp def noRetry)
+	uo <- defUrlOptions
+	ifM (download nullMeterUpdate tmp uo)
 		( ifM (liftIO $ virusFree tmp)
 			( do
 				bv2 <- getbv
