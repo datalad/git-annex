@@ -75,7 +75,7 @@ getbuild repodir (url, f) = do
 		nukeFile tmp
 		putStrLn $ "*** " ++ s
 		return Nothing
-	ifM (download url tmp def)
+	ifM (download url tmp def noRetry)
 		( ifM (liftIO $ virusFree tmp)
 			( do
 				bv2 <- getbv
