@@ -72,7 +72,7 @@ trustMapLoad = do
 		map (\r -> (Types.Remote.uuid r, UnTrusted)) exports
 	logged <- trustMapRaw
 	let configured = M.fromList $ mapMaybe configuredtrust l
-	let m = M.unionWith max exportoverrides $
+	let m = --M.unionWith max exportoverrides $
 		M.union overrides $
 		M.union configured logged
 	Annex.changeState $ \s -> s { Annex.trustmap = Just m }

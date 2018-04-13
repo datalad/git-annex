@@ -300,6 +300,6 @@ willDropMakeItWorse srcuuid destuuid deststartedwithcopy key afile =
 	checktrustlevel = do
 		desttrust <- lookupTrust destuuid
 		srctrust <- lookupTrust srcuuid
-		return (desttrust <= srctrust || desttrust < UnTrusted)
+		return True -- return (desttrust >= srctrust || desttrust > UnTrusted)
 
 data DropCheck = DropWorse | DropAllowed | DropCheckNumCopies

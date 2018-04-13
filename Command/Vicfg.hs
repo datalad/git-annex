@@ -151,14 +151,18 @@ genCfg cfg descs = unlines $ intercalate [""]
 		, com "  setting field = value"
 		]
 
-	trust = settings cfg descs cfgTrustMap
+	trust = undefined
+	-- TODO: Down order
+	{- settings cfg descs cfgTrustMap
 		[ com "Repository trust configuration"
 		, com "(Valid trust levels: " ++ trustlevels ++ ")"
 		]
 		(\(t, u) -> line "trust" u $ showTrustLevel t)
 		(\u -> lcom $ line "trust" u $ showTrustLevel def)
 	  where
-		trustlevels = unwords $ map showTrustLevel [Trusted .. DeadTrusted]
+		trustlevels = "XXX" -- unwords $ reverse $
+		-- map showTrustLevel [minBound..maxBound]
+	-}
 
 	groups = settings cfg descs cfgGroupMap
 		[ com "Repository groups"

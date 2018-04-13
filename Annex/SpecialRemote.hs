@@ -25,10 +25,11 @@ import Data.Ord
 findExisting :: RemoteName -> Annex (Maybe (UUID, RemoteConfig))
 findExisting name = do
 	t <- trustMap
-	matches <- sortBy (comparing $ \(u, _c) -> M.lookup u t)
+	headMaybe
+		. reverse
+		-- . sortBy (comparing $ \(u, _c) -> M.lookup u t)
 		. findByName name
 		<$> Logs.Remote.readRemoteLog
-	return $ headMaybe matches
 
 newConfig :: RemoteName -> RemoteConfig
 newConfig = M.singleton nameKey
