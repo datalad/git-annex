@@ -82,6 +82,7 @@ perform opts cache url = do
 			feedProblem url "bad feed content; no enclosures to download"
 			next $ return True
 		l -> do
+			showOutput
 			ok <- and <$> mapM (performDownload opts cache) l
 			unless ok $
 				feedProblem url "problem downloading item"
