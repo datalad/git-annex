@@ -1,0 +1,12 @@
+After talking it over in [[bugs/move_violates_numcopies]], we found a nicer
+compromise for `git annex move`. Rather than strictly enforcing numcopies,
+it avoids making any bad situations worse. For example, when there's
+only one copy of a file, it can be moved even if numcopies is higher.
+But, when numcopies is 2 and the source and destination repos have a copy,
+move will not drop from the source repo, since that would make it worse.
+
+Implemented that today. While doing so I got bit by the inverted Ord
+instance for TrustLevel, so spent a while cleaning that up.
+
+Today's work was sponsored by Jake Vosloo on
+[Patreon](https://patreon.com/joeyh/).
