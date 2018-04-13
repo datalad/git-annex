@@ -180,7 +180,7 @@ limitCopies want = case splitc ':' want of
 	checktrust checker u = checker <$> lookupTrust u
 	checkgroup g u = S.member g <$> lookupGroups u
 	parsetrustspec s
-		-- | "+" `isSuffixOf` s = (<=) <$> readTrustLevel (beginning s)
+		| "+" `isSuffixOf` s = (<=) <$> readTrustLevel (beginning s)
 		| otherwise = (==) <$> readTrustLevel s
 
 {- Adds a limit to match files that need more copies made. -}

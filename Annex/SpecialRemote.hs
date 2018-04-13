@@ -26,8 +26,7 @@ findExisting :: RemoteName -> Annex (Maybe (UUID, RemoteConfig))
 findExisting name = do
 	t <- trustMap
 	headMaybe
-		. reverse
-		-- . sortBy (comparing $ \(u, _c) -> M.lookup u t)
+		. sortBy (comparing $ \(u, _c) -> Down $ M.lookup u t)
 		. findByName name
 		<$> Logs.Remote.readRemoteLog
 

@@ -15,6 +15,7 @@ import System.Environment (getEnv)
 import Data.Tuple (swap)
 import Data.Char (isSpace)
 import Data.Default
+import Data.Ord
 
 import Command
 import Annex.Perms
@@ -63,7 +64,7 @@ vicfg curcfg f = do
 		Right newcfg -> setCfg curcfg newcfg
 
 data Cfg = Cfg
-	{ cfgTrustMap :: TrustMap
+	{ cfgTrustMap :: M.Map UUID (Down TrustLevel)
 	, cfgGroupMap :: M.Map UUID (S.Set Group)
 	, cfgPreferredContentMap :: M.Map UUID PreferredContentExpression
 	, cfgRequiredContentMap :: M.Map UUID PreferredContentExpression
@@ -75,7 +76,7 @@ data Cfg = Cfg
 
 getCfg :: Annex Cfg
 getCfg = Cfg
-	<$> trustMapRaw -- without local trust overrides
+	<$> (M.map Down <$> trustMapRaw) -- without local trust overrides
 	<*> (groupsByUUID <$> groupMap)
 	<*> preferredContentMapRaw
 	<*> requiredContentMapRaw
@@ -87,7 +88,7 @@ getCfg = Cfg
 setCfg :: Cfg -> Cfg -> Annex ()
 setCfg curcfg newcfg = do
 	let diff = diffCfg curcfg newcfg
-	mapM_ (uncurry trustSet) $ M.toList $ cfgTrustMap diff
+	mapM_ (uncurry trustSet) $ M.toList $ M.map (\(Down v) -> v) $ cfgTrustMap diff
 	mapM_ (uncurry groupSet) $ M.toList $ cfgGroupMap diff
 	mapM_ (uncurry preferredContentSet) $ M.toList $ cfgPreferredContentMap diff
 	mapM_ (uncurry requiredContentSet) $ M.toList $ cfgRequiredContentMap diff
@@ -151,18 +152,15 @@ genCfg cfg descs = unlines $ intercalate [""]
 		, com "  setting field = value"
 		]
 
-	trust = undefined
-	-- TODO: Down order
-	{- settings cfg descs cfgTrustMap
+	trust = settings cfg descs cfgTrustMap
 		[ com "Repository trust configuration"
 		, com "(Valid trust levels: " ++ trustlevels ++ ")"
 		]
-		(\(t, u) -> line "trust" u $ showTrustLevel t)
+		(\(Down t, u) -> line "trust" u $ showTrustLevel t)
 		(\u -> lcom $ line "trust" u $ showTrustLevel def)
 	  where
-		trustlevels = "XXX" -- unwords $ reverse $
-		-- map showTrustLevel [minBound..maxBound]
-	-}
+		trustlevels = unwords $ reverse $
+			map showTrustLevel [minBound..maxBound]
 
 	groups = settings cfg descs cfgGroupMap
 		[ com "Repository groups"
@@ -281,7 +279,7 @@ parseCfg defcfg = go [] defcfg . lines
 		| setting == "trust" = case readTrustLevel val of
 			Nothing -> badval "trust value" val
 			Just t ->
-				let m = M.insert u t (cfgTrustMap cfg)
+				let m = M.insert u (Down t) (cfgTrustMap cfg)
 				in Right $ cfg { cfgTrustMap = m }
 		| setting == "group" =
 			let m = M.insert u (S.fromList $ words val) (cfgGroupMap cfg)

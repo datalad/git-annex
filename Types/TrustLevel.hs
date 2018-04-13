@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE FlexibleInstances #-}
+
 module Types.TrustLevel (
 	TrustLevel(..),
 	TrustMap,
@@ -15,14 +17,18 @@ module Types.TrustLevel (
 
 import qualified Data.Map as M
 import Data.Default
+import Data.Ord
 
 import Types.UUID
 
 data TrustLevel = DeadTrusted | UnTrusted | SemiTrusted | Trusted
-	deriving (Eq, Bounded, Show)
+	deriving (Eq, Enum, Ord, Bounded, Show)
 
 instance Default TrustLevel  where
 	def = SemiTrusted
+
+instance Default (Down TrustLevel)  where
+	def = Down def
 
 type TrustMap = M.Map UUID TrustLevel
 
@@ -40,6 +46,6 @@ showTrustLevel SemiTrusted = "semitrusted"
 showTrustLevel DeadTrusted = "dead"
 
 prop_read_show_TrustLevel :: Bool
-prop_read_show_TrustLevel = True -- all check [minBound .. maxBound]
+prop_read_show_TrustLevel = all check [minBound .. maxBound]
   where
 	check l = readTrustLevel (showTrustLevel l) == Just l
