@@ -227,7 +227,7 @@ performDownload opts cache todownload = case location todownload of
 		case dest of
 			Nothing -> return True
 			Just f -> do
-				showStart "addurl" f
+				showStart "addurl" url
 				ks <- getter f
 				if null ks
 					then do
