@@ -27,7 +27,6 @@ import Types.KeySource
 import Types.UrlContents
 import Annex.FileMatcher
 import Logs.Location
-import Messages.Progress
 import Utility.Metered
 import Utility.FileSystemEncoding
 import Utility.HtmlDetect
