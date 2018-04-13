@@ -10,10 +10,6 @@ git annex move `[path ...] [--from=remote|--to=remote|--to=here]`
 
 Moves the content of files from or to another remote.
 
-Note that by default, this command does not try to preserve the configured
-minimum number of copies of files. It is the only git-annex command to not
-do so.
-
 # OPTIONS
 
 * `--from=remote`
@@ -29,16 +25,15 @@ do so.
   Move the content of files from all reachable remotes to the local
   repository.
 
-* `--safe` `-s`
+* `--force`
 
-  Preserve the configured minimum number of copies of files, by only
-  dropping content when there are enough other copies, and otherwise
-  only copying to the destination.
+  Override numcopies and required content checking, and always remove
+  files from the source repository once the destination repository has a
+  copy.
 
-* `--unsafe` `-u`
-
-  Do not preserve the configured minimum number of copies of files;
-  always move the content between repositories. Currently the default.
+  Note that, even without this option, you can move the content of a file
+  from one repository to another when numcopies is not satisfied, as long
+  as the move does not result in there being fewer copies.
 
 * `--jobs=N` `-JN`
 

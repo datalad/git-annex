@@ -1,8 +1,12 @@
 git-annex (6.20180410) UNRELEASED; urgency=medium
 
-  * move: Added --safe option, which makes move honor numcopies settings.
-    Also --unsafe enables the default behavior, anticipating that the
-    default may one day change.
+  * move: Now takes numcopies configuration, and required content
+    configuration into account, and refuses to reduce the current
+    number of copies of a file, or remove content that a repository
+    requires. --force can override these checks.
+    Note that it's still allowed to move the content of a file
+    from one repository to another when numcopies is not satisfied, as long
+    as the move does not result in there being fewer copies.
 
  -- Joey Hess <id@joeyh.name>  Mon, 09 Apr 2018 14:03:28 -0400
 
