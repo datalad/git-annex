@@ -23,7 +23,7 @@
 module Remote.Tahoe (remote) where
 
 import qualified Data.Map as M
-import Data.Aeson
+import Utility.Aeson
 import Data.ByteString.Lazy.UTF8 (fromString)
 import Control.Concurrent.STM
 

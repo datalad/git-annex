@@ -14,12 +14,12 @@ import Logs.MetaData
 import Annex.WorkTree
 import Messages.JSON (JSONActionItem(..))
 import Types.Messages
+import Utility.Aeson
 
 import qualified Data.Set as S
 import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy.UTF8 as BU
-import Data.Aeson
 import Control.Concurrent
 
 cmd :: Command
@@ -115,7 +115,7 @@ perform c o k = case getSet o of
 cleanup :: Key -> CommandCleanup
 cleanup k = do
 	m <- getCurrentMetaData k
-	let Object o = toJSON (MetaDataFields m)
+	let Object o = toJSON' (MetaDataFields m)
 	maybeShowJSON $ AesonObject o
 	showLongNote $ unlines $ concatMap showmeta $
 		map unwrapmeta (fromMetaData m)
@@ -129,8 +129,8 @@ cleanup k = do
 newtype MetaDataFields = MetaDataFields MetaData
 	deriving (Show)
 
-instance ToJSON MetaDataFields where
-	toJSON (MetaDataFields m) = object [ (fieldsField, toJSON m) ]
+instance ToJSON' MetaDataFields where
+	toJSON' (MetaDataFields m) = object [ (fieldsField, toJSON' m) ]
 
 instance FromJSON MetaDataFields where
 	parseJSON (Object v) = do

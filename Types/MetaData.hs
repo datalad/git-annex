@@ -43,6 +43,7 @@ module Types.MetaData (
 import Common
 import Utility.Base64
 import Utility.QuickCheck
+import Utility.Aeson
 
 import qualified Data.Text as T
 import qualified Data.Set as S
@@ -50,15 +51,14 @@ import qualified Data.Map as M
 import qualified Data.HashMap.Strict as HM
 import Data.Char
 import qualified Data.CaseInsensitive as CI
-import Data.Aeson
 
 newtype MetaData = MetaData (M.Map MetaField (S.Set MetaValue))
 	deriving (Show, Eq, Ord)
 
-instance ToJSON MetaData where
-	toJSON (MetaData m) = object $ map go (M.toList m)
+instance ToJSON' MetaData where
+	toJSON' (MetaData m) = object $ map go (M.toList m)
 	  where
-		go (MetaField f, s) = (T.pack (CI.original f), toJSON s)
+		go (MetaField f, s) = (packString (CI.original f), toJSON' s)
 
 instance FromJSON MetaData where
 	parseJSON (Object o) = do
@@ -82,8 +82,8 @@ newtype MetaField = MetaField (CI.CI String)
 data MetaValue = MetaValue CurrentlySet String
 	deriving (Read, Show)
 
-instance ToJSON MetaValue where
-	toJSON (MetaValue _ v) = toJSON v
+instance ToJSON' MetaValue where
+	toJSON' (MetaValue _ v) = toJSON' v
 
 instance FromJSON MetaValue where
 	parseJSON (String v) = return $ MetaValue (CurrentlySet True) (T.unpack v)

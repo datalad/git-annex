@@ -15,6 +15,7 @@ import Remote.Web (getWebUrls)
 import Annex.UUID
 
 import qualified Data.Map as M
+import qualified Data.Vector as V
 
 cmd :: Command
 cmd = noCommit $ withGlobalOptions [jsonOptions, annexedMatchingOptions] $
@@ -77,7 +78,7 @@ perform remotemap key = do
 	untrustedheader = "The following untrusted locations may also have copies:\n"
 	ppwhereis h ls urls = do
 		descm <- uuidDescriptions
-		let urlvals = map (\(u, us) -> (u, Just us)) $
+		let urlvals = map (\(u, us) -> (u, Just (V.fromList us))) $
 			filter (\(u,_) -> u `elem` ls) urls
 		prettyPrintUUIDsWith (Just "urls") h descm (const Nothing) urlvals
 

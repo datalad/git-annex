@@ -21,7 +21,6 @@ import Test.Tasty.Ingredients.Rerun
 import Options.Applicative (switch, long, help, internal)
 
 import qualified Data.Map as M
-import qualified Data.Aeson
 import qualified Data.ByteString.Lazy.UTF8 as BU8
 import System.Environment
 
@@ -83,6 +82,7 @@ import qualified Utility.HumanTime
 import qualified Utility.Base64
 import qualified Utility.Tmp.Dir
 import qualified Utility.FileSystemEncoding
+import qualified Utility.Aeson
 #ifndef mingw32_HOST_OS
 import qualified Remote.Helper.Encryptable
 import qualified Types.Crypto
@@ -971,7 +971,7 @@ test_merge = intmpclonerepo $
 test_info :: Assertion
 test_info = intmpclonerepo $ do
 	json <- BU8.fromString <$> git_annex_output "info" ["--json"]
-	case Data.Aeson.eitherDecode json :: Either String Data.Aeson.Value of
+	case Utility.Aeson.eitherDecode json :: Either String Utility.Aeson.Value of
 		Right _ -> return ()
 		Left e -> assertFailure e
 

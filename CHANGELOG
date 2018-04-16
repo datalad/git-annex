@@ -7,6 +7,8 @@ git-annex (6.20180410) UNRELEASED; urgency=medium
     Note that it's still allowed to move the content of a file
     from one repository to another when numcopies is not satisfied, as long
     as the move does not result in there being fewer copies.
+  * Fix mangling of --json output of utf-8 characters when not
+    running in a utf-8 locale.
 
  -- Joey Hess <id@joeyh.name>  Mon, 09 Apr 2018 14:03:28 -0400
 

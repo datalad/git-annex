@@ -26,12 +26,10 @@ module Messages.JSON (
 	JSONActionItem(..),
 ) where
 
-import Data.Aeson
 import Control.Applicative
 import qualified Data.Map as M
-import qualified Data.Text as T
 import qualified Data.Vector as V
-import qualified Data.ByteString.Lazy as B
+import qualified Data.ByteString.Lazy as L
 import qualified Data.HashMap.Strict as HM
 import System.IO
 import System.IO.Unsafe (unsafePerformIO)
@@ -44,6 +42,7 @@ import Types.Messages
 import Key
 import Utility.Metered
 import Utility.Percentage
+import Utility.Aeson
 
 -- A global lock to avoid concurrent threads emitting json at the same time.
 {-# NOINLINE emitLock #-}
@@ -53,7 +52,7 @@ emitLock = unsafePerformIO $ newMVar ()
 emit :: Object -> IO ()
 emit o = do
 	takeMVar emitLock
-	B.hPut stdout (encode o)
+	L.hPut stdout (encode o)
 	putStr "\n"
 	putMVar emitLock ()
 
@@ -67,7 +66,7 @@ none = id
 start :: String -> Maybe FilePath -> Maybe Key -> JSONBuilder
 start command file key _ = Just (o, False)
   where
-	Object o = toJSON $ JSONActionItem
+	Object o = toJSON' $ JSONActionItem
 		{ itemCommand = Just command
 		, itemKey = key
 		, itemFile = file
@@ -75,7 +74,7 @@ start command file key _ = Just (o, False)
 		}
 
 end :: Bool -> JSONBuilder
-end b (Just (o, _)) = Just (HM.insert "success" (toJSON b) o, True)
+end b (Just (o, _)) = Just (HM.insert "success" (toJSON' b) o, True)
 end _ Nothing = Nothing
 
 finalize :: JSONOptions -> Object -> Object
@@ -91,32 +90,32 @@ addErrorMessage msg o =
   where
 	combinearray (Array new) (Array old) = Array (old <> new)
 	combinearray new _old = new
-	v = Array $ V.fromList $ map (String . T.pack) msg
+	v = Array $ V.fromList $ map (String . packString) msg
 
 note :: String -> JSONBuilder
 note _ Nothing = Nothing
-note s (Just (o, e)) = Just (HM.insertWith combinelines "note" (toJSON s) o, e)
+note s (Just (o, e)) = Just (HM.insertWith combinelines "note" (toJSON' s) o, e)
   where
 	combinelines (String new) (String old) =
-		String (old <> T.pack "\n" <> new)
+		String (old <> "\n" <> new)
 	combinelines new _old = new
 
 info :: String -> JSONBuilder
 info s _ = Just (o, True)
   where
-	Object o = object ["info" .= toJSON s]
+	Object o = object ["info" .= toJSON' s]
 
 data JSONChunk v where
 	AesonObject :: Object -> JSONChunk Object
-	JSONChunk :: ToJSON v => [(String, v)] -> JSONChunk [(String, v)]
+	JSONChunk :: ToJSON' v => [(String, v)] -> JSONChunk [(String, v)]
 
 add :: JSONChunk v -> JSONBuilder
 add v (Just (o, e)) = Just (HM.union o' o, e)
   where
 	Object o' = case v of
 		AesonObject ao -> Object ao
-		JSONChunk l -> object (map mkPair l)
-	mkPair (s, d) = (T.pack s, toJSON d)
+		JSONChunk l -> object $ map mkPair l
+	mkPair (s, d) = (packString s, toJSON' d)
 add _ Nothing = Nothing
 
 complete :: JSONChunk v -> JSONBuilder
@@ -145,8 +144,8 @@ data DualDisp = DualDisp
 	, dispJson :: String
 	}
 
-instance ToJSON DualDisp where
-	toJSON = toJSON . dispJson
+instance ToJSON' DualDisp where
+	toJSON' = toJSON' . dispJson
 
 instance Show DualDisp where
 	show = dispNormal
@@ -156,10 +155,10 @@ instance Show DualDisp where
 -- serialization of Map, which uses "[key, value]".
 data ObjectMap a = ObjectMap { fromObjectMap :: M.Map String a }
 
-instance ToJSON a => ToJSON (ObjectMap a) where
-	toJSON (ObjectMap m) = object $ map go $ M.toList m
+instance ToJSON' a => ToJSON' (ObjectMap a) where
+	toJSON' (ObjectMap m) = object $ map go $ M.toList m
 	  where
-		go (k, v) = (T.pack k, toJSON v)
+		go (k, v) = (packString k, toJSON' v)
 
 -- An item that a git-annex command acts on, and displays a JSON object about.
 data JSONActionItem a = JSONActionItem
@@ -170,13 +169,13 @@ data JSONActionItem a = JSONActionItem
 	}
 	deriving (Show)
 
-instance ToJSON (JSONActionItem a) where
-	toJSON i = object $ catMaybes
+instance ToJSON' (JSONActionItem a) where
+	toJSON' i = object $ catMaybes
 		[ Just $ "command" .= itemCommand i
 		, case itemKey i of
 			Nothing -> Nothing
-			Just k -> Just $ "key" .= toJSON k
-		, Just $ "file" .= itemFile i
+			Just k -> Just $ "key" .= toJSON' k
+		, Just $ "file" .= toJSON' (itemFile i)
 		-- itemAdded is not included; must be added later by 'add'
 		]
 

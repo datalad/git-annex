@@ -22,7 +22,6 @@ module Key (
 	prop_isomorphic_key_decode
 ) where
 
-import Data.Aeson
 import Data.Char
 import qualified Data.Text as T
 
@@ -30,6 +29,7 @@ import Common
 import Types.Key
 import Utility.QuickCheck
 import Utility.Bloom
+import Utility.Aeson
 import qualified Utility.SimpleProtocol as Proto
 
 stubKey :: Key
@@ -155,8 +155,8 @@ instance Hashable Key where
 	hashIO32 = hashIO32 . key2file
 	hashIO64 = hashIO64 . key2file
 
-instance ToJSON Key where
-	toJSON = toJSON . key2file
+instance ToJSON' Key where
+	toJSON' = toJSON' . key2file
 
 instance FromJSON Key where
 	parseJSON (String t) = maybe mempty pure $ file2key $ T.unpack t

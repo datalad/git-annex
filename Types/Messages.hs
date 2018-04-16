@@ -9,7 +9,7 @@
 
 module Types.Messages where
 
-import qualified Data.Aeson as Aeson
+import qualified Utility.Aeson as Aeson
 
 import Control.Concurrent
 #ifdef WITH_CONCURRENTOUTPUT

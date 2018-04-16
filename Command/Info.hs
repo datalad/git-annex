@@ -11,9 +11,8 @@ module Command.Info where
 
 import "mtl" Control.Monad.State.Strict
 import qualified Data.Map.Strict as M
-import qualified Data.Text as T
+import qualified Data.Vector as V
 import Data.Ord
-import Data.Aeson hiding (json)
 
 import Command
 import qualified Git
@@ -34,6 +33,7 @@ import Config
 import Git.Config (boolConfig)
 import qualified Git.LsTree as LsTree
 import Utility.Percentage
+import Utility.Aeson hiding (json)
 import Types.Transfer
 import Logs.Transfer
 import Types.Key
@@ -283,7 +283,7 @@ simpleStat desc getval = stat desc $ json id getval
 nostat :: Stat
 nostat = return Nothing
 
-json :: ToJSON j => (j -> String) -> StatState j -> String -> StatState String
+json :: ToJSON' j => (j -> String) -> StatState j -> String -> StatState String
 json fmt a desc = do
 	j <- a
 	lift $ maybeShowJSON $ JSONChunk [(desc, j)]
@@ -422,7 +422,7 @@ transfer_list :: Stat
 transfer_list = stat desc $ nojson $ lift $ do
 	uuidmap <- Remote.remoteMap id
 	ts <- getTransfers
-	maybeShowJSON $ JSONChunk [(desc, map (uncurry jsonify) ts)]
+	maybeShowJSON $ JSONChunk [(desc, V.fromList $ map (uncurry jsonify) ts)]
 	return $ if null ts
 		then "none"
 		else multiLine $
@@ -438,11 +438,11 @@ transfer_list = stat desc $ nojson $ lift $ do
 		, maybe (fromUUID $ transferUUID t) Remote.name $
 			M.lookup (transferUUID t) uuidmap
 		]
-	jsonify t i = object $ map (\(k, v) -> (T.pack k, v)) $
-		[ ("transfer", toJSON (formatDirection (transferDirection t)))
-		, ("key", toJSON (key2file (transferKey t)))
-		, ("file", toJSON afile)
-		, ("remote", toJSON (fromUUID (transferUUID t)))
+	jsonify t i = object $ map (\(k, v) -> (packString k, v)) $
+		[ ("transfer", toJSON' (formatDirection (transferDirection t)))
+		, ("key", toJSON' (transferKey t))
+		, ("file", toJSON' afile)
+		, ("remote", toJSON' (fromUUID (transferUUID t)))
 		]
 	  where
 		AssociatedFile afile = associatedFile i
@@ -476,10 +476,13 @@ numcopies_stats :: Stat
 numcopies_stats = stat "numcopies stats" $ json fmt $
 	calc <$> (maybe M.empty numCopiesVarianceMap <$> cachedNumCopiesStats)
   where
-	calc = map (\(variance, count) -> (show variance, count)) 
+	calc = V.fromList
+		. map (\(variance, count) -> (show variance, count)) 
 		. sortBy (flip (comparing fst))
 		. M.toList
-	fmt = multiLine . map (\(variance, count) -> "numcopies " ++ variance ++ ": " ++ show count)
+	fmt = multiLine 
+		. map (\(variance, count) -> "numcopies " ++ variance ++ ": " ++ show count)
+		. V.toList
 
 reposizes_stats :: Stat
 reposizes_stats = stat desc $ nojson $ do

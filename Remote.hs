@@ -57,9 +57,8 @@ module Remote (
 ) where
 
 import Data.Ord
-import Data.Aeson
 import qualified Data.Map as M
-import qualified Data.Text as T
+import qualified Data.Vector as V
 
 import Annex.Common
 import Types.Remote
@@ -74,6 +73,7 @@ import Config
 import Config.DynamicConfig
 import Git.Types (RemoteName)
 import qualified Git
+import Utility.Aeson
 
 {- Map from UUIDs of Remotes to a calculated value. -}
 remoteMap :: (Remote -> v) -> Annex (M.Map UUID v)
@@ -197,7 +197,7 @@ prettyPrintUUIDsDescs header descm uuids =
 
 {- An optional field can be included in the list of UUIDs. -}
 prettyPrintUUIDsWith
-	:: ToJSON v
+	:: ToJSON' v
 	=> Maybe String 
 	-> String 
 	-> M.Map UUID RemoteName
@@ -206,7 +206,7 @@ prettyPrintUUIDsWith
 	-> Annex String
 prettyPrintUUIDsWith optfield header descm showval uuidvals = do
 	hereu <- getUUID
-	maybeShowJSON $ JSONChunk [(header, map (jsonify hereu) uuidvals)]
+	maybeShowJSON $ JSONChunk [(header, V.fromList $ map (jsonify hereu) uuidvals)]
 	return $ unwords $ map (\u -> "\t" ++ prettify hereu u ++ "\n") uuidvals
   where
 	finddescription u = M.findWithDefault "" u descm
@@ -224,11 +224,11 @@ prettyPrintUUIDsWith optfield header descm showval uuidvals = do
 			Nothing -> s
 			Just val -> val ++ ": " ++ s
 	jsonify hereu (u, optval) = object $ catMaybes
-		[ Just (T.pack "uuid", toJSON $ fromUUID u)
-		, Just (T.pack "description", toJSON $ finddescription u)
-		, Just (T.pack "here", toJSON $ hereu == u)
+		[ Just (packString "uuid", toJSON' $ fromUUID u)
+		, Just (packString "description", toJSON' $ finddescription u)
+		, Just (packString "here", toJSON' $ hereu == u)
 		, case (optfield, optval) of
-			(Just field, Just val) -> Just (T.pack field, toJSON val)
+			(Just field, Just val) -> Just (packString field, toJSON' val)
 			_ -> Nothing
 		]
 
