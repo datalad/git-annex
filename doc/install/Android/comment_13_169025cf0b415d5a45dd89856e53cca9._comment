@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="hobbes@b2cacef69071743c3a831e60511062f7e014e52f"
+ nickname="hobbes"
+ avatar="http://cdn.libravatar.org/avatar/44b70169c4d862b3619812c360aa8f1e"
+ subject="Modern Android?"
+ date="2018-04-16T19:28:09Z"
+ content="""
+Hey there!
+
+It's been a while since the android app has worked. Are there any plans to get it working on modern Android versions? I assume it's pretty low demand, but it would make git-annex just so much more useful for me.
+
+To clarify, I am experiencing this issue, as will everybody using Android >=6:
+
+https://git-annex.branchable.com/bugs/android__58___cannot_link_executable/
+https://developer.android.com/about/versions/marshmallow/android-6.0-changes.html#behavior-runtime
+
+I'm not certain, but I think it might just be a matter of compiling git-annex with this flag and releasing a new APK?
+
+https://ghc.haskell.org/trac/ghc/ticket/13702
+
+I'd be delighted to test if given an APK! Thanks again for the lovely git magic :).
+
+
+
+
+"""]]
