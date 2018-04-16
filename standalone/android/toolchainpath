@@ -10,20 +10,20 @@
 
 androidversion="$1"
 
+# Allow running from the top or inside this directory.
+if [ -e abiversion ]; then 
+	top=.
+else
+	top=standalone/android
+fi
+
 wrap () {
-	sed -e "s!PROG!$1!" -e "s!OPTS!$3!" < wrapper.pl > "$2"
+	sed -e "s!PROG!$1!" -e "s!OPTS!$3!" < $top/wrapper.pl > "$2"
 	chmod +x "$2"
 }
 
-# Allow running from the top or inside this directory.
-if [ -e abiversion ]; then 
-	abiversion=$(cat abiversion)
-else
-	abiversion=$(cat standalone/android/abiversion)
-fi
-
 # location to toolchain as installed by ghc-android
-androidtoolchain="$HOME/.ghc/$abiversion/bin"
+androidtoolchain="$HOME/.ghc/$(cat $top/abiversion)/bin"
 
 mkdir -p "$androidtoolchain/orig"
 
