@@ -6,7 +6,7 @@
 #
 # Since the ghc-android wrappers actually hardcode the path to the
 # toolchain, and we want to wrap the toolchain programs, the binaries
-# are moved to bin/orig/ and replaced by wrappers.
+# are moved to .orig and replaced by wrappers.
 
 androidversion="$1"
 
@@ -25,11 +25,9 @@ wrap () {
 # location to toolchain as installed by ghc-android
 androidtoolchain="$HOME/.ghc/$(cat $top/abiversion)/bin"
 
-mkdir -p "$androidtoolchain/orig"
-
-for f in $(find "$androidtoolchain" -maxdepth 1 -not -type d -printf '%f\n'); do
+for f in $(find "$androidtoolchain" -maxdepth 1 -not -type d -printf '%f\n' | grep -v \.orig); do
 	bin="$androidtoolchain/$f"
-	orig="$androidtoolchain/orig/$f"
+	orig="$androidtoolchain/$f.orig"
 	if [ ! -e "$orig" ]; then
 		cp -a "$bin" "$orig"
 	fi
