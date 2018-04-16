@@ -13,40 +13,7 @@ fi
 
 VER="$(perl -e '$_=<>;print m/\((.*?)\)/'<../../CHANGELOG)"
 
-wrap () {
-	sed -e "s!PROG!$1!" -e "s!OPTS!$3!" < wrapper.pl > "$2"
-	chmod +x "$2"
-}
-
-# Add Android cross-compiler to PATH (as installed by ghc-android)
-androidtoolchain="$HOME/.ghc/$(cat abiversion)/bin"
-# For Android 5, use a wrapped version of the C compiler,
-# which sets PIE build flags.
-if [ "$androidversion" = 5 ]; then
-	rm -rf "$androidtoolchain/5"
-	mkdir -p "$androidtoolchain/5"
-	for f in $(find "$androidtoolchain" -maxdepth 1 -not -type d -printf '%f\n'); do
-		src="$androidtoolchain/$f"
-		dest="$androidtoolchain/5/$f"
-		case "$f" in
-		*-ld*)
-			wrap "$src" "$dest" "-pie"
-		;;
-		*-gcc)
-			wrap "$src" "$dest" "-pie -fPIE"
-		;;
-		*'-g++')
-			wrap "$src" "$dest" "-pie -fPIE"
-		;;
-		*)
-			cp -a "$src" "$dest"
-		;;
-		esac
-	done
-	PATH="$androidtoolchain/5:$PATH"
-else
-	PATH="$androidtoolchain:$PATH"
-fi
+PATH=$(./toolchainpath "$androidversion")
 export PATH
 
 # Paths to the Android SDK and NDK.

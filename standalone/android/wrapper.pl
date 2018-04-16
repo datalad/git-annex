@@ -6,5 +6,6 @@ if (grep { $_ eq "-r" || $_ eq "--relocatable" } @ARGV) {
 	exec($prog,@ARGV) || die "failed to run $prog";
 }
 else {
-	exec($prog,@opts,@ARGV) || die "failed to run $prog";
+	my @args=grep { ! m/-no-pie/ } @ARGV;
+	exec($prog,@opts,@args) || die "failed to run $prog";
 }
