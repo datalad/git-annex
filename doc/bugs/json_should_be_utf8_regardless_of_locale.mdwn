@@ -1,3 +1,7 @@
 json is defined as always utf-8. However, when LANG=C,
 git-annex --json currently outputs "file":"���������"
 instead of "file":"äöü東" for that utf-8 filename. --[[Joey]]
+
+(Note that git-annex can operate on non-utf8 filenames; it's not defined
+what the json contains then, which might or might not be considered a bug
+but this is not about that.)
