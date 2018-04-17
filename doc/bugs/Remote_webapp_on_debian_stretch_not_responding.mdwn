@@ -1,0 +1,16 @@
+In a fresh repository installation on debian stretch (arm) (git-annex version: 6.20170101)
+the remote webapp will start and present the dashboard page,
+however any request made by clicking any link does not receive a response.
+
+I have a workaround: to ssh into my server and access the webapp locally using lynx browser, and that does seem to work well.
+
+It presents me with a warning:
+
+warning
+
+   WebApp crashed: xdg-open: createProcess: runInteractiveProcess: exec:
+   does not exist (No such file or directory)
+
+I'm not getting any errors, just the requests not returning responses.
+
+I'm pretty new to this software.
