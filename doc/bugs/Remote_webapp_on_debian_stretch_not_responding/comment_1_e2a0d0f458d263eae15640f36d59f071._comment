@@ -1,0 +1,59 @@
+[[!comment format=mdwn
+ username="moaxey"
+ avatar="http://cdn.libravatar.org/avatar/06abae5b84ce9bbcd39c1cbf49817d29"
+ subject="I also found this log"
+ date="2018-04-17T22:52:15Z"
+ content="""
+```
+   Here's everything that has been logged by the git-annex assistant, as
+   well as by programs it has run.
+[2018-04-17 21:55:06.712567732] main: starting assistant version 6.20170101
+[2018-04-17 21:55:06.754681296] Cronner: You should enable consistency checking
+to protect your data.
+
+  No known network monitor available through dbus; falling back to polling
+
+  No known volume monitor available through dbus; falling back to mtab polling
+(scanning...) [2018-04-17 21:55:06.920804804] Watcher: Performing startup scan
+(started...)
+WebApp crashed: unable to bind to local socket
+CallStack (from HasCallStack):
+  error, called at ./Utility/WebApp.hs:124:19 in main:Utility.WebApp
+[2018-04-17 21:55:07.19622235] WebApp: warning WebApp crashed: unable to bind to
+ local socket
+CallStack (from HasCallStack):
+  error, called at ./Utility/WebApp.hs:124:19 in main:Utility.WebApp
+[2018-04-17 21:57:06.821805552] main: starting assistant version 6.20170101
+[2018-04-17 21:57:06.858432032] Cronner: You should enable consistency checking
+to protect your data.
+
+  No known network monitor available through dbus; falling back to polling
+(scanning...) [2018-04-17 21:57:07.025115165] Watcher: Performing startup scan
+(started...)
+
+  No known volume monitor available through dbus; falling back to mtab polling
+WebApp crashed: unable to bind to local socket
+CallStack (from HasCallStack):
+  error, called at ./Utility/WebApp.hs:124:19 in main:Utility.WebApp
+[2018-04-17 21:57:07.243030677] WebApp: warning WebApp crashed: unable to bind t
+o local socket
+CallStack (from HasCallStack):
+  error, called at ./Utility/WebApp.hs:124:19 in main:Utility.WebApp
+[2018-04-17 21:59:07.137839178] main: starting assistant version 6.20170101
+[2018-04-17 21:59:07.177856054] Cronner: You should enable consistency checking
+to protect your data.
+
+  No known network monitor available through dbus; falling back to polling
+
+  No known volume monitor available through dbus; falling back to mtab polling
+
+(scanning...) [2018-04-17 22:24:10.365052622] Watcher: Performing startup scan
+(started...)
+(merging synced/git-annex into git-annex...)
+(recording state in git...)
+
+     Performed startup scan
+
+```
+
+"""]]
