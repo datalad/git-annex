@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="git-annex not a cask anymore"
+ date="2018-04-20T13:21:27Z"
+ content="""
+@andrew.grangaard, I just wanted to note that git-annex is [no longer available as a cask](https://github.com/caskroom/homebrew-cask/pull/22706). It is just available as a [formula](http://formulae.brew.sh/formula/git-annex), ie `brew install git-annex` see [Homebrew](http://git-annex.branchable.com/install/OSX/Homebrew/).
+"""]]
