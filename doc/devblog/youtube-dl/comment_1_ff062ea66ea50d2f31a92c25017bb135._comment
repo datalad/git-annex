@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="svw"
+ avatar="http://cdn.libravatar.org/avatar/539b90cb79086a2b1d7d3fbe48fd4184"
+ subject="Passing flags to youtube-dl"
+ date="2018-04-20T05:57:39Z"
+ content="""
+Joey - is there some way to pass flags to youtube-dl?
+
+For example the `--extract-audio` flag allows the extraction of just the audio stream.
+"""]]
