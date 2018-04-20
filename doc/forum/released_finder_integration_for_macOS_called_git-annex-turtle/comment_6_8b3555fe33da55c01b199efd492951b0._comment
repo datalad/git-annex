@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="integrating git-annex-turtle into git-annex"
+ date="2018-04-20T18:24:21Z"
+ content="""
+Ooops…, I missed this comment.
+
+I am not exactly sure what the best approach will be, but I have some thoughts. Yes, I can make an example of a folder structure I think could work well. I'll try to explain all the positives and negatives of various approaches below.
+
+The standard for application installation on the mac is to deliver a dmg that when double-clicked opens a small Finder window that contains the application (.app bundle), a link to /Applications and [a background image with an arrow](https://asmaloney.com/2013/07/howto/packaging-a-mac-os-x-application-using-a-dmg/) hinting that users should drag the .app file onto to the /Applications link (which causes Finder to initiate a copy).
+
+Currently, after installing git-annex from the dmg, when you double-click the git-annex.app folder git-annex-webapp is launched.
+
+1) One approach, to bundling git-annex-turtle would be to place git-annex-turtle inside the git-annex.app folder. That would mean, however, users need to ctrl-click then click `Show Package Contents` then browse the file structure until they find git-annex-turtle, then double-click it to launch it. That would be a bit confusing, and not very Mac-y. This could be slightly mitigated by adding an installer for git-annex that asks users if they want to auto-launch git-annex-turtle on login-in, but then we still have the issue of them not being able to re-launch it if they ever quit it. Also, installers are not very popular on the Mac.
+
+2) Another approach would be for the dmg file to contain a folder that contains two items git-annex.app and git-annex-turtle.app. Users would then drag the entire folder to their /Applications folder. Then git-annex-webapp would be launchable (from Finder) by double-clicking on /Applications/git-annex/git-annex.app, and git-annex-turtle would be launch-able by double-clicking on /Applications/git-annex/git-annex-turtle.app. The biggest drawback with this approach is that it would change all of the absolute paths to the binaries inside git-annex.app.
+
+For example, I currently have the following line in my bash_profile:
+
+    export PATH=/Applications/git-annex.app/Contents/MacOS:$PATH
+
+This would need to change to
+
+    export PATH=/Applications/git-annex/git-annex.app/Contents/MacOS:$PATH
+
+I think we probably don't want to make all users have to update all their paths to git-annex binaries.
+
+This approach, of having a folder with multiple apps is quite rare. Users, really expect their /Applications folder to only contain .app files with nice icons that they can double-click to launch things. I could only find a handful of examples of apps that are doing this (all cross-platform apps): Blender, Supercollider, Unity, Adobe (sometimes), Autodesk.
+
+3) Another approach would be to just include both the existing git-annex.app and git-annex-turtle.app (as they are) in the git-annex.dmg file. Then I could create a nice background image that suggests users should drag both git-annex.app and git-annex-turtle.app to their /Applications folder. Then users would have /Applications/git-annex.app and /Applications/git-annex-turtle.app installed. The main drawback here is that users need to know to drag both files to their /Applications folder, and they are slightly more likely to not always upgrade them, and there is the potential for them to just drag git-annex-turtle to /Applications and not git-annex, and wonder why one doesn't work. Or uninstall git-annex at some point, and then again, wonder why git-annex-turtle no longer works.
+
+Currently I am leaning towards this last option. But, I think 2) could work as well, although it would be unfortunate to break people's paths.
+
+
+Andrew
+"""]]
