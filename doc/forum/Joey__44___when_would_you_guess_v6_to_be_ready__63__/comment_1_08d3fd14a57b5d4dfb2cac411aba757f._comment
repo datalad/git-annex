@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ avatar="http://cdn.libravatar.org/avatar/9c3f08f80e67733fd506c353239569eb"
+ subject="current status of v6"
+ date="2018-04-21T19:47:10Z"
+ content="""
+I too would be grateful to know Joey's view on the state of v6.  I would like to replace my direct mode repos.
+
+I'm not sure that the criteria for v6 being suitable for production is that Joey is willing to set it as the default -- there might be reasons other than stability/bugginess not to set it as the default.
+"""]]
