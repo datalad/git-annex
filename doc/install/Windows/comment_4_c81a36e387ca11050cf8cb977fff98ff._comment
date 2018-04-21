@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="grawity@2ea26be48562f66fcb9b66307da72b1e2e37453f"
+ nickname="grawity"
+ avatar="http://cdn.libravatar.org/avatar/7003e967f47003bae82966aa373de8ef"
+ subject="comment 4"
+ date="2018-04-21T09:52:31Z"
+ content="""
+Is 64-bit still a problem now that git-annex has switched over from rsync to its own transport?
+"""]]
