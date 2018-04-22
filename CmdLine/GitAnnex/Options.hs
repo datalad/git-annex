@@ -5,12 +5,14 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances, CPP #-}
 
 module CmdLine.GitAnnex.Options where
 
 import Options.Applicative
+#if ! MIN_VERSION_optparse_applicative(0,14,1)
 import Options.Applicative.Builder.Internal
+#endif
 import Control.Concurrent
 import qualified Data.Map as M
 
