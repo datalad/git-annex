@@ -47,7 +47,7 @@ import Utility.Aeson
 
 import qualified Data.Text as T
 import qualified Data.Set as S
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
 import qualified Data.HashMap.Strict as HM
 import Data.Char
 import qualified Data.CaseInsensitive as CI
@@ -207,8 +207,7 @@ updateMetaData :: MetaField -> MetaValue -> MetaData -> MetaData
 updateMetaData f v = updateMetaData' f (S.singleton v)
 
 updateMetaData' :: MetaField -> S.Set MetaValue -> MetaData -> MetaData
-updateMetaData' f s (MetaData m) = MetaData $
-	M.insertWith' S.union f s m
+updateMetaData' f s (MetaData m) = MetaData $ M.insertWith S.union f s m
 
 {- New metadata overrides old._-}
 unionMetaData :: MetaData -> MetaData -> MetaData

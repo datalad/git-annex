@@ -25,7 +25,7 @@ import Foreign.C.Types
 import Foreign.C.Error
 import Foreign.Ptr
 import Foreign.Marshal
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import qualified System.Posix.Files as Files
 import Control.Concurrent
@@ -212,7 +212,7 @@ handleChange kq@(Kqueue _ _ dirmap pruner) fd olddirinfo =
 		newmap' <- foldM removeSubDir newmap (map changedFile deleted)
 
 		-- Update the cached dirinfo just looked up.
-		let newmap'' = M.insertWith' const fd newdirinfo newmap'
+		let newmap'' = M.insert fd newdirinfo newmap'
 
 		-- When new directories were added, need to update
 		-- the kqueue to watch them.

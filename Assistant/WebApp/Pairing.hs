@@ -17,7 +17,7 @@ import Git.Types
 import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Concurrent.STM
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
 
 data PairingWith = PairingWithSelf | PairingWithFriend
 	deriving (Eq, Show, Read)
@@ -37,7 +37,7 @@ addWormholePairingState h tv = atomically $ do
 	m <- readTVar tv
 	-- use of head is safe because allids is infinite
 	let i = Prelude.head $ filter (`notElem` M.keys m) allids
-	writeTVar tv (M.insertWith' const i h m)
+	writeTVar tv (M.insert i h m)
 	return i
   where
 	allids = map WormholePairingId [1..]

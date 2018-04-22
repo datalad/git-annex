@@ -24,7 +24,7 @@ import Git
 import Git.Command
 import qualified Git.UpdateIndex
 
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
 
 {- Queable actions that can be performed in a git repository. -}
 data Action
@@ -117,7 +117,7 @@ updateQueue !action different sizeincrease q repo
 			, items = newitems
 			}
 		!newsize = size q' + sizeincrease
-		!newitems = M.insertWith' combineNewOld (actionKey action) action (items q')
+		!newitems = M.insertWith combineNewOld (actionKey action) action (items q')
 
 combineNewOld :: Action -> Action -> Action
 combineNewOld (CommandAction _sc1 _ps1 fs1) (CommandAction sc2 ps2 fs2) =

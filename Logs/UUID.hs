@@ -29,7 +29,7 @@ import Logs
 import Logs.UUIDBased
 import qualified Annex.UUID
 
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
 
 {- Records a description for a uuid in the log. -}
 describeUUID :: UUID -> String -> Annex ()
@@ -79,7 +79,7 @@ uuidMapLoad :: Annex UUIDMap
 uuidMapLoad = do
 	m <- (simpleMap . parseLog Just) <$> Annex.Branch.get uuidLog
 	u <- Annex.UUID.getUUID
-	let m' = M.insertWith' preferold u "" m
+	let m' = M.insertWith preferold u "" m
 	Annex.changeState $ \s -> s { Annex.uuidmap = Just m' }
 	return m'
   where

@@ -21,7 +21,7 @@ import Common
 import Annex.VectorClock
 import Logs.Line
 
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
 
 data LogEntry v = LogEntry
 	{ changed :: VectorClock
@@ -56,7 +56,7 @@ changeMapLog c f v = M.insert f $ LogEntry c v
 {- Only add an LogEntry if it's newer (or at least as new as) than any
  - existing LogEntry for a field. -}
 addMapLog :: Ord f => f -> LogEntry v -> MapLog f v -> MapLog f v
-addMapLog = M.insertWith' best
+addMapLog = M.insertWith best
 
 {- Converts a MapLog into a simple Map without the timestamp information.
  - This is a one-way trip, but useful for code that never needs to change

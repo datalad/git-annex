@@ -20,7 +20,7 @@ import Utility.NotificationBroadcaster
 
 import Control.Concurrent
 import Control.Concurrent.Async
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
 import qualified Control.Exception as E
 
 #ifdef WITH_WEBAPP
@@ -57,7 +57,7 @@ startNamedThread urlrenderer (NamedThread afterstartupsanitycheck name a) =
 		aid <- liftIO $ runner $ d { threadName = name }
 		restart <- asIO $ startNamedThread urlrenderer (NamedThread False name a)
 		modifyDaemonStatus_ $ \s -> s
-			{ startedThreads = M.insertWith' const name (aid, restart) (startedThreads s) }
+			{ startedThreads = M.insert name (aid, restart) (startedThreads s) }
 	runmanaged first d = do
 		aid <- async $ runAssistant d $ do
 			void first

@@ -73,7 +73,7 @@ import "mtl" Control.Monad.Reader
 import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Concurrent.STM
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 
 {- git-annex's monad is a ReaderT around an AnnexState stored in a MVar.
@@ -262,17 +262,17 @@ withState modifier = do
 {- Sets a flag to True -}
 setFlag :: String -> Annex ()
 setFlag flag = changeState $ \s ->
-	s { flags = M.insertWith' const flag True $ flags s }
+	s { flags = M.insert flag True $ flags s }
 
 {- Sets a field to a value -}
 setField :: String -> String -> Annex ()
 setField field value = changeState $ \s ->
-	s { fields = M.insertWith' const field value $ fields s }
+	s { fields = M.insert field value $ fields s }
 
 {- Adds a cleanup action to perform. -}
 addCleanup :: CleanupAction -> Annex () -> Annex ()
 addCleanup k a = changeState $ \s ->
-	s { cleanup = M.insertWith' const k a $ cleanup s }
+	s { cleanup = M.insert k a $ cleanup s }
 
 {- Sets the type of output to emit. -}
 setOutput :: OutputType -> Annex ()
