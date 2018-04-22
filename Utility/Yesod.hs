@@ -47,7 +47,11 @@ hamletTemplate f = globFile "hamlet" f
 #endif
 
 {- Lift Handler to Widget -}
+#if MIN_VERSION_yesod_core(1,6,0)
+liftH :: HandlerFor site a -> WidgetFor site a 
+#else
 liftH :: Monad m => HandlerT site m a -> WidgetT site m a
+#endif
 liftH = handlerToWidget
 
 #if ! MIN_VERSION_yesod_core(1,2,20)
