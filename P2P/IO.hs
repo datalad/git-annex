@@ -48,7 +48,7 @@ import System.Log.Logger (debugM)
 import qualified Network.Socket as S
 
 -- Type of interpreters of the Proto free monad.
-type RunProto m = forall a. (MonadIO m, MonadMask m) => Proto a -> m (Either String a)
+type RunProto m = forall a. Proto a -> m (Either String a)
 
 data RunState
 	= Serving UUID (Maybe ChangedRefsHandle) (TVar ProtocolVersion)
