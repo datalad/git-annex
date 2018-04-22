@@ -205,5 +205,6 @@ $if (not exists)
 #ifdef WITH_S3
 	url = S3.iaItemUrl bucket
 #else
-	url = ""
+	url = case bucket of
+		_ -> ""
 #endif
