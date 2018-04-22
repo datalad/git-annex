@@ -326,10 +326,10 @@ download meterupdate url file uo = go `catchNonAsync` (const $ return False)
  -
  - Note that the responseStatus is not checked by this function.
  -}
-sinkResponseFile :: MonadResource m => MeterUpdate -> BytesProcessed -> FilePath -> IOMode -> Response (ResumableSource m B8.ByteString) -> m ()
+sinkResponseFile :: MonadResource m => MeterUpdate -> BytesProcessed -> FilePath -> IOMode -> Response (ConduitM () B8.ByteString m ()) -> m ()
 sinkResponseFile meterupdate initialp file mode resp = do
 	(fr, fh) <- allocate (openBinaryFile file mode) hClose
-	responseBody resp $$+- go initialp fh
+	runConduit $ responseBody resp .| go initialp fh
 	release fr
   where
 	go sofar fh = await >>= \case
