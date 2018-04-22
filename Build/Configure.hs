@@ -9,7 +9,6 @@ import Build.Version
 import Utility.SafeCommand
 import Utility.ExternalSHA
 import Utility.Env.Basic
-import Utility.Exception
 import qualified Git.Version
 import Utility.Directory
 
