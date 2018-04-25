@@ -62,7 +62,7 @@ ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
 			( do
 				-- Integration with the Termux:Boot app.
 				home <- myHomeDir
-				let bootfile = home </> ".termux" </> "boot"
+				let bootfile = home </> ".termux" </> "boot" </> "git-annex"
 				unlessM (doesFileExist bootfile) $ do
 					createDirectoryIfMissing True (takeDirectory bootfile)
 					writeFile bootfile "git-annex assistant --autostart"
