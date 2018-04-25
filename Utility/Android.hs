@@ -11,4 +11,4 @@ import Common
 
 -- Detect when the Linux build is running on Android, eg in termux.
 osAndroid :: IO Bool
-osAndroid = ("Android" == ) <$> readProcess "uname" ["-o"]
+osAndroid = ("Android" `isPrefixOf` ) <$> readProcess "uname" ["-o"]
