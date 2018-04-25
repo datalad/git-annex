@@ -1,0 +1,24 @@
+I've long been unsatisfied with the amount of effort needed to maintain the
+Android port in its current state, the hacky cross-compiler toolchain 
+needs days of wasted work to update, and is constantly out of date and
+breaking in one way or other. This sucks up any time I might spare to
+actually improve the Android port.
+
+So, it was quite a surprise yesterday when I downloaded the git-annex
+standalone Linux tarball into the Termux Android shell and unpacked it, and
+it more or less worked!
+
+The result, after a [[few minor fixes|todo/termux_package]], works 
+just as well as the git-annex Android app, and probably better. Even the 
+webapp works well, and with the Termux:Boot app, it can even
+autostart the assistant on boot as a daemon. If you want to give it a
+try, see [[tips/install_on_Android_in_Termux]].
+
+So, I am leaning toward deprecating the android port for this, removing 14
+thousand lines of patches and android-specific code. Not going to do it
+just yet, but I feel a weight lifting...
+
+----
+
+Today's work was sponsored by Jake Vosloo on
+[Patreon](https://patreon.com/joeyh).
