@@ -28,7 +28,8 @@ depending on the version of android. That sets up $HOME/storage.
 The webapp ought to default to making a repository somewhere in there.
 (Done)
 
-webbapp won't start on boot, but could be made to using https://wiki.termux.com/wiki/Termux:Boot
+The assistant won't start on boot, but could be made to using
+https://wiki.termux.com/wiki/Termux:Boot (Integration in place now)
 
 Apparently termux-exec sets a `LD_PRELOAD` that is not compatible, so
 the wrapper script would need to unset it. (Done now)
