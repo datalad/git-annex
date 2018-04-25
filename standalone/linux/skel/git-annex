@@ -21,11 +21,4 @@ cd "$base"
 base="$(pwd)"
 cd "$orig"
 
-# If this is a standalone app, set a variable that git-annex can use to
-# install itself.
-if [ -e "$base/bin/git-annex" ]; then
-	GIT_ANNEX_APP_BASE="$base"
-	export GIT_ANNEX_APP_BASE
-fi
-
 exec "$base/runshell" git-annex "$@"
