@@ -20,3 +20,6 @@ tor package. And would avoid needing to bundle other
 often out of date stuff with git-annex.apk.
 
 --[[Joey]]
+
+> Retargeting this todo to be about making the git-annex linux standalone
+> build work well when unpacked in termux. --[[Joey]]

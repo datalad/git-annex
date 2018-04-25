@@ -98,6 +98,9 @@ checkRepositoryPath p = do
 {- On first run, if run in the home directory, default to putting it in
  - ~/Desktop/annex, when a Desktop directory exists, and ~/annex otherwise.
  -
+ - When on Android, default to ~/storage/shared/annex, which termux sets up
+ - as a link to the sdcard.
+ -
  - If run in another directory, that the user can write to,
  - the user probably wants to put it there. Unless that directory
  - contains a git-annex file, in which case the user has probably
@@ -120,17 +123,30 @@ defaultRepositoryPath firstrun = do
 	if firstrun then inhome else inhome
 #endif
   where
-	inhome = do
-		desktop <- userDesktopDir
-		ifM (doesDirectoryExist desktop <&&> canWrite desktop)
-			( relHome $ desktop </> gitAnnexAssistantDefaultDir
-			, return $ "~" </> gitAnnexAssistantDefaultDir
-			)
+	inhome = ifM osAndroid
+		( do
+			home <- myHomeDir
+			let storageshared = home </> "storage" </> "shared"
+			ifM (doesDirectoryExist storageshared)
+				( relHome $ storageshared </> gitAnnexAssistantDefaultDir
+				, return $ "~" </> gitAnnexAssistantDefaultDir
+				)
+		, do
+			desktop <- userDesktopDir
+			ifM (doesDirectoryExist desktop <&&> canWrite desktop)
+				( relHome $ desktop </> gitAnnexAssistantDefaultDir
+				, return $ "~" </> gitAnnexAssistantDefaultDir
+				)
+		)
 #ifndef mingw32_HOST_OS
 	-- Avoid using eg, standalone build's git-annex.linux/ directory
 	-- when run from there.
 	legit d = not <$> doesFileExist (d </> "git-annex")
 #endif
+
+-- Detect when the Linux build is running on Android, eg in termux.
+osAndroid :: IO Bool
+osAndroid = ("Android" == ) <$> readProcess "uname" ["-o"]
 
 newRepositoryForm :: FilePath -> Hamlet.Html -> MkMForm RepositoryPath
 newRepositoryForm defpath msg = do
@@ -156,7 +172,7 @@ postFirstRepositoryR = page "Getting started" (Just Configuration) $ do
 	androidspecial <- liftIO $ doesDirectoryExist "/sdcard/DCIM"
 	let path = "/sdcard/annex"
 #else
-	let androidspecial = False
+	androidspecial <- liftIO osAndroid
 	path <- liftIO . defaultRepositoryPath =<< liftH inFirstRun
 #endif
 	((res, form), enctype) <- liftH $ runFormPostNoToken $ newRepositoryForm path
@@ -166,8 +182,14 @@ postFirstRepositoryR = page "Getting started" (Just Configuration) $ do
 		_ -> $(widgetFile "configurators/newrepository/first")
 
 getAndroidCameraRepositoryR :: Handler ()
-getAndroidCameraRepositoryR = 
-	startFullAssistant "/sdcard/DCIM" SourceGroup $ Just addignore	
+getAndroidCameraRepositoryR = do
+#ifdef __ANDROID__
+	let dcim = "/sdcard/DCIM"
+#else
+	home <- liftIO myHomeDir
+	let dcim = home </> "storage" </> "dcim"
+#endif
+	startFullAssistant dcim SourceGroup $ Just addignore	
   where
 	addignore = do
 		liftIO $ unlessM (doesFileExist ".gitignore") $
