@@ -9,14 +9,16 @@ git init fails in sdcard because it tries to chmod something. It works in
 the termux home directory. Note that only the git bundled with git-annex
 has this problem; the termux one works (probably it's patched like I did in
 the android git-annex port). Hacking the standalone build to not run the
-bundled git should work.
+bundled git should work. This could be done only when uname -o = Android.
 
 git annex init fails with a getUserEntryForID exception. 
-This should be easy to fix in git-annex.
-
-If a git-annex repository is copied over to the android device from
-elsewhere, git-annex does work in it. The assistant works.
+[[!commit 526243d6f5db6e16c32ed7f835da590b877f78b8]] probably fixed this,
+but not tested yet.
 
 The webapp doesn't know how to open an url, but copy and paste of the
-url to a web browser works and the webapp mostly works then.
+url to a web browser works and the webapp mostly works then. It should
+be able to use termux-open.
+
+Accessing the sdcard may need termux-setup-storage to be run once, 
+depending on the version of android. That sets up $HOME/storage.
 """]]
