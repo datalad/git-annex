@@ -1,0 +1,47 @@
+[Termux](https://termux.com/) is an Android app that can run some
+Linux software in a terminal.
+
+git-annex is not currently part of the Termux distribution, but it's easy
+to install it. Paste these commands into Termux:
+
+	pkg install git wget tar
+	cd
+	wget https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-armel.tar.gz
+	tar zxf git-annex-standalone-armel.tar.gz
+	rm git-annex-standalone-armel.tar.gz
+	git-annex.linux/runshell
+
+Now you can set up a git-annex repository or two, to manage your
+Android files. Here we'll make one for camera photos.
+
+	termux-setup-storage
+	cd ~/storage/dcim
+	git init
+	git annex init
+
+You can run the git-annex assistant in your repository, to automatically
+notice new and changed files and commit them to the repository:
+
+	cd ~/storage/dcim
+	git annex assistant
+
+You can set up a ssh remote pointing to a server, and the assistant will
+automatically sync things up.
+
+And so on. Most ways you would use git-annex on a Linux system work fairly
+well in this Termux environment.
+
+Known limitations:
+
+* Direct mode
+
+  git-annex will probably default to direct mode due to the
+  limitations of Android's /sdcard. You can get around this using v6
+  unlocked repositories, or by putting the git-annex repository on a better
+  filesystem on the Android device, such as your termux home directory.
+
+* Webapp
+
+  The webapp doesn't know how to open a web browser on Android. It displays
+  a `file://` url, and if you copy and paste that into a web browser, it
+  will work.

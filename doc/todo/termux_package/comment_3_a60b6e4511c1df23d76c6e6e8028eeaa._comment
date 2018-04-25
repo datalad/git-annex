@@ -10,20 +10,25 @@ the termux home directory. Note that only the git bundled with git-annex
 has this problem; the termux one works (probably it's patched like I did in
 the android git-annex port). Hacking the standalone build to not run the
 bundled git should work. This could be done only when uname -o = Android.
+(Update: Fixed)
 
 git annex init fails with a getUserEntryForID exception. 
 [[!commit 526243d6f5db6e16c32ed7f835da590b877f78b8]] probably fixed this,
-but not tested yet.
+but not tested yet. (Update: Fixed)
 
-The webapp doesn't know how to open an url, but copy and paste of the
-url to a web browser works and the webapp mostly works then. It should
-be able to use termux-open.
+The webapp is able to open an url (after I upgraded termux) via xdg-open
+(alias for termux-open), but when in /sdcard/t2 it opened an url that
+chrome was not able to access, apparently a permissions problem. The
+webapp.html does not add any security on android, since it's not a
+multiuser unix system, and so it should open the url to the webapp
+directly.
 
 Accessing the sdcard may need termux-setup-storage to be run once, 
 depending on the version of android. That sets up $HOME/storage.
+The webapp ought to default to making a repository somewhere in there.
 
 webbapp won't start on boot, but could be made to using https://wiki.termux.com/wiki/Termux:Boot
 
 Apparently termux-exec sets a `LD_PRELOAD` that is not compatible, so
-the wrapper script would need to unset it.
+the wrapper script would need to unset it. (Done now)
 """]]

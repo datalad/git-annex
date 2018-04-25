@@ -4,6 +4,7 @@
 
 set -e
 
+os="$(uname -o 2>/dev/null || true)"
 base="$(dirname "$0")"
 
 if [ ! -d "$base" ]; then
@@ -13,10 +14,6 @@ fi
 
 if [ ! -e "$base/bin/git-annex" ]; then
 	echo "** base directory $base does not contain bin/git-annex" >&2
-	exit 1
-fi
-if [ ! -e "$base/bin/git" ]; then
-	echo "** base directory $base does not contain bin/git" >&2
 	exit 1
 fi
 
@@ -152,10 +149,36 @@ for localeenv in "$LANG" "$LANGUAGE" "$LC_CTYPE" "$LC_NUMERIC" "$LC_TIME" \
 	fi
 done
 
-# Indicate which variables were exported above and should be cleaned
-# when running non-bundled programs.
-GIT_ANNEX_STANDLONE_ENV="PATH GCONV_PATH GIT_EXEC_PATH GIT_TEMPLATE_DIR MANPATH LOCPATH"
-export GIT_ANNEX_STANDLONE_ENV
+case "$os" in
+	# Make this bundle work well on Android.
+	Android)
+		if [ -e "$base/git" ]; then
+			echo "Running on Android.. Adding git-annex to PATH for you, and tuning for optimal behavior." >&2
+			# The bundled git does not work well on sdcard, so delete
+			# it and use termux's git which works better.
+			cd "$base"
+			find . | grep git | grep -v git-annex | grep -v git-remote-tor-annex | grep -v git-remote-gcrypt | xargs rm -rf
+			cd "$orig"
+			# Save the poor Android user the typing.
+			if ! [ -e "$HOME/.profile" ] || ! grep -q "$base" "$HOME/.profile"; then
+				echo 'PATH=$PATH:'"$base" >> $HOME/.profile
+			fi
+		fi
+		
+		# Store ssh connection caching sockets outside of sdcard.
+		GIT_ANNEX_TMP_DIR="$TMPDIR"
+		export GIT_ANNEX_TMP_DIR
+
+		GIT_ANNEX_STANDLONE_ENV="PATH GCONV_PATH MANPATH LOCPATH"
+		export GIT_ANNEX_STANDLONE_ENV
+		;;
+	*)
+		# Indicate which variables were exported above and should be cleaned
+		# when running non-bundled programs.
+		GIT_ANNEX_STANDLONE_ENV="PATH GCONV_PATH GIT_EXEC_PATH GIT_TEMPLATE_DIR MANPATH LOCPATH"
+		export GIT_ANNEX_STANDLONE_ENV
+		;;
+esac
 
 if [ "$1" ]; then
 	cmd="$1"
