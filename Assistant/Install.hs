@@ -23,6 +23,8 @@ import Utility.OSX
 #else
 import Utility.FreeDesktop
 import Assistant.Install.Menu
+import Utility.UserInfo
+import Utility.Android
 #endif
 
 standaloneAppBase :: IO (Maybe FilePath)
@@ -54,13 +56,24 @@ ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
 
 #ifdef darwin_HOST_OS
 		autostartfile <- userAutoStart osxAutoStartLabel
-#else
-		menufile <- desktopMenuFilePath "git-annex" <$> userDataDir
-		icondir <- iconDir <$> userDataDir
-		installMenu program menufile base icondir
-		autostartfile <- autoStartPath "git-annex" <$> userConfigDir
-#endif
 		installAutoStart program autostartfile
+#else
+		ifM osAndroid
+			( do
+				-- Integration with the Termux:Boot app.
+				home <- myHomeDir
+				let bootfile = home </> ".termux" </> "boot"
+				unlessM (doesFileExist bootfile) $ do
+					createDirectoryIfMissing True (takeDirectory bootfile)
+					writeFile bootfile "git-annex assistant --autostart"
+			, do
+				menufile <- desktopMenuFilePath "git-annex" <$> userDataDir
+				icondir <- iconDir <$> userDataDir
+				installMenu program menufile base icondir
+				autostartfile <- autoStartPath "git-annex" <$> userConfigDir
+				installAutoStart program autostartfile
+			)
+#endif
 
 		sshdir <- sshDir
 		let runshell var = "exec " ++ base </> "runshell " ++ var

@@ -16,6 +16,10 @@ git-annex (6.20180410) UNRELEASED; urgency=medium
     system may not get along with the bundled linker.
   * runshell: Added some tweaks to make git-annex work in termux on
     Android. The regular arm standalone tarball now works in termux.
+  * Webapp: Support being run inside termux on Android, and offer to set up
+    a repository on the sdcard.
+  * Assistant: Integrate with Termux:Boot, so when it's installed, the
+    assistant is autostarted on boot.
 
  -- Joey Hess <id@joeyh.name>  Mon, 09 Apr 2018 14:03:28 -0400
 
