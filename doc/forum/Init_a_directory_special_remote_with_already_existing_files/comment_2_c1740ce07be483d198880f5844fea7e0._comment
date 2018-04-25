@@ -1,0 +1,52 @@
+[[!comment format=mdwn
+ username="oliv5kta@248adc7a643dc1f0ecef26925e357de176d0f6f3"
+ nickname="oliv5kta"
+ avatar="http://cdn.libravatar.org/avatar/d7f0d33c51583bbd8578e4f1f9f8cf4b"
+ subject="comment 2"
+ date="2018-04-25T17:49:48Z"
+ content="""
+Thks for the answer, I found many interesting info. I ended up scripting my own crappy stuff, please see below:
+
+-------------
+    # Populate a special remote directory with files from the input source
+    # The current repository is used to find out keys & file names,
+    # but is not used directly to copy/move the files from
+    # WHERE selects which files & repo to look for
+    # MOVE=1 moves files instead of copying them
+
+    alias annex_populate='MOVE= _annex_populate'
+
+    alias annex_populatem='MOVE=1 _annex_populate'
+
+    _annex_populate() {
+      local DST=\"${1:?No dst directory specified...}\"
+      local SRC=\"${2:-$PWD}\"
+      local WHERE=\"${3:-${WHERE:---include '*'}}\"
+      eval git annex find \"$WHERE\" --format='\${file}\\000\${hashdirlower}\${key}/\${key}\\000' | xargs -r0 -n2 sh -c '
+        MOVE=\"$1\"; SRC=\"$2/$4\"; DST=\"$3/$5\"
+        if [ -r \"$SRC\" ]; then
+          echo \"$SRC -> $DST\"
+          mkdir -p \"$(dirname \"$DST\")\"
+          if [ -n \"$MOVE\" -a ! -h \"$SRC\" ]; then
+            mv -f -T \"$SRC\" \"$DST\"
+          else
+            rsync -K -L --protect-args \"$SRC\" \"$DST\"
+          fi
+        fi
+      ' _ \"$MOVE\" \"$SRC\" \"$DST\"
+    }
+
+-------------
+Basic usage: annex_populate(m) /my/destination/folder/ /my/source/folder
+
+Principle: we get each file key from the current repository, then build the special remote backend filename and launch the copy/move operation.
+
+Warning:
+
+  1. before using it, make a backup of your data !
+
+  2. it was very little tested: it worked for me and I stopped there. Like many scripts in my toolbox, it may malfunction in different cases than mine.
+
+  3. it should copy files unless you define MOVE=X (or have it defined in your shell ! beware).
+
+"""]]
