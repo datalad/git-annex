@@ -106,7 +106,7 @@ installWrapper file content = do
 
 installFileManagerHooks :: FilePath -> IO ()
 #ifdef linux_HOST_OS
-installFileManagerHooks program = do
+installFileManagerHooks program = unlessM osAndroid $ do
 	let actions = ["get", "drop", "undo"]
 
 	-- Gnome
