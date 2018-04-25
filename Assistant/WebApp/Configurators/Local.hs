@@ -38,6 +38,7 @@ import Config
 import Utility.Gpg
 import qualified Remote.GCrypt as GCrypt
 import qualified Types.Remote
+import Utility.Android
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -143,10 +144,6 @@ defaultRepositoryPath firstrun = do
 	-- when run from there.
 	legit d = not <$> doesFileExist (d </> "git-annex")
 #endif
-
--- Detect when the Linux build is running on Android, eg in termux.
-osAndroid :: IO Bool
-osAndroid = ("Android" == ) <$> readProcess "uname" ["-o"]
 
 newRepositoryForm :: FilePath -> Hamlet.Html -> MkMForm RepositoryPath
 newRepositoryForm defpath msg = do

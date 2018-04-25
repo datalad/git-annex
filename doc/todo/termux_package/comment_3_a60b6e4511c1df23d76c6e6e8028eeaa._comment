@@ -21,11 +21,12 @@ The webapp is able to open an url (after I upgraded termux) via xdg-open
 chrome was not able to access, apparently a permissions problem. The
 webapp.html does not add any security on android, since it's not a
 multiuser unix system, and so it should open the url to the webapp
-directly.
+directly. (Done)
 
 Accessing the sdcard may need termux-setup-storage to be run once, 
 depending on the version of android. That sets up $HOME/storage.
 The webapp ought to default to making a repository somewhere in there.
+(Done)
 
 webbapp won't start on boot, but could be made to using https://wiki.termux.com/wiki/Termux:Boot
 

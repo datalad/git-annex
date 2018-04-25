@@ -31,6 +31,7 @@ import qualified Annex
 import Config.Files
 import Upgrade
 import Annex.Version
+import Utility.Android
 
 import Control.Concurrent
 import Control.Concurrent.STM
@@ -207,43 +208,42 @@ openBrowser mcmd htmlshim realurl outh errh = do
 
 openBrowser' :: Maybe FilePath -> FilePath -> String -> Maybe Handle -> Maybe Handle -> IO ()
 #ifndef __ANDROID__
-openBrowser' mcmd htmlshim _realurl outh errh = runbrowser
+openBrowser' mcmd htmlshim realurl outh errh =
+	ifM osAndroid
+		{- Android does not support file:// urls well, but neither
+		 - is the security of the url in the process table important
+		 - there, so just use the real url. -}
+		( runbrowser realurl
+		, runbrowser (fileUrl htmlshim)
+		)
 #else
 openBrowser' mcmd htmlshim realurl outh errh = do
-	recordUrl url
+	recordUrl realurl
 	{- Android's `am` command does not work reliably across the
 	 - wide range of Android devices. Intead, FIFO should be set to 
 	 - the filename of a fifo that we can write the URL to. -}
 	v <- getEnv "FIFO"
 	case v of
-		Nothing -> runbrowser
+		Nothing -> runbrowser realurl
 		Just f -> void $ forkIO $ do
 			fd <- openFd f WriteOnly Nothing defaultFileFlags
-			void $ fdWrite fd url
+			void $ fdWrite fd realurl
 			closeFd fd
 #endif
   where
-	p = case mcmd of
-		Just c -> proc c [htmlshim]
-		Nothing -> 
+	runbrowser url = do
+		let p = case mcmd of
+			Just c -> proc c [url]
+			Nothing -> 
 #ifndef mingw32_HOST_OS
-			browserProc url
+				browserProc url
 #else
-			{- Windows hack to avoid using the full path,
-			 - which might contain spaces that cause problems
-			 - for browserProc. -}
-			(browserProc (takeFileName htmlshim))
-				{ cwd = Just (takeDirectory htmlshim) } 
+				{- Windows hack to avoid using the full path,
+				 - which might contain spaces that cause problems
+				 - for browserProc. -}
+				(browserProc (takeFileName htmlshim))
+					{ cwd = Just (takeDirectory htmlshim) } 
 #endif
-#ifdef __ANDROID__
-	{- Android does not support file:// urls, but neither is
-	 - the security of the url in the process table important
-	 - there, so just use the real url. -}
-	url = realurl
-#else
-	url = fileUrl htmlshim
-#endif
-	runbrowser = do
 		hPutStrLn (fromMaybe stdout outh) $ "Launching web browser on " ++ url
 		hFlush stdout
 		environ <- cleanEnvironment

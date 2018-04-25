@@ -1000,6 +1000,7 @@ Executable git-annex
     Upgrade.V4
     Upgrade.V5
     Utility.Aeson
+    Utility.Android
     Utility.Applicative
     Utility.AuthToken
     Utility.Base64
