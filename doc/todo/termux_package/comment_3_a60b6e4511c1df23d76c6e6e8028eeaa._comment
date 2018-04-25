@@ -23,4 +23,7 @@ Accessing the sdcard may need termux-setup-storage to be run once,
 depending on the version of android. That sets up $HOME/storage.
 
 webbapp won't start on boot, but could be made to using https://wiki.termux.com/wiki/Termux:Boot
+
+Apparently termux-exec sets a `LD_PRELOAD` that is not compatible, so
+the wrapper script would need to unset it.
 """]]
