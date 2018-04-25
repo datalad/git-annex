@@ -121,6 +121,10 @@ export ORIG_LOCPATH
 LOCPATH="$base/locales"
 export LOCPATH
 
+# LD_PRELOAD may interact badly with the bundled libc and other libraries,
+# which may have a different subarchitecture than the preloaded library.
+unset LD_PRELOAD
+
 # Generate locale definition files for the locales in use,
 # using the localedef and locale files from the bundle.
 # Currently only utf-8 locales are handled.

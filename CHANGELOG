@@ -12,6 +12,8 @@ git-annex (6.20180410) UNRELEASED; urgency=medium
   * Fix build with yesod 1.6.
   * Clean up some build warnings with newer versions of ghc and haskell
     libraries.
+  * runshell: Unset LD_PRELOAD since preloaded libraries from the host
+    system may not get along with the bundled linker.
 
  -- Joey Hess <id@joeyh.name>  Mon, 09 Apr 2018 14:03:28 -0400
 
