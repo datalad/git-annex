@@ -33,4 +33,7 @@ https://wiki.termux.com/wiki/Termux:Boot (Integration in place now)
 
 Apparently termux-exec sets a `LD_PRELOAD` that is not compatible, so
 the wrapper script would need to unset it. (Done now)
+
+Webapp mountwatcher crashes "getMounts: does not exist" (caught exception
+now))
 """]]
