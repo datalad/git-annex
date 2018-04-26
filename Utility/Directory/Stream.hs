@@ -1,17 +1,19 @@
 {- streaming directory traversal
  -
- - Copyright 2011-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2018 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Directory.Stream where
 
 import Control.Monad
 import System.FilePath
+import System.IO.Unsafe (unsafeInterleaveIO)
 import Control.Concurrent
 import Data.Maybe
 import Prelude
@@ -66,9 +68,8 @@ closeDirectory (DirectoryHandle isopen h _ alreadyhave) =
 		v <- tryTakeMVar mv
 		when (isJust v) f
 
-{- |Reads the next entry from the handle. Once the end of the directory
-is reached, returns Nothing and automatically closes the handle.
--}
+-- | Reads the next entry from the handle. Once the end of the directory
+-- is reached, returns Nothing and automatically closes the handle.
 readDirectory :: DirectoryHandle -> IO (Maybe FilePath)
 #ifndef mingw32_HOST_OS
 readDirectory hdl@(DirectoryHandle _ dirp) = do
@@ -99,7 +100,23 @@ readDirectory hdl@(DirectoryHandle _ h fdat mv) = do
 		return (Just filename)
 #endif
 
--- True only when directory exists and contains nothing.
+-- | Like getDirectoryContents, but rather than buffering the whole
+-- directory content in memory, lazily streams.
+--
+-- This is like lazy readFile in that the handle to the directory remains
+-- open until the whole list is consumed, or until the list is garbage
+-- collected. So use with caution particularly when traversing directory
+-- trees.
+streamDirectoryContents :: FilePath -> IO [FilePath]
+streamDirectoryContents d = openDirectory d >>= collect
+  where
+	collect hdl = readDirectory hdl >>= \case
+		Nothing -> return []
+		Just f -> do
+			rest <- unsafeInterleaveIO (collect hdl)
+			return (f:rest)
+
+-- | True only when directory exists and contains nothing.
 -- Throws exception if directory does not exist.
 isDirectoryEmpty :: FilePath -> IO Bool
 isDirectoryEmpty d = bracket (openDirectory d) closeDirectory check
