@@ -1,0 +1,4 @@
+Someone wrote: "Unlocked files are more difficult to synchronize (to check for
+modifications and to synchronize throught multiple remotes)."  Does it mean new
+unlocked file mode V6 takes more time to find modifications?  If not what is the
+drawbacks of this new unlocked file mode?
