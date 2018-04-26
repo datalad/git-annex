@@ -93,9 +93,11 @@ withFilesInRefs a = mapM_ go
 withPathContents :: ((FilePath, FilePath) -> CommandStart) -> CmdParams -> CommandSeek
 withPathContents a params = do
 	matcher <- Limit.getMatcher
-	seekActions $ map a <$> (filterM (checkmatch matcher) =<< ps)
+	forM_ params $ \p -> do
+		fs <- liftIO $ get p
+		forM fs $ \f -> whenM (checkmatch matcher f) $
+			commandAction (a f)	
   where
-	ps = concat <$> liftIO (mapM get params)
 	get p = ifM (isDirectory <$> getFileStatus p)
 		( map (\f -> (f, makeRelative (parentDir p) f))
 			<$> dirContentsRecursiveSkipping (".git" `isSuffixOf`) True p
