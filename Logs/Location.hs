@@ -8,7 +8,7 @@
  - Repositories record their UUID and the date when they --get or --drop
  - a value.
  - 
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -23,6 +23,8 @@ module Logs.Location (
 	isKnownKey,
 	checkDead,
 	setDead,
+	Unchecked,
+	finishCheck,
 	loggedKeys,
 	loggedKeysFor,
 ) where
@@ -114,24 +116,33 @@ setDead' l = l
 		Unknown -> Unknown
 	}
 
+data Unchecked a = Unchecked (Annex (Maybe a))
+
+finishCheck :: Unchecked a -> Annex (Maybe a)
+finishCheck (Unchecked a) = a
+
 {- Finds all keys that have location log information.
  - (There may be duplicate keys in the list.)
  -
  - Keys that have been marked as dead are not included.
  -}
-loggedKeys :: Annex [Key]
+loggedKeys :: Annex [Unchecked Key]
 loggedKeys = loggedKeys' (not <$$> checkDead)
 
-{- Note that sel should be strict, to avoid the filterM building many
- - thunks. -} 
-loggedKeys' :: (Key -> Annex Bool) -> Annex [Key]
-loggedKeys' sel = filterM sel =<<
-	(mapMaybe locationLogFileKey <$> Annex.Branch.files)
+loggedKeys' :: (Key -> Annex Bool) -> Annex [Unchecked Key]
+loggedKeys' check = mapMaybe (defercheck <$$> locationLogFileKey)
+	<$> Annex.Branch.files
+  where
+	defercheck k = Unchecked $ ifM (check k)
+		( return (Just k)
+		, return Nothing
+		)
 
 {- Finds all keys that have location log information indicating
- - they are present for the specified repository. -}
+ - they are present for the specified repository.
+ -}
 loggedKeysFor :: UUID -> Annex [Key]
-loggedKeysFor u = loggedKeys' isthere
+loggedKeysFor u = catMaybes <$> (mapM finishCheck =<< loggedKeys' isthere)
   where
 	isthere k = do
 		us <- loggedLocations k

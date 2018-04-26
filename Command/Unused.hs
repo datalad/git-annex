@@ -100,7 +100,8 @@ checkRemoteUnused name refspec = go =<< fromJust <$> Remote.byNameWithUUID (Just
 		showAction "checking for unused data"
 		_ <- check "" (remoteUnusedMsg r) (remoteunused r) 0
 		next $ return True
-	remoteunused r = excludeReferenced refspec <=< loggedKeysFor $ Remote.uuid r
+	remoteunused r = excludeReferenced refspec
+		<=< loggedKeysFor $ Remote.uuid r
 
 check :: FilePath -> ([(Int, Key)] -> String) -> Annex [Key] -> Int -> Annex Int
 check file msg a c = do

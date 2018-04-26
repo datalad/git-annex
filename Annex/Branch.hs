@@ -34,6 +34,7 @@ import qualified Data.Map as M
 import Data.Function
 import Data.Char
 import Control.Concurrent (threadDelay)
+import System.IO.Unsafe (unsafeInterleaveIO)
 
 import Annex.Common
 import Annex.BranchState
@@ -333,19 +334,33 @@ commitIndex' jl branchref message basemessage retrynum parents = do
 		let racemessage = basemessage ++ " (recovery from race #" ++ show retrynum' ++ "; expected commit parent " ++ show branchref ++ " but found " ++ show lostrefs ++ " )"
 		commitIndex' jl committedref racemessage basemessage retrynum' [committedref]
 
-{- Lists all files on the branch. There may be duplicates in the list. -}
+{- Lists all files on the branch. including ones in the journal
+ - that have not been committed yet. There may be duplicates in the list.
+ - Streams lazily. -}
 files :: Annex [FilePath]
 files = do
 	update
-	(++)
-		<$> branchFiles
-		<*> getJournalledFilesStale
+	withIndex $ do
+		g <- gitRepo
+		withJournalHandle (go g)
+  where
+	go g jh = readDirectory jh >>= \case
+		Nothing -> branchFiles' g
+		Just file
+			| dirCruft file -> go g jh
+			| otherwise -> do
+				let branchfile = fileJournal file
+				rest <- unsafeInterleaveIO (go g jh)
+				return (branchfile:rest)
 
 {- Files in the branch, not including any from journalled changes,
  - and without updating the branch. -}
 branchFiles :: Annex [FilePath]
-branchFiles = withIndex $ inRepo $ Git.Command.pipeNullSplitZombie $
-	lsTreeParams fullname [Param "--name-only"]
+branchFiles = withIndex $ inRepo branchFiles'
+
+branchFiles' :: Git.Repo -> IO [FilePath]
+branchFiles' = Git.Command.pipeNullSplitZombie
+	(lsTreeParams fullname [Param "--name-only"])
 
 {- Populates the branch's index file with the current branch contents.
  - 

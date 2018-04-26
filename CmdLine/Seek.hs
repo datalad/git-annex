@@ -196,14 +196,14 @@ withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 		giveup "Cannot use --auto in a bare repository"
 	case (null params, ko) of
 		(True, Nothing)
-			| bare -> noauto $ runkeyaction loggedKeys
+			| bare -> noauto $ runkeyaction finishCheck loggedKeys 
 			| otherwise -> fallbackaction params
 		(False, Nothing) -> fallbackaction params
-		(True, Just WantAllKeys) -> noauto $ runkeyaction loggedKeys
-		(True, Just WantUnusedKeys) -> noauto $ runkeyaction unusedKeys'
+		(True, Just WantAllKeys) -> noauto $ runkeyaction finishCheck loggedKeys
+		(True, Just WantUnusedKeys) -> noauto $ runkeyaction (pure . Just) unusedKeys'
 		(True, Just WantFailedTransfers) -> noauto runfailedtransfers
-		(True, Just (WantSpecificKey k)) -> noauto $ runkeyaction (return [k])
-		(True, Just WantIncompleteKeys) -> noauto $ runkeyaction incompletekeys
+		(True, Just (WantSpecificKey k)) -> noauto $ runkeyaction (pure . Just) (return [k])
+		(True, Just WantIncompleteKeys) -> noauto $ runkeyaction (pure . Just) incompletekeys
 		(True, Just (WantBranchKeys bs)) -> noauto $ runbranchkeys bs
 		(False, Just _) -> giveup "Can only specify one of file names, --all, --branch, --unused, --failed, --key, or --incomplete"
   where
@@ -211,10 +211,11 @@ withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 		| auto = giveup "Cannot use --auto with --all or --branch or --unused or --key or --incomplete"
 		| otherwise = a
 	incompletekeys = staleKeysPrune gitAnnexTmpObjectDir True
-	runkeyaction getks = do
+	runkeyaction checker getks = do
 		keyaction <- mkkeyaction
 		ks <- getks
-		forM_ ks $ \k -> keyaction k (mkActionItem k)
+		forM_ ks $ checker >=> maybe noop 
+			(\k -> keyaction k (mkActionItem k))
 	runbranchkeys bs = do
 		keyaction <- mkkeyaction
 		forM_ bs $ \b -> do
