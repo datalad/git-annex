@@ -525,7 +525,11 @@ cachedRemoteData u = do
 	case M.lookup u (repoData s) of
 		Just v -> return v
 		Nothing -> do
-			v <- foldKeys <$> lift (loggedKeysFor u)
+			let combinedata d uk = finishCheck uk >>= \case
+				Nothing -> return d
+				Just k -> return $ addKey k d
+			v <- lift $ foldM combinedata emptyKeyData
+				=<< loggedKeysFor' u
 			put s { repoData = M.insert u v (repoData s) }
 			return v
 

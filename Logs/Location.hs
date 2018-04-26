@@ -27,6 +27,7 @@ module Logs.Location (
 	finishCheck,
 	loggedKeys,
 	loggedKeysFor,
+	loggedKeysFor',
 ) where
 
 import Annex.Common
@@ -139,10 +140,15 @@ loggedKeys' check = mapMaybe (defercheck <$$> locationLogFileKey)
 		)
 
 {- Finds all keys that have location log information indicating
- - they are present for the specified repository.
+ - they are present in the specified repository.
+ -
+ - This does not stream well; use loggedKeysFor' for lazy streaming.
  -}
 loggedKeysFor :: UUID -> Annex [Key]
-loggedKeysFor u = catMaybes <$> (mapM finishCheck =<< loggedKeys' isthere)
+loggedKeysFor u = catMaybes <$> (mapM finishCheck =<< loggedKeysFor' u)
+
+loggedKeysFor' :: UUID -> Annex [Unchecked Key]
+loggedKeysFor' u = loggedKeys' isthere
   where
 	isthere k = do
 		us <- loggedLocations k

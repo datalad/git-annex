@@ -23,7 +23,8 @@ git-annex (6.20180410) UNRELEASED; urgency=medium
   * Assistant: Fix installation of menus, icons, etc when run
     from within runshell.
   * import: Avoid buffering all filenames to be imported in memory.
-  * Improve memory use and speed of --all, by not buffering list of all keys.
+  * Improve memory use and speed of --all and git-annex info remote,
+    by not buffering list of all keys.
 
  -- Joey Hess <id@joeyh.name>  Mon, 09 Apr 2018 14:03:28 -0400
 
