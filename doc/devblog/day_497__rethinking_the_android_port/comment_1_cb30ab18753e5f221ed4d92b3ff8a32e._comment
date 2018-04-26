@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/3ee5cf54-f022-4a71-8666-3c2b5ee231dd"
+ nickname="Anthony DeRobertis"
+ avatar="http://cdn.libravatar.org/avatar/1007bfece547e9f2d86fafa142cd240a62456c37f104a9d96ba9db5bf18e1934"
+ subject="Looking forward to trying this"
+ date="2018-04-26T13:10:30Z"
+ content="""
+I use the current Android port on a few tablets, and it's... well, clearly labeled beta. On one of the tablets, it randomly segfaults [no idea if that's a git-annex bug or a hardware problem, not like I have a memtest86 available]. On both it sometimes just decides to add commits to remove files recently added on other machines (easy enough to fix with git revert). Sometimes it puts in place small placeholder files (git annex fsck fixes). Still far better than manually copying & sync'ing, though!
+
+At least for me, v6 mode just doesn't work on Android — even on a new empty repository, last I checked, switching to v6 mode gave errors.
+
+So I look forward to trying it in Termux! 
+"""]]
