@@ -1,0 +1,27 @@
+Hello,
+
+I have observed what I think is a new behavior:
+
+
+    % git annex add . && git annex sync --content
+    commit
+    Auf Branch master
+    nichts zu committen, Arbeitsverzeichnis unverändert
+    ok
+    pull xgm
+    ok
+    pull horus
+    ssh: Could not resolve hostname horus.local: Name or service not known
+    fatal: Konnte nicht vom Remote-Repository lesen.
+    
+    Bitte stellen Sie sicher, dass die korrekten Zugriffsberechtigungen bestehen
+    und das Repository existiert.
+    failed
+    copy Backgrounds/Flo Wallpaper/Cirrus_front_over_Austnesfjorden,_Austvågøya,_Lofoten,_Norway,_2015_April.jpg git-annex: unable to check horus
+
+git annex sync quits with exist code 1. What I rather expect is that it tries to sync --content the other repositories. If I call `git annex sync --content S3` it sync to S3 just fine.
+
+S3 is backup/client, local repo is manual/client.
+
+Thanks,
+Florian
