@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-04-27T17:13:08Z"
+ content="""
+@hobbes we're working on that issue, which seems likely to involve arm64,
+here: https://github.com/termux/termux-packages/issues/420
+"""]]
