@@ -77,7 +77,7 @@ getbuild repodir (url, f) = do
 		putStrLn $ "*** " ++ s
 		return Nothing
 	uo <- defUrlOptions
-	ifM (download nullMeterUpdate tmp uo)
+	ifM (download nullMeterUpdate url tmp uo)
 		( ifM (liftIO $ virusFree tmp)
 			( do
 				bv2 <- getbv
