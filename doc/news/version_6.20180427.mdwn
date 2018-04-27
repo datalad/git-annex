@@ -1,0 +1,27 @@
+git-annex 6.20180427 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * move: Now takes numcopies configuration, and required content
+     configuration into account, and refuses to reduce the current
+     number of copies of a file, or remove content that a repository
+     requires. --force can override these checks.
+     Note that it's still allowed to move the content of a file
+     from one repository to another when numcopies is not satisfied, as long
+     as the move does not result in there being fewer copies.
+   * Fix mangling of --json output of utf-8 characters when not
+     running in a utf-8 locale.
+   * Fix build with yesod 1.6.
+   * Clean up some build warnings with newer versions of ghc and haskell
+     libraries.
+   * runshell: Unset LD\_PRELOAD since preloaded libraries from the host
+     system may not get along with the bundled linker.
+   * runshell: Added some tweaks to make git-annex work in termux on
+     Android. The regular arm standalone tarball now works in termux.
+   * Webapp: Support being run inside termux on Android, and offer to set up
+     a repository on the sdcard.
+   * Assistant: Integrate with Termux:Boot, so when it's installed, the
+     assistant is autostarted on boot.
+   * Assistant: Fix installation of menus, icons, etc when run
+     from within runshell.
+   * import: Avoid buffering all filenames to be imported in memory.
+   * Improve memory use and speed of --all and git-annex info remote,
+     by not buffering list of all keys."""]]
