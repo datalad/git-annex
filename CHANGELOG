@@ -1,4 +1,4 @@
-git-annex (6.20180410) UNRELEASED; urgency=medium
+git-annex (6.20180427) upstream; urgency=medium
 
   * move: Now takes numcopies configuration, and required content
     configuration into account, and refuses to reduce the current
@@ -26,7 +26,7 @@ git-annex (6.20180410) UNRELEASED; urgency=medium
   * Improve memory use and speed of --all and git-annex info remote,
     by not buffering list of all keys.
 
- -- Joey Hess <id@joeyh.name>  Mon, 09 Apr 2018 14:03:28 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 27 Apr 2018 12:36:20 -0400
 
 git-annex (6.20180409) upstream; urgency=medium
 
