@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ avatar="http://cdn.libravatar.org/avatar/9c3f08f80e67733fd506c353239569eb"
+ subject="comment 3"
+ date="2018-04-27T17:15:24Z"
+ content="""
+Seems like the main thing is waiting for patches to git to migrate to systems like Debian stable.
+
+Joey, have your patches been merged?
+"""]]

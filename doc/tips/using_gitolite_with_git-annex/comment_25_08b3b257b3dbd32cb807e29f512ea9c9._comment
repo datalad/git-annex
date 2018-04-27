@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="davicastro"
+ avatar="http://cdn.libravatar.org/avatar/4e708663cf4d5b9e8cfea74caf4307fc"
+ subject="Where does gitolite stores the annex objects contents?"
+ date="2018-04-27T21:06:42Z"
+ content="""
+Hi. Does anyone knows where does gitolite stores the annex objects' contents? (I got it to work, and git annex is working fine, but I want to \"see the annex files\" in the central gitolite server. And it puzzles me I can't find them! It definitively is not in the repo.git bare repository under the gitolite admin repositores folder)
+"""]]

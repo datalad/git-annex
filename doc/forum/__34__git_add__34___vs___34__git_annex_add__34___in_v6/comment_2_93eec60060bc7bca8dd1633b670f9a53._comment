@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ avatar="http://cdn.libravatar.org/avatar/9c3f08f80e67733fd506c353239569eb"
+ subject="comment 2"
+ date="2018-04-27T16:39:49Z"
+ content="""
+Is the `git annex -a` benefit one of performance?  I.e. the reason why the pre-commit hook approach was less good was that could be slower?
+"""]]
