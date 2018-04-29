@@ -1,0 +1,173 @@
+### Please describe the problem.
+I cannot reproduce the archive behaviour explained in the screencast: git annex assistant archiving.
+
+### What steps will reproduce the problem?
+Install the OSX dmg.  Open the webapp. Make a client repo `~/annex` on the laptop and a full archive repo `/Volumes/Seagate/annex` on an external hard drive. Disregard the errors in the webapp. Restart daemon. Finish configuration of the archive repo as full archive.
+Put a test file in `~/annex`, watch it copy over in the webapp.  Verify copies with `git-annex whereis`.  
+numcopies=1  
+**Use the GUI to move the test file to `~/annex/archive`.  The file does not turn into a symlink as expected.**  
+Run the command `git-annex drop --auto`.  the archived file is now replaced by a symlink.  `git annex whereis` verifies that the copy is only in the archive.
+Now move the symlink back to `~/annex`. The symlink is not replaced by the file.
+Restart the assistant using the webapp or with `git annex assistant --stop` `git annex assistant`.  The symlink is replaced by the file.  
+Repeat above steps with the same effect.
+
+### What version of git-annex are you using? On what operating system?
+OSX 10.11.6 El Capitan  
+git-annex version: 6.20180409-gfb0780266  
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV FsEvents ConcurrentOutput TorrentParser MagicMime Feeds Testsuite  
+dependency versions: aws-0.17.1 bloomfilter-2.0.1.0 cryptonite-0.23 DAV-1.3.1 feed-0.3.12.0 ghc-8.0.2 http-client-0.5.7.0 persistent-sqlite-2.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.4.5  
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+
+Version 6.20180426 also produces the same result, however the webapp does not launch a browser window.
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+[2018-04-29 22:12:25.754703] main: starting assistant version 6.20180409-gfb0780266
+[2018-04-29 22:12:25.780218] Cronner: You should enable consistency checking to protect your data. 
+(scanning...) [2018-04-29 22:12:25.901493] Watcher: Performing startup scan
+(started...) 
+gpg: assuming signed data in '/var/folders/vt/jdjpydy51cb4c9743nvk2s7m0000gp/T/git-annex.tmpvDEpq7/info'
+gpg: Signature made Fri Apr 27 20:03:18 2018 EAT using DSA key ID 89C809CB
+gpg: /var/folders/vt/jdjpydy51cb4c9743nvk2s7m0000gp/T/git-annex-gpg.tmpBe1DxC/trustdb.gpg: trustdb created
+gpg: Good signature from "git-annex distribution signing key (for Joey Hess) <id@joeyh.name>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 4005 5C6A FD2D 526B 2961  E78F 5EE1 DBA7 89C8 09CB
+[2018-04-29 22:12:28.884998] Upgrader: An upgrade of git-annex is available.  (version 6.20180426)
+(recording state in git...)
+29/Apr/2018:22:13:13 +0300 [Error#yesod-core] there is no available git remote named "SeagateBlack" @(yesod-core-1.4.37-GCI7RasEcSMIU2vku0fHJ1:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:693:5)
+fatal: remote SeagateBlack already exists.
+29/Apr/2018:22:13:21 +0300 [Error#yesod-core] there is no available git remote named "SeagateBlack" @(yesod-core-1.4.37-GCI7RasEcSMIU2vku0fHJ1:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:693:5)
+fatal: remote SeagateBlack already exists.
+29/Apr/2018:22:13:24 +0300 [Error#yesod-core] there is no available git remote named "SeagateBlack" @(yesod-core-1.4.37-GCI7RasEcSMIU2vku0fHJ1:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:693:5)
+
+##restarted daemon via webapp##
+
+[2018-04-29 22:13:33.426914] main: starting assistant version 6.20180409-gfb0780266
+[2018-04-29 22:13:33.474857] Cronner: You should enable consistency checking to protect your data. 
+[2018-04-29 22:13:33.494878] TransferScanner: Syncing with SeagateBlack 
+(scanning...) [2018-04-29 22:13:33.646686] Watcher: Performing startup scan
+(started...) 
+warning: no common commits
+From /Volumes/SeagateBlack/annex
+ * [new branch]      git-annex  -> SeagateBlack/git-annex
+(merging SeagateBlack/git-annex into git-annex...)
+(recording state in git...)
+To /Volumes/SeagateBlack/annex
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      annex/direct/master -> synced/master
+gpg: assuming signed data in '/var/folders/vt/jdjpydy51cb4c9743nvk2s7m0000gp/T/git-annex.tmpIrPVZb/info'
+gpg: Signature made Fri Apr 27 20:03:18 2018 EAT using DSA key ID 89C809CB
+gpg: /var/folders/vt/jdjpydy51cb4c9743nvk2s7m0000gp/T/git-annex-gpg.tmptALBpe/trustdb.gpg: trustdb created
+gpg: Good signature from "git-annex distribution signing key (for Joey Hess) <id@joeyh.name>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 4005 5C6A FD2D 526B 2961  E78F 5EE1 DBA7 89C8 09CB
+[2018-04-29 22:13:38.218204] Upgrader: An upgrade of git-annex is available.  (version 6.20180426)
+[2018-04-29 22:14:33.641316] Pusher: Syncing with SeagateBlack 
+Everything up-to-date
+
+##restarted daemon via webapp##
+
+[2018-04-29 22:14:04.840648] main: starting assistant version 6.20180409-gfb0780266
+[2018-04-29 22:14:04.914622] Cronner: You should enable consistency checking to protect your data. 
+[2018-04-29 22:14:04.938372] TransferScanner: Syncing with SeagateBlack 
+(scanning...) [2018-04-29 22:14:05.129225] Watcher: Performing startup scan
+(recording state in git...)
+(started...) 
+To /Volumes/SeagateBlack/annex
+   96eb102..56b72d6  git-annex -> synced/git-annex
+gpg: assuming signed data in '/var/folders/vt/jdjpydy51cb4c9743nvk2s7m0000gp/T/git-annex.tmp6iw9TV/info'
+gpg: Signature made Fri Apr 27 20:03:18 2018 EAT using DSA key ID 89C809CB
+gpg: /var/folders/vt/jdjpydy51cb4c9743nvk2s7m0000gp/T/git-annex-gpg.tmpFugMM8/trustdb.gpg: trustdb created
+gpg: Good signature from "git-annex distribution signing key (for Joey Hess) <id@joeyh.name>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 4005 5C6A FD2D 526B 2961  E78F 5EE1 DBA7 89C8 09CB
+[2018-04-29 22:14:13.443848] Upgrader: An upgrade of git-annex is available.  (version 6.20180426)
+[2018-04-29 22:14:29.453797] Committer: Adding testing.txt
+add /Users/jhnichol/Desktop/annex/testing.txt ok
+[2018-04-29 22:14:29.458807] Committer: Committing changes to git
+(recording state in git...)
+[2018-04-29 22:14:29.508458] Pusher: Syncing with SeagateBlack 
+(recording state in git...)
+
+testing.txt
+          13 100%    0.00kB/s    0:00:00
+          13 100%    0.00kB/s    0:00:0(checksum...) 0 (xfer#1, to-check=0/1)
+
+sent 105 bytes  received 42 bytes  294.00 bytes/sec
+total size is 13  speedup is 0.09
+[2018-04-29 22:14:29.908335] Transferrer: Uploaded testing.txt
+To /Volumes/SeagateBlack/annex
+   56b72d6..97076de  git-annex -> synced/git-annex
+   f981f0e..903f744  annex/direct/master -> synced/master
+[2018-04-29 22:14:31.993469] Pusher: Syncing with SeagateBlack 
+(recording state in git...)
+To /Volumes/SeagateBlack/annex
+   97076de..351ae72  git-annex -> synced/git-annex
+[2018-04-29 22:14:37.442779] Committer: Adding testing.txt
+add /Users/jhnichol/Desktop/annex/archive/testing.txt ok
+[2018-04-29 22:14:37.451934] Committer: Committing changes to git
+(recording state in git...)
+[2018-04-29 22:14:37.506885] Pusher: Syncing with SeagateBlack 
+To /Volumes/SeagateBlack/annex
+   903f744..0ace0a4  annex/direct/master -> synced/master
+[2018-04-29 22:15:05.080814] Pusher: Syncing with SeagateBlack 
+To /Volumes/SeagateBlack/annex
+   351ae72..acc6f66  git-annex -> synced/git-annex
+[2018-04-29 22:15:07.643433] Committer: Committing changes to git
+(recording state in git...)
+[2018-04-29 22:15:07.716942] Pusher: Syncing with SeagateBlack 
+To /Volumes/SeagateBlack/annex
+   0ace0a4..216adc1  annex/direct/master -> synced/master
+
+##restarted daemon via webapp##
+
+[2018-04-29 22:15:12.721042] main: starting assistant version 6.20180409-gfb0780266
+[2018-04-29 22:15:12.780184] Cronner: You should enable consistency checking to protect your data. 
+[2018-04-29 22:15:12.802662] TransferScanner: Syncing with SeagateBlack 
+(scanning...) [2018-04-29 22:15:12.995192] Watcher: Performing startup scan
+Everything up-to-date
+(started...) 
+[2018-04-29 22:15:13.807031] Committer: Committing changes to git
+(recording state in git...)
+
+SHA256E-s13--091dfb50686a31a1137099832271eb582fbb745aeca5c0c8153ffc9acc7cd0fe.txt
+          13 100%    0.00kB/s    0:00:00
+          13 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 175 bytes  received 42 bytes  434.00 bytes/sec
+total size is 13  speedup is 0.06
+(checksum...) [2018-04-29 22:15:13.980745] Transferrer: Downloaded testing.txt
+[2018-04-29 22:15:14.805402] Pusher: Syncing with SeagateBlack 
+(recording state in git...)
+To /Volumes/SeagateBlack/annex
+   acc6f66..f62818b  git-annex -> synced/git-annex
+   216adc1..bebd3d1  annex/direct/master -> synced/master
+[2018-04-29 22:15:15.384765] Committer: Adding testing.txt
+add /Users/jhnichol/Desktop/annex/testing.txt ok
+[2018-04-29 22:15:15.447495] Committer: Committing changes to git
+(recording state in git...)
+gpg: assuming signed data in '/var/folders/vt/jdjpydy51cb4c9743nvk2s7m0000gp/T/git-annex.tmpxY52C5/info'
+gpg: Signature made Fri Apr 27 20:03:18 2018 EAT using DSA key ID 89C809CB
+gpg: /var/folders/vt/jdjpydy51cb4c9743nvk2s7m0000gp/T/git-annex-gpg.tmpqPe64c/trustdb.gpg: trustdb created
+gpg: Good signature from "git-annex distribution signing key (for Joey Hess) <id@joeyh.name>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 4005 5C6A FD2D 526B 2961  E78F 5EE1 DBA7 89C8 09CB
+[2018-04-29 22:15:15.908187] Upgrader: An upgrade of git-annex is available.  (version 6.20180426)
+[2018-04-29 22:15:16.983499] Pusher: Syncing with SeagateBlack 
+Everything up-to-date
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+I have not used it before, but I'm determined to make it work!  I'm nomadic and archive my pictures/videos/files and therefore this software must be perfect for me!
