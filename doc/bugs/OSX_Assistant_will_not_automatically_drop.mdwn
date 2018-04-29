@@ -5,7 +5,7 @@ I cannot reproduce the archive behaviour explained in the screencast: git annex 
 Install the OSX dmg.  Open the webapp. Make a client repo `~/annex` on the laptop and a full archive repo `/Volumes/Seagate/annex` on an external hard drive. Disregard the errors in the webapp. Restart daemon. Finish configuration of the archive repo as full archive.
 Put a test file in `~/annex`, watch it copy over in the webapp.  Verify copies with `git-annex whereis`.  
 **Use the GUI to move the test file to `~/annex/archive`.  The file does not turn into a symlink as expected.**  
-Run the command `git-annex drop --auto`.  the archived file is now replaced by a symlink.  `git annex whereis` verifies that the copy is only in the archive.
+Run the command `git-annex drop --auto`.  the archived file is now replaced by a symlink.  `git annex whereis` verifies that the only copy is in the archive repo.
 Now move the symlink back to `~/annex`. The symlink is not replaced by the file.
 Restart the assistant using the webapp.  The symlink is replaced by the file.  
 Repeat above steps with the same effect.
