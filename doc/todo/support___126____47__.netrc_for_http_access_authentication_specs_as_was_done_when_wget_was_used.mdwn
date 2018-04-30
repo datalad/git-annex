@@ -1,0 +1,25 @@
+Recent git-annex started to handle http connections internally (instead of relying on `wget` and `curl`) which is great in general.  But I wondered if it is relatively easy to retain support for authentication via "standard" `~/.netrc` which `wget` supports nicely.  But ATM (e.g. with 6.20180416) it wouldn't work
+
+Example:
+[[!format sh """
+$> git annex addurl --debug http://onerussian.com/tmp/secret/index.html --file testDemo.mnc           
+[2018-04-27 21:10:52.699047352] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2018-04-27 21:10:52.707407583] process done ExitSuccess
+[2018-04-27 21:10:52.707650197] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2018-04-27 21:10:52.711677639] process done ExitSuccess
+[2018-04-27 21:10:52.711863237] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..1aef0c7917a50ea5a23702f04c6e7778ea5c8843","--pretty=%H","-n1"]
+[2018-04-27 21:10:52.719171987] process done ExitSuccess
+[2018-04-27 21:10:52.719903748] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2018-04-27 21:10:52.721168737] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+addurl http://onerussian.com/tmp/secret/index.html 
+
+failed
+[2018-04-27 21:10:53.010687336] process done ExitSuccess
+[2018-04-27 21:10:53.011302754] process done ExitSuccess
+"""]]
+
+whenever works with e.g. 6.20180316 if corresponding settings are setup in `~/.netrc`
+
+Or may be there is some other alternative support for such cases now?
+
+[[!meta author=yoh]]

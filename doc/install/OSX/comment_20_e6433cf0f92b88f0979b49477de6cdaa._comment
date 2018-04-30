@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="allforabit"
+ avatar="http://cdn.libravatar.org/avatar/32e0c529af793688f16aa23cb462d9da"
+ subject="Error in High Sierra"
+ date="2018-04-29T18:28:07Z"
+ content="""
+I'm getting an error when attempting to launch the webapp using the brew build of the app. The error is as follows:
+```
+uname: illegal option -- o
+usage: uname [-amnprsv]
+...
+git-annex: user error (uname [\"-o\"] exited 1)
+```
+Is anyone else getting this error? I have tried the autobuilt dmg as well but that doesn't launch the webapp.
+
+Thanks!
+"""]]
