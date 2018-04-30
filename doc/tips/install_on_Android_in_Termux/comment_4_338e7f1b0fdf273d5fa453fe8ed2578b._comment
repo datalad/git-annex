@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2018-04-30T20:07:00Z"
+ content="""
+@hobbes, that error means Android's system call filter has blocked
+a system call that's needed to run git-annex, unfortunately.
+"""]]
