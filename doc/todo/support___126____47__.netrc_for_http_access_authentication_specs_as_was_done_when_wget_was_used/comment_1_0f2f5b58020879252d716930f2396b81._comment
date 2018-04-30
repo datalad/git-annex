@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-04-30T20:09:20Z"
+ content="""
+.netrc was considered in [[stop_using_curl_and_wget]]. The changelog for
+the release recommends that users who need a netrc do "git config
+annex.web-options --netrc"
+
+I don't anticipate adding support for netrc files to git-annex.
+Adding a dependency on http://hackage.haskell.org/package/netrc for such a
+relatively little-used feature which can be supported as above does not
+seem worth it.
+"""]]
