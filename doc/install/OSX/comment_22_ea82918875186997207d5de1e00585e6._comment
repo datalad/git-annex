@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="allforabit"
+ avatar="http://cdn.libravatar.org/avatar/32e0c529af793688f16aa23cb462d9da"
+ subject="comment 22"
+ date="2018-05-01T17:49:32Z"
+ content="""
+Thanks lhunath, do you know if it's possible to change this without doing a build of the project? I had a look through the scripts and I can't spot the command that is run and causes the issue.
+"""]]
