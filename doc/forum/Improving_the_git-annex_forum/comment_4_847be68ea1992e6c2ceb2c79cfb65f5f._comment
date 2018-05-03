@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="test PageSpec"
+ date="2018-05-03T15:32:16Z"
+ content="""
+Also, related to Subscribing. I have created a PageSpec in my user preferences. How can I test this? IE I want to past my PageSpec string somewhere and see which results on https://git-annex.branchable.com/ that PageSpec would return.
+"""]]
