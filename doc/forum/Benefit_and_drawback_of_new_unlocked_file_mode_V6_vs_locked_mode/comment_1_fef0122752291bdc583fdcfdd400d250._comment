@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 1"
+ date="2018-05-03T19:56:03Z"
+ content="""
+I guess you were reading this blogpost <https://rychly.gitlab.io/post/git-annex/> from 2016?
+
+I have not run into any performance issues, but apparently others have. Namely, direct mode (V5) is faster than using unlocked files with a V6 repo, see [How to improve performance with v6 repos](https://git-annex.branchable.com/forum/How_to_improve_performance_with_v6_repos__63__/) related to the difference between direct-mode and V6 unlocked. Joey has a long [TODO related to git smudge filters](https://git-annex.branchable.com/todo/smudge/) that I believe would resolve this performance issue. The other drawback of V6 is that Joey considers it beta: “I'd encourage you to not upgrade any production repositories to v6 yet. It's still in beta state and has known problems. Currently all known problems are only innefficiencies, but there could also still be bugs.” [v5_to_v6_upgrade_strategy](https://git-annex.branchable.com/forum/v5_to_v6_upgrade_strategy/).
+"""]]
