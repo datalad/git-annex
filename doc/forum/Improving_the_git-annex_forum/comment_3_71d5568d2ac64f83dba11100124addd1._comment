@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 3"
+ date="2018-05-03T15:16:58Z"
+ content="""
+For me, the most difficult thing is keeping informed of responses to my questions.
+
+It looks like adding a comment, or creating a new thread, does have the “email comments to me” checkbox but this is un-checked by default. Maybe it should be checked by default? I must be forgetting to check this box. It seems a lot of people ask a question on the forum then never return to read the response, maybe they aren't subscribing? Or maybe there can be a new user preference subscribe to threads I comment on by default, which would check this box for us. That way users who want to stay informed via git checkouts on the forum don't have to worry about un-checking the email comments to me box all the time.
+
+   +++ User friendly way to (un)subscribe to threads
+
+Agreed, it would be nice to have an unsubscribe/subscribe button on every forum thread. I don't know how to do this from Preferences, my PageSpecs don't seem to be working right now.
+
+  ++++ Bump threads on new replies (that may be a matter of taste)
+
+Yes, I think that would be nice. I do care about seeing active threads first. It would also be good to see some visual notification for threads with no responses.
+
+  ++++ Weird markdown formatting
+
+My main issue is being unable to quote people with nice formatting. The default for Markdown quoting, Right bracket, doesn't format well in this forum, so I end up using space plus-plus-plus…
+
+
+
+
+
+
+
+
+"""]]
