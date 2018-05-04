@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 1"
+ date="2018-05-04T15:58:59Z"
+ content="""
+Hmmm. I am testing on macOS 10.12.6 with git-annex 6.20180409-gfb0780266 installed from dmg in /Applications
+
+The webapp launch behavior seems a bit odd. If I launch from the command-line `git-annex webapp` from my `/Users/Shared/a1` directory, then a webpage loads (for me in Chrome) and no assistant daemons are started, or at least I can't find any with `ps aux`. If I add files to `/Users/Shared/a1` the assistant sees them, but it doesn't transfer to my backup repo at `/Users/Shared/a3`. It seems to only see files from the repo I started git-annex webapp from. Is this the intended behavior Joey?
+
+I have three repos listed at `~/.config/git-annex/autostart`. If I run `git-annex assistant --autostart` from one of my repo directories, then an assistant daemon is started for each repo, I can verify that with `ps aux | grep \"git-annex assistant --startdelay\"` which lists one assistant process per repository (3 total). If I start the assistants this way, they seem to stick around. Then, I can follow the mentioned archiving video and successfully sync/archive as shown.
+
+I have these errors in `system.log`: `bumblebee git-annex[766]: no path for address 0x107d40000`, I don't have anything interesting in any of my daemon.log files. I can't find any other interesting system logs.
+
+—Andrew
+
+
+
+
+"""]]
