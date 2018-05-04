@@ -1,0 +1,34 @@
+### Please describe the problem.
+
+
+[[!format sh """
+(git-annex)hopa:/tmp/1038_hyperface[master]git-annex
+$> git annex view 'needed-by=*'
+view (searching...) fatal: Unable to add (null) to database
+fatal: Unable to add (null) to database
+fatal: Unable to add (null) to database
+fatal: Unable to add (null) to database
+fatal: Unable to add (null) to database
+fatal: Unable to add (null) to database
+fatal: Unable to add (null) to database
+fatal: Unable to add (null) to database
+fatal: Unable to add (null) to database
+fatal: Unable to add (null) to database
+fatal: Unable to add (null) to database
+
+git-annex: fd:14: hGetLine: end of file
+failed
+git-annex: user error (git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","hash-object","-w","--stdin-paths","--no-filters"] exited 128)
+
+
+$> git annex version           
+git-annex version: 6.20180416+gitg86b18966f-1~ndall+1
+
+"""]]
+
+copy of the repository will be provided via email
+
+[[!meta author=yoh]]
+
+
+
