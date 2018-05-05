@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2018-05-05T12:57:00Z"
+ content="""
+We now have a workaround that seems to work, `pkg install proot` and use
+proot to run git-annex. Tomorrrow's daily build of the git-annex standalone 
+bundle will do that automatically.
+"""]]

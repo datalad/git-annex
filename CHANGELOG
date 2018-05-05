@@ -3,6 +3,10 @@ git-annex (6.20180428) UNRELEASED; urgency=medium
   * Fix regression in last release that crashes when using
     --all or running git-annex in a bare repository. May have also
     affected git-annex unused and git-annex info.
+  * runshell: Use proot when running on Android, to work around
+    Android 8's ill-advised seccomp filtering of system calls,
+    including ones crucial for reliable thread locking.
+    (This will only work with termux's version of proot.)
 
  -- Joey Hess <id@joeyh.name>  Tue, 08 May 2018 13:51:37 -0400
 

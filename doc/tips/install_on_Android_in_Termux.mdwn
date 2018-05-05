@@ -4,7 +4,7 @@ Linux software in a terminal.
 git-annex is not currently part of the Termux distribution, but it's easy
 to install it. Paste these commands into Termux:
 
-	pkg install git wget tar coreutils
+	pkg install git wget tar coreutils proot
 	termux-setup-storage
 	cd
 	wget https://downloads.kitenet.net/git-annex/autobuild/armel/git-annex-standalone-armel.tar.gz

@@ -37,6 +37,8 @@ if echo "$base" | grep -q '[:;]'; then
 		rm -rf "$tbase"
 	}
 	trap cleanuptbase EXIT
+else
+	tbase=""
 fi
 
 # Set this variable when using this script inside a package of git-annex,
@@ -153,6 +155,7 @@ for localeenv in "$LANG" "$LANGUAGE" "$LC_CTYPE" "$LC_NUMERIC" "$LC_TIME" \
 	fi
 done
 
+useproot=""
 case "$os" in
 	# Make this bundle work well on Android.
 	Android)
@@ -168,6 +171,10 @@ case "$os" in
 				echo 'PATH=$PATH:'"$base" >> $HOME/.profile
 			fi
 		fi
+		
+		# Work around Android 8's seccomp filtering of some crucial
+		# system calls, using termux's version of proot.
+		useproot=1
 		
 		# Store ssh connection caching sockets outside of sdcard.
 		GIT_ANNEX_TMP_DIR="$TMPDIR"
@@ -187,12 +194,21 @@ esac
 if [ "$1" ]; then
 	cmd="$1"
 	shift 1
-	if [ -z "$tbase" ]; then
-		exec "$cmd" "$@"
+else
+	cmd=sh
+fi
+
+if [ -z "$tbase" ]; then
+	if [ "$useproot" ]; then
+		exec proot "$cmd" "$@"
 	else
-		# allow EXIT trap to cleanup
-		"$cmd" "$@"
+		exec "$cmd" "$@"
 	fi
 else
-	sh
+	# allow EXIT trap to cleanup
+	if [ "$useproot" ]; then
+		proot "$cmd" "$@"
+	else
+		"$cmd" "$@"
+	fi
 fi
