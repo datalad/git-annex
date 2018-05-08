@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-05-08T17:56:54Z"
+ content="""
+I have not received the database by email yet.
+
+Note that this is a sqlite error message.
+
+I wonder if this is a symptom of the same bug as 
+<http://git-annex.branchable.com/bugs/regression_-_fails_to_drop_._Exit_code_11_wo_--debug__44___and_1_with_--debug/>
+since it popped up at the same time, and that also involved a NULL
+dereference.
+"""]]
