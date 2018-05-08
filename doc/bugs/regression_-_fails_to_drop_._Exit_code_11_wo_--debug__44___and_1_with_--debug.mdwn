@@ -99,3 +99,5 @@ error: git-annex died of signal 11
 (dev) 1 19889 ->139.....................................:Mon 07 May 2018 09:43:16 PM EDT:.
 """]]
 which also resolves with downgrade of git-annex.
+
+[[!meta author=yoh]]
