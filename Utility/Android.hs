@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 {- Android stuff
  -
  - Copyright 2018 Joey Hess <id@joeyh.name>
@@ -14,4 +16,9 @@ import Common
 -- Note that this relies on termux's uname having been built with "Android"
 -- as the os name. Often on Android, uname will report "Linux".
 osAndroid :: IO Bool
-osAndroid = ("Android" `isPrefixOf` ) <$> readProcess "uname" ["-o"]
+#ifdef linux_HOST_OS
+osAndroid = catchDefaultIO False $
+	("Android" `isPrefixOf` ) <$> readProcess "uname" ["-o"]
+#else
+osAndroid = return False
+#endif

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 23"""
+ date="2018-05-08T18:03:05Z"
+ content="""
+Guys talking about uname -o and stuff, this is not the place to do that.
+File a [[bug]] report if you have a bug like that. You're making it harder
+for every person who opens this page to install git-annex and ends up
+wwading through discussion of fixed bugs like that one. Also, I respond
+*much* faster to bug reports than to random misplaced comments about bugs.
+"""]]
