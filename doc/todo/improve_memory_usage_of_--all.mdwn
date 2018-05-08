@@ -1,0 +1,14 @@
+Using --all, or running in a bare repo, as well as
+`git annex unused` and `git annex info` all end up buffering the list of
+all keys that have uncommitted journalled changes in memory.
+This is due to Annex.Branch.files's call to getJournalledFilesStale which
+reads all the files in the directory into a buffer.
+
+Note that the list of keys in the branch *does* stream in, so this
+is only really a problem when using annex.alwayscommit=false to build
+up big git-annex branch commits via the journal.
+
+An attempt at making it stream via unsafeInterleaveIO failed miserably
+and that is not the right approach. This would be a good place to use
+ResourceT, but it might need some changes to the Annex monad to allow
+combining the two. --[[Joey]]

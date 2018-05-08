@@ -34,7 +34,6 @@ import qualified Data.Map as M
 import Data.Function
 import Data.Char
 import Control.Concurrent (threadDelay)
-import System.IO.Unsafe (unsafeInterleaveIO)
 
 import Annex.Common
 import Annex.BranchState
@@ -335,23 +334,16 @@ commitIndex' jl branchref message basemessage retrynum parents = do
 		commitIndex' jl committedref racemessage basemessage retrynum' [committedref]
 
 {- Lists all files on the branch. including ones in the journal
- - that have not been committed yet. There may be duplicates in the list.
- - Streams lazily. -}
+ - that have not been committed yet. There may be duplicates in the list. -}
 files :: Annex [FilePath]
 files = do
 	update
-	withIndex $ do
-		g <- gitRepo
-		withJournalHandle (go g)
-  where
-	go g jh = readDirectory jh >>= \case
-		Nothing -> branchFiles' g
-		Just file
-			| dirCruft file -> go g jh
-			| otherwise -> do
-				let branchfile = fileJournal file
-				rest <- unsafeInterleaveIO (go g jh)
-				return (branchfile:rest)
+	-- ++ forces the content of the first list to be buffered in memory,
+	-- so use getJournalledFilesStale which should be much smaller most
+	-- of the time. branchFiles will stream as the list is consumed.
+	(++)
+		<$> getJournalledFilesStale
+		<*> branchFiles
 
 {- Files in the branch, not including any from journalled changes,
  - and without updating the branch. -}

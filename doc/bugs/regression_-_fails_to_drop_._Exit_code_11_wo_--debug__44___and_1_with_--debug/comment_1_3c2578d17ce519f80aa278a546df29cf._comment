@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-05-08T17:09:35Z"
+ content="""
+Neither git rev 6316072f0 nor 86b18966f is present in my git-annex git repo,
+which makes it kind of hard to look at the diff between whatever versions
+of git-annex you're running. Are you building out of a patched git
+repository?
+
+My guess is [[!commit bea0ad220a68138dc0a43d0c86bb2353ecf92d2c]]
+since it involves both directory reading and unsafeInterleaveIO.
+
+Indeed, it looks like that could defer a readDirStream due to
+unsafeInterleaveIO to outside the open/close bracket. And I suppose reading
+from a closed file handle might conceivably segfault.
+
+Looks like that would affect bare repositories, or using --all.
+I don't think it would affect those commands in a non-bare repository.
+Ah, I see youre whereis is indeed in a bare repository, and your drop
+used --all, so my analysis seems right.
+
+Fixed by backing out the problematic part of the commit.
+"""]]

@@ -1,3 +1,11 @@
+git-annex (6.20180428) UNRELEASED; urgency=medium
+
+  * Fix regression in last release that crashes when using
+    --all or running git-annex in a bare repository. May have also
+    affected git-annex unused and git-annex info.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 08 May 2018 13:51:37 -0400
+
 git-annex (6.20180427) upstream; urgency=medium
 
   * move: Now takes numcopies configuration, and required content

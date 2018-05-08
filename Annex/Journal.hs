@@ -55,6 +55,16 @@ getJournalFileStale :: FilePath -> Annex (Maybe String)
 getJournalFileStale file = inRepo $ \g -> catchMaybeIO $
 	readFileStrict $ journalFile file g
 
+{- List of existing journal files, but without locking, may miss new ones
+ - just being added, or may have false positives if the journal is staged
+ - as it is run. -}
+getJournalledFilesStale :: Annex [FilePath]
+getJournalledFilesStale = do
+	g <- gitRepo
+	fs <- liftIO $ catchDefaultIO [] $
+		getDirectoryContents $ gitAnnexJournalDir g
+	return $ filter (`notElem` [".", ".."]) $ map fileJournal fs
+
 withJournalHandle :: (DirectoryHandle -> IO a) -> Annex a
 withJournalHandle a = do
 	d <- fromRepo gitAnnexJournalDir

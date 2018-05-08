@@ -101,3 +101,5 @@ error: git-annex died of signal 11
 which also resolves with downgrade of git-annex.
 
 [[!meta author=yoh]]
+
+> [[fixed|done]] --[[Joey]]
