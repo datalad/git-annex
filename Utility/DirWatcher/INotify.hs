@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 {- higher-level inotify interface
  -
  - Copyright 2012 Joey Hess <id@joeyh.name>
@@ -10,6 +12,9 @@ module Utility.DirWatcher.INotify where
 import Common hiding (isDirectory)
 import Utility.ThreadLock
 import Utility.DirWatcher.Types
+#if MIN_VERSION_hinotify(0,3,10)
+import Utility.FileSystemEncoding
+#endif
 
 import System.INotify
 import qualified System.Posix.Files as Files
@@ -55,7 +60,7 @@ watchDir i dir ignored scanevents hooks
 		lock <- newLock
 		let handler event = withLock lock (void $ go event)
 		flip catchNonAsync failedwatch $ do
-			void (addWatch i watchevents dir handler)
+			void (addWatch i watchevents (toInternalFilePath dir) handler)
 				`catchIO` failedaddwatch
 			withLock lock $
 				mapM_ scan =<< filter (not . dirCruft) <$>
@@ -93,7 +98,7 @@ watchDir i dir ignored scanevents hooks
 				| otherwise ->
 					noop
 
-	go (Created { isDirectory = isd, filePath = f })
+	go (Created { isDirectory = isd, filePath = fi })
 		| isd = recurse $ indir f
 		| otherwise = do
 			ms <- getstatus f
@@ -106,28 +111,39 @@ watchDir i dir ignored scanevents hooks
 						when (hashook addHook) $
 							runhook addHook f ms
 				_ -> noop
+	  where
+		f = fromInternalFilePath fi
+
 	-- Closing a file is assumed to mean it's done being written,
 	-- so a new add event is sent.
-	go (Closed { isDirectory = False, maybeFilePath = Just f }) =
-			checkfiletype Files.isRegularFile addHook f
+	go (Closed { isDirectory = False, maybeFilePath = Just fi }) =
+			checkfiletype Files.isRegularFile addHook $ 
+				fromInternalFilePath fi
+
 	-- When a file or directory is moved in, scan it to add new
 	-- stuff.
-	go (MovedIn { filePath = f }) = scan f
-	go (MovedOut { isDirectory = isd, filePath = f })
+	go (MovedIn { filePath = fi }) = scan $ fromInternalFilePath fi
+	go (MovedOut { isDirectory = isd, filePath = fi })
 		| isd = runhook delDirHook f Nothing
 		| otherwise = runhook delHook f Nothing
+	  where
+		f = fromInternalFilePath fi
+
 	-- Verify that the deleted item really doesn't exist,
 	-- since there can be spurious deletion events for items
 	-- in a directory that has been moved out, but is still
 	-- being watched.
-	go (Deleted { isDirectory = isd, filePath = f })
+	go (Deleted { isDirectory = isd, filePath = fi })
 		| isd = guarded $ runhook delDirHook f Nothing
 		| otherwise = guarded $ runhook delHook f Nothing
 	  where
 		guarded = unlessM (filetype (const True) f)
-	go (Modified { isDirectory = isd, maybeFilePath = Just f })
+		f = fromInternalFilePath fi
+
+	go (Modified { isDirectory = isd, maybeFilePath = Just fi })
 		| isd = noop
-		| otherwise = runhook modifyHook f Nothing
+		| otherwise = runhook modifyHook (fromInternalFilePath fi) Nothing
+
 	go _ = noop
 
 	hashook h = isJust $ h hooks
@@ -185,3 +201,15 @@ querySysctl ps = getM go ["sysctl", "/sbin/sysctl", "/usr/sbin/sysctl"]
 			Nothing -> return Nothing
 			Just s -> return $ parsesysctl s
 	parsesysctl s = readish =<< lastMaybe (words s)
+
+#if MIN_VERSION_hinotify(0,3,10)
+toInternalFilePath :: FilePath -> RawFilePath
+toInternalFilePath = toRawFilePath
+fromInternalFilePath :: RawFilePath -> FilePath
+fromInternalFilePath = fromRawFilePath
+#else
+toInternalFilePath :: FilePath -> FilePath
+toInternalFilePath = id
+fromInternalFilePath :: FilePath -> FilePath
+fromInternalFilePath = id
+#endif

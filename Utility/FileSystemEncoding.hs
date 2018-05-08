@@ -12,6 +12,9 @@ module Utility.FileSystemEncoding (
 	useFileSystemEncoding,
 	fileEncoding,
 	withFilePath,
+	RawFilePath,
+	fromRawFilePath,
+	toRawFilePath,
 	decodeBS,
 	encodeBS,
 	decodeW8,
@@ -32,6 +35,7 @@ import System.IO
 import System.IO.Unsafe
 import Data.Word
 import Data.List
+import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 #ifdef mingw32_HOST_OS
 import qualified Data.ByteString.Lazy.UTF8 as L8
@@ -119,6 +123,22 @@ encodeBS = L.pack . decodeW8NUL
 #else
 encodeBS = L8.fromString
 #endif
+
+{- Recent versions of the unix package have this alias; defined here
+ - for backwards compatibility. -}
+type RawFilePath = S.ByteString
+
+{- Note that the RawFilePath is assumed to never contain NUL,
+ - since filename's don't. This should only be used with actual
+ - RawFilePaths not arbitrary ByteString that may contain NUL. -}
+fromRawFilePath :: RawFilePath -> FilePath
+fromRawFilePath = encodeW8 . S.unpack
+
+{- Note that the FilePath is assumed to never contain NUL,
+ - since filename's don't. This should only be used with actual FilePaths
+ - not arbitrary String that may contain NUL. -}
+toRawFilePath :: FilePath -> RawFilePath
+toRawFilePath = S.pack . decodeW8
 
 {- Converts a [Word8] to a FilePath, encoding using the filesystem encoding.
  -
