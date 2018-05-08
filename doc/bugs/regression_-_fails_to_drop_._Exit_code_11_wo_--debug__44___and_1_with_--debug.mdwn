@@ -1,0 +1,101 @@
+### Please describe the problem.
+
+DataLad unittest (datalad/crawler/pipelines/tests/test_simple_s3.py:test_drop) checking communication of git-annex with our special remote started to hang (should have crashed I guess, yet to check) and the attempt in independent execution showed that git-annex simply crashes.  Downgrade from 6.20180506+gitg6316072f0-1~ndall+1 to 6.20180416+gitg86b18966f-1~ndall+1 resolved the issue. Seems to boil down to change on interactions with the remote with new version crashing with `git-annex: readDirStream: invalid argument (Bad file descriptor)`?
+
+May be manages to stop/kill the custom special remote before stopping communicating with it?
+
+### Please provide any additional information below.
+
+[[!format sh """
+$> git annex whereis --all --debug
+[2018-05-07 21:49:18.991105877] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2018-05-07 21:49:18.997322576] process done ExitSuccess
+[2018-05-07 21:49:18.997426863] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2018-05-07 21:49:19.003137341] process done ExitSuccess
+[2018-05-07 21:49:19.003344009] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..f9909eda54827d61b254605b5631482b3dc65468","--pretty=%H","-n1"]
+[2018-05-07 21:49:19.007972053] process done ExitSuccess
+[2018-05-07 21:49:19.008717245] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2018-05-07 21:49:19.009717171] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+whereis MD5E-s8--966634ebf2fc135707d6753692bf4b1e.txt [2018-05-07 21:49:19.016115806] chat: /home/yoh/proj/datalad/datalad-master/venvs/dev/bin/git-annex-remote-datalad []
+[2018-05-07 21:49:19.832279118] git-annex-remote-datalad[1] --> VERSION 1
+[2018-05-07 21:49:19.832466638] git-annex-remote-datalad[1] <-- EXTENSIONS INFO
+[2018-05-07 21:49:19.832654467] git-annex-remote-datalad[1] --> UNSUPPORTED-REQUEST
+[2018-05-07 21:49:19.832898699] git-annex-remote-datalad[1] <-- PREPARE
+[2018-05-07 21:49:19.83308154] git-annex-remote-datalad[1] --> PREPARE-SUCCESS
+[2018-05-07 21:49:19.833153568] git-annex-remote-datalad[1] <-- WHEREIS MD5E-s8--966634ebf2fc135707d6753692bf4b1e.txt
+[2018-05-07 21:49:19.833276243] git-annex-remote-datalad[1] --> WHEREIS-FAILURE
+[2018-05-07 21:49:19.833536457] git-annex-remote-datalad[1] <-- CLAIMURL s3://datalad-test0-nonversioned/1version-nonversioned1.txt?versionId=null
+[2018-05-07 21:49:19.833847975] git-annex-remote-datalad[1] --> DEBUG Claiming url 's3://datalad-test0-nonversioned/1version-nonversioned1.txt?versionId=null'
+[2018-05-07 21:49:19.833975294] Claiming url 's3://datalad-test0-nonversioned/1version-nonversioned1.txt?versionId=null'
+[2018-05-07 21:49:19.834045759] git-annex-remote-datalad[1] --> CLAIMURL-SUCCESS
+(1 copy) 
+  	cf13d535-b47c-5df6-8590-0793cb08a90a -- [datalad]
+
+  datalad: s3://datalad-test0-nonversioned/1version-nonversioned1.txt?versionId=null
+ok
+git-annex: readDirStream: invalid argument (Bad file descriptor)
+
+(dev) 1 19899 ->1.....................................:Mon 07 May 2018 09:49:19 PM EDT:.
+
+# so -- it exited with exit code 1.  Downgrading now!
+
+$> sudo apt-get install git-annex-standalone=6.20180416+gitg86b18966f-1~ndall+1        
+...
+
+$> git annex whereis --all --debug                                                     
+[2018-05-07 21:50:33.064546504] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2018-05-07 21:50:33.075890599] process done ExitSuccess
+[2018-05-07 21:50:33.076053279] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2018-05-07 21:50:33.082610193] process done ExitSuccess
+[2018-05-07 21:50:33.082774661] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..f9909eda54827d61b254605b5631482b3dc65468","--pretty=%H","-n1"]
+[2018-05-07 21:50:33.088684568] process done ExitSuccess
+[2018-05-07 21:50:33.089343824] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2018-05-07 21:50:33.090037985] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2018-05-07 21:50:33.09515616] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-tree","--full-tree","-z","-r","--name-only","--","refs/heads/git-annex"]
+whereis MD5E-s8--966634ebf2fc135707d6753692bf4b1e.txt [2018-05-07 21:50:33.101385386] chat: /home/yoh/proj/datalad/datalad-master/venvs/dev/bin/git-annex-remote-datalad []
+[2018-05-07 21:50:33.935964594] git-annex-remote-datalad[1] --> VERSION 1
+[2018-05-07 21:50:33.936100411] git-annex-remote-datalad[1] <-- EXTENSIONS INFO
+[2018-05-07 21:50:33.936325748] git-annex-remote-datalad[1] --> UNSUPPORTED-REQUEST
+[2018-05-07 21:50:33.936398107] git-annex-remote-datalad[1] <-- PREPARE
+[2018-05-07 21:50:33.936521005] git-annex-remote-datalad[1] --> PREPARE-SUCCESS
+[2018-05-07 21:50:33.936577067] git-annex-remote-datalad[1] <-- WHEREIS MD5E-s8--966634ebf2fc135707d6753692bf4b1e.txt
+[2018-05-07 21:50:33.936676987] git-annex-remote-datalad[1] --> WHEREIS-FAILURE
+[2018-05-07 21:50:33.937304604] git-annex-remote-datalad[1] <-- CLAIMURL s3://datalad-test0-nonversioned/1version-nonversioned1.txt?versionId=null
+[2018-05-07 21:50:33.937515713] git-annex-remote-datalad[1] --> DEBUG Claiming url 's3://datalad-test0-nonversioned/1version-nonversioned1.txt?versionId=null'
+[2018-05-07 21:50:33.937580054] Claiming url 's3://datalad-test0-nonversioned/1version-nonversioned1.txt?versionId=null'
+[2018-05-07 21:50:33.937645676] git-annex-remote-datalad[1] --> CLAIMURL-SUCCESS
+(1 copy) 
+  	cf13d535-b47c-5df6-8590-0793cb08a90a -- [datalad]
+
+  datalad: s3://datalad-test0-nonversioned/1version-nonversioned1.txt?versionId=null
+ok
+[2018-05-07 21:50:33.973870482] process done ExitSuccess
+[2018-05-07 21:50:33.974304561] process done ExitSuccess
+[2018-05-07 21:50:33.97461093] process done ExitSuccess
+
+"""]]
+
+all kosher.
+
+Original manifestation was (note that exit code was 1 for with --debug and 139 (128+11) without --debug):
+
+
+[[!format sh """
+(git-annex)hopa:~/.tmp/datalad_temp_test_drop2bWvne[master]git
+$> git annex drop --debug --json --all --force --
+[2018-05-07 21:43:12.673253137] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2018-05-07 21:43:12.677379888] process done ExitSuccess
+[2018-05-07 21:43:12.677452681] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2018-05-07 21:43:12.681153081] process done ExitSuccess
+[2018-05-07 21:43:12.681279588] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..f9909eda54827d61b254605b5631482b3dc65468","--pretty=%H","-n1"]
+[2018-05-07 21:43:12.686123605] process done ExitSuccess
+[2018-05-07 21:43:12.686850715] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2018-05-07 21:43:12.687525693] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+git-annex: readDirStream: invalid argument (Bad file descriptor)
+(dev) 1 19888 ->1.....................................:Mon 07 May 2018 09:43:12 PM EDT:.
+(git-annex)hopa:~/.tmp/datalad_temp_test_drop2bWvne[master]git
+$> git annex drop  --json --all --force --     
+error: git-annex died of signal 11
+(dev) 1 19889 ->139.....................................:Mon 07 May 2018 09:43:16 PM EDT:.
+"""]]
+which also resolves with downgrade of git-annex.
