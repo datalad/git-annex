@@ -45,3 +45,5 @@ git-annex: I tried the currently available stable 5.0 package (6.20170101), as w
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, I used it successfully until recently. I remember that I installed a new version of git-annex recently. I used it successfully after the update. However, I am not sure whether I closed and reopened the git-annex app after the update.
+
+> Closing as this was a bug in the deprecated Android app. [[done]] --[[Joey]]

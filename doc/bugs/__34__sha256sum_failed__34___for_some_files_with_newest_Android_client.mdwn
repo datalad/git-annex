@@ -53,3 +53,5 @@ u0_a180@manta:/sdcard/Westerley-Board/Board Packets & Reports/2016-08-25 (Regula
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, I've been using git annex for I think a year and a half now, on several repositories. It works pretty well. I have a total of around 315GB and 23K annexed keys across them (counting each annex only once, even though they're cloned on a bunch of machines).
+
+> Closing as this was a bug in the deprecated Android app. [[done]] --[[Joey]]

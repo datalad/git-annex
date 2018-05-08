@@ -4,3 +4,5 @@ I’ve only just set up git-annex on my Android system, so I might be confused; 
 ### What version of git-annex are you using? On what operating system?
 git-annex 5.20150522-g260b59e
 Android 4.4.4
+
+> Closing as this was a bug in the deprecated Android app. [[done]] --[[Joey]]

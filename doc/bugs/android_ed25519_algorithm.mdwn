@@ -10,3 +10,5 @@ fails with "no hostkey alg"
 
 regards,
 David
+
+> Closing as this was a bug in the deprecated Android app. [[done]] --[[Joey]]

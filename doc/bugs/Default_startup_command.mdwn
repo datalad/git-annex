@@ -27,3 +27,5 @@ Version "current" as of 2014-11-15 and also version "nightly build" as of 2014-1
 
 # End of transcript or log.
 """]]
+
+> Closing as this was a bug in the deprecated Android app. [[done]] --[[Joey]]

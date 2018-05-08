@@ -19,4 +19,4 @@ Latest version of git-annex app on an Android 5 tablet.
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
-
+> Closing as this was a bug in the deprecated Android app. [[done]] --[[Joey]]

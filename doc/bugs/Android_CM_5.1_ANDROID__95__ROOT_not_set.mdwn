@@ -36,3 +36,6 @@ I can add remote repositories and they show up nicely in the webapp, but no file
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I have a couple of repositories atm, one with my music, another that backs up our family pictures for the family and uses Amazon S3 as a backup.
+
+> Closing as this was a bug in the deprecated Android app. [[done]] --[[Joey]]
+

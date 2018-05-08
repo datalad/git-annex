@@ -31,3 +31,5 @@ I suppose since the socket is a Unix domain socket, it gets destroyed when the p
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Not yet, but I'm excited to make it work!
+
+> Closing as this was a bug in the deprecated Android app. [[done]] --[[Joey]]

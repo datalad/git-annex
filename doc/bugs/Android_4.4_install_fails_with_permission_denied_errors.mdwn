@@ -293,3 +293,5 @@ shell@hammerhead:/ $
 """]]
 
 Android is new to me, so it's possible I'm doing something utterly wrong.
+
+> Closing as this was a bug in the deprecated Android app. [[done]] --[[Joey]]

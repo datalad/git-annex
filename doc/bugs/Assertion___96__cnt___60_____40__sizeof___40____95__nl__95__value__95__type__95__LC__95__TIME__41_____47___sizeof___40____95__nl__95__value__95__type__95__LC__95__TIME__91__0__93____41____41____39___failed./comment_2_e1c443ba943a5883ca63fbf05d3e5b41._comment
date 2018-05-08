@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-05-08T18:28:59Z"
+ content="""
+The synology NAS has a very old linux kernel IIRC, so you will probably
+have better luck with the tarball targeting ancient kernels, 
+<https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386-ancient.tar.gz>
+"""]]

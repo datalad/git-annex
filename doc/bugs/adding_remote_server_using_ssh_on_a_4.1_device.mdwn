@@ -34,3 +34,5 @@ The sshd server is debian wheezy
 
 # End of transcript or log.
 """]]
+
+> Closing as this was a bug in the deprecated Android app. [[done]] --[[Joey]]

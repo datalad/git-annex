@@ -18,3 +18,5 @@ The message given by git-annex:
 
 [[!meta title="android 4.3 install failed on android device without sdcard"]]
 [[!tag moreinfo]]
+
+> Closing as this was a bug in the deprecated Android app. [[done]] --[[Joey]]

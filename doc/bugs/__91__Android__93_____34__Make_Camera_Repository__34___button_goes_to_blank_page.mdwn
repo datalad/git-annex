@@ -15,3 +15,4 @@ Current (2014-11-14) Android 4.3/4.4 build on a non-rooted Moto X. I don't see a
 ### Please provide any additional information below.
 
 
+> Closing as this was a bug in the deprecated Android app. [[done]] --[[Joey]]

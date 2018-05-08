@@ -60,3 +60,5 @@ I have tried moving the app to the sd card, but it will not work if I do that.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes! It's by far one of my favorite apps! it works very well on my laptop, on my home file server, and on my internal storage on my Android phone :)
+
+> Closing as this was a bug in the deprecated Android app. [[done]] --[[Joey]]

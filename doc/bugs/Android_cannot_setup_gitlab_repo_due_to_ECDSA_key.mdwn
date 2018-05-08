@@ -38,3 +38,5 @@ The lack of information about the error presented to the user in git annex assis
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 
+> Closing as this was a bug in the deprecated Android app. [[done]] --[[Joey]]
+
