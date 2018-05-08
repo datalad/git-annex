@@ -1,0 +1,21 @@
+I'm unexpectedly preparing for a release soon, because the last
+release turned out to have a crasher bug when using a bare repository or
+--all, and a bug that prevented the webapp starting on OSX.
+
+As well as fixing those, the new release will have
+several smaller improvements and fixes all done today. It's been a rather
+productive day.
+
+And, using git-annex in Termux is now working even on newer versions of
+Android, that use seccomp filtering to filter out system calls that the ghc
+runtime uses. The `proot` program on Termux worked around that nasty
+problem.
+
+The old Android app is now deprecated, and I'll probably remove it entirely
+within a few months unless I find a reason not to.
+So, I also closed almost all the old Android-specific bug reports today. I
+don't normally do mass bug closures without followup, but it was warranted
+here; almost all of those bugs are specific to the old Android app.
+
+Today's work was sponsored by Trenton Cronholm on
+[Patreon](https://patreon.com/joeyh)
