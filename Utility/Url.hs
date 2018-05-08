@@ -250,9 +250,13 @@ headRequest r = r
  - By default, conduit is used for the download, except for file: urls,
  - which are copied. If the url scheme is not supported by conduit, falls
  - back to using curl.
+ -
+ - Displays error message on stderr when download failed.
  -}
 download :: MeterUpdate -> URLString -> FilePath -> UrlOptions -> IO Bool
-download meterupdate url file uo = go `catchNonAsync` (const $ return False)
+download meterupdate url file uo =
+	catchJust matchHttpException go showhttpexception
+		`catchNonAsync` showerr
   where
 	go = case parseURIRelaxed url of
 		Just u -> case (urlDownloader uo, parseUrlConduit (show u)) of
@@ -277,7 +281,7 @@ download meterupdate url file uo = go `catchNonAsync` (const $ return False)
 			resp <- http req (httpManager uo)
 			if responseStatus resp == ok200
 				then store zeroBytesProcessed WriteMode resp
-				else return False
+				else showrespfailure resp
 		Just sz -> resumeconduit req sz
 	
 	alreadydownloaded sz s h = s == requestedRangeNotSatisfiable416 
@@ -302,7 +306,32 @@ download meterupdate url file uo = go `catchNonAsync` (const $ return False)
 				then store (BytesProcessed sz) AppendMode resp
 				else if responseStatus resp == ok200
 					then store zeroBytesProcessed WriteMode resp
-					else return False
+					else showrespfailure resp
+	
+	showrespfailure resp = liftIO $ do
+		hPutStrLn stderr $ B8.toString $
+			statusMessage $ responseStatus resp
+		hFlush stderr
+		return False
+	showhttpexception he = do
+#if MIN_VERSION_http_client(0,5,0)
+		let msg = case he of
+			HttpExceptionRequest _ (StatusCodeException _ msgb) ->
+				B8.toString msgb
+			HttpExceptionRequest _ other -> show other
+			_ -> show he
+#else
+		let msg = case he of
+			StatusCodeException status _ _ -> statusMessage status
+			_ -> show he
+#endif
+		hPutStrLn stderr $ "download failed: " ++ msg
+		hFlush stderr
+		return False
+	showerr e = do
+		hPutStrLn stderr (show e)
+		hFlush stderr
+		return False
 	
 	store initialp mode resp = do
 		sinkResponseFile meterupdate initialp file mode resp
@@ -441,6 +470,13 @@ matchStatusCodeHeadersException want e@(StatusCodeException s r _)
 	| otherwise = Nothing
 matchStatusCodeHeadersException _ _ = Nothing
 #endif
+
+{- Use with eg: 
+ -
+ - > catchJust matchHttpException
+ -}
+matchHttpException :: HttpException -> Maybe HttpException
+matchHttpException = Just
 
 #if MIN_VERSION_http_client(0,5,0)
 matchHttpExceptionContent :: (HttpExceptionContent -> Bool) -> HttpException -> Maybe HttpException

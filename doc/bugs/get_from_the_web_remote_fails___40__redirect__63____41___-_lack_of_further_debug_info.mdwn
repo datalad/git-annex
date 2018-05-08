@@ -82,3 +82,12 @@ git annex get --debug --from=web sub-01.html
 
 
 [[!meta author=yoh]]
+
+> This does not involve redirects. It's hitting the url a
+> couple of times on failure, thus the multiple "from web".
+> That was due to a bug in the forward retry code; `Just 0 > Nothing`.
+> Fixed.
+> 
+> I added a display of the error message from the web server.
+> 
+> [[fixed|done]] --[[Joey]]

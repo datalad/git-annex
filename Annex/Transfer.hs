@@ -199,7 +199,8 @@ stdRetry = combineRetryDeciders forwardRetry configuredRetry
 {- Retries a transfer when it fails, as long as the failed transfer managed
  - to send some data. -}
 forwardRetry :: RetryDecider
-forwardRetry = pure $ \old new -> pure $ bytesComplete old < bytesComplete new
+forwardRetry = pure $ \old new -> pure $
+	fromMaybe 0 (bytesComplete old) < fromMaybe 0 (bytesComplete new)
 
 {- Retries a number of times with growing delays in between when enabled
  - by git configuration. -}
