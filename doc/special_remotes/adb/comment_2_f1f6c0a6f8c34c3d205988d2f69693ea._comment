@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-05-09T20:17:28Z"
+ content="""
+@iakornfeld, like all special remotes, the git repository is not stored in
+the special remote, only the content of annexed files.
+
+Using `git annex export` like in the example, the android device will
+contain files with the same names as those in your git-annex repository.
+
+If you want to use a git-annex repository on the Android device, see
+[[install/Android]] instead of this. However, for pushing a tree of annexed
+files to Android device and updating it, this special remote can be a good
+fit.
+"""]]
