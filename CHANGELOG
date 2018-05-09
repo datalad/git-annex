@@ -1,4 +1,4 @@
-git-annex (6.20180428) UNRELEASED; urgency=medium
+git-annex (6.20180509) upstream; urgency=medium
 
   * The old git-annex Android app is now deprecated in favor of running
     git-annex in termux.
@@ -15,7 +15,7 @@ git-annex (6.20180428) UNRELEASED; urgency=medium
   * Display error message when http download fails.
   * Avoid forward retry when 0 bytes were received.
 
- -- Joey Hess <id@joeyh.name>  Tue, 08 May 2018 13:51:37 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 09 May 2018 16:20:26 -0400
 
 git-annex (6.20180427) upstream; urgency=medium
 
