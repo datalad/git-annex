@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="iakornfeld@eaf45f0b645324dd9f1f57f226377caddf86a80e"
+ nickname="iakornfeld"
+ avatar="http://cdn.libravatar.org/avatar/491e18e0a8b039917830d2db0b3c4061"
+ subject="Git"
+ date="2018-05-09T13:51:55Z"
+ content="""
+Does this remotely access a normal repository, or does it store the files directly (with the metadata stored on the host)?
+"""]]
