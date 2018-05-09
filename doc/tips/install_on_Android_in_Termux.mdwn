@@ -7,7 +7,7 @@ to install it. Paste these commands into Termux:
 	pkg install git wget tar coreutils proot
 	termux-setup-storage
 	cd
-	wget https://downloads.kitenet.net/git-annex/autobuild/armel/git-annex-standalone-armel.tar.gz
+	wget https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-armel.tar.gz
 	tar zxf git-annex-standalone-armel.tar.gz
 	rm git-annex-standalone-armel.tar.gz
 	git-annex.linux/runshell
