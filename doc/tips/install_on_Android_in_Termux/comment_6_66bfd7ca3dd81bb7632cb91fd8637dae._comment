@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 6"
+ date="2018-05-10T10:23:49Z"
+ content="""
+Are the instructions complete/correct? I get an error when following them and trying to execute runshell. Seems to be looking in the wrong place for /bin/sh.
+
+    $ git-annex.linux/runshell
+    proot-error: execve(\"/data/data/com.termux/files/home/git-annex.linux/bin/sh\"): No such file or directory
+
+
+"""]]
