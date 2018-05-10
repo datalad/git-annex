@@ -322,7 +322,8 @@ download meterupdate url file uo =
 			_ -> show he
 #else
 		let msg = case he of
-			StatusCodeException status _ _ -> statusMessage status
+			StatusCodeException status _ _ -> 
+				B8.toString (statusMessage status)
 			_ -> show he
 #endif
 		hPutStrLn stderr $ "download failed: " ++ msg
