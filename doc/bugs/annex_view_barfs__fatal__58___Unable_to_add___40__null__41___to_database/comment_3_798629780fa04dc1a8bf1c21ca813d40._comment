@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-05-14T17:14:17Z"
+ content="""
+I have the file. I've reproduced the crash using that repo and the most
+recent git-annex. No sqlite database exists in the repository, so the bug
+either still exists with the current version, or some bad data is in an
+index file or something.
+"""]]
