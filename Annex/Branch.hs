@@ -463,7 +463,7 @@ stageJournal jl = withIndex $ do
 				sha <- Git.HashObject.hashFile h path
 				hPutStrLn jlogh file
 				streamer $ Git.UpdateIndex.updateIndexLine
-					sha FileBlob (asTopFilePath $ fileJournal file)
+					sha TreeFile (asTopFilePath $ fileJournal file)
 			genstream dir h jh jlogh streamer
 	-- Clean up the staged files, as listed in the temp log file.
 	-- The temp file is used to avoid needing to buffer all the
@@ -573,7 +573,7 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 			ChangeFile content' -> do
 				sha <- hashBlob content'
 				Annex.Queue.addUpdateIndex $ Git.UpdateIndex.pureStreamer $
-					Git.UpdateIndex.updateIndexLine sha FileBlob (asTopFilePath file)
+					Git.UpdateIndex.updateIndexLine sha TreeFile (asTopFilePath file)
 				apply rest file content' trustmap
 			PreserveFile ->
 				apply rest file content trustmap

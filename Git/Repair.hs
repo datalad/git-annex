@@ -396,10 +396,10 @@ rewriteIndex r
 		void cleanup
 		return $ map fst3 bad
   where
-	reinject (file, Just sha, Just mode) = case toBlobType mode of
+	reinject (file, Just sha, Just mode) = case toTreeItemType mode of
 		Nothing -> return Nothing
-		Just blobtype -> Just <$>
-			UpdateIndex.stageFile sha blobtype file r
+		Just treeitemtype -> Just <$>
+			UpdateIndex.stageFile sha treeitemtype file r
 	reinject _ = return Nothing
 
 newtype GoodCommits = GoodCommits (S.Set Sha)

@@ -71,9 +71,9 @@ scanUnlockedFiles = whenM (isJust <$> inRepo Git.Branch.current) $ do
 				=<< catKey (Git.LsTree.sha i)
 	liftIO $ void cleanup
   where
-	isregfile i = case Git.Types.toBlobType (Git.LsTree.mode i) of
-		Just Git.Types.FileBlob -> True
-		Just Git.Types.ExecutableBlob -> True
+	isregfile i = case Git.Types.toTreeItemType (Git.LsTree.mode i) of
+		Just Git.Types.TreeFile -> True
+		Just Git.Types.TreeExecutable -> True
 		_ -> False
 	add i k = do
 		let tf = Git.LsTree.file i

@@ -1,6 +1,6 @@
 {- git data types
  -
- - Copyright 2010-2012 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -77,32 +77,36 @@ readObjectType "commit" = Just CommitObject
 readObjectType "tree" = Just TreeObject
 readObjectType _ = Nothing
 
-{- Types of blobs. -}
-data BlobType = FileBlob | ExecutableBlob | SymlinkBlob
+{- Types of items in a tree. -}
+data TreeItemType = TreeFile | TreeExecutable | TreeSymlink | TreeSubmodule
 	deriving (Eq)
 
-{- Git uses magic numbers to denote the type of a blob. -}
-instance Show BlobType where
-	show FileBlob = "100644"
-	show ExecutableBlob = "100755"
-	show SymlinkBlob = "120000"
+{- Git uses magic numbers to denote the type of a tree item. -}
+readTreeItemType :: String -> Maybe TreeItemType
+readTreeItemType "100644" = Just TreeFile
+readTreeItemType "100755" = Just TreeExecutable
+readTreeItemType "120000" = Just TreeSymlink
+readTreeItemType "160000" = Just TreeSubmodule
+readTreeItemType _ = Nothing
 
-readBlobType :: String -> Maybe BlobType
-readBlobType "100644" = Just FileBlob
-readBlobType "100755" = Just ExecutableBlob
-readBlobType "120000" = Just SymlinkBlob
-readBlobType _ = Nothing
+fmtTreeItemType :: TreeItemType -> String
+fmtTreeItemType TreeFile = "100644"
+fmtTreeItemType TreeExecutable = "100755"
+fmtTreeItemType TreeSymlink = "120000"
+fmtTreeItemType TreeSubmodule = "160000"
 
-toBlobType :: FileMode -> Maybe BlobType
-toBlobType 0o100644 = Just FileBlob
-toBlobType 0o100755 = Just ExecutableBlob
-toBlobType 0o120000 = Just SymlinkBlob
-toBlobType _ = Nothing
+toTreeItemType :: FileMode -> Maybe TreeItemType
+toTreeItemType 0o100644 = Just TreeFile
+toTreeItemType 0o100755 = Just TreeExecutable
+toTreeItemType 0o120000 = Just TreeSymlink
+toTreeItemType 0o160000 = Just TreeSubmodule
+toTreeItemType _ = Nothing
 
-fromBlobType :: BlobType -> FileMode
-fromBlobType FileBlob = 0o100644
-fromBlobType ExecutableBlob = 0o100755
-fromBlobType SymlinkBlob = 0o120000
+fromTreeItemType :: TreeItemType -> FileMode
+fromTreeItemType TreeFile = 0o100644
+fromTreeItemType TreeExecutable = 0o100755
+fromTreeItemType TreeSymlink = 0o120000
+fromTreeItemType TreeSubmodule = 0o160000
 
 data Commit = Commit
 	{ commitTree :: Sha

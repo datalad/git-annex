@@ -83,14 +83,19 @@ lsSubTree (Ref x) p repo streamer = do
 
 {- Generates a line suitable to be fed into update-index, to add
  - a given file with a given sha. -}
-updateIndexLine :: Sha -> BlobType -> TopFilePath -> String
-updateIndexLine sha filetype file =
-	show filetype ++ " blob " ++ fromRef sha ++ "\t" ++ indexPath file
+updateIndexLine :: Sha -> TreeItemType -> TopFilePath -> String
+updateIndexLine sha treeitemtype file = concat
+	[ fmtTreeItemType treeitemtype
+	, " blob "
+	, fromRef sha
+	, "\t"
+	, indexPath file
+	]
 
-stageFile :: Sha -> BlobType -> FilePath -> Repo -> IO Streamer
-stageFile sha filetype file repo = do
+stageFile :: Sha -> TreeItemType -> FilePath -> Repo -> IO Streamer
+stageFile sha treeitemtype file repo = do
 	p <- toTopFilePath file repo
-	return $ pureStreamer $ updateIndexLine sha filetype p
+	return $ pureStreamer $ updateIndexLine sha treeitemtype p
 
 {- A streamer that removes a file from the index. -}
 unstageFile :: FilePath -> Repo -> IO Streamer
@@ -106,13 +111,13 @@ stageSymlink :: FilePath -> Sha -> Repo -> IO Streamer
 stageSymlink file sha repo = do
 	!line <- updateIndexLine
 		<$> pure sha
-		<*> pure SymlinkBlob
+		<*> pure TreeSymlink
 		<*> toTopFilePath file repo
 	return $ pureStreamer line
 
 {- A streamer that applies a DiffTreeItem to the index. -}
 stageDiffTreeItem :: Diff.DiffTreeItem -> Streamer
-stageDiffTreeItem d = case toBlobType (Diff.dstmode d) of
+stageDiffTreeItem d = case toTreeItemType (Diff.dstmode d) of
 	Nothing -> unstageFile' (Diff.file d)
 	Just t -> pureStreamer $ updateIndexLine (Diff.dstsha d) t (Diff.file d)
 

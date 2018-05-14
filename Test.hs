@@ -1402,7 +1402,7 @@ test_conflict_resolution_symlink_bit = unlessM (unlockedFiles <$> getTestMode) $
 	check_is_link f what = do
 		git_annex_expectoutput "find" ["--include=*", f] [Git.FilePath.toInternalGitPath f]
 		l <- annexeval $ Annex.inRepo $ Git.LsTree.lsTreeFiles Git.Ref.headRef [f]
-		all (\i -> Git.Types.toBlobType (Git.LsTree.mode i) == Just Git.Types.SymlinkBlob) l
+		all (\i -> Git.Types.toTreeItemType (Git.LsTree.mode i) == Just Git.Types.TreeSymlink) l
 			@? (what ++ " " ++ f ++ " lost symlink bit after merge: " ++ show l)
 
 {- A v6 unlocked file that conflicts with a locked file should be resolved

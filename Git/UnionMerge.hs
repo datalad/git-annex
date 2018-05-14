@@ -91,7 +91,7 @@ mergeFile info file hashhandle h = case filter (/= nullSha) [Ref asha, Ref bsha]
   where
 	[_colonmode, _bmode, asha, bsha, _status] = words info
 	use sha = return $ Just $
-		updateIndexLine sha FileBlob $ asTopFilePath file
+		updateIndexLine sha TreeFile $ asTopFilePath file
 	-- We don't know how the file is encoded, but need to
 	-- split it into lines to union merge. Using the
 	-- FileSystemEncoding for this is a hack, but ensures there

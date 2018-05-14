@@ -91,7 +91,7 @@ adjustTreeItem ShowMissingAdjustment = noAdjust
 
 ifSymlink :: (TreeItem -> Annex a) -> (TreeItem -> Annex a) -> TreeItem -> Annex a
 ifSymlink issymlink notsymlink ti@(TreeItem _f m _s)
-	| toBlobType m == Just SymlinkBlob = issymlink ti
+	| toTreeItemType m == Just TreeSymlink = issymlink ti
 	| otherwise = notsymlink ti
 
 noAdjust :: TreeItem -> Annex (Maybe TreeItem)
@@ -101,7 +101,7 @@ adjustToPointer :: TreeItem -> Annex (Maybe TreeItem)
 adjustToPointer ti@(TreeItem f _m s) = catKey s >>= \case
 	Just k -> do
 		Database.Keys.addAssociatedFile k f
-		Just . TreeItem f (fromBlobType FileBlob)
+		Just . TreeItem f (fromTreeItemType TreeFile)
 			<$> hashPointerFile k
 	Nothing -> return (Just ti)
 
@@ -114,7 +114,7 @@ adjustToSymlink' gitannexlink ti@(TreeItem f _m s) = catKey s >>= \case
 		absf <- inRepo $ \r -> absPath $
 			fromTopFilePath f r
 		linktarget <- calcRepo $ gitannexlink absf k
-		Just . TreeItem f (fromBlobType SymlinkBlob)
+		Just . TreeItem f (fromTreeItemType TreeSymlink)
 			<$> hashSymlink linktarget
 	Nothing -> return (Just ti)
 

@@ -23,7 +23,7 @@ import qualified Git.Merge
 import qualified Git.Ref
 import qualified Git
 import qualified Git.Branch
-import Git.Types (BlobType(..), fromBlobType)
+import Git.Types (TreeItemType(..), fromTreeItemType)
 import Git.FilePath
 import Config
 import Annex.ReplaceFile
@@ -185,21 +185,23 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 			Just sha -> catKey sha
 			Nothing -> return Nothing
 	
-	islocked select = select (LsFiles.unmergedBlobType u) == Just SymlinkBlob
+	islocked select = select (LsFiles.unmergedTreeItemType u) == Just TreeSymlink
 
 	combinedmodes = case catMaybes [ourmode, theirmode] of
 		[] -> Nothing
 		l -> Just (combineModes l)
 	  where
-		ourmode = fromBlobType <$> LsFiles.valUs (LsFiles.unmergedBlobType u)
-		theirmode = fromBlobType <$> LsFiles.valThem (LsFiles.unmergedBlobType u)
+		ourmode = fromTreeItemType
+			<$> LsFiles.valUs (LsFiles.unmergedTreeItemType u)
+		theirmode = fromTreeItemType
+			<$> LsFiles.valThem (LsFiles.unmergedTreeItemType u)
 
 	makeannexlink key select
 		| islocked select = makesymlink key dest
 		| otherwise = makepointer key dest destmode
 	  where
 		dest = variantFile file key
-		destmode = fromBlobType <$> select (LsFiles.unmergedBlobType u)
+		destmode = fromTreeItemType <$> select (LsFiles.unmergedTreeItemType u)
 
 	stagefile :: FilePath -> Annex FilePath
 	stagefile f
@@ -242,11 +244,11 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 			=<< fromRepo (UpdateIndex.lsSubTree b item)
 
 		-- Update the work tree to reflect the graft.
-		unless inoverlay $ case (selectwant (LsFiles.unmergedBlobType u), selectunwant (LsFiles.unmergedBlobType u)) of
+		unless inoverlay $ case (selectwant (LsFiles.unmergedTreeItemType u), selectunwant (LsFiles.unmergedTreeItemType u)) of
 			-- Symlinks are never left in work tree when
 			-- there's a conflict with anything else.
 			-- So, when grafting in a symlink, we must create it:
-			(Just SymlinkBlob, _) -> do
+			(Just TreeSymlink, _) -> do
 				case selectwant' (LsFiles.unmergedSha u) of
 					Nothing -> noop
 					Just sha -> do
@@ -254,7 +256,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 						replacewithsymlink item link
 			-- And when grafting in anything else vs a symlink,
 			-- the work tree already contains what we want.
-			(_, Just SymlinkBlob) -> noop
+			(_, Just TreeSymlink) -> noop
 			_ -> ifM (withworktree item (liftIO . doesDirectoryExist))
 				-- a conflict between a file and a directory
 				-- leaves the directory, so since a directory

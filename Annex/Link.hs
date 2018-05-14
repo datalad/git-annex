@@ -120,11 +120,11 @@ hashPointerFile key = hashBlob (formatPointer key)
 stagePointerFile :: FilePath -> Maybe FileMode -> Sha -> Annex ()
 stagePointerFile file mode sha =
 	Annex.Queue.addUpdateIndex =<<
-		inRepo (Git.UpdateIndex.stageFile sha blobtype file)
+		inRepo (Git.UpdateIndex.stageFile sha treeitemtype file)
   where
-	blobtype
-		| maybe False isExecutable mode = ExecutableBlob
-		| otherwise = FileBlob
+	treeitemtype
+		| maybe False isExecutable mode = TreeExecutable
+		| otherwise = TreeFile
 
 writePointerFile :: FilePath -> Key -> Maybe FileMode -> IO ()
 writePointerFile file k mode = do

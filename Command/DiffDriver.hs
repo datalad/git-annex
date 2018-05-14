@@ -85,8 +85,8 @@ fixupReq req@(Req {}) =
 	check rOldFile rOldMode (\r f -> r { rOldFile = f }) req
 		>>= check rNewFile rNewMode (\r f -> r { rNewFile = f })
   where
-	check getfile getmode setfile r = case readBlobType (getmode r) of
-		Just SymlinkBlob -> do
+	check getfile getmode setfile r = case readTreeItemType (getmode r) of
+		Just TreeSymlink -> do
 			v <- getAnnexLinkTarget' (getfile r) False
 			case fileKey . takeFileName =<< v of
 				Nothing -> return r

@@ -184,9 +184,9 @@ data Conflicting v = Conflicting
 
 data Unmerged = Unmerged
 	{ unmergedFile :: FilePath
-	, unmergedBlobType :: Conflicting BlobType
+	, unmergedTreeItemType :: Conflicting TreeItemType
 	, unmergedSha :: Conflicting Sha
-	} deriving (Show)
+	}
 
 {- Returns a list of the files in the specified locations that have
  - unresolved merge conflicts.
@@ -213,23 +213,23 @@ unmerged l repo = do
 data InternalUnmerged = InternalUnmerged
 	{ isus :: Bool
 	, ifile :: FilePath
-	, iblobtype :: Maybe BlobType
+	, itreeitemtype :: Maybe TreeItemType
 	, isha :: Maybe Sha
-	} deriving (Show)
+	}
 
 parseUnmerged :: String -> Maybe InternalUnmerged
 parseUnmerged s
 	| null file = Nothing
 	| otherwise = case words metadata of
-		(rawblobtype:rawsha:rawstage:_) -> do
+		(rawtreeitemtype:rawsha:rawstage:_) -> do
 			stage <- readish rawstage :: Maybe Int
 			if stage /= 2 && stage /= 3
 				then Nothing
 				else do
-					blobtype <- readBlobType rawblobtype
+					treeitemtype <- readTreeItemType rawtreeitemtype
 					sha <- extractSha rawsha
 					return $ InternalUnmerged (stage == 2) file
-						(Just blobtype) (Just sha)
+						(Just treeitemtype) (Just sha)
 		_ -> Nothing
   where
 	(metadata, file) = separate (== '\t') s
@@ -239,12 +239,12 @@ reduceUnmerged c [] = c
 reduceUnmerged c (i:is) = reduceUnmerged (new:c) rest
   where
 	(rest, sibi) = findsib i is
-	(blobtypeA, blobtypeB, shaA, shaB)
-		| isus i    = (iblobtype i, iblobtype sibi, isha i, isha sibi)
-		| otherwise = (iblobtype sibi, iblobtype i, isha sibi, isha i)
+	(treeitemtypeA, treeitemtypeB, shaA, shaB)
+		| isus i    = (itreeitemtype i, itreeitemtype sibi, isha i, isha sibi)
+		| otherwise = (itreeitemtype sibi, itreeitemtype i, isha sibi, isha i)
 	new = Unmerged
 		{ unmergedFile = ifile i
-		, unmergedBlobType = Conflicting blobtypeA blobtypeB
+		, unmergedTreeItemType = Conflicting treeitemtypeA treeitemtypeB
 		, unmergedSha = Conflicting shaA shaB
 		}
 	findsib templatei [] = ([], removed templatei)
@@ -253,6 +253,6 @@ reduceUnmerged c (i:is) = reduceUnmerged (new:c) rest
 		| otherwise = (l:ls, removed templatei)
 	removed templatei = templatei
 		{ isus = not (isus templatei)
-		, iblobtype = Nothing
+		, itreeitemtype = Nothing
 		, isha = Nothing
 		}
