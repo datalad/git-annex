@@ -19,7 +19,6 @@ import qualified Git.LsFiles
 import qualified Git.Ref
 import Git.UpdateIndex
 import Git.Sha
-import Annex.HashObject
 import Git.Types
 import Git.FilePath
 import Annex.WorkTree
@@ -29,7 +28,6 @@ import Annex.CatFile
 import Logs.MetaData
 import Logs.View
 import Utility.Glob
-import Utility.FileMode
 import Types.Command
 import CmdLine.Action
 
@@ -327,8 +325,9 @@ applyView = applyView' viewedFileFromReference getWorkTreeMetaData
 narrowView :: View -> Annex Git.Branch
 narrowView = applyView' viewedFileReuse getViewedFileMetaData
 
-{- Go through each file in the currently checked out branch.
- - If the file is not annexed, skip it, unless it's a dotfile in the top.
+{- Go through each staged file.
+ - If the file is not annexed, skip it, unless it's a dotfile in the top,
+ - or a file in a dotdir in the top. 
  - Look up the metadata of annexed files, and generate any ViewedFiles,
  - and stage them.
  -
@@ -337,39 +336,32 @@ narrowView = applyView' viewedFileReuse getViewedFileMetaData
 applyView' :: MkViewedFile -> (FilePath -> MetaData) -> View -> Annex Git.Branch
 applyView' mkviewedfile getfilemetadata view = do
 	top <- fromRepo Git.repoPath
-	(l, clean) <- inRepo $ Git.LsFiles.inRepo [top]
+	(l, clean) <- inRepo $ Git.LsFiles.stagedDetails [top]
 	liftIO . nukeFile =<< fromRepo gitAnnexViewIndex
 	uh <- withViewIndex $ inRepo Git.UpdateIndex.startUpdateIndex
-	forM_ l $ \f -> do
+	forM_ l $ \(f, sha, mode) -> do
 		topf <- inRepo (toTopFilePath f)
-		go uh topf =<< lookupFile f
+		go uh topf sha (toTreeItemType =<< mode) =<< lookupFile f
 	liftIO $ do
 		void $ stopUpdateIndex uh
 		void clean
 	genViewBranch view
   where
 	genviewedfiles = viewedFiles view mkviewedfile -- enables memoization
-	go uh topf (Just k) = do
+
+	go uh topf _sha _mode (Just k) = do
 		metadata <- getCurrentMetaData k
 		let f = getTopFilePath topf
 		let metadata' = getfilemetadata f `unionMetaData` metadata
 		forM_ (genviewedfiles f metadata') $ \fv -> do
 			f' <- fromRepo $ fromTopFilePath $ asTopFilePath fv
 			stagesymlink uh f' =<< calcRepo (gitAnnexLink f' k)
-	go uh topf Nothing
-		| "." `isPrefixOf` getTopFilePath topf = do
-			f <- fromRepo $ fromTopFilePath topf
-			s <- liftIO $ getSymbolicLinkStatus f
-			if isSymbolicLink s
-				then stagesymlink uh f =<< liftIO (readSymbolicLink f)
-				else do
-					sha <- hashFile f
-					let blobtype = if isExecutable (fileMode s)
-						then ExecutableBlob
-						else FileBlob
-					liftIO . Git.UpdateIndex.streamUpdateIndex' uh
-						=<< inRepo (Git.UpdateIndex.stageFile sha blobtype f)
-		| otherwise = noop
+	go uh topf (Just sha) (Just treeitemtype) Nothing
+		| "." `isPrefixOf` getTopFilePath topf =
+			liftIO $ Git.UpdateIndex.streamUpdateIndex' uh $
+				pureStreamer $ updateIndexLine sha treeitemtype topf
+	go _ _ _ _  _ = noop
+
 	stagesymlink uh f linktarget = do
 		sha <- hashSymlink linktarget
 		liftIO . Git.UpdateIndex.streamUpdateIndex' uh

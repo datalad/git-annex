@@ -12,6 +12,8 @@ import qualified Git
 import qualified Git.Command
 import qualified Git.Ref
 import qualified Git.Branch
+import qualified Git.LsFiles as LsFiles
+import Git.FilePath
 import Types.View
 import Annex.View
 import Logs.View
@@ -65,15 +67,21 @@ checkoutViewBranch view mkbranch = do
 	when ok $ do
 		setView view
 		{- A git repo can easily have empty directories in it,
-		 - and this pollutes the view, so remove them. -}
-		top <- fromRepo Git.repoPath
-		liftIO $ removeemptydirs top
+		 - and this pollutes the view, so remove them.
+		 - (However, emptry directories used by submodules are not
+		 - removed.) -}
+		top <- liftIO . absPath =<< fromRepo Git.repoPath
+		(l, cleanup) <- inRepo $
+			LsFiles.notInRepoIncludingEmptyDirectories False [top]
+		forM_ l (removeemptydir top)
+		liftIO $ void cleanup
 		unlessM (liftIO $ doesDirectoryExist here) $ do
 			showLongNote (cwdmissing top)
 	return ok
   where
-	removeemptydirs top = mapM_ (tryIO . removeDirectory)
-		=<< dirTreeRecursiveSkipping (".git" `isSuffixOf`) top
+	removeemptydir top d = do
+		p <- inRepo $ toTopFilePath d
+		liftIO $ tryIO $ removeDirectory (top </> getTopFilePath p)
 	cwdmissing top = unlines
 		[ "This view does not include the subdirectory you are currently in."
 		, "Perhaps you should:  cd " ++ top

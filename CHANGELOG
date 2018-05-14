@@ -1,3 +1,11 @@
+git-annex (6.20180510) UNRELEASED; urgency=medium
+
+  * view, vadd: Fix crash when a git submodule has a name starting with a dot.
+  * Improve handling of unstaged modifications to dotfiles when entering a
+    view.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 14 May 2018 13:42:41 -0400
+
 git-annex (6.20180509) upstream; urgency=medium
 
   * The old git-annex Android app is now deprecated in favor of running

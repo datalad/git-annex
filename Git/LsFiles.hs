@@ -1,6 +1,6 @@
 {- git ls-files interface
  -
- - Copyright 2010,2012 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -8,6 +8,7 @@
 module Git.LsFiles (
 	inRepo,
 	notInRepo,
+	notInRepoIncludingEmptyDirectories,
 	allFiles,
 	deleted,
 	modified,
@@ -44,10 +45,14 @@ inRepo l = pipeNullSplit $
 
 {- Scans for files at the specified locations that are not checked into git. -}
 notInRepo :: Bool -> [FilePath] -> Repo -> IO ([FilePath], IO Bool)
-notInRepo include_ignored l repo = pipeNullSplit params repo
+notInRepo = notInRepo' []
+
+notInRepo' :: [CommandParam] -> Bool -> [FilePath] -> Repo -> IO ([FilePath], IO Bool)
+notInRepo' ps include_ignored l repo = pipeNullSplit params repo
   where
 	params = concat
 		[ [ Param "ls-files", Param "--others"]
+		, ps
 		, exclude
 		, [ Param "-z", Param "--" ]
 		, map File l
@@ -55,6 +60,11 @@ notInRepo include_ignored l repo = pipeNullSplit params repo
 	exclude
 		| include_ignored = []
 		| otherwise = [Param "--exclude-standard"]
+
+{- Scans for files at the specified locations that are not checked into
+ - git. Empty directories are included in the result. -}
+notInRepoIncludingEmptyDirectories :: Bool -> [FilePath] -> Repo -> IO ([FilePath], IO Bool)
+notInRepoIncludingEmptyDirectories = notInRepo' [Param "--directory"]
 
 {- Finds all files in the specified locations, whether checked into git or
  - not. -}
