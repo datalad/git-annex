@@ -43,8 +43,8 @@ start :: StatusOptions -> [FilePath] -> CommandStart
 start o locs = do
 	(l, cleanup) <- inRepo $ getStatus ps locs
 	getstatus <- ifM isDirect
-		( return statusDirect
-		, return $ \s -> pure (Just s)
+		( return (maybe (pure Nothing) statusDirect . simplifiedStatus)
+		, return (pure . simplifiedStatus)
 		)
 	forM_ l $ \s -> maybe noop displayStatus =<< getstatus s
 	ifM (liftIO cleanup)
@@ -56,10 +56,16 @@ start o locs = do
 		Nothing -> []
 		Just s -> [Param $ "--ignore-submodules="++s]
 
+-- Prefer to show unstaged status in this simplified status.
+simplifiedStatus :: StagedUnstaged Status -> Maybe Status
+simplifiedStatus (StagedUnstaged { unstaged = Just s }) = Just s
+simplifiedStatus (StagedUnstaged { staged = Just s }) = Just s
+simplifiedStatus _ = Nothing
+
 displayStatus :: Status -> Annex ()
--- renames not shown in this simplified status
+-- Renames not shown in this simplified status
 displayStatus (Renamed _ _) = noop
-displayStatus s  = do
+displayStatus s = do
 	let c = statusChar s
 	absf <- fromRepo $ fromTopFilePath (statusFile s)
 	f <- liftIO $ relPathCwdToFile absf

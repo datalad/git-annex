@@ -1,6 +1,6 @@
 {- git status interface
  -
- - Copyright 2015 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -20,6 +20,11 @@ data Status
 	| TypeChanged TopFilePath
 	| Untracked TopFilePath
 
+data StagedUnstaged a = StagedUnstaged
+	{ staged :: Maybe a
+	, unstaged :: Maybe a
+	}
+
 statusChar :: Status -> Char
 statusChar (Modified _) = 'M'
 statusChar (Deleted _) = 'D'
@@ -36,35 +41,32 @@ statusFile (Renamed _oldf newf) = newf
 statusFile (TypeChanged f) = f
 statusFile (Untracked f) = f
 
-parseStatusZ :: [String] -> [Status]
+parseStatusZ :: [String] -> [StagedUnstaged Status]
 parseStatusZ = go []
   where
 	go c [] = reverse c
 	go c (x:xs) = case x of
-		(sindex:sworktree:' ':f) -> 
-			-- Look at both the index and worktree status,
-			-- preferring worktree.
-			case cparse sworktree <|> cparse sindex of
-				Just mks -> go (mks (asTopFilePath f) : c) xs
-				Nothing -> if sindex == 'R'
-					-- In -z mode, the name the
-					-- file was renamed to comes
-					-- first, and the next component
-					-- is the old filename.
-					then case xs of
-						(oldf:xs') -> go (Renamed (asTopFilePath oldf) (asTopFilePath f) : c) xs'
-						_ -> go c []
-					else go c xs
+		(sstaged:sunstaged:' ':f) -> 
+			case (cparse sstaged f xs, cparse sunstaged f xs) of
+				((vstaged, xs1), (vunstaged, xs2)) ->
+					let v = StagedUnstaged
+						{ staged = vstaged
+						, unstaged = vunstaged
+						}
+					    xs' = fromMaybe xs (xs1 <|> xs2)
+					in go (v : c) xs'
 		_ -> go c xs
 
-	cparse 'M' = Just Modified
-	cparse 'A' = Just Added
-	cparse 'D' = Just Deleted
-	cparse 'T' = Just TypeChanged
-	cparse '?' = Just Untracked
-	cparse _ = Nothing
+	cparse 'M' f _ = (Just (Modified (asTopFilePath f)), Nothing)
+	cparse 'A' f _ = (Just (Added (asTopFilePath f)), Nothing)
+	cparse 'D' f _ = (Just (Deleted (asTopFilePath f)), Nothing)
+	cparse 'T' f _ = (Just (TypeChanged (asTopFilePath f)), Nothing)
+	cparse '?' f _ = (Just (Untracked (asTopFilePath f)), Nothing)
+	cparse 'R' f (oldf:xs) =
+		(Just (Renamed (asTopFilePath oldf) (asTopFilePath f)), Just xs)
+	cparse _ _ _ = (Nothing, Nothing)
 
-getStatus :: [CommandParam] -> [FilePath] -> Repo -> IO ([Status], IO Bool)
+getStatus :: [CommandParam] -> [FilePath] -> Repo -> IO ([StagedUnstaged Status], IO Bool)
 getStatus ps fs r = do
 	(ls, cleanup) <- pipeNullSplit ps' r
 	return (parseStatusZ ls, cleanup)

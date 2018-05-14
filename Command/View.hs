@@ -14,6 +14,7 @@ import qualified Git.Ref
 import qualified Git.Branch
 import qualified Git.LsFiles as LsFiles
 import Git.FilePath
+import Git.Status
 import Types.View
 import Annex.View
 import Logs.View
@@ -30,13 +31,42 @@ start :: [String] -> CommandStart
 start [] = giveup "Specify metadata to include in view"
 start ps = do
 	showStart' "view" Nothing
-	view <- mkView ps
-	go view  =<< currentView
+	ifM safeToEnterView
+		( do
+			view <- mkView ps
+			go view  =<< currentView
+		, giveup "Not safe to enter view."
+		)
   where
 	go view Nothing = next $ perform view
 	go view (Just v)
 		| v == view = stop
 		| otherwise = giveup "Already in a view. Use the vfilter and vadd commands to further refine this view."
+
+safeToEnterView :: Annex Bool
+safeToEnterView = do
+	(l, cleanup) <- inRepo $ getStatus [] []
+	case filter dangerous l of
+		[] -> liftIO cleanup
+		_ -> do
+			warning "Your uncommitted changes would be lost when entering a view."
+			void $ liftIO cleanup
+			return False
+  where
+	dangerous (StagedUnstaged { staged = Nothing, unstaged = Nothing }) = False
+	-- Untracked files will not be affected by entering a view,
+	-- so are not dangerous.
+	dangerous (StagedUnstaged { staged = Just (Untracked _), unstaged = Nothing }) = False
+	dangerous (StagedUnstaged { unstaged = Just (Untracked _), staged = Nothing }) = False
+	dangerous (StagedUnstaged { unstaged = Just (Untracked _), staged = Just (Untracked _) }) = False
+	-- Staged changes would have their modifications either be 
+	-- lost when entering a view, or committed as part of the view.
+	-- Either is dangerous because upon leaving the view; the staged
+	-- changes would be lost.
+	dangerous (StagedUnstaged { staged = Just _ }) = True
+	-- Unstaged changes to annexed files would get lost when entering a
+	-- view.
+	dangerous (StagedUnstaged { unstaged = Just _ }) = True
 
 perform :: View -> CommandPerform
 perform view = do
