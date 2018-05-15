@@ -23,3 +23,6 @@ whenever works with e.g. 6.20180316 if corresponding settings are setup in `~/.n
 Or may be there is some other alternative support for such cases now?
 
 [[!meta author=yoh]]
+
+> closing as there is a documented way to make a netrc work. [[done]]
+> --[[Joey]]
