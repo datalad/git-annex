@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="Platform addendum for &quot;Debugging &quot;No such file or directory&quot;&quot;"
+ date="2018-05-15T20:29:57Z"
+ content="""
+Probably should have given some platform details to my findings that proot is counter-productive on my device: I'm running LineageOS 14.1-20180206-NIGHTLY-gts210vewifi (LineageOS API level 7, Android 7.1.2, Kernel 3.10.102) on a Samsung SM-T813 (arm64).
+"""]]
