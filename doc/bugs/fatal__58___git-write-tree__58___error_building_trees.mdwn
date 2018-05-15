@@ -101,3 +101,10 @@ After sync'ing on the server, it appears that this has been the case for quite s
 Lastly: Joey, this is probably what caused that weird behavior in the webapp where it showed the bad transfer each day after the fsck at noon. I never diagnosed that more but I bet I won't see it tomorrow.
 
 [[!tag moreinfo]]
+
+> I think this was a corrupt .git/annex/index. The "..." in the above
+> transcript is where the actual useful part of the error message would be,
+> so pity it was trimmed in this bug report. Based on @yarikoptic's
+> occurance of the problem below, deleting .git/annex/index will recover.
+> And I would expect `git annex repair` would also recover in this
+> situation. [[done]] --[[Joey]]
