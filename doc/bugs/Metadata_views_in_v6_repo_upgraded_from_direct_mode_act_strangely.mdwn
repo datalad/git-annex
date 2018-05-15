@@ -21,11 +21,11 @@ mkfs.fat 4.1 (2017-01-24)
 
 [leo60228@digitaleo:~]$ cd demo
 
-[leo60228@digitaleo:~/demo]$ git commit --allow-empty -m 'init'
-[master (root-commit) 8dc8e0a] init
-
 [leo60228@digitaleo:~/demo]$ git init
 Initialized empty Git repository in /home/leo60228/demo/.git/
+
+[leo60228@digitaleo:~/demo]$ git commit --allow-empty -m 'init'
+[master (root-commit) 8dc8e0a] init
 
 [leo60228@digitaleo:~/demo]$ git annex init
 init  
