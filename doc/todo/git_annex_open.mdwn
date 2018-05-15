@@ -8,4 +8,4 @@ This would need some [[metadata]] support partly to guess if the file can be str
 
 How does that idea sound? --[[anarcat]]
 
-I think this idea can be considered obsoleted by the [[git-annex-inprogress]] command. --[[anarcat]]
+I think this idea can be considered obsoleted by the [[git-annex-inprogress]] command. --[[anarcat]] [[done]]
