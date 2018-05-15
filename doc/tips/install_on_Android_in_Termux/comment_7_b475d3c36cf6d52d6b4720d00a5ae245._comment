@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2018-05-15T15:54:54Z"
+ content="""
+@CandyAngel git-annex.linux/bin/sh is included in the bundle.
+If proot cannot run it, it seems likely that you have downloaded a build of
+git-annex that does not match the CPU architecure of your Android device.
+While most Android devices are arm, some use intel or mips..
+"""]]
