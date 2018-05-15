@@ -48,15 +48,14 @@ upgrade (v5 to v6...) (scanning for unlocked files...)
 ok
 (recording state in git...)
 
-[leo60228@digitaleo:~/demo]$ git commit -m 'add file'
-[adjusted/master(unlocked) 0e870b3] add file
- 1 file changed, 1 insertion(+)
- create mode 100644 subdir/file
-
 [leo60228@digitaleo:~/demo]$ git annex add subdir/
 add subdir/file ok
 (recording state in git...)
 
+[leo60228@digitaleo:~/demo]$ git commit -m 'add file'
+[adjusted/master(unlocked) 0e870b3] add file
+ 1 file changed, 1 insertion(+)
+ create mode 100644 subdir/file
 
 [leo60228@digitaleo:~/demo]$ ls subdir/
 file
