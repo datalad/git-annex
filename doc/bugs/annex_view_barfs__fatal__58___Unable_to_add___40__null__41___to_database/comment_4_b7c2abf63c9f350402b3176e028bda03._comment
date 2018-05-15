@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2018-05-14T17:30:25Z"
+ content="""
+It's caused by git submodules with names starting with dots. Not at all
+related to the recent null pointer dereference bug in git-annex.
+
+The .heudiconv/ directory is a submodule and git ls-files lists it; the view
+generation code assumes it's a dotfile and asks git to hash it.
+
+	joey@darkstar:~/tmp/1038_hyperface.x>git hash-object -w --stdin-paths --no-filters
+	.heudiconv
+	fatal: Unable to add (null) to database
+
+Views only include dotfiles to make .gitattributes etc work, and they don't
+include submodules normally, but they do include dot-dirs too; indeed I see
+this repository uses that with a .datalad/ that gets included in the view.
+Perhaps .heudiconv/ is a similar dot-dir. Seems that such submodule
+dot-dirs ought to be included in the view.
+"""]]
