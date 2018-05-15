@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 8"
+ date="2018-05-15T16:15:32Z"
+ content="""
+My phone is an ARMv7, according to /proc/cpuinfo in Termux, so armel would be the correct package? That is the one I have installed..
+"""]]
