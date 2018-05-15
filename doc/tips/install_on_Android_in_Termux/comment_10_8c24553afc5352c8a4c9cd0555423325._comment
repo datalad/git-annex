@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="Debugging &quot;No such file or directory&quot;"
+ date="2018-05-15T19:57:34Z"
+ content="""
+Setting all the environment variables from inside still did not break the tar execution; last resort was disabling proot in runshell. I still had to keep the termux-fix-shebang workaround.
+
+    $ ./git-annex.linux/runshell
+    $ mkdir test; cd test
+    $ git init
+    $ git annex init
+
+From a first glance, things appear to be working now. I had to run termux-fix-shebang on the `.git/hooks/*` and set TMPDIR=something-that-actually-exists, but short of that, local adding and committing as well as moving data around.
+
+Joey, you mentioned ghc runtime issues when introducing proot. Anything particular I should test?
+"""]]
