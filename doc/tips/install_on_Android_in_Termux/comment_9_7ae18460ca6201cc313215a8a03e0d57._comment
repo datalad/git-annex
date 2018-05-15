@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="Debugging &quot;No such file or directory&quot;"
+ date="2018-05-15T19:19:38Z"
+ content="""
+I'm experiencing the same issue as CandyAngel on an arm64 tablet (which should be able to execute regular arm code).
+
+Tracing down from the error message:
+
+    $ ./git-annex.linux/runshell
+    proot error: execve(\"/data/data/com.termux/files/home/git-annex.linux/bin/sh\"): No such file or directory
+    [...]
+    $ head -n1 /data/data/com.termux/files/home/git-annex.linux/bin/sh
+    #!/bin/sh
+    $ which sh
+    /data/data/com.termux/files/usr/bin/sh
+
+So it might just be that the different environments disagree which sh is now executable. For contrast, trying a bash (which is not in /bin/):
+
+    $ ./git-annex.linux/runshell bash
+    bash-4.4$ git-annex
+    bash: /data/data/com.termux/files/home/git-annex.linux/bin/git-annex: /bin/sh: bad interpreter: No such file or directory
+
+Ok, /bin/sh is obviously bad influence here.
+
+    $ termux-fix-shebang git-annex.linux/bin/*
+    $ ./git-annex.linux/runshell bash
+    bash-4.4$ git-annex
+    Segmentation fault
+
+At first glance this does sound like \"Mh, we can't execute 32bit binaries her\", but look:
+
+    bash-4.4$ ./git-annex.linux/lib/ld-linux.so.3  # that's what exe/sh is symliked to
+    Segmentation fault
+    $ exit                                         # now we're out of the runshell again
+    $ /git-annex.linux/lib/ld-linux.so.3
+    Usage: ld.so [OPTION]... EXECUTABLE-FILE [...]
+
+Something in the environment is breaking things. My current stage of drilling is that I can run the variables-expanded version of [[!toggle text=tar id=tarcommand]] [[!toggleable id=tarcommand \"\"\"
+``GIT_ANNEX_PROGRAMPATH=tar ./git-annex.linux/exe/tar --library-path /data/data/com.termux/files/home/git-annex.linux//usr/lib/arm-linux-gnueabi/gconv:/data/data/com.termux/files/home/git-annex.linux//usr/lib/arm-linux-gnueabi/audit:/data/data/com.termux/files/home/git-annex.linux//etc/ld.so.conf.d:/data/data/com.termux/files/home/git-annex.linux//lib:/data/data/com.termux/files/home/git-annex.linux//lib/arm-linux-gnueabi:/data/data/com.termux/files/home/git-annex.linux//usr/lib/arm-linux-gnueabi: ./git-annex.linux/shimmed/tar/tar --help``
+\"\"\"]] successfully from the outside but not from within runshell. Will update when I've found more.
+"""]]
