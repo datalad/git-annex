@@ -1,0 +1,28 @@
+The [[git-annex-shell]] wrapper allows the configuration of a readonly
+repository (through the `GIT_ANNEX_READONLY` environment and friends)
+but that is useful only when we want users to access the data and not
+add to it.
+
+It would be nice to have a *write-only* or "append-only" mode. My use
+case is a backup server that would receive git-annex objects and
+changes, but would forbid the client from deleting content on the
+server. This is to protect contents from being destroyed (or encrypted
+as is a common pattern with ransomware) by a compromised client.
+
+There has been some discussions and work done to protect *branches* in
+such a way, in
+[[todo/git-hook_to_sanity-check_git-annex_branch_pushes]], and that
+could help, but even with git hooks, a malicious client could still
+drop content.
+
+It seems to me this would require modifications to the
+`git-annex-shell` wrapper to forbid certain operations like `dropkey`,
+`lockcontent`, or `p2pstdio` although I'm unfamiliar with the last two
+so I am not certain they could be harmful. Maybe `p2pstdio` itself
+could be somewhat fixed to allow only append commands.
+
+Is it fair to assume that `recvkey` is safe in this context, ie. that
+it wouldn't overwrite an existing bit of content without first doing a
+checksum?
+
+Thanks! -- [[anarcat]]
