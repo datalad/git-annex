@@ -1,0 +1,15 @@
+When working on Android in [[termux|tips/Install on Android in Termux]], user has limited choices in where to check out an annex:
+
+* in the home directory (`/data/data/com.termux/files/home`): well-behaved ext4 file system that allow symlinks, but is only accessible from inside termux.
+* in shared storage (`/storage/emulated/0`, symlinked as `~/storage/...`): accessible to media apps, but does not support symlinks and is therefore a crippled file system with all its drawbacks. The file system seems to be backed by the same ext4 partition as above, but mounted through some fuse mechanism which I can only assume is responsible for enforcing Android's permissions model.
+
+It would be nice to find a way to have the best of both; here's what I tried so far:
+
+* running git-annex as root for experimental purposes: Does not help, the fuse file system does not support symlinks (`ln -s foo bar` → `ln: cannot create symbolic link from 'foo' to 'bar': Function not implemented`).
+  * If that had worked, I would have had a look at whether it's just a matter of permissions that termux could obtain, but it's obviously a matter of principle.
+* running git-annex in home, but ro-bind-mounting a view of it into emulated storage: Only made the files visible to root, not even to termux let alone other processes (I tried adding `--make-shared` without knowing what it'd do exactly)
+* I saw there'd be a way to [allow symlinks on Android](https://android.stackexchange.com/questions/84022/how-to-make-symlinks-work-inside-storage-emulated-in-4-4-4#111669), but honestly that appears too scary, and given the root ln issue, I think it does not apply any more.
+
+The use case I have in mind is syncing photos to an Android tablet in a v5 repository.
+
+Are there other ideas around on how git-annex can be used with classical symlinks on Android?
