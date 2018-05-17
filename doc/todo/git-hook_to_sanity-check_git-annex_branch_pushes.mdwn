@@ -53,3 +53,5 @@ So far it only forbids removals and changes to trust.log.  A bunch of
 stuff is still missing like parameters (to allow changing the list of
 protected files) and checking the log tracking info. Feedback
 welcome. --[[anarcat]]
+
+Similar: [[todo/append-only_mode]]
