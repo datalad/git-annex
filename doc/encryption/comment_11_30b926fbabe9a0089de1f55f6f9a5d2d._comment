@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
+ subject="headless configs"
+ date="2018-05-17T21:02:32Z"
+ content="""
+is there some combination of this and the gcrypt special remote that would give me the following properties:
+
+ 1. password-less operation (ie. allow uploading content without the private key)
+ 2. easy revocation and key rotation (ie. not encrypt directly with GnuPG but instead encrypt a keyfile with the public keys)
+
+It seems to me this would be technically possible, no? A mix of \"hybrid\" and \"sharedpubkey\", basically...?
+
+Hybrid works great, except I can't use it in my scenario because I am trying to automate backups and it will prompt me for the private key password. I guess the solution here is to have a special unencrypted private key for the batch job? Thanks! -- [[anarcat]
+"""]]
