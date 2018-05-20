@@ -1,0 +1,15 @@
+It would be nice to have support for storing extended attributes in git-annex.
+
+There are some useful [proposed metadata attributes](https://www.freedesktop.org/wiki/CommonExtendedAttributes/#proposedmetadataattributes):
+
+* user.xdg.comment: A comment specified by the user. This comment could be displayed by file managers
+* user.xdg.origin.url: Set on a file downloaded from a url. Its value should equal the url it was downloaded from.
+* user.xdg.origin.email.subject: Set on an email attachment when saved to disk. It should get its value from the originating message's "Subject" header
+* user.xdg.origin.email.from: Set on an email attachment when saved to disk. It should get its value from the originating messsage's "From" header. For example '"John Doe" <jdoe@example.com>', or 'jdoe@example.com'
+* user.xdg.origin.email.message-id: Set on an email attachment when saved to disk. It should get its value from the originating message's "Message-Id" header. 
+
+At least `curl --xattr` saves `xdg.origin.url`.
+
+Perhaps `git-annex-metadata` could be leveraged to automatically store and restore xattrs? Might even work that addition of xattrs would always have to be done through a git-annex command, but restoration would be done automatically if git-annex noticed there are xattrs stored in metadata, and the file system is mounted with `user_xattr`.
+
+The `user` namespace is used for user xattrs and thus for "proposed metadata attributes" above. These attributes are valid git-annex metadata fields as-is.
