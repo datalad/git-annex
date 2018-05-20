@@ -90,7 +90,13 @@ mkUrlOptions defuseragent reqheaders reqparams manager =
 	UrlOptions useragent reqheaders urldownloader applyrequest manager
   where
 	urldownloader = if null reqparams
+#if MIN_VERSION_cryptonite(0,6)
 		then DownloadWithConduit
+#else
+		-- Work around for old cryptonite bug that broke tls.
+		-- https://github.com/vincenthz/hs-tls/issues/109
+		then DownloadWithCurl reqparams
+#endif
 		else DownloadWithCurl reqparams
 	applyrequest = \r -> r { requestHeaders = requestHeaders r ++ addedheaders }
 	addedheaders = uaheader ++ otherheaders

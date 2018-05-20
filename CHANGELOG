@@ -2,6 +2,8 @@ git-annex (6.20180510) UNRELEASED; urgency=medium
 
   * view, vadd: Fix crash when a git submodule has a name starting with a dot.
   * Don't allow entering a view with staged or unstaged changes.
+  * Workaround for bug in an old version of cryptonite that broke https
+    downloads, by using curl for downloads when git-annex is built with it.
 
  -- Joey Hess <id@joeyh.name>  Mon, 14 May 2018 13:42:41 -0400
 
