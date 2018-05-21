@@ -90,7 +90,7 @@ mkUrlOptions defuseragent reqheaders reqparams manager =
 	UrlOptions useragent reqheaders urldownloader applyrequest manager
   where
 	urldownloader = if null reqparams
-#if MIN_VERSION_cryptonite(0,6)
+#if MIN_VERSION_cryptonite(0,6,0)
 		then DownloadWithConduit
 #else
 		-- Work around for old cryptonite bug that broke tls.
