@@ -2,7 +2,7 @@
 
 I'm starting to slowly migrate my personal data collection (530GB 3.7M files) under git-annex.  I'm going piece by piece, and not yet giving up my other synchronization methods (yet); thus I need to stay in direct mode.  
 
-I initially found that `git annex` commands were quite slow (i.e. https://github.com/datalad/datalad/issues/17), but I was able to address that by adding all my "not yet included" directories to `.gitignore` at the root of the working tree.  Unfortunately, `git annex proxy` remains super slow, because I notice that it does not include `--exclude-standard` in its calls to ls-files, and thus does not respect `.gitignore`.  Here's an example from the `--debug` log:
+I initially found that `git annex` commands [were quite slow](https://github.com/datalad/datalad/issues/17), but I was able to address that by adding all my "not yet included" directories to `.gitignore` at the root of the working tree.  Unfortunately, `git annex proxy` remains super slow, because I notice that it does not include `--exclude-standard` in its calls to ls-files, and thus does not respect `.gitignore`.  Here's an example from the `--debug` log:
 
 ```
  read: git ["--git-dir=../../../../../.git","--work-tree=../../../../..","--literal-pathspecs","-c","core.bare=false","ls-files","--others","-z","--","../../../../.."]
