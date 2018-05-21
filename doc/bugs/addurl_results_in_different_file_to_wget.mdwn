@@ -46,3 +46,5 @@ $ du -L *
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Of course! Still love git-annex to bits <3
+
+> [[fixed|done]] --[[Joey]]

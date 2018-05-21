@@ -8,6 +8,8 @@ git-annex (6.20180510) UNRELEASED; urgency=medium
     since 6.20180427. The older behavior, which has never been well
     documented and seems almost entirely useless, has been removed.
   * copy: --force no longer does anything.
+  * Prevent haskell http-client from decompressing gzip files, so downloads
+    of such files works the same as it used to with wget and curl.
 
  -- Joey Hess <id@joeyh.name>  Mon, 14 May 2018 13:42:41 -0400
 

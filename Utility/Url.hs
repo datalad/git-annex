@@ -284,11 +284,20 @@ download meterupdate url file uo =
 
 	downloadconduit req = catchMaybeIO (getFileSize file) >>= \case
 		Nothing -> runResourceT $ do
-			resp <- http req (httpManager uo)
+			resp <- http req' (httpManager uo)
 			if responseStatus resp == ok200
 				then store zeroBytesProcessed WriteMode resp
 				else showrespfailure resp
-		Just sz -> resumeconduit req sz
+		Just sz -> resumeconduit req' sz
+	  where
+		-- Override http-client's default decompression of gzip
+		-- compressed files. We want the unmodified file content.
+		req' = req
+			{ requestHeaders = (hAcceptEncoding, "identity") :
+				filter ((/= hAcceptEncoding) . fst)
+					(requestHeaders req)
+			, decompress = const False
+			}
 	
 	alreadydownloaded sz s h = s == requestedRangeNotSatisfiable416 
 		&& case lookup hContentRange h of
