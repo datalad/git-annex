@@ -186,15 +186,13 @@ fromStart removewhen afile key ai src = case removewhen of
 		next $ fromPerform src removewhen key afile
 
 fromOk :: Remote -> Key -> Annex Bool
-fromOk src key = go =<< Annex.getState Annex.force
+fromOk src key 
+	| Remote.hasKeyCheap src =
+		either (const checklog) return =<< haskey
+	| otherwise = checklog
   where
-	go True = either (const $ return True) return =<< haskey
-	go False
-		| Remote.hasKeyCheap src =
-			either (const expensive) return =<< haskey
-		| otherwise = expensive
 	haskey = Remote.hasKey src key
-	expensive = do
+	checklog = do
 		u <- getUUID
 		remotes <- Remote.keyPossibilities key
 		return $ u /= Remote.uuid src && elem src remotes
