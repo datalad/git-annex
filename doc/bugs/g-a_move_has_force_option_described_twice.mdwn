@@ -15,3 +15,6 @@ The **force** option in [[git-annex-move]] is described twice.
   When moving content from a remote, ignore location tracking information
   and always check if the remote has content. Can be useful if the location
   tracking information is out of date.
+
+> Removed the latter, and as far as I could gather on irc, the desired
+> behavior was the former. So, [[done]] --[[Joey]]
