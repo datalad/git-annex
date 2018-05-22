@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-05-22T19:56:15Z"
+ content="""
+datalad is looking for StatusCodeException and FailedConnectionException
+from http-client when enableremote fails. Which special remote is that,
+S3 or WebDAV or something?
+"""]]

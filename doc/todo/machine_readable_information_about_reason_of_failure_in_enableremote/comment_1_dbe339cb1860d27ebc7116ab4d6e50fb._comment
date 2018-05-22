@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""initial thoughts"""
+ date="2018-05-22T19:27:24Z"
+ content="""
+* Could be --json-errors, with one json object per line per error.
+
+* When git-annex is processing multiple files, there could be multiple
+  error messages output by a single command. If --json-errors goes to
+  stdout then it becomes easy to tell what file an error is associated
+  with, since it would be adjacent to the --json object for the file.
+
+  (If --json-errors goes to stderr it would probably need to include
+  the file or other thing being processed, otherwise a consumer would
+  need to read stdout and stderr in a select loop.)
+
+* Whether it goes to stdout or stderr, other non-json output could
+  be mixed in, which complicates parsing.
+  
+  A good way to keep parsing
+  simple would be to send the json error objects to stdout, and only
+  support them for commands that support --json. (Which might be an
+  annoying limitation since not all commands do, and adding --json to some
+  commands, eg initremote, might be pretty hard.)  
+
+  Or there could be a
+  prefix that is documented for programs to look for the tell if a line
+  of output is a json error object. Eg, `{"git-annex-json-error":`
+
+* There ought to be a unique id in each particular json error,
+  so consumers don't need to expect a particular error text.
+
+* For some errors it would be useful to have more structure
+  than just an error message. For example, HTTP status codes could
+  be broken out; `git annex drop` might want to break out the number
+  of copies it was unable to lock.
+"""]]
