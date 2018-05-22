@@ -61,3 +61,15 @@ Last-Update: 2015-04-20
 @@ -0,0 +1,2 @@
 +/usr/lib/git-annex.linux/git-annex /usr/bin/git-annex
 +/usr/lib/git-annex.linux/git-annex-shell /usr/bin/git-annex-shell
+--- a/debian/rules
++++ b/debian/rules
+@@ -38,4 +38,9 @@ override_dh_strip:
+ override_dh_makeshlibs:
+ 	dh_makeshlibs --noscripts
+ 
++# For portability to older systems which do not support default (since
++# buster) .xz for components of the .deb
++override_dh_builddeb:
++	dh_builddeb -- -Zgzip
++
+ endif
