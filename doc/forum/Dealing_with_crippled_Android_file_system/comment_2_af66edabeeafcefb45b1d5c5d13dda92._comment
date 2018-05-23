@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="Re: use case"
+ date="2018-05-23T07:56:34Z"
+ content="""
+The particular repository I'm looking at for a first stage is a wedding photo repository. It contains both the working directories of the photographers involved (some JPEG, some RAW-based with git-versioned Makefiles and sidecars to get the JPEGs which are then checked in with numcopies=0), where some photographers have their files in multiples copies to reflect their pre-sorting. The final photos are also copied to a release directory in various combinations (\"complete couple's selection\", \"pictures released to guests\", \"other pictures of guests\") which were then distributed by a process outside of git-annex' control (zip files were created and distributed over a web server).
+
+This copying workflow usually works greatly with git-annex v5 (or v6 when files are always kept locked): even if files were checked in by different contributors with different default hash settings, copying a file means copying a symlink.
+
+The whole repository amounts to 125gb, with 3gb in the selection.
+
+On the tablet, when I clone the repository on the crippled side of the file system, the initial checkout takes quite some time, and the 3gb get blown to 8gb due to the file being copied not only to the \"complete couple's selection\", but also to the other selections and the occasional picture in the photographers' directories.
+
+Note that on this repository, the tablet does not even have write access to the repository. It is set to untrusted and \"wants\" the selection folder.
+
+---
+
+The next repository I'd like to do this with is our family photo repository, containing an average of four persons' digitized analog and digital photos starting in 2002 and contains about 700gb of images; that repository has not that much duplication, but the interesting files (often a \"Selection\" folder per event that contains copies with appropriately named files for a sequence) are still checked in in duplicate.
+"""]]
