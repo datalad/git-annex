@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="Re: proot"
+ date="2018-05-23T17:05:54Z"
+ content="""
+proot would only change the view of programs launched under it. I could probably do that (if git annex works under proot on the tablet in question at all; [[I had to disable it|tips/install_on_Android_in_Termux/#comment-48d995d39f783b4c59b1a2a66b387b55]] to get it running on Android 7.1 (compatible; LineageOS 14.1)).
+
+The gallery and similar apps would still only see the fuse file system.
+"""]]
