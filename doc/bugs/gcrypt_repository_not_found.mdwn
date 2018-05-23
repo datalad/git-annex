@@ -75,3 +75,5 @@ I also note that the `encryption step` part takes a looong time when we try to r
 Of course! As you very likely know, I use git-annex daily and I'm a really happy user. :) This is, however, the first time I give gcrypt a shot.
 
 Thanks for your hard work! --[[anarcat]]
+
+Update: turns out this is a bug in git-remote-gcrypt and this probably doesn't need to be tracked in git-annex. the workaround is to comment out the `push.sign=ifAsked` entry in the git config, or to make git-remote-gcrypt ignore unknown options. so [[done]].  --[[anarcat]]
