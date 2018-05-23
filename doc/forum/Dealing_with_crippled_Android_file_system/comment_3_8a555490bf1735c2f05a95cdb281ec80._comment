@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 3"
+ date="2018-05-23T16:01:18Z"
+ content="""
+Hmmm, yes, my solution above wouldn't handle de-duplication of the same file in multiple folders. I have a one thought that might work (I can't test right now):
+
+Use [proot](https://github.com/termux/proot) inside termux to [bind a path](https://github.com/proot-me/PRoot/blob/master/doc/proot/manual.txt) `/data/data/com.termux/files/home/annex-photos` to a mount point `~/storage/pictures/annex`. Then perhaps symlinks within annex-photos will be presented as files at `~/storage/pictures/annex` without increasing actual storage.
+
+"""]]
