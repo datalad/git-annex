@@ -150,25 +150,40 @@ validInExtension c
 	| c == '.' = True
 	| otherwise = False
 
-{- Upgrade keys that have the \ prefix on their sha due to a bug, or
- - that contain non-alphanumeric characters in their extension. -}
+{- Upgrade keys that have the \ prefix on their hash due to a bug, or
+ - that contain non-alphanumeric characters in their extension.
+ -
+ - Also, for a while migrate from eg SHA256E to SHA256 resulted in a SHA256
+ - key that contained an extension inside its keyName. Upgrade those
+ - keys, removing the extension.
+ -}
 needsUpgrade :: Key -> Bool
-needsUpgrade key = "\\" `isPrefixOf` keyHash key ||
-	any (not . validInExtension) (takeExtensions $ keyName key)
+needsUpgrade key = or
+	[ "\\" `isPrefixOf` keyHash key
+	, any (not . validInExtension) (takeExtensions $ keyName key)
+	, not (hasExt (keyVariety key)) && keyHash key /= keyName key
+	]
 
 trivialMigrate :: Key -> Backend -> AssociatedFile -> Maybe Key
 trivialMigrate oldkey newbackend afile
 	{- Fast migration from hashE to hash backend. -}
-	| migratable && hasExt newvariety = Just $ oldkey
+	| migratable && hasExt oldvariety = Just $ oldkey
 		{ keyName = keyHash oldkey
 		, keyVariety = newvariety
 		}
 	{- Fast migration from hash to hashE backend. -}
-	| migratable && hasExt oldvariety = case afile of
+	| migratable && hasExt newvariety = case afile of
 		AssociatedFile Nothing -> Nothing
 		AssociatedFile (Just file) -> Just $ oldkey
 			{ keyName = keyHash oldkey ++ selectExtension file
 			, keyVariety = newvariety
+			}
+	{- Upgrade to fix bad previous migration that created a
+	 - non-extension preserving key, with an extension
+	 - in its keyName. -}
+	| newvariety == oldvariety && not (hasExt oldvariety) &&
+		keyHash oldkey /= keyName oldkey = Just $ oldkey
+			{ keyName = keyHash oldkey
 			}
 	| otherwise = Nothing
   where

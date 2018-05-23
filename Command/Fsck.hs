@@ -129,6 +129,7 @@ perform key file backend numcopies = do
 		, verifyWorkTree key file
 		, checkKeySize key keystatus ai
 		, checkBackend backend key keystatus afile
+		, checkKeyUpgrade backend key ai afile
 		, checkKeyNumCopies key afile numcopies
 		]
   where
@@ -408,6 +409,31 @@ checkKeySizeOr bad key file ai = case keySize key of
 			, "); "
 			, msg
 			]
+
+{- Check for keys that are upgradable.
+ -
+ - Warns and suggests the user migrate, but does not migrate itself,
+ - because migration can cause more disk space to be used, and makes
+ - worktree changes that need to be committed.
+ -}
+checkKeyUpgrade :: Backend -> Key -> ActionItem -> AssociatedFile -> Annex Bool
+checkKeyUpgrade backend key ai (AssociatedFile (Just file)) =
+	case Types.Backend.canUpgradeKey backend of
+		Just a | a key -> do
+			warning $ concat
+				[ actionItemDesc ai key
+				, ": Can be upgraded to an improved key format. "
+				, "You can do so by running: git annex migrate --backend="
+				, formatKeyVariety (keyVariety key) ++ " "
+				, file
+				]
+			return True
+		_ -> return True
+checkKeyUpgrade _ _ _ (AssociatedFile Nothing) =
+	-- Don't suggest migrating without a filename, because
+	-- while possible to do, there is no actual benefit from
+	-- doing that in this situation.
+	return True
 
 {- Runs the backend specific check on a key's content object.
  -

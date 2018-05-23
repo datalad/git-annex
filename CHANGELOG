@@ -10,6 +10,17 @@ git-annex (6.20180510) UNRELEASED; urgency=medium
   * copy: --force no longer does anything.
   * Prevent haskell http-client from decompressing gzip files, so downloads
     of such files works the same as it used to with wget and curl.
+  * migrate: Fix bug in migration between eg SHA256 and SHA256E, 
+    that caused the extension to be included in SHA256 keys,
+    and omitted from SHA256E keys.
+    (Bug introduced in version 6.20170214)
+  * migrate: Check for above bug when migrating from SHA256 to SHA256
+    (and same for SHA1 to SHA1 etc), and remove the extension that should
+    not be in the SHA256 key.
+  * fsck: Detect and warn when keys need an upgrade, either to fix up
+    from the above migrate bug, or to add missing size information
+    (a long ago transition), or because of a few other past key related
+    bugs.
 
  -- Joey Hess <id@joeyh.name>  Mon, 14 May 2018 13:42:41 -0400
 
