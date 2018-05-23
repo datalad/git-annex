@@ -106,7 +106,7 @@ Seems like this would need Windows 10.
 > Also, see this important caveat:
 > <https://blogs.msdn.microsoft.com/commandline/2016/11/17/do-not-change-linux-files-using-windows-apps-and-tools/>
 > 
-> WSL is currently rather annoying to enable. *If* it became easy enough
+> March 2017: WSL is currently rather annoying to enable. *If* it became easy enough
 > to enable, note that "bash -c git-annex" works from a windows command
 > prompt, and would probably work in a .bat file as well, so git-annex from
 > the WSL could be transparently used on the windows side.
@@ -117,3 +117,31 @@ Seems like this would need Windows 10.
 > --foreground` does run, but while it notices when new files are added, it
 > does not notice when existing files get modified. Probably an inotify
 > emulation bug. --[[Joey]]
+> 
+> > Update May 2018: With the latest MS Edge VirtualBox image, 
+> > enabling WSL was much easier than before, just a matter of checking a
+> > single box and a reboot. No need to enable developer mode first.
+> > (Don't know if this will apply to commercial Windows 10 or only this
+> > VM image.)
+> > 
+> > Then bash was available in the menu, but it said no distro installed,
+> > and gave an url to a "Store" where Ubuntu, Debian, etc 
+> > could be installed.
+> > 
+> > git-annex test had a failure this time, something to do with disk
+> > IO error and sqlite.
+> > 
+> > The assistant can run as a daemon now. It still doesn't notice some changes. 
+> > Eg with "rm foo; echo new > foo", it got an inotify event for the removal,
+> > but missed the new creation.
+> >
+> > Running `git annex assistant` when the assistant is running
+> > complains of a stale pid file, with the wrong pid number, but it
+> > doesn't start a second one.
+> > 
+> > webapp still can't open a web browser, but there's a way to do
+> > it from within WSL that it should be possible for it to use:
+> > `powershell.exe Start http://google.com`
+> > ("powershell.exe" is in PATH)
+> > 
+> > --[[Joey]]
