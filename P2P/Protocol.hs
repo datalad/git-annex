@@ -411,13 +411,21 @@ serveAuth myuuid = serverLoop handler
 				return ServerContinue
 	handler _ = return ServerUnexpected
 
-data ServerMode = ServeReadOnly | ServeReadWrite
+data ServerMode
+	= ServeReadOnly
+	-- ^ Allow reading, but not writing.
+	| ServeAppendOnly
+	-- ^ Allow reading, and storing new objects, but not deleting objects.
+	| ServeReadWrite
+	-- ^ Full read and write access.
+	deriving (Eq, Ord)
 
 -- | Serve the protocol, with a peer that has authenticated.
 serveAuthed :: ServerMode -> UUID -> Proto ()
 serveAuthed servermode myuuid = void $ serverLoop handler
   where
 	readonlyerror = net $ sendMessage (ERROR "this repository is read-only; write access denied")
+	appendonlyerror = net $ sendMessage (ERROR "this repository is append-only; removal denied")
 	handler (VERSION theirversion) = do
 		let v = min theirversion maxProtocolVersion
 		net $ setProtocolVersion v
@@ -439,22 +447,15 @@ serveAuthed servermode myuuid = void $ serverLoop handler
 		ServeReadWrite -> do
 			sendSuccess =<< local (removeContent key)
 			return ServerContinue
+		ServeAppendOnly -> do
+			appendonlyerror
+			return ServerContinue
 		ServeReadOnly -> do
 			readonlyerror
 			return ServerContinue
 	handler (PUT af key) = case servermode of
-		ServeReadWrite -> do
-			have <- local $ checkContentPresent key
-			if have
-				then net $ sendMessage ALREADY_HAVE
-				else do
-					let sizer = tmpContentSize key
-					let storer = \o l b v -> unVerified $
-						storeContent key af o l b v
-					(ok, _v) <- receiveContent Nothing nullMeterUpdate sizer storer PUT_FROM
-					when ok $
-						local $ setPresent key myuuid
-			return ServerContinue
+		ServeReadWrite -> handleput af key
+		ServeAppendOnly -> handleput af key
 		ServeReadOnly -> do
 			readonlyerror
 			return ServerContinue
@@ -467,6 +468,10 @@ serveAuthed servermode myuuid = void $ serverLoop handler
 		let goahead = net $ relayService service
 		case (servermode, service) of
 			(ServeReadWrite, _) -> goahead
+			(ServeAppendOnly, UploadPack) -> goahead
+			-- git protocol could be used to overwrite
+			-- refs or something, so don't allow
+			(ServeAppendOnly, ReceivePack) -> readonlyerror
 			(ServeReadOnly, UploadPack) -> goahead
 			(ServeReadOnly, ReceivePack) -> readonlyerror
 		-- After connecting to git, there may be unconsumed data
@@ -478,6 +483,19 @@ serveAuthed servermode myuuid = void $ serverLoop handler
 		net $ sendMessage (CHANGED refs)
 		return ServerContinue
 	handler _ = return ServerUnexpected
+
+	handleput af key = do
+		have <- local $ checkContentPresent key
+		if have
+			then net $ sendMessage ALREADY_HAVE
+			else do
+				let sizer = tmpContentSize key
+				let storer = \o l b v -> unVerified $
+					storeContent key af o l b v
+				(ok, _v) <- receiveContent Nothing nullMeterUpdate sizer storer PUT_FROM
+				when ok $
+					local $ setPresent key myuuid
+		return ServerContinue
 
 sendContent :: Key -> AssociatedFile -> Offset -> MeterUpdate -> Proto Bool
 sendContent key af offset@(Offset n) p = go =<< local (contentSize key)

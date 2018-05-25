@@ -26,6 +26,12 @@ readOnlyEnv = "GIT_ANNEX_SHELL_READONLY"
 checkNotReadOnly :: IO ()
 checkNotReadOnly = checkEnv readOnlyEnv
 
+appendOnlyEnv :: String
+appendOnlyEnv = "GIT_ANNEX_SHELL_APPENDONLY"
+
+checkNotAppendOnly :: IO ()
+checkNotAppendOnly = checkEnv appendOnlyEnv
+
 checkEnv :: String -> IO ()
 checkEnv var = checkEnvSet var >>= \case
 	False -> noop

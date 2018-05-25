@@ -139,6 +139,19 @@ changed.
 
   If set, disallows running git-shell to handle unknown commands.
 
+* GIT_ANNEX_SHELL_APPENDONLY
+
+  If set, allows data to be written to the git-annex repository,
+  but does not allow data to be removed from it.
+
+  Note that this does not prevent passing commands on to git-shell,
+  so you will have to separately configure git to reject pushes that
+  overwrite branches or are otherwise not appends. The git pre-receive
+  hook may be useful for accomplishing this.
+
+  It's a good idea to enable annex.securehashesonly in a repository
+  that's set up this way.
+
 * GIT_ANNEX_SHELL_DIRECTORY
 
   If set, git-annex-shell will refuse to run commands that do not operate

@@ -26,10 +26,13 @@ seek _ = giveup "missing UUID parameter"
 
 start :: UUID -> CommandStart
 start theiruuid = do
-	servermode <- liftIO $ 
-		Checks.checkEnvSet Checks.readOnlyEnv >>= return . \case
-			True -> P2P.ServeReadOnly
-			False -> P2P.ServeReadWrite
+	servermode <- liftIO $ do
+		ro <- Checks.checkEnvSet Checks.readOnlyEnv
+		ao <- Checks.checkEnvSet Checks.appendOnlyEnv
+		return $ case (ro, ao) of
+			(True, _) -> P2P.ServeReadOnly
+			(False, True) -> P2P.ServeAppendOnly
+			(False, False) -> P2P.ServeReadWrite
 	myuuid <- getUUID
 	conn <- stdioP2PConnection <$> Annex.gitRepo
 	let server = do

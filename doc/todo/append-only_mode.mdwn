@@ -26,3 +26,22 @@ it wouldn't overwrite an existing bit of content without first doing a
 checksum?
 
 Thanks! -- [[anarcat]]
+
+> Good idea.. Implemented. 
+> 
+> I'm not entirely happy with the name, but could not think of
+> a better one.
+> 
+> Yes, `recvkey` will never overwrite content already in the annex,
+> and unless you turn off annex.verify, hashes will also be checked
+> before letting anything into the annex.
+> 
+> Of course, if non-hashed keys are used, and an object has not
+> reached the repository yet from a trusted source, an attacker
+> could slip in something malicious without being noticed.
+> Setting annex.securehashesonly would be a good idea to prevent this.
+> 
+> p2pstdio implements the same security policies as the rest of
+> git-annex-shell.
+> 
+> --[[Joey]]

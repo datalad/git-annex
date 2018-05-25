@@ -21,6 +21,9 @@ git-annex (6.20180510) UNRELEASED; urgency=medium
     from the above migrate bug, or to add missing size information
     (a long ago transition), or because of a few other past key related
     bugs.
+  * git-annex-shell: GIT_ANNEX_SHELL_APPENDONLY makes it allow writes,
+    but not deletion of annexed content. Note that securing pushes to
+    the git repository is left up to the user.
 
  -- Joey Hess <id@joeyh.name>  Mon, 14 May 2018 13:42:41 -0400
 

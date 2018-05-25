@@ -17,6 +17,7 @@ import Annex.UUID
 import CmdLine.GitAnnexShell.Checks
 import CmdLine.GitAnnexShell.Fields
 import Remote.GCrypt (getGCryptUUID)
+import P2P.Protocol (ServerMode(..))
 
 import qualified Command.ConfigList
 import qualified Command.InAnnex
@@ -30,38 +31,43 @@ import qualified Command.NotifyChanges
 import qualified Command.GCryptSetup
 import qualified Command.P2PStdIO
 
-cmds_readonly :: [Command]
-cmds_readonly =
-	[ Command.ConfigList.cmd
-	, gitAnnexShellCheck Command.InAnnex.cmd
-	, gitAnnexShellCheck Command.LockContent.cmd
-	, gitAnnexShellCheck Command.SendKey.cmd
-	, gitAnnexShellCheck Command.TransferInfo.cmd
-	, gitAnnexShellCheck Command.NotifyChanges.cmd
+import qualified Data.Map as M
+
+cmdsMap :: M.Map ServerMode [Command]
+cmdsMap = M.fromList $ map mk
+	[ (ServeReadOnly, readonlycmds)
+	, (ServeAppendOnly, appendcmds)
+	, (ServeReadWrite, allcmds)
 	]
-
-cmds_notreadonly :: [Command]
-cmds_notreadonly =
-	[ gitAnnexShellCheck Command.RecvKey.cmd
-	, gitAnnexShellCheck Command.DropKey.cmd
-	, gitAnnexShellCheck Command.Commit.cmd
-	, Command.GCryptSetup.cmd
-	]
-
--- Commands that can operate readonly or not; they use checkNotReadOnly.
-cmds_readonly_capable :: [Command]
-cmds_readonly_capable =
-	[ gitAnnexShellCheck Command.P2PStdIO.cmd
-	]
-
-cmds_readonly_safe :: [Command]
-cmds_readonly_safe = cmds_readonly ++ cmds_readonly_capable
-
-cmds :: [Command]
-cmds = map (adddirparam . noMessages)
-	(cmds_readonly ++ cmds_notreadonly ++ cmds_readonly_capable)
   where
+	readonlycmds = 
+		[ Command.ConfigList.cmd
+		, gitAnnexShellCheck Command.InAnnex.cmd
+		, gitAnnexShellCheck Command.LockContent.cmd
+		, gitAnnexShellCheck Command.SendKey.cmd
+		, gitAnnexShellCheck Command.TransferInfo.cmd
+		, gitAnnexShellCheck Command.NotifyChanges.cmd
+		-- p2pstdio checks the enviroment variables to
+		-- determine the security policy to use
+		, gitAnnexShellCheck Command.P2PStdIO.cmd
+		]
+	appendcmds = readonlycmds ++
+		[ gitAnnexShellCheck Command.RecvKey.cmd
+		, gitAnnexShellCheck Command.Commit.cmd
+		]
+	allcmds =
+		[ gitAnnexShellCheck Command.DropKey.cmd
+		, Command.GCryptSetup.cmd
+		]
+
+	mk (s, l) = (s, map (adddirparam . noMessages) l)
 	adddirparam c = c { cmdparamdesc = "DIRECTORY " ++ cmdparamdesc c }
+
+cmdsFor :: ServerMode -> [Command]
+cmdsFor = fromMaybe [] . flip M.lookup cmdsMap
+
+cmdsList :: [Command]
+cmdsList = concat $ M.elems cmdsMap
 
 globalOptions :: [GlobalOption]
 globalOptions = 
@@ -101,17 +107,19 @@ run c@(cmd:_)
 	| otherwise = external c
 
 builtins :: [String]
-builtins = map cmdname cmds
+builtins = map cmdname cmdsList
 
 builtin :: String -> String -> [String] -> IO ()
 builtin cmd dir params = do
-	unless (cmd `elem` map cmdname cmds_readonly_safe)
+	unless (cmd `elem` map cmdname (cmdsFor ServeReadOnly))
 		checkNotReadOnly
+	unless (cmd `elem` map cmdname (cmdsFor ServeAppendOnly))
+		checkNotAppendOnly
 	checkDirectory $ Just dir
 	let (params', fieldparams, opts) = partitionParams params
 	    rsyncopts = ("RsyncOptions", unwords opts)
 	    fields = rsyncopts : filter checkField (parseFields fieldparams)
-	dispatch False (cmd : params') cmds globalOptions fields mkrepo
+	dispatch False (cmd : params') cmdsList globalOptions fields mkrepo
 		"git-annex-shell"
 		"Restricted login shell for git-annex only SSH access"
   where
@@ -161,6 +169,6 @@ checkField (field, val)
 	| otherwise = False
 
 failure :: IO ()
-failure = giveup $ "bad parameters\n\n" ++ usage h cmds
+failure = giveup $ "bad parameters\n\n" ++ usage h cmdsList
   where
 	h = "git-annex-shell [-c] command [parameters ...] [option ...]"
