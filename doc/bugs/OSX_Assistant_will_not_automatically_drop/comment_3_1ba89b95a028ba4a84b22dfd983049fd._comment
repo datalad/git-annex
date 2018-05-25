@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="jhnichol@cce81d2a480707652a3340ea2f24b3dc4b1f808c"
+ nickname="jhnichol"
+ avatar="http://cdn.libravatar.org/avatar/2d05fd7e681bf4838bba8bab538ac65d"
+ subject="comment 3"
+ date="2018-05-24T19:28:27Z"
+ content="""
+> Andrew:
+> \" I have three repos listed at `~/.config/git-annex/autostart`. If I run `git-annex assistant --autostart` from one of my repo directories, then an assistant daemon is started for each repo, I can verify that with `ps aux | grep \"git-annex assistant --startdelay\"` which lists one assistant process per repository (3 total). If I start the assistants this way, they seem to stick around. Then, I can follow the mentioned archiving video and successfully sync/archive as shown. \"
+
+I have only one repo listed at `~/.config/git-annex/autostart` which is my laptop. The other repo was created with the webapp on a USB drive; it is bare and will not allow me to start an assistant on it.  Again, I cannot successfully sync/archive as shown in the archiving video.
+
+I tried using `git-annex version: 6.20180509-gd801a3318` but no help.
+
+FYI, I also noticed that clicking the .app now successfully opens the webapp again.
+"""]]
