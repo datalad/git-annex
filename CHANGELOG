@@ -1,15 +1,15 @@
 git-annex (6.20180510) UNRELEASED; urgency=medium
 
-  * view, vadd: Fix crash when a git submodule has a name starting with a dot.
-  * Don't allow entering a view with staged or unstaged changes.
+  * Prevent haskell http-client from decompressing gzip files, so downloads
+    of such files works the same as it used to with wget and curl.
   * Workaround for bug in an old version of cryptonite that broke https
     downloads, by using curl for downloads when git-annex is built with it.
+  * view, vadd: Fix crash when a git submodule has a name starting with a dot.
+  * Don't allow entering a view with staged or unstaged changes.
   * move: --force was accidentially enabling two unrelated behaviors
     since 6.20180427. The older behavior, which has never been well
     documented and seems almost entirely useless, has been removed.
   * copy: --force no longer does anything.
-  * Prevent haskell http-client from decompressing gzip files, so downloads
-    of such files works the same as it used to with wget and curl.
   * migrate: Fix bug in migration between eg SHA256 and SHA256E, 
     that caused the extension to be included in SHA256 keys,
     and omitted from SHA256E keys.
