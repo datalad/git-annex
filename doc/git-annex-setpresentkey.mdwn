@@ -14,6 +14,13 @@ the specified key's content is present in a remote with the specified uuid.
 Use 1 to indicate the key is present, or 0 to indicate the key is
 not present.
 
+# OPTIONS
+
+* `--batch`
+
+  Enables batch mode, in which lines are read from stdin.
+  The line format is "key uuid [1|0]"
+
 # SEE ALSO
 
 [[git-annex]](1)

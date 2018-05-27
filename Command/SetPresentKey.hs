@@ -16,19 +16,40 @@ cmd = noCommit $
 	command "setpresentkey" SectionPlumbing
 		"change records of where key is present"
 		(paramPair paramKey (paramPair paramUUID "[1|0]"))
-		(withParams seek)
+		(seek <$$> optParser)
 
-seek :: CmdParams -> CommandSeek
-seek = withWords start
+data SetPresentKeyOptions = SetPresentKeyOptions
+	{ params :: CmdParams
+	, batchOption :: BatchMode
+	}
 
-start :: [String] -> CommandStart
-start (ks:us:vs:[]) = do
+optParser :: CmdParamsDesc -> Parser SetPresentKeyOptions
+optParser desc = SetPresentKeyOptions
+	<$> cmdParams desc
+	<*> parseBatchOption
+
+seek :: SetPresentKeyOptions -> CommandSeek
+seek o = case batchOption o of
+	Batch -> batchInput
+		(parseKeyStatus . words)
+		(batchCommandAction . start)
+	NoBatch -> either giveup (commandAction . start)
+		(parseKeyStatus $ params o)
+
+data KeyStatus = KeyStatus Key UUID LogStatus
+
+parseKeyStatus :: [String] -> Either String KeyStatus
+parseKeyStatus (ks:us:vs:[]) = do
+	k <- maybe (Left "bad key") Right (file2key ks)
+	let u = toUUID us
+	s <- maybe (Left "bad value") Right (parseStatus vs)
+	return $ KeyStatus k u s
+parseKeyStatus _ = Left "Bad input. Expected: key uuid value"
+
+start :: KeyStatus -> CommandStart
+start (KeyStatus k u s) = do
 	showStartKey "setpresentkey" k (mkActionItem k)
-	next $ perform k (toUUID us) s
-  where
-	k = fromMaybe (giveup "bad key") (file2key ks)
-	s = fromMaybe (giveup "bad value") (parseStatus vs)
-start _ = giveup "Wrong number of parameters"
+	next $ perform k u s
 
 perform :: Key -> UUID -> LogStatus -> CommandPerform
 perform k u s = next $ do
