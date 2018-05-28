@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="unqueued"
+ avatar="http://cdn.libravatar.org/avatar/3bcbe0c9e9825637ad7efa70f458640d"
+ subject="comment 1"
+ date="2018-05-28T14:55:34Z"
+ content="""
+I wrote a quick and dirty script to store xattrs in a git repo, because I wanted to keep my OSX labels and other metadata like resource forks in my annex. But it only works on OSX at the moment.
+
+https://github.com/unqueued/git-xattr
+
+I think maybe metadata storage would be best implemented as a hook.
+"""]]
