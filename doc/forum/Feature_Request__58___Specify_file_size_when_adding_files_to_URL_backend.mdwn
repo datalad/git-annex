@@ -1,0 +1,10 @@
+It seems that the only way to add a key with the URL backend and with an explicit file size is to use addurl --fast, which requires a a connection to be made to the remote server. However, it becomes impractical when I have tens of thousands of URLs, and I end up hammering the server, when I know ahead of time exactly what the file sizes are. I know it is possible to create URL keys with a size attribute. It would be great to be able to have something like addurl --size=342345 --raw, or be able to pass a size to registerurl.
+
+I have figured out how to construct a SHA256 key outside of git-annex, but I've looked at the source and I admit I'm a bit over my head with manually constructing a URL key.
+
+
+I've been doing a lot of experimenting with [pre-seeding](https://git-annex.branchable.com/forum/__34__Preseeding__34___a_special_remote/), which I would like to share. I think it could be a really cool application of git-annex.
+
+So far, I've been able to generate a distfiles repo automatically for Gentoo portage, which contains BLAKE2B512 signatures for all of their distfiles. I think there could potentially be some really cool applications to keeping track of large sets of files, and I want to eventually try to make it so that portage could fetch distfiles from other users over ipfs.
+
+But, there are many interesting collections of files that are in open directories, and all I have is the filenames and sizes, and being able to quickly generate a repo with knowledge of the exact size would make it really easy to divvy up downloading and mirroring with git. I have a script that converts an FTP server to a git-annex repo with a WORM backend, but I still think that using URL keys would be a better representation of where the resource is.
