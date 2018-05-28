@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="unqueued"
+ avatar="http://cdn.libravatar.org/avatar/3bcbe0c9e9825637ad7efa70f458640d"
+ subject="comment 1"
+ date="2018-05-28T14:46:04Z"
+ content="""
+I have been toying with \"external\" transfer handlers. Sometimes when I am dealing with very large files, it makes more sense to just copy the keys outside of git-annex, and then after they are copied, run fsck. Perhaps at some point there could be a way to have a transfer \"shim\" of some kind, for handling transfers.
+"""]]
