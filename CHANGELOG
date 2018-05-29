@@ -1,4 +1,4 @@
-git-annex (6.20180510) UNRELEASED; urgency=medium
+git-annex (6.20180529) upstream; urgency=medium
 
   * Prevent haskell http-client from decompressing gzip files, so downloads
     of such files works the same as it used to with wget and curl.
@@ -26,7 +26,7 @@ git-annex (6.20180510) UNRELEASED; urgency=medium
     the git repository is left up to the user.
   * setpresentkey: Added --batch support.
 
- -- Joey Hess <id@joeyh.name>  Mon, 14 May 2018 13:42:41 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 29 May 2018 13:05:26 -0400
 
 git-annex (6.20180509) upstream; urgency=medium
 
