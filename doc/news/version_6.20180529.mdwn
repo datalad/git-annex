@@ -1,0 +1,27 @@
+git-annex 6.20180529 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Prevent haskell http-client from decompressing gzip files, so downloads
+     of such files works the same as it used to with wget and curl.
+   * Workaround for bug in an old version of cryptonite that broke https
+     downloads, by using curl for downloads when git-annex is built with it.
+   * view, vadd: Fix crash when a git submodule has a name starting with a dot.
+   * Don't allow entering a view with staged or unstaged changes.
+   * move: --force was accidentially enabling two unrelated behaviors
+     since 6.20180427. The older behavior, which has never been well
+     documented and seems almost entirely useless, has been removed.
+   * copy: --force no longer does anything.
+   * migrate: Fix bug in migration between eg SHA256 and SHA256E,
+     that caused the extension to be included in SHA256 keys,
+     and omitted from SHA256E keys.
+     (Bug introduced in version 6.20170214)
+   * migrate: Check for above bug when migrating from SHA256 to SHA256
+     (and same for SHA1 to SHA1 etc), and remove the extension that should
+     not be in the SHA256 key.
+   * fsck: Detect and warn when keys need an upgrade, either to fix up
+     from the above migrate bug, or to add missing size information
+     (a long ago transition), or because of a few other past key related
+     bugs.
+   * git-annex-shell: GIT\_ANNEX\_SHELL\_APPENDONLY makes it allow writes,
+     but not deletion of annexed content. Note that securing pushes to
+     the git repository is left up to the user.
+   * setpresentkey: Added --batch support."""]]
