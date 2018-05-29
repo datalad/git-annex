@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-05-29T16:41:34Z"
+ content="""
+I wonder if you've tried addurl --fast with a recent version of git-annex?
+
+Since it recently stopped shelling out to curl for every url, it keeps a
+http connection open to the server, and is limited only by network
+latency. Combined with -J10, it might be fast enough now to not be a
+serious bottleneck.
+
+The mangling of urls in keys is ad-hoc and I'd rather not document that
+as part of git-annex's interface, so building your own url keys is not
+recommended.
+
+I could see adding a size value to git-annex registerurl, and
+I think you'd also want git-annex fromkey to have that too so you can
+add the keys to the working tree.
+"""]]
