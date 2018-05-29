@@ -44,3 +44,7 @@ as only read access is needed.
 Probably running a shell script is not too much overhead in many cases,
 if it was too slow, there could be a variant that is run once and 
 fed the names of files to operate on via stdin.
+
+> These hooks may be too specific to this purpose, while a more generalized
+> hook could also support things like [[storing_xattrs|support_for_storing_xattrs]]
+> --[[Joey]]

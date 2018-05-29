@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-05-29T16:51:48Z"
+ content="""
+I also would rather see this as a hook than built into git-annex. It's
+something that git-annex's metadata can be leveraged for, perhaps,
+but different use cases call for different amounts of data.
+
+I suppose the thing to provide a hook into is whenever git-annex adds an
+object content to .git/annex/objects. That will allow the hook
+to store the current xattrs after `git annex add`, and to restore them
+after eg `git annex get`.
+
+But, suppose you run: `git annex add file; git annex move file --to remote`
+Then the remote won't have the updated git-annex branch yet when it stores the
+object content, and so the hook run on it won't be able to do anything.
+
+When new git-annex branch version adds/changes xattr values,
+the local repository would need to be updated to reflect them.
+So, there would also need to be a hook that's run when git-annex
+metadata has changed.
+
+See also: [[lockdown_hooks]] which have different use cases, but seem to
+call for the same kind of hooks.
+"""]]
