@@ -1,0 +1,5 @@
+Joey, did you mean to delete all of the [done bugs](http://git-annex.branchable.com/bugs/done/) during your [mass bug closures](http://git-annex.branchable.com/devblog/day_498__unexpected_release_prep/)?
+
+I usually like to check done bugs on the website to see what has been fixed in a release. But, it seems many of the fixed bugs are now missing. I had been looking to see if you fixed the webapp not launching on OS-X, but I couldn't find the bug report.
+
+—[Andrew](http://git-annex.branchable.com/users/andrew/)
