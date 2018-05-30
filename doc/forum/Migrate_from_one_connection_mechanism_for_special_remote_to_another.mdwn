@@ -1,0 +1,43 @@
+Hi there,
+
+I want to migrate from git-annex-remote-hubic to git-annex-remote-rclone to access the same hubic remote, same container, same data. So ideally I just want to switch to rclone but reuse the old content (since uploading to hubic is so sloooooow). 
+
+My old remote is called hubic, my new one hubic2 in my git annex repo.
+Both are reported as similar by git annex info -F hubic/hubic2 :
+
+    remote: hubic
+    description: [hubic]
+    uuid: 396e481c-5fc9-4933-b6a4-b1398fb7c61b
+    trust: trusted
+    cost: 225.0
+    type: external
+    externaltype: hubic
+    encryption: pubkey (to gpg keys: XXX)
+    chunking: none
+
+    remote: hubic2
+    description: [hubic2]
+    uuid: adaea02d-920c-48fa-811d-c27e51bda85f
+    trust: semitrusted
+    cost: 250.0
+    type: external
+    externaltype: rclone
+    encryption: pubkey (to gpg keys: XXX)
+    chunking: none
+
+Yes, the GPG key is the same. I only have one configured on this machine.
+
+However, when I fsck for a file that is on hubic or on hubic2 I only get a positive result for hubic. The chatlogs of both fsck reveal that the key that fsck is looking for is different for the different remotes.
+ 
+    git-annex-remote-hubic[1] <-- CHECKPRESENT GPGHMACSHA1--64e155e3010f69e909e629c6d9fdacae5c0c3bef
+respectively:
+    git-annex-remote-rclone[1] <-- CHECKPRESENT GPGHMACSHA1--5cf9edd1a413c561775f8920fc7b21410be6c5a4
+
+There is one thing I noticed though:
+Although in the remote-hubic case I have not chunking configured, I see with *rclone lsl* that I have some files in chunks up there.
+However, the file I am using for this test is only 2MB and it is not chunked on the remote.
+
+What am I missing, what am I doing wrong? While writing this I thought of the following: Is there an intermediate key used for the actual encryption or for the encryption of the filenames? If yes how can I access it or make it available to the new remote?
+
+Thanks,
+Marek
