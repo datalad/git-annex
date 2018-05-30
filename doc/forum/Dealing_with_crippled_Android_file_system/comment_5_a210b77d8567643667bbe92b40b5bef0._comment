@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 5"
+ date="2018-05-30T14:43:37Z"
+ content="""
+Aaaah. OK, that makes sense.
+
+So, when you call [termux-setup-storage](https://wiki.termux.com/wiki/Internal_and_external_storage) in Termux it creates a bunch of symlinks to the standard Android directories, calling [setupStorageSymlinks](https://github.com/termux/termux-app/blob/master/app/src/main/java/com/termux/app/TermuxInstaller.java). But yeah, the new folders sitting in $HOME are just symlinks to Android's FAT32 view of these folders. I was thinking maybe they were something else…
+
+So after reading [Diving into SDCardFS: How Google’s FUSE Replacement Will Reduce I/O Overhead](https://www.xda-developers.com/diving-into-sdcardfs-how-googles-fuse-replacement-will-reduce-io-overhead/) it appears that FAT32 is very much the baked-in standard. The article also has some nice information on the naming conventions in Android of various storage types. Some Google-ing does imply that people have changed the underlying filesystem of the root OS, with rooting, but the solutions seems to now, at least, be [device specific](https://stackoverflow.com/a/29727734/8671834).
+
+I can't find any elegant, filesystem level solution for de-duplication of files that would be visible as media to all Android apps in `external storage`.
+
+Maybe it is possible that with Android's new [Adoptable Storage](https://source.android.com/devices/storage/adoptable) one could create symlinks, but I haven't tried this and I am not optimistic. Adoptable storage is not widely supported, but essentially it fully encrypts your device and re-formats your “external storage” as ext4 or f2fs. But I would imagine that any public facing views of external storage would probably still be FAT32 so their wouldn't be any way to create symlinks.
+
+My other thought would be to create an app specific solution to your issue. For example you are trying to make photos visible to Gallery apps and you have a lot of duplicate photos present in multiple folders. One solution would be to use albums, which I am pretty sure already support having the same photo in multiple albums (at least in Google Photos), while only taking up storage for a single photo. So, you could copy a single copy of each of your photos to `~/storage/pictures`, then using Android APIs [add the photos into multiple albums](https://stackoverflow.com/a/11983767/8671834). You could probably automate this process with scripts or perhaps a Termux addon? Or, perhaps there is some other album supporting Android Gallery app that uses a simpler album format, like a JSON file or something.
+
+"""]]
