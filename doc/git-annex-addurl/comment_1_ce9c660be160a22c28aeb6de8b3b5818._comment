@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joseph.rawson.works@85a210ab8c0e37a0b2d6bb235738b20e23e8878f"
+ nickname="joseph.rawson.works"
+ avatar="http://cdn.libravatar.org/avatar/6b473d5484b68803e8c47eeff9197397"
+ subject="Using youtube-dl commandline options with git-annex-addurl"
+ date="2018-05-30T15:29:16Z"
+ content="""
+I have been trying to figure out how to use addurl to get this video.
+I have this in my mscourtstuff annex as a large binary, but I would really like to 
+use the web as a remote for this.
+
+Hughes v Hosemann 2010-CA-01949-SCT-43112001.mp4
+youtube-dl --referer 'http://judicial.mc.edu/case.php?id=24206'  http://player.vimeo.com/video/43112001
+
+
+"""]]
