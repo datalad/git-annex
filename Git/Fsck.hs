@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE BangPatterns, CPP #-}
 
 module Git.Fsck (
 	FsckResults(..),
@@ -26,6 +26,10 @@ import qualified Git.Version
 
 import qualified Data.Set as S
 import Control.Concurrent.Async
+#if MIN_VERSION_base(4,9,0)
+import qualified Data.Semigroup as Sem
+#endif
+import Prelude
 
 data FsckResults 
 	= FsckFoundMissing
@@ -44,15 +48,29 @@ type MissingObjects = S.Set Sha
 
 type Truncated = Bool
 
+appendFsckOutput :: FsckOutput -> FsckOutput -> FsckOutput
+appendFsckOutput (FsckOutput s1 t1) (FsckOutput s2 t2) =
+	FsckOutput (S.union s1 s2) (t1 || t2)
+appendFsckOutput (FsckOutput s t) _ = FsckOutput s t
+appendFsckOutput _ (FsckOutput s t) = FsckOutput s t
+appendFsckOutput NoFsckOutput NoFsckOutput = NoFsckOutput
+appendFsckOutput AllDuplicateEntriesWarning AllDuplicateEntriesWarning = AllDuplicateEntriesWarning
+appendFsckOutput AllDuplicateEntriesWarning NoFsckOutput = AllDuplicateEntriesWarning
+appendFsckOutput NoFsckOutput AllDuplicateEntriesWarning = AllDuplicateEntriesWarning
+
+#if MIN_VERSION_base(4,9,0)
+instance Sem.Semigroup FsckOutput where
+	(<>) = appendFsckOutput
+#endif
+
 instance Monoid FsckOutput where
 	mempty = NoFsckOutput
-	mappend (FsckOutput s1 t1) (FsckOutput s2 t2) = FsckOutput (S.union s1 s2) (t1 || t2)
-	mappend (FsckOutput s t) _ = FsckOutput s t
-	mappend _ (FsckOutput s t) = FsckOutput s t
-	mappend NoFsckOutput NoFsckOutput = NoFsckOutput
-	mappend AllDuplicateEntriesWarning AllDuplicateEntriesWarning = AllDuplicateEntriesWarning
-	mappend AllDuplicateEntriesWarning NoFsckOutput = AllDuplicateEntriesWarning
-	mappend NoFsckOutput AllDuplicateEntriesWarning = AllDuplicateEntriesWarning
+#if MIN_VERSION_base(4,11,0)
+#elif MIN_VERSION_base(4,9,0)
+	mappend = (Sem.<>)
+#else
+	mappend = appendFsckOutput
+#endif
 
 {- Runs fsck to find some of the broken objects in the repository.
  - May not find all broken objects, if fsck fails on bad data in some of

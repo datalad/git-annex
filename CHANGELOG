@@ -1,3 +1,9 @@
+git-annex (6.20180530) UNRELEASED; urgency=medium
+
+  * Fix build with ghc 8.4+, which broke due to the Semigroup Monoid change. 
+
+ -- Joey Hess <id@joeyh.name>  Wed, 30 May 2018 11:49:08 -0400
+
 git-annex (6.20180529) upstream; urgency=medium
 
   * Prevent haskell http-client from decompressing gzip files, so downloads

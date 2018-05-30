@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Types.Difference (
 	Difference(..),
 	Differences(..),
@@ -23,8 +25,11 @@ import qualified Git.Config
 
 import Data.Maybe
 import Data.Monoid
-import Prelude
 import qualified Data.Set as S
+#if MIN_VERSION_base(4,9,0)
+import qualified Data.Semigroup as Sem
+#endif
+import Prelude
 
 -- Describes differences from the v5 repository format.
 --
@@ -67,14 +72,27 @@ instance Eq Differences where
 		, oneLevelBranchHash
 		]
 
+appendDifferences :: Differences -> Differences -> Differences
+appendDifferences a@(Differences {}) b@(Differences {}) = a
+	{ objectHashLower = objectHashLower a || objectHashLower b
+	, oneLevelObjectHash = oneLevelObjectHash a || oneLevelObjectHash b
+	, oneLevelBranchHash = oneLevelBranchHash a || oneLevelBranchHash b
+	}
+appendDifferences _ _ = UnknownDifferences
+
+#if MIN_VERSION_base(4,9,0)
+instance Sem.Semigroup Differences where
+	(<>) = appendDifferences
+#endif
+
 instance Monoid Differences where
 	mempty = Differences False False False
-	mappend a@(Differences {}) b@(Differences {}) = a
-		{ objectHashLower = objectHashLower a || objectHashLower b
-		, oneLevelObjectHash = oneLevelObjectHash a || oneLevelObjectHash b
-		, oneLevelBranchHash = oneLevelBranchHash a || oneLevelBranchHash b
-		}
-	mappend _ _ = UnknownDifferences
+#if MIN_VERSION_base(4,11,0)
+#elif MIN_VERSION_base(4,9,0)
+	mappend = (Sem.<>)
+#else
+	mappend = appendDifferences
+#endif
 
 readDifferences :: String -> Differences
 readDifferences = maybe UnknownDifferences mkDifferences . readish

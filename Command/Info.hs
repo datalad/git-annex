@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns, DeriveDataTypeable #-}
+{-# LANGUAGE BangPatterns, DeriveDataTypeable, CPP #-}
 
 module Command.Info where
 
@@ -13,6 +13,10 @@ import "mtl" Control.Monad.State.Strict
 import qualified Data.Map.Strict as M
 import qualified Data.Vector as V
 import Data.Ord
+#if MIN_VERSION_base(4,9,0)
+import qualified Data.Semigroup as Sem
+#endif
+import Prelude
 
 import Command
 import qualified Git
@@ -55,15 +59,28 @@ data KeyData = KeyData
 	, unknownSizeKeys :: Integer
 	, backendsKeys :: M.Map KeyVariety Integer
 	}
+	
+appendKeyData :: KeyData -> KeyData -> KeyData
+appendKeyData a b = KeyData
+	{ countKeys = countKeys a + countKeys b
+	, sizeKeys = sizeKeys a + sizeKeys b
+	, unknownSizeKeys = unknownSizeKeys a + unknownSizeKeys b
+	, backendsKeys = backendsKeys a <> backendsKeys b
+	}
+	
+#if MIN_VERSION_base(4,9,0)
+instance Sem.Semigroup KeyData where
+	(<>) = appendKeyData
+#endif
 
 instance Monoid KeyData where
 	mempty = KeyData 0 0 0 M.empty
-	mappend a b = KeyData
-		{ countKeys = countKeys a + countKeys b
-		, sizeKeys = sizeKeys a + sizeKeys b
-		, unknownSizeKeys = unknownSizeKeys a + unknownSizeKeys b
-		, backendsKeys = backendsKeys a <> backendsKeys b
-		}
+#if MIN_VERSION_base(4,11,0)
+#elif MIN_VERSION_base(4,9,0)
+	mappend = (Sem.<>)
+#else
+	mappend = appendKeyData
+#endif
 
 data NumCopiesStats = NumCopiesStats
 	{ numCopiesVarianceMap :: M.Map Variance Integer

@@ -134,3 +134,6 @@ Full log https://gist.github.com/ilovezfs/e3af135ed0362e0253a786c71f2a914f
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes! Thanks :)
+
+> Consequence of the Semigroup Monoid change. Fixed. [[done]] --[[Joey]]
+
