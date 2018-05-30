@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-05-30T15:21:57Z"
+ content="""
+Yes, there is an intermediate encryption key.
+
+What may work is to use `git annex enableremote` on the original remote
+with `externaltype=rclone`, which will make it use the other program.
+
+Whether this will work depends on implementation details of both special
+remotes. If they use the same names/urls/whatever to access the data stored
+in them, it should work.
+"""]]
