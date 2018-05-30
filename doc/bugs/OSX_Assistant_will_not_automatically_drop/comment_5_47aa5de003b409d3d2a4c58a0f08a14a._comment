@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="jhnichol@cce81d2a480707652a3340ea2f24b3dc4b1f808c"
+ nickname="jhnichol"
+ avatar="http://cdn.libravatar.org/avatar/2d05fd7e681bf4838bba8bab538ac65d"
+ subject="comment 5"
+ date="2018-05-30T17:36:30Z"
+ content="""
+I started over, making new repos with the webapp & version: 6.20180527-gc3064edac .
+I still get an error in the webapp when adding the USB repo .
+The USB repo `/Volumes/SeagateBlack/annex` was not in `~/.config/git-annex/autostart` , so I added it .
+I enabled debugging in the webapp, shutdown the webapp and assistants, and used the terminal:
+
+	JamesMac:annex jhnichol$ cd /Volumes/SeagateBlack/annex 
+	JamesMac:annex jhnichol$ git-annex assistant --autostart
+	git-annex: You cannot run this command in a bare repository.
+	JamesMac:annex jhnichol$ cd /Users/jhnichol/Desktop/annex 
+	JamesMac:annex jhnichol$ git-annex assistant --autostart
+	git-annex autostart in /Users/jhnichol/Desktop/annex
+	[2018-05-30 20:13:45.005716] call: /Applications/git-annex.app/Contents/MacOS/bundle/git-annex [\"assistant\",\"--stop\"]
+	[2018-05-30 20:13:45.064878] process done ExitSuccess
+	[2018-05-30 20:13:45.065006] call: /Applications/git-annex.app/Contents/MacOS/bundle/git-annex [\"assistant\",\"--startdelay=5s\"]
+	[2018-05-30 20:13:45.117653] logging to .git/annex/daemon.log
+	[2018-05-30 20:13:45.507796] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"git-annex\"]
+	[2018-05-30 20:13:45.520686] process done ExitSuccess
+	[2018-05-30 20:13:45.520806] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+	[2018-05-30 20:13:45.526297] process done ExitSuccess
+	[2018-05-30 20:13:45.526857] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..2f0d4e1b6fe058a5cc899012ef99870cd2877d2c\",\"--pretty=%H\",\"-n1\"]
+	[2018-05-30 20:13:45.537446] process done ExitSuccess
+	[2018-05-30 20:13:45.537572] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..31d29d92a8a48146cdf9dd4517f5a034daf4a467\",\"--pretty=%H\",\"-n1\"]
+	[2018-05-30 20:13:45.543984] process done ExitSuccess
+	[2018-05-30 20:13:45.544626] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"cat-file\",\"--batch\"]
+	[2018-05-30 20:13:45.546186] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+	[2018-05-30 20:13:45.550793] read: git [\"config\",\"--null\",\"--list\"]
+	[2018-05-30 20:13:45.556288] process done ExitSuccess
+	[2018-05-30 20:13:45.557233] logging to .git/annex/daemon.log
+	[2018-05-30 20:13:45.565149] process done ExitSuccess
+	ok
+	git-annex autostart in /Volumes/SeagateBlack/annex 
+	failed
+
+so you see I got the \"You cannot run this command in a bare repository\" error from the assistant.
+Also, the assistant for the USB drive just fails with no error details.
+
+Thank you so much for your comments! I feel so close to having working software!
+"""]]
