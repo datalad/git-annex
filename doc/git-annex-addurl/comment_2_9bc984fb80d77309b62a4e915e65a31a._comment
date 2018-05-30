@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-05-30T16:30:26Z"
+ content="""
+There's not currently a way to do per-file youtube-dl options.
+The difficulty is that we don't know what youtube-dl options might be
+unsafe, and which such a feature could make eg `git annex get` use when run
+by a different user.
+
+I feel that this needs some support in youtube-dl to avoid git-annex
+needing to know about all its safe options. Especially since which options
+are available, or safe, could vary between versions of youtube-dl.
+"""]]
