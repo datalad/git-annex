@@ -1,0 +1,8 @@
+After first installing git-annex if I run `git-annex webapp` on Ubuntu 16.04.4 LTS (annex version 6.20180528-g5300386c2) then the process does not go to the background, but instead stays a foreground process. I can add files to a repo that assistant is watching and it will see them. But, if I then close the web browser and then kill the foreground process that launched the webapp, then all annex processes go away, and git-annex assistant is no longer running anywhere. IE if I then add a file to an assistant repo it won't be seen.
+
+If I reboot, then a bunch of annex processes are automatically started as daemons. Now my repos are watched again. If I launch git-annex webapp, this time the process immediately forks to the background which is different behavior.
+
+The behavior I would expect is that calling `git-annex webapp` should launch, the webapp dameon, load the page in a browser and call something like `git-annex assistant --autostart` as well.
+
+
+—[Andrew](http://git-annex.branchable.com/users/andrew/)
