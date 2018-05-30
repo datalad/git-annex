@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 4"
+ date="2018-05-30T15:24:47Z"
+ content="""
+So [bare repositories](https://git-annex.branchable.com/bare_repositories/) should work fine with Assistant.
+
+You said `it is bare and will not allow me to start an assistant on it`. Do you get an error message from the webapp?
+
+What happens if you manually add the path to your bare USB drive repo to the `~/.config/git-annex/autostart` file, then run `git-annex assistant --autostart`? Then is assistant running on it?
+"""]]
