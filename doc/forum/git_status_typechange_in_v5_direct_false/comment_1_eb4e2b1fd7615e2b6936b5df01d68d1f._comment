@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 1"
+ date="2018-05-31T17:39:10Z"
+ content="""
+This all seems very OK and expected to me.
+
+When you do `git-annex unlock photographers/jboxman/2004/06/16/20040616-004528.jpg` you are changing out the symlink for the actual file, so git has recognized the thing with this name is different. If you do `git-annex add photographers/jboxman/2004/06/16/20040616-004528.jpg` git-annex will recognize that you have not modified any content and will replace the file with the symlink, the file will no longer appear in git status and the file won't have any commits associated with it.
+
+So if you unlock everything, launch digiKam and generate your sidecars, then we see both jpgs and xmps in `git status`. If you then run `git annex add .` all your jpgs will turn back into symlinks and all your xmp files will appear in `git status` per your `largefiles` rule staged for committing.
+
+I haven't tested with your exact setup so I would recommend testing the workflow on a small folder to start. 
+
+
+"""]]
