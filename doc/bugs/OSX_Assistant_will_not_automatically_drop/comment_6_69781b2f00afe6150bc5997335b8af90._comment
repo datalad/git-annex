@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="bare remotes, workflow"
+ date="2018-05-31T12:50:55Z"
+ content="""
+Aaah.
+
+So although git-annex does support storing files in bare repositories it treats them in much the same way as git in general. Namely, they are meant to be added as remotes from other full repositories. Assistant is responsible for monitoring a working directory for changes and automatically committing and syncing those changes. Bare repositories don't actually need assistant monitoring them because they don't have a working directory where users are adding and removing files from.
+
+In your case, you want assistant monitoring `~/Desktop/annex` which it now is. If you then add `/Volumes/SeagateBlack/annex` as a remote to `~/Desktop/annex` then assistant, by watching just `~/Desktop/annex` will sync with all remotes whenever you add remove files in `~/Desktop/annex`.  I imagine you already have your USB drive correctly setup as a remote. Just run `git annex info` from your `~/Desktop/annex` directory to see what remotes it knows about.
+
+Once USB is a remote of `~/Desktop/annex`, then if you launch the webapp from your `~/Desktop/annex` directory,`git-annex webapp` you should actually see both `~/Desktop/annex` and `/Volumes/SeagateBlack/annex` listed. The webapp automatically lists all remotes your repo knows about.
+
+In terms of workflow, I am not actually sure that using a bare repo is what you want on your USB drive. I always setup normal full git repositories on USB drives (not bare repos). That way I can use Finder to actually browse out to the files on the USB drive, add files when I am on the go, copy files etc… If you use a bare repo, then the files won't actually be listed in a usable form. But, if you don't actually want to ever look at the files on your USB drive (from Finder) then using a bare remote on a USB drive has the advantage that you don't need assistant monitoring it, and is probably marginally faster in some extreme cases since there is no working tree to update.
+
+"""]]
