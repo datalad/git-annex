@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="marek@33e8ba4fbc201af14a2badcc0656024401f5c916"
+ nickname="marek"
+ avatar="http://cdn.libravatar.org/avatar/65a60e8f5183feeeef8cef815bf73e61"
+ subject="Fixed a first problem and then ran into bigger problems"
+ date="2018-05-31T09:29:30Z"
+ content="""
+By using 
+    git show git-annex:remote.log
+
+one can extract the cipher from the old remote and set it with
+
+    git annex enableremote $newremote cipher=$CIPHER
+
+However, then I ran into a new problem. The git-annex-remote-hubic special remote created files with leading slashes (/GPGHMACSHA1--00021a41c3143f1e52f16af93625d1072e861543).
+Rclone, and I don`t even mean git-annex-remote-rclone, cannot access these files. It interprets the slash as directory separator which leads to those files not being found.
+
+I guess I will just reupload to fix the slash error in the first place. Or find a Hubic client that can deal with slashes and rename the objects remotely.
+"""]]
