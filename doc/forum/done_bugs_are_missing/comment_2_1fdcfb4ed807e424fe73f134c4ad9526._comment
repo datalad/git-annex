@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-05-31T15:50:05Z"
+ content="""
+The page was simply only listing the most recently closed 10
+bugs, and not all the others. I've changed it to list them all.
+
+(I do archive old closed bugs, generally about a year after the last
+activity on the bug, to keep the size of the wiki in check.)
+"""]]
