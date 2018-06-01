@@ -1,0 +1,7 @@
+git-annex can be installed with the [GNU Guix](https://www.gnu.org/software/guix) package manager.
+
+    guix package -i git-annex
+
+Currently (as of June 2018), some features are not enabled in the package.
+
+    -Android -Assistant -Pairing -S3 -Webapp -WebDAV
