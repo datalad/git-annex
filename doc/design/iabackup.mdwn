@@ -61,7 +61,7 @@ the filenames and urls that belong in it.
 
 A script can do this using the `git annex fromkey` and `git annex
 registerurl` commands. Time to make such a repository with 100k files
-is in the 10 minute range (faster on SSD or randisk).
+is in the 10 minute range (faster on SSD or ramdisk).
 
 ## adding a client
 
