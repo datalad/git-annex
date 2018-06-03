@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-When looking over the [[bug reports|bugs]] here some of them are missing the "Operating system" info in the `git annex version` output. The reason for this is that the `git annex version` output depends on whether it was run inside a annex repo or not.
+When looking over the [[bug reports|bugs]] here some of them are missing the "Operating system" info in the `git annex version` output. The reason for this is that the `git annex version` output depends on whether it was run inside an annex repo or not.
 
 ### What steps will reproduce the problem?
 
