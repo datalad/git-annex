@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="davicastro"
+ avatar="http://cdn.libravatar.org/avatar/4e708663cf4d5b9e8cfea74caf4307fc"
+ subject="Consequences of this error message"
+ date="2018-06-04T14:16:23Z"
+ content="""
+Hi, can someone comment what is the consequences when the \"fatal: Out of memory, getdelim failed\" occurs? It happened to me in some files when adding a bunch but I don't see any side effects. Git fsck and Git annex fsck are OK. git annex unused makes sense. Could this error cause a file to not be added to the repository? (I'm not using NFS file system, git annex version: 6.20180409-gfb0780266, git version: 2.14.1. It might be due to actual out of memory, I'm not sure, I'm just concerned about the side effects).
+"""]]
