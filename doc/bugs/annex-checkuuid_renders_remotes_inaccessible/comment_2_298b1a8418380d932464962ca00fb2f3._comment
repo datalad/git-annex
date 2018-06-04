@@ -3,7 +3,10 @@
  subject="""comment 2"""
  date="2018-06-04T17:40:23Z"
  content="""
-Actually, Remote.gitconfig is not a problem; it contains
-the local repos's remote config settings, not the remote repo's
-own git config.
+I've changed Remote.repo to Remote.getRepo so IO can be done there.
+
+The remaining problem is the remoteGitConfig part
+of RemoteGitConfig. That is dependent on the git config of the remote being
+read when a Remote is constructed, and when checkuuid=false, that won't be
+done. Only a few things use it, but my first try at removing it failed.
 """]]
