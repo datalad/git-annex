@@ -163,6 +163,8 @@ addCopies = addLimit . limitCopies
 
 limitCopies :: MkLimit Annex
 limitCopies want = case splitc ':' want of
+	-- Note that in case of a group having the same name as a trust
+	-- level, it's parsed as a trust level, not as a group.
 	[v, n] -> case parsetrustspec v of
 		Just checker -> go n $ checktrust checker
 		Nothing -> go n $ checkgroup v
