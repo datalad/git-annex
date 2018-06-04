@@ -175,7 +175,7 @@ gen r u c gc
 				else Just $ repairRemote r
 			, config = c
 			, localpath = localpathCalc r
-			, getRepo = return r
+			, getRepo = getRepoFromState st
 			, gitconfig = gc { remoteGitConfig = extractGitConfig r }
 			, readonly = Git.repoIsHttp r
 			, availability = availabilityCalc r
@@ -333,7 +333,7 @@ inAnnex rmt st key = do
 	inAnnex' repo rmt st key
 
 inAnnex' :: Git.Repo -> Remote -> State -> Key -> Annex Bool
-inAnnex' repo rmt (State connpool duc) key
+inAnnex' repo rmt (State connpool duc _) key
 	| Git.repoIsHttp repo = checkhttp
 	| Git.repoIsUrl repo = checkremote
 	| otherwise = checklocal
@@ -378,7 +378,7 @@ dropKey r st key = do
 	dropKey' repo r st key
 
 dropKey' :: Git.Repo -> Remote -> State -> Key -> Annex Bool
-dropKey' repo r (State connpool duc) key
+dropKey' repo r (State connpool duc _) key
 	| not $ Git.repoIsUrl repo = ifM duc
 		( guardUsable repo (return False) $
 			commitOnCleanup repo r $ onLocalFast repo r $ do
@@ -402,7 +402,7 @@ lockKey r st key callback = do
 	lockKey' repo r st key callback
 
 lockKey' :: Git.Repo -> Remote -> State -> Key -> (VerifiedCopy -> Annex r) -> Annex r
-lockKey' repo r (State connpool duc) key callback
+lockKey' repo r (State connpool duc _) key callback
 	| not $ Git.repoIsUrl repo = ifM duc
 		( guardUsable repo failedlock $ do
 			inorigrepo <- Annex.makeRunner
@@ -470,7 +470,7 @@ copyFromRemote' forcersync r st key file dest meterupdate = do
 	copyFromRemote'' repo forcersync r st key file dest meterupdate
 
 copyFromRemote'' :: Git.Repo -> Bool -> Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
-copyFromRemote'' repo forcersync r (State connpool _) key file dest meterupdate
+copyFromRemote'' repo forcersync r (State connpool _ _) key file dest meterupdate
 	| Git.repoIsHttp repo = unVerified $
 		Annex.Content.downloadUrl key meterupdate (keyUrls repo r key) dest
 	| not $ Git.repoIsUrl repo = guardUsable repo (unVerified (return False)) $ do
@@ -595,7 +595,7 @@ copyToRemote r st key file meterupdate = do
 	copyToRemote' repo r st key file meterupdate
 
 copyToRemote' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-copyToRemote' repo r (State connpool duc) key file meterupdate
+copyToRemote' repo r (State connpool duc _) key file meterupdate
 	| not $ Git.repoIsUrl repo = ifM duc
 		( guardUsable repo (return False) $ commitOnCleanup repo r $
 			copylocal =<< Annex.Content.prepSendAnnex key
@@ -775,13 +775,6 @@ mkCopier remotewanthardlink rsyncparams = do
 		, return copier
 		)
 
-data State = State Ssh.P2PSshConnectionPool DeferredUUIDCheck
-
-mkState :: Git.Repo -> UUID -> RemoteGitConfig -> Annex State
-mkState r u gc = State
-	<$> Ssh.mkP2PSshConnectionPool
-	<*> mkDeferredUUIDCheck r u gc
-
 {- Normally the UUID of a local repository is checked at startup,
  - but annex-checkuuid config can prevent that. To avoid getting
  - confused, a deferred check is done just before the repository
@@ -789,19 +782,40 @@ mkState r u gc = State
  - This returns False when the repository UUID is not as expected. -}
 type DeferredUUIDCheck = Annex Bool
 
-mkDeferredUUIDCheck :: Git.Repo -> UUID -> RemoteGitConfig -> Annex DeferredUUIDCheck
-mkDeferredUUIDCheck r u gc
-	| remoteAnnexCheckUUID gc = return (return True)
-	| otherwise = do
-		v <- liftIO newEmptyMVar
-		return $ ifM (liftIO $ isEmptyMVar v)
-			( do
-				r' <- tryGitConfigRead False r
-				u' <- getRepoUUID r'
-				let ok = u' == u
-				void $ liftIO $ tryPutMVar v ok
-				unless ok $
-					warning $ Git.repoDescribe r ++ " is not the expected repository. The remote's annex-checkuuid configuration prevented noticing the change until now."
-				return ok
-			, liftIO $ readMVar v
-			)
+data State = State Ssh.P2PSshConnectionPool DeferredUUIDCheck (Annex Git.Repo)
+
+getRepoFromState :: State -> Annex Git.Repo
+getRepoFromState (State _ _ a) = a
+
+mkState :: Git.Repo -> UUID -> RemoteGitConfig -> Annex State
+mkState r u gc = do
+	pool <- Ssh.mkP2PSshConnectionPool
+	(duc, getrepo) <- go
+	return $ State pool duc getrepo
+  where
+	go
+		| remoteAnnexCheckUUID gc = return (return True, return r)
+		| otherwise = do
+			rv <- liftIO newEmptyMVar
+			let getrepo = ifM (liftIO $ isEmptyMVar rv)
+				( do
+					r' <- tryGitConfigRead False r
+					void $ liftIO $ tryPutMVar rv r'
+					return r'
+				, liftIO $ readMVar rv
+				)
+
+			cv <- liftIO newEmptyMVar
+			let duc = ifM (liftIO $ isEmptyMVar cv)
+				( do
+					r' <- getrepo
+					u' <- getRepoUUID r'
+					let ok = u' == u
+					void $ liftIO $ tryPutMVar cv ok
+					unless ok $
+						warning $ Git.repoDescribe r ++ " is not the expected repository. The remote's annex-checkuuid configuration prevented noticing the change until now."
+					return ok
+				, liftIO $ readMVar cv
+				)
+
+			return (duc, getrepo)
