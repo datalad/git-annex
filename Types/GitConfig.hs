@@ -97,7 +97,6 @@ data GitConfig = GitConfig
 	, receiveDenyCurrentBranch :: DenyCurrentBranch
 	, gcryptId :: Maybe String
 	, gpgCmd :: GpgCmd
-	, gitConfigRepo :: Git.Repo
 	}
 
 extractGitConfig :: Git.Repo -> GitConfig
@@ -164,7 +163,6 @@ extractGitConfig r = GitConfig
 	, receiveDenyCurrentBranch = getDenyCurrentBranch r
 	, gcryptId = getmaybe "core.gcrypt-id"
 	, gpgCmd = mkGpgCmd (getmaybe "gpg.program")
-	, gitConfigRepo = r
 	}
   where
 	getbool k d = fromMaybe d $ getmaybebool k
