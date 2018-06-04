@@ -45,3 +45,5 @@ It might make sense to also always output "supported repository versions" and "u
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I am a long time happy user of git-annex. Thank you for your never ending effort!
+
+> [[done]] --[[Joey]]

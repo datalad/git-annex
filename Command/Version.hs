@@ -48,16 +48,9 @@ seekNoRepo o
 
 showVersion :: Annex ()
 showVersion = do
-	v <- getVersion
-	liftIO $ do
-		showPackageVersion
-		vinfo "local repository version" $ fromMaybe "unknown" v
-		vinfo "supported repository versions" $
-			unwords supportedVersions
-		vinfo "upgrade supported from repository versions" $
-			unwords upgradableVersions
-		vinfo "operating system" $
-			unwords [os, arch]
+	liftIO showPackageVersion
+	maybe noop (liftIO . vinfo "local repository version")
+		=<< getVersion
 
 showPackageVersion :: IO ()
 showPackageVersion = do
@@ -67,6 +60,11 @@ showPackageVersion = do
 	vinfo "key/value backends" $ unwords $
 		map (formatKeyVariety . B.backendVariety) Backend.list
 	vinfo "remote types" $ unwords $ map R.typename Remote.remoteTypes
+	vinfo "operating system" $ unwords [os, arch]
+	vinfo "supported repository versions" $
+		unwords supportedVersions
+	vinfo "upgrade supported from repository versions" $
+		unwords upgradableVersions
 
 showRawVersion :: IO ()
 showRawVersion = do
