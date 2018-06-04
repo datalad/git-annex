@@ -135,7 +135,8 @@ rsyncParamsRemote unlocked r direction key file (AssociatedFile afile) = do
 		-- compatability.
 		: (Fields.direct, if unlocked then "1" else "")
 		: maybe [] (\f -> [(Fields.associatedFile, f)]) afile
-	Just (shellcmd, shellparams) <- git_annex_shell ConsumeStdin (repo r)
+	repo <- getRepo r
+	Just (shellcmd, shellparams) <- git_annex_shell ConsumeStdin repo
 		(if direction == Download then "sendkey" else "recvkey")
 		[ Param $ key2file key ]
 		fields
@@ -237,13 +238,14 @@ openP2PSshConnection :: Remote -> P2PSshConnectionPool -> Annex (Maybe P2PSshCon
 openP2PSshConnection r connpool = do
 	u <- getUUID
 	let ps = [Param (fromUUID u)]
-	git_annex_shell ConsumeStdin (repo r) "p2pstdio" ps [] >>= \case
+	repo <- getRepo r
+	git_annex_shell ConsumeStdin repo "p2pstdio" ps [] >>= \case
 		Nothing -> do
 			liftIO $ rememberunsupported
 			return Nothing
-		Just (cmd, params) -> start cmd params
+		Just (cmd, params) -> start cmd params =<< getRepo r
   where
-	start cmd params = liftIO $ withNullHandle $ \nullh -> do
+	start cmd params repo = liftIO $ withNullHandle $ \nullh -> do
 		-- stderr is discarded because old versions of git-annex
 		-- shell always error
 		(Just from, Just to, Nothing, pid) <- createProcess $
@@ -253,7 +255,7 @@ openP2PSshConnection r connpool = do
 				, std_err = UseHandle nullh
 				}
 		let conn = P2P.P2PConnection
-			{ P2P.connRepo = repo r
+			{ P2P.connRepo = repo
 			, P2P.connCheckAuth = const False
 			, P2P.connIhdl = to
 			, P2P.connOhdl = from

@@ -92,7 +92,9 @@ cleanupSpecialRemote u c = do
 	Logs.Remote.configSet u c
 	Remote.byUUID u >>= \case
 		Nothing -> noop
-		Just r -> setRemoteIgnore (R.repo r) False
+		Just r -> do
+			repo <- R.getRepo r
+			setRemoteIgnore repo False
 	return True
 
 unknownNameError :: String -> Annex a

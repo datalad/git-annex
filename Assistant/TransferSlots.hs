@@ -106,13 +106,13 @@ runTransferThread' program batchmaker d run = go
  - already have been updated to include the transfer. -}
 genTransfer :: Transfer -> TransferInfo -> TransferGenerator
 genTransfer t info = case transferRemote info of
-	Just remote 
-		| Git.repoIsLocalUnknown (Remote.repo remote) -> do
-			-- optimisation for removable drives not plugged in
+	Just remote -> ifM (unpluggedremovabledrive remote)
+		( do
+			-- optimisation, since the transfer would fail
 			liftAnnex $ recordFailedTransfer t info
 			void $ removeTransfer t
 			return Nothing
-		| otherwise -> ifM (liftAnnex $ shouldTransfer t info)
+		, ifM (liftAnnex $ shouldTransfer t info)
 			( do
 				debug [ "Transferring:" , describeTransfer t info ]
 				notifyTransfer
@@ -124,10 +124,14 @@ genTransfer t info = case transferRemote info of
 				finishedTransfer t (Just info)
 				return Nothing
 			)
+		)
 	_ -> return Nothing
   where
 	direction = transferDirection t
 	isdownload = direction == Download
+
+	unpluggedremovabledrive remote = Git.repoIsLocalUnknown
+		<$> liftAnnex (Remote.getRepo remote)
 
 	{- Alerts are only shown for successful transfers.
 	 - Transfers can temporarily fail for many reasons,

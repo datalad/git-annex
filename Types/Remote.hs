@@ -111,8 +111,8 @@ data RemoteA a = Remote
 	, repairRepo :: Maybe (a Bool -> a (IO Bool))
 	-- a Remote has a persistent configuration store
 	, config :: RemoteConfig
-	-- git repo for the Remote
-	, repo :: Git.Repo
+	-- Get the git repo for the Remote.
+	, getRepo :: a Git.Repo
 	-- a Remote's configuration from git
 	, gitconfig :: RemoteGitConfig
 	-- a Remote can be assocated with a specific local filesystem path

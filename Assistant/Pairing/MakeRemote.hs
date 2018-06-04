@@ -47,7 +47,8 @@ finishedLocalPairing msg keypair = do
 			("git-annex-shell -c configlist " ++ T.unpack (sshDirectory sshdata))
 			Nothing
 	r <- liftAnnex $ addRemote $ makeSshRemote sshdata
-	liftAnnex $ setRemoteCost (Remote.repo r) semiExpensiveRemoteCost
+	repo <- liftAnnex $ Remote.getRepo r
+	liftAnnex $ setRemoteCost repo semiExpensiveRemoteCost
 	syncRemote r
 
 {- Mostly a straightforward conversion.  Except:

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-06-04T17:40:23Z"
+ content="""
+Actually, Remote.gitconfig is not a problem; it contains
+the local repos's remote config settings, not the remote repo's
+own git config.
+"""]]

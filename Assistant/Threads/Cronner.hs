@@ -210,11 +210,11 @@ runActivity' urlrenderer (ScheduledRemoteFsck u s d) = dispatch =<< liftAnnex (r
 			 - Annex monad. -}
 			go rmt =<< liftAnnex (mkfscker (annexFsckParams d))
 	go rmt annexfscker = do
+		repo <- liftAnnex $ Remote.getRepo rmt
 		fsckresults <- showFscking urlrenderer (Just rmt) $ tryNonAsync $ do
 			void annexfscker
-			let r = Remote.repo rmt
-			if Git.repoIsLocal r && not (Git.repoIsLocalUnknown r)
-				then Just <$> Git.Fsck.findBroken True r
+			if Git.repoIsLocal repo && not (Git.repoIsLocalUnknown repo)
+				then Just <$> Git.Fsck.findBroken True repo
 				else pure Nothing
 		maybe noop (void . repairWhenNecessary urlrenderer u (Just rmt)) fsckresults
 

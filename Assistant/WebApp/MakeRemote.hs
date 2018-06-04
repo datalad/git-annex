@@ -38,8 +38,9 @@ setupCloudRemote = setupRemote postsetup . Just
 setupRemote :: (Remote -> Handler a) -> Maybe StandardGroup -> Maybe Cost -> Annex RemoteName -> Handler a
 setupRemote postsetup mgroup mcost getname = do
 	r <- liftAnnex $ addRemote getname
+	repo <- liftAnnex $ Remote.getRepo r
 	liftAnnex $ do
 		maybe noop (defaultStandardGroup (Remote.uuid r)) mgroup
-		maybe noop (Config.setRemoteCost (Remote.repo r)) mcost
+		maybe noop (Config.setRemoteCost repo) mcost
 	liftAssistant $ syncRemote r
 	postsetup r

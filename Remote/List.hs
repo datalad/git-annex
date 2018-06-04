@@ -111,7 +111,7 @@ remoteGen m t r = do
 updateRemote :: Remote -> Annex (Maybe Remote)
 updateRemote remote = do
 	m <- readRemoteLog
-	remote' <- updaterepo $ repo remote
+	remote' <- updaterepo =<< getRepo remote
 	remoteGen m (remotetype remote) remote'
   where
 	updaterepo r

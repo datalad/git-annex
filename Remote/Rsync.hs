@@ -88,7 +88,7 @@ gen r u c gc = do
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
 			, config = c
-			, repo = r
+			, getRepo = return r
 			, gitconfig = gc
 			, localpath = if islocal
 				then Just $ rsyncUrl o

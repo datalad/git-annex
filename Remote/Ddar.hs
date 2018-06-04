@@ -67,7 +67,7 @@ gen r u c gc = do
 		, remoteFsck = Nothing
 		, repairRepo = Nothing
 		, config = c
-		, repo = r
+		, getRepo = return r
 		, gitconfig = gc
 		, localpath = if ddarLocal ddarrepo && not (null $ ddarRepoLocation ddarrepo)
 			then Just $ ddarRepoLocation ddarrepo

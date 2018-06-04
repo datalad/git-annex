@@ -123,7 +123,7 @@ gen' r u c gc = do
 		, repairRepo = Nothing
 		, config = c
 		, localpath = localpathCalc r
-		, repo = r
+		, getRepo = return r
 		, gitconfig = gc { remoteGitConfig = extractGitConfig r }
 		, readonly = Git.repoIsHttp r
 		, availability = availabilityCalc r
@@ -328,17 +328,22 @@ setGcryptEncryption c remotename = do
 	remoteconfig n = ConfigKey $ n remotename
 
 store :: Remote -> Remote.Rsync.RsyncOpts -> Storer
-store r rsyncopts
-	| not $ Git.repoIsUrl (repo r) = 
-		byteStorer $ \k b p -> guardUsable (repo r) (return False) $ liftIO $ do
-			let tmpdir = Git.repoLocation (repo r) </> "tmp" </> keyFile k
+store r rsyncopts k s p = do
+	repo <- getRepo r
+	store' repo r rsyncopts k s p
+
+store' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> Storer
+store' repo r rsyncopts
+	| not $ Git.repoIsUrl repo = 
+		byteStorer $ \k b p -> guardUsable repo (return False) $ liftIO $ do
+			let tmpdir = Git.repoLocation repo </> "tmp" </> keyFile k
 			void $ tryIO $ createDirectoryIfMissing True tmpdir
 			let tmpf = tmpdir </> keyFile k
 			meteredWriteFile p tmpf b
-			let destdir = parentDir $ gCryptLocation r k
+			let destdir = parentDir $ gCryptLocation repo k
 			Remote.Directory.finalizeStoreGeneric tmpdir destdir
 			return True
-	| Git.repoIsSsh (repo r) = if accessShell r
+	| Git.repoIsSsh repo = if accessShell r
 		then fileStorer $ \k f p -> do
 			oh <- mkOutputHandler
 			Ssh.rsyncHelper oh (Just p)
@@ -348,11 +353,16 @@ store r rsyncopts
 	| otherwise = unsupportedUrl
 
 retrieve :: Remote -> Remote.Rsync.RsyncOpts -> Retriever
-retrieve r rsyncopts
-	| not $ Git.repoIsUrl (repo r) = byteRetriever $ \k sink ->
-		guardUsable (repo r) (return False) $
-			sink =<< liftIO (L.readFile $ gCryptLocation r k)
-	| Git.repoIsSsh (repo r) = if accessShell r
+retrieve r rsyncopts k p sink = do
+	repo <- getRepo r
+	retrieve' repo r rsyncopts k p sink
+
+retrieve' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> Retriever
+retrieve' repo r rsyncopts
+	| not $ Git.repoIsUrl repo = byteRetriever $ \k sink ->
+		guardUsable repo (return False) $
+			sink =<< liftIO (L.readFile $ gCryptLocation repo k)
+	| Git.repoIsSsh repo = if accessShell r
 		then fileRetriever $ \f k p -> do
 			ps <- Ssh.rsyncParamsRemote False r Download k f
 				(AssociatedFile Nothing)
@@ -364,30 +374,40 @@ retrieve r rsyncopts
   where
 
 remove :: Remote -> Remote.Rsync.RsyncOpts -> Remover
-remove r rsyncopts k
-	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) (return False) $
-		liftIO $ Remote.Directory.removeDirGeneric (Git.repoLocation (repo r)) (parentDir (gCryptLocation r k))
-	| Git.repoIsSsh (repo r) = shellOrRsync r removeshell removersync
+remove r rsyncopts k = do
+	repo <- getRepo r
+	remove' repo r rsyncopts k
+
+remove' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> Remover
+remove' repo r rsyncopts k
+	| not $ Git.repoIsUrl repo = guardUsable repo (return False) $
+		liftIO $ Remote.Directory.removeDirGeneric (Git.repoLocation repo) (parentDir (gCryptLocation repo k))
+	| Git.repoIsSsh repo = shellOrRsync r removeshell removersync
 	| otherwise = unsupportedUrl
   where
 	removersync = Remote.Rsync.remove rsyncopts k
-	removeshell = Ssh.dropKey (repo r) k
+	removeshell = Ssh.dropKey repo k
 
 checkKey :: Remote -> Remote.Rsync.RsyncOpts -> CheckPresent
-checkKey r rsyncopts k
-	| not $ Git.repoIsUrl (repo r) =
-		guardUsable (repo r) (cantCheck $ repo r) $
-			liftIO $ doesFileExist (gCryptLocation r k)
-	| Git.repoIsSsh (repo r) = shellOrRsync r checkshell checkrsync
+checkKey r rsyncopts k = do
+	repo <- getRepo r
+	checkKey' repo r rsyncopts k
+
+checkKey' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> CheckPresent
+checkKey' repo r rsyncopts k
+	| not $ Git.repoIsUrl repo =
+		guardUsable repo (cantCheck repo) $
+			liftIO $ doesFileExist (gCryptLocation repo k)
+	| Git.repoIsSsh repo = shellOrRsync r checkshell checkrsync
 	| otherwise = unsupportedUrl
   where
-	checkrsync = Remote.Rsync.checkKey (repo r) rsyncopts k
-	checkshell = Ssh.inAnnex (repo r) k
+	checkrsync = Remote.Rsync.checkKey repo rsyncopts k
+	checkshell = Ssh.inAnnex repo k
 
 {- Annexed objects are hashed using lower-case directories for max
  - portability. -}
-gCryptLocation :: Remote -> Key -> FilePath
-gCryptLocation r key = Git.repoLocation (repo r) </> objectDir </> keyPath key (hashDirLower def)
+gCryptLocation :: Git.Repo -> Key -> FilePath
+gCryptLocation repo key = Git.repoLocation repo </> objectDir </> keyPath key (hashDirLower def)
 
 data AccessMethod = AccessDirect | AccessShell
 

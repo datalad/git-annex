@@ -139,10 +139,11 @@ repoList reposelector
 			unwanted <- S.fromList
 				<$> filterM inUnwantedGroup (map Remote.uuid syncremotes)
 			trustmap <- trustMap
+			allrs <- concat . Remote.byCost <$> Remote.remoteList
 			rs <- filter (\r -> M.lookup (Remote.uuid r) trustmap /= Just DeadTrusted)
-				. filter selectedrepo 
-				. concat . Remote.byCost
-				<$> Remote.remoteList
+				. map fst
+				. filter selectedrepo
+				<$> forM allrs (\r -> (,) <$> pure r <*> Remote.getRepo r)
 			let l = flip map (map mkRepoId rs) $ \r -> case r of
 				(RepoUUID u)
 					| u `S.member` unwanted -> (r, mkUnwantedRepoActions r)
@@ -165,11 +166,10 @@ repoList reposelector
 		map snd . catMaybes . filter selectedremote 
 			. map (findinfo m g)
 			<$> trustExclude DeadTrusted (M.keys m)
-	selectedrepo r
+	selectedrepo (r, repo)
 		| Remote.readonly r = False
-		| onlyCloud reposelector = Git.repoIsUrl (Remote.repo r)
+		| onlyCloud reposelector = Git.repoIsUrl repo
 			&& Remote.uuid r /= NoUUID 
-			&& not (Remote.isXMPPRemote r)
 		| otherwise = True
 	selectedremote Nothing = False
 	selectedremote (Just (iscloud, _))
@@ -238,8 +238,9 @@ getRepositoriesReorderR = do
 	go list (Just remote) = do
 		rs <- catMaybes <$> mapM repoIdRemote list
 		forM_ (reorderCosts remote rs) $ \(r, newcost) ->
-			when (Remote.cost r /= newcost) $
-				setRemoteCost (Remote.repo r) newcost
+			when (Remote.cost r /= newcost) $ do
+				repo <- Remote.getRepo r
+				setRemoteCost repo newcost
 		void remoteListRefresh
 	fromjs = fromMaybe (RepoUUID NoUUID) . readish . T.unpack
 

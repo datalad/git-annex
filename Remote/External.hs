@@ -117,7 +117,7 @@ gen r u c gc
 			, repairRepo = Nothing
 			, config = c
 			, localpath = Nothing
-			, repo = r
+			, getRepo = return r
 			, gitconfig = gc
 			, readonly = False
 			, availability = avail

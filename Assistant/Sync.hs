@@ -64,26 +64,25 @@ reconnectRemotes rs = void $ do
 		mapM_ signal $ filter (`notElem` failedrs) rs'
 	recordExportCommit
   where
-	gitremotes = filter (notspecialremote . Remote.repo) rs
-	(_xmppremotes, nonxmppremotes) = partition Remote.isXMPPRemote rs
+	gitremotes = liftAnnex $ 
+		filterM (notspecialremote <$$> Remote.getRepo) rs
 	notspecialremote r
 		| Git.repoIsUrl r = True
 		| Git.repoIsLocal r = True
 		| Git.repoIsLocalUnknown r = True
 		| otherwise = False
 	sync currentbranch@(Just _, _) = do
-		(failedpull, diverged) <- manualPull currentbranch gitremotes
+		(failedpull, diverged) <- manualPull currentbranch =<< gitremotes
 		now <- liftIO getCurrentTime
-		failedpush <- pushToRemotes' now gitremotes
+		failedpush <- pushToRemotes' now =<< gitremotes
 		return (nub $ failedpull ++ failedpush, diverged)
 	{- No local branch exists yet, but we can try pulling. -}
-	sync (Nothing, _) = manualPull (Nothing, Nothing) gitremotes
+	sync (Nothing, _) = manualPull (Nothing, Nothing) =<< gitremotes
 	go = do
 		(failed, diverged) <- sync
 			=<< liftAnnex (join Command.Sync.getCurrBranch)
 		addScanRemotes diverged =<<
-			filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig)
-				nonxmppremotes
+			filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) rs
 		return failed
 	signal r = liftIO . mapM_ (flip tryPutMVar ())
 		=<< fromMaybe [] . M.lookup (Remote.uuid r) . connectRemoteNotifiers
@@ -130,8 +129,7 @@ pushToRemotes' now remotes = do
 			<$> gitRepo
 			<*> join Command.Sync.getCurrBranch
 			<*> getUUID
-	let (_xmppremotes, normalremotes) = partition Remote.isXMPPRemote remotes
-	ret <- go True branch g u normalremotes
+	ret <- go True branch g u remotes
 	return ret
   where
 	go _ (Nothing, _) _ _ _ = return [] -- no branch, so nothing to do
@@ -174,7 +172,8 @@ parallelPush g rs a = do
   where
 	topush r = (,)
 		<$> pure r
-		<*> sshOptionsTo (Remote.repo r) (Remote.gitconfig r) g
+		<*> (Remote.getRepo r >>= \repo ->
+			sshOptionsTo repo (Remote.gitconfig r) g)
 
 {- Displays an alert while running an action that syncs with some remotes,
  - and returns any remotes that it failed to sync with.
@@ -187,7 +186,7 @@ syncAction rs a
 	| otherwise = do
 		i <- addAlert $ syncAlert visibleremotes
 		failed <- a rs
-		let failed' = filter (not . Git.repoIsLocalUnknown . Remote.repo) failed
+		failed' <- filterM (not . Git.repoIsLocalUnknown <$$> liftAnnex . Remote.getRepo) failed
 		let succeeded = filter (`notElem` failed) visibleremotes
 		if null succeeded && null failed'
 			then removeAlert i
@@ -195,8 +194,7 @@ syncAction rs a
 				syncResultAlert succeeded failed'
 		return failed
   where
-	visibleremotes = filter (not . Remote.readonly) $
-		filter (not . Remote.isXMPPRemote) rs
+	visibleremotes = filter (not . Remote.readonly) rs
 
 {- Manually pull from remotes and merge their branches. Returns any
  - remotes that it failed to pull from, and a Bool indicating
@@ -206,17 +204,18 @@ syncAction rs a
 manualPull :: Command.Sync.CurrBranch -> [Remote] -> Assistant ([Remote], Bool)
 manualPull currentbranch remotes = do
 	g <- liftAnnex gitRepo
-	let (_xmppremotes, normalremotes) = partition Remote.isXMPPRemote remotes
-	failed <- forM normalremotes $ \r -> if wantpull $ Remote.gitconfig r
+	failed <- forM remotes $ \r -> if wantpull $ Remote.gitconfig r
 		then do
-			g' <- liftAnnex $ sshOptionsTo (Remote.repo r) (Remote.gitconfig r) g
+			g' <- liftAnnex $ do
+				repo <- Remote.getRepo r
+				sshOptionsTo repo (Remote.gitconfig r) g
 			ifM (liftIO $ Git.Command.runBool [Param "fetch", Param $ Remote.name r] g')
 				( return Nothing
 				, return $ Just r
 				)
 		else return Nothing
 	haddiverged <- liftAnnex Annex.Branch.forceUpdate
-	forM_ normalremotes $ \r ->
+	forM_ remotes $ \r ->
 		liftAnnex $ Command.Sync.mergeRemote r
 			currentbranch Command.Sync.mergeConfig def
 	when haddiverged $
@@ -263,10 +262,10 @@ changeSyncable (Just r) False = do
 
 changeSyncFlag :: Remote -> Bool -> Annex ()
 changeSyncFlag r enabled = do
+	repo <- Remote.getRepo r
+	let key = Config.remoteConfig repo "sync"
 	Config.setConfig key (boolConfig enabled)
 	void Remote.remoteListRefresh
-  where
-	key = Config.remoteConfig (Remote.repo r) "sync"
 
 updateExportTreeFromLogAll :: Assistant ()
 updateExportTreeFromLogAll = do

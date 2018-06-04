@@ -64,7 +64,7 @@ chainGen addr r u c gc = do
 		, repairRepo = Nothing
 		, config = c
 		, localpath = Nothing
-		, repo = r
+		, getRepo = return r
 		, gitconfig = gc { remoteGitConfig = extractGitConfig r }
 		, readonly = False
 		, availability = GloballyAvailable

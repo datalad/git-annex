@@ -55,8 +55,7 @@ calcSyncRemotes = do
 	let good r = Remote.uuid r `elem` alive
 	let syncable = filter good rs
 	contentremotes <- filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) $
-		filter (\r -> Remote.uuid r /= NoUUID) $
-		filter (not . Remote.isXMPPRemote) syncable
+		filter (\r -> Remote.uuid r /= NoUUID) syncable
 	let (exportremotes, dataremotes) = partition (exportTree . Remote.config) contentremotes
 
 	return $ \dstatus -> dstatus

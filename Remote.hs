@@ -51,7 +51,6 @@ module Remote (
 	forceTrust,
 	logStatus,
 	checkAvailable,
-	isXMPPRemote,
 	claimingUrl,
 	isExportSupported,
 ) where
@@ -72,21 +71,20 @@ import Remote.List
 import Config
 import Config.DynamicConfig
 import Git.Types (RemoteName)
-import qualified Git
 import Utility.Aeson
 
 {- Map from UUIDs of Remotes to a calculated value. -}
 remoteMap :: (Remote -> v) -> Annex (M.Map UUID v)
-remoteMap mkv = remoteMap' mkv mkk
+remoteMap mkv = remoteMap' mkv (pure . mkk)
   where
 	mkk r = case uuid r of
 		NoUUID -> Nothing
 		u -> Just u
 
-remoteMap' :: Ord k => (Remote -> v) -> (Remote -> Maybe k) -> Annex (M.Map k v)
-remoteMap' mkv mkk = M.fromList . mapMaybe mk <$> remoteList
+remoteMap' :: Ord k => (Remote -> v) -> (Remote -> Annex (Maybe k)) -> Annex (M.Map k v)
+remoteMap' mkv mkk = M.fromList . catMaybes <$> (mapM mk =<< remoteList)
   where
-	mk r = case mkk r of
+	mk r = mkk r >>= return . \case
 		Nothing -> Nothing
 		Just k -> Just (k, mkv r)
 
@@ -122,10 +120,11 @@ byNameWithUUID = checkuuid <=< byName
   where
 	checkuuid Nothing = return Nothing
 	checkuuid (Just r)
-		| uuid r == NoUUID =
+		| uuid r == NoUUID = do
+			repo <- getRepo r
 			ifM (liftIO $ getDynamicConfig $ remoteAnnexIgnore (gitconfig r))
 				( giveup $ noRemoteUUIDMsg r ++
-					" (" ++ show (remoteConfig (repo r) "ignore") ++
+					" (" ++ show (remoteConfig repo "ignore") ++
 					" is set)"
 				, giveup $ noRemoteUUIDMsg r
 				)
@@ -356,12 +355,6 @@ byCost = map snd . sortBy (comparing fst) . M.toList . costmap
 checkAvailable :: Bool -> Remote -> IO Bool
 checkAvailable assumenetworkavailable = 
 	maybe (return assumenetworkavailable) doesDirectoryExist . localpath
-
-{- Old remotes using the XMPP transport have urls like xmpp::user@host -}
-isXMPPRemote :: Remote -> Bool
-isXMPPRemote remote = Git.repoIsUrl r && "xmpp::" `isPrefixOf` Git.repoLocation r
-  where
-	r = repo remote
 
 hasKey :: Remote -> Key -> Annex (Either String Bool)
 hasKey r k = either (Left  . show) Right <$> tryNonAsync (checkPresent r k)

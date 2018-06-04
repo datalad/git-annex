@@ -42,7 +42,8 @@ gitRepoInfo r = do
 	let lastsynctime = case mtimes of
 		[] -> "never"
 		_ -> show $ posixSecondsToUTCTime $ realToFrac $ maximum mtimes
+	repo <- Remote.getRepo r
 	return
-		[ ("repository location", Git.repoLocation (Remote.repo r))
+		[ ("repository location", Git.repoLocation repo)
 		, ("last synced", lastsynctime)
 		]

@@ -123,11 +123,13 @@ exportTreeVariant r = ifM (Remote.isExportSupported r)
 
 -- Regenerate a remote with a modified config.
 adjustRemoteConfig :: Remote -> (Remote.RemoteConfig -> Remote.RemoteConfig) -> Annex (Maybe Remote)
-adjustRemoteConfig r adjustconfig = Remote.generate (Remote.remotetype r)
-	(Remote.repo r)
-	(Remote.uuid r)
-	(adjustconfig (Remote.config r))
-	(Remote.gitconfig r)
+adjustRemoteConfig r adjustconfig = do
+	repo <- Remote.getRepo r
+	Remote.generate (Remote.remotetype r)
+		repo
+		(Remote.uuid r)
+		(adjustconfig (Remote.config r))
+		(Remote.gitconfig r)
 
 test :: Annex.AnnexState -> Remote -> Key -> [TestTree]
 test st r k =

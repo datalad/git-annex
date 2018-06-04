@@ -68,7 +68,7 @@ gen r u c gc = do
 		, remoteFsck = Nothing
 		, repairRepo = Nothing
 		, config = c
-		, repo = r
+		, getRepo = return r
 		, gitconfig = gc
 		, localpath = if bupLocal buprepo && not (null buprepo)
 			then Just buprepo

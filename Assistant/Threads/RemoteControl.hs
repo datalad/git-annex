@@ -99,7 +99,7 @@ remoteResponderThread fromh urimap = go M.empty
 			cont
 
 getURIMap :: Annex (M.Map URI Remote)
-getURIMap = Remote.remoteMap' id (mkk . Git.location . Remote.repo)
+getURIMap = Remote.remoteMap' id (\r -> mkk . Git.location <$> Remote.getRepo r)
   where
 	mkk (Git.Url u) = Just u
 	mkk _ = Nothing

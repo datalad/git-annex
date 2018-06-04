@@ -146,8 +146,8 @@ setRepoConfig uuid mremote oldc newc = do
 
 	legalName = makeLegalName . T.unpack . repoName
 
-editRepositoryAForm :: Maybe Remote -> RepoConfig -> MkAForm RepoConfig
-editRepositoryAForm mremote d = RepoConfig
+editRepositoryAForm :: Maybe Git.Repo -> Maybe Remote -> RepoConfig -> MkAForm RepoConfig
+editRepositoryAForm mrepo mremote d = RepoConfig
 	<$> areq (if ishere then readonlyTextField else textField)
 		(bfs "Name") (Just $ repoName d)
 	<*> aopt textField (bfs "Description") (Just $ repoDescription d)
@@ -156,8 +156,7 @@ editRepositoryAForm mremote d = RepoConfig
 	<*> areq checkBoxField "Syncing enabled" (Just $ repoSyncable d)
   where
 	ishere = isNothing mremote
-	isspecial = fromMaybe False $
-		(== Git.Unknown) . Git.location . Remote.repo <$> mremote
+	isspecial = maybe False ((== Git.Unknown) . Git.location) mrepo
 	groups = customgroups ++ standardgroups
 	standardgroups :: [(Text, RepoGroup)]
 	standardgroups = map (\g -> (T.pack $ descStandardGroup g , RepoGroupStandard g)) $
@@ -204,8 +203,11 @@ editForm new (RepoUUID uuid)
 				error "unknown remote"
 		curr <- liftAnnex $ getRepoConfig uuid mremote
 		liftAnnex $ checkAssociatedDirectory curr mremote
+		mrepo <- liftAnnex $
+			maybe (pure Nothing) (Just <$$> Remote.getRepo) mremote
 		((result, form), enctype) <- liftH $
-			runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $ editRepositoryAForm mremote curr
+			runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $
+				editRepositoryAForm mrepo mremote curr
 		case result of
 			FormSuccess input -> liftH $ do
 				setRepoConfig uuid mremote curr input
@@ -221,7 +223,8 @@ editForm _new r@(RepoName _) = page "Edit repository" (Just Configuration) $ do
 	mr <- liftAnnex (repoIdRemote r)
 	let repoInfo = getRepoInfo mr Nothing
 	g <- liftAnnex gitRepo
-	let sshrepo = maybe False (remoteLocationIsSshUrl . flip parseRemoteLocation g . Git.repoLocation . Remote.repo) mr
+	mrepo <- liftAnnex $ maybe (pure Nothing) (Just <$$> Remote.getRepo) mr
+	let sshrepo = maybe False (remoteLocationIsSshUrl . flip parseRemoteLocation g . Git.repoLocation) mrepo
 	$(widgetFile "configurators/edit/nonannexremote")
 
 {- Makes any directory associated with the repository. -}
@@ -246,7 +249,7 @@ getRepoInfo (Just r) (Just c) = case M.lookup "type" c of
 		| otherwise -> AWS.getRepoInfo c
 	Just t
 		| t /= "git" -> [whamlet|#{t} remote|]
-	_ -> getGitRepoInfo $ Remote.repo r
+	_ -> getGitRepoInfo =<< liftAnnex (Remote.getRepo r)
 getRepoInfo (Just r) _ = getRepoInfo (Just r) (Just $ Remote.config r)
 getRepoInfo _ _ = [whamlet|git repository|]
 
@@ -283,9 +286,11 @@ getUpgradeRepositoryR r = go =<< liftAnnex (repoIdRemote r)
 	go Nothing = redirect DashboardR
 	go (Just rmt) = do
 		liftIO fixSshKeyPairIdentitiesOnly
-		liftAnnex $ setConfig 
-			(remoteConfig (Remote.repo rmt) "ignore")
-			(Git.Config.boolConfig False)
+		liftAnnex $ do
+			repo <- Remote.getRepo rmt
+			setConfig
+				(remoteConfig repo "ignore")
+				(Git.Config.boolConfig False)
 		liftAnnex $ void Remote.remoteListRefresh
 		liftAssistant updateSyncRemotes
 		liftAssistant $ syncRemote rmt

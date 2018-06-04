@@ -49,20 +49,23 @@ handleProblem urlrenderer repoproblem = do
 		liftIO $ afterFix repoproblem
 
 handleRemoteProblem :: UrlRenderer -> Remote -> Assistant Bool
-handleRemoteProblem urlrenderer rmt
-	| Git.repoIsLocal r && not (Git.repoIsLocalUnknown r) =
+handleRemoteProblem urlrenderer rmt = do
+	repo <- liftAnnex $ Remote.getRepo rmt
+	handleRemoteProblem' repo urlrenderer rmt
+
+handleRemoteProblem' :: Git.Repo -> UrlRenderer -> Remote -> Assistant Bool
+handleRemoteProblem' repo urlrenderer rmt
+	| Git.repoIsLocal repo && not (Git.repoIsLocalUnknown repo) =
 		ifM (liftIO $ checkAvailable True rmt)
 			( do
-				fixedlocks <- repairStaleGitLocks r
+				fixedlocks <- repairStaleGitLocks repo
 				fsckresults <- showFscking urlrenderer (Just rmt) $ tryNonAsync $
-					Git.Fsck.findBroken True r
+					Git.Fsck.findBroken True repo
 				repaired <- repairWhenNecessary urlrenderer (Remote.uuid rmt) (Just rmt) fsckresults
 				return $ fixedlocks || repaired
 			, return False
 			)
 	| otherwise = return False
-  where
-	r = Remote.repo rmt
 
 {- This is not yet used, and should probably do a fsck. -}
 handleLocalRepoProblem :: UrlRenderer -> Assistant Bool

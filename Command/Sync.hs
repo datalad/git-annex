@@ -275,8 +275,7 @@ remoteBranch remote = Git.Ref.underBase $ "refs/remotes/" ++ Remote.name remote
 syncRemotes :: [String] -> Annex [Remote]
 syncRemotes ps = do
 	remotelist <- Remote.remoteList' True
-	available <- filterM (liftIO . getDynamicConfig . remoteAnnexSync . Remote.gitconfig)
-		(filter (not . Remote.isXMPPRemote) remotelist)
+	available <- filterM (liftIO . getDynamicConfig . remoteAnnexSync . Remote.gitconfig) remotelist
 	syncRemotes' ps available
 
 syncRemotes' :: [String] -> [Remote] -> Annex [Remote]
@@ -292,7 +291,8 @@ syncRemotes' ps available =
 	listed = concat <$> mapM Remote.byNameOrGroup ps
 	
 	good r
-		| Remote.gitSyncableRemote r = Remote.Git.repoAvail $ Remote.repo r
+		| Remote.gitSyncableRemote r =
+			Remote.Git.repoAvail =<< Remote.getRepo r
 		| otherwise = return True
 	
 	fastest = fromMaybe [] . headMaybe . Remote.byCost
@@ -408,9 +408,11 @@ pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o && want
 		stopUnless fetch $
 			next $ mergeRemote remote branch mergeconfig (resolveMergeOverride o)
   where
-	fetch = inRepoWithSshOptionsTo (Remote.repo remote) (Remote.gitconfig remote) $
-		Git.Command.runBool
-			[Param "fetch", Param $ Remote.name remote]
+	fetch = do
+		repo <- Remote.getRepo remote
+		inRepoWithSshOptionsTo repo (Remote.gitconfig remote) $
+			Git.Command.runBool
+				[Param "fetch", Param $ Remote.name remote]
 	wantpull = remoteAnnexPull (Remote.gitconfig remote)
 
 {- The remote probably has both a master and a synced/master branch.
@@ -441,11 +443,12 @@ pushRemote _o _remote (Nothing, _) = stop
 pushRemote o remote (Just branch, _) = stopUnless (pure (pushOption o) <&&> needpush) $ do
 	showStart' "push" (Just (Remote.name remote))
 	next $ next $ do
+		repo <- Remote.getRepo remote
 		showOutput
-		ok <- inRepoWithSshOptionsTo (Remote.repo remote) gc $
+		ok <- inRepoWithSshOptionsTo repo gc $
 			pushBranch remote branch
 		if ok
-			then postpushupdate
+			then postpushupdate repo
 			else do
 				warning $ unwords [ "Pushing to " ++ Remote.name remote ++ " failed." ]
 				showLongNote "(non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)"
@@ -457,11 +460,11 @@ pushRemote o remote (Just branch, _) = stopUnless (pure (pushOption o) <&&> need
 		| otherwise = anyM (newer remote) [syncBranch branch, Annex.Branch.name]
 	-- Do updateInstead emulation for remotes on eg removable drives
 	-- formatted FAT, where the post-update hook won't run.
-	postpushupdate
-		| annexCrippledFileSystem (remoteGitConfig (Remote.gitconfig remote)) = 
-			case Git.repoWorkTree (Remote.repo remote) of
+	postpushupdate repo
+		| annexCrippledFileSystem (remoteGitConfig (Remote.gitconfig remote)) =
+			case Git.repoWorkTree repo of
 				Nothing -> return True
-				Just wt -> ifM (Remote.Git.onLocal remote needUpdateInsteadEmulation)
+				Just wt -> ifM (Remote.Git.onLocal repo remote needUpdateInsteadEmulation)
 					( liftIO $ do
 						p <- readProgramFile
 						boolSystem' p [Param "post-receive"]

@@ -144,7 +144,8 @@ handleMounts urlrenderer wasmounted nowmounted =
 handleMount :: UrlRenderer -> FilePath -> Assistant ()
 handleMount urlrenderer dir = do
 	debug ["detected mount of", dir]
-	rs <- filter (Git.repoIsLocal . Remote.repo) <$> remotesUnder dir
+	rs <- filterM (Git.repoIsLocal <$$> liftAnnex . Remote.getRepo)
+		=<< remotesUnder dir
 	mapM_ (fsckNudge urlrenderer . Just) rs
 	reconnectRemotes rs
 
