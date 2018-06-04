@@ -33,3 +33,5 @@ git annex find --copies=trusted:1
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes! Thanks so much for your work!
+
+> Closing per comments. [[done]] --[[Joey]]
