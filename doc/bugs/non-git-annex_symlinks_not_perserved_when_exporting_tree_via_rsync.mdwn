@@ -1,0 +1,15 @@
+### Please describe the problem.
+
+non-git-annex symlinks are not perserved when exporting tree via rsync. instead of symlinks on the remote destination, there are files that that contain text that describe the path of the local symlink.
+
+### What steps will reproduce the problem?
+
+add an ssh-based rsync remote with exporttree=yes and run `git annex export master --to test-rsync-remote`
+
+### What version of git-annex are you using? On what operating system?
+
+6.20180529 on Trisquel 8 GNU/Linux
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, Git Annex has allowed us to transfer Gigabytes of data without a need for 7 GB of swap space and a git push command that takes hours to complete. :)
