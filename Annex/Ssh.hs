@@ -73,7 +73,7 @@ sshOptions cs (host, port) gc opts = go =<< sshCachingInfo (host, port)
   where
 	go (Nothing, params) = return $ mkparams cs params
 	go (Just socketfile, params) = do
-		prepSocket socketfile gc host (mkparams NoConsumeStdin params)
+		prepSocket socketfile host (mkparams NoConsumeStdin params)
 			
 		return $ mkparams cs params
 	mkparams cs' ps = concat
@@ -167,8 +167,8 @@ portParams (Just port) = [Param "-p", Param $ show port]
  - Locks the socket lock file to prevent other git-annex processes from
  - stopping the ssh multiplexer on this socket.
  -}
-prepSocket :: FilePath -> RemoteGitConfig -> SshHost -> [CommandParam] -> Annex ()
-prepSocket socketfile gc sshhost sshparams = do
+prepSocket :: FilePath -> SshHost -> [CommandParam] -> Annex ()
+prepSocket socketfile sshhost sshparams = do
 	-- There could be stale ssh connections hanging around
 	-- from a previous git-annex run that was interrupted.
 	-- This must run only once, before we have made any ssh connection,
@@ -190,9 +190,7 @@ prepSocket socketfile gc sshhost sshparams = do
 	let socketlock = socket2lock socketfile
 
 	Annex.getState Annex.concurrency >>= \case
-		Concurrent {}
-			| annexUUID (remoteGitConfig gc) /= NoUUID ->
-				makeconnection socketlock
+		Concurrent {} -> makeconnection socketlock
 		_ -> return ()
 	
 	lockFileCached socketlock
@@ -389,7 +387,7 @@ sshOptionsTo remote gc localr
 				case msockfile of
 					Nothing -> use []
 					Just sockfile -> do
-						prepSocket sockfile gc sshhost $ concat
+						prepSocket sockfile sshhost $ concat
 							[ cacheparams
 							, map Param (remoteAnnexSshOptions gc)
 							, portParams port
