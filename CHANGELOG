@@ -3,8 +3,10 @@ git-annex (6.20180530) UNRELEASED; urgency=medium
   * Fix build with ghc 8.4+, which broke due to the Semigroup Monoid change. 
   * version: Show operating system and repository version list 
     when run outside a git repo too.
-  * Fixed annex-checkuuid implementation, so that remotes configured that
+  * Fix annex-checkuuid implementation, so that remotes configured that
     way can be used.
+  * Fix problems accessing repositories over http when annex.tune.*
+    is configured.
 
  -- Joey Hess <id@joeyh.name>  Wed, 30 May 2018 11:49:08 -0400
 

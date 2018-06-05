@@ -8,3 +8,5 @@ annex-checkuuid=false.
 
 The best thing would be to remove remoteGitConfig, to avoid such problems
 in the future. --[[Joey]]
+
+> [[done]] --[[Joey]]

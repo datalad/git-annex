@@ -176,7 +176,7 @@ gen r u c gc
 			, config = c
 			, localpath = localpathCalc r
 			, getRepo = getRepoFromState st
-			, gitconfig = gc { remoteGitConfig = extractGitConfig r }
+			, gitconfig = gc
 			, readonly = Git.repoIsHttp r
 			, availability = availabilityCalc r
 			, remotetype = remote
@@ -340,8 +340,9 @@ inAnnex' repo rmt (State connpool duc _) key
   where
 	checkhttp = do
 		showChecking repo
+		gc <- Annex.getGitConfig
 		ifM (Url.withUrlOptions $ \uo -> liftIO $
-			anyM (\u -> Url.checkBoth u (keySize key) uo) (keyUrls repo rmt key))
+			anyM (\u -> Url.checkBoth u (keySize key) uo) (keyUrls gc repo rmt key))
 				( return True
 				, giveup "not found"
 				)
@@ -355,22 +356,21 @@ inAnnex' repo rmt (State connpool duc _) key
 		, cantCheck repo
 		)
 
-keyUrls :: Git.Repo -> Remote -> Key -> [String]
-keyUrls repo r key = map tourl locs'
+keyUrls :: GitConfig -> Git.Repo -> Remote -> Key -> [String]
+keyUrls gc repo r key = map tourl locs'
   where
 	tourl l = Git.repoLocation repo ++ "/" ++ l
 	-- If the remote is known to not be bare, try the hash locations
 	-- used for non-bare repos first, as an optimisation.
 	locs
-		| remoteAnnexBare remoteconfig == Just False = reverse (annexLocations cfg key)
-		| otherwise = annexLocations cfg key
+		| remoteAnnexBare remoteconfig == Just False = reverse (annexLocations gc key)
+		| otherwise = annexLocations gc key
 #ifndef mingw32_HOST_OS
 	locs' = locs
 #else
 	locs' = map (replace "\\" "/") locs
 #endif
 	remoteconfig = gitconfig r
-	cfg = remoteGitConfig remoteconfig
 
 dropKey :: Remote -> State -> Key -> Annex Bool
 dropKey r st key = do
@@ -471,8 +471,9 @@ copyFromRemote' forcersync r st key file dest meterupdate = do
 
 copyFromRemote'' :: Git.Repo -> Bool -> Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
 copyFromRemote'' repo forcersync r (State connpool _ _) key file dest meterupdate
-	| Git.repoIsHttp repo = unVerified $
-		Annex.Content.downloadUrl key meterupdate (keyUrls repo r key) dest
+	| Git.repoIsHttp repo = unVerified $ do
+		gc <- Annex.getGitConfig
+		Annex.Content.downloadUrl key meterupdate (keyUrls gc repo r key) dest
 	| not $ Git.repoIsUrl repo = guardUsable repo (unVerified (return False)) $ do
 		params <- Ssh.rsyncParams r Download
 		u <- getUUID
@@ -567,10 +568,10 @@ copyFromRemoteCheap r st key af file = do
 copyFromRemoteCheap' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> FilePath -> Annex Bool
 #ifndef mingw32_HOST_OS
 copyFromRemoteCheap' repo r st key af file
-	| not $ Git.repoIsUrl repo = guardUsable repo (return False) $ liftIO $ do
-		loc <- gitAnnexLocation key repo $
-			remoteGitConfig $ gitconfig r
-		ifM (doesFileExist loc)
+	| not $ Git.repoIsUrl repo = guardUsable repo (return False) $ do
+		gc <- getGitConfigFromState st
+		loc <- liftIO $ gitAnnexLocation key repo gc
+		liftIO $ ifM (doesFileExist loc)
 			( do
 				absloc <- absPath loc
 				catchBoolIO $ do
@@ -782,10 +783,14 @@ mkCopier remotewanthardlink rsyncparams = do
  - This returns False when the repository UUID is not as expected. -}
 type DeferredUUIDCheck = Annex Bool
 
-data State = State Ssh.P2PSshConnectionPool DeferredUUIDCheck (Annex Git.Repo)
+data State = State Ssh.P2PSshConnectionPool DeferredUUIDCheck (Annex (Git.Repo, GitConfig))
 
 getRepoFromState :: State -> Annex Git.Repo
-getRepoFromState (State _ _ a) = a
+getRepoFromState (State _ _ a) = fst <$> a
+
+{- The config of the remote git repository, cached for speed. -}
+getGitConfigFromState :: State -> Annex GitConfig
+getGitConfigFromState (State _ _ a) = snd <$> a
 
 mkState :: Git.Repo -> UUID -> RemoteGitConfig -> Annex State
 mkState r u gc = do
@@ -794,21 +799,23 @@ mkState r u gc = do
 	return $ State pool duc getrepo
   where
 	go
-		| remoteAnnexCheckUUID gc = return (return True, return r)
+		| remoteAnnexCheckUUID gc = return
+			(return True, return (r, extractGitConfig r))
 		| otherwise = do
 			rv <- liftIO newEmptyMVar
 			let getrepo = ifM (liftIO $ isEmptyMVar rv)
 				( do
 					r' <- tryGitConfigRead False r
-					void $ liftIO $ tryPutMVar rv r'
-					return r'
+					let t = (r', extractGitConfig r')
+					void $ liftIO $ tryPutMVar rv t
+					return t
 				, liftIO $ readMVar rv
 				)
 
 			cv <- liftIO newEmptyMVar
 			let duc = ifM (liftIO $ isEmptyMVar cv)
 				( do
-					r' <- getrepo
+					r' <- fst <$> getrepo
 					u' <- getRepoUUID r'
 					let ok = u' == u
 					void $ liftIO $ tryPutMVar cv ok

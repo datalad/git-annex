@@ -65,7 +65,7 @@ chainGen addr r u c gc = do
 		, config = c
 		, localpath = Nothing
 		, getRepo = return r
-		, gitconfig = gc { remoteGitConfig = extractGitConfig r }
+		, gitconfig = gc
 		, readonly = False
 		, availability = GloballyAvailable
 		, remotetype = remote

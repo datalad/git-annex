@@ -124,7 +124,7 @@ gen' r u c gc = do
 		, config = c
 		, localpath = localpathCalc r
 		, getRepo = return r
-		, gitconfig = gc { remoteGitConfig = extractGitConfig r }
+		, gitconfig = gc
 		, readonly = Git.repoIsHttp r
 		, availability = availabilityCalc r
 		, remotetype = remote

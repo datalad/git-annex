@@ -19,6 +19,7 @@ import Common
 import qualified Git
 import qualified Git.Config
 import qualified Git.Construct
+import Git.Types
 import Git.ConfigTypes
 import Utility.DataUnits
 import Config.Cost
@@ -195,7 +196,12 @@ mergeGitConfig gitconfig repoglobals = gitconfig
 
 {- Per-remote git-annex settings. Each setting corresponds to a git-config
  - key such as <remote>.annex-foo, or if that is not set, a default from
- - annex.foo -}
+ - annex.foo.
+ -
+ - Note that this is from the perspective of the local repository,
+ - it is not influenced in any way by the contents of the remote
+ - repository's git config.
+ -}
 data RemoteGitConfig = RemoteGitConfig
 	{ remoteAnnexCost :: DynamicConfig (Maybe Cost)
 	, remoteAnnexIgnore :: DynamicConfig Bool
@@ -235,11 +241,11 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexDdarRepo :: Maybe String
 	, remoteAnnexHookType :: Maybe String
 	, remoteAnnexExternalType :: Maybe String
-	{- A regular git remote's git repository config. -}
-	, remoteGitConfig :: GitConfig
 	}
 
-extractRemoteGitConfig :: Git.Repo -> String -> STM RemoteGitConfig
+{- The Git.Repo is the local repository, which has the remote with the
+ - given RemoteName. -}
+extractRemoteGitConfig :: Git.Repo -> RemoteName -> STM RemoteGitConfig
 extractRemoteGitConfig r remotename = do
 	annexcost <- mkDynamicConfig readCommandRunner
 		(notempty $ getmaybe "cost-command")
@@ -288,7 +294,6 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexDdarRepo = getmaybe "ddarrepo"
 		, remoteAnnexHookType = notempty $ getmaybe "hooktype"
 		, remoteAnnexExternalType = notempty $ getmaybe "externaltype"
-		, remoteGitConfig = extractGitConfig r
 		}
   where
 	getbool k d = fromMaybe d $ getmaybebool k
