@@ -1,12 +1,10 @@
 annex-checkuuid=false prevents the git config of a remote from being read.
 So, the remoteGitConfig will be an empty config when that's set.
 
-Only a few things use remoteGitConfig. Annex.Ssh uses it, but is not
-impacted by the problem. 
-
-And `git annex sync` looks at it to determine
-if the remote is a FAT-formatted drive, and does updateInstead emulation.
-So, that's broken for remotes with annex-checkuuid=false
+I've mostly removed uses of remoteGitConfig, but there are two in
+Remote.Git, which are needed for annexDifferences.
+So, `annex.tune.*` config the remote won't be honored when
+annex-checkuuid=false.
 
 The best thing would be to remove remoteGitConfig, to avoid such problems
 in the future. --[[Joey]]

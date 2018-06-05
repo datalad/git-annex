@@ -454,25 +454,27 @@ pushRemote o remote (Just branch, _) = stopUnless (pure (pushOption o) <&&> need
 				showLongNote "(non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)"
 				return ok
   where
+	gc = Remote.gitconfig remote
 	needpush
 		| remoteAnnexReadOnly gc = return False
 		| not (remoteAnnexPush gc) = return False
 		| otherwise = anyM (newer remote) [syncBranch branch, Annex.Branch.name]
 	-- Do updateInstead emulation for remotes on eg removable drives
-	-- formatted FAT, where the post-update hook won't run.
-	postpushupdate repo
-		| annexCrippledFileSystem (remoteGitConfig (Remote.gitconfig remote)) =
-			case Git.repoWorkTree repo of
-				Nothing -> return True
-				Just wt -> ifM (Remote.Git.onLocal repo remote needUpdateInsteadEmulation)
-					( liftIO $ do
-						p <- readProgramFile
-						boolSystem' p [Param "post-receive"]
-							(\cp -> cp { cwd = Just wt })
-					, return True
-					)
-		| otherwise = return True
-	gc = Remote.gitconfig remote
+	-- formatted FAT, where the post-receive hook won't run.
+	postpushupdate repo = case Git.repoWorkTree repo of
+		Nothing -> return True
+		Just wt -> ifM needemulation
+			( liftIO $ do
+				p <- readProgramFile
+				boolSystem' p [Param "post-receive"]
+					(\cp -> cp { cwd = Just wt })
+			, return True
+			)
+	  where
+		needemulation = Remote.Git.onLocal repo remote $
+			(annexCrippledFileSystem <$> Annex.getGitConfig)
+				<&&>
+			needUpdateInsteadEmulation			
 
 {- Pushes a regular branch like master to a remote. Also pushes the git-annex
  - branch.
