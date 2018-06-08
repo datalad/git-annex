@@ -285,6 +285,15 @@ while read line; do
 			fi
 		;;
 
+		# This is optional, only provided as an example.
+		GETINFO)
+			echo INFOFIELD "repository location"
+			echo INFOVALUE "$mydirectory"
+			echo INFOFIELD "login"
+			echo INFOVALUE "$MYLOGIN"
+			echo INFOEND
+		;;
+
 		*)
 			echo UNSUPPORTED-REQUEST
 		;;

@@ -159,6 +159,11 @@ replying with `UNSUPPORTED-REQUEST` is acceptable.
   network access.  
   This is not needed when `SETURIPRESENT` is used, since such uris are
   automatically displayed by `git annex whereis`.  
+* `GETINFO`  
+  Requests the remote to send some information describing its
+  configuration, for display by `git annex info`.  
+  Reply with a series of `INFOFIELD` each followed by `INFOVALUE`,
+  and concluded with `INFOEND`.
 * `EXPORTSUPPORTED`  
   Used to check if a special remote supports exports. The remote
   responds with either `EXPORTSUPPORTED-SUCCESS` or
@@ -282,6 +287,23 @@ while it's handling a request.
   stored in the special remote.
 * `WHEREIS-FAILURE`  
   Indicates that no location is known for a key.
+* `INFOFIELD` / `INFOVALUE` / `INFOEND`  
+  Reply to a GETINFO request. This can be used to add info about anything,
+  but things like an url to the remote, or details of the remote's
+  configuration are typical. It should not include any sensitive
+  information like passwords, since it will be displayed to the user's
+  screen.
+  
+  There can be zero or more `INFOFIELD` messages, each containing the name of 
+  a field, and each is immediately followed by an `INFOVALUE` message
+  containing its value. The sequence is concluded by `INFOEND`. For example:
+	
+	INFOFIELD repository location
+	INFOVALUE http://example.com/repo/
+	INFOFIELD datacenter
+	INFOVALUE Antarctica
+	INFOEND
+	
 * `EXPORTSUPPORTED-SUCCESS`  
   Indicates that it makes sense to use this special remote as an export.
 * `EXPORTSUPPORTED-FAILURE`  

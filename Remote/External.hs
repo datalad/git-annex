@@ -1,8 +1,8 @@
 {- External special remote interface.
  -
- - Copyright 2013-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2018 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 module Remote.External (remote) where
@@ -61,6 +61,7 @@ gen r u c gc
 			readonlyRemoveKey
 			(checkKeyUrl r)
 			Nothing
+			(externalInfo externaltype)
 			Nothing
 			Nothing
 			exportUnsupported
@@ -94,12 +95,13 @@ gen r u c gc
 			(removeKeyM external)
 			(checkPresentM external)
 			(Just (whereisKeyM external))
+			(getInfoM external)
 			(Just (claimUrlM external))
 			(Just (checkUrlM external))
 			exportactions
 			cheapexportsupported
   where
-	mk cst avail tostore toretrieve toremove tocheckkey towhereis toclaimurl tocheckurl exportactions cheapexportsupported = do
+	mk cst avail tostore toretrieve toremove tocheckkey towhereis togetinfo toclaimurl tocheckurl exportactions cheapexportsupported = do
 		let rmt = Remote
 			{ uuid = u
 			, cost = cst
@@ -125,7 +127,7 @@ gen r u c gc
 				{ exportSupported = cheapexportsupported }
 			, mkUnavailable = gen r u c $
 				gc { remoteAnnexExternalType = Just "!dne!" }
-			, getInfo = return [("externaltype", externaltype)]
+			, getInfo = togetinfo
 			, claimUrl = toclaimurl
 			, checkUrl = tocheckurl
 			}
@@ -151,7 +153,7 @@ externalSetup _ mu _ c gc = do
 		_ -> do
 			external <- newExternal externaltype u c' gc
 			handleRequest external INITREMOTE Nothing $ \resp -> case resp of
-				INITREMOTE_SUCCESS -> Just noop
+				INITREMOTE_SUCCESS -> result ()
 				INITREMOTE_FAILURE errmsg -> Just $ giveup errmsg
 				_ -> Nothing
 			withExternalState external $
@@ -171,21 +173,20 @@ checkExportSupported' :: External -> Annex Bool
 checkExportSupported' external = go `catchNonAsync` (const (return False))
   where
 	go = handleRequest external EXPORTSUPPORTED Nothing $ \resp -> case resp of
-		EXPORTSUPPORTED_SUCCESS -> Just $ return True
-		EXPORTSUPPORTED_FAILURE -> Just $ return False
-		UNSUPPORTED_REQUEST -> Just $ return False
+		EXPORTSUPPORTED_SUCCESS -> result True
+		EXPORTSUPPORTED_FAILURE -> result False
+		UNSUPPORTED_REQUEST -> result False
 		_ -> Nothing
 
 storeKeyM :: External -> Storer
 storeKeyM external = fileStorer $ \k f p ->
 	handleRequestKey external (\sk -> TRANSFER Upload sk f) k (Just p) $ \resp ->
 		case resp of
-			TRANSFER_SUCCESS Upload k' | k == k' ->
-				Just $ return True
+			TRANSFER_SUCCESS Upload k' | k == k' -> result True
 			TRANSFER_FAILURE Upload k' errmsg | k == k' ->
 				Just $ do
 					warning errmsg
-					return False
+					return (Result False)
 			_ -> Nothing
 
 retrieveKeyFileM :: External -> Retriever
@@ -193,7 +194,7 @@ retrieveKeyFileM external = fileRetriever $ \d k p ->
 	handleRequestKey external (\sk -> TRANSFER Download sk d) k (Just p) $ \resp ->
 		case resp of
 			TRANSFER_SUCCESS Download k'
-				| k == k' -> Just $ return ()
+				| k == k' -> result ()
 			TRANSFER_FAILURE Download k' errmsg
 				| k == k' -> Just $ giveup errmsg
 			_ -> Nothing
@@ -203,11 +204,11 @@ removeKeyM external k = safely $
 	handleRequestKey external REMOVE k Nothing $ \resp ->
 		case resp of
 			REMOVE_SUCCESS k'
-				| k == k' -> Just $ return True
+				| k == k' -> result True
 			REMOVE_FAILURE k' errmsg
 				| k == k' -> Just $ do
 					warning errmsg
-					return False
+					return (Result False)
 			_ -> Nothing
 
 checkPresentM :: External -> CheckPresent
@@ -216,32 +217,31 @@ checkPresentM external k = either giveup id <$> go
 	go = handleRequestKey external CHECKPRESENT k Nothing $ \resp ->
 		case resp of
 			CHECKPRESENT_SUCCESS k'
-				| k' == k -> Just $ return $ Right True
+				| k' == k -> result $ Right True
 			CHECKPRESENT_FAILURE k'
-				| k' == k -> Just $ return $ Right False
+				| k' == k -> result $ Right False
 			CHECKPRESENT_UNKNOWN k' errmsg
-				| k' == k -> Just $ return $ Left errmsg
+				| k' == k -> result $ Left errmsg
 			_ -> Nothing
 
 whereisKeyM :: External -> Key -> Annex [String]
 whereisKeyM external k = handleRequestKey external WHEREIS k Nothing $ \resp -> case resp of
-	WHEREIS_SUCCESS s -> Just $ return [s]
-	WHEREIS_FAILURE -> Just $ return []
-	UNSUPPORTED_REQUEST -> Just $ return []
+	WHEREIS_SUCCESS s -> result [s]
+	WHEREIS_FAILURE -> result []
+	UNSUPPORTED_REQUEST -> result []
 	_ -> Nothing
 
 storeExportM :: External -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
 storeExportM external f k loc p = safely $
 	handleRequestExport external loc req k (Just p) $ \resp -> case resp of
-		TRANSFER_SUCCESS Upload k' | k == k' ->
-			Just $ return True
+		TRANSFER_SUCCESS Upload k' | k == k' -> result True
 		TRANSFER_FAILURE Upload k' errmsg | k == k' ->
 			Just $ do
 				warning errmsg
-				return False
+				return (Result False)
 		UNSUPPORTED_REQUEST -> Just $ do
 			warning "TRANSFEREXPORT not implemented by external special remote"
-			return False
+			return (Result False)
 		_ -> Nothing
   where
 	req sk = TRANSFEREXPORT Upload sk f
@@ -250,14 +250,14 @@ retrieveExportM :: External -> Key -> ExportLocation -> FilePath -> MeterUpdate 
 retrieveExportM external k loc d p = safely $
 	handleRequestExport external loc req k (Just p) $ \resp -> case resp of
 		TRANSFER_SUCCESS Download k'
-			| k == k' -> Just $ return True
+			| k == k' -> result True
 		TRANSFER_FAILURE Download k' errmsg
 			| k == k' -> Just $ do
 				warning errmsg
-				return False
+				return (Result False)
 		UNSUPPORTED_REQUEST -> Just $ do
 			warning "TRANSFEREXPORT not implemented by external special remote"
-			return False
+			return (Result False)
 		_ -> Nothing
   where
 	req sk = TRANSFEREXPORT Download sk d
@@ -267,12 +267,12 @@ checkPresentExportM external k loc = either giveup id <$> go
   where
 	go = handleRequestExport external loc CHECKPRESENTEXPORT k Nothing $ \resp -> case resp of
 		CHECKPRESENT_SUCCESS k'
-			| k' == k -> Just $ return $ Right True
+			| k' == k -> result $ Right True
 		CHECKPRESENT_FAILURE k'
-			| k' == k -> Just $ return $ Right False
+			| k' == k -> result $ Right False
 		CHECKPRESENT_UNKNOWN k' errmsg
-			| k' == k -> Just $ return $ Left errmsg
-		UNSUPPORTED_REQUEST -> Just $ return $
+			| k' == k -> result $ Left errmsg
+		UNSUPPORTED_REQUEST -> result $
 			Left "CHECKPRESENTEXPORT not implemented by external special remote"
 		_ -> Nothing
 
@@ -280,22 +280,22 @@ removeExportM :: External -> Key -> ExportLocation -> Annex Bool
 removeExportM external k loc = safely $
 	handleRequestExport external loc REMOVEEXPORT k Nothing $ \resp -> case resp of
 		REMOVE_SUCCESS k'
-			| k == k' -> Just $ return True
+			| k == k' -> result True
 		REMOVE_FAILURE k' errmsg
 			| k == k' -> Just $ do
 				warning errmsg
-				return False
+				return (Result False)
 		UNSUPPORTED_REQUEST -> Just $ do
 			warning "REMOVEEXPORT not implemented by external special remote"
-			return False
+			return (Result False)
 		_ -> Nothing
 
 removeExportDirectoryM :: External -> ExportDirectory -> Annex Bool
 removeExportDirectoryM external dir = safely $
 	handleRequest external req Nothing $ \resp -> case resp of
-		REMOVEEXPORTDIRECTORY_SUCCESS -> Just $ return True
-		REMOVEEXPORTDIRECTORY_FAILURE -> Just $ return False
-		UNSUPPORTED_REQUEST -> Just $ return True
+		REMOVEEXPORTDIRECTORY_SUCCESS -> result True
+		REMOVEEXPORTDIRECTORY_FAILURE -> result False
+		UNSUPPORTED_REQUEST -> result True
 		_ -> Nothing
   where
 	req = REMOVEEXPORTDIRECTORY dir
@@ -304,10 +304,10 @@ renameExportM :: External -> Key -> ExportLocation -> ExportLocation -> Annex Bo
 renameExportM external k src dest = safely $
 	handleRequestExport external src req k Nothing $ \resp -> case resp of
 		RENAMEEXPORT_SUCCESS k'
-			| k' == k -> Just $ return True
+			| k' == k -> result True
 		RENAMEEXPORT_FAILURE k' 
-			| k' == k -> Just $ return False
-		UNSUPPORTED_REQUEST -> Just $ return False
+			| k' == k -> result False
+		UNSUPPORTED_REQUEST -> result False
 		_ -> Nothing
   where
 	req sk = RENAMEEXPORT sk dest
@@ -333,12 +333,12 @@ safely a = go =<< tryNonAsync a
  - May throw exceptions, for example on protocol errors, or
  - when the repository cannot be used.
  -}
-handleRequest :: External -> Request -> Maybe MeterUpdate -> (Response -> Maybe (Annex a)) -> Annex a
+handleRequest :: External -> Request -> Maybe MeterUpdate -> ResponseHandler a -> Annex a
 handleRequest external req mp responsehandler = 
 	withExternalState external $ \st -> 
 		handleRequest' st external req mp responsehandler
 
-handleRequestKey :: External -> (SafeKey -> Request) -> Key -> Maybe MeterUpdate -> (Response -> Maybe (Annex a)) -> Annex a
+handleRequestKey :: External -> (SafeKey -> Request) -> Key -> Maybe MeterUpdate -> ResponseHandler a -> Annex a
 handleRequestKey external mkreq k mp responsehandler = case mkSafeKey k of
 	Right sk -> handleRequest external (mkreq sk) mp responsehandler
 	Left e -> giveup e
@@ -346,14 +346,14 @@ handleRequestKey external mkreq k mp responsehandler = case mkSafeKey k of
 {- Export location is first sent in an EXPORT message before
  - the main request. This is done because the ExportLocation can
  - contain spaces etc. -}
-handleRequestExport :: External -> ExportLocation -> (SafeKey -> Request) -> Key -> Maybe MeterUpdate -> (Response -> Maybe (Annex a)) -> Annex a
+handleRequestExport :: External -> ExportLocation -> (SafeKey -> Request) -> Key -> Maybe MeterUpdate -> ResponseHandler a -> Annex a
 handleRequestExport external loc mkreq k mp responsehandler = do
 	withExternalState external $ \st -> do
 		checkPrepared st external
 		sendMessage st external (EXPORT loc)
 	handleRequestKey external mkreq k mp responsehandler
 
-handleRequest' :: ExternalState -> External -> Request -> Maybe MeterUpdate -> (Response -> Maybe (Annex a)) -> Annex a
+handleRequest' :: ExternalState -> External -> Request -> Maybe MeterUpdate -> ResponseHandler a -> Annex a
 handleRequest' st external req mp responsehandler
 	| needsPREPARE req = do
 		checkPrepared st external
@@ -449,6 +449,17 @@ sendMessage st external m = liftIO $ do
 	line = unwords $ formatMessage m
 	h = externalSend st
 
+{- A response handler can yeild a result, or it can request that another
+ - message be consumed from the external result. -}
+data ResponseHandlerResult a
+	= Result a
+	| GetNextMessage (ResponseHandler a)
+
+type ResponseHandler a = Response -> Maybe (Annex (ResponseHandlerResult a))
+
+result :: a -> Maybe (Annex (ResponseHandlerResult a))
+result = Just . return . Result
+
 {- Waits for a message from the external remote, and passes it to the
  - apppropriate handler. 
  -
@@ -456,7 +467,7 @@ sendMessage st external m = liftIO $ do
 receiveMessage
 	:: ExternalState
 	-> External 
-	-> (Response -> Maybe (Annex a))
+	-> ResponseHandler a
 	-> (RemoteRequest -> Maybe (Annex a))
 	-> (AsyncMessage -> Maybe (Annex a))
 	-> Annex a
@@ -467,14 +478,21 @@ receiveMessage st external handleresponse handlerequest handleasync =
 	go (Just s) = do
 		liftIO $ protocolDebug external st False s
 		case parseMessage s :: Maybe Response of
-			Just resp -> maybe (protocolError True s) id (handleresponse resp)
+			Just resp -> case handleresponse resp of
+				Nothing -> protocolError True s
+				Just callback -> callback >>= \case
+					Result a -> return a
+					GetNextMessage handleresponse' ->
+						receiveMessage st external handleresponse' handlerequest handleasync
 			Nothing -> case parseMessage s :: Maybe RemoteRequest of
 				Just req -> maybe (protocolError True s) id (handlerequest req)
 				Nothing -> case parseMessage s :: Maybe AsyncMessage of
 					Just msg -> maybe (protocolError True s) id (handleasync msg)
 					Nothing -> protocolError False s
 	protocolError parsed s = giveup $ "external special remote protocol error, unexpectedly received \"" ++ s ++ "\" " ++
-		if parsed then "(command not allowed at this time)" else "(unable to parse command)"
+		if parsed
+			then "(command not allowed at this time)"
+			else "(unable to parse command)"
 
 protocolDebug :: External -> ExternalState -> Bool -> String -> IO ()
 protocolDebug external st sendto line = debugM "external" $ unwords
@@ -521,8 +539,8 @@ startExternal external = do
 	-- accepted.
 	receiveMessage st external
 		(\resp -> case resp of
-			EXTENSIONS_RESPONSE _ -> Just (return ())
-			UNSUPPORTED_REQUEST -> Just (return ())
+			EXTENSIONS_RESPONSE _ -> result ()
+			UNSUPPORTED_REQUEST -> result ()
 			_ -> Nothing
 		)
 		(const Nothing)
@@ -603,8 +621,9 @@ checkPrepared st external = do
 		Unprepared ->
 			handleRequest' st external PREPARE Nothing $ \resp ->
 				case resp of
-					PREPARE_SUCCESS -> Just $
+					PREPARE_SUCCESS -> Just $ do
 						setprepared Prepared
+						return (Result ())
 					PREPARE_FAILURE errmsg -> Just $ do
 						setprepared $ FailedPrepare errmsg
 						giveup errmsg
@@ -617,17 +636,18 @@ checkPrepared st external = do
  - external special remote every time time just to ask it what its
  - cost is. -}
 getCost :: External -> Git.Repo -> RemoteGitConfig -> Annex Cost
-getCost external r gc = catchNonAsync (go =<< remoteCost' gc) (const defcst)
+getCost external r gc =
+	(go =<< remoteCost' gc) `catchNonAsync` const (pure defcst)
   where
 	go (Just c) = return c
 	go Nothing = do
 		c <- handleRequest external GETCOST Nothing $ \req -> case req of
-			COST c -> Just $ return c
-			UNSUPPORTED_REQUEST -> Just defcst
+			COST c -> result c
+			UNSUPPORTED_REQUEST -> result defcst
 			_ -> Nothing
 		setRemoteCost r c
 		return c
-	defcst = return expensiveRemoteCost
+	defcst = expensiveRemoteCost
 
 {- Caches the availability in the git config to avoid needing to start up an
  - external special remote every time time just to ask it what its
@@ -638,35 +658,36 @@ getCost external r gc = catchNonAsync (go =<< remoteCost' gc) (const defcst)
  -}
 getAvailability :: External -> Git.Repo -> RemoteGitConfig -> Annex Availability
 getAvailability external r gc = 
-	maybe (catchNonAsync query (const defavail)) return (remoteAnnexAvailability gc)
+	maybe (catchNonAsync query (const (pure defavail))) return
+		(remoteAnnexAvailability gc)
   where
 	query = do
 		avail <- handleRequest external GETAVAILABILITY Nothing $ \req -> case req of
-			AVAILABILITY avail -> Just $ return avail
-			UNSUPPORTED_REQUEST -> Just defavail
+			AVAILABILITY avail -> result avail
+			UNSUPPORTED_REQUEST -> result defavail
 			_ -> Nothing
 		setRemoteAvailability r avail
 		return avail
-	defavail = return GloballyAvailable
+	defavail = GloballyAvailable
 
 claimUrlM :: External -> URLString -> Annex Bool
 claimUrlM external url =
 	handleRequest external (CLAIMURL url) Nothing $ \req -> case req of
-		CLAIMURL_SUCCESS -> Just $ return True
-		CLAIMURL_FAILURE -> Just $ return False
-		UNSUPPORTED_REQUEST -> Just $ return False
+		CLAIMURL_SUCCESS -> result True
+		CLAIMURL_FAILURE -> result False
+		UNSUPPORTED_REQUEST -> result False
 		_ -> Nothing
 
 checkUrlM :: External -> URLString -> Annex UrlContents
 checkUrlM external url = 
 	handleRequest external (CHECKURL url) Nothing $ \req -> case req of
-		CHECKURL_CONTENTS sz f -> Just $ return $ UrlContents sz
-			(if null f then Nothing else Just $ mkSafeFilePath f)
+		CHECKURL_CONTENTS sz f -> result $ UrlContents sz $
+			if null f then Nothing else Just $ mkSafeFilePath f
 		-- Treat a single item multi response specially to
 		-- simplify the external remote implementation.
 		CHECKURL_MULTI ((_, sz, f):[]) ->
-			Just $ return $ UrlContents sz $ Just $ mkSafeFilePath f
-		CHECKURL_MULTI l -> Just $ return $ UrlMulti $ map mkmulti l
+			result $ UrlContents sz $ Just $ mkSafeFilePath f
+		CHECKURL_MULTI l -> result $ UrlMulti $ map mkmulti l
 		CHECKURL_FAILURE errmsg -> Just $ giveup errmsg
 		UNSUPPORTED_REQUEST -> giveup "CHECKURL not implemented by external special remote"
 		_ -> Nothing
@@ -689,3 +710,23 @@ getWebUrls :: Key -> Annex [URLString]
 getWebUrls key = filter supported <$> getUrls key
   where
 	supported u = snd (getDownloader u) == WebDownloader
+			
+externalInfo :: ExternalType -> Annex [(String, String)]
+externalInfo et = return [("externaltype", et)]
+
+getInfoM :: External -> Annex [(String, String)]
+getInfoM external = (++)
+	<$> externalInfo (externalType external)
+	<*> handleRequest external GETINFO Nothing (collect [])
+  where
+	collect l req = case req of
+		INFOFIELD f -> Just $ return $
+			GetNextMessage $ collectvalue l f
+		INFOEND -> result (reverse l)
+		UNSUPPORTED_REQUEST -> result []
+		_ -> Nothing
+	
+	collectvalue l f req = case req of
+		INFOVALUE v -> Just $ return $
+			GetNextMessage $ collect ((f, v) : l)
+		_ -> Nothing

@@ -2,7 +2,7 @@
  -
  - Copyright 2013-2018 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 {-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
@@ -127,6 +127,7 @@ data Request
 	| CHECKPRESENT SafeKey
 	| REMOVE SafeKey
 	| WHEREIS SafeKey
+	| GETINFO
 	| EXPORTSUPPORTED
 	| EXPORT ExportLocation
 	| TRANSFEREXPORT Direction SafeKey FilePath
@@ -162,6 +163,7 @@ instance Proto.Sendable Request where
 		[ "CHECKPRESENT", Proto.serialize key ]
 	formatMessage (REMOVE key) = [ "REMOVE", Proto.serialize key ]
 	formatMessage (WHEREIS key) = [ "WHEREIS", Proto.serialize key ]
+	formatMessage GETINFO = [ "GETINFO" ]
 	formatMessage EXPORTSUPPORTED = ["EXPORTSUPPORTED"]
 	formatMessage (EXPORT loc) = [ "EXPORT", Proto.serialize loc ]
 	formatMessage (TRANSFEREXPORT direction key file) = 
@@ -205,6 +207,9 @@ data Response
 	| CHECKURL_FAILURE ErrorMsg
 	| WHEREIS_SUCCESS String
 	| WHEREIS_FAILURE
+	| INFOFIELD String
+	| INFOVALUE String
+	| INFOEND
 	| EXPORTSUPPORTED_SUCCESS
 	| EXPORTSUPPORTED_FAILURE
 	| REMOVEEXPORTDIRECTORY_SUCCESS
@@ -236,6 +241,9 @@ instance Proto.Receivable Response where
 	parseCommand "CHECKURL-FAILURE" = Proto.parse1 CHECKURL_FAILURE
 	parseCommand "WHEREIS-SUCCESS" = Just . WHEREIS_SUCCESS
 	parseCommand "WHEREIS-FAILURE" = Proto.parse0 WHEREIS_FAILURE
+	parseCommand "INFOFIELD" = Proto.parse1 INFOFIELD
+	parseCommand "INFOVALUE" = Proto.parse1 INFOVALUE
+	parseCommand "INFOEND" = Proto.parse0 INFOEND
 	parseCommand "EXPORTSUPPORTED-SUCCESS" = Proto.parse0 EXPORTSUPPORTED_SUCCESS
 	parseCommand "EXPORTSUPPORTED-FAILURE" = Proto.parse0 EXPORTSUPPORTED_FAILURE
 	parseCommand "REMOVEEXPORTDIRECTORY-SUCCESS" = Proto.parse0 REMOVEEXPORTDIRECTORY_SUCCESS
