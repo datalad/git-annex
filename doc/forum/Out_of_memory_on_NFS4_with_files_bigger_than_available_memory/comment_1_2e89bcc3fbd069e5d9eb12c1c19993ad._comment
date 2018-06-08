@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yves.noirjean@3f9b06d19a920fbf5c82340c362e5971b00d4af2"
+ nickname="yves.noirjean"
+ avatar="http://cdn.libravatar.org/avatar/2f1ad9d443c037337d91f29781560344"
+ subject="comment 1"
+ date="2018-06-08T15:17:16Z"
+ content="""
+I wanted to try it with a repository using v5 indirect mode. This tells me:
+
+      Filesystem allows writing to files whose write bit is not set.
+    git-annex: This repository seems to be on a crippled filesystem, you must use direct mode.
+
+Is that the case with NFS4 in general or might the disk not be mounted properly?
+"""]]
