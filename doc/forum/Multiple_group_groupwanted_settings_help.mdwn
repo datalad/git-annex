@@ -1,0 +1,34 @@
+Help me figure this out. I can't get it to work.
+
+Here's my hypothetical repo setup: a1 a2 b1 b2
+
+All of these are connected to each other.
+
+Settings are as follows:
+
+    group a1 = a 1
+    group a2 = a 2
+    group b1 = b 1
+    group b2 = b 2
+
+    wanted a1 = groupwanted
+    wanted a2 = groupwanted
+    wanted b1 = groupwanted
+    wanted b2 = groupwanted
+
+    groupwanted 1 = not copies=1:1
+    groupwanted 2 = not copies=2:1
+    groupwanted a = not copies=a:1
+    groupwanted b = not copies=b:1
+
+    numcopies default = 2
+    config annex.synccontent = true
+
+The behavior I want is: Group "a" repos will only have 1 copy of a file, and group "b" repos will only have 1 copy of a file.
+Similarly, group "1" repos will only have 1 copy of a file, and group "2" repos will only have 1 copy of a file.
+
+So, for example, a file could be stored in a1 and b2, or a2 and b1, but NOT a1 and a2 (both are group "a") or a1 and b1 (both are group "1").
+
+But it doesn't work. When I add a file to a1, it is not copied to b2 on sync. The documentation says repos can have multiple groups, but I'm not sure how the groupwanted settings of multiple groups work together.
+
+Is this even possible?
