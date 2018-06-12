@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="madapeedikakkaran@2c5c8bb4520ebf2526afb49c8dcbcb60fb295973"
+ nickname="madapeedikakkaran"
+ avatar="http://cdn.libravatar.org/avatar/15c58acba4fc6f75abd783d5836e0254"
+ subject="Termux Error"
+ date="2018-06-12T11:54:02Z"
+ content="""
+I followed the instruction to install git-annex on my Lenovo Vibe K4 running Android 6
+
+At first I got the error `/bin/sh/ is missing`, which I worked around with termux-fix-shebang on runshell. Now I am getting this error. 
+
+`proot info: vpid 1: terminated with signal 11`
+
+Please advice. 
+"""]]
