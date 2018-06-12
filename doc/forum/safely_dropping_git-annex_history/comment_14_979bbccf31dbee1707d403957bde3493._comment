@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2018-06-12T16:11:27Z"
+ content="""
+@Rizwan yes, the things documented here still work. But, they drop old
+history about the past locations of files, they do not drop *all* information
+about the current locations of files. git-annex is keeping track of which
+files you have stored in the local repository and on the remote, and that
+information necessisarily takes up space.
+
+You're using git-annex with small files -- around 12
+kilobytes average file size. It's designed for mostly much larger files,
+so you will see a larger percentage of overhead in using it than you would
+if your files were bigger.
+"""]]
