@@ -27,6 +27,8 @@ import qualified P2P.IO as P2P
 import qualified P2P.Annex as P2P
 
 import Control.Concurrent.STM
+import Control.Concurrent.Async
+import qualified Data.ByteString as B
 
 toRepo :: ConsumeStdin -> Git.Repo -> RemoteGitConfig -> SshCommand -> Annex (FilePath, [CommandParam])
 toRepo cs r gc remotecmd = do
@@ -186,12 +188,15 @@ contentLockedMarker = "OK"
 
 -- A connection over ssh to git-annex shell speaking the P2P protocol.
 type P2PSshConnection = P2P.ClosableConnection
-	(P2P.RunState, P2P.P2PConnection, ProcessHandle)
+	(P2P.RunState, P2P.P2PConnection, ProcessHandle, TVar StderrHandlerState)
+
+data StderrHandlerState = DiscardStderr | DisplayStderr | EndStderrHandler
 
 closeP2PSshConnection :: P2PSshConnection -> IO (P2PSshConnection, Maybe ExitCode)
 closeP2PSshConnection P2P.ClosedConnection = return (P2P.ClosedConnection, Nothing)
-closeP2PSshConnection (P2P.OpenConnection (_st, conn, pid)) = do
+closeP2PSshConnection (P2P.OpenConnection (_st, conn, pid, stderrhandlerst)) = do
 	P2P.closeConnection conn
+	atomically $ writeTVar stderrhandlerst EndStderrHandler
 	exitcode <- waitForProcess pid
 	return (P2P.ClosedConnection, Just exitcode)
 
@@ -245,14 +250,12 @@ openP2PSshConnection r connpool = do
 			return Nothing
 		Just (cmd, params) -> start cmd params =<< getRepo r
   where
-	start cmd params repo = liftIO $ withNullHandle $ \nullh -> do
-		-- stderr is discarded because old versions of git-annex
-		-- shell always error
-		(Just from, Just to, Nothing, pid) <- createProcess $
+	start cmd params repo = liftIO $ do
+		(Just from, Just to, Just err, pid) <- createProcess $
 			(proc cmd (toCommand params))
 				{ std_in = CreatePipe
 				, std_out = CreatePipe
-				, std_err = UseHandle nullh
+				, std_err = CreatePipe
 				}
 		let conn = P2P.P2PConnection
 			{ P2P.connRepo = repo
@@ -260,14 +263,17 @@ openP2PSshConnection r connpool = do
 			, P2P.connIhdl = to
 			, P2P.connOhdl = from
 			}
+		stderrhandlerst <- newStderrHandler err
 		runst <- P2P.mkRunState P2P.Client
-		let c = P2P.OpenConnection (runst, conn, pid)
+		let c = P2P.OpenConnection (runst, conn, pid, stderrhandlerst)
 		-- When the connection is successful, the remote
 		-- will send an AUTH_SUCCESS with its uuid.
 		let proto = P2P.postAuth $
 			P2P.negotiateProtocolVersion P2P.maxProtocolVersion
 		tryNonAsync (P2P.runNetProto runst conn proto) >>= \case
-			Right (Right (Just theiruuid)) | theiruuid == uuid r ->
+			Right (Right (Just theiruuid)) | theiruuid == uuid r -> do
+				atomically $ 
+					writeTVar stderrhandlerst DisplayStderr
 				return $ Just c
 			_ -> do
 				(cclosed, exitcode) <- closeP2PSshConnection c
@@ -285,6 +291,33 @@ openP2PSshConnection r connpool = do
 	rememberunsupported = atomically $
 		modifyTVar' connpool $
 			maybe (Just P2PSshUnsupported) Just
+
+newStderrHandler :: Handle -> IO (TVar StderrHandlerState)
+newStderrHandler errh = do
+	-- stderr from git-annex-shell p2pstdio is initially discarded
+	-- because old versions don't support the command. Once it's known
+	-- to be running, this is changed to DisplayStderr.
+	v <- newTVarIO DiscardStderr
+	p <- async $ go v
+	void $ async $ ender p v
+	return v
+  where
+	go v = do
+		l <- B.hGetLine errh
+		atomically (readTVar v) >>= \case
+			DiscardStderr -> go v
+			DisplayStderr -> do
+				B.hPut stderr l
+				go v
+			EndStderrHandler -> return ()
+	
+	ender p v = do
+		atomically $ do
+			readTVar v >>= \case
+				EndStderrHandler -> return ()
+				_ -> retry
+		hClose errh
+		cancel p
 
 -- Runs a P2P Proto action on a remote when it supports that,
 -- otherwise the fallback action.
@@ -304,7 +337,7 @@ runProto r connpool bad fallback proto = Just <$>
 
 runProtoConn :: P2P.Proto a -> P2PSshConnection -> Annex (P2PSshConnection, Maybe a)
 runProtoConn _ P2P.ClosedConnection = return (P2P.ClosedConnection, Nothing)
-runProtoConn a conn@(P2P.OpenConnection (runst, c, _pid)) = do
+runProtoConn a conn@(P2P.OpenConnection (runst, c, _, _)) = do
 	P2P.runFullProto runst c a >>= \case
 		Right r -> return (conn, Just r)
 		-- When runFullProto fails, the connection is no longer
