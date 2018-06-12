@@ -1,5 +1,5 @@
 ### Please describe the problem.
-git-annex claims that adb does not list any files. `adb devices` however shows the device.
+git-annex claims that adb does not list any devices. `adb devices` however shows the device.
 
 ### What steps will reproduce the problem?
     $ git annex initremote phone type=adb androiddirectory=/storage/external/annex encryption=none exporttree=yes        
