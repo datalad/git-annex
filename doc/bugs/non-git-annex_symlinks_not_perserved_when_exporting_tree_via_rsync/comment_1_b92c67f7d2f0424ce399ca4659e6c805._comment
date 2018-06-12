@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-06-12T16:46:43Z"
+ content="""
+Yes, neither are execute bits preserved. Most kinds of special remotes that
+an export could be done to don't support such things, and it seemed like it
+would unduely complicate the export interface to support them.
+"""]]
