@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="Re: comment 5"
+ date="2018-06-12T19:01:09Z"
+ content="""
+ad SDCardFS / FAT32: It seems that both the fuse wrapper around the SD card (be it actually formatted FAT32 because it's the external one, or ext4 as is the encrypted internal one on my device) and SDCardFS (which, it appears to me, is just Google moving the fuse wrapper into the kernel) won't expose the functionality we want.
+
+ad adoptable storage: I think that's what's happening on my device (but am not sure), so if it is, the there's still the fuse wrapper / SDCardFS inbetween.
+
+ad specific app: That'd still mean that git-annex needs to operate on crippled file system, and I don't want to rely on special solutions for each app.
+
+---
+
+What I've seen when just setting up a new device is that the Storage Access Framework (looks like Android's idea of gvfs / kvfs with a spike of flatpak-portals to me: a userland file system that operates on `saf:/` and `content://` URIs rather than files, probably does file operations by means of IPC and receiving file handlers) might help:
+
+In the LineageOS built-in file manager, I don't see two \"virtual SD cards\" (the internal and the external one), but also a \"Termux\" \"device\" with proper logo and \"0B free\", which allows me to peek into the termux home directory (but not its usr directory). From that file manager I even see the photos inside a regular (symlinked) checkout, and can open them with the Simple Gallery app. (Provided they end with '.jpg' and not '.JPG', but that's probably a detail of the file manager).
+
+I did not yet find another app that sees this \"Termux\" device; Ghost Commander only sees \"Documents\" and the internal and external SD cards; the \"Dir\" file manager exposes a SAF selection only when creating directories on external SD (and then shows the same selection as Ghost Commander), the Simple tools (Simple File Manager, Simple gallery) show \"Internal\", \"SD Card\" and \"Root\" in their own storage selection (might be pre-SAF; similar situation also for the Amaze file manager).
+
+If we could reproduce what the builtin file manager does to access the files, that might be a solution here. Termux obviously already helps in this by exporting the home directory ([since 0.34](https://termux.com/changelog.html)), but maybe they also can do more (like exporting XDG user directories for quick access?).
+"""]]
