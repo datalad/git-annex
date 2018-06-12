@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Rizwan"
+ avatar="http://cdn.libravatar.org/avatar/15c58acba4fc6f75abd783d5836e0254"
+ subject="Are these methods still working?"
+ date="2018-06-12T14:58:03Z"
+ content="""
+I am new to git annex. I like the concept of partial checkout, given that I have multiple storages. 
+
+My repo is small right now, 2000+ files collectively amounting to 24 MB in size. However, as soon as I add and unlock the repo, the size of the Annex folder becomes 50+ MB. Is this normal? I try to sync with google drive and the size goes to 90+ Mb post syncing. 
+
+I feel like I must be doing something wrong. Does the size of gorw upto 4 times the original data. I tried the methods listed in above comments, none worked. Seeing that last comment is 4+ years old, I wanted to know if these methods are still viable?
+"""]]
