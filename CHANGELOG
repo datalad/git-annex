@@ -9,6 +9,8 @@ git-annex (6.20180530) UNRELEASED; urgency=medium
     is configured.
   * External special remotes can now add info to `git annex info $remote`,
     by replying to the GETINFO message.
+  * adb: Android serial numbers are not all 16 characters long, so accept
+    other lengths.
 
  -- Joey Hess <id@joeyh.name>  Wed, 30 May 2018 11:49:08 -0400
 

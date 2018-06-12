@@ -236,7 +236,7 @@ enumerateAdbConnected =
   where
 	parse l = 
 		let (serial, desc) = separate (== '\t') l
-		in if null desc || length serial /= 16
+		in if null desc || length serial < 4
 			then Nothing 
 			else Just (AndroidSerial serial)
 

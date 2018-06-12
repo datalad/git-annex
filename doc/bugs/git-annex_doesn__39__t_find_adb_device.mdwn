@@ -20,3 +20,4 @@ git-annex claims that adb does not list any devices. `adb devices` however shows
     upgrade supported from repository versions: 0 1 2 3 4 5
     operating system: linux x86_64
 
+> [[fixed|done]] --[[Joey]] 
