@@ -172,12 +172,13 @@ elsewhere to allow removing it).
 * `groupwanted`
 
   The "groupwanted" keyword can be used to refer to a preferred content
-  expression that is associated with a group. This is like the "standard"
-  keyword, but you can configure the preferred content expressions
-  using `git annex groupwanted`.
+  expression that is associated with a group, as long as there is exactly
+  one such expression amoung the groups a repository is in. This is like
+  the "standard" keyword, but you can configure the preferred content
+  expressions using `git annex groupwanted`.
 
-  Note that when writing a groupwanted preferred content expression,
-  you can use all of the keywords listed above, including "standard".
+  When writing a groupwanted preferred content expression,
+  you can use all the keywords documented here, including "standard".
   (But not "groupwanted".)
 
   For example, to make a variant of the standard client preferred content
