@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="ghen1"
+ avatar="http://cdn.libravatar.org/avatar/efd0e92b6198291138f0cd7aedbf86b6"
+ subject="comment 2"
+ date="2018-06-13T17:18:49Z"
+ content="""
+Thank you for clarifying. I've worked out a setup that seems to do what I want. The rules are a little messier, but not too bad:
+
+    group a1 = a 1 a1store
+    group a2 = a 2 a2store
+    group b1 = b 1 b1store
+    group b2 = b 2 b2store
+    
+    wanted a1 = groupwanted
+    wanted a2 = groupwanted
+    wanted b1 = groupwanted
+    wanted b2 = groupwanted
+    
+    groupwanted a1store = not copies=1:1 and not copies=a:1
+    groupwanted a2store = not copies=2:1 and not copies=a:1
+    groupwanted b1store = not copies=1:1 and not copies=b:1
+    groupwanted b2store = not copies=2:1 and not copies=b:1
+    
+    numcopies default = 2
+    config annex.synccontent = true
+
+"""]]
