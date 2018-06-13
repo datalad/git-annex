@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="Update on using SAF"
+ date="2018-06-13T14:57:10Z"
+ content="""
+I've looked around for how this whole SAF thing works and where it is supported; it seems to me that it is indeed the way to go:
+
+* Termux added this with the very intention of making the home directory usable ([initial issue](https://github.com/termux/termux-app/issues/79)).
+  * That .JPG files are not image/jpeg is probably the fault of a library termux uses ([reported](https://github.com/termux/termux-app/issues/721))
+* Some applications can find files from a termux-home out-of-the-box, like the [billthefarmer editor](https://f-droid.org/en/packages/org.billthefarmer.editor/) -- just that if it was just about editing text files, we could just have used ~/storage/shared and plain git.
+* Many applications accept files from there when opened from the file manager (VLC, Simple Gallery, Ghost Commander's picture viewer); I have not found one yet that does not.
+* A good way forward would be to encourage the authors of apps we care about to allow opening SAF locations directly; it appears to me that they sometimes add SAF support for a particular function (eg. to support USB-OTG or writing to external SD cards) and then limit it to that path because the usual other options appear to confusing. [Requested support for it in Simple Gallery](https://github.com/SimpleMobileTools/Simple-Gallery/issues/806), let's see where that takes this.
+"""]]
