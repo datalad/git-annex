@@ -18,7 +18,6 @@ import P2P.Annex
 import P2P.IO
 import P2P.Auth
 import Types.Remote
-import Types.GitConfig
 import qualified Git
 import Annex.UUID
 import Config
