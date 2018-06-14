@@ -14,6 +14,9 @@ git-annex (6.20180530) UNRELEASED; urgency=medium
   * Display error messages that come from git-annex-shell when the p2p
     protocol is used, so that diskreserve messages, IO errors, etc from
     the remote side are visible again.
+  * When content has been lost from an export remote and 
+    git-annex fsck --from remote has noticed it's gone, re-running
+    git-annex export or git-annex sync --content will re-upload it.
 
  -- Joey Hess <id@joeyh.name>  Wed, 30 May 2018 11:49:08 -0400
 

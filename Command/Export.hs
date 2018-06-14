@@ -201,7 +201,8 @@ fillExport r ea db new = do
 startExport :: Remote -> ExportActions Annex -> ExportHandle -> MVar Bool -> Git.LsTree.TreeItem -> CommandStart
 startExport r ea db cvar ti = do
 	ek <- exportKey (Git.LsTree.sha ti)
-	stopUnless (liftIO $ notElem loc <$> getExportedLocation db (asKey ek)) $ do
+	np <- notpresent ek
+	stopUnless (notpresent ek) $ do
 		showStart ("export " ++ name r) f
 		liftIO $ modifyMVar_ cvar (pure . const True)
 		next $ performExport r ea db ek af (Git.LsTree.sha ti) loc
@@ -209,6 +210,11 @@ startExport r ea db cvar ti = do
 	loc = mkExportLocation f
 	f = getTopFilePath (Git.LsTree.file ti)
 	af = AssociatedFile (Just f)
+	notpresent ek = (||)
+		<$> liftIO (notElem loc <$> getExportedLocation db (asKey ek))
+		-- If content was removed from the remote, the export db
+		-- will still list it, so also check location tracking.
+		<*> (notElem (uuid r) <$> loggedLocations (asKey ek))
 
 performExport :: Remote -> ExportActions Annex -> ExportHandle -> ExportKey -> AssociatedFile -> Sha -> ExportLocation -> CommandPerform
 performExport r ea db ek af contentsha loc = do
