@@ -78,15 +78,32 @@ A good content identifier needs to:
 * Be reasonably unique, but not necessarily fully unique.  
   For example, if the mtime of a file is used as the content identifier, then
   a rename that swaps two files would be noticed, except for in the
-  unusual case where they have the same mtime. If a new file (or a copy)
+  unusual case where they have the same mtime. If a new file
   is added with the same mtime as some other file in the tree though,
-  git-annex will see that the file is new, and so can still import it, even
-  though it's seen that content identifier before. Of course, that might
-  result in unncessary downloads, so a more unique content identifer would
-  be better.
+  git-annex will see that the filename is new, and so can still import it,
+  even though it's seen that content identifier before. Of course, that might
+  result in unncessary downloads (eg of a renamed file), so a more unique
+  content identifer would be better.
 
 A (size, mtime, inode) tuple is as good a content identifier as git uses in
-its index. That or a hash of the content would be ideal.
+its index. That or a hash of the content would be ideal. 
+
+Do remotes need to tell git-annex about the properties of content
+identifiers they use, or does git-annex assume a minimum bar, and pay the
+price with some unncessary transfers of renamed files etc?
+
+Note that git-annex will need a way to get the content identifiers of files
+that it stores on the remote when exporting a tree to it. There's a race
+here, since a file could be modified on the remote while it's being
+exported, and if the remote then uses its mtime in the content identifier,
+the modification would never be noticed. (Does git have this same race when
+updating the work tree after a merge?)
+
+Some remotes could avoid that race, if they sent back the content
+identifier in response to the TRANSFEREXPORT message, and kept the file
+quarentined until they had generated the content identifier. Other remotes
+probably can't avoid the race. Is it worth changing the TRANSFEREXPORT
+interface to include the content identifier in the reply?
 
 ----
 
