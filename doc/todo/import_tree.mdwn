@@ -12,11 +12,11 @@ that has the modifications in it.
 Updating the working copy is then done by merging the import treeish.
 This way, conflicts will be detected and handled as normal by git.
 
-The remote interface needs one new method, to list the changed/new and
+----
+
+The remote interface could have a new method, to list the changed/new and
 deleted files. It will be up to remotes to implement that if they can
 support importing.
-
-----
 
 One way for a remote to do it, assuming it has mtimes, is to export
 files to the remote with their mtime set to the date of the treeish
@@ -38,8 +38,7 @@ Where to store that data?
 
 The data could be stored in a file/files on the remote, or perhaps
 the remote has a way to store some arbitrary metadata about a file
-that could be used. Note that's basically the same as implementing the git
-index, on a per-remote basis.
+that could be used.
 
 It could be stored in git-annex branch per-remote state. However,
 that state is per-key, not per-file. The export database could be
@@ -58,17 +57,30 @@ masters, which can be reconciled as usual. It would mean extra downloads
 of content from the remote, since each import would download its own copy.
 Perhaps this is acceptable?
 
+This feels like it's reimplementing the git index, on a per-remote basis.
+So perhaps this is not the right interface.
+
 ----
 
-Following the thoughts above, how about this design: The remote
-is responsible for collecting a list of files currently in it, along with
-some content identifier. That data is sent to git-annex. git-annex stores
-the content identifiers locally, and compares old and new lists to determine
-when a file on the remote has changed or is new.
+Alternate interface: The remote is responsible for collecting a list of
+files currently in it, along with some content identifier. That data is
+sent to git-annex. git-annex keep track of which content identifier(s) map
+to which keys, and uses the information to determine when a file on the
+remote has changed or is new.
 
 This way, each special remote doesn't have to reimplement the equivilant of
 the git index, or comparing lists of files, it only needs a way to list
 files, and a good content identifier.
+
+This also simplifies implementation in git-annex, because it does not
+even need to look for changed/new/deleted files compared with the
+old tree. Instead, it can simply build git tree objects as the file list
+comes in, looking up the key corresponding to each content identifier
+(or downloading the content from the remote and adding it to the annex
+when there's no corresponding key yet). It might be possible to avoid
+git-annex buffering much tree data in memory.
+
+----
 
 A good content identifier needs to:
 
@@ -92,15 +104,16 @@ Do remotes need to tell git-annex about the properties of content
 identifiers they use, or does git-annex assume a minimum bar, and pay the
 price with some unncessary transfers of renamed files etc?
 
-Note that git-annex will need a way to get the content identifiers of files
-that it stores on the remote when exporting a tree to it. There's a race
-here, since a file could be modified on the remote while it's being
-exported, and if the remote then uses its mtime in the content identifier,
-the modification would never be noticed.
+----
 
-(Does git have this same race when updating the work tree after a merge?
-There's also a race where a file is modified and then immediately replaced
-with an exported update. Does git have the equivilant race?)
+git-annex will need a way to get the content identifiers of files
+that it stores on the remote when exporting a tree to it, so it can later
+know if those files have changed.
+
+There's a race here, since a file could be modified on the remote while
+it's being exported, and if the remote then uses its mtime in the content
+identifier, the modification would never be noticed.
+(Does git have this same race when updating the work tree after a merge?)
 
 Some remotes could avoid that race, if they sent back the content
 identifier in response to the TRANSFEREXPORT message, and kept the file
@@ -109,12 +122,18 @@ probably can't avoid the race. Is it worth changing the TRANSFEREXPORT
 interface to include the content identifier in the reply if it doesn't
 always avoid the race?
 
-Since exporttree remotes don't have content identifier information yet,
-it needs to be collected the first time import tree is used. (Or
-import everything, but that is probably too expensive). Any modifications
-made before the first import tree would not be noticed. Seems acceptible
-as long as this only affects exporttree remotes created before this feature
-was added.
+There's also a race where a file gets changed on the remote after an
+import tree, and an export then overwrites it with something else. This
+race seems impossible to avoid. Does git have the equivilant race?
+
+----
+
+Since exporttree remotes don't have content identifier information yet, it
+needs to be collected the first time import tree is used. (Or import
+everything, but that is probably too expensive). Any modifications made to
+exported files before the first import tree would not be noticed. Seems
+acceptible as long as this only affects exporttree remotes created before
+this feature was added.
 
 What if repo A is being used to import tree from R for a while, and the
 user gets used to editing files on R and importing them. Then they stop
@@ -122,7 +141,8 @@ using A and switch to clone B. It would not have the content identifier
 information that A did (unless it's stored in git-annex branch rather than
 locally). It seems that in this case, B needs to re-download everything,
 since anything could have changed since the last time A imported.
-That seems too expensive! 
+That seems too expensive!
+
 Would storing content identifiers in the git-annex branch be too expensive?
 
 ----
