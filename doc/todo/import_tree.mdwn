@@ -23,17 +23,70 @@ files to the remote with their mtime set to the date of the treeish
 being exported (when the treeish is a commit, which has dates, and not
 a raw tree). Then the remote can simply enumerate all files,
 with their mtimes, and look for files that have mtimes
-newer than the last exported treeish's date, as well as noticing
-deleted and newly added/renamed files.
+newer than the last exported treeish's date.
 
-> Hmm, but if files on the remote are being changed at the same time
-> as the export, then they could have older mtimes, and be missed.
-> --[[Joey]]
+> But: If files on the remote are being changed at around the time
+> of the export, they could have older mtimes than the exported treeish's
+> date, and so be missed.
+> 
+> Also, a rename that swaps two files would be missed if mtimes
+> are only compared to the treeish's date.
 
-A similar approach is for the remote to preserve object file timestamps,
-but keep a list somewhere (eg a file on the remote) of the timestamps of
-each exported file, and then it can later look for files with newer
-timestamps.
+A perhaps better way is for the remote to keep track of the mtime,
+size, etc of all exported files, and use that state to find changes.
+Where to store that data?
+
+The data could be stored in a file/files on the remote, or perhaps
+the remote has a way to store some arbitrary metadata about a file
+that could be used. Note that's basically the same as implementing the git
+index, on a per-remote basis.
+
+It could be stored in git-annex branch per-remote state. However,
+that state is per-key, not per-file. The export database could be
+used to convert a ExportLocation to a Key, which could be used
+to access the per-remote state. Querying the database for each file
+in the export could be a bottleneck without the right interface.
+
+If only one repository will ever access the remote, it could be stored
+in eg a local database. But access from only one repository is a 
+hard invariant to guarantee.
+
+Would local storage pose a problem when multiple repositories import from
+the same remote? In that case, perhaps different trees would be imported,
+and merged into master. So the two repositories then have differing
+masters, which can be reconciled as usual. It would mean extra downloads
+of content from the remote, since each import would download its own copy.
+Perhaps this is acceptable?
+
+----
+
+Following the thoughts above, how about this design: The remote
+is responsible for collecting a list of files currently in it, along with
+some content identifier. That data is sent to git-annex. git-annex stores
+the content identifiers locally, and compares old and new lists to determine
+when a file on the remote has changed or is new.
+
+This way, each special remote doesn't have to reimplement the equivilant of
+the git index, or comparing lists of files, it only needs a way to list
+files, and a good content identifier.
+
+A good content identifier needs to:
+
+* Be stable, so when a file has not changed, the content identifier
+  remains the same.
+* Change when a file is modified.
+* Be reasonably unique, but not necessarily fully unique.  
+  For example, if the mtime of a file is used as the content identifier, then
+  a rename that swaps two files would be noticed, except for in the
+  unusual case where they have the same mtime. If a new file (or a copy)
+  is added with the same mtime as some other file in the tree though,
+  git-annex will see that the file is new, and so can still import it, even
+  though it's seen that content identifier before. Of course, that might
+  result in unncessary downloads, so a more unique content identifer would
+  be better.
+
+A (size, mtime, inode) tuple is as good a content identifier as git uses in
+its index. That or a hash of the content would be ideal.
 
 ----
 
