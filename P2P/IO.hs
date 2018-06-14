@@ -164,10 +164,10 @@ runNet runst conn runner f = case f of
 			Left e -> return (Left (show e))
 			Right Nothing -> return (Left "protocol error")
 			Right (Just l) -> case parseMessage l of
-					Just m -> do
-						liftIO $ debugMessage "P2P <" m
-						runner (next (Just m))
-					Nothing -> runner (next Nothing)
+				Just m -> do
+					liftIO $ debugMessage "P2P <" m
+					runner (next (Just m))
+				Nothing -> runner (next Nothing)
 	SendBytes len b p next -> do
 		v <- liftIO $ tryNonAsync $ do
 			ok <- sendExactly len b (connOhdl conn) p
