@@ -96,14 +96,34 @@ Note that git-annex will need a way to get the content identifiers of files
 that it stores on the remote when exporting a tree to it. There's a race
 here, since a file could be modified on the remote while it's being
 exported, and if the remote then uses its mtime in the content identifier,
-the modification would never be noticed. (Does git have this same race when
-updating the work tree after a merge?)
+the modification would never be noticed.
+
+(Does git have this same race when updating the work tree after a merge?
+There's also a race where a file is modified and then immediately replaced
+with an exported update. Does git have the equivilant race?)
 
 Some remotes could avoid that race, if they sent back the content
 identifier in response to the TRANSFEREXPORT message, and kept the file
 quarentined until they had generated the content identifier. Other remotes
 probably can't avoid the race. Is it worth changing the TRANSFEREXPORT
-interface to include the content identifier in the reply?
+interface to include the content identifier in the reply if it doesn't
+always avoid the race?
+
+Since exporttree remotes don't have content identifier information yet,
+it needs to be collected the first time import tree is used. (Or
+import everything, but that is probably too expensive). Any modifications
+made before the first import tree would not be noticed. Seems acceptible
+as long as this only affects exporttree remotes created before this feature
+was added.
+
+What if repo A is being used to import tree from R for a while, and the
+user gets used to editing files on R and importing them. Then they stop
+using A and switch to clone B. It would not have the content identifier
+information that A did (unless it's stored in git-annex branch rather than
+locally). It seems that in this case, B needs to re-download everything,
+since anything could have changed since the last time A imported.
+That seems too expensive! 
+Would storing content identifiers in the git-annex branch be too expensive?
 
 ----
 
