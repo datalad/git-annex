@@ -201,7 +201,6 @@ fillExport r ea db new = do
 startExport :: Remote -> ExportActions Annex -> ExportHandle -> MVar Bool -> Git.LsTree.TreeItem -> CommandStart
 startExport r ea db cvar ti = do
 	ek <- exportKey (Git.LsTree.sha ti)
-	np <- notpresent ek
 	stopUnless (notpresent ek) $ do
 		showStart ("export " ++ name r) f
 		liftIO $ modifyMVar_ cvar (pure . const True)
