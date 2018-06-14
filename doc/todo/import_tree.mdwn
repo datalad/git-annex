@@ -26,6 +26,10 @@ with their mtimes, and look for files that have mtimes
 newer than the last exported treeish's date, as well as noticing
 deleted and newly added/renamed files.
 
+> Hmm, but if files on the remote are being changed at the same time
+> as the export, then they could have older mtimes, and be missed.
+> --[[Joey]]
+
 A similar approach is for the remote to preserve object file timestamps,
 but keep a list somewhere (eg a file on the remote) of the timestamps of
 each exported file, and then it can later look for files with newer
@@ -36,6 +40,18 @@ timestamps.
 If multiple repos can access the remote at the same time, then there's a
 potential problem when one is exporting a new tree, and the other one is
 importing from the remote.
+
+> This can be reduced to the same problem as exports of two
+> different trees to the same remote, which is already handled with the
+> export log.
+> 
+> Once a tree has been imported from the remote, it's
+> in the same state as exporting that same tree to the remote, so
+> update the export log to say that the remote has that treeish exported
+> to it. A conflict between two export log entries will be handled as
+> usual, with the user being prompted to re-export the tree they want
+> to be on the remote. (May need to reword that prompt.)
+> --[[Joey]]
 
 ----
 
