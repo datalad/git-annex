@@ -18,8 +18,7 @@ therefore needs write access to the parent directory of the
 Note that "upgrading" from a distribution-based package to the
 [[install/Linux_standalone/]] version may cause weird problems, as an
 unexpected version of git-annex (e.g. the old one from packages) may be
-ran, see [[bugs/git-annex-shell_doesn__39__t_work_as_expected/]] for a full
-discussion.
+ran.
 
 # Repository upgrades
 
