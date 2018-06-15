@@ -1,0 +1,3 @@
+If git-tracked files are removed from the remote, they don't get synced over after a "git annex fsck" and "git annex export".
+
+Is there some way that they could make it to the remote? I'm imagining an rsync-like behavior to copy over files that have different time stamps or file sizes. Would such a feature be welcome in git annex?
