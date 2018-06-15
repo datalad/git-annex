@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 8"
+ date="2018-06-15T15:59:04Z"
+ content="""
+Oh, Awesome, thanks! Great find. I'll write out some of the things I have tried:
+
+Create a text file called `hi.txt` from Termux in `/data/data/com.termux/files/home` AKA `$HOME`. Launch `Turbo Editor` enable `Use the Storage Access Framework` in Preferences menu. Click `Open a file` | `Open from` `Termux`, click `hi.txt`, edit file, save. Now I can see changes in Termux. Nice.
+
+From Termux create a new soft link, `cd`, `ln -s hi.txt hilink.txt`, then in Turbo Editor I can see both files, I can edit and save either, and see changes correctly in Termux.
+
+I wasn't able to find the Termux `$HOME` folder in any File Manager I tried, nor any Gallery App.
+
+
+
+
+"""]]
