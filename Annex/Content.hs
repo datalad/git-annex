@@ -943,18 +943,8 @@ downloadUrl k p urls file =
 	-- Poll the file to handle configurations where an external
 	-- download command is used.
 	meteredFile file (Just p) k $
-		go =<< annexWebDownloadCommand <$> Annex.getGitConfig
-  where
-	go Nothing = Url.withUrlOptions $ \uo -> 
-		liftIO $ anyM (\u -> Url.download p u file uo) urls
-	go (Just basecmd) = anyM (downloadcmd basecmd) urls
-	downloadcmd basecmd url =
-		progressCommand "sh" [Param "-c", Param $ gencmd url basecmd]
-			<&&> liftIO (doesFileExist file)
-	gencmd url = massReplace
-		[ ("%file", shellEscape file)
-		, ("%url", shellEscape url)
-		]
+		Url.withUrlOptions $ \uo -> 
+			liftIO $ anyM (\u -> Url.download p u file uo) urls
 
 {- Copies a key's content, when present, to a temp file.
  - This is used to speed up some rsyncs. -}

@@ -33,8 +33,10 @@ import Config.DynamicConfig
 import Utility.HumanTime
 import Utility.Gpg (GpgCmd, mkGpgCmd)
 import Utility.ThreadScheduler (Seconds(..))
+import Utility.Url (Scheme, mkScheme)
 
 import Control.Concurrent.STM
+import qualified Data.Set as S
 
 -- | A configurable value, that may not be fully determined yet because
 -- the global git config has not yet been loaded.
@@ -71,7 +73,6 @@ data GitConfig = GitConfig
 	, annexWebOptions :: [String]
 	, annexYoutubeDlOptions :: [String]
 	, annexAriaTorrentOptions :: [String]
-	, annexWebDownloadCommand :: Maybe String
 	, annexCrippledFileSystem :: Bool
 	, annexLargeFiles :: Maybe String
 	, annexAddSmallFiles :: Bool
@@ -93,6 +94,7 @@ data GitConfig = GitConfig
 	, annexSecureHashesOnly :: Bool
 	, annexRetry :: Maybe Integer
 	, annexRetryDelay :: Maybe Seconds
+	, annexAllowedUrlSchemes :: S.Set Scheme
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
 	, receiveDenyCurrentBranch :: DenyCurrentBranch
@@ -133,7 +135,6 @@ extractGitConfig r = GitConfig
 	, annexWebOptions = getwords (annex "web-options")
 	, annexYoutubeDlOptions = getwords (annex "youtube-dl-options")
 	, annexAriaTorrentOptions = getwords (annex "aria-torrent-options")
-	, annexWebDownloadCommand = getmaybe (annex "web-download-command")
 	, annexCrippledFileSystem = getbool (annex "crippledfilesystem") False
 	, annexLargeFiles = getmaybe (annex "largefiles")
 	, annexAddSmallFiles = getbool (annex "addsmallfiles") True
@@ -159,6 +160,9 @@ extractGitConfig r = GitConfig
 	, annexRetry = getmayberead (annex "retry")
 	, annexRetryDelay = Seconds
 		<$> getmayberead (annex "retrydelay")
+	, annexAllowedUrlSchemes = S.fromList $ map mkScheme $
+		maybe ["http", "https"] words $
+			getmaybe (annex "security.allowed-url-schemes")
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
 	, receiveDenyCurrentBranch = getDenyCurrentBranch r

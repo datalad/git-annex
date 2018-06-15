@@ -39,6 +39,7 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 		<*> headers
 		<*> options
 		<*> liftIO (U.newManager U.managerSettings)
+		<*> (annexAllowedUrlSchemes <$> Annex.getGitConfig)
 	headers = annexHttpHeadersCommand <$> Annex.getGitConfig >>= \case
 		Just cmd -> lines <$> liftIO (readProcess "sh" ["-c", cmd])
 		Nothing -> annexHttpHeaders <$> Annex.getGitConfig

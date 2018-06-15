@@ -277,7 +277,7 @@ downloadWeb o url urlinfo file =
 		-- Ask youtube-dl what filename it will download
 		-- first, and check if that is already an annexed file,
 		-- to avoid unnecessary work in that case.
-		| otherwise = youtubeDlFileName' url >>= \case
+		| otherwise = youtubeDlFileNameHtmlOnly url >>= \case
 			Right dest -> ifAnnexed dest 
 				(alreadyannexed dest)
 				(dl dest)

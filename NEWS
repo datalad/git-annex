@@ -1,3 +1,14 @@
+git-annex (6.20180622) upstream; urgency=high
+
+  A security fix has changed git-annex to only support http and https
+  URL schemes by default. You can enable other URL schemes, at your own risk,
+  using annex.security.allowed-url-schemes.
+
+  The annex.web-download-command configuration has been removed,
+  use annex.web-options instead.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 15 Jun 2018 17:54:23 -0400
+
 git-annex (6.20180309) upstream; urgency=medium
 
   Note that, due to not using rsync to transfer files over ssh

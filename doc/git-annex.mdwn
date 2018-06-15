@@ -1387,12 +1387,20 @@ Here are all the supported configuration settings.
   If set, the command is run and each line of its output is used as a HTTP
   header. This overrides annex.http-headers.
 
-* `annex.web-download-command`
+* `annex.security.allowed-url-schemes`
 
-  Use to specify a command to run to download a file from the web.
+  List of URL schemes that git-annex is allowed to download content from.
+  The default is "http https".
 
-  In the command line, %url is replaced with the url to download,
-  and %file is replaced with the file that it should be saved to.
+  Think very carefully before changing this; there are security
+  implications. For example, if it's changed to allow "file" URLs,
+  then anyone who can get a commit into your git-annex repository
+  could add a pointer to a private file located outside that repository, 
+  risking it being copied into the repository and transferred on to other
+  remotes, exposing its content.
+
+  Some special remotes support their own domain-specific URL
+  schemes; those are not affected by this configuration setting.
 
 * `annex.secure-erase-command`
 

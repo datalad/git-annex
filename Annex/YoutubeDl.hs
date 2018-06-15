@@ -11,7 +11,7 @@ module Annex.YoutubeDl (
 	youtubeDlSupported,
 	youtubeDlCheck,
 	youtubeDlFileName,
-	youtubeDlFileName',
+	youtubeDlFileNameHtmlOnly,
 ) where
 
 import Annex.Common
@@ -41,8 +41,11 @@ import Control.Concurrent.Async
 -- (Note that we can't use --output to specifiy the file to download to,
 -- due to <https://github.com/rg3/youtube-dl/issues/14864>)
 youtubeDl :: URLString -> FilePath -> Annex (Either String (Maybe FilePath))
-youtubeDl url workdir
-	| supportedScheme url = ifM (liftIO $ inPath "youtube-dl")
+youtubeDl url workdir = withUrlOptions $ youtubeDl' url workdir
+
+youtubeDl' :: URLString -> FilePath -> UrlOptions -> Annex (Either String (Maybe FilePath))
+youtubeDl' url workdir uo
+	| supportedScheme uo url = ifM (liftIO $ inPath "youtube-dl")
 		( runcmd >>= \case
 			Right True -> workdirfiles >>= \case
 				(f:[]) -> return (Right (Just f))
@@ -134,8 +137,11 @@ youtubeDlSupported url = either (const False) id <$> youtubeDlCheck url
 
 -- Check if youtube-dl can find media in an url.
 youtubeDlCheck :: URLString -> Annex (Either String Bool)
-youtubeDlCheck url
-	| supportedScheme url = catchMsgIO $ htmlOnly url False $ do
+youtubeDlCheck = withUrlOptions . youtubeDlCheck'
+
+youtubeDlCheck' :: URLString -> UrlOptions -> Annex (Either String Bool)
+youtubeDlCheck' url uo
+	| supportedScheme uo url = catchMsgIO $ htmlOnly url False $ do
 		opts <- youtubeDlOpts [ Param url, Param "--simulate" ]
 		liftIO $ snd <$> processTranscript "youtube-dl" (toCommand opts) Nothing
 	| otherwise = return (Right False)
@@ -144,18 +150,22 @@ youtubeDlCheck url
 --
 -- (This is not always identical to the filename it uses when downloading.)
 youtubeDlFileName :: URLString -> Annex (Either String FilePath)
-youtubeDlFileName url
-	| supportedScheme url = flip catchIO (pure . Left . show) $
-		htmlOnly url nomedia (youtubeDlFileName' url)
-	| otherwise = return nomedia
+youtubeDlFileName url = withUrlOptions go
   where
+	go uo
+		| supportedScheme uo url = flip catchIO (pure . Left . show) $
+			htmlOnly url nomedia (youtubeDlFileNameHtmlOnly' url uo)
+		| otherwise = return nomedia
 	nomedia = Left "no media in url"
 
 -- Does not check if the url contains htmlOnly; use when that's already
 -- been verified.
-youtubeDlFileName' :: URLString -> Annex (Either String FilePath)
-youtubeDlFileName' url
-	| supportedScheme url = flip catchIO (pure . Left . show) go
+youtubeDlFileNameHtmlOnly :: URLString -> Annex (Either String FilePath)
+youtubeDlFileNameHtmlOnly = withUrlOptions . youtubeDlFileNameHtmlOnly'
+
+youtubeDlFileNameHtmlOnly' :: URLString -> UrlOptions -> Annex (Either String FilePath)
+youtubeDlFileNameHtmlOnly' url uo
+	| supportedScheme uo url = flip catchIO (pure . Left . show) go
 	| otherwise = return nomedia
   where
 	go = do
@@ -189,12 +199,13 @@ youtubeDlOpts addopts = do
 	opts <- map Param . annexYoutubeDlOptions <$> Annex.getGitConfig
 	return (opts ++ addopts)
 
-supportedScheme :: URLString -> Bool
-supportedScheme url = case uriScheme <$> parseURIRelaxed url of
+supportedScheme :: UrlOptions -> URLString -> Bool
+supportedScheme uo url = case parseURIRelaxed url of
 	Nothing -> False
-	-- avoid ugly message from youtube-dl about not supporting file:
-	Just "file:" -> False
-	-- ftp indexes may look like html pages, and there's no point
-	-- involving youtube-dl in a ftp download
-	Just "ftp:" -> False
-	Just _ -> True
+	Just u -> case uriScheme u of
+		-- avoid ugly message from youtube-dl about not supporting file:
+		"file:" -> False
+		-- ftp indexes may look like html pages, and there's no point
+		-- involving youtube-dl in a ftp download
+		"ftp:" -> False
+		_ -> allowedScheme uo u

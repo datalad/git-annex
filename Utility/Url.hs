@@ -15,6 +15,9 @@ module Utility.Url (
 	managerSettings,
 	URLString,
 	UserAgent,
+	Scheme,
+	mkScheme,
+	allowedScheme,
 	UrlOptions(..),
 	defUrlOptions,
 	mkUrlOptions,
@@ -41,6 +44,7 @@ import qualified Data.CaseInsensitive as CI
 import qualified Data.ByteString as B
 import qualified Data.ByteString.UTF8 as B8
 import qualified Data.ByteString.Lazy as L
+import qualified Data.Set as S
 import Control.Monad.Trans.Resource
 import Network.HTTP.Conduit
 import Network.HTTP.Client (brRead, withResponse)
@@ -65,12 +69,22 @@ type Headers = [String]
 
 type UserAgent = String
 
+newtype Scheme = Scheme (CI.CI String)
+	deriving (Eq, Ord)
+
+mkScheme :: String -> Scheme
+mkScheme = Scheme . CI.mk
+
+fromScheme :: Scheme -> String
+fromScheme (Scheme s) = CI.original s
+
 data UrlOptions = UrlOptions
 	{ userAgent :: Maybe UserAgent
 	, reqHeaders :: Headers
 	, urlDownloader :: UrlDownloader
 	, applyRequest :: Request -> Request
 	, httpManager :: Manager
+	, allowedSchemes :: S.Set Scheme
 	}
 
 data UrlDownloader
@@ -84,8 +98,9 @@ defUrlOptions = UrlOptions
 	<*> pure DownloadWithConduit
 	<*> pure id
 	<*> newManager managerSettings
+	<*> pure (S.fromList $ map mkScheme ["http", "https"])
 
-mkUrlOptions :: Maybe UserAgent -> Headers -> [CommandParam] -> Manager -> UrlOptions
+mkUrlOptions :: Maybe UserAgent -> Headers -> [CommandParam] -> Manager -> S.Set Scheme -> UrlOptions
 mkUrlOptions defuseragent reqheaders reqparams manager =
 	UrlOptions useragent reqheaders urldownloader applyrequest manager
   where
@@ -115,7 +130,7 @@ mkUrlOptions defuseragent reqheaders reqparams manager =
 			_ -> (h', B8.fromString v)
 
 curlParams :: UrlOptions -> [CommandParam] -> [CommandParam]
-curlParams uo ps = ps ++ uaparams ++ headerparams ++ addedparams
+curlParams uo ps = ps ++ uaparams ++ headerparams ++ addedparams ++ schemeparams
   where
 	uaparams = case userAgent uo of
 		Nothing -> []
@@ -124,6 +139,25 @@ curlParams uo ps = ps ++ uaparams ++ headerparams ++ addedparams
 	addedparams = case urlDownloader uo of
 		DownloadWithConduit -> []
 		DownloadWithCurl l -> l
+	schemeparams =
+		[ Param "--proto"
+		, Param $ intercalate "," ("-all" : schemelist)
+		]
+	schemelist = map fromScheme $ S.toList $ allowedSchemes uo
+
+checkPolicy :: UrlOptions -> URI -> a -> IO a -> IO a
+checkPolicy uo u onerr a
+	| allowedScheme uo u = a
+	| otherwise = do
+		hPutStrLn stderr $ 
+			"Configuration does not allow accessing " ++ show u
+		hFlush stderr
+		return onerr
+
+allowedScheme :: UrlOptions -> URI -> Bool
+allowedScheme uo u = uscheme `S.member` allowedSchemes uo
+  where
+	uscheme = mkScheme $ takeWhile (/=':') (uriScheme u)
 
 {- Checks that an url exists and could be successfully downloaded,
  - also checking that its size, if available, matches a specified size. -}
@@ -158,7 +192,8 @@ assumeUrlExists = UrlInfo True Nothing Nothing
  - also returning its size and suggested filename if available. -}
 getUrlInfo :: URLString -> UrlOptions -> IO UrlInfo
 getUrlInfo url uo = case parseURIRelaxed url of
-	Just u -> case (urlDownloader uo, parseUrlConduit (show u)) of
+	Just u -> checkPolicy uo u dne $
+		case (urlDownloader uo, parseUrlConduit (show u)) of
 		(DownloadWithConduit, Just req) -> catchJust
 			-- When http redirects to a protocol which 
 			-- conduit does not support, it will throw
@@ -166,7 +201,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 			(matchStatusCodeException (== found302))
 			(existsconduit req)
 			(const (existscurl u))
-			`catchNonAsync` (const dne)
+			`catchNonAsync` (const $ return dne)
 		-- http-conduit does not support file:, ftp:, etc urls,
 		-- so fall back to reading files and using curl.
 		_
@@ -177,11 +212,11 @@ getUrlInfo url uo = case parseURIRelaxed url of
 					Just stat -> do
 						sz <- getFileSize' f stat
 						found (Just sz) Nothing
-					Nothing -> dne
+					Nothing -> return dne
 			| otherwise -> existscurl u
-	Nothing -> dne
+	Nothing -> return dne
   where
-	dne = return $ UrlInfo False Nothing Nothing
+	dne = UrlInfo False Nothing Nothing
 	found sz f = return $ UrlInfo True sz f
 
 	curlparams = curlParams uo $
@@ -213,7 +248,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 				then found
 					(extractlen resp)
 					(extractfilename resp)
-				else dne
+				else return dne
 
 	existscurl u = do
 		output <- catchDefaultIO "" $
@@ -230,7 +265,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 			-- don't try to parse ftp status codes; if curl
 			-- got a length, it's good
 			_ | isftp && isJust len -> good
-			_ -> dne
+			_ -> return dne
 
 -- Parse eg: attachment; filename="fname.ext"
 -- per RFC 2616
@@ -265,7 +300,8 @@ download meterupdate url file uo =
 		`catchNonAsync` showerr
   where
 	go = case parseURIRelaxed url of
-		Just u -> case (urlDownloader uo, parseUrlConduit (show u)) of
+		Just u -> checkPolicy uo u False $
+			case (urlDownloader uo, parseUrlConduit (show u)) of
 			(DownloadWithConduit, Just req) -> catchJust
 				-- When http redirects to a protocol which 
 				-- conduit does not support, it will throw
