@@ -69,6 +69,8 @@ preferredBundledPrograms = catMaybes
 	, Just "rsync"
 #ifndef mingw32_HOST_OS
 	, Just "sh"
+	-- used by git-annex when available
+	, Just "uname"
 #endif
 	, BuildInfo.lsof
 	, BuildInfo.gcrypt

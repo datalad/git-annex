@@ -17,6 +17,7 @@ git-annex (6.20180530) UNRELEASED; urgency=medium
   * When content has been lost from an export remote and 
     git-annex fsck --from remote has noticed it's gone, re-running
     git-annex export or git-annex sync --content will re-upload it.
+  * Include uname in standalone builds.
 
  -- Joey Hess <id@joeyh.name>  Wed, 30 May 2018 11:49:08 -0400
 
