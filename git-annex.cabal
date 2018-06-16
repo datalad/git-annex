@@ -340,7 +340,9 @@ Executable git-annex
    bloomfilter,
    edit-distance,
    resourcet,
+   connection,
    http-client,
+   http-client-tls,
    http-types (>= 0.7),
    http-conduit (>= 2.0),
    conduit,
@@ -1032,6 +1034,7 @@ Executable git-annex
     Utility.Gpg
     Utility.Hash
     Utility.HtmlDetect
+    Utility.HttpManagerRestricted
     Utility.HumanNumber
     Utility.HumanTime
     Utility.InodeCache
