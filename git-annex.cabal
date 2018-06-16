@@ -1038,6 +1038,7 @@ Executable git-annex
     Utility.HumanNumber
     Utility.HumanTime
     Utility.InodeCache
+    Utility.IPAddress
     Utility.LinuxMkLibs
     Utility.LockFile
     Utility.LockFile.LockStatus
