@@ -13,8 +13,11 @@ content has not already been added to the repository before, so you can
 delete, rename, etc the resulting files and repeated runs won't duplicate
 them.
 
-When `youtube-dl` is installed, it's used to download links in the feed.
+When `youtube-dl` is installed, it can be used to download links in the feed.
 This allows importing e.g., YouTube playlists.
+(However, this is disabled by default as it can be a security risk. 
+See the documentation of annex.security.allowed-http-addresses
+in [[git-annex]](1) for details.)
 
 To make the import process add metadata to the imported files from the feed,
 `git config annex.genmetadata true`

@@ -11,6 +11,7 @@ module Annex.Url (
 	withUrlOptions,
 	getUrlOptions,
 	getUserAgent,
+	httpAddressesUnlimited,
 ) where
 
 import Annex.Common
@@ -83,6 +84,10 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 			manager <- liftIO $ U.newManager $
 				restrictManagerSettings r U.managerSettings
 			return (U.DownloadWithConduit, manager)
+
+httpAddressesUnlimited :: Annex Bool
+httpAddressesUnlimited = 
+	("all" == ) . annexAllowedHttpAddresses <$> Annex.getGitConfig
 
 withUrlOptions :: (U.UrlOptions -> Annex a) -> Annex a
 withUrlOptions a = a =<< getUrlOptions

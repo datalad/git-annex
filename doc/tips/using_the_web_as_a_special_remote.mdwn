@@ -78,6 +78,10 @@ When you have youtube-dl installed, you can just
 `git annex addurl http://youtube.com/foo` and it will detect that
 it is a video and download the video content for offline viewing.
 
+(However, this is disabled by default as it can be a security risk. 
+See the documentation of annex.security.allowed-http-addresses
+in [[git-annex]] for details.)
+
 Later, in another clone of the repository, you can run `git annex get` on
 the file and it will also be downloaded with youtube-dl. This works
 even if the video host has transcoded or otherwise changed the video

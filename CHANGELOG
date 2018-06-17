@@ -11,10 +11,11 @@ git-annex (6.20180622) UNRELEASED; urgency=high
     localhost, or any private IP addresses, to prevent accidental
     exposure of internal data. This can be overridden with the
     annex.security.allowed-http-addresses setting.
-  * Since curl's interface does not have a way to prevent it from accessing
-    localhost or private IP addresses, curl defaults to not being used
-    for url downloads, even if annex.web-options enabled it before.
-    Only when annex.security.allowed-http-addresses=all will curl be used.
+  * Since the interfaces to curl and youtube-dl do not have a way to
+    prevent them from accessing localhost or private IP addresses,
+    they default to not being used for url downloads.
+    Only when annex.security.allowed-http-addresses=all will curl and
+    youtube-dl be used.
  
  -- Joey Hess <id@joeyh.name>  Wed, 30 May 2018 11:49:08 -0400
 

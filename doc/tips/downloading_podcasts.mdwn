@@ -84,6 +84,10 @@ manually. For a channel url like
 "https://www.youtube.com/channel/$foo", the
 feed is "https://www.youtube.com/feeds/videos.xml?channel_id=$foo"
 
+Use of youtube-dl is disabled by default as it can be a security risk. 
+See the documentation of annex.security.allowed-http-addresses
+in [[git-annex]] for details.)
+
 ## metadata
 
 As well as storing the urls for items imported from a feed, git-annex can

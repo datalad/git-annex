@@ -1421,9 +1421,9 @@ Here are all the supported configuration settings.
   causing it to be downloaded into your repository transferred to
   other remotes, exposing its content.
 
-  Note that, since curl's interface does not allow these IP address
-  restrictions to be enforced, any configuration that enables use of curl
-  will be ignored unless annex.security.allowed-http-addresses=all.
+  Note that, since the interfaces of curl and youtube-dl do not allow
+  these IP address restrictions to be enforced, curl and youtube-dl will
+  never be used unless annex.security.allowed-http-addresses=all.
 
 * `annex.secure-erase-command`
 
