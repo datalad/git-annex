@@ -7,6 +7,14 @@ git-annex (6.20180622) UNRELEASED; urgency=high
     supporting annex.security.allowed-url-schemes across redirects.
     If you used this setting, you may want to instead use annex.web-options
     to pass options to curl.
+  * git-annex will refuse to download content from http servers on
+    localhost, or any private IP addresses, to prevent accidental
+    exposure of internal data. This can be overridden with the
+    annex.security.allowed-http-addresses setting.
+  * Since curl's interface does not have a way to prevent it from accessing
+    localhost or private IP addresses, curl defaults to not being used
+    for url downloads, even if annex.web-options enabled it before.
+    Only when annex.security.allowed-http-addresses=all will curl be used.
  
  -- Joey Hess <id@joeyh.name>  Wed, 30 May 2018 11:49:08 -0400
 

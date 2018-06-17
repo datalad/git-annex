@@ -18,6 +18,7 @@ module Utility.Url (
 	Scheme,
 	mkScheme,
 	allowedScheme,
+	UrlDownloader(..),
 	UrlOptions(..),
 	defUrlOptions,
 	mkUrlOptions,
@@ -37,6 +38,7 @@ module Utility.Url (
 
 import Common
 import Utility.Metered
+import Utility.HttpManagerRestricted
 
 import Network.URI
 import Network.HTTP.Types
@@ -100,19 +102,10 @@ defUrlOptions = UrlOptions
 	<*> newManager managerSettings
 	<*> pure (S.fromList $ map mkScheme ["http", "https"])
 
-mkUrlOptions :: Maybe UserAgent -> Headers -> [CommandParam] -> Manager -> S.Set Scheme -> UrlOptions
-mkUrlOptions defuseragent reqheaders reqparams manager =
+mkUrlOptions :: Maybe UserAgent -> Headers -> UrlDownloader -> Manager -> S.Set Scheme -> UrlOptions
+mkUrlOptions defuseragent reqheaders urldownloader manager =
 	UrlOptions useragent reqheaders urldownloader applyrequest manager
   where
-	urldownloader = if null reqparams
-#if MIN_VERSION_cryptonite(0,6,0)
-		then DownloadWithConduit
-#else
-		-- Work around for old cryptonite bug that broke tls.
-		-- https://github.com/vincenthz/hs-tls/issues/109
-		then DownloadWithCurl reqparams
-#endif
-		else DownloadWithCurl reqparams
 	applyrequest = \r -> r { requestHeaders = requestHeaders r ++ addedheaders }
 	addedheaders = uaheader ++ otherheaders
 	useragent = maybe defuseragent (Just . B8.toString . snd)
@@ -154,6 +147,12 @@ checkPolicy uo u onerr a
 		hFlush stderr
 		return onerr
 
+unsupportedUrlScheme :: URI -> IO ()
+unsupportedUrlScheme u = do
+	hPutStrLn stderr $ 
+		"Unsupported url scheme" ++ show u
+	hFlush stderr
+
 allowedScheme :: UrlOptions -> URI -> Bool
 allowedScheme uo u = uscheme `S.member` allowedSchemes uo
   where
@@ -194,30 +193,23 @@ getUrlInfo :: URLString -> UrlOptions -> IO UrlInfo
 getUrlInfo url uo = case parseURIRelaxed url of
 	Just u -> checkPolicy uo u dne $
 		case (urlDownloader uo, parseUrlConduit (show u)) of
-		(DownloadWithConduit, Just req) -> catchJust
-			-- When http redirects to a protocol which 
-			-- conduit does not support, it will throw
-			-- a StatusCodeException with found302.
-			(matchStatusCodeException (== found302))
-			(existsconduit req)
-			(const (existscurl u))
-			`catchNonAsync` (const $ return dne)
-		-- http-conduit does not support file:, ftp:, etc urls,
-		-- so fall back to reading files and using curl.
-		_
-			| uriScheme u == "file:" -> do
-				let f = unEscapeString (uriPath u)
-				s <- catchMaybeIO $ getFileStatus f
-				case s of
-					Just stat -> do
-						sz <- getFileSize' f stat
-						found (Just sz) Nothing
-					Nothing -> return dne
-			| otherwise -> existscurl u
+			(DownloadWithConduit, Just req) ->
+				existsconduit req
+					`catchNonAsync` (const $ return dne)
+			(DownloadWithConduit, Nothing)
+				| isfileurl u -> existsfile u
+				| otherwise -> do
+					unsupportedUrlScheme u
+					return dne
+			(DownloadWithCurl _, _) 
+				| isfileurl u -> existsfile u
+				| otherwise -> existscurl u
 	Nothing -> return dne
   where
 	dne = UrlInfo False Nothing Nothing
 	found sz f = return $ UrlInfo True sz f
+
+	isfileurl u = uriScheme u == "file:"
 
 	curlparams = curlParams uo $
 		[ Param "-s"
@@ -266,6 +258,15 @@ getUrlInfo url uo = case parseURIRelaxed url of
 			-- got a length, it's good
 			_ | isftp && isJust len -> good
 			_ -> return dne
+	
+	existsfile u = do
+		let f = unEscapeString (uriPath u)
+		s <- catchMaybeIO $ getFileStatus f
+		case s of
+			Just stat -> do
+				sz <- getFileSize' f stat
+				found (Just sz) Nothing
+			Nothing -> return dne
 
 -- Parse eg: attachment; filename="fname.ext"
 -- per RFC 2616
@@ -288,10 +289,6 @@ headRequest r = r
 
 {- Download a perhaps large file, with auto-resume of incomplete downloads.
  -
- - By default, conduit is used for the download, except for file: urls,
- - which are copied. If the url scheme is not supported by conduit, falls
- - back to using curl.
- -
  - Displays error message on stderr when download failed.
  -}
 download :: MeterUpdate -> URLString -> FilePath -> UrlOptions -> IO Bool
@@ -302,21 +299,19 @@ download meterupdate url file uo =
 	go = case parseURIRelaxed url of
 		Just u -> checkPolicy uo u False $
 			case (urlDownloader uo, parseUrlConduit (show u)) of
-			(DownloadWithConduit, Just req) -> catchJust
-				-- When http redirects to a protocol which 
-				-- conduit does not support, it will throw
-				-- a StatusCodeException with found302.
-				(matchStatusCodeException (== found302))
-				(downloadconduit req)
-				(const downloadcurl)
-			_
-				| uriScheme u == "file:" -> do
-					let src = unEscapeString (uriPath u)
-					withMeteredFile src meterupdate $
-						L.writeFile file
-					return True
-				| otherwise -> downloadcurl
+				(DownloadWithConduit, Just req) ->
+					downloadconduit req
+				(DownloadWithConduit, Nothing)
+					| isfileurl u -> downloadfile u
+					| otherwise -> do
+						unsupportedUrlScheme u
+						return False
+				(DownloadWithCurl _, _)
+					| isfileurl u -> downloadfile u
+					| otherwise -> downloadcurl
 		Nothing -> return False
+	
+	isfileurl u = uriScheme u == "file:"
 
 	downloadconduit req = catchMaybeIO (getFileSize file) >>= \case
 		Nothing -> runResourceT $ do
@@ -369,6 +364,10 @@ download meterupdate url file uo =
 		let msg = case he of
 			HttpExceptionRequest _ (StatusCodeException _ msgb) ->
 				B8.toString msgb
+			HttpExceptionRequest _ (InternalException ie) -> 
+				case fromException ie of
+					Nothing -> show ie
+					Just (ConnectionRestricted why) -> why
 			HttpExceptionRequest _ other -> show other
 			_ -> show he
 #else
@@ -401,6 +400,12 @@ download meterupdate url file uo =
 			, Param "-C", Param "-"
 			]
 		boolSystem "curl" (ps ++ [Param "-o", File file, File url])
+					
+	downloadfile u = do
+		let src = unEscapeString (uriPath u)
+		withMeteredFile src meterupdate $
+			L.writeFile file
+		return True
 
 {- Sinks a Response's body to a file. The file can either be opened in
  - WriteMode or AppendMode. Updates the meter as data is received.

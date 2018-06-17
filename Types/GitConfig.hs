@@ -95,6 +95,7 @@ data GitConfig = GitConfig
 	, annexRetry :: Maybe Integer
 	, annexRetryDelay :: Maybe Seconds
 	, annexAllowedUrlSchemes :: S.Set Scheme
+	, annexAllowedHttpAddresses :: String
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
 	, receiveDenyCurrentBranch :: DenyCurrentBranch
@@ -163,6 +164,8 @@ extractGitConfig r = GitConfig
 	, annexAllowedUrlSchemes = S.fromList $ map mkScheme $
 		maybe ["http", "https"] words $
 			getmaybe (annex "security.allowed-url-schemes")
+	, annexAllowedHttpAddresses = fromMaybe "" $
+		getmaybe (annex "security.allowed-http-addresses")
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
 	, receiveDenyCurrentBranch = getDenyCurrentBranch r

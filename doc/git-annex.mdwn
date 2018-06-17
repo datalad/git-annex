@@ -1356,11 +1356,15 @@ Here are all the supported configuration settings.
 
 * `annex.web-options`
 
-  Setting this makes git-annex use curl to download urls
+  Options to pass to curl when git-annex uses it to download urls
   (rather than the default built-in url downloader).
 
   For example, to force IPv4 only, set it to "-4".
   Or to make curl use your ~/.netrc file, set it to "--netrc".
+
+  Setting this option makes git-annex use curl, but only
+  when annex.security.allowed-http-addresses is configured in a
+  specific way. See its documentation.
 
 * `annex.youtube-dl-options`
 
@@ -1393,14 +1397,33 @@ Here are all the supported configuration settings.
   The default is "http https".
 
   Think very carefully before changing this; there are security
-  implications. For example, if it's changed to allow "file" URLs,
-  then anyone who can get a commit into your git-annex repository
-  could add a pointer to a private file located outside that repository, 
-  risking it being copied into the repository and transferred on to other
-  remotes, exposing its content.
+  implications. For example, if it's changed to allow "file" URLs, then
+  anyone who can get a commit into your git-annex repository could
+  `git-annex addurl` a pointer to a private file located outside that
+  repository, possibly causing it to be copied into your repository
+  and transferred on to other remotes, exposing its content.
 
   Some special remotes support their own domain-specific URL
   schemes; those are not affected by this configuration setting.
+
+* `annex.security.allowed-http-addresses`
+
+  By default, git-annex only makes HTTP connections to public IP addresses;
+  it will refuse to use HTTP servers on localhost or on a private network.
+
+  This setting can override that behavior, allowing access to particular
+  IP addresses. For example "127.0.0.1 ::1" allows access to localhost
+  (both IPV4 and IPV6). To allow access to all IP addresses, use "all"
+  
+  Think very carefully before changing this; there are security
+  implications. Anyone who can get a commit into your git-annex repository
+  could `git annex addurl` an url on a private http server, possibly
+  causing it to be downloaded into your repository transferred to
+  other remotes, exposing its content.
+
+  Note that, since curl's interface does not allow these IP address
+  restrictions to be enforced, any configuration that enables use of curl
+  will be ignored unless annex.security.allowed-http-addresses=all.
 
 * `annex.secure-erase-command`
 
