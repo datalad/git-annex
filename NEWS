@@ -4,8 +4,16 @@ git-annex (6.20180622) upstream; urgency=high
   URL schemes by default. You can enable other URL schemes, at your own risk,
   using annex.security.allowed-url-schemes.
 
+  A related security fix prevents git-annex from connecting to http
+  servers on localhost or private networks. This can be overridden,
+  at your own risk, using annex.security.allowed-http-addresses.
+
   The annex.web-download-command configuration has been removed,
   use annex.web-options instead.
+
+  Setting annex.web-options no longer is enough to make curl be used.
+  See the documentation of annex.security.allowed-http-addresses for
+  why and how to enable curl.
 
  -- Joey Hess <id@joeyh.name>  Fri, 15 Jun 2018 17:54:23 -0400
 
