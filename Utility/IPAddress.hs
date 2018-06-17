@@ -69,3 +69,25 @@ embeddedIpv4 v = case v of
   where
 	toipv4 a b = htonl $ fromIntegral a * (2^halfipv4bits) + fromIntegral b
 	halfipv4bits = 16 :: Word32
+
+{- Given a string containing an IP address, make a function that will
+ - match that address in a SockAddr. Nothing when the address cannot be
+ - parsed.
+ -
+ - This does not involve any DNS lookups.
+ -}
+makeAddressMatcher :: String -> IO (Maybe (SockAddr -> Bool))
+makeAddressMatcher s = go
+	<$> catchDefaultIO [] (getAddrInfo (Just hints) (Just s) Nothing)
+  where
+	hints = defaultHints
+		{ addrSocketType = Stream
+		, addrFlags = [AI_NUMERICHOST]
+		}
+	
+	go [] = Nothing
+	go l = Just $ \sockaddr -> any (match sockaddr) (map addrAddress l)
+
+	match (SockAddrInet _ a) (SockAddrInet _ b) = a == b
+	match (SockAddrInet6 _ _ a _) (SockAddrInet6 _ _ b _) = a == b
+	match _ _ = False
