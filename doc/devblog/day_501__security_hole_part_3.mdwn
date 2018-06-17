@@ -1,0 +1,13 @@
+Got the IP address restrictions for http implemented. (Except for http
+proxies.)
+
+Unforunately as part of this, had to make youtube-dl and curl not be used
+by default. The annex.security.allowed-http-addresses config has to be
+opened up by the user in order to use those external commands, since they
+can follow arbitrary redirects.
+
+Also thought some more about how external special remotes might be
+affected, and sent their authors' a heads-up.
+
+[[!meta date="June 17 2018 4:00 pm"]]
+
