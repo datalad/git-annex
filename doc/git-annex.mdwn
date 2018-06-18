@@ -1418,7 +1418,7 @@ Here are all the supported configuration settings.
   Think very carefully before changing this; there are security
   implications. Anyone who can get a commit into your git-annex repository
   could `git annex addurl` an url on a private http server, possibly
-  causing it to be downloaded into your repository transferred to
+  causing it to be downloaded into your repository and transferred to
   other remotes, exposing its content.
 
   Note that, since the interfaces of curl and youtube-dl do not allow
