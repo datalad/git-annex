@@ -21,10 +21,6 @@ In either case, git-annex gets the content of the annexed file, following
 the file:// url. Then git-annex transfers the content back to the
 attacker's repository.
 
-Note that the victim can always detect this attack after the fact, since
-even if the attacker deletes the file, the git history will still 
-contain it.
-
 It may also be possible to exploit scp:// sftp:// smb:// etc urls to get at
 files on other computers that the user has access to as well as localhost.
 I was not able to get curl to download from scp:// or sftp:// on debian
@@ -108,7 +104,7 @@ May have to disable use of http proxies unless
 Or better, find what http proxy is enabled and prevent using it if it's on
 an IP not allowed there.
 
-> TODO
+> done in [[!commit cc08135e659d3ca9ea157246433d8aa90de3baf7]]
 
 ----
 
@@ -122,8 +118,8 @@ in response to a TRANSFER RETRIEVE will have the same problems as
 git-annex's url downloading. 
 
 > Checked all known external special remotes
-> to see if they used GETURLS; only one that did is ipfs, which doesn't use
-> http so is ok.
+> to see if they used GETURLS. ipfs did, but not in an exploitable way.
+> datalad does; looped in its developers to asess. Rest appear not to.
 
 > TODO document this security issue in special remote protocol page
 
@@ -195,5 +191,9 @@ youtube-dl
 glacier
 
 > This special remote uses glacier-cli, which will need to be audited.
-> Emailed basak.
-> TODO
+> Emailed Robie Basak about it, and he looked into the http libraries
+> used by glacier-cli and boto. It appears that they do not support
+> file:///. It also appears that the libraries do not handle redirects
+> themselves, and that boto does not handle http redirects. glacier-cli
+> uses https. Combining all this, it seems that glacier-cli is not 
+> vulnerable to this class of attacks.

@@ -1,0 +1,12 @@
+A bug exposed the checksum of annexed files to encrypted
+special remotes, which are not supposed to have access to the checksum of
+the un-encrypted file. This only occurred when resuming uploads to the
+encrypted special remote, so it is considered a low-severity security hole.
+
+For details, see [[!commit b890f3a53d936b5e40aa9acc5876cb98f18b9657]]
+
+No CVE was assigned for this issue.
+
+Fixed in git-annex 6.20160419
+
+[[!meta date="Thu, 28 Apr 2016 09:31:14 -0400"]]

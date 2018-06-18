@@ -1,0 +1,36 @@
+Some uses of git-annex were vulnerable to a private data exposure and
+exfiltration attack. It could expose the content of files located
+outside the git-annex repository, or content from a private 
+web server on localhost or the LAN.
+
+This was fixed in git-annex 6.20180622.
+
+## details
+
+The attacker needed to have control over one of the remotes of the git-annex
+repository. For example, they may provide a public git-annex repository that
+the victim clones. Or the victim may have paired repositories with them. Or,
+equivilantly, the attacker could have read access to the victim's git-annex
+repository (eg on a server somewhere), and some channel to get commits into it
+(eg a pull requests).
+
+The attacker does `git-annex addurl --relaxed file:///etc/passwd` and commits
+this to the repository in some out of the way place. Then they wait for the
+victim to pull the change. (As well as `file:///` urls, the attacker can
+use urls to private web servers. The url can also be one that the attacker
+controls, that redirects to such urls.)
+
+The easiest exploit is when the victim is running the git-annex assistant, or
+is periodically doing `git annex sync --content`. The victim may also perform
+the equivilant actions manually, not noticing they're operating on the file.
+
+In either case, git-annex gets the content of the annexed file, following
+the attacker-provider url to private data. Then git-annex transfers the content
+back to the attacker's repository.
+
+This attack was fixed by making git-annex refuse to follow `file:///` urls
+and urls pointing to private/local IP addresses by default. Two new
+configuration settings, annex.security.allowed-url-schemes and
+annex.security.allowed-http-addresses, can relax this security policy,
+and are intended for cases where the git-annex repository is kept
+private and so the attack does not apply.
