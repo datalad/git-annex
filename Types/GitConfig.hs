@@ -162,7 +162,7 @@ extractGitConfig r = GitConfig
 	, annexRetryDelay = Seconds
 		<$> getmayberead (annex "retrydelay")
 	, annexAllowedUrlSchemes = S.fromList $ map mkScheme $
-		maybe ["http", "https"] words $
+		maybe ["http", "https", "ftp"] words $
 			getmaybe (annex "security.allowed-url-schemes")
 	, annexAllowedHttpAddresses = fromMaybe "" $
 		getmaybe (annex "security.allowed-http-addresses")

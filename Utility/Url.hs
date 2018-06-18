@@ -100,7 +100,7 @@ defUrlOptions = UrlOptions
 	<*> pure DownloadWithConduit
 	<*> pure id
 	<*> newManager managerSettings
-	<*> pure (S.fromList $ map mkScheme ["http", "https"])
+	<*> pure (S.fromList $ map mkScheme ["http", "https", "ftp"])
 
 mkUrlOptions :: Maybe UserAgent -> Headers -> UrlDownloader -> Manager -> S.Set Scheme -> UrlOptions
 mkUrlOptions defuseragent reqheaders urldownloader manager =

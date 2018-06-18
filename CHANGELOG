@@ -1,7 +1,7 @@
 git-annex (6.20180622) UNRELEASED; urgency=high
 
   * Added annex.security.allowed-url-schemes setting, which defaults
-    to only allowing http and https URLs. Note especially that file:/
+    to only allowing http, https, and ftp URLs. Note especially that file:/
     is no longer enabled by default. This is a security fix.
   * Removed annex.web-download-command, since its interface does not allow
     supporting annex.security.allowed-url-schemes across redirects.

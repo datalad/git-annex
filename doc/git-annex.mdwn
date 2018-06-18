@@ -1394,7 +1394,7 @@ Here are all the supported configuration settings.
 * `annex.security.allowed-url-schemes`
 
   List of URL schemes that git-annex is allowed to download content from.
-  The default is "http https".
+  The default is "http https ftp".
 
   Think very carefully before changing this; there are security
   implications. For example, if it's changed to allow "file" URLs, then

@@ -1,6 +1,6 @@
 git-annex (6.20180622) upstream; urgency=high
 
-  A security fix has changed git-annex to only support http and https
+  A security fix has changed git-annex to only support http, https, and ftp
   URL schemes by default. You can enable other URL schemes, at your own risk,
   using annex.security.allowed-url-schemes.
 
