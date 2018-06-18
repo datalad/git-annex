@@ -1,0 +1,114 @@
+## What is hashdeep
+
+[hashdeep](http://md5deep.sourceforge.net/) is a handy tool that allows you to check file integrity
+across whole directory trees. It can detect renames and missing files,
+for example.
+
+## How to use it with git-annex
+
+The general working principle of hashdeep is that it iterates over a
+set of files and produces a manifest that looks like this:
+
+    $ hashdeep -r *
+    %%%% HASHDEEP-1.0
+    %%%% size,md5,sha256,filename
+    ## Invoked from: /home/jessek
+    ## $ hashdeep -r archives bin lib doc
+    21508,6178d221a1714b7e2089565e997d6ad1,92caa3f5754b22ca792e4f8626362d2ef39596b080abfcfed951a86bee82bec3,/home/jessek/archives/foo-1.2.1.tar.gz
+    12292,116e77a5dc6af0996597f7bc1b9252a2,c2afc6aa8d5c094a7226db1695d99a37fa858548f5d09aad9e41badfc62b1d27,/home/jessek/archives/bar-0.9.tar.bz2
+    145684,4409c1e0b5995c290c2fc3d1d6d74bac,f56881fb277358c95ed3ddf64f28c4ff3f3937e636e17d6a26d42822b16fd4ed,/home/jessek/bin/ls
+
+Then this manifest can be used to check consistency of the files
+later. Because git-annex also uses hashes to identify files, it fits
+nicely with this pattern and I have used it to verify files that were
+outside of git-annex's control yet still from the repository. First,
+we produce the manifest file:
+
+    (
+    echo '%%%% HASHDEEP-1.0'
+    echo '%%%% size,sha256,filename'
+    git annex find --format '${bytesize},${keyname},${file}\n' | sed 's/\.[^,]*,/,/'
+    ) > manifest.txt
+
+Then this can be used to verify an external fileset with the following
+command:
+
+    hashdeep -k manifest.txt -a -vv -e /mnt/ > result
+
+This will create a listing of every file that was moved, that is
+missing and so on. I have used this to audit corrupted files on my
+phone's microSD card as it turned out that about half of the files
+were corrupted for some mysterious reason:
+
+    hashdeep: Audit failed
+       Input files examined: 0
+      Known files expecting: 0
+              Files matched: 0
+    Files partially matched: 0
+                Files moved: 3411
+            New files found: 2179
+      Known files not found: 42117
+
+The non-zero numbers are interesting: 3411 files were detected as
+being sane and just the filenames had changed. 2179 files were "new"
+which means that they were not in the original set. Since files were
+supposed to *only* come from the original set, this means those files
+were corrupt. Actually, that's not completely true: some files (JPG
+image files, namely) *were* created in the external fileset so I had
+to be careful to exclude those false positives by hand. The 42117
+"known files not found" were files that were simply not transferred
+over to the phone for lack of space.
+
+This way, I was able to quickly find which files were corrupt and
+remove them. This created a list of files to remove:
+
+    grep 'No match' result  | grep -v '.jpg' | sed 's/: No match$//'
+
+And I used the following loop to remove the files one by one:
+
+    grep 'No match' result  | grep -v '.jpg' | sed 's/: No match$//' | while read file; do rm "$file" ; done
+
+Note the above is actually quite dangerous and you might want to
+insert an `echo` in there to avoid shenanigans, especially if you do
+not trust the filesystem.
+
+## How else this might work
+
+Naturally, I could have imported all the files into git-annex and work
+only with git-annex to operate this. But because the files were
+renamed to some canonical version by the software transferring the file
+([dSub](https://f-droid.org/en/packages/github.daneren2005.dsub/) and [Airsonic](https://airsonic.github.io/)), it would have been difficult to make a
+diff with the original set. This is on a (ex)fat filesystem too, which
+might make git-annex operation difficult. Yet I can't help but think
+this is something that [[git-annex-export]] should be able to do, but
+I am not sure it could deal with the renames. And I must say I have
+found it a little inconvenient to have to `initremote` to be able to
+use what are essentially ephemeral storage mountpoints.
+
+The above procedure reuses the best of both world: hashdeep does the
+fuzzy matching and git-annex provides the catalog of files.
+
+## Future improvements
+
+It would be nice if [[git-annex-find]] would allow listing only the
+checksum, which would remove a potentially error-prone pattern
+substitution above (`sed 's/\.[^,]*,/,/'`). This is necessary because
+`${keyname}` includes the file extension which is expected with the
+`SHA256E` backend, but it is somewhat inconvenient to deal with. Of
+course, it would be pretty awesome if git-annex could output
+hashdeep-compatible catalogs out of the box: it would improve
+interoperability here... And the icing on cake would be a git-annex
+command (a variation of [[git-annex-import]]?) that would audit an
+external, non-annexed repository for consistency in the same way.
+
+Also note that hashdeep can operate in "chunk" mode which means that
+it can work across file boundaries, detecting partial matches, for
+example. This is something that, as far as I know, is impossible in
+git-annex as checksums are only file-based. This would be useful in
+eliminating the false positives by distinguishing the "this file is
+completely new" and "this file is corrupt" cases.
+
+## Comments
+
+Those notes were provided by [[anarcat]] but would gladly welcome
+corrections and improvements.
