@@ -1688,12 +1688,18 @@ test_add_subdirs = intmpclonerepo $ do
 test_addurl :: Assertion
 test_addurl = intmpclonerepo $ do
 	-- file:// only; this test suite should not hit the network
+	let filecmd c ps = git_annex c 
+		( "-cannex.security.allowed-url-schemes=file"
+		: "-cannex.security.allowed-http-addresses=all"
+		: ps
+		)
 	f <- absPath "myurl"
 	let url = replace "\\" "/" ("file:///" ++ dropDrive f)
 	writeFile f "foo"
-	git_annex "addurl" [url] @? ("addurl failed on " ++ url)
+	not <$> git_annex "addurl" [url] @? "addurl failed to fail on file url"
+	filecmd "addurl" [url] @? ("addurl failed on " ++ url)
 	let dest = "addurlurldest"
-	git_annex "addurl" ["--file", dest, url] @? ("addurl failed on " ++ url ++ "  with --file")
+	filecmd "addurl" ["--file", dest, url] @? ("addurl failed on " ++ url ++ "  with --file")
 	doesFileExist dest @? (dest ++ " missing after addurl --file")
 
 -- This is equivilant to running git-annex, but it's all run in-process
