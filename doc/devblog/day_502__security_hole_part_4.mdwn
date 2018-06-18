@@ -1,0 +1,16 @@
+Spent several hours dealing with the problem of http proxies, which
+bypassed the IP address checks added to prevent the security hole.
+Eventually got it filtering out http proxies located on private IP
+addresses.
+
+Other than the question of what to do about external special remotes
+that may be vulerable to related problems, it looks like the security
+hole is all closed off in git-annex now.
+
+Added a new page [[security]] with details of this and past security holes
+in git-annex.
+
+Several people I reached out to for help with special remotes have gotten
+back to me, and we're discussing how the security hole may affect them and
+what to do. Thanks especially to Robie Basak and Daniel Dent for their
+work on security analysis.
