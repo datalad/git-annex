@@ -1,3 +1,5 @@
+CVE-2018-10857
+
 This is a security hole that allows exposure of
 private data in files located outside the git-annex repository.
 
