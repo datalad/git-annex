@@ -1,0 +1,17 @@
+Hi,
+
+I'm trying to get git-annex working on my Google Pixel running Android version 8.1 through Termux but I'm having some difficulty.
+
+I copy-pasta'd the instructions found here: <https://git-annex.branchable.com/tips/install_on_Android_in_Termux/> until I got the following error when trying to run git-annex.linux/runshell
+
+    Running on Android.. Adding git-annex to PATH for you, and tuning for optimal behavior
+    proot error: execve("/data/data/com.termux/files/home/git-annex.linux/bin/sh"): No such file or directory
+    proot info: possible causes
+      * the program is a script but its interpreter (eg. /bin/sh) was not found;
+      * the program is an ELF but its interpreter (eg. ld-linux.so) was not found;
+      * the program is a foreign binary but qemu was not specified;
+      * qemu does not work correctly (if specified);
+      * the loader was not found or doesn't work.
+    fatal error: see `proot --help`.
+
+If I could get some help troubleshooting this that would be great. Thanks!
