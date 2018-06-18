@@ -28,6 +28,9 @@ import Types.RefSpec
 import Utility.HumanTime
 import Utility.Gpg (GpgCmd, mkGpgCmd)
 import Utility.ThreadScheduler (Seconds(..))
+import Utility.Url (Scheme, mkScheme)
+
+import qualified Data.Set as S
 
 {- Main git-annex settings. Each setting corresponds to a git-config key
  - such as annex.foo -}
@@ -51,7 +54,6 @@ data GitConfig = GitConfig
 	, annexWebOptions :: [String]
 	, annexQuviOptions :: [String]
 	, annexAriaTorrentOptions :: [String]
-	, annexWebDownloadCommand :: Maybe String
 	, annexCrippledFileSystem :: Bool
 	, annexLargeFiles :: Maybe String
 	, annexAddSmallFiles :: Bool
@@ -70,6 +72,8 @@ data GitConfig = GitConfig
 	, annexPidLock :: Bool
 	, annexPidLockTimeout :: Seconds
 	, annexAddUnlocked :: Bool
+	, annexAllowedUrlSchemes :: S.Set Scheme
+	, annexAllowedHttpAddresses :: String
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
 	, gcryptId :: Maybe String
@@ -98,7 +102,6 @@ extractGitConfig r = GitConfig
 	, annexWebOptions = getwords (annex "web-options")
 	, annexQuviOptions = getwords (annex "quvi-options")
 	, annexAriaTorrentOptions = getwords (annex "aria-torrent-options")
-	, annexWebDownloadCommand = getmaybe (annex "web-download-command")
 	, annexCrippledFileSystem = getbool (annex "crippledfilesystem") False
 	, annexLargeFiles = getmaybe (annex "largefiles")
 	, annexAddSmallFiles = getbool (annex "addsmallfiles") True
@@ -120,6 +123,11 @@ extractGitConfig r = GitConfig
 	, annexPidLockTimeout = Seconds $ fromMaybe 300 $
 		getmayberead (annex "pidlocktimeout")
 	, annexAddUnlocked = getbool (annex "addunlocked") False
+	, annexAllowedUrlSchemes = S.fromList $ map mkScheme $
+		maybe ["http", "https", "ftp"] words $
+			getmaybe (annex "security.allowed-url-schemes")
+        , annexAllowedHttpAddresses = fromMaybe "" $
+		getmaybe (annex "security.allowed-http-addresses")
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
 	, gcryptId = getmaybe "core.gcrypt-id"

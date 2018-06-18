@@ -15,6 +15,9 @@ module Utility.Url (
 	managerSettings,
 	URLString,
 	UserAgent,
+	Scheme,
+	mkScheme,
+	allowedScheme,
 	UrlOptions,
 	mkUrlOptions,
 	check,
@@ -38,6 +41,7 @@ import Network.HTTP.Types
 import qualified Data.CaseInsensitive as CI
 import qualified Data.ByteString as B
 import qualified Data.ByteString.UTF8 as B8
+import qualified Data.Set as S
 import Control.Monad.Trans.Resource
 import Network.HTTP.Conduit hiding (closeManager)
 
@@ -63,6 +67,15 @@ type Headers = [String]
 
 type UserAgent = String
 
+newtype Scheme = Scheme (CI.CI String)
+	deriving (Eq, Ord)
+
+mkScheme :: String -> Scheme
+mkScheme = Scheme . CI.mk
+
+fromScheme :: Scheme -> String
+fromScheme (Scheme s) = CI.original s
+
 data UrlOptions = UrlOptions
 	{ userAgent :: Maybe UserAgent
 	, reqHeaders :: Headers
@@ -72,15 +85,17 @@ data UrlOptions = UrlOptions
 #else
 	, applyRequest :: forall m. Request m -> Request m
 #endif
+	, allowedSchemes :: S.Set Scheme
 	}
 
 instance Default UrlOptions
   where
-	def = UrlOptions Nothing [] [] id
+	def = UrlOptions Nothing [] [] id 
+		(S.fromList $ map mkScheme ["http", "https", "ftp"])
 
-mkUrlOptions :: Maybe UserAgent -> Headers -> [CommandParam] -> UrlOptions
-mkUrlOptions defuseragent reqheaders reqparams =
-	UrlOptions useragent reqheaders reqparams applyrequest
+mkUrlOptions :: Maybe UserAgent -> Headers -> [CommandParam] -> S.Set Scheme -> UrlOptions
+mkUrlOptions defuseragent reqheaders reqparams allowedschemes =
+	UrlOptions useragent reqheaders reqparams applyrequest allowedschemes
   where
 	applyrequest = \r -> r { requestHeaders = requestHeaders r ++ addedheaders }
 	addedheaders = uaheader ++ otherheaders
@@ -103,6 +118,28 @@ addUserAgent uo ps = case userAgent uo of
 	Nothing -> ps
 	-- --user-agent works for both wget and curl commands
 	Just ua -> ps ++ [Param "--user-agent", Param ua] 
+
+checkPolicy :: UrlOptions -> URI -> a -> IO a -> IO a
+checkPolicy uo u onerr a
+	| allowedScheme uo u = a
+	| otherwise = do
+		hPutStrLn stderr $
+			"Configuration does not allow accessing " ++ show u
+		hFlush stderr
+		return onerr
+
+curlSchemeParams :: UrlOptions -> [CommandParam]
+curlSchemeParams uo = 
+	[ Param "--proto"
+	, Param $ intercalate "," ("-all" : schemelist)
+	]
+  where
+	schemelist = map fromScheme $ S.toList $ allowedSchemes uo
+
+allowedScheme :: UrlOptions -> URI -> Bool
+allowedScheme uo u = uscheme `S.member` allowedSchemes uo
+  where
+	uscheme = mkScheme $ takeWhile (/=':') (uriScheme u)
 
 {- Checks that an url exists and could be successfully downloaded,
  - also checking that its size, if available, matches a specified size. -}
@@ -137,7 +174,7 @@ assumeUrlExists = UrlInfo True Nothing Nothing
  - also returning its size and suggested filename if available. -}
 getUrlInfo :: URLString -> UrlOptions -> IO UrlInfo
 getUrlInfo url uo = case parseURIRelaxed url of
-	Just u -> case parseurlconduit (show u) of
+	Just u -> checkPolicy uo u dne' $ case parseurlconduit (show u) of
 		Just req -> catchJust
 			-- When http redirects to a protocol which 
 			-- conduit does not support, it will throw
@@ -161,7 +198,8 @@ getUrlInfo url uo = case parseURIRelaxed url of
 			| otherwise -> dne
 	Nothing -> dne
   where
-	dne = return $ UrlInfo False Nothing Nothing
+	dne = return dne'
+	dne' = UrlInfo False Nothing Nothing
 	found sz f = return $ UrlInfo True sz f
 
 	curlparams = addUserAgent uo $
@@ -169,7 +207,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 		, Param "--head"
 		, Param "-L", Param url
 		, Param "-w", Param "%{http_code}"
-		] ++ concatMap (\h -> [Param "-H", Param h]) (reqHeaders uo) ++ (reqParams uo)
+		] ++ concatMap (\h -> [Param "-H", Param h]) (reqHeaders uo) ++ (reqParams uo) ++ curlSchemeParams uo
 
 	extractlencurl s = case lastMaybe $ filter ("Content-Length:" `isPrefixOf`) (lines s) of
 		Just l -> case lastMaybe $ words l of
@@ -263,9 +301,10 @@ downloadQuiet = download' True
 download' :: Bool -> URLString -> FilePath -> UrlOptions -> IO Bool
 download' quiet url file uo = do
 	case parseURIRelaxed url of
-		Just u
-			| uriScheme u == "file:" -> curl
-			| otherwise -> ifM (inPath "wget") (wget , curl)
+		Just u -> checkPolicy uo u False $
+			if uriScheme u == "file:"
+				then curl
+				else ifM (inPath "wget") (wget , curl)
 		_ -> return False
   where
 	headerparams = map (\h -> Param $ "--header=" ++ h) (reqHeaders uo)
@@ -276,6 +315,10 @@ download' quiet url file uo = do
 	 -
 	 - When the wget version is new enough, pass options for
 	 - a less cluttered download display.
+	 -
+	 - wget only supports https, http, and ftp, not file, which are
+	 - all always allowed, so its url schemes do not need to be
+	 - limited.
 	 -}
 #ifndef __ANDROID__
 	wgetparams = concat
@@ -296,7 +339,7 @@ download' quiet url file uo = do
 		-- curl does not create destination file
 		-- if the url happens to be empty, so pre-create.
 		writeFile file ""
-		go "curl" $ headerparams ++ quietopt "-s" ++
+		go "curl" $ headerparams ++ quietopt "-s" ++ curlSchemeParams uo ++
 			[Param "-f", Param "-L", Param "-C", Param "-", Param "-#", Param "-o"]
 	
 	{- Run wget in a temp directory because it has been buggy

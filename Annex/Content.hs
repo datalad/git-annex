@@ -902,24 +902,15 @@ saveState nocommit = doSideAction $ do
 
 {- Downloads content from any of a list of urls. -}
 downloadUrl :: Key -> MeterUpdate -> [Url.URLString] -> FilePath -> Annex Bool
-downloadUrl k p urls file = meteredFile file (Just p) k $
-	go =<< annexWebDownloadCommand <$> Annex.getGitConfig
+downloadUrl k p urls file = meteredFile file (Just p) k go
   where
-	go Nothing = do
+	go = do
 		a <- ifM commandProgressDisabled
 			( return Url.downloadQuiet
 			, return Url.download
 			)
 		Url.withUrlOptions $ \uo ->
 			anyM (\u -> a u file uo) urls
-	go (Just basecmd) = anyM (downloadcmd basecmd) urls
-	downloadcmd basecmd url =
-		progressCommand "sh" [Param "-c", Param $ gencmd url basecmd]
-			<&&> liftIO (doesFileExist file)
-	gencmd url = massReplace
-		[ ("%file", shellEscape file)
-		, ("%url", shellEscape url)
-		]
 
 {- Copies a key's content, when present, to a temp file.
  - This is used to speed up some rsyncs. -}

@@ -1,3 +1,15 @@
+git-annex (6.20170101.1) unstable; urgency=high
+
+  * Added annex.security.allowed-url-schemes setting, which defaults
+    to only allowing http, https, and ftp URLs. Note especially that file:/
+    is no longer enabled by default. This is a security fix.
+  * Removed annex.web-download-command, since its interface does not allow
+    supporting annex.security.allowed-url-schemes across redirects.
+    If you used this setting, you may want to instead use annex.web-options
+    to pass options to curl.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 15 Jun 2018 17:54:23 -0400
+
 git-annex (6.20170101) unstable; urgency=medium
 
   * XMPP support has been removed from the assistant in this release.

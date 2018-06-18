@@ -30,6 +30,7 @@ getUrlOptions = mkUrlOptions
 	<$> getUserAgent
 	<*> headers
 	<*> options
+	<*> (annexAllowedUrlSchemes <$> Annex.getGitConfig)
   where
 	headers = do
 		v <- annexHttpHeadersCommand <$> Annex.getGitConfig
