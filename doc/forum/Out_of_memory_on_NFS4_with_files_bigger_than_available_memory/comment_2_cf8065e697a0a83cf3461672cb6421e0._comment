@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="yves.noirjean@3f9b06d19a920fbf5c82340c362e5971b00d4af2"
+ nickname="yves.noirjean"
+ avatar="http://cdn.libravatar.org/avatar/2f1ad9d443c037337d91f29781560344"
+ subject="comment 2"
+ date="2018-06-18T11:25:18Z"
+ content="""
+The issue has been resolved. The unix file permissions were not applied, but the NFS4 permissions. So git annex did not trust that files without write flags could not be changed. Therefore, it didn't move the files and create symlinks. This somehow lead to git allocating a lot of memory during commit.
+"""]]
