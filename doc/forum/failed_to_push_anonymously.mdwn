@@ -1,0 +1,19 @@
+I have pushed changes to this wiki in the past using this URL as specified in the `Branchable` tab:
+
+    git://git-annex.branchable.com/
+
+Yet after writing the [[tips/hashdeep integration]] page, I wasn't able to push it to this git repo, and got the following error:
+
+    [1023]anarcat@curie:git-annex$ git push 
+    Décompte des objets: 5, fait.
+    Delta compression using up to 4 threads.
+    Compression des objets: 100% (5/5), fait.
+    Écriture des objets: 100% (5/5), 3.30 KiB | 3.30 MiB/s, fait.
+    Total 5 (delta 3), reused 0 (delta 0)
+    remote: fatal: Not a git repository (or any of the parent directories): .git
+    remote: 'git log --pretty=raw --raw --abbrev=40 --always -c -r d8de48ddee630f546bd71adff6024f875f6db4c2..5bce64b25e53849a6cd7f5973fed849898428efa --no-renames -- .' failed: 
+    To git://git-annex.branchable.com/
+     ! [remote rejected]     master -> master (pre-receive hook declined)
+    error: impossible de pousser des références vers 'git://git-annex.branchable.com/'
+
+Seems like there's something wrong on that end, or did I do something wrong? -- [[anarcat]]
