@@ -81,8 +81,13 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 						then Nothing
 						else Just (addrConnectionRestricted addr)
 				}
-			manager <- liftIO $ U.newManager $
+			(settings, pr) <- liftIO $ 
 				restrictManagerSettings r U.managerSettings
+			case pr of
+				Nothing -> return ()
+				Just ProxyRestricted -> toplevelWarning True
+					"http proxy settings not used due to annex.security.allowed-http-addresses configuration"
+			manager <- liftIO $ U.newManager settings
 			return (U.DownloadWithConduit, manager)
 
 httpAddressesUnlimited :: Annex Bool

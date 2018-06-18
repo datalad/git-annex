@@ -5,8 +5,8 @@ git-annex (6.20180622) upstream; urgency=high
   using annex.security.allowed-url-schemes.
 
   A related security fix prevents git-annex from connecting to http
-  servers on localhost or private networks. This can be overridden,
-  at your own risk, using annex.security.allowed-http-addresses.
+  servers (and proxies) on localhost or private networks. This can
+  be overridden, at your own risk, using annex.security.allowed-http-addresses.
   
   Setting annex.web-options no longer is enough to make curl be used,
   and youtube-dl is also no longer used by default. See the

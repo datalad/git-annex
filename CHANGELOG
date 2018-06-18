@@ -11,6 +11,8 @@ git-annex (6.20180622) UNRELEASED; urgency=high
     localhost, or any private IP addresses, to prevent accidental
     exposure of internal data. This can be overridden with the
     annex.security.allowed-http-addresses setting.
+  * Local http proxies will not be used unless allowed by the
+    annex.security.allowed-http-addresses setting.
   * Since the interfaces to curl and youtube-dl do not have a way to
     prevent them from accessing localhost or private IP addresses,
     they default to not being used for url downloads.

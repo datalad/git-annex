@@ -7,25 +7,27 @@
  - License: MIT
  -}
 
-{-# LANGUAGE ScopedTypeVariables, DeriveDataTypeable #-}
+{-# LANGUAGE ScopedTypeVariables, DeriveDataTypeable, LambdaCase, PatternGuards #-}
 
 module Utility.HttpManagerRestricted (
 	restrictManagerSettings,
 	Restriction(..),
 	ConnectionRestricted(..),
 	addrConnectionRestricted,
+	ProxyRestricted(..),
 ) where
 
 import Network.HTTP.Client
-import Network.HTTP.Client.Internal (ManagerSettings(..), Connection)
-import Network.HTTP.Client.TLS
+import Network.HTTP.Client.Internal
+	(ManagerSettings(..), Connection, runProxyOverride)
 import Network.Socket
 import Network.BSD (getProtocolNumber)
 import Control.Exception
 import qualified Network.Connection as NC
-import Data.ByteString (ByteString)
+import qualified Data.ByteString.UTF8 as BU
 import Data.Default
 import Data.Typeable
+import Control.Applicative
 
 data Restriction = Restriction
 	{ addressRestriction :: AddrInfo -> Maybe ConnectionRestricted
@@ -39,30 +41,94 @@ instance Exception ConnectionRestricted
 addrConnectionRestricted :: AddrInfo -> ConnectionRestricted
 addrConnectionRestricted addr = ConnectionRestricted $ unwords
 	 [ "Configuration does not allow accessing address"
-	 , case addrAddress addr of
-	 	a@(SockAddrInet _ _) ->
-			takeWhile (/= ':') $ show a
-		a@(SockAddrInet6 _ _ _ _) -> 
-			takeWhile (/= ']') $ drop 1 $ show a
+	 , showSockAddress (addrAddress addr)
 	 ]
 
--- | Adjusts a ManagerSettings to check a Restriction.
+data ProxyRestricted = ProxyRestricted
+	deriving (Show)
+
+-- | Adjusts a ManagerSettings to enforce a Restriction.
 --
--- Note that connections to http proxies are not checked.
--- Use `managerSetProxy noProxy` to prevent connections through http
--- proxies.
-restrictManagerSettings ::  Restriction -> ManagerSettings -> ManagerSettings
-restrictManagerSettings cfg base = base
+-- This includes checking the http proxy against the Restriction.
+-- If access to it is blocked, the ManagerSettings will be made to
+-- not use the proxy.
+restrictManagerSettings
+	:: Restriction
+	-> ManagerSettings
+	-> IO (ManagerSettings, Maybe ProxyRestricted)
+restrictManagerSettings cfg base = restrictProxy cfg $ base
 	{ managerRawConnection = restrictedRawConnection cfg
 	, managerTlsConnection = restrictedTlsConnection cfg
-	, managerWrapException = \req ->
-		let wrapper se
-			| Just (_ :: ConnectionRestricted) <- fromException se = 
-		         	toException $ HttpExceptionRequest req $
-					InternalException se
-			| otherwise = se
-		 in handle $ throwIO . wrapper
+	, managerWrapException = wrapOurExceptions
 	}
+
+restrictProxy
+	:: Restriction
+	-> ManagerSettings
+	-> IO (ManagerSettings, Maybe ProxyRestricted)
+restrictProxy cfg base = do	
+	http_proxy_addr <- getproxyaddr False
+	https_proxy_addr <- getproxyaddr True
+	let (http_proxy, http_r) = mkproxy http_proxy_addr
+	let (https_proxy, https_r) = mkproxy https_proxy_addr
+	let ms = managerSetInsecureProxy http_proxy $ 
+		managerSetSecureProxy https_proxy base
+	return (ms, http_r <|> https_r)
+  where
+	-- This does not use localhost because http-client may choose
+	-- not to use the proxy for localhost.
+	testnetip = "198.51.100.1"
+	dummyreq https = parseRequest_ $
+		"http" ++ (if https then "s" else "") ++ "://" ++ testnetip
+
+	getproxyaddr https = extractproxy >>= \case
+		Nothing -> return Nothing
+		Just p -> do
+			proto <- getProtocolNumber "tcp"
+			let serv = show (proxyPort p)
+			let hints = defaultHints
+				{ addrFlags = [AI_ADDRCONFIG]
+				, addrProtocol = proto
+				, addrSocketType = Stream
+				}
+			let h = BU.toString $ proxyHost p
+			getAddrInfo (Just hints) (Just h) (Just serv) >>= \case
+				[] -> return Nothing
+				(addr:_) -> return $ Just addr
+	  where
+		-- These contortions are necessary until this issue
+		-- is fixed:
+		-- https://github.com/snoyberg/http-client/issues/355
+		extractproxy = do
+			let po = if https
+				then managerProxySecure base
+				else managerProxyInsecure base
+			f <- runProxyOverride po https
+			return $ proxy $ f $ dummyreq https
+	
+	mkproxy Nothing = (noProxy, Nothing)
+	mkproxy (Just proxyaddr) = case addressRestriction cfg proxyaddr of
+		Nothing -> (addrtoproxy (addrAddress proxyaddr), Nothing)
+		Just _ -> (noProxy, Just ProxyRestricted)
+	
+	addrtoproxy addr = case addr of
+		SockAddrInet pn _ -> mk pn
+		SockAddrInet6 pn _ _ _ -> mk pn
+		_ -> noProxy
+	  where
+		mk pn = useProxy Network.HTTP.Client.Proxy
+			{ proxyHost = BU.fromString (showSockAddress addr)
+			, proxyPort = fromIntegral pn
+			}
+
+wrapOurExceptions :: Request -> IO a -> IO a
+wrapOurExceptions req =
+	let wrapper se
+		| Just (_ :: ConnectionRestricted) <- fromException se = 
+	         	toException $ HttpExceptionRequest req $
+				InternalException se
+		| otherwise = se
+	 in handle $ throwIO . wrapper
 
 restrictedRawConnection :: Restriction -> IO (Maybe HostAddress -> String -> Int -> IO Connection)
 restrictedRawConnection cfg = getConnection cfg Nothing
@@ -76,6 +142,8 @@ restrictedTlsConnection cfg = getConnection cfg $
 	-- less secure, this is not a big problem.
 	Just def
 
+
+
 -- Based on Network.HTTP.Client.TLS.getTlsConnection.
 --
 -- Checks the Restriction
@@ -84,26 +152,26 @@ restrictedTlsConnection cfg = getConnection cfg $
 getConnection :: Restriction -> Maybe NC.TLSSettings -> IO (Maybe HostAddress -> String -> Int -> IO Connection)
 getConnection cfg tls = do
 	context <- NC.initConnectionContext
-	return $ \_ha host port -> bracketOnError
-		(go context host port)
+	return $ \_ha h p -> bracketOnError
+		(go context h p)
 		NC.connectionClose
 		convertConnection
    where
-	go context host port = do
+	go context h p = do
 		let connparams = NC.ConnectionParams
-			{ NC.connectionHostname = host
-			, NC.connectionPort = fromIntegral port
+			{ NC.connectionHostname = h
+			, NC.connectionPort = fromIntegral p
 			, NC.connectionUseSecure = tls
 			, NC.connectionUseSocks = Nothing -- unsupprted
 			}
 		proto <- getProtocolNumber "tcp"
-		let serv = show port
+		let serv = show p
 		let hints = defaultHints
 			{ addrFlags = [AI_ADDRCONFIG]
 			, addrProtocol = proto
 			, addrSocketType = Stream
 			}
-		addrs <- getAddrInfo (Just hints) (Just host) (Just serv)
+		addrs <- getAddrInfo (Just hints) (Just h) (Just serv)
 		bracketOnError
 			(firstSuccessful $ map tryToConnect addrs)
 			close
@@ -115,7 +183,7 @@ getConnection cfg tls = do
 				close
 				(\sock -> connect sock (addrAddress addr) >> return sock)
 			Just r -> throwIO r
-		firstSuccessful [] = throwIO $ NC.HostNotResolved host
+		firstSuccessful [] = throwIO $ NC.HostNotResolved h
 		firstSuccessful (a:as) = a `catch` \(e ::IOException) ->
 			case as of
 				[] -> throwIO e
@@ -130,3 +198,12 @@ convertConnection conn = makeConnection
     -- on the socket.  But when this is called the socket might be
     -- already closed, and we get a @ResourceVanished@.
     (NC.connectionClose conn `Control.Exception.catch` \(_ :: IOException) -> return ())
+
+-- For ipv4 and ipv6, the string will contain only the IP address,
+-- omitting the port that the Show instance includes.
+showSockAddress :: SockAddr -> String
+showSockAddress a@(SockAddrInet _ _) =
+	takeWhile (/= ':') $ show a
+showSockAddress a@(SockAddrInet6 _ _ _ _) =
+	takeWhile (/= ']') $ drop 1 $ show a
+showSockAddress a = show a
