@@ -14,3 +14,9 @@ Several people I reached out to for help with special remotes have gotten
 back to me, and we're discussing how the security hole may affect them and
 what to do. Thanks especially to Robie Basak and Daniel Dent for their
 work on security analysis.
+
+Also prepared a minimal backport of the security fixes for the git-annex in
+Debian stable, which will probably be more palatable to their security team
+than the full 2000+ lines of patches I've developed so far. 
+The minimal fix is secure, but suboptimal; it prevents even safe urls from
+being downloaded from the web special remote by default.
