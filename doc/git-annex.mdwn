@@ -1253,6 +1253,21 @@ Here are all the supported configuration settings.
   Some special remotes support their own domain-specific URL
   schemes; those are not affected by this configuration setting.
 
+* `annex.security.allowed-http-addresses`
+
+  By default, this version of git-annex refuses to download the content of
+  annexed files from the web. Newer versions of git-annex allow downloading
+  from the web, but only when the web server is not on a private IP address.
+
+  To relax this security check and allow getting annexed files from
+  anywhere on the web, set this to "all".
+  
+  Think very carefully before changing this; there are security
+  implications. Anyone who can get a commit into your git-annex repository
+  could `git annex addurl` an url on a private http server, possibly
+  causing it to be downloaded into your repository and transferred to
+  other remotes, exposing its content.
+
 * `annex.secure-erase-command`
 
   This can be set to a command that should be run whenever git-annex

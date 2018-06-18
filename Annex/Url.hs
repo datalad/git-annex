@@ -11,12 +11,15 @@ module Annex.Url (
 	withUrlOptions,
 	getUrlOptions,
 	getUserAgent,
+	httpAddressesUnlimited,
 ) where
 
 import Annex.Common
 import qualified Annex
 import Utility.Url as U
 import qualified Build.SysConfig as SysConfig
+
+import qualified Data.Set as S
 
 defaultUserAgent :: U.UserAgent
 defaultUserAgent = "git-annex/" ++ SysConfig.packageversion
@@ -30,7 +33,7 @@ getUrlOptions = mkUrlOptions
 	<$> getUserAgent
 	<*> headers
 	<*> options
-	<*> (annexAllowedUrlSchemes <$> Annex.getGitConfig)
+	<*> urlschemes
   where
 	headers = do
 		v <- annexHttpHeadersCommand <$> Annex.getGitConfig
@@ -38,6 +41,18 @@ getUrlOptions = mkUrlOptions
 			Just cmd -> lines <$> liftIO (readProcess "sh" ["-c", cmd])
 			Nothing -> annexHttpHeaders <$> Annex.getGitConfig
 	options = map Param . annexWebOptions <$> Annex.getGitConfig
+	urlschemes = ifM httpAddressesUnlimited
+		( annexAllowedUrlSchemes <$> Annex.getGitConfig
+		-- Don't allow any url schemes to be used when
+		-- there's a limit on the allowed addresses, because
+		-- there is no way to prevent curl or wget from
+		-- redirecting to any address.
+		, pure S.empty
+		)
+
+httpAddressesUnlimited :: Annex Bool
+httpAddressesUnlimited =
+	("all" == ) . annexAllowedHttpAddresses <$> Annex.getGitConfig
 
 withUrlOptions :: (U.UrlOptions -> IO a) -> Annex a
 withUrlOptions a = liftIO . a =<< getUrlOptions

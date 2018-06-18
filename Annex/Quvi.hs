@@ -11,8 +11,8 @@ module Annex.Quvi where
 
 import Annex.Common
 import qualified Annex
+import Annex.Url
 import Utility.Quvi
-import Utility.Url
 
 withQuviOptions :: forall a. Query a -> [QuviParams] -> URLString -> Annex a
 withQuviOptions a ps url = do
@@ -21,7 +21,14 @@ withQuviOptions a ps url = do
 	liftIO $ a v (concatMap (\mkp -> mkp v) ps ++ opts) url
 
 quviSupported :: URLString -> Annex Bool
-quviSupported u = liftIO . flip supported u =<< quviVersion
+quviSupported u = ifM httpAddressesUnlimited
+	( liftIO . flip supported u =<< quviVersion
+	-- Don't allow any url schemes to be used when
+	-- there's a limit on the allowed addresses, because
+	-- there is no way to prevent quvi from
+	-- redirecting to any address.
+	, return False
+	)
 
 quviVersion :: Annex QuviVersion
 quviVersion = go =<< Annex.getState Annex.quviversion

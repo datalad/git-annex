@@ -4,6 +4,12 @@ git-annex (6.20170101.1) unstable; urgency=medium
   URL schemes by default. You can enable other URL schemes, at your own risk,
   using annex.security.allowed-url-schemes.
 
+  A related security fix prevents git-annex from downloading content from
+  the web. This can be overridden with the 
+  annex.security.allowed-http-addresses setting.
+  (The S3, glacier, and webdav special remotes are still allowed to
+  download from the web.)
+
   The annex.web-download-command configuration has been removed,
   use annex.web-options instead.
 

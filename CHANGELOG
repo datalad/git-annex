@@ -7,6 +7,12 @@ git-annex (6.20170101.1) unstable; urgency=high
     supporting annex.security.allowed-url-schemes across redirects.
     If you used this setting, you may want to instead use annex.web-options
     to pass options to curl.
+  * git-annex will refuse to download content from the web, to prevent
+    accidental exposure of data on private webservers on localhost and the
+    LAN. This can be overridden with the
+    annex.security.allowed-http-addresses setting.
+    (The S3, glacier, and webdav special remotes are still allowed to
+    download from the web.)
 
  -- Joey Hess <id@joeyh.name>  Fri, 15 Jun 2018 17:54:23 -0400
 
