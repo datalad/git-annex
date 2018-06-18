@@ -1,5 +1,6 @@
 git-annex (6.20170101.1) unstable; urgency=high
 
+  * Security fix release for CVE-2018-10857.
   * Added annex.security.allowed-url-schemes setting, which defaults
     to only allowing http, https, and ftp URLs. Note especially that file:/
     is no longer enabled by default. This is a security fix.
