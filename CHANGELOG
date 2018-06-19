@@ -1,6 +1,7 @@
-git-annex (6.20180622) UNRELEASED; urgency=high
+git-annex (6.20180622) upstream; urgency=high
 
-  * Security fix release for CVE-2018-10857.
+  Security fix release for CVE-2018-10857
+
   * Added annex.security.allowed-url-schemes setting, which defaults
     to only allowing http, https, and ftp URLs. Note especially that file:/
     is no longer enabled by default. This is a security fix.
@@ -20,9 +21,7 @@ git-annex (6.20180622) UNRELEASED; urgency=high
     Only when annex.security.allowed-http-addresses=all will curl and
     youtube-dl be used.
  
- -- Joey Hess <id@joeyh.name>  Wed, 30 May 2018 11:49:08 -0400
-
-git-annex (6.20180530) UNRELEASED; urgency=medium
+  Non-security fix changes:
 
   * Fix build with ghc 8.4+, which broke due to the Semigroup Monoid change. 
   * version: Show operating system and repository version list 
@@ -42,7 +41,7 @@ git-annex (6.20180530) UNRELEASED; urgency=medium
     git-annex fsck --from remote has noticed it's gone, re-running
     git-annex export or git-annex sync --content will re-upload it.
 
- -- Joey Hess <id@joeyh.name>  Wed, 30 May 2018 11:49:08 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 19 Jun 2018 11:40:21 -0400
 
 git-annex (6.20180529) upstream; urgency=medium
 
