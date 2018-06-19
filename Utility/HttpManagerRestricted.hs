@@ -61,9 +61,9 @@ restrictManagerSettings cfg base = restrictProxy cfg $ base
 	{ managerRawConnection = restrictedRawConnection cfg
 	, managerTlsConnection = restrictedTlsConnection cfg
 #if MIN_VERSION_http_client(0,5,0)
-	, managerWrapException = wrapOurExceptions
+	, managerWrapException = wrapOurExceptions base
 #else
-	, managerWrapIOException = wrapOurExceptions
+	, managerWrapIOException = wrapOurExceptions base
 #endif
 	}
 
@@ -127,17 +127,17 @@ restrictProxy cfg base = do
 			}
 
 #if MIN_VERSION_http_client(0,5,0)
-wrapOurExceptions :: Request -> IO a -> IO a
-wrapOurExceptions req =
+wrapOurExceptions :: ManagerSettings -> Request -> IO a -> IO a
+wrapOurExceptions base req a =
 	let wrapper se
 		| Just (_ :: ConnectionRestricted) <- fromException se = 
 	         	toException $ HttpExceptionRequest req $
 				InternalException se
 		| otherwise = se
-	 in handle $ throwIO . wrapper
+	 in managerWrapException base req (handle (throwIO . wrapper) a)
 #else
-wrapOurExceptions :: IO a -> IO a
-wrapOurExceptions =
+wrapOurExceptions :: ManagerSettings -> IO a -> IO a
+wrapOurExceptions base a =
 	let wrapper se = case fromException se of
 		Just (_ :: ConnectionRestricted) ->
 			-- Not really a TLS exception, but there is no
@@ -145,7 +145,7 @@ wrapOurExceptions =
 			-- InternalIOException this old version uses.
 			toException $ TlsException se
 		Nothing -> se
-	in handle $ throwIO . wrapper
+	in managerWrapIOException base (handle (throwIO . wrapper) a)
 #endif
 
 restrictedRawConnection :: Restriction -> IO (Maybe HostAddress -> String -> Int -> IO Connection)
