@@ -123,30 +123,34 @@ git-annex's url downloading.
 > to see if they used GETURLS. ipfs did, but not in an exploitable way.
 > datalad does; looped in its developers to asess. Rest appear not to.
 
-> TODO document this security issue in special remote protocol page
-
 An external special remote might also make a simple http request to a
 key/value API to download a key, and follow a redirect to file:///
 or http://localhost/.
 
 If the key uses a cryptographic hash, git-annex verifies the content. 
 But, the attacker could have committed a key that doesn't
-use a hash. Also, the attacker could use the hash check as an oracle.
+use a hash. Also, the attacker could use the hash check as an oracle,
+to guess at the content of files.
 
-What if an external special remote uses https to a hardcoded server (either
-fully hardcoded, or configured by the user when they enable the remote),
-and uses a http library that only supports https and http (not file:///).
-Is that good enough? An attacker would need to either compromise the server
-to redirect to a local private webserver, or MITM, and https should prevent
-the MITM.
+If the external special remote is encrypted, the http content is passed
+though gpg. So, whatever location an attacker redirects it to would also
+have to be encrypted. gpg is not told what encryption key the content is
+expected to be encrypted with. (Could it be told somehow for hybrid and
+shared encryption which key to use? pubkey encryption of course uses
+the regular gpg public key). 
 
-This seems to require auditing of all external special remotes.
-git-annex could add a new command to the external protocol, that asks
-the special remote if it's been audited, and refuse to use ones that have
-not.
+So if the attacker knows a file that the user has encrypted with any of
+their gpg keys, they can provide that file, and hope it will be decrypted.
+Note that this does not need a redirect to a local file or web server; the
+attacker can make their web server serve up a gpg encrypted file.
 
-I have emailed all relevant external special remote authors a heads-up and
-some questions.
+So, content downloaded from encrypted special remotes (both internal and
+external) must be rejected unless it can be verified with a hash. Then
+content using WORM and URL keys would not be able to be downloaded from
+them. Might as well also require a hash check for non-encrypted external
+special remotes, to block the redirection attack. There could be a config
+setting to say that the git-annex repository is not being shared with
+untrusted third parties, and relax that check.
 
 > TODO
 
