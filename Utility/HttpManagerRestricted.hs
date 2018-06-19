@@ -16,6 +16,7 @@ module Utility.HttpManagerRestricted (
 	ConnectionRestricted(..),
 	addrConnectionRestricted,
 	ProxyRestricted(..),
+	IPAddrString,
 ) where
 
 import Network.HTTP.Client
@@ -34,25 +35,29 @@ data Restriction = Restriction
 	{ addressRestriction :: AddrInfo -> Maybe ConnectionRestricted
 	}
 
+-- | An exception used to indicate that the connection was restricted.
 data ConnectionRestricted = ConnectionRestricted String
 	deriving (Show, Typeable)
 
 instance Exception ConnectionRestricted
 
-addrConnectionRestricted :: AddrInfo -> ConnectionRestricted
-addrConnectionRestricted addr = ConnectionRestricted $ unwords
-	 [ "Configuration does not allow accessing address"
-	 , showSockAddress (addrAddress addr)
-	 ]
+type IPAddrString = String
+
+-- | Constructs a ConnectionRestricted, passing the function a string
+-- containing the IP address.
+addrConnectionRestricted :: (IPAddrString -> String) -> AddrInfo -> ConnectionRestricted
+addrConnectionRestricted mkmessage = 
+	ConnectionRestricted . mkmessage . showSockAddress . addrAddress
 
 data ProxyRestricted = ProxyRestricted
 	deriving (Show)
 
--- | Adjusts a ManagerSettings to enforce a Restriction.
+-- | Adjusts a ManagerSettings to enforce a Restriction. The restriction
+-- will be checked each time a Request is made, and for each redirect
+-- followed.
 --
--- This includes checking the http proxy against the Restriction.
--- If access to it is blocked, the ManagerSettings will be made to
--- not use the proxy.
+-- The http proxy is also checked against the Restriction, and if
+-- access to it is blocked, the http proxy will not be used.
 restrictManagerSettings
 	:: Restriction
 	-> ManagerSettings
@@ -219,7 +224,7 @@ convertConnection conn = makeConnection
 
 -- For ipv4 and ipv6, the string will contain only the IP address,
 -- omitting the port that the Show instance includes.
-showSockAddress :: SockAddr -> String
+showSockAddress :: SockAddr -> IPAddrString
 showSockAddress a@(SockAddrInet _ _) =
 	takeWhile (/= ':') $ show a
 showSockAddress a@(SockAddrInet6 _ _ _ _) =

@@ -75,11 +75,13 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 				| isLoopbackAddress addr = False
 				| isPrivateAddress addr = False
 				| otherwise = True
+			let connectionrestricted = addrConnectionRestricted 
+				("Configuration of annex.security.allowed-http-addresses does not allow accessing address " ++)
 			let r = Restriction
 				{ addressRestriction = \addr ->
 					if isallowed (addrAddress addr)
 						then Nothing
-						else Just (addrConnectionRestricted addr)
+						else Just (connectionrestricted addr)
 				}
 			(settings, pr) <- liftIO $ 
 				restrictManagerSettings r U.managerSettings
