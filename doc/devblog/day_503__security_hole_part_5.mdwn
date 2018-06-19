@@ -1,0 +1,17 @@
+Started testing that the security fix will build everywhere on
+release day. This is being particularly painful for the android build,
+which has very old libraries and needed http-client updated, with many
+follow-on changes, and is not successfully building yet after 5 hours. 
+I really need to finish deprecating the android build.
+
+Pretty exhausted from all this, and thinking what to do about
+external special remotes, I elaborated on an idea that Daniel Dent had
+raised in discussions about vulnerability, and realized that git-annex
+has a second, worse vulnerability. This new one could be used to trick a
+git-annex user into decrypting gpg encrypted data that they had 
+never stored in git-annex. The attacker needs to have control of both an
+encrypted special remote and a git remote, so it's not an easy exploit to
+pull off, but it's still super bad.
+
+This week is going to be a lot longer than I thought, and it's already
+feeling kind of endless..

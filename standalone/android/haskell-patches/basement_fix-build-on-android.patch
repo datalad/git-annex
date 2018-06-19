@@ -1,0 +1,41 @@
+From cc0c373b69f93057cbdcb634a461e10ec019d87a Mon Sep 17 00:00:00 2001
+From: androidbuilder <androidbuilder@example.com>
+Date: Wed, 20 Jun 2018 00:29:11 +0100
+Subject: [PATCH] fix build on android
+
+---
+ Basement/Terminal.hs | 2 --
+ basement.cabal       | 1 -
+ 2 files changed, 3 deletions(-)
+
+diff --git a/Basement/Terminal.hs b/Basement/Terminal.hs
+index 8136e52..cca9606 100644
+--- a/Basement/Terminal.hs
++++ b/Basement/Terminal.hs
+@@ -1,11 +1,9 @@
+ {-# LANGUAGE CPP #-}
+ module Basement.Terminal
+     ( initialize
+-    , getDimensions
+     ) where
+ 
+ import Basement.Compat.Base
+-import Basement.Terminal.Size (getDimensions)
+ #ifdef mingw32_HOST_OS
+ import System.IO (hSetEncoding, utf8, hPutStrLn, stderr, stdin, stdout)
+ import System.Win32.Console (setConsoleCP, setConsoleOutputCP, getConsoleCP, getConsoleOutputCP)
+diff --git a/basement.cabal b/basement.cabal
+index af50291..0824c94 100644
+--- a/basement.cabal
++++ b/basement.cabal
+@@ -135,7 +135,6 @@ library
+                      Basement.String.Encoding.ASCII7
+                      Basement.String.Encoding.ISO_8859_1
+ 
+-                     Basement.Terminal.Size
+ 
+ 
+   build-depends:       base >= 4.7 && < 5
+-- 
+2.1.4
+
