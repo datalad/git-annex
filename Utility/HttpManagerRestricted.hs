@@ -8,6 +8,7 @@
  -}
 
 {-# LANGUAGE ScopedTypeVariables, DeriveDataTypeable, LambdaCase, PatternGuards #-}
+{-# LANGUAGE CPP #-}
 
 module Utility.HttpManagerRestricted (
 	restrictManagerSettings,
@@ -19,7 +20,7 @@ module Utility.HttpManagerRestricted (
 
 import Network.HTTP.Client
 import Network.HTTP.Client.Internal
-	(ManagerSettings(..), Connection, runProxyOverride)
+	(ManagerSettings(..), Connection, runProxyOverride, makeConnection)
 import Network.Socket
 import Network.BSD (getProtocolNumber)
 import Control.Exception
@@ -59,7 +60,11 @@ restrictManagerSettings
 restrictManagerSettings cfg base = restrictProxy cfg $ base
 	{ managerRawConnection = restrictedRawConnection cfg
 	, managerTlsConnection = restrictedTlsConnection cfg
+#if MIN_VERSION_http_client(0,5,0)
 	, managerWrapException = wrapOurExceptions
+#else
+	, managerWrapIOException = wrapOurExceptions
+#endif
 	}
 
 restrictProxy
@@ -121,6 +126,7 @@ restrictProxy cfg base = do
 			, proxyPort = fromIntegral pn
 			}
 
+#if MIN_VERSION_http_client(0,5,0)
 wrapOurExceptions :: Request -> IO a -> IO a
 wrapOurExceptions req =
 	let wrapper se
@@ -129,6 +135,18 @@ wrapOurExceptions req =
 				InternalException se
 		| otherwise = se
 	 in handle $ throwIO . wrapper
+#else
+wrapOurExceptions :: IO a -> IO a
+wrapOurExceptions =
+	let wrapper se = case fromException se of
+		Just (_ :: ConnectionRestricted) ->
+			-- Not really a TLS exception, but there is no
+			-- way to put SomeException in the 
+			-- InternalIOException this old version uses.
+			toException $ TlsException se
+		Nothing -> se
+	in handle $ throwIO . wrapper
+#endif
 
 restrictedRawConnection :: Restriction -> IO (Maybe HostAddress -> String -> Int -> IO Connection)
 restrictedRawConnection cfg = getConnection cfg Nothing
