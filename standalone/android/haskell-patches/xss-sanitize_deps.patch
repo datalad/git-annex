@@ -1,0 +1,24 @@
+From 41eb8ab50125eb6ccf260c5510407483f1d78dd4 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Wed, 20 Jun 2018 14:52:52 +0100
+Subject: [PATCH] deps
+
+---
+ xss-sanitize.cabal | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/xss-sanitize.cabal b/xss-sanitize.cabal
+index 727dc95..2de4270 100644
+--- a/xss-sanitize.cabal
++++ b/xss-sanitize.cabal
+@@ -19,6 +19,7 @@ library
+                     , tagsoup     >= 0.12.2   && < 1
+                     , utf8-string >= 0.3      && < 1
+                     , network     >= 2        && < 3
++                    , network-uri
+                     , css-text    >= 0.1.1    && < 0.2
+                     , text        >= 0.11     && < 2
+                     , attoparsec  >= 0.10.0.3 && < 1
+-- 
+2.1.4
+

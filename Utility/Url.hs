@@ -49,7 +49,7 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.Set as S
 import Control.Monad.Trans.Resource
 import Network.HTTP.Conduit
-import Network.HTTP.Client (brRead, withResponse)
+import Network.HTTP.Client
 import Data.Conduit
 
 #if ! MIN_VERSION_http_client(0,5,0)
