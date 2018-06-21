@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="yves.noirjean@3f9b06d19a920fbf5c82340c362e5971b00d4af2"
+ nickname="yves.noirjean"
+ avatar="http://cdn.libravatar.org/avatar/2f1ad9d443c037337d91f29781560344"
+ subject="comment 3"
+ date="2018-06-21T16:15:05Z"
+ content="""
+Actually, I am still interested in a response.
+
+I would prefer to use annex.addunlocked = true, which would use hardlinks.
+"""]]
