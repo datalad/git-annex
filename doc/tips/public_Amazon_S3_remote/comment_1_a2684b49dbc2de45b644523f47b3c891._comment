@@ -1,0 +1,48 @@
+[[!comment format=mdwn
+ username="jared@ce91556d9548d318ec3f690b5f9bc33721256e4d"
+ nickname="jared"
+ avatar="http://cdn.libravatar.org/avatar/09bdb433e2a9448d780086be1e3d4f10"
+ subject="Unable to access public s3 remote without S3 credentials."
+ date="2018-06-21T13:47:27Z"
+ content="""
+I'm setting up a repository using the following commands:
+
+    git annex init
+    export AWS_ACCESS_KEY_ID=\"[MY KEY]\"
+    export AWS_SECRET_ACCESS_KEY=\"[MY SECRET]\"
+    git annex initremote publics3 type=S3 encryption=none bucket=[BUCKET] exporttree=yes public=yes encryption=none
+    git annex export --tracking master --to publics3
+
+I then add something and export it to s3 using:
+
+    git annex sync --content
+
+I then go on to a different computer and clone the repository and run:
+
+    git annex init
+    git annex enableremote publics3
+    git annex get .
+
+and receive this message:
+
+    # git annex get .
+    get IMG_2714.MOV (from publics3...) 
+    Set both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY to use S3
+
+    No S3 credentials configured
+
+    Unable to access these remotes: publics3
+
+    Try making some of these repositories available:
+         6bc91baa-5250-41e2-8195-d3c1ef3c86e3 -- .
+         7f84dcff-5a74-42b0-b422-5b74490e4aa7 -- [publics3]
+
+     (Note that these git remotes have annex-ignore set: origin)
+failed
+    git-annex: get: 1 failed
+
+
+It is my understanding that setting the remote to \"public=yes\" should allow me to download the files from the remote repository without entering the credentials again. Am I missing something?
+
+Thanks!
+"""]]
