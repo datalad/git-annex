@@ -1,6 +1,6 @@
 {- git-annex Key data type
  -
- - Copyright 2011-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -87,6 +87,23 @@ cryptographicallySecure (Blake2bKey _ _) = True
 cryptographicallySecure (Blake2sKey _ _) = True
 cryptographicallySecure (Blake2spKey _ _) = True
 cryptographicallySecure _ = False
+
+{- Is the Key variety backed by a hash, which allows verifying content?
+ - It does not have to be cryptographically secure against eg birthday
+ - attacks.
+ -}
+isVerifiable :: KeyVariety -> Bool
+isVerifiable (SHA2Key _ _) = True
+isVerifiable (SHA3Key _ _) = True
+isVerifiable (SKEINKey _ _) = True
+isVerifiable (Blake2bKey _ _) = True
+isVerifiable (Blake2sKey _ _) = True
+isVerifiable (Blake2spKey _ _) = True
+isVerifiable (SHA1Key _) = True
+isVerifiable (MD5Key _) = True
+isVerifiable WORMKey = False
+isVerifiable URLKey = False
+isVerifiable (OtherKey _) =  False
 
 formatKeyVariety :: KeyVariety -> String
 formatKeyVariety v = case v of

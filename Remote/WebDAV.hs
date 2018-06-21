@@ -72,6 +72,9 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			, storeKey = storeKeyDummy
 			, retrieveKeyFile = retreiveKeyFileDummy
 			, retrieveKeyFileCheap = retrieveCheap
+			-- HttpManagerRestricted is used here, so this is
+			-- secure.
+			, retrievalSecurityPolicy = RetrievalAllKeysSecure
 			, removeKey = removeKeyDummy
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy

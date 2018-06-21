@@ -59,6 +59,8 @@ gen r _ c gc =
 		, storeKey = uploadKey
 		, retrieveKeyFile = downloadKey
 		, retrieveKeyFileCheap = downloadKeyCheap
+		-- Bittorrent does its own hash checks.
+		, retrievalSecurityPolicy = RetrievalAllKeysSecure
 		, removeKey = dropKey
 		, lockContent = Nothing
 		, checkPresent = checkKey

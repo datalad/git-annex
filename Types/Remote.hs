@@ -2,7 +2,7 @@
  -
  - Most things should not need this, using Types instead
  -
- - Copyright 2011-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -18,6 +18,7 @@ module Types.Remote
 	, Availability(..)
 	, Verification(..)
 	, unVerified
+	, RetrievalSecurityPolicy(..)
 	, isExportSupported
 	, ExportActions(..)
 	)
@@ -85,6 +86,8 @@ data RemoteA a = Remote
 	-- Retrieves a key's contents to a tmp file, if it can be done cheaply.
 	-- It's ok to create a symlink or hardlink.
 	, retrieveKeyFileCheap :: Key -> AssociatedFile -> FilePath -> a Bool
+	-- Security policy for reteiving keys from this remote.
+	, retrievalSecurityPolicy :: RetrievalSecurityPolicy
 	-- Removes a key's contents (succeeds if the contents are not present)
 	, removeKey :: Key -> a Bool
 	-- Uses locking to prevent removal of a key's contents,
@@ -164,6 +167,32 @@ unVerified :: Monad m => m Bool -> m (Bool, Verification)
 unVerified a = do
 	ok <- a
 	return (ok, UnVerified)
+
+-- Security policy indicating what keys can be safely retrieved from a
+-- remote.
+data RetrievalSecurityPolicy
+	= RetrievalVerifiableKeysSecure
+	-- ^ Transfer of keys whose content can be verified
+	-- with a hash check is secure; transfer of unverifiable keys is
+	-- not secure and should not be allowed.
+	--
+	-- This is used eg, when HTTP to a remote could be redirected to a
+	-- local private web server or even a file:// url, causing private
+	-- data from it that is not the intended content of a key to make
+	-- its way into the git-annex repository.
+	--
+	-- It's also used when content is stored encrypted on a remote,
+	-- which could replace it with a different encrypted file, and
+	-- trick git-annex into decrypting it and leaking the decryption
+	-- into the git-annex repository.
+	--
+	-- It's not (currently) used when the remote could alter the
+	-- content stored on it, because git-annex does not provide
+	-- strong guarantees about the content of keys that cannot be 
+	-- verified with a hash check.
+	-- (But annex.securehashesonly does provide such guarantees.)
+	| RetrievalAllKeysSecure
+	-- ^ Any key can be securely retrieved.
 
 isExportSupported :: RemoteA a -> a Bool
 isExportSupported r = exportSupported (remotetype r) (config r) (gitconfig r)

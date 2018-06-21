@@ -73,6 +73,8 @@ gen r u c gc = do
 		, storeKey = store u hdl
 		, retrieveKeyFile = retrieve u hdl
 		, retrieveKeyFileCheap = \_ _ _ -> return False
+		-- Tahoe cryptographically verifies content.
+		, retrievalSecurityPolicy = RetrievalAllKeysSecure
 		, removeKey = remove
 		, lockContent = Nothing
 		, checkPresent = checkKey u hdl

@@ -72,6 +72,7 @@ gen r u c gc = do
 			, storeKey = storeKeyDummy
 			, retrieveKeyFile = retreiveKeyFileDummy
 			, retrieveKeyFileCheap = retrieveCheap o
+			, retrievalSecurityPolicy = RetrievalAllKeysSecure
 			, removeKey = removeKeyDummy
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
