@@ -20,3 +20,5 @@ Debian stable, which will probably be more palatable to their security team
 than the full 2000+ lines of patches I've developed so far. 
 The minimal fix is secure, but suboptimal; it prevents even safe urls from
 being downloaded from the web special remote by default.
+
+[[!meta date="June 18 2018 4:00 pm"]]
