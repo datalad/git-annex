@@ -53,6 +53,9 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 			, storeKey = storeKeyDummy
 			, retrieveKeyFile = retreiveKeyFileDummy
 			, retrieveKeyFileCheap = retrieveCheap this
+			-- glacier-cli does not follow redirects and does
+			-- not support file://, so this is secure.
+			, retrievalSecurityPolicy = RetrievalAllKeysSecure
 			, removeKey = removeKeyDummy
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy

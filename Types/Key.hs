@@ -1,6 +1,6 @@
 {- git-annex Key data type
  -
- - Copyright 2011-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -160,3 +160,13 @@ prop_isomorphic_key_decode f
 	normalfieldorder = fields `isPrefixOf` "smSC"
 	fields = map (f !!) $ filter (< length f) $ map succ $
 		elemIndices fieldSep f
+
+{- Is the Key variety backed by a hash, which allows verifying content?
+ - It does not have to be cryptographically secure against eg birthday
+ - attacks.
+ -}
+isVerifiable :: Key -> Bool
+isVerifiable k = case keyBackendName k of
+	"WORM" -> False
+	"URL" -> False
+	_ -> True

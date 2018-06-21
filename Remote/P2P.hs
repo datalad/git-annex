@@ -53,6 +53,7 @@ chainGen addr r u c gc = do
 		, storeKey = store u addr connpool
 		, retrieveKeyFile = retrieve u addr connpool
 		, retrieveKeyFileCheap = \_ _ _ -> return False
+		, retrievalSecurityPolicy = RetrievalAllKeysSecure
 		, removeKey = remove u addr connpool
 		, lockContent = Just (lock u addr connpool)
 		, checkPresent = checkpresent u addr connpool

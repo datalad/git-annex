@@ -46,6 +46,9 @@ gen r _ c gc =
 		, storeKey = uploadKey
 		, retrieveKeyFile = downloadKey
 		, retrieveKeyFileCheap = downloadKeyCheap
+		-- HttpManagerRestricted is used here, so this is
+		-- secure.
+		, retrievalSecurityPolicy = RetrievalAllKeysSecure
 		, removeKey = dropKey
 		, lockContent = Nothing
 		, checkPresent = checkKey

@@ -56,6 +56,9 @@ gen r u c gc = do
 		, storeKey = storeKeyDummy
 		, retrieveKeyFile = retreiveKeyFileDummy
 		, retrieveKeyFileCheap = retrieveCheap buprepo
+		-- Bup uses git, which cryptographically verifies content
+		-- (with SHA1, but sufficiently for this).
+		, retrievalSecurityPolicy = RetrievalAllKeysSecure
 		, removeKey = removeKeyDummy
 		, lockContent = Nothing
 		, checkPresent = checkPresentDummy

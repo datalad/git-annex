@@ -161,6 +161,14 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 			(retrieveKeyFileCheap baser k f d)
 			-- retrieval of encrypted keys is never cheap
 			(\_ -> return False)
+		-- When encryption is used, the remote could provide
+		-- some other content encrypted by the user, and trick
+		-- git-annex into decrypting it, leaking the decryption
+		-- into the git-annex repository. Verifiable keys
+		-- are the main protection against this attack.
+		, retrievalSecurityPolicy = if isencrypted
+			then RetrievalVerifiableKeysSecure
+			else retrievalSecurityPolicy baser
 		, removeKey = \k -> cip >>= removeKeyGen k
 		, checkPresent = \k -> cip >>= checkPresentGen k
 		, cost = if isencrypted

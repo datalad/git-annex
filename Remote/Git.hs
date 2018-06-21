@@ -147,6 +147,7 @@ gen r u c gc
 			, storeKey = copyToRemote new
 			, retrieveKeyFile = copyFromRemote new
 			, retrieveKeyFileCheap = copyFromRemoteCheap new
+			, retrievalSecurityPolicy = RetrievalAllKeysSecure
 			, removeKey = dropKey new
 			, lockContent = Just (lockKey new)
 			, checkPresent = inAnnex new

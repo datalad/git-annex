@@ -81,6 +81,11 @@ gen r u c gc
 			, storeKey = storeKeyDummy
 			, retrieveKeyFile = retreiveKeyFileDummy
 			, retrieveKeyFileCheap = \_ _ _ -> return False
+			-- External special remotes use many http libraries
+			-- and have no protection against redirects to
+			-- local private web servers, or in some cases
+			-- to file:// urls.
+			, retrievalSecurityPolicy = RetrievalVerifiableKeysSecure
 			, removeKey = removeKeyDummy
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
