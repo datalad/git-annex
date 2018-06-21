@@ -1,0 +1,10 @@
+Was getting dangerously close to burnt out, or exhaustion leading to
+mistakes, so yesterday I took the day off, aside from spending the morning
+babysitting the android build every half hour. (It did finally succeed.)
+
+Today, got back into it, and implemented a fix for CVE-2018-10859 and also
+the one case of CVE-2018-10857 that had not been dealt with before.
+This fix was really a lot easier than the previous fixes for
+CVE-2018-10857.
+Unfortunately this did mean not letting URL and WORM keys be downloaded
+from many special remotes by default, which is going to be painful for some.
