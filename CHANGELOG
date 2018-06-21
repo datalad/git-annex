@@ -1,10 +1,19 @@
 git-annex (6.20180622) upstream; urgency=high
 
-  Security fix release for CVE-2018-10857
+  Security fix release for CVE-2018-10857 and CVE-2018-10859
 
+  * Refuse to download content, that cannot be verified with a hash, 
+    from encrypted special remotes (for CVE-2018-10859),
+    and from all external special remotes (for CVE-2018-10857).
+    In particular, URL and WORM keys stored on such remotes won't
+    be downloaded. If this affects your files, you can run
+    `git-annex migrate` on the affected files, to convert them
+    to use a hash.
+  * Added annex.security.allow-unverified-downloads, which can override
+    the above.
   * Added annex.security.allowed-url-schemes setting, which defaults
     to only allowing http, https, and ftp URLs. Note especially that file:/
-    is no longer enabled by default. This is a security fix.
+    is no longer enabled by default.
   * Removed annex.web-download-command, since its interface does not allow
     supporting annex.security.allowed-url-schemes across redirects.
     If you used this setting, you may want to instead use annex.web-options

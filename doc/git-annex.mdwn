@@ -1228,7 +1228,7 @@ Here are all the supported configuration settings.
 
   Note that even when this is set to `false`, git-annex does verification
   in some edge cases, where it's likely the case than an
-  object was downloaded incorrectly.
+  object was downloaded incorrectly, or when needed for security.
 
 * `remote.<name>.annex-export-tracking`
 
@@ -1424,6 +1424,43 @@ Here are all the supported configuration settings.
   Note that, since the interfaces of curl and youtube-dl do not allow
   these IP address restrictions to be enforced, curl and youtube-dl will
   never be used unless annex.security.allowed-http-addresses=all.
+
+* `annex.security.allow-unverified-downloads`, 
+
+  For security reasons, git-annex refuses to download content from
+  most special remotes when it cannot check a hash to verify 
+  that the correct content was downloaded. This particularly impacts
+  downloading the content of URL or WORM keys, which lack hashes.
+
+  The best way to avoid problems due to this is to migrate files
+  away from such keys, before their content reaches a special remote.
+  See [[git-annex-migrate]](1).
+
+  When the content is only available from a special remote, you can
+  use this configuration to force git-annex to download it.
+  But you do so at your own risk, and it's very important you read and
+  understand the information below first!
+
+  Downloading unverified content from encrypted special remotes is
+  prevented, because the special remote could send some other encrypted
+  content than what you expect, causing git-annex to decrypt data that you
+  never checked into git-annex, and risking exposing the decrypted
+  data to any non-encrypted remotes you send content to.
+
+  Downloading unverified content from (non-encrypted)
+  external special remotes is prevented, because they could follow
+  http redirects to web servers on localhost or on a private network,
+  or in some cases to a file:/// url.
+
+  If you decide to bypass this security check, the best thing to do is
+  to only set it temporarily while running the command that gets the file.
+  The value to set the config to is "ACKTHPPT".
+  For example:
+
+	git -c annex.security.allow-unverified-downloads=ACKTHPPT annex get myfile
+
+  It would be a good idea to check that it downloaded the file you expected,
+  too.
 
 * `annex.secure-erase-command`
 

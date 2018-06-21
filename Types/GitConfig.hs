@@ -96,6 +96,7 @@ data GitConfig = GitConfig
 	, annexRetryDelay :: Maybe Seconds
 	, annexAllowedUrlSchemes :: S.Set Scheme
 	, annexAllowedHttpAddresses :: String
+	, annexAllowUnverifiedDownloads :: Bool
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
 	, receiveDenyCurrentBranch :: DenyCurrentBranch
@@ -166,6 +167,8 @@ extractGitConfig r = GitConfig
 			getmaybe (annex "security.allowed-url-schemes")
 	, annexAllowedHttpAddresses = fromMaybe "" $
 		getmaybe (annex "security.allowed-http-addresses")
+	, annexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
+		getmaybe (annex "security.allow-unverified-downloads")
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
 	, receiveDenyCurrentBranch = getDenyCurrentBranch r

@@ -1,5 +1,11 @@
 git-annex (6.20180622) upstream; urgency=high
 
+  A security fix has changed git-annex to refuse to download content from
+  some special remotes when the content cannot be verified with a hash check.
+  In particular URL and WORM keys stored on such remotes won't be downloaded.
+  See the documentation of the annex.security.allow-unverified-downloads
+  configuration for how to deal with this if it affects your files.
+
   A security fix has changed git-annex to only support http, https, and ftp
   URL schemes by default. You can enable other URL schemes, at your own risk,
   using annex.security.allowed-url-schemes.

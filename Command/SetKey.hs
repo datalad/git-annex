@@ -33,7 +33,7 @@ perform file key = do
 	-- the file might be on a different filesystem, so moveFile is used
 	-- rather than simply calling moveAnnex; disk space is also
 	-- checked this way.
-	ok <- getViaTmp DefaultVerify key $ \dest -> unVerified $
+	ok <- getViaTmp RetrievalAllKeysSecure DefaultVerify key $ \dest -> unVerified $
 		if dest /= file
 			then liftIO $ catchBoolIO $ do
 				moveFile file dest
