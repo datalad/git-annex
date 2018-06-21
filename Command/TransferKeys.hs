@@ -42,7 +42,7 @@ start = do
 				return ok
 		| otherwise = notifyTransfer direction file $
 			download (Remote.uuid remote) key file forwardRetry $ \p ->
-				getViaTmp (RemoteVerify remote) key $ \t -> do
+				getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key $ \t -> do
 					r <- Remote.retrieveKeyFile remote key file t p
 					-- Make sure we get the current
 					-- associated files data for the key,

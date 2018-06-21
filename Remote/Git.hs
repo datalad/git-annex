@@ -571,10 +571,11 @@ copyToRemote' r key file meterupdate
 				ensureInitialized
 				copier <- mkCopier hardlink params
 				let verify = Annex.Content.RemoteVerify r
+				let rsp = RetrievalAllKeysSecure
 				runTransfer (Transfer Download u key) file forwardRetry $ \p ->
 					let p' = combineMeterUpdate meterupdate p
 					in Annex.Content.saveState True `after`
-						Annex.Content.getViaTmp verify key
+						Annex.Content.getViaTmp rsp verify key
 							(\dest -> copier object dest p' (liftIO checksuccessio))
 			)
 

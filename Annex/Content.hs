@@ -1,6 +1,6 @@
 {- git-annex file content managing
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,6 +15,7 @@ module Annex.Content (
 	lockContentShared,
 	lockContentForRemoval,
 	ContentRemovalLock,
+	RetrievalSecurityPolicy(..),
 	getViaTmp,
 	getViaTmp',
 	checkDiskSpaceToGet,
@@ -74,7 +75,7 @@ import qualified Annex.Content.Direct as Direct
 import Annex.ReplaceFile
 import Annex.LockPool
 import Messages.Progress
-import Types.Remote (unVerified, Verification(..))
+import Types.Remote (unVerified, Verification(..), RetrievalSecurityPolicy(..))
 import qualified Types.Remote
 import qualified Types.Backend
 import qualified Backend
@@ -294,19 +295,19 @@ lockContentUsing locker key a = do
 {- Runs an action, passing it the temp file to get,
  - and if the action succeeds, verifies the file matches
  - the key and moves the file into the annex as a key's content. -}
-getViaTmp :: VerifyConfig -> Key -> (FilePath -> Annex (Bool, Verification)) -> Annex Bool
-getViaTmp v key action = checkDiskSpaceToGet key False $
-	getViaTmp' v key action
+getViaTmp :: RetrievalSecurityPolicy -> VerifyConfig -> Key -> (FilePath -> Annex (Bool, Verification)) -> Annex Bool
+getViaTmp rsp v key action = checkDiskSpaceToGet key False $
+	getViaTmp' rsp v key action
 
 {- Like getViaTmp, but does not check that there is enough disk space
  - for the incoming key. For use when the key content is already on disk
  - and not being copied into place. -}
-getViaTmp' :: VerifyConfig -> Key -> (FilePath -> Annex (Bool, Verification)) -> Annex Bool
-getViaTmp' v key action = do
+getViaTmp' :: RetrievalSecurityPolicy -> VerifyConfig -> Key -> (FilePath -> Annex (Bool, Verification)) -> Annex Bool
+getViaTmp' rsp v key action = checkallowed $ do
 	tmpfile <- prepTmp key
 	(ok, verification) <- action tmpfile
 	if ok
-		then ifM (verifyKeyContent v verification key tmpfile)
+		then ifM (verifyKeyContent rsp v verification key tmpfile)
 			( do
 				moveAnnex key tmpfile
 				logStatus key InfoPresent
@@ -319,22 +320,45 @@ getViaTmp' v key action = do
 		-- On transfer failure, the tmp file is left behind, in case
 		-- caller wants to resume its transfer
 		else return False
+  where
+	-- Avoid running the action to get the content when the
+	-- RetrievalSecurityPolicy would cause verification to always fail.
+	checkallowed a = case rsp of
+		RetrievalAllKeysSecure -> a
+		RetrievalVerifiableKeysSecure
+			| isVerifiable key -> a
+			| otherwise -> ifM (annexAllowUnverifiedDownloads <$> Annex.getGitConfig)
+				( a
+				, warnUnverifiableInsecure key >> return False
+				)
 
 {- Verifies that a file is the expected content of a key.
+ -
  - Configuration can prevent verification, for either a
- - particular remote or always.
+ - particular remote or always, unless the RetrievalSecurityPolicy
+ - requires verification.
  -
  - Most keys have a known size, and if so, the file size is checked.
  -
- - When the key's backend allows verifying the content (eg via checksum),
+ - When the key's backend allows verifying the content (via checksum),
  - it is checked. 
+ -
+ - If the RetrievalSecurityPolicy requires verification and the key's
+ - backend doesn't support it, the verification will fail.
  -}
-verifyKeyContent :: VerifyConfig -> Verification -> Key -> FilePath -> Annex Bool
-verifyKeyContent _ Verified _ _ = return True
-verifyKeyContent v UnVerified k f = ifM (shouldVerify v)
-	( verifysize <&&> verifycontent
-	, return True
-	)
+verifyKeyContent :: RetrievalSecurityPolicy -> VerifyConfig -> Verification -> Key -> FilePath -> Annex Bool
+verifyKeyContent _ _ Verified _ _ = return True
+verifyKeyContent rsp v UnVerified k f = case rsp of
+	RetrievalVerifiableKeysSecure
+		| isVerifiable k -> verifysize <&&> verifycontent
+		| otherwise -> ifM (annexAllowUnverifiedDownloads <$> Annex.getGitConfig)
+			( verifysize <&&> verifycontent
+			, warnUnverifiableInsecure k >> return False
+			)
+	_ -> ifM (shouldVerify v)
+		( verifysize <&&> verifycontent
+		, return True
+		)
   where
 	verifysize = case keySize k of
 		Nothing -> return True
@@ -344,6 +368,16 @@ verifyKeyContent v UnVerified k f = ifM (shouldVerify v)
 	verifycontent = case Types.Backend.verifyKeyContent =<< Backend.maybeLookupBackendName (keyBackendName k) of
 		Nothing -> return True
 		Just verifier -> verifier k f
+
+warnUnverifiableInsecure :: Key -> Annex ()
+warnUnverifiableInsecure k = warning $ unwords
+	[ "Getting " ++ kv ++ " keys with this remote is not secure;"
+	, "the content cannot be verified to be correct."
+	, "(Use annex.security.allow-unverified-downloads to bypass"
+	, "this safety check.)"
+	]
+  where
+	kv = keyBackendName k
 
 data VerifyConfig = AlwaysVerify | NoVerify | RemoteVerify Remote | DefaultVerify
 
@@ -790,7 +824,7 @@ isUnmodified key f = go =<< geti
 	go (Just fc) = cheapcheck fc <||> expensivecheck fc
 	cheapcheck fc = anyM (compareInodeCaches fc)
 		=<< Database.Keys.getInodeCaches key
-	expensivecheck fc = ifM (verifyKeyContent AlwaysVerify UnVerified key f)
+	expensivecheck fc = ifM (verifyKeyContent RetrievalAllKeysSecure AlwaysVerify UnVerified key f)
 		-- The file could have been modified while it was
 		-- being verified. Detect that.
 		( geti >>= maybe (return False) (compareInodeCaches fc)

@@ -44,7 +44,7 @@ startSrcDest (src:dest:[])
 	| otherwise = notAnnexed src $ do
 		showStart "reinject" dest
 		next $ ifAnnexed dest
-			(\key -> perform src key (verifyKeyContent DefaultVerify UnVerified key src))
+			(\key -> perform src key (verifyKeyContent RetrievalAllKeysSecure DefaultVerify UnVerified key src))
 			stop
 startSrcDest _ = giveup "specify a src file and a dest file"
 

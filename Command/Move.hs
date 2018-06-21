@@ -179,7 +179,7 @@ fromPerform src move key afile = ifM (inAnnex key)
 	go = notifyTransfer Download afile $ 
 		download (Remote.uuid src) key afile forwardRetry $ \p -> do
 			showAction $ "from " ++ Remote.name src
-			getViaTmp (RemoteVerify src) key $ \t ->
+			getViaTmp (Remote.retrievalSecurityPolicy src) (RemoteVerify src) key $ \t ->
 				Remote.retrieveKeyFile src key afile t p
 	dispatch _ False = stop -- failed
 	dispatch False True = next $ return True -- copy complete

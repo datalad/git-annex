@@ -23,6 +23,7 @@ import P2P.Protocol
 import P2P.IO
 import Logs.Location
 import Types.NumCopies
+import Types.Remote (RetrievalSecurityPolicy(..))
 import Utility.Metered
 import Utility.Tor
 import Annex.UUID
@@ -77,9 +78,12 @@ runLocal runmode runner a = case a of
  			Right Nothing -> runner (next False)
 			Left e -> return (Left (show e))
 	StoreContent k af o l getb next -> do
+		-- This is the same as the retrievalSecurityPolicy of
+		-- Remote.P2P and Remote.Git. 
+		let rsp = RetrievalAllKeysSecure
 		ok <- flip catchNonAsync (const $ return False) $
 			transfer download k af $ \p ->
-				getViaTmp AlwaysVerify k $ \tmp ->
+				getViaTmp rsp AlwaysVerify k $ \tmp ->
 					unVerified $ storefile tmp o l getb p
 		runner (next ok)
 	StoreContentTo dest o l getb next -> do

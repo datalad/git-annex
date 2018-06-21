@@ -83,7 +83,7 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 	 - This avoids hard linking to content linked to an
 	 - unlocked file, which would leave the new key unlocked
 	 - and vulnerable to corruption. -}
-	( getViaTmp' DefaultVerify newkey $ \tmp -> unVerified $ do
+	( getViaTmp' RetrievalAllKeysSecure DefaultVerify newkey $ \tmp -> unVerified $ do
 		oldobj <- calcRepo (gitAnnexLocation oldkey)
 		linkOrCopy' (return True) newkey oldobj tmp Nothing
 	, do

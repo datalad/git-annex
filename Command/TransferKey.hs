@@ -60,7 +60,7 @@ toPerform key file remote = go Upload file $
 fromPerform :: Key -> AssociatedFile -> Remote -> CommandPerform
 fromPerform key file remote = go Upload file $
 	download (uuid remote) key file forwardRetry $ \p ->
-		getViaTmp (RemoteVerify remote) key $ 
+		getViaTmp (retrievalSecurityPolicy remote) (RemoteVerify remote) key $ 
 			\t -> Remote.retrieveKeyFile remote key file t p
 
 go :: Direction -> AssociatedFile -> (NotifyWitness -> Annex Bool) -> CommandPerform

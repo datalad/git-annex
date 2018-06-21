@@ -12,6 +12,7 @@ module Remote (
 	storeKey,
 	retrieveKeyFile,
 	retrieveKeyFileCheap,
+	retrievalSecurityPolicy,
 	removeKey,
 	hasKey,
 	hasKeyCheap,

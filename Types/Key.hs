@@ -15,6 +15,7 @@ module Types.Key (
 	chunkKeyOffset,
 	isChunkKey,
 	isKeyPrefix,
+	isVerifiable,
 
 	prop_isomorphic_key_encode,
 	prop_isomorphic_key_decode
