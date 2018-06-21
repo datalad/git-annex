@@ -143,6 +143,7 @@ So if the attacker knows a file that the user has encrypted with any of
 their gpg keys, they can provide that file, and hope it will be decrypted.
 Note that this does not need a redirect to a local file or web server; the
 attacker can make their web server serve up a gpg encrypted file.
+This is a separate vulnerability and was assigned CVE-2018-10859.
 
 So, content downloaded from encrypted special remotes (both internal and
 external) must be rejected unless it can be verified with a hash. Then
@@ -153,6 +154,9 @@ setting to say that the git-annex repository is not being shared with
 untrusted third parties, and relax that check.
 
 > TODO
+
+Tocho Tochev has updated git-annex-remote-pcloud to not follow http
+redirects.
 
 ----
 
