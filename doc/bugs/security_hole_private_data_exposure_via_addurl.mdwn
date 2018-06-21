@@ -119,10 +119,6 @@ CLAIMURL and CHECKURL, and then themselves download the content of urls
 in response to a TRANSFER RETRIEVE will have the same problems as
 git-annex's url downloading. 
 
-> Checked all known external special remotes
-> to see if they used GETURLS. ipfs did, but not in an exploitable way.
-> datalad does; looped in its developers to asess. Rest appear not to.
-
 An external special remote might also make a simple http request to a
 key/value API to download a key, and follow a redirect to file:///
 or http://localhost/.
@@ -153,10 +149,19 @@ special remotes, to block the redirection attack. There could be a config
 setting to say that the git-annex repository is not being shared with
 untrusted third parties, and relax that check.
 
-> TODO
+> done
 
-Tocho Tochev has updated git-annex-remote-pcloud to not follow http
-redirects.
+TODO Tighten down the gpg decryption to only allow decrypting with
+the provided symmetric key, as a further protection against CVE-2018-10859.
+If this can be done, then only remotes with encryption=pubkey will
+really need to reject WORM and URL keys, since encryption=shared
+and encryption=hybrid use a symetric key that's only used to encrypt data
+for that remote. Although opening those back up to WORM and URL would
+allow the remote sending other content stored on it, to get the wrong
+content decrypted. This seems unlikely to be a useful exploit in most
+cases, but perhaps not all cases, so probably best to not relax the
+rejection aven when doing this. It's still worth doing as a belt and braces
+fix.
 
 ----
 
