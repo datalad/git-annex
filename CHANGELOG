@@ -4,7 +4,7 @@ git-annex (6.20180626) upstream; urgency=high
 
   * Refuse to download content, that cannot be verified with a hash, 
     from encrypted special remotes (for CVE-2018-10859),
-    and from all external special remotes (for CVE-2018-10857).
+    and from all external special remotes and glacier (for CVE-2018-10857).
     In particular, URL and WORM keys stored on such remotes won't
     be downloaded. If this affects your files, you can run
     `git-annex migrate` on the affected files, to convert them
