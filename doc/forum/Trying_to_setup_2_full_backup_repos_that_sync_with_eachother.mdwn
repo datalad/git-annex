@@ -1,0 +1,30 @@
+So I'm liking git-annex alot but trying to setup something up
+by using the webapp wasn't very successful.
+
+I have serverA machineB laptopC laptopD
+
+Now what I want to setup is:
+
+serverA       machineB
+repo   <sync> repo
+
+Basically I want A and B to constantly sync with each
+other for a fullbackup repo on each. But I also want both A and B to
+have the full checkout local.
+
+Then I have C and D just be clients and pull whatever they need from A or B.
+
+What I've gotten working atm:
+On A I setup the repo(not bare - I want access to the contents)). On B I ran
+a clone from A. That way B always syncs to A.
+
+Setup both repos to be fullbackup. I've tried to setup A to also sync
+from B but the webapp fails at doing it - and when I retry it fails
+again but this time with an error in the log that the remote already exists.
+
+Would I need to setup things manually for this scenario? Or is it not even possible?
+
+Do I just setup a normal remote? Or will this loop break things?
+
+When I'm done setting it all up I'd like to have the assistant
+running on both systems to do the syncs for me.
