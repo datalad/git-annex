@@ -1,4 +1,4 @@
-git-annex (6.20180622) upstream; urgency=high
+git-annex (6.20180626) upstream; urgency=high
 
   A security fix has changed git-annex to refuse to download content from
   some special remotes when the content cannot be verified with a hash check.

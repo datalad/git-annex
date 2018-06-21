@@ -1,4 +1,4 @@
-git-annex (6.20180622) upstream; urgency=high
+git-annex (6.20180626) upstream; urgency=high
 
   Security fix release for CVE-2018-10857 and CVE-2018-10859
 
