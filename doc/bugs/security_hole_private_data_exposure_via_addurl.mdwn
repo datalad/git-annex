@@ -149,9 +149,9 @@ special remotes, to block the redirection attack. There could be a config
 setting to say that the git-annex repository is not being shared with
 untrusted third parties, and relax that check.
 
-> done
+> done in [[!commit b657242f5d946efae4cc77e8aef95dd2a306cd6b]]
 
-TODO Tighten down the gpg decryption to only allow decrypting with
+Could also tighten down the gpg decryption to only allow decrypting with
 the provided symmetric key, as a further protection against CVE-2018-10859.
 If this can be done, then only remotes with encryption=pubkey will
 really need to reject WORM and URL keys, since encryption=shared
@@ -162,6 +162,11 @@ content decrypted. This seems unlikely to be a useful exploit in most
 cases, but perhaps not all cases, so probably best to not relax the
 rejection aven when doing this. It's still worth doing as a belt and braces
 fix.
+
+> AFAICS, gpg does not have a way to specify to decrypt with only a
+> symmetric encryption key. It could be done by running gpg in an
+> environment with an empty keyring, but gpg agent makes that difficult and
+> it would be added complexity. Decided not to do it.
 
 ----
 
@@ -203,12 +208,7 @@ youtube-dl
 > 
 > > done in [[!commit e62c4543c31a61186ebf2e4e0412df59fc8630c8]]
 
-glacier
 
-> This special remote uses glacier-cli, which will need to be audited.
-> Emailed Robie Basak about it, and he looked into the http libraries
-> used by glacier-cli and boto. It appears that they do not support
-> file:///. It also appears that the libraries do not handle redirects
-> themselves, and that boto does not handle http redirects. glacier-cli
-> uses https. Combining all this, it seems that glacier-cli is not 
-> vulnerable to this class of attacks.
+----
+
+Both security holes are now fixed. [[done]] --[[Joey]]
