@@ -325,6 +325,13 @@ getViaTmpFromDisk rsp v key action = checkallowed $ do
 				)
 			, do
 				warning "verification of content failed"
+				-- The bad content is not retained, because
+				-- a retry should not try to resume from it
+				-- since it's apparently corrupted.
+				-- Also, the bad content could be any data,
+				-- including perhaps the content of another
+				-- file than the one that was requested,
+				-- and so it's best not to keep it on disk.
 				pruneTmpWorkDirBefore tmpfile (liftIO . nukeFile)
 				return False
 			)
