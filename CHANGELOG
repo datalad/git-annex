@@ -51,7 +51,7 @@ git-annex (6.20180626) upstream; urgency=high
     git-annex fsck --from remote has noticed it's gone, re-running
     git-annex export or git-annex sync --content will re-upload it.
 
- -- Joey Hess <id@joeyh.name>  Tue, 19 Jun 2018 11:40:21 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 22 Jun 2018 10:36:22 -0400
 
 git-annex (6.20180529) upstream; urgency=medium
 
