@@ -24,7 +24,7 @@ git-annex (6.20170101.1) unstable; urgency=high
     (The S3, glacier, and webdav special remotes are still allowed to
     download from the web.)
 
- -- Joey Hess <id@joeyh.name>  Fri, 15 Jun 2018 17:54:23 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 22 Jun 2018 10:37:37 -0400
 
 git-annex (6.20170101) unstable; urgency=medium
 
