@@ -1,6 +1,6 @@
 {- IP addresses
  -
- - Copyright 2012 Joey Hess <id@joeyh.name>
+ - Copyright 2018 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
