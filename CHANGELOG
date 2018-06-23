@@ -1,3 +1,6 @@
+
+  * Support configuring remote.web.annex-cost and remote.bittorrent.annex-cost
+
 git-annex (6.20180530) UNRELEASED; urgency=medium
 
   * Fix build with ghc 8.4+, which broke due to the Semigroup Monoid change. 
