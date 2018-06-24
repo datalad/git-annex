@@ -1,5 +1,6 @@
-
   * Support configuring remote.web.annex-cost and remote.bittorrent.annex-cost
+  * info: Display uuid and description when a repository is identified by
+    uuid, and for "here".
 
 git-annex (6.20180530) UNRELEASED; urgency=medium
 
