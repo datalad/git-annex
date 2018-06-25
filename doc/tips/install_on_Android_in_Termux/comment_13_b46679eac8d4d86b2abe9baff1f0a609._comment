@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="bqone@ea19c1433d6c23d05a56fe7b055d92010ab75ffb"
+ nickname="bqone"
+ avatar="http://cdn.libravatar.org/avatar/b7e0d9ab01e602042db731ee959d8f7e"
+ subject="Not working on OnePlus 6"
+ date="2018-06-25T15:57:13Z"
+ content="""
+I copied and pasted the instructions, here is my output:
+
+https://pastebin.com/ZVJ7uSeU
+
+Almoços for including my entire session, the relevant error is at the bottom.
+
+I'm fairly certain this device has ARM64 arch.
+"""]]
