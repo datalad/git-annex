@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="branchable@bafd175a4b99afd6ed72501042e364ebd3e0c45e"
+ nickname="branchable"
+ avatar="http://cdn.libravatar.org/avatar/ae41dba34ee6000056f00793c695be75"
+ subject="Not working on OnePlus 5T either"
+ date="2018-06-26T10:32:09Z"
+ content="""
+As I mentioned in [Package request: git-annex · Issue #420 · termux/termux-packages](https://github.com/termux/termux-packages/issues/420#issuecomment-400258309) just now, I also get:
+
+    % ./git-annex.linux/runshell
+    proot info: vpid 1: terminated with signal 11
+
+Some further digging suggests that this is due to the architecture mismatch between my OnePlus 5T which is aarch64, and the linker which is 32-bit:
+
+    % PROOT_VERBOSE=9 ./git-annex.linux/runshell |& tail -n3
+    proot info: vpid 1: translate(\"/\" + \"/data/data/com.termux/files/home/git-annex.linux/lib/ld-linux.so.3\")
+    proot info: vpid 1:          -> \"/data/data/com.termux/files/home/git-annex.linux/lib/ld-linux.so.3\"
+    proot info: vpid 1: terminated with signal 11
+    % file /data/data/com.termux/files/home/git-annex.linux/lib/ld-linux.so.3
+    /data/data/com.termux/files/home/git-annex.linux/lib/ld-linux.so.3: ELF 32-bit LSB pie executable ARM, EABI5 version 1 (SYSV), dynamically linked, BuildID[sha1]=59819e8e8c922b822204d3778cd4d6c843422462, stripped
+    % termux-info
+    Updatable packages:
+    All packages up to date
+    System information:
+    Linux localhost 4.4.78-perf+ #1 SMP PREEMPT Wed Jun 13 17:23:58 CST 2018 aarch64 Android
+    Termux-packages arch:
+    aarch64
+    Android version:
+    8.1.0
+    Device manufacturer:
+    OnePlus
+    Device model:
+    ONEPLUS A5010
+
+"""]]
