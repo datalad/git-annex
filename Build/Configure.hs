@@ -1,4 +1,4 @@
-{- Checks system configuration and generates SysConfig. -}
+{- Checks system configuration and generates Build/SysConfig and Build/Version. -}
 
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
@@ -12,15 +12,13 @@ import Utility.Env.Basic
 import qualified Git.Version
 import Utility.Directory
 
-import Control.Monad.IfElse
 import Control.Monad
 import Control.Applicative
 import Prelude
 
 tests :: [TestCase]
 tests =
-	[ TestCase "version" (Config "packageversion" . StringConfig <$> getVersion)
-	, TestCase "UPGRADE_LOCATION" getUpgradeLocation
+	[ TestCase "UPGRADE_LOCATION" getUpgradeLocation
 	, TestCase "git" $ testCmd "git" "git --version >/dev/null"
 	, TestCase "git version" getGitVersion
 	, testCp "cp_a" "-a"
@@ -120,6 +118,7 @@ run ts = do
 	case v of
 		Just "Android" -> writeSysConfig $ androidConfig config
 		_ -> writeSysConfig config
+	writeVersion =<< getVersion
 	cleanup
 
 {- Hard codes some settings to cross-compile for Android. -}

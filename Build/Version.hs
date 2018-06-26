@@ -1,4 +1,4 @@
-{- Package version determination, for configure script. -}
+{- Package version determination. -}
 
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
@@ -13,7 +13,6 @@ import Prelude
 
 import Utility.Monad
 import Utility.Exception
-import Utility.Directory
 
 type Version = String
 
@@ -33,7 +32,6 @@ getVersion = do
 	ifM (isReleaseBuild)
 		( return changelogversion
 		, catchDefaultIO changelogversion $ do
-			let major = takeWhile (/= '.') changelogversion
 			gitversion <- takeWhile (\c -> isAlphaNum c) <$> readProcess "sh"
 				[ "-c"
 				, "git log -n 1 --format=format:'%h'"
@@ -54,3 +52,18 @@ getChangelogVersion = do
 	return $ middle (words verline !! 1)
   where
 	middle = drop 1 . init
+
+writeVersion :: Version -> IO ()
+writeVersion = writeFile "Build/Version" . body
+  where
+	body ver = unlines $ concat
+		[ header
+		, ["packageversion :: String"]
+		, ["packageversion = \"" ++ ver ++ "\""]
+		, footer
+		]
+	header = [
+		  "{- Automatically generated. -}"
+		, ""
+		]
+	footer = []
