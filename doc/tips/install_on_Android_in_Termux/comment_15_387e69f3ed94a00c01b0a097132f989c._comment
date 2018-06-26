@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 15"
+ date="2018-06-26T10:38:21Z"
+ content="""
+Running
+
+    termux-fix-shebang git-annex.linux/bin/*
+
+actually seems to have fixed my installation. `runshell` and `webapp` both execute now, with webapp bringing up the browser.
+"""]]
