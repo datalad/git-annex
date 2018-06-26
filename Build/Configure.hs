@@ -121,8 +121,6 @@ run ts = do
 		Just "Android" -> writeSysConfig $ androidConfig config
 		_ -> writeSysConfig config
 	cleanup
-	whenM isReleaseBuild $
-		cabalSetup "git-annex.cabal"
 
 {- Hard codes some settings to cross-compile for Android. -}
 androidConfig :: [Config] -> [Config]

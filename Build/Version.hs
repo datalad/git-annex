@@ -51,21 +51,3 @@ getChangelogVersion = do
 	return $ middle (words verline !! 1)
   where
 	middle = drop 1 . init
-
-{- Set up cabal file with version. -}
-cabalSetup :: FilePath -> IO ()
-cabalSetup cabalfile = do
-	version <- takeWhile (\c -> isDigit c || c == '.')
-		<$> getChangelogVersion
-	cabal <- readFile cabalfile
-	writeFile tmpcabalfile $ unlines $ 
-		map (setfield "Version" version) $
-		lines cabal
-	renameFile tmpcabalfile cabalfile
-  where
-	tmpcabalfile = cabalfile++".tmp"
-	setfield field value s
-		| fullfield `isPrefixOf` s = fullfield ++ value
-		| otherwise = s
-	  where
-		fullfield = field ++ ": "
