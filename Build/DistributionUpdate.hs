@@ -126,7 +126,7 @@ makeinfos updated version = do
 					, distributionKey = k
 					, distributionVersion = bv
 					, distributionReleasedate = now
-					, distributionUrgentUpgrade = Nothing
+					, distributionUrgentUpgrade = Just "6.20180626"
 					}
 				liftIO $ writeFile infofile $ formatInfoFile d
 				void $ inRepo $ runBool [Param "add", File infofile]

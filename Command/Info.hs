@@ -209,13 +209,16 @@ fileInfo o file k = showCustom (unwords ["info", file]) $ do
 remoteInfo :: InfoOptions -> Remote -> Annex ()
 remoteInfo o r = showCustom (unwords ["info", Remote.name r]) $ do
 	i <- map (\(k, v) -> simpleStat k (pure v)) <$> Remote.getInfo r
-	l <- selStats (remote_fast_stats r ++ i) (uuid_slow_stats (Remote.uuid r))
+	let u = Remote.uuid r
+	l <- selStats 
+		(uuid_fast_stats u ++ remote_fast_stats r ++ i)
+		(uuid_slow_stats u)
 	evalStateT (mapM_ showStat l) (emptyStatInfo o)
 	return True
 
 uuidInfo :: InfoOptions -> UUID -> Annex ()
 uuidInfo o u = showCustom (unwords ["info", fromUUID u]) $ do
-	l <- selStats [] ((uuid_slow_stats u))
+	l <- selStats (uuid_fast_stats u) (uuid_slow_stats u)
 	evalStateT (mapM_ showStat l) (emptyStatInfo o)
 	return True
 
@@ -277,17 +280,21 @@ file_stats f k =
 remote_fast_stats :: Remote -> [Stat]
 remote_fast_stats r = map (\s -> s r)
 	[ remote_name
-	, remote_description
-	, remote_uuid
 	, remote_trust
 	, remote_cost
 	, remote_type
 	]
 
+uuid_fast_stats :: UUID -> [Stat]
+uuid_fast_stats u = map (\s -> s u)
+	[ repo_uuid
+	, repo_description
+	]
+
 uuid_slow_stats :: UUID -> [Stat]
 uuid_slow_stats u = map (\s -> s u)
-	[ remote_annex_keys
-	, remote_annex_size
+	[ repo_annex_keys
+	, repo_annex_size
 	]
 
 stat :: String -> (String -> StatState String) -> Stat
@@ -353,13 +360,11 @@ file_name file = simpleStat "file" $ pure file
 remote_name :: Remote -> Stat
 remote_name r = simpleStat "remote" $ pure (Remote.name r)
 
-remote_description :: Remote -> Stat
-remote_description r = simpleStat "description" $ lift $
-	Remote.prettyUUID (Remote.uuid r)
+repo_description :: UUID -> Stat
+repo_description = simpleStat "description" . lift . Remote.prettyUUID
 
-remote_uuid :: Remote -> Stat
-remote_uuid r = simpleStat "uuid" $ pure $
-	fromUUID $ Remote.uuid r
+repo_uuid :: UUID -> Stat
+repo_uuid = simpleStat "uuid" . pure . fromUUID
 
 remote_trust :: Remote -> Stat
 remote_trust r = simpleStat "trust" $ lift $
@@ -381,12 +386,14 @@ local_annex_size :: Stat
 local_annex_size = simpleStat "local annex size" $
 	showSizeKeys =<< cachedPresentData
 
-remote_annex_keys :: UUID -> Stat
-remote_annex_keys u = stat "remote annex keys" $ json show $
+-- "remote" is in the name for JSON backwards-compatibility
+repo_annex_keys :: UUID -> Stat
+repo_annex_keys u = stat "remote annex keys" $ json show $
 	countKeys <$> cachedRemoteData u
 
-remote_annex_size :: UUID -> Stat
-remote_annex_size u = simpleStat "remote annex size" $
+-- "remote" is in the name for JSON backwards-compatibility
+repo_annex_size :: UUID -> Stat
+repo_annex_size u = simpleStat "remote annex size" $
 	showSizeKeys =<< cachedRemoteData u
 
 known_annex_files :: Bool -> Stat

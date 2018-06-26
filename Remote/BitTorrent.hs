@@ -14,6 +14,7 @@ import Types.Remote
 import qualified Annex
 import qualified Git
 import qualified Git.Construct
+import Config
 import Config.Cost
 import Logs.Web
 import Types.UrlContents
@@ -51,10 +52,11 @@ list _autoinit = do
 	return [r]
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r _ c gc = 
+gen r _ c gc = do
+	cst <- remoteCost gc expensiveRemoteCost
 	return $ Just Remote
 		{ uuid = bitTorrentUUID
-		, cost = expensiveRemoteCost
+		, cost = cst
 		, name = Git.repoDescribe r
 		, storeKey = uploadKey
 		, retrieveKeyFile = downloadKey

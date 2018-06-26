@@ -15,6 +15,7 @@ import qualified Git
 import qualified Git.Construct
 import Annex.Content
 import Config.Cost
+import Config
 import Logs.Web
 import Annex.UUID
 import Messages.Progress
@@ -40,10 +41,11 @@ list _autoinit = do
 	return [r]
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r _ c gc = 
+gen r _ c gc = do
+	cst <- remoteCost gc expensiveRemoteCost
 	return $ Just Remote
 		{ uuid = webUUID
-		, cost = expensiveRemoteCost
+		, cost = cst
 		, name = Git.repoDescribe r
 		, storeKey = uploadKey
 		, retrieveKeyFile = downloadKey

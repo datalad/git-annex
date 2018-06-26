@@ -1,4 +1,11 @@
+git-annex (6.20180627) UNRELEASED; urgency=medium
+
   * Include uname in standalone builds.
+  * Support configuring remote.web.annex-cost and remote.bittorrent.annex-cost
+  * info: Display uuid and description when a repository is identified by
+    uuid, and for "here".
+ 
+ -- Joey Hess <id@joeyh.name>  Fri, 22 Jun 2018 10:36:22 -0400
 
 git-annex (6.20180626) upstream; urgency=high
 
