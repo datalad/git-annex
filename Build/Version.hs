@@ -22,12 +22,11 @@ type Version = String
 isReleaseBuild :: IO Bool
 isReleaseBuild = (== Just "1") <$> catchMaybeIO (getEnv "RELEASE_BUILD")
 
-{- Version is usually based on the major version from the changelog, 
- - plus the date of the last commit, plus the git rev of that commit.
+{- Version comes from the CHANGELOG, plus the git rev of the last commit.
  - This works for autobuilds, ad-hoc builds, etc.
  -
  - If git or a git repo is not available, or something goes wrong,
- - or this is a release build, just use the version from the changelog. -}
+ - or this is a release build, just use the version from the CHANGELOG. -}
 getVersion :: IO Version
 getVersion = do
 	changelogversion <- getChangelogVersion
@@ -35,13 +34,17 @@ getVersion = do
 		( return changelogversion
 		, catchDefaultIO changelogversion $ do
 			let major = takeWhile (/= '.') changelogversion
-			autoversion <- takeWhile (\c -> isAlphaNum c || c == '-') <$> readProcess "sh"
+			gitversion <- takeWhile (\c -> isAlphaNum c) <$> readProcess "sh"
 				[ "-c"
-				, "git log -n 1 --format=format:'%ci %h'| sed -e 's/-//g' -e 's/ .* /-g/'"
+				, "git log -n 1 --format=format:'%h'"
 				] ""
-			if null autoversion
-				then return changelogversion
-				else return $ concat [ major, ".", autoversion ]
+			return $ if null gitversion
+				then changelogversion
+				else concat
+					[ changelogversion
+					, "-g"
+					, gitversion
+					]
 		)
 	
 getChangelogVersion :: IO Version
