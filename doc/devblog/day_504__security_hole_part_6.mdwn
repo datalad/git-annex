@@ -8,3 +8,5 @@ This fix was really a lot easier than the previous fixes for
 CVE-2018-10857.
 Unfortunately this did mean not letting URL and WORM keys be downloaded
 from many special remotes by default, which is going to be painful for some.
+
+[[!meta date="June 20 2018 5:00 pm"]]

@@ -1,0 +1,15 @@
+Just released git-annex 6.20180626 with important security fixes!
+
+Please go upgrade now, read the [[release_notes|news/security_fix_release]]
+for details about some necessary behavior changes,
+and if you're curious about the details of the security holes,
+see [[the advisory|security/CVE-2018-10857_and_CVE-2018-10859]].
+
+I've been dealing with these security holes for the past week and a half,
+and decided to use a security embargo while fixes were being developed
+due to the complexity of addressing security holes that impact both
+git-annex and external special remote programs. For the full story
+see past 5 posts in this devblog, which are being published all together
+now that the embargo is lifted.
+
+[[!meta date="Jun 26 2018 12:00 pm"]]
