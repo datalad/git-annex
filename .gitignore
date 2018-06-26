@@ -5,7 +5,7 @@ Setup
 tmp
 test
 Build/SysConfig
-Build/SysConfig.hs
+Build/Version
 Build/InstallDesktopFile
 Build/EvilSplicer
 Build/Standalone

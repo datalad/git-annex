@@ -63,6 +63,11 @@ getextra rsync.exe 85cb7a4d16d274fcf8069b39042965ad26abd6aa
 #stack upgrade --git
 stack --version
 
+# Update version info for git rev being built.
+mkdir -p dist
+stack ghc --stack-yaml stack-windows.yaml --no-haddock Build/BuildVersion.hs
+./Build/BuildVersion > dist/build-version
+
 # Build git-annex
 stack setup --stack-yaml stack-windows.yaml
 stack install -j 1 --stack-yaml stack-windows.yaml --no-haddock \
@@ -72,10 +77,6 @@ stack install -j 1 --stack-yaml stack-windows.yaml --no-haddock \
 withcygpreferred stack ghc --stack-yaml stack-windows.yaml --no-haddock \
 	--package nsis Build/NullSoftInstaller.hs
 ./Build/NullSoftInstaller
-
-mkdir -p dist
-stack ghc --stack-yaml stack-windows.yaml --no-haddock Build/BuildVersion.hs
-./Build/BuildVersion > dist/build-version
 
 # Test git-annex
 # The test is run in c:/WINDOWS/Temp, because running it in the autobuilder

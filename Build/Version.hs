@@ -1,4 +1,4 @@
-{- Package version determination, for configure script. -}
+{- Package version determination. -}
 
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
@@ -13,7 +13,6 @@ import Prelude
 
 import Utility.Monad
 import Utility.Exception
-import Utility.Directory
 
 type Version = String
 
@@ -22,26 +21,28 @@ type Version = String
 isReleaseBuild :: IO Bool
 isReleaseBuild = (== Just "1") <$> catchMaybeIO (getEnv "RELEASE_BUILD")
 
-{- Version is usually based on the major version from the changelog, 
- - plus the date of the last commit, plus the git rev of that commit.
+{- Version comes from the CHANGELOG, plus the git rev of the last commit.
  - This works for autobuilds, ad-hoc builds, etc.
  -
  - If git or a git repo is not available, or something goes wrong,
- - or this is a release build, just use the version from the changelog. -}
+ - or this is a release build, just use the version from the CHANGELOG. -}
 getVersion :: IO Version
 getVersion = do
 	changelogversion <- getChangelogVersion
 	ifM (isReleaseBuild)
 		( return changelogversion
 		, catchDefaultIO changelogversion $ do
-			let major = takeWhile (/= '.') changelogversion
-			autoversion <- takeWhile (\c -> isAlphaNum c || c == '-') <$> readProcess "sh"
+			gitversion <- takeWhile (\c -> isAlphaNum c) <$> readProcess "sh"
 				[ "-c"
-				, "git log -n 1 --format=format:'%ci %h'| sed -e 's/-//g' -e 's/ .* /-g/'"
+				, "git log -n 1 --format=format:'%h'"
 				] ""
-			if null autoversion
-				then return changelogversion
-				else return $ concat [ major, ".", autoversion ]
+			return $ if null gitversion
+				then changelogversion
+				else concat
+					[ changelogversion
+					, "-g"
+					, gitversion
+					]
 		)
 	
 getChangelogVersion :: IO Version
@@ -52,20 +53,17 @@ getChangelogVersion = do
   where
 	middle = drop 1 . init
 
-{- Set up cabal file with version. -}
-cabalSetup :: FilePath -> IO ()
-cabalSetup cabalfile = do
-	version <- takeWhile (\c -> isDigit c || c == '.')
-		<$> getChangelogVersion
-	cabal <- readFile cabalfile
-	writeFile tmpcabalfile $ unlines $ 
-		map (setfield "Version" version) $
-		lines cabal
-	renameFile tmpcabalfile cabalfile
+writeVersion :: Version -> IO ()
+writeVersion = writeFile "Build/Version" . body
   where
-	tmpcabalfile = cabalfile++".tmp"
-	setfield field value s
-		| fullfield `isPrefixOf` s = fullfield ++ value
-		| otherwise = s
-	  where
-		fullfield = field ++ ": "
+	body ver = unlines $ concat
+		[ header
+		, ["packageversion :: String"]
+		, ["packageversion = \"" ++ ver ++ "\""]
+		, footer
+		]
+	header = [
+		  "{- Automatically generated. -}"
+		, ""
+		]
+	footer = []

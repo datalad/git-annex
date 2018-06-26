@@ -1,6 +1,12 @@
-{- Outputs the version of git-annex that was built, for use by
- - autobuilders. Note that this includes the git rev. -}
+{- For use by autobuilders, this outputs the version of git-annex that
+ - is being built, and also updates the Build/Version file so the build
+ - will report the right version, including the current git rev. -}
+
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 import Build.Version
 
-main = putStr =<< getVersion
+main = do
+	ver <- getVersion
+	writeVersion ver
+	putStr ver
