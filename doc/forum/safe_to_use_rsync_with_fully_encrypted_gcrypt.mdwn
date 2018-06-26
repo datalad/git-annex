@@ -1,9 +1,0 @@
-I am looking through the latest security fixes, [CVE-2018-10857 and CVE-2018-10859](https://git-annex.branchable.com/security/CVE-2018-10857_and_CVE-2018-10859/). It looks like only [http, https, and ftp URL schemes are now supported by default](http://git-annex.branchable.com/news/security_fix_release/).
-
-I had been syncing a remote repo which is a [fully encrypted git repositories with gcrypt](https://git-annex.branchable.com/tips/fully_encrypted_git_repositories_with_gcrypt/) using the `rsync` URL scheme.
-
-Is it safe to do `git config annex.security.allowed-url-schemes "http,https,ftp,rsync"` so that I can use this remote since it is fully encrypted? Is this something the remote maintainer needs to chime in on (if so I can post to their Github issues)?
-
-Also, if it is safe for a fully encrypted remote but not others would it be useful to have `annex.security.allowed-url-schemes` on a per remote basis?
-
-—[Andrew](http://git-annex.branchable.com/users/andrew/)
