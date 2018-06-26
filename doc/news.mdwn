@@ -1,7 +1,7 @@
 [[!if test="news/*" then="""
 This is where announcements of new releases, features, and other news is
 posted. git-annex users are recommended to subscribe to this page's RSS
-feed.
+feed. Also, see [[security]] for security announcements.
 
 [[!inline pages="./news/* and !./news/*/* and !*/Discussion" rootpage="news" show="30"]]
 

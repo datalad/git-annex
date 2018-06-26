@@ -58,6 +58,9 @@ gen r u c gc = do
 		, storeKey = storeKeyDummy
 		, retrieveKeyFile = retreiveKeyFileDummy
 		, retrieveKeyFileCheap = retrieveCheap
+		-- ddar communicates over ssh, not subject to http redirect
+		-- type attacks
+		, retrievalSecurityPolicy = RetrievalAllKeysSecure
 		, removeKey = removeKeyDummy
 		, lockContent = Nothing
 		, checkPresent = checkPresentDummy

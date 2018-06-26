@@ -1228,7 +1228,7 @@ Here are all the supported configuration settings.
 
   Note that even when this is set to `false`, git-annex does verification
   in some edge cases, where it's likely the case than an
-  object was downloaded incorrectly.
+  object was downloaded incorrectly, or when needed for security.
 
 * `remote.<name>.annex-export-tracking`
 
@@ -1356,11 +1356,15 @@ Here are all the supported configuration settings.
 
 * `annex.web-options`
 
-  Setting this makes git-annex use curl to download urls
+  Options to pass to curl when git-annex uses it to download urls
   (rather than the default built-in url downloader).
 
   For example, to force IPv4 only, set it to "-4".
   Or to make curl use your ~/.netrc file, set it to "--netrc".
+
+  Setting this option makes git-annex use curl, but only
+  when annex.security.allowed-http-addresses is configured in a
+  specific way. See its documentation.
 
 * `annex.youtube-dl-options`
 
@@ -1387,12 +1391,76 @@ Here are all the supported configuration settings.
   If set, the command is run and each line of its output is used as a HTTP
   header. This overrides annex.http-headers.
 
-* `annex.web-download-command`
+* `annex.security.allowed-url-schemes`
 
-  Use to specify a command to run to download a file from the web.
+  List of URL schemes that git-annex is allowed to download content from.
+  The default is "http https ftp".
 
-  In the command line, %url is replaced with the url to download,
-  and %file is replaced with the file that it should be saved to.
+  Think very carefully before changing this; there are security
+  implications. For example, if it's changed to allow "file" URLs, then
+  anyone who can get a commit into your git-annex repository could
+  `git-annex addurl` a pointer to a private file located outside that
+  repository, possibly causing it to be copied into your repository
+  and transferred on to other remotes, exposing its content.
+
+  Some special remotes support their own domain-specific URL
+  schemes; those are not affected by this configuration setting.
+
+* `annex.security.allowed-http-addresses`
+
+  By default, git-annex only makes HTTP connections to public IP addresses;
+  it will refuse to use HTTP servers on localhost or on a private network.
+
+  This setting can override that behavior, allowing access to particular
+  IP addresses. For example "127.0.0.1 ::1" allows access to localhost
+  (both IPV4 and IPV6). To allow access to all IP addresses, use "all"
+  
+  Think very carefully before changing this; there are security
+  implications. Anyone who can get a commit into your git-annex repository
+  could `git annex addurl` an url on a private http server, possibly
+  causing it to be downloaded into your repository and transferred to
+  other remotes, exposing its content.
+
+  Note that, since the interfaces of curl and youtube-dl do not allow
+  these IP address restrictions to be enforced, curl and youtube-dl will
+  never be used unless annex.security.allowed-http-addresses=all.
+
+* `annex.security.allow-unverified-downloads`, 
+
+  For security reasons, git-annex refuses to download content from
+  most special remotes when it cannot check a hash to verify 
+  that the correct content was downloaded. This particularly impacts
+  downloading the content of URL or WORM keys, which lack hashes.
+
+  The best way to avoid problems due to this is to migrate files
+  away from such keys, before their content reaches a special remote.
+  See [[git-annex-migrate]](1).
+
+  When the content is only available from a special remote, you can
+  use this configuration to force git-annex to download it.
+  But you do so at your own risk, and it's very important you read and
+  understand the information below first!
+
+  Downloading unverified content from encrypted special remotes is
+  prevented, because the special remote could send some other encrypted
+  content than what you expect, causing git-annex to decrypt data that you
+  never checked into git-annex, and risking exposing the decrypted
+  data to any non-encrypted remotes you send content to.
+
+  Downloading unverified content from (non-encrypted)
+  external special remotes is prevented, because they could follow
+  http redirects to web servers on localhost or on a private network,
+  or in some cases to a file:/// url.
+
+  If you decide to bypass this security check, the best thing to do is
+  to only set it temporarily while running the command that gets the file.
+  The value to set the config to is "ACKTHPPT".
+  For example:
+
+	git -c annex.security.allow-unverified-downloads=ACKTHPPT annex get myfile
+
+  It would be a good idea to check that it downloaded the file you expected,
+  too.
 
 * `annex.secure-erase-command`
 

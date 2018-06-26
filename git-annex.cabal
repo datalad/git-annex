@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 6.20180529
+Version: 6.20180626
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <id@joeyh.name>
@@ -340,7 +340,9 @@ Executable git-annex
    bloomfilter,
    edit-distance,
    resourcet,
-   http-client,
+   connection (>= 0.2.6),
+   http-client (>= 0.4.31),
+   http-client-tls,
    http-types (>= 0.7),
    http-conduit (>= 2.0),
    conduit,
@@ -1032,9 +1034,11 @@ Executable git-annex
     Utility.Gpg
     Utility.Hash
     Utility.HtmlDetect
+    Utility.HttpManagerRestricted
     Utility.HumanNumber
     Utility.HumanTime
     Utility.InodeCache
+    Utility.IPAddress
     Utility.LinuxMkLibs
     Utility.LockFile
     Utility.LockFile.LockStatus

@@ -45,7 +45,7 @@ startSrcDest (src:dest:[])
 		showStart "reinject" dest
 		next $ ifAnnexed dest go stop
   where
-	go key = ifM (verifyKeyContent DefaultVerify UnVerified key src)
+	go key = ifM (verifyKeyContent RetrievalAllKeysSecure DefaultVerify UnVerified key src)
 		( perform src key
 		, error "failed"
 		)

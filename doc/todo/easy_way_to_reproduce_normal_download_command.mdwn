@@ -22,3 +22,10 @@ what about the other settings, is it okay to hardcode those?
 
 maybe this would be easier if there would be an options override just
 like rsync, but separate ones for curl and wget... --[[anarcat]]
+
+> git-annex now only uses curl, and defaults to a built-in http downloader.
+> The annex.web-download-command is no longer supported. annex.web-options
+> can be used to pass options to curl.
+> 
+> So, I don't think this todo is relevant anymore, closing [[done]].
+> --[[Joey]]

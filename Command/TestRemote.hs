@@ -179,7 +179,7 @@ test st r k =
 		Just b -> case Backend.verifyKeyContent b of
 			Nothing -> return True
 			Just verifier -> verifier k (key2file k)
-	get = getViaTmp (RemoteVerify r) k $ \dest ->
+	get = getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k $ \dest ->
 		Remote.retrieveKeyFile r k (AssociatedFile Nothing)
 			dest nullMeterUpdate
 	store = Remote.storeKey r k (AssociatedFile Nothing) nullMeterUpdate
@@ -220,7 +220,7 @@ testExportTree st (Just _) ea k1 k2 =
 	retrieveexport k = withTmpFile "exported" $ \tmp h -> do
 		liftIO $ hClose h
 		ifM (Remote.retrieveExport ea k testexportlocation tmp nullMeterUpdate)
-			( verifyKeyContent AlwaysVerify UnVerified k tmp
+			( verifyKeyContent RetrievalAllKeysSecure AlwaysVerify UnVerified k tmp
 			, return False
 			)
 	checkpresentexport k = Remote.checkPresentExport ea k testexportlocation
@@ -238,10 +238,10 @@ testUnavailable st r k =
 	, check (`notElem` [Right True, Right False]) "checkPresent" $
 		Remote.checkPresent r k
 	, check (== Right False) "retrieveKeyFile" $
-		getViaTmp (RemoteVerify r) k $ \dest ->
+		getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k $ \dest ->
 			Remote.retrieveKeyFile r k (AssociatedFile Nothing) dest nullMeterUpdate
 	, check (== Right False) "retrieveKeyFileCheap" $
-		getViaTmp (RemoteVerify r) k $ \dest -> unVerified $
+		getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k $ \dest -> unVerified $
 			Remote.retrieveKeyFileCheap r k (AssociatedFile Nothing) dest
 	]
   where

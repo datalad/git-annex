@@ -1,0 +1,26 @@
+Most of the day was spent staring at the http-client source code and trying
+to find a way to add the IP address checks to it that I need to fully close
+the security hole.
+
+In the end, I did find a way, with the duplication of a couple dozen lines
+of code from http-client. It will let the security fix be used with
+libraries like aws and DAV that build on top of http-client, too.
+
+While the code is in git-annex for now, it's fully disconnected and
+would also be useful if a web browser were implemented in Haskell,
+to implement same-origin restrictions while avoiding DNS rebinding attacks.
+
+Looks like http proxies and curl will need to be disabled by default,
+since this fix can't support either of them securely. I wonder how web
+browsers deal with http proxies, DNS rebinding attacks and same-origin?
+I can't think of a secure way.
+
+Next I need a function that checks if an IP address is a link-local address
+or a private network address. For both ipv4 and ipv6. Could not find
+anything handy on hackage, so I'm gonna have to stare at some RFCs. Perhaps
+this evening, for now, it's time to swim in the river.
+
+Today's work was sponsored by  Jake Vosloo
+[on Patreon](https://patreon.com/joeyh)
+
+[[!meta date="June 16 2018 4:00 pm"]]

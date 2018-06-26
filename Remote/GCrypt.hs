@@ -113,6 +113,7 @@ gen' r u c gc = do
 		, storeKey = storeKeyDummy
 		, retrieveKeyFile = retreiveKeyFileDummy
 		, retrieveKeyFileCheap = \_ _ _ -> return False
+		, retrievalSecurityPolicy = RetrievalAllKeysSecure
 		, removeKey = removeKeyDummy
 		, lockContent = Nothing
 		, checkPresent = checkPresentDummy

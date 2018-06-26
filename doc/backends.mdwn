@@ -53,6 +53,9 @@ contents that were checked into a repository earlier, you should avoid
 using the non-cryptographically-secure backends, and will need to use
 signed git commits. See [[tips/using_signed_git_commits]] for details.
 
+Retrieval of WORM and URL from many [[special_remotes]] is prohibited
+for [[security_reasons|security/CVE-2018-10857_and_CVE-2018-10859]].
+
 Note that the various 512 and 384 length hashes result in long paths,
 which are known to not work on Windows. If interoperability on Windows is a
 concern, avoid those.

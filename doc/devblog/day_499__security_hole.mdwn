@@ -1,0 +1,27 @@
+I'm writing this on a private branch, it won't be posted until a week from
+now when the security hole is disclosed.
+
+Security is not compositional. You can have one good feature, and add
+another good feature, and the result is not two good features, but a new
+security hole. In this case
+[[bugs/security_hole_private_data_exposure_via_addurl]] (CVE-2018-10857). 
+And it can be hard to spot this kind of security hole, but then once it's
+known it seems blindly obvious.
+
+It came to me last night and by this morning I had decided the potential
+impact was large enough to do a coordinated disclosure. Spent the first
+half of the day thinking through ways to fix it that don't involve writing
+my own http library. Then started getting in touch with all the
+distributions' security teams. And then coded up a fairly complete fix for
+the worst part of the security hole, although a secondary part is going to
+need considerably more work.
+
+It looks like the external special remotes are going to need at least some
+security review too, and I'm still thinking that part of the problem over.
+
+Exhausted.
+
+Today's work was sponsored by Trenton Cronholm 
+[on Patreon](https://patreon.com/joeyh).
+
+[[!meta date="Jun 15 2018 7:00 pm"]]

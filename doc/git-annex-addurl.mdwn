@@ -10,9 +10,12 @@ git annex addurl `[url ...]`
 
 Downloads each url to its own file, which is added to the annex.
 
-When `youtube-dl` is installed, it's used to check for a video embedded in 
-a web page at the url, and that is added to the annex instead.
-  
+When `youtube-dl` is installed, it can be used to check for a video
+embedded in  a web page at the url, and that is added to the annex instead.
+(However, this is disabled by default as it can be a security risk. 
+See the documentation of annex.security.allowed-http-addresses
+in [[git-annex]](1) for details.)
+
 Urls to torrent files (including magnet links) will cause the content of
 the torrent to be downloaded, using `aria2c`.
 

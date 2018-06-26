@@ -11,12 +11,6 @@ The first step is to install the Firefox plugin
 [FlashGot](http://flashgot.net/). We will use it to provide the Firefox
 shortcuts to add things to our annex.
 
-We also need a normal download manager, if we want to get status updates as
-the download is done. We'll need to configure git-annex to use it by
-setting `annex.web-download-command` as Joey describes in his comment on
-[[todo/wishlist: allow configuration of downloader for addurl]]. See the
-manpage [[git-annex]] for more information on setting configuration.
-
 Once we have installed all that, we need a script that has an interface
 which FlashGot can treat as a downloader, but which calls git-annex to do
 the actual downloading. Such a script is available from

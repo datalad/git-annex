@@ -80,7 +80,6 @@ EOF
 	patched unix-time
 	patched lifted-base
 	patched zlib
-	patched MissingH
 	patched distributive
 	patched comonad
 	patched iproute
@@ -93,15 +92,17 @@ EOF
 	patched skein
 	patched lens
 	patched certificate
-	patched x509-system
+	patched x509-store
 	patched persistent-template
 	patched system-filepath
 	patched optparse-applicative
+	patched warp
 	patched wai-app-static
 	patched yesod-routes
 	patched shakespeare
 	patched yesod-core
 	patched yesod-persistent
+	patched xss-sanitize
 	patched yesod-form
 	patched crypto-numbers
 	patched clock
@@ -113,6 +114,7 @@ EOF
 	patched dns
 	patched unbounded-delays
 	patched uuid
+	patched basement
 
 	cd ..
 

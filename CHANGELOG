@@ -1,4 +1,39 @@
-git-annex (6.20180530) UNRELEASED; urgency=medium
+  * Include uname in standalone builds.
+
+git-annex (6.20180626) upstream; urgency=high
+
+  Security fix release for CVE-2018-10857 and CVE-2018-10859
+  https://git-annex.branchable.com/security/CVE-2018-10857_and_CVE-2018-10859/
+
+  * Refuse to download content, that cannot be verified with a hash, 
+    from encrypted special remotes (for CVE-2018-10859),
+    and from all external special remotes and glacier (for CVE-2018-10857).
+    In particular, URL and WORM keys stored on such remotes won't
+    be downloaded. If this affects your files, you can run
+    `git-annex migrate` on the affected files, to convert them
+    to use a hash.
+  * Added annex.security.allow-unverified-downloads, which can override
+    the above.
+  * Added annex.security.allowed-url-schemes setting, which defaults
+    to only allowing http, https, and ftp URLs. Note especially that file:/
+    is no longer enabled by default.
+  * Removed annex.web-download-command, since its interface does not allow
+    supporting annex.security.allowed-url-schemes across redirects.
+    If you used this setting, you may want to instead use annex.web-options
+    to pass options to curl.
+  * git-annex will refuse to download content from http servers on
+    localhost, or any private IP addresses, to prevent accidental
+    exposure of internal data. This can be overridden with the
+    annex.security.allowed-http-addresses setting.
+  * Local http proxies will not be used unless allowed by the
+    annex.security.allowed-http-addresses setting.
+  * Since the interfaces to curl and youtube-dl do not have a way to
+    prevent them from accessing localhost or private IP addresses,
+    they default to not being used for url downloads.
+    Only when annex.security.allowed-http-addresses=all will curl and
+    youtube-dl be used.
+ 
+  Non-security fix changes:
 
   * Fix build with ghc 8.4+, which broke due to the Semigroup Monoid change. 
   * version: Show operating system and repository version list 
@@ -17,9 +52,8 @@ git-annex (6.20180530) UNRELEASED; urgency=medium
   * When content has been lost from an export remote and 
     git-annex fsck --from remote has noticed it's gone, re-running
     git-annex export or git-annex sync --content will re-upload it.
-  * Include uname in standalone builds.
 
- -- Joey Hess <id@joeyh.name>  Wed, 30 May 2018 11:49:08 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 22 Jun 2018 10:36:22 -0400
 
 git-annex (6.20180529) upstream; urgency=medium
 

@@ -55,6 +55,11 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 			, storeKey = storeKeyDummy
 			, retrieveKeyFile = retreiveKeyFileDummy
 			, retrieveKeyFileCheap = retrieveCheap this
+			-- glacier-cli does not follow redirects and does
+			-- not support file://, as far as we know, but
+			-- there's no guarantee that will continue to be
+			-- the case, so require verifiable keys.
+			, retrievalSecurityPolicy = RetrievalVerifiableKeysSecure
 			, removeKey = removeKeyDummy
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy

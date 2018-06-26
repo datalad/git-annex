@@ -13,6 +13,7 @@ import Annex.Action
 import Annex
 import Utility.Rsync
 import Types.Transfer
+import Types.Remote (RetrievalSecurityPolicy(..))
 import Command.SendKey (fieldTransfer)
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 
@@ -31,7 +32,9 @@ start key = fieldTransfer Download key $ \_p -> do
 	fromunlocked <- (isJust <$> Fields.getField Fields.unlocked)
 		<||> (isJust <$> Fields.getField Fields.direct)
 	let verify = if fromunlocked then AlwaysVerify else DefaultVerify
-	ifM (getViaTmp verify key go)
+	-- This matches the retrievalSecurityPolicy of Remote.Git
+	let rsp = RetrievalAllKeysSecure
+	ifM (getViaTmp rsp verify key go)
 		( do
 			-- forcibly quit after receiving one key,
 			-- and shutdown cleanly

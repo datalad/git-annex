@@ -53,6 +53,7 @@ chainGen addr r u c gc = do
 		, storeKey = store (const protorunner)
 		, retrieveKeyFile = retrieve (const protorunner)
 		, retrieveKeyFileCheap = \_ _ _ -> return False
+		, retrievalSecurityPolicy = RetrievalAllKeysSecure
 		, removeKey = remove protorunner
 		, lockContent = Just $ lock withconn runProtoConn u 
 		, checkPresent = checkpresent protorunner

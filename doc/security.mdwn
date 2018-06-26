@@ -1,0 +1,4 @@
+Information about all known security holes in git-annex, and their fixes.
+Subscribe to the RSS feed to be kept up to date.
+
+[[!inline pages="./security/* and !./security/*/* and !*/Discussion" rootpage="security" show="0"]]

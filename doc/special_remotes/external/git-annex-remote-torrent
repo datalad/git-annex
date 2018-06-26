@@ -123,7 +123,7 @@ while read line; do
 			url="$2"
 			# List contents of torrent.
 			tmp=$(mktemp)
-			if ! runcmd curl -o "$tmp" "$url"; then
+			if ! runcmd curl --proto -all,http,https -o "$tmp" "$url"; then
 				echo CHECKURL-FAILURE
 			else
 				oldIFS="$IFS"
@@ -166,7 +166,7 @@ while read line; do
 						echo TRANSFER-FAILURE RETRIEVE "$key" "no known torrent urls for this key"
 					else
 						tmp=$(mktemp)
-						if ! runcmd curl -o "$tmp" "$url"; then
+						if ! runcmd curl --proto -all,http,https -o "$tmp" "$url"; then
 							echo TRANSFER-FAILURE RETRIEVE "$key" "failed downloading torrent file from $url"
 						else
 							filenum="$(echo "$url" | sed 's/(.*#\(\d*\)/\1/')"

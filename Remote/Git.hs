@@ -161,6 +161,7 @@ gen r u c gc
 			, storeKey = copyToRemote new st
 			, retrieveKeyFile = copyFromRemote new st
 			, retrieveKeyFileCheap = copyFromRemoteCheap new st
+			, retrievalSecurityPolicy = RetrievalAllKeysSecure
 			, removeKey = dropKey new st
 			, lockContent = Just (lockKey new st)
 			, checkPresent = inAnnex new st
@@ -625,10 +626,11 @@ copyToRemote' repo r (State connpool duc _) key file meterupdate
 				ensureInitialized
 				copier <- mkCopier hardlink params
 				let verify = Annex.Content.RemoteVerify r
+				let rsp = RetrievalAllKeysSecure
 				runTransfer (Transfer Download u key) file stdRetry $ \p ->
 					let p' = combineMeterUpdate meterupdate p
 					in Annex.Content.saveState True `after`
-						Annex.Content.getViaTmp verify key
+						Annex.Content.getViaTmp rsp verify key
 							(\dest -> copier object dest p' (liftIO checksuccessio))
 			)
 	copyremotefallback p = Annex.Content.sendAnnex key noop $ \object -> do
