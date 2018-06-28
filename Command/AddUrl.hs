@@ -283,18 +283,20 @@ downloadWeb o url urlinfo file =
 				(dl dest)
 			Left _ -> normalfinish tmp
 	  where
-		dl dest = withTmpWorkDir mediakey $ \workdir ->
+		dl dest = withTmpWorkDir mediakey $ \workdir -> do
+			let cleanuptmp = pruneTmpWorkDirBefore tmp (liftIO . nukeFile)
 			Transfer.notifyTransfer Transfer.Download url $
 				Transfer.download webUUID mediakey (AssociatedFile Nothing) Transfer.noRetry $ \_p ->
 					youtubeDl url workdir >>= \case
 						Right (Just mediafile) -> do
-							pruneTmpWorkDirBefore tmp (liftIO . nukeFile)
+							cleanuptmp
 							checkCanAdd dest $ do
 								showDestinationFile dest
 								addWorkTree webUUID mediaurl dest mediakey (Just mediafile)
 								return $ Just mediakey
 						Right Nothing -> normalfinish tmp
 						Left msg -> do
+							cleanuptmp
 							warning msg
 							return Nothing
 		mediaurl = setDownloader url YoutubeDownloader
