@@ -1060,8 +1060,12 @@ pruneTmpWorkDirBefore f action = do
 {- Runs an action, passing it a temporary work directory where
  - it can write files while receiving the content of a key.
  -
+ - Preserves the invariant that the workdir never exists without the
+ - content file, by creating an empty content file first.
+ -
  - On exception, or when the action returns Nothing,
- - the temporary work directory is left, so resumes can use it.
+ - the temporary work directory is retained (unless
+ - empty), so anything in it can be used on resume.
  -}
 withTmpWorkDir :: Key -> (FilePath -> Annex (Maybe a)) -> Annex (Maybe a)
 withTmpWorkDir key action = do
@@ -1078,7 +1082,7 @@ withTmpWorkDir key action = do
 	res <- action tmpdir
 	case res of
 		Just _ -> liftIO $ removeDirectoryRecursive tmpdir
-		Nothing -> noop
+		Nothing -> liftIO $ void $ tryIO $ removeDirectory tmpdir
 	return res
 
 {- Finds items in the first, smaller list, that are not
