@@ -28,10 +28,17 @@ import Network.URI
 import Control.Concurrent.Async
 
 -- youtube-dl is can follow redirects to anywhere, including potentially
--- localhost or a private address. So, it's only allowed to be used if the
--- user has allowed access to all addresses.
+-- localhost or a private address. So, it's only allowed to download
+-- content if the user has allowed access to all addresses.
 youtubeDlAllowed :: Annex Bool
 youtubeDlAllowed = httpAddressesUnlimited
+
+youtubeDlNotAllowedMessage :: String
+youtubeDlNotAllowedMessage = unwords
+	[ "youtube-dl could potentially access any address, and the"
+	, "configuration of annex.security.allowed-http-addresses"
+	, "does not allow that."
+	]
 
 -- Runs youtube-dl in a work directory, to download a single media file
 -- from the url. Reutrns the path to the media file in the work directory.
@@ -49,7 +56,7 @@ youtubeDlAllowed = httpAddressesUnlimited
 youtubeDl :: URLString -> FilePath -> Annex (Either String (Maybe FilePath))
 youtubeDl url workdir = ifM httpAddressesUnlimited
 	( withUrlOptions $ youtubeDl' url workdir
-	, return (Right Nothing)
+	, return $ Left youtubeDlNotAllowedMessage
 	)
 
 youtubeDl' :: URLString -> FilePath -> UrlOptions -> Annex (Either String (Maybe FilePath))
@@ -119,13 +126,7 @@ youtubeDlMaxSize workdir = ifM (Annex.getState Annex.force)
 
 -- Download a media file to a destination, 
 youtubeDlTo :: Key -> URLString -> FilePath -> Annex Bool
-youtubeDlTo key url dest = ifM youtubeDlAllowed
-	( youtubeDlTo' key url dest
-	, return False
-	)
-
-youtubeDlTo' :: Key -> URLString -> FilePath -> Annex Bool
-youtubeDlTo' key url dest = do
+youtubeDlTo key url dest = do
 	res <- withTmpWorkDir key $ \workdir ->
 		youtubeDl url workdir >>= \case
 			Right (Just mediafile) -> do
@@ -147,14 +148,20 @@ htmlOnly url fallback a = withUrlOptions $ \uo ->
 		Just bs | isHtmlBs bs -> a
 		_ -> return fallback
 
+-- Check if youtube-dl supports downloading content from an url.
 youtubeDlSupported :: URLString -> Annex Bool
-youtubeDlSupported url = either (const False) id <$> youtubeDlCheck url
+youtubeDlSupported url = either (const False) id
+	<$> withUrlOptions (youtubeDlCheck' url)
 
 -- Check if youtube-dl can find media in an url.
+--
+-- While this does not download anything, it checks youtubeDlAllowed
+-- for symmetry with youtubeDl; the check should not succeed if the
+-- download won't succeed.
 youtubeDlCheck :: URLString -> Annex (Either String Bool)
 youtubeDlCheck url = ifM youtubeDlAllowed
 	( withUrlOptions $ youtubeDlCheck' url
-	, return (Right False)
+	, return $ Left youtubeDlNotAllowedMessage
 	)
 
 youtubeDlCheck' :: URLString -> UrlOptions -> Annex (Either String Bool)
@@ -168,10 +175,7 @@ youtubeDlCheck' url uo
 --
 -- (This is not always identical to the filename it uses when downloading.)
 youtubeDlFileName :: URLString -> Annex (Either String FilePath)
-youtubeDlFileName url = ifM youtubeDlAllowed
-	( withUrlOptions go
-	, return nomedia
-	)
+youtubeDlFileName url = withUrlOptions go
   where
 	go uo
 		| supportedScheme uo url = flip catchIO (pure . Left . show) $
@@ -182,10 +186,7 @@ youtubeDlFileName url = ifM youtubeDlAllowed
 -- Does not check if the url contains htmlOnly; use when that's already
 -- been verified.
 youtubeDlFileNameHtmlOnly :: URLString -> Annex (Either String FilePath)
-youtubeDlFileNameHtmlOnly url = ifM youtubeDlAllowed
-	( withUrlOptions $ youtubeDlFileNameHtmlOnly' url
-	, return (Left "no media in url") 
-	)
+youtubeDlFileNameHtmlOnly = withUrlOptions . youtubeDlFileNameHtmlOnly'
 
 youtubeDlFileNameHtmlOnly' :: URLString -> UrlOptions -> Annex (Either String FilePath)
 youtubeDlFileNameHtmlOnly' url uo

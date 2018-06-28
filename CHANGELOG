@@ -4,7 +4,10 @@ git-annex (6.20180627) UNRELEASED; urgency=medium
   * Support configuring remote.web.annex-cost and remote.bittorrent.annex-cost
   * info: Display uuid and description when a repository is identified by
     uuid, and for "here".
- 
+  * addurl: When security configuration prevents downloads with youtube-dl,
+    still check if the url is one that it supports, and fail downloading
+    it, instead of downloading the raw web page.
+
  -- Joey Hess <id@joeyh.name>  Fri, 22 Jun 2018 10:36:22 -0400
 
 git-annex (6.20180626) upstream; urgency=high
