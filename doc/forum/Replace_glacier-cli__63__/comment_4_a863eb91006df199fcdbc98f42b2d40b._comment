@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="abimelech@632162f535b3bbc90e3336b14ceef969c41c05a2"
+ nickname="abimelech"
+ avatar="http://cdn.libravatar.org/avatar/057e618fbf211a3733e9fef66030c0b9"
+ subject="I've been using amazonka-glacier to stream uploads to glacier"
+ date="2018-06-27T21:50:45Z"
+ content="""
+Could write a command-line app for it. I also have a couple open PRs against amazonka to fix the glacier support.
+"""]]
