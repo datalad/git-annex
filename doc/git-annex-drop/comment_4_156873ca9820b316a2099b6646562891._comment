@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~liori"
+ nickname="liori"
+ avatar="http://cdn.libravatar.org/avatar/e1d0fdc746b3d21bb147160d40815e37b257b9119774d21784939b2d3ba95a91"
+ subject="The meaning of &quot;safe&quot;"
+ date="2018-06-28T23:27:05Z"
+ content="""
+What does \"safe\" mean? Does `drop` just check if there are enough copies in other repositories in its local cache, does it contact remote repositories to check its own cache, or maybe even checks if the physical file in the remote repository has the right checksum?
+"""]]
