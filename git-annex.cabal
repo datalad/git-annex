@@ -301,7 +301,7 @@ source-repository head
 custom-setup
   Setup-Depends: base (>= 4.6), hslogger, split, unix-compat, process,
     filepath, exceptions, bytestring, directory, IfElse, data-default,
-    utf8-string, Cabal
+    utf8-string, transformers, Cabal
 
 Executable git-annex
   Main-Is: git-annex.hs
