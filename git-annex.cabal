@@ -291,10 +291,6 @@ Flag Benchmark
   Description: Enable benchmarking
   Default: False
 
-Flag network-uri
-  Description: Get Network.URI from the network-uri package
-  Default: True
-
 Flag Dbus
   Description: Enable dbus support
 
@@ -311,6 +307,8 @@ Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends:
    base (>= 4.6 && < 5.0),
+   network (>= 2.6.3.0),
+   network-uri (>= 2.6),
    optparse-applicative (>= 0.11.0), 
    containers (>= 0.5.0.0),
    exceptions (>= 0.6),
@@ -394,11 +392,6 @@ Executable git-annex
   -- (Only tested on Linux).
   if os(Linux)
     GHC-Options: -optl-Wl,--as-needed
-
-  if flag(network-uri)
-    Build-Depends: network-uri (>= 2.6), network (>= 2.6)
-  else
-    Build-Depends: network (< 2.6), network (>= 2.4)
 
   if (os(windows))
     Build-Depends:

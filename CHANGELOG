@@ -7,6 +7,7 @@ git-annex (6.20180627) UNRELEASED; urgency=medium
   * addurl: When security configuration prevents downloads with youtube-dl,
     still check if the url is one that it supports, and fail downloading
     it, instead of downloading the raw web page.
+  * git-annex.cabal: Fix network version.
 
  -- Joey Hess <id@joeyh.name>  Fri, 22 Jun 2018 10:36:22 -0400
 
