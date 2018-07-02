@@ -76,8 +76,9 @@ the S3 remote.
   only affect subseqent uploads.
 
 * `publicurl` - Configure the URL that is used to download files
-  from the bucket when they are available publically.
-  (This is automatically configured for Amazon S3 and the Internet Archive.)
+  from the bucket. Using this in combination with public=yes allows
+  git-annex to download files from the S3 remote without needing to
+  know the S3 credentials.
 
 * `partsize` - Amazon S3 only accepts uploads up to a certian file size,
   and storing larger files requires a multipart upload process.

@@ -20,8 +20,12 @@ Now, create the remote:
 	# git annex initremote pubs3 type=S3 encryption=none public=yes
 	initremote pubs3 (checking bucket) (creating bucket in US) ok
 
-The public=yes is the crtical part; this lets the public read the contents
-of the bucket. (This feature needs git-annex 5.20150617 or newer.)
+The public=yes makes git-annex set a S3 ACL so the files in the bucket
+are publically readable. For git-annex to be able to download files from
+that bucket without needing your AWS credentials, you then need to tell
+it the url of the bucket. Find that url, and run:
+
+	# git annex enableremote pubs3 publicurl=...
 
 In the above example, no encryption was used, but it will also work
 if you enable encryption=shared. Then files will be encrypted on S3, and

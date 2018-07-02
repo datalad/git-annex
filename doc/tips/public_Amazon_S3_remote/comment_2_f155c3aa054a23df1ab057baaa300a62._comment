@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-07-02T16:18:37Z"
+ content="""
+It seems to me that you need to tell git-annex the publicurl to use to
+download files from this S3 remote. That's the url to the top of the S3
+bucket. Run `git annex enableremote publics3 publicurl=...' and push,
+and it should then become available in every clone.
+
+The documentation for publicurl says it's enabled by default when
+public=yes, but AFAICS it's never actually done that. And I'm not sure I
+want to hardcode those urls into git-annex. I've updated the documentation
+instead.
+"""]]
