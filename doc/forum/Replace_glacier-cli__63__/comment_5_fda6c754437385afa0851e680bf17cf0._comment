@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2018-07-02T16:39:16Z"
+ content="""
+@abimelech, why don't you work up a branch that makes the glacier special
+remote be implemented with amazonka. If you want to start with a
+separate utility that git-annex runs, that would be ok, but I think that
+the goal should be for git-annex to end up using amazonka itself.
+
+Once that happens, switching the S3
+special remote from aws to amazonka would be a natural next step, which I'd
+be inclined to work on myself. Seems easier to take this path than an
+immediate leap to amazonka for everything.
+"""]]
