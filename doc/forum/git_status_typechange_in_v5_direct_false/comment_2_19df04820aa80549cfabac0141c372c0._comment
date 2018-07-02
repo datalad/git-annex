@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jasonb885"
+ avatar="http://cdn.libravatar.org/avatar/c7330f4da122c671b935fc1d58bb02b1"
+ subject="oh"
+ date="2018-07-02T01:08:37Z"
+ content="""
+To usefully use files committed to git annex with digiKam, I have to have every single file unlocked. So in this case, what git status is telling me isn't useful. I can grep-v this out, but I wasn't expecting to see it since it seems like normal usage for git annex. It seems git doesn't see it that way and thinks something special has happened. I was hoping I was doing something wrong and if I used some other approach, git would be silent about the typechange. Thanks.
+"""]]
