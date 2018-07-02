@@ -3,6 +3,5 @@
  subject="""comment 1"""
  date="2018-07-02T16:45:07Z"
  content="""
-Sounds like a problem on the branchable end. I'm trying to push this
-comment that way.
+<http://ikiwiki.info/bugs/git_test_receive_wrapper_fails/>
 """]]
