@@ -321,8 +321,8 @@ newStderrHandler errh = do
 
 -- Runs a P2P Proto action on a remote when it supports that,
 -- otherwise the fallback action.
-runProto :: Remote -> P2PSshConnectionPool -> a -> Annex a -> P2P.Proto a -> Annex (Maybe a)
-runProto r connpool bad fallback proto = Just <$>
+runProto :: Remote -> P2PSshConnectionPool -> Annex a -> Annex a -> P2P.Proto a -> Annex (Maybe a)
+runProto r connpool badproto fallback proto = Just <$>
 	(getP2PSshConnection r connpool >>= maybe fallback go)
   where
 	go c = do
@@ -333,7 +333,7 @@ runProto r connpool bad fallback proto = Just <$>
 				return res
 			-- Running the proto failed, either due to a protocol
 			-- error or a network error.
-			Nothing -> return bad
+			Nothing -> badproto
 
 runProtoConn :: P2P.Proto a -> P2PSshConnection -> Annex (P2PSshConnection, Maybe a)
 runProtoConn _ P2P.ClosedConnection = return (P2P.ClosedConnection, Nothing)

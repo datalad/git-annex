@@ -8,6 +8,8 @@ git-annex (6.20180627) UNRELEASED; urgency=medium
     still check if the url is one that it supports, and fail downloading
     it, instead of downloading the raw web page.
   * git-annex.cabal: Fix network version.
+  * Fix reversion introduced in version 6.20180316 that caused git-annex to
+    stop processing files when unable to contact a ssh remote.
 
  -- Joey Hess <id@joeyh.name>  Fri, 22 Jun 2018 10:36:22 -0400
 
