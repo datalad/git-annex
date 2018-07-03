@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2018-07-03T16:32:22Z"
+ content="""
+rsync is still used for some things, the rsync special remote and 
+communication with servers using older versions of git-annex.
+"""]]
