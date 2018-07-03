@@ -18,3 +18,5 @@ I strangely could not find out *where* exactly gpg is called in that way. All i 
 I was hoping this was something git-remote-gcrypt would be doing, but it's not: this is git-annex calling. Maybe some off-by-one conversion error somewhere?
 
 Thank you for your time... -- [[anarcat]]
+
+> [[closing|done]] --[[Joey]]
