@@ -42,9 +42,13 @@ In both repositories, run this command:
 This will print out a pairing code, like "11-incredible-tumeric",
 and prompt for you to enter the other repository's pairing code.
 
+So you have to get in contact with your friend to exchange codes.
+See the section below "how to exchange pairing codes" for tips on
+how to do that securely.
+
 Once the pairing codes are exchanged, the two repositories will be securely
 connected to one-another via Tor. Each will have a git remote, with a name
-like "peer1", which connects to the other repository.
+like "peer1", which connects to the other repository. 
 
 Then, you can run commands like `git annex sync peer1 --content` to sync
 with the paired repository.
@@ -52,6 +56,54 @@ with the paired repository.
 Pairing connects just two repositories, but you can repeat the process to
 pair with as many other repositories as you like, in order to build up
 larger networks of repositories.
+
+## example session
+
+Here's how it all looks:
+
+	$ git annex enable-tor
+	enable-tor
+	  You will be prompted for root's password
+	Password:
+	
+	  Tor hidden service is configured. Checking connection to it. This may take a few minutes.
+
+	  Tor hidden service is working.
+	ok
+	$ git annex remotedaemon
+	$ git annex p2p --pair
+	p2p pair peer1 (using Magic Wormhole) 
+	
+	This repository's pairing code is: 11-incredible-tumeric
+	
+	Enter the other repository's pairing code: 1-revenue-icecream
+	Exchanging pairing data...
+	Successfully exchanged pairing data. Connecting to peer1...
+	ok
+	$ git annex sync peer1 --content
+		commit 
+	On branch master
+	nothing to commit, working tree clean
+	ok
+	pull peer1 
+	remote: Enumerating objects: 10, done.
+	remote: Counting objects: 100% (10/10), done.
+	remote: Compressing objects: 100% (7/7), done.
+	remote: Total 8 (delta 0), reused 0 (delta 0)
+	Unpacking objects: 100% (8/8), done.
+	From tor-annex::wa3i6wgttmworwli.onion:5162
+	   452db22..a894c60  git-annex  -> peer1/git-annex
+	   c0ac431..44ca7f6  master     -> peer1/master
+	
+	Updating c0ac431..44ca7f6
+	Fast-forward
+	 amazing_file | 1 +
+	 1 file changed, 1 insertion(+)
+	 create mode 120000 amazing_file
+	ok
+	(merging peer1/git-annex into git-annex...)
+	get amazing_file (from peer1...) 
+	(checksum...) ok
 
 ## how to exchange pairing codes
 
