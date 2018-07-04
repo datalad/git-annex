@@ -34,6 +34,7 @@ import Utility.Path
 import System.IO
 import System.Exit
 import Control.Concurrent
+import Control.Concurrent.Async
 import Control.Exception
 import Data.Char
 import Data.List
@@ -112,21 +113,23 @@ sendFile f (CodeObserver observer) ps = do
 	-- Work around stupid stdout buffering behavior of python.
 	-- See https://github.com/warner/magic-wormhole/issues/108
 	environ <- addEntry "PYTHONUNBUFFERED" "1" <$> getEnvironment
-	runWormHoleProcess p { env = Just environ} $ \_hin hout ->
-		findcode =<< words <$> hGetContents hout
+	runWormHoleProcess p { env = Just environ} $ \_hin hout herr -> do
+		(inout, inerr) <- findcode hout `concurrently` findcode herr
+		return (inout || inerr)
   where
 	p = wormHoleProcess (Param "send" : ps ++ [File f])
-	findcode [] = return False
-	findcode (w:ws) = case mkCode w of
+	findcode h = findcode' =<< words <$> hGetContents h
+	findcode' [] = return False
+	findcode' (w:ws) = case mkCode w of
 		Just code -> do
-			putMVar observer code
+			_ <- tryPutMVar observer code
 			return True
-		Nothing -> findcode ws
+		Nothing -> findcode' ws
 
 -- | Receives a file. Once the receive is under way, the Code will be
 -- read from the CodeProducer, and fed to wormhole on stdin.
 receiveFile :: FilePath -> CodeProducer -> WormHoleParams -> IO Bool
-receiveFile f (CodeProducer producer) ps = runWormHoleProcess p $ \hin _hout -> do
+receiveFile f (CodeProducer producer) ps = runWormHoleProcess p $ \hin _hout _herr -> do
 	Code c <- readMVar producer
 	hPutStrLn hin c
 	hFlush hin
@@ -142,25 +145,27 @@ receiveFile f (CodeProducer producer) ps = runWormHoleProcess p $ \hin _hout -> 
 wormHoleProcess :: WormHoleParams -> CreateProcess
 wormHoleProcess = proc "wormhole" . toCommand
 
-runWormHoleProcess :: CreateProcess -> (Handle -> Handle -> IO Bool) ->  IO Bool
+runWormHoleProcess :: CreateProcess -> (Handle -> Handle -> Handle -> IO Bool) ->  IO Bool
 runWormHoleProcess p consumer = 
 	bracketOnError setup (\v -> cleanup v <&&> return False) go
   where
 	setup = do
-		(Just hin, Just hout, Nothing, pid)
+		(Just hin, Just hout, Just herr, pid)
 			<- createProcess p
 				{ std_in = CreatePipe
 				, std_out = CreatePipe
+				, std_err = CreatePipe
 				}
-		return (hin, hout, pid)
-	cleanup (hin, hout, pid) = do
+		return (hin, hout, herr, pid)
+	cleanup (hin, hout, herr, pid) = do
 		r <- waitForProcess pid
 		hClose hin
 		hClose hout
+		hClose herr
 		return $ case r of
 			ExitSuccess -> True
 			ExitFailure _ -> False
-	go h@(hin, hout, _) = consumer hin hout <&&> cleanup h
+	go h@(hin, hout, herr, _) = consumer hin hout herr <&&> cleanup h
 
 isInstalled :: IO Bool
 isInstalled = inPath "wormhole"

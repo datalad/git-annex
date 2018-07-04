@@ -10,6 +10,8 @@ git-annex (6.20180627) UNRELEASED; urgency=medium
   * git-annex.cabal: Fix network version.
   * Fix reversion introduced in version 6.20180316 that caused git-annex to
     stop processing files when unable to contact a ssh remote.
+  * p2p --pair: Fix interception of the magic-wormhole pairing code,
+    which since 0.8.2 it has sent to stderr rather than stdout.
 
  -- Joey Hess <id@joeyh.name>  Fri, 22 Jun 2018 10:36:22 -0400
 
