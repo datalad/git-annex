@@ -14,6 +14,9 @@ You also need to install [Magic Wormhole](https://github.com/warner/magic-wormho
 
 	sudo apt-get install magic-wormhole
 
+Important: You need git-annex version 6.20180705. Older versions of git-annex
+unfortunately had a bug that prevents this process from working correctly.
+
 ## pairing two repositories
 
 You have two git-annex repositories on different computers, and want to

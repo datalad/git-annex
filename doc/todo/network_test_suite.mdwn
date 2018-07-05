@@ -1,0 +1,28 @@
+`git annex test` is not allowed to make network connections. (It does do some
+mocking to eg, test ssh special remotes without actually using ssh.)
+
+`git annex testremote` is allowed to use the network, but only when the
+user has set up a remote to test. Some parts of git-annex involve network
+connections, but not as part of accessing a remote, or are specific to a
+particular special remote. There outght to be a test suite for that stuff
+as well.
+
+A motivating example is `git annex p2p --pair`, which was 
+[[broken for years due to lack of testing|apparent_regression_in_git_annex_p2p_--pair_usage_of_magic_wormhole_invocaction]]. 
+Fully testing that would involve setting up tor hidden services which is far
+too extreme for a test suite (and needs root), but it should at least be
+possible to test the interface to magic-wormhole, allowing it to make a
+connection to the wormhole server.
+
+More examples: 
+
+* git-annex multicast (would need two hosts on a lan ideally but
+  could at least try to multicast back to the same host)
+* git-annex addurl and git-annex importfeed with http urls.
+  And testing the various security configs that affect them.
+
+This could be done as a new command or a flag to `git annex test`.
+In any case, the new test suite would need to be run somewhere;
+running it on at least some of the autobuilders might be a good way.
+
+--[[Joey]] 

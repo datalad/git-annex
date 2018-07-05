@@ -6,6 +6,10 @@ install [Tor](https://torproject.org/) and
 [Magic Wormhole](https://github.com/warner/magic-wormhole), and then both
 follow these steps to connect your repositories.
 
+Important: You and your friend need git-annex version 6.20180705. Older
+versions of git-annex unfortunately had a bug that prevents this process
+from working correctly.
+
 Start by opening up your git annex webapp.
 
 [[!img local_pairing_walkthrough/addrepository.png alt="Add another repository button"]]

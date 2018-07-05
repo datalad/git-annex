@@ -32,6 +32,10 @@ services.
   the repositories, so you will need it installed on both computers that are
   being paired.
 
+  This feature was present in a broken form in git-annex versions
+  before version 6.20180705. Make sure that a new enough git-annex
+  is installed on both computers that are being paired.
+
 * `--gen-addresses`
 
   Generates addresses that can be used to access this git-annex repository

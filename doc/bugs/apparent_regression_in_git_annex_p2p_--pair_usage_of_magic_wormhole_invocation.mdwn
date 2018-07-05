@@ -70,3 +70,5 @@ Yes, but not `p2p --pair`.
 `p2p --link` works, including syncing, no problems with the remote daemon itself.
 
 ... and I wouldn't call it luck, i both trust and rely on git annex =)
+
+> [[fixed|done]]
