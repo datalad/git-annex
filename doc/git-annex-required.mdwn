@@ -18,11 +18,10 @@ For example:
 Without an expression, displays the current required content setting
 of the repository.
 
-While [[git-annex-wanted]] is just a preference,
-[[git-annex-required]] designates content that should really not be
-removed. For example a file that is `wanted` can be removed with 
-`git annex drop`, but if that file is `required`, it would need to be
-removed with `git annex drop --force`. 
+While [[git-annex-wanted]](1) is just a preference, this designates content
+that should really not be removed. For example a file that is `wanted` can
+be removed with `git annex drop`, but if that file is `required`, it would
+need to be removed with `git annex drop --force`. 
 
 Also, `git-annex fsck` will warn about required contents that are not
 present.

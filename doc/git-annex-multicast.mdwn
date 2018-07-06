@@ -29,7 +29,7 @@ The uftp program is used for multicast.
   When no files are specified, all annexed files in the current directory
   and subdirectories are sent.
 
-  The [[git-annex-matching-options]] can be used to control which files to
+  The [[git-annex-matching-options]](1) can be used to control which files to
   send. For example:
 
 	git annex multicast send . --not --copies 2

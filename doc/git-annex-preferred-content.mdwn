@@ -159,7 +159,8 @@ elsewhere to allow removing it).
 * `standard`
 
   git-annex comes with some built-in preferred content expressions, that
-  can be used with repositories that are in some [[preferred content/standard groups/]].
+  can be used with repositories that are in some standard groups
+  such as "client" and "transfer".
 
   When a repository is in exactly one such group, you can use the "standard"
   keyword in its preferred content expression, to match whatever content
@@ -263,6 +264,8 @@ that git annex get --auto will want to get, and git annex find --want-drop --in
 [[git-annex-wanted]](1)
 
 <https://git-annex.branchable.com/preferred_content/>
+
+<https://git-annex.branchable.com/preferred_content/standard_groups/>
 
 # AUTHOR
 
