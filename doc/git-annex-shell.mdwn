@@ -190,14 +190,14 @@ git-config(1). For example:
     git config receive.denyDeletes true
     git config receive.denyNonFastForwards true
 
-This doesn't make the repository completely safe: files can actually
-be removed in a commit, but they should still be available in the git
-history. Changes to `git-annex` branch, however, can negatively impact
-git-annex's location tracking information and might cause data loss if
-not used carefully. To work around this problem, more complex hooks
-are required, see for example
-[[todo/git-hook_to_sanity-check_git-annex_branch_pushes]] or the
-`update-paranoid` hook in the git source distribution.
+With this configuration, git commits can still remove files, 
+but they will still be available in the git history and git-annex will
+retain their contents. Changes to `git-annex` branch, however, can
+negatively impact git-annex's location tracking information and might
+cause data loss. To work around this problem, more complex hooks
+are required, see for example the `update-paranoid` hook in the git
+source distribution.
+
 
 # SEE ALSO
 
