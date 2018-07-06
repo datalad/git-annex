@@ -168,12 +168,15 @@ option:
 To further restrict git-annex-shell to a particular repository, 
 and fully lock it down to read-only mode:
 
-	command="GIT_ANNEX_SHELL_DIRECTORY=/srv/annex GIT_ANNEX_SHELL_LIMITED=true GIT_ANNEX_SHELL_READONLY=true git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\"",no-agent-forwarding,no-port-forwarding,no-X11-forwarding ssh-rsa AAAAB3NzaC1y[...] user@example.com
+	command="GIT_ANNEX_SHELL_DIRECTORY=/srv/annex GIT_ANNEX_SHELL_LIMITED=true GIT_ANNEX_SHELL_READONLY=true git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\"",restrict ssh-rsa AAAAB3NzaC1y[...] user@example.com
 
 Obviously, `ssh-rsa AAAAB3NzaC1y[...] user@example.com` needs to
 replaced with your SSH key. The above also assumes `git-annex-shell`
 is available in your `$PATH`, use an absolute path if it is not the
-case.
+case. Also note how the above uses the `restrict` option instead of an
+explicit list of functionality to disallow. This only works in certain
+OpenSSH releases, starting from 7.1p2.
+
 
 # SEE ALSO
 
