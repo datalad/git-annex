@@ -177,6 +177,27 @@ case. Also note how the above uses the `restrict` option instead of an
 explicit list of functionality to disallow. This only works in certain
 OpenSSH releases, starting from 7.1p2.
 
+To only allow adding new objects to the repository, the
+`GIT_ANNEX_SHELL_APPENDONLY` variable can be used as well:
+
+    command="GIT_ANNEX_SHELL_DIRECTORY=/srv/annex GIT_ANNEX_SHELL_APPENDONLY=true git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\"",restrict ssh-rsa AAAAB3NzaC1y[...] user@example.com
+
+This will not keep an attacker from destroying the git history, as
+explained above. For this you might want to disallow certain
+operations, like branch deletion and force-push, with options from
+git-config(1). For example:
+
+    git config receive.denyDeletes true
+    git config receive.denyNonFastForwards true
+
+This doesn't make the repository completely safe: files can actually
+be removed in a commit, but they should still be available in the git
+history. Changes to `git-annex` branch, however, can negatively impact
+git-annex's location tracking information and might cause data loss if
+not used carefully. To work around this problem, more complex hooks
+are required, see for example
+[[todo/git-hook_to_sanity-check_git-annex_branch_pushes]] or the
+`update-paranoid` hook in the git source distribution.
 
 # SEE ALSO
 
