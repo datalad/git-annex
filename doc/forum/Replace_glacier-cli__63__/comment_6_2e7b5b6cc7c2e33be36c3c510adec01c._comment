@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="abimelech@632162f535b3bbc90e3336b14ceef969c41c05a2"
+ nickname="abimelech"
+ avatar="http://cdn.libravatar.org/avatar/057e618fbf211a3733e9fef66030c0b9"
+ subject="comment 6"
+ date="2018-07-07T00:09:48Z"
+ content="""
+I've never used git-annex, so I'm not particularly enthusiastic about developing for it. If someone could describe what glacier actions are needed I could maybe code something up.
+In any case, wouldn't we want to wait until a version of amazonka with functioning glacier support is released? Unless you'd want to add my git fork of the repo as a dependency...
+"""]]
