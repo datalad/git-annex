@@ -1,0 +1,77 @@
+### Please describe the problem.
+
+`git fsck` gives many duplicateEntries errors.  One of my repository's two clones is using an adjusted branch on MacOS.
+
+It's hard to say exactly what created this problem, because you don't see the error immediately after it happens.  But I believe all I did was add some files to the repo with the adjusted branch, run `git annex add` (I think), and git annex sync.  I believe this is all I did because when I have a remote that is apparently running `git fsck` and is rejecting pushes, and I think I'd pushed to this remote before I did the above.
+
+```
+$ git fsck
+Checking object directories: 100% (256/256), done.
+error in tree 85dfa00afd3a57a2981dfe9c0bf489288a3822ae: duplicateEntries: contains duplicate file entries
+error in tree b30abe06ad503de3515269b657330ae6f4bef059: duplicateEntries: contains duplicate file entries
+error in tree 9a3143961333528bfe0a8997413f3952a9892b90: duplicateEntries: contains duplicate file entries
+error in tree c544533d9f4d802574ca3024249ae8171ebc7906: duplicateEntries: contains duplicate file entries
+error in tree a906491c49fd46cc48a8a8ad2e5c059b9909418d: duplicateEntries: contains duplicate file entries
+error in tree 45e22b842e07260b464306fd54daaddb00fe8689: duplicateEntries: contains duplicate file entries
+error in tree 14a7cd8bc15738a61800485f63664d598fa5e100: duplicateEntries: contains duplicate file entries
+[...]
+```
+
+What's particularly interesting is that the duplicate objects appear to be the same blobs.
+
+```
+$ git ls-tree 7171d50e236e541b03faacb3b7113858a3640c4c
+120000 blob 52f9ac67c8e73aa22057ecb5a195ebc51f0df5ea	General Clarification.docx
+120000 blob 52f9ac67c8e73aa22057ecb5a195ebc51f0df5ea	General Clarification.docx
+120000 blob 19b187309ddedd120791d3b9e0779f8ec7a21c9e	Mockumentary_Classic Story Synopses.doc
+120000 blob 19b187309ddedd120791d3b9e0779f8ec7a21c9e	Mockumentary_Classic Story Synopses.doc
+120000 blob 9c3d92e749e34dd1ec43a2c0b36425ae1ff7b01f	Worksheet 2018.pdf
+120000 blob 9c3d92e749e34dd1ec43a2c0b36425ae1ff7b01f	Worksheet 2018.pdf
+120000 blob 8445929b506f916f885018bb5a4a170f3901b7fb	Worksheet 2018.xls
+120000 blob 8445929b506f916f885018bb5a4a170f3901b7fb	Worksheet 2018.xls
+```
+
+We can check systematically:
+
+```
+$ git fsck  |& grep duplicateEntries | cut -f 4 -d ' ' | xargs git ls-tree | uniq -u
+(No output)
+```
+
+I see two previous bugs about this but and an open question for more information.
+
+https://git-annex.branchable.com/bugs/git-annex_wants_to_repair_because_of_duplicateEntries_in_git_fsck/
+https://git-annex.branchable.com/forum/how_to_disaster_recovery/
+
+### What steps will reproduce the problem?
+
+Don't really know, sadly.
+
+### What version of git-annex are you using? On what operating system?
+
+Both machines show the following:
+
+```
+$ git --version
+git version 2.18.0
+
+$ git annex version
+git-annex version: 6.20180626
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV FsEvents ConcurrentOutput TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.19 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.2 feed-1.0.0.0 ghc-8.2.2 http-client-0.5.13 persistent-sqlite-2.6.4 torrent-10000.1.1 uuid-1.3.13 yesod-1.4.5
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: darwin x86_64
+supported repository versions: 3 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+```
+
+However I just recently ran brew update on the two machines.  I don't know what versions of git and git-annex they were running before.
+
+### Please provide any additional information below.
+
+I'm happy to help debug this if I can.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I <3 git-annex.
