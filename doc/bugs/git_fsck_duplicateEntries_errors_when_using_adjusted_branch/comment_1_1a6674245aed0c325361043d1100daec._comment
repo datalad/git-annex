@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="justin.lebar@7a36fcafc322d9a381e89f08ab6289033c6dde91"
+ nickname="justin.lebar"
+ avatar="http://cdn.libravatar.org/avatar/9fca4b61a1ab555f231851e7543f9a3e"
+ subject="comment 1"
+ date="2018-07-08T19:53:08Z"
+ content="""
+OK, that systematic check for duplicates is not right.  A better check is, how many blobs are not duplicated, and how many are duplicated, in the `git ls-tree` output?
+
+    # Not duplicated blobs
+    $ git fsck  |& grep duplicateEntries | cut -f 4 -d ' ' | sed -e 's/://' | xargs -n1 git ls-tree | grep -v ' tree ' | uniq -u | wc -l
+    324
+
+    # Duplicated blobs
+    $ git fsck  |& grep duplicateEntries | cut -f 4 -d ' ' | sed -e 's/://' | xargs -n1 git ls-tree | grep -v ' tree ' | uniq -u | wc -l
+    416
+"""]]
