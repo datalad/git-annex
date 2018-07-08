@@ -34,8 +34,8 @@ We can check systematically:
 
 I see two previous bugs about this but and an open question for more information.
 
-https://git-annex.branchable.com/bugs/git-annex_wants_to_repair_because_of_duplicateEntries_in_git_fsck/
-https://git-annex.branchable.com/forum/how_to_disaster_recovery/
+ * <https://git-annex.branchable.com/bugs/git-annex_wants_to_repair_because_of_duplicateEntries_in_git_fsck/>
+ * <https://git-annex.branchable.com/forum/how_to_disaster_recovery/>
 
 ### What steps will reproduce the problem?
 
