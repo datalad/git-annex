@@ -1,0 +1,16 @@
+Hi,
+
+I'm trying to update the script provided in topic "Decrypting files in special remotes without git-annex" to add support for different MAC algorithms, chunks and sharedpubkey encryption scheme.
+
+I can already decrypt the files using my GPG keys directly, and I'm trying to make the key lookup function to work.
+
+I have difficulties to parse git-annex source code, I cannot find the exact way the special remote keys are computed. I used the script from "yibe" as a starting point (refer to comment #1) because it is in pure bash I can understand:
+
+- From the doc, sharedpubkey cipher is unencrypted in the remote, it is only base64-ed and limited to 256 characters. So I added:
+cipher="$(echo -n "$cipher" | base64 -d | head -c 256)" like it is done for the "shared" encryption scheme.
+
+- From Yibe's script, chunks keys have an extra "-S<chunk_max_size>-C<chunk_number>--" values inside the annex key. But I doubt this part. I tried with and without it: no success.
+
+- Yibe's script handles MAC algorithms correctly. I see no issue there.
+
+In the end, I cannot get the right remote keys for my test file. Question: is there a documentation somewhere about all this encoding chain?
