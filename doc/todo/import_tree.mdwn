@@ -141,7 +141,7 @@ An atomic move could at least narrow the race significantly, eg:
    conflict has to be resolved. Otherwise, delete $tmp2
 4. atomic move $tmp1 to $file
 
-The remaining race is that, if the file is open for write at the same
+A remaining race is that, if the file is open for write at the same
 time it's renamed, the write might happen after the content identifer
 is checked, and then whatever is written to it will be lost. 
 
@@ -152,6 +152,11 @@ that it appended to the file got lost:
 	perl -e 'open (OUT, ">>foo") || die "$!"; while (<>) { print OUT $_ }'
 
 Since this is acceptable in git, I suppose we can accept it here too..
+
+Another remaining race is if the file gets recreated after it's moved out
+of the way. If the atomic move refuses to overwrite existing files, that race
+would be detected by it failing. renameat(2) with `RENAME_NOREPLACE` can do that, 
+but probably many special remote interfaces don't provide a way to do that.
 
 ----
 
