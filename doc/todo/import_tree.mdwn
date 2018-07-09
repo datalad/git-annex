@@ -104,27 +104,54 @@ Do remotes need to tell git-annex about the properties of content
 identifiers they use, or does git-annex assume a minimum bar, and pay the
 price with some unncessary transfers of renamed files etc?
 
-----
-
 git-annex will need a way to get the content identifiers of files
 that it stores on the remote when exporting a tree to it, so it can later
 know if those files have changed.
 
-There's a race here, since a file could be modified on the remote while
-it's being exported, and if the remote then uses its mtime in the content
-identifier, the modification would never be noticed.
-(Does git have this same race when updating the work tree after a merge?)
+----
 
-Some remotes could avoid that race, if they sent back the content
-identifier in response to the TRANSFEREXPORT message, and kept the file
-quarentined until they had generated the content identifier. Other remotes
-probably can't avoid the race. Is it worth changing the TRANSFEREXPORT
-interface to include the content identifier in the reply if it doesn't
-always avoid the race?
+## race conditions TODO
+
+There's a race here, since a file could be modified on the remote while
+it's being exported, and if the remote then uses the mtime of the modified
+file in the content identifier, the modification would never be noticed by
+imports. 
+
+To fix this race, we need an atomic move operation on the remote. Upload
+the file to a temp file, then get its content identifier, and then move it
+from the temp file to its final location.
 
 There's also a race where a file gets changed on the remote after an
-import tree, and an export then overwrites it with something else. This
-race seems impossible to avoid. Does git have the equivilant race?
+import tree, and an export then overwrites it with something else.
+
+One solution would be to only allow one of importtree or exporttree
+to a given remote. This reduces the use cases a lot though, and perhaps
+so far that the import tree feature is not worth building. The adb
+special remote needs both.
+
+Really fixing this race needs locking or an atomic operation. Locking seems
+unlikely to be a portable enough solution.
+
+An atomic move could at least narrow the race significantly, eg:
+
+1. upload new version of $file to $tmp1
+2. atomic move current $file to $tmp2
+3. Get content identifier of $tmp2, check if it's what was expected to
+   be. If not, $file was modified after the last import tree, and that
+   conflict has to be resolved. Otherwise, delete $tmp2
+4. atomic move $tmp1 to $file
+
+The remaining race is that, if the file is open for write at the same
+time it's renamed, the write might happen after the content identifer
+is checked, and then whatever is written to it will be lost. 
+
+But: Git worktree update has the same race condition. Verified with
+this perl oneliner, run in a worktree, followed by a git pull. The lines
+that it appended to the file got lost:
+
+	perl -e 'open (OUT, ">>foo") || die "$!"; while (<>) { print OUT $_ }'
+
+Since this is acceptable in git, I suppose we can accept it here too..
 
 ----
 
