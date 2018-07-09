@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 4"
+ date="2018-07-09T13:44:15Z"
+ content="""
+Yes, see Joey's notes at [smudge](http://git-annex.branchable.com/todo/smudge/) *“When git add is run with a large file, it allocates memory for the whole file content, even though it's only going to stream it to the clean filter. My proposed smudge/clean interface patch also fixed this problem, since it made git not read the file at all.”* I believe that `git annex add` will avoid this issue as you have seen.
+
+See also [unlocked files](http://git-annex.branchable.com/tips/unlocked_files/):
+
+   - `git config annex.addunlocked true` tells git annex to add all files as unlocked
+   - `git config annex.thin true` tells git annex to only keep one copy of unlocked files by using hardlinks
+
+I believe both of these settings only have an effect on a V6 repo. I assume for your desires you will want to use both settings. Did you try setting both of these on your V6 repo then doing a `git annex add`?
+
+The unlocked page and smudge page also talk about various limitations of the thin setting, for example from the smudge page: *“…with annex.thin no attempt is made to protect the object from being modified. If a user wants to protect object contents from modification, they should use git annex add, not git add, or they can git annex lock after adding, or not enable annex.thin.”*
+"""]]
