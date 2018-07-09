@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 1"
+ date="2018-07-09T01:25:22Z"
+ content="""
+[internals](https://git-annex.branchable.com/internals/) is the place to start for all of this documentation.
+
+I believe that the special remote key names (written by Joey) are the same as the keys you see in `.git` which are documented here: 
+[key format](https://git-annex.branchable.com/internals/key_format/), you can see this is independent of encryption scheme, and [hashing](https://git-annex.branchable.com/internals/hashing/) talks about the nested directories structure, which you would also need to know.
+
+Some more context on the [Decrypting files in special remotes without git-annex](https://git-annex.branchable.com/tips/Decrypting_files_in_special_remotes_without_git-annex/) tip is at the related forum post [Future proofing / disaster recovery with an encrypted special remote](http://git-annex.branchable.com/forum/Future_proofing___47___disaster_recovery_with_an_encrypted_special_remote/). Encryption documentation is at [encryption](https://git-annex.branchable.com/encryption/).
+
+But, since you don't actually want to experiment with how keys are stored, and you don't mind relying on `git-annex` I think an easier way to experiment with different encryption schemes would be to [implement your own special remote](https://git-annex.branchable.com/special_remotes/external/), that page contains an `example.sh` code block which is well documented. With `example.sh` you would just need to change `doretrieve` to decrypt before retrieving and `dostore` encrypt before storing.
+
+
+"""]]
