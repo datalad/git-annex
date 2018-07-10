@@ -160,6 +160,7 @@ linuxstandalone:
 	
 	$(MAKE) install-mans DESTDIR="$(LINUXSTANDALONE_DEST)"
 
+	sha1sum git-annex > "$(LINUXSTANDALONE_DEST)/buildid"
 	cd tmp/git-annex.linux && find . -type f > git-annex.MANIFEST
 	cd tmp/git-annex.linux && find . -type l >> git-annex.MANIFEST
 	cd tmp && tar c git-annex.linux | gzip -9 --rsyncable > git-annex-standalone-$(shell dpkg --print-architecture).tar.gz
