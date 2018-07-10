@@ -126,6 +126,13 @@ unset LD_PRELOAD
 ORIG_LOCPATH="$LOCPATH"
 export ORIG_LOCPATH
 LOCPATH="$HOME/.cache/git-annex/locales/$(echo "$base" | tr / _ )"
+if ! mkdir -p "$LOCPATH" 2>/dev/null; then
+	tlocpath=$(mktemp -d -p /tmp annexlocalesXXXXXXXXX 2>/dev/null || true)
+	if [ -z "$tlocpath" ]; then
+		tlocpath="/tmp/annexlocales.$$"
+	fi
+	LOCPATH="$tlocpath/locales/$(echo "$base" | tr / _ )"
+fi
 export LOCPATH
 
 # Clean up locale caches when their standalone bundle no longer exists.
