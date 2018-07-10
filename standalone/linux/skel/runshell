@@ -132,7 +132,7 @@ export LOCPATH
 for localecache in $HOME/.cache/git-annex/locales/*; do
 	cachebase=$(cat "$localecache/base" 2>/dev/null || true)
 	if [ ! -d "$cachebase" ] || ! cmp "$localecache/buildid" "$cachebase/buildid" >/dev/null ; then
-		rm -rf "$localecache"
+		rm -rf "$localecache" 2>&1 || true
 	fi
 done
 
@@ -140,7 +140,10 @@ done
 if [ -e "$LOCPATH/buildid" ] && ! cmp "$LOCPATH/buildid" "$base/buildid" >/dev/null ; then
 	rm -rf "$LOCPATH"
 fi
-mkdir -p "$LOCPATH"
+if ! mkdir -p "$LOCPATH"; then
+	echo "Unable to write to $LOCPATH; can't continue!" >&2
+	exit 1
+fi
 echo "$base" > "$LOCPATH/base"
 cp "$base/buildid" "$LOCPATH/buildid"
 
