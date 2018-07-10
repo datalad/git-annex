@@ -17,7 +17,7 @@ import Control.Monad
 import System.PosixCompat.Types
 import System.PosixCompat.Files
 #ifndef mingw32_HOST_OS
-import System.Posix.Files
+import System.Posix.Files (symbolicLinkMode)
 import Control.Monad.IO.Class (liftIO)
 #endif
 import Control.Monad.IO.Class (MonadIO)
