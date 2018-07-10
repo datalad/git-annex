@@ -14,7 +14,8 @@ git-annex (6.20180627) UNRELEASED; urgency=medium
     which since 0.8.2 it has sent to stderr rather than stdout.
   * linux standalone: Generate locale files in ~/.cache/git-annex/locales/
     so they're available even when the standalone tarball is installed
-    in a directory owned by root.
+    in a directory owned by root. Note that this prevents using the
+    standalone bundle in environments where HOME is not writable.
 
  -- Joey Hess <id@joeyh.name>  Fri, 22 Jun 2018 10:36:22 -0400
 
