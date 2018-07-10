@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 3"
+ date="2018-07-10T18:45:37Z"
+ content="""
+I don't believe the `git` team has provided any way for `git annex` to hook into the `status` command to provide different information.
+
+You can always do `git annex status` if you want to know what `git annex` thinks about the current situation.
+"""]]
