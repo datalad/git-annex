@@ -93,15 +93,15 @@ checkUnused refspec = chain 0
 		v' <- a v
 		chain v' as
 
-checkRemoteUnused :: String -> RefSpec -> CommandPerform
-checkRemoteUnused name refspec = go =<< fromJust <$> Remote.byNameWithUUID (Just name)
+checkRemoteUnused :: RemoteName -> RefSpec -> CommandPerform
+checkRemoteUnused remotename refspec = go =<< Remote.nameToUUID remotename
   where
-	go r = do
+	go u = do
 		showAction "checking for unused data"
-		_ <- check "" (remoteUnusedMsg r) (remoteunused r) 0
+		r <- Remote.byUUID u
+		_ <- check "" (remoteUnusedMsg r remotename) (remoteunused u) 0
 		next $ return True
-	remoteunused r = excludeReferenced refspec
-		<=< loggedKeysFor $ Remote.uuid r
+	remoteunused u = excludeReferenced refspec =<< loggedKeysFor u
 
 check :: FilePath -> ([(Int, Key)] -> String) -> Annex [Key] -> Int -> Annex Int
 check file msg a c = do
@@ -142,16 +142,14 @@ unusedMsg' u mheader mtrailer = unlines $
 	["(To see where data was previously used, try: git log --stat -S'KEY')"] ++
 	mtrailer
 
-remoteUnusedMsg :: Remote -> [(Int, Key)] -> String
-remoteUnusedMsg r u = unusedMsg' u
-	["Some annexed data on " ++ name ++ " is not used by any files:"]
-	[dropMsg $ Just r]
-  where
-	name = Remote.name r 
+remoteUnusedMsg :: Maybe Remote -> RemoteName -> [(Int, Key)] -> String
+remoteUnusedMsg mr remotename u = unusedMsg' u
+	["Some annexed data on " ++ remotename ++ " is not used by any files:"]
+	(if isJust mr then [dropMsg (Just remotename)] else [])
 
-dropMsg :: Maybe Remote -> String
+dropMsg :: Maybe RemoteName -> String
 dropMsg Nothing = dropMsg' ""
-dropMsg (Just r) = dropMsg' $ " --from " ++ Remote.name r
+dropMsg (Just remotename) = dropMsg' $ " --from " ++ remotename
 dropMsg' :: String -> String
 dropMsg' s = "\nTo remove unwanted data: git-annex dropunused" ++ s ++ " NUMBER\n"
 

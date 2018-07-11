@@ -7,3 +7,8 @@ git annex unused supports an --from option to select a specific remote to find u
     [...]
 
 As git annex at least for newly-deleted files knows when those are stored in the given repository, git annex should at least find those.
+
+> [[done]], made it suppose the uuid or description.
+> 
+> Of course, `dropunused --from` still needs the name of a remote, so this
+> is only useful for querying.. --[[Joey]]

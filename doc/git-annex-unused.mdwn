@@ -24,9 +24,12 @@ For example, to move all unused data to origin:
 
   Only show unused temp and bad files.
 
-* `--from=remote`
+* `--from=repository`
 
-  Check for unused data that is located on a remote.
+  Check for unused data that is located in a repository.
+
+  The repository should be specified using the name of a configured remote,
+  or the UUID or description of a repository.
 
 * `--used-refspec=+ref:-ref`
 
