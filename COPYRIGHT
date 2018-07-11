@@ -27,7 +27,7 @@ License: BSD-2-clause
 Files: Utility/HttpManagerRestricted.hs
 Copyright: 2018 Joey Hess <id@joeyh.name>
            2013 Michael Snoyman
-License: MIT
+License: Expat
 
 Files: Utility/*
 Copyright: 2012-2018 Joey Hess <id@joeyh.name>
@@ -53,10 +53,10 @@ License: GPL-3+
 Files: static/jquery*
 Copyright: © 2005-2011 by John Resig, Branden Aaron & Jörn Zaefferer
            © 2011 The Dojo Foundation
-License: MIT or GPL-2
+License: Expat or GPL-2
  The full text of version 2 of the GPL is distributed in
- /usr/share/common-licenses/GPL-2 on Debian systems. The text of the MIT
- license is in the MIT section below.
+ /usr/share/common-licenses/GPL-2 on Debian systems. The text of the Expat
+ license is in the Expat section below.
 
 Files: static/*/bootstrap* static/*/glyphicons-halflings*
 Copyright: 2012-2014 Twitter, Inc.
@@ -140,7 +140,7 @@ License: BSD-2-clause
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  SUCH DAMAGE.
  
-License: MIT
+License: Expat
  Permission is hereby granted, free of charge, to any person obtaining
  a copy of this software and associated documentation files (the
  "Software"), to deal in the Software without restriction, including
