@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="oliv5"
+ avatar="http://cdn.libravatar.org/avatar/d7f0d33c51583bbd8578e4f1f9f8cf4b"
+ subject="comment 9"
+ date="2018-07-15T23:59:42Z"
+ content="""
+I'm trying to add support for the sharedpubkey encryption scheme, and while decrypting the files is straight-forward, I cannot get the \"lookup_key\" function to work with this scheme. I tried the following:
+
+    # Pull out MAC cipher from beginning of cipher
+    if [ \"$encryption\" = \"hybrid\" ] ; then
+        cipher=\"$(echo -n \"$cipher\" | head  -c 256 )\"
+    elif [ \"$encryption\" = \"shared\" ] ; then
+        cipher=\"$(echo -n \"$cipher\" | base64 -d | tr -d '\n' | head  -c 256 )\"
+    elif [ \"$encryption\" = \"pubkey\" ] ; then
+        # pubkey cipher includes a trailing newline which was stripped in
+        # decrypt_cipher process substitution step above
+        IFS= read -rd '' cipher < <( printf \"$cipher\n\" )
+    elif [ \"$encryption\" = \"sharedpubkey\" ] ; then
+        cipher=\"$(echo -n \"$cipher\" | base64 -d | tr -d '\n' | head -c 256)\"
+    fi
+
+as well as many other variations (full cipher, no base 64 etc...) without success. The cipher is said to be unencrypted, so I guess it is base-64 encoded only. Would it be possible that an extra character has been added to the cipher like in the \"pubkey\" encryption scheme ?
+
+My tests are done in a directory special remote, sharedpubkey encryption, no chunks, a single test file in the repository.
+"""]]
