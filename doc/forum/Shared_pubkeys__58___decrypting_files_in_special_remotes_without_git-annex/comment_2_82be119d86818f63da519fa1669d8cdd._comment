@@ -1,0 +1,82 @@
+[[!comment format=mdwn
+ username="oliv5"
+ avatar="http://cdn.libravatar.org/avatar/d7f0d33c51583bbd8578e4f1f9f8cf4b"
+ subject="comment 2"
+ date="2018-07-15T22:46:05Z"
+ content="""
+Thks. My apologies for the long answer delay.
+
+Let's clarify what I'm trying to do: from the files of an encrypted special remote, with their data and filenames encrypted, I'd like to recover the original files back, without using git-annex at all, just in case one day I 'm not able to use git-annex anymore. This is the purpose of the script presented in [Future proofing / disaster recovery with an encrypted special remote](https://git-annex.branchable.com/forum/Future_proofing___47___disaster_recovery_with_an_encrypted_special_remote/)
+
+*\"I believe that the special remote key names (written by Joey) are the same as the keys you see in .git\"*
+
+This is wrong, and the confusion is this: the local repository key does not change (it is not encrypted), but the file sent to the special remote uses an encrypted key (filename if you prefer). Yes, the file sent to the special remote has its data encrypted and its filename hashed and encrypted too.
+
+*\"I think an easier way to experiment with different encryption schemes would be to implement your own special remote\"*
+
+I did almost this actually: I'm using git-annex \"--debug\" command switch which shows all git commands under the hood. In these, I can see the final encrypted key, which is different than the original one.
+
+An exemple is better than a long speech: I'm using a rclone special remote with the \"shared pubkey\" encryption scheme (see [Encryption](https://git-annex.branchable.com/encryption/), section sharedpubkey). In my local test repo, I have a single file. I can upload and download the file from the special remote as expected.
+
+Local filename: ./test.pdf
+
+Local file: .git/annex/objects/F3/pf/SHA256E-s127597--abc14a6cf4ebb79fdc2eb0d1bf9c304cfce30959661e72e98536faf1bb1b393b.pdf/SHA256E-s127597--abc14a6cf4ebb79fdc2eb0d1bf9c304cfce30959661e72e98536faf1bb1b393b.pdf
+
+Local key: SHA256E-s127597--abc14a6cf4ebb79fdc2eb0d1bf9c304cfce30959661e72e98536faf1bb1b393b.pdf
+
+Special remote debug log: <code>git annex get ./test.pdf --debug</code>
+
+    [2018-07-08 11:37:17.92299562] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+    [2018-07-08 11:37:17.926091484] process done ExitSuccess
+    [2018-07-08 11:37:17.926263261] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2018-07-08 11:37:17.929194789] process done ExitSuccess
+    [2018-07-08 11:37:17.929657888] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..bc15cac806cf0e178b4a4edb29d59ec34a8124cd\",\"--pretty=%H\",\"-n1\"]
+    [2018-07-08 11:37:17.931914542] process done ExitSuccess
+    [2018-07-08 11:37:17.932438022] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+    [2018-07-08 11:37:17.933180259] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+    [2018-07-08 11:37:17.93938515] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"./test.pdf\"]
+    get test.pdf (from myremote...) 
+    [2018-07-08 11:37:17.947328106] chat: /home/olivier/bin/git-annex-remote-rclone []
+    [2018-07-08 11:37:17.949286944] git-annex-remote-rclone[1] --> VERSION 1
+    [2018-07-08 11:37:17.949439446] git-annex-remote-rclone[1] <-- EXTENSIONS INFO
+    [2018-07-08 11:37:17.949976023] git-annex-remote-rclone[1] --> UNSUPPORTED-REQUEST
+    [2018-07-08 11:37:17.950062015] git-annex-remote-rclone[1] <-- PREPARE
+    [2018-07-08 11:37:17.950285846] git-annex-remote-rclone[1] --> GETCONFIG prefix
+    [2018-07-08 11:37:17.950360356] git-annex-remote-rclone[1] <-- VALUE mystore
+    [2018-07-08 11:37:17.953250415] git-annex-remote-rclone[1] --> GETCONFIG target
+    [2018-07-08 11:37:17.953381013] git-annex-remote-rclone[1] <-- VALUE storage
+    [2018-07-08 11:37:17.956128895] git-annex-remote-rclone[1] --> GETCONFIG rclone_layout
+    [2018-07-08 11:37:17.956253609] git-annex-remote-rclone[1] <-- VALUE lower
+    [2018-07-08 11:37:17.958960866] git-annex-remote-rclone[1] --> PREPARE-SUCCESS
+    [2018-07-08 11:37:17.959086461] git-annex-remote-rclone[1] <-- TRANSFER RETRIEVE GPGHMACSHA512--9cbf6fe8def32a6b434c8bfc8991916ff425a0c990be48fffe647c5ab7a6b294ba38e96fa58aebd59eb5b14d0e98475b241cd6098f08f2c10953b999d1bcd01c .git/annex/tmp/GPGHMACSHA512--9cbf6fe8def32a6b434c8bfc8991916ff425a0c990be48fffe647c5ab7a6b294ba38e96fa58aebd59eb5b14d0e98475b241cd6098f08f2c10953b999d1bcd01c
+    [2018-07-08 11:37:17.9597168] git-annex-remote-rclone[1] --> DIRHASH-LOWER GPGHMACSHA512--9cbf6fe8def32a6b434c8bfc8991916ff425a0c990be48fffe647c5ab7a6b294ba38e96fa58aebd59eb5b14d0e98475b241cd6098f08f2c10953b999d1bcd01c
+    [2018-07-08 11:37:17.959807775] git-annex-remote-rclone[1] <-- VALUE 00a/620/
+    [2018-07-08 11:37:19.129883435] git-annex-remote-rclone[1] --> TRANSFER-SUCCESS RETRIEVE GPGHMACSHA512--9cbf6fe8def32a6b434c8bfc8991916ff425a0c990be48fffe647c5ab7a6b294ba38e96fa58aebd59eb5b14d0e98475b241cd6098f08f2c10953b999d1bcd01c
+    [2018-07-08 11:37:19.130224384] chat: gpg [\"--batch\",\"--no-tty\",\"--use-agent\",\"--quiet\",\"--trust-model\",\"always\",\"--batch\",\"--decrypt\"]
+    [2018-07-08 11:37:19.248666938] process done ExitSuccess
+
+    (checksum...) ok
+    [2018-07-08 11:37:19.2521772] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"hash-object\",\"-w\",\"--stdin-paths\",\"--no-filters\"]
+    [2018-07-08 11:37:19.252634291] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-index\",\"-z\",\"--index-info\"]
+    [2018-07-08 11:37:19.259545841] process done ExitSuccess
+    [2018-07-08 11:37:19.259672048] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2018-07-08 11:37:19.262905258] process done ExitSuccess
+    (recording state in git...)
+    [2018-07-08 11:37:19.26348496] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"write-tree\"]
+    [2018-07-08 11:37:19.280879681] process done ExitSuccess
+    [2018-07-08 11:37:19.281192446] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"commit-tree\",\"9fa3141c6ae10188ede17ecd10b71b9f679c32f9\",\"--no-gpg-sign\",\"-p\",\"refs/heads/git-annex\"]
+    [2018-07-08 11:37:19.285386915] process done ExitSuccess
+    [2018-07-08 11:37:19.285622336] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-ref\",\"refs/heads/git-annex\",\"81296ea05b728e9440c9d9927121c9b02aca33d4\"]
+    [2018-07-08 11:37:19.289082082] process done ExitSuccess
+    [2018-07-08 11:37:19.290328762] process done ExitSuccess
+    [2018-07-08 11:37:19.290683887] process done ExitSuccess
+    [2018-07-08 11:37:19.290954281] process done ExitSuccess
+    [2018-07-08 11:37:19.291245651] process done ExitSuccess
+
+As you can see, the hashed key is:
+
+00a/620/GPGHMACSHA512--9cbf6fe8def32a6b434c8bfc8991916ff425a0c990be48fffe647c5ab7a6b294ba38e96fa58aebd59eb5b14d0e98475b241cd6098f08f2c10953b999d1bcd01c
+
+It has been hashed (openssl HMACSHA512) and encrypted with GPG. I'd like to be able to recover the original key (SHA256E-s127597--abc14a6cf4ebb79fdc2eb0d1bf9c304cfce30959661e72e98536faf1bb1b393b.pdf) without git-annex. Then I have backup-ed the map between local keys and original filenames, so I'm able to get my file back without using git-annex.
+
+"""]]
