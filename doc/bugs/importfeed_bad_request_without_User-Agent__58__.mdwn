@@ -10,8 +10,6 @@ As best I can tell from packet captures and `telnet` debugging, the issue is tha
 
 Can a suitable `User-Agent:` header be added to the `git annex importfeed` HTTP requests?
 
-(*Note* the bug title probably needs updating since I seem to have discovered the root cause after starting creating the bug.)
-
 ### What steps will reproduce the problem?
 
 Attempt to `git annex importfeed` the feed `'https://theythempodcast.com/episodes?format=RSS'`.  The problem also appears reproducible with `'http://theythempodcast.com/episodes?format=RSS'` (ie, unencrypted), which makes debugging a wee bit simpler (ie, packet captures can help).
