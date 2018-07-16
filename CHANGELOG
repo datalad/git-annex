@@ -17,6 +17,8 @@ git-annex (6.20180627) UNRELEASED; urgency=medium
     in a directory owned by root. Note that this prevents using the
     standalone bundle in environments where HOME is not writable.
   * unused --from: Allow specifiying a repository by uuid or description.
+  * Send User-Agent and any configured annex.http-headers when downloading
+    with http, fixes reversion introduced when switching to http-client.
 
  -- Joey Hess <id@joeyh.name>  Fri, 22 Jun 2018 10:36:22 -0400
 

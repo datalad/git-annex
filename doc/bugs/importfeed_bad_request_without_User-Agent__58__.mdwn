@@ -224,3 +224,5 @@ Note that the only addition was adding a `User-Agent:` header (copied from the `
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Absolutely :-)  `git annex` has been my podcatcher, and media management tool for years.  Thanks for writing it!
+
+> [[fixed|done]] --[[Joey]]

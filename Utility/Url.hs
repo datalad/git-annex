@@ -315,7 +315,7 @@ download meterupdate url file uo =
 
 	downloadconduit req = catchMaybeIO (getFileSize file) >>= \case
 		Nothing -> runResourceT $ do
-			resp <- http req' (httpManager uo)
+			resp <- http (applyRequest uo req') (httpManager uo)
 			if responseStatus resp == ok200
 				then store zeroBytesProcessed WriteMode resp
 				else showrespfailure resp
