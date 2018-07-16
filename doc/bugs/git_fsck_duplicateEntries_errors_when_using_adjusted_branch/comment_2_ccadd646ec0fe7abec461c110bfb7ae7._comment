@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-07-16T15:27:13Z"
+ content="""
+Something more is involved than git annex add and sync on an adjusted
+branch, because when I try that the problem does not appear.
+(Also tried on OSX in case it was somehow OSX specific.)
+
+I see that the mode of the files in the problem tree you showed
+is 120000, which tells me that tree is one that was committed to the master
+branch, not the adjusted unlocked branch. That suggests that the problem is
+in reverseAdjustedTree. But I don't think I will be able to find it by
+staring at the code; I need a way to reproduce the problem.
+
+What *might* help is if you can show the full directory tree in the
+repository (with names mangled for privacy as needed). It may be that it's
+somehow caused by adding a file at a particular location in the tree,
+since a lot of the complication in the code is around handling such things.
+"""]]
