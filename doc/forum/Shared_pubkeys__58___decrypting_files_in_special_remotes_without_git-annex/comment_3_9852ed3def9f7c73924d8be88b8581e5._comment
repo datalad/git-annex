@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="remote encrypted keys"
+ date="2018-07-16T12:09:22Z"
+ content="""
+Aaah. I see you have commented on the [Future proofing / disaster recovery with an encrypted special remote](http://git-annex.branchable.com/forum/Future_proofing___47___disaster_recovery_with_an_encrypted_special_remote/) as well. I'll try to test with `sharedpubkey` if I get a chance.
+
+Have you tried looking at the generated cipher? `git show git-annex:remote.log | grep 'name='\"your-remote-name \"`? Did you try adding `IFS= read -rd '' cipher < <( printf \"$cipher\n\" )`?
+"""]]
