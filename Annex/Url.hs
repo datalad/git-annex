@@ -26,9 +26,9 @@ import Network.Socket
 defaultUserAgent :: U.UserAgent
 defaultUserAgent = "git-annex/" ++ BuildInfo.packageversion
 
-getUserAgent :: Annex (Maybe U.UserAgent)
+getUserAgent :: Annex U.UserAgent
 getUserAgent = Annex.getState $ 
-	Just . fromMaybe defaultUserAgent . Annex.useragent
+	fromMaybe defaultUserAgent . Annex.useragent
 
 getUrlOptions :: Annex U.UrlOptions
 getUrlOptions = Annex.getState Annex.urloptions >>= \case
@@ -42,7 +42,7 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 	mk = do
 		(urldownloader, manager) <- checkallowedaddr
 		mkUrlOptions
-			<$> getUserAgent
+			<$> (Just <$> getUserAgent)
 			<*> headers
 			<*> pure urldownloader
 			<*> pure manager
