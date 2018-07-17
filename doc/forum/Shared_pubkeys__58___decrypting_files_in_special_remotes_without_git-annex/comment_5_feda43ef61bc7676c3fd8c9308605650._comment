@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 5"
+ date="2018-07-16T22:58:30Z"
+ content="""
+OK. Thanks for all of the patience with the back-and-forth. After trying to follow these steps and re-reading your posts I believe that what you are trying to do is unfortunately not possible with your current setup.
+
+Although you are using public keys to encrypt your content, `git-annex` is hashing the original key names (using a one-way hash) aka SHA1 Digest signed with your public key before storing on the special remote. The public key is just used by the digest algorithm for signing and does not enable you to recover the hashed key. The `git-annex` special remote protocol does not require special remotes to actually store `git-annex` keys, it only requires that special remotes can retrieve content *given* a key.
+
+In Joey's source code `Crypto.hs` in reference to this key generation process he does have a comment to this effect, \"The encryption does not need to be reversable\". I assume Joey used hashes for simplicity and so the filenames could stay short.
+
+In [Future proofing / disaster recovery with an encrypted special remote](http://git-annex.branchable.com/forum/Future_proofing___47___disaster_recovery_with_an_encrypted_special_remote/) Joey also mentions “That's what's \"special\" about special remotes vs regular git remotes: They only store the content of annexed files and not the git repository. Back up the git repository separately”
+
+So, it seems, in order to recover the original key names you will either have to keep a backup of the original repository or create a new special remote that stores these in a recoverable fashion (instead of using a digest). Perhaps some git commit hook that zips up the `.git` directory and adds it to your repository could be of use?
+"""]]

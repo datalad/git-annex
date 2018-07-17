@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="oliv5"
+ avatar="http://cdn.libravatar.org/avatar/d7f0d33c51583bbd8578e4f1f9f8cf4b"
+ subject="comment 4"
+ date="2018-07-16T17:04:06Z"
+ content="""
+Yes, I had a look at the cipher, and I cannot tell much about it. It is ... random :) And yes, I tried the removal of the '\n' characters like in pubkey encryption scheme, with no success so far.
+
+I'll post my test script, which is a basic variation of the one given in [Decrypting_files_in_special_remotes_without_git-annex](https://git-annex.branchable.com/tips/Decrypting_files_in_special_remotes_without_git-annex/) to make multiple calls to lookup_key().
+"""]]
