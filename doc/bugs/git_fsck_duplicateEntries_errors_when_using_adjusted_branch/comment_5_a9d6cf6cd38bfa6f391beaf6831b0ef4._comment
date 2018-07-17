@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2018-07-17T15:12:12Z"
+ content="""
+I wrote a reproduction script, which worked several times, and then stopped
+working. Now I can't reproduce it using that script. Some kind of race condition?
+Only happens before coffee o-clock? I don't know. :-/
+
+The script:
+
+	#!/bin/sh
+	sudo rm -rf /tmp/repo
+	git init /tmp/repo
+	cd /tmp/repo
+	git annex init
+	date > foo
+	git annex add foo
+	git annex sync
+	git annex upgrade
+	git annex adjust --unlock
+	mkdir -p ook/boop/beep/yeep
+	date > ook/boop/beep/yeep/x
+	git annex add
+	git annex sync
+	git fsck
+
+I also noticed that, once a tree gets duplicate entries in it, they are
+carried forward into the new trees when other commits are made to that
+directory. This may explain why fsck is finding so many trees to complain
+about in your repsitory.
+
+The commit made to the adjusted branch does not have a duplicate in the tree.
+The reverse adjusted commit made to master does. So it must involve
+adjustTree somehow.
+
+I don't see anything likely to cause a race condition in adjustTree.
+However, I do think that v6 mode has many bugs some of which may be
+race conditions, and perhaps the root cause is not adjustTree.
+
+This seems likely related in some way to
+[[bugs/add_fails_with_v6_repo_when_four_levels_deep]],
+which I incidentially reproduced for the first time (and then fixed) while
+trying again to reproduce this bug.
+"""]]
