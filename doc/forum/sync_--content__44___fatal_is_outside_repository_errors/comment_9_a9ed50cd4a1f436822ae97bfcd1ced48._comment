@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 9"
+ date="2018-07-17T18:58:58Z"
+ content="""
+Most likely related to and fixed by now fixed bug: <https://git-annex.branchable.com/bugs/add_fails_with_v6_repo_when_four_levels_deep/>
+"""]]
