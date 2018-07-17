@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2018-07-17T14:59:26Z"
+ content="""
+Looking at those files, all the duplicated files
+are located at least 2 subdirectories deep, and most more like 5-7
+deep. But, almost all of the repo is inside such
+subdirectories, so that is not conclusive.
+
+Aha! I managed to reproduce it:
+
+	joey@darkstar:~/tmp/t#master(unlocked)>mkdir ook
+	joey@darkstar:~/tmp/t#master(unlocked)>cd ook
+	joey@darkstar:~/tmp/t/ook#master(unlocked)>mkdir boop
+	joey@darkstar:~/tmp/t/ook#master(unlocked)>cd boop
+	joey@darkstar:~/tmp/t/ook/boop#master(unlocked)>mkdir beep
+	joey@darkstar:~/tmp/t/ook/boop#master(unlocked)>cd beep
+	joey@darkstar:~/tmp/t/ook/boop/beep#master(unlocked)>mkdir yeep
+	joey@darkstar:~/tmp/t/ook/boop/beep#master(unlocked)>cd yeep
+	joey@darkstar:~/tmp/t/ook/boop/beep/yeep#master(unlocked)>date > X
+	joey@darkstar:~/tmp/t/ook/boop/beep/yeep#master(unlocked)>git annex add
+	add X ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/t/ook/boop/beep/yeep#master(unlocked)>git annex sync
+	commit
+	[adjusted/master(unlocked) fe11872] git-annex in joey@darkstar:~/tmp/t
+	 1 file changed, 1 insertion(+)
+	 create mode 100644 ook/boop/beep/yeep/X
+	ok
+	joey@darkstar:~/tmp/t/ook/boop/beep/yeep#master(unlocked)>git fsck
+	error in tree a5fcd5b3aa5189ed8916f025cf035fce74098a1a: duplicateEntries: contains duplicate file entries
+	Checking object directories: 100% (256/256), done.
+
+Ok, it seems it's simply caused by deep paths in the tree and nothing
+else. Will debug from here.
+"""]]
