@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2018-07-17T19:16:23Z"
+ content="""
+Hmm, maybe.
+
+It's very difficult to say without enough of a transcript to have any idea
+at what point in the `git annex sync` it was failing. If it failed in the
+"commit" part, then yes, it could be git commit running the smudge/clean filter
+and the worktree path problem affecting it.
+"""]]
