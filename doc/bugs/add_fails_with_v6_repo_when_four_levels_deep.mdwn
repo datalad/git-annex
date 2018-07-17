@@ -134,3 +134,5 @@ ok
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 I've been happily using git-annex on my laptop and server for almost a year; it's saved me a great deal of time and effort.
 Thanks for all your work!
+
+> [[fixed|done]] finally... --[[Joey]]

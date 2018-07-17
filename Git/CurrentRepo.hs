@@ -25,12 +25,20 @@ import Utility.Env.Set
  - directory if necessary to ensure it is within the repository's work
  - tree. While not needed for git commands, this is useful for anything
  - else that looks for files in the worktree.
+ -
+ - Also works around a git bug when running some hooks. It
+ - runs the hooks in the top of the repository, but if GIT_WORK_TREE
+ - was relative, it then points to the wrong directory. In this situation
+ - GIT_PREFIX contains the directory that GIT_WORK_TREE (and GIT_DIR)
+ - are relative to.
  -}
 get :: IO Repo
 get = do
-	gd <- pathenv "GIT_DIR"
+	prefix <- getpathenv "GIT_PREFIX"
+	gd <- pathenv "GIT_DIR" prefix
 	r <- configure gd =<< fromCwd
-	wt <- maybe (worktree $ location r) Just <$> pathenv "GIT_WORK_TREE"
+	wt <- maybe (worktree $ location r) Just
+		<$> pathenv "GIT_WORK_TREE" prefix
 	case wt of
 		Nothing -> return r
 		Just d -> do
@@ -39,13 +47,18 @@ get = do
 				setCurrentDirectory d
 			return $ addworktree wt r
   where
-	pathenv s = do
+	getpathenv s = do
 		v <- getEnv s
 		case v of
 			Just d -> do
 				unsetEnv s
-				Just <$> absPath d
+				return (Just d)
 			Nothing -> return Nothing
+	
+	pathenv s Nothing = getpathenv s
+	pathenv s (Just prefix) = getpathenv s >>= \case
+		Nothing -> return Nothing
+		Just d -> Just <$> absPath (prefix </> d)
 
 	configure Nothing (Just r) = Git.Config.read r
 	configure (Just d) _ = do
