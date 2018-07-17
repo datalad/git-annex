@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="jlebar"
+ avatar="http://cdn.libravatar.org/avatar/9fca4b61a1ab555f231851e7543f9a3e"
+ subject="comment 3"
+ date="2018-07-17T05:12:03Z"
+ content="""
+Thanks a lot, Joey.
+
+I wrote a script that replaces each directory or filename with a salted hash:
+
+	#!/usr/bin/env python
+
+	import sys
+	import hashlib
+
+	def hash(s):
+	  m = hashlib.sha256()
+	  m.update(s)
+	  m.update('<secret>')
+	  return m.hexdigest()
+
+	for line in sys.stdin:
+	  print '/'.join(hash(p) for p in line.split('/'))
+
+Then I ran
+
+	$ git ls-files | python hash_paths.py | bzip2 > repo_paths.bz2  # attached
+
+To make something you can correlate with the git fsck errors, I ran
+
+	$ git fsck  |& grep duplicateEntries | cut -f 4 -d ' ' | sed -e 's/://' | xargs -n1 git ls-tree | grep -v ' tree '  > blobs
+	$ paste <(cut -f 1 blobs) <(cut -f 2 blobs | python hash_paths.py) | bzip2 > fsck_errors.bz2  # attached
+
+So the second column in fsck_errors is the salted+hashed filename like in the comment above.  You should be able to correlate the \"filenames\" in fsck_errors with the paths in repo_paths.
+
+I'll email you the relevant files.
+"""]]
