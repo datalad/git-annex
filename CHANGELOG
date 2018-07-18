@@ -1,5 +1,7 @@
 git-annex (6.20180627) UNRELEASED; urgency=medium
 
+  * Support working trees set up by git-worktree.
+  * Improve support for repositories created with --separate-git-dir.
   * Include uname in standalone builds.
   * Support configuring remote.web.annex-cost and remote.bittorrent.annex-cost
   * info: Display uuid and description when a repository is identified by

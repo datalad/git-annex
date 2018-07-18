@@ -207,10 +207,19 @@ checkForRepo dir =
 		( return $ Just $ LocalUnknown dir
 		, return Nothing
 		)
-	isRepo = checkdir $ gitSignature $ ".git" </> "config"
+	isRepo = checkdir $ 
+		gitSignature (".git" </> "config")
+			<||>
+		-- A git-worktree lacks .git/config, but has .git/commondir.
+		-- (Normally the .git is a file, not a symlink, but it can
+		-- be converted to a symlink and git will still work;
+		-- this handles that case.)
+		gitSignature (".git" </> "gitdir")
 	isBareRepo = checkdir $ gitSignature "config"
 		<&&> doesDirectoryExist (dir </> "objects")
 	gitDirFile = do
+		-- git-submodule, git-worktree, and --separate-git-dir
+		-- make .git be a file pointing to the real git directory.
 		c <- firstLine <$>
 			catchDefaultIO "" (readFile $ dir </> ".git")
 		return $ if gitdirprefix `isPrefixOf` c

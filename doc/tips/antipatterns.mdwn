@@ -39,6 +39,10 @@ to copy files between the two repos, using space only once. This
 works, of course, only on filesystems that support hardlinks, but
 that's usually the case for filesystems that support symlinks.
 
+Alternatively, `git worktree` can be used to add another worktree to a git
+repository. This way, multiple worktrees can share the same git-annex
+object store.
+
 Real world cases
 ----------------
 
