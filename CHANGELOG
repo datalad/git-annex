@@ -2,29 +2,29 @@ git-annex (6.20180719) UNRELEASED; urgency=medium
 
   * Support working trees set up by git-worktree.
   * Improve support for repositories created with --separate-git-dir.
-  * Include uname in standalone builds.
   * Support configuring remote.web.annex-cost and remote.bittorrent.annex-cost
-  * info: Display uuid and description when a repository is identified by
-    uuid, and for "here".
   * addurl: When security configuration prevents downloads with youtube-dl,
     still check if the url is one that it supports, and fail downloading
     it, instead of downloading the raw web page.
-  * git-annex.cabal: Fix network version.
+  * Send User-Agent and any configured annex.http-headers when downloading
+    with http, fixes reversion introduced when switching to http-client.
   * Fix reversion introduced in version 6.20180316 that caused git-annex to
     stop processing files when unable to contact a ssh remote.
+  * v6: Work around git bug that runs smudge/clean filters at the top of the
+    repository while passing them a relative GIT_WORK_TREE that may point
+    outside of the repository, by using GIT_PREFIX to get back to the
+    subdirectory where a relative GIT_WORK_TREE is valid.
   * p2p --pair: Fix interception of the magic-wormhole pairing code,
     which since 0.8.2 it has sent to stderr rather than stdout.
+  * info: Display uuid and description when a repository is identified by
+    uuid, and for "here".
+  * unused --from: Allow specifiying a repository by uuid or description.
   * linux standalone: Generate locale files in ~/.cache/git-annex/locales/
     so they're available even when the standalone tarball is installed
     in a directory owned by root. Note that this prevents using the
     standalone bundle in environments where HOME is not writable.
-  * unused --from: Allow specifiying a repository by uuid or description.
-  * Send User-Agent and any configured annex.http-headers when downloading
-    with http, fixes reversion introduced when switching to http-client.
-  * Work around git bug that runs smudge/clean filters at the top of the
-    repository while passing them a relative GIT_WORK_TREE that may point
-    outside of the repository, by using GIT_PREFIX to get back to the
-    subdirectory where a relative GIT_WORK_TREE is valid.
+  * Include uname command in standalone builds since git-annex uses it.
+  * git-annex.cabal: Fix network version.
 
  -- Joey Hess <id@joeyh.name>  Fri, 22 Jun 2018 10:36:22 -0400
 
