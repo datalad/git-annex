@@ -1,4 +1,4 @@
-git-annex (6.20180627) UNRELEASED; urgency=medium
+git-annex (6.20180719) UNRELEASED; urgency=medium
 
   * Support working trees set up by git-worktree.
   * Improve support for repositories created with --separate-git-dir.
