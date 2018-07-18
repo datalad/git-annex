@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="oliv5"
+ avatar="http://cdn.libravatar.org/avatar/d7f0d33c51583bbd8578e4f1f9f8cf4b"
+ subject="comment 6"
+ date="2018-07-18T22:35:44Z"
+ content="""
+Hi,
+I understand your points, but I think there is a little misunderstanding.
+
+I agree there may be no way to revert the hashing, even given the public key and its corresponding private key (that I have of course, to be able to decrypt the files content). But this is not what I'm trying to do; actually, I want to do the opposite: from the local key, compute the hashed key. In other words, I want to do exactly what git-annex does already internally, but in a little shell script, independent of git-annex (in case git-annex is unusable one day, a.k.a the \"disaster\").
+
+This is the whole purpose of the function \"lookup_key()\" of the shell script of page [Future proofing / disaster recovery with an encrypted special remote](https://git-annex.branchable.com/forum/Future_proofing___47___disaster_recovery_with_an_encrypted_special_remote/): the functions tries to hash/use the keys the same way git-annex does. It prints the final hashed key used in the special remote. This function allows a user to find which file in the special remote corresponds to a given file in the local repository.
+
+This mapping \"local file name\" / \"local key\" / \"special remote hashed key\" is what I want to backup. In case of trouble to run git-annex one day, this mapping would allow me to rename my special remote files to their original filename, after downloading them using third party-tools (sftp, scp, rsync, whatever) and decrypting their content using my private key. All this without git-annex and its special remote third-party script.
+
+Do you see what I'm trying to do ? I rely much on this lookup_key() function, which is basically already implemented inside git-annex. My main pb is I don't understand Haskell, I can only lurk around in the code, but I didn't identify the sequence of operations about these hashed keys.
+
+"""]]
