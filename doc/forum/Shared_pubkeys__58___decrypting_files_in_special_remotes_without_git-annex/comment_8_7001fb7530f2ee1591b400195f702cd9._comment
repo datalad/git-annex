@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 8"
+ date="2018-07-19T18:18:39Z"
+ content="""
+This does not seem to resolve the issue. I've filed a bug report with an easy to reproduce case using just local directory remotes. `sharedpubkey` seems to be using a different method than `shared` to created encrypted filenames.
+"""]]
