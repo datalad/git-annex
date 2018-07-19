@@ -61,17 +61,6 @@ I am looking into [decrypting files in special remotes without git-annex](https:
 
 You can see that I am able to generate correctly the special remote key used by `remote2` the `shared` remote, `0332a66cded87db8ec8427280c171133c958754f`. But using the same method for `remote1` the `sharedpubkey` remote does not yield a meaningful key `bb3b1f4b27164c2edc81da32c43c64e8a4be75d8`
 
-
-### Please provide any additional information below.
-
-[[!format sh """
-# If you can, paste a complete transcript of the problem occurring here.
-# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
-
-
-# End of transcript or log.
-"""]]
-
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
-
+Yes. —[andrew](https://git-annex.branchable.com/users/andrew/)
 
