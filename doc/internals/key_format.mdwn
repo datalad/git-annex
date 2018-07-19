@@ -17,7 +17,7 @@ For example:
   added to git-annex, expressed as seconds from the epoch.
   This is currently only used by the WORM backend.
 * The "-S" and "-C" fields are only used for keys that are chunks
-  of some other key. "-S" is the size of the chunk, and "-c" is the chunk
+  of some other key. "-S" is the size of the chunk, and "-C" is the chunk
   number (starting at 1).
 * Other fields could be added in the future, if needed.
 
