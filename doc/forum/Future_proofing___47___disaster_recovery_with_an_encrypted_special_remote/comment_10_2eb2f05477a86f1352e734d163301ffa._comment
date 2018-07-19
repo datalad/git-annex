@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2018-07-19T16:16:14Z"
+ content="""
+@oliv5 sharedpubkey's cipher has the same newline problem as pubkey does,
+as discussed above. Unlike pubkey, it has to be base64-decoded first,
+and then the extra newline appended to that.
+
+	                # Pull out MAC cipher from beginning of cipher
+	                if [ \"$encryption\" = \"hybrid\" ] ; then
+	                        cipher=\"$(echo -n \"$cipher\" | head  -c 256 )\"
+	                elif [ \"$encryption\" = \"shared\" ] ; then
+	                        cipher=\"$(echo -n \"$cipher\" | base64 -d | head  -c 256 )\"
+	                elif [ \"$encryption\" = \"pubkey\" ] ; then
+	                        cipher=\"$cipher
+	\"
+	                elif [ \"$encryption\" = \"sharedpubkey\" ] ; then
+	                        cipher=\"$(echo -n \"$cipher\" | base64 -d)\"
+				cipher=\"$cipher
+	\"
+			fi
+
+Note that base64 -d does emit the newline (verified with hexdump);
+again the shell is shooting you in the foot by eliminating it.
+
+BTW, a very simple code hack that makes it easy to dump out the cipher git-annex
+is using:
+
+	diff --git a/Remote/Helper/Encryptable.hs b/Remote/Helper/Encryptable.hs
+	index 97e55a415..c4d252912 100644
+	--- a/Remote/Helper/Encryptable.hs
+	+++ b/Remote/Helper/Encryptable.hs
+	@@ -192,7 +192,7 @@ describeCipher :: StorableCipher -> String
+	 describeCipher c = case c of
+ 		(SharedCipher _) -> \"encryption key stored in git repository\"
+	 	(EncryptedCipher _ _ ks) -> showkeys ks
+	-	(SharedPubKeyCipher _ ks) -> showkeys ks
+	+	(SharedPubKeyCipher c ks) -> show c ++ \" \" ++ showkeys ks
+	   where
+	 	showkeys (KeyIds { keyIds = ks }) = \"to gpg keys: \" ++ unwords ks
+
+Then git-annex info remote will display it. Obviously, this patch is insecure.
+"""]]

@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2018-07-19T16:57:22Z"
+ content="""
+I have addressed the sharedpubkey thing in the other thread.
+
+Chunk keys may have a -S as well as the -C, if the special remote was
+set up with new-style chunking enabled.
+
+A remote can have several different chunk sizes over its
+lifetime; the chunk size used for a given key is in the .log.cnk file
+in the git-annex branch, documented in [[internals]].
+
+The easy way to test if you are generating
+the right key, prior to HMAC encrypting it, is to set up a non-encrypted
+special remote with the same chunking configuration, and look at the chunk
+keys used when files are stored in it.
+"""]]
