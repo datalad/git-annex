@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2018-07-19T20:30:18Z"
+ content="""
+I tested the script fragement that I posted.
+
+The obvious difference between shared and sharedpubkey, if you look
+at that script fragement, is that shared only uses the first 256 bytes
+of the cipher to encrypt filenames, while sharedpubkey uses the entire
+cipher. 
+"""]]
