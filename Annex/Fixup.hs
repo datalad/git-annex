@@ -25,6 +25,8 @@ import Data.List
 import Control.Monad
 import Control.Monad.IfElse
 import qualified Data.Map as M
+import Control.Applicative
+import Prelude
 
 fixupRepo :: Repo -> GitConfig -> IO Repo
 fixupRepo r c = do
