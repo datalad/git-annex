@@ -1,4 +1,4 @@
-git-annex (6.20180719) UNRELEASED; urgency=medium
+git-annex (6.20180719) upstream; urgency=medium
 
   * Support working trees set up by git-worktree.
   * Improve support for repositories created with --separate-git-dir.
@@ -26,7 +26,7 @@ git-annex (6.20180719) UNRELEASED; urgency=medium
   * Include uname command in standalone builds since git-annex uses it.
   * git-annex.cabal: Fix network version.
 
- -- Joey Hess <id@joeyh.name>  Fri, 22 Jun 2018 10:36:22 -0400
+ -- Joey Hess <id@joeyh.name>  Thu, 19 Jul 2018 13:53:45 -0400
 
 git-annex (6.20180626) upstream; urgency=high
 
