@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="oliv5"
+ avatar="http://cdn.libravatar.org/avatar/d7f0d33c51583bbd8578e4f1f9f8cf4b"
+ subject="comment 10"
+ date="2018-07-20T22:48:47Z"
+ content="""
+I managed to get the lookup_key() working with sharedpubkey, chunks and mac SHA512, by combining Joey's cipher and yibe's script.
+
+I have to clean the script before posting, but it is basically Yibe's script [(at the bottom of this page)](https://git-annex.branchable.com/tips/Decrypting_files_in_special_remotes_without_git-annex/) with the sharedpubkey cipher above, and nothing more.
+
+    +    elif [ \"$encryption\" = \"sharedpubkey\" ] ; then
+    +        cipher=\"$(echo -n \"$cipher\" | base64 -d)
+    +\"
+        fi
+
+It is working good for my test file, but this file is made of 1 chunk only. Before relying on the script, more tests should be done with bigger files, e.g more chunks.
+
+Anyway, thks to all of you for your help.
+
+"""]]
