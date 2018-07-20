@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="oliv5"
+ avatar="http://cdn.libravatar.org/avatar/d7f0d33c51583bbd8578e4f1f9f8cf4b"
+ subject="comment 11"
+ date="2018-07-20T23:03:37Z"
+ content="""
+The original script with sharedpubkey support is available [here](https://raw.githubusercontent.com/oliv5/profile/master/pbin/git-annex-decrypt.sh)
+
+Yibe's enhanced script with sharedpubkey, different mac and chunk support is available [here](https://raw.githubusercontent.com/oliv5/profile/master/pbin/git-annex-decrypt-2.sh). Chunk management should be verified before relying on it, I haven't done it yet except for a basic case (1 chunk per file). Mac support seems ok.
+"""]]
