@@ -1,0 +1,10 @@
+I recently upgraded my annex from version 5 to version 6. In fact, there are two sister repos, one on NTFS and the other on EXT4. I am getting the following error on the EXT4 repo:
+
+    git-annex: unknown response from git cat-file ("refs/heads/git-annex:79a/279/SHA256E-s1287921--0970d35c130c8f678fe9cd74508ee9944598aa211e410c0378833afa214ab0e9.jpg missing",Ref "refs/heads/git-annex:79a/279/SHA256E-s1287921--0970d35c130c8f678fe9cd74508ee9944598aa211e410c0378833afa214ab0e9.jpg\n.log")
+    CallStack (from HasCallStack):
+      error, called at ./Git/CatFile.hs:88:28 in main:Git.CatFile
+
+
+I see this message on the EXT4 repo if I run any usual commands like "git annex get" or "git annex list".
+
+I do not have any files with newlines in their names. I may have interrupted commands like "git add" and "git annex lock", so it's difficult to say how I ended up with the above situation. The most puzzling part is that under .git/annex/objects, the EXT4 repo has only two-letter directories while the NTFS repo has only three-letter directories, and there is no .git/annex/objects/79a/279 in either.
