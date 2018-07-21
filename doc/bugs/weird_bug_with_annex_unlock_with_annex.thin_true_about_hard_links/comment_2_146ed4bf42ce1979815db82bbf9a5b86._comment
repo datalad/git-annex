@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="andrey_utkin@49e37627b3060c40292113d73d7ffbf317233e62"
+ nickname="andrey_utkin"
+ avatar="http://cdn.libravatar.org/avatar/95bb7f4f7647cc24c1cf635b61578842"
+ subject="comment 2"
+ date="2018-07-21T23:41:34Z"
+ content="""
+Hit this, too. dev-vcs/git-annex-6.20180529.
+All files which are successfully hardlinked have executability bit not set. `chmod a-x *` eventually fixes hardlinking for almost all files, but interestingly, not for all. Also as I see executability permissions bit does not propagate through git commits with modechange.
+"""]]
