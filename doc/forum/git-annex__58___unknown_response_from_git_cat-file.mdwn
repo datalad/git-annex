@@ -1,4 +1,4 @@
-I recently upgraded my annex from version 5 to version 6. In fact, there are two sister repos, one on NTFS and the other on EXT4. I am getting the following error on the EXT4 repo:
+I recently upgraded my annex from version 5 to version 6. In fact, there are two sister repos, one on an NTFS partition and the other on EXT4. I am getting the following error on the EXT4 repo:
 
     git-annex: unknown response from git cat-file ("refs/heads/git-annex:79a/279/SHA256E-s1287921--0970d35c130c8f678fe9cd74508ee9944598aa211e410c0378833afa214ab0e9.jpg missing",Ref "refs/heads/git-annex:79a/279/SHA256E-s1287921--0970d35c130c8f678fe9cd74508ee9944598aa211e410c0378833afa214ab0e9.jpg\n.log")
     CallStack (from HasCallStack):
