@@ -1,0 +1,5 @@
+I want to import a file that's on my filesystem as a/b/c, but have it end up in the repo at $REPO/d/e/f -- but only if it's not already present, i.e. using `--skip-duplicates`.  There are two requirements here; `git annex import` will meet one of them (dedup), and copy+`git annex add` will meet the other (arbitrary destination).  Is there a way to meet both at once?
+
+(Actually, for my current use case, what I really want is to import a/b/c to $REPO/a/b/c -- but _not_ to import all the rest of the tree under a/.  Can't get there either.  If I say `git annex import a/b/c`, the directory structure isn't preserved; the file ends up at $REPO/c.  For this specific use case, a `--preserve-directories` option to `import` would be splendid, but that's rather specific; being able to specify an arbitrary destination would be a more general solution.)
+
+Thanks.
