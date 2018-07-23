@@ -64,3 +64,4 @@ You can see that I am able to generate correctly the special remote key used by 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Yes. —[andrew](https://git-annex.branchable.com/users/andrew/)
 
+[[done]]
