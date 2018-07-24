@@ -1,0 +1,5 @@
+I'm fairly new to git-annex. Just spent the better part of an hour scratching my head about locked and unlocked files, until I realized that *my repository is v5, even though git-annex on all my machines is v6!*
+
+Is there a good reason repos created using v6 default to v5 rather than v6? I.e., not-yet-implemented features that will cause me a headache? Just want to make sure I'm not inviting more trouble if I update the repository to v6. Otherwise, I'd like to move ahead and do that, since I want to have an easier workflow for maintaining frequently edited binary files across my machines.
+
+Thanks.
