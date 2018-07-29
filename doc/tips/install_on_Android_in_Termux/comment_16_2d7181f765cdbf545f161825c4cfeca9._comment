@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="branchable@bafd175a4b99afd6ed72501042e364ebd3e0c45e"
+ nickname="branchable"
+ avatar="http://cdn.libravatar.org/avatar/ae41dba34ee6000056f00793c695be75"
+ subject="still broken on aarch64"
+ date="2018-07-29T08:48:22Z"
+ content="""
+I didn't explicitly mention it in my last comment (only in [the issue I linked to](https://github.com/termux/termux-packages/issues/420#issuecomment-400258309)), but I had already applied the `termux-fix-shebang` fix.  Whilst this helps resolve the other issue, it does *not* help with the fact that `./git-annex.linux/lib/ld-linux.so.3` is a 32-bit binary which crashes with a segfault (SIG11) when run via `runshell`.
+
+So this is still broken for me :-(  Has anyone else had better luck on aarch64 (ARM v8) ?
+"""]]
