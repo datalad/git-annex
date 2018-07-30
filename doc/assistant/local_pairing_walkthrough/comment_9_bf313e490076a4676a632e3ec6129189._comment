@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="lhunath@3b4ff15f4600f3276d1776a490b734fca0f5c245"
+ nickname="lhunath"
+ avatar="http://cdn.libravatar.org/avatar/6388e539b56b3875cc9aceb9f404b3ad"
+ subject="Diagnosing local pairing issues."
+ date="2018-07-30T18:54:56Z"
+ content="""
+In my situation, a local pairing is initiated on machine A, machine B sees the request, prompts for the pass-phrase, both machines proceed with the actual sync process, but nothing actually happens.  The last message in B's log is \"Pairing with [A] in progress\" and machine A says \"main: Pairing in progress\".  How do I diagnose this issue?
+"""]]
