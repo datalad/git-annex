@@ -1,3 +1,9 @@
+git-annex (6.20180720) UNRELEASED; urgency=medium
+
+  * Fix reversion in display of http 404 errors.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 31 Jul 2018 12:14:11 -0400
+
 git-annex (6.20180719) upstream; urgency=medium
 
   * Support working trees set up by git-worktree.

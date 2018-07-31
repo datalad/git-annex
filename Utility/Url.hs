@@ -362,8 +362,8 @@ download meterupdate url file uo =
 	showhttpexception he = do
 #if MIN_VERSION_http_client(0,5,0)
 		let msg = case he of
-			HttpExceptionRequest _ (StatusCodeException _ msgb) ->
-				B8.toString msgb
+			HttpExceptionRequest _ (StatusCodeException r _) ->
+				B8.toString $ statusMessage $ responseStatus r
 			HttpExceptionRequest _ (InternalException ie) -> 
 				case fromException ie of
 					Nothing -> show ie
