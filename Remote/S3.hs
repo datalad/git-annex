@@ -46,7 +46,7 @@ import Creds
 import Annex.UUID
 import Logs.Web
 import Utility.Metered
-import qualified Utility.Url as Url
+import qualified Annex.Url as Url
 import Utility.DataUnits
 import Utility.FileSystemEncoding
 import Annex.Content
@@ -54,6 +54,7 @@ import Annex.Url (withUrlOptions)
 import Utility.Url (checkBoth, UrlOptions(..))
 
 type BucketName = String
+type BucketObject = String
 
 remote :: RemoteType
 remote = RemoteType
@@ -91,15 +92,15 @@ gen r u c gc = do
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
-			, exportActions = withS3Handle c gc u $ \h -> 
+			, exportActions = withS3HandleMaybe c gc u $ \mh -> 
 				return $ ExportActions
-					{ storeExport = storeExportS3 info h
-					, retrieveExport = retrieveExportS3 info h
-					, removeExport = removeExportS3 info h
-					, checkPresentExport = checkPresentExportS3 info h
+					{ storeExport = storeExportS3 u info mh
+					, retrieveExport = retrieveExportS3 u info mh
+					, removeExport = removeExportS3 u info mh
+					, checkPresentExport = checkPresentExportS3 u info mh
 					-- S3 does not have directories.
 					, removeExportDirectory = Nothing
-					, renameExport = renameExportS3 info h
+					, renameExport = renameExportS3 u info mh
 					}
 			, whereisKey = Just (getWebUrls info c)
 			, remoteFsck = Nothing
@@ -188,7 +189,7 @@ store _r info h = fileStorer $ \k f p -> do
 	storeHelper info h f (T.pack $ bucketObject info k) p
 	-- Store public URL to item in Internet Archive.
 	when (isIA info && not (isChunkKey k)) $
-		setUrlPresent webUUID k (iaPublicKeyUrl info k)
+		setUrlPresent webUUID k (iaPublicUrl info (bucketObject info k))
 	return True
 
 storeHelper :: S3Info -> S3Handle -> FilePath -> S3.Object -> MeterUpdate -> Annex ()
@@ -254,10 +255,10 @@ retrieve _ info (Just h) = fileRetriever $ \f k p ->
 	retrieveHelper info h (T.pack $ bucketObject info k) f p
 retrieve r info Nothing = case getpublicurl info of
 	Nothing -> \_ _ _ -> do
-		warnMissingCredPairFor "S3" (AWS.creds $ uuid r)
+		needS3Creds (uuid r)
 		return False
 	Just geturl -> fileRetriever $ \f k p ->
-		unlessM (downloadUrl k p [geturl k] f) $
+		unlessM (downloadUrl k p [geturl $ bucketObject info k] f) $
 			giveup "failed to download content"
 
 retrieveHelper :: S3Info -> S3Handle -> S3.Object -> FilePath -> MeterUpdate -> Annex ()
@@ -281,11 +282,12 @@ remove info h k = do
 checkKey :: Remote -> S3Info -> Maybe S3Handle -> CheckPresent
 checkKey r info Nothing k = case getpublicurl info of
 	Nothing -> do
-		warnMissingCredPairFor "S3" (AWS.creds $ uuid r)
+		needS3Creds (uuid r)
 		giveup "No S3 credentials configured"
 	Just geturl -> do
 		showChecking r
-		withUrlOptions $ liftIO . checkBoth (geturl k) (keySize k)
+		withUrlOptions $ liftIO . 
+			checkBoth (geturl $ bucketObject info k) (keySize k)
 checkKey r info (Just h) k = do
 	showChecking r
 	checkKeyHelper info h (T.pack $ bucketObject info k)
@@ -316,38 +318,58 @@ checkKeyHelper info h object = do
 			| otherwise = Nothing
 #endif
 
-storeExportS3 :: S3Info -> S3Handle -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
-storeExportS3 info h f _k loc p = 
+storeExportS3 :: UUID -> S3Info -> Maybe S3Handle -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
+storeExportS3 _u info (Just h) f _k loc p = 
 	catchNonAsync go (\e -> warning (show e) >> return False)
   where
 	go = do
 		storeHelper info h f (T.pack $ bucketExportLocation info loc) p
 		return True
+storeExportS3 u _ Nothing _ _ _ _ = do
+	needS3Creds u
+	return False
 
-retrieveExportS3 :: S3Info -> S3Handle -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
-retrieveExportS3 info h _k loc f p =
+retrieveExportS3 :: UUID -> S3Info -> Maybe S3Handle -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
+retrieveExportS3 u info mh _k loc f p =
 	catchNonAsync go (\e -> warning (show e) >> return False)
   where
-	go = do
-		retrieveHelper info h (T.pack $ bucketExportLocation info loc) f p
-		return True
+	go = case mh of
+		Just h -> do
+			retrieveHelper info h (T.pack exporturl) f p
+			return True
+		Nothing -> case getpublicurl info of
+			Nothing -> do
+				needS3Creds u
+				return False
+			Just geturl -> Url.withUrlOptions $ 
+				liftIO . Url.download p (geturl exporturl) f
+	exporturl = bucketExportLocation info loc
 
-removeExportS3 :: S3Info -> S3Handle -> Key -> ExportLocation -> Annex Bool
-removeExportS3 info h _k loc = 
+removeExportS3 :: UUID -> S3Info -> Maybe S3Handle -> Key -> ExportLocation -> Annex Bool
+removeExportS3 _u info (Just h) _k loc = 
 	catchNonAsync go (\e -> warning (show e) >> return False)
   where
 	go = do
 		res <- tryNonAsync $ sendS3Handle h $
 			S3.DeleteObject (T.pack $ bucketExportLocation info loc) (bucket info)
 		return $ either (const False) (const True) res
+removeExportS3 u _ Nothing _ _ = do
+	needS3Creds u
+	return False
 
-checkPresentExportS3 :: S3Info -> S3Handle -> Key -> ExportLocation -> Annex Bool
-checkPresentExportS3 info h _k loc =
+checkPresentExportS3 :: UUID -> S3Info -> Maybe S3Handle -> Key -> ExportLocation -> Annex Bool
+checkPresentExportS3 _u info (Just h) _k loc =
 	checkKeyHelper info h (T.pack $ bucketExportLocation info loc)
+checkPresentExportS3 u info Nothing k loc = case getpublicurl info of
+	Nothing -> do
+		needS3Creds u
+		giveup "No S3 credentials configured"
+	Just geturl -> withUrlOptions $ liftIO . 
+		checkBoth (geturl $ bucketExportLocation info loc) (keySize k)
 
 -- S3 has no move primitive; copy and delete.
-renameExportS3 :: S3Info -> S3Handle -> Key -> ExportLocation -> ExportLocation -> Annex Bool
-renameExportS3 info h _k src dest = catchNonAsync go (\_ -> return False)
+renameExportS3 :: UUID -> S3Info -> Maybe S3Handle -> Key -> ExportLocation -> ExportLocation -> Annex Bool
+renameExportS3 _u info (Just h) _k src dest = catchNonAsync go (\_ -> return False)
   where
 	go = do
 		let co = S3.copyObject (bucket info) dstobject
@@ -359,6 +381,9 @@ renameExportS3 info h _k src dest = catchNonAsync go (\_ -> return False)
 		return True
 	srcobject = T.pack $ bucketExportLocation info src
 	dstobject = T.pack $ bucketExportLocation info dest
+renameExportS3 u _ Nothing _ _ _ = do
+	needS3Creds u
+	return False
 
 {- Generate the bucket if it does not already exist, including creating the
  - UUID file within the bucket.
@@ -477,7 +502,7 @@ withS3Handle :: RemoteConfig -> RemoteGitConfig -> UUID -> (S3Handle -> Annex a)
 withS3Handle c gc u a = withS3HandleMaybe c gc u $ \mh -> case mh of
 	Just h -> a h
 	Nothing -> do
-		warnMissingCredPairFor "S3" (AWS.creds u)
+		needS3Creds u
 		giveup "No S3 credentials configured"
 
 withS3HandleMaybe :: RemoteConfig -> RemoteGitConfig -> UUID -> (Maybe S3Handle -> Annex a) -> Annex a
@@ -495,6 +520,9 @@ withS3HandleMaybe c gc u a = do
 		Nothing -> a Nothing
   where
 	s3cfg = s3Configuration c
+
+needS3Creds :: UUID -> Annex ()
+needS3Creds u = warnMissingCredPairFor "S3" (AWS.creds u)
 
 s3Configuration :: RemoteConfig -> S3.S3Configuration AWS.NormalQuery
 s3Configuration c = cfg
@@ -525,13 +553,13 @@ s3Configuration c = cfg
 data S3Info = S3Info
 	{ bucket :: S3.Bucket
 	, storageClass :: S3.StorageClass
-	, bucketObject :: Key -> String
-	, bucketExportLocation :: ExportLocation -> String
+	, bucketObject :: Key -> BucketObject
+	, bucketExportLocation :: ExportLocation -> BucketObject
 	, metaHeaders :: [(T.Text, T.Text)]
 	, partSize :: Maybe Integer
 	, isIA :: Bool
 	, public :: Bool
-	, getpublicurl :: Maybe (Key -> URLString)
+	, getpublicurl :: Maybe (BucketObject -> URLString)
 	}
 
 extractS3Info :: RemoteConfig -> Annex S3Info
@@ -552,13 +580,13 @@ extractS3Info c = do
 			Just "yes" -> True
 			_ -> False
 		, getpublicurl = case M.lookup "publicurl" c of
-			Just u -> Just $ genericPublicKeyUrl info u
+			Just u -> Just $ \p -> genericPublicUrl p u
 			Nothing -> case M.lookup "host" c of
 				Just h
 					| h == AWS.s3DefaultHost ->
-						Just $ awsPublicKeyUrl info
+						Just (awsPublicUrl info)
 					| isIAHost h ->
-						Just $ iaPublicKeyUrl info
+						Just (iaPublicUrl info)
 				_ -> Nothing
 		}
 	return info
@@ -601,14 +629,14 @@ getMetaHeaders = map munge . filter ismetaheader . M.assocs
 getFilePrefix :: RemoteConfig -> String
 getFilePrefix = M.findWithDefault "" "fileprefix"
 
-getBucketObject :: RemoteConfig -> Key -> FilePath
+getBucketObject :: RemoteConfig -> Key -> BucketObject
 getBucketObject c = munge . key2file
   where
 	munge s = case M.lookup "mungekeys" c of
 		Just "ia" -> iaMunge $ getFilePrefix c ++ s
 		_ -> getFilePrefix c ++ s
 
-getBucketExportLocation :: RemoteConfig -> ExportLocation -> FilePath
+getBucketExportLocation :: RemoteConfig -> ExportLocation -> BucketObject
 getBucketExportLocation c loc = getFilePrefix c ++ fromExportLocation loc
 
 {- Internet Archive documentation limits filenames to a subset of ascii.
@@ -636,16 +664,16 @@ isIAHost h = ".archive.org" `isSuffixOf` map toLower h
 iaItemUrl :: BucketName -> URLString
 iaItemUrl b = "http://archive.org/details/" ++ b
 
-iaPublicKeyUrl :: S3Info -> Key -> URLString
-iaPublicKeyUrl info = genericPublicKeyUrl info $
+iaPublicUrl :: S3Info -> BucketObject -> URLString
+iaPublicUrl info p = genericPublicUrl p $
 	"http://archive.org/download/" ++ T.unpack (bucket info) ++ "/" 
 
-awsPublicKeyUrl :: S3Info -> Key -> URLString
-awsPublicKeyUrl info = genericPublicKeyUrl info $ 
+awsPublicUrl :: S3Info -> BucketObject -> URLString
+awsPublicUrl info p = genericPublicUrl p $ 
 	"https://" ++ T.unpack (bucket info) ++ ".s3.amazonaws.com/" 
 
-genericPublicKeyUrl :: S3Info -> URLString -> Key -> URLString
-genericPublicKeyUrl info baseurl k = baseurl ++ bucketObject info k
+genericPublicUrl :: BucketObject -> URLString -> URLString
+genericPublicUrl p baseurl = baseurl ++ p
 
 genCredentials :: CredPair -> IO AWS.Credentials
 genCredentials (keyid, secret) = AWS.Credentials
@@ -690,6 +718,6 @@ getWebUrls :: S3Info -> RemoteConfig -> Key -> Annex [URLString]
 getWebUrls info c k
 	| exportTree c = return []
 	| otherwise = case (public info, getpublicurl info) of
-		(True, Just geturl) -> return [geturl k]
+		(True, Just geturl) -> return [geturl $ bucketObject info k]
 		_ -> return []
 
