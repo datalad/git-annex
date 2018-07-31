@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="RonnyPfannschmidt"
+ avatar="http://cdn.libravatar.org/avatar/c5379a3fe2188b7571858c49f9db63c6"
+ subject="comment 1"
+ date="2018-07-30T21:09:11Z"
+ content="""
+as per [[upgrades/#index1h2]] the upgrade to v6 repos is currently manual due to the finer details of git smudge handling and direct mode vs lock/unlock
+
+since v6 repos do behave differently the updates are manual
+
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="size"
+ date="2018-07-31T14:19:15Z"
+ content="""
+> to check the file size, and it's not clear how to do that with a sftp or ssh url
+
+what do you mean?  why something as simple as \"ssh host stat filepath\" wouldn't work?  or it seems e.g. libssh2 provides file size information via sftp: https://curl.haxx.se/mail/lib-2011-01/0094.html
+"""]]

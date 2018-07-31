@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2018-07-31T14:27:17Z"
+ content="""
+My usecase is to be able to associate changes in main branches and in git-annex branch, so instead of non-informative \"update\" commit message it could carry e.g.
+
+    [DATALAD] Updated git/annex from a remote location
+    
+    URLs processed: 7
+     downloaded: 7
+     size: 17.1 GB
+    Files processed: 7
+     skipped: 7
+     overwritten: 7
+
+or I might even include the branch in which changes were done, e.g. short ones become
+
+    [DATALAD, incoming] Updated git/annex from a remote location
+    [DATALAD, incoming-processed] Added files from extracted archives
+    ...
+    
+Then looking at `git log git-annex` would allow me to quickly see what actions lead to \"updates\" in git-annex branch
+"""]]
