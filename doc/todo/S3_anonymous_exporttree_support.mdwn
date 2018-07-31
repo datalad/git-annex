@@ -1,0 +1,2 @@
+S3 remotes using exporttree=yes cannot currently be accessed w/o creds.
+This is possible to support with some work. --[[Joey]]
