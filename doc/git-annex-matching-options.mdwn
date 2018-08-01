@@ -145,6 +145,20 @@ in either of two repositories.
   
   Note that this will not match anything when using --all or --unused.
 
+* `--accessedwithin=interval`
+
+  Matches files that were accessed recently, within the specified time
+  interval.
+  
+  The interval can be in the form "5m" or "1h" or "2d" or "1y", or a
+  combination such as "1h5m".
+
+  So for example, `--accessedwithin=1d` matches files that have been
+  accessed within the past day.
+
+  If the OS or filesystem does not support access times, this will not
+  match any files.
+
 * `--not`
 
   Inverts the next matching option. For example, to only act on

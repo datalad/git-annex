@@ -5,6 +5,7 @@ git-annex (6.20180720) UNRELEASED; urgency=medium
   * Fix reversion in display of http 404 errors.
   * Added remote.name.annex-speculate-present config that can be used to
     make cache remotes.
+  * Added --accessedwithin matching option.
 
  -- Joey Hess <id@joeyh.name>  Tue, 31 Jul 2018 12:14:11 -0400
 

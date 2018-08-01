@@ -21,10 +21,10 @@ You'll need git-annex 6.20180802 or newer to follow these instructions.
 ## creating the cache
 
 First let's create a new, empty git-annex repository. It will be put in
-~/.annex-cache in the example, but for best results, it in the same
+~/.annex-cache in the example, but for best results, put it in the same
 filesystem as your other git-annex repositories.
 
-	git init ~/.annex-cache
+	git init --bare ~/.annex-cache
 	cd ~/.annex-cache
 	git annex init
 	git config annex.hardlink true
@@ -79,11 +79,23 @@ enough start.
 
 ## cleaning the cache
 
-XXX find
+You safely can remove content from the cache at any time to free up disk
+space.
+
+To remove everything:
+
+	cd ~/.annex-cache
+	git annex drop --force
+
+To remove files that have not been requested from the cache for the past day:
+
+	cd ~/.annex-cache
+	git annex drop --force --not --accessedwithin=1d
 
 ## automatically populating the cache
 
-XXX
+The assistant can be used to automatically populate the cache with files
+that git-annex downloads into a repository.
 
 ## more caches
 

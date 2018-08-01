@@ -38,6 +38,7 @@ import CmdLine.Usage
 import CmdLine.GlobalSetter
 import qualified Backend
 import qualified Types.Backend as Backend
+import Utility.HumanTime
 
 -- Global options that are accepted by all git-annex sub-commands,
 -- although not always used.
@@ -275,6 +276,12 @@ nonWorkTreeMatchingOptions' =
 		<> help "match files the repository wants to drop"
 		<> hidden
 		)
+	, globalSetter Limit.addAccessedWithin $ option (str >>= parseDuration)
+		( long "accessedwithin"
+		<> metavar paramTime
+		<> help "match files accessed within a time interval"
+		<> hidden
+		)
 	]
 
 -- Options to match files which may not yet be annexed.
@@ -371,7 +378,7 @@ jobsOption =
 
 timeLimitOption :: [GlobalOption]
 timeLimitOption = 
-	[ globalSetter Limit.addTimeLimit $ strOption
+	[ globalSetter Limit.addTimeLimit $ option (str >>= parseDuration)
 		( long "time-limit" <> short 'T' <> metavar paramTime
 		<> help "stop after the specified amount of time"
 		<> hidden

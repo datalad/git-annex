@@ -298,20 +298,31 @@ limitMetaData s = case parseMetaDataMatcher s of
 		. S.filter matching
 		. metaDataValues f <$> getCurrentMetaData k
 
-addTimeLimit :: String -> Annex ()
-addTimeLimit s = do
-	let seconds = maybe (giveup "bad time-limit") durationToPOSIXTime $
-		parseDuration s
+addTimeLimit :: Duration -> Annex ()
+addTimeLimit duration = do
 	start <- liftIO getPOSIXTime
-	let cutoff = start + seconds
+	let cutoff = start + durationToPOSIXTime duration
 	addLimit $ Right $ const $ const $ do
 		now <- liftIO getPOSIXTime
 		if now > cutoff
 			then do
-				warning $ "Time limit (" ++ s ++ ") reached!"
+				warning $ "Time limit (" ++ fromDuration duration ++ ") reached!"
 				shutdown True
 				liftIO $ exitWith $ ExitFailure 101
 			else return True
+
+addAccessedWithin :: Duration -> Annex ()
+addAccessedWithin duration = do
+	now <- liftIO getPOSIXTime
+	addLimit $ Right $ const $ checkKey $ check now
+  where
+	check now k = inAnnexCheck k $ \f ->
+		liftIO $ catchDefaultIO False $ do
+			s <- getFileStatus f
+			let accessed = realToFrac (accessTime s)
+			let delta = now - accessed
+			return $ delta <= secs
+	secs = fromIntegral (durationSeconds duration)
 
 lookupFileKey :: FileInfo -> Annex (Maybe Key)
 lookupFileKey = lookupFile . currFile
