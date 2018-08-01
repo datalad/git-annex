@@ -62,6 +62,9 @@ the S3 remote.
 * `requeststyle` - Set to "path" to use path style requests, instead of the
   default DNS style requests. This is needed with some S3 services.
 
+  If you get an error about a host name not existing, it's a good
+  indication that you need to use this.
+
 * `bucket` - S3 requires that buckets have a globally unique name, 
   so by default, a bucket name is chosen based on the remote name
   and UUID. This can be specified to pick a bucket name.
