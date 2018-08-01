@@ -1,0 +1,24 @@
+Is there a way to 'combine' tags in view branches? For example:
+
+```
+git annex view photos videos
+```
+
+produces a directory tree like so:
+
++ photos
+  - a.jpg
+  - b.jpg
+  - ...
++ videos
+  - a.mp4
+  - b.mp4
+  - ...
+
+Is there a way to achieve the following output?:
+
+- a.jpg
+- b.jpg
+- a.mp4
+- b.mp4
+- ...
