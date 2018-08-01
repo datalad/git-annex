@@ -616,7 +616,7 @@ seekSyncContent o rs = do
  -}
 syncFile :: Either (Maybe (Bloom Key)) (Key -> Annex ()) -> [Remote] -> AssociatedFile -> Key -> Annex Bool
 syncFile ebloom rs af k = onlyActionOn' k $ do
-	locs <- Remote.keyLocations k
+	locs <- map Remote.uuid <$> Remote.keyPossibilities k
 	let (have, lack) = partition (\r -> Remote.uuid r `elem` locs) rs
 
 	got <- anyM id =<< handleget have

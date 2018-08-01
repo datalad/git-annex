@@ -92,7 +92,7 @@ queueTransfersMatching matching reason schedule k f direction
 				filter (\r -> not (inset s r || Remote.readonly r))
 					(syncDataRemotes st)
 	  where
-		locs = S.fromList <$> Remote.keyLocations k
+		locs = S.fromList . map Remote.uuid <$> Remote.keyPossibilities k
 		inset s r = S.member (Remote.uuid r) s
 	gentransfer r = Transfer
 		{ transferDirection = direction

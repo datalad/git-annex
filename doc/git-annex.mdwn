@@ -1283,6 +1283,13 @@ Here are all the supported configuration settings.
   Can be used to tell git-annex whether a remote is LocallyAvailable
   or GloballyAvailable. Normally, git-annex determines this automatically.
 
+* `remote.<name>.annex-speculate-present`
+
+  Make git-annex speculate that this remote may contain the content of any
+  file, even though its normal location tracking does not indicate that it
+  does. This will cause git-annex to try to get all file contents from the
+  remote. Can be useful in setting up a caching remote.
+
 * `remote.<name>.annex-bare`
 
   Can be used to tell git-annex if a remote is a bare repository

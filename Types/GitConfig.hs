@@ -226,6 +226,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexStartCommand :: Maybe String
 	, remoteAnnexStopCommand :: Maybe String
 	, remoteAnnexAvailability :: Maybe Availability
+	, remoteAnnexSpeculatePresent :: Bool
 	, remoteAnnexBare :: Maybe Bool
 	, remoteAnnexRetry :: Maybe Integer
 	, remoteAnnexRetryDelay :: Maybe Seconds
@@ -281,6 +282,7 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexStartCommand = notempty $ getmaybe "start-command"
 		, remoteAnnexStopCommand = notempty $ getmaybe "stop-command"
 		, remoteAnnexAvailability = getmayberead "availability"
+		, remoteAnnexSpeculatePresent = getbool "speculate-present" False
 		, remoteAnnexBare = getmaybebool "bare"
 		, remoteAnnexRetry = getmayberead "retry"
 		, remoteAnnexRetryDelay = Seconds

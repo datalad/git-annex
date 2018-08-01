@@ -1,6 +1,6 @@
 {- git-annex remotes
  -
- - Copyright 2011 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -278,13 +278,21 @@ keyLocations key = trustExclude DeadTrusted =<< loggedLocations key
 
 {- Cost ordered lists of remotes that the location log indicates
  - may have a key.
+ -
+ - Also includes remotes with remoteAnnexSpeculatePresent set.
  -}
 keyPossibilities :: Key -> Annex [Remote]
 keyPossibilities key = do
 	u <- getUUID
 	-- uuids of all remotes that are recorded to have the key
 	locations <- filter (/= u) <$> keyLocations key
-	fst <$> remoteLocations locations []
+	speclocations <- map uuid
+		. filter (remoteAnnexSpeculatePresent . gitconfig)
+		<$> remoteList
+	-- there are unlikely to be many speclocations, so building a Set
+	-- is not worth the expense
+	let locations' = speclocations ++ filter (`notElem` speclocations) locations
+	fst <$> remoteLocations locations' []
 
 {- Given a list of locations of a key, and a list of all
  - trusted repositories, generates a cost-ordered list of

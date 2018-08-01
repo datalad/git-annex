@@ -1,0 +1,91 @@
+Here's how to set up a local cache of annexed files, that can be used
+to avoid repeated downloads.
+
+An example use case: Your CI system is operating on a git-annex repository,
+so every time it runs it makes a fresh clone of the repository and uses
+`git-annex get` to download a lot of data into it.
+
+We'll create a cache repository, set it as a remote of the other git-annex
+repositories, and configure git-annex to check the cache first before other
+more expensive ways of retrieving content. The cache can be cleaned out
+whenever you like with simple unix commands. 
+
+Some other nice properties -- When used on a system like BTRFS with COW
+support, content from the cache can populate multiple other repositories
+without using any additional disk space. And, git-annex repositories that
+are otherwise unrelated can share use of the cache if they happen to
+contain a common file.
+
+You'll need git-annex 6.20180802 or newer to follow these instructions.
+
+## creating the cache
+
+First let's create a new, empty git-annex repository. It will be put in
+~/.annex-cache in the example, but for best results, it in the same
+filesystem as your other git-annex repositories.
+
+	git init ~/.annex-cache
+	cd ~/.annex-cache
+	git annex init
+	git config annex.hardlink true
+	git annex untrust here
+
+The cache does not need to be a git annex repository; any kind of special
+remote can be used as a cache too. But, using a git repository lets
+annex.hardlink be used to make hard links between the cache and
+repositories using it.
+
+The cache is made untrusted, because its contents can be cleaned at any
+time; other repositories should not trust it to retain content.
+
+## making repositories use the cache
+
+Now in each git-annex repository that you want to use the cache, add it as
+a remote, and configure it as follows:
+
+	cd my-repository
+	git remote add cache ~/.annex-cache
+	git config remote.cache.annex-speculate-present true
+	git config remote.cache.annex-cost 10
+	git config remote.cache.annex-pull false
+	git config remote.cache.annex-push false
+
+The annex-speculate-present setting is the essential part. It makes
+git-annex know that the cache repository may contain the content of any
+annexed file. So, when getting a file, git-annex will try the cache
+repository first.
+
+The low annex-cost makes git-annex try to get content from the cache remote
+before any other remotes.
+
+The annex-pull and annex-push settings prevent `git-annex sync` from
+pulling and pushing to the remote. The cache repository will remain an
+empty git repository (except for the content of annexed files). This means
+that the same cache can be used with multiple different git-annex
+repositories, without intermingling their git data. You should also avoid
+manual `git pull` and `git push` to the cache remote.
+
+## populating the cache
+
+For the cache to be used, you need to get file contents into it somehow.
+A simple way to do that is, in a git-annex repository that already
+contains the content of files:
+
+	git annex copy --to cache
+
+You could run that anytime after you get content. There are also ways to
+automate it, but getting some files into the cache manually is a good
+enough start.
+
+## cleaning the cache
+
+XXX find
+
+## automatically populating the cache
+
+XXX
+
+## more caches
+
+The example above used a local cache on the same system. However, it's also
+possible to have a cache repository shared amoung computers on a LAN.
