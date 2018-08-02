@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2018-08-02T17:46:51Z"
+ content="""
+OTOH, maybe merging is never something one would want to add a custom
+message for -- it's an entirely a function of the inputs -- and so only
+"update" should get replaced.
+"""]]
