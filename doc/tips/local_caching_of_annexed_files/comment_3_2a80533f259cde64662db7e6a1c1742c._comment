@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="could be taken as a feature! but also annex should avoid merging cache git-annex"
+ date="2018-08-02T14:30:51Z"
+ content="""
+I have two cache repos -- `cache` is just a regular one and `cache2` with those tuned up parameters:
+
+[[!format sh \"\"\"
+$> git annex merge       
+merge git-annex (merging cache/git-annex cache2/git-annex into git-annex...)
+git-annex: Remote repository is tuned in incompatible way; cannot be merged with local repository.
+
+\"\"\"]]
+
+and it didn't merge any of those which is good -- we do not want a possibly monstrous history of the cache to be merged into every repo using it
+
+But then when I remove that `cache2` git-annex does merge it:
+
+[[!format sh \"\"\"
+$> git remote rm cache2
+$> git annex merge     
+merge git-annex (merging cache/git-annex into git-annex...)
+(recording state in git...)
+ok
+\"\"\"]]
+which imho shouldn't happen -- annex shouldn't merge \"cache\" histories into this repository git-annex history.  I guess there should be one more config option to set for those remotes?
+"""]]
