@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-08-02T17:21:13Z"
+ content="""
+Well, depends on coreutils and needs a stat(1) parser. Also, will sftp
+servers necessarily let arbitrary commands be run over ssh? Driving sftp
+interactive and parsing its ls -l would add more complexity to getting file
+size.
+
+The url security fixes also mean these uris can't be used without relaxing
+the security policy.. Makes me wonder how much special-casing makes sense
+for such an edge feature.
+"""]]
