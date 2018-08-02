@@ -1,0 +1,51 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="re: parallel and costs"
+ date="2018-08-02T17:28:46Z"
+ content="""
+Sorry - I am still missing.  
+I followed your example so the cost for cache is 10, whenever for web it is default 200:
+[[!format sh \"\"\"
+$> git annex info cache web | grep -e remote: -e cost
+remote: cache
+cost: 10.0
+remote: web
+cost: 200.0
+\"\"\"]]
+but it does download from the web in parallel download case -- so what am I missing?
+[[!format sh \"\"\"
+~/datalad/openfmri/ds000001 > datalad get -J 1 sub-01/anat/sub-*_T1w.nii.gz 
+get(ok): /home/yoh/datalad/openfmri/ds000001/sub-01/anat/sub-01_T1w.nii.gz (file) [from cache...]               
+
+~/datalad/openfmri/ds000001 > git annex drop sub-01/anat/sub-*_T1w.nii.gz
+drop sub-01/anat/sub-01_T1w.nii.gz (checking http://openneuro.s3.amazonaws.com/ds000001/ds000001_R1.1.0/uncompressed/sub001/anatomy/highres001.nii.gz?versionId=8TJ17W9WInNkQPdiQ9vS7wo8ZJ9llF80...) ok
+(recording state in git...)
+
+~/datalad/openfmri/ds000001 > datalad get -J 2 sub-01/anat/sub-*_T1w.nii.gz  
+get(ok): /home/yoh/datalad/openfmri/ds000001/sub-01/anat/sub-01_T1w.nii.gz (file) [from web...] 
+\"\"\"]]
+nothing in --debug output hints on the costs:
+[[!format sh \"\"\"
+~/datalad/openfmri/ds000001 > git annex get -J 2 --debug sub-01/anat/sub-*_T1w.nii.gz
+[2018-08-02 13:28:03.896215705] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"sub-01/anat/sub-01_T1w.nii.gz\"]
+[2018-08-02 13:28:03.900141316] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2018-08-02 13:28:03.904139213] process done ExitSuccess
+[2018-08-02 13:28:03.904230988] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2018-08-02 13:28:03.908376239] process done ExitSuccess
+[2018-08-02 13:28:03.908608977] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..ff8578c5e3bdd1c67b2d9ca8082893fe6425f729\",\"--pretty=%H\",\"-n1\"]
+[2018-08-02 13:28:03.913502761] process done ExitSuccess
+[2018-08-02 13:28:03.914221081] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-08-02 13:28:03.914683852] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2018-08-02 13:28:03.920509994] read: git [\"config\",\"--null\",\"--list\"]
+[2018-08-02 13:28:03.925910945] process done ExitSuccess
+get sub-01/anat/sub-01_T1w.nii.gz 
+[2018-08-02 13:28:03.926689119] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-08-02 13:28:03.9274736] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objectty(from web...) ze)\"]
+76%   4.12 MiB        859 KiB/s 1s
+73%   3.96 MiB        842 KiB/s 1s
+...
+\"\"\"]]
+
+
+"""]]
