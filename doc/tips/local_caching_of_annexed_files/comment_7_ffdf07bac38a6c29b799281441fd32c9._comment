@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2018-08-02T18:15:13Z"
+ content="""
+Well, git-annex merge does not fetch, it only merges refs it sees. With
+the configuration I gave in the tip, you will not have a cache/git-annex branch for it
+to merge.
+"""]]
