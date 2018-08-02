@@ -27,7 +27,7 @@ mergeBranch = do
 	next $ do
 		Annex.Branch.update
 		-- commit explicitly, in case no remote branches were merged
-		Annex.Branch.commit "update"
+		Annex.Branch.commit =<< Annex.Branch.commitMessage
 		next $ return True
 
 mergeSynced :: CommandStart

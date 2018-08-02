@@ -124,7 +124,7 @@ pushToRemotes remotes = do
 pushToRemotes' :: UTCTime -> [Remote] -> Assistant [Remote]
 pushToRemotes' now remotes = do
 	(g, branch, u) <- liftAnnex $ do
-		Annex.Branch.commit "update"
+		Annex.Branch.commit =<< Annex.Branch.commitMessage
 		(,,)
 			<$> gitRepo
 			<*> join Command.Sync.getCurrBranch

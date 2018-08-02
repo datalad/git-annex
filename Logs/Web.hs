@@ -78,7 +78,7 @@ knownUrls = do
 	 - any journaled changes are reflected in it, since we're going
 	 - to query its index directly. -}
 	Annex.Branch.update
-	Annex.Branch.commit "update"
+	Annex.Branch.commit =<< Annex.Branch.commitMessage
 	Annex.Branch.withIndex $ do
 		top <- fromRepo Git.repoPath
 		(l, cleanup) <- inRepo $ Git.LsFiles.stagedDetails [top]

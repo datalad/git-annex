@@ -975,7 +975,7 @@ saveState nocommit = doSideAction $ do
 	Annex.Queue.flush
 	unless nocommit $
 		whenM (annexAlwaysCommit <$> Annex.getGitConfig) $
-			Annex.Branch.commit "update"
+			Annex.Branch.commit =<< Annex.Branch.commitMessage
 
 {- Downloads content from any of a list of urls. -}
 downloadUrl :: Key -> MeterUpdate -> [Url.URLString] -> FilePath -> Annex Bool

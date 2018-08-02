@@ -21,7 +21,7 @@ seek = withNothing start
 
 start :: CommandStart
 start = next $ next $ do
-	Annex.Branch.commit "update"
+	Annex.Branch.commit =<< Annex.Branch.commitMessage
 	_ <- runhook <=< inRepo $ Git.hookPath "annex-content"
 	return True
   where

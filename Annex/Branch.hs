@@ -1,6 +1,6 @@
 {- management of the git-annex branch
  -
- - Copyright 2011-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -19,6 +19,7 @@ module Annex.Branch (
 	getHistorical,
 	change,
 	maybeChange,
+	commitMessage,
 	commit,
 	forceCommit,
 	getBranch,
@@ -51,7 +52,7 @@ import qualified Git.Tree
 import Git.LsTree (lsTreeParams)
 import qualified Git.HashObject
 import Annex.HashObject
-import Git.Types
+import Git.Types (Ref(..), fromRef, RefDate, TreeItemType(..))
 import Git.FilePath
 import Annex.CatFile
 import Annex.Perms
@@ -177,9 +178,9 @@ updateTo' pairs = do
 	go branchref dirty tomerge jl = withIndex $ do
 		let (refs, branches) = unzip tomerge
 		cleanjournal <- if dirty then stageJournal jl else return noop
-		let merge_desc = if null tomerge
-			then "update"
-			else "merging " ++
+		merge_desc <- if null tomerge
+			then commitMessage
+			else return $ "merging " ++
 				unwords (map Git.Ref.describe branches) ++ 
 				" into " ++ fromRef name
 		localtransitions <- parseTransitionsStrictly "local"
@@ -258,6 +259,11 @@ maybeChange file f = lockJournal $ \jl -> do
 {- Records new content of a file into the journal -}
 set :: JournalLocked -> FilePath -> String -> Annex ()
 set = setJournalFile
+
+{- Commit message used when making a commit of whatever data has changed
+ - to the git-annex brach. -}
+commitMessage :: Annex String
+commitMessage = fromMaybe "update" . annexCommitMessage <$> Annex.getGitConfig
 
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()

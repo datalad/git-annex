@@ -301,7 +301,7 @@ commit :: SyncOptions -> CommandStart
 commit o = stopUnless shouldcommit $ next $ next $ do
 	commitmessage <- maybe commitMsg return (messageOption o)
 	showStart' "commit" Nothing
-	Annex.Branch.commit "update"
+	Annex.Branch.commit =<< Annex.Branch.commitMessage
 	ifM isDirect
 		( do
 			void stageDirect
@@ -544,7 +544,7 @@ pushBranch remote branch g = directpush `after` annexpush `after` syncpush
 
 commitAnnex :: CommandStart
 commitAnnex = do
-	Annex.Branch.commit "update"
+	Annex.Branch.commit =<< Annex.Branch.commitMessage
 	stop
 
 mergeAnnex :: CommandStart

@@ -6,6 +6,8 @@ git-annex (6.20180720) UNRELEASED; urgency=medium
   * Added remote.name.annex-speculate-present config that can be used to
     make cache remotes.
   * Added --accessedwithin matching option.
+  * Added annex.commitmessage config that can specify a commit message
+    for the git-annex branch instead of the usual "update".
 
  -- Joey Hess <id@joeyh.name>  Tue, 31 Jul 2018 12:14:11 -0400
 

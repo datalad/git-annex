@@ -728,7 +728,7 @@ commitOnCleanup repo r a = go `after` a
 	cleanup
 		| not $ Git.repoIsUrl repo = onLocalFast repo r $
 			doQuietSideAction $
-				Annex.Branch.commit "update"
+				Annex.Branch.commit =<< Annex.Branch.commitMessage
 		| otherwise = void $ do
 			Just (shellcmd, shellparams) <-
 				Ssh.git_annex_shell NoConsumeStdin

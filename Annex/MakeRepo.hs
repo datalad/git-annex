@@ -82,7 +82,7 @@ initRepo' desc mgroup = unlessM isInitialized $ do
 	maybe noop (defaultStandardGroup u) mgroup
 	{- Ensure branch gets committed right away so it is
 	 - available for merging immediately. -}
-	Annex.Branch.commit "update"
+	Annex.Branch.commit =<< Annex.Branch.commitMessage
 
 {- Checks if a git repo exists at a location. -}
 probeRepoExists :: FilePath -> IO Bool

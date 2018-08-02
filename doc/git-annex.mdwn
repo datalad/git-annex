@@ -974,6 +974,17 @@ Here are all the supported configuration settings.
   since it could garbage collect objects that are staged in git-annex's
   index but not yet committed.
 
+* `annex.commitmessage`
+
+  When git-annex updates the git-annex branch, it usually makes up
+  its own commit message ("update"), since users rarely look at or
+  care about changes to that branch. If you do care, you can
+  specify this setting by running commands with
+  `-c annex.commitmessage=whatever`
+
+  This works well in combination with annex.alwayscommit=false,
+  to gather up a set of changes and commit them with a message you specify.
+
 * `annex.merge-annex-branches`
 
   By default, git-annex branches that have been pulled from remotes

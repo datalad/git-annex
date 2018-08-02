@@ -138,7 +138,7 @@ postConfigFsckR = page "Consistency checks" (Just Configuration) $ do
 changeSchedule :: Handler () -> Handler Html
 changeSchedule a = do
 	a
-	liftAnnex $ Annex.Branch.commit "update"
+	liftAnnex $ Annex.Branch.commit =<< Annex.Branch.commitMessage
 	redirect ConfigFsckR
 
 getRemoveActivityR :: UUID -> ScheduledActivity -> Handler Html
