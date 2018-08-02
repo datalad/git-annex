@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="is it &quot;safe&quot; to tune?"
+ date="2018-08-02T13:53:04Z"
+ content="""
+Hi Joey,
+
+Would it be safe to init that repo with those `tunables` such as ` -c annex.tune.objecthash1=true -c annex.tune.branchhash1=true` to save some inodes etc?   Any other tunable which might be of benefit (I still hope that I will see the time whenever the \"KEY/\" directory would be gone ;-))?
+I've tried with those two above (although annex.tune.branchhash1=true is probably irrelevant here) and it seems to do the right thing (at least for the objecthash1), but I just wanted to make sure I am not shooting myself into the foot.
+"""]]
