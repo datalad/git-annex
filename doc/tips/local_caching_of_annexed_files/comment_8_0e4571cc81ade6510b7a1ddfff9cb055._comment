@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="re: annex merge cache"
+ date="2018-08-02T18:49:51Z"
+ content="""
+> Well, git-annex merge does not fetch, it only merges refs it sees.
+
+That is correct!  My alias to fetch all remotes (useful to quickly update on the current state of development in feature branches of others) fetched the cache as well.  Despite viral nature of git tags I consider it to be a good general approach.  But fetching is not merging -- I can remove any of those remotes at any moment happen some remote became too heavy or smth like that (tags are trickier).
+
+IMHO `annex merge` should also not merge those remotes which are not \"pullable\" by default.  May be it could take remote name(s) as its argument(s) to merge only specified ones (ATM arguments seems to be silently ignored), happen someone really need to merge somehow any of those.  That would prevent accidental blow up of the git-annex branch in case cache remote gets fetched.
+"""]]
