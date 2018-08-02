@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="is not going from cache with parallel get e.g. -J 2 "
+ date="2018-08-02T13:33:08Z"
+ content="""
+Sweet! Thank you Joey
+
+The main issue so far detected is that if it is a parallel download (we have it as a default in datalad), it doesn't consider cache:
+
+[[!format sh \"\"\"
+$> git annex get -J1 sub-01/anat/sub-*_T1w.nii.gz      
+get sub-01/anat/sub-01_T1w.nii.gz (from cache...) ok
+(recording state in git...)
+
+$> datalad drop sub-01/anat/sub-*_T1w.nii.gz
+drop(ok): /home/yoh/datalad/openfmri/ds000001/sub-01/anat/sub-01_T1w.nii.gz (file)
+
+$> git annex get -J2 sub-01/anat/sub-*_T1w.nii.gz
+get sub-01/anat/sub-01_T1w.nii.gz (from web...) 
+22%   1.2 MiB         880 KiB/s 4s
+16%   891.34 KiB      895 KiB/s 5s
+
+\"\"\"]]
+
+I am still digesting either having cache operations/state reflected in git-annex branch is a ok or not so ok (whenever # of files is large etc) thing
+
+[[!meta author=yoh]]
+
+"""]]
