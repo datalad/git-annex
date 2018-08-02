@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2018-08-02T16:58:45Z"
+ content="""
+Parallel downloads will use the cache repository for everything if it has a
+lower cost than other repositories. That's why the cost is set to 10 in the
+example. If it has the same cost as another repository, parallel downloads
+will spread the load between them. (This also means you can have multiple
+caches with the same cost and distribute load amoung them..)
+
+You should never be pulling from the cache repo, so there should be nothing
+to merge from it. That's what the remote.cache.annex-pull is there to prevent
+git-annex sync doing, but you also have to avoid pulling from it yourself.
+
+Using tunables with the cache does seem to work. Since all remotes usually
+have the same tunables as the local repo, there could potentially be
+bugs (or optimisations?) where it applies the local tunables to the
+remote, but in a little testing it seemed to work.
+"""]]
