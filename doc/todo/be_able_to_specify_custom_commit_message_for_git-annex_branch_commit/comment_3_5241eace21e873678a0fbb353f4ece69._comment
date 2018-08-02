@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-08-02T17:38:23Z"
+ content="""
+There are a few other messages than "update" that show up in some rare
+occasions including (message ++ " (recovery from race #"..) and
+"new branch for transition".
+
+And, there's "merging remote/git-annex into git-annex"
+which is common enough.
+
+I kind of have the feeling that the rare ones are rare enough
+that we might want to always use them, and only override 
+merging and update.
+"""]]
