@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="re: annex merge cache"
+ date="2018-08-02T17:35:22Z"
+ content="""
+>  but you also have to avoid pulling from it yourself.
+
+I think we do call out to `annex merge` from time to time to update information about annex objects availability from any remote it might want to do so.  Since `sync` does more we avoid using it for those cases.  `git annex merge` doesn't even care about any argument given to it, so we cannot simply avoid calling it on `cache` remotes by specifying all other remotes.  Would it be possible to get some option `--only-pullable` or alike to make it prevent merging \"caches\"?
+"""]]
