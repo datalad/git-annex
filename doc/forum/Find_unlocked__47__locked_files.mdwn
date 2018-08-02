@@ -1,5 +1,5 @@
 Hello, I would like to know if there is any way to specifically list the locked or unlocked annexed files in a git annex.
-I looked at the git-annex-find and gt-annex-matching-options pages and on Google but I didn't find anything.
+I looked at the [[git-annex-lock]], [[git-annex-find]], and [[git-annex-matching-options]] pages and even the discussion about the [[tips/unlocked_files]] but I didn't find anything.
 
 I know it wouldn't make any sens for the older versions, but in the v6 mode, I think it might be useful to add such a shortcut search.
 I mean, we can already look for local content with:
