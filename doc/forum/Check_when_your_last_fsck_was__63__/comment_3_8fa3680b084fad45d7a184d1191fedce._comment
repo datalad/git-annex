@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-08-03T18:28:07Z"
+ content="""
+That was implemented for a different use-case (`git-annex expire`) but
+you can certianly use it to keep track of the last time some fsck, perhaps
+a partial one, was run on a repository.
+"""]]
