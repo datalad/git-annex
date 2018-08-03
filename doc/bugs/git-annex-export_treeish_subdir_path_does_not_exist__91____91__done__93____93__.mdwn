@@ -50,3 +50,4 @@ operating system: linux x86_64
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Yep, it has been a long time since I used it but I am back to see what I can do to manage my files properly :)
 
+> [[done]] --[[Joey]]
