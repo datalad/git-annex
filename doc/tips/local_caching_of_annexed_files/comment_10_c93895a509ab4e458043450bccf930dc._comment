@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2018-08-03T17:18:04Z"
+ content="""
+I fear that preventing merging of branches fetched from the cache remote
+in git-annex would be a game of whack-a-mole. There are just too many
+ways the user could bypass such protections. Including, for example,
+configuring git to fetch from cache to origin/ tracking branches.
+
+I remember at some point discussing isolating repos from one-another so
+that data from one repo can't leak across a boundary to another repo, while
+still having it be a remote, and it was similarly just not tractable. Can't
+seem to find the thread, but it's basically the same problem.
+
+If you do accidentially merge the git-annex branch from a cache remote,
+you can always make it dead and use git-annex forget --drop-dead.
+
+If you really want to avoid any possibility of git fetching from the caching
+remote, make it a directory special remote! But, there is not currently
+any way to make annex.hardlink work for directory special remotes, so it
+will be less efficient.
+"""]]
