@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-08-03T17:41:16Z"
+ content="""
+I was able to reproduce the error message when I made a git-annex symlink
+that has a newline at the end of its link target. 
+
+So, it seems you must have one in your tree. Find it with:
+
+	find -ls | grep SHA256E-s1287921--0970d35c130c8f678fe9cd7
+
+Deleting the symlink that finds and replacing it with a new symlink without
+the newline at the end of its link target should fix the problem.
+
+It would be interesting to know how this symlink came to be. If you make
+another clone of the repository, do you get the same symlink? Was the file
+originally added to the NTFS repository and the bad symlink somehow came
+from there?
+
+Also, what git-annex version was used to add the bad symlink?
+"""]]
