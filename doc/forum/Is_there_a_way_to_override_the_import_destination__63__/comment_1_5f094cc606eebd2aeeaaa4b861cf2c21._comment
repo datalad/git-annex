@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-08-03T17:37:59Z"
+ content="""
+`git-annex import` imports files into the current working directory,
+so make whatever subdirectory structure you want, cd into the place
+and import to there.
+"""]]
