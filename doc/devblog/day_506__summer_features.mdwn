@@ -1,0 +1,38 @@
+After the big security fix push, I've had a bit of a vacation. Several new
+features have also landed in git-annex though.
+
+git-worktree support is a feature I'm fairly excited by.
+It turned out to be possible to make git-annex just work in working trees
+set up by `git worktree`, and they share the same object files. So,
+if you need several checkouts of a repository for whatever reason,
+this makes it really efficient to do. It's much better than the old
+method of using `git clone --shared`.
+
+A new `--accessedwithin` option matches files whose content was accessed
+within a given amount of time. (Using the atime.) Of course it can
+be combined with other options, for example
+`git annex move --to archive --not --accessedwithin=30d`  
+There are a few open requests for other new file matching options that I
+hope to get to soon.
+
+A small configuration addition of remote.name.annex-speculate-present
+to make git-annex try to get content from a remote even if its records
+don't indicate the remote contains the content allows setting up an interesting
+kind of [local cache of annexed files](https://git-annex.branchable.com/tips/local_caching_of_annexed_files/)
+which can even be shared between unrelated git-annex repositories, with
+inter-repository deduplication. 
+
+I suspect that remote.name.annex-speculate-present may also have other
+uses. It warps git-annex's behavior in a small but fundamental way which
+could let it fit into new places. Will be interesting to see.
+
+There's also a annex.commitmessage config, which I am much less excited by,
+but enough people have asked for it over the years.
+
+Also fixed a howler of a bug today: In -J mode, remotes were sorted not
+by cost, but by UUID! How did that not get noticed for 2 years?
+
+Much of this work was sponsored by NSF-funded DataLad project at Dartmouth
+Colledge, as has been the case for the past 4 years. All told they've
+funded over 1000 hours of work on git-annex. This is the last month of that
+funding.
