@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="could we just make it &quot;avoidable&quot;?"
+ date="2018-08-03T17:54:01Z"
+ content="""
+> There are just too many ways the user could bypass such protections. Including, for example, configuring git to fetch from cache to origin/ tracking branches.
+
+My concern is not really about making it impossible, but about making it unlikely or avoidable.   It is as similar as you cannot avoid completely someone merging `git-annex` branch \"manually\" using regular git-merge with some -Sours to \"avoid\" the conflicts. It is unavoidable but very unlikely ;)   ATM my problem is \"likely\" (as likely as me, the first user of the feature, ran into this problem right away) and \"unavoidable\" (`annex merge` has no option/mode to avoid merging those).  As long as we could avoid it somehow (e.g. by providing some option to `annex merge`) in those situations, it would be great.  My concern is that we cannot avoid it at all.
+
+> make it dead and use `git-annex forget --drop-dead`
+
+yeap, we will add that information to some FAQ etc, very useful.  But it might be a bit too late if we share that blown up git-annex branch publicly and people merge it into their git-annex'es.  If someone is as advanced as configuring git with alternative fetch settings, they could indeed resort to this.
+"""]]
