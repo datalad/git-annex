@@ -146,8 +146,13 @@ instance Show (RemoteA a) where
 instance Eq (RemoteA a) where
 	x == y = uuid x == uuid y
 
+-- Order by cost since that is the important order of remotes
+-- when deciding which to use. But since remotes often have the same cost
+-- and Ord must be total, do a secondary ordering by uuid.
 instance Ord (RemoteA a) where
-	compare = comparing uuid
+	compare a b
+		| cost a == cost b = comparing uuid a b
+		| otherwise = comparing cost a b
 
 instance ToUUID (RemoteA a) where
 	toUUID = uuid

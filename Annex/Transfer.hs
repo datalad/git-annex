@@ -279,4 +279,4 @@ pickRemote l a = go l =<< Annex.getState Annex.concurrency
 lessActiveFirst :: M.Map Remote Integer -> Remote -> Remote -> Ordering
 lessActiveFirst active a b
 	| Remote.cost a == Remote.cost b = comparing (`M.lookup` active) a b
-	| otherwise = compare a b
+	| otherwise = comparing Remote.cost a b

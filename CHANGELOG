@@ -8,6 +8,8 @@ git-annex (6.20180720) UNRELEASED; urgency=medium
   * Added --accessedwithin matching option.
   * Added annex.commitmessage config that can specify a commit message
     for the git-annex branch instead of the usual "update".
+  * Fix wrong sorting of remotes when using -J, it was sorting by uuid,
+    rather than cost.
 
  -- Joey Hess <id@joeyh.name>  Tue, 31 Jul 2018 12:14:11 -0400
 

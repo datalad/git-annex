@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2018-08-03T16:30:35Z"
+ content="""
+The -J2 web bug was not related to caching remotes at all
+but was an accidental sort by remote uuid rather than cost.
+I've fixed it.
+"""]]
