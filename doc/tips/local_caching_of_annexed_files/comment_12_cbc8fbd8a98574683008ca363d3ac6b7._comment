@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2018-08-03T18:09:26Z"
+ content="""
+Found a remote.cache.fetch that will prevent most accidents, though of
+course the determined footgun script may find a way.
+"""]]

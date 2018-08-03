@@ -49,6 +49,7 @@ a remote, and configure it as follows:
 	git config remote.cache.annex-cost 10
 	git config remote.cache.annex-pull false
 	git config remote.cache.annex-push false
+	git config remote.cache.fetch do-not-fetch-from-this-remote:
 
 The annex-speculate-present setting is the essential part. It makes
 git-annex know that the cache repository may contain the content of any
@@ -59,11 +60,12 @@ The low annex-cost makes git-annex try to get content from the cache remote
 before any other remotes.
 
 The annex-pull and annex-push settings prevent `git-annex sync` from
-pulling and pushing to the remote. The cache repository will remain an
-empty git repository (except for the content of annexed files). This means
-that the same cache can be used with multiple different git-annex
-repositories, without intermingling their git data. You should also avoid
-manual `git pull` and `git push` to the cache remote.
+pulling and pushing to the remote, and the remote.cache.fetch setting
+further prevents git commands from fetching from it or pushing to it. The
+cache repository will remain an empty git repository (except for the
+content of annexed files). This means that the same cache can be used with
+multiple different git-annex repositories, without intermingling their git
+data.
 
 ## populating the cache
 
