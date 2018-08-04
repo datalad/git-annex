@@ -1,6 +1,6 @@
 #!/usr/bin/make -f
 
-export BUILDER=debian/cabal-wrapper
+export BUILDER=./Setup
 
 # -j1 is used for reproducible build
 export BUILDEROPTIONS=-j1
