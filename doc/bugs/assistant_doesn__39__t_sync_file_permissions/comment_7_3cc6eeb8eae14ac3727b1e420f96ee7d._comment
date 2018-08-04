@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="no generic solution is possible in indirect mode BUT still would be nice to have a 99% solution"
+ date="2018-08-03T21:51:22Z"
+ content="""
+just ran into this as well, so was looking around. 
+I am afraid that in indirect mode no \"proper\" solution is possible since for the same content (git-annex key) there could originally be multiple files with different permissions -- e.g. one executable and one not. 
+**BUT** IMHO even though no proper solution possible, if would indeed be very useful to have it resolved to work for 99% of cases, where such collisions aren't likely and a \"union\" of executable bit across present files in the repo could be used (so if one is executable, all others with the same content are as well).  Since git annex by default inherits/propagates metadata changes across \"editions\" of the files it would already be handy even if e.g. executable shell scripts gets modified which is kinda a neat side effect ;-)
+"""]]
