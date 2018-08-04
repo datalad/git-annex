@@ -6,6 +6,7 @@
 
 import Build.Version
 
+main :: IO ()
 main = do
 	ver <- getVersion
 	writeVersion ver
