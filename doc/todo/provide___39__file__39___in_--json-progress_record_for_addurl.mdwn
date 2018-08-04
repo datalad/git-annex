@@ -1,0 +1,13 @@
+Would it be sensibly easy to provide "file" field in progress json records for addurl?  I guess in any usecase (provided or deduced from url filename) it should be known at that stage.
+ATM it is just "null" and I guess (didn't try ATM) it would be impossible to associate particular progress reports with corresponding files in the `--batch -J` mode
+
+[[!format sh """
+$> git annex addurl --file bigone --json --json-progress https://s3.amazonaws.com/fcp-indi/data/Projects/ABIDE_Initiative/Outputs/freesurfer/5.1/UCLA_1_0051257/mri/T1.mgz                                              
+{"byte-progress":259645,"action":{"command":"addurl","file":null},"total-size":2459677,"percent-progress":"10.56%"}
+{"byte-progress":1304125,"action":{"command":"addurl","file":null},"total-size":2459677,"percent-progress":"53.02%"}
+{"command":"addurl","note":"to bigone","success":true,"key":"MD5E-s2459677--ad5bf54490212c7e9d88f15e16c4b0c1","file":"bigone"}
+"""]]
+
+Thanks in advance
+
+[[!meta author=yoh]]
