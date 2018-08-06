@@ -314,6 +314,7 @@ downloadWeb o url urlinfo file =
 {- The destination file is not known at start time unless the user provided
  - a filename. It's not displayed then for output consistency, 
  - but is added to the json when available. -}
+showStartAddUrl :: URLString -> AddUrlOptions -> Annex ()
 showStartAddUrl url o = do
 	showStart' "addurl" (Just url)
 	case fileOption (downloadOptions o) of
