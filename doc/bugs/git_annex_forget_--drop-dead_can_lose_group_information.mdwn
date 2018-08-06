@@ -152,3 +152,5 @@ B IS IN GROUP:
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, git-annex is slowly replacing all of my other sync and backup systems I've cobbled together over the years.
+
+> [[fixed|done]] --[[Joey]]

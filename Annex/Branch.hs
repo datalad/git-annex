@@ -223,10 +223,15 @@ getLocal :: FilePath -> Annex String
 getLocal file = go =<< getJournalFileStale file
   where
 	go (Just journalcontent) = return journalcontent
-	go Nothing = getRaw file
+	go Nothing = getRef fullname file
 
-getRaw :: FilePath -> Annex String
-getRaw = getRef fullname
+{- Gets the content of a file as staged in the branch's index. -}
+getStaged :: FilePath -> Annex String
+getStaged = getRef indexref
+  where
+	-- This makes git cat-file be run with ":file",
+	-- so it looks at the index.
+	indexref = Ref ""
 
 getHistorical :: RefDate -> FilePath -> Annex String
 getHistorical date file =
@@ -533,6 +538,10 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 	-- update the git-annex branch, while it usually holds changes
 	-- for the head branch. Flush any such changes.
 	Annex.Queue.flush
+	-- Stop any running git cat-files, to ensure that the
+	-- getStaged calls below use the current index, and not some older
+	-- one.
+	catFileStop
 	withIndex $ do
 		prepareModifyIndex jl
 		run $ mapMaybe getTransitionCalculator tlist
@@ -557,15 +566,15 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 	 - to hold changes to every file in the branch at once.)
 	 -
 	 - When a file in the branch is changed by transition code,
-	 - that value is remembered and fed into the code for subsequent
+	 - its new content is remembered and fed into the code for subsequent
 	 - transitions.
 	 -}
 	run [] = noop
 	run changers = do
-		trustmap <- calcTrustMap <$> getRaw trustLog
+		trustmap <- calcTrustMap <$> getStaged trustLog
 		fs <- branchFiles
 		forM_ fs $ \f -> do
-			content <- getRaw f
+			content <- getStaged f
 			apply changers f content trustmap
 	apply [] _ _ _ = return ()
 	apply (changer:rest) file content trustmap =
