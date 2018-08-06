@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-08-06T15:55:56Z"
+ content="""
+This is quite old, is it still wanted?
+
+git's remote.name.fetch config can make it only fetch a particular branch,
+so that's one way to do this without adding an option.
+"""]]
