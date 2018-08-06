@@ -126,7 +126,7 @@ checkUrl r o u = do
   where
 
 	go _ (Left e) = void $ commandAction $ do
-		showStart' "addurl" (Just u)
+		showStartAddUrl u o
 		warning (show e)
 		next $ next $ return False
 	go deffile (Right (UrlContents sz mf)) = do
@@ -148,7 +148,7 @@ startRemote :: Remote -> AddUrlOptions -> FilePath -> URLString -> Maybe Integer
 startRemote r o file uri sz = do
 	pathmax <- liftIO $ fileNameLengthLimit "."
 	let file' = joinPath $ map (truncateFilePath pathmax) $ splitDirectories file
-	showStart' "addurl" (Just uri)
+	showStartAddUrl uri o
 	showNote $ "from " ++ Remote.name r 
 	showDestinationFile file'
 	next $ performRemote r o uri file' sz
@@ -192,7 +192,7 @@ startWeb o urlstring = go $ fromMaybe bad $ parseURI urlstring
 	bad = fromMaybe (giveup $ "bad url " ++ urlstring) $
 		Url.parseURIRelaxed $ urlstring
 	go url = do
-		showStart' "addurl" (Just urlstring)
+		showStartAddUrl urlstring o
 		pathmax <- liftIO $ fileNameLengthLimit "."
 		urlinfo <- if relaxedOption (downloadOptions o)
 			then pure Url.assumeUrlExists
@@ -310,6 +310,15 @@ downloadWeb o url urlinfo file =
 				else do
 					warning $ dest ++ " already exists; not overwriting"
 					return Nothing
+
+{- The destination file is not known at start time unless the user provided
+ - a filename. It's not displayed then for output consistency, 
+ - but is added to the json when available. -}
+showStartAddUrl url o = do
+	showStart' "addurl" (Just url)
+	case fileOption (downloadOptions o) of
+		Nothing -> noop
+		Just file -> maybeShowJSON $ JSONChunk [("file", file)]
 
 showDestinationFile :: FilePath -> Annex ()
 showDestinationFile file = do
