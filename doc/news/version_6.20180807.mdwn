@@ -1,0 +1,15 @@
+git-annex 6.20180807 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * S3: Support credential-less download from remotes configured
+     with public=yes exporttree=yes.
+   * Fix reversion in display of http 404 errors.
+   * Added remote.name.annex-speculate-present config that can be used to
+     make cache remotes.
+   * Added --accessedwithin matching option.
+   * Added annex.commitmessage config that can specify a commit message
+     for the git-annex branch instead of the usual "update".
+   * Fix wrong sorting of remotes when using -J, it was sorting by uuid,
+     rather than cost.
+   * addurl: Include filename in --json-progress output.
+   * Fix git-annex branch data loss that could occur after
+     git-annex forget --drop-dead."""]]
