@@ -14,7 +14,7 @@ git-annex (6.20180807) upstream; urgency=medium
   * Fix git-annex branch data loss that could occur after
     git-annex forget --drop-dead.
 
- -- Joey Hess <id@joeyh.name>  Mon, 06 Aug 2018 20:30:32 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 07 Aug 2018 16:22:05 -0400
 
 git-annex (6.20180719) upstream; urgency=medium
 
