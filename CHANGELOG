@@ -1,4 +1,4 @@
-git-annex (6.20180720) UNRELEASED; urgency=medium
+git-annex (6.20180807) upstream; urgency=medium
 
   * S3: Support credential-less download from remotes configured
     with public=yes exporttree=yes.
@@ -14,7 +14,7 @@ git-annex (6.20180720) UNRELEASED; urgency=medium
   * Fix git-annex branch data loss that could occur after
     git-annex forget --drop-dead.
 
- -- Joey Hess <id@joeyh.name>  Tue, 31 Jul 2018 12:14:11 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 06 Aug 2018 20:30:32 -0400
 
 git-annex (6.20180719) upstream; urgency=medium
 
