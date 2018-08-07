@@ -9,7 +9,9 @@
 
 module Utility.Android where
 
+#ifdef linux_HOST_OS
 import Common
+#endif
 
 -- Detect when the Linux build is running on Android, eg in termux.
 --
