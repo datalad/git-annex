@@ -15,6 +15,7 @@ import Annex.WorkTree
 import Messages.JSON (JSONActionItem(..))
 import Types.Messages
 import Utility.Aeson
+import Limit
 
 import qualified Data.Set as S
 import qualified Data.Map as M
@@ -83,8 +84,11 @@ seek o = case batchOption o of
 			(seeker $ whenAnnexed $ start c o)
 			=<< workTreeItems (forFiles o)
 	Batch -> withMessageState $ \s -> case outputType s of
-		JSONOutput _ -> batchInput parseJSONInput $
-			commandAction . startBatch
+		JSONOutput _ -> ifM limited
+			( giveup "combining --batch with file matching options is not currently supported"
+			, batchInput parseJSONInput $
+				commandAction . startBatch
+			)
 		_ -> giveup "--batch is currently only supported in --json mode"
 
 start :: VectorClock -> MetaDataOptions -> FilePath -> Key -> CommandStart

@@ -152,6 +152,9 @@ automatically.
 
 	{"file":"foo","fields":{"author":[]}}
 
+  Note that file matching options do not affect the files that are
+  processed when in batch mode.
+
 # EXAMPLES
 
 To set some tags on a file and also its author:

@@ -62,7 +62,7 @@ seek o = allowConcurrentOutput $ do
 		Batch
 			| updateOnly o ->
 				giveup "--update --batch is not supported"
-			| otherwise -> batchFiles gofile
+			| otherwise -> batchFilesMatching gofile
 		NoBatch -> do
 			l <- workTreeItems (addThese o)
 			let go a = a gofile l

@@ -48,7 +48,8 @@ For example:
   Enables batch mode, in which a file is read in a line from stdin,
   its information displayed, and repeat.
 
-  Note that if the file is not an annexed file, an empty line will be
+  Note that if the file is not an annexed file, or does not match
+  specified file matching options, an empty line will be
   output instead.
 
 * `--json`

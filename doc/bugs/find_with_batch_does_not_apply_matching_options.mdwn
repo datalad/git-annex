@@ -8,3 +8,6 @@ Using `git annex find --batch` with matching options seems to not apply them.
 
 ### What version of git-annex are you using? On what operating system?
 I'd rather not say ~~because it is ancient~~. Joey says this is reproducible on recent git-annex versions though.
+
+> Not only find, but a bunch of commands supporting --batch had this
+> oversight. Fixed them all. [[done]] --[[Joey]]

@@ -1,3 +1,14 @@
+git-annex (6.20180808) UNRELEASED; urgency=medium
+
+  * When --batch is used with matching options like --in, --metadata,
+    etc, only operate on the provided files when they match those options.
+    Otherwise, a blank line is output in the batch protocol.
+    Affected commands: find, add, whereis, drop, copy, move, get
+  * Make metadata --batch combined with matching options refuse to run,
+    since it does not seem worth supporting that combination.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 08 Aug 2018 11:24:08 -0400
+
 git-annex (6.20180807) upstream; urgency=medium
 
   * S3: Support credential-less download from remotes configured

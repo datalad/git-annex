@@ -12,6 +12,8 @@ import Types.Command
 import CmdLine.Action
 import CmdLine.GitAnnex.Options
 import Options.Applicative
+import Limit
+import Types.FileMatcher
 
 data BatchMode = Batch | NoBatch
 
@@ -72,5 +74,18 @@ batchCommandAction a = maybe (batchBadInput Batch) (const noop)
 
 -- Reads lines of batch input and passes the filepaths to a CommandStart
 -- to handle them.
-batchFiles :: (FilePath -> CommandStart) -> Annex ()
-batchFiles a = batchInput Right $ batchCommandAction . a
+--
+-- File matching options are not checked.
+allBatchFiles :: (FilePath -> CommandStart) -> Annex ()
+allBatchFiles a = batchInput Right $ batchCommandAction . a
+
+-- Like allBatchFiles, but checks the file matching options
+-- and skips non-matching files.
+batchFilesMatching :: (FilePath -> CommandStart) -> Annex ()
+batchFilesMatching a = do
+	matcher <- getMatcher
+	allBatchFiles $ \f ->
+		ifM (matcher $ MatchingFile $ FileInfo f f)
+			( a f
+			, return Nothing
+			)

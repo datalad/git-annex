@@ -77,8 +77,9 @@ annexed content, and other symlinks.
   the file is added, and repeat.
 
   Note that if a file is skipped (due to not existing, being gitignored,
-  already being in git etc), an empty line will be output instead of the
-  normal output produced when adding a file.
+  already being in git, or doesn't meet the matching options), 
+  an empty line will be output instead of the normal output produced
+  when adding a file.
 
 # SEE ALSO
 
