@@ -33,3 +33,5 @@ operating system: linux x86_64
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Yes, I use it on my laptop without issues. I'm trying to set up a server on my desktop.
+
+> [[done]], apparently the reporter was mistaken --[[Joey]] 
