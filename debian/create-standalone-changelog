@@ -7,10 +7,10 @@ set -eu
 
 umask 022
 
-# This is the same method that the configure script uses when git-annex is
-# built from git master.
-ANNEX_VERSION=$(runghc Build/BuildVersion.hs)
-
+# For NeuroDebian we rely on `git describe` output to get a
+# sortable version which should work for any stage of a snapshot between
+# releases and would remain sortable
+ANNEX_VERSION=$(git describe HEAD)
 ANNEX_NDVERSION=$( echo ${ANNEX_VERSION} | sed -e 's,-,+git,' -e 's,$,-1~ndall+1,')
 
 dch --noconf -v ${ANNEX_NDVERSION} \
