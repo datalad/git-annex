@@ -65,16 +65,16 @@ git-annex should use smudge/clean filters.
 * When git runs the smudge filter, it buffers all its output in ram before
   writing it to a file. So, checking out a branch with a large v6 unlocked files
   can cause git to use a lot of memory.
-  (This needs to be fixed in git, but my proposed interface in
+
+  This needs to be fixed in git, but my proposed interface in
   <http://thread.gmane.org/gmane.comp.version-control.git/294425> would
   avoid the problem for git checkout, since it would use the new interface
-  and not the smudge filter.)
+  and not the smudge filter.
 
-* When `git add` is run with a large file, it allocates memory for
-  the whole file content, even though it's only going
-  to stream it to the clean filter. My proposed smudge/clean
-  interface patch also fixed this problem, since it made git not read
-  the file at all.
+  Last verified with git 2.18 in 2018. 
+
+  To check: Does the long-running filter process interface have the same
+  problem?
 
 * Eventually (but not yet), make v6 the default for new repositories.
   Note that the assistant forces repos into direct mode; that will need to

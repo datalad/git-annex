@@ -6,6 +6,9 @@ git-annex (6.20180808) UNRELEASED; urgency=medium
     Affected commands: find, add, whereis, drop, copy, move, get
   * Make metadata --batch combined with matching options refuse to run,
     since it does not seem worth supporting that combination.
+  * v6 add: Take advantage of improved SIGPIPE handler in git 2.5 to
+    speed up the clean filter by not reading the file content from the
+    pipe. This also avoids git buffering the whole file content in memory.
 
  -- Joey Hess <id@joeyh.name>  Wed, 08 Aug 2018 11:24:08 -0400
 

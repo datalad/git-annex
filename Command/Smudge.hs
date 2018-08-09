@@ -16,6 +16,7 @@ import Annex.Ingest
 import Annex.CatFile
 import Logs.Location
 import qualified Database.Keys
+import qualified Git.BuildVersion
 import Git.FilePath
 import Backend
 
@@ -68,7 +69,7 @@ smudge file = do
 
 -- Clean filter is fed file content on stdin, decides if a file
 -- should be stored in the annex, and outputs a pointer to its
--- injested content.
+-- injested content if so. Otherwise, the original content.
 clean :: FilePath -> CommandStart
 clean file = do
 	b <- liftIO $ B.hGetContents stdin
@@ -76,10 +77,18 @@ clean file = do
 		then liftIO $ B.hPut stdout b
 		else ifM (shouldAnnex file)
 			( do
-				-- Even though we ingest the actual file,
-				-- and not stdin, we need to consume all
-				-- stdin, or git will get annoyed.
-				B.length b `seq` return ()
+				-- Before git 2.5, failing to consume all
+				-- stdin here would cause a SIGPIPE and
+				-- crash it.
+				-- Newer git catches the signal and
+				-- stops sending, which is much faster.
+				-- (Also, git seems to forget to free memory
+				-- when sending the file, so the less we
+				-- let it send, the less memory it will
+				-- waste.)
+				if Git.BuildVersion.older "2.5"
+					then B.length b `seq` return ()
+					else liftIO $ hClose stdin
 				-- Look up the backend that was used
 				-- for this file before, so that when
 				-- git re-cleans a file its backend does
