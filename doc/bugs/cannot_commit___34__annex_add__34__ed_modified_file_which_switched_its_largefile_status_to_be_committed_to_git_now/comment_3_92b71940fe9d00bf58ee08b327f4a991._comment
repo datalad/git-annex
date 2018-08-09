@@ -36,7 +36,9 @@ to git as they desire.
 
 Which is better, the implicit conversion of the explicit? I am not
 sure, but lean toward the explicit since it doesn't have this potential
-to confuse users.
+to confuse users. Also, the implicit conversion would only work when
+annex.largefiles is being used, but the explicit conversion can be done
+irregardless.
 
 The explicit paths would be:
 
