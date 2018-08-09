@@ -14,17 +14,40 @@ to tell that this file is not supposed to be treated as an unlocked file.
 I don't think we want `git annex add` to commit the file. That would be
 very surprising behavior!
 
-Instead, let's improve the pre-commit hook. It
-currently looks for typechanged files and adds them as annexed files.
-Why not make it check annex.largefiles? All it has to do is, if the file
-doesn't match annex.largefiles, leave it typechanged. Git will then commit
-its contents to git.
+What git-annex could do is have the pre-commit hook notice that the file
+doesn't match annex.largefiles and not re-annex it, allowing the typechange to
+get committed to git. Then the user would only need to unlock the file,
+modify it to make it non-large, and commit it to get it checked into git.
 
-With that, all the user has to do is unlock the file, modify it to make it
-small, and commit, and it will automatically be converted to an in-git file.
+In a way, this is *too* easy, because if the user sees that working, they may
+expect to be able to turn a small file back into an annexed file by
+making the content large and running git commit on it w/o git-annex add.
+Which would be bad because that would commit a large file to git.
+I suppose the pre-commit could handle that too, but imagine that replacing
+eg a `configure` script that's expected to be shipped in the git repository
+with an annex symlink, which would be surprising.
 
-(Since the pre-commit hook has that partial commit blocking
-when there are typechanged files, that will need to be changed to
-not block partial commits when none of typechanged files match
-annex.largefiles.)
+So it may be better to keep the conversion from annexed to in-git file
+and back explicit. This could be done by `git annex add` detecting
+this situation and erroring out with a message that suggests running
+`git commit -n` if the user wants to change the annexed file to a in-git
+file. That bypasses the pre-commit hook, so the typechange gets committed
+to git as they desire.
+
+Which is better, the implicit conversion of the explicit? I am not
+sure, but lean toward the explicit since it doesn't have this potential
+to confuse users.
+
+The explicit paths would be:
+
+	# annex to git                 # git to annex
+	git annex unlock file		
+	largen file                    smallen file
+	git add file                   git annex add file
+	git commit -n                  git commit
+
+Seems worth documenting somewhere. Or making a command that handles these
+conversions, but the largen and smallen steps being manual, and the
+possibility to combine multiple of these into a single commit argues
+against a conversion command.
 """]]
