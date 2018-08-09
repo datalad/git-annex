@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Adopting "git annex add" as default command in workflow"""
+ date="2018-08-09T19:46:22Z"
+ content="""
+@davicastro yes, using git-annex add for adding both kinds of files is
+workflow this is about. Other than git add features like `--interactive`
+I see no need to ever use git add once you have this set up.
+"""]]
