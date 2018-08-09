@@ -108,3 +108,34 @@ be stored in the annex, you can temporarily override the configuration like
 this:
 
 	git annex add -c annex.largefiles=anything smallfile
+
+## converting git to annexed
+
+When you have a file that is currently stored in git, and you want to
+convert that to be stored in the annex, here's how to accomplish that:
+
+	git rm --cached file
+	git annex add -c annex.largefiles=anything file
+	git commit file
+
+This first removes the file from git's index cache, and then adds it back
+using git-annex. You can modify the file before the `git-annex add` step,
+perhaps replacing it with new larger content that necessitates git-annex.
+
+## converting annexed to git
+
+When you have a file that is currently stored in the annex, and you want to
+convert that to be stored in git, here's how to accomplish that:
+
+	git annex unlock file
+	git add file
+	git commit -n file
+
+You can modify the file after unlocking it and before adding it to
+git. And this is probably a good idea if it was really a big file,
+so that you can replace its content with something smaller.
+
+Notice the `-n` switch when committing the file. This bypasses the
+[[git-annex-precommit]] hook. In this situation, that hook sees an unlocked
+file and wants to add it back to the annex, so you have to bypass the hook
+to get the file committed to git.
