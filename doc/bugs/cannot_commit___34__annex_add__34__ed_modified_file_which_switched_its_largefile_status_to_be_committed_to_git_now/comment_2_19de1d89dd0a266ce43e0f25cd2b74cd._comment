@@ -4,4 +4,9 @@
  date="2018-08-09T16:05:27Z"
  content="""
 The double output from `git-annex add file` is also some kind of minor bug.
+
+The double output seems to have the same root cause too: The file is left
+typechanged form by the first pass of the add, and so the second pass
+sees it again. When annex.largefiles lets the file be annexed, the doubled
+output does not occur.
 """]]
