@@ -1,0 +1,23 @@
+Plan is to take some time this August and revisit v6, hoping to move it
+toward being production ready.
+
+Today I studied the "Long Running Filter Process" documentation in
+gitattributes(5), as well as the supplimental documentation in git about
+the protocol they use. This interface was added to git after v6 mode was
+implemented, and hopefully some of v6's issues can be fixed by using it in
+some way. But I don't know how yet, it's not as simple as using this
+interface as-is (it was designed for something different), but
+finding a creative trick using it.
+
+So far I have [this idea](http://git-annex.branchable.com/todo/Long_Running_Filter_Process/#comment-7c571c4ed26ce370ccd48db0a4aff4fc)
+to explore. It's promising, might fix the worst of the problems.
+
+Also, reading over all the notes in [[todo/smudge]], I finally
+checked and yes, git doesn't require filters to consume all stdin anymore,
+and when they don't consume stdin, git doesn't leak memory anymore either.
+Which let me massively speed up `git add` in v6 repos. While before `git
+add` of a gigabyte file made git grow to a gigabyte in memory and copied a
+gigabyte through a pipe, it's now just as fast as `git annex add` in v5
+mode is.
+
+This work is supported by the NSF-funded DataLad project.
