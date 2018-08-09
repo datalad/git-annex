@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-08-09T16:05:27Z"
+ content="""
+The double output from `git-annex add file` is also some kind of minor bug.
+"""]]
