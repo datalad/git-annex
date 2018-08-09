@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2018-08-09T19:52:50Z"
+ content="""
+Ben, I can reproduce that, but the file appearing modified in git status 
+is a known  problem documented in [[todo/smudge]]. It's one
+of the primary reasons that v6 mode remains experiemental.
+
+While `git commit -a` in that clone does cause the file to be converted
+from git to annex, touching the file and committing has the same effect. If
+you want to juggle annexed and non-annexed files in a v6 repository without
+letting annex.largefiles tell git-annex what to do, you have to manually
+tell it what to do every time the file is staged. When you `git commit -a`,
+you stage the file and so you need to include `-c annex.largefiles=nothing`
+to keep it from transitioning to the annex.
+
+It think it might make sense to get v6 working to the point that it's
+non-experimental before worrying about such a marginal edge case as this.
+"""]]
