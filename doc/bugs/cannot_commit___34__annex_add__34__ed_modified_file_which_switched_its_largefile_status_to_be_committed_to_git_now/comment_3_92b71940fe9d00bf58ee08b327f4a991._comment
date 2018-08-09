@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-08-09T16:17:33Z"
+ content="""
+So the root problem is that when we have a typechanged file and want to
+convert that to be not typechanged, we have to git commit it.
+As long as the previous commit is a symlink and the file in the index is
+not, the file will be typechanged by definition.
+
+When git-annex add runs `git add file`, it's doing the only thing it can
+do, but it leaves the file typechanged, and so git-annex later has no way
+to tell that this file is not supposed to be treated as an unlocked file.
+I don't think we want `git annex add` to commit the file. That would be
+very surprising behavior!
+
+Instead, let's improve the pre-commit hook. It
+currently looks for typechanged files and adds them as annexed files.
+Why not make it check annex.largefiles? All it has to do is, if the file
+doesn't match annex.largefiles, leave it typechanged. Git will then commit
+its contents to git.
+
+With that, all the user has to do is unlock the file, modify it to make it
+small, and commit, and it will automatically be converted to an in-git file.
+
+(Since the pre-commit hook has that partial commit blocking
+when there are typechanged files, that will need to be changed to
+not block partial commits when none of typechanged files match
+annex.largefiles.)
+"""]]
