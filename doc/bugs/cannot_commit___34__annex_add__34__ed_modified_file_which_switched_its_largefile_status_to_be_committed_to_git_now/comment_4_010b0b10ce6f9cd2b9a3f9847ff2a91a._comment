@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="may be one more gitattribute to instruct on either conversion is desired for the file?"
+ date="2018-08-09T18:59:56Z"
+ content="""
+I will place implementation and possible tech difficulties aside for now.
+I am afraid that here and [there](http://git-annex.branchable.com/bugs/Too_difficult_if_not_impossible_to_explicitly_add__47__keep_file_under_git___40__not_annex__41___in_v6_without_employing_.gitattributes/) we (well, me?) indeed wanted to see two conflicting behaviors somehow happen.  On one hand (in [there](http://git-annex.branchable.com/bugs/Too_difficult_if_not_impossible_to_explicitly_add__47__keep_file_under_git___40__not_annex__41___in_v6_without_employing_.gitattributes/)) we would like to keep the file initially committed to git under git, regardless what .gitattributes instructs.
+On the other, here I expected file to automagically jump between git and annex depending on `.gitattributes`.  So, rather than explicit \"to git\" or \"to annex\" you outlined, to me the question sounds more like \"retain the same storage (git or annex) as before\" or \"possibly perform conversion according to .gitattributes\".  And I see usecases where for some files (directories, e.g. `.datalad/metadata`) we would like to see one strategy (auto-conversion) and for the others (default?) the other (maintain git/annex).   Given that in v6 there would only be `git add` (so no explicit `git` vs `git annex` add), and that `-n` for `git add` is a flag I was not even aware about, may be it is better to think about being able to explicitly set some additional gitattribute to allow (or disallow?) the conversion for given files, and then have consistent user-level `git annex add` (and in v6 `git add`) which would perform necessary actions across provided files according to `largefiles` and that additional attribute value to decide on the destiny of the file?
+"""]]
