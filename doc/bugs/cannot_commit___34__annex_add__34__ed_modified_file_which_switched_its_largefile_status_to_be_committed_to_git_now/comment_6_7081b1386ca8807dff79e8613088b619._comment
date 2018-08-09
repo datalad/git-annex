@@ -9,5 +9,9 @@ in v6 mode too. And `-n` is a flag to `git commit`, not `git add`.
 
 Let's please not entangle this bug with that other bug. Unless your goal is
 that I merge them. Bear in mind that I consider the other bug a snake pit,
-and probably should have closed it as utterly useless some time ago.
+and probably should have closed it as utterly useless some time ago.a
+
+(Maybe that was uncharitable, but the other bug seems pretty well blocked
+on a complete reimplementation of v6 mode leading to a v6 mode that is not
+experimental, and entangling this bug into that does not seem wise.)
 """]]
