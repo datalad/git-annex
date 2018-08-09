@@ -3,16 +3,14 @@
  subject="""comment 1"""
  date="2018-08-09T15:57:57Z"
  content="""
-The partial commit blocking is explained in
-[[!commit adc5ca70a8095a389273e7c286cb32de6873a5a3]]
+I take this as not being a bug about the partial commit
+blocking (as explained in
+[[!commit adc5ca70a8095a389273e7c286cb32de6873a5a3]]), which is working
+around a git behavior and so can't be fixed other than by going to v6.
 
-That is working around a behavior of git, so it cannot be improved in
-git-annex. If it didn't block partial commits, the repository would be left
-in a broken state. The error message explains what you need to do.
-
-(The best fix for this issue is making v6 mode work well enough to ditch v5
-mode. This is indeed one of the motivations for v6 mode in the first place.)
-
-So I don't see a bug here except possibly with the part where git commit -a
-commits to annex not git.
+Instead, I think this is a bug about git annex add of an unlocked file
+not converting it to a in-git file when annex.largefiles says it ought
+to. If it did that it would not run into the partial commit blocking
+at all. And, the observersion about git commit -a committing to the annex
+not to git points at the same problem.
 """]]
