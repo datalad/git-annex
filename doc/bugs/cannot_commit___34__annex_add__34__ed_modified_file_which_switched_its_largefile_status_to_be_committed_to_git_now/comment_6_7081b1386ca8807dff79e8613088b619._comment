@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2018-08-09T19:16:10Z"
+ content="""
+In v6, `git add` rather than `git annex add` will also add it to the annex,
+given annex.largefiles setting. Of course, `git annex add` can also be used
+in v6 mode too. And `-n` is a flag to `git commit`, not `git add`.
+
+Let's please not entangle this bug with that other bug. Unless your goal is
+that I merge them. Bear in mind that I consider the other bug a snake pit,
+and probably should have closed it as utterly useless some time ago.
+"""]]
