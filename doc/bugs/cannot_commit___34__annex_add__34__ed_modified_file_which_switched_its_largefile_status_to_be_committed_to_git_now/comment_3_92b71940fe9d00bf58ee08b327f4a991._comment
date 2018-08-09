@@ -42,7 +42,7 @@ The explicit paths would be:
 
 	# annex to git                 # git to annex
 	git annex unlock file		
-	largen file                    smallen file
+	smallen file                   largen file
 	git add file                   git annex add file
 	git commit -n                  git commit
 
