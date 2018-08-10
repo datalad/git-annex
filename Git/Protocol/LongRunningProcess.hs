@@ -79,7 +79,8 @@ handshake selectrole selectcapability input output =
 		case selectrole role of
 			Left e -> return (Left e)
 			Right myrole -> sendpkt rolePkt myrole $
-				sendpkt versionPkt (Version "2") $
+				sendpkt versionPkt (Version "2") $ do
+					hFlush output
 					exchangecaps $ \mycaps -> return $ 
 						Right (myrole, mycaps)
   where
@@ -87,13 +88,15 @@ handshake selectrole selectcapability input output =
 	
 	sendpkt f v cnt = case f v of
 		Just pkt -> do
-			hPutBuilder output $ encodePktLine pkt
-			hFlush output
+			writePktLine output pkt
 			cnt
 		Nothing -> return $ Left $ 
 			"failed constructing pkt-line packet for: " ++ show v
 	
-	sendpkts _ [] cnt = sendpkt Just flushPkt cnt
+	sendpkts _ [] cnt = do
+		writePktLine output flushPkt
+		hFlush output
+		cnt
 	sendpkts f (v:vs) cnt = sendpkt f v $ sendpkts f vs cnt
 
 	getpkt parser cnt = readPktLine input >>= \case

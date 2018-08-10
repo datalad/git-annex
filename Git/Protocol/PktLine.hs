@@ -19,6 +19,7 @@ module Git.Protocol.PktLine (
 	decodePktLine,
 	splitPktLine,
 	readPktLine,
+	writePktLine,
 ) where
 
 import qualified Data.ByteString as S
@@ -156,3 +157,7 @@ readPktLine h = do
 					body <- S.hGet h (len - 4)
 					let parser = parsePktLine' len <* endOfInput
 					return $ Just $ parseOnly parser body
+
+-- | Sends a packet to the Handle. Does not flush the Handle.
+writePktLine :: Handle -> PktLine -> IO ()
+writePktLine h = hPutBuilder h . encodePktLine
