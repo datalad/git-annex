@@ -70,11 +70,11 @@ versionPkt = formatKV "version" fromVersion
 -- the Server.
 handshake
 	:: (Role -> Either String Role) -- ^ role selection function
-	-> ([Capability] -> [Capability]) -- ^ capability selection function
+	-> (Capability -> Bool) -- ^ capability selection function
 	-> Handle -- ^ handle to receive data from git
 	-> Handle -- ^ handle to send data to git
 	-> IO (Either String (Role, [Capability]))
-handshake selectrole selectcapabilities input output =
+handshake selectrole selectcapability input output =
 	getpkt pktRole $ \role ->
 		checkversion $ do
 			case selectrole role of
@@ -120,7 +120,7 @@ handshake selectrole selectcapabilities input output =
 				"git is using an unsupported protocol version: " ++ show versions
 	
 	exchangecaps cnt = getpkts pktCapability $ \caps -> do
-		let mycaps = selectcapabilities caps
+		let mycaps = filter selectcapability caps
 		sendpkts capabilityPkt mycaps $
 			cnt mycaps
 
