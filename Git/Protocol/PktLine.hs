@@ -18,6 +18,7 @@ module Git.Protocol.PktLine (
 	parsePktLine,
 	decodePktLine,
 	splitPktLine,
+	readPktLine,
 ) where
 
 import qualified Data.ByteString as S
@@ -31,12 +32,13 @@ import qualified Data.Text.Encoding as E
 import qualified Data.Text.Encoding.Error as E
 import Data.Monoid
 import Data.Word
+import System.IO
 
 -- | A pkt-line encodes a variable length binary string with a maximum size.
 --
 -- This module only exports smart constructors for legal pkt-lines.
 newtype PktLine = PktLine S.ByteString
-	deriving (Show)
+	deriving (Show, Eq)
 
 -- | Maximum data that can be contained in a pkt-line, not
 -- including the 4 byte length header.
@@ -96,17 +98,17 @@ encodePktLine (PktLine b)
 
 -- | Attoparsec parser for a pkt-line.
 parsePktLine :: Parser PktLine
-parsePktLine = do
-	len <- parseLengthHeader
-	if len == 0
-		then do
-			endOfInput
-			return flushPkt
-		else if len < 4
-			-- It's impossible for a pkt-line to be less than
-			-- 4 bytes long, since the length header is 4 bytes.
-			then fail "invalid pkt-line length"
-			else PktLine <$> A.take (len - 4)
+parsePktLine = parsePktLine' =<< parseLengthHeader
+
+parsePktLine' :: Int -> Parser PktLine
+parsePktLine' len
+	| len == 0 = do
+		endOfInput
+		return flushPkt
+	-- It's impossible for a pkt-line to be less than
+	-- 4 bytes long, since the length header is 4 bytes.
+	| len < 4 = fail "invalid pkt-line length"
+	| otherwise = PktLine <$> A.take (len - 4)
 
 parseLengthHeader :: Parser Int
 parseLengthHeader = do
@@ -134,3 +136,23 @@ splitPktLine = go . AL.parse parsePktLine
   where
 	go (AL.Done rest p) = Right (p, rest)
 	go (AL.Fail _ _ e) = Left e
+
+-- | Read the next PktLine from a Handle. 
+--
+-- Nothing is returned at EOF.
+readPktLine :: Handle -> IO (Maybe (Either String PktLine))
+readPktLine h = do
+	header <- S.hGet h 4
+	if S.null header
+		then return Nothing
+		else case parseOnly parseLengthHeader header of
+			Left e -> return $ Just $ Left e
+			Right len
+				| len == 0 -> return $ Just $ Right flushPkt
+				| otherwise -> do
+					-- The header parser rejects headers that
+					-- are too long, so this will never use
+					-- much memory.
+					body <- S.hGet h (len - 4)
+					let parser = parsePktLine' len <* endOfInput
+					return $ Just $ parseOnly parser body
