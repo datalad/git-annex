@@ -364,6 +364,7 @@ Executable git-annex
    cryptonite,
    memory,
    split,
+   attoparsec,
    QuickCheck (>= 2.1),
    tasty (>= 0.7),
    tasty-hunit,
@@ -846,6 +847,7 @@ Executable git-annex
     Git.LsTree
     Git.Merge
     Git.Objects
+    Git.Protocol.PktLine
     Git.Queue
     Git.Ref
     Git.RefLog
