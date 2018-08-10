@@ -75,14 +75,13 @@ handshake
 	-> Handle -- ^ handle to send data to git
 	-> IO (Either String (Role, [Capability]))
 handshake selectrole selectcapability input output =
-	getpkt pktRole $ \role ->
-		checkversion $ do
-			case selectrole role of
-				Left e -> return (Left e)
-				Right myrole -> sendpkt rolePkt myrole $
-					sendpkt versionPkt (Version "2") $
-						exchangecaps $ \mycaps -> return $ 
-							Right (myrole, mycaps)
+	getpkt pktRole $ \role -> checkversion $ 
+		case selectrole role of
+			Left e -> return (Left e)
+			Right myrole -> sendpkt rolePkt myrole $
+				sendpkt versionPkt (Version "2") $
+					exchangecaps $ \mycaps -> return $ 
+						Right (myrole, mycaps)
   where
 	protoerr e = return $ Left $ e ++ " from git in protocol handshake"
 	
