@@ -1,0 +1,20 @@
+Spent today implementing the git pkt-line protocol. Git uses it for a bunch
+of internal stuff, but also to talk to long-running filter processes.
+
+This was my first time using attoparsec, which I quite enjoyed aside from
+some difficulty in parsing a 4 byte hex number. Even though parsing to a
+Word16 should naturally only consume 4 bytes, attoparsec will actually
+consume subsequent bytes that look like hex. And it may parse fewer than 4
+bytes too. So my parser had to take 4 bytes and feed them back into a call
+to attoparsec. Which seemed weird, but works. I also used
+bytestring-builder, and between the two libraries, this should be quite a
+fast implementation of the protocol.
+
+With that 300 lines of code written, it should be easy to implement support
+for the rest of the long-running filter process protocol. Which will surely
+speed up v6 a bit, since at least git won't be running git-annex over and
+over again for each file in the worktree. I hope it will also avoid a memory
+leak in git. That'll be the rest of the low-hanging fruit, before v6
+improvements get really interesting.
+
+This work is supported by the NSF-funded DataLad project.
