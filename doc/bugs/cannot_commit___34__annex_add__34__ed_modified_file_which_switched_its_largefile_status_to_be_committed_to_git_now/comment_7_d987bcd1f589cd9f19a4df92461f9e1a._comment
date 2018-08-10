@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="my 1c"
+ date="2018-08-10T19:17:16Z"
+ content="""
+> Let's please not entangle this bug with that other bug.
+
+Sure!  I just (probably erroneously) felt that they stem from the same point of absent clear \"semantic\" on either conversion should happen or not.  I am  yet to fully digest what you are suggesting, and either and how we should address for this at datalad level, but meanwhile FWIW:
+
+- adding `-n` to the `commit` (and not to `add`) is as uncommon to me in my daily use of git/git-annex, and I hope that I would never have to use it while performing regular \"annex unlock file(s); annex add file(s); commit file(s)\" sequence in order to maintain a file(s) under annex.
+
+- either a file `smallen` according to git-annex/largefiles setting is unknown to the user (or some higher level tool using git-annex as datalad) without explicitly checking (not even sure yet how) or doing `git annex add`-ing it/them and seeing either it would now be added to git whenever it was added to annex before.  So hopefully we do not need to do that either.
+
+"""]]
