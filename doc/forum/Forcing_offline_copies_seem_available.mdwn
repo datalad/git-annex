@@ -1,0 +1,3 @@
+I have a large archive repository copied on an LTO tape, plus a proxy version of it with data dropped on local HDD. I've added this stripped proxy as a remote to a central repository to keep track of what is stored on the tape. Unfortunately, since the proxy has no contents, the central repo thinks there are no copies available anywhere, even though the offline tape contains all the data.
+
+How could I convince the central repo that the copies do in fact exist, even if they are very much offline?
