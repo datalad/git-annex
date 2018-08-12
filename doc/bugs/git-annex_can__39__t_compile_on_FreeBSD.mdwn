@@ -15,7 +15,7 @@ FreeBSD 11.1-RELEASE r321309 GENERIC amd64
 
 ### Please provide any additional information below.
 
-The full log is available at https://gitlab.com/snippets/1743708.  Summary below:
+The full log is available at [https://gitlab.com/snippets/1743708](https://gitlab.com/snippets/1743708).  Summary below:
 
 [[!format sh """
 cabal: Error: some packages failed to install:
