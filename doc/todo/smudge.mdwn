@@ -37,6 +37,9 @@ git-annex should use smudge/clean filters.
   > Thanks to [[!commit a96972015dd76271b46432151e15d5d38d7151ff]], 
   > the clean filter is now very quick, so perhaps git update-index would
   > be ok?
+  > 
+  > Better, `git update-index --index-info` can be used, this avoids
+  > running the clean filter.
 
 * Implement git's new `filter.<driver>.process` interface, which will
   let only 1 git-annex process be started by git when processing
