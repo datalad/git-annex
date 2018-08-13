@@ -5,14 +5,12 @@ git-annex should use smudge/clean filters.
 * Reconcile staged changes into the associated files database, whenever
   the database is queried. This is needed to handle eg:
 
-  ```
-  	git add largefile
+	git add largefile
 	git mv largefile othername
 	git annex move othername --to foo
 	# fails to drop content from associated file othername,
 	# because it doesn't know it has that name
 	# git commit clears up this mess
-  ```
 
 * Dropping a smudged file causes git status (and git annex status)
   to show it as modified,  because the timestamp has changed. 
@@ -36,9 +34,15 @@ git-annex should use smudge/clean filters.
 
   And developed a patch set: [[git-patches]]
 
+  > Thanks to [[!commit a96972015dd76271b46432151e15d5d38d7151ff]], 
+  > the clean filter is now very quick, so perhaps git update-index would
+  > be ok?
+
 * Implement git's new `filter.<driver>.process` interface, which will
   let only 1 git-annex process be started by git when processing
   multiple files, and so should be faster.
+
+  See [[todo/Long_Running_Filter_Process]]
 
 * Checking out a different branch causes git to smudge all changed files,
   and write their content. This does not honor annex.thin. A warning
@@ -73,8 +77,7 @@ git-annex should use smudge/clean filters.
 
   Last verified with git 2.18 in 2018. 
 
-  To check: Does the long-running filter process interface have the same
-  problem?
+  Note that the long-running filter process interface has the same problem.
 
 * Eventually (but not yet), make v6 the default for new repositories.
   Note that the assistant forces repos into direct mode; that will need to
