@@ -35,11 +35,14 @@ git-annex should use smudge/clean filters.
   And developed a patch set: [[git-patches]]
 
   > Thanks to [[!commit a96972015dd76271b46432151e15d5d38d7151ff]], 
-  > the clean filter is now very quick, so perhaps git update-index would
-  > be ok?
-  > 
-  > Better, `git update-index --index-info` can be used, this avoids
-  > running the clean filter.
+  > the clean filter is now very quick, so, this can be fixed by running
+  > git update-index with files affected by get/drop.
+  >
+  > In case a file's content quickly changes after get/drop, git
+  > update-index would add the new content. To avoid this, use 
+  > `git update-index --index-info`. The next run of `git status`
+  > then runs the clean filter, and will detect if the file has gotten
+  > modified after the get/drop.
 
 * Implement git's new `filter.<driver>.process` interface, which will
   let only 1 git-annex process be started by git when processing
