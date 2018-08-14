@@ -42,13 +42,14 @@ git-annex should use smudge/clean filters.
   > update-index would add the new content. To avoid this, use 
   > `git update-index --index-info`. The next run of `git status`
   > then runs the clean filter, and will detect if the file has gotten
-  > modified after the get/drop.
+  > modified after the get/drop. TODO
 
-* Implement git's new `filter.<driver>.process` interface, which will
+* Use git's new `filter.<driver>.process` interface, which will
   let only 1 git-annex process be started by git when processing
   multiple files, and so should be faster.
 
-  See [[todo/Long_Running_Filter_Process]]
+  See [[todo/Long_Running_Filter_Process]] .. it's not currently actually a
+  win but might be a good way to improve git to work better with v6.
 
 * Checking out a different branch causes git to smudge all changed files,
   and write their content. This does not honor annex.thin. A warning
