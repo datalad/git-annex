@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jarno"
+ avatar="http://cdn.libravatar.org/avatar/da157278ab330a9c936dd733c43740f8"
+ subject="comment 2"
+ date="2018-08-14T16:03:39Z"
+ content="""
+Nice, thank you! I think I'll just delete or move the proxy away after feeding the (fake) availability info to the main repo. That should prevent git-annex from accidentally discovering that the data doesn't actually exist on the proxy, right?
+"""]]
