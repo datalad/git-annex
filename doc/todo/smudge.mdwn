@@ -12,39 +12,39 @@ git-annex should use smudge/clean filters.
 	# because it doesn't know it has that name
 	# git commit clears up this mess
 
-* Dropping a smudged file causes git status (and git annex status)
-  to show it as modified,  because the timestamp has changed. 
-  Getting a smudged file can also cause this.
-  Upgrading a direct mode repo also leaves files in this state.
-  User can use `git add` to clear it up, but better to avoid this,
-  by updating stat info in the index.
+* If an annexed file's content is not present, and its pointer file
+  is copied to a new name and added, it does not get added as an
+  associated file. (If the content is present, it does get added.)
 
-  May need to use libgit2 to do this efficiently, cannot find
-  any plumbing except git-update-index, which is very inneficient for
-  smudged files; updating a file feeds its whole content through the clean
-  filter again.
+* If an unlocked file's content is not present, and a new file with
+  identical content is added with `git add`, the unlocked file is
+  populated, but git-annex is unable to update the index, so git status
+  will say that it has been modified.
 
-  Part of the problem is that the clean filter needs to consume the whole
-  of stdin. (And git has to write the whole file content to stdout from the
-  file it mmaps). A more efficient smudge/clean interface that let the filter
-  read the file itself would let git-annex short-circuit when the file it's
-  cleaning is one it already knows about. I've proposed extending git with
-  such an interface:
-  <http://git.661346.n2.nabble.com/proposal-for-extending-smudge-clean-filters-with-raw-file-access-td7656150.html>
+* If an annexed file is deleted in the index, and another annexed file
+  uses the same key, and git annex get/drop is run, the index update
+  that's done to prevent status showing the file as modified adds
+  the deleted file back to the index.
 
-  And developed a patch set: [[git-patches]]
+* Also, if the user is getting files, and modifying files at the same
+  time, and they stage their modifications, the modification may get
+  unstaged in a race when a file is got and the updated worktree file
+  staged in the index. 
+  
+  I don't know if this is worth worrying about,
+  because there's also of course a race where the modification to the
+  worktree file may get reverted when git-annex updates the content. Those
+  races are much smaller, but do exist.
 
-  > Thanks to [[!commit a96972015dd76271b46432151e15d5d38d7151ff]], 
-  > the clean filter is now very quick, so, this can be fixed by running
-  > git update-index with files affected by get/drop.
-  >
-  > In case a file's content quickly changes after get/drop, git
-  > update-index would add the new content. To avoid this, use 
-  > `git update-index --index-info`. The next run of `git status`
-  > then runs the clean filter, and will detect if the file has gotten
-  > modified after the get/drop. TODO
+* get/drop operations on unlocked files lead to an update of the index.
+  Only one process can update the index at one time, so eg, git annex get
+  at the same time as a git commit may display a ugly warning
+  (or the git commit could fail to start if run at just the right time).
 
-* Use git's new `filter.<driver>.process` interface, which will
+  Two git-annex get processes can also try to update the index at the
+  same time and encounter this problem (git annex get -J is ok).
+
+* Potentially: Use git's new `filter.<driver>.process` interface, which will
   let only 1 git-annex process be started by git when processing
   multiple files, and so should be faster.
 
@@ -66,12 +66,8 @@ git-annex should use smudge/clean filters.
   git-annex adjust and git-annex sync could both use that internally
   when checking out the adjusted branch, and merging a branch into HEAD.
   
-  Since this approach modifies work tree files, it again causes git status
-  to think files are modified. So, the above todo item about that needs to
-  be sorted out first; it would not do for git annex adjust to cause
-  the whole work tree to be considered to be modified!
-
-  My enhanced smudge/clean patch set also fixes this problem.
+  (My enhanced smudge/clean patch set also fixed this problem, in a much
+  nicer way...)
 
 * When git runs the smudge filter, it buffers all its output in ram before
   writing it to a file. So, checking out a branch with a large v6 unlocked files

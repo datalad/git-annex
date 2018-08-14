@@ -24,6 +24,7 @@ module Annex.Content (
 	checkDiskSpace,
 	needMoreDiskSpace,
 	moveAnnex,
+	Restage(..),
 	populatePointerFile,
 	linkToAnnex,
 	linkFromAnnex,
@@ -545,7 +546,7 @@ moveAnnex key src = ifM (checkSecureHashes key)
 			fs <- map (`fromTopFilePath` g)
 				<$> Database.Keys.getAssociatedFiles key
 			unless (null fs) $ do
-				mapM_ (populatePointerFile key dest) fs
+				mapM_ (populatePointerFile (Restage True) key dest) fs
 				Database.Keys.storeInodeCaches key (dest:fs)
 		)
 	storeindirect = storeobject =<< calcRepo (gitAnnexLocation key)
@@ -586,14 +587,23 @@ checkSecureHashes key
 		, return True
 		)
 
-populatePointerFile :: Key -> FilePath -> FilePath -> Annex ()
-populatePointerFile k obj f = go =<< liftIO (isPointerFile f)
+newtype Restage = Restage Bool
+
+{- Populates a pointer file with the content of a key. -}
+populatePointerFile :: Restage -> Key -> FilePath -> FilePath -> Annex ()
+populatePointerFile (Restage restage) k obj f = go =<< liftIO (isPointerFile f)
   where
 	go (Just k') | k == k' = do
 		destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus f
 		liftIO $ nukeFile f
 		ifM (linkOrCopy k obj f destmode)
-			( thawContent f
+			( do
+				thawContent f
+	 			-- The pointer file is re-staged,
+				-- so git won't think it's been modified.
+				when restage $ do
+					pointersha <- hashPointerFile k
+					stagePointerFile f destmode pointersha
 			, liftIO $ writePointerFile f k destmode
 			)
 	go _ = return ()
@@ -816,12 +826,6 @@ cleanObjectLoc key cleaner = do
 			<=< catchMaybeIO $ removeDirectory dir
 
 {- Removes a key's file from .git/annex/objects/
- -
- - When a key has associated pointer files, they are checked for
- - modifications, and if unmodified, are reset.
- -
- - In direct mode, deletes the associated files or files, and replaces
- - them with symlinks.
  -}
 removeAnnex :: ContentRemovalLock -> Annex ()
 removeAnnex (ContentRemovalLock key) = withObjectLoc key remove removedirect
@@ -834,22 +838,33 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key remove removedirect
 			=<< Database.Keys.getAssociatedFiles key
 		Database.Keys.removeInodeCaches key
 		Direct.removeInodeCache key
+ 
+	-- Check associated pointer file for modifications, and reset if
+	-- it's unmodified.
 	resetpointer file = ifM (isUnmodified key file)
 		( do
 			mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
 			secureErase file
 			liftIO $ nukeFile file
 			liftIO $ writePointerFile file key mode
-		-- Can't delete the pointer file.
+			-- Re-stage the pointer, so git won't think it's
+			-- been modified.
+			pointersha <- hashPointerFile key
+			stagePointerFile file mode pointersha
+		-- Modified file, so leave it alone.
 		-- If it was a hard link to the annex object,
 		-- that object might have been frozen as part of the
 		-- removal process, so thaw it.
 		, void $ tryIO $ thawContent file
 		)
+ 
+	-- In direct mode, deletes the associated files or files, and replaces
+	-- them with symlinks.
 	removedirect fs = do
 		cache <- Direct.recordedInodeCache key
 		Direct.removeInodeCache key
 		mapM_ (resetfile cache) fs
+	
 	resetfile cache f = whenM (Direct.sameInodeCache f cache) $ do
 		l <- calcRepo $ gitAnnexLink f key
 		secureErase f

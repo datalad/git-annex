@@ -97,7 +97,7 @@ clean file = do
 					<$> catKeyFile file
 				liftIO . emitPointer
 					=<< go
-					=<< (\ld -> ingest' currbackend ld Nothing)
+					=<< (\ld -> ingest' currbackend ld Nothing norestage)
 					=<< lockDown cfg file
 			, liftIO $ B.hPut stdout b
 			)
@@ -111,6 +111,9 @@ clean file = do
 		{ lockingFile = False
 		, hardlinkFileTmp = False
 		}
+	-- Can't restage associated files because git add runs this and has
+	-- the index locked.
+	norestage = Restage False
 
 shouldAnnex :: FilePath -> Annex Bool
 shouldAnnex file = do

@@ -9,6 +9,8 @@ git-annex (6.20180808) UNRELEASED; urgency=medium
   * v6 add: Take advantage of improved SIGPIPE handler in git 2.5 to
     speed up the clean filter by not reading the file content from the
     pipe. This also avoids git buffering the whole file content in memory.
+  * v6: After updating the worktree for an add/drop, update git's index,
+    so git status will not show the files as modified.
 
  -- Joey Hess <id@joeyh.name>  Wed, 08 Aug 2018 11:24:08 -0400
 

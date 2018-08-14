@@ -140,14 +140,13 @@ ingestAdd' ld@(Just (LockedDown cfg source)) mk = do
 			return (Just k)
 
 {- Ingests a locked down file into the annex. Does not update the working
- - tree or the index.
- -}
+ - tree or the index. -}
 ingest :: Maybe LockedDown -> Maybe Key -> Annex (Maybe Key, Maybe InodeCache)
-ingest = ingest' Nothing
+ingest ld mk = ingest' Nothing ld mk (Restage True)
 
-ingest' :: Maybe Backend -> Maybe LockedDown -> Maybe Key -> Annex (Maybe Key, Maybe InodeCache)
-ingest' _ Nothing _ = return (Nothing, Nothing)
-ingest' preferredbackend (Just (LockedDown cfg source)) mk = withTSDelta $ \delta -> do
+ingest' :: Maybe Backend -> Maybe LockedDown -> Maybe Key -> Restage -> Annex (Maybe Key, Maybe InodeCache)
+ingest' _ Nothing _ _ = return (Nothing, Nothing)
+ingest' preferredbackend (Just (LockedDown cfg source)) mk restage = withTSDelta $ \delta -> do
 	k <- case mk of
 		Nothing -> do
 			backend <- maybe (chooseBackend $ keyFilename source) (return . Just) preferredbackend
@@ -172,7 +171,7 @@ ingest' preferredbackend (Just (LockedDown cfg source)) mk = withTSDelta $ \delt
 	golocked key mcache s =
 		tryNonAsync (moveAnnex key $ contentLocation source) >>= \case
 			Right True -> do
-				populateAssociatedFiles key source
+				populateAssociatedFiles key source restage
 				success key mcache s		
 			Right False -> giveup "failed to add content to annex"
 			Left e -> restoreFile (keyFilename source) key e
@@ -186,7 +185,7 @@ ingest' preferredbackend (Just (LockedDown cfg source)) mk = withTSDelta $ \delt
 		linkToAnnex key (keyFilename source) (Just cache) >>= \case
 			LinkAnnexFailed -> failure "failed to link to annex"
 			_ -> do
-				finishIngestUnlocked' key source
+				finishIngestUnlocked' key source restage
 				success key (Just cache) s
 	gounlocked _ _ _ = failure "failed statting file"
 
@@ -218,23 +217,23 @@ finishIngestDirect key source = do
 finishIngestUnlocked :: Key -> KeySource -> Annex ()
 finishIngestUnlocked key source = do
 	cleanCruft source
-	finishIngestUnlocked' key source
+	finishIngestUnlocked' key source (Restage True)
 
-finishIngestUnlocked' :: Key -> KeySource -> Annex ()
-finishIngestUnlocked' key source = do
+finishIngestUnlocked' :: Key -> KeySource -> Restage -> Annex ()
+finishIngestUnlocked' key source restage = do
 	Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath (keyFilename source))
-	populateAssociatedFiles key source
+	populateAssociatedFiles key source restage
 
 {- Copy to any other locations using the same key. -}
-populateAssociatedFiles :: Key -> KeySource -> Annex ()
-populateAssociatedFiles key source = do
+populateAssociatedFiles :: Key -> KeySource -> Restage -> Annex ()
+populateAssociatedFiles key source restage = do
 	obj <- calcRepo (gitAnnexLocation key)
 	g <- Annex.gitRepo
 	ingestedf <- flip fromTopFilePath g
 		<$> inRepo (toTopFilePath (keyFilename source))
 	afs <- map (`fromTopFilePath` g) <$> Database.Keys.getAssociatedFiles key
 	forM_ (filter (/= ingestedf) afs) $
-		populatePointerFile key obj
+		populatePointerFile restage key obj
 
 cleanCruft :: KeySource -> Annex ()
 cleanCruft source = when (contentLocation source /= keyFilename source) $
