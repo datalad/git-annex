@@ -1,0 +1,14 @@
+I've now fixed the worst problem with v6 mode, which was that get/drop of
+unlocked files would cause git to think that the files were modified.
+
+Since the clean filter now runs quite fast, I was able to fix that by,
+after git-annex updates the worktree, restaging the not-really-modified 
+file in the index.
+
+This approach is not optimal; index file updates have overhead; and only
+one process can update the index file at one time. [[todo/smudge]] has a
+bunch of new todo items for cases where this change causes problems. Still,
+it seems a lot better than the old behavior, which made v6 mode nearly
+unusable IMHO.
+
+This work is supported by the NSF-funded DataLad project.
