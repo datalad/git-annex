@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-08-14T17:40:10Z"
+ content="""
+Indeed, making the proxy remote not accessible will avoid such probles.
+
+You will certianly need to make git-annex trust the remote if you want it
+to count the tape as a copy of a file.
+"""]]
