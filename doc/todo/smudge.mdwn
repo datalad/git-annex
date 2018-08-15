@@ -12,10 +12,6 @@ git-annex should use smudge/clean filters.
 	# because it doesn't know it has that name
 	# git commit clears up this mess
 
-* If an annexed file's content is not present, and its pointer file
-  is copied to a new name and added, it does not get added as an
-  associated file. (If the content is present, it does get added.)
-
 * If an unlocked file's content is not present, and a new file with
   identical content is added with `git add`, the unlocked file is
   populated, but git-annex is unable to update the index, so git status
