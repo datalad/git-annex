@@ -587,11 +587,9 @@ checkSecureHashes key
 		, return True
 		)
 
-newtype Restage = Restage Bool
-
 {- Populates a pointer file with the content of a key. -}
 populatePointerFile :: Restage -> Key -> FilePath -> FilePath -> Annex ()
-populatePointerFile (Restage restage) k obj f = go =<< liftIO (isPointerFile f)
+populatePointerFile restage k obj f = go =<< liftIO (isPointerFile f)
   where
 	go (Just k') | k == k' = do
 		destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus f
@@ -599,14 +597,25 @@ populatePointerFile (Restage restage) k obj f = go =<< liftIO (isPointerFile f)
 		ifM (linkOrCopy k obj f destmode)
 			( do
 				thawContent f
-	 			-- The pointer file is re-staged,
-				-- so git won't think it's been modified.
-				when restage $ do
-					pointersha <- hashPointerFile k
-					stagePointerFile f destmode pointersha
+				restagePointerFile restage k f destmode
 			, liftIO $ writePointerFile f k destmode
 			)
 	go _ = return ()
+
+newtype Restage = Restage Bool
+
+{- Re-stages a pointer file. This is used after updating a worktree file
+ - when content is added/removed, to prevent git from treating the worktree
+ - file as modified.
+ -
+ - If the index is known to be locked (eg, git add has run git-annex),
+ - the staging would fail, and Restage False will prevent it.
+ -}
+restagePointerFile :: Restage -> Key -> FilePath -> Maybe FileMode -> Annex ()
+restagePointerFile (Restage False) _ _ _ = return ()
+restagePointerFile (Restage True) k f mode = do
+	pointersha <- hashPointerFile k
+	stagePointerFile f mode pointersha
 
 data LinkAnnexResult = LinkAnnexOk | LinkAnnexFailed | LinkAnnexNoop
 
@@ -847,10 +856,7 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key remove removedirect
 			secureErase file
 			liftIO $ nukeFile file
 			liftIO $ writePointerFile file key mode
-			-- Re-stage the pointer, so git won't think it's
-			-- been modified.
-			pointersha <- hashPointerFile key
-			stagePointerFile file mode pointersha
+			restagePointerFile (Restage True) key file mode
 		-- Modified file, so leave it alone.
 		-- If it was a hard link to the annex object,
 		-- that object might have been frozen as part of the
