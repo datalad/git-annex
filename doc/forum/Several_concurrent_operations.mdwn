@@ -1,0 +1,1 @@
+Is it safe to have several `git annex` processes running concurrently in the same repo or in multiple repositories? For example, I have several repositories syncing to each other. Now I run `git annex sync` on them sequentially. Is it safe to run them concurrently?
