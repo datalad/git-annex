@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-08-15T15:43:00Z"
+ content="""
+git-annex is concurrency safe
+"""]]
