@@ -7,7 +7,7 @@
  -
  - Pointer files are used instead of symlinks for unlocked files.
  -
- - Copyright 2013-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -130,6 +130,41 @@ writePointerFile :: FilePath -> Key -> Maybe FileMode -> IO ()
 writePointerFile file k mode = do
 	writeFile file (formatPointer k)
 	maybe noop (setFileMode file) mode
+
+newtype Restage = Restage Bool
+
+{- Restage pointer file. This is used after updating a worktree file
+ - when content is added/removed, to prevent git status from showing
+ - it as modified.
+ -
+ - Asks git to refresh its index information for the file.
+ - That in turn runs the clean filter on the file; when the clean
+ - filter produces the same pointer that was in the index before, git
+ - realizes that the file has not actually been modified.
+ -
+ - Note that, if the pointer file is staged for deletion, or has different
+ - content than the current worktree content staged, this won't change
+ - that. So it's safe to call at any time and any situation.
+ -
+ - If the index is known to be locked (eg, git add has run git-annex),
+ - that would fail. Restage False will prevent the index being updated.
+ - Will display a message to help the user understand why
+ - the file will appear to be modified.
+ -
+ - This uses the git queue, so the update is not performed immediately,
+ - and this can be run multiple times cheaply.
+ -}
+restagePointerFile :: Restage -> FilePath -> Annex ()
+restagePointerFile (Restage False) f = toplevelWarning True $ unwords
+	[ "git status will show " ++ f
+	, "to be modified, since its content availability has changed."
+	, "This is only a cosmetic problem affecting git status; git add,"
+	, "git commit, etc won't be affected."
+	, "To fix the git status display, you can run:"
+	, "git update-index -q --refresh " ++ f
+	]
+restagePointerFile (Restage True) f = 
+	Annex.Queue.addCommand "update-index" [Param "-q", Param "--refresh"] [f]
 
 {- Parses a symlink target or a pointer file to a Key.
  - Only looks at the first line, as pointer files can have subsequent

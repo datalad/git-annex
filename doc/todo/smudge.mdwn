@@ -12,33 +12,20 @@ git-annex should use smudge/clean filters.
 	# because it doesn't know it has that name
 	# git commit clears up this mess
 
-* If an unlocked file's content is not present, and a new file with
-  identical content is added with `git add`, the unlocked file is
-  populated, but git-annex is unable to update the index, so git status
-  will say that it has been modified.
-
-* If an annexed file is deleted in the index, and another annexed file
-  uses the same key, and git annex get/drop is run, the index update
-  that's done to prevent status showing the file as modified adds
-  the deleted file back to the index.
-
-* Also, if the user is getting files, and modifying files at the same
-  time, and they stage their modifications, the modification may get
-  unstaged in a race when a file is got and the updated worktree file
-  staged in the index. 
+* If the user is getting a file that was not present, and at the same
+  time overwrites the file with new content, the new content can be staged
+  accidentially when git-annex runs git update-index on the file.
   
-  I don't know if this is worth worrying about,
-  because there's also of course a race where the modification to the
-  worktree file may get reverted when git-annex updates the content. Those
-  races are much smaller, but do exist.
-
-* get/drop operations on unlocked files lead to an update of the index.
-  Only one process can update the index at one time, so eg, git annex get
-  at the same time as a git commit may display a ugly warning
-  (or the git commit could fail to start if run at just the right time).
-
-  Two git-annex get processes can also try to update the index at the
-  same time and encounter this problem (git annex get -J is ok).
+  This race's window is wide because git-annex will process annex.queuesize
+  files before updating the index. It could be narrowed by running
+  update-index more frequently. Or, could check for modified files before
+  running it and throw those out, which would narrow the window a lot,
+  but not eliminate the race entirely.
+  
+  (Of course there's also a race where the modification gets overwritten
+  by git-annex when it updates the worktree. Which is much like the race
+  that git checkout/pull/merge can overwite a modification, which is small
+  and unlikely but afaik unclosable.)
 
 * Potentially: Use git's new `filter.<driver>.process` interface, which will
   let only 1 git-annex process be started by git when processing

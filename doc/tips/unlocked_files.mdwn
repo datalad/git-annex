@@ -110,6 +110,23 @@ to having them all unlocked, you can do so using `git annex adjust
 useful when using filesystems like FAT, and OS's like Windows that don't
 support symlinks.
 
+## index gotchas
+
+When git-annex gets or drops the content of an unlocked file, it updates
+the file in git's worktree accordingly. Then it needs to update the index
+file to reflect the change. Otherwise, `git status` would show the file
+as modified, even though there are no changes to commit.
+
+This means that when git-annex is running a command that gets or drops the
+content of an unlocked file, the index will sometimes be locked. This might
+prevent you from `git commit` at the same time. Or, if you have a git
+commit in progress, or are running multiple git-annex processes, git-annex
+may complain that the index is locked.
+
+To manually update the index when git-annex was not able to, you can run:
+
+	git update-index -q --refresh $file
+
 ## using less disk space
 
 Unlocked files are handy, but they have one significant disadvantage
@@ -154,7 +171,7 @@ So, using `git checkout` to check out a different branch, or even
 working tree, and using more disk space. A warning will be printed out in
 this situation. You can always run `git annex fix` to re-thin such files.
 
-## tradeoffs
+## annex.thin tradeoffs
 
 [[!template id=note text="""
 When a [[direct_mode]] repository is upgraded, annex.thin is automatically
