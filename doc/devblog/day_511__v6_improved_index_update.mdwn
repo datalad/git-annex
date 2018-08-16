@@ -1,0 +1,13 @@
+Found a better way to update the index after get/drop in v6 repositories.
+I was able to close all the todos around that.
+
+Only problem is there is a race where a modification that happens to a file
+soon after get/drop gets unexpectedly staged by the index update. I made
+this race's window as small as I reasonably can. Fully fixing it would
+involve improvements to the git update-index interface, or another way to
+update the index.
+
+Only two todos remain in [[todo/smudge]] that
+I want to fix in the remainder of this v6 sprint.
+
+This work is supported by the NSF-funded DataLad project.
