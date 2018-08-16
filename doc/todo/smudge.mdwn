@@ -1,6 +1,6 @@
-git-annex should use smudge/clean filters.
+git-annex should use smudge/clean filters. v6 mode
 
-### implementation todo list
+### August sprint todo list
 
 * Reconcile staged changes into the associated files database, whenever
   the database is queried. This is needed to handle eg:
@@ -11,13 +11,6 @@ git-annex should use smudge/clean filters.
 	# fails to drop content from associated file othername,
 	# because it doesn't know it has that name
 	# git commit clears up this mess
-
-* Potentially: Use git's new `filter.<driver>.process` interface, which will
-  let only 1 git-annex process be started by git when processing
-  multiple files, and so should be faster.
-
-  See [[todo/Long_Running_Filter_Process]] .. it's not currently actually a
-  win but might be a good way to improve git to work better with v6.
 
 * Checking out a different branch causes git to smudge all changed files,
   and write their content. This does not honor annex.thin. A warning
@@ -37,6 +30,8 @@ git-annex should use smudge/clean filters.
   (My enhanced smudge/clean patch set also fixed this problem, in a much
   nicer way...)
 
+## other warts
+
 * When git runs the smudge filter, it buffers all its output in ram before
   writing it to a file. So, checking out a branch with a large v6 unlocked files
   can cause git to use a lot of memory.
@@ -49,6 +44,8 @@ git-annex should use smudge/clean filters.
   Last verified with git 2.18 in 2018. 
 
   Note that the long-running filter process interface has the same problem.
+
+  The git-annex proxy idea above could work around this problem.
 
 * If the user is getting a file that was not present, and at the same
   time overwrites the file with new content, the new content can be staged
@@ -63,9 +60,19 @@ git-annex should use smudge/clean filters.
   with the information git-annex knows, including the inode etc of the 
   worktree file.
 
+### long term todos
+
+* Potentially: Use git's new `filter.<driver>.process` interface, which will
+  let only 1 git-annex process be started by git when processing
+  multiple files, and so should be faster.
+
+  See [[todo/Long_Running_Filter_Process]] .. it's not currently actually a
+  win but might be a good way to improve git to work better with v6.
+
 * Eventually (but not yet), make v6 the default for new repositories.
   Note that the assistant forces repos into direct mode; that will need to
   be changed then, and it should enable annex.thin instead.
+
 * Later still, remove support for direct mode, and enable automatic
   v5 to v6 upgrades.
 
