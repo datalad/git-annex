@@ -12,21 +12,6 @@ git-annex should use smudge/clean filters.
 	# because it doesn't know it has that name
 	# git commit clears up this mess
 
-* If the user is getting a file that was not present, and at the same
-  time overwrites the file with new content, the new content can be staged
-  accidentially when git-annex runs git update-index on the file.
-  
-  This race's window is wide because git-annex will process annex.queuesize
-  files before updating the index. It could be narrowed by running
-  update-index more frequently. Or, could check for modified files before
-  running it and throw those out, which would narrow the window a lot,
-  but not eliminate the race entirely.
-  
-  (Of course there's also a race where the modification gets overwritten
-  by git-annex when it updates the worktree. Which is much like the race
-  that git checkout/pull/merge can overwite a modification, which is small
-  and unlikely but afaik unclosable.)
-
 * Potentially: Use git's new `filter.<driver>.process` interface, which will
   let only 1 git-annex process be started by git when processing
   multiple files, and so should be faster.
@@ -64,6 +49,19 @@ git-annex should use smudge/clean filters.
   Last verified with git 2.18 in 2018. 
 
   Note that the long-running filter process interface has the same problem.
+
+* If the user is getting a file that was not present, and at the same
+  time overwrites the file with new content, the new content can be staged
+  accidentially when git-annex runs git update-index on the file.
+
+  The race window size has been made fairly small, but still
+  varies with annex.queuesize, since it filters out modified files
+  before running git update-index on all queued files. A modification
+  that occurs after the filter checks the file triggers the race.
+
+  To fully close this race would need a way to manually update the index
+  with the information git-annex knows, including the inode etc of the 
+  worktree file.
 
 * Eventually (but not yet), make v6 the default for new repositories.
   Note that the assistant forces repos into direct mode; that will need to

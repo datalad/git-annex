@@ -25,6 +25,8 @@ import Git.FilePath
 import Annex.HashObject
 import Utility.FileMode
 import Utility.FileSystemEncoding
+import Utility.InodeCache
+import Annex.InodeSentinal
 
 import qualified Data.ByteString.Lazy as L
 
@@ -153,9 +155,11 @@ newtype Restage = Restage Bool
  -
  - This uses the git queue, so the update is not performed immediately,
  - and this can be run multiple times cheaply.
+ -
+ - The InodeCache is for the worktree file.
  -}
-restagePointerFile :: Restage -> FilePath -> Annex ()
-restagePointerFile (Restage False) f = toplevelWarning True $ unwords
+restagePointerFile :: Restage -> FilePath -> InodeCache -> Annex ()
+restagePointerFile (Restage False) f _ = toplevelWarning True $ unwords
 	[ "git status will show " ++ f
 	, "to be modified, since its content availability has changed."
 	, "This is only a cosmetic problem affecting git status; git add,"
@@ -163,8 +167,18 @@ restagePointerFile (Restage False) f = toplevelWarning True $ unwords
 	, "To fix the git status display, you can run:"
 	, "git update-index -q --refresh " ++ f
 	]
-restagePointerFile (Restage True) f = 
-	Annex.Queue.addCommand "update-index" [Param "-q", Param "--refresh"] [f]
+restagePointerFile (Restage True) f orig = withTSDelta $ \tsd ->
+	Annex.Queue.addCommandCond "update-index" [Param "-q", Param "--refresh"]
+		[(f, check tsd)]
+  where
+	-- If the file gets modified before update-index runs,
+	-- it would stage the modified file, which would be surprising
+	-- behavior. So check for modifications and avoid running
+	-- update-index on the file. This does not close the race, but it
+	-- makes the window as narrow as possible.
+	check tsd = genInodeCache f tsd >>= return . \case
+		Nothing -> False
+		Just new -> compareStrong orig new
 
 {- Parses a symlink target or a pointer file to a Key.
  - Only looks at the first line, as pointer files can have subsequent

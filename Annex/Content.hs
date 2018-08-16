@@ -593,12 +593,13 @@ populatePointerFile restage k obj f = go =<< liftIO (isPointerFile f)
 	go (Just k') | k == k' = do
 		destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus f
 		liftIO $ nukeFile f
-		ifM (linkOrCopy k obj f destmode)
-			( do
-				thawContent f
-				restagePointerFile restage f
-			, liftIO $ writePointerFile f k destmode
-			)
+		ic <- replaceFile f $ \tmp -> do
+			ifM (linkOrCopy k obj tmp destmode)
+				( thawContent tmp
+				, liftIO $ writePointerFile tmp k destmode
+				)
+			withTSDelta (liftIO . genInodeCache tmp)
+		maybe noop (restagePointerFile restage f) ic
 	go _ = return ()
 
 data LinkAnnexResult = LinkAnnexOk | LinkAnnexFailed | LinkAnnexNoop
@@ -839,8 +840,10 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key remove removedirect
 			mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
 			secureErase file
 			liftIO $ nukeFile file
-			liftIO $ writePointerFile file key mode
-			restagePointerFile (Restage True) file
+			ic <- replaceFile file $ \tmp -> do
+				liftIO $ writePointerFile tmp key mode
+				withTSDelta (liftIO . genInodeCache tmp)
+			maybe noop (restagePointerFile (Restage True) file) ic
 		-- Modified file, so leave it alone.
 		-- If it was a hard link to the annex object,
 		-- that object might have been frozen as part of the

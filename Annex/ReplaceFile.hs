@@ -26,7 +26,7 @@ import Utility.Path.Max
  -
  - Throws an IO exception when it was unable to replace the file.
  -}
-replaceFile :: FilePath -> (FilePath -> Annex ()) -> Annex ()
+replaceFile :: FilePath -> (FilePath -> Annex a) -> Annex a
 replaceFile file action = do
 	misctmpdir <- fromRepo gitAnnexTmpMiscDir
 	void $ createAnnexDirectory misctmpdir
@@ -43,8 +43,9 @@ replaceFile file action = do
 #endif
 	withTmpDirIn misctmpdir basetmp $ \tmpdir -> do
 		let tmpfile = tmpdir </> basetmp
-		action tmpfile
+		r <- action tmpfile
 		liftIO $ replaceFileFrom tmpfile file
+		return r
 
 replaceFileFrom :: FilePath -> FilePath -> IO ()
 replaceFileFrom src dest = go `catchIO` fallback
