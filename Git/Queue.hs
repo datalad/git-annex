@@ -11,6 +11,7 @@ module Git.Queue (
 	Queue,
 	new,
 	addCommand,
+	addCommandCond,
 	addUpdateIndex,
 	size,
 	full,
@@ -36,8 +37,11 @@ data Action
 	| CommandAction 
 		{ getSubcommand :: String
 		, getParams :: [CommandParam]
-		, getFiles :: [CommandParam]
-		} 
+		{- The IO action is run when constructing the action, and 
+		 - can return False if the file should not be included
+		 - after all. -}
+		, getFiles :: [(FilePath, IO Bool)]
+		}
 
 {- A key that can uniquely represent an action in a Map. -}
 data ActionKey = UpdateIndexActionKey | CommandActionKey String
@@ -79,13 +83,19 @@ new lim = Queue 0 (fromMaybe defaultLimit lim) M.empty
  - result.
  -}
 addCommand :: String -> [CommandParam] -> [FilePath] -> Queue -> Repo -> IO Queue
-addCommand subcommand params files q repo =
+addCommand subcommand params files q repo = 
+	addCommandCond subcommand params files' q repo
+  where
+	files' = map (\f -> (f, return True)) files
+
+addCommandCond :: String -> [CommandParam] -> [(FilePath, IO Bool)] -> Queue -> Repo -> IO Queue
+addCommandCond subcommand params files q repo =
 	updateQueue action different (length files) q repo
   where
 	action = CommandAction
 		{ getSubcommand = subcommand
 		, getParams = params
-		, getFiles = map File files
+		, getFiles = files
 		}
 	
 	different (CommandAction { getSubcommand = s }) = s /= subcommand
@@ -157,17 +167,22 @@ runAction repo (UpdateIndexAction streamers) =
 	Git.UpdateIndex.streamUpdateIndex repo $ reverse streamers
 runAction repo action@(CommandAction {}) = do
 #ifndef mingw32_HOST_OS
-	let p = (proc "xargs" $ "-0":"git":toCommand gitparams) { env = gitEnv repo }
+	let p = (proc "xargs" $ "-0":"git":toCommand gitparams)
+		{ env = gitEnv repo }
 	withHandle StdinHandle createProcessSuccess p $ \h -> do
-		hPutStr h $ intercalate "\0" $ toCommand $ getFiles action
+		forM_ (getFiles action) $ \(f, check) ->
+			whenM check $ do
+				hPutStr h (toCommand' (File f))
+				hPutStr h "\0"
 		hClose h
 #else
 	-- Using xargs on Windows is problematic, so just run the command
 	-- once per file (not as efficient.)
 	if null (getFiles action)
 		then void $ boolSystemEnv "git" gitparams (gitEnv repo)
-		else forM_ (getFiles action) $ \f ->
-			void $ boolSystemEnv "git" (gitparams ++ [f]) (gitEnv repo)
+		else forM_ (getFiles action) $ \(f, check) ->
+			whenM check $
+				void $ boolSystemEnv "git" (gitparams ++ [File f]) (gitEnv repo)
 #endif
   where
 	gitparams = gitCommandLine

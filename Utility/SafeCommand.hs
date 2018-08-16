@@ -27,19 +27,21 @@ data CommandParam
 -- | Used to pass a list of CommandParams to a function that runs
 -- a command and expects Strings. -}
 toCommand :: [CommandParam] -> [String]
-toCommand = map unwrap
+toCommand = map toCommand'
+
+toCommand' :: CommandParam -> String
+toCommand' (Param s) = s
+-- Files that start with a non-alphanumeric that is not a path
+-- separator are modified to avoid the command interpreting them as
+-- options or other special constructs.
+toCommand' (File s@(h:_))
+	| isAlphaNum h || h `elem` pathseps = s
+	| otherwise = "./" ++ s
   where
-	unwrap (Param s) = s
-	-- Files that start with a non-alphanumeric that is not a path
-	-- separator are modified to avoid the command interpreting them as
-	-- options or other special constructs.
-	unwrap (File s@(h:_))
-		| isAlphaNum h || h `elem` pathseps = s
-		| otherwise = "./" ++ s
-	unwrap (File s) = s
 	-- '/' is explicitly included because it's an alternative
 	-- path separator on Windows.
 	pathseps = pathSeparator:"./"
+toCommand' (File s) = s
 
 -- | Run a system command, and returns True or False if it succeeded or failed.
 --
