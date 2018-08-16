@@ -29,3 +29,5 @@ The full log is available at [https://gitlab.com/snippets/1743708](https://gitla
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 No, I'm afraid.  But it looks really good!  I'm trying to use it to add a bunch of high-res images to my Jeykll website, all managed through Git, with the images stored in S3.
+
+> [[done]] --[[Joey]]
