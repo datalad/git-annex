@@ -167,16 +167,20 @@ restagePointerFile (Restage False) f _ = toplevelWarning True $ unwords
 	, "To fix the git status display, you can run:"
 	, "git update-index -q --refresh " ++ f
 	]
-restagePointerFile (Restage True) f orig = withTSDelta $ \tsd ->
+restagePointerFile (Restage True) f orig = withTSDelta $ \tsd -> do
+	-- update-index is documented as picky about "./file" and it
+	-- fails on "../../repo/path/file" when cwd is not in the repo 
+	-- being acted on. Avoid these problems with an absolute path.
+	absf <- liftIO $ absPath f
 	Annex.Queue.addCommandCond "update-index" [Param "-q", Param "--refresh"]
-		[(f, check tsd)]
+		[(absf, check tsd)]
   where
 	-- If the file gets modified before update-index runs,
 	-- it would stage the modified file, which would be surprising
 	-- behavior. So check for modifications and avoid running
 	-- update-index on the file. This does not close the race, but it
 	-- makes the window as narrow as possible.
-	check tsd = genInodeCache f tsd >>= return . \case
+	check f tsd = genInodeCache f tsd >>= return . \case
 		Nothing -> False
 		Just new -> compareStrong orig new
 
