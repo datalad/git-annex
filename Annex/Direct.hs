@@ -164,7 +164,7 @@ addDirect file cache = do
 mergeDirect :: Maybe Git.Ref -> Maybe Git.Ref -> Git.Branch -> Annex Bool -> [Git.Merge.MergeConfig] -> Git.Branch.CommitMode -> Annex Bool
 mergeDirect startbranch oldref branch resolvemerge mergeconfig commitmode = exclusively $ do
 	reali <- liftIO . absPath =<< fromRepo indexFile
-	tmpi <- liftIO . absPath =<< fromRepo indexFileLock
+	tmpi <- liftIO . absPath =<< fromRepo (indexFileLock . indexFile)
 	liftIO $ whenM (doesFileExist reali) $
 		copyFile reali tmpi
 

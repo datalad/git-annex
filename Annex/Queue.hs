@@ -30,7 +30,7 @@ addCommand command params files = do
 	store <=< flushWhenFull <=< inRepo $
 		Git.Queue.addCommand command params files q
 
-addInternalAction :: InternalActionRunner -> [(FilePath, IO Bool)] -> Annex ()
+addInternalAction :: Git.Queue.InternalActionRunner -> [(FilePath, IO Bool)] -> Annex ()
 addInternalAction runner files = do
 	q <- get
 	store <=< flushWhenFull <=< inRepo $

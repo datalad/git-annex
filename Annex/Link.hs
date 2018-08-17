@@ -18,15 +18,22 @@ module Annex.Link where
 
 import Annex.Common
 import qualified Annex
-import qualified Git.UpdateIndex
 import qualified Annex.Queue
+import qualified Git.Queue
+import qualified Git.UpdateIndex
+import qualified Git.Index
+import qualified Git.LockFile
+import qualified Git.Env
+import qualified Git
 import Git.Types
 import Git.FilePath
 import Annex.HashObject
+import Annex.InodeSentinal
 import Utility.FileMode
 import Utility.FileSystemEncoding
 import Utility.InodeCache
-import Annex.InodeSentinal
+import Utility.Tmp.Dir
+import Utility.CopyFile
 
 import qualified Data.ByteString.Lazy as L
 
@@ -156,33 +163,65 @@ newtype Restage = Restage Bool
  - This uses the git queue, so the update is not performed immediately,
  - and this can be run multiple times cheaply.
  -
- - The InodeCache is for the worktree file.
+ - The InodeCache is for the worktree file. It is used to detect when
+ - the worktree file is changed by something else before git update-index
+ - gets to look at it.
  -}
 restagePointerFile :: Restage -> FilePath -> InodeCache -> Annex ()
-restagePointerFile (Restage False) f _ = toplevelWarning True $ unwords
-	[ "git status will show " ++ f
-	, "to be modified, since its content availability has changed."
-	, "This is only a cosmetic problem affecting git status; git add,"
-	, "git commit, etc won't be affected."
-	, "To fix the git status display, you can run:"
-	, "git update-index -q --refresh " ++ f
-	]
+restagePointerFile (Restage False) f _ =
+	toplevelWarning True $ unableToRestage (Just f)
 restagePointerFile (Restage True) f orig = withTSDelta $ \tsd -> do
 	-- update-index is documented as picky about "./file" and it
 	-- fails on "../../repo/path/file" when cwd is not in the repo 
 	-- being acted on. Avoid these problems with an absolute path.
 	absf <- liftIO $ absPath f
-	Annex.Queue.addCommandCond "update-index" [Param "-q", Param "--refresh"]
-		[(absf, check tsd)]
+	Annex.Queue.addInternalAction runner [(absf, isunmodified tsd)]
   where
-	-- If the file gets modified before update-index runs,
-	-- it would stage the modified file, which would be surprising
-	-- behavior. So check for modifications and avoid running
-	-- update-index on the file. This does not close the race, but it
-	-- makes the window as narrow as possible.
-	check f tsd = genInodeCache f tsd >>= return . \case
+	isunmodified tsd = genInodeCache f tsd >>= return . \case
 		Nothing -> False
 		Just new -> compareStrong orig new
+
+	-- Other changes to the files may have been staged before this
+	-- gets a chance to run. To avoid a race with any staging of
+	-- changes, first lock the index file. Then run git update-index
+	-- on all still-unmodified files, using a copy of the index file,
+	-- to bypass the lock. Then replace the old index file with the new
+	-- updated index file.
+	runner = Git.Queue.InternalActionRunner "restagePointerFile" $ \r l -> do
+		realindex <- Git.Index.currentIndexFile r
+		let lock = Git.Index.indexFileLock realindex
+		    lockindex = catchMaybeIO $ Git.LockFile.openLock' lock
+		    unlockindex = maybe noop Git.LockFile.closeLock
+		    showwarning = warningIO $ unableToRestage Nothing
+		    go Nothing = showwarning
+		    go (Just _) = withTmpDirIn (Git.localGitDir r) "annexindex" $ \tmpdir -> do
+			let tmpindex = tmpdir </> "index"
+			let updatetmpindex = do
+				r' <- Git.Env.addGitEnv r Git.Index.indexEnv 
+					=<< Git.Index.indexEnvVal tmpindex
+				Git.UpdateIndex.refreshIndex r' $ \feed ->
+					forM_ l $ \(f', checkunmodified) ->
+						whenM checkunmodified $
+							feed f'
+			let replaceindex = catchBoolIO $ do
+				moveFile tmpindex realindex
+				return True
+			ok <- createLinkOrCopy realindex tmpindex
+				<&&> updatetmpindex
+				<&&> replaceindex
+			unless ok showwarning
+		bracket lockindex unlockindex go
+
+unableToRestage :: Maybe FilePath -> String
+unableToRestage mf = unwords
+	[ "git status will show " ++ fromMaybe "some files" mf
+	, "to be modified, since content availability has changed"
+	, "and git-annex was unable to update the index."
+	, "This is only a cosmetic problem affecting git status; git add,"
+	, "git commit, etc won't be affected."
+	, "To fix the git status display, you can run:"
+	, "git update-index -q --refresh " ++ fromMaybe "<file>" mf
+	]
 
 {- Parses a symlink target or a pointer file to a Key.
  - Only looks at the first line, as pointer files can have subsequent

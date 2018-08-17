@@ -1,6 +1,6 @@
 {- git index file stuff
  -
- - Copyright 2011 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -47,12 +47,17 @@ override index _r = do
 	reset (Just v) = setEnv indexEnv v True
 	reset _ = unsetEnv var
 
+{- The normal index file. Does not check GIT_INDEX_FILE. -}
 indexFile :: Repo -> FilePath
 indexFile r = localGitDir r </> "index"
 
+{- The index file git will currently use, checking GIT_INDEX_FILE. -}
+currentIndexFile :: Repo -> IO FilePath
+currentIndexFile r = fromMaybe (indexFile r) <$> getEnv indexEnv	
+
 {- Git locks the index by creating this file. -}
-indexFileLock :: Repo -> FilePath
-indexFileLock r = indexFile r ++ ".lock"
+indexFileLock :: FilePath -> FilePath
+indexFileLock f = f ++ ".lock"
 
 {- When the pre-commit hook is run, and git commit has been run with
  - a file or files specified to commit, rather than committing the staged

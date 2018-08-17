@@ -270,7 +270,7 @@ preventCommits :: (CommitsPrevented -> Annex a) -> Annex a
 preventCommits = bracket setup cleanup
   where
 	setup = do
-		lck <- fromRepo indexFileLock
+		lck <- fromRepo $ indexFileLock . indexFile
 		liftIO $ Git.LockFile.openLock lck
 	cleanup = liftIO . Git.LockFile.closeLock
 

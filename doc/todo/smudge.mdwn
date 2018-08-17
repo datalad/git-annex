@@ -12,26 +12,6 @@ git-annex should use smudge/clean filters. v6 mode
 	# because it doesn't know it has that name
 	# git commit clears up this mess
 
-* If the user is getting a file that was not present, and at the same
-  time overwrites the file with new content, the new content can be staged
-  accidentially when git-annex runs git update-index on the file.
-
-  The race window size has been made fairly small, but still
-  varies with annex.queuesize, since it filters out modified files
-  before running git update-index on all queued files. A modification
-  that occurs after the filter checks the file triggers the race.
-
-  Here's how to prevent this race: Lock the index file before running git
-  update-index. Filter out worktree files that were modified already.
-  Run git update-index on a copy of the index so it runs despite the lock,
-  and once it's done, replace the old index with it and drop the lock.
-
-  Copying the index would be expensive. Could hard link it on systems that
-  support them.
-
-  Note that git split index files complicate this since there are other
-  files than the main index file.
-
 * Checking out a different branch causes git to smudge all changed files,
   and write their content. This does not honor annex.thin. A warning
   message is printed in this case.  

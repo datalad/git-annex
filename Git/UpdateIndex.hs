@@ -1,6 +1,6 @@
 {- git-update-index library
  -
- - Copyright 2011-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -21,6 +21,7 @@ module Git.UpdateIndex (
 	unstageFile,
 	stageSymlink,
 	stageDiffTreeItem,
+	refreshIndex,
 ) where
 
 import Common
@@ -123,3 +124,23 @@ stageDiffTreeItem d = case toTreeItemType (Diff.dstmode d) of
 
 indexPath :: TopFilePath -> InternalGitPath
 indexPath = toInternalGitPath . getTopFilePath
+
+{- Refreshes the index, by checking file stat information.  -}
+refreshIndex :: Repo -> ((FilePath -> IO ()) -> IO ()) -> IO Bool
+refreshIndex repo feeder = do
+	(Just h, _, _, p) <- createProcess (gitCreateProcess params repo)
+		{ std_in = CreatePipe }
+	feeder $ \f -> do
+		hPutStr h f
+		hPutStr h "\0"
+	hFlush h
+	hClose h
+	checkSuccessProcess p
+  where
+	params = 
+		[ Param "update-index"
+		, Param "-q"
+		, Param "--refresh"
+		, Param "-z"
+		, Param "--stdin"
+		]
