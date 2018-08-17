@@ -1,0 +1,5 @@
+Sleeping on that race from yesterday, I realized there is a way to fix it,
+and have implemented the fix. It doubled the overhead of updating the
+index, but that's worth it to not have a race condition to worry about.
+
+This work is supported by the NSF-funded DataLad project.
