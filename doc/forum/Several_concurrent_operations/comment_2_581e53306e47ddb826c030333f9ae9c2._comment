@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~liori"
+ nickname="liori"
+ avatar="http://cdn.libravatar.org/avatar/e1d0fdc746b3d21bb147160d40815e37b257b9119774d21784939b2d3ba95a91"
+ subject="comment 2"
+ date="2018-08-17T21:58:03Z"
+ content="""
+So, indeed it works. However, syncing a large archive (2TB, ~1M objects) over several USB HDDs at the same time ended up a bad idea: inevitably at some point every process tried syncing with the same, slowest, repository, and lack of good I/O concurrency on a USB-connected HDD killed all performance. I'm guessing that introducing some targetted locking could probably help, or even maybe just randomizing the order in which repositories are pulled from/pushed to.
+"""]]
