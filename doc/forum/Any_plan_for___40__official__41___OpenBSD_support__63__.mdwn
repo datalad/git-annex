@@ -1,0 +1,10 @@
+Hello
+
+Is OpenBSD support on the roadmap for the near future?
+Both cabal and stack are problematic on OpenBSD (for now). 
+
+I revisit this issue once in a while and while it is literally the last thing keeping me on Linux, my whole daily workflow revolves around git-annex, so I can't be without it. I also can't have it break on me every time I will need to update.
+
+Just wanted to know if anybody else had success or if a more formal way of installation on OpenBSD is in the cards.
+
+Thanks a lot

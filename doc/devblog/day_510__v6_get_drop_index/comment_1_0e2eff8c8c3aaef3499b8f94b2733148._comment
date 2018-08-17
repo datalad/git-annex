@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ avatar="http://cdn.libravatar.org/avatar/9c3f08f80e67733fd506c353239569eb"
+ subject="comment 1"
+ date="2018-08-17T14:44:13Z"
+ content="""
+> I've now fixed the worst problem with v6 mode, which was that get/drop of
+> unlocked files would cause git to think that the files were modified.
+
+\o/
+
+I have been using v6 lately and did not know that this was a known
+issue; I assumed I was doing something wrong.
+
+Thank you!
+"""]]
