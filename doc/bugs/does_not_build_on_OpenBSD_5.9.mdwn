@@ -206,3 +206,11 @@ git-annex-6.20160511: build
     ghc: /usr/local/lib/libidn.a: unknown symbol `libintl_bindtextdomain'
     ghc: unable to load package `gnuidn-0.2.2'
 """]]
+
+> So git-annex dropped xmpp and the libidn.a
+> library will no longer be pulled in.
+> 
+> Also, you were right about `stack install git-annex`
+> being problimatic. The build instuctions have since been changed to
+> run stack inside the git-annex source tree.
+> Since that worked for you, closing this bug. [[done]] --[[Joey]]

@@ -36,4 +36,6 @@ GHCi cannot safely continue in this situation.  Exiting now.  Sorry.
 # End of transcript or log.
 """]]
 
-[[!tag moreinfo]]
+> Since this bug was filed, git-annex has dropped xmpp and the problimatic
+> libraries. Since the bug comments say the build worked without xmpp,
+> closing this bug [[done]] --[[Joey]] 
