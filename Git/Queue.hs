@@ -1,6 +1,6 @@
 {- git repository command queue
  -
- - Copyright 2010,2012 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,8 +11,9 @@ module Git.Queue (
 	Queue,
 	new,
 	addCommand,
-	addCommandCond,
 	addUpdateIndex,
+	addInternalAction,
+	InternalActionRunner(..),
 	size,
 	full,
 	flush,
@@ -37,19 +38,29 @@ data Action
 	| CommandAction 
 		{ getSubcommand :: String
 		, getParams :: [CommandParam]
-		{- The IO action is run when constructing the action, and 
-		 - can return False if the file should not be included
-		 - after all. -}
-		, getFiles :: [(FilePath, IO Bool)]
+		, getFiles :: [CommandParam]
+		} 
+	{- An internal action to run, on a list of files that can be added
+	 - to as the queue grows. -}
+	| InternalAction
+		{ getRunner :: InternalActionRunner
+		, getInternalFiles :: [(FilePath, IO Bool)]
 		}
 
+{- The String must be unique for each internal action. -}
+data InternalActionRunner = InternalActionRunner String (Repo -> [(FilePath, IO Bool)] -> IO ())
+
+instance Eq InternalActionRunner where
+	InternalActionRunner s1 _ == InternalActionRunner s2 _ = s1 == s2
+
 {- A key that can uniquely represent an action in a Map. -}
-data ActionKey = UpdateIndexActionKey | CommandActionKey String
+data ActionKey = UpdateIndexActionKey | CommandActionKey String | InternalActionKey String
 	deriving (Eq, Ord)
 
 actionKey :: Action -> ActionKey
 actionKey (UpdateIndexAction _) = UpdateIndexActionKey
 actionKey CommandAction { getSubcommand = s } = CommandActionKey s
+actionKey InternalAction { getRunner = InternalActionRunner s _ } = InternalActionKey s
 
 {- A queue of actions to perform (in any order) on a git repository,
  - with lists of files to perform them on. This allows coalescing 
@@ -83,22 +94,29 @@ new lim = Queue 0 (fromMaybe defaultLimit lim) M.empty
  - result.
  -}
 addCommand :: String -> [CommandParam] -> [FilePath] -> Queue -> Repo -> IO Queue
-addCommand subcommand params files q repo = 
-	addCommandCond subcommand params files' q repo
-  where
-	files' = map (\f -> (f, return True)) files
-
-addCommandCond :: String -> [CommandParam] -> [(FilePath, IO Bool)] -> Queue -> Repo -> IO Queue
-addCommandCond subcommand params files q repo =
+addCommand subcommand params files q repo =
 	updateQueue action different (length files) q repo
   where
 	action = CommandAction
 		{ getSubcommand = subcommand
 		, getParams = params
-		, getFiles = files
+		, getFiles = map File files
 		}
 	
 	different (CommandAction { getSubcommand = s }) = s /= subcommand
+	different _ = True
+
+{- Adds an internal action to the queue. -}
+addInternalAction :: InternalActionRunner -> [(FilePath, IO Bool)] -> Queue -> Repo -> IO Queue
+addInternalAction runner files q repo =
+	updateQueue action different (length files) q repo
+  where
+	action = InternalAction
+		{ getRunner = runner
+		, getInternalFiles = files
+		}
+	
+	different (InternalAction { getRunner = r }) = r /= runner
 	different _ = True
 
 {- Adds an update-index streamer to the queue. -}
@@ -137,6 +155,8 @@ combineNewOld (CommandAction _sc1 _ps1 fs1) (CommandAction sc2 ps2 fs2) =
 	CommandAction sc2 ps2 (fs1++fs2)
 combineNewOld (UpdateIndexAction s1) (UpdateIndexAction s2) =
 	UpdateIndexAction (s1++s2)
+combineNewOld (InternalAction _r1 fs1) (InternalAction r2 fs2) =
+	InternalAction r2 (fs1++fs2)
 combineNewOld anew _aold = anew
 
 {- Merges the contents of the second queue into the first.
@@ -170,23 +190,21 @@ runAction repo (UpdateIndexAction streamers) =
 	Git.UpdateIndex.streamUpdateIndex repo $ reverse streamers
 runAction repo action@(CommandAction {}) = do
 #ifndef mingw32_HOST_OS
-	let p = (proc "xargs" $ "-0":"git":toCommand gitparams)
-		{ env = gitEnv repo }
+	let p = (proc "xargs" $ "-0":"git":toCommand gitparams) { env = gitEnv repo }
 	withHandle StdinHandle createProcessSuccess p $ \h -> do
-		forM_ (getFiles action) $ \(f, check) ->
-			whenM check $ do
-				hPutStr h (toCommand' (File f))
-				hPutStr h "\0"
+		hPutStr h $ intercalate "\0" $ toCommand $ getFiles action
 		hClose h
 #else
 	-- Using xargs on Windows is problematic, so just run the command
 	-- once per file (not as efficient.)
 	if null (getFiles action)
 		then void $ boolSystemEnv "git" gitparams (gitEnv repo)
-		else forM_ (getFiles action) $ \(f, check) ->
-			whenM check $
-				void $ boolSystemEnv "git" (gitparams ++ [File f]) (gitEnv repo)
+		else forM_ (getFiles action) $ \f ->
+			void $ boolSystemEnv "git" (gitparams ++ [f]) (gitEnv repo)
 #endif
   where
 	gitparams = gitCommandLine
 		(Param (getSubcommand action):getParams action) repo
+runAction repo action@(InternalAction {}) =
+	let InternalActionRunner _ runner = getRunner action
+	in runner repo (getInternalFiles action)

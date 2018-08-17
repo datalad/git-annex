@@ -9,7 +9,7 @@
 
 module Annex.Queue (
 	addCommand,
-	addCommandCond,
+	addInternalAction,
 	addUpdateIndex,
 	flush,
 	flushWhenFull,
@@ -30,11 +30,11 @@ addCommand command params files = do
 	store <=< flushWhenFull <=< inRepo $
 		Git.Queue.addCommand command params files q
 
-addCommandCond :: String -> [CommandParam] -> [(FilePath, IO Bool)] -> Annex ()
-addCommandCond command params files = do
+addInternalAction :: InternalActionRunner -> [(FilePath, IO Bool)] -> Annex ()
+addInternalAction runner files = do
 	q <- get
 	store <=< flushWhenFull <=< inRepo $
-		Git.Queue.addCommandCond command params files q
+		Git.Queue.addInternalAction runner files q
 
 {- Adds an update-index stream to the queue. -}
 addUpdateIndex :: Git.UpdateIndex.Streamer -> Annex ()
