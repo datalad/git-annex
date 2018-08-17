@@ -129,6 +129,9 @@ updateQueue !action different sizeincrease q repo
 		!newsize = size q' + sizeincrease
 		!newitems = M.insertWith combineNewOld (actionKey action) action (items q')
 
+{- The new value comes first. It probably has a smaller list of files than
+ - the old value. So, the list append of the new value first is more
+ - efficient. -}
 combineNewOld :: Action -> Action -> Action
 combineNewOld (CommandAction _sc1 _ps1 fs1) (CommandAction sc2 ps2 fs2) =
 	CommandAction sc2 ps2 (fs1++fs2)
