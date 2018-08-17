@@ -1,0 +1,7 @@
+When I run `git-annex fsck` I see a lot of output passing by the screen. In the end, after many hours, I see an error count.
+
+Now, how do I see what files had problems and what is wrong with them? I can't see any option mentioning a log file or similar mechanism in the man page. Would I need to re-run the command and discard STDOUT? At this point I'm not even sure that would work.
+
+What is the proper way to run `fsck` so that I can examine the problems it finds?
+
+Thank you.
