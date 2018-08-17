@@ -113,15 +113,19 @@ support symlinks.
 ## index gotchas
 
 When git-annex gets or drops the content of an unlocked file, it updates
-the file in git's worktree accordingly. Then it needs to update the index
-file to reflect the change. Otherwise, `git status` would show the file
-as modified, even though there are no changes to commit.
+the file in git's worktree accordingly. That makes `git status` show
+the file as modified, even though there are no changes to commit.
+So git-annex then updates the index file to reflect the change to the
+worktree, and prevent the file from appearing to be modified.
 
 This means that when git-annex is running a command that gets or drops the
 content of an unlocked file, the index will sometimes be locked. This might
 prevent you from `git commit` at the same time. Or, if you have a git
 commit in progress, or are running multiple git-annex processes, git-annex
 may complain that the index is locked.
+
+Also, interrupting git-annex (eg with ctrl-c) before it can update the
+index will leave `git status` showing modifications.
 
 To manually update the index when git-annex was not able to, you can run:
 
