@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-08-17T20:16:02Z"
+ content="""
+People have told me once or twice that they were able to build git-annex on
+openbsd using stack. If it doesn't build, file a bug (unless it's clearly a
+toolchain/OS issue).
+
+If someone can confirm it builds, I could try to set up an openbsd
+autobuilder in a VM. But I have no openbsd experience so would probably
+need some hand-holding.
+"""]]
