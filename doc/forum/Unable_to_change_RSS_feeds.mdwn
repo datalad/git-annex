@@ -1,0 +1,8 @@
+Hello. It seems that one of the RSS feed I was using for a podcast is now pointing to a missing server, and so I started getting the error `Unable to access these remotes: web`.
+I found another feed that does not have this problem, but I have not been able to update my git annex repository with this new URL.
+
+I have tried to add the new feed to the feed list and `importfeed` and have tried to use `addurl` to provide an alternate source, but that did not change anything. I tried to remove files and run `importfeed` but `info` always gives the same URL and `get` fails.
+
+What is the proper way to go about this? I am using `importfeed --relaxed --fast --template=...` to pull in the information.
+
+Thank you for any help you can provide.
