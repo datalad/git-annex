@@ -1,0 +1,42 @@
+If I `git-annex add` a directory, with some files inside, and then move into the directory to execute `git commit -m message`, then `git commit` fails with: `git-annex: git: createProcess: runInteractiveProcess: chdir: does not exist (No such file or directory)`. Why?
+
+Notice that if I do the same operations within a standard git repository (not annex), then `git commit` works with no problems, as expected.
+
+As it is described above, this difference between git-annex and git seems a minor issue, but I got stuck into that for a while when I stumbled into it in a more complex scenario. 
+
+Steps to reproduce the issue:
+
+    > mkdir annex
+    > cd annex
+    /annex> git init
+    Initialized empty Git repository in /tmp/zzz/annex/.git/
+    /annex (master)> git-annex init
+    init  ok
+    (recording state in git...)
+    /annex (master)> mkdir a
+    /annex (master)> cd a
+    /annex/a (master)> echo foo > bar
+    /annex/a (master)> git annex add bar
+    add bar ok
+    (recording state in git...)
+    /annex/a (master)> git commit -m "bar added"
+    git-annex: git: createProcess: runInteractiveProcess: chdir: does not exist (No such file or directory)
+
+
+Differently, within a standard git repository, the equivalent `git commit` does not fail:
+
+    > mkdir repo
+    > cd repo
+    /repo> git init
+    Initialized empty Git repository in /tmp/zzz/repo/.git/
+    /repo (master)> mkdir a
+    /repo (master)> cd a
+    /repo/a (master)> echo foo > bar
+    /repo/a (master)> git add bar
+    /repo/a (master)> git commit -m "bar added"
+    [master (root-commit) 203c996] bar added
+     1 file changed, 1 insertion(+)
+     create mode 100644 a/bar
+
+
+In any case, a big thank for making `git-annex`, it is a really great piece of software!
