@@ -27,6 +27,11 @@ git-annex should use smudge/clean filters. v6 mode
   git-annex adjust and git-annex sync could both use that internally
   when checking out the adjusted branch, and merging a branch into HEAD.
   
+  Or: Make the smudge filter not provide the actual file content, but the
+  pointer, at least when used in a checkout. And install a post-checkout
+  hook that populates the worktree files that were checked out.
+  Of course, it will also need to update the index..
+
   (My enhanced smudge/clean patch set also fixed this problem, in a much
   nicer way...)
 
@@ -45,7 +50,7 @@ git-annex should use smudge/clean filters. v6 mode
 
   Note that the long-running filter process interface has the same problem.
 
-  The git-annex proxy idea above could work around this problem.
+  The annex.thin idea above could work around this problem.
 
 ### long term todos
 
