@@ -123,56 +123,59 @@ export MANPATH
 unset LD_PRELOAD
 
 # Avoid using system locales, which may interact badly with bundled libc.
+# (But if LOCPATH is set, don't override it.)
 ORIG_LOCPATH="$LOCPATH"
 export ORIG_LOCPATH
-LOCPATH="$HOME/.cache/git-annex/locales/$(echo "$base" | tr / _ )"
-export LOCPATH
-
-# Clean up locale caches when their standalone bundle no longer exists.
-for localecache in $HOME/.cache/git-annex/locales/*; do
-	cachebase=$(cat "$localecache/base" 2>/dev/null || true)
-	if [ ! -d "$cachebase" ] || ! cmp "$localecache/buildid" "$cachebase/buildid" >/dev/null ; then
-		rm -rf "$localecache" 2>&1 || true
+if [ -z "${LOCPATH+set}" ]; then
+	LOCPATH="$HOME/.cache/git-annex/locales/$(echo "$base" | tr / _ )"
+	export LOCPATH
+	
+	# Clean up locale caches when their standalone bundle no longer exists.
+	for localecache in $HOME/.cache/git-annex/locales/*; do
+		cachebase=$(cat "$localecache/base" 2>/dev/null || true)
+		if [ ! -d "$cachebase" ] || ! cmp "$localecache/buildid" "$cachebase/buildid" >/dev/null ; then
+			rm -rf "$localecache" 2>&1 || true
+		fi
+	done
+	
+	# If the locale cache for this bundle is out of date, refresh it.
+	if [ -e "$LOCPATH/buildid" ] && ! cmp "$LOCPATH/buildid" "$base/buildid" >/dev/null ; then
+		rm -rf "$LOCPATH"
 	fi
-done
+	if ! mkdir -p "$LOCPATH"; then
+		echo "Unable to write to $LOCPATH; can't continue!" >&2
+		exit 1
+	fi
+	echo "$base" > "$LOCPATH/base"
+	cp "$base/buildid" "$LOCPATH/buildid"
 
-# If the locale cache for this bundle is out of date, refresh it.
-if [ -e "$LOCPATH/buildid" ] && ! cmp "$LOCPATH/buildid" "$base/buildid" >/dev/null ; then
-	rm -rf "$LOCPATH"
-fi
-if ! mkdir -p "$LOCPATH"; then
-	echo "Unable to write to $LOCPATH; can't continue!" >&2
-	exit 1
-fi
-echo "$base" > "$LOCPATH/base"
-cp "$base/buildid" "$LOCPATH/buildid"
-
-# Generate locale definition files for the locales in use,
-# using the localedef and locale files from the bundle.
-# Currently only utf-8 locales are handled.
-lastlocaleenv=""
-for localeenv in "$LANG" "$LANGUAGE" "$LC_CTYPE" "$LC_NUMERIC" "$LC_TIME" \
-		"$LC_COLLATE" "$LC_MONETARY" "$LC_MESSAGES" "$LC_PAPER" \
-		"$LC_NAME" "$LC_ADDRESS" "$LC_TELEPHONE" "$LC_MEASUREMENT" \
-		"$LC_IDENTIFICATION" "$LC_ALL"; do
-	if [ "$localeenv" != "$lastlocaleenv" ]; then
-		lastlocaleenv="$localeenv"
-		if [ ! -d "$LOCPATH/$localeenv" ]; then
-			if [ "${localeenv##[!.]*.}" = "utf8" ] || [ "${localeenv##[!.]*.}" = "UTF-8" ]; then
-				(
-					rm -rf "$LOCPATH/$localeenv.new.$$" &&
-					mkdir -p "$LOCPATH/$localeenv.new.$$" &&
-					# cd to $base since localedef reads files from pwd
-					cd "$base" &&
-					# Run localedef using the bundled i18n files;
-					# use LANG=C to avoid it reading the system locale archive.
-					I18NPATH="$base/i18n" LANG=C localedef -i "${localeenv%%.*}" -c -f UTF-8 "$LOCPATH/$localeenv.new.$$" &&
-					mv "$LOCPATH/$localeenv.new.$$" "$LOCPATH/$localeenv"
-				) >/dev/null 2>/dev/null || true
+	# Generate locale definition files for the locales in use,
+	# using the localedef and locale files from the bundle.
+	# Currently only utf-8 locales are handled.
+	lastlocaleenv=""
+	for localeenv in "$LANG" "$LANGUAGE" "$LC_CTYPE" "$LC_NUMERIC" "$LC_TIME" \
+			"$LC_COLLATE" "$LC_MONETARY" "$LC_MESSAGES" "$LC_PAPER" \
+			"$LC_NAME" "$LC_ADDRESS" "$LC_TELEPHONE" "$LC_MEASUREMENT" \
+			"$LC_IDENTIFICATION" "$LC_ALL"; do
+		if [ "$localeenv" != "$lastlocaleenv" ]; then
+			lastlocaleenv="$localeenv"
+			if [ ! -d "$LOCPATH/$localeenv" ]; then
+				if [ "${localeenv##[!.]*.}" = "utf8" ] || [ "${localeenv##[!.]*.}" = "UTF-8" ]; then
+					(
+						rm -rf "$LOCPATH/$localeenv.new.$$" &&
+						mkdir -p "$LOCPATH/$localeenv.new.$$" &&
+						# cd to $base since localedef reads files from pwd
+						cd "$base" &&
+						# Run localedef using the bundled i18n files;
+						# use LANG=C to avoid it reading the system locale archive.
+						I18NPATH="$base/i18n" LANG=C localedef -i "${localeenv%%.*}" -c -f UTF-8 "$LOCPATH/$localeenv.new.$$" &&
+						mv "$LOCPATH/$localeenv.new.$$" "$LOCPATH/$localeenv"
+					) >/dev/null 2>/dev/null || true
+				fi
 			fi
 		fi
-	fi
-done
+	done
+fi
 
 useproot=""
 case "$os" in
