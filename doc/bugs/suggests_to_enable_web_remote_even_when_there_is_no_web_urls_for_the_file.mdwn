@@ -36,14 +36,5 @@ ok
 
 6.20180807+git63-gbafc55c4a-1~ndall+1
 
-### Please provide any additional information below.
-
-# If you can, paste a complete transcript of the problem occurring here.
-# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
-
-
-# End of transcript or log.
-"""]]
-
 
 [[!meta name=yoh]]
