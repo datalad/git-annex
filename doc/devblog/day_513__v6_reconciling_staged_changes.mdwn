@@ -1,0 +1,21 @@
+More v6 work. Got most of the way to a solution to the problem of updating
+the associated files database for staged changes to unlocked files, eg a
+`git mv`.
+
+While writing the test case, I was surprised to find that the problem
+is timing dependent. If a `git mv` is run less than a second after `git
+add`, git runs the smudge filter for whatever reason, which avoids the
+problem. With a longer delay, it doesn't run the smudge filter. Seems this
+could be the cause of intermittent glitches with v6 mode, and I've seen a
+few such glitches before.
+
+Anyway, I developed an inexpensive way to find the relevant staged changes,
+using `git diff` with a full page of options to tweak its behavior just
+right. Still need to make that only run when the index has changed, not
+every time git-annex runs.
+
+There's still a race between a command like `git mv` and `git annex
+drop/get`, that can result in the unlocked file's content not being
+updated. Don't have a solution to that yet.
+
+This work is supported by the NSF-funded DataLad project.
