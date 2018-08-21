@@ -47,7 +47,7 @@ startSrcDest (src:dest:[])
   where
 	go key = ifM (verifyKeyContent RetrievalAllKeysSecure DefaultVerify UnVerified key src)
 		( perform src key
-		, error "failed"
+		, giveup $ src ++ " does not have expected content of " ++ dest
 		)
 startSrcDest _ = giveup "specify a src file and a dest file"
 
