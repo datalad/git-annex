@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="andrew@d9c20810619d89ecb4d8ebe187df122112b82fd9"
+ nickname="andrew"
+ avatar="http://cdn.libravatar.org/avatar/06d3f4f0a82dd00a84f8f8fabc8e537d"
+ subject="Not connect to remote as part of initremote?"
+ date="2018-08-21T23:34:55Z"
+ content="""
+Hey,
+
+I'm setting up some git repos as part of a FAI [0] build, and part of this process is running \"git annex initremote\" to add an rsync remote.
+
+git annex is trying to connect to the remote, but as this an automated build there are no ssh keys available, and warnings etc are spat out. Is it possible to instruct initremote to not connect to the remote as part of this process?
+
+Cheers,
+Andrew
+
+[0] http://fai-project.org
+"""]]
