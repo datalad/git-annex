@@ -2,15 +2,18 @@ git-annex should use smudge/clean filters. v6 mode
 
 ### August sprint todo list
 
-* Reconcile staged changes into the associated files database, whenever
-  the database is queried. This is needed to handle eg:
+* Avoid running reconcileStaged when the index has not changed since last
+  time.
 
-	git add largefile
-	git mv largefile othername
-	git annex move othername --to foo
-	# fails to drop content from associated file othername,
-	# because it doesn't know it has that name
-	# git commit clears up this mess
+* If `git mv` of an unlocked file is run at the same time as `git annex drop`, 
+  and when git-annex starts up, the mv has not happened yet, but once it
+  wants to update the associated file to drop the content, the mv has 
+  happened, then the content will be left in the working tree despite
+  git-annex having said it dropped it.
+
+  I think git-annex fsck also won't notice this problem, even though,
+  once the mv is complete, git-annex does notice the change in the index 
+  and updates the associated files.
 
 * Checking out a different branch causes git to smudge all changed files,
   and write their content. This does not honor annex.thin. A warning

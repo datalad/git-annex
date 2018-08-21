@@ -1,6 +1,6 @@
 {- Sqlite database of information about Keys
  -
- - Copyright 2015-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -31,9 +31,13 @@ import Annex.Common hiding (delete)
 import Annex.Version (versionUsesKeysDatabase)
 import qualified Annex
 import Annex.LockFile
+import Annex.CatFile
 import Utility.InodeCache
 import Annex.InodeSentinal
+import Git
 import Git.FilePath
+import Git.Command
+import Git.Types
 
 {- Runs an action that reads from the database.
  -
@@ -124,12 +128,16 @@ openDb createdb _ = catchPermissionDenied permerr $ withExclusiveLock gitAnnexKe
 			open db
 		(False, False) -> return DbUnavailable
   where
-	open db = liftIO $ DbOpen <$> H.openDbQueue H.MultiWriter db SQL.containedTable
 	-- If permissions don't allow opening the database, treat it as if
 	-- it does not exist.
 	permerr e = case createdb of
 		False -> return DbUnavailable
 		True -> throwM e
+	
+	open db = do
+		h <- liftIO $ H.openDbQueue H.MultiWriter db SQL.containedTable
+		reconcileStaged (SQL.WriteHandle h)
+		return $ DbOpen h
 
 {- Closes the database if it was open. Any writes will be flushed to it.
  -
@@ -172,3 +180,66 @@ getInodeCaches = runReaderIO . SQL.getInodeCaches . toIKey
 
 removeInodeCaches :: Key -> Annex ()
 removeInodeCaches = runWriterIO . SQL.removeInodeCaches . toIKey
+
+{- Looks at staged changes to find when unlocked files are copied/moved,
+ - and updates associated files in the keys database.
+ -
+ - Since staged changes can be dropped later, does not remove any
+ - associated files; only adds new associated files.
+ -
+ - This needs to be run before querying the keys database so that
+ - information is consistent with the state of the repository.
+ -
+ - TODO To avoid unncessary work, the index file is statted, and if it's not
+ - changed since last time this was run, nothing is done.
+ -}
+reconcileStaged :: SQL.WriteHandle -> Annex ()
+reconcileStaged h@(SQL.WriteHandle qh) = whenM versionUsesKeysDatabase $ do
+	(l, cleanup) <- inRepo $ pipeNullSplit diff
+	changed <- go l False
+	void $ liftIO cleanup
+	-- Flush database changes immediately so other processes can see them.
+	when changed $
+		liftIO $ H.flushDbQueue qh
+  where
+	diff =
+		-- Avoid using external diff command, which would be slow.
+		-- (The -G option may make it be used otherwise.)
+		[ Param "-c", Param "diff.external="
+		, Param "diff"
+		, Param "--cached"
+		, Param "--raw"
+		, Param "-z"
+		, Param "--abbrev=40"
+		-- Optimization: Only find pointer files. This is not
+		-- perfect. A file could start with this and not be a
+		-- pointer file. And a pointer file that is replaced with
+		-- a non-pointer file will match this.
+		, Param $ "-G^" ++ toInternalGitPath (pathSeparator:objectDir)
+		-- Don't include files that were deleted, because this only
+		-- wants to update information for files that are present
+		-- in the index.
+		, Param "--diff-filter=AMUT"
+		-- Disable rename detection.
+		, Param "--no-renames"
+		-- Avoid other complications.
+		, Param "--ignore-submodules=all"
+		, Param "--no-ext-diff"
+		]
+	
+	go (info:file:rest) changed = case words info of
+		((':':_srcmode):dstmode:_srcsha:dstsha:_change:[])
+			-- Only want files, not symlinks
+			| dstmode /= fmtTreeItemType TreeSymlink -> do
+				catKey (Ref dstsha) >>= \case
+					Nothing -> noop
+					Just k -> liftIO $ 
+						SQL.addAssociatedFileFast 
+							(toIKey k)
+							(asTopFilePath file)
+							h
+				go rest True
+			| otherwise -> go rest changed
+		_ -> return changed -- parse failed
+	go _ changed = return changed
+
