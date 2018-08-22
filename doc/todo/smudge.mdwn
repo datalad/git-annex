@@ -8,9 +8,7 @@ git-annex should use smudge/clean filters. v6 mode
   happened, then the content will be left in the working tree despite
   git-annex having said it dropped it.
 
-  I think git-annex fsck also won't notice this problem, even though,
-  once the mv is complete, git-annex does notice the change in the index 
-  and updates the associated files.
+  git-annex fsck does notice and fix this problem.
 
 * Checking out a different branch causes git to smudge all changed files,
   and write their content. This does not honor annex.thin. A warning
