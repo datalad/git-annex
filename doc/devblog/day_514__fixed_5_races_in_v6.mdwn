@@ -1,0 +1,9 @@
+That's a lot of races! Well, 4 of them were all related, but the fixes to
+them had to be made in two different places.
+
+Hopefully that's all the v6 races fixed. I've been finding these races by
+inspection, who knows if I missed some. Anyway, I'm now down to one todo
+item left on the v6 sprint. Gonna take a break for a couple days before
+tackling it.
+
+This work is supported by the NSF-funded DataLad project.
