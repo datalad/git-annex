@@ -13,7 +13,7 @@ git-annex should use smudge/clean filters. v6 mode
 
   This could be partially dealt with in reconcileStaged. The next time
   git-annex runs it, it will notice the staged change, and it could update
-  the worktree file that was not gotten/dropped before.
+  the worktree file that was not gotten/dropped before. -- this is done now
 
   But, if a git mv is run, and then a git commit, reconcileStaged won't
   get a chance to notice the changes. git commit does run the clean filter.

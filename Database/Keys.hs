@@ -15,6 +15,7 @@ module Database.Keys (
 	getAssociatedKey,
 	removeAssociatedFile,
 	storeInodeCaches,
+	storeInodeCaches',
 	addInodeCaches,
 	getInodeCaches,
 	removeInodeCaches,
@@ -32,6 +33,8 @@ import Annex.Version (versionUsesKeysDatabase)
 import qualified Annex
 import Annex.LockFile
 import Annex.CatFile
+import Annex.Content.PointerFile
+import Annex.Link
 import Utility.InodeCache
 import Annex.InodeSentinal
 import Git
@@ -136,9 +139,9 @@ openDb createdb _ = catchPermissionDenied permerr $ withExclusiveLock gitAnnexKe
 		True -> throwM e
 	
 	open db = do
-		h <- liftIO $ H.openDbQueue H.MultiWriter db SQL.containedTable
-		reconcileStaged (SQL.WriteHandle h)
-		return $ DbOpen h
+		qh <- liftIO $ H.openDbQueue H.MultiWriter db SQL.containedTable
+		reconcileStaged qh
+		return $ DbOpen qh
 
 {- Closes the database if it was open. Any writes will be flushed to it.
  -
@@ -168,8 +171,12 @@ removeAssociatedFile k = runWriterIO . SQL.removeAssociatedFile (toIKey k)
 
 {- Stats the files, and stores their InodeCaches. -}
 storeInodeCaches :: Key -> [FilePath] -> Annex ()
-storeInodeCaches k fs = withTSDelta $ \d ->
-	addInodeCaches k . catMaybes =<< liftIO (mapM (`genInodeCache` d) fs)
+storeInodeCaches k fs = storeInodeCaches' k fs []
+
+storeInodeCaches' :: Key -> [FilePath] -> [InodeCache] -> Annex ()
+storeInodeCaches' k fs ics = withTSDelta $ \d ->
+	addInodeCaches k . (++ ics) . catMaybes
+		=<< liftIO (mapM (`genInodeCache` d) fs)
 
 addInodeCaches :: Key -> [InodeCache] -> Annex ()
 addInodeCaches k is = runWriterIO $ SQL.addInodeCaches (toIKey k) is
@@ -196,9 +203,22 @@ removeInodeCaches = runWriterIO . SQL.removeInodeCaches . toIKey
  -
  - Note that this is run with a lock held, so only one process can be
  - running this at a time.
+ -
+ - This also cleans up after a race between eg a git mv and git-annex
+ - get/drop/similar. If git moves the file between this being run and the
+ - get/drop, the moved file won't be updated for the get/drop. 
+ - The next time this runs, it will see the staged change. It then checks
+ - if the worktree file's content availability does not match the git-annex
+ - content availablity, and makes changes as necessary to reconcile them.
+ -
+ - Note that if a commit happens before this runs again, it won't see
+ - the staged change. Instead, during the commit, git will run the clean
+ - filter. If a drop missed the file then the file is added back into the
+ - annex. If a get missed the file then the clean filter populates the
+ - file.
  -}
-reconcileStaged :: SQL.WriteHandle -> Annex ()
-reconcileStaged h@(SQL.WriteHandle qh) = whenM versionUsesKeysDatabase $ do
+reconcileStaged :: H.DbQueue -> Annex ()
+reconcileStaged qh = whenM versionUsesKeysDatabase $ do
 	gitindex <- inRepo currentIndexFile
 	indexcache <- fromRepo gitAnnexKeysDbIndexCache
 	withTSDelta (liftIO . genInodeCache gitindex) >>= \case
@@ -250,15 +270,28 @@ reconcileStaged h@(SQL.WriteHandle qh) = whenM versionUsesKeysDatabase $ do
 		((':':_srcmode):dstmode:_srcsha:dstsha:_change:[])
 			-- Only want files, not symlinks
 			| dstmode /= fmtTreeItemType TreeSymlink -> do
-				catKey (Ref dstsha) >>= \case
-					Nothing -> noop
-					Just k -> liftIO $ 
-						SQL.addAssociatedFileFast 
-							(toIKey k)
-							(asTopFilePath file)
-							h
+				maybe noop (reconcile (asTopFilePath file)) 
+					=<< catKey (Ref dstsha)
 				procdiff rest True
 			| otherwise -> procdiff rest changed
 		_ -> return changed -- parse failed
 	procdiff _ changed = return changed
 
+	-- Note that database writes done in here will not necessarily 
+	-- be visible to database reads also done in here.
+	reconcile file key = do
+		let ikey = toIKey key
+		liftIO $ SQL.addAssociatedFileFast ikey file (SQL.WriteHandle qh)
+		caches <- liftIO $ SQL.getInodeCaches ikey (SQL.ReadHandle qh)
+		keyloc <- calcRepo (gitAnnexLocation key)
+		keypopulated <- sameInodeCache keyloc caches
+		p <- fromRepo $ fromTopFilePath file
+		filepopulated <- sameInodeCache p caches
+		case (keypopulated, filepopulated) of
+			(True, False) ->
+				populatePointerFile (Restage True) key keyloc p >>= \case
+					Nothing -> return ()
+					Just ic -> liftIO $
+						SQL.addInodeCaches ikey [ic] (SQL.WriteHandle qh)
+			(False, True) -> depopulatePointerFile key p
+			_ -> return ()
