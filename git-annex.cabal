@@ -551,6 +551,8 @@ Executable git-annex
     Annex.Concurrent
     Annex.Content
     Annex.Content.Direct
+    Annex.Content.LowLevel
+    Annex.Content.PointerFile
     Annex.Difference
     Annex.DirHashes
     Annex.Direct
