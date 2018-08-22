@@ -499,8 +499,8 @@ moveAnnex key src = ifM (checkSecureHashes key)
 			fs <- map (`fromTopFilePath` g)
 				<$> Database.Keys.getAssociatedFiles key
 			unless (null fs) $ do
-				mapM_ (populatePointerFile (Restage True) key dest) fs
-				Database.Keys.storeInodeCaches key (dest:fs)
+				ics <- mapM (populatePointerFile (Restage True) key dest) fs
+				Database.Keys.storeInodeCaches' key [dest] (catMaybes ics)
 		)
 	storeindirect = storeobject =<< calcRepo (gitAnnexLocation key)
 

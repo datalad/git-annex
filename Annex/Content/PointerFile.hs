@@ -19,21 +19,30 @@ import Annex.InodeSentinal
 import Utility.InodeCache
 import Annex.Content.LowLevel
 
-{- Populates a pointer file with the content of a key. -}
-populatePointerFile :: Restage -> Key -> FilePath -> FilePath -> Annex ()
+{- Populates a pointer file with the content of a key. 
+ -
+ - If the file already has some other content, it is not modified.
+ -
+ - Returns an InodeCache if it populated the pointer file.
+ -}
+populatePointerFile :: Restage -> Key -> FilePath -> FilePath -> Annex (Maybe InodeCache)
 populatePointerFile restage k obj f = go =<< liftIO (isPointerFile f)
   where
 	go (Just k') | k == k' = do
 		destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus f
 		liftIO $ nukeFile f
-		ic <- replaceFile f $ \tmp -> do
-			ifM (linkOrCopy k obj tmp destmode)
-				( thawContent tmp
-				, liftIO $ writePointerFile tmp k destmode
-				)
-			withTSDelta (liftIO . genInodeCache tmp)
+		(ic, populated) <- replaceFile f $ \tmp -> do
+			ok <- linkOrCopy k obj tmp destmode
+			if ok
+				then thawContent tmp
+				else liftIO $ writePointerFile tmp k destmode
+			ic <- withTSDelta (liftIO . genInodeCache tmp)
+			return (ic, ok)
 		maybe noop (restagePointerFile restage f) ic
-	go _ = return ()
+		if populated
+			then return ic
+			else return Nothing
+	go _ = return Nothing
 	
 {- Removes the content from a pointer file, replacing it with a pointer.
  -
