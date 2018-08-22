@@ -73,9 +73,11 @@ smudge file = do
 clean :: FilePath -> CommandStart
 clean file = do
 	b <- liftIO $ B.hGetContents stdin
-	if isJust (parseLinkOrPointer b)
-		then liftIO $ B.hPut stdout b
-		else ifM (shouldAnnex file)
+	case parseLinkOrPointer b of
+		Just k -> do
+			getMoveRaceRecovery k file
+			liftIO $ B.hPut stdout b
+		Nothing -> ifM (shouldAnnex file)
 			( do
 				-- Before git 2.5, failing to consume all
 				-- stdin here would cause a SIGPIPE and
@@ -122,3 +124,21 @@ shouldAnnex file = do
 
 emitPointer :: Key -> IO ()
 emitPointer = putStr . formatPointer
+
+-- Recover from a previous race between eg git mv and git-annex get.
+-- That could result in the file remaining a pointer file, while
+-- its content is present in the annex. Populate the pointer file.
+-- 
+-- This also handles the case where a copy of a pointer file is made,
+-- then git-annex gets the content, and later git add is run on
+-- the pointer copy. It will then be populated with the content.
+getMoveRaceRecovery :: Key -> FilePath -> Annex ()
+getMoveRaceRecovery k file = void $ tryNonAsync $
+	liftIO (isPointerFile file) >>= \k' -> when (Just k == k') $
+		whenM (inAnnex k) $ do
+			obj <- calcRepo (gitAnnexLocation k)
+			-- Cannot restage because git add is running and has
+			-- the index locked.
+			populatePointerFile (Restage False) k obj file >>= \case
+				Nothing -> return ()
+				Just ic -> Database.Keys.addInodeCaches k [ic]

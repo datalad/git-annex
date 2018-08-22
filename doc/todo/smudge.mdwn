@@ -2,28 +2,6 @@ git-annex should use smudge/clean filters. v6 mode
 
 ### August sprint todo list
 
-* If `git mv` of an unlocked file is run at the same time as `git annex drop`, 
-  and when git-annex starts up, the mv has not happened yet, but once it
-  wants to update the associated file to drop the content, the mv has 
-  happened, then the content will be left in the working tree despite
-  git-annex having said it dropped it. And `git annex move` has the inverse
-  problem.
-
-  git-annex fsck does notice and fix this problem, at least sometimes.
-
-  This could be partially dealt with in reconcileStaged. The next time
-  git-annex runs it, it will notice the staged change, and it could update
-  the worktree file that was not gotten/dropped before. -- this is done now
-
-  But, if a git mv is run, and then a git commit, reconcileStaged won't
-  get a chance to notice the changes. git commit does run the clean filter.
-  If the file was supposed to be dropped but is still present, the clean
-  filter will re-inject it, and it's as if the drop never happened.
-
-  OTOH, if the file was supposed to be gotten but is not present, the clean
-  filter currently does nothing. It would need to update the worktree file
-  to have the content to fully recover from the race.
-
 * Checking out a different branch causes git to smudge all changed files,
   and write their content. This does not honor annex.thin. A warning
   message is printed in this case.  
