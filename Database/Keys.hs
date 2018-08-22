@@ -38,6 +38,7 @@ import Git
 import Git.FilePath
 import Git.Command
 import Git.Types
+import Git.Index
 
 {- Runs an action that reads from the database.
  -
@@ -190,18 +191,36 @@ removeInodeCaches = runWriterIO . SQL.removeInodeCaches . toIKey
  - This needs to be run before querying the keys database so that
  - information is consistent with the state of the repository.
  -
- - TODO To avoid unncessary work, the index file is statted, and if it's not
+ - To avoid unncessary work, the index file is statted, and if it's not
  - changed since last time this was run, nothing is done.
+ -
+ - Note that this is run with a lock held, so only one process can be
+ - running this at a time.
  -}
 reconcileStaged :: SQL.WriteHandle -> Annex ()
 reconcileStaged h@(SQL.WriteHandle qh) = whenM versionUsesKeysDatabase $ do
-	(l, cleanup) <- inRepo $ pipeNullSplit diff
-	changed <- go l False
-	void $ liftIO cleanup
-	-- Flush database changes immediately so other processes can see them.
-	when changed $
-		liftIO $ H.flushDbQueue qh
+	gitindex <- inRepo currentIndexFile
+	indexcache <- fromRepo gitAnnexKeysDbIndexCache
+	withTSDelta (liftIO . genInodeCache gitindex) >>= \case
+		Just cur -> 
+			liftIO (maybe Nothing readInodeCache <$> catchMaybeIO (readFile indexcache)) >>= \case
+				Nothing -> go cur indexcache
+				Just prev -> ifM (compareInodeCaches prev cur)
+					( noop
+					, go cur indexcache
+					)
+		Nothing -> noop
   where
+	go cur indexcache = do
+		(l, cleanup) <- inRepo $ pipeNullSplit diff
+		changed <- procdiff l False
+		void $ liftIO cleanup
+		-- Flush database changes immediately
+		-- so other processes can see them.
+		when changed $
+			liftIO $ H.flushDbQueue qh
+		liftIO $ writeFile indexcache $ showInodeCache cur
+	
 	diff =
 		-- Avoid using external diff command, which would be slow.
 		-- (The -G option may make it be used otherwise.)
@@ -227,7 +246,7 @@ reconcileStaged h@(SQL.WriteHandle qh) = whenM versionUsesKeysDatabase $ do
 		, Param "--no-ext-diff"
 		]
 	
-	go (info:file:rest) changed = case words info of
+	procdiff (info:file:rest) changed = case words info of
 		((':':_srcmode):dstmode:_srcsha:dstsha:_change:[])
 			-- Only want files, not symlinks
 			| dstmode /= fmtTreeItemType TreeSymlink -> do
@@ -238,8 +257,8 @@ reconcileStaged h@(SQL.WriteHandle qh) = whenM versionUsesKeysDatabase $ do
 							(toIKey k)
 							(asTopFilePath file)
 							h
-				go rest True
-			| otherwise -> go rest changed
+				procdiff rest True
+			| otherwise -> procdiff rest changed
 		_ -> return changed -- parse failed
-	go _ changed = return changed
+	procdiff _ changed = return changed
 

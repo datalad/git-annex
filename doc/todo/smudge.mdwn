@@ -2,9 +2,6 @@ git-annex should use smudge/clean filters. v6 mode
 
 ### August sprint todo list
 
-* Avoid running reconcileStaged when the index has not changed since last
-  time.
-
 * If `git mv` of an unlocked file is run at the same time as `git annex drop`, 
   and when git-annex starts up, the mv has not happened yet, but once it
   wants to update the associated file to drop the content, the mv has 

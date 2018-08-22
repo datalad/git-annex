@@ -33,6 +33,7 @@ module Annex.Locations (
 	gitAnnexUnusedLog,
 	gitAnnexKeysDb,
 	gitAnnexKeysDbLock,
+	gitAnnexKeysDbIndexCache,
 	gitAnnexFsckState,
 	gitAnnexFsckDbDir,
 	gitAnnexFsckDbLock,
@@ -284,6 +285,11 @@ gitAnnexKeysDb r = gitAnnexDir r </> "keys"
 {- Lock file for the keys database. -}
 gitAnnexKeysDbLock :: Git.Repo -> FilePath
 gitAnnexKeysDbLock r = gitAnnexKeysDb r ++ ".lck"
+
+{- Contains the stat of the last index file that was
+ - reconciled with rhe keys database. -}
+gitAnnexKeysDbIndexCache :: Git.Repo -> FilePath
+gitAnnexKeysDbIndexCache r = gitAnnexKeysDb r ++ ".cache"
 
 {- .git/annex/fsck/uuid/ is used to store information about incremental
  - fscks. -}
