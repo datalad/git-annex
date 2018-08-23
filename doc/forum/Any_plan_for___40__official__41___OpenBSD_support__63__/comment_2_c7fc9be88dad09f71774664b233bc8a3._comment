@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="hobbes@b2cacef69071743c3a831e60511062f7e014e52f"
+ nickname="hobbes"
+ avatar="http://cdn.libravatar.org/avatar/44b70169c4d862b3619812c360aa8f1e"
+ subject="Building with OpenBSD"
+ date="2018-08-23T19:30:09Z"
+ content="""
+I have successfully built git-annex using plain cabal on OpenBSD, and ran into significant problems using stack.
+
+The main thing was that I needed to add a lot of swap space, and the build took forever. Running out of memory pretty much just killed the machine. I would love to have an official build available. Would make my life easier too, and put the effort in one place.
+"""]]
