@@ -33,6 +33,7 @@ Update: there are multiple projects trying to solve this problem space outside o
 
  * [[design/assistant/telehash/]] support is still not complete, as the upstream spec and implementation (particularly Haskell bits), need to mature
  * [[special_remotes/ipfs/]] is now a special remote that does respond to some of the requirements (but [duplicates files around](https://github.com/ipfs/go-ipfs/issues/875) even more and is [kind of](https://github.com/ipfs/go-ipfs/issues/872) [slow](https://github.com/ipfs/go-ipfs/issues/898))
+ * [dat](https://datproject.org/) is a bit like IPFS, except it doesn't duplicate files around so it might be a better match to sync stuff around
  * [Maidsafe](http://maidsafe.net/) is another option, which provides storage and uses crypto-currency incentives
  * [Storj](http://storj.io/) is similar
  * [camlistore](https://camlistore.org/) is yet another option
