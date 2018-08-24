@@ -46,7 +46,7 @@ Update: there are multiple projects trying to solve this problem space outside o
  * [scout](https://github.com/bittorrent/scout) - DHT-based messaging and peer discovery, used for the Bittorrent-based [bleep messenger](http://www.bleep.pm), could be used to sync git history? [introduction article](http://blog.bittorrent.com/2016/09/09/scout-securely-locate-peers-without-central-servers/)
  * [pwnat](http://samy.pl/pwnat/) can similarly be used to create tunnels to bypass NATs
 
-joeyh's approach for now is to [[wait and see what will emerge|devblog/day_219__catching_up_and_looking_back/]], but of course people are welcome to implement their own [[special_remotes]] to fix this problem!
+joeyh worked on [[design/assistant/telehash/]] for a while but then switched to [[wait and see|devblog/day_219__catching_up_and_looking_back/]], when it became clear telehash wasn't quite mature enough yet. he eventually implemented a solution for part 3 of this problem (connecting to peers without setting up a server) with the [[tor special remote|special_remotes/tor/]], see [[tips/peer_to_peer_network_with_tor/]] for instructions. This doesn't directly address the other two requirements in the sense that each remote need a custom setup to join the p2p exchange, which is still one-to-one and not many-to-many as typical p2p applications are. -- [[anarcat]] 2018-08-24
 
 Using an external client (addurl torrent support)
 =================================================
