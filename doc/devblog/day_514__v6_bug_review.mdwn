@@ -1,0 +1,25 @@
+Looked over bugs filed about v6 mode and did some triage and analysis.
+[[smudge]] has the details.
+
+This led to changing what's done by `git add` and `git commit file` when
+annex.largefiles is not configured. Rather than behaving like `git annex
+add` and always storing the file in the annex, it will store it in the
+annex if the old version was annexed, and in git if the old version was
+stored in git. This avoids accidental conversions.
+
+It might make sense to have `git annex add` also do this, even in v5
+repositories, but I want to concentrate on v6 for now, and also don't
+think that `git add` and `git annex add` necessarily need to behave
+identically in v6 mode. While using `git commit -a` doesn't imply
+anything about whether you want the file in git or the annex,
+using `git-annex add` seems to imply they you want it in
+the annex, unless you've gone out of your way to configure otherwise.
+
+----
+
+Also did some design work on supporting versioned S3 buckets with
+`git-annex export`.
+
+----
+
+This work is supported by the NSF-funded DataLad project.
