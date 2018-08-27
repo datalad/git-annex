@@ -1,0 +1,5 @@
+git annex sync supports git remote groups, that should be expanded to all
+commands supporting --to and --from. And since there will be a [Remote]
+list, could also support --to foo --to bar etc.
+
+--[[Joey]]
