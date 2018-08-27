@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2018-08-27T18:08:24Z"
+ content="""
+Hmm, I think if annex.largefiles is configured, it should be honored. So,
+the ways to convert documented on
+<https://git-annex.branchable.com/tips/largefiles/> will work
+with only a minor modification.
+
+If annex.largefiles is not configured, it can check if the file was annexed
+or not before, and maintain the status quo.
+
+At least to start with I am only going to do it in the clean filter, so
+`git annex add` behavior won't change, it default to annexing. It may make
+sense to make `git annex add` consistent with `git add`, but that would
+also need to affect v5 repositories, probably, and I don't want to entangle
+a v6 bug fix with a v5 behavior change. Also, the risk of a
+`git annex add` with the wrong annex.largefiles temp setting
+is much smaller than the risk of forgetting to temp set annex.largefiles
+when running `git commit -a`. Also, I seem to remember another todo item
+discussing making this change to `git annex add` and would need to revisit
+the thinking in that.
+
+Note that a .gitattributes file might only configure largefiles for eg,
+"*.c" and not for other files, thus implicitly accepting the default
+largefiles for the rest. Should then `Makefile` be treated as having
+largefiles configured or not? I lean toward treating it as not configured,
+because then when the user temporarily overrides largefiles to add `Makefile`
+to git, a modification won't accidentially go to the annex.
+"""]]

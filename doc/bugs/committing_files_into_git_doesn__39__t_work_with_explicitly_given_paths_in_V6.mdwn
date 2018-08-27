@@ -45,3 +45,6 @@ operating system: linux x86_64
 
 
 [[ben]]
+
+> [[done]]; clean filter defaults to preserving git/annex state of file.
+> --[[Joey]]

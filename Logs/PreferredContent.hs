@@ -58,7 +58,7 @@ checkMap getmap mu notpresent mkey afile d = do
 	m <- getmap
 	case M.lookup u m of
 		Nothing -> return d
-		Just matcher -> checkMatcher matcher mkey afile notpresent d
+		Just matcher -> checkMatcher matcher mkey afile notpresent (return d) (return d)
 
 preferredContentMap :: Annex (FileMatcherMap Annex)
 preferredContentMap = maybe (fst <$> preferredRequiredMapsLoad) return

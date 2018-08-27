@@ -11,6 +11,11 @@ git-annex (6.20180808) UNRELEASED; urgency=medium
     pipe. This also avoids git buffering the whole file content in memory.
   * v6: After updating the worktree for an add/drop, update git's index,
     so git status will not show the files as modified.
+  * v6: When annex.largefiles is not configured for a file, running git
+    add or git commit, or otherwise using git to stage a file
+    will add it to the annex if the file was in the annex before,
+    and to git otherwise. This is to avoid accidental conversion.
+    Note that git-annex add's behavior has not changed.
   * v6: Update associated files database when git has staged changes
     to pointer files.
   * v6: Fix some race conditions.

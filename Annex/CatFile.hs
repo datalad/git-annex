@@ -13,6 +13,7 @@ module Annex.CatFile (
 	catCommit,
 	catObjectDetails,
 	catFileHandle,
+	catObjectMetaData,
 	catFileStop,
 	catKey,
 	catKeyFile,

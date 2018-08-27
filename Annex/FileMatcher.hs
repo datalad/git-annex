@@ -10,6 +10,7 @@
 module Annex.FileMatcher (
 	GetFileMatcher,
 	checkFileMatcher,
+	checkFileMatcher',
 	checkMatcher,
 	matchAll,
 	preferredContentParser,
@@ -42,17 +43,25 @@ import qualified Data.Set as S
 type GetFileMatcher = FilePath -> Annex (FileMatcher Annex)
 
 checkFileMatcher :: GetFileMatcher -> FilePath -> Annex Bool
-checkFileMatcher getmatcher file = do
-	matcher <- getmatcher file
-	checkMatcher matcher Nothing (AssociatedFile (Just file)) S.empty True
+checkFileMatcher getmatcher file = checkFileMatcher' getmatcher file (return True)
 
-checkMatcher :: FileMatcher Annex -> Maybe Key -> AssociatedFile -> AssumeNotPresent -> Bool -> Annex Bool
-checkMatcher matcher mkey afile notpresent d
-	| isEmpty matcher = return d
+-- | Allows running an action when no matcher is configured for the file.
+checkFileMatcher' :: GetFileMatcher -> FilePath -> Annex Bool -> Annex Bool
+checkFileMatcher' getmatcher file notconfigured = do
+	matcher <- getmatcher file
+	checkMatcher matcher Nothing afile S.empty notconfigured d
+  where
+	afile = AssociatedFile (Just file)
+	-- checkMatcher will never use this, because afile is provided.
+	d = return True
+
+checkMatcher :: FileMatcher Annex -> Maybe Key -> AssociatedFile -> AssumeNotPresent -> Annex Bool -> Annex Bool -> Annex Bool
+checkMatcher matcher mkey afile notpresent notconfigured d
+	| isEmpty matcher = notconfigured
 	| otherwise = case (mkey, afile) of
 		(_, AssociatedFile (Just file)) -> go =<< fileMatchInfo file
 		(Just key, _) -> go (MatchingKey key)
-		_ -> return d
+		_ -> d
   where
 	go mi = matchMrun matcher $ \a -> a notpresent mi
 
