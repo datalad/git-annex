@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2018-08-27T17:20:19Z"
+ content="""
+Actually the "some" in-git file showing as modified in status is not the
+same as the git-annex get/drop showing modified in status problem. I've
+fixed the latter and the former still happens.
+
+What's happening is, git runs the clean filter, I think because this
+is a fresh clone and it's not cleaned it yet. That looks at
+annex.largefiles (lack of) configuration and concludes this file belongs in
+the annex, so it ingests it. Rest follows the same as what I described in 
+comment #2.
+
+So yeah, that's a real problem, you clone a repo and there are suddenly
+changes that mess up the painstakingly set up in-annex/in-git division.
+(Note that it does not need to involve an upgrade.)
+
+Only fix I can imagine is my old idea:
+
+> I suppose one way this could be improved is for git annex smudge --clean to
+> check if a file was checked into git as a non-annexed file before, and then
+> avoid cleaning it at all. But then if someone had a non-annexed file and it got
+> big and they wanted to add it annexed, such a change would cause a problem..
+
+I suppose we could get around that problem with a new git-annex command
+that converts a non-annexed file to an annexed file. Without a command,
+this would also work: mv the file to a temp name, followed by git-annex add,
+and then git mv back.
+"""]]
