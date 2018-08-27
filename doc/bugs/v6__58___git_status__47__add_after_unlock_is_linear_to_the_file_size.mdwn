@@ -21,3 +21,4 @@ NixOS (master branch)
 Not yet. :)  
 But will use it to keep my music library and sync a smaller (ogg) version to my various devices (with beets handling metadata and conversion)
 
+> [[fixed|done]] --[[Joey]]

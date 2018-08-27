@@ -21,3 +21,5 @@ The only way to rectify this I can find is `git checkout` - but that means I hav
 git-annex version: 6.20171026-gd451d333d (standalone binary) on Debian stretch.
 
 [[!meta title="v6 get/drop make git think files are changed"]]
+
+> [[fixed|done]] --[[Joey]]
