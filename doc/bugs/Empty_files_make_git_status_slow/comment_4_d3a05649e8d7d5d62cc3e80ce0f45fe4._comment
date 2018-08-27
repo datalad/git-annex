@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2018-08-27T16:17:32Z"
+ content="""
+Verified to still be the case with current git-annex
+and git 2.18.0.
+
+I suppose one workaround would be to default annex.largefiles to your
+setting. 
+
+But, the user might want to use `git annex export`, which currently exports
+only annexed file, not in-git files. Or there might be a workflow with
+git-annex metadata, which likewise can only be added to annexed files. Such
+a special case by default may be more trouble than it's worth.
+
+I'm guessing that git uses 0 size in the index to indicate it doesn't know
+the stat information for the file, or something like that. Perhaps git
+could be changed to use 0 inode instead.
+"""]]
