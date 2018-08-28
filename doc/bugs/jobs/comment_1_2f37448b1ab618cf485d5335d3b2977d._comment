@@ -3,14 +3,23 @@
  subject="""comment 1"""
  date="2018-08-28T16:16:03Z"
  content="""
-Does the .git/index.lock file still exist now that git-annex has exited?
+Reproduced by creating 10000 files and running 
+`git -c annex.queuesize=100 annex add -J8`
 
-Can you provide a log with --debug of the git-annex add command?
-Can trim it to only the lines containing xargs.
+Apparently it runs two concurrent git adds
+when flushing the queue in some circumstances.
+The smaller queue size must make it easier to reproduce;
+without it all 10000 files get added ok here.
 
-I am pretty sure git-annex only runs one git add at a time, no matter how
-many jobs you configure. It seems quite likely that some other git command
-was operating in the repository at the same time and locked the index,
-or like the error message says, git may have somehow crashed and left
-the index.lock behind.
+It's not specific to v6 at all.
+
+Hmm, worker threads don't actually get separate
+Annex.repoqueue; a single queue is inherited
+from the parent. Two worker threads could try
+to flush the shared queue at the same time.
+
+Since the queue updates are also done non-atomically,
+which looks susceptable to races too,
+I think each thread needs to get its own queue, but
+only one thread ought to be allowed to flush its queue at a time.
 """]]
