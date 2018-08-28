@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-08-28T16:16:03Z"
+ content="""
+Does the .git/index.lock file still exist now that git-annex has exited?
+
+Can you provide a log with --debug of the git-annex add command?
+Can trim it to only the lines containing xargs.
+
+I am pretty sure git-annex only runs one git add at a time, no matter how
+many jobs you configure. It seems quite likely that some other git command
+was operating in the repository at the same time and locked the index,
+or like the error message says, git may have somehow crashed and left
+the index.lock behind.
+"""]]
