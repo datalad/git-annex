@@ -75,13 +75,8 @@ preferredBundledPrograms = catMaybes
 	, BuildInfo.lsof
 	, BuildInfo.gcrypt
 #ifndef mingw32_HOST_OS
-	-- All these utilities are included in git for Windows
+	-- These utilities are included in git for Windows
 	, ifset BuildInfo.curl "curl"
-	, BuildInfo.sha1
-	, BuildInfo.sha256
-	, BuildInfo.sha512
-	, BuildInfo.sha224
-	, BuildInfo.sha384
 	, Just "cp"
 #endif
 #ifdef linux_HOST_OS

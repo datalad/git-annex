@@ -1021,7 +1021,6 @@ Executable git-annex
     Utility.Env.Basic
     Utility.Env.Set
     Utility.Exception
-    Utility.ExternalSHA
     Utility.FileMode
     Utility.FileSize
     Utility.FileSystemEncoding

@@ -18,9 +18,7 @@ import Types.Key
 import Types.Backend
 import Types.KeySource
 import Utility.Hash
-import Utility.ExternalSHA
 
-import qualified BuildInfo
 import qualified Data.ByteString.Lazy as L
 import Data.Char
 
@@ -89,7 +87,7 @@ keyValue :: Hash -> KeySource -> Annex (Maybe Key)
 keyValue hash source = do
 	let file = contentLocation source
 	filesize <- liftIO $ getFileSize file
-	s <- hashFile hash file filesize
+	s <- hashFile hash file
 	return $ Just $ stubKey
 		{ keyName = s
 		, keyVariety = hashKeyVariety hash (HasExt False)
@@ -116,16 +114,16 @@ selectExtension f
 		reverse $ splitc '.' $ takeExtensions f
 	shortenough e = length e <= 4 -- long enough for "jpeg"
 
-{- A key's checksum is checked during fsck. -}
+{- A key's checksum is checked during fsck when it's content is present
+ - except for in fast mode. -}
 checkKeyChecksum :: Hash -> Key -> FilePath -> Annex Bool
 checkKeyChecksum hash key file = catchIOErrorType HardwareFault hwfault $ do
 	fast <- Annex.getState Annex.fast
-	mstat <- liftIO $ catchMaybeIO $ getFileStatus file
-	case (mstat, fast) of
-		(Just stat, False) -> do
-			filesize <- liftIO $ getFileSize' file stat
+	exists <- liftIO $ doesFileExist file
+	case (exists, fast) of
+		(True, False) -> do
 			showAction "checksum"
-			check <$> hashFile hash file filesize
+			check <$> hashFile hash file
 		_ -> return True
   where
 	expected = keyHash key
@@ -192,55 +190,33 @@ trivialMigrate oldkey newbackend afile
 	oldvariety = keyVariety oldkey
 	newvariety = backendVariety newbackend
 
-hashFile :: Hash -> FilePath -> Integer -> Annex String
-hashFile hash file filesize = go hash
+hashFile :: Hash -> FilePath -> Annex String
+hashFile hash file = liftIO $ do
+	h <- hasher <$> L.readFile file
+	-- Force full evaluation so file is read and closed.
+	return (length h `seq` h)
   where
-	go MD5Hash = use md5Hasher
-	go SHA1Hash = usehasher (HashSize 1)
-	go (SHA2Hash hashsize) = usehasher hashsize
-	go (SHA3Hash hashsize) = use (sha3Hasher hashsize)
-	go (SkeinHash hashsize) = use (skeinHasher hashsize)
+	hasher = case hash of
+		MD5Hash -> md5Hasher
+		SHA1Hash -> sha1Hasher
+		SHA2Hash hashsize -> sha2Hasher hashsize
+		SHA3Hash hashsize -> sha3Hasher hashsize
+		SkeinHash hashsize -> skeinHasher hashsize
 #if MIN_VERSION_cryptonite(0,23,0)
-	go (Blake2bHash hashsize) = use (blake2bHasher hashsize)
-	go (Blake2sHash hashsize) = use (blake2sHasher hashsize)
-	go (Blake2spHash hashsize) = use (blake2spHasher hashsize)
+		Blake2bHash hashsize -> blake2bHasher hashsize
+		Blake2sHash hashsize -> blake2sHasher hashsize
+		Blake2spHash hashsize -> blake2spHasher hashsize
 #endif
-	
-	use hasher = liftIO $ do
-		h <- hasher <$> L.readFile file
-		-- Force full evaluation so file is read and closed.
-		return (length h `seq` h)
-	
-	usehasher hashsize@(HashSize sz) = case shaHasher hashsize filesize of
-		Left sha -> use sha
-		Right (external, internal) ->
-			liftIO (externalSHA external sz file) >>= \case
-				Right r -> return r
-				Left e -> do
-					warning e
-					-- fall back to internal since
-					-- external command failed
-					use internal
 
-shaHasher :: HashSize -> Integer -> Either (L.ByteString -> String) (String, L.ByteString -> String)
-shaHasher (HashSize hashsize) filesize
-	| hashsize == 1 = use BuildInfo.sha1 sha1
-	| hashsize == 256 = use BuildInfo.sha256 sha2_256
-	| hashsize == 224 = use BuildInfo.sha224 sha2_224
-	| hashsize == 384 = use BuildInfo.sha384 sha2_384
-	| hashsize == 512 = use BuildInfo.sha512 sha2_512
+sha2Hasher :: HashSize -> (L.ByteString -> String)
+sha2Hasher (HashSize hashsize)
+	| hashsize == 256 = use sha2_256
+	| hashsize == 224 = use sha2_224
+	| hashsize == 384 = use sha2_384
+	| hashsize == 512 = use sha2_512
 	| otherwise = error $ "unsupported SHA size " ++ show hashsize
   where
-	use Nothing hasher = Left $ usehasher hasher
-	use (Just c) hasher
-		{- Use builtin, but slightly slower hashing for
-		 - smallish files. Cryptohash benchmarks 90 to 101%
-		 - faster than external hashers, depending on the hash
-		 - and system. So there is no point forking an external
-		 - process unless the file is large. -}
-		| filesize < 1048576 = Left $ usehasher hasher
-		| otherwise = Right (c, usehasher hasher)
-	usehasher hasher = show . hasher
+	use hasher = show . hasher
 
 sha3Hasher :: HashSize -> (L.ByteString -> String)
 sha3Hasher (HashSize hashsize)
@@ -279,6 +255,9 @@ blake2spHasher (HashSize hashsize)
 	| hashsize == 224 = show . blake2sp_224
 	| otherwise = error $ "unsupported BLAKE2SP size " ++ show hashsize
 #endif
+
+sha1Hasher :: L.ByteString -> String
+sha1Hasher = show . sha1
 
 md5Hasher :: L.ByteString -> String
 md5Hasher = show . md5

@@ -7,7 +7,6 @@ module Build.Configure where
 import Build.TestConfig
 import Build.Version
 import Utility.SafeCommand
-import Utility.ExternalSHA
 import Utility.Env.Basic
 import qualified Git.Version
 import Utility.Directory
@@ -38,37 +37,7 @@ tests =
 	, TestCase "lsof" $ findCmdPath "lsof" "lsof"
 	, TestCase "git-remote-gcrypt" $ findCmdPath "gcrypt" "git-remote-gcrypt"
 	, TestCase "ssh connection caching" getSshConnectionCaching
-	] ++ shaTestCases
-	[ (1, "da39a3ee5e6b4b0d3255bfef95601890afd80709")
-	, (256, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
-	, (512, "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e")
-	, (224, "d14a028c2a3a2bc9476102bb288234c415a2b01f828ea62ac5b3e42f")
-	, (384, "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b")
 	]
-
-{- shaNsum are the program names used by coreutils. Some systems
- - install these with 'g' prefixes.
- -
- - On some systems, shaN is used instead, but on other
- - systems, it might be "hashalot", which does not produce
- - usable checksums. Only accept programs that produce
- - known-good hashes when run on files. -}
-shaTestCases :: [(Int, String)] -> [TestCase]
-shaTestCases l = map make l
-  where
-	make (n, knowngood) = TestCase key $ 
-		Config key . MaybeStringConfig <$> search (shacmds n)
-	  where
-		key = "sha" ++ show n
-		search [] = return Nothing
-		search (c:cmds) = do
-			sha <- externalSHA c n "/dev/null"
-			if sha == Right knowngood
-				then return $ Just c
-				else search cmds
-	
-	shacmds n = concatMap (\x -> [x, 'g':x]) $
-		map (\x -> "sha" ++ show n ++ x) ["sum", ""]
 
 tmpDir :: String
 tmpDir = "tmp"
@@ -128,8 +97,6 @@ androidConfig c = overrides ++ filter (not . overridden) c
 	overrides = 
 		[ Config "cp_reflink_auto" $ BoolConfig False
 		, Config "curl" $ BoolConfig False
-		, Config "sha224" $ MaybeStringConfig Nothing
-		, Config "sha384" $ MaybeStringConfig Nothing
 		]
 	overridden (Config k _) = k `elem` overridekeys
 	overridekeys = map (\(Config k _) -> k) overrides

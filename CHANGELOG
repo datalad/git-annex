@@ -23,6 +23,7 @@ git-annex (6.20180808) UNRELEASED; urgency=medium
   * linux standalone: When LOCPATH is already set, use it instead of the
     bundled locales. It can be set to an empty string to use the system
     locales too.
+  * Stop using external hash programs, since cryptonite is faster.
 
  -- Joey Hess <id@joeyh.name>  Wed, 08 Aug 2018 11:24:08 -0400
 
