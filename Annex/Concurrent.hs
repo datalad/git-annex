@@ -41,9 +41,13 @@ forkState a = do
 dupState :: Annex AnnexState
 dupState = do
 	st <- Annex.getState id
-	-- avoid sharing eg, open file handles
 	return $ st
 		{ Annex.workers = []
+		-- each thread has its own repoqueue, but the repoqueuesem
+		-- is shared to prevent more than one thread flushing its
+		-- queue at the same time
+		, Annex.repoqueue = Nothing
+		-- avoid sharing eg, open file handles
 		, Annex.catfilehandles = M.empty
 		, Annex.checkattrhandle = Nothing
 		, Annex.checkignorehandle = Nothing

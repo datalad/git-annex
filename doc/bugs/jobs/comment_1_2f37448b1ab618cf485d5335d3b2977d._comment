@@ -13,13 +13,5 @@ without it all 10000 files get added ok here.
 
 It's not specific to v6 at all.
 
-Hmm, worker threads don't actually get separate
-Annex.repoqueue; a single queue is inherited
-from the parent. Two worker threads could try
-to flush the shared queue at the same time.
-
-Since the queue updates are also done non-atomically,
-which looks susceptable to races too,
-I think each thread needs to get its own queue, but
-only one thread ought to be allowed to flush its queue at a time.
+Two worker threads are flushing their queues at the same time.
 """]]
