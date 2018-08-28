@@ -18,7 +18,7 @@ import Logs.Location
 import qualified Database.Keys
 import qualified Git.BuildVersion
 import Git.FilePath
-import Git.Ref
+import qualified Git.Ref
 import Backend
 
 import qualified Data.ByteString.Lazy as B
@@ -130,7 +130,7 @@ shouldAnnex file moldkey = do
   where
 	whenempty = case moldkey of
 		Just _ -> return True
-		Nothing -> isNothing <$> catObjectMetaData (fileRef file)
+		Nothing -> isNothing <$> catObjectMetaData (Git.Ref.fileRef file)
 
 emitPointer :: Key -> IO ()
 emitPointer = putStr . formatPointer
