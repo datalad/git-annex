@@ -1,0 +1,57 @@
+Some remotes like S3 support versioning of data stored in them.
+When git-annex updates an export, it deletes the old
+content from eg the S3 bucket, but with versioning enabled, S3 retains the
+content and it can be accessed using a version ID (that S3 returns when
+storing the content). So it should be possible for git-annex to allow
+downloading old versions of files from such a remote.
+
+## remote pair approach
+
+One way would be to have the S3 remote, when storing a file to a S3 bucket
+that is known to support versioning, to add an url using the S3 version ID
+to the web remote.
+
+However, some remotes that support versioning won't be accessible via the
+web, so that's not a general solution.
+
+(Also, S3 buckets only support web access when configured to be public.)
+
+This generalizes to a pair of remotes, it could be S3+web or S3 could instantiate
+two remotes automatically, and use the second for versioned data.
+
+Note that location tracking info has to be carefully managed, to avoid
+there appearing to be two copies of data that's only really stored in one place.
+When uploading to S3, it should not yet add the url or mark the content 
+as present in the web. Then when dropping from S3, after the
+drop succeeds, it can mark the content as present in the web and add its url.
+
+There's a potential race there still, since the remote does not update location
+tracking when dropping, the caller of the remote does. So if S3 marks content
+as being present in the web, it will breifly appear present in both locations
+and break numcopies counting. Would need to extend the API to avoid this race.
+
+Unfortunately this remote pair approach will leak out into git-annex's interface;
+it will show two remotes. Not a problem for S3+web really, but if S3 instantiates
+an S3oldversions remote, that could be more confusing to the user. 
+
+## location tracking approach
+
+Another way is to store the S3 version ID in git-annex branch and support
+downloading using it. But this has the problem that dropping makes
+git-annex think it's not in S3 any more, while what we want for export
+is for it to be removed from the current bucket, but still tracked as
+present in S3.
+
+The drop from S3 could fail, or "succeed" in a way that prevents the location
+tracking being updated to say it lacks the content. Failing is how bup deals
+with it.
+
+But hmm.. if git-annex drop sees location tracking that says it's in S3, it
+will try to drop it, even though the content is not present in the
+current bucket version, and so every repeated run of drop/sync --content
+would do a *lot* of unnecessary work to accomplish a noop.
+
+And, `git annex export` relies on location tracking to know what remains to
+be uploaded to the export remote. So if the location tracking says present
+after a drop, and the old file is added back to the exported tree,
+it won't get uploaded again, and the export would be incomplete.
