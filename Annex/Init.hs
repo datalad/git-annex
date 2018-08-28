@@ -35,6 +35,7 @@ import Annex.UUID
 import Annex.Link
 import Annex.WorkTree
 import Config
+import Config.Smudge
 import Annex.Direct
 import Annex.AdjustedBranch
 import Annex.Environment

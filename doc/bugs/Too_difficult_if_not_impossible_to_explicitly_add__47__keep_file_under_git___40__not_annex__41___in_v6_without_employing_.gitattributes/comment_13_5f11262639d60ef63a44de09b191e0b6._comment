@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2018-08-28T14:02:37Z"
+ content="""
+However, that leaves the case where .gitattributes configures
+annex.largefiles, but that's been overridden for a file to add it to git,
+and then the repo is cloned and initted with --version=6 (or upgraded).
+
+Turns out that calling git status before enabling the smudge filter
+prevents git from getting confused about the file being modified in this
+case.
+
+In the fresh clone, git has not populated the index with stat info
+yet, and so it later runs the clean filter on the file, and that
+respects the largefiles configuration, so the way the file is
+stored in git is not taken into account.
+
+Worked around this by adding a `git status` call to the v6
+initialization/upgrade.
+"""]]

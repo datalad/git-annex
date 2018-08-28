@@ -10,6 +10,7 @@ module Upgrade.V5 where
 import Annex.Common
 import qualified Annex
 import Config
+import Config.Smudge
 import Annex.InodeSentinal
 import Annex.Link
 import Annex.Direct
