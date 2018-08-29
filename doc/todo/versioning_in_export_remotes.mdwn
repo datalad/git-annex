@@ -30,9 +30,20 @@ tracking when dropping, the caller of the remote does. So if S3 marks content
 as being present in the web, it will breifly appear present in both locations
 and break numcopies counting. Would need to extend the API to avoid this race.
 
+> Ah, but: exporttree remotes are always untrusted for other reasons,
+> so location tracking is less of a problem. Even if location tracking
+> shows the content in two places, a drop will skip the exporttree remote
+> so will only treat the pair as one copy.
+> 
+> So the location tracking problem is limited to --copies=N matching incorrectly,
+> and whereis listing both locations, and some preferred content 
+> expressions behaving in surprising ways.
+
 Unfortunately this remote pair approach will leak out into git-annex's interface;
 it will show two remotes. Not a problem for S3+web really, but if S3 instantiates
-an S3oldversions remote, that could be more confusing to the user. 
+an S3oldversions remote, that necessarily adds the potential for confusion,
+and adds complexity in configuration of preferred content settings, repo groups,
+etc.
 
 ## location tracking approach
 
