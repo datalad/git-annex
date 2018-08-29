@@ -1,5 +1,5 @@
 Looked over bugs filed about v6 mode and did some triage and analysis.
-[[smudge]] has the details.
+[[todo/smudge]] has the details.
 
 This led to changing what's done by `git add` and `git commit file` when
 annex.largefiles is not configured. Rather than behaving like `git annex
