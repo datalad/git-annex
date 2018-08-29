@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2018-08-29T16:14:09Z"
+ content="""
+That other bug is closed now, and 
+let to [[!commit 10138056dc240ad4265a4c473a32d4c715bbb629]].
+
+So in v6, when annex.largefiles is not configured for a file,
+git add of a modification to the file will store it however the file was
+stored before. But when annex.largefiles is configured, it overrides that
+default.
+
+That didn't change the behavior of git-annex add, but we could consider
+doing so. Although I don't know if it's technically possible to support
+that behavior in v5 mode, due to the difficulties discussed in comment #3
+above.
+"""]]
