@@ -45,6 +45,15 @@ an S3oldversions remote, that necessarily adds the potential for confusion,
 and adds complexity in configuration of preferred content settings, repo groups,
 etc.
 
+> Could flip it; make the main remote track the versioned data, and the
+> exporttree remote be secondary. Since only git-annex export/sync need to
+> access that remote, they could have a special case to look for such a
+> secondary remote and act on it. All other commands would only operate on
+> the main remote. Indeed, the secondary remote would not need to be
+> in the RemoteList at all.
+> 
+> Doesn't avoid preferred content etc complexity, still.
+
 ## location tracking approach
 
 Another way is to store the S3 version ID in git-annex branch and support
@@ -55,14 +64,61 @@ present in S3.
 
 The drop from S3 could fail, or "succeed" in a way that prevents the location
 tracking being updated to say it lacks the content. Failing is how bup deals
-with it.
+with it. It seems confusing to have a drop appear to succeed but not really drop,
+especially since dropping again would seem to do something a second time.
 
-But hmm.. if git-annex drop sees location tracking that says it's in S3, it
-will try to drop it, even though the content is not present in the
-current bucket version, and so every repeated run of drop/sync --content
-would do a *lot* of unnecessary work to accomplish a noop.
+This does mean that git-annex drop/sync --content/assistant might try to do a
+lot of drops from the remote, and generate a lot of noise when they fail.
+Which is kind of ok for drop, since the user should be told that they can't
+delete the data. Could add a way to say "this remote does not support drop",
+and make at sync --content/assistant use that.
 
-And, `git annex export` relies on location tracking to know what remains to
-be uploaded to the export remote. So if the location tracking says present
-after a drop, and the old file is added back to the exported tree,
-it won't get uploaded again, and the export would be incomplete.
+Note that git-annex export does not rely on location tracking to determine
+which files still need to be sent to an export. It uses the export database
+to keep track of that. Except there's this:
+
+        notpresent ek = (||)
+                <$> liftIO (notElem loc <$> getExportedLocation db (asKey ek))
+                -- If content was removed from the remote, the export db
+                -- will still list it, so also check location tracking.
+                <*> (notElem (uuid r) <$> loggedLocations (asKey ek))
+
+Seems that loggedLocations should not be checked there for these versioned
+remotes, because just because they contain a key does not mean it's in
+their current head. In fact, that last line was added to make content be
+re-sent after fsck notices the remote lost it, and otherwise it relies on
+the export database to know what's in an export.
+
+## final plan
+
+Add an "appendOnly" field to Remote, indicating it retains all content stored
+in it.
+
+Let S3 remotes be configured with versioned=yes or something like that
+(what does S3 call the feature?) which enables appendOnly.
+
+Make S3 store version IDs for uploaded keys in the per-remote log when so
+configured, and use them for when retrieving keys and for checkpresent.
+
+Make S3 refuse to removeKey when configured appendOnly, failing with an error.
+
+Make `git annex export` not check loggedLocations for appendOnly remotes,
+since they can contain content that is not in their head tree.
+
+Make `git annex export` check appendOnly when removing a file from an
+export, and not update the location log, since the remote still contains
+the content.
+
+Make git-annex sync and the assistant skip trying to drop from appendOnly
+remotes since it's just going to fail.
+
+Make exporttree=yes remotes that are appendOnly be trusted, and not force
+verification of content, since the usual concerns about losing data when an
+export is updated by someone else don't apply.
+
+Make bup an appendOnly remote.
+
+When a file was deleted from an exported tree, and then put back
+in a later exported tree, it might get re-uploaded even though the content
+is still retained in the versioned remote. S3 might have a way to avoid
+such a redundant upload, if so it could support using it.
