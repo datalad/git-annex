@@ -109,7 +109,7 @@ scanRecursive topdir prune = M.fromList <$> walk [] [topdir]
 				Nothing -> walk c rest
 				Just info -> do
 					mfd <- catchMaybeIO $
-						openFd dir ReadOnly Nothing defaultFileFlags
+						Files.openFd dir Files.ReadOnly Nothing Files.defaultFileFlags
 					case mfd of
 						Nothing -> walk c rest
 						Just fd -> do
@@ -129,7 +129,7 @@ addSubDirs dirmap prune dirs = do
 {- Removes a subdirectory (and all its children) from a directory map. -}
 removeSubDir :: DirMap -> FilePath -> IO DirMap
 removeSubDir dirmap dir = do
-	mapM_ closeFd $ M.keys toremove
+	mapM_ Files.closeFd $ M.keys toremove
 	return rest
   where
 	(toremove, rest) = M.partition (dirContains dir . dirName) dirmap
@@ -167,7 +167,7 @@ updateKqueue (Kqueue h _ dirmap _) =
 {- Stops a Kqueue. Note: Does not directly close the Fds in the dirmap,
  - so it can be reused.  -}
 stopKqueue :: Kqueue -> IO ()
-stopKqueue = closeFd . kqueueFd
+stopKqueue = Files.closeFd . kqueueFd
 
 {- Waits for a change on a Kqueue.
  - May update the Kqueue.

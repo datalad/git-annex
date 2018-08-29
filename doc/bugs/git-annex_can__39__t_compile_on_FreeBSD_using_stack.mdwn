@@ -47,3 +47,5 @@ Compilation failure is as follows:
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Not yet.  But I'm used to issues compiling new tools on FreeBSD, so I'm in no way disheartened by this :)
+
+> [[done]] --[[Joey]]
