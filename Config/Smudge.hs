@@ -14,7 +14,7 @@ import qualified Git.Command
 import Config
 
 configureSmudgeFilter :: Annex ()
-configureSmudgeFilter = unlessM (fromRepo Git.repoIsLocalBare) $
+configureSmudgeFilter = unlessM (fromRepo Git.repoIsLocalBare) $ do
 	-- If this is run in a newly cloned repository, git may not have
 	-- cached file information in the index yet, and so after
 	-- configuring the clean filter, the next git status would want to
