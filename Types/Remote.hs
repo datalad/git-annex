@@ -55,7 +55,7 @@ data RemoteTypeA a = RemoteType
 	-- enumerates remotes of this type
 	-- The Bool is True if automatic initialization of remotes is desired
 	, enumerate :: Bool -> a [Git.Repo]
-	-- generates a remote of this type from the current git config
+	-- generates a remote of this type
 	, generate :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> a (Maybe (RemoteA a))
 	-- initializes or enables a remote
 	, setup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> a (RemoteConfig, UUID)
