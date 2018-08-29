@@ -75,19 +75,7 @@ and make at sync --content/assistant use that.
 
 Note that git-annex export does not rely on location tracking to determine
 which files still need to be sent to an export. It uses the export database
-to keep track of that. Except there's this:
-
-        notpresent ek = (||)
-                <$> liftIO (notElem loc <$> getExportedLocation db (asKey ek))
-                -- If content was removed from the remote, the export db
-                -- will still list it, so also check location tracking.
-                <*> (notElem (uuid r) <$> loggedLocations (asKey ek))
-
-Seems that loggedLocations should not be checked there for these versioned
-remotes, because just because they contain a key does not mean it's in
-their current head. In fact, that last line was added to make content be
-re-sent after fsck notices the remote lost it, and otherwise it relies on
-the export database to know what's in an export.
+to keep track of that.
 
 ## final plan
 
@@ -101,9 +89,6 @@ Make S3 store version IDs for uploaded keys in the per-remote log when so
 configured, and use them for when retrieving keys and for checkpresent.
 
 Make S3 refuse to removeKey when configured appendOnly, failing with an error.
-
-Make `git annex export` not check loggedLocations for appendOnly remotes,
-since they can contain content that is not in their head tree.
 
 Make `git annex export` check appendOnly when removing a file from an
 export, and not update the location log, since the remote still contains
