@@ -113,24 +113,20 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 			{ storeKey = \_ _ _ -> do
 				warning "remote is configured with exporttree=yes; use `git-annex export` to store content on it"
 				return False
-			-- Keys can be retrieved, but since an export
-			-- is not a true key/value store, the content of
-			-- the key has to be able to be strongly verified.
-			, retrieveKeyFile = \k _af dest p -> unVerified $
-				if maybe False (isJust . verifyKeyContent) (maybeLookupBackendVariety (keyVariety k))
-					then do
-						locs <- getexportlocs k
-						case locs of
-							[] -> do
-								warning "unknown export location"
-								return False
-							(l:_) -> do
-								ea <- exportActions r
-								retrieveExport ea k l dest p
-					else do
-						warning $ "exported content cannot be verified due to using the " ++ formatKeyVariety (keyVariety k) ++ " backend"
-						return False
-			, retrieveKeyFileCheap = \_ _ _ -> return False
+			-- Keys can be retrieved using retrieveExport, 
+			-- but since that retrieves from a path in the
+			-- remote that another writer could have replaced
+			-- with content not of the requested key,
+			-- the content has to be strongly verified.
+			--
+			-- But, appendonly remotes have a key/value store,
+			-- so don't need to use retrieveExport.
+			, retrieveKeyFile = if appendonly r
+				then retrieveKeyFile r
+				else retrieveKeyFileFromExport getexportlocs
+			, retrieveKeyFileCheap = if appendonly r
+				then retrieveKeyFileCheap r
+				else \_ _ _ -> return False
 			-- Removing a key from an export would need to
 			-- change the tree in the export log to not include
 			-- the file. Otherwise, conflicts when removing
@@ -143,16 +139,40 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 			-- Can't lock content on exports, since they're
 			-- not key/value stores, and someone else could
 			-- change what's exported to a file at any time.
-			, lockContent = Nothing
-			-- Check if any of the files a key was exported
-			-- to are present. This doesn't guarantee the
-			-- export contains the right content.
-			, checkPresent = \k -> do
-				ea <- exportActions r
-				anyM (checkPresentExport ea k)
-					=<< getexportlocs k
+			--
+			-- (except for appendonly remotes)
+			, lockContent = if appendonly r
+				then lockContent r
+				else Nothing
+			-- Check if any of the files a key was exported to
+			-- are present. This doesn't guarantee the export
+			-- contains the right content, which is why export
+			-- remotes are untrusted.
+			--
+			-- (but appendonly remotes work the same as any
+			-- non-export remote)
+			, checkPresent = if appendonly r
+				then checkPresent r
+				else \k -> do
+					ea <- exportActions r
+					anyM (checkPresentExport ea k)
+						=<< getexportlocs k
 			, mkUnavailable = return Nothing
 			, getInfo = do
 				is <- getInfo r
 				return (is++[("export", "yes")])
 			}
+	retrieveKeyFileFromExport getexportlocs k _af dest p = unVerified $
+		if maybe False (isJust . verifyKeyContent) (maybeLookupBackendVariety (keyVariety k))
+			then do
+				locs <- getexportlocs k
+				case locs of
+					[] -> do
+						warning "unknown export location"
+						return False
+					(l:_) -> do
+						ea <- exportActions r
+						retrieveExport ea k l dest p
+			else do
+				warning $ "exported content cannot be verified due to using the " ++ formatKeyVariety (keyVariety k) ++ " backend"
+				return False
