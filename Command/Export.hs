@@ -285,11 +285,15 @@ cleanupUnexport r ea db eks loc = do
 			removeExportedLocation db (asKey ek) loc
 		flushDbQueue db
 
-	remaininglocs <- liftIO $ 
-		concat <$> forM eks (\ek -> getExportedLocation db (asKey ek))
-	when (null remaininglocs) $
-		forM_ eks $ \ek ->
-			logChange (asKey ek) (uuid r) InfoMissing
+	-- A readonly remote can support removeExportLocation to remove
+	-- the file from the exported tree, but still retain the content
+	-- and allow retrieving it.
+	unless (Remote.readonly) $ do
+		remaininglocs <- liftIO $ 
+			concat <$> forM eks (\ek -> getExportedLocation db (asKey ek))
+		when (null remaininglocs) $
+			forM_ eks $ \ek ->
+				logChange (asKey ek) (uuid r) InfoMissing
 	
 	removeEmptyDirectories ea db loc (map asKey eks)
 

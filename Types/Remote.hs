@@ -123,7 +123,9 @@ data RemoteA a = Remote
 	-- a Remote can be known to be readonly
 	, readonly :: Bool
 	-- a Remote can allow writes but not have a way to delete content
-	-- from it
+	-- from it. Note that an export remote that supports removeExport
+	-- to remove a file from the exported tree, but still retains the
+	-- content in accessible form should set this to True.
 	, appendonly :: Bool
 	-- a Remote can be globally available. (Ie, "in the cloud".)
 	, availability :: Availability

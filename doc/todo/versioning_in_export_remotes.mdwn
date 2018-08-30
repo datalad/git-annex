@@ -31,7 +31,7 @@ won't be updated, as discussed above.
 ## final plan
 
 Add an "appendOnly" field to Remote, indicating it retains all content stored
-in it.
+in it. done
 
 Let S3 remotes be configured with versioned=yes or something like that
 (what does S3 call the feature?) which enables appendOnly.
@@ -43,7 +43,7 @@ Make S3 refuse to removeKey when configured appendOnly, failing with an error.
 
 Make `git annex export` check appendOnly when removing a file from an
 export, and not update the location log, since the remote still contains
-the content.
+the content. done
 
 Make git-annex sync and the assistant skip trying to drop from appendOnly
 remotes since it's just going to fail.
@@ -51,8 +51,6 @@ remotes since it's just going to fail.
 Make exporttree=yes remotes that are appendOnly be trusted, and not force
 verification of content, since the usual concerns about losing data when an
 export is updated by someone else don't apply.
-
-Make bup an appendOnly remote.
 
 When a file was deleted from an exported tree, and then put back
 in a later exported tree, it might get re-uploaded even though the content
