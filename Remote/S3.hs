@@ -206,7 +206,7 @@ storeHelper info h f object p = case partSize info of
 	singlepartupload = do
 		rbody <- liftIO $ httpBodyStorer f p
 		r <- sendS3Handle h $ putObject info object rbody
-		return (mkS3VersionID (S3.porVersionId r))
+		return (mkS3VersionID object (S3.porVersionId r))
 	multipartupload fsz partsz = do
 #if MIN_VERSION_aws(0,10,6)
 		let startreq = (S3.postInitiateMultipartUpload (bucket info) object)
@@ -245,7 +245,7 @@ storeHelper info h f object p = case partSize info of
 
 		r <- sendS3Handle h $ S3.postCompleteMultipartUpload
 			(bucket info) object uploadid (zip [1..] etags)
-		return (mkS3VersionID (S3.cmurVersionId r))
+		return (mkS3VersionID object (S3.cmurVersionId r))
 #else
 		warning $ "Cannot do multipart upload (partsize " ++ show partsz ++ ") of large file (" ++ show fsz ++ "); built with too old a version of the aws library."
 		singlepartupload
@@ -255,8 +255,9 @@ storeHelper info h f object p = case partSize info of
  - out to the file. Would be better to implement a byteRetriever, but
  - that is difficult. -}
 retrieve :: Remote -> S3Info -> Maybe S3Handle -> Retriever
-retrieve _ info (Just h) = fileRetriever $ \f k p ->
-	retrieveHelper info h (T.pack $ bucketObject info k) f p
+retrieve r info (Just h) = fileRetriever $ \f k p -> do
+	loc <- getS3VersionID info (uuid r) k (T.pack $ bucketObject info k)
+	retrieveHelper info h loc f p
 retrieve r info Nothing = case getpublicurl info of
 	Nothing -> \_ _ _ -> do
 		needS3Creds (uuid r)
@@ -265,9 +266,12 @@ retrieve r info Nothing = case getpublicurl info of
 		unlessM (downloadUrl k p [geturl $ bucketObject info k] f) $
 			giveup "failed to download content"
 
-retrieveHelper :: S3Info -> S3Handle -> S3.Object -> FilePath -> MeterUpdate -> Annex ()
-retrieveHelper info h object f p = liftIO $ runResourceT $ do
-	let req = S3.getObject (bucket info) object
+retrieveHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> FilePath -> MeterUpdate -> Annex ()
+retrieveHelper info h loc f p = liftIO $ runResourceT $ do
+	let req = case loc of
+		Left o -> S3.getObject (bucket info) o
+		Right (S3VersionID o vid) -> (S3.getObject (bucket info) o)
+			{ S3.goVersionId = Just (T.pack vid) }
 	S3.GetObjectResponse { S3.gorResponse = rsp } <- sendS3Handle' h req
 	Url.sinkResponseFile p zeroBytesProcessed f WriteMode rsp
 
@@ -294,10 +298,11 @@ checkKey r info Nothing k = case getpublicurl info of
 			checkBoth (geturl $ bucketObject info k) (keySize k)
 checkKey r info (Just h) k = do
 	showChecking r
-	checkKeyHelper info h (T.pack $ bucketObject info k)
+	loc <- getS3VersionID info (uuid r) k (T.pack $ bucketObject info k)
+	checkKeyHelper info h loc
 
-checkKeyHelper :: S3Info -> S3Handle -> S3.Object -> Annex Bool
-checkKeyHelper info h object = do
+checkKeyHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> Annex Bool
+checkKeyHelper info h loc = do
 #if MIN_VERSION_aws(0,10,0)
 	rsp <- go
 	return (isJust $ S3.horMetadata rsp)
@@ -307,7 +312,11 @@ checkKeyHelper info h object = do
 		return True
 #endif
   where
-	go = sendS3Handle h $ S3.headObject (bucket info) object
+	go = sendS3Handle h req
+	req = case loc of
+		Left o -> S3.headObject (bucket info) o
+		Right (S3VersionID o vid) -> (S3.headObject (bucket info) o)
+			{ S3.hoVersionId = Just (T.pack vid) }
 
 #if ! MIN_VERSION_aws(0,10,0)
 	{- Catch exception headObject returns when an object is not present
@@ -327,10 +336,9 @@ storeExportS3 u info (Just h) f k loc p =
 	catchNonAsync go (\e -> warning (show e) >> return False)
   where
 	go = do
-		storeHelper info h f (T.pack $ bucketExportLocation info loc) p
-			>>= if versioning info
-				then setS3VersionID u k
-				else const noop
+		let o = T.pack $ bucketExportLocation info loc
+		storeHelper info h f o p
+			>>= setS3VersionID info u k
 		return True
 storeExportS3 u _ Nothing _ _ _ _ = do
 	needS3Creds u
@@ -342,7 +350,7 @@ retrieveExportS3 u info mh _k loc f p =
   where
 	go = case mh of
 		Just h -> do
-			retrieveHelper info h (T.pack exporturl) f p
+			retrieveHelper info h (Left (T.pack exporturl)) f p
 			return True
 		Nothing -> case getpublicurl info of
 			Nothing -> do
@@ -366,7 +374,7 @@ removeExportS3 u _ Nothing _ _ = do
 
 checkPresentExportS3 :: UUID -> S3Info -> Maybe S3Handle -> Key -> ExportLocation -> Annex Bool
 checkPresentExportS3 _u info (Just h) _k loc =
-	checkKeyHelper info h (T.pack $ bucketExportLocation info loc)
+	checkKeyHelper info h (Left (T.pack $ bucketExportLocation info loc))
 checkPresentExportS3 u info Nothing k loc = case getpublicurl info of
 	Nothing -> do
 		needS3Creds u
@@ -732,26 +740,45 @@ getWebUrls info c k
 		(True, Just geturl) -> return [geturl $ bucketObject info k]
 		_ -> return []
 
-newtype S3VersionID = S3VersionID String
+data S3VersionID = S3VersionID S3.Object String
 	deriving (Show)
 
 -- smart constructor
-mkS3VersionID :: Maybe T.Text -> Maybe S3VersionID
-mkS3VersionID = mkS3VersionID' . fmap T.unpack
+mkS3VersionID :: S3.Object -> Maybe T.Text -> Maybe S3VersionID
+mkS3VersionID o = mkS3VersionID' o . fmap T.unpack
 
-mkS3VersionID' :: Maybe String -> Maybe S3VersionID
-mkS3VersionID' Nothing = Nothing
-mkS3VersionID' (Just s)
+mkS3VersionID' :: S3.Object -> Maybe String -> Maybe S3VersionID
+mkS3VersionID' o (Just s)
 	| null s = Nothing
 	-- AWS documentation says a version ID is at most 1024 bytes long.
 	-- Since they are stored in the git-annex branch, prevent them from
 	-- being very much larger than that.
-	| length s < 2048 = Just (S3VersionID s)
+	| length s < 2048 = Just (S3VersionID o s)
 	| otherwise = Nothing
+mkS3VersionID' _ Nothing = Nothing
 
-setS3VersionID :: UUID -> Key -> Maybe S3VersionID -> Annex ()
-setS3VersionID u k (Just (S3VersionID v)) = setRemoteState u k v
-setS3VersionID _ _ Nothing = noop
+-- A S3 version ID is "url ready" so does not contain spaces,
+-- but an Object may contain spaces, so put it last.
+formatS3VersionID :: S3VersionID -> String
+formatS3VersionID (S3VersionID o v) = v ++ ' ' : T.unpack o
 
-getS3VersionID :: UUID -> Key -> Annex (Maybe S3VersionID)
-getS3VersionID u k = mkS3VersionID' <$> getRemoteState u k
+parseS3VersionID :: String -> Maybe S3VersionID
+parseS3VersionID s = 
+	let (v, o) = separate (== ' ') s
+	in mkS3VersionID' (T.pack o) (Just v)
+
+setS3VersionID :: S3Info -> UUID -> Key -> Maybe S3VersionID -> Annex ()
+setS3VersionID info u k vid
+	| versioning info = maybe noop (setS3VersionID' u k) vid
+	| otherwise = noop
+
+setS3VersionID' :: UUID -> Key -> S3VersionID -> Annex ()
+setS3VersionID' u k vid = setRemoteState u k (formatS3VersionID vid)
+
+getS3VersionID :: S3Info -> UUID -> Key -> S3.Object -> Annex (Either S3.Object S3VersionID)
+getS3VersionID info u k fallback
+	| versioning info = maybe (Left fallback) Right <$> getS3VersionID' u k
+	| otherwise = return (Left fallback)
+
+getS3VersionID' :: UUID -> Key -> Annex (Maybe S3VersionID)
+getS3VersionID' u k = maybe Nothing parseS3VersionID <$> getRemoteState u k

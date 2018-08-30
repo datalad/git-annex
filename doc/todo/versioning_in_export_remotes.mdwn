@@ -63,9 +63,11 @@ done
 Make S3 store version IDs for exported files in the per-remote log when so
 configured. done
 
-Use version IDs when retrieving keys and for checkpresent.
+Use version IDs when retrieving keys and for checkpresent. done
 
-Can public urls be generated using version IDs?
+Can public urls be generated using version IDs? The url has
+"?versionId=" appended, but all the examples I've seen include S3
+authorization headers.
 
 When a file was deleted from an exported tree, and then put back
 in a later exported tree, it might get re-uploaded even though the content
