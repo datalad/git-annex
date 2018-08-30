@@ -70,8 +70,20 @@ the S3 remote.
   and UUID. This can be specified to pick a bucket name.
 
 * `exporttree` - Set to "yes" to make this special remote usable
-  by [[git-annex-export]]. It will not be usable as a general-purpose
-  special remote.
+  by [[git-annex export|git-annex-export]].
+  It will not be usable as a general-purpose special remote.
+
+* `versioning` - Setting this to "yes" along with "exporttree=yes",
+  and [manually enabling versioning for the S3 bucket in the AWS console](https://docs.aws.amazon.com/AmazonS3/latest/user-guide/enable-versioning.html)
+  allows git-annex to access old versions of files exported to the
+  special remote with [[git-annex export|git-annex-export]].
+
+  Note that git-annex needs to remember S3 version IDs for files
+  sent to a remote configured this way, which will make the git-annex
+  branch a bit larger.
+
+  Also note that git-annex does not support dropping content from versioned
+  S3 buckets.
 
 * `public` - Set to "yes" to allow public read access to files sent
   to the S3 remote. This is accomplished by setting an ACL when each 

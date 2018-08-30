@@ -38,6 +38,13 @@ verification of content downloaded from an export. Some types of keys,
 that are not based on checksums, cannot be downloaded from an export.
 And, git-annex will never trust an export to retain the content of a key.
 
+However, some special remotes, notably S3, support keeping track of old
+versions of files stored in them. If a special remote is set up to do 
+that, it can be used as a key/value store and the limitations in the above
+paragraph do not appy. Note that dropping content from such a remote is
+not supported. See individual special remotes' documentation for
+details of how to  enable such versioning.
+
 # OPTIONS
 
 * `--to=remote`

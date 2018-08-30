@@ -559,6 +559,7 @@ data S3Info = S3Info
 	, metaHeaders :: [(T.Text, T.Text)]
 	, partSize :: Maybe Integer
 	, isIA :: Bool
+	, versioning :: Bool
 	, public :: Bool
 	, getpublicurl :: Maybe (BucketObject -> URLString)
 	}
@@ -577,9 +578,8 @@ extractS3Info c = do
 		, metaHeaders = getMetaHeaders c
 		, partSize = getPartSize c
 		, isIA = configIA c
-		, public = case M.lookup "public" c of
-			Just "yes" -> True
-			_ -> False
+		, versioning = boolcfg "versioning"
+		, public = boolcfg "public"
 		, getpublicurl = case M.lookup "publicurl" c of
 			Just u -> Just $ \p -> genericPublicUrl p u
 			Nothing -> case M.lookup "host" c of
@@ -591,6 +591,10 @@ extractS3Info c = do
 				_ -> Nothing
 		}
 	return info
+  where
+	boolcfg k = case M.lookup k c of
+		Just "yes" -> True
+		_ -> False
 
 putObject :: S3Info -> T.Text -> RequestBody -> S3.PutObject
 putObject info file rbody = (S3.putObject (bucket info) file rbody)
