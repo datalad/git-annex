@@ -11,7 +11,7 @@ import Annex.Common
 import qualified Annex
 import Logs.Trust
 import Annex.NumCopies
-import Types.Remote (uuid)
+import Types.Remote (uuid, appendonly)
 import qualified Remote
 import qualified Command.Drop
 import Command
@@ -28,6 +28,9 @@ type Reason = String
 
 {- Drop a key from local and/or remote when allowed by the preferred content
  - and numcopies settings.
+ -
+ - Skips trying to drop from remotes that are appendonly, since those drops
+ - would presumably fail.
  -
  - The UUIDs are ones where the content is believed to be present.
  - The Remote list can include other remotes that do not have the content;
@@ -58,9 +61,10 @@ handleDropsFrom locs rs reason fromhere key afile preverified runner = do
 		AssociatedFile (Just f) -> nub (f : l)
 		AssociatedFile Nothing -> l
 	n <- getcopies fs
+	let rs' = filter (not . appendonly) rs
 	void $ if fromhere && checkcopies n Nothing
-		then go fs rs n >>= dropl fs
-		else go fs rs n
+		then go fs rs' n >>= dropl fs
+		else go fs rs' n
   where
 	getcopies fs = do
 		(untrusted, have) <- trustPartition UnTrusted locs
