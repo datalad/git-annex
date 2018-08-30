@@ -44,6 +44,7 @@ import Remote.Helper.Export
 import qualified Remote.Helper.AWS as AWS
 import Creds
 import Annex.UUID
+import Logs.RemoteState
 import Logs.Web
 import Utility.Metered
 import qualified Annex.Url as Url
@@ -187,13 +188,13 @@ prepareS3HandleMaybe r = resourcePrepare $ const $
 
 store :: Remote -> S3Info -> S3Handle -> Storer
 store _r info h = fileStorer $ \k f p -> do
-	storeHelper info h f (T.pack $ bucketObject info k) p
+	void $ storeHelper info h f (T.pack $ bucketObject info k) p
 	-- Store public URL to item in Internet Archive.
 	when (isIA info && not (isChunkKey k)) $
 		setUrlPresent webUUID k (iaPublicUrl info (bucketObject info k))
 	return True
 
-storeHelper :: S3Info -> S3Handle -> FilePath -> S3.Object -> MeterUpdate -> Annex ()
+storeHelper :: S3Info -> S3Handle -> FilePath -> S3.Object -> MeterUpdate -> Annex (Maybe S3VersionID)
 storeHelper info h f object p = case partSize info of
 	Just partsz | partsz > 0 -> do
 		fsz <- liftIO $ getFileSize f
@@ -204,7 +205,8 @@ storeHelper info h f object p = case partSize info of
   where
 	singlepartupload = do
 		rbody <- liftIO $ httpBodyStorer f p
-		void $ sendS3Handle h $ putObject info object rbody
+		r <- sendS3Handle h $ putObject info object rbody
+		return (mkS3VersionID (S3.porVersionId r))
 	multipartupload fsz partsz = do
 #if MIN_VERSION_aws(0,10,6)
 		let startreq = (S3.postInitiateMultipartUpload (bucket info) object)
@@ -241,8 +243,9 @@ storeHelper info h f object p = case partSize info of
 						sendparts (offsetMeterUpdate meter (toBytesProcessed sz)) (etag:etags) (partnum + 1)
 			sendparts p [] 1
 
-		void $ sendS3Handle h $ S3.postCompleteMultipartUpload
+		r <- sendS3Handle h $ S3.postCompleteMultipartUpload
 			(bucket info) object uploadid (zip [1..] etags)
+		return (mkS3VersionID (S3.cmurVersionId r))
 #else
 		warning $ "Cannot do multipart upload (partsize " ++ show partsz ++ ") of large file (" ++ show fsz ++ "); built with too old a version of the aws library."
 		singlepartupload
@@ -320,11 +323,14 @@ checkKeyHelper info h object = do
 #endif
 
 storeExportS3 :: UUID -> S3Info -> Maybe S3Handle -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
-storeExportS3 _u info (Just h) f _k loc p = 
+storeExportS3 u info (Just h) f k loc p = 
 	catchNonAsync go (\e -> warning (show e) >> return False)
   where
 	go = do
 		storeHelper info h f (T.pack $ bucketExportLocation info loc) p
+			>>= if versioning info
+				then setS3VersionID u k
+				else const noop
 		return True
 storeExportS3 u _ Nothing _ _ _ _ = do
 	needS3Creds u
@@ -726,3 +732,26 @@ getWebUrls info c k
 		(True, Just geturl) -> return [geturl $ bucketObject info k]
 		_ -> return []
 
+newtype S3VersionID = S3VersionID String
+	deriving (Show)
+
+-- smart constructor
+mkS3VersionID :: Maybe T.Text -> Maybe S3VersionID
+mkS3VersionID = mkS3VersionID' . fmap T.unpack
+
+mkS3VersionID' :: Maybe String -> Maybe S3VersionID
+mkS3VersionID' Nothing = Nothing
+mkS3VersionID' (Just s)
+	| null s = Nothing
+	-- AWS documentation says a version ID is at most 1024 bytes long.
+	-- Since they are stored in the git-annex branch, prevent them from
+	-- being very much larger than that.
+	| length s < 2048 = Just (S3VersionID s)
+	| otherwise = Nothing
+
+setS3VersionID :: UUID -> Key -> Maybe S3VersionID -> Annex ()
+setS3VersionID u k (Just (S3VersionID v)) = setRemoteState u k v
+setS3VersionID _ _ Nothing = noop
+
+getS3VersionID :: UUID -> Key -> Annex (Maybe S3VersionID)
+getS3VersionID u k = mkS3VersionID' <$> getRemoteState u k

@@ -61,7 +61,11 @@ Let S3 remotes be configured with versioning=yes which enables appendOnly.
 done
 
 Make S3 store version IDs for exported files in the per-remote log when so
-configured, and use them for when retrieving keys and for checkpresent.
+configured. done
+
+Use version IDs when retrieving keys and for checkpresent.
+
+Can public urls be generated using version IDs?
 
 When a file was deleted from an exported tree, and then put back
 in a later exported tree, it might get re-uploaded even though the content
@@ -80,3 +84,7 @@ keys that are not used in the current export doesn't help because another
 repository may have changed the exported tree and be relying on the dropped
 key being present in the export. So, DELETE from an appendonly export
 won't be supported, at least for now.
+
+Another reason DELETE from appendonly is not supported is that only one
+version ID is stored per key, but the same key could have its content in
+the bucket multiple times under different version IDs.
