@@ -96,6 +96,7 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			, gitconfig = gc
 			, localpath = Nothing
 			, readonly = False
+			, appendonly = False
 			, availability = GloballyAvailable
 			, remotetype = remote
 			, mkUnavailable = gen r u (M.insert "url" "http://!dne!/" c) gc

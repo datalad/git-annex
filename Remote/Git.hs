@@ -179,6 +179,7 @@ gen r u c gc
 			, getRepo = getRepoFromState st
 			, gitconfig = gc
 			, readonly = Git.repoIsHttp r
+			, appendonly = False
 			, availability = availabilityCalc r
 			, remotetype = remote
 			, mkUnavailable = unavailable r u c gc

@@ -76,6 +76,7 @@ gen r _ c gc = do
 		, localpath = Nothing
 		, getRepo = return r
 		, readonly = True
+		, appendonly = False
 		, availability = GloballyAvailable
 		, remotetype = remote
 		, mkUnavailable = return Nothing

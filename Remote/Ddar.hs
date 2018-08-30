@@ -78,6 +78,7 @@ gen r u c gc = do
 		, remotetype = remote
 		, availability = if ddarLocal ddarrepo then LocallyAvailable else GloballyAvailable
 		, readonly = False
+		, appendonly = False
 		, mkUnavailable = return Nothing
 		, getInfo = return [("repo", ddarRepoLocation ddarrepo)]
 		, claimUrl = Nothing

@@ -122,6 +122,9 @@ data RemoteA a = Remote
 	, localpath :: Maybe FilePath
 	-- a Remote can be known to be readonly
 	, readonly :: Bool
+	-- a Remote can allow writes but not have a way to delete content
+	-- from it
+	, appendonly :: Bool
 	-- a Remote can be globally available. (Ie, "in the cloud".)
 	, availability :: Availability
 	-- the type of the remote

@@ -95,6 +95,7 @@ gen r u c gc = do
 				then Just $ rsyncUrl o
 				else Nothing
 			, readonly = False
+			, appendonly = False
 			, availability = if islocal then LocallyAvailable else GloballyAvailable
 			, remotetype = remote
 			, mkUnavailable = return Nothing

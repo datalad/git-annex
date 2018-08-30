@@ -71,6 +71,7 @@ gen r u c gc = do
 		, remotetype = remote
 		, availability = LocallyAvailable
 		, readonly = False
+		, appendonly = False
 		, mkUnavailable = return Nothing
 		, getInfo = return
 			[ ("androidserial", fromAndroidSerial serial)

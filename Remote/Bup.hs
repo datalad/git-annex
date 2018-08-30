@@ -79,6 +79,7 @@ gen r u c gc = do
 		, remotetype = remote
 		, availability = if bupLocal buprepo then LocallyAvailable else GloballyAvailable
 		, readonly = False
+		, appendonly = True
 		, mkUnavailable = return Nothing
 		, getInfo = return [("repo", buprepo)]
 		, claimUrl = Nothing

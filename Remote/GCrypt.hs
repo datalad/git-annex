@@ -127,6 +127,7 @@ gen' r u c gc = do
 		, getRepo = return r
 		, gitconfig = gc
 		, readonly = Git.repoIsHttp r
+		, appendonly = False
 		, availability = availabilityCalc r
 		, remotetype = remote
 		, mkUnavailable = return Nothing

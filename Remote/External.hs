@@ -127,6 +127,7 @@ gen r u c gc
 			, getRepo = return r
 			, gitconfig = gc
 			, readonly = False
+			, appendonly = False
 			, availability = avail
 			, remotetype = remote 
 				{ exportSupported = cheapexportsupported }

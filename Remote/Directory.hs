@@ -81,6 +81,7 @@ gen r u c gc = do
 			, gitconfig = gc
 			, localpath = Just dir
 			, readonly = False
+			, appendonly = False
 			, availability = LocallyAvailable
 			, remotetype = remote
 			, mkUnavailable = gen r u c $

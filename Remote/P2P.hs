@@ -67,6 +67,7 @@ chainGen addr r u c gc = do
 		, getRepo = return r
 		, gitconfig = gc
 		, readonly = False
+		, appendonly = False
 		, availability = GloballyAvailable
 		, remotetype = remote
 		, mkUnavailable = return Nothing
