@@ -25,6 +25,9 @@ git-annex (6.20180808) UNRELEASED; urgency=medium
     locales too.
   * Stop using external hash programs, since cryptonite is faster.
   * Fix build on FreeBSD.
+  * S3: Support buckets with versioning enabled. When a remote
+    is configured with exporttree=yes versioning=yes, git-annex can
+    download past versions of exported files from it.
 
  -- Joey Hess <id@joeyh.name>  Wed, 08 Aug 2018 11:24:08 -0400
 

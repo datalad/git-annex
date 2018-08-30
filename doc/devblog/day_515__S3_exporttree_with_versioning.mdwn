@@ -1,0 +1,10 @@
+Most of the way done with implementing support for export to S3 buckets
+with versioning enabled. This will make the files from the most recent
+`git annex export` be visible to users browsing the bucket, while letting
+git-annex download any of the content from previous exports too.
+
+Still need to test it. And, deletion of old content from such a bucket is
+not supported, and my initial thoughts are that it might not be possible
+in a multi-writer situation. I need to think about it more.
+
+This work is supported by the NSF-funded DataLad project.
