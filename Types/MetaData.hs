@@ -37,7 +37,7 @@ module Types.MetaData (
 	ModMeta(..),
 	modMeta,
 	RemoteMetaData(..),
-	mkRemoteMetaData,
+	extractRemoteMetaData,
 	fromRemoteMetaData,
 	prop_metadata_sane,
 	prop_metadata_serialize
@@ -291,8 +291,8 @@ data RemoteMetaData = RemoteMetaData UUID MetaData
 
 {- Extracts only the fields prefixed with "uuid:", which belong to that
  - remote. -}
-mkRemoteMetaData :: UUID -> MetaData -> RemoteMetaData
-mkRemoteMetaData u (MetaData m) = RemoteMetaData u $ MetaData $
+extractRemoteMetaData :: UUID -> MetaData -> RemoteMetaData
+extractRemoteMetaData u (MetaData m) = RemoteMetaData u $ MetaData $
 	M.mapKeys removeprefix $ M.filterWithKey belongsremote m
   where
 	belongsremote (MetaField f) _v = prefix `isPrefixOf` CI.original f

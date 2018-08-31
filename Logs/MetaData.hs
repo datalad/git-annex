@@ -96,7 +96,7 @@ getCurrentMetaData' getlogfile k = do
 	showts = formatPOSIXTime "%F@%H-%M-%S"
 
 getCurrentRemoteMetaData :: UUID -> Key -> Annex RemoteMetaData
-getCurrentRemoteMetaData u k = mkRemoteMetaData u <$>
+getCurrentRemoteMetaData u k = extractRemoteMetaData u <$>
 	getCurrentMetaData' remoteMetaDataLogFile k
 
 {- Adds in some metadata, which can override existing values, or unset

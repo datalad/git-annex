@@ -18,8 +18,9 @@ import qualified Aws.S3 as S3
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Lazy as L
-import qualified Data.ByteString as S
+import qualified Data.ByteString as BS
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Data.Char
 import Network.Socket (HostName)
 import Network.HTTP.Conduit (Manager)
@@ -44,8 +45,9 @@ import Remote.Helper.Export
 import qualified Remote.Helper.AWS as AWS
 import Creds
 import Annex.UUID
-import Logs.RemoteState
 import Logs.Web
+import Logs.MetaData
+import Types.MetaData
 import Utility.Metered
 import qualified Annex.Url as Url
 import Utility.DataUnits
@@ -256,7 +258,7 @@ storeHelper info h f object p = case partSize info of
  - that is difficult. -}
 retrieve :: Remote -> S3Info -> Maybe S3Handle -> Retriever
 retrieve r info (Just h) = fileRetriever $ \f k p -> do
-	loc <- getS3VersionID info (uuid r) k (T.pack $ bucketObject info k)
+	loc <- eitherS3VersionID info (uuid r) k (T.pack $ bucketObject info k)
 	retrieveHelper info h loc f p
 retrieve r info Nothing = case getpublicurl info of
 	Nothing -> \_ _ _ -> do
@@ -298,7 +300,7 @@ checkKey r info Nothing k = case getpublicurl info of
 			checkBoth (geturl $ bucketObject info k) (keySize k)
 checkKey r info (Just h) k = do
 	showChecking r
-	loc <- getS3VersionID info (uuid r) k (T.pack $ bucketObject info k)
+	loc <- eitherS3VersionID info (uuid r) k (T.pack $ bucketObject info k)
 	checkKeyHelper info h loc
 
 checkKeyHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> Annex Bool
@@ -717,7 +719,7 @@ debugMapper level t = forward "S3" (T.unpack t)
 s3Info :: RemoteConfig -> S3Info -> [(String, String)]
 s3Info c info = catMaybes
 	[ Just ("bucket", fromMaybe "unknown" (getBucketName c))
-	, Just ("endpoint", w82s (S.unpack (S3.s3Endpoint s3c)))
+	, Just ("endpoint", w82s (BS.unpack (S3.s3Endpoint s3c)))
 	, Just ("port", show (S3.s3Port s3c))
 	, Just ("storage class", showstorageclass (getStorageClass c))
 	, if configIA c
@@ -773,12 +775,27 @@ setS3VersionID info u k vid
 	| otherwise = noop
 
 setS3VersionID' :: UUID -> Key -> S3VersionID -> Annex ()
-setS3VersionID' u k vid = setRemoteState u k (formatS3VersionID vid)
+setS3VersionID' u k vid = addRemoteMetaData k $
+	RemoteMetaData u (updateMetaData s3VersionField v emptyMetaData)
+  where
+	v = mkMetaValue (CurrentlySet True) (formatS3VersionID vid)
 
-getS3VersionID :: S3Info -> UUID -> Key -> S3.Object -> Annex (Either S3.Object S3VersionID)
-getS3VersionID info u k fallback
-	| versioning info = maybe (Left fallback) Right <$> getS3VersionID' u k
+getS3VersionID :: UUID -> Key -> Annex [S3VersionID]
+getS3VersionID u k = do
+	(RemoteMetaData _ m) <- getCurrentRemoteMetaData u k
+	return $ mapMaybe parseS3VersionID $ map unwrap $ S.toList $
+		metaDataValues s3VersionField m
+  where
+	unwrap (MetaValue _ v) = v
+
+s3VersionField :: MetaField
+s3VersionField = mkMetaFieldUnchecked "V"
+
+eitherS3VersionID :: S3Info -> UUID -> Key -> S3.Object -> Annex (Either S3.Object S3VersionID)
+eitherS3VersionID info u k fallback
+	| versioning info = getS3VersionID u k >>= return . \case
+		[] -> Left fallback
+		-- It's possible for a key to be stored multiple timees in
+		-- a bucket with different version IDs; only use one of them.
+		(v:_) -> Right v
 	| otherwise = return (Left fallback)
-
-getS3VersionID' :: UUID -> Key -> Annex (Maybe S3VersionID)
-getS3VersionID' u k = maybe Nothing parseS3VersionID <$> getRemoteState u k

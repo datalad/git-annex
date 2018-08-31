@@ -82,7 +82,3 @@ keys that are not used in the current export doesn't help because another
 repository may have changed the exported tree and be relying on the dropped
 key being present in the export. Unless... Could export conflict resultion
 somehow detect that?
-
-Another reason DELETE from appendonly is not supported is that only one
-version ID is stored per key, but the same key could have its content in
-the bucket multiple times under different version IDs.
