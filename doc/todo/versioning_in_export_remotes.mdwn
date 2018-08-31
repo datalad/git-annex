@@ -56,7 +56,7 @@ repository may have changed the exported tree and be relying on the dropped
 key being present in the export. Unless... Could export conflict resultion
 somehow detect that?
 
-## final plan (all done now)
+## final plan
 
 Add an "appendOnly" field to Remote, indicating it retains all content stored
 in it. done
@@ -80,9 +80,4 @@ configured. done
 
 Use version IDs when retrieving keys and for checkpresent. done
 
-## remaining TODO
-
-When bucket is public, use version ID to generate public url.
-
-And, support git-annex operations on public url to versioned content.
-
+> all done! (but see [[support_public_versioned_S3_access]]) --[[Joey]] 
