@@ -236,6 +236,10 @@ These log files are used by remotes that need to record their own state
 about keys. Each remote can store one line of data about a key, in
 its own format.
 
+Note that only the most recently set state about a key is seen
+by remotes using this. The `log.rmet` documented below does not have this
+limitation.
+
 Example:
 
 	1287290776.765152s e605dca6-446a-11e0-8b2a-002170d25c55 blah blah
@@ -261,6 +265,20 @@ The value can be completely arbitrary data, although it's typically
 reasonably short. If the value contains any whitespace
 (including \r or \n), it will be base64 encoded. Base64 encoded values
 are indicated by prefixing them with "!".
+
+## `aaa/bbb/*.log.rmet`
+
+These log files store per-remote metadata about keys. This metadata
+is only used by the remote.
+
+Format is the same as the metadata log files above, but each metadata key
+is prefixed with "uuid:" to indicate the remote it belongs to.
+
+For example:
+
+	1287290776.765152s e605dca6-446a-11e0-8b2a-002170d25c55:foo +bar
+	1287290776.765152s 26339d22-446b-11e0-9101-002170d25c55:x +1
+	1291237510.141453s 26339d22-446b-11e0-9101-002170d25c55:x -1 26339d22-446b-11e0-9101-002170d25c55:x +2
 
 ## `aaa/bbb/*.log.cnk`
 

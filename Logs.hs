@@ -1,6 +1,6 @@
 {- git-annex log file names
  -
- - Copyright 2013-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -26,7 +26,7 @@ getLogVariety f
 	| f `elem` topLevelUUIDBasedLogs = Just UUIDBasedLog
 	| isRemoteStateLog f = Just NewUUIDBasedLog
 	| isChunkLog f = ChunkLog <$> chunkLogFileKey f
-	| isMetaDataLog f || f `elem` otherLogs = Just OtherLog
+	| isMetaDataLog f || isRemoteMetaDataLog f || f `elem` otherLogs = Just OtherLog
 	| otherwise = PresenceLog <$> firstJust (presenceLogs f)
 
 {- All the uuid-based logs stored in the top of the git-annex branch. -}
@@ -185,3 +185,13 @@ metaDataLogExt = ".log.met"
 
 isMetaDataLog :: FilePath -> Bool
 isMetaDataLog path = metaDataLogExt `isSuffixOf` path
+
+{- The filename of the remote metadata log for a given key. -}
+remoteMetaDataLogFile :: GitConfig -> Key -> FilePath
+remoteMetaDataLogFile config key = branchHashDir config key </> keyFile key ++ remoteMetaDataLogExt
+
+remoteMetaDataLogExt :: String
+remoteMetaDataLogExt = ".log.rmet"
+
+isRemoteMetaDataLog :: FilePath -> Bool
+isRemoteMetaDataLog path = remoteMetaDataLogExt `isSuffixOf` path

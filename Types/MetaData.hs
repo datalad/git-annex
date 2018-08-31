@@ -1,6 +1,6 @@
 {- git-annex general metadata
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -36,6 +36,9 @@ module Types.MetaData (
 	metaDataValues,
 	ModMeta(..),
 	modMeta,
+	RemoteMetaData(..),
+	mkRemoteMetaData,
+	fromRemoteMetaData,
 	prop_metadata_sane,
 	prop_metadata_serialize
 ) where
@@ -44,6 +47,7 @@ import Common
 import Utility.Base64
 import Utility.QuickCheck
 import Utility.Aeson
+import Types.UUID
 
 import qualified Data.Text as T
 import qualified Data.Set as S
@@ -281,6 +285,31 @@ modMeta m (MaybeSetMeta f v)
 	| S.null (currentMetaDataValues f m) = updateMetaData f v emptyMetaData
 	| otherwise = emptyMetaData
 modMeta m (ComposeModMeta a b) = unionMetaData (modMeta m a) (modMeta m b)
+
+data RemoteMetaData = RemoteMetaData UUID MetaData
+	deriving (Show, Eq, Ord)
+
+{- Extracts only the fields prefixed with "uuid:", which belong to that
+ - remote. -}
+mkRemoteMetaData :: UUID -> MetaData -> RemoteMetaData
+mkRemoteMetaData u (MetaData m) = RemoteMetaData u $ MetaData $
+	M.mapKeys removeprefix $ M.filterWithKey belongsremote m
+  where
+	belongsremote (MetaField f) _v = prefix `isPrefixOf` CI.original f
+	removeprefix (MetaField f) = MetaField $ 
+		CI.mk $ drop prefixlen $ CI.original f
+	prefix = remoteMetaDataPrefix u
+	prefixlen = length prefix
+
+remoteMetaDataPrefix :: UUID -> String
+remoteMetaDataPrefix u = fromUUID u ++ ":"
+
+fromRemoteMetaData :: RemoteMetaData -> MetaData
+fromRemoteMetaData (RemoteMetaData u (MetaData m)) = MetaData $
+	M.mapKeys addprefix m
+  where
+	addprefix (MetaField f) = MetaField $ CI.mk $ (++ prefix) $ CI.original f
+	prefix = remoteMetaDataPrefix u
 
 {- Avoid putting too many fields in the map; extremely large maps make
  - the seriaization test slow due to the sheer amount of data.

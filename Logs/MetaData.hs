@@ -1,6 +1,8 @@
-{- git-annex general metadata storage log
+{- git-annex general metadata storage log and per-remote metadata storage log.
  -
  - A line of the log will look like "timestamp field [+-]value [...]"
+ -
+ - (In the per-remote log, each field is prefixed with "uuid:")
  -
  - Note that unset values are preserved. Consider this case:
  -
@@ -18,7 +20,7 @@
  - and so foo currently has no value.
  -
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -27,8 +29,10 @@
 
 module Logs.MetaData (
 	getCurrentMetaData,
+	getCurrentRemoteMetaData,
 	addMetaData,
-	addMetaData',
+	addRemoteMetaData,
+	addMetaDataClocked,
 	currentMetaData,
 	copyMetaData,
 ) where
@@ -50,11 +54,6 @@ instance SingleValueSerializable MetaData where
 	serialize = Types.MetaData.serialize
 	deserialize = Types.MetaData.deserialize
 
-getMetaDataLog :: Key -> Annex (Log MetaData)
-getMetaDataLog key = do
-	config <- Annex.getGitConfig
-	readLog $ metaDataLogFile config key
-
 logToCurrentMetaData :: [LogEntry MetaData] -> MetaData
 logToCurrentMetaData = currentMetaData . combineMetaData . map value
 
@@ -65,8 +64,12 @@ logToCurrentMetaData = currentMetaData . combineMetaData . map value
  - currently set, based on timestamps in the log.
  -}
 getCurrentMetaData :: Key -> Annex MetaData
-getCurrentMetaData k = do
-	ls <- S.toAscList <$> getMetaDataLog k
+getCurrentMetaData = getCurrentMetaData' metaDataLogFile
+
+getCurrentMetaData' :: (GitConfig -> Key -> FilePath) -> Key -> Annex MetaData
+getCurrentMetaData' getlogfile k = do
+	config <- Annex.getGitConfig
+	ls <- S.toAscList <$> readLog (getlogfile config k)
 	let loggedmeta = logToCurrentMetaData ls
 	return $ currentMetaData $ unionMetaData loggedmeta
 		(lastchanged ls loggedmeta)
@@ -92,26 +95,41 @@ getCurrentMetaData k = do
 			Unknown -> 0
 	showts = formatPOSIXTime "%F@%H-%M-%S"
 
+getCurrentRemoteMetaData :: UUID -> Key -> Annex RemoteMetaData
+getCurrentRemoteMetaData u k = mkRemoteMetaData u <$>
+	getCurrentMetaData' remoteMetaDataLogFile k
+
 {- Adds in some metadata, which can override existing values, or unset
  - them, but otherwise leaves any existing metadata as-is. -}
 addMetaData :: Key -> MetaData -> Annex ()
-addMetaData k metadata = addMetaData' k metadata =<< liftIO currentVectorClock
+addMetaData = addMetaData' metaDataLogFile
+
+addMetaData' :: (GitConfig -> Key -> FilePath) -> Key -> MetaData -> Annex ()
+addMetaData' getlogfile k metadata = 
+	addMetaDataClocked' getlogfile k metadata =<< liftIO currentVectorClock
 
 {- Reusing the same VectorClock when making changes to the metadata
  - of multiple keys is a nice optimisation. The same metadata lines
  - will tend to be generated across the different log files, and so
  - git will be able to pack the data more efficiently. -}
-addMetaData' :: Key -> MetaData -> VectorClock -> Annex ()
-addMetaData' k d@(MetaData m) c
+addMetaDataClocked :: Key -> MetaData -> VectorClock -> Annex ()
+addMetaDataClocked = addMetaDataClocked' metaDataLogFile
+
+addMetaDataClocked' :: (GitConfig -> Key -> FilePath) -> Key -> MetaData -> VectorClock -> Annex ()
+addMetaDataClocked' getlogfile k d@(MetaData m) c
 	| d == emptyMetaData = noop
 	| otherwise = do
 		config <- Annex.getGitConfig
-		Annex.Branch.change (metaDataLogFile config k) $
+		Annex.Branch.change (getlogfile config k) $
 			showLog . simplifyLog 
 				. S.insert (LogEntry c metadata)
 				. parseLog
   where
 	metadata = MetaData $ M.filterWithKey (\f _ -> not (isLastChangedField f)) m
+
+addRemoteMetaData :: Key -> RemoteMetaData -> Annex ()
+addRemoteMetaData k m = do
+	addMetaData' remoteMetaDataLogFile k (fromRemoteMetaData m)
 
 {- Simplify a log, removing historical values that are no longer
  - needed. 
@@ -172,6 +190,11 @@ simplifyLog s = case sl of
 	  where
 		older = value l
 		unique = older `differenceMetaData` newer
+
+getMetaDataLog :: Key -> Annex (Log MetaData)
+getMetaDataLog key = do
+	config <- Annex.getGitConfig
+	readLog $ metaDataLogFile config key
 
 {- Copies the metadata from the old key to the new key.
  -

@@ -112,7 +112,7 @@ perform c o k = case getSet o of
 	Set ms -> do
 		oldm <- getCurrentMetaData k
 		let m = combineMetaData $ map (modMeta oldm) ms
-		addMetaData' k m c
+		addMetaDataClocked k m c
 		next $ cleanup k
 	_ -> next $ cleanup k
 
