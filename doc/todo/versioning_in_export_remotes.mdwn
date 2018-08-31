@@ -57,13 +57,10 @@ configured. done
 
 Use version IDs when retrieving keys and for checkpresent. done
 
-TODO testing
+When bucket is public, use version ID to generate public url.
+And, support git-annex operations on public url to versioned content.
 
 ## other considerations
-
-Can public urls be generated using version IDs? The url has
-"?versionId=" appended, but all the examples I've seen include S3
-authorization headers.
 
 If the user enables versioning in git-annex but forgets to enable it
 in the bucket (or later suspends versioning in the bucket), it's no
