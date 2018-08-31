@@ -33,7 +33,30 @@ won't be updated, as discussed above.
 The haskell aws library does not seem to support enabling versioning when
 creating a bucket, so it would need to be done from the web console.
 
-## final plan
+## other considerations
+
+If the user enables versioning in git-annex but forgets to enable it
+in the bucket (or later suspends versioning in the bucket), it's no
+big problem; old files will not be retained and git-annex will notice
+this in the usual way (drop locking, fsck). So, it seems that initremote
+does not need to check if the versioning=yes setting matches the bucket
+configuration. For same reasons, it's ok to enable versioning for an
+existing remote.
+
+S3 does allow DELETE of a version of an object from a bucket. So it would
+be possible to support `git annex drop` of old versions of a file from an
+export remote. Dropping the current version though, would make the export
+database inconsistent; it would not know that a file in the exported tree
+was no longer present. I don't think that inconsitency can easily be
+resolved -- bear in ming that multiple repositories can have an export db,
+so it would need to look at location tracking for all objects in the export
+to find ones that some other repository dropped. And dropping of only
+keys that are not used in the current export doesn't help because another
+repository may have changed the exported tree and be relying on the dropped
+key being present in the export. Unless... Could export conflict resultion
+somehow detect that?
+
+## final plan (all done now)
 
 Add an "appendOnly" field to Remote, indicating it retains all content stored
 in it. done
@@ -57,28 +80,9 @@ configured. done
 
 Use version IDs when retrieving keys and for checkpresent. done
 
+## remaining TODO
+
 When bucket is public, use version ID to generate public url.
+
 And, support git-annex operations on public url to versioned content.
 
-## other considerations
-
-If the user enables versioning in git-annex but forgets to enable it
-in the bucket (or later suspends versioning in the bucket), it's no
-big problem; old files will not be retained and git-annex will notice
-this in the usual way (drop locking, fsck). So, it seems that initremote
-does not need to check if the versioning=yes setting matches the bucket
-configuration. For same reasons, it's ok to enable versioning for an
-existing remote.
-
-S3 does allow DELETE of a version of an object from a bucket. So it would
-be possible to support `git annex drop` of old versions of a file from an
-export remote. Dropping the current version though, would make the export
-database inconsistent; it would not know that a file in the exported tree
-was no longer present. I don't think that inconsitency can easily be
-resolved -- bear in ming that multiple repositories can have an export db,
-so it would need to look at location tracking for all objects in the export
-to find ones that some other repository dropped. And dropping of only
-keys that are not used in the current export doesn't help because another
-repository may have changed the exported tree and be relying on the dropped
-key being present in the export. Unless... Could export conflict resultion
-somehow detect that?
