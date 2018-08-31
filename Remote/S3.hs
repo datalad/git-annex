@@ -759,14 +759,15 @@ mkS3VersionID' o (Just s)
 	| otherwise = Nothing
 mkS3VersionID' _ Nothing = Nothing
 
--- A S3 version ID is "url ready" so does not contain spaces,
--- but an Object may contain spaces, so put it last.
+-- A S3 version ID is "url ready" so does not contain '#' and so we'll use
+-- that to separate it from the object id. (Could use a space, but spaces
+-- in metadata values lead to an inefficient encoding.)
 formatS3VersionID :: S3VersionID -> String
-formatS3VersionID (S3VersionID o v) = v ++ ' ' : T.unpack o
+formatS3VersionID (S3VersionID o v) = v ++ '#' : T.unpack o
 
 parseS3VersionID :: String -> Maybe S3VersionID
 parseS3VersionID s = 
-	let (v, o) = separate (== ' ') s
+	let (v, o) = separate (== '#') s
 	in mkS3VersionID' (T.pack o) (Just v)
 
 setS3VersionID :: S3Info -> UUID -> Key -> Maybe S3VersionID -> Annex ()
