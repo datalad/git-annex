@@ -308,7 +308,7 @@ fromRemoteMetaData :: RemoteMetaData -> MetaData
 fromRemoteMetaData (RemoteMetaData u (MetaData m)) = MetaData $
 	M.mapKeys addprefix m
   where
-	addprefix (MetaField f) = MetaField $ CI.mk $ (++ prefix) $ CI.original f
+	addprefix (MetaField f) = MetaField $ CI.mk $ (prefix ++) $ CI.original f
 	prefix = remoteMetaDataPrefix u
 
 {- Avoid putting too many fields in the map; extremely large maps make
