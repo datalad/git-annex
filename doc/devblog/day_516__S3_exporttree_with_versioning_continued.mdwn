@@ -1,0 +1,19 @@
+Finished this feature, and I'm liking it quite a lot!
+Though I had to put off [[todo/support_public_versioned_S3_access]] until
+some other time as I'm all out of time and energy.
+
+The storage of S3 version IDs got rethought -- I was not comfortable with
+using per-remote state in the git-annex branch which would have caused
+problems if dropping from these remotes later gets supported.
+
+So, I added per-remote metadata in about 1 hour! It's like git-annex's regular
+metadata, but scoped so only the remote that owns it can see it. This is
+perfect for storing things like S3 version IDs. It probably ought to be added
+to the external special remote interface since it could be used for lots of
+stuff.
+
+Here's how that looks when S3 version IDs are stored in it:
+
+	1535737778.867692782s 31ea6c94-fba3-4952-99b5-285ae192d92a:V +woYHK59DD2VUkJfg527mEBBqtCaPlSXn#myfile
+
+This work was supported by the NSF-funded DataLad project.
