@@ -35,9 +35,10 @@ youtubeDlAllowed = httpAddressesUnlimited
 
 youtubeDlNotAllowedMessage :: String
 youtubeDlNotAllowedMessage = unwords
-	[ "youtube-dl could potentially access any address, and the"
+	[ "This url is supported by youtube-dl, but"
+	, "youtube-dl could potentially access any address, and the"
 	, "configuration of annex.security.allowed-http-addresses"
-	, "does not allow that."
+	, "does not allow that. Not using youtube-dl."
 	]
 
 -- Runs youtube-dl in a work directory, to download a single media file
