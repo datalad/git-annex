@@ -198,7 +198,7 @@ performDownload opts cache todownload = case location todownload of
 		let mediaurl = setDownloader linkurl YoutubeDownloader
 		let mediakey = Backend.URL.fromUrl mediaurl Nothing
 		-- Old versions of git-annex that used quvi might have
-		-- used the quviurl for this, so check i/f it's known
+		-- used the quviurl for this, so check if it's known
 		-- to avoid adding it a second time.
 		let quviurl = setDownloader linkurl QuviDownloader
 		checkknown mediaurl $ checkknown quviurl $
