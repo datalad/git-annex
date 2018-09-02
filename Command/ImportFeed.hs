@@ -85,7 +85,7 @@ perform opts cache url = do
 			showOutput
 			ok <- and <$> mapM (performDownload opts cache) l
 			unless ok $
-				feedProblem url "problem downloading item"
+				feedProblem url "problem downloading some item(s) from feed"
 			next $ cleanup url True
 
 cleanup :: URLString -> Bool -> CommandCleanup
