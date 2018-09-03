@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="ewen"
+ avatar="http://cdn.libravatar.org/avatar/605b2981cb52b4af268455dee7a4f64e"
+ subject="Synology bug report"
+ date="2018-09-03T22:36:07Z"
+ content="""
+FWIW, I've created a Synology Account, to create a Synology Support Request, [#2082132](https://account.synology.com/en-global/support/2082132/detail) for the missing timer_create system call on DSM 6.2-23739-2.  I'm not holding out a lot of hope given it's a third party application running on the NAS, and not even one in their app store, but maybe there's a chance it'll get the system call turned back on again.  That Synology support request includes a link to this bug report.
+
+Ewen
+
+PS: I expect that bug report will only be visible if you're logged in with my Synology account.  But at least someone else reporting it can reference the same issue to Synology Support.
+"""]]
