@@ -416,12 +416,91 @@ Executable git-annex
     Other-Modules:
       Remote.WebDAV
       Remote.WebDAV.DavLocation
-
-  if flag(Assistant) && ! os(solaris) && ! os(gnu)
-    Build-Depends: dns (>= 1.0.0), mountpoints
-    CPP-Options: -DWITH_ASSISTANT
+  if flag(S3) || flag(WebDAV)
+    Other-Modules:
+      Remote.Helper.Http
 
   if flag(Assistant)
+    Build-Depends: mountpoints
+    CPP-Options: -DWITH_ASSISTANT
+    Other-Modules:
+      Assistant
+      Assistant.Alert
+      Assistant.Alert.Utility
+      Assistant.BranchChange
+      Assistant.Changes
+      Assistant.Commits
+      Assistant.Common
+      Assistant.CredPairCache
+      Assistant.DaemonStatus
+      Assistant.DeleteRemote
+      Assistant.Drop
+      Assistant.Fsck
+      Assistant.Gpg
+      Assistant.Install
+      Assistant.Install.AutoStart
+      Assistant.Install.Menu
+      Assistant.MakeRemote
+      Assistant.Monad
+      Assistant.NamedThread
+      Assistant.Pairing
+      Assistant.Pairing.MakeRemote
+      Assistant.Pairing.Network
+      Assistant.Pushes
+      Assistant.RemoteControl
+      Assistant.Repair
+      Assistant.RepoProblem
+      Assistant.Restart
+      Assistant.ScanRemotes
+      Assistant.Ssh
+      Assistant.Sync
+      Assistant.Threads.Committer
+      Assistant.Threads.ConfigMonitor
+      Assistant.Threads.Cronner
+      Assistant.Threads.DaemonStatus
+      Assistant.Threads.Exporter
+      Assistant.Threads.Glacier
+      Assistant.Threads.Merger
+      Assistant.Threads.MountWatcher
+      Assistant.Threads.NetWatcher
+      Assistant.Threads.ProblemFixer
+      Assistant.Threads.Pusher
+      Assistant.Threads.RemoteControl
+      Assistant.Threads.SanityChecker
+      Assistant.Threads.TransferPoller
+      Assistant.Threads.TransferScanner
+      Assistant.Threads.TransferWatcher
+      Assistant.Threads.Transferrer
+      Assistant.Threads.UpgradeWatcher
+      Assistant.Threads.Upgrader
+      Assistant.Threads.Watcher
+      Assistant.TransferQueue
+      Assistant.TransferSlots
+      Assistant.TransferrerPool
+      Assistant.Types.Alert
+      Assistant.Types.BranchChange
+      Assistant.Types.Changes
+      Assistant.Types.Commits
+      Assistant.Types.CredPairCache
+      Assistant.Types.DaemonStatus
+      Assistant.Types.NamedThread
+      Assistant.Types.Pushes
+      Assistant.Types.RemoteControl
+      Assistant.Types.RepoProblem
+      Assistant.Types.ScanRemotes
+      Assistant.Types.ThreadName
+      Assistant.Types.ThreadedMonad
+      Assistant.Types.TransferQueue
+      Assistant.Types.TransferSlots
+      Assistant.Types.TransferrerPool
+      Assistant.Types.UrlRenderer
+      Assistant.Unused
+      Assistant.Upgrade
+      Build.DesktopFile
+      Command.Assistant
+      Command.Watch
+      Utility.Mounts
+
     if os(linux) || flag(Android)
       Build-Depends: hinotify
       CPP-Options: -DWITH_INOTIFY
@@ -430,7 +509,9 @@ Executable git-annex
       if os(darwin)
         Build-Depends: hfsevents
         CPP-Options: -DWITH_FSEVENTS
-        Other-Modules: Utility.DirWatcher.FSEvents
+        Other-Modules:
+          Utility.DirWatcher.FSEvents
+          Utility.OSX
       else
         if os(windows)
           Build-Depends: Win32-notify
@@ -452,6 +533,8 @@ Executable git-annex
   if flag(Android)
     Build-Depends: data-endian
     CPP-Options: -D__ANDROID__ -DANDROID_SPLICES -D__NO_TH__
+    Other-Modules:
+      Utility.Android
   else
     Build-Depends: disk-free-space
 
@@ -597,78 +680,6 @@ Executable git-annex
     Annex.Wanted
     Annex.WorkTree
     Annex.YoutubeDl
-    Assistant
-    Assistant.Alert
-    Assistant.Alert.Utility
-    Assistant.BranchChange
-    Assistant.Changes
-    Assistant.Commits
-    Assistant.Common
-    Assistant.CredPairCache
-    Assistant.DaemonStatus
-    Assistant.DeleteRemote
-    Assistant.Drop
-    Assistant.Fsck
-    Assistant.Gpg
-    Assistant.Install
-    Assistant.Install.AutoStart
-    Assistant.Install.Menu
-    Assistant.MakeRemote
-    Assistant.Monad
-    Assistant.NamedThread
-    Assistant.Pairing
-    Assistant.Pairing.MakeRemote
-    Assistant.Pairing.Network
-    Assistant.Pushes
-    Assistant.RemoteControl
-    Assistant.Repair
-    Assistant.RepoProblem
-    Assistant.Restart
-    Assistant.ScanRemotes
-    Assistant.Ssh
-    Assistant.Sync
-    Assistant.Threads.Committer
-    Assistant.Threads.ConfigMonitor
-    Assistant.Threads.Cronner
-    Assistant.Threads.DaemonStatus
-    Assistant.Threads.Exporter
-    Assistant.Threads.Glacier
-    Assistant.Threads.Merger
-    Assistant.Threads.MountWatcher
-    Assistant.Threads.NetWatcher
-    Assistant.Threads.ProblemFixer
-    Assistant.Threads.Pusher
-    Assistant.Threads.RemoteControl
-    Assistant.Threads.SanityChecker
-    Assistant.Threads.TransferPoller
-    Assistant.Threads.TransferScanner
-    Assistant.Threads.TransferWatcher
-    Assistant.Threads.Transferrer
-    Assistant.Threads.UpgradeWatcher
-    Assistant.Threads.Upgrader
-    Assistant.Threads.Watcher
-    Assistant.TransferQueue
-    Assistant.TransferSlots
-    Assistant.TransferrerPool
-    Assistant.Types.Alert
-    Assistant.Types.BranchChange
-    Assistant.Types.Changes
-    Assistant.Types.Commits
-    Assistant.Types.CredPairCache
-    Assistant.Types.DaemonStatus
-    Assistant.Types.NamedThread
-    Assistant.Types.Pushes
-    Assistant.Types.RemoteControl
-    Assistant.Types.RepoProblem
-    Assistant.Types.ScanRemotes
-    Assistant.Types.ThreadName
-    Assistant.Types.ThreadedMonad
-    Assistant.Types.TransferQueue
-    Assistant.Types.TransferSlots
-    Assistant.Types.TransferrerPool
-    Assistant.Types.UrlRenderer
-    Assistant.Unused
-    Assistant.Upgrade
     Backend
     Backend.Hash
     Backend.URL
@@ -676,7 +687,6 @@ Executable git-annex
     Backend.WORM
     Build.BundledPrograms
     Build.Configure
-    Build.DesktopFile
     Build.Mans
     Build.TestConfig
     Build.Version
@@ -700,7 +710,6 @@ Executable git-annex
     Command.AddUnused
     Command.AddUrl
     Command.Adjust
-    Command.Assistant
     Command.CalcKey
     Command.CheckPresentKey
     Command.Commit
@@ -801,7 +810,6 @@ Executable git-annex
     Command.Vicfg
     Command.View
     Command.Wanted
-    Command.Watch
     Command.Whereis
     Common
     Config
@@ -933,7 +941,6 @@ Executable git-annex
     Remote.Helper.Export
     Remote.Helper.Git
     Remote.Helper.Hooks
-    Remote.Helper.Http
     Remote.Helper.Messages
     Remote.Helper.P2P
     Remote.Helper.ReadOnly
@@ -999,7 +1006,6 @@ Executable git-annex
     Upgrade.V4
     Upgrade.V5
     Utility.Aeson
-    Utility.Android
     Utility.Applicative
     Utility.AuthToken
     Utility.Base64
@@ -1050,10 +1056,8 @@ Executable git-annex
     Utility.Metered
     Utility.Misc
     Utility.Monad
-    Utility.Mounts
     Utility.Network
     Utility.NotificationBroadcaster
-    Utility.OSX
     Utility.OptParse
     Utility.PID
     Utility.Parallel
