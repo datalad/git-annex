@@ -1,0 +1,25 @@
+Hello all, my situation is I have two laptops, one for work and one for home use.  I have a lot of simple text files that I use in v6 unlocked mode (used to use direct mode, but recently switched).  I run the assistant to sync between these hosts using an intermediate server which is an always-on VPS (visarend.solasistim.net in this example).
+
+At some point, these files will start to be desynced, and I'll see messages like these in the log files.
+
+    [2018-09-03 11:34:04.062717904] NetWatcherFallback: Syncing with origin 
+
+    error: Your local changes to the following files would be overwritten by merge:
+            howto/c++.md
+            howto/emacs.mkd
+            howto/git-annex.mkd
+            howto/windows.mkd
+            org/kanban.org
+    Please commit your changes or stash them before you merge.
+    Aborting
+    To visarend.solasistim.net:annex
+     ! [rejected]            master -> synced/master (non-fast-forward)
+    error: failed to push some refs to 'visarend.solasistim.net:annex'
+    hint: Updates were rejected because a pushed branch tip is behind its remote
+    hint: counterpart. Check out this branch and integrate the remote changes
+    hint: (e.g. 'git pull ...') before pushing again.
+    hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+
+Using git-annex 6.20170101.1 on all hosts.
+
+What exactly does this error mean?  How can I get rid of it?  I solve it by rm'ing the repository and re-cloning from visarend.solasistim.net, and integrating any changes manually, but I'm wondering why it's happening.

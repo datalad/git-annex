@@ -1,0 +1,13 @@
+Hello,
+
+using git-annex 6.20180807-23 on Arch I get this message from time to time:
+
+     copy archive/Studium/Diplomarbeit/Daten/Vortrag/vortrag.snm (to xgm...) 
+     git-annex-shell: <stdin>: hGetChar: illegal operation (handle is closed)ok
+     copy archive/Studium/Diplomarbeit/Daten/Wheels/SingleWheelCalcs/5SpokeWheel/5Spoke_MRF/6000/Lambda2.gz 
+       Lost connection (fd:21: hFlush: resource vanished (Broken pipe))
+     (fd:21: hClose: resource vanished (Broken pipe)) failed
+
+The peer is git-annex, downloaded at Aug 7 at Debian Stable. Repeating the file transfer makes the message goes away, but I have to initiate the transfer multiple times, to be able to transfer all files without this error message.
+
+Best Thanks!

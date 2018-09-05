@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="ewen"
+ avatar="http://cdn.libravatar.org/avatar/605b2981cb52b4af268455dee7a4f64e"
+ subject="timer_create"
+ date="2018-09-03T22:06:00Z"
+ content="""
+From some digging around it looks like [`timer_create`](http://man7.org/linux/man-pages/man2/timer_create.2.html) is a Linux system call.  So presumably the issue with the Synology NAS is being caused by the kernel being updated.
+
+Of note, it appears that [Microsoft Windows System for Linux does not support `timer_create` either](https://github.com/Microsoft/WSL/issues/307).  And that [system call is apparently required for Haskell binaries](https://github.com/Microsoft/WSL/issues/307#issuecomment-217051052)...  Apparently (from this thread) other people have hit this issue trying to run `git-annex` too.
+
+There's a [suggestion of some work around flags](https://github.com/Microsoft/WSL/issues/307#issuecomment-239617836), but they do not seem to work with the `git-annex` stand alone binary as it is currently built:
+
+    ewen@nas01:~$ git-annex +RTS -V0 -RTS help
+    git-annex: Most RTS options are disabled. Link with -rtsopts to enable them.
+    ewen@nas01:~$ export GHCRTS=-V0
+    ewen@nas01:~$ git annex help
+    git-annex: Most RTS options are disabled. Link with -rtsopts to enable them.
+    ewen@nas01:~$ 
+
+Possibly it'll be necessary to try to persuade Synology to re-enable the `timer_create` system call.  But my guess is maybe they turned it off as a Spectre/Meltdown fix, so it may be non-trivial to persuade them to change it back.
+
+Ewen
+"""]]

@@ -1,0 +1,58 @@
+### Please describe the problem.
+
+After updating my Synology DS216+ NAS from [6.2-23739-1](https://www.synology.com/en-uk/releaseNote/DS216+II#ver_23739-1) to [6.2-23739-2](https://www.synology.com/en-uk/releaseNote/DS216+II#ver_23739-2), running `git-annex` with any non-trivial command, locally on the NAS or remotely on the NAS results in:
+
+    git-annex: timer_create: Bad address
+
+I'm guessing that this means that a library function the standalone binary needs is no longer present, but I'm unsure why.  The `-1` to `-2` update seems to only have two security fixes ([SA 18-36](https://www.synology.com/en-uk/support/security/Synology_SA_18_36), and [SA 18-01](https://www.synology.com/en-uk/support/security/Synology_SA_18_01) -- the latter being a Spectre/Meltdown bug).
+
+Do you know if `timer_create` is a kernel system call?  Or a libc (etc) library function?
+
+### What steps will reproduce the problem?
+
+Update Synology NAS to [6.2-23739-2](https://www.synology.com/en-uk/releaseNote/DS216+II#ver_23739-2), run `git annex sync`, `git annex version` or similar (remotely or locally).
+
+### What version of git-annex are you using? On what operating system?
+
+`x86-32`, stand alone build, for ancient-kernels, as that the 64-bit stand alone build [no longer seemed to work due to locale issues](https://ewen.mcneill.gen.nz/blog/entry/2017-05-28-git-annex-on-synology-ds216+/) (see note added at the end).
+
+I believe it is `6.20180626`, but `git annex version` currently also fails...
+
+### Please provide any additional information below.
+
+    ewen@nas01:/volume1/music/podcasts$ hostname --fqdn
+    nas01
+    ewen@nas01:/volume1/music/podcasts$ git annex sync
+    git-annex: timer_create: Bad address
+    ewen@nas01:/volume1/music/podcasts$ 
+    ewen@nas01:/volume1/music/podcasts$ git annex version
+    git-annex: timer_create: Bad address
+    ewen@nas01:/volume1/music/podcasts$ 
+    ewen@nas01:/volume1/music/podcasts$ uname -mr
+    3.10.105 x86_64
+    ewen@nas01:/volume1/music/podcasts$ 
+
+There is a [6.2.1 firmware release](https://www.synology.com/en-uk/releaseNote/DS216+) for the Synology NAS released a couple of days ago, but it does not yet seem to be visible to my NAS.  I can try that one if it'd help.
+
+I can also try switching back to one of the more modern `x86-64` / `x86-32` stand alone builds if that'd help.  But then I'd need some assistance with working around the:
+
+    sh: loadlocale.c:129: _nl_intern_locale_data: Assertion `cnt < (sizeof (_nl_value_type_LC_TIME) / sizeof (_nl_value_type_LC_TIME[0]))' failed.
+    error: git-annex died of signal 6
+
+error I was seeing on those builds.  (From other work elsewhere it feels a lot like the LC_TIME structure changed in size in some libc definition somewhere in the last 6-12 months; in another project we had a similar break on Ubuntu 18.04 issues which didn't affect Ubuntu 16.04 and earlier.)
+
+In case it helps, out of the box defaults give:
+
+    ewen@nas01:/volume1/music/podcasts$ echo $LANG
+    en_US.utf8
+    ewen@nas01:/volume1/music/podcasts$ ls /volume1/thirdparty/git-annex.linux/locales/en_US.utf8/
+    LC_ADDRESS  LC_IDENTIFICATION  LC_MONETARY  LC_PAPER
+    LC_COLLATE  LC_MEASUREMENT     LC_NAME      LC_TELEPHONE
+    LC_CTYPE    LC_MESSAGES        LC_NUMERIC   LC_TIME
+    ewen@nas01:/volume1/music/podcasts$ 
+
+(although those files are currently generated with the now broken x86-32 legacy standalone build).
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Definitely.  It was working until I updated the NAS firmware image this afternoon... for this repository holding years of podcasts and many others.
