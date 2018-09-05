@@ -38,6 +38,7 @@ module Types.MetaData (
 	modMeta,
 	RemoteMetaData(..),
 	extractRemoteMetaData,
+	splitRemoteMetaDataField,
 	fromRemoteMetaData,
 	prop_metadata_sane,
 	prop_metadata_serialize
@@ -300,6 +301,12 @@ extractRemoteMetaData u (MetaData m) = RemoteMetaData u $ MetaData $
 		CI.mk $ drop prefixlen $ CI.original f
 	prefix = remoteMetaDataPrefix u
 	prefixlen = length prefix
+
+splitRemoteMetaDataField :: MetaField -> Maybe (UUID, MetaField)
+splitRemoteMetaDataField (MetaField f) = do
+	let (su, sf) = separate (== ':') (CI.original f)
+	f' <- toMetaField sf
+	return $ (toUUID su, f')
 
 remoteMetaDataPrefix :: UUID -> String
 remoteMetaDataPrefix u = fromUUID u ++ ":"

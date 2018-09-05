@@ -16,6 +16,7 @@ data LogVariety
 	| NewUUIDBasedLog
 	| ChunkLog Key
 	| PresenceLog Key
+	| RemoteMetaDataLog
 	| OtherLog
 	deriving (Show)
 
@@ -26,7 +27,8 @@ getLogVariety f
 	| f `elem` topLevelUUIDBasedLogs = Just UUIDBasedLog
 	| isRemoteStateLog f = Just NewUUIDBasedLog
 	| isChunkLog f = ChunkLog <$> chunkLogFileKey f
-	| isMetaDataLog f || isRemoteMetaDataLog f || f `elem` otherLogs = Just OtherLog
+	| isRemoteMetaDataLog f = Just RemoteMetaDataLog
+	| isMetaDataLog f || f `elem` otherLogs = Just OtherLog
 	| otherwise = PresenceLog <$> firstJust (presenceLogs f)
 
 {- All the uuid-based logs stored in the top of the git-annex branch. -}

@@ -1,6 +1,6 @@
 {- git-annex branch transitions
  -
- - Copyright 2013 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,8 +15,10 @@ import Logs.Transitions
 import qualified Logs.UUIDBased as UUIDBased
 import qualified Logs.Presence.Pure as Presence
 import qualified Logs.Chunk.Pure as Chunk
+import qualified Logs.MetaData.Pure as MetaData
 import Types.TrustLevel
 import Types.UUID
+import Types.MetaData
 
 import qualified Data.Map as M
 import Data.Default
@@ -49,16 +51,27 @@ dropDead f content trustmap = case getLogVariety f of
 		in if null newlog
 			then RemoveFile
 			else ChangeFile $ Presence.showLog newlog
+	Just RemoteMetaDataLog ->
+		let newlog = dropDeadFromRemoteMetaDataLog trustmap $ MetaData.simplifyLog $ MetaData.parseLog content
+		in if null newlog
+			then RemoveFile
+			else ChangeFile $ MetaData.showLog newlog
 	Just OtherLog -> PreserveFile
 	Nothing -> PreserveFile
 
 dropDeadFromMapLog :: TrustMap -> (k -> UUID) -> M.Map k v -> M.Map k v
-dropDeadFromMapLog trustmap getuuid = M.filterWithKey $ \k _v -> notDead trustmap getuuid k
+dropDeadFromMapLog trustmap getuuid =
+	M.filterWithKey $ \k _v -> notDead trustmap getuuid k
 
 {- Presence logs can contain UUIDs or other values. Any line that matches
  - a dead uuid is dropped; any other values are passed through. -}
 dropDeadFromPresenceLog :: TrustMap -> [Presence.LogLine] -> [Presence.LogLine]
-dropDeadFromPresenceLog trustmap = filter $ notDead trustmap (toUUID . Presence.info)
+dropDeadFromPresenceLog trustmap =
+	filter $ notDead trustmap (toUUID . Presence.info)
+
+dropDeadFromRemoteMetaDataLog :: TrustMap -> MetaData.Log MetaData -> MetaData.Log MetaData
+dropDeadFromRemoteMetaDataLog trustmap =
+	MetaData.filterOutEmpty . MetaData.filterRemoteMetaData (notDead trustmap id)
 
 notDead :: TrustMap -> (v -> UUID) -> v -> Bool
 notDead trustmap a v = M.findWithDefault def (a v) trustmap /= DeadTrusted

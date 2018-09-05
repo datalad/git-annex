@@ -889,6 +889,7 @@ Executable git-annex
     Logs.Location
     Logs.MapLog
     Logs.MetaData
+    Logs.MetaData.Pure
     Logs.Multicast
     Logs.NumCopies
     Logs.PreferredContent
@@ -899,6 +900,7 @@ Executable git-annex
     Logs.RemoteState
     Logs.Schedule
     Logs.SingleValue
+    Logs.SingleValue.Pure
     Logs.TimeStamp
     Logs.Transfer
     Logs.Transitions
