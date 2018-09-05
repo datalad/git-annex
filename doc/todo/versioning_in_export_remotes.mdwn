@@ -80,4 +80,4 @@ configured. done
 
 Use version IDs when retrieving keys and for checkpresent. done
 
-> all done! (but see [[support_public_versioned_S3_access]]) --[[Joey]] 
+> all [[done]]! (but see [[support_public_versioned_S3_access]]) --[[Joey]] 
