@@ -499,6 +499,7 @@ Executable git-annex
       Command.Assistant
       Command.Watch
       Utility.Mounts
+      Utility.OSX
 
     if os(linux) || flag(Android)
       Build-Depends: hinotify
@@ -510,7 +511,6 @@ Executable git-annex
         CPP-Options: -DWITH_FSEVENTS
         Other-Modules:
           Utility.DirWatcher.FSEvents
-          Utility.OSX
       else
         if os(windows)
           Build-Depends: Win32-notify
