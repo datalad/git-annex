@@ -1,4 +1,4 @@
-{- Temporary directorie
+{- Temporary directories
  -
  - Copyright 2010-2013 Joey Hess <id@joeyh.name>
  -
