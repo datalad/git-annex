@@ -1,0 +1,1 @@
+git-annex version: 6.20180807-gebc1bb5 supports creating version 6 repos, but by default creates version 5.  Are version 6 repos still in beta / not reliable?
