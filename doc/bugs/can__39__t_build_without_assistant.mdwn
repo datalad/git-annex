@@ -22,7 +22,7 @@ haskell-mountpoints package is instaled.
 If turn on assistant flag, building is ok.
 
 ### Please provide any additional information below.
-I don't know haskell, but try to make optional building of Assistant, see [patch](https://github.com/fftmp/git-annex-min-pkgbuild/blob/master/0002-optional-build-assistant-and-other-small-cabal-refin.patch). Seems, that it works.
+I don't know haskell, but try to make optional building of Assistant, see [patch](https://github.com/fftmp/git-annex-min-pkgbuild/blob/master/0002-optional-build-assistant-and-other-small-cabal-refin.patch). Seems, that it works for minimal building, but may be incomplete.
 ### What version of git-annex are you using? On what operating system?
 6.20180807,  Archlinux
 
