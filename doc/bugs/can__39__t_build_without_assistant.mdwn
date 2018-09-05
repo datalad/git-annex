@@ -1,0 +1,32 @@
+### Please describe the problem.
+1. Building minimal variant of git-annex failed.
+1. Seems, that instructions about [minimal building from source](https://git-annex.branchable.com/install/fromsource/) are out-of-date, at least because options 'xmpp' and 'dns' don't exist in git-annex.cabal.
+1. Also seems, that file Utility/SRV.hs unused, may be remove it?
+
+In git-annex.cabal 'Assistant' flag doesn't influence on list of modules, only on compile flags and dependencies. 'Assistant/\*' modules includes into base variant of building (and some 'Assistant/\*' modules turn on with WebApp flag).
+
+### What steps will reproduce the problem?
+Try to build as in [archlinux package](https://git.archlinux.org/svntogit/community.git/tree/repos/community-x86_64/PKGBUILD?h=packages/git-annex), but turn off assistant:
+
+`runhaskell Setup configure -O --prefix=/usr --enable-executable-dynamic --disable-library-vanilla --docdir="/usr/share/doc/git-annex" -fconcurrentoutput -ftorrentparser -f-androidsplice -f-android -fproduction -fpairing -fwebapp -f-assistant -fwebdav -fs3 -f-benchmark -fdbus -fmagicmime`
+
+`runhaskell Setup.hs build`
+
+After that I got error:
+
+`Utility/Mounts.hs:13:1: error:`
+
+`    Could not find module ‘System.MountPoints’`
+
+haskell-mountpoints package is instaled.
+If turn on assistant flag, building is ok.
+
+### Please provide any additional information below.
+I don't know haskell, but try to make optional building of Assistant, see [patch](https://github.com/fftmp/git-annex-min-pkgbuild/blob/master/0002-optional-build-assistant-and-other-small-cabal-refin.patch). Seems, that it works.
+### What version of git-annex are you using? On what operating system?
+6.20180807,  Archlinux
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Yes, use it for several years and have approx 100G repo with 10k+ files. Works fine.
+
