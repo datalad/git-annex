@@ -1066,7 +1066,6 @@ Executable git-annex
     Utility.Process.Transcript
     Utility.QuickCheck
     Utility.Rsync
-    Utility.SRV
     Utility.SafeCommand
     Utility.Scheduled
     Utility.Scheduled.QuickCheck
