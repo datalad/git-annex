@@ -53,7 +53,6 @@ Build-Depends:
 	libghc-securemem-dev,
 	libghc-byteable-dev,
 	libghc-stm-chans-dev,
-	libghc-dns-dev,
 	libghc-case-insensitive-dev,
 	libghc-http-types-dev,
 	libghc-http-conduit-dev,
