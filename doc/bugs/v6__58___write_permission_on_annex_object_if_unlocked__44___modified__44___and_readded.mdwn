@@ -31,3 +31,5 @@ Debian Stretch, but building git-annex from source with `stack build`.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, everyday.  Thank you for git-annex :-)
+
+> [[fixed|done]] --[[Joey]]

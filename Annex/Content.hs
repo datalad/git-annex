@@ -456,7 +456,7 @@ withTmp key action = do
  -
  - When a key has associated pointer files, the object is hard
  - linked (or copied) to the files, and the object file is left thawed.
- 
+ - 
  - In direct mode, moves the object file to the associated file, or files.
  -
  - What if the key there already has content? This could happen for
@@ -564,11 +564,12 @@ data FromTo = From | To
 {- Hard links or copies from or to the annex object location. 
  - Updates inode cache.
  -
- - Thaws the file that is not the annex object.
- - When a hard link was made, this necessarily thaws
- - the annex object too. So, adding an object to the annex this
- - way can prevent losing the content if the source file
- - is deleted, but does not guard against modifications.
+ - Freezes or thaws the destination appropriately.
+ -
+ - When a hard link is made, the annex object necessarily has to be thawed
+ - too. So, adding an object to the annex with a hard link can prevent
+ - losing the content if the source file is deleted, but does not
+ - guard against modifications.
  -
  - Nothing is done if the destination file already exists.
  -}
@@ -584,9 +585,12 @@ linkAnnex fromto key src (Just srcic) dest destmode =
 			return LinkAnnexNoop
 		Nothing -> ifM (linkOrCopy key src dest destmode)
 			( do
-				thawContent $ case fromto of
-					From -> dest
-					To -> src
+				case fromto of
+					From -> thawContent dest
+					To -> do
+						s <- liftIO $ getFileStatus dest
+						unless (linkCount s > 1) $
+							freezeContent dest
 				checksrcunchanged
 			, failed
 			)

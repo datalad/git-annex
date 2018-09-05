@@ -19,6 +19,8 @@ git-annex (6.20180808) UNRELEASED; urgency=medium
   * v6: Update associated files database when git has staged changes
     to pointer files.
   * v6: Fix some race conditions.
+  * v6: Fix annex object file permissions when git-annex add is run
+    on a modified unlocked file, and in some related cases.
   * Fix git command queue to be concurrency safe.
   * linux standalone: When LOCPATH is already set, use it instead of the
     bundled locales. It can be set to an empty string to use the system
