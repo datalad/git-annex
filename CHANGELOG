@@ -30,6 +30,7 @@ git-annex (6.20180808) UNRELEASED; urgency=medium
   * S3: Support buckets with versioning enabled. When a remote
     is configured with exporttree=yes versioning=yes, git-annex can
     download past versions of exported files from it.
+  * S3: Support AWS_SESSION_TOKEN.
   * git-annex.cabal: Fix build without assistant, and some other refinements.
     Thanks fftehnik.
 

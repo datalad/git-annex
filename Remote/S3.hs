@@ -55,6 +55,7 @@ import Utility.FileSystemEncoding
 import Annex.Content
 import Annex.Url (withUrlOptions)
 import Utility.Url (checkBoth, UrlOptions(..))
+import Utility.Env
 
 type BucketName = String
 type BucketObject = String
@@ -698,10 +699,12 @@ genericPublicUrl p baseurl = baseurl ++ p
 
 genCredentials :: CredPair -> IO AWS.Credentials
 genCredentials (keyid, secret) = AWS.Credentials
-	<$> pure (T.encodeUtf8 (T.pack keyid))
-	<*> pure (T.encodeUtf8 (T.pack secret))
+	<$> pure (tobs keyid)
+	<*> pure (tobs secret)
 	<*> newIORef []
-	<*> pure Nothing
+	<*> (fmap tobs <$> getEnv "AWS_SESSION_TOKEN")
+  where
+	tobs = T.encodeUtf8 . T.pack
 
 mkLocationConstraint :: AWS.Region -> S3.LocationConstraint
 mkLocationConstraint "US" = S3.locationUsClassic
