@@ -583,17 +583,15 @@ linkAnnex fromto key src (Just srcic) dest destmode =
 				then Database.Keys.addInodeCaches key [srcic, destic]
 				else Database.Keys.addInodeCaches key [srcic]
 			return LinkAnnexNoop
-		Nothing -> ifM (linkOrCopy key src dest destmode)
-			( do
+		Nothing -> linkOrCopy key src dest destmode >>= \case
+			Nothing -> failed
+			Just r -> do
 				case fromto of
 					From -> thawContent dest
-					To -> do
-						s <- liftIO $ getFileStatus dest
-						unless (linkCount s > 1) $
-							freezeContent dest
+					To -> case r of
+						Copied -> freezeContent dest
+						Linked -> noop
 				checksrcunchanged
-			, failed
-			)
   where
 	failed = do
 		Database.Keys.addInodeCaches key [srcic]

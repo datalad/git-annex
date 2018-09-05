@@ -29,6 +29,8 @@ secureErase file = maybe noop go =<< annexSecureEraseCommand <$> Annex.getGitCon
 		boolSystem "sh" [Param "-c", Param $ gencmd basecmd]
 	gencmd = massReplace [ ("%file", shellEscape file) ]
 
+data LinkedOrCopied = Linked | Copied
+
 {- Hard links or copies src to dest, which must not already exist.
  -
  - Only uses a hard link when annex.thin is enabled and when src is
@@ -42,13 +44,13 @@ secureErase file = maybe noop go =<< annexSecureEraseCommand <$> Annex.getGitCon
  - execute bit will be set. The mode is not fully copied over because
  - git doesn't support file modes beyond execute.
  -}
-linkOrCopy :: Key -> FilePath -> FilePath -> Maybe FileMode -> Annex Bool
+linkOrCopy :: Key -> FilePath -> FilePath -> Maybe FileMode -> Annex (Maybe LinkedOrCopied)
 linkOrCopy = linkOrCopy' (annexThin <$> Annex.getGitConfig)
 
-linkOrCopy' :: Annex Bool -> Key -> FilePath -> FilePath -> Maybe FileMode -> Annex Bool
+linkOrCopy' :: Annex Bool -> Key -> FilePath -> FilePath -> Maybe FileMode -> Annex (Maybe LinkedOrCopied)
 linkOrCopy' canhardlink key src dest destmode
 	| maybe False isExecutable destmode = copy =<< getstat
-	| otherwise = catchBoolIO $
+	| otherwise = catchDefaultIO Nothing $
 		ifM canhardlink
 			( hardlink
 			, copy =<< getstat
@@ -58,9 +60,12 @@ linkOrCopy' canhardlink key src dest destmode
 		s <- getstat
 		if linkCount s > 1
 			then copy s
-			else liftIO (createLink src dest >> preserveGitMode dest destmode >> return True)
+			else liftIO (createLink src dest >> preserveGitMode dest destmode >> return (Just Linked))
 				`catchIO` const (copy s)
-	copy = checkedCopyFile' key src dest destmode
+	copy s = ifM (checkedCopyFile' key src dest destmode s)
+		( return (Just Copied)
+		, return Nothing
+		)
 	getstat = liftIO $ getFileStatus src
 
 {- Checks disk space before copying. -}

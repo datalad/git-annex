@@ -32,10 +32,9 @@ populatePointerFile restage k obj f = go =<< liftIO (isPointerFile f)
 		destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus f
 		liftIO $ nukeFile f
 		(ic, populated) <- replaceFile f $ \tmp -> do
-			ok <- linkOrCopy k obj tmp destmode
-			if ok
-				then thawContent tmp
-				else liftIO $ writePointerFile tmp k destmode
+			ok <- linkOrCopy k obj tmp destmode >>= \case
+				Just _ -> thawContent tmp >> return True
+				Nothing -> liftIO (writePointerFile tmp k destmode) >> return False
 			ic <- withTSDelta (liftIO . genInodeCache tmp)
 			return (ic, ok)
 		maybe noop (restagePointerFile restage f) ic
