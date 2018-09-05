@@ -420,7 +420,7 @@ Executable git-annex
     Other-Modules:
       Remote.Helper.Http
 
-  if flag(Assistant)
+  if flag(Assistant) && ! os(solaris) && ! os(gnu)
     Build-Depends: mountpoints
     CPP-Options: -DWITH_ASSISTANT
     Other-Modules:
@@ -496,7 +496,6 @@ Executable git-annex
       Assistant.Types.UrlRenderer
       Assistant.Unused
       Assistant.Upgrade
-      Build.DesktopFile
       Command.Assistant
       Command.Watch
       Utility.Mounts
@@ -533,8 +532,6 @@ Executable git-annex
   if flag(Android)
     Build-Depends: data-endian
     CPP-Options: -D__ANDROID__ -DANDROID_SPLICES -D__NO_TH__
-    Other-Modules:
-      Utility.Android
   else
     Build-Depends: disk-free-space
 
@@ -687,6 +684,7 @@ Executable git-annex
     Backend.WORM
     Build.BundledPrograms
     Build.Configure
+    Build.DesktopFile
     Build.Mans
     Build.TestConfig
     Build.Version
@@ -1006,6 +1004,7 @@ Executable git-annex
     Upgrade.V4
     Upgrade.V5
     Utility.Aeson
+    Utility.Android
     Utility.Applicative
     Utility.AuthToken
     Utility.Base64

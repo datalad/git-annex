@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-09-05T15:23:49Z"
+ content="""
+Thanks for the patch, but while it is moving in a good direction,
+it gets some things wrong too. Problems I noticed:
+
+* It removes the "&& ! os(solaris) && ! os(gnu)" from the assistant flag
+  test, which are important to support building git-annex on hurd and
+  solaris.
+* Utility.Android is used inside *linux* builds to detect android at
+  runtime. So moving it under the flag(Android) test is wrong and will
+  break all linux builds AFAICS.
+* Build.DesktopFile is not linked into the assistant, like Build.Configure
+  it's only listed to get the source file into the cabal tarball. Best to
+  keep it with the other such files.
+
+I've applied the patch but reverted the above changes.
+"""]]
