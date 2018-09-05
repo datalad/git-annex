@@ -1,0 +1,9 @@
+Back to being only [crowdfunded](https://patreon.com/joeyh) now.
+
+Several little things today, including a git-annex.cabal patch from
+fftehnik that fixed building without the assistant, and supporting
+`AWS_SESSION_TOKEN`. The main work was on making `git annex drop --dead`
+prune obsolete per-remote metadata, and on fixing a bug in v6 mode that
+left git-annex object files writable.
+
+Today's work was sponsored by Paul Walmsley in honor of Mark Phillips.
