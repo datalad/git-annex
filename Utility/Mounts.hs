@@ -18,7 +18,8 @@ import Utility.Exception
 getMounts :: IO [Mntent] 
 #ifndef __ANDROID__
 getMounts = System.MountPoints.getMounts
-	-- That will crash when running on Android, so fall back to this.
+	-- That will crash when the linux build is running on Android,
+	-- so fall back to this.
 	`catchNonAsync` const System.MountPoints.getProcMounts
 #else
 getMounts = System.MountPoints.getProcMounts
