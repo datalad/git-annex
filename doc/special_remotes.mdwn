@@ -15,6 +15,7 @@ They cannot be used by other git commands though.
 * [[directory]]
 * [[gcrypt]] (encrypted git repositories!)
 * [[hook]]
+* [[rclone]]
 * [[rsync]]
 * [[S3]] (Amazon S3, and other compatible services)
 * [[tahoe]]
