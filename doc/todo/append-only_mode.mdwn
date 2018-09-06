@@ -45,3 +45,5 @@ Thanks! -- [[anarcat]]
 > git-annex-shell.
 > 
 > --[[Joey]]
+
+> Update: I didn't close this before, but it seems [[done]] --[[Joey]]
