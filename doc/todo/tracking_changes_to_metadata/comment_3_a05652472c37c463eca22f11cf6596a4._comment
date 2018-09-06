@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-09-06T17:17:38Z"
+ content="""
+While git-annex does now let annex.commitmessage be set to specify
+a commit message, it seems to me that you could include your reason for the
+metadata value as yet more metadata. Ie:
+
+	annex metadata -s 'NowPlaying-=machinename' -s 'message=This already exists on Artist - Album'
+
+And a metadata log display would then naturally include those messages next
+to the change they describe.
+"""]]
