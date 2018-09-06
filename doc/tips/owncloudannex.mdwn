@@ -26,3 +26,7 @@ Make the file executable, and link it into PATH
 
     USERNAME="login" PASSWORD="password" git annex initremote owncloud type=external externaltype=owncloud encryption=shared folder=gitannex url="https://host/remote.php/webdav/"
     git annex describe dropbox "the owncloud library"
+
+# Note
+
+This can also be accomplished through the [[special_remotes/webdav]] special remote as Owncloud and Nextcloud are basically webdav endpoints.
