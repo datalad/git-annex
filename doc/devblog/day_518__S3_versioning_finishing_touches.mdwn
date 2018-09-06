@@ -1,0 +1,39 @@
+Got git-annex downloading versioned files from S3, without needing S3
+credentials. This makes a S3 special remote be equally capable as a
+git-annex repository exported over http, other than of course not including
+the git objects.
+
+An example of this new feature:
+
+	AWS_SECRET_ACCESS_KEY=... AWS_ACCESS_KEY_ID=...
+	git annex initremote s3 type=S3 public=yes exporttree=yes versioning=yes
+	git annex export --tracking master --to s3
+	git tag 1.0
+	# modify some files here
+	git annex sync --content s3
+
+And then in a clone without the credentials:
+
+	git annex enableremote s3
+	git checkout 1.0
+	git annex get somefile
+
+This is nice; I only wish it were supported by other special remotes.
+It seems that any special remote could be made to support it, but ones not
+supporting some kind of versioning would need to store each file twice,
+and many would also need each file to be uploaded to them twice. But
+perhaps there are others that do have a form of versioning.
+WebDAV for one has a versioning extension in RFC 3253.
+
+Also did a final review of a patch Antoine Beaupré is working on to
+backport the recent git-annex security fixes to debian oldstable,
+git-annex 5.20141125. He described the backport [in his blog](https://anarc.at/blog/2018-08-31-report/):
+
+> This time again, Haskell was nice to work with: by changing type
+> configurations and APIs, the compiler makes sure that everything works out and
+> there are no inconsistencies. This logic is somewhat backwards to what we are
+> used to: normally, in security updates, we avoid breaking APIs at all costs.
+> But in Haskell, it's a fundamental way to make sure the system is still
+> coherent.
+
+Today's work was sponsored by Trenton Cronholm [on Patreon](https://patreon.com/joeyh).
