@@ -72,14 +72,14 @@ remote = RemoteType
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
 	cst <- remoteCost gc expensiveRemoteCost
-	info <- extractS3Info c
+	info <- extractS3Info c u
 	return $ new cst info
   where
 	new cst info = Just $ specialRemote c
 		(prepareS3Handle this $ store this info)
-		(prepareS3HandleMaybe this $ retrieve this info)
+		(prepareS3HandleMaybe this $ retrieve this c info)
 		(prepareS3Handle this $ remove info)
-		(prepareS3HandleMaybe this $ checkKey this info)
+		(prepareS3HandleMaybe this $ checkKey this c info)
 		this
 	  where
 		this = Remote
@@ -106,7 +106,7 @@ gen r u c gc = do
 					, removeExportDirectory = Nothing
 					, renameExport = renameExportS3 u info mh
 					}
-			, whereisKey = Just (getWebUrls info c)
+			, whereisKey = Just (getPublicWebUrls info c)
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
 			, config = c
@@ -173,7 +173,7 @@ s3Setup' ss u mcreds c gc
 			M.union c' $
 			-- special constraints on key names
 			M.insert "mungekeys" "ia" defaults
-		info <- extractS3Info archiveconfig
+		info <- extractS3Info archiveconfig u
 		withS3Handle archiveconfig gc u $
 			writeUUIDFile archiveconfig u info
 		use archiveconfig
@@ -257,16 +257,16 @@ storeHelper info h f object p = case partSize info of
 {- Implemented as a fileRetriever, that uses conduit to stream the chunks
  - out to the file. Would be better to implement a byteRetriever, but
  - that is difficult. -}
-retrieve :: Remote -> S3Info -> Maybe S3Handle -> Retriever
-retrieve r info (Just h) = fileRetriever $ \f k p -> do
+retrieve :: Remote -> RemoteConfig -> S3Info -> Maybe S3Handle -> Retriever
+retrieve r _ info (Just h) = fileRetriever $ \f k p -> do
 	loc <- eitherS3VersionID info (uuid r) k (T.pack $ bucketObject info k)
 	retrieveHelper info h loc f p
-retrieve r info Nothing = case getpublicurl info of
-	Nothing -> \_ _ _ -> do
-		needS3Creds (uuid r)
-		return False
-	Just geturl -> fileRetriever $ \f k p ->
-		unlessM (downloadUrl k p [geturl $ bucketObject info k] f) $
+retrieve r c info Nothing = fileRetriever $ \f k p ->
+	getPublicWebUrls info c k >>= \case
+		[] -> do
+			needS3Creds (uuid r)
+			giveup "No S3 credentials configured"
+		us -> unlessM (downloadUrl k p us f) $
 			giveup "failed to download content"
 
 retrieveHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> FilePath -> MeterUpdate -> Annex ()
@@ -290,19 +290,21 @@ remove info h k = do
 		S3.DeleteObject (T.pack $ bucketObject info k) (bucket info)
 	return $ either (const False) (const True) res
 
-checkKey :: Remote -> S3Info -> Maybe S3Handle -> CheckPresent
-checkKey r info Nothing k = case getpublicurl info of
-	Nothing -> do
-		needS3Creds (uuid r)
-		giveup "No S3 credentials configured"
-	Just geturl -> do
-		showChecking r
-		withUrlOptions $ liftIO . 
-			checkBoth (geturl $ bucketObject info k) (keySize k)
-checkKey r info (Just h) k = do
+checkKey :: Remote -> RemoteConfig -> S3Info -> Maybe S3Handle -> CheckPresent
+checkKey r _ info (Just h) k = do
 	showChecking r
 	loc <- eitherS3VersionID info (uuid r) k (T.pack $ bucketObject info k)
 	checkKeyHelper info h loc
+checkKey r c info Nothing k = 
+	getPublicWebUrls info c k >>= \case
+		[] -> do
+			needS3Creds (uuid r)
+			giveup "No S3 credentials configured"
+		us -> do
+			showChecking r
+			let check u = withUrlOptions $ 
+				liftIO . checkBoth u (keySize k)
+			anyM check us
 
 checkKeyHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> Annex Bool
 checkKeyHelper info h loc = do
@@ -413,7 +415,7 @@ renameExportS3 u _ Nothing _ _ _ = do
 genBucket :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex ()
 genBucket c gc u = do
 	showAction "checking bucket"
-	info <- extractS3Info c
+	info <- extractS3Info c u
 	withS3Handle c gc u $ \h ->
 		go info h =<< checkUUIDFile c u info h
   where
@@ -579,10 +581,11 @@ data S3Info = S3Info
 	, versioning :: Bool
 	, public :: Bool
 	, getpublicurl :: Maybe (BucketObject -> URLString)
+	, getpublicversionedurls :: Maybe (Key -> Annex [URLString])
 	}
 
-extractS3Info :: RemoteConfig -> Annex S3Info
-extractS3Info c = do
+extractS3Info :: RemoteConfig -> UUID -> Annex S3Info
+extractS3Info c u = do
 	b <- maybe
 		(giveup "S3 bucket not configured")
 		(return . T.pack)
@@ -597,21 +600,32 @@ extractS3Info c = do
 		, isIA = configIA c
 		, versioning = boolcfg "versioning"
 		, public = boolcfg "public"
-		, getpublicurl = case M.lookup "publicurl" c of
-			Just u -> Just $ \p -> genericPublicUrl p u
-			Nothing -> case M.lookup "host" c of
+		, getpublicurl = case publicurl of
+			Just url -> Just (genericPublicUrl url)
+			Nothing -> case host of
 				Just h
 					| h == AWS.s3DefaultHost ->
 						Just (awsPublicUrl info)
 					| isIAHost h ->
 						Just (iaPublicUrl info)
 				_ -> Nothing
+		, getpublicversionedurls = if versioning info
+			then case publicurl of
+				Just url -> Just $
+					getS3VersionIDPublicUrls (const $ genericPublicUrl url) info u
+				Nothing -> case host of
+					Just h | h == AWS.s3DefaultHost -> Just $
+						getS3VersionIDPublicUrls awsPublicUrl info u
+					_ -> Nothing
+			else Nothing
 		}
 	return info
   where
 	boolcfg k = case M.lookup k c of
 		Just "yes" -> True
 		_ -> False
+	publicurl = M.lookup "publicurl" c
+	host = M.lookup "host" c
 
 putObject :: S3Info -> T.Text -> RequestBody -> S3.PutObject
 putObject info file rbody = (S3.putObject (bucket info) file rbody)
@@ -687,15 +701,15 @@ iaItemUrl :: BucketName -> URLString
 iaItemUrl b = "http://archive.org/details/" ++ b
 
 iaPublicUrl :: S3Info -> BucketObject -> URLString
-iaPublicUrl info p = genericPublicUrl p $
+iaPublicUrl info = genericPublicUrl $
 	"http://archive.org/download/" ++ T.unpack (bucket info) ++ "/" 
 
 awsPublicUrl :: S3Info -> BucketObject -> URLString
-awsPublicUrl info p = genericPublicUrl p $ 
+awsPublicUrl info = genericPublicUrl $ 
 	"https://" ++ T.unpack (bucket info) ++ ".s3.amazonaws.com/" 
 
-genericPublicUrl :: BucketObject -> URLString -> URLString
-genericPublicUrl p baseurl = baseurl ++ p
+genericPublicUrl :: URLString -> BucketObject -> URLString
+genericPublicUrl baseurl p = baseurl ++ p
 
 genCredentials :: CredPair -> IO AWS.Credentials
 genCredentials (keyid, secret) = AWS.Credentials
@@ -730,6 +744,7 @@ s3Info c info = catMaybes
 		else Nothing
 	, Just ("partsize", maybe "unlimited" (roughSize storageUnits False) (getPartSize c))
 	, Just ("public", if public info then "yes" else "no")
+	, Just ("versioning", if versioning info then "yes" else "no")
 	]
   where
 	s3c = s3Configuration c
@@ -738,12 +753,13 @@ s3Info c info = catMaybes
 #endif
 	showstorageclass sc = show sc
 
-getWebUrls :: S3Info -> RemoteConfig -> Key -> Annex [URLString]
-getWebUrls info c k
-	| exportTree c = return []
-	| otherwise = case (public info, getpublicurl info) of
-		(True, Just geturl) -> return [geturl $ bucketObject info k]
-		_ -> return []
+getPublicWebUrls :: S3Info -> RemoteConfig -> Key -> Annex [URLString]
+getPublicWebUrls info c k
+	| not (public info) = return []
+	| exportTree c = maybe (return []) (\a -> a k) (getpublicversionedurls info)
+	| otherwise = case getpublicurl info of
+		Just geturl -> return [geturl $ bucketObject info k]
+		Nothing -> return []
 
 data S3VersionID = S3VersionID S3.Object String
 	deriving (Show)
@@ -762,12 +778,15 @@ mkS3VersionID' o (Just s)
 	| otherwise = Nothing
 mkS3VersionID' _ Nothing = Nothing
 
+-- Format for storage in per-remote metadata.
+--
 -- A S3 version ID is "url ready" so does not contain '#' and so we'll use
 -- that to separate it from the object id. (Could use a space, but spaces
 -- in metadata values lead to an inefficient encoding.)
 formatS3VersionID :: S3VersionID -> String
 formatS3VersionID (S3VersionID o v) = v ++ '#' : T.unpack o
 
+-- Parse from value stored in per-remote metadata.
 parseS3VersionID :: String -> Maybe S3VersionID
 parseS3VersionID s = 
 	let (v, o) = separate (== '#') s
@@ -803,3 +822,14 @@ eitherS3VersionID info u k fallback
 		-- a bucket with different version IDs; only use one of them.
 		(v:_) -> Right v
 	| otherwise = return (Left fallback)
+
+s3VersionIDPublicUrl :: (S3Info -> BucketObject -> URLString) -> S3Info -> S3VersionID -> URLString
+s3VersionIDPublicUrl mk info (S3VersionID obj vid) = mk info $ concat
+	[ T.unpack obj
+	, "?versionId="
+	, vid -- version ID is "url ready" so no escaping needed
+	]
+
+getS3VersionIDPublicUrls :: (S3Info -> BucketObject -> URLString) -> S3Info -> UUID -> Key -> Annex [URLString]
+getS3VersionIDPublicUrls mk info u k =
+	map (s3VersionIDPublicUrl mk info) <$> getS3VersionID u k

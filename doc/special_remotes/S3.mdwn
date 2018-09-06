@@ -77,8 +77,8 @@ the S3 remote.
 
 * `versioning` - Setting this to "yes" along with "exporttree=yes",
   and [manually enabling versioning for the S3 bucket in the AWS console](https://docs.aws.amazon.com/AmazonS3/latest/user-guide/enable-versioning.html)
-  allows git-annex to access old versions of files exported to the
-  special remote with [[git-annex export|git-annex-export]].
+  allows git-annex to access old versions of files that were 
+  exported to the special remote by [[git-annex export|git-annex-export]].
 
   Note that git-annex needs to remember S3 version IDs for files
   sent to a remote configured this way, which will make the git-annex
