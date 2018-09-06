@@ -72,7 +72,7 @@ remote = RemoteType
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
 	cst <- remoteCost gc expensiveRemoteCost
-	info <- extractS3Info c u
+	info <- extractS3Info c
 	return $ new cst info
   where
 	new cst info = Just $ specialRemote c
@@ -106,7 +106,7 @@ gen r u c gc = do
 					, removeExportDirectory = Nothing
 					, renameExport = renameExportS3 u info mh
 					}
-			, whereisKey = Just (getPublicWebUrls info c)
+			, whereisKey = Just (getPublicWebUrls u info c)
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
 			, config = c
@@ -173,7 +173,7 @@ s3Setup' ss u mcreds c gc
 			M.union c' $
 			-- special constraints on key names
 			M.insert "mungekeys" "ia" defaults
-		info <- extractS3Info archiveconfig u
+		info <- extractS3Info archiveconfig
 		withS3Handle archiveconfig gc u $
 			writeUUIDFile archiveconfig u info
 		use archiveconfig
@@ -262,7 +262,7 @@ retrieve r _ info (Just h) = fileRetriever $ \f k p -> do
 	loc <- eitherS3VersionID info (uuid r) k (T.pack $ bucketObject info k)
 	retrieveHelper info h loc f p
 retrieve r c info Nothing = fileRetriever $ \f k p ->
-	getPublicWebUrls info c k >>= \case
+	getPublicWebUrls (uuid r) info c k >>= \case
 		[] -> do
 			needS3Creds (uuid r)
 			giveup "No S3 credentials configured"
@@ -296,7 +296,7 @@ checkKey r _ info (Just h) k = do
 	loc <- eitherS3VersionID info (uuid r) k (T.pack $ bucketObject info k)
 	checkKeyHelper info h loc
 checkKey r c info Nothing k = 
-	getPublicWebUrls info c k >>= \case
+	getPublicWebUrls (uuid r) info c k >>= \case
 		[] -> do
 			needS3Creds (uuid r)
 			giveup "No S3 credentials configured"
@@ -357,7 +357,7 @@ retrieveExportS3 u info mh _k loc f p =
 		Just h -> do
 			retrieveHelper info h (Left (T.pack exporturl)) f p
 			return True
-		Nothing -> case getpublicurl info of
+		Nothing -> case getPublicUrlMaker info of
 			Nothing -> do
 				needS3Creds u
 				return False
@@ -380,7 +380,7 @@ removeExportS3 u _ Nothing _ _ = do
 checkPresentExportS3 :: UUID -> S3Info -> Maybe S3Handle -> Key -> ExportLocation -> Annex Bool
 checkPresentExportS3 _u info (Just h) _k loc =
 	checkKeyHelper info h (Left (T.pack $ bucketExportLocation info loc))
-checkPresentExportS3 u info Nothing k loc = case getpublicurl info of
+checkPresentExportS3 u info Nothing k loc = case getPublicUrlMaker info of
 	Nothing -> do
 		needS3Creds u
 		giveup "No S3 credentials configured"
@@ -415,7 +415,7 @@ renameExportS3 u _ Nothing _ _ _ = do
 genBucket :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex ()
 genBucket c gc u = do
 	showAction "checking bucket"
-	info <- extractS3Info c u
+	info <- extractS3Info c
 	withS3Handle c gc u $ \h ->
 		go info h =<< checkUUIDFile c u info h
   where
@@ -556,14 +556,14 @@ s3Configuration c = cfg
 	proto
 		| port == 443 = AWS.HTTPS
 		| otherwise = AWS.HTTP
-	host = fromJust $ M.lookup "host" c
+	h = fromJust $ M.lookup "host" c
 	datacenter = fromJust $ M.lookup "datacenter" c
 	-- When the default S3 host is configured, connect directly to
 	-- the S3 endpoint for the configured datacenter.
 	-- When another host is configured, it's used as-is.
 	endpoint
-		| host == AWS.s3DefaultHost = AWS.s3HostName $ T.pack datacenter
-		| otherwise = T.encodeUtf8 $ T.pack host
+		| h == AWS.s3DefaultHost = AWS.s3HostName $ T.pack datacenter
+		| otherwise = T.encodeUtf8 $ T.pack h
 	port = let s = fromJust $ M.lookup "port" c in
 		case reads s of
 		[(p, _)] -> p
@@ -580,17 +580,17 @@ data S3Info = S3Info
 	, isIA :: Bool
 	, versioning :: Bool
 	, public :: Bool
-	, getpublicurl :: Maybe (BucketObject -> URLString)
-	, getpublicversionedurls :: Maybe (Key -> Annex [URLString])
+	, publicurl :: Maybe URLString
+	, host :: Maybe String
 	}
 
-extractS3Info :: RemoteConfig -> UUID -> Annex S3Info
-extractS3Info c u = do
+extractS3Info :: RemoteConfig -> Annex S3Info
+extractS3Info c = do
 	b <- maybe
 		(giveup "S3 bucket not configured")
 		(return . T.pack)
 		(getBucketName c)
-	let info = S3Info
+	return $ S3Info
 		{ bucket = b
 		, storageClass = getStorageClass c
 		, bucketObject = getBucketObject c
@@ -600,32 +600,13 @@ extractS3Info c u = do
 		, isIA = configIA c
 		, versioning = boolcfg "versioning"
 		, public = boolcfg "public"
-		, getpublicurl = case publicurl of
-			Just url -> Just (genericPublicUrl url)
-			Nothing -> case host of
-				Just h
-					| h == AWS.s3DefaultHost ->
-						Just (awsPublicUrl info)
-					| isIAHost h ->
-						Just (iaPublicUrl info)
-				_ -> Nothing
-		, getpublicversionedurls = if versioning info
-			then case publicurl of
-				Just url -> Just $
-					getS3VersionIDPublicUrls (const $ genericPublicUrl url) info u
-				Nothing -> case host of
-					Just h | h == AWS.s3DefaultHost -> Just $
-						getS3VersionIDPublicUrls awsPublicUrl info u
-					_ -> Nothing
-			else Nothing
+		, publicurl = M.lookup "publicurl" c
+		, host = M.lookup "host" c
 		}
-	return info
   where
 	boolcfg k = case M.lookup k c of
 		Just "yes" -> True
 		_ -> False
-	publicurl = M.lookup "publicurl" c
-	host = M.lookup "host" c
 
 putObject :: S3Info -> T.Text -> RequestBody -> S3.PutObject
 putObject info file rbody = (S3.putObject (bucket info) file rbody)
@@ -753,13 +734,32 @@ s3Info c info = catMaybes
 #endif
 	showstorageclass sc = show sc
 
-getPublicWebUrls :: S3Info -> RemoteConfig -> Key -> Annex [URLString]
-getPublicWebUrls info c k
+getPublicWebUrls :: UUID -> S3Info -> RemoteConfig -> Key -> Annex [URLString]
+getPublicWebUrls u info c k
 	| not (public info) = return []
-	| exportTree c = maybe (return []) (\a -> a k) (getpublicversionedurls info)
-	| otherwise = case getpublicurl info of
+	| exportTree c = if versioning info
+		then case publicurl info of
+			Just url -> getS3VersionIDPublicUrls (const $ genericPublicUrl url) info u k
+			Nothing -> case host info of
+				Just h | h == AWS.s3DefaultHost ->
+					getS3VersionIDPublicUrls awsPublicUrl info u k
+				_ -> return []
+		else return []
+	| otherwise = case getPublicUrlMaker info of
 		Just geturl -> return [geturl $ bucketObject info k]
 		Nothing -> return []
+
+getPublicUrlMaker :: S3Info -> Maybe (BucketObject -> URLString)
+getPublicUrlMaker info = case publicurl info of
+	Just url -> Just (genericPublicUrl url)
+	Nothing -> case host info of
+		Just h
+			| h == AWS.s3DefaultHost ->
+				Just (awsPublicUrl info)
+			| isIAHost h ->
+				Just (iaPublicUrl info)
+		_ -> Nothing
+
 
 data S3VersionID = S3VersionID S3.Object String
 	deriving (Show)
