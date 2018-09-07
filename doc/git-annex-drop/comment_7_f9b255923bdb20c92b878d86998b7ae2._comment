@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="re: drop everything but subdirectory"
+ date="2018-09-07T20:13:03Z"
+ content="""
+> Is there a way to drop everything except files under a given path in the repository?
+
+You can use something like `git annex drop --exclude='subdir/*'`.  See `man git-annex-matching-options`.
+
+"""]]
