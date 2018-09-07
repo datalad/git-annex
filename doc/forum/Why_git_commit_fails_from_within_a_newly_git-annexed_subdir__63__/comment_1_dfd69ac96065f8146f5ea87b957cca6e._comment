@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="inecas@fe552cc962c331a5cb1499e80bd5b2aa0808d987"
+ nickname="inecas"
+ avatar="http://cdn.libravatar.org/avatar/08cb45efffe7995a6bcbb904e9066f79"
+ subject="comment 1"
+ date="2018-09-07T07:25:53Z"
+ content="""
+I see this issue as well, it started appearing after updating git-annex-6.20180626-1 to git-annex-6.20180807-1 (Fedora distribution).
+Downgrading helped resolving this issue for me for now.
+"""]]
