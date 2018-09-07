@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/iOGTltEpmOTQ.xZ99NFP5c7Zdcc-#6a7ba"
+ nickname="Ilya S"
+ avatar="http://cdn.libravatar.org/avatar/8a133555cc739a35b83b07d5724d28d9e2f7852c224e949eec6fd4fb7693331e"
+ subject="comment 1"
+ date="2018-09-07T18:04:51Z"
+ content="""
+Also relative symlinks can point to other subdirs in the repository, in addition to pointing to files.  Basically, it would be good to add a command-line flag so that when git-annex-get or other command operates on a path in the repository, it would also operate on paths pointed to by relative symlinks under the given path.
+"""]]
