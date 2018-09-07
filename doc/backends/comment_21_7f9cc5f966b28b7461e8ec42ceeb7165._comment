@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/iOGTltEpmOTQ.xZ99NFP5c7Zdcc-#6a7ba"
+ nickname="Ilya S"
+ avatar="http://cdn.libravatar.org/avatar/8a133555cc739a35b83b07d5724d28d9e2f7852c224e949eec6fd4fb7693331e"
+ subject="keys from metadata"
+ date="2018-09-07T15:57:37Z"
+ content="""
+\"When a file is annexed, a key is generated from its content and/or metadata\" -- the 'metadata' here just refers to the file name/size/mtime, not to https://git-annex.branchable.com/git-annex-metadata/ , correct?
+"""]]
