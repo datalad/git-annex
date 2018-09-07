@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/iOGTltEpmOTQ.xZ99NFP5c7Zdcc-#6a7ba"
+ nickname="Ilya S"
+ avatar="http://cdn.libravatar.org/avatar/8a133555cc739a35b83b07d5724d28d9e2f7852c224e949eec6fd4fb7693331e"
+ subject="comment 6"
+ date="2018-09-07T18:10:05Z"
+ content="""
+Is there a way to drop everything _except_ files under a given path in the repository?   If not, it would be good to add this option.
+It should also not drop a file if it is outside the path but is pointed to by a relative symlink under the path.
+"""]]
