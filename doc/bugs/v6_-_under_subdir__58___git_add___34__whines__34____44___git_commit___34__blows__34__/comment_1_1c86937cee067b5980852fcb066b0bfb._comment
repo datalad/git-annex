@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="the reason is system wide git version!"
+ date="2018-09-07T00:13:33Z"
+ content="""
+HA -- it is compatibility issue with git somewhere.  
+I had system wide 1:2.13.0~rc1+next.20170430-1~nd90+1  installation of git, and that was the reason.  Similar blows with 1:2.11.0-3+nd1~nd90+1, but works fine with 1:2.19.0~rc2-1 .
+At least that explains how we did not run into it while testing in DataLad:
+
+1. we use git bundled with git-annex when git annex standalone is installed
+2. We use \"git annex add\" and not \"git add\" directly even in v6 mode repos
+
+But it brings the point of possibly needing to test with a regular debian build of git annex more  which would use system-wide git. Also that may be git annex should test git version used and blow with informative message whenever git is too old?
+"""]]
