@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/iOGTltEpmOTQ.xZ99NFP5c7Zdcc-#6a7ba"
+ nickname="Ilya S"
+ avatar="http://cdn.libravatar.org/avatar/8a133555cc739a35b83b07d5724d28d9e2f7852c224e949eec6fd4fb7693331e"
+ subject="adding metadata to keys that don't point to any contents is ok, correct?"
+ date="2018-09-08T22:36:06Z"
+ content="""
+I want to store a simple mapping in git-annex on the git-annex branch, from string keys to values.  I figured I can just do
+ git annex metadata --key=WORM-s0-m0--mykey -s myfield+=myvalue
+and after git annex sync these mappings will propagate to copies of the repo.  But the keys won't point to any file in any remote.
+Will that break anything in git-annex?  Will they get garbage-collected automatically in some circumstances?
+"""]]
