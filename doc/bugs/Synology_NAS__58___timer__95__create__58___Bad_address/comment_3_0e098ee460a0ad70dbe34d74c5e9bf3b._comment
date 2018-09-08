@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="ewen"
+ avatar="http://cdn.libravatar.org/avatar/605b2981cb52b4af268455dee7a4f64e"
+ subject="x86-64 build working on Synology NAS (with work around)"
+ date="2018-09-08T02:03:21Z"
+ content="""
+The Synology reply was \"our developers suspected that this is related to some library linking problem in the kernel\", and they asked for remote access to my device -- which I wasn't very keen on so I did some experimentation of my own.
+
+With the latest standalone `x86-64` build, I do *not* get the `timer_create` error.  So it does seem like there's a linking issue around accessing `timer_create` from the \"ancient\" builds on the current Synology DS216+ kernel/libc.
+
+However, the standalone `x86-64` builds *do* fail with `LC_TIME` issues by default:
+
+    ewen@nas01:/volume1/thirdparty$ git-annex help
+    warning: /bin/sh: setlocale: LC_ALL: cannot change locale (en_US.utf8)
+    sh: loadlocale.c:129: _nl_intern_locale_data: Assertion `cnt < (sizeof (_nl_value_type_LC_TIME) / sizeof (_nl_value_type_LC_TIME[0]))' failed.
+    Aborted
+    ewen@nas01:/volume1/thirdparty$ 
+
+(and have for a while; it was why I switched to trying the Ancient 32-bit build earlier this year).  It appears at some point the `LC_TIME` structure changed in size, which means that mixing statically linked binaries with `locale` information that is older/newer causes problems.
+
+Fortunately that problem is now [common](https://unix.stackexchange.com/questions/444102/loadlocale-c-nl-intern-locale-data-assertion-error) [enough](https://github.com/hadolint/hadolint/issues/173) ([etc](https://github.com/ProteoWizard/pwiz/issues/29)), due to people encountering it with, eg Ubuntu 18.04 LTS, that it's widely known, and there's a [pretty easy work around](https://stackoverflow.com/questions/49301627/android-7-1-2-armv7):
+
+    export LC_ALL=C
+
+(which overrides the Synology shell default of `LC_ALL=en_US.utf8`).  Just setting `LC_TIME` does not seem to be sufficient if either `LC_ALL` or `LANG` are set to other values (with the Synology shell does by default).
+
+That `LC_ALL=C` override works for me, so I've tweaked my `git-annex-shell`, `git-annex-wrapper`, and `git-annex` shell scripts to do that before carrying on to call the rest of the `git-annex` tools, and everything seems to work again.  Possibly the `standalone` builds should do that automatically?
+
+    ewen@nas01:~$ set | egrep 'LANG|LC_'
+    LANG=en_US.utf8
+    LC_ALL=en_US.utf8
+    ewen@nas01:~$ LC_ALL=C git-annex version
+    git-annex version: 6.20180807-g48d11a5df
+    build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify ConcurrentOutput TorrentParser MagicMime Feeds Testsuite
+    dependency versions: aws-0.19 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.2 feed-1.0.0.0 ghc-8.2.2 http-client-0.5.13 persistent-sqlite-2.8.1.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+    operating system: linux x86_64
+    supported repository versions: 3 5 6
+    upgrade supported from repository versions: 0 1 2 3 4 5
+    ewen@nas01:~$
+
+Ewen
+"""]]
