@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="fixed"
+ date="2018-09-10T18:27:49Z"
+ content="""
+As far as I can tell, this was fixed by 10138056d (v6: avoid accidental conversion when annex.largefiles is not configured, 2018-08-27).
+
+"""]]
