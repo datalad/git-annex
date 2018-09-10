@@ -1,0 +1,121 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="what to be done for previously exported instances?"
+ date="2018-09-10T17:03:16Z"
+ content="""
+OpenNeuro folks have been exporting their datasets for a while by now using older git-annex, which didn't have all the recent \"public S3\" support implemented.  What changes should be done on their end so git-annex could get those files (ATM --debug output and error message give no information on why access is failing)?  Here is an example repository/dataset:
+[[!format sh \"\"\"
+$> git clone https://github.com/OpenNeuroDatasets/ds001506 ; cd ds001506; 
+Cloning into 'ds001506'...                                                
+remote: Counting objects: 10911, done.
+remote: Compressing objects: 100% (6624/6624), done.
+remote: Total 10911 (delta 1820), reused 10911 (delta 1820), pack-reused 0
+Receiving objects: 100% (10911/10911), 1.16 MiB | 0 bytes/s, done.
+Resolving deltas: 100% (1820/1820), done.
+
+$> git annex info s3-PUBLIC                                              
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+download failed: Not Found
+
+  Remote origin not usable by git-annex; setting annex-ignore
+uuid: ca9b233b-7567-48b3-89c7-efe7f6a97d4a
+description: s3-PUBLIC
+remote annex keys: 1288
+remote annex size: 103.29 gigabytes (+ 632 unknown size)
+
+$> git annex info          
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 6
+	00000000-0000-0000-0000-000000000001 -- web
+ 	00000000-0000-0000-0000-000000000002 -- bittorrent
+ 	810b2f6b-fb98-4401-9130-6c84dd7ddc50 -- root@b3ba225d5547:/datalad/ds001506
+ 	8fdca7f0-84c3-4b1b-af9a-453effd5380c -- s3-PRIVATE
+ 	b2a25c10-6db6-4e7c-8490-b16837fff749 -- yoh@hopa:/tmp/ds001506 [here]
+ 	ca9b233b-7567-48b3-89c7-efe7f6a97d4a -- s3-PUBLIC
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 21.98 gigabytes (+1 megabyte reserved)
+local annex keys: 0
+local annex size: 0 bytes
+annexed files in working tree: 665
+size of annexed files in working tree: 104.83 gigabytes
+bloom filter size: 32 mebibytes (0% full)
+backend usage: 
+	MD5E: 665
+
+$> git annex enableremote s3-PUBLIC                                          
+
+enableremote s3-PUBLIC ok          
+(recording state in git...)
+
+$> git annex get --from s3-PUBLIC sub-01/ses-anatomy/anat/sub-01_ses-anatomy_T1w.nii.gz
+get sub-01/ses-anatomy/anat/sub-01_ses-anatomy_T1w.nii.gz (from s3-PUBLIC...) failed
+git-annex: get: 1 failed
+
+$> git annex get --debug --from s3-PUBLIC sub-01/ses-anatomy/anat/sub-01_ses-anatomy_T1w.nii.gz 
+[2018-09-10 12:53:35.937741872] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2018-09-10 12:53:35.946999706] process done ExitSuccess
+[2018-09-10 12:53:35.947122637] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2018-09-10 12:53:35.951493681] process done ExitSuccess
+[2018-09-10 12:53:35.951694627] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..566bcf31d8d24f0e03df73d7c2196092e6fce39e\",\"--pretty=%H\",\"-n1\"]
+[2018-09-10 12:53:35.955844481] process done ExitSuccess
+[2018-09-10 12:53:35.956107478] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-09-10 12:53:35.956674577] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2018-09-10 12:53:35.963580866] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"sub-01/ses-anatomy/anat/sub-01_ses-anatomy_T1w.nii.gz\"]
+get sub-01/ses-anatomy/anat/sub-01_ses-anatomy_T1w.nii.gz (from s3-PUBLIC...) failed
+[2018-09-10 12:53:35.991800587] process done ExitSuccess
+[2018-09-10 12:53:35.992039867] process done ExitSuccess
+git-annex: get: 1 failed
+
+$> git annex version
+git-annex version: 6.20180807+git230-gaa291acfe-1~ndall+1
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify ConcurrentOutput TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.19 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.2 feed-1.0.0.0 ghc-8.2.2 http-client-0.5.12 persistent-sqlite-2.8.1.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: linux x86_64
+supported repository versions: 3 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+local repository version: 5
+
+$> git annex whereis sub-01/ses-anatomy/anat/sub-01_ses-anatomy_T1w.nii.gz
+whereis sub-01/ses-anatomy/anat/sub-01_ses-anatomy_T1w.nii.gz (2 copies) 
+  	810b2f6b-fb98-4401-9130-6c84dd7ddc50 -- root@b3ba225d5547:/datalad/ds001506
+   	8fdca7f0-84c3-4b1b-af9a-453effd5380c -- s3-PRIVATE
+
+  The following untrusted locations may also have copies:
+  	ca9b233b-7567-48b3-89c7-efe7f6a97d4a -- [s3-PUBLIC]
+ok
+
+$> datalad ls s3://openneuro.org/ds001506/sub-01/ses-anatomy/anat/sub-01_ses-anatomy_T1w.nii.gz
+Connecting to bucket: openneuro.org                                                            
+[INFO   ] S3 session: Connecting to the bucket openneuro.org anonymously 
+Bucket info:
+  Versioning: S3ResponseError: 403 Forbidden
+     Website: S3ResponseError: 403 Forbidden
+         ACL: <Policy: openneurocommon (owner) = FULL_CONTROL, http://acs.amazonaws.com/groups/global/AllUsers = READ, rblair2 = FULL_CONTROL, http://acs.amazonaws.com/groups/global/AllUsers = READ_ACP>
+ds001506/sub-01/ses-anatomy/anat/sub-01_ses-anatomy_T1w.nii.gz 2018-09-10T14:20:22.000Z 11697980 
+
+$> datalad ls --list-content md5 -L s3://openneuro.org/ds001506/sub-01/ses-anatomy/anat/sub-01_ses-anatomy_T1w.nii.gz 
+Connecting to bucket: openneuro.org
+[INFO   ] S3 session: Connecting to the bucket openneuro.org anonymously 
+Bucket info:
+  Versioning: S3ResponseError: 403 Forbidden
+     Website: S3ResponseError: 403 Forbidden
+         ACL: <Policy: openneurocommon (owner) = FULL_CONTROL, http://acs.amazonaws.com/groups/global/AllUsers = READ, rblair2 = FULL_CONTROL, http://acs.amazonaws.com/groups/global/AllUsers = READ_ACP>
+ds001506/sub-01/ses-anatomy/anat/sub-01_ses-anatomy_T1w.nii.gz 2018-09-10T14:20:22.000Z 11697980 ver:snn1VMlJ8hgxd42_Dy1dXuiyBCwd00eZ  acl:AccessDenied  http://openneuro.org.s3.amazonaws.com/ds001506/sub-01/ses-anatomy/anat/sub-01_ses-anatomy_T1w.nii.gz?versionId=snn1VMlJ8hgxd42_Dy1dXuiyBCwd00eZ [OK] f8e1e6ec4efe752b86a7e5885d64e131
+
+$> ls -ld sub-01/ses-anatomy/anat/sub-01_ses-anatomy_T1w.nii.gz                            
+lrwxrwxrwx 1 yoh yoh 145 Sep 10 12:53 sub-01/ses-anatomy/anat/sub-01_ses-anatomy_T1w.nii.gz -> ../../../.git/annex/objects/fq/V7/MD5E-s11697980--f8e1e6ec4efe752b86a7e5885d64e131.nii.gz/MD5E-s11697980--f8e1e6ec4efe752b86a7e5885d64e131.nii.gz
+
+\"\"\"]]
+
+so file is available from S3, matches the checksum, but `git annex get` just fails to get it without giving any clarification on why.
+If I add `versioning=yes` to enableremote then it starts asking for the AWS credentials.
+
+Thank you in advance for looking into it.
+
+"""]]
