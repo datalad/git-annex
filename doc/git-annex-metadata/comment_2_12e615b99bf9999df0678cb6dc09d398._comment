@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-09-11T16:33:15Z"
+ content="""
+The only risk in doing this is that if you somehow later add a file that
+actually uses that key it will have this metadata.
+
+There's no garbage collection of metadata except for keys that have been
+marked as dead with `git annex dead`.
+"""]]
