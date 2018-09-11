@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-09-11T16:56:14Z"
+ content="""
+What you're looking for is the [[design/external_special_remote_protocol]].
+When you build your own special remote using that protocol,
+it can use SETSTATE and GETSTATE to store and retrieve
+the immutable IDs.
+
+It should not be hard to write your own special remote. See
+[[this page|special_remotes/external]].
+
+The Datalad project has a bunch of special remotes doing things like this
+BTW.
+"""]]
