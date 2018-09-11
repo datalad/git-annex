@@ -1,0 +1,77 @@
+### Please describe the problem.
+
+As originally reported in the [comments](http://git-annex.branchable.com/devblog/day_518__S3_versioning_finishing_touches/?updated#comment-ecfa9f9e6075bf524a88f404bb19e086) and now wondering if it has to do with the awkwardness of that bucket -- its name has a period in its name, so https validation fails and we had to [workaround for that in datalad](https://github.com/datalad/datalad/commit/ea8977fddbd05faa3f299562b70d4a491a774cea) as well.  In either case - having at least some debug log message about the problem would be handy
+
+[[!format sh """
+test@hopa:/tmp$ mkdir testuser
+test@hopa:/tmp$ cd testuser
+test@hopa:/tmp/testuser$ git clone https://github.com/OpenNeuroDatasets/ds001506 ; cd ds001506; 
+Cloning into 'ds001506'...
+remote: Counting objects: 11017, done.
+remote: Compressing objects: 100% (6694/6694), done.
+remote: Total 11017 (delta 1856), reused 11007 (delta 1846), pack-reused 0
+Receiving objects: 100% (11017/11017), 1.17 MiB | 1.31 MiB/s, done.
+Resolving deltas: 100% (1856/1856), done.
+test@hopa:/tmp/testuser/ds001506$ git annex enableremote s3-PUBLIC public=yes
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+download failed: ConnectionFailure Network.Socket.connect: <socket: 11>: timeout (Connection timed out)
+
+  Remote origin not usable by git-annex; setting annex-ignore
+enableremote s3-PUBLIC ok
+(recording state in git...)
+test@hopa:/tmp/testuser/ds001506$ git annex get --debug sub-01/ses-anatomy/anat
+[2018-09-11 13:00:24.89648131] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--cached","-z","--","sub-01/ses-anatomy/anat"]
+get sub-01/ses-anatomy/anat/sub-01_ses-anatomy_T1w.nii.gz [2018-09-11 13:00:24.900815381] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2018-09-11 13:00:24.90536002] process done ExitSuccess
+[2018-09-11 13:00:24.905485937] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2018-09-11 13:00:24.909586624] process done ExitSuccess
+[2018-09-11 13:00:24.909805571] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..a152bc6cd4a6b1f06115d683e6a296374219e9f7","--pretty=%H","-n1"]
+[2018-09-11 13:00:24.914170223] process done ExitSuccess
+[2018-09-11 13:00:24.914585144] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2018-09-11 13:00:24.91587481] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+(from s3-PUBLIC...) [2018-09-11 13:00:24.982444067] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff-tree","-z","--raw","--no-renames","-l0","-r","4b825dc642cb6eb9a060e54bf8d69288fbee4904","18df0d827a901db0a989999f765f2816b769bf49","--"]
+[2018-09-11 13:00:24.994539395] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2018-09-11 13:00:24.995000749] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2018-09-11 13:00:25.433359795] process done ExitSuccess
+
+  Unable to access these remotes: s3-PUBLIC
+
+  Try making some of these repositories available:
+  	810b2f6b-fb98-4401-9130-6c84dd7ddc50 -- root@b3ba225d5547:/datalad/ds001506
+   	ca9b233b-7567-48b3-89c7-efe7f6a97d4a -- [s3-PUBLIC]
+
+  (Note that these git remotes have annex-ignore set: origin)
+failed
+[2018-09-11 13:00:25.657658586] process done ExitSuccess
+[2018-09-11 13:00:25.658108866] process done ExitSuccess
+[2018-09-11 13:00:25.658390098] process done ExitSuccess
+[2018-09-11 13:00:25.658635699] process done ExitSuccess
+git-annex: get: 1 failed
+test@hopa:/tmp/testuser/ds001506$ git annex version | head -n 1
+git-annex version: 6.20180807+git230-gaa291acfe-1~ndall+1
+test@hopa:/tmp/testuser/ds001506$ git annex info s3-PUBLIC
+uuid: ca9b233b-7567-48b3-89c7-efe7f6a97d4a
+description: [s3-PUBLIC]
+remote: s3-PUBLIC
+trust: untrusted
+cost: 200.0
+type: S3
+creds: not available
+bucket: openneuro.org
+endpoint: s3.amazonaws.com
+port: 80
+storage class: STANDARD
+partsize: 1.07 gigabytes
+public: yes
+versioning: no
+encryption: none
+chunking: none
+export: yes
+remote annex keys: 1287
+remote annex size: 103.28 gigabytes (+ 632 unknown size)
+
+"""]]
+
+
+[[!meta author=yoh]]
