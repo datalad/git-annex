@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2018-09-11T17:20:18Z"
+ content="""
+IIRC the haskell runtime stopped using `timer_create` after ghc 7 or
+something like that. These days it uses poll.
+
+That said, `timer_create` is part of POSIX and part of the linux API
+and that is unlikely to change. There might be something in the libc/kernel
+interface that has changed in newer kernels, if so it may be that the
+i386ancient build is not going to work with new kernels.. But it's there to
+support old kernels anyway.
+
+As for the setlocale failure, while LC_ALL=C avoids it, that's not
+something I want to set by default, because people do use git-annex with
+unicode filenames and that can impact that, as well as of course preventing
+display of any translated messages by anything git-annex runs (though
+git-annex itself is not translated). It would be good to get to the bottom
+of the setlocale failure.
+"""]]
