@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-09-11T16:39:14Z"
+ content="""
+@Ilya, it seems to me you could just configure your localhost webserver to
+listen on one of the other localnet addresses (eg 127.0.0.2), and 
+only serve up the "safe" files on that address.
+Then whitelist that address in git-annex.
+
+That seems better than adding user-configured regexps to a security path.
+(Worth noting that the example regexp you gave also matches port 808, probably
+by accident! Regexps and security are often not the best combination.)
+
+Also, I don't think it would be possible to implement anything that looks
+at the whole url in the restricted Http Manager, since the http-client
+library's interface does not provide the path being requested to the hook
+that is built on.
+"""]]
