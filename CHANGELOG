@@ -35,7 +35,7 @@ git-annex (6.20180808) UNRELEASED; urgency=medium
     does not intend GIT_WORK_TREE to be relative to GIT_PREFIX in that
     case, despite GIT_WORK_TREE=.. being relative to GIT_PREFIX.
   * Don't use GIT_PREFIX to fix up a relative GIT_DIR, because
-    git 2.11 sets GIT_PREFIX set to a path it's not relative to.
+    git 2.11 sets GIT_PREFIX to a path it's not relative to.
     and apparently GIT_DIR is never relative to GIT_PREFIX.
   * git-annex.cabal: Fix build without assistant, and some other refinements.
     Thanks fftehnik.
