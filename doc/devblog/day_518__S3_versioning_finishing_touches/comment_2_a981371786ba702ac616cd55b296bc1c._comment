@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-09-11T16:17:09Z"
+ content="""
+What they'll need to do is:
+
+1. Enableremote with versioning=yes
+2. Manually update the git-annex branch location tracking
+   info for older versions of exported files so git-annex knows that the files
+   are still stored in S3. Ie, `git-annex setpresentkey`
+3. Add remote metadata log files to git-annex branch so that the S3 remote knows
+   the S3 version ID for all the already updated files.
+
+The third item is surely going to involve some work since they'll have to
+gather the S3 version IDs, match them up with git-annex keys for the file
+that was uploaded at that point, and manually generate files to
+commit to the git-annex branch. The rmet log file for S3 looks like:
+
+	timestamp uuid:V +versionid#filename
+
+For example, for a file that was uploaded to the bucket as "myfile":
+
+	1535737778.867692782s 31ea6c94-fba3-4952-99b5-285ae192d92a:V +woYHK59DD2VUkJfg527mEBBqtCaPlSXn#myfile
+
+Note that if the filename contains spaces it gets more complicated and it
+would probably be worth adding some plumbing command to git-annex to set
+per-remote metadata.
+
+----
+
+As to the problems you're having with that S3 remote, it looks like
+it does not have public=yes enabled in its configuration at all, which is
+why git-annex is failing to download from it. It kind of looks like you
+have some other S3 creds in the environment, otherwise I'd expect git-annex
+to complain that the remote is not public and no creds are set. Or maybe a
+bug in the handling of that case. devblog doesn't seem like the place to
+dig into that..
+"""]]
