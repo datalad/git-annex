@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-09-11T18:08:43Z"
+ content="""
+Ah yes, I was remembering this workaround in git-annex:
+
+	* v6: Work around git bug that runs smudge/clean filters at the top of the
+	  repository while passing them a relative GIT_WORK_TREE that may point
+	  outside of the repository, by using GIT_PREFIX to get back to the
+	  subdirectory where a relative GIT_WORK_TREE is valid.
+
+Perhaps that broke with some older versions of git.
+[[!commit e50ed4ba48f93cf0addb3638a4a9605a10f17976]]
+has the gory details, which includes a git bug.
+
+A good way to debug this is to set:
+
+	git config filter.annex.clean 'bash -c "set | grep GIT_ >&2; pwd >&2; git-annex smudge --clean %f"'
+
+Then when git runs the clean filter it will display the git environment variables.
+"""]]
