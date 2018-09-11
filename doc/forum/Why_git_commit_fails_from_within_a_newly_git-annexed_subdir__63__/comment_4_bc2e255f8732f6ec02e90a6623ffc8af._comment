@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2018-09-11T19:54:45Z"
+ content="""
+It seems likely I've just fixed this in git-annex [[!commit fdbdf64d87e2980e8399d1182ccb43bd0f013b16]]
+but since I can't reproduce the problem from your transcript I can't say
+for sure.
+"""]]
