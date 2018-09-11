@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="bnyn"
+ avatar="http://cdn.libravatar.org/avatar/086ca5cb07dc2022f472433c1c5edac1"
+ subject="Update"
+ date="2018-09-11T19:29:39Z"
+ content="""
+Hey joey (and anyone else struggling to compile on OpenBSD)
+
+Just thought I'd give you this update. Git annex now successfully builds for me on OpenBSD 6.3
+I think a recent change regarding the building without assistant fixed it.
+I was playing around with constraints to try to force my way around problematic hackage package versions and decided to start from scrap a couple of days later.
+6.20180808 then simply worked for me. 
+
+Please be aware that I built using cabal with the following flags, otherwise as per the instructions on the \"fromsource\" page here.
+\"-s3 -webdav -assistant -webapp -pairing -torrentparser -magicmime -dbus\"
+
+I don't know if you have intentionally worked on support for the BSDs or another fix applied here as well, but it works now. 
+Thanks a lot, joey! I really appreciate this.
+"""]]
