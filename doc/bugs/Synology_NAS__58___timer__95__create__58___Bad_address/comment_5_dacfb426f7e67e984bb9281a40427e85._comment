@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="ewen"
+ avatar="http://cdn.libravatar.org/avatar/605b2981cb52b4af268455dee7a4f64e"
+ subject="timer_create"
+ date="2018-09-11T21:37:24Z"
+ content="""
+It does very much look like something has removed `timer_create` from the Synology NAS.  Eg, if I statically compile the [example `timer_create` program in the man page](http://man7.org/linux/man-pages/man2/timer_create.2.html) on Debian Jessie/Stretch with:
+
+    gcc -o test_timer_create.jessie -static test_timer_create.c -lrt -lpthread
+
+and try to run it on the Synology NAS now, I get effectively the same symptoms:
+
+    ewen@nas01:~$ ./test_timer_create.jessie 1 100
+    Establishing handler for signal 34
+    Blocking signal 34
+    timer_create: Bad address
+    ewen@nas01:~$ 
+
+(Unfortunately I have no easy way to check if with a previous Synology NAS version.)
+
+The same manpage notes that it *can* be configured out of the kernel: \"Since Linux 4.10, support for POSIX timers is a configurable option that is enabled by default.  Kernel support can be disabled via the CONFIG_POSIX_TIMERS option.\" for which [the patch](https://patchwork.kernel.org/patch/9422453/) notes that \"Some embedded systems have no use for them\".  Obviously the Synology NAS is an embedded kernel situation.  Given that the tripping point was the [release where Synology introduced their Meltdown/Spectre fixes](https://www.synology.com/en-uk/releaseNote/DS216+II#ver_23739-2), I imagine that they backported a *lot* of related fixes from later kernels, and it seems likely that they did deliberately turn off `CONFIG_POSIX_TIMERS`, even if their 1st level/2nd level helpdesk did not know about it, since timing RAM accesses is pretty much key to the common Meltdown/Spectre exploits, and thus various projects removed \"high resolution\" timers.  (Unfortunately there's no `/proc/config.gz` or similar that I can see, and while I can find some [Synology open source bits](https://sourceforge.net/projects/dsgpl/files/) I got bored digging to try to find a kernel config file.)
+
+The fact that later Haskell switched to `poll` probably explains why the later build works.  At least that seems to a viable path forward for using `git-annex` on my NAS for now.
+
+Ewen
+"""]]
