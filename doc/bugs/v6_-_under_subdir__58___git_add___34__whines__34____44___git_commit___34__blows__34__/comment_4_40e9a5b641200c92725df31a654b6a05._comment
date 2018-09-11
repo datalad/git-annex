@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2018-09-11T18:33:22Z"
+ content="""
+Reproduced in a debian stable chroot with current git-annex in it.
+
+	root@darkstar:/tmp# mkdir repo; cd repo; git init; git annex init; git annex upgrade; git config filter.annex.clean 'bash -c "set | grep GIT_ >&2; pwd >&2; git-annex smudge --clean %f"' ; mkdir -p subdir; cd subdir; touch file; git add file
+	...
+	GIT_DIR=.git
+	GIT_PREFIX=subdir/
+	/tmp/repo
+	git-annex: git: createProcess: runInteractiveProcess: chdir: does not exist (No such file or directory)
+
+Verifies my theory.
+"""]]
