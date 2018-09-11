@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Not connect to remote as part of initremote?"""
+ date="2018-09-11T17:31:53Z"
+ content="""
+@andrew while it might be possible in theory to set up a rsync special
+remote that's usable without connecting to the rsync server yet, there
+are other types of special remotes that do need to connect to the server.
+S3 comes to mind; it needs to either create a bucket or check if an
+existing bucket is already being used as a git-annex remote.
+
+So, I don't think this can be supported generally
+across all special remote implementations. We could try to support it for
+specific ones like rsync. I don't actually see anywhere in the code for the
+rsync special remote where initremote will connect to the remote server
+though.
+"""]]
