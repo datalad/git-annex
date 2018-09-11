@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-09-11T17:04:29Z"
+ content="""
+Supporting this would require that git-annex stat every
+file that non-git-annex symlinks point to, which seems
+like it could have a performance impact. 
+
+Also, git-annex is often processing information from git in a pipe,
+which can include the link target. In such cases it can very efficiently
+see if the link target is an annex object, but to support symlinks to
+symlinks it would have to do an additonal round trip through git, which
+would be much more innefficient than statting a symlink.
+
+And then there's the question of symlinks which point outside the git
+repository, or to another git-annex repository, or symlink loops. 
+Now we have potentially security sensitive filename parsing.
+
+It seems like a really big can of worms to open, I am not eager to do this.
+You'd have to have some *extemely* compelling use cases. So far, my
+response to the use cases provided is:
+"Doctor, Doctor… It Hurts When I Do This!"
+"""]]
