@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-09-11T17:39:05Z"
+ content="""
+There are a few places in git-annex where it runs git with the cwd
+overridden, eg to the top of a git repository.
+If it somehow comes up with a path that doesn't exist,
+that would explain this error. The most likely one is
+in `Git.Config.read'`, which git-annex always runs at startup.
+
+So it probably comes down to git running the clean filter with
+the wrong `GIT_DIR` setting or something like that, leading to this as a
+cascading failure. And I vaguely remember seeing something like that in the
+git commit log, or having dealt with such a problem before.
+
+We could make git-annex upgrade fail to run with too old a git (and it
+probably should at least when used with a git too old to support
+smudge/clean filters at all!), but it wouldn't help if the repository was
+upgraded in a different environment. git is going to run the git-annex via
+the clean filter before any check can happen and the most git-annex can
+then do is error out somehow.
+
+See also
+<http://git-annex.branchable.com/forum/Why_git_commit_fails_from_within_a_newly_git-annexed_subdir__63__/>
+which seems to be the same problem without v6; they didn't say what git
+version.
+"""]]
