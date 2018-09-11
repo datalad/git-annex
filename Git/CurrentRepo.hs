@@ -28,17 +28,17 @@ import Utility.Env.Set
  -
  - Also works around a git bug when running some hooks. It
  - runs the hooks in the top of the repository, but if GIT_WORK_TREE
- - was relative, it then points to the wrong directory. In this situation
- - GIT_PREFIX contains the directory that GIT_WORK_TREE (and GIT_DIR)
- - are relative to.
+ - was relative (but not "."), it then points to the wrong directory.
+ - In this situation GIT_PREFIX contains the directory that 
+ - GIT_WORK_TREE is relative to.
  -}
 get :: IO Repo
 get = do
-	prefix <- getpathenv "GIT_PREFIX"
-	gd <- pathenv "GIT_DIR" prefix
+	gd <- getpathenv "GIT_DIR"
 	r <- configure gd =<< fromCwd
+	prefix <- getpathenv "GIT_PREFIX"
 	wt <- maybe (worktree $ location r) Just
-		<$> pathenv "GIT_WORK_TREE" prefix
+		<$> getpathenvprefix "GIT_WORK_TREE" prefix
 	case wt of
 		Nothing -> return r
 		Just d -> do
@@ -55,10 +55,13 @@ get = do
 				return (Just d)
 			Nothing -> return Nothing
 	
-	pathenv s Nothing = getpathenv s
-	pathenv s (Just prefix) = getpathenv s >>= \case
-		Nothing -> return Nothing
-		Just d -> Just <$> absPath (prefix </> d)
+	getpathenvprefix s (Just prefix) | not (null prefix) =
+		getpathenv s >>= \case
+			Nothing -> return Nothing
+			Just d
+				| d == "." -> return (Just d)
+				| otherwise -> Just <$> absPath (prefix </> d)
+	getpathenvprefix s _ = getpathenv s
 
 	configure Nothing (Just r) = Git.Config.read r
 	configure (Just d) _ = do

@@ -1,0 +1,57 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2018-09-11T18:51:07Z"
+ content="""
+Unfortunately git 2.11.0 has the bug that I made git-annex look at
+`GIT_PREFIX` to avoid.
+
+	root@darkstar:/tmp/repo/foo/bar# git --work-tree=../.. ls-files --modified /tmp/repo/
+	BASH_EXECUTION_STRING='set | grep GIT_ >&2; pwd >&2; git-annex smudge --clean '\''subdir/file'\'''
+	GIT_DIR=/tmp/repo/.git
+	GIT_PREFIX=foo/bar/
+	GIT_WORK_TREE=../..
+	/tmp/repo
+
+So, it's not as simple as not looking at `GIT_PREFIX` at all with this
+version of git. When `GIT_WORK_TREE` is relative, and `GIT_PREFIX` is set,
+it needs to combine them to get the actual path to the work tree.
+
+Perhaps git-annex should only use `GIT_PREFIX` 
+for fixup of relative `GIT_WORK_TREE`, but not for `GIT_DIR`. I've so
+far only seen it be needed for `GIT_WORK_TREE`; I only made it also
+be used for `GIT_DIR` out of an assumption git would be consistent in its
+bugginess.
+
+Oh hell, here's another way it fails, with git 2.19:
+
+	joey@darkstar:/tmp/repo/subdir/foo> git --work-tree=../.. status
+	BASH_EXECUTION_STRING='set | grep GIT_ >&2; pwd >&2; git-annex smudge --clean '\''subdir/file'\'''
+	GIT_DIR=/tmp/repo/.git
+	GIT_EXEC_PATH=/usr/lib/git-core
+	GIT_MERGE_AUTOEDIT=no
+	GIT_PAGER=
+	GIT_PREFIX=subdir/foo/
+	GIT_WORK_TREE=.
+	/tmp/repo
+	git-annex: subdir/file: getFileStatus: does not exist (No such file or directory)
+	git-annex: smudge: 1 failed
+
+That one does not involve `GIT_DIR`, instead `GIT_WORK_TREE` is not relative to
+`GIT_PREFIX` so the workaround that assumes it is breaks. I guess that we
+could say that `GIT_DIR` is not relative to some directory in this case,
+so the `GIT_PREFIX` is irrelevant.
+
+Kind of feels like git's behavior is so inconsistent and ill-specified
+that trying to work around the bugs in it is likely to just be a neverending
+source of bugs.
+
+Unfortunately the git devs have so far ignored my bug report despite it
+having an easy test case needing nothing more than a simple shell script to
+reproduce. And there are plenty of differently broken git versions out there
+even if they eventually fix it, so it seems git-annex has to deal with this
+mess somehow.
+
+I'm going with not using `GIT_PREFIX` for `GIT_DIR` and not for
+`GIT_WORK_TREE=.` and hope that's enough.
+"""]]
