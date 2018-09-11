@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 23"""
+ date="2018-09-11T16:52:20Z"
+ content="""
+@Ilya, indeed, this page is talking about filesystem metadata.
+I've updated it for clarity.
+
+There is not currently a way to switch backend based on file size,
+although you can use annex.largefiles to make it check eg smaller files
+directly into git rather than annexing them.
+"""]]

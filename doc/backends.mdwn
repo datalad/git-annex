@@ -1,6 +1,6 @@
-When a file is annexed, a key is generated from its content and/or metadata.
-The file checked into git symlinks to the key. This key can later be used
-to retrieve the file's content (its value).
+When a file is annexed, a key is generated from its content and/or filesystem
+metadata. The file checked into git symlinks to the key. This key can later
+be used to retrieve the file's content (its value).
 
 Multiple pluggable key-value backends are supported, and a single repository
 can use different ones for different files. 
