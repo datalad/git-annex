@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-09-11T17:14:04Z"
+ content="""
+That's right, see [[todo/smudge]] for the current status of v6.
+There are known issues, it's been improved a lot in unreleated git-annex
+but even then, still known issues including memory leaks in git.
+"""]]
