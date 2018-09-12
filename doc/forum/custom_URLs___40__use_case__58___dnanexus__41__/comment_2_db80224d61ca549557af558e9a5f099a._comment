@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 2"
+ date="2018-09-12T19:10:46Z"
+ content="""
+Maybe remote.<name>.annex-speculate-present could support being set to a regexp, such that all URLs matching the regexp would be speculated-present in the remote, rather than all URLs?  Then could say that all URLs of the form dx://file-xxxxxx should be speculated present in the DNAnexus remote.
+"""]]
