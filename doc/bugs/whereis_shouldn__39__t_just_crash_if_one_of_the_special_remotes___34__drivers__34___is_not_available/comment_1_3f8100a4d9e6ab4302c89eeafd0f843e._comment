@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-09-12T18:16:49Z"
+ content="""
+Hmm, but the special remote can add urls to the whereis output, indeed it
+is doing so in your example. So if the repository has the special remote
+enabled it seems it ought to need it to be in working order.
+
+External special remote programs are only spun up on demand, so the only
+way to get to this crash is when it's actually being used for something,
+AFAICS.
+"""]]
