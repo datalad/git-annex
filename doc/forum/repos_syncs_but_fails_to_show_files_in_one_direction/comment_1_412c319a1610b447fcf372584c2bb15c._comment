@@ -1,0 +1,49 @@
+[[!comment format=mdwn
+ username="torpidus"
+ avatar="http://cdn.libravatar.org/avatar/997fb77747b008a26383426ae6561368"
+ subject="comment 1"
+ date="2018-09-12T19:05:40Z"
+ content="""
+possible found a first trace. the committer on the NAS side crashes. log file tells:
+
+    [2018-09-12 20:54:19.423764064] Committer: Adding ___git-an..ed_on_NAS
+    add ___git-annex_file_created_on_NAS ok
+    [2018-09-12 20:54:19.524746614] Committer: committing 1 changes
+    [2018-09-12 20:54:19.524993706] Committer: Committing changes to git
+    (recording state in git...)
+    [2018-09-12 20:54:19.590762812] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"update-index\",\"-z\",\"--index-info\"]
+    [2018-09-12 20:54:19.857623683] process done ExitSuccess
+    [2018-09-12 20:54:19.85896977] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+    [2018-09-12 20:54:19.880377072] process done ExitSuccess
+    [2018-09-12 20:54:19.880645044] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"--hash\",\"refs/heads/master\"]
+    [2018-09-12 20:54:20.836749623] process done ExitSuccess
+    [2018-09-12 20:54:20.837005176] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"write-tree\"]
+    [2018-09-12 20:54:21.296523156] process done ExitSuccess
+    [2018-09-12 20:54:21.304290499] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"rev-parse\",\"1469f15a8f89aae0e9b582e141e4e31f0c0ea31f:\"]
+    [2018-09-12 20:54:21.615407387] process done ExitSuccess
+    [2018-09-12 20:54:21.61567249] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"commit-tree\",\"0ec03203b806a3125bb6677c363897b346473aab\",\"--no-gpg-sign\",\"-p\",\"1469f15a8f89aae0e9b582e141e4e31f0c0ea31f\"]
+    [2018-09-12 20:54:21.952881183] process done ExitSuccess
+    [2018-09-12 20:54:21.953184061] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"update-ref\",\"refs/heads/master\",\"b15389e29d1853771a4993954a297d5dea99b21d\"]
+    [2018-09-12 20:54:22.263498786] process done ExitSuccess
+    [2018-09-12 20:54:22.26375159] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+    [2018-09-12 20:54:22.297865786] process done ExitSuccess
+    [2018-09-12 20:54:22.306865822] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"refs/heads/master\"]
+    [2018-09-12 20:54:22.808817784] process done ExitSuccess
+    [2018-09-12 20:54:22.809135542] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"branch\",\"-f\",\"synced/master\",\"refs/heads/master\"]
+    [2018-09-12 20:54:23.32085476] process done ExitSuccess
+    [2018-09-12 20:54:23.321141703] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"branch\",\"-f\",\"master\",\"refs/heads/master\"]
+    fatal: Cannot force update the current branch.
+    [2018-09-12 20:54:23.339070508] process done ExitFailure 128
+    Committer crashed: failed to update refs/heads/master
+    [2018-09-12 20:54:23.343355069] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+    [2018-09-12 20:54:23.343600554] Committer: warning Committer crashed: failed to update refs/heads/master
+    [2018-09-12 20:54:23.36031901] process done ExitSuccess
+    [2018-09-12 20:54:23.360576051] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"refs/heads/master\"]
+    [2018-09-12 20:54:23.68816538] process done ExitSuccess
+    [2018-09-12 20:54:23.690946926] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+    [2018-09-12 20:54:23.710158388] process done ExitSuccess
+    [2018-09-12 20:54:23.71041453] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"show-ref\",\"refs/heads/master\"]
+    [2018-09-12 20:54:23.993586343] process done ExitSuccess
+    [2018-09-12 20:54:23.994052834] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/master..refs/heads/synced/master\",\"--pretty=%H\",\"-n1\"]
+    [2018-09-12 20:54:24.276305404] process done ExitSuccess
+"""]]
