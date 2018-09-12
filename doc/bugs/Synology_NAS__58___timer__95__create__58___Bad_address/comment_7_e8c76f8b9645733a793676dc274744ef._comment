@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="ewen"
+ avatar="http://cdn.libravatar.org/avatar/605b2981cb52b4af268455dee7a4f64e"
+ subject="LC_TIME"
+ date="2018-09-11T23:52:23Z"
+ content="""
+In case it helps, I think this is the [change to the `lc_time` structure definition](https://sourceware.org/git/?p=glibc.git;a=blobdiff;f=locale/categories.def;h=3cbb4e673882eb4ff827fa2b6d9eec2faafceff4;hp=47947f76862ea77779b821a7ca294a3eff67136e;hb=95cb863a1ef7760a11272bbd7ba5fe62dc41be54;hpb=4612268a0ad8e3409d8ce2314dd2dd8ee0af5269), and this is an example of the [change needed to a program loading them](https://sourceware.org/git/?p=glibc.git;a=blobdiff;f=locale/programs/ld-time.c;h=41864482eccb14e31e0ff6cbe27c7008f687160d;hp=67d055a1c41d859b651e3af60f55b6a1499ed107;hb=95cb863a1ef7760a11272bbd7ba5fe62dc41be54;hpb=4612268a0ad8e3409d8ce2314dd2dd8ee0af5269).  Looks like two new arrays (one `char *`, one wide char), each 12 entries long, and maybe a flag for whether the \"alt month\" (names) are present (`alt_mon_defined`), but I'm not clear whether or not that is in the loaded files.  Both linked from the commit I mentioned in the previous comment.
+
+While the parser in that program seems to be able to cope with various formats to some extent, the [loadlocale.c code has an assert check on size](https://sourceware.org/git/?p=glibc.git;a=blob;f=locale/loadlocale.c;h=15f93bec80e1f11c114eaac1c85f77e6ed071712;hb=95cb863a1ef7760a11272bbd7ba5fe62dc41be54#l126) that makes it more brittle.  (And at this point I think I've seen it fail both with \"newer locale files, older binary\" and \"older locale files, newer binary\", so I suspect both are at least \"untested\".)
+
+For the Synology NAS case building on Debian Stretch will *might* still work, and building on Debian Jessie looks like it should still work, but building on Debian Testing/Unstable presumably will not.  Presumably this incompatibility issue will just get more common over 2018/2019 as more things are/aren't upgraded.  Joy.
+
+Ewen
+"""]]

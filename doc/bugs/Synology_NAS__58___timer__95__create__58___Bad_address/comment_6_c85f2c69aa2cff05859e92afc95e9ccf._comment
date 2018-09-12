@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="ewen"
+ avatar="http://cdn.libravatar.org/avatar/605b2981cb52b4af268455dee7a4f64e"
+ subject="LC_TIME"
+ date="2018-09-11T22:23:49Z"
+ content="""
+From some hunting around I can find reports of that `loadlocale.c` issue with `LC_TIME` throughout 2018.  It seems to be more commonly encountered now that things like Ubuntu 18.04 are released with the newer glibc. (There's also a `LC_COLLATE` change somewhere around [mid](https://www.reddit.com/r/archlinux/comments/3g9dzf/loadlocalec130_error_on_everything/)/[late](https://www.linuxquestions.org/questions/slackware-arm-108/login-error-after-upgrade-of-current-4175562326/) 2015, which seems to be the previous change in data format impacting people in this way.)
+
+The generally understood wisdom seems to be that it's caused by locale data compiled by older (glibc) tool versions than the ones being used to load it (eg, statically linked into the binaries).  This is at least the second context in which I've come across it, in the last month, myself.  Both being caused by statically linked binaries built on Linux versions older/newer than the one on which they were being run, approximately across the 2017/2018 calendar boundary.
+
+On the Synology NAS this seems to be the locale tools version:
+
+    ewen@nas01:~$ locale --version
+    locale (crosstool-NG 1.20.0) 2.20-2014.11
+    Copyright (C) 2014 Free Software Foundation, Inc.
+    This is free software; see the source for copying conditions.  There is NO
+    warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    Written by Ulrich Drepper.
+    ewen@nas01:~$ 
+
+which is a tiny bit newer than Debian Jessie:
+
+    ewen@noc:~$ cat /etc/debian_version 
+    8.11
+    ewen@noc:~$ locale --version
+    locale (Debian GLIBC 2.19-18+deb8u10) 2.19
+    Copyright (C) 2014 Free Software Foundation, Inc.
+    This is free software; see the source for copying conditions.  There is NO
+    warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    Written by Ulrich Drepper.
+    ewen@noc:~$ 
+
+and somewhat older than Debian Stretch (2.24), Debian Unstable (2.27), or [Ubuntu 18.04](https://packages.ubuntu.com/bionic/locales) which is also 2.27.  My guess from the timing is that something in the `lc_time` structure size changed between about glibc 2.24 and 2.27, maybe late 2017 or early 2018.
+
+Digging in the glibc git tree turns up [commit f301e5334065e93aace667fd4a87bce6fc1dbd13](https://sourceware.org/git/?p=glibc.git;a=commit;h=f301e5334065e93aace667fd4a87bce6fc1dbd13), from 2017-10-27 which foreshadows a change with \"Now when we are about to add alternative month
+names to LC_TIME (BZ#10871) this will fail again.\".  This appears to be [BugZilla #10871](https://sourceware.org/bugzilla/show_bug.cgi?id=10871) which had been open forever, but the patches seem to have been [finally pushed on 2018-01-22](https://sourceware.org/bugzilla/show_bug.cgi?id=10871#c137).  Which is about the right timing for the problems seen.  Building locales with a glibc after that and loading with an older libc (statically linked), or vice versa, is going to break.  (I think this [might be the commit that breaks things](https://sourceware.org/git/?p=glibc.git;a=commit;h=95cb863a1ef7760a11272bbd7ba5fe62dc41be54), and if not, it's very nearby that commit in the history.  Applied 2018-01-22.)
+
+I don't see a work around for statically linked binaries using system locale files, short of building versions with code from on either side of that flag date and suggesting people use the right version depending on their locale files...
+
+... the best kludge I've thought of so far that *might* work is to turn `LC_ALL` into `LC_...` settings for each individual one, except `LC_TIME=C`, in the hope that maybe that'll cause the (changed) time part not to load.  But I haven't tested that myself.
+
+Ewen
+
+PS: One might hope that this change could have been done in a backwards compatible manner.  But that does not appear to be the case here.  glibc seem to have been perfectly fine with creating a flag day, presumably reasoning distros can always force the locales to be recompiled so they'll always stay in sync.
+"""]]

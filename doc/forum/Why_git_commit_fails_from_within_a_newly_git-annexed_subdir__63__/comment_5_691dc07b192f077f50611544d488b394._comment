@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="emanuele.olivetti@47d88ed185b03191e25329caa6fabc2efb3118b2"
+ nickname="emanuele.olivetti"
+ avatar="http://cdn.libravatar.org/avatar/f51cc5c6c3a0eb28faa6491c3cbcfcce"
+ subject="comment 5"
+ date="2018-09-12T10:45:03Z"
+ content="""
+Thanks Joey for looking into this one. I use git v2.7.4, currently shipped with Ubuntu 16.04, which may not be very recent. I don't use v6 because it is not the default in git-annex, at least till now. Should I?
+I'll try the recent commit you mention, as soon as it will be available in the Linux standalone version or in Neurodebian (currently 6.20180807-g48d11a5df and 6.20180807+git230-gaa291acfe-1~ndall+1) and I will report here shortly after.
+"""]]

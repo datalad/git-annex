@@ -1,0 +1,38 @@
+[[!format sh """
+(git-annex)hopa:~/datalad/neurovault/snapshots[master]
+$> git annex whereis 1003/13873.nii.gz
+whereis 1003/13873.nii.gz git-annex: Cannot run git-annex-remote-datalad-archives -- It is not installed in PATH (/usr/lib/git-annex.linux/bin:/usr/lib/git-core:/home/yoh/gocode/bin:/home/yoh/gocode/bin:/home/yoh/bin:/home/yoh/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/snap/bin:/sbin:/usr/sbin:/usr/local/sbin:/usr/lib/git-annex.linux/extra)
+
+
+$> source ~datalad/datalad-master/venvs/dev/bin/activate
+
+$> git annex whereis 1003/13873.nii.gz                  
+whereis 1003/13873.nii.gz (3 copies) 
+  	123c73e5-a8dc-4cff-8ffc-679c7ea67f94 -- yoh@smaug:/mnt/datasets/datalad/crawl/neurovault
+   	48c1556f-6241-45de-9497-338d437fcb62 -- yoh@falkor:/srv/datasets.datalad.org/www/neurovault/snapshots [origin]
+   	af2785da-2538-4346-a6f6-f2f30fc3f025 -- [datalad-archives]
+
+  datalad-archives: dl+archive:SHA256E-s6460020224--710cc05117e2290e2f793271d11e26452cdc111121e09a937dbf5a34b3cc0107.tar/neurovault_snapshot/1003/13873.nii.gz#size=23262
+
+$> git annex version
+git-annex version: 6.20180807+git230-gaa291acfe-1~ndall+1
+"""]]
+
+IMHO output should be like (since all information is actually available)
+
+[[!format sh """
+$> git annex whereis 1003/13873.nii.gz
+git-annex: ERROR - Cannot run git-annex-remote-datalad-archives
+whereis 1003/13873.nii.gz (3 copies)
+  	123c73e5-a8dc-4cff-8ffc-679c7ea67f94 -- yoh@smaug:/mnt/datasets/datalad/crawl/neurovault
+   	48c1556f-6241-45de-9497-338d437fcb62 -- yoh@falkor:/srv/datasets.datalad.org/www/neurovault/snapshots [origin]
+   	af2785da-2538-4346-a6f6-f2f30fc3f025 -- datalad-archives {ERROR}
+
+  datalad-archives: dl+archive:SHA256E-s6460020224--710cc05117e2290e2f793271d11e26452cdc111121e09a937dbf5a34b3cc0107.tar/neurovault_snapshot/1003/13873.nii.gz#size=23262
+"""]]
+
+and indeed with error code exit may be.
+
+[[!meta author=yoh]]
+
+
