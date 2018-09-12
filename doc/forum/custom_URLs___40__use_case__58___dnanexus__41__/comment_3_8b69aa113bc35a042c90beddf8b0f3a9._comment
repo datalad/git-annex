@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-09-12T19:26:31Z"
+ content="""
+annex-speculate-present is a boolean setting, I see that the docs didn't
+make that clear and have improved them.
+
+I don't see any value in speculating that urls are present in some specific
+remote; there's already sufficient support for remotes to register and
+claim urls. 
+
+See CLAIMURL in the external special remote protocol.
+The ipfs special remote is an example of a a remote that uses CLAIMURL to
+add support for a new type of url to git-annex.
+<https://git-annex.branchable.com/special_remotes/external/git-annex-remote-ipfs>
+"""]]

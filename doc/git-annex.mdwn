@@ -1296,10 +1296,10 @@ Here are all the supported configuration settings.
 
 * `remote.<name>.annex-speculate-present`
 
-  Make git-annex speculate that this remote may contain the content of any
-  file, even though its normal location tracking does not indicate that it
-  does. This will cause git-annex to try to get all file contents from the
-  remote. Can be useful in setting up a caching remote.
+  Set to "true" to make git-annex speculate that this remote may contain the
+  content of any file, even though its normal location tracking does not
+  indicate that it does. This will cause git-annex to try to get all file
+  contents from the remote. Can be useful in setting up a caching remote.
 
 * `remote.<name>.annex-bare`
 
