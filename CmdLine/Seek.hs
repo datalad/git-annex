@@ -31,6 +31,8 @@ import Remote.List
 import qualified Remote
 import Annex.CatFile
 import Annex.Content
+import Annex.InodeSentinal
+import qualified Database.Keys
 
 withFilesInGit :: (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
 withFilesInGit a l = seekActions $ prepFiltered a $
@@ -146,15 +148,19 @@ isOldUnlocked f = liftIO (notSymlink f) <&&>
 withFilesOldUnlockedToBeCommitted :: (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
 withFilesOldUnlockedToBeCommitted = withFilesOldUnlocked' LsFiles.typeChangedStaged
 
-{- v6 unlocked pointer files that are staged to be committed -}
-withUnlockedPointersToBeCommitted :: (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
-withUnlockedPointersToBeCommitted a l = seekActions $
+{- v6 unlocked pointer files that are staged, and whose content has not been
+ - modified-}
+withUnmodifiedUnlockedPointers :: (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
+withUnmodifiedUnlockedPointers a l = seekActions $
 	prepFiltered a unlockedfiles
   where
-	unlockedfiles = filterM isV6Unlocked =<< seekHelper LsFiles.typeChangedStaged l
+	unlockedfiles = filterM isV6UnmodifiedUnlocked 
+		=<< seekHelper LsFiles.typeChangedStaged l
 
-isV6Unlocked :: FilePath -> Annex Bool
-isV6Unlocked f = (isJust <$> catKeyFile f <||> isJust <$> catKeyFileHEAD f)
+isV6UnmodifiedUnlocked :: FilePath -> Annex Bool
+isV6UnmodifiedUnlocked f = catKeyFile f >>= \case
+	Nothing -> return False
+	Just k -> sameInodeCache f =<< Database.Keys.getInodeCaches k
 
 {- Finds files that may be modified. -}
 withFilesMaybeModified :: (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek

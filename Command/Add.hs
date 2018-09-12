@@ -70,7 +70,7 @@ seek o = allowConcurrentOutput $ do
 				go (withFilesNotInGit (not $ includeDotFiles o))
 			go withFilesMaybeModified
 			ifM versionSupportsUnlockedPointers
-				( go withUnlockedPointersToBeCommitted
+				( go withUnmodifiedUnlockedPointers
 				, unlessM isDirect $
 					go withFilesOldUnlocked
 				)
