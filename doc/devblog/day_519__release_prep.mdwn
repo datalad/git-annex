@@ -1,0 +1,10 @@
+I'm in release prep mode now, fixing build problems and a few bugs, but
+the v6 sprint is well over, though v6 still has its issues.
+Might as well release all the last month's work.
+
+Yesterday was taken up with dealing with some very ugly git interface
+stuff that changed between versions. An July workaround for a bug in
+git turns out to have caused reversions with older versions, and was not
+a complete fix either. Tuned it to hopefully work better.
+
+This was sponsored by Jake Vosloo [on Patreon](https://patreon.com/joeyh).
