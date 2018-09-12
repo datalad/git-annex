@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="when push fails due to non-fast-forward merge, pull and retry?"
+ date="2018-09-12T17:56:40Z"
+ content="""
+When a push would result in a non-fast-forward merge, git-annex-sync currently fails.  Maybe instead, pull and retry pushing?  This happens in the context of several processes trying to push to the same git-annex repo.
+
+Also, the docs mention synced/master, but it's synced/current-branch.
+"""]]
