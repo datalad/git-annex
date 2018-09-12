@@ -1,0 +1,7 @@
+I have a repo on two hosts. One host is my laptop which is configured as "manual" repo due to limited disk space and the other host is my NAS as "full backup" repo. My laptop connects via SSH to the NAS.
+
+Strange thing is, syncing looks good. New files created on either side lead to a transfer. However, it doesn't show changes on the NAS that have been triggered on the notebook. For example, folders are missing and I can't see changes in files on the NAS which have been modified and synced from the laptop.
+
+I suspect a problem being stuck with some old branch. Unfortunately, I have little to know knowledge to git commands. :-(
+
+Any idea on how to troubleshoot the issue?
