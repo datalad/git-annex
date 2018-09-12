@@ -21,6 +21,7 @@ import Types.UUID
 import Types.MetaData
 
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Data.Default
 
 data FileTransition
@@ -53,7 +54,7 @@ dropDead f content trustmap = case getLogVariety f of
 			else ChangeFile $ Presence.showLog newlog
 	Just RemoteMetaDataLog ->
 		let newlog = dropDeadFromRemoteMetaDataLog trustmap $ MetaData.simplifyLog $ MetaData.parseLog content
-		in if null newlog
+		in if S.null newlog
 			then RemoveFile
 			else ChangeFile $ MetaData.showLog newlog
 	Just OtherLog -> PreserveFile
