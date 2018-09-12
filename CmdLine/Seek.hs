@@ -4,7 +4,7 @@
  - the values a user passes to a command, and prepare actions operating
  - on them.
  -
- - Copyright 2010-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -128,9 +128,6 @@ withFilesToBeCommitted a l = seekActions $ prepFiltered a $
 withFilesOldUnlocked :: (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
 withFilesOldUnlocked = withFilesOldUnlocked' LsFiles.typeChanged
 
-withFilesOldUnlockedToBeCommitted :: (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
-withFilesOldUnlockedToBeCommitted = withFilesOldUnlocked' LsFiles.typeChangedStaged
-
 {- Unlocked files before v6 have changed type from a symlink to a regular file.
  -
  - Furthermore, unlocked files used to be a git-annex symlink,
@@ -145,6 +142,19 @@ withFilesOldUnlocked' typechanged a l = seekActions $
 isOldUnlocked :: FilePath -> Annex Bool
 isOldUnlocked f = liftIO (notSymlink f) <&&> 
 	(isJust <$> catKeyFile f <||> isJust <$> catKeyFileHEAD f)
+
+withFilesOldUnlockedToBeCommitted :: (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
+withFilesOldUnlockedToBeCommitted = withFilesOldUnlocked' LsFiles.typeChangedStaged
+
+{- v6 unlocked pointer files that are staged to be committed -}
+withUnlockedPointersToBeCommitted :: (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
+withUnlockedPointersToBeCommitted a l = seekActions $
+	prepFiltered a unlockedfiles
+  where
+	unlockedfiles = filterM isV6Unlocked =<< seekHelper LsFiles.typeChangedStaged l
+
+isV6Unlocked :: FilePath -> Annex Bool
+isV6Unlocked f = (isJust <$> catKeyFile f <||> isJust <$> catKeyFileHEAD f)
 
 {- Finds files that may be modified. -}
 withFilesMaybeModified :: (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek

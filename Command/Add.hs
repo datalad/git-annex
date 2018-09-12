@@ -69,8 +69,11 @@ seek o = allowConcurrentOutput $ do
 			unless (updateOnly o) $
 				go (withFilesNotInGit (not $ includeDotFiles o))
 			go withFilesMaybeModified
-			unlessM (versionSupportsUnlockedPointers <||> isDirect) $
-				go withFilesOldUnlocked
+			ifM versionSupportsUnlockedPointers
+				( go withUnlockedPointersToBeCommitted
+				, unlessM isDirect $
+					go withFilesOldUnlocked
+				)
 
 {- Pass file off to git-add. -}
 startSmall :: FilePath -> CommandStart
@@ -111,8 +114,7 @@ start file = do
 	addpresent key = ifM versionSupportsUnlockedPointers
 		( liftIO (catchMaybeIO $ getSymbolicLinkStatus file) >>= \case
 			Just s | isSymbolicLink s -> fixuplink key
-			_ -> ifM (sameInodeCache file =<< Database.Keys.getInodeCaches key)
-				( stop, add )
+			_ -> add
 		, ifM isDirect
 			( liftIO (catchMaybeIO $ getSymbolicLinkStatus file) >>= \case
 				Just s | isSymbolicLink s -> fixuplink key

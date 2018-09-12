@@ -38,3 +38,5 @@ special handling for the V6 behavior.
     upgrade supported from repository versions: 0 1 2 3 4 5
 
 on Debian Stretch, built from source with `stack build`
+
+> [[fixed|done]] --[[Joey]]
