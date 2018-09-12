@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-09-12T19:35:54Z"
+ content="""
+	[2018-09-12 20:54:23.321141703] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"core.bare=false\",\"branch\",\"-f\",\"master\",\"refs/heads/master\"]
+	fatal: Cannot force update the current branch.
+
+Good spotting. This problem was reported by some people 
+[back in 2013](forum/Can_Not_Sync_to_Git_Repo),
+but not since then. They were all using direct mode, and I see you are
+too.
+
+But, as far as I can see, current git-annex *never* runs "git branch -f".
+
+So, I think you may have an old version of git-annex there..
+"""]]
