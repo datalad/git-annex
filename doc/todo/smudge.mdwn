@@ -1,6 +1,6 @@
 git-annex should use smudge/clean filters. v6 mode
 
-### August sprint todo list
+### problems keeping v6 experimental
 
 * Checking out a different branch causes git to smudge all changed files,
   and write their content. This does not honor annex.thin. A warning
