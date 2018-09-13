@@ -245,6 +245,12 @@ reconcileStaged qh = whenM versionUsesKeysDatabase $ do
 		-- Avoid using external diff command, which would be slow.
 		-- (The -G option may make it be used otherwise.)
 		[ Param "-c", Param "diff.external="
+		-- Avoid running smudge or clean filters, since we want the
+		-- raw output, and they would block trying to access the
+		-- locked database. The --raw normally avoids git diff
+		-- running them, but older versions of git need this.
+		, Param "-c", Param "filter.annex.smudge="
+		, Param "-c", Param "filter.annex.clean="
 		, Param "diff"
 		, Param "--cached"
 		, Param "--raw"
