@@ -1,0 +1,48 @@
+git-annex 6.20180913 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * When --batch is used with matching options like --in, --metadata,
+     etc, only operate on the provided files when they match those options.
+     Otherwise, a blank line is output in the batch protocol.
+     Affected commands: find, add, whereis, drop, copy, move, get
+   * Make metadata --batch combined with matching options refuse to run,
+     since it does not seem worth supporting that combination.
+   * v6 add: Take advantage of improved SIGPIPE handler in git 2.5 to
+     speed up the clean filter by not reading the file content from the
+     pipe. This also avoids git buffering the whole file content in memory.
+   * v6: After updating the worktree for an add/drop, update git's index,
+     so git status will not show the files as modified.
+   * v6: When annex.largefiles is not configured for a file, running git
+     add or git commit, or otherwise using git to stage a file
+     will add it to the annex if the file was in the annex before,
+     and to git otherwise. This is to avoid accidental conversion.
+     Note that git-annex add's behavior has not changed.
+   * v6: Update associated files database when git has staged changes
+     to pointer files.
+   * v6: Fix some race conditions.
+   * v6: Fix annex object file permissions when git-annex add is run
+     on a modified unlocked file, and in some related cases.
+   * v6: When a file is unlocked but has not been modified,
+     and the unlocking is only staged, git-annex add did not lock it.
+     Now it will, for consistency with how modified files are handled and
+     with v5.
+   * Fix git command queue to be concurrency safe.
+   * linux standalone: When LOCPATH is already set, use it instead of the
+     bundled locales. It can be set to an empty string to use the system
+     locales too.
+   * Stop using external hash programs, since cryptonite is faster.
+   * Fix build on FreeBSD.
+   * S3: Support buckets with versioning enabled. When a remote
+     is configured with exporttree=yes versioning=yes, git-annex can
+     download past versions of exported files from it.
+   * S3: Multipart uploads are now only supported when git-annex is built
+     with aws-0.16.0 or later, as earlier versions of the library don't
+     support versioning with multipart uploads.
+   * S3: Support AWS\_SESSION\_TOKEN.
+   * Don't use GIT\_PREFIX when GIT\_WORK\_TREE=. because it seems git
+     does not intend GIT\_WORK\_TREE to be relative to GIT\_PREFIX in that
+     case, despite GIT\_WORK\_TREE=.. being relative to GIT\_PREFIX.
+   * Don't use GIT\_PREFIX to fix up a relative GIT\_DIR, because
+     git 2.11 sets GIT\_PREFIX to a path it's not relative to.
+     and apparently GIT\_DIR is never relative to GIT\_PREFIX.
+   * git-annex.cabal: Fix build without assistant, and some other refinements.
+     Thanks fftehnik."""]]
