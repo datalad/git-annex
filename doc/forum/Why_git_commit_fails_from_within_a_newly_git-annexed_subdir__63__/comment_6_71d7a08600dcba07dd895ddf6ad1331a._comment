@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="emanuele.olivetti@47d88ed185b03191e25329caa6fabc2efb3118b2"
+ nickname="emanuele.olivetti"
+ avatar="http://cdn.libravatar.org/avatar/f51cc5c6c3a0eb28faa6491c3cbcfcce"
+ subject="comment 6"
+ date="2018-09-13T14:56:51Z"
+ content="""
+My mistake. The last Linux standalone version, 6.20180807-g48d11a5df, works correctly and does not show the issue anymore:
+
+    $ mkdir annex
+    $ cd annex
+    $ git init
+    Initialized empty Git repository in /tmp/annex/.git/
+    $ git annex init
+    init  ok
+    (recording state in git...)
+    $ mkdir a
+    $ cd a
+    $ echo foo > bar
+    $ git annex add bar
+    add bar ok
+    (recording state in git...)
+    $ git commit -m \"bar added\"
+    [master (root-commit) 4cf38d9] bar added
+     1 file changed, 1 insertion(+)
+     create mode 120000 a/bar
+
+Thank you for fixing the issue and thanks again for git-annex!
+"""]]
