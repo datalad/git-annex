@@ -211,7 +211,7 @@ storeHelper info h f object p = case partSize info of
 		r <- sendS3Handle h $ putObject info object rbody
 		return (mkS3VersionID object (S3.porVersionId r))
 	multipartupload fsz partsz = do
-#if MIN_VERSION_aws(0,10,6)
+#if MIN_VERSION_aws(0,16,0)
 		let startreq = (S3.postInitiateMultipartUpload (bucket info) object)
 				{ S3.imuStorageClass = Just (storageClass info)
 				, S3.imuMetadata = metaHeaders info

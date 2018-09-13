@@ -34,6 +34,9 @@ git-annex (6.20180808) UNRELEASED; urgency=medium
   * S3: Support buckets with versioning enabled. When a remote
     is configured with exporttree=yes versioning=yes, git-annex can
     download past versions of exported files from it.
+  * S3: Multipart uploads are now only supported when git-annex is built
+    with aws-0.16.0 or later, as earlier versions of the library don't
+    support versioning with multipart uploads.
   * S3: Support AWS_SESSION_TOKEN.
   * Don't use GIT_PREFIX when GIT_WORK_TREE=. because it seems git
     does not intend GIT_WORK_TREE to be relative to GIT_PREFIX in that
