@@ -38,6 +38,7 @@ import Annex.ChangedRefs
 import Control.Monad.Free
 import Control.Monad.IO.Class
 import System.Exit (ExitCode(..))
+import System.IO.Error
 import Network.Socket
 import Control.Concurrent
 import Control.Concurrent.Async
@@ -159,9 +160,11 @@ runNet runst conn runner f = case f of
 			Left e -> return (Left (show e))
 			Right () -> runner next
 	ReceiveMessage next -> do
-		v <- liftIO $ tryNonAsync $ getProtocolLine (connIhdl conn)
+		v <- liftIO $ tryIOError $ getProtocolLine (connIhdl conn)
 		case v of
-			Left e -> return (Left (show e))
+			Left e
+				| isEOFError e -> runner (next (Just ProtocolEOF))
+				| otherwise -> return (Left (show e))
 			Right Nothing -> return (Left "protocol error")
 			Right (Just l) -> case parseMessage l of
 				Just m -> do

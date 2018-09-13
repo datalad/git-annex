@@ -113,6 +113,8 @@ dupIoHandles = do
  - This implementation is not super efficient, but as long as the Handle
  - supports buffering, it avoids reading a character at a time at the
  - syscall level.
+ -
+ - Throws isEOFError when no more input is available.
  -}
 getProtocolLine :: Handle -> IO (Maybe String)
 getProtocolLine h = go (32768 :: Int) []
