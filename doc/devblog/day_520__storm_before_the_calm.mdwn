@@ -1,0 +1,10 @@
+Well it took the whole day to finish the release. Including fixing a
+deadlock when the new v6 code runs with an older git, and some build
+errors. Ant there's still an intermittent test suite failure involving v6 on
+one autobuilder, which will need to be dealt with later.
+
+This is a big release, lots of bug fixes, lots of v6 improvements, and
+significant S3 improvements.
+
+Today's work was sponsored by Paul Walmsley 
+[on Patreon](https://patreon.com/joeyh).
