@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="AndyPerry"
+ avatar="http://cdn.libravatar.org/avatar/42114bc1ad6d16de30842b297a91ec45"
+ subject="comment 7"
+ date="2018-09-14T09:49:57Z"
+ content="""
+I get the same error/failure on MacOS. I have git-annex 6.20180807
+I made a very simple change, deleting an old symlink, but the commit fails as mentioned in this thread.
+"""]]
