@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="AndyPerry"
+ avatar="http://cdn.libravatar.org/avatar/42114bc1ad6d16de30842b297a91ec45"
+ subject="comment 8"
+ date="2018-09-14T11:39:41Z"
+ content="""
+I installed the *latest* via `brew install git-annex`. Is there another repository I can use to get a newer version? 
+I'd rather not have top build from source as the pre-reqs are not tools I'd use for anything else.
+"""]]
