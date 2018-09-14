@@ -1,3 +1,10 @@
+git-annex (6.20180914) UNRELEASED; urgency=medium
+
+  * S3: Fix url construction bug when the publicurl has been set to an url
+    that does not end with a slash.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 14 Sep 2018 12:20:19 -0400
+
 git-annex (6.20180913) upstream; urgency=medium
 
   * When --batch is used with matching options like --in, --metadata,

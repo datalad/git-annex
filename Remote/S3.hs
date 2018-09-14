@@ -21,6 +21,7 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as BS
 import qualified Data.Map as M
 import qualified Data.Set as S
+import qualified System.FilePath.Posix as Posix
 import Data.Char
 import Network.Socket (HostName)
 import Network.HTTP.Conduit (Manager)
@@ -690,7 +691,7 @@ awsPublicUrl info = genericPublicUrl $
 	"https://" ++ T.unpack (bucket info) ++ ".s3.amazonaws.com/" 
 
 genericPublicUrl :: URLString -> BucketObject -> URLString
-genericPublicUrl baseurl p = baseurl ++ p
+genericPublicUrl baseurl p = baseurl Posix.</> p
 
 genCredentials :: CredPair -> IO AWS.Credentials
 genCredentials (keyid, secret) = AWS.Credentials
