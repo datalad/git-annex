@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="emanuele.olivetti@47d88ed185b03191e25329caa6fabc2efb3118b2"
+ nickname="emanuele.olivetti"
+ avatar="http://cdn.libravatar.org/avatar/f51cc5c6c3a0eb28faa6491c3cbcfcce"
+ subject="comment 9"
+ date="2018-09-14T12:24:14Z"
+ content="""
+Check the app bundle (pre-built) that you can download from <http://git-annex.branchable.com/install/OSX/>. If it is the analogous of the Linux standalone file, then it should be version 6.20180807-g48d11a5df, which solves the bug discussed in this page. It would be nice if you send feedback here after trying.
+"""]]
