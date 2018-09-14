@@ -51,6 +51,7 @@ import Control.Monad.Trans.Resource
 import Network.HTTP.Conduit
 import Network.HTTP.Client
 import Data.Conduit
+import System.Log.Logger
 
 #if ! MIN_VERSION_http_client(0,5,0)
 responseTimeoutNone :: Maybe Int
@@ -232,6 +233,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 
 	existsconduit req = do
 		let req' = headRequest (applyRequest uo req)
+		debugM "url" (show req')
 		runResourceT $ do
 			resp <- http req' (httpManager uo)
 			-- forces processing the response while
@@ -315,6 +317,7 @@ download meterupdate url file uo =
 
 	downloadconduit req = catchMaybeIO (getFileSize file) >>= \case
 		Nothing -> runResourceT $ do
+			liftIO $ debugM "url" (show req')
 			resp <- http (applyRequest uo req') (httpManager uo)
 			if responseStatus resp == ok200
 				then store zeroBytesProcessed WriteMode resp
@@ -347,6 +350,7 @@ download meterupdate url file uo =
 	  where
 		dl = runResourceT $ do
 			let req' = req { requestHeaders = resumeFromHeader sz : requestHeaders req }
+			liftIO $ debugM "url" (show req')
 			resp <- http req' (httpManager uo)
 			if responseStatus resp == partialContent206
 				then store (BytesProcessed sz) AppendMode resp
@@ -452,6 +456,7 @@ downloadPartial url uo n = case parseURIRelaxed url of
 		Nothing -> return Nothing
 		Just req -> do
 			let req' = applyRequest uo req
+			liftIO $ debugM "url" (show req')
 			withResponse req' (httpManager uo) $ \resp ->
 				if responseStatus resp == ok200
 					then Just <$> brread n [] (responseBody resp)
