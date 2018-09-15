@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="seregynp@3214c4138198e0fe5615d11af832f69f8f5b6873"
+ nickname="seregynp"
+ avatar="http://cdn.libravatar.org/avatar/9070bf4684f1f7ed88564c6d75f29d59"
+ subject="Cannot upgrade to v6"
+ date="2018-09-15T10:20:58Z"
+ content="""
+I'm running Ubuntu:
+
+    Distributor ID: Ubuntu                                                                  │                                                                                       
+    Description:    Ubuntu 16.04.5 LTS                                                      │                                                                                       
+    Release:        16.04                                                                   │                                                                                       
+    Codename:       xenial
+
+Installed git annex with: \"apt-get install git-annex\".
+
+And here is the my \"git-annex version\":
+
+    git-annex version: 5.20151208-1build1                                                   │                                                                                       
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus Des│                                                                                       
+    ktopNotify XMPP DNS Feeds Quvi TDFA TorrentParser Database                              │                                                                                       
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256│                                                                                       
+    E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 S│                                                                                       
+    KEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL                                          │                                                                                       
+    remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar│                                                                                       
+     hook external
+
+When i'm trying to \"git annex init --version=6\" it says: \"Usage: git-annex init [DESC]\".  
+Meaning v5 git annex does not support \"--version\" option for \"init\" command.
+
+If i'm running \"git annex upgrade\", it says: \"upgrade . ok\".  
+But then \"git annex version\" shows v5 again.
+
+Is it possible to upgrade from v5 to v6 currently ?  
+Am i doing anything wrong ?
+"""]]
