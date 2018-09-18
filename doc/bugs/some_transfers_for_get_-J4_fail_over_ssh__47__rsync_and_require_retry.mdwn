@@ -1,0 +1,33 @@
+### Please describe the problem.
+
+I quickly searched but could not find exactly the same issue, so filing it new, but feel welcome to refer/close if it is already filed.
+
+Upon some transfers between local hosts, I am getting some files failing to be transferred upon initial run, and I need to rerun `get` to get them.  Could may be `annex get` internally retry a few times (I think the same is done for http already) upon transfer failure?
+
+[[!format sh """
+
+(git)smaug:/mnt/btrfs/datasets/datalad/crawl/dbic/QA[master]git
+$> git annex get -J4 --from=origin --all --json 2>&1 | tee /tmp/qa-get.log
+{"command":"get","note":"from origin...\nchecksum...","success":true,"key":"SHA256E-s9037046--92b3f24faf39b0c3710311fa57a614bdc24f998e5a4f7c8b33063d4ef01a0aaf.nii.gz","file":null}
+...
+git-annex: get: 1 failed
+git annex get -J4 --from=origin --all --json 2>&1  87.01s user 22.58s system 73% cpu 2:29.82 total
+tee /tmp/qa-get.log  0.00s user 0.02s system 0% cpu 2:29.82 total
+
+$> grep -v -e 'success":true' /tmp/qa-get.log 
+{"command":"get","note":"from origin...\nrsync failed -- run git annex again to resume file transfer","success":false,"key":"SHA256E-s44080906--a534bdaa5b4143fb64135aa83d86cf4d4f29d2c23b7f2e7e1d72a811835f2bb8.nii.gz","file":null}
+git-annex: get: 1 failed
+
+$> git annex get --key SHA256E-s44080906--a534bdaa5b4143fb64135aa83d86cf4d4f29d2c23b7f2e7e1d72a811835f2bb8.nii.gz --from origin
+get SHA256E-s44080906--a534bdaa5b4143fb64135aa83d86cf4d4f29d2c23b7f2e7e1d72a811835f2bb8.nii.gz (from origin...) 
+(checksum...) ok                  
+(recording state in git...)
+
+$> git annex version                  
+git-annex version: 6.20180807+git291-g549114118-1~ndall+1
+
+"""]]
+
+
+[[!meta author=yoh]]
+
