@@ -2,6 +2,6 @@
 
     fd:23: hClose: resource vanished (Broken pipe)
 
-Presumably this sudden lack of backwards incompatibility is intentional.
+Presumably this sudden lack of backwards incompatibility is unintentional.
 
 --spwhitton
