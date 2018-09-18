@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="symlinks into git-annex"
+ date="2018-09-18T19:15:11Z"
+ content="""
+I often work with scenarios where I want to `git annex get` files where I'm not actually in a git annex repository but in a symlink farm that fans out (often via directory-level indirections) into git annices (is there a canonical plural?). There, what I use is a short script that `readlink`s the to-be-fetched files until it contains a `.git/annex/objects` part and then fetches that in its original annex. If there were a way to do that with a standard `git annex get`, possibly (if after some deliberation there remain security concerns) behind a --follow-symlinks switch, I'd appreciate that.
+"""]]
