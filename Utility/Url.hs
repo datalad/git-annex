@@ -151,7 +151,7 @@ checkPolicy uo u onerr a
 unsupportedUrlScheme :: URI -> IO ()
 unsupportedUrlScheme u = do
 	hPutStrLn stderr $ 
-		"Unsupported url scheme" ++ show u
+		"Unsupported url scheme " ++ show u
 	hFlush stderr
 
 allowedScheme :: UrlOptions -> URI -> Bool
