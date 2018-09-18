@@ -1,0 +1,14 @@
+Hello, I was writing a message to ask for help but I found a solution for my problem so I deleted it but now I think it could be useful to someone else so hereafter is my initial message and my workaround.
+
+
+> Hello, this time I am very very frightened by the odds but I am still looking for your help. Long story short: windows update.
+
+> Yesterday, everything was fine with my local git-annex using WSL. This morning, windows had updated itself to version 1803 automatically, (by the way, thanks to Microsoft for their forced updates), and half my locked files are gone. I tried git annex fix ., nothing, I tried to find the associated keys with find .git/annex/objects -name 'sha...', nothing. git annex whereis <file> says the file is here whereas git annex fsck <file> fails telling the file's content is missing.
+
+> Now, it seems like the only remaining files have links pointing to annex/objects directories that are exclusively composed of uppercase letters or numbers. Looking more closely to the objects folders, it seems like they are all strangely duplicated depending on the spelling: for example the variations zZ, Zz, ZZ, zz which all have the same subdirectories and files. Is this the way those directories should be named or did Windows break everything?
+
+> The last thing that keeps me hoping is that the hard drive usage seems to be the same as before but with the apparent duplication of object directories, my hopes are fading away pretty fast... If anyone can help me, or even finish to turn my hopes down, I am listening.
+
+I solved this by using the shiny feature that lets a Windows user revert the OS to previous version once yet another a big flaw has been found in the 1803 version.
+Strangely, after the revert, all my files were back to their normal state, as I left them before the upgrade.
+I hope none of you will need this ;)

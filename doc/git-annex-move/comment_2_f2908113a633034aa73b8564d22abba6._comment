@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="mario"
+ avatar="http://cdn.libravatar.org/avatar/4c63b0935789d29210d0bd8cad8d7ac7"
+ subject="3rd party &quot;mover&quot; / speed up git annex move"
+ date="2018-09-17T12:16:08Z"
+ content="""
+git annex move seems to be quite slow if many small files have to be transferred. I think the main issue is that for each file a new TCP connection is opened. In this case reusing the TCP connection could significantly speed up the transfers. Two questions about this. a) Am I just doing something wrong? (I don't want to use -J because the remote is cluster and -J connects to different servers.) b) Is there an efficient method to write my own mover for the files in question? Basically \"git annex find [...] --json\" gives me all the files in question, so I know what to move. But after copying them to the remote, how do I tell git annex that they are there? Does it make sense to use git annex reinject?
+"""]]

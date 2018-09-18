@@ -1,0 +1,7 @@
+I can't find out why, but under certain circumstances the symlinks don't work in my environment. On all hosts I have latest Ubuntu Linux and latest git-annex. V6 repos. Issue is, that instead of real symlinks, the filenames remain the original ones and the content is the relative link to the corresponding annex object.
+
+Strange behavior is, I can drop and get the files but it doesn't seem to affect the situation after all.
+
+Comparing the size of .git/*, it is very likely that the contents are present and so does "git annex whereis bla.jpg". Leading me to the conclusion that everything works except the symlinking. Is this a known issue? What steps can I perform to find out the root cause?
+
+Thank you.

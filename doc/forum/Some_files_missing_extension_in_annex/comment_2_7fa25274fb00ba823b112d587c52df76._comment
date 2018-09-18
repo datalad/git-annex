@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="jasonb@ab4484d9961a46440958fa1a528e0fc435599057"
+ nickname="jasonb"
+ avatar="http://cdn.libravatar.org/avatar/c7330f4da122c671b935fc1d58bb02b1"
+ subject="comment 2"
+ date="2018-09-16T20:32:08Z"
+ content="""
+Unfortunately, my remotes don't know anything about the change, so when I push it, the symlinks point to files that don't exist, even though the data is still in the annex with the original mysterious filenames.
+
+How to get git-annex to recover the existing data?
+"""]]

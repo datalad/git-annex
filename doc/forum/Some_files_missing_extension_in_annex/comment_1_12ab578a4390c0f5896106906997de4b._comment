@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="jasonb@ab4484d9961a46440958fa1a528e0fc435599057"
+ nickname="jasonb"
+ avatar="http://cdn.libravatar.org/avatar/c7330f4da122c671b935fc1d58bb02b1"
+ subject="comment 1"
+ date="2018-09-16T20:25:39Z"
+ content="""
+Doing a git annex unannex and then a git annex add fixes it. Now sure how this happened originally.
+"""]]

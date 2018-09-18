@@ -1,0 +1,11 @@
+I hadn't noticed this before, but I added some files in the past and, finally looking at them today, the file extension is missing in the annex. This confuses OS X something awful, so it opens the file in TextEdit instead of VLC. If I open the file directly using VLC, it works.
+
+I just dropped and re-added the file that has an extension. It lacked it before:
+
+    ls -l 10*
+    lrwxr-xr-x  1 jasonb  staff  215 Sep 16 15:23 10 Minute Ab Chisel.mkv -> ../.git/annex/objects/zw/mG/WORM-s103155193-m1516830000--Masters,32Hammer,32and,32Chisel-a67ed6d2a3dfd5fe29be62146fbd0c04/WORM-s103155193-m1516830000--Masters,32Hammer,32and,32Chisel-a67ed6d2a3dfd5fe29be62146fbd0c04
+    lrwxr-xr-x  1 jasonb  staff  209 Sep 16 15:04 10 Minute Ab Hammer.mkv -> ../.git/annex/objects/jx/5p/WORM-s117692368-m1537124682--Masters,32Hammer,32and,32Chisel%10,32Minute,32Ab,32Hammer.mkv/WORM-s117692368-m1537124682--Masters,32Hammer,32and,32Chisel%10,32Minute,32Ab,32Hammer.mkv
+
+Is there something I can do to recover my file extensions besides manually dropping and re-adding each file?
+
+Thanks.

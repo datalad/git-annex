@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 4"
+ date="2018-09-18T18:48:06Z"
+ content="""
+p.s. you're right that symlinks to outside the repository would be a security risk.   They should not be added to the annex without explicit options. But it's important to at least warn about them, so e.g. the user knows that 'git annex add' did not add everything, or that 'git annex get subdir/' did not get everything under subdir/ .  It  _would_ be useful to handle relative symlinks into submodules though.
+Symlink loops would of course be errors.  
+"""]]
