@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 3"
+ date="2018-09-18T18:41:01Z"
+ content="""
+The main reason for wanting git-annex to follow symlinks, is that the semantics of its commands (get/add/copy) operating on directories would be much more intuitive.
+I want to know that after 'git annex get subdir' all annexed files accessible under subdir/ are available; that after 'git annex add subdir && git annex move subdir --to my-remote' all
+large files accessible under subdir/ are at my-remote; etc.   I want to be able to treat a subdirectory as a self-contained unit.  But this isn't possible if relative symlinks stored
+undir subdir/ but pointing outside subdir/ might still be broken after 'git annex get subdir', etc.
+
+E.g. I have
+
+proj1/
+      big_file.dat: symlink to ../.git/annex/objects/....
+proj2/
+      big_file.dat: symlink to ../proj1/big_file.dat
+then if I do 'git annex get proj1', I can safely work on proj1 knowing all its files have been fetched; but if I do 'git annex get proj2', I can't safely work on it because
+the symlink proj2/big_file.dat is still broken.   I can of course make proje2/big_file.dat a direct link to the annex, but that loses the relationship between proj1 and proj2.
+It's pretty common to want to create a \"variant\" of a project by making most files in proj2/ symlinks to corresponding files in proj1/ , except for a few files that differ.
+
+With 'git annex add', it'd help a lot to know that 'git annex add /my/dir' will definitely store _everything_ under /my/dir.   In fact, if a symlink under /my/dir points outside the
+repository, git-annex could still store the target file in the annex and check in a symlink to that (or perhaps warn the user about the situation).   Then I can 'git annex add' my local
+setup, even if it points to some absolute paths, and check it out on another machine, with all links working.
+
+\"Supporting this would require that git-annex stat every file that non-git-annex symlinks point to\" -- only ones that point outside the subdir being worked on.  If the target of
+such a symlink is a directory, you'd need to process that directory too.  But if this all is off by default, and turned on by a flag, then the normal operation won't be affected.
+"""]]
