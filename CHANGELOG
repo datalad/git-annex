@@ -1,11 +1,17 @@
 git-annex (6.20180914) UNRELEASED; urgency=medium
 
+  [ Joey Hess ]
   * S3: Fix url construction bug when the publicurl has been set to an url
     that does not end with a slash.
   * --debug shows urls accessed by git-annex, like it used to do when 
     git-annex used wget and curl.
 
- -- Joey Hess <id@joeyh.name>  Fri, 14 Sep 2018 12:20:19 -0400
+  [ Yaroslav Halchenko ]
+  * debian/control
+    + add netbase to Depends: since required for basic tcp interactions
+      (see e.g. https://github.com/nipy/heudiconv/issues/260)
+
+ -- Yaroslav Halchenko <debian@onerussian.com>  Wed, 19 Sep 2018 13:09:04 -0400
 
 git-annex (6.20180913) upstream; urgency=medium
 
