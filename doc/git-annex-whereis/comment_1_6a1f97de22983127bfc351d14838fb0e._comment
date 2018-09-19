@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 1"
+ date="2018-09-19T18:57:13Z"
+ content="""
+Maybe, mention in the docs that whereis does not actually contact remotes to check they still have the files (unlike drop).  Maybe, print the timestamp of the last check?
+"""]]

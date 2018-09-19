@@ -1,0 +1,11 @@
+Hello there!
+
+I sent a part of my files to a special rsync remote ```git annex move --all --to rsync_remote```
+Then I rewrote the history of my repository ```git annex forget```
+And some days later I try ```git annex whereis file``` which tells me there is no copy left and ````git annex info rsync_remote``` which outputs no annexed keys.
+Now, I know the data is still in the rsync special remote because looking for the files SHA keys, I am able to find their annex objects directories.
+The annex objects directories are different between the local git annex and the special rsync remote, supposedly because of my rewrite.
+
+Is there any simple way to repair that? To tell git-annex that the keys are accessible in the special rsync remote?
+I might be able to recover the data doing something like copying all the rsync directory locally and reinjecting files but it seems over complicated while the keys are valid.
+Moreover, the computer with the special rsync remote is a distant one whith limited support (I can't install git-annex on it) so it would be very slow to copy all the data through the network.

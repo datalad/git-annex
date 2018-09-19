@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 32"
+ date="2018-09-19T18:19:22Z"
+ content="""
+Some questions about CHECKPRESENT Key: (1) if Key is a URL backend key, should this return true if CHECKURL on the URL would return CHECKURL-CONTENTS?
+(2) Should the external special remote implementation call GETURLS on the key and return true if CHECKURL would return CHECKURL-CONTENTS for any of the URLs?
+(3) Calling GETURLS on a URL key returns an empty list; shouldn't it return a one-element list containing the included URL (at least if a CHECKURL call on that URL 
+would return CHECKURL-CONTENTS)?
+"""]]

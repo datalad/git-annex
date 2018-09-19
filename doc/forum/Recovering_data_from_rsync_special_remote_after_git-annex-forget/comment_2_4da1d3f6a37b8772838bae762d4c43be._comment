@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="webanck"
+ avatar="http://cdn.libravatar.org/avatar/cd273f76ef8c4218510b4f50ef7e1f3d"
+ subject="comment 2"
+ date="2018-09-19T11:40:56Z"
+ content="""
+Indeed, this command did the trick!
+I didn't even think about using ```fsck``` because the ```git annex info``` was returning 0 references.
+Thanks a lot!
+"""]]

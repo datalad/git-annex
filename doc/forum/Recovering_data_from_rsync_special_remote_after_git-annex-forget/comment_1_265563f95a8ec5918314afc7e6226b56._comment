@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 1"
+ date="2018-09-19T11:03:54Z"
+ content="""
+I think `git annex fsck --fast --from $remote` will make the local annex relearn all the files the remote has without transferring them.
+"""]]

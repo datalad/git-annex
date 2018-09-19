@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 8"
+ date="2018-09-19T16:07:44Z"
+ content="""
+\"Each subdirectory has the name of a key in one of the key-value backends. The file inside also has the name of the key.\" -- is it necessary for the file inside to also have the name of the key?  Repeating the already long key name leads to very long symlink targets.   Could the file inside just be 'f.txt' (or whatever the extension is)?
+
+Also, the terms \"key\" and \"name of the key\" are used in various places; are these the same thing?
+"""]]
