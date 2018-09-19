@@ -1,0 +1,14 @@
+### Please describe the problem.
+If a special remote has URIs that do not end in a file extension, then symlinks to annexed files fetched from that remote will have null extensions, even if
+CHECKURL returned a filename with an extension.
+git annex --verbose --debug addurl dx://file-BXF0vYQ0QyBF509G9J12g927
+creates the symlink
+ contaminants.fasta -> ../.git/annex/objects/ZF/Gj/SHA256E-s18932--c1ed24754e8b7736e275359a34b312d2d6ce2efc1d236061b04d27a9e8147c1a/SHA256E-s18932--c1ed24754e8b7736e275359a34b312d2d6ce2efc1d236061b04d27a9e8147c1a
+
+which doesn't have an extension even though 
+
+[2018-09-18 23:49:54.875801] git-annex-remote-dnanexus[1] --> CHECKURL-CONTENTS 18932 contaminants.fasta
+addurl dx://file-BXF0vYQ0QyBF509G9J12g927 (from dnanexus) (to contaminants.fasta) [2018-09-18 23:49:54.876016] read: git ["--version"]
+[2018-09-18 23:49:54.876825] process done ExitSuccess
+
+and the SHA256E backend is used.
