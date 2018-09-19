@@ -14,7 +14,7 @@ Last-Update: 2015-04-20
  	openssh-client,
  	git-remote-gcrypt (>= 0.20130908-6),
  	gnupg,
-@@ -94,14 +95,14 @@ Vcs-Git: git://git.kitenet.net/git-annex
+@@ -94,15 +95,14 @@ Vcs-Git: git://git.kitenet.net/git-annex
  Homepage: http://git-annex.branchable.com/
  XS-Testsuite: autopkgtest
  
@@ -24,6 +24,7 @@ Last-Update: 2015-04-20
  Section: utils
 -Depends: ${misc:Depends}, ${shlibs:Depends},
 -	git (>= 1:1.8.1),
+-	netbase,
 -	rsync,
 -	curl,
 -	openssh-client (>= 1:5.6p1)
@@ -35,7 +36,7 @@ Last-Update: 2015-04-20
  Recommends: 
  	lsof,
  	gnupg,
-@@ -120,7 +121,7 @@ Suggests:
+@@ -121,7 +121,7 @@ Suggests:
  	libnss-mdns,
  	uftp,
  Breaks: datalad (< 0.9.1)
@@ -44,7 +45,7 @@ Last-Update: 2015-04-20
   git-annex allows managing files with git, without checking the file
   contents into git. While that may seem paradoxical, it is useful when
   dealing with files larger than git can currently easily handle, whether due
-@@ -138,3 +139,7 @@ Description: manage files with git, with
+@@ -139,3 +139,7 @@ Description: manage files with git, with
   noticing when files are changed, and automatically committing them
   to git and transferring them to other computers. The git-annex webapp
   makes it easy to set up and use git-annex this way.
