@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 2"
+ date="2018-09-19T17:21:43Z"
+ content="""
+Strangely, git annex whereis says {\"here\":false}, but git annex info says present: true .
+
+(master_env_py27_v28) [01:18 PM /data/ilya-work/resources]$ git annex whereis hg19.bwa_idx.tar.lz4 --json
+{\"command\":\"whereis\",\"note\":\"1 copy\n\tba0d95d2-9860-430e-9c34-c088f8d8d6c9 -- [ilya-s3]\n\",\"success\":true,\"untrusted\":[],\"key\":\"SHA25\
+6E-s4167227075--01b6bbe72d049948fe439712dae725a48434c9e7af018993b05acf00608f5e6f.tar.lz4\",\"whereis\":[{\"here\":false,\"uuid\":\"ba0d95d2-98\
+60-430e-9c34-c088f8d8d6c9\",\"urls\":[],\"description\":\"[ilya-s3]\"}],\"file\":\"hg19.bwa_idx.tar.lz4\"}
+(master_env_py27_v28) [01:18 PM /data/ilya-work/resources]$ git annex info hg19.bwa_idx.tar.lz4
+file: hg19.bwa_idx.tar.lz4
+size: 4.17 gigabytes
+key: SHA256E-s4167227075--01b6bbe72d049948fe439712dae725a48434c9e7af018993b05acf00608f5e6f.tar.lz4
+present: true
+
+(master_env_py27_v28) [01:19 PM /data/ilya-work/resources]$ git annex info .
+directory: .
+local annex keys: 1
+local annex size: 4.17 gigabytes
+annexed files in working tree: 1
+size of annexed files in working tree: 4.17 gigabytes
+numcopies stats:
+        numcopies +0: 1
+repositories containing these files: 1
+        4.17 GB: ba0d95d2-9860-430e-9c34-c088f8d8d6c9 -- [ilya-s3]
+combined size of repositories containing these files: 4.17 gigabytes
+
+"""]]
