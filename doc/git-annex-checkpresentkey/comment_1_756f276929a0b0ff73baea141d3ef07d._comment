@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 1"
+ date="2018-09-19T17:40:16Z"
+ content="""
+If a key has a URL by which it can be downloaded from an external special remote, and the remote supports checkurl but not checkpresent, checkpresentkey says the key isn't in the remote; but git annex whereis --key says there is.  Maybe it's as intended, checkpresentkey being a plumbing command, but just wanted to note.
+"""]]
