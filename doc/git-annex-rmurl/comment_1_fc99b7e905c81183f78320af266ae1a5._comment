@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 1"
+ date="2018-09-19T03:40:05Z"
+ content="""
+After doing rmurl to remove the last URL at which a file is available, 'git annex whereis filename' still shows 'web' as having one of the copies.  Bug?
+"""]]
