@@ -1,0 +1,25 @@
+Given that git-annex has interactions with AWS S3 built-in, similar to my whining about ssh:// urls, I wondered if may be s3:// urls could be supported directly by git-annex.
+Unfortunately not the case, and messages are a tiny bit misleading (see below) that initially annex just says that configuration disallows access to S3 but when tried to allow, seems to offload that to libcurl which doesn't support it.
+
+The reason I am asking, is that lots of data is on S3 and for now we either relied on our datalad special remote to provide access to S3:// so we could authenticate, but for public buckets it would be overkill to demand datalad.  Although we could replace them with http urls, I thought it might be better if annex could just download s3:// directly.
+
+[[!format sh """
+$> git annex addurl s3://images.cocodataset.org/annotations/image_info_test2014.zip         
+addurl s3://images.cocodataset.org/annotations/image_info_test2014.zip Configuration does not allow accessing s3://images.cocodataset.org/annotations/image_info_test2014.zip
+
+Configuration does not allow accessing s3://images.cocodataset.org/annotations/image_info_test2014.zip
+failed
+git-annex: addurl: 1 failed
+
+$> git -c annex.security.allowed-url-schemes="http https s3" -c annex.security.allowed-http-addresses=all annex addurl s3://images.cocodataset.org/annotations/image_info_test2014.zip
+addurl s3://images.cocodataset.org/annotations/image_info_test2014.zip 
+curl: (1) Protocol "s3" not supported or disabled in libcurl
+failed
+git-annex: addurl: 1 failed
+
+$> git annex version
+git-annex version: 6.20180913+git33-g2cd5a723f-1~ndall+1
+
+"""]]
+
+[[!meta author=yoh]]
