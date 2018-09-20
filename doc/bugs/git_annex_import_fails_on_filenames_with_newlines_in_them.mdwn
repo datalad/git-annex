@@ -45,3 +45,6 @@ foo
 
 [[!tag confirmed git-bug]]
 [[!title git limitations prevent using git-annex on filenames containing newlines]]
+
+> [[fixed|done]] with a workaround that is less efficient at handling such
+> filenames, but does work at least as far as I've tested it. --[[Joey]]

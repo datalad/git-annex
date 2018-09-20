@@ -5,6 +5,8 @@ git-annex (6.20180914) UNRELEASED; urgency=medium
     that does not end with a slash.
   * --debug shows urls accessed by git-annex, like it used to do when 
     git-annex used wget and curl.
+  * Support filenames containing newlines, though less efficiently than
+    other filenames.
 
   [ Yaroslav Halchenko ]
   * debian/control

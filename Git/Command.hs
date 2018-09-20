@@ -63,9 +63,13 @@ pipeReadLazy params repo = assertLocal repo $ do
  - Nonzero exit status is ignored.
  -}
 pipeReadStrict :: [CommandParam] -> Repo -> IO String
-pipeReadStrict params repo = assertLocal repo $
+pipeReadStrict = pipeReadStrict' hGetContentsStrict
+
+{- The reader action must be strict. -}
+pipeReadStrict' :: (Handle -> IO a) -> [CommandParam] -> Repo -> IO a
+pipeReadStrict' reader params repo = assertLocal repo $
 	withHandle StdoutHandle (createProcessChecked ignoreFailureProcess) p $ \h -> do
-		output <- hGetContentsStrict h
+		output <- reader h
 		hClose h
 		return output
   where
@@ -83,8 +87,9 @@ pipeWriteRead params writer repo = assertLocal repo $
 
 {- Runs a git command, feeding it input on a handle with an action. -}
 pipeWrite :: [CommandParam] -> Repo -> (Handle -> IO ()) -> IO ()
-pipeWrite params repo = withHandle StdinHandle createProcessSuccess $
-	gitCreateProcess params repo
+pipeWrite params repo = assertLocal repo $ 
+	withHandle StdinHandle createProcessSuccess $
+		gitCreateProcess params repo
 
 {- Reads null terminated output of a git command (as enabled by the -z 
  - parameter), and splits it. -}
