@@ -1,0 +1,21 @@
+Unix would be better if filenames could not contain newlines. But they can,
+and so today was spent dealing with some technical debt.
+
+The main problem with using git-annex with filenames with newlines is that
+`git cat-file --batch` uses a line-based protocol. It would be nice if that
+were extended to support `-z` like most of the rest of git does, but I
+realized I could work around this by not using batch mode for the rare
+filename with a newline. Handling such files will be slower than other
+files, but at least it will work.
+
+Then I realized that git-annex has its own problems with its `--batch`
+option and files with newlines. So I added support for `-z` to every batchable
+command in git-annex, including a couple of commands that did batch input
+without a `--batch` option.
+
+Now git-annex should fully support filenames containing newlines, as well 
+as anything else. The best thing to do if you have such a file is to
+commit it and then `git mv` it to a better name.
+
+Today's work was sponsored by Trenton Cronholm 
+[on Patreon](https://patreon.com/joeyh).
