@@ -35,7 +35,7 @@ seek o = do
 		giveup "dropkey can cause data loss; use --force if you're sure you want to do this"
 	withKeys start (toDrop o)
 	case batchOption o of
-		Batch -> batchInput parsekey $ batchCommandAction . start
+		Batch fmt -> batchInput fmt parsekey $ batchCommandAction . start
 		NoBatch -> noop
   where
 	parsekey = maybe (Left "bad key") Right . file2key

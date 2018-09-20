@@ -54,7 +54,7 @@ parseDropFromOption = parseRemoteOption <$> strOption
 seek :: DropOptions -> CommandSeek
 seek o = allowConcurrentOutput $
 	case batchOption o of
-		Batch -> batchFilesMatching go
+		Batch fmt -> batchFilesMatching fmt go
 		NoBatch -> withKeyOptions (keyOptions o) (autoMode o)
 			(startKeys o)
 			(withFilesInGit go)

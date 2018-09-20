@@ -87,6 +87,11 @@ safe to do so.
   match specified matching options, or it is not an annexed file,
   a blank line is output in response instead.
 
+* `-z`
+
+  Makes the `--batch` input be delimited by nulls instead of the usual
+  newlines.
+
 * `--json`
 
   Enable JSON output. This is intended to be parsed by programs that use

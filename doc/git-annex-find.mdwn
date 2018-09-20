@@ -68,6 +68,11 @@ finds files in the current directory and its subdirectories.
   or otherwise doesn't meet the matching options, an empty line
   will be output instead.
 
+* `-z`
+
+  Makes the `--batch` input be delimited by nulls instead of the usual
+  newlines.
+
 # SEE ALSO
 
 [[git-annex]](1)

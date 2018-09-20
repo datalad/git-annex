@@ -83,10 +83,10 @@ seek o = case batchOption o of
 			(startKeys c o)
 			(seeker $ whenAnnexed $ start c o)
 			=<< workTreeItems (forFiles o)
-	Batch -> withMessageState $ \s -> case outputType s of
+	Batch fmt -> withMessageState $ \s -> case outputType s of
 		JSONOutput _ -> ifM limited
 			( giveup "combining --batch with file matching options is not currently supported"
-			, batchInput parseJSONInput $
+			, batchInput fmt parseJSONInput $
 				commandAction . startBatch
 			)
 		_ -> giveup "--batch is currently only supported in --json mode"

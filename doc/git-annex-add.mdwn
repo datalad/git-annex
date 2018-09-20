@@ -81,6 +81,11 @@ annexed content, and other symlinks.
   an empty line will be output instead of the normal output produced
   when adding a file.
 
+* `-z`
+
+  Makes the `--batch` input be delimited by nulls instead of the usual
+  newlines.
+
 # SEE ALSO
 
 [[git-annex]](1)

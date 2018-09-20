@@ -30,7 +30,7 @@ optParser desc = RmUrlOptions
 
 seek :: RmUrlOptions -> CommandSeek
 seek o = case batchOption o of
-	Batch -> batchInput batchParser (batchCommandAction . start)
+	Batch fmt -> batchInput fmt batchParser (batchCommandAction . start)
 	NoBatch -> withPairs start (rmThese o)
 
 -- Split on the last space, since a FilePath can contain whitespace,

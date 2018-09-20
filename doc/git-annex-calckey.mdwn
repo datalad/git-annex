@@ -20,14 +20,19 @@ For example, to force use of the SHA1 backend:
 
 # OPTIONS
 
+* `--backend=name`
+
+  Specifies which key-value backend to use.
+
 * `--batch`
 
   Enable batch mode, in which a line containing the filename is read from
   stdin, the key is output to stdout (with a trailing newline), and repeat.
 
-* `--backend=name`
+* `-z`
 
-  Specifies which key-value backend to use.
+  Makes the `--batch` input be delimited by nulls instead of the usual
+  newlines.
 
 # SEE ALSO
 

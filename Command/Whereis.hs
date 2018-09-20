@@ -40,7 +40,7 @@ seek o = do
 	m <- remoteMap id
 	let go = whenAnnexed $ start m
 	case batchOption o of
-		Batch -> batchFilesMatching go
+		Batch fmt -> batchFilesMatching fmt go
 		NoBatch -> 
 			withKeyOptions (keyOptions o) False
 				(startKeys m)

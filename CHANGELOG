@@ -5,8 +5,12 @@ git-annex (6.20180914) UNRELEASED; urgency=medium
     that does not end with a slash.
   * --debug shows urls accessed by git-annex, like it used to do when 
     git-annex used wget and curl.
-  * Support filenames containing newlines, though less efficiently than
-    other filenames.
+  * Fix support for filenames containing newlines when querying git
+    cat-file, though less efficiently than other filenames.
+    This should make git-annex fully support filenames containing newlines
+    as the rest of git's interface is used in newline-safe ways.
+  * Added -z option to git-annex commands that use --batch, useful for
+    supporting filenames containing newlines.
 
   [ Yaroslav Halchenko ]
   * debian/control

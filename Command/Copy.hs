@@ -47,7 +47,7 @@ seek :: CopyOptions -> CommandSeek
 seek o = allowConcurrentOutput $ do
 	let go = whenAnnexed $ start o
 	case batchOption o of
-		Batch -> batchFilesMatching go
+		Batch fmt -> batchFilesMatching fmt go
 		NoBatch -> withKeyOptions
 			(keyOptions o) (autoMode o)
 			(Command.Move.startKey (fromToOptions o) Command.Move.RemoveNever)

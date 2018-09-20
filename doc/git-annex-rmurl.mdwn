@@ -18,6 +18,11 @@ Record that the file is no longer available at the url.
   Each line should contain the file, and the url to remove from that file,
   separated by a single space.
 
+* `-z`
+
+  Makes the `--batch` input be delimited by nulls instead of the usual
+  newlines.
+
 # SEE ALSO
 
 [[git-annex]](1)

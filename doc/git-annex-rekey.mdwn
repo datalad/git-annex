@@ -26,6 +26,11 @@ Multiple pairs of file and key can be given in a single command line.
   Each line should contain the file, and the new key to use for that file,
   separated by a single space.
 
+* `-z`
+
+  Makes the `--batch` input be delimited by nulls instead of the usual
+  newlines.
+
 # SEE ALSO
 
 [[git-annex]](1)

@@ -13,9 +13,8 @@ in the git repository to link to a specified key.
 
 Multiple pairs of file and key can be given in a single command line.
 
-If no key and file pair are specified on the command line, they are
-instead read from stdin. Any number of lines can be provided in this
-mode, each containing a key and filename, separated by a single space.
+If no key and file pair are specified on the command line, batch input
+is used, the same as if the --batch option were specified.
 
 Normally the key is a git-annex formatted key. However, to make it easier
 to use this to add urls, if the key cannot be parsed as a key, and is a
@@ -29,6 +28,19 @@ to do that.
 
   Allow making a file link to a key whose content is not in the local
   repository. The key may not be known to git-annex at all.
+
+* `--batch`
+
+  In batch input mode, lines are read from stdin, and each line
+  should contain a key and filename, separated by a single space.
+
+* `-z`
+
+  When in batch mode, the input is delimited by nulls instead of the usual
+  newlines.
+
+  (Note that for this to be used, you have to explicitly enable batch mode
+  with `--batch`)
 
 # SEE ALSO
 

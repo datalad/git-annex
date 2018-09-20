@@ -23,6 +23,11 @@ nothing is output, and it exits nonzero.
   Note that if there is no key corresponding to the file, an empty line is
   output to stdout instead.
 
+* `-z`
+
+  Makes the `--batch` input be delimited by nulls instead of the usual
+  newlines.
+
 # SEE ALSO
 
 [[git-annex]](1)

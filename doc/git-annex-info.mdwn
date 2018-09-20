@@ -40,6 +40,11 @@ for the repository as a whole.
   Enable batch mode, in which a line containing an item is read from stdin,
   the information about it is output to stdout, and repeat.
 
+* `-z`
+
+  Makes the `--batch` input be delimited by nulls instead of the usual
+  newlines.
+
 * file matching options
 
   When a directory is specified, the [[git-annex-matching-options]](1)

@@ -83,6 +83,11 @@ be used to get better filenames.
   Enables batch mode, in which lines containing urls to add are read from
   stdin.
 
+* `-z`
+
+  Makes the `--batch` input be delimited by nulls instead of the usual
+  newlines. 
+
 * `--with-files`
 
   When batch mode is enabled, makes it parse lines of the form: "$url $file"

@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2015 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -19,23 +19,39 @@ cmd = notDirect $ notBareRepo $
 	command "registerurl"
 		SectionPlumbing "registers an url for a key"
 		(paramPair paramKey paramUrl)
-		(withParams seek)
+		(seek <$$> optParser)
 
-seek :: CmdParams -> CommandSeek
-seek = withWords start
+data RegisterUrlOptions = RegisterUrlOptions
+	{ keyUrlPairs :: CmdParams
+	, batchOption :: BatchMode
+	}
+
+optParser :: CmdParamsDesc -> Parser RegisterUrlOptions
+optParser desc = RegisterUrlOptions
+	<$> cmdParams desc
+	<*> parseBatchOption
+
+seek :: RegisterUrlOptions -> CommandSeek
+seek o = case (batchOption o, keyUrlPairs o) of
+	(Batch fmt, _) -> withNothing (startMass fmt) []
+	-- older way of enabling batch input, does not support BatchNull
+	(NoBatch, []) -> withNothing (startMass BatchLine) []
+	(NoBatch, ps) -> withWords start ps
 
 start :: [String] -> CommandStart
 start (keyname:url:[]) = do
 	let key = mkKey keyname
 	showStart' "registerurl" (Just url)
 	next $ perform key url
-start [] = do
-	showStart' "registerurl" (Just "stdin")
-	next massAdd
 start _ = giveup "specify a key and an url"
 
-massAdd :: CommandPerform
-massAdd = go True =<< map (separate (== ' ')) <$> batchLines
+startMass :: BatchFormat -> CommandStart
+startMass fmt = do
+	showStart' "registerurl" (Just "stdin")
+	next (massAdd fmt)
+
+massAdd :: BatchFormat -> CommandPerform
+massAdd fmt = go True =<< map (separate (== ' ')) <$> batchLines fmt
   where
 	go status [] = next $ return status
 	go status ((keyname,u):rest) | not (null keyname) && not (null u) = do

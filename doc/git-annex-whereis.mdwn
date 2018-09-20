@@ -52,6 +52,11 @@ For example:
   specified file matching options, an empty line will be
   output instead.
 
+* `-z`
+
+  Makes the `--batch` input be delimited by nulls instead of the usual
+  newlines.
+
 * `--json`
 
   Enable JSON output. This is intended to be parsed by programs that use

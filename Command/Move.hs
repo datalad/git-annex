@@ -57,7 +57,7 @@ seek :: MoveOptions -> CommandSeek
 seek o = allowConcurrentOutput $ do
 	let go = whenAnnexed $ start (fromToOptions o) (removeWhen o)
 	case batchOption o of
-		Batch -> batchFilesMatching go
+		Batch fmt -> batchFilesMatching fmt go
 		NoBatch -> withKeyOptions (keyOptions o) False
 			(startKey (fromToOptions o) (removeWhen o))
 			(withFilesInGit go)

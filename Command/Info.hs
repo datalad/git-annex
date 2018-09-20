@@ -133,7 +133,7 @@ optParser desc = InfoOptions
 seek :: InfoOptions -> CommandSeek
 seek o = case batchOption o of
 	NoBatch -> withWords (start o) (infoFor o)
-	Batch -> batchInput Right (itemInfo o)
+	Batch fmt -> batchInput fmt Right (itemInfo o)
 
 start :: InfoOptions -> [String] -> CommandStart
 start o [] = do

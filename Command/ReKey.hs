@@ -49,7 +49,7 @@ batchParser s = case separate (== ' ') (reverse s) of
 
 seek :: ReKeyOptions -> CommandSeek
 seek o = case batchOption o of
-	Batch -> batchInput batchParser (batchCommandAction . start)
+	Batch fmt -> batchInput fmt batchParser (batchCommandAction . start)
 	NoBatch -> withPairs (start . parsekey) (reKeyThese o)
   where
 	parsekey (file, skey) =

@@ -42,7 +42,7 @@ seek o = allowConcurrentOutput $ do
 	from <- maybe (pure Nothing) (Just <$$> getParsed) (getFrom o)
 	let go = whenAnnexed $ start o from
 	case batchOption o of
-		Batch -> batchFilesMatching go
+		Batch fmt -> batchFilesMatching fmt go
 		NoBatch -> withKeyOptions (keyOptions o) (autoMode o)
 			(startKeys from)
 			(withFilesInGit go)

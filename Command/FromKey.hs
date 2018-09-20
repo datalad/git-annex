@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010, 2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -21,13 +21,26 @@ cmd :: Command
 cmd = notDirect $ notBareRepo $
 	command "fromkey" SectionPlumbing "adds a file using a specific key"
 		(paramRepeating (paramPair paramKey paramPath))
-		(withParams seek)
+		(seek <$$> optParser)
 
-seek :: CmdParams -> CommandSeek
-seek [] = withNothing startMass []
-seek ps = do
-	force <- Annex.getState Annex.force
-	withPairs (start force) ps
+data FromKeyOptions = FromKeyOptions
+	{ keyFilePairs :: CmdParams 
+	, batchOption :: BatchMode
+	}
+
+optParser :: CmdParamsDesc -> Parser FromKeyOptions
+optParser desc = FromKeyOptions
+	<$> cmdParams desc
+	<*> parseBatchOption
+
+seek :: FromKeyOptions -> CommandSeek
+seek o = case (batchOption o, keyFilePairs o) of
+	(Batch fmt, _) -> withNothing (startMass fmt) []
+	-- older way of enabling batch input, does not support BatchNull
+	(NoBatch, []) -> withNothing (startMass BatchLine) []
+	(NoBatch, ps) -> do
+		force <- Annex.getState Annex.force
+		withPairs (start force) ps
 
 start :: Bool -> (String, FilePath) -> CommandStart
 start force (keyname, file) = do
@@ -39,13 +52,13 @@ start force (keyname, file) = do
 	showStart "fromkey" file
 	next $ perform key file
 
-startMass :: CommandStart
-startMass = do
+startMass :: BatchFormat -> CommandStart
+startMass fmt = do
 	showStart' "fromkey" (Just "stdin")
-	next massAdd
+	next (massAdd fmt)
 
-massAdd :: CommandPerform
-massAdd = go True =<< map (separate (== ' ')) <$> batchLines
+massAdd :: BatchFormat -> CommandPerform
+massAdd fmt = go True =<< map (separate (== ' ')) <$> batchLines fmt
   where
 	go status [] = next $ return status
 	go status ((keyname,f):rest) | not (null keyname) && not (null f) = do

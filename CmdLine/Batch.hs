@@ -15,13 +15,24 @@ import Options.Applicative
 import Limit
 import Types.FileMatcher
 
-data BatchMode = Batch | NoBatch
+data BatchMode = Batch BatchFormat | NoBatch
+
+data BatchFormat = BatchLine | BatchNull
 
 parseBatchOption :: Parser BatchMode
-parseBatchOption = flag NoBatch Batch
-	( long "batch"
-	<> help "enable batch mode"
-	)
+parseBatchOption = go 
+	<$> switch
+		( long "batch"
+		<> help "enable batch mode"
+		)
+	<*> switch
+		( short 'z'
+		<> help "null delimited batch input"
+		)
+  where
+	go True False = Batch BatchLine
+ 	go True True = Batch BatchNull
+	go False _ = NoBatch
 
 -- A batchable command can run in batch mode, or not.
 -- In batch mode, one line at a time is read, parsed, and a reply output to
@@ -35,8 +46,10 @@ batchable handler parser paramdesc = batchseeker <$> batchparser
 		<*> parseBatchOption
 		<*> cmdParams paramdesc
 	
-	batchseeker (opts, NoBatch, params) = mapM_ (go NoBatch opts) params
-	batchseeker (opts, Batch, _) = batchInput Right (go Batch opts)
+	batchseeker (opts, NoBatch, params) =
+		mapM_ (go NoBatch opts) params
+	batchseeker (opts, batchmode@(Batch fmt), _) = 
+		batchInput fmt Right (go batchmode opts)
 
 	go batchmode opts p =
 		unlessM (handler opts p) $
@@ -46,11 +59,11 @@ batchable handler parser paramdesc = batchseeker <$> batchparser
 -- mode, exit on bad input.
 batchBadInput :: BatchMode -> Annex ()
 batchBadInput NoBatch = liftIO exitFailure
-batchBadInput Batch = liftIO $ putStrLn ""
+batchBadInput (Batch _) = liftIO $ putStrLn ""
 
 -- Reads lines of batch mode input and passes to the action to handle.
-batchInput :: (String -> Either String a) -> (a -> Annex ()) -> Annex ()
-batchInput parser a = go =<< batchLines
+batchInput :: BatchFormat -> (String -> Either String a) -> (a -> Annex ()) -> Annex ()
+batchInput fmt parser a = go =<< batchLines fmt
   where
 	go [] = return ()
 	go (l:rest) = do
@@ -58,8 +71,12 @@ batchInput parser a = go =<< batchLines
 		go rest
 	parseerr s = giveup $ "Batch input parse failure: " ++ s
 
-batchLines :: Annex [String]
-batchLines = liftIO $ lines <$> getContents
+batchLines :: BatchFormat -> Annex [String]
+batchLines fmt = liftIO $ splitter <$> getContents
+  where
+	splitter = case fmt of
+		BatchLine -> lines
+		BatchNull -> splitc '\0'
 
 -- Runs a CommandStart in batch mode.
 --
@@ -69,22 +86,22 @@ batchLines = liftIO $ lines <$> getContents
 -- any output, so in that case, batchBadInput is used to provide the caller
 -- with an empty line.
 batchCommandAction :: CommandStart -> Annex ()
-batchCommandAction a = maybe (batchBadInput Batch) (const noop)
+batchCommandAction a = maybe (batchBadInput (Batch BatchLine)) (const noop)
 	=<< callCommandAction' a
 
 -- Reads lines of batch input and passes the filepaths to a CommandStart
 -- to handle them.
 --
 -- File matching options are not checked.
-allBatchFiles :: (FilePath -> CommandStart) -> Annex ()
-allBatchFiles a = batchInput Right $ batchCommandAction . a
+allBatchFiles :: BatchFormat -> (FilePath -> CommandStart) -> Annex ()
+allBatchFiles fmt a = batchInput fmt Right $ batchCommandAction . a
 
 -- Like allBatchFiles, but checks the file matching options
 -- and skips non-matching files.
-batchFilesMatching :: (FilePath -> CommandStart) -> Annex ()
-batchFilesMatching a = do
+batchFilesMatching :: BatchFormat -> (FilePath -> CommandStart) -> Annex ()
+batchFilesMatching fmt a = do
 	matcher <- getMatcher
-	allBatchFiles $ \f ->
+	allBatchFiles fmt $ \f ->
 		ifM (matcher $ MatchingFile $ FileInfo f f)
 			( a f
 			, return Nothing
