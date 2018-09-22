@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="bremner"
- avatar="http://cdn.libravatar.org/avatar/22c2d800db6a7699139df604a67cb221"
- subject="Similar failure with one host running 6.20180913-1"
- date="2018-09-22T18:38:43Z"
- content="""
-I have two up to date debian testing machines on my desk, same kernel, both running 6.20180913-1 from Debian. One of them sees these \"auth failed\" but not the other.  The server they are trying to fetch from is running 6.20170101-1+deb9u2. The one that is failing  has a restrictive firewall on it; could that be the problem? In principle it is supposed to allow all outbound traffic. Certainly ssh to the server works.
-"""]]
