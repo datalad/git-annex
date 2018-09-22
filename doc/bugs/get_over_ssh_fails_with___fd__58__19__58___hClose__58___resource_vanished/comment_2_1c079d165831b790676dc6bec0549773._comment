@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="bremner"
+ avatar="http://cdn.libravatar.org/avatar/22c2d800db6a7699139df604a67cb221"
+ subject="Dropped the firewall, no change. Maybe it's IPv6?"
+ date="2018-09-22T18:56:12Z"
+ content="""
+<pre>
+convex# iptables -L      
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain FORWARD (policy DROP)
+target     prot opt source               destination         
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination         
+convex# 
+</pre>
+
+The other difference is that the non-working machine is using IPv6 and IPv4, while the working machine is just IPv4
+"""]]
