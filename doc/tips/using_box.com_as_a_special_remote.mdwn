@@ -1,8 +1,11 @@
 [Box.com](http://box.com/) is a file storage service.
 
+** Webdav access to box.com will be disabled as of February 1, 2019. At that point, the method described on this page will no longer work. See [this announcement](https://community.box.com/t5/Box-Product-News/Deprecation-WebDAV-Support/ba-p/55684) for further details. **
+
 git-annex can use Box as a [[special remote|special_remotes]].
 Recent versions of git-annex make this very easy to set up
 and use.
+
 
 ## git-annex setup
 
