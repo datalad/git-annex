@@ -250,7 +250,7 @@ devNull :: FilePath
 devNull = "/dev/null"
 #else
 -- Use device namespace to prevent GHC from rewriting path
-devNull = "\\.\NUL"
+devNull = "\\\\.\\NUL"
 #endif
 
 -- | Extract a desired handle from createProcess's tuple.
