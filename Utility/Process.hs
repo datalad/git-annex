@@ -249,7 +249,8 @@ devNull :: FilePath
 #ifndef mingw32_HOST_OS
 devNull = "/dev/null"
 #else
-devNull = "NUL"
+-- Use device namespace to prevent GHC from rewriting path
+devNull = "\\.\NUL"
 #endif
 
 -- | Extract a desired handle from createProcess's tuple.
