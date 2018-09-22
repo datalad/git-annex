@@ -1,0 +1,66 @@
+### Please describe the problem.
+
+I think I never saw that before.  The only thing which differs now I think is the version of git-annex on this box:
+
+[[!format sh """
+$> git annex get --from origin --debug 'sub-qa/ses-20180312/func/sub-qa_ses-20180312_task-rest_acq-p2Xs4X35mm_bold.nii.gz'                              
+[2018-09-21 23:26:38.299280879] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2018-09-21 23:26:38.303220623] process done ExitSuccess
+[2018-09-21 23:26:38.311081622] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2018-09-21 23:26:38.314302424] process done ExitSuccess
+[2018-09-21 23:26:38.314584504] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..4f0e8cd9a43b003228c3898133b1e200f9bdfc22","--pretty=%H","-n1"]
+[2018-09-21 23:26:38.321260451] process done ExitSuccess
+[2018-09-21 23:26:38.321567411] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2018-09-21 23:26:38.322235784] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2018-09-21 23:26:38.327995657] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--cached","-z","--","sub-qa/ses-20180312/func/sub-qa_ses-20180312_task-rest_acq-p2Xs4X35mm_bold.nii.gz"]
+get sub-qa/ses-20180312/func/sub-qa_ses-20180312_task-rest_acq-p2Xs4X35mm_bold.nii.gz (from origin...) 
+[2018-09-21 23:26:38.336441538] chat: ssh ["bids@rolando.cns","-S",".git/annex/ssh/bids@rolando.cns","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'ba8f2cea-f229-422c-82be-6580e5e07ed5' --uuid 6384a551-a41d-4290-b186-9258befede97"]
+[2018-09-21 23:26:39.94999901] P2P > ERROR auth failed
+
+  fd:19: hClose: resource vanished (Broken pipe)
+failed
+[2018-09-21 23:26:39.951838683] read: ssh ["-O","stop","-S","bids@rolando.cns","-o","ControlMaster=auto","-o","ControlPersist=yes","localhost"]
+[2018-09-21 23:26:39.960970417] process done ExitSuccess
+[2018-09-21 23:26:39.961786471] process done ExitSuccess
+[2018-09-21 23:26:39.962311637] process done ExitSuccess
+
+$> git annex version
+git-annex version: 6.20180913+git33-g2cd5a723f-1~ndall+1
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify ConcurrentOutput TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.19 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.2 feed-1.0.0.0 ghc-8.2.2 http-client-0.5.12 persistent-sqlite-2.8.1.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: linux x86_64
+supported repository versions: 3 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+local repository version: 5
+
+$> ssh -S .git/annex/ssh/bids@rolando.cns bids@rolando.cns ls /inbox/BIDS/dbic/QA
+                                                                                 
+
+    Dartmouth College, Department of Psychological and Brain Sciences
+                      Authorized access only
+
+
+
+
+CHANGES
+code
+...
+
+$> ssh -S .git/annex/ssh/bids@rolando.cns bids@rolando.cns git annex version     
+
+
+    Dartmouth College, Department of Psychological and Brain Sciences
+                      Authorized access only
+
+
+git-annex version: 6.20180115-g56b56033a
+
+"""]]
+
+so ssh connection seems to be ok
+
+what could it be?
+
+[[!meta author=yoh]]
