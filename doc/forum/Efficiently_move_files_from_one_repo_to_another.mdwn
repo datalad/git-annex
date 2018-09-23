@@ -1,0 +1,26 @@
+Hi,
+
+## Context
+
+I use git-annex to work with my files on multiple computers, and also to collaborate with other people on my files. Since I don't want to share all my files to all the devices (especially not these of other people), I have several different annex-repos. Of course there is location tracking and file content is not required on all devices. Still, for some devices I want a clear separation in the sense that there should not be any trace that the files from the other repos even exist. However, sometimes I want to change the "permissions" for a file or directory (meaning I have to move it to another repo).
+
+## Problem
+
+Having multiple annex-repos is a reasonable workaround for the use case discussed above. One remaining issue is that moving files or folders from one repo to another is quite inefficient. This is especially true for the remotes.
+
+### Example:
+
+Having two annex-repos (Repo-A and Repo-B) on my laptop. Both repos also exist on my server. All content is synced among the devices. On the laptop I move a large subdir from Repo-A to Repo-B. If I sync both repos with the server afterwards, I have to re-upload all files even though they are already there, but in a different repo.
+
+## Question
+
+Is there an efficient way to move files from one repo to another that works in the example given above?
+
+## Possible approach
+
+I could imagine something like a device-wide location tracking. In this case Repo-B could check "Is this file available in another repo on the same device?" and get it locally. However, for my use case it is really important, that this device-wide location tracking is not synchronized among all the remotes.
+
+### Example:
+
+Again there are Repo-A and Repo-B on laptop and server. Another repo Repo-C is on my laptop and my phone. The phone knows nothing about Repo-A and Repo-B and also is not aware that the server even exists. And this should stay this way. This means that the laptop must not tell the phone that there are other remotes and other repos, as well.
+
