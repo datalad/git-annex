@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 33"""
+ date="2018-09-24T15:35:54Z"
+ content="""
+@Ilya_Shlyakhter,
+
+1. CHECKURL is only used by git-annex add/importfeed when adding a new url.
+   So it does not need to be consistent with CHECKPRESENT, though it would
+   probably make sense for it to be in most cases.
+2. I guess you're asking if it should do that in its CHECKPRESENT
+   implementation. CHECKPRESENT needs to use some method to actively verify
+   that the remote currently contains the content of the key. It doesn't
+   necessarily need to use a recorded url.
+3. GETURLS looks at information stored in the git-annex branch. If the url
+   key has been added to the repository with `git annex add` then its url
+   will be stored there, but if you just generated an url key, it doesn't
+   necessarily have anything stored about it in the git-annex branch.
+"""]]
