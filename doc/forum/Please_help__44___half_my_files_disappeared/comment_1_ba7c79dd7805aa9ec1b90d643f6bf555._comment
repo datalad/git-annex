@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-09-24T15:14:49Z"
+ content="""
+Glad you recovered ok.
+
+It sounds like windows may be doing something horrible with case
+insensitivity in the file system. It's normal for .git/annex/objects/
+to contain subdirectories with names that only differ by case.
+
+If Windows used to respond to a request for .git/annex/object/XY with
+the contents of that, but now instead responds with the contents of the xy
+directory, it should be possible to rearrange things so git-annex still
+works, but I would not recommend doing it with live data without backups.
+"""]]
