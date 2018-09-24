@@ -27,7 +27,8 @@ import Foreign.Ptr
 import Foreign.Marshal
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
-import qualified System.Posix.Files as Files
+import qualified System.Posix.Files as Posix
+import qualified System.Posix.IO as Posix
 import Control.Concurrent
 
 data Change
@@ -109,7 +110,7 @@ scanRecursive topdir prune = M.fromList <$> walk [] [topdir]
 				Nothing -> walk c rest
 				Just info -> do
 					mfd <- catchMaybeIO $
-						Files.openFd dir Files.ReadOnly Nothing Files.defaultFileFlags
+						Posix.openFd dir Posix.ReadOnly Nothing Posix.defaultFileFlags
 					case mfd of
 						Nothing -> walk c rest
 						Just fd -> do
@@ -129,7 +130,7 @@ addSubDirs dirmap prune dirs = do
 {- Removes a subdirectory (and all its children) from a directory map. -}
 removeSubDir :: DirMap -> FilePath -> IO DirMap
 removeSubDir dirmap dir = do
-	mapM_ Files.closeFd $ M.keys toremove
+	mapM_ Posix.closeFd $ M.keys toremove
 	return rest
   where
 	(toremove, rest) = M.partition (dirContains dir . dirName) dirmap
@@ -167,7 +168,7 @@ updateKqueue (Kqueue h _ dirmap _) =
 {- Stops a Kqueue. Note: Does not directly close the Fds in the dirmap,
  - so it can be reused.  -}
 stopKqueue :: Kqueue -> IO ()
-stopKqueue = Files.closeFd . kqueueFd
+stopKqueue = Posix.closeFd . kqueueFd
 
 {- Waits for a change on a Kqueue.
  - May update the Kqueue.
@@ -249,9 +250,9 @@ runHooks kq hooks = do
 		withstatus change $ dispatchadd dirmap
 		
 	dispatchadd dirmap change s
-		| Files.isSymbolicLink s = callhook addSymlinkHook (Just s) change
-		| Files.isDirectory s = recursiveadd dirmap change
-		| Files.isRegularFile s = callhook addHook (Just s) change
+		| Posix.isSymbolicLink s = callhook addSymlinkHook (Just s) change
+		| Posix.isDirectory s = recursiveadd dirmap change
+		| Posix.isRegularFile s = callhook addHook (Just s) change
 		| otherwise = noop
 
 	recursiveadd dirmap change = do
