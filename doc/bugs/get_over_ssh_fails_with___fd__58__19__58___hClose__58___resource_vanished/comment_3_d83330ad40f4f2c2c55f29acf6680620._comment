@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="gueux"
+ avatar="http://cdn.libravatar.org/avatar/47e44a21505727b2d6bb5d88f0468f34"
+ subject="comment 3"
+ date="2018-09-24T09:03:13Z"
+ content="""
+I'm seeing this bug, too. It happens between my laptop, which is also running 6.20180913-1, and two servers which both run 6.20170101-1+deb9u2. One of the servers is remote, while the other one is on my local network.
+"""]]
