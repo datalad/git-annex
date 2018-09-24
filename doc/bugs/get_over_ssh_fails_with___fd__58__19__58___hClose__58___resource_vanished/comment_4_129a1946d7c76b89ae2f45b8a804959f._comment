@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="downgrading helped! "
+ date="2018-09-24T17:56:42Z"
+ content="""
+Downgrading (testing on local laptop) local git-annex all the way down (didn't try intermediates yet) to 6.20170101-1+deb9u2  helped - I can fetch data from that server.
+
+My wild guess is that it all relates to the fact that remote git-annex-shell, being outdated, has no clue about `p2pstdio` command, and local new git-annex doesn't fall back anyhow to use some other way to transfer.
+"""]]
