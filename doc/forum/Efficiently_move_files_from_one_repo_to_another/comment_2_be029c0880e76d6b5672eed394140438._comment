@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="mario"
+ avatar="http://cdn.libravatar.org/avatar/4c63b0935789d29210d0bd8cad8d7ac7"
+ subject="re: comment 1"
+ date="2018-09-24T18:02:38Z"
+ content="""
+Hi Ilya_Shlyakhter, thanks for your answer.
+
+I'm not sure about using different branches. What prevents other users from just checking out the branches, also the git-annex branch tracks the clear names of all remotes. Moreover, it's a scalability question. Assume the server has thousands (millions?) of files while the phone has only a few. Then it still would be \"bothered\" all the location tracking information of the server.
+
+But one thing in the »local caching« tip raised my attention: \"git config remote.cache.annex-speculate-present true\"
+
+The tip says: \"The annex-speculate-present setting is the essential part. It makes git-annex know that the cache repository may contain the content of any annexed file. So, when getting a file, git-annex will try the cache repository first.\"
+
+Together with \"git config remote.cache.annex-pull false; git config remote.cache.annex-push false\" this could be pretty close to my \"local location tracking\" idea.
+
+It further says: \"The cache repository will remain an empty git repository (except for the content of annexed files). This means that the same cache can be used with multiple different git-annex repositories, without intermingling their git data.\" Thus, there should be no »information leaks« between two repos that both use this cache.
+
+A thing I would have to work around is that I should not do \"git annex --copy --to server --not --in server\". Or, at least before doing this I should always log into the server and do \"git-annex get\" first.
+
+Thanks again for your suggestion. I will give this approach a try.
+"""]]
