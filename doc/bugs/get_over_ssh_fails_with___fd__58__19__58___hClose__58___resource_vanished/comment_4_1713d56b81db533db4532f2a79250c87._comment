@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2018-09-24T18:37:08Z"
+ content="""
+The only new change in 6.20180913 that might somehow affect this is 
+[[!commit b18fb1e343e9654207fbebacf686659c75d0fb4c]]. But I don't see how
+it could really.
+
+Since ssh seems to be displaying a motd when running a noninteractive
+command, I think that git-annex must be seeing that motd where it
+expects to see the P2P protocol.
+
+Although it may be that ssh -T avoids the motd display. (But unfortunately
+your transcript using -T trims out exactly that part!) I didn't think ssh
+normally displays motd when not running a login shell. Perhaps it's
+something to do with your shell and not ssh.
+
+git-annex will fall back to not using p2pstdio, but only if the command
+exits nonzero without ssh sending anything to stdout.
+"""]]
