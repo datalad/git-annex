@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-09-24T15:28:59Z"
+ content="""
+It makes sense that checkpresentkey could report different information than
+whereis, because whereis only reports on logged location information,
+while checkpresentkey actively checks the remote.
+
+I'm not entirely clear on how an external special remote could not support
+checkpresent, I suppose you might mean it always fails or is just not
+implemented (so basically fails). That would be a problem with the remote's
+implementation. If it's something else, open a bug report.
+"""]]
