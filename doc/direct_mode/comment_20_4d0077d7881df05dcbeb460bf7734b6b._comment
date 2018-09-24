@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 20"""
+ date="2018-09-24T15:40:48Z"
+ content="""
+Indirect mode is the recommended thing to use, except for situations where
+it doesn't work, then direct mode is used as a fallback.
+
+v6 is getting fairly close to working better than direct mode at this
+point.
+"""]]
