@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-09-24T15:33:02Z"
+ content="""
+I've added a para above.  Note that this is a wiki, and you can edit it
+too!
+
+Showing the timestamp of when the file was added to the remote could be
+done; git-annex does not track the last time it verified content was on a
+remote and tracking that would bloat the git-annex branch. I don't think
+displaying a very old timestamp for data at rest would give the right
+impression though.
+"""]]

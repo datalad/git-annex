@@ -20,6 +20,10 @@ For example:
 		62b39bbe-4149-11e0-af01-bb89245a1e61  -- usb drive [here]
 		7570b02e-15e9-11e0-adf0-9f3f94cb2eaa  -- backup drive
 
+Note that this command does not contact remotes to verify if they still
+have the content of files. It only reports on the last information that was
+received from remotes.
+
 # OPTIONS
 
 * file matching options
