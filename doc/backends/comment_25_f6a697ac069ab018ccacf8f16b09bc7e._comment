@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 25"""
+ date="2018-09-24T15:42:24Z"
+ content="""
+@Ilya_Shlyakhter, it's a heuristic, what consititues a file extension is
+not very well defined (consider ".tar.gz" and ".not-an-extension").
+The heuristic has been refined over the years, but will never be perfect.
+But, I don't know of any 5+ character file extensions in common use!
+"""]]
