@@ -865,6 +865,13 @@ Here are all the supported configuration settings.
   To configure the behavior in new clones of the repository,
   this can be set in [[git-annex-config]].
 
+* `annex.maxextensionlength`
+
+  Maximum length of what is considered a filename extension when adding a
+  file to a backend that preserves filename extensions. The default length
+  is 4, which allows extensions like "jpeg". The dot before the extension
+  is not counted part of its length.
+
 * `annex.diskreserve`
 
   Amount of disk space to reserve. Disk space is checked when transferring

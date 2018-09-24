@@ -65,7 +65,7 @@ upgradableKey backend key = isNothing (keySize key) || backendupgradable
  - generated.
  -}
 perform :: FilePath -> Key -> Backend -> Backend -> CommandPerform
-perform file oldkey oldbackend newbackend = go =<< genkey
+perform file oldkey oldbackend newbackend = go =<< genkey (fastMigrate oldbackend)
   where
 	go Nothing = stop
 	go (Just (newkey, knowngoodcontent))
@@ -84,7 +84,8 @@ perform file oldkey oldbackend newbackend = go =<< genkey
 			next $ Command.ReKey.cleanup file oldkey newkey
 		, error "failed"
 		)
-	genkey = case maybe Nothing (\fm -> fm oldkey newbackend afile) (fastMigrate oldbackend) of
+	genkey Nothing = return Nothing
+	genkey (Just fm) = fm oldkey newbackend afile >>= \case
 		Just newkey -> return $ Just (newkey, True)
 		Nothing -> do
 			content <- calcRepo $ gitAnnexLocation oldkey

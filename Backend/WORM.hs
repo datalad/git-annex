@@ -47,11 +47,11 @@ keyValue source = do
 needsUpgrade :: Key -> Bool
 needsUpgrade key = ' ' `elem` keyName key
 
-removeSpaces :: Key -> Backend -> AssociatedFile -> Maybe Key
+removeSpaces :: Key -> Backend -> AssociatedFile -> Annex (Maybe Key)
 removeSpaces oldkey newbackend _
-	| migratable = Just $ oldkey
+	| migratable = return $ Just $ oldkey
 		{ keyName = reSanitizeKeyName (keyName oldkey) }
-	| otherwise = Nothing
+	| otherwise = return Nothing
   where
 	migratable = oldvariety == newvariety
 	oldvariety = keyVariety oldkey

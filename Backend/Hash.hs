@@ -98,13 +98,16 @@ keyValue hash source = do
 keyValueE :: Hash -> KeySource -> Annex (Maybe Key)
 keyValueE hash source = keyValue hash source >>= maybe (return Nothing) addE
   where
-	addE k = return $ Just $ k
-		{ keyName = keyName k ++ selectExtension (keyFilename source)
-		, keyVariety = hashKeyVariety hash (HasExt True)
-		}
+	addE k = do
+		maxlen <- annexMaxExtensionLength <$> Annex.getGitConfig
+		let ext = selectExtension maxlen (keyFilename source)
+		return $ Just $ k
+			{ keyName = keyName k ++ ext
+			, keyVariety = hashKeyVariety hash (HasExt True)
+			}
 
-selectExtension :: FilePath -> String
-selectExtension f
+selectExtension :: Maybe Int -> FilePath -> String
+selectExtension maxlen f
 	| null es = ""
 	| otherwise = intercalate "." ("":es)
   where
@@ -112,7 +115,10 @@ selectExtension f
 		take 2 $ filter (all validInExtension) $
 		takeWhile shortenough $
 		reverse $ splitc '.' $ takeExtensions f
-	shortenough e = length e <= 4 -- long enough for "jpeg"
+	shortenough e = length e <= fromMaybe maxExtensionLen maxlen
+
+maxExtensionLen :: Int
+maxExtensionLen = 4 -- long enough for "jpeg"
 
 {- A key's checksum is checked during fsck when it's content is present
  - except for in fast mode. -}
@@ -162,8 +168,12 @@ needsUpgrade key = or
 	, not (hasExt (keyVariety key)) && keyHash key /= keyName key
 	]
 
-trivialMigrate :: Key -> Backend -> AssociatedFile -> Maybe Key
-trivialMigrate oldkey newbackend afile
+trivialMigrate :: Key -> Backend -> AssociatedFile -> Annex (Maybe Key)
+trivialMigrate oldkey newbackend afile = trivialMigrate' oldkey newbackend afile
+	<$> (annexMaxExtensionLength <$> Annex.getGitConfig)
+
+trivialMigrate' :: Key -> Backend -> AssociatedFile -> Maybe Int -> Maybe Key
+trivialMigrate' oldkey newbackend afile maxextlen
 	{- Fast migration from hashE to hash backend. -}
 	| migratable && hasExt oldvariety = Just $ oldkey
 		{ keyName = keyHash oldkey
@@ -173,7 +183,8 @@ trivialMigrate oldkey newbackend afile
 	| migratable && hasExt newvariety = case afile of
 		AssociatedFile Nothing -> Nothing
 		AssociatedFile (Just file) -> Just $ oldkey
-			{ keyName = keyHash oldkey ++ selectExtension file
+			{ keyName = keyHash oldkey 
+				++ selectExtension maxextlen file
 			, keyVariety = newvariety
 			}
 	{- Upgrade to fix bad previous migration that created a

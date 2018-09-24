@@ -98,6 +98,7 @@ data GitConfig = GitConfig
 	, annexAllowedUrlSchemes :: S.Set Scheme
 	, annexAllowedHttpAddresses :: String
 	, annexAllowUnverifiedDownloads :: Bool
+	, annexMaxExtensionLength :: Maybe Int
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
 	, receiveDenyCurrentBranch :: DenyCurrentBranch
@@ -171,6 +172,7 @@ extractGitConfig r = GitConfig
 		getmaybe (annex "security.allowed-http-addresses")
 	, annexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
 		getmaybe (annex "security.allow-unverified-downloads")
+	, annexMaxExtensionLength = getmayberead (annex "maxextensionlength")
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
 	, receiveDenyCurrentBranch = getDenyCurrentBranch r

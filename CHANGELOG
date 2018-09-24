@@ -11,6 +11,8 @@ git-annex (6.20180914) UNRELEASED; urgency=medium
     as the rest of git's interface is used in newline-safe ways.
   * Added -z option to git-annex commands that use --batch, useful for
     supporting filenames containing newlines.
+  * Added annex.maxextensionlength for use cases where extensions longer
+    than 4 characters are needed.
   * More FreeBSD build fixes.
 
   [ Yaroslav Halchenko ]
