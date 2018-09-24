@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-09-24T15:18:21Z"
+ content="""
+git-annex always reuses TCP connections.
+
+More likely you are using an older version of git-annex which
+had some overhead due to running rsync once per transfer. Since version
+6.20180316 git-annex has avoided that overhead.
+"""]]
