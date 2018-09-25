@@ -1,0 +1,96 @@
+
+[[!format sh """
+(git)smaug:/mnt/btrfs/datasets/datalad/crawl/dbic/QA[master]git
+$> git annex get -J 16 --debug --json-progress .
+[2018-09-25 09:40:26.76476951] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--cached","-z","--","."]
+[2018-09-25 09:40:26.769184442] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2018-09-25 09:40:26.771844846] process done ExitSuccess
+[2018-09-25 09:40:26.771993108] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2018-09-25 09:40:26.775598151] process done ExitSuccess
+[2018-09-25 09:40:26.776318887] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..db88e4b0bf3d633885a4e202e0c113942856c47f","--pretty=%H","-n1"]
+[2018-09-25 09:40:26.780382394] process done ExitSuccess
+[2018-09-25 09:40:26.780553211] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..4f0e8cd9a43b003228c3898133b1e200f9bdfc22","--pretty=%H","-n1"]
+[2018-09-25 09:40:26.785109549] process done ExitSuccess
+[2018-09-25 09:40:26.785992031] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2018-09-25 09:40:26.787017719] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2018-09-25 09:40:26.838015294] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2018-09-25 09:40:26.838108997] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2018-09-25 09:40:26.838146759] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2018-09-25 09:40:26.838125814] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2018-09-25 09:40:26.840522185] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2018-09-25 09:40:26.840544359] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2018-09-25 09:40:26.840612031] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2018-09-25 09:40:26.843542095] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2018-09-25 09:40:26.843885927] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2018-09-25 09:40:26.844793008] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2018-09-25 09:40:26.84691911] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2018-09-25 09:40:26.848525571] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2018-09-25 09:40:26.876936065] read: ssh ["-O","stop","-S","bids@rolando.cns","-o","ControlMaster=auto","-o","ControlPersist=yes","localhost"]
+[2018-09-25 09:40:26.89165743] process done ExitSuccess
+{"command":"get","wanted":[{"here":false,"uuid":"6384a551-a41d-4290-b186-9258befede97","description":"bids@rolando:/inbox/BIDS/dbic/QA [origin]"}],"note":"transfer already in progress, or unable to take transfer lock\nUnable to access these remotes: origin\nTry making some of these repositories available:\n\t6384a551-a41d-4290-b186-9258befede97 -- bids@rolando:/inbox/BIDS/dbic/QA [origin]\n","skipped":[],"success":false,"key":"SHA256E-s1633--1bc7a100b82cd31d084aae5b25b8d90af128324d10d92cfc9e2196d28829d375.tsv","file":".heudiconv/qa/ses-20171106/info/dicominfo_ses-20171106.tsv"}
+[2018-09-25 09:40:26.89294943] read: ssh ["-o","BatchMode=true","-S",".git/annex/ssh/bids@rolando.cns","-o","ControlMaster=auto","-o","ControlPersist=yes","-n","-T","bids@rolando.cns","true"]
+[2018-09-25 09:40:26.892976736] read: ssh ["-o","BatchMode=true","-S",".git/annex/ssh/bids@rolando.cns","-o","ControlMaster=auto","-o","ControlPersist=yes","-n","-T","bids@rolando.cns","true"]
+[2018-09-25 09:40:26.892951965] read: ssh ["-o","BatchMode=true","-S",".git/annex/ssh/bids@rolando.cns","-o","ControlMaster=auto","-o","ControlPersist=yes","-n","-T","bids@rolando.cns","true"]
+[2018-09-25 09:40:26.901388917] read: ssh ["-o","BatchMode=true","-S",".git/annex/ssh/bids@rolando.cns","-o","ControlMaster=auto","-o","ControlPersist=yes","-n","-T","bids@rolando.cns","true"]
+[2018-09-25 09:40:26.901683012] read: ssh ["-o","BatchMode=true","-S",".git/annex/ssh/bids@rolando.cns","-o","ControlMaster=auto","-o","ControlPersist=yes","-n","-T","bids@rolando.cns","true"]
+[2018-09-25 09:40:28.479898885] process done ExitSuccess
+[2018-09-25 09:40:28.480093679] chat: ssh ["bids@rolando.cns","-S",".git/annex/ssh/bids@rolando.cns","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'ba8f2cea-f229-422c-82be-6580e5e07ed5' --uuid 6384a551-a41d-4290-b186-9258befede97"]
+[2018-09-25 09:40:28.505377708] process done ExitSuccess
+[2018-09-25 09:40:28.505676376] chat: ssh ["bids@rolando.cns","-S",".git/annex/ssh/bids@rolando.cns","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'ba8f2cea-f229-422c-82be-6580e5e07ed5' --uuid 6384a551-a41d-4290-b186-9258befede97"]
+[2018-09-25 09:40:28.508740142] process done ExitSuccess
+[2018-09-25 09:40:28.508761163] process done ExitSuccess
+[2018-09-25 09:40:28.508782029] process done ExitSuccess
+[2018-09-25 09:40:28.50891246] chat: ssh ["bids@rolando.cns","-S",".git/annex/ssh/bids@rolando.cns","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'ba8f2cea-f229-422c-82be-6580e5e07ed5' --uuid 6384a551-a41d-4290-b186-9258befede97"]
+[2018-09-25 09:40:28.508944895] chat: ssh ["bids@rolando.cns","-S",".git/annex/ssh/bids@rolando.cns","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'ba8f2cea-f229-422c-82be-6580e5e07ed5' --uuid 6384a551-a41d-4290-b186-9258befede97"]
+[2018-09-25 09:40:28.509074882] chat: ssh ["bids@rolando.cns","-S",".git/annex/ssh/bids@rolando.cns","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'ba8f2cea-f229-422c-82be-6580e5e07ed5' --uuid 6384a551-a41d-4290-b186-9258befede97"]
+[2018-09-25 09:40:29.936552742] P2P < AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97
+[2018-09-25 09:40:29.93677054] P2P > VERSION 1
+[2018-09-25 09:40:29.937971781] P2P < VERSION 1
+[2018-09-25 09:40:29.938155534] P2P > GET 0 .heudiconv/qa/ses-20171127/info/filegroup_ses-20171127.json SHA256E-s429026--12edfd6e2c58f05803cb5bff0ff3665f46229b5593354324fbecdd5b131506fc.json
+[2018-09-25 09:40:29.940554579] P2P < GET 0 .heudiconv/qa/ses-20171127/info/filegroup_ses-20171127.json SHA256E-s429026--12edfd6e2c58f05803cb5bff0ff3665f46229b5593354324fbecdd5b131506fc.json[2018-09-25 09:40:29.967840409] P2P < AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97
+[2018-09-25 09:40:29.967989255] P2P > VERSION 1
+[2018-09-25 09:40:29.969234907] P2P < VERSION 1
+[2018-09-25 09:40:29.96933411] P2P > GET 0 .heudiconv/qa/ses-20171204/info/dicominfo_ses-20171204.tsv SHA256E-s1633--7aee5bc34c95def9972b1f99f1a9ad976a3acb9da9f18e8bfa8888f579c111f6.tsv
+[2018-09-25 09:40:29.971575677] P2P < GET 0 .heudiconv/qa/ses-20171204/info/dicominfo_ses-20171204.tsv SHA256E-s1633--7aee5bc34c95def9972b1f99f1a9ad976a3acb9da9f18e8bfa8888f579c111f6.tsv[2018-09-25 09:40:29.972619373] P2P > DATA 429026[2018-09-25 09:40:29.971577514] P2P < DATA 429026
+[2018-09-25 09:40:29.981195211] P2P < AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97
+[2018-09-25 09:40:29.981346807] P2P > VERSION 1
+[2018-09-25 09:40:29.982599704] P2P < VERSION 1
+[2018-09-25 09:40:29.982851645] P2P > GET 0 .heudiconv/qa/ses-20171113/info/filegroup_ses-20171113.json SHA256E-s429026--2f0daf77e8ff5d902c00f88343b3cad51a2c7abc1e4702d450e5aea8dafc4ca6.json
+[2018-09-25 09:40:29.98372615] P2P < AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97
+[2018-09-25 09:40:29.983855252] P2P > VERSION 1
+[2018-09-25 09:40:29.985098551] P2P < GET 0 .heudiconv/qa/ses-20171113/info/filegroup_ses-20171113.json SHA256E-s429026--2f0daf77e8ff5d902c00f88343b3cad51a2c7abc1e4702d450e5aea8dafc4ca6.json[2018-09-25 09:40:29.985099291] P2P < VERSION 1
+[2018-09-25 09:40:29.985268868] P2P > GET 0 .heudiconv/qa/ses-20171113/info/dicominfo_ses-20171113.tsv SHA256E-s1633--76397f694088587dfbe2cbea5d35341c7588dbcb262a0ff91f94a07892c83409.tsv
+[2018-09-25 09:40:29.986356073] P2P < AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97
+[2018-09-25 09:40:29.9876026] P2P < GET 0 .heudiconv/qa/ses-20171113/info/dicominfo_ses-20171113.tsv SHA256E-s1633--76397f694088587dfbe2cbea5d35341c7588dbcb262a0ff91f94a07892c83409.tsv[2018-09-25 09:40:29.986449339] P2P > VERSION 1
+[2018-09-25 09:40:29.987893014] P2P < VERSION 1
+[2018-09-25 09:40:29.988057111] P2P > GET 0 .heudiconv/qa/ses-20171106/info/filegroup_ses-20171106.json SHA256E-s429026--cd00d181cf477405db3b5243fbd5d7969efffccf16b49599a1cd1fde32879a66.json
+[2018-09-25 09:40:29.990480076] P2P < GET 0 .heudiconv/qa/ses-20171106/info/filegroup_ses-20171106.json SHA256E-s429026--cd00d181cf477405db3b5243fbd5d7969efffccf16b49599a1cd1fde32879a66.json{"byte-progress":32752,"action":{"command":"get","note":"from origin...","key":"SHA256E-s429026--12edfd6e2c58f05803cb5bff0ff3665f46229b5593354324fbecdd5b131506fc.json","file":".heudiconv/qa/ses-20171127/info/filegroup_ses-20171127.json"},"total-size":429026,"percent-progress":"7.63%"}
+[2018-09-25 09:40:30.109171443] P2P > VALID{"byte-progress":429026,"action":{"command":"get","note":"from origin...","key":"SHA256E-s429026--12edfd6e2c58f05803cb5bff0ff3665f46229b5593354324fbecdd5b131506fc.json","file":".heudiconv/qa/ses-20171127/info/filegroup_ses-20171127.json"},"total-size":429026,"percent-progress":"100%"}
+[2018-09-25 09:40:30.109206914] P2P < VALID
+[2018-09-25 09:40:30.109391344] P2P > SUCCESS
+[2018-09-25 09:40:30.111586675] P2P < SUCCESS{"command":"get","note":"from origin...\nchecksum...","success":true,"key":"SHA256E-s429026--12edfd6e2c58f05803cb5bff0ff3665f46229b5593354324fbecdd5b131506fc.json","file":".heudiconv/qa/ses-20171127/info/filegroup_ses-20171127.json"}
+
+"""]]
+
+on the remote I see 5 sleeping annex-shells:
+[[!format sh """
+[bids@rolando ~] > ps auxw | grep git-anne[x] | nl
+     1	bids     17254  0.0  0.0 1074095936 12788 ?    Ssl  09:40   0:00 /afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2/exe/git-annex-shell --library-path /afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//usr/lib/x86_64-linux-gnu/gconv:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//usr/lib/x86_64-linux-gnu/audit:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//etc/ld.so.conf.d:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//lib64:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//lib/x86_64-linux-gnu:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//usr/lib/x86_64-linux-gnu: /afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2/shimmed/git-annex-shell/git-annex-shell p2pstdio /inbox/BIDS/dbic/QA --debug ba8f2cea-f229-422c-82be-6580e5e07ed5 --uuid 6384a551-a41d-4290-b186-9258befede97
+     2	bids     17259  0.0  0.0 1074095936 12004 ?    Ssl  09:40   0:00 /afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2/exe/git-annex-shell --library-path /afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//usr/lib/x86_64-linux-gnu/gconv:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//usr/lib/x86_64-linux-gnu/audit:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//etc/ld.so.conf.d:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//lib64:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//lib/x86_64-linux-gnu:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//usr/lib/x86_64-linux-gnu: /afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2/shimmed/git-annex-shell/git-annex-shell p2pstdio /inbox/BIDS/dbic/QA --debug ba8f2cea-f229-422c-82be-6580e5e07ed5 --uuid 6384a551-a41d-4290-b186-9258befede97
+     3	bids     17260  0.0  0.0 1074095936 12012 ?    Ssl  09:40   0:00 /afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2/exe/git-annex-shell --library-path /afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//usr/lib/x86_64-linux-gnu/gconv:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//usr/lib/x86_64-linux-gnu/audit:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//etc/ld.so.conf.d:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//lib64:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//lib/x86_64-linux-gnu:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//usr/lib/x86_64-linux-gnu: /afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2/shimmed/git-annex-shell/git-annex-shell p2pstdio /inbox/BIDS/dbic/QA --debug ba8f2cea-f229-422c-82be-6580e5e07ed5 --uuid 6384a551-a41d-4290-b186-9258befede97
+     4	bids     17261  0.0  0.0 1074095936 12012 ?    Ssl  09:40   0:00 /afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2/exe/git-annex-shell --library-path /afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//usr/lib/x86_64-linux-gnu/gconv:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//usr/lib/x86_64-linux-gnu/audit:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//etc/ld.so.conf.d:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//lib64:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//lib/x86_64-linux-gnu:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//usr/lib/x86_64-linux-gnu: /afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2/shimmed/git-annex-shell/git-annex-shell p2pstdio /inbox/BIDS/dbic/QA --debug ba8f2cea-f229-422c-82be-6580e5e07ed5 --uuid 6384a551-a41d-4290-b186-9258befede97
+     5	bids     17262  0.0  0.0 1074095936 12008 ?    Ssl  09:40   0:00 /afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2/exe/git-annex-shell --library-path /afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//usr/lib/x86_64-linux-gnu/gconv:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//usr/lib/x86_64-linux-gnu/audit:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//etc/ld.so.conf.d:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//lib64:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//lib/x86_64-linux-gnu:/afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2//usr/lib/x86_64-linux-gnu: /afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex_v2/shimmed/git-annex-shell/git-annex-shell p2pstdio /inbox/BIDS/dbic/QA --debug ba8f2cea-f229-422c-82be-6580e5e07ed5 --uuid 6384a551-a41d-4290-b186-9258befede97
+"""]]
+
+local version is 6.20180913+git33-g2cd5a723f-1~ndall+1 and remote 6.20180808-ga1327779a (it is like Sep 13, current standalone build).
+There was/is no other transfer in progress when calling it, but some previously failed runs. That file gets just fine later on if run get on it alone
+[[!format sh """
+$> git annex get .heudiconv/qa/ses-20171113/info/filegroup_ses-20171113.json  
+get .heudiconv/qa/ses-20171113/info/filegroup_ses-20171113.json (from origin...) 
+(checksum...) ok                   
+(recording state in git...)
+"""]]
+
+so to me smells like some race condition due to high -J value.
+
+[[!meta author=yoh]]
