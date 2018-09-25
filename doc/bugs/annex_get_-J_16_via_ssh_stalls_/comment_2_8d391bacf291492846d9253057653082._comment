@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-09-25T17:01:00Z"
+ content="""
+All this debug output means nothing to me, what operation is it stalling
+on?
+
+	{"command":"get","wanted":[{"here":false,"uuid":"6384a551-a41d-4290-b186-9258befede97","description":"bids@rolando:/inbox/BIDS/dbic/QA [origin]"}],"note":"transfer already in progress, or unable to take transfer lock\nUnable to access these remotes: origin\nTry making some of these repositories available:\n\t6384a551-a41d-4290-b186-9258befede97 -- bids@rolando:/inbox/BIDS/dbic/QA [origin]\n","skipped":[],"success":false,"key":"SHA256E-s1633--1bc7a100b82cd31d084aae5b25b8d90af128324d10d92cfc9e2196d28829d375.tsv","file":".heudiconv/qa/ses-20171106/info/dicominfo_ses-20171106.tsv"}
+
+Are two files in the set of files you operated on both pointing at this key?
+"""]]
