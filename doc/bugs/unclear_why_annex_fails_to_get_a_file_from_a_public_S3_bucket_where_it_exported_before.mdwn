@@ -1,0 +1,122 @@
+### Please describe the problem.
+
+Continuation of the prior brief troubleshooting in [devblog](http://git-annex.branchable.com/devblog/day_518__S3_versioning_finishing_touches/#comment-ced84e6126b523170638f36a73cdb4b1).
+
+Joey:
+
+> As to the problems you're having with that S3 remote, it looks like it does not have public=yes enabled in its configuration at all, which is why git-annex is failing to download from it. 
+
+I do not think that is the case.  s3-PUBLIC has `public=yes`.  But it is entirely not clear why git-annex fails to download - no diagnostic error message at --debug level.  Please try yourself:
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+~datalad > git clone https://github.com/OpenNeuroDatasets/ds001419               
+Cloning into 'ds001419'...
+remote: Enumerating objects: 420, done.
+remote: Counting objects: 100% (420/420), done.
+remote: Compressing objects: 100% (232/232), done.
+remote: Total 420 (delta 99), reused 418 (delta 97), pack-reused 0
+Receiving objects: 100% (420/420), 37.43 KiB | 2.88 MiB/s, done.
+Resolving deltas: 100% (99/99), done.
+
+~datalad > cd ds001419 
+
+~datalad/providers/openneuro/ds001419 > git annex enableremote s3-PUBLIC
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+download failed: Not Found
+
+  Remote origin not usable by git-annex; setting annex-ignore
+enableremote s3-PUBLIC ok
+(recording state in git...)
+
+~datalad/providers/openneuro/ds001419 > git annex whereis sub-01/anat/sub-01_T1w.nii.gz                                                                                       
+whereis sub-01/anat/sub-01_T1w.nii.gz (2 copies)  
+  	303581cd-3c58-4a60-b685-42cae4314c68 -- root@1f69c4ed80cf:/datalad/ds001419
+   	c21131c5-9e22-442d-a4d6-22d225603bc9 -- s3-PRIVATE
+
+  The following untrusted locations may also have copies:
+  	336309c0-d7f8-430e-bd2b-4bdc61e587cb -- [s3-PUBLIC]
+ok
+
+~datalad/providers/openneuro/ds001419 > git annex get --from s3-PUBLIC --debug sub-01/anat/sub-01_T1w.nii.gz
+[2018-09-25 11:30:48.623186962] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2018-09-25 11:30:48.6294298] process done ExitSuccess
+[2018-09-25 11:30:48.629531355] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2018-09-25 11:30:48.63678286] process done ExitSuccess
+[2018-09-25 11:30:48.637035079] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..a6e5981635fd80f9186e6aa840312a97153508a4","--pretty=%H","-n1"]
+[2018-09-25 11:30:48.648701597] process done ExitSuccess
+[2018-09-25 11:30:48.648965608] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2018-09-25 11:30:48.649547391] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2018-09-25 11:30:48.655933893] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--cached","-z","--","sub-01/anat/sub-01_T1w.nii.gz"]
+get sub-01/anat/sub-01_T1w.nii.gz (from s3-PUBLIC...) [2018-09-25 11:30:48.662890927] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff-tree","-z","--raw","--no-renames","-l0","-r","4b825dc642cb6eb9a060e54bf8d69288fbee4904","3bbd58c6720ad7a764409c219397a4e15e4ed77d","--"]
+[2018-09-25 11:30:48.670609446] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2018-09-25 11:30:48.672897086] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2018-09-25 11:30:48.681427258] process done ExitSuccess
+failed
+[2018-09-25 11:30:48.740042089] process done ExitSuccess
+[2018-09-25 11:30:48.740263179] process done ExitSuccess
+[2018-09-25 11:30:48.740549287] process done ExitSuccess
+[2018-09-25 11:30:48.740805353] process done ExitSuccess
+git-annex: get: 1 failed
+
+~datalad/providers/openneuro/ds001419 > git cat-file -p git-annex:remote.log
+336309c0-d7f8-430e-bd2b-4bdc61e587cb bucket=openneuro.org datacenter=US encryption=none exporttree=yes fileprefix=ds001419/ host=s3.amazonaws.com name=s3-PUBLIC partsize=1GiB port=80 public=yes publicurl=yes storageclass=STANDARD type=S3 timestamp=1537889429.294083309s
+c21131c5-9e22-442d-a4d6-22d225603bc9 bucket=openneuro-private datacenter=US encryption=none exporttree=yes fileprefix=ds001419/ host=s3.amazonaws.com name=s3-PRIVATE partsize=1GiB port=80 storageclass=STANDARD type=S3 timestamp=1531961539.924031958s
+
+~datalad/providers/openneuro/ds001419 > git annex info
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 5
+	00000000-0000-0000-0000-000000000001 -- web
+ 	00000000-0000-0000-0000-000000000002 -- bittorrent
+ 	303581cd-3c58-4a60-b685-42cae4314c68 -- root@1f69c4ed80cf:/datalad/ds001419
+ 	3cf65be0-250d-4456-bfee-8501390e28c7 -- yoh@hopa:~/proj/datalad/providers/openneuro/ds001419 [here]
+ 	c21131c5-9e22-442d-a4d6-22d225603bc9 -- s3-PRIVATE
+untrusted repositories: 1
+	336309c0-d7f8-430e-bd2b-4bdc61e587cb -- [s3-PUBLIC]
+transfers in progress: none
+available local disk space: 1.76 gigabytes (+1 megabyte reserved)
+local annex keys: 0
+local annex size: 0 bytes
+annexed files in working tree: 7
+size of annexed files in working tree: 183.03 megabytes
+bloom filter size: 32 mebibytes (0% full)
+backend usage: 
+	MD5E: 7
+
+~datalad/providers/openneuro/ds001419 > git annex info s3-PUBLIC
+uuid: 336309c0-d7f8-430e-bd2b-4bdc61e587cb
+description: [s3-PUBLIC]
+remote: s3-PUBLIC
+trust: untrusted
+cost: 200.0
+type: S3
+creds: not available
+bucket: openneuro.org
+endpoint: s3.amazonaws.com
+port: 80
+storage class: STANDARD
+partsize: 1.07 gigabytes
+public: yes
+versioning: no
+encryption: none
+chunking: none
+export: yes
+remote annex keys: 27
+remote annex size: 183.03 megabytes (+ 20 unknown size)
+
+"""]]
+
+
+may be it is somehow interaction with the fact that the bucket is versioned, although export happened with annex version which didn't support versioning?
+
+It would be nice, before introducing versioning information as you outlined in the [comment](http://git-annex.branchable.com/devblog/day_518__S3_versioning_finishing_touches/#comment-01400aba452e6596e2b6b2967a0b9bc1) to enable access to the bucket at least to download the most recent version(s) of the file(s).
+
+### What version of git-annex are you using? On what operating system?
+
+6.20180913+git52-gdb1644808-1~ndall+1
+
+
+[[!meta author=yoh]]
