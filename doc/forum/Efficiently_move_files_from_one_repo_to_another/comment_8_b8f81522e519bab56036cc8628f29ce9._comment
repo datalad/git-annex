@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="mario"
+ avatar="http://cdn.libravatar.org/avatar/4c63b0935789d29210d0bd8cad8d7ac7"
+ subject="comment 8"
+ date="2018-09-25T21:59:10Z"
+ content="""
+Ilya_Shlyakhter, thanks for the link. Apparently \"git-annex get\" also works on bare repos (but I still have to find out how to use this with gitolite, maybe I can write some custom hook or something..)
+
+About the refspecs etc. I think my git-knowledge is not sufficient to fully grasp your idea. But there's one thing that makes me hesitate. I'm looking for a solution that is as less \"special\" as possible. If I have to remember what I was thinking when I designed all this, I'm pretty sure things will break eventually. Thus, in a good solution all thinks should work identically as with regular git-annex. If I have to remember something to do things (e.g. move operations) more efficiently that's okay, as long as things don't break when I just use my repo like a regular git-annex repo. I'm not sure if your approach would provide this.
+
+Also, I suppose I would have to \"design\" one mega-repository for all my current (and probably future) use cases. A loose coupling of otherwise separated repos seems not to be possible, as far as I understand the solution. This could especially become an issue for repos I want to share with others.
+"""]]
