@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-09-25T17:18:14Z"
+ content="""
+Ok, reproduced by downgrading git-annex, so it is a reversion in the
+fallback from p2pstdio.
+
+It is indeed caused by [[!commit b18fb1e343e9654207fbebacf686659c75d0fb4c]],
+because that adds a new ProtocolEOF value, and postAuth has a fallthrough
+case that tries to then send a ERROR message back over the connection, but
+by that time the pipe has closed.
+
+So that was an easy fix. I do still wonder how a system that displays
+/etc/issue or whatever to noninteractive logins could have ever worked with
+rsync or git-annex. But if that system doesn't work after this fix, it's an
+unrelated problem.
+"""]]

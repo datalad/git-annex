@@ -83,7 +83,6 @@ data Message
 	| DATA Len -- followed by bytes of data
 	| VALIDITY Validity
 	| ERROR String
-	| ProtocolEOF
 	deriving (Show)
 
 instance Proto.Sendable Message where
@@ -109,7 +108,6 @@ instance Proto.Sendable Message where
 	formatMessage (VALIDITY Invalid) = ["INVALID"]
 	formatMessage (DATA len) = ["DATA", Proto.serialize len]
 	formatMessage (ERROR err) = ["ERROR", Proto.serialize err]
-	formatMessage (ProtocolEOF) = []
 
 instance Proto.Receivable Message where
 	parseCommand "AUTH" = Proto.parse2 AUTH
@@ -369,8 +367,6 @@ serverLoop :: (Message -> Proto (ServerHandler a)) -> Proto (Maybe a)
 serverLoop a = do
 	mcmd <- net receiveMessage
 	case mcmd of
-		-- Stop loop at EOF
-		Just ProtocolEOF -> return Nothing
 		-- When the client sends ERROR to the server, the server
 		-- gives up, since it's not clear what state the client
 		-- is in, and so not possible to recover.

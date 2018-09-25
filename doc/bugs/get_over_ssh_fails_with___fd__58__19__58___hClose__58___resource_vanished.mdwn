@@ -64,3 +64,5 @@ so ssh connection seems to be ok
 what could it be?
 
 [[!meta author=yoh]]
+
+> [[fixed|done]] --[[Joey]]

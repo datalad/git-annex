@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2018-09-25T17:18:14Z"
- content="""
-Ok, reproduced by downgrading git-annex, so it is a reversion in the
-fallback from p2pstdio.
-"""]]
