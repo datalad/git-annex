@@ -4,7 +4,7 @@
  - not change, otherwise removing old hooks using an old version of
  - the script would fail.
  -
- - Copyright 2013-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -20,16 +20,23 @@ import Utility.Shell
 import qualified Data.Map as M
 
 preCommitHook :: Git.Hook
-preCommitHook = Git.Hook "pre-commit" (mkHookScript "git annex pre-commit .")
+preCommitHook = Git.Hook "pre-commit" (mkHookScript "git annex pre-commit .") []
 
 postReceiveHook :: Git.Hook
-postReceiveHook = Git.Hook "post-receive" (mkHookScript "git annex post-receive")
+postReceiveHook = Git.Hook "post-receive"
+	-- Only run git-annex post-receive when git-annex supports it,
+	-- to avoid failing if the repository with this hook is used
+	-- with an older version of git-annex.
+	(mkHookScript "if git annex post-receive --help >/dev/null 2>&1; then git annex post-receive; fi")
+	-- This is an old version of the hook script.
+	[ mkHookScript "git annex post-receive"
+	]
 
 preCommitAnnexHook :: Git.Hook
-preCommitAnnexHook = Git.Hook "pre-commit-annex" ""
+preCommitAnnexHook = Git.Hook "pre-commit-annex" "" []
 
 postUpdateAnnexHook :: Git.Hook
-postUpdateAnnexHook = Git.Hook "post-update-annex" ""
+postUpdateAnnexHook = Git.Hook "post-update-annex" "" []
 
 mkHookScript :: String -> String
 mkHookScript s = unlines

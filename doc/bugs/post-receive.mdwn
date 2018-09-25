@@ -65,3 +65,5 @@ tai@trasa:~$
 I did not hit enter, the script just failed on me during tab-complete and exited.
 
 Thanks, I look forward to any response from the community this might get.
+
+> [[fixed|done]] --[[Joey]]
