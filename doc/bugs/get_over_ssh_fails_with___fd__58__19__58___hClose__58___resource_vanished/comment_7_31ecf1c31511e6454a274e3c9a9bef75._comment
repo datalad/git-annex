@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 7"
+ date="2018-09-25T16:15:54Z"
+ content="""
+indeed I do have /etc/issue (not motd) displayed even when with -T:
+
+[[!format sh \"\"\"
+
+        $> ssh bids@rolando.cns -T git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'ba8f2cea-f229-422c-82be-6580e5e07ed5' --uuid 6384a551-a41d-4290-b186-9258befede97
+
+
+                Dartmouth College, Department of Psychological and Brain Sciences
+                                                  Authorized access only
+
+
+
+
+        fatal: Run with no arguments or with -c cmd
+        git-annex-shell: git-shell failed
+        1 5383 ->1
+
+\"\"\"]]
+
+"""]]
