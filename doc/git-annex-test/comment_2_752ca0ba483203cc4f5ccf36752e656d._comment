@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-09-25T16:57:13Z"
+ content="""
+Multithreaded operation is not tested, and since most threading related
+bugs are timing dependant, it's doubtful that the test suite would be able
+to usefully test them.
+"""]]
