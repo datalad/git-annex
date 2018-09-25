@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2018-09-25T18:14:19Z"
+ content="""
+If you perform the same move between repos on both the laptop and the
+server, git-annex will generate the same keys for the files on both of
+them, and so won't need to transfer the data again.
+"""]]
