@@ -4,7 +4,7 @@ This is actually two (related) bugs.
 I discovered the second by means of troubleshooting the first.
 
 One issue I've had with a portable repo is when I init it from my arch machine it sets up everything as expected.
-When I try to use that drive with my raspberry pi, however, there are some new git hooks (or at least one) that the older version of git annex (still the latest available in the Pi's repos, 2016, which is really old :/). 
+When I try to use that drive with my raspberry pi, however, there are some new git hooks (or at least one) that the older version of git annex (still the latest available in the Pi's repos, 2016, which is really old :/) does not support. 
 
 What is necessary to get a newer version of git-annex available in the Raspbian repos for default users? I know I can just install the tarball (and I'm considering it) but for everyone else coming upon this issue...
 
