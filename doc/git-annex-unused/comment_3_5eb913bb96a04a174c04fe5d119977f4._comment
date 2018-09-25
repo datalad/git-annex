@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-09-25T18:09:29Z"
+ content="""
+Well, this only finds old versions of files, it does not delete them.
+
+Even if you choose to then run [[git-annex-dropunused]], it won't lose
+data unless you force it to.
+"""]]
