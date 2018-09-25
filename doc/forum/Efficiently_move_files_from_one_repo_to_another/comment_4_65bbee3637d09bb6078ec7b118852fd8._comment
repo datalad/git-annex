@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="mario"
+ avatar="http://cdn.libravatar.org/avatar/4c63b0935789d29210d0bd8cad8d7ac7"
+ subject="comment 4"
+ date="2018-09-25T09:45:00Z"
+ content="""
+I discovered one potential problem with this approach. The \"server\" in my example typically has \"--bare\" repos created by gitolite. I'm not sure if I can convince such a repo to get files from the cache. But I will try and report my findings.
+
+Is there a way to tell a remote repo (e.g. the server) to get files from another remote?
+"""]]
