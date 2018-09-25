@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="same as another one?"
+ date="2018-09-25T15:35:15Z"
+ content="""
+might relate to my other recent report [about needing to retry while transfering over ssh/rsync](http://git-annex.branchable.com/bugs/some_transfers_for_get_-J4_fail_over_ssh__47__rsync_and_require_retry/)
+"""]]
