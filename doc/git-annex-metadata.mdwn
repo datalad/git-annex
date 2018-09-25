@@ -22,6 +22,14 @@ contains the date the field was last changed. Unlike other metadata,
 this cannot be directly modified by this command. It is updated
 automatically.
 
+Note that the metadata is attached to the particular content of a file
+(or rather to a particular [key](http://git-annex.branchable.com/backends/)),
+not to a particular file on a particular git branch.  All files with given
+content share the same metadata, which is stored on the
+[git-annex branch](http://git-annex.branchable.com/internals#The_git-annex_branch).
+If a file is [edited](http://git-annex.branchable.com/git-annex-unlock/),
+old metadata will be copied to the new contents when you [[git-annex-add]] the edited file. 
+
 # OPTIONS
 
 * `-g field` / `--get field`
