@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-09-25T17:31:36Z"
+ content="""
+Misconfiguration:
+
+	joey@darkstar:~/tmp/ds001419>git show git-annex:remote.log | grep openneuro.org
+	336309c0-d7f8-430e-bd2b-4bdc61e587cb bucket=openneuro.org datacenter=US encryption=none exporttree=yes fileprefix=ds001419/ host=s3.amazonaws.com name=s3-PUBLIC partsize=1GiB port=80 public=yes publicurl=yes storageclass=STANDARD type=S3 timestamp=1537895418.565736858s
+
+publicurl=yes means that the bucket's url is "yes".
+
+Since constructing an URI object from that invalid url fails, the url
+downloader fails early and this avoids the debug output that would normally be
+shown too when downloading an url by recent versions of git-annex.
+
+This also explains probably why whereis doesn't list any urls.
+"""]]

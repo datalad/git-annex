@@ -120,3 +120,6 @@ It would be nice, before introducing versioning information as you outlined in t
 
 
 [[!meta author=yoh]]
+
+> Added an error message when download of an invalid url is attempted
+> and also made the url be listed by --debug. [[done]] --[[Joey]]

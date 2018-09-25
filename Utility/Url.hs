@@ -311,7 +311,10 @@ download meterupdate url file uo =
 				(DownloadWithCurl _, _)
 					| isfileurl u -> downloadfile u
 					| otherwise -> downloadcurl
-		Nothing -> return False
+		Nothing -> do
+			liftIO $ debugM "url" url
+			hPutStrLn stderr "download failed: invalid url"
+			return False
 	
 	isfileurl u = uriScheme u == "file:"
 
