@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="mario"
+ avatar="http://cdn.libravatar.org/avatar/4c63b0935789d29210d0bd8cad8d7ac7"
+ subject="comment 7"
+ date="2018-09-25T21:33:17Z"
+ content="""
+Joey, that's true. However, one of the things I like most about git-annex is that I don't have to repeat operations (like renaming/moving of files) on each remote. Therefore, I try to also automate this behavior even if the move operation spans two repos (if both repos exist on the remote).
+
+Probably such \"actions\" (get files from another local repo) could be checked-in as \"todos\" into the repo. Then the remote could try to perform it after a sync. However, I imagine that its hard to design this in a straight forward way and could get pretty messy. Therefore, I thought some kind of \"local location tracking\" could be the cleaner solution.
+
+My preferred solution would be the following. But I guess this would require changes in git-annex: Multiple local repos can share a single .git/annex/objects directory. Typically a repo would only know about its own files in there (and would not care about files put there by other repos at all, especially not leaking them into the location tracking). But if a file is checked-in into a repo (\"sync\", not \"sync --content\") and the content of this file is already present (e.g. because it also exists in another repo), the repo would detect that the file is there and updates location tracking for this file.
+
+I presume the \"local cache\" approach with hardlinks is the next best thing to this idea, that not requires changes to git-annex. E.g. some scripting/hooks that performs a \"get\" operation after a sync..
+"""]]
