@@ -28,7 +28,7 @@ not to a particular file on a particular git branch.  All files with given
 content share the same metadata, which is stored on the
 [git-annex branch](http://git-annex.branchable.com/internals#The_git-annex_branch).
 If a file is [edited](http://git-annex.branchable.com/git-annex-unlock/),
-old metadata will be transferred to the new contents when you [[git-annex-add]] the edited file. 
+old metadata will be copied to the new contents when you [[git-annex-add]] the edited file. 
 
 # OPTIONS
 
