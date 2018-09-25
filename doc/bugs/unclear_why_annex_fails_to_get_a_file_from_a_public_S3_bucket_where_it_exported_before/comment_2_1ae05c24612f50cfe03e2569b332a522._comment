@@ -1,0 +1,51 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="resolved!"
+ date="2018-09-25T17:55:30Z"
+ content="""
+oh man, thanks!  indeed I should have noticed it
+
+FTR here is a protocol of manual changes:
+
+[[!format sh \"\"\"
+$> cd ds001419 
+CHANGES  README  dataset_description.json  participants.tsv  sub-01/
+1 5689.....................................:Tue 25 Sep 2018 01:52:13 PM EDT:.
+(git-annex)hopa:~datalad/providers/openneuro/ds001419[master]
+$> git co git-annex                                    
+Switched to branch 'git-annex'
+1 5690.....................................:Tue 25 Sep 2018 01:52:15 PM EDT:.
+(git-annex)hopa:~datalad/providers/openneuro/ds001419[git-annex]git
+$> vim remote.log 
+1 5691.....................................:Tue 25 Sep 2018 01:53:06 PM EDT:.
+(git-annex)hopa:~datalad/providers/openneuro/ds001419[git-annex]git
+$> git diff
+diff --git a/remote.log b/remote.log
+index 162f6f6..6864376 100644
+--- a/remote.log
++++ b/remote.log
+@@ -1,2 +1,2 @@
+-336309c0-d7f8-430e-bd2b-4bdc61e587cb bucket=openneuro.org datacenter=US encryption=none exporttree=yes fileprefix=ds001419/ host=s3.amazonaws.com name=s3-PUBLIC partsize=1GiB port=80 public=yes publicurl=yes storageclass=STANDARD type=S3 timestamp=1537889429.294083309s
++336309c0-d7f8-430e-bd2b-4bdc61e587cb bucket=openneuro.org datacenter=US encryption=none exporttree=yes fileprefix=ds001419/ host=s3.amazonaws.com name=s3-PUBLIC partsize=1GiB port=80 public=yes publicurl=http://openneuro.org.s3.amazonaws.com/ storageclass=STANDARD type=S3 timestamp=1537889429.294083309s
+ c21131c5-9e22-442d-a4d6-22d225603bc9 bucket=openneuro-private datacenter=US encryption=none exporttree=yes fileprefix=ds001419/ host=s3.amazonaws.com name=s3-PRIVATE partsize=1GiB port=80 storageclass=STANDARD type=S3 timestamp=1531961539.924031958s
+1 5695.....................................:Tue 25 Sep 2018 01:53:08 PM EDT:.
+(git-annex)hopa:~datalad/providers/openneuro/ds001419[git-annex]git
+$> git commit -m 'made public url to be http://openneuro.org.s3.amazonaws.com/' -a
+[git-annex 7f1a89e] made public url to be http://openneuro.org.s3.amazonaws.com/
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+1 5696.....................................:Tue 25 Sep 2018 01:53:15 PM EDT:.
+(git-annex)hopa:~datalad/providers/openneuro/ds001419[git-annex]git
+$> git co master
+Switched to branch 'master'
+Your branch is up to date with 'origin/master'.
+1 5697.....................................:Tue 25 Sep 2018 01:53:17 PM EDT:.
+(git-annex)hopa:~datalad/providers/openneuro/ds001419[git-annex]git
+$> git annex get sub-01/anat/sub-01_T1w.nii.gz
+get sub-01/anat/sub-01_T1w.nii.gz (from s3-PUBLIC...) (checksum...) ok
+(recording state in git...)
+
+\"\"\"]]
+
+can be closed, thanks again
+"""]]
