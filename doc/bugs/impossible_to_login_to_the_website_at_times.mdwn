@@ -1,0 +1,6 @@
+As reported before in private communication, remains the case.  Yesterday happened on both chromium and firefox.  Cookies are enabled and even present (see screenshot, couldn't attach), clearing cookie doesn't help.  Now managed to successfully login in firefox.
+
+
+[[!meta author=yoh]]
+
+[screenshot.png](http://www.onerussian.com/tmp/gkrellShoot_09-25-18_092905.png)
