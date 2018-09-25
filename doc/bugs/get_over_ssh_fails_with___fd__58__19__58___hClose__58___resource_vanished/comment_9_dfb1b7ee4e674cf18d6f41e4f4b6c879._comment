@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2018-09-25T16:37:53Z"
+ content="""
+I tried configuring sshd with PrintMotd yes, that actually resulted in
+double motd on interactive login, but still none on noninteractive login,
+and doesn't cause this problem.
+
+I tried making ~/.bashrc echo some stuff. That also didn't reproduce the
+problem, though debug does have this:
+
+	[2018-09-25 12:40:18.092800592] P2P > ERROR auth failed
+
+It does not give up, but goes on to use rsync. Although rsync unsurprisingly 
+also fails "protocol version mismatch -- is your shell clean?".
+
+Still, this seems to indicate that the motd display shown in your transcripts is
+at the root of the problem, although I've not fully replicated the circumstances
+and will need more information to get further on this.
+"""]]
