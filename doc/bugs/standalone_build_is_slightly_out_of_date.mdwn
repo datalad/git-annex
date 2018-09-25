@@ -1,0 +1,45 @@
+
+[[!format sh """
+hopa:/tmp
+$> wget -S https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz
+--2018-09-25 09:25:06--  https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz
+Resolving downloads.kitenet.net (downloads.kitenet.net)... 66.228.36.95, 2600:3c03::f03c:91ff:fe73:b0d2
+Connecting to downloads.kitenet.net (downloads.kitenet.net)|66.228.36.95|:443... connected.
+HTTP request sent, awaiting response... 
+  HTTP/1.1 200 OK
+  Date: Tue, 25 Sep 2018 13:25:07 GMT
+  Server: Apache/2.4.34 (Debian)
+  Last-Modified: Thu, 13 Sep 2018 20:29:04 GMT
+  ETag: "3e30e83-575c68ee3f927"
+  Accept-Ranges: bytes
+  Content-Length: 65212035
+  Keep-Alive: timeout=5, max=100
+  Connection: Keep-Alive
+  Content-Type: application/x-gzip
+Length: 65212035 (62M) [application/x-gzip]
+Saving to: ‘git-annex-standalone-amd64.tar.gz’
+
+git-annex-standalone-amd64. 100%[===========================================>]  62.19M  1.77MB/s    in 28s     
+
+2018-09-25 09:25:35 (2.20 MB/s) - ‘git-annex-standalone-amd64.tar.gz’ saved [65212035/65212035]
+
+
+$> tar -xzf git-annex-standalone-amd64.tar.gz                                                    
+
+$> git-annex.linux/git-annex version         
+git-annex version: 6.20180808-ga1327779a
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify ConcurrentOutput TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.19 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.2 feed-1.0.0.0 ghc-8.2.2 http-client-0.5.13 persistent-sqlite-2.8.1.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: linux x86_64
+supported repository versions: 3 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+
+$> git -C ~/proj/git-annex describe --contains 6.20180808-ga1327779a
+6.20180913~3^2~1
+
+"""]]
+
+[[!meta author=yoh]]
+
