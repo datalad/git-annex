@@ -1,0 +1,42 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 8"
+ date="2018-09-25T16:18:58Z"
+ content="""
+replicated on another host with a VERY outdated annex (5.20141125), but where there is no issue or motd:
+[[!format sh \"\"\"
+$> git annex get --debug 1
+[2018-09-25 12:17:02.454369526] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"1\"]
+get 1 [2018-09-25 12:17:02.463349835] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2018-09-25 12:17:02.467436881] process done ExitSuccess
+[2018-09-25 12:17:02.467538938] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2018-09-25 12:17:02.471371867] process done ExitSuccess
+[2018-09-25 12:17:02.471566695] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..70d4b5032ee0c3d4de499d650c71bdb0d55d2dee\",\"--pretty=%H\",\"-n1\"]
+[2018-09-25 12:17:02.476070612] process done ExitSuccess
+[2018-09-25 12:17:02.476399866] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-09-25 12:17:02.477000311] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+(from origin...) 
+[2018-09-25 12:17:02.484004025] chat: ssh [\"washoe\",\"-S\",\".git/annex/ssh/washoe\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-T\",\"git-annex-shell 'p2pstdio' '/tmp/repo' '--debug' '84085bc4-d338-41eb-be4d-9b0d96536860' --uuid f6bedfe8-0e58-4182-bca3-764c5c3ed17b\"]
+[2018-09-25 12:17:02.695407743] P2P > ERROR auth failed
+
+  fd:19: hClose: resource vanished (Broken pipe)
+
+  Unable to access these remotes: origin
+
+  Try making some of these repositories available:
+  	f6bedfe8-0e58-4182-bca3-764c5c3ed17b -- yoh@washoe:/tmp/repo [origin]
+failed
+[2018-09-25 12:17:02.699113109] read: ssh [\"-O\",\"stop\",\"-S\",\"washoe\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"localhost\"]
+[2018-09-25 12:17:02.709050558] process done ExitSuccess
+[2018-09-25 12:17:02.709515542] process done ExitSuccess
+[2018-09-25 12:17:02.710090983] process done ExitSuccess
+git-annex: get: 1 failed
+
+$> ssh washoe -T git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'ba8f2cea-f229-422c-82be-6580e5e07ed5' --uuid 6384a551-a41d-4290-b186-9258befede97       
+fatal: Run with no arguments or with -c cmd
+git-annex-shell: git-shell failed
+
+\"\"\"]]
+so I think it is incorrectly handles this failure and doesn't fall back to ssh/rsync.  nothing to do with motd/issue
+"""]]
