@@ -5,3 +5,6 @@
 Presumably this sudden lack of backwards incompatibility is unintentional.
 
 --spwhitton
+
+> Indeed it was, and I'll be making a release in the next couple of days
+> because of the breakage. [[done]] --[[Joey]]
