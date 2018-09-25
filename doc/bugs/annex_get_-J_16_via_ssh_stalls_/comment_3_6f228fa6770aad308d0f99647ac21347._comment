@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2018-09-25T22:28:49Z"
+ content="""
+> All this debug output means nothing to me, what operation is it stalling on?
+
+Do you mean that command I have pasted in the beginning `git annex get -J 16 --debug --json-progress .`? if something else, I cannot add beyond that command and `--debug` output.
+
+> Are two files in the set of files you operated on both pointing at this key?
+
+Ha, good question... seems to be not?:
+
+[[!format sh \"\"\"
+$> git clone http://datasets.datalad.org/dbic/QA/.git
+Cloning into 'QA'...
+
+$> cd QA
+
+$> find -lname */SHA256E-s1633--1bc7a100b82cd31d084aae5b25b8d90af128324d10d92cfc9e2196d28829d375.tsv 
+./.heudiconv/qa/ses-20171106/info/dicominfo_ses-20171106.tsv
+
+\"\"\"]]
+the only thing is that I have interrupted some previous stalled `get` invocations so may be it is somehow related?
+"""]]
