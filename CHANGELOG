@@ -18,6 +18,8 @@ git-annex (6.20180914) UNRELEASED; urgency=medium
     supporting filenames containing newlines.
   * Added annex.maxextensionlength for use cases where extensions longer
     than 4 characters are needed.
+  * Added remote.name.annex-security-allow-unverified-downloads, a
+    per-remote setting for annex.security.allow-unverified-downloads.
   * More FreeBSD build fixes.
 
   [ Yaroslav Halchenko ]

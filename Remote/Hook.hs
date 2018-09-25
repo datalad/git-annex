@@ -51,7 +51,7 @@ gen r u c gc = do
 			, retrieveKeyFileCheap = retrieveCheap hooktype
 			-- A hook could use http and be vulnerable to
 			-- redirect to file:// attacks, etc.
-			, retrievalSecurityPolicy = RetrievalVerifiableKeysSecure
+			, retrievalSecurityPolicy = mkRetrievalVerifiableKeysSecure gc
 			, removeKey = removeKeyDummy
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy

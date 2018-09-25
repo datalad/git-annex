@@ -3,3 +3,5 @@ Sometimes I _know_ that a given external special remote doesn't do redirects, or
 git -c annex.security.allow-unverified-downloads=ACKTHPPT annex get myfile
 every time is another thing to think about, when the whole point of git-annex is to not have to think about where things are :)  While configuring 
 annex.security.allow-unverified-downloads=ACKTHPPT permanently opens security holes.
+
+> [[done]] --[[Joey]]

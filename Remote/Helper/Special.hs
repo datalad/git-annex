@@ -1,6 +1,6 @@
 {- helpers for special remotes
  -
- - Copyright 2011-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -8,6 +8,7 @@
 module Remote.Helper.Special (
 	findSpecialRemotes,
 	gitConfigSpecialRemote,
+	mkRetrievalVerifiableKeysSecure,
 	Preparer,
 	Storer,
 	Retriever,
@@ -72,6 +73,15 @@ gitConfigSpecialRemote u c cfgs = do
 	setConfig (remoteConfig remotename "uuid") (fromUUID u)
   where
 	remotename = fromJust (M.lookup "name" c)
+
+-- RetrievalVerifiableKeysSecure unless overridden by git config.
+--
+-- Only looks at the RemoteGitConfig; the GitConfig's setting is
+-- checked at the same place the RetrievalSecurityPolicy is checked.
+mkRetrievalVerifiableKeysSecure :: RemoteGitConfig -> RetrievalSecurityPolicy
+mkRetrievalVerifiableKeysSecure gc
+	| remoteAnnexAllowUnverifiedDownloads gc = RetrievalAllKeysSecure
+	| otherwise = RetrievalVerifiableKeysSecure
 
 -- Use when nothing needs to be done to prepare a helper.
 simplyPrepare :: helper -> Preparer helper
@@ -168,7 +178,7 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 		-- into the git-annex repository. Verifiable keys
 		-- are the main protection against this attack.
 		, retrievalSecurityPolicy = if isencrypted
-			then RetrievalVerifiableKeysSecure
+			then mkRetrievalVerifiableKeysSecure (gitconfig baser)
 			else retrievalSecurityPolicy baser
 		, removeKey = \k -> cip >>= removeKeyGen k
 		, checkPresent = \k -> cip >>= checkPresentGen k

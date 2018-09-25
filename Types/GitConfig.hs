@@ -234,6 +234,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexBare :: Maybe Bool
 	, remoteAnnexRetry :: Maybe Integer
 	, remoteAnnexRetryDelay :: Maybe Seconds
+	, remoteAnnexAllowUnverifiedDownloads :: Bool
 
 	{- These settings are specific to particular types of remotes
 	 - including special remotes. -}
@@ -291,6 +292,8 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexRetry = getmayberead "retry"
 		, remoteAnnexRetryDelay = Seconds
 			<$> getmayberead "retrydelay"
+		, remoteAnnexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
+			getmaybe ("security-allow-unverified-downloads")
 		, remoteAnnexShell = getmaybe "shell"
 		, remoteAnnexSshOptions = getoptions "ssh-options"
 		, remoteAnnexRsyncOptions = getoptions "rsync-options"

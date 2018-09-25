@@ -113,7 +113,7 @@ gen r u c gc
 			-- and have no protection against redirects to
 			-- local private web servers, or in some cases
 			-- to file:// urls.
-			, retrievalSecurityPolicy = RetrievalVerifiableKeysSecure
+			, retrievalSecurityPolicy = mkRetrievalVerifiableKeysSecure gc
 			, removeKey = removeKeyDummy
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy

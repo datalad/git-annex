@@ -1450,7 +1450,7 @@ Here are all the supported configuration settings.
   these IP address restrictions to be enforced, curl and youtube-dl will
   never be used unless annex.security.allowed-http-addresses=all.
 
-* `annex.security.allow-unverified-downloads`, 
+* `annex.security.allow-unverified-downloads`
 
   For security reasons, git-annex refuses to download content from
   most special remotes when it cannot check a hash to verify 
@@ -1486,6 +1486,10 @@ Here are all the supported configuration settings.
 
   It would be a good idea to check that it downloaded the file you expected,
   too.
+
+* `remote.name.annex-security-allow-unverified-downloads`
+
+  Per-remote configuration of annex.security.allow-unverified-downloads.
 
 * `annex.secure-erase-command`
 

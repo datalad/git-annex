@@ -59,7 +59,7 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 			-- not support file://, as far as we know, but
 			-- there's no guarantee that will continue to be
 			-- the case, so require verifiable keys.
-			, retrievalSecurityPolicy = RetrievalVerifiableKeysSecure
+			, retrievalSecurityPolicy = mkRetrievalVerifiableKeysSecure gc
 			, removeKey = removeKeyDummy
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
