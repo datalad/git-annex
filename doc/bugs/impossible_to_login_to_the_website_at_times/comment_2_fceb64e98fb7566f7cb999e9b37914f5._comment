@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2018-09-25T15:27:13Z"
+ content="""
+happened to me again on firefox, where I first went to http://git-annex.branchable.com/bugs/ to file a new report, was directed to login, entered credentials, got error message.  I have then removed cookies, went in a new tab to the bugs, this bug, and then was able to login.
+So it is cookies related, but IMHO not a user fault 
+"""]]
