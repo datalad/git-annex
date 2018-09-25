@@ -97,7 +97,7 @@ runProtoConn a c@(OpenConnection (runst, conn)) = do
 	-- so close it.
 	case v of
 		Left e -> do
-			warning $ "Lost connection to peer (" ++ e ++ ")"
+			warning $ "Lost connection to peer (" ++ describeProtoFailure e ++ ")"
 			liftIO $ closeConnection conn
 			return (ClosedConnection, Nothing)
 		Right r -> return (c, Just r)
@@ -162,7 +162,7 @@ openConnection u addr = do
 					liftIO $ closeConnection conn
 					return ClosedConnection
 				Left e -> do
-					warning $ "Problem communicating with peer. (" ++ e ++ ")"
+					warning $ "Problem communicating with peer. (" ++ describeProtoFailure e ++ ")"
 					liftIO $ closeConnection conn
 					return ClosedConnection
 		Left e -> do

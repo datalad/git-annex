@@ -324,4 +324,4 @@ setupLink remotename (P2PAddressAuth addr authtoken) = do
 			storeP2PRemoteAuthToken addr authtoken
 		return LinkSuccess
 	go (Right Nothing) = return $ AuthenticationError "Unable to authenticate with peer. Please check the address and try again."
-	go (Left e) = return $ AuthenticationError $ "Unable to authenticate with peer: " ++ e
+	go (Left e) = return $ AuthenticationError $ "Unable to authenticate with peer: " ++ describeProtoFailure e

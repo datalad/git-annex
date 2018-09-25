@@ -1,6 +1,6 @@
 {- P2P protocol, IO implementation
  -
- - Copyright 2016 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -18,6 +18,8 @@ module P2P.IO
 	, closeConnection
 	, serveUnixSocket
 	, setupHandle
+	, ProtoFailure(..)
+	, describeProtoFailure
 	, runNetProto
 	, runNet
 	) where
@@ -38,6 +40,7 @@ import Annex.ChangedRefs
 import Control.Monad.Free
 import Control.Monad.IO.Class
 import System.Exit (ExitCode(..))
+import System.IO.Error
 import Network.Socket
 import Control.Concurrent
 import Control.Concurrent.Async
@@ -48,7 +51,17 @@ import System.Log.Logger (debugM)
 import qualified Network.Socket as S
 
 -- Type of interpreters of the Proto free monad.
-type RunProto m = forall a. Proto a -> m (Either String a)
+type RunProto m = forall a. Proto a -> m (Either ProtoFailure a)
+
+data ProtoFailure
+	= ProtoFailureMessage String
+	| ProtoFailureException SomeException
+	| ProtoFailureIOError IOError
+
+describeProtoFailure :: ProtoFailure -> String
+describeProtoFailure (ProtoFailureMessage s) = s
+describeProtoFailure (ProtoFailureException e) = show e
+describeProtoFailure (ProtoFailureIOError e) = show e
 
 data RunState
 	= Serving UUID (Maybe ChangedRefsHandle) (TVar ProtocolVersion)
@@ -135,19 +148,20 @@ setupHandle s = do
 -- This only runs Net actions. No Local actions will be run
 -- (those need the Annex monad) -- if the interpreter reaches any,
 -- it returns Nothing.
-runNetProto :: RunState -> P2PConnection -> Proto a -> IO (Either String a)
+runNetProto :: RunState -> P2PConnection -> Proto a -> IO (Either ProtoFailure a)
 runNetProto runst conn = go
   where
 	go :: RunProto IO
 	go (Pure v) = return (Right v)
 	go (Free (Net n)) = runNet runst conn go n
-	go (Free (Local _)) = return (Left "unexpected annex operation attempted")
+	go (Free (Local _)) = return $ Left $
+		ProtoFailureMessage "unexpected annex operation attempted"
 
 -- Interpreter of the Net part of Proto.
 --
 -- An interpreter of Proto has to be provided, to handle the rest of Proto
 -- actions.
-runNet :: (MonadIO m, MonadMask m) => RunState -> P2PConnection -> RunProto m -> NetF (Proto a) -> m (Either String a)
+runNet :: (MonadIO m, MonadMask m) => RunState -> P2PConnection -> RunProto m -> NetF (Proto a) -> m (Either ProtoFailure a)
 runNet runst conn runner f = case f of
 	SendMessage m next -> do
 		v <- liftIO $ tryNonAsync $ do
@@ -156,13 +170,14 @@ runNet runst conn runner f = case f of
 			hPutStrLn (connOhdl conn) l
 			hFlush (connOhdl conn)
 		case v of
-			Left e -> return (Left (show e))
+			Left e -> return $ Left $ ProtoFailureException e
 			Right () -> runner next
 	ReceiveMessage next -> do
-		v <- liftIO $ tryNonAsync $ getProtocolLine (connIhdl conn)
+		v <- liftIO $ tryIOError $ getProtocolLine (connIhdl conn)
 		case v of
-			Left e -> return (Left (show e))
-			Right Nothing -> return (Left "protocol error")
+			Left e -> return $ Left $ ProtoFailureIOError e
+			Right Nothing -> return $ Left $
+				ProtoFailureMessage "protocol error"
 			Right (Just l) -> case parseMessage l of
 				Just m -> do
 					liftIO $ debugMessage "P2P <" m
@@ -175,12 +190,13 @@ runNet runst conn runner f = case f of
 			return ok
 		case v of
 			Right True -> runner next
-			Right False -> return (Left "short data write")
-			Left e -> return (Left (show e))
+			Right False -> return $ Left $
+				ProtoFailureMessage "short data write"
+			Left e -> return $ Left $ ProtoFailureException e
 	ReceiveBytes len p next -> do
 		v <- liftIO $ tryNonAsync $ receiveExactly len (connIhdl conn) p
 		case v of
-			Left e -> return (Left (show e))
+			Left e -> return $ Left $ ProtoFailureException e
 			Right b -> runner (next b)
 	CheckAuthToken _u t next -> do
 		let authed = connCheckAuth conn t
@@ -188,12 +204,12 @@ runNet runst conn runner f = case f of
 	Relay hin hout next -> do
 		v <- liftIO $ runRelay runnerio hin hout
 		case v of
-			Left e -> return (Left e)
+			Left e -> return $ Left e
 			Right exitcode -> runner (next exitcode)
 	RelayService service next -> do
 		v <- liftIO $ runRelayService conn runnerio service
 		case v of
-			Left e -> return (Left e)
+			Left e -> return $ Left e
 			Right () -> runner next
 	SetProtocolVersion v next -> do
 		liftIO $ atomically $ writeTVar versiontvar v
@@ -236,10 +252,10 @@ sendExactly (Len n) b h p = do
 receiveExactly :: Len -> Handle -> MeterUpdate -> IO L.ByteString
 receiveExactly (Len n) h p = hGetMetered h (Just n) p
 
-runRelay :: RunProto IO -> RelayHandle -> RelayHandle -> IO (Either String ExitCode)
+runRelay :: RunProto IO -> RelayHandle -> RelayHandle -> IO (Either ProtoFailure ExitCode)
 runRelay runner (RelayHandle hout) (RelayHandle hin) = 
 	bracket setup cleanup go
-		`catchNonAsync` (return . Left . show)
+		`catchNonAsync` (return . Left . ProtoFailureException)
   where
 	setup = do
 		v <- newEmptyMVar
@@ -253,10 +269,10 @@ runRelay runner (RelayHandle hout) (RelayHandle hin) =
 	
 	go v = relayHelper runner v
 
-runRelayService :: P2PConnection -> RunProto IO -> Service -> IO (Either String ())
+runRelayService :: P2PConnection -> RunProto IO -> Service -> IO (Either ProtoFailure ())
 runRelayService conn runner service = 
 	bracket setup cleanup go
-		`catchNonAsync` (return . Left . show)
+		`catchNonAsync` (return . Left . ProtoFailureException)
   where
 	cmd = case service of
 		UploadPack -> "upload-pack"
@@ -287,13 +303,13 @@ runRelayService conn runner service =
 	go (v, _, _, _, _) = do
 		r <- relayHelper runner v
 		case r of
-			Left e -> return (Left (show e))
+			Left e -> return $ Left e
 			Right exitcode -> runner $ net $ relayToPeer (RelayDone exitcode)
 	
 	waitexit v pid = putMVar v . RelayDone =<< waitForProcess pid
 
 -- Processes RelayData as it is put into the MVar.
-relayHelper :: RunProto IO -> MVar RelayData -> IO (Either String ExitCode)
+relayHelper :: RunProto IO -> MVar RelayData -> IO (Either ProtoFailure ExitCode)
 relayHelper runner v = loop
   where
 	loop = do

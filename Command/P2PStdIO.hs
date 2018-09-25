@@ -15,6 +15,8 @@ import qualified Annex
 import Annex.UUID
 import qualified CmdLine.GitAnnexShell.Checks as Checks
 
+import System.IO.Error
+
 cmd :: Command
 cmd = noMessages $ command "p2pstdio" SectionPlumbing
 	"communicate in P2P protocol over stdio"
@@ -40,5 +42,9 @@ start theiruuid = do
 		P2P.serveAuthed servermode myuuid
 	runst <- liftIO $ mkRunState $ Serving theiruuid Nothing
 	runFullProto runst conn server >>= \case
-		Right () -> next $ next $ return True
-		Left e -> giveup e
+		Right () -> done
+		-- Avoid displaying an error when the client hung up on us.
+		Left (ProtoFailureIOError e) | isEOFError e -> done
+		Left e -> giveup (describeProtoFailure e)
+  where
+	done = next $ next $ return True

@@ -120,10 +120,10 @@ serveClient th u r q = bracket setup cleanup start
 			v <- liftIO $ runNetProto runstauth conn $ P2P.serveAuth u
 			case v of
 				Right (Just theiruuid) -> authed conn theiruuid
-				Right Nothing -> liftIO $
-					debugM "remotedaemon" "Tor connection failed to authenticate"
-				Left e -> liftIO $
-					debugM "remotedaemon" ("Tor connection error before authentication: " ++ e)
+				Right Nothing -> liftIO $ debugM "remotedaemon"
+					"Tor connection failed to authenticate"
+				Left e -> liftIO $ debugM "remotedaemon" $
+					"Tor connection error before authentication: " ++ describeProtoFailure e
 		-- Merge the duplicated state back in.
 		liftAnnex th $ mergeState st'
 	
@@ -134,7 +134,8 @@ serveClient th u r q = bracket setup cleanup start
 				P2P.serveAuthed P2P.ServeReadWrite u
 			case v' of
 				Right () -> return ()
-				Left e -> liftIO $ debugM "remotedaemon" ("Tor connection error: " ++ e)
+				Left e -> liftIO $ debugM "remotedaemon" $ 
+					"Tor connection error: " ++ describeProtoFailure e
 
 -- Connect to peer's tor hidden service.
 transport :: Transport

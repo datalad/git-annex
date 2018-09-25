@@ -32,8 +32,9 @@ run (_remotename:address:[]) = forever $
 		| otherwise = parseAddressPort address
 	go service = do
 		ready
-		either giveup exitWith
-			=<< connectService onionaddress onionport service
+		connectService onionaddress onionport service >>= \case
+			Right exitcode -> exitWith exitcode
+			Left e -> giveup $ describeProtoFailure e
 	ready = do
 		putStrLn ""
 		hFlush stdout
@@ -48,7 +49,7 @@ parseAddressPort s =
 		Nothing -> giveup "onion address must include port number"
 		Just p -> (OnionAddress a, p)
 
-connectService :: OnionAddress -> OnionPort -> Service -> IO (Either String ExitCode)
+connectService :: OnionAddress -> OnionPort -> Service -> IO (Either ProtoFailure ExitCode)
 connectService address port service = do
 	state <- Annex.new =<< Git.CurrentRepo.get
 	Annex.eval state $ do

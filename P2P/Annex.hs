@@ -28,7 +28,7 @@ import Utility.Metered
 import Control.Monad.Free
 
 -- Full interpreter for Proto, that can receive and send objects.
-runFullProto :: RunState -> P2PConnection -> Proto a -> Annex (Either String a)
+runFullProto :: RunState -> P2PConnection -> Proto a -> Annex (Either ProtoFailure a)
 runFullProto runst conn = go
   where
 	go :: RunProto Annex
@@ -36,7 +36,7 @@ runFullProto runst conn = go
 	go (Free (Net n)) = runNet runst conn go n
 	go (Free (Local l)) = runLocal runst go l
 
-runLocal :: RunState -> RunProto Annex -> LocalF (Proto a) -> Annex (Either String a)
+runLocal :: RunState -> RunProto Annex -> LocalF (Proto a) -> Annex (Either ProtoFailure a)
 runLocal runst runner a = case a of
 	TmpContentSize k next -> do
 		tmp <- fromRepo $ gitAnnexTmpObjectLocation k
@@ -57,12 +57,12 @@ runLocal runst runner a = case a of
 					transfer upload k af $
 						sinkfile f o checkchanged sender
 				case v' of
-					Left e -> return (Left (show e))
-					Right (Left e) -> return (Left (show e))
+					Left e -> return $ Left $ ProtoFailureException e
+					Right (Left e) -> return $ Left e
 					Right (Right ok) -> runner (next ok)
 			-- content not available
  			Right Nothing -> runner (next False)
-			Left e -> return (Left (show e))
+			Left e -> return $ Left $ ProtoFailureException e
 	StoreContent k af o l getb validitycheck next -> do
 		-- This is the same as the retrievalSecurityPolicy of
 		-- Remote.P2P and Remote.Git. 
@@ -79,12 +79,12 @@ runLocal runst runner a = case a of
 	SetPresent k u next -> do
 		v <- tryNonAsync $ logChange k u InfoPresent
 		case v of
-			Left e -> return (Left (show e))
+			Left e -> return $ Left $ ProtoFailureException e
 			Right () -> runner next
 	CheckContentPresent k next -> do
 		v <- tryNonAsync $ inAnnex k
 		case v of
-			Left e -> return (Left (show e))
+			Left e -> return $ Left $ ProtoFailureException e
 			Right result -> runner (next result)
 	RemoveContent k next -> do
 		v <- tryNonAsync $
@@ -96,7 +96,7 @@ runLocal runst runner a = case a of
 				, return True
 				)
 		case v of
-			Left e -> return (Left (show e))
+			Left e -> return $ Left $ ProtoFailureException e
 			Right result -> runner (next result)
 	TryLockContent k protoaction next -> do
 		v <- tryNonAsync $ lockContentShared k $ \verifiedcopy -> 
@@ -114,9 +114,10 @@ runLocal runst runner a = case a of
 		Serving _ (Just h) _ -> do
 			v <- tryNonAsync $ liftIO $ waitChangedRefs h
 			case v of
-				Left e -> return (Left (show e))
+				Left e -> return $ Left $ ProtoFailureException e
 				Right changedrefs -> runner (next changedrefs)
-		_ -> return $ Left "change notification not available"
+		_ -> return $ Left $
+			ProtoFailureMessage "change notification not available"
 	UpdateMeterTotalSize m sz next -> do
 		liftIO $ setMeterTotalSize m sz
 		runner next
@@ -153,7 +154,7 @@ runLocal runst runner a = case a of
 						-- known. Force content
 						-- verification.
 						return (rightsize, MustVerify)
-			Left e -> error e
+			Left e -> error $ describeProtoFailure e
 	
 	sinkfile f (Offset o) checkchanged sender p = bracket setup cleanup go
 	  where

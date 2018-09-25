@@ -343,7 +343,7 @@ runProtoConn a conn@(P2P.OpenConnection (runst, c, _, _)) = do
 		-- When runFullProto fails, the connection is no longer
 		-- usable, so close it.
 		Left e -> do
-			warning $ "Lost connection (" ++ e ++ ")"
+			warning $ "Lost connection (" ++ P2P.describeProtoFailure e ++ ")"
 			conn' <- fst <$> liftIO (closeP2PSshConnection conn)
 			return (conn', Nothing)
 
