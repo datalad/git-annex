@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 3"
+ date="2018-09-25T18:22:16Z"
+ content="""
+\"since most threading related bugs are timing dependant, it's doubtful that the test suite would be able to usefully test them\" -- if you repeat a test enough times it'll tell you _whether_ that test might fail under multithreading.  Then git bisect can narrow down the breaking change.  But it'd be reassuring to be able to run the tests with multithreading on my particular environment (the way I use git-annex) and know they pass.
+"""]]
