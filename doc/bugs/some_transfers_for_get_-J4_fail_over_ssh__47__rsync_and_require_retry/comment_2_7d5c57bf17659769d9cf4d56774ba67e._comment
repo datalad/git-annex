@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2018-09-25T22:36:43Z"
+ content="""
+
+> You neglected to show the actual error message from git-annex or rsync or whatever actually failed. I can't do anything with this.
+
+oh lucky me still having that file where I dumped all the output and grepped in the original report to not flood the page: http://www.onerussian.com/tmp/qa-get.log
+but hey -- there were no actual error message as far as I see it:
+
+[[!format sh \"\"\"
+$> grep -v '^{' /tmp/qa-get.log
+git-annex: get: 1 failed
+\"\"\"]]
+
+so may be if annex included the message from git-annex/rsync in its record:
+
+[[!format sh \"\"\"
+$> grep rsync qa-get.log
+{\"command\":\"get\",\"note\":\"from origin...\nrsync failed -- run git annex again to resume file transfer\",\"success\":false,\"key\":\"SHA256E-s44080906--a534bdaa5b4143fb64135aa83d86cf4d4f29d2c23b7f2e7e1d72a811835f2bb8.nii.gz\",\"file\":null}
+\"\"\"]]
+
+we both would be happier...
+
+> annex.retry affects all transfers, not only http.
+
+that is great -- so why it didn't retry here?  is default `0`, i.e. no retries?
+
+[[!format sh \"\"\"
+$> grep a534bdaa5b4143fb64135aa83d86cf4d4f29d2c23b7f2e7e1d72a811835f2bb8 qa-get.log 
+{\"command\":\"get\",\"note\":\"from origin...\nrsync failed -- run git annex again to resume file transfer\",\"success\":false,\"key\":\"SHA256E-s44080906--a534bdaa5b4143fb64135aa83d86cf4d4f29d2c23b7f2e7e1d72a811835f2bb8.nii.gz\",\"file\":null}
+\"\"\"]]
+
+"""]]
