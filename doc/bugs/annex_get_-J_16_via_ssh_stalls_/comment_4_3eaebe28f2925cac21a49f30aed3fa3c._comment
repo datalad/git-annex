@@ -1,0 +1,239 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="reproducible, no locking message, many &quot;duplicate&quot; files"
+ date="2018-09-26T00:06:29Z"
+ content="""
+tried to replicate from other hosts, but without success, so might be something specific about that one (original repo is on NFS (mount options rw,relatime,vers=3,rsize=131072,wsize=131072,namlen=255,hard,proto=tcp,timeo=600,retrans=2,sec=sys,mountaddr=10.232.11.5,mountvers=3,mountport=1009,mountproto=udp,local_lock=none,addr=10.232.11.5), CentOS Linux release 7.4.1708 (Core), git annex 6.20180808-ga1327779a, OpenSSH_7.4p1, OpenSSL 1.0.2k-fips).  This time it is also without any message about being unable to lock:
+
+[[!format sh \"\"\"
+$> git clone bids@rolando.cns:/inbox/BIDS/dbic/QA
+Cloning into 'QA'...
+
+
+    Dartmouth College, Department of Psychological and Brain Sciences
+                      Authorized access only
+
+
+
+
+remote: Counting objects: 26086, done.
+remote: Compressing objects: 100% (9257/9257), done.
+remote: Total 26086 (delta 11366), reused 25687 (delta 10968)
+Receiving objects: 100% (26086/26086), 30.63 MiB | 53.17 MiB/s, done.
+Resolving deltas: 100% (11366/11366), done.
+1 13074.....................................:Tue 25 Sep 2018 07:39:11 PM EDT:.
+smaug:/tmp
+$> cd QA
+CHANGES    dataset_description.json  sub-emmet/                                        task-rest_acq-3mm_bold.json                 task-rest_acq-p2Xs4X35mm_bold.json
+README     participants.tsv          sub-qa/                                           task-rest_acq-noXgrappa_bold.json           task-rest_acq-p2_bold.json
+README.md  sourcedata/               sub-sid000143/                                    task-rest_acq-p22_bold.json                 task-rest_acq-p2noprescannormalize_bold.json
+code/      sub-amit/                 task-rest_acq-24mm64sl1000tr32te600dyn_bold.json  task-rest_acq-p2XB0shimXadvanced_bold.json
+1 13075.....................................:Tue 25 Sep 2018 07:39:12 PM EDT:.
+(git)smaug:/tmp/QA[master]
+$> git annex get -J16 --debug --json --json-progress .                            
+[2018-09-25 19:39:24.076576505] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2018-09-25 19:39:24.08073842] process done ExitSuccess
+[2018-09-25 19:39:24.080921239] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2018-09-25 19:39:24.083832166] process done ExitFailure 1
+[2018-09-25 19:39:24.084026056] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--verify\",\"-q\",\"origin/git-annex\"]
+[2018-09-25 19:39:24.086534115] process done ExitFailure 1
+[2018-09-25 19:39:24.087406723] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"write-tree\"]
+[2018-09-25 19:39:24.090577834] process done ExitSuccess
+[2018-09-25 19:39:24.090805078] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"commit-tree\",\"4b825dc642cb6eb9a060e54bf8d69288fbee4904\",\"--no-gpg-sign\"]
+[2018-09-25 19:39:24.094384723] process done ExitSuccess
+[2018-09-25 19:39:24.094571341] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-ref\",\"refs/heads/git-annex\",\"0fd8155db835617a672760453bf6fd0786d16ea7\"]
+[2018-09-25 19:39:24.099179252] process done ExitSuccess
+[2018-09-25 19:39:24.163625058] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"config\",\"annex.uuid\",\"e57c285c-4145-4c57-9e9c-73c29a6dc115\"]
+[2018-09-25 19:39:24.167183166] process done ExitSuccess
+[2018-09-25 19:39:24.167313312] read: git [\"config\",\"--null\",\"--list\"]
+[2018-09-25 19:39:24.171253975] process done ExitSuccess
+[2018-09-25 19:39:24.182032449] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2018-09-25 19:39:24.183696686] process done ExitSuccess
+[2018-09-25 19:39:24.183777495] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2018-09-25 19:39:24.185400318] process done ExitSuccess
+[2018-09-25 19:39:24.185531597] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..0fd8155db835617a672760453bf6fd0786d16ea7\",\"--pretty=%H\",\"-n1\"]
+[2018-09-25 19:39:24.18734038] process done ExitSuccess
+[2018-09-25 19:39:24.187415347] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..70f0788641a4b3b77353b14ee6db0986a1c1e682\",\"--pretty=%H\",\"-n1\"]
+[2018-09-25 19:39:24.191055467] process done ExitSuccess
+[2018-09-25 19:39:24.191255165] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-09-25 19:39:24.191633582] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2018-09-25 19:39:24.193406759] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"hash-object\",\"-w\",\"--stdin-paths\",\"--no-filters\"]
+[2018-09-25 19:39:24.193797713] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-index\",\"-z\",\"--index-info\"]
+[2018-09-25 19:39:24.19424715] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"diff-index\",\"--raw\",\"-z\",\"-r\",\"--no-renames\",\"-l0\",\"--cached\",\"70f0788641a4b3b77353b14ee6db0986a1c1e682\",\"--\"]
+[2018-09-25 19:39:24.402505793] process done ExitSuccess
+[2018-09-25 19:39:24.411127976] process done ExitSuccess
+[2018-09-25 19:39:24.411819307] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"70f0788641a4b3b77353b14ee6db0986a1c1e682..refs/heads/git-annex\",\"--pretty=%H\",\"-n1\"]
+[2018-09-25 19:39:24.414936679] process done ExitSuccess
+[2018-09-25 19:39:24.415127364] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"write-tree\"]
+[2018-09-25 19:39:24.426606063] process done ExitSuccess
+[2018-09-25 19:39:24.426728558] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"commit-tree\",\"961159c1de057d7120f7cea5c0f151954ab400c1\",\"--no-gpg-sign\",\"-p\",\"refs/heads/git-annex\",\"-p\",\"70f0788641a4b3b77353b14ee6db0986a1c1e682\"]
+[2018-09-25 19:39:24.42982717] process done ExitSuccess
+[2018-09-25 19:39:24.429968237] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-ref\",\"refs/heads/git-annex\",\"691a2081d0839b84e286f50330ffbb0fa4dfc22f\"]
+[2018-09-25 19:39:24.433255645] process done ExitSuccess
+[2018-09-25 19:39:24.434830328] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"config\",\"annex.version\",\"5\"]
+[2018-09-25 19:39:24.436846163] process done ExitSuccess
+[2018-09-25 19:39:24.436926679] read: git [\"config\",\"--null\",\"--list\"]
+[2018-09-25 19:39:24.449483362] process done ExitSuccess
+[2018-09-25 19:39:24.449648554] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2018-09-25 19:39:24.452355348] process done ExitSuccess
+[2018-09-25 19:39:24.452485849] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"refs/heads/master\"]
+[2018-09-25 19:39:24.455464092] process done ExitSuccess
+[2018-09-25 19:39:24.455563403] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2018-09-25 19:39:24.458025223] process done ExitSuccess
+[2018-09-25 19:39:24.458139592] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/master\"]
+[2018-09-25 19:39:24.461541709] process done ExitSuccess
+[2018-09-25 19:39:24.461682534] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"checkout\",\"-q\",\"-B\",\"master\"]
+[2018-09-25 19:39:24.523918634] process done ExitSuccess
+[2018-09-25 19:39:24.525217891] read: uname [\"-n\"]
+[2018-09-25 19:39:24.527130923] process done ExitSuccess
+[2018-09-25 19:39:24.528961091] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"ls-files\",\"--cached\",\"-z\",\"--\",\".\"]
+[2018-09-25 19:39:24.53401854] read: ssh [\"-o\",\"BatchMode=true\",\"-S\",\".git/annex/ssh/bids@rolando.cns\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-n\",\"-T\",\"bids@rolando.cns\",\"true\"]
+[2018-09-25 19:39:26.071148456] process done ExitSuccess
+[2018-09-25 19:39:26.071456884] read: ssh [\"bids@rolando.cns\",\"-S\",\".git/annex/ssh/bids@rolando.cns\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-n\",\"-T\",\"git-annex-shell 'configlist' '/inbox/BIDS/dbic/QA' '--debug'\"]
+[2018-09-25 19:39:27.533523078] process done ExitSuccess
+[2018-09-25 19:39:27.533732629] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"config\",\"remote.origin.annex-uuid\",\"6384a551-a41d-4290-b186-9258befede97\"]
+[2018-09-25 19:39:27.541031187] process done ExitSuccess
+[2018-09-25 19:39:27.541185336] read: git [\"config\",\"--null\",\"--list\"]
+[2018-09-25 19:39:27.546614539] process done ExitSuccess
+[2018-09-25 19:39:27.548934829] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-09-25 19:39:27.54893425] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-09-25 19:39:27.5490026] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-09-25 19:39:27.54908919] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-09-25 19:39:27.549123562] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-09-25 19:39:27.549156199] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-09-25 19:39:27.549209727] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-09-25 19:39:27.549329392] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-09-25 19:39:27.549398039] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-09-25 19:39:27.549438971] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-09-25 19:39:27.549469661] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-09-25 19:39:27.549491832] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-09-25 19:39:27.549500665] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2018-09-25 19:39:27.549677068] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2018-09-25 19:39:27.549933199] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2018-09-25 19:39:27.550251508] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2018-09-25 19:39:27.550728146] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2018-09-25 19:39:27.552286946] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2018-09-25 19:39:27.552666906] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2018-09-25 19:39:27.552969316] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2018-09-25 19:39:27.553792735] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2018-09-25 19:39:27.55697274] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2018-09-25 19:39:27.557179172] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2018-09-25 19:39:27.557586095] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2018-09-25 19:39:27.559528852] chat: ssh [\"bids@rolando.cns\",\"-S\",\".git/annex/ssh/bids@rolando.cns\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-T\",\"git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'e57c285c-4145-4c57-9e9c-73c29a6dc115' --uuid 6384a551-a41d-4290-b186-9258befede97\"]
+[2018-09-25 19:39:27.560166953] chat: ssh [\"bids@rolando.cns\",\"-S\",\".git/annex/ssh/bids@rolando.cns\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-T\",\"git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'e57c285c-4145-4c57-9e9c-73c29a6dc115' --uuid 6384a551-a41d-4290-b186-9258befede97\"]
+[2018-09-25 19:39:27.560470671] chat: ssh [\"bids@rolando.cns\",\"-S\",\".git/annex/ssh/bids@rolando.cns\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-T\",\"git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'e57c285c-4145-4c57-9e9c-73c29a6dc115' --uuid 6384a551-a41d-4290-b186-9258befede97\"]
+[2018-09-25 19:39:27.609120855] chat: ssh [\"bids@rolando.cns\",\"-S\",\".git/annex/ssh/bids@rolando.cns\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-T\",\"git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'e57c285c-4145-4c57-9e9c-73c29a6dc115' --uuid 6384a551-a41d-4290-b186-9258befede97\"]
+[2018-09-25 19:39:27.628746035] chat: ssh [\"bids@rolando.cns\",\"-S\",\".git/annex/ssh/bids@rolando.cns\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-T\",\"git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'e57c285c-4145-4c57-9e9c-73c29a6dc115' --uuid 6384a551-a41d-4290-b186-9258befede97\"]
+[2018-09-25 19:39:27.629098606] chat: ssh [\"bids@rolando.cns\",\"-S\",\".git/annex/ssh/bids@rolando.cns\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-T\",\"git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'e57c285c-4145-4c57-9e9c-73c29a6dc115' --uuid 6384a551-a41d-4290-b186-9258befede97\"]
+[2018-09-25 19:39:27.642438219] chat: ssh [\"bids@rolando.cns\",\"-S\",\".git/annex/ssh/bids@rolando.cns\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-T\",\"git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'e57c285c-4145-4c57-9e9c-73c29a6dc115' --uuid 6384a551-a41d-4290-b186-9258befede97\"]
+[2018-09-25 19:39:27.642444075] chat: ssh [\"bids@rolando.cns\",\"-S\",\".git/annex/ssh/bids@rolando.cns\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-T\",\"git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'e57c285c-4145-4c57-9e9c-73c29a6dc115' --uuid 6384a551-a41d-4290-b186-9258befede97\"]
+[2018-09-25 19:39:27.642633512] chat: ssh [\"bids@rolando.cns\",\"-S\",\".git/annex/ssh/bids@rolando.cns\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-T\",\"git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'e57c285c-4145-4c57-9e9c-73c29a6dc115' --uuid 6384a551-a41d-4290-b186-9258befede97\"]
+[2018-09-25 19:39:27.642685766] chat: ssh [\"bids@rolando.cns\",\"-S\",\".git/annex/ssh/bids@rolando.cns\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-T\",\"git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'e57c285c-4145-4c57-9e9c-73c29a6dc115' --uuid 6384a551-a41d-4290-b186-9258befede97\"]
+[2018-09-25 19:39:27.64756999] chat: ssh [\"bids@rolando.cns\",\"-S\",\".git/annex/ssh/bids@rolando.cns\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-T\",\"git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'e57c285c-4145-4c57-9e9c-73c29a6dc115' --uuid 6384a551-a41d-4290-b186-9258befede97\"]
+[2018-09-25 19:39:27.64783317] chat: ssh [\"bids@rolando.cns\",\"-S\",\".git/annex/ssh/bids@rolando.cns\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-T\",\"git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'e57c285c-4145-4c57-9e9c-73c29a6dc115' --uuid 6384a551-a41d-4290-b186-9258befede97\"]
+[2018-09-25 19:39:29.140327887] P2P < AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97
+[2018-09-25 19:39:29.140500055] P2P > VERSION 1
+[2018-09-25 19:39:29.141624424] P2P < VERSION 1
+[2018-09-25 19:39:29.141769124] P2P > GET 0 .heudiconv/amit/ses-20180508/info/dicominfo_ses-20180508.tsv SHA256E-s2072--84342b6857db244be0bfa97d4289ee6206ba8e34bb11dc23262f609b6478e783.tsv
+[2018-09-25 19:39:29.1419719] P2P < AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97
+[2018-09-25 19:39:29.142163513] P2P > VERSION 1
+[2018-09-25 19:39:29.143097033] P2P < GET 0 .heudiconv/amit/ses-20180508/info/dicominfo_ses-20180508.tsv SHA256E-s2072--84342b6857db244be0bfa97d4289ee6206ba8e34bb11dc23262f609b6478e783.tsv[2018-09-25 19:39:29.143589471] P2P < VERSION 1
+[2018-09-25 19:39:29.14370964] P2P > GET 0 .heudiconv/amit/ses-20180508/info/amit_ses-20180508.edit.txt SHA256E-s551--bc05c5596a6cf03ad7d302aab294dac7b45ecfcb96f7469085520660bf1c3e29.edit.txt
+[2018-09-25 19:39:29.145075908] P2P < GET 0 .heudiconv/amit/ses-20180508/info/amit_ses-20180508.edit.txt SHA256E-s551--bc05c5596a6cf03ad7d302aab294dac7b45ecfcb96f7469085520660bf1c3e29.edit.txt[2018-09-25 19:39:29.172581646] P2P > DATA 2072[2018-09-25 19:39:29.172391553] P2P < DATA 2072
+[2018-09-25 19:39:29.17275537] P2P < AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97
+[2018-09-25 19:39:29.172869445] P2P > VERSION 1
+[2018-09-25 19:39:29.1739641] P2P < VERSION 1
+[2018-09-25 19:39:29.174135119] P2P > GET 0 .heudiconv/emmet/ses-20180508/info/dicominfo_ses-20180508.tsv SHA256E-s2086--b3e49ddbe4c33b7872c031722b771e66ecfc67468c9d13e9abbaa5fdde2a2851.tsv
+[2018-09-25 19:39:29.17581668] P2P > VALID[2018-09-25 19:39:29.175562895] P2P < GET 0 .heudiconv/emmet/ses-20180508/info/dicominfo_ses-20180508.tsv SHA256E-s2086--b3e49ddbe4c33b7872c031722b771e66ecfc67468c9d13e9abbaa5fdde2a2851.tsv{\"byte-progress\":2072,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s2072--84342b6857db244be0bfa97d4289ee6206ba8e34bb11dc23262f609b6478e783.tsv\",\"file\":\".heudiconv/amit/ses-20180508/info/dicominfo_ses-20180508.tsv\"},\"total-size\":2072,\"percent-progress\":\"100%\"}
+[2018-09-25 19:39:29.179265924] P2P < AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97
+[2018-09-25 19:39:29.179393396] P2P > VERSION 1
+[2018-09-25 19:39:29.180519354] P2P < VERSION 1
+[2018-09-25 19:39:29.180693554] P2P > GET 0 .heudiconv/emmet/ses-20180521/info/emmet_ses-20180521.auto.txt SHA256E-s2658--42b972cbc99464913e8819e4944071a949914ec2cc7e786cb48fc26b41f665f1.auto.txt
+[2018-09-25 19:39:29.181047474] P2P < AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97
+[2018-09-25 19:39:29.18117293] P2P > VERSION 1
+[2018-09-25 19:39:29.182208685] P2P < VERSION 1
+[2018-09-25 19:39:29.18233901] P2P > GET 0 .heudiconv/amit/ses-20180508/info/amit_ses-20180508.auto.txt SHA256E-s551--bc05c5596a6cf03ad7d302aab294dac7b45ecfcb96f7469085520660bf1c3e29.auto.txt
+[2018-09-25 19:39:29.183648585] P2P < GET 0 .heudiconv/amit/ses-20180508/info/amit_ses-20180508.auto.txt SHA256E-s551--bc05c5596a6cf03ad7d302aab294dac7b45ecfcb96f7469085520660bf1c3e29.auto.txt[2018-09-25 19:39:29.18996796] P2P < AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97
+[2018-09-25 19:39:29.190121603] P2P > VERSION 1
+[2018-09-25 19:39:29.19043361] P2P < AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97
+[2018-09-25 19:39:29.190512631] P2P > VERSION 1
+[2018-09-25 19:39:29.191211455] P2P < VERSION 1
+[2018-09-25 19:39:29.191380774] P2P > GET 0 .heudiconv/emmet/ses-20180508/info/filegroup_ses-20180508.json SHA256E-s222552--1d8be851f4aa959df6cf8b39313f9f8245d4f5c7897f3028eaf671c3140e07db.json
+[2018-09-25 19:39:29.191418345] P2P < VERSION 1
+[2018-09-25 19:39:29.191614568] P2P > GET 0 .heudiconv/emmet/ses-20180521/info/emmet_ses-20180521.edit.txt SHA256E-s2658--42b972cbc99464913e8819e4944071a949914ec2cc7e786cb48fc26b41f665f1.edit.txt
+[2018-09-25 19:39:29.192744192] P2P < GET 0 .heudiconv/emmet/ses-20180508/info/filegroup_ses-20180508.json SHA256E-s222552--1d8be851f4aa959df6cf8b39313f9f8245d4f5c7897f3028eaf671c3140e07db.json[2018-09-25 19:39:29.194287137] P2P < AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97
+[2018-09-25 19:39:29.194417333] P2P > VERSION 1
+[2018-09-25 19:39:29.195415113] P2P < VERSION 1
+[2018-09-25 19:39:29.1956202] P2P < AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97
+[2018-09-25 19:39:29.195628464] P2P > GET 0 .heudiconv/emmet/ses-20180508/info/reproin.py SHA256E-s39141--59c2abfbe8184c851079d1cc0d8b87ddb38239a20d08002610ed81866aff7680.py
+[2018-09-25 19:39:29.195755609] P2P > VERSION 1
+[2018-09-25 19:39:29.196329099] P2P < AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97
+[2018-09-25 19:39:29.196428881] P2P > VERSION 1
+[2018-09-25 19:39:29.197074793] P2P < GET 0 .heudiconv/emmet/ses-20180508/info/reproin.py SHA256E-s39141--59c2abfbe8184c851079d1cc0d8b87ddb38239a20d08002610ed81866aff7680.py[2018-09-25 19:39:29.196872107] P2P < VERSION 1
+[2018-09-25 19:39:29.197063591] P2P > GET 0 .heudiconv/emmet/ses-20180521/info/filegroup_ses-20180521.json SHA256E-s505696--ebc027b49ed92d8020c9f566239782519c9eb2b44945476fd534d3290feab14f.json
+[2018-09-25 19:39:29.197414808] P2P < VERSION 1
+[2018-09-25 19:39:29.19757817] P2P > GET 0 .heudiconv/amit/ses-20180508/info/filegroup_ses-20180508.json SHA256E-s219789--d98a66036a9e3eb96308430cb3b4ac4e741a3cf13373e396ba353dbc46ddb3ec.json
+[2018-09-25 19:39:29.19848677] P2P < GET 0 .heudiconv/emmet/ses-20180521/info/filegroup_ses-20180521.json SHA256E-s505696--ebc027b49ed92d8020c9f566239782519c9eb2b44945476fd534d3290feab14f.json[2018-09-25 19:39:29.198940575] P2P < GET 0 .heudiconv/amit/ses-20180508/info/filegroup_ses-20180508.json SHA256E-s219789--d98a66036a9e3eb96308430cb3b4ac4e741a3cf13373e396ba353dbc46ddb3ec.json[2018-09-25 19:39:29.285402553] P2P < AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97
+[2018-09-25 19:39:29.285533748] P2P > VERSION 1
+[2018-09-25 19:39:29.286629667] P2P < VERSION 1
+[2018-09-25 19:39:29.286785793] P2P > GET 0 .heudiconv/emmet/ses-20180531/info/dicominfo_ses-20180531.tsv SHA256E-s2569--52f497d72d0ccd90f9405ec9ba26ff01d37257e618d9d836ebc56d60aa90413f.tsv
+[2018-09-25 19:39:29.288268229] P2P < GET 0 .heudiconv/emmet/ses-20180531/info/dicominfo_ses-20180531.tsv SHA256E-s2569--52f497d72d0ccd90f9405ec9ba26ff01d37257e618d9d836ebc56d60aa90413f.tsv[2018-09-25 19:39:29.179261499] P2P > AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97[2018-09-25 19:39:29.190593096] P2P > AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97[2018-09-25 19:39:29.180612292] P2P < VERSION 1[2018-09-25 19:39:29.191640719] P2P < VERSION 1[2018-09-25 19:39:29.180837225] P2P > VERSION 1[2018-09-25 19:39:29.191763909] P2P > VERSION 1[2018-09-25 19:39:29.182014203] P2P < GET 0 .heudiconv/emmet/ses-20180521/info/emmet_ses-20180521.auto.txt SHA256E-s2658--42b972cbc99464913e8819e4944071a949914ec2cc7e786cb48fc26b41f665f1.auto.txt[2018-09-25 19:39:29.192947297] P2P < GET 0 .heudiconv/emmet/ses-20180521/info/emmet_ses-20180521.edit.txt SHA256E-s2658--42b972cbc99464913e8819e4944071a949914ec2cc7e786cb48fc26b41f665f1.edit.txt[2018-09-25 19:39:29.319628794] P2P < VALID
+[2018-09-25 19:39:29.31975345] P2P > SUCCESS
+[2018-09-25 19:39:29.321050683] P2P < SUCCESS{\"command\":\"get\",\"note\":\"from origin...\nchecksum...\",\"success\":true,\"key\":\"SHA256E-s2072--84342b6857db244be0bfa97d4289ee6206ba8e34bb11dc23262f609b6478e783.tsv\",\"file\":\".heudiconv/amit/ses-20180508/info/dicominfo_ses-20180508.tsv\"}
+[2018-09-25 19:39:29.326554415] P2P > GET 0 .heudiconv/emmet/ses-20180531/info/emmet_ses-20180531.auto.txt SHA256E-s1317--7eca0e85c908fbf855e085d4514d025ab401c3673fe63f4af04e24ac5cf049fa.auto.txt
+
+
+\"\"\"]]
+and nothing more...
+
+indeed though there is a good number of files pointing to the same annex keys
+
+[[!format sh \"\"\"
+(git)smaug:/tmp/QA[master]git
+$> find -type l | while read f; do readlink $f | xargs basename || echo ERROR; done | sort | uniq -c | sort -n | nl | tail -n 20
+  1168          1 SHA256E-s9234655--441a4f30bdda1378ab9a55c682e075af8f6660ddf3c20b6bdd0ade5e788183c0.nii.gz
+  1169        1 SHA256E-s9236756--b761702178efdb66a7165ac21433ea65cee844231d85ce2b3699dbf6f9f10439.nii.gz
+  1170        1 SHA256E-s9251135--903bfe4fa818f8773a3617090c6545d9bbc45f7287cbb4727fa784365bb17ccc.nii.gz
+  1171        1 SHA256E-s9266850--97c97de7fcb552893dfd48e78d98d8300bfa26a51d56ef112675b91df55f1aca.nii.gz
+  1172        1 SHA256E-s93--ddf04c5c23b143330b4e4ea83dfbbdf07b48acb64f3cfd309147a5cc2c6487f8
+  1173        1 SHA256E-s9678246--6048a63eac04b294cd4ef06c217da1ec19b9733ece68991da0ab4200363dad1c.tgz
+  1174        2 SHA256E-s11626616--d9b4f8bc420f09c2b43a0967f12421295fb500c0311b40d1cd2de0f7881d2f48.nii.gz
+  1175        2 SHA256E-s43413657--dc9a866b5100af7129acac14d3fb31e3404767349dda2d7cbde42bcb2cd5fa45.nii.gz
+  1176        2 SHA256E-s551--bc05c5596a6cf03ad7d302aab294dac7b45ecfcb96f7469085520660bf1c3e29.auto.txt
+  1177        2 SHA256E-s551--bc05c5596a6cf03ad7d302aab294dac7b45ecfcb96f7469085520660bf1c3e29.edit.txt
+  1178        4 SHA256E-s39141--59c2abfbe8184c851079d1cc0d8b87ddb38239a20d08002610ed81866aff7680.py
+  1179        7 SHA256E-s736--bb53d9a3cf00df009e6a53d1960ec76796e46dc32dd92e5349a48c8c00d50df9.auto.txt
+  1180        7 SHA256E-s736--bb53d9a3cf00df009e6a53d1960ec76796e46dc32dd92e5349a48c8c00d50df9.edit.txt
+  1181        9 SHA256E-s685--fc402d82b86dcfb0b1736d176948e7b9d368af063f92fcdb730f068b5e30e04f.auto.txt
+  1182        9 SHA256E-s685--fc402d82b86dcfb0b1736d176948e7b9d368af063f92fcdb730f068b5e30e04f.edit.txt
+  1183       31 SHA256E-s598--492217a4a3191ce3d7848e60138c31315152fdf85d902fdbc98b6f642cd4b859.auto.txt
+  1184       31 SHA256E-s598--492217a4a3191ce3d7848e60138c31315152fdf85d902fdbc98b6f642cd4b859.edit.txt
+  1185       34 SHA256E-s857--15709030cff9f43cd0b8f7e91a184dfde283215a017704da01380202d2f55425.auto.txt
+  1186       34 SHA256E-s857--15709030cff9f43cd0b8f7e91a184dfde283215a017704da01380202d2f55425.edit.txt
+  1187       92 SHA256E-s39894--637a4b00403a5c88835c6d1ffb3f611d68b6377d95c5f7751e33539b598b18a3.py
+1 13093.....................................:Tue 25 Sep 2018 08:04:56 PM EDT:.
+(git)smaug:/tmp/QA[master]git
+$> git annex info                                                                                                               
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 6
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        6384a551-a41d-4290-b186-9258befede97 -- bids@rolando:/inbox/BIDS/dbic/QA [origin]
+        7d9ed214-3e5f-4cc8-ac88-f397145b2d4c -- yoh@falkor:/srv/datasets.datalad.org/www/dbic/QA
+        ba8f2cea-f229-422c-82be-6580e5e07ed5 -- yoh@smaug:/mnt/datasets/datalad/crawl/dbic/QA
+        e57c285c-4145-4c57-9e9c-73c29a6dc115 -- yoh@smaug:/tmp/QA [here]
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 3.35 gigabytes (+1 megabyte reserved)
+local annex keys: 4
+local annex size: 246.75 kilobytes
+annexed files in working tree: 1439
+size of annexed files in working tree: 39.52 gigabytes
+bloom filter size: 32 mebibytes (0% full)
+backend usage: 
+        SHA256E: 1439
+\"\"\"]]
+so only 1187 unique keys for 1439 files.
+"""]]
