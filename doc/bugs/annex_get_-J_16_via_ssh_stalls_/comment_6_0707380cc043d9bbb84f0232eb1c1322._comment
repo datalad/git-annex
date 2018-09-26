@@ -1,0 +1,105 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="&quot;minimal&quot; reproducible case"
+ date="2018-09-26T16:03:13Z"
+ content="""
+Finally I've boiled down to a small reproducible case for the stall with the bleeding edge 6.20180913+git149-g23bd27773-1~ndall+1 build:
+
+[[!format sh \"\"\"
+(git)smaug:/mnt/btrfs/scrap/tmp/QA[master]git
+$> git annex drop --fast sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2_dwi.nii.gz sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz
+drop sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz (locking origin...) ok
+drop sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2_dwi.nii.gz (locking origin...) ok
+drop sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz (locking origin...) ok
+(recording state in git...)
+
+$> git annex get --debug -c remote.origin.annex-ssh-options='-o ControlMaster=auto -S /home/yoh/.cache/datalad/sockets/478606ac' --json --json-progress -J2 -- sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2_dwi.nii.gz sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz
+{\"byte-progress\":32752,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz\",\"file\":\"sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz\"},\"total-size\":24797353,\"percent-progress\":\"0.13%\"}
+{\"byte-progress\":4159504,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz\",\"file\":\"sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz\"},\"total-size\":24797353,\"percent-progress\":\"16.77%\"}
+{\"byte-progress\":8253504,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz\",\"file\":\"sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz\"},\"total-size\":24797353,\"percent-progress\":\"33.28%\"}
+{\"byte-progress\":12347504,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz\",\"file\":\"sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz\"},\"total-size\":24797353,\"percent-progress\":\"49.79%\"}
+{\"byte-progress\":16539760,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz\",\"file\":\"sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz\"},\"total-size\":24797353,\"percent-progress\":\"66.7%\"}
+{\"byte-progress\":20699264,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz\",\"file\":\"sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz\"},\"total-size\":24797353,\"percent-progress\":\"83.47%\"}
+{\"byte-progress\":24797353,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz\",\"file\":\"sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz\"},\"total-size\":24797353,\"percent-progress\":\"100%\"}
+{\"command\":\"get\",\"note\":\"from origin...\nchecksum...\",\"success\":true,\"key\":\"SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz\",\"file\":\"sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz\"}
+{\"byte-progress\":32752,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz\",\"file\":\"sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz\"},\"total-size\":33352666,\"percent-progress\":\"0.1%\"}
+{\"byte-progress\":4683536,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz\",\"file\":\"sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz\"},\"total-size\":33352666,\"percent-progress\":\"14.04%\"}
+{\"byte-progress\":9694592,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz\",\"file\":\"sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz\"},\"total-size\":33352666,\"percent-progress\":\"29.07%\"}
+{\"byte-progress\":11790720,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz\",\"file\":\"sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz\"},\"total-size\":33352666,\"percent-progress\":\"35.35%\"}
+{\"byte-progress\":18373872,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz\",\"file\":\"sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz\"},\"total-size\":33352666,\"percent-progress\":\"55.09%\"}
+{\"byte-progress\":23417680,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz\",\"file\":\"sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz\"},\"total-size\":33352666,\"percent-progress\":\"70.21%\"}
+{\"byte-progress\":28461488,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz\",\"file\":\"sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz\"},\"total-size\":33352666,\"percent-progress\":\"85.33%\"}
+{\"byte-progress\":33352666,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz\",\"file\":\"sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz\"},\"total-size\":33352666,\"percent-progress\":\"100%\"}
+{\"command\":\"get\",\"note\":\"from origin...\nchecksum...\",\"success\":true,\"key\":\"SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz\",\"file\":\"sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz\"}
+
+
+\"\"\"]]
+
+So it gets stuck after having 2 out of 3 files transmitted.  With -J8 (in above it is -J2) it stalls after the first one.  Similarly stalls (there is more --debug output) if I do not reuse the ssh socket:
+[[!format sh \"\"\"
+$> git annex get --debug --json --json-progress -J2 -- sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2_dwi.nii.gz sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz              
+[2018-09-26 11:59:52.123811672] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz\",\"sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2_dwi.nii.gz\",\"sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz\"]
+[2018-09-26 11:59:52.127664351] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2018-09-26 11:59:52.132089355] process done ExitSuccess
+[2018-09-26 11:59:52.132238783] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2018-09-26 11:59:52.135559006] process done ExitSuccess
+[2018-09-26 11:59:52.135835934] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..eb4d1df5604157f25b3f2f272413e4a3fb59dc2d\",\"--pretty=%H\",\"-n1\"]
+[2018-09-26 11:59:52.139675103] process done ExitSuccess
+[2018-09-26 11:59:52.140319876] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-09-26 11:59:52.140817819] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2018-09-26 11:59:52.146834989] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-09-26 11:59:52.146890494] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-09-26 11:59:52.147529819] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2018-09-26 11:59:52.147813727] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2018-09-26 11:59:52.154567936] read: ssh [\"-o\",\"BatchMode=true\",\"-S\",\".git/annex/ssh/bids@rolando.cns\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-n\",\"-T\",\"bids@rolando.cns\",\"true\"]
+[2018-09-26 11:59:52.155552005] read: ssh [\"-o\",\"BatchMode=true\",\"-S\",\".git/annex/ssh/bids@rolando.cns\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-n\",\"-T\",\"bids@rolando.cns\",\"true\"]
+[2018-09-26 11:59:53.680319247] process done ExitSuccess
+[2018-09-26 11:59:53.680436536] process done ExitSuccess
+[2018-09-26 11:59:53.680671127] chat: ssh [\"bids@rolando.cns\",\"-S\",\".git/annex/ssh/bids@rolando.cns\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-T\",\"git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'c807100d-3e57-4198-9a25-a9d434f493a9' --uuid 6384a551-a41d-4290-b186-9258befede97\"]
+[2018-09-26 11:59:53.680730098] chat: ssh [\"bids@rolando.cns\",\"-S\",\".git/annex/ssh/bids@rolando.cns\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-T\",\"git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'c807100d-3e57-4198-9a25-a9d434f493a9' --uuid 6384a551-a41d-4290-b186-9258befede97\"]
+[2018-09-26 11:59:55.15893547] P2P < AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97
+[2018-09-26 11:59:55.15895813] P2P < AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97
+[2018-09-26 11:59:55.159205411] P2P > VERSION 1
+[2018-09-26 11:59:55.159313796] P2P > VERSION 1
+[2018-09-26 11:59:55.160624999] P2P < VERSION 1
+[2018-09-26 11:59:55.160742428] P2P < VERSION 1
+[2018-09-26 11:59:55.162001851] P2P > VERSION 1[2018-09-26 11:59:55.160845243] P2P > GET 0 sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2_dwi.nii.gz SHA256E-s26287753--02448aa9a07ef300dcd7b445d178c558bef8048dced539e0cf97a51250c937c8.nii.gz
+[2018-09-26 11:59:55.160943268] P2P > GET 0 sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz
+[2018-09-26 11:59:55.163615313] P2P < GET 0 sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2_dwi.nii.gz SHA256E-s26287753--02448aa9a07ef300dcd7b445d178c558bef8048dced539e0cf97a51250c937c8.nii.gz[2018-09-26 11:59:55.163667046] P2P < GET 0 sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz[2018-09-26 11:59:55.196799694] P2P > DATA 24797353[2018-09-26 11:59:55.19553292] P2P < DATA 24797353
+{\"byte-progress\":32752,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz\",\"file\":\"sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz\"},\"total-size\":24797353,\"percent-progress\":\"0.13%\"}
+{\"byte-progress\":3930240,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz\",\"file\":\"sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz\"},\"total-size\":24797353,\"percent-progress\":\"15.85%\"}
+{\"byte-progress\":8351760,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz\",\"file\":\"sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz\"},\"total-size\":24797353,\"percent-progress\":\"33.68%\"}
+{\"byte-progress\":12675024,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz\",\"file\":\"sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz\"},\"total-size\":24797353,\"percent-progress\":\"51.11%\"}
+{\"byte-progress\":17293056,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz\",\"file\":\"sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz\"},\"total-size\":24797353,\"percent-progress\":\"69.74%\"}
+{\"byte-progress\":22009344,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz\",\"file\":\"sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz\"},\"total-size\":24797353,\"percent-progress\":\"88.76%\"}
+[2018-09-26 11:59:55.759916936] P2P > VALID{\"byte-progress\":24797353,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz\",\"file\":\"sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz\"},\"total-size\":24797353,\"percent-progress\":\"100%\"}
+[2018-09-26 11:59:55.759776216] P2P < VALID
+[2018-09-26 11:59:55.759965583] P2P > SUCCESS
+[2018-09-26 11:59:55.762270429] P2P < SUCCESS{\"command\":\"get\",\"note\":\"from origin...\nchecksum...\",\"success\":true,\"key\":\"SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz\",\"file\":\"sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz\"}
+[2018-09-26 11:59:55.902055144] P2P > GET 0 sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz
+[2018-09-26 11:59:55.904705166] P2P < GET 0 sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz[2018-09-26 11:59:55.93085693] P2P > DATA 33352666[2018-09-26 11:59:55.929729548] P2P < DATA 33352666
+{\"byte-progress\":32752,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz\",\"file\":\"sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz\"},\"total-size\":33352666,\"percent-progress\":\"0.1%\"}
+{\"byte-progress\":5207568,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz\",\"file\":\"sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz\"},\"total-size\":33352666,\"percent-progress\":\"15.61%\"}
+{\"byte-progress\":10382384,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz\",\"file\":\"sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz\"},\"total-size\":33352666,\"percent-progress\":\"31.13%\"}
+{\"byte-progress\":15720960,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz\",\"file\":\"sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz\"},\"total-size\":33352666,\"percent-progress\":\"47.14%\"}
+{\"byte-progress\":21157792,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz\",\"file\":\"sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz\"},\"total-size\":33352666,\"percent-progress\":\"63.44%\"}
+{\"byte-progress\":26463616,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz\",\"file\":\"sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz\"},\"total-size\":33352666,\"percent-progress\":\"79.34%\"}
+{\"byte-progress\":27511680,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz\",\"file\":\"sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz\"},\"total-size\":33352666,\"percent-progress\":\"82.49%\"}
+[2018-09-26 11:59:56.729414189] P2P > VALID{\"byte-progress\":33352666,\"action\":{\"command\":\"get\",\"note\":\"from origin...\",\"key\":\"SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz\",\"file\":\"sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz\"},\"total-size\":33352666,\"percent-progress\":\"100%\"}
+[2018-09-26 11:59:56.729435631] P2P < VALID
+[2018-09-26 11:59:56.729716652] P2P > SUCCESS
+[2018-09-26 11:59:56.732037464] P2P < SUCCESS{\"command\":\"get\",\"note\":\"from origin...\nchecksum...\",\"success\":true,\"key\":\"SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz\",\"file\":\"sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz\"}
+\"\"\"]]
+
+all of those 3 files point to different keys
+[[!format sh \"\"\"
+$> ls -l sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2_dwi.nii.gz sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz   
+lrwxrwxrwx 1 yoh yoh 215 Sep 26 09:25 sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz -> ../../../.git/annex/objects/8p/qK/SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz/SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz
+lrwxrwxrwx 1 yoh yoh 215 Sep 26 09:25 sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2_dwi.nii.gz -> ../../../.git/annex/objects/gq/WX/SHA256E-s26287753--02448aa9a07ef300dcd7b445d178c558bef8048dced539e0cf97a51250c937c8.nii.gz/SHA256E-s26287753--02448aa9a07ef300dcd7b445d178c558bef8048dced539e0cf97a51250c937c8.nii.gz
+lrwxrwxrwx 1 yoh yoh 215 Sep 26 09:25 sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz -> ../../../.git/annex/objects/8K/85/SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz/SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz
+\"\"\"]]
+
+`.git/tmp/annex` is clean (I thought it could have mattered, seems not)
+What other information could I provide?
+"""]]
