@@ -1,0 +1,47 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 11"
+ date="2018-09-26T00:10:40Z"
+ content="""
+FWIW confirming that the issue is resolved for my attempts while interacting with that very old git-annex on a server side
+
+[[!format sh \"\"\"
+(git-annex)hopa:/tmp/repo[master]
+$> git annex get 1                              
+get 1 (from origin...) 
+ 
+  fd:19: hClose: resource vanished (Broken pipe)
+
+  Unable to access these remotes: origin
+
+  Try making some of these repositories available:
+  	f6bedfe8-0e58-4182-bca3-764c5c3ed17b -- yoh@washoe:/tmp/repo [origin]
+failed
+git-annex: get: 1 failed
+1 5943 ->1.....................................:Tue 25 Sep 2018 08:07:34 PM EDT:.
+(git-annex)hopa:/tmp/repo[master]
+$> sudo dpkg -i ../git-annex-standalone_6.20180913+git149-g23bd27773-1\~ndall+1_amd64.deb 
+[sudo] password for yoh: 
+(Reading database ... 825207 files and directories currently installed.)
+Preparing to unpack .../git-annex-standalone_6.20180913+git149-g23bd27773-1~ndall+1_amd64.deb ...
+Unpacking git-annex-standalone (6.20180913+git149-g23bd27773-1~ndall+1) over (6.20180913+git52-gdb1644808-1~ndall+1) ...
+Setting up git-annex-standalone (6.20180913+git149-g23bd27773-1~ndall+1) ...
+Processing triggers for gnome-menus (3.13.3-11) ...
+Processing triggers for desktop-file-utils (0.23-2) ...
+Processing triggers for mime-support (3.60) ...
+Processing triggers for doc-base (0.10.8) ...
+Processing 1 changed doc-base file...
+Registering documents with scrollkeeper...
+Processing triggers for hicolor-icon-theme (0.17-2) ...
+Processing triggers for man-db (2.8.2-1) ...
+sudo dpkg -i   4.98s user 1.95s system 65% cpu 10.632 total
+1 5944.....................................:Tue 25 Sep 2018 08:07:52 PM EDT:.
+(git-annex)hopa:/tmp/repo[master]
+$> git annex get 1                                                                       
+get 1 (from origin...) 
+(checksum...) ok                  
+(recording state in git...)
+
+\"\"\"]]
+"""]]
