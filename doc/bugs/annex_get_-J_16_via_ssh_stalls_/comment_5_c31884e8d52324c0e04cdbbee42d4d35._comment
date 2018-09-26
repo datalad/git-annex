@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2018-09-26T13:47:35Z"
+ content="""
+FWIW, some anecdotal evidences/observations:
+
+After upgrade to 6.20180913+git149-g23bd27773-1~ndall+1 (resolving that `get` issue over ssh with elderly annexes) I thought that I started to see that `get` does not stall in a fresh git clone of the repository
+while `get` was still stalling in the git clone where I have tried to get (and stalled) with 6.20180913+git52-gdb1644808-1~ndall+1.  Removing files under `.git/annex/tmp` seemed to make `get` on the next run behave better...  But then I still started to observe stalling from time to time, although it felt that it started to happen **much** more rarely.
+
+Despite -J flag, and starting a large number of  `git-annex-shell 'p2pstdio'`, transmission seems to happen one file at a time, nothing is really parallelized.  I see a single file being downloaded reported by `datalad` (which processes --json --json-progress output) or just observing output of `git annex get -J16 .` (or even just -J2) having only a single % line running at the bottom.
+
+On one run I got a new beasty error reported: `hGetChar: illegal operation`:
+
+[[!format sh \"\"\"
+$> git annex get -J16 .
+get sourcedata/sub-qa/ses-20170807/func/sub-qa_ses-20170807_task-rest_acq-p2Xs4X35mm_bold.dicom.tgz (from origin...) (checksum...) ok
+get sourcedata/sub-qa/ses-20170828/func/sub-qa_ses-20170828_task-rest_acq-p2Xs4X35mm_bold.dicom.tgz (from origin...) (checksum...) ok
+get sourcedata/sub-qa/ses-20170905/func/sub-qa_ses-20170905_task-rest_acq-p2Xs4X35mm_bold.dicom.tgz (from origin...) 
+  Lost connection (fd:167: hGetChar: illegal operation (handle is closed))
+
+  Unable to access these remotes: origin
+
+  Try making some of these repositories available:
+  	6384a551-a41d-4290-b186-9258befede97 -- bids@rolando:/inbox/BIDS/dbic/QA [origin]
+   	7d9ed214-3e5f-4cc8-ac88-f397145b2d4c -- yoh@falkor:/srv/datasets.datalad.org/www/dbic/QA
+   	ba8f2cea-f229-422c-82be-6580e5e07ed5 -- yoh@smaug:/mnt/datasets/datalad/crawl/dbic/QA
+failed
+get sourcedata/sub-qa/ses-20170905/dwi/sub-qa_ses-20170905_acq-DTIX30Xp2_dwi.dicom.tgz (from origin...) (checksum...) ok
+get sourcedata/sub-qa/ses-20170911/dwi/sub-qa_ses-20170911_acq-DTIX30Xp2Xs4_dwi.dicom.tgz (from origin...) (checksum...) ok
+....
+42%   34.86 MiB        52 MiB/s 0s
+\"\"\"]]
+may be it is somehow related.
+
+Raising -J to some obscene value (32) causes a collection of the `Unable to access these remotes: origin`, some include that `Lost connection (fd:323: hGetChar: illegal operation (handle is closed))`, some not. Someone could argue that it would be expected...
+
+Overall:
+- I think that stalling situation did improve, although not entirely resolved.
+- Not sure if annex is actually doing any parallel transfer over ssh
+
+"""]]
