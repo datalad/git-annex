@@ -1,4 +1,4 @@
-git-annex (6.20180914) UNRELEASED; urgency=medium
+git-annex (6.20180926) upstream; urgency=medium
 
   [ Joey Hess ]
   * Fixes a reversion in the last release that broke interoperation with
@@ -27,7 +27,7 @@ git-annex (6.20180914) UNRELEASED; urgency=medium
     + add netbase to Depends: since required for basic tcp interactions
       (see e.g. https://github.com/nipy/heudiconv/issues/260)
 
- -- Yaroslav Halchenko <debian@onerussian.com>  Wed, 19 Sep 2018 13:09:04 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 26 Sep 2018 12:56:49 -0400
 
 git-annex (6.20180913) upstream; urgency=medium
 
