@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 1"
+ date="2018-09-27T07:39:57Z"
+ content="""
+The key is in the path twice as a security measure (the write bit is removed from the directory, to prevent `rm -rf`ing all the files away by mistake).
+
+This is known to cause slowness while traversing the objects directory, which is why there is repository [[tuning]]. Perhaps you want to set some of these?
+"""]]
