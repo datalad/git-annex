@@ -43,7 +43,7 @@ versions of files stored in them. If a special remote is set up to do
 that, it can be used as a key/value store and the limitations in the above
 paragraph do not appy. Note that dropping content from such a remote is
 not supported. See individual special remotes' documentation for
-details of how to  enable such versioning.
+details of how to enable such versioning.
 
 # OPTIONS
 
@@ -55,7 +55,11 @@ details of how to  enable such versioning.
 
   This makes the export track changes that are committed to
   the branch. `git annex sync --content` and the git-annex assistant
-  will update exports when it commits to the branch they are tracking.
+  will update exports with commits made to the branch.
+
+  This is a local configuration setting, similar to a git remote's tracking
+  branch. You'll need to run `git annex export --tracking` in each
+  repository you want the export to track.
 
 * `--fast`
 

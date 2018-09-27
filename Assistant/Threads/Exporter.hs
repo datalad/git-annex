@@ -64,6 +64,7 @@ exportToRemotes rs = do
 			Annex.changeState $ \st -> st { Annex.errcounter = 0 }
 			start <- liftIO getCurrentTime
 			void $ Command.Sync.seekExportContent rs
+				=<< join Command.Sync.getCurrBranch
 			-- Look at command error counter to see if the export
 			-- didn't work.
 			failed <- (> 0) <$> Annex.getState Annex.errcounter

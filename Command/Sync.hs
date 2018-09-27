@@ -189,7 +189,7 @@ seek o = allowConcurrentOutput $ do
 			
 			whenM shouldsynccontent $ do
 				syncedcontent <- seekSyncContent o dataremotes
-				exportedcontent <- seekExportContent exportremotes
+				exportedcontent <- withbranch $ seekExportContent exportremotes
 				-- Transferring content can take a while,
 				-- and other changes can be pushed to the
 				-- git-annex branch on the remotes in the
@@ -680,22 +680,39 @@ syncFile ebloom rs af k = onlyActionOn' k $ do
  - 
  - Returns True if any file transfers were made.
  -}
-seekExportContent :: [Remote] -> Annex Bool
-seekExportContent rs = or <$> forM rs go
+seekExportContent :: [Remote] -> CurrBranch -> Annex Bool
+seekExportContent rs (currbranch, _) = or <$> forM rs go
   where
 	go r = withExclusiveLock (gitAnnexExportLock (Remote.uuid r)) $ do
 		db <- Export.openDb (Remote.uuid r)
 		ea <- Remote.exportActions r
 		exported <- case remoteAnnexExportTracking (Remote.gitconfig r) of
-			Nothing -> getExport (Remote.uuid r)
+			Nothing -> nontracking r
 			Just b -> do
 				mcur <- inRepo $ Git.Ref.tree b
 				case mcur of
-					Nothing -> getExport (Remote.uuid r)
+					Nothing -> nontracking r
 					Just cur -> do
 						Command.Export.changeExport r ea db cur
 						return [Exported cur []]
 		Export.closeDb db `after` fillexport r ea db exported
+		
+	nontracking r = do
+		exported <- getExport (Remote.uuid r)
+		maybe noop (warnnontracking r exported) currbranch
+		return exported
+	
+	warnnontracking r exported currb = inRepo (Git.Ref.tree currb) >>= \case
+		Just currt | not (any (\ex -> exportedTreeish ex == currt) exported) ->
+			showLongNote $ unwords
+				[ "Not updating export to " ++ Remote.name r
+				, "to reflect changes to the tree, because export"
+				, "tracking is not enabled. "
+				, "(Use git-annex export's --tracking option"
+				, "to enable it.)"
+				]
+		_ -> noop
+
 
 	fillexport _ _ _ [] = return False
 	fillexport r ea db (Exported { exportedTreeish = t }:[]) =

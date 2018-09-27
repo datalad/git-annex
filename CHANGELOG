@@ -1,3 +1,10 @@
+git-annex (6.20180927) UNRELEASED; urgency=medium
+
+  * sync: Warn when a remote's export is not updated to the current
+    tree because export tracking is not configured.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 27 Sep 2018 15:27:20 -0400
+
 git-annex (6.20180926) upstream; urgency=medium
 
   [ Joey Hess ]
