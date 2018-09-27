@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 2"
+ date="2018-09-27T11:09:04Z"
+ content="""
+\"The key is in the path twice as a security measure\" -- would key/f.txt be less secure than key/key.txt?  I thought the security comes from having both a dir and a file, not from them both having the key in their name?
+"""]]
