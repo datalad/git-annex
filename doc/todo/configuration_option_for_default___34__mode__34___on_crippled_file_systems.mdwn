@@ -1,0 +1,3 @@
+ATM `git-annex init` switches repository to direct mode if detects a crippled filesystem.  Since version 6 is now generally more usable than direct mode in many scenarios, it would be nice if it was possible to instruct to choose v6 mode instead of direct whenever a crippled system is encountered.
+
+[[!meta author=yoh]]
