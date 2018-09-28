@@ -1,0 +1,39 @@
+ATM git-annex init on a new clone would try to sense the remote regarding git-annex support and would try to fetch its /config.  If that fails it would announce that remote ignored for annex.
+
+[[!format sh """
+...
+Switched to branch 'adjusted/master(unlocked)'
+download failed: Not Found
+
+  Remote origin not usable by git-annex; setting annex-ignore
+
+"""]]
+and that download failed, thanks to --debug output comes from
+[[!format sh """
+[2018-09-28 12:52:12.541757374] Request {
+  host                 = "github.com"
+  port                 = 443
+  secure               = True
+  requestHeaders       = [("Range","bytes=0-"),("Accept-Encoding","identity")]
+  path                 = "/psychoinformatics-de/studyforrest-data-structural/config"
+  queryString          = ""
+  method               = "GET"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+}
+
+download failed: Not Found
+
+  Remote origin not usable by git-annex; setting annex-ignore
+
+"""]]
+
+IMHO that "download failed: " message output should be provided only in `--debug` mode.  Otherwise, if exposed to naive user it is an uninformative alarm, which (if he/she knows) is clarified by the follow up message ("Remote origin not usable ...")
+
+
+[[!meta author=yoh]]
+
+ref: [https://github.com/datalad/datalad/pull/2881#issue-218977359](https://github.com/datalad/datalad/pull/2881#issue-218977359)
