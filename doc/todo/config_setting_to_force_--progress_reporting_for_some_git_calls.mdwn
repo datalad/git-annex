@@ -1,0 +1,7 @@
+Ref: all heated discussions around https://github.com/datalad/datalad/issues/2844
+
+The main point is -- `git annex init --version=6`, while running  on a crippled system might need some time to accomplish the mission of unlocking a big number of files, which leads to `Checking out` progress update spit out by `git`.  BUT if someone (us) swallows stderr, `git` does not produce any progress output unless that command (checkout, pull, fetch, etc...) provides explicit `--progress` flag.  According to IRC there is no config setting to trigger that behavior in `git`.  Could may be `git annex` get a config setting alike `force-git-progress` which would add `--progress` to any relevant `git` call whenever git is ran without stderr being swallowed by annex?
+
+Thanks in advance for considering
+
+[[!meta author=yoh]]
