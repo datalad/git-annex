@@ -30,7 +30,7 @@ cmd' name desc getter setter = noMessages $
   where
 	pdesc = paramPair paramRemote (paramOptional paramExpression)
 
-	seek = withWords start
+	seek = withWords (commandAction . start)
 
 	start (rname:[]) = go rname (performGet getter)
 	start (rname:expr:[]) = go rname $ \uuid -> do

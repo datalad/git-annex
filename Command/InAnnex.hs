@@ -18,7 +18,7 @@ cmd = noCommit $
 		(withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withKeys start
+seek = withKeys (commandAction . start)
 
 start :: Key -> CommandStart
 start key = inAnnexSafe key >>= dispatch

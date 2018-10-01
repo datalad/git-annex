@@ -99,10 +99,12 @@ changeExport r ea db new = do
 	-- the next block of code below may have renamed some files to
 	-- temp files. Diff from the incomplete tree to the new tree,
 	-- and delete any temp files that the new tree can't use.
+	let recover diff = commandAction $
+		startRecoverIncomplete r ea db
+			(Git.DiffTree.srcsha diff)
+			(Git.DiffTree.file diff)
 	forM_ (concatMap incompleteExportedTreeish old) $ \incomplete ->
-		mapdiff (\diff -> startRecoverIncomplete r ea db (Git.DiffTree.srcsha diff) (Git.DiffTree.file diff))
-			incomplete
-			new
+		mapdiff recover incomplete new
 
 	-- Diff the old and new trees, and delete or rename to new name all
 	-- changed files in the export. After this, every file that remains
@@ -115,13 +117,14 @@ changeExport r ea db new = do
 		[] -> updateExportTree db emptyTree new
 		[oldtreesha] -> do
 			diffmap <- mkDiffMap oldtreesha new db
-			let seekdiffmap a = seekActions $ pure $ map a (M.toList diffmap)
+			let seekdiffmap a = commandActions $ 
+				map a (M.toList diffmap)
 			-- Rename old files to temp, or delete.
 			seekdiffmap $ \(ek, (moldf, mnewf)) -> do
 				case (moldf, mnewf) of
 					(Just oldf, Just _newf) ->
 						startMoveToTempName r ea db oldf ek
-					(Just oldf, Nothing) -> 
+					(Just oldf, Nothing) ->
 						startUnexport' r ea db oldf ek
 					_ -> stop
 			-- Rename from temp to new files.
@@ -144,7 +147,7 @@ changeExport r ea db new = do
 				-- Don't rename to temp, because the
 				-- content is unknown; delete instead.
 				mapdiff
-					(\diff -> startUnexport r ea db (Git.DiffTree.file diff) (unexportboth diff))
+					(\diff -> commandAction $ startUnexport r ea db (Git.DiffTree.file diff) (unexportboth diff))
 					oldtreesha new
 			updateExportTree db emptyTree new
 	liftIO $ recordExportTreeCurrent db new
@@ -194,7 +197,7 @@ fillExport :: Remote -> ExportActions Annex -> ExportHandle -> Git.Ref -> Annex 
 fillExport r ea db new = do
 	(l, cleanup) <- inRepo $ Git.LsTree.lsTree new
 	cvar <- liftIO $ newMVar False
-	seekActions $ pure $ map (startExport r ea db cvar) l
+	commandActions $ map (startExport r ea db cvar) l
 	void $ liftIO $ cleanup
 	liftIO $ takeMVar cvar
 

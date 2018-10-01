@@ -32,10 +32,10 @@ seek :: CmdParams -> CommandSeek
 seek ps = do
 	l <- workTreeItems ps
 	ifM versionSupportsUnlockedPointers
-		( withFilesInGit (whenAnnexed startNew) l
+		( withFilesInGit (commandAction . (whenAnnexed startNew)) l
 		, do
-			withFilesOldUnlocked startOld l
-			withFilesOldUnlockedToBeCommitted startOld l
+			withFilesOldUnlocked (commandAction . startOld) l
+			withFilesOldUnlockedToBeCommitted (commandAction . startOld) l
 		)
 
 startNew :: FilePath -> Key -> CommandStart

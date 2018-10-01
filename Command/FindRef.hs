@@ -18,4 +18,5 @@ cmd = withGlobalOptions [nonWorkTreeMatchingOptions] $ Find.mkCommand $
 		paramRef (seek <$$> Find.optParser)
 
 seek :: Find.FindOptions -> CommandSeek
-seek o = Find.start o `withFilesInRefs` (map Git.Ref $ Find.findThese o)
+seek o = (commandAction . uncurry (Find.start o))
+	`withFilesInRefs` (map Git.Ref $ Find.findThese o)

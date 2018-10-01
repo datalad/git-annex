@@ -39,7 +39,7 @@ seek :: CmdParams -> CommandSeek
 seek ps = lockPreCommitHook $ ifM isDirect
 	( do
 		-- update direct mode mappings for committed files
-		withWords startDirect ps
+		withWords (commandAction . startDirect) ps
 		runAnnexHook preCommitAnnexHook
 	, do
 		ifM (not <$> versionSupportsUnlockedPointers <&&> liftIO Git.haveFalseIndex)
@@ -51,14 +51,14 @@ seek ps = lockPreCommitHook $ ifM isDirect
 			, do
 				l <- workTreeItems ps
 				-- fix symlinks to files being committed
-				flip withFilesToBeCommitted l $ \f -> 
+				flip withFilesToBeCommitted l $ \f -> commandAction $
 					maybe stop (Command.Fix.start Command.Fix.FixSymlinks f)
 						=<< isAnnexLink f
 				-- inject unlocked files into the annex
 				-- (not needed when repo version uses
 				-- unlocked pointer files)
 				unlessM versionSupportsUnlockedPointers $
-					withFilesOldUnlockedToBeCommitted startInjectUnlocked l
+					withFilesOldUnlockedToBeCommitted (commandAction . startInjectUnlocked) l
 			)
 		runAnnexHook preCommitAnnexHook
 		-- committing changes to a view updates metadata

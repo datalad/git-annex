@@ -18,7 +18,7 @@ cmd = command "describe" SectionSetup
 	(withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withWords start
+seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start (name:description) = do

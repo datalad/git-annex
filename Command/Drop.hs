@@ -56,8 +56,8 @@ seek o = allowConcurrentOutput $
 	case batchOption o of
 		Batch fmt -> batchFilesMatching fmt go
 		NoBatch -> withKeyOptions (keyOptions o) (autoMode o)
-			(startKeys o)
-			(withFilesInGit go)
+			(commandAction . startKeys o)
+			(withFilesInGit (commandAction . go))
 			=<< workTreeItems (dropFiles o)
   where
 	go = whenAnnexed $ start o
@@ -84,8 +84,8 @@ start' o key afile ai = do
 			| autoMode o = wantDrop False (Remote.uuid <$> from) (Just key) afile
 			| otherwise = return True
 
-startKeys :: DropOptions -> Key -> ActionItem -> CommandStart
-startKeys o key = start' o key (AssociatedFile Nothing)
+startKeys :: DropOptions -> (Key, ActionItem) -> CommandStart
+startKeys o (key, ai) = start' o key (AssociatedFile Nothing) ai
 
 startLocal :: AssociatedFile -> ActionItem -> NumCopies -> Key -> [VerifiedCopy] -> CommandStart
 startLocal afile ai numcopies key preverified = stopUnless (inAnnex key) $ do

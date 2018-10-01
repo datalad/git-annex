@@ -94,8 +94,8 @@ seek o = allowConcurrentOutput $ do
 	checkDeadRepo u
 	i <- prepIncremental u (incrementalOpt o)
 	withKeyOptions (keyOptions o) False
-		(\k ai -> startKey from i k ai =<< getNumCopies)
-		(withFilesInGit $ whenAnnexed $ start from i)
+		(\kai -> commandAction . startKey from i kai =<< getNumCopies)
+		(withFilesInGit $ commandAction . (whenAnnexed (start from i)))
 		=<< workTreeItems (fsckFiles o)
 	cleanupIncremental i
 	void $ tryIO $ recordActivity Fsck u
@@ -183,8 +183,8 @@ performRemote key afile backend numcopies remote =
 		)
 	dummymeter _ = noop
 
-startKey :: Maybe Remote -> Incremental -> Key -> ActionItem -> NumCopies -> CommandStart
-startKey from inc key ai numcopies =
+startKey :: Maybe Remote -> Incremental -> (Key, ActionItem) -> NumCopies -> CommandStart
+startKey from inc (key, ai) numcopies =
 	case Backend.maybeLookupBackendVariety (keyVariety key) of
 		Nothing -> stop
 		Just backend -> runFsck inc ai key $

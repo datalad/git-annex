@@ -19,7 +19,7 @@ cmd = dontCheck repoExists $
 		("-- cmd --") (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withWords start
+seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start opts = do

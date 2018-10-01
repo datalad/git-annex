@@ -20,7 +20,7 @@ cmd = noMessages $ command "schedule" SectionSetup "get or set scheduled jobs"
 	(withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withWords start
+seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start = parse

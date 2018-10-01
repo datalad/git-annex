@@ -80,8 +80,8 @@ seek o = case batchOption o of
 			Set _ -> withFilesInGitNonRecursive
 				"Not recursively setting metadata. Use --force to do that."
 		withKeyOptions (keyOptions o) False
-			(startKeys c o)
-			(seeker $ whenAnnexed $ start c o)
+			(commandAction . startKeys c o)
+			(seeker (commandAction . (whenAnnexed (start c o))))
 			=<< workTreeItems (forFiles o)
 	Batch fmt -> withMessageState $ \s -> case outputType s of
 		JSONOutput _ -> ifM limited
@@ -92,12 +92,12 @@ seek o = case batchOption o of
 		_ -> giveup "--batch is currently only supported in --json mode"
 
 start :: VectorClock -> MetaDataOptions -> FilePath -> Key -> CommandStart
-start c o file k = startKeys c o k (mkActionItem afile)
+start c o file k = startKeys c o (k, mkActionItem afile)
   where
 	afile = AssociatedFile (Just file)
 
-startKeys :: VectorClock -> MetaDataOptions -> Key -> ActionItem -> CommandStart
-startKeys c o k ai = case getSet o of
+startKeys :: VectorClock -> MetaDataOptions -> (Key, ActionItem) -> CommandStart
+startKeys c o (k, ai) = case getSet o of
 	Get f -> do
 		l <- S.toList . currentMetaDataValues f <$> getCurrentMetaData k
 		liftIO $ forM_ l $

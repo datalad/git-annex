@@ -44,7 +44,8 @@ seek :: ListOptions -> CommandSeek
 seek o = do
 	list <- getList o
 	printHeader list
-	withFilesInGit (whenAnnexed $ start list)
+	withFilesInGit
+		(commandAction . (whenAnnexed $ start list))
 		=<< workTreeItems (listThese o)
 
 getList :: ListOptions -> Annex [(UUID, RemoteName, TrustLevel)]

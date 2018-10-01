@@ -25,7 +25,7 @@ cmd = notBareRepo $ notDirect $
 		paramView (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withWords start
+seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start [] = giveup "Specify metadata to include in view"

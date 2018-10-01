@@ -59,8 +59,8 @@ seek o = allowConcurrentOutput $ do
 	case batchOption o of
 		Batch fmt -> batchFilesMatching fmt go
 		NoBatch -> withKeyOptions (keyOptions o) False
-			(startKey (fromToOptions o) (removeWhen o))
-			(withFilesInGit go)
+			(commandAction . startKey (fromToOptions o) (removeWhen o))
+			(withFilesInGit (commandAction . go))
 			=<< workTreeItems (moveFiles o)
 
 start :: FromToHereOptions -> RemoveWhen -> FilePath -> Key -> CommandStart
@@ -69,8 +69,9 @@ start fromto removewhen f k =
   where
 	afile = AssociatedFile (Just f)
 
-startKey :: FromToHereOptions -> RemoveWhen -> Key -> ActionItem -> CommandStart
-startKey fromto removewhen = start' fromto removewhen (AssociatedFile Nothing)
+startKey :: FromToHereOptions -> RemoveWhen -> (Key, ActionItem) -> CommandStart
+startKey fromto removewhen = 
+	uncurry $ start' fromto removewhen (AssociatedFile Nothing)
 
 start' :: FromToHereOptions -> RemoveWhen -> AssociatedFile -> Key -> ActionItem -> CommandStart
 start' fromto removewhen afile key ai = onlyActionOn key $

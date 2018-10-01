@@ -67,7 +67,7 @@ optParser desc = ImportFeedOptions
 seek :: ImportFeedOptions -> CommandSeek
 seek o = do
 	cache <- getCache (templateOption o)
-	withStrings (start o cache) (feedUrls o)
+	withStrings (commandAction . start o cache) (feedUrls o)
 
 start :: ImportFeedOptions -> Cache -> URLString -> CommandStart
 start opts cache url = do

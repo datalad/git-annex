@@ -35,12 +35,12 @@ optParser desc = FromKeyOptions
 
 seek :: FromKeyOptions -> CommandSeek
 seek o = case (batchOption o, keyFilePairs o) of
-	(Batch fmt, _) -> withNothing (startMass fmt) []
+	(Batch fmt, _) -> commandAction $ startMass fmt
 	-- older way of enabling batch input, does not support BatchNull
-	(NoBatch, []) -> withNothing (startMass BatchLine) []
+	(NoBatch, []) -> commandAction $ startMass BatchLine
 	(NoBatch, ps) -> do
 		force <- Annex.getState Annex.force
-		withPairs (start force) ps
+		withPairs (commandAction . start force) ps
 
 start :: Bool -> (String, FilePath) -> CommandStart
 start force (keyname, file) = do

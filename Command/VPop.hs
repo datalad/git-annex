@@ -21,7 +21,7 @@ cmd = notBareRepo $ notDirect $
 		paramNumber (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withWords start
+seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start ps = go =<< currentView

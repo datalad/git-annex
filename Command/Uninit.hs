@@ -41,9 +41,9 @@ check = do
 seek :: CmdParams -> CommandSeek
 seek ps = do
 	l <- workTreeItems ps
-	withFilesNotInGit False (whenAnnexed startCheckIncomplete) l
+	withFilesNotInGit False (commandAction . whenAnnexed startCheckIncomplete) l
 	Annex.changeState $ \s -> s { Annex.fast = True }
-	withFilesInGit (whenAnnexed Command.Unannex.start) l
+	withFilesInGit (commandAction . whenAnnexed Command.Unannex.start) l
 	finish
 
 {- git annex symlinks that are not checked into git could be left by an

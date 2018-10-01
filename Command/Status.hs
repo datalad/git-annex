@@ -37,7 +37,7 @@ optParser desc = StatusOptions
 		))
 
 seek :: StatusOptions -> CommandSeek
-seek o = withWords (start o) (statusFiles o)
+seek o = withWords (commandAction . start o) (statusFiles o)
 	
 start :: StatusOptions -> [FilePath] -> CommandStart
 start o locs = do

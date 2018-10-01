@@ -65,7 +65,7 @@ seek o = allowConcurrentOutput $ do
 			| otherwise -> batchFilesMatching fmt gofile
 		NoBatch -> do
 			l <- workTreeItems (addThese o)
-			let go a = a gofile l
+			let go a = a (commandAction . gofile) l
 			unless (updateOnly o) $
 				go (withFilesNotInGit (not $ includeDotFiles o))
 			go withFilesMaybeModified

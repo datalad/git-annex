@@ -38,7 +38,8 @@ seek o = do
 		then forM_ ts $ commandAction . start'
 		else do
 			let s = S.fromList ts
-			withFilesInGit (whenAnnexed (start s))
+			withFilesInGit
+				(commandAction . (whenAnnexed (start s)))
 				=<< workTreeItems (inprogressFiles o)
 
 start :: S.Set Key -> FilePath -> Key -> CommandStart

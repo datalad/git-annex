@@ -43,7 +43,7 @@ seek ps = do
 	void $ Command.Sync.commitStaged Git.Branch.ManualCommit
 		"commit before undo"
 	
-	withStrings start ps
+	withStrings (commandAction . start) ps
 
 start :: FilePath -> CommandStart
 start p = do

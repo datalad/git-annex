@@ -35,8 +35,8 @@ optParser desc = ReinjectOptions
 
 seek :: ReinjectOptions -> CommandSeek
 seek os
-	| knownOpt os = withStrings startKnown (params os)
-	| otherwise = withWords startSrcDest (params os)
+	| knownOpt os = withStrings (commandAction . startKnown) (params os)
+	| otherwise = withWords (commandAction . startSrcDest) (params os)
 
 startSrcDest :: [FilePath] -> CommandStart
 startSrcDest (src:dest:[])

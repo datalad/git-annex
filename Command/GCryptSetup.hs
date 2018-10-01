@@ -19,7 +19,7 @@ cmd = dontCheck repoExists $ noCommit $
 		paramValue (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withStrings start
+seek = withStrings (commandAction . start)
 
 start :: String -> CommandStart
 start gcryptid = next $ next $ do

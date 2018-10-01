@@ -19,7 +19,7 @@ cmd = command "ungroup" SectionSetup "remove a repository from a group"
 	(paramPair paramRemote paramDesc) (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withWords start
+seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start (name:g:[]) = do

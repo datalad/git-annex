@@ -36,7 +36,7 @@ cmd = noCommit $ dontCheck repoExists $
 		"uid" (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withWords start
+seek = withWords (commandAction . start)
 
 -- This runs as root, so avoid making any commits or initializing
 -- git-annex, or doing other things that create root-owned files.

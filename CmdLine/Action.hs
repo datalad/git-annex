@@ -78,6 +78,9 @@ commandAction a = go =<< Annex.getState Annex.concurrency
 	go NonConcurrent = run
 	run = void $ includeCommandAction a
 
+commandActions :: [CommandStart] -> Annex ()
+commandActions = mapM_ commandAction
+
 {- Waits for any forked off command actions to finish.
  -
  - Merge together the cleanup actions of all the AnnexStates used by

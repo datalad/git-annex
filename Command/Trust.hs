@@ -23,7 +23,7 @@ seek :: CmdParams -> CommandSeek
 seek = trustCommand "trust" Trusted
 
 trustCommand :: String -> TrustLevel -> CmdParams -> CommandSeek
-trustCommand c level = withWords start
+trustCommand c level = withWords (commandAction . start)
   where
 	start ws = do
 		let name = unwords ws

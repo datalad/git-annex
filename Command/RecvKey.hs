@@ -23,7 +23,7 @@ cmd = noCommit $ command "recvkey" SectionPlumbing
 	paramKey (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withKeys start
+seek = withKeys (commandAction . start)
 
 start :: Key -> CommandStart
 start key = fieldTransfer Download key $ \_p -> do

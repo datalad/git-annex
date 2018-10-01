@@ -20,7 +20,7 @@ cmd = noCommit $
 		(withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withWords start
+seek = withWords (commandAction . start)
 
 -- First, lock the content, then print out "OK". 
 -- Wait for the caller to send a line before dropping the lock.

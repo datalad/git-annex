@@ -42,7 +42,7 @@ instance DeferredParseClass TransferKeyOptions where
 		<*> pure (fileOption v)
 
 seek :: TransferKeyOptions -> CommandSeek
-seek o = withKeys (start o) (keyOptions o)
+seek o = withKeys (commandAction . start o) (keyOptions o)
 
 start :: TransferKeyOptions -> Key -> CommandStart
 start o key = case fromToOptions o of

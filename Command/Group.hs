@@ -19,7 +19,7 @@ cmd = noMessages $ command "group" SectionSetup "add a repository to a group"
 	(paramPair paramRemote paramDesc) (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withWords start
+seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start (name:g:[]) = do

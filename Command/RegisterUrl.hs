@@ -33,10 +33,10 @@ optParser desc = RegisterUrlOptions
 
 seek :: RegisterUrlOptions -> CommandSeek
 seek o = case (batchOption o, keyUrlPairs o) of
-	(Batch fmt, _) -> withNothing (startMass fmt) []
+	(Batch fmt, _) -> commandAction $ startMass fmt
 	-- older way of enabling batch input, does not support BatchNull
-	(NoBatch, []) -> withNothing (startMass BatchLine) []
-	(NoBatch, ps) -> withWords start ps
+	(NoBatch, []) -> commandAction $ startMass BatchLine
+	(NoBatch, ps) -> withWords (commandAction . start) ps
 
 start :: [String] -> CommandStart
 start (keyname:url:[]) = do

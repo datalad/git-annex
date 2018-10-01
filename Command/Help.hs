@@ -27,7 +27,7 @@ cmd = noCommit $ dontCheck repoExists $
 	parseparams = withParams
 
 seek :: CmdParams -> CommandSeek
-seek = withWords start
+seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start params = do

@@ -50,8 +50,8 @@ seek o = allowConcurrentOutput $ do
 		Batch fmt -> batchFilesMatching fmt go
 		NoBatch -> withKeyOptions
 			(keyOptions o) (autoMode o)
-			(Command.Move.startKey (fromToOptions o) Command.Move.RemoveNever)
-			(withFilesInGit go)
+			(commandAction . Command.Move.startKey (fromToOptions o) Command.Move.RemoveNever)
+			(withFilesInGit $ commandAction . go)
 			=<< workTreeItems (copyFiles o)
 
 {- A copy is just a move that does not delete the source file.

@@ -44,8 +44,8 @@ seek o = allowConcurrentOutput $ do
 	case batchOption o of
 		Batch fmt -> batchFilesMatching fmt go
 		NoBatch -> withKeyOptions (keyOptions o) (autoMode o)
-			(startKeys from)
-			(withFilesInGit go)
+			(commandAction . startKeys from)
+			(withFilesInGit (commandAction . go))
 			=<< workTreeItems (getFiles o)
 
 start :: GetOptions -> Maybe Remote -> FilePath -> Key -> CommandStart
@@ -57,8 +57,8 @@ start o from file key = start' expensivecheck from key afile (mkActionItem afile
 			<||> wantGet False (Just key) afile
 		| otherwise = return True
 
-startKeys :: Maybe Remote -> Key -> ActionItem -> CommandStart
-startKeys from key ai = checkFailedTransferDirection ai Download $
+startKeys :: Maybe Remote -> (Key, ActionItem) -> CommandStart
+startKeys from (key, ai) = checkFailedTransferDirection ai Download $
 	start' (return True) from key (AssociatedFile Nothing) ai
 
 start' :: Annex Bool -> Maybe Remote -> Key -> AssociatedFile -> ActionItem -> CommandStart

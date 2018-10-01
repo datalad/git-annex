@@ -22,7 +22,6 @@ import qualified Git.LsTree as LsTree
 import Git.FilePath
 import qualified Limit
 import CmdLine.GitAnnex.Options
-import CmdLine.Action
 import Logs.Location
 import Logs.Unused
 import Types.Transfer
@@ -34,11 +33,11 @@ import Annex.Content
 import Annex.InodeSentinal
 import qualified Database.Keys
 
-withFilesInGit :: (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
+withFilesInGit :: (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesInGit a l = seekActions $ prepFiltered a $
 	seekHelper LsFiles.inRepo l
 
-withFilesInGitNonRecursive :: String -> (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
+withFilesInGitNonRecursive :: String -> (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesInGitNonRecursive needforce a l = ifM (Annex.getState Annex.force)
 	( withFilesInGit a l
 	, if null l
@@ -58,7 +57,7 @@ withFilesInGitNonRecursive needforce a l = ifM (Annex.getState Annex.force)
 				getfiles c ps
 			_ -> giveup needforce
 
-withFilesNotInGit :: Bool -> (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
+withFilesNotInGit :: Bool -> (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesNotInGit skipdotfiles a l
 	| skipdotfiles = do
 		{- dotfiles are not acted on unless explicitly listed -}
@@ -78,7 +77,7 @@ withFilesNotInGit skipdotfiles a l
 	go fs = seekActions $ prepFiltered a $
 		return $ concat $ segmentPaths (map (\(WorkTreeItem f) -> f) l) fs
 
-withFilesInRefs :: (FilePath -> Key -> CommandStart) -> [Git.Ref] -> CommandSeek
+withFilesInRefs :: ((FilePath, Key) -> CommandSeek) -> [Git.Ref] -> CommandSeek
 withFilesInRefs a = mapM_ go
   where
 	go r = do	
@@ -89,16 +88,17 @@ withFilesInRefs a = mapM_ go
 			catKey (LsTree.sha i) >>= \case
 				Nothing -> noop
 				Just k -> whenM (matcher $ MatchingKey k) $
-					commandAction $ a f k
+					a (f, k)
 		liftIO $ void cleanup
 
-withPathContents :: ((FilePath, FilePath) -> CommandStart) -> CmdParams -> CommandSeek
+withPathContents :: ((FilePath, FilePath) -> CommandSeek) -> CmdParams -> CommandSeek
 withPathContents a params = do
 	matcher <- Limit.getMatcher
 	forM_ params $ \p -> do
 		fs <- liftIO $ get p
-		forM fs $ \f -> whenM (checkmatch matcher f) $
-			commandAction (a f)	
+		forM fs $ \f ->
+			whenM (checkmatch matcher f) $
+				a f
   where
 	get p = ifM (isDirectory <$> getFileStatus p)
 		( map (\f -> (f, makeRelative (parentDir p) f))
@@ -110,24 +110,24 @@ withPathContents a params = do
 		, matchFile = relf
 		}
 
-withWords :: ([String] -> CommandStart) -> CmdParams -> CommandSeek
+withWords :: ([String] -> CommandSeek) -> CmdParams -> CommandSeek
 withWords a params = seekActions $ return [a params]
 
-withStrings :: (String -> CommandStart) -> CmdParams -> CommandSeek
+withStrings :: (String -> CommandSeek) -> CmdParams -> CommandSeek
 withStrings a params = seekActions $ return $ map a params
 
-withPairs :: ((String, String) -> CommandStart) -> CmdParams -> CommandSeek
+withPairs :: ((String, String) -> CommandSeek) -> CmdParams -> CommandSeek
 withPairs a params = seekActions $ return $ map a $ pairs [] params
   where
 	pairs c [] = reverse c
 	pairs c (x:y:xs) = pairs ((x,y):c) xs
 	pairs _ _ = giveup "expected pairs"
 
-withFilesToBeCommitted :: (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
+withFilesToBeCommitted :: (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesToBeCommitted a l = seekActions $ prepFiltered a $
 	seekHelper LsFiles.stagedNotDeleted l
 
-withFilesOldUnlocked :: (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
+withFilesOldUnlocked :: (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesOldUnlocked = withFilesOldUnlocked' LsFiles.typeChanged
 
 {- Unlocked files before v6 have changed type from a symlink to a regular file.
@@ -135,7 +135,7 @@ withFilesOldUnlocked = withFilesOldUnlocked' LsFiles.typeChanged
  - Furthermore, unlocked files used to be a git-annex symlink,
  - not some other sort of symlink.
  -}
-withFilesOldUnlocked' :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
+withFilesOldUnlocked' :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesOldUnlocked' typechanged a l = seekActions $
 	prepFiltered a unlockedfiles
   where
@@ -145,12 +145,12 @@ isOldUnlocked :: FilePath -> Annex Bool
 isOldUnlocked f = liftIO (notSymlink f) <&&> 
 	(isJust <$> catKeyFile f <||> isJust <$> catKeyFileHEAD f)
 
-withFilesOldUnlockedToBeCommitted :: (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
+withFilesOldUnlockedToBeCommitted :: (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesOldUnlockedToBeCommitted = withFilesOldUnlocked' LsFiles.typeChangedStaged
 
 {- v6 unlocked pointer files that are staged, and whose content has not been
  - modified-}
-withUnmodifiedUnlockedPointers :: (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
+withUnmodifiedUnlockedPointers :: (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withUnmodifiedUnlockedPointers a l = seekActions $
 	prepFiltered a unlockedfiles
   where
@@ -163,17 +163,17 @@ isV6UnmodifiedUnlocked f = catKeyFile f >>= \case
 	Just k -> sameInodeCache f =<< Database.Keys.getInodeCaches k
 
 {- Finds files that may be modified. -}
-withFilesMaybeModified :: (FilePath -> CommandStart) -> [WorkTreeItem] -> CommandSeek
+withFilesMaybeModified :: (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesMaybeModified a params = seekActions $
 	prepFiltered a $ seekHelper LsFiles.modified params
 
-withKeys :: (Key -> CommandStart) -> CmdParams -> CommandSeek
+withKeys :: (Key -> CommandSeek) -> CmdParams -> CommandSeek
 withKeys a l = seekActions $ return $ map (a . parse) l
   where
 	parse p = fromMaybe (giveup "bad key") $ file2key p
 
-withNothing :: CommandStart -> CmdParams -> CommandSeek
-withNothing a [] = seekActions $ return [a]
+withNothing :: CommandSeek -> CmdParams -> CommandSeek
+withNothing a [] = a
 withNothing _ _ = giveup "This command takes no parameters."
 
 {- Handles the --all, --branch, --unused, --failed, --key, and
@@ -183,11 +183,12 @@ withNothing _ _ = giveup "This command takes no parameters."
  - In a bare repo, --all is the default.
  -
  - Otherwise falls back to a regular CommandSeek action on
- - whatever params were passed. -}
+ - whatever params were passed.
+ -}
 withKeyOptions 
 	:: Maybe KeyOptions
 	-> Bool
-	-> (Key -> ActionItem -> CommandStart)
+	-> ((Key, ActionItem) -> CommandSeek)
 	-> ([WorkTreeItem] -> CommandSeek)
 	-> [WorkTreeItem]
 	-> CommandSeek
@@ -195,14 +196,14 @@ withKeyOptions ko auto keyaction = withKeyOptions' ko auto mkkeyaction
   where
 	mkkeyaction = do
 		matcher <- Limit.getMatcher
-		return $ \k i ->
-			whenM (matcher $ MatchingKey k) $
-				commandAction $ keyaction k i
+		return $ \v ->
+			whenM (matcher $ MatchingKey $ fst v) $
+				keyaction v
 
 withKeyOptions' 
 	:: Maybe KeyOptions
 	-> Bool
-	-> Annex (Key -> ActionItem -> Annex ())
+	-> Annex ((Key, ActionItem) -> Annex ())
 	-> ([WorkTreeItem] -> CommandSeek)
 	-> [WorkTreeItem]
 	-> CommandSeek
@@ -231,14 +232,14 @@ withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 		keyaction <- mkkeyaction
 		ks <- getks
 		forM_ ks $ checker >=> maybe noop 
-			(\k -> keyaction k (mkActionItem k))
+			(\k -> keyaction (k, mkActionItem k))
 	runbranchkeys bs = do
 		keyaction <- mkkeyaction
 		forM_ bs $ \b -> do
 			(l, cleanup) <- inRepo $ LsTree.lsTree b
 			forM_ l $ \i -> do
 				let bfp = mkActionItem $ BranchFilePath b (LsTree.file i)
-				maybe noop (\k -> keyaction k bfp)
+				maybe noop (\k -> keyaction (k, bfp))
 					=<< catKey (LsTree.sha i)
 			unlessM (liftIO cleanup) $
 				error ("git ls-tree " ++ Git.fromRef b ++ " failed")
@@ -247,18 +248,17 @@ withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 		rs <- remoteList
 		ts <- concat <$> mapM (getFailedTransfers . Remote.uuid) rs
 		forM_ ts $ \(t, i) ->
-			keyaction (transferKey t) (mkActionItem (t, i))
+			keyaction (transferKey t, mkActionItem (t, i))
 
-prepFiltered :: (FilePath -> CommandStart) -> Annex [FilePath] -> Annex [CommandStart]
+prepFiltered :: (FilePath -> CommandSeek) -> Annex [FilePath] -> Annex [CommandSeek]
 prepFiltered a fs = do
 	matcher <- Limit.getMatcher
 	map (process matcher) <$> fs
   where
-	process matcher f = ifM (matcher $ MatchingFile $ FileInfo f f)
-		( a f , return Nothing )
+	process matcher f = whenM (matcher $ MatchingFile $ FileInfo f f) $ a f
 
-seekActions :: Annex [CommandStart] -> Annex ()
-seekActions gen = mapM_ commandAction =<< gen
+seekActions :: Annex [CommandSeek] -> Annex ()
+seekActions gen = sequence_ =<< gen
 
 seekHelper :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> [WorkTreeItem] -> Annex [FilePath]
 seekHelper a l = inRepo $ \g ->

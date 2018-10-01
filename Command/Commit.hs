@@ -17,7 +17,7 @@ cmd = command "commit" SectionPlumbing
 	paramNothing (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withNothing start
+seek = withNothing (commandAction start)
 
 start :: CommandStart
 start = next $ next $ do

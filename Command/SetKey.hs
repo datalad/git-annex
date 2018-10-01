@@ -17,7 +17,7 @@ cmd = command "setkey" SectionPlumbing "sets annexed content for a key"
 	(withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withWords start
+seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start (keyname:file:[]) = do

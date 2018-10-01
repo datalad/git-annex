@@ -43,17 +43,17 @@ seek o = do
 		Batch fmt -> batchFilesMatching fmt go
 		NoBatch -> 
 			withKeyOptions (keyOptions o) False
-				(startKeys m)
-				(withFilesInGit go)
+				(commandAction . startKeys m)
+				(withFilesInGit (commandAction . go))
 				=<< workTreeItems (whereisFiles o)
 
 start :: M.Map UUID Remote -> FilePath -> Key -> CommandStart
-start remotemap file key = startKeys remotemap key (mkActionItem afile)
+start remotemap file key = startKeys remotemap (key, mkActionItem afile)
   where
 	afile = AssociatedFile (Just file)
 
-startKeys :: M.Map UUID Remote -> Key -> ActionItem -> CommandStart
-startKeys remotemap key ai = do
+startKeys :: M.Map UUID Remote -> (Key, ActionItem) -> CommandStart
+startKeys remotemap (key, ai) = do
 	showStartKey "whereis" key ai
 	next $ perform remotemap key
 

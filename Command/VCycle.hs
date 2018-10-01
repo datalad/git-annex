@@ -20,7 +20,7 @@ cmd = notBareRepo $ notDirect $
 		paramNothing (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withNothing start
+seek = withNothing (commandAction start)
 
 start ::CommandStart
 start = go =<< currentView

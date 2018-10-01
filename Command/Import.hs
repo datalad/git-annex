@@ -73,7 +73,8 @@ seek o = allowConcurrentOutput $ do
 	unless (null inrepops) $ do
 		giveup $ "cannot import files from inside the working tree (use git annex add instead): " ++ unwords inrepops
 	largematcher <- largeFilesMatcher
-	withPathContents (start largematcher (duplicateMode o)) (importFiles o)
+	(commandAction . start largematcher (duplicateMode o))
+		`withPathContents` importFiles o
 
 start :: GetFileMatcher -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
 start largematcher mode (srcfile, destfile) =

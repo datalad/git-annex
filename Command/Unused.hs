@@ -303,8 +303,7 @@ withUnusedMaps a params = do
 	unusedtmp <- readUnusedMap "tmp"
 	let m = unused `M.union` unusedbad `M.union` unusedtmp
 	let unusedmaps = UnusedMaps unused unusedbad unusedtmp
-	seekActions $ return $ map (a unusedmaps) $
-		concatMap (unusedSpec m) params
+	commandActions $ map (a unusedmaps) $ concatMap (unusedSpec m) params
 
 unusedSpec :: UnusedMap -> String -> [Int]
 unusedSpec m spec

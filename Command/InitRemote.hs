@@ -24,7 +24,7 @@ cmd = command "initremote" SectionSetup
 	(withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withWords start
+seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start [] = giveup "Specify a name for the remote."

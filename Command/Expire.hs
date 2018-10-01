@@ -53,7 +53,7 @@ seek o = do
 	u <- getUUID
 	us <- filter (/= u) . M.keys <$> uuidMap
 	descs <- uuidMap
-	seekActions $ pure $ map (start expire (noActOption o) actlog descs) us
+	commandActions $ map (start expire (noActOption o) actlog descs) us
 
 start :: Expire -> Bool -> Log Activity -> M.Map UUID String -> UUID -> CommandStart
 start (Expire expire) noact actlog descs u =

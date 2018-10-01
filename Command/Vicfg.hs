@@ -37,7 +37,7 @@ cmd = command "vicfg" SectionSetup "edit configuration in git-annex branch"
 	paramNothing (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withNothing start
+seek = withNothing (commandAction start)
 
 start :: CommandStart
 start = do

@@ -32,7 +32,7 @@ cmd = command "enableremote" SectionSetup
 	(withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withWords start
+seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start [] = unknownNameError "Specify the remote to enable."

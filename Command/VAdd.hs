@@ -19,7 +19,7 @@ cmd = notBareRepo $ notDirect $
 		(withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withWords start
+seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start params = do

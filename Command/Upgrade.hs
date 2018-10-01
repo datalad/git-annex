@@ -19,7 +19,7 @@ cmd = dontCheck repoExists $ -- because an old version may not seem to exist
 		paramNothing (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withNothing start
+seek = withNothing (commandAction start)
 
 start :: CommandStart
 start = do

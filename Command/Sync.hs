@@ -595,7 +595,7 @@ seekSyncContent o rs = do
   where
 	seekworktree mvar l bloomfeeder = seekHelper LsFiles.inRepo l >>=
 		mapM_ (\f -> ifAnnexed f (go (Right bloomfeeder) mvar (AssociatedFile (Just f))) noop)
-	seekkeys mvar bloom k _ = go (Left bloom) mvar (AssociatedFile Nothing) k
+	seekkeys mvar bloom (k, _) = go (Left bloom) mvar (AssociatedFile Nothing) k
 	go ebloom mvar af k = commandAction $ do
 		whenM (syncFile ebloom rs af k) $
 			void $ liftIO $ tryPutMVar mvar ()

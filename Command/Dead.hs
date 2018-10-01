@@ -29,7 +29,7 @@ optParser desc = (DeadRemotes <$> cmdParams desc)
 
 seek :: DeadOptions -> CommandSeek
 seek (DeadRemotes rs) = trustCommand "dead" DeadTrusted rs
-seek (DeadKeys ks) = seekActions $ pure $ map startKey ks
+seek (DeadKeys ks) = commandActions $ map startKey ks
 
 startKey :: Key -> CommandStart
 startKey key = do

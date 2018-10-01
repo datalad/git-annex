@@ -27,7 +27,7 @@ cmd = notBareRepo $
 		("-- git command") (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withWords start
+seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start [] = giveup "Did not specify command to run."

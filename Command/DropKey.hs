@@ -33,7 +33,7 @@ seek :: DropKeyOptions -> CommandSeek
 seek o = do
 	unlessM (Annex.getState Annex.force) $
 		giveup "dropkey can cause data loss; use --force if you're sure you want to do this"
-	withKeys start (toDrop o)
+	withKeys (commandAction . start) (toDrop o)
 	case batchOption o of
 		Batch fmt -> batchInput fmt parsekey $ batchCommandAction . start
 		NoBatch -> noop

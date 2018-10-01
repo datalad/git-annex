@@ -31,7 +31,7 @@ cmd = withGlobalOptions [annexedMatchingOptions] $
 
 seek :: CmdParams -> CommandSeek
 seek ps = wrapUnannex $ 
-	(withFilesInGit $ whenAnnexed start) =<< workTreeItems ps
+	(withFilesInGit $ commandAction . whenAnnexed start) =<< workTreeItems ps
 
 wrapUnannex :: Annex a -> Annex a
 wrapUnannex a = ifM (versionSupportsUnlockedPointers <||> isDirect)

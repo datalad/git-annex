@@ -26,7 +26,7 @@ cmd = notDirect $ withGlobalOptions [annexedMatchingOptions] $
 		paramPaths (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek ps = withFilesInGit (whenAnnexed start) =<< workTreeItems ps
+seek = withFilesInGit (commandAction . (whenAnnexed start)) <=< workTreeItems
 
 start :: FilePath -> Key -> CommandStart
 start file key = do

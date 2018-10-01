@@ -22,7 +22,7 @@ cmd = noCommit $
 		paramKey (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withWords start
+seek = withWords (commandAction . start)
 
 {- Security:
  - 
