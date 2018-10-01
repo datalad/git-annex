@@ -12,3 +12,5 @@ and the full pipe was
 to my surprise all i got was the retrial of the existing meta-data instead of the addition of the linked fields
 
 IHO git annex should allow to store metadata in batch mode by key
+
+[[!meta title="metadata --batch parses json strictly, loosen?"]]
