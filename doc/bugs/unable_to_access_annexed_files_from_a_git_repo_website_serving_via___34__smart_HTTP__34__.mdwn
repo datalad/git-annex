@@ -3,9 +3,12 @@
 Our http://datasets.datalad.org has been providing git annex repos, some of which with the content, via a "dummy" HTTP support of git.  For various reasons (performance, progress reporting by git upon clone) we want to switch to use [Smart HTTP](https://git-scm.com/book/en/v2/Git-on-the-Server-Smart-HTTP) git-http-backend  backend.  Sample deployment is at http://datasets-dev.datalad.org/.
 I followed the docs to set it up and only added one more configuration tune up
 
+
 ```
  RewriteEngine On
+
  RewriteCond  "%{HTTP_USER_AGENT}"  "(git)"
+
  RewriteRule ^(.*)$ "/git/$1" [PT]
 ```
 
@@ -83,9 +86,12 @@ git-annex: get: 1 failed
 """]]
 because it fails to find those two files under `.git/annex/objects`, here is apache log file
 
+
 ```
 10.31.191.134 - - [01/Oct/2018:13:01:58 -0400] "GET /labs/haxby/raiders/.git//config HTTP/1.1" 206 501 "-" "-"
+
 10.31.191.134 - - [01/Oct/2018:13:01:58 -0400] "GET /labs/haxby/raiders/.git//annex/objects/Z8/f1/MD5E-s41438--06c245e709e7d40a90ed48c6c3b58295.nii.gz/MD5E-s41438--06c245e709e7d40a90ed48c6c3b58295.nii.gz HTTP/1.1" 404 243 "-" "git-annex/6.20180913+git149-g23bd27773-1~ndall+1"
+
 10.31.191.134 - - [01/Oct/2018:13:01:58 -0400] "GET /labs/haxby/raiders/.git//annex/objects/681/5d0/MD5E-s41438--06c245e709e7d40a90ed48c6c3b58295.nii.gz/MD5E-s41438--06c245e709e7d40a90ed48c6c3b58295.nii.gz HTTP/1.1" 404 243 "-" "git-annex/6.20180913+git149-g23bd27773-1~ndall+1"
 ```
 
@@ -98,14 +104,17 @@ drwxrwsr-x 1 yoh datalad 104 Sep 26  2016 /mnt/btrfs/manual-snapshots/srv-201809
 
 
 which git-annex assumes when working with the dummy HTTP:
+
 ```
 10.31.191.134 - - [01/Oct/2018:13:09:53 -0400] "GET /labs/haxby/raiders/.git//config HTTP/1.1" 206 501 "-" "-"
+
 10.31.191.134 - - [01/Oct/2018:13:09:53 -0400] "GET /labs/haxby/raiders/.git//annex/objects/Z8/f1/MD5E-s41438--06c245e709e7d40a90ed48c6c3b58295.nii.gz/MD5E-s41438--06c245e709e7d40a90ed48c6c3b58295.nii.gz HTTP/1.1" 200 41679 "-" "git-annex/6.20180913+git149-g23bd27773-1~ndall+1"
 ```
 
 So I wonder if I need to do something on my end in configuring apache2, or something could/should be done on git-annex side?  Ideally I would like to be able to just clone them without specifying `.git/` suffix to the url.
 
 But also note that `git-annex` seems to not even provide any agent value while trying to access `config` file:
+
 ```
 10.31.191.134 - - [01/Oct/2018:13:12:45 -0400] "GET /labs/haxby/raiders/.git//config HTTP/1.1" 206 501 "-" "-"
 ```
