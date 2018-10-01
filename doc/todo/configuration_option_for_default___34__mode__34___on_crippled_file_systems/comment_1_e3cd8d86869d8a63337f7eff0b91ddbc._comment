@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-10-01T15:57:40Z"
+ content="""
+Wouldn't git annex init --version=6 work? If not that is a bug.
+"""]]
