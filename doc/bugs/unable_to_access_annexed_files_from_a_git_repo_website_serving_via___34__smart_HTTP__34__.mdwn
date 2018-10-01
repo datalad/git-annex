@@ -82,11 +82,12 @@ failed
 git-annex: get: 1 failed
 """]]
 because it fails to find those two files under `.git/annex/objects`, here is apache log file
-[[!format apache """
+
+```
 10.31.191.134 - - [01/Oct/2018:13:01:58 -0400] "GET /labs/haxby/raiders/.git//config HTTP/1.1" 206 501 "-" "-"
 10.31.191.134 - - [01/Oct/2018:13:01:58 -0400] "GET /labs/haxby/raiders/.git//annex/objects/Z8/f1/MD5E-s41438--06c245e709e7d40a90ed48c6c3b58295.nii.gz/MD5E-s41438--06c245e709e7d40a90ed48c6c3b58295.nii.gz HTTP/1.1" 404 243 "-" "git-annex/6.20180913+git149-g23bd27773-1~ndall+1"
 10.31.191.134 - - [01/Oct/2018:13:01:58 -0400] "GET /labs/haxby/raiders/.git//annex/objects/681/5d0/MD5E-s41438--06c245e709e7d40a90ed48c6c3b58295.nii.gz/MD5E-s41438--06c245e709e7d40a90ed48c6c3b58295.nii.gz HTTP/1.1" 404 243 "-" "git-annex/6.20180913+git149-g23bd27773-1~ndall+1"
-"""]]
+```
 
 where it seems to assume different layout:
 
