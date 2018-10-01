@@ -23,6 +23,9 @@ a remote. That risks using a lot of memory if one remote is very slow.
 The queue would need to be capped at some amount, and when full,
 delay until the laggard remotes catches up.
 
+Bonus: git annex sync --content -J2 already works, but it has the same
+problem described above and ought to be able to be fixed the same way.
+
 Also worth noting that with --auto and -J, git-annex may make more transfers
 than preferred content settings demand, because it will start several
 transfers to different remotes at once. If only one copy is needed
