@@ -193,7 +193,7 @@ assumeUrlExists = UrlInfo True Nothing Nothing
 getUrlInfo :: URLString -> UrlOptions -> IO UrlInfo
 getUrlInfo url uo = case parseURIRelaxed url of
 	Just u -> checkPolicy uo u dne $
-		case (urlDownloader uo, parseUrlConduit (show u)) of
+		case (urlDownloader uo, parseUrlRequest (show u)) of
 			(DownloadWithConduit, Just req) ->
 				existsconduit req
 					`catchNonAsync` (const $ return dne)
@@ -300,7 +300,7 @@ download meterupdate url file uo =
   where
 	go = case parseURIRelaxed url of
 		Just u -> checkPolicy uo u False $
-			case (urlDownloader uo, parseUrlConduit (show u)) of
+			case (urlDownloader uo, parseUrlRequest (show u)) of
 				(DownloadWithConduit, Just req) ->
 					downloadconduit req
 				(DownloadWithConduit, Nothing)
@@ -452,36 +452,23 @@ downloadPartial url uo n = case parseURIRelaxed url of
 	Nothing -> return Nothing
 	Just u -> go u `catchNonAsync` const (return Nothing)
   where
-	go u = case parseUrlConduit (show u) of
+	go u = case parseUrlRequest (show u) of
 		Nothing -> return Nothing
 		Just req -> do
 			let req' = applyRequest uo req
 			liftIO $ debugM "url" (show req')
 			withResponse req' (httpManager uo) $ \resp ->
 				if responseStatus resp == ok200
-					then Just <$> brread n [] (responseBody resp)
+					then Just <$> brReadSome (responseBody resp) n
 					else return Nothing
-
-	-- could use brReadSome here, needs newer http-client dependency
-	brread n' l rb
-		| n' <= 0 = return (L.fromChunks (reverse l))
-		| otherwise = do
-			bs <- brRead rb
-			if B.null bs
-				then return (L.fromChunks (reverse l))
-				else brread (n' - B.length bs) (bs:l) rb
 
 {- Allows for spaces and other stuff in urls, properly escaping them. -}
 parseURIRelaxed :: URLString -> Maybe URI
 parseURIRelaxed s = maybe (parseURIRelaxed' s) Just $
 	parseURI $ escapeURIString isAllowedInURI s
 
-parseUrlConduit :: URLString -> Maybe Request
-#if MIN_VERSION_http_client(0,4,30)
-parseUrlConduit = parseUrlThrow
-#else
-parseUrlConduit = parseUrl
-#endif
+parseUrlRequest :: URLString -> Maybe Request
+parseUrlRequest = parseUrlThrow
 
 {- Some characters like '[' are allowed in eg, the address of
  - an uri, but cannot appear unescaped further along in the uri.
