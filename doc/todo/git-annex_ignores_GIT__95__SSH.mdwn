@@ -37,3 +37,7 @@ Windows 8,
 ### Please provide any additional information below.
 
 
+> This got fixed a while back, but you have to set `GIT_ANNEX_USE_GIT_SSH`
+> to make it use it because the `GIT_SSH` command needs to support a
+> parameter that some commands may not support.
+> See the git-annex man page for details. [[done]] --[[Joey]]
