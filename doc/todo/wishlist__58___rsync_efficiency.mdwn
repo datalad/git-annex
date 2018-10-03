@@ -6,3 +6,8 @@ Would parallelization be an option? Are there alternate improvements?
 
 
 -- Richard
+
+> I think that git-annex switching to the P2P protocol for ssh transfers
+> fixed this; it doesn't have the overhead of starting up rsync each time,
+> and even multiple transfers go over the same ssh connection, which also
+> adds efficiency. [[done]] --[[Joey]]
