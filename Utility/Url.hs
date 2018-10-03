@@ -29,6 +29,7 @@ module Utility.Url (
 	getUrlInfo,
 	assumeUrlExists,
 	download,
+	downloadQuiet,
 	sinkResponseFile,
 	downloadPartial,
 	parseURIRelaxed,
@@ -139,19 +140,21 @@ curlParams uo ps = ps ++ uaparams ++ headerparams ++ addedparams ++ schemeparams
 		]
 	schemelist = map fromScheme $ S.toList $ allowedSchemes uo
 
-checkPolicy :: UrlOptions -> URI -> a -> IO a -> IO a
-checkPolicy uo u onerr a
+checkPolicy :: UrlOptions -> URI -> a -> (String -> IO b) -> IO a -> IO a
+checkPolicy uo u onerr displayerror a
 	| allowedScheme uo u = a
 	| otherwise = do
-		hPutStrLn stderr $ 
+		void $ displayerror $
 			"Configuration does not allow accessing " ++ show u
-		hFlush stderr
 		return onerr
 
-unsupportedUrlScheme :: URI -> IO ()
-unsupportedUrlScheme u = do
-	hPutStrLn stderr $ 
-		"Unsupported url scheme " ++ show u
+unsupportedUrlScheme :: URI -> (String -> IO a) -> IO a
+unsupportedUrlScheme u displayerror =
+	displayerror $ "Unsupported url scheme " ++ show u
+
+warnError :: String -> IO ()
+warnError msg = do
+	hPutStrLn stderr msg
 	hFlush stderr
 
 allowedScheme :: UrlOptions -> URI -> Bool
@@ -192,7 +195,7 @@ assumeUrlExists = UrlInfo True Nothing Nothing
  - also returning its size and suggested filename if available. -}
 getUrlInfo :: URLString -> UrlOptions -> IO UrlInfo
 getUrlInfo url uo = case parseURIRelaxed url of
-	Just u -> checkPolicy uo u dne $
+	Just u -> checkPolicy uo u dne warnError $
 		case (urlDownloader uo, parseUrlRequest (show u)) of
 			(DownloadWithConduit, Just req) ->
 				existsconduit req
@@ -200,7 +203,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 			(DownloadWithConduit, Nothing)
 				| isfileurl u -> existsfile u
 				| otherwise -> do
-					unsupportedUrlScheme u
+					unsupportedUrlScheme u warnError
 					return dne
 			(DownloadWithCurl _, _) 
 				| isfileurl u -> existsfile u
@@ -294,20 +297,25 @@ headRequest r = r
  - Displays error message on stderr when download failed.
  -}
 download :: MeterUpdate -> URLString -> FilePath -> UrlOptions -> IO Bool
-download meterupdate url file uo =
+download = download' False
+
+{- Avoids displaying any error message. -}
+downloadQuiet :: MeterUpdate -> URLString -> FilePath -> UrlOptions -> IO Bool
+downloadQuiet = download' True
+
+download' :: Bool -> MeterUpdate -> URLString -> FilePath -> UrlOptions -> IO Bool
+download' noerror meterupdate url file uo =
 	catchJust matchHttpException go showhttpexception
 		`catchNonAsync` (dlfailed . show)
   where
 	go = case parseURIRelaxed url of
-		Just u -> checkPolicy uo u False $
+		Just u -> checkPolicy uo u False dlfailed $
 			case (urlDownloader uo, parseUrlRequest (show u)) of
 				(DownloadWithConduit, Just req) ->
 					downloadconduit req
 				(DownloadWithConduit, Nothing)
 					| isfileurl u -> downloadfile u
-					| otherwise -> do
-						unsupportedUrlScheme u
-						return False
+					| otherwise -> unsupportedUrlScheme u dlfailed
 				(DownloadWithCurl _, _)
 					| isfileurl u -> downloadfile u
 					| otherwise -> downloadcurl
@@ -360,11 +368,8 @@ download meterupdate url file uo =
 					then store zeroBytesProcessed WriteMode resp
 					else showrespfailure resp
 	
-	showrespfailure resp = liftIO $ do
-		hPutStrLn stderr $ B8.toString $
-			statusMessage $ responseStatus resp
-		hFlush stderr
-		return False
+	showrespfailure = liftIO . dlfailed . B8.toString 
+		. statusMessage . responseStatus
 	showhttpexception he = do
 #if MIN_VERSION_http_client(0,5,0)
 		let msg = case he of
@@ -383,10 +388,12 @@ download meterupdate url file uo =
 			_ -> show he
 #endif
 		dlfailed msg
-	dlfailed msg = do
-		hPutStrLn stderr $ "download failed: " ++ msg
-		hFlush stderr
-		return False
+	dlfailed msg
+		| noerror = return False
+		| otherwise = do
+			hPutStrLn stderr $ "download failed: " ++ msg
+			hFlush stderr
+			return False
 	
 	store initialp mode resp = do
 		sinkResponseFile meterupdate initialp file mode resp
@@ -398,13 +405,15 @@ download meterupdate url file uo =
 		unlessM (doesFileExist file) $
 			writeFile file ""
 		let ps = curlParams uo
-			[ Param "-sS"
+			[ if noerror
+				then Param "-S"
+				else Param "-sS"
 			, Param "-f"
 			, Param "-L"
 			, Param "-C", Param "-"
 			]
 		boolSystem "curl" (ps ++ [Param "-o", File file, File url])
-					
+	
 	downloadfile u = do
 		let src = unEscapeString (uriPath u)
 		withMeteredFile src meterupdate $
