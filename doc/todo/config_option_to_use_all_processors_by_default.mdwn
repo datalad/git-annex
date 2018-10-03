@@ -1,0 +1,1 @@
+Can you add a global config flag to tell parallelizable commands to use all available cores?  Often I forget to add -JN when it would have sped things up.

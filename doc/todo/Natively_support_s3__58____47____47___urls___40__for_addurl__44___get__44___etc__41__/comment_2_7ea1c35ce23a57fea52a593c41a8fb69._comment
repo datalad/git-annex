@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2018-10-03T17:39:48Z"
+ content="""
+great question. 
+I think there is \"none\" or may be it is even incorrect to use `s3` in \"s3://\" because underlying protocol is probably http(s).
+
+I was using `s3://` because
+- that is what [s3cmd](https://s3tools.org/s3cmd) consumes and probably it was the first cmdline helper I used for interaction with S3
+- `aws` from [awscli](http://aws.amazon.com/cli/) from Amazon itself, describes `s3://mybucket/myprefix/myobject` as S3Uri; although I found no mentioning of it yet in https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html.  Here is what `aws s3 help` says
+
+```
+       S3Uri: represents the location of a S3 object, prefix, or bucket.  This
+       must  be  written in the form s3://mybucket/mykey where mybucket is the
+       specified S3 bucket, mykey is the specified S3 key.  The path  argument
+       must  begin with s3:// in order to denote that the path argument refers
+       to a S3 object. Note that prefixes are separated  by  forward  slashes.
+       For  example, if the S3 object myobject had the prefix myprefix, the S3
+       key would be myprefix/myobject, and if the object  was  in  the  bucket
+       mybucket, the S3Uri would be s3://mybucket/myprefix/myobject.
+```
+
+so it seems that in neither of those two cases there is any provisioning to specify the specific versionId (like pure http url would have), or identify the key/object by etag (somewhat volatile AFAIK, could change for the same version if recomputed).  So even if s3:// gets supported, there is no standard way to point to the particular version of the file.
+"""]]

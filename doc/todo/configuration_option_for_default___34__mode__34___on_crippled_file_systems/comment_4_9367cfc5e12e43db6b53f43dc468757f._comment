@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2018-10-03T18:03:56Z"
+ content="""
+> until v6 becomes the default
+
+default only for the crippled FS or for all?
+
+Anyways, it is up to you of cause.  But even with your use-case (when to prefer direct instead of v6) it sounds like such an option would be handy so I could set it within ~/.gitconfig and have all new repos uniformly in `direct` mode (whenever v6 is the default).  Especially since `annex init` seems to have no option for getting into direct mode right away, so whenever v6 becomes default there, it would require a jump first into v6 and then running `annex direct` (if I am not missing anything).
+"""]]
