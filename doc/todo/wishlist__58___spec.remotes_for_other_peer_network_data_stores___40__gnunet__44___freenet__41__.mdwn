@@ -24,3 +24,8 @@ For example:
 * **Venti**, [[**Tahoe-LAFS**|todo/tahoe lfs for reals]] would need a backend for their hashes, and a specially setup special remote in each repo where we'd like to use them--because these are not "global" system, we must setup the path to the instance of the filesystem we'd like to use.
 * probably, there must be other interesting cases of this kind...
 * (I'm also thinking about using somethng like a **bibliographic information** as a key, but then it wouldn't guarantee identical files: the same paper can be stored in different formats, etc. Cf. [**URNs**](http://en.wikipedia.org/wiki/Uniform_resource_name#Examples), via <http://it.slashdot.org/comments.pl?sid=3032489&cid=40907233>. Also, an URN like bibliographic information can't be computed from the file, it will have to be entered manually or obtained from another directory of URNs.)
+
+> I don't think there is anything else to do in git-annex, it has
+> everything necessary to let people create such external special remotes
+> and several of the ones discussed here actually exist now. [[done]]
+> --[[Joey]]

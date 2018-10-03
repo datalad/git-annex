@@ -39,6 +39,7 @@ for using git-annex with various services:
 * [chef-vault](https://github.com/3ofcoins/knife-annex/)
 * [Dropbox](https://github.com/DanielDent/git-annex-remote-rclone)
 * [[Flickr|tips/flickrannex]]
+* [Freenet](https://github.com/xloem/gitlakepy)
 * [[Google Cloud Storage|tips/using_Google_Cloud_Storage]]
 * [Google Drive](https://github.com/Lykos153/git-annex-remote-googledrive)
 * [hubiC](https://github.com/Schnouki/git-annex-remote-hubic)
