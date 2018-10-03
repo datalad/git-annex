@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2018-10-03T17:55:04Z"
+ content="""
+hm...
+
+```
+$> git checkout --help | grep progress
+       --[no-]progress
+           This flag enables progress reporting even if not attached to a
+
+$> git --version
+git version 2.19.0
+```
+"""]]
