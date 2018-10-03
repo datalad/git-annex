@@ -16,3 +16,6 @@ It might make sense to make this behavior configurable, because not everyone mig
 
 
 So what do you say?
+
+> The `git annex inprogress` command now can be used to more easily do what
+> I was suggesting be done with `git annex find` below. [[done]] --[[Joey]]
