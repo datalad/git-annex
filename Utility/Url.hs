@@ -296,7 +296,7 @@ headRequest r = r
 download :: MeterUpdate -> URLString -> FilePath -> UrlOptions -> IO Bool
 download meterupdate url file uo =
 	catchJust matchHttpException go showhttpexception
-		`catchNonAsync` showerr
+		`catchNonAsync` (dlfailed . show)
   where
 	go = case parseURIRelaxed url of
 		Just u -> checkPolicy uo u False $
@@ -313,8 +313,7 @@ download meterupdate url file uo =
 					| otherwise -> downloadcurl
 		Nothing -> do
 			liftIO $ debugM "url" url
-			hPutStrLn stderr "download failed: invalid url"
-			return False
+			dlfailed "invalid url"
 	
 	isfileurl u = uriScheme u == "file:"
 
@@ -383,11 +382,9 @@ download meterupdate url file uo =
 				B8.toString (statusMessage status)
 			_ -> show he
 #endif
+		dlfailed msg
+	dlfailed msg = do
 		hPutStrLn stderr $ "download failed: " ++ msg
-		hFlush stderr
-		return False
-	showerr e = do
-		hPutStrLn stderr (show e)
 		hFlush stderr
 		return False
 	
