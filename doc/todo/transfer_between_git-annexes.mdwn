@@ -18,3 +18,7 @@ with the usual modifiers (e.g. --fast would skip the fsck, --force to skip non-p
 Reason I ask: I have a huge annex from importing the contents of a bunch of random harddrives and will eventually sort the contents into various other annexes I can put files into (personal, general family, specific people). Having git-annex guiding and checking the transfers from the sorting annex to the individual ones would be really nice.
 
 Not having this isn't a showstopper (I can use rsync) so no worries if you don't think it is worth it or think it is but put it on the backburner :) Would just be a nice-to-have.
+
+> So I get the feeling you found a way to do this in a script using
+> lower-level parts of git-annex. Closing on that basis, but feel free to
+> reopen if I'm wrong. [[done]] --[[Joey]]
