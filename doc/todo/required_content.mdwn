@@ -21,3 +21,5 @@ preferred content), and would make drop refuse to drop it.
 > In his example, A B and C are in group anchor and have required
 > content set to `include=*`, and D E F have it set to
 > `not inallgroup=anchor`. --[[Joey]]
+
+[[!meta title="actively verify required content during drop"]]
