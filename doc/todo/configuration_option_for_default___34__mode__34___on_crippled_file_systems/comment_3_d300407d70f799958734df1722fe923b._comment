@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-10-03T16:31:50Z"
+ content="""
+Yes, it will auto-init in a clone. But you can still manually init of
+course.
+
+I am reluctant to add this if the only use for it is going to be until v6
+becomes the default; it would make more sense to spend the time on getting
+v6 closer to that point.
+
+Especially because "v6 is worth using instead of direct mode" is a pretty specific
+opinion to hardcode into git-annex. I can imagine other opinions, like "v6
+is worth using instead of direct mode but not in WSL because sqlite
+sometimes crashes there" (closer to my own opinion). Seems to me that if there
+were a setting at all, it would need to make git-annex default to v6 mode always.
+"""]]
