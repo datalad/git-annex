@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-10-03T16:27:45Z"
+ content="""
+Hrm, git checkout does not have a --progress flag that I can see.
+Perhaps they were thinking about git clone, which does have a progress, but
+the repo is already cloned at this point.
+"""]]
