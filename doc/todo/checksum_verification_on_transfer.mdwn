@@ -5,3 +5,5 @@ I have not verified if an upload could be aborted before sending the data to the
 Doing the same for downloads is less useful, because the data is there locally to be fscked. The real advantage would be doing the check for uploads, to ensure that hard-to-detect corrupted files don't reach special remotes.
 
 --[[Joey]]
+
+[[!meta title="do checksum verification on upload to special remotes"]
