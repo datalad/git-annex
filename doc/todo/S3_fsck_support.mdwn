@@ -53,3 +53,6 @@ the android client also happens to check with that API on downloads:
 https://github.com/aws/aws-sdk-android/blob/4de3a3146d66d9ab5684eb5e71d5a2cef9f4dec9/aws-android-sdk-s3/src/main/java/com/amazonaws/services/s3/AmazonS3Client.java#L1302
 
 now of course MD5 is a pile of dung nowadays, but having that checksum beats not having any checksum at all. *and* it is at no cost on the client side... --[[anarcat]]
+
+> Don't think there's anything for git-annex to do here, so [[done]]
+> --[[Joey]]
