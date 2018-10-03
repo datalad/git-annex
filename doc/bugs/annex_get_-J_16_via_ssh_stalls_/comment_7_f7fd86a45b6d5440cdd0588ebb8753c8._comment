@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2018-10-03T19:17:35Z"
+ content="""
+It seems to be stalled waiting for data to come in from the pipe from ssh.
+Both the protocol debug and the emailed strace look like that.
+
+I think it's quite likely that this is something in ssh being unhappy with
+a large number of connections. ssh also seems to be closing some of the
+connections while git-annex is still using them.
+
+It would be worth disabling annex.sshcaching to at least eliminate that
+part of ssh.
+
+It would probably make sense to look at the ssh server's logs and see if
+it's throttling connections.
+
+FWIW, I tried a git-annex get -J64 from localhost using ssh and it worked
+without any problems.
+"""]]
