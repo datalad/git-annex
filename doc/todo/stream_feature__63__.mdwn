@@ -21,3 +21,6 @@ I mean on your setup, with slow internet, you maybe always make a get command, b
 So I have to go sleep now 
 
 bye
+
+> I think that `git annex inprogress` is kind of what you were looking for.
+> [[done]] --[[Joey]]
