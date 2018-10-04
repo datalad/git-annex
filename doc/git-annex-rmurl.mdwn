@@ -10,6 +10,9 @@ git annex rmurl `[file url ..]`
 
 Record that the file is no longer available at the url.
 
+Removing the last url will make git-annex no longer treat content as being
+present in the web special remote.
+
 # OPTIONS
 
 * `--batch`
