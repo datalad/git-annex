@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 35"""
+ date="2018-10-04T18:17:57Z"
+ content="""
+Use `SETURLPRESENT` when it's a regular http url. This allows
+git-annex to download from the remote in readonly mode without needing the
+external special remote program to be installed at all.
+
+Use `SETURIPRESENT` for things that are not http urls, but that it makes
+sense for `git annex whereis` to display.
+"""]]
