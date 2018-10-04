@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="4omecha@fff0ca6fa5307d92706e5ee6812d8db8f8067df0"
+ nickname="4omecha"
+ avatar="http://cdn.libravatar.org/avatar/9345d7ff12c24cf55ce343c0e58a6188"
+ subject="git-annex"
+ date="2018-10-04T14:19:17Z"
+ content="""
+Hey Joey,
+
+figured this might be the right place to drop a heartily \"Thank You!\" for your work regarding git-annex (as well for your contributions to Debian and the FLOSS universe in general).
+
+I'm still in the process of trying to wrap my head around the git-annex complex to find the right(TM) implementation for my use case. For me, git-annex strives for essentials, i.e. future-proving, wide applicability and others. Steep learning curve for the diligent user trying to find the right way the first time w/o losing data while using it.
+
+Best prove of a successful and sustainable piece of software seems to be the diversity of use cases others find to apply it to. Looking around the web and seeing the diversity of real and serious git-annex applications is just plain amazing.
+
+cheers
+"""]]
