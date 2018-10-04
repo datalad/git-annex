@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-10-04T21:38:41Z"
+ content="""
+That's not the same information that this command deals with. There is the
+per-remote metadata log, which some export remotes (currently S3) can 
+use to keep track of whatever information is needed to access a given
+file that was exported to them.
+"""]]
