@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 1"
+ date="2018-10-04T01:11:10Z"
+ content="""
+Maybe also, implement git-annex-put that's like git-annex-get but ensures a file or key exists on a remote, rather than locally?   Use case is to ensure, before starting an AWS job, that its inputs exist in an S3 bucket, getting copied from other remotes as needed.   Also if they're in another S3 bucket can do the copy without downloading locally.
+"""]]
