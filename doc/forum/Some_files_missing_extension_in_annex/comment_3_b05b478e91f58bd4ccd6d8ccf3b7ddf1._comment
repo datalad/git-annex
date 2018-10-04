@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-10-04T18:27:26Z"
+ content="""
+You used the WORM backend which is not the default backend, and which does
+not preserve the extension inside the symlink target in all cases.
+
+You'll need to re-upload the data to the remotes since you've added it back
+under a different key. It would also be possible to use `git annex
+reinject` on the remote, pointing it at the old content's filename.
+"""]]
