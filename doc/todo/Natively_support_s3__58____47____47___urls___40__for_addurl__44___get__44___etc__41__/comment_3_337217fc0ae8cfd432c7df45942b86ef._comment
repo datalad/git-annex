@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-10-04T16:41:00Z"
+ content="""
+I suspect that Amazon's tools also allow uris where
+the bucket is not a domain name and is assumed to be
+on AWS. The documentation kind of reads that way.
+That would not fly in git-annex.
+"""]]
