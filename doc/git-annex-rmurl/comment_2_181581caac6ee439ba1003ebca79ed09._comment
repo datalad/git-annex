@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-10-04T18:47:14Z"
+ content="""
+This is a plumbing-level command. It only affects
+the urls git-annex has stored, not the repositories
+git-annex thinks has a key present. If you want to make git-annex think
+it's not in the web remote, you will need to also use
+`git-annex setpresentkey`.
+"""]]
