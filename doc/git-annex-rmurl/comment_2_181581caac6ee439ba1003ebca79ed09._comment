@@ -3,9 +3,10 @@
  subject="""comment 2"""
  date="2018-10-04T18:47:14Z"
  content="""
-This is a plumbing-level command. It only affects
-the urls git-annex has stored, not the repositories
-git-annex thinks has a key present. If you want to make git-annex think
-it's not in the web remote, you will need to also use
-`git-annex setpresentkey`.
+rmurl should mark the content as not being present in the web special
+remote once the last url is removed, and it does when I tested it just now.
+
+Please file a bug report if git-annex does not behave as expected.. It's
+hard to keep track of comments to random man pages, and bloating the end of
+this page with comments about a possible bug is just not great.
 """]]
