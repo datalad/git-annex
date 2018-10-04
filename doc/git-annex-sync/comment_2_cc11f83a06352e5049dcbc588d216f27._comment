@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-10-04T19:07:09Z"
+ content="""
+git-annex sync pulls before pushing. If another push occurs at the same
+time, the push might fail, but retrying the pull will not avoid that same
+situation occurring again. I don't think it makes sense for git-annex sync
+to retry an arbitrary number of times.
+"""]]
