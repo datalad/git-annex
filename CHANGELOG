@@ -3,6 +3,7 @@ git-annex (6.20180927) UNRELEASED; urgency=medium
   * sync: Warn when a remote's export is not updated to the current
     tree because export tracking is not configured.
   * Improve display when git config download from a http remote fails.
+  * Added annex.jobs setting, which is like using the -J option.
 
  -- Joey Hess <id@joeyh.name>  Thu, 27 Sep 2018 15:27:20 -0400
 

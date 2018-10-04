@@ -13,7 +13,6 @@ import Options.Applicative
 #if ! MIN_VERSION_optparse_applicative(0,14,1)
 import Options.Applicative.Builder.Internal
 #endif
-import Control.Concurrent
 import qualified Data.Map as M
 
 import Annex.Common
@@ -370,11 +369,7 @@ jobsOption =
 			)
 	]
   where
-	set n = do
-		Annex.changeState $ \s -> s { Annex.concurrency = Concurrent n }
-		c <- liftIO getNumCapabilities
-		when (n > c) $
-			liftIO $ setNumCapabilities n
+	set n = Annex.changeState $ \s -> s { Annex.concurrency = Concurrent n }
 
 timeLimitOption :: [GlobalOption]
 timeLimitOption = 

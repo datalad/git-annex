@@ -170,20 +170,32 @@ callCommandActionQuiet = start
 {- Do concurrent output when that has been requested. -}
 allowConcurrentOutput :: Annex a -> Annex a
 #ifdef WITH_CONCURRENTOUTPUT
-allowConcurrentOutput a = go =<< Annex.getState Annex.concurrency
+allowConcurrentOutput a = do
+	fromcmdline <- Annex.getState Annex.concurrency
+	fromgitcfg <- annexJobs <$> Annex.getGitConfig
+	case (fromcmdline, fromgitcfg) of
+		(NonConcurrent, NonConcurrent) -> a
+		(Concurrent n, _) -> goconcurrent n
+		(NonConcurrent, Concurrent n) -> do
+			Annex.changeState $ 
+				\c -> c { Annex.concurrency = fromgitcfg }
+			goconcurrent n
   where
-	go NonConcurrent = a
-	go (Concurrent _) = ifM (liftIO concurrentOutputSupported)
-		( Regions.displayConsoleRegions $
-			goconcurrent True
-		, goconcurrent False
-		)
-	goconcurrent b = bracket_ (setup b) cleanup a
-	setup = setconcurrentenabled
+	goconcurrent n = do
+		c <- liftIO getNumCapabilities
+		when (n > c) $
+			liftIO $ setNumCapabilities n
+		ifM (liftIO concurrentOutputSupported)
+			( Regions.displayConsoleRegions $
+				goconcurrent' True
+			, goconcurrent' False
+			)
+	goconcurrent' b = bracket_ (setup b) cleanup a
+	setup = setconcurrentoutputenabled
 	cleanup = do
 		finishCommandActions
-		setconcurrentenabled False
-	setconcurrentenabled b = Annex.changeState $ \s ->
+		setconcurrentoutputenabled False
+	setconcurrentoutputenabled b = Annex.changeState $ \s ->
 		s { Annex.output = (Annex.output s) { concurrentOutputEnabled = b } }
 #else
 allowConcurrentOutput = id

@@ -26,6 +26,7 @@ import Config.Cost
 import Types.UUID
 import Types.Distribution
 import Types.Availability
+import Types.Concurrency
 import Types.NumCopies
 import Types.Difference
 import Types.RefSpec
@@ -99,6 +100,7 @@ data GitConfig = GitConfig
 	, annexAllowedHttpAddresses :: String
 	, annexAllowUnverifiedDownloads :: Bool
 	, annexMaxExtensionLength :: Maybe Int
+	, annexJobs :: Concurrency
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
 	, receiveDenyCurrentBranch :: DenyCurrentBranch
@@ -173,6 +175,7 @@ extractGitConfig r = GitConfig
 	, annexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
 		getmaybe (annex "security.allow-unverified-downloads")
 	, annexMaxExtensionLength = getmayberead (annex "maxextensionlength")
+	, annexJobs = maybe NonConcurrent Concurrent $ getmayberead (annex "jobs")
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
 	, receiveDenyCurrentBranch = getDenyCurrentBranch r

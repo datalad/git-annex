@@ -935,6 +935,13 @@ Here are all the supported configuration settings.
   This controls which refs `git-annex unused` considers to be used.
   See REFSPEC FORMAT in [[git-annex-unused]](1) for details.
 
+* `annex.jobs
+
+  Configure the number of concurrent jobs to run. Default is 1.
+
+  Only git-annex commands that support the --jobs option will
+  use this.
+
 * `annex.queuesize`
 
   git-annex builds a queue of git commands, in order to combine similar
