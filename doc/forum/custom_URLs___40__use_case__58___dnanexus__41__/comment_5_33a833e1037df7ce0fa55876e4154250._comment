@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2018-10-04T19:28:32Z"
+ content="""
+No, as I mentioned upthread, git-annex supports external special remotes
+claiming urls.
+"""]]
