@@ -1,0 +1,68 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="reporting back"
+ date="2018-10-04T20:37:53Z"
+ content="""
+NB that server we are accessing via ssh was even rebooted today, no change
+
+doing `git -c annex.sshcaching=no annex get` didn't make any difference
+
+Here is some logs from the server with comments from myself (on `#`-prefixed lines):
+
+[[!format sh \"\"\"
+Oct  4 16:24:50 localhost sshd[11428]: Accepted publickey for bids from 129.XXX.XXX.XXX port 40052 ssh2: RSA SHA256:XXX
+Oct  4 16:24:50 localhost sshd: pam_unix(sshd:session): session opened for user bids by (uid=0)
+Oct  4 16:24:53 localhost sshd[11428]: Received disconnect from 129.XXX.XXX.XXX port 40052:11: disconnected by user
+Oct  4 16:24:53 localhost sshd[11428]: Disconnected from 129.XXX.XXX.XXX port 40052
+Oct  4 16:24:53 localhost sshd[11428]: pam_unix(sshd:session): session closed for user bids
+# that was a good non -J session
+
+Oct  4 16:25:06 localhost sshd[11560]: Accepted publickey for bids from 129.XXX.XXX.XXX port 40070 ssh2: RSA SHA256:XXX
+Oct  4 16:25:06 localhost sshd: pam_unix(sshd:session): session opened for user bids by (uid=0)
+Oct  4 16:25:07 localhost sshd[11560]: Received disconnect from 129.XXX.XXX.XXX port 40070:11: disconnected by user
+Oct  4 16:25:07 localhost sshd[11560]: Disconnected from 129.XXX.XXX.XXX port 40070
+Oct  4 16:25:07 localhost sshd[11560]: pam_unix(sshd:session): session closed for user bids
+# that was a drop
+
+Oct  4 16:25:26 localhost sshd[11701]: Accepted publickey for bids from 129.XXX.XXX.XXX port 40082 ssh2: RSA SHA256:XXX
+Oct  4 16:25:26 localhost sshd[11700]: Accepted publickey for bids from 129.XXX.XXX.XXX port 40080 ssh2: RSA SHA256:XXX
+Oct  4 16:25:26 localhost sshd: pam_unix(sshd:session): session opened for user bids by (uid=0)
+Oct  4 16:25:26 localhost sshd: pam_unix(sshd:session): session opened for user bids by (uid=0)
+Oct  4 16:25:28 localhost sshd[11700]: Received disconnect from 129.XXX.XXX.XXX port 40080:11: disconnected by user
+Oct  4 16:25:28 localhost sshd[11700]: Disconnected from 129.XXX.XXX.XXX port 40080
+Oct  4 16:25:28 localhost sshd[11700]: pam_unix(sshd:session): session closed for user bids
+# here it is stalled
+# interrupted on client, ssh: .git/annex/ssh/bids@rolando.cns [mux] process is still there
+# killing the process
+Oct  4 16:26:11 localhost sshd[11701]: Received disconnect from 129.XXX.XXX.XXX port 40082:11: disconnected by user
+Oct  4 16:26:11 localhost sshd[11701]: Disconnected from 129.XXX.XXX.XXX port 40082
+Oct  4 16:26:11 localhost sshd[11701]: pam_unix(sshd:session): session closed for user bids
+
+
+Oct  4 16:26:43 localhost sshd[12176]: Accepted publickey for bids from 129.XXX.XXX.XXX port 40092 ssh2: RSA SHA256:XXX
+Oct  4 16:26:43 localhost sshd: pam_unix(sshd:session): session opened for user bids by (uid=0)
+Oct  4 16:26:44 localhost sshd[12176]: Received disconnect from 129.XXX.XXX.XXX port 40092:11: disconnected by user
+Oct  4 16:26:44 localhost sshd[12176]: Disconnected from 129.XXX.XXX.XXX port 40092
+Oct  4 16:26:44 localhost sshd[12176]: pam_unix(sshd:session): session closed for user bids
+# that was drop
+
+Oct  4 16:26:53 localhost sshd[12309]: Accepted publickey for bids from 129.XXX.XXX.XXX port 40096 ssh2: RSA SHA256:XXX
+Oct  4 16:26:53 localhost sshd[12308]: Accepted publickey for bids from 129.XXX.XXX.XXX port 40094 ssh2: RSA SHA256:XXX
+Oct  4 16:26:53 localhost sshd[12310]: Accepted publickey for bids from 129.XXX.XXX.XXX port 40098 ssh2: RSA SHA256:XXX
+Oct  4 16:26:53 localhost sshd: pam_unix(sshd:session): session opened for user bids by (uid=0)
+Oct  4 16:26:53 localhost sshd: pam_unix(sshd:session): session opened for user bids by (uid=0)
+Oct  4 16:26:53 localhost sshd: pam_unix(sshd:session): session opened for user bids by (uid=0)
+Oct  4 16:26:54 localhost sshd[12308]: Received disconnect from 129.XXX.XXX.XXX port 40094:11: disconnected by user
+Oct  4 16:26:54 localhost sshd[12308]: Disconnected from 129.XXX.XXX.XXX port 40094
+Oct  4 16:26:54 localhost sshd[12310]: Received disconnect from 129.XXX.XXX.XXX port 40098:11: disconnected by user
+Oct  4 16:26:54 localhost sshd[12310]: Disconnected from 129.XXX.XXX.XXX port 40098
+Oct  4 16:26:54 localhost sshd[12308]: pam_unix(sshd:session): session closed for user bids
+Oct  4 16:26:54 localhost sshd[12310]: pam_unix(sshd:session): session closed for user bids
+# This was with -J3, which stalled after the first one was done   
+# it stalled with a single ssh: .git/annex/ssh/bids@rolando.cns [mux]  still running
+# interruptedOct  4 16:28:34 localhost sshd[12309]: Received disconnect from 129.XXX.XXX.XXX port 40096:11: disconnected by user
+Oct  4 16:28:34 localhost sshd[12309]: Disconnected from 129.XXX.XXX.XXX port 40096
+Oct  4 16:28:34 localhost sshd[12309]: pam_unix(sshd:session): session closed for user bids
+\"\"\"]]
+"""]]
