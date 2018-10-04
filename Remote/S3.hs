@@ -195,7 +195,7 @@ store _r info h = fileStorer $ \k f p -> do
 	void $ storeHelper info h f (T.pack $ bucketObject info k) p
 	-- Store public URL to item in Internet Archive.
 	when (isIA info && not (isChunkKey k)) $
-		setUrlPresent webUUID k (iaPublicUrl info (bucketObject info k))
+		setUrlPresent k (iaPublicUrl info (bucketObject info k))
 	return True
 
 storeHelper :: S3Info -> S3Handle -> FilePath -> S3.Object -> MeterUpdate -> Annex (Maybe S3VersionID)

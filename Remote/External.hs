@@ -416,9 +416,9 @@ handleRequest' st external req mp responsehandler
 			<$> getRemoteState (externalUUID external) key
 		send $ VALUE state
 	handleRemoteRequest (SETURLPRESENT key url) =
-		setUrlPresent (externalUUID external) key url
+		setUrlPresent key url
 	handleRemoteRequest (SETURLMISSING key url) =
-		setUrlMissing (externalUUID external) key url
+		setUrlMissing key url
 	handleRemoteRequest (SETURIPRESENT key uri) =
 		withurl (SETURLPRESENT key) uri
 	handleRemoteRequest (SETURIMISSING key uri) =

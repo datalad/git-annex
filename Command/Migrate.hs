@@ -17,7 +17,6 @@ import qualified Command.Fsck
 import qualified Annex
 import Logs.MetaData
 import Logs.Web
-import qualified Remote
 
 cmd :: Command
 cmd = notDirect $ withGlobalOptions [annexedMatchingOptions] $
@@ -78,9 +77,8 @@ perform file oldkey oldbackend newbackend = go =<< genkey (fastMigrate oldbacken
 			-- If the old key had some associated urls, record them for
 			-- the new key as well.
 			urls <- getUrls oldkey
-			forM_ urls $ \url -> do
-				r <- Remote.claimingUrl url
-				setUrlPresent (Remote.uuid r) newkey url
+			forM_ urls $ \url ->
+				setUrlPresent newkey url
 			next $ Command.ReKey.cleanup file oldkey newkey
 		, error "failed"
 		)

@@ -100,7 +100,7 @@ uploadKey _ _ _ = do
 
 dropKey :: Key -> Annex Bool
 dropKey k = do
-	mapM_ (setUrlMissing webUUID k) =<< getWebUrls k
+	mapM_ (setUrlMissing k) =<< getWebUrls k
 	return True
 
 checkKey :: Key -> Annex Bool

@@ -233,7 +233,8 @@ addUrlChecked o url file u checkexistssize key =
 			(exists, samesize, url') <- checkexistssize key
 			if exists && (samesize || relaxedOption (downloadOptions o))
 				then do
-					setUrlPresent u key url'
+					setUrlPresent key url'
+					logChange key u InfoPresent
 					next $ return True
 				else do
 					warning $ "while adding a new url to an already annexed file, " ++ if exists
@@ -397,7 +398,8 @@ addWorkTree u url file key mtmp = case mtmp of
   where
 	go = do
 		maybeShowJSON $ JSONChunk [("key", key2file key)]
-		setUrlPresent u key url
+		setUrlPresent key url
+		logChange key u InfoPresent
 		ifM (addAnnexedFile file key mtmp)
 			( do
 				when (isJust mtmp) $

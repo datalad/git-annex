@@ -6,7 +6,6 @@
 rmurl should mark the content as not being present in the web special
 remote once the last url is removed, and it does when I tested it just now.
 
-Please file a bug report if git-annex does not behave as expected.. It's
-hard to keep track of comments to random man pages, and bloating the end of
-this page with comments about a possible bug is just not great.
+There was a recent bug, now fixed, that prevented it doing that in some unusual
+circumstances.
 """]]

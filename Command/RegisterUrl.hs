@@ -69,5 +69,5 @@ perform key url = do
 perform' :: Key -> URLString -> Annex Bool
 perform' key url = do
 	r <- Remote.claimingUrl url
-	setUrlPresent (Remote.uuid r) key (setDownloader' url r)
+	setUrlPresent key (setDownloader' url r)
 	return True

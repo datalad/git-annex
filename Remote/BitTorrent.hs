@@ -112,7 +112,7 @@ uploadKey _ _ _ = do
 
 dropKey :: Key -> Annex Bool
 dropKey k = do
-	mapM_ (setUrlMissing bitTorrentUUID k) =<< getBitTorrentUrls k
+	mapM_ (setUrlMissing k) =<< getBitTorrentUrls k
 	return True
 
 {- We punt and don't try to check if a torrent has enough seeders

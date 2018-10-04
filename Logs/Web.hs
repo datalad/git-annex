@@ -56,20 +56,32 @@ getUrlsWithPrefix key prefix = filter (prefix `isPrefixOf`)
 	. map (fst . getDownloader)
 	<$> getUrls key
 
-setUrlPresent :: UUID -> Key -> URLString -> Annex ()
-setUrlPresent uuid key url = do
+setUrlPresent :: Key -> URLString -> Annex ()
+setUrlPresent key url = do
 	us <- getUrls key
 	unless (url `elem` us) $ do
 		config <- Annex.getGitConfig
 		addLog (urlLogFile config key) =<< logNow InfoPresent url
-	logChange key uuid InfoPresent
+	-- If the url does not have an OtherDownloader, it must be present
+	-- in the web.
+	case snd (getDownloader url) of
+		OtherDownloader -> return ()
+		_ -> logChange key webUUID InfoPresent
 
-setUrlMissing :: UUID -> Key -> URLString -> Annex ()
-setUrlMissing uuid key url = do
+setUrlMissing :: Key -> URLString -> Annex ()
+setUrlMissing key url = do
 	config <- Annex.getGitConfig
 	addLog (urlLogFile config key) =<< logNow InfoMissing url
-	whenM (null <$> getUrls key) $
-		logChange key uuid InfoMissing
+	-- If the url was a web url (not OtherDownloader) and none of
+	-- the remaining urls for the key are web urls, the key must not
+	-- be present in the web.
+	when (isweb url) $
+		whenM (null . filter isweb <$> getUrls key) $
+			logChange key webUUID InfoMissing
+  where
+	isweb u = case snd (getDownloader u) of
+		OtherDownloader -> False
+		_ -> True
 
 {- Finds all known urls. -}
 knownUrls :: Annex [(Key, URLString)]

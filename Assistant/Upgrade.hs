@@ -83,7 +83,7 @@ startDistributionDownload d = go =<< liftIO . newVersionLocation d =<< liftIO ol
   where
 	go Nothing = debug ["Skipping redundant upgrade"]
 	go (Just dest) = do
-		liftAnnex $ setUrlPresent webUUID k u
+		liftAnnex $ setUrlPresent k u
 		hook <- asIO1 $ distributionDownloadComplete d dest cleanup
 		modifyDaemonStatus_ $ \s -> s
 			{ transferHook = M.insert k hook (transferHook s) }
@@ -100,7 +100,7 @@ startDistributionDownload d = go =<< liftIO . newVersionLocation d =<< liftIO ol
 		}
 	cleanup = liftAnnex $ do
 		lockContentForRemoval k removeAnnex
-		setUrlMissing webUUID k u
+		setUrlMissing k u
 		logStatus k InfoMissing
 
 {- Called once the download is done.
