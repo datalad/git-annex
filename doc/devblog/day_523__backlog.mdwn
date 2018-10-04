@@ -1,0 +1,13 @@
+So I've been catching up on backlog for a couple of days. Including reading
+all the old todos, and closing a bunch of them that turned out to have been
+implemented already.
+
+Today I added an annex.jobs setting, fixed annex.web-options
+which was broken in the semi-recent security update,
+and fixed a very tricky bug in rmurl.
+
+(What happened to the <http://git-annex.branchable.com/todo/to_and_from_multiple_remotes/>
+I was working on earlier this week? When I looked at the details, it was
+much more complicated than I had thought. Back burnered.)
+
+Today's work was sponsored by Jake Vosloo [on Patreon](https://patreon.com/joeyh/).
