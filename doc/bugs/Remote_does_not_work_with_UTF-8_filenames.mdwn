@@ -191,3 +191,5 @@ failed
 
 I love git annex, using it very day :)
 
+> closing since this is not a bug in git-annex but in the external remote.
+> [[done]] --[[Joey]]
