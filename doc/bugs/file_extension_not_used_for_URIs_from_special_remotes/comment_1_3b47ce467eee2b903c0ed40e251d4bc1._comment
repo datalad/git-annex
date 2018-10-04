@@ -1,0 +1,88 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-10-04T18:58:32Z"
+ content="""
+That would certianly be a bug, but I am not able to reproduce it. 
+
+I used this external special remote program:
+
+	#!/bin/sh
+	set -e
+	runcmd () {
+		"$@" >&2
+	}
+	echo VERSION 1
+	while read line; do
+		set -- $line
+		case "$1" in
+			INITREMOTE)
+				echo INITREMOTE-SUCCESS
+			;;
+			PREPARE)
+				echo PREPARE-SUCCESS
+			;;
+			CLAIMURL)
+				url="$2"
+				echo CLAIMURL-SUCCESS
+			;;
+			CHECKURL)
+				echo CHECKURL-CONTENTS 0 foo.gif
+			;;
+			TRANSFER)
+				op="$2"
+				key="$3"
+				shift 3
+				file="$@"
+				case "$op" in
+					STORE)
+						echo TRANSFER-FAILURE STORE "$key" dummy
+					;;
+					RETRIEVE)
+						touch "$file"
+						echo TRANSFER-SUCCESS RETRIEVE "$key"
+					;;
+				esac
+			;;
+			CHECKPRESENT)
+				key="$2"
+				echo CHECKPRESENT-UNKNOWN "$key" dummy
+			;;
+			REMOVE)
+				key="$2"
+				echo REMOVE-SUCCESS "$key"
+			;;
+			*)
+				echo UNSUPPORTED-REQUEST
+			;;
+		esac	
+	done
+
+That claims all urls, and provides an (empty) .gif file.
+
+Result using it:
+
+	joey@darkstar:/tmp>git init test
+	Initialized empty Git repository in /tmp/test/.git/
+	joey@darkstar:/tmp>cd test
+	joey@darkstar:/tmp/test>git annex init
+	init  ok
+	(recording state in git...)
+	joey@darkstar:/tmp/test>>git annex initremote test type=external externaltype=test ecryption=none
+	initremote test ok
+	(recording state in git...)
+	joey@darkstar:/tmp/test>git annex addurl http://bar/ 
+	addurl http://bar/ (from test) (to foo.gif) 
+	ok
+	(recording state in git...)
+	joey@darkstar:/tmp/test>ls -l foo.gif 
+	lrwxrwxrwx 1 joey joey 186 Oct  4 15:01 foo.gif -> .git/annex/objects/Zp/QG/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.gif/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.gif
+
+Which is as expected, and in the code it downloads the file to the worktree
+and then ingests it from there, so it's handled the same way as a wget and
+a git annex add would be.
+
+It may be that older versions of git-annex behaved differently. I don't 
+know what version you are using. Please always include a version number in
+bug reports.
+"""]]
