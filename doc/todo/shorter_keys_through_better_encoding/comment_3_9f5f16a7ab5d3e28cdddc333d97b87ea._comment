@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-10-04T18:35:28Z"
+ content="""
+I'm not convinced that git-annex should try to make the symlinks shorter
+just because some programs have UIs that don't work well with longer
+symlinks. UIs can be improved.
+
+I like to use `ls -lL` for example, which conveniently
+avoids displaying the symlink target and also shows the size of the annexed
+file.
+
+Using the MD5 backend will also give you much shorter symlinks..
+
+External backends is an interesting idea, but needing to deal with the
+backend being missing or failing to work could have wide repurcussions in
+the code base. It feels like too much complexity for too little gain.
+"""]]
