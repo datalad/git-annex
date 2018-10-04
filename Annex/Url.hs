@@ -59,8 +59,8 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 			-- it from accessing specific IP addresses.
 			curlopts <- map Param . annexWebOptions <$> Annex.getGitConfig
 			let urldownloader = if null curlopts
-				then U.DownloadWithCurl curlopts
-				else U.DownloadWithConduit
+				then U.DownloadWithConduit
+				else U.DownloadWithCurl curlopts
 			manager <- liftIO $ U.newManager U.managerSettings
 			return (urldownloader, manager)
 		allowedaddrs -> do

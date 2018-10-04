@@ -4,6 +4,7 @@ git-annex (6.20180927) UNRELEASED; urgency=medium
     tree because export tracking is not configured.
   * Improve display when git config download from a http remote fails.
   * Added annex.jobs setting, which is like using the -J option.
+  * Fix reversion in support of annex.web-options.
 
  -- Joey Hess <id@joeyh.name>  Thu, 27 Sep 2018 15:27:20 -0400
 
