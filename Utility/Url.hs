@@ -328,15 +328,15 @@ download' noerror meterupdate url file uo =
 	downloadconduit req = catchMaybeIO (getFileSize file) >>= \case
 		Nothing -> runResourceT $ do
 			liftIO $ debugM "url" (show req')
-			resp <- http (applyRequest uo req') (httpManager uo)
+			resp <- http req' (httpManager uo)
 			if responseStatus resp == ok200
 				then store zeroBytesProcessed WriteMode resp
 				else showrespfailure resp
 		Just sz -> resumeconduit req' sz
 	  where
-		-- Override http-client's default decompression of gzip
-		-- compressed files. We want the unmodified file content.
-		req' = req
+		req' = applyRequest uo $ req
+			-- Override http-client's default decompression of gzip
+			-- compressed files. We want the unmodified file content.
 			{ requestHeaders = (hAcceptEncoding, "identity") :
 				filter ((/= hAcceptEncoding) . fst)
 					(requestHeaders req)
