@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-10-04T16:53:31Z"
+ content="""
+Ah, I see, I was searching for "--progress".
+
+I suppose what would make sense is to add the same option to the git-annex
+commands that can do a git checkout: init, adjust, sync, view, vpop, vadd,
+vcycle.
+"""]]
