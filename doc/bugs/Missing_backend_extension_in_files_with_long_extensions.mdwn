@@ -40,3 +40,5 @@ macOS isn't able to open a file without extension. In order to just view it, I h
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yup, I've been using it for 5 years. It's awesome! Thank you.
+
+> [[done]] --[[Joey]]
