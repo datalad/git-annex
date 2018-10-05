@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2018-10-05T20:20:42Z"
+ content="""
+yes, for `s3://` urls there is only a bucket name, not a domain.  Since bucket name is allowed to have `.`, some folks started to use their project domain name as a bucket name (e.g. `openneuro.org`, `images.cocodataset.org`).  Then if you are to access them directly via url, full domain name would be e.g. http://images.cocodataset.org.s3.amazonaws.com, which would start causing troubles if you try to access it via https
+
+[[!format sh \"\"\"
+$> wget -S https://images.cocodataset.org.s3.amazonaws.com 
+--2018-10-05 16:19:48--  https://images.cocodataset.org.s3.amazonaws.com/
+Resolving images.cocodataset.org.s3.amazonaws.com (images.cocodataset.org.s3.amazonaws.com)... 52.216.18.32
+Connecting to images.cocodataset.org.s3.amazonaws.com (images.cocodataset.org.s3.amazonaws.com)|52.216.18.32|:443... connected.
+The certificate's owner does not match hostname ‘images.cocodataset.org.s3.amazonaws.com’
+\"\"\"]]
+
+for which we started to provide workarounds in datalad.
+"""]]
