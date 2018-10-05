@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 4"
+ date="2018-10-05T19:56:24Z"
+ content="""
+If the s3 remote claims s3:// URLs, does the bucket name have to be a DNS domain?  I thought, when a special remote claims a URL, it can interepret it however it wants?
+"""]]
