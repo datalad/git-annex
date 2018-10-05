@@ -1,0 +1,14 @@
+Let's say I have 2 client repos located in my laptop and desktop and a backup repo located in an external drive.<br>
+I want the 2 client repos to only want content that is already present in the repo. So I set their preferred content like this: 
+
+```git annex wanted . "present"```
+
+And let's say the 2 client repos already contain the file test.txt.
+
+When I modify test.txt in the laptop repo and run git annex sync --content, then go to the desktop repo and run git annex sync,<br>
+the behavior I'm expecting is that text.txt in the desktop repo will be updated when sync is run since clients want content that is already present. 
+
+However, what happens is that the file text.txt in the desktop repo is dropped.<br>
+Is this the expected behavior when using `present` in the preferred content expression?
+
+How can I have the modified content in a client repo automatically copied via `git annex sync --content` to another client repo when the preferred content for the client group is to only want content that is already present?
