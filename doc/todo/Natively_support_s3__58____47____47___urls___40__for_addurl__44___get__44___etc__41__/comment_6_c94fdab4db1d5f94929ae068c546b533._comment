@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 6"
+ date="2018-10-05T21:31:33Z"
+ content="""
+My current planned solution is to write an external special remote that claims s3:// URLs and downloads them.  Then can use addurl --fast .  My use case is that, if I run a batch job that reads inputs from s3 and writes outputs to s3, what I get at the end are pointers to s3, and I want to check these results into git-annex.  Ideally there'd be a way for me to tell the batch system to use git-annex to send things to s3, but currently that's not possible.
+
+Question: if an external special remote claims a URL that a built-in special remote could handle, does the external special remote take priority?
+"""]]

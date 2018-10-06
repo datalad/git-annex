@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Teyras"
+ avatar="http://cdn.libravatar.org/avatar/d874f8fa5e6480461f368400b9089a2f"
+ subject="gcrypt support"
+ date="2018-10-06T12:14:44Z"
+ content="""
+Is it possible to use gcrypt remotes when running git-annex in Termux?
+"""]]

@@ -1,0 +1,140 @@
+[[!comment format=mdwn
+ username="Mowgli"
+ avatar="http://cdn.libravatar.org/avatar/17ab194dddf7b7da59ec039cbb3ac252"
+ subject="Gentoo-Build (Haskell nightmare)"
+ date="2018-10-05T19:36:01Z"
+ content="""
+I try to build git-annex on Gentoo linux (the most current version to be able to interact with the same version on debian). Unfortunatelly the version in Gentoo itself is to old (6.20170818).
+
+So I found the haskell overlay that includes newer libraries for haskell as well as git-annex version 6.20180626.
+
+So for 3 days now I try to get the haskell stack compiled what failed many times with circular dependencies, conflicting versions or simply not working haskell versions. It was a real nightmare and only a hint from the mailinglist to simply allow any haskell library, even all broken ones, gave me the solution to fulfile all dependencies for git-annex.
+
+But now, git-annex itself fails to compile. I have no idea how to solve that.
+
+Here the relevant logs:
+./setup configure --ghc --prefix=/usr --with-compiler=/usr/bin/ghc --with-hc-pkg=/usr/bin/ghc-pkg --prefix=/usr --libdir=/usr/lib64 --libsubdir=git-annex-6.20180626/ghc-8.4.3 --datadir=/usr/share/ --datasubdir=git-annex-6.20180626/ghc-8.4.3 --ghc-options=-j2 +RTS -A256M -qb0 -RTS --with-ar=x86_64-pc-linux-gnu-ar --ghc-option=-optc-march=native --ghc-option=-optc-O2 --ghc-option=-optc-pipe --ghc-option=-optl-Wl,-O1 --ghc-option=-optl-Wl,--as-needed --disable-executable-stripping --docdir=/usr/share/doc/git-annex-6.20180626 --verbose --enable-shared --enable-executable-dynamic --sysconfdir=/etc --disable-library-stripping --flag=-android --flag=-androidsplice --flags=-assistant --flags=-benchmark --flags=concurrentoutput --flags=-dbus --flags=magicmime --flags=network-uri --flags=pairing --flag=-production --flags=-s3 --flag=-testsuite --flags=torrentparser --flags=-webapp --flags=webdav
+…
+Assistant/Threads/MountWatcher.hs:36:2: error:
+     warning: #warning Building without dbus support; will use mtab polling [-Wcpp]
+     #warning Building without dbus support; will use mtab polling
+      ^~~~~~~
+   |
+36 | #warning Building without dbus support; will use mtab polling
+   |  ^
+
+Assistant/Threads/NetWatcher.hs:27:2: error:
+     warning: #warning Building without dbus support; will poll for network connection changes [-Wcpp]
+     #warning Building without dbus support; will poll for network connection changes
+      ^~~~~~~
+   |
+27 | #warning Building without dbus support; will poll for network connection changes
+   |  ^
+
+BuildFlags.hs:22:2: error:
+     warning: #warning Building without the assistant. [-Wcpp]
+     #warning Building without the assistant.
+      ^~~~~~~
+   |
+22 | #warning Building without the assistant.
+   |  ^
+
+BuildFlags.hs:27:2: error:
+     warning: #warning Building without the webapp. You probably need to install Yesod.. [-Wcpp]
+     #warning Building without the webapp. You probably need to install Yesod..
+      ^~~~~~~
+   |
+27 | #warning Building without the webapp. You probably need to install Yesod..
+   |  ^
+
+BuildFlags.hs:43:2: error:
+     warning: #warning Building without S3. [-Wcpp]
+     #warning Building without S3.
+      ^~~~~~~
+   |
+43 | #warning Building without S3.
+   |  ^
+
+Utility/DirWatcher.hs:42:2: error:
+     warning: #warning \"Building without inotify support\" [-Wcpp]
+     #warning \"Building without inotify support\"
+      ^~~~~~~
+   |
+42 | #warning \"Building without inotify support\"
+   |  ^
+…
+Utility/IPAddress.hs:20:48: error:
+    Variable not in scope:
+      hostAddressToTuple :: HostAddress -> (Integer, b0, c0, d0)
+   |
+20 | isLoopbackAddress (SockAddrInet _ ipv4) = case hostAddressToTuple ipv4 of
+   |                                                ^^^^^^^^^^^^^^^^^^
+
+Utility/IPAddress.hs:26:53: error:
+    Variable not in scope:
+      hostAddress6ToTuple
+        :: HostAddress6
+           -> (Word16, Word16, Word16, Word16, Word16, Word16, Word16, Word16)
+   |
+26 | isLoopbackAddress (SockAddrInet6 _ _ ipv6 _) = case hostAddress6ToTuple ipv6 of
+   |                                                     ^^^^^^^^^^^^^^^^^^^
+
+Utility/IPAddress.hs:39:47: error:
+    Variable not in scope:
+      hostAddressToTuple
+        :: HostAddress -> (Integer, Integer, Integer, Integer)
+   |
+39 | isPrivateAddress (SockAddrInet _ ipv4) = case hostAddressToTuple ipv4 of
+   |                                               ^^^^^^^^^^^^^^^^^^
+
+Utility/IPAddress.hs:49:52: error:
+    Variable not in scope:
+      hostAddress6ToTuple
+        :: HostAddress6
+           -> (Word16, Word16, Word16, Word16, Word16, Word16, Word16, Word16)
+   |
+49 | isPrivateAddress (SockAddrInet6 _ _ ipv6 _) = case hostAddress6ToTuple ipv6 of
+   |                                                    ^^^^^^^^^^^^^^^^^^^
+
+Utility/IPAddress.hs:70:22: error:
+    Variable not in scope: htonl :: Integer -> t
+   |
+70 |         toipv4 a b = htonl $ fromIntegral a * (2^halfipv4bits) + fromIntegral b
+   |                      ^^^^^
+…
+Utility/Mounts.hs:13:1: error:
+    Could not find module `System.MountPoints'
+    Use -v to see a list of the files searched for.
+   |
+13 | import qualified System.MountPoints
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Utility/Mounts.hs:14:1: error:
+    Could not find module `System.MountPoints'
+    Use -v to see a list of the files searched for.
+   |
+14 | import System.MountPoints (Mntent(..))
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+…
+Utility/SRV.hs:18:1: error:
+    Could not find module `Network.DNS.Lookup'
+    Use -v to see a list of the files searched for.
+   |
+18 | import qualified Network.DNS.Lookup as DNS
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Utility/SRV.hs:19:1: error:
+    Could not find module `Network.DNS.Resolver'
+    Use -v to see a list of the files searched for.
+   |
+19 | import Network.DNS.Resolver
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Full logs via e-mail.
+
+As you can see, I try to compile without assistant and without webapp as I never use that two subsystems. From the ebuild file, that should exclude them via cabal flags and does not install the dns library (beside others).
+
+Bt git-annex seems to ignore the cabal flags and try to install all the excluded stuff nevertheless (like s3, assistan or webapp).
+
+Help! How to get out of the Haskell nightmare!?
+"""]]
