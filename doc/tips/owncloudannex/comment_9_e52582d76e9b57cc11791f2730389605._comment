@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
+ subject="asked upstream"
+ date="2018-10-07T18:07:05Z"
+ content="""
+i [asked that question upstream](https://github.com/TobiasTheViking/owncloudannex/issues/6) more directly to see what we're missing out in webdav land. :) One thing webdav *has* over this special remote is support for the new [[git-annex-export]] command...
+"""]]
