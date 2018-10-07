@@ -1,0 +1,14 @@
+### Please describe the problem.
+
+[[!format sh """
+$ git annex assistant
+git-annex: S3 bucket not configured
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex.linux.6.20180914 - the one i had gotten after autoupdate
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+yes
