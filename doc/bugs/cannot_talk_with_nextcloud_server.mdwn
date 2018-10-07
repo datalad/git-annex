@@ -123,7 +123,7 @@ git-annex: initremote: 1 failed
 
 Notice how the server is hosted on a subdirectory of `example.net` (a placeholder name of course, my hosting provide wants to stay private ;). Maybe that's the problem? The error message says `MKCOL is not allowed for the URL /index.html`, so that is probably `example.net/index.html` responding. I suspect it's failing to do `getProps /` right before and assumes the WebDAV server does not have a root directory (which makes no sense - the Nextcloud server endpoint is actually at `/nextcloud/remote.php/webdav`). I would argue that `getProps /` should never fail or rather, we should *assume* the server is hosted in a subdirectory in that case.
 
-Incidentally, the [[tips/owncloudannex]] remote also fails, but at the upload stage - it gives a 500 error message. But since it doesn't support the `exporttree` functionality, it's out of the question here as well.
+Incidentally, the [[tips/owncloudannex]] remote also [fails](https://github.com/TobiasTheViking/owncloudannex/issues/5), but at the upload stage - it gives a 500 error message. But since it doesn't support the `exporttree` functionality, it's out of the question here as well.
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
