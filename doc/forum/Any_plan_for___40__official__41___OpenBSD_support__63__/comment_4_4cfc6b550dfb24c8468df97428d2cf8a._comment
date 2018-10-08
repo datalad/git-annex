@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2018-10-08T16:39:42Z"
+ content="""
+I feel that the best thing to do would be for someone to set up an
+autobuilder on openbsd, ideally someone who can be somewhat trusted by
+people in the openbsd community -- and then this site can link to those
+builds.
+"""]]
