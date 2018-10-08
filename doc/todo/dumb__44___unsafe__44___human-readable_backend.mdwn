@@ -13,3 +13,9 @@ The main advantage, for me, is much better interoperability: any remote becomes 
 
 > [[done]]; the new `git-annex export` feature allows you to export a tree
 > to a special remote. --[[Joey]]
+
+> > That is not exactly what I was hoping for. It's a little confusing to have a whole other command set for remotes. For example, I stumbled upon a [[bug in the webdav special remote|bugs/cannot_talk_with_nextcloud_server]] which I could work around by using the rclone remote, *except* that remote still doesn't support exporttree, because it's so special. If this would have been implemented through a "dumb" backend the way I proposed, all those special remotes would have worked out of the box without needing to be individually ported. Now I can't use this feature on my WebDAV server because of that bug...
+> > 
+> > I also need to learn yet another command in an already crowded namespace. This makes it harder for new people to get familiar with git-annex.
+> >
+> > I nevertheless thank you for the new feature and hope to use it to publish shiny clean files in remotes in the future! :) -- [[anarcat]]
