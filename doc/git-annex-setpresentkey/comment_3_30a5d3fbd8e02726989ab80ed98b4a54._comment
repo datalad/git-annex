@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-10-08T16:24:59Z"
+ content="""
+@Ilya_Shlyakhter the way export tree remotes work is git-annex keeps track
+of the tree object that corresponds to the state of the remote, as well
+as the usual presense tracking information. It uses the presense tracking
+to know which files in the tree have reached the remote, and the tree to
+work out the path to a file on the remote.
+
+So the only way to manipulate its tracking for those is to update the tree
+that it has recorded as exported there, as well as the presence information
+this command is about. [[internals]] has the details for the export.log.
+"""]]
