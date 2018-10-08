@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 19"""
+ date="2018-10-08T16:09:26Z"
+ content="""
+@Teyras, I think this would be possible, but you'd have to get gpg and
+git-remote-gcrypt installed and working in that environment.
+"""]]
