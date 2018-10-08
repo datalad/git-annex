@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-10-08T16:42:29Z"
+ content="""
+If you use the --jobs option, git-annex will actually balance load amoung
+multiple remotes that have the same cost. Which will prevent everything
+bottlenecking on a single repository.
+
+Alternatively, configure the cost of the slow repository to be higher than
+the other drives, and then things like `git annex get` will avoid using the
+slow one if a faster one is available.
+"""]]
