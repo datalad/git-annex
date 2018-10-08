@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 71"""
+ date="2018-10-08T16:30:41Z"
+ content="""
+@Mowgl, I see from the errors that whatever version of git-annex you're
+trying to build is at least somewhat out of date, since Utility.SRV was
+removed last month. The Utility.Mounts problem has also been fixed in newer
+versions.
+
+hostAddressToTuple has been provided by all versions of the network package
+that git-annex.cabal allows it to build with, so you must have forced it to
+build with an older, unsupported version.
+
+Anyway, there is nothing that prevents using git-annex 6.20170818 from
+working with any newer version of git-annex, unless you are using a
+couple of features added in newer versions.
+"""]]
