@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-10-08T16:01:21Z"
+ content="""
+It seems to me this must depend on the repository that you have the
+assistant configured to run in. If that repository has a S3 remote set up
+in the git config, but is somehow missing the bucket name configuration,
+that would explain this error message.
+
+Or, the S3 remote in question might have been configured with
+autoenable=true, so git-annex tries to enabled it on a new clone?
+
+So please show your repository's .git/config file, and also
+the output of this command run in the repository:
+
+`git show git-annex:remote.log | grep autoenable | cut -d" " -f1`
+"""]]
