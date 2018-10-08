@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2018-10-08T16:14:23Z"
+ content="""
+@Ilya_Shlyakhter it is possible for git-annex to send things to S3 though,
+particularly `git-annex export` sounds like it may meet your use case.
+(Or the planned [[todo/import_tree]].)
+
+Remote url claiming iterates through remotes ordered by cost, so the
+cheapest remote wins. I'm not decided if that really makes sense, it's
+just what fell out of the code.
+
+As to s3:// stealthily hiding the fact that what look like real urls are
+forced to be hosted by Amazon -- ugh. Amazon may not want S3 to be a
+protocol, but it is one, and so that is inappropriate hard-coding.
+"""]]
