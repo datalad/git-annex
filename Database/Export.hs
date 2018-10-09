@@ -126,10 +126,10 @@ addExportedLocation h k el = queueDb h $ do
 	let edirs = map
 		(\ed -> ExportedDirectory (toSFilePath (fromExportDirectory ed)) ef)
 		(exportDirectories el)
-#if MIN_VERSION_persistent(2,1,0)
-	insertMany_ edirs
+#if MIN_VERSION_persistent(2,8,1)
+	putMany edirs
 #else
-	void $ insertMany edirs
+	mapM_ insertUnique edirs
 #endif
   where
 	ik = toIKey k
