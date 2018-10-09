@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 9"
+ date="2018-10-09T15:33:59Z"
+ content="""
+@joey If I understand correctly, addurl requires a standard URL downloadable by curl?   Would it be possible to add 'adduri' and 'registeruri' counterparts, that would be exactly like addurl/registerurl, except they would be for custom URIs not expected to be fetchable by curl?   There seems to be an odd asymmetry, where the external special remote protocol has SETURIPRESENT/SETURLPRESENT, but the command-line only has the URL versions.
+"""]]
