@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 10"
+ date="2018-10-09T18:53:30Z"
+ content="""
+\"Remote url claiming iterates through remotes ordered by cost\" -- my web remote has lower cost than my dnanexus external special remote; the latter claims dx:// URLs.  But git-annex never seems to ask dnanexus to process dx:// URLs, even when I've manually set the URL to be present there.  Does the web remote always win, and if it can't handle a URL does git-annex then not try external special remotes?
+"""]]
