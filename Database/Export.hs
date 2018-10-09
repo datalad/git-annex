@@ -208,7 +208,7 @@ updateExportTree h old new = do
 		| sha == nullSha = return Nothing
 		| otherwise = Just <$> exportKey sha
 
-updateExportTree' :: ExportHandle -> Maybe ExportKey -> Maybe ExportKey -> Git.DiffTree.DiffTreeItem-> Annex ()
+updateExportTree' :: ExportHandle -> Maybe ExportKey -> Maybe ExportKey -> Git.DiffTree.DiffTreeItem -> Annex ()
 updateExportTree' h srcek dstek i = do
 	case srcek of
 		Nothing -> return ()
