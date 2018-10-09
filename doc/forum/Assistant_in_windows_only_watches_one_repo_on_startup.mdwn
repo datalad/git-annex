@@ -1,0 +1,19 @@
+Hi there,
+
+I've got a problem similar to here: [bugs/Assistant_only_watches_one_repo_on_startup/](https://git-annex.branchable.com/bugs/Assistant_only_watches_one_repo_on_startup/) but in **windows 7**.
+
+I'm running the latest version and my autostart config file (~/.config/git-annex/autostart) contains the following repos:
+
+&nbsp;&nbsp;&nbsp;&nbsp;C:\temp\testrepo1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;C:\temp\testrepo2
+
+From a git bash shell, I launch the assistant using the following command: `git annex assistant --autostart`.
+Upon startup, it outputs the following message: 
+
+&nbsp;&nbsp;&nbsp;&nbsp;git-annex autostart in C:\temp\testrepo1
+
+I then copy a test file to both repos.
+
+In testrepo1, the test file is automatically added to the repo. While in testrepo2, running `git annex status` shows that file has not been processed.
+
+Which means that the second repo is not being watched by the assistant.

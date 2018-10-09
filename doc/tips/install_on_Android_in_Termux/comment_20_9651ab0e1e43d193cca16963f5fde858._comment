@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="branchable@bafd175a4b99afd6ed72501042e364ebd3e0c45e"
+ nickname="branchable"
+ avatar="http://cdn.libravatar.org/avatar/ae41dba34ee6000056f00793c695be75"
+ subject="aarch64 still broken, please help"
+ date="2018-10-09T09:17:11Z"
+ content="""
+@joey, any update on this signal 11 issue?  Currently we aarch64 users are completely stuck, AFAICS.  Thanks!
+"""]]

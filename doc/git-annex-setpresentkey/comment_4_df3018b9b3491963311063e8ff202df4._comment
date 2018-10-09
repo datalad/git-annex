@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 4"
+ date="2018-10-08T21:43:17Z"
+ content="""
+@joey thanks.  But, besides export.log, the S3 remote also keeps some (undocumented?) internal state, and there's not way to update that state to record the fact that git-annex can GET a given key by downloading s3://mybucket/myobject ?  Also, I feel uneasy directly manipulating git-annex internal files.  Can you think of any plumbing commands, that could be added to support this use case?
+The use case is, I submit a batch job that takes as input some s3:// objects, writes outputs to other s3:// objects, and returns pointers to these new s3:// objects.  I want to register these new objects in git-annex, initially without downloading them, but be able to git-annex-get these objects, drop them from the S3 remote, but later be able to put them back under their original s3:// URIs.  The latter ability is needed because (1) many workflows expect filenames to be in a particular form, e.g. mysamplename.pN.bam to represent mysample processed with parameter p=N; and (2) some workflow engines can reuse past results if a step is re-run with the same inputs, but they need the results to be at the same s3:// URI as when the step was first run.
+"""]]
