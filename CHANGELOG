@@ -10,6 +10,8 @@ git-annex (6.20180927) UNRELEASED; urgency=medium
   * SETURLPRESENT, SETURIPRESENT, SETURLMISSING, and SETURIMISSING
     used to update the presence information of the external special remote
     that called them; this was not documented behavior and is no longer done.
+  * export: Fix false positive in export conflict detection, that occurred
+    when the same tree was exported by multiple clones.
 
  -- Joey Hess <id@joeyh.name>  Thu, 27 Sep 2018 15:27:20 -0400
 

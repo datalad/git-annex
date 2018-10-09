@@ -113,7 +113,7 @@ changeExport r ea db new = do
 	-- When there was an export conflict, this resolves it.
 	--
 	-- The ExportTree is also updated here to reflect the new tree.
-	case map exportedTreeish old of
+	case nub (map exportedTreeish old) of
 		[] -> updateExportTree db emptyTree new
 		[oldtreesha] -> do
 			diffmap <- mkDiffMap oldtreesha new db
