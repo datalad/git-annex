@@ -14,6 +14,6 @@ Upon startup, it outputs the following message:
 
 I then copy a test file to both repos.
 
-In testrepo1, the test file is automatically added to the repo. While in testrepo2, running 'git annex status` shows that file has not been processed.
+In testrepo1, the test file is automatically added to the repo. While in testrepo2, running `git annex status` shows that file has not been processed.
 
 Which means that the second repo is not being watched by the assistant.
