@@ -75,7 +75,9 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 		)
 	Nothing -> notexport
 	Just "no" -> notexport
-	Just _ -> error "bad exporttree value"
+	Just _ -> do
+		warning $ "bad exporttree value for " ++ name r ++ ", assuming not an export"
+		notexport
   where
 	notexport = return $ r 
 		{ exportActions = exportUnsupported
