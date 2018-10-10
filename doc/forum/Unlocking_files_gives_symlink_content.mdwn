@@ -4,6 +4,7 @@ When files are locked, I am able to view their contents. However, when I unlock 
 
 ```
 $ cat test.md
+
 /annex/objects/SHA256E-s535--d37feb3390801b601a9cee77f6467f01aaabbb293149d20d75df26172a3594fd.md
 ```
 
