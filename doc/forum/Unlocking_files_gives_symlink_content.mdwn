@@ -7,7 +7,7 @@ When files are locked, I am able to view their contents. However, when I unlock 
 
 Some files still behave as expected.
 
-My git-annex repo is in my Linux home folder on an ext4 partition so handling symlinks should not be an issue. My repo uses git-annex version 6.
+My git-annex repo is in my Linux home folder on an ext4 partition. My repo uses git-annex version 6.
 
 I did have a look at [this discussion](https://git-annex.branchable.com/forum/git_annex_file_content_replaced_with_symlink_content/) but none of the solutions there seemed to do the trick.
 
