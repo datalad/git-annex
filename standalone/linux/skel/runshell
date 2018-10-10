@@ -147,7 +147,9 @@ if [ -z "${LOCPATH+set}" ]; then
 		exit 1
 	fi
 	echo "$base" > "$LOCPATH/base"
-	cp "$base/buildid" "$LOCPATH/buildid"
+	# Not using cp to avoid using the one bundled with git-annex before
+	# the environment is set up to run it.
+	cat < "$base/buildid" > "$LOCPATH/buildid"
 
 	# Generate locale definition files for the locales in use,
 	# using the localedef and locale files from the bundle.
