@@ -12,9 +12,11 @@ import Annex.CatFile
 import Types.Key
 import Types.Remote
 import qualified Git
+import Config
 
 import qualified Data.Map as M
 import Control.Applicative
+import Data.Maybe
 import Prelude
 
 -- An export includes both annexed files and files stored in git.
@@ -40,6 +42,4 @@ exportKey sha = mk <$> catKey sha
 		}
 
 exportTree :: RemoteConfig -> Bool
-exportTree c = case M.lookup "exporttree" c of
-	Just "yes" -> True
-	_ -> False
+exportTree c = fromMaybe False $ yesNo =<< M.lookup "exporttree" c

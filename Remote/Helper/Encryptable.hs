@@ -25,6 +25,7 @@ import qualified Data.ByteString as B
 
 import Annex.Common
 import Types.Remote
+import Config
 import Crypto
 import Types.Crypto
 import qualified Annex
@@ -128,11 +129,9 @@ remoteCipher' c gc = go $ extractCipher c
  - Not when a shared cipher is used.
  -}
 embedCreds :: RemoteConfig -> Bool
-embedCreds c
-	| M.lookup "embedcreds" c == Just "yes" = True
-	| M.lookup "embedcreds" c == Just "no" = False
-	| isJust (M.lookup "cipherkeys" c) && isJust (M.lookup "cipher" c) = True
-	| otherwise = False
+embedCreds c = case yesNo =<< M.lookup "embedcreds" c of
+	Just v -> v
+	Nothing -> isJust (M.lookup "cipherkeys" c) && isJust (M.lookup "cipher" c)
 
 {- Gets encryption Cipher, and key encryptor. -}
 cipherKey :: RemoteConfig -> RemoteGitConfig -> Annex (Maybe (Cipher, EncKey))

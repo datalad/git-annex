@@ -102,3 +102,8 @@ setCrippledFileSystem :: Bool -> Annex ()
 setCrippledFileSystem b = do
 	setConfig (annexConfig "crippledfilesystem") (Git.Config.boolConfig b)
 	Annex.changeGitConfig $ \c -> c { annexCrippledFileSystem = b }
+
+yesNo :: String -> Maybe Bool
+yesNo "yes" = Just True
+yesNo "no" = Just False
+yesNo _ = Nothing

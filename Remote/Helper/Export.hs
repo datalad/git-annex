@@ -17,6 +17,7 @@ import Backend
 import Remote.Helper.Encryptable (isEncrypted)
 import Database.Export
 import Annex.Export
+import Config
 
 import qualified Data.Map as M
 import Control.Concurrent.STM
@@ -69,15 +70,16 @@ adjustExportableRemoteType rt = rt { setup = setup' }
 -- remote to be an export.
 adjustExportable :: Remote -> Annex Remote
 adjustExportable r = case M.lookup "exporttree" (config r) of
-	Just "yes" -> ifM (isExportSupported r)
-		( isexport
-		, notexport
-		)
 	Nothing -> notexport
-	Just "no" -> notexport
-	Just _ -> do
-		warning $ "bad exporttree value for " ++ name r ++ ", assuming not an export"
-		notexport
+	Just c -> case yesNo c of
+		Just True -> ifM (isExportSupported r)
+			( isexport
+			, notexport
+			)
+		Just False -> notexport
+		Nothing -> do
+			warning $ "bad exporttree value for " ++ name r ++ ", assuming not an export"
+			notexport
   where
 	notexport = return $ r 
 		{ exportActions = exportUnsupported

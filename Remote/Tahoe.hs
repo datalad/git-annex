@@ -104,7 +104,7 @@ tahoeSetup _ mu _ c _ = do
 	u <- maybe (liftIO genUUID) return mu
 	configdir <- liftIO $ defaultTahoeConfigDir u
 	scs <- liftIO $ tahoeConfigure configdir furl (M.lookup scsk c)
-	let c' = if M.lookup "embedcreds" c == Just "yes"
+	let c' = if (yesNo =<< M.lookup "embedcreds" c) == Just True
 		then flip M.union c $ M.fromList
 			[ (furlk, furl)
 			, (scsk, scs)

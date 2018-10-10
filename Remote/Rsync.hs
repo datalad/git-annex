@@ -114,7 +114,7 @@ genRsyncOpts c gc transport url = RsyncOpts
 	, rsyncOptions = transport ++ opts []
 	, rsyncUploadOptions = transport ++ opts (remoteAnnexRsyncUploadOptions gc)
 	, rsyncDownloadOptions = transport ++ opts (remoteAnnexRsyncDownloadOptions gc)
-	, rsyncShellEscape = M.lookup "shellescape" c /= Just "no"
+	, rsyncShellEscape = (yesNo =<< M.lookup "shellescape" c) /= Just False
 	}
   where
 	opts specificopts = map Param $ filter safe $

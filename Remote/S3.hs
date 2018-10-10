@@ -605,9 +605,7 @@ extractS3Info c = do
 		, host = M.lookup "host" c
 		}
   where
-	boolcfg k = case M.lookup k c of
-		Just "yes" -> True
-		_ -> False
+	boolcfg k = fromMaybe False $ yesNo =<< M.lookup k c
 
 putObject :: S3Info -> T.Text -> RequestBody -> S3.PutObject
 putObject info file rbody = (S3.putObject (bucket info) file rbody)
