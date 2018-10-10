@@ -2,11 +2,8 @@ I am just beginning to use git-annex so it is possible that the following issue 
 
 When files are locked, I am able to view their contents. However, when I unlock certain files, their contents appear to be replaced by the contents of the symlink. Locking them again allows me to view their contents. For instance, with one unlocked file, say `test.md`, I get
 
-```
-$ cat test.md
-
-/annex/objects/SHA256E-s535--d37feb3390801b601a9cee77f6467f01aaabbb293149d20d75df26172a3594fd.md
-```
+    $ cat test.md
+    /annex/objects/SHA256E-s535--d37feb3390801b601a9cee77f6467f01aaabbb293149d20d75df26172a3594fd.md
 
 Some files still behave as expected.
 
