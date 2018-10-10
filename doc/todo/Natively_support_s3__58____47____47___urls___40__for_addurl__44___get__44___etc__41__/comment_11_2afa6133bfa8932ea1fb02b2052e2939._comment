@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 11"
+ date="2018-10-10T14:05:53Z"
+ content="""
+Ilya -- what version of annex you are using?  Upgrade might help since there were some fixes related to the priorities in the past month or two (initially detected when using -J setting)
+"""]]
