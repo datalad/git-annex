@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 1"
+ date="2018-10-10T11:28:39Z"
+ content="""
+The [preferred-content](https://git-annex.branchable.com/git-annex-preferred-content/) expression `present` operates on the content of a file, not on the file name. So when you modify `test.txt` on laptop, then `test.txt` now links to the new content (say content2). When you sync, desktop sees that `test.txt` now links to content2, content2 is not present on desktop so on your desktop `test.txt` now links to content that isn't there, IE `test.txt` shows as not present on your desktop. But your old content, say content1 is still present on your laptop and desktop if you were to checkout previous versions of git. Nothing was actually dropped anywhere (I don't think) but the new content (content2) was just not wanted on your desktop since it was never present there.
+
+I don't think what you are trying to achieve is currently possible with git-annex in the general case. But, for 2 repos you could just do: `git annex wanted . \"copies=2\"`. This will mean that anytime you create a new version of a file (new content) on one machine that content will be wanted on the other machine as well to increase the copy count to 2.
+"""]]
