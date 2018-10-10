@@ -133,13 +133,13 @@ if [ -z "${LOCPATH+set}" ]; then
 	# Clean up locale caches when their standalone bundle no longer exists.
 	for localecache in $HOME/.cache/git-annex/locales/*; do
 		cachebase=$(cat "$localecache/base" 2>/dev/null || true)
-		if [ ! -d "$cachebase" ] || ! cmp "$localecache/buildid" "$cachebase/buildid" >/dev/null ; then
+		if [ ! -d "$cachebase" ] || ! cmp "$localecache/buildid" "$cachebase/buildid" >/dev/null 2>&1 ; then
 			rm -rf "$localecache" 2>&1 || true
 		fi
 	done
 	
 	# If the locale cache for this bundle is out of date, refresh it.
-	if [ -e "$LOCPATH/buildid" ] && ! cmp "$LOCPATH/buildid" "$base/buildid" >/dev/null ; then
+	if [ -e "$LOCPATH/buildid" ] && ! cmp "$LOCPATH/buildid" "$base/buildid" >/dev/null 2>&1 ; then
 		rm -rf "$LOCPATH"
 	fi
 	if ! mkdir -p "$LOCPATH"; then
