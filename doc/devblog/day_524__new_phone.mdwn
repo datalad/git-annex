@@ -1,0 +1,17 @@
+Been making some improvements to `git-annex export` over the past couple
+days, but took time off this afternoon to set up a new phone, and try
+[git-annex in termux](https://git-annex.branchable.com/tips/install_on_Android_in_Termux/)
+on it. Luckily, I was able to reproduce the signal 11
+on arm64 problem that several users have reported earlier, and also found a fix,
+which is simply to build git-annex for arm64.
+
+So I want to set up a [[todo/arm64_autobuilder]], and if someone has an
+arm64 server that could host it, that would be great. Otherwise, I could
+use Scaleway, but I'd rather avoid that ongoing expense.
+
+Also fixed a recent reversion in the linux standalone 
+runshell that broke git-annex in termux, and probably on some other
+systems.
+
+Today's work was sponsored by Trenton Cronholm
+[on Patreon](https://patreon.com/joeyh)

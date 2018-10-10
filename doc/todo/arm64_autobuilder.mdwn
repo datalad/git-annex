@@ -1,0 +1,10 @@
+Add an arm64 autobuilder (linux).
+
+This is needed to run in termux on some android devices.
+And of course there are arm64 servers, although the armel build probably
+also works on them.
+
+Status: Builds fine on arm64, but needs an autobuilder. Building under
+emulation could be done, or a scaleway arm64 server, which would be a
+$5/month expense. Or, perhaps someone has an arm64 that could host the
+autobuilder? --[[Joey]]

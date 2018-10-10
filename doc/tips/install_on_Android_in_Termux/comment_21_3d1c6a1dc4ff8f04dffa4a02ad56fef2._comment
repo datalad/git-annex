@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 21"""
+ date="2018-10-10T20:14:17Z"
+ content="""
+Well, I see the signal 11 too, on my arm64 phone running LineageOS Android 8.1. 
+Some others had earlier reported it worked on arm64, but perhaps newer
+versions of Android don't or whatever.
+
+I made a test arm64 build, and it does work. Get it here:
+<https://tmp.joeyh.name/git-annex-arm64-test-build/>
+
+(I also had to run termux-fix-shebang as described above.) 
+
+I do not yet have an arm64 autobuilder running, todo for that is
+[[todo/arm64_autobuilder]] -- if anyone has an arm64 machine that could run
+the autobuilder, that would help!
+"""]]
