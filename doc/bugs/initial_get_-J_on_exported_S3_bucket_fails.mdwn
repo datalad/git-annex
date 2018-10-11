@@ -1,0 +1,49 @@
+I was excited to give a shot to https://github.com/OpenNeuroDatasets/ds001544/ which has proper publicurl set etc... unfortunately there is something forbidding immediate parallel get (in below example `-J8` but it is the same with `-J2`).  It works on the 2nd try, or if not using -J. Error message states "unknown export location":
+
+[[!format sh """
+$> git annex version | head -n 1; git clone https://github.com/OpenNeuroDatasets/ds001544/ ; cd ds001544; git annex enableremote s3-PUBLIC; git annex get -J8 . 2>&1 | head -n 20; echo "2nd run"; git annex get -J8 .
+git-annex version: 6.20181011+git7-g373c2abc2-1~ndall+1
+Cloning into 'ds001544'...
+remote: Enumerating objects: 866, done.
+remote: Counting objects: 100% (866/866), done.
+remote: Compressing objects: 100% (483/483), done.
+remote: Total 866 (delta 144), reused 863 (delta 141), pack-reused 0
+Receiving objects: 100% (866/866), 75.07 KiB | 4.69 MiB/s, done.
+Resolving deltas: 100% (144/144), done.
+
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+
+  Remote origin not usable by git-annex; setting annex-ignore
+enableremote s3-PUBLIC ok
+(recording state in git...)
+get code/convert_sub01_ses01.R (from s3-PUBLIC...) 
+  unknown export location
+
+  Unable to access these remotes: s3-PUBLIC
+
+  Try making some of these repositories available:
+  	1c66b8f9-34c7-42d1-8e9f-d7bc1982311a -- root@460f24a504cc:/datalad/ds001544
+   	837e28c7-9e4a-4792-b1b1-aa69d3430a42 -- [s3-PUBLIC]
+   	a7294efc-f620-445d-8e9d-803b3ec748ef -- s3-PRIVATE
+
+  (Note that these git remotes have annex-ignore set: origin)
+failed
+get sub-01/ses-01/fmap/sub-01_ses-01_acq-cf0PA_run-03_epi.nii.gz (from s3-PUBLIC...) 
+  unknown export location
+
+  Unable to access these remotes: s3-PUBLIC
+
+  Try making some of these repositories available:
+  	1c66b8f9-34c7-42d1-8e9f-d7bc1982311a -- root@460f24a504cc:/datalad/ds001544
+   	837e28c7-9e4a-4792-b1b1-aa69d3430a42 -- [s3-PUBLIC]
+2nd run
+get code/convert_sub01_ses02.R (from s3-PUBLIC...) (checksum...) ok
+get code/convert_sub01_ses01.R (from s3-PUBLIC...) (checksum...) ok
+get sub-01/ses-01/fmap/sub-01_ses-01_acq-cf1PA_run-02_epi.nii.gz (from s3-PUBLIC...) (checksum...) ok
+get sub-01/ses-01/func/sub-01_ses-01_task-Stroop_acq-cf0AP_run-03_physio.tsv.gz (from s3-PUBLIC...) (checksum...) ok
+...
+"""]]
+
+
+[[!meta author=yoh]]
