@@ -189,6 +189,8 @@ case "$os" in
 			# it and use termux's git which works better.
 			cd "$base"
 			find . | grep git | grep -v git-annex | grep -v git-remote-tor-annex | grep -v git-remote-gcrypt | xargs rm -rf
+			# Fix shell scripts to work when run inside proot.
+			termux-fix-shebang bin/* runshell git-annex git-annex-shell git-annex-webapp 
 			cd "$orig"
 			# Save the poor Android user the typing.
 			if ! [ -e "$HOME/.profile" ] || ! grep -q "$base" "$HOME/.profile"; then

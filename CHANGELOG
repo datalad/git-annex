@@ -15,8 +15,9 @@ git-annex (6.20180927) UNRELEASED; urgency=medium
   * Fix potential crash in exporttree database due to failure to honor
     uniqueness constraint.
   * Fix crash when exporttree is set to a bad value.
-  * Linux standalone: Avoid using bundled cp before envionment is fully set
-    up.
+  * Linux standalone: Avoid using bundled cp before envionment is fully set up.
+  * Added arm64 Linux standalone build.
+  * Improved termux installation process.
 
  -- Joey Hess <id@joeyh.name>  Thu, 27 Sep 2018 15:27:20 -0400
 

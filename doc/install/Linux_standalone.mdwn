@@ -9,6 +9,7 @@ dependencies and is self-contained.
 * x86-64: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz)
 * x86-32, for ancient kernels: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386-ancient.tar.gz)
 * arm: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-armel.tar.gz)
+* arm64: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-arm64.tar.gz)
 
 To use, just unpack the tarball, `cd git-annex.linux` and run `./runshell`
 -- this sets up an environment where you can use `git annex`, as well
