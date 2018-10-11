@@ -1,4 +1,4 @@
-I am just beginning to use git-annex so it is possible that the following issue was caused by my own mishap. It cropped after commiting a number of files that had been moved between subfolders, and added with `git add -A` etc.
+I am just beginning to use git-annex so it is possible that the following issue was caused by my own mistake. It cropped after commiting a number of files that had been moved between subfolders, and added with `git add -A` etc.
 
 When files are locked, I am able to view their contents. However, when I unlock certain files, their contents appear to be replaced by the contents of the symlink. Locking them again allows me to view their contents. For instance, with one unlocked file, say `test.md`, I get
 
