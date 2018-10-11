@@ -1,0 +1,20 @@
+git-annex 6.20181011 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * sync: Warn when a remote's export is not updated to the current
+     tree because export tracking is not configured.
+   * Improve display when git config download from a http remote fails.
+   * Added annex.jobs setting, which is like using the -J option.
+   * Fix reversion in support of annex.web-options.
+   * rmurl: Fix a case where removing the last url left git-annex thinking
+     content was still present in the web special remote.
+   * SETURLPRESENT, SETURIPRESENT, SETURLMISSING, and SETURIMISSING
+     used to update the presence information of the external special remote
+     that called them; this was not documented behavior and is no longer done.
+   * export: Fix false positive in export conflict detection, that occurred
+     when the same tree was exported by multiple clones.
+   * Fix potential crash in exporttree database due to failure to honor
+     uniqueness constraint.
+   * Fix crash when exporttree is set to a bad value.
+   * Linux standalone: Avoid using bundled cp before envionment is fully set up.
+   * Added arm64 Linux standalone build.
+   * Improved termux installation process."""]]
