@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 13"
+ date="2018-10-11T12:03:12Z"
+ content="""
+So, it was some odd misconfiguration — I initremote’d a new external special remote of the same externaltype, set the old one to annex-ignore, and things seem to work.
+"""]]
