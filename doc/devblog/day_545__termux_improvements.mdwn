@@ -1,0 +1,13 @@
+I've improved the termux installation, adding an installer script to make
+it easier, and fixing some issues that have been reported. And it supports
+arm64 and also should work on Intel android devices. 
+This feels very close to being able to remove the old deprecated Android
+apps.
+
+I'm temporarily running the arm64 builds on my phone, in a Debian chroot. But
+it overheats, so this is a stopgap and it won't autobuild daily, only manually
+at release time.
+
+Released git-annex 6.20181011.
+
+Today's work was sponsored by Jake Vosloo [on Patreon](http://patreon.com/joeyh/).
