@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2018-10-12T13:42:07Z"
+ content="""
+I was arguing for removal of the KEY-directory/ for a while ;) See e.g. as old as https://github.com/datalad/datalad/issues/32 . There is an issue/discussion on this website too somewhere, couldn't find quickly.
+IMHO it is just a \"tech\" problem, i.e. no design principle forbids fixing it. It might though lead to performance issues since the containing directory then needs to be chmod'ed back and forth to introduce changes to the KEY-file under it, but it is probably very similar to what it is now anyways.  
+
+FWIW in DataLad we moved to use MD5E backend as the default to at least somewhat relief the burden of long symlinks.  I think we are \"secure\" enough for what we use DataLad here ;)
+"""]]

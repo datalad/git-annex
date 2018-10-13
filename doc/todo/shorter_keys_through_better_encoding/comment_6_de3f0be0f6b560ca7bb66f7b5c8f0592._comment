@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 6"
+ date="2018-10-12T13:58:05Z"
+ content="""
+Removing KEY/directory could give more savings, but sometimes there is more than one file there (eg key metadata), so the dir makes sense.  But the content filename in the dir needn’t repeat the key.   But, changing that could be hard.  Adding backend variamts with base64-encoded checksums seems possible though?
+"""]]

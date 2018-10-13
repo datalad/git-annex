@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Mowgli"
+ avatar="http://cdn.libravatar.org/avatar/17ab194dddf7b7da59ec039cbb3ac252"
+ subject="comment 72"
+ date="2018-10-13T12:37:56Z"
+ content="""
+@joey, What I have is just the builds I get from gentoo respective the haskell overlay. The most current version in that overlay is 6.20180626 but it also does not compile.
+
+I need a version more recent than 6.20170818 as that version does still use rsync for remote copy.
+"""]]

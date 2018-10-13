@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 4"
+ date="2018-10-12T01:05:30Z"
+ content="""
+\"I'm not convinced that git-annex should try to make the symlinks shorter just because some programs have UIs that don't work well with longer symlinks\" -- UI is just one plus of shorter keys. Another is that some systems can't handle long paths; e.g. backends says don't use 512 or 384 hashes on Windows. Another is that long keys and symlinks increase the amount of data git deals with, which can matter for large repos. Using base64 encoding for hashes would shorten key lengths by a third; not repeating the hash twice in symlinks would give another factor of 2.
+"""]]
