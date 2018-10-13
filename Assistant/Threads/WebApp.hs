@@ -7,7 +7,6 @@
 
 {-# LANGUAGE TemplateHaskell, MultiParamTypeClasses #-}
 {-# LANGUAGE ViewPatterns, OverloadedStrings #-}
-{-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Assistant.Threads.WebApp where
@@ -69,11 +68,6 @@ webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost
 		then pure listenhost
 		else getAnnex $ annexListen <$> Annex.getGitConfig
 	tlssettings <- getAnnex getTlsSettings
-#ifdef __ANDROID__
-	when (isJust listenhost') $
-		-- See Utility.WebApp
-		giveup "Sorry, --listen is not currently supported on Android"
-#endif
 	webapp <- WebApp
 		<$> pure assistantdata
 		<*> genAuthToken 128

@@ -5,8 +5,6 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Utility.CopyFile (
 	copyFileExternal,
 	createLinkOrCopy,
@@ -32,7 +30,6 @@ copyFileExternal meta src dest = do
 		removeFile dest
 	boolSystem "cp" $ params ++ [File src, File dest]
   where
-#ifndef __ANDROID__
 	params = map snd $ filter fst
 		[ (BuildInfo.cp_reflink_auto, Param "--reflink=auto")
 		, (allmeta && BuildInfo.cp_a, Param "-a")
@@ -41,9 +38,6 @@ copyFileExternal meta src dest = do
 		, (not allmeta && BuildInfo.cp_preserve_timestamps
 			, Param "--preserve=timestamps")
 		]
-#else
-	params = if allmeta then [] else []
-#endif
 	allmeta = meta == CopyAllMetaData
 
 {- Create a hard link if the filesystem allows it, and fall back to copying

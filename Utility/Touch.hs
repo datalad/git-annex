@@ -13,7 +13,7 @@ module Utility.Touch (
 	touch
 ) where
 
-#if ! defined(mingw32_HOST_OS) && ! defined(__ANDROID__)
+#if ! defined(mingw32_HOST_OS)
 
 #if MIN_VERSION_unix(2,7,0)
 

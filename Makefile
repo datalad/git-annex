@@ -109,7 +109,7 @@ clean:
 	if [ "$(BUILDER)" != ./Setup ] && [ "$(BUILDER)" != cabal ]; then $(BUILDER) clean; fi
 	rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \
 		doc/.ikiwiki html dist tags Build/SysConfig Build/Version \
-		Setup Build/InstallDesktopFile Build/EvilSplicer \
+		Setup Build/InstallDesktopFile \
 		Build/Standalone Build/OSXMkLibs Build/LinuxMkLibs \
 		Build/DistributionUpdate Build/BuildVersion Build/MakeMans \
 		git-annex-shell git-union-merge .tasty-rerun-log
@@ -117,8 +117,6 @@ clean:
 	find . -name \*.hi -exec rm {} \;
 
 Build/InstallDesktopFile: Build/InstallDesktopFile.hs
-	$(GHC) --make $@ -Wall -fno-warn-tabs
-Build/EvilSplicer: Build/EvilSplicer.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
 Build/Standalone: Build/Standalone.hs tmp/configure-stamp
 	$(GHC) --make $@ -Wall -fno-warn-tabs
@@ -233,47 +231,6 @@ osxapp:
 	rm -f tmp/git-annex.dmg
 	hdiutil create -format UDBZ -size 640m -srcfolder tmp/build-dmg \
 		-volname git-annex -o tmp/git-annex.dmg
-
-ANDROID_FLAGS?=
-# Cross compile for Android.
-# Uses https://github.com/neurocyte/ghc-android
-android: Build/EvilSplicer
-	echo "Running native build, to get TH splices.."
-	if [ ! -e dist/setup/setup ]; then $(BUILDER) configure -O0 $(ANDROID_FLAGS) -fAndroidSplice;  fi
-	mkdir -p tmp
-	if ! $(BUILDER) build --ghc-options=-ddump-splices 2> tmp/dump-splices; then tail tmp/dump-splices >&2; exit 1; fi
-	echo "Setting up Android build tree.."
-	./Build/EvilSplicer tmp/splices tmp/dump-splices standalone/no-th/evilsplicer-headers.hs
-	rsync -az --exclude tmp --exclude dist . tmp/androidtree
-# Copy the files with expanded splices to the source tree, but
-# only if the existing source file is not newer. (So, if a file
-# used to have TH splices but they were removed, it will be newer,
-# and not overwritten.)
-	cp -uR tmp/splices/* tmp/androidtree || true
-# Some additional dependencies needed by the expanded splices.
-	sed -i 's/^  Build-Depends: */  Build-Depends: yesod-core, yesod-routes, shakespeare, blaze-markup, file-embed, wai-app-static, wai, unordered-containers, /' tmp/androidtree/git-annex.cabal
-# Avoid warnings due to sometimes unused imports added for the splices.
-	sed -i 's/GHC-Options: \(.*\)-Wall/GHC-Options: \1-Wall -fno-warn-unused-imports /i' tmp/androidtree/git-annex.cabal
-	sed -i 's/Extensions: /Extensions: MagicHash /i' tmp/androidtree/git-annex.cabal
-# Cabal cannot cross compile with custom build type, so workaround.
-	sed -i 's/Build-type: Custom/Build-type: Simple/' tmp/androidtree/git-annex.cabal
-# Build just once, but link repeatedly, for different versions of Android.
-	mkdir -p tmp/androidtree/dist/build/git-annex/4.0 tmp/androidtree/dist/build/git-annex/4.3 tmp/androidtree/dist/build/git-annex/5.0
-	if [ ! -e tmp/androidtree/dist/setup-config ]; then \
-		cd tmp/androidtree && CROSS_COMPILE=Android $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal configure -fAndroid $(ANDROID_FLAGS); \
-	fi
-	PATH=$(shell standalone/android/toolchainpath 4) cd tmp/androidtree && $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal build \
-		&& mv dist/build/git-annex/git-annex dist/build/git-annex/4.0/git-annex
-	PATH=$(shell standalone/android/toolchainpath 4) cd tmp/androidtree && $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal build \
-		--ghc-options=-optl-z --ghc-options=-optlnocopyreloc \
-		&& mv dist/build/git-annex/git-annex dist/build/git-annex/4.3/git-annex
-	PATH=$(shell standalone/android/toolchainpath 5) cd tmp/androidtree && $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal build \
-		--ghc-options=-optl-z --ghc-options=-optlnocopyreloc --ghc-options=-optl-fPIE --ghc-options=-optl-pie --ghc-options=-optc-fPIE --ghc-options=-optc-pie \
-		&& mv dist/build/git-annex/git-annex dist/build/git-annex/5.0/git-annex
-
-androidapp:
-	$(MAKE) android
-	$(MAKE) -C standalone/android
 
 # Bypass cabal, and only run the main ghc --make command for a
 # faster development build.

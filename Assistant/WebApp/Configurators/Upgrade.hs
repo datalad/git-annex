@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 
 module Assistant.WebApp.Configurators.Upgrade where
 
@@ -15,22 +15,11 @@ import Assistant.Upgrade
 import Assistant.Restart
 import Config
 
-{- On Android, just point the user at the apk file to download.
- - Installation will be handled by selecting the downloaded file.
- -
- - Otherwise, start the upgrade process, which will run fully
- - noninteractively.
- - -}
+{- Start the upgrade process. -}
 getConfigStartUpgradeR :: GitAnnexDistribution -> Handler Html
 getConfigStartUpgradeR d = do
-#ifdef ANDROID_SPLICES
-	let url = distributionUrl d
-	page "Upgrade" (Just Configuration) $
-		$(widgetFile "configurators/upgrade/android")
-#else
 	liftAssistant $ startDistributionDownload d
 	redirect DashboardR
-#endif
 
 {- Finish upgrade by starting the new assistant in the same repository this
  - one is running in, and redirecting to it. -}

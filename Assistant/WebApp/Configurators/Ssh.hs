@@ -116,7 +116,6 @@ sshInputAForm hostnamefield d = normalize <$> gen
 		bad_username textField
 
 	bad_username = "bad user name" :: Text
-#ifndef __ANDROID__
 	bad_hostname = "cannot resolve host name" :: Text
 
 	check_hostname = checkM (liftIO . checkdns) hostnamefield
@@ -131,10 +130,6 @@ sshInputAForm hostnamefield d = normalize <$> gen
 				| otherwise -> Right $ T.pack fullname
 			Just [] -> Right t
 			Nothing -> Left bad_hostname
-#else
-	-- getAddrInfo currently broken on Android
-	check_hostname = hostnamefield -- unchecked
-#endif
 
 	-- The directory is implicitly in home, so remove any leading ~/
 	normalize i = i { inputDirectory = normalizedir <$> inputDirectory i }

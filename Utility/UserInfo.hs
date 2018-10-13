@@ -47,8 +47,8 @@ myUserName = myVal env userName
 #endif
 
 myUserGecos :: IO (Maybe String)
--- userGecos crashes on Android and is not available on Windows.
-#if defined(__ANDROID__) || defined(mingw32_HOST_OS)
+-- userGecos is not available on Windows.
+#if defined(mingw32_HOST_OS)
 myUserGecos = return Nothing
 #else
 myUserGecos = eitherToMaybe <$> myVal [] userGecos

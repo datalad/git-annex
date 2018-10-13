@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes, CPP #-}
+{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
 
 module Assistant.WebApp.Page where
 
@@ -70,13 +70,6 @@ customPage' with_longpolling navbaritem content = do
 		Just msg -> error msg
   where
 	navdetails i = (navBarName i, navBarRoute i, Just i == navbaritem)
-
-hasFileBrowser :: Bool
-#ifdef ANDROID_SPLICES
-hasFileBrowser = False
-#else
-hasFileBrowser = True
-#endif
 
 controlMenu :: Widget
 controlMenu = $(widgetFile "controlmenu")

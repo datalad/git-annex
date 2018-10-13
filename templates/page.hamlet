@@ -16,9 +16,8 @@
               #{name}
       $maybe reldir <- relDir webapp
         <ul .nav .navbar-nav .navbar-right>
-          $if hasFileBrowser
-            <li>
-              ^{actionButton FileBrowserR (Just "Files") (Just "Click to open a file browser") "" "glyphicon-folder-open icon-white"}
+          <li>
+            ^{actionButton FileBrowserR (Just "Files") (Just "Click to open a file browser") "" "glyphicon-folder-open icon-white"}
           <li .dropdown #menu1>
             <a .dropdown-toggle data-toggle="dropdown" href="#menu1">
               Repository: #{reldir}

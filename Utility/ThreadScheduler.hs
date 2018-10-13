@@ -18,9 +18,7 @@ import System.Posix.IO
 #endif
 #ifndef mingw32_HOST_OS
 import System.Posix.Signals
-#ifndef __ANDROID__
 import System.Posix.Terminal
-#endif
 #endif
 
 newtype Seconds = Seconds { fromSeconds :: Int }
@@ -63,10 +61,8 @@ waitForTermination = do
 	let check sig = void $
 		installHandler sig (CatchOnce $ putMVar lock ()) Nothing
 	check softwareTermination
-#ifndef __ANDROID__
 	whenM (queryTerminal stdInput) $
 		check keyboardSignal
-#endif
 	takeMVar lock
 #endif
 

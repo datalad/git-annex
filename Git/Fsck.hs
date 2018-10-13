@@ -26,9 +26,7 @@ import qualified Git.Version
 
 import qualified Data.Set as S
 import Control.Concurrent.Async
-#if MIN_VERSION_base(4,9,0)
 import qualified Data.Semigroup as Sem
-#endif
 import Prelude
 
 data FsckResults 
@@ -58,18 +56,13 @@ appendFsckOutput AllDuplicateEntriesWarning AllDuplicateEntriesWarning = AllDupl
 appendFsckOutput AllDuplicateEntriesWarning NoFsckOutput = AllDuplicateEntriesWarning
 appendFsckOutput NoFsckOutput AllDuplicateEntriesWarning = AllDuplicateEntriesWarning
 
-#if MIN_VERSION_base(4,9,0)
 instance Sem.Semigroup FsckOutput where
 	(<>) = appendFsckOutput
-#endif
 
 instance Monoid FsckOutput where
 	mempty = NoFsckOutput
-#if MIN_VERSION_base(4,11,0)
-#elif MIN_VERSION_base(4,9,0)
+#if ! MIN_VERSION_base(4,11,0)
 	mappend = (Sem.<>)
-#else
-	mappend = appendFsckOutput
 #endif
 
 {- Runs fsck to find some of the broken objects in the repository.

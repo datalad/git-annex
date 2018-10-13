@@ -14,6 +14,7 @@ import Git
 import Git.Types
 import Git.Index
 import Git.Env
+import Utility.Env
 import qualified Annex
 import qualified Annex.Queue
 
@@ -27,8 +28,8 @@ withIndexFile f a = do
 		a
   where
 	-- This is an optimisation. Since withIndexFile is run repeatedly,
-	-- and addGitEnv uses the slow copyGitEnv when gitEnv is Nothing, 
-	-- we cache the copied environment the first time, and reuse it in
+	-- and addGitEnv uses the slow getEnvironment when gitEnv is Nothing, 
+	-- we cache the environment the first time, and reuse it in
 	-- subsequent calls.
 	--
 	-- (This could be done at another level; eg when creating the
@@ -40,7 +41,7 @@ withIndexFile f a = do
 		Nothing -> do
 			e <- Annex.withState $ \s -> case Annex.cachedgitenv s of
 				Nothing -> do
-					e <- copyGitEnv
+					e <- getEnvironment
 					return (s { Annex.cachedgitenv = Just e }, e)
 				Just e -> return (s, e)
 			m (g { gitEnv = Just e })

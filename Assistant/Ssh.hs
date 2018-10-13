@@ -189,7 +189,7 @@ addAuthorizedKeysCommand gitannexshellonly dir pubkey = intercalate "&&"
 	echoval v = "echo " ++ shellEscape v
 	wrapper = "~/.ssh/git-annex-shell"
 	script =
-		[ shebang_portable
+		[ shebang
 		, "set -e"
 		, "if [ \"x$SSH_ORIGINAL_COMMAND\" != \"x\" ]; then"
 		,   runshell "$SSH_ORIGINAL_COMMAND"

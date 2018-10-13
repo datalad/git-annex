@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Assistant.Pairing where
 
 import Annex.Common
@@ -84,11 +82,7 @@ data PairingInProgress = PairingInProgress
 data AddrClass = IPv4AddrClass | IPv6AddrClass
 
 data SomeAddr = IPv4Addr HostAddress
-{- My Android build of the Network library does not currently have IPV6
- - support. -}
-#ifndef __ANDROID__
 	| IPv6Addr HostAddress6
-#endif
 	deriving (Ord, Eq, Read, Show)
 
 {- This contains the whole secret, just lightly obfuscated to make it not

@@ -218,7 +218,6 @@ Extra-Source-Files:
   templates/configurators/ssh/add.hamlet
   templates/configurators/ssh/setupmodal.hamlet
   templates/configurators/ssh/confirm.hamlet
-  templates/configurators/upgrade/android.hamlet
   templates/configurators/enableia.hamlet
   templates/configurators/fsck.hamlet
   templates/configurators/addrepository/archive.hamlet
@@ -270,22 +269,11 @@ Flag Pairing
 Flag Production
   Description: Enable production build (slower build; faster binary)
 
-Flag Android
-  Description: Cross building for Android
-  Default: False
-
-Flag AndroidSplice
-  Description: Building to get TH splices for Android
-  Default: False
-
 Flag TorrentParser
   Description: Use haskell torrent library to parse torrent files
 
 Flag MagicMime
   Description: Use libmagic to determine file MIME types
-
-Flag ConcurrentOutput
-  Description: Use concurrent-output library
 
 Flag Benchmark
   Description: Enable benchmarking
@@ -299,18 +287,18 @@ source-repository head
   location: git://git-annex.branchable.com/
 
 custom-setup
-  Setup-Depends: base (>= 4.6), hslogger, split, unix-compat, process,
+  Setup-Depends: base (>= 4.9), hslogger, split, unix-compat, process,
     filepath, exceptions, bytestring, directory, IfElse, data-default,
     utf8-string, transformers, Cabal
 
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends:
-   base (>= 4.6 && < 5.0),
+   base (>= 4.9 && < 5.0),
    network (>= 2.6.3.0),
    network-uri (>= 2.6),
    optparse-applicative (>= 0.11.0), 
-   containers (>= 0.5.0.0),
+   containers (>= 0.5.7.1),
    exceptions (>= 0.6),
    stm (>= 2.3),
    mtl (>= 2),
@@ -324,6 +312,7 @@ Executable git-annex
    SafeSemaphore,
    async,
    directory (>= 1.2),
+   disk-free-space,
    filepath,
    IfElse,
    hslogger,
@@ -365,6 +354,7 @@ Executable git-annex
    memory,
    split,
    attoparsec,
+   concurrent-output (>= 1.6),
    QuickCheck (>= 2.1),
    tasty (>= 0.7),
    tasty-hunit,
@@ -501,7 +491,7 @@ Executable git-annex
       Utility.Mounts
       Utility.OSX
 
-    if os(linux) || flag(Android)
+    if os(linux)
       Build-Depends: hinotify
       CPP-Options: -DWITH_INOTIFY
       Other-Modules: Utility.DirWatcher.INotify
@@ -529,30 +519,21 @@ Executable git-annex
       CPP-Options: -DWITH_DBUS -DWITH_DESKTOP_NOTIFY -DWITH_DBUS_NOTIFICATIONS
       Other-Modules: Utility.DBus
 
-  if flag(Android)
-    Build-Depends: data-endian
-    CPP-Options: -D__ANDROID__ -DANDROID_SPLICES -D__NO_TH__
-  else
-    Build-Depends: disk-free-space
-
-  if flag(AndroidSplice)
-    CPP-Options: -DANDROID_SPLICES
-
   if flag(Webapp)
     Build-Depends:
-     yesod (>= 1.2.6), 
-     yesod-static (>= 1.2.4),
-     yesod-form (>= 1.3.15),
-     yesod-core (>= 1.2.19),
-     path-pieces (>= 0.1.4),
-     warp (>= 3.0.0.5),
-     warp-tls (>= 1.4),
+     yesod (>= 1.4.3), 
+     yesod-static (>= 1.5.1),
+     yesod-form (>= 1.4.8),
+     yesod-core (>= 1.4.25),
+     path-pieces (>= 0.2.1),
+     warp (>= 3.2.8),
+     warp-tls (>= 3.2.2),
      wai,
      wai-extra,
      blaze-builder,
      clientsession,
      template-haskell,
-     shakespeare (>= 2.0.0)
+     shakespeare (>= 2.0.11)
     CPP-Options: -DWITH_WEBAPP
     Other-Modules:
       Command.WebApp
@@ -604,10 +585,6 @@ Executable git-annex
     if (! os(windows))
       Build-Depends: magic
       CPP-Options: -DWITH_MAGICMIME
-
-  if flag(ConcurrentOutput)
-    Build-Depends: concurrent-output (>= 1.6)
-    CPP-Options: -DWITH_CONCURRENTOUTPUT
 
   if flag(Benchmark)
     Build-Depends: criterion, deepseq

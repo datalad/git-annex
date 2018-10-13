@@ -20,21 +20,11 @@ import Utility.PartialPrelude
 import System.FilePath
 #endif
 
-shellPath_portable :: FilePath
-shellPath_portable = "/bin/sh"
+shellPath :: FilePath
+shellPath = "/bin/sh"
 
-shellPath_local :: FilePath
-#ifndef __ANDROID__
-shellPath_local = shellPath_portable
-#else
-shellPath_local = "/system/bin/sh"
-#endif
-
-shebang_portable :: String
-shebang_portable = "#!" ++ shellPath_portable
-
-shebang_local :: String
-shebang_local = "#!" ++ shellPath_local
+shebang :: String
+shebang = "#!" ++ shellPath
 
 -- | On Windows, shebang is not handled by the kernel, so to support
 -- shell scripts etc, have to look at the program being run and

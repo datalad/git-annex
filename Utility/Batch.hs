@@ -11,7 +11,7 @@ module Utility.Batch where
 
 import Common
 
-#if defined(linux_HOST_OS) || defined(__ANDROID__)
+#if defined(linux_HOST_OS)
 import Control.Concurrent.Async
 import System.Posix.Process
 #endif
@@ -29,7 +29,7 @@ import qualified Control.Exception as E
  - systems, the action is simply ran.
  -}
 batch :: IO a -> IO a
-#if defined(linux_HOST_OS) || defined(__ANDROID__)
+#if defined(linux_HOST_OS)
 batch a = wait =<< batchthread
   where
 	batchthread = asyncBound $ do
@@ -51,11 +51,7 @@ getBatchCommandMaker = do
 #ifndef mingw32_HOST_OS
 	nicers <- filterM (inPath . fst)
 		[ ("nice", [])
-#ifndef __ANDROID__
-		-- Android's ionice does not allow specifying a command,
-		-- so don't use it.
 		, ("ionice", ["-c3"])
-#endif
 		, ("nocache", [])
 		]
 	return $ \(command, params) ->

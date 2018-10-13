@@ -24,10 +24,7 @@ import Control.Concurrent.STM
 import Control.Exception (throwIO)
 import Data.Either
 import qualified Data.Map.Strict as M
-
-#ifdef WITH_CONCURRENTOUTPUT
 import qualified System.Console.Regions as Regions
-#endif
 
 {- Runs a command, starting with the check stage, and then
  - the seek stage. Finishes by running the continutation, and 
@@ -169,7 +166,6 @@ callCommandActionQuiet = start
 
 {- Do concurrent output when that has been requested. -}
 allowConcurrentOutput :: Annex a -> Annex a
-#ifdef WITH_CONCURRENTOUTPUT
 allowConcurrentOutput a = do
 	fromcmdline <- Annex.getState Annex.concurrency
 	fromgitcfg <- annexJobs <$> Annex.getGitConfig
@@ -197,9 +193,6 @@ allowConcurrentOutput a = do
 		setconcurrentoutputenabled False
 	setconcurrentoutputenabled b = Annex.changeState $ \s ->
 		s { Annex.output = (Annex.output s) { concurrentOutputEnabled = b } }
-#else
-allowConcurrentOutput = id
-#endif
 
 {- Ensures that only one thread processes a key at a time.
  - Other threads will block until it's done. -}

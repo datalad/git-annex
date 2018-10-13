@@ -30,9 +30,6 @@ import Blaze.ByteString.Builder.Char.Utf8 (fromText)
 import Blaze.ByteString.Builder (Builder)
 import Control.Arrow ((***))
 import Control.Concurrent
-#ifdef __ANDROID__
-import Data.Endian
-#endif
 
 localhost :: HostName
 localhost = "localhost"
@@ -42,11 +39,6 @@ browserProc :: String -> CreateProcess
 #ifdef darwin_HOST_OS
 browserProc url = proc "open" [url]
 #else
-#ifdef __ANDROID__
--- Warning: The `am` command does not work very reliably on Android.
-browserProc url = proc "am"
-	["start", "-a", "android.intent.action.VIEW", "-d", url]
-#else
 #ifdef mingw32_HOST_OS
 -- Warning: On Windows, no quoting or escaping of the url seems possible,
 -- so spaces in it will cause problems. One approach is to make the url
@@ -55,7 +47,6 @@ browserProc url = proc "am"
 browserProc url = proc "cmd" ["/c start " ++ url]
 #else
 browserProc url = proc "xdg-open" [url]
-#endif
 #endif
 #endif
 
@@ -69,18 +60,10 @@ runWebApp :: Maybe TLSSettings -> Maybe HostName -> Wai.Application -> (SockAddr
 runWebApp tlssettings h app observer = withSocketsDo $ do
 	sock <- getSocket h
 	void $ forkIO $ go webAppSettings sock app	
-	sockaddr <- fixSockAddr <$> getSocketName sock
+	sockaddr <- getSocketName sock
 	observer sockaddr
   where
 	go = (maybe runSettingsSocket (\ts -> runTLSSocket ts) tlssettings)
-
-fixSockAddr :: SockAddr -> SockAddr
-#ifdef __ANDROID__
-{- On Android, the port is currently incorrectly returned in network
- - byte order, which is wrong on little endian systems. -}
-fixSockAddr (SockAddrInet (PortNum port) addr) = SockAddrInet (PortNum $ swapEndian port) addr
-#endif
-fixSockAddr addr = addr
 
 -- disable buggy sloworis attack prevention code
 webAppSettings :: Settings

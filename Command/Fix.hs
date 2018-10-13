@@ -18,7 +18,7 @@ import Annex.Content
 import Annex.Perms
 import qualified Annex.Queue
 import qualified Database.Keys
-#if ! defined(mingw32_HOST_OS) && ! defined(__ANDROID__)
+#if ! defined(mingw32_HOST_OS)
 import Utility.Touch
 #endif
 
@@ -91,7 +91,7 @@ makeHardLink file key = do
 fixSymlink :: FilePath -> FilePath -> CommandPerform
 fixSymlink file link = do
 	liftIO $ do
-#if ! defined(mingw32_HOST_OS) && ! defined(__ANDROID__)
+#if ! defined(mingw32_HOST_OS)
 		-- preserve mtime of symlink
 		mtime <- catchMaybeIO $ TimeSpec . modificationTime
 			<$> getSymbolicLinkStatus file
@@ -99,7 +99,7 @@ fixSymlink file link = do
 		createDirectoryIfMissing True (parentDir file)
 		removeFile file
 		createSymbolicLink link file
-#if ! defined(mingw32_HOST_OS) && ! defined(__ANDROID__)
+#if ! defined(mingw32_HOST_OS)
 		maybe noop (\t -> touch file t False) mtime
 #endif
 	next $ cleanupSymlink file

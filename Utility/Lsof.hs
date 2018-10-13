@@ -5,8 +5,6 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Utility.Lsof where
 
 import Common
@@ -54,13 +52,6 @@ query opts =
 
 type LsofParser = String -> [(FilePath, LsofOpenMode, ProcessInfo)]
 
-parse :: LsofParser
-#ifdef __ANDROID__
-parse = parseDefault
-#else
-parse = parseFormatted
-#endif
-
 {- Parsing null-delimited output like:
  -
  - pPID\0cCMDLINE\0
@@ -71,8 +62,8 @@ parse = parseFormatted
  - Where each new process block is started by a pid, and a process can
  - have multiple files open.
  -}
-parseFormatted :: LsofParser
-parseFormatted s = bundle $ go [] $ lines s
+parse :: LsofParser
+parse s = bundle $ go [] $ lines s
   where
 	bundle = concatMap (\(fs, p) -> map (\(f, m) -> (f, m, p)) fs)
 
@@ -110,14 +101,3 @@ parseFormatted s = bundle $ go [] $ lines s
 	splitnull = splitc '\0'
 
 	parsefail = error $ "failed to parse lsof output: " ++ show s
-
-{- Parses lsof's default output format. -}
-parseDefault :: LsofParser
-parseDefault = mapMaybe parseline . drop 1 . lines
-  where
-	parseline l = case words l of
-		(command : spid : _user : _fd : _type : _device : _size : _node : rest) -> 
-			case readish spid of
-				Nothing -> Nothing
-				Just pid -> Just (unwords rest, OpenUnknown, ProcessInfo pid command)
-		_ -> Nothing

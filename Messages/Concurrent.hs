@@ -14,7 +14,6 @@ import Types
 import Types.Messages
 import qualified Annex
 
-#ifdef WITH_CONCURRENTOUTPUT
 import Common
 import qualified System.Console.Concurrent as Console
 import qualified System.Console.Regions as Regions
@@ -22,7 +21,6 @@ import Control.Concurrent.STM
 import qualified Data.Text as T
 #ifndef mingw32_HOST_OS
 import GHC.IO.Encoding
-#endif
 #endif
 
 {- Outputs a message in a concurrency safe way.
@@ -33,15 +31,10 @@ import GHC.IO.Encoding
  - instead.
  -}
 concurrentMessage :: MessageState -> Bool -> String -> Annex () -> Annex ()
-#ifdef WITH_CONCURRENTOUTPUT
 concurrentMessage s iserror msg fallback 
 	| concurrentOutputEnabled s =
 		go =<< consoleRegion <$> Annex.getState Annex.output
-#else
-concurrentMessage _s _iserror _msg fallback 
-#endif
 	| otherwise = fallback
-#ifdef WITH_CONCURRENTOUTPUT
   where
 	go Nothing
 		| iserror = liftIO $ Console.errorConcurrent msg
@@ -58,7 +51,6 @@ concurrentMessage _s _iserror _msg fallback
 			rl <- takeTMVar Regions.regionList
 			putTMVar Regions.regionList
 				(if r `elem` rl then rl else r:rl)
-#endif
 
 {- Runs an action in its own dedicated region of the console.
  -
@@ -70,7 +62,6 @@ concurrentMessage _s _iserror _msg fallback
  - complete.
  -}
 inOwnConsoleRegion :: MessageState -> Annex a -> Annex a
-#ifdef WITH_CONCURRENTOUTPUT
 inOwnConsoleRegion s a
 	| concurrentOutputEnabled s = do
 		r <- mkregion
@@ -85,11 +76,7 @@ inOwnConsoleRegion s a
 			Right ret -> do
 				rmregion r
 				return ret
-#else
-inOwnConsoleRegion _s a
-#endif
 	| otherwise = a
-#ifdef WITH_CONCURRENTOUTPUT
   where
 	-- The region is allocated here, but not displayed until 
 	-- a message is added to it. This avoids unnecessary screen
@@ -108,10 +95,8 @@ inOwnConsoleRegion _s a
 			unless (T.null t) $
 				Console.bufferOutputSTM h t
 			Regions.closeConsoleRegion r
-#endif
 
 {- The progress region is displayed inline with the current console region. -}
-#ifdef WITH_CONCURRENTOUTPUT
 withProgressRegion :: (Regions.ConsoleRegion -> Annex a) -> Annex a
 withProgressRegion a = do
 	parent <- consoleRegion <$> Annex.getState Annex.output
@@ -119,23 +104,18 @@ withProgressRegion a = do
 
 instance Regions.LiftRegion Annex where
 	liftRegion = liftIO . atomically
-#endif
 
 {- The concurrent-output library uses Text, which bypasses the normal use
  - of the fileSystemEncoding to roundtrip invalid characters, when in a
  - non-unicode locale. Work around that problem by avoiding using
  - concurrent output when not in a unicode locale. -}
 concurrentOutputSupported :: IO Bool
-#ifdef WITH_CONCURRENTOUTPUT
 #ifndef mingw32_HOST_OS
 concurrentOutputSupported = do
 	enc <- getLocaleEncoding
 	return ("UTF" `isInfixOf` textEncodingName enc)
 #else
 concurrentOutputSupported = return True -- Windows is always unicode
-#endif
-#else
-concurrentOutputSupported = return False
 #endif
 
 {- Hide any currently displayed console regions while running the action,
@@ -144,7 +124,6 @@ concurrentOutputSupported = return False
  - the regions will not be hidden, but the action still runs, garbling the
  - display. -}
 hideRegionsWhile :: Annex a -> Annex a
-#ifdef WITH_CONCURRENTOUTPUT
 #if MIN_VERSION_concurrent_output(1,9,0)
 hideRegionsWhile a = bracketIO setup cleanup go
   where
@@ -153,9 +132,6 @@ hideRegionsWhile a = bracketIO setup cleanup go
 	go _ = do
 		liftIO $ hFlush stdout
 		a
-#else
-hideRegionsWhile = id
-#endif
 #else
 hideRegionsWhile = id
 #endif

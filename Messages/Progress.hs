@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Messages.Progress where
 
 import Common
@@ -16,12 +14,10 @@ import Types
 import Types.Messages
 import Types.Key
 import qualified Messages.JSON as JSON
-
-#ifdef WITH_CONCURRENTOUTPUT
 import Messages.Concurrent
+
 import qualified System.Console.Regions as Regions
 import qualified System.Console.Concurrent as Console
-#endif
 
 {- Shows a progress meter while performing a transfer of a key.
  - The action is passed the meter and a callback to use to update the meter.
@@ -45,7 +41,6 @@ metered othermeter key getsrcfile a = withMessageState $ \st ->
 		liftIO $ clearMeterHandle meter stdout
 		return r
 	go msize (MessageState { outputType = NormalOutput, concurrentOutputEnabled = True }) =
-#if WITH_CONCURRENTOUTPUT
 		withProgressRegion $ \r -> do
 			meter <- liftIO $ mkMeter msize $ \_ msize' old new ->
 				let s = bandwidthMeter msize' old new
@@ -53,9 +48,6 @@ metered othermeter key getsrcfile a = withMessageState $ \st ->
 			m <- liftIO $ rateLimitMeterUpdate 0.2 meter $
 				updateMeter meter
 			a meter (combinemeter m)
-#else
-		nometer
-#endif
 	go msize (MessageState { outputType = JSONOutput jsonoptions })
 		| jsonProgress jsonoptions = do
 			buf <- withMessageState $ return . jsonBuffer
@@ -133,7 +125,6 @@ mkStderrRelayer = do
 mkStderrEmitter :: Annex (String -> IO ())
 mkStderrEmitter = withMessageState go
   where
-#ifdef WITH_CONCURRENTOUTPUT
-	go s | concurrentOutputEnabled s = return Console.errorConcurrent
-#endif
-	go _ = return (hPutStrLn stderr)
+	go s
+		| concurrentOutputEnabled s = return Console.errorConcurrent
+		| otherwise = return (hPutStrLn stderr)

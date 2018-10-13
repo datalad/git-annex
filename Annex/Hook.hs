@@ -40,7 +40,7 @@ postUpdateAnnexHook = Git.Hook "post-update-annex" "" []
 
 mkHookScript :: String -> String
 mkHookScript s = unlines
-	[ shebang_local
+	[ shebang
 	, "# automatically configured by git-annex"
 	, s
 	]

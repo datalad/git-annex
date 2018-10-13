@@ -80,7 +80,7 @@ ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
 		let rungitannexshell var = runshell $ "git-annex-shell -c \"" ++ var ++ "\""
 
 		installWrapper (sshdir </> "git-annex-shell") $ unlines
-			[ shebang_local
+			[ shebang
 			, "set -e"
 			, "if [ \"x$SSH_ORIGINAL_COMMAND\" != \"x\" ]; then"
 			,   rungitannexshell "$SSH_ORIGINAL_COMMAND"
@@ -89,7 +89,7 @@ ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
 			, "fi"
 			]
 		installWrapper (sshdir </> "git-annex-wrapper") $ unlines
-			[ shebang_local
+			[ shebang
 			, "set -e"
 			, runshell "\"$@\""
 			]
@@ -124,7 +124,7 @@ installFileManagerHooks program = unlessM osAndroid $ do
   where
 	genNautilusScript scriptdir action =
 		installscript (scriptdir </> scriptname action) $ unlines
-			[ shebang_local
+			[ shebang
 			, autoaddedcomment
 			, "exec " ++ program ++ " " ++ action ++ " --notify-start --notify-finish -- \"$@\""
 			]

@@ -1,3 +1,12 @@
+git-annex (6.20181012) UNRELEASED; urgency=medium
+
+  * Removed the old Android app.
+  * Removed support for building with very old ghc < 8.0.1,
+    and with yesod < 1.4.3, and without concurrent-output,
+    which were onyl being used for the Android cross build.
+
+ -- Joey Hess <id@joeyh.name>  Sat, 13 Oct 2018 00:52:02 -0400
+
 git-annex (6.20181011) upstream; urgency=medium
 
   * sync: Warn when a remote's export is not updated to the current

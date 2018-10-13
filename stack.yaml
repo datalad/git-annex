@@ -1,6 +1,5 @@
 flags:
   git-annex:
-    concurrentoutput: true
     production: true
     assistant: true
     pairing: true
@@ -10,8 +9,6 @@ flags:
     webapp: true
     magicmime: false
     dbus: false
-    android: false
-    androidsplice: false
 packages:
 - '.'
 extra-deps:

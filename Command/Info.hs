@@ -13,9 +13,7 @@ import "mtl" Control.Monad.State.Strict
 import qualified Data.Map.Strict as M
 import qualified Data.Vector as V
 import Data.Ord
-#if MIN_VERSION_base(4,9,0)
 import qualified Data.Semigroup as Sem
-#endif
 import Prelude
 
 import Command
@@ -60,26 +58,18 @@ data KeyData = KeyData
 	, backendsKeys :: M.Map KeyVariety Integer
 	}
 	
-appendKeyData :: KeyData -> KeyData -> KeyData
-appendKeyData a b = KeyData
-	{ countKeys = countKeys a + countKeys b
-	, sizeKeys = sizeKeys a + sizeKeys b
-	, unknownSizeKeys = unknownSizeKeys a + unknownSizeKeys b
-	, backendsKeys = backendsKeys a <> backendsKeys b
-	}
-	
-#if MIN_VERSION_base(4,9,0)
 instance Sem.Semigroup KeyData where
-	(<>) = appendKeyData
-#endif
+	a <> b = KeyData
+		{ countKeys = countKeys a + countKeys b
+		, sizeKeys = sizeKeys a + sizeKeys b
+		, unknownSizeKeys = unknownSizeKeys a + unknownSizeKeys b
+		, backendsKeys = backendsKeys a <> backendsKeys b
+		}
 
 instance Monoid KeyData where
 	mempty = KeyData 0 0 0 M.empty
-#if MIN_VERSION_base(4,11,0)
-#elif MIN_VERSION_base(4,9,0)
+#if ! MIN_VERSION_base(4,11,0)
 	mappend = (Sem.<>)
-#else
-	mappend = appendKeyData
 #endif
 
 data NumCopiesStats = NumCopiesStats

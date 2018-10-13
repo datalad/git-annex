@@ -62,11 +62,6 @@ buildFlags = filter (not . null)
 #ifdef WITH_DESKTOP_NOTIFY
 	, "DesktopNotify"
 #endif
-#ifdef WITH_CONCURRENTOUTPUT
-	, "ConcurrentOutput"
-#else
-#warning Building without ConcurrentOutput
-#endif
 #ifdef WITH_TORRENTPARSER
 	, "TorrentParser"
 #endif

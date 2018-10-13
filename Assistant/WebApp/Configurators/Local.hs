@@ -165,13 +165,8 @@ postFirstRepositoryR :: Handler Html
 postFirstRepositoryR = page "Getting started" (Just Configuration) $ do
 	unlessM (liftIO $ inPath "git") $
 		giveup "You need to install git in order to use git-annex!"
-#ifdef __ANDROID__
-	androidspecial <- liftIO $ doesDirectoryExist "/sdcard/DCIM"
-	let path = "/sdcard/annex"
-#else
 	androidspecial <- liftIO osAndroid
 	path <- liftIO . defaultRepositoryPath =<< liftH inFirstRun
-#endif
 	((res, form), enctype) <- liftH $ runFormPostNoToken $ newRepositoryForm path
 	case res of
 		FormSuccess (RepositoryPath p) -> liftH $
@@ -180,12 +175,8 @@ postFirstRepositoryR = page "Getting started" (Just Configuration) $ do
 
 getAndroidCameraRepositoryR :: Handler ()
 getAndroidCameraRepositoryR = do
-#ifdef __ANDROID__
-	let dcim = "/sdcard/DCIM"
-#else
 	home <- liftIO myHomeDir
 	let dcim = home </> "storage" </> "dcim"
-#endif
 	startFullAssistant dcim SourceGroup $ Just addignore	
   where
 	addignore = do
@@ -392,10 +383,6 @@ driveList = mapM (genRemovableDrive . mnt_dir) =<< filter sane <$> getMounts
 		| dir == "/tmp" = False
 		| dir == "/run/shm" = False
 		| dir == "/run/lock" = False
-#ifdef __ANDROID__
-		| dir == "/mnt/sdcard" = False
-		| dir == "/sdcard" = False
-#endif
 		| otherwise = True
 #endif
 

@@ -26,9 +26,7 @@ import qualified Git.Config
 import Data.Maybe
 import Data.Monoid
 import qualified Data.Set as S
-#if MIN_VERSION_base(4,9,0)
 import qualified Data.Semigroup as Sem
-#endif
 import Prelude
 
 -- Describes differences from the v5 repository format.
@@ -80,18 +78,13 @@ appendDifferences a@(Differences {}) b@(Differences {}) = a
 	}
 appendDifferences _ _ = UnknownDifferences
 
-#if MIN_VERSION_base(4,9,0)
 instance Sem.Semigroup Differences where
 	(<>) = appendDifferences
-#endif
 
 instance Monoid Differences where
 	mempty = Differences False False False
-#if MIN_VERSION_base(4,11,0)
-#elif MIN_VERSION_base(4,9,0)
+#if ! MIN_VERSION_base(4,11,0)
 	mappend = (Sem.<>)
-#else
-	mappend = appendDifferences
 #endif
 
 readDifferences :: String -> Differences

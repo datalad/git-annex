@@ -5,7 +5,7 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE CPP, ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Exception (
@@ -29,11 +29,7 @@ module Utility.Exception (
 import Control.Monad.Catch as X hiding (Handler)
 import qualified Control.Monad.Catch as M
 import Control.Exception (IOException, AsyncException)
-#ifdef MIN_VERSION_GLASGOW_HASKELL
-#if MIN_VERSION_GLASGOW_HASKELL(7,10,0,0)
 import Control.Exception (SomeAsyncException)
-#endif
-#endif
 import Control.Monad
 import Control.Monad.IO.Class (liftIO, MonadIO)
 import System.IO.Error (isDoesNotExistError, ioeGetErrorType)
@@ -46,15 +42,7 @@ import Utility.Data
  - where there's a problem that the user is excpected to see in some
  - circumstances. -}
 giveup :: [Char] -> a
-#ifdef MIN_VERSION_base
-#if MIN_VERSION_base(4,9,0)
 giveup = errorWithoutStackTrace
-#else
-giveup = error
-#endif
-#else
-giveup = error
-#endif
 
 {- Catches IO errors and returns a Bool -}
 catchBoolIO :: MonadCatch m => m Bool -> m Bool
@@ -95,11 +83,7 @@ bracketIO setup cleanup = bracket (liftIO setup) (liftIO . cleanup)
 catchNonAsync :: MonadCatch m => m a -> (SomeException -> m a) -> m a
 catchNonAsync a onerr = a `catches`
 	[ M.Handler (\ (e :: AsyncException) -> throwM e)
-#ifdef MIN_VERSION_GLASGOW_HASKELL
-#if MIN_VERSION_GLASGOW_HASKELL(7,10,0,0)
 	, M.Handler (\ (e :: SomeAsyncException) -> throwM e)
-#endif
-#endif
 	, M.Handler (\ (e :: SomeException) -> onerr e)
 	]
 

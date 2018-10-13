@@ -33,7 +33,7 @@ Files: Utility/*
 Copyright: 2012-2018 Joey Hess <id@joeyh.name>
 License: BSD-2-clause
 
-Files: doc/logo* */favicon.ico standalone/osx/git-annex.app/Contents/Resources/git-annex.icns standalone/android/icons/*
+Files: doc/logo* */favicon.ico standalone/osx/git-annex.app/Contents/Resources/git-annex.icns
 Copyright: 2007 Henrik Nyh <http://henrik.nyh.se/>
            2010 Joey Hess <id@joeyh.name>
 	   2013 John Lawrence
