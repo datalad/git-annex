@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="slackermesut@265fdbc657a03028da3a213cbb9f74a9d621c8ab"
+ avatar="http://cdn.libravatar.org/avatar/7c78d1b3bc3ae0e6c00d49c92b573162"
+ subject="comment 7"
+ date="2018-10-13T20:47:44Z"
+ content="""
+Hi, 
+
+I have a laptop and desktop pc.
+I initialized git-annex repo on laptop and mounted laptop to desktop.
+I added mounted laptop directory to desktop as a remote.
+After I synced files with content with laptop on desktop.
+I want to get files and commits on laptop but I can't.
+
+On laptop there is a .git directory but I don't know how to get files from it.
+"""]]
