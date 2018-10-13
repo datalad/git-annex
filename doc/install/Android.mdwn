@@ -1,45 +1,7 @@
 Now git-annex can be used on Android!
 
-[[Documentation for using git-annex on Android|/android]]
+See [[/Android]] for installation instructions and other details.
 
-## Termux
-
-This just in: git-annex can be used in Termux, instead of using the Android
-app below. [[Give git-annex in Termux a try|tips/install_on_Android_in_Termux/]]
-
-## (Old) Android app
-
-This app is being deprecated in favor of Termux. It doesn't work with newer
-versions of Android.
-
-To install it, first, ensure your Android device is configured to allow
-installation of the app. Go to Setup -&gt; Security, and enable "Unknown
-Sources".
-
-Then download the git-annex.apk for your version of Android, and 
-open it to install.
-
-* [Android 5.0 git-annex.apk](http://downloads.kitenet.net/git-annex/android/current/5.0/git-annex.apk)
-* [Android 4.4 and 4.3 git-annex.apk](http://downloads.kitenet.net/git-annex/android/current/4.3/git-annex.apk)
-* [Android 4.0 to 4.2 git-annex.apk](http://downloads.kitenet.net/git-annex/android/current/4.0/git-annex.apk)
-
-## autobuilds
-
-A daily build is also available, thanks to Mesar Hameed and the University
-of Bath CS department.
-
-* [Android 5.0 git-annex.apk](http://downloads.kitenet.net/git-annex/autobuild/android/5.0/git-annex.apk)
-* [Android 4.4 and 4.3 git-annex.apk](http://downloads.kitenet.net/git-annex/autobuild/android/4.3/git-annex.apk)
-* [Android 4.0 to 4.2 git-annex.apk](http://downloads.kitenet.net/git-annex/autobuild/android/4.0/git-annex.apk)
-* [build logs](http://downloads.kitenet.net/git-annex/autobuild/android/)
-
-## building it yourself
-
-git-annex can be built from source for Android.
-
-1. Run `standalone/android/buildchroot` as root (requires debootstrap).
-   This builds a chroot with a `builder` user.
-   The rest of the build will run in this chroot as that user.
-2. In the chroot, run `standalone/android/install-haskell-packages`
-3. Finally, once the chroot is set up, you can build an Android binary
-   with `make android`, and `make androidapp` will build the complete APK.
+The way it works now is the [[Linux_standalone]] builds of git-annex are run
+inside the Termux app. The old git-annex Android app,
+is no longer being updated, details about it are at [[oldapp]].

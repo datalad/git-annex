@@ -1,0 +1,11 @@
+## Old Android app
+
+This app is being deprecated in favor of Termux. It doesn't work with newer
+versions of Android.
+
+**These builds are not being updated.** They are provided just in case
+someone needs them, but use at your own risk.
+
+* [Android 5.0 git-annex.apk](http://downloads.kitenet.net/git-annex/android/current/5.0/git-annex.apk)
+* [Android 4.4 and 4.3 git-annex.apk](http://downloads.kitenet.net/git-annex/android/current/4.3/git-annex.apk)
+* [Android 4.0 to 4.2 git-annex.apk](http://downloads.kitenet.net/git-annex/android/current/4.0/git-annex.apk)

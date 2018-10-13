@@ -1,53 +1,66 @@
-git-annex is now available for Android. This includes the 
+git-annex is available for Android inside Termux. This includes the 
 [[git-annex assistant|/assistant]], for easy syncing between your Android
 and other devices. You do not need to root your Android to use git-annex.
 
-[[Android installation instructions|/install/android]]
-
-When you run the git-annex Android app, two windows will open. The first is
-a terminal window, and the second is a web browser showing the git-annex
-webapp.
-
-[[!img apps.png alt="two windows"]]
-
 [[!toc ]]
 
-## closing and reopening the webapp
+## Installation
+
+First, install [Termux](https://termux.com/). This is an Android app that can
+run some Linux software in a terminal, including git-annex.
+
+git-annex is not currently part of the Termux distribution, but it's easy
+to install it. Paste these commands into Termux:
+
+	pkg install wget
+	wget https://git-annex.branchable.com/install/Android/git-annex-install.sh
+	sh git-annex-install.sh
+
+## Starting git-annex
+
+To start git-annex, just run "git annex webapp" inside Termux.
+A browser window will open with the git-annex interface.
+
+[[!img webapp.png alt="git-annex webapp"]]
+
+## Closing and reopening the webapp
 
 The webapp does not need to be left open after you've set up your
-repository. As long as the terminal window is left open, git-annex will
-remain running and sync your files. To re-open the webapp after closing it,
-use the [[!img newwindow.png alt="New Window"]] icon in the terminal window.
+repository. As long as Termux is left open, git-annex will
+remain running and sync your files.
 
-## starting git-annex
+## Starting at power on
 
-The app is not currently automatically started on boot, so you will need to
-manually open it to keep your files in sync. You do not need to leave the
-app running all the time, though. It will sync back up automatically when
-started.
+If you install the Termux:Boot app, git-annex will automatically
+be automatically started when your Android device powers on. It will
+run in the background in whatever repositories you have set up in the
+webapp. (Or have listed in (or listed in
+~/.config/git-annex/autostart)
 
-## stopping git-annex
+## Using the command line
 
-Simply close the terminal window to stop git-annex from running.
+If you prefer to use `git-annex` at the command line, you can do so inside
+Termux. Here we'll make a repository for photos:
 
-## using the command line
+        cd ~/storage/dcim
+        git init
+        git annex init
 
-[[!img terminal.png alt="Android terminal"]]
+You can go on to set up a ssh remote pointing to a server, and sync
+your files to and from it.
 
-If you prefer to use `git-annex` at the command line, you can do so using the
-terminal. A fairly full set of tools is provided, including `git`, `ssh`,
-`rsync`, and `gpg`.
+And so on. Most ways you would use git-annex on a Linux system work fairly
+well in the Termux environment.
 
-To prevent the webapp from being automatically started
-when a terminal window opens, go into the terminal preferences, to "Initial
-Command", and clear out the default `git annex webapp` setting.
+# Known limitations
 
-Or, if you'd like to run the assistant automatically, but not open the
-webapp, change the "Initial Command" to: `git annex assistant --autostart`
+* Direct mode
 
-## using from adb shell
+  git-annex will probably default to direct mode due to the
+  limitations of Android's /sdcard. You can get around this using v6
+  unlocked repositories, or by putting the git-annex repository on a better
+  filesystem on the Android device, such as your termux home directory.
 
-To set up the git-annex environment from within `adb shell`, run:
-`/data/data/ga.androidterm/runshell`
+## Upgrading
 
-This will launch a shell that has git-annex, git, etc in PATH.
+To upgrade to a new git-annex release, just run `git-annex-install.sh` again.
