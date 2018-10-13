@@ -17,7 +17,7 @@ email <id@joeyh.name>.)
 
 git-annex development is partially supported by the
 [NSF](https://www.nsf.gov/awardsearch/showAward?AWD_ID=1429999) as a part of the
-[DataLad project](http://datalad.org/).
+[DataLad project](http://datalad.org/) and NICEMAN (ReproNim TR&D3).
 
 Thanks also to these folks for their support: 
 [[!inline raw=yes pages="thanks/list"]] and anonymous supporters.
