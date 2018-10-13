@@ -35,7 +35,6 @@ signingKey = "89C809CB"
 autobuilds :: [(URLString, FilePath)]
 autobuilds = 
 	(map linuxarch ["i386", "amd64", "armel", "arm64", "i386-ancient"]) ++
-	(map androidversion ["4.0", "4.3", "5.0"]) ++
 	[ (autobuild "x86_64-apple-yosemite/git-annex.dmg", "git-annex/OSX/current/10.10_Yosemite/git-annex.dmg")
 	, (autobuild "windows/git-annex-installer.exe", "git-annex/windows/current/git-annex-installer.exe")
 	]
@@ -43,10 +42,6 @@ autobuilds =
 	linuxarch a =
 		( autobuild (a ++ "/git-annex-standalone-" ++ a ++ ".tar.gz")
 		, "git-annex/linux/current/git-annex-standalone-" ++ a ++ ".tar.gz"
-		)
-	androidversion v =
-		( autobuild ("android/" ++ v ++ "/git-annex.apk")
-		, "git-annex/android/current/" ++ v ++ "/git-annex.apk"
 		)
 	autobuild f = "https://downloads.kitenet.net/git-annex/autobuild/" ++ f
 
