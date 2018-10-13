@@ -52,7 +52,7 @@ your files to and from it.
 And so on. Most ways you would use git-annex on a Linux system work fairly
 well in the Termux environment.
 
-# Known limitations
+## Known limitations
 
 * Direct mode
 
