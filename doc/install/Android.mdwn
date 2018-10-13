@@ -1,6 +1,6 @@
 Now git-annex can be used on Android!
 
-See [[/Android]] for installation instructions and other details.
+[[Installation instructions here|/Android]].
 
 The way it works now is the [[Linux_standalone]] builds of git-annex are run
 inside the Termux app. The old git-annex Android app,
