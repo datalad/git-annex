@@ -1,0 +1,14 @@
+Pulled the trigger on the old Android builds, and made a 
+[massive commit](http://source.git-annex.branchable.com/?p=source.git;a=commitdiff;h=38d691a10febf9590dd3639defa0e4f38ec3648c)
+removing all the cruft that had built up to enable them. Running in Termux
+is just better. It's important to note this does not mean I've given up on
+more native git-annex Android stuff, indeed there are promising
+developments in ghc Android support that I'm keeping an eye on.
+
+I'll kind of miss the EvilSplicer, that was 750 lines of crazy code to be
+proud of. But really, it's going to be great to not have hanging over me
+the prospect that any change could break the Android build and end up
+needing tons of work to resolve.
+
+Today's work was sponsored by Trenton Cronholm 
+[on Patreon](https://patreon.com/joeyh).
