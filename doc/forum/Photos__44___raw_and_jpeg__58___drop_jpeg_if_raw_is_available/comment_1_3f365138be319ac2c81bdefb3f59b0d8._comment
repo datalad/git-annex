@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 1"
+ date="2018-10-15T07:33:40Z"
+ content="""
+This sounds like it could be built around my own suggestion of [[todo/Bidirectional_metadata]].
+
+There, Joey mentions that the datalad project uses a special remote. Perhaps one could be made where it does the JPG/NEF mapping and reports the JPG as available if the NEF is, allowing the NEF to count as a copy.
+
+I wouldn't personally do this unless the JPG can be reliably reproduced from the NEF *exactly* though!
+"""]]
