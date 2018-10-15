@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Chris"
+ avatar="http://cdn.libravatar.org/avatar/02b67b7ebace8cb6433504ba9a17d4a4"
+ subject="comment 2"
+ date="2018-10-15T09:07:44Z"
+ content="""
+Thanks for the idea. The reason I want to get rid of the jpegs is not that I see them as derivatives of the raw (for my most recent camera they are since it can reprocess the raws), but that I consider them less important. On my notebook computer I do not have enough space to keep all the files anymore. Therefore I want to get rid of the less important ones, which means that later I want to also remove the raws with less than 2 stars rating, and the movie clips I do not work on currently. On the external hard disk, all the files are present anytime. The backup is separate, the git-annex setup is just for extending my notebooks hard disk drive since industry fails for years to come up with 2.5\" drives larger than 2 TB in 9.5 mm height. So I think what you are describing is another use case. Automatically recognizing raw+jpeg pairs would just be partial automation of my workflow. Or did I miss something?
+"""]]
