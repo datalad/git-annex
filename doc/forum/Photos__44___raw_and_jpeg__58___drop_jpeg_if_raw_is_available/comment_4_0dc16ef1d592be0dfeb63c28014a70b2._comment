@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Chris"
+ avatar="http://cdn.libravatar.org/avatar/02b67b7ebace8cb6433504ba9a17d4a4"
+ subject="comment 4"
+ date="2018-10-15T21:43:03Z"
+ content="""
+I was hoping that there is a possibility that git-annex recognizes the files I do not want on my notebook based on the rule I described and drops them as soon as their copy arrived at the USB disk automatically (e.g. with the next sync command), and never pulls them back unless explicitly stated (especially, `sync --content` should not transfer them back). What you are describing is basically a manual tagging and dropping of the images. Of course I could write a script to drop the jpegs, but this would be very slow for 100000 images, and I was hoping for some more automated way from within git-annex.
+"""]]
