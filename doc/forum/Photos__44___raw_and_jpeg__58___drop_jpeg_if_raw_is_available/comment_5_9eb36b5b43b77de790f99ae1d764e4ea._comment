@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 5"
+ date="2018-10-15T22:23:06Z"
+ content="""
+You could set the preferred content to not include files with that metadata, so they would be dropped by `git annex drop --auto` and not brought back by `git annex sync`.
+
+git-annex still has to handle all those files and information related to them, manually or not, so it'll be just as slow. Not that 100K files is a lot to me anymore :P (my largest annex is in the 10s of millions..).
+"""]]
