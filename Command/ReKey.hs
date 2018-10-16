@@ -87,17 +87,17 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 		oldobj <- calcRepo (gitAnnexLocation oldkey)
 		isJust <$> linkOrCopy' (return True) newkey oldobj tmp Nothing
 	, do
-	 	{- The file being rekeyed is itself an unlocked file, so if
-		 - it's linked to the old key, that link must be broken. -}
+	 	{- The file being rekeyed is itself an unlocked file; if
+		 - it's hard linked to the old key, that link must be broken. -}
 		oldobj <- calcRepo (gitAnnexLocation oldkey)
-		v <- tryNonAsync $ modifyContent oldobj $ do
-			replaceFile oldobj $ \tmp ->
-				unlessM (checkedCopyFile oldkey file tmp Nothing) $
-					error "can't lock old key"
-			freezeContent oldobj
-			oldic <- withTSDelta (liftIO . genInodeCache oldobj)
-			whenM (isUnmodified oldkey oldobj) $
-				Database.Keys.addInodeCaches oldkey (catMaybes [oldic])
+		v <- tryNonAsync $ do
+			st <- liftIO $ getFileStatus file
+			when (linkCount st > 1) $ do
+				freezeContent oldobj
+				replaceFile file $ \tmp -> do
+					unlessM (checkedCopyFile oldkey oldobj tmp Nothing) $
+						error "can't lock old key"
+					thawContent tmp
 		ic <- withTSDelta (liftIO . genInodeCache file)
 		case v of
 			Left e -> do
