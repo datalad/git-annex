@@ -28,10 +28,6 @@ that can be determined purely by looking at the key.
 
   Also, '\\n' is a newline, '\\000' is a NULL, etc.
 
-  Note that it is not possible to extract the URL from a key created by the
-  URL backend: parts of longer URLs may be represented in the key by a 
-  checksum.
-
 * `--json`
 
   Enable JSON output. This is intended to be parsed by programs that use
