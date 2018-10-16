@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="Chris"
+ avatar="http://cdn.libravatar.org/avatar/02b67b7ebace8cb6433504ba9a17d4a4"
+ subject="comment 8"
+ date="2018-10-16T15:15:17Z"
+ content="""
+Hm, the raw converter reads and writes metadata from the “sidecar” xmp files, so it would not work to have it only in git-annex. Therefore, a full sync would be required, but luckily this is one-directional, so it should be possible. I think that's the way to go for me.
+
+Thanks for your effort helping me with my stupid questions :).
+
+And disk space is my main concern here, as mentioned above. I really need solutions since I did not know where to put new images, which unfortunately coincided with the birth of my 2nd child and I caught myself taking less photographs of her because I did not know where to put them (and having them accessible from the photo management/raw converter). Therefore, I decided to finally seriously try git-annex which I watch almost from the beginning of the project.
+
+Thanks again :)
+"""]]
