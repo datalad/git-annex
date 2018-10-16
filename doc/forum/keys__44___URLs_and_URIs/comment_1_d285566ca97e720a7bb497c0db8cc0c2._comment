@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-10-16T14:46:40Z"
+ content="""
+The main difference is that git-annex will not try to
+download URIs itself, but will try to download URLs.
+
+Also, `git annex whereis` displays any URIs
+claimed by the remote, but not URLs unless
+the remote reponds to WHEREIS by listing them.
+
+URLs/URIs are not recorded with a particular remote
+owning them, but CLAIMURL can be used for a remote to
+claim ownership.
+
+My comment
+<http://git-annex.branchable.com/design/external_special_remote_protocol/#comment-f7b2275dc00920599a108a3e99cab4f2>
+sums it up pretty well, I thought.
+"""]]
