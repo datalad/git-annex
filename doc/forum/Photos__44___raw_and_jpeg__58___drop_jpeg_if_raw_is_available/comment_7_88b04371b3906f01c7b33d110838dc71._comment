@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 7"
+ date="2018-10-16T12:57:55Z"
+ content="""
+git-annex doesn't \"use\" the content of files for anything, except at specific points like deriving the key. You can make it automatically copy metadata from a file into git-annex when added (see [[tips/automatically_adding_metadata]]) but it won't keep them in sync, as far as I know. Personally, I strip metadata from the images entirely and put everything into git-annex's metadata.
+
+I would just make a script which has the behavior you want and run it when disk space is a concern  or put it in cron (gets a list of 1-star or JPGs with RAWs, passes it to `git annex drop --batch`).
+
+Otherwise, creating a special remotes that will return `CHECKPRESENT-SUCCESS` for keys you want to drop, so you can set the preferred content to only want files that are \"not present\" in that special remote might work?
+"""]]
