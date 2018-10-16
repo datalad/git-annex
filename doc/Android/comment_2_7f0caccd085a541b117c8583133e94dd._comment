@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="hoxu"
+ avatar="http://cdn.libravatar.org/avatar/95e33a0073f6c06477b3a202f0301dde"
+ subject="wget link broken"
+ date="2018-10-16T14:23:29Z"
+ content="""
+    wget https://git-annex.branchable.com/install/Android/git-annex-install.sh
+
+This seems to download a html.
+"""]]
