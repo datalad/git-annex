@@ -87,7 +87,6 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 		oldobj <- calcRepo (gitAnnexLocation oldkey)
 		isJust <$> linkOrCopy' (return True) newkey oldobj tmp Nothing
 	, do
-		ic <- withTSDelta (liftIO . genInodeCache file)
 	 	{- The file being rekeyed is itself an unlocked file, so if
 		 - it's linked to the old key, that link must be broken. -}
 		oldobj <- calcRepo (gitAnnexLocation oldkey)
@@ -99,6 +98,7 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 			oldic <- withTSDelta (liftIO . genInodeCache oldobj)
 			whenM (isUnmodified oldkey oldobj) $
 				Database.Keys.addInodeCaches oldkey (catMaybes [oldic])
+		ic <- withTSDelta (liftIO . genInodeCache file)
 		case v of
 			Left e -> do
 				warning (show e)
