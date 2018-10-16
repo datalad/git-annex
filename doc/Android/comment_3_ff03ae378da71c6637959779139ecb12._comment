@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-10-16T15:22:19Z"
+ content="""
+Thank you for reporting that, I have fixed the url.
+
+I'd again like to ask that, if you have **any kind of problem or bug** with
+this Android build of git-annex, you open a [[bug report|bugs]] rather than
+posting a problem here.
+"""]]

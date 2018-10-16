@@ -13,8 +13,8 @@ git-annex is not currently part of the Termux distribution, but it's easy
 to install it. Paste these commands into Termux:
 
 	pkg install wget
-	wget https://git-annex.branchable.com/install/Android/git-annex-install.sh
-	sh git-annex-install.sh
+	wget https://git-annex.branchable.com/install/Android/git-annex-install
+	sh git-annex-install
 
 ## Starting git-annex
 
@@ -63,4 +63,4 @@ well in the Termux environment.
 
 ## Upgrading
 
-To upgrade to a new git-annex release, just run `git-annex-install.sh` again.
+To upgrade to a new git-annex release, just run `git-annex-install` again.
