@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-10-16T15:25:25Z"
+ content="""
+Please note that repository version 6, which you are using, is still experimental, it has
+known bugs and probably unknown bugs.
+
+I think this is an unknown bug, probably something has gotten inconsistent
+in the keys database and it doesn't realize it has the content.
+
+I found one way to cause this, filed a bug:
+[[bugs/v6_unlock_confused_by_touch]]
+"""]]
