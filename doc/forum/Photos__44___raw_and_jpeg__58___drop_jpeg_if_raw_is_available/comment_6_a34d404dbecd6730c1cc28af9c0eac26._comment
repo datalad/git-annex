@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="Chris"
+ avatar="http://cdn.libravatar.org/avatar/02b67b7ebace8cb6433504ba9a17d4a4"
+ subject="comment 6"
+ date="2018-10-16T11:07:30Z"
+ content="""
+That means I update the metadata periodically by a script such as
+
+    for k in `find . -name \"*.CR2\"`; do
+        if [ -e `dirname $k`/`basename $k .CR2`.JPG ]; then
+            <set metadata>
+        fi
+    done
+
+and add a corresponding preferred content setting? I'll try that. Btw, is there a possibility to use the xmp files of my raw converter (darktable) as source for metadata? I want to do the same with images that have a low star rating (<1 star should not be synchronized to the notebook computer and dropped from there as soon as they are on the external disk), and I hope there is a possibility to not double this metadata but directly use the xmp output. The xmp files are checked into the git regularly (without git annex).
+"""]]
