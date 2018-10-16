@@ -30,6 +30,30 @@ the problem yet. --[[Joey]]
 > 
 > --[[Joey]]
 
+> > When annex.thin is not set, inAnnex does not need to check the inode
+> > cache, and not checking it will avoid this problem.
+> > 
+> > It is necessary for inAnnex to check the inode cache when annex.thin
+> > is set, because then the object file can be a hard link to the working
+> > tree and so modifiable.
+> > 
+> > Checking for link count of 2 and only then checking the inode cache
+> > won't suffice though, because the object file could be modified and then the
+> > worktree file deleted, and then the object file would be modified with
+> > a link count of 1. So with annex.thin, have to always check the inode
+> > cache.
+> > 
+> > So, it seems what has to be done is, when annex.thin is set, check the
+> > inode cache first, if it's unchanged great, but if not, inAnnex would
+> > need to checksum the object file to determine if it's been modified.
+> > So inAnnex gets potentially very much slower for annex.thin, but I can't
+> > see a way around that. --[[Joey]]
+
+> > > Also, I was able to reproduce the repeated get, after unlock; lock;
+> > > touch; fsck and the above change did fix that.
+> > > 
+> > > So, all [[done]]! --[[Joey]]
+
 ## more information needed
 
 If gleachkr comes back to IRC, it would be good to find out:

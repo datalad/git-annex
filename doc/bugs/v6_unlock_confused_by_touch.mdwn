@@ -24,3 +24,5 @@ lock, it does. So, here's a complete reproducer:
 	git annex unlock file
 	cat file
 	/annex/objects/...
+
+> now [[fixed|done]] --[[Joey]]

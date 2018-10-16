@@ -25,12 +25,6 @@ git-annex should use smudge/clean filters. v6 mode
   (My enhanced smudge/clean patch set also fixed this problem, in a much
   nicer way...)
 
-* <http://git-annex.branchable.com/bugs/inAnnex_check_failed_repeatedly_for_present_content_v6/>
-
-  I have this mostly analized and need to implement the planned fix.
-
-* <http://git-annex.branchable.com/bugs/>
-
 ## other warts
 
 * There are several v6 bugs that are edge cases and

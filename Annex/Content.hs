@@ -97,29 +97,29 @@ inAnnex key = inAnnexCheck key $ liftIO . doesFileExist
 inAnnexCheck :: Key -> (FilePath -> Annex Bool) -> Annex Bool
 inAnnexCheck key check = inAnnex' id False check key
 
-{- inAnnex that performs an arbitrary check of the key's content.
- -
- - When the content is unlocked, it must also be unmodified, or the bad
- - value will be returned.
- -
- - In direct mode, at least one of the associated files must pass the
- - check. Additionally, the file must be unmodified.
- -}
+{- inAnnex that performs an arbitrary check of the key's content. -}
 inAnnex' :: (a -> Bool) -> a -> (FilePath -> Annex a) -> Key -> Annex a
 inAnnex' isgood bad check key = withObjectLoc key checkindirect checkdirect
   where
 	checkindirect loc = do
 		r <- check loc
 		if isgood r
-			then do
-				cache <- Database.Keys.getInodeCaches key
-				if null cache
-					then return r
-					else ifM (sameInodeCache loc cache)
-						( return r
-						, return bad
-						)
+			then ifM (annexThin <$> Annex.getGitConfig)
+				-- When annex.thin is set, the object file
+				-- could be modified; make sure it's not.
+				-- (Suppress any messages about
+				-- checksumming, to avoid them cluttering
+				-- the display.)
+				( ifM (doQuietAction $ isUnmodified key loc)
+					( return r
+					, return bad
+					)
+				, return r
+				)
 			else return bad
+ 
+	-- In direct mode, at least one of the associated files must pass the
+	-- check. Additionally, the file must be unmodified.
 	checkdirect [] = return bad
 	checkdirect (loc:locs) = do
 		r <- check loc
@@ -750,9 +750,17 @@ isUnmodified key f = go =<< geti
 	cheapcheck fc = anyM (compareInodeCaches fc)
 		=<< Database.Keys.getInodeCaches key
 	expensivecheck fc = ifM (verifyKeyContent RetrievalAllKeysSecure AlwaysVerify UnVerified key f)
-		-- The file could have been modified while it was
-		-- being verified. Detect that.
-		( geti >>= maybe (return False) (compareInodeCaches fc)
+		( do
+			-- The file could have been modified while it was
+			-- being verified. Detect that.
+			ifM (geti >>= maybe (return False) (compareInodeCaches fc))
+				( do
+					-- Update the InodeCache to avoid
+					-- performing this expensive check again.
+					Database.Keys.addInodeCaches key [fc]
+					return True
+				, return False
+				)
 		, return False
 		)
 	geti = withTSDelta (liftIO . genInodeCache f)

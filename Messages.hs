@@ -16,6 +16,7 @@ module Messages (
 	showSideAction,
 	doSideAction,
 	doQuietSideAction,
+	doQuietAction,
 	showStoringStateAction,
 	showOutput,
 	showLongNote,
@@ -111,11 +112,27 @@ doSideAction :: Annex a -> Annex a
 doSideAction = doSideAction' StartBlock
 
 doSideAction' :: SideActionBlock -> Annex a -> Annex a
-doSideAction' b a = do
-	o <- Annex.getState Annex.output
-	set $ o { sideActionBlock = b }
-	set o `after` a
+doSideAction' b = bracket setup cleanup . const
   where
+	setup = do
+		o <- Annex.getState Annex.output
+		set $ o { sideActionBlock = b }
+		return o
+	cleanup = set
+	set o = Annex.changeState $ \s -> s { Annex.output = o }
+
+{- Performs an action, suppressing all normal standard output,
+ - but not json output. -}
+doQuietAction :: Annex a -> Annex a
+doQuietAction = bracket setup cleanup . const
+  where
+	setup = do
+		o <- Annex.getState Annex.output
+		case outputType o of
+			NormalOutput -> set $ o { outputType = QuietOutput }
+			_ -> noop
+		return o
+	cleanup = set
 	set o = Annex.changeState $ \s -> s {  Annex.output = o }
 
 {- Make way for subsequent output of a command. -}
