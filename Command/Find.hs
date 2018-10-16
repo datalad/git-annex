@@ -18,7 +18,7 @@ import qualified Utility.Format
 import Utility.DataUnits
 
 cmd :: Command
-cmd = withGlobalOptions [annexedMatchingOptions] $ mkCommand $
+cmd = notBareRepo $ withGlobalOptions [annexedMatchingOptions] $ mkCommand $
 	command "find" SectionQuery "lists available files"
 		paramPaths (seek <$$> optParser)
 
