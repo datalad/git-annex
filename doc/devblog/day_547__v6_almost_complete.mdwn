@@ -1,0 +1,12 @@
+No time to blog yesterday, but I somehow found the time to fix the second
+to last known major issue with v6 mode, a database inconsistency problem
+involving touching annexed files.
+
+The only remaining blocker for v6 not being experimental is that `git
+checkout` of large unlocked files can use a lot of memory (and doesn't
+honor annex.thin).
+
+Also I finally have a rought plan for how to [[todo/hide_missing_files]]:
+Have `git annex sync` update the working tree to only show visible files.
+Still details to work out, but it would be great to finally get this
+often-requested feature.
