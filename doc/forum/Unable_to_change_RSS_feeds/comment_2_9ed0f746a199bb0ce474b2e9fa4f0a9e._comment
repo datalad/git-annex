@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="Gus"
+ avatar="http://cdn.libravatar.org/avatar/665626c67ab3ee7e842183f6f659e120"
+ subject="Thanks"
+ date="2018-10-17T22:46:36Z"
+ content="""
+Hello and thank you for taking an interest and offering your time to help me out, Joey.
+
+I keep a file with a list of podcasts I follow and the relevant (old) URL in it is `https://rss.art19.com/freakonomics-radio`. I import them all with `xargs git annex importfeed --relaxed --fast --template='${feedtitle}/${itempubdate}-${itemtitle}${extension}' < feeds.txt`..
+
+It seems that some files that are referenced in this RSS feed are no longer valid.
+
+    $ git-annex info 2014_10_16-How_Can_Tiny_Norway_Afford_to_Buy_So_Many_Teslas____.mp3
+    file: 2014_10_16-How_Can_Tiny_Norway_Afford_to_Buy_So_Many_Teslas____.mp3
+    size: 0 bytes (+ 1 unknown size)
+    key: URL--http://feedproxy.google.com/,12-63d190ce967f261870566fc1551cb690
+    present: false
+
+I tried to find another RSS feed for this show and came across the more \"official\" `http://freakonomics.com/feed/`.
+
+This was all quite some time ago and I don't recall many details. Since those days I managed to get around this by downloading the files from the archives. It may also be that the feeds have changed since then. I have also upgraded my system (including the version of git-annex), which was kept back many months.
+I was still downloading the old files that I do not see in the RSS feeds now — this may be related to the problem.
+
+The `addurl` does seem to work now, and I can't reproduce the problem I had back then. I'll take this off the table.
+Yet, I do wish that `info` would mention all the URLs associated to the file. It would help pinpoint the problem in such a situation. I still don't know if the importfeed is doing its thing (adding URLS) or not.
+
+Anyway, once more, my appreciation for your interest, your time and your work.
+"""]]
