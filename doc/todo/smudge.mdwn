@@ -25,17 +25,6 @@ git-annex should use smudge/clean filters. v6 mode
   (My enhanced smudge/clean patch set also fixed this problem, in a much
   nicer way...)
 
-## other warts
-
-* There are several v6 bugs that are edge cases and
-  need more info or analysis. None of these seem like blockers
-  to keep v6 experimental or to replacing direct mode with v6.
-
-  - <http://git-annex.branchable.com/bugs/assistant_crashes_in_TransferScanner/>
-  - <http://git-annex.branchable.com/bugs/v6_appears_to_not_thin/>
-  - <http://git-annex.branchable.com/bugs/Metadata_views_in_v6_repo_upgraded_from_direct_mode_act_strangely/>a
-  - <http://git-annex.branchable.com/bugs/git-annex-sync_sometimes_fails_in_submodule_in_V6_adjusted_branch/>
-
 * When git runs the smudge filter, it buffers all its output in ram before
   writing it to a file. So, checking out a branch with a large v6 unlocked files
   can cause git to use a lot of memory.
@@ -50,6 +39,18 @@ git-annex should use smudge/clean filters. v6 mode
   Note that the long-running filter process interface has the same problem.
 
   The annex.thin idea above could work around this problem.
+
+
+## other warts
+
+* There are several v6 bugs that are edge cases and
+  need more info or analysis. None of these seem like blockers
+  to keep v6 experimental or to replacing direct mode with v6.
+
+  - <http://git-annex.branchable.com/bugs/assistant_crashes_in_TransferScanner/>
+  - <http://git-annex.branchable.com/bugs/v6_appears_to_not_thin/>
+  - <http://git-annex.branchable.com/bugs/Metadata_views_in_v6_repo_upgraded_from_direct_mode_act_strangely/>
+  - <http://git-annex.branchable.com/bugs/git-annex-sync_sometimes_fails_in_submodule_in_V6_adjusted_branch/>
 
 ### long term todos
 
