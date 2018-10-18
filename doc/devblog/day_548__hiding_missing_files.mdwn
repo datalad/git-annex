@@ -1,0 +1,18 @@
+At long last there's a way to hide annexed files whose content
+is missing from the working tree: `git-annex adjust --hide-missing`
+
+And once you've run that command, `git annex sync` will update the tree
+to hide/unhide files whose content availability has changed.
+(So will running `git annex adjust` again with the same options.)
+
+You can also combine `--hide-missing` with `--unlock`, which should prove
+useful in a lot of situations.
+
+My implementation today is as simple as possible, which means that every
+time it updates the adjusted branch it does a full traversal of the
+original branch, checks content availability, and generates a new branch.
+So it may not be super fast in a large repo, but I was able to implement
+it in one day's work. It should be possible later to speed it up a
+lot, by [maintaining more state](http://git-annex.branchable.com/todo/hide_missing_files/#comment-5f56545b69a0baebffe5411258ee30ea).
+
+Today's work was sponsored by Ethan Aubin.
