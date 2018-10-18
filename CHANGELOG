@@ -1,5 +1,11 @@
 git-annex (6.20181012) UNRELEASED; urgency=medium
 
+  * At long last there's a way to hide annexed files whose content
+    is missing from the working tree: git-annex adjust --hide-missing
+  * When already in an adjusted branch, running git-annex adjust
+    again will update the branch as needed. This is mostly
+    useful with --hide-missing to hide/unhide files after their content
+    has been dropped or received.
   * Removed the old Android app.
   * Removed support for building with very old ghc < 8.0.1,
     and with yesod < 1.4.3, and without concurrent-output,

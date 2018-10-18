@@ -240,12 +240,21 @@ originalBranch = fmap fromAdjustedBranch <$> inRepo Git.Branch.current
  - branch).
  -
  - Can fail, if no branch is checked out, or if the adjusted branch already
- - exists, or perhaps if staged changes conflict with the adjusted branch.
+ - exists, or if staged changes prevent a checkout.
  -}
 enterAdjustedBranch :: Adjustment -> Annex Bool
-enterAdjustedBranch adj = go =<< originalBranch
+enterAdjustedBranch adj = inRepo Git.Branch.current >>= \case
+	Just currbranch -> case getAdjustment currbranch of
+		Just curradj | curradj == adj ->
+			reenterAdjustedBranch adj currbranch
+				(fromAdjustedBranch currbranch)
+		_ -> go currbranch
+	Nothing -> do
+		warning "not on any branch!"
+		return False
   where
-	go (Just origbranch) = do
+	go currbranch = do
+		let origbranch = fromAdjustedBranch currbranch
 		let adjbranch = adjBranch $ originalToAdjusted origbranch adj
 		ifM (inRepo (Git.Ref.exists adjbranch) <&&> (not <$> Annex.getState Annex.force))
 			( do
@@ -263,17 +272,52 @@ enterAdjustedBranch adj = go =<< originalBranch
 					]
 				return False
 			, do
-				AdjBranch b <- preventCommits $ const $ 
+				b <- preventCommits $ const $ 
 					adjustBranch adj origbranch
-				showOutput -- checkout can have output in large repos
-				inRepo $ Git.Command.runBool
-					[ Param "checkout"
-					, Param $ fromRef $ Git.Ref.base b
-					]
+				checkoutAdjustedBranch b []
 			)
-	go Nothing = do
-		warning "not on any branch!"
-		return False
+
+checkoutAdjustedBranch :: AdjBranch -> [CommandParam] -> Annex Bool
+checkoutAdjustedBranch (AdjBranch b) checkoutparams = do
+	showOutput -- checkout can have output in large repos
+	inRepo $ Git.Command.runBool $
+		[ Param "checkout"
+		, Param $ fromRef $ Git.Ref.base b
+		-- always show checkout progress, even if --quiet is used
+		-- to suppress other messages
+		, Param "--progress"
+		] ++ checkoutparams
+
+{- Already in a branch with this adjustment, but the user asked to enter it
+ - again. This should have the same result as checking out the original branch,
+ - deleting and rebuilding the adjusted branch, and then checking it out.
+ - But, it can be implemented more efficiently than that.
+ -}
+reenterAdjustedBranch :: Adjustment -> Branch -> OrigBranch -> Annex Bool
+reenterAdjustedBranch adj@(PresenceAdjustment _ _) currbranch origbranch = do
+	b <- preventCommits $ \commitlck -> do
+		-- Avoid losing any commits that the adjusted branch has that
+		-- have not yet been propigated back to the origbranch.
+		_ <- propigateAdjustedCommits' origbranch adj commitlck
+
+		-- Git normally won't do anything when asked to check out the
+		-- currently checked out branch, even when its ref has
+		-- changed. Work around this by writing a raw sha to .git/HEAD.
+		inRepo (Git.Ref.sha currbranch) >>= \case
+			Just headsha -> inRepo $ \r ->
+				writeFile (Git.Ref.headFile r) (fromRef headsha)
+			_ -> noop
+	
+		adjustBranch adj origbranch
+	
+	-- Make git checkout quiet to avoid warnings about disconnected
+	-- branch tips being lost.
+	checkoutAdjustedBranch b [Param "--quiet"]
+reenterAdjustedBranch adj@(LinkAdjustment _) _ origbranch = preventCommits $ \commitlck -> do
+	-- Not really needed here, but done for consistency.
+	_ <- propigateAdjustedCommits' origbranch adj commitlck
+	-- No need to do anything else, because link adjustments are stable.
+	return True
 
 adjustToCrippledFileSystem :: Annex ()
 adjustToCrippledFileSystem = do

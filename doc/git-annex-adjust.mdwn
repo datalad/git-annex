@@ -4,7 +4,7 @@ git-annex adjust - enter an adjusted branch
 
 # SYNOPSIS
 
-git annex adjust `--unlock|--fix`
+git annex adjust `--unlock|--fix|--hide-missing [--unlock|--fix]`
 
 # DESCRIPTION
 
@@ -20,9 +20,14 @@ While in the adjusted branch, you can use git-annex and git commands as
 usual. Any commits that you make will initially only be made to the
 adjusted branch. 
 
-To propagate changes from the adjusted branch back to the original branch,
+To propagate commits from the adjusted branch back to the original branch,
 and to other repositories, as well as to merge in changes from other
-repositories, use `git annex sync`.
+repositories, run `git annex sync`.
+
+Re-running this command with the same options
+while inside the adjusted branch will update the adjusted branch
+as necessary (eg for `--hide-missing`), and will also propagate commits
+back to the original branch.
 
 This command can only be used in a v6 git-annex repository.
 
@@ -39,6 +44,22 @@ This command can only be used in a v6 git-annex repository.
   object directory. This can be useful if a repository is checked out in an
   unusual way that prevents the symlinks committed to git from pointing at
   the annex objects.
+
+* `--hide-missing`
+
+  Only include annexed files in the adjusted branch when their content
+  is present.
+
+  The adjusted branch is not immediately changed when content availability
+  changes, so if you `git annex drop` files, they will become broken
+  links in the usual way. And when files that were missing are copied into the
+  repository from elsewhere, they won't immediatly become visible in the
+  branch. 
+  
+  To update the adjusted branch to reflect changes to content availability, 
+  run `git annex adjust --hide-missing` again.
+
+  This option can be combined with --unlock or --fix.
 
 # SEE ALSO
 

@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2016 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,21 +16,30 @@ cmd = notBareRepo $ notDirect $ noDaemonRunning $
 		paramNothing (seek <$$> optParser)
 
 optParser :: CmdParamsDesc -> Parser Adjustment
-optParser _ = 
-	flag' (LinkAdjustment UnlockAdjustment)
+optParser _ =
+	(LinkAdjustment <$> linkAdjustmentParser)
+	<|> (PresenceAdjustment <$> presenceAdjustmentParser <*> maybeLinkAdjustmentParser)
+
+linkAdjustmentParser :: Parser LinkAdjustment
+linkAdjustmentParser =
+	flag' UnlockAdjustment
 		( long "unlock"
 		<> help "unlock annexed files"
 		)
-	<|> flag' (LinkAdjustment FixAdjustment)
+	<|> flag' FixAdjustment
 		( long "fix"
 		<> help "fix symlinks to annnexed files"
 		)
-	{- Not ready yet
-	<|> flag' (PresenseAdjustment HideMissingAdjustment)
+
+maybeLinkAdjustmentParser :: Parser (Maybe LinkAdjustment)
+maybeLinkAdjustmentParser = Just <$> linkAdjustmentParser <|> pure Nothing
+
+presenceAdjustmentParser :: Parser PresenceAdjustment
+presenceAdjustmentParser =
+	flag' HideMissingAdjustment
 		( long "hide-missing"
-		<> help "omit annexed files whose content is not present"
+		<> help "hide annexed files whose content is not present"
 		)
-	-}
 
 seek :: Adjustment -> CommandSeek
 seek = commandAction . start

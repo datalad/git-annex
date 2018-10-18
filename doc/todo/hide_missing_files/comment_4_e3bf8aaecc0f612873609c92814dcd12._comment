@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2018-10-18T19:27:43Z"
+ content="""
+I implemented `git annex adjust --hide-missing`.
+It can be run after any change to content availability to update
+the adjusted branch, hiding or unhiding files.
+
+My implementation is not as fast as it could be; each update
+is a linear scan of the whole original branch and rebuild of the adjusted
+branch. But it all works so we'll defer speeding this up to later bug
+reports about it being too slow. ;)
+
+What still needs to be done:
+
+* `git annex sync --content` needs to scan the original branch, not the
+  adjusted branch, to find files to transfer.
+* `git annex sync` needs to update the adjusted branch.
+* The assistant also needs to scan the original branch when looking for
+  files to download.
+* The assistant ought to update the adjusted branch at some point after
+  downloads, but it's not clear when. Perhaps this will need to be deferred
+  until it can be done more cheaply, so it can do it after every file.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2018-10-18T18:59:54Z"
+ content="""
+Good news everyone! `git annex adjust --hide-missing` sets up a branch
+where only files with content available are included. And once in such a
+branch, `git annex sync` updates it as necessary to reflect changes in
+content availability.
+"""]]
