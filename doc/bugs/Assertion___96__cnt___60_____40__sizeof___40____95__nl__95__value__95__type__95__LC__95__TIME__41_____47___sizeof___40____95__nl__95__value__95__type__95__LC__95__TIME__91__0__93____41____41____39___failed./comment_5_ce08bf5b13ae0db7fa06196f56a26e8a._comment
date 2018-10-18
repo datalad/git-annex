@@ -1,0 +1,57 @@
+[[!comment format=mdwn
+ username="g@aaed65f19d6c3a2a18c33da828e66c7bb915e65a"
+ nickname="g"
+ avatar="http://cdn.libravatar.org/avatar/10470d6f8a18833e04dee17126d53372"
+ subject="workaround: setting LC_ALL=C"
+ date="2018-10-18T08:55:19Z"
+ content="""
+I had a similar problem yesterday with the latest [x86-64 standalone build](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz), git-annex ver. 6.20180927-g897e5ba57
+
+# Short story
+
+I solved this adding this to my `.bashrc`
+
+    export LC_ALL=C
+
+# Non so short story
+
+I need the standalone version for I'm using an hosting service with ssh connection; it's just a \"classic\" LAMP hosting space, not a full VM, so I cannot install any package on it
+
+In 2016 I was able to install the standalone git-annex version 6.20161231-gc8eeb17da, along with gitolite for access control, and all was working well until recently on one of my machines I upgraded to ver. 6.20180913-1 amd64: trying to get some content always failed with
+
+      [2018-10-17 17:56:52.199123421] P2P > ERROR auth failed
+
+      fd:19: hClose: resource vanished (Broken pipe)
+      failed
+
+After a brief search I found [get over ssh fails with fd:19: hClose: resource vanished - comment 1](http://git-annex.branchable.com/bugs/get_over_ssh_fails_with___fd__58__19__58___hClose__58___resource_vanished/#comment-f9a93468be4a799e1e79e97941449d67) and decidet to upgrade git-annex server side
+
+After upgrade I got the error reported in this bug report subject and after a quick research I found a [similar report on askubuntu](https://askubuntu.com/questions/1081901/right-way-to-fix-assertion-in-loadlocale-c)
+
+The first thing I tried was 
+
+    LC_ALL=C git annex version
+
+and I the error \"disappeared\": bingo!
+
+I realized that `LC_ALL` was *unset* in my gitolite user profile, so I added it to my `.bashrc` and now all is working (almost) fine.
+
+# Why almost?
+
+Well: it's surely not related to git-annex but to my hosting server.
+
+Every time I get some file from the remote on that hosting space I get an error
+     
+     ERROR: ld.so: object '/lib/security/hosting-securize.so' from /etc/ld.so.preload cannot be preloaded (wrong ELF class: ELFCLASS32): ignored.
+
+but fortunately it is ignored and the files are downloaded as expected
+
+I still had no time to investigate why I get a ELFCLASS32 (I'm sure I installed the amd64 standalone)... but since it works I leave it as a background wishlist
+
+# The end
+
+That's all, I hope this will help others with similar issues
+
+Bye!
+Giovanni Biscuolo  
+"""]]

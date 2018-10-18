@@ -1,0 +1,62 @@
+[[!comment format=mdwn
+ username="ewen"
+ avatar="http://cdn.libravatar.org/avatar/605b2981cb52b4af268455dee7a4f64e"
+ subject="Synology NAS 6.2.1-23824"
+ date="2018-10-18T00:00:34Z"
+ content="""
+FTR, Synology finally released the NAS DSM 6.2.1-23824 (OS) software to my region (New Zealand; last I assume) so I've been able to install the September software update.  That does work with the 64-bit Git Annex standalone version, providing the `LC_ALL=C` workaround is still in place:
+
+    ewen@nas01:~$ git-annex version
+    rm: loadlocale.c:129: _nl_intern_locale_data: Assertion `cnt < (sizeof (_nl_value_type_LC_TIME) / sizeof (_nl_value_type_LC_TIME[0]))' failed.
+    /volume1/thirdparty/git-annex.linux/runshell: line 132: 14602 Aborted                 rm -rf \"$localecache\" 2>&1
+    cmp: loadlocale.c:129: _nl_intern_locale_data: Assertion `cnt < (sizeof (_nl_value_type_LC_TIME) / sizeof (_nl_value_type_LC_TIME[0]))' failed.
+    /volume1/thirdparty/git-annex.linux/runshell: line 142: 14603 Aborted                 cmp \"$LOCPATH/buildid\" \"$base/buildid\" > /dev/null
+    rm: loadlocale.c:129: _nl_intern_locale_data: Assertion `cnt < (sizeof (_nl_value_type_LC_TIME) / sizeof (_nl_value_type_LC_TIME[0]))' failed.
+    /volume1/thirdparty/git-annex.linux/runshell: line 142: 14604 Aborted                 rm -rf \"$LOCPATH\"
+    ewen@nas01:~$ LC_ALL=C git-annex version
+    git-annex version: 6.20180807-g48d11a5df
+    build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify ConcurrentOutput TorrentParser MagicMime Feeds Testsuite
+    dependency versions: aws-0.19 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.2 feed-1.0.0.0 ghc-8.2.2 http-client-0.5.13 persistent-sqlite-2.8.1.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+    operating system: linux x86_64
+    supported repository versions: 3 5 6
+    upgrade supported from repository versions: 0 1 2 3 4 5
+    ewen@nas01:~$ 
+
+so at least for now I'm leaving my hand-edited work around in place:
+
+    ewen@nas01:~$ grep -B 1 LC_ALL /usr/local/bin/git-annex
+    # 2018-09-08 - work around for LC_TIME mismatch in locales
+    LC_ALL=C
+    export LC_ALL
+    ewen@nas01:~$ 
+
+Interestingly I hadn't noticed previously that it seems like its `rm` and `cmp` and the like which are running into locale loading problems, at least now.  Ironically line 132 is the point where it tries to clean up locale caches...
+
+    # Clean up locale caches when their standalone bundle no longer exists.
+    for localecache in $HOME/.cache/git-annex/locales/*; do
+        cachebase=$(cat \"$localecache/base\" 2>/dev/null || true)
+        if [ ! -d \"$cachebase\" ] || ! cmp \"$localecache/buildid\" \"$cachebase/buildid\" >/dev/null ; then
+            rm -rf \"$localecache\" 2>&1 || true
+        fi
+    done
+
+and 142 is the bit that tries to refresh the locale cache:
+
+    # If the locale cache for this bundle is out of date, refresh it.
+    if [ -e \"$LOCPATH/buildid\" ] && ! cmp \"$LOCPATH/buildid\" \"$base/buildid\" >/dev/null ; then
+        rm -rf \"$LOCPATH\"
+    fi
+    if ! mkdir -p \"$LOCPATH\"; then
+        echo \"Unable to write to $LOCPATH; can't continue!\" >&2
+        exit 1
+    fi
+    echo \"$base\" > \"$LOCPATH/base\"
+    cp \"$base/buildid\" \"$LOCPATH/buildid\"
+
+
+so it's possible the *new* issue might just be that bits of the git annex work around for locale issues are now unreachable... due to locale issues.  In which case maybe only the work around step needs `LC_ALL=C`?  I haven't experimented with that, but it does seem plausible that if it can get far enough to build/use locales in the right format for its own libc, that it'd then work properly.
+
+Ewen
+"""]]
