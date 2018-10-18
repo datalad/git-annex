@@ -329,9 +329,13 @@ addUnlocked = isDirect <||>
 	(versionSupportsUnlockedPointers <&&>
 	 ((not . coreSymlinks <$> Annex.getGitConfig) <||>
 	  (annexAddUnlocked <$> Annex.getGitConfig) <||>
-	  (maybe False (\b -> getAdjustment b == Just UnlockAdjustment) <$> cachedCurrentBranch)
+	  (maybe False (isadjustedunlocked . getAdjustment) <$> cachedCurrentBranch)
 	 )
 	)
+  where
+	isadjustedunlocked (Just (LinkAdjustment UnlockAdjustment)) = True
+	isadjustedunlocked (Just (PresenceAdjustment _ (Just UnlockAdjustment))) = True
+	isadjustedunlocked _ = False
 
 cachedCurrentBranch :: Annex (Maybe Git.Branch)
 cachedCurrentBranch = maybe cache (return . Just)

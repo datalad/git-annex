@@ -56,7 +56,7 @@ upgrade automatic = do
 		{- Create adjusted branch where all files are unlocked.
 		 - This should have the same content for each file as
 		 - have been staged in upgradeDirectWorkTree. -}
-		AdjBranch b <- adjustBranch UnlockAdjustment cur
+		AdjBranch b <- adjustBranch (LinkAdjustment UnlockAdjustment) cur
 		{- Since the work tree was already set up by
 		 - upgradeDirectWorkTree, and contains unlocked file
 		 - contents too, don't use git checkout to check out the

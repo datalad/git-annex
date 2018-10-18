@@ -1,14 +1,16 @@
 {- adjusted branch
  -
- - Copyright 2016 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2018 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 {-# LANGUAGE BangPatterns #-}
 
 module Annex.AdjustedBranch (
 	Adjustment(..),
+	LinkAdjustment(..),
+	PresenceAdjustment(..),
 	OrigBranch,
 	AdjBranch(..),
 	originalToAdjusted,
@@ -58,36 +60,72 @@ import Config
 import qualified Data.Map as M
 
 data Adjustment
+	= LinkAdjustment LinkAdjustment
+	| PresenceAdjustment PresenceAdjustment (Maybe LinkAdjustment)
+	deriving (Show, Eq)
+
+-- Doesn't make sense to combine unlock with fix.
+data LinkAdjustment
 	= UnlockAdjustment
 	| LockAdjustment
 	| FixAdjustment
 	| UnFixAdjustment
-	| HideMissingAdjustment
+	deriving (Show, Eq)
+
+data PresenceAdjustment
+	= HideMissingAdjustment
 	| ShowMissingAdjustment
 	deriving (Show, Eq)
 
-reverseAdjustment :: Adjustment -> Adjustment
-reverseAdjustment UnlockAdjustment = LockAdjustment
-reverseAdjustment LockAdjustment = UnlockAdjustment
-reverseAdjustment HideMissingAdjustment = ShowMissingAdjustment
-reverseAdjustment ShowMissingAdjustment = HideMissingAdjustment
-reverseAdjustment FixAdjustment = UnFixAdjustment
-reverseAdjustment UnFixAdjustment = FixAdjustment
+-- Adjustments have to be able to be reversed, so that commits made to the
+-- adjusted branch can be reversed to the commit that would have been made
+-- without the adjustment and applied to the original branch.
+class ReversableAdjustment t where
+	reverseAdjustment :: t -> t
 
-{- How to perform various adjustments to a TreeItem. -}
-adjustTreeItem :: Adjustment -> TreeItem -> Annex (Maybe TreeItem)
-adjustTreeItem UnlockAdjustment = ifSymlink adjustToPointer noAdjust
-adjustTreeItem LockAdjustment = ifSymlink noAdjust adjustToSymlink
-adjustTreeItem FixAdjustment = ifSymlink adjustToSymlink noAdjust
-adjustTreeItem UnFixAdjustment = ifSymlink (adjustToSymlink' gitAnnexLinkCanonical) noAdjust
-adjustTreeItem HideMissingAdjustment = \ti@(TreeItem _ _ s) ->
-	catKey s >>= \case
-		Just k -> ifM (inAnnex k)
-			( return (Just ti)
-			, return Nothing
-			)
-		Nothing -> return (Just ti)
-adjustTreeItem ShowMissingAdjustment = noAdjust
+instance ReversableAdjustment Adjustment where
+	reverseAdjustment (LinkAdjustment l) = 
+		LinkAdjustment (reverseAdjustment l)
+	reverseAdjustment (PresenceAdjustment p ml) =
+		PresenceAdjustment (reverseAdjustment p) (fmap reverseAdjustment ml)
+
+instance ReversableAdjustment LinkAdjustment where
+	reverseAdjustment UnlockAdjustment = LockAdjustment
+	reverseAdjustment LockAdjustment = UnlockAdjustment
+	reverseAdjustment FixAdjustment = UnFixAdjustment
+	reverseAdjustment UnFixAdjustment = FixAdjustment
+
+instance ReversableAdjustment PresenceAdjustment where
+	reverseAdjustment HideMissingAdjustment = ShowMissingAdjustment
+	reverseAdjustment ShowMissingAdjustment = HideMissingAdjustment
+
+-- How to perform various adjustments to a TreeItem.
+class AdjustTreeItem t where
+	adjustTreeItem :: t -> TreeItem -> Annex (Maybe TreeItem)
+
+instance AdjustTreeItem Adjustment where
+	adjustTreeItem (LinkAdjustment l) t = adjustTreeItem l t
+	adjustTreeItem (PresenceAdjustment p Nothing) t = adjustTreeItem p t
+	adjustTreeItem (PresenceAdjustment p (Just l)) t =
+		adjustTreeItem p t >>= \case
+			Nothing -> return Nothing
+			Just t' -> adjustTreeItem l t'
+
+instance AdjustTreeItem LinkAdjustment where
+	adjustTreeItem UnlockAdjustment = ifSymlink adjustToPointer noAdjust
+	adjustTreeItem LockAdjustment = ifSymlink noAdjust adjustToSymlink
+	adjustTreeItem FixAdjustment = ifSymlink adjustToSymlink noAdjust
+	adjustTreeItem UnFixAdjustment = ifSymlink (adjustToSymlink' gitAnnexLinkCanonical) noAdjust
+
+instance AdjustTreeItem PresenceAdjustment where
+	adjustTreeItem HideMissingAdjustment = \ti@(TreeItem _ _ s) ->
+		catKey s >>= \case
+			Just k -> ifM (inAnnex k)
+				( return (Just ti)
+				, return Nothing
+				)
+			Nothing -> return (Just ti)
+	adjustTreeItem ShowMissingAdjustment = noAdjust
 
 ifSymlink :: (TreeItem -> Annex a) -> (TreeItem -> Annex a) -> TreeItem -> Annex a
 ifSymlink issymlink notsymlink ti@(TreeItem _f m _s)
@@ -135,21 +173,41 @@ basisBranch (AdjBranch adjbranch) = BasisBranch $
 adjustedBranchPrefix :: String
 adjustedBranchPrefix = "refs/heads/adjusted/"
 
-serialize :: Adjustment -> String
-serialize UnlockAdjustment = "unlocked"
-serialize LockAdjustment = "locked"
-serialize HideMissingAdjustment = "present"
-serialize ShowMissingAdjustment = "showmissing"
-serialize FixAdjustment = "fixed"
-serialize UnFixAdjustment = "unfixed"
+class SerializeAdjustment t where
+	serialize :: t -> String
+	deserialize :: String -> Maybe t
 
-deserialize :: String -> Maybe Adjustment
-deserialize "unlocked" = Just UnlockAdjustment
-deserialize "locked" = Just UnlockAdjustment
-deserialize "present" = Just HideMissingAdjustment
-deserialize "fixed" = Just FixAdjustment
-deserialize "unfixed" = Just UnFixAdjustment
-deserialize _ = Nothing
+instance SerializeAdjustment Adjustment where
+	serialize (LinkAdjustment l) = serialize l
+	serialize (PresenceAdjustment p Nothing) = serialize p
+	serialize (PresenceAdjustment p (Just l)) = 
+		serialize p ++ "-" ++ serialize l
+	deserialize s = 
+		(LinkAdjustment <$> deserialize s)
+			<|>
+		(PresenceAdjustment <$> deserialize s1 <*> pure (deserialize s2))
+			<|>
+		(PresenceAdjustment <$> deserialize s <*> pure Nothing)
+	  where
+		(s1, s2) = separate (== '-') s
+
+instance SerializeAdjustment LinkAdjustment where
+	serialize UnlockAdjustment = "unlocked"
+	serialize LockAdjustment = "locked"
+	serialize FixAdjustment = "fixed"
+	serialize UnFixAdjustment = "unfixed"
+	deserialize "unlocked" = Just UnlockAdjustment
+	deserialize "locked" = Just UnlockAdjustment
+	deserialize "fixed" = Just FixAdjustment
+	deserialize "unfixed" = Just UnFixAdjustment
+	deserialize _ = Nothing
+
+instance SerializeAdjustment PresenceAdjustment where
+	serialize HideMissingAdjustment = "hidemissing"
+	serialize ShowMissingAdjustment = "showmissing"
+	deserialize "hidemissing" = Just HideMissingAdjustment
+	deserialize "showmissing" = Just ShowMissingAdjustment
+	deserialize _ = Nothing
 
 originalToAdjusted :: OrigBranch -> Adjustment -> AdjBranch
 originalToAdjusted orig adj = AdjBranch $ Ref $
@@ -227,7 +285,7 @@ adjustToCrippledFileSystem = do
 			, Param "-m"
 			, Param "commit before entering adjusted unlocked branch"
 			]
-	unlessM (enterAdjustedBranch UnlockAdjustment) $
+	unlessM (enterAdjustedBranch (LinkAdjustment UnlockAdjustment)) $
 		warning "Failed to enter adjusted branch!"
 
 setBasisBranch :: BasisBranch -> Ref -> Annex ()

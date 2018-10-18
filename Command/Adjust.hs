@@ -17,16 +17,16 @@ cmd = notBareRepo $ notDirect $ noDaemonRunning $
 
 optParser :: CmdParamsDesc -> Parser Adjustment
 optParser _ = 
-	flag' UnlockAdjustment
+	flag' (LinkAdjustment UnlockAdjustment)
 		( long "unlock"
 		<> help "unlock annexed files"
 		)
-	<|> flag' FixAdjustment
+	<|> flag' (LinkAdjustment FixAdjustment)
 		( long "fix"
 		<> help "fix symlinks to annnexed files"
 		)
 	{- Not ready yet
-	<|> flag' HideMissingAdjustment
+	<|> flag' (PresenseAdjustment HideMissingAdjustment)
 		( long "hide-missing"
 		<> help "omit annexed files whose content is not present"
 		)
