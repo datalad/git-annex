@@ -1,0 +1,52 @@
+Goal for today was to make `git annex sync --content` operate on files hidden by
+`git annex adjust --hide-missing`. However, this got into the weeds pretty
+quickly due to the problem of how to handle `--content-of=path` when
+either the whole path or some files within it may be hidden.
+
+Eventually I discovered that `git ls-files --with-tree` can be used to
+get a combined list of files in the index plus files in another tree,
+which in git-annex's case is the original branch that got adjusted.
+It's not documented to work the way I'm using it (worrying), but it's
+perfect, because git-annex already uses `git ls-files` extensively and this
+could let lots of commands get support for operating on hidden files.
+
+That said, I'm going to limit it to `git annex sync` for now,
+because it would be a lot of work to make lots of commands support them,
+and there could easily be commands where supporting them adds lots of
+complexity or room for confusion.
+
+Demo time:
+
+	joey@darkstar:/tmp> git clone ~/lib/sound/
+	Cloning into 'sound'...
+	done.
+	Checking out files: 100% (45727/45727), done.
+	joey@darkstar:/tmp> cd sound/
+	joey@darkstar:/tmp/sound> git annex init --version=6
+	init  (merging origin/git-annex origin/synced/git-annex into git-annex...)
+	(scanning for unlocked files...)
+	ok
+	joey@darkstar:/tmp/sound> git annex adjust --hide-missing
+	adjust 
+	Switched to branch 'adjusted/master(hidemissing)'
+	ok
+	joey@darkstar:/tmp/sound#master(hidemissing)> ls
+	podcasts
+	joey@darkstar:/tmp/sound#master(hidemissing)> ls podcasts
+	feeds
+	joey@darkstar:/tmp/sound#master(hidemissing)> git annex sync origin --no-push -C podcasts
+	...
+	joey@darkstar:/tmp/sound> time git annex adjust --hide-missing
+	adjust
+	ok
+	15.03user 3.11system 0:14.95elapsed 121%CPU (0avgtext+0avgdata 93280maxresident)k
+	0inputs+88outputs (0major+12206minor)pagefaults 0swaps
+	joey@darkstar:/tmp/sound#master(hidemissing)> ls podcasts
+	Astronomy_Cast/                                     Hacking_Culture/
+	Benjamen_Walker_s_Theory_of_Everything/             In_Our_Time/
+	Clarkesworld_Magazine___Science_Fiction___Fantasy/  Lightspeed_MagazineLightspeed_Magazine___Science_Fiction___Fantasy/
+	DatCast/                                            Long_Now__Seminars_About_Long_term_Thinking/
+	Escape_Pod/                                         Love___Radio/
+	Gravy/                                              feeds
+
+Close to being able to use this on my phone. ;-)
