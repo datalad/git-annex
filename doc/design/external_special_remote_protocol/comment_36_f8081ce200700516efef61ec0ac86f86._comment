@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 36"
+ date="2018-10-19T15:52:21Z"
+ content="""
+What is the intended use case for CHECKURL-MULTI?  Are there examples of external special remote implementations that use this response?
+"""]]
