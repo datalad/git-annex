@@ -7,6 +7,7 @@
 
 module Git.LsFiles (
 	inRepo,
+	inRepoOrBranch,
 	notInRepo,
 	notInRepoIncludingEmptyDirectories,
 	allFiles,
@@ -34,14 +35,22 @@ import Git.Sha
 import Numeric
 import System.Posix.Types
 
-{- Scans for files that are checked into git at the specified locations. -}
+{- Scans for files that are checked into git's index at the specified locations. -}
 inRepo :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
-inRepo l = pipeNullSplit $ 
+inRepo = inRepo' [] 
+
+inRepo' :: [CommandParam] -> [FilePath] -> Repo -> IO ([FilePath], IO Bool)
+inRepo' ps l = pipeNullSplit $ 
 	Param "ls-files" :
 	Param "--cached" :
 	Param "-z" :
-	Param "--" :
-	map File l
+	ps ++
+	(Param "--" : map File l)
+
+{- Files that are checked into the index or have been committed to a
+ - branch. -}
+inRepoOrBranch :: Branch -> [FilePath] -> Repo -> IO ([FilePath], IO Bool)
+inRepoOrBranch (Ref b) = inRepo' [Param $ "--with-tree=" ++ b]
 
 {- Scans for files at the specified locations that are not checked into git. -}
 notInRepo :: Bool -> [FilePath] -> Repo -> IO ([FilePath], IO Bool)

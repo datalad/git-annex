@@ -54,10 +54,14 @@ This command can only be used in a v6 git-annex repository.
   changes, so if you `git annex drop` files, they will become broken
   links in the usual way. And when files that were missing are copied into the
   repository from elsewhere, they won't immediatly become visible in the
-  branch. 
+  branch.
   
   To update the adjusted branch to reflect changes to content availability, 
   run `git annex adjust --hide-missing` again.
+
+  Despite missing files being hidden, `git annex sync --content` will
+  still operate on them, and can be used to download missing
+  files from remotes.
 
   This option can be combined with --unlock or --fix.
 

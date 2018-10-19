@@ -14,8 +14,6 @@ reports about it being too slow. ;)
 
 What still needs to be done:
 
-* `git annex sync --content` needs to scan the original branch, not the
-  adjusted branch, to find files to transfer.
 * `git annex sync` needs to update the adjusted branch.
 * The assistant also needs to scan the original branch when looking for
   files to download.

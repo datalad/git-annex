@@ -70,15 +70,15 @@ by running "git annex sync" on the remote.
 * `--content`, `--no-content`
 
   Normally, syncing does not transfer the contents of annexed files.
-  The --content option causes the content of files in the work tree
+  The --content option causes the content of annexed files
   to also be uploaded and downloaded as necessary.
 
   The `annex.synccontent` configuration can be set to true to make content
   be synced by default.
 
-  Normally this tries to get each annexed file in the work tree
-  that the local repository  does not yet have, and then copies each
-  file in the work tree to every remote that it is syncing with.
+  Normally this tries to get each annexed file that the local repository
+  does not yet have, and then copies each file to every remote that it
+  is syncing with.
   This behavior can be overridden by configuring the preferred content
   of a repository. See [[git-annex-preferred-content]](1).
 
@@ -88,7 +88,7 @@ by running "git annex sync" on the remote.
 
 * `--content-of=path` `-C path`
 
-  While --content operates on all annexed files in the work tree,
+  While --content operates on all annexed files,
   --content-of allows limiting the transferred files to ones in a given
   location.
 

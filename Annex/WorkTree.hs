@@ -1,6 +1,6 @@
 {- git-annex worktree files
  -
- - Copyright 2013-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,6 +13,7 @@ import Annex.CatFile
 import Annex.Version
 import Annex.Content
 import Annex.ReplaceFile
+import Annex.CurrentBranch
 import Config
 import Git.FilePath
 import qualified Git.Ref
@@ -28,19 +29,20 @@ import qualified Database.Keys.SQL
  -
  - An unlocked file will not have a link on disk, so fall back to
  - looking for a pointer to a key in git.
+ -
+ - When in an adjusted branch that may have hidden the file, looks for a
+ - pointer to a key in the original branch.
  -}
 lookupFile :: FilePath -> Annex (Maybe Key)
 lookupFile file = isAnnexLink file >>= \case
-	Just key -> makeret key
+	Just key -> return (Just key)
 	Nothing -> ifM (versionSupportsUnlockedPointers <||> isDirect)
 		( ifM (liftIO $ doesFileExist file)
-			( maybe (return Nothing) makeret =<< catKeyFile file
-			, return Nothing
+			( catKeyFile file
+			, catKeyFileHidden file =<< getCurrentBranch
 			)
 		, return Nothing 
 		)
-  where
-	makeret = return . Just
 
 {- Modifies an action to only act on files that are already annexed,
  - and passes the key on to it. -}

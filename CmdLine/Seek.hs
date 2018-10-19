@@ -29,6 +29,7 @@ import Logs.Transfer
 import Remote.List
 import qualified Remote
 import Annex.CatFile
+import Annex.CurrentBranch
 import Annex.Content
 import Annex.InodeSentinal
 import qualified Database.Keys
@@ -270,17 +271,33 @@ seekHelper a l = inRepo $ \g ->
 -- An item in the work tree, which may be a file or a directory.
 newtype WorkTreeItem = WorkTreeItem FilePath
 
+-- When in an adjusted branch that hides some files, it may not exist
+-- in the current work tree, but in the original branch. This allows
+-- seeking for such files.
+newtype AllowHidden = AllowHidden Bool
+
 -- Many git commands seek work tree items matching some criteria,
 -- and silently skip over anything that does not exist. But users expect
 -- an error message when one of the files they provided as a command-line
 -- parameter doesn't exist, so this checks that each exists.
 workTreeItems :: CmdParams -> Annex [WorkTreeItem]
-workTreeItems ps = do
+workTreeItems = workTreeItems' (AllowHidden False)
+
+workTreeItems' :: AllowHidden -> CmdParams -> Annex [WorkTreeItem]
+workTreeItems' (AllowHidden allowhidden) ps = do
+	currbranch <- getCurrentBranch
 	forM_ ps $ \p ->
-		unlessM (isJust <$> liftIO (catchMaybeIO $ getSymbolicLinkStatus p)) $ do
+		unlessM (exists p <||> hidden currbranch p) $ do
 			toplevelWarning False (p ++ " not found")
 			Annex.incError
 	return (map WorkTreeItem ps)
+  where
+	exists p = isJust <$> liftIO (catchMaybeIO $ getSymbolicLinkStatus p)
+	hidden currbranch p
+		| allowhidden = do
+			f <- liftIO $ relPathCwdToFile p
+			isJust <$> catObjectMetaDataHidden f currbranch
+		| otherwise = return False
 
 notSymlink :: FilePath -> IO Bool
 notSymlink f = liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f

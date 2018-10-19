@@ -1,6 +1,6 @@
 {- git cat-file interface, with handle automatically stored in the Annex monad
  -
- - Copyright 2011-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,9 +16,11 @@ module Annex.CatFile (
 	catObjectMetaData,
 	catFileStop,
 	catKey,
+	catSymLinkTarget,
 	catKeyFile,
 	catKeyFileHEAD,
-	catSymLinkTarget,
+	catKeyFileHidden,
+	catObjectMetaDataHidden,
 ) where
 
 import qualified Data.ByteString.Lazy as L
@@ -34,6 +36,8 @@ import Git.FilePath
 import Git.Index
 import qualified Git.Ref
 import Annex.Link
+import Annex.CurrentBranch
+import Types.AdjustedBranch
 import Utility.FileSystemEncoding
 
 catFile :: Git.Branch -> FilePath -> Annex L.ByteString
@@ -142,3 +146,16 @@ catKeyFile f = ifM (Annex.getState Annex.daemon)
 
 catKeyFileHEAD :: FilePath -> Annex (Maybe Key)
 catKeyFileHEAD f = catKey $ Git.Ref.fileFromRef Git.Ref.headRef f
+
+{- Look in the original branch from whence an adjusted branch is based
+ - to find the file. But only when the adjustment hides some files. -}
+catKeyFileHidden :: FilePath -> CurrBranch -> Annex (Maybe Key) 
+catKeyFileHidden = hiddenCat catKey
+
+catObjectMetaDataHidden :: FilePath -> CurrBranch -> Annex (Maybe (Integer, ObjectType))
+catObjectMetaDataHidden = hiddenCat catObjectMetaData
+
+hiddenCat :: (Ref -> Annex (Maybe a)) -> FilePath -> CurrBranch -> Annex (Maybe a)
+hiddenCat a f (Just origbranch, Just adj)
+	| adjustmentHidesFiles adj = a (Git.Ref.fileFromRef origbranch f)
+hiddenCat _ _ _ = return Nothing

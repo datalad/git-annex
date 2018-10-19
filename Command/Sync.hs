@@ -556,26 +556,35 @@ seekSyncContent o rs currbranch = do
 	bloom <- case keyOptions o of
 		Just WantAllKeys -> Just <$> genBloomFilter (seekworktree mvar [])
 		_ -> case currbranch of
-			(origbranch, Just adj) | adjustmentHidesFiles adj -> do
-				seekbranch origbranch (contentOfOption o)
-				pure Nohing
-			_ = do
+                	(Just origbranch, Just adj) | adjustmentHidesFiles adj -> do
+				l <- workTreeItems' (AllowHidden True) (contentOfOption o)
+				seekincludinghidden origbranch mvar l (const noop)
+				pure Nothing
+			_ -> do
 				l <- workTreeItems (contentOfOption o)
 				seekworktree mvar l (const noop)
 				pure Nothing
 	withKeyOptions' (keyOptions o) False
-		(return (seekkeys mvar bloom))
+		(return (gokey mvar bloom))
 		(const noop)
 		[]
 	finishCommandActions
 	liftIO $ not <$> isEmptyMVar mvar
   where
-	seekworktree mvar l bloomfeeder = seekHelper LsFiles.inRepo l >>=
-		mapM_ (\f -> ifAnnexed f (go (Right bloomfeeder) mvar (AssociatedFile (Just f))) noop)
+	seekworktree mvar l bloomfeeder = 
+		seekHelper LsFiles.inRepo l
+			>>= gofiles bloomfeeder mvar
 
-	seekbranch origbranch l = 
+	seekincludinghidden origbranch mvar l bloomfeeder = 
+		seekHelper (LsFiles.inRepoOrBranch origbranch) l 
+			>>= gofiles bloomfeeder mvar
 
-	seekkeys mvar bloom (k, _) = go (Left bloom) mvar (AssociatedFile Nothing) k
+	gofiles bloomfeeder mvar = mapM_ $ \f ->
+		ifAnnexed f
+			(go (Right bloomfeeder) mvar (AssociatedFile (Just f)))
+			noop
+	
+	gokey mvar bloom (k, _) = go (Left bloom) mvar (AssociatedFile Nothing) k
 
 	go ebloom mvar af k = commandAction $ do
 		whenM (syncFile ebloom rs af k) $

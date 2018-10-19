@@ -6,6 +6,8 @@ git-annex (6.20181012) UNRELEASED; urgency=medium
     again will update the branch as needed. This is mostly
     useful with --hide-missing to hide/unhide files after their content
     has been dropped or received.
+  * git-annex sync --content supports --hide-missing; it can
+    be used to get the content of hidden files.
   * Removed the old Android app.
   * Removed support for building with very old ghc < 8.0.1,
     and with yesod < 1.4.3, and without concurrent-output,
